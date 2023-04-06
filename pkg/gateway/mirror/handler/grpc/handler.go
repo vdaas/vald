@@ -90,16 +90,12 @@ func (s *server) Register(ctx context.Context, req *payload.Mirror_Targets) (*pa
 			err = status.WrapWithCanceled(
 				mirror.RegisterRPCName+" API canceld", err, reqInfo, resInfo,
 			)
-			attrs = trace.StatusCodeCancelled(
-				errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + mirror.RegisterRPCName,
-			)
+			attrs = trace.StatusCodeCancelled(err.Error())
 		case errors.Is(err, context.DeadlineExceeded):
 			err = status.WrapWithCanceled(
 				mirror.RegisterRPCName+" API deadline exceeded", err, reqInfo, resInfo,
 			)
-			attrs = trace.StatusCodeCancelled(
-				errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + mirror.RegisterRPCName,
-			)
+			attrs = trace.StatusCodeDeadlineExceeded(err.Error())
 		case errors.Is(err, errors.ErrGRPCClientConnNotFound("*")):
 			err = status.WrapWithInternal(
 				mirror.RegisterRPCName+" API connection not found", err, reqInfo, resInfo,
@@ -204,16 +200,12 @@ func (s *server) Exists(ctx context.Context, meta *payload.Object_ID) (id *paylo
 			err = status.WrapWithCanceled(
 				vald.ExistsRPCName+" API canceld", err, reqInfo, resInfo,
 			)
-			attrs = trace.StatusCodeCancelled(
-				errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.ExistsRPCName,
-			)
+			attrs = trace.StatusCodeCancelled(err.Error())
 		case errors.Is(err, context.DeadlineExceeded):
 			err = status.WrapWithDeadlineExceeded(
 				vald.ExistsRPCName+" API deadline exceeded", err, reqInfo, resInfo,
 			)
-			attrs = trace.StatusCodeDeadlineExceeded(
-				errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.ExistsRPCName,
-			)
+			attrs = trace.StatusCodeDeadlineExceeded(err.Error())
 		case errors.Is(err, errors.ErrTargetNotFound):
 			err = status.WrapWithInternal(
 				vald.ExistsRPCName+" API target not found", err, reqInfo, resInfo,
@@ -276,16 +268,12 @@ func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *
 			err = status.WrapWithCanceled(
 				vald.SearchRPCName+" API canceld", err, reqInfo, resInfo,
 			)
-			attrs = trace.StatusCodeCancelled(
-				errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.SearchRPCName,
-			)
+			attrs = trace.StatusCodeCancelled(err.Error())
 		case errors.Is(err, context.DeadlineExceeded):
 			err = status.WrapWithDeadlineExceeded(
 				vald.SearchRPCName+" API deadline exceeded", err, reqInfo, resInfo,
 			)
-			attrs = trace.StatusCodeDeadlineExceeded(
-				errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.SearchRPCName,
-			)
+			attrs = trace.StatusCodeDeadlineExceeded(err.Error())
 		case errors.Is(err, errors.ErrTargetNotFound):
 			err = status.WrapWithInternal(
 				vald.SearchRPCName+" API target not found", err, reqInfo, resInfo,
@@ -350,16 +338,12 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 			err = status.WrapWithCanceled(
 				vald.SearchByIDRPCName+" API canceld", err, reqInfo, resInfo,
 			)
-			attrs = trace.StatusCodeCancelled(
-				errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.SearchByIDRPCName,
-			)
+			attrs = trace.StatusCodeCancelled(err.Error())
 		case errors.Is(err, context.DeadlineExceeded):
 			err = status.WrapWithDeadlineExceeded(
 				vald.SearchByIDRPCName+" API deadline exceeded", err, reqInfo, resInfo,
 			)
-			attrs = trace.StatusCodeDeadlineExceeded(
-				errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.SearchByIDRPCName,
-			)
+			attrs = trace.StatusCodeDeadlineExceeded(err.Error())
 		case errors.Is(err, errors.ErrTargetNotFound):
 			err = status.WrapWithInternal(
 				vald.SearchByIDRPCName+" API target not found", err, reqInfo, resInfo,
@@ -519,16 +503,12 @@ func (s *server) MultiSearch(ctx context.Context, req *payload.Search_MultiReque
 			err = status.WrapWithCanceled(
 				vald.MultiSearchRPCName+" API canceld", err, reqInfo, resInfo,
 			)
-			attrs = trace.StatusCodeCancelled(
-				errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.MultiSearchRPCName,
-			)
+			attrs = trace.StatusCodeCancelled(err.Error())
 		case errors.Is(err, context.DeadlineExceeded):
 			err = status.WrapWithDeadlineExceeded(
 				vald.MultiSearchRPCName+" API deadline exceeded", err, reqInfo, resInfo,
 			)
-			attrs = trace.StatusCodeDeadlineExceeded(
-				errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.MultiSearchRPCName,
-			)
+			attrs = trace.StatusCodeDeadlineExceeded(err.Error())
 		case errors.Is(err, errors.ErrTargetNotFound):
 			err = status.WrapWithInternal(
 				vald.MultiSearchRPCName+" API target not found", err, reqInfo, resInfo,
@@ -590,16 +570,12 @@ func (s *server) MultiSearchByID(ctx context.Context, req *payload.Search_MultiI
 			err = status.WrapWithCanceled(
 				vald.MultiSearchByIDRPCName+" API canceld", err, reqInfo, resInfo,
 			)
-			attrs = trace.StatusCodeCancelled(
-				errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.MultiSearchByIDRPCName,
-			)
+			attrs = trace.StatusCodeCancelled(err.Error())
 		case errors.Is(err, context.DeadlineExceeded):
 			err = status.WrapWithDeadlineExceeded(
 				vald.MultiSearchByIDRPCName+" API deadline exceeded", err, reqInfo, resInfo,
 			)
-			attrs = trace.StatusCodeDeadlineExceeded(
-				errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.MultiSearchByIDRPCName,
-			)
+			attrs = trace.StatusCodeDeadlineExceeded(err.Error())
 		case errors.Is(err, errors.ErrTargetNotFound):
 			err = status.WrapWithInternal(
 				vald.MultiSearchByIDRPCName+" API target not found", err, reqInfo, resInfo,
@@ -662,16 +638,12 @@ func (s *server) LinearSearch(ctx context.Context, req *payload.Search_Request) 
 			err = status.WrapWithCanceled(
 				vald.LinearSearchRPCName+" API canceld", err, reqInfo, resInfo,
 			)
-			attrs = trace.StatusCodeCancelled(
-				errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.LinearSearchRPCName,
-			)
+			attrs = trace.StatusCodeCancelled(err.Error())
 		case errors.Is(err, context.DeadlineExceeded):
 			err = status.WrapWithDeadlineExceeded(
 				vald.LinearSearchRPCName+" API deadline exceeded", err, reqInfo, resInfo,
 			)
-			attrs = trace.StatusCodeDeadlineExceeded(
-				errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.LinearSearchRPCName,
-			)
+			attrs = trace.StatusCodeDeadlineExceeded(err.Error())
 		case errors.Is(err, errors.ErrTargetNotFound):
 			err = status.WrapWithInternal(
 				vald.LinearSearchRPCName+" API target not found", err, reqInfo, resInfo,
@@ -736,16 +708,12 @@ func (s *server) LinearSearchByID(ctx context.Context, req *payload.Search_IDReq
 			err = status.WrapWithCanceled(
 				vald.LinearSearchByIDRPCName+" API canceld", err, reqInfo, resInfo,
 			)
-			attrs = trace.StatusCodeCancelled(
-				errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.LinearSearchByIDRPCName,
-			)
+			attrs = trace.StatusCodeCancelled(err.Error())
 		case errors.Is(err, context.DeadlineExceeded):
 			err = status.WrapWithDeadlineExceeded(
 				vald.LinearSearchByIDRPCName+" API deadline exceeded", err, reqInfo, resInfo,
 			)
-			attrs = trace.StatusCodeDeadlineExceeded(
-				errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.LinearSearchByIDRPCName,
-			)
+			attrs = trace.StatusCodeDeadlineExceeded(err.Error())
 		case errors.Is(err, errors.ErrTargetNotFound):
 			err = status.WrapWithInternal(
 				vald.LinearSearchByIDRPCName+" API target not found", err, reqInfo, resInfo,
@@ -905,16 +873,12 @@ func (s *server) MultiLinearSearch(ctx context.Context, req *payload.Search_Mult
 			err = status.WrapWithCanceled(
 				vald.MultiLinearSearchRPCName+" API canceld", err, reqInfo, resInfo,
 			)
-			attrs = trace.StatusCodeCancelled(
-				errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.MultiLinearSearchRPCName,
-			)
+			attrs = trace.StatusCodeCancelled(err.Error())
 		case errors.Is(err, context.DeadlineExceeded):
 			err = status.WrapWithDeadlineExceeded(
 				vald.MultiLinearSearchRPCName+" API deadline exceeded", err, reqInfo, resInfo,
 			)
-			attrs = trace.StatusCodeDeadlineExceeded(
-				errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.MultiLinearSearchRPCName,
-			)
+			attrs = trace.StatusCodeDeadlineExceeded(err.Error())
 		case errors.Is(err, errors.ErrTargetNotFound):
 			err = status.WrapWithInternal(
 				vald.MultiLinearSearchRPCName+" API target not found", err, reqInfo, resInfo,
@@ -976,16 +940,12 @@ func (s *server) MultiLinearSearchByID(ctx context.Context, req *payload.Search_
 			err = status.WrapWithCanceled(
 				vald.MultiLinearSearchByIDRPCName+" API canceld", err, reqInfo, resInfo,
 			)
-			attrs = trace.StatusCodeCancelled(
-				errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.MultiLinearSearchByIDRPCName,
-			)
+			attrs = trace.StatusCodeCancelled(err.Error())
 		case errors.Is(err, context.DeadlineExceeded):
 			err = status.WrapWithDeadlineExceeded(
 				vald.MultiLinearSearchByIDRPCName+" API deadline exceeded", err, reqInfo, resInfo,
 			)
-			attrs = trace.StatusCodeDeadlineExceeded(
-				errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.MultiLinearSearchByIDRPCName,
-			)
+			attrs = trace.StatusCodeDeadlineExceeded(err.Error())
 		case errors.Is(err, errors.ErrTargetNotFound):
 			err = status.WrapWithInternal(
 				vald.MultiLinearSearchByIDRPCName+" API target not found", err, reqInfo, resInfo,
@@ -1053,16 +1013,12 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (loc *
 				err = status.WrapWithCanceled(
 					vald.InsertRPCName+" API canceld", err, reqInfo, resInfo,
 				)
-				attrs = trace.StatusCodeCancelled(
-					errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.InsertRPCName,
-				)
+				attrs = trace.StatusCodeCancelled(err.Error())
 			case errors.Is(err, context.DeadlineExceeded):
 				err = status.WrapWithDeadlineExceeded(
 					vald.InsertRPCName+" API deadline exceeded", err, reqInfo, resInfo,
 				)
-				attrs = trace.StatusCodeDeadlineExceeded(
-					errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.InsertRPCName,
-				)
+				attrs = trace.StatusCodeDeadlineExceeded(err.Error())
 			case errors.Is(err, errors.ErrTargetNotFound):
 				err = status.WrapWithInternal(
 					vald.InsertRPCName+" API target not found", err, reqInfo, resInfo,
@@ -1336,16 +1292,12 @@ func (s *server) insert(ctx context.Context, client vald.InsertClient, req *payl
 			err = status.WrapWithCanceled(
 				vald.InsertRPCName+" API canceld", err, reqInfo, resInfo,
 			)
-			attrs = trace.StatusCodeCancelled(
-				errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.InsertRPCName,
-			)
+			attrs = trace.StatusCodeCancelled(err.Error())
 		case errors.Is(err, context.DeadlineExceeded):
 			err = status.WrapWithDeadlineExceeded(
 				vald.InsertRPCName+" API deadline exceeded", err, reqInfo, resInfo,
 			)
-			attrs = trace.StatusCodeDeadlineExceeded(
-				errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.InsertRPCName,
-			)
+			attrs = trace.StatusCodeDeadlineExceeded(err.Error())
 		case errors.Is(err, errors.ErrGRPCClientConnNotFound("*")):
 			err = status.WrapWithInternal(
 				vald.InsertRPCName+" API connection not found", err, reqInfo, resInfo,
@@ -1432,7 +1384,7 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 		Locations: make([]*payload.Object_Location, len(reqs.GetRequests())),
 	}
 
-	var mutex, errMutex sync.Mutex
+	var mu, emu sync.Mutex
 	var wg sync.WaitGroup
 
 	for i, r := range reqs.GetRequests() {
@@ -1460,18 +1412,18 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 					span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
 					span.SetStatus(trace.StatusError, err.Error())
 				}
-				errMutex.Lock()
-				if errs == nil {
-					errs = err
+				emu.Lock()
+				if errs != nil {
+					errs = errors.Join(errs, err)
 				} else {
-					errs = errors.Wrap(errs, err.Error())
+					errs = err
 				}
-				errMutex.Unlock()
+				emu.Unlock()
 				return nil
 			}
-			mutex.Lock()
+			mu.Lock()
 			res.Locations[idx] = loc
-			mutex.Unlock()
+			mu.Unlock()
 			return nil
 		}))
 	}
@@ -1528,16 +1480,12 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (loc *
 				err = status.WrapWithCanceled(
 					vald.UpdateRPCName+" API canceld", err, reqInfo, resInfo,
 				)
-				attrs = trace.StatusCodeCancelled(
-					errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.UpdateRPCName,
-				)
+				attrs = trace.StatusCodeCancelled(err.Error())
 			case errors.Is(err, context.DeadlineExceeded):
 				err = status.WrapWithDeadlineExceeded(
 					vald.UpdateRPCName+" API deadline exceeded", err, reqInfo, resInfo,
 				)
-				attrs = trace.StatusCodeDeadlineExceeded(
-					errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.UpdateRPCName,
-				)
+				attrs = trace.StatusCodeDeadlineExceeded(err.Error())
 			case errors.Is(err, errors.ErrTargetNotFound):
 				err = status.WrapWithInternal(
 					vald.UpdateRPCName+" API target not found", err, reqInfo, resInfo,
@@ -1859,16 +1807,12 @@ func (s *server) update(ctx context.Context, client vald.UpdateClient, req *payl
 			err = status.WrapWithCanceled(
 				vald.UpdateRPCName+" API canceld", err, reqInfo, resInfo,
 			)
-			attrs = trace.StatusCodeCancelled(
-				errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.UpdateRPCName,
-			)
+			attrs = trace.StatusCodeCancelled(err.Error())
 		case errors.Is(err, context.DeadlineExceeded):
 			err = status.WrapWithDeadlineExceeded(
 				vald.UpdateRPCName+" API deadline exceeded", err, reqInfo, resInfo,
 			)
-			attrs = trace.StatusCodeDeadlineExceeded(
-				errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.UpdateRPCName,
-			)
+			attrs = trace.StatusCodeDeadlineExceeded(err.Error())
 		case errors.Is(err, errors.ErrGRPCClientConnNotFound("*")):
 			err = status.WrapWithInternal(
 				vald.UpdateRPCName+" API connection not found", err, reqInfo, resInfo,
@@ -1955,7 +1899,7 @@ func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequ
 		Locations: make([]*payload.Object_Location, len(reqs.GetRequests())),
 	}
 
-	var mutex, errMutex sync.Mutex
+	var mu, emu sync.Mutex
 	var wg sync.WaitGroup
 
 	for i, r := range reqs.GetRequests() {
@@ -1983,18 +1927,18 @@ func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequ
 					span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
 					span.SetStatus(trace.StatusError, err.Error())
 				}
-				errMutex.Lock()
-				if errs == nil {
-					errs = err
+				emu.Lock()
+				if errs != nil {
+					errs = errors.Join(errs, err)
 				} else {
-					errs = errors.Wrap(errs, err.Error())
+					errs = err
 				}
-				errMutex.Unlock()
+				emu.Unlock()
 				return nil
 			}
-			mutex.Lock()
+			mu.Lock()
 			res.Locations[idx] = loc
-			mutex.Unlock()
+			mu.Unlock()
 			return nil
 		}))
 	}
@@ -2051,16 +1995,12 @@ func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *
 				err = status.WrapWithCanceled(
 					vald.UpsertRPCName+" API canceld", err, reqInfo, resInfo,
 				)
-				attrs = trace.StatusCodeCancelled(
-					errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.UpsertRPCName,
-				)
+				attrs = trace.StatusCodeCancelled(err.Error())
 			case errors.Is(err, context.DeadlineExceeded):
 				err = status.WrapWithDeadlineExceeded(
 					vald.UpsertRPCName+" API deadline exceeded", err, reqInfo, resInfo,
 				)
-				attrs = trace.StatusCodeDeadlineExceeded(
-					errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.UpsertRPCName,
-				)
+				attrs = trace.StatusCodeDeadlineExceeded(err.Error())
 			case errors.Is(err, errors.ErrTargetNotFound):
 				err = status.WrapWithInternal(
 					vald.UpsertRPCName+" API target not found", err, reqInfo, resInfo,
@@ -2378,16 +2318,12 @@ func (s *server) upsert(ctx context.Context, client vald.UpsertClient, req *payl
 			err = status.WrapWithCanceled(
 				vald.UpsertRPCName+" API canceld", err, reqInfo, resInfo,
 			)
-			attrs = trace.StatusCodeCancelled(
-				errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.GetObjectRPCName,
-			)
+			attrs = trace.StatusCodeCancelled(err.Error())
 		case errors.Is(err, context.DeadlineExceeded):
 			err = status.WrapWithDeadlineExceeded(
 				vald.UpsertRPCName+" API deadline exceeded", err, reqInfo, resInfo,
 			)
-			attrs = trace.StatusCodeDeadlineExceeded(
-				errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.UpsertRPCName,
-			)
+			attrs = trace.StatusCodeDeadlineExceeded(err.Error())
 		case errors.Is(err, errors.ErrGRPCClientConnNotFound("*")):
 			err = status.WrapWithInternal(
 				vald.UpsertRPCName+" API connection not found", err, reqInfo, resInfo,
@@ -2474,7 +2410,7 @@ func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequ
 		Locations: make([]*payload.Object_Location, len(reqs.GetRequests())),
 	}
 
-	var mutex, errMutex sync.Mutex
+	var mu, emu sync.Mutex
 	var wg sync.WaitGroup
 
 	for i, r := range reqs.GetRequests() {
@@ -2502,18 +2438,18 @@ func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequ
 					span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
 					span.SetStatus(trace.StatusError, err.Error())
 				}
-				errMutex.Lock()
-				if errs == nil {
-					errs = err
+				emu.Lock()
+				if errs != nil {
+					errs = errors.Join(errs, err)
 				} else {
-					errs = errors.Wrap(errs, err.Error())
+					errs = err
 				}
-				errMutex.Unlock()
+				emu.Unlock()
 				return nil
 			}
-			mutex.Lock()
+			mu.Lock()
 			res.Locations[idx] = loc
-			mutex.Unlock()
+			mu.Unlock()
 			return nil
 		}))
 	}
@@ -2570,16 +2506,12 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (loc *
 				err = status.WrapWithCanceled(
 					vald.RemoveRPCName+" API canceld", err, reqInfo, resInfo,
 				)
-				attrs = trace.StatusCodeCancelled(
-					errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.RemoveRPCName,
-				)
+				attrs = trace.StatusCodeCancelled(err.Error())
 			case errors.Is(err, context.DeadlineExceeded):
 				err = status.WrapWithDeadlineExceeded(
 					vald.RemoveRPCName+" API deadline exceeded", err, reqInfo, resInfo,
 				)
-				attrs = trace.StatusCodeDeadlineExceeded(
-					errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.RemoveRPCName,
-				)
+				attrs = trace.StatusCodeDeadlineExceeded(err.Error())
 			case errors.Is(err, errors.ErrTargetNotFound):
 				err = status.WrapWithInternal(
 					vald.RemoveRPCName+" API target not found", err, reqInfo, resInfo,
@@ -2868,16 +2800,12 @@ func (s *server) remove(ctx context.Context, client vald.RemoveClient, req *payl
 			err = status.WrapWithCanceled(
 				vald.RemoveRPCName+" API canceld", err, reqInfo, resInfo,
 			)
-			attrs = trace.StatusCodeCancelled(
-				errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.RemoveRPCName,
-			)
+			attrs = trace.StatusCodeCancelled(err.Error())
 		case errors.Is(err, context.DeadlineExceeded):
 			err = status.WrapWithDeadlineExceeded(
 				vald.RemoveRPCName+" API deadline exceeded", err, reqInfo, resInfo,
 			)
-			attrs = trace.StatusCodeDeadlineExceeded(
-				errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.RemoveRPCName,
-			)
+			attrs = trace.StatusCodeDeadlineExceeded(err.Error())
 		case errors.Is(err, errors.ErrGRPCClientConnNotFound("*")):
 			err = status.WrapWithInternal(
 				vald.RemoveRPCName+" API connection not found", err, reqInfo, resInfo,
@@ -2964,7 +2892,7 @@ func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequ
 		Locations: make([]*payload.Object_Location, len(reqs.GetRequests())),
 	}
 
-	var mutex, errMutex sync.Mutex
+	var mu, emu sync.Mutex
 	var wg sync.WaitGroup
 
 	for i, r := range reqs.GetRequests() {
@@ -2992,18 +2920,18 @@ func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequ
 					span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
 					span.SetStatus(trace.StatusError, err.Error())
 				}
-				errMutex.Lock()
-				if errs == nil {
-					errs = err
+				emu.Lock()
+				if errs != nil {
+					errs = errors.Join(errs, err)
 				} else {
-					errs = errors.Wrap(errs, err.Error())
+					errs = err
 				}
-				errMutex.Unlock()
+				emu.Unlock()
 				return nil
 			}
-			mutex.Lock()
+			mu.Lock()
 			res.Locations[idx] = loc
-			mutex.Unlock()
+			mu.Unlock()
 			return nil
 		}))
 	}
@@ -3055,16 +2983,12 @@ func (s *server) GetObject(ctx context.Context, req *payload.Object_VectorReques
 			err = status.WrapWithCanceled(
 				vald.GetObjectRPCName+" API canceld", err, reqInfo, resInfo,
 			)
-			attrs = trace.StatusCodeCancelled(
-				errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.GetObjectRPCName,
-			)
+			attrs = trace.StatusCodeCancelled(err.Error())
 		case errors.Is(err, context.DeadlineExceeded):
 			err = status.WrapWithDeadlineExceeded(
 				vald.GetObjectRPCName+" API deadline exceeded", err, reqInfo, resInfo,
 			)
-			attrs = trace.StatusCodeDeadlineExceeded(
-				errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.GetObjectRPCName,
-			)
+			attrs = trace.StatusCodeDeadlineExceeded(err.Error())
 		case errors.Is(err, errors.ErrTargetNotFound):
 			err = status.WrapWithInternal(
 				vald.GetObjectRPCName+" API target not found", err, reqInfo, resInfo,
@@ -3133,17 +3057,13 @@ func (s *server) getObjects(ctx context.Context, req *payload.Object_VectorReque
 				err = status.WrapWithCanceled(
 					vald.GetObjectRPCName+" API canceld", err, reqInfo, resInfo,
 				)
-				attrs = trace.StatusCodeCancelled(
-					errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.GetObjectRPCName,
-				)
+				attrs = trace.StatusCodeCancelled(err.Error())
 				code = codes.Canceled
 			case errors.Is(err, context.DeadlineExceeded):
 				err = status.WrapWithDeadlineExceeded(
 					vald.GetObjectRPCName+" API deadline exceeded", err, reqInfo, resInfo,
 				)
-				attrs = trace.StatusCodeDeadlineExceeded(
-					errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.GetObjectRPCName,
-				)
+				attrs = trace.StatusCodeDeadlineExceeded(err.Error())
 				code = codes.DeadlineExceeded
 			case errors.Is(err, errors.ErrTargetNotFound):
 				err = status.WrapWithInternal(
