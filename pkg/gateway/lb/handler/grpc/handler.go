@@ -513,45 +513,51 @@ func (s *server) doSearch(ctx context.Context, cfg *payload.Search_Config,
 				}
 			}()
 			r, err := f(sctx, vc, copts...)
-			switch {
-			case errors.Is(err, context.Canceled),
-				errors.Is(err, errors.ErrRPCCallFailed(target, context.Canceled)):
-				if sspan != nil {
-					sspan.RecordError(err)
-					sspan.SetAttributes(trace.StatusCodeCancelled(
-						errdetails.ValdGRPCResourceTypePrefix +
-							"/vald.v1.search.BroadCast/" +
-							target + " canceled: " + err.Error())...)
-					sspan.SetStatus(trace.StatusError, err.Error())
+			if err != nil {
+				switch {
+				case errors.Is(err, context.Canceled),
+					errors.Is(err, errors.ErrRPCCallFailed(target, context.Canceled)):
+					if sspan != nil {
+						sspan.RecordError(err)
+						sspan.SetAttributes(trace.StatusCodeCancelled(
+							errdetails.ValdGRPCResourceTypePrefix +
+								"/vald.v1.search.BroadCast/" +
+								target + " canceled: " + err.Error())...)
+						sspan.SetStatus(trace.StatusError, err.Error())
+					}
+				case errors.Is(err, context.DeadlineExceeded),
+					errors.Is(err, errors.ErrRPCCallFailed(target, context.DeadlineExceeded)):
+					if sspan != nil {
+						sspan.RecordError(err)
+						sspan.SetAttributes(trace.StatusCodeDeadlineExceeded(
+							errdetails.ValdGRPCResourceTypePrefix +
+								"/vald.v1.search.BroadCast/" +
+								target + " deadline_exceeded: " + err.Error())...)
+						sspan.SetStatus(trace.StatusError, err.Error())
+					}
+				default:
+					st, msg, err := status.ParseError(err, codes.Internal, "failed to parse search gRPC error response",
+						&errdetails.ResourceInfo{
+							ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.search",
+							ResourceName: fmt.Sprintf("%s: %s(%s) to %s", apiName, s.name, s.ip, target),
+						})
+					if sspan != nil {
+						sspan.RecordError(err)
+						sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+						sspan.SetStatus(trace.StatusError, err.Error())
+					}
+					switch st.Code() {
+					case codes.Internal,
+						codes.Unavailable,
+						codes.ResourceExhausted:
+						log.Warn(err)
+						return err
+					}
 				}
-			case errors.Is(err, context.DeadlineExceeded),
-				errors.Is(err, errors.ErrRPCCallFailed(target, context.DeadlineExceeded)):
-				if sspan != nil {
-					sspan.RecordError(err)
-					sspan.SetAttributes(trace.StatusCodeDeadlineExceeded(
-						errdetails.ValdGRPCResourceTypePrefix +
-							"/vald.v1.search.BroadCast/" +
-							target + " deadline_exceeded: " + err.Error())...)
-					sspan.SetStatus(trace.StatusError, err.Error())
-				}
-			case err != nil:
-				st, msg, err := status.ParseError(err, codes.Internal, "failed to parse search gRPC error response",
-					&errdetails.ResourceInfo{
-						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.search",
-						ResourceName: fmt.Sprintf("%s: %s(%s) to %s", apiName, s.name, s.ip, target),
-					})
-				if sspan != nil {
-					sspan.RecordError(err)
-					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
-					sspan.SetStatus(trace.StatusError, err.Error())
-				}
-				switch st.Code() {
-				case codes.Internal,
-					codes.Unavailable,
-					codes.ResourceExhausted:
-					return err
-				}
-			case r == nil || len(r.GetResults()) == 0:
+				log.Debug(err)
+				return nil
+			}
+			if r == nil || len(r.GetResults()) == 0 {
 				err = status.WrapWithNotFound("failed to process search request", errors.ErrEmptySearchResult,
 					&errdetails.ResourceInfo{
 						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.search",
@@ -562,21 +568,24 @@ func (s *server) doSearch(ctx context.Context, cfg *payload.Search_Config,
 					sspan.SetAttributes(trace.StatusCodeNotFound(err.Error())...)
 					sspan.SetStatus(trace.StatusError, err.Error())
 				}
-			}
-			for _, dist := range r.GetResults() {
-				if dist == nil {
-					continue
-				}
-				fdist := big.NewFloat(float64(dist.GetDistance()))
-				bf, ok := maxDist.Load().(*big.Float)
-				if !ok || fdist.Cmp(bf) >= 0 {
+				r, err = f(sctx, vc, copts...)
+				if err != nil || r == nil || len(r.GetResults()) == 0 {
 					return nil
 				}
-				if _, already := visited.LoadOrStore(dist.GetId(), struct{}{}); !already {
-					select {
-					case <-ectx.Done():
+			}
+			for _, dist := range r.GetResults() {
+				if dist != nil {
+					fdist := big.NewFloat(float64(dist.GetDistance()))
+					bf, ok := maxDist.Load().(*big.Float)
+					if !ok || fdist.Cmp(bf) >= 0 {
 						return nil
-					case dch <- DistPayload{raw: dist, distance: fdist}:
+					}
+					if _, already := visited.LoadOrStore(dist.GetId(), struct{}{}); !already {
+						select {
+						case <-ectx.Done():
+							return nil
+						case dch <- DistPayload{raw: dist, distance: fdist}:
+						}
 					}
 				}
 			}
