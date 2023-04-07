@@ -38,7 +38,7 @@ func (s *server) Flush(ctx context.Context, req *payload.Flush_Request) (*payloa
 	err := s.ngt.RegenerateIndex(ctx)
 	if err != nil {
 		var attrs []attribute.KeyValue
-		if errors.Is(err, errors.ErrFlushingIsInProgress()) {
+		if errors.Is(err, errors.ErrFlushingIsInProgress) {
 			err = status.WrapWithAborted("Flush API aborted to process search request due to flushing indices is in progress", err,
 				&errdetails.RequestInfo{
 					ServingData: errdetails.Serialize(req),

@@ -1703,7 +1703,7 @@ func (n *ngt) mktmp() (err error) {
 func (n *ngt) Exists(uuid string) (oid uint32, ok bool) {
 	if n.IsFlushing() {
 		log.Debugf("Exists\tuuid: %s's data will be delete soon\terror: %v",
-			uuid, errors.ErrFlushingIsInProgress())
+			uuid, errors.ErrFlushingIsInProgress)
 		return 0, false
 	}
 	ok = n.vq.IVExists(uuid)
