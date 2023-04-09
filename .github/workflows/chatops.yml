@@ -327,6 +327,7 @@ jobs:
         with:
           go-version: ${{ steps.golang_version.outputs.version }}
       - name: Generate tests and push
+        id: gen_test
         if: steps.check_comments_gen_test.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         run: |
           curl -s ${PR_INFO_URL} > /tmp/pr_info.json
@@ -342,7 +343,7 @@ jobs:
           git checkout ${HEAD_BRANCH}
 
           make gotests/install
-          make -j 4 gotests/gen
+          GITHUB_OUTPUT=$(make gotests/gen 2>&1 >/dev/null)
 
           git add cmd hack internal pkg
           git commit -S --signoff -m ":robot: Add automatically generated tests"
@@ -361,12 +362,13 @@ jobs:
       - name: failure comment
         if: failure()
         run: |
+          ERR_LOG=${{ steps.gen_test.outputs }}
           curl --include --verbose --fail \
           -H "Accept: application/json" \
           -H "Content-Type:application/json" \
           -H "Authorization: token ${GITHUB_TOKEN}" \
           --request POST \
-          --data "{\"body\": \"**[GEN TEST]** Failed to generate tests.\"}" \
+          --data "{\"body\": \"**[GEN TEST]** Failed to generate tests. Error: $ERR_LOG\"}" \
           $API_URL
         env:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}

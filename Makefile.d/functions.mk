@@ -134,6 +134,11 @@ define gen-go-test-sources
 	@for f in $(GO_SOURCES); do \
 		echo "Generating go test file: $$f"; \
 		gotests -w -template_dir $(ROOTDIR)/assets/test/templates/common -all $(patsubst %_test.go,%.go,$$f); \
+		RESULT=$$?; \
+		if [ ! $$RESULT -eq 0 ]; then \
+			echo $$RESULT; \
+			exit 1; \
+		fi; \
 	done
 endef
 
@@ -141,5 +146,10 @@ define gen-go-option-test-sources
 	@for f in $(GO_OPTION_SOURCES); do \
 		echo "Generating go option test file: $$f"; \
 		gotests -w -template_dir $(ROOTDIR)/assets/test/templates/common -all $(patsubst %_test.go,%.go,$$f); \
+		RESULT=$$?; \
+		if [ ! $$RESULT -eq 0 ]; then \
+			echo $$RESULT; \
+			exit 1; \
+		fi; \
 	done
 endef
