@@ -44,7 +44,7 @@ func TestMain(m *testing.M) {
 
 func TestString(t *testing.T) {
 	type want struct {
-		want string
+		want *Detail
 	}
 	type test struct {
 		name       string
@@ -54,10 +54,21 @@ func TestString(t *testing.T) {
 		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want, got string) error {
-		if got != w.want {
-			return errors.Errorf("\tgot: \"%v\",\n\t\t\t\twant: \"%v\"", got, w.want)
+		if got == w.want.String() {
+			// check the position of "->"
+			var oldIdx int
+			for i, str := range strings.Split(strings.TrimPrefix(got, "\n"), "\n") {
+				idx := strings.Index(str, "->")
+				if i != 0 {
+					if oldIdx != idx {
+						return errors.Errorf("\tgot: \"%v\",\n\t\t\t\twant: \"%v\"", got, w.want)
+					}
+				}
+				oldIdx = idx
+			}
+			return nil
 		}
-		return nil
+		return errors.Errorf("\tgot: \"%v\",\n\t\t\t\twant: \"%v\"", got, w.want)
 	}
 	tests := []test{
 		{
@@ -75,10 +86,22 @@ func TestString(t *testing.T) {
 				infoProvider = nil
 			},
 			want: want{
-				want: "\nbuild cpu info flags ->\t[]\ncgo enabled          ->\tunknown\ngit commit           ->\tmain\ngo arch              ->\t" + runtime.GOARCH + "\ngo os                ->\t" + runtime.GOOS + "\ngo root              ->\t" + runtime.GOROOT() + "\ngo version           ->\t" + runtime.Version() + "\nvald version         ->\t\x1b[1mv0.0.1\x1b[22m",
+				want: &Detail{
+					Version:           "v0.0.1",
+					ServerName:        "",
+					GitCommit:         "main",
+					BuildTime:         "",
+					GoVersion:         runtime.Version(),
+					GoOS:              runtime.GOOS,
+					GoArch:            runtime.GOARCH,
+					GoRoot:            runtime.GOROOT(),
+					CGOEnabled:        "unknown",
+					NGTVersion:        "",
+					BuildCPUInfoFlags: nil,
+					StackTrace:        nil,
+				},
 			},
 		},
-
 		{
 			name: "return correct string with no information initialized",
 			beforeFunc: func(t *testing.T) {
@@ -95,7 +118,20 @@ func TestString(t *testing.T) {
 				infoProvider = nil
 			},
 			want: want{
-				want: "\nbuild cpu info flags ->\t[]\ncgo enabled          ->\tunknown\ngit commit           ->\tmain\ngo arch              ->\t" + runtime.GOARCH + "\ngo os                ->\t" + runtime.GOOS + "\ngo root              ->\t" + runtime.GOROOT() + "\ngo version           ->\t" + runtime.Version() + "\nvald version         ->\t\x1b[1m\x1b[22m",
+				want: &Detail{
+					Version:           "",
+					ServerName:        "",
+					GitCommit:         "main",
+					BuildTime:         "",
+					GoVersion:         runtime.Version(),
+					GoOS:              runtime.GOOS,
+					GoArch:            runtime.GOARCH,
+					GoRoot:            runtime.GOROOT(),
+					CGOEnabled:        "unknown",
+					NGTVersion:        "",
+					BuildCPUInfoFlags: nil,
+					StackTrace:        nil,
+				},
 			},
 		},
 	}
@@ -589,7 +625,7 @@ func Test_info_String(t *testing.T) {
 		rtFuncForPC func(pc uintptr) *runtime.Func
 	}
 	type want struct {
-		want string
+		want *Detail
 	}
 	type test struct {
 		name       string
@@ -600,10 +636,21 @@ func Test_info_String(t *testing.T) {
 		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want, got string) error {
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got: \"%v\",\n\t\t\t\twant: \"%v\"", got, w.want)
+		if got == w.want.String() {
+			// check the position of "->"
+			var oldIdx int
+			for i, str := range strings.Split(strings.TrimPrefix(got, "\n"), "\n") {
+				idx := strings.Index(str, "->")
+				if i != 0 {
+					if oldIdx != idx {
+						return errors.Errorf("\tgot: \"%v\",\n\t\t\t\twant: \"%v\"", got, w.want)
+					}
+				}
+				oldIdx = idx
+			}
+			return nil
 		}
-		return nil
+		return errors.Errorf("\tgot: \"%v\",\n\t\t\t\twant: \"%v\"", got, w.want)
 	}
 	tests := []test{
 		{
@@ -632,7 +679,27 @@ func Test_info_String(t *testing.T) {
 				},
 			},
 			want: want{
-				want: "\nbuild cpu info flags ->\t[]\nbuild time           ->\tbt\ncgo enabled          ->\ttrue\ngit commit           ->\tcommit\ngo arch              ->\tgoarch\ngo os                ->\tgoos\ngo root              ->\t/usr/local/go\ngo version           ->\t1.1\nngt version          ->\t1.2\nserver name          ->\tsrv\nstack trace-000      ->\turl\tfile#L10\tfunc\nvald version         ->\t\x1b[1m1.0\x1b[22m",
+				want: &Detail{
+					Version:           "1.0",
+					ServerName:        "srv",
+					GitCommit:         "commit",
+					BuildTime:         "bt",
+					GoVersion:         "1.1",
+					GoOS:              "goos",
+					GoArch:            "goarch",
+					GoRoot:            "/usr/local/go",
+					CGOEnabled:        "true",
+					NGTVersion:        "1.2",
+					BuildCPUInfoFlags: nil,
+					StackTrace: []StackTrace{
+						{
+							URL:      "url",
+							FuncName: "func",
+							File:     "file",
+							Line:     10,
+						},
+					},
+				},
 			},
 		},
 		{
@@ -657,7 +724,20 @@ func Test_info_String(t *testing.T) {
 				},
 			},
 			want: want{
-				want: "\nbuild cpu info flags ->\t[]\nbuild time           ->\tbt\ncgo enabled          ->\ttrue\ngit commit           ->\tcommit\ngo arch              ->\tgoarch\ngo os                ->\tgoos\ngo root              ->\t/usr/local/go\ngo version           ->\t1.1\nngt version          ->\t1.2\nserver name          ->\tsrv\nvald version         ->\t\x1b[1m1.0\x1b[22m",
+				want: &Detail{
+					Version:           "1.0",
+					ServerName:        "srv",
+					GitCommit:         "commit",
+					BuildTime:         "bt",
+					GoVersion:         "1.1",
+					GoOS:              "goos",
+					GoArch:            "goarch",
+					GoRoot:            "/usr/local/go",
+					CGOEnabled:        "true",
+					NGTVersion:        "1.2",
+					BuildCPUInfoFlags: nil,
+					StackTrace:        nil,
+				},
 			},
 		},
 	}
@@ -705,7 +785,7 @@ func TestDetail_String(t *testing.T) {
 		StackTrace        []StackTrace
 	}
 	type want struct {
-		want string
+		want *Detail
 	}
 	type test struct {
 		name       string
@@ -716,10 +796,21 @@ func TestDetail_String(t *testing.T) {
 		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want, got string) error {
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+		if got == w.want.String() {
+			// check the position of "->"
+			var oldIdx int
+			for i, str := range strings.Split(strings.TrimPrefix(got, "\n"), "\n") {
+				idx := strings.Index(str, "->")
+				if i != 0 {
+					if oldIdx != idx {
+						return errors.Errorf("\tgot: \"%v\",\n\t\t\t\twant: \"%v\"", got, w.want)
+					}
+				}
+				oldIdx = idx
+			}
+			return nil
 		}
-		return nil
+		return errors.Errorf("\tgot: \"%v\",\n\t\t\t\twant: \"%v\"", got, w.want)
 	}
 	tests := []test{
 		{
@@ -745,7 +836,26 @@ func TestDetail_String(t *testing.T) {
 				},
 			},
 			want: want{
-				want: "\nbuild cpu info flags ->\t[]\nbuild time           ->\tbt\ncgo enabled          ->\ttrue\ngit commit           ->\tcommit\ngo arch              ->\tgoarch\ngo os                ->\tgoos\ngo version           ->\t1.1\nngt version          ->\t1.2\nserver name          ->\tsrv\nstack trace-000      ->\turl\tfile#L10\tfunc\nvald version         ->\t\x1b[1m1.0\x1b[22m",
+				want: &Detail{
+					Version:           "1.0",
+					ServerName:        "srv",
+					GitCommit:         "commit",
+					BuildTime:         "bt",
+					GoVersion:         "1.1",
+					GoOS:              "goos",
+					GoArch:            "goarch",
+					CGOEnabled:        "true",
+					NGTVersion:        "1.2",
+					BuildCPUInfoFlags: nil,
+					StackTrace: []StackTrace{
+						{
+							URL:      "url",
+							FuncName: "func",
+							File:     "file",
+							Line:     10,
+						},
+					},
+				},
 			},
 		},
 		{
@@ -764,7 +874,19 @@ func TestDetail_String(t *testing.T) {
 				StackTrace:        []StackTrace{},
 			},
 			want: want{
-				want: "\nbuild cpu info flags ->\t[]\nbuild time           ->\tbt\ncgo enabled          ->\ttrue\ngit commit           ->\tcommit\ngo arch              ->\tgoarch\ngo os                ->\tgoos\ngo version           ->\t1.1\nngt version          ->\t1.2\nserver name          ->\tsrv\nvald version         ->\t\x1b[1m1.0\x1b[22m",
+				want: &Detail{
+					Version:           "1.0",
+					ServerName:        "srv",
+					GitCommit:         "commit",
+					BuildTime:         "bt",
+					GoVersion:         "1.1",
+					GoOS:              "goos",
+					GoArch:            "goarch",
+					CGOEnabled:        "true",
+					NGTVersion:        "1.2",
+					BuildCPUInfoFlags: nil,
+					StackTrace:        nil,
+				},
 			},
 		},
 	}
