@@ -1143,9 +1143,29 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (loc *
 		}
 		return true
 	})
-	if errs == nil {
+	switch {
+	case errs == nil:
 		log.Debugf("Insert API mirror request succeeded to %#v", loc)
 		return loc, nil
+	case len(targets) == 0 && errs != nil:
+		log.Error("failed to Insert API mirror request: %v and can not rollback because success target length is 0", errs)
+		st, msg, err := status.ParseError(errs, codes.Internal,
+			"failed to parse "+vald.InsertRPCName+" gRPC error response",
+			&errdetails.RequestInfo{
+				RequestId:   req.GetVector().GetId(),
+				ServingData: errdetails.Serialize(req),
+			},
+			&errdetails.ResourceInfo{
+				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.InsertRPCName,
+				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+			},
+		)
+		if span != nil {
+			span.RecordError(err)
+			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+			span.SetStatus(trace.StatusError, err.Error())
+		}
+		return nil, err
 	}
 	log.Error("failed to Insert API mirror request: %v, so starts the rollback request", errs)
 
@@ -1623,9 +1643,29 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (loc *
 		}
 		return true
 	})
-	if errs == nil {
+	switch {
+	case errs == nil:
 		log.Debugf("Update API mirror request succeeded to %#v", loc)
 		return loc, nil
+	case len(targets) == 0 && errs != nil:
+		log.Error("failed to Update API mirror request: %v and can not rollback because success target length is 0", errs)
+		st, msg, err := status.ParseError(errs, codes.Internal,
+			"failed to parse "+vald.UpdateRPCName+" gRPC error response",
+			&errdetails.RequestInfo{
+				RequestId:   req.GetVector().GetId(),
+				ServingData: errdetails.Serialize(req),
+			},
+			&errdetails.ResourceInfo{
+				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.UpdateRPCName,
+				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+			},
+		)
+		if span != nil {
+			span.RecordError(err)
+			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+			span.SetStatus(trace.StatusError, err.Error())
+		}
+		return nil, err
 	}
 	log.Error("failed to Update API mirror request: %v, so starts the rollback request", errs)
 
@@ -2135,9 +2175,29 @@ func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *
 		}
 		return true
 	})
-	if errs == nil {
+	switch {
+	case errs == nil:
 		log.Debugf("Upsert API mirror request succeeded to %#v", loc)
 		return loc, nil
+	case len(targets) == 0 && errs != nil:
+		log.Error("failed to Upsert API mirror request: %v and can not rollback because success target length is 0", errs)
+		st, msg, err := status.ParseError(errs, codes.Internal,
+			"failed to parse "+vald.UpsertRPCName+" gRPC error response",
+			&errdetails.RequestInfo{
+				RequestId:   req.GetVector().GetId(),
+				ServingData: errdetails.Serialize(req),
+			},
+			&errdetails.ResourceInfo{
+				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.UpsertRPCName,
+				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+			},
+		)
+		if span != nil {
+			span.RecordError(err)
+			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+			span.SetStatus(trace.StatusError, err.Error())
+		}
+		return nil, err
 	}
 	log.Error("failed to Upsert API mirror request: %v, so starts the rollback request", errs)
 
@@ -2647,9 +2707,29 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (loc *
 		}
 		return true
 	})
-	if errs == nil {
+	switch {
+	case errs == nil:
 		log.Debugf("Remove API mirror request succeeded to %#v", loc)
 		return loc, nil
+	case len(targets) == 0 && errs != nil:
+		log.Error("failed to Remove API mirror request: %v and can not rollback because success target length is 0", errs)
+		st, msg, err := status.ParseError(errs, codes.Internal,
+			"failed to parse "+vald.RemoveRPCName+" gRPC error response",
+			&errdetails.RequestInfo{
+				RequestId:   req.GetId().GetId(),
+				ServingData: errdetails.Serialize(req),
+			},
+			&errdetails.ResourceInfo{
+				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.RemoveRPCName,
+				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+			},
+		)
+		if span != nil {
+			span.RecordError(err)
+			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+			span.SetStatus(trace.StatusError, err.Error())
+		}
+		return nil, err
 	}
 	log.Error("failed to Remove API mirror request: %v, so starts the rollback request", errs)
 
