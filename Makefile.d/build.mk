@@ -30,9 +30,10 @@ cmd/agent/core/ngt/ngt: \
 	$(PBGOS) \
 	$(shell find $(ROOTDIR)/cmd/agent/core/ngt -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go') \
 	$(shell find $(ROOTDIR)/pkg/agent/core/ngt $(ROOTDIR)/pkg/agent/internal -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
+	$(eval CGO_ENABLED = 1)
 	CFLAGS="$(CFLAGS)" \
 	CXXFLAGS="$(CXXFLAGS)" \
-	CGO_ENABLED=1 \
+	CGO_ENABLED=$(CGO_ENABLED) \
 	CGO_CXXFLAGS="-g -Ofast -march=native" \
 	CGO_FFLAGS="-g -Ofast -march=native" \
 	CGO_LDFLAGS="-g -Ofast -march=native" \
@@ -41,15 +42,15 @@ cmd/agent/core/ngt/ngt: \
 	go build \
 		--ldflags "-w -linkmode 'external' \
 		-extldflags '-static -fPIC -pthread -fopenmp -std=gnu++20 -lstdc++ -lm -z relro -z now $(EXTLDFLAGS)' \
-		-X '$(ROOTDIR)/internal/info.Version=$(VERSION)' \
-		-X '$(ROOTDIR)/internal/info.GitCommit=$(GIT_COMMIT)' \
-		-X '$(ROOTDIR)/internal/info.BuildTime=$(DATETIME)' \
-		-X '$(ROOTDIR)/internal/info.GoVersion=$(GO_VERSION)' \
-		-X '$(ROOTDIR)/internal/info.GoOS=$(GOOS)' \
-		-X '$(ROOTDIR)/internal/info.GoArch=$(GOARCH)' \
-		-X '$(ROOTDIR)/internal/info.CGOEnabled=$${CGO_ENABLED}' \
-		-X '$(ROOTDIR)/internal/info.NGTVersion=$(NGT_VERSION)' \
-		-X '$(ROOTDIR)/internal/info.BuildCPUInfoFlags=$(CPU_INFO_FLAGS)' \
+		-X '$(GOPKG)/internal/info.Version=$(VERSION)' \
+		-X '$(GOPKG)/internal/info.GitCommit=$(GIT_COMMIT)' \
+		-X '$(GOPKG)/internal/info.BuildTime=$(DATETIME)' \
+		-X '$(GOPKG)/internal/info.GoVersion=$(GO_VERSION)' \
+		-X '$(GOPKG)/internal/info.GoOS=$(GOOS)' \
+		-X '$(GOPKG)/internal/info.GoArch=$(GOARCH)' \
+		-X '$(GOPKG)/internal/info.CGOEnabled=$(CGO_ENABLED)' \
+		-X '$(GOPKG)/internal/info.NGTVersion=$(NGT_VERSION)' \
+		-X '$(GOPKG)/internal/info.BuildCPUInfoFlags=$(CPU_INFO_FLAGS)' \
 		-buildid=" \
 		-mod=readonly \
 		-modcacherw \
@@ -65,19 +66,20 @@ cmd/agent/sidecar/sidecar: \
 	$(PBGOS) \
 	$(shell find $(ROOTDIR)/cmd/agent/sidecar -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go') \
 	$(shell find $(ROOTDIR)/pkg/agent/sidecar $(ROOTDIR)/pkg/agent/internal -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
-	CGO_ENABLED=0 \
+	$(eval CGO_ENABLED = 0)
+	CGO_ENABLED=$(CGO_ENABLED) \
 	GO111MODULE=on \
 	GOPRIVATE=$(GOPRIVATE) \
 	go build \
 		--ldflags "-w -extldflags=-static \
-		-X '$(ROOTDIR)/internal/info.Version=$(VERSION)' \
-		-X '$(ROOTDIR)/internal/info.GitCommit=$(GIT_COMMIT)' \
-		-X '$(ROOTDIR)/internal/info.BuildTime=$(DATETIME)' \
-		-X '$(ROOTDIR)/internal/info.GoVersion=$(GO_VERSION)' \
-		-X '$(ROOTDIR)/internal/info.GoOS=$(GOOS)' \
-		-X '$(ROOTDIR)/internal/info.GoArch=$(GOARCH)' \
-		-X '$(ROOTDIR)/internal/info.CGOEnabled=$${CGO_ENABLED}' \
-		-X '$(ROOTDIR)/internal/info.BuildCPUInfoFlags=$(CPU_INFO_FLAGS)' \
+		-X '$(GOPKG)/internal/info.Version=$(VERSION)' \
+		-X '$(GOPKG)/internal/info.GitCommit=$(GIT_COMMIT)' \
+		-X '$(GOPKG)/internal/info.BuildTime=$(DATETIME)' \
+		-X '$(GOPKG)/internal/info.GoVersion=$(GO_VERSION)' \
+		-X '$(GOPKG)/internal/info.GoOS=$(GOOS)' \
+		-X '$(GOPKG)/internal/info.GoArch=$(GOARCH)' \
+		-X '$(GOPKG)/internal/info.CGOEnabled=$(CGO_ENABLED)' \
+		-X '$(GOPKG)/internal/info.BuildCPUInfoFlags=$(CPU_INFO_FLAGS)' \
 		-buildid=" \
 		-mod=readonly \
 		-modcacherw \
@@ -93,19 +95,20 @@ cmd/discoverer/k8s/discoverer: \
 	$(PBGOS) \
 	$(shell find $(ROOTDIR)/cmd/discoverer/k8s -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go') \
 	$(shell find $(ROOTDIR)/pkg/discoverer/k8s -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
-	CGO_ENABLED=0 \
+	$(eval CGO_ENABLED = 0)
+	CGO_ENABLED=$(CGO_ENABLED) \
 	GO111MODULE=on \
 	GOPRIVATE=$(GOPRIVATE) \
 	go build \
 		--ldflags "-w -extldflags=-static \
-		-X '$(ROOTDIR)/internal/info.Version=$(VERSION)' \
-		-X '$(ROOTDIR)/internal/info.GitCommit=$(GIT_COMMIT)' \
-		-X '$(ROOTDIR)/internal/info.BuildTime=$(DATETIME)' \
-		-X '$(ROOTDIR)/internal/info.GoVersion=$(GO_VERSION)' \
-		-X '$(ROOTDIR)/internal/info.GoOS=$(GOOS)' \
-		-X '$(ROOTDIR)/internal/info.GoArch=$(GOARCH)' \
-		-X '$(ROOTDIR)/internal/info.CGOEnabled=$${CGO_ENABLED}' \
-		-X '$(ROOTDIR)/internal/info.BuildCPUInfoFlags=$(CPU_INFO_FLAGS)' \
+		-X '$(GOPKG)/internal/info.Version=$(VERSION)' \
+		-X '$(GOPKG)/internal/info.GitCommit=$(GIT_COMMIT)' \
+		-X '$(GOPKG)/internal/info.BuildTime=$(DATETIME)' \
+		-X '$(GOPKG)/internal/info.GoVersion=$(GO_VERSION)' \
+		-X '$(GOPKG)/internal/info.GoOS=$(GOOS)' \
+		-X '$(GOPKG)/internal/info.GoArch=$(GOARCH)' \
+		-X '$(GOPKG)/internal/info.CGOEnabled=$(CGO_ENABLED)' \
+		-X '$(GOPKG)/internal/info.BuildCPUInfoFlags=$(CPU_INFO_FLAGS)' \
 		-buildid=" \
 		-mod=readonly \
 		-modcacherw \
@@ -121,19 +124,20 @@ cmd/gateway/lb/lb: \
 	$(PBGOS) \
 	$(shell find $(ROOTDIR)/cmd/gateway/lb -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go') \
 	$(shell find $(ROOTDIR)/pkg/gateway/lb -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
-	CGO_ENABLED=0 \
+	$(eval CGO_ENABLED = 0)
+	CGO_ENABLED=$(CGO_ENABLED) \
 	GO111MODULE=on \
 	GOPRIVATE=$(GOPRIVATE) \
 	go build \
 		--ldflags "-w -extldflags=-static \
-		-X '$(ROOTDIR)/internal/info.Version=$(VERSION)' \
-		-X '$(ROOTDIR)/internal/info.GitCommit=$(GIT_COMMIT)' \
-		-X '$(ROOTDIR)/internal/info.BuildTime=$(DATETIME)' \
-		-X '$(ROOTDIR)/internal/info.GoVersion=$(GO_VERSION)' \
-		-X '$(ROOTDIR)/internal/info.GoOS=$(GOOS)' \
-		-X '$(ROOTDIR)/internal/info.GoArch=$(GOARCH)' \
-		-X '$(ROOTDIR)/internal/info.CGOEnabled=$${CGO_ENABLED}' \
-		-X '$(ROOTDIR)/internal/info.BuildCPUInfoFlags=$(CPU_INFO_FLAGS)' \
+		-X '$(GOPKG)/internal/info.Version=$(VERSION)' \
+		-X '$(GOPKG)/internal/info.GitCommit=$(GIT_COMMIT)' \
+		-X '$(GOPKG)/internal/info.BuildTime=$(DATETIME)' \
+		-X '$(GOPKG)/internal/info.GoVersion=$(GO_VERSION)' \
+		-X '$(GOPKG)/internal/info.GoOS=$(GOOS)' \
+		-X '$(GOPKG)/internal/info.GoArch=$(GOARCH)' \
+		-X '$(GOPKG)/internal/info.CGOEnabled=$(CGO_ENABLED)' \
+		-X '$(GOPKG)/internal/info.BuildCPUInfoFlags=$(CPU_INFO_FLAGS)' \
 		-buildid=" \
 		-mod=readonly \
 		-modcacherw \
@@ -149,19 +153,20 @@ cmd/gateway/filter/filter: \
 	$(PBGOS) \
 	$(shell find $(ROOTDIR)/cmd/gateway/filter -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go') \
 	$(shell find $(ROOTDIR)/pkg/gateway/filter -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
-	CGO_ENABLED=0 \
+	$(eval CGO_ENABLED = 0)
+	CGO_ENABLED=$(CGO_ENABLED) \
 	GO111MODULE=on \
 	GOPRIVATE=$(GOPRIVATE) \
 	go build \
 		--ldflags "-w -extldflags=-static \
-		-X '$(ROOTDIR)/internal/info.Version=$(VERSION)' \
-		-X '$(ROOTDIR)/internal/info.GitCommit=$(GIT_COMMIT)' \
-		-X '$(ROOTDIR)/internal/info.BuildTime=$(DATETIME)' \
-		-X '$(ROOTDIR)/internal/info.GoVersion=$(GO_VERSION)' \
-		-X '$(ROOTDIR)/internal/info.GoOS=$(GOOS)' \
-		-X '$(ROOTDIR)/internal/info.GoArch=$(GOARCH)' \
-		-X '$(ROOTDIR)/internal/info.CGOEnabled=$${CGO_ENABLED}' \
-		-X '$(ROOTDIR)/internal/info.BuildCPUInfoFlags=$(CPU_INFO_FLAGS)' \
+		-X '$(GOPKG)/internal/info.Version=$(VERSION)' \
+		-X '$(GOPKG)/internal/info.GitCommit=$(GIT_COMMIT)' \
+		-X '$(GOPKG)/internal/info.BuildTime=$(DATETIME)' \
+		-X '$(GOPKG)/internal/info.GoVersion=$(GO_VERSION)' \
+		-X '$(GOPKG)/internal/info.GoOS=$(GOOS)' \
+		-X '$(GOPKG)/internal/info.GoArch=$(GOARCH)' \
+		-X '$(GOPKG)/internal/info.CGOEnabled=$(CGO_ENABLED)' \
+		-X '$(GOPKG)/internal/info.BuildCPUInfoFlags=$(CPU_INFO_FLAGS)' \
 		-buildid=" \
 		-mod=readonly \
 		-modcacherw \
@@ -177,19 +182,20 @@ cmd/manager/index/index: \
 	$(PBGOS) \
 	$(shell find $(ROOTDIR)/cmd/manager/index -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go') \
 	$(shell find $(ROOTDIR)/pkg/manager/index -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
-	CGO_ENABLED=0 \
+	$(eval CGO_ENABLED = 0)
+	CGO_ENABLED=$(CGO_ENABLED) \
 	GO111MODULE=on \
 	GOPRIVATE=$(GOPRIVATE) \
 	go build \
 		--ldflags "-w -extldflags=-static \
-		-X '$(ROOTDIR)/internal/info.Version=$(VERSION)' \
-		-X '$(ROOTDIR)/internal/info.GitCommit=$(GIT_COMMIT)' \
-		-X '$(ROOTDIR)/internal/info.BuildTime=$(DATETIME)' \
-		-X '$(ROOTDIR)/internal/info.GoVersion=$(GO_VERSION)' \
-		-X '$(ROOTDIR)/internal/info.GoOS=$(GOOS)' \
-		-X '$(ROOTDIR)/internal/info.GoArch=$(GOARCH)' \
-		-X '$(ROOTDIR)/internal/info.CGOEnabled=$${CGO_ENABLED}' \
-		-X '$(ROOTDIR)/internal/info.BuildCPUInfoFlags=$(CPU_INFO_FLAGS)' \
+		-X '$(GOPKG)/internal/info.Version=$(VERSION)' \
+		-X '$(GOPKG)/internal/info.GitCommit=$(GIT_COMMIT)' \
+		-X '$(GOPKG)/internal/info.BuildTime=$(DATETIME)' \
+		-X '$(GOPKG)/internal/info.GoVersion=$(GO_VERSION)' \
+		-X '$(GOPKG)/internal/info.GoOS=$(GOOS)' \
+		-X '$(GOPKG)/internal/info.GoArch=$(GOARCH)' \
+		-X '$(GOPKG)/internal/info.CGOEnabled=$(CGO_ENABLED)' \
+		-X '$(GOPKG)/internal/info.BuildCPUInfoFlags=$(CPU_INFO_FLAGS)' \
 		-buildid=" \
 		-mod=readonly \
 		-modcacherw \

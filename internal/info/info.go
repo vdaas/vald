@@ -350,6 +350,14 @@ func (i *info) prepare() {
 		if len(i.detail.CGOEnabled) == 0 && len(CGOEnabled) != 0 {
 			i.detail.CGOEnabled = CGOEnabled
 		}
+		switch i.detail.CGOEnabled {
+		case "0", "false":
+			i.detail.CGOEnabled = "false"
+		case "1", "true":
+			i.detail.CGOEnabled = "true"
+		default:
+			i.detail.CGOEnabled = "unknown"
+		}
 		if len(i.detail.NGTVersion) == 0 && len(NGTVersion) != 0 {
 			i.detail.NGTVersion = NGTVersion
 		}
