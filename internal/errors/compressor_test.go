@@ -259,3 +259,5 @@ func TestErrCompressorRegistererChannelIsFull(t *testing.T) {
 		})
 	}
 }
+
+// NOT IMPLEMENTED BELOW

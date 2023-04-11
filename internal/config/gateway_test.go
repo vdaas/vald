@@ -253,3 +253,5 @@ func TestGateway_Bind(t *testing.T) {
 		})
 	}
 }
+
+// NOT IMPLEMENTED BELOW

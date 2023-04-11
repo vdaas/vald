@@ -158,3 +158,5 @@ func TestNewErrWriterNotProvided(t *testing.T) {
 		})
 	}
 }
+
+// NOT IMPLEMENTED BELOW

@@ -204,3 +204,5 @@ func TestRetry_Outf(t *testing.T) {
 		})
 	}
 }
+
+// NOT IMPLEMENTED BELOW

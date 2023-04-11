@@ -870,3 +870,5 @@ func Test_nopLogger_Close(t *testing.T) {
 		})
 	}
 }
+
+// NOT IMPLEMENTED BELOW

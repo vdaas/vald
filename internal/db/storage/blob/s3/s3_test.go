@@ -711,3 +711,5 @@ func Test_client_Writer(t *testing.T) {
 		})
 	}
 }
+
+// NOT IMPLEMENTED BELOW
