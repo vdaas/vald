@@ -319,11 +319,13 @@ jobs:
           git_user_signingkey: true
           git_commit_gpgsign: true
       - name: Fetch golang version
+        if: steps.check_comments_gen_test.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         run: |
           GO_VERSION=`make version/go`
           echo "version=${GO_VERSION}" >> $GITHUB_OUTPUT
         id: golang_version
       - uses: actions/setup-go@v3
+        if: steps.check_comments_gen_test.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         with:
           go-version: ${{ steps.golang_version.outputs.version }}
       - name: Generate tests and push
@@ -343,7 +345,8 @@ jobs:
           git checkout ${HEAD_BRANCH}
 
           make gotests/install
-          GITHUB_OUTPUT=$(make gotests/gen 2>&1 >/dev/null)
+          ERR_LOG=$(make gotests/gen 2>&1 >/dev/null)
+          echo "ERR_LOG=$ERR_LOG" >> $GITHUB_OUTPUT
 
           git add cmd hack internal pkg
           git commit -S --signoff -m ":robot: Add automatically generated tests"
@@ -362,7 +365,7 @@ jobs:
       - name: failure comment
         if: failure()
         run: |
-          ERR_LOG=${{ steps.gen_test.outputs }}
+          ERR_LOG=${{ steps.gen_test.outputs.ERR_LOG }}
           curl --include --verbose --fail \
           -H "Accept: application/json" \
           -H "Content-Type:application/json" \
