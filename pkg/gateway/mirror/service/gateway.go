@@ -20,7 +20,6 @@ package service
 import (
 	"context"
 	"reflect"
-	"time"
 
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
 	client "github.com/vdaas/vald/internal/client/v1/client/mirror"
@@ -48,10 +47,9 @@ type Gateway interface {
 }
 
 type gateway struct {
-	client       client.Client // Mirror Gateway client for other clusters and to the Vald gateway (LB gateway) client for own cluster.
-	eg           errgroup.Group
-	advertiseDur time.Duration
-	podName      string
+	client  client.Client // Mirror Gateway client for other clusters and to the Vald gateway (LB gateway) client for own cluster.
+	eg      errgroup.Group
+	podName string
 }
 
 func NewGateway(opts ...Option) (Gateway, error) {
