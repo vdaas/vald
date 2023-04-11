@@ -111,10 +111,13 @@ var (
 )
 
 const (
-	goSrc    = "go/src/"
-	goSrcLen = len(goSrc)
-	goMod    = "go/pkg/mod/"
-	goModLen = len(goMod)
+	goSrc      = "go/src/"
+	goSrcLen   = len(goSrc)
+	goMod      = "go/pkg/mod/"
+	goModLen   = len(goMod)
+	cgoTrue    = "true"
+	cgoFalse   = "false"
+	cgoUnknown = "unknown"
 )
 
 // Init initializes Detail object only once.
@@ -351,12 +354,12 @@ func (i *info) prepare() {
 			i.detail.CGOEnabled = CGOEnabled
 		}
 		switch i.detail.CGOEnabled {
-		case "0", "false":
-			i.detail.CGOEnabled = "false"
-		case "1", "true":
-			i.detail.CGOEnabled = "true"
+		case "0", cgoFalse:
+			i.detail.CGOEnabled = cgoFalse
+		case "1", cgoTrue:
+			i.detail.CGOEnabled = cgoTrue
 		default:
-			i.detail.CGOEnabled = "unknown"
+			i.detail.CGOEnabled = cgoUnknown
 		}
 		if len(i.detail.NGTVersion) == 0 && len(NGTVersion) != 0 {
 			i.detail.NGTVersion = NGTVersion
