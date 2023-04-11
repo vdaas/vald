@@ -343,7 +343,8 @@ jobs:
           git checkout ${HEAD_BRANCH}
 
           make gotests/install
-          GITHUB_OUTPUT=$(make gotests/gen 2>&1 >/dev/null)
+          ERR_LOG=$(make gotests/gen 2>&1 >/dev/null)
+          echo "ERR_LOG=$ERR_LOG" >> $GITHUB_OUTPUT
 
           git add cmd hack internal pkg
           git commit -S --signoff -m ":robot: Add automatically generated tests"
@@ -362,7 +363,7 @@ jobs:
       - name: failure comment
         if: failure()
         run: |
-          ERR_LOG=${{ steps.gen_test.outputs }}
+          ERR_LOG=${{ steps.gen_test.outputs.ERR_LOG }}
           curl --include --verbose --fail \
           -H "Accept: application/json" \
           -H "Content-Type:application/json" \
