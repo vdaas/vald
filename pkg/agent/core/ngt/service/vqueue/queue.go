@@ -33,7 +33,7 @@ type Queue interface {
 	PushInsert(uuid string, vector []float32, date int64) error
 	PushDelete(uuid string, date int64) error
 	GetVector(uuid string) ([]float32, bool)
-	RangePopInsert(ctx context.Context, now int64, f func(uuid string, vector []float32) bool)
+	RangePopInsert(ctx context.Context, now int64, f func(uuid string, vector []float32, date int64) bool)
 	RangePopDelete(ctx context.Context, now int64, f func(uuid string) bool)
 	IVExists(uuid string) bool
 	DVExists(uuid string) bool
@@ -170,7 +170,7 @@ func (v *vqueue) DVExists(uuid string) bool {
 	return didx.date > idx.date
 }
 
-func (v *vqueue) RangePopInsert(ctx context.Context, now int64, f func(uuid string, vector []float32) bool) {
+func (v *vqueue) RangePopInsert(ctx context.Context, now int64, f func(uuid string, vector []float32, date int64) bool) {
 	uii := make([]index, 0, atomic.LoadUint64(&v.ic))
 	v.il.Range(func(uuid string, idx index) bool {
 		if idx.date > now {
@@ -197,7 +197,7 @@ func (v *vqueue) RangePopInsert(ctx context.Context, now int64, f func(uuid stri
 		return left.date > right.date
 	})
 	for _, idx := range uii {
-		if !f(idx.uuid, idx.vector) {
+		if !f(idx.uuid, idx.vector, idx.date) {
 			return
 		}
 		v.il.Delete(idx.uuid)

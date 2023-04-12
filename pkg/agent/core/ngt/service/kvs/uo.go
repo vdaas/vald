@@ -32,18 +32,23 @@ type readOnlyUo struct {
 }
 
 // skipcq: GSC-G103
-var expungedUo = unsafe.Pointer(new(uint32))
+var expungedUo = unsafe.Pointer(new(ValueStructUo))
 
 type entryUo struct {
 	p unsafe.Pointer
 }
 
-func newEntryUo(i uint32) *entryUo {
+type ValueStructUo struct {
+	value     uint32
+	timestamp int64
+}
+
+func newEntryUo(i ValueStructUo) *entryUo {
 	// skipcq: GSC-G103
 	return &entryUo{p: unsafe.Pointer(&i)}
 }
 
-func (m *uo) Load(key string) (value uint32, ok bool) {
+func (m *uo) Load(key string) (value uint32, timestamp int64, ok bool) {
 	read, _ := m.read.Load().(readOnlyUo)
 	e, ok := read.m[key]
 	if !ok && read.amended {
@@ -57,20 +62,20 @@ func (m *uo) Load(key string) (value uint32, ok bool) {
 		m.mu.Unlock()
 	}
 	if !ok {
-		return value, false
+		return value, timestamp, false
 	}
 	return e.load()
 }
 
-func (e *entryUo) load() (value uint32, ok bool) {
+func (e *entryUo) load() (value uint32, timestamp int64, ok bool) {
 	p := atomic.LoadPointer(&e.p)
 	if p == nil || p == expungedUo {
-		return value, false
+		return value, timestamp, false
 	}
-	return *(*uint32)(p), true
+	return (*ValueStructUo)(p).value, (*ValueStructUo)(p).timestamp, true
 }
 
-func (m *uo) Store(key string, value uint32) {
+func (m *uo) Store(key string, value ValueStructUo) {
 	read, _ := m.read.Load().(readOnlyUo)
 	if e, ok := read.m[key]; ok && e.tryStore(&value) {
 		return
@@ -94,7 +99,7 @@ func (m *uo) Store(key string, value uint32) {
 	m.mu.Unlock()
 }
 
-func (e *entryUo) tryStore(i *uint32) bool {
+func (e *entryUo) tryStore(i *ValueStructUo) bool {
 	for {
 		p := atomic.LoadPointer(&e.p)
 		if p == expungedUo {
@@ -111,17 +116,17 @@ func (e *entryUo) unexpungeLocked() (wasExpunged bool) {
 	return atomic.CompareAndSwapPointer(&e.p, expungedUo, nil)
 }
 
-func (e *entryUo) storeLocked(i *uint32) {
+func (e *entryUo) storeLocked(i *ValueStructUo) {
 	// skipcq: GSC-G103
 	atomic.StorePointer(&e.p, unsafe.Pointer(i))
 }
 
-func (m *uo) LoadOrStore(key string, value uint32) (actual uint32, loaded bool) {
+func (m *uo) LoadOrStore(key string, value ValueStructUo) (actual uint32, at int64, loaded bool) {
 	read, _ := m.read.Load().(readOnlyUo)
 	if e, ok := read.m[key]; ok {
-		actual, loaded, ok := e.tryLoadOrStore(value)
+		actual, at, loaded, ok := e.tryLoadOrStore(value)
 		if ok {
-			return actual, loaded
+			return actual, at, loaded
 		}
 	}
 	m.mu.Lock()
@@ -130,9 +135,9 @@ func (m *uo) LoadOrStore(key string, value uint32) (actual uint32, loaded bool) 
 		if e.unexpungeLocked() {
 			m.dirty[key] = e
 		}
-		actual, loaded, _ = e.tryLoadOrStore(value)
+		actual, at, loaded, _ = e.tryLoadOrStore(value)
 	} else if e, ok := m.dirty[key]; ok {
-		actual, loaded, _ = e.tryLoadOrStore(value)
+		actual, at, loaded, _ = e.tryLoadOrStore(value)
 		m.missLocked()
 	} else {
 		if !read.amended {
@@ -140,37 +145,37 @@ func (m *uo) LoadOrStore(key string, value uint32) (actual uint32, loaded bool) 
 			m.read.Store(readOnlyUo{m: read.m, amended: true})
 		}
 		m.dirty[key] = newEntryUo(value)
-		actual, loaded = value, false
+		actual, at, loaded = value.value, value.timestamp, false
 	}
 	m.mu.Unlock()
-	return actual, loaded
+	return actual, at, loaded
 }
 
-func (e *entryUo) tryLoadOrStore(i uint32) (actual uint32, loaded, ok bool) {
+func (e *entryUo) tryLoadOrStore(i ValueStructUo) (actual uint32, at int64, loaded, ok bool) {
 	p := atomic.LoadPointer(&e.p)
 	if p == expungedUo {
-		return actual, false, false
+		return actual, at, false, false
 	}
 	if p != nil {
-		return *(*uint32)(p), true, true
+		return (*ValueStructUo)(p).value, (*ValueStructUo)(p).timestamp, true, true
 	}
 	ic := i
 	for {
 		// skipcq: GSC-G103
 		if atomic.CompareAndSwapPointer(&e.p, nil, unsafe.Pointer(&ic)) {
-			return i, false, true
+			return i.value, i.timestamp, false, true
 		}
 		p = atomic.LoadPointer(&e.p)
 		if p == expungedUo {
-			return actual, false, false
+			return actual, at, false, false
 		}
 		if p != nil {
-			return *(*uint32)(p), true, true
+			return (*ValueStructUo)(p).value, (*ValueStructUo)(p).timestamp, true, true
 		}
 	}
 }
 
-func (m *uo) LoadAndDelete(key string) (value uint32, loaded bool) {
+func (m *uo) LoadAndDelete(key string) (value uint32, timestamp int64, loaded bool) {
 	read, _ := m.read.Load().(readOnlyUo)
 	e, ok := read.m[key]
 	if !ok && read.amended {
@@ -187,26 +192,26 @@ func (m *uo) LoadAndDelete(key string) (value uint32, loaded bool) {
 	if ok {
 		return e.delete()
 	}
-	return value, false
+	return value, timestamp, false
 }
 
 func (m *uo) Delete(key string) {
 	m.LoadAndDelete(key)
 }
 
-func (e *entryUo) delete() (value uint32, ok bool) {
+func (e *entryUo) delete() (value uint32, timestamp int64, ok bool) {
 	for {
 		p := atomic.LoadPointer(&e.p)
 		if p == nil || p == expungedUo {
-			return value, false
+			return value, timestamp, false
 		}
 		if atomic.CompareAndSwapPointer(&e.p, p, nil) {
-			return *(*uint32)(p), true
+			return (*ValueStructUo)(p).value, (*ValueStructUo)(p).timestamp, true
 		}
 	}
 }
 
-func (m *uo) Range(f func(key string, value uint32) bool) {
+func (m *uo) Range(f func(key string, value ValueStructUo) bool) {
 	read, _ := m.read.Load().(readOnlyUo)
 	if read.amended {
 		m.mu.Lock()
@@ -221,11 +226,11 @@ func (m *uo) Range(f func(key string, value uint32) bool) {
 	}
 
 	for k, e := range read.m {
-		v, ok := e.load()
+		v, t, ok := e.load()
 		if !ok {
 			continue
 		}
-		if !f(k, v) {
+		if !f(k, ValueStructUo{value: v, timestamp: t}) {
 			break
 		}
 	}
