@@ -302,7 +302,13 @@ func (n *ngt) load(ctx context.Context, path string, opts ...core.Option) (err e
 		timeout = time.Duration(math.Min(float64(n.minLit), float64(n.maxLit)))
 	}
 
-	log.Debugf("index path: %s and metadata: %s and kvsdb file: %s and timestamp kvsdb file: %s exists and successfully load metadata, now starting to load full index and kvs data in concurrent", path, metadataPath, kvsFilePath, kvsTimestampFilePath)
+	log.Debugf(
+		"index path: %s and metadata: %s and kvsdb file: %s and timestamp kvsdb file: %s exists and successfully load metadata, now starting to load full index and kvs data in concurrent",
+		path,
+		metadataPath,
+		kvsFilePath,
+		kvsTimestampFilePath,
+	)
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 	eg, _ := errgroup.New(ctx)
