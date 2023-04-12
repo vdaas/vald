@@ -271,7 +271,7 @@ func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequ
 				if errs == nil {
 					errs = err
 				} else {
-					errs = errors.Wrap(errs, err.Error())
+					errs = errors.Join(errs, err)
 				}
 				mu.Unlock()
 			}
@@ -288,7 +288,7 @@ func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequ
 				if errs == nil {
 					errs = err
 				} else {
-					errs = errors.Wrap(errs, err.Error())
+					errs = errors.Join(errs, err)
 				}
 				mu.Unlock()
 			}

@@ -605,7 +605,7 @@ func (n *ngt) Start(ctx context.Context) <-chan error {
 				err = n.CreateIndex(ctx, n.poolSize)
 				if err != nil && !errors.Is(err, errors.ErrUncommittedIndexNotFound) {
 					ech <- err
-					return errors.Wrap(ctx.Err(), err.Error())
+					return errors.Join(ctx.Err(), err)
 				}
 				return ctx.Err()
 			case <-tick.C:
@@ -772,7 +772,7 @@ func (n *ngt) insertMultiple(vecs map[string][]float32, now int64, validation bo
 		ierr := n.insert(uuid, vec, now, validation)
 		if ierr != nil {
 			if err != nil {
-				err = errors.Wrap(ierr, err.Error())
+				err = errors.Join(ierr, err)
 			} else {
 				err = ierr
 			}
@@ -873,7 +873,7 @@ func (n *ngt) deleteMultiple(uuids []string, now int64, validation bool) (err er
 		ierr := n.delete(uuid, now, validation)
 		if ierr != nil {
 			if err != nil {
-				err = errors.Wrap(ierr, err.Error())
+				err = errors.Join(ierr, err)
 			} else {
 				err = ierr
 			}
@@ -1129,7 +1129,7 @@ func (n *ngt) saveIndex(ctx context.Context) (err error) {
 				if f != nil {
 					derr := f.Close()
 					if derr != nil {
-						err = errors.Wrap(err, derr.Error())
+						err = errors.Join(err, derr)
 					}
 				}
 			}()
@@ -1193,7 +1193,7 @@ func (n *ngt) saveIndex(ctx context.Context) (err error) {
 				if f != nil {
 					derr := f.Close()
 					if derr != nil {
-						err = errors.Wrap(err, derr.Error())
+						err = errors.Join(err, derr)
 					}
 				}
 			}()
@@ -1408,7 +1408,7 @@ func (n *ngt) Close(ctx context.Context) (err error) {
 			!errors.Is(err, context.Canceled) &&
 			!errors.Is(err, context.DeadlineExceeded) {
 			if err != nil {
-				err = errors.Wrap(cerr, err.Error())
+				err = errors.Join(cerr, err)
 			} else {
 				err = cerr
 			}
@@ -1419,7 +1419,7 @@ func (n *ngt) Close(ctx context.Context) (err error) {
 			!errors.Is(err, context.Canceled) &&
 			!errors.Is(err, context.DeadlineExceeded) {
 			if err != nil {
-				err = errors.Wrap(serr, err.Error())
+				err = errors.Join(serr, err)
 			} else {
 				err = serr
 			}

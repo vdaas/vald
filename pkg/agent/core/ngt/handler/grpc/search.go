@@ -439,7 +439,7 @@ func (s *server) MultiSearch(ctx context.Context, reqs *payload.Search_MultiRequ
 				if errs == nil {
 					errs = err
 				} else {
-					errs = errors.Wrap(errs, err.Error())
+					errs = errors.Join(errs, err)
 				}
 				mu.Unlock()
 				return nil
@@ -513,7 +513,7 @@ func (s *server) MultiSearchByID(ctx context.Context, reqs *payload.Search_Multi
 				if errs == nil {
 					errs = err
 				} else {
-					errs = errors.Wrap(errs, err.Error())
+					errs = errors.Join(errs, err)
 				}
 				mu.Unlock()
 				return nil
