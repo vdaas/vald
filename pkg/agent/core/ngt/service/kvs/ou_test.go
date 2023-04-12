@@ -27,7 +27,7 @@ import (
 
 func Test_newEntryOu(t *testing.T) {
 	type args struct {
-		i string
+		i ValueStructOu
 	}
 	type want struct {
 		want *entryOu
@@ -52,7 +52,7 @@ func Test_newEntryOu(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
-		           i:"",
+		           i:ValueStructOu{},
 		       },
 		       want: want{},
 		       checkFunc: defaultCheckFunc,
@@ -71,7 +71,7 @@ func Test_newEntryOu(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
-		           i:"",
+		           i:ValueStructOu{},
 		           },
 		           want: want{},
 		           checkFunc: defaultCheckFunc,
@@ -120,21 +120,25 @@ func Test_ou_Load(t *testing.T) {
 		misses int
 	}
 	type want struct {
-		wantValue string
-		wantOk    bool
+		wantValue     string
+		wantTimestamp int64
+		wantOk        bool
 	}
 	type test struct {
 		name       string
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, string, bool) error
+		checkFunc  func(want, string, int64, bool) error
 		beforeFunc func(*testing.T, args)
 		afterFunc  func(*testing.T, args)
 	}
-	defaultCheckFunc := func(w want, gotValue string, gotOk bool) error {
+	defaultCheckFunc := func(w want, gotValue string, gotTimestamp int64, gotOk bool) error {
 		if !reflect.DeepEqual(gotValue, w.wantValue) {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotValue, w.wantValue)
+		}
+		if !reflect.DeepEqual(gotTimestamp, w.wantTimestamp) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotTimestamp, w.wantTimestamp)
 		}
 		if !reflect.DeepEqual(gotOk, w.wantOk) {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotOk, w.wantOk)
@@ -212,8 +216,8 @@ func Test_ou_Load(t *testing.T) {
 				misses: test.fields.misses,
 			}
 
-			gotValue, gotOk := m.Load(test.args.key)
-			if err := checkFunc(test.want, gotValue, gotOk); err != nil {
+			gotValue, gotTimestamp, gotOk := m.Load(test.args.key)
+			if err := checkFunc(test.want, gotValue, gotTimestamp, gotOk); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -225,20 +229,24 @@ func Test_entryOu_load(t *testing.T) {
 		p unsafe.Pointer
 	}
 	type want struct {
-		wantValue string
-		wantOk    bool
+		wantValue     string
+		wantTimestamp int64
+		wantOk        bool
 	}
 	type test struct {
 		name       string
 		fields     fields
 		want       want
-		checkFunc  func(want, string, bool) error
+		checkFunc  func(want, string, int64, bool) error
 		beforeFunc func(*testing.T)
 		afterFunc  func(*testing.T)
 	}
-	defaultCheckFunc := func(w want, gotValue string, gotOk bool) error {
+	defaultCheckFunc := func(w want, gotValue string, gotTimestamp int64, gotOk bool) error {
 		if !reflect.DeepEqual(gotValue, w.wantValue) {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotValue, w.wantValue)
+		}
+		if !reflect.DeepEqual(gotTimestamp, w.wantTimestamp) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotTimestamp, w.wantTimestamp)
 		}
 		if !reflect.DeepEqual(gotOk, w.wantOk) {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotOk, w.wantOk)
@@ -304,8 +312,8 @@ func Test_entryOu_load(t *testing.T) {
 				p: test.fields.p,
 			}
 
-			gotValue, gotOk := e.load()
-			if err := checkFunc(test.want, gotValue, gotOk); err != nil {
+			gotValue, gotTimestamp, gotOk := e.load()
+			if err := checkFunc(test.want, gotValue, gotTimestamp, gotOk); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -315,7 +323,7 @@ func Test_entryOu_load(t *testing.T) {
 func Test_ou_Store(t *testing.T) {
 	type args struct {
 		key   uint32
-		value string
+		value ValueStructOu
 	}
 	type fields struct {
 		read   atomic.Value
@@ -342,7 +350,7 @@ func Test_ou_Store(t *testing.T) {
 		       name: "test_case_1",
 		       args: args {
 		           key:0,
-		           value:"",
+		           value:ValueStructOu{},
 		       },
 		       fields: fields {
 		           read:nil,
@@ -367,7 +375,7 @@ func Test_ou_Store(t *testing.T) {
 		           name: "test_case_2",
 		           args: args {
 		           key:0,
-		           value:"",
+		           value:ValueStructOu{},
 		           },
 		           fields: fields {
 		           read:nil,
@@ -418,7 +426,7 @@ func Test_ou_Store(t *testing.T) {
 
 func Test_entryOu_tryStore(t *testing.T) {
 	type args struct {
-		i *string
+		i *ValueStructOu
 	}
 	type fields struct {
 		p unsafe.Pointer
@@ -447,7 +455,7 @@ func Test_entryOu_tryStore(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
-		           i:nil,
+		           i:ValueStructOu{},
 		       },
 		       fields: fields {
 		           p:nil,
@@ -469,7 +477,7 @@ func Test_entryOu_tryStore(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
-		           i:nil,
+		           i:ValueStructOu{},
 		           },
 		           fields: fields {
 		           p:nil,
@@ -604,7 +612,7 @@ func Test_entryOu_unexpungeLocked(t *testing.T) {
 
 func Test_entryOu_storeLocked(t *testing.T) {
 	type args struct {
-		i *string
+		i *ValueStructOu
 	}
 	type fields struct {
 		p unsafe.Pointer
@@ -628,7 +636,7 @@ func Test_entryOu_storeLocked(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
-		           i:nil,
+		           i:ValueStructOu{},
 		       },
 		       fields: fields {
 		           p:nil,
@@ -650,7 +658,7 @@ func Test_entryOu_storeLocked(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
-		           i:nil,
+		           i:ValueStructOu{},
 		           },
 		           fields: fields {
 		           p:nil,
@@ -698,7 +706,7 @@ func Test_entryOu_storeLocked(t *testing.T) {
 func Test_ou_LoadOrStore(t *testing.T) {
 	type args struct {
 		key   uint32
-		value string
+		value ValueStructOu
 	}
 	type fields struct {
 		read   atomic.Value
@@ -707,6 +715,7 @@ func Test_ou_LoadOrStore(t *testing.T) {
 	}
 	type want struct {
 		wantActual string
+		wantAt     int64
 		wantLoaded bool
 	}
 	type test struct {
@@ -714,13 +723,16 @@ func Test_ou_LoadOrStore(t *testing.T) {
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, string, bool) error
+		checkFunc  func(want, string, int64, bool) error
 		beforeFunc func(*testing.T, args)
 		afterFunc  func(*testing.T, args)
 	}
-	defaultCheckFunc := func(w want, gotActual string, gotLoaded bool) error {
+	defaultCheckFunc := func(w want, gotActual string, gotAt int64, gotLoaded bool) error {
 		if !reflect.DeepEqual(gotActual, w.wantActual) {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotActual, w.wantActual)
+		}
+		if !reflect.DeepEqual(gotAt, w.wantAt) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotAt, w.wantAt)
 		}
 		if !reflect.DeepEqual(gotLoaded, w.wantLoaded) {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotLoaded, w.wantLoaded)
@@ -734,7 +746,7 @@ func Test_ou_LoadOrStore(t *testing.T) {
 		       name: "test_case_1",
 		       args: args {
 		           key:0,
-		           value:"",
+		           value:ValueStructOu{},
 		       },
 		       fields: fields {
 		           read:nil,
@@ -759,7 +771,7 @@ func Test_ou_LoadOrStore(t *testing.T) {
 		           name: "test_case_2",
 		           args: args {
 		           key:0,
-		           value:"",
+		           value:ValueStructOu{},
 		           },
 		           fields: fields {
 		           read:nil,
@@ -800,8 +812,8 @@ func Test_ou_LoadOrStore(t *testing.T) {
 				misses: test.fields.misses,
 			}
 
-			gotActual, gotLoaded := m.LoadOrStore(test.args.key, test.args.value)
-			if err := checkFunc(test.want, gotActual, gotLoaded); err != nil {
+			gotActual, gotAt, gotLoaded := m.LoadOrStore(test.args.key, test.args.value)
+			if err := checkFunc(test.want, gotActual, gotAt, gotLoaded); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -810,13 +822,14 @@ func Test_ou_LoadOrStore(t *testing.T) {
 
 func Test_entryOu_tryLoadOrStore(t *testing.T) {
 	type args struct {
-		i string
+		i ValueStructOu
 	}
 	type fields struct {
 		p unsafe.Pointer
 	}
 	type want struct {
 		wantActual string
+		wantAt     int64
 		wantLoaded bool
 		wantOk     bool
 	}
@@ -825,13 +838,16 @@ func Test_entryOu_tryLoadOrStore(t *testing.T) {
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, string, bool, bool) error
+		checkFunc  func(want, string, int64, bool, bool) error
 		beforeFunc func(*testing.T, args)
 		afterFunc  func(*testing.T, args)
 	}
-	defaultCheckFunc := func(w want, gotActual string, gotLoaded bool, gotOk bool) error {
+	defaultCheckFunc := func(w want, gotActual string, gotAt int64, gotLoaded bool, gotOk bool) error {
 		if !reflect.DeepEqual(gotActual, w.wantActual) {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotActual, w.wantActual)
+		}
+		if !reflect.DeepEqual(gotAt, w.wantAt) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotAt, w.wantAt)
 		}
 		if !reflect.DeepEqual(gotLoaded, w.wantLoaded) {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotLoaded, w.wantLoaded)
@@ -847,7 +863,7 @@ func Test_entryOu_tryLoadOrStore(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
-		           i:"",
+		           i:ValueStructOu{},
 		       },
 		       fields: fields {
 		           p:nil,
@@ -869,7 +885,7 @@ func Test_entryOu_tryLoadOrStore(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
-		           i:"",
+		           i:ValueStructOu{},
 		           },
 		           fields: fields {
 		           p:nil,
@@ -906,8 +922,8 @@ func Test_entryOu_tryLoadOrStore(t *testing.T) {
 				p: test.fields.p,
 			}
 
-			gotActual, gotLoaded, gotOk := e.tryLoadOrStore(test.args.i)
-			if err := checkFunc(test.want, gotActual, gotLoaded, gotOk); err != nil {
+			gotActual, gotAt, gotLoaded, gotOk := e.tryLoadOrStore(test.args.i)
+			if err := checkFunc(test.want, gotActual, gotAt, gotLoaded, gotOk); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -924,21 +940,25 @@ func Test_ou_LoadAndDelete(t *testing.T) {
 		misses int
 	}
 	type want struct {
-		wantValue  string
-		wantLoaded bool
+		wantValue     string
+		wantTimestamp int64
+		wantLoaded    bool
 	}
 	type test struct {
 		name       string
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, string, bool) error
+		checkFunc  func(want, string, int64, bool) error
 		beforeFunc func(*testing.T, args)
 		afterFunc  func(*testing.T, args)
 	}
-	defaultCheckFunc := func(w want, gotValue string, gotLoaded bool) error {
+	defaultCheckFunc := func(w want, gotValue string, gotTimestamp int64, gotLoaded bool) error {
 		if !reflect.DeepEqual(gotValue, w.wantValue) {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotValue, w.wantValue)
+		}
+		if !reflect.DeepEqual(gotTimestamp, w.wantTimestamp) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotTimestamp, w.wantTimestamp)
 		}
 		if !reflect.DeepEqual(gotLoaded, w.wantLoaded) {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotLoaded, w.wantLoaded)
@@ -1016,8 +1036,8 @@ func Test_ou_LoadAndDelete(t *testing.T) {
 				misses: test.fields.misses,
 			}
 
-			gotValue, gotLoaded := m.LoadAndDelete(test.args.key)
-			if err := checkFunc(test.want, gotValue, gotLoaded); err != nil {
+			gotValue, gotTimestamp, gotLoaded := m.LoadAndDelete(test.args.key)
+			if err := checkFunc(test.want, gotValue, gotTimestamp, gotLoaded); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1130,20 +1150,24 @@ func Test_entryOu_delete(t *testing.T) {
 		p unsafe.Pointer
 	}
 	type want struct {
-		wantValue string
-		wantOk    bool
+		wantValue     string
+		wantTimestamp int64
+		wantOk        bool
 	}
 	type test struct {
 		name       string
 		fields     fields
 		want       want
-		checkFunc  func(want, string, bool) error
+		checkFunc  func(want, string, int64, bool) error
 		beforeFunc func(*testing.T)
 		afterFunc  func(*testing.T)
 	}
-	defaultCheckFunc := func(w want, gotValue string, gotOk bool) error {
+	defaultCheckFunc := func(w want, gotValue string, gotTimestamp int64, gotOk bool) error {
 		if !reflect.DeepEqual(gotValue, w.wantValue) {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotValue, w.wantValue)
+		}
+		if !reflect.DeepEqual(gotTimestamp, w.wantTimestamp) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotTimestamp, w.wantTimestamp)
 		}
 		if !reflect.DeepEqual(gotOk, w.wantOk) {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotOk, w.wantOk)
@@ -1209,8 +1233,8 @@ func Test_entryOu_delete(t *testing.T) {
 				p: test.fields.p,
 			}
 
-			gotValue, gotOk := e.delete()
-			if err := checkFunc(test.want, gotValue, gotOk); err != nil {
+			gotValue, gotTimestamp, gotOk := e.delete()
+			if err := checkFunc(test.want, gotValue, gotTimestamp, gotOk); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1219,7 +1243,7 @@ func Test_entryOu_delete(t *testing.T) {
 
 func Test_ou_Range(t *testing.T) {
 	type args struct {
-		f func(key uint32, value string) bool
+		f func(key uint32, value ValueStructOu) bool
 	}
 	type fields struct {
 		read   atomic.Value

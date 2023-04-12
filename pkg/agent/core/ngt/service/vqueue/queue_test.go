@@ -684,7 +684,7 @@ func Test_vqueue_RangePopInsert(t *testing.T) {
 	type args struct {
 		ctx context.Context
 		now int64
-		f   func(uuid string, vector []float32) bool
+		f   func(uuid string, vector []float32, date int64) bool
 	}
 	type fields struct {
 		il indexMap

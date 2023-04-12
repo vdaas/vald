@@ -497,7 +497,7 @@ func Test_ngt_load(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		fmap              map[string]uint32
+		fmap              map[string]int64
 		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
@@ -727,7 +727,7 @@ func Test_ngt_initNGT(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		fmap              map[string]uint32
+		fmap              map[string]int64
 		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
@@ -947,13 +947,15 @@ func Test_ngt_initNGT(t *testing.T) {
 
 func Test_ngt_loadKVS(t *testing.T) {
 	type args struct {
-		path string
+		ctx     context.Context
+		path    string
+		timeout time.Duration
 	}
 	type fields struct {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		fmap              map[string]uint32
+		fmap              map[string]int64
 		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
@@ -1008,7 +1010,9 @@ func Test_ngt_loadKVS(t *testing.T) {
 		   {
 		       name: "test_case_1",
 		       args: args {
+		           ctx:nil,
 		           path:"",
+		           timeout:nil,
 		       },
 		       fields: fields {
 		           core:nil,
@@ -1062,7 +1066,9 @@ func Test_ngt_loadKVS(t *testing.T) {
 		       return test {
 		           name: "test_case_2",
 		           args: args {
+		           ctx:nil,
 		           path:"",
+		           timeout:nil,
 		           },
 		           fields: fields {
 		           core:nil,
@@ -1163,7 +1169,7 @@ func Test_ngt_loadKVS(t *testing.T) {
 				kvsdbConcurrency:  test.fields.kvsdbConcurrency,
 			}
 
-			err := n.loadKVS(test.args.path)
+			err := n.loadKVS(test.args.ctx, test.args.path, test.args.timeout)
 			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -1179,7 +1185,7 @@ func Test_ngt_Start(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		fmap              map[string]uint32
+		fmap              map[string]int64
 		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
@@ -1408,7 +1414,7 @@ func Test_ngt_Search(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		fmap              map[string]uint32
+		fmap              map[string]int64
 		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
@@ -1647,7 +1653,7 @@ func Test_ngt_SearchByID(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		fmap              map[string]uint32
+		fmap              map[string]int64
 		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
@@ -1888,7 +1894,7 @@ func Test_ngt_LinearSearch(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		fmap              map[string]uint32
+		fmap              map[string]int64
 		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
@@ -2121,7 +2127,7 @@ func Test_ngt_LinearSearchByID(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		fmap              map[string]uint32
+		fmap              map[string]int64
 		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
@@ -2358,7 +2364,7 @@ func Test_ngt_Insert(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		fmap              map[string]uint32
+		fmap              map[string]int64
 		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
@@ -2588,7 +2594,7 @@ func Test_ngt_InsertWithTime(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		fmap              map[string]uint32
+		fmap              map[string]int64
 		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
@@ -2821,7 +2827,7 @@ func Test_ngt_insert(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		fmap              map[string]uint32
+		fmap              map[string]int64
 		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
@@ -3053,7 +3059,7 @@ func Test_ngt_InsertMultiple(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		fmap              map[string]uint32
+		fmap              map[string]int64
 		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
@@ -3280,7 +3286,7 @@ func Test_ngt_InsertMultipleWithTime(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		fmap              map[string]uint32
+		fmap              map[string]int64
 		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
@@ -3510,7 +3516,7 @@ func Test_ngt_insertMultiple(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		fmap              map[string]uint32
+		fmap              map[string]int64
 		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
@@ -3741,7 +3747,7 @@ func Test_ngt_Update(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		fmap              map[string]uint32
+		fmap              map[string]int64
 		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
@@ -3971,7 +3977,7 @@ func Test_ngt_UpdateWithTime(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		fmap              map[string]uint32
+		fmap              map[string]int64
 		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
@@ -4203,7 +4209,7 @@ func Test_ngt_update(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		fmap              map[string]uint32
+		fmap              map[string]int64
 		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
@@ -4433,7 +4439,7 @@ func Test_ngt_UpdateMultiple(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		fmap              map[string]uint32
+		fmap              map[string]int64
 		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
@@ -4660,7 +4666,7 @@ func Test_ngt_UpdateMultipleWithTime(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		fmap              map[string]uint32
+		fmap              map[string]int64
 		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
@@ -4889,7 +4895,7 @@ func Test_ngt_updateMultiple(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		fmap              map[string]uint32
+		fmap              map[string]int64
 		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
@@ -5117,7 +5123,7 @@ func Test_ngt_Delete(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		fmap              map[string]uint32
+		fmap              map[string]int64
 		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
@@ -5344,7 +5350,7 @@ func Test_ngt_DeleteWithTime(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		fmap              map[string]uint32
+		fmap              map[string]int64
 		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
@@ -5574,7 +5580,7 @@ func Test_ngt_delete(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		fmap              map[string]uint32
+		fmap              map[string]int64
 		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
@@ -5804,7 +5810,7 @@ func Test_ngt_DeleteMultiple(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		fmap              map[string]uint32
+		fmap              map[string]int64
 		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
@@ -6031,7 +6037,7 @@ func Test_ngt_DeleteMultipleWithTime(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		fmap              map[string]uint32
+		fmap              map[string]int64
 		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
@@ -6261,7 +6267,7 @@ func Test_ngt_deleteMultiple(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		fmap              map[string]uint32
+		fmap              map[string]int64
 		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
@@ -6492,7 +6498,7 @@ func Test_ngt_CreateIndex(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		fmap              map[string]uint32
+		fmap              map[string]int64
 		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
@@ -6720,7 +6726,7 @@ func Test_ngt_removeInvalidIndex(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		fmap              map[string]uint32
+		fmap              map[string]int64
 		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
@@ -6941,7 +6947,7 @@ func Test_ngt_SaveIndex(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		fmap              map[string]uint32
+		fmap              map[string]int64
 		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
@@ -7167,7 +7173,7 @@ func Test_ngt_saveIndex(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		fmap              map[string]uint32
+		fmap              map[string]int64
 		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
@@ -7394,7 +7400,7 @@ func Test_ngt_CreateAndSaveIndex(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		fmap              map[string]uint32
+		fmap              map[string]int64
 		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
@@ -7622,7 +7628,7 @@ func Test_ngt_moveAndSwitchSavedData(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		fmap              map[string]uint32
+		fmap              map[string]int64
 		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
@@ -7845,7 +7851,7 @@ func Test_ngt_mktmp(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		fmap              map[string]uint32
+		fmap              map[string]int64
 		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
@@ -8064,7 +8070,7 @@ func Test_ngt_Exists(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		fmap              map[string]uint32
+		fmap              map[string]int64
 		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
@@ -8294,7 +8300,7 @@ func Test_ngt_GetObject(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		fmap              map[string]uint32
+		fmap              map[string]int64
 		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
@@ -8525,7 +8531,7 @@ func Test_ngt_readyForUpdate(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		fmap              map[string]uint32
+		fmap              map[string]int64
 		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
@@ -8750,7 +8756,7 @@ func Test_ngt_IsSaving(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		fmap              map[string]uint32
+		fmap              map[string]int64
 		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
@@ -8966,7 +8972,7 @@ func Test_ngt_IsIndexing(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		fmap              map[string]uint32
+		fmap              map[string]int64
 		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
@@ -9185,7 +9191,7 @@ func Test_ngt_UUIDs(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		fmap              map[string]uint32
+		fmap              map[string]int64
 		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
@@ -9408,7 +9414,7 @@ func Test_ngt_NumberOfCreateIndexExecution(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		fmap              map[string]uint32
+		fmap              map[string]int64
 		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
@@ -9624,7 +9630,7 @@ func Test_ngt_NumberOfProactiveGCExecution(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		fmap              map[string]uint32
+		fmap              map[string]int64
 		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
@@ -9840,7 +9846,7 @@ func Test_ngt_gc(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		fmap              map[string]uint32
+		fmap              map[string]int64
 		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
@@ -10051,7 +10057,7 @@ func Test_ngt_Len(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		fmap              map[string]uint32
+		fmap              map[string]int64
 		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
@@ -10267,7 +10273,7 @@ func Test_ngt_InsertVQueueBufferLen(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		fmap              map[string]uint32
+		fmap              map[string]int64
 		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
@@ -10483,7 +10489,7 @@ func Test_ngt_DeleteVQueueBufferLen(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		fmap              map[string]uint32
+		fmap              map[string]int64
 		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
@@ -10699,7 +10705,7 @@ func Test_ngt_GetDimensionSize(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		fmap              map[string]uint32
+		fmap              map[string]int64
 		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
@@ -10918,7 +10924,7 @@ func Test_ngt_Close(t *testing.T) {
 		core              core.NGT
 		eg                errgroup.Group
 		kvs               kvs.BidiMap
-		fmap              map[string]uint32
+		fmap              map[string]int64
 		vq                vqueue.Queue
 		indexing          atomic.Value
 		saving            atomic.Value
