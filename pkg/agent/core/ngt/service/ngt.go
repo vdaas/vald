@@ -87,7 +87,7 @@ type ngt struct {
 	eg   errgroup.Group
 	kvs  kvs.BidiMap
 	fmu  sync.Mutex
-	fmap map[string]uint32 // failure map for index
+	fmap map[string]int64 // failure map for index
 	vq   vqueue.Queue
 
 	// statuses
@@ -136,7 +136,9 @@ type ngt struct {
 }
 
 const (
-	kvsFileName = "ngt-meta.kvsdb"
+	kvsFileName          = "ngt-meta.kvsdb"
+	kvsTimestampFileName = "ngt-timestamp.kvsdb"
+	noTimeStampFile      = -1
 
 	oldIndexDirName    = "backup"
 	originIndexDirName = "origin"
@@ -144,7 +146,7 @@ const (
 
 func New(cfg *config.NGT, opts ...Option) (nn NGT, err error) {
 	n := &ngt{
-		fmap:              make(map[string]uint32),
+		fmap:              make(map[string]int64),
 		dim:               cfg.Dimension,
 		enableProactiveGC: cfg.EnableProactiveGC,
 		enableCopyOnWrite: cfg.EnableCopyOnWrite,
@@ -271,6 +273,18 @@ func (n *ngt) load(ctx context.Context, path string, opts ...core.Option) (err e
 		err = errors.Wrapf(err, "invalid permission for loading kvsdb file from %s", kvsFilePath)
 		return err
 	}
+	kvsTimestampFilePath := file.Join(path, kvsTimestampFileName)
+	log.Debugf("now starting to load kvs timestamp data from %s", kvsTimestampFilePath)
+	exist, fi, err = file.ExistsWithDetail(kvsTimestampFilePath)
+	switch {
+	case !exist, fi == nil, fi != nil && fi.Size() == 0, err != nil && errors.Is(err, fs.ErrNotExist):
+		log.Warnf("timestamp kvsdb file does not exists,\tpath: %s,\terr: %v", kvsTimestampFilePath, err)
+	case err != nil && errors.Is(err, fs.ErrPermission):
+		if fi != nil {
+			err = errors.ErrFailedToOpenFile(err, kvsTimestampFilePath, 0, fi.Mode())
+		}
+		log.Warnf("invalid permission for loading timestamp kvsdb file from %s", kvsTimestampFilePath)
+	}
 	var timeout time.Duration
 	if agentMetadata != nil && agentMetadata.NGT != nil {
 		log.Debugf("the backup index size is %d. starting to load...", agentMetadata.NGT.IndexCount)
@@ -288,7 +302,7 @@ func (n *ngt) load(ctx context.Context, path string, opts ...core.Option) (err e
 		timeout = time.Duration(math.Min(float64(n.minLit), float64(n.maxLit)))
 	}
 
-	log.Debugf("index path: %s and metadata: %s and kvsdb file: %s exists and successfully load metadata, now starting to load full index and kvs data in concurrent", path, metadataPath, kvsFilePath)
+	log.Debugf("index path: %s and metadata: %s and kvsdb file: %s and timestamp kvsdb file: %s exists and successfully load metadata, now starting to load full index and kvs data in concurrent", path, metadataPath, kvsFilePath, kvsTimestampFilePath)
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 	eg, _ := errgroup.New(ctx)
@@ -306,9 +320,9 @@ func (n *ngt) load(ctx context.Context, path string, opts ...core.Option) (err e
 	}))
 
 	eg.Go(safety.RecoverFunc(func() (err error) {
-		err = n.loadKVS(kvsFilePath)
+		err = n.loadKVS(ctx, path, timeout)
 		if err != nil {
-			err = errors.Wrapf(err, "failed to load kvsdb data from path: %s", kvsFilePath)
+			err = errors.Wrapf(err, "failed to load kvsdb data from path: %s, %s", kvsFilePath, kvsTimestampFilePath)
 			return err
 		}
 		if n.kvs != nil && float64(agentMetadata.NGT.IndexCount/2) > float64(n.kvs.Len()) {
@@ -453,31 +467,69 @@ func (n *ngt) initNGT(opts ...core.Option) (err error) {
 	return nil
 }
 
-func (n *ngt) loadKVS(path string) (err error) {
-	gob.Register(map[string]uint32{})
-
-	var f *os.File
-	f, err = file.Open(
-		path,
-		os.O_RDONLY|os.O_SYNC,
-		fs.ModePerm,
-	)
-	if err != nil {
-		return err
-	}
-	defer func() {
-		if f != nil {
-			derr := f.Close()
-			if derr != nil {
-				err = errors.Wrap(err, derr.Error())
-			}
-		}
-	}()
+func (n *ngt) loadKVS(ctx context.Context, path string, timeout time.Duration) (err error) {
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+	eg, _ := errgroup.New(ctx)
 
 	m := make(map[string]uint32)
-	err = gob.NewDecoder(f).Decode(&m)
+	mt := make(map[string]int64)
+
+	eg.Go(safety.RecoverFunc(func() (err error) {
+		gob.Register(map[string]uint32{})
+		var f *os.File
+		f, err = file.Open(
+			file.Join(path, kvsFileName),
+			os.O_RDONLY|os.O_SYNC,
+			fs.ModePerm,
+		)
+		if err != nil {
+			return err
+		}
+		defer func() {
+			if f != nil {
+				derr := f.Close()
+				if derr != nil {
+					err = errors.Wrap(err, derr.Error())
+				}
+			}
+		}()
+		err = gob.NewDecoder(f).Decode(&m)
+		if err != nil {
+			log.Errorf("error decoding kvsdb file,\terr: %v", err)
+			return err
+		}
+		return nil
+	}))
+
+	eg.Go(safety.RecoverFunc(func() (err error) {
+		gob.Register(map[string]int64{})
+		var ft *os.File
+		ft, err = file.Open(
+			file.Join(path, kvsTimestampFileName),
+			os.O_RDONLY|os.O_SYNC,
+			fs.ModePerm,
+		)
+		if err != nil {
+			log.Warnf("error opening timestamp kvsdb file,\terr: %v", err)
+		}
+		defer func() {
+			if ft != nil {
+				derr := ft.Close()
+				if derr != nil {
+					err = errors.Wrap(err, derr.Error())
+				}
+			}
+		}()
+		err = gob.NewDecoder(ft).Decode(&mt)
+		if err != nil {
+			log.Warnf("error decoding timestamp kvsdb file,\terr: %v", err)
+		}
+		return nil
+	}))
+
+	err = eg.Wait()
 	if err != nil {
-		log.Errorf("error decoding kvsdb file,\terr: %v", err)
 		return err
 	}
 
@@ -488,7 +540,18 @@ func (n *ngt) loadKVS(path string) (err error) {
 		n.kvs = kvs.New(kvs.WithConcurrency(n.kvsdbConcurrency))
 	}
 	for k, id := range m {
-		n.kvs.Set(k, id)
+		if ts, ok := mt[k]; ok {
+			n.kvs.Set(k, id, ts)
+		} else {
+			// NOTE: SaveIndex do not write ngt-timestamp.kvsdb with timestamp 0.
+			n.kvs.Set(k, id, 0)
+			n.fmap[k] = int64(id)
+		}
+	}
+	for k := range mt {
+		if _, ok := m[k]; !ok {
+			n.fmap[k] = noTimeStampFile
+		}
 	}
 
 	return nil
@@ -581,7 +644,7 @@ func (n *ngt) Search(vec []float32, size uint32, epsilon, radius float32) ([]mod
 			log.Warnf("an error occurred while searching: %s", err)
 			continue
 		}
-		key, ok := n.kvs.GetInverse(d.ID)
+		key, _, ok := n.kvs.GetInverse(d.ID)
 		if ok {
 			ds = append(ds, model.Distance{
 				ID:       key,
@@ -633,7 +696,7 @@ func (n *ngt) LinearSearch(vec []float32, size uint32) ([]model.Distance, error)
 			log.Warnf("an error occurred while searching: %s", err)
 			continue
 		}
-		key, ok := n.kvs.GetInverse(d.ID)
+		key, _, ok := n.kvs.GetInverse(d.ID)
 		if ok {
 			ds = append(ds, model.Distance{
 				ID:       key,
@@ -780,7 +843,7 @@ func (n *ngt) delete(uuid string, t int64, validation bool) (err error) {
 		return err
 	}
 	if validation {
-		_, ok := n.kvs.Get(uuid)
+		_, _, ok := n.kvs.Get(uuid)
 		if !ok && !n.vq.IVExists(uuid) {
 			return errors.ErrObjectIDNotFound(uuid)
 		}
@@ -872,7 +935,7 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 		if err := n.core.Remove(uint(oid)); err != nil {
 			log.Errorf("failed to remove oid: %d from ngt index. error: %v", oid, err)
 			n.fmu.Lock()
-			n.fmap[uuid] = oid
+			n.fmap[uuid] = int64(oid)
 			n.fmu.Unlock()
 		}
 		log.Debugf("removed from ngt index and kvsdb id: %s, oid: %d", uuid, oid)
@@ -882,7 +945,7 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 	n.gc()
 	log.Debug("create index insert phase started")
 	var icnt uint32
-	n.vq.RangePopInsert(ctx, now, func(uuid string, vector []float32) bool {
+	n.vq.RangePopInsert(ctx, now, func(uuid string, vector []float32, timestamp int64) bool {
 		log.Debugf("start insert operation for ngt index id: %s", uuid)
 		oid, err := n.core.Insert(vector)
 		if err != nil {
@@ -898,7 +961,7 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 			}
 		}
 		log.Debugf("start insert operation for kvsdb id: %s, oid: %d", uuid, oid)
-		n.kvs.Set(uuid, uint32(oid))
+		n.kvs.Set(uuid, uint32(oid), timestamp)
 		atomic.AddUint32(&icnt, 1)
 
 		n.fmu.Lock()
@@ -936,14 +999,14 @@ func (n *ngt) removeInvalidIndex(ctx context.Context) {
 		return
 	}
 	var dcnt uint32
-	n.kvs.Range(ctx, func(uuid string, oid uint32) bool {
+	n.kvs.Range(ctx, func(uuid string, oid uint32, _ int64) bool {
 		vec, err := n.core.GetVector(uint(oid))
 		if err != nil || vec == nil || len(vec) != n.dim {
 			log.Debugf("invalid index detected err: %v\tuuid: %s\toid: %d will remove", err, uuid, oid)
 			n.kvs.Delete(uuid)
 			n.fmu.Lock()
 			err = n.core.Remove(uint(oid))
-			n.fmap[uuid] = oid
+			n.fmap[uuid] = int64(oid)
 			n.fmu.Unlock()
 			atomic.AddUint32(&dcnt, 1)
 			if err != nil {
@@ -1037,10 +1100,12 @@ func (n *ngt) saveIndex(ctx context.Context) (err error) {
 	eg.Go(safety.RecoverFunc(func() (err error) {
 		if n.kvs.Len() > 0 && path != "" {
 			m := make(map[string]uint32, n.Len())
+			mt := make(map[string]int64, n.Len())
 			var mu sync.Mutex
-			n.kvs.Range(ectx, func(key string, id uint32) bool {
+			n.kvs.Range(ectx, func(key string, id uint32, ts int64) bool {
 				mu.Lock()
 				m[key] = id
+				mt[key] = ts
 				mu.Unlock()
 				atomic.AddUint64(&kvsLen, 1)
 				return true
@@ -1072,6 +1137,34 @@ func (n *ngt) saveIndex(ctx context.Context) (err error) {
 				return err
 			}
 			m = make(map[string]uint32)
+
+			var ft *os.File
+			ft, err = file.Open(
+				file.Join(path, kvsTimestampFileName),
+				os.O_WRONLY|os.O_CREATE|os.O_TRUNC,
+				fs.ModePerm,
+			)
+			if err != nil {
+				return err
+			}
+			defer func() {
+				if ft != nil {
+					derr := ft.Close()
+					if derr != nil {
+						err = errors.Wrap(err, derr.Error())
+					}
+				}
+			}()
+			gob.Register(map[string]int64{})
+			err = gob.NewEncoder(ft).Encode(&mt)
+			if err != nil {
+				return err
+			}
+			err = ft.Sync()
+			if err != nil {
+				return err
+			}
+			mt = make(map[string]int64)
 		}
 		return nil
 	}))
@@ -1098,7 +1191,7 @@ func (n *ngt) saveIndex(ctx context.Context) (err error) {
 					}
 				}
 			}()
-			gob.Register(map[string]uint32{})
+			gob.Register(map[string]int64{})
 			n.fmu.Lock()
 			err = gob.NewEncoder(f).Encode(&n.fmap)
 			n.fmu.Unlock()
@@ -1192,7 +1285,7 @@ func (n *ngt) mktmp() (err error) {
 func (n *ngt) Exists(uuid string) (oid uint32, ok bool) {
 	ok = n.vq.IVExists(uuid)
 	if !ok {
-		oid, ok = n.kvs.Get(uuid)
+		oid, _, ok = n.kvs.Get(uuid)
 		if !ok {
 			log.Debugf("Exists\tuuid: %s's data not found in kvsdb and insert vqueue\terror: %v", uuid, errors.ErrObjectIDNotFound(uuid))
 			return 0, false
@@ -1212,7 +1305,7 @@ func (n *ngt) Exists(uuid string) (oid uint32, ok bool) {
 func (n *ngt) GetObject(uuid string) (vec []float32, err error) {
 	vec, ok := n.vq.GetVector(uuid)
 	if !ok {
-		oid, ok := n.kvs.Get(uuid)
+		oid, _, ok := n.kvs.Get(uuid)
 		if !ok {
 			log.Debugf("GetObject\tuuid: %s's data not found in kvsdb and insert vqueue", uuid)
 			return nil, errors.ErrObjectIDNotFound(uuid)
@@ -1262,7 +1355,7 @@ func (n *ngt) IsIndexing() bool {
 
 func (n *ngt) UUIDs(ctx context.Context) (uuids []string) {
 	uuids = make([]string, 0, n.kvs.Len())
-	n.kvs.Range(ctx, func(uuid string, oid uint32) bool {
+	n.kvs.Range(ctx, func(uuid string, oid uint32, _ int64) bool {
 		uuids = append(uuids, uuid)
 		return true
 	})

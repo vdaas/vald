@@ -889,7 +889,7 @@ var (
 			q.RangePopInsert(
 				sy.ctx,
 				now,
-				func(uuid string, vector []float32) bool { return true },
+				func(uuid string, vector []float32, date int64) bool { return true },
 			)
 
 			return &resultContainer{}
