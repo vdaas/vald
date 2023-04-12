@@ -766,7 +766,7 @@ func Test_group_Wait(t *testing.T) {
 				},
 			},
 			want: want{
-				err: errors.Wrap(errors.New("err1"), errors.New("err2").Error()),
+				err: errors.Join(errors.New("err1"), errors.New("err2")),
 			},
 		},
 	}

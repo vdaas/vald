@@ -87,7 +87,7 @@ func TestParseBytes(t *testing.T) {
 			want: want{
 				wantBytes: 0,
 				err: func() (err error) {
-					err = errors.Wrap(errors.New("byte quantity must be a positive integer with a unit of measurement like M, MB, MiB, G, GiB, or GB"), errors.ErrParseUnitFailed("a").Error())
+					err = errors.Join(errors.New("byte quantst be a positive integer with a unit of measurement like M, MB, MiB, G, GiB, or GB"), errors.ErrParseUnitFailed("a"))
 					return
 				}(),
 			},

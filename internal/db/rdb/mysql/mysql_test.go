@@ -401,7 +401,7 @@ func Test_mySQLClient_Open(t *testing.T) {
 					cancel()
 				},
 				want: want{
-					err: errors.Wrap(errors.ErrMySQLConnectionPingFailed, err.Error()),
+					err: errors.Join(errors.ErrMySQLConnectionPingFailed, err, context.DeadlineExceeded),
 				},
 			}
 		}(),
@@ -550,7 +550,7 @@ func Test_mySQLClient_Ping(t *testing.T) {
 					},
 				},
 				want: want{
-					err: errors.Wrap(errors.Wrap(errors.ErrMySQLConnectionPingFailed, err.Error()), context.DeadlineExceeded.Error()),
+					err: errors.Join(errors.ErrMySQLConnectionPingFailed, err, context.DeadlineExceeded),
 				},
 				afterFunc: func(t *testing.T, _ args) {
 					t.Helper()

@@ -72,7 +72,7 @@ func BidirectionalStream[Q any, R any](ctx context.Context, stream ServerStream,
 			if errs == nil {
 				errs = err
 			} else {
-				errs = errors.Wrap(err, errs.Error())
+				errs = errors.Join(err, errs)
 			}
 			return true
 		})
@@ -192,7 +192,7 @@ func BidirectionalStreamClient(stream ClientStream,
 
 	defer func() {
 		if err != nil {
-			err = errors.Wrap(stream.CloseSend(), err.Error())
+			err = errors.Join(stream.CloseSend(), err)
 		} else {
 			err = stream.CloseSend()
 		}
@@ -209,7 +209,7 @@ func BidirectionalStreamClient(stream ClientStream,
 					err = stream.CloseSend()
 					cancel()
 					if err != nil {
-						return errors.Wrap(eg.Wait(), err.Error())
+						return errors.Join(eg.Wait(), err)
 					}
 					return eg.Wait()
 				}

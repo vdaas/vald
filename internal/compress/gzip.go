@@ -133,7 +133,7 @@ func (g *gzipReader) Read(p []byte) (n int, err error) {
 func (g *gzipReader) Close() (err error) {
 	err = g.r.Close()
 	if err != nil {
-		return errors.Wrap(g.src.Close(), err.Error())
+		return errors.Join(g.src.Close(), err)
 	}
 
 	return g.src.Close()
@@ -153,7 +153,7 @@ func (g *gzipWriter) Write(p []byte) (n int, err error) {
 func (g *gzipWriter) Close() (err error) {
 	err = g.w.Close()
 	if err != nil {
-		return errors.Wrap(g.dst.Close(), err.Error())
+		return errors.Join(g.dst.Close(), err)
 	}
 
 	return g.dst.Close()

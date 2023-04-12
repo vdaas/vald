@@ -142,7 +142,7 @@ func (w *worker) startJobLoop(ctx context.Context) <-chan error {
 			select {
 			case <-ctx.Done():
 				if err = ctx.Err(); err != nil {
-					return errors.Wrap(eg.Wait(), err.Error())
+					return errors.Join(eg.Wait(), err)
 				}
 				return eg.Wait()
 			case limitation <- struct{}{}:
