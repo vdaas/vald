@@ -471,9 +471,19 @@ jobs:
 
           git checkout ${HEAD_BRANCH}
 
+<<<<<<< HEAD
           echo "Update license headers and format go codes/yaml"
 
           sudo make format
+=======
+          echo "Install format dependencies"
+
+          sudo make prettier/install
+
+          echo "Update license headers and format go codes/yaml"
+
+          make format
+>>>>>>> 359bd31e9 (:green_heart: fix chatops yaml)
 
           git checkout go.mod go.sum
 
