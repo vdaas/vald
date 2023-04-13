@@ -182,7 +182,7 @@ func Test_implementedTest(t *testing.T) {
 
 // NOT IMPLEMENTED BELOW
 
-func Test_unimplementedTest2(t *testing.T) {
+func Test_unimplementedTest(t *testing.T) {
     // this unit test function is not implemented yet
 }
 ```
