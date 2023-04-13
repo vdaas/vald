@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -795,10 +795,7 @@ func (s *server) StreamLinearSearch(stream vald.Search_StreamLinearSearchServer)
 }
 
 func (s *server) StreamLinearSearchByID(stream vald.Search_StreamLinearSearchByIDServer) (err error) {
-	ctx, span := trace.StartSpan(
-		grpc.WithGRPCMethod(stream.Context(), vald.PackageName+"."+vald.SearchRPCServiceName+"/"+vald.StreamLinearSearchByIDRPCName),
-		apiName+"/"+vald.StreamLinearSearchByIDRPCName,
-	)
+	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(stream.Context(), vald.PackageName+"."+vald.SearchRPCServiceName+"/"+vald.StreamLinearSearchByIDRPCName), apiName+"/"+vald.StreamLinearSearchByIDRPCName)
 	defer func() {
 		if span != nil {
 			span.End()
