@@ -471,16 +471,9 @@ jobs:
 
           git checkout ${HEAD_BRANCH}
 
-          echo "Install format dependencies"
-
-          make golines/install gofumpt/install goimports/install strictgoimports/install
-          sudo make prettier/install
-
           echo "Update license headers and format go codes/yaml"
 
-          make format/go
-          make format/yaml
-          make license
+          sudo make format/go
 
           git checkout go.mod go.sum
 
