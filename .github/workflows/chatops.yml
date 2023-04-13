@@ -558,4 +558,3 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
           PR_URL: ${{ github.event.issue.pull_request.url }}
-          USERNAME: ${{ steps.check_comments_approve.outputs.COMMENTER_USERNAME }}
