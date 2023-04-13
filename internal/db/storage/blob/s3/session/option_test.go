@@ -1234,3 +1234,5 @@ func TestWithHTTPClient(t *testing.T) {
 		})
 	}
 }
+
+// NOT IMPLEMENTED BELOW

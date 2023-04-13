@@ -220,3 +220,5 @@ func TestMeta_Bind(t *testing.T) {
 		})
 	}
 }
+
+// NOT IMPLEMENTED BELOW

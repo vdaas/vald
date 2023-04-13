@@ -415,3 +415,5 @@ func TestWithInsecureSkipVerify(t *testing.T) {
 		})
 	}
 }
+
+// NOT IMPLEMENTED BELOW

@@ -1123,3 +1123,5 @@ func Test_gzipWriter_Close(t *testing.T) {
 		})
 	}
 }
+
+// NOT IMPLEMENTED BELOW

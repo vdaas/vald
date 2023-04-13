@@ -874,3 +874,5 @@ func TestIsMySQLInvalidArgumentError(t *testing.T) {
 		})
 	}
 }
+
+// NOT IMPLEMENTED BELOW

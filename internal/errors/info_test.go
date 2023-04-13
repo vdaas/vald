@@ -130,3 +130,5 @@ func TestErrRuntimeFuncNil(t *testing.T) {
 		})
 	}
 }
+
+// NOT IMPLEMENTED BELOW

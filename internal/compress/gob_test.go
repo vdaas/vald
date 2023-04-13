@@ -867,3 +867,5 @@ func Test_gobWriter_Close(t *testing.T) {
 		})
 	}
 }
+
+// NOT IMPLEMENTED BELOW

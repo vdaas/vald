@@ -821,3 +821,5 @@ func TestWithWriter(t *testing.T) {
 		})
 	}
 }
+
+// NOT IMPLEMENTED BELOW
