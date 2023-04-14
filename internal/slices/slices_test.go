@@ -16,8 +16,7 @@ package slices
 import (
 	"testing"
 
-	"internal/errors"
-
+	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/test/goleak"
 )
 
