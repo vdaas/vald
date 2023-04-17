@@ -465,7 +465,7 @@ func (p *pool) dial(ctx context.Context, addr string) (conn *ClientConn, err err
 			if conn != nil {
 				err = conn.Close()
 				if err != nil && !errors.Is(err, grpc.ErrClientConnClosing) {
-					err = errors.Wrapf(errors.ErrGRPCClientConnNotFound(addr), err.Error())
+					err = errors.Join(errors.ErrGRPCClientConnNotFound(addr), err)
 				} else {
 					err = errors.ErrGRPCClientConnNotFound(addr)
 				}

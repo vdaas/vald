@@ -496,7 +496,7 @@ func (n *ngt) loadKVS(ctx context.Context, path string, timeout time.Duration) (
 			if f != nil {
 				derr := f.Close()
 				if derr != nil {
-					err = errors.Wrap(err, derr.Error())
+					err = errors.Join(err, derr)
 				}
 			}
 		}()
@@ -523,7 +523,7 @@ func (n *ngt) loadKVS(ctx context.Context, path string, timeout time.Duration) (
 			if ft != nil {
 				derr := ft.Close()
 				if derr != nil {
-					err = errors.Wrap(err, derr.Error())
+					err = errors.Join(err, derr)
 				}
 			}
 		}()
@@ -1157,7 +1157,7 @@ func (n *ngt) saveIndex(ctx context.Context) (err error) {
 				if ft != nil {
 					derr := ft.Close()
 					if derr != nil {
-						err = errors.Wrap(err, derr.Error())
+						err = errors.Join(err, derr)
 					}
 				}
 			}()
