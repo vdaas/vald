@@ -3,7 +3,7 @@ body {
 }
 
 .top {
-  background-color: #54b9b2;
+  background: linear-gradient(270.43deg, #00bab1 0%, #006076 100%);
   position: relative;
   height: 600px;
   overflow: hidden;
@@ -18,10 +18,123 @@ body {
   position: relative;
 }
 
+.top__icon {
+  display: block;
+  position: absolute;
+  width: 150px;
+  height: 150px;
+  background-color: #00bab1;
+  border-radius: 100%;
+  background-size: 100px;
+  background-repeat: no-repeat;
+  background-position: center;
+  box-shadow: 5px 5px 20px rgba(0, 0, 0, 0.05);
+}
+
+.top__icon.icon-logo {
+  width: 200px;
+  height: 200px;
+  background-size: 140px;
+  background-image: url("../images/icon_logo.svg");
+  left: 50%;
+  margin-left: -100px;
+  top: 50%;
+  margin-top: -100px;
+}
+
+.top__icon.icon-image {
+  background-image: url("../images/icon_image.svg");
+  right: -13%;
+  top: 19%;
+}
+
+.top__icon.icon-data {
+  background-image: url("../images/icon_data.svg");
+  left: -13%;
+  top: 19%;
+}
+
+.top__icon.icon-text {
+  background-image: url("../images/icon_text.svg");
+  right: 3%;
+  bottom: 9%;
+}
+
+.top__icon.icon-sound {
+  background-image: url("../images/icon_sound.svg");
+  left: 3%;
+  bottom: 9%;
+}
+
+.top__icon.icon-voice {
+  background-image: url("../images/icon_voice.svg");
+  left: 50%;
+  margin-left: -75px;
+  top: 2%;
+}
+
+@media screen and (min-width: 576px) {
+  .top__icon.icon-image {
+    right: 10%;
+    top: 19%;
+  }
+
+  .top__icon.icon-data {
+    left: 10%;
+    top: 19%;
+  }
+
+  .top__icon.icon-text {
+    right: 18%;
+  }
+
+  .top__icon.icon-sound {
+    left: 18%;
+  }
+}
+
+@media screen and (min-width: 768px) {
+  .top__icon.icon-logo {
+    width: 230px;
+    height: 230px;
+    background-size: 160px;
+    background-image: url("../images/icon_logo.svg");
+    left: 70%;
+    top: 50%;
+    margin-top: -115px;
+  }
+
+  .top__icon.icon-image {
+    right: 4%;
+    top: 17%;
+  }
+
+  .top__icon.icon-data {
+    left: 40%;
+    top: 25%;
+  }
+
+  .top__icon.icon-text {
+    right: 9%;
+  }
+
+  .top__icon.icon-sound {
+    left: 50%;
+  }
+  .top__icon.icon-voice {
+    left: 65%;
+    top: 2%;
+  }
+}
+
 .top__content {
   padding: 0 24px;
   position: relative;
   z-index: 10;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .top__title {
@@ -84,6 +197,9 @@ body {
     margin-bottom: 0;
     margin-right: 10px;
   }
+  .top__linklist {
+    width: 84%;
+  }
 }
 
 .top__bg {
@@ -92,7 +208,31 @@ body {
   left: 0;
   width: 100%;
   height: 100%;
+  z-index: 1;
 }
+
+.top__mask {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 187, 177, 0.3);
+  z-index: 2;
+}
+
+/* .top__bg .rect-wrap {
+  display: flex;
+  width: 100%;
+  height: 100%;
+}
+
+.top__bg .rect {
+  width: 200px;
+  height: 200px;
+  border: 1px solid #ffffff;
+  transform: rotateZ(-60deg) skewY(30deg) scale(0.7071, 0.8165);
+} */
 
 .top__bg .bg__img {
   position: absolute;
@@ -340,7 +480,7 @@ body {
 @media screen and (min-width: 768px) {
   .top__content {
     margin: 0 auto;
-    max-width: 1108px;
+    width: 1108px;
   }
 
   .top__title {
@@ -350,6 +490,7 @@ body {
 
   .top__lead {
     font-size: 4rem;
+    width: 70%;
   }
 
   .concept__content {
