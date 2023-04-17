@@ -118,7 +118,7 @@ To contribute unit test code, the steps are almost the same as [contribute sourc
 
 1. Execute `make gotests/gen` command under Vald repository
 1. Move the test function above the placeholder `// NOT IMPLEMENTED BELOW`
-2. Implement the test function
+1. Implement the test function
 
 Vald implmentes unit test code to ensure the quality of Vald. Each implementation file comes with its unit test file, with `*_test.go` postfix.
 In Vald, unit test files are looks like:
