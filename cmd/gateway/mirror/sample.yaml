@@ -135,14 +135,14 @@ gateway:
           cache_expiration: 1h
           refresh_duration: 30m
         tls:
+          enabled: false
           ca: /path/to/ca
           cert: /path/to/cert
-          enabled: false
           key: /path/to/key
       timeout: ""
       write_buffer_size: 0
     tls:
-      ca: /path/to/ca
-      cert: /path/to/cert
       enabled: false
+       ca: /path/to/ca
+      cert: /path/to/cert
       key: /path/to/key
