@@ -77,11 +77,11 @@ func TestBidirectionalStream(t *testing.T) {
 		// since the insert order is not guaranteed, check only the error count on the response
 		sm := make(map[int32]int) // want status map
 		for _, r := range w.rpcResp {
-			sm[r.GetStatus().GetCode()] = sm[r.GetStatus().GetCode()] + 1
+			sm[r.GetStatus().GetCode()]++
 		}
 		gsm := make(map[int32]int) // got status map
 		for _, r := range rpcResp {
-			gsm[r.GetStatus().GetCode()] = gsm[r.GetStatus().GetCode()] + 1
+			gsm[r.GetStatus().GetCode()]++
 		}
 
 		if !reflect.DeepEqual(sm, gsm) {
