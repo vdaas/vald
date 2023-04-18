@@ -579,3 +579,5 @@ func TestErrRunnerWait(t *testing.T) {
 		})
 	}
 }
+
+// NOT IMPLEMENTED BELOW

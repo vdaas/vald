@@ -68,3 +68,5 @@ func TestErrCollectorNotFound(t *testing.T) {
 		})
 	}
 }
+
+// NOT IMPLEMENTED BELOW

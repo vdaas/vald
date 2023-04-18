@@ -489,3 +489,5 @@ func TestGenSameVecMultiInsertReq(t *testing.T) {
 		})
 	}
 }
+
+// NOT IMPLEMENTED BELOW

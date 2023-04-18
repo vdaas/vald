@@ -159,3 +159,5 @@ func Test_rand_init(t *testing.T) {
 		})
 	}
 }
+
+// NOT IMPLEMENTED BELOW
