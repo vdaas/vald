@@ -163,6 +163,16 @@
       "contributions": [
         "doc"
       ]
+    },
+    {
+      "login": "ykadowak",
+      "name": "Yusuke Kadowaki",
+      "avatar_url": "https://avatars.githubusercontent.com/u/60080334?v=4",
+      "profile": "https://github.com/ykadowak",
+      "contributions": [
+        "code",
+        "test"
+      ]
     }
   ],
   "contributorsPerLine": 7,
