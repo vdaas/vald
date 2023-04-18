@@ -96,7 +96,6 @@ func TestBidirectionalStream(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-
 			return test{
 				name: "success to receive 1 message from stream",
 				args: args{
@@ -115,7 +114,6 @@ func TestBidirectionalStream(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-
 			return test{
 				name: "success to receive 10 message from stream",
 				args: args{
