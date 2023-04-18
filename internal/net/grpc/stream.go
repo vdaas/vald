@@ -72,7 +72,10 @@ func BidirectionalStream[Q any, R any](ctx context.Context, stream ServerStream,
 			if errs == nil {
 				errs = err
 			} else {
-				errs = errors.Join(err, errs)
+				// FIXME: It should have been errors.Join here, but it remains errors.Wrap because the bench/agent/stream tests will fail.
+				// The reason is likely that when it's changed to errors.Join, status.ParseError cannot parse errors correctly,
+				// but this needs to be investigated further.
+				errs = errors.Wrap(err, errs.Error())
 			}
 			return true
 		})
