@@ -51,10 +51,10 @@ func TestBidirectionalStream(t *testing.T) {
 	}
 
 	const (
-		name               = "vald-agent-ngt-1" // agent name
-		f32VecDim          = 3                  // float32 vector dimension
-		ip                 = "localhost"        // ip address
-		defaultConcurrency = 10
+		name        = "vald-agent-ngt-1" // agent name
+		f32VecDim   = 3                  // float32 vector dimension
+		ip          = "localhost"        // ip address
+		concurrency = 10
 	)
 
 	defaultCallbackFn := func(ctx context.Context, i *payload.Insert_Request) (*payload.Object_StreamLocation, error) {
@@ -100,7 +100,7 @@ func TestBidirectionalStream(t *testing.T) {
 				name: "success to receive 1 message from stream",
 				args: args{
 					insertReqs:  reqs.Requests,
-					concurrency: defaultConcurrency,
+					concurrency: concurrency,
 					f:           defaultCallbackFn,
 				},
 				want: want{
@@ -118,7 +118,7 @@ func TestBidirectionalStream(t *testing.T) {
 				name: "success to receive 10 message from stream",
 				args: args{
 					insertReqs:  reqs.Requests,
-					concurrency: defaultConcurrency,
+					concurrency: concurrency,
 					f:           defaultCallbackFn,
 				},
 				want: want{
@@ -131,7 +131,7 @@ func TestBidirectionalStream(t *testing.T) {
 				name: "success to receive 0 message from stream",
 				args: args{
 					insertReqs:  []*payload.Insert_Request{},
-					concurrency: defaultConcurrency,
+					concurrency: concurrency,
 					f:           defaultCallbackFn,
 				},
 				want: want{
