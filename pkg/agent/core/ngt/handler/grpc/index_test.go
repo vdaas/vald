@@ -2462,3 +2462,5 @@ func Test_server_IndexInfo(t *testing.T) {
 		})
 	}
 }
+
+// NOT IMPLEMENTED BELOW

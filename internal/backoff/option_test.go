@@ -447,3 +447,5 @@ func TestWithEnableErrorLog(t *testing.T) {
 		})
 	}
 }
+
+// NOT IMPLEMENTED BELOW

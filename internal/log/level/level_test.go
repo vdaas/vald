@@ -290,3 +290,5 @@ func TestLevel_String(t *testing.T) {
 		})
 	}
 }
+
+// NOT IMPLEMENTED BELOW

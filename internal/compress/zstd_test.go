@@ -1182,3 +1182,5 @@ func Test_zstdWriter_Close(t *testing.T) {
 		})
 	}
 }
+
+// NOT IMPLEMENTED BELOW

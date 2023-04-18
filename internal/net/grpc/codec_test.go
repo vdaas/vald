@@ -261,3 +261,5 @@ func TestCodec_Name(t *testing.T) {
 		})
 	}
 }
+
+// NOT IMPLEMENTED BELOW

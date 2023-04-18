@@ -244,3 +244,5 @@ func Test_vector_GetIPs(t *testing.T) {
 		})
 	}
 }
+
+// NOT IMPLEMENTED BELOW

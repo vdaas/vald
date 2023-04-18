@@ -341,3 +341,5 @@ func TestErrInvalidDiscoveryCache(t *testing.T) {
 		})
 	}
 }
+
+// NOT IMPLEMENTED BELOW

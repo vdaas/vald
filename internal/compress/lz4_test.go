@@ -1008,3 +1008,5 @@ func Test_lz4Writer_Close(t *testing.T) {
 		})
 	}
 }
+
+// NOT IMPLEMENTED BELOW

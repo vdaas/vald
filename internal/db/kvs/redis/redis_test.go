@@ -1053,3 +1053,5 @@ func Test_redisClient_Connect(t *testing.T) {
 		})
 	}
 }
+
+// NOT IMPLEMENTED BELOW
