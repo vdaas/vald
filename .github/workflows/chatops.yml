@@ -318,7 +318,18 @@ jobs:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           git_user_signingkey: true
           git_commit_gpgsign: true
+      - name: Fetch golang version
+        if: steps.check_comments_gen_test.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
+        run: |
+          GO_VERSION=`make version/go`
+          echo "version=${GO_VERSION}" >> $GITHUB_OUTPUT
+        id: golang_version
+      - uses: actions/setup-go@v3
+        if: steps.check_comments_gen_test.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
+        with:
+          go-version: ${{ steps.golang_version.outputs.version }}
       - name: Generate tests and push
+        id: gen_test
         if: steps.check_comments_gen_test.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         run: |
           curl -s ${PR_INFO_URL} > /tmp/pr_info.json
@@ -334,7 +345,8 @@ jobs:
           git checkout ${HEAD_BRANCH}
 
           make gotests/install
-          make -j 4 gotests/gen
+          ERR_LOG=$(make gotests/gen 2>&1 >/dev/null)
+          echo "ERR_LOG=$ERR_LOG" >> $GITHUB_OUTPUT
 
           git add cmd hack internal pkg
           git commit -S --signoff -m ":robot: Add automatically generated tests"
@@ -353,12 +365,13 @@ jobs:
       - name: failure comment
         if: failure()
         run: |
+          ERR_LOG=${{ steps.gen_test.outputs.ERR_LOG }}
           curl --include --verbose --fail \
           -H "Accept: application/json" \
           -H "Content-Type:application/json" \
           -H "Authorization: token ${GITHUB_TOKEN}" \
           --request POST \
-          --data "{\"body\": \"**[GEN TEST]** Failed to generate tests.\"}" \
+          --data "{\"body\": \"**[GEN TEST]** Failed to generate tests. Error: $ERR_LOG\"}" \
           $API_URL
         env:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
@@ -458,16 +471,9 @@ jobs:
 
           git checkout ${HEAD_BRANCH}
 
-          echo "Install format dependencies"
-
-          make golines/install gofumpt/install goimports/install strictgoimports/install
-          sudo make prettier/install
-
           echo "Update license headers and format go codes/yaml"
 
-          make format/go
-          make format/yaml
-          make license
+          sudo make format
 
           git checkout go.mod go.sum
 

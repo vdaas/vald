@@ -153,7 +153,7 @@ func (z *zstdWriter) Write(p []byte) (n int, err error) {
 func (z *zstdWriter) Close() (err error) {
 	err = z.w.Close()
 	if err != nil {
-		return errors.Wrap(z.dst.Close(), err.Error())
+		return errors.Join(z.dst.Close(), err)
 	}
 
 	return z.dst.Close()

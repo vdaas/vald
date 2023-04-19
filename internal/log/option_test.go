@@ -345,3 +345,5 @@ func TestWithFormat(t *testing.T) {
 		})
 	}
 }
+
+// NOT IMPLEMENTED BELOW

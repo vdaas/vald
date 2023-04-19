@@ -23,6 +23,7 @@ import (
 	"reflect"
 	"runtime"
 	"strings"
+	"unsafe"
 )
 
 var (
@@ -113,9 +114,6 @@ var (
 		}
 		return Errorf(format, args...)
 	}
-
-	// Join represents a function to generate multiple error when the input errors is not nil.
-	Join = errors.Join
 
 	// Cause represents a function to generate an error when the input error is not nil.
 	// When the input is nil, it will return nil.
@@ -218,4 +216,90 @@ func Unwrap(err error) error {
 	default:
 		return nil
 	}
+}
+
+// Join represents a function to generate multiple error when the input errors is not nil.
+func Join(errs ...error) error {
+	l := len(errs)
+	switch l {
+	case 0:
+		return nil
+	case 1:
+		if errs[0] != nil {
+			return errs[0]
+		}
+	case 2:
+		switch {
+		case errs[0] != nil && errs[1] != nil && !Is(errs[0], errs[1]):
+			var es []error
+			switch x := errs[1].(type) {
+			case *joinError:
+				es = x.errs
+			case interface{ Unwrap() []error }:
+				es = x.Unwrap()
+			default:
+				es = []error{errs[1]}
+			}
+			switch x := errs[0].(type) {
+			case *joinError:
+				x.errs = append(x.errs, es...)
+				return x
+			case interface{ Unwrap() []error }:
+				return &joinError{errs: append(x.Unwrap(), es...)}
+			default:
+				return &joinError{errs: []error{errs[0], errs[1]}}
+			}
+		case errs[0] != nil:
+			return errs[0]
+		case errs[1] != nil:
+			return errs[1]
+		}
+	}
+	n := 0
+	for _, err := range errs {
+		if err != nil {
+			n++
+		}
+	}
+	if n == 0 {
+		return nil
+	}
+	e := &joinError{
+		errs: make([]error, 0, n),
+	}
+	for _, err := range errs {
+		if err != nil {
+			e.errs = append(e.errs, err)
+		}
+	}
+	return e
+}
+
+type joinError struct {
+	errs []error
+}
+
+func (e *joinError) Error() string {
+	switch len(e.errs) {
+	case 0:
+		return ""
+	case 1:
+		return e.errs[0].Error()
+	}
+	b := make([]byte, 0, len(e.errs)*16)
+	for i, err := range e.errs {
+		if i > 0 {
+			b = append(b, '\n')
+		}
+		b = append(b, err.Error()...)
+	}
+	if len(b) == 0 {
+		return ""
+	}
+	// skipcq: GSC-G103
+	return unsafe.String(&b[0], len(b))
+}
+
+func (e *joinError) Unwrap() []error {
+	return e.errs
 }

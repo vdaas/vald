@@ -60,7 +60,7 @@ func (l *lz4Compressor) CompressVector(vector []float32) (b []byte, err error) {
 		cerr := zw.Close()
 		if cerr != nil {
 			b = nil
-			err = errors.Wrap(err, cerr.Error())
+			err = errors.Join(err, cerr)
 		}
 	}()
 
@@ -142,7 +142,7 @@ func (l *lz4Writer) Write(p []byte) (n int, err error) {
 func (l *lz4Writer) Close() (err error) {
 	err = l.w.Close()
 	if err != nil {
-		return errors.Wrap(l.dst.Close(), err.Error())
+		return errors.Join(l.dst.Close(), err)
 	}
 
 	return l.dst.Close()

@@ -1198,3 +1198,5 @@ func TestIsCassandraUnavailableError(t *testing.T) {
 		})
 	}
 }
+
+// NOT IMPLEMENTED BELOW

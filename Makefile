@@ -89,7 +89,7 @@ GIT_COMMIT := $(eval GIT_COMMIT := $(shell git rev-list -1 HEAD))$(GIT_COMMIT)
 
 MAKELISTS := Makefile $(shell find Makefile.d -type f -regex ".*\.mk")
 
-ROOTDIR = $(eval ROOTDIR := $(shell git rev-parse --show-toplevel))$(ROOTDIR)
+ROOTDIR = $(eval ROOTDIR := $(or $(shell git rev-parse --show-toplevel), $(PWD)))$(ROOTDIR)
 PROTODIRS := $(eval PROTODIRS := $(shell find apis/proto -type d | sed -e "s%apis/proto/%%g" | grep -v "apis/proto"))$(PROTODIRS)
 BENCH_DATASET_BASE_DIR = hack/benchmark/assets
 BENCH_DATASET_MD5_DIR_NAME = checksum
@@ -161,13 +161,13 @@ BODY = ""
 PROTO_PATHS = \
 	$(PWD) \
 	$(GOPATH)/src \
-	$(GOPATH)/src/$(GOPKG) \
-	$(GOPATH)/src/$(GOPKG)/apis/proto/v1 \
 	$(GOPATH)/src/github.com/envoyproxy/protoc-gen-validate \
 	$(GOPATH)/src/github.com/googleapis/googleapis \
 	$(GOPATH)/src/github.com/planetscale/vtprotobuf \
 	$(GOPATH)/src/github.com/protocolbuffers/protobuf \
-	$(GOPATH)/src/google.golang.org/genproto
+	$(GOPATH)/src/google.golang.org/genproto \
+	$(ROOTDIR) \
+	$(ROOTDIR)/apis/proto/v1
 
 # [Warning]
 # The below packages have no original implementation.

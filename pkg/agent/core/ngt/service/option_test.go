@@ -316,7 +316,7 @@ func TestWithAutoIndexCheckDuration(t *testing.T) {
 			},
 			want: want{
 				obj: &T{},
-				err: errors.New("invalid timeout value: 5ss\t:timeout parse error out put failed: time: unknown unit \"ss\" in duration \"5ss\""),
+				err: errors.Join(errors.New("time: unknown unit \"ss\" in duration \"5ss\""), errors.ErrTimeoutParseFailed("5ss")),
 			},
 		},
 	}
@@ -401,7 +401,7 @@ func TestWithAutoIndexDurationLimit(t *testing.T) {
 			},
 			want: want{
 				obj: &T{},
-				err: errors.New("invalid timeout value: 5ss\t:timeout parse error out put failed: time: unknown unit \"ss\" in duration \"5ss\""),
+				err: errors.Join(errors.New("time: unknown unit \"ss\" in duration \"5ss\""), errors.ErrTimeoutParseFailed("5ss")),
 			},
 		},
 	}
@@ -486,7 +486,7 @@ func TestWithAutoSaveIndexDuration(t *testing.T) {
 			},
 			want: want{
 				obj: &T{},
-				err: errors.New("invalid timeout value: 5ss\t:timeout parse error out put failed: time: unknown unit \"ss\" in duration \"5ss\""),
+				err: errors.Join(errors.New("time: unknown unit \"ss\" in duration \"5ss\""), errors.ErrTimeoutParseFailed("5ss")),
 			},
 		},
 	}
@@ -647,7 +647,7 @@ func TestWithInitialDelayMaxDuration(t *testing.T) {
 			},
 			want: want{
 				obj: &T{},
-				err: errors.New("invalid timeout value: 5ss\t:timeout parse error out put failed: time: unknown unit \"ss\" in duration \"5ss\""),
+				err: errors.Join(errors.New("time: unknown unit \"ss\" in duration \"5ss\""), errors.ErrTimeoutParseFailed("5ss")),
 			},
 		},
 	}
@@ -732,7 +732,7 @@ func TestWithMinLoadIndexTimeout(t *testing.T) {
 			},
 			want: want{
 				obj: &T{},
-				err: errors.New("invalid timeout value: 5ss\t:timeout parse error out put failed: time: unknown unit \"ss\" in duration \"5ss\""),
+				err: errors.Join(errors.New("time: unknown unit \"ss\" in duration \"5ss\""), errors.ErrTimeoutParseFailed("5ss")),
 			},
 		},
 	}
@@ -817,7 +817,7 @@ func TestWithMaxLoadIndexTimeout(t *testing.T) {
 			},
 			want: want{
 				obj: &T{},
-				err: errors.New("invalid timeout value: 5ss\t:timeout parse error out put failed: time: unknown unit \"ss\" in duration \"5ss\""),
+				err: errors.Join(errors.New("time: unknown unit \"ss\" in duration \"5ss\""), errors.ErrTimeoutParseFailed("5ss")),
 			},
 		},
 	}
@@ -902,7 +902,7 @@ func TestWithLoadIndexTimeoutFactor(t *testing.T) {
 			},
 			want: want{
 				obj: &T{},
-				err: errors.New("invalid timeout value: 5ss\t:timeout parse error out put failed: time: unknown unit \"ss\" in duration \"5ss\""),
+				err: errors.Join(errors.New("time: unknown unit \"ss\" in duration \"5ss\""), errors.ErrTimeoutParseFailed("5ss")),
 			},
 		},
 	}
@@ -1305,3 +1305,5 @@ func TestWithCopyOnWrite(t *testing.T) {
 		})
 	}
 }
+
+// NOT IMPLEMENTED BELOW

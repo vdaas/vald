@@ -2713,9 +2713,8 @@ func Test_server_MultiInsert(t *testing.T) {
 		svcOpts           []service.Option
 	}
 	type want struct {
-		wantRes    *payload.Object_Locations
-		err        error
-		containErr []error // check the function output error contain one of the error or not
+		wantRes *payload.Object_Locations
+		err     error
 	}
 	type test struct {
 		name       string
@@ -2758,11 +2757,15 @@ func Test_server_MultiInsert(t *testing.T) {
 		}
 	)
 
-	genAlreadyExistsErr := func(uuid string, req *payload.Insert_MultiRequest, name, ip string) error {
-		return status.WrapWithAlreadyExists(fmt.Sprintf("MultiInsert API uuids [%v] already exists", uuid),
-			errors.ErrUUIDAlreadyExists(uuid),
+	genAlreadyExistsJoinedErr := func(uuids []string, req *payload.Insert_MultiRequest, name, ip string) error {
+		var joindErr error
+		for _, uuid := range uuids {
+			errors.Join(joindErr, errors.ErrUUIDAlreadyExists(uuid))
+		}
+		return status.WrapWithAlreadyExists(fmt.Sprintf("MultiInsert API uuids %v already exists", uuids),
+			joindErr,
 			&errdetails.RequestInfo{
-				RequestId:   uuid,
+				RequestId:   strings.Join(uuids, ", "),
 				ServingData: errdetails.Serialize(req),
 			},
 			&errdetails.ResourceInfo{
@@ -2772,21 +2775,8 @@ func Test_server_MultiInsert(t *testing.T) {
 	}
 
 	defaultCheckFunc := func(w want, gotRes *payload.Object_Locations, err error) error {
-		if w.containErr == nil {
-			if !errors.Is(err, w.err) {
-				return errors.Errorf("got_error: \"%v\",\n\t\t\t\twant: \"%v\"", err, w.err)
-			}
-		} else {
-			exist := false
-			for _, e := range w.containErr {
-				if errors.Is(err, e) {
-					exist = true
-					break
-				}
-			}
-			if !exist {
-				return errors.Errorf("got_error: \"%v\",\n\t\t\t\tshould contain one of the error: \"%v\"", err, w.containErr)
-			}
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%v\",\n\t\t\t\twant: \"%v\"", err, w.err)
 		}
 		if !reflect.DeepEqual(gotRes, w.wantRes) {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
@@ -5011,10 +5001,7 @@ func Test_server_MultiInsert(t *testing.T) {
 					}
 				},
 				want: want{
-					containErr: []error{
-						genAlreadyExistsErr(req.Requests[0].Vector.Id, req, name, ip),
-						genAlreadyExistsErr(req.Requests[1].Vector.Id, req, name, ip),
-					},
+					err: genAlreadyExistsJoinedErr([]string{req.Requests[0].Vector.Id, req.Requests[1].Vector.Id}, req, name, ip),
 				},
 			}
 		}(),
@@ -5025,10 +5012,11 @@ func Test_server_MultiInsert(t *testing.T) {
 				t.Error(err)
 			}
 
-			wantErrs := make([]error, 100)
-			for i := 0; i < len(req.Requests); i++ {
-				wantErrs[i] = genAlreadyExistsErr(req.Requests[i].Vector.Id, req, name, ip)
+			ids := make([]string, 0, len(req.Requests))
+			for _, r := range req.Requests {
+				ids = append(ids, r.Vector.Id)
 			}
+			wantErr := genAlreadyExistsJoinedErr(ids, req, name, ip)
 
 			return test{
 				name: "Decision Table Testing case 4.2: Fail to MultiInsert with all existed ID when SkipStrictExistCheck is false",
@@ -5068,7 +5056,7 @@ func Test_server_MultiInsert(t *testing.T) {
 					}
 				},
 				want: want{
-					containErr: wantErrs,
+					err: wantErr,
 				},
 			}
 		}(),
@@ -5118,10 +5106,7 @@ func Test_server_MultiInsert(t *testing.T) {
 					}
 				},
 				want: want{
-					containErr: []error{
-						genAlreadyExistsErr(req.Requests[0].Vector.Id, req, name, ip),
-						genAlreadyExistsErr(req.Requests[1].Vector.Id, req, name, ip),
-					},
+					err: genAlreadyExistsJoinedErr([]string{req.Requests[0].Vector.Id, req.Requests[1].Vector.Id}, req, name, ip),
 				},
 			}
 		}(),
@@ -5132,10 +5117,11 @@ func Test_server_MultiInsert(t *testing.T) {
 				t.Error(err)
 			}
 
-			wantErrs := make([]error, 100)
-			for i := 0; i < len(req.Requests); i++ {
-				wantErrs[i] = genAlreadyExistsErr(req.Requests[i].Vector.Id, req, name, ip)
+			ids := make([]string, 0, len(req.Requests))
+			for _, r := range req.Requests {
+				ids = append(ids, r.Vector.Id)
 			}
+			wantErr := genAlreadyExistsJoinedErr(ids, req, name, ip)
 
 			return test{
 				name: "Decision Table Testing case 4.4: Fail to MultiInsert with all existed ID when SkipStrictExistCheck is true",
@@ -5175,7 +5161,7 @@ func Test_server_MultiInsert(t *testing.T) {
 					}
 				},
 				want: want{
-					containErr: wantErrs,
+					err: wantErr,
 				},
 			}
 		}(),
@@ -5402,10 +5388,7 @@ func Test_server_MultiInsert(t *testing.T) {
 					}
 				},
 				want: want{
-					containErr: []error{
-						genAlreadyExistsErr(req.Requests[0].Vector.Id, req, name, ip),
-						genAlreadyExistsErr(req.Requests[1].Vector.Id, req, name, ip),
-					},
+					err: genAlreadyExistsJoinedErr([]string{req.Requests[0].Vector.Id, req.Requests[1].Vector.Id}, req, name, ip),
 				},
 			}
 		}(),
@@ -5416,10 +5399,11 @@ func Test_server_MultiInsert(t *testing.T) {
 				t.Error(err)
 			}
 
-			wantErrs := make([]error, 100)
-			for i := 0; i < len(req.Requests); i++ {
-				wantErrs[i] = genAlreadyExistsErr(req.Requests[i].Vector.Id, req, name, ip)
+			ids := make([]string, 0, len(req.Requests))
+			for _, r := range req.Requests {
+				ids = append(ids, r.Vector.Id)
 			}
+			wantErr := genAlreadyExistsJoinedErr(ids, req, name, ip)
 
 			return test{
 				name: "Decision Table Testingcase 6.2: Fail to MultiInsert with all existed ID & vector when SkipStrictExistCheck is false",
@@ -5452,7 +5436,7 @@ func Test_server_MultiInsert(t *testing.T) {
 					}
 				},
 				want: want{
-					containErr: wantErrs,
+					err: wantErr,
 				},
 			}
 		}(),
@@ -5495,10 +5479,7 @@ func Test_server_MultiInsert(t *testing.T) {
 					}
 				},
 				want: want{
-					containErr: []error{
-						genAlreadyExistsErr(req.Requests[0].Vector.Id, req, name, ip),
-						genAlreadyExistsErr(req.Requests[1].Vector.Id, req, name, ip),
-					},
+					err: genAlreadyExistsJoinedErr([]string{req.Requests[0].Vector.Id, req.Requests[1].Vector.Id}, req, name, ip),
 				},
 			}
 		}(),
@@ -5509,10 +5490,11 @@ func Test_server_MultiInsert(t *testing.T) {
 				t.Error(err)
 			}
 
-			wantErrs := make([]error, 100)
-			for i := 0; i < len(req.Requests); i++ {
-				wantErrs[i] = genAlreadyExistsErr(req.Requests[i].Vector.Id, req, name, ip)
+			ids := make([]string, 0, len(req.Requests))
+			for _, r := range req.Requests {
+				ids = append(ids, r.Vector.Id)
 			}
+			wantErr := genAlreadyExistsJoinedErr(ids, req, name, ip)
 
 			return test{
 				name: "Decision Table Testing case 6.4: Fail to MultiInsert with all existed ID & vector when SkipStrictExistCheck is true",
@@ -5545,7 +5527,7 @@ func Test_server_MultiInsert(t *testing.T) {
 					}
 				},
 				want: want{
-					containErr: wantErrs,
+					err: wantErr,
 				},
 			}
 		}(),
@@ -5592,3 +5574,5 @@ func Test_server_MultiInsert(t *testing.T) {
 		})
 	}
 }
+
+// NOT IMPLEMENTED BELOW

@@ -1151,7 +1151,7 @@ func Test_zstdWriter_Close(t *testing.T) {
 				},
 			},
 			want: want{
-				err: errors.Wrap(errors.New("dst close err"), "w close err"),
+				err: errors.Join(errors.New("dst close err"), errors.New("w close err")),
 			},
 		},
 	}
@@ -1182,3 +1182,5 @@ func Test_zstdWriter_Close(t *testing.T) {
 		})
 	}
 }
+
+// NOT IMPLEMENTED BELOW

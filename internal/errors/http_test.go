@@ -525,3 +525,5 @@ func TestErrTransportRetryable(t *testing.T) {
 		})
 	}
 }
+
+// NOT IMPLEMENTED BELOW

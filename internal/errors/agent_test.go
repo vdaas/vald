@@ -107,3 +107,5 @@ func TestErrObjectNotFound(t *testing.T) {
 		})
 	}
 }
+
+// NOT IMPLEMENTED BELOW

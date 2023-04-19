@@ -34,8 +34,8 @@ define proto-code-gen
                 --go_out=$(GOPATH)/src --plugin protoc-gen-go="$(GOPATH)/bin/protoc-gen-go" \
                 --go-vtproto_out=$(GOPATH)/src --plugin protoc-gen-go-vtproto="$(GOPATH)/bin/protoc-gen-go-vtproto" \
                 --go-vtproto_opt=features=grpc+marshal+unmarshal+size+pool \
-                --go-vtproto_opt=pool=$(GOPKG)/apis/proto/v1/payload.Search.Request \
-                --go-vtproto_opt=pool=$(GOPKG)/apis/proto/v1/payload.Object.Vector \
+                --go-vtproto_opt=pool=$(ROOTDIR)/apis/proto/v1/payload.Search.Request \
+                --go-vtproto_opt=pool=$(ROOTDIR)/apis/proto/v1/payload.Object.Vector \
 		$1
 endef
 
@@ -134,6 +134,11 @@ define gen-go-test-sources
 	@for f in $(GO_SOURCES); do \
 		echo "Generating go test file: $$f"; \
 		gotests -w -template_dir $(ROOTDIR)/assets/test/templates/common -all $(patsubst %_test.go,%.go,$$f); \
+		RESULT=$$?; \
+		if [ ! $$RESULT -eq 0 ]; then \
+			echo $$RESULT; \
+			exit 1; \
+		fi; \
 	done
 endef
 
@@ -141,5 +146,10 @@ define gen-go-option-test-sources
 	@for f in $(GO_OPTION_SOURCES); do \
 		echo "Generating go option test file: $$f"; \
 		gotests -w -template_dir $(ROOTDIR)/assets/test/templates/common -all $(patsubst %_test.go,%.go,$$f); \
+		RESULT=$$?; \
+		if [ ! $$RESULT -eq 0 ]; then \
+			echo $$RESULT; \
+			exit 1; \
+		fi; \
 	done
 endef

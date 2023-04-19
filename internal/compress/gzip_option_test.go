@@ -172,3 +172,5 @@ func TestWithGzipCompressionLevel(t *testing.T) {
 		})
 	}
 }
+
+// NOT IMPLEMENTED BELOW

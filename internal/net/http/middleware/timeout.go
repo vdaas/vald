@@ -82,7 +82,7 @@ func (t *timeout) Wrap(h rest.Func) rest.Func {
 			if err != nil {
 				select {
 				case <-ctx.Done():
-					return http.StatusRequestTimeout, errors.ErrHandlerTimeout(errors.Wrap(ctx.Err(), err.Error()), time.Duration(fastime.UnixNanoNow()-start))
+					return http.StatusRequestTimeout, errors.ErrHandlerTimeout(errors.Join(ctx.Err(), err), time.Duration(fastime.UnixNanoNow()-start))
 				case code = <-sch:
 				}
 				err = errors.ErrHandler(err)

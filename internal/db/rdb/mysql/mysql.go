@@ -159,13 +159,13 @@ func (m *mySQLClient) Ping(ctx context.Context) (err error) {
 		select {
 		case <-pctx.Done():
 			if err != nil {
-				err = errors.Wrap(errors.ErrMySQLConnectionPingFailed, err.Error())
+				err = errors.Join(errors.ErrMySQLConnectionPingFailed, err)
 			} else {
 				err = errors.ErrMySQLConnectionPingFailed
 			}
 			cerr := pctx.Err()
 			if cerr != nil {
-				err = errors.Wrap(err, cerr.Error())
+				err = errors.Join(err, cerr)
 			}
 			return err
 		case <-tick.C:

@@ -29,7 +29,7 @@ func Parse(t string) (time.Duration, error) {
 	}
 	dur, err := time.ParseDuration(t)
 	if err != nil {
-		return 0, errors.Wrap(err, errors.ErrTimeoutParseFailed(t).Error())
+		return 0, errors.Join(err, errors.ErrTimeoutParseFailed(t))
 	}
 	return dur, nil
 }

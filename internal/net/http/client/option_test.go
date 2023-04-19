@@ -254,7 +254,11 @@ func TestWithTLSHandshakeTimeout(t *testing.T) {
 				obj: &T{
 					Transport: &http.Transport{},
 				},
-				err: errors.NewErrCriticalOption("TLSHandshakeTimeout", "dummy", errors.New("invalid timeout value: dummy\t:timeout parse error out put failed: time: invalid duration \"dummy\"")),
+				err: errors.NewErrCriticalOption(
+					"TLSHandshakeTimeout",
+					"dummy",
+					errors.Join(errors.New("time: invalid duration \"dummy\""), errors.ErrTimeoutParseFailed("dummy")),
+				),
 			},
 		},
 		{
@@ -759,7 +763,11 @@ func TestWithIdleConnTimeout(t *testing.T) {
 				obj: &T{
 					Transport: &http.Transport{},
 				},
-				err: errors.NewErrCriticalOption("idleConnTimeout", "dummy", errors.New("invalid timeout value: dummy\t:timeout parse error out put failed: time: invalid duration \"dummy\"")),
+				err: errors.NewErrCriticalOption(
+					"idleConnTimeout",
+					"dummy",
+					errors.Join(errors.New("time: invalid duration \"dummy\""), errors.ErrTimeoutParseFailed("dummy")),
+				),
 			},
 		},
 		{
@@ -852,7 +860,11 @@ func TestWithResponseHeaderTimeout(t *testing.T) {
 				obj: &T{
 					Transport: &http.Transport{},
 				},
-				err: errors.NewErrCriticalOption("responseHeaderTimeout", "dummy", errors.New("invalid timeout value: dummy\t:timeout parse error out put failed: time: invalid duration \"dummy\"")),
+				err: errors.NewErrCriticalOption(
+					"responseHeaderTimeout",
+					"dummy",
+					errors.Join(errors.New("time: invalid duration \"dummy\""), errors.ErrTimeoutParseFailed("dummy")),
+				),
 			},
 		},
 		{
@@ -945,7 +957,11 @@ func TestWithExpectContinueTimeout(t *testing.T) {
 				obj: &T{
 					Transport: &http.Transport{},
 				},
-				err: errors.NewErrCriticalOption("expectContinueTimeout", "dummy", errors.New("invalid timeout value: dummy\t:timeout parse error out put failed: time: invalid duration \"dummy\"")),
+				err: errors.NewErrCriticalOption(
+					"expectContinueTimeout",
+					"dummy",
+					errors.Join(errors.New("time: invalid duration \"dummy\""), errors.ErrTimeoutParseFailed("dummy")),
+				),
 			},
 		},
 		{
@@ -1509,3 +1525,5 @@ func TestWithBackoffOpts(t *testing.T) {
 		})
 	}
 }
+
+// NOT IMPLEMENTED BELOW

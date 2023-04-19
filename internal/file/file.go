@@ -45,7 +45,7 @@ func Open(path string, flg int, perm fs.FileMode) (file *os.File, err error) {
 
 	defer func() {
 		if err != nil && file != nil {
-			err = errors.Wrap(file.Close(), err.Error())
+			err = errors.Join(file.Close(), err)
 			file = nil
 		}
 	}()
@@ -124,7 +124,7 @@ func doMoveDir(ctx context.Context, src, dst string, rollback bool) (err error) 
 				if err != nil && Exists(dst) {
 					err = errors.ErrFailedToRemoveDir(err, dst, nil)
 					if rollback {
-						err = errors.Wrap(doMoveDir(ctx, tmpPath, dst, false), errors.Wrapf(err, "trying to recover temporary file %s to rollback previous operation", tmpPath).Error())
+						err = errors.Join(doMoveDir(ctx, tmpPath, dst, false), errors.Wrapf(err, "trying to recover temporary file %s to rollback previous operation", tmpPath))
 					}
 					log.Warn(err)
 					return err
@@ -141,7 +141,7 @@ func doMoveDir(ctx context.Context, src, dst string, rollback bool) (err error) 
 				if err != nil {
 					err = errors.ErrFailedToCopyDir(err, src, dst, fi, nil)
 					if rollback {
-						err = errors.Wrap(doMoveDir(ctx, tmpPath, dst, false), errors.Wrapf(err, "trying to recover temporary file %s to rollback previous operation", tmpPath).Error())
+						err = errors.Join(doMoveDir(ctx, tmpPath, dst, false), errors.Wrapf(err, "trying to recover temporary file %s to rollback previous operation", tmpPath))
 					}
 					log.Warn(err)
 					return err
@@ -181,7 +181,7 @@ func CopyDir(ctx context.Context, src, dst string) (err error) {
 		if err != nil {
 			fi, ierr := info.Info()
 			if ierr != nil {
-				err = errors.Wrap(err, ierr.Error())
+				err = errors.Join(err, ierr)
 			}
 			err = errors.ErrFailedToWalkDir(err, src, childPath, nil, fi)
 			log.Warn(err)
@@ -202,7 +202,7 @@ func CopyDir(ctx context.Context, src, dst string) (err error) {
 		return nil
 	})
 	if err != nil {
-		return errors.Wrap(eg.Wait(), err.Error())
+		return errors.Join(eg.Wait(), err)
 	}
 	return eg.Wait()
 }
@@ -227,9 +227,9 @@ func CopyFileWithPerm(ctx context.Context, src, dst string, perm fs.FileMode) (n
 	exist, fi, err := ExistsWithDetail(src)
 	switch {
 	case !exist, fi == nil, fi.Size() == 0, fi.IsDir():
-		return 0, errors.Wrap(err, errors.ErrFileNotFound(src).Error())
+		return 0, errors.Join(err, errors.ErrFileNotFound(src))
 	case err != nil && (!errors.Is(err, fs.ErrExist) || errors.Is(err, fs.ErrNotExist)):
-		return 0, errors.Wrap(errors.ErrFileNotFound(src), err.Error())
+		return 0, errors.Join(errors.ErrFileNotFound(src), err)
 	case fi != nil && !fi.Mode().IsRegular():
 		return 0, errors.ErrNonRegularFile(src, fi)
 	case err != nil:
@@ -246,7 +246,7 @@ func CopyFileWithPerm(ctx context.Context, src, dst string, perm fs.FileMode) (n
 		if sf != nil {
 			derr := sf.Close()
 			if derr != nil {
-				err = errors.Wrap(err, errors.ErrFailedToCloseFile(derr, src, fi).Error())
+				err = errors.Join(err, errors.ErrFailedToCloseFile(derr, src, fi))
 			}
 		}
 	}()
@@ -280,7 +280,7 @@ func writeFileWithContext(ctx context.Context, target string, r io.Reader, flg i
 	case err == nil, exist, fi != nil && fi.Size() != 0, fi != nil && fi.IsDir():
 		err = errors.ErrFileAlreadyExists(target)
 	case err != nil && !errors.Is(err, fs.ErrNotExist), err != nil && errors.Is(err, fs.ErrExist):
-		err = errors.Wrap(errors.ErrFileAlreadyExists(target), err.Error())
+		err = errors.Join(errors.ErrFileAlreadyExists(target), err)
 	case err != nil:
 		log.Warn(err)
 	}
@@ -300,7 +300,7 @@ func writeFileWithContext(ctx context.Context, target string, r io.Reader, flg i
 		if f != nil {
 			derr := f.Close()
 			if derr != nil {
-				err = errors.Wrap(err, errors.ErrFailedToCloseFile(derr, target, fi).Error())
+				err = errors.Join(err, errors.ErrFailedToCloseFile(derr, target, fi))
 			}
 		}
 	}()
@@ -332,7 +332,7 @@ func ReadDir(path string) (dirs []fs.DirEntry, err error) {
 		if f != nil {
 			derr := f.Close()
 			if derr != nil {
-				err = errors.Wrap(err, errors.ErrFailedToCloseFile(derr, path, nil).Error())
+				err = errors.Join(err, errors.ErrFailedToCloseFile(derr, path, nil))
 			}
 		}
 	}()
@@ -351,7 +351,7 @@ func ReadFile(path string) (n []byte, err error) {
 		if f != nil {
 			derr := f.Close()
 			if derr != nil {
-				err = errors.Wrap(err, errors.ErrFailedToCloseFile(derr, path, nil).Error())
+				err = errors.Join(err, errors.ErrFailedToCloseFile(derr, path, nil))
 			}
 		}
 	}()
@@ -393,7 +393,7 @@ func MkdirAll(path string, perm fs.FileMode) (err error) {
 		}
 		rerr = os.RemoveAll(path)
 		if rerr != nil {
-			err = errors.Wrap(err, rerr.Error())
+			err = errors.Join(err, rerr)
 		}
 	}
 	if err != nil {
@@ -403,16 +403,16 @@ func MkdirAll(path string, perm fs.FileMode) (err error) {
 	if merr == nil {
 		return nil
 	}
-	err = errors.Wrap(merr, err.Error())
+	err = errors.Join(merr, err)
 	if err != nil {
 		if errors.Is(err, fs.ErrPermission) {
 			rerr = os.RemoveAll(path)
 			if rerr != nil {
-				err = errors.Wrap(err, errors.ErrFailedToRemoveDir(rerr, path, fi).Error())
+				err = errors.Join(err, errors.ErrFailedToRemoveDir(rerr, path, fi))
 			}
 			merr = os.MkdirAll(path, fs.ModePerm)
 			if merr != nil {
-				err = errors.Wrap(err, errors.ErrFailedToMkdir(merr, path, fi).Error())
+				err = errors.Join(err, errors.ErrFailedToMkdir(merr, path, fi))
 			}
 		}
 		log.Warn(err)

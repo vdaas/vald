@@ -59,7 +59,7 @@ func Load(path string) (meta *Metadata, err error) {
 		if f != nil {
 			derr := f.Close()
 			if derr != nil {
-				err = errors.Wrap(err, derr.Error())
+				err = errors.Join(err, derr)
 			}
 		}
 	}()
@@ -81,7 +81,7 @@ func Store(path string, meta *Metadata) (err error) {
 		if f != nil {
 			derr := f.Close()
 			if derr != nil {
-				err = errors.Wrap(err, derr.Error())
+				err = errors.Join(err, derr)
 			}
 		}
 	}()

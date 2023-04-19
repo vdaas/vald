@@ -114,7 +114,7 @@ func (l *loader) Do(ctx context.Context) <-chan error {
 	finalize := func(ctx context.Context, err error) {
 		select {
 		case <-ctx.Done():
-			ech <- errors.Wrap(err, ctx.Err().Error())
+			ech <- errors.Join(err, ctx.Err())
 		case ech <- err:
 		}
 	}
