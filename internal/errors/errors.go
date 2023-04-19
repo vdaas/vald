@@ -23,7 +23,7 @@ import (
 	"reflect"
 	"runtime"
 	"strings"
-	"unsafe"
+	"sync"
 )
 
 var (
@@ -279,25 +279,39 @@ type joinError struct {
 	errs []error
 }
 
-func (e *joinError) Error() string {
+var sbPool = sync.Pool{
+	New: func() interface{} {
+		return new(strings.Builder)
+	},
+}
+
+func (e *joinError) Error() (str string) {
 	switch len(e.errs) {
 	case 0:
 		return ""
 	case 1:
 		return e.errs[0].Error()
 	}
-	b := make([]byte, 0, len(e.errs)*16)
+	sb, ok := sbPool.Get().(*strings.Builder)
+	if !ok {
+		sb = new(strings.Builder)
+	}
+	defer func() {
+		sb.Reset()
+		sbPool.Put(sb)
+	}()
+	sb.Grow(len(e.errs) * 16)
 	for i, err := range e.errs {
 		if i > 0 {
-			b = append(b, '\n')
+			sb.WriteByte('\n')
 		}
-		b = append(b, err.Error()...)
+		sb.WriteString(err.Error())
 	}
-	if len(b) == 0 {
+	if sb.Len() == 0 {
 		return ""
 	}
-	// skipcq: GSC-G103
-	return unsafe.String(&b[0], len(b))
+	str = sb.String()
+	return str
 }
 
 func (e *joinError) Unwrap() []error {
