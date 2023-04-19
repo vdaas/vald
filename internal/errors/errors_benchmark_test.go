@@ -67,6 +67,7 @@ func randStr(n int) string {
 		cache >>= rs6LetterIdxBits
 		remain--
 	}
+	// skipcq: GSC-G103
 	return *(*string)(unsafe.Pointer(&b))
 }
 
