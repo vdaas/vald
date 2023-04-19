@@ -225,12 +225,10 @@ func Join(errs ...error) error {
 	case 0:
 		return nil
 	case 1:
-		if errs[0] != nil {
-			return errs[0]
-		}
+		return errs[0]
 	case 2:
 		switch {
-		case errs[0] != nil && errs[1] != nil && !Is(errs[0], errs[1]):
+		case errs[0] != nil && errs[1] != nil:
 			var es []error
 			switch x := errs[1].(type) {
 			case *joinError:
@@ -254,18 +252,20 @@ func Join(errs ...error) error {
 		case errs[1] != nil:
 			return errs[1]
 		}
-	}
-	n := 0
-	for _, err := range errs {
-		if err != nil {
-			n++
-		}
-	}
-	if n == 0 {
 		return nil
 	}
-	e := &joinError{
-		errs: make([]error, 0, n),
+	var e *joinError
+	switch x := errs[0].(type) {
+	case *joinError:
+		e = x
+		errs = errs[1:]
+	case interface{ Unwrap() []error }:
+		e = &joinError{errs: x.Unwrap()}
+		errs = errs[1:]
+	default:
+		e = &joinError{
+			errs: make([]error, 0, l),
+		}
 	}
 	for _, err := range errs {
 		if err != nil {
