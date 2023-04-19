@@ -69,7 +69,7 @@ func Read(path string, cfg interface{}) (err error) {
 	defer func() {
 		if f != nil {
 			if err != nil {
-				err = errors.Wrap(f.Close(), err.Error())
+				err = errors.Join(f.Close(), err)
 				return
 			}
 			err = f.Close()

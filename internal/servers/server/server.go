@@ -390,7 +390,7 @@ func (s *server) Shutdown(ctx context.Context) (rerr error) {
 		defer func() {
 			err := os.RemoveAll(s.socketPath)
 			if err != nil {
-				rerr = errors.Wrap(rerr, err.Error())
+				rerr = errors.Join(rerr, err)
 			}
 		}()
 	}
@@ -403,12 +403,12 @@ func (s *server) Shutdown(ctx context.Context) (rerr error) {
 		s.http.srv.SetKeepAlivesEnabled(false)
 		err := s.http.srv.Shutdown(sctx)
 		if err != nil && err != http.ErrServerClosed && err != grpc.ErrServerStopped {
-			rerr = errors.Wrap(rerr, err.Error())
+			rerr = errors.Join(rerr, err)
 		}
 
 		err = sctx.Err()
 		if err != nil && err != context.Canceled {
-			rerr = errors.Wrap(rerr, err.Error())
+			rerr = errors.Join(rerr, err)
 		}
 
 	case GRPC:

@@ -94,7 +94,7 @@ func (l *logger) initialize(sinkPath, errSinkPath string) (err error) {
 func (l *logger) Close() error {
 	err := l.logger.Sync()
 	if err != nil {
-		return errors.Wrap(l.sugar.Sync(), err.Error())
+		return errors.Join(l.sugar.Sync(), err)
 	}
 
 	return l.sugar.Sync()

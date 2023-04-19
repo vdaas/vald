@@ -316,7 +316,7 @@ func (d *dialer) dial(ctx context.Context, network, addr string) (conn Conn, err
 		defer func(conn Conn) {
 			if conn != nil {
 				if err != nil {
-					err = errors.Wrap(conn.Close(), err.Error())
+					err = errors.Join(conn.Close(), err)
 					return
 				}
 				err = conn.Close()
@@ -414,7 +414,7 @@ func (d *dialer) tlsHandshake(ctx context.Context, conn Conn, network, addr stri
 			defer func(conn Conn) {
 				if conn != nil {
 					if err != nil {
-						err = errors.Wrap(conn.Close(), err.Error())
+						err = errors.Join(conn.Close(), err)
 						return
 					}
 					err = conn.Close()

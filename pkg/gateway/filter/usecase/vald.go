@@ -292,12 +292,12 @@ func (r *run) Stop(ctx context.Context) error {
 func (r *run) PostStop(ctx context.Context) (err error) {
 	defer func() {
 		if err != nil {
-			err = errors.Wrap(r.ingress.Stop(ctx), errors.Wrap(r.egress.Stop(ctx), err.Error()).Error())
+			err = errors.Join(r.ingress.Stop(ctx), errors.Join(r.egress.Stop(ctx), err))
 			return
 		}
 		err = r.ingress.Stop(ctx)
 		if err != nil {
-			err = errors.Wrap(r.egress.Stop(ctx), err.Error())
+			err = errors.Join(r.egress.Stop(ctx), err)
 			return
 		}
 		err = r.egress.Stop(ctx)

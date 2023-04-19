@@ -211,7 +211,7 @@ func (g *gRPCClient) StartConnectionMonitor(ctx context.Context) (<-chan error, 
 			select {
 			case <-ctx.Done():
 				if err != nil {
-					return errors.Wrap(ctx.Err(), err.Error())
+					return errors.Join(ctx.Err(), err)
 				}
 				return ctx.Err()
 			case <-prTick.C:
@@ -912,7 +912,7 @@ func (g *gRPCClient) Connect(ctx context.Context, addr string, dopts ...DialOpti
 			derr := g.Disconnect(ctx, addr)
 			if derr != nil && !errors.Is(derr, errors.ErrGRPCClientConnNotFound(addr)) {
 				log.Warnf("failed to disconnect unhealthy pool addr= %s\terror= %s", addr, err.Error())
-				err = errors.Wrap(err, derr.Error())
+				err = errors.Join(err, derr)
 			}
 			return nil, err
 		}
@@ -923,7 +923,7 @@ func (g *gRPCClient) Connect(ctx context.Context, addr string, dopts ...DialOpti
 			derr := g.Disconnect(ctx, addr)
 			if derr != nil && !errors.Is(derr, errors.ErrGRPCClientConnNotFound(addr)) {
 				log.Warnf("failed to disconnect unhealthy pool addr= %s\terror= %s", addr, err.Error())
-				err = errors.Wrap(err, derr.Error())
+				err = errors.Join(err, derr)
 			}
 			return nil, err
 		}
@@ -1021,7 +1021,7 @@ func (g *gRPCClient) Close(ctx context.Context) (err error) {
 	g.conns.Range(func(addr string, p pool.Conn) bool {
 		derr := g.Disconnect(ctx, addr)
 		if derr != nil && !errors.Is(derr, errors.ErrGRPCClientConnNotFound(addr)) {
-			err = errors.Wrap(err, derr.Error())
+			err = errors.Join(err, derr)
 		}
 		return true
 	})

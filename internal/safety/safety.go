@@ -52,7 +52,7 @@ func recoverFn(fn func() error, withPanic bool) func() error {
 				case string:
 					err = errors.ErrPanicString(err, x)
 				case error:
-					err = errors.Wrap(err, x.Error())
+					err = errors.Join(err, x)
 				default:
 					err = errors.ErrPanicRecovered(err, x)
 				}

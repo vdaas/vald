@@ -156,7 +156,7 @@ func (o *observability) Stop(ctx context.Context) (werr error) {
 	for _, ex := range o.exporters {
 		if err := ex.Stop(ctx); err != nil {
 			log.Error(err)
-			werr = errors.Wrap(werr, err.Error())
+			werr = errors.Join(werr, err)
 		}
 	}
 	return werr
