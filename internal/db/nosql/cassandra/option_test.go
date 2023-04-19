@@ -535,7 +535,7 @@ func TestWithConnectTimeout(t *testing.T) {
 				dur: "dummy",
 			},
 			want: want{
-				err: errors.NewErrCriticalOption("connectTimeout", "dummy", errors.New("invalid timeout value: dummy	:timeout parse error out put failed: time: invalid duration \"dummy\"")),
+				err: errors.NewErrCriticalOption("connectTimeout", "dummy", errors.Join(errors.New("time: invalid duration \"dummy\""), errors.ErrTimeoutParseFailed("dummy"))),
 				obj: &T{},
 			},
 		},
@@ -1521,7 +1521,7 @@ func TestWithRetryPolicyMinDuration(t *testing.T) {
 				err: errors.NewErrCriticalOption(
 					"retryPolicyMinDuration",
 					"dummy",
-					errors.New("invalid timeout value: dummy	:timeout parse error out put failed: time: invalid duration \"dummy\""),
+					errors.Join(errors.New("time: invalid duration \"dummy\""), errors.ErrTimeoutParseFailed("dummy")),
 				),
 				obj: &T{},
 			},
@@ -1613,7 +1613,7 @@ func TestWithRetryPolicyMaxDuration(t *testing.T) {
 				err: errors.NewErrCriticalOption(
 					"retryPolicyMaxDuration",
 					"dummy",
-					errors.New("invalid timeout value: dummy	:timeout parse error out put failed: time: invalid duration \"dummy\""),
+					errors.Join(errors.New("time: invalid duration \"dummy\""), errors.ErrTimeoutParseFailed("dummy")),
 				),
 				obj: &T{},
 			},
@@ -1705,7 +1705,7 @@ func TestWithReconnectionPolicyInitialInterval(t *testing.T) {
 				err: errors.NewErrCriticalOption(
 					"reconnectionPolicyInitialInterval",
 					"dummy",
-					errors.New("invalid timeout value: dummy	:timeout parse error out put failed: time: invalid duration \"dummy\""),
+					errors.Join(errors.New("time: invalid duration \"dummy\""), errors.ErrTimeoutParseFailed("dummy")),
 				),
 				obj: &T{},
 			},
@@ -1869,7 +1869,11 @@ func TestWithSocketKeepalive(t *testing.T) {
 				socketKeepalive: "dummy",
 			},
 			want: want{
-				err: errors.NewErrCriticalOption("socketKeepalive", "dummy", errors.New("invalid timeout value: dummy	:timeout parse error out put failed: time: invalid duration \"dummy\"")),
+				err: errors.NewErrCriticalOption(
+					"socketKeepalive",
+					"dummy",
+					errors.Join(errors.New("time: invalid duration \"dummy\""), errors.ErrTimeoutParseFailed("dummy")),
+				),
 				obj: &T{},
 			},
 		},
@@ -2973,7 +2977,7 @@ func TestWithMaxWaitSchemaAgreement(t *testing.T) {
 				err: errors.NewErrCriticalOption(
 					"maxWaitSchemaAgreement",
 					"dummy",
-					errors.New("invalid timeout value: dummy	:timeout parse error out put failed: time: invalid duration \"dummy\""),
+					errors.Join(errors.New("time: invalid duration \"dummy\""), errors.ErrTimeoutParseFailed("dummy")),
 				),
 				obj: &T{},
 			},
@@ -3060,7 +3064,11 @@ func TestWithReconnectInterval(t *testing.T) {
 				reconnectInterval: "dummy",
 			},
 			want: want{
-				err: errors.NewErrCriticalOption("reconnectInterval", "dummy", errors.New("invalid timeout value: dummy	:timeout parse error out put failed: time: invalid duration \"dummy\"")),
+				err: errors.NewErrCriticalOption(
+					"reconnectInterval",
+					"dummy",
+					errors.Join(errors.New("time: invalid duration \"dummy\""), errors.ErrTimeoutParseFailed("dummy")),
+				),
 				obj: &T{},
 			},
 		},
@@ -3911,7 +3919,11 @@ func TestWithWriteCoalesceWaitTime(t *testing.T) {
 				writeCoalesceWaitTime: "dummy",
 			},
 			want: want{
-				err: errors.NewErrCriticalOption("writeCoalesceWaitTime", "dummy", errors.New("invalid timeout value: dummy	:timeout parse error out put failed: time: invalid duration \"dummy\"")),
+				err: errors.NewErrCriticalOption(
+					"writeCoalesceWaitTime",
+					"dummy",
+					errors.Join(errors.New("time: invalid duration \"dummy\""), errors.ErrTimeoutParseFailed("dummy")),
+				),
 				obj: &T{},
 			},
 		},

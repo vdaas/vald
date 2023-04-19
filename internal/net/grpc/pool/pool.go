@@ -143,7 +143,7 @@ func New(ctx context.Context, opts ...Option) (c Conn, err error) {
 			if conn != nil {
 				cerr := conn.Close()
 				if cerr != nil && !errors.Is(cerr, grpc.ErrClientConnClosing) {
-					return nil, errors.Wrap(err, cerr.Error())
+					return nil, errors.Join(err, cerr)
 				}
 			}
 			return nil, err
@@ -305,7 +305,7 @@ func (p *pool) refreshConn(ctx context.Context, idx int, pc *poolConn, addr stri
 				}))
 			}
 		}
-		return errors.Wrap(err, errors.ErrInvalidGRPCClientConn(addr).Error())
+		return errors.Join(err, errors.ErrInvalidGRPCClientConn(addr))
 	}
 	p.store(idx, &poolConn{
 		conn: conn,
@@ -441,7 +441,7 @@ func (p *pool) Disconnect() (err error) {
 	})
 	p.flush()
 	for _, e := range emap {
-		err = errors.Wrap(err, e.Error())
+		err = errors.Join(err, e)
 	}
 	return err
 }
@@ -455,7 +455,7 @@ func (p *pool) dial(ctx context.Context, addr string) (conn *ClientConn, err err
 			if conn != nil {
 				cerr := conn.Close()
 				if cerr != nil && !errors.Is(cerr, grpc.ErrClientConnClosing) {
-					err = errors.Wrap(err, cerr.Error())
+					err = errors.Join(err, cerr)
 				}
 			}
 			log.Debugf("failed to dial gRPC connection to %s,\terror: %v", addr, err)
@@ -465,7 +465,7 @@ func (p *pool) dial(ctx context.Context, addr string) (conn *ClientConn, err err
 			if conn != nil {
 				err = conn.Close()
 				if err != nil && !errors.Is(err, grpc.ErrClientConnClosing) {
-					err = errors.Wrapf(errors.ErrGRPCClientConnNotFound(addr), err.Error())
+					err = errors.Join(errors.ErrGRPCClientConnNotFound(addr), err)
 				} else {
 					err = errors.ErrGRPCClientConnNotFound(addr)
 				}
@@ -708,7 +708,7 @@ func (pc *poolConn) Close(ctx context.Context, delay time.Duration) error {
 				if ctx.Err() != nil &&
 					!errors.Is(ctx.Err(), context.DeadlineExceeded) &&
 					!errors.Is(ctx.Err(), context.Canceled) {
-					return errors.Wrap(err, ctx.Err().Error())
+					return errors.Join(err, ctx.Err())
 				}
 				return err
 			}

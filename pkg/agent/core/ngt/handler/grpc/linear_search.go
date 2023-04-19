@@ -434,7 +434,7 @@ func (s *server) MultiLinearSearch(ctx context.Context, reqs *payload.Search_Mul
 				if errs == nil {
 					errs = err
 				} else {
-					errs = errors.Wrap(errs, err.Error())
+					errs = errors.Join(errs, err)
 				}
 				mu.Unlock()
 				return nil
@@ -508,7 +508,7 @@ func (s *server) MultiLinearSearchByID(ctx context.Context, reqs *payload.Search
 				if errs == nil {
 					errs = err
 				} else {
-					errs = errors.Wrap(errs, err.Error())
+					errs = errors.Join(errs, err)
 				}
 				mu.Unlock()
 				return nil

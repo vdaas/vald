@@ -103,7 +103,7 @@ func (c *client) Start(ctx context.Context) (<-chan error, error) {
 	err = c.discover(ctx, ech)
 	if err != nil {
 		close(ech)
-		return nil, errors.Wrap(c.dscClient.Close(ctx), err.Error())
+		return nil, errors.Join(c.dscClient.Close(ctx), err)
 	}
 
 	c.eg.Go(safety.RecoverFunc(func() (err error) {
@@ -114,17 +114,17 @@ func (c *client) Start(ctx context.Context) (<-chan error, error) {
 			var errs error
 			err = c.dscClient.Close(ctx)
 			if err != nil {
-				errs = errors.Wrap(errs, err.Error())
+				errs = errors.Join(errs, err)
 			}
 			if c.autoconn && c.client != nil {
 				err = c.client.Close(ctx)
 				if err != nil {
-					errs = errors.Wrap(errs, err.Error())
+					errs = errors.Join(errs, err)
 				}
 			}
 			err = ctx.Err()
 			if err != nil && err != context.Canceled {
-				errs = errors.Wrap(errs, err.Error())
+				errs = errors.Join(errs, err)
 			}
 			return errs
 		}
@@ -373,7 +373,7 @@ func (c *client) disconnectOldAddrs(ctx context.Context, oldAddrs, connectedAddr
 				if err != nil {
 					select {
 					case <-ctx.Done():
-						return errors.Wrap(ctx.Err(), err.Error())
+						return errors.Join(ctx.Err(), err)
 					case ech <- err:
 						return err
 					}
@@ -383,7 +383,7 @@ func (c *client) disconnectOldAddrs(ctx context.Context, oldAddrs, connectedAddr
 		}); err != nil {
 			select {
 			case <-ctx.Done():
-				return errors.Wrap(ctx.Err(), err.Error())
+				return errors.Join(ctx.Err(), err)
 			case ech <- err:
 				return err
 			}
