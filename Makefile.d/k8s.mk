@@ -13,6 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
+MIRROR01_NAMESPACE = vald-01
+MIRROR02_NAMESPACE = vald-02
+MIRROR03_NAMESPACE = vald-03
+
 .PHONY: k8s/manifest/clean
 ## clean k8s manifests
 k8s/manifest/clean:
@@ -101,21 +106,21 @@ k8s/vald/delete:
 .PHONY: k8s/multi/vald/deploy
 ## deploy multiple vald sample clusters to k8s
 k8s/multi/vald/deploy:
-	-@kubectl create ns vald-01
-	-@kubectl create ns vald-02
-	-@kubectl create ns vald-03
+	-@kubectl create ns $(MIRROR01_NAMESPACE)
+	-@kubectl create ns $(MIRROR02_NAMESPACE)
+	-@kubectl create ns $(MIRROR03_NAMESPACE)
 	helm install vald-cluster-01 charts/vald \
 		-f ./charts/vald/values/multi-vald/dev-vald-with-mirror.yaml \
 		-f ./charts/vald/values/multi-vald/dev-vald-01.yaml \
-	    -n vald-01
+	    -n $(MIRROR01_NAMESPACE)
 	helm install vald-cluster-02 charts/vald \
 		-f ./charts/vald/values/multi-vald/dev-vald-with-mirror.yaml \
 		-f ./charts/vald/values/multi-vald/dev-vald-02.yaml \
-	    -n vald-02
+	    -n $(MIRROR02_NAMESPACE)
 	helm install vald-cluster-03 charts/vald \
 		-f ./charts/vald/values/multi-vald/dev-vald-with-mirror.yaml \
 		-f ./charts/vald/values/multi-vald/dev-vald-03.yaml \
-		-n vald-03
+		-n $(MIRROR03_NAMESPACE)
 
 .PHONY: k8s/multi/vald/delete
 ## delete multiple vald sample clusters to k8s
