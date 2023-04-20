@@ -88,6 +88,9 @@ issues:
     - path: internal/errors/errors\.go
       linters:
         - depguard
+    - path: internal/errors/errors_benchmark_test\.go
+      linters:
+        - depguard
 
 linters-settings:
   gocritic:

@@ -1760,7 +1760,7 @@ func Test_joinError_Error(t *testing.T) {
 		errs []error
 	}
 	type want struct {
-		want string
+		wantStr string
 	}
 	type test struct {
 		name       string
@@ -1770,9 +1770,9 @@ func Test_joinError_Error(t *testing.T) {
 		beforeFunc func(*testing.T)
 		afterFunc  func(*testing.T)
 	}
-	defaultCheckFunc := func(w want, got string) error {
-		if !reflect.DeepEqual(got, w.want) {
-			return Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+	defaultCheckFunc := func(w want, gotStr string) error {
+		if !reflect.DeepEqual(gotStr, w.wantStr) {
+			return Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotStr, w.wantStr)
 		}
 		return nil
 	}
@@ -1835,8 +1835,8 @@ func Test_joinError_Error(t *testing.T) {
 				errs: test.fields.errs,
 			}
 
-			got := e.Error()
-			if err := checkFunc(test.want, got); err != nil {
+			gotStr := e.Error()
+			if err := checkFunc(test.want, gotStr); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
