@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,37 +19,24 @@ package service
 
 import (
 	"context"
-	"time"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/net/grpc/codes"
+	"github.com/vdaas/vald/internal/net/grpc/status"
 )
 
 func (j *job) search(ctx context.Context, ech chan error) error {
 	log.Info("[benchmark job] Start benchmarking search")
-	if j.searchConfig == nil {
-		err := errors.NewErrInvalidOption("searchConfig", j.searchConfig)
-		select {
-		case <-ctx.Done():
-			if err != context.Canceled {
-				ech <- errors.Wrap(err, ctx.Err().Error())
-			} else {
-				ech <- err
-			}
-		case ech <- err:
-		}
-		return err
-	}
 	// create data
 	vecs := j.genVec(j.dataset)
-	timeout, _ := time.ParseDuration(j.searchConfig.Timeout)
 	cfg := &payload.Search_Config{
 		Num:     uint32(j.searchConfig.Num),
 		MinNum:  uint32(j.searchConfig.MinNum),
 		Radius:  float32(j.searchConfig.Radius),
 		Epsilon: float32(j.searchConfig.Epsilon),
-		Timeout: timeout.Nanoseconds(),
+		Timeout: j.timeout.Nanoseconds(),
 	}
 	lres := make([]*payload.Search_Response, len(vecs))
 	for i := 0; i < len(vecs); i++ {
@@ -64,18 +51,23 @@ func (j *job) search(ctx context.Context, ech chan error) error {
 		if err != nil {
 			select {
 			case <-ctx.Done():
-				if !errors.Is(err, context.Canceled) {
-					ech <- errors.Wrap(err, ctx.Err().Error())
-				} else {
-					ech <- err
+				if errors.Is(err, context.Canceled) {
+					return errors.Join(err, context.Canceled)
 				}
-			case ech <- err:
+				select {
+				case <-ctx.Done():
+					return errors.Join(err, context.Canceled)
+				case ech <- errors.Join(err, ctx.Err()):
+				}
+			default:
+				st, _ := status.FromError(err)
+				if st.Code() != codes.NotFound {
+					log.Warnf("[benchmark job] linear search error is detected: code = %d, msg = %s", st.Code(), err.Error())
+				}
 			}
-			return err
 		}
 		lres[i] = res
 	}
-	// TODO: apply rpc from crd setting params
 	sres := make([]*payload.Search_Response, len(vecs))
 	log.Infof("[benchmark job] Start search")
 	for i := 0; i < len(vecs); i++ {
@@ -85,9 +77,10 @@ func (j *job) search(ctx context.Context, ech chan error) error {
 		}
 		err := j.limiter.Wait(ctx)
 		if err != nil {
-			errors.Is(context.Canceled, err)
+			if errors.Is(err, context.Canceled) {
+				return errors.Join(err, context.Canceled)
+			}
 			ech <- err
-			break
 		}
 		res, err := j.client.Search(ctx, &payload.Search_Request{
 			Vector: vecs[i],
@@ -98,19 +91,25 @@ func (j *job) search(ctx context.Context, ech chan error) error {
 			select {
 			case <-ctx.Done():
 				if errors.Is(err, context.Canceled) {
-					ech <- errors.Wrap(err, ctx.Err().Error())
-				} else {
-					ech <- err
+					return errors.Join(err, context.Canceled)
 				}
-			case ech <- err:
-				break
+				select {
+				case <-ctx.Done():
+					return errors.Join(err, context.Canceled)
+				case ech <- errors.Join(err, ctx.Err()):
+				}
+			default:
+				st, _ := status.FromError(err)
+				if st.Code() != codes.NotFound {
+					log.Warnf("[benchmark job] search error is detected: code = %d, msg = %s", st.Code(), err.Error())
+				}
 			}
 		}
 		sres[i] = res
 	}
 	recall := make([]float64, len(vecs))
 	for i := 0; i < len(vecs); i++ {
-		recall[i] = calcRecall(lres[i].Results, sres[i].Results)
+		recall[i] = calcRecall(lres[i], sres[i])
 		log.Info("[branch job] search recall: ", recall[i])
 	}
 	log.Info("[benchmark job] Finish benchmarking search")

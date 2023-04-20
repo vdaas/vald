@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -549,12 +549,12 @@ func (o *operator) checkAtomics() error {
 	if len(cjl) == 0 {
 		if len(cbjl) > 0 || len(cbsl) > 0 {
 			log.Error("mismatch atomics: job=%v, benchjob=%v, scenario=%v", cjl, cbjl, cbsl)
-			return errors.ErrMismatchAtomics(cjl, cbjl, cbsl)
+			return errors.ErrMismatchBenchmarkAtomics(cjl, cbjl, cbsl)
 		}
 		return nil
 	} else if len(cbjl) == 0 {
 		log.Error("mismatch atomics: job=%v, benchjob=%v, scenario=%v", cjl, cbjl, cbsl)
-		return errors.ErrMismatchAtomics(cjl, cbjl, cbsl)
+		return errors.ErrMismatchBenchmarkAtomics(cjl, cbjl, cbsl)
 	}
 	jobCounter := len(cjl)
 	scenarioBenchCounter := 0
@@ -576,7 +576,7 @@ func (o *operator) checkAtomics() error {
 	}
 	if jobCounter != 0 || scenarioBenchCounter != 0 {
 		log.Error("mismatch atomics: job=%v, benchjob=%v, scenario=%v", cjl, cbjl, cbsl)
-		return errors.ErrMismatchAtomics(cjl, cbjl, cbsl)
+		return errors.ErrMismatchBenchmarkAtomics(cjl, cbjl, cbsl)
 	}
 	return nil
 }

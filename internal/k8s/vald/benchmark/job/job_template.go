@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -43,7 +43,6 @@ func NewBenchmarkJobTemplate(opts ...BenchmarkJobOption) (benchmarkJobTemplate, 
 			return *jobTmpl, err
 		}
 	}
-	terminationGracePeriodSeconds := int64(10)
 	jobTmpl.Spec.Template.Spec.Containers = []corev1.Container{
 		{
 			Name:            ContainerName,
@@ -61,10 +60,6 @@ func NewBenchmarkJobTemplate(opts ...BenchmarkJobOption) (benchmarkJobTemplate, 
 						},
 					},
 				},
-				TerminationGracePeriodSeconds: &terminationGracePeriodSeconds,
-			},
-			ReadinessProbe: &corev1.Probe{
-				TerminationGracePeriodSeconds: &terminationGracePeriodSeconds,
 			},
 			StartupProbe: &corev1.Probe{
 				FailureThreshold: int32(30),
@@ -78,7 +73,6 @@ func NewBenchmarkJobTemplate(opts ...BenchmarkJobOption) (benchmarkJobTemplate, 
 						},
 					},
 				},
-				TerminationGracePeriodSeconds: &terminationGracePeriodSeconds,
 			},
 			Ports: []corev1.ContainerPort{
 				{

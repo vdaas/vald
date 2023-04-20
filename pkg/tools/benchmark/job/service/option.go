@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ var defaultOpts = []Option{
 	// TODO: set default config for client
 	WithDimension(748),
 	WithBeforeJobDuration("30s"),
-	WithRPC(100),
+	WithRPS(100),
 }
 
 // WithDimension sets the vector's dimension for running benchmark job with dataset.
@@ -243,11 +243,11 @@ func WithK8sClient(cli client.Client) Option {
 	}
 }
 
-// WithRPC sets the rpc for sending request per seconds to the target Vald cluster.
-func WithRPC(rpc int) Option {
+// WithRPS sets the rpc for sending request per seconds to the target Vald cluster.
+func WithRPS(rps int) Option {
 	return func(j *job) error {
-		if rpc > 0 {
-			j.rpc = rpc
+		if rps > 0 {
+			j.rps = rps
 		}
 		return nil
 	}

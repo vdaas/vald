@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -37,7 +37,7 @@ type BenchmarkJobSpec struct {
 	ObjectConfig *config.ObjectConfig       `json:"object_config,omitempty" yaml:"object_config"`
 	ClientConfig *config.GRPCClient         `json:"client_config,omitempty" yaml:"client_config"`
 	Rules        []*config.BenchmarkJobRule `json:"rules,omitempty"         yaml:"rules"`
-	RPC          int                        `json:"rpc,omitempty"           yaml:"rpc"`
+	RPS          int                        `json:"rps,omitempty"           yaml:"rps"`
 }
 
 type BenchmarkJobStatus string

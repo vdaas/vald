@@ -54,9 +54,8 @@ func (l *limiter) Wait(ctx context.Context) error {
 	default:
 		if l.isStd {
 			return l.std.Wait(ctx)
-		} else {
-			l.uber.Take()
 		}
+		l.uber.Take()
 	}
 	return nil
 }

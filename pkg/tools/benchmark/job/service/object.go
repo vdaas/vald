@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -24,43 +24,41 @@ import (
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
-	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/net/grpc/status"
 )
 
 func (j *job) exists(ctx context.Context, ech chan error) error {
 	log.Info("[benchmark job] Start benchmarking exists")
-	// create data
-	for i := j.dataset.Range.Start; i <= j.dataset.Range.End; i++ {
+	for i := 0; i < j.dataset.Indexes; i++ {
 		err := j.limiter.Wait(ctx)
 		if err != nil {
 			if errors.Is(err, context.Canceled) {
-				ech <- err
+				return errors.Join(err, context.Canceled)
 			}
+			ech <- err
 		}
 		res, err := j.client.Exists(ctx, &payload.Object_ID{
-			Id: strconv.Itoa(i + j.dataset.Range.Start),
+			Id: strconv.Itoa(i),
 		})
 		if err != nil {
-			st, _, perr := status.ParseError(err, codes.Internal, "")
-			if st.Code() == codes.NotFound {
-				continue
-			}
-			if perr != nil {
-				ech <- errors.Join(err, perr)
-			}
 			select {
 			case <-ctx.Done():
 				if errors.Is(err, context.Canceled) {
-					ech <- errors.Wrap(err, ctx.Err().Error())
-				} else {
-					ech <- err
+					return errors.Join(err, context.Canceled)
 				}
-			case ech <- err:
-				break
+				select {
+				case <-ctx.Done():
+					return errors.Join(err, context.Canceled)
+				case ech <- errors.Join(err, ctx.Err()):
+				}
+			default:
+				st, _ := status.FromError(err)
+				log.Warnf("[benchmark job] exists error is detected: code = %d, msg = %s", st.Code(), err.Error())
 			}
 		}
-		log.Infof("[benchmark exists job] iter=%d, Id=%s", i, res.GetId())
+		if res != nil {
+			log.Infof("[benchmark exists job] iter=%d, Id=%s", i, res.GetId())
+		}
 	}
 	log.Info("[benchmark job] Finish benchmarking exists")
 	return nil
@@ -68,22 +66,17 @@ func (j *job) exists(ctx context.Context, ech chan error) error {
 
 func (j *job) getObject(ctx context.Context, ech chan error) error {
 	log.Info("[benchmark job] Start benchmarking getObject")
-	if j.objectConfig == nil {
-		log.Warnf("[benchmark job] No get object config is set: %v", j.objectConfig)
-	}
-
 	// create data
 	vecs := j.genVec(j.dataset)
-	log.Debug(j.dataset.Indexes, len(vecs))
 	for i := 0; i < len(vecs); i++ {
 		log.Infof("[benchmark job] Start getObject: iter = %d", i)
 		err := j.limiter.Wait(ctx)
 		if err != nil {
 			if errors.Is(err, context.Canceled) {
-				ech <- err
+				return errors.Join(err, context.Canceled)
 			}
+			ech <- err
 		}
-		id := i + j.dataset.Indexes
 		ft := []*payload.Filter_Target{}
 		if j.objectConfig != nil {
 			for i, target := range j.objectConfig.FilterConfig.Targets {
@@ -95,34 +88,29 @@ func (j *job) getObject(ctx context.Context, ech chan error) error {
 		}
 		res, err := j.client.GetObject(ctx, &payload.Object_VectorRequest{
 			Id: &payload.Object_ID{
-				Id: strconv.Itoa(id),
+				Id: strconv.Itoa(i),
 			},
 			Filters: &payload.Filter_Config{
 				Targets: ft,
 			},
 		})
-		log.Infof("[benchmark get object job] iter=%d, Id=%s, Vec=%v", i, res.GetId(), res.GetVector())
+		if res != nil {
+			log.Infof("[benchmark get object job] iter=%d, Id=%s, Vec=%v", i, res.GetId(), res.GetVector())
+		}
 		if err != nil {
-			st, _, perr := status.ParseError(err, codes.Internal, "")
-			if st.Code() == codes.NotFound {
-				continue
-			}
-			if perr != nil {
-				ech <- errors.Join(err, perr)
-			}
 			select {
 			case <-ctx.Done():
 				if errors.Is(err, context.Canceled) {
-					ech <- errors.Wrap(err, ctx.Err().Error())
-				} else {
-					st, _, err := status.ParseError(err, codes.NotFound, "hoge", i)
-					if st.Code() != codes.NotFound {
-						ech <- err
-					}
-					ech <- err
+					return errors.Join(err, context.Canceled)
 				}
-			case ech <- err:
-				break
+				select {
+				case <-ctx.Done():
+					return errors.Join(err, context.Canceled)
+				case ech <- errors.Join(err, ctx.Err()):
+				}
+			default:
+				st, _ := status.FromError(err)
+				log.Warnf("[benchmark job] get object error is detected: code = %d, msg = %s", st.Code(), err.Error())
 			}
 		}
 	}
