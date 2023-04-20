@@ -210,6 +210,9 @@ defaults:
             # @schema {"name": "defaults.server_config.servers.grpc.server.grpc.enable_reflection", "type": "boolean"}
             # defaults.server_config.servers.grpc.server.grpc.enable_reflection -- gRPC server reflection option
             enable_reflection: true
+            # @schema {"name": "defaults.server_config.servers.grpc.server.grpc.enable_admin", "type": "boolean"}
+            # defaults.server_config.servers.grpc.server.grpc.enable_admin -- gRPC server admin option
+            enable_admin: true
           # @schema {"name": "defaults.server_config.servers.grpc.server.socket_option", "alias": "socket_option"}
           socket_option:
             # defaults.server_config.servers.grpc.server.socket_option.reuse_port -- server listen socket option for reuse_port functionality
@@ -805,7 +808,7 @@ defaults:
       # @schema {"name": "defaults.observability.metrics.enable_version_info", "type": "boolean"}
       # defaults.observability.metrics.enable_version_info -- version info metrics enabled
       enable_version_info: true
-      # @schema {"name": "defaults.observability.metrics.version_info_labels", "type": "array", "items": {"type": "string", "enum": ["vald_version", "server_name", "git_commit", "build_time", "go_version", "go_os", "go_arch", "cgo_enabled", "ngt_version", "build_cpu_info_flags"]}}
+      # @schema {"name": "defaults.observability.metrics.version_info_labels", "type": "array", "items": {"type": "string", "enum": ["vald_version", "server_name", "git_commit", "build_time", "go_version", "go_os", "go_arch", "cgo_enabled", "algorithm_info", "build_cpu_info_flags"]}}
       # defaults.observability.metrics.version_info_labels -- enabled label names of version info
       version_info_labels:
         - "vald_version"
@@ -815,7 +818,7 @@ defaults:
         - "go_version"
         - "go_os"
         - "go_arch"
-        - "ngt_version"
+        - "algorithm_info"
       # @schema {"name": "defaults.observability.metrics.enable_memory", "type": "boolean"}
       # defaults.observability.metrics.enable_memory -- memory metrics enabled
       enable_memory: true
@@ -1395,6 +1398,10 @@ agent:
   # @schema {"name": "agent.version", "alias": "version"}
   # agent.version -- version of agent config
   version: v0.0.0
+  # @schema {"name": "agent.algorithm", "type": "string", "enum": ["ngt", "qbg", "faiss"]}
+  # agent.algorithm -- agent algorithm type.
+  # it should be `ngt` or `qbg` or `faiss`.
+  algorithm: ngt
   # @schema {"name": "agent.time_zone", "type": "string"}
   # agent.time_zone -- Time zone
   time_zone: ""
@@ -1403,7 +1410,7 @@ agent:
   logging: {}
   # @schema {"name": "agent.name", "type": "string"}
   # agent.name -- name of agent deployment
-  name: vald-agent-ngt
+  name: vald-agent
   # @schema {"name": "agent.kind", "type": "string", "enum": ["StatefulSet", "Deployment", "DaemonSet"]}
   # agent.kind -- deployment kind: Deployment, DaemonSet or StatefulSet
   kind: StatefulSet
@@ -1574,7 +1581,7 @@ agent:
                 - key: app
                   operator: In
                   values:
-                    - vald-agent-ngt
+                    - vald-agent
       # agent.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution -- pod anti-affinity required scheduling terms
       requiredDuringSchedulingIgnoredDuringExecution: []
   # @schema {"name": "agent.topologySpreadConstraints", "alias": "topologySpreadConstraints"}
@@ -1600,7 +1607,7 @@ agent:
   observability:
     otlp:
       attribute:
-        service_name: vald-agent-ngt
+        service_name: vald-agent
   # @schema {"name": "agent.resources", "alias": "resources"}
   # agent.resources -- compute resources.
   # recommended setting of memory requests = cluster memory * 0.4 / number of agent pods
@@ -1642,9 +1649,8 @@ agent:
     # it should be `l1`, `l2`, `angle`, `hamming`, `cosine`,`poincare`, `lorentz`, `jaccard`, `sparsejaccard`, `normalizedangle` or `normalizedcosine`.
     # for further details about NGT libraries supported distance is https://github.com/yahoojapan/NGT/wiki/Command-Quick-Reference
     # and vald agent's supported NGT distance type is https://pkg.go.dev/github.com/vdaas/vald/internal/core/algorithm/ngt#pkg-constants
-    distance_type:
-      l2
-      # @schema {"name": "agent.ngt.object_type", "type": "string", "enum": ["float", "float16", "uint8"]}
+    distance_type: l2
+    # @schema {"name": "agent.ngt.object_type", "type": "string", "enum": ["float", "float16", "uint8"]}
     # agent.ngt.object_type -- object type.
     # it should be `float` or `uint8` or `float16`.
     # for further details: https://github.com/yahoojapan/NGT/wiki/Command-Quick-Reference

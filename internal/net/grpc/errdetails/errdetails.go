@@ -282,7 +282,7 @@ func DebugInfoFromInfoDetail(v *info.Detail) *DebugInfo {
 			"Name:", v.ServerName, ",",
 			"GitCommit:", v.GitCommit, ",",
 			"BuildTime:", v.BuildTime, ",",
-			"NGT_Version:", v.NGTVersion, ",",
+			"Algorithm_Info:", v.AlgorithmInfo, ",",
 			"Go_Version:", v.GoVersion, ",",
 			"GOARCH:", v.GoArch, ",",
 			"GOOS:", v.GoOS, ",",

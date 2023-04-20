@@ -47,6 +47,7 @@ hack/go.mod.default3
 
 # for mac
 .DS_Store
+.nvimlog
 
 # for nvim
 .nvimlog

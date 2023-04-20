@@ -172,7 +172,7 @@ func (d *dialer) lookup(ctx context.Context, host string) (dc *dialerCache, err 
 	dc = &dialerCache{
 		ips: ips,
 	}
-	log.Infof("lookup succeed %v", dc.ips)
+	log.Debugf("lookup succeed for %s, ips: %v", host, dc.ips)
 	if d.enableDNSCache {
 		d.dnsCache.Set(host, dc)
 	}

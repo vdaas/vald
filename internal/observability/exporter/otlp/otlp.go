@@ -32,7 +32,7 @@ import (
 	"go.opentelemetry.io/otel/sdk/metric"
 	"go.opentelemetry.io/otel/sdk/resource"
 	"go.opentelemetry.io/otel/sdk/trace"
-	semconv "go.opentelemetry.io/otel/semconv/v1.12.0"
+	semconv "go.opentelemetry.io/otel/semconv/v1.17.0"
 )
 
 // Metrics and Trace attribute keys.
@@ -123,7 +123,8 @@ func (e *exp) initMeter(ctx context.Context) (err error) {
 			e.metricsExporter,
 			metric.WithInterval(e.mExportInterval),
 			metric.WithTimeout(e.mExportTimeout),
-		), e.metricsViews...),
+		)),
+		metric.WithView(e.metricsViews...),
 		metric.WithResource(resource.NewWithAttributes(
 			semconv.SchemaURL,
 			e.attributes...,

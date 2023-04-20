@@ -47,7 +47,7 @@ spec:
         app.kubernetes.io/instance: release-name
         app.kubernetes.io/component: manager-index
       annotations:
-        checksum/configmap: 46ee9fc16e0baf0480fe9f62a3c0133086f86c09728bf12ea060ed021cfb6f65
+        checksum/configmap: 19e61c8726b0fc4c28c6f7abcd54e5702cf79935fff3222019b50ba0268d19fe
         profefe.com/enable: "true"
         profefe.com/port: "6060"
         profefe.com/service: vald-manager-index
@@ -65,7 +65,7 @@ spec:
             - -e
             - -c
             - |
-              until [ "$(wget --server-response --spider --quiet http://vald-agent-ngt.default.svc.cluster.local:3001/readiness 2>&1 | awk 'NR==1{print $2}')" == "200" ]; do
+              until [ "$(wget --server-response --spider --quiet http://vald-agent.default.svc.cluster.local:3001/readiness 2>&1 | awk 'NR==1{print $2}')" == "200" ]; do
                 echo "waiting for agent to be ready..."
                 sleep 2;
               done

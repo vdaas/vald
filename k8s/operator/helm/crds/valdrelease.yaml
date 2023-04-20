@@ -116,6 +116,12 @@ spec:
                               items:
                                 type: object
                                 x-kubernetes-preserve-unknown-fields: true
+                    algorithm:
+                      type: string
+                      enum:
+                        - ngt
+                        - qbg
+                        - faiss
                     annotations:
                       type: object
                       x-kubernetes-preserve-unknown-fields: true
@@ -311,7 +317,7 @@ spec:
                                   - go_os
                                   - go_arch
                                   - cgo_enabled
-                                  - ngt_version
+                                  - algorithm_info
                                   - build_cpu_info_flags
                         otlp:
                           type: object
@@ -729,6 +735,8 @@ spec:
                                           type: integer
                                         connection_timeout:
                                           type: string
+                                        enable_admin:
+                                          type: boolean
                                         enable_reflection:
                                           type: boolean
                                         header_table_size:
@@ -1219,7 +1227,7 @@ spec:
                                       - go_os
                                       - go_arch
                                       - cgo_enabled
-                                      - ngt_version
+                                      - algorithm_info
                                       - build_cpu_info_flags
                             otlp:
                               type: object
@@ -1589,6 +1597,8 @@ spec:
                                               type: integer
                                             connection_timeout:
                                               type: string
+                                            enable_admin:
+                                              type: boolean
                                             enable_reflection:
                                               type: boolean
                                             header_table_size:
@@ -2051,7 +2061,7 @@ spec:
                                   - go_os
                                   - go_arch
                                   - cgo_enabled
-                                  - ngt_version
+                                  - algorithm_info
                                   - build_cpu_info_flags
                         otlp:
                           type: object
@@ -2412,6 +2422,8 @@ spec:
                                           type: integer
                                         connection_timeout:
                                           type: string
+                                        enable_admin:
+                                          type: boolean
                                         enable_reflection:
                                           type: boolean
                                         header_table_size:
@@ -2862,7 +2874,7 @@ spec:
                                   - go_os
                                   - go_arch
                                   - cgo_enabled
-                                  - ngt_version
+                                  - algorithm_info
                                   - build_cpu_info_flags
                         otlp:
                           type: object
@@ -3260,6 +3272,8 @@ spec:
                                           type: integer
                                         connection_timeout:
                                           type: string
+                                        enable_admin:
+                                          type: boolean
                                         enable_reflection:
                                           type: boolean
                                         header_table_size:
@@ -4218,7 +4232,7 @@ spec:
                                       - go_os
                                       - go_arch
                                       - cgo_enabled
-                                      - ngt_version
+                                      - algorithm_info
                                       - build_cpu_info_flags
                             otlp:
                               type: object
@@ -4616,6 +4630,8 @@ spec:
                                               type: integer
                                             connection_timeout:
                                               type: string
+                                            enable_admin:
+                                              type: boolean
                                             enable_reflection:
                                               type: boolean
                                             header_table_size:
@@ -5372,7 +5388,7 @@ spec:
                                       - go_os
                                       - go_arch
                                       - cgo_enabled
-                                      - ngt_version
+                                      - algorithm_info
                                       - build_cpu_info_flags
                             otlp:
                               type: object
@@ -5770,6 +5786,8 @@ spec:
                                               type: integer
                                             connection_timeout:
                                               type: string
+                                            enable_admin:
+                                              type: boolean
                                             enable_reflection:
                                               type: boolean
                                             header_table_size:
@@ -6509,7 +6527,7 @@ spec:
                                       - go_os
                                       - go_arch
                                       - cgo_enabled
-                                      - ngt_version
+                                      - algorithm_info
                                       - build_cpu_info_flags
                             otlp:
                               type: object
@@ -6910,6 +6928,8 @@ spec:
                                               type: integer
                                             connection_timeout:
                                               type: string
+                                            enable_admin:
+                                              type: boolean
                                             enable_reflection:
                                               type: boolean
                                             header_table_size:

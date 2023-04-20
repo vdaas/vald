@@ -46,7 +46,7 @@ spec:
         app.kubernetes.io/instance: release-name
         app.kubernetes.io/component: gateway-lb
       annotations:
-        checksum/configmap: 4f57b405ff930189d0a7af663799c53bd861a08adfc413282ad51aa6187dacf6
+        checksum/configmap: 1a94eac2cf5af2a5be839203dfbf50c1be4e9de1abd880b6ad08f9cfb5bc1a0a
         profefe.com/enable: "true"
         profefe.com/port: "6060"
         profefe.com/service: vald-lb-gateway
@@ -75,7 +75,7 @@ spec:
             - -e
             - -c
             - |
-              until [ "$(wget --server-response --spider --quiet http://vald-agent-ngt.default.svc.cluster.local:3001/readiness 2>&1 | awk 'NR==1{print $2}')" == "200" ]; do
+              until [ "$(wget --server-response --spider --quiet http://vald-agent.default.svc.cluster.local:3001/readiness 2>&1 | awk 'NR==1{print $2}')" == "200" ]; do
                 echo "waiting for agent to be ready..."
                 sleep 2;
               done

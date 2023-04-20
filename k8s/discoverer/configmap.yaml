@@ -42,6 +42,7 @@ data:
           grpc:
             bidirectional_stream_concurrency: 20
             connection_timeout: ""
+            enable_admin: true
             enable_reflection: true
             header_table_size: 0
             initial_conn_window_size: 0
@@ -190,7 +191,7 @@ data:
         - go_version
         - go_os
         - go_arch
-        - ngt_version
+        - algorithm_info
       trace:
         enabled: false
     discoverer:
@@ -210,7 +211,7 @@ data:
           pod_metrics:
             labels: {}
             fields:
-              containers.name: vald-agent-ngt
+              containers.name: vald-agent
           node_metrics:
             labels: {}
             fields: {}

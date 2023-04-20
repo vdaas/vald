@@ -61,6 +61,11 @@
             }
           }
         },
+        "algorithm": {
+          "type": "string",
+          "description": "agent algorithm type. it should be `ngt` or `qbg` or `faiss`.",
+          "enum": ["ngt", "qbg", "faiss"]
+        },
         "annotations": {
           "type": "object",
           "description": "deployment annotations"
@@ -331,7 +336,7 @@
                       "go_os",
                       "go_arch",
                       "cgo_enabled",
-                      "ngt_version",
+                      "algorithm_info",
                       "build_cpu_info_flags"
                     ]
                   }
@@ -1059,6 +1064,10 @@
                             "connection_timeout": {
                               "type": "string",
                               "description": "gRPC server connection timeout"
+                            },
+                            "enable_admin": {
+                              "type": "boolean",
+                              "description": "gRPC server admin option"
                             },
                             "enable_reflection": {
                               "type": "boolean",
@@ -1896,7 +1905,7 @@
                           "go_os",
                           "go_arch",
                           "cgo_enabled",
-                          "ngt_version",
+                          "algorithm_info",
                           "build_cpu_info_flags"
                         ]
                       }
@@ -2549,6 +2558,10 @@
                                 "connection_timeout": {
                                   "type": "string",
                                   "description": "gRPC server connection timeout"
+                                },
+                                "enable_admin": {
+                                  "type": "boolean",
+                                  "description": "gRPC server admin option"
                                 },
                                 "enable_reflection": {
                                   "type": "boolean",
@@ -3315,7 +3328,7 @@
                       "go_os",
                       "go_arch",
                       "cgo_enabled",
-                      "ngt_version",
+                      "algorithm_info",
                       "build_cpu_info_flags"
                     ]
                   }
@@ -3954,6 +3967,10 @@
                             "connection_timeout": {
                               "type": "string",
                               "description": "gRPC server connection timeout"
+                            },
+                            "enable_admin": {
+                              "type": "boolean",
+                              "description": "gRPC server admin option"
                             },
                             "enable_reflection": {
                               "type": "boolean",
@@ -4660,7 +4677,7 @@
                       "go_os",
                       "go_arch",
                       "cgo_enabled",
-                      "ngt_version",
+                      "algorithm_info",
                       "build_cpu_info_flags"
                     ]
                   }
@@ -5354,6 +5371,10 @@
                             "connection_timeout": {
                               "type": "string",
                               "description": "gRPC server connection timeout"
+                            },
+                            "enable_admin": {
+                              "type": "boolean",
+                              "description": "gRPC server admin option"
                             },
                             "enable_reflection": {
                               "type": "boolean",
@@ -6941,7 +6962,7 @@
                           "go_os",
                           "go_arch",
                           "cgo_enabled",
-                          "ngt_version",
+                          "algorithm_info",
                           "build_cpu_info_flags"
                         ]
                       }
@@ -7641,6 +7662,10 @@
                                 "connection_timeout": {
                                   "type": "string",
                                   "description": "gRPC server connection timeout"
+                                },
+                                "enable_admin": {
+                                  "type": "boolean",
+                                  "description": "gRPC server admin option"
                                 },
                                 "enable_reflection": {
                                   "type": "boolean",
@@ -8879,7 +8904,7 @@
                           "go_os",
                           "go_arch",
                           "cgo_enabled",
-                          "ngt_version",
+                          "algorithm_info",
                           "build_cpu_info_flags"
                         ]
                       }
@@ -9579,6 +9604,10 @@
                                 "connection_timeout": {
                                   "type": "string",
                                   "description": "gRPC server connection timeout"
+                                },
+                                "enable_admin": {
+                                  "type": "boolean",
+                                  "description": "gRPC server admin option"
                                 },
                                 "enable_reflection": {
                                   "type": "boolean",
@@ -10801,7 +10830,7 @@
                           "go_os",
                           "go_arch",
                           "cgo_enabled",
-                          "ngt_version",
+                          "algorithm_info",
                           "build_cpu_info_flags"
                         ]
                       }
@@ -11506,6 +11535,10 @@
                                 "connection_timeout": {
                                   "type": "string",
                                   "description": "gRPC server connection timeout"
+                                },
+                                "enable_admin": {
+                                  "type": "boolean",
+                                  "description": "gRPC server admin option"
                                 },
                                 "enable_reflection": {
                                   "type": "boolean",

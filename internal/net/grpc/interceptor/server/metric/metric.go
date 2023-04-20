@@ -36,7 +36,7 @@ const (
 func MetricInterceptors() (grpc.UnaryServerInterceptor, grpc.StreamServerInterceptor, error) {
 	meter := metrics.GetMeter()
 
-	latencyHistgram, err := meter.SyncFloat64().Histogram(
+	latencyHistgram, err := meter.Float64Histogram(
 		latencyMetricsName,
 		metrics.WithDescription("Server latency in milliseconds, by method"),
 		metrics.WithUnit(metrics.Milliseconds),
@@ -45,7 +45,7 @@ func MetricInterceptors() (grpc.UnaryServerInterceptor, grpc.StreamServerInterce
 		return nil, nil, errors.Wrap(err, "failed to create latency metric")
 	}
 
-	completedRPCCnt, err := meter.SyncInt64().Counter(
+	completedRPCCnt, err := meter.Int64Counter(
 		completedRPCsMetricsName,
 		metrics.WithDescription("Count of RPCs by method and status"),
 		metrics.WithUnit(metrics.Milliseconds),

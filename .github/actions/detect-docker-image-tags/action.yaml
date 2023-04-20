@@ -24,6 +24,8 @@ inputs:
     description: "image names"
     required: false
     default: "vdaas/vald-agent-ngt \
+      vdaas/vald-agent-qbg \
+      vdaas/vald-agent-sidecar \
       vdaas/vald-discoverer-k8s \
       vdaas/vald-lb-gateway \
       vdaas/vald-manager-index"
@@ -43,6 +45,7 @@ runs:
       run: |
         declare -A m=(
           ["vdaas/vald-agent-ngt"]="agent.image.tag"
+          ["vdaas/vald-agent-qbg"]="agent.image.tag"
           ["vdaas/vald-agent-sidecar"]="agent.sidecar.image.tag"
           ["vdaas/vald-discoverer-k8s"]="discoverer.image.tag"
           ["vdaas/vald-lb-gateway"]="gateway.lb.image.tag"

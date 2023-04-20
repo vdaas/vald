@@ -55,7 +55,7 @@ func NewIndexClient(cc grpc.ClientConnInterface) IndexClient {
 }
 
 func (c *indexClient) IndexInfo(ctx context.Context, in *payload.Empty, opts ...grpc.CallOption) (*payload.Info_Index_Count, error) {
-	out := new(payload.Info_Index_Count)
+	out := payload.Info_Index_CountFromVTPool()
 	err := c.cc.Invoke(ctx, "/manager.index.v1.Index/IndexInfo", in, out, opts...)
 	if err != nil {
 		return nil, err

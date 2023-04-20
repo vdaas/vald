@@ -18,8 +18,9 @@ import (
 
 	"github.com/vdaas/vald/internal/observability/metrics"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/service"
+	api "go.opentelemetry.io/otel/metric"
+	view "go.opentelemetry.io/otel/sdk/metric"
 	"go.opentelemetry.io/otel/sdk/metric/aggregation"
-	"go.opentelemetry.io/otel/sdk/metric/view"
 )
 
 const (
@@ -58,93 +59,85 @@ func New(n service.NGT) metrics.Metric {
 	}
 }
 
-func (n *ngtMetrics) View() ([]*metrics.View, error) {
-	indexCount, err := view.New(
-		view.MatchInstrumentName(indexCountMetricsName),
-		view.WithSetDescription(indexCountMetricsDescription),
-		view.WithSetAggregation(aggregation.LastValue{}),
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	uncommittedIndexCount, err := view.New(
-		view.MatchInstrumentName(uncommittedIndexCountMetricsName),
-		view.WithSetDescription(uncommittedIndexCountMetricsDescription),
-		view.WithSetAggregation(aggregation.LastValue{}),
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	insertVQueueCount, err := view.New(
-		view.MatchInstrumentName(insertVQueueCountMetricsName),
-		view.WithSetDescription(insertVQueueCountMetricsDescription),
-		view.WithSetAggregation(aggregation.LastValue{}),
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	deleteVQueueCount, err := view.New(
-		view.MatchInstrumentName(deleteVQueueCountMetricsName),
-		view.WithSetDescription(deleteVQueueCountMetricsDescription),
-		view.WithSetAggregation(aggregation.LastValue{}),
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	completedCreateIndexTotal, err := view.New(
-		view.MatchInstrumentName(completedCreateIndexTotalMetricsName),
-		view.WithSetDescription(completedCreateIndexTotalMetricsDescription),
-		view.WithSetAggregation(aggregation.LastValue{}),
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	executedProactiveGCTotal, err := view.New(
-		view.MatchInstrumentName(executedProactiveGCTotalMetricsName),
-		view.WithSetDescription(executedProactiveGCTotalMetricsDescription),
-		view.WithSetAggregation(aggregation.LastValue{}),
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	isIndexing, err := view.New(
-		view.MatchInstrumentName(isIndexingMetricsName),
-		view.WithSetDescription(isIndexingMetricsDescription),
-		view.WithSetAggregation(aggregation.LastValue{}),
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	isSaving, err := view.New(
-		view.MatchInstrumentName(isSavingMetricsName),
-		view.WithSetDescription(isSavingMetricsDescription),
-		view.WithSetAggregation(aggregation.LastValue{}),
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	return []*metrics.View{
-		&indexCount,
-		&uncommittedIndexCount,
-		&insertVQueueCount,
-		&deleteVQueueCount,
-		&completedCreateIndexTotal,
-		&executedProactiveGCTotal,
-		&isIndexing,
-		&isSaving,
+func (n *ngtMetrics) View() ([]metrics.View, error) {
+	return []metrics.View{
+		view.NewView(
+			view.Instrument{
+				Name:        indexCountMetricsName,
+				Description: indexCountMetricsDescription,
+			},
+			view.Stream{
+				Aggregation: aggregation.LastValue{},
+			},
+		),
+		view.NewView(
+			view.Instrument{
+				Name:        uncommittedIndexCountMetricsName,
+				Description: uncommittedIndexCountMetricsDescription,
+			},
+			view.Stream{
+				Aggregation: aggregation.LastValue{},
+			},
+		),
+		view.NewView(
+			view.Instrument{
+				Name:        insertVQueueCountMetricsName,
+				Description: insertVQueueCountMetricsDescription,
+			},
+			view.Stream{
+				Aggregation: aggregation.LastValue{},
+			},
+		),
+		view.NewView(
+			view.Instrument{
+				Name:        deleteVQueueCountMetricsName,
+				Description: deleteVQueueCountMetricsDescription,
+			},
+			view.Stream{
+				Aggregation: aggregation.LastValue{},
+			},
+		),
+		view.NewView(
+			view.Instrument{
+				Name:        completedCreateIndexTotalMetricsName,
+				Description: completedCreateIndexTotalMetricsDescription,
+			},
+			view.Stream{
+				Aggregation: aggregation.LastValue{},
+			},
+		),
+		view.NewView(
+			view.Instrument{
+				Name:        executedProactiveGCTotalMetricsName,
+				Description: executedProactiveGCTotalMetricsDescription,
+			},
+			view.Stream{
+				Aggregation: aggregation.LastValue{},
+			},
+		),
+		view.NewView(
+			view.Instrument{
+				Name:        isIndexingMetricsName,
+				Description: isIndexingMetricsDescription,
+			},
+			view.Stream{
+				Aggregation: aggregation.LastValue{},
+			},
+		),
+		view.NewView(
+			view.Instrument{
+				Name:        isSavingMetricsName,
+				Description: isSavingMetricsDescription,
+			},
+			view.Stream{
+				Aggregation: aggregation.LastValue{},
+			},
+		),
 	}, nil
 }
 
 func (n *ngtMetrics) Register(m metrics.Meter) error {
-	indexCount, err := m.AsyncInt64().Gauge(
+	indexCount, err := m.Int64ObservableGauge(
 		indexCountMetricsName,
 		metrics.WithDescription(indexCountMetricsDescription),
 		metrics.WithUnit(metrics.Dimensionless),
@@ -153,7 +146,7 @@ func (n *ngtMetrics) Register(m metrics.Meter) error {
 		return err
 	}
 
-	uncommittedIndexCount, err := m.AsyncInt64().Gauge(
+	uncommittedIndexCount, err := m.Int64ObservableGauge(
 		uncommittedIndexCountMetricsName,
 		metrics.WithDescription(uncommittedIndexCountMetricsDescription),
 		metrics.WithUnit(metrics.Dimensionless),
@@ -162,7 +155,7 @@ func (n *ngtMetrics) Register(m metrics.Meter) error {
 		return err
 	}
 
-	insertVQueueCount, err := m.AsyncInt64().Gauge(
+	insertVQueueCount, err := m.Int64ObservableGauge(
 		insertVQueueCountMetricsName,
 		metrics.WithDescription(insertVQueueCountMetricsDescription),
 		metrics.WithUnit(metrics.Dimensionless),
@@ -171,7 +164,7 @@ func (n *ngtMetrics) Register(m metrics.Meter) error {
 		return err
 	}
 
-	deleteVQueueCount, err := m.AsyncInt64().Gauge(
+	deleteVQueueCount, err := m.Int64ObservableGauge(
 		deleteVQueueCountMetricsName,
 		metrics.WithDescription(deleteVQueueCountMetricsDescription),
 		metrics.WithUnit(metrics.Dimensionless),
@@ -180,7 +173,7 @@ func (n *ngtMetrics) Register(m metrics.Meter) error {
 		return err
 	}
 
-	completedCreateIndexTotal, err := m.AsyncInt64().Gauge(
+	completedCreateIndexTotal, err := m.Int64ObservableGauge(
 		completedCreateIndexTotalMetricsName,
 		metrics.WithDescription(completedCreateIndexTotalMetricsDescription),
 		metrics.WithUnit(metrics.Dimensionless),
@@ -189,7 +182,7 @@ func (n *ngtMetrics) Register(m metrics.Meter) error {
 		return err
 	}
 
-	executedProactiveGCTotal, err := m.AsyncInt64().Gauge(
+	executedProactiveGCTotal, err := m.Int64ObservableGauge(
 		executedProactiveGCTotalMetricsName,
 		metrics.WithDescription(executedProactiveGCTotalMetricsDescription),
 		metrics.WithUnit(metrics.Dimensionless),
@@ -198,7 +191,7 @@ func (n *ngtMetrics) Register(m metrics.Meter) error {
 		return err
 	}
 
-	isIndexing, err := m.AsyncInt64().Gauge(
+	isIndexing, err := m.Int64ObservableGauge(
 		isIndexingMetricsName,
 		metrics.WithDescription(isIndexingMetricsDescription),
 		metrics.WithUnit(metrics.Dimensionless),
@@ -207,7 +200,7 @@ func (n *ngtMetrics) Register(m metrics.Meter) error {
 		return err
 	}
 
-	isSaving, err := m.AsyncInt64().Gauge(
+	isSaving, err := m.Int64ObservableGauge(
 		isSavingMetricsName,
 		metrics.WithDescription(isSavingMetricsDescription),
 		metrics.WithUnit(metrics.Dimensionless),
@@ -216,36 +209,36 @@ func (n *ngtMetrics) Register(m metrics.Meter) error {
 		return err
 	}
 
-	return m.RegisterCallback(
-		[]metrics.AsynchronousInstrument{
-			indexCount,
-			uncommittedIndexCount,
-			insertVQueueCount,
-			deleteVQueueCount,
-			completedCreateIndexTotal,
-			executedProactiveGCTotal,
-			isIndexing,
-			isSaving,
-		},
-		func(ctx context.Context) {
+	_, err = m.RegisterCallback(
+		func(_ context.Context, o api.Observer) error {
 			var indexing int64
 			if n.ngt.IsIndexing() {
 				indexing = 1
 			}
-
 			var saving int64
 			if n.ngt.IsSaving() {
 				saving = 1
 			}
 
-			indexCount.Observe(ctx, int64(n.ngt.Len()))
-			uncommittedIndexCount.Observe(ctx, int64(n.ngt.InsertVQueueBufferLen()+n.ngt.DeleteVQueueBufferLen()))
-			insertVQueueCount.Observe(ctx, int64(n.ngt.InsertVQueueBufferLen()))
-			deleteVQueueCount.Observe(ctx, int64(int64(n.ngt.DeleteVQueueBufferLen())))
-			completedCreateIndexTotal.Observe(ctx, int64(n.ngt.NumberOfCreateIndexExecution()))
-			executedProactiveGCTotal.Observe(ctx, int64(n.ngt.NumberOfProactiveGCExecution()))
-			isIndexing.Observe(ctx, int64(indexing))
-			isSaving.Observe(ctx, int64(saving))
+			o.ObserveInt64(indexCount, int64(n.ngt.Len()))
+			o.ObserveInt64(uncommittedIndexCount, int64(n.ngt.InsertVQueueBufferLen()+n.ngt.DeleteVQueueBufferLen()))
+			o.ObserveInt64(insertVQueueCount, int64(n.ngt.InsertVQueueBufferLen()))
+			o.ObserveInt64(deleteVQueueCount, int64(int64(n.ngt.DeleteVQueueBufferLen())))
+			o.ObserveInt64(completedCreateIndexTotal, int64(n.ngt.NumberOfCreateIndexExecution()))
+			o.ObserveInt64(executedProactiveGCTotal, int64(n.ngt.NumberOfProactiveGCExecution()))
+			o.ObserveInt64(isIndexing, int64(indexing))
+			o.ObserveInt64(isSaving, int64(saving))
+
+			return nil
 		},
+		indexCount,
+		uncommittedIndexCount,
+		insertVQueueCount,
+		deleteVQueueCount,
+		completedCreateIndexTotal,
+		executedProactiveGCTotal,
+		isIndexing,
+		isSaving,
 	)
+	return err
 }

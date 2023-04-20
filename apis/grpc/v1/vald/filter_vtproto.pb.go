@@ -77,7 +77,7 @@ func NewFilterClient(cc grpc.ClientConnInterface) FilterClient {
 }
 
 func (c *filterClient) SearchObject(ctx context.Context, in *payload.Search_ObjectRequest, opts ...grpc.CallOption) (*payload.Search_Response, error) {
-	out := new(payload.Search_Response)
+	out := payload.Search_ResponseFromVTPool()
 	err := c.cc.Invoke(ctx, "/vald.v1.Filter/SearchObject", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -86,7 +86,7 @@ func (c *filterClient) SearchObject(ctx context.Context, in *payload.Search_Obje
 }
 
 func (c *filterClient) MultiSearchObject(ctx context.Context, in *payload.Search_MultiObjectRequest, opts ...grpc.CallOption) (*payload.Search_Responses, error) {
-	out := new(payload.Search_Responses)
+	out := payload.Search_ResponsesFromVTPool()
 	err := c.cc.Invoke(ctx, "/vald.v1.Filter/MultiSearchObject", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -126,7 +126,7 @@ func (x *filterStreamSearchObjectClient) Recv() (*payload.Search_StreamResponse,
 }
 
 func (c *filterClient) InsertObject(ctx context.Context, in *payload.Insert_ObjectRequest, opts ...grpc.CallOption) (*payload.Object_Location, error) {
-	out := new(payload.Object_Location)
+	out := payload.Object_LocationFromVTPool()
 	err := c.cc.Invoke(ctx, "/vald.v1.Filter/InsertObject", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -166,7 +166,7 @@ func (x *filterStreamInsertObjectClient) Recv() (*payload.Object_StreamLocation,
 }
 
 func (c *filterClient) MultiInsertObject(ctx context.Context, in *payload.Insert_MultiObjectRequest, opts ...grpc.CallOption) (*payload.Object_Locations, error) {
-	out := new(payload.Object_Locations)
+	out := payload.Object_LocationsFromVTPool()
 	err := c.cc.Invoke(ctx, "/vald.v1.Filter/MultiInsertObject", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -175,7 +175,7 @@ func (c *filterClient) MultiInsertObject(ctx context.Context, in *payload.Insert
 }
 
 func (c *filterClient) UpdateObject(ctx context.Context, in *payload.Update_ObjectRequest, opts ...grpc.CallOption) (*payload.Object_Location, error) {
-	out := new(payload.Object_Location)
+	out := payload.Object_LocationFromVTPool()
 	err := c.cc.Invoke(ctx, "/vald.v1.Filter/UpdateObject", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -215,7 +215,7 @@ func (x *filterStreamUpdateObjectClient) Recv() (*payload.Object_StreamLocation,
 }
 
 func (c *filterClient) MultiUpdateObject(ctx context.Context, in *payload.Update_MultiObjectRequest, opts ...grpc.CallOption) (*payload.Object_Locations, error) {
-	out := new(payload.Object_Locations)
+	out := payload.Object_LocationsFromVTPool()
 	err := c.cc.Invoke(ctx, "/vald.v1.Filter/MultiUpdateObject", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -224,7 +224,7 @@ func (c *filterClient) MultiUpdateObject(ctx context.Context, in *payload.Update
 }
 
 func (c *filterClient) UpsertObject(ctx context.Context, in *payload.Upsert_ObjectRequest, opts ...grpc.CallOption) (*payload.Object_Location, error) {
-	out := new(payload.Object_Location)
+	out := payload.Object_LocationFromVTPool()
 	err := c.cc.Invoke(ctx, "/vald.v1.Filter/UpsertObject", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -264,7 +264,7 @@ func (x *filterStreamUpsertObjectClient) Recv() (*payload.Object_StreamLocation,
 }
 
 func (c *filterClient) MultiUpsertObject(ctx context.Context, in *payload.Upsert_MultiObjectRequest, opts ...grpc.CallOption) (*payload.Object_Locations, error) {
-	out := new(payload.Object_Locations)
+	out := payload.Object_LocationsFromVTPool()
 	err := c.cc.Invoke(ctx, "/vald.v1.Filter/MultiUpsertObject", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -357,7 +357,7 @@ func RegisterFilterServer(s grpc.ServiceRegistrar, srv FilterServer) {
 }
 
 func _Filter_SearchObject_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(payload.Search_ObjectRequest)
+	in := payload.Search_ObjectRequestFromVTPool()
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -375,7 +375,7 @@ func _Filter_SearchObject_Handler(srv interface{}, ctx context.Context, dec func
 }
 
 func _Filter_MultiSearchObject_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(payload.Search_MultiObjectRequest)
+	in := payload.Search_MultiObjectRequestFromVTPool()
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -411,7 +411,7 @@ func (x *filterStreamSearchObjectServer) Send(m *payload.Search_StreamResponse) 
 }
 
 func (x *filterStreamSearchObjectServer) Recv() (*payload.Search_ObjectRequest, error) {
-	m := new(payload.Search_ObjectRequest)
+	m := payload.Search_ObjectRequestFromVTPool()
 	if err := x.ServerStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
@@ -419,7 +419,7 @@ func (x *filterStreamSearchObjectServer) Recv() (*payload.Search_ObjectRequest, 
 }
 
 func _Filter_InsertObject_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(payload.Insert_ObjectRequest)
+	in := payload.Insert_ObjectRequestFromVTPool()
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -455,7 +455,7 @@ func (x *filterStreamInsertObjectServer) Send(m *payload.Object_StreamLocation) 
 }
 
 func (x *filterStreamInsertObjectServer) Recv() (*payload.Insert_ObjectRequest, error) {
-	m := new(payload.Insert_ObjectRequest)
+	m := payload.Insert_ObjectRequestFromVTPool()
 	if err := x.ServerStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
@@ -463,7 +463,7 @@ func (x *filterStreamInsertObjectServer) Recv() (*payload.Insert_ObjectRequest, 
 }
 
 func _Filter_MultiInsertObject_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(payload.Insert_MultiObjectRequest)
+	in := payload.Insert_MultiObjectRequestFromVTPool()
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -481,7 +481,7 @@ func _Filter_MultiInsertObject_Handler(srv interface{}, ctx context.Context, dec
 }
 
 func _Filter_UpdateObject_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(payload.Update_ObjectRequest)
+	in := payload.Update_ObjectRequestFromVTPool()
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -517,7 +517,7 @@ func (x *filterStreamUpdateObjectServer) Send(m *payload.Object_StreamLocation) 
 }
 
 func (x *filterStreamUpdateObjectServer) Recv() (*payload.Update_ObjectRequest, error) {
-	m := new(payload.Update_ObjectRequest)
+	m := payload.Update_ObjectRequestFromVTPool()
 	if err := x.ServerStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
@@ -525,7 +525,7 @@ func (x *filterStreamUpdateObjectServer) Recv() (*payload.Update_ObjectRequest, 
 }
 
 func _Filter_MultiUpdateObject_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(payload.Update_MultiObjectRequest)
+	in := payload.Update_MultiObjectRequestFromVTPool()
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -543,7 +543,7 @@ func _Filter_MultiUpdateObject_Handler(srv interface{}, ctx context.Context, dec
 }
 
 func _Filter_UpsertObject_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(payload.Upsert_ObjectRequest)
+	in := payload.Upsert_ObjectRequestFromVTPool()
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -579,7 +579,7 @@ func (x *filterStreamUpsertObjectServer) Send(m *payload.Object_StreamLocation) 
 }
 
 func (x *filterStreamUpsertObjectServer) Recv() (*payload.Upsert_ObjectRequest, error) {
-	m := new(payload.Upsert_ObjectRequest)
+	m := payload.Upsert_ObjectRequestFromVTPool()
 	if err := x.ServerStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
@@ -587,7 +587,7 @@ func (x *filterStreamUpsertObjectServer) Recv() (*payload.Upsert_ObjectRequest, 
 }
 
 func _Filter_MultiUpsertObject_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(payload.Upsert_MultiObjectRequest)
+	in := payload.Upsert_MultiObjectRequestFromVTPool()
 	if err := dec(in); err != nil {
 		return nil, err
 	}

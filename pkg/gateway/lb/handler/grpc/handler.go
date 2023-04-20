@@ -499,7 +499,7 @@ func (s *server) doSearch(ctx context.Context, cfg *payload.Search_Config,
 		timeout = s.timeout
 	}
 
-	var maxDist atomic.Value
+	var maxDist atomic.Pointer[big.Float]
 	maxDist.Store(big.NewFloat(math.MaxFloat64))
 	ectx, cancel = context.WithTimeout(ectx, timeout)
 	eg.Go(safety.RecoverFunc(func() error {
@@ -554,11 +554,11 @@ func (s *server) doSearch(ctx context.Context, cfg *payload.Search_Config,
 						return err
 					}
 				}
-				log.Debug(err)
+				log.Debugf("search BroadCast operation to %s returned error: %v", target, err)
 				return nil
 			}
 			if r == nil || len(r.GetResults()) == 0 {
-				err = status.WrapWithNotFound("failed to process search request", errors.ErrEmptySearchResult,
+				err = status.WrapWithNotFound("search result length is zero, NotFound for this search operation", errors.ErrEmptySearchResult,
 					&errdetails.ResourceInfo{
 						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.search",
 						ResourceName: fmt.Sprintf("%s: %s(%s) to %s", apiName, s.name, s.ip, target),
@@ -568,10 +568,7 @@ func (s *server) doSearch(ctx context.Context, cfg *payload.Search_Config,
 					sspan.SetAttributes(trace.StatusCodeNotFound(err.Error())...)
 					sspan.SetStatus(trace.StatusError, err.Error())
 				}
-				r, err = f(sctx, vc, copts...)
-				if err != nil || r == nil || len(r.GetResults()) == 0 {
-					return nil
-				}
+				return nil
 			}
 			for _, dist := range r.GetResults() {
 				if dist != nil {
@@ -594,11 +591,7 @@ func (s *server) doSearch(ctx context.Context, cfg *payload.Search_Config,
 	}))
 	add := func(distance *big.Float, dist *payload.Object_Distance) {
 		rl := len(res.GetResults()) // result length
-		fmax, ok := maxDist.Load().(*big.Float)
-		if !ok {
-			return
-		}
-		if rl >= num && distance.Cmp(fmax) >= 0 {
+		if rl >= num && distance.Cmp(maxDist.Load()) >= 0 {
 			return
 		}
 		switch rl {
@@ -636,7 +629,7 @@ func (s *server) doSearch(ctx context.Context, cfg *payload.Search_Config,
 			rl = len(res.GetResults())
 		}
 		if distEnd := big.NewFloat(float64(res.GetResults()[rl-1].GetDistance())); rl >= num &&
-			distEnd.Cmp(fmax) < 0 {
+			distEnd.Cmp(maxDist.Load()) < 0 {
 			maxDist.Store(distEnd)
 		}
 	}

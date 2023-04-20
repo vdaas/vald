@@ -17,7 +17,7 @@
 apiVersion: scheduling.k8s.io/v1
 kind: PriorityClass
 metadata:
-  name: default-vald-agent-ngt-priority
+  name: default-vald-agent-priority
   labels:
     app.kubernetes.io/name: vald
     helm.sh/chart: vald-v1.7.4

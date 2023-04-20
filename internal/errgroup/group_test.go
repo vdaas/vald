@@ -379,8 +379,7 @@ func Test_group_Limitation(t *testing.T) {
 			},
 			want: want{
 				want: &group{
-					enableLimitation: func() atomic.Bool {
-						var el atomic.Bool
+					enableLimitation: func() (el atomic.Bool) {
 						el.Store(false)
 						return el
 					}(),
@@ -398,8 +397,7 @@ func Test_group_Limitation(t *testing.T) {
 			},
 			want: want{
 				want: &group{
-					enableLimitation: func() atomic.Bool {
-						var el atomic.Bool
+					enableLimitation: func() (el atomic.Bool) {
 						el.Store(true)
 						return el
 					}(),

@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 {{- $agent := .Values.agent -}}
-{{- if $agent.enabled }}
+{{- if and ($agent.enabled) (eq (lower $agent.algorithm) "ngt")}}
 apiVersion: v1
 kind: ConfigMap
 metadata:

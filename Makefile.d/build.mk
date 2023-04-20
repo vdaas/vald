@@ -49,7 +49,7 @@ cmd/agent/core/ngt/ngt: \
 		-X '$(GOPKG)/internal/info.GoOS=$(GOOS)' \
 		-X '$(GOPKG)/internal/info.GoArch=$(GOARCH)' \
 		-X '$(GOPKG)/internal/info.CGOEnabled=$(CGO_ENABLED)' \
-		-X '$(GOPKG)/internal/info.NGTVersion=$(NGT_VERSION)' \
+		-X '$(GOPKG)/internal/info.AlgorithmInfo=NGT-$(NGT_VERSION)' \
 		-X '$(GOPKG)/internal/info.BuildCPUInfoFlags=$(CPU_INFO_FLAGS)' \
 		-buildid=" \
 		-mod=readonly \

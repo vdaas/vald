@@ -181,29 +181,31 @@ PROTO_PATHS = \
 # - internal/test/comparator
 # - internal/test/mock
 GO_SOURCES = $(eval GO_SOURCES := $(shell find \
-		./cmd \
-		./hack \
-		./internal \
-		./pkg \
-		-not -path './cmd/cli/*' \
-		-not -path './internal/core/algorithm/ngt/*' \
-		-not -path './internal/compress/gob/*' \
-		-not -path './internal/compress/gzip/*' \
-		-not -path './internal/compress/lz4/*' \
-		-not -path './internal/compress/zstd/*' \
-		-not -path './internal/db/storage/blob/s3/sdk/s3/*' \
-		-not -path './internal/db/rdb/mysql/dbr/*' \
-		-not -path './internal/test/comparator/*' \
-		-not -path './internal/test/mock/*' \
-		-not -path './hack/benchmark/internal/client/ngtd/*' \
-		-not -path './hack/benchmark/internal/starter/agent/*' \
-		-not -path './hack/benchmark/internal/starter/external/*' \
-		-not -path './hack/benchmark/internal/starter/gateway/*' \
-		-not -path './hack/gorules/*' \
-		-not -path './hack/license/*' \
-		-not -path './hack/swagger/*' \
-		-not -path './hack/tools/*' \
-		-not -path './tests/*' \
+		$(ROOTDIR)/cmd \
+		$(ROOTDIR)/hack \
+		$(ROOTDIR)/internal \
+		$(ROOTDIR)/pkg \
+		-not -path '$(ROOTDIR)/cmd/cli/*' \
+		-not -path '$(ROOTDIR)/internal/core/algorithm/ngt/*' \
+		-not -path '$(ROOTDIR)/internal/core/algorithm/qbg/*' \
+		-not -path '$(ROOTDIR)/internal/core/algorithm/faiss/*' \
+		-not -path '$(ROOTDIR)/internal/compress/gob/*' \
+		-not -path '$(ROOTDIR)/internal/compress/gzip/*' \
+		-not -path '$(ROOTDIR)/internal/compress/lz4/*' \
+		-not -path '$(ROOTDIR)/internal/compress/zstd/*' \
+		-not -path '$(ROOTDIR)/internal/db/storage/blob/s3/sdk/s3/*' \
+		-not -path '$(ROOTDIR)/internal/db/rdb/mysql/dbr/*' \
+		-not -path '$(ROOTDIR)/internal/test/comparator/*' \
+		-not -path '$(ROOTDIR)/internal/test/mock/*' \
+		-not -path '$(ROOTDIR)/hack/benchmark/internal/client/ngtd/*' \
+		-not -path '$(ROOTDIR)/hack/benchmark/internal/starter/agent/*' \
+		-not -path '$(ROOTDIR)/hack/benchmark/internal/starter/external/*' \
+		-not -path '$(ROOTDIR)/hack/benchmark/internal/starter/gateway/*' \
+		-not -path '$(ROOTDIR)/hack/gorules/*' \
+		-not -path '$(ROOTDIR)/hack/license/*' \
+		-not -path '$(ROOTDIR)/hack/swagger/*' \
+		-not -path '$(ROOTDIR)/hack/tools/*' \
+		-not -path '$(ROOTDIR)/tests/*' \
 		-type f \
 		-name '*.go' \
 		-not -regex '.*options?\.go' \
@@ -211,29 +213,31 @@ GO_SOURCES = $(eval GO_SOURCES := $(shell find \
 		-not -name '*_mock.go' \
 		-not -name 'doc.go'))$(GO_SOURCES)
 GO_OPTION_SOURCES = $(eval GO_OPTION_SOURCES := $(shell find \
-		./cmd \
-		./hack \
-		./internal \
-		./pkg \
-		-not -path './cmd/cli/*' \
-		-not -path './internal/core/algorithm/ngt/*' \
-		-not -path './internal/compress/gob/*' \
-		-not -path './internal/compress/gzip/*' \
-		-not -path './internal/compress/lz4/*' \
-		-not -path './internal/compress/zstd/*' \
-		-not -path './internal/db/storage/blob/s3/sdk/s3/*' \
-		-not -path './internal/db/rdb/mysql/dbr/*' \
-		-not -path './internal/test/comparator/*' \
-		-not -path './internal/test/mock/*' \
-		-not -path './hack/benchmark/internal/client/ngtd/*' \
-		-not -path './hack/benchmark/internal/starter/agent/*' \
-		-not -path './hack/benchmark/internal/starter/external/*' \
-		-not -path './hack/benchmark/internal/starter/gateway/*' \
-		-not -path './hack/gorules/*' \
-		-not -path './hack/license/*' \
-		-not -path './hack/swagger/*' \
-		-not -path './hack/tools/*' \
-		-not -path './tests/*' \
+		$(ROOTDIR)/cmd \
+		$(ROOTDIR)/hack \
+		$(ROOTDIR)/internal \
+		$(ROOTDIR)/pkg \
+		-not -path '$(ROOTDIR)/cmd/cli/*' \
+		-not -path '$(ROOTDIR)/internal/core/algorithm/ngt/*' \
+		-not -path '$(ROOTDIR)/internal/core/algorithm/qbg/*' \
+		-not -path '$(ROOTDIR)/internal/core/algorithm/faiss/*' \
+		-not -path '$(ROOTDIR)/internal/compress/gob/*' \
+		-not -path '$(ROOTDIR)/internal/compress/gzip/*' \
+		-not -path '$(ROOTDIR)/internal/compress/lz4/*' \
+		-not -path '$(ROOTDIR)/internal/compress/zstd/*' \
+		-not -path '$(ROOTDIR)/internal/db/storage/blob/s3/sdk/s3/*' \
+		-not -path '$(ROOTDIR)/internal/db/rdb/mysql/dbr/*' \
+		-not -path '$(ROOTDIR)/internal/test/comparator/*' \
+		-not -path '$(ROOTDIR)/internal/test/mock/*' \
+		-not -path '$(ROOTDIR)/hack/benchmark/internal/client/ngtd/*' \
+		-not -path '$(ROOTDIR)/hack/benchmark/internal/starter/agent/*' \
+		-not -path '$(ROOTDIR)/hack/benchmark/internal/starter/external/*' \
+		-not -path '$(ROOTDIR)/hack/benchmark/internal/starter/gateway/*' \
+		-not -path '$(ROOTDIR)/hack/gorules/*' \
+		-not -path '$(ROOTDIR)/hack/license/*' \
+		-not -path '$(ROOTDIR)/hack/swagger/*' \
+		-not -path '$(ROOTDIR)/hack/tools/*' \
+		-not -path '$(ROOTDIR)/tests/*' \
 		-type f \
 		-regex '.*options?\.go' \
 		-not -name '*_test.go' \
@@ -241,7 +245,7 @@ GO_OPTION_SOURCES = $(eval GO_OPTION_SOURCES := $(shell find \
 		-not -name 'doc.go'))$(GO_OPTION_SOURCES)
 
 GO_SOURCES_INTERNAL = $(eval GO_SOURCES_INTERNAL := $(shell find \
-		./internal \
+		$(ROOTDIR)/internal \
 		-type f \
 		-name '*.go' \
 		-not -name '*_test.go' \
@@ -321,36 +325,36 @@ all: clean deps
 clean:
 	rm -rf vendor
 	go clean -cache -modcache -testcache -i -r
-	mv ./apis/grpc/v1/vald/vald.go $(TEMP_DIR)/vald.go
-	mv ./apis/grpc/v1/agent/core/agent.go $(TEMP_DIR)/agent.go
-	mv ./apis/grpc/v1/payload/interface.go $(TEMP_DIR)/interface.go
+	mv $(ROOTDIR)/apis/grpc/v1/vald/vald.go $(TEMP_DIR)/vald.go
+	mv $(ROOTDIR)/apis/grpc/v1/agent/core/agent.go $(TEMP_DIR)/agent.go
+	mv $(ROOTDIR)/apis/grpc/v1/payload/interface.go $(TEMP_DIR)/interface.go
 	rm -rf \
 		/go/pkg \
-		./*.log \
-		./*.svg \
-		./apis/docs \
-		./apis/swagger \
-		./apis/grpc \
-		./bench \
-		./pprof \
-		./libs \
+		$(ROOTDIR)/*.log \
+		$(ROOTDIR)/*.svg \
+		$(ROOTDIR)/apis/docs \
+		$(ROOTDIR)/apis/swagger \
+		$(ROOTDIR)/apis/grpc \
+		$(ROOTDIR)/bench \
+		$(ROOTDIR)/pprof \
+		$(ROOTDIR)/libs \
 		$(GOCACHE) \
-		./go.sum \
-		./go.mod
-	mkdir -p ./apis/grpc/v1/vald
-	mv $(TEMP_DIR)/vald.go ./apis/grpc/v1/vald/vald.go
-	mkdir -p ./apis/grpc/v1/agent/core
-	mv $(TEMP_DIR)/agent.go ./apis/grpc/v1/agent/core/agent.go
-	mkdir -p ./apis/grpc/v1/payload
-	mv $(TEMP_DIR)/interface.go ./apis/grpc/v1/payload/interface.go
-	cp ./hack/go.mod.default ./go.mod
+		$(ROOTDIR)/go.sum \
+		$(ROOTDIR)/go.mod
+	mkdir -p $(ROOTDIR)/apis/grpc/v1/vald
+	mv $(TEMP_DIR)/vald.go $(ROOTDIR)/apis/grpc/v1/vald/vald.go
+	mkdir -p $(ROOTDIR)/apis/grpc/v1/agent/core
+	mv $(TEMP_DIR)/agent.go $(ROOTDIR)/apis/grpc/v1/agent/core/agent.go
+	mkdir -p $(ROOTDIR)/apis/grpc/v1/payload
+	mv $(TEMP_DIR)/interface.go $(ROOTDIR)/apis/grpc/v1/payload/interface.go
+	cp $(ROOTDIR)/hack/go.mod.default $(ROOTDIR)/go.mod
 
 .PHONY: license
 ## add license to files
 license:
 	GOPRIVATE=$(GOPRIVATE) \
 	MAINTAINER=$(MAINTAINER) \
-	go run -mod=readonly hack/license/gen/main.go ./
+	go run -mod=readonly hack/license/gen/main.go $(ROOTDIR)/
 
 .PHONY: init
 ## initialize development environment
@@ -395,10 +399,10 @@ format/go: \
 	gofumpt/install \
 	strictgoimports/install \
 	goimports/install
-	find ./ -type d -name .git -prune -o -type f -regex '.*[^\.pb]\.go' -print | xargs $(GOPATH)/bin/golines -w -m $(GOLINES_MAX_WIDTH)
-	find ./ -type d -name .git -prune -o -type f -regex '.*[^\.pb]\.go' -print | xargs $(GOPATH)/bin/gofumpt -w
-	find ./ -type d -name .git -prune -o -type f -regex '.*[^\.pb]\.go' -print | xargs $(GOPATH)/bin/strictgoimports -w
-	find ./ -type d -name .git -prune -o -type f -regex '.*\.go' -print | xargs $(GOPATH)/bin/goimports -w
+	find $(ROOTDIR)/ -type d -name .git -prune -o -type f -regex '.*[^\.pb]\.go' -print | xargs $(GOPATH)/bin/golines -w -m $(GOLINES_MAX_WIDTH)
+	find $(ROOTDIR)/ -type d -name .git -prune -o -type f -regex '.*[^\.pb]\.go' -print | xargs $(GOPATH)/bin/gofumpt -w
+	find $(ROOTDIR)/ -type d -name .git -prune -o -type f -regex '.*[^\.pb]\.go' -print | xargs $(GOPATH)/bin/strictgoimports -w
+	find $(ROOTDIR)/ -type d -name .git -prune -o -type f -regex '.*\.go' -print | xargs $(GOPATH)/bin/goimports -w
 
 .PHONY: format/go/test
 ## run golines, gofumpt, goimports for go test files
@@ -428,7 +432,7 @@ format/md: \
 	    "charts/**/*.md" \
 	    "apis/**/*.md" \
 	    "tests/**/*.md" \
-	    "./*.md"
+	    "$(ROOTDIR)/*.md"
 
 .PHONY: format/json
 format/json: \
