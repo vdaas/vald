@@ -23,7 +23,7 @@ import (
 	"reflect"
 	"runtime"
 	"strings"
-	"unsafe"
+	"sync"
 )
 
 var (
@@ -225,12 +225,10 @@ func Join(errs ...error) error {
 	case 0:
 		return nil
 	case 1:
-		if errs[0] != nil {
-			return errs[0]
-		}
+		return errs[0]
 	case 2:
 		switch {
-		case errs[0] != nil && errs[1] != nil && !Is(errs[0], errs[1]):
+		case errs[0] != nil && errs[1] != nil:
 			var es []error
 			switch x := errs[1].(type) {
 			case *joinError:
@@ -254,18 +252,20 @@ func Join(errs ...error) error {
 		case errs[1] != nil:
 			return errs[1]
 		}
-	}
-	n := 0
-	for _, err := range errs {
-		if err != nil {
-			n++
-		}
-	}
-	if n == 0 {
 		return nil
 	}
-	e := &joinError{
-		errs: make([]error, 0, n),
+	var e *joinError
+	switch x := errs[0].(type) {
+	case *joinError:
+		e = x
+		errs = errs[1:]
+	case interface{ Unwrap() []error }:
+		e = &joinError{errs: x.Unwrap()}
+		errs = errs[1:]
+	default:
+		e = &joinError{
+			errs: make([]error, 0, l),
+		}
 	}
 	for _, err := range errs {
 		if err != nil {
@@ -279,25 +279,39 @@ type joinError struct {
 	errs []error
 }
 
-func (e *joinError) Error() string {
+var sbPool = sync.Pool{
+	New: func() interface{} {
+		return new(strings.Builder)
+	},
+}
+
+func (e *joinError) Error() (str string) {
 	switch len(e.errs) {
 	case 0:
 		return ""
 	case 1:
 		return e.errs[0].Error()
 	}
-	b := make([]byte, 0, len(e.errs)*16)
+	sb, ok := sbPool.Get().(*strings.Builder)
+	if !ok {
+		sb = new(strings.Builder)
+	}
+	defer func() {
+		sb.Reset()
+		sbPool.Put(sb)
+	}()
+	sb.Grow(len(e.errs) * 16)
 	for i, err := range e.errs {
 		if i > 0 {
-			b = append(b, '\n')
+			sb.WriteByte('\n')
 		}
-		b = append(b, err.Error()...)
+		sb.WriteString(err.Error())
 	}
-	if len(b) == 0 {
+	if sb.Len() == 0 {
 		return ""
 	}
-	// skipcq: GSC-G103
-	return unsafe.String(&b[0], len(b))
+	str = sb.String()
+	return str
 }
 
 func (e *joinError) Unwrap() []error {

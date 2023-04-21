@@ -33,6 +33,7 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
+	"github.com/vdaas/vald/internal/slices"
 	"google.golang.org/grpc"
 )
 
@@ -57,32 +58,26 @@ func BidirectionalStream[Q any, R any](ctx context.Context, stream ServerStream,
 		eg.Limitation(concurrency)
 	}
 
-	var mu sync.Mutex
+	var (
+		mu   sync.Mutex
+		emu  sync.Mutex
+		errs = make([]error, 0, concurrency*2) // concurrency * recv+send
+	)
 
-	errMap := sync.Map{}
-
-	finalize := func() error {
-		var errs error
+	finalize := func() (err error) {
 		err = eg.Wait()
-		errMap.Range(func(_, e interface{}) bool {
-			err, ok := e.(error)
-			if !ok || err == nil {
-				return true
-			}
-			if errs == nil {
-				errs = err
-			} else {
-				// FIXME: It should have been errors.Join here, but it remains errors.Wrap because the bench/agent/stream tests will fail.
-				// The reason is likely that when it's changed to errors.Join, status.ParseError cannot parse errors correctly,
-				// but this needs to be investigated further.
-				errs = errors.Wrap(err, errs.Error())
-			}
-			return true
-		})
-		if errs == nil {
-			return nil
+		if err != nil {
+			emu.Lock()
+			errs = append(errs, err)
+			emu.Unlock()
 		}
-		st, msg, err := status.ParseError(errs, codes.Internal, "failed to parse BidirectionalStream final gRPC error response")
+		slices.RemoveDuplicates(errs, func(left, right error) bool {
+			return left.Error() < right.Error()
+		})
+		emu.Lock()
+		err = errors.Join(errs...)
+		emu.Unlock()
+		st, msg, err := status.ParseError(err, codes.Internal, "failed to parse BidirectionalStream final gRPC error response")
 		if span != nil {
 			span.RecordError(err)
 			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
@@ -101,8 +96,11 @@ func BidirectionalStream[Q any, R any](ctx context.Context, stream ServerStream,
 			err = stream.RecvMsg(data)
 			if err != nil {
 				if err != io.EOF && !errors.Is(err, io.EOF) {
+					err = errors.Wrap(err, "BidirectionalStream RecvMsg returned error")
+					emu.Lock()
+					errs = append(errs, err)
+					emu.Unlock()
 					log.Errorf("failed to receive stream message: %v", err)
-					errMap.Store(err.Error(), err)
 				}
 				return finalize()
 
@@ -120,7 +118,6 @@ func BidirectionalStream[Q any, R any](ctx context.Context, stream ServerStream,
 					res, err = f(ctx, data)
 					if err != nil {
 						runtime.Gosched()
-						errMap.Store(err.Error(), err)
 						st, msg, err := status.ParseError(err, codes.Internal, fmt.Sprintf("failed to parse BidirectionalStream id= %020d gRPC error response", id))
 						if sspan != nil {
 							sspan.RecordError(err)
@@ -144,6 +141,10 @@ func BidirectionalStream[Q any, R any](ctx context.Context, stream ServerStream,
 						mu.Unlock()
 						if err != nil {
 							runtime.Gosched()
+							err = errors.Wrapf(err, "BidirectionalStream SendMsg returned error at stream-%020d", id)
+							emu.Lock()
+							errs = append(errs, err)
+							emu.Unlock()
 							st, msg, err := status.ParseError(err, codes.Internal, fmt.Sprintf("failed to parse BidirectionalStream.SendMsg id= %020d gRPC error response", id),
 								&errdetails.RequestInfo{
 									RequestId:   fmt.Sprintf("%s/BidirectionalStream/stream-%020d/SendMsg", apiName, id),
