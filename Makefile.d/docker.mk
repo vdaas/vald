@@ -188,3 +188,31 @@ docker/build/loadtest:
 	    -t $(ORG)/$(LOADTEST_IMAGE):$(TAG) . \
 	    --build-arg MAINTAINER=$(MAINTAINER) \
 	    --build-arg GO_VERSION=$(GO_VERSION)
+
+.PHONY: docker/name/example/client/gateway/filter/ingress-filter/server
+docker/name/example/client/gateway/filter/ingress-filter/server:
+	@echo "vald-ingress-filter"
+
+.PHONY: docker/build/example/client/gateway/filter/ingress-filter/server
+docker/build/example/client/gateway/filter/ingress-filter/server:
+	$(DOCKER) build \
+	    $(DOCKER_OPTS) \
+	    -f dockers/example/client/gateway/filter/ingress-filter/server/Dockerfile \
+	    -t $(ORG)/vald-ingress-filter:latest . \
+	    --build-arg GO_VERSION=$(GO_VERSION) \
+	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
+	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG)
+
+.PHONY: docker/name/example/client/gateway/filter/egress-filter/server
+docker/name/example/client/gateway/filter/egress-filter/server:
+	@echo "vald-egress-filter"
+
+.PHONY: docker/build/example/client/gateway/filter/egress-filter/server
+docker/build/example/client/gateway/filter/egress-filter/server:
+	$(DOCKER) build \
+	    $(DOCKER_OPTS) \
+	    -f dockers/example/client/gateway/filter/egress-filter/server/Dockerfile \
+	    -t $(ORG)/vald-egress-filter:latest . \
+	    --build-arg GO_VERSION=$(GO_VERSION) \
+	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
+	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG)

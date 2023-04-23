@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vald-egress-filter
+  labels:
+    app: vald-egress-filter
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: vald-egress-filter
+  template:
+    metadata:
+      labels:
+        app: vald-egress-filter
+    spec:
+      securityContext:
+        runAsUser: 65532
+        runAsGroup: 65532
+        runAsNonRoot: true
+        fsGroup: 65532
+      containers:
+        - name: vald-egress-filter
+          image: vdaas/vald-egress-filter:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: grpc
+              containerPort: 8083

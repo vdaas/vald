@@ -206,6 +206,64 @@ cmd/manager/index/index: \
 		$(dir $@)main.go
 	$@ -version
 
+.PHONY: cmd/example/client/gateway/filter/ingress-filter/server
+cmd/example/client/gateway/filter/ingress-filter/server: \
+	$(GO_SOURCES_INTERNAL) \
+	$(PBGOS) \
+	$(shell find $(ROOTDIR)/cmd/gateway/filter -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go') \
+	$(shell find $(ROOTDIR)/pkg/gateway/filter -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
+	$(eval CGO_ENABLED = 0)
+	CGO_ENABLED=$(CGO_ENABLED) \
+	GO111MODULE=on \
+	GOPRIVATE=$(GOPRIVATE) \
+	go build \
+		--ldflags "-w -extldflags=-static \
+		-X '$(GOPKG)/internal/info.Version=$(VERSION)' \
+		-X '$(GOPKG)/internal/info.GitCommit=$(GIT_COMMIT)' \
+		-X '$(GOPKG)/internal/info.BuildTime=$(DATETIME)' \
+		-X '$(GOPKG)/internal/info.GoVersion=$(GO_VERSION)' \
+		-X '$(GOPKG)/internal/info.GoOS=$(GOOS)' \
+		-X '$(GOPKG)/internal/info.GoArch=$(GOARCH)' \
+		-X '$(GOPKG)/internal/info.CGOEnabled=$(CGO_ENABLED)' \
+		-X '$(GOPKG)/internal/info.BuildCPUInfoFlags=$(CPU_INFO_FLAGS)' \
+		-buildid=" \
+		-mod=readonly \
+		-modcacherw \
+		-a \
+		-tags "osusergo netgo static_build" \
+		-trimpath \
+		-o $@ \
+		example/client/gateway/filter/ingress-filter/server/main.go
+
+.PHONY: cmd/example/client/gateway/filter/egress-filter/server
+cmd/example/client/gateway/filter/egress-filter/server: \
+	$(GO_SOURCES_INTERNAL) \
+	$(PBGOS) \
+	$(shell find $(ROOTDIR)/cmd/gateway/filter -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go') \
+	$(shell find $(ROOTDIR)/pkg/gateway/filter -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
+	$(eval CGO_ENABLED = 0)
+	CGO_ENABLED=$(CGO_ENABLED) \
+	GO111MODULE=on \
+	GOPRIVATE=$(GOPRIVATE) \
+	go build \
+		--ldflags "-w -extldflags=-static \
+		-X '$(GOPKG)/internal/info.Version=$(VERSION)' \
+		-X '$(GOPKG)/internal/info.GitCommit=$(GIT_COMMIT)' \
+		-X '$(GOPKG)/internal/info.BuildTime=$(DATETIME)' \
+		-X '$(GOPKG)/internal/info.GoVersion=$(GO_VERSION)' \
+		-X '$(GOPKG)/internal/info.GoOS=$(GOOS)' \
+		-X '$(GOPKG)/internal/info.GoArch=$(GOARCH)' \
+		-X '$(GOPKG)/internal/info.CGOEnabled=$(CGO_ENABLED)' \
+		-X '$(GOPKG)/internal/info.BuildCPUInfoFlags=$(CPU_INFO_FLAGS)' \
+		-buildid=" \
+		-mod=readonly \
+		-modcacherw \
+		-a \
+		-tags "osusergo netgo static_build" \
+		-trimpath \
+		-o $@ \
+		example/client/gateway/filter/egress-filter/server/main.go
+
 .PHONY: binary/build/zip
 ## build all binaries and zip them
 binary/build/zip: \

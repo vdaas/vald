@@ -378,3 +378,23 @@ $(BINDIR)/kube-linter:
 	    && mv kube-linter-linux $(BINDIR)/kube-linter \
 	    && chmod a+x $(BINDIR)/kube-linter
 endif
+
+.PHONY: k8s/example/client/gateway/filter/ingress-filter/server/deploy
+## deploy ingrsess-filter
+k8s/example/client/gateway/filter/ingress-filter/server/deploy:
+	kubectl apply -f k8s/example/client/gateway/filter/ingress-filter/server
+
+.PHONY: k8s/example/client/gateway/filter/ingress-filter/server/delete
+## delete ingrsess-filter
+k8s/example/client/gateway/filter/ingress-filter/server/delete:
+	kubectl delete -f k8s/example/client/gateway/filter/ingress-filter/server
+
+.PHONY: k8s/example/client/gateway/filter/egress-filter/server/deploy
+## deploy egrsess-filter
+k8s/example/client/gateway/filter/egress-filter/server/deploy:
+	kubectl apply -f k8s/example/client/gateway/filter/egress-filter/server
+
+.PHONY: k8s/example/client/gateway/filter/egress-filter/server/delete
+## delete egrsess-filter
+k8s/example/client/gateway/filter/egress-filter/server/delete:
+	kubectl delete -f k8s/example/client/gateway/filter/egress-filter/server

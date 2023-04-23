@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: vald-ingress-filter
+spec:
+  selector:
+    app: vald-ingress-filter
+  ports:
+  - protocol: TCP
+    port: 8082
+    targetPort: 8082
