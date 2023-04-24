@@ -48,7 +48,6 @@ func init() {
 func main() {
 	glg.Println("start gRPC Client.")
 
-	fmt.Println("Aaa")
 	addr := net.JoinHostPort(egressServerHost, uint16(egressServerPort))
 	conn, err := grpc.Dial(
 		addr,
