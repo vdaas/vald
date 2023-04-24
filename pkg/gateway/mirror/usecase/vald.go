@@ -20,7 +20,7 @@ package usecase
 import (
 	"context"
 
-	"github.com/vdaas/vald/apis/grpc/v1/mirror"
+	"github.com/vdaas/vald/apis/grpc/v1/vald"
 	mclient "github.com/vdaas/vald/internal/client/v1/client/mirror"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/net/grpc"
@@ -78,7 +78,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		service.WithAdvertiseInterval(cfg.Mirror.AdvertiseInterval),
 		service.WithValdAddrs(cfg.Mirror.GatewayAddr),
 		service.WithSelfMirrorAddrs(cfg.Mirror.SelfMirrorAddr),
-		service.WithMirror(c),
+		service.WithGateway(gw),
 	)
 	if err != nil {
 		return nil, err
@@ -97,7 +97,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 
 	grpcServerOptions := []server.Option{
 		server.WithGRPCRegistFunc(func(srv *grpc.Server) {
-			mirror.RegisterValdServerWithMirror(srv, v)
+			vald.RegisterValdServerWithMirror(srv, v)
 		}),
 		server.WithPreStopFunction(func() error {
 			return nil

@@ -23,10 +23,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/vdaas/vald/apis/grpc/v1/mirror"
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
-	mclient "github.com/vdaas/vald/internal/client/v1/client/mirror"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
@@ -52,7 +50,7 @@ type mirr struct {
 	selfMirrAddrl sync.Map // List of self Mirror gateway addresses
 	gwAddrs       []string // Address of Vald Gateway (LB gateway)
 	gwAddrl       sync.Map // List of Vald Gateway addresses
-	client        mclient.Client
+	gateway       Gateway
 	eg            errgroup.Group
 	advertiseDur  time.Duration
 }
@@ -117,7 +115,7 @@ func (m *mirr) startAdvertise(ctx context.Context) (<-chan error, error) {
 	}()
 	ech := make(chan error, 100)
 
-	tgts, err := m.addrsToMirrorTargets(m.selfMirrAddrs...)
+	tgts, err := m.toMirrorTargets(m.selfMirrAddrs...)
 	if err != nil {
 		close(ech)
 		return nil, err
@@ -144,7 +142,7 @@ func (m *mirr) startAdvertise(ctx context.Context) (<-chan error, error) {
 				st  *status.Status
 				msg string
 			)
-			st, msg, err = status.ParseError(err, codes.Internal, "failed to parse "+mirror.RegisterRPCName+" gRPC error response")
+			st, msg, err = status.ParseError(err, codes.Internal, "failed to parse "+vald.RegisterRPCName+" gRPC error response")
 			if span != nil {
 				span.RecordError(err)
 				span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
@@ -171,7 +169,7 @@ func (m *mirr) startAdvertise(ctx context.Context) (<-chan error, error) {
 			case <-ctx.Done():
 				return err
 			case <-tic.C:
-				tgts, err := m.addrsToMirrorTargets(append(m.selfMirrAddrs, m.client.GRPCClient().ConnectedAddrs()...)...)
+				tgts, err := m.toMirrorTargets(append(m.selfMirrAddrs, m.gateway.GRPCClient().ConnectedAddrs()...)...)
 				if err != nil || len(tgts.GetTargets()) == 0 {
 					if err == nil {
 						err = errors.ErrTargetNotFound
@@ -202,7 +200,7 @@ func (m *mirr) startAdvertise(ctx context.Context) (<-chan error, error) {
 					case ech <- err:
 					}
 				}
-				log.Debugf("[mirror]: connected mirror gateway targets: %v", m.client.GRPCClient().ConnectedAddrs())
+				log.Debugf("[mirror]: connected mirror gateway targets: %v", m.gateway.GRPCClient().ConnectedAddrs())
 			}
 		}
 	})
@@ -210,7 +208,7 @@ func (m *mirr) startAdvertise(ctx context.Context) (<-chan error, error) {
 }
 
 func (m *mirr) registers(ctx context.Context, tgts *payload.Mirror_Targets) error {
-	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+mirror.MirrorRPCServiceName+"/"+mirror.RegisterRPCName), "vald/gateway/mirror/service/Mirror.registers")
+	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.MirrorRPCServiceName+"/"+vald.RegisterRPCName), "vald/gateway/mirror/service/Mirror.registers")
 	defer func() {
 		if span != nil {
 			span.End()
@@ -220,60 +218,61 @@ func (m *mirr) registers(ctx context.Context, tgts *payload.Mirror_Targets) erro
 		ServingData: errdetails.Serialize(tgts),
 	}
 	resInfo := &errdetails.ResourceInfo{
-		ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + mirror.RegisterRPCName,
+		ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.RegisterRPCName,
 	}
-	return m.broadCast(ctx,
-		func(ctx context.Context, target string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
-			ctx, span := trace.StartSpan(ctx, "vald/gateway/mirror/service/Mirror.registers/"+target)
-			defer func() {
-				if span != nil {
-					span.End()
-				}
-			}()
-			_, err := mirror.NewMirrorClient(conn).Register(ctx, tgts, copts...)
-			if err != nil {
-				var attrs trace.Attributes
-				switch {
-				case errors.Is(err, context.Canceled):
-					err = status.WrapWithCanceled(
-						mirror.RegisterRPCName+" API canceld", err, reqInfo, resInfo,
-					)
-					attrs = trace.StatusCodeCancelled(err.Error())
-				case errors.Is(err, context.DeadlineExceeded):
-					err = status.WrapWithCanceled(
-						mirror.RegisterRPCName+" API deadline exceeded", err, reqInfo, resInfo,
-					)
-					attrs = trace.StatusCodeDeadlineExceeded(err.Error())
-				case errors.Is(err, errors.ErrGRPCClientConnNotFound("*")):
-					err = status.WrapWithInternal(
-						mirror.RegisterRPCName+" API connection not found", err, reqInfo, resInfo,
-					)
-					attrs = trace.StatusCodeInternal(err.Error())
-				default:
-					var (
-						st  *status.Status
-						msg string
-					)
-					st, msg, err = status.ParseError(err, codes.Internal,
-						"failed to parse "+mirror.RegisterRPCName+" gRPC error response", reqInfo, resInfo,
-					)
-					attrs = trace.FromGRPCStatus(st.Code(), msg)
-				}
-				log.Error("failed to send Register API to %s\t: %v", target, err)
-				if span != nil {
-					span.RecordError(err)
-					span.SetAttributes(attrs...)
-					span.SetStatus(trace.StatusError, err.Error())
-				}
-				return err
+
+	return m.gateway.DoMulti(ctx, m.connectedMirrorAddrs(), func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error {
+		ctx, span := trace.StartSpan(ctx, "vald/gateway/mirror/service/Mirror.registers/"+target)
+		defer func() {
+			if span != nil {
+				span.End()
 			}
-			return nil
-		},
-	)
+		}()
+
+		_, err := vc.Register(ctx, tgts, copts...)
+		if err != nil {
+			var attrs trace.Attributes
+			switch {
+			case errors.Is(err, context.Canceled):
+				err = status.WrapWithCanceled(
+					vald.RegisterRPCName+" API canceld", err, reqInfo, resInfo,
+				)
+				attrs = trace.StatusCodeCancelled(err.Error())
+			case errors.Is(err, context.DeadlineExceeded):
+				err = status.WrapWithCanceled(
+					vald.RegisterRPCName+" API deadline exceeded", err, reqInfo, resInfo,
+				)
+				attrs = trace.StatusCodeDeadlineExceeded(err.Error())
+			case errors.Is(err, errors.ErrGRPCClientConnNotFound("*")):
+				err = status.WrapWithInternal(
+					vald.RegisterRPCName+" API connection not found", err, reqInfo, resInfo,
+				)
+				attrs = trace.StatusCodeInternal(err.Error())
+			default:
+				var (
+					st  *status.Status
+					msg string
+				)
+				st, msg, err = status.ParseError(err, codes.Internal,
+					"failed to parse "+vald.RegisterRPCName+" gRPC error response", reqInfo, resInfo,
+				)
+				attrs = trace.FromGRPCStatus(st.Code(), msg)
+			}
+			log.Error("failed to send Register API to %s\t: %v", target, err)
+			if span != nil {
+				span.RecordError(err)
+				span.SetAttributes(attrs...)
+				span.SetStatus(trace.StatusError, err.Error())
+			}
+			return err
+		}
+
+		return nil
+	})
 }
 
 func (m *mirr) advertises(ctx context.Context, tgts *payload.Mirror_Targets) ([]*payload.Mirror_Target, error) {
-	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+mirror.MirrorRPCServiceName+"/"+mirror.AdvertiseRPCName), "vald/gateway/mirror/service/Mirror.advertises")
+	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.MirrorRPCServiceName+"/"+vald.AdvertiseRPCName), "vald/gateway/vald/service/Mirror.advertises")
 	defer func() {
 		if span != nil {
 			span.End()
@@ -283,63 +282,62 @@ func (m *mirr) advertises(ctx context.Context, tgts *payload.Mirror_Targets) ([]
 		ServingData: errdetails.Serialize(tgts),
 	}
 	resInfo := &errdetails.ResourceInfo{
-		ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + mirror.AdvertiseRPCName,
+		ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.AdvertiseRPCName,
 	}
 	resTgts := make([]*payload.Mirror_Target, 0, len(tgts.GetTargets()))
 	var mu sync.Mutex
-	err := m.broadCast(ctx,
-		func(ctx context.Context, target string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
-			ctx, span := trace.StartSpan(ctx, "vald/gateway/mirror/service/Mirror.advertises/"+target)
-			defer func() {
-				if span != nil {
-					span.End()
-				}
-			}()
-			res, err := mirror.NewMirrorClient(conn).Advertise(ctx, tgts)
-			if err != nil {
-				var attrs trace.Attributes
-				switch {
-				case errors.Is(err, context.Canceled):
-					err = status.WrapWithCanceled(
-						mirror.AdvertiseRPCName+" API canceld", err, reqInfo, resInfo,
-					)
-					attrs = trace.StatusCodeCancelled(err.Error())
-				case errors.Is(err, context.DeadlineExceeded):
-					err = status.WrapWithCanceled(
-						mirror.AdvertiseRPCName+" API deadline exceeded", err, reqInfo, resInfo,
-					)
-					attrs = trace.StatusCodeDeadlineExceeded(err.Error())
-				case errors.Is(err, errors.ErrGRPCClientConnNotFound("*")):
-					err = status.WrapWithInternal(
-						mirror.AdvertiseRPCName+" API connection not found", err, reqInfo, resInfo,
-					)
-					attrs = trace.StatusCodeInternal(err.Error())
-				default:
-					var (
-						st  *status.Status
-						msg string
-					)
-					st, msg, err = status.ParseError(err, codes.Internal,
-						"failed to parse "+mirror.AdvertiseRPCName+" gRPC error response", reqInfo, resInfo,
-					)
-					attrs = trace.FromGRPCStatus(st.Code(), msg)
-				}
-				log.Errorf("failed to process advertise requst to %s\terror: %s", target, err.Error())
-				if span != nil {
-					span.RecordError(err)
-					span.SetAttributes(attrs...)
-					span.SetStatus(trace.StatusError, err.Error())
-				}
-				return err
+
+	err := m.gateway.DoMulti(ctx, m.connectedMirrorAddrs(), func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error {
+		ctx, span := trace.StartSpan(ctx, "vald/gateway/mirror/service/Mirror.advertises/"+target)
+		defer func() {
+			if span != nil {
+				span.End()
 			}
-			if res != nil && len(res.GetTargets()) > 0 {
-				mu.Lock()
-				resTgts = append(resTgts, res.GetTargets()...)
-				mu.Unlock()
+		}()
+		res, err := vc.Advertise(ctx, tgts)
+		if err != nil {
+			var attrs trace.Attributes
+			switch {
+			case errors.Is(err, context.Canceled):
+				err = status.WrapWithCanceled(
+					vald.AdvertiseRPCName+" API canceld", err, reqInfo, resInfo,
+				)
+				attrs = trace.StatusCodeCancelled(err.Error())
+			case errors.Is(err, context.DeadlineExceeded):
+				err = status.WrapWithCanceled(
+					vald.AdvertiseRPCName+" API deadline exceeded", err, reqInfo, resInfo,
+				)
+				attrs = trace.StatusCodeDeadlineExceeded(err.Error())
+			case errors.Is(err, errors.ErrGRPCClientConnNotFound("*")):
+				err = status.WrapWithInternal(
+					vald.AdvertiseRPCName+" API connection not found", err, reqInfo, resInfo,
+				)
+				attrs = trace.StatusCodeInternal(err.Error())
+			default:
+				var (
+					st  *status.Status
+					msg string
+				)
+				st, msg, err = status.ParseError(err, codes.Internal,
+					"failed to parse "+vald.AdvertiseRPCName+" gRPC error response", reqInfo, resInfo,
+				)
+				attrs = trace.FromGRPCStatus(st.Code(), msg)
 			}
-			return nil
-		},
-	)
+			log.Errorf("failed to process advertise requst to %s\terror: %s", target, err.Error())
+			if span != nil {
+				span.RecordError(err)
+				span.SetAttributes(attrs...)
+				span.SetStatus(trace.StatusError, err.Error())
+			}
+			return err
+		}
+		if res != nil && len(res.GetTargets()) > 0 {
+			mu.Lock()
+			resTgts = append(resTgts, res.GetTargets()...)
+			mu.Unlock()
+		}
+		return nil
+	})
 	return resTgts, err
 }
 
@@ -357,8 +355,8 @@ func (m *mirr) Connect(ctx context.Context, targets ...*payload.Mirror_Target) e
 		addr := net.JoinHostPort(target.GetIp(), uint16(target.GetPort())) // addr: host:port
 		if !m.isSelfMirrorAddr(addr) && !m.isGatewayAddr(addr) {
 			_, ok := m.addrl.Load(addr)
-			if !ok || !m.client.GRPCClient().IsConnected(ctx, addr) {
-				_, err := m.client.GRPCClient().Connect(ctx, addr)
+			if !ok || !m.gateway.GRPCClient().IsConnected(ctx, addr) {
+				_, err := m.gateway.GRPCClient().Connect(ctx, addr)
 				if err != nil {
 					m.addrl.Delete(addr)
 					return err
@@ -371,7 +369,7 @@ func (m *mirr) Connect(ctx context.Context, targets ...*payload.Mirror_Target) e
 }
 
 func (m *mirr) MirrorTargets() ([]*payload.Mirror_Target, error) {
-	addrs := append(m.selfMirrAddrs, m.client.GRPCClient().ConnectedAddrs()...)
+	addrs := append(m.selfMirrAddrs, m.gateway.GRPCClient().ConnectedAddrs()...)
 	tgts := make([]*payload.Mirror_Target, 0, len(addrs))
 	for _, addr := range addrs {
 		if !m.isGatewayAddr(addr) {
@@ -388,42 +386,6 @@ func (m *mirr) MirrorTargets() ([]*payload.Mirror_Target, error) {
 	return tgts, nil
 }
 
-func (m *mirr) broadCast(ctx context.Context,
-	f func(ctx context.Context, target string, conn *grpc.ClientConn, copts ...grpc.CallOption) error,
-) (err error) {
-	fctx, span := trace.StartSpan(ctx, "vald/gateway/mirror/service/Mirror.broadCast")
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
-	connectedAddrs := m.client.GRPCClient().ConnectedAddrs()
-	addrs := make([]string, 0, len(connectedAddrs))
-	for _, addr := range connectedAddrs {
-		if !m.isSelfMirrorAddr(addr) && !m.isGatewayAddr(addr) {
-			addrs = append(addrs, addr)
-		}
-	}
-	if len(addrs) == 0 {
-		return errors.ErrTargetNotFound
-	}
-
-	return m.client.GRPCClient().OrderedRangeConcurrent(fctx, addrs, -1, func(ictx context.Context,
-		addr string, conn *grpc.ClientConn, copts ...grpc.CallOption,
-	) error {
-		select {
-		case <-ictx.Done():
-			return nil
-		default:
-			err = f(ictx, addr, conn, copts...)
-			if err != nil {
-				return err
-			}
-		}
-		return nil
-	})
-}
-
 func (m *mirr) isSelfMirrorAddr(addr string) bool {
 	if _, ok := m.selfMirrAddrl.Load(addr); ok {
 		return true
@@ -438,7 +400,19 @@ func (m *mirr) isGatewayAddr(addr string) bool {
 	return false
 }
 
-func (m *mirr) addrsToMirrorTargets(addrs ...string) (*payload.Mirror_Targets, error) {
+func (m *mirr) connectedMirrorAddrs() []string {
+	connectedAddrs := m.gateway.GRPCClient().ConnectedAddrs()
+	addrs := make([]string, 0, len(connectedAddrs))
+	for _, addr := range connectedAddrs {
+		if !m.isSelfMirrorAddr(addr) &&
+			!m.isGatewayAddr(addr) {
+			addrs = append(addrs, addr)
+		}
+	}
+	return addrs
+}
+
+func (m *mirr) toMirrorTargets(addrs ...string) (*payload.Mirror_Targets, error) {
 	tgts := make([]*payload.Mirror_Target, 0, len(addrs))
 	for _, addr := range addrs {
 		if ok := m.isGatewayAddr(addr); !ok {

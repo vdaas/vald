@@ -23,7 +23,6 @@ import (
 	"reflect"
 	"sync"
 
-	"github.com/vdaas/vald/apis/grpc/v1/mirror"
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
 	"github.com/vdaas/vald/internal/errgroup"
@@ -46,12 +45,12 @@ type server struct {
 	streamConcurrency int
 	name              string
 	ip                string
-	mirror.UnimplementedValdServerWithMirror
+	vald.UnimplementedValdServerWithMirror
 }
 
 const apiName = "vald/gateway/mirror"
 
-func New(opts ...Option) (mirror.Server, error) {
+func New(opts ...Option) (vald.ServerWithMirror, error) {
 	s := new(server)
 	for _, opt := range append(defaultOptions, opts...) {
 		if err := opt(s); err != nil {
@@ -68,7 +67,7 @@ func New(opts ...Option) (mirror.Server, error) {
 }
 
 func (s *server) Register(ctx context.Context, req *payload.Mirror_Targets) (*payload.Mirror_Targets, error) {
-	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, mirror.PackageName+"."+mirror.MirrorRPCServiceName+"/"+mirror.RegisterRPCName), apiName+"/"+mirror.RegisterRPCName)
+	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.MirrorRPCServiceName+"/"+vald.RegisterRPCName), apiName+"/"+vald.RegisterRPCName)
 	defer func() {
 		if span != nil {
 			span.End()
@@ -80,7 +79,7 @@ func (s *server) Register(ctx context.Context, req *payload.Mirror_Targets) (*pa
 			ServingData: errdetails.Serialize(req),
 		}
 		resInfo := &errdetails.ResourceInfo{
-			ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + mirror.RegisterRPCName,
+			ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.RegisterRPCName,
 			ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
 		}
 		var attrs trace.Attributes
@@ -88,22 +87,22 @@ func (s *server) Register(ctx context.Context, req *payload.Mirror_Targets) (*pa
 		switch {
 		case errors.Is(err, context.Canceled):
 			err = status.WrapWithCanceled(
-				mirror.RegisterRPCName+" API canceld", err, reqInfo, resInfo,
+				vald.RegisterRPCName+" API canceld", err, reqInfo, resInfo,
 			)
 			attrs = trace.StatusCodeCancelled(err.Error())
 		case errors.Is(err, context.DeadlineExceeded):
 			err = status.WrapWithCanceled(
-				mirror.RegisterRPCName+" API deadline exceeded", err, reqInfo, resInfo,
+				vald.RegisterRPCName+" API deadline exceeded", err, reqInfo, resInfo,
 			)
 			attrs = trace.StatusCodeDeadlineExceeded(err.Error())
 		case errors.Is(err, errors.ErrGRPCClientConnNotFound("*")):
 			err = status.WrapWithInternal(
-				mirror.RegisterRPCName+" API connection not found", err, reqInfo, resInfo,
+				vald.RegisterRPCName+" API connection not found", err, reqInfo, resInfo,
 			)
 			attrs = trace.StatusCodeInternal(err.Error())
 		case errors.Is(err, errors.ErrTargetNotFound):
 			err = status.WrapWithInvalidArgument(
-				mirror.RegisterRPCName+" API target not found", err, reqInfo, resInfo,
+				vald.RegisterRPCName+" API target not found", err, reqInfo, resInfo,
 			)
 			attrs = trace.StatusCodeInvalidArgument(err.Error())
 		default:
@@ -112,7 +111,7 @@ func (s *server) Register(ctx context.Context, req *payload.Mirror_Targets) (*pa
 				msg string
 			)
 			st, msg, err = status.ParseError(err, codes.Internal,
-				"failed to parse "+mirror.RegisterRPCName+" gRPC error response", reqInfo, resInfo,
+				"failed to parse "+vald.RegisterRPCName+" gRPC error response", reqInfo, resInfo,
 			)
 			attrs = trace.FromGRPCStatus(st.Code(), msg)
 		}
@@ -128,7 +127,7 @@ func (s *server) Register(ctx context.Context, req *payload.Mirror_Targets) (*pa
 }
 
 func (s *server) Advertise(ctx context.Context, req *payload.Mirror_Targets) (res *payload.Mirror_Targets, err error) {
-	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, mirror.PackageName+"."+mirror.MirrorRPCServiceName+"/"+mirror.AdvertiseRPCName), apiName+"/"+mirror.AdvertiseRPCName)
+	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.MirrorRPCServiceName+"/"+vald.AdvertiseRPCName), apiName+"/"+vald.AdvertiseRPCName)
 	defer func() {
 		if span != nil {
 			span.End()
@@ -140,7 +139,7 @@ func (s *server) Advertise(ctx context.Context, req *payload.Mirror_Targets) (re
 	}
 	tgts, err := s.mirror.MirrorTargets()
 	if err != nil {
-		err = status.WrapWithInternal(mirror.AdvertiseRPCName+" API failed to get connected mirror gateway targets", err,
+		err = status.WrapWithInternal(vald.AdvertiseRPCName+" API failed to get connected vald gateway targets", err,
 			&errdetails.RequestInfo{
 				ServingData: errdetails.Serialize(req),
 			},
@@ -153,7 +152,7 @@ func (s *server) Advertise(ctx context.Context, req *payload.Mirror_Targets) (re
 				},
 			},
 			&errdetails.ResourceInfo{
-				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + mirror.AdvertiseRPCName,
+				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.AdvertiseRPCName,
 				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
 			},
 		)
@@ -178,7 +177,7 @@ func (s *server) Exists(ctx context.Context, meta *payload.Object_ID) (id *paylo
 		}
 	}()
 
-	_, err = s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (interface{}, error) {
+	_, err = s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, vc vald.ClientWithMirror, copts ...grpc.CallOption) (interface{}, error) {
 		id, err = vc.Exists(ctx, meta, copts...)
 		if err != nil {
 			return nil, err
@@ -245,7 +244,7 @@ func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *
 		}
 	}()
 
-	_, err = s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (interface{}, error) {
+	_, err = s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, vc vald.ClientWithMirror, copts ...grpc.CallOption) (interface{}, error) {
 		res, err = vc.Search(ctx, req, copts...)
 		if err != nil {
 			return nil, err
@@ -315,7 +314,7 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 		}
 	}()
 
-	_, err = s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (interface{}, error) {
+	_, err = s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, vc vald.ClientWithMirror, copts ...grpc.CallOption) (interface{}, error) {
 		res, err = vc.SearchByID(ctx, req, copts...)
 		if err != nil {
 			return nil, err
@@ -481,7 +480,7 @@ func (s *server) MultiSearch(ctx context.Context, req *payload.Search_MultiReque
 		}
 	}()
 
-	_, err = s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (interface{}, error) {
+	_, err = s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, vc vald.ClientWithMirror, copts ...grpc.CallOption) (interface{}, error) {
 		res, err = vc.MultiSearch(ctx, req, copts...)
 		if err != nil {
 			return nil, err
@@ -548,7 +547,7 @@ func (s *server) MultiSearchByID(ctx context.Context, req *payload.Search_MultiI
 		}
 	}()
 
-	_, err = s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (interface{}, error) {
+	_, err = s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, vc vald.ClientWithMirror, copts ...grpc.CallOption) (interface{}, error) {
 		res, err = vc.MultiSearchByID(ctx, req, copts...)
 		if err != nil {
 			return nil, err
@@ -615,7 +614,7 @@ func (s *server) LinearSearch(ctx context.Context, req *payload.Search_Request) 
 		}
 	}()
 
-	_, err = s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (interface{}, error) {
+	_, err = s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, vc vald.ClientWithMirror, copts ...grpc.CallOption) (interface{}, error) {
 		res, err = vc.LinearSearch(ctx, req, copts...)
 		if err != nil {
 			return nil, err
@@ -685,7 +684,7 @@ func (s *server) LinearSearchByID(ctx context.Context, req *payload.Search_IDReq
 		}
 	}()
 
-	_, err = s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (interface{}, error) {
+	_, err = s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, vc vald.ClientWithMirror, copts ...grpc.CallOption) (interface{}, error) {
 		res, err = vc.LinearSearchByID(ctx, req, copts...)
 		if err != nil {
 			return nil, err
@@ -851,7 +850,7 @@ func (s *server) MultiLinearSearch(ctx context.Context, req *payload.Search_Mult
 		}
 	}()
 
-	_, err = s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (interface{}, error) {
+	_, err = s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, vc vald.ClientWithMirror, copts ...grpc.CallOption) (interface{}, error) {
 		res, err = vc.MultiLinearSearch(ctx, req, copts...)
 		if err != nil {
 			return nil, err
@@ -918,7 +917,7 @@ func (s *server) MultiLinearSearchByID(ctx context.Context, req *payload.Search_
 		}
 	}()
 
-	_, err = s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (interface{}, error) {
+	_, err = s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, vc vald.ClientWithMirror, copts ...grpc.CallOption) (interface{}, error) {
 		res, err = vc.MultiLinearSearchByID(ctx, req, copts...)
 		if err != nil {
 			return nil, err
@@ -990,7 +989,7 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (loc *
 	// When this condition is matched, the request is proxied to another Mirror gateway.
 	// So this component sends requests only to the Vald gateway (LB gateway) of its own cluster.
 	if len(reqSrcPodName) != 0 {
-		_, err = s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (interface{}, error) {
+		_, err = s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, vc vald.ClientWithMirror, copts ...grpc.CallOption) (interface{}, error) {
 			loc, err = vc.Insert(ctx, req, copts...)
 			if err != nil {
 				return nil, err
@@ -1057,7 +1056,7 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (loc *
 		Uuid: req.GetVector().GetId(),
 		Ips:  make([]string, 0),
 	}
-	err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error {
+	err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error {
 		ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "BroadCast/"+target), apiName+"/"+vald.InsertRPCName+"/"+target)
 		defer func() {
 			if span != nil {
@@ -1177,7 +1176,7 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (loc *
 		},
 	}
 	err = s.gateway.DoMulti(ctx, targets,
-		func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error {
+		func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error {
 			ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "rollback/BroadCast/"+target), apiName+"/"+vald.InsertRPCName+"/rollback/"+target)
 			defer func() {
 				if span != nil {
@@ -1477,7 +1476,7 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (loc *
 	// When this condition is matched, the request is proxied to another Mirror gateway.
 	// So this component sends requests only to the Vald gateway (LB gateway) of its own cluster.
 	if len(reqSrcPodName) != 0 {
-		_, err = s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (interface{}, error) {
+		_, err = s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, vc vald.ClientWithMirror, copts ...grpc.CallOption) (interface{}, error) {
 			loc, err = vc.Update(ctx, req, copts...)
 			if err != nil {
 				return nil, err
@@ -1556,7 +1555,7 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (loc *
 	}
 
 	err = s.gateway.BroadCast(ctx,
-		func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error {
+		func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error {
 			ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "BroadCast/"+target), apiName+"/"+vald.UpdateRPCName+"/"+target)
 			defer func() {
 				if span != nil {
@@ -1678,7 +1677,7 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (loc *
 	}
 
 	err = s.gateway.DoMulti(ctx, targets,
-		func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error {
+		func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error {
 			ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "rollback/BroadCast/"+target), apiName+"/"+vald.RemoveRPCName+"/rollback/"+target)
 			defer func() {
 				if span != nil {
@@ -2012,7 +2011,7 @@ func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *
 	// When this condition is matched, the request is proxied to another Mirror gateway.
 	// So this component sends requests only to the Vald gateway (LB gateway) of its own cluster.
 	if len(reqSrcPodName) != 0 {
-		_, err = s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (interface{}, error) {
+		_, err = s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, vc vald.ClientWithMirror, copts ...grpc.CallOption) (interface{}, error) {
 			loc, err = vc.Upsert(ctx, req, copts...)
 			if err != nil {
 				return nil, err
@@ -2089,7 +2088,7 @@ func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *
 		Uuid: req.GetVector().GetId(),
 		Ips:  make([]string, 0),
 	}
-	err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error {
+	err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error {
 		ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "BroadCast/"+target), apiName+"/"+vald.UpsertRPCName+"/"+target)
 		defer func() {
 			if span != nil {
@@ -2209,7 +2208,7 @@ func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *
 		},
 	}
 	err = s.gateway.DoMulti(ctx, targets,
-		func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error {
+		func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error {
 			ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "rollback/BroadCast/"+target), apiName+"/"+vald.UpsertRPCName+"/rollback/"+target)
 			defer func() {
 				if span != nil {
@@ -2543,7 +2542,7 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (loc *
 	// When this condition is matched, the request is proxied to another Mirror gateway.
 	// So this component sends the request only to the Vald gateway (LB gateway) of own cluster.
 	if len(reqSrcPodName) != 0 {
-		_, err = s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (interface{}, error) {
+		_, err = s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, vc vald.ClientWithMirror, copts ...grpc.CallOption) (interface{}, error) {
 			loc, err = vc.Remove(ctx, req, copts...)
 			if err != nil {
 				return nil, err
@@ -2621,7 +2620,7 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (loc *
 		Ips:  make([]string, 0),
 	}
 
-	err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error {
+	err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error {
 		ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "BroadCast/"+target), apiName+"/"+vald.RemoveRPCName+"/"+target)
 		defer func() {
 			if span != nil {
@@ -2736,7 +2735,7 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (loc *
 	var emu sync.Mutex
 	var rerrs error
 	err = s.gateway.DoMulti(ctx, targets,
-		func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error {
+		func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error {
 			ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "rollback/BroadCast/"+target), apiName+"/"+vald.RemoveRPCName+"/rollback/"+target)
 			defer func() {
 				if span != nil {
@@ -3040,7 +3039,7 @@ func (s *server) GetObject(ctx context.Context, req *payload.Object_VectorReques
 		}
 	}()
 
-	_, err = s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (interface{}, error) {
+	_, err = s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, vc vald.ClientWithMirror, copts ...grpc.CallOption) (interface{}, error) {
 		vec, err = vc.GetObject(ctx, req, copts...)
 		if err != nil {
 			return nil, err
@@ -3111,7 +3110,7 @@ func (s *server) getObjects(ctx context.Context, req *payload.Object_VectorReque
 	var errs error
 	var emu sync.Mutex
 	vecs = new(sync.Map)
-	err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error {
+	err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error {
 		ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "BroadCast/"+target), apiName+"/"+vald.GetObjectRPCName+"/getObjects/"+target)
 		defer func() {
 			if span != nil {

@@ -7,7 +7,6 @@ import (
 	"sync/atomic"
 	"testing"
 
-	"github.com/vdaas/vald/apis/grpc/v1/mirror"
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
 	"github.com/vdaas/vald/internal/errgroup"
@@ -37,7 +36,7 @@ func Test_server_Insert(t *testing.T) {
 		streamConcurrency                 int
 		name                              string
 		ip                                string
-		UnimplementedValdServerWithMirror mirror.UnimplementedValdServerWithMirror
+		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
 	}
 	type want struct {
 		wantCe *payload.Object_Location
@@ -71,7 +70,7 @@ func Test_server_Insert(t *testing.T) {
 				Uuid: uuid,
 				Ips:  []string{"127.0.0.1"},
 			}
-			cmap := map[string]vald.Client{
+			cmap := map[string]vald.ClientWithMirror{
 				"vald-mirror-01": &mockClient{
 					InsertFunc: func(_ context.Context, _ *payload.Insert_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
 						return loc, nil
@@ -105,7 +104,7 @@ func Test_server_Insert(t *testing.T) {
 						FromForwardedContextFunc: func(_ context.Context) string {
 							return ""
 						},
-						BroadCastFunc: func(ctx context.Context, f func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error) error {
+						BroadCastFunc: func(ctx context.Context, f func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error) error {
 							for tgt, c := range cmap {
 								f(ctx, tgt, c)
 							}
@@ -131,7 +130,7 @@ func Test_server_Insert(t *testing.T) {
 				Uuid: uuid,
 				Ips:  []string{"127.0.0.1"},
 			}
-			cmap := map[string]vald.Client{
+			cmap := map[string]vald.ClientWithMirror{
 				"vald-mirror-01": &mockClient{
 					InsertFunc: func(_ context.Context, _ *payload.Insert_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
 						return loc, nil
@@ -164,13 +163,13 @@ func Test_server_Insert(t *testing.T) {
 						FromForwardedContextFunc: func(_ context.Context) string {
 							return ""
 						},
-						BroadCastFunc: func(ctx context.Context, f func(_ context.Context, _ string, _ vald.Client, _ ...grpc.CallOption) error) error {
+						BroadCastFunc: func(ctx context.Context, f func(_ context.Context, _ string, _ vald.ClientWithMirror, _ ...grpc.CallOption) error) error {
 							for tgt, c := range cmap {
 								f(ctx, tgt, c)
 							}
 							return nil
 						},
-						DoMultiFunc: func(ctx context.Context, targets []string, f func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error) error {
+						DoMultiFunc: func(ctx context.Context, targets []string, f func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error) error {
 							if len(targets) != 1 {
 								return errors.New("invalid target")
 							}
@@ -199,7 +198,7 @@ func Test_server_Insert(t *testing.T) {
 				Uuid: uuid,
 				Ips:  []string{"127.0.0.1"},
 			}
-			cmap := map[string]vald.Client{
+			cmap := map[string]vald.ClientWithMirror{
 				"vald-mirror-01": &mockClient{
 					InsertFunc: func(_ context.Context, _ *payload.Insert_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
 						return loc, nil
@@ -232,13 +231,13 @@ func Test_server_Insert(t *testing.T) {
 						FromForwardedContextFunc: func(_ context.Context) string {
 							return ""
 						},
-						BroadCastFunc: func(ctx context.Context, f func(_ context.Context, _ string, _ vald.Client, _ ...grpc.CallOption) error) error {
+						BroadCastFunc: func(ctx context.Context, f func(_ context.Context, _ string, _ vald.ClientWithMirror, _ ...grpc.CallOption) error) error {
 							for tgt, c := range cmap {
 								f(ctx, tgt, c)
 							}
 							return nil
 						},
-						DoMultiFunc: func(ctx context.Context, targets []string, f func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error) error {
+						DoMultiFunc: func(ctx context.Context, targets []string, f func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error) error {
 							if len(targets) != 1 {
 								return errors.New("invalid target")
 							}
@@ -311,7 +310,7 @@ func Test_server_Update(t *testing.T) {
 		streamConcurrency                 int
 		name                              string
 		ip                                string
-		UnimplementedValdServerWithMirror mirror.UnimplementedValdServerWithMirror
+		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
 	}
 	type want struct {
 		wantLoc *payload.Object_Location
@@ -345,7 +344,7 @@ func Test_server_Update(t *testing.T) {
 				Uuid: uuid,
 				Ips:  []string{"127.0.0.1"},
 			}
-			cmap := map[string]vald.Client{
+			cmap := map[string]vald.ClientWithMirror{
 				"vald-mirror-01": &mockClient{
 					GetObjectFunc: func(_ context.Context, _ *payload.Object_VectorRequest, _ ...grpc.CallOption) (*payload.Object_Vector, error) {
 						return nil, status.Error(codes.NotFound, errors.ErrObjectIDNotFound(uuid).Error())
@@ -385,7 +384,7 @@ func Test_server_Update(t *testing.T) {
 						FromForwardedContextFunc: func(_ context.Context) string {
 							return ""
 						},
-						BroadCastFunc: func(ctx context.Context, f func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error) error {
+						BroadCastFunc: func(ctx context.Context, f func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error) error {
 							for tgt, c := range cmap {
 								f(ctx, tgt, c)
 							}
@@ -411,7 +410,7 @@ func Test_server_Update(t *testing.T) {
 				Uuid: uuid,
 				Ips:  []string{"127.0.0.1"},
 			}
-			cmap := map[string]vald.Client{
+			cmap := map[string]vald.ClientWithMirror{
 				"vald-mirror-01": &mockClient{
 					GetObjectFunc: func(_ context.Context, _ *payload.Object_VectorRequest, _ ...grpc.CallOption) (*payload.Object_Vector, error) {
 						return nil, status.Error(codes.NotFound, errors.ErrObjectIDNotFound(uuid).Error())
@@ -450,13 +449,13 @@ func Test_server_Update(t *testing.T) {
 						FromForwardedContextFunc: func(_ context.Context) string {
 							return ""
 						},
-						BroadCastFunc: func(ctx context.Context, f func(_ context.Context, _ string, _ vald.Client, _ ...grpc.CallOption) error) error {
+						BroadCastFunc: func(ctx context.Context, f func(_ context.Context, _ string, _ vald.ClientWithMirror, _ ...grpc.CallOption) error) error {
 							for tgt, c := range cmap {
 								f(ctx, tgt, c)
 							}
 							return nil
 						},
-						DoMultiFunc: func(ctx context.Context, targets []string, f func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error) error {
+						DoMultiFunc: func(ctx context.Context, targets []string, f func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error) error {
 							if len(targets) != 1 {
 								return errors.New("invalid target")
 							}
@@ -489,7 +488,7 @@ func Test_server_Update(t *testing.T) {
 				Id:     uuid,
 				Vector: vector.GaussianDistributedFloat32VectorGenerator(1, dimension)[0],
 			}
-			cmap := map[string]vald.Client{
+			cmap := map[string]vald.ClientWithMirror{
 				"vald-mirror-01": &mockClient{
 					GetObjectFunc: func(_ context.Context, _ *payload.Object_VectorRequest, _ ...grpc.CallOption) (*payload.Object_Vector, error) {
 						return ovec, nil
@@ -522,13 +521,13 @@ func Test_server_Update(t *testing.T) {
 						FromForwardedContextFunc: func(_ context.Context) string {
 							return ""
 						},
-						BroadCastFunc: func(ctx context.Context, f func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error) error {
+						BroadCastFunc: func(ctx context.Context, f func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error) error {
 							for tgt, c := range cmap {
 								f(ctx, tgt, c)
 							}
 							return nil
 						},
-						DoMultiFunc: func(ctx context.Context, targets []string, f func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error) error {
+						DoMultiFunc: func(ctx context.Context, targets []string, f func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error) error {
 							if len(targets) != 1 {
 								return errors.New("invalid target")
 							}
@@ -557,7 +556,7 @@ func Test_server_Update(t *testing.T) {
 				Uuid: uuid,
 				Ips:  []string{"127.0.0.1"},
 			}
-			cmap := map[string]vald.Client{
+			cmap := map[string]vald.ClientWithMirror{
 				"vald-mirror-01": &mockClient{
 					GetObjectFunc: func(_ context.Context, _ *payload.Object_VectorRequest, _ ...grpc.CallOption) (*payload.Object_Vector, error) {
 						return nil, status.Error(codes.NotFound, errors.ErrObjectIDNotFound(uuid).Error())
@@ -596,13 +595,13 @@ func Test_server_Update(t *testing.T) {
 						FromForwardedContextFunc: func(_ context.Context) string {
 							return ""
 						},
-						BroadCastFunc: func(ctx context.Context, f func(_ context.Context, _ string, _ vald.Client, _ ...grpc.CallOption) error) error {
+						BroadCastFunc: func(ctx context.Context, f func(_ context.Context, _ string, _ vald.ClientWithMirror, _ ...grpc.CallOption) error) error {
 							for tgt, c := range cmap {
 								f(ctx, tgt, c)
 							}
 							return nil
 						},
-						DoMultiFunc: func(ctx context.Context, targets []string, f func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error) error {
+						DoMultiFunc: func(ctx context.Context, targets []string, f func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error) error {
 							if len(targets) != 1 {
 								return errors.New("invalid target")
 							}
@@ -636,7 +635,7 @@ func Test_server_Update(t *testing.T) {
 				Vector: vector.GaussianDistributedFloat32VectorGenerator(1, dimension)[0],
 			}
 			var cnt uint32
-			cmap := map[string]vald.Client{
+			cmap := map[string]vald.ClientWithMirror{
 				"vald-mirror-01": &mockClient{
 					GetObjectFunc: func(_ context.Context, _ *payload.Object_VectorRequest, _ ...grpc.CallOption) (*payload.Object_Vector, error) {
 						return ovec, nil
@@ -672,13 +671,13 @@ func Test_server_Update(t *testing.T) {
 						FromForwardedContextFunc: func(_ context.Context) string {
 							return ""
 						},
-						BroadCastFunc: func(ctx context.Context, f func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error) error {
+						BroadCastFunc: func(ctx context.Context, f func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error) error {
 							for tgt, c := range cmap {
 								f(ctx, tgt, c)
 							}
 							return nil
 						},
-						DoMultiFunc: func(ctx context.Context, targets []string, f func(ctx context.Context, target string, vc vald.Client, _ ...grpc.CallOption) error) error {
+						DoMultiFunc: func(ctx context.Context, targets []string, f func(ctx context.Context, target string, vc vald.ClientWithMirror, _ ...grpc.CallOption) error) error {
 							if len(targets) != 1 {
 								return errors.New("invalid target")
 							}
@@ -751,7 +750,7 @@ func Test_server_Upsert(t *testing.T) {
 		streamConcurrency                 int
 		name                              string
 		ip                                string
-		UnimplementedValdServerWithMirror mirror.UnimplementedValdServerWithMirror
+		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
 	}
 	type want struct {
 		wantLoc *payload.Object_Location
@@ -785,7 +784,7 @@ func Test_server_Upsert(t *testing.T) {
 				Uuid: uuid,
 				Ips:  []string{"127.0.0.1"},
 			}
-			cmap := map[string]vald.Client{
+			cmap := map[string]vald.ClientWithMirror{
 				"vald-mirror-01": &mockClient{
 					GetObjectFunc: func(_ context.Context, _ *payload.Object_VectorRequest, _ ...grpc.CallOption) (*payload.Object_Vector, error) {
 						return nil, status.Error(codes.NotFound, errors.ErrObjectIDNotFound(uuid).Error())
@@ -825,7 +824,7 @@ func Test_server_Upsert(t *testing.T) {
 						FromForwardedContextFunc: func(_ context.Context) string {
 							return ""
 						},
-						BroadCastFunc: func(ctx context.Context, f func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error) error {
+						BroadCastFunc: func(ctx context.Context, f func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error) error {
 							for tgt, c := range cmap {
 								f(ctx, tgt, c)
 							}
@@ -851,7 +850,7 @@ func Test_server_Upsert(t *testing.T) {
 				Uuid: uuid,
 				Ips:  []string{"127.0.0.1"},
 			}
-			cmap := map[string]vald.Client{
+			cmap := map[string]vald.ClientWithMirror{
 				"vald-mirror-01": &mockClient{
 					GetObjectFunc: func(_ context.Context, _ *payload.Object_VectorRequest, _ ...grpc.CallOption) (*payload.Object_Vector, error) {
 						return nil, status.Error(codes.NotFound, errors.ErrObjectIDNotFound(uuid).Error())
@@ -890,13 +889,13 @@ func Test_server_Upsert(t *testing.T) {
 						FromForwardedContextFunc: func(_ context.Context) string {
 							return ""
 						},
-						BroadCastFunc: func(ctx context.Context, f func(_ context.Context, _ string, _ vald.Client, _ ...grpc.CallOption) error) error {
+						BroadCastFunc: func(ctx context.Context, f func(_ context.Context, _ string, _ vald.ClientWithMirror, _ ...grpc.CallOption) error) error {
 							for tgt, c := range cmap {
 								f(ctx, tgt, c)
 							}
 							return nil
 						},
-						DoMultiFunc: func(ctx context.Context, targets []string, f func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error) error {
+						DoMultiFunc: func(ctx context.Context, targets []string, f func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error) error {
 							if len(targets) != 1 {
 								return errors.New("invalid target")
 							}
@@ -929,7 +928,7 @@ func Test_server_Upsert(t *testing.T) {
 				Id:     uuid,
 				Vector: vector.GaussianDistributedFloat32VectorGenerator(1, dimension)[0],
 			}
-			cmap := map[string]vald.Client{
+			cmap := map[string]vald.ClientWithMirror{
 				"vald-mirror-01": &mockClient{
 					GetObjectFunc: func(_ context.Context, _ *payload.Object_VectorRequest, _ ...grpc.CallOption) (*payload.Object_Vector, error) {
 						return ovec, nil
@@ -965,13 +964,13 @@ func Test_server_Upsert(t *testing.T) {
 						FromForwardedContextFunc: func(_ context.Context) string {
 							return ""
 						},
-						BroadCastFunc: func(ctx context.Context, f func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error) error {
+						BroadCastFunc: func(ctx context.Context, f func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error) error {
 							for tgt, c := range cmap {
 								f(ctx, tgt, c)
 							}
 							return nil
 						},
-						DoMultiFunc: func(ctx context.Context, targets []string, f func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error) error {
+						DoMultiFunc: func(ctx context.Context, targets []string, f func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error) error {
 							if len(targets) != 1 {
 								return errors.New("invalid target")
 							}
@@ -1000,7 +999,7 @@ func Test_server_Upsert(t *testing.T) {
 				Uuid: uuid,
 				Ips:  []string{"127.0.0.1"},
 			}
-			cmap := map[string]vald.Client{
+			cmap := map[string]vald.ClientWithMirror{
 				"vald-mirror-01": &mockClient{
 					GetObjectFunc: func(_ context.Context, _ *payload.Object_VectorRequest, _ ...grpc.CallOption) (*payload.Object_Vector, error) {
 						return nil, status.Error(codes.NotFound, errors.ErrObjectIDNotFound(uuid).Error())
@@ -1039,13 +1038,13 @@ func Test_server_Upsert(t *testing.T) {
 						FromForwardedContextFunc: func(_ context.Context) string {
 							return ""
 						},
-						BroadCastFunc: func(ctx context.Context, f func(_ context.Context, _ string, _ vald.Client, _ ...grpc.CallOption) error) error {
+						BroadCastFunc: func(ctx context.Context, f func(_ context.Context, _ string, _ vald.ClientWithMirror, _ ...grpc.CallOption) error) error {
 							for tgt, c := range cmap {
 								f(ctx, tgt, c)
 							}
 							return nil
 						},
-						DoMultiFunc: func(ctx context.Context, targets []string, f func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error) error {
+						DoMultiFunc: func(ctx context.Context, targets []string, f func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error) error {
 							if len(targets) != 1 {
 								return errors.New("invalid target")
 							}
@@ -1078,7 +1077,7 @@ func Test_server_Upsert(t *testing.T) {
 				Id:     uuid,
 				Vector: vector.GaussianDistributedFloat32VectorGenerator(1, dimension)[0],
 			}
-			cmap := map[string]vald.Client{
+			cmap := map[string]vald.ClientWithMirror{
 				"vald-mirror-01": &mockClient{
 					GetObjectFunc: func(_ context.Context, _ *payload.Object_VectorRequest, _ ...grpc.CallOption) (*payload.Object_Vector, error) {
 						return ovec, nil
@@ -1114,13 +1113,13 @@ func Test_server_Upsert(t *testing.T) {
 						FromForwardedContextFunc: func(_ context.Context) string {
 							return ""
 						},
-						BroadCastFunc: func(ctx context.Context, f func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error) error {
+						BroadCastFunc: func(ctx context.Context, f func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error) error {
 							for tgt, c := range cmap {
 								f(ctx, tgt, c)
 							}
 							return nil
 						},
-						DoMultiFunc: func(ctx context.Context, targets []string, f func(ctx context.Context, target string, vc vald.Client, _ ...grpc.CallOption) error) error {
+						DoMultiFunc: func(ctx context.Context, targets []string, f func(ctx context.Context, target string, vc vald.ClientWithMirror, _ ...grpc.CallOption) error) error {
 							if len(targets) != 1 {
 								return errors.New("invalid target")
 							}
@@ -1193,7 +1192,7 @@ func Test_server_Remove(t *testing.T) {
 		streamConcurrency                 int
 		name                              string
 		ip                                string
-		UnimplementedValdServerWithMirror mirror.UnimplementedValdServerWithMirror
+		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
 	}
 	type want struct {
 		wantLoc *payload.Object_Location
@@ -1231,7 +1230,7 @@ func Test_server_Remove(t *testing.T) {
 				Id:     uuid,
 				Vector: vector.GaussianDistributedFloat32VectorGenerator(1, dimension)[0],
 			}
-			cmap := map[string]vald.Client{
+			cmap := map[string]vald.ClientWithMirror{
 				"vald-mirror-01": &mockClient{
 					GetObjectFunc: func(_ context.Context, _ *payload.Object_VectorRequest, _ ...grpc.CallOption) (*payload.Object_Vector, error) {
 						return ovec, nil
@@ -1270,7 +1269,7 @@ func Test_server_Remove(t *testing.T) {
 						FromForwardedContextFunc: func(_ context.Context) string {
 							return ""
 						},
-						BroadCastFunc: func(ctx context.Context, f func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error) error {
+						BroadCastFunc: func(ctx context.Context, f func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error) error {
 							for tgt, c := range cmap {
 								f(ctx, tgt, c)
 							}
@@ -1300,7 +1299,7 @@ func Test_server_Remove(t *testing.T) {
 				Id:     uuid,
 				Vector: vector.GaussianDistributedFloat32VectorGenerator(1, dimension)[0],
 			}
-			cmap := map[string]vald.Client{
+			cmap := map[string]vald.ClientWithMirror{
 				"vald-mirror-01": &mockClient{
 					GetObjectFunc: func(_ context.Context, _ *payload.Object_VectorRequest, _ ...grpc.CallOption) (*payload.Object_Vector, error) {
 						return ovec, nil
@@ -1338,13 +1337,13 @@ func Test_server_Remove(t *testing.T) {
 						FromForwardedContextFunc: func(_ context.Context) string {
 							return ""
 						},
-						BroadCastFunc: func(ctx context.Context, f func(_ context.Context, _ string, _ vald.Client, _ ...grpc.CallOption) error) error {
+						BroadCastFunc: func(ctx context.Context, f func(_ context.Context, _ string, _ vald.ClientWithMirror, _ ...grpc.CallOption) error) error {
 							for tgt, c := range cmap {
 								f(ctx, tgt, c)
 							}
 							return nil
 						},
-						DoMultiFunc: func(ctx context.Context, targets []string, f func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error) error {
+						DoMultiFunc: func(ctx context.Context, targets []string, f func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error) error {
 							if len(targets) != 1 {
 								return errors.New("invalid target")
 							}
@@ -1377,7 +1376,7 @@ func Test_server_Remove(t *testing.T) {
 				Id:     uuid,
 				Vector: vector.GaussianDistributedFloat32VectorGenerator(1, dimension)[0],
 			}
-			cmap := map[string]vald.Client{
+			cmap := map[string]vald.ClientWithMirror{
 				"vald-mirror-01": &mockClient{
 					GetObjectFunc: func(_ context.Context, _ *payload.Object_VectorRequest, _ ...grpc.CallOption) (*payload.Object_Vector, error) {
 						return ovec, nil
@@ -1415,13 +1414,13 @@ func Test_server_Remove(t *testing.T) {
 						FromForwardedContextFunc: func(_ context.Context) string {
 							return ""
 						},
-						BroadCastFunc: func(ctx context.Context, f func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error) error {
+						BroadCastFunc: func(ctx context.Context, f func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error) error {
 							for tgt, c := range cmap {
 								f(ctx, tgt, c)
 							}
 							return nil
 						},
-						DoMultiFunc: func(ctx context.Context, targets []string, f func(ctx context.Context, target string, vc vald.Client, _ ...grpc.CallOption) error) error {
+						DoMultiFunc: func(ctx context.Context, targets []string, f func(ctx context.Context, target string, vc vald.ClientWithMirror, _ ...grpc.CallOption) error) error {
 							if len(targets) != 1 {
 								return errors.New("invalid target")
 							}
@@ -1484,18 +1483,18 @@ func TestNew(t *testing.T) {
 		opts []Option
 	}
 	type want struct {
-		want mirror.Server
+		want vald.ServerWithMirror
 		err  error
 	}
 	type test struct {
 		name       string
 		args       args
 		want       want
-		checkFunc  func(want, mirror.Server, error) error
+		checkFunc  func(want, vald.Server, error) error
 		beforeFunc func(*testing.T, args)
 		afterFunc  func(*testing.T, args)
 	}
-	defaultCheckFunc := func(w want, got mirror.Server, err error) error {
+	defaultCheckFunc := func(w want, got vald.Server, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
@@ -1581,7 +1580,7 @@ func Test_server_Register(t *testing.T) {
 		streamConcurrency                 int
 		name                              string
 		ip                                string
-		UnimplementedValdServerWithMirror mirror.UnimplementedValdServerWithMirror
+		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
 	}
 	type want struct {
 		want *payload.Mirror_Targets
@@ -1714,7 +1713,7 @@ func Test_server_Advertise(t *testing.T) {
 		streamConcurrency                 int
 		name                              string
 		ip                                string
-		UnimplementedValdServerWithMirror mirror.UnimplementedValdServerWithMirror
+		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
 	}
 	type want struct {
 		wantRes *payload.Mirror_Targets
@@ -1847,7 +1846,7 @@ func Test_server_Exists(t *testing.T) {
 		streamConcurrency                 int
 		name                              string
 		ip                                string
-		UnimplementedValdServerWithMirror mirror.UnimplementedValdServerWithMirror
+		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
 	}
 	type want struct {
 		wantId *payload.Object_ID
@@ -1980,7 +1979,7 @@ func Test_server_Search(t *testing.T) {
 		streamConcurrency                 int
 		name                              string
 		ip                                string
-		UnimplementedValdServerWithMirror mirror.UnimplementedValdServerWithMirror
+		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
 	}
 	type want struct {
 		wantRes *payload.Search_Response
@@ -2113,7 +2112,7 @@ func Test_server_SearchByID(t *testing.T) {
 		streamConcurrency                 int
 		name                              string
 		ip                                string
-		UnimplementedValdServerWithMirror mirror.UnimplementedValdServerWithMirror
+		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
 	}
 	type want struct {
 		wantRes *payload.Search_Response
@@ -2245,7 +2244,7 @@ func Test_server_StreamSearch(t *testing.T) {
 		streamConcurrency                 int
 		name                              string
 		ip                                string
-		UnimplementedValdServerWithMirror mirror.UnimplementedValdServerWithMirror
+		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
 	}
 	type want struct {
 		err error
@@ -2371,7 +2370,7 @@ func Test_server_StreamSearchByID(t *testing.T) {
 		streamConcurrency                 int
 		name                              string
 		ip                                string
-		UnimplementedValdServerWithMirror mirror.UnimplementedValdServerWithMirror
+		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
 	}
 	type want struct {
 		err error
@@ -2498,7 +2497,7 @@ func Test_server_MultiSearch(t *testing.T) {
 		streamConcurrency                 int
 		name                              string
 		ip                                string
-		UnimplementedValdServerWithMirror mirror.UnimplementedValdServerWithMirror
+		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
 	}
 	type want struct {
 		wantRes *payload.Search_Responses
@@ -2631,7 +2630,7 @@ func Test_server_MultiSearchByID(t *testing.T) {
 		streamConcurrency                 int
 		name                              string
 		ip                                string
-		UnimplementedValdServerWithMirror mirror.UnimplementedValdServerWithMirror
+		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
 	}
 	type want struct {
 		wantRes *payload.Search_Responses
@@ -2764,7 +2763,7 @@ func Test_server_LinearSearch(t *testing.T) {
 		streamConcurrency                 int
 		name                              string
 		ip                                string
-		UnimplementedValdServerWithMirror mirror.UnimplementedValdServerWithMirror
+		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
 	}
 	type want struct {
 		wantRes *payload.Search_Response
@@ -2897,7 +2896,7 @@ func Test_server_LinearSearchByID(t *testing.T) {
 		streamConcurrency                 int
 		name                              string
 		ip                                string
-		UnimplementedValdServerWithMirror mirror.UnimplementedValdServerWithMirror
+		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
 	}
 	type want struct {
 		wantRes *payload.Search_Response
@@ -3029,7 +3028,7 @@ func Test_server_StreamLinearSearch(t *testing.T) {
 		streamConcurrency                 int
 		name                              string
 		ip                                string
-		UnimplementedValdServerWithMirror mirror.UnimplementedValdServerWithMirror
+		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
 	}
 	type want struct {
 		err error
@@ -3155,7 +3154,7 @@ func Test_server_StreamLinearSearchByID(t *testing.T) {
 		streamConcurrency                 int
 		name                              string
 		ip                                string
-		UnimplementedValdServerWithMirror mirror.UnimplementedValdServerWithMirror
+		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
 	}
 	type want struct {
 		err error
@@ -3282,7 +3281,7 @@ func Test_server_MultiLinearSearch(t *testing.T) {
 		streamConcurrency                 int
 		name                              string
 		ip                                string
-		UnimplementedValdServerWithMirror mirror.UnimplementedValdServerWithMirror
+		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
 	}
 	type want struct {
 		wantRes *payload.Search_Responses
@@ -3415,7 +3414,7 @@ func Test_server_MultiLinearSearchByID(t *testing.T) {
 		streamConcurrency                 int
 		name                              string
 		ip                                string
-		UnimplementedValdServerWithMirror mirror.UnimplementedValdServerWithMirror
+		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
 	}
 	type want struct {
 		wantRes *payload.Search_Responses
@@ -3550,7 +3549,7 @@ func Test_server_insert(t *testing.T) {
 		streamConcurrency                 int
 		name                              string
 		ip                                string
-		UnimplementedValdServerWithMirror mirror.UnimplementedValdServerWithMirror
+		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
 	}
 	type want struct {
 		wantLoc *payload.Object_Location
@@ -3686,7 +3685,7 @@ func Test_server_StreamInsert(t *testing.T) {
 		streamConcurrency                 int
 		name                              string
 		ip                                string
-		UnimplementedValdServerWithMirror mirror.UnimplementedValdServerWithMirror
+		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
 	}
 	type want struct {
 		err error
@@ -3813,7 +3812,7 @@ func Test_server_MultiInsert(t *testing.T) {
 		streamConcurrency                 int
 		name                              string
 		ip                                string
-		UnimplementedValdServerWithMirror mirror.UnimplementedValdServerWithMirror
+		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
 	}
 	type want struct {
 		wantRes *payload.Object_Locations
@@ -3948,7 +3947,7 @@ func Test_server_update(t *testing.T) {
 		streamConcurrency                 int
 		name                              string
 		ip                                string
-		UnimplementedValdServerWithMirror mirror.UnimplementedValdServerWithMirror
+		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
 	}
 	type want struct {
 		wantLoc *payload.Object_Location
@@ -4084,7 +4083,7 @@ func Test_server_StreamUpdate(t *testing.T) {
 		streamConcurrency                 int
 		name                              string
 		ip                                string
-		UnimplementedValdServerWithMirror mirror.UnimplementedValdServerWithMirror
+		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
 	}
 	type want struct {
 		err error
@@ -4211,7 +4210,7 @@ func Test_server_MultiUpdate(t *testing.T) {
 		streamConcurrency                 int
 		name                              string
 		ip                                string
-		UnimplementedValdServerWithMirror mirror.UnimplementedValdServerWithMirror
+		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
 	}
 	type want struct {
 		wantRes *payload.Object_Locations
@@ -4346,7 +4345,7 @@ func Test_server_upsert(t *testing.T) {
 		streamConcurrency                 int
 		name                              string
 		ip                                string
-		UnimplementedValdServerWithMirror mirror.UnimplementedValdServerWithMirror
+		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
 	}
 	type want struct {
 		wantLoc *payload.Object_Location
@@ -4482,7 +4481,7 @@ func Test_server_StreamUpsert(t *testing.T) {
 		streamConcurrency                 int
 		name                              string
 		ip                                string
-		UnimplementedValdServerWithMirror mirror.UnimplementedValdServerWithMirror
+		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
 	}
 	type want struct {
 		err error
@@ -4609,7 +4608,7 @@ func Test_server_MultiUpsert(t *testing.T) {
 		streamConcurrency                 int
 		name                              string
 		ip                                string
-		UnimplementedValdServerWithMirror mirror.UnimplementedValdServerWithMirror
+		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
 	}
 	type want struct {
 		wantRes *payload.Object_Locations
@@ -4744,7 +4743,7 @@ func Test_server_remove(t *testing.T) {
 		streamConcurrency                 int
 		name                              string
 		ip                                string
-		UnimplementedValdServerWithMirror mirror.UnimplementedValdServerWithMirror
+		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
 	}
 	type want struct {
 		want *payload.Object_Location
@@ -4880,7 +4879,7 @@ func Test_server_StreamRemove(t *testing.T) {
 		streamConcurrency                 int
 		name                              string
 		ip                                string
-		UnimplementedValdServerWithMirror mirror.UnimplementedValdServerWithMirror
+		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
 	}
 	type want struct {
 		err error
@@ -5007,7 +5006,7 @@ func Test_server_MultiRemove(t *testing.T) {
 		streamConcurrency                 int
 		name                              string
 		ip                                string
-		UnimplementedValdServerWithMirror mirror.UnimplementedValdServerWithMirror
+		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
 	}
 	type want struct {
 		wantRes *payload.Object_Locations
@@ -5140,7 +5139,7 @@ func Test_server_GetObject(t *testing.T) {
 		streamConcurrency                 int
 		name                              string
 		ip                                string
-		UnimplementedValdServerWithMirror mirror.UnimplementedValdServerWithMirror
+		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
 	}
 	type want struct {
 		wantVec *payload.Object_Vector
@@ -5273,7 +5272,7 @@ func Test_server_getObjects(t *testing.T) {
 		streamConcurrency                 int
 		name                              string
 		ip                                string
-		UnimplementedValdServerWithMirror mirror.UnimplementedValdServerWithMirror
+		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
 	}
 	type want struct {
 		wantVecs *sync.Map
@@ -5405,7 +5404,7 @@ func Test_server_StreamGetObject(t *testing.T) {
 		streamConcurrency                 int
 		name                              string
 		ip                                string
-		UnimplementedValdServerWithMirror mirror.UnimplementedValdServerWithMirror
+		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
 	}
 	type want struct {
 		err error

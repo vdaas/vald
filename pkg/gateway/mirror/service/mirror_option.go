@@ -3,7 +3,6 @@ package service
 import (
 	"time"
 
-	"github.com/vdaas/vald/internal/client/v1/client/mirror"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 )
@@ -49,10 +48,10 @@ func WithSelfMirrorAddrs(addrs ...string) MirrorOption {
 	}
 }
 
-func WithMirror(c mirror.Client) MirrorOption {
+func WithGateway(g Gateway) MirrorOption {
 	return func(m *mirr) error {
-		if c != nil {
-			m.client = c
+		if g != nil {
+			m.gateway = g
 		}
 		return nil
 	}

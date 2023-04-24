@@ -20,8 +20,8 @@ package rest
 import (
 	"net/http"
 
-	"github.com/vdaas/vald/apis/grpc/v1/mirror"
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
+	"github.com/vdaas/vald/apis/grpc/v1/vald"
 	"github.com/vdaas/vald/internal/net/http/dump"
 	"github.com/vdaas/vald/internal/net/http/json"
 )
@@ -51,7 +51,7 @@ type Handler interface {
 }
 
 type handler struct {
-	vald mirror.Server
+	vald vald.ServerWithMirror
 }
 
 func New(opts ...Option) Handler {

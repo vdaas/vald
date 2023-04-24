@@ -42,6 +42,9 @@ type mockClient struct {
 	ExistsFunc          func(ctx context.Context, in *payload.Object_ID, opts ...grpc.CallOption) (*payload.Object_ID, error)
 	GetObjectFunc       func(ctx context.Context, in *payload.Object_VectorRequest, opts ...grpc.CallOption) (*payload.Object_Vector, error)
 	StreamGetObjectFunc func(ctx context.Context, opts ...grpc.CallOption) (vald.Object_StreamGetObjectClient, error)
+
+	RegisterFunc  func(ctx context.Context, in *payload.Mirror_Targets, opts ...grpc.CallOption) (*payload.Mirror_Targets, error)
+	AdvertiseFunc func(ctx context.Context, in *payload.Mirror_Targets, opts ...grpc.CallOption) (*payload.Mirror_Targets, error)
 }
 
 func (m *mockClient) Insert(ctx context.Context, in *payload.Insert_Request, opts ...grpc.CallOption) (*payload.Object_Location, error) {
@@ -152,18 +155,27 @@ func (m *mockClient) StreamGetObject(ctx context.Context, opts ...grpc.CallOptio
 	return m.StreamGetObjectFunc(ctx, opts...)
 }
 
-var _ vald.Client = (*mockClient)(nil)
+func (m *mockClient) Register(ctx context.Context, in *payload.Mirror_Targets, opts ...grpc.CallOption) (*payload.Mirror_Targets, error) {
+	return m.RegisterFunc(ctx, in)
+}
+
+func (m *mockClient) Advertise(ctx context.Context, in *payload.Mirror_Targets, opts ...grpc.CallOption) (*payload.Mirror_Targets, error) {
+	return m.AdvertiseFunc(ctx, in)
+}
+
+var _ vald.ClientWithMirror = (*mockClient)(nil)
 
 type mockGateway struct {
 	StartFunc                func(ctx context.Context) (<-chan error, error)
 	ForwardedContextFunc     func(ctx context.Context, podName string) context.Context
 	FromForwardedContextFunc func(ctx context.Context) string
 	BroadCastFunc            func(ctx context.Context,
-		f func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error) error
+		f func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error) error
 	DoFunc func(ctx context.Context, target string,
-		f func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (interface{}, error)) (interface{}, error)
+		f func(ctx context.Context, vc vald.ClientWithMirror, copts ...grpc.CallOption) (interface{}, error)) (interface{}, error)
 	DoMultiFunc func(ctx context.Context, targets []string,
-		f func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error) error
+		f func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error) error
+	GRPCClientFunc func() grpc.Client
 }
 
 func (m *mockGateway) Start(ctx context.Context) (<-chan error, error) {
@@ -179,21 +191,25 @@ func (m *mockGateway) FromForwardedContext(ctx context.Context) string {
 }
 
 func (m *mockGateway) BroadCast(ctx context.Context,
-	f func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error,
+	f func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error,
 ) error {
 	return m.BroadCastFunc(ctx, f)
 }
 
 func (m *mockGateway) Do(ctx context.Context, target string,
-	f func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (interface{}, error),
+	f func(ctx context.Context, vc vald.ClientWithMirror, copts ...grpc.CallOption) (interface{}, error),
 ) (interface{}, error) {
 	return m.DoFunc(ctx, target, f)
 }
 
 func (m *mockGateway) DoMulti(ctx context.Context, targets []string,
-	f func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error,
+	f func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error,
 ) error {
 	return m.DoMultiFunc(ctx, targets, f)
+}
+
+func (m *mockGateway) GRPCClient() grpc.Client {
+	return m.GRPCClientFunc()
 }
 
 var _ service.Gateway = (*mockGateway)(nil)
