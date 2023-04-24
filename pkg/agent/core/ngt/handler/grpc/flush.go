@@ -26,6 +26,7 @@ import (
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
 	"github.com/vdaas/vald/internal/observability/trace"
+	"sync/atomic"
 )
 
 func (s *server) Flush(ctx context.Context, req *payload.Flush_Request) (*payload.Info_Index_Count, error) {
@@ -35,7 +36,7 @@ func (s *server) Flush(ctx context.Context, req *payload.Flush_Request) (*payloa
 			span.End()
 		}
 	}()
-	err := s.ngt.RegenerateIndex(ctx)
+	err := s.ngt.RegenerateIndexes(ctx)
 	if err != nil {
 		var attrs []attribute.KeyValue
 		if errors.Is(err, errors.ErrFlushingIsInProgress) {
@@ -68,5 +69,24 @@ func (s *server) Flush(ctx context.Context, req *payload.Flush_Request) (*payloa
 		}
 		return nil, err
 	}
-	return nil, err
+
+	var (
+		stored     uint32
+		uncommited uint32
+		indexing   atomic.Value
+		saving     atomic.Value
+	)
+	stored = 0
+	uncommited = 0
+	indexing.Store(false)
+	saving.Store(false)
+
+	cnts := &payload.Info_Index_Count{
+		Stored:      atomic.LoadUint32(&stored),
+		Uncommitted: atomic.LoadUint32(&uncommited),
+		Indexing:    indexing.Load().(bool),
+		Saving:      saving.Load().(bool),
+	}
+
+	return cnts, nil
 }

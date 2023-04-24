@@ -66,7 +66,7 @@ type NGT interface {
 	DeleteWithTime(uuid string, t int64) (err error)
 	DeleteMultiple(uuids ...string) (err error)
 	DeleteMultipleWithTime(uuids []string, t int64) (err error)
-	ReganarateIndecies(ctx context.Context) (err error)
+	RegenerateIndexes(ctx context.Context) (err error)
 	GetObject(uuid string) (vec []float32, err error)
 	CreateIndex(ctx context.Context, poolSize uint32) (err error)
 	SaveIndex(ctx context.Context) (err error)
@@ -1185,7 +1185,7 @@ func (n *ngt) deleteMultiple(uuids []string, now int64, validation bool) (err er
 	return err
 }
 
-func (n *ngt) ReganarateIndecies(ctx context.Context) (err error) {
+func (n *ngt) RegenerateIndexes(ctx context.Context) (err error) {
 	if n.IsFlushing() {
 		return errors.ErrFlushingIsInProgress
 	}
@@ -1219,14 +1219,9 @@ func (n *ngt) ReganarateIndecies(ctx context.Context) (err error) {
 	if err != nil {
 		log.Errorf("failed to flushing vector to ngt index in delete kvs. error: %v", err)
 	}
-	n.kvs = nil
+	n.kvs = kvs.New(kvs.WithConcurrency(n.kvsdbConcurrency))
 
-	// delete ngt
-	n.core.CloseWithoutSaveIndex()
-	n.core = nil
-
-	// delete vq
-	n.vq = nil
+	n.vq, err = vqueue.New()
 
 	// gc
 	runtime.GC()
