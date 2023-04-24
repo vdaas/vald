@@ -16,7 +16,6 @@ package main
 import (
 	"context"
 	"flag"
-	"fmt"
 
 	"github.com/kpango/glg"
 	"github.com/vdaas/vald/apis/grpc/v1/filter/egress"
