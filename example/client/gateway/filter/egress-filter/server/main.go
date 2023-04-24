@@ -22,15 +22,14 @@ import (
 	"os/signal"
 
 	"github.com/kpango/glg"
-	
 	"github.com/vdaas/vald/apis/grpc/v1/filter/egress"
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"google.golang.org/grpc"
 )
 
 var (
-	egressServerPort	uint
-	dimension uint
+	egressServerPort uint
+	dimension        uint
 )
 
 func init() {
@@ -51,7 +50,7 @@ func (s *myEgressServer) GenVector(ctx context.Context, in *payload.Object_Blob)
 	// Write your own logic
 	vec := make([]float32, dimension)
 	return &payload.Object_Vector{
-		Id: in.GetId(),
+		Id:     in.GetId(),
 		Vector: vec,
 	}, nil
 }

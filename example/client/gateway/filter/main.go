@@ -20,21 +20,19 @@ import (
 	"time"
 
 	"github.com/kpango/glg"
-
 	"github.com/vdaas/vald-client-go/v1/payload"
 	"github.com/vdaas/vald-client-go/v1/vald"
-	
 	"google.golang.org/grpc"
 )
 
 var (
 	grpcServerAddr      string
-	ingressServerHost	string
-	ingressServerPort	uint
-	egressServerHost	string
-	egressServerPort	uint
+	ingressServerHost   string
+	ingressServerPort   uint
+	egressServerHost    string
+	egressServerPort    uint
 	indexingWaitSeconds uint
-	dimension uint
+	dimension           uint
 )
 
 func init() {
@@ -60,7 +58,7 @@ func init() {
 // Please execute after setting up the server of vald cluster and ingress/egress filter
 func main() {
 	// create a data set for operation confirmation
-	makeVecFn := func (dim int, value float32) ([]float32) {
+	makeVecFn := func(dim int, value float32) []float32 {
 		vec := make([]float32, dim)
 		for i := 0; i < dim; i++ {
 			vec[i] = value
@@ -68,29 +66,28 @@ func main() {
 		return vec
 	}
 	dataset := []struct {
-		id      string
-		vector	[]float32
+		id     string
+		vector []float32
 	}{
 		{
-			id: "1_fashinon",
-			vector:  makeVecFn(int(dimension), 0.1),
+			id:     "1_fashinon",
+			vector: makeVecFn(int(dimension), 0.1),
 		},
 		{
-			id: "2_food",
-			vector:  makeVecFn(int(dimension), 0.2),
+			id:     "2_food",
+			vector: makeVecFn(int(dimension), 0.2),
 		},
 		{
-			id: "3_fashion",
-			vector:  makeVecFn(int(dimension), 0.3),
+			id:     "3_fashion",
+			vector: makeVecFn(int(dimension), 0.3),
 		},
 		{
-			id: "4_pet",
-			vector:  makeVecFn(int(dimension), 0.4),
+			id:     "4_pet",
+			vector: makeVecFn(int(dimension), 0.4),
 		},
 	}
 
 	var object []byte
-
 
 	// connect to the Vald cluster
 	ctx := context.Background()
@@ -107,7 +104,7 @@ func main() {
 		icfg := &payload.Insert_ObjectRequest{
 			// object data to pass to GenVector function of your ingress filter
 			Object: &payload.Object_Blob{
-				Id: dataset[i].id,
+				Id:     dataset[i].id,
 				Object: object,
 			},
 			// insert config
@@ -140,20 +137,18 @@ func main() {
 		glg.Infof("location: %#v", res.Ips)
 	}
 
-
 	// Vald Agent starts indexing automatically after insert. It needs to wait until the indexing is completed before a search action is performed.
 	wt := time.Duration(indexingWaitSeconds) * time.Second
 	glg.Infof("Wait %s for indexing to finish", wt)
-	time.Sleep(wt) 
-
+	time.Sleep(wt)
 
 	// create a search client
 	sclient := vald.NewSearchClient(conn)
 
 	scfg := &payload.Search_Config{
-		Num: 10,
+		Num:     10,
 		Epsilon: 0.1,
-		Radius: -1,
+		Radius:  -1,
 		// config to call DistanceVector function of your egress filter
 		EgressFilters: &payload.Filter_Config{
 			Targets: []*payload.Filter_Target{
@@ -170,14 +165,12 @@ func main() {
 		Vector: dataset[0].vector,
 		Config: scfg,
 	})
-	
 	if err != nil {
 		glg.Error(err)
 		return
 	}
 	b, _ := json.MarshalIndent(res.GetResults(), "", " ")
 	glg.Infof("Results : %s\n\n", string(b))
-
 
 	// create an object client
 	oclient := vald.NewObjectClient(conn)

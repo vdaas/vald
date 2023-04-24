@@ -21,16 +21,16 @@ import (
 	"github.com/kpango/glg"
 	"github.com/vdaas/vald/apis/grpc/v1/filter/egress"
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
-
+	"github.com/vdaas/vald/internal/net"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
 
 var (
-	client egress.FilterClient
-	egressServerHost	string
-	egressServerPort	uint
-	dimension uint
+	client           egress.FilterClient
+	egressServerHost string
+	egressServerPort uint
+	dimension        uint
 )
 
 func init() {
@@ -48,9 +48,10 @@ func init() {
 func main() {
 	glg.Println("start gRPC Client.")
 
-	address := fmt.Sprintf("%s:%d", egressServerHost, egressServerPort)
+	fmt.Println("Aaa")
+	addr := net.JoinHostPort(egressServerHost, uint16(egressServerPort))
 	conn, err := grpc.Dial(
-		address,
+		addr,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 		grpc.WithBlock(),
 	)
