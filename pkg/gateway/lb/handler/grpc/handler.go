@@ -35,6 +35,7 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/info"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/net/grpc/errdetails"
@@ -1927,12 +1928,17 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (res *
 	}
 
 	if req.GetConfig().GetDisableBalancedUpdate() {
-		var mu sync.Mutex
-		locs := &payload.Object_Location{
-			Uuid: uuid,
-			Ips:  make([]string, 0, s.replica),
-		}
-		ls := make([]string, 0, s.replica)
+		var (
+			mu      sync.RWMutex
+			aeCount atomic.Uint64
+			updated atomic.Uint64
+			ls      = make([]string, 0, s.replica)
+			visited = make(map[string]bool, s.replica)
+			locs    = &payload.Object_Location{
+				Uuid: uuid,
+				Ips:  make([]string, 0, s.replica),
+			}
+		)
 		err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) (err error) {
 			ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "BroadCast/"+target), apiName+"/"+vald.UpdateRPCName+"/"+target)
 			defer func() {
@@ -1943,32 +1949,49 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (res *
 			loc, err := vc.Update(ctx, req, copts...)
 			if err != nil {
 				st, ok := status.FromError(err)
-				if ok && st != nil &&
-					st.Code() != codes.AlreadyExists &&
-					st.Code() != codes.Canceled &&
-					st.Code() != codes.DeadlineExceeded &&
-					st.Code() != codes.InvalidArgument &&
-					st.Code() != codes.NotFound &&
-					st.Code() != codes.OK &&
-					st.Code() != codes.Unimplemented {
-					if span != nil {
-						span.RecordError(err)
-						span.SetAttributes(trace.FromGRPCStatus(st.Code(), fmt.Sprintf("Update operation for Agent %s failed,\terror: %v", target, err))...)
-						span.SetStatus(trace.StatusError, err.Error())
+				if ok && st != nil {
+					if st.Code() != codes.AlreadyExists &&
+						st.Code() != codes.Canceled &&
+						st.Code() != codes.DeadlineExceeded &&
+						st.Code() != codes.InvalidArgument &&
+						st.Code() != codes.NotFound &&
+						st.Code() != codes.OK &&
+						st.Code() != codes.Unimplemented {
+						if span != nil {
+							span.RecordError(err)
+							span.SetAttributes(trace.FromGRPCStatus(st.Code(), fmt.Sprintf("Update operation for Agent %s failed,\terror: %v", target, err))...)
+							span.SetStatus(trace.StatusError, err.Error())
+						}
+						return err
 					}
-					return err
+					if st.Code() == codes.AlreadyExists {
+						host, _, err := net.SplitHostPort(target)
+						if err != nil {
+							host = target
+						}
+						aeCount.Add(1)
+						mu.Lock()
+						visited[target] = true
+						locs.Ips = append(locs.GetIps(), host)
+						ls = append(ls, host)
+						mu.Unlock()
+
+					}
 				}
 				return nil
 			}
 			if loc != nil {
+				updated.Add(1)
 				mu.Lock()
+				visited[target] = true
 				locs.Ips = append(locs.GetIps(), loc.GetIps()...)
 				ls = append(ls, loc.GetName())
 				mu.Unlock()
 			}
 			return nil
 		})
-		if err != nil {
+		switch {
+		case err != nil:
 			st, msg, err := status.ParseError(err, codes.Internal,
 				"failed to parse "+vald.UpdateRPCName+" gRPC error response", reqInfo, resInfo, info.Get())
 			if span != nil {
@@ -1977,8 +2000,7 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (res *
 				span.SetStatus(trace.StatusError, err.Error())
 			}
 			return nil, err
-		}
-		if len(locs.Ips) <= 0 {
+		case len(locs.Ips) <= 0:
 			err = errors.ErrIndexNotFound
 			err = status.WrapWithNotFound(vald.UpdateRPCName+" API update target not found", err, reqInfo, resInfo)
 			if span != nil {
@@ -1987,6 +2009,57 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (res *
 				span.SetStatus(trace.StatusError, err.Error())
 			}
 			return nil, err
+		case updated.Load()+aeCount.Load() < uint64(s.replica):
+			shortage := s.replica - int(updated.Load()+aeCount.Load())
+			err = s.gateway.DoMulti(ctx, shortage, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) (err error) {
+				mu.RLock()
+				tf, ok := visited[target]
+				mu.RUnlock()
+				if tf && ok {
+					return errors.Errorf("target: %s already inserted will skip", target)
+				}
+				ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "DoMulti/"+target), apiName+"/"+vald.InsertRPCName+"/"+target)
+				defer func() {
+					if span != nil {
+						span.End()
+					}
+				}()
+				loc, err := vc.Insert(ctx, &payload.Insert_Request{
+					Vector: req.GetVector(),
+					Config: &payload.Insert_Config{
+						SkipStrictExistCheck: true,
+						Filters:              req.GetConfig().GetFilters(),
+						Timestamp:            req.GetConfig().GetTimestamp(),
+					},
+				}, copts...)
+				if err != nil {
+					st, ok := status.FromError(err)
+					if ok && st != nil && span != nil {
+						span.RecordError(err)
+						span.SetAttributes(trace.FromGRPCStatus(st.Code(), fmt.Sprintf("Shortage index Insert for Update operation for Agent %s failed,\terror: %v", target, err))...)
+						span.SetStatus(trace.StatusError, err.Error())
+					}
+					return err
+				}
+				if loc != nil {
+					updated.Add(1)
+					mu.Lock()
+					locs.Ips = append(locs.GetIps(), loc.GetIps()...)
+					ls = append(ls, loc.GetName())
+					mu.Unlock()
+				}
+				return nil
+			})
+		case updated.Load() == 0 && aeCount.Load() > 0:
+			err = errors.ErrSameVectorAlreadyExists(uuid, vec, vec)
+			err = status.WrapWithAlreadyExists(vald.UpdateRPCName+" API update target same vector already exists", err, reqInfo, resInfo)
+			if span != nil {
+				span.RecordError(err)
+				span.SetAttributes(trace.StatusCodeAlreadyExists(err.Error())...)
+				span.SetStatus(trace.StatusError, err.Error())
+			}
+			return nil, err
+
 		}
 		slices.Sort(ls)
 		locs.Name = strings.Join(ls, ",")
