@@ -49,8 +49,8 @@ replace (
 	github.com/Microsoft/go-winio => github.com/Microsoft/go-winio v0.6.1
 	github.com/Microsoft/hcsshim => github.com/Microsoft/hcsshim v0.9.8
 	github.com/NYTimes/gziphandler => github.com/NYTimes/gziphandler v1.1.1
-	github.com/ajstarks/deck => github.com/ajstarks/deck v0.0.0-20230403145838-746d569493ac
-	github.com/ajstarks/deck/generate => github.com/ajstarks/deck/generate v0.0.0-20230403145838-746d569493ac
+	github.com/ajstarks/deck => github.com/ajstarks/deck v0.0.0-20230422215033-6fa005bf32d9
+	github.com/ajstarks/deck/generate => github.com/ajstarks/deck/generate v0.0.0-20230422215033-6fa005bf32d9
 	github.com/ajstarks/svgo => github.com/ajstarks/svgo v0.0.0-20211024235047-1546f124cd8b
 	github.com/antihax/optional => github.com/antihax/optional v1.0.0
 	github.com/armon/circbuf => github.com/armon/circbuf v0.0.0-20190214190532-5111143e8da2
@@ -58,7 +58,7 @@ replace (
 	github.com/armon/go-radix => github.com/armon/go-radix v1.0.0
 	github.com/armon/go-socks5 => github.com/armon/go-socks5 v0.0.0-20160902184237-e75332964ef5
 	github.com/asaskevich/govalidator => github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2
-	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.44.247
+	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.44.248
 	github.com/aws/aws-sdk-go-v2 => github.com/aws/aws-sdk-go-v2 v1.17.8
 	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream => github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.4.10
 	github.com/aws/aws-sdk-go-v2/config => github.com/aws/aws-sdk-go-v2/config v1.18.21
@@ -81,7 +81,7 @@ replace (
 	github.com/aws/aws-sdk-go-v2/service/sso => github.com/aws/aws-sdk-go-v2/service/sso v1.12.8
 	github.com/aws/aws-sdk-go-v2/service/sts => github.com/aws/aws-sdk-go-v2/service/sts v1.18.9
 	github.com/aws/smithy-go => github.com/aws/smithy-go v1.13.5
-	github.com/benbjohnson/clock => github.com/benbjohnson/clock v1.3.1
+	github.com/benbjohnson/clock => github.com/benbjohnson/clock v1.3.3
 	github.com/beorn7/perks => github.com/beorn7/perks v1.0.1
 	github.com/bgentry/speakeasy => github.com/bgentry/speakeasy v0.1.0
 	github.com/bitly/go-hostpool => github.com/bitly/go-hostpool v0.1.0
@@ -178,7 +178,7 @@ replace (
 	github.com/go-openapi/jsonreference => github.com/go-openapi/jsonreference v0.20.2
 	github.com/go-openapi/loads => github.com/go-openapi/loads v0.21.2
 	github.com/go-openapi/runtime => github.com/go-openapi/runtime v0.26.0
-	github.com/go-openapi/spec => github.com/go-openapi/spec v0.20.8
+	github.com/go-openapi/spec => github.com/go-openapi/spec v0.20.9
 	github.com/go-openapi/strfmt => github.com/go-openapi/strfmt v0.21.7
 	github.com/go-openapi/swag => github.com/go-openapi/swag v0.22.3
 	github.com/go-openapi/validate => github.com/go-openapi/validate v0.22.1
@@ -242,7 +242,7 @@ replace (
 	github.com/grpc-ecosystem/grpc-gateway/v2 => github.com/grpc-ecosystem/grpc-gateway/v2 v2.15.2
 	github.com/hailocab/go-hostpool => github.com/kpango/go-hostpool v0.0.0-20210303030322-aab80263dcd0
 	github.com/hanwen/go-fuse => github.com/hanwen/go-fuse v1.0.0
-	github.com/hanwen/go-fuse/v2 => github.com/hanwen/go-fuse/v2 v2.2.0
+	github.com/hanwen/go-fuse/v2 => github.com/hanwen/go-fuse/v2 v2.3.0
 	github.com/hashicorp/consul/api => github.com/hashicorp/consul/api v1.20.0
 	github.com/hashicorp/consul/sdk => github.com/hashicorp/consul/sdk v0.13.1
 	github.com/hashicorp/errwrap => github.com/hashicorp/errwrap v1.1.0
@@ -290,7 +290,7 @@ replace (
 	github.com/julienschmidt/httprouter => github.com/julienschmidt/httprouter v1.3.0
 	github.com/kisielk/errcheck => github.com/kisielk/errcheck v1.6.3
 	github.com/kisielk/gotool => github.com/kisielk/gotool v1.0.0
-	github.com/klauspost/compress => github.com/klauspost/compress v1.16.5
+	github.com/klauspost/compress => github.com/klauspost/compress v1.16.6-0.20230422094245-7a331e10e5d0
 	github.com/klauspost/cpuid/v2 => github.com/klauspost/cpuid/v2 v2.2.4
 	github.com/kolo/xmlrpc => github.com/kolo/xmlrpc v0.0.0-20220921171641-a4b6fa1dd06b
 	github.com/kpango/fastime => github.com/kpango/fastime v1.1.9
@@ -589,7 +589,7 @@ require (
 	github.com/go-openapi/jsonpointer v0.19.6 // indirect
 	github.com/go-openapi/jsonreference v0.20.1 // indirect
 	github.com/go-openapi/swag v0.22.3 // indirect
-	github.com/go-pdf/fpdf v0.7.0 // indirect
+	github.com/go-pdf/fpdf v0.8.0 // indirect
 	github.com/go-toolsmith/astcopy v1.0.2 // indirect
 	github.com/go-toolsmith/astequal v1.1.0 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
