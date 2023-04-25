@@ -62,6 +62,7 @@
 - [Helm Operator Chart Reference](https://github.com/vdaas/vald/blob/v1.7.5/charts/vald-helm-operator/README.md)
 
 ### Changes
+
 :sparkles: New features
 
 - Add index with timestamp [#1984](https://github.com/vdaas/vald/pull/1984)
@@ -104,7 +105,6 @@
 :handshake: Contributor
 
 - Add ykadowak as a contributor for code, and test [#2009](https://github.com/vdaas/vald/pull/2009)
-
 
 ## v1.7.4
 
