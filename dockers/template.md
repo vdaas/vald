@@ -68,11 +68,16 @@ Please refer to the [Get Started](https://vald.vdaas.org/docs/get-started) for d
 
 ## Versions
 
-| tag     |       x86_64       |        Arm         | description                                                                                                           |
-| :------ | :----------------: | :----------------: | :-------------------------------------------------------------------------------------------------------------------- |
-| latest  | :white_check_mark: | :white_check_mark: | the latest image is the same as the latest version of [vdaas/vald](https://github.com/vdaas/vald) repository version. |
-| nightly | :white_check_mark: |        :x:         | the nightly applies the main branch's source code of the [vdaas/vald](https://github.com/vdaas/vald) repository.      |
-| vX.Y.Z  | :white_check_mark: | :white_check_mark: | the vX.Y.Z image applies the source code of the [vdaas/vald](https://github.com/vdaas/vald) repository.               |
+| tag     |           linux/amd64           |    linux/arm64     | description                                                                                                                 |
+| :------ | :-----------------------------: | :----------------: | :-------------------------------------------------------------------------------------------------------------------------- |
+| latest  | :white_check_mark:<BR>:warning: | :white_check_mark: | the latest image is the same as the latest version of [vdaas/vald](https://github.com/vdaas/vald) repository version.       |
+| nightly | :white_check_mark:<BR>:warning: | :white_check_mark: | the nightly applies the main branch's source code of the [vdaas/vald](https://github.com/vdaas/vald) repository.            |
+| vX.Y.Z  | :white_check_mark:<BR>:warning: | :white_check_mark: | the vX.Y.Z image applies the source code of the [vdaas/vald](https://github.com/vdaas/vald) repository.                     |
+| pr-XXX  | :white_check_mark:<BR>:warning: |        :x:         | the pr-X image applies the source code of the pull request X of the [vdaas/vald](https://github.com/vdaas/vald) repository. |
+
+<!-- FIXME: If image has some requirements, describe here with :warning: emoji -->
+
+- :warning: : The image of `linux/amd64` requires CPU applying `AVX-2` or `AVX-512` for running NGT
 
 ## Dockerfile
 
