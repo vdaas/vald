@@ -114,6 +114,21 @@ docker/build/gateway-filter:
 	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
 	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG)
 
+.PHONY: docker/name/gateway-mirror
+docker/name/gateway-mirror:
+	@echo "$(ORG)/$(MIRROR_GATEWAY_IMAGE)"
+
+.PHONY: docker/build/gateway-mirror
+## build gateway-mirror image
+docker/build/gateway-mirror:
+	$(DOCKER) build \
+	    $(DOCKER_OPTS) \
+	    -f dockers/gateway/mirror/Dockerfile \
+	    -t $(ORG)/$(MIRROR_GATEWAY_IMAGE):$(TAG) . \
+	    --build-arg GO_VERSION=$(GO_VERSION) \
+	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
+	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG)
+
 .PHONY: docker/name/manager-index
 docker/name/manager-index:
 	@echo "$(ORG)/$(MANAGER_INDEX_IMAGE)"
