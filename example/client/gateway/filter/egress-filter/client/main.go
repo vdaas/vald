@@ -14,12 +14,14 @@
 package main
 
 import (
+	// "github.com/vdaas/vald/apis/grpc/v1/filter/egress"
+	// "github.com/vdaas/vald/apis/grpc/v1/payload"
 	"context"
 	"flag"
 
 	"github.com/kpango/glg"
-	"github.com/vdaas/vald/apis/grpc/v1/filter/egress"
-	"github.com/vdaas/vald/apis/grpc/v1/payload"
+	"github.com/vdaas/vald-client-go/v1/filter/egress"
+	"github.com/vdaas/vald-client-go/v1/payload"
 	"github.com/vdaas/vald/internal/net"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -61,7 +63,8 @@ func main() {
 
 	client = egress.NewFilterClient(conn)
 
-	res, err := client.FilterDistance(context.Background(), &payload.Filter_DistanceRequest{})
+	// res, err := client.FilterDistance(context.Background(), &payload.Filter_DistanceRequest{})
+	res, err := client.FilterDistance(context.Background(), &payload.Object_Distance{})
 	if err != nil {
 		glg.Error(err)
 	} else {
@@ -69,11 +72,15 @@ func main() {
 	}
 
 	// TODO: Fix
-	r, err := client.FilterVector(context.Background(), &payload.Filter_VectorRequest{
-		Vector: []*payload.Object_Vector{
-			{Id: "1", Vector: make([]float32, dimension)},
-		},
-		Query: &payload.Filter_Query{},
+	// r, err := client.FilterVector(context.Background(), &payload.Filter_VectorRequest{
+	// 	Vector: []*payload.Object_Vector{
+	// 		{Id: "1", Vector: make([]float32, dimension)},
+	// 	},
+	// 	Query: &payload.Filter_Query{},
+	// })
+	r, err := client.FilterVector(context.Background(), &payload.Object_Vector{
+		Id:     "1",
+		Vector: make([]float32, dimension),
 	})
 	if err != nil {
 		glg.Error(err)

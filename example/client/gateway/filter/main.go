@@ -42,7 +42,7 @@ func init() {
 	Ingressport option specifies grpc server port of your ingress filter. Default value is `8082`.
 	Egresshost option specifies grpc server host of your egress filter. Default value is `127.0.0.1`.
 	Egressport option specifies grpc server port of your egress filter. Default value is `8083`.
-	Wait option specifies indexing wait time (in seconds). Default value is  `180`.
+	Wait option specifies indexing wait time (in seconds). Default value is  `240`.
 	Dimension option specifies dimension size of vectors. Default value is  `784`.
 	**/
 	flag.StringVar(&grpcServerAddr, "addr", "127.0.0.1:8081", "gRPC server address of filter gateway")
@@ -50,7 +50,7 @@ func init() {
 	flag.UintVar(&ingressServerPort, "ingressport", 8082, "ingress server port")
 	flag.StringVar(&egressServerHost, "egresshost", "127.0.0.1", "egress server host")
 	flag.UintVar(&egressServerPort, "egressport", 8083, "egress server port")
-	flag.UintVar(&indexingWaitSeconds, "wait", 180, "indexing wait seconds")
+	flag.UintVar(&indexingWaitSeconds, "wait", 240, "indexing wait seconds")
 	flag.UintVar(&dimension, "dimension", 784, "dimension size of vectors")
 	flag.Parse()
 }
@@ -70,7 +70,7 @@ func main() {
 		vector []float32
 	}{
 		{
-			id:     "1_fashinon",
+			id:     "1_fashion",
 			vector: makeVecFn(int(dimension), 0.1),
 		},
 		{
@@ -87,8 +87,6 @@ func main() {
 		},
 	}
 
-	var object []byte
-
 	// connect to the Vald cluster
 	ctx := context.Background()
 	conn, err := grpc.DialContext(ctx, grpcServerAddr, grpc.WithInsecure())
@@ -98,6 +96,7 @@ func main() {
 	}
 
 	// create a filter client
+	var object []byte
 	fclient := vald.NewFilterClient(conn)
 
 	for i := 0; i < len(dataset); i++ {

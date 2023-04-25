@@ -14,6 +14,8 @@
 package main
 
 import (
+	// "github.com/vdaas/vald/apis/grpc/v1/filter/egress"
+	// "github.com/vdaas/vald/apis/grpc/v1/payload"
 	"context"
 	"flag"
 	"fmt"
@@ -22,8 +24,8 @@ import (
 	"os/signal"
 
 	"github.com/kpango/glg"
-	"github.com/vdaas/vald/apis/grpc/v1/filter/egress"
-	"github.com/vdaas/vald/apis/grpc/v1/payload"
+	"github.com/vdaas/vald-client-go/v1/filter/egress"
+	"github.com/vdaas/vald-client-go/v1/payload"
 	"google.golang.org/grpc"
 )
 
@@ -46,26 +48,33 @@ type myEgressServer struct {
 	egress.UnimplementedFilterServer
 }
 
-func (s *myEgressServer) GenVector(ctx context.Context, in *payload.Object_Blob) (*payload.Object_Vector, error) {
-	// Write your own logic
-	vec := make([]float32, dimension)
-	return &payload.Object_Vector{
-		Id:     in.GetId(),
-		Vector: vec,
-	}, nil
-}
+// func (s *myEgressServer) FilterDistance(ctx context.Context, in *payload.Filter_DistanceRequest) (*payload.Filter_DistanceResponse, error) {
+// 	// Write your own logic
+// 	return &payload.Filter_DistanceResponse{
+// 		Distance: in.GetDistance(),
+// 	}, nil
+// }
 
-func (s *myEgressServer) FilterDistance(ctx context.Context, in *payload.Filter_DistanceRequest) (*payload.Filter_DistanceResponse, error) {
+func (s *myEgressServer) FilterDistance(ctx context.Context, in *payload.Object_Distance) (*payload.Object_Distance, error) {
 	// Write your own logic
-	return &payload.Filter_DistanceResponse{
+	return &payload.Object_Distance{
+		Id:       in.GetId(),
 		Distance: in.GetDistance(),
 	}, nil
 }
 
 // TODO: Fix
-func (s *myEgressServer) FilterVector(ctx context.Context, in *payload.Filter_VectorRequest) (*payload.Filter_VectorResponse, error) {
+// func (s *myEgressServer) FilterVector(ctx context.Context, in *payload.Filter_VectorRequest) (*payload.Filter_VectorResponse, error) {
+// 	// Write your own logic
+// 	return &payload.Filter_VectorResponse{
+// 		Vector: in.GetVector(),
+// 	}, nil
+// }
+
+func (s *myEgressServer) FilterVector(ctx context.Context, in *payload.Object_Vector) (*payload.Object_Vector, error) {
 	// Write your own logic
-	return &payload.Filter_VectorResponse{
+	return &payload.Object_Vector{
+		Id:     in.GetId(),
 		Vector: in.GetVector(),
 	}, nil
 }
@@ -80,7 +89,7 @@ func main() {
 	egress.RegisterFilterServer(s, &myEgressServer{})
 
 	go func() {
-		glg.Infof("start gRPC server adde: %v", egressServerPort)
+		glg.Infof("start gRPC server port: %v", egressServerPort)
 		s.Serve(listener)
 	}()
 

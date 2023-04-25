@@ -20,7 +20,7 @@ metadata:
   labels:
     app: vald-egress-filter
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: vald-egress-filter

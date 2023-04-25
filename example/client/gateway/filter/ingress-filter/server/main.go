@@ -14,6 +14,8 @@
 package main
 
 import (
+	// "github.com/vdaas/vald/apis/grpc/v1/filter/ingress"
+	// "github.com/vdaas/vald/apis/grpc/v1/payload"
 	"context"
 	"flag"
 	"fmt"
@@ -22,8 +24,8 @@ import (
 	"os/signal"
 
 	"github.com/kpango/glg"
-	"github.com/vdaas/vald/apis/grpc/v1/filter/ingress"
-	"github.com/vdaas/vald/apis/grpc/v1/payload"
+	"github.com/vdaas/vald-client-go/v1/filter/ingress"
+	"github.com/vdaas/vald-client-go/v1/payload"
 	"google.golang.org/grpc"
 )
 
@@ -70,7 +72,7 @@ func main() {
 	ingress.RegisterFilterServer(s, &myIngressServer{})
 
 	go func() {
-		glg.Infof("start gRPC server adde: %v", ingressServerPort)
+		glg.Infof("start gRPC server port: %v", ingressServerPort)
 		s.Serve(listener)
 	}()
 
