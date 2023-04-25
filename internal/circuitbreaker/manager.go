@@ -86,7 +86,8 @@ func (bm *breakerManager) Do(ctx context.Context, key string, fn func(ctx contex
 	if err != nil {
 		switch st {
 		case StateClosed:
-			err = errors.Wrapf(err, "circuitbreaker state is %s, this error is not caused by circuitbreaker", st.String())
+			cerr := errors.Wrapf(err, "circuitbreaker state is %s, this error is not caused by circuitbreaker", st.String())
+			log.Debug(cerr)
 		case StateOpen:
 			if !errors.Is(err, errors.ErrCircuitBreakerOpenState) {
 				err = errors.Join(err, errors.ErrCircuitBreakerOpenState)

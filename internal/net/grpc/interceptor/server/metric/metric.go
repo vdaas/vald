@@ -65,7 +65,7 @@ func MetricInterceptors() (grpc.UnaryServerInterceptor, grpc.StreamServerInterce
 			elapsedTime := time.Since(now)
 			record(ctx, info.FullMethod, err, float64(elapsedTime)/float64(time.Millisecond))
 			return resp, err
-		}, func(srv interface{}, ss grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
+		}, func(srv interface{}, ss grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) (err error) {
 			now := time.Now()
 			err = handler(srv, ss)
 			elapsedTime := time.Since(now)

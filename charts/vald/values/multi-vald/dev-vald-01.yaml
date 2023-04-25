@@ -1,0 +1,5 @@
+discoverer:
+  clusterRoleBinding:
+    name: vald-01
+  serviceAccount:
+    name: vald-01
