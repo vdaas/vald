@@ -13,6 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
+MIRROR01_NAMESPACE = vald-01
+MIRROR02_NAMESPACE = vald-02
+MIRROR03_NAMESPACE = vald-03
+
 .PHONY: k8s/manifest/clean
 ## clean k8s manifests
 k8s/manifest/clean:
@@ -98,6 +103,33 @@ k8s/vald/delete:
 	kubectl delete -f $(TEMP_DIR)/vald/templates/discoverer
 	kubectl delete -f $(TEMP_DIR)/vald/templates/agent
 	rm -rf $(TEMP_DIR)
+
+.PHONY: k8s/multi/vald/deploy
+## deploy multiple vald sample clusters to k8s
+k8s/multi/vald/deploy:
+	-@kubectl create ns $(MIRROR01_NAMESPACE)
+	-@kubectl create ns $(MIRROR02_NAMESPACE)
+	-@kubectl create ns $(MIRROR03_NAMESPACE)
+	helm install vald-cluster-01 charts/vald \
+		-f ./charts/vald/values/multi-vald/dev-vald-with-mirror.yaml \
+		-f ./charts/vald/values/multi-vald/dev-vald-01.yaml \
+	    -n $(MIRROR01_NAMESPACE)
+	helm install vald-cluster-02 charts/vald \
+		-f ./charts/vald/values/multi-vald/dev-vald-with-mirror.yaml \
+		-f ./charts/vald/values/multi-vald/dev-vald-02.yaml \
+	    -n $(MIRROR02_NAMESPACE)
+	helm install vald-cluster-03 charts/vald \
+		-f ./charts/vald/values/multi-vald/dev-vald-with-mirror.yaml \
+		-f ./charts/vald/values/multi-vald/dev-vald-03.yaml \
+		-n $(MIRROR03_NAMESPACE)
+
+.PHONY: k8s/multi/vald/delete
+## delete multiple vald sample clusters to k8s
+k8s/multi/vald/delete:
+	helm uninstall vald-cluster-01 -n vald-01
+	helm uninstall vald-cluster-02 -n vald-02
+	helm uninstall vald-cluster-03 -n vald-03
+	-@kubectl delete ns vald-01 vald-02 vald-03
 
 .PHONY: k8s/vald-helm-operator/deploy
 ## deploy vald-helm-operator to k8s
@@ -300,29 +332,50 @@ k8s/linkerd/deploy:
 k8s/linkerd/delete:
 	linkerd install --ignore-cluster | kubectl delete -f -
 
-.PHONY: k8s/otel/operator/install
+.PHONY: k8s/otel/operator/deploy
 ## deploy opentelemetry operator
-k8s/otel/operator/install:
+k8s/otel/operator/deploy:
 	helm repo add open-telemetry https://open-telemetry.github.io/opentelemetry-helm-charts
 	helm install ${OTEL_OPERATOR_RELEASE_NAME} open-telemetry/opentelemetry-operator --set installCRDs=true --version ${OTEL_OPERATOR_VERSION}
 	kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=opentelemetry-operator --timeout=60s
+	sleep 10
 
-.PHONY: k8s/otel/operator/uninstall
+.PHONY: k8s/otel/operator/delete
 ## delete opentelemetry operator
-k8s/otel/operator/uninstall:
+k8s/otel/operator/delete:
 	helm uninstall ${OTEL_OPERATOR_RELEASE_NAME}
 
-.PHONY: k8s/otel/collector/install
+.PHONY: k8s/otel/collector/deploy
 ## deploy opentelemetry collector
-k8s/otel/collector/install:
+k8s/otel/collector/deploy:
 	kubectl apply -f $(ROOTDIR)/k8s/metrics/otel/collector.yaml
 	kubectl apply -f $(ROOTDIR)/k8s/metrics/otel/pod-monitor.yaml
 
-.PHONY: k8s/otel/collector/uninstall
+.PHONY: k8s/otel/collector/delete
 ## delete opentelemetry collector
-k8s/otel/collector/uninstall:
+k8s/otel/collector/delete:
 	kubectl delete -f $(ROOTDIR)/k8s/metrics/otel/collector.yaml
 	kubectl delete -f $(ROOTDIR)/k8s/metrics/otel/pod-monitor.yaml
+
+.PHONY: k8s/monitoring/deploy
+## deploy monitoring stack
+k8s/monitoring/deploy: \
+	k8s/external/cert-manager/deploy \
+	k8s/metrics/jaeger/deploy \
+	k8s/metrics/prometheus/operator/deploy \
+	k8s/metrics/grafana/deploy \
+	k8s/otel/operator/deploy \
+	k8s/otel/collector/deploy
+
+.PHONY: k8s/monitoring/delete
+## delete monitoring stack
+k8s/monitoring/delete: \
+	k8s/otel/collector/delete \
+	k8s/otel/operator/delete \
+	k8s/metrics/grafana/delete \
+	k8s/metrics/jaeger/delete \
+	k8s/metrics/prometheus/operator/delete \
+	k8s/external/cert-manager/delete
 
 .PHONY: telepresence/install
 ## install telepresence
