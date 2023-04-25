@@ -16,13 +16,13 @@ package config
 // Mirror represents the Mirror Gateway configuration.
 type Mirror struct {
 	// Client represents the gRPC client configuration for connecting the LB Gateway.
-	Client *GRPCClient `json:"client"             yaml:"client"`
+	Client *GRPCClient `json:"client" yaml:"client"`
 	// SelfMirrorAddr represents the address for the self Mirror Gateway.
-	SelfMirrorAddr string `json:"self_mirror_addr"   yaml:"self_mirror_addr"`
+	SelfMirrorAddr string `json:"self_mirror_addr" yaml:"self_mirror_addr"`
 	// GatewayAddr represents the address for the Vald Gateway (e.g lb-gateway).
-	GatewayAddr string `json:"gateway_addr"       yaml:"gateway_addr"`
+	GatewayAddr string `json:"gateway_addr" yaml:"gateway_addr"`
 	// PodName represents self Mirror Gateway Pod name.
-	PodName string `json:"pod_name"           yaml:"pod_name"`
+	PodName string `json:"pod_name" yaml:"pod_name"`
 	// AdvertiseInterval represents interval to advertise Mirror Gateway information to other mirror gateway.
 	AdvertiseInterval string `json:"advertise_interval" yaml:"advertise_interval"`
 }
