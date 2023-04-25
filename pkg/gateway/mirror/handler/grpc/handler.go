@@ -790,10 +790,7 @@ func (s *server) StreamLinearSearch(stream vald.Search_StreamLinearSearchServer)
 }
 
 func (s *server) StreamLinearSearchByID(stream vald.Search_StreamLinearSearchByIDServer) (err error) {
-	ctx, span := trace.StartSpan(
-		grpc.WithGRPCMethod(stream.Context(), vald.PackageName+"."+vald.SearchRPCServiceName+"/"+vald.StreamLinearSearchByIDRPCName),
-		apiName+"/"+vald.StreamLinearSearchByIDRPCName,
-	)
+	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(stream.Context(), vald.PackageName+"."+vald.SearchRPCServiceName+"/"+vald.StreamLinearSearchByIDRPCName), apiName+"/"+vald.StreamLinearSearchByIDRPCName)
 	defer func() {
 		if span != nil {
 			span.End()

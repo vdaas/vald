@@ -143,6 +143,10 @@ gateway:
       write_buffer_size: 0
     tls:
       enabled: false
+<<<<<<< HEAD
       ca: /path/to/ca
+=======
+       ca: /path/to/ca
+>>>>>>> c989103b2 (Add mirror gateway component (#1949))
       cert: /path/to/cert
       key: /path/to/key
