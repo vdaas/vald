@@ -2901,10 +2901,10 @@ func (s *server) Flush(ctx context.Context, req *payload.Flush_Request) (cnts *p
 	}()
 
 	var (
-		stored uint32
-		uncommited uint32
-		indexing atomic.Value
-		saving atomic.Value
+		stored      uint32
+		uncommitted uint32
+		indexing    atomic.Value
+		saving      atomic.Value
 	)
 	indexing.Store(false)
 	saving.Store(false)
@@ -2921,7 +2921,7 @@ func (s *server) Flush(ctx context.Context, req *payload.Flush_Request) (cnts *p
 			st, msg, err := status.ParseError(err, codes.Internal,
 				"failed to parse "+vald.FlushRPCName+" gRPC error response",
 				&errdetails.RequestInfo{
-					RequestId:   now,
+					RequestId:   strconv.FormatInt(now, 10),
 					ServingData: errdetails.Serialize(req),
 				},
 				&errdetails.ResourceInfo{
@@ -2942,10 +2942,10 @@ func (s *server) Flush(ctx context.Context, req *payload.Flush_Request) (cnts *p
 		atomic.AddUint32(&stored, cnt.Stored)
 		atomic.AddUint32(&uncommitted, cnt.Uncommitted)
 		if cnt.Indexing {
-		 	indexing.Store(cnt.Indexing)
+			indexing.Store(cnt.Indexing)
 		}
 		if cnt.Saving {
-		 	saving.Store(cnt.Saving)
+			saving.Store(cnt.Saving)
 		}
 		return nil
 	})
@@ -2953,7 +2953,7 @@ func (s *server) Flush(ctx context.Context, req *payload.Flush_Request) (cnts *p
 		st, msg, err := status.ParseError(err, codes.Internal,
 			"failed to parse "+vald.FlushRPCName+" gRPC error response",
 			&errdetails.RequestInfo{
-				RequestId:   now,
+				RequestId:   strconv.FormatInt(now, 10),
 				ServingData: errdetails.Serialize(req),
 			},
 			&errdetails.ResourceInfo{
@@ -2968,19 +2968,19 @@ func (s *server) Flush(ctx context.Context, req *payload.Flush_Request) (cnts *p
 		return nil, err
 	}
 	cnts = &payload.Info_Index_Count{
-		Stored: atomic.LoadUint32(&stored),
-		Uncommitted: atomic.LoadUint32(&uncommited),
-		Indexing: indexing.Load().(bool),
-		Saving: saving.Load().(bool),
+		Stored:      atomic.LoadUint32(&stored),
+		Uncommitted: atomic.LoadUint32(&uncommitted),
+		Indexing:    indexing.Load().(bool),
+		Saving:      saving.Load().(bool),
 	}
-	if len(cnts.Stored) > 0 || len(cnts.Uncommitted) > 0 || cnts.Indexing || cnts.Saving {
+	if cnts.Stored > 0 || cnts.Uncommitted > 0 || cnts.Indexing || cnts.Saving {
 		err = errors.Errorf(
 			"stored index: %d, uncommited: %d, indexing: %t, saving: %t",
-			cnts.Stored, cnts.Uncommitted, cnts.Indexing, cnts.Saving
+			cnts.Stored, cnts.Uncommitted, cnts.Indexing, cnts.Saving,
 		)
 		err = status.WrapWithInternal(vald.FlushRPCName+" API flush failed", err,
 			&errdetails.RequestInfo{
-				RequestId:   now,
+				RequestId:   strconv.FormatInt(now, 10),
 				ServingData: errdetails.Serialize(req),
 			},
 			&errdetails.ResourceInfo{
