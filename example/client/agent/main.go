@@ -164,10 +164,10 @@ func main() {
 		glg.Infof("%d - Results : %s\n\n", i+1, string(b))
 		time.Sleep(1 * time.Second)
 	}
-
+	glg.Infof("Finish searching %d times", testCount)
 	glg.Info("Start removing vector")
-	// Remove indexed 400 vectors from vald cluster.
-	for i := range ids[:insertCount] {
+	// Remove indexed 200 vectors from vald cluster.
+	for i := range ids[:insertCount/2] {
 		// Call `Remove` function of Vald client.
 		// Sends id to server via gRPC.
 		_, err := client.Remove(ctx, &payload.Remove_Request{
@@ -196,6 +196,12 @@ func main() {
 		glg.Fatal(err)
 	}
 	glg.Info("Finish removing indexed vector from backup")
+	glg.Info("Start flushing vector")
+	res, err := client.Flush(ctx, &payload.Flush_Request{})
+	if err != nil {
+		glg.Fatal(err, res)
+	}
+	glg.Info("Finish flushing vector")
 }
 
 // load function loads training and test vector from hdf file. The size of ids is same to the number of training data.
