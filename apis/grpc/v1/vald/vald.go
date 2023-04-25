@@ -18,6 +18,7 @@
 package vald
 
 import (
+	"github.com/vdaas/vald/apis/grpc/v1/mirror"
 	grpc "google.golang.org/grpc"
 )
 
@@ -35,6 +36,11 @@ type ServerWithFilter interface {
 	FilterServer
 }
 
+type ServerWithMirror interface {
+	Server
+	mirror.MirrorServer
+}
+
 type UnimplementedValdServer struct {
 	UnimplementedInsertServer
 	UnimplementedUpdateServer
@@ -47,6 +53,11 @@ type UnimplementedValdServer struct {
 type UnimplementedValdServerWithFilter struct {
 	UnimplementedValdServer
 	UnimplementedFilterServer
+}
+
+type UnimplementedValdServerWithMirror struct {
+	UnimplementedValdServer
+	mirror.UnimplementedMirrorServer
 }
 
 type Client interface {
@@ -63,6 +74,11 @@ type ClientWithFilter interface {
 	FilterClient
 }
 
+type ClientWithMirror interface {
+	Client
+	mirror.MirrorClient
+}
+
 const PackageName = "vald.v1"
 
 const (
@@ -73,6 +89,7 @@ const (
 	RemoveRPCServiceName = "Remove"
 	ObjectRPCServiceName = "Object"
 	FilterRPCServiceName = "Filter"
+	MirrorRPCServiceName = "Mirror"
 )
 
 const (
@@ -123,6 +140,9 @@ const (
 	ExistsRPCName          = "Exists"
 	GetObjectRPCName       = "GetObject"
 	StreamGetObjectRPCName = "StreamGetObject"
+
+	RegisterRPCName  = "Register"
+	AdvertiseRPCName = "Advertise"
 )
 
 type client struct {
@@ -132,6 +152,11 @@ type client struct {
 	SearchClient
 	RemoveClient
 	ObjectClient
+}
+
+type clientWithMirror struct {
+	Client
+	mirror.MirrorClient
 }
 
 func RegisterValdServer(s *grpc.Server, srv Server) {
@@ -148,6 +173,11 @@ func RegisterValdServerWithFilter(s *grpc.Server, srv ServerWithFilter) {
 	RegisterFilterServer(s, srv)
 }
 
+func RegisterValdServerWithMirror(s *grpc.Server, srv ServerWithMirror) {
+	RegisterValdServer(s, srv)
+	mirror.RegisterMirrorServer(s, srv)
+}
+
 func NewValdClient(conn *grpc.ClientConn) Client {
 	return &client{
 		NewInsertClient(conn),
@@ -156,5 +186,12 @@ func NewValdClient(conn *grpc.ClientConn) Client {
 		NewSearchClient(conn),
 		NewRemoveClient(conn),
 		NewObjectClient(conn),
+	}
+}
+
+func NewValdClientWithMirror(conn *grpc.ClientConn) ClientWithMirror {
+	return &clientWithMirror{
+		Client:       NewValdClient(conn),
+		MirrorClient: mirror.NewMirrorClient(conn),
 	}
 }
