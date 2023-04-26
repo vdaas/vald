@@ -20,8 +20,8 @@ import (
 	"time"
 
 	"github.com/kpango/glg"
-	"github.com/vdaas/vald-client-go/v1/payload"
-	"github.com/vdaas/vald-client-go/v1/vald"
+	"github.com/vdaas/vald/apis/grpc/v1/payload"
+	"github.com/vdaas/vald/apis/grpc/v1/vald"
 	"google.golang.org/grpc"
 )
 
@@ -86,6 +86,7 @@ func main() {
 			vector: makeVecFn(int(dimension), 0.4),
 		},
 	}
+	query := "category=fashion"
 
 	// connect to the Vald cluster
 	ctx := context.Background()
@@ -110,12 +111,13 @@ func main() {
 			Config: &payload.Insert_Config{
 				SkipStrictExistCheck: false,
 				// config to call FilterVector function of your ingress filter
-				Filters: &payload.Filter_Config{
-					Targets: []*payload.Filter_Target{
-						{
+				Filters: []*payload.Filter_Config{
+					{
+						Target: &payload.Filter_Target{
 							Host: ingressServerHost,
 							Port: uint32(ingressServerPort),
 						},
+						Query: &payload.Filter_Query{},
 					},
 				},
 			},
@@ -149,11 +151,14 @@ func main() {
 		Epsilon: 0.1,
 		Radius:  -1,
 		// config to call DistanceVector function of your egress filter
-		EgressFilters: &payload.Filter_Config{
-			Targets: []*payload.Filter_Target{
-				{
+		EgressFilters: []*payload.Filter_Config{
+			{
+				Target: &payload.Filter_Target{
 					Host: egressServerHost,
 					Port: uint32(egressServerPort),
+				},
+				Query: &payload.Filter_Query{
+					Query: query,
 				},
 			},
 		},
@@ -177,12 +182,13 @@ func main() {
 	vreq := &payload.Object_VectorRequest{
 		Id: &payload.Object_ID{Id: dataset[0].id},
 		// config to call FilterVector function of your egress filter
-		Filters: &payload.Filter_Config{
-			Targets: []*payload.Filter_Target{
-				{
+		Filters: []*payload.Filter_Config{
+			{
+				Target: &payload.Filter_Target{
 					Host: egressServerHost,
 					Port: uint32(egressServerPort),
 				},
+				Query: &payload.Filter_Query{},
 			},
 		},
 	}

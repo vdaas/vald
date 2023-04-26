@@ -14,18 +14,19 @@
 package main
 
 import (
-	// "github.com/vdaas/vald/apis/grpc/v1/filter/egress"
-	// "github.com/vdaas/vald/apis/grpc/v1/payload"
 	"context"
 	"flag"
 	"fmt"
 	"net"
 	"os"
 	"os/signal"
+	"strings"
 
 	"github.com/kpango/glg"
-	"github.com/vdaas/vald-client-go/v1/filter/egress"
-	"github.com/vdaas/vald-client-go/v1/payload"
+	"github.com/vdaas/vald/apis/grpc/v1/filter/egress"
+	"github.com/vdaas/vald/apis/grpc/v1/payload"
+	"github.com/vdaas/vald/internal/net/grpc/codes"
+	"github.com/vdaas/vald/internal/net/grpc/status"
 	"google.golang.org/grpc"
 )
 
@@ -44,37 +45,55 @@ func init() {
 	flag.Parse()
 }
 
+func getSplitValue(str string, sep string, pos uint) (string, bool) {
+	ss := strings.Split(str, sep)
+	if len(ss) == int(pos+1) {
+		return ss[pos], true
+	}
+
+	return "", false
+}
+
 type myEgressServer struct {
 	egress.UnimplementedFilterServer
 }
 
-// func (s *myEgressServer) FilterDistance(ctx context.Context, in *payload.Filter_DistanceRequest) (*payload.Filter_DistanceResponse, error) {
-// 	// Write your own logic
-// 	return &payload.Filter_DistanceResponse{
-// 		Distance: in.GetDistance(),
-// 	}, nil
-// }
-
-func (s *myEgressServer) FilterDistance(ctx context.Context, in *payload.Object_Distance) (*payload.Object_Distance, error) {
+func (s *myEgressServer) FilterDistance(ctx context.Context, in *payload.Filter_DistanceRequest) (*payload.Filter_DistanceResponse, error) {
 	// Write your own logic
-	return &payload.Object_Distance{
-		Id:       in.GetId(),
-		Distance: in.GetDistance(),
+	qCategory, ok := getSplitValue(in.GetQuery().GetQuery(), "=", 1)
+	if !ok {
+		return &payload.Filter_DistanceResponse{
+			Distance: in.GetDistance(),
+		}, nil
+	}
+
+	filteredDis := []*payload.Object_Distance{}
+	for _, d := range in.GetDistance() {
+		iCategory, ok := getSplitValue(d.GetId(), "_", 1)
+		if !ok {
+			return &payload.Filter_DistanceResponse{
+				Distance: in.GetDistance(),
+			}, nil
+		}
+
+		glg.Infof("qCategory: %v, iCategory: %v", qCategory, iCategory)
+		if qCategory == iCategory {
+			filteredDis = append(filteredDis, d)
+		}
+	}
+
+	if len(filteredDis) == 0 {
+		return nil, status.Error(codes.NotFound, "FilterDistance results not found.")
+	}
+
+	return &payload.Filter_DistanceResponse{
+		Distance: filteredDis,
 	}, nil
 }
 
-// TODO: Fix
-// func (s *myEgressServer) FilterVector(ctx context.Context, in *payload.Filter_VectorRequest) (*payload.Filter_VectorResponse, error) {
-// 	// Write your own logic
-// 	return &payload.Filter_VectorResponse{
-// 		Vector: in.GetVector(),
-// 	}, nil
-// }
-
-func (s *myEgressServer) FilterVector(ctx context.Context, in *payload.Object_Vector) (*payload.Object_Vector, error) {
+func (s *myEgressServer) FilterVector(ctx context.Context, in *payload.Filter_VectorRequest) (*payload.Filter_VectorResponse, error) {
 	// Write your own logic
-	return &payload.Object_Vector{
-		Id:     in.GetId(),
+	return &payload.Filter_VectorResponse{
 		Vector: in.GetVector(),
 	}, nil
 }

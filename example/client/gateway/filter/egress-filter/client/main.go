@@ -14,14 +14,12 @@
 package main
 
 import (
-	// "github.com/vdaas/vald/apis/grpc/v1/filter/egress"
-	// "github.com/vdaas/vald/apis/grpc/v1/payload"
 	"context"
 	"flag"
 
 	"github.com/kpango/glg"
-	"github.com/vdaas/vald-client-go/v1/filter/egress"
-	"github.com/vdaas/vald-client-go/v1/payload"
+	"github.com/vdaas/vald/apis/grpc/v1/filter/egress"
+	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/net"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -63,24 +61,41 @@ func main() {
 
 	client = egress.NewFilterClient(conn)
 
-	// res, err := client.FilterDistance(context.Background(), &payload.Filter_DistanceRequest{})
-	res, err := client.FilterDistance(context.Background(), &payload.Object_Distance{})
+	fdr := &payload.Filter_DistanceRequest{
+		Distance: []*payload.Object_Distance{
+			{
+				Id:       "1_fashion",
+				Distance: 0.01,
+			},
+			{
+				Id:       "2_food",
+				Distance: 0.02,
+			},
+			{
+				Id:       "3_fashion",
+				Distance: 0.03,
+			},
+			{
+				Id:       "4_pet",
+				Distance: 0.04,
+			},
+		},
+		Query: &payload.Filter_Query{
+			Query: "category=fashion",
+		},
+	}
+	res, err := client.FilterDistance(context.Background(), fdr)
 	if err != nil {
 		glg.Error(err)
 	} else {
 		glg.Info("FilterDistance Distance: ", res.GetDistance())
 	}
 
-	// TODO: Fix
-	// r, err := client.FilterVector(context.Background(), &payload.Filter_VectorRequest{
-	// 	Vector: []*payload.Object_Vector{
-	// 		{Id: "1", Vector: make([]float32, dimension)},
-	// 	},
-	// 	Query: &payload.Filter_Query{},
-	// })
-	r, err := client.FilterVector(context.Background(), &payload.Object_Vector{
-		Id:     "1",
-		Vector: make([]float32, dimension),
+	r, err := client.FilterVector(context.Background(), &payload.Filter_VectorRequest{
+		Vector: []*payload.Object_Vector{
+			{Id: "1", Vector: make([]float32, dimension)},
+		},
+		Query: &payload.Filter_Query{},
 	})
 	if err != nil {
 		glg.Error(err)
