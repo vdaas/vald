@@ -14,34 +14,48 @@
 // limitations under the License.
 //
 
-// Package router provides implementation of Go API for routing http Handler wrapped by rest.Func
-package router
+package rate
 
 import (
-	"github.com/vdaas/vald/internal/errgroup"
-	"github.com/vdaas/vald/pkg/tools/benchmark/operator/handler/rest"
+	"context"
+	"runtime"
+
+	"go.uber.org/ratelimit"
+	"golang.org/x/time/rate"
 )
 
-type Option func(*router)
-
-var defaultOpts = []Option{
-	WithTimeout("3s"),
+type Limiter interface {
+	Wait(ctx context.Context) error
 }
 
-func WithHandler(h rest.Handler) Option {
-	return func(r *router) {
-		r.handler = h
+type limiter struct {
+	isStd bool
+	uber  ratelimit.Limiter
+	std   *rate.Limiter
+}
+
+func NewLimiter(cnt int) Limiter {
+	if runtime.GOMAXPROCS(0) >= 32 {
+		return &limiter{
+			isStd: true,
+			std:   rate.NewLimiter(rate.Limit(cnt), 1),
+		}
+	}
+	return &limiter{
+		isStd: false,
+		uber:  ratelimit.New(cnt, ratelimit.WithoutSlack),
 	}
 }
 
-func WithTimeout(timeout string) Option {
-	return func(r *router) {
-		r.timeout = timeout
+func (l *limiter) Wait(ctx context.Context) error {
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	default:
+		if l.isStd {
+			return l.std.Wait(ctx)
+		}
+		l.uber.Take()
 	}
-}
-
-func WithErrGroup(eg errgroup.Group) Option {
-	return func(r *router) {
-		r.eg = eg
-	}
+	return nil
 }
