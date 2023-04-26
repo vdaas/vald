@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,8 +19,10 @@ package service
 
 import (
 	"context"
+	"math"
 	"os"
 	"reflect"
+	"strconv"
 	"syscall"
 	"time"
 
@@ -34,6 +36,7 @@ import (
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/test/data/hdf5"
+	"github.com/vdaas/vald/internal/timeutil/rate"
 )
 
 type Job interface {
@@ -46,15 +49,33 @@ type jobType int
 
 const (
 	USERDEFINED jobType = iota
+	INSERT
 	SEARCH
+	UPDATE
+	UPSERT
+	REMOVE
+	GETOBJECT
+	EXISTS
 )
 
 func (jt jobType) String() string {
 	switch jt {
 	case USERDEFINED:
 		return "userdefined"
+	case INSERT:
+		return "insert"
 	case SEARCH:
 		return "search"
+	case UPDATE:
+		return "update"
+	case UPSERT:
+		return "upsert"
+	case REMOVE:
+		return "remove"
+	case GETOBJECT:
+		return "getobject"
+	case EXISTS:
+		return "exists"
 	}
 	return ""
 }
@@ -70,12 +91,17 @@ type job struct {
 	upsertConfig       *config.UpsertConfig
 	searchConfig       *config.SearchConfig
 	removeConfig       *config.RemoveConfig
+	objectConfig       *config.ObjectConfig
 	client             vald.Client
 	hdf5               hdf5.Data
 	beforeJobName      string
 	beforeJobNamespace string
 	k8sClient          client.Client
 	beforeJobDur       time.Duration
+	limiter            rate.Limiter
+	rps                int
+	timeout            time.Duration
+	timestamp          int64
 }
 
 func New(opts ...Option) (Job, error) {
@@ -91,16 +117,90 @@ func New(opts ...Option) (Job, error) {
 			opt := WithJobFunc(j.jobFunc)
 			err := opt(j)
 			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
+		case INSERT:
+			j.jobFunc = j.insert
+			if j.insertConfig == nil {
+				return nil, errors.NewErrInvalidOption("insert config", j.insertConfig)
+			}
+			ts, err := strconv.Atoi(j.insertConfig.Timestamp)
+			if err != nil {
+				log.Warn("[benchmark job]: ", errors.NewErrInvalidOption("insert config timestamp", j.insert, err).Error())
+			} else {
+				j.timestamp = int64(ts)
+			}
 		case SEARCH:
 			j.jobFunc = j.search
+			if j.searchConfig == nil {
+				return nil, errors.NewErrInvalidOption("search config", j.searchConfig)
+			}
+			to, err := time.ParseDuration(j.searchConfig.Timeout)
+			if err != nil {
+				log.Warn("[benchmark job]: ", errors.NewErrInvalidOption("search config timeout", j.searchConfig.Timeout, err).Error())
+			} else {
+				j.timeout = to
+			}
+		case UPDATE:
+			j.jobFunc = j.update
+			if j.updateConfig == nil {
+				return nil, errors.NewErrInvalidOption("update config", j.updateConfig)
+			}
+			ts, err := strconv.Atoi(j.updateConfig.Timestamp)
+			if err != nil {
+				log.Warn("[benchmark job]: ", errors.NewErrInvalidOption("update config timestamp", j.updateConfig.Timestamp, err).Error())
+			} else {
+				j.timestamp = int64(ts)
+			}
+		case UPSERT:
+			j.jobFunc = j.upsert
+			if j.upsertConfig == nil {
+				return nil, errors.NewErrInvalidOption("upsert config", j.insertConfig)
+			}
+			ts, err := strconv.Atoi(j.upsertConfig.Timestamp)
+			if err != nil {
+				log.Warn("[benchmark job]: ", errors.NewErrInvalidOption("upsert config timestamp", j.upsertConfig.Timestamp, err).Error())
+			} else {
+				j.timestamp = int64(ts)
+			}
+		case REMOVE:
+			j.jobFunc = j.remove
+			if j.removeConfig == nil {
+				return nil, errors.NewErrInvalidOption("insert config", j.insertConfig)
+			}
+			ts, err := strconv.Atoi(j.removeConfig.Timestamp)
+			if err != nil {
+				log.Warn("[benchmark job]: ", errors.NewErrInvalidOption("remove config timestamp", j.removeConfig.Timestamp, err).Error())
+			} else {
+				j.timestamp = int64(ts)
+			}
+		case GETOBJECT:
+			j.jobFunc = j.getObject
+			if j.objectConfig == nil {
+				log.Warnf("[benchmark job] No get object config is set: %v", j.objectConfig)
+			}
+		case EXISTS:
+			j.jobFunc = j.exists
 		}
 	} else if j.jobType != USERDEFINED {
 		log.Warnf("[benchmark job] userdefined jobFunc is set but jobType is set %s", j.jobType.String())
+	}
+	if j.rps > 0 {
+		j.limiter = rate.NewLimiter(j.rps)
 	}
 	return j, nil
 }
 
 func (j *job) PreStart(ctx context.Context) error {
+	log.Infof("[benchmark job] start download dataset of %s", j.hdf5.GetName().String())
+	if err := j.hdf5.Download(); err != nil {
+		return err
+	}
+	log.Infof("[benchmark job] success download dataset of %s", j.hdf5.GetName().String())
+	log.Infof("[benchmark job] start load dataset of %s", j.hdf5.GetName().String())
+	if err := j.hdf5.Read(); err != nil {
+		return err
+	}
+	log.Infof("[benchmark job] success load dataset of %s", j.hdf5.GetName().String())
+	// Wait for beforeJob completed if exists
 	if len(j.beforeJobName) != 0 {
 		var jobResource v1.ValdBenchmarkJob
 		log.Info("[benchmark job] check before benchjob is completed or not...")
@@ -128,17 +228,6 @@ func (j *job) PreStart(ctx context.Context) error {
 			return err
 		}
 	}
-
-	log.Infof("[benchmark job] start download dataset of %s", j.hdf5.GetName().String())
-	if err := j.hdf5.Download(); err != nil {
-		return err
-	}
-	log.Infof("[benchmark job] success download dataset of %s", j.hdf5.GetName().String())
-	log.Infof("[benchmark job] start load dataset of %s", j.hdf5.GetName().String())
-	if err := j.hdf5.Read(); err != nil {
-		return err
-	}
-	log.Infof("[benchmark job] success load dataset of %s", j.hdf5.GetName().String())
 	return nil
 }
 
@@ -169,7 +258,7 @@ func (j *job) Start(ctx context.Context) (<-chan error, error) {
 			if err != nil {
 				select {
 				case <-ctx.Done():
-					ech <- errors.Wrap(err, ctx.Err().Error())
+					ech <- errors.Join(err, ctx.Err())
 				case ech <- err:
 				}
 			}
@@ -192,33 +281,42 @@ func (j *job) Stop(ctx context.Context) (err error) {
 	return
 }
 
-func calcRecall(linearRes, searchRes []*payload.Object_Distance) (recall float64) {
-	if len(linearRes) == 0 || len(searchRes) == 0 {
+func calcRecall(linearRes, searchRes *payload.Search_Response) (recall float64) {
+	if linearRes == nil || searchRes == nil {
+		return
+	}
+	lres := linearRes.Results
+	sres := searchRes.Results
+	if len(lres) == 0 || len(sres) == 0 {
 		return
 	}
 	linearIds := map[string]struct{}{}
-	for _, v := range linearRes {
+	for _, v := range lres {
 		linearIds[v.Id] = struct{}{}
 	}
-	for _, v := range searchRes {
+	for _, v := range sres {
 		if _, ok := linearIds[v.Id]; ok {
 			recall++
 		}
 	}
-	return recall / float64(len(linearRes))
+	return recall / float64(len(lres))
 }
 
-func genVec(data [][]float32, cfg *config.BenchmarkDataset) [][]float32 {
+func (j *job) genVec(cfg *config.BenchmarkDataset) [][]float32 {
 	start := cfg.Range.Start
 	end := cfg.Range.End
-	if (end - start) < cfg.Indexes {
-		end = cfg.Indexes
+	// If (Range.End - Range.Start) is smaller than Indexes, Indexes are prioritized based on Range.Start.
+	if (end - start + 1) < cfg.Indexes {
+		end = cfg.Range.Start + cfg.Indexes
 	}
-	num := end - start + 1
-	if len(data) < num {
-		num = len(data)
-		end = start + num + 1
+	data := j.hdf5.GetByGroupName(cfg.Group)
+	if n := math.Ceil(float64(end) / float64(len(data))); n > 1 {
+		var def [][]float32
+		for i := 0; i < int(n-1); i++ {
+			def = append(def, data...)
+		}
+		data = append(data, def...)
 	}
-	vectors := data[start : end+1]
+	vectors := data[start-1 : end]
 	return vectors
 }
