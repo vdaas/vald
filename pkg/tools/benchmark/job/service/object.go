@@ -19,62 +19,17 @@ package service
 
 import (
 	"context"
+	"strconv"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
-	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/net/grpc/status"
 )
 
-func (j *job) search(ctx context.Context, ech chan error) error {
-	log.Info("[benchmark job] Start benchmarking search")
-	// create data
-	vecs := j.genVec(j.dataset)
-	cfg := &payload.Search_Config{
-		Num:     uint32(j.searchConfig.Num),
-		MinNum:  uint32(j.searchConfig.MinNum),
-		Radius:  float32(j.searchConfig.Radius),
-		Epsilon: float32(j.searchConfig.Epsilon),
-		Timeout: j.timeout.Nanoseconds(),
-	}
-	lres := make([]*payload.Search_Response, len(vecs))
-	for i := 0; i < len(vecs); i++ {
-		if len(vecs[i]) != j.dimension {
-			log.Warn("len(vecs) ", len(vecs[i]), "is not matched with ", j.dimension)
-			continue
-		}
-		res, err := j.client.LinearSearch(ctx, &payload.Search_Request{
-			Vector: vecs[i],
-			Config: cfg,
-		})
-		if err != nil {
-			select {
-			case <-ctx.Done():
-				if errors.Is(err, context.Canceled) {
-					return errors.Join(err, context.Canceled)
-				}
-				select {
-				case <-ctx.Done():
-					return errors.Join(err, context.Canceled)
-				case ech <- errors.Join(err, ctx.Err()):
-				}
-			default:
-				st, _ := status.FromError(err)
-				if st.Code() != codes.NotFound {
-					log.Warnf("[benchmark job] linear search error is detected: code = %d, msg = %s", st.Code(), err.Error())
-				}
-			}
-		}
-		lres[i] = res
-	}
-	sres := make([]*payload.Search_Response, len(vecs))
-	log.Infof("[benchmark job] Start search")
-	for i := 0; i < len(vecs); i++ {
-		if len(vecs[i]) != j.dimension {
-			log.Warn("len(vecs) ", len(vecs[i]), "is not matched with ", j.dimension)
-			continue
-		}
+func (j *job) exists(ctx context.Context, ech chan error) error {
+	log.Info("[benchmark job] Start benchmarking exists")
+	for i := 0; i < j.dataset.Indexes; i++ {
 		err := j.limiter.Wait(ctx)
 		if err != nil {
 			if errors.Is(err, context.Canceled) {
@@ -82,11 +37,9 @@ func (j *job) search(ctx context.Context, ech chan error) error {
 			}
 			ech <- err
 		}
-		res, err := j.client.Search(ctx, &payload.Search_Request{
-			Vector: vecs[i],
-			Config: cfg,
+		res, err := j.client.Exists(ctx, &payload.Object_ID{
+			Id: strconv.Itoa(i),
 		})
-		log.Infof("[benchmark job] search %d", i)
 		if err != nil {
 			select {
 			case <-ctx.Done():
@@ -100,18 +53,67 @@ func (j *job) search(ctx context.Context, ech chan error) error {
 				}
 			default:
 				st, _ := status.FromError(err)
-				if st.Code() != codes.NotFound {
-					log.Warnf("[benchmark job] search error is detected: code = %d, msg = %s", st.Code(), err.Error())
+				log.Warnf("[benchmark job] exists error is detected: code = %d, msg = %s", st.Code(), err.Error())
+			}
+		}
+		if res != nil {
+			log.Infof("[benchmark exists job] iter=%d, Id=%s", i, res.GetId())
+		}
+	}
+	log.Info("[benchmark job] Finish benchmarking exists")
+	return nil
+}
+
+func (j *job) getObject(ctx context.Context, ech chan error) error {
+	log.Info("[benchmark job] Start benchmarking getObject")
+	// create data
+	vecs := j.genVec(j.dataset)
+	for i := 0; i < len(vecs); i++ {
+		log.Infof("[benchmark job] Start getObject: iter = %d", i)
+		err := j.limiter.Wait(ctx)
+		if err != nil {
+			if errors.Is(err, context.Canceled) {
+				return errors.Join(err, context.Canceled)
+			}
+			ech <- err
+		}
+		ft := []*payload.Filter_Target{}
+		if j.objectConfig != nil {
+			for i, target := range j.objectConfig.FilterConfig.Targets {
+				ft[i] = &payload.Filter_Target{
+					Host: target.Host,
+					Port: uint32(target.Port),
 				}
 			}
 		}
-		sres[i] = res
+		res, err := j.client.GetObject(ctx, &payload.Object_VectorRequest{
+			Id: &payload.Object_ID{
+				Id: strconv.Itoa(i),
+			},
+			Filters: &payload.Filter_Config{
+				Targets: ft,
+			},
+		})
+		if res != nil {
+			log.Infof("[benchmark get object job] iter=%d, Id=%s, Vec=%v", i, res.GetId(), res.GetVector())
+		}
+		if err != nil {
+			select {
+			case <-ctx.Done():
+				if errors.Is(err, context.Canceled) {
+					return errors.Join(err, context.Canceled)
+				}
+				select {
+				case <-ctx.Done():
+					return errors.Join(err, context.Canceled)
+				case ech <- errors.Join(err, ctx.Err()):
+				}
+			default:
+				st, _ := status.FromError(err)
+				log.Warnf("[benchmark job] get object error is detected: code = %d, msg = %s", st.Code(), err.Error())
+			}
+		}
 	}
-	recall := make([]float64, len(vecs))
-	for i := 0; i < len(vecs); i++ {
-		recall[i] = calcRecall(lres[i], sres[i])
-		log.Info("[branch job] search recall: ", recall[i])
-	}
-	log.Info("[benchmark job] Finish benchmarking search")
+	log.Info("[benchmark job] Finish benchmarking getObject")
 	return nil
 }
