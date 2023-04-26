@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -99,10 +99,12 @@ func New(cfg *config.Config) (r runner.Runner, err error) {
 		service.WithUpsertConfig(cfg.Job.UpsertConfig),
 		service.WithSearchConfig(cfg.Job.SearchConfig),
 		service.WithRemoveConfig(cfg.Job.RemoveConfig),
+		service.WithObjectConfig(cfg.Job.ObjectConfig),
 		service.WithHdf5(d),
 		service.WithBeforeJobName(cfg.Job.BeforeJobName),
 		service.WithBeforeJobNamespace(cfg.Job.BeforeJobNamespace),
-		service.WithK8sClient(cfg.Job.Client),
+		service.WithK8sClient(cfg.K8sClient),
+		service.WithRPS(cfg.Job.RPS),
 	)
 	if err != nil {
 		return nil, err

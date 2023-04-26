@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -35,6 +35,7 @@ var defaultOpts = []Option{
 	// TODO: set default config for client
 	WithDimension(748),
 	WithBeforeJobDuration("30s"),
+	WithRPS(100),
 }
 
 // WithDimension sets the vector's dimension for running benchmark job with dataset.
@@ -97,6 +98,16 @@ func WithRemoveConfig(c *config.RemoveConfig) Option {
 	}
 }
 
+// WithObjectConfig sets the get object API config for running get object request job.
+func WithObjectConfig(c *config.ObjectConfig) Option {
+	return func(j *job) error {
+		if c != nil {
+			j.objectConfig = c
+		}
+		return nil
+	}
+}
+
 // WithValdClient sets the Vald client for sending request to the target Vald cluster.
 func WithValdClient(c vald.Client) Option {
 	return func(j *job) error {
@@ -147,8 +158,20 @@ func WithJobTypeByString(t string) Option {
 	switch t {
 	case "userdefined":
 		jt = USERDEFINED
+	case "insert":
+		jt = INSERT
 	case "search":
 		jt = SEARCH
+	case "update":
+		jt = UPDATE
+	case "upsert":
+		jt = UPSERT
+	case "remove":
+		jt = REMOVE
+	case "getobject":
+		jt = GETOBJECT
+	case "exists":
+		jt = EXISTS
 	}
 	return WithJobType(jt)
 }
@@ -156,14 +179,10 @@ func WithJobTypeByString(t string) Option {
 // WithJobType sets the jobType for running benchmark job.
 func WithJobType(jt jobType) Option {
 	return func(j *job) error {
-		switch jt {
-		case USERDEFINED:
-			j.jobType = jt
-		case SEARCH:
-			j.jobType = jt
-		default:
-			return errors.NewErrInvalidOption("jobType", jt)
+		if len(jt.String()) == 0 {
+			return errors.NewErrInvalidOption("jobType", jt.String())
 		}
+		j.jobType = jt
 		return nil
 	}
 }
@@ -219,6 +238,16 @@ func WithK8sClient(cli client.Client) Option {
 	return func(j *job) error {
 		if cli != nil {
 			j.k8sClient = cli
+		}
+		return nil
+	}
+}
+
+// WithRPS sets the rpc for sending request per seconds to the target Vald cluster.
+func WithRPS(rps int) Option {
+	return func(j *job) error {
+		if rps > 0 {
+			j.rps = rps
 		}
 		return nil
 	}
