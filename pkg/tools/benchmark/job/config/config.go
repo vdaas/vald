@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -43,11 +43,16 @@ type Config struct {
 
 	// Job represents benchmark job configurations
 	Job *config.BenchmarkJob `json:"job" yaml:"job"`
+
+	// K8sClient represents kubernetes clients
+	K8sClient client.Client
 }
 
 var (
-	NAMESPACE = os.Getenv("CRD_NAMESPACE")
-	NAME      = os.Getenv("CRD_NAME")
+	NAMESPACE               = os.Getenv("CRD_NAMESPACE")
+	NAME                    = os.Getenv("CRD_NAME")
+	JOBNAME_ANNOTATION      = "before-job-name"
+	JOBNAMESPACE_ANNOTATION = "before-job-namespace"
 )
 
 // NewConfig represents the set config from the given setting file path.
@@ -85,15 +90,15 @@ func NewConfig(ctx context.Context, path string) (cfg *Config, err error) {
 
 	// Get config from applied ValdBenchmarkJob custom resource
 	var jobResource v1.ValdBenchmarkJob
-	if cfg.Job.Client == nil {
+	if cfg.K8sClient == nil {
 		c, err := client.New(client.WithSchemeBuilder(*v1.SchemeBuilder))
 		if err != nil {
 			log.Error(err.Error())
 			return nil, err
 		}
-		cfg.Job.Client = c
+		cfg.K8sClient = c
 	}
-	err = cfg.Job.Client.Get(ctx, NAME, NAMESPACE, &jobResource)
+	err = cfg.K8sClient.Get(ctx, NAME, NAMESPACE, &jobResource)
 	if err != nil {
 		log.Warn(err.Error())
 	} else {
@@ -108,10 +113,12 @@ func NewConfig(ctx context.Context, path string) (cfg *Config, err error) {
 		cfg.Job.UpsertConfig = jobResource.Spec.UpsertConfig
 		cfg.Job.SearchConfig = jobResource.Spec.SearchConfig
 		cfg.Job.RemoveConfig = jobResource.Spec.RemoveConfig
+		cfg.Job.ObjectConfig = jobResource.Spec.ObjectConfig
 		cfg.Job.ClientConfig = jobResource.Spec.ClientConfig
+		cfg.Job.RPS = jobResource.Spec.RPS
 		if annotations := jobResource.GetAnnotations(); annotations != nil {
-			cfg.Job.BeforeJobName = annotations["before-job-name"]
-			cfg.Job.BeforeJobNamespace = annotations["before-job-namespace"]
+			cfg.Job.BeforeJobName = annotations[JOBNAME_ANNOTATION]
+			cfg.Job.BeforeJobNamespace = annotations[JOBNAMESPACE_ANNOTATION]
 		}
 	}
 

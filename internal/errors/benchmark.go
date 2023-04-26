@@ -29,4 +29,9 @@ var (
 	ErrFailedToCreateJob = func(err error, jn string) error {
 		return Wrapf(err, "could not create job: %s ", jn)
 	}
+
+	// ErrMismatchBenchmarkAtomics represents a function to generate an error that mismatch each atomic.Pointer stored corresponding to benchmark tasks.
+	ErrMismatchBenchmarkAtomics = func(job, benchjob, benchscenario interface{}) error {
+		return Errorf("mismatch atomics: job=%v\tbenchjob=%v\tbenchscenario=%v", job, benchjob, benchscenario)
+	}
 )
