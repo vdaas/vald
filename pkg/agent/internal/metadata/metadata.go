@@ -32,11 +32,16 @@ const (
 )
 
 type Metadata struct {
-	IsInvalid bool `json:"is_invalid"    yaml:"is_invalid"`
-	NGT       *NGT `json:"ngt,omitempty" yaml:"ngt"`
+	IsInvalid bool   `json:"is_invalid"    yaml:"is_invalid"`
+	NGT       *NGT   `json:"ngt,omitempty" yaml:"ngt"`
+	Faiss     *Faiss `json:"faiss,omitempty" yaml:"faiss"`
 }
 
 type NGT struct {
+	IndexCount uint64 `json:"index_count" yaml:"index_count"`
+}
+
+type Faiss struct {
 	IndexCount uint64 `json:"index_count" yaml:"index_count"`
 }
 

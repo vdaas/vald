@@ -19,6 +19,16 @@
 e2e:
 	$(call run-e2e-crud-test,-run TestE2EStandardCRUD)
 
+.PHONY: e2e/faiss
+## run e2e/faiss
+e2e/faiss:
+	#$(call run-e2e-crud-faiss-test,-run TestE2EInsertOnly)
+	#$(call run-e2e-crud-faiss-test,-run TestE2ESearchOnly)
+	#$(call run-e2e-crud-faiss-test,-run TestE2EUpdateOnly)
+	#$(call run-e2e-crud-faiss-test,-run TestE2ERemoveOnly)
+	#$(call run-e2e-crud-faiss-test,-run TestE2EInsertAndSearch)
+	$(call run-e2e-crud-faiss-test,-run TestE2EStandardCRUD)
+
 .PHONY: e2e/multi
 ## run e2e multiple apis
 e2e/multi:

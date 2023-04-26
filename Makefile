@@ -38,6 +38,7 @@ VERSION ?= $(eval VERSION := $(shell cat versions/VALD_VERSION))$(VERSION)
 
 NGT_VERSION := $(eval NGT_VERSION := $(shell cat versions/NGT_VERSION))$(NGT_VERSION)
 NGT_REPO = github.com/yahoojapan/NGT
+FAISS_VERSION := $(eval FAISS_VERSION := $(shell cat versions/FAISS_VERSION))$(FAISS_VERSION)
 
 GOPROXY=direct
 GO_VERSION := $(eval GO_VERSION := $(shell cat versions/GO_VERSION))$(GO_VERSION)
@@ -506,6 +507,18 @@ ngt/install: /usr/local/include/NGT/Capi.h
 	make install -C $(TEMP_DIR)/NGT-$(NGT_VERSION)
 	rm -rf v$(NGT_VERSION).tar.gz
 	rm -rf $(TEMP_DIR)/NGT-$(NGT_VERSION)
+	ldconfig
+
+.PHONY: faiss/install
+## install Faiss
+faiss/install: /usr/local/lib/libfaiss.so
+/usr/local/lib/libfaiss.so:
+	curl -LO https://github.com/facebookresearch/faiss/archive/v$(FAISS_VERSION).tar.gz
+	tar zxf v$(FAISS_VERSION).tar.gz -C $(TEMP_DIR)/
+	cd $(TEMP_DIR)/faiss-$(FAISS_VERSION) && \
+		cmake -DFAISS_ENABLE_GPU=OFF -DFAISS_ENABLE_PYTHON=OFF -DBUILD_TESTING=OFF -DBUILD_SHARED_LIBS=ON -B build . && \
+		make -C build -j faiss && \
+		make -C build install
 	ldconfig
 
 .PHONY: lint
