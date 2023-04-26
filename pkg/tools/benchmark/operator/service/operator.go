@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -161,6 +161,7 @@ func (o *operator) jobReconcile(ctx context.Context, jobList map[string][]job.Jo
 	if len(jobList) == 0 {
 		log.Info("[reconcile job] no job is founded")
 		o.jobs.Store(&map[string]string{})
+		log.Debug("[reconcile job] finish")
 		return
 	}
 	cjobs := o.getAtomicJob()
@@ -215,8 +216,9 @@ func (o *operator) jobReconcile(ctx context.Context, jobList map[string][]job.Jo
 func (o *operator) benchJobReconcile(ctx context.Context, benchJobList map[string]v1.ValdBenchmarkJob) {
 	log.Debugf("[reconcile benchmark job resource] job list: %#v", benchJobList)
 	if len(benchJobList) == 0 {
-		o.benchjobs.Store(&(map[string]*v1.ValdBenchmarkJob{}))
 		log.Info("[reconcile benchmark job resource] job resource not found")
+		o.benchjobs.Store(&(map[string]*v1.ValdBenchmarkJob{}))
+		log.Debug("[reconcile benchmark job resource] finish")
 		return
 	}
 	cbjl := o.getAtomicBenchJob()
@@ -227,7 +229,11 @@ func (o *operator) benchJobReconcile(ctx context.Context, benchJobList map[strin
 	for k := range benchJobList {
 		// update scenario status
 		job := benchJobList[k]
-		if scenarios := o.getAtomicScenario(); scenarios != nil {
+		hasOwner := false
+		if len(job.GetOwnerReferences()) > 0 {
+			hasOwner = true
+		}
+		if scenarios := o.getAtomicScenario(); scenarios != nil && hasOwner {
 			on := job.GetOwnerReferences()[0].Name
 			if _, ok := scenarios[on]; ok {
 				if scenarios[on].BenchJobStatus == nil {
@@ -282,8 +288,7 @@ func (o *operator) benchScenarioReconcile(ctx context.Context, scenarioList map[
 	if len(scenarioList) == 0 {
 		log.Info("[reconcile benchmark scenario resource]: scenario not found")
 		o.scenarios.Store(&(map[string]*scenario{}))
-		o.benchjobs.Store(&(map[string]*v1.ValdBenchmarkJob{}))
-		o.jobs.Store(&(map[string]string{}))
+		log.Debug("[reconcile benchmark scenario resource] finish")
 		return
 	}
 	cbsl := o.getAtomicScenario()
@@ -536,16 +541,44 @@ func (o *operator) checkJobsStatus(ctx context.Context, jobs map[string]string) 
 	return err
 }
 
-func (o *operator) initAtomics() {
-	if cbsl := o.getAtomicScenario(); len(cbsl) > 0 {
-		o.scenarios.Store(&(map[string]*scenario{}))
+// checkAtomics checks each atomic keeps consistency.
+func (o *operator) checkAtomics() error {
+	cjl := o.getAtomicJob()
+	cbjl := o.getAtomicBenchJob()
+	cbsl := o.getAtomicScenario()
+	if len(cjl) == 0 {
+		if len(cbjl) > 0 || len(cbsl) > 0 {
+			log.Error("mismatch atomics: job=%v, benchjob=%v, scenario=%v", cjl, cbjl, cbsl)
+			return errors.ErrMismatchBenchmarkAtomics(cjl, cbjl, cbsl)
+		}
+		return nil
+	} else if len(cbjl) == 0 {
+		log.Error("mismatch atomics: job=%v, benchjob=%v, scenario=%v", cjl, cbjl, cbsl)
+		return errors.ErrMismatchBenchmarkAtomics(cjl, cbjl, cbsl)
 	}
-	if cbjl := o.getAtomicBenchJob(); len(cbjl) > 0 {
-		o.benchjobs.Store(&(map[string]*v1.ValdBenchmarkJob{}))
+	jobCounter := len(cjl)
+	scenarioBenchCounter := 0
+	for sc := range cbsl {
+		scenarioBenchCounter += len(cbsl[sc].BenchJobStatus)
 	}
-	if cjl := o.getAtomicJob(); len(cjl) > 0 {
-		o.jobs.Store(&(map[string]string{}))
+	for jobName := range cjl {
+		if benchJob := cbjl[jobName]; benchJob != nil {
+			jobCounter--
+			if owner := benchJob.GetOwnerReferences(); len(owner) > 0 {
+				scenarioName := owner[0].Name
+				if scenario := cbsl[scenarioName]; scenario != nil {
+					if _, ok := scenario.BenchJobStatus[benchJob.GetName()]; ok {
+						scenarioBenchCounter--
+					}
+				}
+			}
+		}
 	}
+	if jobCounter != 0 || scenarioBenchCounter != 0 {
+		log.Error("mismatch atomics: job=%v, benchjob=%v, scenario=%v", cjl, cbjl, cbsl)
+		return errors.ErrMismatchBenchmarkAtomics(cjl, cbjl, cbsl)
+	}
+	return nil
 }
 
 func (o *operator) PreStart(ctx context.Context) error {
@@ -568,13 +601,13 @@ func (o *operator) Start(ctx context.Context) (<-chan error, error) {
 			case <-ctx.Done():
 				return nil
 			case <-rcticker.C:
-				cbsl := o.getAtomicScenario()
-				if cbsl == nil {
-					log.Info("benchmark scenario resource is empty")
-					// clear atomic pointer
-					o.initAtomics()
-					continue
-				} else {
+				// check mismatch atomic
+				err = o.checkAtomics()
+				if err != nil {
+					ech <- err
+				}
+				// determine whether benchmark scenario status should be updated.
+				if cbsl := o.getAtomicScenario(); cbsl != nil {
 					scenarioStatus := make(map[string]v1.ValdBenchmarkScenarioStatus)
 					for name, scenario := range cbsl {
 						if scenario.Crd.Status != v1.BenchmarkScenarioCompleted {
