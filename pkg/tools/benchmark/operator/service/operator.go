@@ -288,8 +288,7 @@ func (o *operator) benchScenarioReconcile(ctx context.Context, scenarioList map[
 	if len(scenarioList) == 0 {
 		log.Info("[reconcile benchmark scenario resource]: scenario not found")
 		o.scenarios.Store(&(map[string]*scenario{}))
-		o.benchjobs.Store(&(map[string]*v1.ValdBenchmarkJob{}))
-		o.jobs.Store(&(map[string]string{}))
+		log.Debug("[reconcile benchmark scenario resource] finish")
 		return
 	}
 	cbsl := o.getAtomicScenario()
