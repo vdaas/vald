@@ -392,8 +392,6 @@ require (
 	golang.org/x/sys v0.10.0
 	golang.org/x/text v0.11.0
 	golang.org/x/tools v0.10.0
-	golang.org/x/text v0.9.0
-	golang.org/x/time v0.3.0
 	golang.org/x/time v0.3.0
 	gonum.org/v1/hdf5 v0.0.0-00010101000000-000000000000
 	gonum.org/v1/plot v0.10.1
