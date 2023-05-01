@@ -44,6 +44,6 @@ spec:
   egress:
     - to:
       - namespaceSelector:
-        matchLabels:
-          kubernetes.io/metadata.name: kube-system
+          matchLabels:
+            kubernetes.io/metadata.name: kube-system
 {{- end }}
