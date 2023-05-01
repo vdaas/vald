@@ -198,7 +198,7 @@ docker/build/example/client/gateway/filter/ingress-filter/server:
 	$(DOCKER) build \
 	    $(DOCKER_OPTS) \
 	    -f dockers/example/client/gateway/filter/ingress-filter/server/Dockerfile \
-	    -t $(ORG)/vald-ingress-filter:latest . \
+	    -t $(YOUR_DOCKERHUB_ID)/vald-ingress-filter:latest . \
 	    --build-arg GO_VERSION=$(GO_VERSION) \
 	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
 	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG)
@@ -212,7 +212,7 @@ docker/build/example/client/gateway/filter/egress-filter/server:
 	$(DOCKER) build \
 	    $(DOCKER_OPTS) \
 	    -f dockers/example/client/gateway/filter/egress-filter/server/Dockerfile \
-	    -t $(ORG)/vald-egress-filter:latest . \
+	    -t $(YOUR_DOCKERHUB_ID)/vald-egress-filter:latest . \
 	    --build-arg GO_VERSION=$(GO_VERSION) \
 	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
 	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG)

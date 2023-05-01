@@ -36,8 +36,8 @@ spec:
         fsGroup: 65532
       containers:
         - name: vald-egress-filter
-          image: vdaas/vald-egress-filter:latest
-          imagePullPolicy: IfNotPresent
+          image: {YOUR_DOCKERHUB_ID}/vald-egress-filter:latest
+          imagePullPolicy: Always
           ports:
             - name: grpc
               containerPort: 8083

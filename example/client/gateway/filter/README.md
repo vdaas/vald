@@ -26,12 +26,18 @@ kubectl port-forward deployment/vald-filter-gateway 8081:8081
 
 2. Deploy an ingress filter server and an egress filter server
 ```
+// prepare for pushing images to your dockerhub
+docker login
+export YOUR_DOCKERHUB_ID=<YOUR_DOCKERHUB_ID>
+
 // deploy ingress filter
 make docker/build/example/client/gateway/filter/ingress-filter/server
+docker push ${YOUR_DOCKERHUB_ID}/vald-ingress-filter
 make k8s/example/client/gateway/filter/ingress-filter/server/deploy
 
 // deploy egress filter
 make docker/build/example/client/gateway/filter/egress-filter/server
+docker push ${YOUR_DOCKERHUB_ID}/vald-egress-filter
 make k8s/example/client/gateway/filter/egress-filter/server/deploy
 ```
 

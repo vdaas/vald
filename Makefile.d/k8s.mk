@@ -382,7 +382,8 @@ endif
 .PHONY: k8s/example/client/gateway/filter/ingress-filter/server/deploy
 ## deploy ingrsess-filter
 k8s/example/client/gateway/filter/ingress-filter/server/deploy:
-	kubectl apply -f k8s/example/client/gateway/filter/ingress-filter/server
+	sed -e "s/{YOUR_DOCKERHUB_ID}/${YOUR_DOCKERHUB_ID}/g" k8s/example/client/gateway/filter/ingress-filter/server/deployment.yaml | kubectl apply -f - \
+	&& kubectl apply -f k8s/example/client/gateway/filter/ingress-filter/server/service.yaml
 
 .PHONY: k8s/example/client/gateway/filter/ingress-filter/server/delete
 ## delete ingrsess-filter
@@ -392,7 +393,8 @@ k8s/example/client/gateway/filter/ingress-filter/server/delete:
 .PHONY: k8s/example/client/gateway/filter/egress-filter/server/deploy
 ## deploy egrsess-filter
 k8s/example/client/gateway/filter/egress-filter/server/deploy:
-	kubectl apply -f k8s/example/client/gateway/filter/egress-filter/server
+	sed -e "s/{YOUR_DOCKERHUB_ID}/${YOUR_DOCKERHUB_ID}/g" k8s/example/client/gateway/filter/egress-filter/server/deployment.yaml | kubectl apply -f - \
+	&& kubectl apply -f k8s/example/client/gateway/filter/egress-filter/server/service.yaml
 
 .PHONY: k8s/example/client/gateway/filter/egress-filter/server/delete
 ## delete egrsess-filter
