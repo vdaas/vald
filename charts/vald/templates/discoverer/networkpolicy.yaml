@@ -15,6 +15,8 @@
 #
 
 {{- $discoverer := .Values.discoverer -}}
+{{- $lb := .Values.gateway.lb -}}
+{{- $index := .Values.gateway.index -}}
 {{- if .Values.defaults.networkPolicy.enabled }}
 # TODO: もしNetworkPolicyがenabledであればという条件分岐を先頭に追加
 kind: NetworkPolicy
@@ -28,9 +30,20 @@ spec:
   policyTypes:
     - Ingress
     - Egress
-  # FIXME: k8sapi周りの指定方法調査後修正。一旦全通ししておく
   ingress:
-    - {}
+    - from:
+      - namespaceSelector:
+          matchLabels:
+            kubernetes.io/metadata.name: kube-system
+      - podSelector:
+          matchLabels:
+            app: {{ $lb.name }}
+      - podSelector:
+          matchLabels:
+            app: {{ $index.name }}
   egress:
-    - {}
+    - to:
+      - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: kube-system
 {{- end }}

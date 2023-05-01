@@ -15,7 +15,7 @@
 #
 
 {{- $agent := .Values.agent -}}
-{{- $gateway := .Values.gateway.lb -}}
+{{- $lb := .Values.gateway.lb -}}
 {{- $index := .Values.manager.index -}}
 {{- if .Values.defaults.networkPolicy.enabled }}
 kind: NetworkPolicy
@@ -32,7 +32,7 @@ spec:
     - from:
         - podSelector:
             matchLabels:
-              app: {{ $gateway.name }}
+              app: {{ $lb.name }}
         - podSelector:
             matchLabels:
               app: {{ $index.name }}

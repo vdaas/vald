@@ -16,6 +16,7 @@
 
 {{- $agent := .Values.agent -}}
 {{- $lb := .Values.gateway.lb -}}
+{{- $filter := .Values.gateway.filter -}}
 {{- $discoverer := .Values.discoverer -}}
 {{- if .Values.defaults.networkPolicy.enabled }}
 kind: NetworkPolicy
@@ -30,8 +31,13 @@ spec:
     - Ingress
     - Egress
   ingress:
-    # FIXME: filter and api
-    - {}
+    - from:
+      - namespaceSelector:
+          matchLabels:
+            kubernetes.io/metadata.name: kube-system
+      - podSelector:
+          matchLabels:
+            app: {{ $filter.name }}
   egress:
     - to:
       - podSelector:

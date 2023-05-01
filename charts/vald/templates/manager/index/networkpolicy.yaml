@@ -30,8 +30,10 @@ spec:
     - Ingress
     - Egress
   ingress:
-    # FIXME: k8sapi
-    - {}
+    - from:
+      - namespaceSelector:
+          matchLabels:
+            kubernetes.io/metadata.name: kube-system
   egress:
     - to:
       - podSelector:
