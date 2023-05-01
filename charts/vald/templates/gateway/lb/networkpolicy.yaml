@@ -40,4 +40,7 @@ spec:
       - podSelector:
           matchLabels:
             app: {{ $discoverer.name }}
+      - namespaceSelector:
+          matchLabels:
+            name: kube-system
 {{- end }}
