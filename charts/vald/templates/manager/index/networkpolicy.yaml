@@ -33,6 +33,7 @@ spec:
       app: {{ $index.name }}
   policyTypes:
     - Ingress
+    - Egress
   ingress:
     # FIXME: k8sapi
     - {}
