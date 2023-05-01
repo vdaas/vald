@@ -36,6 +36,7 @@ k8s/manifest/update: \
 	mv $(TEMP_DIR)/vald/templates/discoverer k8s/discoverer
 	mv $(TEMP_DIR)/vald/templates/gateway/lb k8s/gateway/lb
 	mv $(TEMP_DIR)/vald/templates/manager/index k8s/manager/index
+	mv $(TEMP_DIR)/vald/templates/common k8s/common
 	rm -rf $(TEMP_DIR)
 
 .PHONY: k8s/manifest/helm-operator/clean
@@ -71,6 +72,7 @@ k8s/vald/deploy:
 	    --set manager.index.image.repository=$(CRORG)/$(MANAGER_INDEX_IMAGE) \
 	    --output-dir $(TEMP_DIR) \
 	    charts/vald
+	kubectl apply -f $(TEMP_DIR)/vald/templates/common
 	kubectl apply -f $(TEMP_DIR)/vald/templates/manager/index
 	kubectl apply -f $(TEMP_DIR)/vald/templates/agent
 	kubectl apply -f $(TEMP_DIR)/vald/templates/discoverer
@@ -96,6 +98,7 @@ k8s/vald/delete:
 	kubectl delete -f $(TEMP_DIR)/vald/templates/manager/index
 	kubectl delete -f $(TEMP_DIR)/vald/templates/discoverer
 	kubectl delete -f $(TEMP_DIR)/vald/templates/agent
+	kubectl delete -f $(TEMP_DIR)/vald/templates/common
 	rm -rf $(TEMP_DIR)
 
 .PHONY: k8s/vald-helm-operator/deploy
