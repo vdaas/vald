@@ -14,6 +14,7 @@ gateway:
 agent:
     ngt:
         dimension: 784
+        distance_type: l2
 ...
 
 // deploy vald cluster
