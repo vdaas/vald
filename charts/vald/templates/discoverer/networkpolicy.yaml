@@ -16,7 +16,7 @@
 
 {{- $discoverer := .Values.discoverer -}}
 {{- $lb := .Values.gateway.lb -}}
-{{- $index := .Values.gateway.index -}}
+{{- $index := .Values.manager.index -}}
 {{- if .Values.defaults.networkPolicy.enabled }}
 # TODO: もしNetworkPolicyがenabledであればという条件分岐を先頭に追加
 kind: NetworkPolicy
