@@ -37,10 +37,10 @@ spec:
     # FIXME: k8sapi
     - {}
   egress:
-    - podSelector:
-        matchLabels:
-          app: {{ $agent.name }}
-    - podSelector:
-        matchLabels:
-          app: {{ $discoverer.name }}
-
+    - to:
+      - podSelector:
+          matchLabels:
+            app: {{ $agent.name }}
+      - podSelector:
+          matchLabels:
+            app: {{ $discoverer.name }}
