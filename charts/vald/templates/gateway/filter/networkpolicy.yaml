@@ -14,14 +14,9 @@
 # limitations under the License.
 #
 
-# FIXME: ここをNetwork Policyの定義に変更する
-# Valuesにenable/disableみたいな項目を追加する必要があるはず
-# Agent:
-#   ingress: lb, index
-#   egress: none
 {{- $lb := .Values.gateway.lb -}}
 {{- $filter := .Values.gateway.filter -}}
-# TODO: もしNetworkPolicyがenabledであればという条件分岐を先頭に追加
+{{- if .Values.defaults.networkPolicy.enabled }}
 kind: NetworkPolicy
 apiVersion: networking.k8s.io/v1
 metadata:
@@ -43,3 +38,4 @@ spec:
       - podSelector:
           matchLabels:
             app: {{ $lb.name }}
+{{- end }}

@@ -15,8 +15,7 @@
 #
 
 # Deny all the ingress/egress traffic
-# TODO: もしNetworkPolicyがenabledであればという条件分岐を先頭に追加
-# Valuesにenable/disableみたいな項目を追加する必要があるはず
+{{- if .Values.defaults.networkPolicy.enabled }}
 kind: NetworkPolicy
 apiVersion: networking.k8s.io/v1
 metadata:
@@ -26,3 +25,4 @@ spec:
   policyTypes:
     - Ingress
     - Egress
+{{- end }}
