@@ -19,25 +19,27 @@
 # Agent:
 #   ingress: lb, index
 #   egress: none
-{{- $agent := .Values.agent -}}
-{{- $gateway := .Values.gateway.lb -}}
-{{- $index := .Values.manager.index -}}
+{{- $lb := .Values.gateway.lb -}}
+{{- $filter := .Values.gateway.filter -}}
 # TODO: もしNetworkPolicyがenabledであればという条件分岐を先頭に追加
 kind: NetworkPolicy
 apiVersion: networking.k8s.io/v1
 metadata:
-  name: agent-allow
+  name: filter-allow
 spec:
   podSelector:
     matchLabels:
-      app: {{ $agent.name }}
+      app: {{ $filter.name }}
   policyTypes:
     - Ingress
+    - Egress
   ingress:
+    # FIXME: apiserver and user-defined filters
     - from:
-        - podSelector:
-            matchLabels:
-              app: {{ $gateway.name }}
-        - podSelector:
-            matchLabels:
-              app: {{ $index.name }}
+      - {}
+  egress:
+    - to:
+      # FIXME: add user-defined filters
+      - podSelector:
+          matchLabels:
+            app: {{ $lb.name }}

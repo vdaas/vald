@@ -20,24 +20,27 @@
 #   ingress: lb, index
 #   egress: none
 {{- $agent := .Values.agent -}}
-{{- $gateway := .Values.gateway.lb -}}
+{{- $discoverer := .Values.discoverer -}}
 {{- $index := .Values.manager.index -}}
 # TODO: もしNetworkPolicyがenabledであればという条件分岐を先頭に追加
 kind: NetworkPolicy
 apiVersion: networking.k8s.io/v1
 metadata:
-  name: agent-allow
+  name: index-allow
 spec:
   podSelector:
     matchLabels:
-      app: {{ $agent.name }}
+      app: {{ $index.name }}
   policyTypes:
     - Ingress
   ingress:
-    - from:
-        - podSelector:
-            matchLabels:
-              app: {{ $gateway.name }}
-        - podSelector:
-            matchLabels:
-              app: {{ $index.name }}
+    # FIXME: k8sapi
+    - {}
+  egress:
+    - podSelector:
+        matchLabels:
+          app: {{ $agent.name }}
+    - podSelector:
+        matchLabels:
+          app: {{ $discoverer.name }}
+

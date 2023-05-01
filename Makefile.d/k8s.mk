@@ -17,10 +17,11 @@
 ## clean k8s manifests
 k8s/manifest/clean:
 	rm -rf \
-	    k8s/agent \
-	    k8s/discoverer \
-	    k8s/gateway \
-	    k8s/manager
+		k8s/agent \
+		k8s/discoverer \
+		k8s/gateway \
+		k8s/manager \
+		k8s/common
 
 .PHONY: k8s/manifest/update
 ## update k8s manifests using helm templates
