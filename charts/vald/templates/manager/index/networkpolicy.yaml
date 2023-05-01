@@ -42,5 +42,5 @@ spec:
             app: {{ $discoverer.name }}
       - namespaceSelector:
           matchLabels:
-            name: kube-system
+            kubernetes.io/metadata.name: kube-system
 {{- end }}
