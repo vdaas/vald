@@ -27,7 +27,7 @@ k8s/manifest/clean:
 k8s/manifest/update: \
 	k8s/manifest/clean
 	helm template \
-	    --values charts/vald/values/dev.yaml \
+	    --values $(HELM_VALUES) \
 	    --output-dir $(TEMP_DIR) \
 	    charts/vald
 	mkdir -p k8s/gateway
@@ -62,7 +62,7 @@ k8s/manifest/helm-operator/update: \
 ## deploy vald sample cluster to k8s
 k8s/vald/deploy:
 	helm template \
-	    --values charts/vald/values/dev.yaml \
+	    --values $(HELM_VALUES) \
 	    --set defaults.image.tag=$(VERSION) \
 	    --set agent.image.repository=$(CRORG)/$(AGENT_IMAGE) \
 	    --set agent.sidecar.image.repository=$(CRORG)/$(AGENT_SIDECAR_IMAGE) \
@@ -84,7 +84,7 @@ k8s/vald/deploy:
 ## delete vald sample cluster from k8s
 k8s/vald/delete:
 	helm template \
-	    --values charts/vald/values/dev.yaml \
+	    --values $(HELM_VALUES) \
 	    --set defaults.image.tag=$(VERSION) \
 	    --set agent.image.repository=$(CRORG)/$(AGENT_IMAGE) \
 	    --set agent.sidecar.image.repository=$(CRORG)/$(AGENT_SIDECAR_IMAGE) \
@@ -135,7 +135,7 @@ k8s/vr/deploy: \
 	k8s/metrics/metrics-server/deploy
 	yq eval \
 	    '{"apiVersion": "vald.vdaas.org/v1", "kind": "ValdRelease", "metadata":{"name":"vald-cluster"}, "spec": .}' \
-	    charts/vald/values/dev.yaml \
+	    $(HELM_VALUES) \
 	    | kubectl apply -f -
 
 .PHONY: k8s/vr/delete
