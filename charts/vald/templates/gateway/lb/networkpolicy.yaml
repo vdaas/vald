@@ -36,8 +36,7 @@ spec:
     - Egress
   ingress:
     # FIXME: filter and api
-    - from:
-      - {}
+    - {}
   egress:
     - to:
       - podSelector:
