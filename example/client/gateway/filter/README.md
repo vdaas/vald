@@ -32,12 +32,12 @@ export YOUR_DOCKERHUB_ID=<YOUR_DOCKERHUB_ID>
 
 // deploy ingress filter
 make docker/build/example/client/gateway/filter/ingress-filter/server
-docker push ${YOUR_DOCKERHUB_ID}/vald-ingress-filter
+docker push ${YOUR_DOCKERHUB_ID}/vald-ingress-filter:latest
 make k8s/example/client/gateway/filter/ingress-filter/server/deploy
 
 // deploy egress filter
 make docker/build/example/client/gateway/filter/egress-filter/server
-docker push ${YOUR_DOCKERHUB_ID}/vald-egress-filter
+docker push ${YOUR_DOCKERHUB_ID}/vald-egress-filter:latest
 make k8s/example/client/gateway/filter/egress-filter/server/deploy
 ```
 
