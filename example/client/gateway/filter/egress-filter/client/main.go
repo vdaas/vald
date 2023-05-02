@@ -92,14 +92,14 @@ func main() {
 	}
 
 	r, err := client.FilterVector(context.Background(), &payload.Filter_VectorRequest{
-		Vector: []*payload.Object_Vector{
-			{Id: "1", Vector: make([]float32, dimension)},
+		Vector: &payload.Object_Vector{
+			Id: "1", Vector: make([]float32, dimension),
 		},
 		Query: &payload.Filter_Query{},
 	})
 	if err != nil {
 		glg.Error(err)
 	} else {
-		glg.Info("FilterVector Vector: ", r.Vector)
+		glg.Info("FilterVector Vector: ", r.GetVector())
 	}
 }

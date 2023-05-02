@@ -927,17 +927,15 @@ func (m *Filter_VectorRequest) MarshalToSizedBufferVT(dAtA []byte) (int, error) 
 		i--
 		dAtA[i] = 0x12
 	}
-	if len(m.Vector) > 0 {
-		for iNdEx := len(m.Vector) - 1; iNdEx >= 0; iNdEx-- {
-			size, err := m.Vector[iNdEx].MarshalToSizedBufferVT(dAtA[:i])
-			if err != nil {
-				return 0, err
-			}
-			i -= size
-			i = encodeVarint(dAtA, i, uint64(size))
-			i--
-			dAtA[i] = 0xa
+	if m.Vector != nil {
+		size, err := m.Vector.MarshalToSizedBufferVT(dAtA[:i])
+		if err != nil {
+			return 0, err
 		}
+		i -= size
+		i = encodeVarint(dAtA, i, uint64(size))
+		i--
+		dAtA[i] = 0xa
 	}
 	return len(dAtA) - i, nil
 }
@@ -972,17 +970,15 @@ func (m *Filter_VectorResponse) MarshalToSizedBufferVT(dAtA []byte) (int, error)
 		i -= len(m.unknownFields)
 		copy(dAtA[i:], m.unknownFields)
 	}
-	if len(m.Vector) > 0 {
-		for iNdEx := len(m.Vector) - 1; iNdEx >= 0; iNdEx-- {
-			size, err := m.Vector[iNdEx].MarshalToSizedBufferVT(dAtA[:i])
-			if err != nil {
-				return 0, err
-			}
-			i -= size
-			i = encodeVarint(dAtA, i, uint64(size))
-			i--
-			dAtA[i] = 0xa
+	if m.Vector != nil {
+		size, err := m.Vector.MarshalToSizedBufferVT(dAtA[:i])
+		if err != nil {
+			return 0, err
 		}
+		i -= size
+		i = encodeVarint(dAtA, i, uint64(size))
+		i--
+		dAtA[i] = 0xa
 	}
 	return len(dAtA) - i, nil
 }
@@ -4227,11 +4223,9 @@ func (m *Filter_VectorRequest) SizeVT() (n int) {
 	}
 	var l int
 	_ = l
-	if len(m.Vector) > 0 {
-		for _, e := range m.Vector {
-			l = e.SizeVT()
-			n += 1 + l + sov(uint64(l))
-		}
+	if m.Vector != nil {
+		l = m.Vector.SizeVT()
+		n += 1 + l + sov(uint64(l))
 	}
 	if m.Query != nil {
 		l = m.Query.SizeVT()
@@ -4249,11 +4243,9 @@ func (m *Filter_VectorResponse) SizeVT() (n int) {
 	}
 	var l int
 	_ = l
-	if len(m.Vector) > 0 {
-		for _, e := range m.Vector {
-			l = e.SizeVT()
-			n += 1 + l + sov(uint64(l))
-		}
+	if m.Vector != nil {
+		l = m.Vector.SizeVT()
+		n += 1 + l + sov(uint64(l))
 	}
 	if m.unknownFields != nil {
 		n += len(m.unknownFields)
@@ -7307,8 +7299,10 @@ func (m *Filter_VectorRequest) UnmarshalVT(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Vector = append(m.Vector, &Object_Vector{})
-			if err := m.Vector[len(m.Vector)-1].UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
+			if m.Vector == nil {
+				m.Vector = &Object_Vector{}
+			}
+			if err := m.Vector.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -7428,8 +7422,10 @@ func (m *Filter_VectorResponse) UnmarshalVT(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Vector = append(m.Vector, &Object_Vector{})
-			if err := m.Vector[len(m.Vector)-1].UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
+			if m.Vector == nil {
+				m.Vector = &Object_Vector{}
+			}
+			if err := m.Vector.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex

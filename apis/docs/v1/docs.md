@@ -319,10 +319,10 @@ Represent the target filter server.
 
 Represent the ID and vector pair.
 
-| Field  | Type                                       | Label    | Description |
-| ------ | ------------------------------------------ | -------- | ----------- |
-| vector | [Object.Vector](#payload-v1-Object-Vector) | repeated | Vector      |
-| query  | [Filter.Query](#payload-v1-Filter-Query)   |          | Query       |
+| Field  | Type                                       | Label | Description |
+| ------ | ------------------------------------------ | ----- | ----------- |
+| vector | [Object.Vector](#payload-v1-Object-Vector) |       | Vector      |
+| query  | [Filter.Query](#payload-v1-Filter-Query)   |       | Query       |
 
 <a name="payload-v1-Filter-VectorResponse"></a>
 
@@ -330,9 +330,9 @@ Represent the ID and vector pair.
 
 Represent the ID and vector pair.
 
-| Field  | Type                                       | Label    | Description |
-| ------ | ------------------------------------------ | -------- | ----------- |
-| vector | [Object.Vector](#payload-v1-Object-Vector) | repeated | Distance    |
+| Field  | Type                                       | Label | Description |
+| ------ | ------------------------------------------ | ----- | ----------- |
+| vector | [Object.Vector](#payload-v1-Object-Vector) |       | Distance    |
 
 <a name="payload-v1-Info"></a>
 

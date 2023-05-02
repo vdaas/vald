@@ -115,10 +115,7 @@
       "type": "object",
       "properties": {
         "vector": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/ObjectVector"
-          },
+          "$ref": "#/definitions/ObjectVector",
           "title": "Distance"
         }
       },
@@ -197,10 +194,7 @@
       "type": "object",
       "properties": {
         "vector": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/ObjectVector"
-          },
+          "$ref": "#/definitions/ObjectVector",
           "title": "Vector"
         },
         "query": {

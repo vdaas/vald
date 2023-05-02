@@ -3270,9 +3270,7 @@ func (s *server) GetObject(ctx context.Context, req *payload.Object_VectorReques
 				return nil, err
 			}
 			res, err := c.FilterVector(ctx, &payload.Filter_VectorRequest{
-				Vector: []*payload.Object_Vector{
-					vec,
-				},
+				Vector: vec,
 				Query: filterConfig.GetQuery(),
 			})
 			if err != nil {
@@ -3293,7 +3291,7 @@ func (s *server) GetObject(ctx context.Context, req *payload.Object_VectorReques
 				}
 				return nil, err
 			}
-			vec = res.GetVector()[0]
+			vec = res.GetVector()
 		}
 	}
 	return vec, nil

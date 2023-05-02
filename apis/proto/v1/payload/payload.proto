@@ -160,7 +160,7 @@ message Filter {
   // Represent the ID and vector pair.
   message VectorRequest {
     // Vector
-    repeated Object.Vector vector = 1;
+    Object.Vector vector = 1;
     // Query
     Query query = 2;
   }
@@ -168,7 +168,7 @@ message Filter {
   // Represent the ID and vector pair.
   message VectorResponse {
     // Distance
-    repeated Object.Vector vector = 1;
+    Object.Vector vector = 1;
   }
 }
 
