@@ -834,7 +834,8 @@ defaults:
   networkPolicy:
     # @schema {"name": "defaults.networkPolicy.enabled", "type": "boolean"}
     # defaults.networkPolicy.enabled -- if network policy enabled
-    enabled: true
+    # TODO: Change this to true after implementing user custom network policy parser
+    enabled: false
 
 # @schema {"name": "gateway", "type": "object"}
 gateway:

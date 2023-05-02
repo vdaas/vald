@@ -18,7 +18,6 @@
 {{- $lb := .Values.gateway.lb -}}
 {{- $index := .Values.manager.index -}}
 {{- if .Values.defaults.networkPolicy.enabled }}
-# TODO: もしNetworkPolicyがenabledであればという条件分岐を先頭に追加
 kind: NetworkPolicy
 apiVersion: networking.k8s.io/v1
 metadata:
