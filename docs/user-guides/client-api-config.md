@@ -16,13 +16,13 @@ It requires the vector, its ID (specific ID for the vector), and optional config
 ### Configuration
 
 ```rpc
-// Represent insert configuration.
+// Represent insert configurations.
 message Config {
-  // Check whether or not the same set of vector and ID is already inserted.
+  // A flag to skip exist check during insert operation.
   bool skip_strict_exist_check = 1;
-  // Configuration for filters if your Vald cluster uses filters.
-  Filter.Config filters = 2;
-  // The timestamp when the vector was inserted.
+  // Filter configurations.
+  repeated Filter.Config filters = 2;
+  // Insert timestamp.
   int64 timestamp = 3;
 }
 ```
@@ -66,12 +66,13 @@ func main() {
 		// Insert configuration (optional)
 		Config: &payload.Insert_Config{
 			SkipStrictExistCheck: false,
-			Filters: &payload.Filter_Config{
-				Targets: []*payload.Filter_Target{
-					{
+			Filters: []*payload.Filter_Config{
+				{
+					Target: &payload.Filter_Target{
 						Host: "vald-ingress-filter",
 						Port: 8081,
 					},
+					Query: &payload.Filter_Query{},
 				},
 			},
 			Timestamp: time.Now().UnixMilli(),
@@ -114,7 +115,9 @@ message Filter {
   // Represent filter configuration.
   message Config {
     // Represent the filter target configuration.
-    repeated Target targets = 1;
+    Target target = 1; 
+    // The target query.
+    Query query = 2;
   }
 }
 ```
@@ -132,14 +135,16 @@ It requires the new vector, its ID (the target ID already indexed), and optional
 ### Configuration
 
 ```rpc
-// Represent update configuration.
+// Represent the update configuration.
 message Config {
-  // Check whether or not the same set of vector and ID is already inserted.
+  // A flag to skip exist check during update operation.
   bool skip_strict_exist_check = 1;
-  // Configuration for filters if your Vald cluster uses filters.
-  Filter.Config filters = 2;
-  // The timestamp when the vector was inserted.
+  // Filter configuration.
+  repeated Filter.Config filters = 2;
+  // Update timestamp.
   int64 timestamp = 3;
+  // A flag to disable balanced update (split remove -> insert operation) during update operation.
+  bool disable_balanced_update = 4;
 }
 ```
 
@@ -182,12 +187,13 @@ func example() {
 		// Update configuration (optional)
 		Config: &payload.Update_Config{
 			SkipStrictExistCheck: false,
-			Filters: &payload.Filter_Config{
-				Targets: []*payload.Filter_Target{
-					{
+			Filters: []*payload.Filter_Config{
+				{
+					Target: &payload.Filter_Target{
 						Host: "vald-ingress-filter",
 						Port: 8081,
 					},
+					Query: &payload.Filter_Query{},
 				},
 			},
 			Timestamp: time.Now().UnixMilli(),
@@ -238,7 +244,9 @@ message Filter {
   // Represent filter configuration.
   message Config {
     // Represent the filter target configuration.
-    repeated Target targets = 1;
+    Target target = 1; 
+    // The target query.
+    Query query = 2;
   }
 }
 ```
@@ -256,14 +264,16 @@ It requires the vector, its ID (specific ID for the vector), and optional config
 ### Configuration
 
 ```rpc
-// Represent upsert configuration.
+// Represent the upsert configuration.
 message Config {
-  // Check whether or not the same set of vector and ID is already inserted.
+  // A flag to skip exist check during upsert operation.
   bool skip_strict_exist_check = 1;
-  // Configuration for filters if your Vald cluster uses filters.
-  Filter.Config filters = 2;
-  // The timestamp when the vector was inserted.
+  // Filter configuration.
+  repeated Filter.Config filters = 2;
+  // Upsert timestamp.
   int64 timestamp = 3;
+  // A flag to disable balanced update (split remove -> insert operation) during update operation.
+  bool disable_balanced_update = 4;
 }
 ```
 
@@ -305,12 +315,13 @@ func example() {
 		// Upsert configuration (optional)
 		Config: &payload.Upsert_Config{
 			SkipStrictExistCheck: false,
-			Filters: &payload.Filter_Config{
-				Targets: []*payload.Filter_Target{
-					{
+			Filters: []*payload.Filter_Config{
+				{
+					Target: &payload.Filter_Target{
 						Host: "vald-ingress-filter",
 						Port: 8081,
 					},
+					Query: &payload.Filter_Query{},
 				},
 			},
 			Timestamp: time.Now().UnixMilli(),
@@ -361,7 +372,9 @@ message Filter {
   // Represent filter configuration.
   message Config {
     // Represent the filter target configuration.
-    repeated Target targets = 1;
+    Target target = 1; 
+    // The target query.
+    Query query = 2;
   }
 }
 ```
@@ -412,7 +425,7 @@ For more details, please refer to [the Search API document](../api/search.md).
 message Config {
   // Unique request ID.
   string request_id = 1;
-  // Maximum number of results to be returned.
+  // Maximum number of result to be returned.
   uint32 num = 2 [ (validate.rules).uint32.gte = 1 ];
   // Search radius.
   float radius = 3;
@@ -421,10 +434,10 @@ message Config {
   // Search timeout in nanoseconds.
   int64 timeout = 5;
   // Ingress filter configurations.
-  Filter.Config ingress_filters = 6;
+  repeated Filter.Config ingress_filters = 6;
   // Egress filter configurations.
-  Filter.Config egress_filters = 7;
-  // Minimum number of results to be returned.
+  repeated Filter.Config egress_filters = 7;
+  // Minimum number of result to be returned.
   uint32 min_num = 8 [ (validate.rules).uint32.gte = 0 ];
 }
 ```
@@ -473,20 +486,22 @@ func main() {
 			Epsilon: 0.1,
 			// Search timeout setting.
 			Timeout: 100000000,
-			IngressFilters: &payload.Filter_Config{
-				Targets: []*payload.Filter_Target{
-					{
+			IngressFilters: []*payload.Filter_Config{
+				{
+					Target: &payload.Filter_Target{
 						Host: "vald-ingress-filter",
 						Port: 8081,
 					},
+					Query: &payload.Filter_Query{},
 				},
 			},
-			EgressFilters: &payload.Filter_Config{
-				Targets: []*payload.Filter_Target{
-					{
+			EgressFilters: []*payload.Filter_Config{
+				{
+					Target: &payload.Filter_Target{
 						Host: "vald-egress-filter",
 						Port: 8081,
 					},
+					Query: &payload.Filter_Query{},
 				},
 			},
 		},
@@ -556,7 +571,9 @@ message Filter {
   // Represent filter configuration.
   message Config {
     // Represent the filter target configuration.
-    repeated Target targets = 1;
+    Target target = 1; 
+    // The target query.
+    Query query = 2;
   }
 }
 ```
@@ -581,7 +598,9 @@ message Filter {
   // Represent filter configuration.
   message Config {
     // Represent the filter target configuration.
-    repeated Target targets = 1;
+    Target target = 1; 
+    // The target query.
+    Query query = 2;
   }
 }
 ```
@@ -602,11 +621,11 @@ For more details, please refer to [the Remove API document](../api/remove.md).
 ### Configuration
 
 ```rpc
-// Represent remove configuration.
+// Represent the remove configuration.
 message Config {
-  // Check whether or not the same set of ID and vector is already inserted.
+  // A flag to skip exist check during upsert operation.
   bool skip_strict_exist_check = 1;
-  // The timestamp when the vector was removed.
+  // Remove timestamp.
   int64 timestamp = 3;
 }
 ```
