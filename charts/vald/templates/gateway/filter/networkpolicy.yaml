@@ -29,9 +29,10 @@ spec:
     - Ingress
     - Egress
   ingress:
-    # FIXME: apiserver and user-defined filters
     - from:
-      - {}
+      - namespaceSelector:
+          matchLabels:
+            kubernetes.io/metadata.name: kube-system
   egress:
     - to:
       # FIXME: add user-defined filters
