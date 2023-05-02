@@ -36,7 +36,7 @@ spec:
         fsGroup: 65532
       containers:
         - name: vald-ingress-filter
-          image: {YOUR_DOCKERHUB_ID}/vald-ingress-filter:latest
+          image: YOUR_DOCKERHUB_ID/vald-ingress-filter:latest
           imagePullPolicy: Always
           ports:
             - name: grpc
