@@ -73,7 +73,8 @@ k8s/vald/deploy:
 	    --set manager.index.image.repository=$(CRORG)/$(MANAGER_INDEX_IMAGE) \
 	    --output-dir $(TEMP_DIR) \
 	    charts/vald
-	kubectl apply -f $(TEMP_DIR)/vald/templates/common
+	@echo "Permitting error because there's nothing to apply when network policy is disabled"
+	kubectl apply -f $(TEMP_DIR)/vald/templates/common || true
 	kubectl apply -f $(TEMP_DIR)/vald/templates/manager/index
 	kubectl apply -f $(TEMP_DIR)/vald/templates/agent
 	kubectl apply -f $(TEMP_DIR)/vald/templates/discoverer
@@ -99,7 +100,7 @@ k8s/vald/delete:
 	kubectl delete -f $(TEMP_DIR)/vald/templates/manager/index
 	kubectl delete -f $(TEMP_DIR)/vald/templates/discoverer
 	kubectl delete -f $(TEMP_DIR)/vald/templates/agent
-	kubectl delete -f $(TEMP_DIR)/vald/templates/common
+	kubectl delete -f $(TEMP_DIR)/vald/templates/common || true
 	rm -rf $(TEMP_DIR)
 
 .PHONY: k8s/vald-helm-operator/deploy
