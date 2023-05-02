@@ -34,9 +34,6 @@ spec:
           matchLabels:
             kubernetes.io/metadata.name: kube-system
   egress:
-    - to:
-      # FIXME: add user-defined filters
-      - podSelector:
-          matchLabels:
-            app: {{ $lb.name }}
+    # allow all the egress to communicate with user-defined filters
+    - {}
 {{- end }}
