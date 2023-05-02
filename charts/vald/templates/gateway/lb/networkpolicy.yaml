@@ -35,15 +35,24 @@ spec:
       - namespaceSelector:
           matchLabels:
             kubernetes.io/metadata.name: kube-system
-      - podSelector:
+      - namespaceSelector:
+          matchLabels:
+            kubernetes.io/metadata.name: {{ .Release.Namespace }}
+        podSelector:
           matchLabels:
             app: {{ $filter.name }}
   egress:
     - to:
-      - podSelector:
+      - namespaceSelector:
+          matchLabels:
+            kubernetes.io/metadata.name: {{ .Release.Namespace }}
+        podSelector:
           matchLabels:
             app: {{ $agent.name }}
-      - podSelector:
+      - namespaceSelector:
+          matchLabels:
+            kubernetes.io/metadata.name: {{ .Release.Namespace }}
+        podSelector:
           matchLabels:
             app: {{ $discoverer.name }}
       - namespaceSelector:
