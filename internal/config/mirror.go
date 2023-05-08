@@ -15,6 +15,8 @@ package config
 
 // Mirror represents the Mirror Gateway configuration.
 type Mirror struct {
+	// Net represents the network configuration tcp, udp, unix domain socket.
+	Net *Net `json:"net,omitempty"                yaml:"net"`
 	// Client represents the gRPC client configuration for connecting the LB Gateway.
 	Client *GRPCClient `json:"client" yaml:"client"`
 	// SelfMirrorAddr represents the address for the self Mirror Gateway.
@@ -25,6 +27,12 @@ type Mirror struct {
 	PodName string `json:"pod_name" yaml:"pod_name"`
 	// AdvertiseInterval represents interval to advertise Mirror Gateway information to other mirror gateway.
 	AdvertiseInterval string `json:"advertise_interval" yaml:"advertise_interval"`
+	// Namespace represents namespace to be reconciled.
+	Namespace string `json:"namespace,omitempty"          yaml:"namespace"`
+	// DiscoverDuration represents namespace to be reconciled.
+	DiscoveryDuration string `json:"discovery_duration" yaml:"discovery_duration"`
+	// Colocation represents colocation name.
+	Colocation string `json:"colocation" yaml:"colocation"`
 }
 
 // Bind binds the actual data from the Mirror receiver fields.
@@ -33,6 +41,14 @@ func (m *Mirror) Bind() *Mirror {
 	m.GatewayAddr = GetActualValue(m.GatewayAddr)
 	m.PodName = GetActualValue(m.PodName)
 	m.AdvertiseInterval = GetActualValue(m.AdvertiseInterval)
+	m.Namespace = GetActualValue(m.Namespace)
+	m.DiscoveryDuration = GetActualValue(m.DiscoveryDuration)
+	m.Colocation = GetActualValue(m.Colocation)
+	if m.Net != nil {
+		m.Net = m.Net.Bind()
+	} else {
+		m.Net = new(Net).Bind()
+	}
 	if m.Client != nil {
 		m.Client = m.Client.Bind()
 	} else {
