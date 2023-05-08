@@ -40,7 +40,6 @@ This image includes some libraries which are required for implementation and is 
 
 `vald-dev-container` is used for contributing Vald project.
 
-
 ```bash
 docker pull vdaas/vald-dev-container
 docker run -name vald-dev -dit vdaas/vald-dev-container
