@@ -65,8 +65,8 @@ COPY Makefile.d .
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}
 COPY Makefile .
 
-RUN make REPO=${ORG} NAME=${REPO} cmd/${DIR} \
-    && mv "cmd/${DIR}" "/usr/bin/${APP_NAME}"
+RUN make REPO=${ORG} NAME=${REPO} ${DIR}/${APP_NAME} \
+    && mv "${DIR}/${APP_NAME}" "/usr/bin/${APP_NAME}"
 
 
 FROM ${DISTROLESS_IMAGE}:${DISTROLESS_IMAGE_TAG}
@@ -74,7 +74,7 @@ LABEL maintainer "${MAINTAINER}"
 
 ENV APP_NAME egress-filter
 
-COPY --from=builder /usr/bin/${APP_NAME} /go/bin/egress-filter
+COPY --from=builder /usr/bin/${APP_NAME} /go/bin/${APP_NAME}
 
 USER nonroot:nonroot
 

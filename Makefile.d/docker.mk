@@ -191,7 +191,7 @@ docker/build/loadtest:
 
 .PHONY: docker/name/example/client/gateway/filter/ingress-filter/server
 docker/name/example/client/gateway/filter/ingress-filter/server:
-	@echo "vald-ingress-filter"
+	@echo "$(YOUR_DOCKERHUB_ID)/vald-ingress-filter"
 
 .PHONY: docker/build/example/client/gateway/filter/ingress-filter/server
 docker/build/example/client/gateway/filter/ingress-filter/server:
@@ -205,7 +205,7 @@ docker/build/example/client/gateway/filter/ingress-filter/server:
 
 .PHONY: docker/name/example/client/gateway/filter/egress-filter/server
 docker/name/example/client/gateway/filter/egress-filter/server:
-	@echo "vald-egress-filter"
+	@echo "$(YOUR_DOCKERHUB_ID)/vald-egress-filter"
 
 .PHONY: docker/build/example/client/gateway/filter/egress-filter/server
 docker/build/example/client/gateway/filter/egress-filter/server:

@@ -206,8 +206,8 @@ cmd/manager/index/index: \
 		$(dir $@)main.go
 	$@ -version
 
-.PHONY: cmd/example/client/gateway/filter/ingress-filter/server
-cmd/example/client/gateway/filter/ingress-filter/server: \
+.PHONY: example/client/gateway/filter/ingress-filter/server/ingress-filter
+example/client/gateway/filter/ingress-filter/server/ingress-filter: \
 	$(GO_SOURCES_INTERNAL) \
 	$(PBGOS) \
 	$(shell find $(ROOTDIR)/cmd/gateway/filter -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go') \
@@ -233,10 +233,10 @@ cmd/example/client/gateway/filter/ingress-filter/server: \
 		-tags "osusergo netgo static_build" \
 		-trimpath \
 		-o $@ \
-		example/client/gateway/filter/ingress-filter/server/main.go
+		$(dir $@)main.go
 
-.PHONY: cmd/example/client/gateway/filter/egress-filter/server
-cmd/example/client/gateway/filter/egress-filter/server: \
+.PHONY: example/client/gateway/filter/egress-filter/server/egress-filter
+example/client/gateway/filter/egress-filter/server/egress-filter: \
 	$(GO_SOURCES_INTERNAL) \
 	$(PBGOS) \
 	$(shell find $(ROOTDIR)/cmd/gateway/filter -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go') \
@@ -262,7 +262,7 @@ cmd/example/client/gateway/filter/egress-filter/server: \
 		-tags "osusergo netgo static_build" \
 		-trimpath \
 		-o $@ \
-		example/client/gateway/filter/egress-filter/server/main.go
+		$(dir $@)main.go
 
 .PHONY: binary/build/zip
 ## build all binaries and zip them
