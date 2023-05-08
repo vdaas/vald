@@ -382,23 +382,23 @@ endif
 .PHONY: k8s/example/client/gateway/filter/ingress-filter/server/deploy
 ## deploy ingrsess-filter
 k8s/example/client/gateway/filter/ingress-filter/server/deploy:
-	sed -e "s/YOUR_DOCKERHUB_ID/${YOUR_DOCKERHUB_ID}/g" k8s/example/client/gateway/filter/ingress-filter/server/deployment.yaml | kubectl apply -f - \
-	&& kubectl apply -f k8s/example/client/gateway/filter/ingress-filter/server/service.yaml
+	sed -e "s/YOUR_DOCKERHUB_ID/${YOUR_DOCKERHUB_ID}/g" $(dir $@)deployment.yaml | kubectl apply -f - \
+	&& kubectl apply -f $(dir $@)service.yaml
 
 .PHONY: k8s/example/client/gateway/filter/ingress-filter/server/delete
 ## delete ingrsess-filter
 k8s/example/client/gateway/filter/ingress-filter/server/delete:
-	sed -e "s/YOUR_DOCKERHUB_ID/${YOUR_DOCKERHUB_ID}/g" k8s/example/client/gateway/filter/ingress-filter/server/deployment.yaml | kubectl delete -f - \
-	&& kubectl delete -f k8s/example/client/gateway/filter/ingress-filter/server/service.yaml
+	sed -e "s/YOUR_DOCKERHUB_ID/${YOUR_DOCKERHUB_ID}/g" $(dir $@)deployment.yaml | kubectl delete -f - \
+	&& kubectl delete -f $(dir $@)service.yaml
 
 .PHONY: k8s/example/client/gateway/filter/egress-filter/server/deploy
 ## deploy egrsess-filter
 k8s/example/client/gateway/filter/egress-filter/server/deploy:
-	sed -e "s/YOUR_DOCKERHUB_ID/${YOUR_DOCKERHUB_ID}/g" k8s/example/client/gateway/filter/egress-filter/server/deployment.yaml | kubectl apply -f - \
-	&& kubectl apply -f k8s/example/client/gateway/filter/egress-filter/server/service.yaml
+	sed -e "s/YOUR_DOCKERHUB_ID/${YOUR_DOCKERHUB_ID}/g" $(dir $@)deployment.yaml | kubectl apply -f - \
+	&& kubectl apply -f $(dir $@)service.yaml
 
 .PHONY: k8s/example/client/gateway/filter/egress-filter/server/delete
 ## delete egrsess-filter
 k8s/example/client/gateway/filter/egress-filter/server/delete:
-	sed -e "s/YOUR_DOCKERHUB_ID/${YOUR_DOCKERHUB_ID}/g" k8s/example/client/gateway/filter/egress-filter/server/deployment.yaml | kubectl delete -f -  \
-	&& kubectl delete -f k8s/example/client/gateway/filter/egress-filter/server/service.yaml
+	sed -e "s/YOUR_DOCKERHUB_ID/${YOUR_DOCKERHUB_ID}/g" $(dir $@)deployment.yaml | kubectl delete -f -  \
+	&& kubectl delete -f $(dir $@)service.yaml
