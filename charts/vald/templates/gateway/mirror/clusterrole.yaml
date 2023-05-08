@@ -1,0 +1,27 @@
+{{- $gateway := .Values.gateway.mirror -}}
+{{- if and $gateway.enabled $gateway.clusterRole.enabled }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: gateway-mirror
+  labels:
+    app.kubernetes.io/name: {{ include "vald.name" . }}
+    helm.sh/chart: {{ include "vald.chart" . }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/version: {{ .Chart.Version }}
+    app.kubernetes.io/component: gateway-mirror
+rules:
+  - apiGroups:
+      - vald.vdaas.org
+    resources:
+      - valdmirrortargets
+    verbs:
+      - create
+      - update
+      - delete
+      - get
+      - list
+      - watch
+      - patch
+{{- end }}
