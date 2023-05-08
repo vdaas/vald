@@ -16,12 +16,19 @@
 
 # Deny all the ingress/egress traffic
 {{- if .Values.defaults.networkPolicy.enabled }}
+{{- $agent := .Values.agent -}}
+{{- $discoverer := .Values.discoverer -}}
+{{- $filter := .Values.gateway.filter -}}
+{{- $lb := .Values.gateway.lb -}}
+{{- $index := .Values.manager.index -}}
 kind: NetworkPolicy
 apiVersion: networking.k8s.io/v1
 metadata:
   name: deny-all
 spec:
-  podSelector: {}
+  podSelector:
+    matchExpressions:
+      - {key: app, operator: In, values: [{{ $agent.name }}, {{ $discoverer.name }}, {{ $filter.name }}, {{ $lb.name }}, {{ $index.name }}]}
   policyTypes:
     - Ingress
     - Egress
