@@ -9,13 +9,11 @@ import (
 
 type DiscovererOption func(d *discoverer) error
 
-var (
-	defaultDiscovererOpts = []DiscovererOption{
-		WithDiscovererDuration("1s"),
-		WithDiscovererErrGroup(errgroup.Get()),
-		WithDiscovererColocation("dc1"),
-	}
-)
+var defaultDiscovererOpts = []DiscovererOption{
+	WithDiscovererDuration("1s"),
+	WithDiscovererErrGroup(errgroup.Get()),
+	WithDiscovererColocation("dc1"),
+}
 
 func WithDiscovererMirror(m Mirror) DiscovererOption {
 	return func(d *discoverer) error {
