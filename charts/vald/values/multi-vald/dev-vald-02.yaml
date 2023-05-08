@@ -26,6 +26,6 @@ gateway:
     clusterRole:
       enabled: false
     clusterRoleBinding:
-      name:  vald-mirror-02
+      name: vald-mirror-02
     serviceAccount:
-      name:  vald-mirror-02
+      name: vald-mirror-02
