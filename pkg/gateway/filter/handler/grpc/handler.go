@@ -1473,7 +1473,7 @@ func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *
 			})
 			if err != nil {
 				err = status.WrapWithInternal(
-					fmt.Sprintf(vald.SearchRPCName+" API egress filter request to %v failure on id %s", addr, dist),
+					fmt.Sprintf(vald.SearchRPCName+" API egress filter request to %v failure on distance %v and query %v", addr, dist, filterConfig.GetQuery()),
 					err,
 					&errdetails.RequestInfo{
 						RequestId:   req.GetConfig().GetRequestId(),
@@ -1554,7 +1554,7 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 			})
 			if err != nil {
 				err = status.WrapWithInternal(
-					fmt.Sprintf(vald.SearchByIDRPCName+" API egress filter request to %v failure on id %s", addr, dist),
+					fmt.Sprintf(vald.SearchByIDRPCName+" API egress filter request to %v failure on distance %v and query %v", addr, dist, filterConfig.GetQuery()),
 					err,
 					&errdetails.RequestInfo{
 						RequestId:   req.GetConfig().GetRequestId(),
@@ -1950,7 +1950,7 @@ func (s *server) LinearSearch(ctx context.Context, req *payload.Search_Request) 
 			})
 			if err != nil {
 				err = status.WrapWithInternal(
-					fmt.Sprintf(vald.LinearSearchRPCName+" API egress filter request to %v failure on id %s", addr, dist),
+					fmt.Sprintf(vald.LinearSearchRPCName+" API egress filter request to %v failure on distance %v and query %v", addr, dist, filterConfig.GetQuery()),
 					err,
 					&errdetails.RequestInfo{
 						RequestId:   req.GetConfig().GetRequestId(),
@@ -2026,7 +2026,7 @@ func (s *server) LinearSearchByID(ctx context.Context, req *payload.Search_IDReq
 			})
 			if err != nil {
 				err = status.WrapWithInternal(
-					fmt.Sprintf(vald.LinearSearchByIDRPCName+" API egress filter request to %v failure on id %s", addr, dist),
+					fmt.Sprintf(vald.LinearSearchByIDRPCName+" API egress filter request to %v failure on distance %v and query %v", addr, dist, filterConfig.GetQuery()),
 					err,
 					&errdetails.RequestInfo{
 						RequestId:   req.GetConfig().GetRequestId(),
