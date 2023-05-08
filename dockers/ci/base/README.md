@@ -1,14 +1,10 @@
-# Image Title
+# Vald CI Container
 
 <!-- introduction sentence -->
 
-`image-name` is the XXX for vald-XXX-YYY.
+`vald-ci-container` is designed for running CI workflows on GitHub Actions.
 
-The responsibility of this image is XXX.
-
-<!-- FIXME: document URL -->
-
-For more details, please refer to the [component document](https://vald.vdaas.org/docs/overview/component).
+This image includes the basic libraries for running some workflows on [vdaas/vald](https://github.com/vdaas/vald) repository.
 
 <div align="center">
     <img src="https://github.com/vdaas/vald/blob/main/assets/image/readme.svg" width="50%" />
@@ -26,33 +22,39 @@ For more details, please refer to the [component document](https://vald.vdaas.or
 <details><summary>linux/amd64</summary><br>
 
 - CPU instruction: requires `AVX2` or `AVX512`
-- RAM: XXX
-- Image: XXX
-- External components: S3
 
 </details>
 
 <details><summary>linux/arm64</summary><br>
 
-- CPU instruction: requires `AVX2` or `AVX512`
-- RAM: XXX
-- Image: XXX
-- External components: S3
-
-:warning: Warning
-
-This image does NOT support running on M1/M2 Mac.
+- CPU instruction: not Apple silicon
 
 </details>
 
 ## Get Started
 
 <!-- Get Started -->
-<!-- Vald Agent NGT requires more chapter Agent Standalone -->
 
-`image-name` is used for one of the components of the Vald cluster, which means it should be used on the Kubernetes cluster, not the local environment or Docker.
+`vald-ci-container` is used for running workflow on GitHub Actions.
 
-Please refer to the [Get Started](https://vald.vdaas.org/docs/tutorial/get-started) for deploy Vald cluster.
+```yaml
+name: Name of workflow
+on:
+  push:
+    branches:
+      - main
+jobs:
+  job_titile:
+    name: job_name
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/vdaas/vald/vald-ci-container:latest
+    steps:
+      - name: step 1
+    ...
+```
+
+The sample workflows are [here](https://github.com/vdaas/vald/search?l=YAML&q=vald-ci-container).
 
 ## Versions
 
@@ -67,7 +69,7 @@ Please refer to the [Get Started](https://vald.vdaas.org/docs/tutorial/get-start
 
 <!-- FIXME -->
 
-The `Dockerfile` of this image is [here](https://github.com/vdaas/vald/blob/main/dockers/agent/core/ngt/Dockerfile).
+The `Dockerfile` of this image is [here](https://github.com/vdaas/vald/blob/main/dockers/ci/base/Dockerfile).
 
 ## About Vald Project
 

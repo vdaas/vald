@@ -1,14 +1,10 @@
-# Image Title
+# Vald Dev Container
 
 <!-- introduction sentence -->
 
-`image-name` is the XXX for vald-XXX-YYY.
+`vald-dev-container` is designed for development Vald on docker.
 
-The responsibility of this image is XXX.
-
-<!-- FIXME: document URL -->
-
-For more details, please refer to the [component document](https://vald.vdaas.org/docs/overview/component).
+This image includes some libraries which are required for implementation and is based on `ubuntu:devel` image.
 
 <div align="center">
     <img src="https://github.com/vdaas/vald/blob/main/assets/image/readme.svg" width="50%" />
@@ -26,22 +22,14 @@ For more details, please refer to the [component document](https://vald.vdaas.or
 <details><summary>linux/amd64</summary><br>
 
 - CPU instruction: requires `AVX2` or `AVX512`
-- RAM: XXX
-- Image: XXX
-- External components: S3
+- Tools: Docker
 
 </details>
 
 <details><summary>linux/arm64</summary><br>
 
-- CPU instruction: requires `AVX2` or `AVX512`
-- RAM: XXX
-- Image: XXX
-- External components: S3
-
-:warning: Warning
-
-This image does NOT support running on M1/M2 Mac.
+- CPU instruction: NOT Apple silicon
+- Tools: Docker
 
 </details>
 
@@ -50,9 +38,14 @@ This image does NOT support running on M1/M2 Mac.
 <!-- Get Started -->
 <!-- Vald Agent NGT requires more chapter Agent Standalone -->
 
-`image-name` is used for one of the components of the Vald cluster, which means it should be used on the Kubernetes cluster, not the local environment or Docker.
+`vald-dev-container` is used for contributing Vald project.
 
-Please refer to the [Get Started](https://vald.vdaas.org/docs/tutorial/get-started) for deploy Vald cluster.
+
+```bash
+docker pull vdaas/vald-dev-container
+docker run -name vald-dev -dit vdaas/vald-dev-container
+docker exec -it vald-dev /bin/bash
+```
 
 ## Versions
 
@@ -67,7 +60,7 @@ Please refer to the [Get Started](https://vald.vdaas.org/docs/tutorial/get-start
 
 <!-- FIXME -->
 
-The `Dockerfile` of this image is [here](https://github.com/vdaas/vald/blob/main/dockers/agent/core/ngt/Dockerfile).
+The `Dockerfile` of this image is [here](https://github.com/vdaas/vald/blob/main/dockers/dev/Dockerfile).
 
 ## About Vald Project
 

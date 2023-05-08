@@ -1,14 +1,21 @@
-# Image Title
+# Vald Agent Sidecar
 
 <!-- introduction sentence -->
 
-`image-name` is the XXX for vald-XXX-YYY.
+`vald-agent-sidecar` is the docker image for vald-agent-sidecar component.
 
-The responsibility of this image is XXX.
+This image is responsible for save the index metadata files to external storage like Amazon S3 or Google Cloud Storage.
+
+It has the 2 main features:
+
+1. Backup
+   - When `Agent` completes creating the index metadata files, `Sidecar` hooks to store them in the external storage.
+1. Restore
+   - WHen the Vald Agent Pod restarts, the index structure is restored from the external backup files.
 
 <!-- FIXME: document URL -->
 
-For more details, please refer to the [component document](https://vald.vdaas.org/docs/overview/component).
+For more details, please refer to the [component document](https://vald.vdaas.org/docs/overview/component/agent/#sidecar).
 
 <div align="center">
     <img src="https://github.com/vdaas/vald/blob/main/assets/image/readme.svg" width="50%" />
@@ -25,23 +32,15 @@ For more details, please refer to the [component document](https://vald.vdaas.or
 
 <details><summary>linux/amd64</summary><br>
 
-- CPU instruction: requires `AVX2` or `AVX512`
-- RAM: XXX
-- Image: XXX
-- External components: S3
+- Image: `vald-agent-ngt`
+- External components: Amazon S3 or Google Cloud Storage
 
 </details>
 
 <details><summary>linux/arm64</summary><br>
 
-- CPU instruction: requires `AVX2` or `AVX512`
-- RAM: XXX
-- Image: XXX
-- External components: S3
-
-:warning: Warning
-
-This image does NOT support running on M1/M2 Mac.
+- Image: `vald-agent-ngt`
+- External components: Amazon S3 or Google Cloud Storage
 
 </details>
 
@@ -50,9 +49,9 @@ This image does NOT support running on M1/M2 Mac.
 <!-- Get Started -->
 <!-- Vald Agent NGT requires more chapter Agent Standalone -->
 
-`image-name` is used for one of the components of the Vald cluster, which means it should be used on the Kubernetes cluster, not the local environment or Docker.
+`vald-agent-sidecar` is used for one of the components of the Vald cluster, which means it should be used on the Kubernetes cluster, not the local environment or Docker.
 
-Please refer to the [Get Started](https://vald.vdaas.org/docs/tutorial/get-started) for deploy Vald cluster.
+Please refer to the [Get Started](https://vald.vdaas.org/docs/tutorial/get-started) for deploy Vald cluster and [Backup configuration](https://vald.vdaas.org/docs/user-guides/backup-configuration/) to enable the backup feature.
 
 ## Versions
 
@@ -67,7 +66,7 @@ Please refer to the [Get Started](https://vald.vdaas.org/docs/tutorial/get-start
 
 <!-- FIXME -->
 
-The `Dockerfile` of this image is [here](https://github.com/vdaas/vald/blob/main/dockers/agent/core/ngt/Dockerfile).
+The `Dockerfile` of this image is [here](https://github.com/vdaas/vald/blob/main/dockers/agent/sidecar/Dockerfile).
 
 ## About Vald Project
 

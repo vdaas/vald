@@ -1,14 +1,12 @@
-# Image Title
+# Vald Load Test
 
 <!-- introduction sentence -->
 
-`image-name` is the XXX for vald-XXX-YYY.
+`vald-loadtest` is the docker image for load testing with Vald cluster.
 
-The responsibility of this image is XXX.
+This image is responsible for load testing about performance of insert and search operation to the Vald cluster.
 
-<!-- FIXME: document URL -->
-
-For more details, please refer to the [component document](https://vald.vdaas.org/docs/overview/component).
+For more details, please refer to the [load test document](https://vald.vdaas.org/docs/performance/loadtest/).
 
 <div align="center">
     <img src="https://github.com/vdaas/vald/blob/main/assets/image/readme.svg" width="50%" />
@@ -25,23 +23,13 @@ For more details, please refer to the [component document](https://vald.vdaas.or
 
 <details><summary>linux/amd64</summary><br>
 
-- CPU instruction: requires `AVX2` or `AVX512`
-- RAM: XXX
-- Image: XXX
-- External components: S3
+- Others: Vald cluster or Vald Agent
 
 </details>
 
 <details><summary>linux/arm64</summary><br>
 
-- CPU instruction: requires `AVX2` or `AVX512`
-- RAM: XXX
-- Image: XXX
-- External components: S3
-
-:warning: Warning
-
-This image does NOT support running on M1/M2 Mac.
+- Others: Vald cluster or Vald Agent
 
 </details>
 
@@ -50,9 +38,7 @@ This image does NOT support running on M1/M2 Mac.
 <!-- Get Started -->
 <!-- Vald Agent NGT requires more chapter Agent Standalone -->
 
-`image-name` is used for one of the components of the Vald cluster, which means it should be used on the Kubernetes cluster, not the local environment or Docker.
-
-Please refer to the [Get Started](https://vald.vdaas.org/docs/tutorial/get-started) for deploy Vald cluster.
+Please refer to the [load test document](https://vald.vdaas.org/docs/performance/loadtest/) for executing load test.
 
 ## Versions
 
@@ -67,7 +53,7 @@ Please refer to the [Get Started](https://vald.vdaas.org/docs/tutorial/get-start
 
 <!-- FIXME -->
 
-The `Dockerfile` of this image is [here](https://github.com/vdaas/vald/blob/main/dockers/agent/core/ngt/Dockerfile).
+The `Dockerfile` of this image is [here](https://github.com/vdaas/vald/blob/main/dockers/tools/cli/loadtest/Dockerfile).
 
 ## About Vald Project
 

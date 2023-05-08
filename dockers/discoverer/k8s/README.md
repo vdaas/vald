@@ -1,14 +1,14 @@
-# Image Title
+# Vald Discoverer K8s
 
 <!-- introduction sentence -->
 
-`image-name` is the XXX for vald-XXX-YYY.
+`vald-discoverer-k8s` is the docker image for vald-discoverer component.
 
-The responsibility of this image is XXX.
+This image is responsible for retrieving each Kubernetes Node and Pod resource usage from [kube-apiserver](https://kubernetes.io/docs/reference/command-line-tools-reference/kube-apiserver/) and sharing it with `vald-lb-gateway` and `vald-index-manager` in the Vald cluster.
 
 <!-- FIXME: document URL -->
 
-For more details, please refer to the [component document](https://vald.vdaas.org/docs/overview/component).
+For more details, please refer to the [component document](https://vald.vdaas.org/docs/overview/component/discoverer).
 
 <div align="center">
     <img src="https://github.com/vdaas/vald/blob/main/assets/image/readme.svg" width="50%" />
@@ -25,23 +25,13 @@ For more details, please refer to the [component document](https://vald.vdaas.or
 
 <details><summary>linux/amd64</summary><br>
 
-- CPU instruction: requires `AVX2` or `AVX512`
-- RAM: XXX
-- Image: XXX
-- External components: S3
+- External components: kube-apiserver
 
 </details>
 
 <details><summary>linux/arm64</summary><br>
 
-- CPU instruction: requires `AVX2` or `AVX512`
-- RAM: XXX
-- Image: XXX
-- External components: S3
-
-:warning: Warning
-
-This image does NOT support running on M1/M2 Mac.
+- External components: kube-apiserver
 
 </details>
 
@@ -50,7 +40,7 @@ This image does NOT support running on M1/M2 Mac.
 <!-- Get Started -->
 <!-- Vald Agent NGT requires more chapter Agent Standalone -->
 
-`image-name` is used for one of the components of the Vald cluster, which means it should be used on the Kubernetes cluster, not the local environment or Docker.
+`vald-discoverer-k8s` is used for one of the components of the Vald cluster, which means it should be used on the Kubernetes cluster, not the local environment or Docker.
 
 Please refer to the [Get Started](https://vald.vdaas.org/docs/tutorial/get-started) for deploy Vald cluster.
 
@@ -67,7 +57,7 @@ Please refer to the [Get Started](https://vald.vdaas.org/docs/tutorial/get-start
 
 <!-- FIXME -->
 
-The `Dockerfile` of this image is [here](https://github.com/vdaas/vald/blob/main/dockers/agent/core/ngt/Dockerfile).
+The `Dockerfile` of this image is [here](https://github.com/vdaas/vald/blob/main/dockers/discoverer/k8s/Dockerfile).
 
 ## About Vald Project
 

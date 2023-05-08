@@ -1,14 +1,15 @@
-# Image Title
+# Vald Helm Operator
 
 <!-- introduction sentence -->
 
-`image-name` is the XXX for vald-XXX-YYY.
+`vald-helm-operator` is the Helm operator image for operating Vald cluster.
 
-The responsibility of this image is XXX.
+This image is responsible for:
 
-<!-- FIXME: document URL -->
+- monitoring 2 custom resource definitions, [`ValdRelease`](https://github.com/vdaas/vald/blob/main/charts/vald-helm-operator/crds/valdrelease.yaml) and [`ValdHelmOperatorRelease`](https://github.com/vdaas/vald/blob/main/charts/vald-helm-operator/crds/valdhelmoperatorrelease.yaml)
+- Operating Vald Helm Operator and Vald cluster according to applied CRD.
 
-For more details, please refer to the [component document](https://vald.vdaas.org/docs/overview/component).
+Vald recommends to use Vald Helm Operator for production usage.
 
 <div align="center">
     <img src="https://github.com/vdaas/vald/blob/main/assets/image/readme.svg" width="50%" />
@@ -25,23 +26,13 @@ For more details, please refer to the [component document](https://vald.vdaas.or
 
 <details><summary>linux/amd64</summary><br>
 
-- CPU instruction: requires `AVX2` or `AVX512`
-- RAM: XXX
-- Image: XXX
-- External components: S3
+- Others: apply CRDs
 
 </details>
 
 <details><summary>linux/arm64</summary><br>
 
-- CPU instruction: requires `AVX2` or `AVX512`
-- RAM: XXX
-- Image: XXX
-- External components: S3
-
-:warning: Warning
-
-This image does NOT support running on M1/M2 Mac.
+- Others: apply CRDs
 
 </details>
 
@@ -50,9 +41,8 @@ This image does NOT support running on M1/M2 Mac.
 <!-- Get Started -->
 <!-- Vald Agent NGT requires more chapter Agent Standalone -->
 
-`image-name` is used for one of the components of the Vald cluster, which means it should be used on the Kubernetes cluster, not the local environment or Docker.
-
-Please refer to the [Get Started](https://vald.vdaas.org/docs/tutorial/get-started) for deploy Vald cluster.
+`vald-helm-operator` is used for monitoring, managing and operating for the Vald cluster.
+Please refer to the [Deployment](https://vald.vdaas.org/docs/user-guides/deployment/#using-with-vald-helm-operator) document for deployment.
 
 ## Versions
 
@@ -67,7 +57,7 @@ Please refer to the [Get Started](https://vald.vdaas.org/docs/tutorial/get-start
 
 <!-- FIXME -->
 
-The `Dockerfile` of this image is [here](https://github.com/vdaas/vald/blob/main/dockers/agent/core/ngt/Dockerfile).
+The `Dockerfile` of this image is [here](https://github.com/vdaas/vald/blob/main/dockers/operator/helm/Dockerfile).
 
 ## About Vald Project
 

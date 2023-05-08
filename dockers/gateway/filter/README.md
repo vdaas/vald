@@ -1,14 +1,20 @@
-# Image Title
+# Vald Filter Gateway
 
 <!-- introduction sentence -->
 
-`image-name` is the XXX for vald-XXX-YYY.
+`vald-filter-gateway` is the image for vald-filter-gateway component.
 
-The responsibility of this image is XXX.
+This image is responsible for allowing the user to run user-defined custom logic with ingress/egress filter components.
+
+`vald-filter-gateway` bypasses the user request or response between the Vald cluster and the user-defined ingress filter/egress filter component.
+
+Ingress filtering means the pre-process before the request is processed by the Vald LB Gateway, e.g., converting blob data to the vector, filtering request vector.
+
+Egress filtering means the post-process for the search result returned from the Vald LB Gateway.
 
 <!-- FIXME: document URL -->
 
-For more details, please refer to the [component document](https://vald.vdaas.org/docs/overview/component).
+For more details, please refer to the [component document](https://vald.vdaas.org/docs/overview/component/filter-gateway).
 
 <div align="center">
     <img src="https://github.com/vdaas/vald/blob/main/assets/image/readme.svg" width="50%" />
@@ -25,23 +31,13 @@ For more details, please refer to the [component document](https://vald.vdaas.or
 
 <details><summary>linux/amd64</summary><br>
 
-- CPU instruction: requires `AVX2` or `AVX512`
-- RAM: XXX
-- Image: XXX
-- External components: S3
+- Image: User-defined filter image, vald-lb-gateway, vald-agent-ngt, vald-discoverer-k8s
 
 </details>
 
 <details><summary>linux/arm64</summary><br>
 
-- CPU instruction: requires `AVX2` or `AVX512`
-- RAM: XXX
-- Image: XXX
-- External components: S3
-
-:warning: Warning
-
-This image does NOT support running on M1/M2 Mac.
+- Image: User-defined/Vald official filter image, vald-lb-gateway, vald-agent-ngt, vald-discoverer-k8s
 
 </details>
 
@@ -50,9 +46,9 @@ This image does NOT support running on M1/M2 Mac.
 <!-- Get Started -->
 <!-- Vald Agent NGT requires more chapter Agent Standalone -->
 
-`image-name` is used for one of the components of the Vald cluster, which means it should be used on the Kubernetes cluster, not the local environment or Docker.
+`vald-filter-gateway` is used for one of the components of the Vald cluster, which means it should be used on the Kubernetes cluster, not the local environment or Docker.
 
-Please refer to the [Get Started](https://vald.vdaas.org/docs/tutorial/get-started) for deploy Vald cluster.
+Please refer to the [Get Started](https://vald.vdaas.org/docs/tutorial/get-started) for deploy Vald cluster and [Filtering configuration](https://vald.vdaas.org/docs/user-guides/filtering-configuration/) to enable the filter feature.
 
 ## Versions
 
@@ -67,7 +63,7 @@ Please refer to the [Get Started](https://vald.vdaas.org/docs/tutorial/get-start
 
 <!-- FIXME -->
 
-The `Dockerfile` of this image is [here](https://github.com/vdaas/vald/blob/main/dockers/agent/core/ngt/Dockerfile).
+The `Dockerfile` of this image is [here](https://github.com/vdaas/vald/blob/main/dockers/gateway/filter/Dockerfile).
 
 ## About Vald Project
 
