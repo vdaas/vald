@@ -26,13 +26,7 @@ spec:
     matchLabels:
       app: {{ $filter.name }}
   policyTypes:
-    - Ingress
     - Egress
-  ingress:
-    - from:
-      - namespaceSelector:
-          matchLabels:
-            kubernetes.io/metadata.name: kube-system
   egress:
     # allow all the egress to communicate with user-defined filters
     - {}
