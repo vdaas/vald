@@ -1650,6 +1650,53 @@ gateway:
         memory: 700Mi
     # @schema {"name": "gateway.mirror.gateway_config", "type": "object"}
     gateway_config:
+      # @schema {"name": "gateway.mirror.gateway_config.net", "alias": "net"}
+      net:
+        dns:
+          # gateway.mirror.gateway_config.net.dns.cache_enabled -- TCP DNS cache enabled
+          cache_enabled: true
+          # gateway.mirror.gateway_config.net.dns.refresh_duration -- TCP DNS cache refresh duration
+          refresh_duration: 5m
+          # gateway.mirror.gateway_config.net.dns.cache_expiration -- TCP DNS cache expiration
+          cache_expiration: 24h
+        dialer:
+          # gateway.mirror.gateway_config.net.dialer.timeout -- TCP dialer timeout
+          timeout: 30s
+          # gateway.mirror.gateway_config.net.dialer.keepalive -- TCP dialer keep alive
+          keepalive: 10m
+          # gateway.mirror.gateway_config.net.dialer.dual_stack_enabled -- TCP dialer dual stack enabled
+          dual_stack_enabled: false
+        tls:
+          # gateway.mirror.gateway_config.net.tls.enabled -- TLS enabled
+          enabled: false
+          # gateway.mirror.gateway_config.net.tls.cert -- TLS cert path
+          cert: /path/to/cert
+          # gateway.mirror.gateway_config.net.tls.key -- TLS key path
+          key: /path/to/key
+          # gateway.mirror.gateway_config.net.tls.ca -- TLS ca path
+          ca: /path/to/ca
+          # gateway.mirror.gateway_config.net.tls.insecure_skip_verify -- enable/disable skip SSL certificate verification
+          insecure_skip_verify: false
+        # @schema {"name": "gateway.mirror.gateway_config.net.socket_option", "alias": "socket_option"}
+        socket_option:
+          # gateway.mirror.gateway_config.net.socket_option.reuse_port -- server listen socket option for reuse_port functionality
+          reuse_port: true
+          # gateway.mirror.gateway_config.net.socket_option.reuse_addr -- server listen socket option for reuse_addr functionality
+          reuse_addr: true
+          # gateway.mirror.gateway_config.net.socket_option.tcp_fast_open -- server listen socket option for tcp_fast_open functionality
+          tcp_fast_open: true
+          # gateway.mirror.gateway_config.net.socket_option.tcp_no_delay -- server listen socket option for tcp_no_delay functionality
+          tcp_no_delay: true
+          # gateway.mirror.gateway_config.net.socket_option.tcp_cork -- server listen socket option for tcp_cork functionality
+          tcp_cork: false
+          # gateway.mirror.gateway_config.net.socket_option.tcp_quick_ack -- server listen socket option for tcp_quick_ack functionality
+          tcp_quick_ack: true
+          # gateway.mirror.gateway_config.net.socket_option.tcp_defer_accept -- server listen socket option for tcp_defer_accept functionality
+          tcp_defer_accept: true
+          # gateway.mirror.gateway_config.net.socket_option.ip_transparent -- server listen socket option for ip_transparent functionality
+          ip_transparent: false
+          # gateway.mirror.gateway_config.net.socket_option.ip_recover_destination_addr -- server listen socket option for ip_recover_destination_addr functionality
+          ip_recover_destination_addr: false
       # @schema {"name": "gateway.mirror.gateway_config.client", "alias": "grpc.client"}
       # gateway.mirror.gateway_config.client -- gRPC client (overrides defaults.grpc.client)
       client: {}
@@ -1665,6 +1712,39 @@ gateway:
       # @schema {"name": "gateway.mirror.gateway_config.advertise_interval", "type": "string"}
       # gateway.mirror.gateway_config.advertise_interval -- interval to advertise mirror-gateway information to other mirror-gateway.
       advertise_interval: "1s"
+      # @schema {"name": "gateway.mirror.gateway_config.namespace", "type": "string"}
+      # gateway.mirror.gateway_config.namespace -- namespace to discovery
+      namespace: _MY_POD_NAMESPACE_
+      # @schema {"name": "gateway.mirror.gateway_config.discovery_duration", "type": "string"}
+      # gateway.mirror.gateway_config.discovery_duration -- duration to discovery
+      discovery_duration: 1s
+      # @schema {"name": "gateway.mirror.gateway_config.colocation", "type": "string"}
+      # gateway.mirror.gateway_config.colocation -- colocation name
+      colocation: "dc1"
+    # @schema {"name": "gateway.mirror.clusterRole", "type": "object"}
+    clusterRole:
+      # @schema {"name": "gateway.mirror.clusterRole.enabled", "type": "boolean"}
+      # gateway.mirror.clusterRole.enabled -- creates clusterRole resource
+      enabled: true
+      # @schema {"name": "gateway.mirror.clusterRole.name", "type": "string"}
+      # gateway.mirror.clusterRole.name -- name of clusterRole
+      name: gateway-mirror
+    # @schema {"name": "gateway.mirror.clusterRoleBinding", "type": "object"}
+    clusterRoleBinding:
+      # @schema {"name": "gateway.mirror.clusterRoleBinding.enabled", "type": "boolean"}
+      # gateway.mirror.clusterRoleBinding.enabled -- creates clusterRoleBinding resource
+      enabled: true
+      # @schema {"name": "gateway.mirror.clusterRoleBinding.name", "type": "string"}
+      # gateway.mirror.clusterRoleBinding.name -- name of clusterRoleBinding
+      name: gateway-mirror
+    # @schema {"name": "gateway.mirror.serviceAccount", "type": "object"}
+    serviceAccount:
+      # @schema {"name": "gateway.mirror.serviceAccount.enabled", "type": "boolean"}
+      # gateway.mirror.serviceAccount.enabled -- creates service account
+      enabled: true
+      # @schema {"name": "gateway.mirror.serviceAccount.name", "type": "string"}
+      # gateway.mirror.serviceAccount.name -- name of service account
+      name: gateway-mirror
 # @schema {"name": "agent", "type": "object"}
 agent:
   # @schema {"name": "agent.enabled", "type": "boolean"}
