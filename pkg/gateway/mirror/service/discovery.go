@@ -191,6 +191,9 @@ func (d *discoverer) startSync(ctx context.Context, prev map[string]target.Targe
 }
 
 func (d *discoverer) createTarget(ctx context.Context, req map[string]target.Target) error {
+	if len(req) == 0 {
+		return nil
+	}
 	conns := make([]*payload.Mirror_Target, 0, len(req))
 	for _, created := range req {
 		conns = append(conns, &payload.Mirror_Target{
@@ -216,6 +219,9 @@ func (d *discoverer) createMirrorTargetResource(ctx context.Context, name, host 
 }
 
 func (d *discoverer) deleteTarget(ctx context.Context, req map[string]*deletedTarget) (err error) {
+	if len(req) == 0 {
+		return nil
+	}
 	tgts := make([]*payload.Mirror_Target, 0, len(req))
 	for _, deleted := range req {
 		tgts = append(tgts, &payload.Mirror_Target{
@@ -238,6 +244,9 @@ func (d *discoverer) deleteMirrorTargetResource(ctx context.Context, name string
 }
 
 func (d *discoverer) updateTarget(ctx context.Context, req map[string]*updatedTarget) error {
+	if len(req) == 0 {
+		return nil
+	}
 	delTgts := make([]*payload.Mirror_Target, 0, len(req)/2)
 	newTgts := make([]*payload.Mirror_Target, 0, len(req)/2)
 	for _, updated := range req {
