@@ -28,6 +28,8 @@ spec:
       app: {{ $agent.name }}
   policyTypes:
     - Ingress
+    # Deny all egress traffic by default
+    - Egress
   ingress:
     - from:
         - namespaceSelector:

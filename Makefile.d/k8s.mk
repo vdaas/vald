@@ -20,8 +20,7 @@ k8s/manifest/clean:
 		k8s/agent \
 		k8s/discoverer \
 		k8s/gateway \
-		k8s/manager \
-		k8s/common
+		k8s/manager
 
 .PHONY: k8s/manifest/update
 ## update k8s manifests using helm templates
@@ -37,7 +36,6 @@ k8s/manifest/update: \
 	mv $(TEMP_DIR)/vald/templates/discoverer k8s/discoverer
 	mv $(TEMP_DIR)/vald/templates/gateway/lb k8s/gateway/lb
 	mv $(TEMP_DIR)/vald/templates/manager/index k8s/manager/index
-	mv $(TEMP_DIR)/vald/templates/common k8s/common
 	rm -rf $(TEMP_DIR)
 
 .PHONY: k8s/manifest/helm-operator/clean
@@ -74,7 +72,6 @@ k8s/vald/deploy:
 	    --output-dir $(TEMP_DIR) \
 	    charts/vald
 	@echo "Permitting error because there's nothing to apply when network policy is disabled"
-	kubectl apply -f $(TEMP_DIR)/vald/templates/common || true
 	kubectl apply -f $(TEMP_DIR)/vald/templates/manager/index
 	kubectl apply -f $(TEMP_DIR)/vald/templates/agent
 	kubectl apply -f $(TEMP_DIR)/vald/templates/discoverer
@@ -100,7 +97,6 @@ k8s/vald/delete:
 	kubectl delete -f $(TEMP_DIR)/vald/templates/manager/index
 	kubectl delete -f $(TEMP_DIR)/vald/templates/discoverer
 	kubectl delete -f $(TEMP_DIR)/vald/templates/agent
-	kubectl delete -f $(TEMP_DIR)/vald/templates/common || true
 	rm -rf $(TEMP_DIR)
 
 .PHONY: k8s/vald-helm-operator/deploy
