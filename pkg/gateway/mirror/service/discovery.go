@@ -183,7 +183,7 @@ func (d *discoverer) startSync(ctx context.Context, prev map[string]target.Targe
 			if err != nil {
 				log.Error(err)
 			}
-			name := resourcePrefix + "-" + strconv.Itoa(int(xxh3.HashString(addr)))
+			name := resourcePrefix + "-" + strconv.FormatUint(xxh3.HashString(addr), 10)
 			err = errors.Join(err, d.createMirrorTargetResource(ctx, name, host, int(port)))
 		}
 		return true
