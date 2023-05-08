@@ -40,10 +40,9 @@ func WithValdAddrs(addrs ...string) MirrorOption {
 		if len(addrs) == 0 {
 			return errors.NewErrCriticalOption("lbAddrs", addrs)
 		}
-		if m.gwAddrs == nil {
-			m.gwAddrs = make([]string, 0, len(addrs))
+		for _, addr := range addrs {
+			m.gwAddrl.Store(addr, struct{}{})
 		}
-		m.gwAddrs = append(m.gwAddrs, addrs...)
 		return nil
 	}
 }
@@ -53,10 +52,9 @@ func WithSelfMirrorAddrs(addrs ...string) MirrorOption {
 		if len(addrs) == 0 {
 			return errors.NewErrCriticalOption("selfMirrorAddrs", addrs)
 		}
-		if m.selfMirrAddrs == nil {
-			m.selfMirrAddrs = make([]string, 0, len(addrs))
+		for _, addr := range addrs {
+			m.selfMirrAddrl.Store(addr, struct{}{})
 		}
-		m.selfMirrAddrs = append(m.selfMirrAddrs, addrs...)
 		return nil
 	}
 }
