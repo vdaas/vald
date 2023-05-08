@@ -20,3 +20,12 @@ discoverer:
     name: vald-02
   serviceAccount:
     name: vald-02
+
+gateway:
+  mirror:
+    clusterRole:
+      enabled: false
+    clusterRoleBinding:
+      name:  vald-mirror-02
+    serviceAccount:
+      name:  vald-mirror-02

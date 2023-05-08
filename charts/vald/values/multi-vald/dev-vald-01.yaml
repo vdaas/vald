@@ -18,3 +18,10 @@ discoverer:
     name: vald-01
   serviceAccount:
     name: vald-01
+
+gateway:
+  mirror:
+    clusterRoleBinding:
+      name: vald-mirror-01
+    serviceAccount:
+      name: vald-mirror-01
