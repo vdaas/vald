@@ -2,15 +2,15 @@
 
 <!-- introduction sentence -->
 
-`vald-dev-container` is designed for development Vald on docker.
+`vald-dev-container` is designed for the development of Vald on Docker.
 
-This image includes some libraries which are required for implementation and is based on `ubuntu:devel` image.
+This image includes some libraries required for implementation and is based on `ubuntu:devel` image.
 
 <div align="center">
     <img src="https://github.com/vdaas/vald/blob/main/assets/image/readme.svg" width="50%" />
 </div>
 
-[![latest Image](https://img.shields.io/docker/v/vdaas/vald-agent-ngt/latest?label=vald-agent-ngt)](https://hub.docker.com/r/vdaas/vald-agent-ngt/tags?page=1&name=latest)
+[![latest Image](https://img.shields.io/docker/v/vdaas/vald-dev-container/latest?label=vald-dev-container)](https://hub.docker.com/r/vdaas/vald-dev-container/tags?page=1&name=latest)
 [![License: Apache 2.0](https://img.shields.io/github/license/vdaas/vald.svg?style=flat-square)](https://opensource.org/licenses/Apache-2.0)
 [![latest ver.](https://img.shields.io/github/release/vdaas/vald.svg?style=flat-square)](https://github.com/vdaas/vald/releases/latest)
 [![Twitter](https://img.shields.io/badge/twitter-follow-blue?logo=twitter&style=flat-square)](https://twitter.com/vdaas_vald)
@@ -28,7 +28,7 @@ This image includes some libraries which are required for implementation and is 
 
 <details><summary>linux/arm64</summary><br>
 
-- CPU instruction: NOT Apple silicon
+- CPU instruction: NOT Apple Silicon
 - Tools: Docker
 
 </details>
@@ -38,7 +38,7 @@ This image includes some libraries which are required for implementation and is 
 <!-- Get Started -->
 <!-- Vald Agent NGT requires more chapter Agent Standalone -->
 
-`vald-dev-container` is used for contributing Vald project.
+`vald-dev-container` is used for contributing to Vald's project.
 
 ```bash
 docker pull vdaas/vald-dev-container

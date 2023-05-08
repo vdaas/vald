@@ -2,16 +2,16 @@
 
 <!-- introduction sentence -->
 
-`vald-agent-sidecar` is the docker image for vald-agent-sidecar component.
+`vald-agent-sidecar` is the docker image for the vald-agent-sidecar component.
 
-This image is responsible for save the index metadata files to external storage like Amazon S3 or Google Cloud Storage.
+This image saves the index metadata files to external storage like Amazon S3 or Google Cloud Storage.
 
-It has the 2 main features:
+It has 2 main features:
 
 1. Backup
    - When `Agent` completes creating the index metadata files, `Sidecar` hooks to store them in the external storage.
 1. Restore
-   - WHen the Vald Agent Pod restarts, the index structure is restored from the external backup files.
+   - When the Vald Agent Pod restarts, the index structure on the `vald-agent` component is restored from the external backup files.
 
 <!-- FIXME: document URL -->
 
@@ -21,7 +21,7 @@ For more details, please refer to the [component document](https://vald.vdaas.or
     <img src="https://github.com/vdaas/vald/blob/main/assets/image/readme.svg" width="50%" />
 </div>
 
-[![latest Image](https://img.shields.io/docker/v/vdaas/vald-agent-ngt/latest?label=vald-agent-ngt)](https://hub.docker.com/r/vdaas/vald-agent-ngt/tags?page=1&name=latest)
+[![latest Image](https://img.shields.io/docker/v/vdaas/vald-agent-sidecar/latest?label=vald-agent-sidecar)](https://hub.docker.com/r/vdaas/vald-agent-sidecar/tags?page=1&name=latest)
 [![License: Apache 2.0](https://img.shields.io/github/license/vdaas/vald.svg?style=flat-square)](https://opensource.org/licenses/Apache-2.0)
 [![latest ver.](https://img.shields.io/github/release/vdaas/vald.svg?style=flat-square)](https://github.com/vdaas/vald/releases/latest)
 [![Twitter](https://img.shields.io/badge/twitter-follow-blue?logo=twitter&style=flat-square)](https://twitter.com/vdaas_vald)
@@ -51,7 +51,7 @@ For more details, please refer to the [component document](https://vald.vdaas.or
 
 `vald-agent-sidecar` is used for one of the components of the Vald cluster, which means it should be used on the Kubernetes cluster, not the local environment or Docker.
 
-Please refer to the [Get Started](https://vald.vdaas.org/docs/tutorial/get-started) for deploy Vald cluster and [Backup configuration](https://vald.vdaas.org/docs/user-guides/backup-configuration/) to enable the backup feature.
+Please refer to the [Get Started](https://vald.vdaas.org/docs/tutorial/get-started) for deploying the Vald cluster and [Backup configuration](https://vald.vdaas.org/docs/user-guides/backup-configuration/) to enable the backup feature.
 
 ## Versions
 

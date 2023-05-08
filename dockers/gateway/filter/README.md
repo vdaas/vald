@@ -2,13 +2,13 @@
 
 <!-- introduction sentence -->
 
-`vald-filter-gateway` is the image for vald-filter-gateway component.
+`vald-filter-gateway` is the image for the vald-filter-gateway component.
 
-This image is responsible for allowing the user to run user-defined custom logic with ingress/egress filter components.
+This image allows the user to run user-defined custom logic with ingress/egress filter components.
 
 `vald-filter-gateway` bypasses the user request or response between the Vald cluster and the user-defined ingress filter/egress filter component.
 
-Ingress filtering means the pre-process before the request is processed by the Vald LB Gateway, e.g., converting blob data to the vector, filtering request vector.
+Ingress filtering means the pre-process before the request is processed by the Vald LB Gateway, e.g., converting blob data to the vector, filtering request vector, etc.
 
 Egress filtering means the post-process for the search result returned from the Vald LB Gateway.
 
@@ -20,7 +20,7 @@ For more details, please refer to the [component document](https://vald.vdaas.or
     <img src="https://github.com/vdaas/vald/blob/main/assets/image/readme.svg" width="50%" />
 </div>
 
-[![latest Image](https://img.shields.io/docker/v/vdaas/vald-agent-ngt/latest?label=vald-agent-ngt)](https://hub.docker.com/r/vdaas/vald-agent-ngt/tags?page=1&name=latest)
+[![latest Image](https://img.shields.io/docker/v/vdaas/vald-filter-gateway/latest?label=vald-filter-gateway)](https://hub.docker.com/r/vdaas/vald-filter-gateway/tags?page=1&name=latest)
 [![License: Apache 2.0](https://img.shields.io/github/license/vdaas/vald.svg?style=flat-square)](https://opensource.org/licenses/Apache-2.0)
 [![latest ver.](https://img.shields.io/github/release/vdaas/vald.svg?style=flat-square)](https://github.com/vdaas/vald/releases/latest)
 [![Twitter](https://img.shields.io/badge/twitter-follow-blue?logo=twitter&style=flat-square)](https://twitter.com/vdaas_vald)
@@ -48,7 +48,7 @@ For more details, please refer to the [component document](https://vald.vdaas.or
 
 `vald-filter-gateway` is used for one of the components of the Vald cluster, which means it should be used on the Kubernetes cluster, not the local environment or Docker.
 
-Please refer to the [Get Started](https://vald.vdaas.org/docs/tutorial/get-started) for deploy Vald cluster and [Filtering configuration](https://vald.vdaas.org/docs/user-guides/filtering-configuration/) to enable the filter feature.
+Please refer to the [Get Started](https://vald.vdaas.org/docs/tutorial/get-started) for deploying the Vald cluster and [Filtering configuration](https://vald.vdaas.org/docs/user-guides/filtering-configuration/) to enable the filter feature.
 
 ## Versions
 

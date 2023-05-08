@@ -2,9 +2,9 @@
 
 <!-- introduction sentence -->
 
-`vald-loadtest` is the docker image for load testing with Vald cluster.
+`vald-loadtest` is the docker image for load testing with the Vald cluster.
 
-This image is responsible for load testing about performance of insert and search operation to the Vald cluster.
+This image is responsible for load testing about insert and search operation performance to the Vald cluster.
 
 For more details, please refer to the [load test document](https://vald.vdaas.org/docs/performance/loadtest/).
 
@@ -12,7 +12,7 @@ For more details, please refer to the [load test document](https://vald.vdaas.or
     <img src="https://github.com/vdaas/vald/blob/main/assets/image/readme.svg" width="50%" />
 </div>
 
-[![latest Image](https://img.shields.io/docker/v/vdaas/vald-agent-ngt/latest?label=vald-agent-ngt)](https://hub.docker.com/r/vdaas/vald-agent-ngt/tags?page=1&name=latest)
+[![latest Image](https://img.shields.io/docker/v/vdaas/vald-loadtest/latest?label=vald-loadtest)](https://hub.docker.com/r/vdaas/vald-loadtest/tags?page=1&name=latest)
 [![License: Apache 2.0](https://img.shields.io/github/license/vdaas/vald.svg?style=flat-square)](https://opensource.org/licenses/Apache-2.0)
 [![latest ver.](https://img.shields.io/github/release/vdaas/vald.svg?style=flat-square)](https://github.com/vdaas/vald/releases/latest)
 [![Twitter](https://img.shields.io/badge/twitter-follow-blue?logo=twitter&style=flat-square)](https://twitter.com/vdaas_vald)
@@ -38,7 +38,7 @@ For more details, please refer to the [load test document](https://vald.vdaas.or
 <!-- Get Started -->
 <!-- Vald Agent NGT requires more chapter Agent Standalone -->
 
-Please refer to the [load test document](https://vald.vdaas.org/docs/performance/loadtest/) for executing load test.
+Please refer to the [load test document](https://vald.vdaas.org/docs/performance/loadtest/) for executing the load test.
 
 ## Versions
 

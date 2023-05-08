@@ -2,9 +2,9 @@
 
 <!-- introduction sentence -->
 
-`vald-discoverer-k8s` is the docker image for vald-discoverer component.
+`vald-discoverer-k8s` is the docker image for the vald-discoverer component.
 
-This image is responsible for retrieving each Kubernetes Node and Pod resource usage from [kube-apiserver](https://kubernetes.io/docs/reference/command-line-tools-reference/kube-apiserver/) and sharing it with `vald-lb-gateway` and `vald-index-manager` in the Vald cluster.
+This image retrieves each Kubernetes Node and Pod resource usage from [kube-apiserver](https://kubernetes.io/docs/reference/command-line-tools-reference/kube-apiserver/) and shares it with `vald-lb-gateway` and `vald-index-manager` in the Vald cluster.
 
 <!-- FIXME: document URL -->
 
@@ -14,7 +14,7 @@ For more details, please refer to the [component document](https://vald.vdaas.or
     <img src="https://github.com/vdaas/vald/blob/main/assets/image/readme.svg" width="50%" />
 </div>
 
-[![latest Image](https://img.shields.io/docker/v/vdaas/vald-agent-ngt/latest?label=vald-agent-ngt)](https://hub.docker.com/r/vdaas/vald-agent-ngt/tags?page=1&name=latest)
+[![latest Image](https://img.shields.io/docker/v/vdaas/vald-discoverer-k8s/latest?label=vald-discoverer-k8s)](https://hub.docker.com/r/vdaas/vald-discoverer-k8s/tags?page=1&name=latest)
 [![License: Apache 2.0](https://img.shields.io/github/license/vdaas/vald.svg?style=flat-square)](https://opensource.org/licenses/Apache-2.0)
 [![latest ver.](https://img.shields.io/github/release/vdaas/vald.svg?style=flat-square)](https://github.com/vdaas/vald/releases/latest)
 [![Twitter](https://img.shields.io/badge/twitter-follow-blue?logo=twitter&style=flat-square)](https://twitter.com/vdaas_vald)
@@ -42,7 +42,7 @@ For more details, please refer to the [component document](https://vald.vdaas.or
 
 `vald-discoverer-k8s` is used for one of the components of the Vald cluster, which means it should be used on the Kubernetes cluster, not the local environment or Docker.
 
-Please refer to the [Get Started](https://vald.vdaas.org/docs/tutorial/get-started) for deploy Vald cluster.
+Please refer to the [Get Started](https://vald.vdaas.org/docs/tutorial/get-started) for deploying the Vald cluster.
 
 ## Versions
 

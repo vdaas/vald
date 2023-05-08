@@ -2,14 +2,14 @@
 
 <!-- introduction sentence -->
 
-`vald-manager-index` is the image for vald-index-manager component.
+`vald-manager-index` is the image for the vald-index-manager component.
 
-`vald-manager-index` has the unique feature to control the index timing for all Vald Agent pods in the Vald cluster.
+`vald-manager-index` has a unique feature, controlling the index timing for all Vald Agent pods in the Vald cluster.
 
 The main features are:
 
 - Syncing data from Vald Discoverer
-- Controlling indexing process for each Vald Agent pods
+- Controlling the indexing process for each Vald Agent pods
 
 For more details, please refer to the [component document](https://vald.vdaas.org/docs/overview/component/index-manager).
 
@@ -17,7 +17,7 @@ For more details, please refer to the [component document](https://vald.vdaas.or
     <img src="https://github.com/vdaas/vald/blob/main/assets/image/readme.svg" width="50%" />
 </div>
 
-[![latest Image](https://img.shields.io/docker/v/vdaas/vald-agent-ngt/latest?label=vald-agent-ngt)](https://hub.docker.com/r/vdaas/vald-agent-ngt/tags?page=1&name=latest)
+[![latest Image](https://img.shields.io/docker/v/vdaas/vald-manager-index/latest?label=vald-manager-index)](https://hub.docker.com/r/vdaas/vald-manager-index/tags?page=1&name=latest)
 [![License: Apache 2.0](https://img.shields.io/github/license/vdaas/vald.svg?style=flat-square)](https://opensource.org/licenses/Apache-2.0)
 [![latest ver.](https://img.shields.io/github/release/vdaas/vald.svg?style=flat-square)](https://github.com/vdaas/vald/releases/latest)
 [![Twitter](https://img.shields.io/badge/twitter-follow-blue?logo=twitter&style=flat-square)](https://twitter.com/vdaas_vald)
@@ -45,7 +45,7 @@ For more details, please refer to the [component document](https://vald.vdaas.or
 
 `vald-manager-index` is used for one of the components of the Vald cluster, which means it should be used on the Kubernetes cluster, not the local environment or Docker.
 
-Please refer to the [Get Started](https://vald.vdaas.org/docs/tutorial/get-started) for deploy Vald cluster.
+Please refer to the [Get Started](https://vald.vdaas.org/docs/tutorial/get-started) for deploying the Vald cluster.
 
 ## Versions
 

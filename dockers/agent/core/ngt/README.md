@@ -2,11 +2,11 @@
 
 <!-- introduction sentence -->
 
-`vald-agent-ngt` is the docker image for vald-agent-ngt component.
+`vald-agent-ngt` is the docker image for the vald-agent-ngt component.
 
-This image is responsible for:
+This image is responsible for the following:
 
-- Store index data along to the user request.
+- Store index data along with the user request.
   - The store destination is In-Memory, Volume Mounts, Persistent Volume, or External Storage(:warning:).
 - Search the nearest neighbor vectors of the request vector and return the search result.
 
@@ -46,14 +46,14 @@ This image does NOT support running on M1/M2 Mac.
 <!-- Get Started -->
 <!-- Vald Agent NGT requires more chapter Agent Standalone -->
 
-You can use `vald-agent-ngt` for 3 ways.
+You can use `vald-agent-ngt` in 3 ways.
 
 1. One of the components of the Vald cluster
-   - Refer [Get Started](https://vald.vdaas.org/docs/tutotial/get-started/).
+   - Refer to [Get Started](https://vald.vdaas.org/docs/tutotial/get-started/).
 1. Standalone on the Kubernetes cluster
-   - Refer [Vald Agent Standalone on Kubernetes](https://vald.vdaas.org/docs/tutorial/vald-agent-standalone-on-k8s/)
+   - Refer to [Vald Agent Standalone on Kubernetes](https://vald.vdaas.org/docs/tutorial/vald-agent-standalone-on-k8s/)
 1. Standalone on Docker
-   - Refer [Vald Agent Standalone on Docker](https://vald.vdaas.org/docs/tutorial/vald-agent-standalone-on-docker/)
+   - Refer to [Vald Agent Standalone on Docker](https://vald.vdaas.org/docs/tutorial/vald-agent-standalone-on-docker/)
 
 ## Versions
 

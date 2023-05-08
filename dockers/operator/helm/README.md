@@ -2,20 +2,20 @@
 
 <!-- introduction sentence -->
 
-`vald-helm-operator` is the Helm operator image for operating Vald cluster.
+`vald-helm-operator` is the Helm operator image for operating the Vald cluster.
 
-This image is responsible for:
+This image is responsible for the following:
 
 - monitoring 2 custom resource definitions, [`ValdRelease`](https://github.com/vdaas/vald/blob/main/charts/vald-helm-operator/crds/valdrelease.yaml) and [`ValdHelmOperatorRelease`](https://github.com/vdaas/vald/blob/main/charts/vald-helm-operator/crds/valdhelmoperatorrelease.yaml)
 - Operating Vald Helm Operator and Vald cluster according to applied CRD.
 
-Vald recommends to use Vald Helm Operator for production usage.
+Vald recommends using Vald Helm Operator for production usage.
 
 <div align="center">
     <img src="https://github.com/vdaas/vald/blob/main/assets/image/readme.svg" width="50%" />
 </div>
 
-[![latest Image](https://img.shields.io/docker/v/vdaas/vald-agent-ngt/latest?label=vald-agent-ngt)](https://hub.docker.com/r/vdaas/vald-agent-ngt/tags?page=1&name=latest)
+[![latest Image](https://img.shields.io/docker/v/vdaas/vald-helm-operator/latest?label=vald-helm-operator)](https://hub.docker.com/r/vdaas/vald-helm-operator/tags?page=1&name=latest)
 [![License: Apache 2.0](https://img.shields.io/github/license/vdaas/vald.svg?style=flat-square)](https://opensource.org/licenses/Apache-2.0)
 [![latest ver.](https://img.shields.io/github/release/vdaas/vald.svg?style=flat-square)](https://github.com/vdaas/vald/releases/latest)
 [![Twitter](https://img.shields.io/badge/twitter-follow-blue?logo=twitter&style=flat-square)](https://twitter.com/vdaas_vald)
@@ -41,7 +41,7 @@ Vald recommends to use Vald Helm Operator for production usage.
 <!-- Get Started -->
 <!-- Vald Agent NGT requires more chapter Agent Standalone -->
 
-`vald-helm-operator` is used for monitoring, managing and operating for the Vald cluster.
+`vald-helm-operator` is used for monitoring, managing and operating the Vald cluster.
 Please refer to the [Deployment](https://vald.vdaas.org/docs/user-guides/deployment/#using-with-vald-helm-operator) document for deployment.
 
 ## Versions

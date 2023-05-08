@@ -4,13 +4,13 @@
 
 `vald-ci-container` is designed for running CI workflows on GitHub Actions.
 
-This image includes the basic libraries for running some workflows on [vdaas/vald](https://github.com/vdaas/vald) repository.
+This image includes the basic libraries for running some workflows on the [vdaas/vald](https://github.com/vdaas/vald) repository.
 
 <div align="center">
     <img src="https://github.com/vdaas/vald/blob/main/assets/image/readme.svg" width="50%" />
 </div>
 
-[![latest Image](https://img.shields.io/docker/v/vdaas/vald-agent-ngt/latest?label=vald-agent-ngt)](https://hub.docker.com/r/vdaas/vald-agent-ngt/tags?page=1&name=latest)
+[![latest Image](https://img.shields.io/docker/v/vdaas/vald-ci-container/latest?label=vald-ci-container)](https://hub.docker.com/r/vdaas/vald-ci-container/tags?page=1&name=latest)
 [![License: Apache 2.0](https://img.shields.io/github/license/vdaas/vald.svg?style=flat-square)](https://opensource.org/licenses/Apache-2.0)
 [![latest ver.](https://img.shields.io/github/release/vdaas/vald.svg?style=flat-square)](https://github.com/vdaas/vald/releases/latest)
 [![Twitter](https://img.shields.io/badge/twitter-follow-blue?logo=twitter&style=flat-square)](https://twitter.com/vdaas_vald)
@@ -27,7 +27,7 @@ This image includes the basic libraries for running some workflows on [vdaas/val
 
 <details><summary>linux/arm64</summary><br>
 
-- CPU instruction: not Apple silicon
+- CPU instruction: NOT Apple Silicon
 
 </details>
 
@@ -35,7 +35,7 @@ This image includes the basic libraries for running some workflows on [vdaas/val
 
 <!-- Get Started -->
 
-`vald-ci-container` is used for running workflow on GitHub Actions.
+`vald-ci-container` is used for running the workflow on GitHub Actions.
 
 ```yaml
 name: Name of workflow
@@ -44,13 +44,13 @@ on:
     branches:
       - main
 jobs:
-  job_titile:
-    name: job_name
+  {job_titile}:
+    name: {job_name}
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/vdaas/vald/vald-ci-container:latest
     steps:
-      - name: step 1
+      - name: {step_name}
     ...
 ```
 
