@@ -165,10 +165,11 @@ func (d *discoverer) startSync(ctx context.Context, prev map[string]target.Targe
 	}
 	log.Infof("created: %#v\tupdated: %#v\tdeleted: %#v", created, updated, deleted)
 
-	err = errors.Join(d.createTarget(ctx, created),
-		d.deleteTarget(ctx, deleted),
-		d.updateTarget(ctx, updated),
-	)
+	err = errors.Join(
+		errors.Join(
+			d.createTarget(ctx, created),
+			d.deleteTarget(ctx, deleted)),
+		d.updateTarget(ctx, updated))
 	if err != nil {
 		return cur, err
 	}
