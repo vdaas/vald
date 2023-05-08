@@ -4,14 +4,12 @@ import "github.com/vdaas/vald/internal/errors"
 
 type MirrorTargetOption func(*MirrorTarget) error
 
-var (
-	defaultMirrorTargetOptions = []MirrorTargetOption{
-		WithMirrorTargetLabels(map[string]string{
-			"app.kubernetes.io/name":       "mirror-target",
-			"app.kubernetes.io/managed-by": "gateway-mirror",
-		}),
-	}
-)
+var defaultMirrorTargetOptions = []MirrorTargetOption{
+	WithMirrorTargetLabels(map[string]string{
+		"app.kubernetes.io/name":       "mirror-target",
+		"app.kubernetes.io/managed-by": "gateway-mirror",
+	}),
+}
 
 func WithMirrorTargetNamespace(ns string) MirrorTargetOption {
 	return func(mt *MirrorTarget) error {
