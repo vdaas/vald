@@ -40,6 +40,10 @@ inputs:
     description: "timeout used for waiting for pods"
     required: false
     default: "600s"
+  use_local_charts:
+    description: "If you want to use local charts, set this to true."
+    required: false
+    default: "false"
 outputs:
   POD_NAME:
     description: "a pod name that waited for"
@@ -80,9 +84,10 @@ runs:
         fi
       env:
         REQUIRE_MINIO: ${{ inputs.require_minio }}
-    - name: deploy vald
+    - name: deploy vald from remote charts
       shell: bash
-      id: deploy_vald
+      id: deploy_vald_remote
+      if: ${{ inputs.use_local_charts == 'false' }}
       run: |
         helm install \
           --values ${VALUES} \
@@ -101,5 +106,27 @@ runs:
       env:
         VALUES: ${{ inputs.values }}
         HELM_EXTRA_OPTIONS: ${{ inputs.helm_extra_options }}
+        WAIT_FOR_SELECTOR: ${{ inputs.wait_for_selector }}
+        WAIT_FOR_TIMEOUT: ${{ inputs.wait_for_timeout }}
+    - name: deploy vald from local charts
+      shell: bash
+      id: deploy_vald_local
+      if: ${{ inputs.use_local_charts == 'true' }}
+      run: |
+        make k8s/vald/deploy HELM_VALUES=${VALUES}
+
+        sleep 3
+
+        kubectl wait --for=condition=ready pod -l ${WAIT_FOR_SELECTOR} --timeout=${WAIT_FOR_TIMEOUT}
+        
+        kubectl get pods
+
+        podname=`kubectl get pods --selector=${WAIT_FOR_SELECTOR} | tail -1 | awk '{print $1}'`
+        echo "POD_NAME=${podname}" >> $GITHUB_OUTPUT
+      env:
+        VALUES: ${{ inputs.values }}
+        # TODO: currently, we can't pass helm options to the make command.
+        #       Is it really necessary in the first place?
+        # HELM_EXTRA_OPTIONS: ${{ inputs.helm_extra_options }}
         WAIT_FOR_SELECTOR: ${{ inputs.wait_for_selector }}
         WAIT_FOR_TIMEOUT: ${{ inputs.wait_for_timeout }}
