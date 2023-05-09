@@ -71,7 +71,6 @@ k8s/vald/deploy:
 	    --set manager.index.image.repository=$(CRORG)/$(MANAGER_INDEX_IMAGE) \
 	    --output-dir $(TEMP_DIR) \
 	    charts/vald
-	@echo "Permitting error because there's nothing to apply when network policy is disabled"
 	kubectl apply -f $(TEMP_DIR)/vald/templates/manager/index
 	kubectl apply -f $(TEMP_DIR)/vald/templates/agent
 	kubectl apply -f $(TEMP_DIR)/vald/templates/discoverer
