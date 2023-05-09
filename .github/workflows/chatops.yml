@@ -455,6 +455,7 @@ jobs:
         with:
           go-version: ${{ steps.golang_version.outputs.version }}
       - name: update and push
+        id: format_push
         if: steps.check_comments_format.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         run: |
           export PATH=$(go env GOPATH)/bin:$PATH
@@ -478,8 +479,10 @@ jobs:
           git checkout go.mod go.sum
 
           if git diff --quiet --exit-code; then
+            echo "UPDATED=false" >> $GITHUB_OUTPUT
             echo "Nothing updated"
           else
+            echo "UPDATED=true" >> $GITHUB_OUTPUT
             git add .
             git commit -S --signoff -m ":robot: Update license headers / Format go codes and yaml files"
 
@@ -492,6 +495,19 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
           PR_INFO_URL: ${{ github.event.issue.pull_request.url }}
           PR_NUM: ${{ github.event.issue.number }}
+      - name: no changes
+        if: steps.check_comments_format.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true' && steps.format_push.outputs.UPDATED == 'false'
+        run: |
+          curl --include --verbose --fail \
+          -H "Accept: application/json" \
+          -H "Content-Type:application/json" \
+          -H "Authorization: token ${GITHUB_TOKEN}" \
+          --request POST \
+          --data "{\"body\": \"**[FORMAT]** Nothing to format.\"}" \
+          $API_URL
+        env:
+          GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
+          API_URL: ${{ github.event.issue.comments_url }}
       - name: failure comment
         if: failure()
         run: |
