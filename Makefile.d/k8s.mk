@@ -17,17 +17,17 @@
 ## clean k8s manifests
 k8s/manifest/clean:
 	rm -rf \
-	    k8s/agent \
-	    k8s/discoverer \
-	    k8s/gateway \
-	    k8s/manager
+		k8s/agent \
+		k8s/discoverer \
+		k8s/gateway \
+		k8s/manager
 
 .PHONY: k8s/manifest/update
 ## update k8s manifests using helm templates
 k8s/manifest/update: \
 	k8s/manifest/clean
 	helm template \
-	    --values charts/vald/values/dev.yaml \
+	    --values $(HELM_VALUES) \
 	    --output-dir $(TEMP_DIR) \
 	    charts/vald
 	mkdir -p k8s/gateway
@@ -61,7 +61,7 @@ k8s/manifest/helm-operator/update: \
 ## deploy vald sample cluster to k8s
 k8s/vald/deploy:
 	helm template \
-	    --values charts/vald/values/dev.yaml \
+	    --values $(HELM_VALUES) \
 	    --set defaults.image.tag=$(VERSION) \
 	    --set agent.image.repository=$(CRORG)/$(AGENT_IMAGE) \
 	    --set agent.sidecar.image.repository=$(CRORG)/$(AGENT_SIDECAR_IMAGE) \
@@ -71,6 +71,7 @@ k8s/vald/deploy:
 	    --set manager.index.image.repository=$(CRORG)/$(MANAGER_INDEX_IMAGE) \
 	    --output-dir $(TEMP_DIR) \
 	    charts/vald
+	@echo "Permitting error because there's nothing to apply when network policy is disabled"
 	kubectl apply -f $(TEMP_DIR)/vald/templates/manager/index
 	kubectl apply -f $(TEMP_DIR)/vald/templates/agent
 	kubectl apply -f $(TEMP_DIR)/vald/templates/discoverer
@@ -82,7 +83,7 @@ k8s/vald/deploy:
 ## delete vald sample cluster from k8s
 k8s/vald/delete:
 	helm template \
-	    --values charts/vald/values/dev.yaml \
+	    --values $(HELM_VALUES) \
 	    --set defaults.image.tag=$(VERSION) \
 	    --set agent.image.repository=$(CRORG)/$(AGENT_IMAGE) \
 	    --set agent.sidecar.image.repository=$(CRORG)/$(AGENT_SIDECAR_IMAGE) \
@@ -132,7 +133,7 @@ k8s/vr/deploy: \
 	k8s/metrics/metrics-server/deploy
 	yq eval \
 	    '{"apiVersion": "vald.vdaas.org/v1", "kind": "ValdRelease", "metadata":{"name":"vald-cluster"}, "spec": .}' \
-	    charts/vald/values/dev.yaml \
+	    $(HELM_VALUES) \
 	    | kubectl apply -f -
 
 .PHONY: k8s/vr/delete
