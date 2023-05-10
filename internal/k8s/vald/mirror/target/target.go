@@ -21,6 +21,14 @@ import (
 type (
 	MirrorTargetWatcher k8s.ResourceController
 	MirrorTarget        = mirrv1.ValdMirrorTarget
+	MirrorTargetStatus  = mirrv1.MirrorTargetStatus
+)
+
+const (
+	MirrorTargetStatusPending      = mirrv1.MirrorTargetPending
+	MirrorTargetStatusConnected    = mirrv1.MirrorTargetConnected
+	MirrorTargetStatusDisconnected = mirrv1.MirrorTargetDisconnected
+	MirrorTargetStatusUnknown      = mirrv1.MirrorTargetUnknown
 )
 
 type reconciler struct {

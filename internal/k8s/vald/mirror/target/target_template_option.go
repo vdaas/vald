@@ -30,6 +30,13 @@ func WithMirrorTargetName(name string) MirrorTargetOption {
 	}
 }
 
+func WithMirrorTargetStatus(st MirrorTargetStatus) MirrorTargetOption {
+	return func(mt *MirrorTarget) error {
+		mt.Status = st
+		return nil
+	}
+}
+
 func WithMirrorTargetLabels(labels map[string]string) MirrorTargetOption {
 	return func(mt *MirrorTarget) error {
 		if len(labels) != 0 {

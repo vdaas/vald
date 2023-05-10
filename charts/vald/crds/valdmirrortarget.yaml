@@ -16,6 +16,10 @@ spec:
       storage: true
       subresources:
         status: {}
+      additionalPrinterColumns:
+        - name: STATUS
+          type: string
+          jsonPath: .status
       schema:
         openAPIV3Schema:
           description: ValdMirrorTarget is the Schema for the valdmirrortargets API
@@ -37,7 +41,13 @@ spec:
               type: object
             status:
               description: ValdMirrorTargetStatus defines the observed state of ValdMirrorTarget
-              type: object
+              type: string
+              enum:
+                - Pending
+                - Connected
+                - Disconnected
+                - Unknown
+              default: Pending
             spec:
               description: ValdMirrorTargetSpec defines the desired state of ValdMirrorTarget
               type: object
