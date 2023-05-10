@@ -277,7 +277,7 @@ func (d *discoverer) updateMirrorTargetStatus(ctx context.Context, name string, 
 		return err
 	}
 	mt.Status = st
-	return c.Update(ctx, mt)
+	return c.Status().Update(ctx, mt)
 }
 
 func (d *discoverer) updateTarget(ctx context.Context, req map[string]*updatedTarget) (err error) {
