@@ -41,11 +41,13 @@ type Mirror interface {
 	IsConnected(ctx context.Context, addr string) bool
 	MirrorTargets() ([]*payload.Mirror_Target, error)
 	RangeAllMirrorAddr(f func(addr string, _ any) bool)
+	SelfMirrorAddrs() []string
 }
 
 type mirr struct {
 	addrl         sync.Map                 // List of all connected addresses
-	selfMirrTgts  []*payload.Mirror_Target // Address of self mirror gateway
+	selfMirrTgts  []*payload.Mirror_Target // Targets of self mirror gateway
+	selfMirrAddrs []string                 // Address of self mirror gateway
 	selfMirrAddrl sync.Map                 // List of self Mirror gateway addresses
 	gwAddrl       sync.Map                 // List of Vald Gateway addresses
 	eg            errgroup.Group
@@ -415,6 +417,10 @@ func (m *mirr) MirrorTargets() ([]*payload.Mirror_Target, error) {
 		}
 	}
 	return tgts, nil
+}
+
+func (m *mirr) SelfMirrorAddrs() []string {
+	return m.selfMirrAddrs
 }
 
 func (m *mirr) isSelfMirrorAddr(addr string) bool {

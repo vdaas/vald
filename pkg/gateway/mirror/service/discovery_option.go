@@ -43,6 +43,18 @@ func WithDiscovererNamespace(ns string) DiscovererOption {
 	}
 }
 
+func WithDiscovererGroup(g string) DiscovererOption {
+	return func(d *discoverer) error {
+		if len(g) != 0 {
+			if d.labels == nil {
+				d.labels = make(map[string]string)
+			}
+			d.labels[groupKey] = g
+		}
+		return nil
+	}
+}
+
 func WithDiscovererColocation(loc string) DiscovererOption {
 	return func(d *discoverer) error {
 		if len(loc) != 0 {

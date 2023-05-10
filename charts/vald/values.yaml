@@ -1729,6 +1729,9 @@ gateway:
       # @schema {"name": "gateway.mirror.gateway_config.colocation", "type": "string"}
       # gateway.mirror.gateway_config.colocation -- colocation name
       colocation: "dc1"
+      # @schema {"name": "gateway.mirror.gateway_config.group", "type": "string"}
+      # gateway.mirror.gateway_config.group -- mirror group name
+      group: ""
     # @schema {"name": "gateway.mirror.clusterRole", "type": "object"}
     clusterRole:
       # @schema {"name": "gateway.mirror.clusterRole.enabled", "type": "boolean"}

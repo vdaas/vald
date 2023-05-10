@@ -33,12 +33,7 @@ func WithMirrorTargetName(name string) MirrorTargetOption {
 func WithMirrorTargetLabels(labels map[string]string) MirrorTargetOption {
 	return func(mt *MirrorTarget) error {
 		if len(labels) != 0 {
-			if mt.ObjectMeta.Labels == nil {
-				mt.ObjectMeta.Labels = make(map[string]string)
-			}
-			for key, val := range labels {
-				mt.ObjectMeta.Labels[key] = val
-			}
+			mt.ObjectMeta.Labels = labels
 		}
 		return nil
 	}
