@@ -293,16 +293,16 @@ func (d *discoverer) updateTarget(ctx context.Context, req map[string]*updatedTa
 			if uerr := d.updateMirrorTargetStatus(ctx, updated.name, target.MirrorTargetStatusDisconnected); uerr != nil {
 				err = errors.Join(err, uerr)
 			}
-			continue
-		}
-		cerr := d.mirr.Connect(ctx, &payload.Mirror_Target{
-			Ip:   updated.new.Host,
-			Port: uint32(updated.new.Port),
-		})
-		if cerr != nil {
-			err = errors.Join(cerr, err)
-			if uerr := d.updateMirrorTargetStatus(ctx, updated.name, target.MirrorTargetStatusDisconnected); uerr != nil {
-				err = errors.Join(err, uerr)
+		} else {
+			cerr := d.mirr.Connect(ctx, &payload.Mirror_Target{
+				Ip:   updated.new.Host,
+				Port: uint32(updated.new.Port),
+			})
+			if cerr != nil {
+				err = errors.Join(cerr, err)
+				if uerr := d.updateMirrorTargetStatus(ctx, updated.name, target.MirrorTargetStatusDisconnected); uerr != nil {
+					err = errors.Join(err, uerr)
+				}
 			}
 		}
 	}
