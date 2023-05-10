@@ -268,15 +268,16 @@ func (d *discoverer) deleteTarget(ctx context.Context, req map[string]*deletedTa
 // }
 
 func (d *discoverer) updateMirrorTargetStatus(ctx context.Context, name string, st target.MirrorTargetStatus) error {
-	mt, err := target.NewMirrorTargetTemplate(
-		target.WithMirrorTargetName(name),
-		target.WithMirrorTargetNamespace(d.namespace),
-		target.WithMirrorTargetStatus(st),
-	)
-	if err != nil {
+	c := d.ctrl.GetManager().GetClient()
+	mt := &target.MirrorTarget{}
+	if err := c.Get(ctx, k8s.ObjectKey{
+		Namespace: d.namespace,
+		Name:      name,
+	}, mt); err != nil {
 		return err
 	}
-	return d.ctrl.GetManager().GetClient().Update(ctx, mt)
+	mt.Status = st
+	return c.Update(ctx, mt)
 }
 
 func (d *discoverer) updateTarget(ctx context.Context, req map[string]*updatedTarget) (err error) {
