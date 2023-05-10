@@ -9,7 +9,7 @@ This image is responsible for load testing about insert and search operation per
 For more details, please refer to the [load test document](https://vald.vdaas.org/docs/performance/loadtest/).
 
 <div align="center">
-    <img src="https://github.com/vdaas/vald/blob/main/assets/image/readme.svg" width="50%" />
+    <img src="https://github.com/vdaas/vald/blob/main/assets/image/readme.svg?raw=true" width="50%" />
 </div>
 
 [![latest Image](https://img.shields.io/docker/v/vdaas/vald-loadtest/latest?label=vald-loadtest)](https://hub.docker.com/r/vdaas/vald-loadtest/tags?page=1&name=latest)
@@ -21,17 +21,13 @@ For more details, please refer to the [load test document](https://vald.vdaas.or
 
 <!-- FIXME: If image has some requirements, describe here with :warning: emoji -->
 
-<details><summary>linux/amd64</summary><br>
+### linux/amd64
 
 - Others: Vald cluster or Vald Agent
 
-</details>
-
-<details><summary>linux/arm64</summary><br>
+### linux/arm64
 
 - Others: Vald cluster or Vald Agent
-
-</details>
 
 ## Get Started
 
@@ -42,12 +38,12 @@ Please refer to the [load test document](https://vald.vdaas.org/docs/performance
 
 ## Versions
 
-| tag     |    linux/amd64     |    linux/arm64     | description                                                                                                                 |
-| :------ | :----------------: | :----------------: | :-------------------------------------------------------------------------------------------------------------------------- |
-| latest  | :white_check_mark: | :white_check_mark: | the latest image is the same as the latest version of [vdaas/vald](https://github.com/vdaas/vald) repository version.       |
-| nightly | :white_check_mark: | :white_check_mark: | the nightly applies the main branch's source code of the [vdaas/vald](https://github.com/vdaas/vald) repository.            |
-| vX.Y.Z  | :white_check_mark: | :white_check_mark: | the vX.Y.Z image applies the source code of the [vdaas/vald](https://github.com/vdaas/vald) repository.                     |
-| pr-XXX  | :white_check_mark: |        :x:         | the pr-X image applies the source code of the pull request X of the [vdaas/vald](https://github.com/vdaas/vald) repository. |
+| tag     | linux/amd64 | linux/arm64 | description                                                                                                                     |
+| :------ | :---------: | :---------: | :------------------------------------------------------------------------------------------------------------------------------ |
+| latest  |     ✅      |     ✅      | the latest image is the same as the latest version of [vdaas/vald](https://github.com/vdaas/vald) repository version.           |
+| nightly |     ✅      |     ✅      | the nightly applies the main branch's source code of the [vdaas/vald](https://github.com/vdaas/vald) repository.                |
+| vX.Y.Z  |     ✅      |     ✅      | the vX.Y.Z image applies the source code of the [vdaas/vald](https://github.com/vdaas/vald) repository.                         |
+| pr-XXX  |     ✅      |     ❌      | the pr-XXX image applies the source code of the pull request XXX of the [vdaas/vald](https://github.com/vdaas/vald) repository. |
 
 ## Dockerfile
 
