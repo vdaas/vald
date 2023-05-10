@@ -14,11 +14,13 @@ import (
 	"github.com/vdaas/vald/internal/k8s/vald/mirror/target"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net"
+	"github.com/vdaas/vald/internal/strings"
 	"github.com/zeebo/xxh3"
 )
 
 const (
 	resourcePrefix = "mirror-target"
+	groupKey       = "group"
 )
 
 type Discoverer interface {
@@ -27,12 +29,14 @@ type Discoverer interface {
 
 type discoverer struct {
 	namespace  string
+	labels     map[string]string
 	colocation string
 	der        net.Dialer
 
-	targetsByName atomic.Pointer[map[string]target.Target] // latest reconciliation results.
-	ctrl          k8s.Controller
-	dur           time.Duration
+	targetsByName   atomic.Pointer[map[string]target.Target] // latest reconciliation results.
+	ctrl            k8s.Controller
+	dur             time.Duration
+	selfMirrAddrStr string
 
 	mirr Mirror
 	eg   errgroup.Group
@@ -52,10 +56,12 @@ func NewDiscoverer(opts ...DiscovererOption) (dsc Discoverer, err error) {
 		}
 	}
 	d.targetsByName.Store(&map[string]target.Target{})
+	d.selfMirrAddrStr = strings.Join(d.mirr.SelfMirrorAddrs(), ",")
 
 	watcher, err := target.New(
 		target.WithControllerName("mirror discoverer"),
 		target.WithNamespace(d.namespace),
+		target.WithLabels(d.labels),
 		target.WithOnErrorFunc(func(err error) {
 			log.Error("failed to reconcile:", err)
 		}),
@@ -91,7 +97,6 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 		defer tic.Stop()
 
 		prev := d.loadTargets()
-
 		for {
 			select {
 			case <-ctx.Done():
@@ -183,7 +188,7 @@ func (d *discoverer) startSync(ctx context.Context, prev map[string]target.Targe
 			if err != nil {
 				log.Error(err)
 			}
-			name := resourcePrefix + "-" + strconv.FormatUint(xxh3.HashString(addr), 10)
+			name := resourcePrefix + "-" + strconv.FormatUint(xxh3.HashString(d.selfMirrAddrStr+addr), 10)
 			err = errors.Join(err, d.createMirrorTargetResource(ctx, name, host, int(port)))
 		}
 		return true
@@ -209,6 +214,7 @@ func (d *discoverer) createMirrorTargetResource(ctx context.Context, name, host 
 	mt, err := target.NewMirrorTargetTemplate(
 		target.WithMirrorTargetName(name),
 		target.WithMirrorTargetNamespace(d.namespace),
+		target.WithMirrorTargetLabels(d.labels),
 		target.WithMirrorTargetColocation(d.colocation),
 		target.WithMirrorTargetHost(host),
 		target.WithMirrorTargetPort(port),
