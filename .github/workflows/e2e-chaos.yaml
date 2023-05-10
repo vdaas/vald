@@ -114,10 +114,6 @@ jobs:
       - name: Helm version
         run: |
           helm version
-      # DEBUG:
-      - name: Debug print use_local_charts
-        run: |
-          echo "use_local_charts=${{ needs.setup-workflow-envs.outputs.use_local_charts }}"
       - name: deploy Vald
         id: deploy_vald
         uses: ./.github/actions/e2e-deploy-vald
