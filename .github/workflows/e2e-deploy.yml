@@ -24,8 +24,17 @@ on:
   pull_request:
     types:
       - "labeled"
-
 jobs:
+  setup-workflow-envs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup use_local_charts
+        run: |
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            echo "use_local_charts=true" >> $GITHUB_OUTPUT
+          else
+            echo "use_local_charts=false" >> $GITHUB_OUTPUT
+          fi
   dump_contexts_to_log:
     runs-on: ubuntu-latest
     steps:
@@ -57,6 +66,7 @@ jobs:
   e2e-stream-crud:
     name: "E2E test (Stream CRUD)"
     runs-on: ubuntu-latest
+    needs: setup-workflow-envs
     timeout-minutes: 60
     if: startsWith( github.ref, 'refs/tags/') || github.event.action == 'labeled' && github.event.label.name == 'actions/e2e-deploy'
     steps:
@@ -107,6 +117,7 @@ jobs:
           helm_extra_options: ${{ steps.specify_container_versions.outputs.HELM_EXTRA_OPTIONS }}
           values: .github/helm/values/values-lb.yaml
           wait_for_selector: app=vald-lb-gateway
+          use_local_charts: ${{ needs.setup-workflow-envs.outputs.use_local_charts }}
       - name: Fetch golang version
         run: |
           GO_VERSION=`make version/go`
@@ -148,6 +159,7 @@ jobs:
   e2e-stream-crud-for-operator:
     name: "E2E test (Stream CRUD) for operator"
     runs-on: ubuntu-latest
+    needs: setup-workflow-envs
     timeout-minutes: 60
     if: startsWith( github.ref, 'refs/tags/') || github.event.action == 'labeled' && github.event.label.name == 'actions/e2e-deploy'
     steps:
@@ -210,6 +222,7 @@ jobs:
           require_libhdf5: "true"
           valdrelease: ./.github/valdrelease/valdrelease.yaml
           wait_for_selector: app=vald-lb-gateway
+          use_local_charts: ${{ needs.setup-workflow-envs.outputs.use_local_charts }}
       - name: Fetch golang version
         run: |
           GO_VERSION=`make version/go`
@@ -252,6 +265,7 @@ jobs:
   e2e-stream-crud-skip-exist-check:
     name: "E2E test (Stream CRUD: skip strict exist check)"
     runs-on: ubuntu-latest
+    needs: setup-workflow-envs
     timeout-minutes: 60
     if: startsWith( github.ref, 'refs/tags/') || github.event.action == 'labeled' && github.event.label.name == 'actions/e2e-deploy'
     steps:
@@ -302,6 +316,7 @@ jobs:
           helm_extra_options: ${{ steps.specify_container_versions.outputs.HELM_EXTRA_OPTIONS }}
           values: .github/helm/values/values-lb.yaml
           wait_for_selector: app=vald-lb-gateway
+          use_local_charts: ${{ needs.setup-workflow-envs.outputs.use_local_charts }}
       - name: Fetch golang version
         run: |
           GO_VERSION=`make version/go`
@@ -339,6 +354,7 @@ jobs:
   e2e-multiapis-crud:
     name: "E2E test (Multi-APIs CRUD)"
     runs-on: ubuntu-latest
+    needs: setup-workflow-envs
     timeout-minutes: 60
     if: startsWith( github.ref, 'refs/tags/') || github.event.action == 'labeled' && github.event.label.name == 'actions/e2e-deploy'
     steps:
@@ -389,6 +405,7 @@ jobs:
           helm_extra_options: ${{ steps.specify_container_versions.outputs.HELM_EXTRA_OPTIONS }}
           values: .github/helm/values/values-lb.yaml
           wait_for_selector: app=vald-lb-gateway
+          use_local_charts: ${{ needs.setup-workflow-envs.outputs.use_local_charts }}
       - name: Fetch golang version
         run: |
           GO_VERSION=`make version/go`
@@ -423,6 +440,7 @@ jobs:
   e2e-agent-and-sidecar:
     name: "E2E Agent & Sidecar test"
     runs-on: ubuntu-latest
+    needs: setup-workflow-envs
     timeout-minutes: 60
     if: startsWith( github.ref, 'refs/tags/') || github.event.action == 'labeled' && github.event.label.name == 'actions/e2e-deploy'
     steps:
@@ -482,6 +500,7 @@ jobs:
           values: .github/helm/values/values-agent-sidecar.yaml
           wait_for_selector: app=vald-agent-ngt
           wait_for_timeout: 29m
+          use_local_charts: ${{ needs.setup-workflow-envs.outputs.use_local_charts }}
       - name: Fetch golang version
         run: |
           GO_VERSION=`make version/go`
