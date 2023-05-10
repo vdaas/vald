@@ -57,8 +57,17 @@ func WithNamespace(ns string) Option {
 		if ns == "" {
 			return errors.NewErrInvalidOption("namespace", ns)
 		}
-		r.namespace = ns
 		r.addListOpts(client.InNamespace(ns))
+		return nil
+	}
+}
+
+func WithLabels(labels map[string]string) Option {
+	return func(r *reconciler) error {
+		if len(labels) == 0 {
+			return errors.NewErrInvalidOption("labels", labels)
+		}
+		r.addListOpts(client.MatchingLabels(labels))
 		return nil
 	}
 }

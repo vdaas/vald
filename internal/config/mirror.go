@@ -44,6 +44,7 @@ func (m *Mirror) Bind() *Mirror {
 	m.Namespace = GetActualValue(m.Namespace)
 	m.DiscoveryDuration = GetActualValue(m.DiscoveryDuration)
 	m.Colocation = GetActualValue(m.Colocation)
+	m.Group = GetActualValue(m.Group)
 	if m.Net != nil {
 		m.Net = m.Net.Bind()
 	} else {

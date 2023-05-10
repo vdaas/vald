@@ -92,6 +92,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	}
 	dsc, err := service.NewDiscoverer(
 		service.WithDiscovererNamespace(cfg.Mirror.Namespace),
+		service.WithDiscovererGroup(cfg.Mirror.Group),
 		service.WithDiscovererDuration(cfg.Mirror.DiscoveryDuration),
 		service.WithDiscovererColocation(cfg.Mirror.Colocation),
 		service.WithDiscovererDialer(der),

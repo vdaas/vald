@@ -26,7 +26,6 @@ type (
 type reconciler struct {
 	mgr         manager.Manager
 	name        string
-	namespace   string
 	onError     func(err error)
 	onReconcile func(ctx context.Context, mm map[string]Target)
 	lopts       []client.ListOption
