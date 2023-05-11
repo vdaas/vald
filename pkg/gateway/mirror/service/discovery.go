@@ -284,6 +284,9 @@ func (d *discoverer) updateMirrorTargetPhase(ctx context.Context, name string, p
 	}, mt); err != nil {
 		return err
 	}
+	if mt.Status.Phase == phase {
+		return nil
+	}
 	mt.Status.Phase = phase
 	mt.Status.LastTransitionTime = k8s.Now()
 	return c.Status().Update(ctx, mt)
