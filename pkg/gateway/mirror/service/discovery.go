@@ -190,7 +190,7 @@ func (d *discoverer) startSync(ctx context.Context, prev map[string]target.Targe
 	d.mirr.RangeAllMirrorAddr(func(addr string, _ any) bool {
 		connected := d.mirr.IsConnected(ctx, addr)
 		if name, ok := curAddrs[addr]; ok && !connected {
-			err = errors.Join(err, d.updateMirrorTargetStatus(ctx, name, target.MirrorTargetStatusDisconnected))
+			err = errors.Join(err, d.updateMirrorTargetPhase(ctx, name, target.MirrorTargetPhaseDisconnected))
 		} else if !ok && connected {
 			host, port, err := net.SplitHostPort(addr)
 			if err != nil {
@@ -209,16 +209,16 @@ func (d *discoverer) createTarget(ctx context.Context, req map[string]*createdTa
 		return nil
 	}
 	for _, created := range req {
-		st := target.MirrorTargetStatusConnected
+		phase := target.MirrorTargetPhaseConnected
 		cerr := d.mirr.Connect(ctx, &payload.Mirror_Target{
 			Ip:   created.tgt.Host,
 			Port: uint32(created.tgt.Port),
 		})
 		if cerr != nil {
 			err = errors.Join(err, cerr)
-			st = target.MirrorTargetStatusDisconnected
+			phase = target.MirrorTargetPhaseDisconnected
 		}
-		uerr := d.updateMirrorTargetStatus(ctx, created.name, st)
+		uerr := d.updateMirrorTargetPhase(ctx, created.name, phase)
 		if uerr != nil {
 			err = errors.Join(err, uerr)
 		}
@@ -230,7 +230,9 @@ func (d *discoverer) createMirrorTargetResource(ctx context.Context, name, host 
 	mt, err := target.NewMirrorTargetTemplate(
 		target.WithMirrorTargetName(name),
 		target.WithMirrorTargetNamespace(d.namespace),
-		target.WithMirrorTargetStatus(target.MirrorTargetStatusPending),
+		target.WithMirrorTargetStatus(&target.MirrorTargetStatus{
+			Phase: target.MirrorTargetPhasePending,
+		}),
 		target.WithMirrorTargetLabels(d.labels),
 		target.WithMirrorTargetColocation(d.colocation),
 		target.WithMirrorTargetHost(host),
@@ -267,7 +269,7 @@ func (d *discoverer) deleteTarget(ctx context.Context, req map[string]*deletedTa
 // 	return d.ctrl.GetManager().GetClient().Delete(ctx, mt)
 // }
 
-func (d *discoverer) updateMirrorTargetStatus(ctx context.Context, name string, st target.MirrorTargetStatus) error {
+func (d *discoverer) updateMirrorTargetPhase(ctx context.Context, name string, phase target.MirrorTargetPhase) error {
 	c := d.ctrl.GetManager().GetClient()
 	mt := &target.MirrorTarget{}
 	if err := c.Get(ctx, k8s.ObjectKey{
@@ -276,7 +278,8 @@ func (d *discoverer) updateMirrorTargetStatus(ctx context.Context, name string, 
 	}, mt); err != nil {
 		return err
 	}
-	mt.Status = st
+	mt.Status.Phase = phase
+	mt.Status.LastTransitionTime = nowString()
 	return c.Status().Update(ctx, mt)
 }
 
@@ -291,7 +294,7 @@ func (d *discoverer) updateTarget(ctx context.Context, req map[string]*updatedTa
 		})
 		if derr != nil {
 			err = errors.Join(err, derr)
-			if uerr := d.updateMirrorTargetStatus(ctx, updated.name, target.MirrorTargetStatusDisconnected); uerr != nil {
+			if uerr := d.updateMirrorTargetPhase(ctx, updated.name, target.MirrorTargetPhaseDisconnected); uerr != nil {
 				err = errors.Join(err, uerr)
 			}
 		} else {
@@ -301,11 +304,15 @@ func (d *discoverer) updateTarget(ctx context.Context, req map[string]*updatedTa
 			})
 			if cerr != nil {
 				err = errors.Join(cerr, err)
-				if uerr := d.updateMirrorTargetStatus(ctx, updated.name, target.MirrorTargetStatusDisconnected); uerr != nil {
+				if uerr := d.updateMirrorTargetPhase(ctx, updated.name, target.MirrorTargetPhaseDisconnected); uerr != nil {
 					err = errors.Join(err, uerr)
 				}
 			}
 		}
 	}
 	return err
+}
+
+func nowString() string {
+	return time.Now().Format(time.RFC3339)
 }
