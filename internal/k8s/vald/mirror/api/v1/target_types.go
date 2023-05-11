@@ -105,7 +105,7 @@ func (in *MirrorTarget) DeepCopy() *MirrorTarget {
 // MirrorTargetStatus is status of ValdMirrorTarget
 type MirrorTargetStatus struct {
 	Phase              MirrorTargetPhase `json:"phase,omitempty"`
-	LastTransitionTime string            `json:"last_transition_time,omitempty"`
+	LastTransitionTime string            `json:"lastTransitionTime,omitempty"`
 }
 
 type MirrorTargetPhase string
