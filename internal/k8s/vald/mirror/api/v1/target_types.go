@@ -103,13 +103,18 @@ func (in *MirrorTarget) DeepCopy() *MirrorTarget {
 }
 
 // MirrorTargetStatus is status of ValdMirrorTarget
-type MirrorTargetStatus string
+type MirrorTargetStatus struct {
+	Phase              MirrorTargetPhase `json:"phase,omitempty"`
+	LastTransitionTime string            `json:"last_transition_time,omitempty"`
+}
+
+type MirrorTargetPhase string
 
 const (
-	MirrorTargetPending      = MirrorTargetStatus("Pending")
-	MirrorTargetConnected    = MirrorTargetStatus("Connected")
-	MirrorTargetDisconnected = MirrorTargetStatus("Disconnected")
-	MirrorTargetUnknown      = MirrorTargetStatus("Unknown")
+	MirrorTargetPending      = MirrorTargetPhase("Pending")
+	MirrorTargetConnected    = MirrorTargetPhase("Connected")
+	MirrorTargetDisconnected = MirrorTargetPhase("Disconnected")
+	MirrorTargetUnknown      = MirrorTargetPhase("Unknown")
 )
 
 // ValdMirrorList is the whole list of all ValdMirror which have been registered with master.
