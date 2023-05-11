@@ -190,12 +190,12 @@ func (d *discoverer) startSync(ctx context.Context, prev map[string]target.Targe
 	d.mirr.RangeAllMirrorAddr(func(addr string, _ any) bool {
 		connected := d.mirr.IsConnected(ctx, addr)
 		if name, ok := curAddrs[addr]; ok {
-			if connected && cur[name].Phase != target.MirrorTargetPhaseConnected {
+			if st := target.MirrorTargetPhaseConnected; connected && cur[name].Phase != st {
 				err = errors.Join(err,
-					d.updateMirrorTargetPhase(ctx, name, target.MirrorTargetPhaseConnected))
-			} else if !connected {
+					d.updateMirrorTargetPhase(ctx, name, st))
+			} else if st := target.MirrorTargetPhaseDisconnected; !connected && cur[name].Phase != st {
 				err = errors.Join(err,
-					d.updateMirrorTargetPhase(ctx, name, target.MirrorTargetPhaseDisconnected))
+					d.updateMirrorTargetPhase(ctx, name, st))
 			}
 		} else if !ok && connected {
 			host, port, err := net.SplitHostPort(addr)
