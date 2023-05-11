@@ -71,10 +71,11 @@ k8s/vald/deploy:
 	    --set manager.index.image.repository=$(CRORG)/$(MANAGER_INDEX_IMAGE) \
 	    --output-dir $(TEMP_DIR) \
 	    charts/vald
-	kubectl apply -f $(TEMP_DIR)/vald/templates/manager/index
-	kubectl apply -f $(TEMP_DIR)/vald/templates/agent
-	kubectl apply -f $(TEMP_DIR)/vald/templates/discoverer
-	kubectl apply -f $(TEMP_DIR)/vald/templates/gateway/lb
+	@echo "Permitting error because there's some cases nothing to apply"
+	kubectl apply -f $(TEMP_DIR)/vald/templates/manager/index || true
+	kubectl apply -f $(TEMP_DIR)/vald/templates/agent || true
+	kubectl apply -f $(TEMP_DIR)/vald/templates/discoverer || true
+	kubectl apply -f $(TEMP_DIR)/vald/templates/gateway/lb || true
 	rm -rf $(TEMP_DIR)
 	kubectl get pods -o jsonpath="{.items[*].spec.containers[*].image}" | tr " " "\n"
 

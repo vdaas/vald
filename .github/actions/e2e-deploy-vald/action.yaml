@@ -47,7 +47,7 @@ inputs:
 outputs:
   POD_NAME:
     description: "a pod name that waited for"
-    value: ${{ steps.deploy_vald.outputs.POD_NAME }}
+    value: ${{ steps.get_real_pod_name.outputs.POD_NAME }}
 runs:
   using: "composite"
   steps:
@@ -130,3 +130,16 @@ runs:
         # HELM_EXTRA_OPTIONS: ${{ inputs.helm_extra_options }}
         WAIT_FOR_SELECTOR: ${{ inputs.wait_for_selector }}
         WAIT_FOR_TIMEOUT: ${{ inputs.wait_for_timeout }}
+    - name: get real pod name
+      shell: bash
+      id: get_real_pod_name
+      env:
+        PODNAME_LOCAL_DEPLOY: ${{ steps.deploy_vald_local.outputs.POD_NAME }}
+        PODNAME_REMOTE_DEPLOY: ${{ steps.deploy_vald_remote.outputs.POD_NAME }}
+      # Set GITHUB_OUTPUT to the not empty one, PODNAME_LOCAL_DEPLOY or PODNAME_REMOTE_DEPLOY
+      run: |
+        if [[ -n "${PODNAME_LOCAL_DEPLOY}" ]]; then
+          echo "POD_NAME=${PODNAME_LOCAL_DEPLOY}" >> $GITHUB_OUTPUT
+        else
+          echo "POD_NAME=${PODNAME_REMOTE_DEPLOY}" >> $GITHUB_OUTPUT
+        fi
