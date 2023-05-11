@@ -50,11 +50,11 @@ Please refer to the [Get Started](https://vald.vdaas.org/docs/tutorial/get-start
 
 ## Versions
 
-| tag     | linux/amd64 | linux/arm64 | description                                                                                                                 |
-| :------ | :---------: | :---------: | :-------------------------------------------------------------------------------------------------------------------------- |
-| latest  |     ✅      |     ✅      | the latest image is the same as the latest version of [vdaas/vald](https://github.com/vdaas/vald) repository version.       |
-| nightly |     ✅      |     ✅      | the nightly applies the main branch's source code of the [vdaas/vald](https://github.com/vdaas/vald) repository.            |
-| vX.Y.Z  |     ✅      |     ✅      | the vX.Y.Z image applies the source code of the [vdaas/vald](https://github.com/vdaas/vald) repository.                     |
+| tag     | linux/amd64 | linux/arm64 | description                                                                                                                     |
+| :------ | :---------: | :---------: | :------------------------------------------------------------------------------------------------------------------------------ |
+| latest  |     ✅      |     ✅      | the latest image is the same as the latest version of [vdaas/vald](https://github.com/vdaas/vald) repository version.           |
+| nightly |     ✅      |     ✅      | the nightly applies the main branch's source code of the [vdaas/vald](https://github.com/vdaas/vald) repository.                |
+| vX.Y.Z  |     ✅      |     ✅      | the vX.Y.Z image applies the source code of the [vdaas/vald](https://github.com/vdaas/vald) repository.                         |
 | pr-XXX  |     ✅      |     ❌      | the pr-XXX image applies the source code of the pull request XXX of the [vdaas/vald](https://github.com/vdaas/vald) repository. |
 
 ## Dockerfile
