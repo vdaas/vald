@@ -30,9 +30,9 @@ func WithMirrorTargetName(name string) MirrorTargetOption {
 	}
 }
 
-func WithMirrorTargetStatus(st MirrorTargetStatus) MirrorTargetOption {
+func WithMirrorTargetStatus(st *MirrorTargetStatus) MirrorTargetOption {
 	return func(mt *MirrorTarget) error {
-		mt.Status = st
+		mt.Status = *st
 		return nil
 	}
 }
