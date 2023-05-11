@@ -44,6 +44,7 @@ type Target struct {
 	Colocation string
 	Host       string
 	Port       int
+	Phase      MirrorTargetPhase
 }
 
 func New(opts ...Option) (MirrorTargetWatcher, error) {
@@ -97,6 +98,7 @@ func (r *reconciler) Reconcile(ctx context.Context, req reconcile.Request) (res 
 			Colocation: m.Spec.Colocation,
 			Host:       m.Spec.Target.Host,
 			Port:       m.Spec.Target.Port,
+			Phase:      m.Status.Phase,
 		}
 	}
 	r.onReconcile(ctx, tm)

@@ -189,8 +189,14 @@ func (d *discoverer) startSync(ctx context.Context, prev map[string]target.Targe
 
 	d.mirr.RangeAllMirrorAddr(func(addr string, _ any) bool {
 		connected := d.mirr.IsConnected(ctx, addr)
-		if name, ok := curAddrs[addr]; ok && !connected {
-			err = errors.Join(err, d.updateMirrorTargetPhase(ctx, name, target.MirrorTargetPhaseDisconnected))
+		if name, ok := curAddrs[addr]; ok {
+			if connected && cur[name].Phase != target.MirrorTargetPhaseConnected {
+				err = errors.Join(err,
+					d.updateMirrorTargetPhase(ctx, name, target.MirrorTargetPhaseConnected))
+			} else if !connected {
+				err = errors.Join(err,
+					d.updateMirrorTargetPhase(ctx, name, target.MirrorTargetPhaseDisconnected))
+			}
 		} else if !ok && connected {
 			host, port, err := net.SplitHostPort(addr)
 			if err != nil {
@@ -279,7 +285,7 @@ func (d *discoverer) updateMirrorTargetPhase(ctx context.Context, name string, p
 		return err
 	}
 	mt.Status.Phase = phase
-	mt.Status.LastTransitionTime = nowString()
+	mt.Status.LastTransitionTime = k8s.Now()
 	return c.Status().Update(ctx, mt)
 }
 
@@ -311,8 +317,4 @@ func (d *discoverer) updateTarget(ctx context.Context, req map[string]*updatedTa
 		}
 	}
 	return err
-}
-
-func nowString() string {
-	return time.Now().Format(time.RFC3339)
 }
