@@ -62,6 +62,8 @@ type Controller interface {
 	// TODO delete --->>>
 }
 
+var Now = v1.Now
+
 type ResourceController interface {
 	GetName() string
 	NewReconciler(ctx context.Context, mgr manager.Manager) reconcile.Reconciler
