@@ -24,4 +24,20 @@ rules:
       - list
       - watch
       - patch
+  - apiGroups:
+      - vald.vdaas.org
+    resources:
+      - valdmirrortargets/status
+    verbs:
+      - create
+      - update
+      - get
+      - list
+      - patch
+  - apiGroups:
+      - vald.vdaas.org
+    resources:
+      - valdmirrortargets/finalizers
+    verbs:
+      - update
 {{- end }}
