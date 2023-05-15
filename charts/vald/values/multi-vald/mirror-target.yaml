@@ -1,0 +1,20 @@
+---
+apiVersion: vald.vdaas.org/v1
+kind: ValdMirrorTarget
+metadata:
+  name: mirror-target-01
+spec:
+  colocation: dc1
+  target:
+    host: vald-mirror-gateway.vald-01.svc.cluster.local
+    port: 8081
+---
+apiVersion: vald.vdaas.org/v1
+kind: ValdMirrorTarget
+metadata:
+  name: mirror-target-02
+spec:
+  colocation: dc1
+  target:
+    host: vald-mirror-gateway.vald-02.svc.cluster.local
+    port: 8081
