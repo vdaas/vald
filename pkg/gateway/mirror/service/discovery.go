@@ -264,17 +264,6 @@ func (d *discoverer) deleteTarget(ctx context.Context, req map[string]*deletedTa
 	return d.mirr.Disconnect(ctx, tgts...)
 }
 
-// func (d *discoverer) deleteMirrorTargetResource(ctx context.Context, name string) error {
-// 	mt, err := target.NewMirrorTargetTemplate(
-// 		target.WithMirrorTargetName(name),
-// 		target.WithMirrorTargetNamespace(d.namespace),
-// 	)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	return d.ctrl.GetManager().GetClient().Delete(ctx, mt)
-// }
-
 func (d *discoverer) updateMirrorTargetPhase(ctx context.Context, name string, phase target.MirrorTargetPhase) error {
 	c := d.ctrl.GetManager().GetClient()
 	mt := &target.MirrorTarget{}
