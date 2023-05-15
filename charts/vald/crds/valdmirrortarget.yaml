@@ -6,6 +6,9 @@ spec:
   group: vald.vdaas.org
   names:
     kind: ValdMirrorTarget
+    shortNames:
+    - vmt
+    - vmts
     listKind: ValdMirrorTargetList
     plural: valdmirrortargets
     singular: valdmirrortarget
@@ -17,9 +20,23 @@ spec:
       subresources:
         status: {}
       additionalPrinterColumns:
-        - name: STATUS
+        - name: Host
           type: string
-          jsonPath: .status
+          jsonPath: .spec.target.host
+          priority: 1
+        - name: Port
+          type: integer
+          jsonPath: .spec.target.port
+          priority: 1
+        - name: Status
+          type: string
+          jsonPath: .status.phase
+        - name: LastTransitionTime
+          type: string
+          jsonPath: .status.lastTransitionTime
+        - name: Age
+          type: date
+          jsonPath: .metadata.creationTimestamp
       schema:
         openAPIV3Schema:
           description: ValdMirrorTarget is the Schema for the valdmirrortargets API
@@ -41,13 +58,19 @@ spec:
               type: object
             status:
               description: ValdMirrorTargetStatus defines the observed state of ValdMirrorTarget
-              type: string
-              enum:
-                - Pending
-                - Connected
-                - Disconnected
-                - Unknown
-              default: Pending
+              type: object
+              default: {}
+              properties:
+                phase:
+                  type: string
+                  enum:
+                    - Pending
+                    - Connected
+                    - Disconnected
+                    - Unknown
+                  default: Pending
+                lastTransitionTime:
+                  type: string
             spec:
               description: ValdMirrorTargetSpec defines the desired state of ValdMirrorTarget
               type: object
