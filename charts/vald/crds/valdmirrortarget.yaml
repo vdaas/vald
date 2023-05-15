@@ -7,8 +7,8 @@ spec:
   names:
     kind: ValdMirrorTarget
     shortNames:
-    - vmt
-    - vmts
+      - vmt
+      - vmts
     listKind: ValdMirrorTargetList
     plural: valdmirrortargets
     singular: valdmirrortarget
