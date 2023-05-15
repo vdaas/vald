@@ -17,6 +17,7 @@
 MIRROR01_NAMESPACE = vald-01
 MIRROR02_NAMESPACE = vald-02
 MIRROR03_NAMESPACE = vald-03
+MIRROR_APP_NAME    = vald-mirror-gateway
 
 .PHONY: k8s/manifest/clean
 ## clean k8s manifests
@@ -123,9 +124,9 @@ k8s/multi/vald/deploy:
 		-f ./charts/vald/values/multi-vald/dev-vald-with-mirror.yaml \
 		-f ./charts/vald/values/multi-vald/dev-vald-03.yaml \
 		-n $(MIRROR03_NAMESPACE)
-	kubectl wait --for=condition=ready pod -l app=vald-mirror-gateway --timeout=60s -n $(MIRROR01_NAMESPACE)
-	kubectl wait --for=condition=ready pod -l app=vald-mirror-gateway --timeout=60s -n $(MIRROR02_NAMESPACE)
-	kubectl wait --for=condition=ready pod -l app=vald-mirror-gateway --timeout=60s -n $(MIRROR03_NAMESPACE)
+	kubectl wait --for=condition=ready pod -l app=$(MIRROR_APP_NAME) --timeout=60s -n $(MIRROR01_NAMESPACE)
+	kubectl wait --for=condition=ready pod -l app=$(MIRROR_APP_NAME) --timeout=60s -n $(MIRROR02_NAMESPACE)
+	kubectl wait --for=condition=ready pod -l app=$(MIRROR_APP_NAME) --timeout=60s -n $(MIRROR03_NAMESPACE)
 	kubectl apply -f ./charts/vald/values/multi-vald/mirror-target.yaml \
 		-n $(MIRROR03_NAMESPACE)
 
