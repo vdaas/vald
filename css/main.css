@@ -1371,6 +1371,11 @@ details > summary {
   .markdown code {
     background-color: rgba(40, 40, 40, 1);
   }
+  .notice code,
+  .caution code,
+  .warning code {
+    color: #fff;
+  }
 
   @media screen and (min-width: 768px) {
     .current {
