@@ -830,6 +830,13 @@ defaults:
       # @schema {"name": "defaults.observability.trace.enabled", "type": "boolean"}
       # defaults.observability.trace.enabled -- trace enabled
       enabled: false
+  # @schema {"name": "defaults.networkPolicy", "type": "object", "anchor": "networkPolicy"}
+  networkPolicy:
+    # @schema {"name": "defaults.networkPolicy.enabled", "type": "boolean"}
+    # defaults.networkPolicy.enabled -- if network policy enabled
+    # TODO: Change this to true after implementing user custom network policy parser
+    enabled: false
+
 # @schema {"name": "gateway", "type": "object"}
 gateway:
   # @schema {"name": "gateway.lb", "type": "object"}

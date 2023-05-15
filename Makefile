@@ -267,6 +267,9 @@ K8S_SLEEP_DURATION_FOR_WAIT_COMMAND ?= 5
 K8S_KUBECTL_VERSION ?= $(eval K8S_KUBECTL_VERSION := $(shell kubectl version --short))$(K8S_KUBECTL_VERSION)
 K8S_SERVER_VERSION ?= $(eval K8S_SERVER_VERSION := $(shell echo "$(K8S_KUBECTL_VERSION)" | sed -e "s/.*Server.*\(v[0-9]\.[0-9]*\)\..*/\1/g"))$(K8S_SERVER_VERSION)
 
+# values file to use when deploying sample vald cluster with make k8s/vald/deploy
+HELM_VALUES ?= charts/vald/values/dev.yaml
+
 COMMA := ,
 SHELL = bash
 
