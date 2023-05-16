@@ -56,7 +56,6 @@ jobs:
   e2e-stream-crud:
     name: "E2E test (Stream CRUD)"
     runs-on: ubuntu-latest
-    needs: setup-workflow-envs
     timeout-minutes: 60
     if: startsWith( github.ref, 'refs/tags/') || github.event.action == 'labeled' && github.event.label.name == 'actions/e2e-deploy'
     steps:
@@ -148,7 +147,6 @@ jobs:
   e2e-stream-crud-for-operator:
     name: "E2E test (Stream CRUD) for operator"
     runs-on: ubuntu-latest
-    needs: setup-workflow-envs
     timeout-minutes: 60
     if: startsWith( github.ref, 'refs/tags/') || github.event.action == 'labeled' && github.event.label.name == 'actions/e2e-deploy'
     steps:
@@ -253,7 +251,6 @@ jobs:
   e2e-stream-crud-skip-exist-check:
     name: "E2E test (Stream CRUD: skip strict exist check)"
     runs-on: ubuntu-latest
-    needs: setup-workflow-envs
     timeout-minutes: 60
     if: startsWith( github.ref, 'refs/tags/') || github.event.action == 'labeled' && github.event.label.name == 'actions/e2e-deploy'
     steps:
@@ -341,7 +338,6 @@ jobs:
   e2e-multiapis-crud:
     name: "E2E test (Multi-APIs CRUD)"
     runs-on: ubuntu-latest
-    needs: setup-workflow-envs
     timeout-minutes: 60
     if: startsWith( github.ref, 'refs/tags/') || github.event.action == 'labeled' && github.event.label.name == 'actions/e2e-deploy'
     steps:
@@ -426,7 +422,6 @@ jobs:
   e2e-agent-and-sidecar:
     name: "E2E Agent & Sidecar test"
     runs-on: ubuntu-latest
-    needs: setup-workflow-envs
     timeout-minutes: 60
     if: startsWith( github.ref, 'refs/tags/') || github.event.action == 'labeled' && github.event.label.name == 'actions/e2e-deploy'
     steps:
