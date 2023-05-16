@@ -198,7 +198,11 @@ func (d *discoverer) startSync(ctx context.Context, prev map[string]target.Targe
 					d.updateMirrorTargetPhase(ctx, name, st))
 			}
 		} else if !ok && connected {
-			host, port, err := net.SplitHostPort(addr)
+			var (
+				host string
+				port uint16
+			)
+			host, port, err = net.SplitHostPort(addr)
 			if err != nil {
 				log.Error(err)
 			}
@@ -250,7 +254,7 @@ func (d *discoverer) createMirrorTargetResource(ctx context.Context, name, host 
 	return d.ctrl.GetManager().GetClient().Create(ctx, mt)
 }
 
-func (d *discoverer) deleteTarget(ctx context.Context, req map[string]*deletedTarget) (err error) {
+func (d *discoverer) deleteTarget(ctx context.Context, req map[string]*deletedTarget) error {
 	if len(req) == 0 {
 		return nil
 	}
