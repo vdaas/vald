@@ -161,7 +161,7 @@ jobs:
             echo "DEBUG: wait for lb"
             kubectl wait --for=condition=Ready pod -l app=vald-lb-gateway --timeout=${WAIT_FOR_TIMEOUT}
 
-            echo "DEBUG: wait for lb"
+            echo "DEBUG: wait for manager"
             kubectl wait --for=condition=Ready pod -l app=vald-manager-index --timeout=${WAIT_FOR_TIMEOUT}
 
             echo "DEBUG: print the result of kubectl get pods $(kubectl get pods)"
