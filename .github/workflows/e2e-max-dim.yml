@@ -155,7 +155,11 @@ jobs:
 
             sleep 30
 
+            echo "DEBUG: wait for agent"
             kubectl wait --for=condition=Ready pod -l ${WAIT_FOR_SELECTOR} --timeout=${WAIT_FOR_TIMEOUT}
+
+            echo "DEBUG: wait for lb"
+            kubectl wait --for=condition=Ready pod -l app=vald-lb-gateway --timeout=${WAIT_FOR_TIMEOUT}
 
             echo "DEBUG: print the result of kubectl get pods $(kubectl get pods)"
 
