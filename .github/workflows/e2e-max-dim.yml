@@ -113,14 +113,6 @@ jobs:
       - name: Helm version
         run: |
           helm version
-      - name: deploy Vald
-        id: deploy_vald
-        uses: ./.github/actions/e2e-deploy-vald
-        with:
-          helm_extra_options: ${{ steps.specify_container_versions.outputs.HELM_EXTRA_OPTIONS }}
-          values: .github/helm/values/values-max-dim.yaml
-          wait_for_selector: app=vald-lb-gateway
-          use_local_charts: ${{ needs.setup-workflow-envs.outputs.use_local_charts }}
       - name: Fetch golang version
         run: |
           GO_VERSION=`make version/go`
@@ -146,8 +138,8 @@ jobs:
               DIM=$(($DIM-1))
             fi
 
-            export HELM_EXTRA_OPTIOINS="--set defaults.image.tag=nightly --set agent.ngt.dimension=${DIM}"
-            make k8s/vald/deploy HELM_VALUES=${VALUES} HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIOINS}"
+            export HELM_EXTRA_OPTIOINS="--set agent.ngt.dimension=${DIM}"
+            make k8s/vald/deploy VERSION="nightly" HELM_VALUES=${VALUES} HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIOINS}"
 
             sleep 3
 
@@ -198,6 +190,9 @@ jobs:
             echo "Finish: Bit=${BIT}"
             BIT=$(($BIT+1))
             rm ${FILEPATH}
+
+            echo "removing cluster"
+            make k8s/vald/delete VERSION="nightly" HELM_VALUES=${VALUES} HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIOINS}"
           done
           echo "MAX_BIT=${BIT}" >> $GITHUB_OUTPUT
           echo "MAX_BIT=${BIT}"
