@@ -26,19 +26,6 @@ on:
       - "labeled"
 
 jobs:
-  setup-workflow-envs:
-    runs-on: ubuntu-latest
-    outputs:
-      use_local_charts: ${{ steps.check_if_pr.outputs.use_local_charts }}
-    steps:
-      - name: Setup use_local_charts
-        id: check_if_pr
-        run: |
-          if [ "${{ github.event_name }}" == "pull_request" ]; then
-            echo "use_local_charts=true" >> $GITHUB_OUTPUT
-          else
-            echo "use_local_charts=false" >> $GITHUB_OUTPUT
-          fi
   dump_contexts_to_log:
     runs-on: ubuntu-latest
     steps:
