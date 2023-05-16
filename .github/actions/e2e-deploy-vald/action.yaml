@@ -43,7 +43,7 @@ inputs:
   use_local_charts:
     description: "If you want to use local charts, set this to true."
     required: false
-    default: "false"
+    default: "true"
 outputs:
   POD_NAME:
     description: "a pod name that waited for"
