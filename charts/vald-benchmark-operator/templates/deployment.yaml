@@ -1,0 +1,149 @@
+#
+# Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ .Values.name }}
+    app.kubernetes.io/name: {{ include "vald.name" . }}
+    helm.sh/chart: {{ include "vald.chart" . }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/version: {{ .Chart.Version }}
+    app.kubernetes.io/component: benchmark-operator
+  {{- if .Values.annotations }}
+  annotations:
+    {{- toYaml .Values.annotations | nindent 4 }}
+  {{- end }}
+spec:
+  replicas: {{ .Values.replicas }}
+  selector:
+    matchLabels:
+      name: {{ .Values.name }}
+  template:
+    metadata:
+      labels:
+        name: {{ .Values.name }}
+        app.kubernetes.io/name: {{ include "vald.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/component: benchmark-operator
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    spec:
+      serviceAccountName: {{ .Values.serviceAccount.name }}
+      containers:
+        - name: {{ .Values.name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- if .Values.liveness.enabled }}
+          livenessProbe:
+            failureThreshold: {{ .Values.liveness.livenessProbe.failureThreshold }}
+            httpGet:
+              path: {{ .Values.liveness.livenessProbe.httpGet.path }}
+              port: {{ .Values.liveness.livenessProbe.httpGet.port }}
+              scheme: {{ .Values.liveness.livenessProbe.httpGet.scheme }}
+            initialDelaySeconds: {{ .Values.liveness.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.liveness.livenessProbe.periodSeconds }}
+            successThreshold: {{ .Values.liveness.livenessProbe.successThreshold }}
+            timeoutSeconds: {{ .Values.liveness.livenessProbe.timeoutSeconds }}
+          {{- end}}
+          {{- if .Values.readiness.enabled }}
+          readinessProbe:
+            failureThreshold: {{ .Values.readiness.readinessProbe.failureThreshold }}
+            httpGet:
+              path: {{ .Values.readiness.readinessProbe.httpGet.path }}
+              port: {{ .Values.readiness.readinessProbe.httpGet.port }}
+              scheme: {{ .Values.readiness.readinessProbe.httpGet.scheme }}
+            initialDelaySeconds: {{ .Values.readiness.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.readiness.readinessProbe.periodSeconds }}
+            successThreshold: {{ .Values.readiness.readinessProbe.successThreshold }}
+            timeoutSeconds: {{ .Values.readiness.readinessProbe.timeoutSeconds }}
+          {{- end}}
+          {{- if .Values.startup.enabled }}
+          startupProbe:
+            failureThreshold: {{ .Values.startup.startupProbe.failureThreshold }}
+            httpGet:
+              path: {{ .Values.startup.startupProbe.httpGet.path }}
+              port: {{ .Values.startup.startupProbe.httpGet.port }}
+              scheme: {{ .Values.startup.startupProbe.httpGet.scheme }}
+            initialDelaySeconds: {{ .Values.startup.startupProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.startup.startupProbe.periodSeconds }}
+            successThreshold: {{ .Values.startup.startupProbe.successThreshold }}
+            timeoutSeconds: {{ .Values.startup.startupProbe.timeoutSeconds }}
+          {{- end}}
+          ports:
+            {{- if .Values.liveness.enabled }}
+            - name: liveness
+              protocol: TCP
+              containerPort: {{ .Values.liveness.port }}
+            {{- end}}
+            {{- if .Values.readiness.enabled }}
+            - name: readiness
+              protocol: TCP
+              containerPort: {{ .Values.readiness.port }}
+            {{- end}}
+            - name: grpc
+              protocol: TCP
+              containerPort: {{ default 8081 .Values.grpc }}
+            - name: pprof
+              protocol: TCP
+              containerPort: {{ default 6060 .Values.pprof }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            - name: {{ .Values.name }}-config
+              mountPath: /etc/server
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+      restartPolicy: Always
+      volumes:
+        - name: {{ .Values.name }}-config
+          configMap:
+            defaultMode: 420
+            name: {{ .Values.name }}-config
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+
+      {{- if .Values.nodeName }}
+      nodeName: {{ .Values.nodeName }}
+      {{- end }}
+      {{- if .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml .Values.nodeSelector | nindent 8 }}
+      {{- end }}
+      {{- if .Values.tolerations }}
+      tolerations:
+        {{- toYaml .Values.tolerations | nindent 8 }}
+      {{- end }}
+      {{- if .Values.podPriority }}
+      {{- if .Values.podPriority.enabled }}
+      priorityClassName: {{ .Release.Namespace }}-{{ .Values.name }}-priority
+      {{- end }}
+      {{- end }}

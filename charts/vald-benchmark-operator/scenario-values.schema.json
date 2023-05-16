@@ -1,0 +1,64 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Values",
+  "type": "object",
+  "properties": {
+    "dataset": {
+      "type": "object",
+      "description": "dataset information",
+      "properties": {
+        "group": {
+          "type": "string",
+          "description": "the hdf5 group name of dataset",
+          "minLength": 1
+        },
+        "indexes": {
+          "type": "integer",
+          "description": "the amount of indexes",
+          "minimum": 0
+        },
+        "name": {
+          "type": "string",
+          "description": "the name of dataset",
+          "enum": ["fashion-mnist"]
+        },
+        "range": {
+          "type": "object",
+          "description": "the data range of indexes",
+          "properties": {
+            "end": {
+              "type": "integer",
+              "description": "end index number",
+              "minimum": 1
+            },
+            "start": {
+              "type": "integer",
+              "description": "start index number",
+              "minimum": 1
+            }
+          }
+        }
+      },
+      "required": ["name", "indexes", "group", "range"]
+    },
+    "jobs": { "type": "array" },
+    "target": {
+      "type": "object",
+      "description": "target cluster location",
+      "properties": {
+        "host": {
+          "type": "string",
+          "description": "target cluster host",
+          "minLength": 1
+        },
+        "port": {
+          "type": "integer",
+          "description": "target cluster port",
+          "maximum": 65535,
+          "minimum": 0
+        }
+      },
+      "required": ["host", "port"]
+    }
+  }
+}

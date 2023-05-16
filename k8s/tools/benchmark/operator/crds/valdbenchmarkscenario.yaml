@@ -1,0 +1,429 @@
+#
+# Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: valdbenchmarkscenarios.vald.vdaas.org
+spec:
+  group: vald.vdaas.org
+  names:
+    kind: ValdBenchmarkScenario
+    listKind: ValdBenchmarkScenarioList
+    plural: valdbenchmarkscenarios
+    singular: valdbenchmarkscenario
+    shortNames:
+      - vbo
+      - vbos
+  scope: Namespaced
+  versions:
+    - name: v1
+      served: true
+      storage: true
+      subresources:
+        status: {}
+      additionalPrinterColumns:
+        - jsonPath: .status
+          name: STATUS
+          type: string
+      schema:
+        openAPIV3Schema:
+          description: ValdBenchmarkScenario is the Schema for the valdbenchmarkscenarios API
+          type: object
+          properties:
+            apiVersion:
+              description:
+                "APIVersion defines the versioned schema of this representation
+                of an object. Servers should convert recognized schemas to the latest
+                internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources"
+              type: string
+            kind:
+              description:
+                "Kind is a string value representing the REST resource this
+                object represents. Servers may infer this from the endpoint the client
+                submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds"
+              type: string
+            metadata:
+              type: object
+            status:
+              description: ValdBenchmarkScenarioStatus defines the observed state of ValdBenchmarkScenario
+              enum:
+                - NotReady
+                - Completed
+                - Available
+                - Healthy
+              type: string
+            spec:
+              description: ValdBenchmarkScenarioSpec defines the desired state of ValdBenchmarkScenario
+              type: object
+              properties:
+                dataset:
+                  description: BenchmarkDataset defines the desired state of BenchmarkDateset
+                  properties:
+                    group:
+                      type: string
+                    indexes:
+                      type: integer
+                    name:
+                      type: string
+                    range:
+                      description: BenchmarkDatasetRange defines the desired state of BenchmarkDatesetRange
+                      properties:
+                        end:
+                          type: integer
+                        start:
+                          type: integer
+                      required:
+                        - end
+                        - start
+                      type: object
+                  required:
+                    - group
+                    - indexes
+                    - name
+                  type: object
+                target:
+                  properties:
+                    host:
+                      type: string
+                    port:
+                      type: integer
+                  required:
+                    - host
+                    - port
+                  type: object
+                jobs:
+                  type: array
+                  items:
+                    description: BenchmarkJobSpec defines the desired state of ValdBenchmarkJob
+                    type: object
+                    properties:
+                      target:
+                        description: BenchmarkTarget defines the desired state of BenchmarkTarget
+                        properties:
+                          host:
+                            type: string
+                          port:
+                            type: integer
+                        required:
+                          - host
+                          - port
+                        type: object
+                      dataset:
+                        description: BenchmarkDataset defines the desired state of BenchmarkDateset
+                        properties:
+                          group:
+                            type: string
+                          indexes:
+                            type: integer
+                          name:
+                            type: string
+                          range:
+                            description: BenchmarkDatasetRange defines the desired state of BenchmarkDatesetRange
+                            properties:
+                              end:
+                                type: integer
+                              start:
+                                type: integer
+                            required:
+                              - end
+                              - start
+                            type: object
+                        required:
+                          - group
+                          - indexes
+                          - name
+                        type: object
+                      dimension:
+                        type: integer
+                      job_type:
+                        type: string
+                      repetition:
+                        type: integer
+                      replica:
+                        type: integer
+                      rules:
+                        items:
+                          description: BenchmarkJobRule defines the desired state of BenchmarkJobRule
+                          properties:
+                            name:
+                              type: string
+                            type:
+                              type: string
+                          required:
+                            - name
+                            - type
+                          type: object
+                        type: array
+                      rps:
+                        type: integer
+                      insert_config:
+                        description: InsertConfig defines the desired state of insert config
+                        properties:
+                          skip_strict_exist_check:
+                            type: boolean
+                          timestamp:
+                            type: string
+                        type: object
+                      remove_config:
+                        description: RemoveConfig defines the desired state of remove config
+                        properties:
+                          skip_strict_exist_check:
+                            type: boolean
+                          timestamp:
+                            type: string
+                        type: object
+                      search_config:
+                        description: SearchConfig defines the desired state of search config
+                        properties:
+                          epsilon:
+                            type: number
+                          min_num:
+                            format: int32
+                            type: integer
+                          num:
+                            format: int32
+                            type: integer
+                          radius:
+                            type: number
+                          timeout:
+                            type: string
+                        type: object
+                      update_config:
+                        description: UpdateConfig defines the desired state of update config
+                        properties:
+                          skip_strict_exist_check:
+                            type: boolean
+                          timestamp:
+                            type: string
+                          disable_balanced_update:
+                            type: boolean
+                        type: object
+                      upsert_config:
+                        description: UpsertConfig defines the desired state of upsert config
+                        properties:
+                          skip_strict_exist_check:
+                            type: boolean
+                          timestamp:
+                            type: string
+                          disable_balanced_update:
+                            type: boolean
+                        type: object
+                      client_config:
+                        description: ClientConfig represents the configurations for gRPC client.
+                        properties:
+                          addrs:
+                            items:
+                              type: string
+                            type: array
+                          backoff:
+                            description: Backoff represents the configuration for the internal backoff package.
+                            properties:
+                              backoff_factor:
+                                type: number
+                              backoff_time_limit:
+                                type: string
+                              enable_error_log:
+                                type: boolean
+                              initial_duration:
+                                type: string
+                              jitter_limit:
+                                type: string
+                              maximum_duration:
+                                type: string
+                              retry_count:
+                                type: integer
+                            type: object
+                          call_option:
+                            description: CallOption represents the configurations for call option.
+                            properties:
+                              max_recv_msg_size:
+                                type: integer
+                              max_retry_rpc_buffer_size:
+                                type: integer
+                              max_send_msg_size:
+                                type: integer
+                              wait_for_ready:
+                                type: boolean
+                            type: object
+                          circuit_breaker:
+                            description: CircuitBreaker represents the configuration for the internal circuitbreaker package.
+                            properties:
+                              closed_error_rate:
+                                type: number
+                              closed_refresh_timeout:
+                                type: string
+                              half_open_error_rate:
+                                type: number
+                              min_samples:
+                                format: int64
+                                type: integer
+                              open_timeout:
+                                type: string
+                            type: object
+                          connection_pool:
+                            description: ConnectionPool represents the configurations for connection pool.
+                            properties:
+                              enable_rebalance:
+                                type: boolean
+                              old_conn_close_duration:
+                                type: string
+                              rebalance_duration:
+                                type: string
+                              resolve_dns:
+                                type: boolean
+                              size:
+                                type: integer
+                            type: object
+                          dial_option:
+                            description: DialOption represents the configurations for dial option.
+                            properties:
+                              backoff_base_delay:
+                                type: string
+                              backoff_jitter:
+                                type: number
+                              backoff_max_delay:
+                                type: string
+                              backoff_multiplier:
+                                type: number
+                              enable_backoff:
+                                type: boolean
+                              initial_connection_window_size:
+                                type: integer
+                              initial_window_size:
+                                type: integer
+                              insecure:
+                                type: boolean
+                              interceptors:
+                                items:
+                                  type: string
+                                type: array
+                              keepalive:
+                                description: GRPCClientKeepalive represents the configurations for gRPC keep-alive.
+                                properties:
+                                  permit_without_stream:
+                                    type: boolean
+                                  time:
+                                    type: string
+                                  timeout:
+                                    type: string
+                                type: object
+                              max_msg_size:
+                                type: integer
+                              minimum_connection_timeout:
+                                type: string
+                              net:
+                                description: Net represents the network configuration tcp, udp, unix domain socket.
+                                properties:
+                                  dialer:
+                                    description: Dialer represents the configuration for dial.
+                                    properties:
+                                      dual_stack_enabled:
+                                        type: boolean
+                                      fallback_delay:
+                                        type: string
+                                      keepalive:
+                                        type: string
+                                      timeout:
+                                        type: string
+                                    type: object
+                                  dns:
+                                    description: DNS represents the configuration for resolving DNS.
+                                    properties:
+                                      cache_enabled:
+                                        type: boolean
+                                      cache_expiration:
+                                        type: string
+                                      refresh_duration:
+                                        type: string
+                                    type: object
+                                  socket_option:
+                                    description: SocketOption represents the socket configurations.
+                                    properties:
+                                      ip_recover_destination_addr:
+                                        type: boolean
+                                      ip_transparent:
+                                        type: boolean
+                                      reuse_addr:
+                                        type: boolean
+                                      reuse_port:
+                                        type: boolean
+                                      tcp_cork:
+                                        type: boolean
+                                      tcp_defer_accept:
+                                        type: boolean
+                                      tcp_fast_open:
+                                        type: boolean
+                                      tcp_no_delay:
+                                        type: boolean
+                                      tcp_quick_ack:
+                                        type: boolean
+                                    type: object
+                                  tls:
+                                    description: TLS represent the TLS configuration for server.
+                                    properties:
+                                      ca:
+                                        description: CA represent the CA certificate environment variable key used to start server.
+                                        type: string
+                                      cert:
+                                        description: Cert represent the certificate environment variable key used to start server.
+                                        type: string
+                                      enabled:
+                                        description: Enable represent the server enable TLS or not.
+                                        type: boolean
+                                      insecure_skip_verify:
+                                        description: InsecureSkipVerify represent enable/disable skip SSL certificate verification
+                                        type: boolean
+                                      key:
+                                        description: Key represent the private key environment variable key used to start server.
+                                        type: string
+                                    type: object
+                                type: object
+                              read_buffer_size:
+                                type: integer
+                              timeout:
+                                type: string
+                              write_buffer_size:
+                                type: integer
+                            type: object
+                          health_check_duration:
+                            type: string
+                          tls:
+                            description: TLS represent the TLS configuration for server.
+                            properties:
+                              ca:
+                                description: CA represent the CA certificate environment variable key used to start server.
+                                type: string
+                              cert:
+                                description: Cert represent the certificate environment variable key used to start server.
+                                type: string
+                              enabled:
+                                description: Enable represent the server enable TLS or not.
+                                type: boolean
+                              insecure_skip_verify:
+                                description: InsecureSkipVerify represent enable/disable skip SSL certificate verification
+                                type: boolean
+                              key:
+                                description: Key represent the private key environment variable key used to start server.
+                                type: string
+                            type: object
+                        type: object
+                    required:
+                      - job_type
+                      - dimension
+              required:
+                - jobs
+                - dataset
+                - target

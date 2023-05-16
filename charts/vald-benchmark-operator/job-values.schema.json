@@ -1,0 +1,450 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Values",
+  "type": "object",
+  "properties": {
+    "client_config": {
+      "type": "object",
+      "description": "gRPC client config for request to the Vald cluster",
+      "properties": {
+        "addrs": {
+          "type": "array",
+          "description": "gRPC client addresses",
+          "items": { "type": "string" }
+        },
+        "backoff": {
+          "type": "object",
+          "properties": {
+            "backoff_factor": {
+              "type": "number",
+              "description": "gRPC client backoff factor"
+            },
+            "backoff_time_limit": {
+              "type": "string",
+              "description": "gRPC client backoff time limit"
+            },
+            "enable_error_log": {
+              "type": "boolean",
+              "description": "gRPC client backoff log enabled"
+            },
+            "initial_duration": {
+              "type": "string",
+              "description": "gRPC client backoff initial duration"
+            },
+            "jitter_limit": {
+              "type": "string",
+              "description": "gRPC client backoff jitter limit"
+            },
+            "maximum_duration": {
+              "type": "string",
+              "description": "gRPC client backoff maximum duration"
+            },
+            "retry_count": {
+              "type": "integer",
+              "description": "gRPC client backoff retry count"
+            }
+          }
+        },
+        "call_option": { "type": "object" },
+        "circuit_breaker": {
+          "type": "object",
+          "properties": {
+            "closed_error_rate": {
+              "type": "number",
+              "description": "gRPC client circuitbreaker closed error rate"
+            },
+            "closed_refresh_timeout": {
+              "type": "string",
+              "description": "gRPC client circuitbreaker closed refresh timeout"
+            },
+            "half_open_error_rate": {
+              "type": "number",
+              "description": "gRPC client circuitbreaker half-open error rate"
+            },
+            "min_samples": {
+              "type": "integer",
+              "description": "gRPC client circuitbreaker minimum sampling count"
+            },
+            "open_timeout": {
+              "type": "string",
+              "description": "gRPC client circuitbreaker open timeout"
+            }
+          }
+        },
+        "connection_pool": {
+          "type": "object",
+          "properties": {
+            "enable_dns_resolver": {
+              "type": "boolean",
+              "description": "enables gRPC client connection pool dns resolver, when enabled vald uses ip handshake exclude dns discovery which improves network performance"
+            },
+            "enable_rebalance": {
+              "type": "boolean",
+              "description": "enables gRPC client connection pool rebalance"
+            },
+            "old_conn_close_duration": {
+              "type": "string",
+              "description": "makes delay before gRPC client connection closing during connection pool rebalance"
+            },
+            "rebalance_duration": {
+              "type": "string",
+              "description": "gRPC client connection pool rebalance duration"
+            },
+            "size": {
+              "type": "integer",
+              "description": "gRPC client connection pool size"
+            }
+          }
+        },
+        "dial_option": {
+          "type": "object",
+          "properties": {
+            "backoff_base_delay": {
+              "type": "string",
+              "description": "gRPC client dial option base backoff delay"
+            },
+            "backoff_jitter": {
+              "type": "number",
+              "description": "gRPC client dial option base backoff delay"
+            },
+            "backoff_max_delay": {
+              "type": "string",
+              "description": "gRPC client dial option max backoff delay"
+            },
+            "backoff_multiplier": {
+              "type": "number",
+              "description": "gRPC client dial option base backoff delay"
+            },
+            "enable_backoff": {
+              "type": "boolean",
+              "description": "gRPC client dial option backoff enabled"
+            },
+            "initial_connection_window_size": {
+              "type": "integer",
+              "description": "gRPC client dial option initial connection window size"
+            },
+            "initial_window_size": {
+              "type": "integer",
+              "description": "gRPC client dial option initial window size"
+            },
+            "insecure": {
+              "type": "boolean",
+              "description": "gRPC client dial option insecure enabled"
+            },
+            "interceptors": {
+              "type": "array",
+              "description": "gRPC client interceptors",
+              "items": { "type": "string", "enum": ["TraceInterceptor"] }
+            },
+            "keepalive": {
+              "type": "object",
+              "properties": {
+                "permit_without_stream": {
+                  "type": "boolean",
+                  "description": "gRPC client keep alive permit without stream"
+                },
+                "time": {
+                  "type": "string",
+                  "description": "gRPC client keep alive time"
+                },
+                "timeout": {
+                  "type": "string",
+                  "description": "gRPC client keep alive timeout"
+                }
+              }
+            },
+            "max_msg_size": {
+              "type": "integer",
+              "description": "gRPC client dial option max message size"
+            },
+            "min_connection_timeout": {
+              "type": "string",
+              "description": "gRPC client dial option minimum connection timeout"
+            },
+            "net": {
+              "type": "object",
+              "properties": {
+                "dialer": {
+                  "type": "object",
+                  "properties": {
+                    "dual_stack_enabled": {
+                      "type": "boolean",
+                      "description": "gRPC client TCP dialer dual stack enabled"
+                    },
+                    "keepalive": {
+                      "type": "string",
+                      "description": "gRPC client TCP dialer keep alive"
+                    },
+                    "timeout": {
+                      "type": "string",
+                      "description": "gRPC client TCP dialer timeout"
+                    }
+                  }
+                },
+                "dns": {
+                  "type": "object",
+                  "properties": {
+                    "cache_enabled": {
+                      "type": "boolean",
+                      "description": "gRPC client TCP DNS cache enabled"
+                    },
+                    "cache_expiration": {
+                      "type": "string",
+                      "description": "gRPC client TCP DNS cache expiration"
+                    },
+                    "refresh_duration": {
+                      "type": "string",
+                      "description": "gRPC client TCP DNS cache refresh duration"
+                    }
+                  }
+                },
+                "socket_option": {
+                  "type": "object",
+                  "properties": {
+                    "ip_recover_destination_addr": {
+                      "type": "boolean",
+                      "description": "server listen socket option for ip_recover_destination_addr functionality"
+                    },
+                    "ip_transparent": {
+                      "type": "boolean",
+                      "description": "server listen socket option for ip_transparent functionality"
+                    },
+                    "reuse_addr": {
+                      "type": "boolean",
+                      "description": "server listen socket option for reuse_addr functionality"
+                    },
+                    "reuse_port": {
+                      "type": "boolean",
+                      "description": "server listen socket option for reuse_port functionality"
+                    },
+                    "tcp_cork": {
+                      "type": "boolean",
+                      "description": "server listen socket option for tcp_cork functionality"
+                    },
+                    "tcp_defer_accept": {
+                      "type": "boolean",
+                      "description": "server listen socket option for tcp_defer_accept functionality"
+                    },
+                    "tcp_fast_open": {
+                      "type": "boolean",
+                      "description": "server listen socket option for tcp_fast_open functionality"
+                    },
+                    "tcp_no_delay": {
+                      "type": "boolean",
+                      "description": "server listen socket option for tcp_no_delay functionality"
+                    },
+                    "tcp_quick_ack": {
+                      "type": "boolean",
+                      "description": "server listen socket option for tcp_quick_ack functionality"
+                    }
+                  }
+                },
+                "tls": {
+                  "type": "object",
+                  "properties": {
+                    "ca": { "type": "string" },
+                    "cert": { "type": "string" },
+                    "enabled": { "type": "boolean" },
+                    "insecure_skip_verify": { "type": "boolean" },
+                    "key": { "type": "string" }
+                  }
+                }
+              }
+            },
+            "read_buffer_size": {
+              "type": "integer",
+              "description": "gRPC client dial option read buffer size"
+            },
+            "timeout": {
+              "type": "string",
+              "description": "gRPC client dial option timeout"
+            },
+            "write_buffer_size": {
+              "type": "integer",
+              "description": "gRPC client dial option write buffer size"
+            }
+          }
+        },
+        "health_check_duration": {
+          "type": "string",
+          "description": "gRPC client health check duration"
+        },
+        "max_recv_msg_size": { "type": "integer" },
+        "max_retry_rpc_buffer_size": { "type": "integer" },
+        "max_send_msg_size": { "type": "integer" },
+        "tls": {
+          "type": "object",
+          "properties": {
+            "ca": { "type": "string", "description": "TLS ca path" },
+            "cert": { "type": "string", "description": "TLS cert path" },
+            "enabled": { "type": "boolean", "description": "TLS enabled" },
+            "insecure_skip_verify": {
+              "type": "boolean",
+              "description": "enable/disable skip SSL certificate verification"
+            },
+            "key": { "type": "string", "description": "TLS key path" }
+          }
+        },
+        "wait_for_ready": { "type": "boolean" }
+      }
+    },
+    "dataset": {
+      "type": "object",
+      "description": "dataset information",
+      "properties": {
+        "group": {
+          "type": "string",
+          "description": "the hdf5 group name of dataset",
+          "minLength": 1
+        },
+        "indexes": {
+          "type": "integer",
+          "description": "the amount of indexes",
+          "minimum": 0
+        },
+        "name": {
+          "type": "string",
+          "description": "the name of dataset",
+          "enum": ["fashion-mnist"]
+        },
+        "range": {
+          "type": "object",
+          "description": "the data range of indexes",
+          "properties": {
+            "end": {
+              "type": "integer",
+              "description": "end index number",
+              "minimum": 1
+            },
+            "start": {
+              "type": "integer",
+              "description": "start index number",
+              "minimum": 1
+            }
+          }
+        }
+      },
+      "required": ["name", "indexes", "group", "range"]
+    },
+    "dimension": {
+      "type": "integer",
+      "description": "vector dimension",
+      "minimum": 1
+    },
+    "insert_config": {
+      "type": "object",
+      "description": "insert config",
+      "properties": {
+        "skip_strict_exist_check": {
+          "type": "boolean",
+          "description": "skip strict exists check flag config"
+        },
+        "timestamp": { "type": "string", "description": "index timestamp" }
+      }
+    },
+    "job_type": {
+      "type": "string",
+      "description": "job type name",
+      "enum": [
+        "insert",
+        "update",
+        "upsert",
+        "search",
+        "remove",
+        "get_object",
+        "exists"
+      ]
+    },
+    "object_config": {
+      "type": "object",
+      "description": "object config",
+      "properties": {
+        "filter_config": {
+          "type": "object",
+          "description": "filter target config",
+          "properties": {
+            "host": { "type": "string", "description": "filter target host" }
+          }
+        }
+      }
+    },
+    "remove_config": {
+      "type": "object",
+      "description": "remove config",
+      "properties": {
+        "skip_strict_exist_check": {
+          "type": "boolean",
+          "description": "skip strict exists check flag config"
+        },
+        "timestamp": { "type": "string", "description": "index timestamp" }
+      }
+    },
+    "repetition": {
+      "type": "integer",
+      "description": "the number of repeat job",
+      "minimum": 1
+    },
+    "replica": {
+      "type": "integer",
+      "description": "the number of running concurrency job",
+      "minimum": 1
+    },
+    "rps": {
+      "type": "integer",
+      "description": "desired request per sec",
+      "maximum": 65535,
+      "minimum": 0
+    },
+    "rules": { "type": "array", "description": "executing rule" },
+    "search": { "type": "object" },
+    "search_config": { "type": "number", "description": "epsilon" },
+    "target": {
+      "type": "object",
+      "description": "target cluster location",
+      "properties": {
+        "host": {
+          "type": "string",
+          "description": "target cluster host",
+          "minLength": 1
+        },
+        "port": {
+          "type": "integer",
+          "description": "target cluster port",
+          "maximum": 65535,
+          "minimum": 0
+        }
+      },
+      "required": ["host", "port"]
+    },
+    "update_config": {
+      "type": "object",
+      "description": "update config",
+      "properties": {
+        "disable_balance_update": {
+          "type": "boolean",
+          "description": "disabled balance update flag"
+        },
+        "skip_strict_exist_check": {
+          "type": "boolean",
+          "description": "skip strict exists check flag config"
+        },
+        "timestamp": { "type": "string", "description": "index timestamp" }
+      }
+    },
+    "upsert_config": {
+      "type": "object",
+      "description": "upsert config",
+      "properties": {
+        "disable_balance_update": {
+          "type": "boolean",
+          "description": "disabled balance update flag"
+        },
+        "skip_strict_exist_check": {
+          "type": "boolean",
+          "description": "skip strict exists check flag config"
+        },
+        "timestamp": { "type": "string", "description": "index timestamp" }
+      }
+    }
+  }
+}
