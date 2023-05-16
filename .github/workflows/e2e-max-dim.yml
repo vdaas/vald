@@ -154,9 +154,15 @@ jobs:
             kubectl rollout restart statefulset vald-agent-ngt
 
             sleep 30
-            
+
             kubectl wait --for=condition=Ready pod -l ${WAIT_FOR_SELECTOR} --timeout=${WAIT_FOR_TIMEOUT}
+
+            echo "DEBUG: print the result of kubectl get pods $(kubectl get pods)"
+
             POD_NAME=`kubectl get pods | grep vald-lb-gateway | awk '{print $1}'`
+
+            echo "DEBUG: POD_NAME is ${POD_NAME}"
+
             go test \
               -race \
               -v tests/e2e/performance/max_vector_dim_test.go \
