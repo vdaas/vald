@@ -70,6 +70,7 @@ k8s/vald/deploy:
 	    --set gateway.lb.image.repository=$(CRORG)/$(LB_GATEWAY_IMAGE) \
 	    --set manager.index.image.repository=$(CRORG)/$(MANAGER_INDEX_IMAGE) \
 	    --output-dir $(TEMP_DIR) \
+	    $(HELM_EXTRA_OPTIONS) \
 	    charts/vald
 	@echo "Permitting error because there's some cases nothing to apply"
 	kubectl apply -f $(TEMP_DIR)/vald/templates/manager/index || true
