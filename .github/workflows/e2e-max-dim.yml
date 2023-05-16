@@ -145,13 +145,16 @@ jobs:
             if [ $BIT = "32" ]; then
               DIM=$(($DIM-1))
             fi
-            helm upgrade ${RELEASE} charts/vald \
-              --values ${VALUES} \
-              --set defaults.image.tag=nightly \
-              --set agent.ngt.dimension=${DIM}
+
+            export HELM_EXTRA_OPTIOINS="--set defaults.image.tag=nightly --set agent.ngt.dimension=${DIM}"
+            make k8s/vald/deploy HELM_VALUES=${VALUES} HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIOINS}"
+
             sleep 3
+
             kubectl rollout restart statefulset vald-agent-ngt
+
             sleep 30
+            
             kubectl wait --for=condition=Ready pod -l ${WAIT_FOR_SELECTOR} --timeout=${WAIT_FOR_TIMEOUT}
             POD_NAME=`kubectl get pods | grep vald-lb-gateway | awk '{print $1}'`
             go test \
