@@ -232,7 +232,7 @@ k8s/metrics/jaeger/deploy:
 ## delete jaeger
 k8s/metrics/jaeger/delete:
 	kubectl delete -f k8s/metrics/jaeger
-	helm delete jaeger
+	helm uninstall jaeger
 
 .PHONY: k8s/metrics/loki/deploy
 ## deploy loki and promtail
