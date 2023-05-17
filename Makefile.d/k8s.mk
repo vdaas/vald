@@ -224,9 +224,12 @@ k8s/metrics/grafana/delete:
 ## deploy jaeger
 k8s/metrics/jaeger/deploy:
 	helm repo add jaegertracing https://jaegertracing.github.io/helm-charts
-	helm install jaeger jaegertracing/jaeger-operator --version $(JAEGER_OPERATOR_VERSION)
+	helm install jaeger jaegertracing/jaeger-operator \
+		--version $(JAEGER_OPERATOR_VERSION) \
+		--set webhooks.mutatingWebhook.create=false \
+		--set webhooks.validatingWebhook.create=false
 	kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=jaeger-operator --timeout=60s
-	kubectl apply -f k8s/metrics/jaeger
+	kubectl apply -f k8s/metrics/jaeger/jaeger.yaml
 
 .PHONY: k8s/metrics/jaeger/delete
 ## delete jaeger
