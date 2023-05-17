@@ -224,10 +224,7 @@ k8s/metrics/grafana/delete:
 ## deploy jaeger
 k8s/metrics/jaeger/deploy:
 	helm repo add jaegertracing https://jaegertracing.github.io/helm-charts
-	helm install jaeger jaegertracing/jaeger-operator \
-		--version $(JAEGER_OPERATOR_VERSION) \
-		--set webhooks.mutatingWebhook.create=false \
-		--set webhooks.validatingWebhook.create=false || true
+	helm install jaeger jaegertracing/jaeger-operator --version $(JAEGER_OPERATOR_VERSION)
 	kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=jaeger-operator --timeout=60s
 	kubectl apply -f k8s/metrics/jaeger/jaeger.yaml
 
@@ -330,7 +327,6 @@ k8s/otel/collector/delete:
 .PHONY: k8s/monitoring/deploy
 ## deploy monitoring stack
 k8s/monitoring/deploy: \
-	k8s/external/cert-manager/deploy \
 	k8s/metrics/jaeger/deploy \
 	k8s/metrics/prometheus/operator/deploy \
 	k8s/metrics/grafana/deploy \
@@ -345,7 +341,6 @@ k8s/monitoring/delete: \
 	k8s/metrics/grafana/delete \
 	k8s/metrics/jaeger/delete \
 	k8s/metrics/prometheus/operator/delete \
-	k8s/external/cert-manager/delete
 
 .PHONY: telepresence/install
 ## install telepresence
