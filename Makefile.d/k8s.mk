@@ -227,7 +227,7 @@ k8s/metrics/jaeger/deploy:
 	helm install jaeger jaegertracing/jaeger-operator \
 		--version $(JAEGER_OPERATOR_VERSION) \
 		--set webhooks.mutatingWebhook.create=false \
-		--set webhooks.validatingWebhook.create=false
+		--set webhooks.validatingWebhook.create=false || true
 	kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=jaeger-operator --timeout=60s
 	kubectl apply -f k8s/metrics/jaeger/jaeger.yaml
 
