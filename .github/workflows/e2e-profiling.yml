@@ -26,19 +26,6 @@ on:
       - "labeled"
 
 jobs:
-  setup-workflow-envs:
-    runs-on: ubuntu-latest
-    outputs:
-      use_local_charts: ${{ steps.check_if_pr.outputs.use_local_charts }}
-    steps:
-      - name: Setup use_local_charts
-        id: check_if_pr
-        run: |
-          if [ "${{ github.event_name }}" == "pull_request" ]; then
-            echo "use_local_charts=true" >> $GITHUB_OUTPUT
-          else
-            echo "use_local_charts=false" >> $GITHUB_OUTPUT
-          fi
   dump_contexts_to_log:
     runs-on: ubuntu-latest
     steps:
@@ -70,7 +57,6 @@ jobs:
   e2e-profiling:
     name: "E2E profiling"
     runs-on: ubuntu-latest
-    needs: setup-workflow-envs
     timeout-minutes: 60
     if: startsWith( github.ref, 'refs/tags/') || github.event.action == 'labeled' && github.event.label.name == 'actions/e2e-profiling'
     steps:
@@ -121,7 +107,6 @@ jobs:
           helm_extra_options: ${{ steps.specify_container_versions.outputs.HELM_EXTRA_OPTIONS }}
           values: .github/helm/values/values-profile.yaml
           wait_for_selector: app=vald-lb-gateway
-          use_local_charts: ${{ needs.setup-workflow-envs.outputs.use_local_charts }}
       - name: deploy profefe
         run: |
           make k8s/metrics/profefe/deploy

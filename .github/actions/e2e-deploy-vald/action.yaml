@@ -43,7 +43,7 @@ inputs:
   use_local_charts:
     description: "If you want to use local charts, set this to true."
     required: false
-    default: "false"
+    default: "true"
 outputs:
   POD_NAME:
     description: "a pod name that waited for"
@@ -113,7 +113,7 @@ runs:
       id: deploy_vald_local
       if: ${{ inputs.use_local_charts == 'true' }}
       run: |
-        make k8s/vald/deploy HELM_VALUES=${VALUES}
+        make k8s/vald/deploy HELM_VALUES=${VALUES} HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIONS}"
 
         sleep 3
 
@@ -125,9 +125,7 @@ runs:
         echo "POD_NAME=${podname}" >> $GITHUB_OUTPUT
       env:
         VALUES: ${{ inputs.values }}
-        # TODO: currently, we can't pass helm options to the make command.
-        #       Is it really necessary in the first place?
-        # HELM_EXTRA_OPTIONS: ${{ inputs.helm_extra_options }}
+        HELM_EXTRA_OPTIONS: ${{ inputs.helm_extra_options }}
         WAIT_FOR_SELECTOR: ${{ inputs.wait_for_selector }}
         WAIT_FOR_TIMEOUT: ${{ inputs.wait_for_timeout }}
     - name: get real pod name
