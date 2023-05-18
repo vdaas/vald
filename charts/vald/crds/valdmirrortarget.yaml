@@ -70,11 +70,13 @@ spec:
               properties:
                 colocation:
                   type: string
+                  minLength: 1
                 target:
                   type: object
                   properties:
                     host:
                       type: string
+                      minLength: 1
                     port:
                       type: integer
                       maximum: 65535
