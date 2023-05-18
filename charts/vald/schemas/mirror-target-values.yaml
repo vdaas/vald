@@ -1,10 +1,10 @@
-# @schema {"name": "colocation", "type": "string"}
+# @schema {"name": "colocation", "type": "string", "minLength": 1}
 # colocation -- Data center name
 colocation: dc1
 # @schema {"name": "target", "type": "object", "required": ["host", "port"]}
 # target -- Mirror target information
 target:
-  # @schema {"name": "target.host", "type": "string"}
+  # @schema {"name": "target.host", "type": "string", "minLength": 1}
   # host -- Mirror target host name
   host: "vald-mirror-gateway.vald.svc.cluster.local"
   # @schema {"name": "target.port", "type": "integer", "minimum": 0, "maximum": 65535}
