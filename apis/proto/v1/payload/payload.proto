@@ -529,8 +529,8 @@ message Mirror {
 
   // Represent server information.
   message Target {
-    // The target ip.
-    string ip = 1;
+    // The target hostname.
+    string host = 1;
     // The target port.
     uint32 port = 2;
   }
