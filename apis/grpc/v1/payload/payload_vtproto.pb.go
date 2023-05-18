@@ -7896,9 +7896,7 @@ func (m *Flush_Request) SizeVT() (n int) {
 	}
 	var l int
 	_ = l
-	if m.unknownFields != nil {
-		n += len(m.unknownFields)
-	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -7908,9 +7906,7 @@ func (m *Flush) SizeVT() (n int) {
 	}
 	var l int
 	_ = l
-	if m.unknownFields != nil {
-		n += len(m.unknownFields)
-	}
+	n += len(m.unknownFields)
 	return n
 }
 

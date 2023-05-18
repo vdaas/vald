@@ -582,7 +582,7 @@ func (c *client) MultiRemove(ctx context.Context, in *payload.Remove_MultiReques
 }
 
 func (c *client) Flush(ctx context.Context, in *payload.Flush_Request, opts ...grpc.CallOption) (res *payload.Info_Index_Count, err error) {
-	ctx, span := trace.StartSpan(ctx, apiName+"/Client.Flush")
+	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+vald.FlushRPCName), apiName+"/"+vald.FlushRPCName)
 	defer func() {
 		if span != nil {
 			span.End()
