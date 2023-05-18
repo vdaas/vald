@@ -490,10 +490,10 @@ Mirror related messages.
 
 Represent server information.
 
-| Field | Type              | Label | Description      |
-| ----- | ----------------- | ----- | ---------------- |
-| ip    | [string](#string) |       | The target ip.   |
-| port  | [uint32](#uint32) |       | The target port. |
+| Field | Type              | Label | Description          |
+| ----- | ----------------- | ----- | -------------------- |
+| host  | [string](#string) |       | The target hostname. |
+| port  | [uint32](#uint32) |       | The target port.     |
 
 <a name="payload-v1-Mirror-Targets"></a>
 
@@ -1093,7 +1093,7 @@ Upsert service provides ways to insert/update vectors.
 
 ## apis/proto/v1/mirror/mirror.proto
 
-Copyright (C) 2019-2022 vdaas.org vald team &lt;vald@vdaas.org&gt;
+Copyright (C) 2019-2023 vdaas.org vald team &lt;vald@vdaas.org&gt;
 
 Licensed under the Apache License, Version 2.0 (the &#34;License&#34;);
 you may not use this file except in compliance with the License.
