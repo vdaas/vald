@@ -7711,10 +7711,10 @@ func (m *Mirror_Target) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 		i--
 		dAtA[i] = 0x10
 	}
-	if len(m.Ip) > 0 {
-		i -= len(m.Ip)
-		copy(dAtA[i:], m.Ip)
-		i = encodeVarint(dAtA, i, uint64(len(m.Ip)))
+	if len(m.Host) > 0 {
+		i -= len(m.Host)
+		copy(dAtA[i:], m.Host)
+		i = encodeVarint(dAtA, i, uint64(len(m.Host)))
 		i--
 		dAtA[i] = 0xa
 	}
@@ -9269,7 +9269,7 @@ func (m *Mirror_Target) SizeVT() (n int) {
 	}
 	var l int
 	_ = l
-	l = len(m.Ip)
+	l = len(m.Host)
 	if l > 0 {
 		n += 1 + l + sov(uint64(l))
 	}
@@ -17130,7 +17130,7 @@ func (m *Mirror_Target) UnmarshalVT(dAtA []byte) error {
 		switch fieldNum {
 		case 1:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Ip", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field Host", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -17158,7 +17158,7 @@ func (m *Mirror_Target) UnmarshalVT(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Ip = string(dAtA[iNdEx:postIndex])
+			m.Host = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		case 2:
 			if wireType != 0 {
