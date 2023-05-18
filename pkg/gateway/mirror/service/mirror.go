@@ -77,7 +77,7 @@ func NewMirror(opts ...MirrorOption) (_ Mirror, err error) {
 			return false
 		}
 		m.selfMirrTgts = append(m.selfMirrTgts, &payload.Mirror_Target{
-			Ip:   host,
+			Host: host,
 			Port: uint32(port),
 		})
 		return true
@@ -355,7 +355,7 @@ func (m *mirr) Connect(ctx context.Context, targets ...*payload.Mirror_Target) e
 		return errors.ErrTargetNotFound
 	}
 	for _, target := range targets {
-		addr := net.JoinHostPort(target.GetIp(), uint16(target.GetPort())) // addr: host:port
+		addr := net.JoinHostPort(target.GetHost(), uint16(target.GetPort())) // addr: host:port
 		if !m.isSelfMirrorAddr(addr) && !m.isGatewayAddr(addr) {
 			_, ok := m.addrl.Load(addr)
 			if !ok || !m.IsConnected(ctx, addr) {
@@ -382,7 +382,7 @@ func (m *mirr) Disconnect(ctx context.Context, targets ...*payload.Mirror_Target
 		return errors.ErrTargetNotFound
 	}
 	for _, target := range targets {
-		addr := net.JoinHostPort(target.GetIp(), uint16(target.GetPort()))
+		addr := net.JoinHostPort(target.GetHost(), uint16(target.GetPort()))
 		if _, ok := m.gwAddrl.Load(addr); !ok {
 			_, ok := m.addrl.Load(addr)
 			if ok || m.IsConnected(ctx, addr) {
@@ -411,7 +411,7 @@ func (m *mirr) MirrorTargets() ([]*payload.Mirror_Target, error) {
 				return nil, err
 			}
 			tgts = append(tgts, &payload.Mirror_Target{
-				Ip:   host,
+				Host: host,
 				Port: uint32(port),
 			})
 		}
@@ -466,7 +466,7 @@ func (m *mirr) toMirrorTargets(addrs ...string) ([]*payload.Mirror_Target, error
 				return nil, err
 			}
 			tgts = append(tgts, &payload.Mirror_Target{
-				Ip:   host,
+				Host: host,
 				Port: uint32(port),
 			})
 		}
