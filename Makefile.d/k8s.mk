@@ -69,6 +69,7 @@ k8s/vald/deploy:
 	    --set gateway.filter.image.repository=$(CRORG)/$(FILTER_GATEWAY_IMAGE) \
 	    --set gateway.lb.image.repository=$(CRORG)/$(LB_GATEWAY_IMAGE) \
 	    --set manager.index.image.repository=$(CRORG)/$(MANAGER_INDEX_IMAGE) \
+	    $(HELM_EXTRA_OPTIONS) \
 	    --output-dir $(TEMP_DIR) \
 	    charts/vald
 	@echo "Permitting error because there's some cases nothing to apply"
