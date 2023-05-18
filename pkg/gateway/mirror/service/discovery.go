@@ -221,7 +221,7 @@ func (d *discoverer) createTarget(ctx context.Context, req map[string]*createdTa
 	for _, created := range req {
 		phase := target.MirrorTargetPhaseConnected
 		cerr := d.mirr.Connect(ctx, &payload.Mirror_Target{
-			Ip:   created.tgt.Host,
+			Host: created.tgt.Host,
 			Port: uint32(created.tgt.Port),
 		})
 		if cerr != nil {
@@ -261,7 +261,7 @@ func (d *discoverer) deleteTarget(ctx context.Context, req map[string]*deletedTa
 	tgts := make([]*payload.Mirror_Target, 0, len(req))
 	for _, deleted := range req {
 		tgts = append(tgts, &payload.Mirror_Target{
-			Ip:   deleted.host,
+			Host: deleted.host,
 			Port: deleted.port,
 		})
 	}
@@ -291,7 +291,7 @@ func (d *discoverer) updateTarget(ctx context.Context, req map[string]*updatedTa
 	}
 	for _, updated := range req {
 		derr := d.mirr.Disconnect(ctx, &payload.Mirror_Target{
-			Ip:   updated.old.Host,
+			Host: updated.old.Host,
 			Port: uint32(updated.old.Port),
 		})
 		if derr != nil {
@@ -301,7 +301,7 @@ func (d *discoverer) updateTarget(ctx context.Context, req map[string]*updatedTa
 			}
 		} else {
 			cerr := d.mirr.Connect(ctx, &payload.Mirror_Target{
-				Ip:   updated.new.Host,
+				Host: updated.new.Host,
 				Port: uint32(updated.new.Port),
 			})
 			if cerr != nil {
