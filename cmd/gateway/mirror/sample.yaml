@@ -143,6 +143,6 @@ gateway:
       write_buffer_size: 0
     tls:
       enabled: false
-       ca: /path/to/ca
+      ca: /path/to/ca
       cert: /path/to/cert
       key: /path/to/key
