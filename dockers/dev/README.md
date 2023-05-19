@@ -31,7 +31,6 @@ This image includes some libraries required to develop Vald and is based on `mcr
 
 `vald-dev-container` is used for contributing to Vald's project. Please use this container with [our Dev Container settings](https://github.com/vdaas/vald/blob/main/.devcontainer/devcontainer.json).
 
-
 ## Versions
 
 | tag     | linux/amd64 | linux/arm64 | description                                                                                                                     |
