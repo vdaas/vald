@@ -4,13 +4,13 @@
 
 `vald-dev-container` is designed for the development of Vald on Docker.
 
-This image includes some libraries required for implementation and is based on `ubuntu:devel` image.
+This image includes some libraries required to develop Vald and is based on `mcr.microsoft.com/vscode/devcontainers/go:1` image.
 
 <div align="center">
     <img src="https://github.com/vdaas/vald/blob/main/assets/image/readme.svg?raw=true" width="50%" />
 </div>
 
-[![latest Image](https://img.shields.io/docker/v/vdaas/vald-dev-container/latest?label=vald-dev-container)](https://hub.docker.com/r/vdaas/vald-dev-container/tags?page=1&name=latest)
+[![latest Image](https://img.shields.io/docker/v/vdaas/vald-dev-container/latest?label=vald-dev-container)](https://hub.docker.com/r/vdaas/vald-dev-container/tags?page=1&name=nightly)
 [![License: Apache 2.0](https://img.shields.io/github/license/vdaas/vald.svg?style=flat-square)](https://opensource.org/licenses/Apache-2.0)
 [![latest ver.](https://img.shields.io/github/release/vdaas/vald.svg?style=flat-square)](https://github.com/vdaas/vald/releases/latest)
 [![Twitter](https://img.shields.io/badge/twitter-follow-blue?logo=twitter&style=flat-square)](https://twitter.com/vdaas_vald)
@@ -24,31 +24,19 @@ This image includes some libraries required for implementation and is based on `
 - CPU instruction: requires `AVX2` or `AVX512`
 - Tools: Docker
 
-### linux/arm64
-
-- CPU instruction: NOT Apple Silicon
-- Tools: Docker
-
 ## Get Started
 
 <!-- Get Started -->
 <!-- Vald Agent NGT requires more chapter Agent Standalone -->
 
-`vald-dev-container` is used for contributing to Vald's project.
+`vald-dev-container` is used for contributing to Vald's project. Please use this container with [our Dev Container settings](https://github.com/vdaas/vald/blob/main/.devcontainer/devcontainer.json).
 
-```bash
-docker pull vdaas/vald-dev-container
-docker run -name vald-dev -dit vdaas/vald-dev-container
-docker exec -it vald-dev /bin/bash
-```
 
 ## Versions
 
 | tag     | linux/amd64 | linux/arm64 | description                                                                                                                     |
 | :------ | :---------: | :---------: | :------------------------------------------------------------------------------------------------------------------------------ |
-| latest  |     ✅      |     ✅      | the latest image is the same as the latest version of [vdaas/vald](https://github.com/vdaas/vald) repository version.           |
 | nightly |     ✅      |     ✅      | the nightly applies the main branch's source code of the [vdaas/vald](https://github.com/vdaas/vald) repository.                |
-| vX.Y.Z  |     ✅      |     ✅      | the vX.Y.Z image applies the source code of the [vdaas/vald](https://github.com/vdaas/vald) repository.                         |
 | pr-XXX  |     ✅      |     ❌      | the pr-XXX image applies the source code of the pull request XXX of the [vdaas/vald](https://github.com/vdaas/vald) repository. |
 
 ## Dockerfile
