@@ -34,7 +34,7 @@ time_zone: ""
 image:
   # @schema {"name": "image.repository", "type": "string"}
   # image.repository -- image repository
-  repository: local-registry:5000/vdaas/vald-benchmark-operator
+  repository: vdaas/vald-benchmark-operator
   # @schema {"name": "image.tag", "type": "string"}
   # image.tag -- image tag
   tag: v1.7.5
@@ -147,120 +147,6 @@ logging:
   # logging format must be `raw` or `json`
   format: raw
 
-# @schema {"name": "liveness", "type": "object"}
-liveness:
-  # @schema {"name": "liveness.enabled", "type": "boolean"}
-  # liveness.enabled -- enable liveness probe.
-  enabled: true
-  host: 0.0.0.0
-  port: 3000
-  servicePort: 3000
-  # @schema {"name": "livenessProbe", "type": "object"}
-  livenessProbe:
-    # @schema {"name": "livenessProbe.httpGet", "type": "object"}
-    httpGet:
-      # @schema {"name": "livenessProbe.httpGet.path", "type": "string"}
-      # livenessProbe.httpGet.path -- readiness probe path
-      path: /liveness
-      # @schema {"name": "livenessProbe.httpGet.port", "type": "string"}
-      # livenessProbe.httpGet.port -- readiness probe port
-      port: liveness
-      # @schema {"name": "livenessProbe.httpGet.scheme", "type": "string"}
-      # livenessProbe.httpGet.scheme -- readiness probe scheme
-      scheme: HTTP
-    # @schema {"name": "livenessProbe.initialDelaySeconds", "type": "integer"}
-    # livenessProbe.initialDelaySeconds -- liveness probe initial delay seconds
-    initialDelaySeconds: 15
-    # @schema {"name": "livenessProbe.periodSeconds", "type": "integer"}
-    # livenessProbe.periodSeconds -- liveness probe period seconds
-    periodSeconds: 20
-    # @schema {"name": "livenessProbe.successThreshold", "type": "integer"}
-    # livenessProbe.successThreshold -- liveness probe success threshold
-    successThreshold: 1
-    # @schema {"name": "livenessProbe.failureThreshold", "type": "integer"}
-    # livenessProbe.failureThreshold -- liveness probe failure threshold
-    failureThreshold: 2
-    # @schema {"name": "livenessProbe.timeoutSeconds", "type": "integer"}
-    # livenessProbe.timeoutSeconds -- liveness probe timeout seconds
-    timeoutSeconds: 5
-
-# @schema {"name": "readiness", "type": "object"}
-readiness:
-  # @schema {"name": "readiness.enabled", "type": "boolean"}
-  # readiness.enabled -- enable liveness probe.
-  enabled: true
-  host: 0.0.0.0
-  port: 3001
-  servicePort: 3001
-  # @schema {"name": "readinessProbe", "type": "object"}
-  readinessProbe:
-    # @schema {"name": "readinessProbe.httpGet", "type": "object"}
-    httpGet:
-      # @schema {"name": "readinessProbe.httpGet.path", "type": "string"}
-      # readinessProbe.httpGet.path -- readiness probe path
-      path: /readiness
-      # @schema {"name": "readinessProbe.httpGet.port", "type": "string"}
-      # readinessProbe.httpGet.port -- readiness probe port
-      port: readiness
-      # @schema {"name": "readinessProbe.httpGet.scheme", "type": "string"}
-      # readinessProbe.httpGet.scheme -- readiness probe scheme
-      scheme: HTTP
-    # @schema {"name": "readinessProbe.initialDelaySeconds", "type": "integer"}
-    # readinessProbe.initialDelaySeconds -- readiness probe initial delay seconds
-    initialDelaySeconds: 10
-    # @schema {"name": "readinessProbe.periodSeconds", "type": "integer"}
-    # readinessProbe.periodSeconds -- readiness probe period seconds
-    periodSeconds: 3
-    # @schema {"name": "readinessProbe.successThreshold", "type": "integer"}
-    # readinessProbe.successThreshold -- readiness probe success threshold
-    successThreshold: 1
-    # @schema {"name": "readinessProbe.failureThreshold", "type": "integer"}
-    # readinessProbe.failureThreshold --readiness probe failure threshold
-    failureThreshold: 2
-    # @schema {"name": "readinessProbe.timeoutSeconds", "type": "integer"}
-    # readinessProbe.timeoutSeconds -- readiness probe timeout seconds
-    timeoutSeconds: 2
-
-# @schema {"name": "startup", "type": "object"}
-startup:
-  # @schema {"name": "startup.enabled", "type": "boolean"}
-  # startup.enabled -- enable startup probe.
-  enabled: true
-  # @schema {"name": "startupProbe", "type": "object"}
-  startupProbe:
-    # @schema {"name": "startupProbe.httpGet", "type": "object"}
-    httpGet:
-      # @schema {"name": "startupProbe.httpGet.path", "type": "string"}
-      # startupProbe.httpGet.path -- startup probe path
-      path: /liveness
-      # @schema {"name": "startupProbe.httpGet.port", "type": "string"}
-      # startupProbe.httpGet.port -- startup probe port
-      port: liveness
-      # @schema {"name": "startupProbe.httpGet.scheme", "type": "string"}
-      # startupProbe.httpGet.scheme -- startup probe scheme
-      scheme: HTTP
-    # @schema {"name": "startupProbe.initialDelaySeconds", "type": "integer"}
-    # startupProbe.initialDelaySeconds -- startup probe initial delay seconds
-    initialDelaySeconds: 5
-    # @schema {"name": "startupProbe.periodSeconds", "type": "integer"}
-    # startupProbe.periodSeconds -- startup probe period seconds
-    periodSeconds: 5
-    # @schema {"name": "startupProbe.successThreshold", "type": "integer"}
-    # startupProbe.successThreshold -- startup probe success threshold
-    successThreshold: 1
-    # @schema {"name": "startupProbe.failureThreshold", "type": "integer"}
-    # startupProbe.failureThreshold -- startupProbe probe failure threshold
-    failureThreshold: 30
-    # @schema {"name": "startupProbe.timeoutSeconds", "type": "integer"}
-    # startupProbe.timeoutSeconds -- startup probe timeout seconds
-    timeoutSeconds: 2
-
-# @schema {"name": "metrics", "type": "object"}
-metrics:
-  # @schema {"name": "metrics.port", "type": "integer", "minimum": 0, "maximum": 65535}
-  # metrics.port -- pprof server port
-  port: 6060
-
 # @schema {"name": "server_config", "type": "object"}
 server_config:
   # @schema {"name": "server_config.servers", "type": "object"}
@@ -303,7 +189,7 @@ server_config:
           initial_conn_window_size: 0
           # @schema {"name": "server_config.servers.grpc.server.grpc.initial_window_size", "type": "integer"}
           initial_window_size: 0
-          # @schema {"name": "server_config.servers.grpc.server.grpc.interceptors", "type": "array"}
+          # @schema {"name": "server_config.servers.grpc.server.grpc.interceptors", "type": "array", "items": {"type": "string"}}
           interceptors: []
           # @schema {"name": "server_config.servers.grpc.server.grpc.keepalive", "type": "object"}
           keepalive:
@@ -353,6 +239,36 @@ server_config:
       host: 0.0.0.0
       # @schema {"name": "server_config.healths.liveness.port", "type": "integer"}
       port: 3000
+      # @schema {"name": "server_config.healths.liveness.servicePort", "type": "integer"}
+      servicePort: 3000
+      # @schema {"name": "server_config.healths.liveness.livenessProbe", "type": "object"}
+      livenessProbe:
+         # @schema {"name": "server_config.healths.liveness.livenessProbe.httpGet", "type": "object"}
+         httpGet:
+           # @schema {"name": "server_config.healths.liveness.livenessProbe.httpGet.path", "type": "string"}
+           # server_config.healths.liveness.livenessProbe.httpGet.path -- readiness probe path
+           path: /liveness
+           # @schema {"name": "server_config.healths.liveness.livenessProbe.httpGet.port", "type": "string"}
+           # server_config.healths.liveness.livenessProbe.httpGet.port -- readiness probe port
+           port: liveness
+           # @schema {"name": "server_config.healths.liveness.livenessProbe.httpGet.scheme", "type": "string"}
+           # server_config.healths.liveness.livenessProbe.httpGet.scheme -- readiness probe scheme
+           scheme: HTTP
+         # @schema {"name": "server_config.healths.liveness.livenessProbe.initialDelaySeconds", "type": "integer"}
+         # server_config.healths.liveness.livenessProbe.initialDelaySeconds -- liveness probe initial delay seconds
+         initialDelaySeconds: 15
+         # @schema {"name": "server_config.healths.liveness.livenessProbe.periodSeconds", "type": "integer"}
+         # server_config.healths.liveness.livenessProbe.periodSeconds -- liveness probe period seconds
+         periodSeconds: 20
+         # @schema {"name": "server_config.healths.liveness.livenessProbe.successThreshold", "type": "integer"}
+         # server_config.healths.liveness.livenessProbe.successThreshold -- liveness probe success threshold
+         successThreshold: 1
+         # @schema {"name": "server_config.healths.liveness.livenessProbe.failureThreshold", "type": "integer"}
+         # server_config.healths.liveness.livenessProbe.failureThreshold -- liveness probe failure threshold
+         failureThreshold: 2
+         # @schema {"name": "server_config.healths.liveness.livenessProbe.timeoutSeconds", "type": "integer"}
+         # server_config.healths.liveness.livenessProbe.timeoutSeconds -- liveness probe timeout seconds
+         timeoutSeconds: 5
       # @schema {"name": "server_config.healths.liveness.server", "type": "object"}
       server:
         # @schema {"name": "server_config.healths.liveness.server.mode", "type": "string"}
@@ -385,6 +301,36 @@ server_config:
       host: 0.0.0.0
       # @schema {"name": "server_config.healths.readiness.port", "type": "integer"}
       port: 3001
+      # @schema {"name": "server_config.healths.readiness.servicePort", "type": "integer"}
+      servicePort: 3001
+      # @schema {"name": "server_config.healths.readiness.readinessProbe", "type": "object"}
+      readinessProbe:
+        # @schema {"name": "server_config.healths.readiness.readinessProbe.httpGet", "type": "object"}
+        httpGet:
+          # @schema {"name": "server_config.healths.readiness.readinessProbe.httpGet.path", "type": "string"}
+          # server_config.healths.readiness.readinessProbe.httpGet.path -- readiness probe path
+          path: /readiness
+          # @schema {"name": "server_config.healths.readiness.readinessProbe.httpGet.port", "type": "string"}
+          # server_config.healths.readiness.readinessProbe.httpGet.port -- readiness probe port
+          port: readiness
+          # @schema {"name": "server_config.healths.readiness.readinessProbe.httpGet.scheme", "type": "string"}
+          # server_config.healths.readiness.readinessProbe.httpGet.scheme -- readiness probe scheme
+          scheme: HTTP
+        # @schema {"name": "server_config.healths.readiness.readinessProbe.initialDelaySeconds", "type": "integer"}
+        # server_config.healths.readiness.readinessProbe.initialDelaySeconds -- readiness probe initial delay seconds
+        initialDelaySeconds: 10
+        # @schema {"name": "server_config.healths.readiness.readinessProbe.periodSeconds", "type": "integer"}
+        # server_config.healths.readiness.readinessProbe.periodSeconds -- readiness probe period seconds
+        periodSeconds: 3
+        # @schema {"name": "server_config.healths.readiness.readinessProbe.successThreshold", "type": "integer"}
+        # server_config.healths.readiness.readinessProbe.successThreshold -- readiness probe success threshold
+        successThreshold: 1
+        # @schema {"name": "server_config.healths.readiness.readinessProbe.failureThreshold", "type": "integer"}
+        # server_config.healths.readiness.readinessProbe.failureThreshold --readiness probe failure threshold
+        failureThreshold: 2
+        # @schema {"name": "server_config.healths.readiness.readinessProbe.timeoutSeconds", "type": "integer"}
+        # server_config.healths.readiness.readinessProbe.timeoutSeconds -- readiness probe timeout seconds
+        timeoutSeconds: 2
       # @schema {"name": "server_config.healths.readiness.server", "type": "object"}
       server:
         # @schema {"name": "server_config.healths.readiness.server.mode", "type": "string"}
@@ -409,6 +355,39 @@ server_config:
           shutdown_duration: 0s
           # @schema {"name": "server_config.healths.readiness.server.http.write_timeout", "type": "string"}
           write_timeout: ""
+    # @schema {"name": "server_config.healths.startup", "type": "object"}
+    startup:
+      # @schema {"name": "server_config.healths.startup.enabled", "type": "boolean"}
+      # server_config.healths.startup.enabled -- enable startup probe.
+      enabled: true
+      # @schema {"name": "server_config.healths.startupProbe", "type": "object"}
+      startupProbe:
+        # @schema {"name": "server_config.healths.startupProbe.httpGet", "type": "object"}
+        httpGet:
+          # @schema {"name": "server_config.healths.startupProbe.httpGet.path", "type": "string"}
+          # server_config.healths.startupProbe.httpGet.path -- startup probe path
+          path: /liveness
+          # @schema {"name": "server_config.healths.startupProbe.httpGet.port", "type": "string"}
+          # server_config.healths.startupProbe.httpGet.port -- startup probe port
+          port: liveness
+          # @schema {"name": "server_config.healths.startupProbe.httpGet.scheme", "type": "string"}
+          # server_config.healths.startupProbe.httpGet.scheme -- startup probe scheme
+          scheme: HTTP
+        # @schema {"name": "server_config.healths.startupProbe.initialDelaySeconds", "type": "integer"}
+        # server_config.healths.startupProbe.initialDelaySeconds -- startup probe initial delay seconds
+        initialDelaySeconds: 5
+        # @schema {"name": "server_config.healths.startupProbe.periodSeconds", "type": "integer"}
+        # server_config.healths.startupProbe.periodSeconds -- startup probe period seconds
+        periodSeconds: 5
+        # @schema {"name": "server_config.healths.startupProbe.successThreshold", "type": "integer"}
+        # server_config.healths.startupProbe.successThreshold -- startup probe success threshold
+        successThreshold: 1
+        # @schema {"name": "server_config.healths.startupProbe.failureThreshold", "type": "integer"}
+        # server_config.healths.startupProbe.failureThreshold -- startupProbe probe failure threshold
+        failureThreshold: 30
+        # @schema {"name": "server_config.healths.startupProbe.timeoutSeconds", "type": "integer"}
+        # server_config.healths.startupProbe.timeoutSeconds -- startup probe timeout seconds
+        timeoutSeconds: 2
   # @schema {"name": "server_config.metrics", "type": "object"}
   metrics:
     # @schema {"name": "server_config.metrics.pprof", "type": "object"}
@@ -418,7 +397,7 @@ server_config:
       # @schema {"name": "server_config.metrics.pprof.host", "type": "string"}
       host: 0.0.0.0
       # @schema {"name": "server_config.metrics.pprof.port", "type": "integer"}
-      port: 6000
+      port: 6060
       # @schema {"name": "server_config.metrics.pprof.server", "type": "object"}
       server:
         # @schema {"name": "server_config.metrics.pprof.server.mode", "type": "string"}

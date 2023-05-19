@@ -52,52 +52,55 @@ spec:
         - name: {{ .Values.name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          {{- if .Values.liveness.enabled }}
+          {{- $liveness := .Values.server_config.healths.liveness }}
+          {{- if $liveness.enabled }}
           livenessProbe:
-            failureThreshold: {{ .Values.liveness.livenessProbe.failureThreshold }}
+            failureThreshold: {{ $liveness.livenessProbe.failureThreshold }}
             httpGet:
-              path: {{ .Values.liveness.livenessProbe.httpGet.path }}
-              port: {{ .Values.liveness.livenessProbe.httpGet.port }}
-              scheme: {{ .Values.liveness.livenessProbe.httpGet.scheme }}
-            initialDelaySeconds: {{ .Values.liveness.livenessProbe.initialDelaySeconds }}
-            periodSeconds: {{ .Values.liveness.livenessProbe.periodSeconds }}
-            successThreshold: {{ .Values.liveness.livenessProbe.successThreshold }}
-            timeoutSeconds: {{ .Values.liveness.livenessProbe.timeoutSeconds }}
+              path: {{ $liveness.livenessProbe.httpGet.path }}
+              port: {{ $liveness.livenessProbe.httpGet.port }}
+              scheme: {{ $liveness.livenessProbe.httpGet.scheme }}
+            initialDelaySeconds: {{ $liveness.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ $liveness.livenessProbe.periodSeconds }}
+            successThreshold: {{ $liveness.livenessProbe.successThreshold }}
+            timeoutSeconds: {{ $liveness.livenessProbe.timeoutSeconds }}
           {{- end}}
-          {{- if .Values.readiness.enabled }}
+          {{- $readiness := .Values.server_config.healths.readiness }}
+          {{- if $readiness.enabled }}
           readinessProbe:
-            failureThreshold: {{ .Values.readiness.readinessProbe.failureThreshold }}
+            failureThreshold: {{ $readiness.readinessProbe.failureThreshold }}
             httpGet:
-              path: {{ .Values.readiness.readinessProbe.httpGet.path }}
-              port: {{ .Values.readiness.readinessProbe.httpGet.port }}
-              scheme: {{ .Values.readiness.readinessProbe.httpGet.scheme }}
-            initialDelaySeconds: {{ .Values.readiness.readinessProbe.initialDelaySeconds }}
-            periodSeconds: {{ .Values.readiness.readinessProbe.periodSeconds }}
-            successThreshold: {{ .Values.readiness.readinessProbe.successThreshold }}
-            timeoutSeconds: {{ .Values.readiness.readinessProbe.timeoutSeconds }}
+              path: {{ $readiness.readinessProbe.httpGet.path }}
+              port: {{ $readiness.readinessProbe.httpGet.port }}
+              scheme: {{ $readiness.readinessProbe.httpGet.scheme }}
+            initialDelaySeconds: {{ $readiness.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ $readiness.readinessProbe.periodSeconds }}
+            successThreshold: {{ $readiness.readinessProbe.successThreshold }}
+            timeoutSeconds: {{ $readiness.readinessProbe.timeoutSeconds }}
           {{- end}}
-          {{- if .Values.startup.enabled }}
+          {{- $startup := .Values.server_config.healths.startup }}
+          {{- if $startup.enabled }}
           startupProbe:
-            failureThreshold: {{ .Values.startup.startupProbe.failureThreshold }}
+            failureThreshold: {{ $startup.startupProbe.failureThreshold }}
             httpGet:
-              path: {{ .Values.startup.startupProbe.httpGet.path }}
-              port: {{ .Values.startup.startupProbe.httpGet.port }}
-              scheme: {{ .Values.startup.startupProbe.httpGet.scheme }}
-            initialDelaySeconds: {{ .Values.startup.startupProbe.initialDelaySeconds }}
-            periodSeconds: {{ .Values.startup.startupProbe.periodSeconds }}
-            successThreshold: {{ .Values.startup.startupProbe.successThreshold }}
-            timeoutSeconds: {{ .Values.startup.startupProbe.timeoutSeconds }}
+              path: {{ $startup.startupProbe.httpGet.path }}
+              port: {{ $startup.startupProbe.httpGet.port }}
+              scheme: {{ $startup.startupProbe.httpGet.scheme }}
+            initialDelaySeconds: {{ $startup.startupProbe.initialDelaySeconds }}
+            periodSeconds: {{ $startup.startupProbe.periodSeconds }}
+            successThreshold: {{ $startup.startupProbe.successThreshold }}
+            timeoutSeconds: {{ $startup.startupProbe.timeoutSeconds }}
           {{- end}}
           ports:
-            {{- if .Values.liveness.enabled }}
+            {{- if $liveness.enabled }}
             - name: liveness
               protocol: TCP
-              containerPort: {{ .Values.liveness.port }}
+              containerPort: {{ $liveness.port }}
             {{- end}}
-            {{- if .Values.readiness.enabled }}
+            {{- if $readiness.enabled }}
             - name: readiness
               protocol: TCP
-              containerPort: {{ .Values.readiness.port }}
+              containerPort: {{ $readiness.port }}
             {{- end}}
             - name: grpc
               protocol: TCP

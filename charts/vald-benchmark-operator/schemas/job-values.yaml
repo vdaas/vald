@@ -90,7 +90,7 @@ upsert_config:
   # @schema {"name": "upsert_config.disable_balance_update", "type": "boolean"}
   # upsert_config.disable_balance_update -- disabled balance update flag
   disable_balance_update: false
-# @schema {"name": "search", "type": "object"}
+# @schema {"name": "search_config", "type": "object"}
 # search_config -- upsert config
 search_config:
   # @schema {"name": "search_config.epsilon", "type": "number"}
@@ -352,7 +352,7 @@ client_config:
     # @schema {"name": "client_config.tls.insecure_skip_verify", "type": "boolean"}
     # client_config.tls.insecure_skip_verify -- enable/disable skip SSL certificate verification
     insecure_skip_verify: false
-# @schema {"name": "rules", "type": "array"}
+# @schema {"name": "rules", "type": "array", "items": {"type": "string"}}
 # rules -- executing rule
 rules: []
 # @schema {"name": "rps", "type": "integer", "minimum": 0, "maximum": 65535}

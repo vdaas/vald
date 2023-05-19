@@ -81,33 +81,6 @@ spec:
                       type: string
                     tag:
                       type: string
-                liveness:
-                  type: object
-                  properties:
-                    enabled:
-                      type: boolean
-                livenessProbe:
-                  type: object
-                  properties:
-                    failureThreshold:
-                      type: integer
-                    httpGet:
-                      type: object
-                      properties:
-                        path:
-                          type: string
-                        port:
-                          type: string
-                        scheme:
-                          type: string
-                    initialDelaySeconds:
-                      type: integer
-                    periodSeconds:
-                      type: integer
-                    successThreshold:
-                      type: integer
-                    timeoutSeconds:
-                      type: integer
                 logging:
                   type: object
                   properties:
@@ -129,13 +102,6 @@ spec:
                       enum:
                         - glg
                         - zap
-                metrics:
-                  type: object
-                  properties:
-                    port:
-                      type: integer
-                      maximum: 65535
-                      minimum: 0
                 name:
                   type: string
                 nodeSelector:
@@ -209,33 +175,6 @@ spec:
                       type: boolean
                     name:
                       type: string
-                readiness:
-                  type: object
-                  properties:
-                    enabled:
-                      type: boolean
-                readinessProbe:
-                  type: object
-                  properties:
-                    failureThreshold:
-                      type: integer
-                    httpGet:
-                      type: object
-                      properties:
-                        path:
-                          type: string
-                        port:
-                          type: string
-                        scheme:
-                          type: string
-                    initialDelaySeconds:
-                      type: integer
-                    periodSeconds:
-                      type: integer
-                    successThreshold:
-                      type: integer
-                    timeoutSeconds:
-                      type: integer
                 replicas:
                   type: integer
                 resources:
@@ -265,6 +204,28 @@ spec:
                               type: boolean
                             host:
                               type: string
+                            livenessProbe:
+                              type: object
+                              properties:
+                                failureThreshold:
+                                  type: integer
+                                httpGet:
+                                  type: object
+                                  properties:
+                                    path:
+                                      type: string
+                                    port:
+                                      type: string
+                                    scheme:
+                                      type: string
+                                initialDelaySeconds:
+                                  type: integer
+                                periodSeconds:
+                                  type: integer
+                                successThreshold:
+                                  type: integer
+                                timeoutSeconds:
+                                  type: integer
                             port:
                               type: integer
                             server:
@@ -293,6 +254,8 @@ spec:
                                   type: string
                                 socket_path:
                                   type: string
+                            servicePort:
+                              type: integer
                         readiness:
                           type: object
                           properties:
@@ -302,6 +265,28 @@ spec:
                               type: string
                             port:
                               type: integer
+                            readinessProbe:
+                              type: object
+                              properties:
+                                failureThreshold:
+                                  type: integer
+                                httpGet:
+                                  type: object
+                                  properties:
+                                    path:
+                                      type: string
+                                    port:
+                                      type: string
+                                    scheme:
+                                      type: string
+                                initialDelaySeconds:
+                                  type: integer
+                                periodSeconds:
+                                  type: integer
+                                successThreshold:
+                                  type: integer
+                                timeoutSeconds:
+                                  type: integer
                             server:
                               type: object
                               properties:
@@ -328,6 +313,35 @@ spec:
                                   type: string
                                 socket_path:
                                   type: string
+                            servicePort:
+                              type: integer
+                        startup:
+                          type: object
+                          properties:
+                            enabled:
+                              type: boolean
+                        startupProbe:
+                          type: object
+                          properties:
+                            failureThreshold:
+                              type: integer
+                            httpGet:
+                              type: object
+                              properties:
+                                path:
+                                  type: string
+                                port:
+                                  type: string
+                                scheme:
+                                  type: string
+                            initialDelaySeconds:
+                              type: integer
+                            periodSeconds:
+                              type: integer
+                            successThreshold:
+                              type: integer
+                            timeoutSeconds:
+                              type: integer
                     metrics:
                       type: object
                       properties:
@@ -400,6 +414,8 @@ spec:
                                       type: integer
                                     interceptors:
                                       type: array
+                                      items:
+                                        type: string
                                     keepalive:
                                       type: object
                                       properties:
@@ -483,33 +499,6 @@ spec:
                       type: boolean
                     name:
                       type: string
-                startup:
-                  type: object
-                  properties:
-                    enabled:
-                      type: boolean
-                startupProbe:
-                  type: object
-                  properties:
-                    failureThreshold:
-                      type: integer
-                    httpGet:
-                      type: object
-                      properties:
-                        path:
-                          type: string
-                        port:
-                          type: string
-                        scheme:
-                          type: string
-                    initialDelaySeconds:
-                      type: integer
-                    periodSeconds:
-                      type: integer
-                    successThreshold:
-                      type: integer
-                    timeoutSeconds:
-                      type: integer
                 time_zone:
                   type: string
                 tolerations:

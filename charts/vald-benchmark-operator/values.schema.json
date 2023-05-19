@@ -20,51 +20,6 @@
         "tag": { "type": "string", "description": "image tag" }
       }
     },
-    "liveness": {
-      "type": "object",
-      "properties": {
-        "enabled": {
-          "type": "boolean",
-          "description": "enable liveness probe."
-        }
-      }
-    },
-    "livenessProbe": {
-      "type": "object",
-      "properties": {
-        "failureThreshold": {
-          "type": "integer",
-          "description": "liveness probe failure threshold"
-        },
-        "httpGet": {
-          "type": "object",
-          "properties": {
-            "path": { "type": "string", "description": "readiness probe path" },
-            "port": { "type": "string", "description": "readiness probe port" },
-            "scheme": {
-              "type": "string",
-              "description": "readiness probe scheme"
-            }
-          }
-        },
-        "initialDelaySeconds": {
-          "type": "integer",
-          "description": "liveness probe initial delay seconds"
-        },
-        "periodSeconds": {
-          "type": "integer",
-          "description": "liveness probe period seconds"
-        },
-        "successThreshold": {
-          "type": "integer",
-          "description": "liveness probe success threshold"
-        },
-        "timeoutSeconds": {
-          "type": "integer",
-          "description": "liveness probe timeout seconds"
-        }
-      }
-    },
     "logging": {
       "type": "object",
       "properties": {
@@ -82,17 +37,6 @@
           "type": "string",
           "description": "logger name. currently logger must be `glg` or `zap`.",
           "enum": ["glg", "zap"]
-        }
-      }
-    },
-    "metrics": {
-      "type": "object",
-      "properties": {
-        "port": {
-          "type": "integer",
-          "description": "pprof server port",
-          "maximum": 65535,
-          "minimum": 0
         }
       }
     },
@@ -166,51 +110,6 @@
         }
       }
     },
-    "readiness": {
-      "type": "object",
-      "properties": {
-        "enabled": {
-          "type": "boolean",
-          "description": "enable liveness probe."
-        }
-      }
-    },
-    "readinessProbe": {
-      "type": "object",
-      "properties": {
-        "failureThreshold": {
-          "type": "integer",
-          "description": "readiness probe failure threshold"
-        },
-        "httpGet": {
-          "type": "object",
-          "properties": {
-            "path": { "type": "string", "description": "readiness probe path" },
-            "port": { "type": "string", "description": "readiness probe port" },
-            "scheme": {
-              "type": "string",
-              "description": "readiness probe scheme"
-            }
-          }
-        },
-        "initialDelaySeconds": {
-          "type": "integer",
-          "description": "readiness probe initial delay seconds"
-        },
-        "periodSeconds": {
-          "type": "integer",
-          "description": "readiness probe period seconds"
-        },
-        "successThreshold": {
-          "type": "integer",
-          "description": "readiness probe success threshold"
-        },
-        "timeoutSeconds": {
-          "type": "integer",
-          "description": "readiness probe timeout seconds"
-        }
-      }
-    },
     "replicas": {
       "type": "integer",
       "description": "the number of replica for deployment"
@@ -239,6 +138,48 @@
               "properties": {
                 "enabled": { "type": "boolean" },
                 "host": { "type": "string" },
+                "livenessProbe": {
+                  "type": "object",
+                  "properties": {
+                    "failureThreshold": {
+                      "type": "integer",
+                      "description": "liveness probe failure threshold"
+                    },
+                    "httpGet": {
+                      "type": "object",
+                      "properties": {
+                        "path": {
+                          "type": "string",
+                          "description": "readiness probe path"
+                        },
+                        "port": {
+                          "type": "string",
+                          "description": "readiness probe port"
+                        },
+                        "scheme": {
+                          "type": "string",
+                          "description": "readiness probe scheme"
+                        }
+                      }
+                    },
+                    "initialDelaySeconds": {
+                      "type": "integer",
+                      "description": "liveness probe initial delay seconds"
+                    },
+                    "periodSeconds": {
+                      "type": "integer",
+                      "description": "liveness probe period seconds"
+                    },
+                    "successThreshold": {
+                      "type": "integer",
+                      "description": "liveness probe success threshold"
+                    },
+                    "timeoutSeconds": {
+                      "type": "integer",
+                      "description": "liveness probe timeout seconds"
+                    }
+                  }
+                },
                 "port": { "type": "integer" },
                 "server": {
                   "type": "object",
@@ -259,7 +200,8 @@
                     "probe_wait_time": { "type": "string" },
                     "socket_path": { "type": "string" }
                   }
-                }
+                },
+                "servicePort": { "type": "integer" }
               }
             },
             "readiness": {
@@ -268,6 +210,48 @@
                 "enabled": { "type": "boolean" },
                 "host": { "type": "string" },
                 "port": { "type": "integer" },
+                "readinessProbe": {
+                  "type": "object",
+                  "properties": {
+                    "failureThreshold": {
+                      "type": "integer",
+                      "description": "readiness probe failure threshold"
+                    },
+                    "httpGet": {
+                      "type": "object",
+                      "properties": {
+                        "path": {
+                          "type": "string",
+                          "description": "readiness probe path"
+                        },
+                        "port": {
+                          "type": "string",
+                          "description": "readiness probe port"
+                        },
+                        "scheme": {
+                          "type": "string",
+                          "description": "readiness probe scheme"
+                        }
+                      }
+                    },
+                    "initialDelaySeconds": {
+                      "type": "integer",
+                      "description": "readiness probe initial delay seconds"
+                    },
+                    "periodSeconds": {
+                      "type": "integer",
+                      "description": "readiness probe period seconds"
+                    },
+                    "successThreshold": {
+                      "type": "integer",
+                      "description": "readiness probe success threshold"
+                    },
+                    "timeoutSeconds": {
+                      "type": "integer",
+                      "description": "readiness probe timeout seconds"
+                    }
+                  }
+                },
                 "server": {
                   "type": "object",
                   "properties": {
@@ -287,6 +271,58 @@
                     "probe_wait_time": { "type": "string" },
                     "socket_path": { "type": "string" }
                   }
+                },
+                "servicePort": { "type": "integer" }
+              }
+            },
+            "startup": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "description": "enable startup probe."
+                }
+              }
+            },
+            "startupProbe": {
+              "type": "object",
+              "properties": {
+                "failureThreshold": {
+                  "type": "integer",
+                  "description": "startupProbe probe failure threshold"
+                },
+                "httpGet": {
+                  "type": "object",
+                  "properties": {
+                    "path": {
+                      "type": "string",
+                      "description": "startup probe path"
+                    },
+                    "port": {
+                      "type": "string",
+                      "description": "startup probe port"
+                    },
+                    "scheme": {
+                      "type": "string",
+                      "description": "startup probe scheme"
+                    }
+                  }
+                },
+                "initialDelaySeconds": {
+                  "type": "integer",
+                  "description": "startup probe initial delay seconds"
+                },
+                "periodSeconds": {
+                  "type": "integer",
+                  "description": "startup probe period seconds"
+                },
+                "successThreshold": {
+                  "type": "integer",
+                  "description": "startup probe success threshold"
+                },
+                "timeoutSeconds": {
+                  "type": "integer",
+                  "description": "startup probe timeout seconds"
                 }
               }
             }
@@ -349,7 +385,10 @@
                         "header_table_size": { "type": "integer" },
                         "initial_conn_window_size": { "type": "integer" },
                         "initial_window_size": { "type": "integer" },
-                        "interceptors": { "type": "array" },
+                        "interceptors": {
+                          "type": "array",
+                          "items": { "type": "string" }
+                        },
                         "keepalive": {
                           "type": "object",
                           "properties": {
@@ -449,48 +488,6 @@
           "description": "service account will be created"
         },
         "name": { "type": "string", "description": "name of service account" }
-      }
-    },
-    "startup": {
-      "type": "object",
-      "properties": {
-        "enabled": { "type": "boolean", "description": "enable startup probe." }
-      }
-    },
-    "startupProbe": {
-      "type": "object",
-      "properties": {
-        "failureThreshold": {
-          "type": "integer",
-          "description": "startupProbe probe failure threshold"
-        },
-        "httpGet": {
-          "type": "object",
-          "properties": {
-            "path": { "type": "string", "description": "startup probe path" },
-            "port": { "type": "string", "description": "startup probe port" },
-            "scheme": {
-              "type": "string",
-              "description": "startup probe scheme"
-            }
-          }
-        },
-        "initialDelaySeconds": {
-          "type": "integer",
-          "description": "startup probe initial delay seconds"
-        },
-        "periodSeconds": {
-          "type": "integer",
-          "description": "startup probe period seconds"
-        },
-        "successThreshold": {
-          "type": "integer",
-          "description": "startup probe success threshold"
-        },
-        "timeoutSeconds": {
-          "type": "integer",
-          "description": "startup probe timeout seconds"
-        }
       }
     },
     "time_zone": { "type": "string", "description": "time_zone" },

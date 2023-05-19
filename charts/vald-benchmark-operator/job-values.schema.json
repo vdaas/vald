@@ -395,9 +395,28 @@
       "maximum": 65535,
       "minimum": 0
     },
-    "rules": { "type": "array", "description": "executing rule" },
-    "search": { "type": "object" },
-    "search_config": { "type": "number", "description": "epsilon" },
+    "rules": {
+      "type": "array",
+      "description": "executing rule",
+      "items": { "type": "string" }
+    },
+    "search_config": {
+      "type": "object",
+      "description": "upsert config",
+      "properties": {
+        "epsilon": { "type": "number", "description": "epsilon" },
+        "min_num": {
+          "type": "integer",
+          "description": "minimum number of top-k"
+        },
+        "num": { "type": "integer", "description": "number of top-k" },
+        "radius": { "type": "number", "description": "radius" },
+        "timeout": {
+          "type": "string",
+          "description": "search operation timeout"
+        }
+      }
+    },
     "target": {
       "type": "object",
       "description": "target cluster location",

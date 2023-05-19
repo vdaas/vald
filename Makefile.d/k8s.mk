@@ -162,14 +162,14 @@ k8s/vr/delete: \
 
 .PHONY: k8s/vald-benchmark-operator/deploy
 ## deploy vald-benchmark-operator to k8s
-## TODO FIX to ${VERSION}
 k8s/vald-benchmark-operator/deploy:
 	helm template \
 	    --output-dir $(TEMP_DIR) \
-	    --set image.tag=latest \
+	    --set image.tag=${VERSION} \
 	    --include-crds \
 	    charts/vald-benchmark-operator
 	kubectl create -f $(TEMP_DIR)/vald-benchmark-operator/crds/valdbenchmarkjob.yaml
+	kubectl create -f $(TEMP_DIR)/vald-benchmark-operator/crds/valdbenchmarkscenario.yaml
 	kubectl create -f $(TEMP_DIR)/vald-benchmark-operator/crds/valdbenchmarkoperatorrelease.yaml
 	kubectl apply -f $(TEMP_DIR)/vald-benchmark-operator/templates
 	sleep 2
@@ -177,11 +177,10 @@ k8s/vald-benchmark-operator/deploy:
 
 .PHONY: k8s/vald-benchmark-operator/delete
 ## delete vald-benchmark-operator from k8s
-## TODO FIX to ${VERSION}
 k8s/vald-benchmark-operator/delete:
 	helm template \
 	    --output-dir $(TEMP_DIR) \
-	    --set image.tag=latest \
+	    --set image.tag=${VERSION} \
 	    --include-crds \
 	    charts/vald-benchmark-operator
 	kubectl delete -f $(TEMP_DIR)/vald-benchmark-operator/templates

@@ -35,8 +35,8 @@ metadata:
 spec:
   ports:
     - name: prometheus
-      port: {{ .Values.metrics.port }}
-      targetPort: {{ .Values.metrics.port }}
+      port: {{ .Values.server_config.metrics.pprof.port }}
+      targetPort: {{ .Values.server_config.metrics.pprof.port }}
       protocol: TCP
   selector:
     app.kubernetes.io/name: {{ include "vald.name" . }}

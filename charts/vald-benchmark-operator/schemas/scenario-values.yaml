@@ -48,7 +48,7 @@ dataset:
     end: 1000
 
 
-# @schema {"name": "jobs", "type": "array"}
+# @schema {"name": "jobs", "type": "array", "items": {"type": "object"}}
 jobs:
   - target:
       host: "vald-lb-gateway.default.svc.cluster.local"

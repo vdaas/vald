@@ -41,7 +41,7 @@
       },
       "required": ["name", "indexes", "group", "range"]
     },
-    "jobs": { "type": "array" },
+    "jobs": { "type": "array", "items": { "type": "object" } },
     "target": {
       "type": "object",
       "description": "target cluster location",

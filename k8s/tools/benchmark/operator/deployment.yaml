@@ -43,7 +43,7 @@ spec:
       serviceAccountName: vald-benchmark-operator
       containers:
         - name: vald-benchmark-operator
-          image: "local-registry:5000/vdaas/vald-benchmark-operator:v1.7.5"
+          image: "vdaas/vald-benchmark-operator:v1.7.5"
           imagePullPolicy: Always
           livenessProbe:
             failureThreshold: 2

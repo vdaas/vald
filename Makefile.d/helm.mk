@@ -176,23 +176,23 @@ helm/schema/crd/vald-helm-operator: \
 ## generate OpenAPI v3 schema for ValdBenchmarkJobRelease
 helm/schema/crd/vald-benchmark-job: \
 	yq/install
-	mv charts/vald-benchmark-operator/crds/valdbenchmarkjobrelease.yaml $(TEMP_DIR)/valdbenchmarkjobrelease.yaml
+	mv charts/vald-benchmark-operator/crds/valdbenchmarkjob.yaml $(TEMP_DIR)/valdbenchmarkjob.yaml
 	GOPRIVATE=$(GOPRIVATE) \
 	go run -mod=readonly hack/helm/schema/crd/main.go \
-	charts/vald-benchmark-operator/schemas/job-values.yaml > $(TEMP_DIR)/valdbenchmarkjobrelease-spec.yaml
+	charts/vald-benchmark-operator/schemas/job-values.yaml > $(TEMP_DIR)/valdbenchmarkjob-spec.yaml
 	$(BINDIR)/yq eval-all 'select(fileIndex==0).spec.versions[0].schema.openAPIV3Schema.properties.spec = select(fileIndex==1).spec | select(fileIndex==0)' \
-	$(TEMP_DIR)/valdbenchmarkjobrelease.yaml $(TEMP_DIR)/valdbenchmarkjobrelease-spec.yaml > charts/vald-benchmark-operator/crds/valdbenchmarkjobrelease.yaml
+	$(TEMP_DIR)/valdbenchmarkjob.yaml $(TEMP_DIR)/valdbenchmarkjob-spec.yaml > charts/vald-benchmark-operator/crds/valdbenchmarkjob.yaml
 
 .PHONY: helm/schema/crd/vald-benchmark-scenario
 ## generate OpenAPI v3 schema for ValdBenchmarkScenarioRelease
 helm/schema/crd/vald-benchmark-scenario: \
 	yq/install
-	mv charts/vald-benchmark-operator/crds/valdbenchmarkscenariorelease.yaml $(TEMP_DIR)/valdbenchmarkscenariorelease.yaml
+	mv charts/vald-benchmark-operator/crds/valdbenchmarkscenario.yaml $(TEMP_DIR)/valdbenchmarkscenario.yaml
 	GOPRIVATE=$(GOPRIVATE) \
 	go run -mod=readonly hack/helm/schema/crd/main.go \
-	charts/vald-benchmark-operator/schemas/scenario-values.yaml > $(TEMP_DIR)/valdbenchmarkscenariorelease-spec.yaml
+	charts/vald-benchmark-operator/schemas/scenario-values.yaml > $(TEMP_DIR)/valdbenchmarkscenario-spec.yaml
 	$(BINDIR)/yq eval-all 'select(fileIndex==0).spec.versions[0].schema.openAPIV3Schema.properties.spec = select(fileIndex==1).spec | select(fileIndex==0)' \
-	$(TEMP_DIR)/valdbenchmarkscenariorelease.yaml $(TEMP_DIR)/valdbenchmarkscenariorelease-spec.yaml > charts/vald-benchmark-operator/crds/valdbenchmarkscenariorelease.yaml
+	$(TEMP_DIR)/valdbenchmarkscenario.yaml $(TEMP_DIR)/valdbenchmarkscenario-spec.yaml > charts/vald-benchmark-operator/crds/valdbenchmarkscenario.yaml
 
 .PHONY: helm/schema/crd/vald-benchmark-operator
 ## generate OpenAPI v3 schema for ValdBenchmarkOperatorRelease
