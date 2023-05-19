@@ -59,6 +59,7 @@ RUN make ngt/install \
     && make protobuf/install
 
 # k3d
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 RUN wget -q -O - https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash
 # kubectl
 RUN curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
@@ -67,6 +68,7 @@ RUN install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
 # k9s installs the binary to the current user which is root for devcontainer
 # so change the current user to vscode to user afterwards
 USER vscode
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 RUN curl -sS https://webinstall.dev/k9s | bash
 
 WORKDIR ${GOPATH}
