@@ -524,7 +524,8 @@ func Test_retryableStatusCode(t *testing.T) {
 			want: want{
 				want: true,
 			},
-		}, {
+		},
+		{
 			name: "return false when response status is 301(MovedPermanently)",
 			args: args{
 				status: http.StatusMovedPermanently,
