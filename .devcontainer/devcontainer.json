@@ -1,6 +1,6 @@
 {
   "name": "Vald",
-  "dockerFile": "./Dockerfile",
+  "dockerFile": "../dockers/dev/Dockerfile",
   "context": "..",
   "runArgs": ["--cap-add=SYS_PTRACE", "--security-opt", "seccomp=unconfined"],
   "features": {

@@ -64,12 +64,21 @@ COPY versions versions
 RUN make ngt/install \
     && make helm/install \
     && make helm-docs/install \
-    && make kind/install \
     && make valdcli/install \
     && make yq/install \
     && make golangci-lint/install \
     && make reviewdog/install \
-    && make kubectl/install \
     && make protobuf/install
+
+# k3d
+RUN wget -q -O - https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash
+# kubectl
+RUN curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+RUN sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+# k9s
+# k9s installs the binary to the current user which is root for devcontainer
+# so change the current user to vscode to user afterwards
+USER vscode
+RUN curl -sS https://webinstall.dev/k9s | bash
 
 WORKDIR ${GOPATH}
