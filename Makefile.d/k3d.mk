@@ -24,7 +24,7 @@ k3d/install: $(BINDIR)/k3d
 
 $(BINDIR)/k3d:
 	mkdir -p $(BINDIR)
-	wget -q -O - "https://raw.githubusercontent.com/rancher/k3d/main/install.sh" | bash
+	curl -sS https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash
 	chmod a+x $(BINDIR)/$(K3D_COMMAND)
 
 .PHONY: k3d/start
