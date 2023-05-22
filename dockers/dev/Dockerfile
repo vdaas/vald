@@ -16,18 +16,6 @@
 
 ARG MAINTAINER="vdaas.org vald team <vald@vdaas.org>"
 
-FROM ubuntu:devel AS builder
-
-# skipcq: DOK-DL3008
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    ca-certificates \
-    curl \
-    unzip \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
-
-WORKDIR /tmp
-
 # skipcq: DOK-DL3026
 FROM mcr.microsoft.com/vscode/devcontainers/go:1 AS base
 LABEL maintainer "${MAINTAINER}"
@@ -64,12 +52,18 @@ COPY versions versions
 RUN make ngt/install \
     && make helm/install \
     && make helm-docs/install \
-    && make kind/install \
     && make valdcli/install \
     && make yq/install \
     && make golangci-lint/install \
     && make reviewdog/install \
+    && make protobuf/install \
     && make kubectl/install \
-    && make protobuf/install
+    && make k3d/install
+
+# k9s installs the binary to the current user which is root for devcontainer
+# so change the current user to vscode to user afterwards
+USER vscode
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+RUN curl -sS https://webinstall.dev/k9s | bash
 
 WORKDIR ${GOPATH}

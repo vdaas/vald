@@ -69,6 +69,7 @@ k8s/vald/deploy:
 	    --set gateway.filter.image.repository=$(CRORG)/$(FILTER_GATEWAY_IMAGE) \
 	    --set gateway.lb.image.repository=$(CRORG)/$(LB_GATEWAY_IMAGE) \
 	    --set manager.index.image.repository=$(CRORG)/$(MANAGER_INDEX_IMAGE) \
+	    $(HELM_EXTRA_OPTIONS) \
 	    --output-dir $(TEMP_DIR) \
 	    charts/vald
 	@echo "Permitting error because there's some cases nothing to apply"
@@ -223,17 +224,16 @@ k8s/metrics/grafana/delete:
 .PHONY: k8s/metrics/jaeger/deploy
 ## deploy jaeger
 k8s/metrics/jaeger/deploy:
-	kubectl apply -f https://raw.githubusercontent.com/jaegertracing/helm-charts/jaeger-operator-$(JAEGER_OPERATOR_VERSION)/charts/jaeger-operator/crds/crd.yaml
-	kubectl apply -f k8s/metrics/jaeger/jaeger-operator
+	helm repo add jaegertracing https://jaegertracing.github.io/helm-charts
+	helm install jaeger jaegertracing/jaeger-operator --version $(JAEGER_OPERATOR_VERSION)
 	kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=jaeger-operator --timeout=60s
-	kubectl apply -f k8s/metrics/jaeger/jaeger
+	kubectl apply -f k8s/metrics/jaeger/jaeger.yaml
 
 .PHONY: k8s/metrics/jaeger/delete
 ## delete jaeger
 k8s/metrics/jaeger/delete:
-	kubectl delete -f k8s/metrics/jaeger/jaeger
-	kubectl delete -f k8s/metrics/jaeger/jaeger-operator
-	kubectl delete -f https://raw.githubusercontent.com/jaegertracing/helm-charts/jaeger-operator-$(JAEGER_OPERATOR_VERSION)/charts/jaeger-operator/crds/crd.yaml
+	kubectl delete -f k8s/metrics/jaeger
+	helm uninstall jaeger
 
 .PHONY: k8s/metrics/loki/deploy
 ## deploy loki and promtail
@@ -300,29 +300,48 @@ k8s/linkerd/deploy:
 k8s/linkerd/delete:
 	linkerd install --ignore-cluster | kubectl delete -f -
 
-.PHONY: k8s/otel/operator/install
+.PHONY: k8s/otel/operator/deploy
 ## deploy opentelemetry operator
-k8s/otel/operator/install:
+k8s/otel/operator/deploy:
 	helm repo add open-telemetry https://open-telemetry.github.io/opentelemetry-helm-charts
 	helm install ${OTEL_OPERATOR_RELEASE_NAME} open-telemetry/opentelemetry-operator --set installCRDs=true --version ${OTEL_OPERATOR_VERSION}
 	kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=opentelemetry-operator --timeout=60s
+	sleep 10
 
-.PHONY: k8s/otel/operator/uninstall
+.PHONY: k8s/otel/operator/delete
 ## delete opentelemetry operator
-k8s/otel/operator/uninstall:
+k8s/otel/operator/delete:
 	helm uninstall ${OTEL_OPERATOR_RELEASE_NAME}
 
-.PHONY: k8s/otel/collector/install
+.PHONY: k8s/otel/collector/deploy
 ## deploy opentelemetry collector
-k8s/otel/collector/install:
+k8s/otel/collector/deploy:
 	kubectl apply -f $(ROOTDIR)/k8s/metrics/otel/collector.yaml
 	kubectl apply -f $(ROOTDIR)/k8s/metrics/otel/pod-monitor.yaml
 
-.PHONY: k8s/otel/collector/uninstall
+.PHONY: k8s/otel/collector/delete
 ## delete opentelemetry collector
-k8s/otel/collector/uninstall:
+k8s/otel/collector/delete:
 	kubectl delete -f $(ROOTDIR)/k8s/metrics/otel/collector.yaml
 	kubectl delete -f $(ROOTDIR)/k8s/metrics/otel/pod-monitor.yaml
+
+.PHONY: k8s/monitoring/deploy
+## deploy monitoring stack
+k8s/monitoring/deploy: \
+	k8s/metrics/jaeger/deploy \
+	k8s/metrics/prometheus/operator/deploy \
+	k8s/metrics/grafana/deploy \
+	k8s/otel/operator/deploy \
+	k8s/otel/collector/deploy
+
+.PHONY: k8s/monitoring/delete
+## delete monitoring stack
+k8s/monitoring/delete: \
+	k8s/otel/collector/delete \
+	k8s/otel/operator/delete \
+	k8s/metrics/grafana/delete \
+	k8s/metrics/jaeger/delete \
+	k8s/metrics/prometheus/operator/delete \
 
 .PHONY: telepresence/install
 ## install telepresence

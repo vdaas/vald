@@ -74,7 +74,7 @@ Before executing the following command, please ensure the Prometheus operator ru
 </div>
 
 ```bash
-make k8s/otel/operator/install k8s/otel/collector/install
+make k8s/otel/operator/deploy k8s/otel/collector/deploy
 ```
 
 ## Configure Helm chart

@@ -23,6 +23,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"reflect"
+	"strconv"
 	"testing"
 
 	"github.com/vdaas/vald/internal/backoff"
@@ -371,14 +372,14 @@ func Test_ert_doRoundTrip(t *testing.T) {
 				transport: &roundTripMock{
 					RoundTripFunc: func(*http.Request) (*http.Response, error) {
 						return &http.Response{
-							Status: "200",
+							Status: strconv.Itoa(http.StatusOK),
 						}, nil
 					},
 				},
 			},
 			want: want{
 				wantRes: &http.Response{
-					Status: "200",
+					Status: strconv.Itoa(http.StatusOK),
 				},
 			},
 		},
@@ -399,7 +400,7 @@ func Test_ert_doRoundTrip(t *testing.T) {
 			},
 		},
 		{
-			name: "roundtrip return retryable error",
+			name: "roundtrip return retryable error when status code is 502",
 			args: args{
 				req: &http.Request{},
 			},
@@ -415,6 +416,26 @@ func Test_ert_doRoundTrip(t *testing.T) {
 			},
 			want: want{
 				err: errors.ErrTransportRetryable,
+			},
+		},
+		{
+			name: "roundtrip return success when status code is 301",
+			args: args{
+				req: &http.Request{},
+			},
+			fields: fields{
+				transport: &roundTripMock{
+					RoundTripFunc: func(*http.Request) (*http.Response, error) {
+						return &http.Response{
+							Status: strconv.Itoa(http.StatusMovedPermanently),
+						}, nil
+					},
+				},
+			},
+			want: want{
+				wantRes: &http.Response{
+					Status: strconv.Itoa(http.StatusMovedPermanently),
+				},
 			},
 		},
 		{
@@ -496,7 +517,7 @@ func Test_retryableStatusCode(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "return true when response status is retryable",
+			name: "return true when response status is 429(TooManyRequest)",
 			args: args{
 				status: http.StatusTooManyRequests,
 			},
@@ -505,7 +526,16 @@ func Test_retryableStatusCode(t *testing.T) {
 			},
 		},
 		{
-			name: "return false when response status is not retryable",
+			name: "return false when response status is 301(MovedPermanently)",
+			args: args{
+				status: http.StatusMovedPermanently,
+			},
+			want: want{
+				want: false,
+			},
+		},
+		{
+			name: "return false when response status is 200(OK)",
 			args: args{
 				status: http.StatusOK,
 			},
