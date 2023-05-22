@@ -60,6 +60,11 @@ RUN make ngt/install \
     && make kubectl/install \
     && make k3d/install
 
+# change GOPATH owner to vscode to run make binary/build without root permission
+RUN chown -R vscode:vscode ${GOPATH}
+# mkdir for agent configuration install
+RUN mkdir -p /etc/server
+
 # k9s installs the binary to the current user which is root for devcontainer
 # so change the current user to vscode to user afterwards
 USER vscode
