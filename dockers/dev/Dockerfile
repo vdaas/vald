@@ -60,7 +60,6 @@ RUN make ngt/install \
     && make kubectl/install \
     && make k3d/install
 
-# k9s
 # k9s installs the binary to the current user which is root for devcontainer
 # so change the current user to vscode to user afterwards
 USER vscode
