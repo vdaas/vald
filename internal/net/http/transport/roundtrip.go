@@ -94,7 +94,6 @@ func retryableStatusCode(status int) bool {
 	case http.StatusTooManyRequests,
 		http.StatusInternalServerError,
 		http.StatusServiceUnavailable,
-		http.StatusMovedPermanently,
 		http.StatusBadGateway,
 		http.StatusGatewayTimeout:
 		return true
