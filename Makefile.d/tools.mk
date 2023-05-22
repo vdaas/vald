@@ -78,8 +78,8 @@ $(BINDIR)/kubectl:
 else
 $(BINDIR)/kubectl:
 	curl -LO "https://dl.k8s.io/release/$(shell curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-	install -o root -g root -m 0755 kubectl $(BINDIR)/kubectl
-	chmod a+x $(BINDIR)/kubectl
+	chmod a+x ./kubectl
+	sudo mv ./kubectl $(BINDIR)/kubectl
 endif
 
 .PHONY: protobuf/install
