@@ -47,7 +47,6 @@ dataset:
     # dataset.range.end -- end index number
     end: 1000
 
-
 # @schema {"name": "jobs", "type": "array", "items": {"type": "object"}}
 jobs:
   - target:
