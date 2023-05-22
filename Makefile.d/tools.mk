@@ -77,8 +77,9 @@ $(BINDIR)/kubectl:
 	chmod a+x $(BINDIR)/kubectl
 else
 $(BINDIR)/kubectl:
-	curl -L "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl" -o $(BINDIR)/kubectl
-	chmod a+x $(BINDIR)/kubectl
+	curl -LO "https://dl.k8s.io/release/$(shell curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+	chmod a+x ./kubectl
+	sudo mv ./kubectl $(BINDIR)/kubectl
 endif
 
 .PHONY: protobuf/install
