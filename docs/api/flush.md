@@ -2,7 +2,7 @@
 
 ## Overview
 
-Flush Service is responsible for removing vectors that are indexed in the `vald-agent`.
+Flush Service is responsible for removing all vectors that are indexed and uncommitted in the `vald-agent`.
 
 ```rpc
 service Flush {
@@ -38,22 +38,22 @@ Flush RPC is the method to remove all vectors.
   ```rpc
   message Object {
       message Info_Index_Count {
-        int64 stored = 0;
-        int64 uncommitted = 0;
+        uint32 stored = 0;
+        uint32 uncommitted = 0;
         bool indexing = false;
         bool saving = false;
       }
   }
   ```
 
-  - Object.Info_Index_Count
+   Object.Info_Index_Count
 
-    | field       | type  | label | desc.                                                                      |
-    | :---------: | :---- | :---- | :------------------------------------------------------------------------- |
-    | stored      | int64 |       | count of indices.                                                          |
-    | uncommitted | int64 |       | count of uncommited indices.                                               |
-    | indexing    | bool  |       | the state indicating whether `vald-agent` pods is present in the indexing. |
-    | saving      | bool  |       | the state indicating whether `vald-agent` pods is present in the saving.   |
+    | field       | type   | label | desc.                                                                      |
+    | :---------: |:------ | :---- | :------------------------------------------------------------------------- |
+    | stored      | uint32 |       | count of indices.                                                          | 
+    | uncommitted | uint32 |       | count of uncommitted indices.                                              |
+    | indexing    |  bool  |       | the state indicating whether `vald-agent` pods is present in the indexing. |
+    | saving      |  bool  |       | the state indicating whether `vald-agent` pods is present in the saving.   |
 
 ### Status Code
 

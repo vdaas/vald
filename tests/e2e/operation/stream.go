@@ -1001,6 +1001,24 @@ func (c *client) RemoveWithParameters(
 	return rerr
 }
 
+func (c *client) Flush(t *testing.T, ctx context.Context) error {
+	t.Log("flush operation started")
+
+	client, err := c.getClient(ctx)
+	if err != nil {
+		return err
+	}
+
+	_, err = client.Flush(ctx, &payload.Flush_Request{})
+	if err != nil {
+		return err
+	}
+
+	t.Log("flush operation finished")
+
+	return nil
+}
+
 func (c *client) Exists(t *testing.T, ctx context.Context, id string) error {
 	t.Log("exists operation started")
 

@@ -379,6 +379,11 @@ func TestE2EStandardCRUD(t *testing.T) {
 	if err != nil {
 		t.Fatalf("an error occurred: %s", err)
 	}
+
+	err = op.Flush(t, ctx)
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
 }
 
 func TestE2ECRUDWithSkipStrictExistCheck(t *testing.T) {

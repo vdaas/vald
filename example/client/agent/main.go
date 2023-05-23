@@ -164,7 +164,7 @@ func main() {
 		glg.Infof("%d - Results : %s\n\n", i+1, string(b))
 		time.Sleep(1 * time.Second)
 	}
-	glg.Infof("Finish searching %d times", testCount)
+
 	glg.Info("Start removing vector")
 	// Remove indexed 200 vectors from vald cluster.
 	for i := range ids[:insertCount/2] {
