@@ -30,9 +30,6 @@ Flush RPC is the method to remove all vectors.
 
   - Flush.Request
 
-    | field  | type      | label | required | desc.                                   |
-    | :----: | :-------- | :---- | :------: | :-------------------------------------- |
-
 
 ### Output
 
@@ -51,12 +48,12 @@ Flush RPC is the method to remove all vectors.
 
   - Object.Info_Index_Count
 
-    | field | type  | label                   | desc.                                                                      |
-    |:-----:| :----- |:---------------------------------------------------------------------------| :-------------------------------------------------------------------- |
-    | stored  | int64 |                         | count of indices.                                                          |
-    | uncommitted  | int64 |                         | count of uncommited indices.                                               |
-    |  indexing  | bool  | repeated(Array[string]) | the state indicating whether `vald-agent` pods is present in the indexing. |
-    |  saving  | bool  | repeated(Array[string]) | the state indicating whether `vald-agent` pods is present in the saving.   |
+    | field       | type  | label | desc.                                                                      |
+    | :---------: | :---- | :---- | :------------------------------------------------------------------------- |
+    | stored      | int64 |       | count of indices.                                                          |
+    | uncommitted | int64 |       | count of uncommited indices.                                               |
+    | indexing    | bool  |       | the state indicating whether `vald-agent` pods is present in the indexing. |
+    | saving      | bool  |       | the state indicating whether `vald-agent` pods is present in the saving.   |
 
 ### Status Code
 

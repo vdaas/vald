@@ -1230,7 +1230,6 @@ func (n *ngt) RegenerateIndexes(ctx context.Context) (err error) {
 	// delete file
 	err = file.DeleteDir(ctx, n.path)
 	if err != nil {
-		// ここはエラーにすべき？
 		log.Errorf("failed to flushing vector to ngt index in delete file. error: %v", err)
 	}
 
@@ -1238,7 +1237,6 @@ func (n *ngt) RegenerateIndexes(ctx context.Context) (err error) {
 	if n.enableCopyOnWrite {
 		err := file.DeleteDir(ctx, n.oldPath)
 		if err != nil {
-			// ここはエラーにすべき？
 			log.Errorf("failed to flushing vector to ngt index in delete file. error: %v", err)
 		}
 	}
