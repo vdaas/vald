@@ -117,13 +117,14 @@ type ngt struct {
 	enableProactiveGC bool // if this value is true, agent component will purge GC memory more proactive
 	enableCopyOnWrite bool // if this value is true, agent component will write backup file using Copy on Write and saves old files to the old directory
 
-	path      string       // index path
-	smu       sync.Mutex   // save index lock
-	tmpPath   atomic.Value // temporary index path for Copy on Write
-	oldPath   string       // old volume path
-	basePath  string       // index base directory for CoW
-	cowmu     sync.Mutex   // copy on write move lock
-	backupGen uint64       // number of backup generation
+	path       string       // index path
+	smu        sync.Mutex   // save index lock
+	tmpPath    atomic.Value // temporary index path for Copy on Write
+	oldPath    string       // old volume path
+	basePath   string       // index base directory for CoW
+	brokenPath string       // backup broken index path
+	cowmu      sync.Mutex   // copy on write move lock
+	backupGen  uint64       // number of backup generation
 
 	poolSize uint32  // default pool size
 	radius   float32 // default radius
@@ -142,6 +143,7 @@ const (
 
 	oldIndexDirName    = "backup"
 	originIndexDirName = "origin"
+	brokenIndexDirName = "broken"
 )
 
 func New(cfg *config.NGT, opts ...Option) (nn NGT, err error) {
@@ -199,6 +201,21 @@ func New(cfg *config.NGT, opts ...Option) (nn NGT, err error) {
 }
 
 func (n *ngt) prepareFolders() (err error) {
+	// initialize broken index backup directory
+	// the path does not differ if it's copy on write mode or not
+	if !n.inMem {
+		sep := string(os.PathSeparator)
+		n.path, err = filepath.Abs(strings.ReplaceAll(n.path, sep+sep, sep))
+		if err != nil {
+			log.Warn(err)
+		}
+		n.brokenPath = file.Join(n.path, brokenIndexDirName)
+		err = file.MkdirAll(n.brokenPath, fs.ModePerm)
+		if err != nil {
+			log.Warn("failed to create a folder for broken index backup: %w", err)
+		}
+	}
+
 	if n.enableCopyOnWrite && !n.inMem && len(n.path) != 0 {
 		sep := string(os.PathSeparator)
 		absPath, err := filepath.Abs(strings.ReplaceAll(n.path, sep+sep, sep))
