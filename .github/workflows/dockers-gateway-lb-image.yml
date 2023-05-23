@@ -113,9 +113,17 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ (github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == false) || (github.event.pull_request.head.repo.fork == true && github.event_name == 'pull_request_target' && contains(github.event.pull_request.labels.*.name, 'ci/approved')) || (github.event_name == 'push' && github.ref == 'refs/heads/main') || startsWith( github.ref, 'refs/tags/') }}
     steps:
+      - name: Get ref
+        id: ref
+        run: |
+          if [ ${{ github.event.pull_request.head.sha }} != "" ]; then
+            echo ref=${{ github.event.pull_request.head.sha }} >> $GITHUB_OUTPUT
+          else
+            echo ref=${{ github.sha }} >> $GITHUB_OUTPUT
+          fi
       - uses: actions/checkout@v3
         with:
-          ref: ${{ github.event.pull_request.head.sha }}
+          ref: ${{ steps.ref.outputs.ref }}
       - name: set git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
