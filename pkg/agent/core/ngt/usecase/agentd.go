@@ -23,6 +23,7 @@ import (
 	vald "github.com/vdaas/vald/apis/grpc/v1/vald"
 	iconf "github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errgroup"
+	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/observability"
 	ngtmetrics "github.com/vdaas/vald/internal/observability/metrics/agent/core/ngt"
@@ -47,6 +48,7 @@ type run struct {
 }
 
 func New(cfg *config.Data) (r runner.Runner, err error) {
+	log.Info("Test")
 	ngt, err := service.New(
 		cfg.NGT,
 		service.WithErrGroup(errgroup.Get()),
