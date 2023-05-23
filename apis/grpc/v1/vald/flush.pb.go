@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,11 +23,12 @@
 package vald
 
 import (
+	reflect "reflect"
+
 	payload "github.com/vdaas/vald/apis/grpc/v1/payload"
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
-	reflect "reflect"
 )
 
 const (
