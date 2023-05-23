@@ -17,6 +17,7 @@
 .PHONY: update/libs
 ## update vald libraries including tools
 update/libs: \
+	update/chaos-mesh \
 	update/go \
 	update/golangci-lint \
 	update/helm \
@@ -24,6 +25,7 @@ update/libs: \
 	update/helm-operator \
 	update/jaeger-operator \
 	update/kind \
+	update/kubectl \
 	update/kube-linter \
 	update/ngt \
 	update/prometheus-stack \
@@ -66,6 +68,11 @@ go/example/deps:
 	cp $(ROOTDIR)/example/client/go.mod.default $(ROOTDIR)/example/client/go.mod
 	cd $(ROOTDIR)/example/client && GOPRIVATE=$(GOPRIVATE) go mod tidy && cd -
 
+.PHONY: update/chaos-mesh
+## update chaos-mesh version
+update/chaos-mesh:
+	curl --silent https://api.github.com/repos/chaos-mesh/chaos-mesh/releases/latest | grep -Po '"tag_name": "\K.*?(?=")' | sed 's/v//g' > $(ROOTDIR)/versions/CHAOS_MESH_VERSION
+
 .PHONY: update/go
 ## update go version
 update/go:
@@ -100,6 +107,11 @@ update/protobuf:
 ## update kind (kubernetes in docker) version
 update/kind:
 	curl --silent https://api.github.com/repos/kubernetes-sigs/kind/releases/latest | grep -Po '"tag_name": "\K.*?(?=")' | sed 's/v//g' > $(ROOTDIR)/versions/KIND_VERSION
+
+.PHONY: update/kubectl
+## update kubectl (kubernetes cli) version
+update/kubectl:
+	curl -L -s https://dl.k8s.io/release/stable.txt > $(ROOTDIR)/versions/KUBECTL_VERSION
 
 .PHONY: update/prometheus-stack
 ## update prometheus version

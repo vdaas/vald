@@ -17,17 +17,10 @@
 ## install KinD
 kind/install: $(BINDIR)/kind
 
-ifeq ($(UNAME),Darwin)
 $(BINDIR)/kind:
 	mkdir -p $(BINDIR)
-	curl -L https://github.com/kubernetes-sigs/kind/releases/download/$(KIND_VERSION)/kind-darwin-amd64 -o $(BINDIR)/kind
+	curl -L https://github.com/kubernetes-sigs/kind/releases/download/$(KIND_VERSION)/kind-$(shell echo $(UNAME) | tr '[:upper:]' '[:lower:]')-$(subst x86_64,amd64,$(shell echo $(ARCH) | tr '[:upper:]' '[:lower:]')) -o $(BINDIR)/kind
 	chmod a+x $(BINDIR)/kind
-else
-$(BINDIR)/kind:
-	mkdir -p $(BINDIR)
-	curl -L https://github.com/kubernetes-sigs/kind/releases/download/$(KIND_VERSION)/kind-linux-amd64 -o $(BINDIR)/kind
-	chmod a+x $(BINDIR)/kind
-endif
 
 .PHONY: kind/start
 ## start kind (kubernetes in docker) cluster
