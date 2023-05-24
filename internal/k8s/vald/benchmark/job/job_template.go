@@ -27,7 +27,8 @@ type benchmarkJobTemplate = batchv1.Job
 const (
 	SvcAccountName = "vald-benchmark-operator"
 	ContainerName  = "vald-benchmark-job"
-	ContainerImage = "local-registry:5000/vdaas/vald-benchmark-job:latest"
+	// TODO: Fix
+	ContainerImage = "vdaas/vald-benchmark-job:pr-2027"
 
 	RestartPolicyAlways    corev1.RestartPolicy = "Always"
 	RestartPolicyOnFailure corev1.RestartPolicy = "OnFailure"
