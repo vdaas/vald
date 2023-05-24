@@ -105,38 +105,6 @@ func TestNew(t *testing.T) {
 				},
 			}
 		}(),
-		func() test {
-			tmpDir := t.TempDir()
-			return test{
-				name: "success with default options2",
-				args: args{
-					cfg: &config.NGT{
-						Dimension:           100,
-						DistanceType:        "l2",
-						ObjectType:          "float",
-						BulkInsertChunkSize: 10,
-						CreationEdgeSize:    20,
-						SearchEdgeSize:      10,
-						EnableProactiveGC:   false,
-						EnableCopyOnWrite:   false,
-						KVSDB: &config.KVSDB{
-							Concurrency: 10,
-						},
-					},
-					opts: []Option{
-						WithIndexPath(tmpDir),
-					},
-				},
-				want: want{
-					err: nil,
-				},
-				checkFunc: defaultCheckFunc,
-				beforeFunc: func(t *testing.T, args args) {
-				},
-				afterFunc: func(t *testing.T, args args) {
-				},
-			}
-		}(),
 	}
 
 	for _, tc := range tests {
