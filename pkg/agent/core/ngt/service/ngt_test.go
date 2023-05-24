@@ -128,8 +128,7 @@ func TestNew(t *testing.T) {
 }
 
 func Test_ngt_prepareFolders(t *testing.T) {
-	type args struct {
-	}
+	type args struct{}
 	type want struct {
 		err error
 	}
