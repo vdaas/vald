@@ -1,3 +1,4 @@
+---
 #
 # Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 #
@@ -18,68 +19,81 @@ kind: ConfigMap
 metadata:
   name: vald-benchmark-operator-config
   labels:
-    app.kubernetes.io/name: vald
-    app.kubernetes.io/component: vald-benchmark-operator
+    app.kubernetes.io/name: vald-benchmark-operator
+    helm.sh/chart: vald-benchmark-operator-v1.7.5
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: release-name
+    app.kubernetes.io/version: v1.7.5
+    app.kubernetes.io/component: benchmark-operator
 data:
   config.yaml: |
     ---
     version: v0.0.0
-    time_zone: JST
+    time_zone: ""
     logging:
-      format: raw
-      level: debug
-      logger: glg
+      logger: "glg"
+      level: "debug"
+      format: "raw"
     server_config:
       servers:
         - name: grpc
           host: 0.0.0.0
           port: 8081
+          mode: GRPC
+          probe_wait_time: "3s"
+          network: "tcp"
+          socket_path: ""
           grpc:
             bidirectional_stream_concurrency: 20
             connection_timeout: ""
-            header_table_size: 0
-            initial_conn_window_size: 0
-            initial_window_size: 0
-            interceptors: []
-            keepalive:
-              max_conn_age: ""
-              max_conn_age_grace: ""
-              max_conn_idle: ""
-              time: ""
-              timeout: ""
-            max_header_list_size: 0
             max_receive_message_size: 0
             max_send_message_size: 0
-            read_buffer_size: 0
+            initial_window_size: 0
+            initial_conn_window_size: 0
+            keepalive:
+              max_conn_idle: ""
+              max_conn_age: ""
+              max_conn_age_grace: ""
+              time: "120s"
+              timeout: "30s"
+              min_time: "60s"
+              permit_without_stream: true
             write_buffer_size: 0
-          mode: GRPC
-          probe_wait_time: 3s
+            read_buffer_size: 0
+            max_header_list_size: 0
+            header_table_size: 0
+            interceptors: []
+            enable_reflection: true
           restart: true
       health_check_servers:
         - name: liveness
           host: 0.0.0.0
           port: 3000
+          mode: ""
+          probe_wait_time: "3s"
+          network: "tcp"
+          socket_path: ""
           http:
+            shutdown_duration: "5s"
             handler_timeout: ""
             idle_timeout: ""
             read_header_timeout: ""
             read_timeout: ""
-            shutdown_duration: 5s
             write_timeout: ""
-          mode: ""
-          probe_wait_time: 3s
         - name: readiness
           host: 0.0.0.0
           port: 3001
+          mode: ""
+          probe_wait_time: "3s"
+          network: "tcp"
+          socket_path: ""
           http:
+            shutdown_duration: "0s"
             handler_timeout: ""
             idle_timeout: ""
             read_header_timeout: ""
             read_timeout: ""
-            shutdown_duration: 0s
             write_timeout: ""
-          mode: ""
-          probe_wait_time: 3s
       metrics_servers:
       startup_strategy:
         - liveness
@@ -87,80 +101,40 @@ data:
         - readiness
       full_shutdown_duration: 600s
       tls:
-        ca: /path/to/ca
-        cert: /path/to/cert
         enabled: false
-        key: /path/to/key
+        cert: "/path/to/cert"
+        key: "/path/to/key"
+        ca: "/path/to/ca"
+        insecure_skip_verify: false
     observability:
       enabled: false
-      collector:
-        duration: 5s
-        metrics:
-          enable_cgo: true
-          enable_goroutine: true
-          enable_memory: true
-          enable_version_info: true
-          version_info_labels:
-            - vald_version
-            - server_name
-            - git_commit
-            - build_time
-            - go_version
-            - go_os
-            - go_arch
-            - ngt_version
+      otlp:
+        collector_endpoint: ""
+        trace_batch_timeout: "1s"
+        trace_export_timeout: "1m"
+        trace_max_export_batch_size: 1024
+        trace_max_queue_size: 256
+        metrics_export_interval: "1s"
+        metrics_export_timeout: "1m"
+        attribute:
+          namespace: "_MY_POD_NAMESPACE_"
+          pod_name: "_MY_POD_NAME_"
+          node_name: "_MY_NODE_NAME_"
+          service_name: "vald-benchmark-operator"
+      metrics:
+        enable_version_info: true
+        version_info_labels:
+          - vald_version
+          - server_name
+          - git_commit
+          - build_time
+          - go_version
+          - go_os
+          - go_arch
+          - ngt_version
+        enable_memory: true
+        enable_goroutine: true
+        enable_cgo: true
       trace:
         enabled: false
         sampling_rate: 1
-      prometheus:
-        enabled: false
-        endpoint: /metrics
-        namespace: vald
-      jaeger:
-        enabled: false
-        collector_endpoint: ""
-        agent_endpoint: "jaeger-agent.default.svc.cluster.local:6831"
-        username: ""
-        password: ""
-        service_name: "vald-benchmark-job"
-        buffer_max_count: 10
-      stackdriver:
-        project_id: ""
-        client:
-          api_key: ""
-          audiences: []
-          authentication_enabled: true
-          credentials_file: ""
-          credentials_json: ""
-          endpoint: ""
-          quota_project: ""
-          request_reason: ""
-          scopes: []
-          telemetry_enabled: true
-          user_agent: ""
-        exporter:
-          bundle_count_threshold: 0
-          bundle_delay_threshold: "0"
-          location: ""
-          metric_prefix: vald.vdaas.org
-          monitoring_enabled: false
-          number_of_workers: 1
-          reporting_interval: 1m
-          skip_cmd: false
-          timeout: 5s
-          trace_spans_buffer_max_bytes: 0
-          tracing_enabled: false
-        profiler:
-          enabled: false
-          service: "vald-benchmark-job"
-          service_version: ""
-          debug_logging: false
-          mutex_profiling: true
-          cpu_profiling: true
-          alloc_profiling: true
-          heap_profiling: true
-          goroutine_profiling: true
-          alloc_force_gc: false
-          api_addr: ""
-          instance: ""
-          zone: ""

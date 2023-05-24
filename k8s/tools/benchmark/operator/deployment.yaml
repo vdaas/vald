@@ -1,3 +1,4 @@
+---
 #
 # Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 #
@@ -17,25 +18,63 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: vald-benchmark-operator
+  namespace: default
   labels:
     app: vald-benchmark-operator
+    app.kubernetes.io/name: vald-benchmark-operator
+    helm.sh/chart: vald-benchmark-operator-v1.7.5
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: release-name
+    app.kubernetes.io/version: v1.7.5
+    app.kubernetes.io/component: benchmark-operator
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: vald-benchmark-operator
+      name: vald-benchmark-operator
   template:
     metadata:
       labels:
-        app: vald-benchmark-operator
+        name: vald-benchmark-operator
+        app.kubernetes.io/name: vald-benchmark-operator
+        app.kubernetes.io/instance: release-name
+        app.kubernetes.io/component: benchmark-operator
     spec:
+      serviceAccountName: vald-benchmark-operator
       containers:
         - name: vald-benchmark-operator
-          image: vdaas/vald-benchmark-operator:latest
+          image: "vdaas/vald-benchmark-operator:v1.7.5"
           imagePullPolicy: Always
-          volumeMounts:
-            - name: vald-benchmark-operator-config
-              mountPath: /etc/server/
+          livenessProbe:
+            failureThreshold: 2
+            httpGet:
+              path: /liveness
+              port: liveness
+              scheme: HTTP
+            initialDelaySeconds: 15
+            periodSeconds: 20
+            successThreshold: 1
+            timeoutSeconds: 5
+          readinessProbe:
+            failureThreshold: 2
+            httpGet:
+              path: /readiness
+              port: readiness
+              scheme: HTTP
+            initialDelaySeconds: 10
+            periodSeconds: 3
+            successThreshold: 1
+            timeoutSeconds: 2
+          startupProbe:
+            failureThreshold: 30
+            httpGet:
+              path: /liveness
+              port: liveness
+              scheme: HTTP
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            successThreshold: 1
+            timeoutSeconds: 2
           ports:
             - name: liveness
               protocol: TCP
@@ -43,7 +82,25 @@ spec:
             - name: readiness
               protocol: TCP
               containerPort: 3001
-      serviceAccountName: vald-benchmark-operator
+            - name: grpc
+              protocol: TCP
+              containerPort: 8081
+            - name: pprof
+              protocol: TCP
+              containerPort: 6060
+          resources:
+            limits:
+              cpu: 300m
+              memory: 300Mi
+            requests:
+              cpu: 200m
+              memory: 200Mi
+          volumeMounts:
+            - name: vald-benchmark-operator-config
+              mountPath: /etc/server
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+      restartPolicy: Always
       volumes:
         - name: vald-benchmark-operator-config
           configMap:
