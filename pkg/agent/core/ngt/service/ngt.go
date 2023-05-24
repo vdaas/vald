@@ -20,6 +20,7 @@ package service
 import (
 	"context"
 	"encoding/gob"
+	"fmt"
 	"io/fs"
 	"math"
 	"os"
@@ -406,7 +407,36 @@ func (n *ngt) load(ctx context.Context, path string, opts ...core.Option) (err e
 	return nil
 }
 
+func (n *ngt) rebuild(path string, opts ...core.Option) (err error) {
+	// TODO: add backup logic here. look for config if it's enabled
+	// copy broken index directory to backup path if the condition matches
+
+	// remove same way as before
+	files, err := file.ListInDir(path)
+	if err == nil && len(files) != 0 {
+		log.Warnf("index path exists, will remove the directories: %v", files)
+		for _, f := range files {
+			err = os.RemoveAll(f)
+			if err != nil {
+				return err
+			}
+		}
+	} else if err != nil {
+		// TODO: is it really ok to continue processing here???
+		log.Debug(err)
+	}
+
+	n.core, err = core.New(append(opts, core.WithIndexPath(path))...)
+	if err != nil {
+		return fmt.Errorf("failed to create new core: %w", err)
+	}
+	return nil
+}
+
 func (n *ngt) initNGT(opts ...core.Option) (err error) {
+
+	log.Debug("============== initNGT starting")
+
 	if n.kvs == nil {
 		n.kvs = kvs.New(kvs.WithConcurrency(n.kvsdbConcurrency))
 	}
@@ -432,8 +462,7 @@ func (n *ngt) initNGT(opts ...core.Option) (err error) {
 				n.core.Close()
 				n.core = nil
 			}
-			n.core, err = core.New(append(opts, core.WithIndexPath(n.path))...)
-			return err
+			return n.rebuild(n.path, opts...)
 		}
 		if errors.Is(err, errors.ErrIndicesAreTooFewComparedToMetadata) && n.kvs != nil {
 			current = n.kvs.Len()
@@ -488,7 +517,7 @@ func (n *ngt) initNGT(opts ...core.Option) (err error) {
 		n.core.Close()
 		n.core = nil
 	}
-	n.core, err = core.New(append(opts, core.WithIndexPath(tpath))...)
+	err = n.rebuild(tpath, opts...)
 	if err != nil {
 		return err
 	}
