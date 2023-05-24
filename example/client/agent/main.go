@@ -31,6 +31,7 @@ import (
 
 const (
 	insertCount = 400
+	removeCount = 200
 	testCount   = 20
 )
 
@@ -167,7 +168,7 @@ func main() {
 
 	glg.Info("Start removing vector")
 	// Remove indexed 200 vectors from vald cluster.
-	for i := range ids[:insertCount/2] {
+	for i := range ids[:removeCount] {
 		// Call `Remove` function of Vald client.
 		// Sends id to server via gRPC.
 		_, err := client.Remove(ctx, &payload.Remove_Request{
@@ -197,9 +198,9 @@ func main() {
 	}
 	glg.Info("Finish removing indexed vector from backup")
 	glg.Info("Start flushing vector")
-	res, err := client.Flush(ctx, &payload.Flush_Request{})
+	_, err = client.Flush(ctx, &payload.Flush_Request{})
 	if err != nil {
-		glg.Fatal(err, res)
+		glg.Fatal(err)
 	}
 	glg.Info("Finish flushing vector")
 }

@@ -404,11 +404,11 @@ If you are interested, please refer to [SDKs](../user-guides/sdks.md).<br>
 
     1.  Remove
 
-        - Remove 400 indexed training datasets from the Vald agent.
+        - Remove 200 indexed training datasets from the Vald agent.
             <details><summary>example code</summary><br>
 
           ```go
-          for i := range ids [:insertCount] {
+          for i := range ids [:removeCount] {
               _, err := client.Remove(ctx, &payload.Remove_Request{
                   Id: &payload.Object_ID{
                       Id: ids[i],
@@ -421,6 +421,20 @@ If you are interested, please refer to [SDKs](../user-guides/sdks.md).<br>
                   glg.Infof("Removed %d", i)
               }
           }
+          ```
+
+            </details>
+
+    1.  Flush
+
+        - Remove all remaining training datasets from the Vald agent.
+            <details><summary>example code</summary><br>
+
+          ```go
+          _, err := client.Flush(ctx, &payload.Flush_Request{})
+          if err != nil {
+		            glg.Fatal(err)
+		        }
           ```
 
             </details>

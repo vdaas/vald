@@ -30,6 +30,8 @@ Flush RPC is the method to remove all vectors.
 
   - Flush.Request
 
+    empty
+
 
 ### Output
 
