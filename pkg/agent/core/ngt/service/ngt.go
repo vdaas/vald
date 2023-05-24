@@ -434,7 +434,6 @@ func (n *ngt) rebuild(path string, opts ...core.Option) (err error) {
 }
 
 func (n *ngt) initNGT(opts ...core.Option) (err error) {
-
 	log.Debug("============== initNGT starting")
 
 	if n.kvs == nil {
