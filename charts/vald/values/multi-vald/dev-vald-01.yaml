@@ -21,6 +21,9 @@ discoverer:
 
 gateway:
   mirror:
+    enabled: true
+    image:
+      tag: pr-2023 # TODO: Delete it later.
     clusterRoleBinding:
       name: vald-mirror-01
     serviceAccount:
