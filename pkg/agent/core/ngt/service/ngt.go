@@ -159,30 +159,13 @@ func New(cfg *config.NGT, opts ...Option) (nn NGT, err error) {
 		}
 	}
 	if len(n.path) == 0 {
+		log.Info("index path setting is empty, starting vald agent with in-memory mode")
 		n.inMem = true
 	}
 
-	if n.enableCopyOnWrite && !n.inMem && len(n.path) != 0 {
-		sep := string(os.PathSeparator)
-		n.path, err = filepath.Abs(strings.ReplaceAll(n.path, sep+sep, sep))
-		if err != nil {
-			log.Warn(err)
-		}
-		n.basePath = n.path
-		n.oldPath = file.Join(n.basePath, oldIndexDirName)
-		n.path = file.Join(n.basePath, originIndexDirName)
-		err = file.MkdirAll(n.oldPath, fs.ModePerm)
-		if err != nil {
-			log.Warn(err)
-		}
-		err = file.MkdirAll(n.path, fs.ModePerm)
-		if err != nil {
-			log.Warn(err)
-		}
-		err = n.mktmp()
-		if err != nil {
-			return nil, err
-		}
+	err = n.prepareFolders()
+	if err != nil {
+		return nil, err
 	}
 
 	err = n.initNGT(
@@ -213,6 +196,33 @@ func New(cfg *config.NGT, opts ...Option) (nn NGT, err error) {
 	n.indexing.Store(false)
 	n.saving.Store(false)
 	return n, nil
+}
+
+func (n *ngt) prepareFolders() (err error) {
+	if n.enableCopyOnWrite && !n.inMem && len(n.path) != 0 {
+		sep := string(os.PathSeparator)
+		n.path, err = filepath.Abs(strings.ReplaceAll(n.path, sep+sep, sep))
+		if err != nil {
+			// TODO: maybe we should return error here?
+			log.Warn(err)
+		}
+		n.basePath = n.path
+		n.oldPath = file.Join(n.basePath, oldIndexDirName)
+		n.path = file.Join(n.basePath, originIndexDirName)
+		err = file.MkdirAll(n.oldPath, fs.ModePerm)
+		if err != nil {
+			log.Warn(err)
+		}
+		err = file.MkdirAll(n.path, fs.ModePerm)
+		if err != nil {
+			log.Warn(err)
+		}
+		err = n.mktmp()
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (n *ngt) load(ctx context.Context, path string, opts ...core.Option) (err error) {
