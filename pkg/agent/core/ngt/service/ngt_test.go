@@ -99,10 +99,6 @@ func TestNew(t *testing.T) {
 					err: nil,
 				},
 				checkFunc: defaultCheckFunc,
-				beforeFunc: func(t *testing.T, args args) {
-				},
-				afterFunc: func(t *testing.T, args args) {
-				},
 			}
 		}(),
 	}
@@ -133,8 +129,6 @@ func TestNew(t *testing.T) {
 
 func Test_ngt_prepareFolders(t *testing.T) {
 	type args struct {
-		cfg  *config.NGT
-		opts []Option
 	}
 	type want struct {
 		err error
