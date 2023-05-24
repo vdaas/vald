@@ -34,6 +34,7 @@ import (
 	core "github.com/vdaas/vald/internal/core/algorithm/ngt"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/file"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/test/data/vector"
@@ -155,6 +156,104 @@ func TestNew(t *testing.T) {
 			}
 
 			_, err := New(test.args.cfg, test.args.opts...)
+			if err := checkFunc(test.want, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func Test_ngt_prepareFolders(t *testing.T) {
+	type args struct {
+		cfg  *config.NGT
+		opts []Option
+	}
+	type want struct {
+		err error
+	}
+	type fields struct {
+		enableCopyOnWrite bool
+		path              string
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, error) error
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
+	}
+	defaultCheckFunc := func(w want, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		return nil
+	}
+
+	tests := []test{
+		func() test {
+			tmpDir := t.TempDir()
+			return test{
+				name: "success to create origin and backup dir",
+				args: args{},
+				fields: fields{
+					enableCopyOnWrite: true,
+					path:              tmpDir,
+				},
+				want: want{
+					err: nil,
+				},
+				checkFunc: func(w want, err error) error {
+					if !errors.Is(err, w.err) {
+						return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+					}
+					dirs, err := file.ListInDir(tmpDir)
+					if err != nil {
+						return err
+					}
+
+					// extract folder name from dir path into a map
+					dirMap := make(map[string]struct{}, len(dirs))
+					for _, dir := range dirs {
+						// extract folder name from dir path
+						dir = dir[len(tmpDir)+1:]
+						dirMap[dir] = struct{}{}
+					}
+
+					// check if the dirs slice contains origin or backup.
+					// if the dirs slice contains both origin and backup, it is an error.
+					if _, ok := dirMap[originIndexDirName]; !ok {
+						return fmt.Errorf("failed to create origin dir")
+					}
+					if _, ok := dirMap[oldIndexDirName]; !ok {
+						return fmt.Errorf("failed to create backup dir")
+					}
+					return nil
+				},
+			}
+		}(),
+	}
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(tt, test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(tt, test.args)
+			}
+			checkFunc := test.checkFunc
+			if test.checkFunc == nil {
+				checkFunc = defaultCheckFunc
+			}
+			n := &ngt{
+				enableCopyOnWrite: test.fields.enableCopyOnWrite,
+				path:              test.fields.path,
+			}
+			err := n.prepareFolders()
 			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
