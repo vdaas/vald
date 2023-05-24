@@ -31,7 +31,7 @@ type Mirror struct {
 	Namespace string `json:"namespace" yaml:"namespace"`
 	// DiscoveryDuration represents the duration to discover.
 	DiscoveryDuration string `json:"discovery_duration" yaml:"discovery_duration"`
-	//Colocation represents the colocation name.
+	// Colocation represents the colocation name.
 	Colocation string `json:"colocation" yaml:"colocation"`
 	// Group represents the group name of the Mirror Gateways.
 	// It is used to discover ValdMirrorTarget resources with the same group name.
