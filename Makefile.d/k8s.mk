@@ -59,6 +59,23 @@ k8s/manifest/helm-operator/update: \
 	rm -rf $(TEMP_DIR)
 	cp -r charts/vald-helm-operator/crds k8s/operator/helm/crds
 
+.PHONY: k8s/manifest/benchmark-operator/clean
+## clean k8s manifests for benchmark-operator
+k8s/manifest/benchmark-operator/clean:
+	rm -rf \
+	    k8s/tools/benchmark/operator
+
+.PHONY: k8s/manifest/benchmark-operator/update
+## update k8s manifests for benchmark-operator using helm templates
+k8s/manifest/benchmark-operator/update: \
+	k8s/manifest/benchmark-operator/clean
+	helm template \
+	    --output-dir $(TEMP_DIR) \
+	    charts/vald-benchmark-operator
+	mkdir -p k8s/tools/benchmark
+	mv $(TEMP_DIR)/vald-benchmark-operator/templates k8s/tools/benchmark/operator
+	rm -rf $(TEMP_DIR)
+	cp -r charts/vald-benchmark-operator/crds k8s/tools/benchmark/operator/crds
 
 .PHONY: k8s/vald/deploy
 ## deploy vald sample cluster to k8s
@@ -146,6 +163,34 @@ k8s/vr/deploy: \
 k8s/vr/delete: \
 	k8s/metrics/metrics-server/delete
 	kubectl delete vr vald-cluster
+
+.PHONY: k8s/vald-benchmark-operator/deploy
+## deploy vald-benchmark-operator to k8s
+k8s/vald-benchmark-operator/deploy:
+	helm template \
+	    --output-dir $(TEMP_DIR) \
+	    --set image.tag=${VERSION} \
+	    --include-crds \
+	    charts/vald-benchmark-operator
+	kubectl create -f $(TEMP_DIR)/vald-benchmark-operator/crds/valdbenchmarkjob.yaml
+	kubectl create -f $(TEMP_DIR)/vald-benchmark-operator/crds/valdbenchmarkscenario.yaml
+	kubectl create -f $(TEMP_DIR)/vald-benchmark-operator/crds/valdbenchmarkoperatorrelease.yaml
+	kubectl apply -f $(TEMP_DIR)/vald-benchmark-operator/templates
+	sleep 2
+	kubectl wait --for=condition=ready pod -l name=vald-benchmark-operator --timeout=600s
+
+.PHONY: k8s/vald-benchmark-operator/delete
+## delete vald-benchmark-operator from k8s
+k8s/vald-benchmark-operator/delete:
+	helm template \
+	    --output-dir $(TEMP_DIR) \
+	    --set image.tag=${VERSION} \
+	    --include-crds \
+	    charts/vald-benchmark-operator
+	kubectl delete -f $(TEMP_DIR)/vald-benchmark-operator/templates
+	kubectl wait --for=delete pod -l name=vald-benchmark-operator --timeout=600s
+	kubectl delete -f $(TEMP_DIR)/vald-benchmark-operator/crds
+	rm -rf $(TEMP_DIR)
 
 .PHONY: k8s/external/cert-manager/deploy
 ## deploy cert-manager
