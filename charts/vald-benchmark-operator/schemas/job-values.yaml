@@ -1,0 +1,360 @@
+#
+# Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+# @schema {"name": "target", "type": "object", "required": ["host", "port"]}
+# target -- target cluster location
+target:
+  # @schema {"name": "target.host", "type": "string", "minLength": 1}
+  # target.host -- target cluster host
+  host:
+    "vald-lb-gateway.default.svc.cluster.local"
+    # @schema {"name": "target.port", "type": "integer", "minimum": 0, "maximum": 65535}
+  # target.port -- target cluster port
+  port: 8081
+# @schema {"name": "dataset", "type": "object", "required": ["name", "indexes", "group", "range"]}
+# dataset -- dataset information
+dataset:
+  # @schema {"name": "dataset.name", "type": "string", "enum": ["fashion-mnist"] }
+  # dataset.name -- the name of dataset
+  name: "fashion-mnist"
+  # @schema {"name": "dataset.indexes", "type": "integer", "minimum": 0}
+  # dataset.indexes -- the amount of indexes
+  indexes: 1000
+  # @schema {"name": "dataset.group", "type": "string", "minLength": 1}
+  # dataset.group -- the hdf5 group name of dataset
+  group: "test"
+  # @schema {"name": "dataset.range", "type": "object", "range": ["start", "port"]}
+  # dataset.range -- the data range of indexes
+  range:
+    # @schema {"name": "dataset.range.start", "type": "integer", "minimum": 1}
+    # dataset.range.start -- start index number
+    start: 1
+    # @schema {"name": "dataset.range.end", "type": "integer", "minimum": 1}
+    # dataset.range.end -- end index number
+    end: 1000
+# @schema {"name": "dimension", "type": "integer", "minimum": 1}
+# dimension -- vector dimension
+dimension: 784
+# @schema {"name": "replica", "type": "integer", "minimum": 1}
+# replica -- the number of running concurrency job
+replica: 1
+# @schema {"name": "repetition", "type": "integer", "minimum": 1}
+# repetition -- the number of repeat job
+repetition: 1
+# @schema {"name": "job_type", "type": "string", "enum": ["insert", "update", "upsert", "search", "remove", "get_object", "exists"]}
+# job_type -- job type name
+job_type: "search"
+# @schema {"name": "insert_config", "type": "object"}
+# insert_config -- insert config
+insert_config:
+  # @schema {"name": "insert_config.skip_strict_exist_check", "type": "boolean"}
+  # insert_config.skip_strict_exist_check -- skip strict exists check flag config
+  skip_strict_exist_check: false
+  # @schema {"name": "insert_config.timestamp", "type": "string"}
+  # insert_config.timestamp -- index timestamp
+  timestamp: ""
+# @schema {"name": "update_config", "type": "object"}
+# update_config -- update config
+update_config:
+  # @schema {"name": "update_config.skip_strict_exist_check", "type": "boolean"}
+  # update_config.skip_strict_exist_check -- skip strict exists check flag config
+  skip_strict_exist_check: false
+  # @schema {"name": "update_config.timestamp", "type": "string"}
+  # update_config.timestamp -- index timestamp
+  timestamp: ""
+  # @schema {"name": "update_config.disable_balance_update", "type": "boolean"}
+  # update_config.disable_balance_update -- disabled balance update flag
+  disable_balance_update: false
+# @schema {"name": "upsert_config", "type": "object"}
+# upsert_config -- upsert config
+upsert_config:
+  # @schema {"name": "upsert_config.skip_strict_exist_check", "type": "boolean"}
+  # upsert_config.skip_strict_exist_check -- skip strict exists check flag config
+  skip_strict_exist_check: false
+  # @schema {"name": "upsert_config.timestamp", "type": "string"}
+  # upsert_config.timestamp -- index timestamp
+  timestamp: ""
+  # @schema {"name": "upsert_config.disable_balance_update", "type": "boolean"}
+  # upsert_config.disable_balance_update -- disabled balance update flag
+  disable_balance_update: false
+# @schema {"name": "search_config", "type": "object"}
+# search_config -- upsert config
+search_config:
+  # @schema {"name": "search_config.epsilon", "type": "number"}
+  # search_config.epsilon -- epsilon
+  epsilon: 0.1
+  # @schema {"name": "search_config.radius", "type": "number"}
+  # search_config.radius -- radius
+  radius: -1
+  # @schema {"name": "search_config.num", "type": "integer"}
+  # search_config.num -- number of top-k
+  num: 10
+  # @schema {"name": "search_config.min_num", "type": "integer"}
+  # search_config.min_num -- minimum number of top-k
+  min_num: 10
+  # @schema {"name": "search_config.timeout", "type": "string"}
+  # search_config.timeout -- search operation timeout
+  timeout: "10s"
+
+# @schema {"name": "remove_config", "type": "object"}
+# remove_config -- remove config
+remove_config:
+  # @schema {"name": "remove_config.skip_strict_exist_check", "type": "boolean"}
+  # remove_config.skip_strict_exist_check -- skip strict exists check flag config
+  skip_strict_exist_check: false
+  # @schema {"name": "remove_config.timestamp", "type": "string"}
+  # remove_config.timestamp -- index timestamp
+  timestamp: ""
+# @schema {"name": "object_config", "type": "object"}
+# object_config -- object config
+object_config:
+  # @schema {"name": "object_config.filter_config", "type": "object"}
+  # object_config.filter_config -- filter target config
+  filter_config:
+    # @schema {"name": "object_config.filter_config.host", "type": "string"}
+    # object_config.filter_config.host -- filter target host
+    host: 0.0.0.0
+    # @schema {"name": "object_config.filter_config.host", "type": "integer"}
+    # object_config.filter_config.port -- filter target host
+    port: 8081
+# @schema {"name": "client_config", "type": "object"}
+# client_config -- gRPC client config for request to the Vald cluster
+client_config:
+  # @schema {"name": "client_config.addrs", "type": "array", "items": {"type": "string"}}
+  # client_config.addrs -- gRPC client addresses
+  addrs: []
+  # @schema {"name": "client_config.health_check_duration", "type": "string"}
+  # client_config.health_check_duration -- gRPC client health check duration
+  health_check_duration: "1s"
+  # @schema {"name": "client_config.connection_pool", "type": "object"}
+  connection_pool:
+    # @schema {"name": "client_config.connection_pool.enable_dns_resolver", "type": "boolean"}
+    # client_config.connection_pool.enable_dns_resolver -- enables gRPC client connection pool dns resolver, when enabled vald uses ip handshake exclude dns discovery which improves network performance
+    enable_dns_resolver: true
+    # @schema {"name": "client_config.connection_pool.enable_rebalance", "type": "boolean"}
+    # client_config.connection_pool.enable_rebalance -- enables gRPC client connection pool rebalance
+    enable_rebalance: true
+    # @schema {"name": "client_config.connection_pool.rebalance_duration", "type": "string"}
+    # client_config.connection_pool.rebalance_duration -- gRPC client connection pool rebalance duration
+    rebalance_duration: 30m
+    # @schema {"name": "client_config.connection_pool.size", "type": "integer"}
+    # client_config.connection_pool.size -- gRPC client connection pool size
+    size: 3
+    # @schema {"name": "client_config.connection_pool.old_conn_close_duration", "type": "string"}
+    # client_config.connection_pool.old_conn_close_duration -- makes delay before gRPC client connection closing during connection pool rebalance
+    old_conn_close_duration: "2m"
+  # @schema {"name": "client_config.backoff", "type": "object", "anchor": "backoff"}
+  backoff:
+    # @schema {"name": "client_config.backoff.initial_duration", "type": "string"}
+    # client_config.backoff.initial_duration -- gRPC client backoff initial duration
+    initial_duration: 5ms
+    # @schema {"name": "client_config.backoff.backoff_time_limit", "type": "string"}
+    # client_config.backoff.backoff_time_limit -- gRPC client backoff time limit
+    backoff_time_limit: 5s
+    # @schema {"name": "client_config.backoff.maximum_duration", "type": "string"}
+    # client_config.backoff.maximum_duration -- gRPC client backoff maximum duration
+    maximum_duration: 5s
+    # @schema {"name": "client_config.backoff.jitter_limit", "type": "string"}
+    # client_config.backoff.jitter_limit -- gRPC client backoff jitter limit
+    jitter_limit: 100ms
+    # @schema {"name": "client_config.backoff.backoff_factor", "type": "number"}
+    # client_config.backoff.backoff_factor -- gRPC client backoff factor
+    backoff_factor: 1.1
+    # @schema {"name": "client_config.backoff.retry_count", "type": "integer"}
+    # client_config.backoff.retry_count -- gRPC client backoff retry count
+    retry_count: 100
+    # @schema {"name": "client_config.backoff.enable_error_log", "type": "boolean"}
+    # client_config.backoff.enable_error_log -- gRPC client backoff log enabled
+    enable_error_log: true
+  # @schema {"name": "client_config.circuit_breaker", "type": "object"}
+  circuit_breaker:
+    # @schema {"name": "client_config.circuit_breaker.closed_error_rate", "type": "number"}
+    # client_config.circuit_breaker.closed_error_rate -- gRPC client circuitbreaker closed error rate
+    closed_error_rate: 0.7
+    # @schema {"name": "client_config.circuit_breaker.half_open_error_rate", "type": "number"}
+    # client_config.circuit_breaker.half_open_error_rate -- gRPC client circuitbreaker half-open error rate
+    half_open_error_rate: 0.5
+    # @schema {"name": "client_config.circuit_breaker.min_samples", "type": "integer"}
+    # client_config.circuit_breaker.min_samples -- gRPC client circuitbreaker minimum sampling count
+    min_samples: 1000
+    # @schema {"name": "client_config.circuit_breaker.open_timeout", "type": "string"}
+    # client_config.circuit_breaker.open_timeout -- gRPC client circuitbreaker open timeout
+    open_timeout: "1s"
+    # @schema {"name": "client_config.circuit_breaker.closed_refresh_timeout", "type": "string"}
+    # client_config.circuit_breaker.closed_refresh_timeout -- gRPC client circuitbreaker closed refresh timeout
+    closed_refresh_timeout: "10s"
+  # @schema {"name": "client_config.call_option", "type": "object"}
+  call_option:
+    # @schema {"name": "client_config.wait_for_ready", "type": "boolean"}
+    # client_config.call_option.wait_for_ready -- gRPC client call option wait for ready
+    wait_for_ready: true
+    # @schema {"name": "client_config.max_retry_rpc_buffer_size", "type": "integer"}
+    # client_config.call_option.max_retry_rpc_buffer_size -- gRPC client call option max retry rpc buffer size
+    max_retry_rpc_buffer_size: 0
+    # @schema {"name": "client_config.max_recv_msg_size", "type": "integer"}
+    # client_config.call_option.max_recv_msg_size -- gRPC client call option max receive message size
+    max_recv_msg_size: 0
+    # @schema {"name": "client_config.max_send_msg_size", "type": "integer"}
+    # client_config.call_option.max_send_msg_size -- gRPC client call option max send message size
+    max_send_msg_size: 0
+  # @schema {"name": "client_config.dial_option", "type": "object"}
+  dial_option:
+    # @schema {"name": "client_config.dial_option.write_buffer_size", "type": "integer"}
+    # client_config.dial_option.write_buffer_size -- gRPC client dial option write buffer size
+    write_buffer_size: 0
+    # @schema {"name": "client_config.dial_option.read_buffer_size", "type": "integer"}
+    # client_config.dial_option.read_buffer_size -- gRPC client dial option read buffer size
+    read_buffer_size: 0
+    # @schema {"name": "client_config.dial_option.initial_window_size", "type": "integer"}
+    # client_config.dial_option.initial_window_size -- gRPC client dial option initial window size
+    initial_window_size: 0
+    # @schema {"name": "client_config.dial_option.initial_connection_window_size", "type": "integer"}
+    # client_config.dial_option.initial_connection_window_size -- gRPC client dial option initial connection window size
+    initial_connection_window_size: 0
+    # @schema {"name": "client_config.dial_option.max_msg_size", "type": "integer"}
+    # client_config.dial_option.max_msg_size -- gRPC client dial option max message size
+    max_msg_size: 0
+    # @schema {"name": "client_config.dial_option.backoff_max_delay", "type": "string"}
+    # client_config.dial_option.backoff_max_delay -- gRPC client dial option max backoff delay
+    backoff_max_delay: "120s"
+    # @schema {"name": "client_config.dial_option.backoff_base_delay", "type": "string"}
+    # client_config.dial_option.backoff_base_delay -- gRPC client dial option base backoff delay
+    backoff_base_delay: "1s"
+    # @schema {"name": "client_config.dial_option.backoff_multiplier", "type": "number"}
+    # client_config.dial_option.backoff_multiplier -- gRPC client dial option base backoff delay
+    backoff_multiplier: 1.6
+    # @schema {"name": "client_config.dial_option.backoff_jitter", "type": "number"}
+    # client_config.dial_option.backoff_jitter -- gRPC client dial option base backoff delay
+    backoff_jitter: 0.2
+    # @schema {"name": "client_config.dial_option.min_connection_timeout", "type": "string"}
+    # client_config.dial_option.min_connection_timeout -- gRPC client dial option minimum connection timeout
+    min_connection_timeout: "20s"
+    # @schema {"name": "client_config.dial_option.enable_backoff", "type": "boolean"}
+    # client_config.dial_option.enable_backoff -- gRPC client dial option backoff enabled
+    enable_backoff: false
+    # @schema {"name": "client_config.dial_option.insecure", "type": "boolean"}
+    # client_config.dial_option.insecure -- gRPC client dial option insecure enabled
+    insecure: true
+    # @schema {"name": "client_config.dial_option.timeout", "type": "string"}
+    # client_config.dial_option.timeout -- gRPC client dial option timeout
+    timeout: ""
+    # @schema {"name": "client_config.dial_option.interceptors", "type": "array", "items": {"type": "string", "enum": ["TraceInterceptor"]}}
+    # client_config.dial_option.interceptors -- gRPC client interceptors
+    interceptors: []
+    # @schema {"name": "client_config.dial_option.net", "type": "object", "anchor": "net"}
+    net:
+      # @schema {"name": "client_config.dial_option.net.dns", "type": "object"}
+      dns:
+        # @schema {"name": "client_config.dial_option.net.dns.cache_enabled", "type": "boolean"}
+        # client_config.dial_option.net.dns.cache_enabled -- gRPC client TCP DNS cache enabled
+        cache_enabled: true
+        # @schema {"name": "client_config.dial_option.net.dns.refresh_duration", "type": "string"}
+        # client_config.dial_option.net.dns.refresh_duration -- gRPC client TCP DNS cache refresh duration
+        refresh_duration: 30m
+        # @schema {"name": "client_config.dial_option.net.dns.cache_expiration", "type": "string"}
+        # client_config.dial_option.net.dns.cache_expiration -- gRPC client TCP DNS cache expiration
+        cache_expiration: 1h
+      # @schema {"name": "client_config.dial_option.net.dialer", "type": "object"}
+      dialer:
+        # @schema {"name": "client_config.dial_option.net.dialer.timeout", "type": "string"}
+        # client_config.dial_option.net.dialer.timeout -- gRPC client TCP dialer timeout
+        timeout: ""
+        # @schema {"name": "client_config.dial_option.net.dialer.keepalive", "type": "string"}
+        # client_config.dial_option.net.dialer.keepalive -- gRPC client TCP dialer keep alive
+        keepalive: ""
+        # @schema {"name": "client_config.dial_option.net.dialer.dual_stack_enabled", "type": "boolean"}
+        # client_config.dial_option.net.dialer.dual_stack_enabled -- gRPC client TCP dialer dual stack enabled
+        dual_stack_enabled: true
+      # @schema {"name": "client_config.dial_option.net.tls", "type": "object"}
+      tls:
+        # @schema {"name": "client_config.dial_option.net.tls.enabled", "type": "boolean"}
+        # client_config.tls.enabled -- TLS enabled
+        enabled: false
+        # @schema {"name": "client_config.dial_option.net.tls.cert", "type": "string"}
+        # client_config.tls.cert -- TLS cert path
+        cert: /path/to/cert
+        # @schema {"name": "client_config.dial_option.net.tls.key", "type": "string"}
+        # client_config.tls.key -- TLS key path
+        key: /path/to/key
+        # @schema {"name": "client_config.dial_option.net.tls.ca", "type": "string"}
+        # client_config.tls.ca -- TLS ca path
+        ca: /path/to/ca
+        # @schema {"name": "client_config.dial_option.net.tls.insecure_skip_verify", "type": "boolean"}
+        # client_config.tls.insecure_skip_verify -- enable/disable skip SSL certificate verification
+        insecure_skip_verify: false
+      # @schema {"name": "client_config.dial_option.net.socket_option", "type": "object"}
+      socket_option:
+        # @schema {"name": "client_config.dial_option.net.socket_option.reuse_port", "type": "boolean"}
+        # client_config.dial_option.net.socket_option.reuse_port -- server listen socket option for reuse_port functionality
+        reuse_port: true
+        # @schema {"name": "client_config.dial_option.net.socket_option.reuse_addr", "type": "boolean"}
+        # client_config.dial_option.net.socket_option.reuse_addr -- server listen socket option for reuse_addr functionality
+        reuse_addr: true
+        # @schema {"name": "client_config.dial_option.net.socket_option.tcp_fast_open", "type": "boolean"}
+        # client_config.dial_option.net.socket_option.tcp_fast_open -- server listen socket option for tcp_fast_open functionality
+        tcp_fast_open: true
+        # @schema {"name": "client_config.dial_option.net.socket_option.tcp_no_delay", "type": "boolean"}
+        # client_config.dial_option.net.socket_option.tcp_no_delay -- server listen socket option for tcp_no_delay functionality
+        tcp_no_delay: true
+        # @schema {"name": "client_config.dial_option.net.socket_option.tcp_cork", "type": "boolean"}
+        # client_config.dial_option.net.socket_option.tcp_cork -- server listen socket option for tcp_cork functionality
+        tcp_cork: false
+        # @schema {"name": "client_config.dial_option.net.socket_option.tcp_quick_ack", "type": "boolean"}
+        # client_config.dial_option.net.socket_option.tcp_quick_ack -- server listen socket option for tcp_quick_ack functionality
+        tcp_quick_ack: true
+        # @schema {"name": "client_config.dial_option.net.socket_option.tcp_defer_accept", "type": "boolean"}
+        # client_config.dial_option.net.socket_option.tcp_defer_accept -- server listen socket option for tcp_defer_accept functionality
+        tcp_defer_accept: true
+        # @schema {"name": "client_config.dial_option.net.socket_option.ip_transparent", "type": "boolean"}
+        # client_config.dial_option.net.socket_option.ip_transparent -- server listen socket option for ip_transparent functionality
+        ip_transparent: false
+        # @schema {"name": "client_config.dial_option.net.socket_option.ip_recover_destination_addr", "type": "boolean"}
+        # client_config.dial_option.net.socket_option.ip_recover_destination_addr -- server listen socket option for ip_recover_destination_addr functionality
+        ip_recover_destination_addr: false
+    # @schema {"name": "client_config.dial_option.keepalive", "type": "object"}
+    keepalive:
+      # @schema {"name": "client_config.dial_option.keepalive.time", "type": "string"}
+      # client_config.dial_option.keepalive.time -- gRPC client keep alive time
+      time: "120s"
+      # @schema {"name": "client_config.dial_option.keepalive.timeout", "type": "string"}
+      # client_config.dial_option.keepalive.timeout -- gRPC client keep alive timeout
+      timeout: "30s"
+      # @schema {"name": "client_config.dial_option.keepalive.permit_without_stream", "type": "boolean"}
+      # client_config.dial_option.keepalive.permit_without_stream -- gRPC client keep alive permit without stream
+      permit_without_stream: true
+  # @schema {"name": "client_config.tls", "type": "object"}
+  tls:
+    # @schema {"name": "client_config.tls.enabled", "type": "boolean"}
+    # client_config.tls.enabled -- TLS enabled
+    enabled: false
+    # @schema {"name": "client_config.tls.cert", "type": "string"}
+    # client_config.tls.cert -- TLS cert path
+    cert: /path/to/cert
+    # @schema {"name": "client_config.tls.key", "type": "string"}
+    # client_config.tls.key -- TLS key path
+    key: /path/to/key
+    # @schema {"name": "client_config.tls.ca", "type": "string"}
+    # client_config.tls.ca -- TLS ca path
+    ca: /path/to/ca
+    # @schema {"name": "client_config.tls.insecure_skip_verify", "type": "boolean"}
+    # client_config.tls.insecure_skip_verify -- enable/disable skip SSL certificate verification
+    insecure_skip_verify: false
+# @schema {"name": "rules", "type": "array", "items": {"type": "string"}}
+# rules -- executing rule
+rules: []
+# @schema {"name": "rps", "type": "integer", "minimum": 0, "maximum": 65535}
+# rps -- desired request per sec
+rps: 1000

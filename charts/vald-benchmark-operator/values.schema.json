@@ -3,261 +3,502 @@
   "title": "Values",
   "type": "object",
   "properties": {
-    "client_config": {
+    "affinity": { "type": "object", "description": "affinity" },
+    "annotations": {
+      "type": "object",
+      "description": "deployment annotations"
+    },
+    "image": {
       "type": "object",
       "properties": {
-        "addrs": {
-          "type": "array",
-          "description": "gRPC client addresses",
-          "items": { "type": "string" }
-        },
-        "backoff": {
-          "type": "object",
-          "properties": {
-            "backoff_factor": {
-              "type": "number",
-              "description": "gRPC client backoff factor"
-            },
-            "backoff_time_limit": {
-              "type": "string",
-              "description": "gRPC client backoff time limit"
-            },
-            "enable_error_log": {
-              "type": "boolean",
-              "description": "gRPC client backoff log enabled"
-            },
-            "initial_duration": {
-              "type": "string",
-              "description": "gRPC client backoff initial duration"
-            },
-            "jitter_limit": {
-              "type": "string",
-              "description": "gRPC client backoff jitter limit"
-            },
-            "maximum_duration": {
-              "type": "string",
-              "description": "gRPC client backoff maximum duration"
-            },
-            "retry_count": {
-              "type": "integer",
-              "description": "gRPC client backoff retry count"
-            }
-          }
-        },
-        "call_option": { "type": "object" },
-        "circuit_breaker": {
-          "type": "object",
-          "properties": {
-            "closed_error_rate": {
-              "type": "number",
-              "description": "gRPC client circuitbreaker closed error rate"
-            },
-            "closed_refresh_timeout": {
-              "type": "string",
-              "description": "gRPC client circuitbreaker closed refresh timeout"
-            },
-            "half_open_error_rate": {
-              "type": "number",
-              "description": "gRPC client circuitbreaker half-open error rate"
-            },
-            "min_samples": {
-              "type": "integer",
-              "description": "gRPC client circuitbreaker minimum sampling count"
-            },
-            "open_timeout": {
-              "type": "string",
-              "description": "gRPC client circuitbreaker open timeout"
-            }
-          }
-        },
-        "connection_pool": {
-          "type": "object",
-          "properties": {
-            "enable_dns_resolver": {
-              "type": "boolean",
-              "description": "enables gRPC client connection pool dns resolver, when enabled vald uses ip handshake exclude dns discovery which improves network performance"
-            },
-            "enable_rebalance": {
-              "type": "boolean",
-              "description": "enables gRPC client connection pool rebalance"
-            },
-            "old_conn_close_duration": {
-              "type": "string",
-              "description": "makes delay before gRPC client connection closing during connection pool rebalance"
-            },
-            "rebalance_duration": {
-              "type": "string",
-              "description": "gRPC client connection pool rebalance duration"
-            },
-            "size": {
-              "type": "integer",
-              "description": "gRPC client connection pool size"
-            }
-          }
-        },
-        "dial_option": {
-          "type": "object",
-          "properties": {
-            "backoff_base_delay": {
-              "type": "string",
-              "description": "gRPC client dial option base backoff delay"
-            },
-            "backoff_jitter": {
-              "type": "number",
-              "description": "gRPC client dial option base backoff delay"
-            },
-            "backoff_max_delay": {
-              "type": "string",
-              "description": "gRPC client dial option max backoff delay"
-            },
-            "backoff_multiplier": {
-              "type": "number",
-              "description": "gRPC client dial option base backoff delay"
-            },
-            "enable_backoff": {
-              "type": "boolean",
-              "description": "gRPC client dial option backoff enabled"
-            },
-            "initial_connection_window_size": {
-              "type": "integer",
-              "description": "gRPC client dial option initial connection window size"
-            },
-            "initial_window_size": {
-              "type": "integer",
-              "description": "gRPC client dial option initial window size"
-            },
-            "insecure": {
-              "type": "boolean",
-              "description": "gRPC client dial option insecure enabled"
-            },
-            "interceptors": {
-              "type": "array",
-              "description": "gRPC client interceptors",
-              "items": { "type": "string", "enum": ["TraceInterceptor"] }
-            },
-            "keepalive": {
-              "type": "object",
-              "properties": {
-                "permit_without_stream": {
-                  "type": "boolean",
-                  "description": "gRPC client keep alive permit without stream"
-                },
-                "time": {
-                  "type": "string",
-                  "description": "gRPC client keep alive time"
-                },
-                "timeout": {
-                  "type": "string",
-                  "description": "gRPC client keep alive timeout"
-                }
-              }
-            },
-            "max_msg_size": {
-              "type": "integer",
-              "description": "gRPC client dial option max message size"
-            },
-            "min_connection_timeout": {
-              "type": "string",
-              "description": "gRPC client dial option minimum connection timeout"
-            },
-            "net": {
-              "type": "object",
-              "properties": {
-                "dialer": {
-                  "type": "object",
-                  "properties": {
-                    "dual_stack_enabled": {
-                      "type": "boolean",
-                      "description": "gRPC client TCP dialer dual stack enabled"
-                    },
-                    "keepalive": {
-                      "type": "string",
-                      "description": "gRPC client TCP dialer keep alive"
-                    },
-                    "timeout": {
-                      "type": "string",
-                      "description": "gRPC client TCP dialer timeout"
-                    }
-                  }
-                },
-                "dns": {
-                  "type": "object",
-                  "properties": {
-                    "cache_enabled": {
-                      "type": "boolean",
-                      "description": "gRPC client TCP DNS cache enabled"
-                    },
-                    "cache_expiration": {
-                      "type": "string",
-                      "description": "gRPC client TCP DNS cache expiration"
-                    },
-                    "refresh_duration": {
-                      "type": "string",
-                      "description": "gRPC client TCP DNS cache refresh duration"
-                    }
-                  }
-                },
-                "socket_option": { "type": "" },
-                "tls": { "type": "" }
-              }
-            },
-            "read_buffer_size": {
-              "type": "integer",
-              "description": "gRPC client dial option read buffer size"
-            },
-            "timeout": {
-              "type": "string",
-              "description": "gRPC client dial option timeout"
-            },
-            "write_buffer_size": {
-              "type": "integer",
-              "description": "gRPC client dial option write buffer size"
-            }
-          }
-        },
-        "health_check_duration": {
+        "pullPolicy": {
           "type": "string",
-          "description": "gRPC client health check duration"
+          "description": "image pull policy",
+          "enum": ["Always", "Never", "IfNotPresent"]
         },
-        "max_recv_msg_size": { "type": "integer" },
-        "max_retry_rpc_buffer_size": { "type": "integer" },
-        "max_send_msg_size": { "type": "integer" },
-        "tls": { "type": "" },
-        "wait_for_ready": { "type": "boolean" }
+        "repository": { "type": "string", "description": "image repository" },
+        "tag": { "type": "string", "description": "image tag" }
       }
     },
-    "dataset": {
+    "logging": {
       "type": "object",
-      "description": "dataset information",
       "properties": {
-        "group": {
+        "format": {
           "type": "string",
-          "description": "the hdf5 group name of dataset"
+          "description": "logging format. logging format must be `raw` or `json`",
+          "enum": ["raw", "json"]
         },
-        "indexes": {
-          "type": "integer",
-          "description": "the amount of indexes"
+        "level": {
+          "type": "string",
+          "description": "logging level. logging level must be `debug`, `info`, `warn`, `error` or `fatal`.",
+          "enum": ["debug", "info", "warn", "error", "fatal"]
         },
-        "name": { "type": "string", "description": "the name of dataset" },
-        "range": {
+        "logger": {
+          "type": "string",
+          "description": "logger name. currently logger must be `glg` or `zap`.",
+          "enum": ["glg", "zap"]
+        }
+      }
+    },
+    "name": { "type": "string", "description": "name of the deployment" },
+    "nodeSelector": {
+      "type": "object",
+      "description": "node labels for pod assignment"
+    },
+    "observability": {
+      "type": "object",
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "otlp": {
           "type": "object",
-          "description": "the data range of indexes",
           "properties": {
-            "end": { "type": "integer", "description": "end index number" },
-            "start": { "type": "integer", "description": "start index number" }
+            "attribute": {
+              "type": "object",
+              "properties": {
+                "metrics": {
+                  "type": "object",
+                  "properties": {
+                    "enable_cgo": { "type": "boolean" },
+                    "enable_goroutine": { "type": "boolean" },
+                    "enable_memory": { "type": "boolean" },
+                    "enable_version_info": { "type": "boolean" },
+                    "version_info_labels": {
+                      "type": "array",
+                      "items": { "type": "string" }
+                    }
+                  }
+                },
+                "namespace": { "type": "string" },
+                "node_name": { "type": "string" },
+                "pod_name": { "type": "string" },
+                "service_name": { "type": "string" }
+              }
+            },
+            "collector_endpoint": { "type": "string" },
+            "metrics_export_interval": { "type": "string" },
+            "metrics_export_timeout": { "type": "string" },
+            "trace_batch_timeout": { "type": "string" },
+            "trace_export_timeout": { "type": "string" },
+            "trace_max_export_batch_size": { "type": "integer" },
+            "trace_max_queue_size": { "type": "integer" }
+          }
+        },
+        "trace": {
+          "type": "object",
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "sampling_rate": { "type": "integer" }
           }
         }
       }
     },
-    "jobs": {
+    "podAnnotations": { "type": "object", "description": "pod annotations" },
+    "podSecurityContext": {
+      "type": "object",
+      "description": "security context for pod"
+    },
+    "rbac": {
+      "type": "object",
+      "properties": {
+        "create": {
+          "type": "boolean",
+          "description": "required roles and rolebindings will be created"
+        },
+        "name": {
+          "type": "string",
+          "description": "name of roles and rolebindings"
+        }
+      }
+    },
+    "replicas": {
+      "type": "integer",
+      "description": "the number of replica for deployment"
+    },
+    "resources": {
+      "type": "object",
+      "description": "kubernetes resources of pod",
+      "properties": {
+        "limits": { "type": "object" },
+        "requests": { "type": "object" }
+      }
+    },
+    "securityContext": {
+      "type": "object",
+      "description": "security context for container"
+    },
+    "server_config": {
+      "type": "object",
+      "properties": {
+        "full_shutdown_duration": { "type": "string" },
+        "healths": {
+          "type": "object",
+          "properties": {
+            "liveness": {
+              "type": "object",
+              "properties": {
+                "enabled": { "type": "boolean" },
+                "host": { "type": "string" },
+                "livenessProbe": {
+                  "type": "object",
+                  "properties": {
+                    "failureThreshold": {
+                      "type": "integer",
+                      "description": "liveness probe failure threshold"
+                    },
+                    "httpGet": {
+                      "type": "object",
+                      "properties": {
+                        "path": {
+                          "type": "string",
+                          "description": "readiness probe path"
+                        },
+                        "port": {
+                          "type": "string",
+                          "description": "readiness probe port"
+                        },
+                        "scheme": {
+                          "type": "string",
+                          "description": "readiness probe scheme"
+                        }
+                      }
+                    },
+                    "initialDelaySeconds": {
+                      "type": "integer",
+                      "description": "liveness probe initial delay seconds"
+                    },
+                    "periodSeconds": {
+                      "type": "integer",
+                      "description": "liveness probe period seconds"
+                    },
+                    "successThreshold": {
+                      "type": "integer",
+                      "description": "liveness probe success threshold"
+                    },
+                    "timeoutSeconds": {
+                      "type": "integer",
+                      "description": "liveness probe timeout seconds"
+                    }
+                  }
+                },
+                "port": { "type": "integer" },
+                "server": {
+                  "type": "object",
+                  "properties": {
+                    "http": {
+                      "type": "object",
+                      "properties": {
+                        "idle_timeout": { "type": "string" },
+                        "read_header_timeout": { "type": "string" },
+                        "read_timeout": { "type": "string" },
+                        "shutdown_duration": { "type": "string" },
+                        "timeout": { "type": "string" },
+                        "write_timeout": { "type": "string" }
+                      }
+                    },
+                    "mode": { "type": "string" },
+                    "network": { "type": "string" },
+                    "probe_wait_time": { "type": "string" },
+                    "socket_path": { "type": "string" }
+                  }
+                },
+                "servicePort": { "type": "integer" }
+              }
+            },
+            "readiness": {
+              "type": "object",
+              "properties": {
+                "enabled": { "type": "boolean" },
+                "host": { "type": "string" },
+                "port": { "type": "integer" },
+                "readinessProbe": {
+                  "type": "object",
+                  "properties": {
+                    "failureThreshold": {
+                      "type": "integer",
+                      "description": "readiness probe failure threshold"
+                    },
+                    "httpGet": {
+                      "type": "object",
+                      "properties": {
+                        "path": {
+                          "type": "string",
+                          "description": "readiness probe path"
+                        },
+                        "port": {
+                          "type": "string",
+                          "description": "readiness probe port"
+                        },
+                        "scheme": {
+                          "type": "string",
+                          "description": "readiness probe scheme"
+                        }
+                      }
+                    },
+                    "initialDelaySeconds": {
+                      "type": "integer",
+                      "description": "readiness probe initial delay seconds"
+                    },
+                    "periodSeconds": {
+                      "type": "integer",
+                      "description": "readiness probe period seconds"
+                    },
+                    "successThreshold": {
+                      "type": "integer",
+                      "description": "readiness probe success threshold"
+                    },
+                    "timeoutSeconds": {
+                      "type": "integer",
+                      "description": "readiness probe timeout seconds"
+                    }
+                  }
+                },
+                "server": {
+                  "type": "object",
+                  "properties": {
+                    "http": {
+                      "type": "object",
+                      "properties": {
+                        "handler_timeout": { "type": "string" },
+                        "idle_timeout": { "type": "string" },
+                        "read_header_timeout": { "type": "string" },
+                        "read_timeout": { "type": "string" },
+                        "shutdown_duration": { "type": "string" },
+                        "write_timeout": { "type": "string" }
+                      }
+                    },
+                    "mode": { "type": "string" },
+                    "network": { "type": "string" },
+                    "probe_wait_time": { "type": "string" },
+                    "socket_path": { "type": "string" }
+                  }
+                },
+                "servicePort": { "type": "integer" }
+              }
+            },
+            "startup": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "description": "enable startup probe."
+                }
+              }
+            },
+            "startupProbe": {
+              "type": "object",
+              "properties": {
+                "failureThreshold": {
+                  "type": "integer",
+                  "description": "startupProbe probe failure threshold"
+                },
+                "httpGet": {
+                  "type": "object",
+                  "properties": {
+                    "path": {
+                      "type": "string",
+                      "description": "startup probe path"
+                    },
+                    "port": {
+                      "type": "string",
+                      "description": "startup probe port"
+                    },
+                    "scheme": {
+                      "type": "string",
+                      "description": "startup probe scheme"
+                    }
+                  }
+                },
+                "initialDelaySeconds": {
+                  "type": "integer",
+                  "description": "startup probe initial delay seconds"
+                },
+                "periodSeconds": {
+                  "type": "integer",
+                  "description": "startup probe period seconds"
+                },
+                "successThreshold": {
+                  "type": "integer",
+                  "description": "startup probe success threshold"
+                },
+                "timeoutSeconds": {
+                  "type": "integer",
+                  "description": "startup probe timeout seconds"
+                }
+              }
+            }
+          }
+        },
+        "metrics": {
+          "type": "object",
+          "properties": {
+            "pprof": {
+              "type": "object",
+              "properties": {
+                "enabled": { "type": "boolean" },
+                "host": { "type": "string" },
+                "port": { "type": "integer" },
+                "server": {
+                  "type": "object",
+                  "properties": {
+                    "http": {
+                      "type": "object",
+                      "properties": {
+                        "handler_timeout": { "type": "string" },
+                        "idle_timeout": { "type": "string" },
+                        "read_header_timeout": { "type": "string" },
+                        "read_timeout": { "type": "string" },
+                        "shutdown_duration": { "type": "string" },
+                        "write_timeout": { "type": "string" }
+                      }
+                    },
+                    "mode": { "type": "string" },
+                    "network": { "type": "string" },
+                    "probe_wait_time": { "type": "string" },
+                    "socket_path": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "servers": {
+          "type": "object",
+          "properties": {
+            "grpc": {
+              "type": "object",
+              "properties": {
+                "enabled": { "type": "boolean" },
+                "host": { "type": "string" },
+                "name": { "type": "string" },
+                "port": { "type": "integer" },
+                "server": {
+                  "type": "object",
+                  "properties": {
+                    "grpc": {
+                      "type": "object",
+                      "properties": {
+                        "bidirectional_stream_concurrency": {
+                          "type": "integer"
+                        },
+                        "connection_timeout": { "type": "string" },
+                        "enable_reflection": { "type": "boolean" },
+                        "header_table_size": { "type": "integer" },
+                        "initial_conn_window_size": { "type": "integer" },
+                        "initial_window_size": { "type": "integer" },
+                        "interceptors": {
+                          "type": "array",
+                          "items": { "type": "string" }
+                        },
+                        "keepalive": {
+                          "type": "object",
+                          "properties": {
+                            "max_conn_age": {
+                              "type": "string",
+                              "description": "gRPC server keep alive max connection age"
+                            },
+                            "max_conn_age_grace": {
+                              "type": "string",
+                              "description": "gRPC server keep alive max connection age grace"
+                            },
+                            "max_conn_idle": {
+                              "type": "string",
+                              "description": "gRPC server keep alive max connection idle"
+                            },
+                            "min_time": {
+                              "type": "string",
+                              "description": "gRPC server keep alive min_time"
+                            },
+                            "permit_without_stream": {
+                              "type": "boolean",
+                              "description": "gRPC server keep alive permit_without_stream"
+                            },
+                            "time": {
+                              "type": "string",
+                              "description": "gRPC server keep alive time"
+                            },
+                            "timeout": {
+                              "type": "string",
+                              "description": "gRPC server keep alive timeout"
+                            }
+                          }
+                        },
+                        "max_header_list_size": { "type": "integer" },
+                        "max_receive_message_size": { "type": "integer" },
+                        "max_send_msg_size": { "type": "integer" },
+                        "read_buffer_size": { "type": "integer" },
+                        "write_buffer_size": { "type": "integer" }
+                      }
+                    },
+                    "mode": { "type": "string" },
+                    "network": { "type": "string" },
+                    "probe_wait_time": { "type": "string" },
+                    "restart": { "type": "boolean" },
+                    "socket_path": { "type": "string" }
+                  }
+                },
+                "servicePort": { "type": "integer" }
+              }
+            },
+            "rest": {
+              "type": "object",
+              "properties": { "enabled": { "type": "boolean" } }
+            }
+          }
+        },
+        "tls": {
+          "type": "object",
+          "properties": {
+            "ca": { "type": "string" },
+            "cert": { "type": "string" },
+            "enabled": { "type": "boolean" },
+            "insecure_skip_verify": {
+              "type": "boolean",
+              "description": "enable/disable skip SSL certificate verification"
+            },
+            "key": { "type": "string" }
+          }
+        }
+      }
+    },
+    "service": {
+      "type": "object",
+      "properties": {
+        "annotations": {
+          "type": "object",
+          "description": "service annotations"
+        },
+        "enabled": { "type": "boolean", "description": "service enabled" },
+        "externalTrafficPolicy": {
+          "type": "string",
+          "description": "external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local"
+        },
+        "labels": { "type": "object", "description": "service labels" },
+        "type": {
+          "type": "string",
+          "description": "service type: ClusterIP, LoadBalancer or NodePort",
+          "enum": ["ClusterIP", "LoadBalancer", "NodePort"]
+        }
+      }
+    },
+    "serviceAccount": {
+      "type": "object",
+      "properties": {
+        "create": {
+          "type": "boolean",
+          "description": "service account will be created"
+        },
+        "name": { "type": "string", "description": "name of service account" }
+      }
+    },
+    "time_zone": { "type": "string", "description": "time_zone" },
+    "tolerations": {
       "type": "array",
-      "description": "benchmark jobs",
+      "description": "tolerations",
       "items": { "type": "object" }
     },
-    "target": {
-      "type": "array",
-      "description": "target cluster host\u0026port",
-      "items": { "type": "object" }
+    "version": {
+      "type": "string",
+      "description": "version of benchmark-operator config"
     }
   }
 }
