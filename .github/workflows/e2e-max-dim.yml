@@ -59,7 +59,7 @@ jobs:
     name: "E2E test (Max Dimension Insert: skip strict exist check)"
     runs-on: ubuntu-latest
     timeout-minutes: 60
-    if: startsWith( github.ref, 'refs/tags/') || github.event.action == 'labeled' && github.event.label.name == 'actions/e2e-max-dim'
+    if: startsWith( github.ref, 'refs/tags/') || github.event.action == 'labeled' && github.event.label.name == 'actions/e2e-chaos'
     steps:
       - uses: actions/checkout@v3
       - name: set git config
@@ -71,12 +71,12 @@ jobs:
         uses: ./.github/actions/wait-for-docker-image
       - name: Get PR number
         id: get_pr_number
-        if: github.event.action == 'labeled' && github.event.label.name == 'actions/e2e-deploy'
+        if: github.event.action == 'labeled' && github.event.label.name == 'actions/e2e-chaos'
         run: |
           pr_num=`cat $GITHUB_EVENT_PATH | jq -r ".number"`
           echo "PR_NUM=${pr_num}" >> $GITHUB_OUTPUT
       - name: Specify container versions
-        if: github.event.action == 'labeled' && github.event.label.name == 'actions/e2e-deploy'
+        if: github.event.action == 'labeled' && github.event.label.name == 'actions/e2e-chaos'
         id: specify_container_versions
         uses: ./.github/actions/detect-docker-image-tags
         with:
