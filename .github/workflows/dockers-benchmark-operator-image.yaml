@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-name: "Build docker image: benchmark-job"
+name: "Build docker image: benchmark-operator"
 on:
   push:
     branches:
@@ -25,7 +25,7 @@ on:
       - "v*.*.*-*"
     paths:
       - ".github/actions/docker-build/actions.yaml"
-      - ".github/workflows/dockers-benchmak-job-image.yml"
+      - ".github/workflows/dockers-benchmak-operator-image.yml"
       - "go.mod"
       - "go.sum"
       - "internal/**"
@@ -33,24 +33,24 @@ on:
       - "!internal/db/**"
       - "!internal/k8s/**"
       - "apis/grpc/**"
-      - "pkg/benchmark/job/**"
-      - "cmd/benchmark/job/**"
-      - "dockers/benchmark/job/Dockerfile"
+      - "pkg/benchmark/operator/**"
+      - "cmd/benchmark/operator/**"
+      - "dockers/benchmark/operator/Dockerfile"
       - "versions/GO_VERSION"
       - "versions/NGT_VERSION"
   pull_request:
     paths:
       - ".github/actions/docker-build/actions.yaml"
-      - ".github/workflows/dockers-benchmak-job-image.yml"
+      - ".github/workflows/dockers-benchmak-operator-image.yml"
       - "go.mod"
       - "go.sum"
       - "internal/**"
       - "!internal/**/*_test.go"
       - "!internal/db/**"
       - "apis/grpc/**"
-      - "pkg/benchmark/job/**"
-      - "cmd/benchmark/job/**"
-      - "dockers/benchmark/job/Dockerfile"
+      - "pkg/benchmark/operator/**"
+      - "cmd/benchmark/operator/**"
+      - "dockers/benchmark/operator/Dockerfile"
       - "versions/GO_VERSION"
       - "versions/NGT_VERSION"
 
@@ -89,7 +89,7 @@ jobs:
         id: build_and_publish
         uses: ./.github/actions/docker-build
         with:
-          target: benchmark-job
+          target: benchmark-operator
           builder: ${{ steps.buildx.outputs.name }}
       - name: Initialize CodeQL
         if: startsWith( github.ref, 'refs/tags/')
@@ -124,7 +124,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - uses: 8398a7/action-slack@v3
         with:
-          author_name: benchmark-job image build
+          author_name: benchmark-operator image build
           status: ${{ env.WORKFLOW_CONCLUSION }}
           only_mention_fail: channel
         env:

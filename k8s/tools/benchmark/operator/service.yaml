@@ -15,7 +15,24 @@
 # limitations under the License.
 #
 apiVersion: v1
-kind: ServiceAccount
+kind: Service
 metadata:
   name: vald-benchmark-operator
-  namespace: default
+  labels:
+    app.kubernetes.io/name: vald-benchmark-operator
+    helm.sh/chart: vald-benchmark-operator-v1.7.5
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: release-name
+    app.kubernetes.io/version: v1.7.5
+    app.kubernetes.io/component: helm-operator
+spec:
+  ports:
+    - name: prometheus
+      port: 6060
+      targetPort: 6060
+      protocol: TCP
+  selector:
+    app.kubernetes.io/name: vald-benchmark-operator
+    app.kubernetes.io/component: helm-operator
+  clusterIP: None
+  type: ClusterIP
