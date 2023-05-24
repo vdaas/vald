@@ -124,9 +124,9 @@ k8s/multi/vald/deploy:
 		-f ./charts/vald/values/multi-vald/dev-vald-with-mirror.yaml \
 		-f ./charts/vald/values/multi-vald/dev-vald-03.yaml \
 		-n $(MIRROR03_NAMESPACE)
-	kubectl wait --for=condition=ready pod -l app=$(MIRROR_APP_NAME) --timeout=60s -n $(MIRROR01_NAMESPACE)
-	kubectl wait --for=condition=ready pod -l app=$(MIRROR_APP_NAME) --timeout=60s -n $(MIRROR02_NAMESPACE)
-	kubectl wait --for=condition=ready pod -l app=$(MIRROR_APP_NAME) --timeout=60s -n $(MIRROR03_NAMESPACE)
+	kubectl wait --for=condition=ready pod -l app=$(MIRROR_APP_NAME) --timeout=120s -n $(MIRROR01_NAMESPACE)
+	kubectl wait --for=condition=ready pod -l app=$(MIRROR_APP_NAME) --timeout=120s -n $(MIRROR02_NAMESPACE)
+	kubectl wait --for=condition=ready pod -l app=$(MIRROR_APP_NAME) --timeout=120s -n $(MIRROR03_NAMESPACE)
 	kubectl apply -f ./charts/vald/values/multi-vald/mirror-target.yaml \
 		-n $(MIRROR03_NAMESPACE)
 
