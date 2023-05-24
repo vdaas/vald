@@ -90,7 +90,7 @@ jobs:
           version: latest
           name: vald
           agents: 3
-          options: "--image docker.io/rancher/k3s:v1.23.5-rc1-k3s1"
+          options: "--image docker.io/rancher/k3s:latest"
       - name: check k3d
         run: |
           kubectl cluster-info
@@ -110,8 +110,8 @@ jobs:
           wait_for_selector: app=vald-lb-gateway
       - name: deploy Chaos Mesh
         run: |
-          make kubectl/install/linux/v1.23.6
-          curl -sSL https://mirrors.chaos-mesh.org/v2.4.1/install.sh | bash -s -- --k3s
+          make kubectl/install
+          curl -sSL "https://mirrors.chaos-mesh.org/v$(cat versions/CHAOS_MESH_VERSION)/install.sh" | bash -s -- --k3s
           helm install \
             --set podChaos.failure.enabled=true \
             vald-chaos-test tests/chaos/chart
@@ -184,7 +184,7 @@ jobs:
           version: latest
           name: vald
           agents: 3
-          options: "--image docker.io/rancher/k3s:v1.23.5-rc1-k3s1"
+          options: "--image docker.io/rancher/k3s:latest"
       - name: check k3d
         run: |
           kubectl cluster-info
@@ -204,8 +204,8 @@ jobs:
           wait_for_selector: app=vald-lb-gateway
       - name: deploy Chaos Mesh
         run: |
-          make kubectl/install/linux/v1.23.6
-          curl -sSL https://mirrors.chaos-mesh.org/v2.4.1/install.sh | bash -s -- --k3s
+          make kubectl/install
+          curl -sSL "https://mirrors.chaos-mesh.org/v$(cat versions/CHAOS_MESH_VERSION)/install.sh" | bash -s -- --k3s
           helm install \
             --set podChaos.kill.enabled=true \
             vald-chaos-test tests/chaos/chart
@@ -278,7 +278,7 @@ jobs:
           version: latest
           name: vald
           agents: 3
-          options: "--image docker.io/rancher/k3s:v1.23.5-rc1-k3s1"
+          options: "--image docker.io/rancher/k3s:latest"
       - name: check k3d
         run: |
           kubectl cluster-info
@@ -298,8 +298,8 @@ jobs:
           wait_for_selector: app=vald-lb-gateway
       - name: deploy Chaos Mesh
         run: |
-          make kubectl/install/linux/v1.23.6
-          curl -sSL https://mirrors.chaos-mesh.org/v2.4.1/install.sh | bash -s -- --k3s
+          make kubectl/install
+          curl -sSL "https://mirrors.chaos-mesh.org/v$(cat versions/CHAOS_MESH_VERSION)/install.sh" | bash -s -- --k3s
           helm install \
             --set networkChaos.partition.enabled=true \
             vald-chaos-test tests/chaos/chart
@@ -372,7 +372,7 @@ jobs:
           version: latest
           name: vald
           agents: 3
-          options: "--image docker.io/rancher/k3s:v1.23.5-rc1-k3s1"
+          options: "--image docker.io/rancher/k3s:latest"
       - name: check k3d
         run: |
           kubectl cluster-info
@@ -392,8 +392,8 @@ jobs:
           wait_for_selector: app=vald-lb-gateway
       - name: deploy Chaos Mesh
         run: |
-          make kubectl/install/linux/v1.23.6
-          curl -sSL https://mirrors.chaos-mesh.org/v2.4.1/install.sh | bash -s -- --k3s
+          make kubectl/install
+          curl -sSL "https://mirrors.chaos-mesh.org/v$(cat versions/CHAOS_MESH_VERSION)/install.sh" | bash -s -- --k3s
           helm install \
             --set networkChaos.bandwidth.enabled=true \
             vald-chaos-test tests/chaos/chart
