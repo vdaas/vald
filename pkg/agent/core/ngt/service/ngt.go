@@ -201,10 +201,11 @@ func New(cfg *config.NGT, opts ...Option) (nn NGT, err error) {
 func (n *ngt) prepareFolders() (err error) {
 	if n.enableCopyOnWrite && !n.inMem && len(n.path) != 0 {
 		sep := string(os.PathSeparator)
-		n.path, err = filepath.Abs(strings.ReplaceAll(n.path, sep+sep, sep))
+		absPath, err := filepath.Abs(strings.ReplaceAll(n.path, sep+sep, sep))
 		if err != nil {
-			// TODO: maybe we should return error here?
 			log.Warn(err)
+		} else if file.Exists(absPath) {
+			n.path = absPath
 		}
 		n.basePath = n.path
 		n.oldPath = file.Join(n.basePath, oldIndexDirName)
