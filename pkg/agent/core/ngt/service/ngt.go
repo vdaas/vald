@@ -203,8 +203,8 @@ func (n *ngt) prepareFolders() (err error) {
 		sep := string(os.PathSeparator)
 		absPath, err := filepath.Abs(strings.ReplaceAll(n.path, sep+sep, sep))
 		if err != nil {
-			log.Warn(err)
-		} else if file.Exists(absPath) {
+			log.Warn("keep going with relative path: %w", err)
+		} else {
 			n.path = absPath
 		}
 		n.basePath = n.path
