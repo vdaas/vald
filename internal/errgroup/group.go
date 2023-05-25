@@ -174,7 +174,7 @@ func (g *group) Wait() error {
 	default:
 		g.err = g.errs[0]
 		for _, err := range g.errs[1:] {
-			g.err = errors.Wrap(g.err, err.Error())
+			g.err = errors.Join(g.err, err)
 		}
 	}
 	g.mu.RUnlock()

@@ -208,3 +208,5 @@ func TestTLS_Opts(t *testing.T) {
 		})
 	}
 }
+
+// NOT IMPLEMENTED BELOW

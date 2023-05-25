@@ -38,7 +38,7 @@ defaults:
   image:
     # @schema {"name": "defaults.image.tag", "type": "string"}
     # defaults.image.tag -- docker image tag
-    tag: v1.7.3
+    tag: v1.7.5
   # @schema {"name": "defaults.server_config", "type": "object", "anchor": "server_config"}
   server_config:
     # @schema {"name": "defaults.server_config.servers", "type": "object"}
@@ -830,6 +830,13 @@ defaults:
       # @schema {"name": "defaults.observability.trace.enabled", "type": "boolean"}
       # defaults.observability.trace.enabled -- trace enabled
       enabled: false
+  # @schema {"name": "defaults.networkPolicy", "type": "object", "anchor": "networkPolicy"}
+  networkPolicy:
+    # @schema {"name": "defaults.networkPolicy.enabled", "type": "boolean"}
+    # defaults.networkPolicy.enabled -- if network policy enabled
+    # TODO: Change this to true after implementing user custom network policy parser
+    enabled: false
+
 # @schema {"name": "gateway", "type": "object"}
 gateway:
   # @schema {"name": "gateway.lb", "type": "object"}

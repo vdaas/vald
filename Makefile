@@ -47,6 +47,7 @@ GOCACHE := $(eval GOCACHE := $(shell go env GOCACHE))$(GOCACHE)
 GOOS := $(eval GOOS := $(shell go env GOOS))$(GOOS)
 GOPATH := $(eval GOPATH := $(shell go env GOPATH))$(GOPATH)
 GOTEST_TIMEOUT = 30m
+TEST_NOT_IMPL_PLACEHOLDER = NOT IMPLEMENTED BELOW
 
 TEMP_DIR := $(eval TEMP_DIR := $(shell mktemp -d))$(TEMP_DIR)
 
@@ -57,6 +58,7 @@ HELM_DOCS_VERSION         := $(eval HELM_DOCS_VERSION := $(shell cat versions/HE
 HELM_VERSION              := $(eval HELM_VERSION := $(shell cat versions/HELM_VERSION))$(HELM_VERSION)
 JAEGER_OPERATOR_VERSION   := $(eval JAEGER_OPERATOR_VERSION := $(shell cat versions/JAEGER_OPERATOR_VERSION))$(JAEGER_OPERATOR_VERSION)
 KIND_VERSION              := $(eval KIND_VERSION := $(shell cat versions/KIND_VERSION))$(KIND_VERSION)
+KUBECTL_VERSION           := $(eval KUBECTL_VERSION := $(shell cat versions/KUBECTL_VERSION))$(KUBECTL_VERSION)
 KUBELINTER_VERSION        := $(eval KUBELINTER_VERSION := $(shell cat versions/KUBELINTER_VERSION))$(KUBELINTER_VERSION)
 OTEL_OPERATOR_VERSION     := $(eval OTEL_OPERATOR_VERSION := $(shell cat versions/OTEL_OPERATOR_VERSION))$(OTEL_OPERATOR_VERSION)
 PROMETHEUS_STACK_VERSION  := $(eval PROMETHEUS_STACK_VERSION := $(shell cat versions/PROMETHEUS_STACK_VERSION))$(PROMETHEUS_STACK_VERSION)
@@ -75,7 +77,8 @@ SWAP_TAG             ?= latest
 
 BINDIR ?= /usr/local/bin
 
-UNAME := $(eval UNAME := $(shell uname))$(UNAME)
+UNAME := $(eval UNAME := $(shell uname -s))$(UNAME)
+ARCH := $(eval ARCH := $(shell uname -m))$(ARCH)
 PWD := $(eval PWD := $(shell pwd))$(PWD)
 
 ifeq ($(UNAME),Linux)
@@ -88,7 +91,7 @@ GIT_COMMIT := $(eval GIT_COMMIT := $(shell git rev-list -1 HEAD))$(GIT_COMMIT)
 
 MAKELISTS := Makefile $(shell find Makefile.d -type f -regex ".*\.mk")
 
-ROOTDIR = $(eval ROOTDIR := $(shell git rev-parse --show-toplevel))$(ROOTDIR)
+ROOTDIR = $(eval ROOTDIR := $(or $(shell git rev-parse --show-toplevel), $(PWD)))$(ROOTDIR)
 PROTODIRS := $(eval PROTODIRS := $(shell find apis/proto -type d | sed -e "s%apis/proto/%%g" | grep -v "apis/proto"))$(PROTODIRS)
 BENCH_DATASET_BASE_DIR = hack/benchmark/assets
 BENCH_DATASET_MD5_DIR_NAME = checksum
@@ -160,13 +163,13 @@ BODY = ""
 PROTO_PATHS = \
 	$(PWD) \
 	$(GOPATH)/src \
-	$(GOPATH)/src/$(GOPKG) \
-	$(GOPATH)/src/$(GOPKG)/apis/proto/v1 \
 	$(GOPATH)/src/github.com/envoyproxy/protoc-gen-validate \
 	$(GOPATH)/src/github.com/googleapis/googleapis \
 	$(GOPATH)/src/github.com/planetscale/vtprotobuf \
 	$(GOPATH)/src/github.com/protocolbuffers/protobuf \
-	$(GOPATH)/src/google.golang.org/genproto
+	$(GOPATH)/src/google.golang.org/genproto \
+	$(ROOTDIR) \
+	$(ROOTDIR)/apis/proto/v1
 
 # [Warning]
 # The below packages have no original implementation.
@@ -250,6 +253,8 @@ GO_SOURCES_INTERNAL = $(eval GO_SOURCES_INTERNAL := $(shell find \
 GO_TEST_SOURCES = $(GO_SOURCES:%.go=%_test.go)
 GO_OPTION_TEST_SOURCES = $(GO_OPTION_SOURCES:%.go=%_test.go)
 
+GO_ALL_TEST_SOURCES = $(GO_TEST_SOURCES) $(GO_OPTION_TEST_SOURCES)
+
 DOCKER           ?= docker
 DOCKER_OPTS      ?=
 
@@ -262,6 +267,11 @@ K8S_SLEEP_DURATION_FOR_WAIT_COMMAND ?= 5
 
 K8S_KUBECTL_VERSION ?= $(eval K8S_KUBECTL_VERSION := $(shell kubectl version --short))$(K8S_KUBECTL_VERSION)
 K8S_SERVER_VERSION ?= $(eval K8S_SERVER_VERSION := $(shell echo "$(K8S_KUBECTL_VERSION)" | sed -e "s/.*Server.*\(v[0-9]\.[0-9]*\)\..*/\1/g"))$(K8S_SERVER_VERSION)
+
+# values file to use when deploying sample vald cluster with make k8s/vald/deploy
+HELM_VALUES ?= charts/vald/values/dev.yaml
+# extra options to pass to helm when deploying sample vald cluster with make k8s/vald/deploy
+HELM_EXTRA_OPTIONS ?= ""
 
 COMMA := ,
 SHELL = bash
@@ -396,6 +406,18 @@ format/go: \
 	find ./ -type d -name .git -prune -o -type f -regex '.*[^\.pb]\.go' -print | xargs $(GOPATH)/bin/gofumpt -w
 	find ./ -type d -name .git -prune -o -type f -regex '.*[^\.pb]\.go' -print | xargs $(GOPATH)/bin/strictgoimports -w
 	find ./ -type d -name .git -prune -o -type f -regex '.*\.go' -print | xargs $(GOPATH)/bin/goimports -w
+
+.PHONY: format/go/test
+## run golines, gofumpt, goimports for go test files
+format/go/test: \
+	golines/install \
+	gofumpt/install \
+	strictgoimports/install \
+	goimports/install
+	find $(ROOTDIR)/* -name '*_test.go' | xargs $(GOPATH)/bin/golines -w -m $(GOLINES_MAX_WIDTH)
+	find $(ROOTDIR)/* -name '*_test.go' | xargs $(GOPATH)/bin/gofumpt -w
+	find $(ROOTDIR)/* -name '*_test.go' | xargs $(GOPATH)/bin/strictgoimports -w
+	find $(ROOTDIR)/* -name '*_test.go' | xargs $(GOPATH)/bin/goimports -w
 
 .PHONY: format/yaml
 format/yaml: \

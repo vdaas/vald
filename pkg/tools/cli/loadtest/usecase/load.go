@@ -90,12 +90,12 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 			if r.client != nil {
 				err = r.client.Close(ctx)
 				if err != nil {
-					errs = errors.Wrap(errs, err.Error())
+					errs = errors.Join(errs, err)
 				}
 			}
 			err = ctx.Err()
 			if err != nil && !errors.Is(err, context.Canceled) {
-				errs = errors.Wrap(errs, err.Error())
+				errs = errors.Join(errs, err)
 			}
 			return errs
 		}

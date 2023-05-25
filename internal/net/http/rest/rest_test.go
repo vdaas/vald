@@ -76,3 +76,5 @@ func TestHandlerToRestFunc(t *testing.T) {
 		})
 	}
 }
+
+// NOT IMPLEMENTED BELOW

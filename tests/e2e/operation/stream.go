@@ -114,12 +114,12 @@ func (c *client) SearchWithParameters(
 
 			if err != nil {
 				if err := evalidator(t, err); err != nil {
-					rerr = errors.Wrap(
+					rerr = errors.Join(
 						rerr,
 						errors.Errorf(
 							"stream finished by an error: %s",
 							err.Error(),
-						).Error(),
+						),
 					)
 				}
 				return
@@ -134,7 +134,7 @@ func (c *client) SearchWithParameters(
 							status.GetCode(),
 							status.GetMessage(),
 							errdetails.Serialize(status.GetDetails()))
-						rerr = errors.Wrap(rerr, e.Error())
+						rerr = errors.Join(rerr, e)
 					}
 					continue
 				}
@@ -238,12 +238,12 @@ func (c *client) SearchByIDWithParameters(
 
 			if err != nil {
 				if err := evalidator(t, err); err != nil {
-					rerr = errors.Wrap(
+					rerr = errors.Join(
 						rerr,
 						errors.Errorf(
 							"stream finished by an error: %s",
 							err.Error(),
-						).Error(),
+						),
 					)
 				}
 				return
@@ -258,7 +258,7 @@ func (c *client) SearchByIDWithParameters(
 							status.GetCode(),
 							status.GetMessage(),
 							errdetails.Serialize(status.GetDetails()))
-						rerr = errors.Wrap(rerr, e.Error())
+						rerr = errors.Join(rerr, e)
 					}
 					continue
 				}
@@ -349,12 +349,12 @@ func (c *client) LinearSearchWithParameters(
 
 			if err != nil {
 				if err := evalidator(t, err); err != nil {
-					rerr = errors.Wrap(
+					rerr = errors.Join(
 						rerr,
 						errors.Errorf(
 							"stream finished by an error: %s",
 							err.Error(),
-						).Error(),
+						),
 					)
 				}
 				return
@@ -369,7 +369,7 @@ func (c *client) LinearSearchWithParameters(
 							status.GetCode(),
 							status.GetMessage(),
 							errdetails.Serialize(status.GetDetails()))
-						rerr = errors.Wrap(rerr, e.Error())
+						rerr = errors.Join(rerr, e)
 					}
 					continue
 				}
@@ -467,12 +467,12 @@ func (c *client) LinearSearchByIDWithParameters(
 
 			if err != nil {
 				if err := evalidator(t, err); err != nil {
-					rerr = errors.Wrap(
+					rerr = errors.Join(
 						rerr,
 						errors.Errorf(
 							"stream finished by an error: %s",
 							err.Error(),
-						).Error(),
+						),
 					)
 				}
 				return
@@ -487,7 +487,7 @@ func (c *client) LinearSearchByIDWithParameters(
 							status.GetCode(),
 							status.GetMessage(),
 							errdetails.Serialize(status.GetDetails()))
-						rerr = errors.Wrap(rerr, e.Error())
+						rerr = errors.Join(rerr, e)
 					}
 					continue
 				}
@@ -573,12 +573,12 @@ func (c *client) InsertWithParameters(
 
 			if err != nil {
 				if err := evalidator(t, err); err != nil {
-					rerr = errors.Wrap(
+					rerr = errors.Join(
 						rerr,
 						errors.Errorf(
 							"stream finished by an error: %s",
 							err.Error(),
-						).Error(),
+						),
 					)
 				}
 				return
@@ -593,7 +593,7 @@ func (c *client) InsertWithParameters(
 							status.GetCode(),
 							status.GetMessage(),
 							errdetails.Serialize(status.GetDetails()))
-						rerr = errors.Wrap(rerr, e.Error())
+						rerr = errors.Join(rerr, e)
 					}
 					continue
 				}
@@ -676,12 +676,12 @@ func (c *client) UpdateWithParameters(
 
 			if err != nil {
 				if err := evalidator(t, err); err != nil {
-					rerr = errors.Wrap(
+					rerr = errors.Join(
 						rerr,
 						errors.Errorf(
 							"stream finished by an error: %s",
 							err.Error(),
-						).Error(),
+						),
 					)
 				}
 				return
@@ -696,7 +696,7 @@ func (c *client) UpdateWithParameters(
 							status.GetCode(),
 							status.GetMessage(),
 							errdetails.Serialize(status.GetDetails()))
-						rerr = errors.Wrap(rerr, e.Error())
+						rerr = errors.Join(rerr, e)
 					}
 					continue
 				}
@@ -780,12 +780,12 @@ func (c *client) UpsertWithParameters(
 
 			if err != nil {
 				if err := evalidator(t, err); err != nil {
-					rerr = errors.Wrap(
+					rerr = errors.Join(
 						rerr,
 						errors.Errorf(
 							"stream finished by an error: %s",
 							err.Error(),
-						).Error(),
+						),
 					)
 				}
 				return
@@ -800,7 +800,7 @@ func (c *client) UpsertWithParameters(
 							status.GetCode(),
 							status.GetMessage(),
 							errdetails.Serialize(status.GetDetails()))
-						rerr = errors.Wrap(rerr, e.Error())
+						rerr = errors.Join(rerr, e)
 					}
 					continue
 				}
@@ -882,12 +882,12 @@ func (c *client) RemoveWithParameters(
 
 			if err != nil {
 				if err := evalidator(t, err); err != nil {
-					rerr = errors.Wrap(
+					rerr = errors.Join(
 						rerr,
 						errors.Errorf(
 							"stream finished by an error: %s",
 							err.Error(),
-						).Error(),
+						),
 					)
 				}
 				return
@@ -902,7 +902,7 @@ func (c *client) RemoveWithParameters(
 							status.GetCode(),
 							status.GetMessage(),
 							errdetails.Serialize(status.GetDetails()))
-						rerr = errors.Wrap(rerr, e.Error())
+						rerr = errors.Join(rerr, e)
 					}
 					continue
 				}
@@ -991,12 +991,12 @@ func (c *client) GetObject(
 
 			if err != nil {
 				err = ParseAndLogError(t, err)
-				rerr = errors.Wrap(
+				rerr = errors.Join(
 					rerr,
 					errors.Errorf(
 						"stream finished by an error: %s",
 						err.Error(),
-					).Error(),
+					),
 				)
 				return
 			}

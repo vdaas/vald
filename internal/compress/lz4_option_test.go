@@ -174,3 +174,5 @@ func TestWithLZ4CompressionLevel(t *testing.T) {
 		})
 	}
 }
+
+// NOT IMPLEMENTED BELOW

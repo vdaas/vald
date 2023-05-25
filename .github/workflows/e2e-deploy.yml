@@ -24,7 +24,6 @@ on:
   pull_request:
     types:
       - "labeled"
-
 jobs:
   dump_contexts_to_log:
     runs-on: ubuntu-latest

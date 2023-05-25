@@ -118,3 +118,5 @@ func TestLogging_Bind(t *testing.T) {
 		})
 	}
 }
+
+// NOT IMPLEMENTED BELOW

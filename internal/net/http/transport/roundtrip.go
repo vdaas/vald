@@ -76,7 +76,7 @@ func (e *ert) doRoundTrip(req *http.Request) (res *http.Response, err error) {
 		if res != nil { // just in case we check the response as it depends on RoundTrip impl.
 			closeBody(res.Body)
 			if retryableStatusCode(res.StatusCode) {
-				return nil, errors.Wrap(errors.ErrTransportRetryable, err.Error())
+				return nil, errors.Join(errors.ErrTransportRetryable, err)
 			}
 		}
 		return nil, err
@@ -94,7 +94,6 @@ func retryableStatusCode(status int) bool {
 	case http.StatusTooManyRequests,
 		http.StatusInternalServerError,
 		http.StatusServiceUnavailable,
-		http.StatusMovedPermanently,
 		http.StatusBadGateway,
 		http.StatusGatewayTimeout:
 		return true

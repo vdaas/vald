@@ -216,7 +216,7 @@ func Test_redisClient_ping(t *testing.T) {
 				},
 				want: want{
 					wantR: nil,
-					err:   errors.Wrap(errors.Wrap(err, errors.ErrRedisConnectionPingFailed.Error()), context.DeadlineExceeded.Error()),
+					err:   errors.Join(err, errors.ErrRedisConnectionPingFailed, context.DeadlineExceeded),
 				},
 			}
 		}(),
@@ -993,7 +993,7 @@ func Test_redisClient_Connect(t *testing.T) {
 					dialer:               dialer,
 				},
 				want: want{
-					err: errors.Wrap(errors.Wrap(nil, errors.ErrRedisConnectionPingFailed.Error()), context.DeadlineExceeded.Error()),
+					err: errors.Join(nil, errors.ErrRedisConnectionPingFailed, context.DeadlineExceeded),
 				},
 				checkFunc: defaultCheckFunc,
 			}
@@ -1053,3 +1053,5 @@ func Test_redisClient_Connect(t *testing.T) {
 		})
 	}
 }
+
+// NOT IMPLEMENTED BELOW

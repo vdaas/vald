@@ -100,3 +100,5 @@ func TestNewTLS(t *testing.T) {
 		})
 	}
 }
+
+// NOT IMPLEMENTED BELOW

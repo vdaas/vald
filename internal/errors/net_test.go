@@ -326,3 +326,5 @@ func TestErrLookupIPAddrNotFound(t *testing.T) {
 		})
 	}
 }
+
+// NOT IMPLEMENTED BELOW

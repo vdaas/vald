@@ -62,41 +62,18 @@ $(BINDIR)/reviewdog:
 .PHONY: kubectl/install
 kubectl/install: $(BINDIR)/kubectl
 
-## WARNING: choas-mesh install.sh check_kubernetes()
-## This version information is deprecated and will be replaced with the output from kubectl version --short.
-## https://github.com/chaos-mesh/chaos-mesh/blob/master/install.sh#L291
-.PHONY: kubectl/install/linux/v1.23.6
-kubectl/install/linux/v1.23.6:
-	curl -L "https://storage.googleapis.com/kubernetes-release/release/v1.23.6/bin/linux/amd64/kubectl" -o $(ROOTDIR)/kubectl
-	chmod a+x $(ROOTDIR)/kubectl
-	mv $(ROOTDIR)/kubectl $(BINDIR)/kubectl
-
-ifeq ($(UNAME),Darwin)
 $(BINDIR)/kubectl:
-	curl -L "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/darwin/amd64/kubectl" -o $(BINDIR)/kubectl
+	curl -L "https://dl.k8s.io/release/$(KUBECTL_VERSION)/bin/$(shell echo $(UNAME) | tr '[:upper:]' '[:lower:]')/$(subst x86_64,amd64,$(shell echo $(ARCH) | tr '[:upper:]' '[:lower:]'))/kubectl" -o $(BINDIR)/kubectl
 	chmod a+x $(BINDIR)/kubectl
-else
-$(BINDIR)/kubectl:
-	curl -L "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl" -o $(BINDIR)/kubectl
-	chmod a+x $(BINDIR)/kubectl
-endif
 
 .PHONY: protobuf/install
 protobuf/install: $(BINDIR)/protoc
 
-ifeq ($(UNAME),Darwin)
 $(BINDIR)/protoc:
-	curl -L "https://github.com/protocolbuffers/protobuf/releases/download/v$(PROTOBUF_VERSION)/protoc-$(PROTOBUF_VERSION)-osx-x86_64.zip" -o /tmp/protoc.zip
-	sudo unzip -o /tmp/protoc.zip -d /usr/local bin/protoc
-	sudo unzip -o /tmp/protoc.zip -d /usr/local 'include/*'
-	rm -f /tmp/protoc.zip
-else
-$(BINDIR)/protoc:
-	curl -L "https://github.com/protocolbuffers/protobuf/releases/download/v$(PROTOBUF_VERSION)/protoc-$(PROTOBUF_VERSION)-linux-x86_64.zip" -o /tmp/protoc.zip
+	curl -L "https://github.com/protocolbuffers/protobuf/releases/download/v$(PROTOBUF_VERSION)/protoc-$(PROTOBUF_VERSION)-$(subst darwin,osx,$(shell echo $(UNAME) | tr '[:upper:]' '[:lower:]'))-$(ARCH).zip" -o /tmp/protoc.zip
 	unzip -o /tmp/protoc.zip -d /usr/local bin/protoc
 	unzip -o /tmp/protoc.zip -d /usr/local 'include/*'
 	rm -f /tmp/protoc.zip
-endif
 
 .PHONY: textlint/install
 textlint/install:

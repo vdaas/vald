@@ -899,3 +899,5 @@ func Test_logger_V(t *testing.T) {
 		})
 	}
 }
+
+// NOT IMPLEMENTED BELOW

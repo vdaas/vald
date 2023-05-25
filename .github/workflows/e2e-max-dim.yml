@@ -99,13 +99,6 @@ jobs:
       - name: Helm version
         run: |
           helm version
-      - name: deploy Vald
-        id: deploy_vald
-        uses: ./.github/actions/e2e-deploy-vald
-        with:
-          helm_extra_options: ${{ steps.specify_container_versions.outputs.HELM_EXTRA_OPTIONS }}
-          values: .github/helm/values/values-max-dim.yaml
-          wait_for_selector: app=vald-lb-gateway
       - name: Fetch golang version
         run: |
           GO_VERSION=`make version/go`
@@ -130,13 +123,16 @@ jobs:
             if [ $BIT = "32" ]; then
               DIM=$(($DIM-1))
             fi
-            helm upgrade ${RELEASE} charts/vald \
-              --values ${VALUES} \
-              --set defaults.image.tag=nightly \
-              --set agent.ngt.dimension=${DIM}
+
+            export HELM_EXTRA_OPTIOINS="--set agent.ngt.dimension=${DIM}"
+            make k8s/vald/deploy VERSION="nightly" HELM_VALUES=${VALUES} HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIOINS}"
+
             sleep 3
+
             kubectl rollout restart statefulset vald-agent-ngt
+
             sleep 30
+
             kubectl wait --for=condition=Ready pod -l ${WAIT_FOR_SELECTOR} --timeout=${WAIT_FOR_TIMEOUT}
             POD_NAME=`kubectl get pods | grep vald-lb-gateway | awk '{print $1}'`
             go test \
@@ -167,6 +163,9 @@ jobs:
             echo "Finish: Bit=${BIT}"
             BIT=$(($BIT+1))
             rm ${FILEPATH}
+
+            echo "removing cluster"
+            make k8s/vald/delete VERSION="nightly" HELM_VALUES=${VALUES} HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIOINS}"
           done
           echo "MAX_BIT=${BIT}" >> $GITHUB_OUTPUT
           echo "MAX_BIT=${BIT}"

@@ -21,9 +21,9 @@ type Payload interface {
 	ProtoMessage()
 	ProtoReflect() protoreflect.Message
 	Descriptor() ([]byte, []int)
-	// MarshalToSizedBufferVT(dAtA []byte) (int, error)
-	// MarshalToVT(dAtA []byte) (int, error)
-	// MarshalVT() (dAtA []byte, err error)
-	// SizeVT() (n int)
-	// UnmarshalVT(dAtA []byte) error
+	MarshalToSizedBufferVT(dAtA []byte) (int, error)
+	MarshalToVT(dAtA []byte) (int, error)
+	MarshalVT() (dAtA []byte, err error)
+	SizeVT() (n int)
+	UnmarshalVT(dAtA []byte) error
 }

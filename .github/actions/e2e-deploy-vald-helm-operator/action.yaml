@@ -36,6 +36,10 @@ inputs:
     description: "timeout used for waiting for pods"
     required: false
     default: "600s"
+  use_local_charts:
+    description: "If you want to use local charts, set this to true."
+    required: false
+    default: "true"
 outputs:
   POD_NAME:
     description: "a pod name that waited for"
@@ -76,14 +80,22 @@ runs:
         fi
       env:
         REQUIRE_MINIO: ${{ inputs.require_minio }}
-    - name: deploy vald helm operator
+    - name: deploy vald helm operator from remote charts
       shell: bash
-      id: deploy_vald_helm_operator
+      id: deploy_vald_helm_operator_remote
+      if: ${{ inputs.use_local_charts == 'false' }}
       run: |
         helm install vald-helm-operator \
           --set image.tag=nightly \
           charts/vald-helm-operator/.
 
+        sleep 3
+    - name: deploy vald helm operator from local charts
+      shell: bash
+      id: deploy_vald_helm_operator_local
+      if: ${{ inputs.use_local_charts == 'true' }}
+      run: |
+        make k8s/vald-helm-operator/deploy
         sleep 3
     - name: deploy vald
       shell: bash

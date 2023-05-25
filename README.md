@@ -258,7 +258,7 @@ make init
 
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
 
-[![All Contributors](https://img.shields.io/badge/all_contributors-15-orange.svg?style=flat-square)](#contributors)
+[![All Contributors](https://img.shields.io/badge/all_contributors-16-orange.svg?style=flat-square)](#contributors)
 
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
@@ -285,10 +285,11 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/zchee"><img src="https://avatars.githubusercontent.com/u/6366270?v=4?s=100" width="100px;" alt="Koichi Shiraishi"/><br /><sub><b>Koichi Shiraishi</b></sub></a><br /><a href="#a11y-zchee" title="Accessibility">️️️️♿️</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/liusy182"><img src="https://avatars.githubusercontent.com/u/3293332?v=4?s=100" width="100px;" alt="Siyuan Liu"/><br /><sub><b>Siyuan Liu</b></sub></a><br /><a href="#a11y-liusy182" title="Accessibility">️️️️♿️</a> <a href="#example-liusy182" title="Examples">💡</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/dotdc"><img src="https://avatars.githubusercontent.com/u/12827900?v=4?s=100" width="100px;" alt="David Calvert"/><br /><sub><b>David Calvert</b></sub></a><br /><a href="https://github.com/vdaas/vald/commits?author=dotdc" title="Documentation">📖</a></td>
-      <td align="center" valign="top" width="14.28%"><a href="https://github.com/takuyaymd"><img src="https://avatars.githubusercontent.com/u/49614391?v=4?s=100" width="100px;" alt="takuyaymd"/><br /><sub><b>takuyaymd</b></sub></a><br /><a href="https://github.com/vdaas/vald/issues?q=author%3Atakuyaymd" title="Bug reports">🐛</a> <a href="https://github.com/vdaas/vald/commits?author=takuyaymd" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/takuyaymd"><img src="https://avatars.githubusercontent.com/u/49614391?v=4?s=100" width="100px;" alt="takuyaymd"/><br /><sub><b>takuyaymd</b></sub></a><br /><a href="https://github.com/vdaas/vald/issues?q=author%3Atakuyaymd" title="Bug reports">🐛</a> <a href="https://github.com/vdaas/vald/commits?author=takuyaymd" title="Code">💻</a> <a href="#maintenance-takuyaymd" title="Maintenance">🚧</a></td>
     </tr>
     <tr>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/junsei-ando"><img src="https://avatars.githubusercontent.com/u/1892077?v=4?s=100" width="100px;" alt="junsei-ando"/><br /><sub><b>junsei-ando</b></sub></a><br /><a href="https://github.com/vdaas/vald/commits?author=junsei-ando" title="Documentation">📖</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/ykadowak"><img src="https://avatars.githubusercontent.com/u/60080334?v=4?s=100" width="100px;" alt="Yusuke Kadowaki"/><br /><sub><b>Yusuke Kadowaki</b></sub></a><br /><a href="https://github.com/vdaas/vald/commits?author=ykadowak" title="Code">💻</a> <a href="https://github.com/vdaas/vald/commits?author=ykadowak" title="Tests">⚠️</a></td>
     </tr>
   </tbody>
 </table>

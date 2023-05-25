@@ -853,7 +853,7 @@ func Test_gzipReader_Close(t *testing.T) {
 				},
 			},
 			want: want{
-				err: errors.Wrap(errors.New("serr"), errors.New("rerr").Error()),
+				err: errors.Join(errors.New("serr"), errors.New("rerr")),
 			},
 		},
 
@@ -872,7 +872,7 @@ func Test_gzipReader_Close(t *testing.T) {
 				},
 			},
 			want: want{
-				err: errors.Wrap(nil, errors.New("rerr").Error()),
+				err: errors.New("rerr"),
 			},
 		},
 
@@ -1055,7 +1055,7 @@ func Test_gzipWriter_Close(t *testing.T) {
 				},
 			},
 			want: want{
-				err: errors.Wrap(errors.New("derr"), errors.New("werr").Error()),
+				err: errors.Join(errors.New("derr"), errors.New("werr")),
 			},
 		},
 
@@ -1074,7 +1074,7 @@ func Test_gzipWriter_Close(t *testing.T) {
 				},
 			},
 			want: want{
-				err: errors.Wrap(nil, errors.New("werr").Error()),
+				err: errors.New("werr"),
 			},
 		},
 
@@ -1123,3 +1123,5 @@ func Test_gzipWriter_Close(t *testing.T) {
 		})
 	}
 }
+
+// NOT IMPLEMENTED BELOW

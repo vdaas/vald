@@ -40,10 +40,14 @@ inputs:
     description: "timeout used for waiting for pods"
     required: false
     default: "600s"
+  use_local_charts:
+    description: "If you want to use local charts, set this to true."
+    required: false
+    default: "true"
 outputs:
   POD_NAME:
     description: "a pod name that waited for"
-    value: ${{ steps.deploy_vald.outputs.POD_NAME }}
+    value: ${{ steps.get_real_pod_name.outputs.POD_NAME }}
 runs:
   using: "composite"
   steps:
@@ -80,9 +84,10 @@ runs:
         fi
       env:
         REQUIRE_MINIO: ${{ inputs.require_minio }}
-    - name: deploy vald
+    - name: deploy vald from remote charts
       shell: bash
-      id: deploy_vald
+      id: deploy_vald_remote
+      if: ${{ inputs.use_local_charts == 'false' }}
       run: |
         helm install \
           --values ${VALUES} \
@@ -103,3 +108,36 @@ runs:
         HELM_EXTRA_OPTIONS: ${{ inputs.helm_extra_options }}
         WAIT_FOR_SELECTOR: ${{ inputs.wait_for_selector }}
         WAIT_FOR_TIMEOUT: ${{ inputs.wait_for_timeout }}
+    - name: deploy vald from local charts
+      shell: bash
+      id: deploy_vald_local
+      if: ${{ inputs.use_local_charts == 'true' }}
+      run: |
+        make k8s/vald/deploy HELM_VALUES=${VALUES} HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIONS}"
+
+        sleep 3
+
+        kubectl wait --for=condition=ready pod -l ${WAIT_FOR_SELECTOR} --timeout=${WAIT_FOR_TIMEOUT}
+
+        kubectl get pods
+
+        podname=`kubectl get pods --selector=${WAIT_FOR_SELECTOR} | tail -1 | awk '{print $1}'`
+        echo "POD_NAME=${podname}" >> $GITHUB_OUTPUT
+      env:
+        VALUES: ${{ inputs.values }}
+        HELM_EXTRA_OPTIONS: ${{ inputs.helm_extra_options }}
+        WAIT_FOR_SELECTOR: ${{ inputs.wait_for_selector }}
+        WAIT_FOR_TIMEOUT: ${{ inputs.wait_for_timeout }}
+    - name: get real pod name
+      shell: bash
+      id: get_real_pod_name
+      env:
+        PODNAME_LOCAL_DEPLOY: ${{ steps.deploy_vald_local.outputs.POD_NAME }}
+        PODNAME_REMOTE_DEPLOY: ${{ steps.deploy_vald_remote.outputs.POD_NAME }}
+      # Set GITHUB_OUTPUT to the not empty one, PODNAME_LOCAL_DEPLOY or PODNAME_REMOTE_DEPLOY
+      run: |
+        if [[ -n "${PODNAME_LOCAL_DEPLOY}" ]]; then
+          echo "POD_NAME=${PODNAME_LOCAL_DEPLOY}" >> $GITHUB_OUTPUT
+        else
+          echo "POD_NAME=${PODNAME_REMOTE_DEPLOY}" >> $GITHUB_OUTPUT
+        fi

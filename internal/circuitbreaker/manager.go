@@ -97,11 +97,11 @@ func (bm *breakerManager) Do(ctx context.Context, key string, fn func(ctx contex
 			err = errors.Wrapf(err, "circuitbreaker state is %s, this error is not caused by circuitbreaker", st.String())
 		case StateOpen:
 			if !errors.Is(err, errors.ErrCircuitBreakerOpenState) {
-				err = errors.Wrap(err, errors.ErrCircuitBreakerOpenState.Error())
+				err = errors.Join(err, errors.ErrCircuitBreakerOpenState)
 			}
 		case StateHalfOpen:
 			if !errors.Is(err, errors.ErrCircuitBreakerHalfOpenFlowLimitation) {
-				err = errors.Wrap(err, errors.ErrCircuitBreakerHalfOpenFlowLimitation.Error())
+				err = errors.Join(err, errors.ErrCircuitBreakerHalfOpenFlowLimitation)
 			}
 		}
 		return val, err

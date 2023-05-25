@@ -283,7 +283,7 @@ func (rc *redisClient) ping(ctx context.Context) (r Redis, err error) {
 	for {
 		select {
 		case <-pctx.Done():
-			err = errors.Wrap(errors.Wrap(err, errors.ErrRedisConnectionPingFailed.Error()), pctx.Err().Error())
+			err = errors.Join(err, errors.ErrRedisConnectionPingFailed, pctx.Err())
 			log.Error(err)
 			return nil, err
 		case <-tick.C:
