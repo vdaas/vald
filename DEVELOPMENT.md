@@ -1,6 +1,6 @@
 # Development documentation
 
-This document describes how to setup the development environment and how to develop Vald.
+This document describes how to set up the development environment and how to develop Vald.
 
 ## Set up environment
 
