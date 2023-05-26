@@ -9,7 +9,7 @@ This document describes how to setup the development environment and how to deve
 #### OS
 
 - When using Docker related environment, you can use any OS that supports Docker.
-- When using native environment, Linux is required.
+- When using native environment, `Linux` is required.
 
 #### Architecture
 
@@ -32,4 +32,36 @@ That's everything you need to build and test `Vald`, so you can use it as a refe
 
 ### Unit tests
 
+The command below will run all the unit tests.
+```bash
+make test
+```
+
 ### E2E tests
+The steps below will deploy `Vald` to local `k3d` cluster and run the E2E tests.
+1. Change `example/helm/values.yaml` to `dimensions: 784` and `distance_type: l2`.
+2. Run the commands below.
+```bash
+# Download the dataset
+make hack/benchmark/assets/dataset/fashion-mnist-784-euclidean.hdf5
+
+# Create k3d cluster
+k3d cluster create vald
+
+# Wait for a while until the cluster is ready
+# You might want to use k9s for this
+
+# Deploy Vald
+make k8s/vald/deploy
+
+# Wait for a while until the deployment is ready
+
+# Run E2E tests
+make e2e E2E_WAIT_FOR_CREATE_INDEX_DURATION=3m
+
+
+# The result will be shown in three minutes or so
+
+# Delete the cluster
+make k8s/vald/delete
+```
