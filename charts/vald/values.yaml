@@ -836,6 +836,35 @@ defaults:
     # defaults.networkPolicy.enabled -- if network policy enabled
     # TODO: Change this to true after implementing user custom network policy parser
     enabled: false
+  # @schema {"name": "defaults.defaultBackend", "type": "object", "anchor": "defaultBackend"}
+  defaultBackend:
+    # @schema {"name": "defaults.defaultBackend.resource", "type": "object"}
+    # defaults.defaultBackend.resource -- ingress defaultBackend resource
+    resource:
+      # @schema {"name": "defaults.defaultBackend.resource.kind", "type": "string"}
+      # defaults.defaultBackend.resource.kind -- ingress defaultBackend resource kind
+      kind: ""
+      # @schema {"name": "defaults.defaultBackend.resource.name", "type": "string"}
+      # defaults.defaultBackend.resource.name -- ingress defaultBackend resource name
+      name: ""
+      # @schema {"name": "defaults.defaultBackend.resource.apiGroup", "type": "string"}
+      # defaults.defaultBackend.resource.apiGroup -- ingress defaultBackend resource apiGroup
+      apiGroup: ""
+    # @schema {"name": "defaults.defaultBackend.service", "type": "object"}
+    # defaults.defaultBackend.service -- ingress defaultBackend service
+    service:
+      # @schema {"name": "defaults.defaultBackend.service.name", "type": "string"}
+      # defaults.defaultBackend.service.name -- ingress defaultBackend service name
+      name: ""
+      # @schema {"name": "defaults.defaultBackend.service.port", "type": "object"}
+      # defaults.defaultBackend.service.port -- ingress defaultBackend service port
+      port:
+        # @schema {"name": "defaults.defaultBackend.service.port.name", "type": "string"}
+        # defaults.defaultBackend.service.port.name -- ingress defaultBackend service port name
+        name: ""
+        # @schema {"name": "defaults.defaultBackend.service.port.number", "type": "integer"}
+        # defaults.defaultBackend.service.port.number -- ingress defaultBackend service port number
+        number: 80
 
 # @schema {"name": "gateway", "type": "object"}
 gateway:
@@ -1076,11 +1105,9 @@ gateway:
       # @schema {"name": "gateway.lb.ingress.servicePort", "type": "string"}
       # gateway.lb.ingress.servicePort -- service port to be exposed by ingress
       servicePort: grpc
-      # @schema {"name": "gateway.lb.ingress.defaultBackend", "type": "object"}
-      defaultBackend:
-        # @schema {"name": "gateway.lb.ingress.defaultBackend.enabled", "type": "boolean"}
-        # gateway.lb.ingress.defaultBackend.enabled -- gateway ingress defaultBackend enabled
-        enabled: true
+      # @schema {"name": "gateway.lb.ingress.defaultBackend", "alias": "defaultBackend"}
+      # gateway.lb.ingress.defaultBackend -- defaultBackend config (overrides defaults.defaultBackend)
+      defaultBackend: {}
     # @schema {"name": "gateway.lb.resources", "type": "object", "anchor": "resources"}
     # gateway.lb.resources -- compute resources
     resources:
@@ -1349,6 +1376,9 @@ gateway:
       # @schema {"name": "gateway.filter.ingress.servicePort", "type": "string"}
       # gateway.filter.ingress.servicePort -- service port to be exposed by ingress
       servicePort: grpc
+      # @schema {"name": "gateway.filter.ingress.defaultBackend", "alias": "defaultBackend"}
+      # gateway.filter.ingress.defaultBackend -- defaultBackend config (overrides defaults.defaultBackend)
+      defaultBackend: {}
     # @schema {"name": "gateway.filter.resources", "type": "object", "anchor": "resources"}
     # gateway.filter.resources -- compute resources
     resources:

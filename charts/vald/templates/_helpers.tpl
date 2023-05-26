@@ -203,6 +203,31 @@ port:
   {{- end -}}
 {{- end -}}
 
+{/*
+Ingress defaultBackend
+*/}
+{{- define "vald.ingressDefaultBackend" -}}
+{{- $defaultBackend := .default }}
+{{- if .Values }}
+{{- $defaultBackend = .Values }}
+{{- end }}
+{{- if $defaultBackend -}}
+defaultBackend:
+  {{- if $defaultBackend.resource }}
+  resource:
+    {{- toYaml $defaultBackend.resource| nindent 4}}
+  {{- else }}
+  service:
+    name: {{ $defaultBackend.service.name }}
+    port:
+      {{- if $defaultBackend.service.port.number }}
+      number: {{ $defaultBackend.service.port.number }}
+      {{- else }}
+      name: {{ $defaultBackend.service.port.name }}
+      {{- end -}}
+  {{- end -}}
+{{- end -}}
+{{- end -}}
 
 {/*
 Service ports
