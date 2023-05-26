@@ -16,7 +16,7 @@ We appreciate your help!
   - [How to contribute source code](#how-to-contribute-source-code)
   - [How to contribute unit test code](#how-to-contribute-unit-test-code)
   - [Branch naming convention](#branch-naming-convention)
-  
+
 ## Contributing Issue
 
 We use [Github Issues](https://github.com/vdaas/vald/issues) to track issues within this repository.
