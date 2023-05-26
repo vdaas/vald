@@ -383,21 +383,11 @@ telepresence/swap/lb-gateway:
 ## install kubelinter
 kubelinter/install: $(BINDIR)/kube-linter
 
-ifeq ($(UNAME),Darwin)
 $(BINDIR)/kube-linter:
 	mkdir -p $(BINDIR)
 	cd $(TEMP_DIR) \
-	    && curl -LO https://github.com/stackrox/kube-linter/releases/download/$(KUBELINTER_VERSION)/kube-linter-darwin \
-	    && mv kube-linter-darwin $(BINDIR)/kube-linter \
+	    && curl -L https://github.com/stackrox/kube-linter/releases/download/$(KUBELINTER_VERSION)/kube-linter-$(shell echo $(UNAME) | tr '[:upper:]' '[:lower:]') -o $(BINDIR)/kube-linter \
 	    && chmod a+x $(BINDIR)/kube-linter
-else
-$(BINDIR)/kube-linter:
-	mkdir -p $(BINDIR)
-	cd $(TEMP_DIR) \
-	    && curl -LO https://github.com/stackrox/kube-linter/releases/download/$(KUBELINTER_VERSION)/kube-linter-linux \
-	    && mv kube-linter-linux $(BINDIR)/kube-linter \
-	    && chmod a+x $(BINDIR)/kube-linter
-endif
 
 .PHONY: k8s/example/client/gateway/filter/ingress-filter/server/deploy
 ## deploy ingrsess-filter
