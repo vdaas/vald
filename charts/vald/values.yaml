@@ -1065,7 +1065,7 @@ gateway:
       pathType: ImplementationSpecific
       # @schema {"name": "gateway.lb.ingress.enabled", "type": "boolean"}
       # gateway.lb.ingress.enabled -- gateway ingress enabled
-      enabled: true
+      enabled: false
       # @schema {"name": "gateway.lb.ingress.annotations", "type": "object"}
       # gateway.lb.ingress.annotations -- annotations for ingress
       annotations:
