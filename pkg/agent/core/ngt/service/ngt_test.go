@@ -175,20 +175,22 @@ func Test_ngt_prepareFolders(t *testing.T) {
 					}
 
 					// extract folder name from dir path into a map
-					dirMap := make(map[string]struct{}, len(dirs))
+					dirSet := make(map[string]struct{}, len(dirs))
 					for _, dir := range dirs {
 						// extract folder name from dir path
 						dir = dir[len(tmpDir)+1:]
-						dirMap[dir] = struct{}{}
+						dirSet[dir] = struct{}{}
 					}
 
-					// check if the dirs slice contains origin or backup.
-					// if the dirs slice contains both origin and backup, it is an error.
-					if _, ok := dirMap[originIndexDirName]; !ok {
+					// check if the dirs set contains folder names origin, backup and broken.
+					if _, ok := dirSet[originIndexDirName]; !ok {
 						return fmt.Errorf("failed to create origin dir")
 					}
-					if _, ok := dirMap[oldIndexDirName]; !ok {
+					if _, ok := dirSet[oldIndexDirName]; !ok {
 						return fmt.Errorf("failed to create backup dir")
+					}
+					if _, ok := dirSet[brokenIndexDirName]; !ok {
+						return fmt.Errorf("failed to create broken dir")
 					}
 					return nil
 				},
