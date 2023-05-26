@@ -63,7 +63,6 @@ make k8s/vald/deploy
 # Run E2E tests
 make e2e E2E_WAIT_FOR_CREATE_INDEX_DURATION=3m
 
-
 # The result will be shown in three minutes or so
 
 # Delete the cluster
