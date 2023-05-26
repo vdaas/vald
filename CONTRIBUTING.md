@@ -6,16 +6,18 @@ We appreciate your help!
 
 ## Table of Contents
 
-- [Contributing Issue](#contributing-issue)
-  - [Bug Report](#bug-report)
-  - [Proposal](#proposal)
-  - [Feature Request](#feature-request)
-  - [Security Issue Report](#security-issue-report)
-- [Contributing Source Code](#contributing-source-code)
-  - [Before contributing source code](#before-contributing-source-code)
-  - [How to contribute source code](#how-to-contribute-source-code)
-  - [How to contribute unit test code](#how-to-contribute-unit-test-code)
-  - [Branch naming convention](#branch-naming-convention)
+- [Contributing to Vald](#contributing-to-vald)
+  - [Table of Contents](#table-of-contents)
+  - [Contributing Issue](#contributing-issue)
+    - [Bug Report](#bug-report)
+    - [Proposal](#proposal)
+    - [Feature Request](#feature-request)
+    - [Security Issue Report](#security-issue-report)
+  - [Contributing Source Code](#contributing-source-code)
+    - [Before contributing source code](#before-contributing-source-code)
+    - [How to contribute source code](#how-to-contribute-source-code)
+    - [How to contribute unit test code](#how-to-contribute-unit-test-code)
+    - [Branch naming convention](#branch-naming-convention)
 
 ## Contributing Issue
 
@@ -80,6 +82,8 @@ We will consider using another third-party module if the vulnerable module is no
 Please submit the security issue report [here](https://github.com/vdaas/vald/issues/new?assignees=&labels=type%2Fsecurity%2C+priority%2Fmedium%2C+team%2Fcore%2C+team%2Fsre&template=security_issue_report.md&title=)
 
 ## Contributing Source Code
+
+Please refer to [development setup](./DEVELOPMENT.md) for information on setting up a development environment.
 
 ### Before contributing source code
 
