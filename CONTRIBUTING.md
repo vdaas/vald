@@ -6,19 +6,17 @@ We appreciate your help!
 
 ## Table of Contents
 
-- [Contributing to Vald](#contributing-to-vald)
-  - [Table of Contents](#table-of-contents)
-  - [Contributing Issue](#contributing-issue)
-    - [Bug Report](#bug-report)
-    - [Proposal](#proposal)
-    - [Feature Request](#feature-request)
-    - [Security Issue Report](#security-issue-report)
-  - [Contributing Source Code](#contributing-source-code)
-    - [Before contributing source code](#before-contributing-source-code)
-    - [How to contribute source code](#how-to-contribute-source-code)
-    - [How to contribute unit test code](#how-to-contribute-unit-test-code)
-    - [Branch naming convention](#branch-naming-convention)
-
+- [Contributing Issue](#contributing-issue)
+  - [Bug Report](#bug-report)
+  - [Proposal](#proposal)
+  - [Feature Request](#feature-request)
+  - [Security Issue Report](#security-issue-report)
+- [Contributing Source Code](#contributing-source-code)
+  - [Before contributing source code](#before-contributing-source-code)
+  - [How to contribute source code](#how-to-contribute-source-code)
+  - [How to contribute unit test code](#how-to-contribute-unit-test-code)
+  - [Branch naming convention](#branch-naming-convention)
+  
 ## Contributing Issue
 
 We use [Github Issues](https://github.com/vdaas/vald/issues) to track issues within this repository.
