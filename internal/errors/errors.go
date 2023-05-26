@@ -80,6 +80,11 @@ var (
 		return Wrapf(err, "failed to output %s logs", str)
 	}
 
+	// ErrIndexPathNotExists represents a function to generate an error that the index path is not exists.
+	ErrIndexPathNotExists = func(path string) error {
+		return Errorf("index path %s not exists", path)
+	}
+
 	// New represents a function to generate the new error with a message.
 	// When the message is nil, it will return nil instead of an error.
 	New = func(msg string) error {

@@ -166,9 +166,15 @@ func New(cfg *config.NGT, opts ...Option) (nn NGT, err error) {
 		n.inMem = true
 	}
 
-	err = n.prepareFolders()
-	if err != nil {
-		return nil, err
+	// prepare directories to store index only when it not in-memory mode
+	if !n.inMem {
+		if !file.Exists(n.path) {
+			return nil, errors.ErrIndexPathNotExists(n.path)
+		}
+		err = n.prepareFolders()
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	err = n.initNGT(
@@ -203,21 +209,26 @@ func New(cfg *config.NGT, opts ...Option) (nn NGT, err error) {
 
 func (n *ngt) prepareFolders() (err error) {
 	// initialize broken index backup directory
-	// the path does not differ if it's copy on write mode or not
-	if !n.inMem {
-		sep := string(os.PathSeparator)
-		n.path, err = filepath.Abs(strings.ReplaceAll(n.path, sep+sep, sep))
-		if err != nil {
-			log.Warn(err)
-		}
-		n.brokenPath = file.Join(n.path, brokenIndexDirName)
-		err = file.MkdirAll(n.brokenPath, fs.ModePerm)
-		if err != nil {
-			log.Warn("failed to create a folder for broken index backup: %w", err)
-		}
+	// the path does not differ if it's CoW mode or not
+	sep := string(os.PathSeparator)
+	n.path, err = filepath.Abs(strings.ReplaceAll(n.path, sep+sep, sep))
+	if err != nil {
+		log.Warn(err)
+	}
+	n.brokenPath = file.Join(n.path, brokenIndexDirName)
+	err = file.MkdirAll(n.brokenPath, fs.ModePerm)
+	if err != nil {
+		log.Warnf("failed to create a folder for broken index backup: %v", err)
 	}
 
-	if n.enableCopyOnWrite && !n.inMem && len(n.path) != 0 {
+	if !n.enableCopyOnWrite {
+		// TODO: check if there is a index in old folder and move it to the origin folder
+		// dirs, err := file.ListInDir(n.path)
+
+		log.Debug("========= not in memory and not copy on write mode")
+	}
+
+	if n.enableCopyOnWrite && len(n.path) != 0 {
 		sep := string(os.PathSeparator)
 		absPath, err := filepath.Abs(strings.ReplaceAll(n.path, sep+sep, sep))
 		if err != nil {

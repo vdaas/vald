@@ -72,31 +72,47 @@ func TestNew(t *testing.T) {
 		}
 		return nil
 	}
+	defaultConfig := config.NGT{
+		Dimension:           100,
+		DistanceType:        "l2",
+		ObjectType:          "float",
+		BulkInsertChunkSize: 10,
+		CreationEdgeSize:    20,
+		SearchEdgeSize:      10,
+		EnableProactiveGC:   false,
+		EnableCopyOnWrite:   false,
+		KVSDB: &config.KVSDB{
+			Concurrency: 10,
+		},
+	}
 	tests := []test{
 		func() test {
 			tmpDir := t.TempDir()
 			return test{
 				name: "success with default options",
 				args: args{
-					cfg: &config.NGT{
-						Dimension:           100,
-						DistanceType:        "l2",
-						ObjectType:          "float",
-						BulkInsertChunkSize: 10,
-						CreationEdgeSize:    20,
-						SearchEdgeSize:      10,
-						EnableProactiveGC:   false,
-						EnableCopyOnWrite:   false,
-						KVSDB: &config.KVSDB{
-							Concurrency: 10,
-						},
-					},
+					cfg: &defaultConfig,
 					opts: []Option{
 						WithIndexPath(tmpDir),
 					},
 				},
 				want: want{
 					err: nil,
+				},
+				checkFunc: defaultCheckFunc,
+			}
+		}(),
+		func() test {
+			return test{
+				name: "failed with not existing index path",
+				args: args{
+					cfg: &defaultConfig,
+					opts: []Option{
+						WithIndexPath("/dev/null/ghost"),
+					},
+				},
+				want: want{
+					err: errors.ErrIndexPathNotExists("/dev/null/ghost"),
 				},
 				checkFunc: defaultCheckFunc,
 			}
@@ -156,7 +172,7 @@ func Test_ngt_prepareFolders(t *testing.T) {
 		func() test {
 			tmpDir := t.TempDir()
 			return test{
-				name: "success to create origin and backup dir",
+				name: "success to create directories to preserve index",
 				args: args{},
 				fields: fields{
 					enableCopyOnWrite: true,
