@@ -207,7 +207,63 @@ func New(cfg *config.NGT, opts ...Option) (nn NGT, err error) {
 	return n, nil
 }
 
+// migrate migrates the index directory from old to new under the input path if necessary
+func migrate(path string) (err error) {
+	// check if migration is required
+	dirs, err := file.ListInDir(path)
+	if err != nil {
+		return errors.ErrIndexPathNotExists(path)
+	}
+	if len(dirs) == 0 {
+		// empty directory
+		return nil
+	}
+
+	originExists := false
+	for _, dir := range dirs {
+		if dir == string(originIndexDirName) {
+			originExists = true
+			break
+		}
+	}
+	if originExists {
+		// origin folder exists. meaning already migrated
+		return nil
+	}
+
+	// TODO: start migration process
+	// この時点でpathに何かが入っているが、originは存在しない状況なので、
+	// pathの中身を全てoriginを作成して移動してしまう
+	// file.Moveみたいなの使う
+	// e, f, err := file.ExistsWithDetail(path)
+	// if err != nil {
+	// 	// this doesn't happen but in case
+	// 	log.Error(err)
+	// }
+	// log.Debug(e)
+	// log.Debug(f)
+
+	// // check how many files in the n.path
+	// files, err := filepath.Glob(file.Join(path, "*"))
+	// if err != nil {
+	// 	log.Error(err)
+	// }
+	// log.Debug(files)
+
+	// log.Debug("========= not in memory and not copy on write mode")
+
+	return nil
+}
+
 func (n *ngt) prepareFolders() (err error) {
+	// migrate from old index directory to new index directory if necessary
+	if !n.enableCopyOnWrite {
+		err = migrate(n.path)
+		if err != nil {
+			return err
+		}
+	}
+
 	// initialize broken index backup directory
 	// the path does not differ if it's CoW mode or not
 	sep := string(os.PathSeparator)
@@ -219,13 +275,6 @@ func (n *ngt) prepareFolders() (err error) {
 	err = file.MkdirAll(n.brokenPath, fs.ModePerm)
 	if err != nil {
 		log.Warnf("failed to create a folder for broken index backup: %v", err)
-	}
-
-	if !n.enableCopyOnWrite {
-		// TODO: check if there is a index in old folder and move it to the origin folder
-		// dirs, err := file.ListInDir(n.path)
-
-		log.Debug("========= not in memory and not copy on write mode")
 	}
 
 	if n.enableCopyOnWrite && len(n.path) != 0 {
