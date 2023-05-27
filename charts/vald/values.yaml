@@ -837,34 +837,34 @@ defaults:
     # TODO: Change this to true after implementing user custom network policy parser
     enabled: false
   # @schema {"name": "defaults.defaultBackend", "type": "object", "anchor": "defaultBackend"}
-  defaultBackend:
+  defaultBackend: {}
     # @schema {"name": "defaults.defaultBackend.resource", "type": "object"}
     # defaults.defaultBackend.resource -- ingress defaultBackend resource
-    resource:
+    # resource:
       # @schema {"name": "defaults.defaultBackend.resource.kind", "type": "string"}
       # defaults.defaultBackend.resource.kind -- ingress defaultBackend resource kind
-      kind: ""
+      # kind: ""
       # @schema {"name": "defaults.defaultBackend.resource.name", "type": "string"}
       # defaults.defaultBackend.resource.name -- ingress defaultBackend resource name
-      name: ""
+      # name: ""
       # @schema {"name": "defaults.defaultBackend.resource.apiGroup", "type": "string"}
       # defaults.defaultBackend.resource.apiGroup -- ingress defaultBackend resource apiGroup
-      apiGroup: ""
+      # apiGroup: ""
     # @schema {"name": "defaults.defaultBackend.service", "type": "object"}
     # defaults.defaultBackend.service -- ingress defaultBackend service
-    service:
+    # service:
       # @schema {"name": "defaults.defaultBackend.service.name", "type": "string"}
       # defaults.defaultBackend.service.name -- ingress defaultBackend service name
-      name: ""
+      # name: ""
       # @schema {"name": "defaults.defaultBackend.service.port", "type": "object"}
       # defaults.defaultBackend.service.port -- ingress defaultBackend service port
-      port:
+      # port:
         # @schema {"name": "defaults.defaultBackend.service.port.name", "type": "string"}
         # defaults.defaultBackend.service.port.name -- ingress defaultBackend service port name
-        name: ""
+        # name: ""
         # @schema {"name": "defaults.defaultBackend.service.port.number", "type": "integer"}
         # defaults.defaultBackend.service.port.number -- ingress defaultBackend service port number
-        number: 80
+        # number: 80
 
 # @schema {"name": "gateway", "type": "object"}
 gateway:
