@@ -271,7 +271,7 @@ K8S_SERVER_VERSION ?= $(eval K8S_SERVER_VERSION := $(shell echo "$(K8S_KUBECTL_V
 # values file to use when deploying sample vald cluster with make k8s/vald/deploy
 HELM_VALUES ?= charts/vald/values/dev.yaml
 # extra options to pass to helm when deploying sample vald cluster with make k8s/vald/deploy
-HELM_EXTRA_OPTIONS ?= ""
+HELM_EXTRA_OPTIONS ?=
 
 COMMA := ,
 SHELL = bash
