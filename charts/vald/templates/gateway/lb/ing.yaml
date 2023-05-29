@@ -39,7 +39,7 @@ spec:
   {{- else }}
   {{- $defaultBackend := dict "Values" $gateway.ingress.defaultBackend "default" .Values.defaults.defaultBackend }}
   {{- include "vald.ingressDefaultBackend" $defaultBackend | nindent 2 }}
-  {{- end }}
+  {{- end -}}
   rules:
   - host: {{ $gateway.ingress.host }}
     http:

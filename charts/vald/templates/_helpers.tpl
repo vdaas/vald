@@ -211,7 +211,7 @@ Ingress defaultBackend
 {{- with .Values }}
 {{- $defaultBackend = . }}
 {{- end }}
-{{- if $defaultBackend -}}
+{{- if $defaultBackend }}
 defaultBackend:
   {{- if $defaultBackend.resource }}
   resource:
