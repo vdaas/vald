@@ -1818,6 +1818,30 @@ spec:
                 defaults:
                   type: object
                   properties:
+                    defaultBackend:
+                      type: object
+                      properties:
+                        resource:
+                          type: object
+                          properties:
+                            apiGroup:
+                              type: string
+                            kind:
+                              type: string
+                            name:
+                              type: string
+                        service:
+                          type: object
+                          properties:
+                            name:
+                              type: string
+                            port:
+                              type: object
+                              properties:
+                                name:
+                                  type: string
+                                number:
+                                  type: integer
                     grpc:
                       type: object
                       properties:
@@ -2022,6 +2046,11 @@ spec:
                           enum:
                             - glg
                             - zap
+                    networkPolicy:
+                      type: object
+                      properties:
+                        enabled:
+                          type: boolean
                     observability:
                       type: object
                       properties:
@@ -4133,6 +4162,30 @@ spec:
                             annotations:
                               type: object
                               x-kubernetes-preserve-unknown-fields: true
+                            defaultBackend:
+                              type: object
+                              properties:
+                                resource:
+                                  type: object
+                                  properties:
+                                    apiGroup:
+                                      type: string
+                                    kind:
+                                      type: string
+                                    name:
+                                      type: string
+                                service:
+                                  type: object
+                                  properties:
+                                    name:
+                                      type: string
+                                    port:
+                                      type: object
+                                      properties:
+                                        name:
+                                          type: string
+                                        number:
+                                          type: integer
                             enabled:
                               type: boolean
                             host:
@@ -5287,6 +5340,30 @@ spec:
                             annotations:
                               type: object
                               x-kubernetes-preserve-unknown-fields: true
+                            defaultBackend:
+                              type: object
+                              properties:
+                                resource:
+                                  type: object
+                                  properties:
+                                    apiGroup:
+                                      type: string
+                                    kind:
+                                      type: string
+                                    name:
+                                      type: string
+                                service:
+                                  type: object
+                                  properties:
+                                    name:
+                                      type: string
+                                    port:
+                                      type: object
+                                      properties:
+                                        name:
+                                          type: string
+                                        number:
+                                          type: integer
                             enabled:
                               type: boolean
                             host:
