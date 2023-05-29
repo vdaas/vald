@@ -208,10 +208,20 @@ Ingress defaultBackend
 */}
 {{- define "vald.ingressDefaultBackend" -}}
 {{- $defaultBackend := .default }}
-{{- if or (.Values) (not (eq .Values nil)) }}
-{{- $defaultBackend = .Values }}
+{{- if gt (len .Values.ingress.defaultBackend) 0}}
+{{- $defaultBackend = .Values.ingress.defaultBackend }}
 {{- end }}
-{{- if $defaultBackend }}
+{{- if not $defaultBackend }}
+defaultBackend:
+  service:
+    name: {{ .Values.name }}
+    port:
+      {{- if regexMatch "^()([1-9]|[1-5]?[0-9]{2,4}|6[1-4][0-9]{3}|65[1-4][0-9]{2}|655[1-2][0-9]|6553[1-5])$" .Values.ingress.servicePort -}}
+      number: {{ .Values.ingress.servicePort }}
+      {{- else }}
+      name: {{ .Values.ingress.servicePort }}
+      {{- end }}
+{{- else if or ($defaultBackend.resource) ($defaultBackend.service) }}
 defaultBackend:
   {{- if $defaultBackend.resource }}
   resource:
@@ -225,7 +235,7 @@ defaultBackend:
       {{- else }}
       name: {{ $defaultBackend.service.port.name }}
       {{- end -}}
-  {{- end -}}
+  {{- end }}
 {{- end -}}
 {{- end -}}
 

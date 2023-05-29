@@ -837,7 +837,7 @@ defaults:
     # TODO: Change this to true after implementing user custom network policy parser
     enabled: false
   # @schema {"name": "defaults.defaultBackend", "type": "object", "anchor": "defaultBackend"}
-  # defaultBackend: {}
+  defaultBackend: {}
     # @schema {"name": "defaults.defaultBackend.resource", "type": "object"}
     # defaults.defaultBackend.resource -- ingress defaultBackend resource
     # resource:
@@ -1107,7 +1107,7 @@ gateway:
       servicePort: grpc
       # @schema {"name": "gateway.lb.ingress.defaultBackend", "alias": "defaultBackend"}
       # gateway.lb.ingress.defaultBackend -- defaultBackend config (overrides defaults.defaultBackend)
-      # defaultBackend: {}
+      defaultBackend: {}
     # @schema {"name": "gateway.lb.resources", "type": "object", "anchor": "resources"}
     # gateway.lb.resources -- compute resources
     resources:
@@ -1378,7 +1378,7 @@ gateway:
       servicePort: grpc
       # @schema {"name": "gateway.filter.ingress.defaultBackend", "alias": "defaultBackend"}
       # gateway.filter.ingress.defaultBackend -- defaultBackend config (overrides defaults.defaultBackend)
-      # defaultBackend: {}
+      defaultBackend: {}
     # @schema {"name": "gateway.filter.resources", "type": "object", "anchor": "resources"}
     # gateway.filter.resources -- compute resources
     resources:
