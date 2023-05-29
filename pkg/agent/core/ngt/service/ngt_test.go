@@ -21,6 +21,7 @@ import (
 	"context"
 	"fmt"
 	"math"
+	"os"
 	"reflect"
 	"sync"
 	"sync/atomic"
@@ -136,6 +137,151 @@ func TestNew(t *testing.T) {
 			}
 
 			_, err := New(test.args.cfg, test.args.opts...)
+			if err := checkFunc(test.want, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func Test_migrate(t *testing.T) {
+	type args struct {
+		path string
+	}
+	type want struct {
+		err error
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, error) error
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
+	}
+	defaultCheckFunc := func(w want, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		return nil
+	}
+	tests := []test{
+		func() test {
+			tmpDir := t.TempDir()
+			return test{
+				name: "migrate does nothing when input path is empty",
+				args: args{
+					path: tmpDir,
+				},
+				want: want{
+					err: nil,
+				},
+				checkFunc: func(w want, err error) error {
+					if !errors.Is(err, w.err) {
+						return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+					}
+					files, err := file.ListInDir(tmpDir)
+					if err != nil {
+						return err
+					}
+					if len(files) != 0 {
+						return fmt.Errorf("migrate does something when input path is empty")
+					}
+					return nil
+				},
+			}
+		}(),
+		func() test {
+			tmpDir := t.TempDir()
+			originDir := tmpDir + string(os.PathSeparator) + originIndexDirName
+			return test{
+				name: "migrate does nothing when origin directory exists",
+				args: args{
+					path: tmpDir,
+				},
+				want: want{
+					err: nil,
+				},
+				beforeFunc: func(t *testing.T, a args) {
+					t.Helper()
+					err := os.Mkdir(originDir, 0755)
+					if err != nil {
+						t.Errorf("failed to create origin dir: %v", err)
+					}
+				},
+				checkFunc: func(w want, err error) error {
+					if !errors.Is(err, w.err) {
+						return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+					}
+					files, err := file.ListInDir(tmpDir)
+					if err != nil {
+						return err
+					}
+					if len(files) != 1 {
+						return fmt.Errorf("migrate does something when input path is empty")
+					}
+					if files[0] != originDir {
+						return fmt.Errorf("the directory name shoule be %v but %v", originDir, files[0])
+					}
+					return nil
+				},
+			}
+		}(),
+		func() test {
+			tmpDir := t.TempDir()
+			originDir := tmpDir + string(os.PathSeparator) + originIndexDirName
+			return test{
+				name: "migrate moves old index files to origin directory",
+				args: args{
+					path: tmpDir,
+				},
+				want: want{
+					err: nil,
+				},
+				beforeFunc: func(t *testing.T, a args) {
+					t.Helper()
+					f, err := os.Create(tmpDir + string(os.PathSeparator) + "old-index-file-before-migration")
+					if err != nil {
+						t.Errorf("failed to create old index file: %v", err)
+					}
+					defer f.Close()
+				},
+				checkFunc: func(w want, err error) error {
+					if !errors.Is(err, w.err) {
+						return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+					}
+					files, err := file.ListInDir(tmpDir)
+					if err != nil {
+						return err
+					}
+					// FIXME: check if the file name is `old-index-file....`
+					if len(files) != 1 {
+						return fmt.Errorf("migrate does something when input path is empty")
+					}
+					if files[0] != originDir {
+						return fmt.Errorf("the directory name shoule be %v but %v", originDir, files[0])
+					}
+					return nil
+				},
+			}
+		}(),
+	}
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(tt, test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(tt, test.args)
+			}
+			checkFunc := test.checkFunc
+			if test.checkFunc == nil {
+				checkFunc = defaultCheckFunc
+			}
+			err := migrate(test.args.path)
 			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}

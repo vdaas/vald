@@ -210,18 +210,18 @@ func New(cfg *config.NGT, opts ...Option) (nn NGT, err error) {
 // migrate migrates the index directory from old to new under the input path if necessary
 func migrate(path string) (err error) {
 	// check if migration is required
-	dirs, err := file.ListInDir(path)
+	files, err := file.ListInDir(path)
 	if err != nil {
-		return errors.ErrIndexPathNotExists(path)
+		return err
 	}
-	if len(dirs) == 0 {
-		// empty directory
+	if len(files) == 0 {
+		// empty directory doesn't need migration
 		return nil
 	}
 
 	originExists := false
-	for _, dir := range dirs {
-		if dir == string(originIndexDirName) {
+	for _, file := range files {
+		if file == path + string(os.PathSeparator) + string(originIndexDirName) {
 			originExists = true
 			break
 		}
@@ -231,26 +231,30 @@ func migrate(path string) (err error) {
 		return nil
 	}
 
-	// TODO: start migration process
-	// この時点でpathに何かが入っているが、originは存在しない状況なので、
-	// pathの中身を全てoriginを作成して移動してしまう
-	// file.Moveみたいなの使う
-	// e, f, err := file.ExistsWithDetail(path)
-	// if err != nil {
-	// 	// this doesn't happen but in case
-	// 	log.Error(err)
-	// }
-	// log.Debug(e)
-	// log.Debug(f)
+	// at this point, there is something in the path, but there is no `path/origin`, which means migration is required
+	// so create origin and move all contents in path to `path/origin`
 
-	// // check how many files in the n.path
-	// files, err := filepath.Glob(file.Join(path, "*"))
-	// if err != nil {
-	// 	log.Error(err)
-	// }
-	// log.Debug(files)
+	// first move all contents to temporary directory because it's not possible to directly move directory to its subdirectory
+	tp, err := file.MkdirTemp("")
+	if err != nil {
+		return err
+	}
+	err = file.MoveDir(context.Background(), path, tp)
+	if err != nil {
+		return err
+	}
 
-	// log.Debug("========= not in memory and not copy on write mode")
+	// recreate the path again to move contents to `path/origin` lately
+	err = file.MkdirAll(path, fs.ModePerm)
+	if err != nil {
+		return err
+	}
+
+	// finally move to `path/origin` directory
+	err = file.MoveDir(context.Background(), tp, file.Join(path, originIndexDirName))
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -264,35 +268,30 @@ func (n *ngt) prepareFolders() (err error) {
 		}
 	}
 
-	// initialize broken index backup directory
-	// the path does not differ if it's CoW mode or not
+	// set paths
 	sep := string(os.PathSeparator)
 	n.path, err = filepath.Abs(strings.ReplaceAll(n.path, sep+sep, sep))
 	if err != nil {
 		log.Warn(err)
 	}
-	n.brokenPath = file.Join(n.path, brokenIndexDirName)
+	n.basePath = n.path
+	n.oldPath = file.Join(n.basePath, oldIndexDirName)
+	n.path = file.Join(n.basePath, originIndexDirName)
+	n.brokenPath = file.Join(n.basePath, brokenIndexDirName)
+
+	// initialize origin and broken index backup directory
+	// the path does not differ if it's CoW mode or not
+	err = file.MkdirAll(n.path, fs.ModePerm)
+	if err != nil {
+		log.Warn(err)
+	}
 	err = file.MkdirAll(n.brokenPath, fs.ModePerm)
 	if err != nil {
 		log.Warnf("failed to create a folder for broken index backup: %v", err)
 	}
 
 	if n.enableCopyOnWrite && len(n.path) != 0 {
-		sep := string(os.PathSeparator)
-		absPath, err := filepath.Abs(strings.ReplaceAll(n.path, sep+sep, sep))
-		if err != nil {
-			log.Warnf("keep going with relative path:\t%v", err)
-		} else {
-			n.path = absPath
-		}
-		n.basePath = n.path
-		n.oldPath = file.Join(n.basePath, oldIndexDirName)
-		n.path = file.Join(n.basePath, originIndexDirName)
 		err = file.MkdirAll(n.oldPath, fs.ModePerm)
-		if err != nil {
-			log.Warn(err)
-		}
-		err = file.MkdirAll(n.path, fs.ModePerm)
 		if err != nil {
 			log.Warn(err)
 		}
