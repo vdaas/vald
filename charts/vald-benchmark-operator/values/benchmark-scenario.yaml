@@ -89,6 +89,7 @@ spec:
         num: 10
         min_num: 10
         timeout: "1m"
+        enable_linear_search: true
       client_config:
         health_check_duration: "10s"
       rps: 2000
@@ -111,7 +112,7 @@ spec:
       rps: 1000
     - job_type: "search"
       dimension: 784
-      repetition: 1
+      repetition: 2
       replica: 1
       rules: []
       dataset:
@@ -127,6 +128,7 @@ spec:
         num: 10
         min_num: 10
         timeout: "1m"
+        enable_linear_search: false
       client_config:
         health_check_duration: "10s"
       rps: 4000

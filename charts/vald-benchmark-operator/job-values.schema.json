@@ -351,7 +351,7 @@
         "upsert",
         "search",
         "remove",
-        "get_object",
+        "getobject",
         "exists"
       ]
     },
@@ -404,6 +404,10 @@
       "type": "object",
       "description": "upsert config",
       "properties": {
+        "enable_linear_search": {
+          "type": "boolean",
+          "description": "enable linear search for calculation recall"
+        },
         "epsilon": { "type": "number", "description": "epsilon" },
         "min_num": {
           "type": "integer",
@@ -434,6 +438,12 @@
         }
       },
       "required": ["host", "port"]
+    },
+    "ttl_seconds_after_finished": {
+      "type": "integer",
+      "description": "limits the lifetime of a Job that has finished execution.",
+      "maximum": 65535,
+      "minimum": 0
     },
     "update_config": {
       "type": "object",

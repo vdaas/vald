@@ -18,11 +18,12 @@ package job
 
 import (
 	"github.com/vdaas/vald/internal/k8s"
+	jobs "github.com/vdaas/vald/internal/k8s/job"
 	corev1 "k8s.io/api/core/v1"
 )
 
 // BenchmarkJobOption represents the option for create benchmark job template.
-type BenchmarkJobOption func(b *benchmarkJobTemplate) error
+type BenchmarkJobOption func(b *jobs.Job) error
 
 var defaultBenchmarkJobOpts = []BenchmarkJobOption{
 	WithSvcAccountName(SvcAccountName),
@@ -31,7 +32,7 @@ var defaultBenchmarkJobOpts = []BenchmarkJobOption{
 
 // WithSvcAccountName sets the service account name for benchmark job.
 func WithSvcAccountName(name string) BenchmarkJobOption {
-	return func(b *benchmarkJobTemplate) error {
+	return func(b *jobs.Job) error {
 		if len(name) > 0 {
 			b.Spec.Template.Spec.ServiceAccountName = name
 		}
@@ -41,7 +42,7 @@ func WithSvcAccountName(name string) BenchmarkJobOption {
 
 // WithRestartPolicy sets the job restart policy for benchmark job.
 func WithRestartPolicy(rp corev1.RestartPolicy) BenchmarkJobOption {
-	return func(b *benchmarkJobTemplate) error {
+	return func(b *jobs.Job) error {
 		if len(rp) > 0 {
 			b.Spec.Template.Spec.RestartPolicy = rp
 		}
@@ -51,7 +52,7 @@ func WithRestartPolicy(rp corev1.RestartPolicy) BenchmarkJobOption {
 
 // WithBackoffLimit sets the job backoff limit for benchmark job.
 func WithBackoffLimit(bo int32) BenchmarkJobOption {
-	return func(b *benchmarkJobTemplate) error {
+	return func(b *jobs.Job) error {
 		b.Spec.BackoffLimit = &bo
 		return nil
 	}
@@ -59,7 +60,7 @@ func WithBackoffLimit(bo int32) BenchmarkJobOption {
 
 // WithName sets the job name of benchmark job.
 func WithName(name string) BenchmarkJobOption {
-	return func(b *benchmarkJobTemplate) error {
+	return func(b *jobs.Job) error {
 		b.Name = name
 		return nil
 	}
@@ -67,7 +68,7 @@ func WithName(name string) BenchmarkJobOption {
 
 // WithNamespace specify namespace where job will execute.
 func WithNamespace(ns string) BenchmarkJobOption {
-	return func(b *benchmarkJobTemplate) error {
+	return func(b *jobs.Job) error {
 		b.Namespace = ns
 		return nil
 	}
@@ -75,7 +76,7 @@ func WithNamespace(ns string) BenchmarkJobOption {
 
 // WithOwnerRef sets the OwnerReference to the job resource.
 func WithOwnerRef(refs []k8s.OwnerReference) BenchmarkJobOption {
-	return func(b *benchmarkJobTemplate) error {
+	return func(b *jobs.Job) error {
 		if len(refs) > 0 {
 			b.OwnerReferences = refs
 		}
@@ -85,7 +86,7 @@ func WithOwnerRef(refs []k8s.OwnerReference) BenchmarkJobOption {
 
 // WithCompletions sets the job completion.
 func WithCompletions(com int32) BenchmarkJobOption {
-	return func(b *benchmarkJobTemplate) error {
+	return func(b *jobs.Job) error {
 		if com > 1 {
 			b.Spec.Completions = &com
 		}
@@ -95,7 +96,7 @@ func WithCompletions(com int32) BenchmarkJobOption {
 
 // WithParallelism sets the job parallelism.
 func WithParallelism(parallelism int32) BenchmarkJobOption {
-	return func(b *benchmarkJobTemplate) error {
+	return func(b *jobs.Job) error {
 		if parallelism > 1 {
 			b.Spec.Parallelism = &parallelism
 		}
@@ -105,10 +106,18 @@ func WithParallelism(parallelism int32) BenchmarkJobOption {
 
 // WithLabel sets the label to the job resource.
 func WithLabel(label map[string]string) BenchmarkJobOption {
-	return func(b *benchmarkJobTemplate) error {
+	return func(b *jobs.Job) error {
 		if len(label) > 0 {
 			b.Labels = label
 		}
+		return nil
+	}
+}
+
+// WithTTLSecondsAfterFinished sets the TTLSecondsAfterFinished to the job template.
+func WithTTLSecondsAfterFinished(ttl int32) BenchmarkJobOption {
+	return func(b *jobs.Job) error {
+		b.Spec.TTLSecondsAfterFinished = &ttl
 		return nil
 	}
 }

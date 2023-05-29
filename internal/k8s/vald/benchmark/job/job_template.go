@@ -18,11 +18,9 @@
 package job
 
 import (
-	batchv1 "k8s.io/api/batch/v1"
+	jobs "github.com/vdaas/vald/internal/k8s/job"
 	corev1 "k8s.io/api/core/v1"
 )
-
-type benchmarkJobTemplate = batchv1.Job
 
 const (
 	SvcAccountName = "vald-benchmark-operator"
@@ -36,8 +34,8 @@ const (
 )
 
 // NewBenchmarkJobTemplate creates the job template for crating k8s job resource.
-func NewBenchmarkJobTemplate(opts ...BenchmarkJobOption) (benchmarkJobTemplate, error) {
-	jobTmpl := new(benchmarkJobTemplate)
+func NewBenchmarkJobTemplate(opts ...BenchmarkJobOption) (jobs.Job, error) {
+	jobTmpl := new(jobs.Job)
 	for _, opt := range append(defaultBenchmarkJobOpts, opts...) {
 		err := opt(jobTmpl)
 		if err != nil {
