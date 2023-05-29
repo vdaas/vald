@@ -124,11 +124,12 @@ func (cfg *UpsertConfig) Bind() *UpsertConfig {
 
 // SearchConfig defines the desired state of search config
 type SearchConfig struct {
-	Epsilon float32 `json:"epsilon,omitempty"`
-	Radius  float32 `json:"radius,omitempty"`
-	Num     int32   `json:"num,omitempty"`
-	MinNum  int32   `json:"min_num,omitempty"`
-	Timeout string  `json:"timeout,omitempty"`
+	Epsilon            float32 `json:"epsilon,omitempty"`
+	Radius             float32 `json:"radius,omitempty"`
+	Num                int32   `json:"num,omitempty"`
+	MinNum             int32   `json:"min_num,omitempty"`
+	Timeout            string  `json:"timeout,omitempty"`
+	EnableLinearSearch bool    `json:"enable_linear_search,omitempty"`
 }
 
 func (cfg *SearchConfig) Bind() *SearchConfig {

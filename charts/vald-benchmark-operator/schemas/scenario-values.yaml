@@ -80,6 +80,7 @@ jobs:
       num: 10
       min_num: 10
       timeout: "10s"
+      enable_linear_search: true
     remove_config:
       skip_strict_exist_check: false
       timestamp: ""
@@ -167,3 +168,4 @@ jobs:
         insecure_skip_verify: false
     rules: []
     rps: 1000
+    ttl_seconds_after_finished: 100

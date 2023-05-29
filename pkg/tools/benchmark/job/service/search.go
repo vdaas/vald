@@ -38,36 +38,6 @@ func (j *job) search(ctx context.Context, ech chan error) error {
 		Epsilon: float32(j.searchConfig.Epsilon),
 		Timeout: j.timeout.Nanoseconds(),
 	}
-	lres := make([]*payload.Search_Response, len(vecs))
-	for i := 0; i < len(vecs); i++ {
-		if len(vecs[i]) != j.dimension {
-			log.Warn("len(vecs) ", len(vecs[i]), "is not matched with ", j.dimension)
-			continue
-		}
-		res, err := j.client.LinearSearch(ctx, &payload.Search_Request{
-			Vector: vecs[i],
-			Config: cfg,
-		})
-		if err != nil {
-			select {
-			case <-ctx.Done():
-				if errors.Is(err, context.Canceled) {
-					return errors.Join(err, context.Canceled)
-				}
-				select {
-				case <-ctx.Done():
-					return errors.Join(err, context.Canceled)
-				case ech <- errors.Join(err, ctx.Err()):
-				}
-			default:
-				st, _ := status.FromError(err)
-				if st.Code() != codes.NotFound {
-					log.Warnf("[benchmark job] linear search error is detected: code = %d, msg = %s", st.Code(), err.Error())
-				}
-			}
-		}
-		lres[i] = res
-	}
 	sres := make([]*payload.Search_Response, len(vecs))
 	log.Infof("[benchmark job] Start search")
 	for i := 0; i < len(vecs); i++ {
@@ -107,10 +77,43 @@ func (j *job) search(ctx context.Context, ech chan error) error {
 		}
 		sres[i] = res
 	}
-	recall := make([]float64, len(vecs))
-	for i := 0; i < len(vecs); i++ {
-		recall[i] = calcRecall(lres[i], sres[i])
-		log.Info("[branch job] search recall: ", recall[i])
+
+	if j.searchConfig.EnableLinearSearch {
+		lres := make([]*payload.Search_Response, len(vecs))
+		for i := 0; i < len(vecs); i++ {
+			if len(vecs[i]) != j.dimension {
+				log.Warn("len(vecs) ", len(vecs[i]), "is not matched with ", j.dimension)
+				continue
+			}
+			res, err := j.client.LinearSearch(ctx, &payload.Search_Request{
+				Vector: vecs[i],
+				Config: cfg,
+			})
+			if err != nil {
+				select {
+				case <-ctx.Done():
+					if errors.Is(err, context.Canceled) {
+						return errors.Join(err, context.Canceled)
+					}
+					select {
+					case <-ctx.Done():
+						return errors.Join(err, context.Canceled)
+					case ech <- errors.Join(err, ctx.Err()):
+					}
+				default:
+					st, _ := status.FromError(err)
+					if st.Code() != codes.NotFound {
+						log.Warnf("[benchmark job] linear search error is detected: code = %d, msg = %s", st.Code(), err.Error())
+					}
+				}
+			}
+			lres[i] = res
+		}
+		recall := make([]float64, len(vecs))
+		for i := 0; i < len(vecs); i++ {
+			recall[i] = calcRecall(lres[i], sres[i])
+			log.Info("[branch job] search recall: ", recall[i])
+		}
 	}
 	log.Info("[benchmark job] Finish benchmarking search")
 	return nil

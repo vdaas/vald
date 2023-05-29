@@ -285,7 +285,7 @@ spec:
                     - upsert
                     - search
                     - remove
-                    - get_object
+                    - getobject
                     - exists
                 object_config:
                   type: object
@@ -319,6 +319,8 @@ spec:
                 search_config:
                   type: object
                   properties:
+                    enable_linear_search:
+                      type: boolean
                     epsilon:
                       type: number
                     min_num:
@@ -342,6 +344,10 @@ spec:
                   required:
                     - host
                     - port
+                ttl_seconds_after_finished:
+                  type: integer
+                  maximum: 65535
+                  minimum: 0
                 update_config:
                   type: object
                   properties:
