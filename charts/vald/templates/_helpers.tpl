@@ -208,8 +208,8 @@ Ingress defaultBackend
 */}
 {{- define "vald.ingressDefaultBackend" -}}
 {{- $defaultBackend := .default }}
-{{- if .Values }}
-{{- $defaultBackend = .Values }}
+{{- with .Values }}
+{{- $defaultBackend = . }}
 {{- end }}
 {{- if $defaultBackend -}}
 defaultBackend:
