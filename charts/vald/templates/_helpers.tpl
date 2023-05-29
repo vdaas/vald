@@ -210,6 +210,10 @@ Ingress defaultBackend
 {{- $defaultBackend := .default }}
 {{- with .Values }}
 {{- $defaultBackend = . }}
+{{- else }}
+{{- if not (eq .Values nil) -}}
+{{- $defaultBackend = .Values }}
+{{- end }}
 {{- end }}
 {{- if $defaultBackend }}
 defaultBackend:
