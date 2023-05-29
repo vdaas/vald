@@ -162,7 +162,7 @@ func New(cfg *config.NGT, opts ...Option) (nn NGT, err error) {
 		}
 	}
 	if len(n.path) == 0 {
-		log.Info("index path setting is empty, will start with in-memory mode")
+		log.Info("index path setting is empty, starting vald agent with in-memory mode")
 		n.inMem = true
 	}
 
