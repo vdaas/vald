@@ -221,7 +221,7 @@ func migrate(path string) (err error) {
 
 	originExists := false
 	for _, file := range files {
-		if file == path + string(os.PathSeparator) + string(originIndexDirName) {
+		if file == path+string(os.PathSeparator)+string(originIndexDirName) {
 			originExists = true
 			break
 		}
