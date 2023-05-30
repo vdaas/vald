@@ -40,7 +40,7 @@ make test
 
 ### E2E tests
 
-The steps below will deploy `Vald` to local `k3d` cluster and run the E2E tests.
+The steps below will deploy a Vald cluster to the local `k3d` cluster and run the E2E tests.
 
 1. Change `example/helm/values.yaml` to `dimensions: 784` and `distance_type: l2`.
 2. Run the commands below.
