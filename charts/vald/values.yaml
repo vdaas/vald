@@ -1076,36 +1076,12 @@ gateway:
       # @schema {"name": "gateway.lb.ingress.servicePort", "type": "string"}
       # gateway.lb.ingress.servicePort -- service port to be exposed by ingress
       servicePort: grpc
-      # @schema {"name": "gateway.lb.ingress.defaultBackend"}
+      # @schema {"name": "gateway.lb.ingress.defaultBackend", "type": "object"}
       # gateway.lb.ingress.defaultBackend -- defaultBackend config
       defaultBackend:
-        # @schema {"name": "gateway.lb.ingress.defaultBackend.resource", "type": "object"}
-        # gateway.lb.ingress.defaultBackend.resource -- ingress defaultBackend resource
-        resource:
-          # @schema {"name": "gateway.lb.ingress.defaultBackend.resource.kind", "type": "string"}
-          # gateway.lb.ingress.defaultBackend.resource.kind -- ingress defaultBackend resource kind
-          kind: ""
-          # @schema {"name": "gateway.lb.ingress.defaultBackend.resource.name", "type": "string"}
-          # gateway.lb.ingress.defaultBackend.resource.name -- ingress defaultBackend resource name
-          name: ""
-          # @schema {"name": "gateway.lb.ingress.defaultBackend.resource.apiGroup", "type": "string"}
-          # gateway.lb.ingress.defaultBackend.resource.apiGroup -- ingress defaultBackend resource apiGroup
-          apiGroup: ""
-        # @schema {"name": "gateway.lb.ingress.defaultBackend.service", "type": "object"}
-        # gateway.lb.ingress.defaultBackend.service -- ingress defaultBackend service
-        service:
-          # @schema {"name": "gateway.lb.ingress.defaultBackend.service.name", "type": "string"}
-          # gateway.lb.ingress.defaultBackend.service.name -- ingress defaultBackend service name
-          name: "vald-lb-gateway"
-          # @schema {"name": "gateway.lb.ingress.defaultBackend.service.port", "type": "object"}
-          # gateway.lb.ingress.defaultBackend.service.port -- ingress defaultBackend service port
-          port:
-            # @schema {"name": "gateway.lb.ingress.defaultBackend.service.port.name", "type": "string"}
-            # gateway.lb.ingress.defaultBackend.service.port.name -- ingress defaultBackend service port name
-            name: "grpc"
-            # @schema {"name": "gateway.lb.ingress.defaultBackend.service.port.number", "type": "integer"}
-            # gateway.lb.ingress.defaultBackend.service.port.number -- ingress defaultBackend service port number
-            number: 0
+        # @schema {"name": "gateway.lb.ingress.defaultBackend.enabled", "type": "boolean"}
+        # gateway.lb.ingress.defaultBackend.enabled -- gateway ingress defaultBackend enabled
+        enabled: true
     # @schema {"name": "gateway.lb.resources", "type": "object", "anchor": "resources"}
     # gateway.lb.resources -- compute resources
     resources:
@@ -1374,36 +1350,12 @@ gateway:
       # @schema {"name": "gateway.filter.ingress.servicePort", "type": "string"}
       # gateway.filter.ingress.servicePort -- service port to be exposed by ingress
       servicePort: grpc
-      # @schema {"name": "gateway.filter.ingress.defaultBackend"}
+      # @schema {"name": "gateway.filter.ingress.defaultBackend", "type": "object"}
       # gateway.filter.ingress.defaultBackend -- defaultBackend config
       defaultBackend:
-        # @schema {"name": "gateway.filter.ingress.defaultBackend.resource", "type": "object"}
-        # gateway.filter.ingress.defaultBackend.resource -- ingress defaultBackend resource
-        resource:
-          # @schema {"name": "gateway.filter.ingress.defaultBackend.resource.kind", "type": "string"}
-          # gateway.filter.ingress.defaultBackend.resource.kind -- ingress defaultBackend resource kind
-          kind: ""
-          # @schema {"name": "gateway.filter.ingress.defaultBackend.resource.name", "type": "string"}
-          # gateway.filter.ingress.defaultBackend.resource.name -- ingress defaultBackend resource name
-          name: ""
-          # @schema {"name": "gateway.filter.ingress.defaultBackend.resource.apiGroup", "type": "string"}
-          # gateway.filter.ingress.defaultBackend.resource.apiGroup -- ingress defaultBackend resource apiGroup
-          apiGroup: ""
-        # @schema {"name": "gateway.filter.ingress.defaultBackend.service", "type": "object"}
-        # gateway.filter.ingress.defaultBackend.service -- ingress defaultBackend service
-        service:
-          # @schema {"name": "gateway.filter.ingress.defaultBackend.service.name", "type": "string"}
-          # gateway.filter.ingress.defaultBackend.service.name -- ingress defaultBackend service name
-          name: "vald-filter-gateway"
-          # @schema {"name": "gateway.filter.ingress.defaultBackend.service.port", "type": "object"}
-          # gateway.filter.ingress.defaultBackend.service.port -- ingress defaultBackend service port
-          port:
-            # @schema {"name": "gateway.filter.ingress.defaultBackend.service.port.name", "type": "string"}
-            # gateway.filter.ingress.defaultBackend.service.port.name -- ingress defaultBackend service port name
-            name: "grpc"
-            # @schema {"name": "gateway.filter.ingress.defaultBackend.service.port.number", "type": "integer"}
-            # gateway.filter.ingress.defaultBackend.service.port.number -- ingress defaultBackend service port number
-            number: 0
+        # @schema {"name": "gateway.filter.ingress.defaultBackend.enabled", "type": "boolean"}
+        # gateway.filter.ingress.defaultBackend.enabled -- gateway ingress defaultBackend enabled
+        enabled: true
     # @schema {"name": "gateway.filter.resources", "type": "object", "anchor": "resources"}
     # gateway.filter.resources -- compute resources
     resources:
