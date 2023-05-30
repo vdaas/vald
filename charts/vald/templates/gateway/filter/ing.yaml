@@ -31,7 +31,7 @@ metadata:
     app.kubernetes.io/component: gateway-filter
   name: {{ $gateway.name }}-ingress
 spec:
-  {{- if and $gateway.ingress.defaultBackend.enabled }}
+  {{- if $gateway.ingress.defaultBackend.enabled }}
   defaultBackend:
     service:
       name: {{ $gateway.name }}
