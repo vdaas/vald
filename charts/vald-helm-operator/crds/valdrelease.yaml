@@ -1818,30 +1818,6 @@ spec:
                 defaults:
                   type: object
                   properties:
-                    defaultBackend:
-                      type: object
-                      properties:
-                        resource:
-                          type: object
-                          properties:
-                            apiGroup:
-                              type: string
-                            kind:
-                              type: string
-                            name:
-                              type: string
-                        service:
-                          type: object
-                          properties:
-                            name:
-                              type: string
-                            port:
-                              type: object
-                              properties:
-                                name:
-                                  type: string
-                                number:
-                                  type: integer
                     grpc:
                       type: object
                       properties:
@@ -4165,27 +4141,8 @@ spec:
                             defaultBackend:
                               type: object
                               properties:
-                                resource:
-                                  type: object
-                                  properties:
-                                    apiGroup:
-                                      type: string
-                                    kind:
-                                      type: string
-                                    name:
-                                      type: string
-                                service:
-                                  type: object
-                                  properties:
-                                    name:
-                                      type: string
-                                    port:
-                                      type: object
-                                      properties:
-                                        name:
-                                          type: string
-                                        number:
-                                          type: integer
+                                enabled:
+                                  type: boolean
                             enabled:
                               type: boolean
                             host:
@@ -5343,27 +5300,8 @@ spec:
                             defaultBackend:
                               type: object
                               properties:
-                                resource:
-                                  type: object
-                                  properties:
-                                    apiGroup:
-                                      type: string
-                                    kind:
-                                      type: string
-                                    name:
-                                      type: string
-                                service:
-                                  type: object
-                                  properties:
-                                    name:
-                                      type: string
-                                    port:
-                                      type: object
-                                      properties:
-                                        name:
-                                          type: string
-                                        number:
-                                          type: integer
+                                enabled:
+                                  type: boolean
                             enabled:
                               type: boolean
                             host:

@@ -455,6 +455,7 @@
         },
         "resources": {
           "type": "object",
+          "description": "compute resources",
           "properties": {
             "limits": { "type": "object" },
             "requests": { "type": "object" }
@@ -1970,6 +1971,7 @@
             },
             "resources": {
               "type": "object",
+              "description": "compute resources",
               "properties": {
                 "limits": { "type": "object" },
                 "requests": { "type": "object" }
@@ -2934,33 +2936,6 @@
     "defaults": {
       "type": "object",
       "properties": {
-        "defaultBackend": {
-          "type": "object",
-          "properties": {
-            "resource": {
-              "type": "object",
-              "description": "ingress defaultBackend resource resource: defaults.defaultBackend.resource.kind -- ingress defaultBackend resource kind kind: \"\" defaults.defaultBackend.resource.name -- ingress defaultBackend resource name name: \"\" defaults.defaultBackend.resource.apiGroup -- ingress defaultBackend resource apiGroup apiGroup: \"\" defaults.defaultBackend.service -- ingress defaultBackend service service: defaults.defaultBackend.service.name -- ingress defaultBackend service name name: \"\" defaults.defaultBackend.service.port -- ingress defaultBackend service port port: defaults.defaultBackend.service.port.name -- ingress defaultBackend service port name name: \"\" defaults.defaultBackend.service.port.number -- ingress defaultBackend service port number number: 80",
-              "properties": {
-                "apiGroup": { "type": "string" },
-                "kind": { "type": "string" },
-                "name": { "type": "string" }
-              }
-            },
-            "service": {
-              "type": "object",
-              "properties": {
-                "name": { "type": "string" },
-                "port": {
-                  "type": "object",
-                  "properties": {
-                    "name": { "type": "string" },
-                    "number": { "type": "integer" }
-                  }
-                }
-              }
-            }
-          }
-        },
         "grpc": {
           "type": "object",
           "properties": {
@@ -4788,6 +4763,7 @@
         },
         "resources": {
           "type": "object",
+          "description": "compute resources",
           "properties": {
             "limits": { "type": "object" },
             "requests": { "type": "object" }
@@ -6864,28 +6840,11 @@
                 },
                 "defaultBackend": {
                   "type": "object",
+                  "description": "defaultBackend config",
                   "properties": {
-                    "resource": {
-                      "type": "object",
-                      "description": "ingress defaultBackend resource resource: defaults.defaultBackend.resource.kind -- ingress defaultBackend resource kind kind: \"\" defaults.defaultBackend.resource.name -- ingress defaultBackend resource name name: \"\" defaults.defaultBackend.resource.apiGroup -- ingress defaultBackend resource apiGroup apiGroup: \"\" defaults.defaultBackend.service -- ingress defaultBackend service service: defaults.defaultBackend.service.name -- ingress defaultBackend service name name: \"\" defaults.defaultBackend.service.port -- ingress defaultBackend service port port: defaults.defaultBackend.service.port.name -- ingress defaultBackend service port name name: \"\" defaults.defaultBackend.service.port.number -- ingress defaultBackend service port number number: 80",
-                      "properties": {
-                        "apiGroup": { "type": "string" },
-                        "kind": { "type": "string" },
-                        "name": { "type": "string" }
-                      }
-                    },
-                    "service": {
-                      "type": "object",
-                      "properties": {
-                        "name": { "type": "string" },
-                        "port": {
-                          "type": "object",
-                          "properties": {
-                            "name": { "type": "string" },
-                            "number": { "type": "integer" }
-                          }
-                        }
-                      }
+                    "enabled": {
+                      "type": "boolean",
+                      "description": "gateway ingress defaultBackend enabled"
                     }
                   }
                 },
@@ -7101,6 +7060,7 @@
             },
             "resources": {
               "type": "object",
+              "description": "compute resources",
               "properties": {
                 "limits": { "type": "object" },
                 "requests": { "type": "object" }
@@ -8828,28 +8788,11 @@
                 },
                 "defaultBackend": {
                   "type": "object",
+                  "description": "defaultBackend config",
                   "properties": {
-                    "resource": {
-                      "type": "object",
-                      "description": "ingress defaultBackend resource resource: defaults.defaultBackend.resource.kind -- ingress defaultBackend resource kind kind: \"\" defaults.defaultBackend.resource.name -- ingress defaultBackend resource name name: \"\" defaults.defaultBackend.resource.apiGroup -- ingress defaultBackend resource apiGroup apiGroup: \"\" defaults.defaultBackend.service -- ingress defaultBackend service service: defaults.defaultBackend.service.name -- ingress defaultBackend service name name: \"\" defaults.defaultBackend.service.port -- ingress defaultBackend service port port: defaults.defaultBackend.service.port.name -- ingress defaultBackend service port name name: \"\" defaults.defaultBackend.service.port.number -- ingress defaultBackend service port number number: 80",
-                      "properties": {
-                        "apiGroup": { "type": "string" },
-                        "kind": { "type": "string" },
-                        "name": { "type": "string" }
-                      }
-                    },
-                    "service": {
-                      "type": "object",
-                      "properties": {
-                        "name": { "type": "string" },
-                        "port": {
-                          "type": "object",
-                          "properties": {
-                            "name": { "type": "string" },
-                            "number": { "type": "integer" }
-                          }
-                        }
-                      }
+                    "enabled": {
+                      "type": "boolean",
+                      "description": "gateway ingress defaultBackend enabled"
                     }
                   }
                 },
@@ -9065,6 +9008,7 @@
             },
             "resources": {
               "type": "object",
+              "description": "compute resources",
               "properties": {
                 "limits": { "type": "object" },
                 "requests": { "type": "object" }
@@ -10991,6 +10935,7 @@
             },
             "resources": {
               "type": "object",
+              "description": "compute resources",
               "properties": {
                 "limits": { "type": "object" },
                 "requests": { "type": "object" }
