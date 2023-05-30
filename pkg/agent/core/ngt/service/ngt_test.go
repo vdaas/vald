@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"math"
 	"os"
+	"path/filepath"
 	"reflect"
 	"sync"
 	"sync/atomic"
@@ -193,7 +194,7 @@ func Test_migrate(t *testing.T) {
 		}(),
 		func() test {
 			tmpDir := t.TempDir()
-			originDir := tmpDir + string(os.PathSeparator) + originIndexDirName
+			originDir := filepath.Join(tmpDir, originIndexDirName)
 			return test{
 				name: "migrate does nothing when origin directory exists",
 				args: args{
@@ -229,7 +230,7 @@ func Test_migrate(t *testing.T) {
 		}(),
 		func() test {
 			tmpDir := t.TempDir()
-			originDir := tmpDir + string(os.PathSeparator) + originIndexDirName
+			originDir := filepath.Join(tmpDir, originIndexDirName)
 			return test{
 				name: "migrate moves old index files to origin directory",
 				args: args{
@@ -240,7 +241,7 @@ func Test_migrate(t *testing.T) {
 				},
 				beforeFunc: func(t *testing.T, a args) {
 					t.Helper()
-					f, err := os.Create(tmpDir + string(os.PathSeparator) + "old-index-file-before-migration")
+					f, err := os.Create(filepath.Join(tmpDir, "old-index-file-before-migration"))
 					if err != nil {
 						t.Errorf("failed to create old index file: %v", err)
 					}
@@ -254,12 +255,14 @@ func Test_migrate(t *testing.T) {
 					if err != nil {
 						return err
 					}
-					// FIXME: check if the file name is `old-index-file....`
 					if len(files) != 1 {
-						return fmt.Errorf("migrate does something when input path is empty")
+						return fmt.Errorf("there should be only one folder `origin` in the directory")
 					}
 					if files[0] != originDir {
 						return fmt.Errorf("the directory name shoule be %v but %v", originDir, files[0])
+					}
+					if !file.Exists(filepath.Join(originDir, "old-index-file-before-migration")) {
+						return fmt.Errorf("the old index file is missing in the origin directory")
 					}
 					return nil
 				},
