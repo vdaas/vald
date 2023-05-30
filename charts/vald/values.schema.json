@@ -3275,6 +3275,15 @@
             }
           }
         },
+        "networkPolicy": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "if network policy enabled TODO: Change this to true after implementing user custom network policy parser"
+            }
+          }
+        },
         "observability": {
           "type": "object",
           "properties": {
@@ -6829,6 +6838,16 @@
                   "type": "object",
                   "description": "annotations for ingress"
                 },
+                "defaultBackend": {
+                  "type": "object",
+                  "description": "defaultBackend config",
+                  "properties": {
+                    "enabled": {
+                      "type": "boolean",
+                      "description": "gateway ingress defaultBackend enabled"
+                    }
+                  }
+                },
                 "enabled": {
                   "type": "boolean",
                   "description": "gateway ingress enabled"
@@ -8766,6 +8785,16 @@
                 "annotations": {
                   "type": "object",
                   "description": "annotations for ingress"
+                },
+                "defaultBackend": {
+                  "type": "object",
+                  "description": "defaultBackend config",
+                  "properties": {
+                    "enabled": {
+                      "type": "boolean",
+                      "description": "gateway ingress defaultBackend enabled"
+                    }
+                  }
                 },
                 "enabled": {
                   "type": "boolean",
