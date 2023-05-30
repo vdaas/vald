@@ -27,6 +27,7 @@ import (
 	"path/filepath"
 	"reflect"
 	"runtime"
+	"sort"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -466,9 +467,63 @@ func (n *ngt) load(ctx context.Context, path string, opts ...core.Option) (err e
 	return nil
 }
 
+func backupBroken(originPath string, brokenDir string, limit int) error {
+	if limit <= 0 {
+		return nil
+	}
+
+	// do nothing when origin path is empty
+	files, err := file.ListInDir(originPath)
+	if err != nil {
+		return err
+	}
+	if len(files) == 0 {
+		return nil
+	}
+
+	// how many generation exists in the path?
+	files, err = file.ListInDir(brokenDir)
+	if err != nil {
+		return err
+	}
+
+	if len(files) >= limit {
+		// remove the oldest
+		sort.Slice(files, func(i, j int) bool {
+			return files[i] < files[j]
+		})
+		os.RemoveAll(files[0])
+	}
+
+	// create directory for new generation broken index
+	// TODO: is unix nano ok? year 2262 problem
+	name := time.Now().UnixNano()
+	dest := filepath.Join(brokenDir, fmt.Sprint(name))
+
+	// move index to the new directory
+	err = file.MoveDir(context.Background(), originPath, dest)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// rebuild rebuilds the index when it's broken. It moves the current broken index to the broken directory
+// until it reaches the limit. If the limit is reached, it removes the oldest.
 func (n *ngt) rebuild(path string, opts ...core.Option) (err error) {
-	// TODO: add backup logic here. look for config if it's enabled
-	// copy broken index directory to backup path if the condition matches
+	// FIXME: get the limit from config
+	// FIXME: implement WithAgentLimit
+	limit := 1
+	err = backupBroken(n.path, n.brokenPath, limit)
+	if err != nil {
+		log.Warnf("failed to backup broken index. will remove it and restart: %v", err)
+	} else {
+		// remake the path since it has been moved to broken directory
+		err = file.MkdirAll(n.path, fs.ModePerm)
+		if err != nil {
+			return fmt.Errorf("failed to recreate the index directory: %w", err)
+		}
+	}
 
 	// remove same way as before
 	files, err := file.ListInDir(path)

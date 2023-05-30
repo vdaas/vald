@@ -20,6 +20,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"io/fs"
 	"math"
 	"os"
 	"path/filepath"
@@ -90,6 +91,7 @@ func TestNew(t *testing.T) {
 	tests := []test{
 		func() test {
 			tmpDir := t.TempDir()
+			brokenDir := filepath.Join(tmpDir, brokenIndexDirName)
 			return test{
 				name: "New creates `origin` and `broken` directory with default options",
 				args: args{
@@ -125,12 +127,22 @@ func TestNew(t *testing.T) {
 					if _, ok := dirSet[brokenIndexDirName]; !ok {
 						return fmt.Errorf("failed to create broken dir")
 					}
+
+					// check if the broken index directory is empty
+					files, err := file.ListInDir(brokenDir)
+					if err != nil {
+						return err
+					}
+					if len(files) != 0 {
+						return fmt.Errorf("broken index directory is not empty")
+					}
 					return nil
 				},
 			}
 		}(),
 		func() test {
 			tmpDir := t.TempDir()
+			brokenDir := filepath.Join(tmpDir, brokenIndexDirName)
 			config := defaultConfig
 			config.EnableCopyOnWrite = true
 			return test{
@@ -170,6 +182,186 @@ func TestNew(t *testing.T) {
 					}
 					if _, ok := dirSet[brokenIndexDirName]; !ok {
 						return fmt.Errorf("failed to create broken dir")
+					}
+
+					// check if the broken index directory is empty
+					files, err := file.ListInDir(brokenDir)
+					if err != nil {
+						return err
+					}
+					if len(files) != 0 {
+						return fmt.Errorf("broken index directory is not empty")
+					}
+
+					return nil
+				},
+			}
+		}(),
+		func() test {
+			tmpDir := t.TempDir()
+			originDir := filepath.Join(tmpDir, originIndexDirName)
+			brokenDir := filepath.Join(tmpDir, brokenIndexDirName)
+			config := defaultConfig
+			config.EnableCopyOnWrite = true
+			return test{
+				name: "New succeeds to backup broken index with CoW enabled",
+				args: args{
+					cfg: &config,
+					opts: []Option{
+						WithIndexPath(tmpDir),
+					},
+				},
+				want: want{
+					err: nil,
+				},
+				beforeFunc: func(t *testing.T, args args) {
+					t.Helper()
+					if err := file.MkdirAll(originDir, fs.ModePerm); err != nil {
+						t.Errorf("failed to create origin dir: %v", err)
+					}
+					f, err := os.Create(filepath.Join(originDir, "broken-index-file"))
+					if err != nil {
+						t.Errorf("failed to create old index file: %v", err)
+					}
+					f.Close()
+				},
+				checkFunc: func(w want, err error) error {
+					if !errors.Is(err, w.err) {
+						return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+					}
+					files, err := file.ListInDir(brokenDir)
+					if err != nil {
+						return err
+					}
+					if len(files) != 1 {
+						return fmt.Errorf("only one generation should be in broken dir")
+					}
+
+					index, err := file.ListInDir(files[0])
+					if err != nil {
+						return err
+					}
+					if len(index) != 1 {
+						return fmt.Errorf("only one index file should be in the generation dir")
+					}
+
+					if filepath.Base(index[0]) != "broken-index-file" {
+						return fmt.Errorf("index file name should be broken-index-file")
+					}
+					return nil
+				},
+			}
+		}(),
+		func() test {
+			tmpDir := t.TempDir()
+			originDir := filepath.Join(tmpDir, originIndexDirName)
+			brokenDir := filepath.Join(tmpDir, brokenIndexDirName)
+			return test{
+				name: "New succeeds to backup broken index with CoW disabled",
+				args: args{
+					cfg: &defaultConfig,
+					opts: []Option{
+						WithIndexPath(tmpDir),
+					},
+				},
+				want: want{
+					err: nil,
+				},
+				beforeFunc: func(t *testing.T, args args) {
+					t.Helper()
+					if err := file.MkdirAll(originDir, fs.ModePerm); err != nil {
+						t.Errorf("failed to create origin dir: %v", err)
+					}
+					f, err := os.Create(filepath.Join(originDir, "broken-index-file"))
+					if err != nil {
+						t.Errorf("failed to create old index file: %v", err)
+					}
+					f.Close()
+				},
+				checkFunc: func(w want, err error) error {
+					if !errors.Is(err, w.err) {
+						return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+					}
+					files, err := file.ListInDir(brokenDir)
+					if err != nil {
+						return err
+					}
+					if len(files) != 1 {
+						return fmt.Errorf("only one generation should be in broken dir")
+					}
+
+					index, err := file.ListInDir(files[0])
+					if err != nil {
+						return err
+					}
+					if len(index) != 1 {
+						return fmt.Errorf("only one index file should be in the generation dir")
+					}
+
+					if filepath.Base(index[0]) != "broken-index-file" {
+						return fmt.Errorf("index file name should be broken-index-file")
+					}
+					return nil
+				},
+			}
+		}(),
+		func() test {
+			tmpDir := t.TempDir()
+			originDir := filepath.Join(tmpDir, originIndexDirName)
+			brokenDir := filepath.Join(tmpDir, brokenIndexDirName)
+			return test{
+				// FIXME: set limit by config and adopt this test to it
+				name: "New succeeds to rotate broken index backup when the number of generations exceeds the limit",
+				args: args{
+					cfg: &defaultConfig,
+					opts: []Option{
+						WithIndexPath(tmpDir),
+					},
+				},
+				want: want{
+					err: nil,
+				},
+				beforeFunc: func(t *testing.T, args args) {
+					t.Helper()
+					if err := file.MkdirAll(originDir, fs.ModePerm); err != nil {
+						t.Errorf("failed to create origin dir: %v", err)
+					}
+					f, err := os.Create(filepath.Join(originDir, "broken-index-file"))
+					if err != nil {
+						t.Errorf("failed to create old index file: %v", err)
+					}
+					f.Close()
+
+					if err := file.MkdirAll(brokenDir, fs.ModePerm); err != nil {
+						t.Errorf("failed to create origin dir: %v", err)
+					}
+					gen1 := filepath.Join(brokenDir, fmt.Sprint(time.Now().UnixNano()))
+					if err := file.MkdirAll(gen1, fs.ModePerm); err != nil {
+						t.Errorf("failed to create gen1 dir: %v", err)
+					}
+				},
+				checkFunc: func(w want, err error) error {
+					if !errors.Is(err, w.err) {
+						return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+					}
+					files, err := file.ListInDir(brokenDir)
+					if err != nil {
+						return err
+					}
+					if len(files) != 1 {
+						return fmt.Errorf("only one generation should be in broken dir")
+					}
+
+					index, err := file.ListInDir(files[0])
+					if err != nil {
+						return err
+					}
+					if len(index) != 1 {
+						return fmt.Errorf("only one index file should be in the generation dir")
+					}
+
+					if filepath.Base(index[0]) != "broken-index-file" {
+						return fmt.Errorf("index file name should be broken-index-file")
 					}
 					return nil
 				},
