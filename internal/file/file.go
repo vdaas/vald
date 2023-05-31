@@ -477,10 +477,15 @@ func ListInDir(path string) ([]string, error) {
 	return files, nil
 }
 
+// DeleteDir recursively deletes each file or directory based on the path specified as an argument
 func DeleteDir(ctx context.Context, path string) (err error) {
 	exists, _, err := ExistsWithDetail(path)
-	if !exists {
+	if err != nil {
 		return err
+	}
+	if !exists {
+		log.Debugf("path %s does not exist, so deleting the directory is not executed.", path)
+		return nil
 	}
 	err = os.Remove(path)
 	if err == nil {

@@ -96,7 +96,7 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (res *
 					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
 				})
 			log.Warn(err)
-			attrs = trace.StatusCodeAlreadyExists(err.Error())
+			attrs = trace.StatusCodeAborted(err.Error())
 		} else if errors.Is(err, errors.ErrUUIDNotFound(0)) {
 			err = status.WrapWithInvalidArgument(fmt.Sprintf("Insert API empty uuid \"%s\" was given", vec.GetId()), err,
 				&errdetails.RequestInfo{

@@ -1185,6 +1185,7 @@ func (n *ngt) deleteMultiple(uuids []string, now int64, validation bool) (err er
 	return err
 }
 
+// RegenerateIndexes deletes the KVS and file, and then re-generate the NGT instance.
 func (n *ngt) RegenerateIndexes(ctx context.Context) (err error) {
 	if n.IsFlushing() {
 		return errors.ErrFlushingIsInProgress

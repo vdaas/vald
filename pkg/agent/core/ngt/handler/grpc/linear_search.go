@@ -224,6 +224,18 @@ func (s *server) LinearSearchByID(ctx context.Context, req *payload.Search_IDReq
 			log.Debug(err)
 			attrs = trace.StatusCodeAborted(err.Error())
 		case errors.Is(err, errors.ErrFlushingIsInProgress):
+			err = status.WrapWithAborted("LinearSearchByID API aborted to process search request due to flushing indices is in progress", err,
+				&errdetails.RequestInfo{
+					RequestId:   req.GetConfig().GetRequestId(),
+					ServingData: errdetails.Serialize(req),
+				},
+				&errdetails.ResourceInfo{
+					ResourceType: ngtResourceType + "/ngt.LinearSearchByID",
+					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+				})
+			log.Debug(err)
+			attrs = trace.StatusCodeAborted(err.Error())
+		case errors.Is(err, errors.ErrFlushingIsInProgress):
 			err = status.WrapWithAborted("Search API aborted to process search request due to flushing indices is in progress", err,
 				&errdetails.RequestInfo{
 					RequestId:   req.GetConfig().GetRequestId(),
