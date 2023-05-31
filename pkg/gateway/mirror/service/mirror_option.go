@@ -52,7 +52,6 @@ func WithSelfMirrorAddrs(addrs ...string) MirrorOption {
 		if len(addrs) == 0 {
 			return errors.NewErrCriticalOption("selfMirrorAddrs", addrs)
 		}
-		m.selfMirrAddrs = append(m.selfMirrAddrs, addrs...)
 		for _, addr := range addrs {
 			m.selfMirrAddrl.Store(addr, struct{}{})
 		}
