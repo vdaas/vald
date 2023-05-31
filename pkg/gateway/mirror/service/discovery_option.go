@@ -86,3 +86,13 @@ func WithDiscovererErrGroup(eg errgroup.Group) DiscovererOption {
 		return nil
 	}
 }
+
+func WithDiscovererSelfMirrorAddrs(addrs ...string) DiscovererOption {
+	return func(d *discoverer) error {
+		if len(addrs) == 0 {
+			return errors.NewErrCriticalOption("discovererSelfMirrorAddrs", addrs)
+		}
+		d.selfMirrAddrs = append(d.selfMirrAddrs, addrs...)
+		return nil
+	}
+}

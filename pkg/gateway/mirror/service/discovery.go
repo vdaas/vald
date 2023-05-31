@@ -36,6 +36,7 @@ type discoverer struct {
 	targetsByName   atomic.Pointer[map[string]target.Target] // latest reconciliation results.
 	ctrl            k8s.Controller
 	dur             time.Duration
+	selfMirrAddrs   []string
 	selfMirrAddrStr string
 
 	mirr Mirror
@@ -56,7 +57,7 @@ func NewDiscoverer(opts ...DiscovererOption) (dsc Discoverer, err error) {
 		}
 	}
 	d.targetsByName.Store(&map[string]target.Target{})
-	d.selfMirrAddrStr = strings.Join(d.mirr.SelfMirrorAddrs(), ",")
+	d.selfMirrAddrStr = strings.Join(d.selfMirrAddrs, ",")
 
 	watcher, err := target.New(
 		target.WithControllerName("mirror discoverer"),
