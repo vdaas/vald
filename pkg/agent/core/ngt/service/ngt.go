@@ -136,6 +136,7 @@ type ngt struct {
 	dcd    bool          // disable commit daemon
 
 	kvsdbConcurrency int // kvsdb concurrency
+	historyLimit     int // the maximum generation number of broken index backup
 }
 
 const (
@@ -155,6 +156,7 @@ func New(cfg *config.NGT, opts ...Option) (nn NGT, err error) {
 		enableProactiveGC: cfg.EnableProactiveGC,
 		enableCopyOnWrite: cfg.EnableCopyOnWrite,
 		kvsdbConcurrency:  cfg.KVSDB.Concurrency,
+		historyLimit:      cfg.BrokenIndexHistoryLimit,
 	}
 
 	for _, opt := range append(defaultOptions, opts...) {
@@ -508,24 +510,71 @@ func backupBroken(originPath string, brokenDir string, limit int) error {
 	return nil
 }
 
-// rebuild rebuilds the index when it's broken. It moves the current broken index to the broken directory
-// until it reaches the limit. If the limit is reached, it removes the oldest.
-func (n *ngt) rebuild(path string, opts ...core.Option) (err error) {
-	// FIXME: get the limit from config
-	// FIXME: implement WithAgentLimit
-	limit := 1
-	err = backupBroken(n.path, n.brokenPath, limit)
+func needsBackup(backupPath string) bool {
+	// Initail state where there's only grp, obj, prf, tre -> false
+	files, err := file.ListInDir(backupPath)
 	if err != nil {
-		log.Warnf("failed to backup broken index. will remove it and restart: %v", err)
-	} else {
-		// remake the path since it has been moved to broken directory
-		err = file.MkdirAll(n.path, fs.ModePerm)
+		return false
+	}
+	// Check if there's *.json or *.kvsdb
+	initialState := true
+	for _, f := range files {
+		if strings.HasSuffix(f, ".json") || strings.HasSuffix(f, ".kvsdb") {
+			initialState = false
+			break
+		}
+	}
+	if initialState {
+		return false
+	}
+
+	// Not initial state but no metadata.json exists -> true
+	hasMetadataJson := false
+	for _, f := range files {
+		if filepath.Base(f) == "metadata.json" {
+			hasMetadataJson = true
+			break
+		}
+	}
+	if !hasMetadataJson {
+		return true
+	}
+
+	// Now check the metadata.json to see if backup is required
+	metadataPath := filepath.Join(backupPath, metadata.AgentMetadataFileName)
+	meta, err := metadata.Load(metadataPath)
+	if err != nil {
+		return false
+	}
+
+	if meta.IsInvalid || meta.NGT.IndexCount > 0 {
+		return true
+	}
+
+	return false
+}
+
+// rebuild rebuilds the index directory with a clean state. When it is required, it moves the current broken index
+// to the broken directory until it reaches the limit. If the limit is reached, it removes the oldest.
+// the `path` input is the path to rebuild the index directory. It is identical to n.path when CoW is disabled
+// and is a temporal path when CoW is enabled.
+func (n *ngt) rebuild(path string, opts ...core.Option) (err error) {
+	// backup when it is required
+	if needsBackup(n.path) {
+		log.Infof("starting to backup broken index at %v", n.path)
+		err = backupBroken(n.path, n.brokenPath, n.historyLimit)
 		if err != nil {
-			return fmt.Errorf("failed to recreate the index directory: %w", err)
+			log.Warnf("failed to backup broken index. will remove it and restart: %v", err)
+		} else {
+			// remake the path since it has been moved to broken directory
+			err = file.MkdirAll(n.path, fs.ModePerm)
+			if err != nil {
+				return fmt.Errorf("failed to recreate the index directory: %w", err)
+			}
 		}
 	}
 
-	// remove same way as before
+	// remove the index directory and restart with a clean state
 	files, err := file.ListInDir(path)
 	if err == nil && len(files) != 0 {
 		log.Warnf("index path exists, will remove the directories: %v", files)
@@ -548,8 +597,6 @@ func (n *ngt) rebuild(path string, opts ...core.Option) (err error) {
 }
 
 func (n *ngt) initNGT(opts ...core.Option) (err error) {
-	log.Debug("============== initNGT starting")
-
 	if n.kvs == nil {
 		n.kvs = kvs.New(kvs.WithConcurrency(n.kvsdbConcurrency))
 	}
