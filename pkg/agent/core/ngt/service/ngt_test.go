@@ -25,6 +25,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"testing"
@@ -40,11 +41,13 @@ import (
 	"github.com/vdaas/vald/internal/file"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/safety"
+	testdata "github.com/vdaas/vald/internal/test"
 	"github.com/vdaas/vald/internal/test/data/vector"
 	"github.com/vdaas/vald/internal/test/goleak"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/model"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/service/kvs"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/service/vqueue"
+	"github.com/vdaas/vald/pkg/agent/internal/metadata"
 	"google.golang.org/grpc"
 )
 
@@ -87,6 +90,7 @@ func TestNew(t *testing.T) {
 		KVSDB: &config.KVSDB{
 			Concurrency: 10,
 		},
+		BrokenIndexHistoryLimit: 1,
 	}
 	tests := []test{
 		func() test {
@@ -135,6 +139,118 @@ func TestNew(t *testing.T) {
 					}
 					if len(files) != 0 {
 						return fmt.Errorf("broken index directory is not empty")
+					}
+					return nil
+				},
+			}
+		}(),
+		func() test {
+			tmpDir := t.TempDir()
+			originDir := filepath.Join(tmpDir, originIndexDirName)
+			testIndexDir := testdata.GetTestdataPath(testdata.ValidIndex)
+			return test{
+				name: "New migrates index files into `origin`",
+				args: args{
+					cfg: &defaultConfig,
+					opts: []Option{
+						WithIndexPath(tmpDir),
+					},
+				},
+				want: want{
+					err: nil,
+				},
+				beforeFunc: func(t *testing.T, args args) {
+					t.Helper()
+					// copy testdata index files into tmpDir which is a old index directory
+					// this should be moved to origin directory by the migration process
+					file.CopyDir(context.Background(), testIndexDir, tmpDir)
+				},
+				checkFunc: func(w want, err error) error {
+					if !errors.Is(err, w.err) {
+						return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+					}
+					files, err := file.ListInDir(tmpDir)
+					if err != nil {
+						return err
+					}
+
+					// extract folder name from dir path into a map
+					dirSet := make(map[string]struct{}, len(files))
+					for _, dir := range files {
+						// extract folder name from dir path
+						dirSet[filepath.Base(dir)] = struct{}{}
+					}
+
+					// check if the dirs set contains folder names origin, backup and broken.
+					if _, ok := dirSet[originIndexDirName]; !ok {
+						return fmt.Errorf("failed to create origin dir")
+					}
+					if _, ok := dirSet[brokenIndexDirName]; !ok {
+						return fmt.Errorf("failed to create broken dir")
+					}
+
+					// check if the origin index directory has index files
+					files, err = file.ListInDir(originDir)
+					if err != nil {
+						return err
+					}
+					if len(files) == 0 {
+						return fmt.Errorf("migration failed to move index files")
+					}
+					return nil
+				},
+			}
+		}(),
+		func() test {
+			tmpDir := t.TempDir()
+			originDir := filepath.Join(tmpDir, originIndexDirName)
+			testIndexDir := testdata.GetTestdataPath(testdata.ValidIndex)
+			return test{
+				name: "New migrates does not migrate index files if origin directory already exists",
+				args: args{
+					cfg: &defaultConfig,
+					opts: []Option{
+						WithIndexPath(tmpDir),
+					},
+				},
+				want: want{
+					err: nil,
+				},
+				beforeFunc: func(t *testing.T, args args) {
+					t.Helper()
+					// copy testdata index files into tmpDir which is a old index directory
+					err := file.CopyDir(context.Background(), testIndexDir, tmpDir)
+					if err != nil {
+						t.Errorf("failed to copy testdata index files: %v", err)
+					}
+
+					// copy testdata index files into tmpDir which is a old index directory
+					err = file.MkdirAll(originDir, fs.ModePerm)
+					if err != nil {
+						t.Errorf("failed to create origin directory: %v", err)
+					}
+					err = file.CopyDir(context.Background(), testIndexDir, originDir)
+					if err != nil {
+						t.Errorf("failed to copy testdata index files: %v", err)
+					}
+				},
+				checkFunc: func(w want, err error) error {
+					if !errors.Is(err, w.err) {
+						return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+					}
+					files, err := file.ListInDir(tmpDir)
+					if err != nil {
+						return err
+					}
+
+					metadataExists := false
+					for _, file := range files {
+						if filepath.Base(file) == "metadata.json" {
+							metadataExists = true
+						}
+					}
+					if !metadataExists {
+						return fmt.Errorf("migration should not happen")
 					}
 					return nil
 				},
@@ -201,10 +317,11 @@ func TestNew(t *testing.T) {
 			tmpDir := t.TempDir()
 			originDir := filepath.Join(tmpDir, originIndexDirName)
 			brokenDir := filepath.Join(tmpDir, brokenIndexDirName)
+			testIndexDir := testdata.GetTestdataPath(testdata.ValidIndex)
 			config := defaultConfig
-			config.EnableCopyOnWrite = true
+			config.BrokenIndexHistoryLimit = 1
 			return test{
-				name: "New succeeds to backup broken index with CoW enabled",
+				name: "New succeeds to backup broken index",
 				args: args{
 					cfg: &config,
 					opts: []Option{
@@ -219,11 +336,11 @@ func TestNew(t *testing.T) {
 					if err := file.MkdirAll(originDir, fs.ModePerm); err != nil {
 						t.Errorf("failed to create origin dir: %v", err)
 					}
-					f, err := os.Create(filepath.Join(originDir, "broken-index-file"))
-					if err != nil {
-						t.Errorf("failed to create old index file: %v", err)
+					file.CopyDir(context.Background(), testIndexDir, originDir)
+					// remove metadata.json to make it broken
+					if err := os.Remove(filepath.Join(originDir, "metadata.json")); err != nil {
+						t.Errorf("failed to remove index file: %v", err)
 					}
-					f.Close()
 				},
 				checkFunc: func(w want, err error) error {
 					if !errors.Is(err, w.err) {
@@ -237,16 +354,12 @@ func TestNew(t *testing.T) {
 						return fmt.Errorf("only one generation should be in broken dir")
 					}
 
-					index, err := file.ListInDir(files[0])
+					broken, err := file.ListInDir(files[0])
 					if err != nil {
 						return err
 					}
-					if len(index) != 1 {
-						return fmt.Errorf("only one index file should be in the generation dir")
-					}
-
-					if filepath.Base(index[0]) != "broken-index-file" {
-						return fmt.Errorf("index file name should be broken-index-file")
+					if len(broken) == 0 {
+						return fmt.Errorf("failed to move broken index files")
 					}
 					return nil
 				},
@@ -256,64 +369,13 @@ func TestNew(t *testing.T) {
 			tmpDir := t.TempDir()
 			originDir := filepath.Join(tmpDir, originIndexDirName)
 			brokenDir := filepath.Join(tmpDir, brokenIndexDirName)
+			testIndexDir := testdata.GetTestdataPath(testdata.ValidIndex)
+			config := defaultConfig
+			config.BrokenIndexHistoryLimit = 1
 			return test{
-				name: "New succeeds to backup broken index with CoW disabled",
-				args: args{
-					cfg: &defaultConfig,
-					opts: []Option{
-						WithIndexPath(tmpDir),
-					},
-				},
-				want: want{
-					err: nil,
-				},
-				beforeFunc: func(t *testing.T, args args) {
-					t.Helper()
-					if err := file.MkdirAll(originDir, fs.ModePerm); err != nil {
-						t.Errorf("failed to create origin dir: %v", err)
-					}
-					f, err := os.Create(filepath.Join(originDir, "broken-index-file"))
-					if err != nil {
-						t.Errorf("failed to create old index file: %v", err)
-					}
-					f.Close()
-				},
-				checkFunc: func(w want, err error) error {
-					if !errors.Is(err, w.err) {
-						return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-					}
-					files, err := file.ListInDir(brokenDir)
-					if err != nil {
-						return err
-					}
-					if len(files) != 1 {
-						return fmt.Errorf("only one generation should be in broken dir")
-					}
-
-					index, err := file.ListInDir(files[0])
-					if err != nil {
-						return err
-					}
-					if len(index) != 1 {
-						return fmt.Errorf("only one index file should be in the generation dir")
-					}
-
-					if filepath.Base(index[0]) != "broken-index-file" {
-						return fmt.Errorf("index file name should be broken-index-file")
-					}
-					return nil
-				},
-			}
-		}(),
-		func() test {
-			tmpDir := t.TempDir()
-			originDir := filepath.Join(tmpDir, originIndexDirName)
-			brokenDir := filepath.Join(tmpDir, brokenIndexDirName)
-			return test{
-				// FIXME: set limit by config and adopt this test to it
 				name: "New succeeds to rotate broken index backup when the number of generations exceeds the limit",
 				args: args{
-					cfg: &defaultConfig,
+					cfg: &config,
 					opts: []Option{
 						WithIndexPath(tmpDir),
 					},
@@ -326,14 +388,14 @@ func TestNew(t *testing.T) {
 					if err := file.MkdirAll(originDir, fs.ModePerm); err != nil {
 						t.Errorf("failed to create origin dir: %v", err)
 					}
-					f, err := os.Create(filepath.Join(originDir, "broken-index-file"))
-					if err != nil {
-						t.Errorf("failed to create old index file: %v", err)
+					file.CopyDir(context.Background(), testIndexDir, originDir)
+					// remove metadata.json to make it broken
+					if err := os.Remove(filepath.Join(originDir, "metadata.json")); err != nil {
+						t.Errorf("failed to remove index file: %v", err)
 					}
-					f.Close()
 
 					if err := file.MkdirAll(brokenDir, fs.ModePerm); err != nil {
-						t.Errorf("failed to create origin dir: %v", err)
+						t.Errorf("failed to create broken dir: %v", err)
 					}
 					gen1 := filepath.Join(brokenDir, fmt.Sprint(time.Now().UnixNano()))
 					if err := file.MkdirAll(gen1, fs.ModePerm); err != nil {
@@ -352,16 +414,56 @@ func TestNew(t *testing.T) {
 						return fmt.Errorf("only one generation should be in broken dir")
 					}
 
-					index, err := file.ListInDir(files[0])
+					broken, err := file.ListInDir(files[0])
 					if err != nil {
 						return err
 					}
-					if len(index) != 1 {
-						return fmt.Errorf("only one index file should be in the generation dir")
+					if len(broken) == 0 {
+						return fmt.Errorf("failed to move broken index files")
 					}
-
-					if filepath.Base(index[0]) != "broken-index-file" {
-						return fmt.Errorf("index file name should be broken-index-file")
+					return nil
+				},
+			}
+		}(),
+		func() test {
+			tmpDir := t.TempDir()
+			originDir := filepath.Join(tmpDir, originIndexDirName)
+			brokenDir := filepath.Join(tmpDir, brokenIndexDirName)
+			testIndexDir := testdata.GetTestdataPath(testdata.ValidIndex)
+			config := defaultConfig
+			config.BrokenIndexHistoryLimit = 0
+			return test{
+				name: "New does not backup when history limit is 0",
+				args: args{
+					cfg: &config,
+					opts: []Option{
+						WithIndexPath(tmpDir),
+					},
+				},
+				want: want{
+					err: nil,
+				},
+				beforeFunc: func(t *testing.T, args args) {
+					t.Helper()
+					if err := file.MkdirAll(originDir, fs.ModePerm); err != nil {
+						t.Errorf("failed to create origin dir: %v", err)
+					}
+					file.CopyDir(context.Background(), testIndexDir, originDir)
+					// remove metadata.json to make it broken
+					if err := os.Remove(filepath.Join(originDir, "metadata.json")); err != nil {
+						t.Errorf("failed to remove index file: %v", err)
+					}
+				},
+				checkFunc: func(w want, err error) error {
+					if !errors.Is(err, w.err) {
+						return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+					}
+					files, err := file.ListInDir(brokenDir)
+					if err != nil {
+						return err
+					}
+					if len(files) != 0 {
+						return fmt.Errorf("backup should not happen")
 					}
 					return nil
 				},
@@ -407,126 +509,175 @@ func TestNew(t *testing.T) {
 	}
 }
 
-func Test_migrate(t *testing.T) {
+func Test_needsBackup(t *testing.T) {
 	type args struct {
 		path string
 	}
 	type want struct {
-		err error
+		need bool
 	}
 	type test struct {
 		name       string
 		args       args
 		want       want
-		checkFunc  func(want, error) error
+		checkFunc  func(want, bool) error
 		beforeFunc func(*testing.T, args)
 		afterFunc  func(*testing.T, args)
 	}
-	defaultCheckFunc := func(w want, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+	defaultCheckFunc := func(w want, need bool) error {
+		if need != w.need {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", need, w.need)
 		}
 		return nil
 	}
 	tests := []test{
 		func() test {
 			tmpDir := t.TempDir()
+			validIndexDir := testdata.GetTestdataPath(testdata.ValidIndex)
 			return test{
-				name: "migrate does nothing when input path is empty",
+				name: "returns false when it's an initaial state",
 				args: args{
 					path: tmpDir,
 				},
 				want: want{
-					err: nil,
+					need: false,
 				},
-				checkFunc: func(w want, err error) error {
-					if !errors.Is(err, w.err) {
-						return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+				beforeFunc: func(t *testing.T, a args) {
+					t.Helper()
+					if err := file.CopyDir(context.Background(), validIndexDir, tmpDir); err != nil {
+						t.Errorf("failed to copy index files: %v", err)
 					}
+
+					// remove .json and .kvsdb files to simulate an initial state
 					files, err := file.ListInDir(tmpDir)
 					if err != nil {
-						return err
+						t.Errorf("failed to list index files: %v", err)
 					}
-					if len(files) != 0 {
-						return fmt.Errorf("migrate does something when input path is empty")
+					for _, file := range files {
+						if strings.HasSuffix(file, ".json") || strings.HasSuffix(file, ".kvsdb") {
+							if err := os.Remove(file); err != nil {
+								t.Errorf("failed to remove index file: %v", err)
+							}
+						}
 					}
-					return nil
 				},
 			}
 		}(),
 		func() test {
 			tmpDir := t.TempDir()
-			originDir := filepath.Join(tmpDir, originIndexDirName)
+			validIndexDir := testdata.GetTestdataPath(testdata.ValidIndex)
 			return test{
-				name: "migrate does nothing when origin directory exists",
+				name: "returns true when there's index files but no metadata.json",
 				args: args{
 					path: tmpDir,
 				},
 				want: want{
-					err: nil,
+					need: true,
 				},
 				beforeFunc: func(t *testing.T, a args) {
 					t.Helper()
-					err := os.Mkdir(originDir, 0755)
-					if err != nil {
-						t.Errorf("failed to create origin dir: %v", err)
+					if err := file.CopyDir(context.Background(), validIndexDir, tmpDir); err != nil {
+						t.Errorf("failed to copy index files: %v", err)
 					}
-				},
-				checkFunc: func(w want, err error) error {
-					if !errors.Is(err, w.err) {
-						return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+
+					// remove metadata.json
+					metafile := filepath.Join(tmpDir, "metadata.json")
+					if err := os.Remove(metafile); err != nil {
+						t.Errorf("failed to remove metadata.json: %v", err)
 					}
-					files, err := file.ListInDir(tmpDir)
-					if err != nil {
-						return err
-					}
-					if len(files) != 1 {
-						return fmt.Errorf("migrate does something when input path is empty")
-					}
-					if files[0] != originDir {
-						return fmt.Errorf("the directory name shoule be %v but %v", originDir, files[0])
-					}
-					return nil
 				},
 			}
 		}(),
 		func() test {
 			tmpDir := t.TempDir()
-			originDir := filepath.Join(tmpDir, originIndexDirName)
+			validIndexDir := testdata.GetTestdataPath(testdata.ValidIndex)
 			return test{
-				name: "migrate moves old index files to origin directory",
+				name: "returns true when mets.IsInvalid is true",
 				args: args{
 					path: tmpDir,
 				},
 				want: want{
-					err: nil,
+					need: true,
 				},
 				beforeFunc: func(t *testing.T, a args) {
 					t.Helper()
-					f, err := os.Create(filepath.Join(tmpDir, "old-index-file-before-migration"))
-					if err != nil {
-						t.Errorf("failed to create old index file: %v", err)
+					if err := file.CopyDir(context.Background(), validIndexDir, tmpDir); err != nil {
+						t.Errorf("failed to copy index files: %v", err)
 					}
-					defer f.Close()
+
+					// change IsInvalid in metadata.json
+					metafile := filepath.Join(tmpDir, "metadata.json")
+					meta, err := metadata.Load(metafile)
+					if err != nil {
+						t.Errorf("failed to load metadata.json: %v", err)
+					}
+					meta.IsInvalid = true
+					meta.NGT.IndexCount = 0
+					if err := metadata.Store(metafile, meta); err != nil {
+						t.Errorf("failed to store metadata.json: %v", err)
+					}
 				},
-				checkFunc: func(w want, err error) error {
-					if !errors.Is(err, w.err) {
-						return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+			}
+		}(),
+		func() test {
+			tmpDir := t.TempDir()
+			validIndexDir := testdata.GetTestdataPath(testdata.ValidIndex)
+			return test{
+				name: "returns true when mets.IsInvalid is true",
+				args: args{
+					path: tmpDir,
+				},
+				want: want{
+					need: true,
+				},
+				beforeFunc: func(t *testing.T, a args) {
+					t.Helper()
+					if err := file.CopyDir(context.Background(), validIndexDir, tmpDir); err != nil {
+						t.Errorf("failed to copy index files: %v", err)
 					}
-					files, err := file.ListInDir(tmpDir)
+
+					// change NGT.IndexCount in metadata.json
+					metafile := filepath.Join(tmpDir, "metadata.json")
+					meta, err := metadata.Load(metafile)
 					if err != nil {
-						return err
+						t.Errorf("failed to load metadata.json: %v", err)
 					}
-					if len(files) != 1 {
-						return fmt.Errorf("there should be only one folder `origin` in the directory")
+					meta.IsInvalid = false
+					meta.NGT.IndexCount = 100
+					if err := metadata.Store(metafile, meta); err != nil {
+						t.Errorf("failed to store metadata.json: %v", err)
 					}
-					if files[0] != originDir {
-						return fmt.Errorf("the directory name shoule be %v but %v", originDir, files[0])
+				},
+			}
+		}(),
+		func() test {
+			tmpDir := t.TempDir()
+			validIndexDir := testdata.GetTestdataPath(testdata.ValidIndex)
+			return test{
+				name: "returns false when NGT.IndexCount is 0",
+				args: args{
+					path: tmpDir,
+				},
+				want: want{
+					need: false,
+				},
+				beforeFunc: func(t *testing.T, a args) {
+					t.Helper()
+					if err := file.CopyDir(context.Background(), validIndexDir, tmpDir); err != nil {
+						t.Errorf("failed to copy index files: %v", err)
 					}
-					if !file.Exists(filepath.Join(originDir, "old-index-file-before-migration")) {
-						return fmt.Errorf("the old index file is missing in the origin directory")
+
+					// change NGT.IndexCount in metadata.json
+					metafile := filepath.Join(tmpDir, "metadata.json")
+					meta, err := metadata.Load(metafile)
+					if err != nil {
+						t.Errorf("failed to load metadata.json: %v", err)
 					}
-					return nil
+					meta.IsInvalid = false
+					meta.NGT.IndexCount = 0
+					if err := metadata.Store(metafile, meta); err != nil {
+						t.Errorf("failed to store metadata.json: %v", err)
+					}
 				},
 			}
 		}(),
@@ -546,8 +697,8 @@ func Test_migrate(t *testing.T) {
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
-			err := migrate(test.args.path)
-			if err := checkFunc(test.want, err); err != nil {
+			need := needsBackup(test.args.path)
+			if err := checkFunc(test.want, need); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
