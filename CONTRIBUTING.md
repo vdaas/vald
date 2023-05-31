@@ -81,6 +81,8 @@ Please submit the security issue report [here](https://github.com/vdaas/vald/iss
 
 ## Contributing Source Code
 
+Please refer to our [development documentaion](./docs/contributing/development.md) for information on setting up a development environment.
+
 ### Before contributing source code
 
 Follow these steps to make a contribution to any of our open source repositories:
