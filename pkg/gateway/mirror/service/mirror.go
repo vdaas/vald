@@ -41,13 +41,11 @@ type Mirror interface {
 	IsConnected(ctx context.Context, addr string) bool
 	MirrorTargets() ([]*payload.Mirror_Target, error)
 	RangeAllMirrorAddr(f func(addr string, _ any) bool)
-	SelfMirrorAddrs() []string
 }
 
 type mirr struct {
 	addrl         sync.Map                 // List of all connected addresses
 	selfMirrTgts  []*payload.Mirror_Target // Targets of self mirror gateway
-	selfMirrAddrs []string                 // Address of self mirror gateway
 	selfMirrAddrl sync.Map                 // List of self Mirror gateway addresses
 	gwAddrl       sync.Map                 // List of Vald Gateway addresses
 	eg            errgroup.Group
@@ -71,9 +69,12 @@ func NewMirror(opts ...MirrorOption) (_ Mirror, err error) {
 
 	m.selfMirrTgts = make([]*payload.Mirror_Target, 0)
 	m.selfMirrAddrl.Range(func(addr, _ any) bool {
-		host, port, serr := net.SplitHostPort(addr.(string))
+		var (
+			host string
+			port uint16
+		)
+		host, port, err = net.SplitHostPort(addr.(string))
 		if err != nil {
-			err = serr
 			return false
 		}
 		m.selfMirrTgts = append(m.selfMirrTgts, &payload.Mirror_Target{
@@ -417,10 +418,6 @@ func (m *mirr) MirrorTargets() ([]*payload.Mirror_Target, error) {
 		}
 	}
 	return tgts, nil
-}
-
-func (m *mirr) SelfMirrorAddrs() []string {
-	return m.selfMirrAddrs
 }
 
 func (m *mirr) isSelfMirrorAddr(addr string) bool {
