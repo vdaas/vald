@@ -22,11 +22,14 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
+var (
+	ContainerImage  string
+	ImagePullPolicy corev1.PullPolicy
+)
+
 const (
 	SvcAccountName = "vald-benchmark-operator"
 	ContainerName  = "vald-benchmark-job"
-	// TODO: Fix
-	ContainerImage = "vdaas/vald-benchmark-job:pr-2027"
 
 	RestartPolicyAlways    corev1.RestartPolicy = "Always"
 	RestartPolicyOnFailure corev1.RestartPolicy = "OnFailure"
@@ -35,6 +38,7 @@ const (
 
 // NewBenchmarkJobTemplate creates the job template for crating k8s job resource.
 func NewBenchmarkJobTemplate(opts ...BenchmarkJobOption) (jobs.Job, error) {
+	ContainerImage = "vdaas/vald-benchmark-job"
 	jobTmpl := new(jobs.Job)
 	for _, opt := range append(defaultBenchmarkJobOpts, opts...) {
 		err := opt(jobTmpl)

@@ -17,6 +17,7 @@
 package job
 
 import (
+	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/k8s"
 	jobs "github.com/vdaas/vald/internal/k8s/job"
 	corev1 "k8s.io/api/core/v1"
@@ -28,6 +29,36 @@ type BenchmarkJobOption func(b *jobs.Job) error
 var defaultBenchmarkJobOpts = []BenchmarkJobOption{
 	WithSvcAccountName(SvcAccountName),
 	WithRestartPolicy(RestartPolicyNever),
+}
+
+// WithImage sets the docker image path for benchmark job.
+func WithImage(name string) BenchmarkJobOption {
+	return func(_ *jobs.Job) error {
+		if len(name) > 0 {
+			ContainerImage = name
+		}
+		return nil
+	}
+}
+
+// WithImagePullPolicy sets the docker image pull policy for benchmark job.
+func WithImagePullPolicy(policy string) BenchmarkJobOption {
+	return func(_ *jobs.Job) error {
+		if len(policy) == 0 {
+			return nil
+		}
+		switch policy {
+		case string(corev1.PullAlways):
+			ImagePullPolicy = corev1.PullAlways
+		case string(corev1.PullIfNotPresent):
+			ImagePullPolicy = corev1.PullIfNotPresent
+		case string(corev1.PullNever):
+			ImagePullPolicy = corev1.PullNever
+		default:
+			return errors.NewErrInvalidOption("image pull policy", policy)
+		}
+		return nil
+	}
 }
 
 // WithSvcAccountName sets the service account name for benchmark job.

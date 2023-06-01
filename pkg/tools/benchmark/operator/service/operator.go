@@ -53,13 +53,15 @@ const (
 )
 
 type operator struct {
-	jobNamespace string
-	scenarios    atomic.Pointer[map[string]*scenario]
-	benchjobs    atomic.Pointer[map[string]*v1.ValdBenchmarkJob]
-	jobs         atomic.Pointer[map[string]string]
-	rcd          time.Duration // reconcile check duration
-	eg           errgroup.Group
-	ctrl         k8s.Controller
+	jobNamespace       string
+	jobImage           string
+	jobImagePullPolicy string
+	scenarios          atomic.Pointer[map[string]*scenario]
+	benchjobs          atomic.Pointer[map[string]*v1.ValdBenchmarkJob]
+	jobs               atomic.Pointer[map[string]string]
+	rcd                time.Duration // reconcile check duration
+	eg                 errgroup.Group
+	ctrl               k8s.Controller
 }
 
 // New creates the new scenario struct to handle vald benchmark job scenario.
@@ -462,6 +464,8 @@ func (o *operator) createJob(ctx context.Context, bjr v1.ValdBenchmarkJob) error
 			},
 		}),
 		benchjob.WithTTLSecondsAfterFinished(int32(bjr.Spec.TTLSecondsAfterFinished)),
+		benchjob.WithImage(o.jobImage),
+		benchjob.WithImagePullPolicy(o.jobImagePullPolicy),
 	)
 	if err != nil {
 		return err
