@@ -17,6 +17,7 @@
 - [apis/proto/v1/manager/index/index_manager.proto](#apis_proto_v1_manager_index_index_manager-proto)
   - [Index](#manager-index-v1-Index)
 - [apis/proto/v1/payload/payload.proto](#apis_proto_v1_payload_payload-proto)
+
   - [Control](#payload-v1-Control)
   - [Control.CreateIndexRequest](#payload-v1-Control-CreateIndexRequest)
   - [Discoverer](#payload-v1-Discoverer)
@@ -86,6 +87,9 @@
   - [Upsert.MultiRequest](#payload-v1-Upsert-MultiRequest)
   - [Upsert.ObjectRequest](#payload-v1-Upsert-ObjectRequest)
   - [Upsert.Request](#payload-v1-Upsert-Request)
+
+  - [Search.AggregationAlgorithm](#payload-v1-Search-AggregationAlgorithm)
+
 - [apis/proto/v1/vald/filter.proto](#apis_proto_v1_vald_filter-proto)
   - [Filter](#vald-v1-Filter)
 - [apis/proto/v1/vald/insert.proto](#apis_proto_v1_vald_insert-proto)
@@ -680,16 +684,17 @@ Search related messages.
 
 Represent search configuration.
 
-| Field           | Type                                       | Label | Description                              |
-| --------------- | ------------------------------------------ | ----- | ---------------------------------------- |
-| request_id      | [string](#string)                          |       | Unique request ID.                       |
-| num             | [uint32](#uint32)                          |       | Maximum number of result to be returned. |
-| radius          | [float](#float)                            |       | Search radius.                           |
-| epsilon         | [float](#float)                            |       | Search coefficient.                      |
-| timeout         | [int64](#int64)                            |       | Search timeout in nanoseconds.           |
-| ingress_filters | [Filter.Config](#payload-v1-Filter-Config) |       | Ingress filter configurations.           |
-| egress_filters  | [Filter.Config](#payload-v1-Filter-Config) |       | Egress filter configurations.            |
-| min_num         | [uint32](#uint32)                          |       | Minimum number of result to be returned. |
+| Field                 | Type                                                                   | Label | Description                              |
+| --------------------- | ---------------------------------------------------------------------- | ----- | ---------------------------------------- |
+| request_id            | [string](#string)                                                      |       | Unique request ID.                       |
+| num                   | [uint32](#uint32)                                                      |       | Maximum number of result to be returned. |
+| radius                | [float](#float)                                                        |       | Search radius.                           |
+| epsilon               | [float](#float)                                                        |       | Search coefficient.                      |
+| timeout               | [int64](#int64)                                                        |       | Search timeout in nanoseconds.           |
+| ingress_filters       | [Filter.Config](#payload-v1-Filter-Config)                             |       | Ingress filter configurations.           |
+| egress_filters        | [Filter.Config](#payload-v1-Filter-Config)                             |       | Egress filter configurations.            |
+| min_num               | [uint32](#uint32)                                                      |       | Minimum number of result to be returned. |
+| aggregation_algorithm | [Search.AggregationAlgorithm](#payload-v1-Search-AggregationAlgorithm) |       | Aggregation Algorithm                    |
 
 <a name="payload-v1-Search-IDRequest"></a>
 
@@ -910,6 +915,20 @@ Represent the upsert request.
 | ------ | ------------------------------------------ | ----- | ---------------------------------------- |
 | vector | [Object.Vector](#payload-v1-Object-Vector) |       | The vector to be upserted.               |
 | config | [Upsert.Config](#payload-v1-Upsert-Config) |       | The configuration of the upsert request. |
+
+<a name="payload-v1-Search-AggregationAlgorithm"></a>
+
+### Search.AggregationAlgorithm
+
+AggregationAlgorithm is enum of each aggregation algorithms
+
+| Name            | Number | Description |
+| --------------- | ------ | ----------- |
+| Unknown         | 0      |             |
+| ConcurrentQueue | 1      |             |
+| SortSlice       | 2      |             |
+| SortPoolSlice   | 3      |             |
+| PairingHeap     | 4      |             |
 
 <a name="apis_proto_v1_vald_filter-proto"></a>
 

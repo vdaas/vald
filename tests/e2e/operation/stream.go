@@ -28,6 +28,7 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/net/grpc/errdetails"
 	"github.com/vdaas/vald/internal/net/grpc/status"
+	"github.com/vdaas/vald/internal/strings"
 )
 
 type (
@@ -152,14 +153,19 @@ func (c *client) SearchWithParameters(
 				t.Errorf("empty result is returned for test ID %s: %#v", resp.GetRequestId(), topKIDs)
 				continue
 			}
+			left, right, ok := strings.Cut(resp.GetRequestId(), "-")
+			if !ok {
+				sid := strings.SplitN(resp.GetRequestId(), "-", 2)
+				left, right = sid[0], sid[1]
+			}
 
-			idx, err := strconv.Atoi(resp.GetRequestId())
+			idx, err := strconv.Atoi(left)
 			if err != nil {
 				t.Errorf("an error occurred while converting RequestId into int: %s", err)
 				continue
 			}
 
-			t.Logf("results: %d, recall: %f", len(topKIDs), c.recall(topKIDs, ds.Neighbors[idx][:len(topKIDs)]))
+			t.Logf("algo: %s, id: %d, results: %d, recall: %f", right, idx, len(topKIDs), c.recall(topKIDs, ds.Neighbors[idx][:len(topKIDs)]))
 		}
 	}()
 
@@ -168,11 +174,67 @@ func (c *client) SearchWithParameters(
 		err := sc.Send(&payload.Search_Request{
 			Vector: ds.Test[i],
 			Config: &payload.Search_Config{
-				RequestId: id,
+				RequestId: id + "-Unknown",
 				Num:       num,
 				Radius:    radius,
 				Epsilon:   epsilon,
 				Timeout:   timeout,
+			},
+		})
+		if err != nil {
+			return err
+		}
+		err = sc.Send(&payload.Search_Request{
+			Vector: ds.Test[i],
+			Config: &payload.Search_Config{
+				RequestId:            id + "-ConcurrentQueue",
+				Num:                  num,
+				Radius:               radius,
+				Epsilon:              epsilon,
+				Timeout:              timeout,
+				AggregationAlgorithm: payload.Search_ConcurrentQueue,
+			},
+		})
+		if err != nil {
+			return err
+		}
+		err = sc.Send(&payload.Search_Request{
+			Vector: ds.Test[i],
+			Config: &payload.Search_Config{
+				RequestId:            id + "-SortSlice",
+				Num:                  num,
+				Radius:               radius,
+				Epsilon:              epsilon,
+				Timeout:              timeout,
+				AggregationAlgorithm: payload.Search_SortSlice,
+			},
+		})
+		if err != nil {
+			return err
+		}
+		err = sc.Send(&payload.Search_Request{
+			Vector: ds.Test[i],
+			Config: &payload.Search_Config{
+				RequestId:            id + "-SortPoolSlice",
+				Num:                  num,
+				Radius:               radius,
+				Epsilon:              epsilon,
+				Timeout:              timeout,
+				AggregationAlgorithm: payload.Search_SortPoolSlice,
+			},
+		})
+		if err != nil {
+			return err
+		}
+		err = sc.Send(&payload.Search_Request{
+			Vector: ds.Test[i],
+			Config: &payload.Search_Config{
+				RequestId:            id + "-PairingHeap",
+				Num:                  num,
+				Radius:               radius,
+				Epsilon:              epsilon,
+				Timeout:              timeout,
+				AggregationAlgorithm: payload.Search_PairingHeap,
 			},
 		})
 		if err != nil {

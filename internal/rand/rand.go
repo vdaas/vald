@@ -47,6 +47,10 @@ func LimitedUint32(max uint64) uint32 {
 	return uint32(uint64(Uint32()) * max >> 32)
 }
 
+func Float32() float32 {
+	return float32(Uint32()) / (1 << 32)
+}
+
 func (r *rand) Uint32() (x uint32) {
 	if atomic.LoadUint32(r.x) == 0 {
 		r.init()

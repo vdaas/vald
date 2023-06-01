@@ -366,6 +366,9 @@ func Exists(path string) (e bool) {
 
 // ExistsWithDetail returns file existence with detailed information
 func ExistsWithDetail(path string) (e bool, fi fs.FileInfo, err error) {
+	if path == "" {
+		return false, nil, fs.ErrInvalid
+	}
 	fi, err = os.Stat(path)
 	if err != nil {
 		if os.IsExist(err) {

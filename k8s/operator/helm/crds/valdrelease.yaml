@@ -2022,6 +2022,11 @@ spec:
                           enum:
                             - glg
                             - zap
+                    networkPolicy:
+                      type: object
+                      properties:
+                        enabled:
+                          type: boolean
                     observability:
                       type: object
                       properties:
@@ -4133,6 +4138,11 @@ spec:
                             annotations:
                               type: object
                               x-kubernetes-preserve-unknown-fields: true
+                            defaultBackend:
+                              type: object
+                              properties:
+                                enabled:
+                                  type: boolean
                             enabled:
                               type: boolean
                             host:
@@ -5287,6 +5297,11 @@ spec:
                             annotations:
                               type: object
                               x-kubernetes-preserve-unknown-fields: true
+                            defaultBackend:
+                              type: object
+                              properties:
+                                enabled:
+                                  type: boolean
                             enabled:
                               type: boolean
                             host:
