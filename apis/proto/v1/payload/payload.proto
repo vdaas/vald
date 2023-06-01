@@ -91,6 +91,17 @@ message Search {
     Filter.Config egress_filters = 7;
     // Minimum number of result to be returned.
     uint32 min_num = 8 [ (validate.rules).uint32.gte = 0 ];
+    // Aggregation Algorithm
+    AggregationAlgorithm aggregation_algorithm = 9;
+  }
+
+  // AggregationAlgorithm is enum of each aggregation algorithms
+  enum AggregationAlgorithm {
+    Unknown = 0;
+    ConcurrentQueue = 1;
+    SortSlice = 2;
+    SortPoolSlice = 3;
+    PairingHeap = 4;
   }
 
   // Represent a search response.

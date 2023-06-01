@@ -363,6 +363,11 @@ func (m *Search_Config) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 		i -= len(m.unknownFields)
 		copy(dAtA[i:], m.unknownFields)
 	}
+	if m.AggregationAlgorithm != 0 {
+		i = encodeVarint(dAtA, i, uint64(m.AggregationAlgorithm))
+		i--
+		dAtA[i] = 0x48
+	}
 	if m.MinNum != 0 {
 		i = encodeVarint(dAtA, i, uint64(m.MinNum))
 		i--
@@ -3732,6 +3737,9 @@ func (m *Search_Config) SizeVT() (n int) {
 	if m.MinNum != 0 {
 		n += 1 + sov(uint64(m.MinNum))
 	}
+	if m.AggregationAlgorithm != 0 {
+		n += 1 + sov(uint64(m.AggregationAlgorithm))
+	}
 	n += len(m.unknownFields)
 	return n
 }
@@ -5788,6 +5796,25 @@ func (m *Search_Config) UnmarshalVT(dAtA []byte) error {
 				b := dAtA[iNdEx]
 				iNdEx++
 				m.MinNum |= uint32(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 9:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field AggregationAlgorithm", wireType)
+			}
+			m.AggregationAlgorithm = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.AggregationAlgorithm |= Search_AggregationAlgorithm(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
