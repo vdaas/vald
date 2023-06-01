@@ -61,9 +61,7 @@ gateway:
     ingress:
       enabled: false
     gateway_config:
-      lb_client: {}
-      mirror_client: {}
-      self_mirror_client: {}
+      self_mirror_addr: ""
 
 agent:
   podAnnotations:
