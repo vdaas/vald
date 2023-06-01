@@ -191,7 +191,7 @@ func New(opts ...Option) (Job, error) {
 
 func (j *job) PreStart(ctx context.Context) error {
 	log.Infof("[benchmark job] start download dataset of %s", j.hdf5.GetName().String())
-	if err := j.hdf5.Download(); err != nil {
+	if err := j.hdf5.Download(j.dataset.URL); err != nil {
 		return err
 	}
 	log.Infof("[benchmark job] success download dataset of %s", j.hdf5.GetName().String())

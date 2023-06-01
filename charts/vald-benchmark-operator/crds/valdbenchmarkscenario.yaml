@@ -84,6 +84,11 @@ spec:
                         start:
                           type: integer
                           minimum: 1
+                      required:
+                        - start
+                        - end
+                    url:
+                      type: string
                   required:
                     - name
                     - indexes

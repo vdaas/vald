@@ -252,6 +252,7 @@ spec:
                     name:
                       type: string
                       enum:
+                        - original
                         - fashion-mnist
                     range:
                       type: object
@@ -262,6 +263,11 @@ spec:
                         start:
                           type: integer
                           minimum: 1
+                      required:
+                        - start
+                        - end
+                    url:
+                      type: string
                   required:
                     - name
                     - indexes

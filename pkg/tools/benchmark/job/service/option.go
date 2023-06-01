@@ -141,10 +141,13 @@ func WithHdf5(d hdf5.Data) Option {
 	}
 }
 
-// WithDataset sets the config.BenchmarkDataset including benchmakr dataset name, group name of hdf5.Data, the number of index, start range and end range.
+// WithDataset sets the config.BenchmarkDataset including benchmark dataset name, group name of hdf5.Data, the number of index, start range and end range, and original URL which is used for download user defined hdf5.
 func WithDataset(d *config.BenchmarkDataset) Option {
 	return func(j *job) error {
 		if d == nil {
+			return errors.NewErrInvalidOption("dataset", d)
+		}
+		if d.Name == hdf5.Original.String() && len(d.URL) == 0 {
 			return errors.NewErrInvalidOption("dataset", d)
 		}
 		j.dataset = d

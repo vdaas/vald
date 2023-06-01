@@ -27,7 +27,7 @@ target:
 # @schema {"name": "dataset", "type": "object", "required": ["name", "indexes", "group", "range"]}
 # dataset -- dataset information
 dataset:
-  # @schema {"name": "dataset.name", "type": "string", "enum": ["fashion-mnist"] }
+  # @schema {"name": "dataset.name", "type": "string", "enum": ["original", "fashion-mnist"] }
   # dataset.name -- the name of dataset
   name: "fashion-mnist"
   # @schema {"name": "dataset.indexes", "type": "integer", "minimum": 0}
@@ -36,7 +36,7 @@ dataset:
   # @schema {"name": "dataset.group", "type": "string", "minLength": 1}
   # dataset.group -- the hdf5 group name of dataset
   group: "test"
-  # @schema {"name": "dataset.range", "type": "object", "range": ["start", "port"]}
+  # @schema {"name": "dataset.range", "type": "object", "required": ["start", "end"]}
   # dataset.range -- the data range of indexes
   range:
     # @schema {"name": "dataset.range.start", "type": "integer", "minimum": 1}
@@ -45,6 +45,9 @@ dataset:
     # @schema {"name": "dataset.range.end", "type": "integer", "minimum": 1}
     # dataset.range.end -- end index number
     end: 1000
+  # @schema {"name": "dataset.url", "type": "string"}
+  # dataset.url -- the dataset url which is used for executing benchmark job with user defined hdf5 file
+  url: ""
 # @schema {"name": "dimension", "type": "integer", "minimum": 1}
 # dimension -- vector dimension
 dimension: 784

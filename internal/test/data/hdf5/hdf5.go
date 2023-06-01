@@ -28,7 +28,7 @@ import (
 )
 
 type Data interface {
-	Download() error
+	Download(url string) error
 	Read() error
 	GetName() DatasetName
 	GetPath() string
@@ -41,11 +41,14 @@ type Data interface {
 type DatasetName int
 
 const (
-	FashionMNIST784Euclidean DatasetName = iota
+	Original DatasetName = iota
+	FashionMNIST784Euclidean
 )
 
 func (d DatasetName) String() string {
 	switch d {
+	case Original:
+		return "original"
 	case FashionMNIST784Euclidean:
 		return "fashion-mnist-784-euc"
 	default:
@@ -109,8 +112,10 @@ func New(opts ...Option) (Data, error) {
 
 // Get downloads the hdf5 file.
 // https://github.com/erikbern/ann-benchmarks/#data-sets
-func (d *data) Download() error {
+func (d *data) Download(url string) error {
 	switch d.name {
+	case Original:
+		return downloadFile(url, d.path)
 	case FashionMNIST784Euclidean:
 		return downloadFile(FashionMNIST784EuclideanUrl.String(), d.path)
 	default:

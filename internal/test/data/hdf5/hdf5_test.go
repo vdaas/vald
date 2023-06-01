@@ -353,12 +353,16 @@ func Test_data_Download(t *testing.T) {
 		test      [][]float32
 		neighbors [][]int
 	}
+	type args struct {
+		url string
+	}
 	type want struct {
 		err error
 	}
 	type test struct {
 		name       string
 		fields     fields
+		args       args
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(*testing.T)
@@ -440,7 +444,7 @@ func Test_data_Download(t *testing.T) {
 				neighbors: test.fields.neighbors,
 			}
 
-			err := d.Download()
+			err := d.Download(test.args.url)
 			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
