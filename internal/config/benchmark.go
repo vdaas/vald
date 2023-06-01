@@ -62,10 +62,13 @@ type BenchmarkDataset struct {
 	Group   string                 `json:"group,omitempty"`
 	Indexes int                    `json:"indexes,omitempty"`
 	Range   *BenchmarkDatasetRange `json:"range,omitempty"`
+	URL     string                 `json:"url,omitempty"`
 }
 
 func (d *BenchmarkDataset) Bind() *BenchmarkDataset {
 	d.Name = GetActualValue(d.Name)
+	d.Group = GetActualValue(d.Group)
+	d.URL = GetActualValue(d.URL)
 	return d
 }
 
