@@ -57,6 +57,8 @@ func New(cfg *config.Config) (r runner.Runner, err error) {
 
 	operator, err := service.New(
 		service.WithErrGroup(eg),
+		service.WithJobImage(cfg.JobImage.Image),
+		service.WithJobImagePullPolicy(cfg.JobImage.PullPolicy),
 	)
 	if err != nil {
 		return nil, err

@@ -66,3 +66,23 @@ func WithJobNamespace(ns string) Option {
 		return nil
 	}
 }
+
+// WithJobImageInfo sets the benchmark job docker image info.
+func WithJobImage(image string) Option {
+	return func(o *operator) error {
+		if len(image) > 0 {
+			o.jobImage = image
+		}
+		return nil
+	}
+}
+
+// WithJobImagePullPolicy sets the benchmark job docker image pullPolicy.
+func WithJobImagePullPolicy(p string) Option {
+	return func(o *operator) error {
+		if len(p) > 0 {
+			o.jobImagePullPolicy = p
+		}
+		return nil
+	}
+}
