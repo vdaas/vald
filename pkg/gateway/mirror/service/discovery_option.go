@@ -7,6 +7,7 @@ import (
 	"github.com/vdaas/vald/internal/timeutil"
 )
 
+// Option represents the functional option for discoverer.
 type DiscovererOption func(d *discoverer) error
 
 var defaultDiscovererOpts = []DiscovererOption{
@@ -15,6 +16,7 @@ var defaultDiscovererOpts = []DiscovererOption{
 	WithDiscovererColocation("dc1"),
 }
 
+// WithDiscovererMirror returns the option to set the Mirror service.
 func WithDiscovererMirror(m Mirror) DiscovererOption {
 	return func(d *discoverer) error {
 		if m == nil {
@@ -25,6 +27,7 @@ func WithDiscovererMirror(m Mirror) DiscovererOption {
 	}
 }
 
+// WithDiscovererDialer returns the option to set the dialer for controller manager.
 func WithDiscovererDialer(der net.Dialer) DiscovererOption {
 	return func(d *discoverer) error {
 		if der != nil {
@@ -34,6 +37,7 @@ func WithDiscovererDialer(der net.Dialer) DiscovererOption {
 	}
 }
 
+// WithDiscovererNamespace returns the option to set the namespace for discovery.
 func WithDiscovererNamespace(ns string) DiscovererOption {
 	return func(d *discoverer) error {
 		if len(ns) != 0 {
@@ -43,6 +47,7 @@ func WithDiscovererNamespace(ns string) DiscovererOption {
 	}
 }
 
+// WithDiscovererGroup returns the option to set the Mirror group for discovery.
 func WithDiscovererGroup(g string) DiscovererOption {
 	return func(d *discoverer) error {
 		if len(g) != 0 {
@@ -55,6 +60,7 @@ func WithDiscovererGroup(g string) DiscovererOption {
 	}
 }
 
+// WithDiscovererColocation returns the option to set the colocation name of datacenter.
 func WithDiscovererColocation(loc string) DiscovererOption {
 	return func(d *discoverer) error {
 		if len(loc) != 0 {
@@ -64,6 +70,7 @@ func WithDiscovererColocation(loc string) DiscovererOption {
 	}
 }
 
+// WithDiscovererDuration returns the option to set the duration of the discovery.
 func WithDiscovererDuration(s string) DiscovererOption {
 	return func(d *discoverer) error {
 		if s == "" {
@@ -78,6 +85,7 @@ func WithDiscovererDuration(s string) DiscovererOption {
 	}
 }
 
+// WithDiscovererErrGroup returns the option to set the errgroup.
 func WithDiscovererErrGroup(eg errgroup.Group) DiscovererOption {
 	return func(d *discoverer) error {
 		if eg != nil {
@@ -87,6 +95,7 @@ func WithDiscovererErrGroup(eg errgroup.Group) DiscovererOption {
 	}
 }
 
+// WithDiscovererSelfMirrorAddrs returns the option to set the self Mirror addresses.
 func WithDiscovererSelfMirrorAddrs(addrs ...string) DiscovererOption {
 	return func(d *discoverer) error {
 		if len(addrs) == 0 {
