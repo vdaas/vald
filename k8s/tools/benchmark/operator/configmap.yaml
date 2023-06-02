@@ -139,5 +139,5 @@ data:
         enabled: false
         sampling_rate: 1
     job_image:
-      image: "local-registry:5000/vdaas/vald-benchmark-job"
+      image: "vdaas/vald-benchmark-job:v1.7.5"
       pullPolicy: Always

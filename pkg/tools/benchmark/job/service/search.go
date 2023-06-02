@@ -37,6 +37,14 @@ func (j *job) search(ctx context.Context, ech chan error) error {
 		Radius:  float32(j.searchConfig.Radius),
 		Epsilon: float32(j.searchConfig.Epsilon),
 		Timeout: j.timeout.Nanoseconds(),
+		AggregationAlgorithm: func() payload.Search_AggregationAlgorithm {
+			if len(j.searchConfig.AggregationAlgorithm) > 0 {
+				if v, ok := payload.Search_AggregationAlgorithm_value[j.searchConfig.AggregationAlgorithm]; ok {
+					return payload.Search_AggregationAlgorithm(v)
+				}
+			}
+			return 0
+		}(),
 	}
 	sres := make([]*payload.Search_Response, len(vecs))
 	log.Infof("[benchmark job] Start search")

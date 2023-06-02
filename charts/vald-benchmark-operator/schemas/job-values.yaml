@@ -114,6 +114,9 @@ search_config:
   # @schema {"name": "search_config.enable_linear_search", "type": "boolean"}
   # search_config.enable_linear_search -- enable linear search for calculation recall
   enable_linear_search: true
+  # @schema {"name": "search_config.aggregation_algorithm", "type": "string", "enum": ["Unknown", "ConcurrentQueue", "SortSlice", "SortPoolSlice", "PairingHeap"]}
+  # search_config.aggregation_algorithm -- search result aggregation algorithm
+  aggregation_algorithm: "Unknown"
 
 # @schema {"name": "remove_config", "type": "object"}
 # remove_config -- remove config

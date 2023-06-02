@@ -325,6 +325,14 @@ spec:
                 search_config:
                   type: object
                   properties:
+                    aggregation_algorithm:
+                      type: string
+                      enum:
+                        - Unknown
+                        - ConcurrentQueue
+                        - SortSlice
+                        - SortPoolSlice
+                        - PairingHeap
                     enable_linear_search:
                       type: boolean
                     epsilon:
