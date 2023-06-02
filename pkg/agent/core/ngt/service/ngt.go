@@ -517,7 +517,7 @@ func backupBroken(originPath string, brokenDir string, limit int) error {
 
 // needsBackup checks if the backup is needed.
 func needsBackup(backupPath string) bool {
-	// Initail state where there's only grp, obj, prf, tre -> false
+	// Initial state where there's only grp, obj, prf, tre -> false
 	files, err := file.ListInDir(backupPath)
 	if err != nil {
 		return false
