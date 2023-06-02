@@ -19,7 +19,6 @@ package service
 
 import (
 	"context"
-	"math"
 	"os"
 	"reflect"
 	"strconv"
@@ -186,20 +185,27 @@ func New(opts ...Option) (Job, error) {
 	if j.rps > 0 {
 		j.limiter = rate.NewLimiter(j.rps)
 	}
+	// If (Range.End - Range.Start) is smaller than Indexes, Indexes are prioritized based on Range.Start.
+	if (j.dataset.Range.End - j.dataset.Range.Start + 1) < j.dataset.Indexes {
+		j.dataset.Range.End = j.dataset.Range.Start + j.dataset.Indexes
+	}
+
 	return j, nil
 }
 
 func (j *job) PreStart(ctx context.Context) error {
-	log.Infof("[benchmark job] start download dataset of %s", j.hdf5.GetName().String())
-	if err := j.hdf5.Download(j.dataset.URL); err != nil {
-		return err
+	if j.jobType != GETOBJECT && j.jobType != EXISTS && j.jobType != REMOVE {
+		log.Infof("[benchmark job] start download dataset of %s", j.hdf5.GetName().String())
+		if err := j.hdf5.Download(j.dataset.URL); err != nil {
+			return err
+		}
+		log.Infof("[benchmark job] success download dataset of %s", j.hdf5.GetName().String())
+		log.Infof("[benchmark job] start load dataset of %s", j.hdf5.GetName().String())
+		if err := j.hdf5.Read(); err != nil {
+			return err
+		}
+		log.Infof("[benchmark job] success load dataset of %s", j.hdf5.GetName().String())
 	}
-	log.Infof("[benchmark job] success download dataset of %s", j.hdf5.GetName().String())
-	log.Infof("[benchmark job] start load dataset of %s", j.hdf5.GetName().String())
-	if err := j.hdf5.Read(); err != nil {
-		return err
-	}
-	log.Infof("[benchmark job] success load dataset of %s", j.hdf5.GetName().String())
 	// Wait for beforeJob completed if exists
 	if len(j.beforeJobName) != 0 {
 		var jobResource v1.ValdBenchmarkJob
@@ -220,7 +226,7 @@ func (j *job) PreStart(ctx context.Context) error {
 						log.Infof("[benchmark job ] before job (%s) is completed, job service will start soon.", j.beforeJobName)
 						return nil
 					}
-					log.Infof("[benchmark job] before job (%s) is not completed...", j.beforeJobName)
+					log.Infof("[benchmark job] before job (%s/%s) is not completed...", j.beforeJobName, jobResource.Status)
 				}
 			}
 		}))
@@ -266,13 +272,19 @@ func (j *job) Start(ctx context.Context) (<-chan error, error) {
 				log.Error(err)
 			}
 		}()
+		// wg := sync.WaitGroup{}
+		// wg.Add(1)
+		// go func() {
+		// defer wg.Done()
 		err = j.jobFunc(ctx, ech)
 		if err != nil {
 			log.Errorf("[benchmark job] failed to job: %v", err)
 		}
+
+		// }()
+		// wg.Wait()
 		return
 	})
-
 	return ech, nil
 }
 
@@ -300,23 +312,4 @@ func calcRecall(linearRes, searchRes *payload.Search_Response) (recall float64) 
 		}
 	}
 	return recall / float64(len(lres))
-}
-
-func (j *job) genVec(cfg *config.BenchmarkDataset) [][]float32 {
-	start := cfg.Range.Start
-	end := cfg.Range.End
-	// If (Range.End - Range.Start) is smaller than Indexes, Indexes are prioritized based on Range.Start.
-	if (end - start + 1) < cfg.Indexes {
-		end = cfg.Range.Start + cfg.Indexes
-	}
-	data := j.hdf5.GetByGroupName(cfg.Group)
-	if n := math.Ceil(float64(end) / float64(len(data))); n > 1 {
-		var def [][]float32
-		for i := 0; i < int(n-1); i++ {
-			def = append(def, data...)
-		}
-		data = append(data, def...)
-	}
-	vectors := data[start-1 : end]
-	return vectors
 }
