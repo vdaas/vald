@@ -491,6 +491,7 @@ func backupBroken(originPath string, brokenDir string, limit int) error {
 
 	if len(files) >= limit {
 		// remove the oldest
+		log.Infof("There's already more than %v broken index generations stored. Thus removing the oldest.", limit)
 		sort.Slice(files, func(i, j int) bool {
 			return files[i] < files[j]
 		})
@@ -498,7 +499,6 @@ func backupBroken(originPath string, brokenDir string, limit int) error {
 	}
 
 	// create directory for new generation broken index
-	// TODO: is unix nano ok? year 2262 problem
 	name := time.Now().UnixNano()
 	dest := filepath.Join(brokenDir, fmt.Sprint(name))
 
