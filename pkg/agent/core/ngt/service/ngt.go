@@ -223,10 +223,9 @@ func migrate(path string) (err error) {
 		// empty directory doesn't need migration
 		return nil
 	}
-
 	originExists := false
 	for _, file := range files {
-		if file == path+string(os.PathSeparator)+string(originIndexDirName) {
+		if file == filepath.Join(path, originIndexDirName) {
 			originExists = true
 			break
 		}
