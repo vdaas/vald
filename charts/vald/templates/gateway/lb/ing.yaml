@@ -31,10 +31,12 @@ metadata:
     app.kubernetes.io/component: gateway-lb
   name: {{ $gateway.name }}-ingress
 spec:
+  {{- if $gateway.ingress.defaultBackend.enabled }}
   defaultBackend:
     service:
       name: {{ $gateway.name }}
       {{- include "vald.ingressPort" (dict "Values" $gateway.ingress) | nindent 6 }}
+  {{- end }}
   rules:
   - host: {{ $gateway.ingress.host }}
     http:
