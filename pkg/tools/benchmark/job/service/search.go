@@ -19,8 +19,10 @@ package service
 
 import (
 	"context"
+	"math"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
+	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc/codes"
@@ -30,7 +32,7 @@ import (
 func (j *job) search(ctx context.Context, ech chan error) error {
 	log.Info("[benchmark job] Start benchmarking search")
 	// create data
-	vecs := j.genVec(j.dataset)
+	vecs := j.hdf5.GetByGroupName(j.dataset.Group)
 	cfg := &payload.Search_Config{
 		Num:     uint32(j.searchConfig.Num),
 		MinNum:  uint32(j.searchConfig.MinNum),
@@ -46,82 +48,120 @@ func (j *job) search(ctx context.Context, ech chan error) error {
 			return 0
 		}(),
 	}
-	sres := make([]*payload.Search_Response, len(vecs))
-	log.Infof("[benchmark job] Start search")
-	for i := 0; i < len(vecs); i++ {
-		if len(vecs[i]) != j.dimension {
-			log.Warn("len(vecs) ", len(vecs[i]), "is not matched with ", j.dimension)
+	sres := make([]*payload.Search_Response, j.dataset.Indexes)
+	eg, egctx := errgroup.New(ctx)
+	for i := j.dataset.Range.Start; i <= j.dataset.Range.End; i++ {
+		iter := i
+		loop_cnt := math.Floor(float64(i-1) / float64(len(vecs)))
+		idx := i - 1 - (len(vecs) * int(loop_cnt))
+		if len(vecs[idx]) != j.dimension {
+			log.Warn("len(vecs) ", len(vecs[iter]), "is not matched with ", j.dimension)
 			continue
 		}
-		err := j.limiter.Wait(ctx)
+		err := j.limiter.Wait(egctx)
 		if err != nil {
+			log.Errorf("[benchmark job] limiter error is detected: %s", err.Error())
 			if errors.Is(err, context.Canceled) {
 				return errors.Join(err, context.Canceled)
 			}
-			ech <- err
-		}
-		res, err := j.client.Search(ctx, &payload.Search_Request{
-			Vector: vecs[i],
-			Config: cfg,
-		})
-		log.Infof("[benchmark job] search %d", i)
-		if err != nil {
 			select {
-			case <-ctx.Done():
-				if errors.Is(err, context.Canceled) {
-					return errors.Join(err, context.Canceled)
-				}
-				select {
-				case <-ctx.Done():
-					return errors.Join(err, context.Canceled)
-				case ech <- errors.Join(err, ctx.Err()):
-				}
-			default:
-				st, _ := status.FromError(err)
-				if st.Code() != codes.NotFound {
-					log.Warnf("[benchmark job] search error is detected: code = %d, msg = %s", st.Code(), err.Error())
-				}
+			case <-egctx.Done():
+				return egctx.Err()
+			case ech <- err:
 			}
 		}
-		sres[i] = res
-	}
-
-	if j.searchConfig.EnableLinearSearch {
-		lres := make([]*payload.Search_Response, len(vecs))
-		for i := 0; i < len(vecs); i++ {
-			if len(vecs[i]) != j.dimension {
-				log.Warn("len(vecs) ", len(vecs[i]), "is not matched with ", j.dimension)
-				continue
-			}
-			res, err := j.client.LinearSearch(ctx, &payload.Search_Request{
-				Vector: vecs[i],
+		eg.Go(func() error {
+			log.Debugf("[benchmark job] Start search: iter = %d", iter)
+			res, err := j.client.Search(egctx, &payload.Search_Request{
+				Vector: vecs[idx],
 				Config: cfg,
 			})
 			if err != nil {
 				select {
-				case <-ctx.Done():
-					if errors.Is(err, context.Canceled) {
-						return errors.Join(err, context.Canceled)
-					}
-					select {
-					case <-ctx.Done():
-						return errors.Join(err, context.Canceled)
-					case ech <- errors.Join(err, ctx.Err()):
-					}
+				case <-egctx.Done():
+					log.Errorf("[benchmark job] context error is detected: %s\t%s", err.Error(), egctx.Err())
+					return errors.Join(err, egctx.Err())
 				default:
-					st, _ := status.FromError(err)
-					if st.Code() != codes.NotFound {
-						log.Warnf("[benchmark job] linear search error is detected: code = %d, msg = %s", st.Code(), err.Error())
+					if st, ok := status.FromError(err); ok {
+						if st.Code() != codes.NotFound {
+							log.Warnf("[benchmark job] search error is detected: code = %d, msg = %s", st.Code(), err.Error())
+						}
 					}
 				}
 			}
-			lres[i] = res
+			if res != nil {
+				sres[idx-j.dataset.Range.Start] = res
+			}
+			log.Debugf("[benchmark job] Finish search: iter = %d", iter)
+			return nil
+		})
+	}
+	err := eg.Wait()
+	if err != nil {
+		log.Warnf("[benchmark job] search error is detected: err = %s", err.Error())
+		return err
+	}
+	if j.searchConfig.EnableLinearSearch {
+		lres := make([]*payload.Search_Response, j.dataset.Indexes)
+		for i := j.dataset.Range.Start; i <= j.dataset.Range.End; i++ {
+			err := j.limiter.Wait(egctx)
+			if err != nil {
+				log.Errorf("[benchmark job] limiter error is detected: %s", err.Error())
+				if errors.Is(err, context.Canceled) {
+					return errors.Join(err, context.Canceled)
+				}
+				select {
+				case <-egctx.Done():
+					return egctx.Err()
+				case ech <- err:
+				}
+			}
+			iter := i
+			loop_cnt := math.Floor(float64(i-1) / float64(len(vecs)))
+			idx := i - 1 - (len(vecs) * int(loop_cnt))
+			if len(vecs[idx]) != j.dimension {
+				log.Warn("len(vecs) ", len(vecs[idx]), "is not matched with ", j.dimension)
+				continue
+			}
+			eg.Go(func() error {
+				log.Debugf("[benchmark job] Start linear search: iter = %d", iter)
+				res, err := j.client.LinearSearch(egctx, &payload.Search_Request{
+					Vector: vecs[idx],
+					Config: cfg,
+				})
+				if err != nil {
+					select {
+					case <-egctx.Done():
+						log.Errorf("[benchmark job] context error is detected: %s\t%s", err.Error(), egctx.Err())
+						return errors.Join(err, egctx.Err())
+					default:
+						if st, ok := status.FromError(err); ok {
+							if st.Code() != codes.NotFound {
+								log.Warnf("[benchmark job] linear search error is detected: code = %d, msg = %s", st.Code(), err.Error())
+							}
+						}
+					}
+				}
+				if res != nil {
+					lres[idx-j.dataset.Range.Start] = res
+				}
+				log.Debugf("[benchmark job] Finish linear search: iter = %d", iter)
+				return nil
+			})
 		}
-		recall := make([]float64, len(vecs))
-		for i := 0; i < len(vecs); i++ {
+		err := eg.Wait()
+		if err != nil {
+			log.Warnf("[benchmark job] linear search error is detected: err = %s", err.Error())
+			return err
+		}
+		recall := make([]float64, j.dataset.Indexes)
+		cnt := float64(0)
+		for i := 0; i < j.dataset.Indexes; i++ {
 			recall[i] = calcRecall(lres[i], sres[i])
 			log.Info("[branch job] search recall: ", recall[i])
+			cnt += recall[i]
 		}
+		log.Info("[benchmark job] Total search recall: ", (cnt / float64(len(vecs))))
 	}
 	log.Info("[benchmark job] Finish benchmarking search")
 	return nil

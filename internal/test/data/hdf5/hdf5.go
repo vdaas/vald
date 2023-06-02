@@ -50,7 +50,7 @@ func (d DatasetName) String() string {
 	case Original:
 		return "original"
 	case FashionMNIST784Euclidean:
-		return "fashion-mnist-784-euc"
+		return "fashion-mnist"
 	default:
 		return ""
 	}

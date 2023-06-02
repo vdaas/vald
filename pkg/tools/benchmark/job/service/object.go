@@ -22,6 +22,7 @@ import (
 	"strconv"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
+	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc/status"
@@ -29,36 +30,48 @@ import (
 
 func (j *job) exists(ctx context.Context, ech chan error) error {
 	log.Info("[benchmark job] Start benchmarking exists")
-	for i := 0; i < j.dataset.Indexes; i++ {
-		err := j.limiter.Wait(ctx)
+	eg, egctx := errgroup.New(ctx)
+	for i := j.dataset.Range.Start; i <= j.dataset.Range.End; i++ {
+		err := j.limiter.Wait(egctx)
 		if err != nil {
+			log.Errorf("[benchmark job] limiter error is detected: %s", err.Error())
 			if errors.Is(err, context.Canceled) {
 				return errors.Join(err, context.Canceled)
 			}
-			ech <- err
-		}
-		res, err := j.client.Exists(ctx, &payload.Object_ID{
-			Id: strconv.Itoa(i),
-		})
-		if err != nil {
 			select {
-			case <-ctx.Done():
-				if errors.Is(err, context.Canceled) {
-					return errors.Join(err, context.Canceled)
-				}
-				select {
-				case <-ctx.Done():
-					return errors.Join(err, context.Canceled)
-				case ech <- errors.Join(err, ctx.Err()):
-				}
-			default:
-				st, _ := status.FromError(err)
-				log.Warnf("[benchmark job] exists error is detected: code = %d, msg = %s", st.Code(), err.Error())
+			case <-egctx.Done():
+				return egctx.Err()
+			case ech <- err:
 			}
 		}
-		if res != nil {
-			log.Infof("[benchmark exists job] iter=%d, Id=%s", i, res.GetId())
-		}
+		idx := i
+		eg.Go(func() error {
+			log.Debugf("[benchmark job] Start exists: iter = %d", i)
+			res, err := j.client.Exists(egctx, &payload.Object_ID{
+				Id: strconv.Itoa(idx),
+			})
+			if err != nil {
+				select {
+				case <-egctx.Done():
+					log.Errorf("[benchmark job] context error is detected: %s\t%s", err.Error(), egctx.Err())
+					return errors.Join(err, egctx.Err())
+				default:
+					if st, ok := status.FromError(err); ok {
+						log.Warnf("[benchmark job] exists error is detected: code = %d, msg = %s", st.Code(), err.Error())
+					}
+				}
+			}
+			if res != nil {
+				log.Infof("[benchmark exists job] iter=%d, Id=%s", idx, res.GetId())
+			}
+			log.Debugf("[benchmark job] Finish exists: iter= %d \n%v\n", idx, res)
+			return nil
+		})
+	}
+	err := eg.Wait()
+	if err != nil {
+		log.Warnf("[benchmark job] exists RPC error is detected: err = %s", err.Error())
+		return err
 	}
 	log.Info("[benchmark job] Finish benchmarking exists")
 	return nil
@@ -67,15 +80,20 @@ func (j *job) exists(ctx context.Context, ech chan error) error {
 func (j *job) getObject(ctx context.Context, ech chan error) error {
 	log.Info("[benchmark job] Start benchmarking getObject")
 	// create data
-	vecs := j.genVec(j.dataset)
-	for i := 0; i < len(vecs); i++ {
-		log.Infof("[benchmark job] Start getObject: iter = %d", i)
-		err := j.limiter.Wait(ctx)
+	eg, egctx := errgroup.New(ctx)
+	for i := j.dataset.Range.Start; i <= j.dataset.Range.End; i++ {
+		log.Infof("[benchmark job] Start get object: iter = %d", i)
+		err := j.limiter.Wait(egctx)
 		if err != nil {
+			log.Errorf("[benchmark job] limiter error is detected: %s", err.Error())
 			if errors.Is(err, context.Canceled) {
 				return errors.Join(err, context.Canceled)
 			}
-			ech <- err
+			select {
+			case <-egctx.Done():
+				return egctx.Err()
+			case ech <- err:
+			}
 		}
 		ft := []*payload.Filter_Target{}
 		if j.objectConfig != nil {
@@ -86,33 +104,39 @@ func (j *job) getObject(ctx context.Context, ech chan error) error {
 				}
 			}
 		}
-		res, err := j.client.GetObject(ctx, &payload.Object_VectorRequest{
-			Id: &payload.Object_ID{
-				Id: strconv.Itoa(i),
-			},
-			Filters: &payload.Filter_Config{
-				Targets: ft,
-			},
-		})
-		if res != nil {
-			log.Infof("[benchmark get object job] iter=%d, Id=%s, Vec=%v", i, res.GetId(), res.GetVector())
-		}
-		if err != nil {
-			select {
-			case <-ctx.Done():
-				if errors.Is(err, context.Canceled) {
-					return errors.Join(err, context.Canceled)
-				}
+		idx := i
+		eg.Go(func() error {
+			log.Debugf("[benchmark job] Start get object: iter = %d", idx)
+			res, err := j.client.GetObject(egctx, &payload.Object_VectorRequest{
+				Id: &payload.Object_ID{
+					Id: strconv.Itoa(idx),
+				},
+				Filters: &payload.Filter_Config{
+					Targets: ft,
+				},
+			})
+			if err != nil {
 				select {
-				case <-ctx.Done():
-					return errors.Join(err, context.Canceled)
-				case ech <- errors.Join(err, ctx.Err()):
+				case <-egctx.Done():
+					log.Errorf("[benchmark job] context error is detected: %s\t%s", err.Error(), egctx.Err())
+					return errors.Join(err, egctx.Err())
+				default:
+					if st, ok := status.FromError(err); ok {
+						log.Warnf("[benchmark job] object error is detected: code = %d, msg = %s", st.Code(), err.Error())
+					}
 				}
-			default:
-				st, _ := status.FromError(err)
-				log.Warnf("[benchmark job] get object error is detected: code = %d, msg = %s", st.Code(), err.Error())
 			}
-		}
+			if res != nil {
+				log.Infof("[benchmark get object job] iter=%d, Id=%s, Vec=%v", idx, res.GetId(), res.GetVector())
+			}
+			log.Debugf("[benchmark job] Finish get object: iter= %d \n%v\n", idx, res)
+			return nil
+		})
+	}
+	err := eg.Wait()
+	if err != nil {
+		log.Warnf("[benchmark job] object error is detected: err = %s", err.Error())
+		return err
 	}
 	log.Info("[benchmark job] Finish benchmarking getObject")
 	return nil

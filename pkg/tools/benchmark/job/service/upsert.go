@@ -19,9 +19,11 @@ package service
 
 import (
 	"context"
+	"math"
 	"strconv"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
+	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc/status"
@@ -30,7 +32,7 @@ import (
 func (j *job) upsert(ctx context.Context, ech chan error) error {
 	log.Info("[benchmark job] Start benchmarking upsert")
 	// create data
-	vecs := j.genVec(j.dataset)
+	vecs := j.hdf5.GetByGroupName(j.dataset.Group)
 	cfg := &payload.Upsert_Config{
 		SkipStrictExistCheck:  j.upsertConfig.SkipStrictExistCheck,
 		DisableBalancedUpdate: j.upsertConfig.DisableBalancedUpdate,
@@ -38,43 +40,55 @@ func (j *job) upsert(ctx context.Context, ech chan error) error {
 	if j.timestamp > int64(0) {
 		cfg.Timestamp = j.timestamp
 	}
+	eg, egctx := errgroup.New(ctx)
 	for i := 0; i < len(vecs); i++ {
-		log.Infof("[benchmark job] Start upsert: iter = %d", i)
-		err := j.limiter.Wait(ctx)
+		err := j.limiter.Wait(egctx)
 		if err != nil {
+			log.Errorf("[benchmark job] limiter error is detected: %s", err.Error())
 			if errors.Is(err, context.Canceled) {
 				return errors.Join(err, context.Canceled)
 			}
-			ech <- err
-		}
-		res, err := j.client.Upsert(ctx, &payload.Upsert_Request{
-			Vector: &payload.Object_Vector{
-				Id:     strconv.Itoa(i),
-				Vector: vecs[i],
-			},
-			Config: cfg,
-		})
-		if err != nil {
 			select {
-			case <-ctx.Done():
-				if errors.Is(err, context.Canceled) {
-					return errors.Join(err, context.Canceled)
-				}
-				select {
-				case <-ctx.Done():
-					return errors.Join(err, context.Canceled)
-				case ech <- errors.Join(err, ctx.Err()):
-				}
-			default:
-				st, _ := status.FromError(err)
-				log.Warnf("[benchmark job] upsert error is detected: code = %d, msg = %s", st.Code(), err.Error())
+			case <-egctx.Done():
+				return egctx.Err()
+			case ech <- err:
 			}
 		}
-		if res != nil {
-			log.Infof("[benchmark job] iter=%d, Name=%s, Uuid=%s, Ips=%v", i, res.Name, res.Uuid, res.Ips)
-		}
+		iter := i
+		loop_cnt := math.Floor(float64(i-1) / float64(len(vecs)))
+		idx := i - 1 - (len(vecs) * int(loop_cnt))
+		eg.Go(func() error {
+			log.Debugf("[benchmark job] Start upsert: iter = %d", iter)
+			res, err := j.client.Upsert(egctx, &payload.Upsert_Request{
+				Vector: &payload.Object_Vector{
+					Id:     strconv.Itoa(iter),
+					Vector: vecs[idx],
+				},
+				Config: cfg,
+			})
+			if err != nil {
+				select {
+				case <-egctx.Done():
+					log.Errorf("[benchmark job] context error is detected: %s\t%s", err.Error(), egctx.Err())
+					return errors.Join(err, egctx.Err())
+				default:
+					if st, ok := status.FromError(err); ok {
+						log.Warnf("[benchmark job] upsert error is detected: code = %d, msg = %s", st.Code(), err.Error())
+					}
+				}
+			}
+			if res != nil {
+				log.Infof("[benchmark job] iter=%d, Name=%s, Uuid=%s, Ips=%v", idx, res.Name, res.Uuid, res.Ips)
+			}
+			log.Debugf("[benchmark job] Finish upsert: iter = %d", iter)
+			return nil
+		})
 	}
-
+	err := eg.Wait()
+	if err != nil {
+		log.Warnf("[benchmark job] upsert error is detected: err = %s", err.Error())
+		return err
+	}
 	log.Info("[benchmark job] Finish benchmarking upsert")
 	return nil
 }

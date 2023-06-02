@@ -47,37 +47,19 @@ func TestDatasetName_String(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		       beforeFunc: func(t *testing.T,) {
-		           t.Helper()
-		       },
-		       afterFunc: func(t *testing.T,) {
-		           t.Helper()
-		       },
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		           beforeFunc: func(t *testing.T,) {
-		               t.Helper()
-		           },
-		           afterFunc: func(t *testing.T,) {
-		               t.Helper()
-		           },
-		       }
-		   }(),
-		*/
+		// {
+		//     name: "set original",
+		//     want: want{
+		//      want: "original",
+		//     },
+		//     checkFunc: defaultCheckFunc,
+		//     beforeFunc: func(t *testing.T,) {
+		//         t.Helper()
+		//     },
+		//     afterFunc: func(t *testing.T,) {
+		//         t.Helper()
+		//     },
+		// },
 	}
 
 	for _, tc := range tests {

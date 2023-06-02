@@ -79,7 +79,6 @@ func New(cfg *config.Config) (r runner.Runner, err error) {
 	if err != nil {
 		return nil, err
 	}
-
 	d, err := hdf5.New(
 		hdf5.WithNameByString(cfg.Job.Dataset.Name),
 	)
@@ -87,7 +86,6 @@ func New(cfg *config.Config) (r runner.Runner, err error) {
 		return nil, err
 	}
 	log.Info("pkg/tools/benchmark/job/cmd success d")
-
 	job, err := service.New(
 		service.WithErrGroup(eg),
 		service.WithValdClient(vcli),
