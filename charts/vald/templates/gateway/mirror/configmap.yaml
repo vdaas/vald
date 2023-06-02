@@ -48,7 +48,7 @@ data:
       discovery_duration: {{ $gateway.gateway_config.discovery_duration }}
       colocation: {{ $gateway.gateway_config.colocation }}
       group: {{ $gateway.gateway_config.group }}
-      net: 
+      net:
       {{- toYaml $gateway.gateway_config.net | nindent 8 }}
       client:
         {{- $client := $gateway.gateway_config.client }}
