@@ -210,7 +210,9 @@ func New(cfg *config.NGT, opts ...Option) (nn NGT, err error) {
 	return n, nil
 }
 
-// migrate migrates the index directory from old to new under the input path if necessary
+// migrate migrates the index directory from old to new under the input path if necessary.
+// Migration happens when the path is not empty and there is no `path/origin` directory,
+// which indicates that the user has NOT been using CoW mode and the index directory is not migrated yet.
 func migrate(path string) (err error) {
 	// check if migration is required
 	files, err := file.ListInDir(path)
@@ -469,6 +471,9 @@ func (n *ngt) load(ctx context.Context, path string, opts ...core.Option) (err e
 	return nil
 }
 
+// backupBroken backup index at originPath into brokenDir.
+// The name of the directory will be timestamp(UnixNano).
+// If it exeeds the limit, backupBroken removes the oldest backup directory.
 func backupBroken(originPath string, brokenDir string, limit int) error {
 	if limit <= 0 {
 		return nil
@@ -510,6 +515,7 @@ func backupBroken(originPath string, brokenDir string, limit int) error {
 	return nil
 }
 
+// needsBackup checks if the backup is needed.
 func needsBackup(backupPath string) bool {
 	// Initail state where there's only grp, obj, prf, tre -> false
 	files, err := file.ListInDir(backupPath)
@@ -585,7 +591,6 @@ func (n *ngt) rebuild(path string, opts ...core.Option) (err error) {
 			}
 		}
 	} else if err != nil {
-		// TODO: is it really ok to continue processing here???
 		log.Debug(err)
 	}
 
