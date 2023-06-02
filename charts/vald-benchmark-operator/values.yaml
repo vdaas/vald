@@ -46,7 +46,7 @@ image:
 job_image:
   # @schema {"name": "job_image.repository", "type": "string"}
   # image.repository -- job image repository
-  repository: vdaas/vald-benchmark-operator
+  repository: vdaas/vald-benchmark-job
   # @schema {"name": "job_image.tag", "type": "string"}
   # image.tag -- image tag for job docker image
   tag: v1.7.5

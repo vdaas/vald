@@ -409,6 +409,17 @@
       "type": "object",
       "description": "upsert config",
       "properties": {
+        "aggregation_algorithm": {
+          "type": "string",
+          "description": "search result aggregation algorithm",
+          "enum": [
+            "Unknown",
+            "ConcurrentQueue",
+            "SortSlice",
+            "SortPoolSlice",
+            "PairingHeap"
+          ]
+        },
         "enable_linear_search": {
           "type": "boolean",
           "description": "enable linear search for calculation recall"
