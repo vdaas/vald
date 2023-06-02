@@ -61,7 +61,7 @@ RUN make ngt/install \
     && make k3d/install
 
 # change GOPATH owner to vscode to run commands as user vscode without root permission
-RUN chown -R vscode:vscode ${GOPATH} \
+RUN chown -R vscode:vscode "${GOPATH}" \
     # mkdir for agent configuration install
     && mkdir -p /etc/server
 
