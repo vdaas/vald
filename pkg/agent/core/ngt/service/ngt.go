@@ -1063,8 +1063,6 @@ func (n *ngt) SaveIndex(ctx context.Context) (err error) {
 		}
 	}()
 	if !n.inMem {
-		log.Info("save index operation started")
-		defer log.Infof("save index operation finished")
 		return n.saveIndex(ctx)
 	}
 	return nil
@@ -1097,6 +1095,8 @@ func (n *ngt) saveIndex(ctx context.Context) (err error) {
 	defer n.gc()
 	defer n.saving.Store(false)
 
+	log.Infof("save index operation started, the number of create index execution = %d", nocie)
+	defer log.Info("save index operation finished")
 	log.Debug("cleanup invalid index started")
 	n.removeInvalidIndex(ctx)
 	log.Debug("cleanup invalid index finished")
@@ -1117,6 +1117,8 @@ func (n *ngt) saveIndex(ctx context.Context) (err error) {
 	n.smu.Lock()
 	defer n.smu.Unlock()
 	eg.Go(safety.RecoverFunc(func() (err error) {
+		log.Debugf("start save operation for kvsdb, the number of kvsdb = %d", n.kvs.Len())
+		defer log.Debug("save operation for kvsdb finished")
 		if n.kvs.Len() > 0 && path != "" {
 			m := make(map[string]uint32, n.Len())
 			mt := make(map[string]int64, n.Len())
@@ -1192,6 +1194,8 @@ func (n *ngt) saveIndex(ctx context.Context) (err error) {
 		n.fmu.Lock()
 		fl := len(n.fmap)
 		n.fmu.Unlock()
+		log.Debugf("start save operation for invalid kvsdb, the number of invalid kvsdb = %d", fl)
+		defer log.Debug("save operation for invalid kvsdb finished")
 		if fl > 0 && path != "" {
 			var f *os.File
 			f, err = file.Open(
@@ -1226,6 +1230,8 @@ func (n *ngt) saveIndex(ctx context.Context) (err error) {
 	}))
 
 	eg.Go(safety.RecoverFunc(func() error {
+		log.Debug("start save operation for index")
+		defer log.Debug("save operation for index")
 		return n.core.SaveIndexWithPath(path)
 	}))
 
@@ -1234,6 +1240,8 @@ func (n *ngt) saveIndex(ctx context.Context) (err error) {
 		return err
 	}
 
+	log.Debug("start save operation for metadata json file")
+	defer log.Debug("save operation for index")
 	err = metadata.Store(
 		file.Join(path, metadata.AgentMetadataFileName),
 		&metadata.Metadata{
