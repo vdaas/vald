@@ -49,7 +49,7 @@ $(GOPATH)/bin/golines:
 .PHONY: prettier/install
 prettier/install: $(BINDIR)/prettier
 $(BINDIR)/prettier:
-	type prettier || npm install -g prettier
+	type prettier || sudo npm install -g prettier
 
 .PHONY: reviewdog/install
 ## install reviewdog
