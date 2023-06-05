@@ -1168,7 +1168,7 @@ func (n *ngt) saveIndex(ctx context.Context) (err error) {
 				fs.ModePerm,
 			)
 			if err != nil {
-				log.Warn("failed to create or open kvs timestamp file, err: %v", err)
+				log.Warnf("failed to create or open kvs timestamp file, err: %v", err)
 				return err
 			}
 			defer func() {
@@ -1182,7 +1182,7 @@ func (n *ngt) saveIndex(ctx context.Context) (err error) {
 			gob.Register(map[string]int64{})
 			err = gob.NewEncoder(ft).Encode(&mt)
 			if err != nil {
-				log.Warn("failed to encode kvs timestamp data, err: %v", err)
+				log.Warnf("failed to encode kvs timestamp data, err: %v", err)
 				return err
 			}
 			err = ft.Sync()
