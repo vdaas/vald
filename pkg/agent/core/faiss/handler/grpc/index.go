@@ -72,7 +72,7 @@ func (s *server) CreateIndex(ctx context.Context, c *payload.Control_CreateIndex
 				ResourceType: faissResourceType + "/faiss.CreateIndex",
 				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
 			}, info.Get())
-					log.Error(err)
+		log.Error(err)
 		if span != nil {
 			span.RecordError(err)
 			span.SetAttributes(trace.StatusCodeInternal(err.Error())...)
@@ -164,7 +164,7 @@ func (s *server) CreateAndSaveIndex(ctx context.Context, c *payload.Control_Crea
 }
 
 func (s *server) IndexInfo(ctx context.Context, c *payload.Empty) (res *payload.Info_Index_Count, err error) {
-		_, span := trace.StartSpan(ctx, apiName+".IndexInfo")
+	_, span := trace.StartSpan(ctx, apiName+".IndexInfo")
 	defer func() {
 		if span != nil {
 			span.End()

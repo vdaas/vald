@@ -115,7 +115,7 @@ faiss:
   index_path: ""
   initial_delay_max_duration: 3m
   load_index_timeout_factor: 1ms
-  m: 8  # dimension % m == 0, train size >= 2^m(or nlist) * minPointsPerCentroid
+  m: 8 # dimension % m == 0, train size >= 2^m(or nlist) * minPointsPerCentroid
   max_load_index_timeout: 10m
   metric_type: "inner_product"
   min_load_index_timeout: 3m

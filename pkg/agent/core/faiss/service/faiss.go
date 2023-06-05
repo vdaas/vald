@@ -51,8 +51,8 @@ type (
 		Train(nb int, xb []float32) error
 		Insert(uuid string, xb []float32) error
 		InsertWithTime(uuid string, vec []float32, t int64) error
-		Update(uuid string, vec[]float32) error
-		UpdateWithTime(uuid string, vec[]float32, t int64) error
+		Update(uuid string, vec []float32) error
+		UpdateWithTime(uuid string, vec []float32, t int64) error
 		CreateIndex(ctx context.Context) error
 		SaveIndex(ctx context.Context) error
 		CreateAndSaveIndex(ctx context.Context) error
@@ -829,10 +829,10 @@ func (f *faiss) CreateIndex(ctx context.Context) error {
 	} else {
 		max = int(math.Pow(2, float64(f.m)))
 	}
-	if !f.isTrained && len(f.addVecs) / f.dim >= max * minPointsPerCentroid {
+	if !f.isTrained && len(f.addVecs)/f.dim >= max*minPointsPerCentroid {
 		log.Debug("faiss train phase started")
-		log.Debugf("max * minPointsPerCentroid: %d", max * minPointsPerCentroid)
-		err := f.core.Train(len(f.addVecs) / f.dim, f.addVecs)
+		log.Debugf("max * minPointsPerCentroid: %d", max*minPointsPerCentroid)
+		err := f.core.Train(len(f.addVecs)/f.dim, f.addVecs)
 		if err != nil {
 			log.Errorf("failed to faiss train", err)
 			return err
@@ -843,7 +843,7 @@ func (f *faiss) CreateIndex(ctx context.Context) error {
 	}
 	if f.isTrained && len(f.addVecs) > 0 {
 		log.Debug("faiss add phase started")
-		ntotal, err := f.core.Add(len(f.addVecs) / f.dim, f.addVecs, f.addIds)
+		ntotal, err := f.core.Add(len(f.addVecs)/f.dim, f.addVecs, f.addIds)
 		if err != nil {
 			log.Errorf("failed to faiss add", err)
 			return err

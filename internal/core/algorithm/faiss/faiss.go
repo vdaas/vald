@@ -193,8 +193,8 @@ func (f *faiss) Train(nb int, xb []float32) error {
 // Add returns faiss ntotal.
 func (f *faiss) Add(nb int, xb []float32, xids []int64) (int, error) {
 	dim := int(f.dimension)
-	if len(xb) != dim * nb || len(xb) != dim * len(xids) {
-		return -1, errors.ErrIncompatibleDimensionSize(len(xb) / nb, dim)
+	if len(xb) != dim*nb || len(xb) != dim*len(xids) {
+		return -1, errors.ErrIncompatibleDimensionSize(len(xb)/nb, dim)
 	}
 
 	f.mu.Lock()
@@ -209,7 +209,7 @@ func (f *faiss) Add(nb int, xb []float32, xids []int64) (int, error) {
 
 // Search returns search result as []SearchResult.
 func (f *faiss) Search(k, nq int, xq []float32) ([]SearchResult, error) {
-	if len(xq) != nq * int(f.dimension) {
+	if len(xq) != nq*int(f.dimension) {
 		return nil, errors.ErrIncompatibleDimensionSize(len(xq), int(f.dimension))
 	}
 

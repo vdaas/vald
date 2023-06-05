@@ -29,15 +29,13 @@ import (
 // Option represents the functional option for faiss.
 type Option func(*faiss) error
 
-var (
-	defaultOptions = []Option{
-		WithDimension(64),
-		WithNlist(100),
-		WithM(8),
-		WithNbitsPerIdx(8),
-		WithMetricType("l2"),
-	}
-)
+var defaultOptions = []Option{
+	WithDimension(64),
+	WithNlist(100),
+	WithM(8),
+	WithNbitsPerIdx(8),
+	WithMetricType("l2"),
+}
 
 // WithDimension represents the option to set the dimension for faiss.
 func WithDimension(dim int) Option {
@@ -67,7 +65,7 @@ func WithNlist(nlist int) Option {
 // WithM represents the option to set the m for faiss.
 func WithM(m int) Option {
 	return func(f *faiss) error {
-		if m <= 0 || int(f.dimension) % m != 0 {
+		if m <= 0 || int(f.dimension)%m != 0 {
 			return errors.NewErrInvalidOption("m", m)
 		}
 
