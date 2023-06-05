@@ -1270,6 +1270,7 @@ func (n *ngt) saveIndex(ctx context.Context) (err error) {
 	log.Debug("save operation for metadata file finished")
 
 	if err := n.moveAndSwitchSavedData(ctx); err != nil {
+		log.Warnf("failed to move and switch saved data for copy on write, err: %v", err)
 		return err
 	}
 	log.Info("save index operation finished")
