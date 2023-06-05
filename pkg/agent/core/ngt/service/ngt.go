@@ -1063,6 +1063,8 @@ func (n *ngt) SaveIndex(ctx context.Context) (err error) {
 		}
 	}()
 	if !n.inMem {
+		log.Info("save index operation started")
+		defer log.Infof("save index operation finished")
 		return n.saveIndex(ctx)
 	}
 	return nil
