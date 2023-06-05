@@ -86,7 +86,7 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (res *
 			log.Warn(err)
 			attrs = trace.StatusCodeAlreadyExists(err.Error())
 		} else if errors.Is(err, errors.ErrFlushingIsInProgress) {
-			err = status.WrapWithAborted("Insert API aborted to process search request due to flushing indices is in progress", err,
+			err = status.WrapWithAborted("Insert API aborted to process insert request due to flushing indices is in progress", err,
 				&errdetails.RequestInfo{
 					RequestId:   req.GetVector().GetId(),
 					ServingData: errdetails.Serialize(req),

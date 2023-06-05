@@ -75,7 +75,7 @@ func (s *server) LinearSearch(ctx context.Context, req *payload.Search_Request) 
 		var attrs []attribute.KeyValue
 		switch {
 		case errors.Is(err, errors.ErrCreateIndexingIsInProgress):
-			err = status.WrapWithAborted("LinearSearch API aborted to process search request due to createing indices is in progress", err,
+			err = status.WrapWithAborted("LinearSearch API aborted to process search request due to creating indices is in progress", err,
 				&errdetails.RequestInfo{
 					RequestId:   req.GetConfig().GetRequestId(),
 					ServingData: errdetails.Serialize(req),
@@ -87,7 +87,7 @@ func (s *server) LinearSearch(ctx context.Context, req *payload.Search_Request) 
 			log.Debug(err)
 			attrs = trace.StatusCodeAborted(err.Error())
 		case errors.Is(err, errors.ErrFlushingIsInProgress):
-			err = status.WrapWithAborted("Search API aborted to process search request due to flushing indices is in progress", err,
+			err = status.WrapWithAborted("LinearSearch API aborted to process search request due to flushing indices is in progress", err,
 				&errdetails.RequestInfo{
 					RequestId:   req.GetConfig().GetRequestId(),
 					ServingData: errdetails.Serialize(req),
@@ -212,7 +212,7 @@ func (s *server) LinearSearchByID(ctx context.Context, req *payload.Search_IDReq
 		var attrs []attribute.KeyValue
 		switch {
 		case errors.Is(err, errors.ErrCreateIndexingIsInProgress):
-			err = status.WrapWithAborted("LinearSearchByID API aborted to process search request due to createing indices is in progress", err,
+			err = status.WrapWithAborted("LinearSearchByID API aborted to process search request due to creating indices is in progress", err,
 				&errdetails.RequestInfo{
 					RequestId:   req.GetConfig().GetRequestId(),
 					ServingData: errdetails.Serialize(req),

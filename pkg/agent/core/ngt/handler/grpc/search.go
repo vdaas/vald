@@ -78,7 +78,7 @@ func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *
 		var attrs []attribute.KeyValue
 		switch {
 		case errors.Is(err, errors.ErrCreateIndexingIsInProgress):
-			err = status.WrapWithAborted("Search API aborted to process search request due to createing indices is in progress", err,
+			err = status.WrapWithAborted("Search API aborted to process search request due to creating indices is in progress", err,
 				&errdetails.RequestInfo{
 					RequestId:   req.GetConfig().GetRequestId(),
 					ServingData: errdetails.Serialize(req),
@@ -217,7 +217,7 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 		var attrs []attribute.KeyValue
 		switch {
 		case errors.Is(err, errors.ErrCreateIndexingIsInProgress):
-			err = status.WrapWithAborted("SearchByID API aborted to process search request due to createing indices is in progress", err,
+			err = status.WrapWithAborted("SearchByID API aborted to process search request due to creating indices is in progress", err,
 				&errdetails.RequestInfo{
 					RequestId:   req.GetConfig().GetRequestId(),
 					ServingData: errdetails.Serialize(req),
