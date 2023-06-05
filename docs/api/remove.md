@@ -96,6 +96,7 @@ Remove RPC is the method to remove a single vector.
 |  3   | INVALID_ARGUMENT  |
 |  4   | DEADLINE_EXCEEDED |
 |  5   | NOT_FOUND         |
+|  10  | ABORTED           |
 |  13  | INTERNAL          |
 
 ## StreamRemove RPC
@@ -202,6 +203,7 @@ It's the recommended method to remove a large number of vectors.
 |  3   | INVALID_ARGUMENT  |
 |  4   | DEADLINE_EXCEEDED |
 |  5   | NOT_FOUND         |
+|  10  | ABORTED           |
 |  13  | INTERNAL          |
 
 ## MultiRemove RPC
@@ -306,4 +308,5 @@ Please be careful that the size of the request exceeds the limit.
 |  3   | INVALID_ARGUMENT  |
 |  4   | DEADLINE_EXCEEDED |
 |  5   | NOT_FOUND         |
+|  10  | ABORTED           |
 |  13  | INTERNAL          |

@@ -70,7 +70,19 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (res *
 	err = s.ngt.DeleteWithTime(uuid, req.GetConfig().GetTimestamp())
 	if err != nil {
 		var attrs []attribute.KeyValue
-		if errors.Is(err, errors.ErrObjectIDNotFound(uuid)) {
+		if errors.Is(err, errors.ErrFlushingIsInProgress) {
+			err = status.WrapWithAborted("Remove API aborted to process remove request due to flushing indices is in progress", err,
+				&errdetails.RequestInfo{
+					RequestId:   uuid,
+					ServingData: errdetails.Serialize(req),
+				},
+				&errdetails.ResourceInfo{
+					ResourceType: ngtResourceType + "/ngt.Remove",
+					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+				})
+			log.Warn(err)
+			attrs = trace.StatusCodeAborted(err.Error())
+		} else if errors.Is(err, errors.ErrObjectIDNotFound(uuid)) {
 			err = status.WrapWithNotFound(fmt.Sprintf("Remove API uuid %s not found", uuid), err,
 				&errdetails.RequestInfo{
 					RequestId:   uuid,
@@ -187,7 +199,19 @@ func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequ
 	err = s.ngt.DeleteMultiple(uuids...)
 	if err != nil {
 		var attrs []attribute.KeyValue
-		if notFoundIDs := func() []string {
+		if errors.Is(err, errors.ErrFlushingIsInProgress) {
+			err = status.WrapWithAborted("MultiRemove API aborted to process remove request due to flushing indices is in progress", err,
+				&errdetails.RequestInfo{
+					RequestId:   strings.Join(uuids, ", "),
+					ServingData: errdetails.Serialize(reqs),
+				},
+				&errdetails.ResourceInfo{
+					ResourceType: ngtResourceType + "/ngt.MultiRemove",
+					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+				})
+			log.Warn(err)
+			attrs = trace.StatusCodeAborted(err.Error())
+		} else if notFoundIDs := func() []string {
 			aids := make([]string, 0, len(uuids))
 			for _, id := range uuids {
 				if errors.Is(err, errors.ErrObjectIDNotFound(id)) {

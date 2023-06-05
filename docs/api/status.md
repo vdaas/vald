@@ -114,6 +114,9 @@ It appears when:
 Services that return status are:
 
 - [Insert Service](../api/insert.md)
+- [Update Service](../api/update.md)
+- [Upsert Service](../api/upsert.md)
+- [Remove Service](../api/remove.md)
 - [Search Service](../api/search.md)
 
 You have to wait for the completion of creating indices or flushing process before making the request again.

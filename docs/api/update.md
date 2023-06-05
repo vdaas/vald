@@ -99,6 +99,7 @@ Update RPC is the method to update a single vector.
 |  4   | DEADLINE_EXCEEDED |
 |  5   | NOT_FOUND         |
 |  6   | ALREADY_EXISTS    |
+|  10  | ABORTED           |
 |  13  | INTERNAL          |
 
 ## StreamUpdate RPC
@@ -210,6 +211,7 @@ It's the recommended method to update the large amount of vectors.
 |  4   | DEADLINE_EXCEEDED |
 |  5   | NOT_FOUND         |
 |  6   | ALREADY_EXISTS    |
+|  10  | ABORTED           |
 |  13  | INTERNAL          |
 
 ## MultiUpdate RPC
@@ -318,4 +320,5 @@ Please be careful that the size of the request exceed the limit.
 |  4   | DEADLINE_EXCEEDED |
 |  5   | NOT_FOUND         |
 |  6   | ALREADY_EXISTS    |
+|  10  | ABORTED           |
 |  13  | INTERNAL          |

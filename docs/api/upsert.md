@@ -102,6 +102,7 @@ Upsert RPC is the method to update a single vector and add a new single vector.
 |  3   | INVALID_ARGUMENT  |
 |  4   | DEADLINE_EXCEEDED |
 |  6   | ALREADY_EXISTS    |
+|  10  | ABORTED           |
 |  13  | INTERNAL          |
 
 ## StreamUpsert RPC
@@ -212,6 +213,7 @@ It’s the recommended method to upsert a large number of vectors.
 |  3   | INVALID_ARGUMENT  |
 |  4   | DEADLINE_EXCEEDED |
 |  6   | ALREADY_EXISTS    |
+|  10  | ABORTED           |
 |  13  | INTERNAL          |
 
 ## MultiUpsert RPC
@@ -319,4 +321,5 @@ Please be careful that the size of the request exceeds the limit.
 |  3   | INVALID_ARGUMENT  |
 |  4   | DEADLINE_EXCEEDED |
 |  6   | ALREADY_EXISTS    |
+|  10  | ABORTED           |
 |  13  | INTERNAL          |
