@@ -1095,8 +1095,6 @@ func (n *ngt) saveIndex(ctx context.Context) (err error) {
 	defer n.gc()
 	defer n.saving.Store(false)
 
-	log.Infof("save index operation started, the number of create index execution = %d", nocie)
-	defer log.Info("save index operation finished")
 	log.Debug("cleanup invalid index started")
 	n.removeInvalidIndex(ctx)
 	log.Debug("cleanup invalid index finished")
@@ -1116,9 +1114,10 @@ func (n *ngt) saveIndex(ctx context.Context) (err error) {
 	}
 	n.smu.Lock()
 	defer n.smu.Unlock()
+	log.Infof("save index operation started, the number of create index execution = %d", nocie)
+
 	eg.Go(safety.RecoverFunc(func() (err error) {
 		log.Debugf("start save operation for kvsdb, the number of kvsdb = %d", n.kvs.Len())
-		defer log.Debug("save operation for kvsdb finished")
 		if n.kvs.Len() > 0 && path != "" {
 			m := make(map[string]uint32, n.Len())
 			mt := make(map[string]int64, n.Len())
@@ -1138,6 +1137,7 @@ func (n *ngt) saveIndex(ctx context.Context) (err error) {
 				fs.ModePerm,
 			)
 			if err != nil {
+				log.Warnf("failed to create or open kvsdb file, err: %v", err)
 				return err
 			}
 			defer func() {
@@ -1151,10 +1151,12 @@ func (n *ngt) saveIndex(ctx context.Context) (err error) {
 			gob.Register(map[string]uint32{})
 			err = gob.NewEncoder(f).Encode(&m)
 			if err != nil {
+				log.Warnf("failed to encode kvsdb data, err: %v", err)
 				return err
 			}
 			err = f.Sync()
 			if err != nil {
+				log.Warnf("failed to flush all kvsdb data to storage, err: %v", err)
 				return err
 			}
 			m = make(map[string]uint32)
@@ -1166,6 +1168,7 @@ func (n *ngt) saveIndex(ctx context.Context) (err error) {
 				fs.ModePerm,
 			)
 			if err != nil {
+				log.Warn("failed to create or open kvs timestamp file, err: %v", err)
 				return err
 			}
 			defer func() {
@@ -1179,14 +1182,17 @@ func (n *ngt) saveIndex(ctx context.Context) (err error) {
 			gob.Register(map[string]int64{})
 			err = gob.NewEncoder(ft).Encode(&mt)
 			if err != nil {
+				log.Warn("failed to encode kvs timestamp data, err: %v", err)
 				return err
 			}
 			err = ft.Sync()
 			if err != nil {
+				log.Warnf("failed to flush all kvsdb timestamp data to storage, err: %v", err)
 				return err
 			}
 			mt = make(map[string]int64)
 		}
+		log.Debug("save operation for kvsdb finished")
 		return nil
 	}))
 
@@ -1195,7 +1201,6 @@ func (n *ngt) saveIndex(ctx context.Context) (err error) {
 		fl := len(n.fmap)
 		n.fmu.Unlock()
 		log.Debugf("start save operation for invalid kvsdb, the number of invalid kvsdb = %d", fl)
-		defer log.Debug("save operation for invalid kvsdb finished")
 		if fl > 0 && path != "" {
 			var f *os.File
 			f, err = file.Open(
@@ -1204,6 +1209,7 @@ func (n *ngt) saveIndex(ctx context.Context) (err error) {
 				fs.ModePerm,
 			)
 			if err != nil {
+				log.Warnf("failed to create or open invalid kvsdb file, err: %v", err)
 				return err
 			}
 			defer func() {
@@ -1219,20 +1225,27 @@ func (n *ngt) saveIndex(ctx context.Context) (err error) {
 			err = gob.NewEncoder(f).Encode(&n.fmap)
 			n.fmu.Unlock()
 			if err != nil {
+				log.Warnf("failed to encode invalid kvsdb data, err: %v", err)
 				return err
 			}
 			err = f.Sync()
 			if err != nil {
+				log.Warnf("failed to flush all invalid kvsdb data to storage, err: %v", err)
 				return err
 			}
 		}
+		log.Debug("start save operation for invalid kvsdb finished")
 		return nil
 	}))
 
 	eg.Go(safety.RecoverFunc(func() error {
 		log.Debug("start save operation for index")
-		defer log.Debug("save operation for index")
-		return n.core.SaveIndexWithPath(path)
+		if err := n.core.SaveIndexWithPath(path); err != nil {
+			log.Warnf("failed to save index with path, err: %v\tpath: %s", err, path)
+			return err
+		}
+		log.Debug("save operation for index finished")
+		return nil
 	}))
 
 	err = eg.Wait()
@@ -1240,8 +1253,7 @@ func (n *ngt) saveIndex(ctx context.Context) (err error) {
 		return err
 	}
 
-	log.Debug("start save operation for metadata json file")
-	defer log.Debug("save operation for index")
+	log.Debug("start save operation for metadata file")
 	err = metadata.Store(
 		file.Join(path, metadata.AgentMetadataFileName),
 		&metadata.Metadata{
@@ -1252,10 +1264,16 @@ func (n *ngt) saveIndex(ctx context.Context) (err error) {
 		},
 	)
 	if err != nil {
+		log.Warnf("failed to save metadata file, err: %v", err)
 		return err
 	}
+	log.Debug("save operation for metadata file finished")
 
-	return n.moveAndSwitchSavedData(ctx)
+	if err := n.moveAndSwitchSavedData(ctx); err != nil {
+		return err
+	}
+	log.Info("save index operation finished")
+	return nil
 }
 
 func (n *ngt) CreateAndSaveIndex(ctx context.Context, poolSize uint32) (err error) {
@@ -1282,6 +1300,7 @@ func (n *ngt) moveAndSwitchSavedData(ctx context.Context) (err error) {
 	}
 	n.cowmu.Lock()
 	defer n.cowmu.Unlock()
+	log.Debug("start move and switch saved data operation for copy on write")
 	err = file.MoveDir(ctx, n.path, n.oldPath)
 	if err != nil {
 		log.Warnf("failed to backup backup data from %s to %s error: %v", n.path, n.oldPath, err)
