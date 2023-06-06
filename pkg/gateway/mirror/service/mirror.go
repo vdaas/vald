@@ -176,18 +176,7 @@ func (m *mirr) startAdvertise(ctx context.Context) (<-chan error, error) {
 			case <-ctx.Done():
 				return err
 			case <-tic.C:
-				tgts, err := m.toMirrorTargets(m.gateway.GRPCClient().ConnectedAddrs()...)
-				if err != nil {
-					select {
-					case <-ctx.Done():
-						return ctx.Err()
-					case ech <- err:
-						break
-					}
-				}
-				resTgts, err := m.advertises(ctx, &payload.Mirror_Targets{
-					Targets: append(tgts, m.selfMirrTgts...),
-				})
+				resTgts, err := m.advertises(ctx, new(payload.Mirror_Targets))
 				if err != nil || len(resTgts) == 0 {
 					if err == nil {
 						err = errors.ErrTargetNotFound
@@ -209,7 +198,7 @@ func (m *mirr) startAdvertise(ctx context.Context) (<-chan error, error) {
 				}
 
 				if err := m.registers(ctx, &payload.Mirror_Targets{
-					Targets: resTgts,
+					Targets: append(resTgts, m.selfMirrTgts...),
 				}); err != nil {
 					select {
 					case <-ctx.Done():
