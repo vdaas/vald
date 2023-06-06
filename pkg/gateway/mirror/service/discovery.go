@@ -177,15 +177,26 @@ func (d *discoverer) startSync(ctx context.Context, prev map[string]target.Targe
 			deleted[addr] = &deletedTarget{name: name, host: ptgt.Host, port: uint32(ptgt.Port)}
 		}
 	}
-	log.Infof("created: %#v\tupdated: %#v\tdeleted: %#v", created, updated, deleted)
 
-	err = errors.Join(
-		errors.Join(
-			d.createTarget(ctx, created),
-			d.deleteTarget(ctx, deleted)),
-		d.updateTarget(ctx, updated))
-	if err != nil {
-		return cur, err
+	if len(created) != 0 || len(deleted) != 0 || len(updated) != 0 {
+		log.Infof("created: %#v\tupdated: %#v\tdeleted: %#v", created, updated, deleted)
+		err = errors.Join(
+			errors.Join(
+				d.createTarget(ctx, created),
+				d.deleteTarget(ctx, deleted)),
+			d.updateTarget(ctx, updated))
+		if err != nil {
+			return cur, err
+		}
+		return cur, nil
+	}
+
+	for addr, name := range curAddrs {
+		// When the status code of a regularly running Advertise RPC is Unimplemented, the connection to the target will be disconnected
+		// so the status of the resource (CR) may be misaligned. To prevent this, change the status of the resource to Disconnected.
+		if !d.mirr.Exist(ctx, addr) && cur[name].Phase == target.MirrorTargetPhaseConnected {
+			err = errors.Join(err, d.updateMirrorTargetPhase(ctx, name, target.MirrorTargetPhaseDisconnected))
+		}
 	}
 
 	d.mirr.RangeAllMirrorAddr(func(addr string, _ any) bool {
@@ -297,15 +308,11 @@ func (d *discoverer) updateTarget(ctx context.Context, req map[string]*updatedTa
 		})
 		if derr != nil {
 			err = errors.Join(err, derr)
-			if uerr := d.updateMirrorTargetPhase(ctx, updated.name, target.MirrorTargetPhaseDisconnected); uerr != nil {
-				err = errors.Join(err, uerr)
-			}
 		} else {
-			cerr := d.mirr.Connect(ctx, &payload.Mirror_Target{
+			if cerr := d.mirr.Connect(ctx, &payload.Mirror_Target{
 				Host: updated.new.Host,
 				Port: uint32(updated.new.Port),
-			})
-			if cerr != nil {
+			}); cerr != nil {
 				err = errors.Join(cerr, err)
 				if uerr := d.updateMirrorTargetPhase(ctx, updated.name, target.MirrorTargetPhaseDisconnected); uerr != nil {
 					err = errors.Join(err, uerr)
