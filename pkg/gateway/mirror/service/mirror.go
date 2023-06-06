@@ -39,6 +39,7 @@ type Mirror interface {
 	Connect(ctx context.Context, targets ...*payload.Mirror_Target) error
 	Disconnect(ctx context.Context, targets ...*payload.Mirror_Target) error
 	IsConnected(ctx context.Context, addr string) bool
+	Exist(ctx context.Context, addr string) bool
 	MirrorTargets() ([]*payload.Mirror_Target, error)
 	RangeAllMirrorAddr(f func(addr string, _ any) bool)
 }
@@ -181,8 +182,8 @@ func (m *mirr) startAdvertise(ctx context.Context) (<-chan error, error) {
 					case <-ctx.Done():
 						return ctx.Err()
 					case ech <- err:
+						break
 					}
-					continue
 				}
 				resTgts, err := m.advertises(ctx, &payload.Mirror_Targets{
 					Targets: append(tgts, m.selfMirrTgts...),
@@ -195,14 +196,26 @@ func (m *mirr) startAdvertise(ctx context.Context) (<-chan error, error) {
 					case <-ctx.Done():
 						return ctx.Err()
 					case ech <- err:
+						break
 					}
-					continue
 				}
 				if err = m.Connect(ctx, resTgts...); err != nil {
 					select {
 					case <-ctx.Done():
 						return ctx.Err()
 					case ech <- err:
+						break
+					}
+				}
+
+				if err := m.registers(ctx, &payload.Mirror_Targets{
+					Targets: resTgts,
+				}); err != nil {
+					select {
+					case <-ctx.Done():
+						return ctx.Err()
+					case ech <- err:
+						break
 					}
 				}
 				log.Debugf("[mirror]: connected mirror gateway targets: %v", m.gateway.GRPCClient().ConnectedAddrs())
@@ -289,6 +302,7 @@ func (m *mirr) advertises(ctx context.Context, tgts *payload.Mirror_Targets) ([]
 		ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.AdvertiseRPCName,
 	}
 	resTgts := make([]*payload.Mirror_Target, 0, len(tgts.GetTargets()))
+	exists := make(map[string]struct{})
 	var mu sync.Mutex
 
 	err := m.gateway.DoMulti(ctx, m.connectedMirrorAddrs(), func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error {
@@ -326,6 +340,22 @@ func (m *mirr) advertises(ctx context.Context, tgts *payload.Mirror_Targets) ([]
 					"failed to parse "+vald.AdvertiseRPCName+" gRPC error response", reqInfo, resInfo,
 				)
 				attrs = trace.FromGRPCStatus(st.Code(), msg)
+
+				// When ingress is deleted, the controller's default backend results(Unimplemented error) are returned so that the connection should be disconnected.
+				// If it is a different namespace on the same cluster, the connection is automatically disconnected because the net.grpc health check fails.
+				if st != nil && st.Code() == codes.Unimplemented {
+					host, port, err := net.SplitHostPort(target)
+					if err != nil {
+						log.Warn(err)
+					} else {
+						if err := m.Disconnect(ctx, &payload.Mirror_Target{
+							Host: host,
+							Port: uint32(port),
+						}); err != nil {
+							log.Errorf("failed to disconnect %s, err: %v", target, err)
+						}
+					}
+				}
 			}
 			log.Errorf("failed to process advertise requst to %s\terror: %s", target, err.Error())
 			if span != nil {
@@ -336,9 +366,15 @@ func (m *mirr) advertises(ctx context.Context, tgts *payload.Mirror_Targets) ([]
 			return err
 		}
 		if res != nil && len(res.GetTargets()) > 0 {
-			mu.Lock()
-			resTgts = append(resTgts, res.GetTargets()...)
-			mu.Unlock()
+			for _, tgt := range res.GetTargets() {
+				mu.Lock()
+				addr := net.JoinHostPort(tgt.Host, uint16(tgt.Port))
+				if _, ok := exists[addr]; !ok {
+					exists[addr] = struct{}{}
+					resTgts = append(resTgts, res.GetTargets()...)
+				}
+				mu.Unlock()
+			}
 		}
 		return nil
 	})
@@ -399,6 +435,11 @@ func (m *mirr) Disconnect(ctx context.Context, targets ...*payload.Mirror_Target
 
 func (m *mirr) IsConnected(ctx context.Context, addr string) bool {
 	return m.gateway.GRPCClient().IsConnected(ctx, addr)
+}
+
+func (m *mirr) Exist(_ context.Context, addr string) bool {
+	_, ok := m.addrl.Load(addr)
+	return ok
 }
 
 func (m *mirr) MirrorTargets() ([]*payload.Mirror_Target, error) {
