@@ -46,6 +46,13 @@ func NewBenchmarkJobTemplate(opts ...BenchmarkJobOption) (jobs.Job, error) {
 			return *jobTmpl, err
 		}
 	}
+	jobTmpl.Spec.Template.Annotations = map[string]string{
+		"pyroscope.io/scrape":              "true",
+		"pyroscope.io/application-name":    "benchmark-job",
+		"pyroscope.io/profile-cpu-enabled": "true",
+		"pyroscope.io/profile-mem-enabled": "true",
+		"pyroscope.io/port":                "6060",
+	}
 	jobTmpl.Spec.Template.Spec.Containers = []corev1.Container{
 		{
 			Name:            ContainerName,

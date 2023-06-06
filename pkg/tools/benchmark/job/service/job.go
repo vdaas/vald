@@ -201,7 +201,17 @@ func (j *job) PreStart(ctx context.Context) error {
 		}
 		log.Infof("[benchmark job] success download dataset of %s", j.hdf5.GetName().String())
 		log.Infof("[benchmark job] start load dataset of %s", j.hdf5.GetName().String())
-		if err := j.hdf5.Read(); err != nil {
+		var key hdf5.Hdf5Key
+		switch j.dataset.Group {
+		case "train":
+			key = hdf5.Train
+		case "test":
+			key = hdf5.Test
+		case "neighbors":
+			key = hdf5.Neighors
+		default:
+		}
+		if err := j.hdf5.Read(key); err != nil {
 			return err
 		}
 		log.Infof("[benchmark job] success load dataset of %s", j.hdf5.GetName().String())
