@@ -25,8 +25,6 @@ import (
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
-	"github.com/vdaas/vald/internal/net/grpc/codes"
-	"github.com/vdaas/vald/internal/net/grpc/status"
 )
 
 func (j *job) search(ctx context.Context, ech chan error) error {
@@ -42,6 +40,7 @@ func (j *job) search(ctx context.Context, ech chan error) error {
 		AggregationAlgorithm: func() payload.Search_AggregationAlgorithm {
 			if len(j.searchConfig.AggregationAlgorithm) > 0 {
 				if v, ok := payload.Search_AggregationAlgorithm_value[j.searchConfig.AggregationAlgorithm]; ok {
+					log.Info(v)
 					return payload.Search_AggregationAlgorithm(v)
 				}
 			}
@@ -52,26 +51,28 @@ func (j *job) search(ctx context.Context, ech chan error) error {
 	eg, egctx := errgroup.New(ctx)
 	for i := j.dataset.Range.Start; i <= j.dataset.Range.End; i++ {
 		iter := i
-		loop_cnt := math.Floor(float64(i-1) / float64(len(vecs)))
-		idx := i - 1 - (len(vecs) * int(loop_cnt))
-		if len(vecs[idx]) != j.dimension {
-			log.Warn("len(vecs) ", len(vecs[iter]), "is not matched with ", j.dimension)
-			continue
-		}
-		err := j.limiter.Wait(egctx)
-		if err != nil {
-			log.Errorf("[benchmark job] limiter error is detected: %s", err.Error())
-			if errors.Is(err, context.Canceled) {
-				return errors.Join(err, context.Canceled)
-			}
-			select {
-			case <-egctx.Done():
-				return egctx.Err()
-			case ech <- err:
-			}
-		}
 		eg.Go(func() error {
 			log.Debugf("[benchmark job] Start search: iter = %d", iter)
+			loopCnt := math.Floor(float64(iter-1) / float64(len(vecs)))
+			idx := iter - 1 - (len(vecs) * int(loopCnt))
+			if len(vecs[idx]) != j.dimension {
+				log.Warn("len(vecs) ", len(vecs[iter]), "is not matched with ", j.dimension)
+				return nil
+			}
+			err := j.limiter.Wait(egctx)
+			if err != nil {
+				log.Errorf("[benchmark job] limiter error is detected: %s", err.Error())
+				if errors.Is(err, context.Canceled) {
+					return nil
+					// return errors.Join(err, context.Canceled)
+				}
+				select {
+				case <-egctx.Done():
+					return egctx.Err()
+				case ech <- err:
+				}
+			}
+
 			res, err := j.client.Search(egctx, &payload.Search_Request{
 				Vector: vecs[idx],
 				Config: cfg,
@@ -80,17 +81,18 @@ func (j *job) search(ctx context.Context, ech chan error) error {
 				select {
 				case <-egctx.Done():
 					log.Errorf("[benchmark job] context error is detected: %s\t%s", err.Error(), egctx.Err())
-					return errors.Join(err, egctx.Err())
+					return nil
+					// return errors.Join(err, egctx.Err())
 				default:
-					if st, ok := status.FromError(err); ok {
-						if st.Code() != codes.NotFound {
-							log.Warnf("[benchmark job] search error is detected: code = %d, msg = %s", st.Code(), err.Error())
-						}
-					}
+					// if st, ok := status.FromError(err); ok {
+					// 	if st.Code() != codes.NotFound {
+					// 		log.Warnf("[benchmark job] search error is detected: code = %d, msg = %s", st.Code(), err.Error())
+					// 	}
+					// }
 				}
 			}
-			if res != nil {
-				sres[idx-j.dataset.Range.Start] = res
+			if res != nil && j.searchConfig.EnableLinearSearch {
+				sres[iter-j.dataset.Range.Start] = res
 			}
 			log.Debugf("[benchmark job] Finish search: iter = %d", iter)
 			return nil
@@ -135,11 +137,11 @@ func (j *job) search(ctx context.Context, ech chan error) error {
 						log.Errorf("[benchmark job] context error is detected: %s\t%s", err.Error(), egctx.Err())
 						return errors.Join(err, egctx.Err())
 					default:
-						if st, ok := status.FromError(err); ok {
-							if st.Code() != codes.NotFound {
-								log.Warnf("[benchmark job] linear search error is detected: code = %d, msg = %s", st.Code(), err.Error())
-							}
-						}
+						// if st, ok := status.FromError(err); ok {
+						// 	if st.Code() != codes.NotFound {
+						// 		log.Warnf("[benchmark job] linear search error is detected: code = %d, msg = %s", st.Code(), err.Error())
+						// 	}
+						// }
 					}
 				}
 				if res != nil {

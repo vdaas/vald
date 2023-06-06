@@ -26,7 +26,6 @@ import (
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
-	"github.com/vdaas/vald/internal/net/grpc/status"
 )
 
 func (j *job) upsert(ctx context.Context, ech chan error) error {
@@ -72,9 +71,9 @@ func (j *job) upsert(ctx context.Context, ech chan error) error {
 					log.Errorf("[benchmark job] context error is detected: %s\t%s", err.Error(), egctx.Err())
 					return errors.Join(err, egctx.Err())
 				default:
-					if st, ok := status.FromError(err); ok {
-						log.Warnf("[benchmark job] upsert error is detected: code = %d, msg = %s", st.Code(), err.Error())
-					}
+					// if st, ok := status.FromError(err); ok {
+					// 	log.Warnf("[benchmark job] upsert error is detected: code = %d, msg = %s", st.Code(), err.Error())
+					// }
 				}
 			}
 			if res != nil {

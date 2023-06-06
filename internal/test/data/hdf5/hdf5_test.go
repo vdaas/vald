@@ -162,13 +162,13 @@ func TestDatasetUrl_String(t *testing.T) {
 	}
 }
 
-func Test_hdf5Key_String(t *testing.T) {
+func Test_Hdf5Key_String(t *testing.T) {
 	type want struct {
 		want string
 	}
 	type test struct {
 		name       string
-		h          hdf5Key
+		h          Hdf5Key
 		want       want
 		checkFunc  func(want, string) error
 		beforeFunc func(*testing.T)
@@ -442,6 +442,9 @@ func Test_data_Read(t *testing.T) {
 		test      [][]float32
 		neighbors [][]int
 	}
+	type args struct {
+		key Hdf5Key
+	}
 	type want struct {
 		err error
 	}
@@ -449,6 +452,7 @@ func Test_data_Read(t *testing.T) {
 		name       string
 		fields     fields
 		want       want
+		args       args
 		checkFunc  func(want, error) error
 		beforeFunc func(*testing.T)
 		afterFunc  func(*testing.T)
@@ -530,7 +534,7 @@ func Test_data_Read(t *testing.T) {
 				neighbors: test.fields.neighbors,
 			}
 
-			err := d.Read()
+			err := d.Read(test.args.key)
 			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -1251,7 +1255,7 @@ func Test_downloadFile(t *testing.T) {
 func TestReadDatasetF32(t *testing.T) {
 	type args struct {
 		file *hdf5.File
-		key  hdf5Key
+		key  Hdf5Key
 	}
 	type want struct {
 		want [][]float32
@@ -1343,7 +1347,7 @@ func TestReadDatasetF32(t *testing.T) {
 func TestReadDatasetI32(t *testing.T) {
 	type args struct {
 		file *hdf5.File
-		key  hdf5Key
+		key  Hdf5Key
 	}
 	type want struct {
 		want [][]int32
