@@ -224,8 +224,9 @@ func migrate(ctx context.Context, path string) (err error) {
 		// empty directory doesn't need migration
 		return nil
 	}
+	od := filepath.Join(path, originIndexDirName)
 	for _, file := range files {
-		if file == filepath.Join(path, originIndexDirName) {
+		if file == od {
 			// origin folder exists. meaning already migrated
 			return nil
 		}
