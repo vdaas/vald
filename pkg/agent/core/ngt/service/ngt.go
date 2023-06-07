@@ -492,7 +492,9 @@ func backupBroken(originPath string, brokenDir string, limit int) error {
 		// remove the oldest
 		log.Infof("There's already more than %v broken index generations stored. Thus removing the oldest.", limit)
 		slices.Sort(files)
-		os.RemoveAll(files[0])
+		if err := os.RemoveAll(files[0]); err != nil {
+			return err
+		}
 	}
 
 	// create directory for new generation broken index
