@@ -174,7 +174,8 @@ func New(cfg *config.NGT, opts ...Option) (nn NGT, err error) {
 		if !file.Exists(n.path) {
 			return nil, errors.ErrIndexPathNotExists(n.path)
 		}
-		err = n.prepareFolders()
+		ctx := context.Background()
+		err = n.prepareFolders(ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -213,7 +214,7 @@ func New(cfg *config.NGT, opts ...Option) (nn NGT, err error) {
 // migrate migrates the index directory from old to new under the input path if necessary.
 // Migration happens when the path is not empty and there is no `path/origin` directory,
 // which indicates that the user has NOT been using CoW mode and the index directory is not migrated yet.
-func migrate(path string) (err error) {
+func migrate(ctx context.Context, path string) (err error) {
 	// check if migration is required
 	files, err := file.ListInDir(path)
 	if err != nil {
@@ -238,7 +239,7 @@ func migrate(path string) (err error) {
 	if err != nil {
 		return err
 	}
-	err = file.MoveDir(context.Background(), path, tp)
+	err = file.MoveDir(ctx, path, tp)
 	if err != nil {
 		return err
 	}
@@ -250,7 +251,7 @@ func migrate(path string) (err error) {
 	}
 
 	// finally move to `path/origin` directory
-	err = file.MoveDir(context.Background(), tp, file.Join(path, originIndexDirName))
+	err = file.MoveDir(ctx, tp, file.Join(path, originIndexDirName))
 	if err != nil {
 		return err
 	}
@@ -258,10 +259,10 @@ func migrate(path string) (err error) {
 	return nil
 }
 
-func (n *ngt) prepareFolders() (err error) {
+func (n *ngt) prepareFolders(ctx context.Context) (err error) {
 	// migrate from old index directory to new index directory if necessary
 	if !n.enableCopyOnWrite {
-		err = migrate(n.path)
+		err = migrate(ctx, n.path)
 		if err != nil {
 			return err
 		}
@@ -468,7 +469,7 @@ func (n *ngt) load(ctx context.Context, path string, opts ...core.Option) (err e
 // backupBroken backup index at originPath into brokenDir.
 // The name of the directory will be timestamp(UnixNano).
 // If it exeeds the limit, backupBroken removes the oldest backup directory.
-func backupBroken(originPath string, brokenDir string, limit int) error {
+func backupBroken(ctx context.Context, originPath string, brokenDir string, limit int) error {
 	if limit <= 0 {
 		return nil
 	}
@@ -502,7 +503,7 @@ func backupBroken(originPath string, brokenDir string, limit int) error {
 	dest := filepath.Join(brokenDir, fmt.Sprint(name))
 
 	// move index to the new directory
-	err = file.MoveDir(context.Background(), originPath, dest)
+	err = file.MoveDir(ctx, originPath, dest)
 	if err != nil {
 		return err
 	}
@@ -558,11 +559,11 @@ func needsBackup(backupPath string) bool {
 // to the broken directory until it reaches the limit. If the limit is reached, it removes the oldest.
 // the `path` input is the path to rebuild the index directory. It is identical to n.path when CoW is disabled
 // and is a temporal path when CoW is enabled.
-func (n *ngt) rebuild(path string, opts ...core.Option) (err error) {
+func (n *ngt) rebuild(ctx context.Context, path string, opts ...core.Option) (err error) {
 	// backup when it is required
 	if needsBackup(n.path) {
 		log.Infof("starting to backup broken index at %v", n.path)
-		err = backupBroken(n.path, n.brokenPath, n.historyLimit)
+		err = backupBroken(ctx, n.path, n.brokenPath, n.historyLimit)
 		if err != nil {
 			log.Warnf("failed to backup broken index. will remove it and restart: %v", err)
 		} else {
@@ -621,7 +622,7 @@ func (n *ngt) initNGT(opts ...core.Option) (err error) {
 				n.core.Close()
 				n.core = nil
 			}
-			return n.rebuild(n.path, opts...)
+			return n.rebuild(ctx, n.path, opts...)
 		}
 		if errors.Is(err, errors.ErrIndicesAreTooFewComparedToMetadata) && n.kvs != nil {
 			current = n.kvs.Len()
@@ -676,7 +677,7 @@ func (n *ngt) initNGT(opts ...core.Option) (err error) {
 		n.core.Close()
 		n.core = nil
 	}
-	err = n.rebuild(tpath, opts...)
+	err = n.rebuild(ctx, tpath, opts...)
 	if err != nil {
 		return err
 	}
