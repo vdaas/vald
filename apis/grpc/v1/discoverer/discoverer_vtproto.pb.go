@@ -57,7 +57,7 @@ func NewDiscovererClient(cc grpc.ClientConnInterface) DiscovererClient {
 }
 
 func (c *discovererClient) Pods(ctx context.Context, in *payload.Discoverer_Request, opts ...grpc.CallOption) (*payload.Info_Pods, error) {
-	out := new(payload.Info_Pods)
+	out := payload.Info_PodsFromVTPool()
 	err := c.cc.Invoke(ctx, "/discoverer.v1.Discoverer/Pods", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -66,7 +66,7 @@ func (c *discovererClient) Pods(ctx context.Context, in *payload.Discoverer_Requ
 }
 
 func (c *discovererClient) Nodes(ctx context.Context, in *payload.Discoverer_Request, opts ...grpc.CallOption) (*payload.Info_Nodes, error) {
-	out := new(payload.Info_Nodes)
+	out := payload.Info_NodesFromVTPool()
 	err := c.cc.Invoke(ctx, "/discoverer.v1.Discoverer/Nodes", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -109,7 +109,7 @@ func RegisterDiscovererServer(s grpc.ServiceRegistrar, srv DiscovererServer) {
 }
 
 func _Discoverer_Pods_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(payload.Discoverer_Request)
+	in := payload.Discoverer_RequestFromVTPool()
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -127,7 +127,7 @@ func _Discoverer_Pods_Handler(srv interface{}, ctx context.Context, dec func(int
 }
 
 func _Discoverer_Nodes_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(payload.Discoverer_Request)
+	in := payload.Discoverer_RequestFromVTPool()
 	if err := dec(in); err != nil {
 		return nil, err
 	}

@@ -21,6 +21,7 @@ import (
 	fmt "fmt"
 	math "math"
 	bits "math/bits"
+	sync "sync"
 
 	io "github.com/vdaas/vald/internal/io"
 	status "google.golang.org/genproto/googleapis/rpc/status"
@@ -35,6 +36,2047 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+func (this *Search_Request) EqualVT(that *Search_Request) bool {
+	if this == that {
+		return true
+	} else if this == nil || that == nil {
+		return false
+	}
+	if len(this.Vector) != len(that.Vector) {
+		return false
+	}
+	for i, vx := range this.Vector {
+		vy := that.Vector[i]
+		if vx != vy {
+			return false
+		}
+	}
+	if !this.Config.EqualVT(that.Config) {
+		return false
+	}
+	return string(this.unknownFields) == string(that.unknownFields)
+}
+
+func (this *Search_Request) EqualMessageVT(thatMsg proto.Message) bool {
+	that, ok := thatMsg.(*Search_Request)
+	if !ok {
+		return false
+	}
+	return this.EqualVT(that)
+}
+func (this *Search_MultiRequest) EqualVT(that *Search_MultiRequest) bool {
+	if this == that {
+		return true
+	} else if this == nil || that == nil {
+		return false
+	}
+	if len(this.Requests) != len(that.Requests) {
+		return false
+	}
+	for i, vx := range this.Requests {
+		vy := that.Requests[i]
+		if p, q := vx, vy; p != q {
+			if p == nil {
+				p = &Search_Request{}
+			}
+			if q == nil {
+				q = &Search_Request{}
+			}
+			if !p.EqualVT(q) {
+				return false
+			}
+		}
+	}
+	return string(this.unknownFields) == string(that.unknownFields)
+}
+
+func (this *Search_MultiRequest) EqualMessageVT(thatMsg proto.Message) bool {
+	that, ok := thatMsg.(*Search_MultiRequest)
+	if !ok {
+		return false
+	}
+	return this.EqualVT(that)
+}
+func (this *Search_IDRequest) EqualVT(that *Search_IDRequest) bool {
+	if this == that {
+		return true
+	} else if this == nil || that == nil {
+		return false
+	}
+	if this.Id != that.Id {
+		return false
+	}
+	if !this.Config.EqualVT(that.Config) {
+		return false
+	}
+	return string(this.unknownFields) == string(that.unknownFields)
+}
+
+func (this *Search_IDRequest) EqualMessageVT(thatMsg proto.Message) bool {
+	that, ok := thatMsg.(*Search_IDRequest)
+	if !ok {
+		return false
+	}
+	return this.EqualVT(that)
+}
+func (this *Search_MultiIDRequest) EqualVT(that *Search_MultiIDRequest) bool {
+	if this == that {
+		return true
+	} else if this == nil || that == nil {
+		return false
+	}
+	if len(this.Requests) != len(that.Requests) {
+		return false
+	}
+	for i, vx := range this.Requests {
+		vy := that.Requests[i]
+		if p, q := vx, vy; p != q {
+			if p == nil {
+				p = &Search_IDRequest{}
+			}
+			if q == nil {
+				q = &Search_IDRequest{}
+			}
+			if !p.EqualVT(q) {
+				return false
+			}
+		}
+	}
+	return string(this.unknownFields) == string(that.unknownFields)
+}
+
+func (this *Search_MultiIDRequest) EqualMessageVT(thatMsg proto.Message) bool {
+	that, ok := thatMsg.(*Search_MultiIDRequest)
+	if !ok {
+		return false
+	}
+	return this.EqualVT(that)
+}
+func (this *Search_ObjectRequest) EqualVT(that *Search_ObjectRequest) bool {
+	if this == that {
+		return true
+	} else if this == nil || that == nil {
+		return false
+	}
+	if string(this.Object) != string(that.Object) {
+		return false
+	}
+	if !this.Config.EqualVT(that.Config) {
+		return false
+	}
+	if !this.Vectorizer.EqualVT(that.Vectorizer) {
+		return false
+	}
+	return string(this.unknownFields) == string(that.unknownFields)
+}
+
+func (this *Search_ObjectRequest) EqualMessageVT(thatMsg proto.Message) bool {
+	that, ok := thatMsg.(*Search_ObjectRequest)
+	if !ok {
+		return false
+	}
+	return this.EqualVT(that)
+}
+func (this *Search_MultiObjectRequest) EqualVT(that *Search_MultiObjectRequest) bool {
+	if this == that {
+		return true
+	} else if this == nil || that == nil {
+		return false
+	}
+	if len(this.Requests) != len(that.Requests) {
+		return false
+	}
+	for i, vx := range this.Requests {
+		vy := that.Requests[i]
+		if p, q := vx, vy; p != q {
+			if p == nil {
+				p = &Search_ObjectRequest{}
+			}
+			if q == nil {
+				q = &Search_ObjectRequest{}
+			}
+			if !p.EqualVT(q) {
+				return false
+			}
+		}
+	}
+	return string(this.unknownFields) == string(that.unknownFields)
+}
+
+func (this *Search_MultiObjectRequest) EqualMessageVT(thatMsg proto.Message) bool {
+	that, ok := thatMsg.(*Search_MultiObjectRequest)
+	if !ok {
+		return false
+	}
+	return this.EqualVT(that)
+}
+func (this *Search_Config) EqualVT(that *Search_Config) bool {
+	if this == that {
+		return true
+	} else if this == nil || that == nil {
+		return false
+	}
+	if this.RequestId != that.RequestId {
+		return false
+	}
+	if this.Num != that.Num {
+		return false
+	}
+	if this.Radius != that.Radius {
+		return false
+	}
+	if this.Epsilon != that.Epsilon {
+		return false
+	}
+	if this.Timeout != that.Timeout {
+		return false
+	}
+	if !this.IngressFilters.EqualVT(that.IngressFilters) {
+		return false
+	}
+	if !this.EgressFilters.EqualVT(that.EgressFilters) {
+		return false
+	}
+	if this.MinNum != that.MinNum {
+		return false
+	}
+	if this.AggregationAlgorithm != that.AggregationAlgorithm {
+		return false
+	}
+	return string(this.unknownFields) == string(that.unknownFields)
+}
+
+func (this *Search_Config) EqualMessageVT(thatMsg proto.Message) bool {
+	that, ok := thatMsg.(*Search_Config)
+	if !ok {
+		return false
+	}
+	return this.EqualVT(that)
+}
+func (this *Search_Response) EqualVT(that *Search_Response) bool {
+	if this == that {
+		return true
+	} else if this == nil || that == nil {
+		return false
+	}
+	if this.RequestId != that.RequestId {
+		return false
+	}
+	if len(this.Results) != len(that.Results) {
+		return false
+	}
+	for i, vx := range this.Results {
+		vy := that.Results[i]
+		if p, q := vx, vy; p != q {
+			if p == nil {
+				p = &Object_Distance{}
+			}
+			if q == nil {
+				q = &Object_Distance{}
+			}
+			if !p.EqualVT(q) {
+				return false
+			}
+		}
+	}
+	return string(this.unknownFields) == string(that.unknownFields)
+}
+
+func (this *Search_Response) EqualMessageVT(thatMsg proto.Message) bool {
+	that, ok := thatMsg.(*Search_Response)
+	if !ok {
+		return false
+	}
+	return this.EqualVT(that)
+}
+func (this *Search_Responses) EqualVT(that *Search_Responses) bool {
+	if this == that {
+		return true
+	} else if this == nil || that == nil {
+		return false
+	}
+	if len(this.Responses) != len(that.Responses) {
+		return false
+	}
+	for i, vx := range this.Responses {
+		vy := that.Responses[i]
+		if p, q := vx, vy; p != q {
+			if p == nil {
+				p = &Search_Response{}
+			}
+			if q == nil {
+				q = &Search_Response{}
+			}
+			if !p.EqualVT(q) {
+				return false
+			}
+		}
+	}
+	return string(this.unknownFields) == string(that.unknownFields)
+}
+
+func (this *Search_Responses) EqualMessageVT(thatMsg proto.Message) bool {
+	that, ok := thatMsg.(*Search_Responses)
+	if !ok {
+		return false
+	}
+	return this.EqualVT(that)
+}
+func (this *Search_StreamResponse) EqualVT(that *Search_StreamResponse) bool {
+	if this == that {
+		return true
+	} else if this == nil || that == nil {
+		return false
+	}
+	if this.Payload == nil && that.Payload != nil {
+		return false
+	} else if this.Payload != nil {
+		if that.Payload == nil {
+			return false
+		}
+		if !this.Payload.(interface {
+			EqualVT(isSearch_StreamResponse_Payload) bool
+		}).EqualVT(that.Payload) {
+			return false
+		}
+	}
+	return string(this.unknownFields) == string(that.unknownFields)
+}
+
+func (this *Search_StreamResponse) EqualMessageVT(thatMsg proto.Message) bool {
+	that, ok := thatMsg.(*Search_StreamResponse)
+	if !ok {
+		return false
+	}
+	return this.EqualVT(that)
+}
+func (this *Search_StreamResponse_Response) EqualVT(thatIface isSearch_StreamResponse_Payload) bool {
+	that, ok := thatIface.(*Search_StreamResponse_Response)
+	if !ok {
+		return false
+	}
+	if this == that {
+		return true
+	}
+	if this == nil && that != nil || this != nil && that == nil {
+		return false
+	}
+	if p, q := this.Response, that.Response; p != q {
+		if p == nil {
+			p = &Search_Response{}
+		}
+		if q == nil {
+			q = &Search_Response{}
+		}
+		if !p.EqualVT(q) {
+			return false
+		}
+	}
+	return true
+}
+
+func (this *Search_StreamResponse_Status) EqualVT(thatIface isSearch_StreamResponse_Payload) bool {
+	that, ok := thatIface.(*Search_StreamResponse_Status)
+	if !ok {
+		return false
+	}
+	if this == that {
+		return true
+	}
+	if this == nil && that != nil || this != nil && that == nil {
+		return false
+	}
+	if p, q := this.Status, that.Status; p != q {
+		if p == nil {
+			p = &status.Status{}
+		}
+		if q == nil {
+			q = &status.Status{}
+		}
+		if equal, ok := interface{}(p).(interface{ EqualVT(*status.Status) bool }); ok {
+			if !equal.EqualVT(q) {
+				return false
+			}
+		} else if !proto.Equal(p, q) {
+			return false
+		}
+	}
+	return true
+}
+
+func (this *Search) EqualVT(that *Search) bool {
+	if this == that {
+		return true
+	} else if this == nil || that == nil {
+		return false
+	}
+	return string(this.unknownFields) == string(that.unknownFields)
+}
+
+func (this *Search) EqualMessageVT(thatMsg proto.Message) bool {
+	that, ok := thatMsg.(*Search)
+	if !ok {
+		return false
+	}
+	return this.EqualVT(that)
+}
+func (this *Filter_Target) EqualVT(that *Filter_Target) bool {
+	if this == that {
+		return true
+	} else if this == nil || that == nil {
+		return false
+	}
+	if this.Host != that.Host {
+		return false
+	}
+	if this.Port != that.Port {
+		return false
+	}
+	return string(this.unknownFields) == string(that.unknownFields)
+}
+
+func (this *Filter_Target) EqualMessageVT(thatMsg proto.Message) bool {
+	that, ok := thatMsg.(*Filter_Target)
+	if !ok {
+		return false
+	}
+	return this.EqualVT(that)
+}
+func (this *Filter_Config) EqualVT(that *Filter_Config) bool {
+	if this == that {
+		return true
+	} else if this == nil || that == nil {
+		return false
+	}
+	if len(this.Targets) != len(that.Targets) {
+		return false
+	}
+	for i, vx := range this.Targets {
+		vy := that.Targets[i]
+		if p, q := vx, vy; p != q {
+			if p == nil {
+				p = &Filter_Target{}
+			}
+			if q == nil {
+				q = &Filter_Target{}
+			}
+			if !p.EqualVT(q) {
+				return false
+			}
+		}
+	}
+	return string(this.unknownFields) == string(that.unknownFields)
+}
+
+func (this *Filter_Config) EqualMessageVT(thatMsg proto.Message) bool {
+	that, ok := thatMsg.(*Filter_Config)
+	if !ok {
+		return false
+	}
+	return this.EqualVT(that)
+}
+func (this *Filter) EqualVT(that *Filter) bool {
+	if this == that {
+		return true
+	} else if this == nil || that == nil {
+		return false
+	}
+	return string(this.unknownFields) == string(that.unknownFields)
+}
+
+func (this *Filter) EqualMessageVT(thatMsg proto.Message) bool {
+	that, ok := thatMsg.(*Filter)
+	if !ok {
+		return false
+	}
+	return this.EqualVT(that)
+}
+func (this *Insert_Request) EqualVT(that *Insert_Request) bool {
+	if this == that {
+		return true
+	} else if this == nil || that == nil {
+		return false
+	}
+	if !this.Vector.EqualVT(that.Vector) {
+		return false
+	}
+	if !this.Config.EqualVT(that.Config) {
+		return false
+	}
+	return string(this.unknownFields) == string(that.unknownFields)
+}
+
+func (this *Insert_Request) EqualMessageVT(thatMsg proto.Message) bool {
+	that, ok := thatMsg.(*Insert_Request)
+	if !ok {
+		return false
+	}
+	return this.EqualVT(that)
+}
+func (this *Insert_MultiRequest) EqualVT(that *Insert_MultiRequest) bool {
+	if this == that {
+		return true
+	} else if this == nil || that == nil {
+		return false
+	}
+	if len(this.Requests) != len(that.Requests) {
+		return false
+	}
+	for i, vx := range this.Requests {
+		vy := that.Requests[i]
+		if p, q := vx, vy; p != q {
+			if p == nil {
+				p = &Insert_Request{}
+			}
+			if q == nil {
+				q = &Insert_Request{}
+			}
+			if !p.EqualVT(q) {
+				return false
+			}
+		}
+	}
+	return string(this.unknownFields) == string(that.unknownFields)
+}
+
+func (this *Insert_MultiRequest) EqualMessageVT(thatMsg proto.Message) bool {
+	that, ok := thatMsg.(*Insert_MultiRequest)
+	if !ok {
+		return false
+	}
+	return this.EqualVT(that)
+}
+func (this *Insert_ObjectRequest) EqualVT(that *Insert_ObjectRequest) bool {
+	if this == that {
+		return true
+	} else if this == nil || that == nil {
+		return false
+	}
+	if !this.Object.EqualVT(that.Object) {
+		return false
+	}
+	if !this.Config.EqualVT(that.Config) {
+		return false
+	}
+	if !this.Vectorizer.EqualVT(that.Vectorizer) {
+		return false
+	}
+	return string(this.unknownFields) == string(that.unknownFields)
+}
+
+func (this *Insert_ObjectRequest) EqualMessageVT(thatMsg proto.Message) bool {
+	that, ok := thatMsg.(*Insert_ObjectRequest)
+	if !ok {
+		return false
+	}
+	return this.EqualVT(that)
+}
+func (this *Insert_MultiObjectRequest) EqualVT(that *Insert_MultiObjectRequest) bool {
+	if this == that {
+		return true
+	} else if this == nil || that == nil {
+		return false
+	}
+	if len(this.Requests) != len(that.Requests) {
+		return false
+	}
+	for i, vx := range this.Requests {
+		vy := that.Requests[i]
+		if p, q := vx, vy; p != q {
+			if p == nil {
+				p = &Insert_ObjectRequest{}
+			}
+			if q == nil {
+				q = &Insert_ObjectRequest{}
+			}
+			if !p.EqualVT(q) {
+				return false
+			}
+		}
+	}
+	return string(this.unknownFields) == string(that.unknownFields)
+}
+
+func (this *Insert_MultiObjectRequest) EqualMessageVT(thatMsg proto.Message) bool {
+	that, ok := thatMsg.(*Insert_MultiObjectRequest)
+	if !ok {
+		return false
+	}
+	return this.EqualVT(that)
+}
+func (this *Insert_Config) EqualVT(that *Insert_Config) bool {
+	if this == that {
+		return true
+	} else if this == nil || that == nil {
+		return false
+	}
+	if this.SkipStrictExistCheck != that.SkipStrictExistCheck {
+		return false
+	}
+	if !this.Filters.EqualVT(that.Filters) {
+		return false
+	}
+	if this.Timestamp != that.Timestamp {
+		return false
+	}
+	return string(this.unknownFields) == string(that.unknownFields)
+}
+
+func (this *Insert_Config) EqualMessageVT(thatMsg proto.Message) bool {
+	that, ok := thatMsg.(*Insert_Config)
+	if !ok {
+		return false
+	}
+	return this.EqualVT(that)
+}
+func (this *Insert) EqualVT(that *Insert) bool {
+	if this == that {
+		return true
+	} else if this == nil || that == nil {
+		return false
+	}
+	return string(this.unknownFields) == string(that.unknownFields)
+}
+
+func (this *Insert) EqualMessageVT(thatMsg proto.Message) bool {
+	that, ok := thatMsg.(*Insert)
+	if !ok {
+		return false
+	}
+	return this.EqualVT(that)
+}
+func (this *Update_Request) EqualVT(that *Update_Request) bool {
+	if this == that {
+		return true
+	} else if this == nil || that == nil {
+		return false
+	}
+	if !this.Vector.EqualVT(that.Vector) {
+		return false
+	}
+	if !this.Config.EqualVT(that.Config) {
+		return false
+	}
+	return string(this.unknownFields) == string(that.unknownFields)
+}
+
+func (this *Update_Request) EqualMessageVT(thatMsg proto.Message) bool {
+	that, ok := thatMsg.(*Update_Request)
+	if !ok {
+		return false
+	}
+	return this.EqualVT(that)
+}
+func (this *Update_MultiRequest) EqualVT(that *Update_MultiRequest) bool {
+	if this == that {
+		return true
+	} else if this == nil || that == nil {
+		return false
+	}
+	if len(this.Requests) != len(that.Requests) {
+		return false
+	}
+	for i, vx := range this.Requests {
+		vy := that.Requests[i]
+		if p, q := vx, vy; p != q {
+			if p == nil {
+				p = &Update_Request{}
+			}
+			if q == nil {
+				q = &Update_Request{}
+			}
+			if !p.EqualVT(q) {
+				return false
+			}
+		}
+	}
+	return string(this.unknownFields) == string(that.unknownFields)
+}
+
+func (this *Update_MultiRequest) EqualMessageVT(thatMsg proto.Message) bool {
+	that, ok := thatMsg.(*Update_MultiRequest)
+	if !ok {
+		return false
+	}
+	return this.EqualVT(that)
+}
+func (this *Update_ObjectRequest) EqualVT(that *Update_ObjectRequest) bool {
+	if this == that {
+		return true
+	} else if this == nil || that == nil {
+		return false
+	}
+	if !this.Object.EqualVT(that.Object) {
+		return false
+	}
+	if !this.Config.EqualVT(that.Config) {
+		return false
+	}
+	if !this.Vectorizer.EqualVT(that.Vectorizer) {
+		return false
+	}
+	return string(this.unknownFields) == string(that.unknownFields)
+}
+
+func (this *Update_ObjectRequest) EqualMessageVT(thatMsg proto.Message) bool {
+	that, ok := thatMsg.(*Update_ObjectRequest)
+	if !ok {
+		return false
+	}
+	return this.EqualVT(that)
+}
+func (this *Update_MultiObjectRequest) EqualVT(that *Update_MultiObjectRequest) bool {
+	if this == that {
+		return true
+	} else if this == nil || that == nil {
+		return false
+	}
+	if len(this.Requests) != len(that.Requests) {
+		return false
+	}
+	for i, vx := range this.Requests {
+		vy := that.Requests[i]
+		if p, q := vx, vy; p != q {
+			if p == nil {
+				p = &Update_ObjectRequest{}
+			}
+			if q == nil {
+				q = &Update_ObjectRequest{}
+			}
+			if !p.EqualVT(q) {
+				return false
+			}
+		}
+	}
+	return string(this.unknownFields) == string(that.unknownFields)
+}
+
+func (this *Update_MultiObjectRequest) EqualMessageVT(thatMsg proto.Message) bool {
+	that, ok := thatMsg.(*Update_MultiObjectRequest)
+	if !ok {
+		return false
+	}
+	return this.EqualVT(that)
+}
+func (this *Update_Config) EqualVT(that *Update_Config) bool {
+	if this == that {
+		return true
+	} else if this == nil || that == nil {
+		return false
+	}
+	if this.SkipStrictExistCheck != that.SkipStrictExistCheck {
+		return false
+	}
+	if !this.Filters.EqualVT(that.Filters) {
+		return false
+	}
+	if this.Timestamp != that.Timestamp {
+		return false
+	}
+	if this.DisableBalancedUpdate != that.DisableBalancedUpdate {
+		return false
+	}
+	return string(this.unknownFields) == string(that.unknownFields)
+}
+
+func (this *Update_Config) EqualMessageVT(thatMsg proto.Message) bool {
+	that, ok := thatMsg.(*Update_Config)
+	if !ok {
+		return false
+	}
+	return this.EqualVT(that)
+}
+func (this *Update) EqualVT(that *Update) bool {
+	if this == that {
+		return true
+	} else if this == nil || that == nil {
+		return false
+	}
+	return string(this.unknownFields) == string(that.unknownFields)
+}
+
+func (this *Update) EqualMessageVT(thatMsg proto.Message) bool {
+	that, ok := thatMsg.(*Update)
+	if !ok {
+		return false
+	}
+	return this.EqualVT(that)
+}
+func (this *Upsert_Request) EqualVT(that *Upsert_Request) bool {
+	if this == that {
+		return true
+	} else if this == nil || that == nil {
+		return false
+	}
+	if !this.Vector.EqualVT(that.Vector) {
+		return false
+	}
+	if !this.Config.EqualVT(that.Config) {
+		return false
+	}
+	return string(this.unknownFields) == string(that.unknownFields)
+}
+
+func (this *Upsert_Request) EqualMessageVT(thatMsg proto.Message) bool {
+	that, ok := thatMsg.(*Upsert_Request)
+	if !ok {
+		return false
+	}
+	return this.EqualVT(that)
+}
+func (this *Upsert_MultiRequest) EqualVT(that *Upsert_MultiRequest) bool {
+	if this == that {
+		return true
+	} else if this == nil || that == nil {
+		return false
+	}
+	if len(this.Requests) != len(that.Requests) {
+		return false
+	}
+	for i, vx := range this.Requests {
+		vy := that.Requests[i]
+		if p, q := vx, vy; p != q {
+			if p == nil {
+				p = &Upsert_Request{}
+			}
+			if q == nil {
+				q = &Upsert_Request{}
+			}
+			if !p.EqualVT(q) {
+				return false
+			}
+		}
+	}
+	return string(this.unknownFields) == string(that.unknownFields)
+}
+
+func (this *Upsert_MultiRequest) EqualMessageVT(thatMsg proto.Message) bool {
+	that, ok := thatMsg.(*Upsert_MultiRequest)
+	if !ok {
+		return false
+	}
+	return this.EqualVT(that)
+}
+func (this *Upsert_ObjectRequest) EqualVT(that *Upsert_ObjectRequest) bool {
+	if this == that {
+		return true
+	} else if this == nil || that == nil {
+		return false
+	}
+	if !this.Object.EqualVT(that.Object) {
+		return false
+	}
+	if !this.Config.EqualVT(that.Config) {
+		return false
+	}
+	if !this.Vectorizer.EqualVT(that.Vectorizer) {
+		return false
+	}
+	return string(this.unknownFields) == string(that.unknownFields)
+}
+
+func (this *Upsert_ObjectRequest) EqualMessageVT(thatMsg proto.Message) bool {
+	that, ok := thatMsg.(*Upsert_ObjectRequest)
+	if !ok {
+		return false
+	}
+	return this.EqualVT(that)
+}
+func (this *Upsert_MultiObjectRequest) EqualVT(that *Upsert_MultiObjectRequest) bool {
+	if this == that {
+		return true
+	} else if this == nil || that == nil {
+		return false
+	}
+	if len(this.Requests) != len(that.Requests) {
+		return false
+	}
+	for i, vx := range this.Requests {
+		vy := that.Requests[i]
+		if p, q := vx, vy; p != q {
+			if p == nil {
+				p = &Upsert_ObjectRequest{}
+			}
+			if q == nil {
+				q = &Upsert_ObjectRequest{}
+			}
+			if !p.EqualVT(q) {
+				return false
+			}
+		}
+	}
+	return string(this.unknownFields) == string(that.unknownFields)
+}
+
+func (this *Upsert_MultiObjectRequest) EqualMessageVT(thatMsg proto.Message) bool {
+	that, ok := thatMsg.(*Upsert_MultiObjectRequest)
+	if !ok {
+		return false
+	}
+	return this.EqualVT(that)
+}
+func (this *Upsert_Config) EqualVT(that *Upsert_Config) bool {
+	if this == that {
+		return true
+	} else if this == nil || that == nil {
+		return false
+	}
+	if this.SkipStrictExistCheck != that.SkipStrictExistCheck {
+		return false
+	}
+	if !this.Filters.EqualVT(that.Filters) {
+		return false
+	}
+	if this.Timestamp != that.Timestamp {
+		return false
+	}
+	if this.DisableBalancedUpdate != that.DisableBalancedUpdate {
+		return false
+	}
+	return string(this.unknownFields) == string(that.unknownFields)
+}
+
+func (this *Upsert_Config) EqualMessageVT(thatMsg proto.Message) bool {
+	that, ok := thatMsg.(*Upsert_Config)
+	if !ok {
+		return false
+	}
+	return this.EqualVT(that)
+}
+func (this *Upsert) EqualVT(that *Upsert) bool {
+	if this == that {
+		return true
+	} else if this == nil || that == nil {
+		return false
+	}
+	return string(this.unknownFields) == string(that.unknownFields)
+}
+
+func (this *Upsert) EqualMessageVT(thatMsg proto.Message) bool {
+	that, ok := thatMsg.(*Upsert)
+	if !ok {
+		return false
+	}
+	return this.EqualVT(that)
+}
+func (this *Remove_Request) EqualVT(that *Remove_Request) bool {
+	if this == that {
+		return true
+	} else if this == nil || that == nil {
+		return false
+	}
+	if !this.Id.EqualVT(that.Id) {
+		return false
+	}
+	if !this.Config.EqualVT(that.Config) {
+		return false
+	}
+	return string(this.unknownFields) == string(that.unknownFields)
+}
+
+func (this *Remove_Request) EqualMessageVT(thatMsg proto.Message) bool {
+	that, ok := thatMsg.(*Remove_Request)
+	if !ok {
+		return false
+	}
+	return this.EqualVT(that)
+}
+func (this *Remove_MultiRequest) EqualVT(that *Remove_MultiRequest) bool {
+	if this == that {
+		return true
+	} else if this == nil || that == nil {
+		return false
+	}
+	if len(this.Requests) != len(that.Requests) {
+		return false
+	}
+	for i, vx := range this.Requests {
+		vy := that.Requests[i]
+		if p, q := vx, vy; p != q {
+			if p == nil {
+				p = &Remove_Request{}
+			}
+			if q == nil {
+				q = &Remove_Request{}
+			}
+			if !p.EqualVT(q) {
+				return false
+			}
+		}
+	}
+	return string(this.unknownFields) == string(that.unknownFields)
+}
+
+func (this *Remove_MultiRequest) EqualMessageVT(thatMsg proto.Message) bool {
+	that, ok := thatMsg.(*Remove_MultiRequest)
+	if !ok {
+		return false
+	}
+	return this.EqualVT(that)
+}
+func (this *Remove_Config) EqualVT(that *Remove_Config) bool {
+	if this == that {
+		return true
+	} else if this == nil || that == nil {
+		return false
+	}
+	if this.SkipStrictExistCheck != that.SkipStrictExistCheck {
+		return false
+	}
+	if this.Timestamp != that.Timestamp {
+		return false
+	}
+	return string(this.unknownFields) == string(that.unknownFields)
+}
+
+func (this *Remove_Config) EqualMessageVT(thatMsg proto.Message) bool {
+	that, ok := thatMsg.(*Remove_Config)
+	if !ok {
+		return false
+	}
+	return this.EqualVT(that)
+}
+func (this *Remove) EqualVT(that *Remove) bool {
+	if this == that {
+		return true
+	} else if this == nil || that == nil {
+		return false
+	}
+	return string(this.unknownFields) == string(that.unknownFields)
+}
+
+func (this *Remove) EqualMessageVT(thatMsg proto.Message) bool {
+	that, ok := thatMsg.(*Remove)
+	if !ok {
+		return false
+	}
+	return this.EqualVT(that)
+}
+func (this *Object_VectorRequest) EqualVT(that *Object_VectorRequest) bool {
+	if this == that {
+		return true
+	} else if this == nil || that == nil {
+		return false
+	}
+	if !this.Id.EqualVT(that.Id) {
+		return false
+	}
+	if !this.Filters.EqualVT(that.Filters) {
+		return false
+	}
+	return string(this.unknownFields) == string(that.unknownFields)
+}
+
+func (this *Object_VectorRequest) EqualMessageVT(thatMsg proto.Message) bool {
+	that, ok := thatMsg.(*Object_VectorRequest)
+	if !ok {
+		return false
+	}
+	return this.EqualVT(that)
+}
+func (this *Object_Distance) EqualVT(that *Object_Distance) bool {
+	if this == that {
+		return true
+	} else if this == nil || that == nil {
+		return false
+	}
+	if this.Id != that.Id {
+		return false
+	}
+	if this.Distance != that.Distance {
+		return false
+	}
+	return string(this.unknownFields) == string(that.unknownFields)
+}
+
+func (this *Object_Distance) EqualMessageVT(thatMsg proto.Message) bool {
+	that, ok := thatMsg.(*Object_Distance)
+	if !ok {
+		return false
+	}
+	return this.EqualVT(that)
+}
+func (this *Object_StreamDistance) EqualVT(that *Object_StreamDistance) bool {
+	if this == that {
+		return true
+	} else if this == nil || that == nil {
+		return false
+	}
+	if this.Payload == nil && that.Payload != nil {
+		return false
+	} else if this.Payload != nil {
+		if that.Payload == nil {
+			return false
+		}
+		if !this.Payload.(interface {
+			EqualVT(isObject_StreamDistance_Payload) bool
+		}).EqualVT(that.Payload) {
+			return false
+		}
+	}
+	return string(this.unknownFields) == string(that.unknownFields)
+}
+
+func (this *Object_StreamDistance) EqualMessageVT(thatMsg proto.Message) bool {
+	that, ok := thatMsg.(*Object_StreamDistance)
+	if !ok {
+		return false
+	}
+	return this.EqualVT(that)
+}
+func (this *Object_StreamDistance_Distance) EqualVT(thatIface isObject_StreamDistance_Payload) bool {
+	that, ok := thatIface.(*Object_StreamDistance_Distance)
+	if !ok {
+		return false
+	}
+	if this == that {
+		return true
+	}
+	if this == nil && that != nil || this != nil && that == nil {
+		return false
+	}
+	if p, q := this.Distance, that.Distance; p != q {
+		if p == nil {
+			p = &Object_Distance{}
+		}
+		if q == nil {
+			q = &Object_Distance{}
+		}
+		if !p.EqualVT(q) {
+			return false
+		}
+	}
+	return true
+}
+
+func (this *Object_StreamDistance_Status) EqualVT(thatIface isObject_StreamDistance_Payload) bool {
+	that, ok := thatIface.(*Object_StreamDistance_Status)
+	if !ok {
+		return false
+	}
+	if this == that {
+		return true
+	}
+	if this == nil && that != nil || this != nil && that == nil {
+		return false
+	}
+	if p, q := this.Status, that.Status; p != q {
+		if p == nil {
+			p = &status.Status{}
+		}
+		if q == nil {
+			q = &status.Status{}
+		}
+		if equal, ok := interface{}(p).(interface{ EqualVT(*status.Status) bool }); ok {
+			if !equal.EqualVT(q) {
+				return false
+			}
+		} else if !proto.Equal(p, q) {
+			return false
+		}
+	}
+	return true
+}
+
+func (this *Object_ID) EqualVT(that *Object_ID) bool {
+	if this == that {
+		return true
+	} else if this == nil || that == nil {
+		return false
+	}
+	if this.Id != that.Id {
+		return false
+	}
+	return string(this.unknownFields) == string(that.unknownFields)
+}
+
+func (this *Object_ID) EqualMessageVT(thatMsg proto.Message) bool {
+	that, ok := thatMsg.(*Object_ID)
+	if !ok {
+		return false
+	}
+	return this.EqualVT(that)
+}
+func (this *Object_IDs) EqualVT(that *Object_IDs) bool {
+	if this == that {
+		return true
+	} else if this == nil || that == nil {
+		return false
+	}
+	if len(this.Ids) != len(that.Ids) {
+		return false
+	}
+	for i, vx := range this.Ids {
+		vy := that.Ids[i]
+		if vx != vy {
+			return false
+		}
+	}
+	return string(this.unknownFields) == string(that.unknownFields)
+}
+
+func (this *Object_IDs) EqualMessageVT(thatMsg proto.Message) bool {
+	that, ok := thatMsg.(*Object_IDs)
+	if !ok {
+		return false
+	}
+	return this.EqualVT(that)
+}
+func (this *Object_Vector) EqualVT(that *Object_Vector) bool {
+	if this == that {
+		return true
+	} else if this == nil || that == nil {
+		return false
+	}
+	if this.Id != that.Id {
+		return false
+	}
+	if len(this.Vector) != len(that.Vector) {
+		return false
+	}
+	for i, vx := range this.Vector {
+		vy := that.Vector[i]
+		if vx != vy {
+			return false
+		}
+	}
+	return string(this.unknownFields) == string(that.unknownFields)
+}
+
+func (this *Object_Vector) EqualMessageVT(thatMsg proto.Message) bool {
+	that, ok := thatMsg.(*Object_Vector)
+	if !ok {
+		return false
+	}
+	return this.EqualVT(that)
+}
+func (this *Object_Vectors) EqualVT(that *Object_Vectors) bool {
+	if this == that {
+		return true
+	} else if this == nil || that == nil {
+		return false
+	}
+	if len(this.Vectors) != len(that.Vectors) {
+		return false
+	}
+	for i, vx := range this.Vectors {
+		vy := that.Vectors[i]
+		if p, q := vx, vy; p != q {
+			if p == nil {
+				p = &Object_Vector{}
+			}
+			if q == nil {
+				q = &Object_Vector{}
+			}
+			if !p.EqualVT(q) {
+				return false
+			}
+		}
+	}
+	return string(this.unknownFields) == string(that.unknownFields)
+}
+
+func (this *Object_Vectors) EqualMessageVT(thatMsg proto.Message) bool {
+	that, ok := thatMsg.(*Object_Vectors)
+	if !ok {
+		return false
+	}
+	return this.EqualVT(that)
+}
+func (this *Object_StreamVector) EqualVT(that *Object_StreamVector) bool {
+	if this == that {
+		return true
+	} else if this == nil || that == nil {
+		return false
+	}
+	if this.Payload == nil && that.Payload != nil {
+		return false
+	} else if this.Payload != nil {
+		if that.Payload == nil {
+			return false
+		}
+		if !this.Payload.(interface {
+			EqualVT(isObject_StreamVector_Payload) bool
+		}).EqualVT(that.Payload) {
+			return false
+		}
+	}
+	return string(this.unknownFields) == string(that.unknownFields)
+}
+
+func (this *Object_StreamVector) EqualMessageVT(thatMsg proto.Message) bool {
+	that, ok := thatMsg.(*Object_StreamVector)
+	if !ok {
+		return false
+	}
+	return this.EqualVT(that)
+}
+func (this *Object_StreamVector_Vector) EqualVT(thatIface isObject_StreamVector_Payload) bool {
+	that, ok := thatIface.(*Object_StreamVector_Vector)
+	if !ok {
+		return false
+	}
+	if this == that {
+		return true
+	}
+	if this == nil && that != nil || this != nil && that == nil {
+		return false
+	}
+	if p, q := this.Vector, that.Vector; p != q {
+		if p == nil {
+			p = &Object_Vector{}
+		}
+		if q == nil {
+			q = &Object_Vector{}
+		}
+		if !p.EqualVT(q) {
+			return false
+		}
+	}
+	return true
+}
+
+func (this *Object_StreamVector_Status) EqualVT(thatIface isObject_StreamVector_Payload) bool {
+	that, ok := thatIface.(*Object_StreamVector_Status)
+	if !ok {
+		return false
+	}
+	if this == that {
+		return true
+	}
+	if this == nil && that != nil || this != nil && that == nil {
+		return false
+	}
+	if p, q := this.Status, that.Status; p != q {
+		if p == nil {
+			p = &status.Status{}
+		}
+		if q == nil {
+			q = &status.Status{}
+		}
+		if equal, ok := interface{}(p).(interface{ EqualVT(*status.Status) bool }); ok {
+			if !equal.EqualVT(q) {
+				return false
+			}
+		} else if !proto.Equal(p, q) {
+			return false
+		}
+	}
+	return true
+}
+
+func (this *Object_ReshapeVector) EqualVT(that *Object_ReshapeVector) bool {
+	if this == that {
+		return true
+	} else if this == nil || that == nil {
+		return false
+	}
+	if string(this.Object) != string(that.Object) {
+		return false
+	}
+	if len(this.Shape) != len(that.Shape) {
+		return false
+	}
+	for i, vx := range this.Shape {
+		vy := that.Shape[i]
+		if vx != vy {
+			return false
+		}
+	}
+	return string(this.unknownFields) == string(that.unknownFields)
+}
+
+func (this *Object_ReshapeVector) EqualMessageVT(thatMsg proto.Message) bool {
+	that, ok := thatMsg.(*Object_ReshapeVector)
+	if !ok {
+		return false
+	}
+	return this.EqualVT(that)
+}
+func (this *Object_Blob) EqualVT(that *Object_Blob) bool {
+	if this == that {
+		return true
+	} else if this == nil || that == nil {
+		return false
+	}
+	if this.Id != that.Id {
+		return false
+	}
+	if string(this.Object) != string(that.Object) {
+		return false
+	}
+	return string(this.unknownFields) == string(that.unknownFields)
+}
+
+func (this *Object_Blob) EqualMessageVT(thatMsg proto.Message) bool {
+	that, ok := thatMsg.(*Object_Blob)
+	if !ok {
+		return false
+	}
+	return this.EqualVT(that)
+}
+func (this *Object_StreamBlob) EqualVT(that *Object_StreamBlob) bool {
+	if this == that {
+		return true
+	} else if this == nil || that == nil {
+		return false
+	}
+	if this.Payload == nil && that.Payload != nil {
+		return false
+	} else if this.Payload != nil {
+		if that.Payload == nil {
+			return false
+		}
+		if !this.Payload.(interface {
+			EqualVT(isObject_StreamBlob_Payload) bool
+		}).EqualVT(that.Payload) {
+			return false
+		}
+	}
+	return string(this.unknownFields) == string(that.unknownFields)
+}
+
+func (this *Object_StreamBlob) EqualMessageVT(thatMsg proto.Message) bool {
+	that, ok := thatMsg.(*Object_StreamBlob)
+	if !ok {
+		return false
+	}
+	return this.EqualVT(that)
+}
+func (this *Object_StreamBlob_Blob) EqualVT(thatIface isObject_StreamBlob_Payload) bool {
+	that, ok := thatIface.(*Object_StreamBlob_Blob)
+	if !ok {
+		return false
+	}
+	if this == that {
+		return true
+	}
+	if this == nil && that != nil || this != nil && that == nil {
+		return false
+	}
+	if p, q := this.Blob, that.Blob; p != q {
+		if p == nil {
+			p = &Object_Blob{}
+		}
+		if q == nil {
+			q = &Object_Blob{}
+		}
+		if !p.EqualVT(q) {
+			return false
+		}
+	}
+	return true
+}
+
+func (this *Object_StreamBlob_Status) EqualVT(thatIface isObject_StreamBlob_Payload) bool {
+	that, ok := thatIface.(*Object_StreamBlob_Status)
+	if !ok {
+		return false
+	}
+	if this == that {
+		return true
+	}
+	if this == nil && that != nil || this != nil && that == nil {
+		return false
+	}
+	if p, q := this.Status, that.Status; p != q {
+		if p == nil {
+			p = &status.Status{}
+		}
+		if q == nil {
+			q = &status.Status{}
+		}
+		if equal, ok := interface{}(p).(interface{ EqualVT(*status.Status) bool }); ok {
+			if !equal.EqualVT(q) {
+				return false
+			}
+		} else if !proto.Equal(p, q) {
+			return false
+		}
+	}
+	return true
+}
+
+func (this *Object_Location) EqualVT(that *Object_Location) bool {
+	if this == that {
+		return true
+	} else if this == nil || that == nil {
+		return false
+	}
+	if this.Name != that.Name {
+		return false
+	}
+	if this.Uuid != that.Uuid {
+		return false
+	}
+	if len(this.Ips) != len(that.Ips) {
+		return false
+	}
+	for i, vx := range this.Ips {
+		vy := that.Ips[i]
+		if vx != vy {
+			return false
+		}
+	}
+	return string(this.unknownFields) == string(that.unknownFields)
+}
+
+func (this *Object_Location) EqualMessageVT(thatMsg proto.Message) bool {
+	that, ok := thatMsg.(*Object_Location)
+	if !ok {
+		return false
+	}
+	return this.EqualVT(that)
+}
+func (this *Object_StreamLocation) EqualVT(that *Object_StreamLocation) bool {
+	if this == that {
+		return true
+	} else if this == nil || that == nil {
+		return false
+	}
+	if this.Payload == nil && that.Payload != nil {
+		return false
+	} else if this.Payload != nil {
+		if that.Payload == nil {
+			return false
+		}
+		if !this.Payload.(interface {
+			EqualVT(isObject_StreamLocation_Payload) bool
+		}).EqualVT(that.Payload) {
+			return false
+		}
+	}
+	return string(this.unknownFields) == string(that.unknownFields)
+}
+
+func (this *Object_StreamLocation) EqualMessageVT(thatMsg proto.Message) bool {
+	that, ok := thatMsg.(*Object_StreamLocation)
+	if !ok {
+		return false
+	}
+	return this.EqualVT(that)
+}
+func (this *Object_StreamLocation_Location) EqualVT(thatIface isObject_StreamLocation_Payload) bool {
+	that, ok := thatIface.(*Object_StreamLocation_Location)
+	if !ok {
+		return false
+	}
+	if this == that {
+		return true
+	}
+	if this == nil && that != nil || this != nil && that == nil {
+		return false
+	}
+	if p, q := this.Location, that.Location; p != q {
+		if p == nil {
+			p = &Object_Location{}
+		}
+		if q == nil {
+			q = &Object_Location{}
+		}
+		if !p.EqualVT(q) {
+			return false
+		}
+	}
+	return true
+}
+
+func (this *Object_StreamLocation_Status) EqualVT(thatIface isObject_StreamLocation_Payload) bool {
+	that, ok := thatIface.(*Object_StreamLocation_Status)
+	if !ok {
+		return false
+	}
+	if this == that {
+		return true
+	}
+	if this == nil && that != nil || this != nil && that == nil {
+		return false
+	}
+	if p, q := this.Status, that.Status; p != q {
+		if p == nil {
+			p = &status.Status{}
+		}
+		if q == nil {
+			q = &status.Status{}
+		}
+		if equal, ok := interface{}(p).(interface{ EqualVT(*status.Status) bool }); ok {
+			if !equal.EqualVT(q) {
+				return false
+			}
+		} else if !proto.Equal(p, q) {
+			return false
+		}
+	}
+	return true
+}
+
+func (this *Object_Locations) EqualVT(that *Object_Locations) bool {
+	if this == that {
+		return true
+	} else if this == nil || that == nil {
+		return false
+	}
+	if len(this.Locations) != len(that.Locations) {
+		return false
+	}
+	for i, vx := range this.Locations {
+		vy := that.Locations[i]
+		if p, q := vx, vy; p != q {
+			if p == nil {
+				p = &Object_Location{}
+			}
+			if q == nil {
+				q = &Object_Location{}
+			}
+			if !p.EqualVT(q) {
+				return false
+			}
+		}
+	}
+	return string(this.unknownFields) == string(that.unknownFields)
+}
+
+func (this *Object_Locations) EqualMessageVT(thatMsg proto.Message) bool {
+	that, ok := thatMsg.(*Object_Locations)
+	if !ok {
+		return false
+	}
+	return this.EqualVT(that)
+}
+func (this *Object) EqualVT(that *Object) bool {
+	if this == that {
+		return true
+	} else if this == nil || that == nil {
+		return false
+	}
+	return string(this.unknownFields) == string(that.unknownFields)
+}
+
+func (this *Object) EqualMessageVT(thatMsg proto.Message) bool {
+	that, ok := thatMsg.(*Object)
+	if !ok {
+		return false
+	}
+	return this.EqualVT(that)
+}
+func (this *Control_CreateIndexRequest) EqualVT(that *Control_CreateIndexRequest) bool {
+	if this == that {
+		return true
+	} else if this == nil || that == nil {
+		return false
+	}
+	if this.PoolSize != that.PoolSize {
+		return false
+	}
+	return string(this.unknownFields) == string(that.unknownFields)
+}
+
+func (this *Control_CreateIndexRequest) EqualMessageVT(thatMsg proto.Message) bool {
+	that, ok := thatMsg.(*Control_CreateIndexRequest)
+	if !ok {
+		return false
+	}
+	return this.EqualVT(that)
+}
+func (this *Control) EqualVT(that *Control) bool {
+	if this == that {
+		return true
+	} else if this == nil || that == nil {
+		return false
+	}
+	return string(this.unknownFields) == string(that.unknownFields)
+}
+
+func (this *Control) EqualMessageVT(thatMsg proto.Message) bool {
+	that, ok := thatMsg.(*Control)
+	if !ok {
+		return false
+	}
+	return this.EqualVT(that)
+}
+func (this *Discoverer_Request) EqualVT(that *Discoverer_Request) bool {
+	if this == that {
+		return true
+	} else if this == nil || that == nil {
+		return false
+	}
+	if this.Name != that.Name {
+		return false
+	}
+	if this.Namespace != that.Namespace {
+		return false
+	}
+	if this.Node != that.Node {
+		return false
+	}
+	return string(this.unknownFields) == string(that.unknownFields)
+}
+
+func (this *Discoverer_Request) EqualMessageVT(thatMsg proto.Message) bool {
+	that, ok := thatMsg.(*Discoverer_Request)
+	if !ok {
+		return false
+	}
+	return this.EqualVT(that)
+}
+func (this *Discoverer) EqualVT(that *Discoverer) bool {
+	if this == that {
+		return true
+	} else if this == nil || that == nil {
+		return false
+	}
+	return string(this.unknownFields) == string(that.unknownFields)
+}
+
+func (this *Discoverer) EqualMessageVT(thatMsg proto.Message) bool {
+	that, ok := thatMsg.(*Discoverer)
+	if !ok {
+		return false
+	}
+	return this.EqualVT(that)
+}
+func (this *Info_Index_Count) EqualVT(that *Info_Index_Count) bool {
+	if this == that {
+		return true
+	} else if this == nil || that == nil {
+		return false
+	}
+	if this.Stored != that.Stored {
+		return false
+	}
+	if this.Uncommitted != that.Uncommitted {
+		return false
+	}
+	if this.Indexing != that.Indexing {
+		return false
+	}
+	if this.Saving != that.Saving {
+		return false
+	}
+	return string(this.unknownFields) == string(that.unknownFields)
+}
+
+func (this *Info_Index_Count) EqualMessageVT(thatMsg proto.Message) bool {
+	that, ok := thatMsg.(*Info_Index_Count)
+	if !ok {
+		return false
+	}
+	return this.EqualVT(that)
+}
+func (this *Info_Index_UUID_Committed) EqualVT(that *Info_Index_UUID_Committed) bool {
+	if this == that {
+		return true
+	} else if this == nil || that == nil {
+		return false
+	}
+	if this.Uuid != that.Uuid {
+		return false
+	}
+	return string(this.unknownFields) == string(that.unknownFields)
+}
+
+func (this *Info_Index_UUID_Committed) EqualMessageVT(thatMsg proto.Message) bool {
+	that, ok := thatMsg.(*Info_Index_UUID_Committed)
+	if !ok {
+		return false
+	}
+	return this.EqualVT(that)
+}
+func (this *Info_Index_UUID_Uncommitted) EqualVT(that *Info_Index_UUID_Uncommitted) bool {
+	if this == that {
+		return true
+	} else if this == nil || that == nil {
+		return false
+	}
+	if this.Uuid != that.Uuid {
+		return false
+	}
+	return string(this.unknownFields) == string(that.unknownFields)
+}
+
+func (this *Info_Index_UUID_Uncommitted) EqualMessageVT(thatMsg proto.Message) bool {
+	that, ok := thatMsg.(*Info_Index_UUID_Uncommitted)
+	if !ok {
+		return false
+	}
+	return this.EqualVT(that)
+}
+func (this *Info_Index_UUID) EqualVT(that *Info_Index_UUID) bool {
+	if this == that {
+		return true
+	} else if this == nil || that == nil {
+		return false
+	}
+	return string(this.unknownFields) == string(that.unknownFields)
+}
+
+func (this *Info_Index_UUID) EqualMessageVT(thatMsg proto.Message) bool {
+	that, ok := thatMsg.(*Info_Index_UUID)
+	if !ok {
+		return false
+	}
+	return this.EqualVT(that)
+}
+func (this *Info_Index) EqualVT(that *Info_Index) bool {
+	if this == that {
+		return true
+	} else if this == nil || that == nil {
+		return false
+	}
+	return string(this.unknownFields) == string(that.unknownFields)
+}
+
+func (this *Info_Index) EqualMessageVT(thatMsg proto.Message) bool {
+	that, ok := thatMsg.(*Info_Index)
+	if !ok {
+		return false
+	}
+	return this.EqualVT(that)
+}
+func (this *Info_Pod) EqualVT(that *Info_Pod) bool {
+	if this == that {
+		return true
+	} else if this == nil || that == nil {
+		return false
+	}
+	if this.AppName != that.AppName {
+		return false
+	}
+	if this.Name != that.Name {
+		return false
+	}
+	if this.Namespace != that.Namespace {
+		return false
+	}
+	if this.Ip != that.Ip {
+		return false
+	}
+	if !this.Cpu.EqualVT(that.Cpu) {
+		return false
+	}
+	if !this.Memory.EqualVT(that.Memory) {
+		return false
+	}
+	if !this.Node.EqualVT(that.Node) {
+		return false
+	}
+	return string(this.unknownFields) == string(that.unknownFields)
+}
+
+func (this *Info_Pod) EqualMessageVT(thatMsg proto.Message) bool {
+	that, ok := thatMsg.(*Info_Pod)
+	if !ok {
+		return false
+	}
+	return this.EqualVT(that)
+}
+func (this *Info_Node) EqualVT(that *Info_Node) bool {
+	if this == that {
+		return true
+	} else if this == nil || that == nil {
+		return false
+	}
+	if this.Name != that.Name {
+		return false
+	}
+	if this.InternalAddr != that.InternalAddr {
+		return false
+	}
+	if this.ExternalAddr != that.ExternalAddr {
+		return false
+	}
+	if !this.Cpu.EqualVT(that.Cpu) {
+		return false
+	}
+	if !this.Memory.EqualVT(that.Memory) {
+		return false
+	}
+	if !this.Pods.EqualVT(that.Pods) {
+		return false
+	}
+	return string(this.unknownFields) == string(that.unknownFields)
+}
+
+func (this *Info_Node) EqualMessageVT(thatMsg proto.Message) bool {
+	that, ok := thatMsg.(*Info_Node)
+	if !ok {
+		return false
+	}
+	return this.EqualVT(that)
+}
+func (this *Info_CPU) EqualVT(that *Info_CPU) bool {
+	if this == that {
+		return true
+	} else if this == nil || that == nil {
+		return false
+	}
+	if this.Limit != that.Limit {
+		return false
+	}
+	if this.Request != that.Request {
+		return false
+	}
+	if this.Usage != that.Usage {
+		return false
+	}
+	return string(this.unknownFields) == string(that.unknownFields)
+}
+
+func (this *Info_CPU) EqualMessageVT(thatMsg proto.Message) bool {
+	that, ok := thatMsg.(*Info_CPU)
+	if !ok {
+		return false
+	}
+	return this.EqualVT(that)
+}
+func (this *Info_Memory) EqualVT(that *Info_Memory) bool {
+	if this == that {
+		return true
+	} else if this == nil || that == nil {
+		return false
+	}
+	if this.Limit != that.Limit {
+		return false
+	}
+	if this.Request != that.Request {
+		return false
+	}
+	if this.Usage != that.Usage {
+		return false
+	}
+	return string(this.unknownFields) == string(that.unknownFields)
+}
+
+func (this *Info_Memory) EqualMessageVT(thatMsg proto.Message) bool {
+	that, ok := thatMsg.(*Info_Memory)
+	if !ok {
+		return false
+	}
+	return this.EqualVT(that)
+}
+func (this *Info_Pods) EqualVT(that *Info_Pods) bool {
+	if this == that {
+		return true
+	} else if this == nil || that == nil {
+		return false
+	}
+	if len(this.Pods) != len(that.Pods) {
+		return false
+	}
+	for i, vx := range this.Pods {
+		vy := that.Pods[i]
+		if p, q := vx, vy; p != q {
+			if p == nil {
+				p = &Info_Pod{}
+			}
+			if q == nil {
+				q = &Info_Pod{}
+			}
+			if !p.EqualVT(q) {
+				return false
+			}
+		}
+	}
+	return string(this.unknownFields) == string(that.unknownFields)
+}
+
+func (this *Info_Pods) EqualMessageVT(thatMsg proto.Message) bool {
+	that, ok := thatMsg.(*Info_Pods)
+	if !ok {
+		return false
+	}
+	return this.EqualVT(that)
+}
+func (this *Info_Nodes) EqualVT(that *Info_Nodes) bool {
+	if this == that {
+		return true
+	} else if this == nil || that == nil {
+		return false
+	}
+	if len(this.Nodes) != len(that.Nodes) {
+		return false
+	}
+	for i, vx := range this.Nodes {
+		vy := that.Nodes[i]
+		if p, q := vx, vy; p != q {
+			if p == nil {
+				p = &Info_Node{}
+			}
+			if q == nil {
+				q = &Info_Node{}
+			}
+			if !p.EqualVT(q) {
+				return false
+			}
+		}
+	}
+	return string(this.unknownFields) == string(that.unknownFields)
+}
+
+func (this *Info_Nodes) EqualMessageVT(thatMsg proto.Message) bool {
+	that, ok := thatMsg.(*Info_Nodes)
+	if !ok {
+		return false
+	}
+	return this.EqualVT(that)
+}
+func (this *Info_IPs) EqualVT(that *Info_IPs) bool {
+	if this == that {
+		return true
+	} else if this == nil || that == nil {
+		return false
+	}
+	if len(this.Ip) != len(that.Ip) {
+		return false
+	}
+	for i, vx := range this.Ip {
+		vy := that.Ip[i]
+		if vx != vy {
+			return false
+		}
+	}
+	return string(this.unknownFields) == string(that.unknownFields)
+}
+
+func (this *Info_IPs) EqualMessageVT(thatMsg proto.Message) bool {
+	that, ok := thatMsg.(*Info_IPs)
+	if !ok {
+		return false
+	}
+	return this.EqualVT(that)
+}
+func (this *Info) EqualVT(that *Info) bool {
+	if this == that {
+		return true
+	} else if this == nil || that == nil {
+		return false
+	}
+	return string(this.unknownFields) == string(that.unknownFields)
+}
+
+func (this *Info) EqualMessageVT(thatMsg proto.Message) bool {
+	that, ok := thatMsg.(*Info)
+	if !ok {
+		return false
+	}
+	return this.EqualVT(that)
+}
+func (this *Empty) EqualVT(that *Empty) bool {
+	if this == that {
+		return true
+	} else if this == nil || that == nil {
+		return false
+	}
+	return string(this.unknownFields) == string(that.unknownFields)
+}
+
+func (this *Empty) EqualMessageVT(thatMsg proto.Message) bool {
+	that, ok := thatMsg.(*Empty)
+	if !ok {
+		return false
+	}
+	return this.EqualVT(that)
+}
 func (m *Search_Request) MarshalVT() (dAtA []byte, err error) {
 	if m == nil {
 		return nil, nil
@@ -362,6 +2404,11 @@ func (m *Search_Config) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 	if m.unknownFields != nil {
 		i -= len(m.unknownFields)
 		copy(dAtA[i:], m.unknownFields)
+	}
+	if m.AggregationAlgorithm != 0 {
+		i = encodeVarint(dAtA, i, uint64(m.AggregationAlgorithm))
+		i--
+		dAtA[i] = 0x48
 	}
 	if m.MinNum != 0 {
 		i = encodeVarint(dAtA, i, uint64(m.MinNum))
@@ -3594,6 +5641,1268 @@ func encodeVarint(dAtA []byte, offset int, v uint64) int {
 	dAtA[offset] = uint8(v)
 	return base
 }
+
+var vtprotoPool_Search_Request = sync.Pool{
+	New: func() interface{} {
+		return &Search_Request{}
+	},
+}
+
+func (m *Search_Request) ResetVT() {
+	f0 := m.Vector[:0]
+	m.Config.ReturnToVTPool()
+	m.Reset()
+	m.Vector = f0
+}
+func (m *Search_Request) ReturnToVTPool() {
+	if m != nil {
+		m.ResetVT()
+		vtprotoPool_Search_Request.Put(m)
+	}
+}
+func Search_RequestFromVTPool() *Search_Request {
+	return vtprotoPool_Search_Request.Get().(*Search_Request)
+}
+
+var vtprotoPool_Search_MultiRequest = sync.Pool{
+	New: func() interface{} {
+		return &Search_MultiRequest{}
+	},
+}
+
+func (m *Search_MultiRequest) ResetVT() {
+	for _, mm := range m.Requests {
+		mm.ResetVT()
+	}
+	m.Reset()
+}
+func (m *Search_MultiRequest) ReturnToVTPool() {
+	if m != nil {
+		m.ResetVT()
+		vtprotoPool_Search_MultiRequest.Put(m)
+	}
+}
+func Search_MultiRequestFromVTPool() *Search_MultiRequest {
+	return vtprotoPool_Search_MultiRequest.Get().(*Search_MultiRequest)
+}
+
+var vtprotoPool_Search_IDRequest = sync.Pool{
+	New: func() interface{} {
+		return &Search_IDRequest{}
+	},
+}
+
+func (m *Search_IDRequest) ResetVT() {
+	m.Config.ReturnToVTPool()
+	m.Reset()
+}
+func (m *Search_IDRequest) ReturnToVTPool() {
+	if m != nil {
+		m.ResetVT()
+		vtprotoPool_Search_IDRequest.Put(m)
+	}
+}
+func Search_IDRequestFromVTPool() *Search_IDRequest {
+	return vtprotoPool_Search_IDRequest.Get().(*Search_IDRequest)
+}
+
+var vtprotoPool_Search_MultiIDRequest = sync.Pool{
+	New: func() interface{} {
+		return &Search_MultiIDRequest{}
+	},
+}
+
+func (m *Search_MultiIDRequest) ResetVT() {
+	for _, mm := range m.Requests {
+		mm.ResetVT()
+	}
+	m.Reset()
+}
+func (m *Search_MultiIDRequest) ReturnToVTPool() {
+	if m != nil {
+		m.ResetVT()
+		vtprotoPool_Search_MultiIDRequest.Put(m)
+	}
+}
+func Search_MultiIDRequestFromVTPool() *Search_MultiIDRequest {
+	return vtprotoPool_Search_MultiIDRequest.Get().(*Search_MultiIDRequest)
+}
+
+var vtprotoPool_Search_ObjectRequest = sync.Pool{
+	New: func() interface{} {
+		return &Search_ObjectRequest{}
+	},
+}
+
+func (m *Search_ObjectRequest) ResetVT() {
+	f0 := m.Object[:0]
+	m.Config.ReturnToVTPool()
+	m.Vectorizer.ReturnToVTPool()
+	m.Reset()
+	m.Object = f0
+}
+func (m *Search_ObjectRequest) ReturnToVTPool() {
+	if m != nil {
+		m.ResetVT()
+		vtprotoPool_Search_ObjectRequest.Put(m)
+	}
+}
+func Search_ObjectRequestFromVTPool() *Search_ObjectRequest {
+	return vtprotoPool_Search_ObjectRequest.Get().(*Search_ObjectRequest)
+}
+
+var vtprotoPool_Search_MultiObjectRequest = sync.Pool{
+	New: func() interface{} {
+		return &Search_MultiObjectRequest{}
+	},
+}
+
+func (m *Search_MultiObjectRequest) ResetVT() {
+	for _, mm := range m.Requests {
+		mm.ResetVT()
+	}
+	m.Reset()
+}
+func (m *Search_MultiObjectRequest) ReturnToVTPool() {
+	if m != nil {
+		m.ResetVT()
+		vtprotoPool_Search_MultiObjectRequest.Put(m)
+	}
+}
+func Search_MultiObjectRequestFromVTPool() *Search_MultiObjectRequest {
+	return vtprotoPool_Search_MultiObjectRequest.Get().(*Search_MultiObjectRequest)
+}
+
+var vtprotoPool_Search_Config = sync.Pool{
+	New: func() interface{} {
+		return &Search_Config{}
+	},
+}
+
+func (m *Search_Config) ResetVT() {
+	m.IngressFilters.ReturnToVTPool()
+	m.EgressFilters.ReturnToVTPool()
+	m.Reset()
+}
+func (m *Search_Config) ReturnToVTPool() {
+	if m != nil {
+		m.ResetVT()
+		vtprotoPool_Search_Config.Put(m)
+	}
+}
+func Search_ConfigFromVTPool() *Search_Config {
+	return vtprotoPool_Search_Config.Get().(*Search_Config)
+}
+
+var vtprotoPool_Search_Response = sync.Pool{
+	New: func() interface{} {
+		return &Search_Response{}
+	},
+}
+
+func (m *Search_Response) ResetVT() {
+	for _, mm := range m.Results {
+		mm.ResetVT()
+	}
+	m.Reset()
+}
+func (m *Search_Response) ReturnToVTPool() {
+	if m != nil {
+		m.ResetVT()
+		vtprotoPool_Search_Response.Put(m)
+	}
+}
+func Search_ResponseFromVTPool() *Search_Response {
+	return vtprotoPool_Search_Response.Get().(*Search_Response)
+}
+
+var vtprotoPool_Search_Responses = sync.Pool{
+	New: func() interface{} {
+		return &Search_Responses{}
+	},
+}
+
+func (m *Search_Responses) ResetVT() {
+	for _, mm := range m.Responses {
+		mm.ResetVT()
+	}
+	m.Reset()
+}
+func (m *Search_Responses) ReturnToVTPool() {
+	if m != nil {
+		m.ResetVT()
+		vtprotoPool_Search_Responses.Put(m)
+	}
+}
+func Search_ResponsesFromVTPool() *Search_Responses {
+	return vtprotoPool_Search_Responses.Get().(*Search_Responses)
+}
+
+var vtprotoPool_Search = sync.Pool{
+	New: func() interface{} {
+		return &Search{}
+	},
+}
+
+func (m *Search) ResetVT() {
+	m.Reset()
+}
+func (m *Search) ReturnToVTPool() {
+	if m != nil {
+		m.ResetVT()
+		vtprotoPool_Search.Put(m)
+	}
+}
+func SearchFromVTPool() *Search {
+	return vtprotoPool_Search.Get().(*Search)
+}
+
+var vtprotoPool_Filter_Target = sync.Pool{
+	New: func() interface{} {
+		return &Filter_Target{}
+	},
+}
+
+func (m *Filter_Target) ResetVT() {
+	m.Reset()
+}
+func (m *Filter_Target) ReturnToVTPool() {
+	if m != nil {
+		m.ResetVT()
+		vtprotoPool_Filter_Target.Put(m)
+	}
+}
+func Filter_TargetFromVTPool() *Filter_Target {
+	return vtprotoPool_Filter_Target.Get().(*Filter_Target)
+}
+
+var vtprotoPool_Filter_Config = sync.Pool{
+	New: func() interface{} {
+		return &Filter_Config{}
+	},
+}
+
+func (m *Filter_Config) ResetVT() {
+	for _, mm := range m.Targets {
+		mm.ResetVT()
+	}
+	m.Reset()
+}
+func (m *Filter_Config) ReturnToVTPool() {
+	if m != nil {
+		m.ResetVT()
+		vtprotoPool_Filter_Config.Put(m)
+	}
+}
+func Filter_ConfigFromVTPool() *Filter_Config {
+	return vtprotoPool_Filter_Config.Get().(*Filter_Config)
+}
+
+var vtprotoPool_Filter = sync.Pool{
+	New: func() interface{} {
+		return &Filter{}
+	},
+}
+
+func (m *Filter) ResetVT() {
+	m.Reset()
+}
+func (m *Filter) ReturnToVTPool() {
+	if m != nil {
+		m.ResetVT()
+		vtprotoPool_Filter.Put(m)
+	}
+}
+func FilterFromVTPool() *Filter {
+	return vtprotoPool_Filter.Get().(*Filter)
+}
+
+var vtprotoPool_Insert_Request = sync.Pool{
+	New: func() interface{} {
+		return &Insert_Request{}
+	},
+}
+
+func (m *Insert_Request) ResetVT() {
+	m.Vector.ReturnToVTPool()
+	m.Config.ReturnToVTPool()
+	m.Reset()
+}
+func (m *Insert_Request) ReturnToVTPool() {
+	if m != nil {
+		m.ResetVT()
+		vtprotoPool_Insert_Request.Put(m)
+	}
+}
+func Insert_RequestFromVTPool() *Insert_Request {
+	return vtprotoPool_Insert_Request.Get().(*Insert_Request)
+}
+
+var vtprotoPool_Insert_MultiRequest = sync.Pool{
+	New: func() interface{} {
+		return &Insert_MultiRequest{}
+	},
+}
+
+func (m *Insert_MultiRequest) ResetVT() {
+	for _, mm := range m.Requests {
+		mm.ResetVT()
+	}
+	m.Reset()
+}
+func (m *Insert_MultiRequest) ReturnToVTPool() {
+	if m != nil {
+		m.ResetVT()
+		vtprotoPool_Insert_MultiRequest.Put(m)
+	}
+}
+func Insert_MultiRequestFromVTPool() *Insert_MultiRequest {
+	return vtprotoPool_Insert_MultiRequest.Get().(*Insert_MultiRequest)
+}
+
+var vtprotoPool_Insert_ObjectRequest = sync.Pool{
+	New: func() interface{} {
+		return &Insert_ObjectRequest{}
+	},
+}
+
+func (m *Insert_ObjectRequest) ResetVT() {
+	m.Object.ReturnToVTPool()
+	m.Config.ReturnToVTPool()
+	m.Vectorizer.ReturnToVTPool()
+	m.Reset()
+}
+func (m *Insert_ObjectRequest) ReturnToVTPool() {
+	if m != nil {
+		m.ResetVT()
+		vtprotoPool_Insert_ObjectRequest.Put(m)
+	}
+}
+func Insert_ObjectRequestFromVTPool() *Insert_ObjectRequest {
+	return vtprotoPool_Insert_ObjectRequest.Get().(*Insert_ObjectRequest)
+}
+
+var vtprotoPool_Insert_MultiObjectRequest = sync.Pool{
+	New: func() interface{} {
+		return &Insert_MultiObjectRequest{}
+	},
+}
+
+func (m *Insert_MultiObjectRequest) ResetVT() {
+	for _, mm := range m.Requests {
+		mm.ResetVT()
+	}
+	m.Reset()
+}
+func (m *Insert_MultiObjectRequest) ReturnToVTPool() {
+	if m != nil {
+		m.ResetVT()
+		vtprotoPool_Insert_MultiObjectRequest.Put(m)
+	}
+}
+func Insert_MultiObjectRequestFromVTPool() *Insert_MultiObjectRequest {
+	return vtprotoPool_Insert_MultiObjectRequest.Get().(*Insert_MultiObjectRequest)
+}
+
+var vtprotoPool_Insert_Config = sync.Pool{
+	New: func() interface{} {
+		return &Insert_Config{}
+	},
+}
+
+func (m *Insert_Config) ResetVT() {
+	m.Filters.ReturnToVTPool()
+	m.Reset()
+}
+func (m *Insert_Config) ReturnToVTPool() {
+	if m != nil {
+		m.ResetVT()
+		vtprotoPool_Insert_Config.Put(m)
+	}
+}
+func Insert_ConfigFromVTPool() *Insert_Config {
+	return vtprotoPool_Insert_Config.Get().(*Insert_Config)
+}
+
+var vtprotoPool_Insert = sync.Pool{
+	New: func() interface{} {
+		return &Insert{}
+	},
+}
+
+func (m *Insert) ResetVT() {
+	m.Reset()
+}
+func (m *Insert) ReturnToVTPool() {
+	if m != nil {
+		m.ResetVT()
+		vtprotoPool_Insert.Put(m)
+	}
+}
+func InsertFromVTPool() *Insert {
+	return vtprotoPool_Insert.Get().(*Insert)
+}
+
+var vtprotoPool_Update_Request = sync.Pool{
+	New: func() interface{} {
+		return &Update_Request{}
+	},
+}
+
+func (m *Update_Request) ResetVT() {
+	m.Vector.ReturnToVTPool()
+	m.Config.ReturnToVTPool()
+	m.Reset()
+}
+func (m *Update_Request) ReturnToVTPool() {
+	if m != nil {
+		m.ResetVT()
+		vtprotoPool_Update_Request.Put(m)
+	}
+}
+func Update_RequestFromVTPool() *Update_Request {
+	return vtprotoPool_Update_Request.Get().(*Update_Request)
+}
+
+var vtprotoPool_Update_MultiRequest = sync.Pool{
+	New: func() interface{} {
+		return &Update_MultiRequest{}
+	},
+}
+
+func (m *Update_MultiRequest) ResetVT() {
+	for _, mm := range m.Requests {
+		mm.ResetVT()
+	}
+	m.Reset()
+}
+func (m *Update_MultiRequest) ReturnToVTPool() {
+	if m != nil {
+		m.ResetVT()
+		vtprotoPool_Update_MultiRequest.Put(m)
+	}
+}
+func Update_MultiRequestFromVTPool() *Update_MultiRequest {
+	return vtprotoPool_Update_MultiRequest.Get().(*Update_MultiRequest)
+}
+
+var vtprotoPool_Update_ObjectRequest = sync.Pool{
+	New: func() interface{} {
+		return &Update_ObjectRequest{}
+	},
+}
+
+func (m *Update_ObjectRequest) ResetVT() {
+	m.Object.ReturnToVTPool()
+	m.Config.ReturnToVTPool()
+	m.Vectorizer.ReturnToVTPool()
+	m.Reset()
+}
+func (m *Update_ObjectRequest) ReturnToVTPool() {
+	if m != nil {
+		m.ResetVT()
+		vtprotoPool_Update_ObjectRequest.Put(m)
+	}
+}
+func Update_ObjectRequestFromVTPool() *Update_ObjectRequest {
+	return vtprotoPool_Update_ObjectRequest.Get().(*Update_ObjectRequest)
+}
+
+var vtprotoPool_Update_MultiObjectRequest = sync.Pool{
+	New: func() interface{} {
+		return &Update_MultiObjectRequest{}
+	},
+}
+
+func (m *Update_MultiObjectRequest) ResetVT() {
+	for _, mm := range m.Requests {
+		mm.ResetVT()
+	}
+	m.Reset()
+}
+func (m *Update_MultiObjectRequest) ReturnToVTPool() {
+	if m != nil {
+		m.ResetVT()
+		vtprotoPool_Update_MultiObjectRequest.Put(m)
+	}
+}
+func Update_MultiObjectRequestFromVTPool() *Update_MultiObjectRequest {
+	return vtprotoPool_Update_MultiObjectRequest.Get().(*Update_MultiObjectRequest)
+}
+
+var vtprotoPool_Update_Config = sync.Pool{
+	New: func() interface{} {
+		return &Update_Config{}
+	},
+}
+
+func (m *Update_Config) ResetVT() {
+	m.Filters.ReturnToVTPool()
+	m.Reset()
+}
+func (m *Update_Config) ReturnToVTPool() {
+	if m != nil {
+		m.ResetVT()
+		vtprotoPool_Update_Config.Put(m)
+	}
+}
+func Update_ConfigFromVTPool() *Update_Config {
+	return vtprotoPool_Update_Config.Get().(*Update_Config)
+}
+
+var vtprotoPool_Update = sync.Pool{
+	New: func() interface{} {
+		return &Update{}
+	},
+}
+
+func (m *Update) ResetVT() {
+	m.Reset()
+}
+func (m *Update) ReturnToVTPool() {
+	if m != nil {
+		m.ResetVT()
+		vtprotoPool_Update.Put(m)
+	}
+}
+func UpdateFromVTPool() *Update {
+	return vtprotoPool_Update.Get().(*Update)
+}
+
+var vtprotoPool_Upsert_Request = sync.Pool{
+	New: func() interface{} {
+		return &Upsert_Request{}
+	},
+}
+
+func (m *Upsert_Request) ResetVT() {
+	m.Vector.ReturnToVTPool()
+	m.Config.ReturnToVTPool()
+	m.Reset()
+}
+func (m *Upsert_Request) ReturnToVTPool() {
+	if m != nil {
+		m.ResetVT()
+		vtprotoPool_Upsert_Request.Put(m)
+	}
+}
+func Upsert_RequestFromVTPool() *Upsert_Request {
+	return vtprotoPool_Upsert_Request.Get().(*Upsert_Request)
+}
+
+var vtprotoPool_Upsert_MultiRequest = sync.Pool{
+	New: func() interface{} {
+		return &Upsert_MultiRequest{}
+	},
+}
+
+func (m *Upsert_MultiRequest) ResetVT() {
+	for _, mm := range m.Requests {
+		mm.ResetVT()
+	}
+	m.Reset()
+}
+func (m *Upsert_MultiRequest) ReturnToVTPool() {
+	if m != nil {
+		m.ResetVT()
+		vtprotoPool_Upsert_MultiRequest.Put(m)
+	}
+}
+func Upsert_MultiRequestFromVTPool() *Upsert_MultiRequest {
+	return vtprotoPool_Upsert_MultiRequest.Get().(*Upsert_MultiRequest)
+}
+
+var vtprotoPool_Upsert_ObjectRequest = sync.Pool{
+	New: func() interface{} {
+		return &Upsert_ObjectRequest{}
+	},
+}
+
+func (m *Upsert_ObjectRequest) ResetVT() {
+	m.Object.ReturnToVTPool()
+	m.Config.ReturnToVTPool()
+	m.Vectorizer.ReturnToVTPool()
+	m.Reset()
+}
+func (m *Upsert_ObjectRequest) ReturnToVTPool() {
+	if m != nil {
+		m.ResetVT()
+		vtprotoPool_Upsert_ObjectRequest.Put(m)
+	}
+}
+func Upsert_ObjectRequestFromVTPool() *Upsert_ObjectRequest {
+	return vtprotoPool_Upsert_ObjectRequest.Get().(*Upsert_ObjectRequest)
+}
+
+var vtprotoPool_Upsert_MultiObjectRequest = sync.Pool{
+	New: func() interface{} {
+		return &Upsert_MultiObjectRequest{}
+	},
+}
+
+func (m *Upsert_MultiObjectRequest) ResetVT() {
+	for _, mm := range m.Requests {
+		mm.ResetVT()
+	}
+	m.Reset()
+}
+func (m *Upsert_MultiObjectRequest) ReturnToVTPool() {
+	if m != nil {
+		m.ResetVT()
+		vtprotoPool_Upsert_MultiObjectRequest.Put(m)
+	}
+}
+func Upsert_MultiObjectRequestFromVTPool() *Upsert_MultiObjectRequest {
+	return vtprotoPool_Upsert_MultiObjectRequest.Get().(*Upsert_MultiObjectRequest)
+}
+
+var vtprotoPool_Upsert_Config = sync.Pool{
+	New: func() interface{} {
+		return &Upsert_Config{}
+	},
+}
+
+func (m *Upsert_Config) ResetVT() {
+	m.Filters.ReturnToVTPool()
+	m.Reset()
+}
+func (m *Upsert_Config) ReturnToVTPool() {
+	if m != nil {
+		m.ResetVT()
+		vtprotoPool_Upsert_Config.Put(m)
+	}
+}
+func Upsert_ConfigFromVTPool() *Upsert_Config {
+	return vtprotoPool_Upsert_Config.Get().(*Upsert_Config)
+}
+
+var vtprotoPool_Upsert = sync.Pool{
+	New: func() interface{} {
+		return &Upsert{}
+	},
+}
+
+func (m *Upsert) ResetVT() {
+	m.Reset()
+}
+func (m *Upsert) ReturnToVTPool() {
+	if m != nil {
+		m.ResetVT()
+		vtprotoPool_Upsert.Put(m)
+	}
+}
+func UpsertFromVTPool() *Upsert {
+	return vtprotoPool_Upsert.Get().(*Upsert)
+}
+
+var vtprotoPool_Remove_Request = sync.Pool{
+	New: func() interface{} {
+		return &Remove_Request{}
+	},
+}
+
+func (m *Remove_Request) ResetVT() {
+	m.Id.ReturnToVTPool()
+	m.Config.ReturnToVTPool()
+	m.Reset()
+}
+func (m *Remove_Request) ReturnToVTPool() {
+	if m != nil {
+		m.ResetVT()
+		vtprotoPool_Remove_Request.Put(m)
+	}
+}
+func Remove_RequestFromVTPool() *Remove_Request {
+	return vtprotoPool_Remove_Request.Get().(*Remove_Request)
+}
+
+var vtprotoPool_Remove_MultiRequest = sync.Pool{
+	New: func() interface{} {
+		return &Remove_MultiRequest{}
+	},
+}
+
+func (m *Remove_MultiRequest) ResetVT() {
+	for _, mm := range m.Requests {
+		mm.ResetVT()
+	}
+	m.Reset()
+}
+func (m *Remove_MultiRequest) ReturnToVTPool() {
+	if m != nil {
+		m.ResetVT()
+		vtprotoPool_Remove_MultiRequest.Put(m)
+	}
+}
+func Remove_MultiRequestFromVTPool() *Remove_MultiRequest {
+	return vtprotoPool_Remove_MultiRequest.Get().(*Remove_MultiRequest)
+}
+
+var vtprotoPool_Remove_Config = sync.Pool{
+	New: func() interface{} {
+		return &Remove_Config{}
+	},
+}
+
+func (m *Remove_Config) ResetVT() {
+	m.Reset()
+}
+func (m *Remove_Config) ReturnToVTPool() {
+	if m != nil {
+		m.ResetVT()
+		vtprotoPool_Remove_Config.Put(m)
+	}
+}
+func Remove_ConfigFromVTPool() *Remove_Config {
+	return vtprotoPool_Remove_Config.Get().(*Remove_Config)
+}
+
+var vtprotoPool_Remove = sync.Pool{
+	New: func() interface{} {
+		return &Remove{}
+	},
+}
+
+func (m *Remove) ResetVT() {
+	m.Reset()
+}
+func (m *Remove) ReturnToVTPool() {
+	if m != nil {
+		m.ResetVT()
+		vtprotoPool_Remove.Put(m)
+	}
+}
+func RemoveFromVTPool() *Remove {
+	return vtprotoPool_Remove.Get().(*Remove)
+}
+
+var vtprotoPool_Object_VectorRequest = sync.Pool{
+	New: func() interface{} {
+		return &Object_VectorRequest{}
+	},
+}
+
+func (m *Object_VectorRequest) ResetVT() {
+	m.Id.ReturnToVTPool()
+	m.Filters.ReturnToVTPool()
+	m.Reset()
+}
+func (m *Object_VectorRequest) ReturnToVTPool() {
+	if m != nil {
+		m.ResetVT()
+		vtprotoPool_Object_VectorRequest.Put(m)
+	}
+}
+func Object_VectorRequestFromVTPool() *Object_VectorRequest {
+	return vtprotoPool_Object_VectorRequest.Get().(*Object_VectorRequest)
+}
+
+var vtprotoPool_Object_Distance = sync.Pool{
+	New: func() interface{} {
+		return &Object_Distance{}
+	},
+}
+
+func (m *Object_Distance) ResetVT() {
+	m.Reset()
+}
+func (m *Object_Distance) ReturnToVTPool() {
+	if m != nil {
+		m.ResetVT()
+		vtprotoPool_Object_Distance.Put(m)
+	}
+}
+func Object_DistanceFromVTPool() *Object_Distance {
+	return vtprotoPool_Object_Distance.Get().(*Object_Distance)
+}
+
+var vtprotoPool_Object_ID = sync.Pool{
+	New: func() interface{} {
+		return &Object_ID{}
+	},
+}
+
+func (m *Object_ID) ResetVT() {
+	m.Reset()
+}
+func (m *Object_ID) ReturnToVTPool() {
+	if m != nil {
+		m.ResetVT()
+		vtprotoPool_Object_ID.Put(m)
+	}
+}
+func Object_IDFromVTPool() *Object_ID {
+	return vtprotoPool_Object_ID.Get().(*Object_ID)
+}
+
+var vtprotoPool_Object_IDs = sync.Pool{
+	New: func() interface{} {
+		return &Object_IDs{}
+	},
+}
+
+func (m *Object_IDs) ResetVT() {
+	f0 := m.Ids[:0]
+	m.Reset()
+	m.Ids = f0
+}
+func (m *Object_IDs) ReturnToVTPool() {
+	if m != nil {
+		m.ResetVT()
+		vtprotoPool_Object_IDs.Put(m)
+	}
+}
+func Object_IDsFromVTPool() *Object_IDs {
+	return vtprotoPool_Object_IDs.Get().(*Object_IDs)
+}
+
+var vtprotoPool_Object_Vector = sync.Pool{
+	New: func() interface{} {
+		return &Object_Vector{}
+	},
+}
+
+func (m *Object_Vector) ResetVT() {
+	f0 := m.Vector[:0]
+	m.Reset()
+	m.Vector = f0
+}
+func (m *Object_Vector) ReturnToVTPool() {
+	if m != nil {
+		m.ResetVT()
+		vtprotoPool_Object_Vector.Put(m)
+	}
+}
+func Object_VectorFromVTPool() *Object_Vector {
+	return vtprotoPool_Object_Vector.Get().(*Object_Vector)
+}
+
+var vtprotoPool_Object_Vectors = sync.Pool{
+	New: func() interface{} {
+		return &Object_Vectors{}
+	},
+}
+
+func (m *Object_Vectors) ResetVT() {
+	for _, mm := range m.Vectors {
+		mm.ResetVT()
+	}
+	m.Reset()
+}
+func (m *Object_Vectors) ReturnToVTPool() {
+	if m != nil {
+		m.ResetVT()
+		vtprotoPool_Object_Vectors.Put(m)
+	}
+}
+func Object_VectorsFromVTPool() *Object_Vectors {
+	return vtprotoPool_Object_Vectors.Get().(*Object_Vectors)
+}
+
+var vtprotoPool_Object_ReshapeVector = sync.Pool{
+	New: func() interface{} {
+		return &Object_ReshapeVector{}
+	},
+}
+
+func (m *Object_ReshapeVector) ResetVT() {
+	f0 := m.Object[:0]
+	f1 := m.Shape[:0]
+	m.Reset()
+	m.Object = f0
+	m.Shape = f1
+}
+func (m *Object_ReshapeVector) ReturnToVTPool() {
+	if m != nil {
+		m.ResetVT()
+		vtprotoPool_Object_ReshapeVector.Put(m)
+	}
+}
+func Object_ReshapeVectorFromVTPool() *Object_ReshapeVector {
+	return vtprotoPool_Object_ReshapeVector.Get().(*Object_ReshapeVector)
+}
+
+var vtprotoPool_Object_Blob = sync.Pool{
+	New: func() interface{} {
+		return &Object_Blob{}
+	},
+}
+
+func (m *Object_Blob) ResetVT() {
+	f0 := m.Object[:0]
+	m.Reset()
+	m.Object = f0
+}
+func (m *Object_Blob) ReturnToVTPool() {
+	if m != nil {
+		m.ResetVT()
+		vtprotoPool_Object_Blob.Put(m)
+	}
+}
+func Object_BlobFromVTPool() *Object_Blob {
+	return vtprotoPool_Object_Blob.Get().(*Object_Blob)
+}
+
+var vtprotoPool_Object_Location = sync.Pool{
+	New: func() interface{} {
+		return &Object_Location{}
+	},
+}
+
+func (m *Object_Location) ResetVT() {
+	f0 := m.Ips[:0]
+	m.Reset()
+	m.Ips = f0
+}
+func (m *Object_Location) ReturnToVTPool() {
+	if m != nil {
+		m.ResetVT()
+		vtprotoPool_Object_Location.Put(m)
+	}
+}
+func Object_LocationFromVTPool() *Object_Location {
+	return vtprotoPool_Object_Location.Get().(*Object_Location)
+}
+
+var vtprotoPool_Object_Locations = sync.Pool{
+	New: func() interface{} {
+		return &Object_Locations{}
+	},
+}
+
+func (m *Object_Locations) ResetVT() {
+	for _, mm := range m.Locations {
+		mm.ResetVT()
+	}
+	m.Reset()
+}
+func (m *Object_Locations) ReturnToVTPool() {
+	if m != nil {
+		m.ResetVT()
+		vtprotoPool_Object_Locations.Put(m)
+	}
+}
+func Object_LocationsFromVTPool() *Object_Locations {
+	return vtprotoPool_Object_Locations.Get().(*Object_Locations)
+}
+
+var vtprotoPool_Object = sync.Pool{
+	New: func() interface{} {
+		return &Object{}
+	},
+}
+
+func (m *Object) ResetVT() {
+	m.Reset()
+}
+func (m *Object) ReturnToVTPool() {
+	if m != nil {
+		m.ResetVT()
+		vtprotoPool_Object.Put(m)
+	}
+}
+func ObjectFromVTPool() *Object {
+	return vtprotoPool_Object.Get().(*Object)
+}
+
+var vtprotoPool_Control_CreateIndexRequest = sync.Pool{
+	New: func() interface{} {
+		return &Control_CreateIndexRequest{}
+	},
+}
+
+func (m *Control_CreateIndexRequest) ResetVT() {
+	m.Reset()
+}
+func (m *Control_CreateIndexRequest) ReturnToVTPool() {
+	if m != nil {
+		m.ResetVT()
+		vtprotoPool_Control_CreateIndexRequest.Put(m)
+	}
+}
+func Control_CreateIndexRequestFromVTPool() *Control_CreateIndexRequest {
+	return vtprotoPool_Control_CreateIndexRequest.Get().(*Control_CreateIndexRequest)
+}
+
+var vtprotoPool_Control = sync.Pool{
+	New: func() interface{} {
+		return &Control{}
+	},
+}
+
+func (m *Control) ResetVT() {
+	m.Reset()
+}
+func (m *Control) ReturnToVTPool() {
+	if m != nil {
+		m.ResetVT()
+		vtprotoPool_Control.Put(m)
+	}
+}
+func ControlFromVTPool() *Control {
+	return vtprotoPool_Control.Get().(*Control)
+}
+
+var vtprotoPool_Discoverer_Request = sync.Pool{
+	New: func() interface{} {
+		return &Discoverer_Request{}
+	},
+}
+
+func (m *Discoverer_Request) ResetVT() {
+	m.Reset()
+}
+func (m *Discoverer_Request) ReturnToVTPool() {
+	if m != nil {
+		m.ResetVT()
+		vtprotoPool_Discoverer_Request.Put(m)
+	}
+}
+func Discoverer_RequestFromVTPool() *Discoverer_Request {
+	return vtprotoPool_Discoverer_Request.Get().(*Discoverer_Request)
+}
+
+var vtprotoPool_Discoverer = sync.Pool{
+	New: func() interface{} {
+		return &Discoverer{}
+	},
+}
+
+func (m *Discoverer) ResetVT() {
+	m.Reset()
+}
+func (m *Discoverer) ReturnToVTPool() {
+	if m != nil {
+		m.ResetVT()
+		vtprotoPool_Discoverer.Put(m)
+	}
+}
+func DiscovererFromVTPool() *Discoverer {
+	return vtprotoPool_Discoverer.Get().(*Discoverer)
+}
+
+var vtprotoPool_Info_Index_Count = sync.Pool{
+	New: func() interface{} {
+		return &Info_Index_Count{}
+	},
+}
+
+func (m *Info_Index_Count) ResetVT() {
+	m.Reset()
+}
+func (m *Info_Index_Count) ReturnToVTPool() {
+	if m != nil {
+		m.ResetVT()
+		vtprotoPool_Info_Index_Count.Put(m)
+	}
+}
+func Info_Index_CountFromVTPool() *Info_Index_Count {
+	return vtprotoPool_Info_Index_Count.Get().(*Info_Index_Count)
+}
+
+var vtprotoPool_Info_Index_UUID = sync.Pool{
+	New: func() interface{} {
+		return &Info_Index_UUID{}
+	},
+}
+
+func (m *Info_Index_UUID) ResetVT() {
+	m.Reset()
+}
+func (m *Info_Index_UUID) ReturnToVTPool() {
+	if m != nil {
+		m.ResetVT()
+		vtprotoPool_Info_Index_UUID.Put(m)
+	}
+}
+func Info_Index_UUIDFromVTPool() *Info_Index_UUID {
+	return vtprotoPool_Info_Index_UUID.Get().(*Info_Index_UUID)
+}
+
+var vtprotoPool_Info_Index = sync.Pool{
+	New: func() interface{} {
+		return &Info_Index{}
+	},
+}
+
+func (m *Info_Index) ResetVT() {
+	m.Reset()
+}
+func (m *Info_Index) ReturnToVTPool() {
+	if m != nil {
+		m.ResetVT()
+		vtprotoPool_Info_Index.Put(m)
+	}
+}
+func Info_IndexFromVTPool() *Info_Index {
+	return vtprotoPool_Info_Index.Get().(*Info_Index)
+}
+
+var vtprotoPool_Info_Pod = sync.Pool{
+	New: func() interface{} {
+		return &Info_Pod{}
+	},
+}
+
+func (m *Info_Pod) ResetVT() {
+	m.Cpu.ReturnToVTPool()
+	m.Memory.ReturnToVTPool()
+	m.Node.ReturnToVTPool()
+	m.Reset()
+}
+func (m *Info_Pod) ReturnToVTPool() {
+	if m != nil {
+		m.ResetVT()
+		vtprotoPool_Info_Pod.Put(m)
+	}
+}
+func Info_PodFromVTPool() *Info_Pod {
+	return vtprotoPool_Info_Pod.Get().(*Info_Pod)
+}
+
+var vtprotoPool_Info_Node = sync.Pool{
+	New: func() interface{} {
+		return &Info_Node{}
+	},
+}
+
+func (m *Info_Node) ResetVT() {
+	m.Cpu.ReturnToVTPool()
+	m.Memory.ReturnToVTPool()
+	m.Pods.ReturnToVTPool()
+	m.Reset()
+}
+func (m *Info_Node) ReturnToVTPool() {
+	if m != nil {
+		m.ResetVT()
+		vtprotoPool_Info_Node.Put(m)
+	}
+}
+func Info_NodeFromVTPool() *Info_Node {
+	return vtprotoPool_Info_Node.Get().(*Info_Node)
+}
+
+var vtprotoPool_Info_CPU = sync.Pool{
+	New: func() interface{} {
+		return &Info_CPU{}
+	},
+}
+
+func (m *Info_CPU) ResetVT() {
+	m.Reset()
+}
+func (m *Info_CPU) ReturnToVTPool() {
+	if m != nil {
+		m.ResetVT()
+		vtprotoPool_Info_CPU.Put(m)
+	}
+}
+func Info_CPUFromVTPool() *Info_CPU {
+	return vtprotoPool_Info_CPU.Get().(*Info_CPU)
+}
+
+var vtprotoPool_Info_Memory = sync.Pool{
+	New: func() interface{} {
+		return &Info_Memory{}
+	},
+}
+
+func (m *Info_Memory) ResetVT() {
+	m.Reset()
+}
+func (m *Info_Memory) ReturnToVTPool() {
+	if m != nil {
+		m.ResetVT()
+		vtprotoPool_Info_Memory.Put(m)
+	}
+}
+func Info_MemoryFromVTPool() *Info_Memory {
+	return vtprotoPool_Info_Memory.Get().(*Info_Memory)
+}
+
+var vtprotoPool_Info_Pods = sync.Pool{
+	New: func() interface{} {
+		return &Info_Pods{}
+	},
+}
+
+func (m *Info_Pods) ResetVT() {
+	for _, mm := range m.Pods {
+		mm.ResetVT()
+	}
+	m.Reset()
+}
+func (m *Info_Pods) ReturnToVTPool() {
+	if m != nil {
+		m.ResetVT()
+		vtprotoPool_Info_Pods.Put(m)
+	}
+}
+func Info_PodsFromVTPool() *Info_Pods {
+	return vtprotoPool_Info_Pods.Get().(*Info_Pods)
+}
+
+var vtprotoPool_Info_Nodes = sync.Pool{
+	New: func() interface{} {
+		return &Info_Nodes{}
+	},
+}
+
+func (m *Info_Nodes) ResetVT() {
+	for _, mm := range m.Nodes {
+		mm.ResetVT()
+	}
+	m.Reset()
+}
+func (m *Info_Nodes) ReturnToVTPool() {
+	if m != nil {
+		m.ResetVT()
+		vtprotoPool_Info_Nodes.Put(m)
+	}
+}
+func Info_NodesFromVTPool() *Info_Nodes {
+	return vtprotoPool_Info_Nodes.Get().(*Info_Nodes)
+}
+
+var vtprotoPool_Info_IPs = sync.Pool{
+	New: func() interface{} {
+		return &Info_IPs{}
+	},
+}
+
+func (m *Info_IPs) ResetVT() {
+	f0 := m.Ip[:0]
+	m.Reset()
+	m.Ip = f0
+}
+func (m *Info_IPs) ReturnToVTPool() {
+	if m != nil {
+		m.ResetVT()
+		vtprotoPool_Info_IPs.Put(m)
+	}
+}
+func Info_IPsFromVTPool() *Info_IPs {
+	return vtprotoPool_Info_IPs.Get().(*Info_IPs)
+}
+
+var vtprotoPool_Info = sync.Pool{
+	New: func() interface{} {
+		return &Info{}
+	},
+}
+
+func (m *Info) ResetVT() {
+	m.Reset()
+}
+func (m *Info) ReturnToVTPool() {
+	if m != nil {
+		m.ResetVT()
+		vtprotoPool_Info.Put(m)
+	}
+}
+func InfoFromVTPool() *Info {
+	return vtprotoPool_Info.Get().(*Info)
+}
 func (m *Search_Request) SizeVT() (n int) {
 	if m == nil {
 		return 0
@@ -3731,6 +7040,9 @@ func (m *Search_Config) SizeVT() (n int) {
 	}
 	if m.MinNum != 0 {
 		n += 1 + sov(uint64(m.MinNum))
+	}
+	if m.AggregationAlgorithm != 0 {
+		n += 1 + sov(uint64(m.AggregationAlgorithm))
 	}
 	n += len(m.unknownFields)
 	return n
@@ -4975,7 +8287,7 @@ func (m *Search_Request) UnmarshalVT(dAtA []byte) error {
 				}
 				var elementCount int
 				elementCount = packedLen / 4
-				if elementCount != 0 && len(m.Vector) == 0 {
+				if elementCount != 0 && len(m.Vector) == 0 && cap(m.Vector) < elementCount {
 					m.Vector = make([]float32, 0, elementCount)
 				}
 				for iNdEx < postIndex {
@@ -5021,7 +8333,7 @@ func (m *Search_Request) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if m.Config == nil {
-				m.Config = &Search_Config{}
+				m.Config = Search_ConfigFromVTPool()
 			}
 			if err := m.Config.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
@@ -5107,7 +8419,14 @@ func (m *Search_MultiRequest) UnmarshalVT(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Requests = append(m.Requests, &Search_Request{})
+			if len(m.Requests) == cap(m.Requests) {
+				m.Requests = append(m.Requests, &Search_Request{})
+			} else {
+				m.Requests = m.Requests[:len(m.Requests)+1]
+				if m.Requests[len(m.Requests)-1] == nil {
+					m.Requests[len(m.Requests)-1] = &Search_Request{}
+				}
+			}
 			if err := m.Requests[len(m.Requests)-1].UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
@@ -5225,7 +8544,7 @@ func (m *Search_IDRequest) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if m.Config == nil {
-				m.Config = &Search_Config{}
+				m.Config = Search_ConfigFromVTPool()
 			}
 			if err := m.Config.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
@@ -5311,7 +8630,14 @@ func (m *Search_MultiIDRequest) UnmarshalVT(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Requests = append(m.Requests, &Search_IDRequest{})
+			if len(m.Requests) == cap(m.Requests) {
+				m.Requests = append(m.Requests, &Search_IDRequest{})
+			} else {
+				m.Requests = m.Requests[:len(m.Requests)+1]
+				if m.Requests[len(m.Requests)-1] == nil {
+					m.Requests[len(m.Requests)-1] = &Search_IDRequest{}
+				}
+			}
 			if err := m.Requests[len(m.Requests)-1].UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
@@ -5431,7 +8757,7 @@ func (m *Search_ObjectRequest) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if m.Config == nil {
-				m.Config = &Search_Config{}
+				m.Config = Search_ConfigFromVTPool()
 			}
 			if err := m.Config.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
@@ -5467,7 +8793,7 @@ func (m *Search_ObjectRequest) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if m.Vectorizer == nil {
-				m.Vectorizer = &Filter_Target{}
+				m.Vectorizer = Filter_TargetFromVTPool()
 			}
 			if err := m.Vectorizer.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
@@ -5553,7 +8879,14 @@ func (m *Search_MultiObjectRequest) UnmarshalVT(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Requests = append(m.Requests, &Search_ObjectRequest{})
+			if len(m.Requests) == cap(m.Requests) {
+				m.Requests = append(m.Requests, &Search_ObjectRequest{})
+			} else {
+				m.Requests = m.Requests[:len(m.Requests)+1]
+				if m.Requests[len(m.Requests)-1] == nil {
+					m.Requests[len(m.Requests)-1] = &Search_ObjectRequest{}
+				}
+			}
 			if err := m.Requests[len(m.Requests)-1].UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
@@ -5731,7 +9064,7 @@ func (m *Search_Config) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if m.IngressFilters == nil {
-				m.IngressFilters = &Filter_Config{}
+				m.IngressFilters = Filter_ConfigFromVTPool()
 			}
 			if err := m.IngressFilters.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
@@ -5767,7 +9100,7 @@ func (m *Search_Config) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if m.EgressFilters == nil {
-				m.EgressFilters = &Filter_Config{}
+				m.EgressFilters = Filter_ConfigFromVTPool()
 			}
 			if err := m.EgressFilters.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
@@ -5788,6 +9121,25 @@ func (m *Search_Config) UnmarshalVT(dAtA []byte) error {
 				b := dAtA[iNdEx]
 				iNdEx++
 				m.MinNum |= uint32(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 9:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field AggregationAlgorithm", wireType)
+			}
+			m.AggregationAlgorithm = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.AggregationAlgorithm |= Search_AggregationAlgorithm(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
@@ -5904,7 +9256,14 @@ func (m *Search_Response) UnmarshalVT(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Results = append(m.Results, &Object_Distance{})
+			if len(m.Results) == cap(m.Results) {
+				m.Results = append(m.Results, &Object_Distance{})
+			} else {
+				m.Results = m.Results[:len(m.Results)+1]
+				if m.Results[len(m.Results)-1] == nil {
+					m.Results[len(m.Results)-1] = &Object_Distance{}
+				}
+			}
 			if err := m.Results[len(m.Results)-1].UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
@@ -5989,7 +9348,14 @@ func (m *Search_Responses) UnmarshalVT(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Responses = append(m.Responses, &Search_Response{})
+			if len(m.Responses) == cap(m.Responses) {
+				m.Responses = append(m.Responses, &Search_Response{})
+			} else {
+				m.Responses = m.Responses[:len(m.Responses)+1]
+				if m.Responses[len(m.Responses)-1] == nil {
+					m.Responses[len(m.Responses)-1] = &Search_Response{}
+				}
+			}
 			if err := m.Responses[len(m.Responses)-1].UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
@@ -6376,7 +9742,14 @@ func (m *Filter_Config) UnmarshalVT(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Targets = append(m.Targets, &Filter_Target{})
+			if len(m.Targets) == cap(m.Targets) {
+				m.Targets = append(m.Targets, &Filter_Target{})
+			} else {
+				m.Targets = m.Targets[:len(m.Targets)+1]
+				if m.Targets[len(m.Targets)-1] == nil {
+					m.Targets[len(m.Targets)-1] = &Filter_Target{}
+				}
+			}
 			if err := m.Targets[len(m.Targets)-1].UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
@@ -6513,7 +9886,7 @@ func (m *Insert_Request) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if m.Vector == nil {
-				m.Vector = &Object_Vector{}
+				m.Vector = Object_VectorFromVTPool()
 			}
 			if err := m.Vector.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
@@ -6549,7 +9922,7 @@ func (m *Insert_Request) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if m.Config == nil {
-				m.Config = &Insert_Config{}
+				m.Config = Insert_ConfigFromVTPool()
 			}
 			if err := m.Config.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
@@ -6635,7 +10008,14 @@ func (m *Insert_MultiRequest) UnmarshalVT(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Requests = append(m.Requests, &Insert_Request{})
+			if len(m.Requests) == cap(m.Requests) {
+				m.Requests = append(m.Requests, &Insert_Request{})
+			} else {
+				m.Requests = m.Requests[:len(m.Requests)+1]
+				if m.Requests[len(m.Requests)-1] == nil {
+					m.Requests[len(m.Requests)-1] = &Insert_Request{}
+				}
+			}
 			if err := m.Requests[len(m.Requests)-1].UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
@@ -6721,7 +10101,7 @@ func (m *Insert_ObjectRequest) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if m.Object == nil {
-				m.Object = &Object_Blob{}
+				m.Object = Object_BlobFromVTPool()
 			}
 			if err := m.Object.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
@@ -6757,7 +10137,7 @@ func (m *Insert_ObjectRequest) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if m.Config == nil {
-				m.Config = &Insert_Config{}
+				m.Config = Insert_ConfigFromVTPool()
 			}
 			if err := m.Config.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
@@ -6793,7 +10173,7 @@ func (m *Insert_ObjectRequest) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if m.Vectorizer == nil {
-				m.Vectorizer = &Filter_Target{}
+				m.Vectorizer = Filter_TargetFromVTPool()
 			}
 			if err := m.Vectorizer.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
@@ -6879,7 +10259,14 @@ func (m *Insert_MultiObjectRequest) UnmarshalVT(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Requests = append(m.Requests, &Insert_ObjectRequest{})
+			if len(m.Requests) == cap(m.Requests) {
+				m.Requests = append(m.Requests, &Insert_ObjectRequest{})
+			} else {
+				m.Requests = m.Requests[:len(m.Requests)+1]
+				if m.Requests[len(m.Requests)-1] == nil {
+					m.Requests[len(m.Requests)-1] = &Insert_ObjectRequest{}
+				}
+			}
 			if err := m.Requests[len(m.Requests)-1].UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
@@ -6985,7 +10372,7 @@ func (m *Insert_Config) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if m.Filters == nil {
-				m.Filters = &Filter_Config{}
+				m.Filters = Filter_ConfigFromVTPool()
 			}
 			if err := m.Filters.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
@@ -7142,7 +10529,7 @@ func (m *Update_Request) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if m.Vector == nil {
-				m.Vector = &Object_Vector{}
+				m.Vector = Object_VectorFromVTPool()
 			}
 			if err := m.Vector.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
@@ -7178,7 +10565,7 @@ func (m *Update_Request) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if m.Config == nil {
-				m.Config = &Update_Config{}
+				m.Config = Update_ConfigFromVTPool()
 			}
 			if err := m.Config.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
@@ -7264,7 +10651,14 @@ func (m *Update_MultiRequest) UnmarshalVT(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Requests = append(m.Requests, &Update_Request{})
+			if len(m.Requests) == cap(m.Requests) {
+				m.Requests = append(m.Requests, &Update_Request{})
+			} else {
+				m.Requests = m.Requests[:len(m.Requests)+1]
+				if m.Requests[len(m.Requests)-1] == nil {
+					m.Requests[len(m.Requests)-1] = &Update_Request{}
+				}
+			}
 			if err := m.Requests[len(m.Requests)-1].UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
@@ -7350,7 +10744,7 @@ func (m *Update_ObjectRequest) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if m.Object == nil {
-				m.Object = &Object_Blob{}
+				m.Object = Object_BlobFromVTPool()
 			}
 			if err := m.Object.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
@@ -7386,7 +10780,7 @@ func (m *Update_ObjectRequest) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if m.Config == nil {
-				m.Config = &Update_Config{}
+				m.Config = Update_ConfigFromVTPool()
 			}
 			if err := m.Config.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
@@ -7422,7 +10816,7 @@ func (m *Update_ObjectRequest) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if m.Vectorizer == nil {
-				m.Vectorizer = &Filter_Target{}
+				m.Vectorizer = Filter_TargetFromVTPool()
 			}
 			if err := m.Vectorizer.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
@@ -7508,7 +10902,14 @@ func (m *Update_MultiObjectRequest) UnmarshalVT(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Requests = append(m.Requests, &Update_ObjectRequest{})
+			if len(m.Requests) == cap(m.Requests) {
+				m.Requests = append(m.Requests, &Update_ObjectRequest{})
+			} else {
+				m.Requests = m.Requests[:len(m.Requests)+1]
+				if m.Requests[len(m.Requests)-1] == nil {
+					m.Requests[len(m.Requests)-1] = &Update_ObjectRequest{}
+				}
+			}
 			if err := m.Requests[len(m.Requests)-1].UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
@@ -7614,7 +11015,7 @@ func (m *Update_Config) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if m.Filters == nil {
-				m.Filters = &Filter_Config{}
+				m.Filters = Filter_ConfigFromVTPool()
 			}
 			if err := m.Filters.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
@@ -7791,7 +11192,7 @@ func (m *Upsert_Request) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if m.Vector == nil {
-				m.Vector = &Object_Vector{}
+				m.Vector = Object_VectorFromVTPool()
 			}
 			if err := m.Vector.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
@@ -7827,7 +11228,7 @@ func (m *Upsert_Request) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if m.Config == nil {
-				m.Config = &Upsert_Config{}
+				m.Config = Upsert_ConfigFromVTPool()
 			}
 			if err := m.Config.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
@@ -7913,7 +11314,14 @@ func (m *Upsert_MultiRequest) UnmarshalVT(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Requests = append(m.Requests, &Upsert_Request{})
+			if len(m.Requests) == cap(m.Requests) {
+				m.Requests = append(m.Requests, &Upsert_Request{})
+			} else {
+				m.Requests = m.Requests[:len(m.Requests)+1]
+				if m.Requests[len(m.Requests)-1] == nil {
+					m.Requests[len(m.Requests)-1] = &Upsert_Request{}
+				}
+			}
 			if err := m.Requests[len(m.Requests)-1].UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
@@ -7999,7 +11407,7 @@ func (m *Upsert_ObjectRequest) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if m.Object == nil {
-				m.Object = &Object_Blob{}
+				m.Object = Object_BlobFromVTPool()
 			}
 			if err := m.Object.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
@@ -8035,7 +11443,7 @@ func (m *Upsert_ObjectRequest) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if m.Config == nil {
-				m.Config = &Upsert_Config{}
+				m.Config = Upsert_ConfigFromVTPool()
 			}
 			if err := m.Config.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
@@ -8071,7 +11479,7 @@ func (m *Upsert_ObjectRequest) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if m.Vectorizer == nil {
-				m.Vectorizer = &Filter_Target{}
+				m.Vectorizer = Filter_TargetFromVTPool()
 			}
 			if err := m.Vectorizer.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
@@ -8157,7 +11565,14 @@ func (m *Upsert_MultiObjectRequest) UnmarshalVT(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Requests = append(m.Requests, &Upsert_ObjectRequest{})
+			if len(m.Requests) == cap(m.Requests) {
+				m.Requests = append(m.Requests, &Upsert_ObjectRequest{})
+			} else {
+				m.Requests = m.Requests[:len(m.Requests)+1]
+				if m.Requests[len(m.Requests)-1] == nil {
+					m.Requests[len(m.Requests)-1] = &Upsert_ObjectRequest{}
+				}
+			}
 			if err := m.Requests[len(m.Requests)-1].UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
@@ -8263,7 +11678,7 @@ func (m *Upsert_Config) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if m.Filters == nil {
-				m.Filters = &Filter_Config{}
+				m.Filters = Filter_ConfigFromVTPool()
 			}
 			if err := m.Filters.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
@@ -8440,7 +11855,7 @@ func (m *Remove_Request) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if m.Id == nil {
-				m.Id = &Object_ID{}
+				m.Id = Object_IDFromVTPool()
 			}
 			if err := m.Id.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
@@ -8476,7 +11891,7 @@ func (m *Remove_Request) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if m.Config == nil {
-				m.Config = &Remove_Config{}
+				m.Config = Remove_ConfigFromVTPool()
 			}
 			if err := m.Config.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
@@ -8562,7 +11977,14 @@ func (m *Remove_MultiRequest) UnmarshalVT(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Requests = append(m.Requests, &Remove_Request{})
+			if len(m.Requests) == cap(m.Requests) {
+				m.Requests = append(m.Requests, &Remove_Request{})
+			} else {
+				m.Requests = m.Requests[:len(m.Requests)+1]
+				if m.Requests[len(m.Requests)-1] == nil {
+					m.Requests[len(m.Requests)-1] = &Remove_Request{}
+				}
+			}
 			if err := m.Requests[len(m.Requests)-1].UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
@@ -8789,7 +12211,7 @@ func (m *Object_VectorRequest) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if m.Id == nil {
-				m.Id = &Object_ID{}
+				m.Id = Object_IDFromVTPool()
 			}
 			if err := m.Id.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
@@ -8825,7 +12247,7 @@ func (m *Object_VectorRequest) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if m.Filters == nil {
-				m.Filters = &Filter_Config{}
+				m.Filters = Filter_ConfigFromVTPool()
 			}
 			if err := m.Filters.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
@@ -9361,7 +12783,7 @@ func (m *Object_Vector) UnmarshalVT(dAtA []byte) error {
 				}
 				var elementCount int
 				elementCount = packedLen / 4
-				if elementCount != 0 && len(m.Vector) == 0 {
+				if elementCount != 0 && len(m.Vector) == 0 && cap(m.Vector) < elementCount {
 					m.Vector = make([]float32, 0, elementCount)
 				}
 				for iNdEx < postIndex {
@@ -9457,7 +12879,14 @@ func (m *Object_Vectors) UnmarshalVT(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Vectors = append(m.Vectors, &Object_Vector{})
+			if len(m.Vectors) == cap(m.Vectors) {
+				m.Vectors = append(m.Vectors, &Object_Vector{})
+			} else {
+				m.Vectors = m.Vectors[:len(m.Vectors)+1]
+				if m.Vectors[len(m.Vectors)-1] == nil {
+					m.Vectors[len(m.Vectors)-1] = &Object_Vector{}
+				}
+			}
 			if err := m.Vectors[len(m.Vectors)-1].UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
@@ -9748,7 +13177,7 @@ func (m *Object_ReshapeVector) UnmarshalVT(dAtA []byte) error {
 					}
 				}
 				elementCount = count
-				if elementCount != 0 && len(m.Shape) == 0 {
+				if elementCount != 0 && len(m.Shape) == 0 && cap(m.Shape) < elementCount {
 					m.Shape = make([]int32, 0, elementCount)
 				}
 				for iNdEx < postIndex {
@@ -10414,7 +13843,14 @@ func (m *Object_Locations) UnmarshalVT(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Locations = append(m.Locations, &Object_Location{})
+			if len(m.Locations) == cap(m.Locations) {
+				m.Locations = append(m.Locations, &Object_Location{})
+			} else {
+				m.Locations = m.Locations[:len(m.Locations)+1]
+				if m.Locations[len(m.Locations)-1] == nil {
+					m.Locations[len(m.Locations)-1] = &Object_Location{}
+				}
+			}
 			if err := m.Locations[len(m.Locations)-1].UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
@@ -11395,7 +14831,7 @@ func (m *Info_Pod) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if m.Cpu == nil {
-				m.Cpu = &Info_CPU{}
+				m.Cpu = Info_CPUFromVTPool()
 			}
 			if err := m.Cpu.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
@@ -11431,7 +14867,7 @@ func (m *Info_Pod) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if m.Memory == nil {
-				m.Memory = &Info_Memory{}
+				m.Memory = Info_MemoryFromVTPool()
 			}
 			if err := m.Memory.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
@@ -11467,7 +14903,7 @@ func (m *Info_Pod) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if m.Node == nil {
-				m.Node = &Info_Node{}
+				m.Node = Info_NodeFromVTPool()
 			}
 			if err := m.Node.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
@@ -11650,7 +15086,7 @@ func (m *Info_Node) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if m.Cpu == nil {
-				m.Cpu = &Info_CPU{}
+				m.Cpu = Info_CPUFromVTPool()
 			}
 			if err := m.Cpu.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
@@ -11686,7 +15122,7 @@ func (m *Info_Node) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if m.Memory == nil {
-				m.Memory = &Info_Memory{}
+				m.Memory = Info_MemoryFromVTPool()
 			}
 			if err := m.Memory.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
@@ -11722,7 +15158,7 @@ func (m *Info_Node) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if m.Pods == nil {
-				m.Pods = &Info_Pods{}
+				m.Pods = Info_PodsFromVTPool()
 			}
 			if err := m.Pods.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
@@ -11976,7 +15412,14 @@ func (m *Info_Pods) UnmarshalVT(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Pods = append(m.Pods, &Info_Pod{})
+			if len(m.Pods) == cap(m.Pods) {
+				m.Pods = append(m.Pods, &Info_Pod{})
+			} else {
+				m.Pods = m.Pods[:len(m.Pods)+1]
+				if m.Pods[len(m.Pods)-1] == nil {
+					m.Pods[len(m.Pods)-1] = &Info_Pod{}
+				}
+			}
 			if err := m.Pods[len(m.Pods)-1].UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
@@ -12061,7 +15504,14 @@ func (m *Info_Nodes) UnmarshalVT(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Nodes = append(m.Nodes, &Info_Node{})
+			if len(m.Nodes) == cap(m.Nodes) {
+				m.Nodes = append(m.Nodes, &Info_Node{})
+			} else {
+				m.Nodes = m.Nodes[:len(m.Nodes)+1]
+				if m.Nodes[len(m.Nodes)-1] == nil {
+					m.Nodes[len(m.Nodes)-1] = &Info_Node{}
+				}
+			}
 			if err := m.Nodes[len(m.Nodes)-1].UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}

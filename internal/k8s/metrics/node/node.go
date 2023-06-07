@@ -29,7 +29,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-	"sigs.k8s.io/controller-runtime/pkg/source"
 )
 
 type NodeWatcher k8s.ResourceController
@@ -139,7 +138,7 @@ func (*reconciler) Owns() (client.Object, []builder.OwnsOption) {
 	return nil, nil
 }
 
-func (*reconciler) Watches() (*source.Kind, handler.EventHandler, []builder.WatchesOption) {
-	// return &source.Kind{Type: new(metrics.NodeMetrics)}, &handler.EnqueueRequestForObject{}
+func (*reconciler) Watches() (client.Object, handler.EventHandler, []builder.WatchesOption) {
+	// return new(metrics.NodeMetrics), &handler.EnqueueRequestForObject{}
 	return nil, nil, nil
 }

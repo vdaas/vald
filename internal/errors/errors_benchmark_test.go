@@ -15,11 +15,11 @@ package errors
 
 import (
 	"errors"
+	"flag"
 	"fmt"
-	"math/rand"
 	"testing"
-	"time"
-	"unsafe"
+
+	"github.com/vdaas/vald/internal/test/data/strings"
 )
 
 var (
@@ -37,38 +37,18 @@ var (
 	}
 )
 
-func init() {
+func TestMain(m *testing.M) {
+	testing.Init()
+	flag.Parse()
+	if testing.Short() {
+		m.Run()
+		return
+	}
 	for i := 0; i < bigDataCount; i++ {
-		bigData[randStr(bigDataLen)] = New(randStr(bigDataLen))
+		bigData[strings.Random(bigDataLen)] = New(strings.Random(bigDataLen))
 	}
-}
-
-var randSrc = rand.NewSource(time.Now().UnixNano())
-
-const (
-	rs6Letters       = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-	rs6LetterIdxBits = 6
-	rs6LetterIdxMask = 1<<rs6LetterIdxBits - 1
-	rs6LetterIdxMax  = 63 / rs6LetterIdxBits
-)
-
-func randStr(n int) string {
-	b := make([]byte, n)
-	cache, remain := randSrc.Int63(), rs6LetterIdxMax
-	for i := n - 1; i >= 0; {
-		if remain == 0 {
-			cache, remain = randSrc.Int63(), rs6LetterIdxMax
-		}
-		idx := int(cache & rs6LetterIdxMask)
-		if idx < len(rs6Letters) {
-			b[i] = rs6Letters[idx]
-			i--
-		}
-		cache >>= rs6LetterIdxBits
-		remain--
-	}
-	// skipcq: GSC-G103
-	return *(*string)(unsafe.Pointer(&b))
+	m.Run()
+	bigData = nil
 }
 
 func benchmark(b *testing.B, data map[string]error,

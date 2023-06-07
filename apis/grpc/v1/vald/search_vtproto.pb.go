@@ -77,7 +77,7 @@ func NewSearchClient(cc grpc.ClientConnInterface) SearchClient {
 }
 
 func (c *searchClient) Search(ctx context.Context, in *payload.Search_Request, opts ...grpc.CallOption) (*payload.Search_Response, error) {
-	out := new(payload.Search_Response)
+	out := payload.Search_ResponseFromVTPool()
 	err := c.cc.Invoke(ctx, "/vald.v1.Search/Search", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -86,7 +86,7 @@ func (c *searchClient) Search(ctx context.Context, in *payload.Search_Request, o
 }
 
 func (c *searchClient) SearchByID(ctx context.Context, in *payload.Search_IDRequest, opts ...grpc.CallOption) (*payload.Search_Response, error) {
-	out := new(payload.Search_Response)
+	out := payload.Search_ResponseFromVTPool()
 	err := c.cc.Invoke(ctx, "/vald.v1.Search/SearchByID", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -157,7 +157,7 @@ func (x *searchStreamSearchByIDClient) Recv() (*payload.Search_StreamResponse, e
 }
 
 func (c *searchClient) MultiSearch(ctx context.Context, in *payload.Search_MultiRequest, opts ...grpc.CallOption) (*payload.Search_Responses, error) {
-	out := new(payload.Search_Responses)
+	out := payload.Search_ResponsesFromVTPool()
 	err := c.cc.Invoke(ctx, "/vald.v1.Search/MultiSearch", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -166,7 +166,7 @@ func (c *searchClient) MultiSearch(ctx context.Context, in *payload.Search_Multi
 }
 
 func (c *searchClient) MultiSearchByID(ctx context.Context, in *payload.Search_MultiIDRequest, opts ...grpc.CallOption) (*payload.Search_Responses, error) {
-	out := new(payload.Search_Responses)
+	out := payload.Search_ResponsesFromVTPool()
 	err := c.cc.Invoke(ctx, "/vald.v1.Search/MultiSearchByID", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -175,7 +175,7 @@ func (c *searchClient) MultiSearchByID(ctx context.Context, in *payload.Search_M
 }
 
 func (c *searchClient) LinearSearch(ctx context.Context, in *payload.Search_Request, opts ...grpc.CallOption) (*payload.Search_Response, error) {
-	out := new(payload.Search_Response)
+	out := payload.Search_ResponseFromVTPool()
 	err := c.cc.Invoke(ctx, "/vald.v1.Search/LinearSearch", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -184,7 +184,7 @@ func (c *searchClient) LinearSearch(ctx context.Context, in *payload.Search_Requ
 }
 
 func (c *searchClient) LinearSearchByID(ctx context.Context, in *payload.Search_IDRequest, opts ...grpc.CallOption) (*payload.Search_Response, error) {
-	out := new(payload.Search_Response)
+	out := payload.Search_ResponseFromVTPool()
 	err := c.cc.Invoke(ctx, "/vald.v1.Search/LinearSearchByID", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -255,7 +255,7 @@ func (x *searchStreamLinearSearchByIDClient) Recv() (*payload.Search_StreamRespo
 }
 
 func (c *searchClient) MultiLinearSearch(ctx context.Context, in *payload.Search_MultiRequest, opts ...grpc.CallOption) (*payload.Search_Responses, error) {
-	out := new(payload.Search_Responses)
+	out := payload.Search_ResponsesFromVTPool()
 	err := c.cc.Invoke(ctx, "/vald.v1.Search/MultiLinearSearch", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -264,7 +264,7 @@ func (c *searchClient) MultiLinearSearch(ctx context.Context, in *payload.Search
 }
 
 func (c *searchClient) MultiLinearSearchByID(ctx context.Context, in *payload.Search_MultiIDRequest, opts ...grpc.CallOption) (*payload.Search_Responses, error) {
-	out := new(payload.Search_Responses)
+	out := payload.Search_ResponsesFromVTPool()
 	err := c.cc.Invoke(ctx, "/vald.v1.Search/MultiLinearSearchByID", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -357,7 +357,7 @@ func RegisterSearchServer(s grpc.ServiceRegistrar, srv SearchServer) {
 }
 
 func _Search_Search_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(payload.Search_Request)
+	in := payload.Search_RequestFromVTPool()
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -375,7 +375,7 @@ func _Search_Search_Handler(srv interface{}, ctx context.Context, dec func(inter
 }
 
 func _Search_SearchByID_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(payload.Search_IDRequest)
+	in := payload.Search_IDRequestFromVTPool()
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -411,7 +411,7 @@ func (x *searchStreamSearchServer) Send(m *payload.Search_StreamResponse) error 
 }
 
 func (x *searchStreamSearchServer) Recv() (*payload.Search_Request, error) {
-	m := new(payload.Search_Request)
+	m := payload.Search_RequestFromVTPool()
 	if err := x.ServerStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
@@ -437,7 +437,7 @@ func (x *searchStreamSearchByIDServer) Send(m *payload.Search_StreamResponse) er
 }
 
 func (x *searchStreamSearchByIDServer) Recv() (*payload.Search_IDRequest, error) {
-	m := new(payload.Search_IDRequest)
+	m := payload.Search_IDRequestFromVTPool()
 	if err := x.ServerStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
@@ -445,7 +445,7 @@ func (x *searchStreamSearchByIDServer) Recv() (*payload.Search_IDRequest, error)
 }
 
 func _Search_MultiSearch_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(payload.Search_MultiRequest)
+	in := payload.Search_MultiRequestFromVTPool()
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -463,7 +463,7 @@ func _Search_MultiSearch_Handler(srv interface{}, ctx context.Context, dec func(
 }
 
 func _Search_MultiSearchByID_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(payload.Search_MultiIDRequest)
+	in := payload.Search_MultiIDRequestFromVTPool()
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -481,7 +481,7 @@ func _Search_MultiSearchByID_Handler(srv interface{}, ctx context.Context, dec f
 }
 
 func _Search_LinearSearch_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(payload.Search_Request)
+	in := payload.Search_RequestFromVTPool()
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -499,7 +499,7 @@ func _Search_LinearSearch_Handler(srv interface{}, ctx context.Context, dec func
 }
 
 func _Search_LinearSearchByID_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(payload.Search_IDRequest)
+	in := payload.Search_IDRequestFromVTPool()
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -535,7 +535,7 @@ func (x *searchStreamLinearSearchServer) Send(m *payload.Search_StreamResponse) 
 }
 
 func (x *searchStreamLinearSearchServer) Recv() (*payload.Search_Request, error) {
-	m := new(payload.Search_Request)
+	m := payload.Search_RequestFromVTPool()
 	if err := x.ServerStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
@@ -561,7 +561,7 @@ func (x *searchStreamLinearSearchByIDServer) Send(m *payload.Search_StreamRespon
 }
 
 func (x *searchStreamLinearSearchByIDServer) Recv() (*payload.Search_IDRequest, error) {
-	m := new(payload.Search_IDRequest)
+	m := payload.Search_IDRequestFromVTPool()
 	if err := x.ServerStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
@@ -569,7 +569,7 @@ func (x *searchStreamLinearSearchByIDServer) Recv() (*payload.Search_IDRequest, 
 }
 
 func _Search_MultiLinearSearch_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(payload.Search_MultiRequest)
+	in := payload.Search_MultiRequestFromVTPool()
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -587,7 +587,7 @@ func _Search_MultiLinearSearch_Handler(srv interface{}, ctx context.Context, dec
 }
 
 func _Search_MultiLinearSearchByID_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(payload.Search_MultiIDRequest)
+	in := payload.Search_MultiIDRequestFromVTPool()
 	if err := dec(in); err != nil {
 		return nil, err
 	}
