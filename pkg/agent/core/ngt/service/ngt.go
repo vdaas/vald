@@ -27,7 +27,6 @@ import (
 	"path/filepath"
 	"reflect"
 	"runtime"
-	"sort"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -41,6 +40,7 @@ import (
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
+	"github.com/vdaas/vald/internal/slices"
 	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/model"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/service/kvs"
@@ -491,9 +491,7 @@ func backupBroken(originPath string, brokenDir string, limit int) error {
 	if len(files) >= limit {
 		// remove the oldest
 		log.Infof("There's already more than %v broken index generations stored. Thus removing the oldest.", limit)
-		sort.Slice(files, func(i, j int) bool {
-			return files[i] < files[j]
-		})
+		slices.Sort(files)
 		os.RemoveAll(files[0])
 	}
 
