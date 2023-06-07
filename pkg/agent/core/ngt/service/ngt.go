@@ -223,16 +223,11 @@ func migrate(path string) (err error) {
 		// empty directory doesn't need migration
 		return nil
 	}
-	originExists := false
 	for _, file := range files {
 		if file == filepath.Join(path, originIndexDirName) {
-			originExists = true
-			break
+			// origin folder exists. meaning already migrated
+			return nil
 		}
-	}
-	if originExists {
-		// origin folder exists. meaning already migrated
-		return nil
 	}
 
 	// at this point, there is something in the path, but there is no `path/origin`, which means migration is required
