@@ -531,7 +531,7 @@ func needsBackup(backupPath string) bool {
 	// Not initial state but no metadata.json exists -> true
 	hasMetadataJSON := false
 	for _, f := range files {
-		if filepath.Base(f) == "metadata.json" {
+		if filepath.Base(f) == metadata.AgentMetadataFileName {
 			hasMetadataJSON = true
 			break
 		}
