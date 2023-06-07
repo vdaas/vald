@@ -836,6 +836,9 @@ defaults:
     # defaults.networkPolicy.enabled -- if network policy enabled
     # TODO: Change this to true after implementing user custom network policy parser
     enabled: false
+    custom:
+      ingress: {}
+      egress: {}
 
 # @schema {"name": "gateway", "type": "object"}
 gateway:
