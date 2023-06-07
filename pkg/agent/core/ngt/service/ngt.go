@@ -20,6 +20,7 @@ package service
 import (
 	"context"
 	"encoding/gob"
+	"fmt"
 	"io/fs"
 	"math"
 	"os"
@@ -39,6 +40,7 @@ import (
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
+	"github.com/vdaas/vald/internal/slices"
 	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/model"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/service/kvs"
@@ -117,13 +119,14 @@ type ngt struct {
 	enableProactiveGC bool // if this value is true, agent component will purge GC memory more proactive
 	enableCopyOnWrite bool // if this value is true, agent component will write backup file using Copy on Write and saves old files to the old directory
 
-	path      string       // index path
-	smu       sync.Mutex   // save index lock
-	tmpPath   atomic.Value // temporary index path for Copy on Write
-	oldPath   string       // old volume path
-	basePath  string       // index base directory for CoW
-	cowmu     sync.Mutex   // copy on write move lock
-	backupGen uint64       // number of backup generation
+	path       string       // index path
+	smu        sync.Mutex   // save index lock
+	tmpPath    atomic.Value // temporary index path for Copy on Write
+	oldPath    string       // old volume path
+	basePath   string       // index base directory for CoW
+	brokenPath string       // backup broken index path
+	cowmu      sync.Mutex   // copy on write move lock
+	backupGen  uint64       // number of backup generation
 
 	poolSize uint32  // default pool size
 	radius   float32 // default radius
@@ -133,6 +136,7 @@ type ngt struct {
 	dcd    bool          // disable commit daemon
 
 	kvsdbConcurrency int // kvsdb concurrency
+	historyLimit     int // the maximum generation number of broken index backup
 }
 
 const (
@@ -142,6 +146,7 @@ const (
 
 	oldIndexDirName    = "backup"
 	originIndexDirName = "origin"
+	brokenIndexDirName = "broken"
 )
 
 func New(cfg *config.NGT, opts ...Option) (nn NGT, err error) {
@@ -151,6 +156,7 @@ func New(cfg *config.NGT, opts ...Option) (nn NGT, err error) {
 		enableProactiveGC: cfg.EnableProactiveGC,
 		enableCopyOnWrite: cfg.EnableCopyOnWrite,
 		kvsdbConcurrency:  cfg.KVSDB.Concurrency,
+		historyLimit:      cfg.BrokenIndexHistoryLimit,
 	}
 
 	for _, opt := range append(defaultOptions, opts...) {
@@ -163,9 +169,16 @@ func New(cfg *config.NGT, opts ...Option) (nn NGT, err error) {
 		n.inMem = true
 	}
 
-	err = n.prepareFolders()
-	if err != nil {
-		return nil, err
+	// prepare directories to store index only when it not in-memory mode
+	if !n.inMem {
+		if !file.Exists(n.path) {
+			return nil, errors.ErrIndexPathNotExists(n.path)
+		}
+		ctx := context.Background()
+		err = n.prepareFolders(ctx)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	err = n.initNGT(
@@ -198,23 +211,88 @@ func New(cfg *config.NGT, opts ...Option) (nn NGT, err error) {
 	return n, nil
 }
 
-func (n *ngt) prepareFolders() (err error) {
-	if n.enableCopyOnWrite && !n.inMem && len(n.path) != 0 {
-		sep := string(os.PathSeparator)
-		absPath, err := filepath.Abs(strings.ReplaceAll(n.path, sep+sep, sep))
-		if err != nil {
-			log.Warnf("keep going with relative path:\t%v", err)
-		} else {
-			n.path = absPath
+// migrate migrates the index directory from old to new under the input path if necessary.
+// Migration happens when the path is not empty and there is no `path/origin` directory,
+// which indicates that the user has NOT been using CoW mode and the index directory is not migrated yet.
+func migrate(ctx context.Context, path string) (err error) {
+	// check if migration is required
+	files, err := file.ListInDir(path)
+	if err != nil {
+		return err
+	}
+	if len(files) == 0 {
+		// empty directory doesn't need migration
+		return nil
+	}
+	od := filepath.Join(path, originIndexDirName)
+	for _, file := range files {
+		if file == od {
+			// origin folder exists. meaning already migrated
+			return nil
 		}
-		n.basePath = n.path
-		n.oldPath = file.Join(n.basePath, oldIndexDirName)
-		n.path = file.Join(n.basePath, originIndexDirName)
+	}
+
+	// at this point, there is something in the path, but there is no `path/origin`, which means migration is required
+	// so create origin and move all contents in path to `path/origin`
+
+	// first move all contents to temporary directory because it's not possible to directly move directory to its subdirectory
+	tp, err := file.MkdirTemp("")
+	if err != nil {
+		return err
+	}
+	err = file.MoveDir(ctx, path, tp)
+	if err != nil {
+		return err
+	}
+
+	// recreate the path again to move contents to `path/origin` lately
+	err = file.MkdirAll(path, fs.ModePerm)
+	if err != nil {
+		return err
+	}
+
+	// finally move to `path/origin` directory
+	err = file.MoveDir(ctx, tp, file.Join(path, originIndexDirName))
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (n *ngt) prepareFolders(ctx context.Context) (err error) {
+	// migrate from old index directory to new index directory if necessary
+	if !n.enableCopyOnWrite {
+		err = migrate(ctx, n.path)
+		if err != nil {
+			return err
+		}
+	}
+
+	// set paths
+	sep := string(os.PathSeparator)
+	n.path, err = filepath.Abs(strings.ReplaceAll(n.path, sep+sep, sep))
+	if err != nil {
+		log.Warn(err)
+	}
+	n.basePath = n.path
+	n.oldPath = file.Join(n.basePath, oldIndexDirName)
+	n.path = file.Join(n.basePath, originIndexDirName)
+	n.brokenPath = file.Join(n.basePath, brokenIndexDirName)
+
+	// initialize origin and broken index backup directory
+	// the path does not differ if it's CoW mode or not
+	err = file.MkdirAll(n.path, fs.ModePerm)
+	if err != nil {
+		log.Warn(err)
+	}
+	err = file.MkdirAll(n.brokenPath, fs.ModePerm)
+	if err != nil {
+		log.Warnf("failed to create a folder for broken index backup: %v", err)
+	}
+
+	if n.enableCopyOnWrite && len(n.path) != 0 {
 		err = file.MkdirAll(n.oldPath, fs.ModePerm)
-		if err != nil {
-			log.Warn(err)
-		}
-		err = file.MkdirAll(n.path, fs.ModePerm)
 		if err != nil {
 			log.Warn(err)
 		}
@@ -389,6 +467,136 @@ func (n *ngt) load(ctx context.Context, path string, opts ...core.Option) (err e
 	return nil
 }
 
+// backupBroken backup index at originPath into brokenDir.
+// The name of the directory will be timestamp(UnixNano).
+// If it exeeds the limit, backupBroken removes the oldest backup directory.
+func backupBroken(ctx context.Context, originPath string, brokenDir string, limit int) error {
+	if limit <= 0 {
+		return nil
+	}
+
+	// do nothing when origin path is empty
+	files, err := file.ListInDir(originPath)
+	if err != nil {
+		return err
+	}
+	if len(files) == 0 {
+		return nil
+	}
+
+	// how many generation exists in the path?
+	files, err = file.ListInDir(brokenDir)
+	if err != nil {
+		return err
+	}
+
+	if len(files) >= limit {
+		// remove the oldest
+		log.Infof("There's already more than %v broken index generations stored. Thus removing the oldest.", limit)
+		slices.Sort(files)
+		if err := os.RemoveAll(files[0]); err != nil {
+			return err
+		}
+	}
+
+	// create directory for new generation broken index
+	name := time.Now().UnixNano()
+	dest := filepath.Join(brokenDir, fmt.Sprint(name))
+
+	// move index to the new directory
+	err = file.MoveDir(ctx, originPath, dest)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// needsBackup checks if the backup is needed.
+func needsBackup(backupPath string) bool {
+	// Initial state where there's only grp, obj, prf, tre -> false
+	files, err := file.ListInDir(backupPath)
+	if err != nil {
+		return false
+	}
+	// Check if there's *.json or *.kvsdb
+	initialState := true
+	for _, f := range files {
+		if strings.HasSuffix(f, ".json") || strings.HasSuffix(f, ".kvsdb") {
+			initialState = false
+			break
+		}
+	}
+	if initialState {
+		return false
+	}
+
+	// Not initial state but no metadata.json exists -> true
+	hasMetadataJSON := false
+	for _, f := range files {
+		if filepath.Base(f) == metadata.AgentMetadataFileName {
+			hasMetadataJSON = true
+			break
+		}
+	}
+	if !hasMetadataJSON {
+		return true
+	}
+
+	// Now check the metadata.json to see if backup is required
+	metadataPath := filepath.Join(backupPath, metadata.AgentMetadataFileName)
+	meta, err := metadata.Load(metadataPath)
+	if err != nil {
+		return false
+	}
+
+	if meta.IsInvalid || meta.NGT.IndexCount > 0 {
+		return true
+	}
+
+	return false
+}
+
+// rebuild rebuilds the index directory with a clean state. When it is required, it moves the current broken index
+// to the broken directory until it reaches the limit. If the limit is reached, it removes the oldest.
+// the `path` input is the path to rebuild the index directory. It is identical to n.path when CoW is disabled
+// and is a temporal path when CoW is enabled.
+func (n *ngt) rebuild(ctx context.Context, path string, opts ...core.Option) (err error) {
+	// backup when it is required
+	if needsBackup(n.path) {
+		log.Infof("starting to backup broken index at %v", n.path)
+		err = backupBroken(ctx, n.path, n.brokenPath, n.historyLimit)
+		if err != nil {
+			log.Warnf("failed to backup broken index. will remove it and restart: %v", err)
+		} else {
+			// remake the path since it has been moved to broken directory
+			err = file.MkdirAll(n.path, fs.ModePerm)
+			if err != nil {
+				return fmt.Errorf("failed to recreate the index directory: %w", err)
+			}
+		}
+	}
+
+	// remove the index directory and restart with a clean state
+	files, err := file.ListInDir(path)
+	if err == nil && len(files) != 0 {
+		log.Warnf("index path exists, will remove the directories: %v", files)
+		for _, f := range files {
+			err = os.RemoveAll(f)
+			if err != nil {
+				return err
+			}
+		}
+	} else if err != nil {
+		log.Debug(err)
+	}
+
+	n.core, err = core.New(append(opts, core.WithIndexPath(path))...)
+	if err != nil {
+		return fmt.Errorf("failed to create new core: %w", err)
+	}
+	return nil
+}
+
 func (n *ngt) initNGT(opts ...core.Option) (err error) {
 	if n.kvs == nil {
 		n.kvs = kvs.New(kvs.WithConcurrency(n.kvsdbConcurrency))
@@ -415,8 +623,7 @@ func (n *ngt) initNGT(opts ...core.Option) (err error) {
 				n.core.Close()
 				n.core = nil
 			}
-			n.core, err = core.New(append(opts, core.WithIndexPath(n.path))...)
-			return err
+			return n.rebuild(ctx, n.path, opts...)
 		}
 		if errors.Is(err, errors.ErrIndicesAreTooFewComparedToMetadata) && n.kvs != nil {
 			current = n.kvs.Len()
@@ -471,7 +678,7 @@ func (n *ngt) initNGT(opts ...core.Option) (err error) {
 		n.core.Close()
 		n.core = nil
 	}
-	n.core, err = core.New(append(opts, core.WithIndexPath(tpath))...)
+	err = n.rebuild(ctx, tpath, opts...)
 	if err != nil {
 		return err
 	}
