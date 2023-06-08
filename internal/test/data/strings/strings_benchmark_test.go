@@ -45,7 +45,5 @@ func benchmark(b *testing.B, f func(l int) string) {
 }
 
 func BenchmarkRandom(b *testing.B) {
-	benchmark(b, func(cnt int) string {
-		return Random(cnt)
-	})
+	benchmark(b, Random)
 }

@@ -88,6 +88,9 @@ type NGT struct {
 
 	// KVSDB represent the ngt bidirectional kv store configuration
 	KVSDB *KVSDB `json:"kvsdb,omitempty" yaml:"kvsdb"`
+
+	// BrokenIndexHistoryLimit represents the maximum number of broken index generations that will be backed up
+	BrokenIndexHistoryLimit int `yaml:"broken_index_history_limit" json:"broken_index_history_limit,omitempty"`
 }
 
 // KVSDB represent the ngt vector bidirectional kv store configuration

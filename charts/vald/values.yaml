@@ -1714,6 +1714,9 @@ agent:
       # @schema {"name": "agent.ngt.kvsdb.concurrency", "type": "integer"}
       # agent.ngt.kvsdb.concurrency -- kvsdb processing concurrency
       concurrency: 6
+    # @schema {"name": "agent.ngt.broken_index_history_limit", "type": "integer"}
+    # agent.ngt.broken_index_history_limit -- maximum number of broken index generations to backup
+    broken_index_history_limit: 0
   # @schema {"name": "agent.sidecar", "type": "object"}
   sidecar:
     # @schema {"name": "agent.sidecar.enabled", "type": "boolean"}

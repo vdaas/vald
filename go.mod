@@ -58,7 +58,7 @@ replace (
 	github.com/armon/go-radix => github.com/armon/go-radix v1.0.0
 	github.com/armon/go-socks5 => github.com/armon/go-socks5 v0.0.0-20160902184237-e75332964ef5
 	github.com/asaskevich/govalidator => github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2
-	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.44.277
+	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.44.278
 	github.com/aws/aws-sdk-go-v2 => github.com/aws/aws-sdk-go-v2 v1.18.0
 	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream => github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.4.10
 	github.com/aws/aws-sdk-go-v2/config => github.com/aws/aws-sdk-go-v2/config v1.18.25
@@ -433,7 +433,7 @@ replace (
 	go.opentelemetry.io/otel/sdk => go.opentelemetry.io/otel/sdk v1.11.1
 	go.opentelemetry.io/otel/sdk/metric => go.opentelemetry.io/otel/sdk/metric v0.33.0
 	go.opentelemetry.io/otel/trace => go.opentelemetry.io/otel/trace v1.11.1
-	go.opentelemetry.io/proto/otlp => go.opentelemetry.io/proto/otlp v0.19.0
+	go.opentelemetry.io/proto/otlp => go.opentelemetry.io/proto/otlp v0.20.0
 	go.starlark.net => go.starlark.net v0.0.0-20230525235612-a134d8f9ddca
 	go.uber.org/atomic => go.uber.org/atomic v1.11.0
 	go.uber.org/automaxprocs => go.uber.org/automaxprocs v1.5.2
@@ -611,7 +611,7 @@ require (
 	github.com/googleapis/enterprise-certificate-proxy v0.2.3 // indirect
 	github.com/googleapis/gax-go/v2 v2.10.0 // indirect
 	github.com/gregjones/httpcache v0.0.0-20180305231024-9cad4c3443a7 // indirect
-	github.com/grpc-ecosystem/grpc-gateway/v2 v2.11.3 // indirect
+	github.com/grpc-ecosystem/grpc-gateway/v2 v2.16.0 // indirect
 	github.com/hailocab/go-hostpool v0.0.0-20160125115350-e80d13ce29ed // indirect
 	github.com/huandu/xstrings v1.4.0 // indirect
 	github.com/imdario/mergo v0.3.6 // indirect

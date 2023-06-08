@@ -126,3 +126,4 @@ ngt:
   object_type: float
   search_edge_size: 10
   enable_copy_on_write: false
+  broken_index_history_limit: 0

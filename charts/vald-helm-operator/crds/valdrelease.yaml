@@ -203,6 +203,8 @@ spec:
                           type: integer
                         auto_save_index_duration:
                           type: string
+                        broken_index_history_limit:
+                          type: integer
                         bulk_insert_chunk_size:
                           type: integer
                         creation_edge_size:

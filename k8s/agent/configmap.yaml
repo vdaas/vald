@@ -199,6 +199,7 @@ data:
       auto_index_duration_limit: 24h
       auto_index_length: 100
       auto_save_index_duration: 35m
+      broken_index_history_limit: 0
       bulk_insert_chunk_size: 10
       creation_edge_size: 20
       default_epsilon: 0.1
