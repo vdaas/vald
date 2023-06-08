@@ -205,6 +205,7 @@ spec:
                           type: string
                         broken_index_history_limit:
                           type: integer
+                          minimum: 0
                         bulk_insert_chunk_size:
                           type: integer
                         creation_edge_size:
