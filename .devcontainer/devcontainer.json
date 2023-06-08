@@ -10,5 +10,6 @@
       "moby": "true"
     }
   },
-  "postCreateCommand": "go version"
+  "postCreateCommand": "go version",
+  "postAttachCommand": "sudo ln -s $(pwd)/cmd/agent/core/ngt/sample.yaml /etc/server/config.yaml"
 }

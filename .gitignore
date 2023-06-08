@@ -51,4 +51,7 @@ hack/go.mod.default3
 # for nvim
 .nvimlog
 
+# for vscode
+.vscode/
+
 telepresence.log

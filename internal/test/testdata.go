@@ -21,6 +21,10 @@ import (
 	"github.com/vdaas/vald/internal/strings"
 )
 
+const (
+	ValidIndex = "agent/ngt/validIndex"
+)
+
 // GetTestdataPath returns the test data file path under `internal/test/data`.
 func GetTestdataPath(filename string) string {
 	return file.Join(baseDir(), "/internal/test/data/", filename)
