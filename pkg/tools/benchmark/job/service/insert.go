@@ -39,6 +39,7 @@ func (j *job) insert(ctx context.Context, ech chan error) error {
 		cfg.Timestamp = j.timestamp
 	}
 	eg, egctx := errgroup.New(ctx)
+	eg.Limitation(100)
 	for i := j.dataset.Range.Start; i <= j.dataset.Range.End; i++ {
 		err := j.limiter.Wait(egctx)
 		if err != nil {
