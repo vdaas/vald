@@ -31,21 +31,22 @@ func (j *job) exists(ctx context.Context, ech chan error) error {
 	log.Info("[benchmark job] Start benchmarking exists")
 	eg, egctx := errgroup.New(ctx)
 	for i := j.dataset.Range.Start; i <= j.dataset.Range.End; i++ {
-		err := j.limiter.Wait(egctx)
-		if err != nil {
-			log.Errorf("[benchmark job] limiter error is detected: %s", err.Error())
-			if errors.Is(err, context.Canceled) {
-				return errors.Join(err, context.Canceled)
-			}
-			select {
-			case <-egctx.Done():
-				return egctx.Err()
-			case ech <- err:
-			}
-		}
 		idx := i
 		eg.Go(func() error {
 			log.Debugf("[benchmark job] Start exists: iter = %d", i)
+			err := j.limiter.Wait(egctx)
+			if err != nil {
+				log.Errorf("[benchmark job] limiter error is detected: %s", err.Error())
+				if errors.Is(err, context.Canceled) {
+					return nil
+					// return errors.Join(err, context.Canceled)
+				}
+				select {
+				case <-egctx.Done():
+					return egctx.Err()
+				case ech <- err:
+				}
+			}
 			res, err := j.client.Exists(egctx, &payload.Object_ID{
 				Id: strconv.Itoa(idx),
 			})
@@ -53,15 +54,13 @@ func (j *job) exists(ctx context.Context, ech chan error) error {
 				select {
 				case <-egctx.Done():
 					log.Errorf("[benchmark job] context error is detected: %s\t%s", err.Error(), egctx.Err())
-					return errors.Join(err, egctx.Err())
+					return nil
+					// return errors.Join(err, egctx.Err())
 				default:
 					// if st, ok := status.FromError(err); ok {
 					// 	log.Warnf("[benchmark job] exists error is detected: code = %d, msg = %s", st.Code(), err.Error())
 					// }
 				}
-			}
-			if res != nil {
-				log.Infof("[benchmark exists job] iter=%d, Id=%s", idx, res.GetId())
 			}
 			log.Debugf("[benchmark job] Finish exists: iter= %d \n%v\n", idx, res)
 			return nil
@@ -82,18 +81,6 @@ func (j *job) getObject(ctx context.Context, ech chan error) error {
 	eg, egctx := errgroup.New(ctx)
 	for i := j.dataset.Range.Start; i <= j.dataset.Range.End; i++ {
 		log.Infof("[benchmark job] Start get object: iter = %d", i)
-		err := j.limiter.Wait(egctx)
-		if err != nil {
-			log.Errorf("[benchmark job] limiter error is detected: %s", err.Error())
-			if errors.Is(err, context.Canceled) {
-				return errors.Join(err, context.Canceled)
-			}
-			select {
-			case <-egctx.Done():
-				return egctx.Err()
-			case ech <- err:
-			}
-		}
 		ft := []*payload.Filter_Target{}
 		if j.objectConfig != nil {
 			for i, target := range j.objectConfig.FilterConfig.Targets {
@@ -106,6 +93,19 @@ func (j *job) getObject(ctx context.Context, ech chan error) error {
 		idx := i
 		eg.Go(func() error {
 			log.Debugf("[benchmark job] Start get object: iter = %d", idx)
+			err := j.limiter.Wait(egctx)
+			if err != nil {
+				log.Errorf("[benchmark job] limiter error is detected: %s", err.Error())
+				if errors.Is(err, context.Canceled) {
+					// return errors.Join(err, context.Canceled)
+					return nil
+				}
+				select {
+				case <-egctx.Done():
+					return egctx.Err()
+				case ech <- err:
+				}
+			}
 			res, err := j.client.GetObject(egctx, &payload.Object_VectorRequest{
 				Id: &payload.Object_ID{
 					Id: strconv.Itoa(idx),
@@ -118,7 +118,8 @@ func (j *job) getObject(ctx context.Context, ech chan error) error {
 				select {
 				case <-egctx.Done():
 					log.Errorf("[benchmark job] context error is detected: %s\t%s", err.Error(), egctx.Err())
-					return errors.Join(err, egctx.Err())
+					// return errors.Join(err, egctx.Err())
+					return nil
 				default:
 					// if st, ok := status.FromError(err); ok {
 					// 	log.Warnf("[benchmark job] object error is detected: code = %d, msg = %s", st.Code(), err.Error())

@@ -49,6 +49,7 @@ func (j *job) search(ctx context.Context, ech chan error) error {
 	}
 	sres := make([]*payload.Search_Response, j.dataset.Indexes)
 	eg, egctx := errgroup.New(ctx)
+	eg.Limitation(100)
 	for i := j.dataset.Range.Start; i <= j.dataset.Range.End; i++ {
 		iter := i
 		eg.Go(func() error {
