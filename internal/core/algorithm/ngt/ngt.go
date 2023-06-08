@@ -436,7 +436,6 @@ func (n *ngt) LinearSearch(vec []float32, size int) (result []SearchResult, err 
 
 	ebuf := n.GetErrorBuffer()
 	results := C.ngt_create_empty_results(ebuf)
-	// defer C.free(unsafe.Pointer(results))
 	defer C.ngt_destroy_results(results)
 	if results == nil {
 		return nil, n.newGoError(ebuf)
@@ -485,7 +484,7 @@ func (n *ngt) LinearSearch(vec []float32, size int) (result []SearchResult, err 
 
 // Insert returns NGT object id.
 // This only stores not indexing, you must call CreateIndex and SaveIndex.
-func (n *ngt) Insert(vec []float32) (uint, error) {
+func (n *ngt) Insert(vec []float32) (id uint, err error) {
 	dim := int(n.dimension)
 	if len(vec) != dim {
 		return 0, errors.ErrIncompatibleDimensionSize(len(vec), dim)
@@ -493,14 +492,14 @@ func (n *ngt) Insert(vec []float32) (uint, error) {
 
 	ebuf := n.GetErrorBuffer()
 	n.mu.Lock()
-	id := C.ngt_insert_index_as_float(n.index, (*C.float)(&vec[0]), C.uint32_t(n.dimension), ebuf)
+	id = uint(C.ngt_insert_index_as_float(n.index, (*C.float)(&vec[0]), C.uint32_t(n.dimension), ebuf))
 	n.mu.Unlock()
 	if id == 0 {
 		return 0, n.newGoError(ebuf)
 	}
 	n.PutErrorBuffer(ebuf)
 
-	return uint(id), nil
+	return id, nil
 }
 
 // InsertCommit returns NGT object id.
@@ -520,7 +519,6 @@ func (n *ngt) InsertCommit(vec []float32, poolSize uint32) (uint, error) {
 	if err != nil {
 		return id, err
 	}
-
 	return id, nil
 }
 
@@ -671,7 +669,7 @@ func (n *ngt) GetVector(id uint) ([]float32, error) {
 	var ret []float32
 	ebuf := n.GetErrorBuffer()
 	switch n.objectType {
-	case Float, HalfFloat:
+	case Float:
 		n.mu.RLock()
 		results := C.ngt_get_object_as_float(n.ospace, C.ObjectID(id), ebuf)
 		n.mu.RUnlock()
@@ -679,9 +677,18 @@ func (n *ngt) GetVector(id uint) ([]float32, error) {
 			return nil, n.newGoError(ebuf)
 		}
 		ret = (*[algorithm.MaximumVectorDimensionSize]float32)(unsafe.Pointer(results))[:dimension:dimension]
-		// for _, elem := range (*[algorithm.MaximumVectorDimensionSize]C.float)(unsafe.Pointer(results))[:dimension:dimension]{
-		// 	ret = append(ret, float32(elem))
-		// }
+	case HalfFloat:
+		n.mu.RLock()
+		results := C.ngt_get_allocated_object_as_float(n.ospace, C.ObjectID(id), ebuf)
+		n.mu.RUnlock()
+		defer C.free(unsafe.Pointer(results))
+		if results == nil {
+			return nil, n.newGoError(ebuf)
+		}
+		ret = make([]float32, dimension)
+		for i, elem := range (*[algorithm.MaximumVectorDimensionSize]float32)(unsafe.Pointer(results))[:dimension:dimension] {
+			ret[i] = elem
+		}
 	case Uint8:
 		n.mu.RLock()
 		results := C.ngt_get_object_as_integer(n.ospace, C.ObjectID(id), ebuf)

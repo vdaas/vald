@@ -17,6 +17,8 @@ import (
 	"context"
 	"encoding/json"
 	"flag"
+	"fmt"
+	"math"
 	"time"
 
 	"github.com/kpango/fuid"
@@ -112,6 +114,32 @@ func main() {
 	wt := time.Duration(indexingWaitSeconds) * time.Second
 	glg.Infof("Wait %s for indexing to finish", wt)
 	time.Sleep(wt)
+
+	glg.Infof("Start getting object")
+	for i := range ids[:insertCount] {
+		// Call `GetObject` function of Vald client.
+		// Sends id to server via gRPC.
+		res, err := client.GetObject(ctx, &payload.Object_VectorRequest{
+			Id: &payload.Object_ID{
+				Id: ids[i],
+			},
+		})
+		if err != nil {
+			glg.Fatal(err)
+		}
+		glg.Infof("ID: %s, Vector: %v", res.GetId(), res.GetVector())
+
+		// calc Euclidean distance of r and t
+		r := res.GetVector()
+		t := train[i]
+		var sum float64
+		for i := range r {
+			fmt.Println("r, t: ", r[i], t[i])
+			sum += math.Pow(float64(t[i]-r[i]), 2)
+		}
+		fmt.Println(sum)
+	}
+	glg.Info("Finish getting object")
 
 	/**
 	Gets approximate vectors, which is based on the value of `SearchConfig`, from the indexed tree based on the training data.
