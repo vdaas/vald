@@ -21,6 +21,7 @@ on:
     paths:
       - "versions/GO_VERSION"
       - "versions/NGT_VERSION"
+      - "versions/KUBECTL_VERSION"
 
 jobs:
   dump_contexts_to_log:
@@ -76,6 +77,7 @@ jobs:
 
           GO_VERSION=$(make version/go)
           NGT_VERSION=$(make version/ngt)
+          KUBECTL_VERSION=$(make version/k8s)
 
           sed -i -e "s/^- Go Version: .*$/- Go Version: ${GO_VERSION}/" .github/ISSUE_TEMPLATE/bug_report.md
           sed -i -e "s/^- Go Version: .*$/- Go Version: ${GO_VERSION}/" .github/ISSUE_TEMPLATE/security_issue_report.md
