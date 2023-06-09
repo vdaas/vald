@@ -481,6 +481,11 @@ version/go:
 version/ngt:
 	@echo $(NGT_VERSION)
 
+.PHONY: version/k8s
+## print Kubernetes version
+version/k8s:
+	@echo $(KUBECTL_VERSION)
+
 .PHONY: version/kind
 version/kind:
 	@echo $(KIND_VERSION)
