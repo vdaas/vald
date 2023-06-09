@@ -220,7 +220,7 @@ func WithObjectTypeByString(ot string) Option {
 		o = Uint8
 	case "float", "float32", "f", "f32", "fp32":
 		o = Float
-	case "float16", "halfFloat", "half_float", "f16", "fp16":
+	case "float16", "halffloat", "hf", "f16", "fp16":
 		o = HalfFloat
 	}
 	return WithObjectType(o)
