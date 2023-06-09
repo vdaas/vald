@@ -59,7 +59,7 @@ func NewInsertClient(cc grpc.ClientConnInterface) InsertClient {
 }
 
 func (c *insertClient) Insert(ctx context.Context, in *payload.Insert_Request, opts ...grpc.CallOption) (*payload.Object_Location, error) {
-	out := new(payload.Object_Location)
+	out := payload.Object_LocationFromVTPool()
 	err := c.cc.Invoke(ctx, "/vald.v1.Insert/Insert", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -99,7 +99,7 @@ func (x *insertStreamInsertClient) Recv() (*payload.Object_StreamLocation, error
 }
 
 func (c *insertClient) MultiInsert(ctx context.Context, in *payload.Insert_MultiRequest, opts ...grpc.CallOption) (*payload.Object_Locations, error) {
-	out := new(payload.Object_Locations)
+	out := payload.Object_LocationsFromVTPool()
 	err := c.cc.Invoke(ctx, "/vald.v1.Insert/MultiInsert", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -147,7 +147,7 @@ func RegisterInsertServer(s grpc.ServiceRegistrar, srv InsertServer) {
 }
 
 func _Insert_Insert_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(payload.Insert_Request)
+	in := payload.Insert_RequestFromVTPool()
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -183,7 +183,7 @@ func (x *insertStreamInsertServer) Send(m *payload.Object_StreamLocation) error 
 }
 
 func (x *insertStreamInsertServer) Recv() (*payload.Insert_Request, error) {
-	m := new(payload.Insert_Request)
+	m := payload.Insert_RequestFromVTPool()
 	if err := x.ServerStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
@@ -191,7 +191,7 @@ func (x *insertStreamInsertServer) Recv() (*payload.Insert_Request, error) {
 }
 
 func _Insert_MultiInsert_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(payload.Insert_MultiRequest)
+	in := payload.Insert_MultiRequestFromVTPool()
 	if err := dec(in); err != nil {
 		return nil, err
 	}
