@@ -171,6 +171,11 @@
               "type": "string",
               "description": "duration of automatic save index"
             },
+            "broken_index_history_limit": {
+              "type": "integer",
+              "description": "maximum number of broken index generations to backup",
+              "minimum": 0
+            },
             "bulk_insert_chunk_size": {
               "type": "integer",
               "description": "bulk insert chunk size"

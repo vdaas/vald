@@ -122,13 +122,14 @@ var (
 	}
 )
 
-func init() {
+func TestMain(m *testing.M) {
 	testing.Init()
 
 	flag.Int64Var(&seed, "pbt-seed", 0, "seed number used for PBT")
 	flag.IntVar(&minSuccessfulTests, "pbt-min-successful-tests", 10, "minimum number of successful tests in PBT")
 	flag.Float64Var(&maxDiscardRatio, "pbt-max-discard-ratio", 5.0, "maximum discard ratio of PBT")
 	flag.BoolVar(&applicationLog, "pbt-enable-application-log", false, "enable application log on PBT")
+	m.Run()
 }
 
 var (

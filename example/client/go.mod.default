@@ -12,6 +12,8 @@ replace (
 	golang.org/x/net => golang.org/x/net latest
 	golang.org/x/text => golang.org/x/text latest
 	google.golang.org/genproto => google.golang.org/genproto latest
+	google.golang.org/genproto/googleapis/api => google.golang.org/genproto/googleapis/api latest
+	google.golang.org/genproto/googleapis/rpc => google.golang.org/genproto/googleapis/rpc latest
 	google.golang.org/grpc => google.golang.org/grpc latest
 	google.golang.org/protobuf => google.golang.org/protobuf latest
 	gopkg.in/yaml.v2 => gopkg.in/yaml.v2 latest

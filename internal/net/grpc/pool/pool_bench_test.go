@@ -40,9 +40,10 @@ type server struct {
 	discoverer.DiscovererServer
 }
 
-func init() {
+func TestMain(m *testing.M) {
 	testing.Init()
 	log.Init(log.WithLevel(level.ERROR.String()))
+	m.Run()
 }
 
 func (*server) Pods(context.Context, *payload.Discoverer_Request) (*payload.Info_Pods, error) {

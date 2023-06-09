@@ -57,7 +57,7 @@ func NewFilterClient(cc grpc.ClientConnInterface) FilterClient {
 }
 
 func (c *filterClient) FilterDistance(ctx context.Context, in *payload.Object_Distance, opts ...grpc.CallOption) (*payload.Object_Distance, error) {
-	out := new(payload.Object_Distance)
+	out := payload.Object_DistanceFromVTPool()
 	err := c.cc.Invoke(ctx, "/filter.egress.v1.Filter/FilterDistance", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -66,7 +66,7 @@ func (c *filterClient) FilterDistance(ctx context.Context, in *payload.Object_Di
 }
 
 func (c *filterClient) FilterVector(ctx context.Context, in *payload.Object_Vector, opts ...grpc.CallOption) (*payload.Object_Vector, error) {
-	out := new(payload.Object_Vector)
+	out := payload.Object_VectorFromVTPool()
 	err := c.cc.Invoke(ctx, "/filter.egress.v1.Filter/FilterVector", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -109,7 +109,7 @@ func RegisterFilterServer(s grpc.ServiceRegistrar, srv FilterServer) {
 }
 
 func _Filter_FilterDistance_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(payload.Object_Distance)
+	in := payload.Object_DistanceFromVTPool()
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -127,7 +127,7 @@ func _Filter_FilterDistance_Handler(srv interface{}, ctx context.Context, dec fu
 }
 
 func _Filter_FilterVector_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(payload.Object_Vector)
+	in := payload.Object_VectorFromVTPool()
 	if err := dec(in); err != nil {
 		return nil, err
 	}

@@ -32,7 +32,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-	"sigs.k8s.io/controller-runtime/pkg/source"
 )
 
 type Controller interface {
@@ -44,7 +43,7 @@ type ResourceController interface {
 	NewReconciler(ctx context.Context, mgr manager.Manager) reconcile.Reconciler
 	For() (client.Object, []builder.ForOption)
 	Owns() (client.Object, []builder.OwnsOption)
-	Watches() (*source.Kind, handler.EventHandler, []builder.WatchesOption)
+	Watches() (client.Object, handler.EventHandler, []builder.WatchesOption)
 }
 
 type controller struct {
