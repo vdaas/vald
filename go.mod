@@ -28,7 +28,7 @@ replace (
 	github.com/Azure/azure-sdk-for-go/sdk/internal => github.com/Azure/azure-sdk-for-go/sdk/internal v1.3.0
 	github.com/Azure/azure-service-bus-go => github.com/Azure/azure-service-bus-go v0.11.5
 	github.com/Azure/azure-storage-blob-go => github.com/Azure/azure-storage-blob-go v0.15.0
-	github.com/Azure/go-amqp => github.com/Azure/go-amqp v1.0.0
+	github.com/Azure/go-amqp => github.com/Azure/go-amqp v1.0.1
 	github.com/Azure/go-ansiterm => github.com/Azure/go-ansiterm v0.0.0-20230124172434-306776ec8161
 	github.com/Azure/go-autorest => github.com/Azure/go-autorest v14.2.1-0.20230530143100-be633f7b83b4+incompatible
 	github.com/Azure/go-autorest/autorest => github.com/Azure/go-autorest/autorest v0.11.30-0.20230530143100-be633f7b83b4
@@ -41,7 +41,7 @@ replace (
 	github.com/Azure/go-autorest/autorest/validation => github.com/Azure/go-autorest/autorest/validation v0.3.2-0.20230530143100-be633f7b83b4
 	github.com/Azure/go-autorest/logger => github.com/Azure/go-autorest/logger v0.2.2-0.20230530143100-be633f7b83b4
 	github.com/Azure/go-autorest/tracing => github.com/Azure/go-autorest/tracing v0.6.1-0.20230530143100-be633f7b83b4
-	github.com/BurntSushi/toml => github.com/BurntSushi/toml v1.3.1
+	github.com/BurntSushi/toml => github.com/BurntSushi/toml v1.3.2
 	github.com/DATA-DOG/go-sqlmock => github.com/DATA-DOG/go-sqlmock v1.5.0
 	github.com/DataDog/datadog-go => github.com/DataDog/datadog-go v4.8.3+incompatible
 	github.com/GoogleCloudPlatform/cloudsql-proxy => github.com/GoogleCloudPlatform/cloudsql-proxy v1.33.7
@@ -54,11 +54,11 @@ replace (
 	github.com/ajstarks/svgo => github.com/ajstarks/svgo v0.0.0-20211024235047-1546f124cd8b
 	github.com/antihax/optional => github.com/antihax/optional v1.0.0
 	github.com/armon/circbuf => github.com/armon/circbuf v0.0.0-20190214190532-5111143e8da2
-	github.com/armon/go-metrics => github.com/armon/go-metrics v0.4.1
+	github.com/armon/go-metrics => github.com/armon/go-metrics v0.5.1
 	github.com/armon/go-radix => github.com/armon/go-radix v1.0.0
 	github.com/armon/go-socks5 => github.com/armon/go-socks5 v0.0.0-20160902184237-e75332964ef5
 	github.com/asaskevich/govalidator => github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2
-	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.44.278
+	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.44.280
 	github.com/aws/aws-sdk-go-v2 => github.com/aws/aws-sdk-go-v2 v1.18.0
 	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream => github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.4.10
 	github.com/aws/aws-sdk-go-v2/config => github.com/aws/aws-sdk-go-v2/config v1.18.25
@@ -180,7 +180,7 @@ replace (
 	github.com/go-openapi/runtime => github.com/go-openapi/runtime v0.26.0
 	github.com/go-openapi/spec => github.com/go-openapi/spec v0.20.9
 	github.com/go-openapi/strfmt => github.com/go-openapi/strfmt v0.21.7
-	github.com/go-openapi/swag => github.com/go-openapi/swag v0.22.3
+	github.com/go-openapi/swag => github.com/go-openapi/swag v0.22.4
 	github.com/go-openapi/validate => github.com/go-openapi/validate v0.22.1
 	github.com/go-pdf/fpdf => github.com/go-pdf/fpdf v1.4.3
 	github.com/go-playground/assert/v2 => github.com/go-playground/assert/v2 v2.2.0
@@ -461,7 +461,7 @@ replace (
 	gonum.org/v1/gonum => gonum.org/v1/gonum v0.13.0
 	gonum.org/v1/hdf5 => gonum.org/v1/hdf5 v0.0.0-20210714002203-8c5d23bc6946
 	gonum.org/v1/plot => gonum.org/v1/plot v0.13.0
-	google.golang.org/api => google.golang.org/api v0.125.0
+	google.golang.org/api => google.golang.org/api v0.126.0
 	google.golang.org/appengine => google.golang.org/appengine v1.6.7
 	google.golang.org/genproto => google.golang.org/genproto v0.0.0-20230530153820-e85fd2cbaebc
 	google.golang.org/genproto/googleapis/api => google.golang.org/genproto/googleapis/api v0.0.0-20230530153820-e85fd2cbaebc
