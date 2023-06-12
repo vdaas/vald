@@ -62,7 +62,9 @@
 - [Helm Operator Chart Reference](https://github.com/vdaas/vald/blob/v1.7.6/charts/vald-helm-operator/README.md)
 
 ### Changes
-⚠️ ⚠️ ⚠️ Warning ⚠️ ⚠️ ⚠️ 
+
+⚠️ ⚠️ ⚠️ Warning ⚠️ ⚠️ ⚠️
+
 - `v1.7.6` does not support `vald-agent-sidecar` for some reason.
 - You can use the `vald-agent-sidecar` by setting the `vald-agent-ngt` image tag as `v1.7.5` or earlier.
 - We will support `vald-agent-sidecar` in the future version again.
@@ -115,7 +117,6 @@
 :handshake: Contributor
 
 - Add takuyaymd as a contributor for maintenance [#2020](https://github.com/vdaas/vald/pull/2020)
-
 
 ## v1.7.5
 
