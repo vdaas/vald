@@ -82,6 +82,9 @@ func (s *server) aggregationSearch(ctx context.Context, aggr Aggregator, cfg *pa
 				}
 			}()
 			r, err := f(sctx, vc, copts...)
+			if r != nil {
+				defer r.ReturnToVTPool()
+			}
 			if err != nil {
 				switch {
 				case errors.Is(err, context.Canceled),
@@ -144,6 +147,9 @@ func (s *server) aggregationSearch(ctx context.Context, aggr Aggregator, cfg *pa
 
 				default:
 					r, err = f(sctx, vc, copts...)
+					if r != nil {
+						defer r.ReturnToVTPool()
+					}
 					if err != nil {
 						switch {
 						case errors.Is(err, context.Canceled),
@@ -468,15 +474,15 @@ func (v *valdStdAggr) Send(ctx context.Context, data *payload.Search_Response) {
 	}
 }
 
-func (v *valdStdAggr) Result() *payload.Search_Response {
+func (v *valdStdAggr) Result() (res *payload.Search_Response) {
 	v.cancel()
 	v.wg.Wait()
 	if len(v.result) > v.num {
 		v.result = v.result[:v.num]
 	}
-	return &payload.Search_Response{
-		Results: v.result,
-	}
+	res = payload.Search_ResponseFromVTPool()
+	res.Results = v.result
+	return res
 }
 
 // pairing heap
@@ -521,7 +527,7 @@ func (v *valdPairingHeapAggr) Send(ctx context.Context, data *payload.Search_Res
 	}
 }
 
-func (v *valdPairingHeapAggr) Result() *payload.Search_Response {
+func (v *valdPairingHeapAggr) Result() (res *payload.Search_Response) {
 	for !v.ph.IsEmpty() && len(v.result) <= v.num {
 		var min *DistPayload
 		min, v.ph = v.ph.ExtractMin()
@@ -530,9 +536,9 @@ func (v *valdPairingHeapAggr) Result() *payload.Search_Response {
 	if len(v.result) > v.num {
 		v.result = v.result[:v.num]
 	}
-	return &payload.Search_Response{
-		Results: v.result,
-	}
+	res = payload.Search_ResponseFromVTPool()
+	res.Results = v.result
+	return res
 }
 
 // plane sort
@@ -580,8 +586,9 @@ func (v *valdSliceAggr) Result() (res *payload.Search_Response) {
 	if len(v.result) > v.num {
 		v.result = v.result[:v.num]
 	}
-	res = &payload.Search_Response{
-		Results: make([]*payload.Object_Distance, 0, v.num),
+	res = payload.Search_ResponseFromVTPool()
+	if cap(res.GetResults()) < v.num {
+		res.Results = make([]*payload.Object_Distance, 0, v.num)
 	}
 	for _, r := range v.result {
 		res.Results = append(res.GetResults(), r.raw)
@@ -647,8 +654,9 @@ func (v *valdPoolSliceAggr) Result() (res *payload.Search_Response) {
 	if len(v.result) > v.num {
 		v.result = v.result[:v.num]
 	}
-	res = &payload.Search_Response{
-		Results: make([]*payload.Object_Distance, 0, v.num),
+	res = payload.Search_ResponseFromVTPool()
+	if cap(res.GetResults()) < v.num {
+		res.Results = make([]*payload.Object_Distance, 0, v.num)
 	}
 	for _, r := range v.result {
 		res.Results = append(res.GetResults(), r.raw)

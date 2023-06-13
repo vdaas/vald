@@ -166,7 +166,8 @@ func (idx *index) Start(ctx context.Context) (<-chan error, error) {
 				idx.schMap.Delete(addr)
 				_, err := idx.client.GetClient().
 					Do(grpc.WithGRPCMethod(ctx, "core.v1.Agent/SaveIndex"), addr, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
-						return agent.NewAgentClient(conn).SaveIndex(ctx, &payload.Empty{}, copts...)
+						req := new(payload.Empty)
+						return agent.NewAgentClient(conn).SaveIndex(ctx, req, copts...)
 					})
 				if err != nil {
 					log.Warnf("an error occurred while calling SaveIndex of %s: %s", addr, err)
@@ -213,9 +214,8 @@ func (idx *index) execute(ctx context.Context, enableLowIndexSkip, immediateSavi
 				return nil
 			}
 			ac := agent.NewAgentClient(conn)
-			req := &payload.Control_CreateIndexRequest{
-				PoolSize: idx.creationPoolSize,
-			}
+			req := payload.Control_CreateIndexRequestFromVTPool()
+			req.PoolSize = idx.creationPoolSize
 			if !immediateSaving {
 				_, err = ac.CreateIndex(ctx, req, copts...)
 				if err != nil {
@@ -285,7 +285,8 @@ func (idx *index) loadInfos(ctx context.Context) (err error) {
 			case <-ctx.Done():
 				return nil
 			default:
-				info, err := agent.NewAgentClient(conn).IndexInfo(ctx, new(payload.Empty), copts...)
+				req := new(payload.Empty)
+				info, err := agent.NewAgentClient(conn).IndexInfo(ctx, req, copts...)
 				if err != nil {
 					log.Warnf("an error occurred while calling IndexInfo of %s: %s", addr, err)
 					return nil

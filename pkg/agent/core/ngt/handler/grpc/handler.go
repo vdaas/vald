@@ -73,15 +73,16 @@ func (s *server) newLocations(uuids ...string) (locs *payload.Object_Locations) 
 	if len(uuids) == 0 {
 		return nil
 	}
-	locs = &payload.Object_Locations{
-		Locations: make([]*payload.Object_Location, 0, len(uuids)),
+	locs = payload.Object_LocationsFromVTPool()
+	if cap(locs.GetLocations()) < len(uuids) {
+		locs.Locations = make([]*payload.Object_Location, 0, len(uuids))
 	}
 	for _, uuid := range uuids {
-		locs.Locations = append(locs.GetLocations(), &payload.Object_Location{
-			Name: s.name,
-			Uuid: uuid,
-			Ips:  []string{s.ip},
-		})
+		loc := payload.Object_LocationFromVTPool()
+		loc.Name = s.name
+		loc.Uuid = uuid
+		loc.Ips = []string{s.ip}
+		locs.Locations = append(locs.GetLocations(), loc)
 	}
 	return locs
 }

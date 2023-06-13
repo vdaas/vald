@@ -47,9 +47,9 @@ func (s *server) IndexInfo(ctx context.Context, _ *payload.Empty) (res *payload.
 			span.End()
 		}
 	}()
-	return &payload.Info_Index_Count{
-		Stored:      s.indexer.NumberOfUUIDs(),
-		Uncommitted: s.indexer.NumberOfUncommittedUUIDs(),
-		Indexing:    s.indexer.IsIndexing(),
-	}, nil
+	res = payload.Info_Index_CountFromVTPool()
+	res.Stored = s.indexer.NumberOfUUIDs()
+	res.Uncommitted = s.indexer.NumberOfUncommittedUUIDs()
+	res.Indexing = s.indexer.IsIndexing()
+	return res, nil
 }

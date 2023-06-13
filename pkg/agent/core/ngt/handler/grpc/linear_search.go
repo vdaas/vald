@@ -399,8 +399,9 @@ func (s *server) MultiLinearSearch(ctx context.Context, reqs *payload.Search_Mul
 		}
 	}()
 
-	res = &payload.Search_Responses{
-		Responses: make([]*payload.Search_Response, len(reqs.GetRequests())),
+	res = payload.Search_ResponsesFromVTPool()
+	if cap(res.GetResponses()) < len(reqs.GetRequests()) {
+		res.Responses = make([]*payload.Search_Response, len(reqs.GetRequests()))
 	}
 	var wg sync.WaitGroup
 	var mu sync.Mutex
@@ -473,8 +474,9 @@ func (s *server) MultiLinearSearchByID(ctx context.Context, reqs *payload.Search
 		}
 	}()
 
-	res = &payload.Search_Responses{
-		Responses: make([]*payload.Search_Response, len(reqs.GetRequests())),
+	res = payload.Search_ResponsesFromVTPool()
+	if cap(res.GetResponses()) < len(reqs.GetRequests()) {
+		res.Responses = make([]*payload.Search_Response, len(reqs.GetRequests()))
 	}
 	var wg sync.WaitGroup
 	var mu sync.Mutex

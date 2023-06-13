@@ -142,10 +142,10 @@ func (s *server) GetObject(ctx context.Context, id *payload.Object_VectorRequest
 		return nil, err
 	}
 
-	return &payload.Object_Vector{
-		Id:     uuid,
-		Vector: vec,
-	}, nil
+	res = payload.Object_VectorFromVTPool()
+	res.Id = uuid
+	res.Vector = vec
+	return res, nil
 }
 
 func (s *server) StreamGetObject(stream vald.Object_StreamGetObjectServer) (err error) {

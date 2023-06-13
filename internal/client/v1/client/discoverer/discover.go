@@ -284,20 +284,20 @@ func (c *client) updateDiscoveryInfo(ctx context.Context, ech chan<- error) (con
 }
 
 func (c *client) discoverNodes(ctx context.Context) (nodes *payload.Info_Nodes, err error) {
+	req := payload.Discoverer_RequestFromVTPool()
+	req.Namespace = c.namespace
+	req.Name = c.name
+	req.Node = c.nodeName
 	_, err = c.dscClient.RoundRobin(grpc.WithGRPCMethod(ctx, "discoverer.v1.Discoverer/Nodes"), func(ctx context.Context,
 		conn *grpc.ClientConn, copts ...grpc.CallOption,
 	) (interface{}, error) {
-		nodes, err = discoverer.NewDiscovererClient(conn).
-			Nodes(ctx, &payload.Discoverer_Request{
-				Namespace: c.namespace,
-				Name:      c.name,
-				Node:      c.nodeName,
-			}, copts...)
+		nodes, err = discoverer.NewDiscovererClient(conn).Nodes(ctx, req, copts...)
 		if err != nil {
 			return nil, err
 		}
 		return nodes, nil
 	})
+	req.ReturnToVTPool()
 	return nodes, err
 }
 

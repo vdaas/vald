@@ -95,22 +95,20 @@ func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *
 	rtName := "/ngt.Upsert"
 	_, exists := s.ngt.Exists(req.GetVector().GetId())
 	if exists {
-		loc, err = s.Update(ctx, &payload.Update_Request{
-			Vector: req.GetVector(),
-			Config: &payload.Update_Config{
-				Timestamp:            req.GetConfig().GetTimestamp(),
-				SkipStrictExistCheck: true,
-			},
-		})
+		ureq := payload.Update_RequestFromVTPool()
+		ureq.Vector = req.GetVector()
+		ureq.Config = payload.Update_ConfigFromVTPool()
+		ureq.Config.Timestamp = req.GetConfig().GetTimestamp()
+		ureq.Config.SkipStrictExistCheck = true
+		loc, err = s.Update(ctx, ureq)
 		rtName += "/ngt.Update"
 	} else {
-		loc, err = s.Insert(ctx, &payload.Insert_Request{
-			Vector: req.GetVector(),
-			Config: &payload.Insert_Config{
-				Timestamp:            req.GetConfig().GetTimestamp(),
-				SkipStrictExistCheck: true,
-			},
-		})
+		ireq := payload.Insert_RequestFromVTPool()
+		ireq.Vector = req.GetVector()
+		ireq.Config = payload.Insert_ConfigFromVTPool()
+		ireq.Config.Timestamp = req.GetConfig().GetTimestamp()
+		ireq.Config.SkipStrictExistCheck = true
+		loc, err = s.Insert(ctx, ireq)
 		rtName += "/ngt.Insert"
 	}
 	if err != nil {
@@ -226,33 +224,31 @@ func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequ
 		ids = append(ids, vec.GetId())
 		_, exists := s.ngt.Exists(vec.GetId())
 		if exists {
-			updateReqs = append(updateReqs, &payload.Update_Request{
-				Vector: vec,
-				Config: &payload.Update_Config{
-					Timestamp:            req.GetConfig().GetTimestamp(),
-					SkipStrictExistCheck: true,
-				},
-			})
+			ureq := payload.Update_RequestFromVTPool()
+			ureq.Vector = vec
+			ureq.Config = payload.Update_ConfigFromVTPool()
+			ureq.Config.Timestamp = req.GetConfig().GetTimestamp()
+			ureq.Config.SkipStrictExistCheck = true
+			updateReqs = append(updateReqs, ureq)
 		} else {
-			insertReqs = append(insertReqs, &payload.Insert_Request{
-				Vector: vec,
-				Config: &payload.Insert_Config{
-					Timestamp:            req.GetConfig().GetTimestamp(),
-					SkipStrictExistCheck: true,
-				},
-			})
+			ireq := payload.Insert_RequestFromVTPool()
+			ireq.Vector = vec
+			ireq.Config = payload.Insert_ConfigFromVTPool()
+			ireq.Config.Timestamp = req.GetConfig().GetTimestamp()
+			ireq.Config.SkipStrictExistCheck = true
+			insertReqs = append(insertReqs, ireq)
 		}
 	}
 
 	switch {
 	case len(insertReqs) <= 0:
-		res, err = s.MultiUpdate(ctx, &payload.Update_MultiRequest{
-			Requests: updateReqs,
-		})
+		ureqs := payload.Update_MultiRequestFromVTPool()
+		ureqs.Requests = updateReqs
+		res, err = s.MultiUpdate(ctx, ureqs)
 	case len(updateReqs) <= 0:
-		res, err = s.MultiInsert(ctx, &payload.Insert_MultiRequest{
-			Requests: insertReqs,
-		})
+		ireqs := payload.Insert_MultiRequestFromVTPool()
+		ireqs.Requests = insertReqs
+		res, err = s.MultiInsert(ctx, ireqs)
 	default:
 		var (
 			ures, ires *payload.Object_Locations
@@ -263,9 +259,9 @@ func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequ
 		wg.Add(1)
 		s.eg.Go(safety.RecoverFunc(func() (err error) {
 			defer wg.Done()
-			ures, err = s.MultiUpdate(ctx, &payload.Update_MultiRequest{
-				Requests: updateReqs,
-			})
+			ureqs := payload.Update_MultiRequestFromVTPool()
+			ureqs.Requests = updateReqs
+			ures, err = s.MultiUpdate(ctx, ureqs)
 			if err != nil {
 				mu.Lock()
 				if errs == nil {
@@ -280,9 +276,9 @@ func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequ
 		wg.Add(1)
 		s.eg.Go(safety.RecoverFunc(func() (err error) {
 			defer wg.Done()
-			ires, err = s.MultiInsert(ctx, &payload.Insert_MultiRequest{
-				Requests: insertReqs,
-			})
+			ireqs := payload.Insert_MultiRequestFromVTPool()
+			ireqs.Requests = insertReqs
+			ires, err = s.MultiInsert(ctx, ireqs)
 			if err != nil {
 				mu.Lock()
 				if errs == nil {
@@ -297,17 +293,14 @@ func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequ
 		wg.Wait()
 
 		if errs == nil {
-			var locs []*payload.Object_Location
+			res = payload.Object_LocationsFromVTPool()
 			switch {
 			case ures.GetLocations() == nil:
-				locs = ires.GetLocations()
+				res.Locations = ires.GetLocations()
 			case ires.GetLocations() == nil:
-				locs = ures.GetLocations()
+				res.Locations = ures.GetLocations()
 			default:
-				locs = append(ures.GetLocations(), ires.GetLocations()...)
-			}
-			res = &payload.Object_Locations{
-				Locations: locs,
+				res.Locations = append(ures.GetLocations(), ires.GetLocations()...)
 			}
 		} else {
 			err = errs

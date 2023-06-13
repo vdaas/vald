@@ -404,8 +404,9 @@ func (s *server) MultiSearch(ctx context.Context, reqs *payload.Search_MultiRequ
 		}
 	}()
 
-	res = &payload.Search_Responses{
-		Responses: make([]*payload.Search_Response, len(reqs.GetRequests())),
+	res = payload.Search_ResponsesFromVTPool()
+	if cap(res.GetResponses()) < len(reqs.GetRequests()) {
+		res.Responses = make([]*payload.Search_Response, len(reqs.GetRequests()))
 	}
 	var wg sync.WaitGroup
 	var mu sync.Mutex
@@ -478,8 +479,9 @@ func (s *server) MultiSearchByID(ctx context.Context, reqs *payload.Search_Multi
 		}
 	}()
 
-	res = &payload.Search_Responses{
-		Responses: make([]*payload.Search_Response, len(reqs.GetRequests())),
+	res = payload.Search_ResponsesFromVTPool()
+	if cap(res.GetResponses()) < len(reqs.GetRequests()) {
+		res.Responses = make([]*payload.Search_Response, len(reqs.GetRequests()))
 	}
 	var wg sync.WaitGroup
 	var mu sync.Mutex
@@ -551,13 +553,15 @@ func toSearchResponse(dists []model.Distance, err error) (res *payload.Search_Re
 	if len(dists) == 0 {
 		return nil, errors.ErrEmptySearchResult
 	}
-	res = new(payload.Search_Response)
-	res.Results = make([]*payload.Object_Distance, 0, len(dists))
+	res = payload.Search_ResponseFromVTPool()
+	if cap(res.GetResults()) < len(dists) {
+		res.Results = make([]*payload.Object_Distance, 0, len(dists))
+	}
 	for _, dist := range dists {
-		res.Results = append(res.GetResults(), &payload.Object_Distance{
-			Id:       dist.ID,
-			Distance: dist.Distance,
-		})
+		d := payload.Object_DistanceFromVTPool()
+		d.Id = dist.ID
+		d.Distance = dist.Distance
+		res.Results = append(res.GetResults(), d)
 	}
 	return res, nil
 }

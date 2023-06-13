@@ -172,10 +172,10 @@ func (s *server) IndexInfo(ctx context.Context, _ *payload.Empty) (res *payload.
 			span.End()
 		}
 	}()
-	return &payload.Info_Index_Count{
-		Stored:      uint32(s.ngt.Len()),
-		Uncommitted: uint32(s.ngt.InsertVQueueBufferLen() + s.ngt.DeleteVQueueBufferLen()),
-		Indexing:    s.ngt.IsIndexing(),
-		Saving:      s.ngt.IsSaving(),
-	}, nil
+	res = payload.Info_Index_CountFromVTPool()
+	res.Stored = uint32(s.ngt.Len())
+	res.Uncommitted = uint32(s.ngt.InsertVQueueBufferLen() + s.ngt.DeleteVQueueBufferLen())
+	res.Indexing = s.ngt.IsIndexing()
+	res.Saving = s.ngt.IsSaving()
+	return res, nil
 }

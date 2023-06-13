@@ -86,7 +86,7 @@ func (s *server) exists(ctx context.Context, uuid string) (id *payload.Object_ID
 		}
 		return nil, err
 	}
-	ich := make(chan *payload.Object_ID, 1)
+	ich := make(chan string, 1)
 	ech := make(chan error, 1)
 	doneErr := errors.New("done exists")
 	ctx, cancel := context.WithCancelCause(ctx)
@@ -101,10 +101,13 @@ func (s *server) exists(ctx context.Context, uuid string) (id *payload.Object_ID
 					sspan.End()
 				}
 			}()
-			meta := &payload.Object_ID{
-				Id: uuid,
-			}
+			meta := payload.Object_IDFromVTPool()
+			meta.Id = uuid
+
 			oid, err := vc.Exists(sctx, meta, copts...)
+			if oid != nil {
+				defer oid.ReturnToVTPool()
+			}
 			if err != nil {
 				var (
 					attrs trace.Attributes
@@ -162,7 +165,7 @@ func (s *server) exists(ctx context.Context, uuid string) (id *payload.Object_ID
 			}
 			if oid != nil && oid.GetId() != "" {
 				once.Do(func() {
-					ich <- oid
+					ich <- oid.GetId()
 					cancel(doneErr)
 				})
 			}
@@ -170,13 +173,14 @@ func (s *server) exists(ctx context.Context, uuid string) (id *payload.Object_ID
 		})
 		return nil
 	}))
+	var idStr string
 	select {
 	case <-ctx.Done():
 		err = ctx.Err()
 		if errors.Is(err, context.Canceled) && errors.Is(context.Cause(ctx), doneErr) {
 			select {
-			case id = <-ich:
-				if id == nil || id.GetId() == "" {
+			case idStr = <-ich:
+				if idStr == "" {
 					err = errors.ErrObjectIDNotFound(uuid)
 				} else {
 					err = nil
@@ -184,13 +188,13 @@ func (s *server) exists(ctx context.Context, uuid string) (id *payload.Object_ID
 			default:
 			}
 		}
-	case id = <-ich:
-		if id == nil || id.GetId() == "" {
+	case idStr = <-ich:
+		if idStr == "" {
 			err = errors.ErrObjectIDNotFound(uuid)
 		}
 	case err = <-ech:
 	}
-	if err == nil && (id == nil || id.GetId() == "") {
+	if err == nil && (idStr == "") {
 		err = errors.ErrObjectIDNotFound(uuid)
 	}
 	if err != nil {
@@ -201,6 +205,8 @@ func (s *server) exists(ctx context.Context, uuid string) (id *payload.Object_ID
 		}
 		return nil, err
 	}
+	id = payload.Object_IDFromVTPool()
+	id.Id = idStr
 	return id, nil
 }
 
@@ -300,17 +306,18 @@ func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *
 	if req.Config != nil {
 		req.Config.MinNum = 0
 	}
-	res, err = s.doSearch(ctx, &payload.Search_Config{
-		RequestId:            cfg.GetRequestId(),
-		Num:                  cfg.GetNum(),
-		MinNum:               mn,
-		Radius:               cfg.GetRadius(),
-		Epsilon:              cfg.GetEpsilon(),
-		Timeout:              cfg.GetTimeout(),
-		IngressFilters:       cfg.GetIngressFilters(),
-		EgressFilters:        cfg.GetEgressFilters(),
-		AggregationAlgorithm: cfg.GetAggregationAlgorithm(),
-	}, func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error) {
+	scfg := payload.Search_ConfigFromVTPool()
+	scfg.RequestId = cfg.GetRequestId()
+	scfg.Num = cfg.GetNum()
+	scfg.MinNum = mn
+	scfg.Radius = cfg.GetRadius()
+	scfg.Epsilon = cfg.GetEpsilon()
+	scfg.Timeout = cfg.GetTimeout()
+	scfg.IngressFilters = cfg.GetIngressFilters()
+	scfg.EgressFilters = cfg.GetEgressFilters()
+	scfg.AggregationAlgorithm = cfg.GetAggregationAlgorithm()
+	defer scfg.ReturnToVTPool()
+	res, err = s.doSearch(ctx, scfg, func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error) {
 		return vc.Search(ctx, req, copts...)
 	})
 	if err != nil {
@@ -375,17 +382,17 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 	if req.Config != nil {
 		req.Config.MinNum = 0
 	}
-	scfg := &payload.Search_Config{
-		RequestId:            cfg.GetRequestId(),
-		Num:                  cfg.GetNum(),
-		MinNum:               mn,
-		Radius:               cfg.GetRadius(),
-		Epsilon:              cfg.GetEpsilon(),
-		Timeout:              cfg.GetTimeout(),
-		IngressFilters:       cfg.GetIngressFilters(),
-		EgressFilters:        cfg.GetEgressFilters(),
-		AggregationAlgorithm: cfg.GetAggregationAlgorithm(),
-	}
+	scfg := payload.Search_ConfigFromVTPool()
+	scfg.RequestId = cfg.GetRequestId()
+	scfg.Num = cfg.GetNum()
+	scfg.MinNum = mn
+	scfg.Radius = cfg.GetRadius()
+	scfg.Epsilon = cfg.GetEpsilon()
+	scfg.Timeout = cfg.GetTimeout()
+	scfg.IngressFilters = cfg.GetIngressFilters()
+	scfg.EgressFilters = cfg.GetEgressFilters()
+	scfg.AggregationAlgorithm = cfg.GetAggregationAlgorithm()
+	defer scfg.ReturnToVTPool()
 	if err != nil {
 		var (
 			attrs trace.Attributes
@@ -449,10 +456,10 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 		}
 		return nil, err
 	}
-	res, err = s.Search(ctx, &payload.Search_Request{
-		Vector: vec.GetVector(),
-		Config: scfg,
-	})
+	sreq := payload.Search_RequestFromVTPool()
+	sreq.Vector = vec.GetVector()
+	sreq.Config = scfg
+	res, err = s.Search(ctx, sreq)
 	if err != nil {
 		res, err = s.doSearch(ctx, scfg, func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error) {
 			return vc.SearchByID(ctx, req, copts...)
@@ -608,8 +615,9 @@ func (s *server) MultiSearch(ctx context.Context, reqs *payload.Search_MultiRequ
 			span.End()
 		}
 	}()
-	res = &payload.Search_Responses{
-		Responses: make([]*payload.Search_Response, len(reqs.GetRequests())),
+	res = payload.Search_ResponsesFromVTPool()
+	if cap(res.GetResponses()) < len(reqs.GetRequests()) {
+		res.Responses = make([]*payload.Search_Response, len(reqs.GetRequests()))
 	}
 	var wg sync.WaitGroup
 	var mu, emu sync.Mutex
@@ -682,9 +690,9 @@ func (s *server) MultiSearchByID(ctx context.Context, reqs *payload.Search_Multi
 			span.End()
 		}
 	}()
-
-	res = &payload.Search_Responses{
-		Responses: make([]*payload.Search_Response, len(reqs.GetRequests())),
+	res = payload.Search_ResponsesFromVTPool()
+	if cap(res.GetResponses()) < len(reqs.GetRequests()) {
+		res.Responses = make([]*payload.Search_Response, len(reqs.GetRequests()))
 	}
 	var wg sync.WaitGroup
 	var mu, emu sync.Mutex
@@ -785,15 +793,16 @@ func (s *server) LinearSearch(ctx context.Context, req *payload.Search_Request) 
 	if req.Config != nil {
 		req.Config.MinNum = 0
 	}
-	res, err = s.doSearch(ctx, &payload.Search_Config{
-		RequestId:            cfg.GetRequestId(),
-		Num:                  cfg.GetNum(),
-		MinNum:               mn,
-		Timeout:              cfg.GetTimeout(),
-		IngressFilters:       cfg.GetIngressFilters(),
-		EgressFilters:        cfg.GetEgressFilters(),
-		AggregationAlgorithm: cfg.GetAggregationAlgorithm(),
-	}, func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error) {
+	scfg := payload.Search_ConfigFromVTPool()
+	scfg.RequestId = cfg.GetRequestId()
+	scfg.Num = cfg.GetNum()
+	scfg.MinNum = mn
+	scfg.Timeout = cfg.GetTimeout()
+	scfg.IngressFilters = cfg.GetIngressFilters()
+	scfg.EgressFilters = cfg.GetEgressFilters()
+	scfg.AggregationAlgorithm = cfg.GetAggregationAlgorithm()
+	defer scfg.ReturnToVTPool()
+	res, err = s.doSearch(ctx, scfg, func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error) {
 		return vc.LinearSearch(ctx, req, copts...)
 	})
 	if err != nil {
@@ -858,15 +867,15 @@ func (s *server) LinearSearchByID(ctx context.Context, req *payload.Search_IDReq
 	if req.Config != nil {
 		req.Config.MinNum = 0
 	}
-	scfg := &payload.Search_Config{
-		RequestId:            cfg.GetRequestId(),
-		Num:                  cfg.GetNum(),
-		MinNum:               mn,
-		Timeout:              cfg.GetTimeout(),
-		IngressFilters:       cfg.GetIngressFilters(),
-		EgressFilters:        cfg.GetEgressFilters(),
-		AggregationAlgorithm: cfg.GetAggregationAlgorithm(),
-	}
+	scfg := payload.Search_ConfigFromVTPool()
+	scfg.RequestId = cfg.GetRequestId()
+	scfg.Num = cfg.GetNum()
+	scfg.MinNum = mn
+	scfg.Timeout = cfg.GetTimeout()
+	scfg.IngressFilters = cfg.GetIngressFilters()
+	scfg.EgressFilters = cfg.GetEgressFilters()
+	scfg.AggregationAlgorithm = cfg.GetAggregationAlgorithm()
+	defer scfg.ReturnToVTPool()
 	if err != nil {
 		var (
 			attrs trace.Attributes
@@ -931,10 +940,10 @@ func (s *server) LinearSearchByID(ctx context.Context, req *payload.Search_IDReq
 		return nil, err
 	}
 
-	res, err = s.LinearSearch(ctx, &payload.Search_Request{
-		Vector: vec.GetVector(),
-		Config: scfg,
-	})
+	sreq := payload.Search_RequestFromVTPool()
+	sreq.Vector = vec.GetVector()
+	sreq.Config = scfg
+	res, err = s.LinearSearch(ctx, sreq)
 	if err != nil {
 		res, err = s.doSearch(ctx, scfg, func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error) {
 			return vc.LinearSearchByID(ctx, req, copts...)
@@ -1061,8 +1070,9 @@ func (s *server) MultiLinearSearch(ctx context.Context, reqs *payload.Search_Mul
 			span.End()
 		}
 	}()
-	res = &payload.Search_Responses{
-		Responses: make([]*payload.Search_Response, len(reqs.GetRequests())),
+	res = payload.Search_ResponsesFromVTPool()
+	if cap(res.GetResponses()) < len(reqs.GetRequests()) {
+		res.Responses = make([]*payload.Search_Response, len(reqs.GetRequests()))
 	}
 	var wg sync.WaitGroup
 	var mu, emu sync.Mutex
@@ -1135,9 +1145,9 @@ func (s *server) MultiLinearSearchByID(ctx context.Context, reqs *payload.Search
 			span.End()
 		}
 	}()
-
-	res = &payload.Search_Responses{
-		Responses: make([]*payload.Search_Response, len(reqs.GetRequests())),
+	res = payload.Search_ResponsesFromVTPool()
+	if cap(res.GetResponses()) < len(reqs.GetRequests()) {
+		res.Responses = make([]*payload.Search_Response, len(reqs.GetRequests()))
 	}
 	var wg sync.WaitGroup
 	var mu, emu sync.Mutex
@@ -1289,22 +1299,21 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 		if req.GetConfig() != nil {
 			req.GetConfig().SkipStrictExistCheck = true
 		} else {
-			req.Config = &payload.Insert_Config{SkipStrictExistCheck: true}
+			req.Config = payload.Insert_ConfigFromVTPool()
+			req.Config.SkipStrictExistCheck = true
 		}
 	}
 
 	mu := new(sync.Mutex)
-	ce = &payload.Object_Location{
-		Uuid: uuid,
-		Ips:  make([]string, 0, s.replica),
-	}
+	ce = payload.Object_LocationFromVTPool()
+	ce.Uuid = uuid
+	ce.Ips = make([]string, 0, s.replica)
 	locs := make([]string, 0, s.replica)
 	if req.GetConfig().GetTimestamp() == 0 {
 		now := time.Now().UnixNano()
 		if req.GetConfig() == nil {
-			req.Config = &payload.Insert_Config{
-				Timestamp: now,
-			}
+			req.Config = payload.Insert_ConfigFromVTPool()
+			req.Config.Timestamp = now
 		} else {
 			req.GetConfig().Timestamp = now
 		}
@@ -1485,8 +1494,9 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 	)
 	eg, ectx := errgroup.New(ctx)
 	eg.Limitation(s.multiConcurrency)
-	locs = &payload.Object_Locations{
-		Locations: make([]*payload.Object_Location, len(reqs.GetRequests())),
+	locs = payload.Object_LocationsFromVTPool()
+	if cap(locs.Locations) < len(reqs.GetRequests()) {
+		locs.Locations = make([]*payload.Object_Location, len(reqs.GetRequests()))
 	}
 	for i, r := range reqs.GetRequests() {
 		if r != nil && r.GetVector() != nil && len(r.GetVector().GetVector()) >= algorithm.MinimumVectorDimensionSize && r.GetVector().GetId() != "" {
@@ -1647,11 +1657,10 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (res *
 			updated atomic.Uint64
 			ls      = make([]string, 0, s.replica)
 			visited = make(map[string]bool, s.replica)
-			locs    = &payload.Object_Location{
-				Uuid: uuid,
-				Ips:  make([]string, 0, s.replica),
-			}
+			locs    = payload.Object_LocationFromVTPool()
 		)
+		locs.Uuid = uuid
+		locs.Ips = make([]string, 0, s.replica)
 		err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) (err error) {
 			ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "BroadCast/"+target), apiName+"/"+vald.UpdateRPCName+"/"+target)
 			defer func() {
@@ -1737,14 +1746,13 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (res *
 						span.End()
 					}
 				}()
-				loc, err := vc.Insert(ctx, &payload.Insert_Request{
-					Vector: req.GetVector(),
-					Config: &payload.Insert_Config{
-						SkipStrictExistCheck: true,
-						Filters:              req.GetConfig().GetFilters(),
-						Timestamp:            req.GetConfig().GetTimestamp(),
-					},
-				}, copts...)
+				ireq := payload.Insert_RequestFromVTPool()
+				ireq.Vector = req.GetVector()
+				ireq.Config = payload.Insert_ConfigFromVTPool()
+				ireq.Config.SkipStrictExistCheck = true
+				ireq.Config.Filters = req.GetConfig().GetFilters()
+				ireq.Config.Timestamp = req.GetConfig().GetTimestamp()
+				loc, err := vc.Insert(ctx, ireq, copts...)
 				if err != nil {
 					st, ok := status.FromError(err)
 					if ok && st != nil && span != nil {
@@ -1856,7 +1864,8 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (res *
 		if req.GetConfig() != nil {
 			req.GetConfig().SkipStrictExistCheck = true
 		} else {
-			req.Config = &payload.Update_Config{SkipStrictExistCheck: true}
+			req.Config = payload.Update_ConfigFromVTPool()
+			req.Config.SkipStrictExistCheck = true
 		}
 	}
 	var now int64
@@ -2022,8 +2031,9 @@ func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequ
 	)
 	eg, ectx := errgroup.New(ctx)
 	eg.Limitation(s.multiConcurrency)
-	locs = &payload.Object_Locations{
-		Locations: make([]*payload.Object_Location, len(reqs.GetRequests())),
+	locs = payload.Object_LocationsFromVTPool()
+	if cap(locs.GetLocations()) < len(reqs.GetRequests()) {
+		locs.Locations = make([]*payload.Object_Location, len(reqs.GetRequests()))
 	}
 	for i, r := range reqs.GetRequests() {
 		if r != nil && r.GetVector() != nil && len(r.GetVector().GetVector()) >= algorithm.MinimumVectorDimensionSize && r.GetVector().GetId() != "" {
