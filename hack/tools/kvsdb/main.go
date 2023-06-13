@@ -76,6 +76,13 @@ func main() {
 	}
 
 	// print
+	if *format == "csv" {
+		fmt.Printf("uuid,oid,timestamp\n")
+	} else if *format == "tsv" {
+		fmt.Printf("uuid\toid\ttimestamp\n")
+	} else {
+		fmt.Println("uuid", "oid", "timestamp")
+	}
 	kvsdb.Range(context.TODO(), func(uuid string, oid uint32, ts int64) bool {
 		if *format == "csv" {
 			fmt.Printf("%s,%d,%d\n", uuid, oid, ts)
