@@ -30,10 +30,10 @@ import (
 )
 
 var (
-	format = flag.String("format", "csv", "file format(csv,tsv)")
-	kvsFileName = flag.String("file", "ngt-meta.kvsdb", "kvsdb file name")
+	format               = flag.String("format", "csv", "file format(csv,tsv)")
+	kvsFileName          = flag.String("file", "ngt-meta.kvsdb", "kvsdb file name")
 	kvsTimestampFileName = flag.String("timestamp-file", "ngt-timestamp.kvsdb", "kvsdb timestamp file name")
-	path = flag.String("path", ".", "kvsdb file path")
+	path                 = flag.String("path", ".", "kvsdb file path")
 )
 
 func main() {
@@ -64,7 +64,7 @@ func main() {
 		os.O_RDONLY|os.O_SYNC,
 		fs.ModePerm,
 	)
-	_= gob.NewDecoder(ft).Decode(&mt)
+	_ = gob.NewDecoder(ft).Decode(&mt)
 
 	// kvs load
 	for k, id := range m {
