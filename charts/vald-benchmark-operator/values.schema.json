@@ -473,7 +473,7 @@
               "description": "enable/disable skip SSL certificate verification"
             },
             "key": { "type": "string" }
-         }
+          }
         }
       }
     },

@@ -244,17 +244,6 @@ func (j *job) PreStart(ctx context.Context) error {
 			return err
 		}
 	}
-
-	log.Infof("[benchmark job] start download dataset of %s", j.hdf5.GetName().String())
-	if err := j.hdf5.Download(); err != nil {
-		return err
-	}
-	log.Infof("[benchmark job] success download dataset of %s", j.hdf5.GetName().String())
-	log.Infof("[benchmark job] start load dataset of %s", j.hdf5.GetName().String())
-	if err := j.hdf5.Read(); err != nil {
-		return err
-	}
-	log.Infof("[benchmark job] success load dataset of %s", j.hdf5.GetName().String())
 	// Wait for beforeJob completed if exists
 	if len(j.beforeJobName) != 0 {
 		var jobResource v1.ValdBenchmarkJob
