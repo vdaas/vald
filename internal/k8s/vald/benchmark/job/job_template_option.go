@@ -148,7 +148,9 @@ func WithLabel(label map[string]string) BenchmarkJobOption {
 // WithTTLSecondsAfterFinished sets the TTLSecondsAfterFinished to the job template.
 func WithTTLSecondsAfterFinished(ttl int32) BenchmarkJobOption {
 	return func(b *jobs.Job) error {
-		b.Spec.TTLSecondsAfterFinished = &ttl
+		if ttl > 0 {
+			b.Spec.TTLSecondsAfterFinished = &ttl
+		}
 		return nil
 	}
 }

@@ -104,6 +104,7 @@ func NewConfig(ctx context.Context, path string) (cfg *Config, err error) {
 	} else {
 		cfg.Job.Target = (*config.BenchmarkTarget)(jobResource.Spec.Target)
 		cfg.Job.Dataset = (*config.BenchmarkDataset)(jobResource.Spec.Dataset)
+		cfg.Job.Dimension = jobResource.Spec.Dimension
 		cfg.Job.Replica = jobResource.Spec.Replica
 		cfg.Job.Repetition = jobResource.Spec.Repetition
 		cfg.Job.JobType = jobResource.Spec.JobType

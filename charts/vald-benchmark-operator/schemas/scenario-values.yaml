@@ -28,7 +28,7 @@ target:
 # @schema {"name": "dataset", "type": "object", "required": ["name", "indexes", "group", "range"]}
 # dataset -- dataset information
 dataset:
-  # @schema {"name": "dataset.name", "type": "string", "enum": ["fashion-mnist"] }
+  # @schema {"name": "dataset.name", "type": "string", "enum": ["original", "fashion-mnist"] }
   # dataset.name -- the name of dataset
   name: "fashion-mnist"
   # @schema {"name": "dataset.indexes", "type": "integer", "minimum": 0}

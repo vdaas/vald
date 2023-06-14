@@ -74,6 +74,7 @@ spec:
                     name:
                       type: string
                       enum:
+                        - original
                         - fashion-mnist
                     range:
                       type: object

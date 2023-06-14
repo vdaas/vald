@@ -79,7 +79,6 @@ func New(cfg *config.Config) (r runner.Runner, err error) {
 	if err != nil {
 		return nil, err
 	}
-
 	d, err := hdf5.New(
 		hdf5.WithNameByString(cfg.Job.Dataset.Name),
 	)
@@ -87,7 +86,6 @@ func New(cfg *config.Config) (r runner.Runner, err error) {
 		return nil, err
 	}
 	log.Info("pkg/tools/benchmark/job/cmd success d")
-
 	job, err := service.New(
 		service.WithErrGroup(eg),
 		service.WithValdClient(vcli),
@@ -141,6 +139,39 @@ func New(cfg *config.Config) (r runner.Runner, err error) {
 		)
 		if err != nil {
 			return nil, err
+		}
+	}
+
+	if len(cfg.Server.MetricsServers) == 0 {
+		cfg.Server.MetricsServers = []*iconf.Server{
+			{
+				Name: "pprof",
+				Host: "0.0.0.0",
+				Port: uint16(6060),
+				HTTP: &iconf.HTTP{
+					HandlerTimeout:    "5s",
+					IdleTimeout:       "2s",
+					ReadHeaderTimeout: "1s",
+					ReadTimeout:       "1s",
+					ShutdownDuration:  "5s",
+					WriteTimeout:      "1m",
+				},
+				Mode:          "REST",
+				Network:       "tcp",
+				ProbeWaitTime: "3s",
+				SocketOption: &iconf.SocketOption{
+					IPRecoverDestinationAddr: false,
+					IPTransparent:            false,
+					ReuseAddr:                true,
+					ReusePort:                true,
+					TCPCork:                  false,
+					TCPDeferAccept:           true,
+					TCPFastOpen:              true,
+					TCPNoDelay:               true,
+					TCPQuickAck:              true,
+				},
+				SocketPath: "",
+			},
 		}
 	}
 
