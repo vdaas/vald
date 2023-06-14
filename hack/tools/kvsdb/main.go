@@ -78,7 +78,7 @@ func main() {
 	default:
 		sp = " "
 	}
-	sb.WriteString("uuid"+sp+"oid"+sp+"timestamp\n")
+	sb.WriteString("uuid" + sp + "oid" + sp + "timestamp\n")
 	for k, id := range m {
 		if ts, ok := mt[k]; ok {
 			sb.WriteString(strings.Join([]string{k, strconv.FormatUint(uint64(id), 10), strconv.FormatInt(ts, 10), "\r\n"}, sp))
