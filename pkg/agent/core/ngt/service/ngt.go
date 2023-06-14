@@ -222,7 +222,7 @@ func migrate(ctx context.Context, path string) (err error) {
 	}
 	files, err := file.ListInDir(path)
 	if err != nil {
-		return fmt.Errorf("failed to list in file: %w", err)
+		return fmt.Errorf("failed to list in %v: %w", path, err)
 	}
 	if len(files) == 0 {
 		// empty directory doesn't need migration
