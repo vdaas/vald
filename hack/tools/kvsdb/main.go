@@ -17,16 +17,17 @@
 package main
 
 import (
-	"context"
 	"encoding/gob"
 	"flag"
 	"fmt"
 	"io/fs"
 	"os"
+	"strconv"
+	"strings"
+	"unsafe"
 
 	"github.com/vdaas/vald/internal/file"
 	"github.com/vdaas/vald/internal/log"
-	"github.com/vdaas/vald/pkg/agent/core/ngt/service/kvs"
 )
 
 var (
@@ -39,8 +40,6 @@ var (
 func main() {
 	flag.Parse()
 	log.Init()
-
-	kvsdb := kvs.New()
 
 	// value
 	m := make(map[string]uint32)
@@ -66,31 +65,30 @@ func main() {
 	)
 	_ = gob.NewDecoder(ft).Decode(&mt)
 
-	// kvs load
+	// print
+	var (
+		sb strings.Builder
+		sp string
+	)
+	switch *format {
+	case "csv":
+		sp = ","
+	case "tsv":
+		sp = "\t"
+	default:
+		sp = " "
+	}
+	sb.WriteString("uuid"+sp+"oid"+sp+"timestamp\n")
 	for k, id := range m {
 		if ts, ok := mt[k]; ok {
-			kvsdb.Set(k, id, ts)
+			sb.WriteString(strings.Join([]string{k, strconv.FormatUint(uint64(id), 10), strconv.FormatInt(ts, 10), "\r\n"}, sp))
 		} else {
-			kvsdb.Set(k, id, 0)
+			sb.WriteString(strings.Join([]string{k, strconv.FormatUint(uint64(id), 10), "0", "\r\n"}, sp))
+		}
+		if sb.Len()*int(unsafe.Sizeof("")) > 4e+6 {
+			fmt.Print(sb.String())
+			sb.Reset()
 		}
 	}
-
-	// print
-	if *format == "csv" {
-		fmt.Printf("uuid,oid,timestamp\n")
-	} else if *format == "tsv" {
-		fmt.Printf("uuid\toid\ttimestamp\n")
-	} else {
-		fmt.Println("uuid", "oid", "timestamp")
-	}
-	kvsdb.Range(context.TODO(), func(uuid string, oid uint32, ts int64) bool {
-		if *format == "csv" {
-			fmt.Printf("%s,%d,%d\n", uuid, oid, ts)
-		} else if *format == "tsv" {
-			fmt.Printf("%s\t%d\t%d\n", uuid, oid, ts)
-		} else {
-			fmt.Println(uuid, oid, ts)
-		}
-		return true
-	})
+	fmt.Print(sb.String())
 }
