@@ -171,9 +171,6 @@ func New(cfg *config.NGT, opts ...Option) (nn NGT, err error) {
 
 	// prepare directories to store index only when it not in-memory mode
 	if !n.inMem {
-		// if !file.Exists(n.path) {
-		// 	return nil, errors.ErrIndexPathNotExists(n.path)
-		// }
 		ctx := context.Background()
 		err = n.prepareFolders(ctx)
 		if err != nil {

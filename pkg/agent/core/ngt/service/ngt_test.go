@@ -469,20 +469,59 @@ func TestNew(t *testing.T) {
 				},
 			}
 		}(),
-		// func() test {
-		// 	return test{
-		// 		name: "New fails with not existing index path",
-		// 		args: args{
-		// 			cfg: &defaultConfig,
-		// 			opts: []Option{
-		// 				WithIndexPath("/dev/null/ghost"),
-		// 			},
-		// 		},
-		// 		want: want{
-		// 			err: errors.ErrIndexPathNotExists("/dev/null/ghost"),
-		// 		},
-		// 	}
-		// }(),
+		func() test {
+			tmpDir := t.TempDir()
+			indexDir := filepath.Join(tmpDir, "foo") // this does not exists when this test starts
+			brokenDir := filepath.Join(indexDir, brokenIndexDirName)
+			config := defaultConfig
+			return test{
+				name: "New creates `origin` and `backup` directory even when index path does not exist",
+				args: args{
+					cfg: &config,
+					opts: []Option{
+						WithIndexPath(indexDir),
+					},
+				},
+				want: want{
+					err: nil,
+				},
+				checkFunc: func(w want, err error) error {
+					if !errors.Is(err, w.err) {
+						return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+					}
+					dirs, err := file.ListInDir(indexDir)
+					if err != nil {
+						return err
+					}
+
+					// extract folder name from dir path into a map
+					dirSet := make(map[string]struct{}, len(dirs))
+					for _, dir := range dirs {
+						// extract folder name from dir path
+						dirSet[filepath.Base(dir)] = struct{}{}
+					}
+
+					// check if the dirs set contains folder names origin, backup and broken.
+					if _, ok := dirSet[originIndexDirName]; !ok {
+						return fmt.Errorf("failed to create origin dir")
+					}
+					if _, ok := dirSet[brokenIndexDirName]; !ok {
+						return fmt.Errorf("failed to create broken dir")
+					}
+
+					// check if the broken index directory is empty
+					files, err := file.ListInDir(brokenDir)
+					if err != nil {
+						return err
+					}
+					if len(files) != 0 {
+						return fmt.Errorf("broken index directory is not empty")
+					}
+
+					return nil
+				},
+			}
+		}(),
 	}
 
 	for _, tc := range tests {
