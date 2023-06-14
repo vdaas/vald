@@ -80,6 +80,11 @@ var (
 		return Wrapf(err, "failed to output %s logs", str)
 	}
 
+	// ErrAgentMigrationFailed represents a function to generate an error that agent migration failed.
+	ErrAgentMigrationFailed = func(err error) error {
+		return Wrap(err, "migration failed")
+	}
+
 	// New represents a function to generate the new error with a message.
 	// When the message is nil, it will return nil instead of an error.
 	New = func(msg string) error {

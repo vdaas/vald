@@ -219,7 +219,7 @@ func migrate(ctx context.Context, path string) (err error) {
 	}
 	files, err := file.ListInDir(path)
 	if err != nil {
-		return fmt.Errorf("failed to list in %v: %w", path, err)
+		return errors.ErrAgentMigrationFailed(err)
 	}
 	if len(files) == 0 {
 		// empty directory doesn't need migration
@@ -240,23 +240,23 @@ func migrate(ctx context.Context, path string) (err error) {
 	// first move all contents to temporary directory because it's not possible to directly move directory to its subdirectory
 	tp, err := file.MkdirTemp("")
 	if err != nil {
-		return err
+		return errors.ErrAgentMigrationFailed(err)
 	}
 	err = file.MoveDir(ctx, path, tp)
 	if err != nil {
-		return err
+		return errors.ErrAgentMigrationFailed(err)
 	}
 
 	// recreate the path again to move contents to `path/origin` lately
 	err = file.MkdirAll(path, fs.ModePerm)
 	if err != nil {
-		return err
+		return errors.ErrAgentMigrationFailed(err)
 	}
 
 	// finally move to `path/origin` directory
 	err = file.MoveDir(ctx, tp, file.Join(path, originIndexDirName))
 	if err != nil {
-		return err
+		return errors.ErrAgentMigrationFailed(err)
 	}
 
 	return nil
