@@ -216,12 +216,17 @@ func New(cfg *config.NGT, opts ...Option) (nn NGT, err error) {
 // which indicates that the user has NOT been using CoW mode and the index directory is not migrated yet.
 func migrate(ctx context.Context, path string) (err error) {
 	// check if migration is required
+	if !file.Exists(path) {
+		log.Infof("the path %v does not exist. no need to migrate since it's probably the initial state", path)
+		return nil
+	}
 	files, err := file.ListInDir(path)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to list in file: %w", err)
 	}
 	if len(files) == 0 {
 		// empty directory doesn't need migration
+		log.Infof("the path %v is empty. no need to migrate", path)
 		return nil
 	}
 	od := filepath.Join(path, originIndexDirName)
