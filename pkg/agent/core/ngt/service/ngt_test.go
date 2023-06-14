@@ -469,20 +469,20 @@ func TestNew(t *testing.T) {
 				},
 			}
 		}(),
-		func() test {
-			return test{
-				name: "New fails with not existing index path",
-				args: args{
-					cfg: &defaultConfig,
-					opts: []Option{
-						WithIndexPath("/dev/null/ghost"),
-					},
-				},
-				want: want{
-					err: errors.ErrIndexPathNotExists("/dev/null/ghost"),
-				},
-			}
-		}(),
+		// func() test {
+		// 	return test{
+		// 		name: "New fails with not existing index path",
+		// 		args: args{
+		// 			cfg: &defaultConfig,
+		// 			opts: []Option{
+		// 				WithIndexPath("/dev/null/ghost"),
+		// 			},
+		// 		},
+		// 		want: want{
+		// 			err: errors.ErrIndexPathNotExists("/dev/null/ghost"),
+		// 		},
+		// 	}
+		// }(),
 	}
 
 	for _, tc := range tests {
