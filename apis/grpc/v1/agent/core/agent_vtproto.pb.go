@@ -88,7 +88,7 @@ func (c *agentClient) CreateAndSaveIndex(ctx context.Context, in *payload.Contro
 }
 
 func (c *agentClient) IndexInfo(ctx context.Context, in *payload.Empty, opts ...grpc.CallOption) (*payload.Info_Index_Count, error) {
-	out := payload.Info_Index_CountFromVTPool()
+	out := new(payload.Info_Index_Count)
 	err := c.cc.Invoke(ctx, "/core.v1.Agent/IndexInfo", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -141,7 +141,7 @@ func RegisterAgentServer(s grpc.ServiceRegistrar, srv AgentServer) {
 }
 
 func _Agent_CreateIndex_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := payload.Control_CreateIndexRequestFromVTPool()
+	in := new(payload.Control_CreateIndexRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -177,7 +177,7 @@ func _Agent_SaveIndex_Handler(srv interface{}, ctx context.Context, dec func(int
 }
 
 func _Agent_CreateAndSaveIndex_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := payload.Control_CreateIndexRequestFromVTPool()
+	in := new(payload.Control_CreateIndexRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}

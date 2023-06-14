@@ -648,7 +648,7 @@
         },
         "disableBalancedUpdate": {
           "type": "boolean",
-          "description": "A flag to disable balanced update (split remove -\u003e insert operation) during update operation."
+          "description": "A flag to disable balanced update (split remove -\u003e insert operation)\nduring update operation."
         }
       },
       "description": "Represent the update configuration."
@@ -702,7 +702,7 @@
         },
         "disableBalancedUpdate": {
           "type": "boolean",
-          "description": "A flag to disable balanced update (split remove -\u003e insert operation) during update operation."
+          "description": "A flag to disable balanced update (split remove -\u003e insert operation)\nduring update operation."
         }
       },
       "description": "Represent the upsert configuration."

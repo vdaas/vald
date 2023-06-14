@@ -21,7 +21,6 @@ import (
 	fmt "fmt"
 	math "math"
 	bits "math/bits"
-	sync "sync"
 
 	io "github.com/vdaas/vald/internal/io"
 	status "google.golang.org/genproto/googleapis/rpc/status"
@@ -35,6 +34,1541 @@ const (
 	// Verify that runtime/protoimpl is sufficiently up-to-date.
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
+
+func (m *Search_Request) CloneVT() *Search_Request {
+	if m == nil {
+		return (*Search_Request)(nil)
+	}
+	r := &Search_Request{
+		Config: m.Config.CloneVT(),
+	}
+	if rhs := m.Vector; rhs != nil {
+		tmpContainer := make([]float32, len(rhs))
+		copy(tmpContainer, rhs)
+		r.Vector = tmpContainer
+	}
+	if len(m.unknownFields) > 0 {
+		r.unknownFields = make([]byte, len(m.unknownFields))
+		copy(r.unknownFields, m.unknownFields)
+	}
+	return r
+}
+
+func (m *Search_Request) CloneMessageVT() proto.Message {
+	return m.CloneVT()
+}
+
+func (m *Search_MultiRequest) CloneVT() *Search_MultiRequest {
+	if m == nil {
+		return (*Search_MultiRequest)(nil)
+	}
+	r := &Search_MultiRequest{}
+	if rhs := m.Requests; rhs != nil {
+		tmpContainer := make([]*Search_Request, len(rhs))
+		for k, v := range rhs {
+			tmpContainer[k] = v.CloneVT()
+		}
+		r.Requests = tmpContainer
+	}
+	if len(m.unknownFields) > 0 {
+		r.unknownFields = make([]byte, len(m.unknownFields))
+		copy(r.unknownFields, m.unknownFields)
+	}
+	return r
+}
+
+func (m *Search_MultiRequest) CloneMessageVT() proto.Message {
+	return m.CloneVT()
+}
+
+func (m *Search_IDRequest) CloneVT() *Search_IDRequest {
+	if m == nil {
+		return (*Search_IDRequest)(nil)
+	}
+	r := &Search_IDRequest{
+		Id:     m.Id,
+		Config: m.Config.CloneVT(),
+	}
+	if len(m.unknownFields) > 0 {
+		r.unknownFields = make([]byte, len(m.unknownFields))
+		copy(r.unknownFields, m.unknownFields)
+	}
+	return r
+}
+
+func (m *Search_IDRequest) CloneMessageVT() proto.Message {
+	return m.CloneVT()
+}
+
+func (m *Search_MultiIDRequest) CloneVT() *Search_MultiIDRequest {
+	if m == nil {
+		return (*Search_MultiIDRequest)(nil)
+	}
+	r := &Search_MultiIDRequest{}
+	if rhs := m.Requests; rhs != nil {
+		tmpContainer := make([]*Search_IDRequest, len(rhs))
+		for k, v := range rhs {
+			tmpContainer[k] = v.CloneVT()
+		}
+		r.Requests = tmpContainer
+	}
+	if len(m.unknownFields) > 0 {
+		r.unknownFields = make([]byte, len(m.unknownFields))
+		copy(r.unknownFields, m.unknownFields)
+	}
+	return r
+}
+
+func (m *Search_MultiIDRequest) CloneMessageVT() proto.Message {
+	return m.CloneVT()
+}
+
+func (m *Search_ObjectRequest) CloneVT() *Search_ObjectRequest {
+	if m == nil {
+		return (*Search_ObjectRequest)(nil)
+	}
+	r := &Search_ObjectRequest{
+		Config:     m.Config.CloneVT(),
+		Vectorizer: m.Vectorizer.CloneVT(),
+	}
+	if rhs := m.Object; rhs != nil {
+		tmpBytes := make([]byte, len(rhs))
+		copy(tmpBytes, rhs)
+		r.Object = tmpBytes
+	}
+	if len(m.unknownFields) > 0 {
+		r.unknownFields = make([]byte, len(m.unknownFields))
+		copy(r.unknownFields, m.unknownFields)
+	}
+	return r
+}
+
+func (m *Search_ObjectRequest) CloneMessageVT() proto.Message {
+	return m.CloneVT()
+}
+
+func (m *Search_MultiObjectRequest) CloneVT() *Search_MultiObjectRequest {
+	if m == nil {
+		return (*Search_MultiObjectRequest)(nil)
+	}
+	r := &Search_MultiObjectRequest{}
+	if rhs := m.Requests; rhs != nil {
+		tmpContainer := make([]*Search_ObjectRequest, len(rhs))
+		for k, v := range rhs {
+			tmpContainer[k] = v.CloneVT()
+		}
+		r.Requests = tmpContainer
+	}
+	if len(m.unknownFields) > 0 {
+		r.unknownFields = make([]byte, len(m.unknownFields))
+		copy(r.unknownFields, m.unknownFields)
+	}
+	return r
+}
+
+func (m *Search_MultiObjectRequest) CloneMessageVT() proto.Message {
+	return m.CloneVT()
+}
+
+func (m *Search_Config) CloneVT() *Search_Config {
+	if m == nil {
+		return (*Search_Config)(nil)
+	}
+	r := &Search_Config{
+		RequestId:            m.RequestId,
+		Num:                  m.Num,
+		Radius:               m.Radius,
+		Epsilon:              m.Epsilon,
+		Timeout:              m.Timeout,
+		IngressFilters:       m.IngressFilters.CloneVT(),
+		EgressFilters:        m.EgressFilters.CloneVT(),
+		MinNum:               m.MinNum,
+		AggregationAlgorithm: m.AggregationAlgorithm,
+	}
+	if len(m.unknownFields) > 0 {
+		r.unknownFields = make([]byte, len(m.unknownFields))
+		copy(r.unknownFields, m.unknownFields)
+	}
+	return r
+}
+
+func (m *Search_Config) CloneMessageVT() proto.Message {
+	return m.CloneVT()
+}
+
+func (m *Search_Response) CloneVT() *Search_Response {
+	if m == nil {
+		return (*Search_Response)(nil)
+	}
+	r := &Search_Response{
+		RequestId: m.RequestId,
+	}
+	if rhs := m.Results; rhs != nil {
+		tmpContainer := make([]*Object_Distance, len(rhs))
+		for k, v := range rhs {
+			tmpContainer[k] = v.CloneVT()
+		}
+		r.Results = tmpContainer
+	}
+	if len(m.unknownFields) > 0 {
+		r.unknownFields = make([]byte, len(m.unknownFields))
+		copy(r.unknownFields, m.unknownFields)
+	}
+	return r
+}
+
+func (m *Search_Response) CloneMessageVT() proto.Message {
+	return m.CloneVT()
+}
+
+func (m *Search_Responses) CloneVT() *Search_Responses {
+	if m == nil {
+		return (*Search_Responses)(nil)
+	}
+	r := &Search_Responses{}
+	if rhs := m.Responses; rhs != nil {
+		tmpContainer := make([]*Search_Response, len(rhs))
+		for k, v := range rhs {
+			tmpContainer[k] = v.CloneVT()
+		}
+		r.Responses = tmpContainer
+	}
+	if len(m.unknownFields) > 0 {
+		r.unknownFields = make([]byte, len(m.unknownFields))
+		copy(r.unknownFields, m.unknownFields)
+	}
+	return r
+}
+
+func (m *Search_Responses) CloneMessageVT() proto.Message {
+	return m.CloneVT()
+}
+
+func (m *Search_StreamResponse) CloneVT() *Search_StreamResponse {
+	if m == nil {
+		return (*Search_StreamResponse)(nil)
+	}
+	r := &Search_StreamResponse{}
+	if m.Payload != nil {
+		r.Payload = m.Payload.(interface {
+			CloneVT() isSearch_StreamResponse_Payload
+		}).CloneVT()
+	}
+	if len(m.unknownFields) > 0 {
+		r.unknownFields = make([]byte, len(m.unknownFields))
+		copy(r.unknownFields, m.unknownFields)
+	}
+	return r
+}
+
+func (m *Search_StreamResponse) CloneMessageVT() proto.Message {
+	return m.CloneVT()
+}
+
+func (m *Search_StreamResponse_Response) CloneVT() isSearch_StreamResponse_Payload {
+	if m == nil {
+		return (*Search_StreamResponse_Response)(nil)
+	}
+	r := &Search_StreamResponse_Response{
+		Response: m.Response.CloneVT(),
+	}
+	return r
+}
+
+func (m *Search_StreamResponse_Status) CloneVT() isSearch_StreamResponse_Payload {
+	if m == nil {
+		return (*Search_StreamResponse_Status)(nil)
+	}
+	r := &Search_StreamResponse_Status{}
+	if rhs := m.Status; rhs != nil {
+		if vtpb, ok := interface{}(rhs).(interface{ CloneVT() *status.Status }); ok {
+			r.Status = vtpb.CloneVT()
+		} else {
+			r.Status = proto.Clone(rhs).(*status.Status)
+		}
+	}
+	return r
+}
+
+func (m *Search) CloneVT() *Search {
+	if m == nil {
+		return (*Search)(nil)
+	}
+	r := &Search{}
+	if len(m.unknownFields) > 0 {
+		r.unknownFields = make([]byte, len(m.unknownFields))
+		copy(r.unknownFields, m.unknownFields)
+	}
+	return r
+}
+
+func (m *Search) CloneMessageVT() proto.Message {
+	return m.CloneVT()
+}
+
+func (m *Filter_Target) CloneVT() *Filter_Target {
+	if m == nil {
+		return (*Filter_Target)(nil)
+	}
+	r := &Filter_Target{
+		Host: m.Host,
+		Port: m.Port,
+	}
+	if len(m.unknownFields) > 0 {
+		r.unknownFields = make([]byte, len(m.unknownFields))
+		copy(r.unknownFields, m.unknownFields)
+	}
+	return r
+}
+
+func (m *Filter_Target) CloneMessageVT() proto.Message {
+	return m.CloneVT()
+}
+
+func (m *Filter_Config) CloneVT() *Filter_Config {
+	if m == nil {
+		return (*Filter_Config)(nil)
+	}
+	r := &Filter_Config{}
+	if rhs := m.Targets; rhs != nil {
+		tmpContainer := make([]*Filter_Target, len(rhs))
+		for k, v := range rhs {
+			tmpContainer[k] = v.CloneVT()
+		}
+		r.Targets = tmpContainer
+	}
+	if len(m.unknownFields) > 0 {
+		r.unknownFields = make([]byte, len(m.unknownFields))
+		copy(r.unknownFields, m.unknownFields)
+	}
+	return r
+}
+
+func (m *Filter_Config) CloneMessageVT() proto.Message {
+	return m.CloneVT()
+}
+
+func (m *Filter) CloneVT() *Filter {
+	if m == nil {
+		return (*Filter)(nil)
+	}
+	r := &Filter{}
+	if len(m.unknownFields) > 0 {
+		r.unknownFields = make([]byte, len(m.unknownFields))
+		copy(r.unknownFields, m.unknownFields)
+	}
+	return r
+}
+
+func (m *Filter) CloneMessageVT() proto.Message {
+	return m.CloneVT()
+}
+
+func (m *Insert_Request) CloneVT() *Insert_Request {
+	if m == nil {
+		return (*Insert_Request)(nil)
+	}
+	r := &Insert_Request{
+		Vector: m.Vector.CloneVT(),
+		Config: m.Config.CloneVT(),
+	}
+	if len(m.unknownFields) > 0 {
+		r.unknownFields = make([]byte, len(m.unknownFields))
+		copy(r.unknownFields, m.unknownFields)
+	}
+	return r
+}
+
+func (m *Insert_Request) CloneMessageVT() proto.Message {
+	return m.CloneVT()
+}
+
+func (m *Insert_MultiRequest) CloneVT() *Insert_MultiRequest {
+	if m == nil {
+		return (*Insert_MultiRequest)(nil)
+	}
+	r := &Insert_MultiRequest{}
+	if rhs := m.Requests; rhs != nil {
+		tmpContainer := make([]*Insert_Request, len(rhs))
+		for k, v := range rhs {
+			tmpContainer[k] = v.CloneVT()
+		}
+		r.Requests = tmpContainer
+	}
+	if len(m.unknownFields) > 0 {
+		r.unknownFields = make([]byte, len(m.unknownFields))
+		copy(r.unknownFields, m.unknownFields)
+	}
+	return r
+}
+
+func (m *Insert_MultiRequest) CloneMessageVT() proto.Message {
+	return m.CloneVT()
+}
+
+func (m *Insert_ObjectRequest) CloneVT() *Insert_ObjectRequest {
+	if m == nil {
+		return (*Insert_ObjectRequest)(nil)
+	}
+	r := &Insert_ObjectRequest{
+		Object:     m.Object.CloneVT(),
+		Config:     m.Config.CloneVT(),
+		Vectorizer: m.Vectorizer.CloneVT(),
+	}
+	if len(m.unknownFields) > 0 {
+		r.unknownFields = make([]byte, len(m.unknownFields))
+		copy(r.unknownFields, m.unknownFields)
+	}
+	return r
+}
+
+func (m *Insert_ObjectRequest) CloneMessageVT() proto.Message {
+	return m.CloneVT()
+}
+
+func (m *Insert_MultiObjectRequest) CloneVT() *Insert_MultiObjectRequest {
+	if m == nil {
+		return (*Insert_MultiObjectRequest)(nil)
+	}
+	r := &Insert_MultiObjectRequest{}
+	if rhs := m.Requests; rhs != nil {
+		tmpContainer := make([]*Insert_ObjectRequest, len(rhs))
+		for k, v := range rhs {
+			tmpContainer[k] = v.CloneVT()
+		}
+		r.Requests = tmpContainer
+	}
+	if len(m.unknownFields) > 0 {
+		r.unknownFields = make([]byte, len(m.unknownFields))
+		copy(r.unknownFields, m.unknownFields)
+	}
+	return r
+}
+
+func (m *Insert_MultiObjectRequest) CloneMessageVT() proto.Message {
+	return m.CloneVT()
+}
+
+func (m *Insert_Config) CloneVT() *Insert_Config {
+	if m == nil {
+		return (*Insert_Config)(nil)
+	}
+	r := &Insert_Config{
+		SkipStrictExistCheck: m.SkipStrictExistCheck,
+		Filters:              m.Filters.CloneVT(),
+		Timestamp:            m.Timestamp,
+	}
+	if len(m.unknownFields) > 0 {
+		r.unknownFields = make([]byte, len(m.unknownFields))
+		copy(r.unknownFields, m.unknownFields)
+	}
+	return r
+}
+
+func (m *Insert_Config) CloneMessageVT() proto.Message {
+	return m.CloneVT()
+}
+
+func (m *Insert) CloneVT() *Insert {
+	if m == nil {
+		return (*Insert)(nil)
+	}
+	r := &Insert{}
+	if len(m.unknownFields) > 0 {
+		r.unknownFields = make([]byte, len(m.unknownFields))
+		copy(r.unknownFields, m.unknownFields)
+	}
+	return r
+}
+
+func (m *Insert) CloneMessageVT() proto.Message {
+	return m.CloneVT()
+}
+
+func (m *Update_Request) CloneVT() *Update_Request {
+	if m == nil {
+		return (*Update_Request)(nil)
+	}
+	r := &Update_Request{
+		Vector: m.Vector.CloneVT(),
+		Config: m.Config.CloneVT(),
+	}
+	if len(m.unknownFields) > 0 {
+		r.unknownFields = make([]byte, len(m.unknownFields))
+		copy(r.unknownFields, m.unknownFields)
+	}
+	return r
+}
+
+func (m *Update_Request) CloneMessageVT() proto.Message {
+	return m.CloneVT()
+}
+
+func (m *Update_MultiRequest) CloneVT() *Update_MultiRequest {
+	if m == nil {
+		return (*Update_MultiRequest)(nil)
+	}
+	r := &Update_MultiRequest{}
+	if rhs := m.Requests; rhs != nil {
+		tmpContainer := make([]*Update_Request, len(rhs))
+		for k, v := range rhs {
+			tmpContainer[k] = v.CloneVT()
+		}
+		r.Requests = tmpContainer
+	}
+	if len(m.unknownFields) > 0 {
+		r.unknownFields = make([]byte, len(m.unknownFields))
+		copy(r.unknownFields, m.unknownFields)
+	}
+	return r
+}
+
+func (m *Update_MultiRequest) CloneMessageVT() proto.Message {
+	return m.CloneVT()
+}
+
+func (m *Update_ObjectRequest) CloneVT() *Update_ObjectRequest {
+	if m == nil {
+		return (*Update_ObjectRequest)(nil)
+	}
+	r := &Update_ObjectRequest{
+		Object:     m.Object.CloneVT(),
+		Config:     m.Config.CloneVT(),
+		Vectorizer: m.Vectorizer.CloneVT(),
+	}
+	if len(m.unknownFields) > 0 {
+		r.unknownFields = make([]byte, len(m.unknownFields))
+		copy(r.unknownFields, m.unknownFields)
+	}
+	return r
+}
+
+func (m *Update_ObjectRequest) CloneMessageVT() proto.Message {
+	return m.CloneVT()
+}
+
+func (m *Update_MultiObjectRequest) CloneVT() *Update_MultiObjectRequest {
+	if m == nil {
+		return (*Update_MultiObjectRequest)(nil)
+	}
+	r := &Update_MultiObjectRequest{}
+	if rhs := m.Requests; rhs != nil {
+		tmpContainer := make([]*Update_ObjectRequest, len(rhs))
+		for k, v := range rhs {
+			tmpContainer[k] = v.CloneVT()
+		}
+		r.Requests = tmpContainer
+	}
+	if len(m.unknownFields) > 0 {
+		r.unknownFields = make([]byte, len(m.unknownFields))
+		copy(r.unknownFields, m.unknownFields)
+	}
+	return r
+}
+
+func (m *Update_MultiObjectRequest) CloneMessageVT() proto.Message {
+	return m.CloneVT()
+}
+
+func (m *Update_Config) CloneVT() *Update_Config {
+	if m == nil {
+		return (*Update_Config)(nil)
+	}
+	r := &Update_Config{
+		SkipStrictExistCheck:  m.SkipStrictExistCheck,
+		Filters:               m.Filters.CloneVT(),
+		Timestamp:             m.Timestamp,
+		DisableBalancedUpdate: m.DisableBalancedUpdate,
+	}
+	if len(m.unknownFields) > 0 {
+		r.unknownFields = make([]byte, len(m.unknownFields))
+		copy(r.unknownFields, m.unknownFields)
+	}
+	return r
+}
+
+func (m *Update_Config) CloneMessageVT() proto.Message {
+	return m.CloneVT()
+}
+
+func (m *Update) CloneVT() *Update {
+	if m == nil {
+		return (*Update)(nil)
+	}
+	r := &Update{}
+	if len(m.unknownFields) > 0 {
+		r.unknownFields = make([]byte, len(m.unknownFields))
+		copy(r.unknownFields, m.unknownFields)
+	}
+	return r
+}
+
+func (m *Update) CloneMessageVT() proto.Message {
+	return m.CloneVT()
+}
+
+func (m *Upsert_Request) CloneVT() *Upsert_Request {
+	if m == nil {
+		return (*Upsert_Request)(nil)
+	}
+	r := &Upsert_Request{
+		Vector: m.Vector.CloneVT(),
+		Config: m.Config.CloneVT(),
+	}
+	if len(m.unknownFields) > 0 {
+		r.unknownFields = make([]byte, len(m.unknownFields))
+		copy(r.unknownFields, m.unknownFields)
+	}
+	return r
+}
+
+func (m *Upsert_Request) CloneMessageVT() proto.Message {
+	return m.CloneVT()
+}
+
+func (m *Upsert_MultiRequest) CloneVT() *Upsert_MultiRequest {
+	if m == nil {
+		return (*Upsert_MultiRequest)(nil)
+	}
+	r := &Upsert_MultiRequest{}
+	if rhs := m.Requests; rhs != nil {
+		tmpContainer := make([]*Upsert_Request, len(rhs))
+		for k, v := range rhs {
+			tmpContainer[k] = v.CloneVT()
+		}
+		r.Requests = tmpContainer
+	}
+	if len(m.unknownFields) > 0 {
+		r.unknownFields = make([]byte, len(m.unknownFields))
+		copy(r.unknownFields, m.unknownFields)
+	}
+	return r
+}
+
+func (m *Upsert_MultiRequest) CloneMessageVT() proto.Message {
+	return m.CloneVT()
+}
+
+func (m *Upsert_ObjectRequest) CloneVT() *Upsert_ObjectRequest {
+	if m == nil {
+		return (*Upsert_ObjectRequest)(nil)
+	}
+	r := &Upsert_ObjectRequest{
+		Object:     m.Object.CloneVT(),
+		Config:     m.Config.CloneVT(),
+		Vectorizer: m.Vectorizer.CloneVT(),
+	}
+	if len(m.unknownFields) > 0 {
+		r.unknownFields = make([]byte, len(m.unknownFields))
+		copy(r.unknownFields, m.unknownFields)
+	}
+	return r
+}
+
+func (m *Upsert_ObjectRequest) CloneMessageVT() proto.Message {
+	return m.CloneVT()
+}
+
+func (m *Upsert_MultiObjectRequest) CloneVT() *Upsert_MultiObjectRequest {
+	if m == nil {
+		return (*Upsert_MultiObjectRequest)(nil)
+	}
+	r := &Upsert_MultiObjectRequest{}
+	if rhs := m.Requests; rhs != nil {
+		tmpContainer := make([]*Upsert_ObjectRequest, len(rhs))
+		for k, v := range rhs {
+			tmpContainer[k] = v.CloneVT()
+		}
+		r.Requests = tmpContainer
+	}
+	if len(m.unknownFields) > 0 {
+		r.unknownFields = make([]byte, len(m.unknownFields))
+		copy(r.unknownFields, m.unknownFields)
+	}
+	return r
+}
+
+func (m *Upsert_MultiObjectRequest) CloneMessageVT() proto.Message {
+	return m.CloneVT()
+}
+
+func (m *Upsert_Config) CloneVT() *Upsert_Config {
+	if m == nil {
+		return (*Upsert_Config)(nil)
+	}
+	r := &Upsert_Config{
+		SkipStrictExistCheck:  m.SkipStrictExistCheck,
+		Filters:               m.Filters.CloneVT(),
+		Timestamp:             m.Timestamp,
+		DisableBalancedUpdate: m.DisableBalancedUpdate,
+	}
+	if len(m.unknownFields) > 0 {
+		r.unknownFields = make([]byte, len(m.unknownFields))
+		copy(r.unknownFields, m.unknownFields)
+	}
+	return r
+}
+
+func (m *Upsert_Config) CloneMessageVT() proto.Message {
+	return m.CloneVT()
+}
+
+func (m *Upsert) CloneVT() *Upsert {
+	if m == nil {
+		return (*Upsert)(nil)
+	}
+	r := &Upsert{}
+	if len(m.unknownFields) > 0 {
+		r.unknownFields = make([]byte, len(m.unknownFields))
+		copy(r.unknownFields, m.unknownFields)
+	}
+	return r
+}
+
+func (m *Upsert) CloneMessageVT() proto.Message {
+	return m.CloneVT()
+}
+
+func (m *Remove_Request) CloneVT() *Remove_Request {
+	if m == nil {
+		return (*Remove_Request)(nil)
+	}
+	r := &Remove_Request{
+		Id:     m.Id.CloneVT(),
+		Config: m.Config.CloneVT(),
+	}
+	if len(m.unknownFields) > 0 {
+		r.unknownFields = make([]byte, len(m.unknownFields))
+		copy(r.unknownFields, m.unknownFields)
+	}
+	return r
+}
+
+func (m *Remove_Request) CloneMessageVT() proto.Message {
+	return m.CloneVT()
+}
+
+func (m *Remove_MultiRequest) CloneVT() *Remove_MultiRequest {
+	if m == nil {
+		return (*Remove_MultiRequest)(nil)
+	}
+	r := &Remove_MultiRequest{}
+	if rhs := m.Requests; rhs != nil {
+		tmpContainer := make([]*Remove_Request, len(rhs))
+		for k, v := range rhs {
+			tmpContainer[k] = v.CloneVT()
+		}
+		r.Requests = tmpContainer
+	}
+	if len(m.unknownFields) > 0 {
+		r.unknownFields = make([]byte, len(m.unknownFields))
+		copy(r.unknownFields, m.unknownFields)
+	}
+	return r
+}
+
+func (m *Remove_MultiRequest) CloneMessageVT() proto.Message {
+	return m.CloneVT()
+}
+
+func (m *Remove_Config) CloneVT() *Remove_Config {
+	if m == nil {
+		return (*Remove_Config)(nil)
+	}
+	r := &Remove_Config{
+		SkipStrictExistCheck: m.SkipStrictExistCheck,
+		Timestamp:            m.Timestamp,
+	}
+	if len(m.unknownFields) > 0 {
+		r.unknownFields = make([]byte, len(m.unknownFields))
+		copy(r.unknownFields, m.unknownFields)
+	}
+	return r
+}
+
+func (m *Remove_Config) CloneMessageVT() proto.Message {
+	return m.CloneVT()
+}
+
+func (m *Remove) CloneVT() *Remove {
+	if m == nil {
+		return (*Remove)(nil)
+	}
+	r := &Remove{}
+	if len(m.unknownFields) > 0 {
+		r.unknownFields = make([]byte, len(m.unknownFields))
+		copy(r.unknownFields, m.unknownFields)
+	}
+	return r
+}
+
+func (m *Remove) CloneMessageVT() proto.Message {
+	return m.CloneVT()
+}
+
+func (m *Object_VectorRequest) CloneVT() *Object_VectorRequest {
+	if m == nil {
+		return (*Object_VectorRequest)(nil)
+	}
+	r := &Object_VectorRequest{
+		Id:      m.Id.CloneVT(),
+		Filters: m.Filters.CloneVT(),
+	}
+	if len(m.unknownFields) > 0 {
+		r.unknownFields = make([]byte, len(m.unknownFields))
+		copy(r.unknownFields, m.unknownFields)
+	}
+	return r
+}
+
+func (m *Object_VectorRequest) CloneMessageVT() proto.Message {
+	return m.CloneVT()
+}
+
+func (m *Object_Distance) CloneVT() *Object_Distance {
+	if m == nil {
+		return (*Object_Distance)(nil)
+	}
+	r := &Object_Distance{
+		Id:       m.Id,
+		Distance: m.Distance,
+	}
+	if len(m.unknownFields) > 0 {
+		r.unknownFields = make([]byte, len(m.unknownFields))
+		copy(r.unknownFields, m.unknownFields)
+	}
+	return r
+}
+
+func (m *Object_Distance) CloneMessageVT() proto.Message {
+	return m.CloneVT()
+}
+
+func (m *Object_StreamDistance) CloneVT() *Object_StreamDistance {
+	if m == nil {
+		return (*Object_StreamDistance)(nil)
+	}
+	r := &Object_StreamDistance{}
+	if m.Payload != nil {
+		r.Payload = m.Payload.(interface {
+			CloneVT() isObject_StreamDistance_Payload
+		}).CloneVT()
+	}
+	if len(m.unknownFields) > 0 {
+		r.unknownFields = make([]byte, len(m.unknownFields))
+		copy(r.unknownFields, m.unknownFields)
+	}
+	return r
+}
+
+func (m *Object_StreamDistance) CloneMessageVT() proto.Message {
+	return m.CloneVT()
+}
+
+func (m *Object_StreamDistance_Distance) CloneVT() isObject_StreamDistance_Payload {
+	if m == nil {
+		return (*Object_StreamDistance_Distance)(nil)
+	}
+	r := &Object_StreamDistance_Distance{
+		Distance: m.Distance.CloneVT(),
+	}
+	return r
+}
+
+func (m *Object_StreamDistance_Status) CloneVT() isObject_StreamDistance_Payload {
+	if m == nil {
+		return (*Object_StreamDistance_Status)(nil)
+	}
+	r := &Object_StreamDistance_Status{}
+	if rhs := m.Status; rhs != nil {
+		if vtpb, ok := interface{}(rhs).(interface{ CloneVT() *status.Status }); ok {
+			r.Status = vtpb.CloneVT()
+		} else {
+			r.Status = proto.Clone(rhs).(*status.Status)
+		}
+	}
+	return r
+}
+
+func (m *Object_ID) CloneVT() *Object_ID {
+	if m == nil {
+		return (*Object_ID)(nil)
+	}
+	r := &Object_ID{
+		Id: m.Id,
+	}
+	if len(m.unknownFields) > 0 {
+		r.unknownFields = make([]byte, len(m.unknownFields))
+		copy(r.unknownFields, m.unknownFields)
+	}
+	return r
+}
+
+func (m *Object_ID) CloneMessageVT() proto.Message {
+	return m.CloneVT()
+}
+
+func (m *Object_IDs) CloneVT() *Object_IDs {
+	if m == nil {
+		return (*Object_IDs)(nil)
+	}
+	r := &Object_IDs{}
+	if rhs := m.Ids; rhs != nil {
+		tmpContainer := make([]string, len(rhs))
+		copy(tmpContainer, rhs)
+		r.Ids = tmpContainer
+	}
+	if len(m.unknownFields) > 0 {
+		r.unknownFields = make([]byte, len(m.unknownFields))
+		copy(r.unknownFields, m.unknownFields)
+	}
+	return r
+}
+
+func (m *Object_IDs) CloneMessageVT() proto.Message {
+	return m.CloneVT()
+}
+
+func (m *Object_Vector) CloneVT() *Object_Vector {
+	if m == nil {
+		return (*Object_Vector)(nil)
+	}
+	r := &Object_Vector{
+		Id: m.Id,
+	}
+	if rhs := m.Vector; rhs != nil {
+		tmpContainer := make([]float32, len(rhs))
+		copy(tmpContainer, rhs)
+		r.Vector = tmpContainer
+	}
+	if len(m.unknownFields) > 0 {
+		r.unknownFields = make([]byte, len(m.unknownFields))
+		copy(r.unknownFields, m.unknownFields)
+	}
+	return r
+}
+
+func (m *Object_Vector) CloneMessageVT() proto.Message {
+	return m.CloneVT()
+}
+
+func (m *Object_Vectors) CloneVT() *Object_Vectors {
+	if m == nil {
+		return (*Object_Vectors)(nil)
+	}
+	r := &Object_Vectors{}
+	if rhs := m.Vectors; rhs != nil {
+		tmpContainer := make([]*Object_Vector, len(rhs))
+		for k, v := range rhs {
+			tmpContainer[k] = v.CloneVT()
+		}
+		r.Vectors = tmpContainer
+	}
+	if len(m.unknownFields) > 0 {
+		r.unknownFields = make([]byte, len(m.unknownFields))
+		copy(r.unknownFields, m.unknownFields)
+	}
+	return r
+}
+
+func (m *Object_Vectors) CloneMessageVT() proto.Message {
+	return m.CloneVT()
+}
+
+func (m *Object_StreamVector) CloneVT() *Object_StreamVector {
+	if m == nil {
+		return (*Object_StreamVector)(nil)
+	}
+	r := &Object_StreamVector{}
+	if m.Payload != nil {
+		r.Payload = m.Payload.(interface {
+			CloneVT() isObject_StreamVector_Payload
+		}).CloneVT()
+	}
+	if len(m.unknownFields) > 0 {
+		r.unknownFields = make([]byte, len(m.unknownFields))
+		copy(r.unknownFields, m.unknownFields)
+	}
+	return r
+}
+
+func (m *Object_StreamVector) CloneMessageVT() proto.Message {
+	return m.CloneVT()
+}
+
+func (m *Object_StreamVector_Vector) CloneVT() isObject_StreamVector_Payload {
+	if m == nil {
+		return (*Object_StreamVector_Vector)(nil)
+	}
+	r := &Object_StreamVector_Vector{
+		Vector: m.Vector.CloneVT(),
+	}
+	return r
+}
+
+func (m *Object_StreamVector_Status) CloneVT() isObject_StreamVector_Payload {
+	if m == nil {
+		return (*Object_StreamVector_Status)(nil)
+	}
+	r := &Object_StreamVector_Status{}
+	if rhs := m.Status; rhs != nil {
+		if vtpb, ok := interface{}(rhs).(interface{ CloneVT() *status.Status }); ok {
+			r.Status = vtpb.CloneVT()
+		} else {
+			r.Status = proto.Clone(rhs).(*status.Status)
+		}
+	}
+	return r
+}
+
+func (m *Object_ReshapeVector) CloneVT() *Object_ReshapeVector {
+	if m == nil {
+		return (*Object_ReshapeVector)(nil)
+	}
+	r := &Object_ReshapeVector{}
+	if rhs := m.Object; rhs != nil {
+		tmpBytes := make([]byte, len(rhs))
+		copy(tmpBytes, rhs)
+		r.Object = tmpBytes
+	}
+	if rhs := m.Shape; rhs != nil {
+		tmpContainer := make([]int32, len(rhs))
+		copy(tmpContainer, rhs)
+		r.Shape = tmpContainer
+	}
+	if len(m.unknownFields) > 0 {
+		r.unknownFields = make([]byte, len(m.unknownFields))
+		copy(r.unknownFields, m.unknownFields)
+	}
+	return r
+}
+
+func (m *Object_ReshapeVector) CloneMessageVT() proto.Message {
+	return m.CloneVT()
+}
+
+func (m *Object_Blob) CloneVT() *Object_Blob {
+	if m == nil {
+		return (*Object_Blob)(nil)
+	}
+	r := &Object_Blob{
+		Id: m.Id,
+	}
+	if rhs := m.Object; rhs != nil {
+		tmpBytes := make([]byte, len(rhs))
+		copy(tmpBytes, rhs)
+		r.Object = tmpBytes
+	}
+	if len(m.unknownFields) > 0 {
+		r.unknownFields = make([]byte, len(m.unknownFields))
+		copy(r.unknownFields, m.unknownFields)
+	}
+	return r
+}
+
+func (m *Object_Blob) CloneMessageVT() proto.Message {
+	return m.CloneVT()
+}
+
+func (m *Object_StreamBlob) CloneVT() *Object_StreamBlob {
+	if m == nil {
+		return (*Object_StreamBlob)(nil)
+	}
+	r := &Object_StreamBlob{}
+	if m.Payload != nil {
+		r.Payload = m.Payload.(interface {
+			CloneVT() isObject_StreamBlob_Payload
+		}).CloneVT()
+	}
+	if len(m.unknownFields) > 0 {
+		r.unknownFields = make([]byte, len(m.unknownFields))
+		copy(r.unknownFields, m.unknownFields)
+	}
+	return r
+}
+
+func (m *Object_StreamBlob) CloneMessageVT() proto.Message {
+	return m.CloneVT()
+}
+
+func (m *Object_StreamBlob_Blob) CloneVT() isObject_StreamBlob_Payload {
+	if m == nil {
+		return (*Object_StreamBlob_Blob)(nil)
+	}
+	r := &Object_StreamBlob_Blob{
+		Blob: m.Blob.CloneVT(),
+	}
+	return r
+}
+
+func (m *Object_StreamBlob_Status) CloneVT() isObject_StreamBlob_Payload {
+	if m == nil {
+		return (*Object_StreamBlob_Status)(nil)
+	}
+	r := &Object_StreamBlob_Status{}
+	if rhs := m.Status; rhs != nil {
+		if vtpb, ok := interface{}(rhs).(interface{ CloneVT() *status.Status }); ok {
+			r.Status = vtpb.CloneVT()
+		} else {
+			r.Status = proto.Clone(rhs).(*status.Status)
+		}
+	}
+	return r
+}
+
+func (m *Object_Location) CloneVT() *Object_Location {
+	if m == nil {
+		return (*Object_Location)(nil)
+	}
+	r := &Object_Location{
+		Name: m.Name,
+		Uuid: m.Uuid,
+	}
+	if rhs := m.Ips; rhs != nil {
+		tmpContainer := make([]string, len(rhs))
+		copy(tmpContainer, rhs)
+		r.Ips = tmpContainer
+	}
+	if len(m.unknownFields) > 0 {
+		r.unknownFields = make([]byte, len(m.unknownFields))
+		copy(r.unknownFields, m.unknownFields)
+	}
+	return r
+}
+
+func (m *Object_Location) CloneMessageVT() proto.Message {
+	return m.CloneVT()
+}
+
+func (m *Object_StreamLocation) CloneVT() *Object_StreamLocation {
+	if m == nil {
+		return (*Object_StreamLocation)(nil)
+	}
+	r := &Object_StreamLocation{}
+	if m.Payload != nil {
+		r.Payload = m.Payload.(interface {
+			CloneVT() isObject_StreamLocation_Payload
+		}).CloneVT()
+	}
+	if len(m.unknownFields) > 0 {
+		r.unknownFields = make([]byte, len(m.unknownFields))
+		copy(r.unknownFields, m.unknownFields)
+	}
+	return r
+}
+
+func (m *Object_StreamLocation) CloneMessageVT() proto.Message {
+	return m.CloneVT()
+}
+
+func (m *Object_StreamLocation_Location) CloneVT() isObject_StreamLocation_Payload {
+	if m == nil {
+		return (*Object_StreamLocation_Location)(nil)
+	}
+	r := &Object_StreamLocation_Location{
+		Location: m.Location.CloneVT(),
+	}
+	return r
+}
+
+func (m *Object_StreamLocation_Status) CloneVT() isObject_StreamLocation_Payload {
+	if m == nil {
+		return (*Object_StreamLocation_Status)(nil)
+	}
+	r := &Object_StreamLocation_Status{}
+	if rhs := m.Status; rhs != nil {
+		if vtpb, ok := interface{}(rhs).(interface{ CloneVT() *status.Status }); ok {
+			r.Status = vtpb.CloneVT()
+		} else {
+			r.Status = proto.Clone(rhs).(*status.Status)
+		}
+	}
+	return r
+}
+
+func (m *Object_Locations) CloneVT() *Object_Locations {
+	if m == nil {
+		return (*Object_Locations)(nil)
+	}
+	r := &Object_Locations{}
+	if rhs := m.Locations; rhs != nil {
+		tmpContainer := make([]*Object_Location, len(rhs))
+		for k, v := range rhs {
+			tmpContainer[k] = v.CloneVT()
+		}
+		r.Locations = tmpContainer
+	}
+	if len(m.unknownFields) > 0 {
+		r.unknownFields = make([]byte, len(m.unknownFields))
+		copy(r.unknownFields, m.unknownFields)
+	}
+	return r
+}
+
+func (m *Object_Locations) CloneMessageVT() proto.Message {
+	return m.CloneVT()
+}
+
+func (m *Object) CloneVT() *Object {
+	if m == nil {
+		return (*Object)(nil)
+	}
+	r := &Object{}
+	if len(m.unknownFields) > 0 {
+		r.unknownFields = make([]byte, len(m.unknownFields))
+		copy(r.unknownFields, m.unknownFields)
+	}
+	return r
+}
+
+func (m *Object) CloneMessageVT() proto.Message {
+	return m.CloneVT()
+}
+
+func (m *Control_CreateIndexRequest) CloneVT() *Control_CreateIndexRequest {
+	if m == nil {
+		return (*Control_CreateIndexRequest)(nil)
+	}
+	r := &Control_CreateIndexRequest{
+		PoolSize: m.PoolSize,
+	}
+	if len(m.unknownFields) > 0 {
+		r.unknownFields = make([]byte, len(m.unknownFields))
+		copy(r.unknownFields, m.unknownFields)
+	}
+	return r
+}
+
+func (m *Control_CreateIndexRequest) CloneMessageVT() proto.Message {
+	return m.CloneVT()
+}
+
+func (m *Control) CloneVT() *Control {
+	if m == nil {
+		return (*Control)(nil)
+	}
+	r := &Control{}
+	if len(m.unknownFields) > 0 {
+		r.unknownFields = make([]byte, len(m.unknownFields))
+		copy(r.unknownFields, m.unknownFields)
+	}
+	return r
+}
+
+func (m *Control) CloneMessageVT() proto.Message {
+	return m.CloneVT()
+}
+
+func (m *Discoverer_Request) CloneVT() *Discoverer_Request {
+	if m == nil {
+		return (*Discoverer_Request)(nil)
+	}
+	r := &Discoverer_Request{
+		Name:      m.Name,
+		Namespace: m.Namespace,
+		Node:      m.Node,
+	}
+	if len(m.unknownFields) > 0 {
+		r.unknownFields = make([]byte, len(m.unknownFields))
+		copy(r.unknownFields, m.unknownFields)
+	}
+	return r
+}
+
+func (m *Discoverer_Request) CloneMessageVT() proto.Message {
+	return m.CloneVT()
+}
+
+func (m *Discoverer) CloneVT() *Discoverer {
+	if m == nil {
+		return (*Discoverer)(nil)
+	}
+	r := &Discoverer{}
+	if len(m.unknownFields) > 0 {
+		r.unknownFields = make([]byte, len(m.unknownFields))
+		copy(r.unknownFields, m.unknownFields)
+	}
+	return r
+}
+
+func (m *Discoverer) CloneMessageVT() proto.Message {
+	return m.CloneVT()
+}
+
+func (m *Info_Index_Count) CloneVT() *Info_Index_Count {
+	if m == nil {
+		return (*Info_Index_Count)(nil)
+	}
+	r := &Info_Index_Count{
+		Stored:      m.Stored,
+		Uncommitted: m.Uncommitted,
+		Indexing:    m.Indexing,
+		Saving:      m.Saving,
+	}
+	if len(m.unknownFields) > 0 {
+		r.unknownFields = make([]byte, len(m.unknownFields))
+		copy(r.unknownFields, m.unknownFields)
+	}
+	return r
+}
+
+func (m *Info_Index_Count) CloneMessageVT() proto.Message {
+	return m.CloneVT()
+}
+
+func (m *Info_Index_UUID_Committed) CloneVT() *Info_Index_UUID_Committed {
+	if m == nil {
+		return (*Info_Index_UUID_Committed)(nil)
+	}
+	r := &Info_Index_UUID_Committed{
+		Uuid: m.Uuid,
+	}
+	if len(m.unknownFields) > 0 {
+		r.unknownFields = make([]byte, len(m.unknownFields))
+		copy(r.unknownFields, m.unknownFields)
+	}
+	return r
+}
+
+func (m *Info_Index_UUID_Committed) CloneMessageVT() proto.Message {
+	return m.CloneVT()
+}
+
+func (m *Info_Index_UUID_Uncommitted) CloneVT() *Info_Index_UUID_Uncommitted {
+	if m == nil {
+		return (*Info_Index_UUID_Uncommitted)(nil)
+	}
+	r := &Info_Index_UUID_Uncommitted{
+		Uuid: m.Uuid,
+	}
+	if len(m.unknownFields) > 0 {
+		r.unknownFields = make([]byte, len(m.unknownFields))
+		copy(r.unknownFields, m.unknownFields)
+	}
+	return r
+}
+
+func (m *Info_Index_UUID_Uncommitted) CloneMessageVT() proto.Message {
+	return m.CloneVT()
+}
+
+func (m *Info_Index_UUID) CloneVT() *Info_Index_UUID {
+	if m == nil {
+		return (*Info_Index_UUID)(nil)
+	}
+	r := &Info_Index_UUID{}
+	if len(m.unknownFields) > 0 {
+		r.unknownFields = make([]byte, len(m.unknownFields))
+		copy(r.unknownFields, m.unknownFields)
+	}
+	return r
+}
+
+func (m *Info_Index_UUID) CloneMessageVT() proto.Message {
+	return m.CloneVT()
+}
+
+func (m *Info_Index) CloneVT() *Info_Index {
+	if m == nil {
+		return (*Info_Index)(nil)
+	}
+	r := &Info_Index{}
+	if len(m.unknownFields) > 0 {
+		r.unknownFields = make([]byte, len(m.unknownFields))
+		copy(r.unknownFields, m.unknownFields)
+	}
+	return r
+}
+
+func (m *Info_Index) CloneMessageVT() proto.Message {
+	return m.CloneVT()
+}
+
+func (m *Info_Pod) CloneVT() *Info_Pod {
+	if m == nil {
+		return (*Info_Pod)(nil)
+	}
+	r := &Info_Pod{
+		AppName:   m.AppName,
+		Name:      m.Name,
+		Namespace: m.Namespace,
+		Ip:        m.Ip,
+		Cpu:       m.Cpu.CloneVT(),
+		Memory:    m.Memory.CloneVT(),
+		Node:      m.Node.CloneVT(),
+	}
+	if len(m.unknownFields) > 0 {
+		r.unknownFields = make([]byte, len(m.unknownFields))
+		copy(r.unknownFields, m.unknownFields)
+	}
+	return r
+}
+
+func (m *Info_Pod) CloneMessageVT() proto.Message {
+	return m.CloneVT()
+}
+
+func (m *Info_Node) CloneVT() *Info_Node {
+	if m == nil {
+		return (*Info_Node)(nil)
+	}
+	r := &Info_Node{
+		Name:         m.Name,
+		InternalAddr: m.InternalAddr,
+		ExternalAddr: m.ExternalAddr,
+		Cpu:          m.Cpu.CloneVT(),
+		Memory:       m.Memory.CloneVT(),
+		Pods:         m.Pods.CloneVT(),
+	}
+	if len(m.unknownFields) > 0 {
+		r.unknownFields = make([]byte, len(m.unknownFields))
+		copy(r.unknownFields, m.unknownFields)
+	}
+	return r
+}
+
+func (m *Info_Node) CloneMessageVT() proto.Message {
+	return m.CloneVT()
+}
+
+func (m *Info_CPU) CloneVT() *Info_CPU {
+	if m == nil {
+		return (*Info_CPU)(nil)
+	}
+	r := &Info_CPU{
+		Limit:   m.Limit,
+		Request: m.Request,
+		Usage:   m.Usage,
+	}
+	if len(m.unknownFields) > 0 {
+		r.unknownFields = make([]byte, len(m.unknownFields))
+		copy(r.unknownFields, m.unknownFields)
+	}
+	return r
+}
+
+func (m *Info_CPU) CloneMessageVT() proto.Message {
+	return m.CloneVT()
+}
+
+func (m *Info_Memory) CloneVT() *Info_Memory {
+	if m == nil {
+		return (*Info_Memory)(nil)
+	}
+	r := &Info_Memory{
+		Limit:   m.Limit,
+		Request: m.Request,
+		Usage:   m.Usage,
+	}
+	if len(m.unknownFields) > 0 {
+		r.unknownFields = make([]byte, len(m.unknownFields))
+		copy(r.unknownFields, m.unknownFields)
+	}
+	return r
+}
+
+func (m *Info_Memory) CloneMessageVT() proto.Message {
+	return m.CloneVT()
+}
+
+func (m *Info_Pods) CloneVT() *Info_Pods {
+	if m == nil {
+		return (*Info_Pods)(nil)
+	}
+	r := &Info_Pods{}
+	if rhs := m.Pods; rhs != nil {
+		tmpContainer := make([]*Info_Pod, len(rhs))
+		for k, v := range rhs {
+			tmpContainer[k] = v.CloneVT()
+		}
+		r.Pods = tmpContainer
+	}
+	if len(m.unknownFields) > 0 {
+		r.unknownFields = make([]byte, len(m.unknownFields))
+		copy(r.unknownFields, m.unknownFields)
+	}
+	return r
+}
+
+func (m *Info_Pods) CloneMessageVT() proto.Message {
+	return m.CloneVT()
+}
+
+func (m *Info_Nodes) CloneVT() *Info_Nodes {
+	if m == nil {
+		return (*Info_Nodes)(nil)
+	}
+	r := &Info_Nodes{}
+	if rhs := m.Nodes; rhs != nil {
+		tmpContainer := make([]*Info_Node, len(rhs))
+		for k, v := range rhs {
+			tmpContainer[k] = v.CloneVT()
+		}
+		r.Nodes = tmpContainer
+	}
+	if len(m.unknownFields) > 0 {
+		r.unknownFields = make([]byte, len(m.unknownFields))
+		copy(r.unknownFields, m.unknownFields)
+	}
+	return r
+}
+
+func (m *Info_Nodes) CloneMessageVT() proto.Message {
+	return m.CloneVT()
+}
+
+func (m *Info_IPs) CloneVT() *Info_IPs {
+	if m == nil {
+		return (*Info_IPs)(nil)
+	}
+	r := &Info_IPs{}
+	if rhs := m.Ip; rhs != nil {
+		tmpContainer := make([]string, len(rhs))
+		copy(tmpContainer, rhs)
+		r.Ip = tmpContainer
+	}
+	if len(m.unknownFields) > 0 {
+		r.unknownFields = make([]byte, len(m.unknownFields))
+		copy(r.unknownFields, m.unknownFields)
+	}
+	return r
+}
+
+func (m *Info_IPs) CloneMessageVT() proto.Message {
+	return m.CloneVT()
+}
+
+func (m *Info) CloneVT() *Info {
+	if m == nil {
+		return (*Info)(nil)
+	}
+	r := &Info{}
+	if len(m.unknownFields) > 0 {
+		r.unknownFields = make([]byte, len(m.unknownFields))
+		copy(r.unknownFields, m.unknownFields)
+	}
+	return r
+}
+
+func (m *Info) CloneMessageVT() proto.Message {
+	return m.CloneVT()
+}
+
+func (m *Empty) CloneVT() *Empty {
+	if m == nil {
+		return (*Empty)(nil)
+	}
+	r := &Empty{}
+	if len(m.unknownFields) > 0 {
+		r.unknownFields = make([]byte, len(m.unknownFields))
+		copy(r.unknownFields, m.unknownFields)
+	}
+	return r
+}
+
+func (m *Empty) CloneMessageVT() proto.Message {
+	return m.CloneVT()
+}
 
 func (this *Search_Request) EqualVT(that *Search_Request) bool {
 	if this == that {
@@ -5641,1268 +7175,6 @@ func encodeVarint(dAtA []byte, offset int, v uint64) int {
 	dAtA[offset] = uint8(v)
 	return base
 }
-
-var vtprotoPool_Search_Request = sync.Pool{
-	New: func() interface{} {
-		return &Search_Request{}
-	},
-}
-
-func (m *Search_Request) ResetVT() {
-	f0 := m.Vector[:0]
-	m.Config.ReturnToVTPool()
-	m.Reset()
-	m.Vector = f0
-}
-func (m *Search_Request) ReturnToVTPool() {
-	if m != nil {
-		m.ResetVT()
-		vtprotoPool_Search_Request.Put(m)
-	}
-}
-func Search_RequestFromVTPool() *Search_Request {
-	return vtprotoPool_Search_Request.Get().(*Search_Request)
-}
-
-var vtprotoPool_Search_MultiRequest = sync.Pool{
-	New: func() interface{} {
-		return &Search_MultiRequest{}
-	},
-}
-
-func (m *Search_MultiRequest) ResetVT() {
-	for _, mm := range m.Requests {
-		mm.ResetVT()
-	}
-	m.Reset()
-}
-func (m *Search_MultiRequest) ReturnToVTPool() {
-	if m != nil {
-		m.ResetVT()
-		vtprotoPool_Search_MultiRequest.Put(m)
-	}
-}
-func Search_MultiRequestFromVTPool() *Search_MultiRequest {
-	return vtprotoPool_Search_MultiRequest.Get().(*Search_MultiRequest)
-}
-
-var vtprotoPool_Search_IDRequest = sync.Pool{
-	New: func() interface{} {
-		return &Search_IDRequest{}
-	},
-}
-
-func (m *Search_IDRequest) ResetVT() {
-	m.Config.ReturnToVTPool()
-	m.Reset()
-}
-func (m *Search_IDRequest) ReturnToVTPool() {
-	if m != nil {
-		m.ResetVT()
-		vtprotoPool_Search_IDRequest.Put(m)
-	}
-}
-func Search_IDRequestFromVTPool() *Search_IDRequest {
-	return vtprotoPool_Search_IDRequest.Get().(*Search_IDRequest)
-}
-
-var vtprotoPool_Search_MultiIDRequest = sync.Pool{
-	New: func() interface{} {
-		return &Search_MultiIDRequest{}
-	},
-}
-
-func (m *Search_MultiIDRequest) ResetVT() {
-	for _, mm := range m.Requests {
-		mm.ResetVT()
-	}
-	m.Reset()
-}
-func (m *Search_MultiIDRequest) ReturnToVTPool() {
-	if m != nil {
-		m.ResetVT()
-		vtprotoPool_Search_MultiIDRequest.Put(m)
-	}
-}
-func Search_MultiIDRequestFromVTPool() *Search_MultiIDRequest {
-	return vtprotoPool_Search_MultiIDRequest.Get().(*Search_MultiIDRequest)
-}
-
-var vtprotoPool_Search_ObjectRequest = sync.Pool{
-	New: func() interface{} {
-		return &Search_ObjectRequest{}
-	},
-}
-
-func (m *Search_ObjectRequest) ResetVT() {
-	f0 := m.Object[:0]
-	m.Config.ReturnToVTPool()
-	m.Vectorizer.ReturnToVTPool()
-	m.Reset()
-	m.Object = f0
-}
-func (m *Search_ObjectRequest) ReturnToVTPool() {
-	if m != nil {
-		m.ResetVT()
-		vtprotoPool_Search_ObjectRequest.Put(m)
-	}
-}
-func Search_ObjectRequestFromVTPool() *Search_ObjectRequest {
-	return vtprotoPool_Search_ObjectRequest.Get().(*Search_ObjectRequest)
-}
-
-var vtprotoPool_Search_MultiObjectRequest = sync.Pool{
-	New: func() interface{} {
-		return &Search_MultiObjectRequest{}
-	},
-}
-
-func (m *Search_MultiObjectRequest) ResetVT() {
-	for _, mm := range m.Requests {
-		mm.ResetVT()
-	}
-	m.Reset()
-}
-func (m *Search_MultiObjectRequest) ReturnToVTPool() {
-	if m != nil {
-		m.ResetVT()
-		vtprotoPool_Search_MultiObjectRequest.Put(m)
-	}
-}
-func Search_MultiObjectRequestFromVTPool() *Search_MultiObjectRequest {
-	return vtprotoPool_Search_MultiObjectRequest.Get().(*Search_MultiObjectRequest)
-}
-
-var vtprotoPool_Search_Config = sync.Pool{
-	New: func() interface{} {
-		return &Search_Config{}
-	},
-}
-
-func (m *Search_Config) ResetVT() {
-	m.IngressFilters.ReturnToVTPool()
-	m.EgressFilters.ReturnToVTPool()
-	m.Reset()
-}
-func (m *Search_Config) ReturnToVTPool() {
-	if m != nil {
-		m.ResetVT()
-		vtprotoPool_Search_Config.Put(m)
-	}
-}
-func Search_ConfigFromVTPool() *Search_Config {
-	return vtprotoPool_Search_Config.Get().(*Search_Config)
-}
-
-var vtprotoPool_Search_Response = sync.Pool{
-	New: func() interface{} {
-		return &Search_Response{}
-	},
-}
-
-func (m *Search_Response) ResetVT() {
-	for _, mm := range m.Results {
-		mm.ResetVT()
-	}
-	m.Reset()
-}
-func (m *Search_Response) ReturnToVTPool() {
-	if m != nil {
-		m.ResetVT()
-		vtprotoPool_Search_Response.Put(m)
-	}
-}
-func Search_ResponseFromVTPool() *Search_Response {
-	return vtprotoPool_Search_Response.Get().(*Search_Response)
-}
-
-var vtprotoPool_Search_Responses = sync.Pool{
-	New: func() interface{} {
-		return &Search_Responses{}
-	},
-}
-
-func (m *Search_Responses) ResetVT() {
-	for _, mm := range m.Responses {
-		mm.ResetVT()
-	}
-	m.Reset()
-}
-func (m *Search_Responses) ReturnToVTPool() {
-	if m != nil {
-		m.ResetVT()
-		vtprotoPool_Search_Responses.Put(m)
-	}
-}
-func Search_ResponsesFromVTPool() *Search_Responses {
-	return vtprotoPool_Search_Responses.Get().(*Search_Responses)
-}
-
-var vtprotoPool_Search = sync.Pool{
-	New: func() interface{} {
-		return &Search{}
-	},
-}
-
-func (m *Search) ResetVT() {
-	m.Reset()
-}
-func (m *Search) ReturnToVTPool() {
-	if m != nil {
-		m.ResetVT()
-		vtprotoPool_Search.Put(m)
-	}
-}
-func SearchFromVTPool() *Search {
-	return vtprotoPool_Search.Get().(*Search)
-}
-
-var vtprotoPool_Filter_Target = sync.Pool{
-	New: func() interface{} {
-		return &Filter_Target{}
-	},
-}
-
-func (m *Filter_Target) ResetVT() {
-	m.Reset()
-}
-func (m *Filter_Target) ReturnToVTPool() {
-	if m != nil {
-		m.ResetVT()
-		vtprotoPool_Filter_Target.Put(m)
-	}
-}
-func Filter_TargetFromVTPool() *Filter_Target {
-	return vtprotoPool_Filter_Target.Get().(*Filter_Target)
-}
-
-var vtprotoPool_Filter_Config = sync.Pool{
-	New: func() interface{} {
-		return &Filter_Config{}
-	},
-}
-
-func (m *Filter_Config) ResetVT() {
-	for _, mm := range m.Targets {
-		mm.ResetVT()
-	}
-	m.Reset()
-}
-func (m *Filter_Config) ReturnToVTPool() {
-	if m != nil {
-		m.ResetVT()
-		vtprotoPool_Filter_Config.Put(m)
-	}
-}
-func Filter_ConfigFromVTPool() *Filter_Config {
-	return vtprotoPool_Filter_Config.Get().(*Filter_Config)
-}
-
-var vtprotoPool_Filter = sync.Pool{
-	New: func() interface{} {
-		return &Filter{}
-	},
-}
-
-func (m *Filter) ResetVT() {
-	m.Reset()
-}
-func (m *Filter) ReturnToVTPool() {
-	if m != nil {
-		m.ResetVT()
-		vtprotoPool_Filter.Put(m)
-	}
-}
-func FilterFromVTPool() *Filter {
-	return vtprotoPool_Filter.Get().(*Filter)
-}
-
-var vtprotoPool_Insert_Request = sync.Pool{
-	New: func() interface{} {
-		return &Insert_Request{}
-	},
-}
-
-func (m *Insert_Request) ResetVT() {
-	m.Vector.ReturnToVTPool()
-	m.Config.ReturnToVTPool()
-	m.Reset()
-}
-func (m *Insert_Request) ReturnToVTPool() {
-	if m != nil {
-		m.ResetVT()
-		vtprotoPool_Insert_Request.Put(m)
-	}
-}
-func Insert_RequestFromVTPool() *Insert_Request {
-	return vtprotoPool_Insert_Request.Get().(*Insert_Request)
-}
-
-var vtprotoPool_Insert_MultiRequest = sync.Pool{
-	New: func() interface{} {
-		return &Insert_MultiRequest{}
-	},
-}
-
-func (m *Insert_MultiRequest) ResetVT() {
-	for _, mm := range m.Requests {
-		mm.ResetVT()
-	}
-	m.Reset()
-}
-func (m *Insert_MultiRequest) ReturnToVTPool() {
-	if m != nil {
-		m.ResetVT()
-		vtprotoPool_Insert_MultiRequest.Put(m)
-	}
-}
-func Insert_MultiRequestFromVTPool() *Insert_MultiRequest {
-	return vtprotoPool_Insert_MultiRequest.Get().(*Insert_MultiRequest)
-}
-
-var vtprotoPool_Insert_ObjectRequest = sync.Pool{
-	New: func() interface{} {
-		return &Insert_ObjectRequest{}
-	},
-}
-
-func (m *Insert_ObjectRequest) ResetVT() {
-	m.Object.ReturnToVTPool()
-	m.Config.ReturnToVTPool()
-	m.Vectorizer.ReturnToVTPool()
-	m.Reset()
-}
-func (m *Insert_ObjectRequest) ReturnToVTPool() {
-	if m != nil {
-		m.ResetVT()
-		vtprotoPool_Insert_ObjectRequest.Put(m)
-	}
-}
-func Insert_ObjectRequestFromVTPool() *Insert_ObjectRequest {
-	return vtprotoPool_Insert_ObjectRequest.Get().(*Insert_ObjectRequest)
-}
-
-var vtprotoPool_Insert_MultiObjectRequest = sync.Pool{
-	New: func() interface{} {
-		return &Insert_MultiObjectRequest{}
-	},
-}
-
-func (m *Insert_MultiObjectRequest) ResetVT() {
-	for _, mm := range m.Requests {
-		mm.ResetVT()
-	}
-	m.Reset()
-}
-func (m *Insert_MultiObjectRequest) ReturnToVTPool() {
-	if m != nil {
-		m.ResetVT()
-		vtprotoPool_Insert_MultiObjectRequest.Put(m)
-	}
-}
-func Insert_MultiObjectRequestFromVTPool() *Insert_MultiObjectRequest {
-	return vtprotoPool_Insert_MultiObjectRequest.Get().(*Insert_MultiObjectRequest)
-}
-
-var vtprotoPool_Insert_Config = sync.Pool{
-	New: func() interface{} {
-		return &Insert_Config{}
-	},
-}
-
-func (m *Insert_Config) ResetVT() {
-	m.Filters.ReturnToVTPool()
-	m.Reset()
-}
-func (m *Insert_Config) ReturnToVTPool() {
-	if m != nil {
-		m.ResetVT()
-		vtprotoPool_Insert_Config.Put(m)
-	}
-}
-func Insert_ConfigFromVTPool() *Insert_Config {
-	return vtprotoPool_Insert_Config.Get().(*Insert_Config)
-}
-
-var vtprotoPool_Insert = sync.Pool{
-	New: func() interface{} {
-		return &Insert{}
-	},
-}
-
-func (m *Insert) ResetVT() {
-	m.Reset()
-}
-func (m *Insert) ReturnToVTPool() {
-	if m != nil {
-		m.ResetVT()
-		vtprotoPool_Insert.Put(m)
-	}
-}
-func InsertFromVTPool() *Insert {
-	return vtprotoPool_Insert.Get().(*Insert)
-}
-
-var vtprotoPool_Update_Request = sync.Pool{
-	New: func() interface{} {
-		return &Update_Request{}
-	},
-}
-
-func (m *Update_Request) ResetVT() {
-	m.Vector.ReturnToVTPool()
-	m.Config.ReturnToVTPool()
-	m.Reset()
-}
-func (m *Update_Request) ReturnToVTPool() {
-	if m != nil {
-		m.ResetVT()
-		vtprotoPool_Update_Request.Put(m)
-	}
-}
-func Update_RequestFromVTPool() *Update_Request {
-	return vtprotoPool_Update_Request.Get().(*Update_Request)
-}
-
-var vtprotoPool_Update_MultiRequest = sync.Pool{
-	New: func() interface{} {
-		return &Update_MultiRequest{}
-	},
-}
-
-func (m *Update_MultiRequest) ResetVT() {
-	for _, mm := range m.Requests {
-		mm.ResetVT()
-	}
-	m.Reset()
-}
-func (m *Update_MultiRequest) ReturnToVTPool() {
-	if m != nil {
-		m.ResetVT()
-		vtprotoPool_Update_MultiRequest.Put(m)
-	}
-}
-func Update_MultiRequestFromVTPool() *Update_MultiRequest {
-	return vtprotoPool_Update_MultiRequest.Get().(*Update_MultiRequest)
-}
-
-var vtprotoPool_Update_ObjectRequest = sync.Pool{
-	New: func() interface{} {
-		return &Update_ObjectRequest{}
-	},
-}
-
-func (m *Update_ObjectRequest) ResetVT() {
-	m.Object.ReturnToVTPool()
-	m.Config.ReturnToVTPool()
-	m.Vectorizer.ReturnToVTPool()
-	m.Reset()
-}
-func (m *Update_ObjectRequest) ReturnToVTPool() {
-	if m != nil {
-		m.ResetVT()
-		vtprotoPool_Update_ObjectRequest.Put(m)
-	}
-}
-func Update_ObjectRequestFromVTPool() *Update_ObjectRequest {
-	return vtprotoPool_Update_ObjectRequest.Get().(*Update_ObjectRequest)
-}
-
-var vtprotoPool_Update_MultiObjectRequest = sync.Pool{
-	New: func() interface{} {
-		return &Update_MultiObjectRequest{}
-	},
-}
-
-func (m *Update_MultiObjectRequest) ResetVT() {
-	for _, mm := range m.Requests {
-		mm.ResetVT()
-	}
-	m.Reset()
-}
-func (m *Update_MultiObjectRequest) ReturnToVTPool() {
-	if m != nil {
-		m.ResetVT()
-		vtprotoPool_Update_MultiObjectRequest.Put(m)
-	}
-}
-func Update_MultiObjectRequestFromVTPool() *Update_MultiObjectRequest {
-	return vtprotoPool_Update_MultiObjectRequest.Get().(*Update_MultiObjectRequest)
-}
-
-var vtprotoPool_Update_Config = sync.Pool{
-	New: func() interface{} {
-		return &Update_Config{}
-	},
-}
-
-func (m *Update_Config) ResetVT() {
-	m.Filters.ReturnToVTPool()
-	m.Reset()
-}
-func (m *Update_Config) ReturnToVTPool() {
-	if m != nil {
-		m.ResetVT()
-		vtprotoPool_Update_Config.Put(m)
-	}
-}
-func Update_ConfigFromVTPool() *Update_Config {
-	return vtprotoPool_Update_Config.Get().(*Update_Config)
-}
-
-var vtprotoPool_Update = sync.Pool{
-	New: func() interface{} {
-		return &Update{}
-	},
-}
-
-func (m *Update) ResetVT() {
-	m.Reset()
-}
-func (m *Update) ReturnToVTPool() {
-	if m != nil {
-		m.ResetVT()
-		vtprotoPool_Update.Put(m)
-	}
-}
-func UpdateFromVTPool() *Update {
-	return vtprotoPool_Update.Get().(*Update)
-}
-
-var vtprotoPool_Upsert_Request = sync.Pool{
-	New: func() interface{} {
-		return &Upsert_Request{}
-	},
-}
-
-func (m *Upsert_Request) ResetVT() {
-	m.Vector.ReturnToVTPool()
-	m.Config.ReturnToVTPool()
-	m.Reset()
-}
-func (m *Upsert_Request) ReturnToVTPool() {
-	if m != nil {
-		m.ResetVT()
-		vtprotoPool_Upsert_Request.Put(m)
-	}
-}
-func Upsert_RequestFromVTPool() *Upsert_Request {
-	return vtprotoPool_Upsert_Request.Get().(*Upsert_Request)
-}
-
-var vtprotoPool_Upsert_MultiRequest = sync.Pool{
-	New: func() interface{} {
-		return &Upsert_MultiRequest{}
-	},
-}
-
-func (m *Upsert_MultiRequest) ResetVT() {
-	for _, mm := range m.Requests {
-		mm.ResetVT()
-	}
-	m.Reset()
-}
-func (m *Upsert_MultiRequest) ReturnToVTPool() {
-	if m != nil {
-		m.ResetVT()
-		vtprotoPool_Upsert_MultiRequest.Put(m)
-	}
-}
-func Upsert_MultiRequestFromVTPool() *Upsert_MultiRequest {
-	return vtprotoPool_Upsert_MultiRequest.Get().(*Upsert_MultiRequest)
-}
-
-var vtprotoPool_Upsert_ObjectRequest = sync.Pool{
-	New: func() interface{} {
-		return &Upsert_ObjectRequest{}
-	},
-}
-
-func (m *Upsert_ObjectRequest) ResetVT() {
-	m.Object.ReturnToVTPool()
-	m.Config.ReturnToVTPool()
-	m.Vectorizer.ReturnToVTPool()
-	m.Reset()
-}
-func (m *Upsert_ObjectRequest) ReturnToVTPool() {
-	if m != nil {
-		m.ResetVT()
-		vtprotoPool_Upsert_ObjectRequest.Put(m)
-	}
-}
-func Upsert_ObjectRequestFromVTPool() *Upsert_ObjectRequest {
-	return vtprotoPool_Upsert_ObjectRequest.Get().(*Upsert_ObjectRequest)
-}
-
-var vtprotoPool_Upsert_MultiObjectRequest = sync.Pool{
-	New: func() interface{} {
-		return &Upsert_MultiObjectRequest{}
-	},
-}
-
-func (m *Upsert_MultiObjectRequest) ResetVT() {
-	for _, mm := range m.Requests {
-		mm.ResetVT()
-	}
-	m.Reset()
-}
-func (m *Upsert_MultiObjectRequest) ReturnToVTPool() {
-	if m != nil {
-		m.ResetVT()
-		vtprotoPool_Upsert_MultiObjectRequest.Put(m)
-	}
-}
-func Upsert_MultiObjectRequestFromVTPool() *Upsert_MultiObjectRequest {
-	return vtprotoPool_Upsert_MultiObjectRequest.Get().(*Upsert_MultiObjectRequest)
-}
-
-var vtprotoPool_Upsert_Config = sync.Pool{
-	New: func() interface{} {
-		return &Upsert_Config{}
-	},
-}
-
-func (m *Upsert_Config) ResetVT() {
-	m.Filters.ReturnToVTPool()
-	m.Reset()
-}
-func (m *Upsert_Config) ReturnToVTPool() {
-	if m != nil {
-		m.ResetVT()
-		vtprotoPool_Upsert_Config.Put(m)
-	}
-}
-func Upsert_ConfigFromVTPool() *Upsert_Config {
-	return vtprotoPool_Upsert_Config.Get().(*Upsert_Config)
-}
-
-var vtprotoPool_Upsert = sync.Pool{
-	New: func() interface{} {
-		return &Upsert{}
-	},
-}
-
-func (m *Upsert) ResetVT() {
-	m.Reset()
-}
-func (m *Upsert) ReturnToVTPool() {
-	if m != nil {
-		m.ResetVT()
-		vtprotoPool_Upsert.Put(m)
-	}
-}
-func UpsertFromVTPool() *Upsert {
-	return vtprotoPool_Upsert.Get().(*Upsert)
-}
-
-var vtprotoPool_Remove_Request = sync.Pool{
-	New: func() interface{} {
-		return &Remove_Request{}
-	},
-}
-
-func (m *Remove_Request) ResetVT() {
-	m.Id.ReturnToVTPool()
-	m.Config.ReturnToVTPool()
-	m.Reset()
-}
-func (m *Remove_Request) ReturnToVTPool() {
-	if m != nil {
-		m.ResetVT()
-		vtprotoPool_Remove_Request.Put(m)
-	}
-}
-func Remove_RequestFromVTPool() *Remove_Request {
-	return vtprotoPool_Remove_Request.Get().(*Remove_Request)
-}
-
-var vtprotoPool_Remove_MultiRequest = sync.Pool{
-	New: func() interface{} {
-		return &Remove_MultiRequest{}
-	},
-}
-
-func (m *Remove_MultiRequest) ResetVT() {
-	for _, mm := range m.Requests {
-		mm.ResetVT()
-	}
-	m.Reset()
-}
-func (m *Remove_MultiRequest) ReturnToVTPool() {
-	if m != nil {
-		m.ResetVT()
-		vtprotoPool_Remove_MultiRequest.Put(m)
-	}
-}
-func Remove_MultiRequestFromVTPool() *Remove_MultiRequest {
-	return vtprotoPool_Remove_MultiRequest.Get().(*Remove_MultiRequest)
-}
-
-var vtprotoPool_Remove_Config = sync.Pool{
-	New: func() interface{} {
-		return &Remove_Config{}
-	},
-}
-
-func (m *Remove_Config) ResetVT() {
-	m.Reset()
-}
-func (m *Remove_Config) ReturnToVTPool() {
-	if m != nil {
-		m.ResetVT()
-		vtprotoPool_Remove_Config.Put(m)
-	}
-}
-func Remove_ConfigFromVTPool() *Remove_Config {
-	return vtprotoPool_Remove_Config.Get().(*Remove_Config)
-}
-
-var vtprotoPool_Remove = sync.Pool{
-	New: func() interface{} {
-		return &Remove{}
-	},
-}
-
-func (m *Remove) ResetVT() {
-	m.Reset()
-}
-func (m *Remove) ReturnToVTPool() {
-	if m != nil {
-		m.ResetVT()
-		vtprotoPool_Remove.Put(m)
-	}
-}
-func RemoveFromVTPool() *Remove {
-	return vtprotoPool_Remove.Get().(*Remove)
-}
-
-var vtprotoPool_Object_VectorRequest = sync.Pool{
-	New: func() interface{} {
-		return &Object_VectorRequest{}
-	},
-}
-
-func (m *Object_VectorRequest) ResetVT() {
-	m.Id.ReturnToVTPool()
-	m.Filters.ReturnToVTPool()
-	m.Reset()
-}
-func (m *Object_VectorRequest) ReturnToVTPool() {
-	if m != nil {
-		m.ResetVT()
-		vtprotoPool_Object_VectorRequest.Put(m)
-	}
-}
-func Object_VectorRequestFromVTPool() *Object_VectorRequest {
-	return vtprotoPool_Object_VectorRequest.Get().(*Object_VectorRequest)
-}
-
-var vtprotoPool_Object_Distance = sync.Pool{
-	New: func() interface{} {
-		return &Object_Distance{}
-	},
-}
-
-func (m *Object_Distance) ResetVT() {
-	m.Reset()
-}
-func (m *Object_Distance) ReturnToVTPool() {
-	if m != nil {
-		m.ResetVT()
-		vtprotoPool_Object_Distance.Put(m)
-	}
-}
-func Object_DistanceFromVTPool() *Object_Distance {
-	return vtprotoPool_Object_Distance.Get().(*Object_Distance)
-}
-
-var vtprotoPool_Object_ID = sync.Pool{
-	New: func() interface{} {
-		return &Object_ID{}
-	},
-}
-
-func (m *Object_ID) ResetVT() {
-	m.Reset()
-}
-func (m *Object_ID) ReturnToVTPool() {
-	if m != nil {
-		m.ResetVT()
-		vtprotoPool_Object_ID.Put(m)
-	}
-}
-func Object_IDFromVTPool() *Object_ID {
-	return vtprotoPool_Object_ID.Get().(*Object_ID)
-}
-
-var vtprotoPool_Object_IDs = sync.Pool{
-	New: func() interface{} {
-		return &Object_IDs{}
-	},
-}
-
-func (m *Object_IDs) ResetVT() {
-	f0 := m.Ids[:0]
-	m.Reset()
-	m.Ids = f0
-}
-func (m *Object_IDs) ReturnToVTPool() {
-	if m != nil {
-		m.ResetVT()
-		vtprotoPool_Object_IDs.Put(m)
-	}
-}
-func Object_IDsFromVTPool() *Object_IDs {
-	return vtprotoPool_Object_IDs.Get().(*Object_IDs)
-}
-
-var vtprotoPool_Object_Vector = sync.Pool{
-	New: func() interface{} {
-		return &Object_Vector{}
-	},
-}
-
-func (m *Object_Vector) ResetVT() {
-	f0 := m.Vector[:0]
-	m.Reset()
-	m.Vector = f0
-}
-func (m *Object_Vector) ReturnToVTPool() {
-	if m != nil {
-		m.ResetVT()
-		vtprotoPool_Object_Vector.Put(m)
-	}
-}
-func Object_VectorFromVTPool() *Object_Vector {
-	return vtprotoPool_Object_Vector.Get().(*Object_Vector)
-}
-
-var vtprotoPool_Object_Vectors = sync.Pool{
-	New: func() interface{} {
-		return &Object_Vectors{}
-	},
-}
-
-func (m *Object_Vectors) ResetVT() {
-	for _, mm := range m.Vectors {
-		mm.ResetVT()
-	}
-	m.Reset()
-}
-func (m *Object_Vectors) ReturnToVTPool() {
-	if m != nil {
-		m.ResetVT()
-		vtprotoPool_Object_Vectors.Put(m)
-	}
-}
-func Object_VectorsFromVTPool() *Object_Vectors {
-	return vtprotoPool_Object_Vectors.Get().(*Object_Vectors)
-}
-
-var vtprotoPool_Object_ReshapeVector = sync.Pool{
-	New: func() interface{} {
-		return &Object_ReshapeVector{}
-	},
-}
-
-func (m *Object_ReshapeVector) ResetVT() {
-	f0 := m.Object[:0]
-	f1 := m.Shape[:0]
-	m.Reset()
-	m.Object = f0
-	m.Shape = f1
-}
-func (m *Object_ReshapeVector) ReturnToVTPool() {
-	if m != nil {
-		m.ResetVT()
-		vtprotoPool_Object_ReshapeVector.Put(m)
-	}
-}
-func Object_ReshapeVectorFromVTPool() *Object_ReshapeVector {
-	return vtprotoPool_Object_ReshapeVector.Get().(*Object_ReshapeVector)
-}
-
-var vtprotoPool_Object_Blob = sync.Pool{
-	New: func() interface{} {
-		return &Object_Blob{}
-	},
-}
-
-func (m *Object_Blob) ResetVT() {
-	f0 := m.Object[:0]
-	m.Reset()
-	m.Object = f0
-}
-func (m *Object_Blob) ReturnToVTPool() {
-	if m != nil {
-		m.ResetVT()
-		vtprotoPool_Object_Blob.Put(m)
-	}
-}
-func Object_BlobFromVTPool() *Object_Blob {
-	return vtprotoPool_Object_Blob.Get().(*Object_Blob)
-}
-
-var vtprotoPool_Object_Location = sync.Pool{
-	New: func() interface{} {
-		return &Object_Location{}
-	},
-}
-
-func (m *Object_Location) ResetVT() {
-	f0 := m.Ips[:0]
-	m.Reset()
-	m.Ips = f0
-}
-func (m *Object_Location) ReturnToVTPool() {
-	if m != nil {
-		m.ResetVT()
-		vtprotoPool_Object_Location.Put(m)
-	}
-}
-func Object_LocationFromVTPool() *Object_Location {
-	return vtprotoPool_Object_Location.Get().(*Object_Location)
-}
-
-var vtprotoPool_Object_Locations = sync.Pool{
-	New: func() interface{} {
-		return &Object_Locations{}
-	},
-}
-
-func (m *Object_Locations) ResetVT() {
-	for _, mm := range m.Locations {
-		mm.ResetVT()
-	}
-	m.Reset()
-}
-func (m *Object_Locations) ReturnToVTPool() {
-	if m != nil {
-		m.ResetVT()
-		vtprotoPool_Object_Locations.Put(m)
-	}
-}
-func Object_LocationsFromVTPool() *Object_Locations {
-	return vtprotoPool_Object_Locations.Get().(*Object_Locations)
-}
-
-var vtprotoPool_Object = sync.Pool{
-	New: func() interface{} {
-		return &Object{}
-	},
-}
-
-func (m *Object) ResetVT() {
-	m.Reset()
-}
-func (m *Object) ReturnToVTPool() {
-	if m != nil {
-		m.ResetVT()
-		vtprotoPool_Object.Put(m)
-	}
-}
-func ObjectFromVTPool() *Object {
-	return vtprotoPool_Object.Get().(*Object)
-}
-
-var vtprotoPool_Control_CreateIndexRequest = sync.Pool{
-	New: func() interface{} {
-		return &Control_CreateIndexRequest{}
-	},
-}
-
-func (m *Control_CreateIndexRequest) ResetVT() {
-	m.Reset()
-}
-func (m *Control_CreateIndexRequest) ReturnToVTPool() {
-	if m != nil {
-		m.ResetVT()
-		vtprotoPool_Control_CreateIndexRequest.Put(m)
-	}
-}
-func Control_CreateIndexRequestFromVTPool() *Control_CreateIndexRequest {
-	return vtprotoPool_Control_CreateIndexRequest.Get().(*Control_CreateIndexRequest)
-}
-
-var vtprotoPool_Control = sync.Pool{
-	New: func() interface{} {
-		return &Control{}
-	},
-}
-
-func (m *Control) ResetVT() {
-	m.Reset()
-}
-func (m *Control) ReturnToVTPool() {
-	if m != nil {
-		m.ResetVT()
-		vtprotoPool_Control.Put(m)
-	}
-}
-func ControlFromVTPool() *Control {
-	return vtprotoPool_Control.Get().(*Control)
-}
-
-var vtprotoPool_Discoverer_Request = sync.Pool{
-	New: func() interface{} {
-		return &Discoverer_Request{}
-	},
-}
-
-func (m *Discoverer_Request) ResetVT() {
-	m.Reset()
-}
-func (m *Discoverer_Request) ReturnToVTPool() {
-	if m != nil {
-		m.ResetVT()
-		vtprotoPool_Discoverer_Request.Put(m)
-	}
-}
-func Discoverer_RequestFromVTPool() *Discoverer_Request {
-	return vtprotoPool_Discoverer_Request.Get().(*Discoverer_Request)
-}
-
-var vtprotoPool_Discoverer = sync.Pool{
-	New: func() interface{} {
-		return &Discoverer{}
-	},
-}
-
-func (m *Discoverer) ResetVT() {
-	m.Reset()
-}
-func (m *Discoverer) ReturnToVTPool() {
-	if m != nil {
-		m.ResetVT()
-		vtprotoPool_Discoverer.Put(m)
-	}
-}
-func DiscovererFromVTPool() *Discoverer {
-	return vtprotoPool_Discoverer.Get().(*Discoverer)
-}
-
-var vtprotoPool_Info_Index_Count = sync.Pool{
-	New: func() interface{} {
-		return &Info_Index_Count{}
-	},
-}
-
-func (m *Info_Index_Count) ResetVT() {
-	m.Reset()
-}
-func (m *Info_Index_Count) ReturnToVTPool() {
-	if m != nil {
-		m.ResetVT()
-		vtprotoPool_Info_Index_Count.Put(m)
-	}
-}
-func Info_Index_CountFromVTPool() *Info_Index_Count {
-	return vtprotoPool_Info_Index_Count.Get().(*Info_Index_Count)
-}
-
-var vtprotoPool_Info_Index_UUID = sync.Pool{
-	New: func() interface{} {
-		return &Info_Index_UUID{}
-	},
-}
-
-func (m *Info_Index_UUID) ResetVT() {
-	m.Reset()
-}
-func (m *Info_Index_UUID) ReturnToVTPool() {
-	if m != nil {
-		m.ResetVT()
-		vtprotoPool_Info_Index_UUID.Put(m)
-	}
-}
-func Info_Index_UUIDFromVTPool() *Info_Index_UUID {
-	return vtprotoPool_Info_Index_UUID.Get().(*Info_Index_UUID)
-}
-
-var vtprotoPool_Info_Index = sync.Pool{
-	New: func() interface{} {
-		return &Info_Index{}
-	},
-}
-
-func (m *Info_Index) ResetVT() {
-	m.Reset()
-}
-func (m *Info_Index) ReturnToVTPool() {
-	if m != nil {
-		m.ResetVT()
-		vtprotoPool_Info_Index.Put(m)
-	}
-}
-func Info_IndexFromVTPool() *Info_Index {
-	return vtprotoPool_Info_Index.Get().(*Info_Index)
-}
-
-var vtprotoPool_Info_Pod = sync.Pool{
-	New: func() interface{} {
-		return &Info_Pod{}
-	},
-}
-
-func (m *Info_Pod) ResetVT() {
-	m.Cpu.ReturnToVTPool()
-	m.Memory.ReturnToVTPool()
-	m.Node.ReturnToVTPool()
-	m.Reset()
-}
-func (m *Info_Pod) ReturnToVTPool() {
-	if m != nil {
-		m.ResetVT()
-		vtprotoPool_Info_Pod.Put(m)
-	}
-}
-func Info_PodFromVTPool() *Info_Pod {
-	return vtprotoPool_Info_Pod.Get().(*Info_Pod)
-}
-
-var vtprotoPool_Info_Node = sync.Pool{
-	New: func() interface{} {
-		return &Info_Node{}
-	},
-}
-
-func (m *Info_Node) ResetVT() {
-	m.Cpu.ReturnToVTPool()
-	m.Memory.ReturnToVTPool()
-	m.Pods.ReturnToVTPool()
-	m.Reset()
-}
-func (m *Info_Node) ReturnToVTPool() {
-	if m != nil {
-		m.ResetVT()
-		vtprotoPool_Info_Node.Put(m)
-	}
-}
-func Info_NodeFromVTPool() *Info_Node {
-	return vtprotoPool_Info_Node.Get().(*Info_Node)
-}
-
-var vtprotoPool_Info_CPU = sync.Pool{
-	New: func() interface{} {
-		return &Info_CPU{}
-	},
-}
-
-func (m *Info_CPU) ResetVT() {
-	m.Reset()
-}
-func (m *Info_CPU) ReturnToVTPool() {
-	if m != nil {
-		m.ResetVT()
-		vtprotoPool_Info_CPU.Put(m)
-	}
-}
-func Info_CPUFromVTPool() *Info_CPU {
-	return vtprotoPool_Info_CPU.Get().(*Info_CPU)
-}
-
-var vtprotoPool_Info_Memory = sync.Pool{
-	New: func() interface{} {
-		return &Info_Memory{}
-	},
-}
-
-func (m *Info_Memory) ResetVT() {
-	m.Reset()
-}
-func (m *Info_Memory) ReturnToVTPool() {
-	if m != nil {
-		m.ResetVT()
-		vtprotoPool_Info_Memory.Put(m)
-	}
-}
-func Info_MemoryFromVTPool() *Info_Memory {
-	return vtprotoPool_Info_Memory.Get().(*Info_Memory)
-}
-
-var vtprotoPool_Info_Pods = sync.Pool{
-	New: func() interface{} {
-		return &Info_Pods{}
-	},
-}
-
-func (m *Info_Pods) ResetVT() {
-	for _, mm := range m.Pods {
-		mm.ResetVT()
-	}
-	m.Reset()
-}
-func (m *Info_Pods) ReturnToVTPool() {
-	if m != nil {
-		m.ResetVT()
-		vtprotoPool_Info_Pods.Put(m)
-	}
-}
-func Info_PodsFromVTPool() *Info_Pods {
-	return vtprotoPool_Info_Pods.Get().(*Info_Pods)
-}
-
-var vtprotoPool_Info_Nodes = sync.Pool{
-	New: func() interface{} {
-		return &Info_Nodes{}
-	},
-}
-
-func (m *Info_Nodes) ResetVT() {
-	for _, mm := range m.Nodes {
-		mm.ResetVT()
-	}
-	m.Reset()
-}
-func (m *Info_Nodes) ReturnToVTPool() {
-	if m != nil {
-		m.ResetVT()
-		vtprotoPool_Info_Nodes.Put(m)
-	}
-}
-func Info_NodesFromVTPool() *Info_Nodes {
-	return vtprotoPool_Info_Nodes.Get().(*Info_Nodes)
-}
-
-var vtprotoPool_Info_IPs = sync.Pool{
-	New: func() interface{} {
-		return &Info_IPs{}
-	},
-}
-
-func (m *Info_IPs) ResetVT() {
-	f0 := m.Ip[:0]
-	m.Reset()
-	m.Ip = f0
-}
-func (m *Info_IPs) ReturnToVTPool() {
-	if m != nil {
-		m.ResetVT()
-		vtprotoPool_Info_IPs.Put(m)
-	}
-}
-func Info_IPsFromVTPool() *Info_IPs {
-	return vtprotoPool_Info_IPs.Get().(*Info_IPs)
-}
-
-var vtprotoPool_Info = sync.Pool{
-	New: func() interface{} {
-		return &Info{}
-	},
-}
-
-func (m *Info) ResetVT() {
-	m.Reset()
-}
-func (m *Info) ReturnToVTPool() {
-	if m != nil {
-		m.ResetVT()
-		vtprotoPool_Info.Put(m)
-	}
-}
-func InfoFromVTPool() *Info {
-	return vtprotoPool_Info.Get().(*Info)
-}
 func (m *Search_Request) SizeVT() (n int) {
 	if m == nil {
 		return 0
@@ -8287,7 +8559,7 @@ func (m *Search_Request) UnmarshalVT(dAtA []byte) error {
 				}
 				var elementCount int
 				elementCount = packedLen / 4
-				if elementCount != 0 && len(m.Vector) == 0 && cap(m.Vector) < elementCount {
+				if elementCount != 0 && len(m.Vector) == 0 {
 					m.Vector = make([]float32, 0, elementCount)
 				}
 				for iNdEx < postIndex {
@@ -8333,7 +8605,7 @@ func (m *Search_Request) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if m.Config == nil {
-				m.Config = Search_ConfigFromVTPool()
+				m.Config = &Search_Config{}
 			}
 			if err := m.Config.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
@@ -8419,14 +8691,7 @@ func (m *Search_MultiRequest) UnmarshalVT(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if len(m.Requests) == cap(m.Requests) {
-				m.Requests = append(m.Requests, &Search_Request{})
-			} else {
-				m.Requests = m.Requests[:len(m.Requests)+1]
-				if m.Requests[len(m.Requests)-1] == nil {
-					m.Requests[len(m.Requests)-1] = &Search_Request{}
-				}
-			}
+			m.Requests = append(m.Requests, &Search_Request{})
 			if err := m.Requests[len(m.Requests)-1].UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
@@ -8544,7 +8809,7 @@ func (m *Search_IDRequest) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if m.Config == nil {
-				m.Config = Search_ConfigFromVTPool()
+				m.Config = &Search_Config{}
 			}
 			if err := m.Config.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
@@ -8630,14 +8895,7 @@ func (m *Search_MultiIDRequest) UnmarshalVT(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if len(m.Requests) == cap(m.Requests) {
-				m.Requests = append(m.Requests, &Search_IDRequest{})
-			} else {
-				m.Requests = m.Requests[:len(m.Requests)+1]
-				if m.Requests[len(m.Requests)-1] == nil {
-					m.Requests[len(m.Requests)-1] = &Search_IDRequest{}
-				}
-			}
+			m.Requests = append(m.Requests, &Search_IDRequest{})
 			if err := m.Requests[len(m.Requests)-1].UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
@@ -8757,7 +9015,7 @@ func (m *Search_ObjectRequest) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if m.Config == nil {
-				m.Config = Search_ConfigFromVTPool()
+				m.Config = &Search_Config{}
 			}
 			if err := m.Config.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
@@ -8793,7 +9051,7 @@ func (m *Search_ObjectRequest) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if m.Vectorizer == nil {
-				m.Vectorizer = Filter_TargetFromVTPool()
+				m.Vectorizer = &Filter_Target{}
 			}
 			if err := m.Vectorizer.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
@@ -8879,14 +9137,7 @@ func (m *Search_MultiObjectRequest) UnmarshalVT(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if len(m.Requests) == cap(m.Requests) {
-				m.Requests = append(m.Requests, &Search_ObjectRequest{})
-			} else {
-				m.Requests = m.Requests[:len(m.Requests)+1]
-				if m.Requests[len(m.Requests)-1] == nil {
-					m.Requests[len(m.Requests)-1] = &Search_ObjectRequest{}
-				}
-			}
+			m.Requests = append(m.Requests, &Search_ObjectRequest{})
 			if err := m.Requests[len(m.Requests)-1].UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
@@ -9064,7 +9315,7 @@ func (m *Search_Config) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if m.IngressFilters == nil {
-				m.IngressFilters = Filter_ConfigFromVTPool()
+				m.IngressFilters = &Filter_Config{}
 			}
 			if err := m.IngressFilters.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
@@ -9100,7 +9351,7 @@ func (m *Search_Config) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if m.EgressFilters == nil {
-				m.EgressFilters = Filter_ConfigFromVTPool()
+				m.EgressFilters = &Filter_Config{}
 			}
 			if err := m.EgressFilters.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
@@ -9256,14 +9507,7 @@ func (m *Search_Response) UnmarshalVT(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if len(m.Results) == cap(m.Results) {
-				m.Results = append(m.Results, &Object_Distance{})
-			} else {
-				m.Results = m.Results[:len(m.Results)+1]
-				if m.Results[len(m.Results)-1] == nil {
-					m.Results[len(m.Results)-1] = &Object_Distance{}
-				}
-			}
+			m.Results = append(m.Results, &Object_Distance{})
 			if err := m.Results[len(m.Results)-1].UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
@@ -9348,14 +9592,7 @@ func (m *Search_Responses) UnmarshalVT(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if len(m.Responses) == cap(m.Responses) {
-				m.Responses = append(m.Responses, &Search_Response{})
-			} else {
-				m.Responses = m.Responses[:len(m.Responses)+1]
-				if m.Responses[len(m.Responses)-1] == nil {
-					m.Responses[len(m.Responses)-1] = &Search_Response{}
-				}
-			}
+			m.Responses = append(m.Responses, &Search_Response{})
 			if err := m.Responses[len(m.Responses)-1].UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
@@ -9742,14 +9979,7 @@ func (m *Filter_Config) UnmarshalVT(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if len(m.Targets) == cap(m.Targets) {
-				m.Targets = append(m.Targets, &Filter_Target{})
-			} else {
-				m.Targets = m.Targets[:len(m.Targets)+1]
-				if m.Targets[len(m.Targets)-1] == nil {
-					m.Targets[len(m.Targets)-1] = &Filter_Target{}
-				}
-			}
+			m.Targets = append(m.Targets, &Filter_Target{})
 			if err := m.Targets[len(m.Targets)-1].UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
@@ -9886,7 +10116,7 @@ func (m *Insert_Request) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if m.Vector == nil {
-				m.Vector = Object_VectorFromVTPool()
+				m.Vector = &Object_Vector{}
 			}
 			if err := m.Vector.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
@@ -9922,7 +10152,7 @@ func (m *Insert_Request) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if m.Config == nil {
-				m.Config = Insert_ConfigFromVTPool()
+				m.Config = &Insert_Config{}
 			}
 			if err := m.Config.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
@@ -10008,14 +10238,7 @@ func (m *Insert_MultiRequest) UnmarshalVT(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if len(m.Requests) == cap(m.Requests) {
-				m.Requests = append(m.Requests, &Insert_Request{})
-			} else {
-				m.Requests = m.Requests[:len(m.Requests)+1]
-				if m.Requests[len(m.Requests)-1] == nil {
-					m.Requests[len(m.Requests)-1] = &Insert_Request{}
-				}
-			}
+			m.Requests = append(m.Requests, &Insert_Request{})
 			if err := m.Requests[len(m.Requests)-1].UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
@@ -10101,7 +10324,7 @@ func (m *Insert_ObjectRequest) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if m.Object == nil {
-				m.Object = Object_BlobFromVTPool()
+				m.Object = &Object_Blob{}
 			}
 			if err := m.Object.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
@@ -10137,7 +10360,7 @@ func (m *Insert_ObjectRequest) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if m.Config == nil {
-				m.Config = Insert_ConfigFromVTPool()
+				m.Config = &Insert_Config{}
 			}
 			if err := m.Config.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
@@ -10173,7 +10396,7 @@ func (m *Insert_ObjectRequest) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if m.Vectorizer == nil {
-				m.Vectorizer = Filter_TargetFromVTPool()
+				m.Vectorizer = &Filter_Target{}
 			}
 			if err := m.Vectorizer.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
@@ -10259,14 +10482,7 @@ func (m *Insert_MultiObjectRequest) UnmarshalVT(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if len(m.Requests) == cap(m.Requests) {
-				m.Requests = append(m.Requests, &Insert_ObjectRequest{})
-			} else {
-				m.Requests = m.Requests[:len(m.Requests)+1]
-				if m.Requests[len(m.Requests)-1] == nil {
-					m.Requests[len(m.Requests)-1] = &Insert_ObjectRequest{}
-				}
-			}
+			m.Requests = append(m.Requests, &Insert_ObjectRequest{})
 			if err := m.Requests[len(m.Requests)-1].UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
@@ -10372,7 +10588,7 @@ func (m *Insert_Config) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if m.Filters == nil {
-				m.Filters = Filter_ConfigFromVTPool()
+				m.Filters = &Filter_Config{}
 			}
 			if err := m.Filters.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
@@ -10529,7 +10745,7 @@ func (m *Update_Request) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if m.Vector == nil {
-				m.Vector = Object_VectorFromVTPool()
+				m.Vector = &Object_Vector{}
 			}
 			if err := m.Vector.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
@@ -10565,7 +10781,7 @@ func (m *Update_Request) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if m.Config == nil {
-				m.Config = Update_ConfigFromVTPool()
+				m.Config = &Update_Config{}
 			}
 			if err := m.Config.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
@@ -10651,14 +10867,7 @@ func (m *Update_MultiRequest) UnmarshalVT(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if len(m.Requests) == cap(m.Requests) {
-				m.Requests = append(m.Requests, &Update_Request{})
-			} else {
-				m.Requests = m.Requests[:len(m.Requests)+1]
-				if m.Requests[len(m.Requests)-1] == nil {
-					m.Requests[len(m.Requests)-1] = &Update_Request{}
-				}
-			}
+			m.Requests = append(m.Requests, &Update_Request{})
 			if err := m.Requests[len(m.Requests)-1].UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
@@ -10744,7 +10953,7 @@ func (m *Update_ObjectRequest) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if m.Object == nil {
-				m.Object = Object_BlobFromVTPool()
+				m.Object = &Object_Blob{}
 			}
 			if err := m.Object.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
@@ -10780,7 +10989,7 @@ func (m *Update_ObjectRequest) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if m.Config == nil {
-				m.Config = Update_ConfigFromVTPool()
+				m.Config = &Update_Config{}
 			}
 			if err := m.Config.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
@@ -10816,7 +11025,7 @@ func (m *Update_ObjectRequest) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if m.Vectorizer == nil {
-				m.Vectorizer = Filter_TargetFromVTPool()
+				m.Vectorizer = &Filter_Target{}
 			}
 			if err := m.Vectorizer.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
@@ -10902,14 +11111,7 @@ func (m *Update_MultiObjectRequest) UnmarshalVT(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if len(m.Requests) == cap(m.Requests) {
-				m.Requests = append(m.Requests, &Update_ObjectRequest{})
-			} else {
-				m.Requests = m.Requests[:len(m.Requests)+1]
-				if m.Requests[len(m.Requests)-1] == nil {
-					m.Requests[len(m.Requests)-1] = &Update_ObjectRequest{}
-				}
-			}
+			m.Requests = append(m.Requests, &Update_ObjectRequest{})
 			if err := m.Requests[len(m.Requests)-1].UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
@@ -11015,7 +11217,7 @@ func (m *Update_Config) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if m.Filters == nil {
-				m.Filters = Filter_ConfigFromVTPool()
+				m.Filters = &Filter_Config{}
 			}
 			if err := m.Filters.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
@@ -11192,7 +11394,7 @@ func (m *Upsert_Request) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if m.Vector == nil {
-				m.Vector = Object_VectorFromVTPool()
+				m.Vector = &Object_Vector{}
 			}
 			if err := m.Vector.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
@@ -11228,7 +11430,7 @@ func (m *Upsert_Request) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if m.Config == nil {
-				m.Config = Upsert_ConfigFromVTPool()
+				m.Config = &Upsert_Config{}
 			}
 			if err := m.Config.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
@@ -11314,14 +11516,7 @@ func (m *Upsert_MultiRequest) UnmarshalVT(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if len(m.Requests) == cap(m.Requests) {
-				m.Requests = append(m.Requests, &Upsert_Request{})
-			} else {
-				m.Requests = m.Requests[:len(m.Requests)+1]
-				if m.Requests[len(m.Requests)-1] == nil {
-					m.Requests[len(m.Requests)-1] = &Upsert_Request{}
-				}
-			}
+			m.Requests = append(m.Requests, &Upsert_Request{})
 			if err := m.Requests[len(m.Requests)-1].UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
@@ -11407,7 +11602,7 @@ func (m *Upsert_ObjectRequest) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if m.Object == nil {
-				m.Object = Object_BlobFromVTPool()
+				m.Object = &Object_Blob{}
 			}
 			if err := m.Object.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
@@ -11443,7 +11638,7 @@ func (m *Upsert_ObjectRequest) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if m.Config == nil {
-				m.Config = Upsert_ConfigFromVTPool()
+				m.Config = &Upsert_Config{}
 			}
 			if err := m.Config.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
@@ -11479,7 +11674,7 @@ func (m *Upsert_ObjectRequest) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if m.Vectorizer == nil {
-				m.Vectorizer = Filter_TargetFromVTPool()
+				m.Vectorizer = &Filter_Target{}
 			}
 			if err := m.Vectorizer.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
@@ -11565,14 +11760,7 @@ func (m *Upsert_MultiObjectRequest) UnmarshalVT(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if len(m.Requests) == cap(m.Requests) {
-				m.Requests = append(m.Requests, &Upsert_ObjectRequest{})
-			} else {
-				m.Requests = m.Requests[:len(m.Requests)+1]
-				if m.Requests[len(m.Requests)-1] == nil {
-					m.Requests[len(m.Requests)-1] = &Upsert_ObjectRequest{}
-				}
-			}
+			m.Requests = append(m.Requests, &Upsert_ObjectRequest{})
 			if err := m.Requests[len(m.Requests)-1].UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
@@ -11678,7 +11866,7 @@ func (m *Upsert_Config) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if m.Filters == nil {
-				m.Filters = Filter_ConfigFromVTPool()
+				m.Filters = &Filter_Config{}
 			}
 			if err := m.Filters.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
@@ -11855,7 +12043,7 @@ func (m *Remove_Request) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if m.Id == nil {
-				m.Id = Object_IDFromVTPool()
+				m.Id = &Object_ID{}
 			}
 			if err := m.Id.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
@@ -11891,7 +12079,7 @@ func (m *Remove_Request) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if m.Config == nil {
-				m.Config = Remove_ConfigFromVTPool()
+				m.Config = &Remove_Config{}
 			}
 			if err := m.Config.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
@@ -11977,14 +12165,7 @@ func (m *Remove_MultiRequest) UnmarshalVT(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if len(m.Requests) == cap(m.Requests) {
-				m.Requests = append(m.Requests, &Remove_Request{})
-			} else {
-				m.Requests = m.Requests[:len(m.Requests)+1]
-				if m.Requests[len(m.Requests)-1] == nil {
-					m.Requests[len(m.Requests)-1] = &Remove_Request{}
-				}
-			}
+			m.Requests = append(m.Requests, &Remove_Request{})
 			if err := m.Requests[len(m.Requests)-1].UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
@@ -12211,7 +12392,7 @@ func (m *Object_VectorRequest) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if m.Id == nil {
-				m.Id = Object_IDFromVTPool()
+				m.Id = &Object_ID{}
 			}
 			if err := m.Id.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
@@ -12247,7 +12428,7 @@ func (m *Object_VectorRequest) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if m.Filters == nil {
-				m.Filters = Filter_ConfigFromVTPool()
+				m.Filters = &Filter_Config{}
 			}
 			if err := m.Filters.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
@@ -12783,7 +12964,7 @@ func (m *Object_Vector) UnmarshalVT(dAtA []byte) error {
 				}
 				var elementCount int
 				elementCount = packedLen / 4
-				if elementCount != 0 && len(m.Vector) == 0 && cap(m.Vector) < elementCount {
+				if elementCount != 0 && len(m.Vector) == 0 {
 					m.Vector = make([]float32, 0, elementCount)
 				}
 				for iNdEx < postIndex {
@@ -12879,14 +13060,7 @@ func (m *Object_Vectors) UnmarshalVT(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if len(m.Vectors) == cap(m.Vectors) {
-				m.Vectors = append(m.Vectors, &Object_Vector{})
-			} else {
-				m.Vectors = m.Vectors[:len(m.Vectors)+1]
-				if m.Vectors[len(m.Vectors)-1] == nil {
-					m.Vectors[len(m.Vectors)-1] = &Object_Vector{}
-				}
-			}
+			m.Vectors = append(m.Vectors, &Object_Vector{})
 			if err := m.Vectors[len(m.Vectors)-1].UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
@@ -13177,7 +13351,7 @@ func (m *Object_ReshapeVector) UnmarshalVT(dAtA []byte) error {
 					}
 				}
 				elementCount = count
-				if elementCount != 0 && len(m.Shape) == 0 && cap(m.Shape) < elementCount {
+				if elementCount != 0 && len(m.Shape) == 0 {
 					m.Shape = make([]int32, 0, elementCount)
 				}
 				for iNdEx < postIndex {
@@ -13843,14 +14017,7 @@ func (m *Object_Locations) UnmarshalVT(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if len(m.Locations) == cap(m.Locations) {
-				m.Locations = append(m.Locations, &Object_Location{})
-			} else {
-				m.Locations = m.Locations[:len(m.Locations)+1]
-				if m.Locations[len(m.Locations)-1] == nil {
-					m.Locations[len(m.Locations)-1] = &Object_Location{}
-				}
-			}
+			m.Locations = append(m.Locations, &Object_Location{})
 			if err := m.Locations[len(m.Locations)-1].UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
@@ -14831,7 +14998,7 @@ func (m *Info_Pod) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if m.Cpu == nil {
-				m.Cpu = Info_CPUFromVTPool()
+				m.Cpu = &Info_CPU{}
 			}
 			if err := m.Cpu.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
@@ -14867,7 +15034,7 @@ func (m *Info_Pod) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if m.Memory == nil {
-				m.Memory = Info_MemoryFromVTPool()
+				m.Memory = &Info_Memory{}
 			}
 			if err := m.Memory.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
@@ -14903,7 +15070,7 @@ func (m *Info_Pod) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if m.Node == nil {
-				m.Node = Info_NodeFromVTPool()
+				m.Node = &Info_Node{}
 			}
 			if err := m.Node.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
@@ -15086,7 +15253,7 @@ func (m *Info_Node) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if m.Cpu == nil {
-				m.Cpu = Info_CPUFromVTPool()
+				m.Cpu = &Info_CPU{}
 			}
 			if err := m.Cpu.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
@@ -15122,7 +15289,7 @@ func (m *Info_Node) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if m.Memory == nil {
-				m.Memory = Info_MemoryFromVTPool()
+				m.Memory = &Info_Memory{}
 			}
 			if err := m.Memory.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
@@ -15158,7 +15325,7 @@ func (m *Info_Node) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if m.Pods == nil {
-				m.Pods = Info_PodsFromVTPool()
+				m.Pods = &Info_Pods{}
 			}
 			if err := m.Pods.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
@@ -15412,14 +15579,7 @@ func (m *Info_Pods) UnmarshalVT(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if len(m.Pods) == cap(m.Pods) {
-				m.Pods = append(m.Pods, &Info_Pod{})
-			} else {
-				m.Pods = m.Pods[:len(m.Pods)+1]
-				if m.Pods[len(m.Pods)-1] == nil {
-					m.Pods[len(m.Pods)-1] = &Info_Pod{}
-				}
-			}
+			m.Pods = append(m.Pods, &Info_Pod{})
 			if err := m.Pods[len(m.Pods)-1].UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
@@ -15504,14 +15664,7 @@ func (m *Info_Nodes) UnmarshalVT(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if len(m.Nodes) == cap(m.Nodes) {
-				m.Nodes = append(m.Nodes, &Info_Node{})
-			} else {
-				m.Nodes = m.Nodes[:len(m.Nodes)+1]
-				if m.Nodes[len(m.Nodes)-1] == nil {
-					m.Nodes[len(m.Nodes)-1] = &Info_Node{}
-				}
-			}
+			m.Nodes = append(m.Nodes, &Info_Node{})
 			if err := m.Nodes[len(m.Nodes)-1].UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}

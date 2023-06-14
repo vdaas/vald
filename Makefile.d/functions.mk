@@ -33,19 +33,20 @@ define proto-code-gen
 		$(PROTO_PATHS:%=-I %) \
                 --go_out=$(GOPATH)/src --plugin protoc-gen-go="$(GOPATH)/bin/protoc-gen-go" \
                 --go-vtproto_out=$(GOPATH)/src --plugin protoc-gen-go-vtproto="$(GOPATH)/bin/protoc-gen-go-vtproto" \
-                --go-vtproto_opt=pool=$(ROOTDIR)/apis/proto/v1/payload.Insert.MultiRequest \
-                --go-vtproto_opt=pool=$(ROOTDIR)/apis/proto/v1/payload.Insert.Request \
-                --go-vtproto_opt=pool=$(ROOTDIR)/apis/proto/v1/payload.Object.Vector \
-                --go-vtproto_opt=pool=$(ROOTDIR)/apis/proto/v1/payload.Object.Vectors \
-                --go-vtproto_opt=pool=$(ROOTDIR)/apis/proto/v1/payload.Search.ObjectRequest \
-                --go-vtproto_opt=pool=$(ROOTDIR)/apis/proto/v1/payload.Search.Request \
-                --go-vtproto_opt=pool=$(ROOTDIR)/apis/proto/v1/payload.Update.MultiRequest \
-                --go-vtproto_opt=pool=$(ROOTDIR)/apis/proto/v1/payload.Update.Request \
-                --go-vtproto_opt=pool=$(ROOTDIR)/apis/proto/v1/payload.Upsert.MultiRequest \
-                --go-vtproto_opt=pool=$(ROOTDIR)/apis/proto/v1/payload.Upsert.Request \
-                --go-vtproto_opt=features=pool+grpc+marshal+unmarshal+size+equal \
+                --go-vtproto_opt=features=grpc+marshal+unmarshal+size+equal+clone \
 		$1
 endef
+                # --go-vtproto_opt=pool=$(ROOTDIR)/apis/proto/v1/payload.Object.Vector \
+                # --go-vtproto_opt=pool=$(ROOTDIR)/apis/proto/v1/payload.Insert.MultiRequest \
+                # --go-vtproto_opt=pool=$(ROOTDIR)/apis/proto/v1/payload.Insert.Request \
+                # --go-vtproto_opt=pool=$(ROOTDIR)/apis/proto/v1/payload.Object.Vector \
+                # --go-vtproto_opt=pool=$(ROOTDIR)/apis/proto/v1/payload.Object.Vectors \
+                # --go-vtproto_opt=pool=$(ROOTDIR)/apis/proto/v1/payload.Search.ObjectRequest \
+                # --go-vtproto_opt=pool=$(ROOTDIR)/apis/proto/v1/payload.Search.Request \
+                # --go-vtproto_opt=pool=$(ROOTDIR)/apis/proto/v1/payload.Update.MultiRequest \
+                # --go-vtproto_opt=pool=$(ROOTDIR)/apis/proto/v1/payload.Update.Request \
+                # --go-vtproto_opt=pool=$(ROOTDIR)/apis/proto/v1/payload.Upsert.MultiRequest \
+                # --go-vtproto_opt=pool=$(ROOTDIR)/apis/proto/v1/payload.Upsert.Request \
 
 define protoc-gen
 	protoc \

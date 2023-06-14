@@ -24,5 +24,4 @@ option java_package = "org.vdaas.vald.api.v1.agent.sidecar";
 option java_outer_classname = "ValdAgentSidecar";
 
 // Represent the agent sidecar service.
-service Sidecar {
-}
+service Sidecar {}

@@ -144,7 +144,7 @@ func Test_gRPCClient_StartConnectionMonitor(t *testing.T) {
 		cb                  circuitbreaker.CircuitBreaker
 		gbo                 gbackoff.Config
 		mcd                 time.Duration
-		group               singleflight.Group
+		group               singleflight.Group[pool.Conn]
 		ech                 <-chan error
 		monitorRunning      atomic.Bool
 		stopMonitor         context.CancelFunc
@@ -327,7 +327,7 @@ func Test_gRPCClient_Range(t *testing.T) {
 		cb                  circuitbreaker.CircuitBreaker
 		gbo                 gbackoff.Config
 		mcd                 time.Duration
-		group               singleflight.Group
+		group               singleflight.Group[pool.Conn]
 		ech                 <-chan error
 		monitorRunning      atomic.Bool
 		stopMonitor         context.CancelFunc
@@ -509,7 +509,7 @@ func Test_gRPCClient_RangeConcurrent(t *testing.T) {
 		cb                  circuitbreaker.CircuitBreaker
 		gbo                 gbackoff.Config
 		mcd                 time.Duration
-		group               singleflight.Group
+		group               singleflight.Group[pool.Conn]
 		ech                 <-chan error
 		monitorRunning      atomic.Bool
 		stopMonitor         context.CancelFunc
@@ -693,7 +693,7 @@ func Test_gRPCClient_OrderedRange(t *testing.T) {
 		cb                  circuitbreaker.CircuitBreaker
 		gbo                 gbackoff.Config
 		mcd                 time.Duration
-		group               singleflight.Group
+		group               singleflight.Group[pool.Conn]
 		ech                 <-chan error
 		monitorRunning      atomic.Bool
 		stopMonitor         context.CancelFunc
@@ -878,7 +878,7 @@ func Test_gRPCClient_OrderedRangeConcurrent(t *testing.T) {
 		cb                  circuitbreaker.CircuitBreaker
 		gbo                 gbackoff.Config
 		mcd                 time.Duration
-		group               singleflight.Group
+		group               singleflight.Group[pool.Conn]
 		ech                 <-chan error
 		monitorRunning      atomic.Bool
 		stopMonitor         context.CancelFunc
@@ -1063,7 +1063,7 @@ func Test_gRPCClient_RoundRobin(t *testing.T) {
 		cb                  circuitbreaker.CircuitBreaker
 		gbo                 gbackoff.Config
 		mcd                 time.Duration
-		group               singleflight.Group
+		group               singleflight.Group[pool.Conn]
 		ech                 <-chan error
 		monitorRunning      atomic.Bool
 		stopMonitor         context.CancelFunc
@@ -1249,7 +1249,7 @@ func Test_gRPCClient_Do(t *testing.T) {
 		cb                  circuitbreaker.CircuitBreaker
 		gbo                 gbackoff.Config
 		mcd                 time.Duration
-		group               singleflight.Group
+		group               singleflight.Group[pool.Conn]
 		ech                 <-chan error
 		monitorRunning      atomic.Bool
 		stopMonitor         context.CancelFunc
@@ -1439,7 +1439,7 @@ func Test_gRPCClient_connectWithBackoff(t *testing.T) {
 		cb                  circuitbreaker.CircuitBreaker
 		gbo                 gbackoff.Config
 		mcd                 time.Duration
-		group               singleflight.Group
+		group               singleflight.Group[pool.Conn]
 		ech                 <-chan error
 		monitorRunning      atomic.Bool
 		stopMonitor         context.CancelFunc
@@ -1626,7 +1626,7 @@ func Test_gRPCClient_GetDialOption(t *testing.T) {
 		cb                  circuitbreaker.CircuitBreaker
 		gbo                 gbackoff.Config
 		mcd                 time.Duration
-		group               singleflight.Group
+		group               singleflight.Group[pool.Conn]
 		ech                 <-chan error
 		monitorRunning      atomic.Bool
 		stopMonitor         context.CancelFunc
@@ -1794,7 +1794,7 @@ func Test_gRPCClient_GetCallOption(t *testing.T) {
 		cb                  circuitbreaker.CircuitBreaker
 		gbo                 gbackoff.Config
 		mcd                 time.Duration
-		group               singleflight.Group
+		group               singleflight.Group[pool.Conn]
 		ech                 <-chan error
 		monitorRunning      atomic.Bool
 		stopMonitor         context.CancelFunc
@@ -1962,7 +1962,7 @@ func Test_gRPCClient_GetBackoff(t *testing.T) {
 		cb                  circuitbreaker.CircuitBreaker
 		gbo                 gbackoff.Config
 		mcd                 time.Duration
-		group               singleflight.Group
+		group               singleflight.Group[pool.Conn]
 		ech                 <-chan error
 		monitorRunning      atomic.Bool
 		stopMonitor         context.CancelFunc
@@ -2135,7 +2135,7 @@ func Test_gRPCClient_Connect(t *testing.T) {
 		cb                  circuitbreaker.CircuitBreaker
 		gbo                 gbackoff.Config
 		mcd                 time.Duration
-		group               singleflight.Group
+		group               singleflight.Group[pool.Conn]
 		ech                 <-chan error
 		monitorRunning      atomic.Bool
 		stopMonitor         context.CancelFunc
@@ -2322,7 +2322,7 @@ func Test_gRPCClient_IsConnected(t *testing.T) {
 		cb                  circuitbreaker.CircuitBreaker
 		gbo                 gbackoff.Config
 		mcd                 time.Duration
-		group               singleflight.Group
+		group               singleflight.Group[pool.Conn]
 		ech                 <-chan error
 		monitorRunning      atomic.Bool
 		stopMonitor         context.CancelFunc
@@ -2503,7 +2503,7 @@ func Test_gRPCClient_Disconnect(t *testing.T) {
 		cb                  circuitbreaker.CircuitBreaker
 		gbo                 gbackoff.Config
 		mcd                 time.Duration
-		group               singleflight.Group
+		group               singleflight.Group[pool.Conn]
 		ech                 <-chan error
 		monitorRunning      atomic.Bool
 		stopMonitor         context.CancelFunc
@@ -2680,7 +2680,7 @@ func Test_gRPCClient_ConnectedAddrs(t *testing.T) {
 		cb                  circuitbreaker.CircuitBreaker
 		gbo                 gbackoff.Config
 		mcd                 time.Duration
-		group               singleflight.Group
+		group               singleflight.Group[pool.Conn]
 		ech                 <-chan error
 		monitorRunning      atomic.Bool
 		stopMonitor         context.CancelFunc
@@ -2851,7 +2851,7 @@ func Test_gRPCClient_Close(t *testing.T) {
 		cb                  circuitbreaker.CircuitBreaker
 		gbo                 gbackoff.Config
 		mcd                 time.Duration
-		group               singleflight.Group
+		group               singleflight.Group[pool.Conn]
 		ech                 <-chan error
 		monitorRunning      atomic.Bool
 		stopMonitor         context.CancelFunc

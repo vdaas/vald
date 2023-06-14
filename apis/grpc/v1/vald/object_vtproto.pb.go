@@ -59,7 +59,7 @@ func NewObjectClient(cc grpc.ClientConnInterface) ObjectClient {
 }
 
 func (c *objectClient) Exists(ctx context.Context, in *payload.Object_ID, opts ...grpc.CallOption) (*payload.Object_ID, error) {
-	out := payload.Object_IDFromVTPool()
+	out := new(payload.Object_ID)
 	err := c.cc.Invoke(ctx, "/vald.v1.Object/Exists", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -68,7 +68,7 @@ func (c *objectClient) Exists(ctx context.Context, in *payload.Object_ID, opts .
 }
 
 func (c *objectClient) GetObject(ctx context.Context, in *payload.Object_VectorRequest, opts ...grpc.CallOption) (*payload.Object_Vector, error) {
-	out := payload.Object_VectorFromVTPool()
+	out := new(payload.Object_Vector)
 	err := c.cc.Invoke(ctx, "/vald.v1.Object/GetObject", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -147,7 +147,7 @@ func RegisterObjectServer(s grpc.ServiceRegistrar, srv ObjectServer) {
 }
 
 func _Object_Exists_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := payload.Object_IDFromVTPool()
+	in := new(payload.Object_ID)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -165,7 +165,7 @@ func _Object_Exists_Handler(srv interface{}, ctx context.Context, dec func(inter
 }
 
 func _Object_GetObject_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := payload.Object_VectorRequestFromVTPool()
+	in := new(payload.Object_VectorRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -201,7 +201,7 @@ func (x *objectStreamGetObjectServer) Send(m *payload.Object_StreamVector) error
 }
 
 func (x *objectStreamGetObjectServer) Recv() (*payload.Object_VectorRequest, error) {
-	m := payload.Object_VectorRequestFromVTPool()
+	m := new(payload.Object_VectorRequest)
 	if err := x.ServerStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
