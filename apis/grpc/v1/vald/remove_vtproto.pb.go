@@ -59,7 +59,7 @@ func NewRemoveClient(cc grpc.ClientConnInterface) RemoveClient {
 }
 
 func (c *removeClient) Remove(ctx context.Context, in *payload.Remove_Request, opts ...grpc.CallOption) (*payload.Object_Location, error) {
-	out := payload.Object_LocationFromVTPool()
+	out := new(payload.Object_Location)
 	err := c.cc.Invoke(ctx, "/vald.v1.Remove/Remove", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -99,7 +99,7 @@ func (x *removeStreamRemoveClient) Recv() (*payload.Object_StreamLocation, error
 }
 
 func (c *removeClient) MultiRemove(ctx context.Context, in *payload.Remove_MultiRequest, opts ...grpc.CallOption) (*payload.Object_Locations, error) {
-	out := payload.Object_LocationsFromVTPool()
+	out := new(payload.Object_Locations)
 	err := c.cc.Invoke(ctx, "/vald.v1.Remove/MultiRemove", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -147,7 +147,7 @@ func RegisterRemoveServer(s grpc.ServiceRegistrar, srv RemoveServer) {
 }
 
 func _Remove_Remove_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := payload.Remove_RequestFromVTPool()
+	in := new(payload.Remove_Request)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -183,7 +183,7 @@ func (x *removeStreamRemoveServer) Send(m *payload.Object_StreamLocation) error 
 }
 
 func (x *removeStreamRemoveServer) Recv() (*payload.Remove_Request, error) {
-	m := payload.Remove_RequestFromVTPool()
+	m := new(payload.Remove_Request)
 	if err := x.ServerStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
@@ -191,7 +191,7 @@ func (x *removeStreamRemoveServer) Recv() (*payload.Remove_Request, error) {
 }
 
 func _Remove_MultiRemove_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := payload.Remove_MultiRequestFromVTPool()
+	in := new(payload.Remove_MultiRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}

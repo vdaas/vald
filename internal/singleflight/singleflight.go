@@ -23,34 +23,34 @@ import (
 	"sync/atomic"
 )
 
-type call struct {
+type call[V any] struct {
 	wg   sync.WaitGroup
-	val  interface{}
+	val  V
 	err  error
 	dups uint64
 }
 
 // Group represents interface for zero time cache.
-type Group interface {
-	Do(ctx context.Context, key string, fn func() (interface{}, error)) (v interface{}, shared bool, err error)
+type Group[V any] interface {
+	Do(ctx context.Context, key string, fn func() (V, error)) (v V, shared bool, err error)
 }
 
-type group struct {
+type group[V any] struct {
 	m sync.Map
 }
 
 // New returns Group implementation.
-func New() Group {
-	return new(group)
+func New[V any]() Group[V] {
+	return new(group[V])
 }
 
 // Do execute the given function and return the result.
 // It makes sure only one execution of the function for each given key.
 // If duplicate comes, the duplicated call with the same key will wait for the first caller return.
 // It returns the result and the error of the given function, and whether the result is shared from the first caller.
-func (g *group) Do(_ context.Context, key string, fn func() (interface{}, error)) (v interface{}, shared bool, err error) {
-	actual, loaded := g.m.LoadOrStore(key, new(call))
-	c := actual.(*call)
+func (g *group[V]) Do(_ context.Context, key string, fn func() (V, error)) (v V, shared bool, err error) {
+	actual, loaded := g.m.LoadOrStore(key, new(call[V]))
+	c := actual.(*call[V])
 	if loaded {
 		atomic.AddUint64(&c.dups, 1)
 		c.wg.Wait()

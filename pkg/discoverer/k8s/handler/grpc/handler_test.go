@@ -127,7 +127,8 @@ func Test_server_Start(t *testing.T) {
 	}
 	type fields struct {
 		dsc                           service.Discoverer
-		group                         singleflight.Group
+		pgroup                        singleflight.Group[*payload.Info_Pods]
+		ngroup                        singleflight.Group[*payload.Info_Nodes]
 		ip                            string
 		name                          string
 		UnimplementedDiscovererServer discoverer.UnimplementedDiscovererServer
@@ -155,7 +156,8 @@ func Test_server_Start(t *testing.T) {
 		       },
 		       fields: fields {
 		           dsc:nil,
-		           group:nil,
+		           pgroup:nil,
+		           ngroup:nil,
 		           ip:"",
 		           name:"",
 		           UnimplementedDiscovererServer:nil,
@@ -181,7 +183,8 @@ func Test_server_Start(t *testing.T) {
 		           },
 		           fields: fields {
 		           dsc:nil,
-		           group:nil,
+		           pgroup:nil,
+		           ngroup:nil,
 		           ip:"",
 		           name:"",
 		           UnimplementedDiscovererServer:nil,
@@ -216,7 +219,8 @@ func Test_server_Start(t *testing.T) {
 			}
 			s := &server{
 				dsc:                           test.fields.dsc,
-				group:                         test.fields.group,
+				pgroup:                        test.fields.pgroup,
+				ngroup:                        test.fields.ngroup,
 				ip:                            test.fields.ip,
 				name:                          test.fields.name,
 				UnimplementedDiscovererServer: test.fields.UnimplementedDiscovererServer,
@@ -237,7 +241,8 @@ func Test_server_Pods(t *testing.T) {
 	}
 	type fields struct {
 		dsc                           service.Discoverer
-		group                         singleflight.Group
+		pgroup                        singleflight.Group[*payload.Info_Pods]
+		ngroup                        singleflight.Group[*payload.Info_Nodes]
 		ip                            string
 		name                          string
 		UnimplementedDiscovererServer discoverer.UnimplementedDiscovererServer
@@ -275,7 +280,8 @@ func Test_server_Pods(t *testing.T) {
 		       },
 		       fields: fields {
 		           dsc:nil,
-		           group:nil,
+		           pgroup:nil,
+		           ngroup:nil,
 		           ip:"",
 		           name:"",
 		           UnimplementedDiscovererServer:nil,
@@ -302,7 +308,8 @@ func Test_server_Pods(t *testing.T) {
 		           },
 		           fields: fields {
 		           dsc:nil,
-		           group:nil,
+		           pgroup:nil,
+		           ngroup:nil,
 		           ip:"",
 		           name:"",
 		           UnimplementedDiscovererServer:nil,
@@ -337,7 +344,8 @@ func Test_server_Pods(t *testing.T) {
 			}
 			s := &server{
 				dsc:                           test.fields.dsc,
-				group:                         test.fields.group,
+				pgroup:                        test.fields.pgroup,
+				ngroup:                        test.fields.ngroup,
 				ip:                            test.fields.ip,
 				name:                          test.fields.name,
 				UnimplementedDiscovererServer: test.fields.UnimplementedDiscovererServer,
@@ -358,7 +366,8 @@ func Test_server_Nodes(t *testing.T) {
 	}
 	type fields struct {
 		dsc                           service.Discoverer
-		group                         singleflight.Group
+		pgroup                        singleflight.Group[*payload.Info_Pods]
+		ngroup                        singleflight.Group[*payload.Info_Nodes]
 		ip                            string
 		name                          string
 		UnimplementedDiscovererServer discoverer.UnimplementedDiscovererServer
@@ -396,7 +405,8 @@ func Test_server_Nodes(t *testing.T) {
 		       },
 		       fields: fields {
 		           dsc:nil,
-		           group:nil,
+		           pgroup:nil,
+		           ngroup:nil,
 		           ip:"",
 		           name:"",
 		           UnimplementedDiscovererServer:nil,
@@ -423,7 +433,8 @@ func Test_server_Nodes(t *testing.T) {
 		           },
 		           fields: fields {
 		           dsc:nil,
-		           group:nil,
+		           pgroup:nil,
+		           ngroup:nil,
 		           ip:"",
 		           name:"",
 		           UnimplementedDiscovererServer:nil,
@@ -458,7 +469,8 @@ func Test_server_Nodes(t *testing.T) {
 			}
 			s := &server{
 				dsc:                           test.fields.dsc,
-				group:                         test.fields.group,
+				pgroup:                        test.fields.pgroup,
+				ngroup:                        test.fields.ngroup,
 				ip:                            test.fields.ip,
 				name:                          test.fields.name,
 				UnimplementedDiscovererServer: test.fields.UnimplementedDiscovererServer,

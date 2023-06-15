@@ -71,7 +71,7 @@
     },
     "/linearsearch/id/multiple": {
       "post": {
-        "summary": "A method to linear search indexed vectors by multiple IDs in a single request.",
+        "summary": "A method to linear search indexed vectors by multiple IDs in a single\nrequest.",
         "operationId": "Search_MultiLinearSearchByID",
         "responses": {
           "200": {
@@ -102,7 +102,7 @@
     },
     "/linearsearch/multiple": {
       "post": {
-        "summary": "A method to linear search indexed vectors by multiple vectors in a single request.",
+        "summary": "A method to linear search indexed vectors by multiple vectors in a single\nrequest.",
         "operationId": "Search_MultiLinearSearch",
         "responses": {
           "200": {

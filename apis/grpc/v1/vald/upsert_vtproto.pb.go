@@ -59,7 +59,7 @@ func NewUpsertClient(cc grpc.ClientConnInterface) UpsertClient {
 }
 
 func (c *upsertClient) Upsert(ctx context.Context, in *payload.Upsert_Request, opts ...grpc.CallOption) (*payload.Object_Location, error) {
-	out := payload.Object_LocationFromVTPool()
+	out := new(payload.Object_Location)
 	err := c.cc.Invoke(ctx, "/vald.v1.Upsert/Upsert", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -99,7 +99,7 @@ func (x *upsertStreamUpsertClient) Recv() (*payload.Object_StreamLocation, error
 }
 
 func (c *upsertClient) MultiUpsert(ctx context.Context, in *payload.Upsert_MultiRequest, opts ...grpc.CallOption) (*payload.Object_Locations, error) {
-	out := payload.Object_LocationsFromVTPool()
+	out := new(payload.Object_Locations)
 	err := c.cc.Invoke(ctx, "/vald.v1.Upsert/MultiUpsert", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -147,7 +147,7 @@ func RegisterUpsertServer(s grpc.ServiceRegistrar, srv UpsertServer) {
 }
 
 func _Upsert_Upsert_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := payload.Upsert_RequestFromVTPool()
+	in := new(payload.Upsert_Request)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -183,7 +183,7 @@ func (x *upsertStreamUpsertServer) Send(m *payload.Object_StreamLocation) error 
 }
 
 func (x *upsertStreamUpsertServer) Recv() (*payload.Upsert_Request, error) {
-	m := payload.Upsert_RequestFromVTPool()
+	m := new(payload.Upsert_Request)
 	if err := x.ServerStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
@@ -191,7 +191,7 @@ func (x *upsertStreamUpsertServer) Recv() (*payload.Upsert_Request, error) {
 }
 
 func _Upsert_MultiUpsert_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := payload.Upsert_MultiRequestFromVTPool()
+	in := new(payload.Upsert_MultiRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}

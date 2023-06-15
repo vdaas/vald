@@ -73,7 +73,8 @@ service Search {
   }
 
   // A method to linear search indexed vectors by a raw vector.
-  rpc LinearSearch(payload.v1.Search.Request) returns (payload.v1.Search.Response) {
+  rpc LinearSearch(payload.v1.Search.Request)
+      returns (payload.v1.Search.Response) {
     option (google.api.http) = {
       post : "/linearsearch"
       body : "*"
@@ -97,7 +98,8 @@ service Search {
   rpc StreamLinearSearchByID(stream payload.v1.Search.IDRequest)
       returns (stream payload.v1.Search.StreamResponse) {}
 
-  // A method to linear search indexed vectors by multiple vectors in a single request.
+  // A method to linear search indexed vectors by multiple vectors in a single
+  // request.
   rpc MultiLinearSearch(payload.v1.Search.MultiRequest)
       returns (payload.v1.Search.Responses) {
     option (google.api.http) = {
@@ -106,7 +108,8 @@ service Search {
     };
   }
 
-  // A method to linear search indexed vectors by multiple IDs in a single request.
+  // A method to linear search indexed vectors by multiple IDs in a single
+  // request.
   rpc MultiLinearSearchByID(payload.v1.Search.MultiIDRequest)
       returns (payload.v1.Search.Responses) {
     option (google.api.http) = {
