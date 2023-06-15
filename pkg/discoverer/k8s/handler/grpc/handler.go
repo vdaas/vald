@@ -26,7 +26,6 @@ import (
 	"github.com/vdaas/vald/internal/info"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc/errdetails"
-	"github.com/vdaas/vald/internal/net/grpc/proto"
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/singleflight"
@@ -40,10 +39,11 @@ type DiscovererServer interface {
 }
 
 type server struct {
-	dsc   service.Discoverer
-	group singleflight.Group
-	ip    string
-	name  string
+	dsc    service.Discoverer
+	pgroup singleflight.Group[*payload.Info_Pods]  // pod singleflight group
+	ngroup singleflight.Group[*payload.Info_Nodes] // node singleflight group
+	ip     string
+	name   string
 	discoverer.UnimplementedDiscovererServer
 }
 
@@ -64,7 +64,8 @@ func New(opts ...Option) (ds DiscovererServer, err error) {
 		}
 	}
 
-	s.group = singleflight.New()
+	s.pgroup = singleflight.New[*payload.Info_Pods]()
+	s.ngroup = singleflight.New[*payload.Info_Nodes]()
 
 	return s, nil
 }
@@ -80,7 +81,7 @@ func (s *server) Pods(ctx context.Context, req *payload.Discoverer_Request) (*pa
 		}
 	}()
 	key := singleflightKey(podPrefix, req)
-	res, _, err := s.group.Do(ctx, key, func() (interface{}, error) {
+	res, _, err := s.pgroup.Do(ctx, key, func() (*payload.Info_Pods, error) {
 		return s.dsc.GetPods(req)
 	})
 	if err != nil {
@@ -121,7 +122,7 @@ func (s *server) Pods(ctx context.Context, req *payload.Discoverer_Request) (*pa
 		log.Warnf("Pods not found: %#v, error: %v", res, err)
 		return nil, err
 	}
-	cp := proto.Clone(res.(*payload.Info_Pods))
+	cp := res.CloneVT()
 	if cp == nil {
 		err = status.WrapWithNotFound(fmt.Sprintf("Pods API request (name: %s, namespace: %s, node: %s) pods not found, cloned response is nil", req.GetName(), req.GetNamespace(), req.GetNode()), err,
 			&errdetails.RequestInfo{
@@ -141,27 +142,7 @@ func (s *server) Pods(ctx context.Context, req *payload.Discoverer_Request) (*pa
 		log.Warnf("Pods not found: %#v, error: %v", res, err)
 		return nil, err
 	}
-	in, ok := cp.(*payload.Info_Pods)
-	if in == nil || !ok {
-		err = status.WrapWithNotFound(fmt.Sprintf("Pods API request (name: %s, namespace: %s, node: %s) pods not found, cloned response is nil", req.GetName(), req.GetNamespace(), req.GetNode()), err,
-			&errdetails.RequestInfo{
-				RequestId:   key,
-				ServingData: errdetails.Serialize(req),
-			},
-			&errdetails.ResourceInfo{
-				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/discoverer.v1.Pods",
-				ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
-			},
-			info.Get())
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.StatusCodeNotFound(err.Error())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
-		log.Warnf("Pods not found: %#v, error: %v", res, err)
-		return nil, err
-	}
-	return in, nil
+	return cp, nil
 }
 
 func (s *server) Nodes(ctx context.Context, req *payload.Discoverer_Request) (*payload.Info_Nodes, error) {
@@ -173,7 +154,7 @@ func (s *server) Nodes(ctx context.Context, req *payload.Discoverer_Request) (*p
 	}()
 
 	key := singleflightKey(nodePrefix, req)
-	res, _, err := s.group.Do(ctx, key, func() (interface{}, error) {
+	res, _, err := s.ngroup.Do(ctx, key, func() (*payload.Info_Nodes, error) {
 		return s.dsc.GetNodes(req)
 	})
 	if err != nil {
@@ -214,8 +195,8 @@ func (s *server) Nodes(ctx context.Context, req *payload.Discoverer_Request) (*p
 		log.Warnf("Nodes not found: %#v, error: %v", res, err)
 		return nil, err
 	}
-	cp := proto.Clone(res.(*payload.Info_Nodes))
-	if cp == nil {
+	cn := res.CloneVT()
+	if cn == nil {
 		err = status.WrapWithNotFound(
 			fmt.Sprintf("Nodes API request (name: %s, namespace: %s, node: %s) nodes not found, cloned response is nil", req.GetName(), req.GetNamespace(), req.GetNode()),
 			err,
@@ -237,30 +218,7 @@ func (s *server) Nodes(ctx context.Context, req *payload.Discoverer_Request) (*p
 		log.Warnf("Nodes not found: %#v, error: %v", res, err)
 		return nil, err
 	}
-	in, ok := cp.(*payload.Info_Nodes)
-	if in == nil || !ok {
-		err = status.WrapWithNotFound(
-			fmt.Sprintf("Nodes API request (name: %s, namespace: %s, node: %s) nodes not found, cloned response is nil", req.GetName(), req.GetNamespace(), req.GetNode()),
-			err,
-			&errdetails.RequestInfo{
-				RequestId:   key,
-				ServingData: errdetails.Serialize(req),
-			},
-			&errdetails.ResourceInfo{
-				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/discoverer.v1.Nodes",
-				ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
-			},
-			info.Get(),
-		)
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.StatusCodeNotFound(err.Error())...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
-		log.Warnf("Nodes not found: %#v, error: %v", res, err)
-		return nil, err
-	}
-	return in, nil
+	return cn, nil
 }
 
 func singleflightKey(pref string, req *payload.Discoverer_Request) string {

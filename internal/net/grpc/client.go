@@ -109,7 +109,7 @@ type gRPCClient struct {
 	cb                  circuitbreaker.CircuitBreaker
 	gbo                 gbackoff.Config // grpc's original backoff configuration
 	mcd                 time.Duration   // minimum connection timeout duration
-	group               singleflight.Group
+	group               singleflight.Group[pool.Conn]
 	crl                 sync.Map // connection request list
 
 	ech            <-chan error
@@ -121,7 +121,7 @@ const apiName = "vald/internal/net/grpc"
 
 func New(opts ...Option) (c Client) {
 	g := &gRPCClient{
-		group: singleflight.New(),
+		group: singleflight.New[pool.Conn](),
 		addrs: make(map[string]struct{}),
 	}
 
@@ -882,7 +882,7 @@ func (g *gRPCClient) Connect(ctx context.Context, addr string, dopts ...DialOpti
 			span.End()
 		}
 	}()
-	ci, shared, err := g.group.Do(ctx, "connect-"+addr, func() (interface{}, error) {
+	sconn, shared, err := g.group.Do(ctx, "connect-"+addr, func() (pool.Conn, error) {
 		var ok bool
 		conn, ok = g.conns.Load(addr)
 		if ok && conn != nil {
@@ -947,10 +947,7 @@ func (g *gRPCClient) Connect(ctx context.Context, addr string, dopts ...DialOpti
 		return nil, err
 	}
 	if shared {
-		sconn, ok := ci.(pool.Conn)
-		if ok {
-			return sconn, nil
-		}
+		return sconn, nil
 	}
 	return conn, nil
 }
@@ -970,7 +967,7 @@ func (g *gRPCClient) Disconnect(ctx context.Context, addr string) error {
 			span.End()
 		}
 	}()
-	_, _, err := g.group.Do(ctx, "disconnect-"+addr, func() (interface{}, error) {
+	_, _, err := g.group.Do(ctx, "disconnect-"+addr, func() (pool.Conn, error) {
 		p, ok := g.conns.Load(addr)
 		if !ok || p == nil {
 			g.conns.Delete(addr)

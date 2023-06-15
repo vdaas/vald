@@ -59,7 +59,7 @@ func NewUpdateClient(cc grpc.ClientConnInterface) UpdateClient {
 }
 
 func (c *updateClient) Update(ctx context.Context, in *payload.Update_Request, opts ...grpc.CallOption) (*payload.Object_Location, error) {
-	out := payload.Object_LocationFromVTPool()
+	out := new(payload.Object_Location)
 	err := c.cc.Invoke(ctx, "/vald.v1.Update/Update", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -99,7 +99,7 @@ func (x *updateStreamUpdateClient) Recv() (*payload.Object_StreamLocation, error
 }
 
 func (c *updateClient) MultiUpdate(ctx context.Context, in *payload.Update_MultiRequest, opts ...grpc.CallOption) (*payload.Object_Locations, error) {
-	out := payload.Object_LocationsFromVTPool()
+	out := new(payload.Object_Locations)
 	err := c.cc.Invoke(ctx, "/vald.v1.Update/MultiUpdate", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -147,7 +147,7 @@ func RegisterUpdateServer(s grpc.ServiceRegistrar, srv UpdateServer) {
 }
 
 func _Update_Update_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := payload.Update_RequestFromVTPool()
+	in := new(payload.Update_Request)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -183,7 +183,7 @@ func (x *updateStreamUpdateServer) Send(m *payload.Object_StreamLocation) error 
 }
 
 func (x *updateStreamUpdateServer) Recv() (*payload.Update_Request, error) {
-	m := payload.Update_RequestFromVTPool()
+	m := new(payload.Update_Request)
 	if err := x.ServerStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
@@ -191,7 +191,7 @@ func (x *updateStreamUpdateServer) Recv() (*payload.Update_Request, error) {
 }
 
 func _Update_MultiUpdate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := payload.Update_MultiRequestFromVTPool()
+	in := new(payload.Update_MultiRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
