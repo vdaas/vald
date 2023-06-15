@@ -18,7 +18,7 @@ ARG MAINTAINER="vdaas.org vald team <vald@vdaas.org>"
 
 # skipcq: DOK-DL3026
 FROM mcr.microsoft.com/vscode/devcontainers/go:1 AS base
-LABEL maintainer "${MAINTAINER}"
+LABEL maintainer="${MAINTAINER}"
 
 # skipcq: DOK-DL3008
 RUN apt-get update && apt-get install -y --no-install-recommends \

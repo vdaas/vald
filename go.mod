@@ -447,10 +447,10 @@ replace (
 	golang.org/x/image => golang.org/x/image v0.8.0
 	golang.org/x/lint => golang.org/x/lint v0.0.0-20210508222113-6edffad5e616
 	golang.org/x/mobile => golang.org/x/mobile v0.0.0-20230531173138-3c911d8e3eda
-	golang.org/x/mod => golang.org/x/mod v0.10.0
+	golang.org/x/mod => golang.org/x/mod v0.11.0
 	golang.org/x/net => golang.org/x/net v0.11.0
 	golang.org/x/oauth2 => golang.org/x/oauth2 v0.9.0
-	golang.org/x/sync => golang.org/x/sync v0.2.0
+	golang.org/x/sync => golang.org/x/sync v0.3.0
 	golang.org/x/sys => golang.org/x/sys v0.9.0
 	golang.org/x/term => golang.org/x/term v0.9.0
 	golang.org/x/text => golang.org/x/text v0.10.0

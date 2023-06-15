@@ -54,7 +54,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=golang /usr/local/go $GOROOT
-RUN mkdir $GOPATH
+RUN mkdir -p "$GOPATH/src"
 
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}
 
@@ -97,7 +97,7 @@ WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/cmd/${PKG}
 RUN cp sample.yaml /tmp/config.yaml
 
 FROM ${DISTROLESS_IMAGE}:${DISTROLESS_IMAGE_TAG}
-LABEL maintainer "${MAINTAINER}"
+LABEL maintainer="${MAINTAINER}"
 
 ENV APP_NAME ngt
 
