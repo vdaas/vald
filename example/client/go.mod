@@ -23,7 +23,7 @@ replace (
 require (
 	github.com/kpango/fuid v0.0.0-20221203053508-503b5ad89aa1
 	github.com/kpango/glg v1.6.14
-	github.com/vdaas/vald-client-go v1.7.6
+	github.com/vdaas/vald-client-go v1.7.5
 	gonum.org/v1/hdf5 v0.0.0-20210714002203-8c5d23bc6946
 	google.golang.org/grpc v1.55.0
 )
@@ -33,7 +33,6 @@ require (
 	github.com/goccy/go-json v0.10.2 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/kpango/fastime v1.1.9 // indirect
-	github.com/planetscale/vtprotobuf v0.4.0 // indirect
 	golang.org/x/net v0.9.0 // indirect
 	golang.org/x/sys v0.9.0 // indirect
 	golang.org/x/text v0.10.0 // indirect

@@ -22,7 +22,7 @@ docker/build: \
 	docker/build/gateway-lb \
 	docker/build/gateway-filter \
 	docker/build/manager-index \
-	docker/build/helm-operator
+	docker/build/operator/helm
 
 .PHONY: docker/name/org
 docker/name/org:

@@ -17,7 +17,7 @@
 ORG                             ?= vdaas
 NAME                            = vald
 GOPKG                           = github.com/$(ORG)/$(NAME)
-GOPRIVATE                       = $(GOPKG),$(GOPKG)/apis
+GOPRIVATE                       = $(GOPKG),$(GOPKG)/apis,$(GOPKG)-client-go
 DATETIME                        = $(eval DATETIME := $(shell date -u +%Y/%m/%d_%H:%M:%S%z))$(DATETIME)
 TAG                            ?= latest
 CRORG                          ?= $(ORG)

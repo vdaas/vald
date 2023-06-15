@@ -20,8 +20,7 @@ ARG MAINTAINER="vdaas.org vald team <vald@vdaas.org>"
 FROM golang:${GO_VERSION} AS golang
 
 FROM ubuntu:devel AS builder
-
-LABEL maintainer "${MAINTAINER}"
+LABEL maintainer="${MAINTAINER}"
 
 ENV GO111MODULE on
 ENV DEBIAN_FRONTEND noninteractive
@@ -90,3 +89,4 @@ RUN make ngt/install \
 ENV PATH=$PATH:$GOPATH/bin
 
 RUN rm -rf "${GOPATH}/src/github.com/vdaas/vald/*"
+

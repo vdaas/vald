@@ -398,7 +398,7 @@ replace (
 	github.com/stretchr/objx => github.com/stretchr/objx v0.5.0
 	github.com/stretchr/testify => github.com/stretchr/testify v1.8.4
 	github.com/ugorji/go/codec => github.com/ugorji/go/codec v1.2.11
-	github.com/vdaas/vald-client-go => github.com/vdaas/vald-client-go v1.7.6
+	github.com/vdaas/vald-client-go => github.com/vdaas/vald-client-go v1.7.5
 	github.com/vishvananda/netlink => github.com/vishvananda/netlink v1.1.0
 	github.com/vishvananda/netns => github.com/vishvananda/netns v0.0.4
 	github.com/xdg-go/pbkdf2 => github.com/xdg-go/pbkdf2 v1.0.0
@@ -447,10 +447,10 @@ replace (
 	golang.org/x/image => golang.org/x/image v0.8.0
 	golang.org/x/lint => golang.org/x/lint v0.0.0-20210508222113-6edffad5e616
 	golang.org/x/mobile => golang.org/x/mobile v0.0.0-20230531173138-3c911d8e3eda
-	golang.org/x/mod => golang.org/x/mod v0.10.0
+	golang.org/x/mod => golang.org/x/mod v0.11.0
 	golang.org/x/net => golang.org/x/net v0.11.0
 	golang.org/x/oauth2 => golang.org/x/oauth2 v0.9.0
-	golang.org/x/sync => golang.org/x/sync v0.2.0
+	golang.org/x/sync => golang.org/x/sync v0.3.0
 	golang.org/x/sys => golang.org/x/sys v0.9.0
 	golang.org/x/term => golang.org/x/term v0.9.0
 	golang.org/x/text => golang.org/x/text v0.10.0
@@ -629,7 +629,6 @@ require (
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/peterbourgon/diskv v2.0.1+incompatible // indirect
 	github.com/pkg/errors v0.9.1 // indirect
-	github.com/planetscale/vtprotobuf v0.4.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/prometheus/client_golang v1.15.1 // indirect
 	github.com/prometheus/client_model v0.4.0 // indirect
