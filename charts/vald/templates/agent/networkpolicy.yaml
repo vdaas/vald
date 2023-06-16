@@ -47,10 +47,12 @@ spec:
     {{- if .Values.defaults.networkPolicy.custom.ingress }}
     {{- toYaml .Values.defaults.networkPolicy.custom.ingress | nindent 4 }}
     {{- end }}
-  egress: []
-  {{- if .Values.defaults.networkPolicy.custom.egress }}
   egress:
+    - to:
+      - namespaceSelector:
+          matchLabels:
+            kubernetes.io/metadata.name: kube-system
+    {{- if .Values.defaults.networkPolicy.custom.egress }}
     {{- toYaml .Values.defaults.networkPolicy.custom.egress | nindent 4 }}
-  {{- end }}
-
+    {{- end }}
 {{- end }}
