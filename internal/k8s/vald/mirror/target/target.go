@@ -15,7 +15,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-	"sigs.k8s.io/controller-runtime/pkg/source"
 )
 
 type (
@@ -125,6 +124,6 @@ func (r *reconciler) Owns() (client.Object, []builder.OwnsOption) {
 	return nil, nil
 }
 
-func (r *reconciler) Watches() (*source.Kind, handler.EventHandler, []builder.WatchesOption) {
+func (r *reconciler) Watches() (client.Object, handler.EventHandler, []builder.WatchesOption) {
 	return nil, nil, nil
 }
