@@ -71,4 +71,4 @@ USER vscode
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 RUN curl -sS https://webinstall.dev/k9s | bash
 
-WORKDIR ${GOPATH}
+RUN go install github.com/stern/stern@latest
