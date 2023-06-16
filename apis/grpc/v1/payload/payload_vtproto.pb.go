@@ -1554,6 +1554,64 @@ func (m *Info) CloneMessageVT() proto.Message {
 	return m.CloneVT()
 }
 
+func (m *Mirror_Target) CloneVT() *Mirror_Target {
+	if m == nil {
+		return (*Mirror_Target)(nil)
+	}
+	r := &Mirror_Target{
+		Host: m.Host,
+		Port: m.Port,
+	}
+	if len(m.unknownFields) > 0 {
+		r.unknownFields = make([]byte, len(m.unknownFields))
+		copy(r.unknownFields, m.unknownFields)
+	}
+	return r
+}
+
+func (m *Mirror_Target) CloneMessageVT() proto.Message {
+	return m.CloneVT()
+}
+
+func (m *Mirror_Targets) CloneVT() *Mirror_Targets {
+	if m == nil {
+		return (*Mirror_Targets)(nil)
+	}
+	r := &Mirror_Targets{}
+	if rhs := m.Targets; rhs != nil {
+		tmpContainer := make([]*Mirror_Target, len(rhs))
+		for k, v := range rhs {
+			tmpContainer[k] = v.CloneVT()
+		}
+		r.Targets = tmpContainer
+	}
+	if len(m.unknownFields) > 0 {
+		r.unknownFields = make([]byte, len(m.unknownFields))
+		copy(r.unknownFields, m.unknownFields)
+	}
+	return r
+}
+
+func (m *Mirror_Targets) CloneMessageVT() proto.Message {
+	return m.CloneVT()
+}
+
+func (m *Mirror) CloneVT() *Mirror {
+	if m == nil {
+		return (*Mirror)(nil)
+	}
+	r := &Mirror{}
+	if len(m.unknownFields) > 0 {
+		r.unknownFields = make([]byte, len(m.unknownFields))
+		copy(r.unknownFields, m.unknownFields)
+	}
+	return r
+}
+
+func (m *Mirror) CloneMessageVT() proto.Message {
+	return m.CloneVT()
+}
+
 func (m *Empty) CloneVT() *Empty {
 	if m == nil {
 		return (*Empty)(nil)
@@ -3590,6 +3648,77 @@ func (this *Info) EqualVT(that *Info) bool {
 
 func (this *Info) EqualMessageVT(thatMsg proto.Message) bool {
 	that, ok := thatMsg.(*Info)
+	if !ok {
+		return false
+	}
+	return this.EqualVT(that)
+}
+func (this *Mirror_Target) EqualVT(that *Mirror_Target) bool {
+	if this == that {
+		return true
+	} else if this == nil || that == nil {
+		return false
+	}
+	if this.Host != that.Host {
+		return false
+	}
+	if this.Port != that.Port {
+		return false
+	}
+	return string(this.unknownFields) == string(that.unknownFields)
+}
+
+func (this *Mirror_Target) EqualMessageVT(thatMsg proto.Message) bool {
+	that, ok := thatMsg.(*Mirror_Target)
+	if !ok {
+		return false
+	}
+	return this.EqualVT(that)
+}
+func (this *Mirror_Targets) EqualVT(that *Mirror_Targets) bool {
+	if this == that {
+		return true
+	} else if this == nil || that == nil {
+		return false
+	}
+	if len(this.Targets) != len(that.Targets) {
+		return false
+	}
+	for i, vx := range this.Targets {
+		vy := that.Targets[i]
+		if p, q := vx, vy; p != q {
+			if p == nil {
+				p = &Mirror_Target{}
+			}
+			if q == nil {
+				q = &Mirror_Target{}
+			}
+			if !p.EqualVT(q) {
+				return false
+			}
+		}
+	}
+	return string(this.unknownFields) == string(that.unknownFields)
+}
+
+func (this *Mirror_Targets) EqualMessageVT(thatMsg proto.Message) bool {
+	that, ok := thatMsg.(*Mirror_Targets)
+	if !ok {
+		return false
+	}
+	return this.EqualVT(that)
+}
+func (this *Mirror) EqualVT(that *Mirror) bool {
+	if this == that {
+		return true
+	} else if this == nil || that == nil {
+		return false
+	}
+	return string(this.unknownFields) == string(that.unknownFields)
+}
+
+func (this *Mirror) EqualMessageVT(thatMsg proto.Message) bool {
+	that, ok := thatMsg.(*Mirror)
 	if !ok {
 		return false
 	}
