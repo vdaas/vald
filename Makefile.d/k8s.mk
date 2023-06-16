@@ -227,6 +227,7 @@ k8s/metrics/jaeger/deploy:
 	helm repo add jaegertracing https://jaegertracing.github.io/helm-charts
 	helm install jaeger jaegertracing/jaeger-operator --version $(JAEGER_OPERATOR_VERSION)
 	kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=jaeger-operator --timeout=60s
+	sleep 5
 	kubectl apply -f k8s/metrics/jaeger/jaeger.yaml
 
 .PHONY: k8s/metrics/jaeger/delete
