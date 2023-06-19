@@ -17,8 +17,6 @@
 defaults:
   logging:
     level: debug
-  networkPolicy:
-    enabled: true
 
 agent:
   minReplicas: 1

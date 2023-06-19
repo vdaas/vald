@@ -29,8 +29,6 @@ defaults:
             read_header_timeout: 2s
             read_timeout: 2s
             write_timeout: 3m
-  networkPolicy:
-    enabled: true
 
 gateway:
   lb:
