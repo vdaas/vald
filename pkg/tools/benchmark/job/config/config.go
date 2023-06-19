@@ -117,6 +117,7 @@ func NewConfig(ctx context.Context, path string) (cfg *Config, err error) {
 		cfg.Job.ObjectConfig = jobResource.Spec.ObjectConfig
 		cfg.Job.ClientConfig = jobResource.Spec.ClientConfig
 		cfg.Job.RPS = jobResource.Spec.RPS
+		cfg.Job.ConcurrencyLimit = jobResource.Spec.ConcurrencyLimit
 		if annotations := jobResource.GetAnnotations(); annotations != nil {
 			cfg.Job.BeforeJobName = annotations[JOBNAME_ANNOTATION]
 			cfg.Job.BeforeJobNamespace = annotations[JOBNAMESPACE_ANNOTATION]

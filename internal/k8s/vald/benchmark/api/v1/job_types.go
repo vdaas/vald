@@ -38,6 +38,7 @@ type BenchmarkJobSpec struct {
 	ClientConfig            *config.GRPCClient         `json:"client_config,omitempty"`
 	Rules                   []*config.BenchmarkJobRule `json:"rules,omitempty"`
 	RPS                     int                        `json:"rps,omitempty"`
+	ConcurrencyLimit        int                        `json:"concurrency_limit,omitempty"`
 	TTLSecondsAfterFinished int                        `json:"ttl_seconds_after_finished,omitempty"`
 }
 

@@ -367,6 +367,9 @@ rules: []
 # @schema {"name": "rps", "type": "integer", "minimum": 0, "maximum": 65535}
 # rps -- desired request per sec
 rps: 1000
+# @schema {"name": "concurrency_limit", "type": "integer", "minimum": 0, "maximum": 65535}
+# concurrency_limit -- concurrency_limit represents the goroutine limit count. It affects the job performance.
+concurrency_limit: 200
 # @schema {"name": "ttl_seconds_after_finished", "type": "integer", "minimum": 0, "maximum": 65535}
 # ttl_seconds_after_finished -- limits the lifetime of a Job that has finished execution.
 ttl_seconds_after_finished: 10

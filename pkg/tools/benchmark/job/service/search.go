@@ -40,7 +40,6 @@ func (j *job) search(ctx context.Context, ech chan error) error {
 		AggregationAlgorithm: func() payload.Search_AggregationAlgorithm {
 			if len(j.searchConfig.AggregationAlgorithm) > 0 {
 				if v, ok := payload.Search_AggregationAlgorithm_value[j.searchConfig.AggregationAlgorithm]; ok {
-					log.Info(v)
 					return payload.Search_AggregationAlgorithm(v)
 				}
 			}
@@ -49,17 +48,11 @@ func (j *job) search(ctx context.Context, ech chan error) error {
 	}
 	sres := make([]*payload.Search_Response, j.dataset.Indexes)
 	eg, egctx := errgroup.New(ctx)
-	eg.Limitation(100)
+	eg.Limitation(j.concurrencyLimit)
 	for i := j.dataset.Range.Start; i <= j.dataset.Range.End; i++ {
 		iter := i
 		eg.Go(func() error {
 			log.Debugf("[benchmark job] Start search: iter = %d", iter)
-			loopCnt := math.Floor(float64(iter-1) / float64(len(vecs)))
-			idx := iter - 1 - (len(vecs) * int(loopCnt))
-			if len(vecs[idx]) != j.dimension {
-				log.Warn("len(vecs) ", len(vecs[iter]), "is not matched with ", j.dimension)
-				return nil
-			}
 			err := j.limiter.Wait(egctx)
 			if err != nil {
 				log.Errorf("[benchmark job] limiter error is detected: %s", err.Error())
@@ -73,7 +66,12 @@ func (j *job) search(ctx context.Context, ech chan error) error {
 				case ech <- err:
 				}
 			}
-
+			loopCnt := math.Floor(float64(iter-1) / float64(len(vecs)))
+			idx := iter - 1 - (len(vecs) * int(loopCnt))
+			if len(vecs[idx]) != j.dimension {
+				log.Warn("len(vecs) ", len(vecs[iter]), "is not matched with ", j.dimension)
+				return nil
+			}
 			res, err := j.client.Search(egctx, &payload.Search_Request{
 				Vector: vecs[idx],
 				Config: cfg,
@@ -95,7 +93,7 @@ func (j *job) search(ctx context.Context, ech chan error) error {
 			if res != nil && j.searchConfig.EnableLinearSearch {
 				sres[iter-j.dataset.Range.Start] = res
 			}
-			log.Debugf("[benchmark job] Finish search: iter = %d", iter)
+			log.Debugf("[benchmark job] Finish search: iter = %d, len = %d", iter, len(res.Results))
 			return nil
 		})
 	}

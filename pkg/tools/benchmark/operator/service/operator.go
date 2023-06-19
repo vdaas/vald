@@ -47,6 +47,7 @@ type scenario struct {
 
 const (
 	Scenario           = "scenario"
+	ScenarioKind       = "ValdBenchmarkScenario"
 	BenchmarkName      = "benchmark-name"
 	BeforeJobName      = "before-job-name"
 	BeforeJobNamespace = "before-job-namespace"
@@ -558,42 +559,63 @@ func (o *operator) checkJobsStatus(ctx context.Context, jobs map[string]string) 
 }
 
 // checkAtomics checks each atomic keeps consistency.
-// TODO: Fix this function to apply TTLSecondsAfterFinished
 func (o *operator) checkAtomics() error {
 	cjl := o.getAtomicJob()
 	cbjl := o.getAtomicBenchJob()
 	cbsl := o.getAtomicScenario()
-	if len(cjl) == 0 {
-		if len(cbjl) > 0 || len(cbsl) > 0 {
-			log.Errorf("mismatch atomics: job=%v, benchjob=%v, scenario=%v", cjl, cbjl, cbsl)
-			return errors.ErrMismatchBenchmarkAtomics(cjl, cbjl, cbsl)
-		}
-		return nil
-	} else if len(cbjl) == 0 {
+	bjCompletedCnt := 0
+	bjAvailableCnt := 0
+
+	if len(cbjl) == 0 && len(cbsl) > 0 && len(cjl) > 0 {
 		log.Errorf("mismatch atomics: job=%v, benchjob=%v, scenario=%v", cjl, cbjl, cbsl)
 		return errors.ErrMismatchBenchmarkAtomics(cjl, cbjl, cbsl)
 	}
-	jobCounter := len(cjl)
-	scenarioBenchCounter := 0
-	for sc := range cbsl {
-		scenarioBenchCounter += len(cbsl[sc].BenchJobStatus)
-	}
-	for jobName := range cjl {
-		if benchJob := cbjl[jobName]; benchJob != nil {
-			jobCounter--
-			if owner := benchJob.GetOwnerReferences(); len(owner) > 0 {
-				scenarioName := owner[0].Name
-				if scenario := cbsl[scenarioName]; scenario != nil {
-					if _, ok := scenario.BenchJobStatus[benchJob.GetName()]; ok {
-						scenarioBenchCounter--
-					}
+
+	for _, bj := range cbjl {
+		// check bench and job
+		if bj.Status == v1.BenchmarkJobCompleted {
+			bjCompletedCnt++
+		} else {
+			bjAvailableCnt++
+			if ns, ok := cjl[bj.GetName()]; !ok || ns != bj.GetNamespace() {
+				log.Errorf("mismatch atomics: job=%v, benchjob=%v, scenario=%v", cjl, cbjl, cbsl)
+				return errors.ErrMismatchBenchmarkAtomics(cjl, cbjl, cbsl)
+			}
+		}
+		// check scenario and bench
+		if owners := bj.GetOwnerReferences(); len(owners) > 0 {
+			var scenarioName string
+			for _, o := range owners {
+				if o.Kind == ScenarioKind {
+					scenarioName = o.Name
 				}
+			}
+			if sc := cbsl[scenarioName]; sc != nil {
+				if sc.BenchJobStatus[bj.Name] != bj.Status {
+					log.Errorf("mismatch atomics: job=%v, benchjob=%v, scenario=%v", cjl, cbjl, cbsl)
+					return errors.ErrMismatchBenchmarkAtomics(cjl, cbjl, cbsl)
+				}
+			} else {
+				log.Errorf("mismatch atomics: job=%v, benchjob=%v, scenario=%v", cjl, cbjl, cbsl)
+				return errors.ErrMismatchBenchmarkAtomics(cjl, cbjl, cbsl)
 			}
 		}
 	}
-	if jobCounter != 0 || scenarioBenchCounter != 0 {
-		log.Errorf("mismatch atomics: job=%v, benchjob=%v, scenario=%v", cjl, cbjl, cbsl)
-		return errors.ErrMismatchBenchmarkAtomics(cjl, cbjl, cbsl)
+	// check benchmarkjob status list and scenario benchmark job status list
+	if len(cbsl) > 0 {
+		for _, sc := range cbsl {
+			for _, status := range sc.BenchJobStatus {
+				if status == v1.BenchmarkJobCompleted {
+					bjCompletedCnt--
+				} else {
+					bjAvailableCnt--
+				}
+			}
+		}
+		if bjAvailableCnt > 0 || bjCompletedCnt > 0 {
+			log.Errorf("mismatch atomics: job=%v, benchjob=%v, scenario=%v", cjl, cbjl, cbsl)
+			return errors.ErrMismatchBenchmarkAtomics(cjl, cbjl, cbsl)
+		}
 	}
 	return nil
 }

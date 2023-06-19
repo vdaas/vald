@@ -30,6 +30,7 @@ import (
 func (j *job) exists(ctx context.Context, ech chan error) error {
 	log.Info("[benchmark job] Start benchmarking exists")
 	eg, egctx := errgroup.New(ctx)
+	eg.Limitation(j.concurrencyLimit)
 	for i := j.dataset.Range.Start; i <= j.dataset.Range.End; i++ {
 		idx := i
 		eg.Go(func() error {
@@ -77,8 +78,8 @@ func (j *job) exists(ctx context.Context, ech chan error) error {
 
 func (j *job) getObject(ctx context.Context, ech chan error) error {
 	log.Info("[benchmark job] Start benchmarking getObject")
-	// create data
 	eg, egctx := errgroup.New(ctx)
+	eg.Limitation(j.concurrencyLimit)
 	for i := j.dataset.Range.Start; i <= j.dataset.Range.End; i++ {
 		log.Infof("[benchmark job] Start get object: iter = %d", i)
 		ft := []*payload.Filter_Target{}

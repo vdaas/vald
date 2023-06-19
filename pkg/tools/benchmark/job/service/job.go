@@ -99,6 +99,7 @@ type job struct {
 	beforeJobDur       time.Duration
 	limiter            rate.Limiter
 	rps                int
+	concurrencyLimit   int
 	timeout            time.Duration
 	timestamp          int64
 }
@@ -310,17 +311,10 @@ func (j *job) Start(ctx context.Context) (<-chan error, error) {
 				log.Error(err)
 			}
 		}()
-		// wg := sync.WaitGroup{}
-		// wg.Add(1)
-		// go func() {
-		// defer wg.Done()
 		err = j.jobFunc(ctx, ech)
 		if err != nil {
 			log.Errorf("[benchmark job] failed to job: %v", err)
 		}
-
-		// }()
-		// wg.Wait()
 		return
 	})
 	return ech, nil

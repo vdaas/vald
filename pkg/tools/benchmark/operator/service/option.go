@@ -67,7 +67,7 @@ func WithJobNamespace(ns string) Option {
 	}
 }
 
-// WithJobImageInfo sets the benchmark job docker image info.
+// WithJobImage sets the benchmark job docker image info.
 func WithJobImage(image string) Option {
 	return func(o *operator) error {
 		if len(image) > 0 {

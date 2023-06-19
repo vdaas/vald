@@ -40,24 +40,25 @@ func (j *job) upsert(ctx context.Context, ech chan error) error {
 		cfg.Timestamp = j.timestamp
 	}
 	eg, egctx := errgroup.New(ctx)
-	for i := 0; i < len(vecs); i++ {
-		err := j.limiter.Wait(egctx)
-		if err != nil {
-			log.Errorf("[benchmark job] limiter error is detected: %s", err.Error())
-			if errors.Is(err, context.Canceled) {
-				return errors.Join(err, context.Canceled)
-			}
-			select {
-			case <-egctx.Done():
-				return egctx.Err()
-			case ech <- err:
-			}
-		}
+	eg.Limitation(j.concurrencyLimit)
+	for i := j.dataset.Range.Start; i <= j.dataset.Range.End; i++ {
 		iter := i
-		loop_cnt := math.Floor(float64(i-1) / float64(len(vecs)))
-		idx := i - 1 - (len(vecs) * int(loop_cnt))
 		eg.Go(func() error {
 			log.Debugf("[benchmark job] Start upsert: iter = %d", iter)
+			err := j.limiter.Wait(egctx)
+			if err != nil {
+				log.Errorf("[benchmark job] limiter error is detected: %s", err.Error())
+				if errors.Is(err, context.Canceled) {
+					return errors.Join(err, context.Canceled)
+				}
+				select {
+				case <-egctx.Done():
+					return egctx.Err()
+				case ech <- err:
+				}
+			}
+			loop_cnt := math.Floor(float64(i-1) / float64(len(vecs)))
+			idx := i - 1 - (len(vecs) * int(loop_cnt))
 			res, err := j.client.Upsert(egctx, &payload.Upsert_Request{
 				Vector: &payload.Object_Vector{
 					Id:     strconv.Itoa(iter),

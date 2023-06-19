@@ -240,6 +240,10 @@ spec:
                           type: string
                     wait_for_ready:
                       type: boolean
+                concurrency_limit:
+                  type: integer
+                  maximum: 65535
+                  minimum: 0
                 dataset:
                   type: object
                   properties:

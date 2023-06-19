@@ -36,6 +36,7 @@ type BenchmarkJob struct {
 	BeforeJobName      string              `json:"before_job_name,omitempty"      yaml:"before_job_name"`
 	BeforeJobNamespace string              `json:"before_job_namespace,omitempty" yaml:"before_job_namespace"`
 	RPS                int                 `json:"rps,omitempty"                  yaml:"rps"`
+	ConcurrencyLimit   int                 `json:"concurrency_limit,omitempty"    yaml:"concurrency_limit"`
 }
 
 // BenchmarkScenario represents the configuration for the internal benchmark scenario.

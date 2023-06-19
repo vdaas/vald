@@ -103,6 +103,7 @@ func New(cfg *config.Config) (r runner.Runner, err error) {
 		service.WithBeforeJobNamespace(cfg.Job.BeforeJobNamespace),
 		service.WithK8sClient(cfg.K8sClient),
 		service.WithRPS(cfg.Job.RPS),
+		service.WithConcurencyLimit(cfg.Job.ConcurrencyLimit),
 	)
 	if err != nil {
 		return nil, err

@@ -36,22 +36,24 @@ func (j *job) remove(ctx context.Context, ech chan error) error {
 		cfg.Timestamp = j.timestamp
 	}
 	eg, egctx := errgroup.New(ctx)
+	eg.Limitation(j.concurrencyLimit)
 	for i := j.dataset.Range.Start; i <= j.dataset.Range.End; i++ {
-		err := j.limiter.Wait(egctx)
-		if err != nil {
-			log.Errorf("[benchmark job] limiter error is detected: %s", err.Error())
-			if errors.Is(err, context.Canceled) {
-				return errors.Join(err, context.Canceled)
-			}
-			select {
-			case <-egctx.Done():
-				return egctx.Err()
-			case ech <- err:
-			}
-		}
 		idx := i
 		eg.Go(func() error {
 			log.Debugf("[benchmark job] Start remove: iter = %d", i)
+			err := j.limiter.Wait(egctx)
+			if err != nil {
+				log.Errorf("[benchmark job] limiter error is detected: %s", err.Error())
+				if errors.Is(err, context.Canceled) {
+					return nil
+					// return errors.Join(err, context.Canceled)
+				}
+				select {
+				case <-egctx.Done():
+					return egctx.Err()
+				case ech <- err:
+				}
+			}
 			res, err := j.client.Remove(egctx, &payload.Remove_Request{
 				Id: &payload.Object_ID{
 					Id: strconv.Itoa(idx),

@@ -35,7 +35,8 @@ var defaultOpts = []Option{
 	// TODO: set default config for client
 	WithDimension(748),
 	WithBeforeJobDuration("30s"),
-	WithRPS(100),
+	WithRPS(1000),
+	WithConcurencyLimit(200),
 }
 
 // WithDimension sets the vector's dimension for running benchmark job with dataset.
@@ -251,6 +252,16 @@ func WithRPS(rps int) Option {
 	return func(j *job) error {
 		if rps > 0 {
 			j.rps = rps
+		}
+		return nil
+	}
+}
+
+// WithConcurencyLimit sets the goroutine limit for sending request to the target cluster.
+func WithConcurencyLimit(limit int) Option {
+	return func(j *job) error {
+		if limit > 0 {
+			j.concurrencyLimit = limit
 		}
 		return nil
 	}

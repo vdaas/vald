@@ -288,6 +288,12 @@
         "wait_for_ready": { "type": "boolean" }
       }
     },
+    "concurrency_limit": {
+      "type": "integer",
+      "description": "concurrency_limit represents the goroutine limit count. It affects the job performance.",
+      "maximum": 65535,
+      "minimum": 0
+    },
     "dataset": {
       "type": "object",
       "description": "dataset information",
