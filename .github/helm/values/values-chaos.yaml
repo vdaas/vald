@@ -29,6 +29,8 @@ defaults:
         readinessProbe:
           timeoutSeconds: 10
           failureThreshold: 5
+  networkPolicy:
+    enabled: true
 
 gateway:
   lb:
