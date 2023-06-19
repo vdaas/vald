@@ -31,7 +31,7 @@ defaults:
             write_timeout: 3m
   networkPolicy:
     enabled: true
-    
+
 gateway:
   lb:
     enabled: true
