@@ -17,13 +17,12 @@
 package main
 
 import (
+	"encoding/csv"
 	"encoding/gob"
 	"flag"
-	"fmt"
 	"io/fs"
 	"os"
 	"strconv"
-	"strings"
 	"unsafe"
 
 	"github.com/vdaas/vald/internal/file"
@@ -66,29 +65,27 @@ func main() {
 	_ = gob.NewDecoder(ft).Decode(&mt)
 
 	// print
-	var (
-		sb strings.Builder
-		sp string
-	)
+	var s [][]string
+	w := csv.NewWriter(os.Stdout)
+	defer w.Flush()
 	switch *format {
 	case "csv":
-		sp = ","
 	case "tsv":
-		sp = "\t"
+		w.Comma = '\t'
 	default:
-		sp = " "
+		w.Comma = ' '
 	}
-	sb.WriteString("uuid" + sp + "oid" + sp + "timestamp\n")
+	s = append(s, []string{"uuid", "oid", "timestamp"})
 	for k, id := range m {
 		if ts, ok := mt[k]; ok {
-			sb.WriteString(strings.Join([]string{k, strconv.FormatUint(uint64(id), 10), strconv.FormatInt(ts, 10), "\r\n"}, sp))
+			s = append(s, []string{k, strconv.FormatUint(uint64(id), 10), strconv.FormatInt(ts, 10)})
 		} else {
-			sb.WriteString(strings.Join([]string{k, strconv.FormatUint(uint64(id), 10), "0", "\r\n"}, sp))
+			s = append(s, []string{k, strconv.FormatUint(uint64(id), 10), "0"})
 		}
-		if sb.Len()*int(unsafe.Sizeof("")) > 4e+6 {
-			fmt.Print(sb.String())
-			sb.Reset()
+		if len(s)*int(unsafe.Sizeof("")) > 4e+6 {
+			w.WriteAll(s)
+			s = nil
 		}
 	}
-	fmt.Print(sb.String())
+	w.WriteAll(s)
 }
