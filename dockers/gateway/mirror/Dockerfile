@@ -36,9 +36,6 @@ ENV APP_NAME mirror
 
 # skipcq: DOK-DL3008
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    ca-certificates \
-    build-essential \
-    curl \
     upx \
     git \
     && apt-get clean \
