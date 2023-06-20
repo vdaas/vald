@@ -107,17 +107,12 @@ func main() {
 	time.Sleep(wt)
 
 	/**
-	Executes search and get requests to all Vald clusters.
+	Gets approximate vectors, which is based on the value of `SearchConfig`, from the indexed tree based on the training data.
+	In this example, Vald gets 10 approximate vectors each search vector.
 	**/
-	for i, client := range clients {
-		grpcSrvAddr := grpcServerAddrs[i]
-
-		/**
-		Gets approximate vectors, which is based on the value of `SearchConfig`, from the indexed tree based on the training data.
-		In this example, Vald gets 10 approximate vectors each search vector.
-		**/
-		glg.Infof("Start searching %d times from %s", testCount, grpcSrvAddr)
-		for j, vec := range test[:testCount] {
+	glg.Infof("Start searching %d times", testCount)
+	for i, vec := range test[:testCount] {
+		for j, client := range clients {
 			// Send searching vector and configuration object to the Vald server via gRPC.
 			res, err := client.Search(ctx, &payload.Search_Request{
 				Vector: vec,
@@ -133,29 +128,32 @@ func main() {
 				glg.Fatal(err)
 			}
 
+			// NOTE: Search result may differ due to the indexing timing of each Vald cluster.
 			b, _ := json.MarshalIndent(res.GetResults(), "", " ")
-			glg.Infof("%d - Results : %s\n\n", j+1, string(b))
-			time.Sleep(1 * time.Second)
+			glg.Infof("%s: %d - Results : %s\n\n", grpcServerAddrs[j], i+1, string(b))
 		}
-		glg.Infof("Finish searching %d times from %s", testCount, grpcSrvAddr)
+		time.Sleep(1 * time.Second)
+	}
+	glg.Infof("Finish searching %d times", testCount)
 
-		/**
-		Gets the vector using inserted vector id from Vald cluster.
-		**/
-		glg.Infof("Start getting %d times from %s", testCount, grpcSrvAddr)
-		for j := range ids[:insertCount] {
+	/**
+	Gets the vector using inserted vector id from Vald cluster.
+	**/
+	glg.Infof("Start getting %d times", insertCount)
+	for i, id := range ids[:insertCount] {
+		for j, client := range clients {
 			vec, err := client.GetObject(ctx, &payload.Object_VectorRequest{
 				Id: &payload.Object_ID{
-					Id: ids[j],
+					Id: id,
 				},
 			})
 			if err != nil {
 				log.Fatal(err)
 			}
-			glg.Infof("%d - Result : %s", j+1, vec.GetId())
+			glg.Infof("%s: %d - Result : %s", grpcServerAddrs[j], i+1, vec.GetId())
 		}
-		glg.Infof("Finish getting %d times from %s\n\n", testCount, grpcSrvAddr)
 	}
+	glg.Infof("Finish getting %d times", insertCount)
 
 	glg.Info("Start removing vector")
 	// Remove indexed 400 vectors from vald cluster.
