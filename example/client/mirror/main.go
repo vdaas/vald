@@ -107,37 +107,42 @@ func main() {
 	time.Sleep(wt)
 
 	/**
-	Gets approximate vectors, which is based on the value of `SearchConfig`, from the indexed tree based on the training data.
-	In this example, Vald gets 10 approximate vectors each search vector.
-	**/
-	glg.Infof("Start searching %d times", testCount)
-	for i, vec := range test[:testCount] {
-		// Send searching vector and configuration object to the Vald server via gRPC.
-		res, err := clients[0].Search(ctx, &payload.Search_Request{
-			Vector: vec,
-			// Conditions for hitting the search.
-			Config: &payload.Search_Config{
-				Num:     10,        // the number of search results
-				Radius:  -1,        // Radius is used to determine the space of search candidate radius for neighborhood vectors. -1 means infinite circle.
-				Epsilon: 0.1,       // Epsilon is used to determines how much to expand from search candidate radius.
-				Timeout: 100000000, // Timeout is used for search time deadline. The unit is nano-seconds.
-			},
-		})
-		if err != nil {
-			glg.Fatal(err)
-		}
-
-		b, _ := json.MarshalIndent(res.GetResults(), "", " ")
-		glg.Infof("%d - Results : %s\n\n", i+1, string(b))
-		time.Sleep(1 * time.Second)
-	}
-	glg.Infof("Finish searching %d times", testCount)
-
-	/**
-	Gets the vector using inserted vector id from all Vald clusters.
+	Executes search and get requests to all Vald clusters.
 	**/
 	for i, client := range clients {
-		glg.Infof("Start geting %d times from %s", testCount, grpcServerAddrs[i])
+		grpcSrvAddr := grpcServerAddrs[i]
+
+		/**
+		Gets approximate vectors, which is based on the value of `SearchConfig`, from the indexed tree based on the training data.
+		In this example, Vald gets 10 approximate vectors each search vector.
+		**/
+		glg.Infof("Start searching %d times from %s", testCount, grpcSrvAddr)
+		for j, vec := range test[:testCount] {
+			// Send searching vector and configuration object to the Vald server via gRPC.
+			res, err := client.Search(ctx, &payload.Search_Request{
+				Vector: vec,
+				// Conditions for hitting the search.
+				Config: &payload.Search_Config{
+					Num:     10,        // the number of search results
+					Radius:  -1,        // Radius is used to determine the space of search candidate radius for neighborhood vectors. -1 means infinite circle.
+					Epsilon: 0.1,       // Epsilon is used to determines how much to expand from search candidate radius.
+					Timeout: 100000000, // Timeout is used for search time deadline. The unit is nano-seconds.
+				},
+			})
+			if err != nil {
+				glg.Fatal(err)
+			}
+
+			b, _ := json.MarshalIndent(res.GetResults(), "", " ")
+			glg.Infof("%d - Results : %s\n\n", j+1, string(b))
+			time.Sleep(1 * time.Second)
+		}
+		glg.Infof("Finish searching %d times from %s", testCount, grpcSrvAddr)
+
+		/**
+		Gets the vector using inserted vector id from Vald cluster.
+		**/
+		glg.Infof("Start getting %d times from %s", testCount, grpcSrvAddr)
 		for j := range ids[:insertCount] {
 			vec, err := client.GetObject(ctx, &payload.Object_VectorRequest{
 				Id: &payload.Object_ID{
@@ -147,9 +152,9 @@ func main() {
 			if err != nil {
 				log.Fatal(err)
 			}
-			glg.Infof("%d - Result : %s\n", j+1, vec.GetId())
+			glg.Infof("%d - Result : %s", j+1, vec.GetId())
 		}
-		glg.Infof("Finish geting %d times from %s\n\n", testCount, grpcServerAddrs[i])
+		glg.Infof("Finish getting %d times from %s\n\n", testCount, grpcSrvAddr)
 	}
 
 	glg.Info("Start removing vector")
