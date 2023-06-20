@@ -450,7 +450,15 @@ func (o *operator) createJob(ctx context.Context, bjr v1.ValdBenchmarkJob) error
 	label := map[string]string{
 		BenchmarkName: bjr.GetName() + strconv.Itoa(int(bjr.GetGeneration())),
 	}
-	job, err := benchjob.NewBenchmarkJobTemplate(
+	job, err := benchjob.NewBenchmarkJob(
+		benchjob.WithContainerName(bjr.GetName()),
+		benchjob.WithContainerImage(o.jobImage),
+		benchjob.WithImagePullPolicy(benchjob.ImagePullPolicy(o.jobImagePullPolicy)),
+	)
+	if err != nil {
+		return err
+	}
+	tpl, err := job.CreateJobTpl(
 		benchjob.WithName(bjr.GetName()),
 		benchjob.WithNamespace(bjr.Namespace),
 		benchjob.WithLabel(label),
@@ -465,16 +473,14 @@ func (o *operator) createJob(ctx context.Context, bjr v1.ValdBenchmarkJob) error
 			},
 		}),
 		benchjob.WithTTLSecondsAfterFinished(int32(bjr.Spec.TTLSecondsAfterFinished)),
-		benchjob.WithImage(o.jobImage),
-		benchjob.WithImagePullPolicy(o.jobImagePullPolicy),
 	)
 	if err != nil {
-		return err
+		return nil
 	}
 	// create job
 	c := o.ctrl.GetManager().GetClient()
-	if err = c.Create(ctx, &job); err != nil {
-		return errors.ErrFailedToCreateJob(err, job.GetName())
+	if err = c.Create(ctx, &tpl); err != nil {
+		return errors.ErrFailedToCreateJob(err, tpl.GetName())
 	}
 	return nil
 }
@@ -612,7 +618,7 @@ func (o *operator) checkAtomics() error {
 				}
 			}
 		}
-		if bjAvailableCnt > 0 || bjCompletedCnt > 0 {
+		if bjAvailableCnt != 0 || bjCompletedCnt != 0 {
 			log.Errorf("mismatch atomics: job=%v, benchjob=%v, scenario=%v", cjl, cbjl, cbsl)
 			return errors.ErrMismatchBenchmarkAtomics(cjl, cbjl, cbsl)
 		}

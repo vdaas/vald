@@ -17,48 +17,56 @@
 package job
 
 import (
-	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/k8s"
 	jobs "github.com/vdaas/vald/internal/k8s/job"
 	corev1 "k8s.io/api/core/v1"
 )
 
-// BenchmarkJobOption represents the option for create benchmark job template.
-type BenchmarkJobOption func(b *jobs.Job) error
+type BenchmarkJobTplOption func(b *benchmarkJobTpl) error
 
-var defaultBenchmarkJobOpts = []BenchmarkJobOption{
-	WithSvcAccountName(SvcAccountName),
-	WithRestartPolicy(RestartPolicyNever),
+var defaultBenchmarkJobTplOpts = []BenchmarkJobTplOption{
+	WithContainerName("vald-benchmark-job"),
+	WithContainerImage("vdaas/vald-benchmark-job"),
+	WithImagePullPolicy(PullAlways),
 }
 
-// WithImage sets the docker image path for benchmark job.
-func WithImage(name string) BenchmarkJobOption {
-	return func(_ *jobs.Job) error {
+// WithContainerName sets the docker container name of benchmark job.
+func WithContainerName(name string) BenchmarkJobTplOption {
+	return func(b *benchmarkJobTpl) error {
 		if len(name) > 0 {
-			ContainerImage = name
+			b.containerName = name
+		}
+		return nil
+	}
+}
+
+// WithContainerImage sets the docker image path for benchmark job.
+func WithContainerImage(name string) BenchmarkJobTplOption {
+	return func(b *benchmarkJobTpl) error {
+		if len(name) > 0 {
+			b.containerImageName = name
 		}
 		return nil
 	}
 }
 
 // WithImagePullPolicy sets the docker image pull policy for benchmark job.
-func WithImagePullPolicy(policy string) BenchmarkJobOption {
-	return func(_ *jobs.Job) error {
-		if len(policy) == 0 {
+func WithImagePullPolicy(p ImagePullPolicy) BenchmarkJobTplOption {
+	return func(b *benchmarkJobTpl) error {
+		if len(p) == 0 {
 			return nil
 		}
-		switch policy {
-		case string(corev1.PullAlways):
-			ImagePullPolicy = corev1.PullAlways
-		case string(corev1.PullIfNotPresent):
-			ImagePullPolicy = corev1.PullIfNotPresent
-		case string(corev1.PullNever):
-			ImagePullPolicy = corev1.PullNever
-		default:
-			return errors.NewErrInvalidOption("image pull policy", policy)
-		}
+		b.imagePullPolicy = p
 		return nil
 	}
+}
+
+// BenchmarkJobOption represents the option for create benchmark job template.
+type BenchmarkJobOption func(b *jobs.Job) error
+
+var defaultBenchmarkJobOpts = []BenchmarkJobOption{
+	WithSvcAccountName(svcAccount),
+	WithRestartPolicy(RestartPolicyNever),
 }
 
 // WithSvcAccountName sets the service account name for benchmark job.
@@ -72,10 +80,10 @@ func WithSvcAccountName(name string) BenchmarkJobOption {
 }
 
 // WithRestartPolicy sets the job restart policy for benchmark job.
-func WithRestartPolicy(rp corev1.RestartPolicy) BenchmarkJobOption {
+func WithRestartPolicy(rp RestartPolicy) BenchmarkJobOption {
 	return func(b *jobs.Job) error {
 		if len(rp) > 0 {
-			b.Spec.Template.Spec.RestartPolicy = rp
+			b.Spec.Template.Spec.RestartPolicy = corev1.RestartPolicy(rp)
 		}
 		return nil
 	}

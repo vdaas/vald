@@ -28,6 +28,8 @@ import (
 type Option func(o *operator) error
 
 var defaultOpts = []Option{
+	WithJobImage("vdaas/vald-benchmark-job"),
+	WithJobImagePullPolicy("Always"),
 	WithReconcileCheckDuration("10s"),
 	WithJobNamespace("default"),
 }
