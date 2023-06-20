@@ -43,6 +43,11 @@ defaults:
   networkPolicy:
     enabled: true
     custom:
+      ingress:
+        - from:
+            - podSelector:
+                matchLabels:
+                  app.kubernetes.io/name: pyroscope
       egress:
         - to:
             - podSelector:
