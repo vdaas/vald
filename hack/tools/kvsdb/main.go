@@ -39,30 +39,41 @@ var (
 func main() {
 	flag.Parse()
 	log.Init()
+	var err error
 
 	// value
 	m := make(map[string]uint32)
 	gob.Register(map[string]uint32{})
 	var f *os.File
 	defer f.Close()
-	f, _ = file.Open(
+	f, err = file.Open(
 		file.Join(*path, *kvsFileName),
 		os.O_RDONLY|os.O_SYNC,
 		fs.ModePerm,
 	)
-	_ = gob.NewDecoder(f).Decode(&m)
+	if err != nil {
+		log.Fatal(err)
+	}
+	if err = gob.NewDecoder(f).Decode(&m); err != nil {
+		log.Fatal(err)
+	}
 
 	// timestamp
 	mt := make(map[string]int64)
 	gob.Register(map[string]int64{})
 	var ft *os.File
 	defer ft.Close()
-	ft, _ = file.Open(
+	ft, err = file.Open(
 		file.Join(*path, *kvsTimestampFileName),
 		os.O_RDONLY|os.O_SYNC,
 		fs.ModePerm,
 	)
-	_ = gob.NewDecoder(ft).Decode(&mt)
+	if err != nil {
+		log.Fatal(err)
+	}
+	if err = gob.NewDecoder(ft).Decode(&mt); err != nil {
+		log.Fatal(err)
+	}
 
 	// print
 	var s [][]string
@@ -83,9 +94,13 @@ func main() {
 			s = append(s, []string{k, strconv.FormatUint(uint64(id), 10), "0"})
 		}
 		if len(s)*int(unsafe.Sizeof("")) > 4e+6 {
-			w.WriteAll(s)
+			if err = w.WriteAll(s); err != nil {
+				log.Fatal(err)
+			}
 			s = nil
 		}
 	}
-	w.WriteAll(s)
+	if err = w.WriteAll(s); err != nil {
+		log.Fatal(err)
+	}
 }
