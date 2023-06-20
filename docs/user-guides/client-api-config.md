@@ -511,7 +511,7 @@ func main() {
 					},
 				},
 			},
-                        AggregationAlgorithm: 4,
+                        AggregationAlgorithm: payload.Search_PairingHeap,
 		},
 	})
 

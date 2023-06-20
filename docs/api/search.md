@@ -65,8 +65,8 @@ Search RPC is the method to search vector(s) similar to request vector.
       int64 timeout = 5;
       Filter.Config ingress_filters = 6;
       Filter.Config egress_filters = 7;
-      min_num = 8;
-      aggregation_algorithm = 9;
+      uint32 min_num = 8;
+      AggregationAlgorithm aggregation_algorithm = 9;
     }
   }
 
@@ -169,8 +169,8 @@ The vector with the same requested ID should be indexed into the `vald-agent` be
       int64 timeout = 5;
       Filter.Config ingress_filters = 6;
       Filter.Config egress_filters = 7;
-      min_num = 8;
-      aggregation_algorithm = 9;
+      uint32 min_num = 8;
+      AggregationAlgorithm aggregation_algorithm = 9;
     }
   }
 
@@ -274,8 +274,8 @@ Each Search request and response are independent.
       int64 timeout = 5;
       Filter.Config ingress_filters = 6;
       Filter.Config egress_filters = 7;
-      min_num = 8;
-      aggregation_algorithm = 9;
+      uint32 min_num = 8;
+      AggregationAlgorithm aggregation_algorithm = 9;
     }
   }
 
@@ -393,8 +393,8 @@ Each SearchByID request and response are independent.
       int64 timeout = 5;
       Filter.Config ingress_filters = 6;
       Filter.Config egress_filters = 7;
-      min_num = 8;
-      aggregation_algorithm = 9;
+      uint32 min_num = 8;
+      AggregationAlgorithm aggregation_algorithm = 9;
     }
   }
 
@@ -519,8 +519,8 @@ Please be careful that the size of the request exceeds the limit.
       int64 timeout = 5;
       Filter.Config ingress_filters = 6;
       Filter.Config egress_filters = 7;
-      min_num = 8;
-      aggregation_algorithm = 9;
+      uint32 min_num = 8;
+      AggregationAlgorithm aggregation_algorithm = 9;
     }
   }
 
@@ -648,8 +648,8 @@ Please be careful that the size of the request exceed the limit.
       int64 timeout = 5;
       Filter.Config ingress_filters = 6;
       Filter.Config egress_filters = 7;
-      min_num = 8;
-      aggregation_algorithm = 9;
+      uint32 min_num = 8;
+      AggregationAlgorithm aggregation_algorithm = 9;
     }
   }
 
@@ -765,8 +765,8 @@ LinearSearch RPC is the method to linear search vector(s) similar to request vec
       int64 timeout = 5;
       Filter.Config ingress_filters = 6;
       Filter.Config egress_filters = 7;
-      min_num = 8;
-      aggregation_algorithm = 9;
+      uint32 min_num = 8;
+      AggregationAlgorithm aggregation_algorithm = 9;
     }
   }
 
@@ -866,8 +866,8 @@ If the vector doesn't be stored, you will get a `NOT_FOUND` error as a result.
       int64 timeout = 5;
       Filter.Config ingress_filters = 6;
       Filter.Config egress_filters = 7;
-      min_num = 8;
-      aggregation_algorithm = 9;
+      uint32 min_num = 8;
+      AggregationAlgorithm aggregation_algorithm = 9;
     }
   }
 
@@ -967,8 +967,8 @@ Each LinearSearch request and response are independent.
       int64 timeout = 5;
       Filter.Config ingress_filters = 6;
       Filter.Config egress_filters = 7;
-      min_num = 8;
-      aggregation_algorithm = 9;
+      uint32 min_num = 8;
+      AggregationAlgorithm aggregation_algorithm = 9;
     }
   }
 
@@ -1082,8 +1082,8 @@ Each LinearSearchByID request and response are independent.
       int64 timeout = 5;
       Filter.Config ingress_filters = 6;
       Filter.Config egress_filters = 7;
-      min_num = 8;
-      aggregation_algorithm = 9;
+      uint32 min_num = 8;
+      AggregationAlgorithm aggregation_algorithm = 9;
     }
   }
 
@@ -1204,8 +1204,8 @@ Please be careful that the size of the request exceed the limit.
       int64 timeout = 5;
       Filter.Config ingress_filters = 6;
       Filter.Config egress_filters = 7;
-      min_num = 8;
-      aggregation_algorithm = 9;
+      uint32 min_num = 8;
+      AggregationAlgorithm aggregation_algorithm = 9;
     }
   }
 
@@ -1329,8 +1329,8 @@ Please be careful that the size of the request exceed the limit.
       int64 timeout = 5;
       Filter.Config ingress_filters = 6;
       Filter.Config egress_filters = 7;
-      min_num = 8;
-      aggregation_algorithm = 9;
+      uint32 min_num = 8;
+      AggregationAlgorithm aggregation_algorithm = 9;
     }
   }
 
