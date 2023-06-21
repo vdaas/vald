@@ -46,6 +46,9 @@ const (
 
 	isSavingMetricsName        = "agent_core_ngt_is_saving"
 	isSavingMetricsDescription = "Currently saving or not"
+
+	brokenIndexStoreCountMetricsName = "agent_core_ngt_broken_index_store_count"
+	brokenIndexStoreCountMetricsDescription = "How many broken index generations have been stored"
 )
 
 type ngtMetrics struct {
@@ -131,6 +134,15 @@ func (n *ngtMetrics) View() ([]*metrics.View, error) {
 		return nil, err
 	}
 
+	brokenIndexCount, err := view.New(
+		view.MatchInstrumentName(brokenIndexStoreCountMetricsName),
+		view.WithSetDescription(brokenIndexStoreCountMetricsDescription),
+		view.WithSetAggregation(aggregation.LastValue{}),
+	)
+	if err != nil {
+		return nil, err
+	}
+
 	return []*metrics.View{
 		&indexCount,
 		&uncommittedIndexCount,
@@ -140,6 +152,7 @@ func (n *ngtMetrics) View() ([]*metrics.View, error) {
 		&executedProactiveGCTotal,
 		&isIndexing,
 		&isSaving,
+		&brokenIndexCount,
 	}, nil
 }
 
@@ -216,6 +229,15 @@ func (n *ngtMetrics) Register(m metrics.Meter) error {
 		return err
 	}
 
+	brokenIndexCount, err := m.AsyncInt64().Gauge(
+		brokenIndexStoreCountMetricsName,
+		metrics.WithDescription(brokenIndexStoreCountMetricsDescription),
+		metrics.WithUnit(metrics.Dimensionless),
+	)
+	if err != nil {
+		return err
+	}
+
 	return m.RegisterCallback(
 		[]metrics.AsynchronousInstrument{
 			indexCount,
@@ -226,6 +248,7 @@ func (n *ngtMetrics) Register(m metrics.Meter) error {
 			executedProactiveGCTotal,
 			isIndexing,
 			isSaving,
+			brokenIndexCount,
 		},
 		func(ctx context.Context) {
 			var indexing int64
@@ -246,6 +269,7 @@ func (n *ngtMetrics) Register(m metrics.Meter) error {
 			executedProactiveGCTotal.Observe(ctx, int64(n.ngt.NumberOfProactiveGCExecution()))
 			isIndexing.Observe(ctx, int64(indexing))
 			isSaving.Observe(ctx, int64(saving))
+			brokenIndexCount.Observe(ctx, int64(n.ngt.BrokenIndexCount()))
 		},
 	)
 }
