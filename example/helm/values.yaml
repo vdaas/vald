@@ -64,7 +64,7 @@ agent:
       memory: 150Mi
   ngt:
     # The number of dimensions for feature vector of fashion-mnist dataset.
-    dimension: 300
+    dimension: 784
     # We use L2-Norm for distance_type.
     distance_type: cos
     # The type of fashion-mnist's feature vectors.
