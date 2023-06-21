@@ -47,7 +47,7 @@ const (
 	isSavingMetricsName        = "agent_core_ngt_is_saving"
 	isSavingMetricsDescription = "Currently saving or not"
 
-	brokenIndexStoreCountMetricsName = "agent_core_ngt_broken_index_store_count"
+	brokenIndexStoreCountMetricsName        = "agent_core_ngt_broken_index_store_count"
 	brokenIndexStoreCountMetricsDescription = "How many broken index generations have been stored"
 )
 
