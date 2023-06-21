@@ -262,11 +262,11 @@ coverage:
 ## generate missing go test files
 gotests/gen: \
 	test/create-empty \
-	gotests/patch-placeholder \
+	test/patch-placeholder \
 	gotests/gen-test \
 	test/remove-empty \
 	gotests/patch \
-	comment-unimpl-test \
+	test/comment-unimplemented \
 	format/go/test
 
 .PHONY: gotests/gen-test
@@ -288,12 +288,12 @@ gotests/patch:
 	find $(ROOTDIR)/* -name '*_test.go' | xargs sed -i -E "s%go.uber.org/goleak%github.com/vdaas/vald/internal/test/goleak%g"
 	find $(ROOTDIR)/internal/errors -name '*_test.go' | xargs sed -i -E "s%\"github.com/vdaas/vald/internal/errors\"%%g"
 	find $(ROOTDIR)/internal/errors -name '*_test.go' -not -name '*_benchmark_test.go' | xargs sed -i -E "s/errors\.//g"
-	find $(ROOTDIR)/internal/test/goleak -name '*_test.go' | xargs sed -i -E "s%\"github.com/vdaas/vald/internal/test/goleak\"%%g"
-	find $(ROOTDIR)/internal/test/goleak -name '*_test.go' | xargs sed -i -E "s/goleak\.//g"
+	find $(ROOTDIR)/internal/test/goleak -name '*_test.go' | xargs -r sed -i -E "s%\"github.com/vdaas/vald/internal/test/goleak\"%%g"
+	find $(ROOTDIR)/internal/test/goleak -name '*_test.go' | xargs -r sed -i -E "s/goleak\.//g"
 
-.PHONY: gotests/patch-placeholder
+.PHONY: test/patch-placeholder
 ## apply patches to the placeholder of the generated go test files
-gotests/patch-placeholder:
+test/patch-placeholder:
 	@$(call green, "apply placeholder patches to go test files...")
 	for f in $(GO_ALL_TEST_SOURCES) ; do \
 		if [ ! -f "$$f" ] ; then continue; fi; \
@@ -302,10 +302,10 @@ gotests/patch-placeholder:
 		echo "// $(TEST_NOT_IMPL_PLACEHOLDER)" >>"$$f"; \
 	done
 
-.PHONY: gotests/comment-unimpl-test
+.PHONY: test/comment-unimplemented
 ## comment out unimplemented tests
-gotests/comment-unimpl-test:
-	@$(call green, "apply placeholder patches to go test files...")
+test/comment-unimplemented:
+	@$(call green, "comment out unimplemented test...")
 	for f in $(GO_ALL_TEST_SOURCES) ; do \
 		if [ ! -f "$$f" ] ; then continue; fi; \
 		sed -r -i -e '/\/\/ $(TEST_NOT_IMPL_PLACEHOLDER)/,+9999999 s/^/\/\/ /' $$f; \
