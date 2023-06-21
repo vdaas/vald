@@ -1194,6 +1194,7 @@ func Test_ngt_prepareFolders(t *testing.T) {
 		nocie             uint64
 		nogce             uint64
 		wfci              uint64
+		nobic             uint64
 		inMem             bool
 		dim               int
 		alen              int
@@ -1257,6 +1258,7 @@ func Test_ngt_prepareFolders(t *testing.T) {
 		           nocie:0,
 		           nogce:0,
 		           wfci:0,
+		           nobic:0,
 		           inMem:false,
 		           dim:0,
 		           alen:0,
@@ -1313,6 +1315,7 @@ func Test_ngt_prepareFolders(t *testing.T) {
 		           nocie:0,
 		           nogce:0,
 		           wfci:0,
+		           nobic:0,
 		           inMem:false,
 		           dim:0,
 		           alen:0,
@@ -1378,6 +1381,7 @@ func Test_ngt_prepareFolders(t *testing.T) {
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				wfci:              test.fields.wfci,
+				nobic:             test.fields.nobic,
 				inMem:             test.fields.inMem,
 				dim:               test.fields.dim,
 				alen:              test.fields.alen,
@@ -1430,6 +1434,7 @@ func Test_ngt_load(t *testing.T) {
 		nocie             uint64
 		nogce             uint64
 		wfci              uint64
+		nobic             uint64
 		inMem             bool
 		dim               int
 		alen              int
@@ -1495,6 +1500,7 @@ func Test_ngt_load(t *testing.T) {
 		           nocie:0,
 		           nogce:0,
 		           wfci:0,
+		           nobic:0,
 		           inMem:false,
 		           dim:0,
 		           alen:0,
@@ -1553,6 +1559,7 @@ func Test_ngt_load(t *testing.T) {
 		           nocie:0,
 		           nogce:0,
 		           wfci:0,
+		           nobic:0,
 		           inMem:false,
 		           dim:0,
 		           alen:0,
@@ -1618,6 +1625,7 @@ func Test_ngt_load(t *testing.T) {
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				wfci:              test.fields.wfci,
+				nobic:             test.fields.nobic,
 				inMem:             test.fields.inMem,
 				dim:               test.fields.dim,
 				alen:              test.fields.alen,
@@ -1652,105 +1660,9 @@ func Test_ngt_load(t *testing.T) {
 	}
 }
 
-func Test_backupBroken(t *testing.T) {
+func Test_ngt_backupBroken(t *testing.T) {
 	type args struct {
-		ctx        context.Context
-		originPath string
-		brokenDir  string
-		limit      int
-	}
-	type want struct {
-		err error
-	}
-	type test struct {
-		name       string
-		args       args
-		want       want
-		checkFunc  func(want, error) error
-		beforeFunc func(*testing.T, args)
-		afterFunc  func(*testing.T, args)
-	}
-	defaultCheckFunc := func(w want, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ctx:nil,
-		           originPath:"",
-		           brokenDir:"",
-		           limit:0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		       beforeFunc: func(t *testing.T, args args) {
-		           t.Helper()
-		       },
-		       afterFunc: func(t *testing.T, args args) {
-		           t.Helper()
-		       },
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ctx:nil,
-		           originPath:"",
-		           brokenDir:"",
-		           limit:0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		           beforeFunc: func(t *testing.T, args args) {
-		               t.Helper()
-		           },
-		           afterFunc: func(t *testing.T, args args) {
-		               t.Helper()
-		           },
-		       }
-		   }(),
-		*/
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-			if test.beforeFunc != nil {
-				test.beforeFunc(tt, test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(tt, test.args)
-			}
-			checkFunc := test.checkFunc
-			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
-			}
-
-			err := backupBroken(test.args.ctx, test.args.originPath, test.args.brokenDir, test.args.limit)
-			if err := checkFunc(test.want, err); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
-
-func Test_ngt_rebuild(t *testing.T) {
-	type args struct {
-		ctx  context.Context
-		path string
-		opts []core.Option
+		ctx context.Context
 	}
 	type fields struct {
 		core              core.NGT
@@ -1764,6 +1676,7 @@ func Test_ngt_rebuild(t *testing.T) {
 		nocie             uint64
 		nogce             uint64
 		wfci              uint64
+		nobic             uint64
 		inMem             bool
 		dim               int
 		alen              int
@@ -1814,8 +1727,6 @@ func Test_ngt_rebuild(t *testing.T) {
 		       name: "test_case_1",
 		       args: args {
 		           ctx:nil,
-		           path:"",
-		           opts:nil,
 		       },
 		       fields: fields {
 		           core:nil,
@@ -1829,6 +1740,7 @@ func Test_ngt_rebuild(t *testing.T) {
 		           nocie:0,
 		           nogce:0,
 		           wfci:0,
+		           nobic:0,
 		           inMem:false,
 		           dim:0,
 		           alen:0,
@@ -1872,8 +1784,6 @@ func Test_ngt_rebuild(t *testing.T) {
 		           name: "test_case_2",
 		           args: args {
 		           ctx:nil,
-		           path:"",
-		           opts:nil,
 		           },
 		           fields: fields {
 		           core:nil,
@@ -1887,6 +1797,7 @@ func Test_ngt_rebuild(t *testing.T) {
 		           nocie:0,
 		           nogce:0,
 		           wfci:0,
+		           nobic:0,
 		           inMem:false,
 		           dim:0,
 		           alen:0,
@@ -1952,6 +1863,251 @@ func Test_ngt_rebuild(t *testing.T) {
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				wfci:              test.fields.wfci,
+				nobic:             test.fields.nobic,
+				inMem:             test.fields.inMem,
+				dim:               test.fields.dim,
+				alen:              test.fields.alen,
+				lim:               test.fields.lim,
+				dur:               test.fields.dur,
+				sdur:              test.fields.sdur,
+				minLit:            test.fields.minLit,
+				maxLit:            test.fields.maxLit,
+				litFactor:         test.fields.litFactor,
+				enableProactiveGC: test.fields.enableProactiveGC,
+				enableCopyOnWrite: test.fields.enableCopyOnWrite,
+				path:              test.fields.path,
+				tmpPath:           test.fields.tmpPath,
+				oldPath:           test.fields.oldPath,
+				basePath:          test.fields.basePath,
+				brokenPath:        test.fields.brokenPath,
+				backupGen:         test.fields.backupGen,
+				poolSize:          test.fields.poolSize,
+				radius:            test.fields.radius,
+				epsilon:           test.fields.epsilon,
+				idelay:            test.fields.idelay,
+				dcd:               test.fields.dcd,
+				kvsdbConcurrency:  test.fields.kvsdbConcurrency,
+				historyLimit:      test.fields.historyLimit,
+			}
+
+			err := n.backupBroken(test.args.ctx)
+			if err := checkFunc(test.want, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func Test_ngt_rebuild(t *testing.T) {
+	type args struct {
+		ctx  context.Context
+		path string
+		opts []core.Option
+	}
+	type fields struct {
+		core              core.NGT
+		eg                errgroup.Group
+		kvs               kvs.BidiMap
+		fmap              map[string]int64
+		vq                vqueue.Queue
+		indexing          atomic.Value
+		saving            atomic.Value
+		lastNocie         uint64
+		nocie             uint64
+		nogce             uint64
+		wfci              uint64
+		nobic             uint64
+		inMem             bool
+		dim               int
+		alen              int
+		lim               time.Duration
+		dur               time.Duration
+		sdur              time.Duration
+		minLit            time.Duration
+		maxLit            time.Duration
+		litFactor         time.Duration
+		enableProactiveGC bool
+		enableCopyOnWrite bool
+		path              string
+		tmpPath           atomic.Value
+		oldPath           string
+		basePath          string
+		brokenPath        string
+		backupGen         uint64
+		poolSize          uint32
+		radius            float32
+		epsilon           float32
+		idelay            time.Duration
+		dcd               bool
+		kvsdbConcurrency  int
+		historyLimit      int
+	}
+	type want struct {
+		err error
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, error) error
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
+	}
+	defaultCheckFunc := func(w want, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       args: args {
+		           ctx:nil,
+		           path:"",
+		           opts:nil,
+		       },
+		       fields: fields {
+		           core:nil,
+		           eg:nil,
+		           kvs:nil,
+		           fmap:nil,
+		           vq:nil,
+		           indexing:nil,
+		           saving:nil,
+		           lastNocie:0,
+		           nocie:0,
+		           nogce:0,
+		           wfci:0,
+		           nobic:0,
+		           inMem:false,
+		           dim:0,
+		           alen:0,
+		           lim:nil,
+		           dur:nil,
+		           sdur:nil,
+		           minLit:nil,
+		           maxLit:nil,
+		           litFactor:nil,
+		           enableProactiveGC:false,
+		           enableCopyOnWrite:false,
+		           path:"",
+		           tmpPath:nil,
+		           oldPath:"",
+		           basePath:"",
+		           brokenPath:"",
+		           backupGen:0,
+		           poolSize:0,
+		           radius:0,
+		           epsilon:0,
+		           idelay:nil,
+		           dcd:false,
+		           kvsdbConcurrency:0,
+		           historyLimit:0,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T, args args) {
+		           t.Helper()
+		       },
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           args: args {
+		           ctx:nil,
+		           path:"",
+		           opts:nil,
+		           },
+		           fields: fields {
+		           core:nil,
+		           eg:nil,
+		           kvs:nil,
+		           fmap:nil,
+		           vq:nil,
+		           indexing:nil,
+		           saving:nil,
+		           lastNocie:0,
+		           nocie:0,
+		           nogce:0,
+		           wfci:0,
+		           nobic:0,
+		           inMem:false,
+		           dim:0,
+		           alen:0,
+		           lim:nil,
+		           dur:nil,
+		           sdur:nil,
+		           minLit:nil,
+		           maxLit:nil,
+		           litFactor:nil,
+		           enableProactiveGC:false,
+		           enableCopyOnWrite:false,
+		           path:"",
+		           tmpPath:nil,
+		           oldPath:"",
+		           basePath:"",
+		           brokenPath:"",
+		           backupGen:0,
+		           poolSize:0,
+		           radius:0,
+		           epsilon:0,
+		           idelay:nil,
+		           dcd:false,
+		           kvsdbConcurrency:0,
+		           historyLimit:0,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T, args args) {
+		               t.Helper()
+		           },
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(tt, test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(tt, test.args)
+			}
+			checkFunc := test.checkFunc
+			if test.checkFunc == nil {
+				checkFunc = defaultCheckFunc
+			}
+			n := &ngt{
+				core:              test.fields.core,
+				eg:                test.fields.eg,
+				kvs:               test.fields.kvs,
+				fmap:              test.fields.fmap,
+				vq:                test.fields.vq,
+				indexing:          test.fields.indexing,
+				saving:            test.fields.saving,
+				lastNocie:         test.fields.lastNocie,
+				nocie:             test.fields.nocie,
+				nogce:             test.fields.nogce,
+				wfci:              test.fields.wfci,
+				nobic:             test.fields.nobic,
 				inMem:             test.fields.inMem,
 				dim:               test.fields.dim,
 				alen:              test.fields.alen,
@@ -2002,6 +2158,7 @@ func Test_ngt_initNGT(t *testing.T) {
 		nocie             uint64
 		nogce             uint64
 		wfci              uint64
+		nobic             uint64
 		inMem             bool
 		dim               int
 		alen              int
@@ -2065,6 +2222,7 @@ func Test_ngt_initNGT(t *testing.T) {
 		           nocie:0,
 		           nogce:0,
 		           wfci:0,
+		           nobic:0,
 		           inMem:false,
 		           dim:0,
 		           alen:0,
@@ -2121,6 +2279,7 @@ func Test_ngt_initNGT(t *testing.T) {
 		           nocie:0,
 		           nogce:0,
 		           wfci:0,
+		           nobic:0,
 		           inMem:false,
 		           dim:0,
 		           alen:0,
@@ -2186,6 +2345,7 @@ func Test_ngt_initNGT(t *testing.T) {
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				wfci:              test.fields.wfci,
+				nobic:             test.fields.nobic,
 				inMem:             test.fields.inMem,
 				dim:               test.fields.dim,
 				alen:              test.fields.alen,
@@ -2238,6 +2398,7 @@ func Test_ngt_loadKVS(t *testing.T) {
 		nocie             uint64
 		nogce             uint64
 		wfci              uint64
+		nobic             uint64
 		inMem             bool
 		dim               int
 		alen              int
@@ -2303,6 +2464,7 @@ func Test_ngt_loadKVS(t *testing.T) {
 		           nocie:0,
 		           nogce:0,
 		           wfci:0,
+		           nobic:0,
 		           inMem:false,
 		           dim:0,
 		           alen:0,
@@ -2361,6 +2523,7 @@ func Test_ngt_loadKVS(t *testing.T) {
 		           nocie:0,
 		           nogce:0,
 		           wfci:0,
+		           nobic:0,
 		           inMem:false,
 		           dim:0,
 		           alen:0,
@@ -2426,6 +2589,7 @@ func Test_ngt_loadKVS(t *testing.T) {
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				wfci:              test.fields.wfci,
+				nobic:             test.fields.nobic,
 				inMem:             test.fields.inMem,
 				dim:               test.fields.dim,
 				alen:              test.fields.alen,
@@ -2476,6 +2640,7 @@ func Test_ngt_Start(t *testing.T) {
 		nocie             uint64
 		nogce             uint64
 		wfci              uint64
+		nobic             uint64
 		inMem             bool
 		dim               int
 		alen              int
@@ -2539,6 +2704,7 @@ func Test_ngt_Start(t *testing.T) {
 		           nocie:0,
 		           nogce:0,
 		           wfci:0,
+		           nobic:0,
 		           inMem:false,
 		           dim:0,
 		           alen:0,
@@ -2595,6 +2761,7 @@ func Test_ngt_Start(t *testing.T) {
 		           nocie:0,
 		           nogce:0,
 		           wfci:0,
+		           nobic:0,
 		           inMem:false,
 		           dim:0,
 		           alen:0,
@@ -2660,6 +2827,7 @@ func Test_ngt_Start(t *testing.T) {
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				wfci:              test.fields.wfci,
+				nobic:             test.fields.nobic,
 				inMem:             test.fields.inMem,
 				dim:               test.fields.dim,
 				alen:              test.fields.alen,
@@ -2713,6 +2881,7 @@ func Test_ngt_Search(t *testing.T) {
 		nocie             uint64
 		nogce             uint64
 		wfci              uint64
+		nobic             uint64
 		inMem             bool
 		dim               int
 		alen              int
@@ -2783,6 +2952,7 @@ func Test_ngt_Search(t *testing.T) {
 		           nocie:0,
 		           nogce:0,
 		           wfci:0,
+		           nobic:0,
 		           inMem:false,
 		           dim:0,
 		           alen:0,
@@ -2842,6 +3012,7 @@ func Test_ngt_Search(t *testing.T) {
 		           nocie:0,
 		           nogce:0,
 		           wfci:0,
+		           nobic:0,
 		           inMem:false,
 		           dim:0,
 		           alen:0,
@@ -2907,6 +3078,7 @@ func Test_ngt_Search(t *testing.T) {
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				wfci:              test.fields.wfci,
+				nobic:             test.fields.nobic,
 				inMem:             test.fields.inMem,
 				dim:               test.fields.dim,
 				alen:              test.fields.alen,
@@ -2960,6 +3132,7 @@ func Test_ngt_SearchByID(t *testing.T) {
 		nocie             uint64
 		nogce             uint64
 		wfci              uint64
+		nobic             uint64
 		inMem             bool
 		dim               int
 		alen              int
@@ -3034,6 +3207,7 @@ func Test_ngt_SearchByID(t *testing.T) {
 		           nocie:0,
 		           nogce:0,
 		           wfci:0,
+		           nobic:0,
 		           inMem:false,
 		           dim:0,
 		           alen:0,
@@ -3093,6 +3267,7 @@ func Test_ngt_SearchByID(t *testing.T) {
 		           nocie:0,
 		           nogce:0,
 		           wfci:0,
+		           nobic:0,
 		           inMem:false,
 		           dim:0,
 		           alen:0,
@@ -3158,6 +3333,7 @@ func Test_ngt_SearchByID(t *testing.T) {
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				wfci:              test.fields.wfci,
+				nobic:             test.fields.nobic,
 				inMem:             test.fields.inMem,
 				dim:               test.fields.dim,
 				alen:              test.fields.alen,
@@ -3209,6 +3385,7 @@ func Test_ngt_LinearSearch(t *testing.T) {
 		nocie             uint64
 		nogce             uint64
 		wfci              uint64
+		nobic             uint64
 		inMem             bool
 		dim               int
 		alen              int
@@ -3277,6 +3454,7 @@ func Test_ngt_LinearSearch(t *testing.T) {
 		           nocie:0,
 		           nogce:0,
 		           wfci:0,
+		           nobic:0,
 		           inMem:false,
 		           dim:0,
 		           alen:0,
@@ -3334,6 +3512,7 @@ func Test_ngt_LinearSearch(t *testing.T) {
 		           nocie:0,
 		           nogce:0,
 		           wfci:0,
+		           nobic:0,
 		           inMem:false,
 		           dim:0,
 		           alen:0,
@@ -3399,6 +3578,7 @@ func Test_ngt_LinearSearch(t *testing.T) {
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				wfci:              test.fields.wfci,
+				nobic:             test.fields.nobic,
 				inMem:             test.fields.inMem,
 				dim:               test.fields.dim,
 				alen:              test.fields.alen,
@@ -3450,6 +3630,7 @@ func Test_ngt_LinearSearchByID(t *testing.T) {
 		nocie             uint64
 		nogce             uint64
 		wfci              uint64
+		nobic             uint64
 		inMem             bool
 		dim               int
 		alen              int
@@ -3522,6 +3703,7 @@ func Test_ngt_LinearSearchByID(t *testing.T) {
 		           nocie:0,
 		           nogce:0,
 		           wfci:0,
+		           nobic:0,
 		           inMem:false,
 		           dim:0,
 		           alen:0,
@@ -3579,6 +3761,7 @@ func Test_ngt_LinearSearchByID(t *testing.T) {
 		           nocie:0,
 		           nogce:0,
 		           wfci:0,
+		           nobic:0,
 		           inMem:false,
 		           dim:0,
 		           alen:0,
@@ -3644,6 +3827,7 @@ func Test_ngt_LinearSearchByID(t *testing.T) {
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				wfci:              test.fields.wfci,
+				nobic:             test.fields.nobic,
 				inMem:             test.fields.inMem,
 				dim:               test.fields.dim,
 				alen:              test.fields.alen,
@@ -3695,6 +3879,7 @@ func Test_ngt_Insert(t *testing.T) {
 		nocie             uint64
 		nogce             uint64
 		wfci              uint64
+		nobic             uint64
 		inMem             bool
 		dim               int
 		alen              int
@@ -3759,6 +3944,7 @@ func Test_ngt_Insert(t *testing.T) {
 		           nocie:0,
 		           nogce:0,
 		           wfci:0,
+		           nobic:0,
 		           inMem:false,
 		           dim:0,
 		           alen:0,
@@ -3816,6 +4002,7 @@ func Test_ngt_Insert(t *testing.T) {
 		           nocie:0,
 		           nogce:0,
 		           wfci:0,
+		           nobic:0,
 		           inMem:false,
 		           dim:0,
 		           alen:0,
@@ -3881,6 +4068,7 @@ func Test_ngt_Insert(t *testing.T) {
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				wfci:              test.fields.wfci,
+				nobic:             test.fields.nobic,
 				inMem:             test.fields.inMem,
 				dim:               test.fields.dim,
 				alen:              test.fields.alen,
@@ -3933,6 +4121,7 @@ func Test_ngt_InsertWithTime(t *testing.T) {
 		nocie             uint64
 		nogce             uint64
 		wfci              uint64
+		nobic             uint64
 		inMem             bool
 		dim               int
 		alen              int
@@ -3998,6 +4187,7 @@ func Test_ngt_InsertWithTime(t *testing.T) {
 		           nocie:0,
 		           nogce:0,
 		           wfci:0,
+		           nobic:0,
 		           inMem:false,
 		           dim:0,
 		           alen:0,
@@ -4056,6 +4246,7 @@ func Test_ngt_InsertWithTime(t *testing.T) {
 		           nocie:0,
 		           nogce:0,
 		           wfci:0,
+		           nobic:0,
 		           inMem:false,
 		           dim:0,
 		           alen:0,
@@ -4121,6 +4312,7 @@ func Test_ngt_InsertWithTime(t *testing.T) {
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				wfci:              test.fields.wfci,
+				nobic:             test.fields.nobic,
 				inMem:             test.fields.inMem,
 				dim:               test.fields.dim,
 				alen:              test.fields.alen,
@@ -4174,6 +4366,7 @@ func Test_ngt_insert(t *testing.T) {
 		nocie             uint64
 		nogce             uint64
 		wfci              uint64
+		nobic             uint64
 		inMem             bool
 		dim               int
 		alen              int
@@ -4240,6 +4433,7 @@ func Test_ngt_insert(t *testing.T) {
 		           nocie:0,
 		           nogce:0,
 		           wfci:0,
+		           nobic:0,
 		           inMem:false,
 		           dim:0,
 		           alen:0,
@@ -4299,6 +4493,7 @@ func Test_ngt_insert(t *testing.T) {
 		           nocie:0,
 		           nogce:0,
 		           wfci:0,
+		           nobic:0,
 		           inMem:false,
 		           dim:0,
 		           alen:0,
@@ -4364,6 +4559,7 @@ func Test_ngt_insert(t *testing.T) {
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				wfci:              test.fields.wfci,
+				nobic:             test.fields.nobic,
 				inMem:             test.fields.inMem,
 				dim:               test.fields.dim,
 				alen:              test.fields.alen,
@@ -4414,6 +4610,7 @@ func Test_ngt_InsertMultiple(t *testing.T) {
 		nocie             uint64
 		nogce             uint64
 		wfci              uint64
+		nobic             uint64
 		inMem             bool
 		dim               int
 		alen              int
@@ -4477,6 +4674,7 @@ func Test_ngt_InsertMultiple(t *testing.T) {
 		           nocie:0,
 		           nogce:0,
 		           wfci:0,
+		           nobic:0,
 		           inMem:false,
 		           dim:0,
 		           alen:0,
@@ -4533,6 +4731,7 @@ func Test_ngt_InsertMultiple(t *testing.T) {
 		           nocie:0,
 		           nogce:0,
 		           wfci:0,
+		           nobic:0,
 		           inMem:false,
 		           dim:0,
 		           alen:0,
@@ -4598,6 +4797,7 @@ func Test_ngt_InsertMultiple(t *testing.T) {
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				wfci:              test.fields.wfci,
+				nobic:             test.fields.nobic,
 				inMem:             test.fields.inMem,
 				dim:               test.fields.dim,
 				alen:              test.fields.alen,
@@ -4649,6 +4849,7 @@ func Test_ngt_InsertMultipleWithTime(t *testing.T) {
 		nocie             uint64
 		nogce             uint64
 		wfci              uint64
+		nobic             uint64
 		inMem             bool
 		dim               int
 		alen              int
@@ -4713,6 +4914,7 @@ func Test_ngt_InsertMultipleWithTime(t *testing.T) {
 		           nocie:0,
 		           nogce:0,
 		           wfci:0,
+		           nobic:0,
 		           inMem:false,
 		           dim:0,
 		           alen:0,
@@ -4770,6 +4972,7 @@ func Test_ngt_InsertMultipleWithTime(t *testing.T) {
 		           nocie:0,
 		           nogce:0,
 		           wfci:0,
+		           nobic:0,
 		           inMem:false,
 		           dim:0,
 		           alen:0,
@@ -4835,6 +5038,7 @@ func Test_ngt_InsertMultipleWithTime(t *testing.T) {
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				wfci:              test.fields.wfci,
+				nobic:             test.fields.nobic,
 				inMem:             test.fields.inMem,
 				dim:               test.fields.dim,
 				alen:              test.fields.alen,
@@ -4887,6 +5091,7 @@ func Test_ngt_insertMultiple(t *testing.T) {
 		nocie             uint64
 		nogce             uint64
 		wfci              uint64
+		nobic             uint64
 		inMem             bool
 		dim               int
 		alen              int
@@ -4952,6 +5157,7 @@ func Test_ngt_insertMultiple(t *testing.T) {
 		           nocie:0,
 		           nogce:0,
 		           wfci:0,
+		           nobic:0,
 		           inMem:false,
 		           dim:0,
 		           alen:0,
@@ -5010,6 +5216,7 @@ func Test_ngt_insertMultiple(t *testing.T) {
 		           nocie:0,
 		           nogce:0,
 		           wfci:0,
+		           nobic:0,
 		           inMem:false,
 		           dim:0,
 		           alen:0,
@@ -5075,6 +5282,7 @@ func Test_ngt_insertMultiple(t *testing.T) {
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				wfci:              test.fields.wfci,
+				nobic:             test.fields.nobic,
 				inMem:             test.fields.inMem,
 				dim:               test.fields.dim,
 				alen:              test.fields.alen,
@@ -5126,6 +5334,7 @@ func Test_ngt_Update(t *testing.T) {
 		nocie             uint64
 		nogce             uint64
 		wfci              uint64
+		nobic             uint64
 		inMem             bool
 		dim               int
 		alen              int
@@ -5190,6 +5399,7 @@ func Test_ngt_Update(t *testing.T) {
 		           nocie:0,
 		           nogce:0,
 		           wfci:0,
+		           nobic:0,
 		           inMem:false,
 		           dim:0,
 		           alen:0,
@@ -5247,6 +5457,7 @@ func Test_ngt_Update(t *testing.T) {
 		           nocie:0,
 		           nogce:0,
 		           wfci:0,
+		           nobic:0,
 		           inMem:false,
 		           dim:0,
 		           alen:0,
@@ -5312,6 +5523,7 @@ func Test_ngt_Update(t *testing.T) {
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				wfci:              test.fields.wfci,
+				nobic:             test.fields.nobic,
 				inMem:             test.fields.inMem,
 				dim:               test.fields.dim,
 				alen:              test.fields.alen,
@@ -5364,6 +5576,7 @@ func Test_ngt_UpdateWithTime(t *testing.T) {
 		nocie             uint64
 		nogce             uint64
 		wfci              uint64
+		nobic             uint64
 		inMem             bool
 		dim               int
 		alen              int
@@ -5429,6 +5642,7 @@ func Test_ngt_UpdateWithTime(t *testing.T) {
 		           nocie:0,
 		           nogce:0,
 		           wfci:0,
+		           nobic:0,
 		           inMem:false,
 		           dim:0,
 		           alen:0,
@@ -5487,6 +5701,7 @@ func Test_ngt_UpdateWithTime(t *testing.T) {
 		           nocie:0,
 		           nogce:0,
 		           wfci:0,
+		           nobic:0,
 		           inMem:false,
 		           dim:0,
 		           alen:0,
@@ -5552,6 +5767,7 @@ func Test_ngt_UpdateWithTime(t *testing.T) {
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				wfci:              test.fields.wfci,
+				nobic:             test.fields.nobic,
 				inMem:             test.fields.inMem,
 				dim:               test.fields.dim,
 				alen:              test.fields.alen,
@@ -5604,6 +5820,7 @@ func Test_ngt_update(t *testing.T) {
 		nocie             uint64
 		nogce             uint64
 		wfci              uint64
+		nobic             uint64
 		inMem             bool
 		dim               int
 		alen              int
@@ -5669,6 +5886,7 @@ func Test_ngt_update(t *testing.T) {
 		           nocie:0,
 		           nogce:0,
 		           wfci:0,
+		           nobic:0,
 		           inMem:false,
 		           dim:0,
 		           alen:0,
@@ -5727,6 +5945,7 @@ func Test_ngt_update(t *testing.T) {
 		           nocie:0,
 		           nogce:0,
 		           wfci:0,
+		           nobic:0,
 		           inMem:false,
 		           dim:0,
 		           alen:0,
@@ -5792,6 +6011,7 @@ func Test_ngt_update(t *testing.T) {
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				wfci:              test.fields.wfci,
+				nobic:             test.fields.nobic,
 				inMem:             test.fields.inMem,
 				dim:               test.fields.dim,
 				alen:              test.fields.alen,
@@ -5842,6 +6062,7 @@ func Test_ngt_UpdateMultiple(t *testing.T) {
 		nocie             uint64
 		nogce             uint64
 		wfci              uint64
+		nobic             uint64
 		inMem             bool
 		dim               int
 		alen              int
@@ -5905,6 +6126,7 @@ func Test_ngt_UpdateMultiple(t *testing.T) {
 		           nocie:0,
 		           nogce:0,
 		           wfci:0,
+		           nobic:0,
 		           inMem:false,
 		           dim:0,
 		           alen:0,
@@ -5961,6 +6183,7 @@ func Test_ngt_UpdateMultiple(t *testing.T) {
 		           nocie:0,
 		           nogce:0,
 		           wfci:0,
+		           nobic:0,
 		           inMem:false,
 		           dim:0,
 		           alen:0,
@@ -6026,6 +6249,7 @@ func Test_ngt_UpdateMultiple(t *testing.T) {
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				wfci:              test.fields.wfci,
+				nobic:             test.fields.nobic,
 				inMem:             test.fields.inMem,
 				dim:               test.fields.dim,
 				alen:              test.fields.alen,
@@ -6077,6 +6301,7 @@ func Test_ngt_UpdateMultipleWithTime(t *testing.T) {
 		nocie             uint64
 		nogce             uint64
 		wfci              uint64
+		nobic             uint64
 		inMem             bool
 		dim               int
 		alen              int
@@ -6141,6 +6366,7 @@ func Test_ngt_UpdateMultipleWithTime(t *testing.T) {
 		           nocie:0,
 		           nogce:0,
 		           wfci:0,
+		           nobic:0,
 		           inMem:false,
 		           dim:0,
 		           alen:0,
@@ -6198,6 +6424,7 @@ func Test_ngt_UpdateMultipleWithTime(t *testing.T) {
 		           nocie:0,
 		           nogce:0,
 		           wfci:0,
+		           nobic:0,
 		           inMem:false,
 		           dim:0,
 		           alen:0,
@@ -6263,6 +6490,7 @@ func Test_ngt_UpdateMultipleWithTime(t *testing.T) {
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				wfci:              test.fields.wfci,
+				nobic:             test.fields.nobic,
 				inMem:             test.fields.inMem,
 				dim:               test.fields.dim,
 				alen:              test.fields.alen,
@@ -6314,6 +6542,7 @@ func Test_ngt_updateMultiple(t *testing.T) {
 		nocie             uint64
 		nogce             uint64
 		wfci              uint64
+		nobic             uint64
 		inMem             bool
 		dim               int
 		alen              int
@@ -6378,6 +6607,7 @@ func Test_ngt_updateMultiple(t *testing.T) {
 		           nocie:0,
 		           nogce:0,
 		           wfci:0,
+		           nobic:0,
 		           inMem:false,
 		           dim:0,
 		           alen:0,
@@ -6435,6 +6665,7 @@ func Test_ngt_updateMultiple(t *testing.T) {
 		           nocie:0,
 		           nogce:0,
 		           wfci:0,
+		           nobic:0,
 		           inMem:false,
 		           dim:0,
 		           alen:0,
@@ -6500,6 +6731,7 @@ func Test_ngt_updateMultiple(t *testing.T) {
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				wfci:              test.fields.wfci,
+				nobic:             test.fields.nobic,
 				inMem:             test.fields.inMem,
 				dim:               test.fields.dim,
 				alen:              test.fields.alen,
@@ -6550,6 +6782,7 @@ func Test_ngt_Delete(t *testing.T) {
 		nocie             uint64
 		nogce             uint64
 		wfci              uint64
+		nobic             uint64
 		inMem             bool
 		dim               int
 		alen              int
@@ -6613,6 +6846,7 @@ func Test_ngt_Delete(t *testing.T) {
 		           nocie:0,
 		           nogce:0,
 		           wfci:0,
+		           nobic:0,
 		           inMem:false,
 		           dim:0,
 		           alen:0,
@@ -6669,6 +6903,7 @@ func Test_ngt_Delete(t *testing.T) {
 		           nocie:0,
 		           nogce:0,
 		           wfci:0,
+		           nobic:0,
 		           inMem:false,
 		           dim:0,
 		           alen:0,
@@ -6734,6 +6969,7 @@ func Test_ngt_Delete(t *testing.T) {
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				wfci:              test.fields.wfci,
+				nobic:             test.fields.nobic,
 				inMem:             test.fields.inMem,
 				dim:               test.fields.dim,
 				alen:              test.fields.alen,
@@ -6785,6 +7021,7 @@ func Test_ngt_DeleteWithTime(t *testing.T) {
 		nocie             uint64
 		nogce             uint64
 		wfci              uint64
+		nobic             uint64
 		inMem             bool
 		dim               int
 		alen              int
@@ -6849,6 +7086,7 @@ func Test_ngt_DeleteWithTime(t *testing.T) {
 		           nocie:0,
 		           nogce:0,
 		           wfci:0,
+		           nobic:0,
 		           inMem:false,
 		           dim:0,
 		           alen:0,
@@ -6906,6 +7144,7 @@ func Test_ngt_DeleteWithTime(t *testing.T) {
 		           nocie:0,
 		           nogce:0,
 		           wfci:0,
+		           nobic:0,
 		           inMem:false,
 		           dim:0,
 		           alen:0,
@@ -6971,6 +7210,7 @@ func Test_ngt_DeleteWithTime(t *testing.T) {
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				wfci:              test.fields.wfci,
+				nobic:             test.fields.nobic,
 				inMem:             test.fields.inMem,
 				dim:               test.fields.dim,
 				alen:              test.fields.alen,
@@ -7023,6 +7263,7 @@ func Test_ngt_delete(t *testing.T) {
 		nocie             uint64
 		nogce             uint64
 		wfci              uint64
+		nobic             uint64
 		inMem             bool
 		dim               int
 		alen              int
@@ -7088,6 +7329,7 @@ func Test_ngt_delete(t *testing.T) {
 		           nocie:0,
 		           nogce:0,
 		           wfci:0,
+		           nobic:0,
 		           inMem:false,
 		           dim:0,
 		           alen:0,
@@ -7146,6 +7388,7 @@ func Test_ngt_delete(t *testing.T) {
 		           nocie:0,
 		           nogce:0,
 		           wfci:0,
+		           nobic:0,
 		           inMem:false,
 		           dim:0,
 		           alen:0,
@@ -7211,6 +7454,7 @@ func Test_ngt_delete(t *testing.T) {
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				wfci:              test.fields.wfci,
+				nobic:             test.fields.nobic,
 				inMem:             test.fields.inMem,
 				dim:               test.fields.dim,
 				alen:              test.fields.alen,
@@ -7261,6 +7505,7 @@ func Test_ngt_DeleteMultiple(t *testing.T) {
 		nocie             uint64
 		nogce             uint64
 		wfci              uint64
+		nobic             uint64
 		inMem             bool
 		dim               int
 		alen              int
@@ -7324,6 +7569,7 @@ func Test_ngt_DeleteMultiple(t *testing.T) {
 		           nocie:0,
 		           nogce:0,
 		           wfci:0,
+		           nobic:0,
 		           inMem:false,
 		           dim:0,
 		           alen:0,
@@ -7380,6 +7626,7 @@ func Test_ngt_DeleteMultiple(t *testing.T) {
 		           nocie:0,
 		           nogce:0,
 		           wfci:0,
+		           nobic:0,
 		           inMem:false,
 		           dim:0,
 		           alen:0,
@@ -7445,6 +7692,7 @@ func Test_ngt_DeleteMultiple(t *testing.T) {
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				wfci:              test.fields.wfci,
+				nobic:             test.fields.nobic,
 				inMem:             test.fields.inMem,
 				dim:               test.fields.dim,
 				alen:              test.fields.alen,
@@ -7496,6 +7744,7 @@ func Test_ngt_DeleteMultipleWithTime(t *testing.T) {
 		nocie             uint64
 		nogce             uint64
 		wfci              uint64
+		nobic             uint64
 		inMem             bool
 		dim               int
 		alen              int
@@ -7560,6 +7809,7 @@ func Test_ngt_DeleteMultipleWithTime(t *testing.T) {
 		           nocie:0,
 		           nogce:0,
 		           wfci:0,
+		           nobic:0,
 		           inMem:false,
 		           dim:0,
 		           alen:0,
@@ -7617,6 +7867,7 @@ func Test_ngt_DeleteMultipleWithTime(t *testing.T) {
 		           nocie:0,
 		           nogce:0,
 		           wfci:0,
+		           nobic:0,
 		           inMem:false,
 		           dim:0,
 		           alen:0,
@@ -7682,6 +7933,7 @@ func Test_ngt_DeleteMultipleWithTime(t *testing.T) {
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				wfci:              test.fields.wfci,
+				nobic:             test.fields.nobic,
 				inMem:             test.fields.inMem,
 				dim:               test.fields.dim,
 				alen:              test.fields.alen,
@@ -7734,6 +7986,7 @@ func Test_ngt_deleteMultiple(t *testing.T) {
 		nocie             uint64
 		nogce             uint64
 		wfci              uint64
+		nobic             uint64
 		inMem             bool
 		dim               int
 		alen              int
@@ -7799,6 +8052,7 @@ func Test_ngt_deleteMultiple(t *testing.T) {
 		           nocie:0,
 		           nogce:0,
 		           wfci:0,
+		           nobic:0,
 		           inMem:false,
 		           dim:0,
 		           alen:0,
@@ -7857,6 +8111,7 @@ func Test_ngt_deleteMultiple(t *testing.T) {
 		           nocie:0,
 		           nogce:0,
 		           wfci:0,
+		           nobic:0,
 		           inMem:false,
 		           dim:0,
 		           alen:0,
@@ -7922,6 +8177,7 @@ func Test_ngt_deleteMultiple(t *testing.T) {
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				wfci:              test.fields.wfci,
+				nobic:             test.fields.nobic,
 				inMem:             test.fields.inMem,
 				dim:               test.fields.dim,
 				alen:              test.fields.alen,
@@ -7973,6 +8229,7 @@ func Test_ngt_CreateIndex(t *testing.T) {
 		nocie             uint64
 		nogce             uint64
 		wfci              uint64
+		nobic             uint64
 		inMem             bool
 		dim               int
 		alen              int
@@ -8037,6 +8294,7 @@ func Test_ngt_CreateIndex(t *testing.T) {
 		           nocie:0,
 		           nogce:0,
 		           wfci:0,
+		           nobic:0,
 		           inMem:false,
 		           dim:0,
 		           alen:0,
@@ -8094,6 +8352,7 @@ func Test_ngt_CreateIndex(t *testing.T) {
 		           nocie:0,
 		           nogce:0,
 		           wfci:0,
+		           nobic:0,
 		           inMem:false,
 		           dim:0,
 		           alen:0,
@@ -8159,6 +8418,7 @@ func Test_ngt_CreateIndex(t *testing.T) {
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				wfci:              test.fields.wfci,
+				nobic:             test.fields.nobic,
 				inMem:             test.fields.inMem,
 				dim:               test.fields.dim,
 				alen:              test.fields.alen,
@@ -8209,6 +8469,7 @@ func Test_ngt_removeInvalidIndex(t *testing.T) {
 		nocie             uint64
 		nogce             uint64
 		wfci              uint64
+		nobic             uint64
 		inMem             bool
 		dim               int
 		alen              int
@@ -8267,6 +8528,7 @@ func Test_ngt_removeInvalidIndex(t *testing.T) {
 		           nocie:0,
 		           nogce:0,
 		           wfci:0,
+		           nobic:0,
 		           inMem:false,
 		           dim:0,
 		           alen:0,
@@ -8323,6 +8585,7 @@ func Test_ngt_removeInvalidIndex(t *testing.T) {
 		           nocie:0,
 		           nogce:0,
 		           wfci:0,
+		           nobic:0,
 		           inMem:false,
 		           dim:0,
 		           alen:0,
@@ -8388,6 +8651,7 @@ func Test_ngt_removeInvalidIndex(t *testing.T) {
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				wfci:              test.fields.wfci,
+				nobic:             test.fields.nobic,
 				inMem:             test.fields.inMem,
 				dim:               test.fields.dim,
 				alen:              test.fields.alen,
@@ -8438,6 +8702,7 @@ func Test_ngt_SaveIndex(t *testing.T) {
 		nocie             uint64
 		nogce             uint64
 		wfci              uint64
+		nobic             uint64
 		inMem             bool
 		dim               int
 		alen              int
@@ -8501,6 +8766,7 @@ func Test_ngt_SaveIndex(t *testing.T) {
 		           nocie:0,
 		           nogce:0,
 		           wfci:0,
+		           nobic:0,
 		           inMem:false,
 		           dim:0,
 		           alen:0,
@@ -8557,6 +8823,7 @@ func Test_ngt_SaveIndex(t *testing.T) {
 		           nocie:0,
 		           nogce:0,
 		           wfci:0,
+		           nobic:0,
 		           inMem:false,
 		           dim:0,
 		           alen:0,
@@ -8622,6 +8889,7 @@ func Test_ngt_SaveIndex(t *testing.T) {
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				wfci:              test.fields.wfci,
+				nobic:             test.fields.nobic,
 				inMem:             test.fields.inMem,
 				dim:               test.fields.dim,
 				alen:              test.fields.alen,
@@ -8672,6 +8940,7 @@ func Test_ngt_saveIndex(t *testing.T) {
 		nocie             uint64
 		nogce             uint64
 		wfci              uint64
+		nobic             uint64
 		inMem             bool
 		dim               int
 		alen              int
@@ -8735,6 +9004,7 @@ func Test_ngt_saveIndex(t *testing.T) {
 		           nocie:0,
 		           nogce:0,
 		           wfci:0,
+		           nobic:0,
 		           inMem:false,
 		           dim:0,
 		           alen:0,
@@ -8791,6 +9061,7 @@ func Test_ngt_saveIndex(t *testing.T) {
 		           nocie:0,
 		           nogce:0,
 		           wfci:0,
+		           nobic:0,
 		           inMem:false,
 		           dim:0,
 		           alen:0,
@@ -8856,6 +9127,7 @@ func Test_ngt_saveIndex(t *testing.T) {
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				wfci:              test.fields.wfci,
+				nobic:             test.fields.nobic,
 				inMem:             test.fields.inMem,
 				dim:               test.fields.dim,
 				alen:              test.fields.alen,
@@ -8907,6 +9179,7 @@ func Test_ngt_CreateAndSaveIndex(t *testing.T) {
 		nocie             uint64
 		nogce             uint64
 		wfci              uint64
+		nobic             uint64
 		inMem             bool
 		dim               int
 		alen              int
@@ -8971,6 +9244,7 @@ func Test_ngt_CreateAndSaveIndex(t *testing.T) {
 		           nocie:0,
 		           nogce:0,
 		           wfci:0,
+		           nobic:0,
 		           inMem:false,
 		           dim:0,
 		           alen:0,
@@ -9028,6 +9302,7 @@ func Test_ngt_CreateAndSaveIndex(t *testing.T) {
 		           nocie:0,
 		           nogce:0,
 		           wfci:0,
+		           nobic:0,
 		           inMem:false,
 		           dim:0,
 		           alen:0,
@@ -9093,6 +9368,7 @@ func Test_ngt_CreateAndSaveIndex(t *testing.T) {
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				wfci:              test.fields.wfci,
+				nobic:             test.fields.nobic,
 				inMem:             test.fields.inMem,
 				dim:               test.fields.dim,
 				alen:              test.fields.alen,
@@ -9143,6 +9419,7 @@ func Test_ngt_moveAndSwitchSavedData(t *testing.T) {
 		nocie             uint64
 		nogce             uint64
 		wfci              uint64
+		nobic             uint64
 		inMem             bool
 		dim               int
 		alen              int
@@ -9206,6 +9483,7 @@ func Test_ngt_moveAndSwitchSavedData(t *testing.T) {
 		           nocie:0,
 		           nogce:0,
 		           wfci:0,
+		           nobic:0,
 		           inMem:false,
 		           dim:0,
 		           alen:0,
@@ -9262,6 +9540,7 @@ func Test_ngt_moveAndSwitchSavedData(t *testing.T) {
 		           nocie:0,
 		           nogce:0,
 		           wfci:0,
+		           nobic:0,
 		           inMem:false,
 		           dim:0,
 		           alen:0,
@@ -9327,6 +9606,7 @@ func Test_ngt_moveAndSwitchSavedData(t *testing.T) {
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				wfci:              test.fields.wfci,
+				nobic:             test.fields.nobic,
 				inMem:             test.fields.inMem,
 				dim:               test.fields.dim,
 				alen:              test.fields.alen,
@@ -9374,6 +9654,7 @@ func Test_ngt_mktmp(t *testing.T) {
 		nocie             uint64
 		nogce             uint64
 		wfci              uint64
+		nobic             uint64
 		inMem             bool
 		dim               int
 		alen              int
@@ -9433,6 +9714,7 @@ func Test_ngt_mktmp(t *testing.T) {
 		           nocie:0,
 		           nogce:0,
 		           wfci:0,
+		           nobic:0,
 		           inMem:false,
 		           dim:0,
 		           alen:0,
@@ -9486,6 +9768,7 @@ func Test_ngt_mktmp(t *testing.T) {
 		           nocie:0,
 		           nogce:0,
 		           wfci:0,
+		           nobic:0,
 		           inMem:false,
 		           dim:0,
 		           alen:0,
@@ -9551,6 +9834,7 @@ func Test_ngt_mktmp(t *testing.T) {
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				wfci:              test.fields.wfci,
+				nobic:             test.fields.nobic,
 				inMem:             test.fields.inMem,
 				dim:               test.fields.dim,
 				alen:              test.fields.alen,
@@ -9601,6 +9885,7 @@ func Test_ngt_Exists(t *testing.T) {
 		nocie             uint64
 		nogce             uint64
 		wfci              uint64
+		nobic             uint64
 		inMem             bool
 		dim               int
 		alen              int
@@ -9668,6 +9953,7 @@ func Test_ngt_Exists(t *testing.T) {
 		           nocie:0,
 		           nogce:0,
 		           wfci:0,
+		           nobic:0,
 		           inMem:false,
 		           dim:0,
 		           alen:0,
@@ -9724,6 +10010,7 @@ func Test_ngt_Exists(t *testing.T) {
 		           nocie:0,
 		           nogce:0,
 		           wfci:0,
+		           nobic:0,
 		           inMem:false,
 		           dim:0,
 		           alen:0,
@@ -9789,6 +10076,7 @@ func Test_ngt_Exists(t *testing.T) {
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				wfci:              test.fields.wfci,
+				nobic:             test.fields.nobic,
 				inMem:             test.fields.inMem,
 				dim:               test.fields.dim,
 				alen:              test.fields.alen,
@@ -9839,6 +10127,7 @@ func Test_ngt_GetObject(t *testing.T) {
 		nocie             uint64
 		nogce             uint64
 		wfci              uint64
+		nobic             uint64
 		inMem             bool
 		dim               int
 		alen              int
@@ -9906,6 +10195,7 @@ func Test_ngt_GetObject(t *testing.T) {
 		           nocie:0,
 		           nogce:0,
 		           wfci:0,
+		           nobic:0,
 		           inMem:false,
 		           dim:0,
 		           alen:0,
@@ -9962,6 +10252,7 @@ func Test_ngt_GetObject(t *testing.T) {
 		           nocie:0,
 		           nogce:0,
 		           wfci:0,
+		           nobic:0,
 		           inMem:false,
 		           dim:0,
 		           alen:0,
@@ -10027,6 +10318,7 @@ func Test_ngt_GetObject(t *testing.T) {
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				wfci:              test.fields.wfci,
+				nobic:             test.fields.nobic,
 				inMem:             test.fields.inMem,
 				dim:               test.fields.dim,
 				alen:              test.fields.alen,
@@ -10078,6 +10370,7 @@ func Test_ngt_readyForUpdate(t *testing.T) {
 		nocie             uint64
 		nogce             uint64
 		wfci              uint64
+		nobic             uint64
 		inMem             bool
 		dim               int
 		alen              int
@@ -10142,6 +10435,7 @@ func Test_ngt_readyForUpdate(t *testing.T) {
 		           nocie:0,
 		           nogce:0,
 		           wfci:0,
+		           nobic:0,
 		           inMem:false,
 		           dim:0,
 		           alen:0,
@@ -10199,6 +10493,7 @@ func Test_ngt_readyForUpdate(t *testing.T) {
 		           nocie:0,
 		           nogce:0,
 		           wfci:0,
+		           nobic:0,
 		           inMem:false,
 		           dim:0,
 		           alen:0,
@@ -10264,6 +10559,7 @@ func Test_ngt_readyForUpdate(t *testing.T) {
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				wfci:              test.fields.wfci,
+				nobic:             test.fields.nobic,
 				inMem:             test.fields.inMem,
 				dim:               test.fields.dim,
 				alen:              test.fields.alen,
@@ -10311,6 +10607,7 @@ func Test_ngt_IsSaving(t *testing.T) {
 		nocie             uint64
 		nogce             uint64
 		wfci              uint64
+		nobic             uint64
 		inMem             bool
 		dim               int
 		alen              int
@@ -10370,6 +10667,7 @@ func Test_ngt_IsSaving(t *testing.T) {
 		           nocie:0,
 		           nogce:0,
 		           wfci:0,
+		           nobic:0,
 		           inMem:false,
 		           dim:0,
 		           alen:0,
@@ -10423,6 +10721,7 @@ func Test_ngt_IsSaving(t *testing.T) {
 		           nocie:0,
 		           nogce:0,
 		           wfci:0,
+		           nobic:0,
 		           inMem:false,
 		           dim:0,
 		           alen:0,
@@ -10488,6 +10787,7 @@ func Test_ngt_IsSaving(t *testing.T) {
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				wfci:              test.fields.wfci,
+				nobic:             test.fields.nobic,
 				inMem:             test.fields.inMem,
 				dim:               test.fields.dim,
 				alen:              test.fields.alen,
@@ -10535,6 +10835,7 @@ func Test_ngt_IsIndexing(t *testing.T) {
 		nocie             uint64
 		nogce             uint64
 		wfci              uint64
+		nobic             uint64
 		inMem             bool
 		dim               int
 		alen              int
@@ -10594,6 +10895,7 @@ func Test_ngt_IsIndexing(t *testing.T) {
 		           nocie:0,
 		           nogce:0,
 		           wfci:0,
+		           nobic:0,
 		           inMem:false,
 		           dim:0,
 		           alen:0,
@@ -10647,6 +10949,7 @@ func Test_ngt_IsIndexing(t *testing.T) {
 		           nocie:0,
 		           nogce:0,
 		           wfci:0,
+		           nobic:0,
 		           inMem:false,
 		           dim:0,
 		           alen:0,
@@ -10712,6 +11015,7 @@ func Test_ngt_IsIndexing(t *testing.T) {
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				wfci:              test.fields.wfci,
+				nobic:             test.fields.nobic,
 				inMem:             test.fields.inMem,
 				dim:               test.fields.dim,
 				alen:              test.fields.alen,
@@ -10762,6 +11066,7 @@ func Test_ngt_UUIDs(t *testing.T) {
 		nocie             uint64
 		nogce             uint64
 		wfci              uint64
+		nobic             uint64
 		inMem             bool
 		dim               int
 		alen              int
@@ -10825,6 +11130,7 @@ func Test_ngt_UUIDs(t *testing.T) {
 		           nocie:0,
 		           nogce:0,
 		           wfci:0,
+		           nobic:0,
 		           inMem:false,
 		           dim:0,
 		           alen:0,
@@ -10881,6 +11187,7 @@ func Test_ngt_UUIDs(t *testing.T) {
 		           nocie:0,
 		           nogce:0,
 		           wfci:0,
+		           nobic:0,
 		           inMem:false,
 		           dim:0,
 		           alen:0,
@@ -10946,6 +11253,7 @@ func Test_ngt_UUIDs(t *testing.T) {
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				wfci:              test.fields.wfci,
+				nobic:             test.fields.nobic,
 				inMem:             test.fields.inMem,
 				dim:               test.fields.dim,
 				alen:              test.fields.alen,
@@ -10993,6 +11301,7 @@ func Test_ngt_NumberOfCreateIndexExecution(t *testing.T) {
 		nocie             uint64
 		nogce             uint64
 		wfci              uint64
+		nobic             uint64
 		inMem             bool
 		dim               int
 		alen              int
@@ -11052,6 +11361,7 @@ func Test_ngt_NumberOfCreateIndexExecution(t *testing.T) {
 		           nocie:0,
 		           nogce:0,
 		           wfci:0,
+		           nobic:0,
 		           inMem:false,
 		           dim:0,
 		           alen:0,
@@ -11105,6 +11415,7 @@ func Test_ngt_NumberOfCreateIndexExecution(t *testing.T) {
 		           nocie:0,
 		           nogce:0,
 		           wfci:0,
+		           nobic:0,
 		           inMem:false,
 		           dim:0,
 		           alen:0,
@@ -11170,6 +11481,7 @@ func Test_ngt_NumberOfCreateIndexExecution(t *testing.T) {
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				wfci:              test.fields.wfci,
+				nobic:             test.fields.nobic,
 				inMem:             test.fields.inMem,
 				dim:               test.fields.dim,
 				alen:              test.fields.alen,
@@ -11217,6 +11529,7 @@ func Test_ngt_NumberOfProactiveGCExecution(t *testing.T) {
 		nocie             uint64
 		nogce             uint64
 		wfci              uint64
+		nobic             uint64
 		inMem             bool
 		dim               int
 		alen              int
@@ -11276,6 +11589,7 @@ func Test_ngt_NumberOfProactiveGCExecution(t *testing.T) {
 		           nocie:0,
 		           nogce:0,
 		           wfci:0,
+		           nobic:0,
 		           inMem:false,
 		           dim:0,
 		           alen:0,
@@ -11329,6 +11643,7 @@ func Test_ngt_NumberOfProactiveGCExecution(t *testing.T) {
 		           nocie:0,
 		           nogce:0,
 		           wfci:0,
+		           nobic:0,
 		           inMem:false,
 		           dim:0,
 		           alen:0,
@@ -11394,6 +11709,7 @@ func Test_ngt_NumberOfProactiveGCExecution(t *testing.T) {
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				wfci:              test.fields.wfci,
+				nobic:             test.fields.nobic,
 				inMem:             test.fields.inMem,
 				dim:               test.fields.dim,
 				alen:              test.fields.alen,
@@ -11441,6 +11757,7 @@ func Test_ngt_gc(t *testing.T) {
 		nocie             uint64
 		nogce             uint64
 		wfci              uint64
+		nobic             uint64
 		inMem             bool
 		dim               int
 		alen              int
@@ -11495,6 +11812,7 @@ func Test_ngt_gc(t *testing.T) {
 		           nocie:0,
 		           nogce:0,
 		           wfci:0,
+		           nobic:0,
 		           inMem:false,
 		           dim:0,
 		           alen:0,
@@ -11548,6 +11866,7 @@ func Test_ngt_gc(t *testing.T) {
 		           nocie:0,
 		           nogce:0,
 		           wfci:0,
+		           nobic:0,
 		           inMem:false,
 		           dim:0,
 		           alen:0,
@@ -11613,6 +11932,7 @@ func Test_ngt_gc(t *testing.T) {
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				wfci:              test.fields.wfci,
+				nobic:             test.fields.nobic,
 				inMem:             test.fields.inMem,
 				dim:               test.fields.dim,
 				alen:              test.fields.alen,
@@ -11660,6 +11980,7 @@ func Test_ngt_Len(t *testing.T) {
 		nocie             uint64
 		nogce             uint64
 		wfci              uint64
+		nobic             uint64
 		inMem             bool
 		dim               int
 		alen              int
@@ -11719,6 +12040,7 @@ func Test_ngt_Len(t *testing.T) {
 		           nocie:0,
 		           nogce:0,
 		           wfci:0,
+		           nobic:0,
 		           inMem:false,
 		           dim:0,
 		           alen:0,
@@ -11772,6 +12094,7 @@ func Test_ngt_Len(t *testing.T) {
 		           nocie:0,
 		           nogce:0,
 		           wfci:0,
+		           nobic:0,
 		           inMem:false,
 		           dim:0,
 		           alen:0,
@@ -11837,6 +12160,7 @@ func Test_ngt_Len(t *testing.T) {
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				wfci:              test.fields.wfci,
+				nobic:             test.fields.nobic,
 				inMem:             test.fields.inMem,
 				dim:               test.fields.dim,
 				alen:              test.fields.alen,
@@ -11884,6 +12208,7 @@ func Test_ngt_InsertVQueueBufferLen(t *testing.T) {
 		nocie             uint64
 		nogce             uint64
 		wfci              uint64
+		nobic             uint64
 		inMem             bool
 		dim               int
 		alen              int
@@ -11943,6 +12268,7 @@ func Test_ngt_InsertVQueueBufferLen(t *testing.T) {
 		           nocie:0,
 		           nogce:0,
 		           wfci:0,
+		           nobic:0,
 		           inMem:false,
 		           dim:0,
 		           alen:0,
@@ -11996,6 +12322,7 @@ func Test_ngt_InsertVQueueBufferLen(t *testing.T) {
 		           nocie:0,
 		           nogce:0,
 		           wfci:0,
+		           nobic:0,
 		           inMem:false,
 		           dim:0,
 		           alen:0,
@@ -12061,6 +12388,7 @@ func Test_ngt_InsertVQueueBufferLen(t *testing.T) {
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				wfci:              test.fields.wfci,
+				nobic:             test.fields.nobic,
 				inMem:             test.fields.inMem,
 				dim:               test.fields.dim,
 				alen:              test.fields.alen,
@@ -12108,6 +12436,7 @@ func Test_ngt_DeleteVQueueBufferLen(t *testing.T) {
 		nocie             uint64
 		nogce             uint64
 		wfci              uint64
+		nobic             uint64
 		inMem             bool
 		dim               int
 		alen              int
@@ -12167,6 +12496,7 @@ func Test_ngt_DeleteVQueueBufferLen(t *testing.T) {
 		           nocie:0,
 		           nogce:0,
 		           wfci:0,
+		           nobic:0,
 		           inMem:false,
 		           dim:0,
 		           alen:0,
@@ -12220,6 +12550,7 @@ func Test_ngt_DeleteVQueueBufferLen(t *testing.T) {
 		           nocie:0,
 		           nogce:0,
 		           wfci:0,
+		           nobic:0,
 		           inMem:false,
 		           dim:0,
 		           alen:0,
@@ -12285,6 +12616,7 @@ func Test_ngt_DeleteVQueueBufferLen(t *testing.T) {
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				wfci:              test.fields.wfci,
+				nobic:             test.fields.nobic,
 				inMem:             test.fields.inMem,
 				dim:               test.fields.dim,
 				alen:              test.fields.alen,
@@ -12332,6 +12664,7 @@ func Test_ngt_GetDimensionSize(t *testing.T) {
 		nocie             uint64
 		nogce             uint64
 		wfci              uint64
+		nobic             uint64
 		inMem             bool
 		dim               int
 		alen              int
@@ -12391,6 +12724,7 @@ func Test_ngt_GetDimensionSize(t *testing.T) {
 		           nocie:0,
 		           nogce:0,
 		           wfci:0,
+		           nobic:0,
 		           inMem:false,
 		           dim:0,
 		           alen:0,
@@ -12444,6 +12778,7 @@ func Test_ngt_GetDimensionSize(t *testing.T) {
 		           nocie:0,
 		           nogce:0,
 		           wfci:0,
+		           nobic:0,
 		           inMem:false,
 		           dim:0,
 		           alen:0,
@@ -12509,6 +12844,7 @@ func Test_ngt_GetDimensionSize(t *testing.T) {
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				wfci:              test.fields.wfci,
+				nobic:             test.fields.nobic,
 				inMem:             test.fields.inMem,
 				dim:               test.fields.dim,
 				alen:              test.fields.alen,
@@ -12559,6 +12895,7 @@ func Test_ngt_Close(t *testing.T) {
 		nocie             uint64
 		nogce             uint64
 		wfci              uint64
+		nobic             uint64
 		inMem             bool
 		dim               int
 		alen              int
@@ -12622,6 +12959,7 @@ func Test_ngt_Close(t *testing.T) {
 		           nocie:0,
 		           nogce:0,
 		           wfci:0,
+		           nobic:0,
 		           inMem:false,
 		           dim:0,
 		           alen:0,
@@ -12678,6 +13016,7 @@ func Test_ngt_Close(t *testing.T) {
 		           nocie:0,
 		           nogce:0,
 		           wfci:0,
+		           nobic:0,
 		           inMem:false,
 		           dim:0,
 		           alen:0,
@@ -12743,6 +13082,7 @@ func Test_ngt_Close(t *testing.T) {
 				nocie:             test.fields.nocie,
 				nogce:             test.fields.nogce,
 				wfci:              test.fields.wfci,
+				nobic:             test.fields.nobic,
 				inMem:             test.fields.inMem,
 				dim:               test.fields.dim,
 				alen:              test.fields.alen,
@@ -12771,6 +13111,234 @@ func Test_ngt_Close(t *testing.T) {
 
 			err := n.Close(test.args.ctx)
 			if err := checkFunc(test.want, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func Test_ngt_BrokenIndexCount(t *testing.T) {
+	type fields struct {
+		core              core.NGT
+		eg                errgroup.Group
+		kvs               kvs.BidiMap
+		fmap              map[string]int64
+		vq                vqueue.Queue
+		indexing          atomic.Value
+		saving            atomic.Value
+		lastNocie         uint64
+		nocie             uint64
+		nogce             uint64
+		wfci              uint64
+		nobic             uint64
+		inMem             bool
+		dim               int
+		alen              int
+		lim               time.Duration
+		dur               time.Duration
+		sdur              time.Duration
+		minLit            time.Duration
+		maxLit            time.Duration
+		litFactor         time.Duration
+		enableProactiveGC bool
+		enableCopyOnWrite bool
+		path              string
+		tmpPath           atomic.Value
+		oldPath           string
+		basePath          string
+		brokenPath        string
+		backupGen         uint64
+		poolSize          uint32
+		radius            float32
+		epsilon           float32
+		idelay            time.Duration
+		dcd               bool
+		kvsdbConcurrency  int
+		historyLimit      int
+	}
+	type want struct {
+		want uint64
+	}
+	type test struct {
+		name       string
+		fields     fields
+		want       want
+		checkFunc  func(want, uint64) error
+		beforeFunc func(*testing.T)
+		afterFunc  func(*testing.T)
+	}
+	defaultCheckFunc := func(w want, got uint64) error {
+		if !reflect.DeepEqual(got, w.want) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       fields: fields {
+		           core:nil,
+		           eg:nil,
+		           kvs:nil,
+		           fmap:nil,
+		           vq:nil,
+		           indexing:nil,
+		           saving:nil,
+		           lastNocie:0,
+		           nocie:0,
+		           nogce:0,
+		           wfci:0,
+		           nobic:0,
+		           inMem:false,
+		           dim:0,
+		           alen:0,
+		           lim:nil,
+		           dur:nil,
+		           sdur:nil,
+		           minLit:nil,
+		           maxLit:nil,
+		           litFactor:nil,
+		           enableProactiveGC:false,
+		           enableCopyOnWrite:false,
+		           path:"",
+		           tmpPath:nil,
+		           oldPath:"",
+		           basePath:"",
+		           brokenPath:"",
+		           backupGen:0,
+		           poolSize:0,
+		           radius:0,
+		           epsilon:0,
+		           idelay:nil,
+		           dcd:false,
+		           kvsdbConcurrency:0,
+		           historyLimit:0,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           fields: fields {
+		           core:nil,
+		           eg:nil,
+		           kvs:nil,
+		           fmap:nil,
+		           vq:nil,
+		           indexing:nil,
+		           saving:nil,
+		           lastNocie:0,
+		           nocie:0,
+		           nogce:0,
+		           wfci:0,
+		           nobic:0,
+		           inMem:false,
+		           dim:0,
+		           alen:0,
+		           lim:nil,
+		           dur:nil,
+		           sdur:nil,
+		           minLit:nil,
+		           maxLit:nil,
+		           litFactor:nil,
+		           enableProactiveGC:false,
+		           enableCopyOnWrite:false,
+		           path:"",
+		           tmpPath:nil,
+		           oldPath:"",
+		           basePath:"",
+		           brokenPath:"",
+		           backupGen:0,
+		           poolSize:0,
+		           radius:0,
+		           epsilon:0,
+		           idelay:nil,
+		           dcd:false,
+		           kvsdbConcurrency:0,
+		           historyLimit:0,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(tt)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(tt)
+			}
+			checkFunc := test.checkFunc
+			if test.checkFunc == nil {
+				checkFunc = defaultCheckFunc
+			}
+			n := &ngt{
+				core:              test.fields.core,
+				eg:                test.fields.eg,
+				kvs:               test.fields.kvs,
+				fmap:              test.fields.fmap,
+				vq:                test.fields.vq,
+				indexing:          test.fields.indexing,
+				saving:            test.fields.saving,
+				lastNocie:         test.fields.lastNocie,
+				nocie:             test.fields.nocie,
+				nogce:             test.fields.nogce,
+				wfci:              test.fields.wfci,
+				nobic:             test.fields.nobic,
+				inMem:             test.fields.inMem,
+				dim:               test.fields.dim,
+				alen:              test.fields.alen,
+				lim:               test.fields.lim,
+				dur:               test.fields.dur,
+				sdur:              test.fields.sdur,
+				minLit:            test.fields.minLit,
+				maxLit:            test.fields.maxLit,
+				litFactor:         test.fields.litFactor,
+				enableProactiveGC: test.fields.enableProactiveGC,
+				enableCopyOnWrite: test.fields.enableCopyOnWrite,
+				path:              test.fields.path,
+				tmpPath:           test.fields.tmpPath,
+				oldPath:           test.fields.oldPath,
+				basePath:          test.fields.basePath,
+				brokenPath:        test.fields.brokenPath,
+				backupGen:         test.fields.backupGen,
+				poolSize:          test.fields.poolSize,
+				radius:            test.fields.radius,
+				epsilon:           test.fields.epsilon,
+				idelay:            test.fields.idelay,
+				dcd:               test.fields.dcd,
+				kvsdbConcurrency:  test.fields.kvsdbConcurrency,
+				historyLimit:      test.fields.historyLimit,
+			}
+
+			got := n.BrokenIndexCount()
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
