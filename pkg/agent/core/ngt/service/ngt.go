@@ -301,6 +301,7 @@ func (n *ngt) prepareFolders(ctx context.Context) (err error) {
 		log.Warnf("failed to list files in broken index backup directory: %v", err)
 	}
 	atomic.SwapUint64(&n.nobic, uint64(len(files)))
+	log.Debugf("broken index count: %v", n.nobic)
 
 	if n.enableCopyOnWrite && len(n.path) != 0 {
 		err = file.MkdirAll(n.oldPath, fs.ModePerm)
@@ -524,6 +525,7 @@ func (n *ngt) backupBroken(ctx context.Context) error {
 		return err
 	}
 	atomic.SwapUint64(&n.nobic, uint64(len(files)))
+	log.Debugf("broken index count updated: %v", n.nobic)
 
 	return nil
 }
