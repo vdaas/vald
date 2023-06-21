@@ -193,9 +193,18 @@ define gen-go-test-sources
 			exit 1; \
 		fi; \
 	done
-	@for f in $(GO_PKG_SOURCES); do \
+	@for f in $(GO_SOURCES_PKG); do \
 		echo "Generating go test file: $$f"; \
 		gotests -w -exported -template_dir $(ROOTDIR)/assets/test/templates/common -all $(patsubst %_test.go,%.go,$$f); \
+		RESULT=$$?; \
+		if [ ! $$RESULT -eq 0 ]; then \
+			echo $$RESULT; \
+			exit 1; \
+		fi; \
+	done
+	@for f in $(GO_SOURCES_PKG_USECASE); do \
+		echo "Generating go test file: $$f"; \
+		gotests -w -exported -template_dir $(ROOTDIR)/assets/test/templates/common -only New $(patsubst %_test.go,%.go,$$f); \
 		RESULT=$$?; \
 		if [ ! $$RESULT -eq 0 ]; then \
 			echo $$RESULT; \
