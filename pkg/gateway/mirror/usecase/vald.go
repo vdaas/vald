@@ -24,6 +24,7 @@ import (
 	"github.com/vdaas/vald/internal/observability"
 	backoffmetrics "github.com/vdaas/vald/internal/observability/metrics/backoff"
 	cbmetrics "github.com/vdaas/vald/internal/observability/metrics/circuitbreaker"
+	mirrormetrics "github.com/vdaas/vald/internal/observability/metrics/gateway/mirror"
 	"github.com/vdaas/vald/internal/runner"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/servers/server"
@@ -130,6 +131,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 			cfg.Observability,
 			backoffmetrics.New(),
 			cbmetrics.New(),
+			mirrormetrics.New(mirr),
 		)
 		if err != nil {
 			return nil, err
