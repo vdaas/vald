@@ -183,6 +183,9 @@ define run-e2e-sidecar-test
 	    -kubeconfig=$(KUBECONFIG)
 endef
 
+# Generate all go tests on cmd, hack and internal packages with exclusion (see GO_SOURCES),
+# and generate only exported function tests on pkg package with exclusion (see GO_SOURCES_PKG),
+# and generate only New() test on pkg/*/usecase.
 define gen-go-test-sources
 	@for f in $(GO_SOURCES); do \
 		echo "Generating go test file: $$f"; \

@@ -215,7 +215,6 @@ GO_SOURCES_PKG = $(eval GO_SOURCES_PKG := $(shell find \
 		./pkg \
 		-not -path './pkg/*/router/*' \
 		-not -path './pkg/*/handler/rest/*' \
-		-not -path './pkg/*/handler/grpc/*' \
 		-not -path './pkg/*/usecase/*' \
 		-type f \
 		-name '*.go' \
@@ -232,6 +231,14 @@ GO_SOURCES_PKG_USECASE = $(eval GO_SOURCES_PKG_USECASE := $(shell find \
 		-not -name '*_test.go' \
 		-not -name '*_mock.go' \
 		-not -name 'doc.go'))$(GO_SOURCES_PKG_USECASE)
+GO_SOURCES_PKG_NO_EXCL = $(eval GO_SOURCES_PKG_NO_EXCL := $(shell find \
+		./pkg \
+		-type f \
+		-name '*.go' \
+		-not -regex '.*options?\.go' \
+		-not -name '*_test.go' \
+		-not -name '*_mock.go' \
+		-not -name 'doc.go'))$(GO_SOURCES_PKG_NO_EXCL)
 GO_OPTION_SOURCES = $(eval GO_OPTION_SOURCES := $(shell find \
 		./cmd \
 		./hack \
@@ -273,9 +280,10 @@ GO_SOURCES_INTERNAL = $(eval GO_SOURCES_INTERNAL := $(shell find \
 GO_TEST_SOURCES = $(GO_SOURCES:%.go=%_test.go)
 GO_TEST_SOURCES_PKG = $(GO_SOURCES_PKG:%.go=%_test.go)
 GO_TEST_SOURCES_PKG_USECASE = $(GO_SOURCES_PKG_USECASE:%.go=%_test.go)
+GO_TEST_SOURCES_PKG_NO_EXCL =  $(GO_SOURCES_PKG_NO_EXCL:%.go=%_test.go)
 GO_OPTION_TEST_SOURCES = $(GO_OPTION_SOURCES:%.go=%_test.go)
 
-GO_ALL_TEST_SOURCES = $(GO_TEST_SOURCES) $(GO_TEST_SOURCES_PKG) $(GO_TEST_SOURCES_PKG_USECASE) $(GO_OPTION_TEST_SOURCES)
+GO_ALL_TEST_SOURCES = $(GO_TEST_SOURCES) $(GO_TEST_SOURCES_PKG_NO_EXCL) $(GO_OPTION_TEST_SOURCES)
 
 DOCKER           ?= docker
 DOCKER_OPTS      ?=
