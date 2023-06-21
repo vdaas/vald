@@ -266,7 +266,7 @@ gotests/gen: \
 	gotests/gen-test \
 	test/remove-empty \
 	gotests/patch \
-	gotests/comment-unimplemented \
+	comment-unimpl-test \
 	format/go/test
 
 .PHONY: gotests/gen-test
@@ -302,13 +302,12 @@ gotests/patch-placeholder:
 		echo "// $(TEST_NOT_IMPL_PLACEHOLDER)" >>"$$f"; \
 	done
 
-.PHONY: gotests/comment-unimplemented
-## apply patches to the placeholder of the generated go test files
-# sed -r -i -e '/CREATE FUNCTION plpgsql_call_handler/I,+2 s/^/-- /'
-gotests/comment-unimplemented:
+.PHONY: gotests/comment-unimpl-test
+## comment out unimplemented tests
+gotests/comment-unimpl-test:
 	@$(call green, "apply placeholder patches to go test files...")
 	for f in $(GO_ALL_TEST_SOURCES) ; do \
 		if [ ! -f "$$f" ] ; then continue; fi; \
-		sed -r -i -e '/\/\/ $(TEST_NOT_IMPL_PLACEHOLDER)/,+999999 s/^/\/\/ /' $$f; \
+		sed -r -i -e '/\/\/ $(TEST_NOT_IMPL_PLACEHOLDER)/,+9999999 s/^/\/\/ /' $$f; \
 		sed -i 's/\/\/ \/\/ $(TEST_NOT_IMPL_PLACEHOLDER)/\/\/ $(TEST_NOT_IMPL_PLACEHOLDER)/g' $$f; \
 	done
