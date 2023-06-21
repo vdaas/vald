@@ -81,12 +81,15 @@ RUN { \
         echo "  chart: helm-charts/vald-helm-operator"; \
     } > /tmp/watches.yaml
 
+WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/Makefile.d
+COPY Makefile.d .
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}
-
+COPY Makefile .
+COPY .git .
 COPY go.mod .
 COPY go.sum .
 
-RUN go mod download
+RUN make go/download
 
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/internal/errors
 COPY internal/errors .
@@ -109,14 +112,7 @@ COPY charts .
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/hack/helm/schema/gen
 COPY hack/helm/schema/gen .
 
-WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/Makefile.d
-COPY Makefile.d .
-
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}
-COPY Makefile .
-
-COPY .git .
-
 RUN make helm/schema/vald helm/schema/vald-helm-operator \
     && cp -r charts /charts
 

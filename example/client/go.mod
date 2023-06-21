@@ -14,7 +14,7 @@ replace (
 	google.golang.org/genproto => google.golang.org/genproto v0.0.0-20230530153820-e85fd2cbaebc
 	google.golang.org/genproto/googleapis/api => google.golang.org/genproto/googleapis/api v0.0.0-20230530153820-e85fd2cbaebc
 	google.golang.org/genproto/googleapis/rpc => google.golang.org/genproto/googleapis/rpc v0.0.0-20230530153820-e85fd2cbaebc
-	google.golang.org/grpc => google.golang.org/grpc v1.55.0
+	google.golang.org/grpc => google.golang.org/grpc v1.56.0
 	google.golang.org/protobuf => google.golang.org/protobuf v1.30.0
 	gopkg.in/yaml.v2 => gopkg.in/yaml.v2 v2.4.0
 	gopkg.in/yaml.v3 => gopkg.in/yaml.v3 v3.0.1
@@ -23,13 +23,13 @@ replace (
 require (
 	github.com/kpango/fuid v0.0.0-20221203053508-503b5ad89aa1
 	github.com/kpango/glg v1.6.14
-	github.com/vdaas/vald-client-go v1.7.5
+	github.com/vdaas/vald-client-go v1.7.6
 	gonum.org/v1/hdf5 v0.0.0-20210714002203-8c5d23bc6946
 	google.golang.org/grpc v1.55.0
 )
 
 require (
-	github.com/envoyproxy/protoc-gen-validate v0.10.0 // indirect
+	github.com/envoyproxy/protoc-gen-validate v0.10.1 // indirect
 	github.com/goccy/go-json v0.10.2 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/kpango/fastime v1.1.9 // indirect

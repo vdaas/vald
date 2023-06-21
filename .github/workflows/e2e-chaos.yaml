@@ -127,24 +127,15 @@ jobs:
         run: |
           make hack/benchmark/assets/dataset/${DATASET}
           go version
-          go test \
-            -race \
-            -mod=readonly \
-            -v tests/e2e/crud/crud_test.go \
-            -tags "e2e" \
-            -run "TestE2EInsertAndSearch" \
-            -timeout 15m \
-            -host=localhost \
-            -port=8081 \
-            -dataset=`pwd`/hack/benchmark/assets/dataset/${DATASET} \
-            -insert-num=10000 \
-            -search-num=10000 \
-            -wait-after-insert=2m \
-            -portforward \
-            -portforward-pod-name=${POD_NAME} \
-            -portforward-pod-port=8081 \
-            -kubeconfig=${KUBECONFIG} \
-            -namespace=default
+          make E2E_BIND_PORT=8081 \
+            E2E_DATASET_NAME=${DATASET} \
+            E2E_TIMEOUT=15m \
+            E2E_INSERT_COUNT=10000 \
+            E2E_SEARCH_COUNT=10000 \
+            E2E_WAIT_FOR_CREATE_INDEX_DURATION=5m \
+            E2E_TARGET_POD_NAME=${POD_NAME} \
+            E2E_TARGET_NAMESPACE=default \
+            e2e/insert/search
         env:
           DATASET: fashion-mnist-784-euclidean.hdf5
           POD_NAME: ${{ steps.deploy_vald.outputs.POD_NAME }}
@@ -222,24 +213,15 @@ jobs:
           make hack/benchmark/assets/dataset/${DATASET}
           podname=`kubectl get pods --selector=app=vald-lb-gateway | tail -1 | awk '{print $1}'`
           go version
-          go test \
-            -race \
-            -mod=readonly \
-            -v tests/e2e/crud/crud_test.go \
-            -tags "e2e" \
-            -run "TestE2EInsertAndSearch" \
-            -timeout 15m \
-            -host=localhost \
-            -port=8081 \
-            -dataset=`pwd`/hack/benchmark/assets/dataset/${DATASET} \
-            -insert-num=10000 \
-            -search-num=10000 \
-            -wait-after-insert=2m \
-            -portforward \
-            -portforward-pod-name=${podname} \
-            -portforward-pod-port=8081 \
-            -kubeconfig=${KUBECONFIG} \
-            -namespace=default
+          make E2E_BIND_PORT=8081 \
+            E2E_DATASET_NAME=${DATASET} \
+            E2E_TIMEOUT=15m \
+            E2E_INSERT_COUNT=10000 \
+            E2E_SEARCH_COUNT=10000 \
+            E2E_WAIT_FOR_CREATE_INDEX_DURATION=2m \
+            E2E_TARGET_POD_NAME=${podname} \
+            E2E_TARGET_NAMESPACE=default \
+            e2e/insert/search
         env:
           DATASET: fashion-mnist-784-euclidean.hdf5
   agent-network-partition:
@@ -315,24 +297,15 @@ jobs:
         run: |
           make hack/benchmark/assets/dataset/${DATASET}
           go version
-          go test \
-            -race \
-            -mod=readonly \
-            -v tests/e2e/crud/crud_test.go \
-            -tags "e2e" \
-            -run "TestE2EInsertAndSearch" \
-            -timeout 15m \
-            -host=localhost \
-            -port=8081 \
-            -dataset=`pwd`/hack/benchmark/assets/dataset/${DATASET} \
-            -insert-num=10000 \
-            -search-num=10000 \
-            -wait-after-insert=2m \
-            -portforward \
-            -portforward-pod-name=${POD_NAME} \
-            -portforward-pod-port=8081 \
-            -kubeconfig=${KUBECONFIG} \
-            -namespace=default
+          make E2E_BIND_PORT=8081 \
+            E2E_DATASET_NAME=${DATASET} \
+            E2E_TIMEOUT=15m \
+            E2E_INSERT_COUNT=10000 \
+            E2E_SEARCH_COUNT=10000 \
+            E2E_WAIT_FOR_CREATE_INDEX_DURATION=2m \
+            E2E_TARGET_POD_NAME=${POD_NAME} \
+            E2E_TARGET_NAMESPACE=default \
+            e2e/insert/search
         env:
           DATASET: fashion-mnist-784-euclidean.hdf5
           POD_NAME: ${{ steps.deploy_vald.outputs.POD_NAME }}
@@ -409,23 +382,14 @@ jobs:
         run: |
           make hack/benchmark/assets/dataset/${DATASET}
           go version
-          go test \
-            -race \
-            -mod=readonly \
-            -v tests/e2e/crud/crud_test.go \
-            -tags "e2e" \
-            -run "TestE2EInsertOnly" \
-            -timeout 15m \
-            -host=localhost \
-            -port=8081 \
-            -dataset=`pwd`/hack/benchmark/assets/dataset/${DATASET} \
-            -insert-num=10000 \
-            -wait-after-insert=2m \
-            -portforward \
-            -portforward-pod-name=${POD_NAME} \
-            -portforward-pod-port=8081 \
-            -kubeconfig=${KUBECONFIG} \
-            -namespace=default
+          make E2E_BIND_PORT=8081 \
+            E2E_DATASET_NAME=${DATASET} \
+            E2E_TIMEOUT=15m \
+            E2E_INSERT_COUNT=10000 \
+            E2E_WAIT_FOR_CREATE_INDEX_DURATION=2m \
+            E2E_TARGET_POD_NAME=${POD_NAME} \
+            E2E_TARGET_NAMESPACE=default \
+            e2e/insert
         env:
           DATASET: fashion-mnist-784-euclidean.hdf5
           POD_NAME: ${{ steps.deploy_vald.outputs.POD_NAME }}
@@ -433,22 +397,14 @@ jobs:
         run: |
           make hack/benchmark/assets/dataset/${DATASET}
           go version
-          go test \
-            -race \
-            -mod=readonly \
-            -v tests/e2e/crud/crud_test.go \
-            -tags "e2e" \
-            -run "TestE2ESearchOnly" \
-            -timeout 15m \
-            -host=localhost \
-            -port=8081 \
-            -dataset=`pwd`/hack/benchmark/assets/dataset/${DATASET} \
-            -search-num=10000 \
-            -portforward \
-            -portforward-pod-name=${POD_NAME} \
-            -portforward-pod-port=8081 \
-            -kubeconfig=${KUBECONFIG} \
-            -namespace=default
+          make E2E_BIND_PORT=8081 \
+            E2E_DATASET_NAME=${DATASET} \
+            E2E_TIMEOUT=15m \
+            E2E_SEARCH_COUNT=10000 \
+            E2E_WAIT_FOR_CREATE_INDEX_DURATION=2m \
+            E2E_TARGET_POD_NAME=${POD_NAME} \
+            E2E_TARGET_NAMESPACE=default \
+            e2e/search
         env:
           DATASET: fashion-mnist-784-euclidean.hdf5
           POD_NAME: ${{ steps.deploy_vald.outputs.POD_NAME }}

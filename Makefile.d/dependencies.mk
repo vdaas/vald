@@ -36,6 +36,10 @@ update/libs: \
 	update/valdcli \
 	update/yq
 
+.PHONY: go/download
+## download Go package dependencies
+go/download:
+	GOPRIVATE=$(GOPRIVATE) go mod download
 
 .PHONY: go/deps
 ## install Go package dependencies

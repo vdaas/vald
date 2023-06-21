@@ -19,6 +19,11 @@
 e2e:
 	$(call run-e2e-crud-test,-run TestE2EStandardCRUD)
 
+.PHONY: e2e/skip
+## run e2e with skip exists operation
+e2e/skip:
+	$(call run-e2e-crud-test,-run TestE2ECRUDWithSkipStrictExistCheck)
+
 .PHONY: e2e/multi
 ## run e2e multiple apis
 e2e/multi:
@@ -53,3 +58,20 @@ e2e/upsert:
 ## run remove e2e
 e2e/remove:
 	$(call run-e2e-crud-test,-run TestE2ERemoveOnly)
+
+.PHONY: e2e/insert/search
+## run insert and search e2e
+e2e/insert/search:
+	$(call run-e2e-crud-test,-run TestE2EInsertAndSearch)
+
+.PHONY: e2e/maxdim
+## run e2e/maxdim
+e2e/maxdim:
+	$(call run-e2e-max-dim-test)
+
+.PHONY: e2e/sidecar
+## run e2e with sidecar operation
+e2e/sidecar:
+	$(call run-e2e-sidecar-test,-run TestE2EForSidecar)
+
+

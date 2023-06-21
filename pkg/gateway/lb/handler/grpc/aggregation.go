@@ -121,6 +121,10 @@ func (s *server) aggregationSearch(ctx context.Context, aggr Aggregator, cfg *pa
 						codes.ResourceExhausted:
 						log.Warn(err)
 						return err
+					case codes.NotFound,
+						codes.Aborted,
+						codes.InvalidArgument:
+						return nil
 					}
 				}
 				log.Debug(err)
@@ -141,7 +145,6 @@ func (s *server) aggregationSearch(ctx context.Context, aggr Aggregator, cfg *pa
 					}
 					log.Debug(err)
 					return nil
-
 				default:
 					r, err = f(sctx, vc, copts...)
 					if err != nil {
@@ -183,6 +186,10 @@ func (s *server) aggregationSearch(ctx context.Context, aggr Aggregator, cfg *pa
 								codes.ResourceExhausted:
 								log.Warn(err)
 								return err
+							case codes.NotFound,
+								codes.Aborted,
+								codes.InvalidArgument:
+								return nil
 							}
 						}
 						log.Debug(err)
@@ -208,149 +215,147 @@ func (s *server) aggregationSearch(ctx context.Context, aggr Aggregator, cfg *pa
 			return nil
 		})
 	}))
-	for {
-		select {
-		case <-ectx.Done():
-			err = eg.Wait()
-			if errors.Is(err, errors.ErrGRPCClientConnNotFound("*")) {
-				err = status.WrapWithInternal("search API connection not found", err,
-					&errdetails.RequestInfo{
-						RequestId:   cfg.GetRequestId(),
-						ServingData: errdetails.Serialize(cfg),
-					},
-					&errdetails.ResourceInfo{
-						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.search",
-						ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
-					})
-				if span != nil {
-					span.RecordError(err)
-					span.SetAttributes(trace.StatusCodeInternal(err.Error())...)
-					span.SetStatus(trace.StatusError, err.Error())
-				}
-				return nil, err
-			}
-			res = aggr.Result()
-			if num != 0 && len(res.GetResults()) > num {
-				res.Results = res.GetResults()[:num]
-			}
 
-			if errors.Is(ectx.Err(), context.DeadlineExceeded) {
-				if len(res.GetResults()) == 0 {
-					err = status.WrapWithDeadlineExceeded(
-						"error search result length is 0 due to the timeoutage limit",
-						errors.ErrEmptySearchResult,
-						&errdetails.RequestInfo{
-							RequestId:   cfg.GetRequestId(),
-							ServingData: errdetails.Serialize(cfg),
-						},
-						&errdetails.ResourceInfo{
-							ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.search",
-							ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
-						}, info.Get(),
-					)
-					if span != nil {
-						span.RecordError(err)
-						span.SetAttributes(trace.StatusCodeDeadlineExceeded(err.Error())...)
-						span.SetStatus(trace.StatusError, err.Error())
-					}
-					return nil, err
-				}
-				if 0 < min && len(res.GetResults()) < min {
-					err = status.WrapWithDeadlineExceeded(
-						fmt.Sprintf("error search result length is not enough due to the timeoutage limit, required: %d, found: %d", min, len(res.GetResults())),
-						errors.ErrInsuffcientSearchResult,
-						&errdetails.RequestInfo{
-							RequestId:   cfg.GetRequestId(),
-							ServingData: errdetails.Serialize(cfg),
-						},
-						&errdetails.ResourceInfo{
-							ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.search",
-							ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
-						}, info.Get(),
-					)
-					if span != nil {
-						span.RecordError(err)
-						span.SetAttributes(trace.StatusCodeDeadlineExceeded(err.Error())...)
-						span.SetStatus(trace.StatusError, err.Error())
-					}
-					return nil, err
-				}
-			}
+	<-ectx.Done() // Blocking here
 
-			if err != nil {
-				st, msg, err := status.ParseError(err, codes.Internal,
-					"failed to parse search gRPC error response",
-					&errdetails.RequestInfo{
-						RequestId:   cfg.GetRequestId(),
-						ServingData: errdetails.Serialize(cfg),
-					},
-					&errdetails.ResourceInfo{
-						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.search",
-						ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
-					}, info.Get())
-				if span != nil {
-					span.RecordError(err)
-					span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
-					span.SetStatus(trace.StatusError, err.Error())
-				}
-				log.Warn(err)
-				if len(res.GetResults()) == 0 {
-					return nil, err
-				}
-			}
-			if num != 0 && len(res.GetResults()) == 0 {
-				if err == nil {
-					err = errors.ErrEmptySearchResult
-				}
-				err = status.WrapWithNotFound("error search result length is 0", err,
-					&errdetails.RequestInfo{
-						RequestId:   cfg.GetRequestId(),
-						ServingData: errdetails.Serialize(cfg),
-					},
-					&errdetails.ResourceInfo{
-						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.search",
-						ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
-					}, info.Get())
-				if span != nil {
-					span.RecordError(err)
-					span.SetAttributes(trace.StatusCodeNotFound(err.Error())...)
-					span.SetStatus(trace.StatusError, err.Error())
-				}
-				return nil, err
-			}
+	err = eg.Wait()
+	if errors.Is(err, errors.ErrGRPCClientConnNotFound("*")) {
+		err = status.WrapWithInternal("search API connection not found", err,
+			&errdetails.RequestInfo{
+				RequestId:   cfg.GetRequestId(),
+				ServingData: errdetails.Serialize(cfg),
+			},
+			&errdetails.ResourceInfo{
+				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.search",
+				ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
+			})
+		if span != nil {
+			span.RecordError(err)
+			span.SetAttributes(trace.StatusCodeInternal(err.Error())...)
+			span.SetStatus(trace.StatusError, err.Error())
+		}
+		return nil, err
+	}
+	res = aggr.Result()
+	if num != 0 && len(res.GetResults()) > num {
+		res.Results = res.GetResults()[:num]
+	}
 
-			if 0 < min && len(res.GetResults()) < min {
-				if err == nil {
-					err = errors.ErrInsuffcientSearchResult
-				}
-				if span != nil {
-					span.RecordError(err)
-					span.SetAttributes(trace.StatusCodeNotFound(err.Error())...)
-					span.SetStatus(trace.StatusError, err.Error())
-				}
-				err = status.WrapWithNotFound(
-					fmt.Sprintf("error search result length is not enough required: %d, found: %d", min, len(res.GetResults())),
-					errors.ErrInsuffcientSearchResult,
-					&errdetails.RequestInfo{
-						RequestId:   cfg.GetRequestId(),
-						ServingData: errdetails.Serialize(cfg),
-					},
-					&errdetails.ResourceInfo{
-						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.search",
-						ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
-					}, info.Get(),
-				)
-				if span != nil {
-					span.RecordError(err)
-					span.SetAttributes(trace.StatusCodeNotFound(err.Error())...)
-					span.SetStatus(trace.StatusError, err.Error())
-				}
-				return nil, err
+	if errors.Is(ectx.Err(), context.DeadlineExceeded) {
+		if len(res.GetResults()) == 0 {
+			err = status.WrapWithDeadlineExceeded(
+				"error search result length is 0 due to the timeoutage limit",
+				errors.ErrEmptySearchResult,
+				&errdetails.RequestInfo{
+					RequestId:   cfg.GetRequestId(),
+					ServingData: errdetails.Serialize(cfg),
+				},
+				&errdetails.ResourceInfo{
+					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.search",
+					ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
+				}, info.Get(),
+			)
+			if span != nil {
+				span.RecordError(err)
+				span.SetAttributes(trace.StatusCodeDeadlineExceeded(err.Error())...)
+				span.SetStatus(trace.StatusError, err.Error())
 			}
-			res.RequestId = cfg.GetRequestId()
-			return res, nil
+			return nil, err
+		}
+		if 0 < min && len(res.GetResults()) < min {
+			err = status.WrapWithDeadlineExceeded(
+				fmt.Sprintf("error search result length is not enough due to the timeoutage limit, required: %d, found: %d", min, len(res.GetResults())),
+				errors.ErrInsuffcientSearchResult,
+				&errdetails.RequestInfo{
+					RequestId:   cfg.GetRequestId(),
+					ServingData: errdetails.Serialize(cfg),
+				},
+				&errdetails.ResourceInfo{
+					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.search",
+					ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
+				}, info.Get(),
+			)
+			if span != nil {
+				span.RecordError(err)
+				span.SetAttributes(trace.StatusCodeDeadlineExceeded(err.Error())...)
+				span.SetStatus(trace.StatusError, err.Error())
+			}
+			return nil, err
 		}
 	}
+
+	if err != nil {
+		st, msg, err := status.ParseError(err, codes.Internal,
+			"failed to parse search gRPC error response",
+			&errdetails.RequestInfo{
+				RequestId:   cfg.GetRequestId(),
+				ServingData: errdetails.Serialize(cfg),
+			},
+			&errdetails.ResourceInfo{
+				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.search",
+				ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
+			}, info.Get())
+		if span != nil {
+			span.RecordError(err)
+			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+			span.SetStatus(trace.StatusError, err.Error())
+		}
+		log.Warn(err)
+		if len(res.GetResults()) == 0 {
+			return nil, err
+		}
+	}
+	if num != 0 && len(res.GetResults()) == 0 {
+		if err == nil {
+			err = errors.ErrEmptySearchResult
+		}
+		err = status.WrapWithNotFound("error search result length is 0", err,
+			&errdetails.RequestInfo{
+				RequestId:   cfg.GetRequestId(),
+				ServingData: errdetails.Serialize(cfg),
+			},
+			&errdetails.ResourceInfo{
+				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.search",
+				ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
+			}, info.Get())
+		if span != nil {
+			span.RecordError(err)
+			span.SetAttributes(trace.StatusCodeNotFound(err.Error())...)
+			span.SetStatus(trace.StatusError, err.Error())
+		}
+		return nil, err
+	}
+
+	if 0 < min && len(res.GetResults()) < min {
+		if err == nil {
+			err = errors.ErrInsuffcientSearchResult
+		}
+		if span != nil {
+			span.RecordError(err)
+			span.SetAttributes(trace.StatusCodeNotFound(err.Error())...)
+			span.SetStatus(trace.StatusError, err.Error())
+		}
+		err = status.WrapWithNotFound(
+			fmt.Sprintf("error search result length is not enough required: %d, found: %d", min, len(res.GetResults())),
+			errors.ErrInsuffcientSearchResult,
+			&errdetails.RequestInfo{
+				RequestId:   cfg.GetRequestId(),
+				ServingData: errdetails.Serialize(cfg),
+			},
+			&errdetails.ResourceInfo{
+				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.search",
+				ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
+			}, info.Get(),
+		)
+		if span != nil {
+			span.RecordError(err)
+			span.SetAttributes(trace.StatusCodeNotFound(err.Error())...)
+			span.SetStatus(trace.StatusError, err.Error())
+		}
+		return nil, err
+	}
+	res.RequestId = cfg.GetRequestId()
+	return res, nil
 }
 
 // vald standard algorithm
@@ -442,7 +447,6 @@ func (v *valdStdAggr) Start(ctx context.Context) {
 			}
 		}
 	}()
-	return
 }
 
 func (v *valdStdAggr) Send(ctx context.Context, data *payload.Search_Response) {
@@ -496,8 +500,7 @@ func newPairingHeap(num, replica int) Aggregator {
 	}
 }
 
-func (v *valdPairingHeapAggr) Start(ctx context.Context) {
-}
+func (v *valdPairingHeapAggr) Start(_ context.Context) {}
 
 func (v *valdPairingHeapAggr) Send(ctx context.Context, data *payload.Search_Response) {
 	result := data.GetResults()
@@ -549,8 +552,7 @@ func newSlice(num, replica int) Aggregator {
 	}
 }
 
-func (v *valdSliceAggr) Start(ctx context.Context) {
-}
+func (_ *valdSliceAggr) Start(_ context.Context) {}
 
 func (v *valdSliceAggr) Send(ctx context.Context, data *payload.Search_Response) {
 	result := data.GetResults()
@@ -616,8 +618,7 @@ func newPoolSlice(num, replica int) Aggregator {
 	}
 }
 
-func (v *valdPoolSliceAggr) Start(ctx context.Context) {
-}
+func (_ *valdPoolSliceAggr) Start(_ context.Context) {}
 
 func (v *valdPoolSliceAggr) Send(ctx context.Context, data *payload.Search_Response) {
 	result := data.GetResults()
