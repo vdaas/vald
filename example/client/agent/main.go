@@ -17,7 +17,6 @@ import (
 	"context"
 	"encoding/json"
 	"flag"
-	"fmt"
 	"math"
 	"time"
 
