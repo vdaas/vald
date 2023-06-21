@@ -834,8 +834,16 @@ defaults:
   networkPolicy:
     # @schema {"name": "defaults.networkPolicy.enabled", "type": "boolean"}
     # defaults.networkPolicy.enabled -- if network policy enabled
-    # TODO: Change this to true after implementing user custom network policy parser
     enabled: false
+    # @schema {"name": "defaults.networkPolicy.custom", "type": "object"}
+    # defaults.networkPolicy.custom -- custom network policies that a user can add
+    custom:
+      # @schema {"name": "defaults.networkPolicy.custom.ingress", "type": "object"}
+      # defaults.networkPolicy.custom.ingress -- custom ingress network policies that a user can add
+      ingress: {}
+      # @schema {"name": "defaults.networkPolicy.custom.egress", "type": "object"}
+      # defaults.networkPolicy.custom.egress -- custom egress network policies that a user can add
+      egress: {}
 
 # @schema {"name": "gateway", "type": "object"}
 gateway:

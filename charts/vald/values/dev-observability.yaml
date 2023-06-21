@@ -40,6 +40,19 @@ defaults:
       collector_endpoint: "opentelemetry-collector-collector.default.svc.cluster.local:4317"
     trace:
       enabled: true
+  networkPolicy:
+    enabled: true
+    custom:
+      ingress:
+        - from:
+            - podSelector:
+                matchLabels:
+                  app.kubernetes.io/name: pyroscope
+      egress:
+        - to:
+            - podSelector:
+                matchLabels:
+                  app.kubernetes.io/name: opentelemetry-collector-collector
 
 gateway:
   lb:
