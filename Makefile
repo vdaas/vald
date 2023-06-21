@@ -186,7 +186,6 @@ GO_SOURCES = $(eval GO_SOURCES := $(shell find \
 		./cmd \
 		./hack \
 		./internal \
-		./pkg \
 		-not -path './cmd/cli/*' \
 		-not -path './internal/core/algorithm/ngt/*' \
 		-not -path './internal/compress/gob/*' \
@@ -212,11 +211,22 @@ GO_SOURCES = $(eval GO_SOURCES := $(shell find \
 		-not -name '*_test.go' \
 		-not -name '*_mock.go' \
 		-not -name 'doc.go'))$(GO_SOURCES)
+GO_PKG_SOURCES = $(eval GO_PKG_SOURCES := $(shell find \
+		./pkg \
+		-not -path './pkg/*/router/*' \
+		-not -path './pkg/*/handler/rest/*' \
+		-not -path './pkg/*/handler/grpc/*' \
+		-L \
+		-type f \
+		-name '*.go' \
+		-not -regex '.*options?\.go' \
+		-not -name '*_test.go' \
+		-not -name '*_mock.go' \
+		-not -name 'doc.go'))$(GO_PKG_SOURCES)
 GO_OPTION_SOURCES = $(eval GO_OPTION_SOURCES := $(shell find \
 		./cmd \
 		./hack \
 		./internal \
-		./pkg \
 		-not -path './cmd/cli/*' \
 		-not -path './internal/core/algorithm/ngt/*' \
 		-not -path './internal/compress/gob/*' \
@@ -251,9 +261,10 @@ GO_SOURCES_INTERNAL = $(eval GO_SOURCES_INTERNAL := $(shell find \
 		-not -name 'doc.go'))$(GO_SOURCES_INTERNAL)
 
 GO_TEST_SOURCES = $(GO_SOURCES:%.go=%_test.go)
+GO_PKG_TEST_SOURCES = $(GO_PKG_SOURCES:%.go=%_test.go)
 GO_OPTION_TEST_SOURCES = $(GO_OPTION_SOURCES:%.go=%_test.go)
 
-GO_ALL_TEST_SOURCES = $(GO_TEST_SOURCES) $(GO_OPTION_TEST_SOURCES)
+GO_ALL_TEST_SOURCES = $(GO_TEST_SOURCES) $(GO_PKG_TEST_SOURCES) $(GO_OPTION_TEST_SOURCES)
 
 DOCKER           ?= docker
 DOCKER_OPTS      ?=

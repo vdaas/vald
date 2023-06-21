@@ -193,6 +193,15 @@ define gen-go-test-sources
 			exit 1; \
 		fi; \
 	done
+	@for f in $(GO_PKG_SOURCES); do \
+		echo "Generating go test file: $$f"; \
+		gotests -w -exported -template_dir $(ROOTDIR)/assets/test/templates/common -all $(patsubst %_test.go,%.go,$$f); \
+		RESULT=$$?; \
+		if [ ! $$RESULT -eq 0 ]; then \
+			echo $$RESULT; \
+			exit 1; \
+		fi; \
+	done
 endef
 
 define gen-go-option-test-sources
