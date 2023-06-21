@@ -134,10 +134,9 @@ func main() {
 		t := train[i]
 		var sum float64
 		for i := range r {
-			fmt.Println("r, t: ", r[i], t[i])
 			sum += math.Pow(float64(t[i]-r[i]), 2)
 		}
-		fmt.Println(sum)
+		glg.Infof("Euclidean distance of r and t: %v", sum)
 	}
 	glg.Info("Finish getting object")
 
