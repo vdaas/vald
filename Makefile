@@ -243,7 +243,6 @@ GO_OPTION_SOURCES = $(eval GO_OPTION_SOURCES := $(shell find \
 		./cmd \
 		./hack \
 		./internal \
-		./pkg \
 		-not -path './cmd/cli/*' \
 		-not -path './internal/core/algorithm/ngt/*' \
 		-not -path './internal/compress/gob/*' \
@@ -268,6 +267,23 @@ GO_OPTION_SOURCES = $(eval GO_OPTION_SOURCES := $(shell find \
 		-not -name '*_test.go' \
 		-not -name '*_mock.go' \
 		-not -name 'doc.go'))$(GO_OPTION_SOURCES)
+GO_OPTION_SOURCES_PKG = $(eval GO_OPTION_SOURCES_PKG := $(shell find \
+		./pkg \
+		-not -path './pkg/*/router/*' \
+		-not -path './pkg/*/handler/rest/*' \
+		-not -path './pkg/*/usecase/*' \
+		-type f \
+		-regex '.*options?\.go' \
+		-not -name '*_test.go' \
+		-not -name '*_mock.go' \
+		-not -name 'doc.go'))$(GO_OPTION_SOURCES_PKG)
+GO_OPTION_SOURCES_PKG_NO_EXCL = $(eval GO_OPTION_SOURCES_PKG_NO_EXCL := $(shell find \
+		./pkg \
+		-type f \
+		-regex '.*options?\.go' \
+		-not -name '*_test.go' \
+		-not -name '*_mock.go' \
+		-not -name 'doc.go'))$(GO_OPTION_SOURCES_PKG_NO_EXCL)
 
 GO_SOURCES_INTERNAL = $(eval GO_SOURCES_INTERNAL := $(shell find \
 		./internal \
@@ -282,8 +298,10 @@ GO_TEST_SOURCES_PKG = $(GO_SOURCES_PKG:%.go=%_test.go)
 GO_TEST_SOURCES_PKG_USECASE = $(GO_SOURCES_PKG_USECASE:%.go=%_test.go)
 GO_TEST_SOURCES_PKG_NO_EXCL =  $(GO_SOURCES_PKG_NO_EXCL:%.go=%_test.go)
 GO_OPTION_TEST_SOURCES = $(GO_OPTION_SOURCES:%.go=%_test.go)
+GO_OPTION_TEST_SOURCES_PKG = $(GO_OPTION_SOURCES_PKG:%.go=%_test.go)
+GO_OPTION_TEST_SOURCES_NO_EXCL = $(GO_OPTION_SOURCES_NO_EXCL:%.go=%_test.go)
 
-GO_ALL_TEST_SOURCES = $(GO_TEST_SOURCES) $(GO_TEST_SOURCES_PKG_NO_EXCL) $(GO_OPTION_TEST_SOURCES)
+GO_ALL_TEST_SOURCES = $(GO_TEST_SOURCES) $(GO_TEST_SOURCES_PKG_NO_EXCL) $(GO_OPTION_TEST_SOURCES) $(GO_OPTION_SOURCES_NO_EXCL)
 
 DOCKER           ?= docker
 DOCKER_OPTS      ?=

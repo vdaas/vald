@@ -226,4 +226,13 @@ define gen-go-option-test-sources
 			exit 1; \
 		fi; \
 	done
+	@for f in $(GO_OPTION_SOURCES_PKG); do \
+		echo "Generating go option test file: $$f"; \
+		gotests -w -exported -template_dir $(ROOTDIR)/assets/test/templates/common -all $(patsubst %_test.go,%.go,$$f); \
+		RESULT=$$?; \
+		if [ ! $$RESULT -eq 0 ]; then \
+			echo $$RESULT; \
+			exit 1; \
+		fi; \
+	done
 endef
