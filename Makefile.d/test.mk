@@ -197,6 +197,7 @@ test/create-empty:
 	@$(call green, "create empty test file if not exists...")
 	@for f in $(GO_ALL_TEST_SOURCES) ; do \
 		if [ ! -f "$$f" ]; then \
+			echo "Creating empty test file $$f"; \
 			package="$$(dirname $$f)" ; \
 			package="$$(basename $$package)" ; \
 			echo "package $$package" >> "$$f"; \
@@ -289,8 +290,8 @@ gotests/patch:
 	find $(ROOTDIR)/* -name '*_test.go' | xargs sed -i -E "s%go.uber.org/goleak%github.com/vdaas/vald/internal/test/goleak%g"
 	find $(ROOTDIR)/internal/errors -name '*_test.go' | xargs sed -i -E "s%\"github.com/vdaas/vald/internal/errors\"%%g"
 	find $(ROOTDIR)/internal/errors -name '*_test.go' -not -name '*_benchmark_test.go' | xargs sed -i -E "s/errors\.//g"
-	find $(ROOTDIR)/internal/test/goleak -name '*_test.go' | xargs -r sed -i -E "s%\"github.com/vdaas/vald/internal/test/goleak\"%%g"
-	find $(ROOTDIR)/internal/test/goleak -name '*_test.go' | xargs -r sed -i -E "s/goleak\.//g"
+	find $(ROOTDIR)/internal/test/goleak -name '*_test.go' | xargs sed -i -E "s%\"github.com/vdaas/vald/internal/test/goleak\"%%g"
+	find $(ROOTDIR)/internal/test/goleak -name '*_test.go' | xargs sed -i -E "s/goleak\.//g"
 
 .PHONY: test/patch-placeholder
 ## apply patches to the placeholder of the generated go test files
