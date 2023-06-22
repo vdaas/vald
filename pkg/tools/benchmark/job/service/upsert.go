@@ -57,8 +57,8 @@ func (j *job) upsert(ctx context.Context, ech chan error) error {
 				case ech <- err:
 				}
 			}
-			loop_cnt := math.Floor(float64(i-1) / float64(len(vecs)))
-			idx := i - 1 - (len(vecs) * int(loop_cnt))
+			loopCnt := math.Floor(float64(iter-1) / float64(len(vecs)))
+			idx := iter - 1 - (len(vecs) * int(loopCnt))
 			res, err := j.client.Upsert(egctx, &payload.Upsert_Request{
 				Vector: &payload.Object_Vector{
 					Id:     strconv.Itoa(iter),
