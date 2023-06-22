@@ -183,31 +183,24 @@ define run-e2e-sidecar-test
 	    -kubeconfig=$(KUBECONFIG)
 endef
 
-# Generate all go tests on cmd, hack and internal packages with exclusion (see GO_SOURCES),
-# and generate only exported function tests on pkg package with exclusion (see GO_SOURCES_PKG),
-# and generate only New() test on pkg/*/usecase.
+# This function generate only implementation tests, with the following conditions:
+# - Generate all go tests on `./cmd`, `./hack` and `./internal` packages with some exclusion (see $GO_SOURCES)
+# - Skip generating go tests under './pkg/*/router/*' and './pkg/*/handler/test/*' package
+# - Generate only 'New()' test on './pkg/*/usecase'
+# - Generate only exported function tests on `./pkg` package
 define gen-go-test-sources
 	@for f in $(GO_SOURCES); do \
-		echo "Generating go test file: $$f"; \
-		gotests -w -template_dir $(ROOTDIR)/assets/test/templates/common -all $(patsubst %_test.go,%.go,$$f); \
-		RESULT=$$?; \
-		if [ ! $$RESULT -eq 0 ]; then \
-			echo $$RESULT; \
-			exit 1; \
+		GOTESTS_OPTION=" -all "; \
+		if [[ $$f =~ \.\/pkg\/.*\/router\/.* || $$f =~ \.\/pkg\/.*\/handler\/rest\/.* ]]; then \
+			echo "Skip generating go test file: $$f"; \
+			continue; \
+		elif [[ $$f =~ \.\/pkg\/.*\/usecase\/.* ]]; then \
+			GOTESTS_OPTION=" -only New "; \
+		elif [[ $$f =~ \.\/pkg\/.* ]]; then \
+			GOTESTS_OPTION=" -exported "; \
 		fi; \
-	done
-	@for f in $(GO_SOURCES_PKG); do \
-		echo "Generating go test file: $$f"; \
-		gotests -w -exported -template_dir $(ROOTDIR)/assets/test/templates/common -all $(patsubst %_test.go,%.go,$$f); \
-		RESULT=$$?; \
-		if [ ! $$RESULT -eq 0 ]; then \
-			echo $$RESULT; \
-			exit 1; \
-		fi; \
-	done
-	@for f in $(GO_SOURCES_PKG_USECASE); do \
-		echo "Generating go test file: $$f"; \
-		gotests -w -exported -template_dir $(ROOTDIR)/assets/test/templates/common -only New $(patsubst %_test.go,%.go,$$f); \
+		echo "Generating go test file: $$f" with option  $$GOTESTS_OPTION; \
+		gotests -w -template_dir $(ROOTDIR)/assets/test/templates/common $$GOTESTS_OPTION $(patsubst %_test.go,%.go,$$f); \
 		RESULT=$$?; \
 		if [ ! $$RESULT -eq 0 ]; then \
 			echo $$RESULT; \
@@ -216,19 +209,21 @@ define gen-go-test-sources
 	done
 endef
 
+# This function generate only option tests, with the following conditions:
+# - Generate all go tests on `./cmd`, `./hack` and `./internal` packages with exclusion (see $GO_SOURCES)
+# - Skip generating go tests under './pkg/*/router' and './pkg/*/handler/test' and './pkg/*/usecase' package
+# - Generate only exported function tests on './pkg` package
 define gen-go-option-test-sources
 	@for f in $(GO_OPTION_SOURCES); do \
+		GOTESTS_OPTION=" -all "; \
+		if [[ $$f =~ \.\/pkg\/.*\/router\/.* || $$f =~ \.\/pkg\/.*\/handler\/rest\/.* || $$f =~ \.\/pkg\/.*\/usecase\/.* ]]; then \
+			echo "Skip generating go option test file: $$f"; \
+			continue; \
+		elif [[ $$f =~ \.\/pkg\/.* ]]; then \
+			GOTESTS_OPTION=" -exported "; \
+		fi; \
 		echo "Generating go option test file: $$f"; \
 		gotests -w -template_dir $(ROOTDIR)/assets/test/templates/common -all $(patsubst %_test.go,%.go,$$f); \
-		RESULT=$$?; \
-		if [ ! $$RESULT -eq 0 ]; then \
-			echo $$RESULT; \
-			exit 1; \
-		fi; \
-	done
-	@for f in $(GO_OPTION_SOURCES_PKG); do \
-		echo "Generating go option test file: $$f"; \
-		gotests -w -exported -template_dir $(ROOTDIR)/assets/test/templates/common -all $(patsubst %_test.go,%.go,$$f); \
 		RESULT=$$?; \
 		if [ ! $$RESULT -eq 0 ]; then \
 			echo $$RESULT; \

@@ -195,7 +195,7 @@ test/all/gotestfmt: \
 ## create empty test file if not exists
 test/create-empty:
 	@$(call green, "create empty test file if not exists...")
-	for f in $(GO_ALL_TEST_SOURCES) ; do \
+	@for f in $(GO_ALL_TEST_SOURCES) ; do \
 		if [ ! -f "$$f" ]; then \
 			package="$$(dirname $$f)" ; \
 			package="$$(basename $$package)" ; \
@@ -207,8 +207,9 @@ test/create-empty:
 ## remove empty test files
 test/remove-empty:
 	@$(call green, "remove empty test files...")
-	for f in $(GO_ALL_TEST_SOURCES) ; do \
+	@for f in $(GO_ALL_TEST_SOURCES) ; do \
 		if ! grep -q "func Test" "$$f"; then \
+			echo "Removing empty test file $$f"; \
 			rm "$$f"; \
 		fi; \
 	done
@@ -295,7 +296,7 @@ gotests/patch:
 ## apply patches to the placeholder of the generated go test files
 test/patch-placeholder:
 	@$(call green, "apply placeholder patches to go test files...")
-	for f in $(GO_ALL_TEST_SOURCES) ; do \
+	@for f in $(GO_ALL_TEST_SOURCES) ; do \
 		if [ ! -f "$$f" ] ; then continue; fi; \
 		sed -i -e '/\/\/ $(TEST_NOT_IMPL_PLACEHOLDER)/,$$d' $$f; \
 		if [ "$$(tail -1 $$f)" != "" ]; then echo "" >> "$$f"; fi; \
@@ -306,7 +307,7 @@ test/patch-placeholder:
 ## comment out unimplemented tests
 test/comment-unimplemented:
 	@$(call green, "comment out unimplemented test...")
-	for f in $(GO_ALL_TEST_SOURCES) ; do \
+	@for f in $(GO_ALL_TEST_SOURCES) ; do \
 		if [ ! -f "$$f" ] ; then continue; fi; \
 		sed -r -i -e '/\/\/ $(TEST_NOT_IMPL_PLACEHOLDER)/,+9999999 s/^/\/\/ /' $$f; \
 		sed -i 's/\/\/ \/\/ $(TEST_NOT_IMPL_PLACEHOLDER)/\/\/ $(TEST_NOT_IMPL_PLACEHOLDER)/g' $$f; \
