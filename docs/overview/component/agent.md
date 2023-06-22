@@ -103,7 +103,7 @@ The main functions are the followings:
 - CreateIndex
   - Create a new Faiss index structure in memory using vectors stored in the `vqueue` and the existing Faiss index structure if it exists.
   - If a certain number of vectors required for Faiss training are not cached, they will not be trained.
-  - if Faiss is not trained, no index is generated.
+  - If Faiss is not trained, no index is generated.
 - SaveIndex
   - Save metadata about Faiss index information to the internal storage.
 

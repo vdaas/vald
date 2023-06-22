@@ -204,8 +204,8 @@ While the Vald Agent Faiss is in the process of creating indexes, it will ignore
 </div>
 
 <div class="warning">
-When deploying Vald Index Manager, the above parameters should be set much longer than the Vald Index Manager settings (Please refer to the Vald Index Manager section).<BR>
-E.g., set agent.faiss.auto_index_duration_limit to "720h" and agent.faiss.auto_index_check_duration to "24h".<BR>
+When deploying Vald Index Manager, the above parameters should be set much longer than the Vald Index Manager settings (Please refer to the Vald Index Manager section) or minus value.<BR>
+E.g., set agent.faiss.auto_index_duration_limit to "720h" or "-1h" and agent.faiss.auto_index_check_duration to "24h" or "-1h".<BR>
 This is because the Vald Index Manager accurately grasps the index information of each Vald Agent Faiss and controls the execution timing of indexing.<BR><BR>
 When the setting parameter of Vald Agent Faiss is shorter than the setting value of Vald Index Manager, Vald Agent Faiss may start indexing by itself without the execution command from Vald Index Manager.
 If this happens, the Index Manager may not function properly.
