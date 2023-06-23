@@ -47,37 +47,19 @@ func TestDatasetName_String(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		       beforeFunc: func(t *testing.T,) {
-		           t.Helper()
-		       },
-		       afterFunc: func(t *testing.T,) {
-		           t.Helper()
-		       },
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		           beforeFunc: func(t *testing.T,) {
-		               t.Helper()
-		           },
-		           afterFunc: func(t *testing.T,) {
-		               t.Helper()
-		           },
-		       }
-		   }(),
-		*/
+		// {
+		//     name: "set original",
+		//     want: want{
+		//      want: "original",
+		//     },
+		//     checkFunc: defaultCheckFunc,
+		//     beforeFunc: func(t *testing.T,) {
+		//         t.Helper()
+		//     },
+		//     afterFunc: func(t *testing.T,) {
+		//         t.Helper()
+		//     },
+		// },
 	}
 
 	for _, tc := range tests {
@@ -180,13 +162,13 @@ func TestDatasetUrl_String(t *testing.T) {
 	}
 }
 
-func Test_hdf5Key_String(t *testing.T) {
+func Test_Hdf5Key_String(t *testing.T) {
 	type want struct {
 		want string
 	}
 	type test struct {
 		name       string
-		h          hdf5Key
+		h          Hdf5Key
 		want       want
 		checkFunc  func(want, string) error
 		beforeFunc func(*testing.T)
@@ -353,12 +335,16 @@ func Test_data_Download(t *testing.T) {
 		test      [][]float32
 		neighbors [][]int
 	}
+	type args struct {
+		url string
+	}
 	type want struct {
 		err error
 	}
 	type test struct {
 		name       string
 		fields     fields
+		args       args
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(*testing.T)
@@ -440,7 +426,7 @@ func Test_data_Download(t *testing.T) {
 				neighbors: test.fields.neighbors,
 			}
 
-			err := d.Download()
+			err := d.Download(test.args.url)
 			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -456,6 +442,9 @@ func Test_data_Read(t *testing.T) {
 		test      [][]float32
 		neighbors [][]int
 	}
+	type args struct {
+		key Hdf5Key
+	}
 	type want struct {
 		err error
 	}
@@ -463,6 +452,7 @@ func Test_data_Read(t *testing.T) {
 		name       string
 		fields     fields
 		want       want
+		args       args
 		checkFunc  func(want, error) error
 		beforeFunc func(*testing.T)
 		afterFunc  func(*testing.T)
@@ -544,7 +534,7 @@ func Test_data_Read(t *testing.T) {
 				neighbors: test.fields.neighbors,
 			}
 
-			err := d.Read()
+			err := d.Read(test.args.key)
 			if err := checkFunc(test.want, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -1265,7 +1255,7 @@ func Test_downloadFile(t *testing.T) {
 func TestReadDatasetF32(t *testing.T) {
 	type args struct {
 		file *hdf5.File
-		key  hdf5Key
+		key  Hdf5Key
 	}
 	type want struct {
 		want [][]float32
@@ -1357,7 +1347,7 @@ func TestReadDatasetF32(t *testing.T) {
 func TestReadDatasetI32(t *testing.T) {
 	type args struct {
 		file *hdf5.File
-		key  hdf5Key
+		key  Hdf5Key
 	}
 	type want struct {
 		want [][]int32

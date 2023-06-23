@@ -38,3 +38,6 @@ data:
     observability:
       {{- $observability := dict "Values" .Values.observability}}
       {{- include "vald.observability" $observability | nindent 6 }}
+    job_image:
+      image: "{{ .Values.job_image.repository }}:{{ .Values.job_image.tag }}"
+      pullPolicy: {{ .Values.job_image.pullPolicy }}
