@@ -398,7 +398,6 @@ replace (
 	github.com/stretchr/objx => github.com/stretchr/objx latest
 	github.com/stretchr/testify => github.com/stretchr/testify latest
 	github.com/ugorji/go/codec => github.com/ugorji/go/codec latest
-	github.com/vdaas/vald-client-go => github.com/vdaas/vald-client-go latest
 	github.com/vishvananda/netlink => github.com/vishvananda/netlink latest
 	github.com/vishvananda/netns => github.com/vishvananda/netns latest
 	github.com/xdg-go/pbkdf2 => github.com/xdg-go/pbkdf2 latest

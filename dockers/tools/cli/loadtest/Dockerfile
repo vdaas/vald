@@ -48,12 +48,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY --from=golang /usr/local/go $GOROOT
 RUN mkdir -p "$GOPATH/src"
 
+WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/Makefile.d
+COPY Makefile.d .
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}
-
+COPY Makefile .
+COPY .git .
 COPY go.mod .
 COPY go.sum .
 
-RUN go mod download
+RUN make go/download
 
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/internal
 COPY internal .

@@ -265,6 +265,7 @@ GOLINES_MAX_WIDTH     ?= 200
 
 K8S_SLEEP_DURATION_FOR_WAIT_COMMAND ?= 5
 
+KUBECONFIG ?= $(or $(shell echo "$(KUBECONFIG)"),"$(HOME)/.kube/config")
 K8S_KUBECTL_VERSION ?= $(eval K8S_KUBECTL_VERSION := $(shell kubectl version --short))$(K8S_KUBECTL_VERSION)
 K8S_SERVER_VERSION ?= $(eval K8S_SERVER_VERSION := $(shell echo "$(K8S_KUBECTL_VERSION)" | sed -e "s/.*Server.*\(v[0-9]\.[0-9]*\)\..*/\1/g"))$(K8S_SERVER_VERSION)
 
@@ -279,7 +280,7 @@ SHELL = bash
 E2E_BIND_HOST                      ?= 127.0.0.1
 E2E_BIND_PORT                      ?= 8082
 E2E_TIMEOUT                        ?= 30m
-E2E_DATASET_NAME                   ?= fashion-mnist-784-euclidean
+E2E_DATASET_NAME                   ?= fashion-mnist-784-euclidean.hdf5
 E2E_INSERT_COUNT                   ?= 10000
 E2E_SEARCH_COUNT                   ?= 1000
 E2E_SEARCH_BY_ID_COUNT             ?= 100
