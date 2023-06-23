@@ -20,24 +20,35 @@ ARG DISTROLESS_IMAGE_TAG=nonroot
 ARG UPX_OPTIONS=-9
 ARG MAINTAINER="vdaas.org vald team <vald@vdaas.org>"
 
-FROM golang:${GO_VERSION} AS builder
-
-ARG UPX_OPTIONS
+FROM ubuntu:devel AS builder
 
 ENV GO111MODULE on
+ENV DEBIAN_FRONTEND noninteractive
+ENV INITRD No
 ENV LANG en_US.UTF-8
+ENV GOROOT /opt/go
+ENV GOPATH /go
+ENV PATH ${PATH}:${GOROOT}/bin:${GOPATH}/bin
+# ARG UPX_OPTIONS
 ENV ORG vdaas
 ENV REPO vald
 ENV APP_NAME operator
 ENV PKG tools/benchmark/${APP_NAME}
 
+# skipcq: DOK-DL3008
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates \
+    build-essential \
+    curl \
     upx \
     git \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
 RUN mkdir -p ${GOPATH}/src
+
+COPY --from=golang /usr/local/go $GOROOT
+RUN mkdir -p "$GOPATH/src"
 
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}
 

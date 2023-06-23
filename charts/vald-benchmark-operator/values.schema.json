@@ -16,8 +16,25 @@
           "description": "image pull policy",
           "enum": ["Always", "Never", "IfNotPresent"]
         },
-        "repository": { "type": "string", "description": "image repository" },
-        "tag": { "type": "string", "description": "image tag" }
+        "repository": {
+          "type": "string",
+          "description": "job image repository"
+        },
+        "tag": {
+          "type": "string",
+          "description": "image tag for job docker image"
+        }
+      }
+    },
+    "job_image": {
+      "type": "object",
+      "properties": {
+        "pullPolicy": {
+          "type": "string",
+          "enum": ["Always", "Never", "IfNotPresent"]
+        },
+        "repository": { "type": "string" },
+        "tag": { "type": "string" }
       }
     },
     "logging": {

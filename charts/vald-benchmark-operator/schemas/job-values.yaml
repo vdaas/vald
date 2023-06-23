@@ -27,7 +27,7 @@ target:
 # @schema {"name": "dataset", "type": "object", "required": ["name", "indexes", "group", "range"]}
 # dataset -- dataset information
 dataset:
-  # @schema {"name": "dataset.name", "type": "string", "enum": ["fashion-mnist"] }
+  # @schema {"name": "dataset.name", "type": "string", "enum": ["original", "fashion-mnist"] }
   # dataset.name -- the name of dataset
   name: "fashion-mnist"
   # @schema {"name": "dataset.indexes", "type": "integer", "minimum": 0}
@@ -36,7 +36,7 @@ dataset:
   # @schema {"name": "dataset.group", "type": "string", "minLength": 1}
   # dataset.group -- the hdf5 group name of dataset
   group: "test"
-  # @schema {"name": "dataset.range", "type": "object", "range": ["start", "port"]}
+  # @schema {"name": "dataset.range", "type": "object", "required": ["start", "end"]}
   # dataset.range -- the data range of indexes
   range:
     # @schema {"name": "dataset.range.start", "type": "integer", "minimum": 1}
@@ -45,6 +45,9 @@ dataset:
     # @schema {"name": "dataset.range.end", "type": "integer", "minimum": 1}
     # dataset.range.end -- end index number
     end: 1000
+  # @schema {"name": "dataset.url", "type": "string"}
+  # dataset.url -- the dataset url which is used for executing benchmark job with user defined hdf5 file
+  url: ""
 # @schema {"name": "dimension", "type": "integer", "minimum": 1}
 # dimension -- vector dimension
 dimension: 784
@@ -54,7 +57,7 @@ replica: 1
 # @schema {"name": "repetition", "type": "integer", "minimum": 1}
 # repetition -- the number of repeat job
 repetition: 1
-# @schema {"name": "job_type", "type": "string", "enum": ["insert", "update", "upsert", "search", "remove", "get_object", "exists"]}
+# @schema {"name": "job_type", "type": "string", "enum": ["insert", "update", "upsert", "search", "remove", "getobject", "exists"]}
 # job_type -- job type name
 job_type: "search"
 # @schema {"name": "insert_config", "type": "object"}
@@ -108,6 +111,12 @@ search_config:
   # @schema {"name": "search_config.timeout", "type": "string"}
   # search_config.timeout -- search operation timeout
   timeout: "10s"
+  # @schema {"name": "search_config.enable_linear_search", "type": "boolean"}
+  # search_config.enable_linear_search -- enable linear search for calculation recall
+  enable_linear_search: true
+  # @schema {"name": "search_config.aggregation_algorithm", "type": "string", "enum": ["Unknown", "ConcurrentQueue", "SortSlice", "SortPoolSlice", "PairingHeap"]}
+  # search_config.aggregation_algorithm -- search result aggregation algorithm
+  aggregation_algorithm: "Unknown"
 
 # @schema {"name": "remove_config", "type": "object"}
 # remove_config -- remove config
@@ -358,3 +367,9 @@ rules: []
 # @schema {"name": "rps", "type": "integer", "minimum": 0, "maximum": 65535}
 # rps -- desired request per sec
 rps: 1000
+# @schema {"name": "concurrency_limit", "type": "integer", "minimum": 0, "maximum": 65535}
+# concurrency_limit -- concurrency_limit represents the goroutine limit count. It affects the job performance.
+concurrency_limit: 200
+# @schema {"name": "ttl_seconds_after_finished", "type": "integer", "minimum": 0, "maximum": 65535}
+# ttl_seconds_after_finished -- limits the lifetime of a Job that has finished execution.
+ttl_seconds_after_finished: 10
