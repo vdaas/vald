@@ -255,7 +255,7 @@ You can monitor the browser by port forwarding or define the ingress host by you
 
 ## Cleanup
 
-Last, the Vald cluster will be removed by executing the following command.
+Lastly, the Vald cluster will be removed by executing the following command.
 
 ```bash
 helm uninstall vald
