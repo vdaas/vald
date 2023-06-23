@@ -20,6 +20,7 @@ version: 1
 # index: clojure
 # index: configmap
 # index: docker
+# index: documentation
 # index: fashion-mnist
 # index: flamegraph
 # index: go
@@ -81,6 +82,12 @@ rules:
       wordBoundary: true
   - pattern: docker
     expected: Docker
+    options:
+      wordBoundary: true
+  - pattern:
+      - documentation
+      - documentaion
+    expected: documentation
     options:
       wordBoundary: true
   - pattern: fashion-mnist
