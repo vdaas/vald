@@ -44,7 +44,16 @@ spec:
         app.kubernetes.io/component: benchmark-operator
       {{- with .Values.podAnnotations }}
       annotations:
+        {{- if .Values.podAnnotations }}
         {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- if .Values.server_config.metrics.pprof.enabeld }}
+        pyroscope.io/scrape: "true"
+        pyroscope.io/application-name: {{ .Values.name }}
+        pyroscope.io/profile-cpu-enabled: "true"
+        pyroscope.io/profile-mem-enabled: "true"
+        pyroscope.io/port: "{{ .Values.server_config.metrics.pprof.port }}"
+        {{- end}}
       {{- end }}
     spec:
       serviceAccountName: {{ .Values.serviceAccount.name }}
@@ -113,6 +122,11 @@ spec:
           volumeMounts:
             - name: {{ .Values.name }}-config
               mountPath: /etc/server
+          env:
+            - name: JOB_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
           terminationMessagePath: /dev/termination-log
           terminationMessagePolicy: File
       restartPolicy: Always

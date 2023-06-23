@@ -20,7 +20,7 @@
         "name": {
           "type": "string",
           "description": "the name of dataset",
-          "enum": ["fashion-mnist"]
+          "enum": ["original", "fashion-mnist"]
         },
         "range": {
           "type": "object",
@@ -36,7 +36,12 @@
               "description": "start index number",
               "minimum": 1
             }
-          }
+          },
+          "required": ["start", "end"]
+        },
+        "url": {
+          "type": "string",
+          "description": "the dataset url which is used for executing benchmark job with user defined hdf5 file"
         }
       },
       "required": ["name", "indexes", "group", "range"]

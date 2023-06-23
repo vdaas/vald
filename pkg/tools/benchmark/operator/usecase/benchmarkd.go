@@ -19,6 +19,7 @@ package usecase
 
 import (
 	"context"
+	"os"
 
 	iconf "github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errgroup"
@@ -48,6 +49,8 @@ type run struct {
 	observability observability.Observability
 }
 
+var JOB_NAMESPACE = os.Getenv("JOB_NAMESPACE")
+
 func New(cfg *config.Config) (r runner.Runner, err error) {
 	log.Info("pkg/tools/benchmark/scenario/cmd start")
 
@@ -57,6 +60,9 @@ func New(cfg *config.Config) (r runner.Runner, err error) {
 
 	operator, err := service.New(
 		service.WithErrGroup(eg),
+		service.WithJobNamespace(JOB_NAMESPACE),
+		service.WithJobImage(cfg.JobImage.Image),
+		service.WithJobImagePullPolicy(cfg.JobImage.PullPolicy),
 	)
 	if err != nil {
 		return nil, err
