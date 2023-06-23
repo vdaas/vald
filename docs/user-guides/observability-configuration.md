@@ -267,7 +267,7 @@ Also, the observability components will be removed by executing the following co
 make k8s/monitoring/delete k8s/external/cert-manager/delete
 ```
 
-And you can also remove Observability components by executing the following command.
+And the observability components can also be removed by executing the following command.
 
 ```bash
 make k8s/otel/collector/delete \
