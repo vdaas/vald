@@ -81,6 +81,19 @@ spec:
                       type: string
                     tag:
                       type: string
+                job_image:
+                  type: object
+                  properties:
+                    pullPolicy:
+                      type: string
+                      enum:
+                        - Always
+                        - Never
+                        - IfNotPresent
+                    repository:
+                      type: string
+                    tag:
+                      type: string
                 logging:
                   type: object
                   properties:

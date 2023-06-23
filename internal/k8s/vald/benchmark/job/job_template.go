@@ -18,37 +18,71 @@
 package job
 
 import (
-	batchv1 "k8s.io/api/batch/v1"
+	jobs "github.com/vdaas/vald/internal/k8s/job"
 	corev1 "k8s.io/api/core/v1"
 )
 
-type benchmarkJobTemplate = batchv1.Job
-
-const (
-	SvcAccountName = "vald-benchmark-operator"
-	ContainerName  = "vald-benchmark-job"
-	// TODO: Fix
-	ContainerImage = "vdaas/vald-benchmark-job:pr-2027"
-
-	RestartPolicyAlways    corev1.RestartPolicy = "Always"
-	RestartPolicyOnFailure corev1.RestartPolicy = "OnFailure"
-	RestartPolicyNever     corev1.RestartPolicy = "Never"
+type (
+	ImagePullPolicy corev1.PullPolicy
+	RestartPolicy   corev1.RestartPolicy
 )
 
-// NewBenchmarkJobTemplate creates the job template for crating k8s job resource.
-func NewBenchmarkJobTemplate(opts ...BenchmarkJobOption) (benchmarkJobTemplate, error) {
-	jobTmpl := new(benchmarkJobTemplate)
-	for _, opt := range append(defaultBenchmarkJobOpts, opts...) {
-		err := opt(jobTmpl)
+const (
+	PullAlways       ImagePullPolicy = "Always"
+	PullNever        ImagePullPolicy = "Never"
+	PullIfNotPresent ImagePullPolicy = "PullIfNotPresent"
+
+	RestartPolicyAlways    RestartPolicy = "Always"
+	RestartPolicyOnFailure RestartPolicy = "OnFailure"
+	RestartPolicyNever     RestartPolicy = "Never"
+)
+
+const (
+	svcAccount = "vald-benchmark-operator"
+)
+
+type BenchmarkJobTpl interface {
+	CreateJobTpl(opts ...BenchmarkJobOption) (jobs.Job, error)
+}
+
+type benchmarkJobTpl struct {
+	containerName      string
+	containerImageName string
+	imagePullPolicy    ImagePullPolicy
+	jobTpl             jobs.Job
+}
+
+func NewBenchmarkJob(opts ...BenchmarkJobTplOption) (BenchmarkJobTpl, error) {
+	bjTpl := new(benchmarkJobTpl)
+	for _, opt := range append(defaultBenchmarkJobTplOpts, opts...) {
+		err := opt(bjTpl)
 		if err != nil {
-			return *jobTmpl, err
+			return nil, err
 		}
 	}
-	jobTmpl.Spec.Template.Spec.Containers = []corev1.Container{
+	return bjTpl, nil
+}
+
+func (b *benchmarkJobTpl) CreateJobTpl(opts ...BenchmarkJobOption) (jobs.Job, error) {
+	for _, opt := range append(defaultBenchmarkJobOpts, opts...) {
+		err := opt(&b.jobTpl)
+		if err != nil {
+			return b.jobTpl, err
+		}
+	}
+	// TODO: check enable pprof flag
+	b.jobTpl.Spec.Template.Annotations = map[string]string{
+		"pyroscope.io/scrape":              "true",
+		"pyroscope.io/application-name":    "benchmark-job",
+		"pyroscope.io/profile-cpu-enabled": "true",
+		"pyroscope.io/profile-mem-enabled": "true",
+		"pyroscope.io/port":                "6060",
+	}
+	b.jobTpl.Spec.Template.Spec.Containers = []corev1.Container{
 		{
-			Name:            ContainerName,
-			Image:           ContainerImage,
-			ImagePullPolicy: corev1.PullAlways,
+			Name:            b.containerName,
+			Image:           b.containerImageName,
+			ImagePullPolicy: corev1.PullPolicy(b.imagePullPolicy),
 			LivenessProbe: &corev1.Probe{
 				InitialDelaySeconds: int32(60),
 				PeriodSeconds:       int32(10),
@@ -107,5 +141,5 @@ func NewBenchmarkJobTemplate(opts ...BenchmarkJobOption) (benchmarkJobTemplate, 
 			},
 		},
 	}
-	return *jobTmpl, nil
+	return b.jobTpl, nil
 }

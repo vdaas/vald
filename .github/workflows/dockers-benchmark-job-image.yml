@@ -47,6 +47,7 @@ on:
       - "internal/**"
       - "!internal/**/*_test.go"
       - "!internal/db/**"
+      - "!internal/k8s/**"
       - "apis/grpc/**"
       - "pkg/benchmark/job/**"
       - "cmd/benchmark/job/**"
