@@ -35,7 +35,8 @@ var defaultOpts = []Option{
 	// TODO: set default config for client
 	WithDimension(748),
 	WithBeforeJobDuration("30s"),
-	WithRPS(100),
+	WithRPS(1000),
+	WithConcurencyLimit(200),
 }
 
 // WithDimension sets the vector's dimension for running benchmark job with dataset.
@@ -141,10 +142,13 @@ func WithHdf5(d hdf5.Data) Option {
 	}
 }
 
-// WithDataset sets the config.BenchmarkDataset including benchmakr dataset name, group name of hdf5.Data, the number of index, start range and end range.
+// WithDataset sets the config.BenchmarkDataset including benchmark dataset name, group name of hdf5.Data, the number of index, start range and end range, and original URL which is used for download user defined hdf5.
 func WithDataset(d *config.BenchmarkDataset) Option {
 	return func(j *job) error {
 		if d == nil {
+			return errors.NewErrInvalidOption("dataset", d)
+		}
+		if d.Name == hdf5.Original.String() && len(d.URL) == 0 {
 			return errors.NewErrInvalidOption("dataset", d)
 		}
 		j.dataset = d
@@ -248,6 +252,16 @@ func WithRPS(rps int) Option {
 	return func(j *job) error {
 		if rps > 0 {
 			j.rps = rps
+		}
+		return nil
+	}
+}
+
+// WithConcurencyLimit sets the goroutine limit for sending request to the target cluster.
+func WithConcurencyLimit(limit int) Option {
+	return func(j *job) error {
+		if limit > 0 {
+			j.concurrencyLimit = limit
 		}
 		return nil
 	}

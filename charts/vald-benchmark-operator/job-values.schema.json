@@ -288,6 +288,12 @@
         "wait_for_ready": { "type": "boolean" }
       }
     },
+    "concurrency_limit": {
+      "type": "integer",
+      "description": "concurrency_limit represents the goroutine limit count. It affects the job performance.",
+      "maximum": 65535,
+      "minimum": 0
+    },
     "dataset": {
       "type": "object",
       "description": "dataset information",
@@ -305,7 +311,7 @@
         "name": {
           "type": "string",
           "description": "the name of dataset",
-          "enum": ["fashion-mnist"]
+          "enum": ["original", "fashion-mnist"]
         },
         "range": {
           "type": "object",
@@ -321,7 +327,12 @@
               "description": "start index number",
               "minimum": 1
             }
-          }
+          },
+          "required": ["start", "end"]
+        },
+        "url": {
+          "type": "string",
+          "description": "the dataset url which is used for executing benchmark job with user defined hdf5 file"
         }
       },
       "required": ["name", "indexes", "group", "range"]
@@ -351,7 +362,7 @@
         "upsert",
         "search",
         "remove",
-        "get_object",
+        "getobject",
         "exists"
       ]
     },
@@ -404,6 +415,21 @@
       "type": "object",
       "description": "upsert config",
       "properties": {
+        "aggregation_algorithm": {
+          "type": "string",
+          "description": "search result aggregation algorithm",
+          "enum": [
+            "Unknown",
+            "ConcurrentQueue",
+            "SortSlice",
+            "SortPoolSlice",
+            "PairingHeap"
+          ]
+        },
+        "enable_linear_search": {
+          "type": "boolean",
+          "description": "enable linear search for calculation recall"
+        },
         "epsilon": { "type": "number", "description": "epsilon" },
         "min_num": {
           "type": "integer",
@@ -434,6 +460,12 @@
         }
       },
       "required": ["host", "port"]
+    },
+    "ttl_seconds_after_finished": {
+      "type": "integer",
+      "description": "limits the lifetime of a Job that has finished execution.",
+      "maximum": 65535,
+      "minimum": 0
     },
     "update_config": {
       "type": "object",
