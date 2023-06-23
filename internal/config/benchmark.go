@@ -36,6 +36,7 @@ type BenchmarkJob struct {
 	BeforeJobName      string              `json:"before_job_name,omitempty"      yaml:"before_job_name"`
 	BeforeJobNamespace string              `json:"before_job_namespace,omitempty" yaml:"before_job_namespace"`
 	RPS                int                 `json:"rps,omitempty"                  yaml:"rps"`
+	ConcurrencyLimit   int                 `json:"concurrency_limit,omitempty"    yaml:"concurrency_limit"`
 }
 
 // BenchmarkScenario represents the configuration for the internal benchmark scenario.
@@ -62,10 +63,13 @@ type BenchmarkDataset struct {
 	Group   string                 `json:"group,omitempty"`
 	Indexes int                    `json:"indexes,omitempty"`
 	Range   *BenchmarkDatasetRange `json:"range,omitempty"`
+	URL     string                 `json:"url,omitempty"`
 }
 
 func (d *BenchmarkDataset) Bind() *BenchmarkDataset {
 	d.Name = GetActualValue(d.Name)
+	d.Group = GetActualValue(d.Group)
+	d.URL = GetActualValue(d.URL)
 	return d
 }
 
@@ -124,15 +128,18 @@ func (cfg *UpsertConfig) Bind() *UpsertConfig {
 
 // SearchConfig defines the desired state of search config
 type SearchConfig struct {
-	Epsilon float32 `json:"epsilon,omitempty"`
-	Radius  float32 `json:"radius,omitempty"`
-	Num     int32   `json:"num,omitempty"`
-	MinNum  int32   `json:"min_num,omitempty"`
-	Timeout string  `json:"timeout,omitempty"`
+	Epsilon              float32 `json:"epsilon,omitempty"`
+	Radius               float32 `json:"radius,omitempty"`
+	Num                  int32   `json:"num,omitempty"`
+	MinNum               int32   `json:"min_num,omitempty"`
+	Timeout              string  `json:"timeout,omitempty"`
+	EnableLinearSearch   bool    `json:"enable_linear_search,omitempty"`
+	AggregationAlgorithm string  `json:"aggregation_algorithm,omitempty"`
 }
 
 func (cfg *SearchConfig) Bind() *SearchConfig {
 	cfg.Timeout = GetActualValue(cfg.Timeout)
+	cfg.AggregationAlgorithm = GetActualValue(cfg.AggregationAlgorithm)
 	return cfg
 }
 
@@ -223,5 +230,18 @@ func (b *BenchmarkJob) Bind() *BenchmarkJob {
 
 // Bind binds the actual data from the BenchmarkScenario receiver fields.
 func (b *BenchmarkScenario) Bind() *BenchmarkScenario {
+	return b
+}
+
+// BenchmarkJobImageInfo represents the docker image information for benchmark job.
+type BenchmarkJobImageInfo struct {
+	Image      string `json:"image,omitempty"       yaml:"image"`
+	PullPolicy string `json:"pull_policy,omitempty" yaml:"pull_policy"`
+}
+
+// Bind binds the actual data from the BenchmarkJobImageInfo receiver fields.
+func (b *BenchmarkJobImageInfo) Bind() *BenchmarkJobImageInfo {
+	b.Image = GetActualValue(b.Image)
+	b.PullPolicy = GetActualValue(b.PullPolicy)
 	return b
 }

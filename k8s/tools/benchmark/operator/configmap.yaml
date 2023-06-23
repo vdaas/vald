@@ -138,3 +138,6 @@ data:
       trace:
         enabled: false
         sampling_rate: 1
+    job_image:
+      image: "vdaas/vald-benchmark-job:v1.7.5"
+      pullPolicy: Always
