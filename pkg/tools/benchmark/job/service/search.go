@@ -105,27 +105,28 @@ func (j *job) search(ctx context.Context, ech chan error) error {
 	if j.searchConfig.EnableLinearSearch {
 		lres := make([]*payload.Search_Response, j.dataset.Indexes)
 		for i := j.dataset.Range.Start; i <= j.dataset.Range.End; i++ {
-			err := j.limiter.Wait(egctx)
-			if err != nil {
-				log.Errorf("[benchmark job] limiter error is detected: %s", err.Error())
-				if errors.Is(err, context.Canceled) {
-					return errors.Join(err, context.Canceled)
-				}
-				select {
-				case <-egctx.Done():
-					return egctx.Err()
-				case ech <- err:
-				}
-			}
 			iter := i
-			loop_cnt := math.Floor(float64(i-1) / float64(len(vecs)))
-			idx := i - 1 - (len(vecs) * int(loop_cnt))
-			if len(vecs[idx]) != j.dimension {
-				log.Warn("len(vecs) ", len(vecs[idx]), "is not matched with ", j.dimension)
-				continue
-			}
 			eg.Go(func() error {
+				err := j.limiter.Wait(egctx)
+				if err != nil {
+					log.Errorf("[benchmark job] limiter error is detected: %s", err.Error())
+					if errors.Is(err, context.Canceled) {
+						// return errors.Join(err, context.Canceled)
+						return nil
+					}
+					select {
+					case <-egctx.Done():
+						return egctx.Err()
+					case ech <- err:
+					}
+				}
 				log.Debugf("[benchmark job] Start linear search: iter = %d", iter)
+				loopCnt := math.Floor(float64(i-1) / float64(len(vecs)))
+				idx := iter - 1 - (len(vecs) * int(loopCnt))
+				if len(vecs[idx]) != j.dimension {
+					log.Warn("len(vecs) ", len(vecs[idx]), "is not matched with ", j.dimension)
+					return nil
+				}
 				res, err := j.client.LinearSearch(egctx, &payload.Search_Request{
 					Vector: vecs[idx],
 					Config: cfg,
