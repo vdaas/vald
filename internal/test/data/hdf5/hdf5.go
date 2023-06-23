@@ -28,8 +28,8 @@ import (
 )
 
 type Data interface {
-	Download() error
-	Read() error
+	Download(url string) error
+	Read(key Hdf5Key) error
 	GetName() DatasetName
 	GetPath() string
 	GetByGroupName(name string) [][]float32
@@ -41,13 +41,16 @@ type Data interface {
 type DatasetName int
 
 const (
-	FashionMNIST784Euclidean DatasetName = iota
+	Original DatasetName = iota
+	FashionMNIST784Euclidean
 )
 
 func (d DatasetName) String() string {
 	switch d {
+	case Original:
+		return "original"
 	case FashionMNIST784Euclidean:
-		return "fashion-mnist-784-euc"
+		return "fashion-mnist"
 	default:
 		return ""
 	}
@@ -68,16 +71,16 @@ func (d DatasetUrl) String() string {
 	}
 }
 
-type hdf5Key int
+type Hdf5Key int
 
 const (
-	Train hdf5Key = iota
+	Train Hdf5Key = iota + 1
 	Test
 	Neighors
 )
 
-func (h hdf5Key) String() string {
-	switch h {
+func (key Hdf5Key) String() string {
+	switch key {
 	case Train:
 		return "train"
 	case Test:
@@ -109,8 +112,10 @@ func New(opts ...Option) (Data, error) {
 
 // Get downloads the hdf5 file.
 // https://github.com/erikbern/ann-benchmarks/#data-sets
-func (d *data) Download() error {
+func (d *data) Download(url string) error {
 	switch d.name {
+	case Original:
+		return downloadFile(url, d.path)
 	case FashionMNIST784Euclidean:
 		return downloadFile(FashionMNIST784EuclideanUrl.String(), d.path)
 	default:
@@ -118,26 +123,29 @@ func (d *data) Download() error {
 	}
 }
 
-func (d *data) Read() error {
+func (d *data) Read(key Hdf5Key) error {
 	f, err := hdf5.OpenFile(d.path, hdf5.F_ACC_RDONLY)
 	if err != nil {
 		return err
 	}
 	defer f.Close()
 
-	// load training data
-	train, err := ReadDatasetF32(f, Train)
-	if err != nil {
-		return err
+	if key != Test {
+		// load training data
+		train, err := ReadDatasetF32(f, Train)
+		if err != nil {
+			return err
+		}
+		d.train = train
 	}
-	d.train = train
-
-	// load test data
-	test, err := ReadDatasetF32(f, Test)
-	if err != nil {
-		return err
+	if key != Train {
+		// load test data
+		test, err := ReadDatasetF32(f, Test)
+		if err != nil {
+			return err
+		}
+		d.test = test
 	}
-	d.test = test
 
 	// load neighbors
 	neighbors32, err := ReadDatasetI32(f, Neighors)
@@ -230,7 +238,7 @@ func downloadFile(url, path string) error {
 	return nil
 }
 
-func ReadDatasetF32(file *hdf5.File, key hdf5Key) ([][]float32, error) {
+func ReadDatasetF32(file *hdf5.File, key Hdf5Key) ([][]float32, error) {
 	data, err := file.OpenDataset(key.String())
 	if err != nil {
 		return nil, err
@@ -259,7 +267,7 @@ func ReadDatasetF32(file *hdf5.File, key hdf5Key) ([][]float32, error) {
 	return vecs, nil
 }
 
-func ReadDatasetI32(file *hdf5.File, key hdf5Key) ([][]int32, error) {
+func ReadDatasetI32(file *hdf5.File, key Hdf5Key) ([][]int32, error) {
 	data, err := file.OpenDataset(key.String())
 	if err != nil {
 		return nil, err

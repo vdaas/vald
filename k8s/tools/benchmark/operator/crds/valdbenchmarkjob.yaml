@@ -240,6 +240,10 @@ spec:
                           type: string
                     wait_for_ready:
                       type: boolean
+                concurrency_limit:
+                  type: integer
+                  maximum: 65535
+                  minimum: 0
                 dataset:
                   type: object
                   properties:
@@ -252,6 +256,7 @@ spec:
                     name:
                       type: string
                       enum:
+                        - original
                         - fashion-mnist
                     range:
                       type: object
@@ -262,6 +267,11 @@ spec:
                         start:
                           type: integer
                           minimum: 1
+                      required:
+                        - start
+                        - end
+                    url:
+                      type: string
                   required:
                     - name
                     - indexes
@@ -285,7 +295,7 @@ spec:
                     - upsert
                     - search
                     - remove
-                    - get_object
+                    - getobject
                     - exists
                 object_config:
                   type: object
@@ -319,6 +329,16 @@ spec:
                 search_config:
                   type: object
                   properties:
+                    aggregation_algorithm:
+                      type: string
+                      enum:
+                        - Unknown
+                        - ConcurrentQueue
+                        - SortSlice
+                        - SortPoolSlice
+                        - PairingHeap
+                    enable_linear_search:
+                      type: boolean
                     epsilon:
                       type: number
                     min_num:
@@ -342,6 +362,10 @@ spec:
                   required:
                     - host
                     - port
+                ttl_seconds_after_finished:
+                  type: integer
+                  maximum: 65535
+                  minimum: 0
                 update_config:
                   type: object
                   properties:
