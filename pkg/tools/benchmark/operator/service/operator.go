@@ -47,19 +47,22 @@ type scenario struct {
 
 const (
 	Scenario           = "scenario"
+	ScenarioKind       = "ValdBenchmarkScenario"
 	BenchmarkName      = "benchmark-name"
 	BeforeJobName      = "before-job-name"
 	BeforeJobNamespace = "before-job-namespace"
 )
 
 type operator struct {
-	jobNamespace string
-	scenarios    atomic.Pointer[map[string]*scenario]
-	benchjobs    atomic.Pointer[map[string]*v1.ValdBenchmarkJob]
-	jobs         atomic.Pointer[map[string]string]
-	rcd          time.Duration // reconcile check duration
-	eg           errgroup.Group
-	ctrl         k8s.Controller
+	jobNamespace       string
+	jobImage           string
+	jobImagePullPolicy string
+	scenarios          atomic.Pointer[map[string]*scenario]
+	benchjobs          atomic.Pointer[map[string]*v1.ValdBenchmarkJob]
+	jobs               atomic.Pointer[map[string]string]
+	rcd                time.Duration // reconcile check duration
+	eg                 errgroup.Group
+	ctrl               k8s.Controller
 }
 
 // New creates the new scenario struct to handle vald benchmark job scenario.
@@ -251,6 +254,11 @@ func (o *operator) benchJobReconcile(ctx context.Context, benchJobList map[strin
 					if err != nil {
 						log.Warnf("[reconcile benchmark job resource] failed to delete old version job: job name=%s, version=%d\t%s", oldJob.GetName(), oldJob.GetGeneration(), err.Error())
 					}
+					// create new version job
+					err = o.createJob(ctx, job)
+					if err != nil {
+						log.Errorf("[reconcile benchmark job resource] failed to create new version job: %s", err.Error())
+					}
 					cbjl[k] = &job
 				}
 			} else if oldJob.Status == "" {
@@ -326,7 +334,7 @@ func (o *operator) benchScenarioReconcile(ctx context.Context, scenarioList map[
 				// create new benchmark job resources of new version.
 				jobNames, err := o.createBenchmarkJob(ctx, sc)
 				if err != nil {
-					log.Errorf("[reconcile benchmark scenario resource] failed to create benchmark job resource: %s", err.Error())
+					log.Errorf("[reconcile benchmark scenario resource] failed to create new version benchmark job resource: %s", err.Error())
 				}
 				cbsl[name] = &scenario{
 					Crd: &sc,
@@ -373,12 +381,18 @@ func (o *operator) deleteBenchmarkJob(ctx context.Context, name string, generati
 
 // deleteJob deletes job resource according to given benchmark job name and generation.
 func (o *operator) deleteJob(ctx context.Context, name string, generation int64) error {
-	opts := new(client.DeleteAllOfOptions)
-	client.MatchingLabels(map[string]string{
-		BenchmarkName: name + strconv.Itoa(int(generation)),
-	}).ApplyToDeleteAllOf(opts)
-	client.InNamespace(o.jobNamespace).ApplyToDeleteAllOf(opts)
-	return o.ctrl.GetManager().GetClient().DeleteAllOf(ctx, &job.Job{}, opts)
+	cj := new(job.Job)
+	err := o.ctrl.GetManager().GetClient().Get(ctx, client.ObjectKey{
+		Namespace: o.jobNamespace,
+		Name:      name,
+	}, cj)
+	if err != nil {
+		return err
+	}
+	opts := new(client.DeleteOptions)
+	deleteProgation := client.DeletePropagationBackground
+	opts.PropagationPolicy = &deleteProgation
+	return o.ctrl.GetManager().GetClient().Delete(ctx, cj, opts)
 }
 
 // createBenchmarkJob creates the ValdBenchmarkJob crd for running job.
@@ -434,10 +448,18 @@ func (o *operator) createBenchmarkJob(ctx context.Context, scenario v1.ValdBench
 // createJob creates benchmark job from benchmark job resource.
 func (o *operator) createJob(ctx context.Context, bjr v1.ValdBenchmarkJob) error {
 	label := map[string]string{
-		BenchmarkName: bjr.GetName() + strconv.Itoa(int(bjr.Generation)),
+		BenchmarkName: bjr.GetName() + strconv.Itoa(int(bjr.GetGeneration())),
 	}
-	job, err := benchjob.NewBenchmarkJobTemplate(
-		benchjob.WithName(bjr.Name),
+	job, err := benchjob.NewBenchmarkJob(
+		benchjob.WithContainerName(bjr.GetName()),
+		benchjob.WithContainerImage(o.jobImage),
+		benchjob.WithImagePullPolicy(benchjob.ImagePullPolicy(o.jobImagePullPolicy)),
+	)
+	if err != nil {
+		return err
+	}
+	tpl, err := job.CreateJobTpl(
+		benchjob.WithName(bjr.GetName()),
 		benchjob.WithNamespace(bjr.Namespace),
 		benchjob.WithLabel(label),
 		benchjob.WithCompletions(int32(bjr.Spec.Repetition)),
@@ -450,14 +472,15 @@ func (o *operator) createJob(ctx context.Context, bjr v1.ValdBenchmarkJob) error
 				UID:        bjr.UID,
 			},
 		}),
+		benchjob.WithTTLSecondsAfterFinished(int32(bjr.Spec.TTLSecondsAfterFinished)),
 	)
 	if err != nil {
-		return err
+		return nil
 	}
 	// create job
 	c := o.ctrl.GetManager().GetClient()
-	if err = c.Create(ctx, &job); err != nil {
-		return errors.ErrFailedToCreateJob(err, job.GetName())
+	if err = c.Create(ctx, &tpl); err != nil {
+		return errors.ErrFailedToCreateJob(err, tpl.GetName())
 	}
 	return nil
 }
@@ -546,37 +569,59 @@ func (o *operator) checkAtomics() error {
 	cjl := o.getAtomicJob()
 	cbjl := o.getAtomicBenchJob()
 	cbsl := o.getAtomicScenario()
-	if len(cjl) == 0 {
-		if len(cbjl) > 0 || len(cbsl) > 0 {
-			log.Error("mismatch atomics: job=%v, benchjob=%v, scenario=%v", cjl, cbjl, cbsl)
-			return errors.ErrMismatchBenchmarkAtomics(cjl, cbjl, cbsl)
-		}
-		return nil
-	} else if len(cbjl) == 0 {
-		log.Error("mismatch atomics: job=%v, benchjob=%v, scenario=%v", cjl, cbjl, cbsl)
+	bjCompletedCnt := 0
+	bjAvailableCnt := 0
+
+	if len(cbjl) == 0 && len(cbsl) > 0 && len(cjl) > 0 {
+		log.Errorf("mismatch atomics: job=%v, benchjob=%v, scenario=%v", cjl, cbjl, cbsl)
 		return errors.ErrMismatchBenchmarkAtomics(cjl, cbjl, cbsl)
 	}
-	jobCounter := len(cjl)
-	scenarioBenchCounter := 0
-	for sc := range cbsl {
-		scenarioBenchCounter += len(cbsl[sc].BenchJobStatus)
-	}
-	for jobName := range cjl {
-		if benchJob := cbjl[jobName]; benchJob != nil {
-			jobCounter--
-			if owner := benchJob.GetOwnerReferences(); len(owner) > 0 {
-				scenarioName := owner[0].Name
-				if scenario := cbsl[scenarioName]; scenario != nil {
-					if _, ok := scenario.BenchJobStatus[benchJob.GetName()]; ok {
-						scenarioBenchCounter--
-					}
+
+	for _, bj := range cbjl {
+		// check bench and job
+		if bj.Status == v1.BenchmarkJobCompleted {
+			bjCompletedCnt++
+		} else {
+			bjAvailableCnt++
+			if ns, ok := cjl[bj.GetName()]; !ok || ns != bj.GetNamespace() {
+				log.Errorf("mismatch atomics: job=%v, benchjob=%v, scenario=%v", cjl, cbjl, cbsl)
+				return errors.ErrMismatchBenchmarkAtomics(cjl, cbjl, cbsl)
+			}
+		}
+		// check scenario and bench
+		if owners := bj.GetOwnerReferences(); len(owners) > 0 {
+			var scenarioName string
+			for _, o := range owners {
+				if o.Kind == ScenarioKind {
+					scenarioName = o.Name
 				}
+			}
+			if sc := cbsl[scenarioName]; sc != nil {
+				if sc.BenchJobStatus[bj.Name] != bj.Status {
+					log.Errorf("mismatch atomics: job=%v, benchjob=%v, scenario=%v", cjl, cbjl, cbsl)
+					return errors.ErrMismatchBenchmarkAtomics(cjl, cbjl, cbsl)
+				}
+			} else {
+				log.Errorf("mismatch atomics: job=%v, benchjob=%v, scenario=%v", cjl, cbjl, cbsl)
+				return errors.ErrMismatchBenchmarkAtomics(cjl, cbjl, cbsl)
 			}
 		}
 	}
-	if jobCounter != 0 || scenarioBenchCounter != 0 {
-		log.Error("mismatch atomics: job=%v, benchjob=%v, scenario=%v", cjl, cbjl, cbsl)
-		return errors.ErrMismatchBenchmarkAtomics(cjl, cbjl, cbsl)
+	// check benchmarkjob status list and scenario benchmark job status list
+	if len(cbsl) > 0 {
+		for _, sc := range cbsl {
+			for _, status := range sc.BenchJobStatus {
+				if status == v1.BenchmarkJobCompleted {
+					bjCompletedCnt--
+				} else {
+					bjAvailableCnt--
+				}
+			}
+		}
+		if bjAvailableCnt != 0 || bjCompletedCnt != 0 {
+			log.Errorf("mismatch atomics: job=%v, benchjob=%v, scenario=%v", cjl, cbjl, cbsl)
+			return errors.ErrMismatchBenchmarkAtomics(cjl, cbjl, cbsl)
+		}
 	}
 	return nil
 }
