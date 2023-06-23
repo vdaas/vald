@@ -37,6 +37,9 @@ type Config struct {
 
 	// Scenario represents benchmark scenario configurations
 	Scenario *config.BenchmarkScenario `json:"scenario" yaml:"scenario"`
+
+	// JobImage represents the location of Docker image for benchmark job and its ImagePullPolicy
+	JobImage *config.BenchmarkJobImageInfo `json:"job_image" yaml:"job_image"`
 }
 
 // NewConfig represents the set config from the given setting file path.
@@ -56,6 +59,12 @@ func NewConfig(path string) (cfg *Config, err error) {
 
 	if cfg.Observability != nil {
 		cfg.Observability = cfg.Observability.Bind()
+	}
+
+	if cfg.JobImage != nil {
+		cfg.JobImage = cfg.JobImage.Bind()
+	} else {
+		cfg.JobImage = new(config.BenchmarkJobImageInfo)
 	}
 
 	if cfg.Scenario != nil {
