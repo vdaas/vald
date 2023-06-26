@@ -131,6 +131,15 @@ func TestE2EForSidecar(t *testing.T) {
 		t.Fatalf("an error occurred: %s", err)
 	}
 
+	res, err := op.IndexInfo(t, ctx)
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	if insertNum != int(res.GetStored()) {
+		t.Errorf("Stored index count is invalid, expected: %d, stored: %d", insertNum, res.GetStored())
+	}
+
 	err = op.Search(t, ctx, operation.Dataset{
 		Test:      ds.Test[searchFrom : searchFrom+searchNum],
 		Neighbors: ds.Neighbors[searchFrom : searchFrom+searchNum],
@@ -201,7 +210,7 @@ func TestE2EForSidecar(t *testing.T) {
 		defer pf.Close()
 	}
 
-	res, err := op.IndexInfo(t, ctx)
+	res, err = op.IndexInfo(t, ctx)
 	if err != nil {
 		t.Fatalf("an error occurred: %s", err)
 	}

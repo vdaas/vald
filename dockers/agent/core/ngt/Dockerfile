@@ -54,14 +54,17 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=golang /usr/local/go $GOROOT
-RUN mkdir $GOPATH
+RUN mkdir -p "$GOPATH/src"
 
+WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/Makefile.d
+COPY Makefile.d .
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}
-
+COPY Makefile .
+COPY .git .
 COPY go.mod .
 COPY go.sum .
 
-RUN go mod download
+RUN make go/download
 
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/internal
 COPY internal .
@@ -81,15 +84,8 @@ COPY cmd/${PKG} .
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/versions
 COPY versions .
 
-WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/Makefile.d
-COPY Makefile.d .
-
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}
-COPY Makefile .
 RUN make ngt/install
-
-COPY .git .
-
 RUN make REPO=${ORG} NAME=${REPO} cmd/${PKG}/${APP_NAME} \
     && mv "cmd/${PKG}/${APP_NAME}" "/usr/bin/${APP_NAME}"
 
@@ -97,7 +93,7 @@ WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/cmd/${PKG}
 RUN cp sample.yaml /tmp/config.yaml
 
 FROM ${DISTROLESS_IMAGE}:${DISTROLESS_IMAGE_TAG}
-LABEL maintainer "${MAINTAINER}"
+LABEL maintainer="${MAINTAINER}"
 
 ENV APP_NAME ngt
 

@@ -404,6 +404,80 @@ func TestExists(t *testing.T) {
 	}
 }
 
+func TestExistsWithDetail(t *testing.T) {
+	type args struct {
+		path string
+	}
+	type want struct {
+		wantE  bool
+		wantFi fs.FileInfo
+		err    error
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, bool, fs.FileInfo, error) error
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
+	}
+	defaultCheckFunc := func(w want, gotE bool, gotFi fs.FileInfo, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(gotE, w.wantE) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotE, w.wantE)
+		}
+		if !reflect.DeepEqual(gotFi, w.wantFi) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotFi, w.wantFi)
+		}
+		return nil
+	}
+	tests := []test{
+		{
+			name: "return fs.ErrInvalid when path is empty",
+			args: args{
+				path: "",
+			},
+			want: want{
+				wantE:  false,
+				wantFi: nil,
+				err:    fs.ErrInvalid,
+			},
+			checkFunc: defaultCheckFunc,
+			beforeFunc: func(t *testing.T, args args) {
+				t.Helper()
+			},
+			afterFunc: func(t *testing.T, args args) {
+				t.Helper()
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(tt, test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(tt, test.args)
+			}
+			checkFunc := test.checkFunc
+			if test.checkFunc == nil {
+				checkFunc = defaultCheckFunc
+			}
+
+			gotE, gotFi, err := ExistsWithDetail(test.args.path)
+			if err := checkFunc(test.want, gotE, gotFi, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
 // NOT IMPLEMENTED BELOW
 
 func TestMoveDir(t *testing.T) {
@@ -1442,99 +1516,6 @@ func TestReadFile(t *testing.T) {
 
 			gotN, err := ReadFile(test.args.path)
 			if err := checkFunc(test.want, gotN, err); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
-
-func TestExistsWithDetail(t *testing.T) {
-	type args struct {
-		path string
-	}
-	type want struct {
-		wantE  bool
-		wantFi fs.FileInfo
-		err    error
-	}
-	type test struct {
-		name       string
-		args       args
-		want       want
-		checkFunc  func(want, bool, fs.FileInfo, error) error
-		beforeFunc func(*testing.T, args)
-		afterFunc  func(*testing.T, args)
-	}
-	defaultCheckFunc := func(w want, gotE bool, gotFi fs.FileInfo, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-		}
-		if !reflect.DeepEqual(gotE, w.wantE) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotE, w.wantE)
-		}
-		if !reflect.DeepEqual(gotFi, w.wantFi) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotFi, w.wantFi)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           path:"",
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		       beforeFunc: func(t *testing.T, args args) {
-		           t.Helper()
-		       },
-		       afterFunc: func(t *testing.T, args args) {
-		           t.Helper()
-		       },
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           path:"",
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		           beforeFunc: func(t *testing.T, args args) {
-		               t.Helper()
-		           },
-		           afterFunc: func(t *testing.T, args args) {
-		               t.Helper()
-		           },
-		       }
-		   }(),
-		*/
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-			if test.beforeFunc != nil {
-				test.beforeFunc(tt, test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(tt, test.args)
-			}
-			checkFunc := test.checkFunc
-			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
-			}
-
-			gotE, gotFi, err := ExistsWithDetail(test.args.path)
-			if err := checkFunc(test.want, gotE, gotFi, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

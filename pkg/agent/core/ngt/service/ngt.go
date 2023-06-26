@@ -171,9 +171,6 @@ func New(cfg *config.NGT, opts ...Option) (nn NGT, err error) {
 
 	// prepare directories to store index only when it not in-memory mode
 	if !n.inMem {
-		if !file.Exists(n.path) {
-			return nil, errors.ErrIndexPathNotExists(n.path)
-		}
 		ctx := context.Background()
 		err = n.prepareFolders(ctx)
 		if err != nil {
@@ -216,12 +213,17 @@ func New(cfg *config.NGT, opts ...Option) (nn NGT, err error) {
 // which indicates that the user has NOT been using CoW mode and the index directory is not migrated yet.
 func migrate(ctx context.Context, path string) (err error) {
 	// check if migration is required
+	if !file.Exists(path) {
+		log.Infof("the path %v does not exist. no need to migrate since it's probably the initial state", path)
+		return nil
+	}
 	files, err := file.ListInDir(path)
 	if err != nil {
-		return err
+		return errors.ErrAgentMigrationFailed(err)
 	}
 	if len(files) == 0 {
 		// empty directory doesn't need migration
+		log.Infof("the path %v is empty. no need to migrate", path)
 		return nil
 	}
 	od := filepath.Join(path, originIndexDirName)
@@ -238,23 +240,23 @@ func migrate(ctx context.Context, path string) (err error) {
 	// first move all contents to temporary directory because it's not possible to directly move directory to its subdirectory
 	tp, err := file.MkdirTemp("")
 	if err != nil {
-		return err
+		return errors.ErrAgentMigrationFailed(err)
 	}
 	err = file.MoveDir(ctx, path, tp)
 	if err != nil {
-		return err
+		return errors.ErrAgentMigrationFailed(err)
 	}
 
 	// recreate the path again to move contents to `path/origin` lately
 	err = file.MkdirAll(path, fs.ModePerm)
 	if err != nil {
-		return err
+		return errors.ErrAgentMigrationFailed(err)
 	}
 
 	// finally move to `path/origin` directory
 	err = file.MoveDir(ctx, tp, file.Join(path, originIndexDirName))
 	if err != nil {
-		return err
+		return errors.ErrAgentMigrationFailed(err)
 	}
 
 	return nil

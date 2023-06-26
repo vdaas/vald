@@ -71,7 +71,7 @@
     },
     "/linearsearch/id/multiple": {
       "post": {
-        "summary": "A method to linear search indexed vectors by multiple IDs in a single request.",
+        "summary": "A method to linear search indexed vectors by multiple IDs in a single\nrequest.",
         "operationId": "Search_MultiLinearSearchByID",
         "responses": {
           "200": {
@@ -102,7 +102,7 @@
     },
     "/linearsearch/multiple": {
       "post": {
-        "summary": "A method to linear search indexed vectors by multiple vectors in a single request.",
+        "summary": "A method to linear search indexed vectors by multiple vectors in a single\nrequest.",
         "operationId": "Search_MultiLinearSearch",
         "responses": {
           "200": {
@@ -296,6 +296,18 @@
         }
       },
       "description": "Represent the ID and distance pair."
+    },
+    "SearchAggregationAlgorithm": {
+      "type": "string",
+      "enum": [
+        "Unknown",
+        "ConcurrentQueue",
+        "SortSlice",
+        "SortPoolSlice",
+        "PairingHeap"
+      ],
+      "default": "Unknown",
+      "title": "AggregationAlgorithm is enum of each aggregation algorithms"
     },
     "SearchIDRequest": {
       "type": "object",
@@ -510,6 +522,10 @@
           "type": "integer",
           "format": "int64",
           "description": "Minimum number of result to be returned."
+        },
+        "aggregationAlgorithm": {
+          "$ref": "#/definitions/SearchAggregationAlgorithm",
+          "title": "Aggregation Algorithm"
         }
       },
       "description": "Represent search configuration."

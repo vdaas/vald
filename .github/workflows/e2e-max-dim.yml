@@ -135,19 +135,12 @@ jobs:
 
             kubectl wait --for=condition=Ready pod -l ${WAIT_FOR_SELECTOR} --timeout=${WAIT_FOR_TIMEOUT}
             POD_NAME=`kubectl get pods | grep vald-lb-gateway | awk '{print $1}'`
-            go test \
-              -race \
-              -v tests/e2e/performance/max_vector_dim_test.go \
-              -tags "e2e" \
-              -file ${FILEPATH} \
-              -timeout 30m \
-              -bit=${BIT} \
-              -host=localhost \
-              -port=8081 \
-              -portforward \
-              -portforward-pod-name=${POD_NAME} \
-              -kubeconfig=${KUBECONFIG} \
-              -namespace=default
+            make E2E_BIND_PORT=8081 \
+              E2E_MAX_DIM_RESULT_FILEPATH=${FILEPATH} \
+              E2E_MAX_DIM_BIT=${BIT} \
+              E2E_TARGET_POD_NAME=${POD_NAME} \
+              E2E_TARGET_NAMESPACE=default \
+              e2e/maxdim
             CODE=`sed -n 1P ${FILEPATH}`
             if [ ${CODE} = "ResourceExhausted" ]; then
               echo "Finish: Bit=${BIT} with ${CODE}"

@@ -22,6 +22,8 @@ spec:
   defaults:
     logging:
       level: info
+    networkPolicy:
+      enabled: true
 
   gateway:
     lb:

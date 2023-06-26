@@ -26,7 +26,14 @@ spec:
     matchLabels:
       app: {{ $filter.name }}
   policyTypes:
+    {{- if .Values.defaults.networkPolicy.custom.ingress }}
+    - Ingress
+    {{- end }}
     - Egress
+  {{- if .Values.defaults.networkPolicy.custom.ingress }}
+  ingress:
+    {{- toYaml .Values.defaults.networkPolicy.custom.ingress | nindent 4 }}
+  {{- end }}
   egress:
     # allow all the egress to communicate with user-defined filters
     - {}

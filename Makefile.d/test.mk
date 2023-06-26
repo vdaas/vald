@@ -42,6 +42,7 @@ $(GOPATH)bin/gotests:
 
 ## run tests for cmd, internal, pkg
 test:
+	GOPRIVATE=$(GOPRIVATE) \
 	go test -short -shuffle=on -race -mod=readonly -cover -timeout=$(GOTEST_TIMEOUT) $(ROOTDIR)/cmd/... $(ROOTDIR)/internal/... $(ROOTDIR)/pkg/...
 
 .PHONY: test/tparse
@@ -50,6 +51,7 @@ test/tparse: \
         tparse/install
 	set -euo pipefail
 	rm -rf "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json"
+	GOPRIVATE=$(GOPRIVATE) \
 	go test -short -shuffle=on -race -mod=readonly -json -cover -timeout=$(GOTEST_TIMEOUT) $(ROOTDIR)/cmd/... $(ROOTDIR)/internal/... $(ROOTDIR)/pkg/... \
 	| tee "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json" \
 	| tparse -pass -notests
@@ -60,6 +62,7 @@ test/cmd/tparse: \
         tparse/install
 	set -euo pipefail
 	rm -rf "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json"
+	GOPRIVATE=$(GOPRIVATE) \
 	go test -short -shuffle=on -race -mod=readonly -json -cover -timeout=$(GOTEST_TIMEOUT) $(ROOTDIR)/cmd/... \
 	| tee "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json" \
 	| tparse -pass -notests
@@ -70,6 +73,7 @@ test/internal/tparse: \
         tparse/install
 	set -euo pipefail
 	rm -rf "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json"
+	GOPRIVATE=$(GOPRIVATE) \
 	go test -short -shuffle=on -race -mod=readonly -json -cover -timeout=$(GOTEST_TIMEOUT) $(ROOTDIR)/internal/... \
 	| tee "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json" \
 	| tparse -pass -notests
@@ -80,6 +84,7 @@ test/pkg/tparse: \
         tparse/install
 	set -euo pipefail
 	rm -rf "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json"
+	GOPRIVATE=$(GOPRIVATE) \
 	go test -short -shuffle=on -race -mod=readonly -json -cover -timeout=$(GOTEST_TIMEOUT) $(ROOTDIR)/pkg/... \
 	| tee "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json" \
 	| tparse -pass -notests
@@ -90,7 +95,9 @@ test/hack/tparse: \
         tparse/install
 	set -euo pipefail
 	rm -rf "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json"
+	GOPRIVATE=$(GOPRIVATE) \
 	go mod vendor -o $(ROOTDIR)/vendor
+	GOPRIVATE=$(GOPRIVATE) \
 	go test -short -shuffle=on -race -mod=vendor -json -cover \
 		$(ROOTDIR)/hack/gorules/... \
 		$(ROOTDIR)/hack/helm/... \
@@ -106,6 +113,7 @@ test/all/tparse: \
         tparse/install
 	set -euo pipefail
 	rm -rf "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json"
+	GOPRIVATE=$(GOPRIVATE) \
 	go test -short -shuffle=on -race -mod=readonly -json -cover -timeout=$(GOTEST_TIMEOUT) $(ROOTDIR)/... \
 	| tee "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json" \
 	| tparse -pass -notests
@@ -116,6 +124,7 @@ test/gotestfmt: \
         gotestfmt/install
 	set -euo pipefail
 	rm -rf "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json"
+	GOPRIVATE=$(GOPRIVATE) \
 	go test -short -shuffle=on -race -mod=readonly -json -cover -timeout=$(GOTEST_TIMEOUT) $(ROOTDIR)/cmd/... $(ROOTDIR)/internal/... $(ROOTDIR)/pkg/... \
 	| tee "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json" \
 	| gotestfmt -showteststatus
@@ -126,6 +135,7 @@ test/cmd/gotestfmt: \
         gotestfmt/install
 	set -euo pipefail
 	rm -rf "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json"
+	GOPRIVATE=$(GOPRIVATE) \
 	go test -short -shuffle=on -race -mod=readonly -json -cover -timeout=$(GOTEST_TIMEOUT) $(ROOTDIR)/cmd/... \
 	| tee "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json" \
 	| gotestfmt -showteststatus
@@ -136,6 +146,7 @@ test/internal/gotestfmt: \
         gotestfmt/install
 	set -euo pipefail
 	rm -rf "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json"
+	GOPRIVATE=$(GOPRIVATE) \
 	go test -short -shuffle=on -race -mod=readonly -json -cover -timeout=$(GOTEST_TIMEOUT) $(ROOTDIR)/internal/... \
 	| tee "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json" \
 	| gotestfmt -showteststatus
@@ -146,6 +157,7 @@ test/pkg/gotestfmt: \
         gotestfmt/install
 	set -euo pipefail
 	rm -rf "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json"
+	GOPRIVATE=$(GOPRIVATE) \
 	go test -short -shuffle=on -race -mod=readonly -json -cover -timeout=$(GOTEST_TIMEOUT) $(ROOTDIR)/pkg/... \
 	| tee "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json" \
 	| gotestfmt -showteststatus
@@ -156,7 +168,9 @@ test/hack/gotestfmt: \
         gotestfmt/install
 	set -euo pipefail
 	rm -rf "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json"
+	GOPRIVATE=$(GOPRIVATE) \
 	go mod vendor -o $(ROOTDIR)/vendor
+	GOPRIVATE=$(GOPRIVATE) \
 	go test -short -shuffle=on -race -mod=vendor -json -cover \
 		$(ROOTDIR)/hack/gorules/... \
 		$(ROOTDIR)/hack/helm/... \
@@ -172,6 +186,7 @@ test/all/gotestfmt: \
         gotestfmt/install
 	set -euo pipefail
 	rm -rf "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json"
+	GOPRIVATE=$(GOPRIVATE) \
 	go test -short -shuffle=on -race -mod=readonly -json -cover -timeout=$(GOTEST_TIMEOUT) $(ROOTDIR)/... \
 	| tee "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json" \
 	| gotestfmt -showteststatus
@@ -201,22 +216,27 @@ test/remove-empty:
 .PHONY: test/pkg
 ## run tests for pkg
 test/pkg:
+	GOPRIVATE=$(GOPRIVATE) \
 	go test -short -shuffle=on -race -mod=readonly -cover $(ROOTDIR)/pkg/...
 
 .PHONY: test/internal
 ## run tests for internal
 test/internal:
+	GOPRIVATE=$(GOPRIVATE) \
 	go test -short -shuffle=on -race -mod=readonly -cover $(ROOTDIR)/internal/...
 
 .PHONY: test/cmd
 ## run tests for cmd
 test/cmd:
+	GOPRIVATE=$(GOPRIVATE) \
 	go test -short -shuffle=on -race -mod=readonly -cover $(ROOTDIR)/cmd/...
 
 .PHONY: test/hack
 ## run tests for hack
 test/hack:
+	GOPRIVATE=$(GOPRIVATE) \
 	go mod vendor -o $(ROOTDIR)/vendor
+	GOPRIVATE=$(GOPRIVATE) \
 	go test -short -shuffle=on -race -mod=vendor -cover \
 		$(ROOTDIR)/hack/gorules... \
 		$(ROOTDIR)/hack/helm/... \
@@ -227,12 +247,15 @@ test/hack:
 .PHONY: test/all
 ## run tests for all Go codes
 test/all:
+	GOPRIVATE=$(GOPRIVATE) \
 	go test -short -shuffle=on -race -mod=readonly -cover $(ROOTDIR)/...
 
 .PHONY: coverage
 ## calculate coverages
 coverage:
+	GOPRIVATE=$(GOPRIVATE) \
 	go test -short -shuffle=on -race -mod=readonly -v -race -covermode=atomic -timeout=$(GOTEST_TIMEOUT) -coverprofile=coverage.out $(ROOTDIR)/...
+	GOPRIVATE=$(GOPRIVATE) \
 	go tool cover -html=coverage.out -o coverage.html
 
 .PHONY: gotests/gen

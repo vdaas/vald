@@ -28,7 +28,6 @@ option java_outer_classname = "ValdPayload";
 
 // Search related messages.
 message Search {
-
   // Represent a search request.
   message Request {
     // The vector to be searched.
@@ -91,6 +90,17 @@ message Search {
     repeated Filter.Config egress_filters = 7;
     // Minimum number of result to be returned.
     uint32 min_num = 8 [ (validate.rules).uint32.gte = 0 ];
+    // Aggregation Algorithm
+    AggregationAlgorithm aggregation_algorithm = 9;
+  }
+
+  // AggregationAlgorithm is enum of each aggregation algorithms
+  enum AggregationAlgorithm {
+    Unknown = 0;
+    ConcurrentQueue = 1;
+    SortSlice = 2;
+    SortPoolSlice = 3;
+    PairingHeap = 4;
   }
 
   // Represent a search response.
@@ -120,7 +130,6 @@ message Search {
 
 // Filter related messages.
 message Filter {
-
   // Represent the target filter server.
   message Target {
     // The target hostname.
@@ -218,7 +227,6 @@ message Insert {
 
 // Update related messages
 message Update {
-
   // Represent the update request.
   message Request {
     // The vector to be updated.
@@ -257,7 +265,8 @@ message Update {
     repeated Filter.Config filters = 2;
     // Update timestamp.
     int64 timestamp = 3;
-    // A flag to disable balanced update (split remove -> insert operation) during update operation.
+    // A flag to disable balanced update (split remove -> insert operation)
+    // during update operation.
     bool disable_balanced_update = 4;
   }
 }
@@ -303,7 +312,8 @@ message Upsert {
     repeated Filter.Config filters = 2;
     // Upsert timestamp.
     int64 timestamp = 3;
-    // A flag to disable balanced update (split remove -> insert operation) during update operation.
+    // A flag to disable balanced update (split remove -> insert operation)
+    // during update operation.
     bool disable_balanced_update = 4;
   }
 }

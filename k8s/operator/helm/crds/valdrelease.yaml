@@ -203,6 +203,9 @@ spec:
                           type: integer
                         auto_save_index_duration:
                           type: string
+                        broken_index_history_limit:
+                          type: integer
+                          minimum: 0
                         bulk_insert_chunk_size:
                           type: integer
                         creation_edge_size:
@@ -2022,6 +2025,11 @@ spec:
                           enum:
                             - glg
                             - zap
+                    networkPolicy:
+                      type: object
+                      properties:
+                        enabled:
+                          type: boolean
                     observability:
                       type: object
                       properties:
@@ -4133,6 +4141,11 @@ spec:
                             annotations:
                               type: object
                               x-kubernetes-preserve-unknown-fields: true
+                            defaultBackend:
+                              type: object
+                              properties:
+                                enabled:
+                                  type: boolean
                             enabled:
                               type: boolean
                             host:
@@ -5287,6 +5300,11 @@ spec:
                             annotations:
                               type: object
                               x-kubernetes-preserve-unknown-fields: true
+                            defaultBackend:
+                              type: object
+                              properties:
+                                enabled:
+                                  type: boolean
                             enabled:
                               type: boolean
                             host:

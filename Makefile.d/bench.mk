@@ -127,6 +127,7 @@ bench/core/ngt/sequential: \
 pprof/core/ngt/sequential.bin: \
 	hack/benchmark/core/ngt/ngt_bench_test.go
 	mkdir -p $(dir $@)
+	GOPRIVATE=$(GOPRIVATE) \
 	go test \
 	    -mod=readonly \
 	    -count=1 \
@@ -148,6 +149,7 @@ bench/core/ngt/parallel: \
 pprof/core/ngt/parallel.bin: \
 	hack/benchmark/core/ngt/ngt_bench_test.go
 	mkdir -p $(dir $@)
+	GOPRIVATE=$(GOPRIVATE) \
 	go test \
 	    -mod=readonly \
 	    -count=1 \
@@ -176,6 +178,7 @@ pprof/agent/stream.bin: \
 	hack/benchmark/e2e/agent/core/ngt/ngt_bench_test.go \
 	ngt/install
 	mkdir -p $(dir $@)
+	GOPRIVATE=$(GOPRIVATE) \
 	go test \
 	    -mod=readonly \
 	    -count=1 \
@@ -198,6 +201,7 @@ pprof/agent/sequential/grpc.bin: \
 	hack/benchmark/e2e/agent/core/ngt/ngt_bench_test.go \
 	ngt/install
 	mkdir -p $(dir $@)
+	GOPRIVATE=$(GOPRIVATE) \
 	go test \
 	    -mod=readonly \
 	    -count=1 \
@@ -225,6 +229,7 @@ pprof/gateway/sequential.bin: \
 	hack/benchmark/e2e/gateway/vald/vald_bench_test.go \
 	ngt/install
 	mkdir -p $(dir $@)
+	GOPRIVATE=$(GOPRIVATE) \
 	go test \
 	    -mod=readonly \
 	    -count=1 \
@@ -270,6 +275,7 @@ metrics/agent: \
 metrics/agent/core/ngt: $(ROOTDIR)/metrics.gob
 
 $(ROOTDIR)/metrics.gob:
+	GOPRIVATE=$(GOPRIVATE) \
 	go test -mod=readonly -v --timeout=1h $(ROOTDIR)/hack/benchmark/e2e/agent/core/ngt/... -output=$(ROOTDIR)/metrics.gob
 
 .PHONY: metrics/chart

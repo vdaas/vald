@@ -56,7 +56,7 @@ make k3d/start
 # You might want to use k9s for this
 
 # Deploy Vald
-make k8s/vald/deploy
+make k8s/vald/deploy HELM_VALUES=example/helm/values.yaml
 
 # Wait for a while until the deployment is ready
 

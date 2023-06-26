@@ -30,7 +30,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-	"sigs.k8s.io/controller-runtime/pkg/source"
 )
 
 // NOT IMPLEMENTED BELOW
@@ -821,7 +820,7 @@ func Test_reconciler_Watches(t *testing.T) {
 		lopts       []client.ListOption
 	}
 	type want struct {
-		want  *source.Kind
+		want  client.Object
 		want1 handler.EventHandler
 		want2 []builder.WatchesOption
 	}
@@ -829,11 +828,11 @@ func Test_reconciler_Watches(t *testing.T) {
 		name       string
 		fields     fields
 		want       want
-		checkFunc  func(want, *source.Kind, handler.EventHandler, []builder.WatchesOption) error
+		checkFunc  func(want, client.Object, handler.EventHandler, []builder.WatchesOption) error
 		beforeFunc func(*testing.T)
 		afterFunc  func(*testing.T)
 	}
-	defaultCheckFunc := func(w want, got *source.Kind, got1 handler.EventHandler, got2 []builder.WatchesOption) error {
+	defaultCheckFunc := func(w want, got client.Object, got1 handler.EventHandler, got2 []builder.WatchesOption) error {
 		if !reflect.DeepEqual(got, w.want) {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}

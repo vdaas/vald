@@ -1,5 +1,125 @@
 # CHANGELOG
 
+## v1.7.6
+
+### Docker images
+
+<table>
+  <tr>
+    <th>component</th>
+    <th>Docker pull</th>
+  </tr>
+  <tr>
+    <td>Agent NGT</td>
+    <td>
+      <code>docker pull vdaas/vald-agent-ngt:v1.7.6</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-agent-ngt:v1.7.6</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Agent sidecar</td>
+    <td>
+      <code>docker pull vdaas/vald-agent-sidecar:v1.7.6</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-agent-sidecar:v1.7.6</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Discoverers</td>
+    <td>
+      <code>docker pull vdaas/vald-discoverer-k8s:v1.7.6</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-discoverer-k8s:v1.7.6</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Gateways</td>
+    <td>
+      <code>docker pull vdaas/vald-lb-gateway:v1.7.6</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-lb-gateway:v1.7.6</code><br/>
+      <code>docker pull vdaas/vald-filter-gateway:v1.7.6</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-filter-gateway:v1.7.6</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Index Manager</td>
+    <td>
+      <code>docker pull vdaas/vald-manager-index:v1.7.6</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-manager-index:v1.7.6</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Helm Operator</td>
+    <td>
+      <code>docker pull vdaas/vald-helm-operator:v1.7.6</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-helm-operator:v1.7.6</code>
+    </td>
+  </tr>
+</table>
+
+### Documents
+
+- [GoDoc](https://pkg.go.dev/github.com/vdaas/vald@v1.7.6)
+- [Helm Chart Reference](https://github.com/vdaas/vald/blob/v1.7.6/charts/vald/README.md)
+- [Helm Operator Chart Reference](https://github.com/vdaas/vald/blob/v1.7.6/charts/vald-helm-operator/README.md)
+
+### Changes
+
+⚠️ ⚠️ ⚠️ Warning ⚠️ ⚠️ ⚠️
+
+- `v1.7.6` does not support `vald-agent-sidecar` for some reason.
+- You can use the `vald-agent-sidecar` by setting the `vald-agent-ngt` image tag as `v1.7.5` or earlier.
+- We will support `vald-agent-sidecar` in the future version again.
+
+:sparkles: New feature
+
+- Add search algorithm benchmark and update search aggregation algo [#2044](https://github.com/vdaas/vald/pull/2044)
+- Add broken index backup [#2034](https://github.com/vdaas/vald/pull/2034)
+- Add network policy [#2022](https://github.com/vdaas/vald/pull/2022)
+
+:recycle: Refactor
+
+- Add save index operation log [#2048](https://github.com/vdaas/vald/pull/2048)
+- Added flg that can disable to ingress defaultBackend [#1976](https://github.com/vdaas/vald/pull/1976)
+- Refactor and Add test for service/ngt.go [#2040](https://github.com/vdaas/vald/pull/2040)
+- Add e2e envs to devcontainer [#2032](https://github.com/vdaas/vald/pull/2032)
+- Update RoundTrip retry condition [#2033](https://github.com/vdaas/vald/pull/2033)
+
+:bug: Bugfix
+
+- Fix fp16 problems [#2049](https://github.com/vdaas/vald/pull/2049)
+- Add KUBECTL_VERSION value to workflow [#2052](https://github.com/vdaas/vald/pull/2052)
+- Remove sudo from kubectl and small refactor around os/arch [#2037](https://github.com/vdaas/vald/pull/2037)
+- Disable vtproto pooling due to the performance degradation [#2063](https://github.com/vdaas/vald/pull/2063)
+- Fix to create index_path when it does not exists [#2060](https://github.com/vdaas/vald/pull/2060)
+
+:pencil2: Document
+
+- Add documentation for devcontiner [#2042](https://github.com/vdaas/vald/pull/2042)
+- Create README for each docker image [#2014](https://github.com/vdaas/vald/pull/2014)
+
+:green_heart: CI
+
+- Disable deepsource TestCoverage due to the Deepsource Coverage collect server timeout is too short for Vald testing [#2038](https://github.com/vdaas/vald/pull/2038)
+- Update Docker Build workflow with forked sources [#2036](https://github.com/vdaas/vald/pull/2036)
+- Fix e2e-max-dim test [#2028](https://github.com/vdaas/vald/pull/2028)
+- Fix E2E actions on PR [#2025](https://github.com/vdaas/vald/pull/2025)
+- Change E2E actions to use local charts on PR [#2024](https://github.com/vdaas/vald/pull/2024)
+- Update format chatops [#2021](https://github.com/vdaas/vald/pull/2021)
+- Format code with prettier and gofumpt [#2015](https://github.com/vdaas/vald/pull/2015)
+
+:chart_with_upwards_trend: Metrics/Tracing
+
+- Add command to deploy monitoring stack [#2030](https://github.com/vdaas/vald/pull/2030)
+- Fixed duplicate counting in CPU graphs [#2019](https://github.com/vdaas/vald/pull/2019)
+
+:arrow_up: Update dependencies
+
+- Update go modules [#2053](https://github.com/vdaas/vald/pull/2053)
+- Update NGT version [#2026](https://github.com/vdaas/vald/pull/2026)
+
+:handshake: Contributor
+
+- Add takuyaymd as a contributor for maintenance [#2020](https://github.com/vdaas/vald/pull/2020)
+
 ## v1.7.5
 
 ### Docker images

@@ -207,29 +207,19 @@ jobs:
         run: |
           make hack/benchmark/assets/dataset/${DATASET}
           go version
-          go test \
-            -race \
-            -mod=readonly \
-            -v tests/e2e/crud/crud_test.go \
-            -tags "e2e" \
-            -timeout 30m \
-            -run "TestE2EStandardCRUD" \
-            -host=localhost \
-            -port=8081 \
-            -dataset=`pwd`/hack/benchmark/assets/dataset/${DATASET} \
-            -insert-num=60000 \
-            -search-num=10000 \
-            -search-by-id-num=10000 \
-            -get-object-num=100 \
-            -update-num=100 \
-            -upsert-num=100 \
-            -remove-num=100 \
-            -wait-after-insert=3m \
-            -portforward \
-            -portforward-pod-name=${POD_NAME} \
-            -portforward-pod-port=8081 \
-            -kubeconfig=${KUBECONFIG} \
-            -namespace=default
+          make E2E_BIND_PORT=8081 \
+            E2E_DATASET_NAME=${DATASET} \
+            E2E_INSERT_COUNT=60000 \
+            E2E_SEARCH_COUNT=10000 \
+            E2E_SEARCH_BY_ID_COUNT=10000 \
+            E2E_GET_OBJECT_COUNT=100 \
+            E2E_UPDATE_COUNT=100 \
+            E2E_UPSERT_COUNT=100 \
+            E2E_REMOVE_COUNT=100 \
+            E2E_WAIT_FOR_CREATE_INDEX_DURATION=3m \
+            E2E_TARGET_POD_NAME=${POD_NAME} \
+            E2E_TARGET_NAMESPACE=default \
+            e2e
         env:
           DATASET: fashion-mnist-784-euclidean.hdf5
           POD_NAME: ${{ steps.deploy_vald.outputs.POD_NAME }}

@@ -38,7 +38,7 @@ defaults:
   image:
     # @schema {"name": "defaults.image.tag", "type": "string"}
     # defaults.image.tag -- docker image tag
-    tag: v1.7.5
+    tag: v1.7.6
   # @schema {"name": "defaults.server_config", "type": "object", "anchor": "server_config"}
   server_config:
     # @schema {"name": "defaults.server_config.servers", "type": "object"}
@@ -834,8 +834,16 @@ defaults:
   networkPolicy:
     # @schema {"name": "defaults.networkPolicy.enabled", "type": "boolean"}
     # defaults.networkPolicy.enabled -- if network policy enabled
-    # TODO: Change this to true after implementing user custom network policy parser
     enabled: false
+    # @schema {"name": "defaults.networkPolicy.custom", "type": "object"}
+    # defaults.networkPolicy.custom -- custom network policies that a user can add
+    custom:
+      # @schema {"name": "defaults.networkPolicy.custom.ingress", "type": "object"}
+      # defaults.networkPolicy.custom.ingress -- custom ingress network policies that a user can add
+      ingress: {}
+      # @schema {"name": "defaults.networkPolicy.custom.egress", "type": "object"}
+      # defaults.networkPolicy.custom.egress -- custom egress network policies that a user can add
+      egress: {}
 
 # @schema {"name": "gateway", "type": "object"}
 gateway:
@@ -1661,9 +1669,8 @@ agent:
     # it should be `l1`, `l2`, `angle`, `hamming`, `cosine`,`poincare`, `lorentz`, `jaccard`, `sparsejaccard`, `normalizedangle` or `normalizedcosine`.
     # for further details about NGT libraries supported distance is https://github.com/yahoojapan/NGT/wiki/Command-Quick-Reference
     # and vald agent's supported NGT distance type is https://pkg.go.dev/github.com/vdaas/vald/internal/core/algorithm/ngt#pkg-constants
-    distance_type:
-      l2
-      # @schema {"name": "agent.ngt.object_type", "type": "string", "enum": ["float", "float16", "uint8"]}
+    distance_type: l2
+    # @schema {"name": "agent.ngt.object_type", "type": "string", "enum": ["float", "float16", "uint8"]}
     # agent.ngt.object_type -- object type.
     # it should be `float` or `uint8` or `float16`.
     # for further details: https://github.com/yahoojapan/NGT/wiki/Command-Quick-Reference
@@ -1715,7 +1722,7 @@ agent:
       # @schema {"name": "agent.ngt.kvsdb.concurrency", "type": "integer"}
       # agent.ngt.kvsdb.concurrency -- kvsdb processing concurrency
       concurrency: 6
-    # @schema {"name": "agent.ngt.broken_index_history_limit", "type": "integer"}
+    # @schema {"name": "agent.ngt.broken_index_history_limit", "type": "integer", "minimum": 0}
     # agent.ngt.broken_index_history_limit -- maximum number of broken index generations to backup
     broken_index_history_limit: 0
   # @schema {"name": "agent.sidecar", "type": "object"}

@@ -33,11 +33,20 @@ define proto-code-gen
 		$(PROTO_PATHS:%=-I %) \
                 --go_out=$(GOPATH)/src --plugin protoc-gen-go="$(GOPATH)/bin/protoc-gen-go" \
                 --go-vtproto_out=$(GOPATH)/src --plugin protoc-gen-go-vtproto="$(GOPATH)/bin/protoc-gen-go-vtproto" \
-                --go-vtproto_opt=features=grpc+marshal+unmarshal+size+pool \
-                --go-vtproto_opt=pool=$(ROOTDIR)/apis/proto/v1/payload.Search.Request \
-                --go-vtproto_opt=pool=$(ROOTDIR)/apis/proto/v1/payload.Object.Vector \
+                --go-vtproto_opt=features=grpc+marshal+unmarshal+size+equal+clone \
 		$1
 endef
+                # --go-vtproto_opt=pool=$(ROOTDIR)/apis/proto/v1/payload.Object.Vector \
+                # --go-vtproto_opt=pool=$(ROOTDIR)/apis/proto/v1/payload.Insert.MultiRequest \
+                # --go-vtproto_opt=pool=$(ROOTDIR)/apis/proto/v1/payload.Insert.Request \
+                # --go-vtproto_opt=pool=$(ROOTDIR)/apis/proto/v1/payload.Object.Vector \
+                # --go-vtproto_opt=pool=$(ROOTDIR)/apis/proto/v1/payload.Object.Vectors \
+                # --go-vtproto_opt=pool=$(ROOTDIR)/apis/proto/v1/payload.Search.ObjectRequest \
+                # --go-vtproto_opt=pool=$(ROOTDIR)/apis/proto/v1/payload.Search.Request \
+                # --go-vtproto_opt=pool=$(ROOTDIR)/apis/proto/v1/payload.Update.MultiRequest \
+                # --go-vtproto_opt=pool=$(ROOTDIR)/apis/proto/v1/payload.Update.Request \
+                # --go-vtproto_opt=pool=$(ROOTDIR)/apis/proto/v1/payload.Upsert.MultiRequest \
+                # --go-vtproto_opt=pool=$(ROOTDIR)/apis/proto/v1/payload.Upsert.Request \
 
 define protoc-gen
 	protoc \
@@ -81,6 +90,7 @@ define telepresence
 endef
 
 define run-e2e-crud-test
+	GOPRIVATE=$(GOPRIVATE) \
 	go test \
 	    -race \
 	    -mod=readonly \
@@ -90,7 +100,7 @@ define run-e2e-crud-test
 	    -timeout $(E2E_TIMEOUT) \
 	    -host=$(E2E_BIND_HOST) \
 	    -port=$(E2E_BIND_PORT) \
-	    -dataset=$(ROOTDIR)/hack/benchmark/assets/dataset/$(E2E_DATASET_NAME).hdf5 \
+	    -dataset=$(ROOTDIR)/hack/benchmark/assets/dataset/$(E2E_DATASET_NAME) \
 	    -insert-num=$(E2E_INSERT_COUNT) \
 	    -search-num=$(E2E_SEARCH_COUNT) \
 	    -search-by-id-num=$(E2E_SEARCH_BY_ID_COUNT) \
@@ -102,10 +112,12 @@ define run-e2e-crud-test
 	    -portforward=$(E2E_PORTFORWARD_ENABLED) \
 	    -portforward-pod-name=$(E2E_TARGET_POD_NAME) \
 	    -portforward-pod-port=$(E2E_TARGET_PORT) \
-	    -namespace=$(E2E_TARGET_NAMESPACE)
+	    -namespace=$(E2E_TARGET_NAMESPACE) \
+	    -kubeconfig=$(KUBECONFIG)
 endef
 
 define run-e2e-multi-crud-test
+	GOPRIVATE=$(GOPRIVATE) \
 	go test \
 	    -race \
 	    -mod=readonly \
@@ -115,7 +127,7 @@ define run-e2e-multi-crud-test
 	    -timeout $(E2E_TIMEOUT) \
 	    -host=$(E2E_BIND_HOST) \
 	    -port=$(E2E_BIND_PORT) \
-	    -dataset=$(ROOTDIR)/hack/benchmark/assets/dataset/$(E2E_DATASET_NAME).hdf5 \
+	    -dataset=$(ROOTDIR)/hack/benchmark/assets/dataset/$(E2E_DATASET_NAME) \
 	    -insert-num=$(E2E_INSERT_COUNT) \
 	    -search-num=$(E2E_SEARCH_COUNT) \
 	    -search-by-id-num=$(E2E_SEARCH_BY_ID_COUNT) \
@@ -127,7 +139,48 @@ define run-e2e-multi-crud-test
 	    -portforward=$(E2E_PORTFORWARD_ENABLED) \
 	    -portforward-pod-name=$(E2E_TARGET_POD_NAME) \
 	    -portforward-pod-port=$(E2E_TARGET_PORT) \
-	    -namespace=$(E2E_TARGET_NAMESPACE)
+	    -namespace=$(E2E_TARGET_NAMESPACE) \
+	    -kubeconfig=$(KUBECONFIG)
+endef
+
+define run-e2e-max-dim-test
+	GOPRIVATE=$(GOPRIVATE) \
+	go test \
+	    -race \
+	    -mod=readonly \
+            -v $(ROOTDIR)/tests/e2e/performance/max_vector_dim_test.go \
+	    -tags "e2e" \
+	    -timeout $(E2E_TIMEOUT) \
+            -file $(E2E_MAX_DIM_RESULT_FILEPATH) \
+	    -host=$(E2E_BIND_HOST) \
+	    -port=$(E2E_BIND_PORT) \
+	    -bit=${E2E_MAX_DIM_BIT} \
+	    -portforward=$(E2E_PORTFORWARD_ENABLED) \
+	    -portforward-pod-name=$(E2E_TARGET_POD_NAME) \
+	    -portforward-pod-port=$(E2E_TARGET_PORT) \
+	    -namespace=$(E2E_TARGET_NAMESPACE) \
+	    -kubeconfig=$(KUBECONFIG)
+endef
+
+define run-e2e-sidecar-test
+	GOPRIVATE=$(GOPRIVATE) \
+	go test \
+	    -race \
+	    -mod=readonly \
+	    $1 \
+	    -v $(ROOTDIR)/tests/e2e/sidecar/sidecar_test.go \
+	    -tags "e2e" \
+	    -timeout $(E2E_TIMEOUT) \
+	    -host=$(E2E_BIND_HOST) \
+	    -port=$(E2E_BIND_PORT) \
+	    -dataset=$(ROOTDIR)/hack/benchmark/assets/dataset/$(E2E_DATASET_NAME) \
+	    -insert-num=$(E2E_INSERT_COUNT) \
+	    -search-num=$(E2E_SEARCH_COUNT) \
+	    -portforward=$(E2E_PORTFORWARD_ENABLED) \
+	    -portforward-pod-name=$(E2E_TARGET_POD_NAME) \
+	    -portforward-pod-port=$(E2E_TARGET_PORT) \
+	    -namespace=$(E2E_TARGET_NAMESPACE) \
+	    -kubeconfig=$(KUBECONFIG)
 endef
 
 define gen-go-test-sources

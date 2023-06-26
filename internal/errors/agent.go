@@ -104,4 +104,9 @@ var (
 	ErrObjectNotFound = func(err error, uuid string) error {
 		return Wrapf(err, "uuid %s's object not found", uuid)
 	}
+
+	// ErrAgentMigrationFailed represents a function to generate an error that agent migration failed.
+	ErrAgentMigrationFailed = func(err error) error {
+		return Wrap(err, "index_path migration failed")
+	}
 )

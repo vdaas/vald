@@ -338,6 +338,18 @@
       },
       "description": "Represent the stream response of the vector location."
     },
+    "SearchAggregationAlgorithm": {
+      "type": "string",
+      "enum": [
+        "Unknown",
+        "ConcurrentQueue",
+        "SortSlice",
+        "SortPoolSlice",
+        "PairingHeap"
+      ],
+      "default": "Unknown",
+      "title": "AggregationAlgorithm is enum of each aggregation algorithms"
+    },
     "SearchResponse": {
       "type": "object",
       "properties": {
@@ -598,6 +610,10 @@
           "type": "integer",
           "format": "int64",
           "description": "Minimum number of result to be returned."
+        },
+        "aggregationAlgorithm": {
+          "$ref": "#/definitions/SearchAggregationAlgorithm",
+          "title": "Aggregation Algorithm"
         }
       },
       "description": "Represent search configuration."
@@ -655,7 +671,7 @@
         },
         "disableBalancedUpdate": {
           "type": "boolean",
-          "description": "A flag to disable balanced update (split remove -\u003e insert operation) during update operation."
+          "description": "A flag to disable balanced update (split remove -\u003e insert operation)\nduring update operation."
         }
       },
       "description": "Represent the update configuration."
@@ -712,7 +728,7 @@
         },
         "disableBalancedUpdate": {
           "type": "boolean",
-          "description": "A flag to disable balanced update (split remove -\u003e insert operation) during update operation."
+          "description": "A flag to disable balanced update (split remove -\u003e insert operation)\nduring update operation."
         }
       },
       "description": "Represent the upsert configuration."

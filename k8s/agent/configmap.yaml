@@ -20,10 +20,10 @@ metadata:
   name: vald-agent-ngt-config
   labels:
     app.kubernetes.io/name: vald
-    helm.sh/chart: vald-v1.7.5
+    helm.sh/chart: vald-v1.7.6
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: release-name
-    app.kubernetes.io/version: v1.7.5
+    app.kubernetes.io/version: v1.7.6
     app.kubernetes.io/component: agent
 data:
   config.yaml: |
@@ -199,6 +199,7 @@ data:
       auto_index_duration_limit: 24h
       auto_index_length: 100
       auto_save_index_duration: 35m
+      broken_index_history_limit: 0
       bulk_insert_chunk_size: 10
       creation_edge_size: 20
       default_epsilon: 0.1

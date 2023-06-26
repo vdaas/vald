@@ -439,8 +439,30 @@ message Config {
   repeated Filter.Config egress_filters = 7;
   // Minimum number of result to be returned.
   uint32 min_num = 8 [ (validate.rules).uint32.gte = 0 ];
+  // Aggregation Algorithm
+  AggregationAlgorithm aggregation_algorithm = 9;
+}
+
+// AggregationAlgorithm is enum of each aggregation algorithms
+enum AggregationAlgorithm {
+  Unknown = 0;
+  ConcurrentQueue = 1;
+  SortSlice = 2;
+  SortPoolSlice = 3;
+  PairingHeap = 4;
 }
 ```
+
+`AggregationAlgorithm` is available from `v1.7.6`.
+You can select 1 algorithm from 4 algorithms (Unknown is same as `ConcurrentQueue`) based on desired search performance.
+This table shows the description and recommended situation for each algorithm.
+
+| Algorithm         | Description                                                             | Recommended Situation                                                                                                           |
+| :---------------- | :---------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------ |
+| `ConcurrentQueue` | Traditional Vald proprietary aggregation algorithm                      | Good performance when asynchronous aggregation from a large number of Agents and a huge number of threads.                      |
+| `SortSlice`       | Aggregate and rerank all agent results together to eliminate duplicates | Good performance when there are small top-K and small number of Agents.                                                         |
+| `SortPoolSlice`   | Memory reduce version of `SortSlice`                                    | Same as `SortSlice`.                                                                                                            |
+| `PairingHeap`     | Aggregation method using PairingHeap that supports Multi threads.       | Faster under the medium scale top-K and the medium number of Agents, which is difficult to achive performance with `SortSlice`. |
 
 <details><summary>Search Configuration Sample (Go)</summary><br>
 
@@ -504,6 +526,7 @@ func main() {
 					Query: &payload.Filter_Query{},
 				},
 			},
+                        AggregationAlgorithm: payload.Search_PairingHeap,
 		},
 	})
 
