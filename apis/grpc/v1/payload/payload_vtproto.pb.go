@@ -180,10 +180,22 @@ func (m *Search_Config) CloneVT() *Search_Config {
 		Radius:               m.Radius,
 		Epsilon:              m.Epsilon,
 		Timeout:              m.Timeout,
-		IngressFilters:       m.IngressFilters.CloneVT(),
-		EgressFilters:        m.EgressFilters.CloneVT(),
 		MinNum:               m.MinNum,
 		AggregationAlgorithm: m.AggregationAlgorithm,
+	}
+	if rhs := m.IngressFilters; rhs != nil {
+		tmpContainer := make([]*Filter_Config, len(rhs))
+		for k, v := range rhs {
+			tmpContainer[k] = v.CloneVT()
+		}
+		r.IngressFilters = tmpContainer
+	}
+	if rhs := m.EgressFilters; rhs != nil {
+		tmpContainer := make([]*Filter_Config, len(rhs))
+		for k, v := range rhs {
+			tmpContainer[k] = v.CloneVT()
+		}
+		r.EgressFilters = tmpContainer
 	}
 	if len(m.unknownFields) > 0 {
 		r.unknownFields = make([]byte, len(m.unknownFields))
@@ -325,17 +337,31 @@ func (m *Filter_Target) CloneMessageVT() proto.Message {
 	return m.CloneVT()
 }
 
+func (m *Filter_Query) CloneVT() *Filter_Query {
+	if m == nil {
+		return (*Filter_Query)(nil)
+	}
+	r := &Filter_Query{
+		Query: m.Query,
+	}
+	if len(m.unknownFields) > 0 {
+		r.unknownFields = make([]byte, len(m.unknownFields))
+		copy(r.unknownFields, m.unknownFields)
+	}
+	return r
+}
+
+func (m *Filter_Query) CloneMessageVT() proto.Message {
+	return m.CloneVT()
+}
+
 func (m *Filter_Config) CloneVT() *Filter_Config {
 	if m == nil {
 		return (*Filter_Config)(nil)
 	}
-	r := &Filter_Config{}
-	if rhs := m.Targets; rhs != nil {
-		tmpContainer := make([]*Filter_Target, len(rhs))
-		for k, v := range rhs {
-			tmpContainer[k] = v.CloneVT()
-		}
-		r.Targets = tmpContainer
+	r := &Filter_Config{
+		Target: m.Target.CloneVT(),
+		Query:  m.Query.CloneVT(),
 	}
 	if len(m.unknownFields) > 0 {
 		r.unknownFields = make([]byte, len(m.unknownFields))
@@ -345,6 +371,91 @@ func (m *Filter_Config) CloneVT() *Filter_Config {
 }
 
 func (m *Filter_Config) CloneMessageVT() proto.Message {
+	return m.CloneVT()
+}
+
+func (m *Filter_DistanceRequest) CloneVT() *Filter_DistanceRequest {
+	if m == nil {
+		return (*Filter_DistanceRequest)(nil)
+	}
+	r := &Filter_DistanceRequest{
+		Query: m.Query.CloneVT(),
+	}
+	if rhs := m.Distance; rhs != nil {
+		tmpContainer := make([]*Object_Distance, len(rhs))
+		for k, v := range rhs {
+			tmpContainer[k] = v.CloneVT()
+		}
+		r.Distance = tmpContainer
+	}
+	if len(m.unknownFields) > 0 {
+		r.unknownFields = make([]byte, len(m.unknownFields))
+		copy(r.unknownFields, m.unknownFields)
+	}
+	return r
+}
+
+func (m *Filter_DistanceRequest) CloneMessageVT() proto.Message {
+	return m.CloneVT()
+}
+
+func (m *Filter_DistanceResponse) CloneVT() *Filter_DistanceResponse {
+	if m == nil {
+		return (*Filter_DistanceResponse)(nil)
+	}
+	r := &Filter_DistanceResponse{}
+	if rhs := m.Distance; rhs != nil {
+		tmpContainer := make([]*Object_Distance, len(rhs))
+		for k, v := range rhs {
+			tmpContainer[k] = v.CloneVT()
+		}
+		r.Distance = tmpContainer
+	}
+	if len(m.unknownFields) > 0 {
+		r.unknownFields = make([]byte, len(m.unknownFields))
+		copy(r.unknownFields, m.unknownFields)
+	}
+	return r
+}
+
+func (m *Filter_DistanceResponse) CloneMessageVT() proto.Message {
+	return m.CloneVT()
+}
+
+func (m *Filter_VectorRequest) CloneVT() *Filter_VectorRequest {
+	if m == nil {
+		return (*Filter_VectorRequest)(nil)
+	}
+	r := &Filter_VectorRequest{
+		Vector: m.Vector.CloneVT(),
+		Query:  m.Query.CloneVT(),
+	}
+	if len(m.unknownFields) > 0 {
+		r.unknownFields = make([]byte, len(m.unknownFields))
+		copy(r.unknownFields, m.unknownFields)
+	}
+	return r
+}
+
+func (m *Filter_VectorRequest) CloneMessageVT() proto.Message {
+	return m.CloneVT()
+}
+
+func (m *Filter_VectorResponse) CloneVT() *Filter_VectorResponse {
+	if m == nil {
+		return (*Filter_VectorResponse)(nil)
+	}
+	r := &Filter_VectorResponse{
+		Vector: m.Vector.CloneVT(),
+	}
+	if len(m.unknownFields) > 0 {
+		r.unknownFields = make([]byte, len(m.unknownFields))
+		copy(r.unknownFields, m.unknownFields)
+	}
+	return r
+}
+
+func (m *Filter_VectorResponse) CloneMessageVT() proto.Message {
 	return m.CloneVT()
 }
 
@@ -455,8 +566,14 @@ func (m *Insert_Config) CloneVT() *Insert_Config {
 	}
 	r := &Insert_Config{
 		SkipStrictExistCheck: m.SkipStrictExistCheck,
-		Filters:              m.Filters.CloneVT(),
 		Timestamp:            m.Timestamp,
+	}
+	if rhs := m.Filters; rhs != nil {
+		tmpContainer := make([]*Filter_Config, len(rhs))
+		for k, v := range rhs {
+			tmpContainer[k] = v.CloneVT()
+		}
+		r.Filters = tmpContainer
 	}
 	if len(m.unknownFields) > 0 {
 		r.unknownFields = make([]byte, len(m.unknownFields))
@@ -576,9 +693,15 @@ func (m *Update_Config) CloneVT() *Update_Config {
 	}
 	r := &Update_Config{
 		SkipStrictExistCheck:  m.SkipStrictExistCheck,
-		Filters:               m.Filters.CloneVT(),
 		Timestamp:             m.Timestamp,
 		DisableBalancedUpdate: m.DisableBalancedUpdate,
+	}
+	if rhs := m.Filters; rhs != nil {
+		tmpContainer := make([]*Filter_Config, len(rhs))
+		for k, v := range rhs {
+			tmpContainer[k] = v.CloneVT()
+		}
+		r.Filters = tmpContainer
 	}
 	if len(m.unknownFields) > 0 {
 		r.unknownFields = make([]byte, len(m.unknownFields))
@@ -698,9 +821,15 @@ func (m *Upsert_Config) CloneVT() *Upsert_Config {
 	}
 	r := &Upsert_Config{
 		SkipStrictExistCheck:  m.SkipStrictExistCheck,
-		Filters:               m.Filters.CloneVT(),
 		Timestamp:             m.Timestamp,
 		DisableBalancedUpdate: m.DisableBalancedUpdate,
+	}
+	if rhs := m.Filters; rhs != nil {
+		tmpContainer := make([]*Filter_Config, len(rhs))
+		for k, v := range rhs {
+			tmpContainer[k] = v.CloneVT()
+		}
+		r.Filters = tmpContainer
 	}
 	if len(m.unknownFields) > 0 {
 		r.unknownFields = make([]byte, len(m.unknownFields))
@@ -811,8 +940,14 @@ func (m *Object_VectorRequest) CloneVT() *Object_VectorRequest {
 		return (*Object_VectorRequest)(nil)
 	}
 	r := &Object_VectorRequest{
-		Id:      m.Id.CloneVT(),
-		Filters: m.Filters.CloneVT(),
+		Id: m.Id.CloneVT(),
+	}
+	if rhs := m.Filters; rhs != nil {
+		tmpContainer := make([]*Filter_Config, len(rhs))
+		for k, v := range rhs {
+			tmpContainer[k] = v.CloneVT()
+		}
+		r.Filters = tmpContainer
 	}
 	if len(m.unknownFields) > 0 {
 		r.unknownFields = make([]byte, len(m.unknownFields))
@@ -1765,11 +1900,39 @@ func (this *Search_Config) EqualVT(that *Search_Config) bool {
 	if this.Timeout != that.Timeout {
 		return false
 	}
-	if !this.IngressFilters.EqualVT(that.IngressFilters) {
+	if len(this.IngressFilters) != len(that.IngressFilters) {
 		return false
 	}
-	if !this.EgressFilters.EqualVT(that.EgressFilters) {
+	for i, vx := range this.IngressFilters {
+		vy := that.IngressFilters[i]
+		if p, q := vx, vy; p != q {
+			if p == nil {
+				p = &Filter_Config{}
+			}
+			if q == nil {
+				q = &Filter_Config{}
+			}
+			if !p.EqualVT(q) {
+				return false
+			}
+		}
+	}
+	if len(this.EgressFilters) != len(that.EgressFilters) {
 		return false
+	}
+	for i, vx := range this.EgressFilters {
+		vy := that.EgressFilters[i]
+		if p, q := vx, vy; p != q {
+			if p == nil {
+				p = &Filter_Config{}
+			}
+			if q == nil {
+				q = &Filter_Config{}
+			}
+			if !p.EqualVT(q) {
+				return false
+			}
+		}
 	}
 	if this.MinNum != that.MinNum {
 		return false
@@ -1976,23 +2139,100 @@ func (this *Filter_Target) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+func (this *Filter_Query) EqualVT(that *Filter_Query) bool {
+	if this == that {
+		return true
+	} else if this == nil || that == nil {
+		return false
+	}
+	if this.Query != that.Query {
+		return false
+	}
+	return string(this.unknownFields) == string(that.unknownFields)
+}
+
+func (this *Filter_Query) EqualMessageVT(thatMsg proto.Message) bool {
+	that, ok := thatMsg.(*Filter_Query)
+	if !ok {
+		return false
+	}
+	return this.EqualVT(that)
+}
 func (this *Filter_Config) EqualVT(that *Filter_Config) bool {
 	if this == that {
 		return true
 	} else if this == nil || that == nil {
 		return false
 	}
-	if len(this.Targets) != len(that.Targets) {
+	if !this.Target.EqualVT(that.Target) {
 		return false
 	}
-	for i, vx := range this.Targets {
-		vy := that.Targets[i]
+	if !this.Query.EqualVT(that.Query) {
+		return false
+	}
+	return string(this.unknownFields) == string(that.unknownFields)
+}
+
+func (this *Filter_Config) EqualMessageVT(thatMsg proto.Message) bool {
+	that, ok := thatMsg.(*Filter_Config)
+	if !ok {
+		return false
+	}
+	return this.EqualVT(that)
+}
+func (this *Filter_DistanceRequest) EqualVT(that *Filter_DistanceRequest) bool {
+	if this == that {
+		return true
+	} else if this == nil || that == nil {
+		return false
+	}
+	if len(this.Distance) != len(that.Distance) {
+		return false
+	}
+	for i, vx := range this.Distance {
+		vy := that.Distance[i]
 		if p, q := vx, vy; p != q {
 			if p == nil {
-				p = &Filter_Target{}
+				p = &Object_Distance{}
 			}
 			if q == nil {
-				q = &Filter_Target{}
+				q = &Object_Distance{}
+			}
+			if !p.EqualVT(q) {
+				return false
+			}
+		}
+	}
+	if !this.Query.EqualVT(that.Query) {
+		return false
+	}
+	return string(this.unknownFields) == string(that.unknownFields)
+}
+
+func (this *Filter_DistanceRequest) EqualMessageVT(thatMsg proto.Message) bool {
+	that, ok := thatMsg.(*Filter_DistanceRequest)
+	if !ok {
+		return false
+	}
+	return this.EqualVT(that)
+}
+func (this *Filter_DistanceResponse) EqualVT(that *Filter_DistanceResponse) bool {
+	if this == that {
+		return true
+	} else if this == nil || that == nil {
+		return false
+	}
+	if len(this.Distance) != len(that.Distance) {
+		return false
+	}
+	for i, vx := range this.Distance {
+		vy := that.Distance[i]
+		if p, q := vx, vy; p != q {
+			if p == nil {
+				p = &Object_Distance{}
+			}
+			if q == nil {
+				q = &Object_Distance{}
 			}
 			if !p.EqualVT(q) {
 				return false
@@ -2002,8 +2242,49 @@ func (this *Filter_Config) EqualVT(that *Filter_Config) bool {
 	return string(this.unknownFields) == string(that.unknownFields)
 }
 
-func (this *Filter_Config) EqualMessageVT(thatMsg proto.Message) bool {
-	that, ok := thatMsg.(*Filter_Config)
+func (this *Filter_DistanceResponse) EqualMessageVT(thatMsg proto.Message) bool {
+	that, ok := thatMsg.(*Filter_DistanceResponse)
+	if !ok {
+		return false
+	}
+	return this.EqualVT(that)
+}
+func (this *Filter_VectorRequest) EqualVT(that *Filter_VectorRequest) bool {
+	if this == that {
+		return true
+	} else if this == nil || that == nil {
+		return false
+	}
+	if !this.Vector.EqualVT(that.Vector) {
+		return false
+	}
+	if !this.Query.EqualVT(that.Query) {
+		return false
+	}
+	return string(this.unknownFields) == string(that.unknownFields)
+}
+
+func (this *Filter_VectorRequest) EqualMessageVT(thatMsg proto.Message) bool {
+	that, ok := thatMsg.(*Filter_VectorRequest)
+	if !ok {
+		return false
+	}
+	return this.EqualVT(that)
+}
+func (this *Filter_VectorResponse) EqualVT(that *Filter_VectorResponse) bool {
+	if this == that {
+		return true
+	} else if this == nil || that == nil {
+		return false
+	}
+	if !this.Vector.EqualVT(that.Vector) {
+		return false
+	}
+	return string(this.unknownFields) == string(that.unknownFields)
+}
+
+func (this *Filter_VectorResponse) EqualMessageVT(thatMsg proto.Message) bool {
+	that, ok := thatMsg.(*Filter_VectorResponse)
 	if !ok {
 		return false
 	}
@@ -2147,8 +2428,22 @@ func (this *Insert_Config) EqualVT(that *Insert_Config) bool {
 	if this.SkipStrictExistCheck != that.SkipStrictExistCheck {
 		return false
 	}
-	if !this.Filters.EqualVT(that.Filters) {
+	if len(this.Filters) != len(that.Filters) {
 		return false
+	}
+	for i, vx := range this.Filters {
+		vy := that.Filters[i]
+		if p, q := vx, vy; p != q {
+			if p == nil {
+				p = &Filter_Config{}
+			}
+			if q == nil {
+				q = &Filter_Config{}
+			}
+			if !p.EqualVT(q) {
+				return false
+			}
+		}
 	}
 	if this.Timestamp != that.Timestamp {
 		return false
@@ -2301,8 +2596,22 @@ func (this *Update_Config) EqualVT(that *Update_Config) bool {
 	if this.SkipStrictExistCheck != that.SkipStrictExistCheck {
 		return false
 	}
-	if !this.Filters.EqualVT(that.Filters) {
+	if len(this.Filters) != len(that.Filters) {
 		return false
+	}
+	for i, vx := range this.Filters {
+		vy := that.Filters[i]
+		if p, q := vx, vy; p != q {
+			if p == nil {
+				p = &Filter_Config{}
+			}
+			if q == nil {
+				q = &Filter_Config{}
+			}
+			if !p.EqualVT(q) {
+				return false
+			}
+		}
 	}
 	if this.Timestamp != that.Timestamp {
 		return false
@@ -2458,8 +2767,22 @@ func (this *Upsert_Config) EqualVT(that *Upsert_Config) bool {
 	if this.SkipStrictExistCheck != that.SkipStrictExistCheck {
 		return false
 	}
-	if !this.Filters.EqualVT(that.Filters) {
+	if len(this.Filters) != len(that.Filters) {
 		return false
+	}
+	for i, vx := range this.Filters {
+		vy := that.Filters[i]
+		if p, q := vx, vy; p != q {
+			if p == nil {
+				p = &Filter_Config{}
+			}
+			if q == nil {
+				q = &Filter_Config{}
+			}
+			if !p.EqualVT(q) {
+				return false
+			}
+		}
 	}
 	if this.Timestamp != that.Timestamp {
 		return false
@@ -2595,8 +2918,22 @@ func (this *Object_VectorRequest) EqualVT(that *Object_VectorRequest) bool {
 	if !this.Id.EqualVT(that.Id) {
 		return false
 	}
-	if !this.Filters.EqualVT(that.Filters) {
+	if len(this.Filters) != len(that.Filters) {
 		return false
+	}
+	for i, vx := range this.Filters {
+		vy := that.Filters[i]
+		if p, q := vx, vy; p != q {
+			if p == nil {
+				p = &Filter_Config{}
+			}
+			if q == nil {
+				q = &Filter_Config{}
+			}
+			if !p.EqualVT(q) {
+				return false
+			}
+		}
 	}
 	return string(this.unknownFields) == string(that.unknownFields)
 }
@@ -4133,16 +4470,13 @@ func (m *Search_StreamResponse) MarshalToSizedBufferVT(dAtA []byte) (int, error)
 		copy(dAtA[i:], m.unknownFields)
 	}
 	if vtmsg, ok := m.Payload.(interface {
-		MarshalToVT([]byte) (int, error)
-		SizeVT() int
+		MarshalToSizedBufferVT([]byte) (int, error)
 	}); ok {
-		{
-			size := vtmsg.SizeVT()
-			i -= size
-			if _, err := vtmsg.MarshalToVT(dAtA[i:]); err != nil {
-				return 0, err
-			}
+		size, err := vtmsg.MarshalToSizedBufferVT(dAtA[:i])
+		if err != nil {
+			return 0, err
 		}
+		i -= size
 	}
 	return len(dAtA) - i, nil
 }
@@ -4174,10 +4508,10 @@ func (m *Search_StreamResponse_Status) MarshalToVT(dAtA []byte) (int, error) {
 func (m *Search_StreamResponse_Status) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	if m.Status != nil {
-		if marshalto, ok := interface{}(m.Status).(interface {
+		if vtmsg, ok := interface{}(m.Status).(interface {
 			MarshalToSizedBufferVT([]byte) (int, error)
 		}); ok {
-			size, err := marshalto.MarshalToSizedBufferVT(dAtA[:i])
+			size, err := vtmsg.MarshalToSizedBufferVT(dAtA[:i])
 			if err != nil {
 				return 0, err
 			}
@@ -5825,16 +6159,13 @@ func (m *Object_StreamDistance) MarshalToSizedBufferVT(dAtA []byte) (int, error)
 		copy(dAtA[i:], m.unknownFields)
 	}
 	if vtmsg, ok := m.Payload.(interface {
-		MarshalToVT([]byte) (int, error)
-		SizeVT() int
+		MarshalToSizedBufferVT([]byte) (int, error)
 	}); ok {
-		{
-			size := vtmsg.SizeVT()
-			i -= size
-			if _, err := vtmsg.MarshalToVT(dAtA[i:]); err != nil {
-				return 0, err
-			}
+		size, err := vtmsg.MarshalToSizedBufferVT(dAtA[:i])
+		if err != nil {
+			return 0, err
 		}
+		i -= size
 	}
 	return len(dAtA) - i, nil
 }
@@ -5866,10 +6197,10 @@ func (m *Object_StreamDistance_Status) MarshalToVT(dAtA []byte) (int, error) {
 func (m *Object_StreamDistance_Status) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	if m.Status != nil {
-		if marshalto, ok := interface{}(m.Status).(interface {
+		if vtmsg, ok := interface{}(m.Status).(interface {
 			MarshalToSizedBufferVT([]byte) (int, error)
 		}); ok {
-			size, err := marshalto.MarshalToSizedBufferVT(dAtA[:i])
+			size, err := vtmsg.MarshalToSizedBufferVT(dAtA[:i])
 			if err != nil {
 				return 0, err
 			}
@@ -6097,16 +6428,13 @@ func (m *Object_StreamVector) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 		copy(dAtA[i:], m.unknownFields)
 	}
 	if vtmsg, ok := m.Payload.(interface {
-		MarshalToVT([]byte) (int, error)
-		SizeVT() int
+		MarshalToSizedBufferVT([]byte) (int, error)
 	}); ok {
-		{
-			size := vtmsg.SizeVT()
-			i -= size
-			if _, err := vtmsg.MarshalToVT(dAtA[i:]); err != nil {
-				return 0, err
-			}
+		size, err := vtmsg.MarshalToSizedBufferVT(dAtA[:i])
+		if err != nil {
+			return 0, err
 		}
+		i -= size
 	}
 	return len(dAtA) - i, nil
 }
@@ -6138,10 +6466,10 @@ func (m *Object_StreamVector_Status) MarshalToVT(dAtA []byte) (int, error) {
 func (m *Object_StreamVector_Status) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	if m.Status != nil {
-		if marshalto, ok := interface{}(m.Status).(interface {
+		if vtmsg, ok := interface{}(m.Status).(interface {
 			MarshalToSizedBufferVT([]byte) (int, error)
 		}); ok {
-			size, err := marshalto.MarshalToSizedBufferVT(dAtA[:i])
+			size, err := vtmsg.MarshalToSizedBufferVT(dAtA[:i])
 			if err != nil {
 				return 0, err
 			}
@@ -6300,16 +6628,13 @@ func (m *Object_StreamBlob) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 		copy(dAtA[i:], m.unknownFields)
 	}
 	if vtmsg, ok := m.Payload.(interface {
-		MarshalToVT([]byte) (int, error)
-		SizeVT() int
+		MarshalToSizedBufferVT([]byte) (int, error)
 	}); ok {
-		{
-			size := vtmsg.SizeVT()
-			i -= size
-			if _, err := vtmsg.MarshalToVT(dAtA[i:]); err != nil {
-				return 0, err
-			}
+		size, err := vtmsg.MarshalToSizedBufferVT(dAtA[:i])
+		if err != nil {
+			return 0, err
 		}
+		i -= size
 	}
 	return len(dAtA) - i, nil
 }
@@ -6341,10 +6666,10 @@ func (m *Object_StreamBlob_Status) MarshalToVT(dAtA []byte) (int, error) {
 func (m *Object_StreamBlob_Status) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	if m.Status != nil {
-		if marshalto, ok := interface{}(m.Status).(interface {
+		if vtmsg, ok := interface{}(m.Status).(interface {
 			MarshalToSizedBufferVT([]byte) (int, error)
 		}); ok {
-			size, err := marshalto.MarshalToSizedBufferVT(dAtA[:i])
+			size, err := vtmsg.MarshalToSizedBufferVT(dAtA[:i])
 			if err != nil {
 				return 0, err
 			}
@@ -6451,16 +6776,13 @@ func (m *Object_StreamLocation) MarshalToSizedBufferVT(dAtA []byte) (int, error)
 		copy(dAtA[i:], m.unknownFields)
 	}
 	if vtmsg, ok := m.Payload.(interface {
-		MarshalToVT([]byte) (int, error)
-		SizeVT() int
+		MarshalToSizedBufferVT([]byte) (int, error)
 	}); ok {
-		{
-			size := vtmsg.SizeVT()
-			i -= size
-			if _, err := vtmsg.MarshalToVT(dAtA[i:]); err != nil {
-				return 0, err
-			}
+		size, err := vtmsg.MarshalToSizedBufferVT(dAtA[:i])
+		if err != nil {
+			return 0, err
 		}
+		i -= size
 	}
 	return len(dAtA) - i, nil
 }
@@ -6492,10 +6814,10 @@ func (m *Object_StreamLocation_Status) MarshalToVT(dAtA []byte) (int, error) {
 func (m *Object_StreamLocation_Status) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	if m.Status != nil {
-		if marshalto, ok := interface{}(m.Status).(interface {
+		if vtmsg, ok := interface{}(m.Status).(interface {
 			MarshalToSizedBufferVT([]byte) (int, error)
 		}); ok {
-			size, err := marshalto.MarshalToSizedBufferVT(dAtA[:i])
+			size, err := vtmsg.MarshalToSizedBufferVT(dAtA[:i])
 			if err != nil {
 				return 0, err
 			}
@@ -7459,9 +7781,7 @@ func (m *Search_Request) SizeVT() (n int) {
 		l = m.Config.SizeVT()
 		n += 1 + l + sov(uint64(l))
 	}
-	if m.unknownFields != nil {
-		n += len(m.unknownFields)
-	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -7477,9 +7797,7 @@ func (m *Search_MultiRequest) SizeVT() (n int) {
 			n += 1 + l + sov(uint64(l))
 		}
 	}
-	if m.unknownFields != nil {
-		n += len(m.unknownFields)
-	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -7497,9 +7815,7 @@ func (m *Search_IDRequest) SizeVT() (n int) {
 		l = m.Config.SizeVT()
 		n += 1 + l + sov(uint64(l))
 	}
-	if m.unknownFields != nil {
-		n += len(m.unknownFields)
-	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -7515,9 +7831,7 @@ func (m *Search_MultiIDRequest) SizeVT() (n int) {
 			n += 1 + l + sov(uint64(l))
 		}
 	}
-	if m.unknownFields != nil {
-		n += len(m.unknownFields)
-	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -7539,9 +7853,7 @@ func (m *Search_ObjectRequest) SizeVT() (n int) {
 		l = m.Vectorizer.SizeVT()
 		n += 1 + l + sov(uint64(l))
 	}
-	if m.unknownFields != nil {
-		n += len(m.unknownFields)
-	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -7557,9 +7869,7 @@ func (m *Search_MultiObjectRequest) SizeVT() (n int) {
 			n += 1 + l + sov(uint64(l))
 		}
 	}
-	if m.unknownFields != nil {
-		n += len(m.unknownFields)
-	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -7600,6 +7910,9 @@ func (m *Search_Config) SizeVT() (n int) {
 	if m.MinNum != 0 {
 		n += 1 + sov(uint64(m.MinNum))
 	}
+	if m.AggregationAlgorithm != 0 {
+		n += 1 + sov(uint64(m.AggregationAlgorithm))
+	}
 	n += len(m.unknownFields)
 	return n
 }
@@ -7620,9 +7933,7 @@ func (m *Search_Response) SizeVT() (n int) {
 			n += 1 + l + sov(uint64(l))
 		}
 	}
-	if m.unknownFields != nil {
-		n += len(m.unknownFields)
-	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -7638,9 +7949,7 @@ func (m *Search_Responses) SizeVT() (n int) {
 			n += 1 + l + sov(uint64(l))
 		}
 	}
-	if m.unknownFields != nil {
-		n += len(m.unknownFields)
-	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -7653,9 +7962,7 @@ func (m *Search_StreamResponse) SizeVT() (n int) {
 	if vtmsg, ok := m.Payload.(interface{ SizeVT() int }); ok {
 		n += vtmsg.SizeVT()
 	}
-	if m.unknownFields != nil {
-		n += len(m.unknownFields)
-	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -7695,9 +8002,7 @@ func (m *Search) SizeVT() (n int) {
 	}
 	var l int
 	_ = l
-	if m.unknownFields != nil {
-		n += len(m.unknownFields)
-	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -7714,9 +8019,7 @@ func (m *Filter_Target) SizeVT() (n int) {
 	if m.Port != 0 {
 		n += 1 + sov(uint64(m.Port))
 	}
-	if m.unknownFields != nil {
-		n += len(m.unknownFields)
-	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -7730,9 +8033,7 @@ func (m *Filter_Query) SizeVT() (n int) {
 	if l > 0 {
 		n += 1 + l + sov(uint64(l))
 	}
-	if m.unknownFields != nil {
-		n += len(m.unknownFields)
-	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -7750,9 +8051,7 @@ func (m *Filter_Config) SizeVT() (n int) {
 		l = m.Query.SizeVT()
 		n += 1 + l + sov(uint64(l))
 	}
-	if m.unknownFields != nil {
-		n += len(m.unknownFields)
-	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -7772,9 +8071,7 @@ func (m *Filter_DistanceRequest) SizeVT() (n int) {
 		l = m.Query.SizeVT()
 		n += 1 + l + sov(uint64(l))
 	}
-	if m.unknownFields != nil {
-		n += len(m.unknownFields)
-	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -7790,9 +8087,7 @@ func (m *Filter_DistanceResponse) SizeVT() (n int) {
 			n += 1 + l + sov(uint64(l))
 		}
 	}
-	if m.unknownFields != nil {
-		n += len(m.unknownFields)
-	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -7810,9 +8105,7 @@ func (m *Filter_VectorRequest) SizeVT() (n int) {
 		l = m.Query.SizeVT()
 		n += 1 + l + sov(uint64(l))
 	}
-	if m.unknownFields != nil {
-		n += len(m.unknownFields)
-	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -7826,9 +8119,7 @@ func (m *Filter_VectorResponse) SizeVT() (n int) {
 		l = m.Vector.SizeVT()
 		n += 1 + l + sov(uint64(l))
 	}
-	if m.unknownFields != nil {
-		n += len(m.unknownFields)
-	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -7838,9 +8129,7 @@ func (m *Filter) SizeVT() (n int) {
 	}
 	var l int
 	_ = l
-	if m.unknownFields != nil {
-		n += len(m.unknownFields)
-	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -7858,9 +8147,7 @@ func (m *Insert_Request) SizeVT() (n int) {
 		l = m.Config.SizeVT()
 		n += 1 + l + sov(uint64(l))
 	}
-	if m.unknownFields != nil {
-		n += len(m.unknownFields)
-	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -7876,9 +8163,7 @@ func (m *Insert_MultiRequest) SizeVT() (n int) {
 			n += 1 + l + sov(uint64(l))
 		}
 	}
-	if m.unknownFields != nil {
-		n += len(m.unknownFields)
-	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -7900,9 +8185,7 @@ func (m *Insert_ObjectRequest) SizeVT() (n int) {
 		l = m.Vectorizer.SizeVT()
 		n += 1 + l + sov(uint64(l))
 	}
-	if m.unknownFields != nil {
-		n += len(m.unknownFields)
-	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -7918,9 +8201,7 @@ func (m *Insert_MultiObjectRequest) SizeVT() (n int) {
 			n += 1 + l + sov(uint64(l))
 		}
 	}
-	if m.unknownFields != nil {
-		n += len(m.unknownFields)
-	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -7942,9 +8223,7 @@ func (m *Insert_Config) SizeVT() (n int) {
 	if m.Timestamp != 0 {
 		n += 1 + sov(uint64(m.Timestamp))
 	}
-	if m.unknownFields != nil {
-		n += len(m.unknownFields)
-	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -7954,9 +8233,7 @@ func (m *Insert) SizeVT() (n int) {
 	}
 	var l int
 	_ = l
-	if m.unknownFields != nil {
-		n += len(m.unknownFields)
-	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -7974,9 +8251,7 @@ func (m *Update_Request) SizeVT() (n int) {
 		l = m.Config.SizeVT()
 		n += 1 + l + sov(uint64(l))
 	}
-	if m.unknownFields != nil {
-		n += len(m.unknownFields)
-	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -7992,9 +8267,7 @@ func (m *Update_MultiRequest) SizeVT() (n int) {
 			n += 1 + l + sov(uint64(l))
 		}
 	}
-	if m.unknownFields != nil {
-		n += len(m.unknownFields)
-	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -8016,9 +8289,7 @@ func (m *Update_ObjectRequest) SizeVT() (n int) {
 		l = m.Vectorizer.SizeVT()
 		n += 1 + l + sov(uint64(l))
 	}
-	if m.unknownFields != nil {
-		n += len(m.unknownFields)
-	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -8034,9 +8305,7 @@ func (m *Update_MultiObjectRequest) SizeVT() (n int) {
 			n += 1 + l + sov(uint64(l))
 		}
 	}
-	if m.unknownFields != nil {
-		n += len(m.unknownFields)
-	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -8061,9 +8330,7 @@ func (m *Update_Config) SizeVT() (n int) {
 	if m.DisableBalancedUpdate {
 		n += 2
 	}
-	if m.unknownFields != nil {
-		n += len(m.unknownFields)
-	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -8073,9 +8340,7 @@ func (m *Update) SizeVT() (n int) {
 	}
 	var l int
 	_ = l
-	if m.unknownFields != nil {
-		n += len(m.unknownFields)
-	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -8093,9 +8358,7 @@ func (m *Upsert_Request) SizeVT() (n int) {
 		l = m.Config.SizeVT()
 		n += 1 + l + sov(uint64(l))
 	}
-	if m.unknownFields != nil {
-		n += len(m.unknownFields)
-	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -8111,9 +8374,7 @@ func (m *Upsert_MultiRequest) SizeVT() (n int) {
 			n += 1 + l + sov(uint64(l))
 		}
 	}
-	if m.unknownFields != nil {
-		n += len(m.unknownFields)
-	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -8135,9 +8396,7 @@ func (m *Upsert_ObjectRequest) SizeVT() (n int) {
 		l = m.Vectorizer.SizeVT()
 		n += 1 + l + sov(uint64(l))
 	}
-	if m.unknownFields != nil {
-		n += len(m.unknownFields)
-	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -8153,9 +8412,7 @@ func (m *Upsert_MultiObjectRequest) SizeVT() (n int) {
 			n += 1 + l + sov(uint64(l))
 		}
 	}
-	if m.unknownFields != nil {
-		n += len(m.unknownFields)
-	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -8180,9 +8437,7 @@ func (m *Upsert_Config) SizeVT() (n int) {
 	if m.DisableBalancedUpdate {
 		n += 2
 	}
-	if m.unknownFields != nil {
-		n += len(m.unknownFields)
-	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -8192,9 +8447,7 @@ func (m *Upsert) SizeVT() (n int) {
 	}
 	var l int
 	_ = l
-	if m.unknownFields != nil {
-		n += len(m.unknownFields)
-	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -8212,9 +8465,7 @@ func (m *Remove_Request) SizeVT() (n int) {
 		l = m.Config.SizeVT()
 		n += 1 + l + sov(uint64(l))
 	}
-	if m.unknownFields != nil {
-		n += len(m.unknownFields)
-	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -8230,9 +8481,7 @@ func (m *Remove_MultiRequest) SizeVT() (n int) {
 			n += 1 + l + sov(uint64(l))
 		}
 	}
-	if m.unknownFields != nil {
-		n += len(m.unknownFields)
-	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -8248,9 +8497,7 @@ func (m *Remove_Config) SizeVT() (n int) {
 	if m.Timestamp != 0 {
 		n += 1 + sov(uint64(m.Timestamp))
 	}
-	if m.unknownFields != nil {
-		n += len(m.unknownFields)
-	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -8260,9 +8507,7 @@ func (m *Remove) SizeVT() (n int) {
 	}
 	var l int
 	_ = l
-	if m.unknownFields != nil {
-		n += len(m.unknownFields)
-	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -8282,9 +8527,7 @@ func (m *Object_VectorRequest) SizeVT() (n int) {
 			n += 1 + l + sov(uint64(l))
 		}
 	}
-	if m.unknownFields != nil {
-		n += len(m.unknownFields)
-	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -8301,9 +8544,7 @@ func (m *Object_Distance) SizeVT() (n int) {
 	if m.Distance != 0 {
 		n += 5
 	}
-	if m.unknownFields != nil {
-		n += len(m.unknownFields)
-	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -8316,9 +8557,7 @@ func (m *Object_StreamDistance) SizeVT() (n int) {
 	if vtmsg, ok := m.Payload.(interface{ SizeVT() int }); ok {
 		n += vtmsg.SizeVT()
 	}
-	if m.unknownFields != nil {
-		n += len(m.unknownFields)
-	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -8362,9 +8601,7 @@ func (m *Object_ID) SizeVT() (n int) {
 	if l > 0 {
 		n += 1 + l + sov(uint64(l))
 	}
-	if m.unknownFields != nil {
-		n += len(m.unknownFields)
-	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -8380,9 +8617,7 @@ func (m *Object_IDs) SizeVT() (n int) {
 			n += 1 + l + sov(uint64(l))
 		}
 	}
-	if m.unknownFields != nil {
-		n += len(m.unknownFields)
-	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -8399,9 +8634,7 @@ func (m *Object_Vector) SizeVT() (n int) {
 	if len(m.Vector) > 0 {
 		n += 1 + sov(uint64(len(m.Vector)*4)) + len(m.Vector)*4
 	}
-	if m.unknownFields != nil {
-		n += len(m.unknownFields)
-	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -8417,9 +8650,7 @@ func (m *Object_Vectors) SizeVT() (n int) {
 			n += 1 + l + sov(uint64(l))
 		}
 	}
-	if m.unknownFields != nil {
-		n += len(m.unknownFields)
-	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -8432,9 +8663,7 @@ func (m *Object_StreamVector) SizeVT() (n int) {
 	if vtmsg, ok := m.Payload.(interface{ SizeVT() int }); ok {
 		n += vtmsg.SizeVT()
 	}
-	if m.unknownFields != nil {
-		n += len(m.unknownFields)
-	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -8485,9 +8714,7 @@ func (m *Object_ReshapeVector) SizeVT() (n int) {
 		}
 		n += 1 + sov(uint64(l)) + l
 	}
-	if m.unknownFields != nil {
-		n += len(m.unknownFields)
-	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -8505,9 +8732,7 @@ func (m *Object_Blob) SizeVT() (n int) {
 	if l > 0 {
 		n += 1 + l + sov(uint64(l))
 	}
-	if m.unknownFields != nil {
-		n += len(m.unknownFields)
-	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -8520,9 +8745,7 @@ func (m *Object_StreamBlob) SizeVT() (n int) {
 	if vtmsg, ok := m.Payload.(interface{ SizeVT() int }); ok {
 		n += vtmsg.SizeVT()
 	}
-	if m.unknownFields != nil {
-		n += len(m.unknownFields)
-	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -8576,9 +8799,7 @@ func (m *Object_Location) SizeVT() (n int) {
 			n += 1 + l + sov(uint64(l))
 		}
 	}
-	if m.unknownFields != nil {
-		n += len(m.unknownFields)
-	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -8591,9 +8812,7 @@ func (m *Object_StreamLocation) SizeVT() (n int) {
 	if vtmsg, ok := m.Payload.(interface{ SizeVT() int }); ok {
 		n += vtmsg.SizeVT()
 	}
-	if m.unknownFields != nil {
-		n += len(m.unknownFields)
-	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -8639,9 +8858,7 @@ func (m *Object_Locations) SizeVT() (n int) {
 			n += 1 + l + sov(uint64(l))
 		}
 	}
-	if m.unknownFields != nil {
-		n += len(m.unknownFields)
-	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -8651,9 +8868,7 @@ func (m *Object) SizeVT() (n int) {
 	}
 	var l int
 	_ = l
-	if m.unknownFields != nil {
-		n += len(m.unknownFields)
-	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -8666,9 +8881,7 @@ func (m *Control_CreateIndexRequest) SizeVT() (n int) {
 	if m.PoolSize != 0 {
 		n += 1 + sov(uint64(m.PoolSize))
 	}
-	if m.unknownFields != nil {
-		n += len(m.unknownFields)
-	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -8678,9 +8891,7 @@ func (m *Control) SizeVT() (n int) {
 	}
 	var l int
 	_ = l
-	if m.unknownFields != nil {
-		n += len(m.unknownFields)
-	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -8702,9 +8913,7 @@ func (m *Discoverer_Request) SizeVT() (n int) {
 	if l > 0 {
 		n += 1 + l + sov(uint64(l))
 	}
-	if m.unknownFields != nil {
-		n += len(m.unknownFields)
-	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -8714,9 +8923,7 @@ func (m *Discoverer) SizeVT() (n int) {
 	}
 	var l int
 	_ = l
-	if m.unknownFields != nil {
-		n += len(m.unknownFields)
-	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -8738,9 +8945,7 @@ func (m *Info_Index_Count) SizeVT() (n int) {
 	if m.Saving {
 		n += 2
 	}
-	if m.unknownFields != nil {
-		n += len(m.unknownFields)
-	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -8754,9 +8959,7 @@ func (m *Info_Index_UUID_Committed) SizeVT() (n int) {
 	if l > 0 {
 		n += 1 + l + sov(uint64(l))
 	}
-	if m.unknownFields != nil {
-		n += len(m.unknownFields)
-	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -8770,9 +8973,7 @@ func (m *Info_Index_UUID_Uncommitted) SizeVT() (n int) {
 	if l > 0 {
 		n += 1 + l + sov(uint64(l))
 	}
-	if m.unknownFields != nil {
-		n += len(m.unknownFields)
-	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -8782,9 +8983,7 @@ func (m *Info_Index_UUID) SizeVT() (n int) {
 	}
 	var l int
 	_ = l
-	if m.unknownFields != nil {
-		n += len(m.unknownFields)
-	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -8794,9 +8993,7 @@ func (m *Info_Index) SizeVT() (n int) {
 	}
 	var l int
 	_ = l
-	if m.unknownFields != nil {
-		n += len(m.unknownFields)
-	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -8834,9 +9031,7 @@ func (m *Info_Pod) SizeVT() (n int) {
 		l = m.Node.SizeVT()
 		n += 1 + l + sov(uint64(l))
 	}
-	if m.unknownFields != nil {
-		n += len(m.unknownFields)
-	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -8870,9 +9065,7 @@ func (m *Info_Node) SizeVT() (n int) {
 		l = m.Pods.SizeVT()
 		n += 1 + l + sov(uint64(l))
 	}
-	if m.unknownFields != nil {
-		n += len(m.unknownFields)
-	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -8891,9 +9084,7 @@ func (m *Info_CPU) SizeVT() (n int) {
 	if m.Usage != 0 {
 		n += 9
 	}
-	if m.unknownFields != nil {
-		n += len(m.unknownFields)
-	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -8912,9 +9103,7 @@ func (m *Info_Memory) SizeVT() (n int) {
 	if m.Usage != 0 {
 		n += 9
 	}
-	if m.unknownFields != nil {
-		n += len(m.unknownFields)
-	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -8930,9 +9119,7 @@ func (m *Info_Pods) SizeVT() (n int) {
 			n += 1 + l + sov(uint64(l))
 		}
 	}
-	if m.unknownFields != nil {
-		n += len(m.unknownFields)
-	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -8948,9 +9135,7 @@ func (m *Info_Nodes) SizeVT() (n int) {
 			n += 1 + l + sov(uint64(l))
 		}
 	}
-	if m.unknownFields != nil {
-		n += len(m.unknownFields)
-	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -8966,9 +9151,7 @@ func (m *Info_IPs) SizeVT() (n int) {
 			n += 1 + l + sov(uint64(l))
 		}
 	}
-	if m.unknownFields != nil {
-		n += len(m.unknownFields)
-	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -8978,9 +9161,7 @@ func (m *Info) SizeVT() (n int) {
 	}
 	var l int
 	_ = l
-	if m.unknownFields != nil {
-		n += len(m.unknownFields)
-	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -8990,9 +9171,7 @@ func (m *Empty) SizeVT() (n int) {
 	}
 	var l int
 	_ = l
-	if m.unknownFields != nil {
-		n += len(m.unknownFields)
-	}
+	n += len(m.unknownFields)
 	return n
 }
 
@@ -10192,7 +10371,7 @@ func (m *Search_StreamResponse) UnmarshalVT(dAtA []byte) error {
 				if err := v.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 					return err
 				}
-				m.Payload = &Search_StreamResponse_Response{v}
+				m.Payload = &Search_StreamResponse_Response{Response: v}
 			}
 			iNdEx = postIndex
 		case 2:
@@ -10249,7 +10428,7 @@ func (m *Search_StreamResponse) UnmarshalVT(dAtA []byte) error {
 						return err
 					}
 				}
-				m.Payload = &Search_StreamResponse_Status{v}
+				m.Payload = &Search_StreamResponse_Status{Status: v}
 			}
 			iNdEx = postIndex
 		default:
@@ -13652,7 +13831,7 @@ func (m *Object_StreamDistance) UnmarshalVT(dAtA []byte) error {
 				if err := v.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 					return err
 				}
-				m.Payload = &Object_StreamDistance_Distance{v}
+				m.Payload = &Object_StreamDistance_Distance{Distance: v}
 			}
 			iNdEx = postIndex
 		case 2:
@@ -13709,7 +13888,7 @@ func (m *Object_StreamDistance) UnmarshalVT(dAtA []byte) error {
 						return err
 					}
 				}
-				m.Payload = &Object_StreamDistance_Status{v}
+				m.Payload = &Object_StreamDistance_Status{Status: v}
 			}
 			iNdEx = postIndex
 		default:
@@ -14189,7 +14368,7 @@ func (m *Object_StreamVector) UnmarshalVT(dAtA []byte) error {
 				if err := v.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 					return err
 				}
-				m.Payload = &Object_StreamVector_Vector{v}
+				m.Payload = &Object_StreamVector_Vector{Vector: v}
 			}
 			iNdEx = postIndex
 		case 2:
@@ -14246,7 +14425,7 @@ func (m *Object_StreamVector) UnmarshalVT(dAtA []byte) error {
 						return err
 					}
 				}
-				m.Payload = &Object_StreamVector_Status{v}
+				m.Payload = &Object_StreamVector_Status{Status: v}
 			}
 			iNdEx = postIndex
 		default:
@@ -14616,7 +14795,7 @@ func (m *Object_StreamBlob) UnmarshalVT(dAtA []byte) error {
 				if err := v.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 					return err
 				}
-				m.Payload = &Object_StreamBlob_Blob{v}
+				m.Payload = &Object_StreamBlob_Blob{Blob: v}
 			}
 			iNdEx = postIndex
 		case 2:
@@ -14673,7 +14852,7 @@ func (m *Object_StreamBlob) UnmarshalVT(dAtA []byte) error {
 						return err
 					}
 				}
-				m.Payload = &Object_StreamBlob_Status{v}
+				m.Payload = &Object_StreamBlob_Status{Status: v}
 			}
 			iNdEx = postIndex
 		default:
@@ -14912,7 +15091,7 @@ func (m *Object_StreamLocation) UnmarshalVT(dAtA []byte) error {
 				if err := v.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 					return err
 				}
-				m.Payload = &Object_StreamLocation_Location{v}
+				m.Payload = &Object_StreamLocation_Location{Location: v}
 			}
 			iNdEx = postIndex
 		case 2:
@@ -14969,7 +15148,7 @@ func (m *Object_StreamLocation) UnmarshalVT(dAtA []byte) error {
 						return err
 					}
 				}
-				m.Payload = &Object_StreamLocation_Status{v}
+				m.Payload = &Object_StreamLocation_Status{Status: v}
 			}
 			iNdEx = postIndex
 		default:
@@ -16911,6 +17090,7 @@ func (m *Empty) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func skip(dAtA []byte) (n int, err error) {
 	l := len(dAtA)
 	iNdEx := 0
