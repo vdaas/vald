@@ -265,7 +265,9 @@ GOLINES_MAX_WIDTH     ?= 200
 
 K8S_SLEEP_DURATION_FOR_WAIT_COMMAND ?= 5
 
-KUBECONFIG ?= $(or $(shell echo "$(KUBECONFIG)"),"$(HOME)/.kube/config")
+ifeq ($(origin KUBECONFIG), undefined)
+KUBECONFIG := $(HOME)/.kube/config
+endif
 K8S_KUBECTL_VERSION ?= $(eval K8S_KUBECTL_VERSION := $(shell kubectl version --short))$(K8S_KUBECTL_VERSION)
 K8S_SERVER_VERSION ?= $(eval K8S_SERVER_VERSION := $(shell echo "$(K8S_KUBECTL_VERSION)" | sed -e "s/.*Server.*\(v[0-9]\.[0-9]*\)\..*/\1/g"))$(K8S_SERVER_VERSION)
 
