@@ -345,8 +345,8 @@ jobs:
           git checkout ${HEAD_BRANCH}
 
           make gotests/install
-          make gotests/gen 2>error.log
-          echo "ERR_LOG=$(cat error.log)" >> $GITHUB_OUTPUT
+          echo -n "ERR_LOG=" >> $GITHUB_OUTPUT
+          make gotests/gen 2>> $GITHUB_OUTPUT
 
           git add cmd hack internal pkg
           git commit -S --signoff -m ":robot: Add automatically generated tests"
