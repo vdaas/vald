@@ -77,6 +77,14 @@ Before executing the following command, please ensure the Prometheus operator ru
 make k8s/otel/operator/deploy k8s/otel/collector/deploy
 ```
 
+### Deploy Observability components with a simple command
+
+If you would like to deploy observability components with a simple command, please use the following command.
+
+```bash
+make k8s/external/cert-manager/deploy k8s/monitoring/deploy
+```
+
 ## Configure Helm chart
 
 This section shows how to set `values.yaml` to enable each Vald component to send its own telemetry data.
@@ -244,3 +252,28 @@ You can apply it after creating an observability environment.
 The default manifests don't set ingress host.<BR>
 You can monitor the browser by port forwarding or define the ingress host by yourself.
 </div>
+
+## Cleanup
+
+Lastly, the Vald cluster will be removed by executing the following command.
+
+```bash
+helm uninstall vald
+```
+
+Also, the observability components will be removed by executing the following command.
+
+```bash
+make k8s/monitoring/delete k8s/external/cert-manager/delete
+```
+
+And the observability components can also be removed by executing the following command.
+
+```bash
+make k8s/otel/collector/delete \
+  k8s/otel/operator/delete \
+  k8s/metrics/grafana/delete \
+  k8s/metrics/jaeger/delete \
+  k8s/metrics/prometheus/operator/delete \
+  k8s/external/cert-manager/delete
+```
