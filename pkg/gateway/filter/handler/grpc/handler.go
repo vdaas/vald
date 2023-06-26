@@ -3271,7 +3271,7 @@ func (s *server) GetObject(ctx context.Context, req *payload.Object_VectorReques
 			}
 			res, err := c.FilterVector(ctx, &payload.Filter_VectorRequest{
 				Vector: vec,
-				Query: filterConfig.GetQuery(),
+				Query:  filterConfig.GetQuery(),
 			})
 			if err != nil {
 				err = status.WrapWithInternal(vald.GetObjectRPCName+" API egress filter API failed", err,
