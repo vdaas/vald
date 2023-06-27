@@ -3,7 +3,7 @@ module github.com/vdaas/vald/example/client
 go 1.20
 
 replace (
-	github.com/envoyproxy/protoc-gen-validate => github.com/envoyproxy/protoc-gen-validate v1.0.1
+	github.com/envoyproxy/protoc-gen-validate => github.com/envoyproxy/protoc-gen-validate v1.0.2
 	github.com/goccy/go-json => github.com/goccy/go-json v0.10.2
 	github.com/golang/protobuf => github.com/golang/protobuf v1.5.3
 	github.com/kpango/glg => github.com/kpango/glg v1.6.15
@@ -11,11 +11,11 @@ replace (
 	golang.org/x/crypto => golang.org/x/crypto v0.10.0
 	golang.org/x/net => golang.org/x/net v0.11.0
 	golang.org/x/text => golang.org/x/text v0.10.0
-	google.golang.org/genproto => google.golang.org/genproto v0.0.0-20230530153820-e85fd2cbaebc
-	google.golang.org/genproto/googleapis/api => google.golang.org/genproto/googleapis/api v0.0.0-20230530153820-e85fd2cbaebc
-	google.golang.org/genproto/googleapis/rpc => google.golang.org/genproto/googleapis/rpc v0.0.0-20230530153820-e85fd2cbaebc
-	google.golang.org/grpc => google.golang.org/grpc v1.56.0
-	google.golang.org/protobuf => google.golang.org/protobuf v1.30.0
+	google.golang.org/genproto => google.golang.org/genproto v0.0.0-20230626202813-9b080da550b3
+	google.golang.org/genproto/googleapis/api => google.golang.org/genproto/googleapis/api v0.0.0-20230626202813-9b080da550b3
+	google.golang.org/genproto/googleapis/rpc => google.golang.org/genproto/googleapis/rpc v0.0.0-20230626202813-9b080da550b3
+	google.golang.org/grpc => google.golang.org/grpc v1.56.1
+	google.golang.org/protobuf => google.golang.org/protobuf v1.31.0
 	gopkg.in/yaml.v2 => gopkg.in/yaml.v2 v2.4.0
 	gopkg.in/yaml.v3 => gopkg.in/yaml.v3 v3.0.1
 )
@@ -33,7 +33,7 @@ require (
 	github.com/goccy/go-json v0.10.2 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/kpango/fastime v1.1.9 // indirect
-	golang.org/x/net v0.9.0 // indirect
+	golang.org/x/net v0.11.0 // indirect
 	golang.org/x/sys v0.9.0 // indirect
 	golang.org/x/text v0.10.0 // indirect
 	google.golang.org/genproto v0.0.0-20230525234025-438c736192d0 // indirect
