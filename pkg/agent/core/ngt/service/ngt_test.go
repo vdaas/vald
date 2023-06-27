@@ -522,7 +522,6 @@ func TestNew(t *testing.T) {
 				},
 			}
 		}(),
-		// TODO:
 		func() test {
 			tmpDir := t.TempDir()
 			originDir := filepath.Join(tmpDir, originIndexDirName)
