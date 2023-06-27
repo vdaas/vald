@@ -28,3 +28,7 @@ gateway:
       name: vald-mirror-01
     serviceAccount:
       name: vald-mirror-01
+
+agent:
+  ngt:
+    dimension: 784
