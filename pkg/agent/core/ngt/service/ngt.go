@@ -529,7 +529,7 @@ func (n *ngt) backupBroken(ctx context.Context) error {
 
 	// remake the path since it has been moved to broken directory
 	if err := file.MkdirAll(n.path, fs.ModePerm); err != nil {
-		return fmt.Errorf("failed to recreate the index directory: %w", err)
+		return errors.Join(errors.ErrIndexDirectoryRecreationFailed, err)
 	}
 
 	return nil
