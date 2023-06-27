@@ -275,7 +275,7 @@ func genNode(prefix []string, ls []*VSchema) (*Schema, error) {
 
 func newRoot(schemas map[string]*Schema) *Root {
 	return &Root{
-		SchemaKeyword: "http://json-schema.org/draft-07/schema#",
+		SchemaKeyword: "https://json-schema.org/draft-07/schema#",
 		Title:         "Values",
 		Schema: Schema{
 			Type:       objectType,

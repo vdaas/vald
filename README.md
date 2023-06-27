@@ -32,7 +32,7 @@ Vald is easy to use, feature-rich and highly customizable as you needed.
 
 It uses the fastest ANN Algorithm [NGT](https://github.com/yahoojapan/NGT) to search neighbors.
 
-(If you are interested in ANN benchmarks, please refer to [ann-benchmarks.com](http://ann-benchmarks.com/).)
+(If you are interested in ANN benchmarks, please refer to [ann-benchmarks.com](https://ann-benchmarks.com/).)
 
 For more information, please refer to [Official Web Site](https://vald.vdaas.org).
 
