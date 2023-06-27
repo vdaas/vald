@@ -655,7 +655,7 @@ func (n *ngt) initNGT(opts ...core.Option) (err error) {
 		} else {
 			log.Warnf("failed to load vald primary index from %s\t error: %v\ttrying to load from old copied index data from %s", n.path, err, n.oldPath)
 			if needsBackup(n.path) {
-				log.Infof("starting to backup broken index at %v", n.path)
+				log.Infof("starting to backup broken index at %s", n.path)
 				if err := n.backupBroken(ctx); err != nil {
 					log.Warnf("failed to backup broken index. will try to restart from old index anyway: %v", err)
 				}
