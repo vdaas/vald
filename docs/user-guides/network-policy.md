@@ -10,8 +10,8 @@ To enable network policies in a Vald cluster, set `defaults.networkPolicy.enable
 
 ```yaml
 defaults:
-	networkPolicy:
-		enabled: true
+    networkPolicy:
+        enabled: true
 ```
 
 This sets the following ingress/egress rules between Vald components (these are the minimum required rules for a Vald cluster to work).
@@ -33,22 +33,21 @@ There may be cases where you want to connect a Vald cluster to external componen
 
 To handle such cases, Vald allows you to set user custom network policies using the `defaults.networkPolicy.custom` field as follows:
 
-```
+```yaml
 defaults:
-	networkPolicy:
-	    enabled: true
-	    custom:
-	      ingress:
-	        - from:
-	            - podSelector:
-	                matchLabels:
-	                  app.kubernetes.io/name: pyroscope
-	      egress:
-	        - to:
-	            - podSelector:
-	                matchLabels:
-	                  app.kubernetes.io/name: opentelemetry-collector-collector
-
+    networkPolicy:
+        enabled: true
+        custom:
+            ingress:
+            - from:
+                - podSelector:
+                    matchLabels:
+                        app.kubernetes.io/name: pyroscope
+            egress:
+            - to:
+                - podSelector:
+                    matchLabels:
+                        app.kubernetes.io/name: opentelemetry-collector-collector
 ```
 
 Please write down the same notation as the `ingress/egress` field of [NetworkPolicy resource](https://kubernetes.io/docs/concepts/services-networking/network-policies/#networkpolicy-resource) in our `custom` field.
