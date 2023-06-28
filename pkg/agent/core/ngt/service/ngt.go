@@ -527,6 +527,11 @@ func (n *ngt) backupBroken(ctx context.Context) error {
 	atomic.SwapUint64(&n.nobic, uint64(len(files)))
 	log.Debugf("broken index count updated: %v", n.nobic)
 
+	// remake the path since it has been moved to broken directory
+	if err := file.MkdirAll(n.path, fs.ModePerm); err != nil {
+		return errors.Join(err, errors.ErrIndexDirectoryRecreationFailed)
+	}
+
 	return nil
 }
 
@@ -586,12 +591,6 @@ func (n *ngt) rebuild(ctx context.Context, path string, opts ...core.Option) (er
 		err = n.backupBroken(ctx)
 		if err != nil {
 			log.Warnf("failed to backup broken index. will remove it and restart: %v", err)
-		} else {
-			// remake the path since it has been moved to broken directory
-			err = file.MkdirAll(n.path, fs.ModePerm)
-			if err != nil {
-				return fmt.Errorf("failed to recreate the index directory: %w", err)
-			}
 		}
 	}
 
@@ -655,6 +654,12 @@ func (n *ngt) initNGT(opts ...core.Option) (err error) {
 			)
 		} else {
 			log.Warnf("failed to load vald primary index from %s\t error: %v\ttrying to load from old copied index data from %s", n.path, err, n.oldPath)
+			if needsBackup(n.path) {
+				log.Infof("starting to backup broken index at %s", n.path)
+				if err := n.backupBroken(ctx); err != nil {
+					log.Warnf("failed to backup broken index. will try to restart from old index anyway: %v", err)
+				}
+			}
 		}
 	} else {
 		return nil
