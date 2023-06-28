@@ -89,6 +89,6 @@ buf/install: $(BINDIR)/buf
 
 $(BINDIR)/buf:
 	curl -sSL \
-	"https://github.com/bufbuild/buf/releases/download/v$(BUF_VERSION)/buf-$(uname -s)-$(uname -m)" \
+	"https://github.com/bufbuild/buf/releases/download/$(BUF_VERSION)/buf-$(shell uname -s)-$(shell uname -m)" \
 	-o "${BINDIR}/buf" && \
 	chmod +x "${BINDIR}/buf"

@@ -452,7 +452,7 @@ format/json: \
 
 .PHONY: format/proto
 format/proto: \
-	buf/install \
+	buf/install
 	buf format -w
 
 .PHONY: deps
