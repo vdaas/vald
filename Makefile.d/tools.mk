@@ -83,3 +83,12 @@ textlint/install:
 textlint/ci/install:
 	npm init -y
 	npm install --save-dev textlint textlint-rule-en-spell textlint-rule-prh textlint-rule-write-good
+
+.PHONY: buf/install
+buf/install: $(BINDIR)/buf
+
+$(BINDIR)/buf:
+	curl -sSL \
+	"https://github.com/bufbuild/buf/releases/download/v$(BUF_VERSION)/buf-$(uname -s)-$(uname -m)" \
+	-o "${BINDIR}/buf" && \
+	chmod +x "${BINDIR}/buf"
