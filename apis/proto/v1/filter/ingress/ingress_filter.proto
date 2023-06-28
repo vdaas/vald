@@ -23,26 +23,24 @@ import "github.com/googleapis/googleapis/google/api/annotations.proto";
 
 option go_package = "github.com/vdaas/vald/apis/grpc/v1/filter/ingress";
 option java_multiple_files = true;
-option java_package = "org.vdaas.vald.api.v1.filter.ingress";
 option java_outer_classname = "ValdIngressFilter";
+option java_package = "org.vdaas.vald.api.v1.filter.ingress";
 
 // Represent the ingress filter service.
 service Filter {
-
   // Represent the RPC to generate the vector.
   rpc GenVector(payload.v1.Object.Blob) returns (payload.v1.Object.Vector) {
     option (google.api.http) = {
-      post : "/filter/ingress/object"
-      body : "*"
+      post: "/filter/ingress/object"
+      body: "*"
     };
   }
 
   // Represent the RPC to filter the vector.
-  rpc FilterVector(payload.v1.Object.Vector)
-      returns (payload.v1.Object.Vector) {
+  rpc FilterVector(payload.v1.Object.Vector) returns (payload.v1.Object.Vector) {
     option (google.api.http) = {
-      post : "/filter/ingress/vector"
-      body : "*"
+      post: "/filter/ingress/vector"
+      body: "*"
     };
   }
 }
