@@ -23,30 +23,27 @@ import "github.com/googleapis/googleapis/google/api/annotations.proto";
 
 option go_package = "github.com/vdaas/vald/apis/grpc/v1/vald";
 option java_multiple_files = true;
-option java_package = "org.vdaas.vald.api.v1.vald";
 option java_outer_classname = "ValdInsert";
+option java_package = "org.vdaas.vald.api.v1.vald";
 
 // Insert service provides ways to add new vectors.
 service Insert {
-
   // A method to add a new single vector.
   rpc Insert(payload.v1.Insert.Request) returns (payload.v1.Object.Location) {
     option (google.api.http) = {
-      post : "/insert"
-      body : "*"
+      post: "/insert"
+      body: "*"
     };
   }
 
   // A method to add new multiple vectors by bidirectional streaming.
-  rpc StreamInsert(stream payload.v1.Insert.Request)
-      returns (stream payload.v1.Object.StreamLocation) {}
+  rpc StreamInsert(stream payload.v1.Insert.Request) returns (stream payload.v1.Object.StreamLocation) {}
 
   // A method to add new multiple vectors in a single request.
-  rpc MultiInsert(payload.v1.Insert.MultiRequest)
-      returns (payload.v1.Object.Locations) {
+  rpc MultiInsert(payload.v1.Insert.MultiRequest) returns (payload.v1.Object.Locations) {
     option (google.api.http) = {
-      post : "/insert/multiple"
-      body : "*"
+      post: "/insert/multiple"
+      body: "*"
     };
   }
 }

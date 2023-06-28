@@ -23,12 +23,11 @@ import "github.com/googleapis/googleapis/google/api/annotations.proto";
 
 option go_package = "github.com/vdaas/vald/apis/grpc/v1/manager/index";
 option java_multiple_files = true;
-option java_package = "org.vdaas.vald.api.v1.manager.index";
 option java_outer_classname = "ValdIndexManager";
+option java_package = "org.vdaas.vald.api.v1.manager.index";
 
 // Represent the index manager service.
 service Index {
-
   // Represent the RPC to get the index information.
   rpc IndexInfo(payload.v1.Empty) returns (payload.v1.Info.Index.Count) {
     option (google.api.http).get = "/index/info";
