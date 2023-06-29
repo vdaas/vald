@@ -19,9 +19,9 @@ package config
 
 // EgressFilter represents the EgressFilter configuration.
 type EgressFilter struct {
-	Client          *GRPCClient `json:"client,omitempty"           yaml:"client"`
-	DistanceFilters []string    `json:"distance_filters,omitempty" yaml:"distance_filters"`
-	ObjectFilters   []string    `json:"object_filters,omitempty"   yaml:"object_filters"`
+	Client          *GRPCClient            `json:"client,omitempty"           yaml:"client"`
+	DistanceFilters []DistanceFilterConfig `json:"distance_filters,omitempty" yaml:"distance_filters"`
+	ObjectFilters   []ObjectFilterConfig   `json:"object_filters,omitempty"   yaml:"object_filters"`
 }
 
 // IngressFilter represents the IngressFilter configuration.
@@ -34,16 +34,28 @@ type IngressFilter struct {
 	UpsertFilters []string    `json:"upsert_filters,omitempty" yaml:"upsert_filters"`
 }
 
+// DistanceFilterConfig represents the DistanceFilter configuration.
+type DistanceFilterConfig struct {
+	Addr  string `json:"addr,omitempty"  yaml:"addr"`
+	Query string `json:"query,omitempty" yaml:"query"`
+}
+
+// ObjectFilterConfig represents the ObjectFilter configuration.
+type ObjectFilterConfig struct {
+	Addr  string `json:"addr,omitempty"  yaml:"addr"`
+	Query string `json:"query,omitempty" yaml:"query"`
+}
+
 // Bind binds the actual data from the EgressFilter receiver field.
 func (e *EgressFilter) Bind() *EgressFilter {
 	if e.Client != nil {
 		e.Client.Bind()
 	}
-	if e.DistanceFilters != nil {
-		e.DistanceFilters = GetActualValues(e.DistanceFilters)
+	for _, df := range e.DistanceFilters {
+		df.Bind()
 	}
-	if e.ObjectFilters != nil {
-		e.ObjectFilters = GetActualValues(e.ObjectFilters)
+	for _, of := range e.ObjectFilters {
+		of.Bind()
 	}
 	return e
 }
@@ -69,4 +81,18 @@ func (i *IngressFilter) Bind() *IngressFilter {
 		i.UpsertFilters = GetActualValues(i.UpsertFilters)
 	}
 	return i
+}
+
+// Bind binds the actual data from the DistanceFilterConfig receiver field.
+func (c *DistanceFilterConfig) Bind() *DistanceFilterConfig {
+	c.Addr = GetActualValue(c.Addr)
+	c.Query = GetActualValue(c.Query)
+	return c
+}
+
+// Bind binds the actual data from the ObjectFilterConfig receiver field.
+func (c *ObjectFilterConfig) Bind() *ObjectFilterConfig {
+	c.Addr = GetActualValue(c.Addr)
+	c.Query = GetActualValue(c.Query)
+	return c
 }
