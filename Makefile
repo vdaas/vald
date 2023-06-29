@@ -67,6 +67,7 @@ REVIEWDOG_VERSION         := $(eval REVIEWDOG_VERSION := $(shell cat versions/RE
 TELEPRESENCE_VERSION      := $(eval TELEPRESENCE_VERSION := $(shell cat versions/TELEPRESENCE_VERSION))$(TELEPRESENCE_VERSION)
 VALDCLI_VERSION           := $(eval VALDCLI_VERSION := $(shell cat versions/VALDCLI_VERSION))$(VALDCLI_VERSION)
 YQ_VERSION                := $(eval YQ_VERSION := $(shell cat versions/YQ_VERSION))$(YQ_VERSION)
+BUF_VERSION               := $(eval BUF_VERSION := $(shell cat versions/BUF_VERSION))$(BUF_VERSION)
 
 OTEL_OPERATOR_RELEASE_NAME ?= opentelemetry-operator
 PROMETHEUS_RELEASE_NAME    ?= prometheus
@@ -266,7 +267,9 @@ GOLINES_MAX_WIDTH     ?= 200
 
 K8S_SLEEP_DURATION_FOR_WAIT_COMMAND ?= 5
 
-KUBECONFIG ?= $(or $(shell echo "$(KUBECONFIG)"),"$(HOME)/.kube/config")
+ifeq ($(origin KUBECONFIG), undefined)
+KUBECONFIG := $(HOME)/.kube/config
+endif
 K8S_KUBECTL_VERSION ?= $(eval K8S_KUBECTL_VERSION := $(shell kubectl version --short))$(K8S_KUBECTL_VERSION)
 K8S_SERVER_VERSION ?= $(eval K8S_SERVER_VERSION := $(shell echo "$(K8S_KUBECTL_VERSION)" | sed -e "s/.*Server.*\(v[0-9]\.[0-9]*\)\..*/\1/g"))$(K8S_SERVER_VERSION)
 
@@ -395,7 +398,8 @@ format: \
 	format/go \
 	format/json \
 	format/md \
-	format/yaml
+	format/yaml \
+	format/proto
 
 .PHONY: format/go
 ## run golines, gofumpt, goimports for all go files
@@ -446,6 +450,11 @@ format/json: \
 	    "apis/**/*.json" \
 	    "charts/**/*.json" \
 	    "hack/**/*.json"
+
+.PHONY: format/proto
+format/proto: \
+	buf/install
+	buf format -w
 
 .PHONY: deps
 ## resolve dependencies

@@ -23,25 +23,24 @@ import "github.com/googleapis/googleapis/google/api/annotations.proto";
 
 option go_package = "github.com/vdaas/vald/apis/grpc/v1/discoverer";
 option java_multiple_files = true;
-option java_package = "org.vdaas.vald.api.v1.discoverer";
 option java_outer_classname = "ValdDiscoverer";
+option java_package = "org.vdaas.vald.api.v1.discoverer";
 
 // Represent the discoverer service.
 service Discoverer {
-
   // Represent the RPC to get the agent pods information.
   rpc Pods(payload.v1.Discoverer.Request) returns (payload.v1.Info.Pods) {
     option (google.api.http) = {
-      post : "/discover/pods"
-      body : "*"
+      post: "/discover/pods"
+      body: "*"
     };
   }
 
   // Represent the RPC to get the node information.
   rpc Nodes(payload.v1.Discoverer.Request) returns (payload.v1.Info.Nodes) {
     option (google.api.http) = {
-      post : "/discover/nodes"
-      body : "*"
+      post: "/discover/nodes"
+      body: "*"
     };
   }
 }

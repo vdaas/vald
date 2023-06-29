@@ -23,18 +23,17 @@ import "github.com/googleapis/googleapis/google/api/annotations.proto";
 
 option go_package = "github.com/vdaas/vald/apis/grpc/v1/filter/egress";
 option java_multiple_files = true;
-option java_package = "org.vdaas.vald.api.v1.filter.egress";
 option java_outer_classname = "ValdEgressFilter";
+option java_package = "org.vdaas.vald.api.v1.filter.egress";
 
 // Represent the egress filter service.
 service Filter {
-
   // Represent the RPC to filter the distance.
   rpc FilterDistance(payload.v1.Filter.DistanceRequest)
       returns (payload.v1.Filter.DistanceResponse) {
     option (google.api.http) = {
-      post : "/filter/egress/distance"
-      body : "*"
+      post: "/filter/egress/distance"
+      body: "*"
     };
   }
 
@@ -42,8 +41,8 @@ service Filter {
   rpc FilterVector(payload.v1.Filter.VectorRequest)
       returns (payload.v1.Filter.VectorResponse) {
     option (google.api.http) = {
-      post : "/filter/egress/vector"
-      body : "*"
+      post: "/filter/egress/vector"
+      body: "*"
     };
   }
 }

@@ -81,6 +81,7 @@ type NGT interface {
 	InsertVQueueBufferLen() uint64
 	GetDimensionSize() int
 	Close(ctx context.Context) error
+	BrokenIndexCount() uint64
 }
 
 type ngt struct {
@@ -102,6 +103,7 @@ type ngt struct {
 	nocie uint64 // number of create index execution
 	nogce uint64 // number of proactive GC execution
 	wfci  uint64 // wait for create indexing
+	nobic uint64 // number of broken index count
 
 	// configurations
 	inMem bool // in-memory mode
@@ -293,6 +295,14 @@ func (n *ngt) prepareFolders(ctx context.Context) (err error) {
 		log.Warnf("failed to create a folder for broken index backup: %v", err)
 	}
 
+	// update broken index count
+	files, err := file.ListInDir(n.brokenPath)
+	if err != nil {
+		log.Warnf("failed to list files in broken index backup directory: %v", err)
+	}
+	atomic.SwapUint64(&n.nobic, uint64(len(files)))
+	log.Debugf("broken index count: %v", n.nobic)
+
 	if n.enableCopyOnWrite && len(n.path) != 0 {
 		err = file.MkdirAll(n.oldPath, fs.ModePerm)
 		if err != nil {
@@ -472,13 +482,13 @@ func (n *ngt) load(ctx context.Context, path string, opts ...core.Option) (err e
 // backupBroken backup index at originPath into brokenDir.
 // The name of the directory will be timestamp(UnixNano).
 // If it exeeds the limit, backupBroken removes the oldest backup directory.
-func backupBroken(ctx context.Context, originPath string, brokenDir string, limit int) error {
-	if limit <= 0 {
+func (n *ngt) backupBroken(ctx context.Context) error {
+	if n.historyLimit <= 0 {
 		return nil
 	}
 
 	// do nothing when origin path is empty
-	files, err := file.ListInDir(originPath)
+	files, err := file.ListInDir(n.path)
 	if err != nil {
 		return err
 	}
@@ -486,15 +496,13 @@ func backupBroken(ctx context.Context, originPath string, brokenDir string, limi
 		return nil
 	}
 
-	// how many generation exists in the path?
-	files, err = file.ListInDir(brokenDir)
+	files, err = file.ListInDir(n.brokenPath)
 	if err != nil {
 		return err
 	}
-
-	if len(files) >= limit {
+	if len(files) >= n.historyLimit {
 		// remove the oldest
-		log.Infof("There's already more than %v broken index generations stored. Thus removing the oldest.", limit)
+		log.Infof("There's already more than %v broken index generations stored. Thus removing the oldest.", n.historyLimit)
 		slices.Sort(files)
 		if err := os.RemoveAll(files[0]); err != nil {
 			return err
@@ -503,13 +511,27 @@ func backupBroken(ctx context.Context, originPath string, brokenDir string, limi
 
 	// create directory for new generation broken index
 	name := time.Now().UnixNano()
-	dest := filepath.Join(brokenDir, fmt.Sprint(name))
+	dest := filepath.Join(n.brokenPath, fmt.Sprint(name))
 
 	// move index to the new directory
-	err = file.MoveDir(ctx, originPath, dest)
+	err = file.MoveDir(ctx, n.path, dest)
 	if err != nil {
 		return err
 	}
+
+	// update broken index count
+	files, err = file.ListInDir(n.brokenPath)
+	if err != nil {
+		return err
+	}
+	atomic.SwapUint64(&n.nobic, uint64(len(files)))
+	log.Debugf("broken index count updated: %v", n.nobic)
+
+	// remake the path since it has been moved to broken directory
+	if err := file.MkdirAll(n.path, fs.ModePerm); err != nil {
+		return errors.Join(err, errors.ErrIndexDirectoryRecreationFailed)
+	}
+
 	return nil
 }
 
@@ -566,15 +588,9 @@ func (n *ngt) rebuild(ctx context.Context, path string, opts ...core.Option) (er
 	// backup when it is required
 	if needsBackup(n.path) {
 		log.Infof("starting to backup broken index at %v", n.path)
-		err = backupBroken(ctx, n.path, n.brokenPath, n.historyLimit)
+		err = n.backupBroken(ctx)
 		if err != nil {
 			log.Warnf("failed to backup broken index. will remove it and restart: %v", err)
-		} else {
-			// remake the path since it has been moved to broken directory
-			err = file.MkdirAll(n.path, fs.ModePerm)
-			if err != nil {
-				return fmt.Errorf("failed to recreate the index directory: %w", err)
-			}
 		}
 	}
 
@@ -638,6 +654,12 @@ func (n *ngt) initNGT(opts ...core.Option) (err error) {
 			)
 		} else {
 			log.Warnf("failed to load vald primary index from %s\t error: %v\ttrying to load from old copied index data from %s", n.path, err, n.oldPath)
+			if needsBackup(n.path) {
+				log.Infof("starting to backup broken index at %s", n.path)
+				if err := n.backupBroken(ctx); err != nil {
+					log.Warnf("failed to backup broken index. will try to restart from old index anyway: %v", err)
+				}
+			}
 		}
 	} else {
 		return nil
@@ -1677,4 +1699,8 @@ func (n *ngt) Close(ctx context.Context) (err error) {
 	}
 	n.core.Close()
 	return
+}
+
+func (n *ngt) BrokenIndexCount() uint64 {
+	return atomic.LoadUint64(&n.nobic)
 }
