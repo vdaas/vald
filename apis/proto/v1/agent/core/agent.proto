@@ -23,15 +23,13 @@ import "github.com/googleapis/googleapis/google/api/annotations.proto";
 
 option go_package = "github.com/vdaas/vald/apis/grpc/v1/agent/core";
 option java_multiple_files = true;
-option java_package = "org.vdaas.vald.api.v1.agent.core";
 option java_outer_classname = "ValdAgent";
+option java_package = "org.vdaas.vald.api.v1.agent.core";
 
 // Represent the agent service.
 service Agent {
-
   // Represent the creating index RPC.
-  rpc CreateIndex(payload.v1.Control.CreateIndexRequest)
-      returns (payload.v1.Empty) {
+  rpc CreateIndex(payload.v1.Control.CreateIndexRequest) returns (payload.v1.Empty) {
     option (google.api.http).get = "/index/create";
   }
 
@@ -41,8 +39,7 @@ service Agent {
   }
 
   // Represent the creating and saving index RPC.
-  rpc CreateAndSaveIndex(payload.v1.Control.CreateIndexRequest)
-      returns (payload.v1.Empty) {
+  rpc CreateAndSaveIndex(payload.v1.Control.CreateIndexRequest) returns (payload.v1.Empty) {
     option (google.api.http).get = "/index/createandsave";
   }
 

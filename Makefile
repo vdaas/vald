@@ -67,6 +67,7 @@ REVIEWDOG_VERSION         := $(eval REVIEWDOG_VERSION := $(shell cat versions/RE
 TELEPRESENCE_VERSION      := $(eval TELEPRESENCE_VERSION := $(shell cat versions/TELEPRESENCE_VERSION))$(TELEPRESENCE_VERSION)
 VALDCLI_VERSION           := $(eval VALDCLI_VERSION := $(shell cat versions/VALDCLI_VERSION))$(VALDCLI_VERSION)
 YQ_VERSION                := $(eval YQ_VERSION := $(shell cat versions/YQ_VERSION))$(YQ_VERSION)
+BUF_VERSION               := $(eval BUF_VERSION := $(shell cat versions/BUF_VERSION))$(BUF_VERSION)
 
 OTEL_OPERATOR_RELEASE_NAME ?= opentelemetry-operator
 PROMETHEUS_RELEASE_NAME    ?= prometheus
@@ -396,7 +397,8 @@ format: \
 	format/go \
 	format/json \
 	format/md \
-	format/yaml
+	format/yaml \
+	format/proto
 
 .PHONY: format/go
 ## run golines, gofumpt, goimports for all go files
@@ -447,6 +449,11 @@ format/json: \
 	    "apis/**/*.json" \
 	    "charts/**/*.json" \
 	    "hack/**/*.json"
+
+.PHONY: format/proto
+format/proto: \
+	buf/install
+	buf format -w
 
 .PHONY: deps
 ## resolve dependencies

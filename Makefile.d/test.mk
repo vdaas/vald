@@ -195,8 +195,9 @@ test/all/gotestfmt: \
 ## create empty test file if not exists
 test/create-empty:
 	@$(call green, "create empty test file if not exists...")
-	for f in $(GO_ALL_TEST_SOURCES) ; do \
+	@for f in $(GO_ALL_TEST_SOURCES) ; do \
 		if [ ! -f "$$f" ]; then \
+			echo "Creating empty test file $$f"; \
 			package="$$(dirname $$f)" ; \
 			package="$$(basename $$package)" ; \
 			echo "package $$package" >> "$$f"; \
@@ -207,8 +208,9 @@ test/create-empty:
 ## remove empty test files
 test/remove-empty:
 	@$(call green, "remove empty test files...")
-	for f in $(GO_ALL_TEST_SOURCES) ; do \
+	@for f in $(GO_ALL_TEST_SOURCES) ; do \
 		if ! grep -q "func Test" "$$f"; then \
+			echo "Removing empty test file $$f"; \
 			rm "$$f"; \
 		fi; \
 	done
@@ -262,10 +264,11 @@ coverage:
 ## generate missing go test files
 gotests/gen: \
 	test/create-empty \
-	gotests/patch-placeholder \
+	test/patch-placeholder \
 	gotests/gen-test \
 	test/remove-empty \
 	gotests/patch \
+	test/comment-unimplemented \
 	format/go/test
 
 .PHONY: gotests/gen-test
@@ -290,13 +293,23 @@ gotests/patch:
 	find $(ROOTDIR)/internal/test/goleak -name '*_test.go' | xargs sed -i -E "s%\"github.com/vdaas/vald/internal/test/goleak\"%%g"
 	find $(ROOTDIR)/internal/test/goleak -name '*_test.go' | xargs sed -i -E "s/goleak\.//g"
 
-.PHONY: gotests/patch-placeholder
+.PHONY: test/patch-placeholder
 ## apply patches to the placeholder of the generated go test files
-gotests/patch-placeholder:
+test/patch-placeholder:
 	@$(call green, "apply placeholder patches to go test files...")
-	for f in $(GO_ALL_TEST_SOURCES) ; do \
+	@for f in $(GO_ALL_TEST_SOURCES) ; do \
 		if [ ! -f "$$f" ] ; then continue; fi; \
 		sed -i -e '/\/\/ $(TEST_NOT_IMPL_PLACEHOLDER)/,$$d' $$f; \
 		if [ "$$(tail -1 $$f)" != "" ]; then echo "" >> "$$f"; fi; \
 		echo "// $(TEST_NOT_IMPL_PLACEHOLDER)" >>"$$f"; \
+	done
+
+.PHONY: test/comment-unimplemented
+## comment out unimplemented tests
+test/comment-unimplemented:
+	@$(call green, "comment out unimplemented test...")
+	@for f in $(GO_ALL_TEST_SOURCES) ; do \
+		if [ ! -f "$$f" ] ; then continue; fi; \
+		sed -r -i -e '/\/\/ $(TEST_NOT_IMPL_PLACEHOLDER)/,+9999999 s/^/\/\/ /' $$f; \
+		sed -i 's/\/\/ \/\/ $(TEST_NOT_IMPL_PLACEHOLDER)/\/\/ $(TEST_NOT_IMPL_PLACEHOLDER)/g' $$f; \
 	done

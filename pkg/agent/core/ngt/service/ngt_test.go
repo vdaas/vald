@@ -522,6 +522,78 @@ func TestNew(t *testing.T) {
 				},
 			}
 		}(),
+		func() test {
+			tmpDir := t.TempDir()
+			originDir := filepath.Join(tmpDir, originIndexDirName)
+			backupDir := filepath.Join(tmpDir, oldIndexDirName)
+			brokenDir := filepath.Join(tmpDir, brokenIndexDirName)
+			testIndexDir := testdata.GetTestdataPath(testdata.ValidIndex)
+			config := defaultConfig
+			config.BrokenIndexHistoryLimit = 1
+			config.EnableCopyOnWrite = true
+			return test{
+				name: "New backup broken index when CoW is enabled and failed to load primary index",
+				args: args{
+					cfg: &config,
+					opts: []Option{
+						WithIndexPath(tmpDir),
+					},
+				},
+				want: want{
+					err: nil,
+				},
+				beforeFunc: func(t *testing.T, args args) {
+					t.Helper()
+					if err := file.MkdirAll(originDir, fs.ModePerm); err != nil {
+						t.Errorf("failed to create origin dir: %v", err)
+					}
+					if err := file.CopyDir(context.Background(), testIndexDir, originDir); err != nil {
+						t.Errorf("failed to copy test index: %v", err)
+					}
+					// remove metadata.json to make it broken
+					if err := os.Remove(filepath.Join(originDir, "metadata.json")); err != nil {
+						t.Errorf("failed to remove index file: %v", err)
+					}
+
+					if err := file.MkdirAll(backupDir, fs.ModePerm); err != nil {
+						t.Errorf("failed to create backup dir: %v", err)
+					}
+					if err := file.CopyDir(context.Background(), testIndexDir, backupDir); err != nil {
+						t.Errorf("failed to copy test index: %v", err)
+					}
+				},
+				checkFunc: func(w want, err error) error {
+					if !errors.Is(err, w.err) {
+						return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+					}
+					files, err := file.ListInDir(brokenDir)
+					if err != nil {
+						return err
+					}
+					if len(files) != 1 {
+						return fmt.Errorf("only one generation should be in broken dir but there's %v", len(files))
+					}
+
+					broken, err := file.ListInDir(files[0])
+					if err != nil {
+						return err
+					}
+					if len(broken) == 0 {
+						return fmt.Errorf("failed to move broken index files")
+					}
+
+					files, err = file.ListInDir(originDir)
+					if err != nil {
+						return err
+					}
+					if len(files) != 0 {
+						return fmt.Errorf("failed to move origin index files to broken directory")
+					}
+
+					return nil
+				},
+			}
+		}(),
 	}
 
 	for _, tc := range tests {
