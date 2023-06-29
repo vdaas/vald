@@ -19,8 +19,9 @@ import (
 	"time"
 
 	"github.com/vdaas/vald/internal/observability/metrics"
+	api "go.opentelemetry.io/otel/metric"
+	view "go.opentelemetry.io/otel/sdk/metric"
 	"go.opentelemetry.io/otel/sdk/metric/aggregation"
-	"go.opentelemetry.io/otel/sdk/metric/view"
 )
 
 const (
@@ -73,153 +74,139 @@ func New() metrics.Metric {
 	return &memoryMetrics{}
 }
 
-func (*memoryMetrics) View() ([]*metrics.View, error) {
-	alloc, err := view.New(
-		view.MatchInstrumentName(allocMetricsDescription),
-		view.WithSetDescription(allocMetricsDescription),
-		view.WithSetAggregation(aggregation.LastValue{}),
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	totalAlloc, err := view.New(
-		view.MatchInstrumentName(totalAllocMetricsDescription),
-		view.WithSetDescription(totalAllocMetricsDescription),
-		view.WithSetAggregation(aggregation.LastValue{}),
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	sys, err := view.New(
-		view.MatchInstrumentName(sysMetricsName),
-		view.WithSetDescription(sysMetricsDescription),
-		view.WithSetAggregation(aggregation.LastValue{}),
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	mallocs, err := view.New(
-		view.MatchInstrumentName(mallocsMetricsName),
-		view.WithSetDescription(mallocsMetricsDescription),
-		view.WithSetAggregation(aggregation.LastValue{}),
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	frees, err := view.New(
-		view.MatchInstrumentName(freesMetricsName),
-		view.WithSetDescription(freesMetricsDescription),
-		view.WithSetAggregation(aggregation.LastValue{}),
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	heapAlloc, err := view.New(
-		view.MatchInstrumentName(heapAllocMetricsName),
-		view.WithSetDescription(heapAllocMetricsDescription),
-		view.WithSetAggregation(aggregation.LastValue{}),
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	heapSys, err := view.New(
-		view.MatchInstrumentName(heapSysMetricsName),
-		view.WithSetDescription(heapSysMetricsDescription),
-		view.WithSetAggregation(aggregation.LastValue{}),
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	heapIdle, err := view.New(
-		view.MatchInstrumentName(heapIdleMetricsName),
-		view.WithSetDescription(heapIdleMetricsDescription),
-		view.WithSetAggregation(aggregation.LastValue{}),
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	heapInuse, err := view.New(
-		view.MatchInstrumentName(heapInuseMetricsName),
-		view.WithSetDescription(heapInuseMetricsDescription),
-		view.WithSetAggregation(aggregation.LastValue{}),
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	heapReleased, err := view.New(
-		view.MatchInstrumentName(heapReleasedMetricsName),
-		view.WithSetDescription(heapReleasedMetricsDescription),
-		view.WithSetAggregation(aggregation.LastValue{}),
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	stackInuse, err := view.New(
-		view.MatchInstrumentName(stackInuseMetricsName),
-		view.WithSetDescription(stackInuseMetricsDescription),
-		view.WithSetAggregation(aggregation.LastValue{}),
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	stackSys, err := view.New(
-		view.MatchInstrumentName(stackSysMetricsName),
-		view.WithSetDescription(stackSysMetricsDescription),
-		view.WithSetAggregation(aggregation.LastValue{}),
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	pauseTotalMs, err := view.New(
-		view.MatchInstrumentName(pauseTotalMsMetricsName),
-		view.WithSetDescription(pauseTotalMsMetricsDescription),
-		view.WithSetAggregation(aggregation.LastValue{}),
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	numGC, err := view.New(
-		view.MatchInstrumentName(numGCMetricsName),
-		view.WithSetDescription(numGCMetricsDescription),
-		view.WithSetAggregation(aggregation.LastValue{}),
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	return []*metrics.View{
-		&alloc,
-		&totalAlloc,
-		&sys,
-		&mallocs,
-		&frees,
-		&heapAlloc,
-		&heapSys,
-		&heapIdle,
-		&heapInuse,
-		&heapReleased,
-		&stackInuse,
-		&stackSys,
-		&pauseTotalMs,
-		&numGC,
+func (*memoryMetrics) View() ([]metrics.View, error) {
+	return []metrics.View{
+		view.NewView(
+			view.Instrument{
+				Name:        allocMetricsName,
+				Description: allocMetricsDescription,
+			},
+			view.Stream{
+				Aggregation: aggregation.LastValue{},
+			},
+		),
+		view.NewView(
+			view.Instrument{
+				Name:        totalAllocMetricsDescription,
+				Description: totalAllocMetricsDescription,
+			},
+			view.Stream{
+				Aggregation: aggregation.LastValue{},
+			},
+		),
+		view.NewView(
+			view.Instrument{
+				Name:        sysMetricsName,
+				Description: sysMetricsDescription,
+			},
+			view.Stream{
+				Aggregation: aggregation.LastValue{},
+			},
+		),
+		view.NewView(
+			view.Instrument{
+				Name:        mallocsMetricsName,
+				Description: mallocsMetricsDescription,
+			},
+			view.Stream{
+				Aggregation: aggregation.LastValue{},
+			},
+		),
+		view.NewView(
+			view.Instrument{
+				Name:        freesMetricsName,
+				Description: freesMetricsDescription,
+			},
+			view.Stream{
+				Aggregation: aggregation.LastValue{},
+			},
+		),
+		view.NewView(
+			view.Instrument{
+				Name:        heapAllocMetricsName,
+				Description: heapAllocMetricsDescription,
+			},
+			view.Stream{
+				Aggregation: aggregation.LastValue{},
+			},
+		),
+		view.NewView(
+			view.Instrument{
+				Name:        heapSysMetricsName,
+				Description: heapSysMetricsDescription,
+			},
+			view.Stream{
+				Aggregation: aggregation.LastValue{},
+			},
+		),
+		view.NewView(
+			view.Instrument{
+				Name:        heapIdleMetricsName,
+				Description: heapIdleMetricsDescription,
+			},
+			view.Stream{
+				Aggregation: aggregation.LastValue{},
+			},
+		),
+		view.NewView(
+			view.Instrument{
+				Name:        heapInuseMetricsName,
+				Description: heapInuseMetricsDescription,
+			},
+			view.Stream{
+				Aggregation: aggregation.LastValue{},
+			},
+		),
+		view.NewView(
+			view.Instrument{
+				Name:        heapReleasedMetricsName,
+				Description: heapReleasedMetricsDescription,
+			},
+			view.Stream{
+				Aggregation: aggregation.LastValue{},
+			},
+		),
+		view.NewView(
+			view.Instrument{
+				Name:        stackInuseMetricsName,
+				Description: stackInuseMetricsDescription,
+			},
+			view.Stream{
+				Aggregation: aggregation.LastValue{},
+			},
+		),
+		view.NewView(
+			view.Instrument{
+				Name:        stackSysMetricsName,
+				Description: stackSysMetricsDescription,
+			},
+			view.Stream{
+				Aggregation: aggregation.LastValue{},
+			},
+		),
+		view.NewView(
+			view.Instrument{
+				Name:        pauseTotalMsMetricsName,
+				Description: pauseTotalMsMetricsDescription,
+			},
+			view.Stream{
+				Aggregation: aggregation.LastValue{},
+			},
+		),
+		view.NewView(
+			view.Instrument{
+				Name:        numGCMetricsName,
+				Description: numGCMetricsDescription,
+			},
+			view.Stream{
+				Aggregation: aggregation.LastValue{},
+			},
+		),
 	}, nil
 }
 
 func (*memoryMetrics) Register(m metrics.Meter) error {
-	alloc, err := m.AsyncInt64().Gauge(
+	alloc, err := m.Int64ObservableGauge(
 		allocMetricsName,
 		metrics.WithDescription(allocMetricsDescription),
 		metrics.WithUnit(metrics.Bytes),
@@ -228,7 +215,7 @@ func (*memoryMetrics) Register(m metrics.Meter) error {
 		return err
 	}
 
-	totalAlloc, err := m.AsyncInt64().Gauge(
+	totalAlloc, err := m.Int64ObservableGauge(
 		totalAllocMetricsDescription,
 		metrics.WithDescription(totalAllocMetricsDescription),
 		metrics.WithUnit(metrics.Bytes),
@@ -237,7 +224,7 @@ func (*memoryMetrics) Register(m metrics.Meter) error {
 		return err
 	}
 
-	sys, err := m.AsyncInt64().Gauge(
+	sys, err := m.Int64ObservableGauge(
 		sysMetricsName,
 		metrics.WithDescription(sysMetricsDescription),
 		metrics.WithUnit(metrics.Bytes),
@@ -246,7 +233,7 @@ func (*memoryMetrics) Register(m metrics.Meter) error {
 		return err
 	}
 
-	mallocs, err := m.AsyncInt64().Gauge(
+	mallocs, err := m.Int64ObservableGauge(
 		mallocsMetricsName,
 		metrics.WithDescription(mallocsMetricsDescription),
 		metrics.WithUnit(metrics.Dimensionless),
@@ -255,7 +242,7 @@ func (*memoryMetrics) Register(m metrics.Meter) error {
 		return err
 	}
 
-	frees, err := m.AsyncInt64().Gauge(
+	frees, err := m.Int64ObservableGauge(
 		freesMetricsName,
 		metrics.WithDescription(freesMetricsDescription),
 		metrics.WithUnit(metrics.Dimensionless),
@@ -264,7 +251,7 @@ func (*memoryMetrics) Register(m metrics.Meter) error {
 		return err
 	}
 
-	heapAlloc, err := m.AsyncInt64().Gauge(
+	heapAlloc, err := m.Int64ObservableGauge(
 		heapAllocMetricsName,
 		metrics.WithDescription(heapAllocMetricsDescription),
 		metrics.WithUnit(metrics.Bytes),
@@ -273,7 +260,7 @@ func (*memoryMetrics) Register(m metrics.Meter) error {
 		return err
 	}
 
-	heapSys, err := m.AsyncInt64().Gauge(
+	heapSys, err := m.Int64ObservableGauge(
 		heapSysMetricsName,
 		metrics.WithDescription(heapSysMetricsDescription),
 		metrics.WithUnit(metrics.Bytes),
@@ -282,7 +269,7 @@ func (*memoryMetrics) Register(m metrics.Meter) error {
 		return err
 	}
 
-	heapIdle, err := m.AsyncInt64().Gauge(
+	heapIdle, err := m.Int64ObservableGauge(
 		heapIdleMetricsName,
 		metrics.WithDescription(heapIdleMetricsDescription),
 		metrics.WithUnit(metrics.Bytes),
@@ -291,7 +278,7 @@ func (*memoryMetrics) Register(m metrics.Meter) error {
 		return err
 	}
 
-	heapInuse, err := m.AsyncInt64().Gauge(
+	heapInuse, err := m.Int64ObservableGauge(
 		heapInuseMetricsName,
 		metrics.WithDescription(heapInuseMetricsDescription),
 		metrics.WithUnit(metrics.Bytes),
@@ -300,7 +287,7 @@ func (*memoryMetrics) Register(m metrics.Meter) error {
 		return err
 	}
 
-	heapReleased, err := m.AsyncInt64().Gauge(
+	heapReleased, err := m.Int64ObservableGauge(
 		heapReleasedMetricsName,
 		metrics.WithDescription(heapReleasedMetricsDescription),
 		metrics.WithUnit(metrics.Bytes),
@@ -309,7 +296,7 @@ func (*memoryMetrics) Register(m metrics.Meter) error {
 		return err
 	}
 
-	stackInuse, err := m.AsyncInt64().Gauge(
+	stackInuse, err := m.Int64ObservableGauge(
 		stackInuseMetricsName,
 		metrics.WithDescription(stackInuseMetricsDescription),
 		metrics.WithUnit(metrics.Bytes),
@@ -318,7 +305,7 @@ func (*memoryMetrics) Register(m metrics.Meter) error {
 		return err
 	}
 
-	stackSys, err := m.AsyncInt64().Gauge(
+	stackSys, err := m.Int64ObservableGauge(
 		stackSysMetricsName,
 		metrics.WithDescription(stackSysMetricsDescription),
 		metrics.WithUnit(metrics.Bytes),
@@ -327,7 +314,7 @@ func (*memoryMetrics) Register(m metrics.Meter) error {
 		return err
 	}
 
-	pauseTotalMs, err := m.AsyncInt64().Gauge(
+	pauseTotalMs, err := m.Int64ObservableGauge(
 		pauseTotalMsMetricsName,
 		metrics.WithDescription(pauseTotalMsMetricsDescription),
 		metrics.WithUnit(metrics.Milliseconds),
@@ -336,7 +323,7 @@ func (*memoryMetrics) Register(m metrics.Meter) error {
 		return err
 	}
 
-	numGC, err := m.AsyncInt64().Gauge(
+	numGC, err := m.Int64ObservableGauge(
 		numGCMetricsName,
 		metrics.WithDescription(numGCMetricsDescription),
 		metrics.WithUnit(metrics.Bytes),
@@ -345,46 +332,44 @@ func (*memoryMetrics) Register(m metrics.Meter) error {
 		return err
 	}
 
-	return m.RegisterCallback(
-		[]metrics.AsynchronousInstrument{
-			alloc,
-			totalAlloc,
-			sys,
-			mallocs,
-			frees,
-			heapAlloc,
-			heapSys,
-			heapIdle,
-			heapInuse,
-			heapReleased,
-			stackInuse,
-			stackSys,
-			pauseTotalMs,
-			numGC,
-		},
-		func(ctx context.Context) {
+	_, err = m.RegisterCallback(
+		func(_ context.Context, o api.Observer) error {
 			var mstats runtime.MemStats
 			runtime.ReadMemStats(&mstats)
-
-			alloc.Observe(ctx, int64(mstats.Alloc))
-			totalAlloc.Observe(ctx, int64(mstats.TotalAlloc))
-			sys.Observe(ctx, int64(mstats.Sys))
-			mallocs.Observe(ctx, int64(mstats.Mallocs))
-			frees.Observe(ctx, int64(mstats.Frees))
-			heapAlloc.Observe(ctx, int64(mstats.HeapAlloc))
-			heapSys.Observe(ctx, int64(mstats.HeapSys))
-			heapIdle.Observe(ctx, int64(mstats.HeapIdle))
-			heapInuse.Observe(ctx, int64(mstats.HeapInuse))
-			heapReleased.Observe(ctx, int64(mstats.HeapReleased))
-			stackInuse.Observe(ctx, int64(mstats.StackInuse))
-			stackSys.Observe(ctx, int64(mstats.StackSys))
-
-			ptMs := int64(0)
+			o.ObserveInt64(alloc, int64(mstats.Alloc))
+			o.ObserveInt64(frees, int64(mstats.Frees))
+			o.ObserveInt64(heapAlloc, int64(mstats.HeapAlloc))
+			o.ObserveInt64(heapIdle, int64(mstats.HeapIdle))
+			o.ObserveInt64(heapInuse, int64(mstats.HeapInuse))
+			o.ObserveInt64(heapReleased, int64(mstats.HeapReleased))
+			o.ObserveInt64(heapSys, int64(mstats.HeapSys))
+			o.ObserveInt64(mallocs, int64(mstats.Mallocs))
+			o.ObserveInt64(stackInuse, int64(mstats.StackInuse))
+			o.ObserveInt64(stackSys, int64(mstats.StackSys))
+			o.ObserveInt64(sys, int64(mstats.Sys))
+			o.ObserveInt64(totalAlloc, int64(mstats.TotalAlloc))
+			var ptMs int64
 			if mstats.PauseTotalNs > 0 {
-				ptMs = int64(mstats.PauseTotalNs / uint64(time.Millisecond))
+				ptMs = int64(float64(mstats.PauseTotalNs) / float64(time.Millisecond))
 			}
-			pauseTotalMs.Observe(ctx, ptMs)
-			numGC.Observe(ctx, int64(mstats.NextGC))
+			o.ObserveInt64(pauseTotalMs, ptMs)
+			o.ObserveInt64(numGC, int64(mstats.NextGC))
+			return nil
 		},
+		alloc,
+		frees,
+		heapAlloc,
+		heapIdle,
+		heapInuse,
+		heapReleased,
+		heapSys,
+		mallocs,
+		stackInuse,
+		stackSys,
+		sys,
+		totalAlloc,
+		pauseTotalMs,
+		numGC,
 	)
+	return err
 }

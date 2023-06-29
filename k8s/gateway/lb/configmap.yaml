@@ -42,6 +42,7 @@ data:
           grpc:
             bidirectional_stream_concurrency: 20
             connection_timeout: ""
+            enable_admin: true
             enable_reflection: true
             header_table_size: 0
             initial_conn_window_size: 0
@@ -190,13 +191,13 @@ data:
         - go_version
         - go_os
         - go_arch
-        - ngt_version
+        - algorithm_info
       trace:
         enabled: false
     gateway:
       agent_port: 8081
-      agent_name: "vald-agent-ngt"
-      agent_dns: vald-agent-ngt.default.svc.cluster.local
+      agent_name: "vald-agent"
+      agent_dns: vald-agent.default.svc.cluster.local
       agent_namespace: "_MY_POD_NAMESPACE_"
       node_name: ""
       index_replica: 3

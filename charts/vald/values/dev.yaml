@@ -28,6 +28,8 @@ gateway:
       profefe.com/enable: "true"
       profefe.com/port: "6060"
       profefe.com/service: "vald-lb-gateway"
+    ingress:
+      enabled: true
     resources:
       requests:
         cpu: 100m

@@ -21,8 +21,9 @@ import (
 
 	"github.com/vdaas/vald/internal/observability/attribute"
 	"github.com/vdaas/vald/internal/observability/metrics"
+	api "go.opentelemetry.io/otel/metric"
+	view "go.opentelemetry.io/otel/sdk/metric"
 	"go.opentelemetry.io/otel/sdk/metric/aggregation"
-	"go.opentelemetry.io/otel/sdk/metric/view"
 )
 
 type info struct {
@@ -83,23 +84,22 @@ func labelKVs(i interface{}) map[string]string {
 	return kvs
 }
 
-func (i *info) View() ([]*metrics.View, error) {
-	info, err := view.New(
-		view.MatchInstrumentName(i.name),
-		view.WithSetDescription(i.description),
-		view.WithSetAggregation(aggregation.LastValue{}),
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	return []*metrics.View{
-		&info,
+func (i *info) View() ([]metrics.View, error) {
+	return []metrics.View{
+		view.NewView(
+			view.Instrument{
+				Name:        i.name,
+				Description: i.description,
+			},
+			view.Stream{
+				Aggregation: aggregation.LastValue{},
+			},
+		),
 	}, nil
 }
 
 func (i *info) Register(m metrics.Meter) error {
-	info, err := m.AsyncInt64().Gauge(
+	info, err := m.Int64ObservableGauge(
 		i.name,
 		metrics.WithDescription(i.description),
 		metrics.WithUnit(metrics.Dimensionless),
@@ -107,16 +107,15 @@ func (i *info) Register(m metrics.Meter) error {
 	if err != nil {
 		return err
 	}
-	return m.RegisterCallback(
-		[]metrics.AsynchronousInstrument{
-			info,
-		},
-		func(ctx context.Context) {
+	_, err = m.RegisterCallback(
+		func(_ context.Context, o api.Observer) error {
 			attrs := make([]attribute.KeyValue, 0, len(i.kvs))
 			for key, val := range i.kvs {
 				attrs = append(attrs, attribute.String(key, val))
 			}
-			info.Observe(ctx, 1, attrs...)
-		},
+			o.ObserveInt64(info, 1, attrs...)
+			return nil
+		}, info,
 	)
+	return err
 }

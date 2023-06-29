@@ -17,7 +17,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: vald-agent-ngt-config
+  name: vald-agent-config
   labels:
     app.kubernetes.io/name: vald
     helm.sh/chart: vald-v1.7.6
@@ -42,6 +42,7 @@ data:
           grpc:
             bidirectional_stream_concurrency: 20
             connection_timeout: ""
+            enable_admin: true
             enable_reflection: true
             header_table_size: 0
             initial_conn_window_size: 0
@@ -176,7 +177,7 @@ data:
           namespace: "_MY_POD_NAMESPACE_"
           pod_name: "_MY_POD_NAME_"
           node_name: "_MY_NODE_NAME_"
-          service_name: "vald-agent-ngt"
+          service_name: "vald-agent"
       metrics:
         enable_cgo: true
         enable_goroutine: true
@@ -190,7 +191,7 @@ data:
         - go_version
         - go_os
         - go_arch
-        - ngt_version
+        - algorithm_info
       trace:
         enabled: false
     ngt:

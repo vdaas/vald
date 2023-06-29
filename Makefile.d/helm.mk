@@ -104,20 +104,10 @@ $(BINDIR)/yq:
 ## generate OpenAPI v3 schema for ValdRelease
 helm/schema/crd/vald: \
 	yq/install
-	mv charts/vald-helm-operator/crds/valdrelease.yaml $(TEMP_DIR)/valdrelease.yaml
-	GOPRIVATE=$(GOPRIVATE) \
-	go run -mod=readonly hack/helm/schema/crd/main.go \
-	charts/vald/values.yaml > $(TEMP_DIR)/valdrelease-spec.yaml
-	$(BINDIR)/yq eval-all 'select(fileIndex==0).spec.versions[0].schema.openAPIV3Schema.properties.spec = select(fileIndex==1).spec | select(fileIndex==0)' \
-	$(TEMP_DIR)/valdrelease.yaml $(TEMP_DIR)/valdrelease-spec.yaml > charts/vald-helm-operator/crds/valdrelease.yaml
+	$(call gen-crd-schema,valdrelease,vald)
 
 .PHONY: helm/schema/crd/vald-helm-operator
 ## generate OpenAPI v3 schema for ValdHelmOperatorRelease
 helm/schema/crd/vald-helm-operator: \
 	yq/install
-	mv charts/vald-helm-operator/crds/valdhelmoperatorrelease.yaml $(TEMP_DIR)/valdhelmoperatorrelease.yaml
-	GOPRIVATE=$(GOPRIVATE) \
-	go run -mod=readonly hack/helm/schema/crd/main.go \
-	charts/vald-helm-operator/values.yaml > $(TEMP_DIR)/valdhelmoperatorrelease-spec.yaml
-	$(BINDIR)/yq eval-all 'select(fileIndex==0).spec.versions[0].schema.openAPIV3Schema.properties.spec = select(fileIndex==1).spec | select(fileIndex==0)' \
-	$(TEMP_DIR)/valdhelmoperatorrelease.yaml $(TEMP_DIR)/valdhelmoperatorrelease-spec.yaml > charts/vald-helm-operator/crds/valdhelmoperatorrelease.yaml
+	$(call gen-crd-schema,valdhelmoperatorrelease,vald-helm-operator)

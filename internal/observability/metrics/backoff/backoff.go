@@ -19,8 +19,9 @@ import (
 	"github.com/vdaas/vald/internal/backoff"
 	"github.com/vdaas/vald/internal/observability/attribute"
 	"github.com/vdaas/vald/internal/observability/metrics"
+	api "go.opentelemetry.io/otel/metric"
+	view "go.opentelemetry.io/otel/sdk/metric"
 	"go.opentelemetry.io/otel/sdk/metric/aggregation"
-	"go.opentelemetry.io/otel/sdk/metric/view"
 )
 
 const (
@@ -38,22 +39,22 @@ func New() metrics.Metric {
 	}
 }
 
-func (*backoffMetrics) View() ([]*metrics.View, error) {
-	retryCount, err := view.New(
-		view.MatchInstrumentName(metricsName),
-		view.WithSetDescription(metricsDescription),
-		view.WithSetAggregation(aggregation.LastValue{}),
-	)
-	if err != nil {
-		return nil, err
-	}
-	return []*metrics.View{
-		&retryCount,
+func (*backoffMetrics) View() ([]metrics.View, error) {
+	return []metrics.View{
+		view.NewView(
+			view.Instrument{
+				Name:        metricsName,
+				Description: metricsDescription,
+			},
+			view.Stream{
+				Aggregation: aggregation.LastValue{},
+			},
+		),
 	}, nil
 }
 
-func (bm *backoffMetrics) Register(m metrics.Meter) error {
-	retryCount, err := m.AsyncInt64().Gauge(
+func (bm *backoffMetrics) Register(m metrics.Meter) (err error) {
+	retryCount, err := m.Int64ObservableGauge(
 		metricsName,
 		metrics.WithDescription(metricsDescription),
 		metrics.WithUnit(metrics.Dimensionless),
@@ -61,18 +62,17 @@ func (bm *backoffMetrics) Register(m metrics.Meter) error {
 	if err != nil {
 		return err
 	}
-	return m.RegisterCallback(
-		[]metrics.AsynchronousInstrument{
-			retryCount,
-		},
-		func(ctx context.Context) {
+	_, err = m.RegisterCallback(
+		func(ctx context.Context, o api.Observer) error {
 			ms := backoff.Metrics(ctx)
 			if len(ms) == 0 {
-				return
+				return nil
 			}
 			for name, cnt := range ms {
-				retryCount.Observe(ctx, cnt, attribute.String(bm.backoffNameKey, name))
+				o.ObserveInt64(retryCount, cnt, attribute.String(bm.backoffNameKey, name))
 			}
-		},
+			return nil
+		}, retryCount,
 	)
+	return err
 }

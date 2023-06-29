@@ -1,0 +1,153 @@
+#
+# Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+name: "Build docker image: agent-qbg"
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - "*.*.*"
+      - "v*.*.*"
+      - "*.*.*-*"
+      - "v*.*.*-*"
+    paths:
+      - ".github/actions/docker-build/actions.yaml"
+      - ".github/workflows/dockers-agent-qbg-image.yml"
+      - "go.mod"
+      - "go.sum"
+      - "internal/**"
+      - "!internal/**/*_test.go"
+      - "!internal/db/**"
+      - "!internal/k8s/**"
+      - "apis/grpc/**"
+      - "pkg/agent/core/qbg/**"
+      - "cmd/agent/core/qbg/**"
+      - "dockers/agent/core/qbg/Dockerfile"
+      - "versions/GO_VERSION"
+      - "versions/NGT_VERSION"
+  pull_request:
+    paths:
+      - ".github/actions/docker-build/actions.yaml"
+      - ".github/workflows/dockers-agent-qbg-image.yml"
+      - "go.mod"
+      - "go.sum"
+      - "internal/**"
+      - "!internal/**/*_test.go"
+      - "!internal/db/**"
+      - "!internal/k8s/**"
+      - "apis/grpc/**"
+      - "pkg/agent/core/qbg/**"
+      - "cmd/agent/core/qbg/**"
+      - "dockers/agent/core/qbg/Dockerfile"
+      - "versions/GO_VERSION"
+      - "versions/NGT_VERSION"
+  pull_request_target:
+    paths:
+      - ".github/actions/docker-build/actions.yaml"
+      - ".github/workflows/dockers-agent-qbg-image.yml"
+      - "go.mod"
+      - "go.sum"
+      - "internal/**"
+      - "!internal/**/*_test.go"
+      - "!internal/db/**"
+      - "!internal/k8s/**"
+      - "apis/grpc/**"
+      - "pkg/agent/core/qbg/**"
+      - "cmd/agent/core/qbg/**"
+      - "dockers/agent/core/qbg/Dockerfile"
+      - "versions/GO_VERSION"
+      - "versions/NGT_VERSION"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}-${{ github.event_name }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    strategy:
+      max-parallel: 4
+    runs-on: ubuntu-latest
+    if: ${{ (github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == false) || (github.event.pull_request.head.repo.fork == true && github.event_name == 'pull_request_target' && contains(github.event.pull_request.labels.*.name, 'ci/approved')) }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: set git config
+        run: |
+          git config --global --add safe.directory ${GITHUB_WORKSPACE}
+      - name: Setup QEMU
+        uses: docker/setup-qemu-action@v2
+        with:
+          platforms: all
+      - name: Setup Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v2
+        with:
+          buildkitd-flags: "--debug"
+      - name: Login to DockerHub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USER }}
+          password: ${{ secrets.DOCKERHUB_PASS }}
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ secrets.PACKAGE_USER }}
+          password: ${{ secrets.PACKAGE_TOKEN }}
+      - name: Build and Publish
+        id: build_and_publish
+        uses: ./.github/actions/docker-build
+        with:
+          target: agent-qbg
+          builder: ${{ steps.buildx.outputs.name }}
+      - name: Initialize CodeQL
+        if: startsWith( github.ref, 'refs/tags/')
+        uses: github/codeql-action/init@v2
+      - name: Run vulnerability scanner (table)
+        if: startsWith( github.ref, 'refs/tags/')
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: "${{ steps.build_and_publish.outputs.IMAGE_NAME }}:${{ steps.build_and_publish.outputs.PRIMARY_TAG }}"
+          format: "table"
+      - name: Run vulnerability scanner (sarif)
+        if: startsWith( github.ref, 'refs/tags/')
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: "${{ steps.build_and_publish.outputs.IMAGE_NAME }}:${{ steps.build_and_publish.outputs.PRIMARY_TAG }}"
+          format: "template"
+          template: "@/contrib/sarif.tpl"
+          output: "trivy-results.sarif"
+      - name: Upload Trivy scan results to Security tab
+        if: startsWith( github.ref, 'refs/tags/')
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: "trivy-results.sarif"
+  slack:
+    name: Slack notification
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || startsWith( github.ref, 'refs/tags/')
+    steps:
+      - uses: technote-space/workflow-conclusion-action@v2
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: 8398a7/action-slack@v3
+        with:
+          author_name: agent-qbg image build
+          status: ${{ env.WORKFLOW_CONCLUSION }}
+          only_mention_fail: channel
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_NOTIFY_WEBHOOK_URL }}

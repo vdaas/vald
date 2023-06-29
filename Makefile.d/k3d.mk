@@ -30,10 +30,19 @@ $(BINDIR)/k3d:
 .PHONY: k3d/start
 ## start k3d (kubernetes in docker) cluster
 k3d/start:
-	$(K3D_COMMAND) cluster create $(K3D_CLUSTER_NAME) --agents $(K3D_NODES) --image docker.io/rancher/k3s:latest -v "/lib/modules:/lib/modules"
-	# $(K3D_COMMAND) cluster create $(K3D_CLUSTER_NAME) --agents $(K3D_NODES) -v "/lib/modules:/lib/modules" --host-pid-mode=true
+	$(K3D_COMMAND) cluster create $(K3D_CLUSTER_NAME) \
+	  --agents $(K3D_NODES) \
+	  --image docker.io/rancher/k3s:latest \
+	  --host-pid-mode=true \
+	  --port 8081:80@loadbalancer \
+	  --k3s-arg "--disable=traefik@server:*" \
+	  -v "/lib/modules:/lib/modules"
+	# $(K3D_COMMAND) cluster create $(K3D_CLUSTER_NAME) --agents $(K3D_NODES) -v "/lib/modules:/lib/modules"
 	# $(K3D_COMMAND) cluster create $(K3D_CLUSTER_NAME) -p "8081:80@loadbalancer" --agents $(K3D_NODES) --k3s-arg '--disable=traefik@all'
-	export KUBECONFIG="$(shell sudo $(K3D_COMMAND) kubeconfig merge -o $(TEMP_DIR)/k3d_$(K3D_CLUSTER_NAME)_kubeconfig.yaml $(K3D_CLUSTER_NAME))"
+	# K3D_KUBECONFIG_PATH="$(TEMP_DIR)/k3d_$(K3D_CLUSTER_NAME)_kubeconfig.yaml"
+	# $(K3D_COMMAND) kubeconfig merge -o $(K3D_KUBECONFIG_PATH) $(K3D_CLUSTER_NAME)
+	# export KUBECONFIG="$(K3D_KUBECONFIG_PATH)"
+	kubectl wait -n kube-system --for=condition=ready pod -l k8s-app=metrics-server --timeout=600s
 	kubectl apply -f https://projectcontour.io/quickstart/operator.yaml
 	kubectl apply -f https://projectcontour.io/quickstart/contour-custom-resource.yaml
 
