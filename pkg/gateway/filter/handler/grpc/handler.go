@@ -1436,12 +1436,20 @@ func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *
 	}
 	filterConfigs = req.GetConfig().GetEgressFilters()
 	if filterConfigs != nil || s.DistanceFilters != nil {
-		for _, filterConfig := range append(s.DistanceFilters, filterConfigs...) {
-			addr := net.JoinHostPort(filterConfig.GetTarget().GetHost(), uint16(filterConfig.GetTarget().GetPort()))
-			c, err := s.egress.Target(ctx, addr)
+		filters := make([]config.DistanceFilterConfig, 0, len(filterConfigs)+len(s.DistanceFilters))
+		filters = append(filters, s.DistanceFilters...)
+		for _, c := range filterConfigs {
+			filters = append(filters, config.DistanceFilterConfig{
+				Addr:  net.JoinHostPort(c.GetTarget().GetHost(), uint16(c.GetTarget().GetPort())),
+				Query: c.Query.GetQuery(),
+			})
+
+		}
+		for _, filterConfig := range filters {
+			c, err := s.egress.Target(ctx, filterConfig.Addr)
 			if err != nil {
 				err = status.WrapWithUnavailable(
-					fmt.Sprintf(vald.SearchRPCName+" API egress filter target %v not found", addr),
+					fmt.Sprintf(vald.SearchRPCName+" API egress filter target %v not found", filterConfig.Addr),
 					err,
 					&errdetails.RequestInfo{
 						RequestId:   req.GetConfig().GetRequestId(),
@@ -1470,7 +1478,9 @@ func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *
 			dist := res.GetResults()
 			d, err := c.FilterDistance(ctx, &payload.Filter_DistanceRequest{
 				Distance: dist,
-				Query:    filterConfig.GetQuery(),
+				Query: &payload.Filter_Query{
+					Query: filterConfig.Query,
+				},
 			})
 			if err != nil {
 				err = status.WrapWithInternal(
@@ -1559,7 +1569,9 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 			dist := res.GetResults()
 			d, err := c.FilterDistance(ctx, &payload.Filter_DistanceRequest{
 				Distance: dist,
-				Query:    filterConfig.Query,
+				Query: &payload.Filter_Query{
+					Query: filterConfig.Query,
+				},
 			})
 			if err != nil {
 				err = status.WrapWithInternal(
@@ -1919,13 +1931,21 @@ func (s *server) LinearSearch(ctx context.Context, req *payload.Search_Request) 
 		return nil, err
 	}
 	filterConfigs = req.GetConfig().GetEgressFilters()
-	if filterConfigs != nil || append(s.DistanceFilters, filterConfigs...) != nil {
-		for _, filterConfig := range filterConfigs {
-			addr := net.JoinHostPort(filterConfig.GetTarget().GetHost(), uint16(filterConfig.GetTarget().GetPort()))
-			c, err := s.egress.Target(ctx, addr)
+	if filterConfigs != nil || s.DistanceFilters != nil {
+		filters := make([]config.DistanceFilterConfig, 0, len(filterConfigs)+len(s.DistanceFilters))
+		filters = append(filters, s.DistanceFilters...)
+		for _, c := range filterConfigs {
+			filters = append(filters, config.DistanceFilterConfig{
+				Addr:  net.JoinHostPort(c.GetTarget().GetHost(), uint16(c.GetTarget().GetPort())),
+				Query: c.Query.GetQuery(),
+			})
+
+		}
+		for _, filterConfig := range filters {
+			c, err := s.egress.Target(ctx, filterConfig.Addr)
 			if err != nil {
 				err = status.WrapWithUnavailable(
-					fmt.Sprintf(vald.LinearSearchRPCName+" API ingress filter target %v not found", addr),
+					fmt.Sprintf(vald.LinearSearchRPCName+" API ingress filter target %v not found", filterConfig.Addr),
 					err,
 					&errdetails.RequestInfo{
 						RequestId:   req.GetConfig().GetRequestId(),
@@ -1955,7 +1975,9 @@ func (s *server) LinearSearch(ctx context.Context, req *payload.Search_Request) 
 			dist := res.GetResults()
 			d, err := c.FilterDistance(ctx, &payload.Filter_DistanceRequest{
 				Distance: dist,
-				Query:    filterConfig.GetQuery(),
+				Query: &payload.Filter_Query{
+					Query: filterConfig.Query,
+				},
 			})
 			if err != nil {
 				err = status.WrapWithInternal(
@@ -1997,12 +2019,20 @@ func (s *server) LinearSearchByID(ctx context.Context, req *payload.Search_IDReq
 	}
 	filterConfigs := req.GetConfig().GetEgressFilters()
 	if filterConfigs != nil || s.DistanceFilters != nil {
-		for _, filterConfig := range append(s.DistanceFilters, filterConfigs...) {
-			addr := net.JoinHostPort(filterConfig.GetTarget().GetHost(), uint16(filterConfig.GetTarget().GetPort()))
-			c, err := s.egress.Target(ctx, addr)
+		filters := make([]config.DistanceFilterConfig, 0, len(filterConfigs)+len(s.DistanceFilters))
+		filters = append(filters, s.DistanceFilters...)
+		for _, c := range filterConfigs {
+			filters = append(filters, config.DistanceFilterConfig{
+				Addr:  net.JoinHostPort(c.GetTarget().GetHost(), uint16(c.GetTarget().GetPort())),
+				Query: c.Query.GetQuery(),
+			})
+
+		}
+		for _, filterConfig := range filters {
+			c, err := s.egress.Target(ctx, filterConfig.Addr)
 			if err != nil {
 				err = status.WrapWithUnavailable(
-					fmt.Sprintf(vald.LinearSearchByIDRPCName+" API egress filter target %v not found", addr),
+					fmt.Sprintf(vald.LinearSearchByIDRPCName+" API egress filter target %v not found", filterConfig.Addr),
 					err,
 					&errdetails.RequestInfo{
 						RequestId:   req.GetConfig().GetRequestId(),
@@ -2031,7 +2061,9 @@ func (s *server) LinearSearchByID(ctx context.Context, req *payload.Search_IDReq
 			dist := res.GetResults()
 			d, err := c.FilterDistance(ctx, &payload.Filter_DistanceRequest{
 				Distance: dist,
-				Query:    filterConfig.GetQuery(),
+				Query: &payload.Filter_Query{
+					Query: filterConfig.Query,
+				},
 			})
 			if err != nil {
 				err = status.WrapWithInternal(
@@ -3249,9 +3281,17 @@ func (s *server) GetObject(ctx context.Context, req *payload.Object_VectorReques
 	}
 	filterConfigs := req.GetFilters()
 	if filterConfigs != nil || s.ObjectFilters != nil {
-		for _, filterConfig := range append(s.ObjectFilters, filterConfigs...) {
-			addr := net.JoinHostPort(filterConfig.GetTarget().GetHost(), uint16(filterConfig.GetTarget().GetPort()))
-			c, err := s.egress.Target(ctx, addr)
+		filters := make([]config.ObjectFilterConfig, 0, len(filterConfigs)+len(s.ObjectFilters))
+		filters = append(filters, s.ObjectFilters...)
+		for _, c := range filterConfigs {
+			filters = append(filters, config.ObjectFilterConfig{
+				Addr:  net.JoinHostPort(c.GetTarget().GetHost(), uint16(c.GetTarget().GetPort())),
+				Query: c.Query.GetQuery(),
+			})
+
+		}
+		for _, filterConfig := range filters {
+			c, err := s.egress.Target(ctx, filterConfig.Addr)
 			if err != nil {
 				err = status.WrapWithUnavailable(vald.SearchObjectRPCName+" API target filter API unavailable", err,
 					&errdetails.RequestInfo{
@@ -3280,7 +3320,9 @@ func (s *server) GetObject(ctx context.Context, req *payload.Object_VectorReques
 			}
 			res, err := c.FilterVector(ctx, &payload.Filter_VectorRequest{
 				Vector: vec,
-				Query:  filterConfig.GetQuery(),
+				Query: &payload.Filter_Query{
+					Query: filterConfig.Query,
+				},
 			})
 			if err != nil {
 				err = status.WrapWithInternal(vald.GetObjectRPCName+" API egress filter API failed", err,
