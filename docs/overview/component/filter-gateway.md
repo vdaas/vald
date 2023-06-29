@@ -108,12 +108,12 @@ If you want to use this feature, please deploy your own egress filter component,
 - The scheme of egress filter service
 
   ```rpc
-  // https://github.com/vdaas/vald/blob/main/apis/proto/v1/filter/ingress/egress_filter.proto
+  // https://github.com/vdaas/vald/blob/main/apis/proto/v1/filter/egress/egress_filter.proto
   service Filter {
 
     // Represent the RPC to filter the distance.
-    rpc FilterDistance(payload.v1.Object.Distance)
-        returns (payload.v1.Object.Distance) {
+    rpc FilterDistance(payload.v1.Filter.DistanceRequest)
+        returns (payload.v1.Filter.DistanceResponse) {
       option (google.api.http) = {
         post : "/filter/egress/distance"
         body : "*"
@@ -121,8 +121,8 @@ If you want to use this feature, please deploy your own egress filter component,
     }
 
     // Represent the RPC to filter the vector.
-    rpc FilterVector(payload.v1.Object.Vector)
-        returns (payload.v1.Object.Vector) {
+    rpc FilterVector(payload.v1.Filter.VectorRequest)
+        returns (payload.v1.Filter.VectorResponse) {
       option (google.api.http) = {
         post : "/filter/egress/vector"
         body : "*"
@@ -131,23 +131,35 @@ If you want to use this feature, please deploy your own egress filter component,
   }
   ```
 
-- The scheme of `payload.v1.Object.Distance` and `payload.v1.Object.Vector`
+- The scheme of `payload.v1.Filter.DistanceRequest`, `payload.v1.Filter.DistanceResponse`, `payload.v1.Filter.VectorRequest` and `payload.v1.Filter.VectorResponse`
 
   ```rpc
   // https://github.com/vdaas/vald/blob/main/apis/proto/v1/payload/payload.proto
   // Represent the ID and distance pair.
-  message Distance {
-    // The vector ID.
-    string id = 1;
-    // The distance.
-    float distance = 2;
+  message DistanceRequest {
+    // Distance
+    repeated Object.Distance distance = 1;
+    // Query
+    Query query = 2;
   }
 
-  // Represent a vector.
-  message Vector {
-    // The vector ID.
-    string id = 1 [ (validate.rules).string.min_len = 1 ];
-    // The vector.
-    repeated float vector = 2 [ (validate.rules).repeated .min_items = 2 ];
+  // Represent the ID and distance pair.
+  message DistanceResponse {
+    // Distance
+    repeated Object.Distance distance = 1;
+  }
+
+  // Represent the ID and vector pair.
+  message VectorRequest {
+    // Vector
+    Object.Vector vector = 1;
+    // Query
+    Query query = 2;
+  }
+
+  // Represent the ID and vector pair.
+  message VectorResponse {
+    // Distance
+    Object.Vector vector = 1;
   }
   ```

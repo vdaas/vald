@@ -15,7 +15,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/ObjectDistance"
+              "$ref": "#/definitions/FilterDistanceResponse"
             }
           },
           "default": {
@@ -31,7 +31,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/ObjectDistance"
+              "$ref": "#/definitions/FilterDistanceRequest"
             }
           }
         ],
@@ -46,7 +46,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/ObjectVector"
+              "$ref": "#/definitions/FilterVectorResponse"
             }
           },
           "default": {
@@ -62,7 +62,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/ObjectVector"
+              "$ref": "#/definitions/v1FilterVectorRequest"
             }
           }
         ],
@@ -71,6 +71,56 @@
     }
   },
   "definitions": {
+    "FilterDistanceRequest": {
+      "type": "object",
+      "properties": {
+        "distance": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ObjectDistance"
+          },
+          "title": "Distance"
+        },
+        "query": {
+          "$ref": "#/definitions/FilterQuery",
+          "title": "Query"
+        }
+      },
+      "description": "Represent the ID and distance pair."
+    },
+    "FilterDistanceResponse": {
+      "type": "object",
+      "properties": {
+        "distance": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ObjectDistance"
+          },
+          "title": "Distance"
+        }
+      },
+      "description": "Represent the ID and distance pair."
+    },
+    "FilterQuery": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "type": "string",
+          "description": "The raw query string."
+        }
+      },
+      "description": "Represent the filter query."
+    },
+    "FilterVectorResponse": {
+      "type": "object",
+      "properties": {
+        "vector": {
+          "$ref": "#/definitions/ObjectVector",
+          "title": "Distance"
+        }
+      },
+      "description": "Represent the ID and vector pair."
+    },
     "ObjectDistance": {
       "type": "object",
       "properties": {
@@ -144,6 +194,20 @@
           }
         }
       }
+    },
+    "v1FilterVectorRequest": {
+      "type": "object",
+      "properties": {
+        "vector": {
+          "$ref": "#/definitions/ObjectVector",
+          "title": "Vector"
+        },
+        "query": {
+          "$ref": "#/definitions/FilterQuery",
+          "title": "Query"
+        }
+      },
+      "description": "Represent the ID and vector pair."
     }
   }
 }

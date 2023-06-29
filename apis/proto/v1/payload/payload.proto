@@ -85,9 +85,9 @@ message Search {
     // Search timeout in nanoseconds.
     int64 timeout = 5;
     // Ingress filter configurations.
-    Filter.Config ingress_filters = 6;
+    repeated Filter.Config ingress_filters = 6;
     // Egress filter configurations.
-    Filter.Config egress_filters = 7;
+    repeated Filter.Config egress_filters = 7;
     // Minimum number of result to be returned.
     uint32 min_num = 8 [(validate.rules).uint32.gte = 0];
     // Aggregation Algorithm
@@ -138,10 +138,46 @@ message Filter {
     uint32 port = 2;
   }
 
+  // Represent the filter query.
+  message Query {
+    // The raw query string.
+    string query = 1;
+  }
+
   // Represent filter configuration.
   message Config {
     // Represent the filter target configuration.
-    repeated Target targets = 1;
+    Target target = 1; 
+    // The target query.
+    Query query = 2;
+  }
+
+  // Represent the ID and distance pair.
+  message DistanceRequest {
+    // Distance
+    repeated Object.Distance distance = 1;
+    // Query
+    Query query = 2;
+  }
+
+  // Represent the ID and distance pair.
+  message DistanceResponse {
+    // Distance
+    repeated Object.Distance distance = 1;
+  }
+
+  // Represent the ID and vector pair.
+  message VectorRequest {
+    // Vector
+    Object.Vector vector = 1;
+    // Query
+    Query query = 2;
+  }
+
+  // Represent the ID and vector pair.
+  message VectorResponse {
+    // Distance
+    Object.Vector vector = 1;
   }
 }
 
@@ -182,7 +218,7 @@ message Insert {
     // A flag to skip exist check during insert operation.
     bool skip_strict_exist_check = 1;
     // Filter configurations.
-    Filter.Config filters = 2;
+    repeated Filter.Config filters = 2;
     // Insert timestamp.
     int64 timestamp = 3;
   }
@@ -225,7 +261,7 @@ message Update {
     // A flag to skip exist check during update operation.
     bool skip_strict_exist_check = 1;
     // Filter configuration.
-    Filter.Config filters = 2;
+    repeated Filter.Config filters = 2;
     // Update timestamp.
     int64 timestamp = 3;
     // A flag to disable balanced update (split remove -> insert operation)
@@ -271,7 +307,7 @@ message Upsert {
     // A flag to skip exist check during upsert operation.
     bool skip_strict_exist_check = 1;
     // Filter configuration.
-    Filter.Config filters = 2;
+    repeated Filter.Config filters = 2;
     // Upsert timestamp.
     int64 timestamp = 3;
     // A flag to disable balanced update (split remove -> insert operation)
@@ -334,7 +370,7 @@ message Object {
     // The vector ID to be fetched.
     ID id = 1 [(validate.rules).repeated.min_items = 2];
     // Filter configurations.
-    Filter.Config filters = 2;
+    repeated Filter.Config filters = 2;
   }
 
   // Represent the ID and distance pair.

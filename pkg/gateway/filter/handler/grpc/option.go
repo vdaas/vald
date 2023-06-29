@@ -24,6 +24,7 @@ import (
 	"github.com/vdaas/vald/internal/client/v1/client/filter/egress"
 	"github.com/vdaas/vald/internal/client/v1/client/filter/ingress"
 	"github.com/vdaas/vald/internal/client/v1/client/vald"
+	"github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/sync/errgroup"
@@ -111,28 +112,28 @@ func WithVectorizerTargets(addr string) Option {
 	}
 }
 
-func WithDistanceFilterTargets(addrs ...string) Option {
+func WithDistanceFilterTargets(cs ...config.DistanceFilterConfig) Option {
 	return func(s *server) {
-		if len(addrs) == 0 {
+		if len(cs) == 0 {
 			return
 		}
 		if len(s.DistanceFilters) == 0 {
-			s.DistanceFilters = addrs
+			s.DistanceFilters = cs
 		} else {
-			s.DistanceFilters = append(s.DistanceFilters, addrs...)
+			s.DistanceFilters = append(s.DistanceFilters, cs...)
 		}
 	}
 }
 
-func WithObjectFilterTargets(addrs ...string) Option {
+func WithObjectFilterTargets(cs ...config.ObjectFilterConfig) Option {
 	return func(s *server) {
-		if len(addrs) == 0 {
+		if len(cs) == 0 {
 			return
 		}
 		if len(s.ObjectFilters) == 0 {
-			s.ObjectFilters = addrs
+			s.ObjectFilters = cs
 		} else {
-			s.ObjectFilters = append(s.ObjectFilters, addrs...)
+			s.ObjectFilters = append(s.ObjectFilters, cs...)
 		}
 	}
 }

@@ -257,6 +257,16 @@
     }
   },
   "definitions": {
+    "FilterQuery": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "type": "string",
+          "description": "The raw query string."
+        }
+      },
+      "description": "Represent the filter query."
+    },
     "FilterTarget": {
       "type": "object",
       "properties": {
@@ -388,11 +398,11 @@
         "code": {
           "type": "integer",
           "format": "int32",
-          "description": "The status code, which should be an enum value of [google.rpc.Code][google.rpc.Code]."
+          "description": "The status code, which should be an enum value of\n[google.rpc.Code][google.rpc.Code]."
         },
         "message": {
           "type": "string",
-          "description": "A developer-facing error message, which should be in English. Any\nuser-facing error message should be localized and sent in the\n[google.rpc.Status.details][google.rpc.Status.details] field, or localized by the client."
+          "description": "A developer-facing error message, which should be in English. Any\nuser-facing error message should be localized and sent in the\n[google.rpc.Status.details][google.rpc.Status.details] field, or localized\nby the client."
         },
         "details": {
           "type": "array",
@@ -453,12 +463,13 @@
     "v1FilterConfig": {
       "type": "object",
       "properties": {
-        "targets": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/FilterTarget"
-          },
+        "target": {
+          "$ref": "#/definitions/FilterTarget",
           "description": "Represent the filter target configuration."
+        },
+        "query": {
+          "$ref": "#/definitions/FilterQuery",
+          "description": "The target query."
         }
       },
       "description": "Represent filter configuration."
@@ -471,7 +482,10 @@
           "description": "A flag to skip exist check during insert operation."
         },
         "filters": {
-          "$ref": "#/definitions/v1FilterConfig",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1FilterConfig"
+          },
           "description": "Filter configurations."
         },
         "timestamp": {
@@ -562,11 +576,17 @@
           "description": "Search timeout in nanoseconds."
         },
         "ingressFilters": {
-          "$ref": "#/definitions/v1FilterConfig",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1FilterConfig"
+          },
           "description": "Ingress filter configurations."
         },
         "egressFilters": {
-          "$ref": "#/definitions/v1FilterConfig",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1FilterConfig"
+          },
           "description": "Egress filter configurations."
         },
         "minNum": {
@@ -638,7 +658,10 @@
           "description": "A flag to skip exist check during update operation."
         },
         "filters": {
-          "$ref": "#/definitions/v1FilterConfig",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1FilterConfig"
+          },
           "description": "Filter configuration."
         },
         "timestamp": {
@@ -692,7 +715,10 @@
           "description": "A flag to skip exist check during upsert operation."
         },
         "filters": {
-          "$ref": "#/definitions/v1FilterConfig",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1FilterConfig"
+          },
           "description": "Filter configuration."
         },
         "timestamp": {

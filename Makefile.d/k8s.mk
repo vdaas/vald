@@ -394,3 +394,27 @@ $(BINDIR)/kube-linter:
 	cd $(TEMP_DIR) \
 	    && curl -L https://github.com/stackrox/kube-linter/releases/download/$(KUBELINTER_VERSION)/kube-linter-$(shell echo $(UNAME) | tr '[:upper:]' '[:lower:]') -o $(BINDIR)/kube-linter \
 	    && chmod a+x $(BINDIR)/kube-linter
+
+.PHONY: k8s/example/client/gateway/filter/ingress-filter/server/deploy
+## deploy ingrsess-filter
+k8s/example/client/gateway/filter/ingress-filter/server/deploy:
+	sed -e "s/YOUR_DOCKERHUB_ID/${YOUR_DOCKERHUB_ID}/g" $(dir $@)deployment.yaml | kubectl apply -f - \
+	&& kubectl apply -f $(dir $@)service.yaml
+
+.PHONY: k8s/example/client/gateway/filter/ingress-filter/server/delete
+## delete ingrsess-filter
+k8s/example/client/gateway/filter/ingress-filter/server/delete:
+	sed -e "s/YOUR_DOCKERHUB_ID/${YOUR_DOCKERHUB_ID}/g" $(dir $@)deployment.yaml | kubectl delete -f - \
+	&& kubectl delete -f $(dir $@)service.yaml
+
+.PHONY: k8s/example/client/gateway/filter/egress-filter/server/deploy
+## deploy egrsess-filter
+k8s/example/client/gateway/filter/egress-filter/server/deploy:
+	sed -e "s/YOUR_DOCKERHUB_ID/${YOUR_DOCKERHUB_ID}/g" $(dir $@)deployment.yaml | kubectl apply -f - \
+	&& kubectl apply -f $(dir $@)service.yaml
+
+.PHONY: k8s/example/client/gateway/filter/egress-filter/server/delete
+## delete egrsess-filter
+k8s/example/client/gateway/filter/egress-filter/server/delete:
+	sed -e "s/YOUR_DOCKERHUB_ID/${YOUR_DOCKERHUB_ID}/g" $(dir $@)deployment.yaml | kubectl delete -f -  \
+	&& kubectl delete -f $(dir $@)service.yaml
