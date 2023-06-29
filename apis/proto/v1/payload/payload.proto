@@ -23,15 +23,15 @@ import "github.com/googleapis/googleapis/google/rpc/status.proto";
 
 option go_package = "github.com/vdaas/vald/apis/grpc/v1/payload";
 option java_multiple_files = true;
-option java_package = "org.vdaas.vald.api.v1.payload";
 option java_outer_classname = "ValdPayload";
+option java_package = "org.vdaas.vald.api.v1.payload";
 
 // Search related messages.
 message Search {
   // Represent a search request.
   message Request {
     // The vector to be searched.
-    repeated float vector = 1 [ (validate.rules).repeated .min_items = 2 ];
+    repeated float vector = 1 [(validate.rules).repeated.min_items = 2];
     // The configuration of the search request.
     Config config = 2;
   }
@@ -77,7 +77,7 @@ message Search {
     // Unique request ID.
     string request_id = 1;
     // Maximum number of result to be returned.
-    uint32 num = 2 [ (validate.rules).uint32.gte = 1 ];
+    uint32 num = 2 [(validate.rules).uint32.gte = 1];
     // Search radius.
     float radius = 3;
     // Search coefficient.
@@ -89,7 +89,7 @@ message Search {
     // Egress filter configurations.
     Filter.Config egress_filters = 7;
     // Minimum number of result to be returned.
-    uint32 min_num = 8 [ (validate.rules).uint32.gte = 0 ];
+    uint32 min_num = 8 [(validate.rules).uint32.gte = 0];
     // Aggregation Algorithm
     AggregationAlgorithm aggregation_algorithm = 9;
   }
@@ -147,11 +147,10 @@ message Filter {
 
 // Insert related messages.
 message Insert {
-
   // Represent the insert request.
   message Request {
     // The vector to be inserted.
-    Object.Vector vector = 1 [ (validate.rules).repeated .min_items = 2 ];
+    Object.Vector vector = 1 [(validate.rules).repeated.min_items = 2];
     // The configuration of the insert request.
     Config config = 2;
   }
@@ -194,7 +193,7 @@ message Update {
   // Represent the update request.
   message Request {
     // The vector to be updated.
-    Object.Vector vector = 1 [ (validate.rules).repeated .min_items = 2 ];
+    Object.Vector vector = 1 [(validate.rules).repeated.min_items = 2];
     // The configuration of the update request.
     Config config = 2;
   }
@@ -237,11 +236,10 @@ message Update {
 
 // Upsert related messages.
 message Upsert {
-
   // Represent the upsert request.
   message Request {
     // The vector to be upserted.
-    Object.Vector vector = 1 [ (validate.rules).repeated .min_items = 2 ];
+    Object.Vector vector = 1 [(validate.rules).repeated.min_items = 2];
     // The configuration of the upsert request.
     Config config = 2;
   }
@@ -284,7 +282,6 @@ message Upsert {
 
 // Remove related messages.
 message Remove {
-
   // Represent the remove request.
   message Request {
     // The object ID to be removed.
@@ -310,11 +307,10 @@ message Remove {
 
 // Common messages.
 message Object {
-
   // Represent a request to fetch raw vector.
   message VectorRequest {
     // The vector ID to be fetched.
-    ID id = 1 [ (validate.rules).repeated .min_items = 2 ];
+    ID id = 1 [(validate.rules).repeated.min_items = 2];
     // Filter configurations.
     Filter.Config filters = 2;
   }
@@ -338,21 +334,27 @@ message Object {
   }
 
   // Represent the vector ID.
-  message ID { string id = 1 [ (validate.rules).string.min_len = 1 ]; }
+  message ID {
+    string id = 1 [(validate.rules).string.min_len = 1];
+  }
 
   // Represent multiple vector IDs.
-  message IDs { repeated string ids = 1; }
+  message IDs {
+    repeated string ids = 1;
+  }
 
   // Represent a vector.
   message Vector {
     // The vector ID.
-    string id = 1 [ (validate.rules).string.min_len = 1 ];
+    string id = 1 [(validate.rules).string.min_len = 1];
     // The vector.
-    repeated float vector = 2 [ (validate.rules).repeated .min_items = 2 ];
+    repeated float vector = 2 [(validate.rules).repeated.min_items = 2];
   }
 
   // Represent multiple vectors.
-  message Vectors { repeated Vector vectors = 1; }
+  message Vectors {
+    repeated Vector vectors = 1;
+  }
 
   // Represent stream response of the vector.
   message StreamVector {
@@ -375,7 +377,7 @@ message Object {
   // Represent the binary object.
   message Blob {
     // The object ID.
-    string id = 1 [ (validate.rules).string.min_len = 1 ];
+    string id = 1 [(validate.rules).string.min_len = 1];
     // The binary object.
     bytes object = 2;
   }
@@ -411,7 +413,9 @@ message Object {
   }
 
   // Represent multiple vector locations.
-  message Locations { repeated Location locations = 1; }
+  message Locations {
+    repeated Location locations = 1;
+  }
 }
 
 // Control related messages.
@@ -419,17 +423,16 @@ message Control {
   // Represent the create index request.
   message CreateIndexRequest {
     // The pool size of the create index operation.
-    uint32 pool_size = 1 [ (validate.rules).uint32.gte = 0 ];
+    uint32 pool_size = 1 [(validate.rules).uint32.gte = 0];
   }
 }
 
 // Discoverer related messages.
 message Discoverer {
-
   // Represent the dicoverer request.
   message Request {
     // The agent name to be discovered.
-    string name = 1 [ (validate.rules).string.min_len = 1 ];
+    string name = 1 [(validate.rules).string.min_len = 1];
     // The namespace to be discovered.
     string namespace = 2;
     // The node to be discovered.
@@ -439,10 +442,8 @@ message Discoverer {
 
 // Info related messages.
 message Info {
-
   // Represent the index information messages.
   message Index {
-
     // Represent the index count message.
     message Count {
       // The stored index count.
@@ -458,9 +459,13 @@ message Info {
     // Represent the UUID message.
     message UUID {
       // The committed UUID.
-      message Committed { string uuid = 1; }
+      message Committed {
+        string uuid = 1;
+      }
       // The uncommitted UUID.
-      message Uncommitted { string uuid = 1; }
+      message Uncommitted {
+        string uuid = 1;
+      }
     }
   }
 
@@ -473,7 +478,7 @@ message Info {
     // The namespace of the pod.
     string namespace = 3;
     // The IP of the pod.
-    string ip = 4 [ (validate.rules).string.ipv4 = true ];
+    string ip = 4 [(validate.rules).string.ipv4 = true];
     // The CPU information of the pod.
     CPU cpu = 5;
     // The memory information of the pod.
@@ -521,17 +526,19 @@ message Info {
   // Represent the multiple pod information message.
   message Pods {
     // The multiple pod information.
-    repeated Pod pods = 1 [ (validate.rules).repeated .min_items = 1 ];
+    repeated Pod pods = 1 [(validate.rules).repeated.min_items = 1];
   }
 
   // Represent the multiple node information message.
   message Nodes {
     // The multiple node information.
-    repeated Node nodes = 1 [ (validate.rules).repeated .min_items = 1 ];
+    repeated Node nodes = 1 [(validate.rules).repeated.min_items = 1];
   }
 
   // Represent the multiple IP message.
-  message IPs { repeated string ip = 1; }
+  message IPs {
+    repeated string ip = 1;
+  }
 }
 
 // Represent an empty message.

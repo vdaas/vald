@@ -23,30 +23,27 @@ import "github.com/googleapis/googleapis/google/api/annotations.proto";
 
 option go_package = "github.com/vdaas/vald/apis/grpc/v1/vald";
 option java_multiple_files = true;
-option java_package = "org.vdaas.vald.api.v1.vald";
 option java_outer_classname = "ValdRemove";
+option java_package = "org.vdaas.vald.api.v1.vald";
 
 // Remove service provides ways to remove indexed vectors.
 service Remove {
-
   // A method to remove an indexed vector.
   rpc Remove(payload.v1.Remove.Request) returns (payload.v1.Object.Location) {
     option (google.api.http) = {
-      post : "/remove"
-      body : "*"
+      post: "/remove"
+      body: "*"
     };
   }
 
   // A method to remove multiple indexed vectors by bidirectional streaming.
-  rpc StreamRemove(stream payload.v1.Remove.Request)
-      returns (stream payload.v1.Object.StreamLocation) {}
+  rpc StreamRemove(stream payload.v1.Remove.Request) returns (stream payload.v1.Object.StreamLocation) {}
 
   // A method to remove multiple indexed vectors in a single request.
-  rpc MultiRemove(payload.v1.Remove.MultiRequest)
-      returns (payload.v1.Object.Locations) {
+  rpc MultiRemove(payload.v1.Remove.MultiRequest) returns (payload.v1.Object.Locations) {
     option (google.api.http) = {
-      post : "/remove/multiple"
-      body : "*"
+      post: "/remove/multiple"
+      body: "*"
     };
   }
 }

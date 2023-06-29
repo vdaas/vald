@@ -23,98 +23,86 @@ import "github.com/googleapis/googleapis/google/api/annotations.proto";
 
 option go_package = "github.com/vdaas/vald/apis/grpc/v1/vald";
 option java_multiple_files = true;
-option java_package = "org.vdaas.vald.api.v1.vald";
 option java_outer_classname = "ValdSearch";
+option java_package = "org.vdaas.vald.api.v1.vald";
 
 // Search service provides ways to search indexed vectors.
 service Search {
-
   // A method to search indexed vectors by a raw vector.
   rpc Search(payload.v1.Search.Request) returns (payload.v1.Search.Response) {
     option (google.api.http) = {
-      post : "/search"
-      body : "*"
+      post: "/search"
+      body: "*"
     };
   }
 
   // A method to search indexed vectors by ID.
-  rpc SearchByID(payload.v1.Search.IDRequest)
-      returns (payload.v1.Search.Response) {
+  rpc SearchByID(payload.v1.Search.IDRequest) returns (payload.v1.Search.Response) {
     option (google.api.http) = {
-      post : "/search/id"
-      body : "*"
+      post: "/search/id"
+      body: "*"
     };
   }
 
   // A method to search indexed vectors by multiple vectors.
-  rpc StreamSearch(stream payload.v1.Search.Request)
-      returns (stream payload.v1.Search.StreamResponse) {}
+  rpc StreamSearch(stream payload.v1.Search.Request) returns (stream payload.v1.Search.StreamResponse) {}
 
   // A method to search indexed vectors by multiple IDs.
-  rpc StreamSearchByID(stream payload.v1.Search.IDRequest)
-      returns (stream payload.v1.Search.StreamResponse) {}
+  rpc StreamSearchByID(stream payload.v1.Search.IDRequest) returns (stream payload.v1.Search.StreamResponse) {}
 
   // A method to search indexed vectors by multiple vectors in a single request.
-  rpc MultiSearch(payload.v1.Search.MultiRequest)
-      returns (payload.v1.Search.Responses) {
+  rpc MultiSearch(payload.v1.Search.MultiRequest) returns (payload.v1.Search.Responses) {
     option (google.api.http) = {
-      post : "/search/multiple"
-      body : "*"
+      post: "/search/multiple"
+      body: "*"
     };
   }
 
   // A method to search indexed vectors by multiple IDs in a single request.
-  rpc MultiSearchByID(payload.v1.Search.MultiIDRequest)
-      returns (payload.v1.Search.Responses) {
+  rpc MultiSearchByID(payload.v1.Search.MultiIDRequest) returns (payload.v1.Search.Responses) {
     option (google.api.http) = {
-      post : "/search/id/multiple"
-      body : "*"
+      post: "/search/id/multiple"
+      body: "*"
     };
   }
 
   // A method to linear search indexed vectors by a raw vector.
-  rpc LinearSearch(payload.v1.Search.Request)
-      returns (payload.v1.Search.Response) {
+  rpc LinearSearch(payload.v1.Search.Request) returns (payload.v1.Search.Response) {
     option (google.api.http) = {
-      post : "/linearsearch"
-      body : "*"
+      post: "/linearsearch"
+      body: "*"
     };
   }
 
   // A method to linear search indexed vectors by ID.
-  rpc LinearSearchByID(payload.v1.Search.IDRequest)
-      returns (payload.v1.Search.Response) {
+  rpc LinearSearchByID(payload.v1.Search.IDRequest) returns (payload.v1.Search.Response) {
     option (google.api.http) = {
-      post : "/linearsearch/id"
-      body : "*"
+      post: "/linearsearch/id"
+      body: "*"
     };
   }
 
   // A method to linear search indexed vectors by multiple vectors.
-  rpc StreamLinearSearch(stream payload.v1.Search.Request)
-      returns (stream payload.v1.Search.StreamResponse) {}
+  rpc StreamLinearSearch(stream payload.v1.Search.Request) returns (stream payload.v1.Search.StreamResponse) {}
 
   // A method to linear search indexed vectors by multiple IDs.
-  rpc StreamLinearSearchByID(stream payload.v1.Search.IDRequest)
-      returns (stream payload.v1.Search.StreamResponse) {}
+  rpc StreamLinearSearchByID(stream payload.v1.Search.IDRequest) returns (stream payload.v1.Search.StreamResponse) {}
 
   // A method to linear search indexed vectors by multiple vectors in a single
   // request.
-  rpc MultiLinearSearch(payload.v1.Search.MultiRequest)
-      returns (payload.v1.Search.Responses) {
+  rpc MultiLinearSearch(payload.v1.Search.MultiRequest) returns (payload.v1.Search.Responses) {
     option (google.api.http) = {
-      post : "/linearsearch/multiple"
-      body : "*"
+      post: "/linearsearch/multiple"
+      body: "*"
     };
   }
 
   // A method to linear search indexed vectors by multiple IDs in a single
   // request.
-  rpc MultiLinearSearchByID(payload.v1.Search.MultiIDRequest)
-      returns (payload.v1.Search.Responses) {
+  rpc MultiLinearSearchByID(payload.v1.Search.MultiIDRequest) returns (payload.v1.Search.Responses) {
     option (google.api.http) = {
-      post : "/linearsearch/id/multiple"
-      body : "*"
+      post: "/linearsearch/id/multiple"
+      body: "*"
     };
   }
 }
