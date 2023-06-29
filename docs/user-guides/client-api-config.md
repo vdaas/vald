@@ -115,7 +115,7 @@ message Filter {
   // Represent filter configuration.
   message Config {
     // Represent the filter target configuration.
-    Target target = 1; 
+    Target target = 1;
     // The target query.
     Query query = 2;
   }
@@ -244,7 +244,7 @@ message Filter {
   // Represent filter configuration.
   message Config {
     // Represent the filter target configuration.
-    Target target = 1; 
+    Target target = 1;
     // The target query.
     Query query = 2;
   }
@@ -372,7 +372,7 @@ message Filter {
   // Represent filter configuration.
   message Config {
     // Represent the filter target configuration.
-    Target target = 1; 
+    Target target = 1;
     // The target query.
     Query query = 2;
   }
@@ -594,7 +594,7 @@ message Filter {
   // Represent filter configuration.
   message Config {
     // Represent the filter target configuration.
-    Target target = 1; 
+    Target target = 1;
     // The target query.
     Query query = 2;
   }
@@ -621,7 +621,7 @@ message Filter {
   // Represent filter configuration.
   message Config {
     // Represent the filter target configuration.
-    Target target = 1; 
+    Target target = 1;
     // The target query.
     Query query = 2;
   }

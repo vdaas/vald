@@ -1443,7 +1443,6 @@ func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *
 				Addr:  net.JoinHostPort(c.GetTarget().GetHost(), uint16(c.GetTarget().GetPort())),
 				Query: c.Query.GetQuery(),
 			})
-
 		}
 		for _, filterConfig := range filters {
 			c, err := s.egress.Target(ctx, filterConfig.Addr)
@@ -1535,7 +1534,6 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 				Addr:  net.JoinHostPort(c.GetTarget().GetHost(), uint16(c.GetTarget().GetPort())),
 				Query: c.Query.GetQuery(),
 			})
-
 		}
 		for _, filterConfig := range filters {
 			c, err := s.egress.Target(ctx, filterConfig.Addr)
@@ -1941,7 +1939,6 @@ func (s *server) LinearSearch(ctx context.Context, req *payload.Search_Request) 
 				Addr:  net.JoinHostPort(c.GetTarget().GetHost(), uint16(c.GetTarget().GetPort())),
 				Query: c.Query.GetQuery(),
 			})
-
 		}
 		for _, filterConfig := range filters {
 			c, err := s.egress.Target(ctx, filterConfig.Addr)
@@ -2029,7 +2026,6 @@ func (s *server) LinearSearchByID(ctx context.Context, req *payload.Search_IDReq
 				Addr:  net.JoinHostPort(c.GetTarget().GetHost(), uint16(c.GetTarget().GetPort())),
 				Query: c.Query.GetQuery(),
 			})
-
 		}
 		for _, filterConfig := range filters {
 			c, err := s.egress.Target(ctx, filterConfig.Addr)
@@ -3368,7 +3364,6 @@ func (s *server) GetObject(ctx context.Context, req *payload.Object_VectorReques
 				Addr:  net.JoinHostPort(c.GetTarget().GetHost(), uint16(c.GetTarget().GetPort())),
 				Query: c.Query.GetQuery(),
 			})
-
 		}
 		for _, filterConfig := range filters {
 			c, err := s.egress.Target(ctx, filterConfig.Addr)
