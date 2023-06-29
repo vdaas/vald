@@ -1476,15 +1476,16 @@ func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *
 				return nil, err
 			}
 			dist := res.GetResults()
+			q := &payload.Filter_Query{
+				Query: filterConfig.Query,
+			}
 			d, err := c.FilterDistance(ctx, &payload.Filter_DistanceRequest{
 				Distance: dist,
-				Query: &payload.Filter_Query{
-					Query: filterConfig.Query,
-				},
+				Query:    q,
 			})
 			if err != nil {
 				err = status.WrapWithInternal(
-					fmt.Sprintf(vald.SearchRPCName+" API egress filter request to %v failure on distance %v and query %v", addr, dist, filterConfig.GetQuery()),
+					fmt.Sprintf(vald.SearchRPCName+" API egress filter request to %v failure on distance %v and query %v", filterConfig.Addr, dist, q),
 					err,
 					&errdetails.RequestInfo{
 						RequestId:   req.GetConfig().GetRequestId(),
@@ -1567,15 +1568,16 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 				return nil, err
 			}
 			dist := res.GetResults()
+			q := &payload.Filter_Query{
+				Query: filterConfig.Query,
+			}
 			d, err := c.FilterDistance(ctx, &payload.Filter_DistanceRequest{
 				Distance: dist,
-				Query: &payload.Filter_Query{
-					Query: filterConfig.Query,
-				},
+				Query:    q,
 			})
 			if err != nil {
 				err = status.WrapWithInternal(
-					fmt.Sprintf(vald.SearchByIDRPCName+" API egress filter request to %v failure on distance %v and query %v", addr, dist, filterConfig.GetQuery()),
+					fmt.Sprintf(vald.SearchByIDRPCName+" API egress filter request to %v failure on distance %v and query %v", filterConfig.Addr, dist, q),
 					err,
 					&errdetails.RequestInfo{
 						RequestId:   req.GetConfig().GetRequestId(),
@@ -1973,15 +1975,16 @@ func (s *server) LinearSearch(ctx context.Context, req *payload.Search_Request) 
 			}
 
 			dist := res.GetResults()
+			q := &payload.Filter_Query{
+				Query: filterConfig.Query,
+			}
 			d, err := c.FilterDistance(ctx, &payload.Filter_DistanceRequest{
 				Distance: dist,
-				Query: &payload.Filter_Query{
-					Query: filterConfig.Query,
-				},
+				Query:    q,
 			})
 			if err != nil {
 				err = status.WrapWithInternal(
-					fmt.Sprintf(vald.LinearSearchRPCName+" API egress filter request to %v failure on distance %v and query %v", addr, dist, filterConfig.GetQuery()),
+					fmt.Sprintf(vald.LinearSearchRPCName+" API egress filter request to %v failure on distance %v and query %v", filterConfig.Addr, dist, q),
 					err,
 					&errdetails.RequestInfo{
 						RequestId:   req.GetConfig().GetRequestId(),
@@ -2059,15 +2062,16 @@ func (s *server) LinearSearchByID(ctx context.Context, req *payload.Search_IDReq
 				return nil, err
 			}
 			dist := res.GetResults()
+			q := &payload.Filter_Query{
+				Query: filterConfig.Query,
+			}
 			d, err := c.FilterDistance(ctx, &payload.Filter_DistanceRequest{
 				Distance: dist,
-				Query: &payload.Filter_Query{
-					Query: filterConfig.Query,
-				},
+				Query:    q,
 			})
 			if err != nil {
 				err = status.WrapWithInternal(
-					fmt.Sprintf(vald.LinearSearchByIDRPCName+" API egress filter request to %v failure on distance %v and query %v", addr, dist, filterConfig.GetQuery()),
+					fmt.Sprintf(vald.LinearSearchByIDRPCName+" API egress filter request to %v failure on distance %v and query %v", filterConfig.Addr, dist, q),
 					err,
 					&errdetails.RequestInfo{
 						RequestId:   req.GetConfig().GetRequestId(),
