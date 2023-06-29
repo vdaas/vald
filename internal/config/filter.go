@@ -19,9 +19,9 @@ package config
 
 // EgressFilter represents the EgressFilter configuration.
 type EgressFilter struct {
-	Client          *GRPCClient            `json:"client,omitempty"           yaml:"client"`
-	DistanceFilters []DistanceFilterConfig `json:"distance_filters,omitempty" yaml:"distance_filters"`
-	ObjectFilters   []ObjectFilterConfig   `json:"object_filters,omitempty"   yaml:"object_filters"`
+	Client          *GRPCClient             `json:"client,omitempty"           yaml:"client"`
+	DistanceFilters []*DistanceFilterConfig `json:"distance_filters,omitempty" yaml:"distance_filters"`
+	ObjectFilters   []*ObjectFilterConfig   `json:"object_filters,omitempty"   yaml:"object_filters"`
 }
 
 // IngressFilter represents the IngressFilter configuration.

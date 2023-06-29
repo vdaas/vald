@@ -16,18 +16,18 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: vald-ingress-filter
+  name: vald-egress-filter
   labels:
-    app: vald-ingress-filter
+    app: vald-egress-filter
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: vald-ingress-filter
+      app: vald-egress-filter
   template:
     metadata:
       labels:
-        app: vald-ingress-filter
+        app: vald-egress-filter
     spec:
       securityContext:
         runAsUser: 65532
@@ -35,9 +35,9 @@ spec:
         runAsNonRoot: true
         fsGroup: 65532
       containers:
-        - name: vald-ingress-filter
-          image: YOUR_DOCKERHUB_ID/vald-ingress-filter:latest
+        - name: vald-egress-filter
+          image: DOCKERHUB_ID/vald-egress-filter:latest
           imagePullPolicy: Always
           ports:
             - name: grpc
-              containerPort: 8082
+              containerPort: 8083

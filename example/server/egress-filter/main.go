@@ -60,6 +60,7 @@ type myEgressServer struct {
 
 func (s *myEgressServer) FilterDistance(ctx context.Context, in *payload.Filter_DistanceRequest) (*payload.Filter_DistanceResponse, error) {
 	// Write your own logic
+	glg.Log("filtering vector %#v", in)
 	qCategory, ok := getSplitValue(in.GetQuery().GetQuery(), "=", 1)
 	if !ok {
 		return &payload.Filter_DistanceResponse{
@@ -93,6 +94,7 @@ func (s *myEgressServer) FilterDistance(ctx context.Context, in *payload.Filter_
 
 func (s *myEgressServer) FilterVector(ctx context.Context, in *payload.Filter_VectorRequest) (*payload.Filter_VectorResponse, error) {
 	// Write your own logic
+	glg.Logf("filtering the vector %#v", in)
 	return &payload.Filter_VectorResponse{
 		Vector: in.GetVector(),
 	}, nil

@@ -19,22 +19,33 @@ ARG DISTROLESS_IMAGE=gcr.io/distroless/static
 ARG DISTROLESS_IMAGE_TAG=nonroot
 ARG MAINTAINER="vdaas.org vald team <vald@vdaas.org>"
 
-FROM golang:${GO_VERSION} AS builder
+FROM golang:${GO_VERSION} AS golang
+
+FROM ubuntu:devel AS builder
 
 ENV GO111MODULE on
+ENV DEBIAN_FRONTEND noninteractive
+ENV INITRD No
 ENV LANG en_US.UTF-8
+ENV GOROOT /opt/go
+ENV GOPATH /go
+ENV PATH ${PATH}:${GOROOT}/bin:${GOPATH}/bin
 ENV ORG vdaas
 ENV REPO vald
-ENV APP_NAME egress-filter
-ENV DIR example/client/gateway/filter/${APP_NAME}/server
+ENV PKG filter/ingress-filter
+ENV APP_NAME ingress-filter
+ENV DIR example/server/ingress-filter
 
 # skipcq: DOK-DL3008
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates \
+    build-essential \
     upx \
     git \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
+COPY --from=golang /usr/local/go $GOROOT
 RUN mkdir -p "$GOPATH/src"
 
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}
@@ -65,17 +76,27 @@ COPY Makefile.d .
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}
 COPY Makefile .
 
-RUN make REPO=${ORG} NAME=${REPO} ${DIR}/${APP_NAME} \
-    && mv "${DIR}/${APP_NAME}" "/usr/bin/${APP_NAME}"
+RUN GO111MODULE=on \
+	go build \
+		--ldflags "-w -extldflags=-static \
+		-buildid=" \
+		-mod=readonly \
+		-modcacherw \
+		-a \
+		-tags "osusergo netgo static_build" \
+		-trimpath \
+		-o ${DIR}/${APP_NAME} \
+		${DIR}/main.go
+RUN mv "${DIR}/${APP_NAME}" "/usr/bin/${APP_NAME}"
 
 
 FROM ${DISTROLESS_IMAGE}:${DISTROLESS_IMAGE_TAG}
 LABEL maintainer "${MAINTAINER}"
 
-ENV APP_NAME egress-filter
+ENV APP_NAME ingress-filter
 
 COPY --from=builder /usr/bin/${APP_NAME} /go/bin/${APP_NAME}
 
 USER nonroot:nonroot
 
-ENTRYPOINT ["/go/bin/egress-filter"]
+ENTRYPOINT ["/go/bin/ingress-filter"]

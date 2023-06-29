@@ -25,6 +25,11 @@ import (
 	"google.golang.org/grpc"
 )
 
+type dataset struct {
+	id     string
+	vector []float32
+}
+
 var (
 	grpcServerAddr      string
 	ingressServerHost   string
@@ -57,35 +62,7 @@ func init() {
 
 // Please execute after setting up the server of vald cluster and ingress/egress filter
 func main() {
-	// create a data set for operation confirmation
-	makeVecFn := func(dim int, value float32) []float32 {
-		vec := make([]float32, dim)
-		for i := 0; i < dim; i++ {
-			vec[i] = value
-		}
-		return vec
-	}
-	dataset := []struct {
-		id     string
-		vector []float32
-	}{
-		{
-			id:     "1_fashion",
-			vector: makeVecFn(int(dimension), 0.1),
-		},
-		{
-			id:     "2_food",
-			vector: makeVecFn(int(dimension), 0.2),
-		},
-		{
-			id:     "3_fashion",
-			vector: makeVecFn(int(dimension), 0.3),
-		},
-		{
-			id:     "4_pet",
-			vector: makeVecFn(int(dimension), 0.4),
-		},
-	}
+	dataset := genDataset()
 	query := "category=fashion"
 
 	// connect to the Vald cluster
@@ -97,14 +74,15 @@ func main() {
 	}
 
 	// create a filter client
+	glg.Info("Start inserting object via vald filter client")
 	var object []byte
 	fclient := vald.NewFilterClient(conn)
 
-	for i := 0; i < len(dataset); i++ {
+	for _, ds := range dataset {
 		icfg := &payload.Insert_ObjectRequest{
 			// object data to pass to GenVector function of your ingress filter
 			Object: &payload.Object_Blob{
-				Id:     dataset[i].id,
+				Id:     ds.id,
 				Object: object,
 			},
 			// insert config
@@ -144,62 +122,113 @@ func main() {
 	time.Sleep(wt)
 
 	// create a search client
+	glg.Log("Start searching dataset")
 	sclient := vald.NewSearchClient(conn)
 
-	scfg := &payload.Search_Config{
-		Num:     10,
-		Epsilon: 0.1,
-		Radius:  -1,
-		// config to call DistanceVector function of your egress filter
-		EgressFilters: []*payload.Filter_Config{
-			{
-				Target: &payload.Filter_Target{
-					Host: egressServerHost,
-					Port: uint32(egressServerPort),
-				},
-				Query: &payload.Filter_Query{
-					Query: query,
+	for _, ds := range dataset {
+		scfg := &payload.Search_Config{
+			Num:     10,
+			Epsilon: 0.1,
+			Radius:  -1,
+			// config to call DistanceVector function of your egress filter
+			EgressFilters: []*payload.Filter_Config{
+				{
+					Target: &payload.Filter_Target{
+						Host: egressServerHost,
+						Port: uint32(egressServerPort),
+					},
+					Query: &payload.Filter_Query{
+						Query: query,
+					},
 				},
 			},
-		},
-	}
+		}
 
-	// send Search request
-	res, err := sclient.Search(ctx, &payload.Search_Request{
-		Vector: dataset[0].vector,
-		Config: scfg,
-	})
-	if err != nil {
-		glg.Error(err)
-		return
+		// send Search request
+		res, err := sclient.Search(ctx, &payload.Search_Request{
+			Vector: ds.vector,
+			Config: scfg,
+		})
+		if err != nil {
+			glg.Error(err)
+			return
+		}
+		b, _ := json.MarshalIndent(res.GetResults(), "", " ")
+		glg.Infof("Results : %s\n\n", string(b))
 	}
-	b, _ := json.MarshalIndent(res.GetResults(), "", " ")
-	glg.Infof("Results : %s\n\n", string(b))
 
 	// create an object client
+	glg.Info("Start GetObject")
 	oclient := vald.NewObjectClient(conn)
 
-	vreq := &payload.Object_VectorRequest{
-		Id: &payload.Object_ID{Id: dataset[0].id},
-		// config to call FilterVector function of your egress filter
-		Filters: []*payload.Filter_Config{
-			{
-				Target: &payload.Filter_Target{
-					Host: egressServerHost,
-					Port: uint32(egressServerPort),
+	for _, ds := range dataset {
+		vreq := &payload.Object_VectorRequest{
+			Id: &payload.Object_ID{Id: ds.id},
+			// config to call FilterVector function of your egress filter
+			Filters: []*payload.Filter_Config{
+				{
+					Target: &payload.Filter_Target{
+						Host: egressServerHost,
+						Port: uint32(egressServerPort),
+					},
+					Query: &payload.Filter_Query{},
 				},
-				Query: &payload.Filter_Query{},
 			},
+		}
+
+		// send GetObject request
+		r, err := oclient.GetObject(ctx, vreq)
+		if err != nil {
+			glg.Error(err)
+			return
+		}
+		b, _ := json.Marshal(r.GetVector())
+		glg.Infof("Get Object result: %s\n", string(b))
+	}
+
+	// send remove request
+	glg.Info("Start removing data")
+	rclient := vald.NewRemoveClient(conn)
+
+	for _, ds := range dataset {
+		rreq := &payload.Remove_Request{
+			Id: &payload.Object_ID{
+				Id: ds.id,
+			},
+		}
+		if _, err := rclient.Remove(ctx, rreq); err != nil {
+			glg.Errorf("Failed to remove, ID: %v", ds.id)
+		} else {
+			glg.Info("Remove ID %v successed", ds.id)
+		}
+	}
+}
+
+func genDataset() []dataset {
+	// create a data set for operation confirmation
+	makeVecFn := func(dim int, value float32) []float32 {
+		vec := make([]float32, dim)
+		for i := 0; i < dim; i++ {
+			vec[i] = value
+		}
+		return vec
+	}
+	return []dataset{
+		{
+			id:     "1_fashion",
+			vector: makeVecFn(int(dimension), 0.1),
+		},
+		{
+			id:     "2_food",
+			vector: makeVecFn(int(dimension), 0.2),
+		},
+		{
+			id:     "3_fashion",
+			vector: makeVecFn(int(dimension), 0.3),
+		},
+		{
+			id:     "4_pet",
+			vector: makeVecFn(int(dimension), 0.4),
 		},
 	}
-
-	// send GetObject request
-	r, err := oclient.GetObject(ctx, vreq)
-	if err != nil {
-		glg.Error(err)
-		return
-	}
-
-	b, _ = json.Marshal(r.GetVector())
-	glg.Infof("Results : %s\n", string(b))
 }

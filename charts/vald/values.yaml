@@ -1406,10 +1406,10 @@ gateway:
         # @schema {"name": "gateway.filter.gateway_config.egress_filter.client", "alias": "grpc.client"}
         # gateway.filter.gateway_config.egress_filter.client -- gRPC client config for egress filter (overrides defaults.grpc.client)
         client: {}
-        # @schema {"name": "gateway.filter.gateway_config.egress_filter.object_filters", "type": "array", "items": {"type": "string"}}
+        # @schema {"name": "gateway.filter.gateway_config.egress_filter.object_filters", "type": "array", "items": {"type": "object"}}
         # gateway.filter.gateway_config.egress_filter.object_filters -- object egress vector filter targets
         object_filters: []
-        # @schema {"name": "gateway.filter.gateway_config.egress_filter.distance_filters", "type": "array", "items": {"type": "string"}}
+        # @schema {"name": "gateway.filter.gateway_config.egress_filter.distance_filters", "type": "array", "items": {"type": "object"}}
         # gateway.filter.gateway_config.egress_filter.distance_filters -- distance egress vector filter targets
         distance_filters: []
 # @schema {"name": "agent", "type": "object"}

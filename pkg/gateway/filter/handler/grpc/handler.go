@@ -55,8 +55,8 @@ type server struct {
 	copts             []grpc.CallOption
 	streamConcurrency int
 	Vectorizer        string
-	DistanceFilters   []config.DistanceFilterConfig
-	ObjectFilters     []config.ObjectFilterConfig
+	DistanceFilters   []*config.DistanceFilterConfig
+	ObjectFilters     []*config.ObjectFilterConfig
 	SearchFilters     []string
 	InsertFilters     []string
 	UpdateFilters     []string
@@ -1436,10 +1436,10 @@ func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *
 	}
 	filterConfigs = req.GetConfig().GetEgressFilters()
 	if filterConfigs != nil || s.DistanceFilters != nil {
-		filters := make([]config.DistanceFilterConfig, 0, len(filterConfigs)+len(s.DistanceFilters))
+		filters := make([]*config.DistanceFilterConfig, 0, len(filterConfigs)+len(s.DistanceFilters))
 		filters = append(filters, s.DistanceFilters...)
 		for _, c := range filterConfigs {
-			filters = append(filters, config.DistanceFilterConfig{
+			filters = append(filters, &config.DistanceFilterConfig{
 				Addr:  net.JoinHostPort(c.GetTarget().GetHost(), uint16(c.GetTarget().GetPort())),
 				Query: c.Query.GetQuery(),
 			})
@@ -1527,10 +1527,10 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 	}
 	filterConfigs := req.GetConfig().GetEgressFilters()
 	if filterConfigs != nil || s.DistanceFilters != nil {
-		filters := make([]config.DistanceFilterConfig, 0, len(filterConfigs)+len(s.DistanceFilters))
+		filters := make([]*config.DistanceFilterConfig, 0, len(filterConfigs)+len(s.DistanceFilters))
 		filters = append(filters, s.DistanceFilters...)
 		for _, c := range filterConfigs {
-			filters = append(filters, config.DistanceFilterConfig{
+			filters = append(filters, &config.DistanceFilterConfig{
 				Addr:  net.JoinHostPort(c.GetTarget().GetHost(), uint16(c.GetTarget().GetPort())),
 				Query: c.Query.GetQuery(),
 			})
@@ -1932,10 +1932,10 @@ func (s *server) LinearSearch(ctx context.Context, req *payload.Search_Request) 
 	}
 	filterConfigs = req.GetConfig().GetEgressFilters()
 	if filterConfigs != nil || s.DistanceFilters != nil {
-		filters := make([]config.DistanceFilterConfig, 0, len(filterConfigs)+len(s.DistanceFilters))
+		filters := make([]*config.DistanceFilterConfig, 0, len(filterConfigs)+len(s.DistanceFilters))
 		filters = append(filters, s.DistanceFilters...)
 		for _, c := range filterConfigs {
-			filters = append(filters, config.DistanceFilterConfig{
+			filters = append(filters, &config.DistanceFilterConfig{
 				Addr:  net.JoinHostPort(c.GetTarget().GetHost(), uint16(c.GetTarget().GetPort())),
 				Query: c.Query.GetQuery(),
 			})
@@ -2019,10 +2019,10 @@ func (s *server) LinearSearchByID(ctx context.Context, req *payload.Search_IDReq
 	}
 	filterConfigs := req.GetConfig().GetEgressFilters()
 	if filterConfigs != nil || s.DistanceFilters != nil {
-		filters := make([]config.DistanceFilterConfig, 0, len(filterConfigs)+len(s.DistanceFilters))
+		filters := make([]*config.DistanceFilterConfig, 0, len(filterConfigs)+len(s.DistanceFilters))
 		filters = append(filters, s.DistanceFilters...)
 		for _, c := range filterConfigs {
-			filters = append(filters, config.DistanceFilterConfig{
+			filters = append(filters, &config.DistanceFilterConfig{
 				Addr:  net.JoinHostPort(c.GetTarget().GetHost(), uint16(c.GetTarget().GetPort())),
 				Query: c.Query.GetQuery(),
 			})
@@ -3357,10 +3357,10 @@ func (s *server) GetObject(ctx context.Context, req *payload.Object_VectorReques
 	}
 	filterConfigs := req.GetFilters()
 	if filterConfigs != nil || s.ObjectFilters != nil {
-		filters := make([]config.ObjectFilterConfig, 0, len(filterConfigs)+len(s.ObjectFilters))
+		filters := make([]*config.ObjectFilterConfig, 0, len(filterConfigs)+len(s.ObjectFilters))
 		filters = append(filters, s.ObjectFilters...)
 		for _, c := range filterConfigs {
-			filters = append(filters, config.ObjectFilterConfig{
+			filters = append(filters, &config.ObjectFilterConfig{
 				Addr:  net.JoinHostPort(c.GetTarget().GetHost(), uint16(c.GetTarget().GetPort())),
 				Query: c.Query.GetQuery(),
 			})

@@ -24,6 +24,7 @@ import (
 	"github.com/kpango/glg"
 	"github.com/vdaas/vald/apis/grpc/v1/filter/ingress"
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
+	"github.com/vdaas/vald/internal/test/data/vector"
 	"google.golang.org/grpc"
 )
 
@@ -48,15 +49,20 @@ type myIngressServer struct {
 
 func (s *myIngressServer) GenVector(ctx context.Context, in *payload.Object_Blob) (*payload.Object_Vector, error) {
 	// Write your own logic
-	vec := make([]float32, dimension)
+	glg.Logf("generating vector %#v", in)
+	vec, err := vector.GenF32Vec(vector.Gaussian, 1, int(dimension))
+	if err != nil {
+		return nil, err
+	}
 	return &payload.Object_Vector{
 		Id:     in.GetId(),
-		Vector: vec,
+		Vector: vec[0],
 	}, nil
 }
 
 func (s *myIngressServer) FilterVector(ctx context.Context, in *payload.Object_Vector) (*payload.Object_Vector, error) {
 	// Write your own logic
+	glg.Logf("filtering vector %#v", in)
 	return in, nil
 }
 

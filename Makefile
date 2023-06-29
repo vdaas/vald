@@ -258,7 +258,6 @@ GO_ALL_TEST_SOURCES = $(GO_TEST_SOURCES) $(GO_OPTION_TEST_SOURCES)
 
 DOCKER           ?= docker
 DOCKER_OPTS      ?=
-YOUR_DOCKERHUB_ID?= change-it
 
 DISTROLESS_IMAGE      ?= gcr.io/distroless/static
 DISTROLESS_IMAGE_TAG  ?= nonroot

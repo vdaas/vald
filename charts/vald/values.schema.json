@@ -6153,12 +6153,12 @@
                     "distance_filters": {
                       "type": "array",
                       "description": "distance egress vector filter targets",
-                      "items": { "type": "string" }
+                      "items": { "type": "object" }
                     },
                     "object_filters": {
                       "type": "array",
                       "description": "object egress vector filter targets",
-                      "items": { "type": "string" }
+                      "items": { "type": "object" }
                     }
                   }
                 },

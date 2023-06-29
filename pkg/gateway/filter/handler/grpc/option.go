@@ -112,7 +112,7 @@ func WithVectorizerTargets(addr string) Option {
 	}
 }
 
-func WithDistanceFilterTargets(cs ...config.DistanceFilterConfig) Option {
+func WithDistanceFilterTargets(cs ...*config.DistanceFilterConfig) Option {
 	return func(s *server) {
 		if len(cs) == 0 {
 			return
@@ -125,7 +125,7 @@ func WithDistanceFilterTargets(cs ...config.DistanceFilterConfig) Option {
 	}
 }
 
-func WithObjectFilterTargets(cs ...config.ObjectFilterConfig) Option {
+func WithObjectFilterTargets(cs ...*config.ObjectFilterConfig) Option {
 	return func(s *server) {
 		if len(cs) == 0 {
 			return
