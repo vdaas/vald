@@ -58,7 +58,8 @@ RUN make ngt/install \
     && make protobuf/install \
     && make kubectl/install \
     && make k3d/install \
-    && make prettier/install
+    && make prettier/install \
+    && make buf/install
 
 # change GOPATH owner to vscode to run commands as user vscode without root permission
 RUN chown -R vscode:vscode "${GOPATH}" \
