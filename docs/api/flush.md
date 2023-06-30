@@ -23,7 +23,6 @@ Flush RPC is the method to remove all vectors.
   ```rpc
   message Flush {
       message Request {
-
       }
   }
   ```
