@@ -49,9 +49,8 @@ COPY Makefile.d Makefile.d
 COPY versions versions
 COPY hack/go.mod.default hack/go.mod.default
 
-RUN make deps
-
-RUN make ngt/install \
+RUN make deps \
+    && make ngt/install \
     && make helm/install \
     && make helm-docs/install \
     && make valdcli/install \
@@ -63,8 +62,6 @@ RUN make ngt/install \
     && make k3d/install \
     && make buf/install
 
-# k9s installs the binary to the current user which is root for devcontainer
-# so change the current user to vscode to user afterwards
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 RUN curl -sS https://webinstall.dev/k9s | bash
 
