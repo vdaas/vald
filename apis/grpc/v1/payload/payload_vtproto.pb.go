@@ -806,6 +806,38 @@ func (m *Remove) CloneMessageVT() proto.Message {
 	return m.CloneVT()
 }
 
+func (m *Flush_Request) CloneVT() *Flush_Request {
+	if m == nil {
+		return (*Flush_Request)(nil)
+	}
+	r := &Flush_Request{}
+	if len(m.unknownFields) > 0 {
+		r.unknownFields = make([]byte, len(m.unknownFields))
+		copy(r.unknownFields, m.unknownFields)
+	}
+	return r
+}
+
+func (m *Flush_Request) CloneMessageVT() proto.Message {
+	return m.CloneVT()
+}
+
+func (m *Flush) CloneVT() *Flush {
+	if m == nil {
+		return (*Flush)(nil)
+	}
+	r := &Flush{}
+	if len(m.unknownFields) > 0 {
+		r.unknownFields = make([]byte, len(m.unknownFields))
+		copy(r.unknownFields, m.unknownFields)
+	}
+	return r
+}
+
+func (m *Flush) CloneMessageVT() proto.Message {
+	return m.CloneVT()
+}
+
 func (m *Object_VectorRequest) CloneVT() *Object_VectorRequest {
 	if m == nil {
 		return (*Object_VectorRequest)(nil)
@@ -2581,6 +2613,38 @@ func (this *Remove) EqualVT(that *Remove) bool {
 
 func (this *Remove) EqualMessageVT(thatMsg proto.Message) bool {
 	that, ok := thatMsg.(*Remove)
+	if !ok {
+		return false
+	}
+	return this.EqualVT(that)
+}
+func (this *Flush_Request) EqualVT(that *Flush_Request) bool {
+	if this == that {
+		return true
+	} else if this == nil || that == nil {
+		return false
+	}
+	return string(this.unknownFields) == string(that.unknownFields)
+}
+
+func (this *Flush_Request) EqualMessageVT(thatMsg proto.Message) bool {
+	that, ok := thatMsg.(*Flush_Request)
+	if !ok {
+		return false
+	}
+	return this.EqualVT(that)
+}
+func (this *Flush) EqualVT(that *Flush) bool {
+	if this == that {
+		return true
+	} else if this == nil || that == nil {
+		return false
+	}
+	return string(this.unknownFields) == string(that.unknownFields)
+}
+
+func (this *Flush) EqualMessageVT(thatMsg proto.Message) bool {
+	that, ok := thatMsg.(*Flush)
 	if !ok {
 		return false
 	}

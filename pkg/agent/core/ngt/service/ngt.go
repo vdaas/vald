@@ -1211,7 +1211,6 @@ func (n *ngt) RegenerateIndexes(ctx context.Context) (err error) {
 	defer n.cimu.Unlock()
 	n.flushing.Store(true)
 	n.indexing.Store(true)
-	now := time.Now().UnixNano()
 	defer n.flushing.Store(false)
 	defer n.indexing.Store(false)
 
