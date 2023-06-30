@@ -44,16 +44,16 @@ go/download:
 .PHONY: go/deps
 ## install Go package dependencies
 go/deps:
+	sudo rm -rf /go/pkg
 	rm -rf $(ROOTDIR)/vendor \
-		/go/pkg \
 		$(GOCACHE) \
 		$(ROOTDIR)/go.sum \
 		$(ROOTDIR)/go.mod
 	cp $(ROOTDIR)/hack/go.mod.default $(ROOTDIR)/go.mod
 	GOPRIVATE=$(GOPRIVATE) go mod tidy
 	go clean -cache -modcache -testcache -i -r
+	sudo rm -rf /go/pkg
 	rm -rf $(ROOTDIR)/vendor \
-		/go/pkg \
 		$(GOCACHE) \
 		$(ROOTDIR)/go.sum \
 		$(ROOTDIR)/go.mod
