@@ -60,9 +60,6 @@ RUN make deps \
     && make protobuf/install \
     && make kubectl/install \
     && make k3d/install \
-    && make buf/install
-
-SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-RUN curl -sS https://webinstall.dev/k9s | bash
-
-RUN go install github.com/stern/stern@latest
+    && make buf/install \
+    && make k9s/install \
+    && make stern/install
