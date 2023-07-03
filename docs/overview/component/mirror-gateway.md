@@ -4,7 +4,7 @@ Vald Mirror Gateway is an optional component of the Vald, allowing the vector da
 
 This component makes it possible to enhance availability during a cluster failure.
 
-![Vald Mirror Gateway_03.png]()
+<img src="../../../assets/docs/overview/component/mirror-gateway/mirror-gateway.svg">
 
 ## Responsibility
 
@@ -23,7 +23,7 @@ This chapter shows the main features to fulfill Vald Mirror Gateway’s role:
 
 ### Full mesh connection
 
-![Vald Mirror Gateway_02.png]()
+<img src="../../../assets/docs/overview/component/mirror-gateway/full-mesh-connection.svg">
 
 The Vald Mirror Gateway is designed to interconnect with Vald Mirror Gateways in other Vald clusters.
 
@@ -37,7 +37,7 @@ For more information about `ValdMirrorTarget` configuration, please refer to [Cu
 
 ### Request forwarding
 
-![Vald Mirror Gateway_01_b.png]()
+<img src="../../../assets/docs/overview/component/mirror-gateway/request-forwarding.svg">
 
 The Vald Mirror Gateway forwards the incoming user request ([Insert](https://vald.vdaas.org/docs/api/insert/) / [Upsert](https://vald.vdaas.org/docs/api/upsert/) / [Update](https://vald.vdaas.org/docs/api/update/) / [Remove](https://vald.vdaas.org/docs/api/remove/)) to other Vald Mirror Gateways. Then, while forwarding the user request, the Vald Mirror Gateway bypasses the incoming user request to Vald LB Gateway in its own cluster.
 
