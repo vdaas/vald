@@ -49,6 +49,20 @@ message Mirror {
 ### Output
 
 - the scheme of `payload.v1.Mirror.Targets`.
+
+```rpc
+message Mirror {
+  message Target {
+    string host = 1;
+    uint32 port = 2;
+  }
+
+  message Targets {
+    repeated Target targets = 1;
+  }
+}
+```
+
 - Mirror.Targets
 
   |  field  | type          | label                          | required | desc.                            |
@@ -109,6 +123,20 @@ message Mirror {
 ### Output
 
 - the scheme of `payload.v1.Mirror.Targets`.
+
+```rpc
+message Mirror {
+  message Target {
+    string host = 1;
+    uint32 port = 2;
+  }
+
+  message Targets {
+    repeated Target targets = 1;
+  }
+}
+```
+
 - Mirror.Targets
 
   |  field  | type          | label                          | required | desc.                            |
