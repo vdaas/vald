@@ -273,7 +273,7 @@ func TestNewDialer(t *testing.T) {
 			cmpopts.IgnoreFields(*want, "dialer", "der", "addrs", "dnsCachedOnce", "dnsCache", "ctrl", "tmu"),
 			// skipcq: VET-V0008
 			cmp.AllowUnexported(*want),
-			cmp.Comparer(func(x, y cacher.Cache) bool {
+			cmp.Comparer(func(x, y cacher.Cache[*dialerCache]) bool {
 				if x == nil && y == nil {
 					return true
 				}
@@ -493,7 +493,7 @@ func Test_dialer_lookup(t *testing.T) {
 				addr: "google.com",
 			},
 			opts: []DialerOption{
-				WithDNSCache(gache.New()),
+				WithDNSCache(gache.New[*dialerCache]()),
 				WithDisableDialerDualStack(),
 			},
 			checkFunc: func(ctx context.Context, w want, got *dialerCache, err error, d *dialer) error {
@@ -533,8 +533,8 @@ func Test_dialer_lookup(t *testing.T) {
 				addr: "addr",
 			},
 			opts: []DialerOption{
-				WithDNSCache(func() cacher.Cache {
-					g := gache.New()
+				WithDNSCache(func() cacher.Cache[*dialerCache] {
+					g := gache.New[*dialerCache]()
 					g.Set("addr", &dialerCache{
 						ips: []string{"999.999.999.999"},
 					})
@@ -629,7 +629,7 @@ func Test_dialer_StartDialerCache(t *testing.T) {
 						if !ok {
 							return errors.New("cache not found")
 						}
-						if val == nil || len(val.(*dialerCache).ips) != ipLen {
+						if val == nil || len(val.ips) != ipLen {
 							return errors.Errorf("cache is not correct, gotLen: %v, want: %v", val, ipLen)
 						}
 						return nil
@@ -923,7 +923,7 @@ func Test_dialer_cachedDialer(t *testing.T) {
 				w.WriteHeader(200)
 			}))
 
-			c, err := cache.New()
+			c, err := cache.New[*dialerCache]()
 			if err != nil {
 				t.Error(err)
 			}
@@ -977,7 +977,7 @@ func Test_dialer_cachedDialer(t *testing.T) {
 			}))
 			srv.TLS.InsecureSkipVerify = true
 
-			c, err := cache.New()
+			c, err := cache.New[*dialerCache]()
 			if err != nil {
 				t.Error(err)
 			}
@@ -1033,7 +1033,7 @@ func Test_dialer_cachedDialer(t *testing.T) {
 		func() test {
 			addr := "invalid_ip"
 
-			c, err := cache.New()
+			c, err := cache.New[*dialerCache]()
 			if err != nil {
 				t.Error(err)
 			}
@@ -1071,7 +1071,7 @@ func Test_dialer_cachedDialer(t *testing.T) {
 		}(),
 		func() test {
 			addr := "google.com"
-			c, err := cache.New()
+			c, err := cache.New[*dialerCache]()
 			if err != nil {
 				t.Error(err)
 			}
@@ -1124,7 +1124,7 @@ func Test_dialer_cachedDialer(t *testing.T) {
 				addrs[i] = JoinHostPort(hosts[i], ports[i])
 			}
 
-			c, err := cache.New()
+			c, err := cache.New[*dialerCache]()
 			if err != nil {
 				t.Error(err)
 			}
@@ -1225,7 +1225,7 @@ func Test_dialer_cachedDialer(t *testing.T) {
 				t.Error(err)
 			}
 
-			c, err := cache.New()
+			c, err := cache.New[*dialerCache]()
 			if err != nil {
 				t.Error(err)
 			}
@@ -1255,8 +1255,8 @@ func Test_dialer_cachedDialer(t *testing.T) {
 						return errors.New("conn is nil")
 					}
 
-					c, _ := d.dnsCache.Get(host)
-					if dc := c.(*dialerCache); dc.cnt != 0 {
+					dc, _ := d.dnsCache.Get(host)
+					if dc.cnt != 0 {
 						return errors.Errorf("count do not reset, cnt: %v", dc.cnt)
 					}
 
@@ -1830,7 +1830,7 @@ func Test_dialer_lookupIPAddrs(t *testing.T) {
 		host string
 	}
 	type fields struct {
-		dnsCache              cacher.Cache
+		dnsCache              cacher.Cache[*dialerCache]
 		enableDNSCache        bool
 		tlsConfig             *tls.Config
 		dnsRefreshDurationStr string

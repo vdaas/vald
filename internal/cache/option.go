@@ -25,17 +25,25 @@ import (
 )
 
 // Option represents the functional option for cache.
-type Option func(*cache)
+type Option[V any] func(*cache[V])
 
-var defaultOptions = []Option{
-	WithType(cacher.GACHE.String()),
-	WithExpireDuration("30m"),
-	WithExpireCheckDuration("5m"),
+// var defaultOptions = []Option{
+// 	WithType(cacher.GACHE.String()),
+// 	WithExpireDuration("30m"),
+// 	WithExpireCheckDuration("5m"),
+// }
+
+func defaultOptions[V any]() []Option[V] {
+	return []Option[V]{
+		WithType[V](cacher.GACHE.String()),
+		WithExpireDuration[V]("30m"),
+		WithExpireCheckDuration[V]("5m"),
+	}
 }
 
 // WithExpiredHook returns Option after set expiredHook when f is not nil.
-func WithExpiredHook(f func(context.Context, string)) Option {
-	return func(c *cache) {
+func WithExpiredHook[V any](f func(context.Context, string)) Option[V] {
+	return func(c *cache[V]) {
 		if f != nil {
 			c.expiredHook = f
 		}
@@ -43,8 +51,8 @@ func WithExpiredHook(f func(context.Context, string)) Option {
 }
 
 // WithType returns Option after set cacher when len(mo string) is not nil.
-func WithType(mo string) Option {
-	return func(c *cache) {
+func WithType[V any](mo string) Option[V] {
+	return func(c *cache[V]) {
 		if len(mo) == 0 {
 			return
 		}
@@ -54,8 +62,8 @@ func WithType(mo string) Option {
 }
 
 // WithExpireDuration returns Option after set expireDur when dur is cprrect param.
-func WithExpireDuration(dur string) Option {
-	return func(c *cache) {
+func WithExpireDuration[V any](dur string) Option[V] {
+	return func(c *cache[V]) {
 		if len(dur) == 0 {
 			return
 		}
@@ -68,8 +76,8 @@ func WithExpireDuration(dur string) Option {
 }
 
 // WithExpireCheckDuration returns Option after set expireCheckDur when dur is cprrect param.
-func WithExpireCheckDuration(dur string) Option {
-	return func(c *cache) {
+func WithExpireCheckDuration[V any](dur string) Option[V] {
+	return func(c *cache[V]) {
 		if len(dur) == 0 {
 			return
 		}
