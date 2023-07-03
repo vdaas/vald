@@ -20,61 +20,61 @@ Register RPC is the method to register other Vald Mirror Gateway targets.
 
 - the scheme of `payload.v1.Mirror.Targets`.
 
-```rpc
-message Mirror {
-  message Target {
-    string host = 1;
-    uint32 port = 2;
+  ```rpc
+  message Mirror {
+    message Target {
+      string host = 1;
+      uint32 port = 2;
+    }
+
+    message Targets {
+      repeated Target targets = 1;
+    }
   }
+  ```
 
-  message Targets {
-    repeated Target targets = 1;
-  }
-}
-```
+  - Mirror.Targets
 
-- Mirror.Targets
+    |  field  | type          | label                          | required | desc.                            |
+    | :-----: | :------------ | :----------------------------- | :------: | :------------------------------- |
+    | targets | Mirror.Target | repeated(Array[Mirror.Target]) |          | The multiple target information. |
 
-  |  field  | type          | label                          | required | desc.                            |
-  | :-----: | :------------ | :----------------------------- | :------: | :------------------------------- |
-  | targets | Mirror.Target | repeated(Array[Mirror.Target]) |          | The multiple target information. |
+  - Mirror.Target
 
-- Mirror.Target
-
-  | field | type   | label | required | desc.                |
-  | :---: | :----- | :---- | :------: | :------------------- |
-  | host  | string |       |    \*    | The target hostname. |
-  | port  | uint32 |       |    \*    | The target port.     |
+    | field | type   | label | required | desc.                |
+    | :---: | :----- | :---- | :------: | :------------------- |
+    | host  | string |       |    \*    | The target hostname. |
+    | port  | uint32 |       |    \*    | The target port.     |
 
 ### Output
 
 - the scheme of `payload.v1.Mirror.Targets`.
 
-```rpc
-message Mirror {
-  message Target {
-    string host = 1;
-    uint32 port = 2;
+  ```rpc
+  message Mirror {
+    message Target {
+      string host = 1;
+      uint32 port = 2;
+    }
+
+    message Targets {
+      repeated Target targets = 1;
+    }
   }
+  ```
 
-  message Targets {
-    repeated Target targets = 1;
-  }
-}
-```
+  - Mirror.Targets
 
-- Mirror.Targets
+    |  field  | type          | label                          | required | desc.                            |
+    | :-----: | :------------ | :----------------------------- | :------: | :------------------------------- |
+    | targets | Mirror.Target | repeated(Array[Mirror.Target]) |          | The multiple target information. |
 
-  |  field  | type          | label                          | required | desc.                            |
-  | :-----: | :------------ | :----------------------------- | :------: | :------------------------------- |
-  | targets | Mirror.Target | repeated(Array[Mirror.Target]) |          | The multiple target information. |
+  - Mirror.Target
 
-- Mirror.Target
-
-  | field | type   | label | required | desc.                |
-  | :---: | :----- | :---- | :------: | :------------------- |
-  | host  | string |       |    \*    | The target hostname. |
-  | port  | uint32 |       |    \*    | The target port.     |
+    | field | type   | label | required | desc.                |
+    | :---: | :----- | :---- | :------: | :------------------- |
+    | host  | string |       |    \*    | The target hostname. |
+    | port  | uint32 |       |    \*    | The target port.     |
 
 ### Status Code
 
@@ -94,31 +94,31 @@ Advertise RPC is the method to advertise Vald Mirror Gateway targets.
 
 - the scheme of `payload.v1.Mirror.Targets`.
 
-```rpc
-message Mirror {
-  message Target {
-    string host = 1;
-    uint32 port = 2;
+  ```rpc
+  message Mirror {
+    message Target {
+      string host = 1;
+      uint32 port = 2;
+    }
+
+    message Targets {
+      repeated Target targets = 1;
+    }
   }
+  ```
 
-  message Targets {
-    repeated Target targets = 1;
-  }
-}
-```
+  - Mirror.Targets
 
-- Mirror.Targets
+    |  field  | type          | label                          | required | desc.                            |
+    | :-----: | :------------ | :----------------------------- | :------: | :------------------------------- |
+    | targets | Mirror.Target | repeated(Array[Mirror.Target]) |          | The multiple target information. |
 
-  |  field  | type          | label                          | required | desc.                            |
-  | :-----: | :------------ | :----------------------------- | :------: | :------------------------------- |
-  | targets | Mirror.Target | repeated(Array[Mirror.Target]) |          | The multiple target information. |
+  - Mirror.Target
 
-- Mirror.Target
-
-  | field | type   | label | required | desc.                |
-  | :---: | :----- | :---- | :------: | :------------------- |
-  | host  | string |       |    \*    | The target hostname. |
-  | port  | uint32 |       |    \*    | The target port.     |
+    | field | type   | label | required | desc.                |
+    | :---: | :----- | :---- | :------: | :------------------- |
+    | host  | string |       |    \*    | The target hostname. |
+    | port  | uint32 |       |    \*    | The target port.     |
 
 ### Output
 
