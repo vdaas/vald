@@ -31,7 +31,7 @@ Vald Mirror Gateway uses a Custom Resource called the`ValMirrorTarget`to manage 
 
 The `ValdMirrorTarget` is a Custom Resource related to the connection destination to other Vald Mirror Gateway.
 
-When two Vald clusters contain Vald Mirror Gateways, Vald Mirror Gateways can send the request to each other by applying `ValdMirrorTarget`.  
+When two Vald clusters contain Vald Mirror Gateways, Vald Mirror Gateways can send the request to each other by applying `ValdMirrorTarget`.
 
 For more information about `ValdMirrorTarget` configuration, please refer to [Custom Resource Configuration]().
 
@@ -39,9 +39,9 @@ For more information about `ValdMirrorTarget` configuration, please refer to [Cu
 
 ![Vald Mirror Gateway_01_b.png]()
 
-The Vald Mirror Gateway forwards the incoming user request  ([Insert](https://vald.vdaas.org/docs/api/insert/) / [Upsert](https://vald.vdaas.org/docs/api/upsert/) / [Update](https://vald.vdaas.org/docs/api/update/) / [Remove](https://vald.vdaas.org/docs/api/remove/)) to other Vald Mirror Gateways. Then, while forwarding the user request, the Vald Mirror Gateway bypasses the incoming user request to Vald LB Gateway in its own cluster.  
+The Vald Mirror Gateway forwards the incoming user request ([Insert](https://vald.vdaas.org/docs/api/insert/) / [Upsert](https://vald.vdaas.org/docs/api/upsert/) / [Update](https://vald.vdaas.org/docs/api/update/) / [Remove](https://vald.vdaas.org/docs/api/remove/)) to other Vald Mirror Gateways. Then, while forwarding the user request, the Vald Mirror Gateway bypasses the incoming user request to Vald LB Gateway in its own cluster.
 
-On the other hand, if the incoming user request is an [Object API](https://vald.vdaas.org/docs/api/object/) or [Search API](https://vald.vdaas.org/docs/api/search/), it is bypassed to only a Vald LB Gateway in its own cluster without forwarding it to other Vald Mirror Gateways.   
+On the other hand, if the incoming user request is an [Object API](https://vald.vdaas.org/docs/api/object/) or [Search API](https://vald.vdaas.org/docs/api/search/), it is bypassed to only a Vald LB Gateway in its own cluster without forwarding it to other Vald Mirror Gateways.
 
 ### Automatic rollback on failure
 
@@ -54,27 +54,27 @@ To keep index state consistency, the Vald Mirror Gateway will send the rollback 
 The following is the list of rollback types.
 
 - Insert Request
-    - Rollback Condition/Trigger
-        - Status code other than `ALREADY_EXISTS` exists
-    - Rollback request to the successful request
-        - REMOVE request
+  - Rollback Condition/Trigger
+    - Status code other than `ALREADY_EXISTS` exists
+  - Rollback request to the successful request
+    - REMOVE request
 - Remove Request
-    - Rollback Condition/Trigger
-        - Status code other than `NOT_FOUND` exists
-    - Rollback request to the successful request
-        - UPSERT Request with old vector
+  - Rollback Condition/Trigger
+    - Status code other than `NOT_FOUND` exists
+  - Rollback request to the successful request
+    - UPSERT Request with old vector
 - Update Request
-    - Rollback Condition/Trigger
-        - Status code other than `ALREADY_EXISTS` exists
-    - Rollback request to the successful request
-        - REMOVE Request if there is no old vector data
-        - UPDATE Request if there is old vector data
+  - Rollback Condition/Trigger
+    - Status code other than `ALREADY_EXISTS` exists
+  - Rollback request to the successful request
+    - REMOVE Request if there is no old vector data
+    - UPDATE Request if there is old vector data
 - Upsert Request
-    - Rollback Condition/Trigger
-        - Status code other than `ALREADY_EXISTS` exists
-    - Rollback request to the successful request
-        - REMOVE Request if there is no old vector data
-        - UPDATE Request if there is old vector data
+  - Rollback Condition/Trigger
+    - Status code other than `ALREADY_EXISTS` exists
+  - Rollback request to the successful request
+    - REMOVE Request if there is no old vector data
+    - UPDATE Request if there is old vector data
 
 ## See also
 
