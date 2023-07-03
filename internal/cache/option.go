@@ -27,12 +27,6 @@ import (
 // Option represents the functional option for cache.
 type Option[V any] func(*cache[V])
 
-// var defaultOptions = []Option{
-// 	WithType(cacher.GACHE.String()),
-// 	WithExpireDuration("30m"),
-// 	WithExpireCheckDuration("5m"),
-// }
-
 func defaultOptions[V any]() []Option[V] {
 	return []Option[V]{
 		WithType[V](cacher.GACHE.String()),
