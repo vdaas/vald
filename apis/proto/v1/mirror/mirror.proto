@@ -22,26 +22,24 @@ import "github.com/googleapis/googleapis/google/api/annotations.proto";
 
 option go_package = "github.com/vdaas/vald/apis/grpc/v1/mirror";
 option java_multiple_files = true;
-option java_package = "org.vdaas.vald.api.v1.mirror";
 option java_outer_classname = "ValdMirror";
-
+option java_package = "org.vdaas.vald.api.v1.mirror";
 
 // Represent the mirror service.
 service Mirror {
-
   // Register is the RPC to register other mirror servers.
   rpc Register(payload.v1.Mirror.Targets) returns (payload.v1.Mirror.Targets) {
     option (google.api.http) = {
-      post : "/mirror/register"
-      body : "*"
+      post: "/mirror/register"
+      body: "*"
     };
   }
 
   // Advertise is the RPC to advertise other mirror servers.
   rpc Advertise(payload.v1.Mirror.Targets) returns (payload.v1.Mirror.Targets) {
     option (google.api.http) = {
-      post : "/mirror/advertise"
-      body : "*"
+      post: "/mirror/advertise"
+      body: "*"
     };
   }
 }

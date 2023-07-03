@@ -101,12 +101,12 @@
   - [Object](#vald-v1-Object)
 - [apis/proto/v1/vald/remove.proto](#apis_proto_v1_vald_remove-proto)
   - [Remove](#vald-v1-Remove)
+- [apis/proto/v1/vald/search.proto](#apis_proto_v1_vald_search-proto)
+  - [Search](#vald-v1-Search)
 - [apis/proto/v1/vald/update.proto](#apis_proto_v1_vald_update-proto)
   - [Update](#vald-v1-Update)
 - [apis/proto/v1/vald/upsert.proto](#apis_proto_v1_vald_upsert-proto)
   - [Upsert](#vald-v1-Upsert)
-- [apis/proto/v1/vald/search.proto](#apis_proto_v1_vald_search-proto)
-  - [Search](#vald-v1-Search)
 - [apis/proto/v1/mirror/mirror.proto](#apis_proto_v1_mirror_mirror-proto)
   - [Mirror](#mirror-v1-Mirror)
 - [Scalar Value Types](#scalar-value-types)
@@ -1043,6 +1043,33 @@ Remove service provides ways to remove indexed vectors.
 | StreamRemove | [.payload.v1.Remove.Request](#payload-v1-Remove-Request) stream    | [.payload.v1.Object.StreamLocation](#payload-v1-Object-StreamLocation) stream | A method to remove multiple indexed vectors by bidirectional streaming. |
 | MultiRemove  | [.payload.v1.Remove.MultiRequest](#payload-v1-Remove-MultiRequest) | [.payload.v1.Object.Locations](#payload-v1-Object-Locations)                  | A method to remove multiple indexed vectors in a single request.        |
 
+<a name="apis_proto_v1_vald_search-proto"></a>
+
+<p align="right"><a href="#top">Top</a></p>
+
+## apis/proto/v1/vald/search.proto
+
+<a name="vald-v1-Search"></a>
+
+### Search
+
+Search service provides ways to search indexed vectors.
+
+| Method Name            | Request Type                                                           | Response Type                                                                 | Description                                                                        |
+| ---------------------- | ---------------------------------------------------------------------- | ----------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| Search                 | [.payload.v1.Search.Request](#payload-v1-Search-Request)               | [.payload.v1.Search.Response](#payload-v1-Search-Response)                    | A method to search indexed vectors by a raw vector.                                |
+| SearchByID             | [.payload.v1.Search.IDRequest](#payload-v1-Search-IDRequest)           | [.payload.v1.Search.Response](#payload-v1-Search-Response)                    | A method to search indexed vectors by ID.                                          |
+| StreamSearch           | [.payload.v1.Search.Request](#payload-v1-Search-Request) stream        | [.payload.v1.Search.StreamResponse](#payload-v1-Search-StreamResponse) stream | A method to search indexed vectors by multiple vectors.                            |
+| StreamSearchByID       | [.payload.v1.Search.IDRequest](#payload-v1-Search-IDRequest) stream    | [.payload.v1.Search.StreamResponse](#payload-v1-Search-StreamResponse) stream | A method to search indexed vectors by multiple IDs.                                |
+| MultiSearch            | [.payload.v1.Search.MultiRequest](#payload-v1-Search-MultiRequest)     | [.payload.v1.Search.Responses](#payload-v1-Search-Responses)                  | A method to search indexed vectors by multiple vectors in a single request.        |
+| MultiSearchByID        | [.payload.v1.Search.MultiIDRequest](#payload-v1-Search-MultiIDRequest) | [.payload.v1.Search.Responses](#payload-v1-Search-Responses)                  | A method to search indexed vectors by multiple IDs in a single request.            |
+| LinearSearch           | [.payload.v1.Search.Request](#payload-v1-Search-Request)               | [.payload.v1.Search.Response](#payload-v1-Search-Response)                    | A method to linear search indexed vectors by a raw vector.                         |
+| LinearSearchByID       | [.payload.v1.Search.IDRequest](#payload-v1-Search-IDRequest)           | [.payload.v1.Search.Response](#payload-v1-Search-Response)                    | A method to linear search indexed vectors by ID.                                   |
+| StreamLinearSearch     | [.payload.v1.Search.Request](#payload-v1-Search-Request) stream        | [.payload.v1.Search.StreamResponse](#payload-v1-Search-StreamResponse) stream | A method to linear search indexed vectors by multiple vectors.                     |
+| StreamLinearSearchByID | [.payload.v1.Search.IDRequest](#payload-v1-Search-IDRequest) stream    | [.payload.v1.Search.StreamResponse](#payload-v1-Search-StreamResponse) stream | A method to linear search indexed vectors by multiple IDs.                         |
+| MultiLinearSearch      | [.payload.v1.Search.MultiRequest](#payload-v1-Search-MultiRequest)     | [.payload.v1.Search.Responses](#payload-v1-Search-Responses)                  | A method to linear search indexed vectors by multiple vectors in a single request. |
+| MultiLinearSearchByID  | [.payload.v1.Search.MultiIDRequest](#payload-v1-Search-MultiIDRequest) | [.payload.v1.Search.Responses](#payload-v1-Search-Responses)                  | A method to linear search indexed vectors by multiple IDs in a single request.     |
+
 <a name="apis_proto_v1_vald_update-proto"></a>
 
 <p align="right"><a href="#top">Top</a></p>
@@ -1078,33 +1105,6 @@ Upsert service provides ways to insert/update vectors.
 | Upsert       | [.payload.v1.Upsert.Request](#payload-v1-Upsert-Request)           | [.payload.v1.Object.Location](#payload-v1-Object-Location)                    | A method to insert/update a vector.                                    |
 | StreamUpsert | [.payload.v1.Upsert.Request](#payload-v1-Upsert-Request) stream    | [.payload.v1.Object.StreamLocation](#payload-v1-Object-StreamLocation) stream | A method to insert/update multiple vectors by bidirectional streaming. |
 | MultiUpsert  | [.payload.v1.Upsert.MultiRequest](#payload-v1-Upsert-MultiRequest) | [.payload.v1.Object.Locations](#payload-v1-Object-Locations)                  | A method to insert/update multiple vectors in a single request.        |
-
-<a name="apis_proto_v1_vald_search-proto"></a>
-
-<p align="right"><a href="#top">Top</a></p>
-
-## apis/proto/v1/vald/search.proto
-
-<a name="vald-v1-Search"></a>
-
-### Search
-
-Search service provides ways to search indexed vectors.
-
-| Method Name            | Request Type                                                           | Response Type                                                                 | Description                                                                        |
-| ---------------------- | ---------------------------------------------------------------------- | ----------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
-| Search                 | [.payload.v1.Search.Request](#payload-v1-Search-Request)               | [.payload.v1.Search.Response](#payload-v1-Search-Response)                    | A method to search indexed vectors by a raw vector.                                |
-| SearchByID             | [.payload.v1.Search.IDRequest](#payload-v1-Search-IDRequest)           | [.payload.v1.Search.Response](#payload-v1-Search-Response)                    | A method to search indexed vectors by ID.                                          |
-| StreamSearch           | [.payload.v1.Search.Request](#payload-v1-Search-Request) stream        | [.payload.v1.Search.StreamResponse](#payload-v1-Search-StreamResponse) stream | A method to search indexed vectors by multiple vectors.                            |
-| StreamSearchByID       | [.payload.v1.Search.IDRequest](#payload-v1-Search-IDRequest) stream    | [.payload.v1.Search.StreamResponse](#payload-v1-Search-StreamResponse) stream | A method to search indexed vectors by multiple IDs.                                |
-| MultiSearch            | [.payload.v1.Search.MultiRequest](#payload-v1-Search-MultiRequest)     | [.payload.v1.Search.Responses](#payload-v1-Search-Responses)                  | A method to search indexed vectors by multiple vectors in a single request.        |
-| MultiSearchByID        | [.payload.v1.Search.MultiIDRequest](#payload-v1-Search-MultiIDRequest) | [.payload.v1.Search.Responses](#payload-v1-Search-Responses)                  | A method to search indexed vectors by multiple IDs in a single request.            |
-| LinearSearch           | [.payload.v1.Search.Request](#payload-v1-Search-Request)               | [.payload.v1.Search.Response](#payload-v1-Search-Response)                    | A method to linear search indexed vectors by a raw vector.                         |
-| LinearSearchByID       | [.payload.v1.Search.IDRequest](#payload-v1-Search-IDRequest)           | [.payload.v1.Search.Response](#payload-v1-Search-Response)                    | A method to linear search indexed vectors by ID.                                   |
-| StreamLinearSearch     | [.payload.v1.Search.Request](#payload-v1-Search-Request) stream        | [.payload.v1.Search.StreamResponse](#payload-v1-Search-StreamResponse) stream | A method to linear search indexed vectors by multiple vectors.                     |
-| StreamLinearSearchByID | [.payload.v1.Search.IDRequest](#payload-v1-Search-IDRequest) stream    | [.payload.v1.Search.StreamResponse](#payload-v1-Search-StreamResponse) stream | A method to linear search indexed vectors by multiple IDs.                         |
-| MultiLinearSearch      | [.payload.v1.Search.MultiRequest](#payload-v1-Search-MultiRequest)     | [.payload.v1.Search.Responses](#payload-v1-Search-Responses)                  | A method to linear search indexed vectors by multiple vectors in a single request. |
-| MultiLinearSearchByID  | [.payload.v1.Search.MultiIDRequest](#payload-v1-Search-MultiIDRequest) | [.payload.v1.Search.Responses](#payload-v1-Search-Responses)                  | A method to linear search indexed vectors by multiple IDs in a single request.     |
 
 <a name="apis_proto_v1_mirror_mirror-proto"></a>
 
