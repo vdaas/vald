@@ -22,6 +22,7 @@ import (
 	"time"
 
 	gache "github.com/kpango/gache/v2"
+	"github.com/vdaas/vald/internal/cache/cacher"
 )
 
 type cache[V any] struct {
@@ -32,7 +33,7 @@ type cache[V any] struct {
 }
 
 // New loads a cache model and returns a new cache struct.
-func New[V any](opts ...Option[V]) *cache[V] {
+func New[V any](opts ...Option[V]) cacher.Cache[V] {
 	c := new(cache[V])
 	for _, opt := range append(defaultOptions[V](), opts...) {
 		opt(c)
