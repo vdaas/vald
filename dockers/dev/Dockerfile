@@ -49,6 +49,7 @@ COPY Makefile.d Makefile.d
 COPY versions versions
 COPY hack/go.mod.default hack/go.mod.default
 
+# basic deps
 RUN make deps \
     && make ngt/install \
     && make helm/install \
@@ -58,8 +59,9 @@ RUN make deps \
     && make golangci-lint/install \
     && make reviewdog/install \
     && make protobuf/install \
-    && make kubectl/install \
-    && make k3d/install \
+    && make kubectl/install
+
+# additional deps
+RUN make k3d/install \
     && make buf/install \
-    && make k9s/install \
-    && make stern/install
+    && make k9s/install
