@@ -23,10 +23,10 @@ import (
 	"testing"
 	"time"
 
+	gache "github.com/kpango/gache/v2"
 	"github.com/vdaas/vald/internal/cache/cacher"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/test/goleak"
-	gache "github.com/kpango/gache/v2"
 )
 
 // Goroutine leak is detected by `fastime`, but it should be ignored in the test because it is an external package.
