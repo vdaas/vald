@@ -88,8 +88,8 @@ spec:
     port: 8081
 ```
 
-## \***\*See also\*\***
+## See also
 
-- **[Configuration](https://vald.vdaas.org/docs/user-guides/configuration/)**
-- **[Cluster Role Binding](https://vald.vdaas.org/docs/user-guides/cluster-role-binding/)**
-- **[Deployment](https://vald.vdaas.org/docs/user-guides/deployment/)**
+- [Configuration](https://vald.vdaas.org/docs/user-guides/configuration/)
+- [Cluster Role Binding](https://vald.vdaas.org/docs/user-guides/cluster-role-binding/)
+- [Deployment](https://vald.vdaas.org/docs/user-guides/deployment/)
