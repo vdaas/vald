@@ -25,11 +25,10 @@ The Helm values configuration is required for each Vald cluster to be deployed.
 It is easy to enable the mirroring feature.
 
 ```yaml
-...
+---
 gateway:
   mirror:
     enabled: true
-...
 ```
 
 If you want to make more detailed settings, please set the following parameters.
@@ -44,7 +43,7 @@ gateway:
       client: {}
       # The interval to advertise addresses of Mirror Gateway to other Mirror Gateway.
       advertise_interval: "1s"
-      # The target namespace to discover ValdMirrorTarget (CR) resource. 
+      # The target namespace to discover ValdMirrorTarget (CR) resource.
       # The default value is its own namespace.
       namespace: "vald"
       # The group name of the Mirror Gateways (optional).
@@ -89,7 +88,7 @@ spec:
     port: 8081
 ```
 
-## ****See also****
+## \***\*See also\*\***
 
 - **[Configuration](https://vald.vdaas.org/docs/user-guides/configuration/)**
 - **[Cluster Role Binding](https://vald.vdaas.org/docs/user-guides/cluster-role-binding/)**
