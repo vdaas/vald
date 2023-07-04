@@ -604,7 +604,7 @@ func Test_dialer_StartDialerCache(t *testing.T) {
 	tests := []test{
 		func() test {
 			addr := "localhost"
-			ips := []string{}
+			var ips []string
 
 			return test{
 				name: "cache refresh when it is expired",
