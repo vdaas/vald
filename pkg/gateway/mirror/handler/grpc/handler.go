@@ -129,16 +129,9 @@ func (s *server) Advertise(ctx context.Context, req *payload.Mirror_Targets) (re
 			span.End()
 		}
 	}()
-	_, err = s.Register(ctx, req)
-	if err != nil {
-		return nil, err
-	}
 	tgts, err := s.mirror.MirrorTargets()
 	if err != nil {
 		err = status.WrapWithInternal(vald.AdvertiseRPCName+" API failed to get connected vald gateway targets", err,
-			&errdetails.RequestInfo{
-				ServingData: errdetails.Serialize(req),
-			},
 			&errdetails.BadRequest{
 				FieldViolations: []*errdetails.BadRequestFieldViolation{
 					{

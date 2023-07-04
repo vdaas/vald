@@ -13,26 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-discoverer:
-  clusterRole:
-    enabled: false
-  clusterRoleBinding:
-    name: vald-03
-  serviceAccount:
-    name: vald-03
-
-gateway:
-  mirror:
-    enabled: true
-    image:
-      tag: pr-2023 # TODO: Delete it later.
-    clusterRole:
-      enabled: false
-    clusterRoleBinding:
-      name: vald-mirror-03
-    serviceAccount:
-      name: vald-mirror-03
-
-agent:
-  ngt:
-    dimension: 784
+colocation: dc1
+# @schema {"name": "target", "type": "object", "required": ["host", "port"]}
+# target -- Mirror target information
+target:
+  # @schema {"name": "target.host", "type": "string", "minLength": 1}
+  # host -- Mirror target host name
+  host: "vald-mirror-gateway.vald.svc.cluster.local"
+  # @schema {"name": "target.port", "type": "integer", "minimum": 0, "maximum": 65535}
+  # target.port -- Mirror target port
+  port: 8081

@@ -44,6 +44,12 @@ data:
     gateway:
       pod_name: {{ $gateway.gateway_config.pod_name }}
       advertise_interval: {{ $gateway.gateway_config.advertise_interval }}
+      namespace: {{ $gateway.gateway_config.namespace }}
+      discovery_duration: {{ $gateway.gateway_config.discovery_duration }}
+      colocation: {{ $gateway.gateway_config.colocation }}
+      group: {{ $gateway.gateway_config.group }}
+      net: 
+      {{- toYaml $gateway.gateway_config.net | nindent 8 }}
       client:
         {{- $client := $gateway.gateway_config.client }}
         {{- $addrs  := default list $client.addrs }}
@@ -63,9 +69,7 @@ data:
         {{- include "vald.grpc.client" $GRPCClient | nindent 8 }}
       self_mirror_addr:
         {{- if $gateway.ingress.enabled -}}
-        {{- $defaultHost := $gateway.ingress.host }}
-        {{- $defaultPort := default .Values.defaults.server_config.servers.grpc.port $gateway.server_config.servers.grpc.port }}
-        {{- printf "%s:%d" $defaultHost (int64 $defaultPort) | indent 1 }}
+        {{- $gateway.gateway_config.self_mirror_addr | indent 1 }}
         {{- else -}}
         {{- $defaultHost := printf "%s.%s.svc.cluster.local" $gateway.name .Release.Namespace }}
         {{- $defaultPort := default .Values.defaults.server_config.servers.grpc.port $gateway.server_config.servers.grpc.port }}

@@ -1,3 +1,4 @@
+---
 #
 # Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 #
@@ -13,26 +14,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-discoverer:
-  clusterRole:
-    enabled: false
-  clusterRoleBinding:
-    name: vald-03
-  serviceAccount:
-    name: vald-03
-
-gateway:
-  mirror:
-    enabled: true
-    image:
-      tag: pr-2023 # TODO: Delete it later.
-    clusterRole:
-      enabled: false
-    clusterRoleBinding:
-      name: vald-mirror-03
-    serviceAccount:
-      name: vald-mirror-03
-
-agent:
-  ngt:
-    dimension: 784
+apiVersion: vald.vdaas.org/v1
+kind: ValdMirrorTarget
+metadata:
+  name: mirror-target-01
+spec:
+  colocation: dc1
+  target:
+    host: vald-mirror-gateway.vald-01.svc.cluster.local
+    port: 8081
+---
+apiVersion: vald.vdaas.org/v1
+kind: ValdMirrorTarget
+metadata:
+  name: mirror-target-02
+spec:
+  colocation: dc1
+  target:
+    host: vald-mirror-gateway.vald-02.svc.cluster.local
+    port: 8081

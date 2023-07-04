@@ -20,3 +20,19 @@ discoverer:
     name: vald-02
   serviceAccount:
     name: vald-02
+
+gateway:
+  mirror:
+    enabled: true
+    image:
+      tag: pr-2023 # TODO: Delete it later.
+    clusterRole:
+      enabled: false
+    clusterRoleBinding:
+      name: vald-mirror-02
+    serviceAccount:
+      name: vald-mirror-02
+
+agent:
+  ngt:
+    dimension: 784

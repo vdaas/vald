@@ -15,7 +15,7 @@
 #
 defaults:
   image:
-    tag: pr-1949 # TODO: Delete it later.
+    tag: pr-2023 # TODO: Delete it later.
   server_config:
     metrics:
       pprof:
@@ -54,17 +54,14 @@ gateway:
     gateway_config:
       index_replica: 2
 
-  # NOTE: Will work with multiple replicas in the future.
   mirror:
     enabled: true
-    minReplicas: 1
-    maxReplicas: 1
+    minReplicas: 3
+    maxReplicas: 3
     ingress:
       enabled: false
     gateway_config:
-      lb_client: {}
-      mirror_client: {}
-      self_mirror_client: {}
+      self_mirror_addr: ""
 
 agent:
   podAnnotations:
