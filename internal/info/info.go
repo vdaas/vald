@@ -57,7 +57,7 @@ type Detail struct {
 	GoArch            string       `json:"go_arch,omitempty"              yaml:"go_arch,omitempty"`
 	GoRoot            string       `json:"go_root,omitempty"              yaml:"go_root,omitempty"`
 	CGOEnabled        string       `json:"cgo_enabled,omitempty"          yaml:"cgo_enabled,omitempty"`
-	NGTVersion        string       `json:"ngt_version,omitempty"          yaml:"ngt_version,omitempty"`
+	AlgorithmInfo     string       `json:"algorithm_info,omitempty"       yaml:"algorithm_info,omitempty"`
 	BuildCPUInfoFlags []string     `json:"build_cpu_info_flags,omitempty" yaml:"build_cpu_info_flags,omitempty"`
 	StackTrace        []StackTrace `json:"stack_trace,omitempty"          yaml:"stack_trace,omitempty"`
 }
@@ -89,8 +89,8 @@ var (
 	GoRoot string
 	// CGOEnabled represent the cgo is enable or not to build Vald.
 	CGOEnabled string
-	// NGTVersion represent the NGT version in Vald.
-	NGTVersion string
+	// AlgorithmInfo represent the NGT version in Vald.
+	AlgorithmInfo string
 	// BuildCPUInfoFlags represent the CPU info flags to build Vald.
 	BuildCPUInfoFlags string
 
@@ -146,7 +146,7 @@ func New(opts ...Option) (Info, error) {
 			GoArch:            GoArch,
 			GoRoot:            GoRoot,
 			CGOEnabled:        CGOEnabled,
-			NGTVersion:        NGTVersion,
+			AlgorithmInfo:     AlgorithmInfo,
 			BuildCPUInfoFlags: strings.Split(strings.TrimSpace(BuildCPUInfoFlags), " "),
 			StackTrace:        nil,
 		},
@@ -361,8 +361,8 @@ func (i *info) prepare() {
 		default:
 			i.detail.CGOEnabled = cgoUnknown
 		}
-		if len(i.detail.NGTVersion) == 0 && len(NGTVersion) != 0 {
-			i.detail.NGTVersion = NGTVersion
+		if len(i.detail.AlgorithmInfo) == 0 && len(AlgorithmInfo) != 0 {
+			i.detail.AlgorithmInfo = AlgorithmInfo
 		}
 		if len(i.detail.BuildCPUInfoFlags) == 0 && len(BuildCPUInfoFlags) != 0 {
 			i.detail.BuildCPUInfoFlags = strings.Split(strings.TrimSpace(BuildCPUInfoFlags), " ")

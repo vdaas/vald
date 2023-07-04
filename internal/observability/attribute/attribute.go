@@ -13,12 +13,17 @@
 // limitations under the License.
 package attribute
 
-import "go.opentelemetry.io/otel/attribute"
+import (
+	"go.opentelemetry.io/otel/attribute"
+	api "go.opentelemetry.io/otel/metric"
+)
 
 type (
 	KeyValue = attribute.KeyValue
 	Key      = attribute.Key
 )
+
+var ToMeasurementOption = api.WithAttributes
 
 func Bool(k string, v bool) KeyValue {
 	return attribute.Bool(k, v)

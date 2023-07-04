@@ -20,6 +20,8 @@ inputs:
     description: "image names"
     required: false
     default: "vdaas/vald-agent-ngt \
+      vdaas/vald-agent-qbg \
+      vdaas/vald-agent-sidecar \
       vdaas/vald-discoverer-k8s \
       vdaas/vald-lb-gateway \
       vdaas/vald-manager-index"

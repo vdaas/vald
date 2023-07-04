@@ -69,6 +69,7 @@ COPY Makefile.d Makefile.d
 COPY apis/proto apis/proto
 COPY versions versions
 COPY hack/go.mod.default hack/go.mod.default
+COPY example example
 
 RUN make deps ROOTDIR=$ROOTDIR
 

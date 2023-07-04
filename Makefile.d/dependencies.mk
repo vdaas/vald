@@ -18,6 +18,7 @@
 ## update vald libraries including tools
 update/libs: \
 	update/chaos-mesh \
+	update/faiss \
 	update/go \
 	update/golangci-lint \
 	update/helm \
@@ -25,8 +26,8 @@ update/libs: \
 	update/helm-operator \
 	update/jaeger-operator \
 	update/kind \
-	update/kubectl \
 	update/kube-linter \
+	update/kubectl \
 	update/ngt \
 	update/prometheus-stack \
 	update/protobuf \
@@ -141,6 +142,11 @@ update/kube-linter:
 ## update yahoojapan/NGT version
 update/ngt:
 	curl --silent https://api.github.com/repos/yahoojapan/NGT/releases/latest | grep -Po '"tag_name": "\K.*?(?=")' | sed 's/v//g' > $(ROOTDIR)/versions/NGT_VERSION
+
+.PHONY: update/faiss
+## update facebookresearch/faiss version
+update/faiss:
+	curl --silent https://api.github.com/repos/facebookresearch/faiss/releases/latest | grep -Po '"tag_name": "\K.*?(?=")' | sed 's/v//g' > $(ROOTDIR)/versions/FAISS_VERSION
 
 .PHONY: update/reviewdog
 ## update reviewdog version

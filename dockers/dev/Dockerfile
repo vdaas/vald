@@ -48,6 +48,7 @@ COPY Makefile .
 COPY Makefile.d Makefile.d
 COPY versions versions
 COPY hack/go.mod.default hack/go.mod.default
+COPY example example
 
 # basic deps
 RUN make deps \

@@ -84,6 +84,39 @@ jobs:
         uses: github/codeql-action/upload-sarif@v2
         with:
           sarif_file: "trivy-results.sarif"
+  agent-qbg:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: set git config
+        run: |
+          git config --global --add safe.directory ${GITHUB_WORKSPACE}
+      - name: Build the Docker image
+        id: build_image
+        run: |
+          make docker/build/agent-qbg
+          imagename=`make docker/name/agent-qbg`
+          docker tag ${imagename} ${imagename}:${{ github.sha }}
+          echo "IMAGE_NAME=${imagename}" >> $GITHUB_OUTPUT
+        env:
+          DOCKER_BUILDKIT: 1
+      - name: Run vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: "${{ steps.build_image.outputs.IMAGE_NAME }}:${{ github.sha }}"
+          format: "table"
+      - name: Run vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: "${{ steps.build_image.outputs.IMAGE_NAME }}:${{ github.sha }}"
+          format: "template"
+          template: "@/contrib/sarif.tpl"
+          output: "trivy-results.sarif"
+          severity: "HIGH,CRITICAL"
+      - name: Upload Trivy scan results to Security tab
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: "trivy-results.sarif"
   agent-sidecar:
     runs-on: ubuntu-latest
     steps:

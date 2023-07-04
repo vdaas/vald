@@ -1066,7 +1066,7 @@ data:
               "calcs": [
                 "lastNotNull"
               ],
-              "fields": "/^ngt_version$/",
+              "fields": "/^algorithm_info$/",
               "values": false
             },
             "text": {},
@@ -1080,7 +1080,7 @@ data:
                 "uid": "prometheus"
               },
               "editorMode": "code",
-              "expr": "label_replace(app_version_info{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\", target_pod=~\"$PodName\"}, \"ngt_version\", \"v$1\", \"ngt_version\", \"([^v].*)\")",
+              "expr": "label_replace(app_version_info{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\", target_pod=~\"$PodName\"}, \"algorithm_info\", \"v$1\", \"algorithm_info\", \"([^v].*)\")",
               "format": "table",
               "instant": true,
               "interval": "",

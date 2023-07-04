@@ -141,6 +141,7 @@ func dirwalk(dir string) []string {
 				"CONTRIBUTORS",
 				"GO_VERSION",
 				"NGT_VERSION",
+				"FAISS_VERSION",
 				"Pipefile",
 				"VALD_VERSION",
 				"grp",
@@ -190,7 +191,7 @@ func readAndRewrite(path string) error {
 		}
 	} else {
 		switch filepath.Ext(path) {
-		case ".go", ".proto":
+		case ".go", ".proto", ".c", ".h", ".hpp", ".cpp":
 			d.Escape = slushEscape
 		}
 		lf := true
