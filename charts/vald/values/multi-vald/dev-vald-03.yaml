@@ -24,8 +24,6 @@ discoverer:
 gateway:
   mirror:
     enabled: true
-    image:
-      tag: pr-2023 # TODO: Delete it later.
     clusterRole:
       enabled: false
     clusterRoleBinding:
