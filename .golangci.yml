@@ -20,52 +20,110 @@ run:
     - (^|/)hack/benchmark($|/)
     - (^|/)pkg/filter/ingress($|/)
     - (^|/)internal/core/algorithm/ngt($|/)
-
 output:
   format: line-number
-
 linters:
-  enable-all: true
-  disable:
-    - deadcode
-    - errcheck
-    - typecheck
-    - varcheck
-    - cyclop
-    - exhaustivestruct
-    - forbidigo
-    - funlen
-    - gci
-    - gocognit
-    - gocyclo
-    - goerr113
-    - gofmt
-    - goheader
-    - golint
-    - gomoddirectives
-    - gomodguard
-    - goprintffuncname
-    - ifshort
-    - importas
-    - interfacer
-    - lll
-    - maligned
-    - nestif
-    - nlreturn
-    - paralleltest
-    - revive
-    - promlinter
-    - scopelint
-    - testpackage
-    - tparallel
-    - wastedassign
-    - wrapcheck
-    - whitespace
-    - wsl
-
-issues:
+  disable-all: true
+  enable:
+    - asasalint
+    - asciicheck
+    - bidichk
+    - bodyclose
+    - containedctx
+    - contextcheck
+    - decorder
+    - depguard
+    - dogsled
+    - dupl
+    - dupword
+    - durationcheck
+    - errchkjson
+    - errname
+    - errorlint
+    - execinquery
+    - exhaustive
+    - exhaustruct
+    - exportloopref
+    - forcetypeassert
+    - ginkgolinter
+    - gocheckcompilerdirectives
+    - gochecknoglobals
+    - gochecknoinits
+    - goconst
+    - gocritic
+    - godot
+    - godox
+    - gofumpt
+    - goimports
+    - gomnd
+    - gosec #(gas)
+    - gosimple #(megacheck)
+    - gosmopolitan
+    - govet #(vet, vetshadow)
+    - grouper
+    - ineffassign
+    - interfacebloat
+    - loggercheck #(logrlint)
+    - maintidx
+    - makezero
+    - mirror
+    - misspell
+    - musttag
+    - nakedret
+    - nilerr
+    - nilnil
+    - noctx
+    - nolintlint
+    - nosprintfhostport
+    - prealloc
+    - predeclared
+    - reassign
+    - rowserrcheck
+    - sqlclosecheck
+    - staticcheck #(megacheck)
+    - stylecheck
+    - tagalign
+    - tagliatelle
+    - tenv
+    - testableexamples
+    - thelper
+    - unconvert
+    - unparam
+    - unused #(megacheck)
+    - usestdlibvars
+    - zerologlint
+    # Disabled by your configuration linters
+    # - cyclop
+    # - errcheck
+    # - forbidigo
+    # - funlen
+    # - gci
+    # - gocognit
+    # - gocyclo
+    # - goerr113
+    # - gofmt
+    # - goheader
+    # - gomoddirectives
+    # - gomodguard
+    # - goprintffuncname
+    # - importas
+    # - ireturn
+    # - lll
+    # - nestif
+    # - nlreturn
+    # - nonamedreturns
+    # - paralleltest
+    # - promlinter
+    # - revive
+    # - testpackage
+    # - tparallel
+    # - typecheck
+    # - varnamelen
+    # - wastedassign
+    # - whitespace
+    # - wrapcheck
+    # - wslissues:
   exclude-use-default: false
-
   exclude-rules:
     - path: _test\.go
       linters:
@@ -91,14 +149,13 @@ issues:
     - path: internal/errors/errors_benchmark_test\.go
       linters:
         - depguard
-
 linters-settings:
   gocritic:
     enabled-checks:
       - ruleguard
     settings:
       ruleguard:
-        rules: './hack/gorules/rules.go'
+        rules: "./hack/gorules/rules.go"
   tagliatelle:
     case:
       use-field-name: true
