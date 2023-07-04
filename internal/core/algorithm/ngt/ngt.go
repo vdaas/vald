@@ -664,9 +664,8 @@ func (n *ngt) BulkRemove(ids ...uint) (errs error) {
 }
 
 // GetVector returns vector stored in NGT index.
-func (n *ngt) GetVector(id uint) ([]float32, error) {
+func (n *ngt) GetVector(id uint) (ret []float32, err error) {
 	dimension := int(n.dimension)
-	var ret []float32
 	ebuf := n.GetErrorBuffer()
 	switch n.objectType {
 	case Float:

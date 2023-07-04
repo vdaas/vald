@@ -440,6 +440,22 @@ startup_strategy:
   {{- if $readinessEnabled }}
   - readiness
   {{- end }}
+shutdown_strategy:
+  {{- if $readinessEnabled }}
+  - readiness
+  {{- end }}
+  {{- if $restEnabled }}
+  - rest
+  {{- end }}
+  {{- if $grpcEnabled }}
+  - grpc
+  {{- end }}
+  {{- if $pprofEnabled }}
+  - pprof
+  {{- end }}
+  {{- if $livenessEnabled }}
+  - liveness
+  {{- end }}
 full_shutdown_duration: {{ default .default.full_shutdown_duration .Values.full_shutdown_duration }}
 tls:
   {{- if .Values.tls }}

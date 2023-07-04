@@ -6,14 +6,14 @@ replace (
 	cloud.google.com/go => cloud.google.com/go v0.110.3
 	cloud.google.com/go/bigquery => cloud.google.com/go/bigquery v1.52.0
 	cloud.google.com/go/compute => cloud.google.com/go/compute v1.20.1
-	cloud.google.com/go/datastore => cloud.google.com/go/datastore v1.11.0
+	cloud.google.com/go/datastore => cloud.google.com/go/datastore v1.12.0
 	cloud.google.com/go/firestore => cloud.google.com/go/firestore v1.11.0
 	cloud.google.com/go/iam => cloud.google.com/go/iam v1.1.1
 	cloud.google.com/go/kms => cloud.google.com/go/kms v1.12.1
 	cloud.google.com/go/monitoring => cloud.google.com/go/monitoring v1.15.1
-	cloud.google.com/go/pubsub => cloud.google.com/go/pubsub v1.31.0
+	cloud.google.com/go/pubsub => cloud.google.com/go/pubsub v1.32.0
 	cloud.google.com/go/secretmanager => cloud.google.com/go/secretmanager v1.11.1
-	cloud.google.com/go/storage => cloud.google.com/go/storage v1.30.1
+	cloud.google.com/go/storage => cloud.google.com/go/storage v1.31.0
 	cloud.google.com/go/trace => cloud.google.com/go/trace v1.10.1
 	code.cloudfoundry.org/bytefmt => code.cloudfoundry.org/bytefmt v0.0.0-20230612151507-41ef4d1f67a4
 	contrib.go.opencensus.io/exporter/aws => contrib.go.opencensus.io/exporter/aws v0.0.0-20230502192102-15967c811cec
@@ -26,14 +26,14 @@ replace (
 	github.com/Azure/azure-sdk-for-go/sdk/azidentity => github.com/Azure/azure-sdk-for-go/sdk/azidentity v1.3.0
 	github.com/Azure/azure-sdk-for-go/sdk/internal => github.com/Azure/azure-sdk-for-go/sdk/internal v1.3.0
 	github.com/Azure/go-amqp => github.com/Azure/go-amqp v1.0.1
-	github.com/Azure/go-autorest => github.com/Azure/go-autorest v14.2.1-0.20230530143100-be633f7b83b4+incompatible
-	github.com/Azure/go-autorest/autorest => github.com/Azure/go-autorest/autorest v0.11.30-0.20230530143100-be633f7b83b4
+	github.com/Azure/go-autorest => github.com/Azure/go-autorest v14.2.1-0.20230628134501-d3f8f8a6cdf2+incompatible
+	github.com/Azure/go-autorest/autorest => github.com/Azure/go-autorest/autorest v0.11.30-0.20230628134501-d3f8f8a6cdf2
 	github.com/Azure/go-autorest/autorest/adal => github.com/Azure/go-autorest/autorest/adal v0.9.23
-	github.com/Azure/go-autorest/autorest/date => github.com/Azure/go-autorest/autorest/date v0.3.1-0.20230530143100-be633f7b83b4
-	github.com/Azure/go-autorest/autorest/mocks => github.com/Azure/go-autorest/autorest/mocks v0.4.3-0.20230530143100-be633f7b83b4
-	github.com/Azure/go-autorest/autorest/to => github.com/Azure/go-autorest/autorest/to v0.4.1-0.20230530143100-be633f7b83b4
-	github.com/Azure/go-autorest/logger => github.com/Azure/go-autorest/logger v0.2.2-0.20230530143100-be633f7b83b4
-	github.com/Azure/go-autorest/tracing => github.com/Azure/go-autorest/tracing v0.6.1-0.20230530143100-be633f7b83b4
+	github.com/Azure/go-autorest/autorest/date => github.com/Azure/go-autorest/autorest/date v0.3.1-0.20230628134501-d3f8f8a6cdf2
+	github.com/Azure/go-autorest/autorest/mocks => github.com/Azure/go-autorest/autorest/mocks v0.4.3-0.20230628134501-d3f8f8a6cdf2
+	github.com/Azure/go-autorest/autorest/to => github.com/Azure/go-autorest/autorest/to v0.4.1-0.20230628134501-d3f8f8a6cdf2
+	github.com/Azure/go-autorest/logger => github.com/Azure/go-autorest/logger v0.2.2-0.20230628134501-d3f8f8a6cdf2
+	github.com/Azure/go-autorest/tracing => github.com/Azure/go-autorest/tracing v0.6.1-0.20230628134501-d3f8f8a6cdf2
 	github.com/BurntSushi/toml => github.com/BurntSushi/toml v1.3.2
 	github.com/DATA-DOG/go-sqlmock => github.com/DATA-DOG/go-sqlmock v1.5.0
 	github.com/GoogleCloudPlatform/cloudsql-proxy => github.com/GoogleCloudPlatform/cloudsql-proxy v1.33.8
@@ -43,13 +43,13 @@ replace (
 	github.com/ajstarks/svgo => github.com/ajstarks/svgo v0.0.0-20211024235047-1546f124cd8b
 	github.com/antihax/optional => github.com/antihax/optional v1.0.0
 	github.com/armon/go-socks5 => github.com/armon/go-socks5 v0.0.0-20160902184237-e75332964ef5
-	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.44.290
+	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.44.293
 	github.com/aws/aws-sdk-go-v2 => github.com/aws/aws-sdk-go-v2 v1.18.1
 	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream => github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.4.10
 	github.com/aws/aws-sdk-go-v2/config => github.com/aws/aws-sdk-go-v2/config v1.18.27
 	github.com/aws/aws-sdk-go-v2/credentials => github.com/aws/aws-sdk-go-v2/credentials v1.13.26
 	github.com/aws/aws-sdk-go-v2/feature/ec2/imds => github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.13.4
-	github.com/aws/aws-sdk-go-v2/feature/s3/manager => github.com/aws/aws-sdk-go-v2/feature/s3/manager v1.11.70
+	github.com/aws/aws-sdk-go-v2/feature/s3/manager => github.com/aws/aws-sdk-go-v2/feature/s3/manager v1.11.71
 	github.com/aws/aws-sdk-go-v2/internal/configsources => github.com/aws/aws-sdk-go-v2/internal/configsources v1.1.34
 	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 => github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.4.28
 	github.com/aws/aws-sdk-go-v2/internal/ini => github.com/aws/aws-sdk-go-v2/internal/ini v1.3.35
@@ -58,11 +58,11 @@ replace (
 	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url => github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.9.28
 	github.com/aws/aws-sdk-go-v2/service/internal/s3shared => github.com/aws/aws-sdk-go-v2/service/internal/s3shared v1.14.3
 	github.com/aws/aws-sdk-go-v2/service/kms => github.com/aws/aws-sdk-go-v2/service/kms v1.22.2
-	github.com/aws/aws-sdk-go-v2/service/s3 => github.com/aws/aws-sdk-go-v2/service/s3 v1.35.0
+	github.com/aws/aws-sdk-go-v2/service/s3 => github.com/aws/aws-sdk-go-v2/service/s3 v1.36.0
 	github.com/aws/aws-sdk-go-v2/service/secretsmanager => github.com/aws/aws-sdk-go-v2/service/secretsmanager v1.19.10
 	github.com/aws/aws-sdk-go-v2/service/sns => github.com/aws/aws-sdk-go-v2/service/sns v1.20.13
 	github.com/aws/aws-sdk-go-v2/service/sqs => github.com/aws/aws-sdk-go-v2/service/sqs v1.23.2
-	github.com/aws/aws-sdk-go-v2/service/ssm => github.com/aws/aws-sdk-go-v2/service/ssm v1.36.6
+	github.com/aws/aws-sdk-go-v2/service/ssm => github.com/aws/aws-sdk-go-v2/service/ssm v1.36.7
 	github.com/aws/aws-sdk-go-v2/service/sso => github.com/aws/aws-sdk-go-v2/service/sso v1.12.12
 	github.com/aws/aws-sdk-go-v2/service/sts => github.com/aws/aws-sdk-go-v2/service/sts v1.19.2
 	github.com/aws/smithy-go => github.com/aws/smithy-go v1.13.5
@@ -310,11 +310,11 @@ replace (
 	gonum.org/v1/gonum => gonum.org/v1/gonum v0.13.0
 	gonum.org/v1/hdf5 => gonum.org/v1/hdf5 v0.0.0-20210714002203-8c5d23bc6946
 	gonum.org/v1/plot => gonum.org/v1/plot v0.13.0
-	google.golang.org/api => google.golang.org/api v0.128.0
+	google.golang.org/api => google.golang.org/api v0.129.0
 	google.golang.org/appengine => google.golang.org/appengine v1.6.7
-	google.golang.org/genproto => google.golang.org/genproto v0.0.0-20230626202813-9b080da550b3
-	google.golang.org/genproto/googleapis/api => google.golang.org/genproto/googleapis/api v0.0.0-20230626202813-9b080da550b3
-	google.golang.org/genproto/googleapis/rpc => google.golang.org/genproto/googleapis/rpc v0.0.0-20230626202813-9b080da550b3
+	google.golang.org/genproto => google.golang.org/genproto v0.0.0-20230629202037-9506855d4529
+	google.golang.org/genproto/googleapis/api => google.golang.org/genproto/googleapis/api v0.0.0-20230629202037-9506855d4529
+	google.golang.org/genproto/googleapis/rpc => google.golang.org/genproto/googleapis/rpc v0.0.0-20230629202037-9506855d4529
 	google.golang.org/grpc => google.golang.org/grpc v1.56.1
 	google.golang.org/grpc/cmd/protoc-gen-go-grpc => google.golang.org/grpc/cmd/protoc-gen-go-grpc v1.3.0
 	google.golang.org/protobuf => google.golang.org/protobuf v1.31.0
@@ -395,8 +395,8 @@ require (
 	gonum.org/v1/plot v0.10.1
 	google.golang.org/genproto/googleapis/api v0.0.0-20230530153820-e85fd2cbaebc
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20230530153820-e85fd2cbaebc
-	google.golang.org/grpc v1.56.0
-	google.golang.org/protobuf v1.30.0
+	google.golang.org/grpc v1.56.1
+	google.golang.org/protobuf v1.31.0
 	gopkg.in/yaml.v2 v2.4.0
 	k8s.io/api v0.27.3
 	k8s.io/apimachinery v0.27.3
