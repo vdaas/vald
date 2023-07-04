@@ -15,7 +15,7 @@
 #
 defaults:
   image:
-    tag: pr-2023 # TODO: Delete it later.
+    tag: pr-1948 # TODO: Delete it later.
   server_config:
     metrics:
       pprof:
