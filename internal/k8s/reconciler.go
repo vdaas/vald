@@ -25,18 +25,43 @@ import (
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/sync/errgroup"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	cli "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
 
+// TODO delete <<<---
+
+type (
+	Manager        = manager.Manager
+	OwnerReference = v1.OwnerReference
+)
+
+type (
+	Object             = cli.Object
+	ObjectKey          = cli.ObjectKey
+	DeleteAllOfOptions = cli.DeleteAllOfOptions
+	ListOptions        = cli.ListOptions
+	MatchingLabels     = cli.MatchingLabels
+	InNamespace        = cli.InNamespace
+)
+
+// TODO delete --->>>
+
 type Controller interface {
 	Start(ctx context.Context) (<-chan error, error)
+	// TODO delete <<<---
+	GetManager() Manager
+	// TODO delete --->>>
 }
+
+var Now = v1.Now
 
 type ResourceController interface {
 	GetName() string
@@ -135,3 +160,10 @@ func (c *controller) Start(ctx context.Context) (<-chan error, error) {
 
 	return ech, nil
 }
+
+// TODO delete <<<---
+func (c *controller) GetManager() Manager {
+	return c.mgr
+}
+
+// TODO delete --->>>

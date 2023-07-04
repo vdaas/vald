@@ -584,7 +584,6 @@ message Info {
 
 // Mirror related messages.
 message Mirror {
-
   // Represent server information.
   message Target {
     // The target hostname.

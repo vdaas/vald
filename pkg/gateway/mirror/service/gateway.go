@@ -18,7 +18,7 @@ import (
 	"reflect"
 
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
-	client "github.com/vdaas/vald/internal/client/v1/client/mirror"
+	"github.com/vdaas/vald/internal/client/v1/client/mirror"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
@@ -44,7 +44,7 @@ type Gateway interface {
 }
 
 type gateway struct {
-	client  client.Client // Mirror Gateway client for other clusters and to the Vald gateway (LB gateway) client for own cluster.
+	client  mirror.Client // Mirror Gateway client for other clusters and to the Vald gateway (LB gateway) client for own cluster.
 	eg      errgroup.Group
 	podName string
 }

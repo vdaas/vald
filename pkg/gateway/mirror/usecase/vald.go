@@ -19,10 +19,12 @@ import (
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
 	mclient "github.com/vdaas/vald/internal/client/v1/client/mirror"
 	"github.com/vdaas/vald/internal/errgroup"
+	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/observability"
 	backoffmetrics "github.com/vdaas/vald/internal/observability/metrics/backoff"
 	cbmetrics "github.com/vdaas/vald/internal/observability/metrics/circuitbreaker"
+	mirrormetrics "github.com/vdaas/vald/internal/observability/metrics/gateway/mirror"
 	"github.com/vdaas/vald/internal/runner"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/servers/server"
@@ -36,16 +38,26 @@ import (
 
 type run struct {
 	eg            errgroup.Group
+	der           net.Dialer
 	cfg           *config.Data
 	server        starter.Server
 	c             mclient.Client
 	gw            service.Gateway
-	mgw           service.Mirror
+	mirr          service.Mirror
+	dsc           service.Discoverer
 	observability observability.Observability
 }
 
 func New(cfg *config.Data) (r runner.Runner, err error) {
 	eg := errgroup.Get()
+	netOpts, err := cfg.Mirror.Net.Opts()
+	if err != nil {
+		return nil, err
+	}
+	der, err := net.NewDialer(netOpts...)
+	if err != nil {
+		return nil, err
+	}
 
 	cOpts, err := cfg.Mirror.Client.Opts()
 	if err != nil {
@@ -69,7 +81,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	if err != nil {
 		return nil, err
 	}
-	mgw, err := service.NewMirror(
+	mirr, err := service.NewMirror(
 		service.WithErrorGroup(eg),
 		service.WithAdvertiseInterval(cfg.Mirror.AdvertiseInterval),
 		service.WithValdAddrs(cfg.Mirror.GatewayAddr),
@@ -79,12 +91,25 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	if err != nil {
 		return nil, err
 	}
+	dsc, err := service.NewDiscoverer(
+		service.WithDiscovererNamespace(cfg.Mirror.Namespace),
+		service.WithDiscovererGroup(cfg.Mirror.Group),
+		service.WithDiscovererDuration(cfg.Mirror.DiscoveryDuration),
+		service.WithDiscovererSelfMirrorAddrs(cfg.Mirror.SelfMirrorAddr),
+		service.WithDiscovererColocation(cfg.Mirror.Colocation),
+		service.WithDiscovererDialer(der),
+		service.WithDiscovererMirror(mirr),
+		service.WithDiscovererErrGroup(eg),
+	)
+	if err != nil {
+		return nil, err
+	}
 
 	v, err := handler.New(
 		handler.WithValdAddr(cfg.Mirror.GatewayAddr),
 		handler.WithErrGroup(eg),
 		handler.WithGateway(gw),
-		handler.WithMirror(mgw),
+		handler.WithMirror(mirr),
 		handler.WithStreamConcurrency(cfg.Server.GetGRPCStreamConcurrency()),
 	)
 	if err != nil {
@@ -106,6 +131,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 			cfg.Observability,
 			backoffmetrics.New(),
 			cbmetrics.New(),
+			mirrormetrics.New(mirr),
 		)
 		if err != nil {
 			return nil, err
@@ -137,16 +163,21 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 
 	return &run{
 		eg:            eg,
+		der:           der,
 		cfg:           cfg,
 		server:        srv,
 		c:             c,
 		gw:            gw,
-		mgw:           mgw,
+		mirr:          mirr,
+		dsc:           dsc,
 		observability: obs,
 	}, nil
 }
 
 func (r *run) PreStart(ctx context.Context) error {
+	if r.der != nil {
+		r.der.StartDialerCache(ctx)
+	}
 	if r.observability != nil {
 		return r.observability.PreStart(ctx)
 	}
@@ -155,7 +186,7 @@ func (r *run) PreStart(ctx context.Context) error {
 
 func (r *run) Start(ctx context.Context) (<-chan error, error) {
 	ech := make(chan error, 6)
-	var mech, cech, sech, oech <-chan error
+	var mech, dech, cech, sech, oech <-chan error
 	var err error
 
 	sech = r.server.ListenAndServe(ctx)
@@ -166,8 +197,15 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 			return nil, err
 		}
 	}
-	if r.mgw != nil {
-		mech, err = r.mgw.Start(ctx)
+	if r.mirr != nil {
+		mech, err = r.mirr.Start(ctx)
+		if err != nil {
+			close(ech)
+			return nil, err
+		}
+	}
+	if r.dsc != nil {
+		dech, err = r.dsc.Start(ctx)
 		if err != nil {
 			close(ech)
 			return nil, err
@@ -184,6 +222,7 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 			case <-ctx.Done():
 				return ctx.Err()
 			case err = <-mech:
+			case err = <-dech:
 			case err = <-cech:
 			case err = <-sech:
 			case err = <-oech:

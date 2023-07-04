@@ -121,3 +121,14 @@ helm/schema/crd/vald-helm-operator: \
 	charts/vald-helm-operator/values.yaml > $(TEMP_DIR)/valdhelmoperatorrelease-spec.yaml
 	$(BINDIR)/yq eval-all 'select(fileIndex==0).spec.versions[0].schema.openAPIV3Schema.properties.spec = select(fileIndex==1).spec | select(fileIndex==0)' \
 	$(TEMP_DIR)/valdhelmoperatorrelease.yaml $(TEMP_DIR)/valdhelmoperatorrelease-spec.yaml > charts/vald-helm-operator/crds/valdhelmoperatorrelease.yaml
+
+.PHONY: helm/schema/crd/vald/mirror-target
+## generate OpenAPI v3 schema for ValdMirrorTarget
+helm/schema/crd/vald/mirror-target: \
+	yq/install
+	mv charts/vald/crds/valdmirrortarget.yaml  $(TEMP_DIR)/valdmirrortarget.yaml
+	GOPRIVATE=$(GOPRIVATE) \
+	go run -mod=readonly hack/helm/schema/crd/main.go \
+	charts/vald/schemas/mirror-target-values.yaml > $(TEMP_DIR)/valdmirrortarget-spec.yaml
+	$(BINDIR)/yq eval-all 'select(fileIndex==0).spec.versions[0].schema.openAPIV3Schema.properties.spec = select(fileIndex==1).spec | select(fileIndex==0)' \
+	$(TEMP_DIR)/valdmirrortarget.yaml $(TEMP_DIR)/valdmirrortarget-spec.yaml > charts/vald/crds/valdmirrortarget.yaml
