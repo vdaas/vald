@@ -34,6 +34,7 @@ import (
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/tls"
+	valdsync "github.com/vdaas/vald/internal/sync"
 )
 
 // Dialer is an interface to get the dialer instance to connect to an address.
@@ -59,7 +60,7 @@ type dialer struct {
 	ctrl                  control.SocketController
 	sockFlg               control.SocketFlag
 	dialerDualStack       bool
-	addrs                 sync.Map
+	addrs                 valdsync.Map[string, *addrInfo]
 	der                   *net.Dialer
 	dialer                func(ctx context.Context, network, addr string) (Conn, error)
 }
@@ -254,12 +255,9 @@ func (d *dialer) cachedDialer(ctx context.Context, network, addr string) (conn C
 			isIP: isV4 || isV6,
 		})
 	} else {
-		info, ok := ai.(*addrInfo)
-		if ok {
-			host = info.host
-			port = info.port
-			isIP = info.isIP
-		}
+			host = ai.host
+			port = ai.port
+			isIP = ai.isIP
 	}
 
 	if d.enableDNSCache && !isIP {

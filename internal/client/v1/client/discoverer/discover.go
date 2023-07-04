@@ -20,7 +20,6 @@ package discoverer
 import (
 	"context"
 	"reflect"
-	"sync"
 	"sync/atomic"
 	"time"
 
@@ -32,6 +31,7 @@ import (
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/safety"
+	valdsync "github.com/vdaas/vald/internal/sync"
 )
 
 type Client interface {
@@ -344,7 +344,7 @@ func (c *client) disconnectOldAddrs(ctx context.Context, oldAddrs, connectedAddr
 	if !c.autoconn {
 		return nil
 	}
-	var cur sync.Map
+	var cur valdsync.Map[string, any] // TODO: Does this have to be a sync.Map not a map?
 	for _, addr := range connectedAddrs {
 		cur.Store(addr, struct{}{})
 	}

@@ -21,7 +21,6 @@ import (
 	"context"
 	"math"
 	"reflect"
-	"sync"
 	"sync/atomic"
 	"time"
 
@@ -36,6 +35,7 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
+	valdsync "github.com/vdaas/vald/internal/sync"
 )
 
 type Indexer interface {
@@ -54,7 +54,7 @@ type index struct {
 	saveIndexDurationLimit time.Duration
 	saveIndexWaitDuration  time.Duration
 	saveIndexTargetAddrCh  chan string
-	schMap                 sync.Map
+	schMap                 valdsync.Map[string, any]
 	concurrency            int
 	indexInfos             indexInfos
 	indexing               atomic.Value // bool

@@ -35,6 +35,7 @@ import (
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/slices"
+	valdsync "github.com/vdaas/vald/internal/sync"
 )
 
 type Aggregator interface {
@@ -365,7 +366,7 @@ type valdStdAggr struct {
 	dch     chan DistPayload
 	closed  atomic.Bool
 	maxDist atomic.Value
-	visited sync.Map
+	visited valdsync.Map[string, any]
 	result  []*payload.Object_Distance
 	cancel  context.CancelFunc
 }
@@ -495,7 +496,7 @@ type valdPairingHeapAggr struct {
 	num     int
 	ph      *PairingHeap
 	mu      sync.Mutex
-	visited sync.Map
+	visited valdsync.Map[string, any]
 	result  []*payload.Object_Distance
 }
 
