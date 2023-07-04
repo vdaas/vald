@@ -12,7 +12,7 @@ In this tutorial, You will deploy multiple Vald clusters with Vald Mirror Gatewa
 
 The below image shows the architecture image of this case.
 
-<img src="../../assets/docs/tutorial/vald-multicluster-on-k8s.svg">
+<img src="../../assets/docs/tutorial/vald-multicluster-on-k8s.png">
 
 ## Requirements
 
