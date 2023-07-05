@@ -363,7 +363,6 @@ type valdStdAggr struct {
 	num     int
 	wg      sync.WaitGroup
 	dch     chan DistPayload
-	closed  atomic.Bool
 	maxDist atomic.Value
 	visited sync.Map
 	result  []*payload.Object_Distance
@@ -371,7 +370,7 @@ type valdStdAggr struct {
 }
 
 func newStd(num, replica int) Aggregator {
-	vsa := &valdStdAggr{
+	return &valdStdAggr{
 		num: num,
 		dch: make(chan DistPayload, num*replica),
 		maxDist: func() (av atomic.Value) {
@@ -380,8 +379,6 @@ func newStd(num, replica int) Aggregator {
 		}(),
 		result: make([]*payload.Object_Distance, 0, num*replica),
 	}
-	vsa.closed.Store(false)
-	return vsa
 }
 
 func (v *valdStdAggr) Start(ctx context.Context) {
@@ -440,7 +437,6 @@ func (v *valdStdAggr) Start(ctx context.Context) {
 		for {
 			select {
 			case <-ctx.Done():
-				v.closed.Store(true)
 				close(v.dch)
 				for dist := range v.dch {
 					add(dist.distance, dist.raw)
@@ -466,9 +462,6 @@ func (v *valdStdAggr) Send(ctx context.Context, data *payload.Search_Response) {
 				return
 			}
 			if _, already := v.visited.LoadOrStore(dist.GetId(), struct{}{}); !already {
-				if v.closed.Load() {
-					return
-				}
 				select {
 				case <-ctx.Done():
 					return
