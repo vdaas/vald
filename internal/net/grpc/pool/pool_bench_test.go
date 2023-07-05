@@ -27,9 +27,9 @@ import (
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/log/level"
 	"github.com/vdaas/vald/internal/net"
+	valdsync "github.com/vdaas/vald/internal/sync"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
-	valdsync "github.com/vdaas/vald/internal/sync"
 )
 
 const (
