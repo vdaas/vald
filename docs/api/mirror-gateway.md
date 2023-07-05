@@ -37,7 +37,7 @@ Register RPC is the method to register other Vald Mirror Gateway targets.
 
     |  field  | type          | label                          | required | desc.                            |
     | :-----: | :------------ | :----------------------------- | :------: | :------------------------------- |
-    | targets | Mirror.Target | repeated(Array[Mirror.Target]) |   \*     | The multiple target information. |
+    | targets | Mirror.Target | repeated(Array[Mirror.Target]) |    \*    | The multiple target information. |
 
   - Mirror.Target
 
