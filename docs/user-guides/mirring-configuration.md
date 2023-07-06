@@ -56,7 +56,7 @@ gateway:
       colocation: "dc1"
 ```
 
-The cluster role configuration is required when you deploy Vald clusters with Vald Mirror Gateway on multiple namespaces in the Kubernetes cluster.
+The cluster role configuration is required when you deploy Vald clusters with Vald Mirror Gateway on multiple Namespaces in the Kubernetes cluster.
 
 Please refer to [Cluster Role Configuration](https://vald.vdaas.org/docs/user-guides/cluster-role-binding/) about cluster role settings for Mirror Gateway.
 

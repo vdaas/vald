@@ -172,9 +172,9 @@ In this section, you will deploy three Vald clusters consisting of `vald-agent-n
 
 ## Deploy ValdMirrorTarget Resource (Custom Resource)
 
-It requires applying the `ValdMirrorTarget` Custom Resource to the one namespace.
+It requires applying the `ValdMirrorTarget` Custom Resource to the one Namespace.
 
-When applied successfully, the destination information is automatically created on other namespaces when interconnected with each `vald-mirror-gateway`.
+When applied successfully, the destination information is automatically created on other Namespaces when interconnected with each `vald-mirror-gateway`.
 
 This tutorial will deploy the [ValdMirrorTarger](https://github.com/vdaas/vald/tree/main/charts/vald/values/mirror-target.yaml) Custom Resource to the `vald-03` Namespace with the following command.
 
