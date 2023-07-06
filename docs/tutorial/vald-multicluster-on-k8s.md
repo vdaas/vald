@@ -50,7 +50,7 @@ The way to deploy Kubernetes Metrics Service is here:
 ```bash
 kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml && \
 kubectl wait -n kube-system --for=condition=ready pod -l k8s-app=metrics-server --timeout=600s
-````
+```
 
 Please prepare three Namespaces on the Kubernetes cluster.
 
