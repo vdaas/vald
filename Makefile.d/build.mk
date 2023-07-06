@@ -70,9 +70,9 @@ cmd/agent/core/faiss/faiss: \
 	CFLAGS="$(CFLAGS)" \
 	CXXFLAGS="$(CXXFLAGS)" \
 	CGO_ENABLED=1 \
-	CGO_CXXFLAGS="-g -Ofast -march=native" \
-	CGO_FFLAGS="-g -Ofast -march=native" \
-	CGO_LDFLAGS="-g -Ofast -march=native" \
+	CGO_CXXFLAGS="-g -Ofast -march=native -DDEBUG=0" \
+	CGO_FFLAGS="-g -Ofast -march=native -DDEBUG=0" \
+	CGO_LDFLAGS="-g -Ofast -march=native -DDEBUG=0" \
 	GO111MODULE=on \
 	GOPRIVATE=$(GOPRIVATE) \
 	go build \

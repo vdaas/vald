@@ -31,9 +31,11 @@ FaissStruct* faiss_create_index(
     const int m,
     const int nbits_per_idx,
     const int metric_type) {
-  //printf(__FUNCTION__);
-  //printf("\n");
-  //fflush(stdout);
+#if DEBUG
+  printf(__FUNCTION__);
+  printf("\n");
+  fflush(stdout);
+#endif
 
   FaissStruct *st = NULL;
   try {
@@ -52,7 +54,9 @@ FaissStruct* faiss_create_index(
         return NULL;
     }
     faiss::IndexIVFPQ *index = new faiss::IndexIVFPQ(quantizer, d, nlist, m, nbits_per_idx);
-    //index->verbose = true;
+#if DEBUG
+    index->verbose = true;
+#endif
     st = new FaissStruct{
       static_cast<FaissQuantizer>(quantizer),
       static_cast<FaissIndex>(index)
@@ -67,9 +71,11 @@ FaissStruct* faiss_create_index(
 }
 
 FaissStruct* faiss_read_index(const char* fname) {
-  //printf(__FUNCTION__);
-  //printf("\n");
-  //fflush(stdout);
+#if DEBUG
+  printf(__FUNCTION__);
+  printf("\n");
+  fflush(stdout);
+#endif
 
   FaissStruct *st = NULL;
   try {
@@ -89,9 +95,11 @@ FaissStruct* faiss_read_index(const char* fname) {
 bool faiss_write_index(
     const FaissStruct* st,
     const char* fname) {
-  //printf(__FUNCTION__);
-  //printf("\n");
-  //fflush(stdout);
+#if DEBUG
+  printf(__FUNCTION__);
+  printf("\n");
+  fflush(stdout);
+#endif
 
   try {
     faiss::write_index(static_cast<faiss::IndexIVFPQ*>(st->faiss_index), fname);
@@ -110,16 +118,22 @@ bool faiss_train(
     const FaissStruct* st,
     const int nb,
     const float* xb) {
-  //printf(__FUNCTION__);
-  //printf("\n");
-  //fflush(stdout);
+#if DEBUG
+  printf(__FUNCTION__);
+  printf("\n");
+  fflush(stdout);
+#endif
 
   try {
-    //printf("is_trained: %d\n", (static_cast<faiss::IndexIVFPQ*>(st->faiss_index))->is_trained);
-    //printf("ntotal: %ld\n", (static_cast<faiss::IndexIVFPQ*>(st->faiss_index))->ntotal);
+#if DEBUG
+    printf("is_trained: %d\n", (static_cast<faiss::IndexIVFPQ*>(st->faiss_index))->is_trained);
+    printf("ntotal: %ld\n", (static_cast<faiss::IndexIVFPQ*>(st->faiss_index))->ntotal);
+#endif
     (static_cast<faiss::IndexIVFPQ*>(st->faiss_index))->train(nb, xb);
-    //printf("is_trained: %d\n", (static_cast<faiss::IndexIVFPQ*>(st->faiss_index))->is_trained);
-    //printf("ntotal: %ld\n", (static_cast<faiss::IndexIVFPQ*>(st->faiss_index))->ntotal);
+#if DEBUG
+    printf("is_trained: %d\n", (static_cast<faiss::IndexIVFPQ*>(st->faiss_index))->is_trained);
+    printf("ntotal: %ld\n", (static_cast<faiss::IndexIVFPQ*>(st->faiss_index))->ntotal);
+#endif
   } catch(std::exception &err) {
     std::stringstream ss;
     ss << "Capi : " << __FUNCTION__ << "() : Error: " << err.what();
@@ -127,7 +141,9 @@ bool faiss_train(
     return false;
   }
 
+#if DEBUG
   fflush(stdout);
+#endif
   return true;
 }
 
@@ -136,16 +152,22 @@ int faiss_add(
     const int nb,
     const float* xb,
     const long int* xids ) {
-  //printf(__FUNCTION__);
-  //printf("\n");
-  //fflush(stdout);
+#if DEBUG
+  printf(__FUNCTION__);
+  printf("\n");
+  fflush(stdout);
+#endif
 
   try {
-    //printf("is_trained: %d\n", (static_cast<faiss::IndexIVFPQ*>(st->faiss_index))->is_trained);
-    //printf("ntotal: %ld\n", (static_cast<faiss::IndexIVFPQ*>(st->faiss_index))->ntotal);
+#if DEBUG
+    printf("is_trained: %d\n", (static_cast<faiss::IndexIVFPQ*>(st->faiss_index))->is_trained);
+    printf("ntotal: %ld\n", (static_cast<faiss::IndexIVFPQ*>(st->faiss_index))->ntotal);
+#endif
     (static_cast<faiss::IndexIVFPQ*>(st->faiss_index))->add_with_ids(nb, xb, xids);
-    //printf("is_trained: %d\n", (static_cast<faiss::IndexIVFPQ*>(st->faiss_index))->is_trained);
-    //printf("ntotal: %ld\n", (static_cast<faiss::IndexIVFPQ*>(st->faiss_index))->ntotal);
+#if DEBUG
+    printf("is_trained: %d\n", (static_cast<faiss::IndexIVFPQ*>(st->faiss_index))->is_trained);
+    printf("ntotal: %ld\n", (static_cast<faiss::IndexIVFPQ*>(st->faiss_index))->ntotal);
+#endif
   } catch(std::exception &err) {
     std::stringstream ss;
     ss << "Capi : " << __FUNCTION__ << "() : Error: " << err.what();
@@ -153,7 +175,9 @@ int faiss_add(
     return -1;
   }
 
+#if DEBUG
   fflush(stdout);
+#endif
   return (static_cast<faiss::IndexIVFPQ*>(st->faiss_index))->ntotal;
 }
 
@@ -164,28 +188,34 @@ bool faiss_search(
     const float* xq,
     long* I,
     float* D) {
-  //printf(__FUNCTION__);
-  //printf("\n");
-  //fflush(stdout);
+#if DEBUG
+  printf(__FUNCTION__);
+  printf("\n");
+  fflush(stdout);
+#endif
 
   try {
-    //printf("is_trained: %d\n", (static_cast<faiss::IndexIVFPQ*>(st->faiss_index))->is_trained);
-    //printf("ntotal: %ld\n", (static_cast<faiss::IndexIVFPQ*>(st->faiss_index))->ntotal);
+#if DEBUG
+    printf("is_trained: %d\n", (static_cast<faiss::IndexIVFPQ*>(st->faiss_index))->is_trained);
+    printf("ntotal: %ld\n", (static_cast<faiss::IndexIVFPQ*>(st->faiss_index))->ntotal);
+#endif
     (static_cast<faiss::IndexIVFPQ*>(st->faiss_index))->search(nq, xq, k, D, I);
-    //printf("I=\n");
-    //for(int i = 0; i < nq; i++) {
-    //    for(int j = 0; j < k; j++) {
-    //        printf("%5ld ", I[i * k + j]);
-    //    }
-    //    printf("\n");
-    //}
-    //printf("D=\n");
-    //for(int i = 0; i < nq; i++) {
-    //    for(int j = 0; j < k; j++) {
-    //        printf("%7g ", D[i * k + j]);
-    //    }
-    //    printf("\n");
-    //}
+#if DEBUG
+    printf("I=\n");
+    for(int i = 0; i < nq; i++) {
+        for(int j = 0; j < k; j++) {
+            printf("%5ld ", I[i * k + j]);
+        }
+        printf("\n");
+    }
+    printf("D=\n");
+    for(int i = 0; i < nq; i++) {
+        for(int j = 0; j < k; j++) {
+            printf("%7g ", D[i * k + j]);
+        }
+        printf("\n");
+    }
+#endif
   } catch(std::exception &err) {
     std::stringstream ss;
     ss << "Capi : " << __FUNCTION__ << "() : Error: " << err.what();
@@ -193,6 +223,9 @@ bool faiss_search(
     return false;
   }
 
+#if DEBUG
+  fflush(stdout);
+#endif
   return true;
 }
 
@@ -200,17 +233,23 @@ int faiss_remove(
     const FaissStruct* st,
     const int size,
     const long int* ids) {
-  //printf(__FUNCTION__);
-  //printf("\n");
-  //fflush(stdout);
+#if DEBUG
+  printf(__FUNCTION__);
+  printf("\n");
+  fflush(stdout);
+#endif
 
   try {
-    //printf("is_trained: %d\n", (static_cast<faiss::IndexIVFPQ*>(st->faiss_index))->is_trained);
-    //printf("ntotal: %ld\n", (static_cast<faiss::IndexIVFPQ*>(st->faiss_index))->ntotal);
+#if DEBUG
+    printf("is_trained: %d\n", (static_cast<faiss::IndexIVFPQ*>(st->faiss_index))->is_trained);
+    printf("ntotal: %ld\n", (static_cast<faiss::IndexIVFPQ*>(st->faiss_index))->ntotal);
+#endif
     faiss::IDSelectorArray sel(size, ids);
     (static_cast<faiss::IndexIVFPQ*>(st->faiss_index))->remove_ids(sel);
-    //printf("is_trained: %d\n", (static_cast<faiss::IndexIVFPQ*>(st->faiss_index))->is_trained);
-    //printf("ntotal: %ld\n", (static_cast<faiss::IndexIVFPQ*>(st->faiss_index))->ntotal);
+#if DEBUG
+    printf("is_trained: %d\n", (static_cast<faiss::IndexIVFPQ*>(st->faiss_index))->is_trained);
+    printf("ntotal: %ld\n", (static_cast<faiss::IndexIVFPQ*>(st->faiss_index))->ntotal);
+#endif
   } catch(std::exception &err) {
     std::stringstream ss;
     ss << "Capi : " << __FUNCTION__ << "() : Error: " << err.what();
@@ -218,13 +257,18 @@ int faiss_remove(
     return -1;
   }
 
+#if DEBUG
+  fflush(stdout);
+#endif
   return (static_cast<faiss::IndexIVFPQ*>(st->faiss_index))->ntotal;
 }
 
 void faiss_free(FaissStruct* st) {
-  //printf(__FUNCTION__);
-  //printf("\n");
-  //fflush(stdout);
+#if DEBUG
+  printf(__FUNCTION__);
+  printf("\n");
+  fflush(stdout);
+#endif
 
   free(st);
   return;

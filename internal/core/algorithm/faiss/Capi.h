@@ -14,6 +14,10 @@
 // limitations under the License.
 //
 
+#ifndef DEBUG
+#define DEBUG
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
