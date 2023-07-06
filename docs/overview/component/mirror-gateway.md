@@ -76,4 +76,3 @@ The following is the list of rollback types.
   - Rollback request to the successful request
     - REMOVE Request if there is no old vector data
     - UPDATE Request if there is old vector data
-

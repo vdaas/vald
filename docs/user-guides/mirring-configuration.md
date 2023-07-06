@@ -87,4 +87,3 @@ spec:
     # The port number
     port: 8081
 ```
-

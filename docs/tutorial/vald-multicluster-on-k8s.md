@@ -28,7 +28,7 @@ If Helm or HDF5 is not installed, please install [Helm](https://helm.sh/docs/int
 
 <details><summary>Installation command for Helm</summary><br>
 
-```bash
+````bash
 curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 
 ## Prepare the Kubernetes Cluster
@@ -47,7 +47,7 @@ The way to deploy Kubernetes Metrics Service is here:
 ```bash
 kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml && \
 kubectl wait -n kube-system --for=condition=ready pod -l k8s-app=metrics-server --timeout=600s
-```
+````
 
 Please prepare three Namespaces on the Kubernetes cluster.
 
@@ -126,50 +126,49 @@ In this section, you will deploy three Vald clusters consisting of `vald-agent-n
 
     <details><summary>`vald-02` Namespace</summary><br>
 
-     ```bash
-     kubectl get pods -n vald-02
-     NAME                                  READY   STATUS    RESTARTS   AGE
-     vald-agent-ngt-0                      1/1     Running   0          2m52s
-     vald-agent-ngt-1                      1/1     Running   0          2m52s
-     vald-agent-ngt-2                      1/1     Running   0          2m52s
-     vald-agent-ngt-4                      1/1     Running   0          2m52s
-     vald-agent-ngt-5                      1/1     Running   0          2m52s
-     vald-agent-ngt-3                      1/1     Running   0          2m52s
-     vald-discoverer-8cfcff76-vlmpg        1/1     Running   0          2m52s
-     vald-lb-gateway-54896f9f49-wtlcv      1/1     Running   0          2m52s
-     vald-lb-gateway-54896f9f49-hbklj      1/1     Running   0          2m52s
-     vald-manager-index-676855f8d7-bb4wb   1/1     Running   0          2m52s
-     vald-lb-gateway-54896f9f49-kgrdf      1/1     Running   0          2m52s
-     vald-mirror-gateway-6598cf957-t2nz4   1/1     Running   0          2m37s
-     vald-mirror-gateway-6598cf957-wr448   1/1     Running   0          2m52s
-     vald-mirror-gateway-6598cf957-jdd6q   1/1     Running   0          2m37s
-     ```
+   ```bash
+   kubectl get pods -n vald-02
+   NAME                                  READY   STATUS    RESTARTS   AGE
+   vald-agent-ngt-0                      1/1     Running   0          2m52s
+   vald-agent-ngt-1                      1/1     Running   0          2m52s
+   vald-agent-ngt-2                      1/1     Running   0          2m52s
+   vald-agent-ngt-4                      1/1     Running   0          2m52s
+   vald-agent-ngt-5                      1/1     Running   0          2m52s
+   vald-agent-ngt-3                      1/1     Running   0          2m52s
+   vald-discoverer-8cfcff76-vlmpg        1/1     Running   0          2m52s
+   vald-lb-gateway-54896f9f49-wtlcv      1/1     Running   0          2m52s
+   vald-lb-gateway-54896f9f49-hbklj      1/1     Running   0          2m52s
+   vald-manager-index-676855f8d7-bb4wb   1/1     Running   0          2m52s
+   vald-lb-gateway-54896f9f49-kgrdf      1/1     Running   0          2m52s
+   vald-mirror-gateway-6598cf957-t2nz4   1/1     Running   0          2m37s
+   vald-mirror-gateway-6598cf957-wr448   1/1     Running   0          2m52s
+   vald-mirror-gateway-6598cf957-jdd6q   1/1     Running   0          2m37s
+   ```
 
     </details>
 
     <details><summary>`vald-03` Namespace</summary><br>
 
-     ```bash
-     kubectl get pods -n vald-03
-     NAME                                   READY   STATUS    RESTARTS   AGE
-     vald-agent-ngt-0                       1/1     Running   0          2m46s
-     vald-agent-ngt-1                       1/1     Running   0          2m46s
-     vald-agent-ngt-2                       1/1     Running   0          2m46s
-     vald-agent-ngt-3                       1/1     Running   0          2m46s
-     vald-agent-ngt-4                       1/1     Running   0          2m46s
-     vald-agent-ngt-5                       1/1     Running   0          2m46s
-     vald-discoverer-879867b44-8m59h        1/1     Running   0          2m46s
-     vald-lb-gateway-6c8c6b468d-ghlpx       1/1     Running   0          2m46s
-     vald-lb-gateway-6c8c6b468d-rt688       1/1     Running   0          2m46s
-     vald-lb-gateway-6c8c6b468d-jq7pl       1/1     Running   0          2m46s
-     vald-manager-index-5596f89644-xfv4t    1/1     Running   0          2m46s
-     vald-mirror-gateway-7b95956f8b-l57jz   1/1     Running   0          2m31s
-     vald-mirror-gateway-7b95956f8b-xd9n5   1/1     Running   0          2m46s
-     vald-mirror-gateway-7b95956f8b-dnxbb   1/1     Running   0          2m31s
-     ```
+   ```bash
+   kubectl get pods -n vald-03
+   NAME                                   READY   STATUS    RESTARTS   AGE
+   vald-agent-ngt-0                       1/1     Running   0          2m46s
+   vald-agent-ngt-1                       1/1     Running   0          2m46s
+   vald-agent-ngt-2                       1/1     Running   0          2m46s
+   vald-agent-ngt-3                       1/1     Running   0          2m46s
+   vald-agent-ngt-4                       1/1     Running   0          2m46s
+   vald-agent-ngt-5                       1/1     Running   0          2m46s
+   vald-discoverer-879867b44-8m59h        1/1     Running   0          2m46s
+   vald-lb-gateway-6c8c6b468d-ghlpx       1/1     Running   0          2m46s
+   vald-lb-gateway-6c8c6b468d-rt688       1/1     Running   0          2m46s
+   vald-lb-gateway-6c8c6b468d-jq7pl       1/1     Running   0          2m46s
+   vald-manager-index-5596f89644-xfv4t    1/1     Running   0          2m46s
+   vald-mirror-gateway-7b95956f8b-l57jz   1/1     Running   0          2m31s
+   vald-mirror-gateway-7b95956f8b-xd9n5   1/1     Running   0          2m46s
+   vald-mirror-gateway-7b95956f8b-dnxbb   1/1     Running   0          2m31s
+   ```
 
     </details>
-
 
 ## Deploy ValdMirrorTarget Resource (Custom Resource)
 
@@ -185,7 +184,7 @@ kubectl apply -f ./charts/vald/values/multi-vald/mirror-target.yaml -n vald-03
 
 The current connection status can be checked with the following command.
 
-```bash
+````bash
 kubectl get vmt -A -o wide
 
 <details><summary>Example output</summary><br>
@@ -220,7 +219,7 @@ If you are interested, please refer to [SDKs](https://vald.vdaas.org/docs/user-
    kubectl port-forward svc/vald-mirror-gateway 8080:8081 -n vald-01 & \
      kubectl port-forward svc/vald-mirror-gateway 8081:8081 -n vald-02 & \
      kubectl port-forward svc/vald-mirror-gateway 8082:8081 -n vald-03
-   ```
+````
 
 2. Download dataset
 
@@ -282,4 +281,3 @@ You completely entered the World of multiple Vald clusters!
 For more information, we recommend you check the following:
 
 - [Configuration](https://vald.vdaas.org/docs/user-guides/configuration/)
-
