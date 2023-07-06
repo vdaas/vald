@@ -2,7 +2,7 @@
 
 This page describes how to enable mirroring features on the Vald cluster.
 
-Before you use the mirroring functions, please look at [the Vald Mirror Gateway document](../../docs/component/mirror-gateway.md) for what you can do.
+Before you use the mirroring functions, please look at [the Vald Mirror Gateway document](../../docs/overview/component/mirror-gateway.md) for what you can do.
 
 ## Requirement
 
