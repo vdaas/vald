@@ -28,8 +28,11 @@ If Helm or HDF5 is not installed, please install [Helm](https://helm.sh/docs/int
 
 <details><summary>Installation command for Helm</summary><br>
 
-````bash
+```bash
 curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+```
+
+</details>
 
 ## Prepare the Kubernetes Cluster
 
@@ -184,9 +187,6 @@ kubectl apply -f ./charts/vald/values/multi-vald/mirror-target.yaml -n vald-03
 
 The current connection status can be checked with the following command.
 
-````bash
-kubectl get vmt -A -o wide
-
 <details><summary>Example output</summary><br>
 
 ```bash
@@ -198,6 +198,9 @@ vald-02     mirror-target-3296010438411762394    vald-mirror-gateway.vald-01.svc
 vald-02     mirror-target-12697587923462644654   vald-mirror-gateway.vald-03.svc.cluster.local   8081   Connected   2023-05-22T02:07:53Z   19m
 vald-01     mirror-target-13698925675968803691   vald-mirror-gateway.vald-02.svc.cluster.local   8081   Connected   2023-05-22T02:07:53Z   19m
 vald-01     mirror-target-17825710563723389324   vald-mirror-gateway.vald-03.svc.cluster.local   8081   Connected   2023-05-22T02:07:53Z   19m
+```
+
+</details>
 
 ## Run Example Code
 
@@ -219,7 +222,7 @@ If you are interested, please refer to [SDKs](https://vald.vdaas.org/docs/user-
    kubectl port-forward svc/vald-mirror-gateway 8080:8081 -n vald-01 & \
      kubectl port-forward svc/vald-mirror-gateway 8081:8081 -n vald-02 & \
      kubectl port-forward svc/vald-mirror-gateway 8082:8081 -n vald-03
-````
+   ```
 
 2. Download dataset
 
