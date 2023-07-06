@@ -4185,180 +4185,181 @@ func Test_mySQLClient_RemoveIPs(t *testing.T) {
 }
 
 // NOT IMPLEMENTED BELOW
-
-func Test_mySQLClient_errorLog(t *testing.T) {
-	type args struct {
-		err error
-	}
-	type fields struct {
-		db                   string
-		network              string
-		socketPath           string
-		host                 string
-		port                 uint16
-		user                 string
-		pass                 string
-		name                 string
-		charset              string
-		timezone             string
-		initialPingTimeLimit time.Duration
-		initialPingDuration  time.Duration
-		connMaxLifeTime      time.Duration
-		dialer               net.Dialer
-		dialerFunc           func(ctx context.Context, network, addr string) (net.Conn, error)
-		tlsConfig            *tls.Config
-		maxOpenConns         int
-		maxIdleConns         int
-		session              dbr.Session
-		connected            atomic.Value
-		eventReceiver        EventReceiver
-		dbr                  dbr.DBR
-	}
-	type want struct{}
-	type test struct {
-		name       string
-		args       args
-		fields     fields
-		want       want
-		checkFunc  func(want) error
-		beforeFunc func(*testing.T, args)
-		afterFunc  func(*testing.T, args)
-	}
-	defaultCheckFunc := func(w want) error {
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           err:nil,
-		       },
-		       fields: fields {
-		           db:"",
-		           network:"",
-		           socketPath:"",
-		           host:"",
-		           port:0,
-		           user:"",
-		           pass:"",
-		           name:"",
-		           charset:"",
-		           timezone:"",
-		           initialPingTimeLimit:nil,
-		           initialPingDuration:nil,
-		           connMaxLifeTime:nil,
-		           dialer:nil,
-		           dialerFunc:nil,
-		           tlsConfig:nil,
-		           maxOpenConns:0,
-		           maxIdleConns:0,
-		           session:nil,
-		           connected:nil,
-		           eventReceiver:nil,
-		           dbr:nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		       beforeFunc: func(t *testing.T, args args) {
-		           t.Helper()
-		       },
-		       afterFunc: func(t *testing.T, args args) {
-		           t.Helper()
-		       },
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           err:nil,
-		           },
-		           fields: fields {
-		           db:"",
-		           network:"",
-		           socketPath:"",
-		           host:"",
-		           port:0,
-		           user:"",
-		           pass:"",
-		           name:"",
-		           charset:"",
-		           timezone:"",
-		           initialPingTimeLimit:nil,
-		           initialPingDuration:nil,
-		           connMaxLifeTime:nil,
-		           dialer:nil,
-		           dialerFunc:nil,
-		           tlsConfig:nil,
-		           maxOpenConns:0,
-		           maxIdleConns:0,
-		           session:nil,
-		           connected:nil,
-		           eventReceiver:nil,
-		           dbr:nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		           beforeFunc: func(t *testing.T, args args) {
-		               t.Helper()
-		           },
-		           afterFunc: func(t *testing.T, args args) {
-		               t.Helper()
-		           },
-		       }
-		   }(),
-		*/
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-			if test.beforeFunc != nil {
-				test.beforeFunc(tt, test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(tt, test.args)
-			}
-			checkFunc := test.checkFunc
-			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
-			}
-			m := &mySQLClient{
-				db:                   test.fields.db,
-				network:              test.fields.network,
-				socketPath:           test.fields.socketPath,
-				host:                 test.fields.host,
-				port:                 test.fields.port,
-				user:                 test.fields.user,
-				pass:                 test.fields.pass,
-				name:                 test.fields.name,
-				charset:              test.fields.charset,
-				timezone:             test.fields.timezone,
-				initialPingTimeLimit: test.fields.initialPingTimeLimit,
-				initialPingDuration:  test.fields.initialPingDuration,
-				connMaxLifeTime:      test.fields.connMaxLifeTime,
-				dialer:               test.fields.dialer,
-				dialerFunc:           test.fields.dialerFunc,
-				tlsConfig:            test.fields.tlsConfig,
-				maxOpenConns:         test.fields.maxOpenConns,
-				maxIdleConns:         test.fields.maxIdleConns,
-				session:              test.fields.session,
-				connected:            test.fields.connected,
-				eventReceiver:        test.fields.eventReceiver,
-				dbr:                  test.fields.dbr,
-			}
-
-			m.errorLog(test.args.err)
-			if err := checkFunc(test.want); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
+//
+// func Test_mySQLClient_errorLog(t *testing.T) {
+// 	type args struct {
+// 		err error
+// 	}
+// 	type fields struct {
+// 		db                   string
+// 		network              string
+// 		socketPath           string
+// 		host                 string
+// 		port                 uint16
+// 		user                 string
+// 		pass                 string
+// 		name                 string
+// 		charset              string
+// 		timezone             string
+// 		initialPingTimeLimit time.Duration
+// 		initialPingDuration  time.Duration
+// 		connMaxLifeTime      time.Duration
+// 		dialer               net.Dialer
+// 		dialerFunc           func(ctx context.Context, network, addr string) (net.Conn, error)
+// 		tlsConfig            *tls.Config
+// 		maxOpenConns         int
+// 		maxIdleConns         int
+// 		session              dbr.Session
+// 		connected            atomic.Value
+// 		eventReceiver        EventReceiver
+// 		dbr                  dbr.DBR
+// 	}
+// 	type want struct {
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want) error {
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           err:nil,
+// 		       },
+// 		       fields: fields {
+// 		           db:"",
+// 		           network:"",
+// 		           socketPath:"",
+// 		           host:"",
+// 		           port:0,
+// 		           user:"",
+// 		           pass:"",
+// 		           name:"",
+// 		           charset:"",
+// 		           timezone:"",
+// 		           initialPingTimeLimit:nil,
+// 		           initialPingDuration:nil,
+// 		           connMaxLifeTime:nil,
+// 		           dialer:nil,
+// 		           dialerFunc:nil,
+// 		           tlsConfig:nil,
+// 		           maxOpenConns:0,
+// 		           maxIdleConns:0,
+// 		           session:nil,
+// 		           connected:nil,
+// 		           eventReceiver:nil,
+// 		           dbr:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           err:nil,
+// 		           },
+// 		           fields: fields {
+// 		           db:"",
+// 		           network:"",
+// 		           socketPath:"",
+// 		           host:"",
+// 		           port:0,
+// 		           user:"",
+// 		           pass:"",
+// 		           name:"",
+// 		           charset:"",
+// 		           timezone:"",
+// 		           initialPingTimeLimit:nil,
+// 		           initialPingDuration:nil,
+// 		           connMaxLifeTime:nil,
+// 		           dialer:nil,
+// 		           dialerFunc:nil,
+// 		           tlsConfig:nil,
+// 		           maxOpenConns:0,
+// 		           maxIdleConns:0,
+// 		           session:nil,
+// 		           connected:nil,
+// 		           eventReceiver:nil,
+// 		           dbr:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			m := &mySQLClient{
+// 				db:                   test.fields.db,
+// 				network:              test.fields.network,
+// 				socketPath:           test.fields.socketPath,
+// 				host:                 test.fields.host,
+// 				port:                 test.fields.port,
+// 				user:                 test.fields.user,
+// 				pass:                 test.fields.pass,
+// 				name:                 test.fields.name,
+// 				charset:              test.fields.charset,
+// 				timezone:             test.fields.timezone,
+// 				initialPingTimeLimit: test.fields.initialPingTimeLimit,
+// 				initialPingDuration:  test.fields.initialPingDuration,
+// 				connMaxLifeTime:      test.fields.connMaxLifeTime,
+// 				dialer:               test.fields.dialer,
+// 				dialerFunc:           test.fields.dialerFunc,
+// 				tlsConfig:            test.fields.tlsConfig,
+// 				maxOpenConns:         test.fields.maxOpenConns,
+// 				maxIdleConns:         test.fields.maxIdleConns,
+// 				session:              test.fields.session,
+// 				connected:            test.fields.connected,
+// 				eventReceiver:        test.fields.eventReceiver,
+// 				dbr:                  test.fields.dbr,
+// 			}
+//
+// 			m.errorLog(test.args.err)
+// 			if err := checkFunc(test.want); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }

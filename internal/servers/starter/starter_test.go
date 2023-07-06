@@ -15,7 +15,6 @@ package starter
 
 import (
 	"net/http"
-	"reflect"
 	"testing"
 
 	"github.com/vdaas/vald/internal/config"
@@ -23,7 +22,6 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/servers"
 	"github.com/vdaas/vald/internal/servers/server"
-	"github.com/vdaas/vald/internal/test/goleak"
 	"github.com/vdaas/vald/internal/tls"
 )
 
@@ -464,369 +462,372 @@ func TestSetupMetrics(t *testing.T) {
 }
 
 // NOT IMPLEMENTED BELOW
-
-func Test_srvs_setupAPIs(t *testing.T) {
-	type args struct {
-		cfg *tls.Config
-	}
-	type fields struct {
-		rest    func(cfg *config.Server) []server.Option
-		gql     func(cfg *config.Server) []server.Option
-		grpc    func(cfg *config.Server) []server.Option
-		cfg     *config.Servers
-		pstartf map[string]func() error
-		pstopf  map[string]func() error
-	}
-	type want struct {
-		want []servers.Option
-		err  error
-	}
-	type test struct {
-		name       string
-		args       args
-		fields     fields
-		want       want
-		checkFunc  func(want, []servers.Option, error) error
-		beforeFunc func(*testing.T, args)
-		afterFunc  func(*testing.T, args)
-	}
-	defaultCheckFunc := func(w want, got []servers.Option, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-		}
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           cfg:nil,
-		       },
-		       fields: fields {
-		           rest:nil,
-		           gql:nil,
-		           grpc:nil,
-		           cfg:nil,
-		           pstartf:nil,
-		           pstopf:nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		       beforeFunc: func(t *testing.T, args args) {
-		           t.Helper()
-		       },
-		       afterFunc: func(t *testing.T, args args) {
-		           t.Helper()
-		       },
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           cfg:nil,
-		           },
-		           fields: fields {
-		           rest:nil,
-		           gql:nil,
-		           grpc:nil,
-		           cfg:nil,
-		           pstartf:nil,
-		           pstopf:nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		           beforeFunc: func(t *testing.T, args args) {
-		               t.Helper()
-		           },
-		           afterFunc: func(t *testing.T, args args) {
-		               t.Helper()
-		           },
-		       }
-		   }(),
-		*/
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-			if test.beforeFunc != nil {
-				test.beforeFunc(tt, test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(tt, test.args)
-			}
-			checkFunc := test.checkFunc
-			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
-			}
-			s := &srvs{
-				rest:    test.fields.rest,
-				gql:     test.fields.gql,
-				grpc:    test.fields.grpc,
-				cfg:     test.fields.cfg,
-				pstartf: test.fields.pstartf,
-				pstopf:  test.fields.pstopf,
-			}
-
-			got, err := s.setupAPIs(test.args.cfg)
-			if err := checkFunc(test.want, got, err); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
-
-func Test_srvs_setupHealthCheck(t *testing.T) {
-	type args struct {
-		in0 *tls.Config
-	}
-	type fields struct {
-		rest    func(cfg *config.Server) []server.Option
-		gql     func(cfg *config.Server) []server.Option
-		grpc    func(cfg *config.Server) []server.Option
-		cfg     *config.Servers
-		pstartf map[string]func() error
-		pstopf  map[string]func() error
-	}
-	type want struct {
-		want []servers.Option
-		err  error
-	}
-	type test struct {
-		name       string
-		args       args
-		fields     fields
-		want       want
-		checkFunc  func(want, []servers.Option, error) error
-		beforeFunc func(*testing.T, args)
-		afterFunc  func(*testing.T, args)
-	}
-	defaultCheckFunc := func(w want, got []servers.Option, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-		}
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           in0:nil,
-		       },
-		       fields: fields {
-		           rest:nil,
-		           gql:nil,
-		           grpc:nil,
-		           cfg:nil,
-		           pstartf:nil,
-		           pstopf:nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		       beforeFunc: func(t *testing.T, args args) {
-		           t.Helper()
-		       },
-		       afterFunc: func(t *testing.T, args args) {
-		           t.Helper()
-		       },
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           in0:nil,
-		           },
-		           fields: fields {
-		           rest:nil,
-		           gql:nil,
-		           grpc:nil,
-		           cfg:nil,
-		           pstartf:nil,
-		           pstopf:nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		           beforeFunc: func(t *testing.T, args args) {
-		               t.Helper()
-		           },
-		           afterFunc: func(t *testing.T, args args) {
-		               t.Helper()
-		           },
-		       }
-		   }(),
-		*/
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-			if test.beforeFunc != nil {
-				test.beforeFunc(tt, test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(tt, test.args)
-			}
-			checkFunc := test.checkFunc
-			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
-			}
-			s := &srvs{
-				rest:    test.fields.rest,
-				gql:     test.fields.gql,
-				grpc:    test.fields.grpc,
-				cfg:     test.fields.cfg,
-				pstartf: test.fields.pstartf,
-				pstopf:  test.fields.pstopf,
-			}
-
-			got, err := s.setupHealthCheck(test.args.in0)
-			if err := checkFunc(test.want, got, err); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
-
-func Test_srvs_setupMetrics(t *testing.T) {
-	type args struct {
-		cfg *tls.Config
-	}
-	type fields struct {
-		rest    func(cfg *config.Server) []server.Option
-		gql     func(cfg *config.Server) []server.Option
-		grpc    func(cfg *config.Server) []server.Option
-		cfg     *config.Servers
-		pstartf map[string]func() error
-		pstopf  map[string]func() error
-	}
-	type want struct {
-		want []servers.Option
-		err  error
-	}
-	type test struct {
-		name       string
-		args       args
-		fields     fields
-		want       want
-		checkFunc  func(want, []servers.Option, error) error
-		beforeFunc func(*testing.T, args)
-		afterFunc  func(*testing.T, args)
-	}
-	defaultCheckFunc := func(w want, got []servers.Option, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-		}
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           cfg:nil,
-		       },
-		       fields: fields {
-		           rest:nil,
-		           gql:nil,
-		           grpc:nil,
-		           cfg:nil,
-		           pstartf:nil,
-		           pstopf:nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		       beforeFunc: func(t *testing.T, args args) {
-		           t.Helper()
-		       },
-		       afterFunc: func(t *testing.T, args args) {
-		           t.Helper()
-		       },
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           cfg:nil,
-		           },
-		           fields: fields {
-		           rest:nil,
-		           gql:nil,
-		           grpc:nil,
-		           cfg:nil,
-		           pstartf:nil,
-		           pstopf:nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		           beforeFunc: func(t *testing.T, args args) {
-		               t.Helper()
-		           },
-		           afterFunc: func(t *testing.T, args args) {
-		               t.Helper()
-		           },
-		       }
-		   }(),
-		*/
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-			if test.beforeFunc != nil {
-				test.beforeFunc(tt, test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(tt, test.args)
-			}
-			checkFunc := test.checkFunc
-			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
-			}
-			s := &srvs{
-				rest:    test.fields.rest,
-				gql:     test.fields.gql,
-				grpc:    test.fields.grpc,
-				cfg:     test.fields.cfg,
-				pstartf: test.fields.pstartf,
-				pstopf:  test.fields.pstopf,
-			}
-
-			got, err := s.setupMetrics(test.args.cfg)
-			if err := checkFunc(test.want, got, err); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
+//
+// func Test_srvs_setupAPIs(t *testing.T) {
+// 	type args struct {
+// 		cfg *tls.Config
+// 	}
+// 	type fields struct {
+// 		rest    func(cfg *config.Server) []server.Option
+// 		gql     func(cfg *config.Server) []server.Option
+// 		grpc    func(cfg *config.Server) []server.Option
+// 		cfg     *config.Servers
+// 		pstartf map[string]func() error
+// 		pstopf  map[string]func() error
+// 	}
+// 	type want struct {
+// 		want []servers.Option
+// 		err  error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, []servers.Option, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, got []servers.Option, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           cfg:nil,
+// 		       },
+// 		       fields: fields {
+// 		           rest:nil,
+// 		           gql:nil,
+// 		           grpc:nil,
+// 		           cfg:nil,
+// 		           pstartf:nil,
+// 		           pstopf:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           cfg:nil,
+// 		           },
+// 		           fields: fields {
+// 		           rest:nil,
+// 		           gql:nil,
+// 		           grpc:nil,
+// 		           cfg:nil,
+// 		           pstartf:nil,
+// 		           pstopf:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			s := &srvs{
+// 				rest:    test.fields.rest,
+// 				gql:     test.fields.gql,
+// 				grpc:    test.fields.grpc,
+// 				cfg:     test.fields.cfg,
+// 				pstartf: test.fields.pstartf,
+// 				pstopf:  test.fields.pstopf,
+// 			}
+//
+// 			got, err := s.setupAPIs(test.args.cfg)
+// 			if err := checkFunc(test.want, got, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+//
+// 		})
+// 	}
+// }
+//
+// func Test_srvs_setupHealthCheck(t *testing.T) {
+// 	type args struct {
+// 		in0 *tls.Config
+// 	}
+// 	type fields struct {
+// 		rest    func(cfg *config.Server) []server.Option
+// 		gql     func(cfg *config.Server) []server.Option
+// 		grpc    func(cfg *config.Server) []server.Option
+// 		cfg     *config.Servers
+// 		pstartf map[string]func() error
+// 		pstopf  map[string]func() error
+// 	}
+// 	type want struct {
+// 		want []servers.Option
+// 		err  error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, []servers.Option, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, got []servers.Option, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           in0:nil,
+// 		       },
+// 		       fields: fields {
+// 		           rest:nil,
+// 		           gql:nil,
+// 		           grpc:nil,
+// 		           cfg:nil,
+// 		           pstartf:nil,
+// 		           pstopf:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           in0:nil,
+// 		           },
+// 		           fields: fields {
+// 		           rest:nil,
+// 		           gql:nil,
+// 		           grpc:nil,
+// 		           cfg:nil,
+// 		           pstartf:nil,
+// 		           pstopf:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			s := &srvs{
+// 				rest:    test.fields.rest,
+// 				gql:     test.fields.gql,
+// 				grpc:    test.fields.grpc,
+// 				cfg:     test.fields.cfg,
+// 				pstartf: test.fields.pstartf,
+// 				pstopf:  test.fields.pstopf,
+// 			}
+//
+// 			got, err := s.setupHealthCheck(test.args.in0)
+// 			if err := checkFunc(test.want, got, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+//
+// 		})
+// 	}
+// }
+//
+// func Test_srvs_setupMetrics(t *testing.T) {
+// 	type args struct {
+// 		cfg *tls.Config
+// 	}
+// 	type fields struct {
+// 		rest    func(cfg *config.Server) []server.Option
+// 		gql     func(cfg *config.Server) []server.Option
+// 		grpc    func(cfg *config.Server) []server.Option
+// 		cfg     *config.Servers
+// 		pstartf map[string]func() error
+// 		pstopf  map[string]func() error
+// 	}
+// 	type want struct {
+// 		want []servers.Option
+// 		err  error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, []servers.Option, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, got []servers.Option, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           cfg:nil,
+// 		       },
+// 		       fields: fields {
+// 		           rest:nil,
+// 		           gql:nil,
+// 		           grpc:nil,
+// 		           cfg:nil,
+// 		           pstartf:nil,
+// 		           pstopf:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           cfg:nil,
+// 		           },
+// 		           fields: fields {
+// 		           rest:nil,
+// 		           gql:nil,
+// 		           grpc:nil,
+// 		           cfg:nil,
+// 		           pstartf:nil,
+// 		           pstopf:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			s := &srvs{
+// 				rest:    test.fields.rest,
+// 				gql:     test.fields.gql,
+// 				grpc:    test.fields.grpc,
+// 				cfg:     test.fields.cfg,
+// 				pstartf: test.fields.pstartf,
+// 				pstopf:  test.fields.pstopf,
+// 			}
+//
+// 			got, err := s.setupMetrics(test.args.cfg)
+// 			if err := checkFunc(test.want, got, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+//
+// 		})
+// 	}
+// }
