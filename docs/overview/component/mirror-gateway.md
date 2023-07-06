@@ -39,7 +39,8 @@ For more information about `ValdMirrorTarget` configuration, please refer to [Cu
 
 <img src="../../../assets/docs/overview/component/mirror-gateway/request-forwarding.png">
 
-The Vald Mirror Gateway forwards the incoming user request ([Insert](https://vald.vdaas.org/docs/api/insert/) / [Upsert](https://vald.vdaas.org/docs/api/upsert/) / [Update](https://vald.vdaas.org/docs/api/update/) / [Remove](https://vald.vdaas.org/docs/api/remove/)) to other Vald Mirror Gateways. Then, while forwarding the user request, the Vald Mirror Gateway bypasses the incoming user request to Vald LB Gateway in its own cluster.
+The Vald Mirror Gateway forwards the incoming user request ([Insert](https://vald.vdaas.org/docs/api/insert/) / [Upsert](https://vald.vdaas.org/docs/api/upsert/) / [Update](https://vald.vdaas.org/docs/api/update/) / [Remove](https://vald.vdaas.org/docs/api/remove/)) to other Vald Mirror Gateways.
+Then, while forwarding the user request, the Vald Mirror Gateway bypasses the incoming user request to Vald LB Gateway in its own cluster.
 
 On the other hand, if the incoming user request is an [Object API](https://vald.vdaas.org/docs/api/object/) or [Search API](https://vald.vdaas.org/docs/api/search/), it is bypassed to only a Vald LB Gateway in its own cluster without forwarding it to other Vald Mirror Gateways.
 
@@ -76,9 +77,3 @@ The following is the list of rollback types.
     - REMOVE Request if there is no old vector data
     - UPDATE Request if there is old vector data
 
-## See also
-
-- [Agent](https://vald.vdaas.org/docs/overview/component/agent/)
-- [LB Gateway](https://vald.vdaas.org/docs/overview/component/lb-gateway/)
-- [Discoverer](https://vald.vdaas.org/docs/overview/component/discoverer/)
-- [Index Manager](https://vald.vdaas.org/docs/overview/component/index-manager/)

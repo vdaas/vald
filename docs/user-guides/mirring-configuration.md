@@ -11,12 +11,12 @@ Before using the mirroring functions, please check [the Vald Mirror Gateway doc
 
 ## Configuration
 
-This section shows how to configure values.yaml to enable Vald Mirror Gateway and how to interconnect Vald Mirror Gateways.
+This chapter shows how to configure values.yaml to enable Vald Mirror Gateway and how to interconnect Vald Mirror Gateways.
 
 The setting points are the followings:
 
 1. Enable the Vald Mirror Gateway using Helm values configuration
-2. Interconnect Vald Mirror Gateways using custom resource configuration
+2. Interconnect Vald Mirror Gateways using the Custom Resource configuration
 
 ### Helm Values Configuration
 
@@ -56,7 +56,7 @@ gateway:
       colocation: "dc1"
 ```
 
-Configuring the cluster role setting is required when you deploy Vald clusters with Vald Mirror Gateway on multiple namespaces in the Kubernetes cluster.
+The cluster role configuration is required when you deploy Vald clusters with Vald Mirror Gateway on multiple namespaces in the Kubernetes cluster.
 
 Please refer to [Cluster Role Configuration](https://vald.vdaas.org/docs/user-guides/cluster-role-binding/) about cluster role settings for Mirror Gateway.
 
@@ -88,8 +88,3 @@ spec:
     port: 8081
 ```
 
-## See also
-
-- [Configuration](https://vald.vdaas.org/docs/user-guides/configuration/)
-- [Cluster Role Binding](https://vald.vdaas.org/docs/user-guides/cluster-role-binding/)
-- [Deployment](https://vald.vdaas.org/docs/user-guides/deployment/)

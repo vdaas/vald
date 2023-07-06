@@ -8,7 +8,7 @@ Vald cluster consists of multiple micro-services.
 
 In [Get Started](https://vald.vdaas.org/docs/tutorial/get-started), you may use 4 kinds of components to deploy the Vald cluster.
 
-In this tutorial, You will deploy multiple Vald clusters with Vald Mirror Gateway, which connects another Vald cluster to each other.
+In this tutorial, you will deploy multiple Vald clusters with Vald Mirror Gateway, which connects another Vald cluster.
 
 The below image shows the architecture image of this case.
 
@@ -26,30 +26,17 @@ Helm is used to deploy Vald cluster on your Kubernetes and HDF5 is used to decod
 
 If Helm or HDF5 is not installed, please install [Helm](https://helm.sh/docs/intro/install) and [HDF5](https://www.hdfgroup.org/).
 
-- Installation command for Helm
+<details><summary>Installation command for Helm</summary><br>
 
-  ```protobuf
-  curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
-  ```
-
-- Installation command for HDF5
-
-  ```protobuf
-  # yum
-  yum install -y hdf5-devel
-
-  # apt
-  apt-get install libhdf5-serial-dev
-
-  # homebrew
-  brew install hdf5
-  ```
+```bash
+curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 
 ## Prepare the Kubernetes Cluster
 
 This tutorial requires the Kubernetes cluster.
 
-Vald cluster runs on public Cloud Kubernetes Services such as GKE, EKS. In the sense of trying to `Get Started`, [k3d](https://k3d.io/) or [kind](https://kind.sigs.k8s.io/) are easy Kubernetes tools to use.
+Vald cluster runs on public Cloud Kubernetes Services such as GKE, EKS.
+In the sense of trying to `Get Started`, [k3d](https://k3d.io/) or [kind](https://kind.sigs.k8s.io/) are easy Kubernetes tools to use.
 
 This tutorial uses [Kubernetes Metrics Server](https://github.com/kubernetes-sigs/metrics-server) for running the Vald cluster.
 
@@ -72,7 +59,8 @@ kubectl create namespace vald-03
 
 ## Deploy Vald Clusters on each Kubernetes Namespace
 
-This chapter shows how to deploy the multiple Vald clusters using Helm and run it on your Kubernetes cluster. In this section, you will deploy three Vald clusters consisting of `vald-agent-ngt`, `vald-lb-gateway`, `vald-discoverer`, `vald-manager-index`, and `vald-mirror-gateway` using the basic configuration.
+This chapter shows how to deploy the multiple Vald clusters using Helm and run it on your Kubernetes cluster.
+In this section, you will deploy three Vald clusters consisting of `vald-agent-ngt`, `vald-lb-gateway`, `vald-discoverer`, `vald-manager-index`, and `vald-mirror-gateway` using the basic configuration.
 
 1. Clone the repository
 
@@ -111,10 +99,10 @@ This chapter shows how to deploy the multiple Vald clusters using Helm and run i
 
 5. Verify
 
-   If the deployment succeeds, the Vald cluster’s components should run on each Kubernetes Namespace.
+   If success deployment, the Vald cluster’s components should run on each Kubernetes Namespace.
 
-   - Output for `vald-01`
-
+    <details><summary>`vald-01` Namespace</summary><br>
+    
      ```bash
      kubectl get pods -n vald-01
      NAME                                   READY   STATUS    RESTARTS   AGE
@@ -134,7 +122,9 @@ This chapter shows how to deploy the multiple Vald clusters using Helm and run i
      vald-mirror-gateway-6df75cf7cf-c2g7t   1/1     Running   0          2m41s
      ```
 
-   - Output for `vald-02`
+    </details>
+
+    <details><summary>`vald-02` Namespace</summary><br>
 
      ```bash
      kubectl get pods -n vald-02
@@ -155,7 +145,9 @@ This chapter shows how to deploy the multiple Vald clusters using Helm and run i
      vald-mirror-gateway-6598cf957-jdd6q   1/1     Running   0          2m37s
      ```
 
-   - Output for `vald-03`
+    </details>
+
+    <details><summary>`vald-03` Namespace</summary><br>
 
      ```bash
      kubectl get pods -n vald-03
@@ -176,11 +168,14 @@ This chapter shows how to deploy the multiple Vald clusters using Helm and run i
      vald-mirror-gateway-7b95956f8b-dnxbb   1/1     Running   0          2m31s
      ```
 
+    </details>
+
+
 ## Deploy ValdMirrorTarget Resource (Custom Resource)
 
 It requires applying the `ValdMirrorTarget` Custom Resource to the one namespace.
 
-When apply successfully, the destination information is automatically created on other namespaces when interconnected with each `vald-mirror-gateway`.
+When applied successfully, the destination information is automatically created on other namespaces when interconnected with each `vald-mirror-gateway`.
 
 This tutorial will deploy the [ValdMirrorTarger](https://github.com/vdaas/vald/tree/main/charts/vald/values/mirror-target.yaml) Custom Resource to the `vald-03` Namespace with the following command.
 
@@ -190,18 +185,20 @@ kubectl apply -f ./charts/vald/values/multi-vald/mirror-target.yaml -n vald-03
 
 The current connection status can be checked with the following command.
 
-- Output for status
+```bash
+kubectl get vmt -A -o wide
 
-  ```bash
-  kubectl get vmt -A -o wide
-  NAMESPACE   NAME                                 HOST                                            PORT   STATUS      LAST TRANSITION TIME   AGE
-  vald-03     mirror-target-01                     vald-mirror-gateway.vald-01.svc.cluster.local   8081   Connected   2023-05-22T02:07:51Z   19m
-  vald-03     mirror-target-02                     vald-mirror-gateway.vald-02.svc.cluster.local   8081   Connected   2023-05-22T02:07:51Z   19m
-  vald-02     mirror-target-3296010438411762394    vald-mirror-gateway.vald-01.svc.cluster.local   8081   Connected   2023-05-22T02:07:53Z   19m
-  vald-02     mirror-target-12697587923462644654   vald-mirror-gateway.vald-03.svc.cluster.local   8081   Connected   2023-05-22T02:07:53Z   19m
-  vald-01     mirror-target-13698925675968803691   vald-mirror-gateway.vald-02.svc.cluster.local   8081   Connected   2023-05-22T02:07:53Z   19m
-  vald-01     mirror-target-17825710563723389324   vald-mirror-gateway.vald-03.svc.cluster.local   8081   Connected   2023-05-22T02:07:53Z   19m
-  ```
+<details><summary>Example output</summary><br>
+
+```bash
+kubectl get vmt -A -o wide
+NAMESPACE   NAME                                 HOST                                            PORT   STATUS      LAST TRANSITION TIME   AGE
+vald-03     mirror-target-01                     vald-mirror-gateway.vald-01.svc.cluster.local   8081   Connected   2023-05-22T02:07:51Z   19m
+vald-03     mirror-target-02                     vald-mirror-gateway.vald-02.svc.cluster.local   8081   Connected   2023-05-22T02:07:51Z   19m
+vald-02     mirror-target-3296010438411762394    vald-mirror-gateway.vald-01.svc.cluster.local   8081   Connected   2023-05-22T02:07:53Z   19m
+vald-02     mirror-target-12697587923462644654   vald-mirror-gateway.vald-03.svc.cluster.local   8081   Connected   2023-05-22T02:07:53Z   19m
+vald-01     mirror-target-13698925675968803691   vald-mirror-gateway.vald-02.svc.cluster.local   8081   Connected   2023-05-22T02:07:53Z   19m
+vald-01     mirror-target-17825710563723389324   vald-mirror-gateway.vald-03.svc.cluster.local   8081   Connected   2023-05-22T02:07:53Z   19m
 
 ## Run Example Code
 
@@ -217,7 +214,7 @@ If you are interested, please refer to [SDKs](https://vald.vdaas.org/docs/user-
 
 1. Port Forward(option)
 
-   If you do not use Kubernetes Ingress, port-forward is required to make requests from your local environment.
+   If you do NOT use Kubernetes Ingress, port forwarding is required to make requests from your local environment.
 
    ```bash
    kubectl port-forward svc/vald-mirror-gateway 8080:8081 -n vald-01 & \
@@ -243,7 +240,9 @@ If you are interested, please refer to [SDKs](https://vald.vdaas.org/docs/user-
 
    We use [example/client/mirror/main.go](https://github.com/vdaas/vald/blob/feature/mirror-gateway-example/example/client/mirror/main.go) to run the example.
 
-   This example will insert and index 400 vectors into the Vald cluster from the Fashion-MNIST dataset via [gRPC](https://grpc.io/). And then, after waiting for indexing, it will request to search the nearest vector 10 times to all Vald clusters. You will get the 10 nearest neighbor vectors for each search query. And it will request to get vectors using inserted vector id.
+   This example will insert and index 400 vectors into the Vald cluster from the Fashion-MNIST dataset via [gRPC](https://grpc.io/).
+   And then, after waiting for indexing, it will request to search the nearest vector 10 times to all Vald clusters. You will get the 10 nearest neighbor vectors for each search query.
+   And it will request to get vectors using inserted vector ID.
 
    Run example codes by executing the below command.
 
@@ -263,7 +262,7 @@ helm uninstall vald-cluster-02 -n vald-02 && \
 helm uninstall vald-cluster-03 -n vald-03
 ```
 
-You can remove all ValdMirrorTarget resources (Custom Resource) with the below command.
+You can remove all `ValdMirrorTarget` resources (Custom Resource) with the below command.
 
 ```bash
 kubectl delete --all ValdMirrorTargets -A
@@ -277,14 +276,10 @@ kubectl delete namespaces vald-01 vald-02 vald-03
 
 ## Next Steps
 
-Congratulation! You completely entered the World of multiple Vald clusters!
+Congratulation!
+You completely entered the World of multiple Vald clusters!
 
 For more information, we recommend you check the following:
 
 - [Configuration](https://vald.vdaas.org/docs/user-guides/configuration/)
 
-## See also
-
-- [Get Started](https://vald.vdaas.org/docs/tutorial/get-started/)
-- [Vald Agent Standalone on K8s](https://vald.vdaas.org/docs/tutorial/vald-agent-standalone-on-k8s/)
-- [Vald Agent Standalone on Docker](https://vald.vdaas.org/docs/tutorial/vald-agent-standalone-on-docker/)
