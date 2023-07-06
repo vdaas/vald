@@ -34,6 +34,21 @@ curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 
 </details>
 
+<details><summary>Installation command for HDF5</summary><br>
+
+```bash
+# yum
+yum install -y hdf5-devel
+
+# apt
+apt-get install libhdf5-serial-dev
+
+# homebrew
+brew install hdf5
+```
+
+</details>
+
 ## Prepare the Kubernetes Cluster
 
 This tutorial requires the Kubernetes cluster.
@@ -104,7 +119,7 @@ In this section, you will deploy three Vald clusters consisting of `vald-agent-n
 
    If success deployment, the Vald cluster’s components should run on each Kubernetes Namespace.
 
-    <details><summary>`vald-01` Namespace</summary><br>
+    <details><summary>vald-01 Namespace</summary><br>
     
      ```bash
      kubectl get pods -n vald-01
@@ -127,7 +142,7 @@ In this section, you will deploy three Vald clusters consisting of `vald-agent-n
 
     </details>
 
-    <details><summary>`vald-02` Namespace</summary><br>
+    <details><summary>vald-02 Namespace</summary><br>
 
    ```bash
    kubectl get pods -n vald-02
@@ -150,7 +165,7 @@ In this section, you will deploy three Vald clusters consisting of `vald-agent-n
 
     </details>
 
-    <details><summary>`vald-03` Namespace</summary><br>
+    <details><summary>vald-03 Namespace</summary><br>
 
    ```bash
    kubectl get pods -n vald-03
