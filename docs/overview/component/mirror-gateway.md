@@ -33,7 +33,7 @@ The `ValdMirrorTarget` is a Custom Resource related to the connection destinatio
 
 When two Vald clusters contain Vald Mirror Gateways, Vald Mirror Gateways can send the request to each other by applying `ValdMirrorTarget`.
 
-For more information about `ValdMirrorTarget` configuration, please refer to [Custom Resource Configuration]().
+For more information about `ValdMirrorTarget` configuration, please refer to [Custom Resource Configuration](https://vald.vdaas.org/docs/user-guides/mirroring-configuration/).
 
 ### Request forwarding
 
