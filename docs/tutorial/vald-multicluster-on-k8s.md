@@ -284,3 +284,5 @@ You completely entered the World of multiple Vald clusters!
 For more information, we recommend you check the following:
 
 - [Configuration](https://vald.vdaas.org/docs/user-guides/configuration/)
+- [Mirror Configuration](https://vald.vdaas.org/docs/user-guides/mirroring-configuration/)
+- [Network Policy](https://vald.vdaas.org/docs/user-guides/network-policy/)
