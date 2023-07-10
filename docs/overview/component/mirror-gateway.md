@@ -27,7 +27,7 @@ This chapter shows the main features to fulfill Vald Mirror Gateway’s role:
 
 The Vald Mirror Gateway is designed to interconnect with Vald Mirror Gateways in other Vald clusters.
 
-Vald Mirror Gateway uses a Custom Resource called the `ValMirrorTarget` to manage the connection destination information between Vald Mirror Gateways.
+Vald Mirror Gateway uses a Custom Resource called the `ValdMirrorTarget` to manage the connection destination information between Vald Mirror Gateways.
 
 The `ValdMirrorTarget` is a Custom Resource related to the connection destination to other Vald Mirror Gateway.
 
