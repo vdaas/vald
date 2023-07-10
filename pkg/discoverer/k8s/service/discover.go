@@ -51,7 +51,7 @@ type discoverer struct {
 	nodes           valdsync.Map[string, *node.Node]
 	nodeMetrics     nodeMetricsMap
 	pods            podsMap
-	podMetrics      podMetricsMap
+	podMetrics      valdsync.Map[string, mpod.Pod]
 	podsByNode      atomic.Value
 	podsByNamespace atomic.Value
 	podsByName      atomic.Value
