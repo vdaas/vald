@@ -20,7 +20,6 @@ package grpc
 import (
 	"context"
 	"math"
-	"sync"
 	"sync/atomic"
 	"time"
 
@@ -38,6 +37,7 @@ import (
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/singleflight"
 	"github.com/vdaas/vald/internal/strings"
+	valdsync "github.com/vdaas/vald/internal/sync"
 	"google.golang.org/grpc"
 	gbackoff "google.golang.org/grpc/backoff"
 )
@@ -110,7 +110,7 @@ type gRPCClient struct {
 	gbo                 gbackoff.Config // grpc's original backoff configuration
 	mcd                 time.Duration   // minimum connection timeout duration
 	group               singleflight.Group[pool.Conn]
-	crl                 sync.Map // connection request list
+	crl                 valdsync.Map[string, bool] // connection request list
 
 	ech            <-chan error
 	monitorRunning atomic.Bool
@@ -302,18 +302,15 @@ func (g *gRPCClient) StartConnectionMonitor(ctx context.Context) (<-chan error, 
 				}
 			}
 			clctx, cancel := context.WithTimeout(ctx, reconnLimitDuration)
-			g.crl.Range(func(a, bo interface{}) bool {
+			g.crl.Range(func(addr string, enabled bool) bool {
 				select {
 				case <-clctx.Done():
 					return false
 				default:
-					defer g.crl.Delete(a)
-					addr, ok := a.(string)
-					if !ok {
-						return true
-					}
+					defer g.crl.Delete(addr)
+
 					var p pool.Conn
-					if enabled, ok := bo.(bool); ok && enabled && g.bo != nil {
+					if enabled && g.bo != nil {
 						_, err = g.bo.Do(clctx, func(ictx context.Context) (r interface{}, ret bool, err error) {
 							p, err = g.Connect(ictx, addr)
 							return nil, err != nil, err
