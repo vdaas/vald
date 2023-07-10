@@ -2,7 +2,7 @@
 
 ## Overview
 
-Mirror Service is responsible for providing a register and an advertise interface for the Vald Mirror Gateway.
+Mirror Service is responsible for providing `Rregister` and `Advertise` interface for the Vald Mirror Gateway.
 
 ```rpc
 service Mirror {
