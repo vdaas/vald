@@ -24,12 +24,12 @@ import (
 )
 
 // Cache represent the cache interface to store cache.
-type Cache interface {
+type Cache[V any] interface {
 	Start(context.Context)
-	Get(string) (interface{}, bool)
-	Set(string, interface{})
+	Get(string) (V, bool)
+	Set(string, V)
 	Delete(string)
-	GetAndDelete(string) (interface{}, bool)
+	GetAndDelete(string) (V, bool)
 }
 
 // Type represents the cacher type. Currently it support GACHE only.

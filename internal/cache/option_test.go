@@ -33,17 +33,17 @@ func TestWithExpiredHook(t *testing.T) {
 		f func(context.Context, string)
 	}
 	type want struct {
-		want *cache
+		want *cache[any]
 	}
 	type test struct {
 		name       string
 		args       args
 		want       want
-		checkFunc  func(want, *cache) error
+		checkFunc  func(want, *cache[any]) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, got *cache) error {
+	defaultCheckFunc := func(w want, got *cache[any]) error {
 		if reflect.ValueOf(w.want.expiredHook).Pointer() != reflect.ValueOf(got.expiredHook).Pointer() {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
@@ -58,7 +58,7 @@ func TestWithExpiredHook(t *testing.T) {
 					f: fn,
 				},
 				want: want{
-					want: &cache{
+					want: &cache[any]{
 						expiredHook: fn,
 					},
 				},
@@ -71,7 +71,7 @@ func TestWithExpiredHook(t *testing.T) {
 					f: nil,
 				},
 				want: want{
-					want: &cache{},
+					want: &cache[any]{},
 				},
 			}
 		}(),
@@ -92,8 +92,8 @@ func TestWithExpiredHook(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 
-			got := new(cache)
-			opts := WithExpiredHook(test.args.f)
+			got := new(cache[any])
+			opts := WithExpiredHook[any](test.args.f)
 			opts(got)
 			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
@@ -107,17 +107,17 @@ func TestWithType(t *testing.T) {
 		mo string
 	}
 	type want struct {
-		want *cache
+		want *cache[any]
 	}
 	type test struct {
 		name       string
 		args       args
 		want       want
-		checkFunc  func(want, *cache) error
+		checkFunc  func(want, *cache[any]) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, got *cache) error {
+	defaultCheckFunc := func(w want, got *cache[any]) error {
 		if !reflect.DeepEqual(got, w.want) {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
@@ -132,7 +132,7 @@ func TestWithType(t *testing.T) {
 					mo: val,
 				},
 				want: want{
-					want: &cache{
+					want: &cache[any]{
 						cacher: cacher.ToType(val),
 					},
 				},
@@ -142,7 +142,7 @@ func TestWithType(t *testing.T) {
 			return test{
 				name: "set success when len(mo) is 0",
 				want: want{
-					want: &cache{},
+					want: &cache[any]{},
 				},
 			}
 		}(),
@@ -163,8 +163,8 @@ func TestWithType(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 
-			got := new(cache)
-			opts := WithType(test.args.mo)
+			got := new(cache[any])
+			opts := WithType[any](test.args.mo)
 			opts(got)
 			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
@@ -178,17 +178,17 @@ func TestWithExpireDuration(t *testing.T) {
 		dur string
 	}
 	type want struct {
-		want *cache
+		want *cache[any]
 	}
 	type test struct {
 		name       string
 		args       args
 		want       want
-		checkFunc  func(want, *cache) error
+		checkFunc  func(want, *cache[any]) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, got *cache) error {
+	defaultCheckFunc := func(w want, got *cache[any]) error {
 		if !reflect.DeepEqual(got, w.want) {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
@@ -204,7 +204,7 @@ func TestWithExpireDuration(t *testing.T) {
 					dur: val,
 				},
 				want: want{
-					want: &cache{
+					want: &cache[any]{
 						expireDur: dur,
 					},
 				},
@@ -214,7 +214,7 @@ func TestWithExpireDuration(t *testing.T) {
 			return test{
 				name: "set success when dur is empty",
 				want: want{
-					want: &cache{},
+					want: &cache[any]{},
 				},
 			}
 		}(),
@@ -226,7 +226,7 @@ func TestWithExpireDuration(t *testing.T) {
 					dur: val,
 				},
 				want: want{
-					want: &cache{},
+					want: &cache[any]{},
 				},
 			}
 		}(),
@@ -247,8 +247,8 @@ func TestWithExpireDuration(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 
-			got := new(cache)
-			opts := WithExpireDuration(test.args.dur)
+			got := new(cache[any])
+			opts := WithExpireDuration[any](test.args.dur)
 			opts(got)
 			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
@@ -262,17 +262,17 @@ func TestWithExpireCheckDuration(t *testing.T) {
 		dur string
 	}
 	type want struct {
-		want *cache
+		want *cache[any]
 	}
 	type test struct {
 		name       string
 		args       args
 		want       want
-		checkFunc  func(want, *cache) error
+		checkFunc  func(want, *cache[any]) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, got *cache) error {
+	defaultCheckFunc := func(w want, got *cache[any]) error {
 		if !reflect.DeepEqual(got, w.want) {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
@@ -288,7 +288,7 @@ func TestWithExpireCheckDuration(t *testing.T) {
 					dur: val,
 				},
 				want: want{
-					want: &cache{
+					want: &cache[any]{
 						expireCheckDur: dur,
 					},
 				},
@@ -298,7 +298,7 @@ func TestWithExpireCheckDuration(t *testing.T) {
 			return test{
 				name: "set success when dur is empty",
 				want: want{
-					want: &cache{},
+					want: &cache[any]{},
 				},
 			}
 		}(),
@@ -310,7 +310,7 @@ func TestWithExpireCheckDuration(t *testing.T) {
 					dur: val,
 				},
 				want: want{
-					want: &cache{},
+					want: &cache[any]{},
 				},
 			}
 		}(),
@@ -331,8 +331,8 @@ func TestWithExpireCheckDuration(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 
-			got := new(cache)
-			opts := WithExpireCheckDuration(test.args.dur)
+			got := new(cache[any])
+			opts := WithExpireCheckDuration[any](test.args.dur)
 			opts(got)
 			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)

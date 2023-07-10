@@ -194,7 +194,7 @@ replace (
 	github.com/klauspost/cpuid/v2 => github.com/klauspost/cpuid/v2 v2.2.5
 	github.com/kpango/fastime => github.com/kpango/fastime v1.1.9
 	github.com/kpango/fuid => github.com/kpango/fuid v0.0.0-20221203053508-503b5ad89aa1
-	github.com/kpango/gache => github.com/kpango/gache v1.2.8
+	github.com/kpango/gache/v2 => github.com/kpango/gache/v2 v2.0.8
 	github.com/kpango/glg => github.com/kpango/glg v1.6.15
 	github.com/kr/fs => github.com/kr/fs v0.1.0
 	github.com/kr/pretty => github.com/kr/pretty v0.3.1
@@ -362,8 +362,8 @@ require (
 	github.com/klauspost/compress v1.15.9
 	github.com/kpango/fastime v1.1.9
 	github.com/kpango/fuid v0.0.0-00010101000000-000000000000
-	github.com/kpango/gache v0.0.0-00010101000000-000000000000
-	github.com/kpango/glg v1.6.14
+	github.com/kpango/gache/v2 v2.0.0-00010101000000-000000000000
+	github.com/kpango/glg v1.6.15
 	github.com/leanovate/gopter v0.0.0-00010101000000-000000000000
 	github.com/lucasb-eyer/go-colorful v0.0.0-00010101000000-000000000000
 	github.com/pierrec/lz4/v3 v3.0.0-00010101000000-000000000000

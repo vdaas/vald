@@ -21,29 +21,29 @@ import (
 	"context"
 	"time"
 
-	"github.com/kpango/gache"
+	gache "github.com/kpango/gache/v2"
 )
 
 // Option represents the functional option for cache.
-type Option func(*cache)
+type Option[V any] func(*cache[V])
 
 // defaultOptions returns []Option with gache.New().
-func defaultOptions() []Option {
-	return []Option{
-		WithGache(gache.New()),
+func defaultOptions[V any]() []Option[V] {
+	return []Option[V]{
+		WithGache(gache.New[V]()),
 	}
 }
 
 // WithGache returns Option after set gache to cache.
-func WithGache(g gache.Gache) Option {
-	return func(c *cache) {
+func WithGache[V any](g gache.Gache[V]) Option[V] {
+	return func(c *cache[V]) {
 		c.gache = g
 	}
 }
 
 // WithExpiredHook returns Option after set expiredHook when f is not nil.
-func WithExpiredHook(f func(context.Context, string)) Option {
-	return func(c *cache) {
+func WithExpiredHook[V any](f func(context.Context, string)) Option[V] {
+	return func(c *cache[V]) {
 		if f != nil {
 			c.expiredHook = f
 		}
@@ -51,8 +51,8 @@ func WithExpiredHook(f func(context.Context, string)) Option {
 }
 
 // WithExpireDuration returns Option after set expireDur when dur is not 0.
-func WithExpireDuration(dur time.Duration) Option {
-	return func(c *cache) {
+func WithExpireDuration[V any](dur time.Duration) Option[V] {
+	return func(c *cache[V]) {
 		if dur != 0 {
 			c.expireDur = dur
 		}
@@ -60,8 +60,8 @@ func WithExpireDuration(dur time.Duration) Option {
 }
 
 // WithExpireCheckDuration returns Option after set expireCheckDur when dur is not 0.
-func WithExpireCheckDuration(dur time.Duration) Option {
-	return func(c *cache) {
+func WithExpireCheckDuration[V any](dur time.Duration) Option[V] {
+	return func(c *cache[V]) {
 		if dur != 0 {
 			c.expireCheckDur = dur
 		}
