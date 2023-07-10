@@ -11,7 +11,7 @@ This component makes it possible to enhance availability during a cluster failur
 Vald Mirror Gateway is responsible for the followings:
 
 - Forward user requests ([Insert](https://vald.vdaas.org/docs/api/insert/) / [Upsert](https://vald.vdaas.org/docs/api/upsert/) / [Update](https://vald.vdaas.org/docs/api/update/) / [Remove](https://vald.vdaas.org/docs/api/remove/)) to the other Vald Mirror Gateways in the same group.
-- Manage so that each index state will be the same.
+- Manages the state of indexes stored in all clusters to ensure they are consistent.
 
 ## Features
 
