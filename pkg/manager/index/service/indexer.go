@@ -56,7 +56,7 @@ type index struct {
 	saveIndexTargetAddrCh  chan string
 	schMap                 valdsync.Map[string, any]
 	concurrency            int
-	indexInfos             indexInfos
+	indexInfos             valdsync.Map[string, *payload.Info_Index_Count]
 	indexing               atomic.Value // bool
 	minUncommitted         uint32
 	uuidsCount             uint32
