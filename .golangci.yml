@@ -163,15 +163,19 @@ linters-settings:
         json: snake
         yaml: snake
   depguard:
-    list-type: blacklist
-    include-go-root: true
-    packages-with-error-message:
-      - errors: "errors is allowed only by internal/errors"
-      - k8s.io/apimachinery/pkg/api/errors: "errors is allowed only by internal/errors"
-      - github.com/cockroachdb/errors: "errors is allowed only by internal/errors"
-      - github.com/pkg/errors: "errors is allowed only by internal/errors"
-      - github.com/go-errors/errors: "errors is allowed only by internal/errors"
-      - golang.org/x/sync/errgroup: "errgroup is allowed only by internal/errgroup"
+    rules:
+      main:
+        deny:
+          - pkg: "errors"
+            desc: "errors is allowed only by internal/errors"
+          - pkg: "k8s.io/apimachinery/pkg/api/errors"
+            desc: "errors is allowed only by internal/errors"
+          - pkg: "github.com/cockroachdb/errors"
+            desc: "errors is allowed only by internal/errors"
+          - pkg: "github.com/pkg/errors"
+            desc: "errors is allowed only by internal/errors"
+          - pkg: github.com/go-errors/errors
+            desc: "errors is allowed only by internal/errors"
   govet:
     check-shadowing: true
     enable-all: true
