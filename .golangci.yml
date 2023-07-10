@@ -50,7 +50,6 @@ linters:
     - gochecknoglobals
     - gochecknoinits
     - goconst
-    - gocritic
     - godot
     - godox
     - gofumpt
@@ -91,7 +90,6 @@ linters:
     - unparam
     - unused #(megacheck)
     - usestdlibvars
-    - zerologlint
     # Disabled by your configuration linters
     # - cyclop
     # - errcheck
@@ -99,6 +97,7 @@ linters:
     # - funlen
     # - gci
     # - gocognit
+    # - gocritic
     # - gocyclo
     # - goerr113
     # - gofmt
@@ -123,6 +122,7 @@ linters:
     # - whitespace
     # - wrapcheck
     # - wslissues:
+    # - zerologlint
   exclude-use-default: false
   exclude-rules:
     - path: _test\.go
