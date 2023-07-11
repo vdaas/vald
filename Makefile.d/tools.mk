@@ -92,3 +92,15 @@ $(BINDIR)/buf:
 	"https://github.com/bufbuild/buf/releases/download/$(BUF_VERSION)/buf-$(shell uname -s)-$(shell uname -m)" \
 	-o "${BINDIR}/buf" && \
 	chmod +x "${BINDIR}/buf"
+
+.PHONY: k9s/install
+k9s/install: $(GOPATH)/bin/k9s
+
+$(GOPATH)/bin/k9s:
+	$(call go-install, github.com/derailed/k9s)
+
+.PHONY: stern/install
+stern/install: $(GOPATH)/bin/stern
+
+$(GOPATH)/bin/stern:
+	$(call go-install, github.com/stern/stern)

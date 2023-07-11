@@ -1,5 +1,5 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "https://json-schema.org/draft-07/schema#",
   "title": "Values",
   "type": "object",
   "properties": {
@@ -569,33 +569,33 @@
                           "properties": {
                             "handler_timeout": {
                               "type": "string",
-                              "description": "liveness server handler timeout"
+                              "description": "REST server handler timeout"
                             },
                             "idle_timeout": {
                               "type": "string",
-                              "description": "liveness server idle timeout"
+                              "description": "REST server idle timeout"
                             },
                             "read_header_timeout": {
                               "type": "string",
-                              "description": "liveness server read header timeout"
+                              "description": "REST server read header timeout"
                             },
                             "read_timeout": {
                               "type": "string",
-                              "description": "liveness server read timeout"
+                              "description": "REST server read timeout"
                             },
                             "shutdown_duration": {
                               "type": "string",
-                              "description": "liveness server shutdown duration"
+                              "description": "REST server shutdown duration"
                             },
                             "write_timeout": {
                               "type": "string",
-                              "description": "liveness server write timeout"
+                              "description": "REST server write timeout"
                             }
                           }
                         },
                         "mode": {
                           "type": "string",
-                          "description": "liveness server mode"
+                          "description": "REST server server mode"
                         },
                         "network": {
                           "type": "string",
@@ -614,7 +614,7 @@
                         },
                         "probe_wait_time": {
                           "type": "string",
-                          "description": "liveness server probe wait time"
+                          "description": "REST server probe wait time"
                         },
                         "socket_option": {
                           "type": "object",
@@ -738,33 +738,33 @@
                           "properties": {
                             "handler_timeout": {
                               "type": "string",
-                              "description": "readiness server handler timeout"
+                              "description": "REST server handler timeout"
                             },
                             "idle_timeout": {
                               "type": "string",
-                              "description": "readiness server idle timeout"
+                              "description": "REST server idle timeout"
                             },
                             "read_header_timeout": {
                               "type": "string",
-                              "description": "readiness server read header timeout"
+                              "description": "REST server read header timeout"
                             },
                             "read_timeout": {
                               "type": "string",
-                              "description": "readiness server read timeout"
+                              "description": "REST server read timeout"
                             },
                             "shutdown_duration": {
                               "type": "string",
-                              "description": "readiness server shutdown duration"
+                              "description": "REST server shutdown duration"
                             },
                             "write_timeout": {
                               "type": "string",
-                              "description": "readiness server write timeout"
+                              "description": "REST server write timeout"
                             }
                           }
                         },
                         "mode": {
                           "type": "string",
-                          "description": "readiness server mode"
+                          "description": "REST server server mode"
                         },
                         "network": {
                           "type": "string",
@@ -783,7 +783,7 @@
                         },
                         "probe_wait_time": {
                           "type": "string",
-                          "description": "readiness server probe wait time"
+                          "description": "REST server probe wait time"
                         },
                         "socket_option": {
                           "type": "object",
@@ -927,33 +927,33 @@
                           "properties": {
                             "handler_timeout": {
                               "type": "string",
-                              "description": "pprof server handler timeout"
+                              "description": "REST server handler timeout"
                             },
                             "idle_timeout": {
                               "type": "string",
-                              "description": "pprof server idle timeout"
+                              "description": "REST server idle timeout"
                             },
                             "read_header_timeout": {
                               "type": "string",
-                              "description": "pprof server read header timeout"
+                              "description": "REST server read header timeout"
                             },
                             "read_timeout": {
                               "type": "string",
-                              "description": "pprof server read timeout"
+                              "description": "REST server read timeout"
                             },
                             "shutdown_duration": {
                               "type": "string",
-                              "description": "pprof server shutdown duration"
+                              "description": "REST server shutdown duration"
                             },
                             "write_timeout": {
                               "type": "string",
-                              "description": "pprof server write timeout"
+                              "description": "REST server write timeout"
                             }
                           }
                         },
                         "mode": {
                           "type": "string",
-                          "description": "pprof server mode"
+                          "description": "REST server server mode"
                         },
                         "network": {
                           "type": "string",
@@ -972,7 +972,7 @@
                         },
                         "probe_wait_time": {
                           "type": "string",
-                          "description": "pprof server probe wait time"
+                          "description": "REST server probe wait time"
                         },
                         "socket_option": {
                           "type": "object",
@@ -2059,33 +2059,33 @@
                               "properties": {
                                 "handler_timeout": {
                                   "type": "string",
-                                  "description": "liveness server handler timeout"
+                                  "description": "REST server handler timeout"
                                 },
                                 "idle_timeout": {
                                   "type": "string",
-                                  "description": "liveness server idle timeout"
+                                  "description": "REST server idle timeout"
                                 },
                                 "read_header_timeout": {
                                   "type": "string",
-                                  "description": "liveness server read header timeout"
+                                  "description": "REST server read header timeout"
                                 },
                                 "read_timeout": {
                                   "type": "string",
-                                  "description": "liveness server read timeout"
+                                  "description": "REST server read timeout"
                                 },
                                 "shutdown_duration": {
                                   "type": "string",
-                                  "description": "liveness server shutdown duration"
+                                  "description": "REST server shutdown duration"
                                 },
                                 "write_timeout": {
                                   "type": "string",
-                                  "description": "liveness server write timeout"
+                                  "description": "REST server write timeout"
                                 }
                               }
                             },
                             "mode": {
                               "type": "string",
-                              "description": "liveness server mode"
+                              "description": "REST server server mode"
                             },
                             "network": {
                               "type": "string",
@@ -2104,7 +2104,7 @@
                             },
                             "probe_wait_time": {
                               "type": "string",
-                              "description": "liveness server probe wait time"
+                              "description": "REST server probe wait time"
                             },
                             "socket_option": {
                               "type": "object",
@@ -2228,33 +2228,33 @@
                               "properties": {
                                 "handler_timeout": {
                                   "type": "string",
-                                  "description": "readiness server handler timeout"
+                                  "description": "REST server handler timeout"
                                 },
                                 "idle_timeout": {
                                   "type": "string",
-                                  "description": "readiness server idle timeout"
+                                  "description": "REST server idle timeout"
                                 },
                                 "read_header_timeout": {
                                   "type": "string",
-                                  "description": "readiness server read header timeout"
+                                  "description": "REST server read header timeout"
                                 },
                                 "read_timeout": {
                                   "type": "string",
-                                  "description": "readiness server read timeout"
+                                  "description": "REST server read timeout"
                                 },
                                 "shutdown_duration": {
                                   "type": "string",
-                                  "description": "readiness server shutdown duration"
+                                  "description": "REST server shutdown duration"
                                 },
                                 "write_timeout": {
                                   "type": "string",
-                                  "description": "readiness server write timeout"
+                                  "description": "REST server write timeout"
                                 }
                               }
                             },
                             "mode": {
                               "type": "string",
-                              "description": "readiness server mode"
+                              "description": "REST server server mode"
                             },
                             "network": {
                               "type": "string",
@@ -2273,7 +2273,7 @@
                             },
                             "probe_wait_time": {
                               "type": "string",
-                              "description": "readiness server probe wait time"
+                              "description": "REST server probe wait time"
                             },
                             "socket_option": {
                               "type": "object",
@@ -2417,33 +2417,33 @@
                               "properties": {
                                 "handler_timeout": {
                                   "type": "string",
-                                  "description": "pprof server handler timeout"
+                                  "description": "REST server handler timeout"
                                 },
                                 "idle_timeout": {
                                   "type": "string",
-                                  "description": "pprof server idle timeout"
+                                  "description": "REST server idle timeout"
                                 },
                                 "read_header_timeout": {
                                   "type": "string",
-                                  "description": "pprof server read header timeout"
+                                  "description": "REST server read header timeout"
                                 },
                                 "read_timeout": {
                                   "type": "string",
-                                  "description": "pprof server read timeout"
+                                  "description": "REST server read timeout"
                                 },
                                 "shutdown_duration": {
                                   "type": "string",
-                                  "description": "pprof server shutdown duration"
+                                  "description": "REST server shutdown duration"
                                 },
                                 "write_timeout": {
                                   "type": "string",
-                                  "description": "pprof server write timeout"
+                                  "description": "REST server write timeout"
                                 }
                               }
                             },
                             "mode": {
                               "type": "string",
-                              "description": "pprof server mode"
+                              "description": "REST server server mode"
                             },
                             "network": {
                               "type": "string",
@@ -2462,7 +2462,7 @@
                             },
                             "probe_wait_time": {
                               "type": "string",
-                              "description": "pprof server probe wait time"
+                              "description": "REST server probe wait time"
                             },
                             "socket_option": {
                               "type": "object",
@@ -3283,9 +3283,23 @@
         "networkPolicy": {
           "type": "object",
           "properties": {
+            "custom": {
+              "type": "object",
+              "description": "custom network policies that a user can add",
+              "properties": {
+                "egress": {
+                  "type": "object",
+                  "description": "custom egress network policies that a user can add"
+                },
+                "ingress": {
+                  "type": "object",
+                  "description": "custom ingress network policies that a user can add"
+                }
+              }
+            },
             "enabled": {
               "type": "boolean",
-              "description": "if network policy enabled TODO: Change this to true after implementing user custom network policy parser"
+              "description": "if network policy enabled"
             }
           }
         },
@@ -3473,33 +3487,33 @@
                           "properties": {
                             "handler_timeout": {
                               "type": "string",
-                              "description": "liveness server handler timeout"
+                              "description": "REST server handler timeout"
                             },
                             "idle_timeout": {
                               "type": "string",
-                              "description": "liveness server idle timeout"
+                              "description": "REST server idle timeout"
                             },
                             "read_header_timeout": {
                               "type": "string",
-                              "description": "liveness server read header timeout"
+                              "description": "REST server read header timeout"
                             },
                             "read_timeout": {
                               "type": "string",
-                              "description": "liveness server read timeout"
+                              "description": "REST server read timeout"
                             },
                             "shutdown_duration": {
                               "type": "string",
-                              "description": "liveness server shutdown duration"
+                              "description": "REST server shutdown duration"
                             },
                             "write_timeout": {
                               "type": "string",
-                              "description": "liveness server write timeout"
+                              "description": "REST server write timeout"
                             }
                           }
                         },
                         "mode": {
                           "type": "string",
-                          "description": "liveness server mode"
+                          "description": "REST server server mode"
                         },
                         "network": {
                           "type": "string",
@@ -3518,7 +3532,7 @@
                         },
                         "probe_wait_time": {
                           "type": "string",
-                          "description": "liveness server probe wait time"
+                          "description": "REST server probe wait time"
                         },
                         "socket_option": {
                           "type": "object",
@@ -3642,33 +3656,33 @@
                           "properties": {
                             "handler_timeout": {
                               "type": "string",
-                              "description": "readiness server handler timeout"
+                              "description": "REST server handler timeout"
                             },
                             "idle_timeout": {
                               "type": "string",
-                              "description": "readiness server idle timeout"
+                              "description": "REST server idle timeout"
                             },
                             "read_header_timeout": {
                               "type": "string",
-                              "description": "readiness server read header timeout"
+                              "description": "REST server read header timeout"
                             },
                             "read_timeout": {
                               "type": "string",
-                              "description": "readiness server read timeout"
+                              "description": "REST server read timeout"
                             },
                             "shutdown_duration": {
                               "type": "string",
-                              "description": "readiness server shutdown duration"
+                              "description": "REST server shutdown duration"
                             },
                             "write_timeout": {
                               "type": "string",
-                              "description": "readiness server write timeout"
+                              "description": "REST server write timeout"
                             }
                           }
                         },
                         "mode": {
                           "type": "string",
-                          "description": "readiness server mode"
+                          "description": "REST server server mode"
                         },
                         "network": {
                           "type": "string",
@@ -3687,7 +3701,7 @@
                         },
                         "probe_wait_time": {
                           "type": "string",
-                          "description": "readiness server probe wait time"
+                          "description": "REST server probe wait time"
                         },
                         "socket_option": {
                           "type": "object",
@@ -3831,33 +3845,33 @@
                           "properties": {
                             "handler_timeout": {
                               "type": "string",
-                              "description": "pprof server handler timeout"
+                              "description": "REST server handler timeout"
                             },
                             "idle_timeout": {
                               "type": "string",
-                              "description": "pprof server idle timeout"
+                              "description": "REST server idle timeout"
                             },
                             "read_header_timeout": {
                               "type": "string",
-                              "description": "pprof server read header timeout"
+                              "description": "REST server read header timeout"
                             },
                             "read_timeout": {
                               "type": "string",
-                              "description": "pprof server read timeout"
+                              "description": "REST server read timeout"
                             },
                             "shutdown_duration": {
                               "type": "string",
-                              "description": "pprof server shutdown duration"
+                              "description": "REST server shutdown duration"
                             },
                             "write_timeout": {
                               "type": "string",
-                              "description": "pprof server write timeout"
+                              "description": "REST server write timeout"
                             }
                           }
                         },
                         "mode": {
                           "type": "string",
-                          "description": "pprof server mode"
+                          "description": "REST server server mode"
                         },
                         "network": {
                           "type": "string",
@@ -3876,7 +3890,7 @@
                         },
                         "probe_wait_time": {
                           "type": "string",
-                          "description": "pprof server probe wait time"
+                          "description": "REST server probe wait time"
                         },
                         "socket_option": {
                           "type": "object",
@@ -4873,33 +4887,33 @@
                           "properties": {
                             "handler_timeout": {
                               "type": "string",
-                              "description": "liveness server handler timeout"
+                              "description": "REST server handler timeout"
                             },
                             "idle_timeout": {
                               "type": "string",
-                              "description": "liveness server idle timeout"
+                              "description": "REST server idle timeout"
                             },
                             "read_header_timeout": {
                               "type": "string",
-                              "description": "liveness server read header timeout"
+                              "description": "REST server read header timeout"
                             },
                             "read_timeout": {
                               "type": "string",
-                              "description": "liveness server read timeout"
+                              "description": "REST server read timeout"
                             },
                             "shutdown_duration": {
                               "type": "string",
-                              "description": "liveness server shutdown duration"
+                              "description": "REST server shutdown duration"
                             },
                             "write_timeout": {
                               "type": "string",
-                              "description": "liveness server write timeout"
+                              "description": "REST server write timeout"
                             }
                           }
                         },
                         "mode": {
                           "type": "string",
-                          "description": "liveness server mode"
+                          "description": "REST server server mode"
                         },
                         "network": {
                           "type": "string",
@@ -4918,7 +4932,7 @@
                         },
                         "probe_wait_time": {
                           "type": "string",
-                          "description": "liveness server probe wait time"
+                          "description": "REST server probe wait time"
                         },
                         "socket_option": {
                           "type": "object",
@@ -5042,33 +5056,33 @@
                           "properties": {
                             "handler_timeout": {
                               "type": "string",
-                              "description": "readiness server handler timeout"
+                              "description": "REST server handler timeout"
                             },
                             "idle_timeout": {
                               "type": "string",
-                              "description": "readiness server idle timeout"
+                              "description": "REST server idle timeout"
                             },
                             "read_header_timeout": {
                               "type": "string",
-                              "description": "readiness server read header timeout"
+                              "description": "REST server read header timeout"
                             },
                             "read_timeout": {
                               "type": "string",
-                              "description": "readiness server read timeout"
+                              "description": "REST server read timeout"
                             },
                             "shutdown_duration": {
                               "type": "string",
-                              "description": "readiness server shutdown duration"
+                              "description": "REST server shutdown duration"
                             },
                             "write_timeout": {
                               "type": "string",
-                              "description": "readiness server write timeout"
+                              "description": "REST server write timeout"
                             }
                           }
                         },
                         "mode": {
                           "type": "string",
-                          "description": "readiness server mode"
+                          "description": "REST server server mode"
                         },
                         "network": {
                           "type": "string",
@@ -5087,7 +5101,7 @@
                         },
                         "probe_wait_time": {
                           "type": "string",
-                          "description": "readiness server probe wait time"
+                          "description": "REST server probe wait time"
                         },
                         "socket_option": {
                           "type": "object",
@@ -5231,33 +5245,33 @@
                           "properties": {
                             "handler_timeout": {
                               "type": "string",
-                              "description": "pprof server handler timeout"
+                              "description": "REST server handler timeout"
                             },
                             "idle_timeout": {
                               "type": "string",
-                              "description": "pprof server idle timeout"
+                              "description": "REST server idle timeout"
                             },
                             "read_header_timeout": {
                               "type": "string",
-                              "description": "pprof server read header timeout"
+                              "description": "REST server read header timeout"
                             },
                             "read_timeout": {
                               "type": "string",
-                              "description": "pprof server read timeout"
+                              "description": "REST server read timeout"
                             },
                             "shutdown_duration": {
                               "type": "string",
-                              "description": "pprof server shutdown duration"
+                              "description": "REST server shutdown duration"
                             },
                             "write_timeout": {
                               "type": "string",
-                              "description": "pprof server write timeout"
+                              "description": "REST server write timeout"
                             }
                           }
                         },
                         "mode": {
                           "type": "string",
-                          "description": "pprof server mode"
+                          "description": "REST server server mode"
                         },
                         "network": {
                           "type": "string",
@@ -5276,7 +5290,7 @@
                         },
                         "probe_wait_time": {
                           "type": "string",
-                          "description": "pprof server probe wait time"
+                          "description": "REST server probe wait time"
                         },
                         "socket_option": {
                           "type": "object",
@@ -7170,33 +7184,33 @@
                               "properties": {
                                 "handler_timeout": {
                                   "type": "string",
-                                  "description": "liveness server handler timeout"
+                                  "description": "REST server handler timeout"
                                 },
                                 "idle_timeout": {
                                   "type": "string",
-                                  "description": "liveness server idle timeout"
+                                  "description": "REST server idle timeout"
                                 },
                                 "read_header_timeout": {
                                   "type": "string",
-                                  "description": "liveness server read header timeout"
+                                  "description": "REST server read header timeout"
                                 },
                                 "read_timeout": {
                                   "type": "string",
-                                  "description": "liveness server read timeout"
+                                  "description": "REST server read timeout"
                                 },
                                 "shutdown_duration": {
                                   "type": "string",
-                                  "description": "liveness server shutdown duration"
+                                  "description": "REST server shutdown duration"
                                 },
                                 "write_timeout": {
                                   "type": "string",
-                                  "description": "liveness server write timeout"
+                                  "description": "REST server write timeout"
                                 }
                               }
                             },
                             "mode": {
                               "type": "string",
-                              "description": "liveness server mode"
+                              "description": "REST server server mode"
                             },
                             "network": {
                               "type": "string",
@@ -7215,7 +7229,7 @@
                             },
                             "probe_wait_time": {
                               "type": "string",
-                              "description": "liveness server probe wait time"
+                              "description": "REST server probe wait time"
                             },
                             "socket_option": {
                               "type": "object",
@@ -7339,33 +7353,33 @@
                               "properties": {
                                 "handler_timeout": {
                                   "type": "string",
-                                  "description": "readiness server handler timeout"
+                                  "description": "REST server handler timeout"
                                 },
                                 "idle_timeout": {
                                   "type": "string",
-                                  "description": "readiness server idle timeout"
+                                  "description": "REST server idle timeout"
                                 },
                                 "read_header_timeout": {
                                   "type": "string",
-                                  "description": "readiness server read header timeout"
+                                  "description": "REST server read header timeout"
                                 },
                                 "read_timeout": {
                                   "type": "string",
-                                  "description": "readiness server read timeout"
+                                  "description": "REST server read timeout"
                                 },
                                 "shutdown_duration": {
                                   "type": "string",
-                                  "description": "readiness server shutdown duration"
+                                  "description": "REST server shutdown duration"
                                 },
                                 "write_timeout": {
                                   "type": "string",
-                                  "description": "readiness server write timeout"
+                                  "description": "REST server write timeout"
                                 }
                               }
                             },
                             "mode": {
                               "type": "string",
-                              "description": "readiness server mode"
+                              "description": "REST server server mode"
                             },
                             "network": {
                               "type": "string",
@@ -7384,7 +7398,7 @@
                             },
                             "probe_wait_time": {
                               "type": "string",
-                              "description": "readiness server probe wait time"
+                              "description": "REST server probe wait time"
                             },
                             "socket_option": {
                               "type": "object",
@@ -7528,33 +7542,33 @@
                               "properties": {
                                 "handler_timeout": {
                                   "type": "string",
-                                  "description": "pprof server handler timeout"
+                                  "description": "REST server handler timeout"
                                 },
                                 "idle_timeout": {
                                   "type": "string",
-                                  "description": "pprof server idle timeout"
+                                  "description": "REST server idle timeout"
                                 },
                                 "read_header_timeout": {
                                   "type": "string",
-                                  "description": "pprof server read header timeout"
+                                  "description": "REST server read header timeout"
                                 },
                                 "read_timeout": {
                                   "type": "string",
-                                  "description": "pprof server read timeout"
+                                  "description": "REST server read timeout"
                                 },
                                 "shutdown_duration": {
                                   "type": "string",
-                                  "description": "pprof server shutdown duration"
+                                  "description": "REST server shutdown duration"
                                 },
                                 "write_timeout": {
                                   "type": "string",
-                                  "description": "pprof server write timeout"
+                                  "description": "REST server write timeout"
                                 }
                               }
                             },
                             "mode": {
                               "type": "string",
-                              "description": "pprof server mode"
+                              "description": "REST server server mode"
                             },
                             "network": {
                               "type": "string",
@@ -7573,7 +7587,7 @@
                             },
                             "probe_wait_time": {
                               "type": "string",
-                              "description": "pprof server probe wait time"
+                              "description": "REST server probe wait time"
                             },
                             "socket_option": {
                               "type": "object",
@@ -9118,33 +9132,33 @@
                               "properties": {
                                 "handler_timeout": {
                                   "type": "string",
-                                  "description": "liveness server handler timeout"
+                                  "description": "REST server handler timeout"
                                 },
                                 "idle_timeout": {
                                   "type": "string",
-                                  "description": "liveness server idle timeout"
+                                  "description": "REST server idle timeout"
                                 },
                                 "read_header_timeout": {
                                   "type": "string",
-                                  "description": "liveness server read header timeout"
+                                  "description": "REST server read header timeout"
                                 },
                                 "read_timeout": {
                                   "type": "string",
-                                  "description": "liveness server read timeout"
+                                  "description": "REST server read timeout"
                                 },
                                 "shutdown_duration": {
                                   "type": "string",
-                                  "description": "liveness server shutdown duration"
+                                  "description": "REST server shutdown duration"
                                 },
                                 "write_timeout": {
                                   "type": "string",
-                                  "description": "liveness server write timeout"
+                                  "description": "REST server write timeout"
                                 }
                               }
                             },
                             "mode": {
                               "type": "string",
-                              "description": "liveness server mode"
+                              "description": "REST server server mode"
                             },
                             "network": {
                               "type": "string",
@@ -9163,7 +9177,7 @@
                             },
                             "probe_wait_time": {
                               "type": "string",
-                              "description": "liveness server probe wait time"
+                              "description": "REST server probe wait time"
                             },
                             "socket_option": {
                               "type": "object",
@@ -9287,33 +9301,33 @@
                               "properties": {
                                 "handler_timeout": {
                                   "type": "string",
-                                  "description": "readiness server handler timeout"
+                                  "description": "REST server handler timeout"
                                 },
                                 "idle_timeout": {
                                   "type": "string",
-                                  "description": "readiness server idle timeout"
+                                  "description": "REST server idle timeout"
                                 },
                                 "read_header_timeout": {
                                   "type": "string",
-                                  "description": "readiness server read header timeout"
+                                  "description": "REST server read header timeout"
                                 },
                                 "read_timeout": {
                                   "type": "string",
-                                  "description": "readiness server read timeout"
+                                  "description": "REST server read timeout"
                                 },
                                 "shutdown_duration": {
                                   "type": "string",
-                                  "description": "readiness server shutdown duration"
+                                  "description": "REST server shutdown duration"
                                 },
                                 "write_timeout": {
                                   "type": "string",
-                                  "description": "readiness server write timeout"
+                                  "description": "REST server write timeout"
                                 }
                               }
                             },
                             "mode": {
                               "type": "string",
-                              "description": "readiness server mode"
+                              "description": "REST server server mode"
                             },
                             "network": {
                               "type": "string",
@@ -9332,7 +9346,7 @@
                             },
                             "probe_wait_time": {
                               "type": "string",
-                              "description": "readiness server probe wait time"
+                              "description": "REST server probe wait time"
                             },
                             "socket_option": {
                               "type": "object",
@@ -9476,33 +9490,33 @@
                               "properties": {
                                 "handler_timeout": {
                                   "type": "string",
-                                  "description": "pprof server handler timeout"
+                                  "description": "REST server handler timeout"
                                 },
                                 "idle_timeout": {
                                   "type": "string",
-                                  "description": "pprof server idle timeout"
+                                  "description": "REST server idle timeout"
                                 },
                                 "read_header_timeout": {
                                   "type": "string",
-                                  "description": "pprof server read header timeout"
+                                  "description": "REST server read header timeout"
                                 },
                                 "read_timeout": {
                                   "type": "string",
-                                  "description": "pprof server read timeout"
+                                  "description": "REST server read timeout"
                                 },
                                 "shutdown_duration": {
                                   "type": "string",
-                                  "description": "pprof server shutdown duration"
+                                  "description": "REST server shutdown duration"
                                 },
                                 "write_timeout": {
                                   "type": "string",
-                                  "description": "pprof server write timeout"
+                                  "description": "REST server write timeout"
                                 }
                               }
                             },
                             "mode": {
                               "type": "string",
-                              "description": "pprof server mode"
+                              "description": "REST server server mode"
                             },
                             "network": {
                               "type": "string",
@@ -9521,7 +9535,7 @@
                             },
                             "probe_wait_time": {
                               "type": "string",
-                              "description": "pprof server probe wait time"
+                              "description": "REST server probe wait time"
                             },
                             "socket_option": {
                               "type": "object",
@@ -11045,33 +11059,33 @@
                               "properties": {
                                 "handler_timeout": {
                                   "type": "string",
-                                  "description": "liveness server handler timeout"
+                                  "description": "REST server handler timeout"
                                 },
                                 "idle_timeout": {
                                   "type": "string",
-                                  "description": "liveness server idle timeout"
+                                  "description": "REST server idle timeout"
                                 },
                                 "read_header_timeout": {
                                   "type": "string",
-                                  "description": "liveness server read header timeout"
+                                  "description": "REST server read header timeout"
                                 },
                                 "read_timeout": {
                                   "type": "string",
-                                  "description": "liveness server read timeout"
+                                  "description": "REST server read timeout"
                                 },
                                 "shutdown_duration": {
                                   "type": "string",
-                                  "description": "liveness server shutdown duration"
+                                  "description": "REST server shutdown duration"
                                 },
                                 "write_timeout": {
                                   "type": "string",
-                                  "description": "liveness server write timeout"
+                                  "description": "REST server write timeout"
                                 }
                               }
                             },
                             "mode": {
                               "type": "string",
-                              "description": "liveness server mode"
+                              "description": "REST server server mode"
                             },
                             "network": {
                               "type": "string",
@@ -11090,7 +11104,7 @@
                             },
                             "probe_wait_time": {
                               "type": "string",
-                              "description": "liveness server probe wait time"
+                              "description": "REST server probe wait time"
                             },
                             "socket_option": {
                               "type": "object",
@@ -11214,33 +11228,33 @@
                               "properties": {
                                 "handler_timeout": {
                                   "type": "string",
-                                  "description": "readiness server handler timeout"
+                                  "description": "REST server handler timeout"
                                 },
                                 "idle_timeout": {
                                   "type": "string",
-                                  "description": "readiness server idle timeout"
+                                  "description": "REST server idle timeout"
                                 },
                                 "read_header_timeout": {
                                   "type": "string",
-                                  "description": "readiness server read header timeout"
+                                  "description": "REST server read header timeout"
                                 },
                                 "read_timeout": {
                                   "type": "string",
-                                  "description": "readiness server read timeout"
+                                  "description": "REST server read timeout"
                                 },
                                 "shutdown_duration": {
                                   "type": "string",
-                                  "description": "readiness server shutdown duration"
+                                  "description": "REST server shutdown duration"
                                 },
                                 "write_timeout": {
                                   "type": "string",
-                                  "description": "readiness server write timeout"
+                                  "description": "REST server write timeout"
                                 }
                               }
                             },
                             "mode": {
                               "type": "string",
-                              "description": "readiness server mode"
+                              "description": "REST server server mode"
                             },
                             "network": {
                               "type": "string",
@@ -11259,7 +11273,7 @@
                             },
                             "probe_wait_time": {
                               "type": "string",
-                              "description": "readiness server probe wait time"
+                              "description": "REST server probe wait time"
                             },
                             "socket_option": {
                               "type": "object",
@@ -11403,33 +11417,33 @@
                               "properties": {
                                 "handler_timeout": {
                                   "type": "string",
-                                  "description": "pprof server handler timeout"
+                                  "description": "REST server handler timeout"
                                 },
                                 "idle_timeout": {
                                   "type": "string",
-                                  "description": "pprof server idle timeout"
+                                  "description": "REST server idle timeout"
                                 },
                                 "read_header_timeout": {
                                   "type": "string",
-                                  "description": "pprof server read header timeout"
+                                  "description": "REST server read header timeout"
                                 },
                                 "read_timeout": {
                                   "type": "string",
-                                  "description": "pprof server read timeout"
+                                  "description": "REST server read timeout"
                                 },
                                 "shutdown_duration": {
                                   "type": "string",
-                                  "description": "pprof server shutdown duration"
+                                  "description": "REST server shutdown duration"
                                 },
                                 "write_timeout": {
                                   "type": "string",
-                                  "description": "pprof server write timeout"
+                                  "description": "REST server write timeout"
                                 }
                               }
                             },
                             "mode": {
                               "type": "string",
-                              "description": "pprof server mode"
+                              "description": "REST server server mode"
                             },
                             "network": {
                               "type": "string",
@@ -11448,7 +11462,7 @@
                             },
                             "probe_wait_time": {
                               "type": "string",
-                              "description": "pprof server probe wait time"
+                              "description": "REST server probe wait time"
                             },
                             "socket_option": {
                               "type": "object",

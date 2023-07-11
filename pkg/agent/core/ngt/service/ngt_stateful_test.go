@@ -511,9 +511,10 @@ var (
 		RunFunc: func(
 			systemUnderTest commands.SystemUnderTest,
 		) commands.Result {
-			ngt := systemUnderTest.(*ngtSystem).ngt
+			ngtSys := systemUnderTest.(*ngtSystem)
+			ngt := ngtSys.ngt
 
-			res, err := ngt.Search([]float32{0.1, 0.1, 0.1}, 3, 0.1, -1.0)
+			res, err := ngt.Search(ngtSys.ctx, []float32{0.1, 0.1, 0.1}, 3, 0.1, -1.0)
 			return &resultContainer{
 				err:     err,
 				results: res,
@@ -583,9 +584,10 @@ var (
 		RunFunc: func(
 			systemUnderTest commands.SystemUnderTest,
 		) commands.Result {
-			ngt := systemUnderTest.(*ngtSystem).ngt
+			ngtSys := systemUnderTest.(*ngtSystem)
+			ngt := ngtSys.ngt
 
-			_, res, err := ngt.SearchByID(idA, 3, 0.1, -1.0)
+			_, res, err := ngt.SearchByID(ngtSys.ctx, idA, 3, 0.1, -1.0)
 			return &resultContainer{
 				err:     err,
 				results: res,
@@ -662,9 +664,10 @@ var (
 		RunFunc: func(
 			systemUnderTest commands.SystemUnderTest,
 		) commands.Result {
-			ngt := systemUnderTest.(*ngtSystem).ngt
+			ngtSys := systemUnderTest.(*ngtSystem)
+			ngt := ngtSys.ngt
 
-			_, res, err := ngt.SearchByID(idB, 3, 0.1, -1.0)
+			_, res, err := ngt.SearchByID(ngtSys.ctx, idB, 3, 0.1, -1.0)
 			return &resultContainer{
 				err:     err,
 				results: res,
@@ -741,9 +744,10 @@ var (
 		RunFunc: func(
 			systemUnderTest commands.SystemUnderTest,
 		) commands.Result {
-			ngt := systemUnderTest.(*ngtSystem).ngt
+			ngtSys := systemUnderTest.(*ngtSystem)
+			ngt := ngtSys.ngt
 
-			_, res, err := ngt.SearchByID(idC, 3, 0.1, -1.0)
+			_, res, err := ngt.SearchByID(ngtSys.ctx, idC, 3, 0.1, -1.0)
 			return &resultContainer{
 				err:     err,
 				results: res,

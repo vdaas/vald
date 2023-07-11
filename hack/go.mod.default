@@ -194,7 +194,7 @@ replace (
 	github.com/klauspost/cpuid/v2 => github.com/klauspost/cpuid/v2 latest
 	github.com/kpango/fastime => github.com/kpango/fastime latest
 	github.com/kpango/fuid => github.com/kpango/fuid latest
-	github.com/kpango/gache => github.com/kpango/gache latest
+	github.com/kpango/gache/v2 => github.com/kpango/gache/v2 latest
 	github.com/kpango/glg => github.com/kpango/glg latest
 	github.com/kr/fs => github.com/kr/fs latest
 	github.com/kr/pretty => github.com/kr/pretty latest

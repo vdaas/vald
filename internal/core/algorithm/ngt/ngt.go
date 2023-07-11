@@ -25,6 +25,7 @@ package ngt
 import "C"
 
 import (
+	"context"
 	"reflect"
 	"sync"
 	"unsafe"
@@ -40,7 +41,7 @@ type (
 	// NGT is core interface.
 	NGT interface {
 		// Search returns search result as []SearchResult
-		Search(vec []float32, size int, epsilon, radius float32) ([]SearchResult, error)
+		Search(ctx context.Context, vec []float32, size int, epsilon, radius float32) ([]SearchResult, error)
 
 		// Linear Search returns linear search result as []SearchResult
 		LinearSearch(vec []float32, size int) ([]SearchResult, error)
@@ -366,7 +367,7 @@ func (n *ngt) loadObjectSpace() error {
 }
 
 // Search returns search result as []SearchResult.
-func (n *ngt) Search(vec []float32, size int, epsilon, radius float32) (result []SearchResult, err error) {
+func (n *ngt) Search(ctx context.Context, vec []float32, size int, epsilon, radius float32) (result []SearchResult, err error) {
 	if len(vec) != int(n.dimension) {
 		return nil, errors.ErrIncompatibleDimensionSize(len(vec), int(n.dimension))
 	}
@@ -415,6 +416,12 @@ func (n *ngt) Search(vec []float32, size int, epsilon, radius float32) (result [
 	result = make([]SearchResult, rsize)
 
 	for i := range result {
+		select {
+		case <-ctx.Done():
+			n.PutErrorBuffer(ebuf)
+			return result[:i], nil
+		default:
+		}
 		d := C.ngt_get_result(results, C.uint32_t(i), ebuf)
 		if d.id == 0 && d.distance == 0 {
 			result[i] = SearchResult{0, 0, n.newGoError(ebuf)}
@@ -664,9 +671,8 @@ func (n *ngt) BulkRemove(ids ...uint) (errs error) {
 }
 
 // GetVector returns vector stored in NGT index.
-func (n *ngt) GetVector(id uint) ([]float32, error) {
+func (n *ngt) GetVector(id uint) (ret []float32, err error) {
 	dimension := int(n.dimension)
-	var ret []float32
 	ebuf := n.GetErrorBuffer()
 	switch n.objectType {
 	case Float:

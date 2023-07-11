@@ -20,52 +20,110 @@ run:
     - (^|/)hack/benchmark($|/)
     - (^|/)pkg/filter/ingress($|/)
     - (^|/)internal/core/algorithm/ngt($|/)
-
 output:
   format: line-number
-
 linters:
-  enable-all: true
-  disable:
-    - deadcode
-    - errcheck
-    - typecheck
-    - varcheck
-    - cyclop
-    - exhaustivestruct
-    - forbidigo
-    - funlen
-    - gci
-    - gocognit
-    - gocyclo
-    - goerr113
-    - gofmt
-    - goheader
-    - golint
-    - gomoddirectives
-    - gomodguard
-    - goprintffuncname
-    - ifshort
-    - importas
-    - interfacer
-    - lll
-    - maligned
-    - nestif
-    - nlreturn
-    - paralleltest
-    - revive
-    - promlinter
-    - scopelint
-    - testpackage
-    - tparallel
-    - wastedassign
-    - wrapcheck
-    - whitespace
-    - wsl
-
-issues:
+  disable-all: true
+  enable:
+    - asasalint
+    - asciicheck
+    - bidichk
+    - bodyclose
+    - containedctx
+    - contextcheck
+    - decorder
+    - depguard
+    - dogsled
+    - dupl
+    - dupword
+    - durationcheck
+    - errchkjson
+    - errname
+    - errorlint
+    - execinquery
+    - exhaustive
+    - exhaustruct
+    - exportloopref
+    - forcetypeassert
+    - ginkgolinter
+    - gocheckcompilerdirectives
+    - gochecknoglobals
+    - gochecknoinits
+    - goconst
+    - godot
+    - godox
+    - gofumpt
+    - goimports
+    - gomnd
+    - gosec #(gas)
+    - gosimple #(megacheck)
+    - gosmopolitan
+    - govet #(vet, vetshadow)
+    - grouper
+    - ineffassign
+    - interfacebloat
+    - loggercheck #(logrlint)
+    - maintidx
+    - makezero
+    - mirror
+    - misspell
+    - musttag
+    - nakedret
+    - nilerr
+    - nilnil
+    - noctx
+    - nolintlint
+    - nosprintfhostport
+    - prealloc
+    - predeclared
+    - reassign
+    - rowserrcheck
+    - sqlclosecheck
+    - staticcheck #(megacheck)
+    - stylecheck
+    - tagalign
+    - tagliatelle
+    - tenv
+    - testableexamples
+    - thelper
+    - unconvert
+    - unparam
+    - unused #(megacheck)
+    - usestdlibvars
+    # Disabled by your configuration linters
+    # - cyclop
+    # - errcheck
+    # - forbidigo
+    # - funlen
+    # - gci
+    # - gocognit
+    # - gocritic
+    # - gocyclo
+    # - goerr113
+    # - gofmt
+    # - goheader
+    # - gomoddirectives
+    # - gomodguard
+    # - goprintffuncname
+    # - importas
+    # - ireturn
+    # - lll
+    # - nestif
+    # - nlreturn
+    # - nonamedreturns
+    # - paralleltest
+    # - promlinter
+    # - revive
+    # - testpackage
+    # - tparallel
+    # - typecheck
+    # - varnamelen
+    # - wastedassign
+    # - whitespace
+    # - wrapcheck
+    # - wslissues:
+    # - zerologlint
   exclude-use-default: false
-
   exclude-rules:
     - path: _test\.go
       linters:
@@ -91,14 +149,13 @@ issues:
     - path: internal/errors/errors_benchmark_test\.go
       linters:
         - depguard
-
 linters-settings:
   gocritic:
     enabled-checks:
       - ruleguard
     settings:
       ruleguard:
-        rules: './hack/gorules/rules.go'
+        rules: "./hack/gorules/rules.go"
   tagliatelle:
     case:
       use-field-name: true
@@ -106,15 +163,19 @@ linters-settings:
         json: snake
         yaml: snake
   depguard:
-    list-type: blacklist
-    include-go-root: true
-    packages-with-error-message:
-      - errors: "errors is allowed only by internal/errors"
-      - k8s.io/apimachinery/pkg/api/errors: "errors is allowed only by internal/errors"
-      - github.com/cockroachdb/errors: "errors is allowed only by internal/errors"
-      - github.com/pkg/errors: "errors is allowed only by internal/errors"
-      - github.com/go-errors/errors: "errors is allowed only by internal/errors"
-      - golang.org/x/sync/errgroup: "errgroup is allowed only by internal/errgroup"
+    rules:
+      main:
+        deny:
+          - pkg: "errors"
+            desc: "errors is allowed only by internal/errors"
+          - pkg: "k8s.io/apimachinery/pkg/api/errors"
+            desc: "errors is allowed only by internal/errors"
+          - pkg: "github.com/cockroachdb/errors"
+            desc: "errors is allowed only by internal/errors"
+          - pkg: "github.com/pkg/errors"
+            desc: "errors is allowed only by internal/errors"
+          - pkg: github.com/go-errors/errors
+            desc: "errors is allowed only by internal/errors"
   govet:
     check-shadowing: true
     enable-all: true
