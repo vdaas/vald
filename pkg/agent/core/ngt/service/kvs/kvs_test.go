@@ -1382,8 +1382,8 @@ func Test_bidi_DeleteInverse(t *testing.T) {
 			}
 
 			var (
-				key = "45637ec4-c85f-11ea-87d0"
-				ts int64 = 24438
+				key       = "45637ec4-c85f-11ea-87d0"
+				ts  int64 = 24438
 			)
 
 			return test{
