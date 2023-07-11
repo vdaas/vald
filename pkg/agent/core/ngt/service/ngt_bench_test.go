@@ -1,24 +1,23 @@
 package service
 
 import (
+	"context"
+	"os"
+	"runtime/trace"
 	"testing"
 
 	"github.com/kpango/fuid"
 	"github.com/vdaas/vald/internal/config"
+	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/log/logger"
+	"github.com/vdaas/vald/internal/rand"
 	"gonum.org/v1/hdf5"
 )
 
-// func init() {
-// 	/**
-// 	Path option specifies hdf file by path. Default value is `fashion-mnist-784-euclidean.hdf5`.
-// 	Addr option specifies grpc server address. Default value is `127.0.0.1:8080`.
-// 	Wait option specifies indexing wait time (in seconds). Default value is  `60`.
-// 	**/
-// 	flag.StringVar(&datasetPath, "path", "fashion-mnist-784-euclidean.hdf5", "dataset path")
-// 	flag.StringVar(&grpcServerAddr, "addr", "127.0.0.1:8081", "gRPC server address")
-// 	flag.UintVar(&indexingWaitSeconds, "wait", 60, "indexing wait seconds")
-// 	flag.Parse()
-// }
+func init() {
+	testing.Init()
+	log.Init(log.WithLoggerType(logger.NOP.String()))
+}
 
 // load function loads training and test vector from hdf file. The size of ids is same to the number of training data.
 // Each id, which is an element of ids, will be set a random number.
@@ -90,60 +89,9 @@ func load(path string) (ids []string, train, test [][]float32, err error) {
 	return
 }
 
-
-
-func BenchmarkGetObject(b *testing.B) {
-	datasetPath := "fashion-mnist-784-euclidean.hdf5"
-	insertCount := 40000
-	defaultConfig := config.NGT{
-		Dimension:           784,
-		DistanceType:        "l2",
-		ObjectType:          "float",
-		BulkInsertChunkSize: 10,
-		CreationEdgeSize:    20,
-		SearchEdgeSize:      10,
-		EnableProactiveGC:   false,
-		EnableCopyOnWrite:   false,
-		KVSDB: &config.KVSDB{
-			Concurrency: 10,
-		},
-		BrokenIndexHistoryLimit: 1,
-	}
-
-	/**
-	Gets training data, test data and ids based on the dataset path.
-	the number of ids is equal to that of training dataset.
-	**/
-	ids, train, _, err := load(datasetPath)
-	if err != nil {
-		b.Error(err)
-	}
-
-	n, err := New(&defaultConfig)
-	if err != nil {
-		b.Error(err)
-	}
-
-	for i := range ids[:insertCount] {
-		n.Insert(ids[i], train[i])
-	}
-
-
-	b.StopTimer()
-	b.ResetTimer()
-	b.ReportAllocs()
-	b.StartTimer()
-	for i := 0; i < b.N; i++ {
-		n.GetObject(ids[i%insertCount])
-	}
-	b.StopTimer()
-}
-
-
 func BenchmarkGetObjectWithUpdate(b *testing.B) {
 	datasetPath := "fashion-mnist-784-euclidean.hdf5"
-	insertCount := 40000
-	updateCount := 20000
+	insertCount := 10000
 	defaultConfig := config.NGT{
 		Dimension:           784,
 		DistanceType:        "l2",
@@ -176,19 +124,31 @@ func BenchmarkGetObjectWithUpdate(b *testing.B) {
 	for i := range ids[:insertCount] {
 		n.Insert(ids[i], train[i])
 	}
+	n.CreateIndex(context.Background(), uint32(insertCount))
 
-	// update objects
-	for i := range ids[:updateCount] {
-		n.Update(ids[i], train[i + 1])
+	f, err := os.Create("trace.out")
+	if err != nil {
+		b.Error(err)
 	}
-
+	defer f.Close()
 
 	b.StopTimer()
 	b.ResetTimer()
 	b.ReportAllocs()
 	b.StartTimer()
-	for i := 0; i < b.N; i++ {
-		n.GetObject(ids[i%insertCount])
-	}
+
+	trace.Start(f)
+	defer trace.Stop()
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			go func() {
+				id := rand.LimitedUint32(uint64(insertCount))
+				id2 := rand.LimitedUint32(uint64(insertCount))
+				n.Update(ids[id], train[id2])
+			}()
+			_, _ = n.GetObject(ids[rand.LimitedUint32(uint64(insertCount))])
+		}
+	})
+
 	b.StopTimer()
 }
