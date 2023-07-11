@@ -22,7 +22,7 @@ assignees: ""
 
 <!--- Please change the versions below along with your environment -->
 
-- Go Version: 1.20.5
+- Go Version: 1.20.6
 - Docker Version: 20.10.8
 - Kubernetes Version: v1.27.3
 - NGT Version: 2.0.16
