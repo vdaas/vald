@@ -291,8 +291,8 @@ replace (
 	go.uber.org/zap => go.uber.org/zap v1.24.0
 	gocloud.dev => gocloud.dev v0.30.0
 	golang.org/x/crypto => golang.org/x/crypto v0.11.0
-	golang.org/x/exp => golang.org/x/exp v0.0.0-20230711023510-fffb14384f22
-	golang.org/x/exp/typeparams => golang.org/x/exp/typeparams v0.0.0-20230711023510-fffb14384f22
+	golang.org/x/exp => golang.org/x/exp v0.0.0-20230711153332-06a737ee72cb
+	golang.org/x/exp/typeparams => golang.org/x/exp/typeparams v0.0.0-20230711153332-06a737ee72cb
 	golang.org/x/image => golang.org/x/image v0.9.0
 	golang.org/x/lint => golang.org/x/lint v0.0.0-20210508222113-6edffad5e616
 	golang.org/x/mobile => golang.org/x/mobile v0.0.0-20230531173138-3c911d8e3eda
@@ -312,9 +312,9 @@ replace (
 	gonum.org/v1/plot => gonum.org/v1/plot v0.13.0
 	google.golang.org/api => google.golang.org/api v0.130.0
 	google.golang.org/appengine => google.golang.org/appengine v1.6.7
-	google.golang.org/genproto => google.golang.org/genproto v0.0.0-20230710151506-e685fd7b542b
-	google.golang.org/genproto/googleapis/api => google.golang.org/genproto/googleapis/api v0.0.0-20230710151506-e685fd7b542b
-	google.golang.org/genproto/googleapis/rpc => google.golang.org/genproto/googleapis/rpc v0.0.0-20230710151506-e685fd7b542b
+	google.golang.org/genproto => google.golang.org/genproto v0.0.0-20230711160842-782d3b101e98
+	google.golang.org/genproto/googleapis/api => google.golang.org/genproto/googleapis/api v0.0.0-20230711160842-782d3b101e98
+	google.golang.org/genproto/googleapis/rpc => google.golang.org/genproto/googleapis/rpc v0.0.0-20230711160842-782d3b101e98
 	google.golang.org/grpc => google.golang.org/grpc v1.56.2
 	google.golang.org/grpc/cmd/protoc-gen-go-grpc => google.golang.org/grpc/cmd/protoc-gen-go-grpc v1.3.0
 	google.golang.org/protobuf => google.golang.org/protobuf v1.31.0
@@ -362,7 +362,7 @@ require (
 	github.com/klauspost/compress v1.15.9
 	github.com/kpango/fastime v1.1.9
 	github.com/kpango/fuid v0.0.0-00010101000000-000000000000
-	github.com/kpango/gache/v2 v2.0.9
+	github.com/kpango/gache/v2 v2.0.0-00010101000000-000000000000
 	github.com/kpango/glg v1.6.15
 	github.com/leanovate/gopter v0.0.0-00010101000000-000000000000
 	github.com/lucasb-eyer/go-colorful v0.0.0-00010101000000-000000000000
@@ -457,7 +457,7 @@ require (
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
-	github.com/klauspost/cpuid/v2 v2.2.5 // indirect
+	github.com/klauspost/cpuid/v2 v2.2.4 // indirect
 	github.com/liggitt/tabwriter v0.0.0-20181228230101-89fcab3d43de // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.4 // indirect
