@@ -50,8 +50,8 @@ import (
 
 type NGT interface {
 	Start(ctx context.Context) <-chan error
-	Search(vec []float32, size uint32, epsilon, radius float32) ([]model.Distance, error)
-	SearchByID(uuid string, size uint32, epsilon, radius float32) ([]float32, []model.Distance, error)
+	Search(ctx context.Context, vec []float32, size uint32, epsilon, radius float32) ([]model.Distance, error)
+	SearchByID(ctx context.Context, uuid string, size uint32, epsilon, radius float32) ([]float32, []model.Distance, error)
 	LinearSearch(vec []float32, size uint32) ([]model.Distance, error)
 	LinearSearchByID(uuid string, size uint32) ([]float32, []model.Distance, error)
 	Insert(uuid string, vec []float32) (err error)
@@ -869,11 +869,11 @@ func (n *ngt) Start(ctx context.Context) <-chan error {
 	return ech
 }
 
-func (n *ngt) Search(vec []float32, size uint32, epsilon, radius float32) ([]model.Distance, error) {
+func (n *ngt) Search(ctx context.Context, vec []float32, size uint32, epsilon, radius float32) ([]model.Distance, error) {
 	if n.IsIndexing() {
 		return nil, errors.ErrCreateIndexingIsInProgress
 	}
-	sr, err := n.core.Search(vec, int(size), epsilon, radius)
+	sr, err := n.core.Search(ctx, vec, int(size), epsilon, radius)
 	if err != nil {
 		if n.IsIndexing() {
 			return nil, errors.ErrCreateIndexingIsInProgress
@@ -888,6 +888,11 @@ func (n *ngt) Search(vec []float32, size uint32, epsilon, radius float32) ([]mod
 
 	ds := make([]model.Distance, 0, len(sr))
 	for _, d := range sr {
+		select {
+		case <-ctx.Done():
+			return ds, nil
+		default:
+		}
 		if err = d.Error; d.ID == 0 && err != nil {
 			log.Warnf("an error occurred while searching: %s", err)
 			continue
@@ -906,7 +911,7 @@ func (n *ngt) Search(vec []float32, size uint32, epsilon, radius float32) ([]mod
 	return ds, nil
 }
 
-func (n *ngt) SearchByID(uuid string, size uint32, epsilon, radius float32) (vec []float32, dst []model.Distance, err error) {
+func (n *ngt) SearchByID(ctx context.Context, uuid string, size uint32, epsilon, radius float32) (vec []float32, dst []model.Distance, err error) {
 	if n.IsIndexing() {
 		return nil, nil, errors.ErrCreateIndexingIsInProgress
 	}
@@ -914,7 +919,7 @@ func (n *ngt) SearchByID(uuid string, size uint32, epsilon, radius float32) (vec
 	if err != nil {
 		return nil, nil, err
 	}
-	dst, err = n.Search(vec, size, epsilon, radius)
+	dst, err = n.Search(ctx, vec, size, epsilon, radius)
 	if err != nil {
 		return vec, nil, err
 	}
