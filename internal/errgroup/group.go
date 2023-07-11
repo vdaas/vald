@@ -118,6 +118,20 @@ func (g *group) Go(f func() error) {
 			if g.enableLimitation.Load() {
 				select {
 				case <-g.egctx.Done():
+					err = g.egctx.Err()
+					if !errors.Is(err, context.Canceled) &&
+						!errors.Is(err, context.DeadlineExceeded) {
+						g.mu.RLock()
+						_, ok := g.emap[err.Error()]
+						g.mu.RUnlock()
+						if !ok {
+							g.mu.Lock()
+							g.errs = append(g.errs, err)
+							g.emap[err.Error()] = struct{}{}
+							g.mu.Unlock()
+						}
+					}
+					g.doCancel()
 					return
 				case g.limitation <- struct{}{}:
 				}
@@ -125,20 +139,26 @@ func (g *group) Go(f func() error) {
 				select {
 				case <-g.limitation:
 				case <-g.egctx.Done():
+					if err != nil {
+						err = errors.Join(err, g.egctx.Err())
+					}
 				}
 			} else {
 				err = f()
 			}
-			if err != nil && !errors.Is(err, context.Canceled) {
-				runtime.Gosched()
-				g.mu.RLock()
-				_, ok := g.emap[err.Error()]
-				g.mu.RUnlock()
-				if !ok {
-					g.mu.Lock()
-					g.errs = append(g.errs, err)
-					g.emap[err.Error()] = struct{}{}
-					g.mu.Unlock()
+			if err != nil {
+				if !errors.Is(err, context.Canceled) &&
+					!errors.Is(err, context.DeadlineExceeded) {
+					runtime.Gosched()
+					g.mu.RLock()
+					_, ok := g.emap[err.Error()]
+					g.mu.RUnlock()
+					if !ok {
+						g.mu.Lock()
+						g.errs = append(g.errs, err)
+						g.emap[err.Error()] = struct{}{}
+						g.mu.Unlock()
+					}
 				}
 				g.doCancel()
 				return
