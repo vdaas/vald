@@ -23,6 +23,7 @@ import (
 
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/safety"
+	valdsync "github.com/vdaas/vald/internal/sync"
 	"github.com/zeebo/xxh3"
 )
 
@@ -38,10 +39,15 @@ type BidiMap interface {
 	Close() error
 }
 
+type valueStructOu struct {
+	value     string
+	timestamp int64
+}
+
 type bidi struct {
 	concurrency int
 	l           uint64
-	ou          [slen]*ou
+	ou          [slen]*valdsync.Map[uint32, valueStructOu]
 	uo          [slen]*uo
 	eg          errgroup.Group
 }
@@ -65,7 +71,7 @@ func New(opts ...Option) BidiMap {
 		opt(b)
 	}
 	for i := range b.ou {
-		b.ou[i] = new(ou)
+		b.ou[i] = new(valdsync.Map[uint32, valueStructOu])
 		b.uo[i] = new(uo)
 	}
 
@@ -89,7 +95,12 @@ func (b *bidi) Get(key string) (uint32, int64, bool) {
 // GetInverse returns the key and the boolean from the given val.
 // If the key does not exist, it returns nil and false.
 func (b *bidi) GetInverse(val uint32) (string, int64, bool) {
-	return b.ou[val&mask].Load(val)
+	vs, ok := b.ou[val&mask].Load(val)
+	if !ok {
+		return "", 0, false
+	}
+
+	return vs.value, vs.timestamp, true
 }
 
 // Set sets the key and val to the bidi.
@@ -102,7 +113,7 @@ func (b *bidi) Set(key string, val uint32, ts int64) {
 		b.ou[val&mask].Delete(old)                                    // delete paired map value using old value_key
 		b.uo[id].Store(key, ValueStructUo{value: val, timestamp: ts}) // store if loaded for overwrite new value
 	}
-	b.ou[val&mask].Store(val, ValueStructOu{value: key, timestamp: ts}) // store anytime
+	b.ou[val&mask].Store(val, valueStructOu{value: key, timestamp: ts}) // store anytime
 }
 
 // Delete deletes the key and the value from the bidi by the given key and returns val and true.
@@ -119,7 +130,8 @@ func (b *bidi) Delete(key string) (val uint32, ok bool) {
 // DeleteInverse deletes the key and the value from the bidi by the given val and returns the key and true.
 // If the key for the val does not exist, it returns nil and false.
 func (b *bidi) DeleteInverse(val uint32) (key string, ok bool) {
-	key, _, ok = b.ou[val&mask].LoadAndDelete(val)
+	vs, ok := b.ou[val&mask].LoadAndDelete(val)
+	key = vs.value
 	if ok {
 		b.uo[xxh3.HashString(key)&mask].Delete(key)
 		atomic.AddUint64(&b.l, ^uint64(0))
