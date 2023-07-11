@@ -32,7 +32,7 @@ func TestWithDNSCache(t *testing.T) {
 	t.Parallel()
 	type T = dialer
 	type args struct {
-		c cacher.Cache
+		c cacher.Cache[*dialerCache]
 	}
 	type want struct {
 		obj *T
@@ -55,7 +55,7 @@ func TestWithDNSCache(t *testing.T) {
 
 	tests := []test{
 		func() test {
-			c := gache.New()
+			c := gache.New[*dialerCache]()
 			return test{
 				name: "set cache success",
 				args: args{
