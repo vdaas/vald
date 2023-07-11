@@ -73,7 +73,6 @@ func (bm *breakerManager) Do(ctx context.Context, key string, fn func(ctx contex
 		mu.Unlock()
 	}()
 
-	var br *breaker
 	// Pre-loading to prevent a lot of object generation.
 	br, ok := bm.m.Load(key)
 	if !ok {
