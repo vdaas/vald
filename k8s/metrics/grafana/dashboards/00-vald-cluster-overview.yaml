@@ -108,7 +108,7 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "9.4.3",
+          "pluginVersion": "10.0.1",
           "targets": [
             {
               "datasource": {
@@ -186,7 +186,7 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "9.4.3",
+          "pluginVersion": "10.0.1",
           "targets": [
             {
               "datasource": {
@@ -264,7 +264,7 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "9.4.3",
+          "pluginVersion": "10.0.1",
           "targets": [
             {
               "datasource": {
@@ -324,7 +324,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "9.4.3",
+          "pluginVersion": "10.0.1",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -429,7 +429,7 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "9.4.3",
+          "pluginVersion": "10.0.1",
           "targets": [
             {
               "datasource": {
@@ -507,7 +507,7 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "9.4.3",
+          "pluginVersion": "10.0.1",
           "targets": [
             {
               "datasource": {
@@ -590,7 +590,7 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "9.4.3",
+          "pluginVersion": "10.0.1",
           "targets": [
             {
               "datasource": {
@@ -674,7 +674,7 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "9.4.3",
+          "pluginVersion": "10.0.1",
           "targets": [
             {
               "datasource": {
@@ -733,7 +733,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "9.4.3",
+          "pluginVersion": "10.0.1",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -823,7 +823,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "9.4.3",
+          "pluginVersion": "10.0.1",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -932,7 +932,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "9.4.3",
+          "pluginVersion": "10.0.1",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -1054,7 +1054,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "9.4.3",
+          "pluginVersion": "10.0.1",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -1163,7 +1163,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "9.4.3",
+          "pluginVersion": "10.0.1",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -1178,7 +1178,7 @@ data:
                 "uid": "prometheus"
               },
               "editorMode": "code",
-              "expr": "histogram_quantile(0.5, sum(rate(server_latency_bucket{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\", target_pod=~\"$ValdAgentPodName\"}[$interval])) by (le, grpc_server_method))",
+              "expr": "histogram_quantile(0.5, sum(rate(server_latency_bucket{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\", target_pod=~\"$ValdAgentPodName\", grpc_server_method!~\".*Index$\"}[$interval])) by (le, grpc_server_method))",
               "interval": "",
               "intervalFactor": 1,
               "legendFormat": "{{grpc_server_method}} p50",
@@ -1191,7 +1191,7 @@ data:
                 "uid": "prometheus"
               },
               "editorMode": "code",
-              "expr": "histogram_quantile(0.95, sum(rate(server_latency_bucket{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\", target_pod=~\"$ValdAgentPodName\"}[$interval])) by (le, grpc_server_method))",
+              "expr": "histogram_quantile(0.95, sum(rate(server_latency_bucket{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\", target_pod=~\"$ValdAgentPodName\", grpc_server_method!~\".*Index$\"}[$interval])) by (le, grpc_server_method))",
               "interval": "",
               "legendFormat": "{{grpc_server_method}} p95",
               "range": true,
@@ -1203,7 +1203,7 @@ data:
                 "uid": "prometheus"
               },
               "editorMode": "code",
-              "expr": "histogram_quantile(0.99, sum(rate(server_latency_bucket{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\", target_pod=~\"$ValdAgentPodName\"}[$interval])) by (le, grpc_server_method))",
+              "expr": "histogram_quantile(0.99, sum(rate(server_latency_bucket{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\", target_pod=~\"$ValdAgentPodName\", grpc_server_method!~\".*Index$\"}[$interval])) by (le, grpc_server_method))",
               "interval": "",
               "legendFormat": "{{grpc_server_method}} p99",
               "range": true,
@@ -1283,7 +1283,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "9.4.3",
+          "pluginVersion": "10.0.1",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -1379,7 +1379,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "9.4.3",
+          "pluginVersion": "10.0.1",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -1475,7 +1475,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "9.4.3",
+          "pluginVersion": "10.0.1",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -1529,6 +1529,126 @@ data:
           "yaxes": [
             {
               "format": "short",
+              "logBase": 1,
+              "min": "0",
+              "show": true
+            },
+            {
+              "format": "short",
+              "logBase": 1,
+              "show": true
+            }
+          ],
+          "yaxis": {
+            "align": false
+          }
+        },
+        {
+          "aliasColors": {},
+          "bars": false,
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "links": []
+            },
+            "overrides": []
+          },
+          "fill": 0,
+          "fillGradient": 0,
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 36
+          },
+          "hiddenSeries": false,
+          "id": 183,
+          "interval": "",
+          "legend": {
+            "avg": false,
+            "current": false,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "nullPointMode": "null",
+          "options": {
+            "alertThreshold": true
+          },
+          "percentage": false,
+          "pluginVersion": "10.0.1",
+          "pointradius": 2,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "spaceLength": 10,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "histogram_quantile(0.5, sum(rate(server_latency_bucket{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\", target_pod=~\"$ValdAgentPodName\", grpc_server_method=~\".*Index$\"}[$interval])) by (le, grpc_server_method))",
+              "interval": "",
+              "intervalFactor": 1,
+              "legendFormat": "{{grpc_server_method}} p50",
+              "range": true,
+              "refId": "A"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "histogram_quantile(0.95, sum(rate(server_latency_bucket{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\", target_pod=~\"$ValdAgentPodName\", grpc_server_method=~\".*Index$\"}[$interval])) by (le, grpc_server_method))",
+              "interval": "",
+              "legendFormat": "{{grpc_server_method}} p95",
+              "range": true,
+              "refId": "B"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "histogram_quantile(0.99, sum(rate(server_latency_bucket{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\", target_pod=~\"$ValdAgentPodName\", grpc_server_method=~\".*Index$\"}[$interval])) by (le, grpc_server_method))",
+              "interval": "",
+              "legendFormat": "{{grpc_server_method}} p99",
+              "range": true,
+              "refId": "C"
+            }
+          ],
+          "thresholds": [],
+          "timeRegions": [],
+          "title": "Latency (Vald Agent Index)",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "mode": "time",
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "ms",
               "logBase": 1,
               "min": "0",
               "show": true
@@ -1620,7 +1740,7 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "9.4.3",
+          "pluginVersion": "10.0.1",
           "repeatDirection": "v",
           "targets": [
             {
@@ -1682,7 +1802,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "9.4.3",
+          "pluginVersion": "10.0.1",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -1851,7 +1971,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "9.4.3",
+          "pluginVersion": "10.0.1",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -1943,7 +2063,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "9.4.3",
+          "pluginVersion": "10.0.1",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
