@@ -44,11 +44,16 @@ type valueStructOu struct {
 	timestamp int64
 }
 
+type ValueStructUo struct {
+	value     uint32
+	timestamp int64
+}
+
 type bidi struct {
 	concurrency int
 	l           uint64
 	ou          [slen]*valdsync.Map[uint32, valueStructOu]
-	uo          [slen]*uo
+	uo          [slen]*valdsync.Map[string, ValueStructUo]
 	eg          errgroup.Group
 }
 
@@ -72,7 +77,7 @@ func New(opts ...Option) BidiMap {
 	}
 	for i := range b.ou {
 		b.ou[i] = new(valdsync.Map[uint32, valueStructOu])
-		b.uo[i] = new(uo)
+		b.uo[i] = new(valdsync.Map[string, ValueStructUo])
 	}
 
 	if b.eg == nil {
@@ -89,7 +94,11 @@ func New(opts ...Option) BidiMap {
 // Get returns the value and boolean from the given key.
 // If the value does not exist, it returns nil and false.
 func (b *bidi) Get(key string) (uint32, int64, bool) {
-	return b.uo[xxh3.HashString(key)&mask].Load(key)
+	vs, ok := b.uo[xxh3.HashString(key)&mask].Load(key)
+	if !ok {
+		return 0, 0, false
+	}
+	return vs.value, vs.timestamp, true
 }
 
 // GetInverse returns the key and the boolean from the given val.
@@ -106,7 +115,8 @@ func (b *bidi) GetInverse(val uint32) (string, int64, bool) {
 // Set sets the key and val to the bidi.
 func (b *bidi) Set(key string, val uint32, ts int64) {
 	id := xxh3.HashString(key) & mask
-	old, _, loaded := b.uo[id].LoadOrStore(key, ValueStructUo{value: val, timestamp: ts})
+	vs, loaded := b.uo[id].LoadOrStore(key, ValueStructUo{value: val, timestamp: ts})
+	old := vs.value
 	if !loaded { // increase the count only if the key is not exists before
 		atomic.AddUint64(&b.l, 1)
 	} else {
@@ -119,7 +129,8 @@ func (b *bidi) Set(key string, val uint32, ts int64) {
 // Delete deletes the key and the value from the bidi by the given key and returns val and true.
 // If the value for the key does not exist, it returns nil and false.
 func (b *bidi) Delete(key string) (val uint32, ok bool) {
-	val, _, ok = b.uo[xxh3.HashString(key)&mask].LoadAndDelete(key)
+	vs, ok := b.uo[xxh3.HashString(key)&mask].LoadAndDelete(key)
+	val = vs.value
 	if ok {
 		b.ou[val&mask].Delete(val)
 		atomic.AddUint64(&b.l, ^uint64(0))

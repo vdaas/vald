@@ -53,11 +53,11 @@ func TestNew(t *testing.T) {
 		func() test {
 			var (
 				wantOu [slen]*valdsync.Map[uint32, valueStructOu]
-				wantUo [slen]*uo
+				wantUo [slen]*valdsync.Map[string, ValueStructUo]
 			)
 			for i := 0; i < slen; i++ {
 				wantOu[i] = new(valdsync.Map[uint32, valueStructOu])
-				wantUo[i] = new(uo)
+				wantUo[i] = new(valdsync.Map[string, ValueStructUo])
 			}
 			return test{
 				name: "return the bidi struct",
@@ -105,7 +105,7 @@ func Test_bidi_Get(t *testing.T) {
 	}
 	type fields struct {
 		ou [slen]*valdsync.Map[uint32, valueStructOu]
-		uo [slen]*uo
+		uo [slen]*valdsync.Map[string, ValueStructUo]
 		l  uint64
 	}
 	type want struct {
@@ -145,7 +145,7 @@ func Test_bidi_Get(t *testing.T) {
 			}
 			for i := 0; i < slen; i++ {
 				fields.ou[i] = new(valdsync.Map[uint32, valueStructOu])
-				fields.uo[i] = new(uo)
+				fields.uo[i] = new(valdsync.Map[string, ValueStructUo])
 			}
 
 			var (
@@ -178,7 +178,7 @@ func Test_bidi_Get(t *testing.T) {
 			}
 			for i := 0; i < slen; i++ {
 				fields.ou[i] = new(valdsync.Map[uint32, valueStructOu])
-				fields.uo[i] = new(uo)
+				fields.uo[i] = new(valdsync.Map[string, ValueStructUo])
 			}
 
 			var (
@@ -211,7 +211,7 @@ func Test_bidi_Get(t *testing.T) {
 			}
 			for i := 0; i < slen; i++ {
 				fields.ou[i] = new(valdsync.Map[uint32, valueStructOu])
-				fields.uo[i] = new(uo)
+				fields.uo[i] = new(valdsync.Map[string, ValueStructUo])
 			}
 
 			var (
@@ -244,7 +244,7 @@ func Test_bidi_Get(t *testing.T) {
 			}
 			for i := 0; i < slen; i++ {
 				fields.ou[i] = new(valdsync.Map[uint32, valueStructOu])
-				fields.uo[i] = new(uo)
+				fields.uo[i] = new(valdsync.Map[string, ValueStructUo])
 			}
 
 			var (
@@ -277,7 +277,7 @@ func Test_bidi_Get(t *testing.T) {
 			}
 			for i := 0; i < slen; i++ {
 				fields.ou[i] = new(valdsync.Map[uint32, valueStructOu])
-				fields.uo[i] = new(uo)
+				fields.uo[i] = new(valdsync.Map[string, ValueStructUo])
 			}
 
 			var (
@@ -308,7 +308,7 @@ func Test_bidi_Get(t *testing.T) {
 			}
 			for i := 0; i < slen; i++ {
 				fields.ou[i] = new(valdsync.Map[uint32, valueStructOu])
-				fields.uo[i] = new(uo)
+				fields.uo[i] = new(valdsync.Map[string, ValueStructUo])
 			}
 
 			var (
@@ -371,7 +371,7 @@ func Test_bidi_GetInverse(t *testing.T) {
 	}
 	type fields struct {
 		ou [slen]*valdsync.Map[uint32, valueStructOu]
-		uo [slen]*uo
+		uo [slen]*valdsync.Map[string, ValueStructUo]
 		l  uint64
 	}
 	type want struct {
@@ -411,7 +411,7 @@ func Test_bidi_GetInverse(t *testing.T) {
 			}
 			for i := 0; i < slen; i++ {
 				fields.ou[i] = new(valdsync.Map[uint32, valueStructOu])
-				fields.uo[i] = new(uo)
+				fields.uo[i] = new(valdsync.Map[string, ValueStructUo])
 			}
 
 			var (
@@ -444,7 +444,7 @@ func Test_bidi_GetInverse(t *testing.T) {
 			}
 			for i := 0; i < slen; i++ {
 				fields.ou[i] = new(valdsync.Map[uint32, valueStructOu])
-				fields.uo[i] = new(uo)
+				fields.uo[i] = new(valdsync.Map[string, ValueStructUo])
 			}
 
 			var (
@@ -477,7 +477,7 @@ func Test_bidi_GetInverse(t *testing.T) {
 			}
 			for i := 0; i < slen; i++ {
 				fields.ou[i] = new(valdsync.Map[uint32, valueStructOu])
-				fields.uo[i] = new(uo)
+				fields.uo[i] = new(valdsync.Map[string, ValueStructUo])
 			}
 
 			var (
@@ -510,7 +510,7 @@ func Test_bidi_GetInverse(t *testing.T) {
 			}
 			for i := 0; i < slen; i++ {
 				fields.ou[i] = new(valdsync.Map[uint32, valueStructOu])
-				fields.uo[i] = new(uo)
+				fields.uo[i] = new(valdsync.Map[string, ValueStructUo])
 			}
 
 			var (
@@ -543,7 +543,7 @@ func Test_bidi_GetInverse(t *testing.T) {
 			}
 			for i := 0; i < slen; i++ {
 				fields.ou[i] = new(valdsync.Map[uint32, valueStructOu])
-				fields.uo[i] = new(uo)
+				fields.uo[i] = new(valdsync.Map[string, ValueStructUo])
 			}
 
 			var (
@@ -574,7 +574,7 @@ func Test_bidi_GetInverse(t *testing.T) {
 			}
 			for i := 0; i < slen; i++ {
 				fields.ou[i] = new(valdsync.Map[uint32, valueStructOu])
-				fields.uo[i] = new(uo)
+				fields.uo[i] = new(valdsync.Map[string, ValueStructUo])
 			}
 
 			var (
@@ -640,7 +640,7 @@ func Test_bidi_Set(t *testing.T) {
 	}
 	type fields struct {
 		ou [slen]*valdsync.Map[uint32, valueStructOu]
-		uo [slen]*uo
+		uo [slen]*valdsync.Map[string, ValueStructUo]
 		l  uint64
 	}
 	type want struct {
@@ -688,7 +688,7 @@ func Test_bidi_Set(t *testing.T) {
 			}
 			for i := 0; i < slen; i++ {
 				fields.ou[i] = new(valdsync.Map[uint32, valueStructOu])
-				fields.uo[i] = new(uo)
+				fields.uo[i] = new(valdsync.Map[string, ValueStructUo])
 			}
 
 			var (
@@ -719,7 +719,7 @@ func Test_bidi_Set(t *testing.T) {
 			}
 			for i := 0; i < slen; i++ {
 				fields.ou[i] = new(valdsync.Map[uint32, valueStructOu])
-				fields.uo[i] = new(uo)
+				fields.uo[i] = new(valdsync.Map[string, ValueStructUo])
 			}
 
 			var (
@@ -750,7 +750,7 @@ func Test_bidi_Set(t *testing.T) {
 			}
 			for i := 0; i < slen; i++ {
 				fields.ou[i] = new(valdsync.Map[uint32, valueStructOu])
-				fields.uo[i] = new(uo)
+				fields.uo[i] = new(valdsync.Map[string, ValueStructUo])
 			}
 
 			var (
@@ -781,7 +781,7 @@ func Test_bidi_Set(t *testing.T) {
 			}
 			for i := 0; i < slen; i++ {
 				fields.ou[i] = new(valdsync.Map[uint32, valueStructOu])
-				fields.uo[i] = new(uo)
+				fields.uo[i] = new(valdsync.Map[string, ValueStructUo])
 			}
 
 			var (
@@ -821,7 +821,7 @@ func Test_bidi_Set(t *testing.T) {
 			}
 			for i := 0; i < slen; i++ {
 				fields.ou[i] = new(valdsync.Map[uint32, valueStructOu])
-				fields.uo[i] = new(uo)
+				fields.uo[i] = new(valdsync.Map[string, ValueStructUo])
 			}
 
 			key := "45637ec4-c85f-11ea-87d0"
@@ -846,7 +846,7 @@ func Test_bidi_Set(t *testing.T) {
 			}
 			for i := 0; i < slen; i++ {
 				fields.ou[i] = new(valdsync.Map[uint32, valueStructOu])
-				fields.uo[i] = new(uo)
+				fields.uo[i] = new(valdsync.Map[string, ValueStructUo])
 			}
 
 			var val uint32 = 14438
@@ -870,7 +870,7 @@ func Test_bidi_Set(t *testing.T) {
 			}
 			for i := 0; i < slen; i++ {
 				fields.ou[i] = new(valdsync.Map[uint32, valueStructOu])
-				fields.uo[i] = new(uo)
+				fields.uo[i] = new(valdsync.Map[string, ValueStructUo])
 			}
 
 			return test{
@@ -923,7 +923,7 @@ func Test_bidi_Delete(t *testing.T) {
 	}
 	type fields struct {
 		ou [slen]*valdsync.Map[uint32, valueStructOu]
-		uo [slen]*uo
+		uo [slen]*valdsync.Map[string, ValueStructUo]
 		l  uint64
 	}
 	type want struct {
@@ -956,7 +956,7 @@ func Test_bidi_Delete(t *testing.T) {
 			}
 			for i := 0; i < slen; i++ {
 				fields.ou[i] = new(valdsync.Map[uint32, valueStructOu])
-				fields.uo[i] = new(uo)
+				fields.uo[i] = new(valdsync.Map[string, ValueStructUo])
 			}
 
 			var (
@@ -1003,7 +1003,7 @@ func Test_bidi_Delete(t *testing.T) {
 			}
 			for i := 0; i < slen; i++ {
 				fields.ou[i] = new(valdsync.Map[uint32, valueStructOu])
-				fields.uo[i] = new(uo)
+				fields.uo[i] = new(valdsync.Map[string, ValueStructUo])
 			}
 
 			var (
@@ -1050,7 +1050,7 @@ func Test_bidi_Delete(t *testing.T) {
 			}
 			for i := 0; i < slen; i++ {
 				fields.ou[i] = new(valdsync.Map[uint32, valueStructOu])
-				fields.uo[i] = new(uo)
+				fields.uo[i] = new(valdsync.Map[string, ValueStructUo])
 			}
 
 			var (
@@ -1097,7 +1097,7 @@ func Test_bidi_Delete(t *testing.T) {
 			}
 			for i := 0; i < slen; i++ {
 				fields.ou[i] = new(valdsync.Map[uint32, valueStructOu])
-				fields.uo[i] = new(uo)
+				fields.uo[i] = new(valdsync.Map[string, ValueStructUo])
 			}
 
 			var (
@@ -1141,7 +1141,7 @@ func Test_bidi_Delete(t *testing.T) {
 			}
 			for i := 0; i < slen; i++ {
 				fields.ou[i] = new(valdsync.Map[uint32, valueStructOu])
-				fields.uo[i] = new(uo)
+				fields.uo[i] = new(valdsync.Map[string, ValueStructUo])
 			}
 
 			var (
@@ -1204,7 +1204,7 @@ func Test_bidi_DeleteInverse(t *testing.T) {
 	}
 	type fields struct {
 		ou [slen]*valdsync.Map[uint32, valueStructOu]
-		uo [slen]*uo
+		uo [slen]*valdsync.Map[string, ValueStructUo]
 		l  uint64
 	}
 	type want struct {
@@ -1237,7 +1237,7 @@ func Test_bidi_DeleteInverse(t *testing.T) {
 			}
 			for i := 0; i < slen; i++ {
 				fields.ou[i] = new(valdsync.Map[uint32, valueStructOu])
-				fields.uo[i] = new(uo)
+				fields.uo[i] = new(valdsync.Map[string, ValueStructUo])
 			}
 
 			var (
@@ -1284,7 +1284,7 @@ func Test_bidi_DeleteInverse(t *testing.T) {
 			}
 			for i := 0; i < slen; i++ {
 				fields.ou[i] = new(valdsync.Map[uint32, valueStructOu])
-				fields.uo[i] = new(uo)
+				fields.uo[i] = new(valdsync.Map[string, ValueStructUo])
 			}
 
 			var (
@@ -1331,7 +1331,7 @@ func Test_bidi_DeleteInverse(t *testing.T) {
 			}
 			for i := 0; i < slen; i++ {
 				fields.ou[i] = new(valdsync.Map[uint32, valueStructOu])
-				fields.uo[i] = new(uo)
+				fields.uo[i] = new(valdsync.Map[string, ValueStructUo])
 			}
 
 			var (
@@ -1378,7 +1378,7 @@ func Test_bidi_DeleteInverse(t *testing.T) {
 			}
 			for i := 0; i < slen; i++ {
 				fields.ou[i] = new(valdsync.Map[uint32, valueStructOu])
-				fields.uo[i] = new(uo)
+				fields.uo[i] = new(valdsync.Map[string, ValueStructUo])
 			}
 
 			var (
@@ -1422,7 +1422,7 @@ func Test_bidi_DeleteInverse(t *testing.T) {
 			}
 			for i := 0; i < slen; i++ {
 				fields.ou[i] = new(valdsync.Map[uint32, valueStructOu])
-				fields.uo[i] = new(uo)
+				fields.uo[i] = new(valdsync.Map[string, ValueStructUo])
 			}
 
 			var (
@@ -1486,7 +1486,7 @@ func Test_bidi_Range(t *testing.T) {
 	}
 	type fields struct {
 		ou [slen]*valdsync.Map[uint32, valueStructOu]
-		uo [slen]*uo
+		uo [slen]*valdsync.Map[string, ValueStructUo]
 		l  uint64
 	}
 	type want struct {
@@ -1512,7 +1512,7 @@ func Test_bidi_Range(t *testing.T) {
 			}
 			for i := 0; i < slen; i++ {
 				fields.ou[i] = new(valdsync.Map[uint32, valueStructOu])
-				fields.uo[i] = new(uo)
+				fields.uo[i] = new(valdsync.Map[string, ValueStructUo])
 			}
 
 			var (
@@ -1564,7 +1564,7 @@ func Test_bidi_Range(t *testing.T) {
 			}
 			for i := 0; i < slen; i++ {
 				fields.ou[i] = new(valdsync.Map[uint32, valueStructOu])
-				fields.uo[i] = new(uo)
+				fields.uo[i] = new(valdsync.Map[string, ValueStructUo])
 			}
 
 			var (
@@ -1616,7 +1616,7 @@ func Test_bidi_Range(t *testing.T) {
 			}
 			for i := 0; i < slen; i++ {
 				fields.ou[i] = new(valdsync.Map[uint32, valueStructOu])
-				fields.uo[i] = new(uo)
+				fields.uo[i] = new(valdsync.Map[string, ValueStructUo])
 			}
 
 			var (
@@ -1701,7 +1701,7 @@ func Test_bidi_Len(t *testing.T) {
 	t.Parallel()
 	type fields struct {
 		ou [slen]*valdsync.Map[uint32, valueStructOu]
-		uo [slen]*uo
+		uo [slen]*valdsync.Map[string, ValueStructUo]
 		l  uint64
 	}
 	type want struct {
