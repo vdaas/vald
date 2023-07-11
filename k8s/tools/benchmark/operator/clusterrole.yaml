@@ -19,7 +19,7 @@ kind: ClusterRole
 metadata:
   creationTimestamp: null
   name: vald-benchmark-operator
-  namespace: default
+  namespace: benchmark
 rules:
   - apiGroups:
       - apps

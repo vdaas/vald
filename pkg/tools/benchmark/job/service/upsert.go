@@ -62,7 +62,7 @@ func (j *job) upsert(ctx context.Context, ech chan error) error {
 			res, err := j.client.Upsert(egctx, &payload.Upsert_Request{
 				Vector: &payload.Object_Vector{
 					Id:     strconv.Itoa(iter),
-					Vector: vecs[idx],
+					Vector: addNoiseToVec(vecs[idx]),
 				},
 				Config: cfg,
 			})

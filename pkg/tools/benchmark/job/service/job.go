@@ -33,6 +33,7 @@ import (
 	"github.com/vdaas/vald/internal/k8s/client"
 	v1 "github.com/vdaas/vald/internal/k8s/vald/benchmark/api/v1"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/rand"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/test/data/hdf5"
 	"github.com/vdaas/vald/internal/timeutil/rate"
@@ -316,4 +317,12 @@ func calcRecall(linearRes, searchRes *payload.Search_Response) (recall float64) 
 		}
 	}
 	return recall / float64(len(lres))
+}
+
+// TODO: apply many object type
+func addNoiseToVec(oVec []float32) []float32 {
+	noise := rand.Float32()
+	vec := oVec
+	vec[0] += noise
+	return vec
 }

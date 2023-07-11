@@ -23,23 +23,25 @@ import (
 )
 
 type BenchmarkJobSpec struct {
-	Target                  *BenchmarkTarget           `json:"target,omitempty"`
-	Dataset                 *BenchmarkDataset          `json:"dataset,omitempty"`
-	Dimension               int                        `json:"dimension,omitempty"`
-	Replica                 int                        `json:"replica,omitempty"`
-	Repetition              int                        `json:"repetition,omitempty"`
-	JobType                 string                     `json:"job_type,omitempty"`
-	InsertConfig            *config.InsertConfig       `json:"insert_config,omitempty"`
-	UpdateConfig            *config.UpdateConfig       `json:"update_config,omitempty"`
-	UpsertConfig            *config.UpsertConfig       `json:"upsert_config,omitempty"`
-	SearchConfig            *config.SearchConfig       `json:"search_config,omitempty"`
-	RemoveConfig            *config.RemoveConfig       `json:"remove_config,omitempty"`
-	ObjectConfig            *config.ObjectConfig       `json:"object_config,omitempty"`
-	ClientConfig            *config.GRPCClient         `json:"client_config,omitempty"`
-	Rules                   []*config.BenchmarkJobRule `json:"rules,omitempty"`
-	RPS                     int                        `json:"rps,omitempty"`
-	ConcurrencyLimit        int                        `json:"concurrency_limit,omitempty"`
-	TTLSecondsAfterFinished int                        `json:"ttl_seconds_after_finished,omitempty"`
+	Target                  *BenchmarkTarget           `json:"target,omitempty"                     yaml:"target"`
+	Dataset                 *BenchmarkDataset          `json:"dataset,omitempty"                    yaml:"dataset"`
+	Dimension               int                        `json:"dimension,omitempty"                  yaml:"dimension"`
+	Replica                 int                        `json:"replica,omitempty"                    yaml:"replica"`
+	Repetition              int                        `json:"repetition,omitempty"                 yaml:"repetition"`
+	JobType                 string                     `json:"job_type,omitempty"                   yaml:"job_type"`
+	InsertConfig            *config.InsertConfig       `json:"insert_config,omitempty"              yaml:"insert_config"`
+	UpdateConfig            *config.UpdateConfig       `json:"update_config,omitempty"              yaml:"update_config"`
+	UpsertConfig            *config.UpsertConfig       `json:"upsert_config,omitempty"              yaml:"upsert_config"`
+	SearchConfig            *config.SearchConfig       `json:"search_config,omitempty"              yaml:"search_config"`
+	RemoveConfig            *config.RemoveConfig       `json:"remove_config,omitempty"              yaml:"remove_config"`
+	ObjectConfig            *config.ObjectConfig       `json:"object_config,omitempty"              yaml:"object_config"`
+	ClientConfig            *config.GRPCClient         `json:"client_config,omitempty"              yaml:"client_config"`
+	Rules                   []*config.BenchmarkJobRule `json:"rules,omitempty"                      yaml:"rules"`
+	RPS                     int                        `json:"rps,omitempty"                        yaml:"rps"`
+	ConcurrencyLimit        int                        `json:"concurrency_limit,omitempty"          yaml:"concurrency_limit"`
+	TTLSecondsAfterFinished int                        `json:"ttl_seconds_after_finished,omitempty" yaml:"ttl_seconds_after_finished"`
+	GlobalConfig            *config.GlobalConfig       `json:"global_config,omitempty"              yaml:"global_config"`
+	ServerConfig            *config.Servers            `json:"server_config,omitempty"              yaml:"server_config"`
 }
 
 type BenchmarkJobStatus string

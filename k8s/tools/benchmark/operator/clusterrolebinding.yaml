@@ -18,11 +18,11 @@ kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: vald-benchmark-operator
-  namespace: default
+  namespace: benchmark
 subjects:
   - kind: ServiceAccount
     name: vald-benchmark-operator
-    namespace: default
+    namespace: benchmark
 roleRef:
   kind: ClusterRole
   name: vald-benchmark-operator

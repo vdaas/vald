@@ -63,7 +63,7 @@ func (j *job) update(ctx context.Context, ech chan error) error {
 			res, err := j.client.Update(egctx, &payload.Update_Request{
 				Vector: &payload.Object_Vector{
 					Id:     strconv.Itoa(iter),
-					Vector: vecs[idx],
+					Vector: addNoiseToVec(vecs[idx]),
 				},
 				Config: cfg,
 			})

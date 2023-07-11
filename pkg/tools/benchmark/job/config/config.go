@@ -102,6 +102,15 @@ func NewConfig(ctx context.Context, path string) (cfg *Config, err error) {
 	if err != nil {
 		log.Warn(err.Error())
 	} else {
+		// GlobalConfig
+		if jobResource.Spec.GlobalConfig != nil {
+			cfg.GlobalConfig = *jobResource.Spec.GlobalConfig
+		}
+		// ServerConfig
+		if jobResource.Spec.ServerConfig != nil {
+			cfg.Server = jobResource.Spec.ServerConfig
+		}
+		// Job
 		cfg.Job.Target = (*config.BenchmarkTarget)(jobResource.Spec.Target)
 		cfg.Job.Dataset = (*config.BenchmarkDataset)(jobResource.Spec.Dataset)
 		cfg.Job.Dimension = jobResource.Spec.Dimension
@@ -109,13 +118,27 @@ func NewConfig(ctx context.Context, path string) (cfg *Config, err error) {
 		cfg.Job.Repetition = jobResource.Spec.Repetition
 		cfg.Job.JobType = jobResource.Spec.JobType
 		cfg.Job.Rules = jobResource.Spec.Rules
-		cfg.Job.InsertConfig = jobResource.Spec.InsertConfig
-		cfg.Job.UpdateConfig = jobResource.Spec.UpdateConfig
-		cfg.Job.UpsertConfig = jobResource.Spec.UpsertConfig
-		cfg.Job.SearchConfig = jobResource.Spec.SearchConfig
-		cfg.Job.RemoveConfig = jobResource.Spec.RemoveConfig
-		cfg.Job.ObjectConfig = jobResource.Spec.ObjectConfig
-		cfg.Job.ClientConfig = jobResource.Spec.ClientConfig
+		if jobResource.Spec.InsertConfig != nil {
+			cfg.Job.InsertConfig = jobResource.Spec.InsertConfig.Bind()
+		}
+		if jobResource.Spec.UpdateConfig != nil {
+			cfg.Job.UpdateConfig = jobResource.Spec.UpdateConfig.Bind()
+		}
+		if jobResource.Spec.UpsertConfig != nil {
+			cfg.Job.UpsertConfig = jobResource.Spec.UpsertConfig.Bind()
+		}
+		if jobResource.Spec.SearchConfig != nil {
+			cfg.Job.SearchConfig = jobResource.Spec.SearchConfig.Bind()
+		}
+		if jobResource.Spec.RemoveConfig != nil {
+			cfg.Job.RemoveConfig = jobResource.Spec.RemoveConfig.Bind()
+		}
+		if jobResource.Spec.ObjectConfig != nil {
+			cfg.Job.ObjectConfig = jobResource.Spec.ObjectConfig.Bind()
+		}
+		if jobResource.Spec.ClientConfig != nil {
+			cfg.Job.ClientConfig = jobResource.Spec.ClientConfig.Bind()
+		}
 		cfg.Job.RPS = jobResource.Spec.RPS
 		cfg.Job.ConcurrencyLimit = jobResource.Spec.ConcurrencyLimit
 		if annotations := jobResource.GetAnnotations(); annotations != nil {
