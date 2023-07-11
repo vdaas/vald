@@ -273,7 +273,7 @@ K8S_KUBECTL_VERSION ?= $(eval K8S_KUBECTL_VERSION := $(shell kubectl version --s
 K8S_SERVER_VERSION ?= $(eval K8S_SERVER_VERSION := $(shell echo "$(K8S_KUBECTL_VERSION)" | sed -e "s/.*Server.*\(v[0-9]\.[0-9]*\)\..*/\1/g"))$(K8S_SERVER_VERSION)
 
 # values file to use when deploying sample vald cluster with make k8s/vald/deploy
-HELM_VALUES ?= charts/vald/values/dev.yaml
+HELM_VALUES ?= $(ROOTDIR)/charts/vald/values/dev.yaml
 # extra options to pass to helm when deploying sample vald cluster with make k8s/vald/deploy
 HELM_EXTRA_OPTIONS ?=
 
@@ -428,27 +428,27 @@ format/go/test: \
 format/yaml: \
 	prettier/install
 	prettier --write \
-	    ".github/**/*.yaml" \
-	    ".github/**/*.yml" \
-	    "cmd/**/*.yaml" \
-	    "k8s/**/*.yaml"
+	    "$(ROOTDIR)/.github/**/*.yaml" \
+	    "$(ROOTDIR)/.github/**/*.yml" \
+	    "$(ROOTDIR)/cmd/**/*.yaml" \
+	    "$(ROOTDIR)/k8s/**/*.yaml"
 
 .PHONY: format/md
 format/md: \
 	prettier/install
 	prettier --write \
-	    "charts/**/*.md" \
-	    "apis/**/*.md" \
-	    "tests/**/*.md" \
-	    "./*.md"
+	    "$(ROOTDIR)/charts/**/*.md" \
+	    "$(ROOTDIR)/apis/**/*.md" \
+	    "$(ROOTDIR)/tests/**/*.md" \
+	    "$(ROOTDIR)/*.md"
 
 .PHONY: format/json
 format/json: \
 	prettier/install
 	prettier --write \
-	    "apis/**/*.json" \
-	    "charts/**/*.json" \
-	    "hack/**/*.json"
+	    "$(ROOTDIR)/apis/**/*.json" \
+	    "$(ROOTDIR)/charts/**/*.json" \
+	    "$(ROOTDIR)/hack/**/*.json"
 
 .PHONY: format/proto
 format/proto: \

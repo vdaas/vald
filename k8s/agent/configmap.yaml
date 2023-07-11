@@ -70,11 +70,11 @@ data:
             ip_transparent: false
             reuse_addr: true
             reuse_port: true
-            tcp_cork: true
+            tcp_cork: false
             tcp_defer_accept: false
             tcp_fast_open: false
             tcp_no_delay: false
-            tcp_quick_ack: true
+            tcp_quick_ack: false
           socket_path: ""
       health_check_servers:
         - name: liveness
@@ -148,7 +148,7 @@ data:
             tcp_defer_accept: false
             tcp_fast_open: false
             tcp_no_delay: false
-            tcp_quick_ack: true
+            tcp_quick_ack: false
           socket_path: ""
       startup_strategy:
         - liveness
