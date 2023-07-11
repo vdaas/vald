@@ -430,7 +430,7 @@ func (g *gRPCClient) RangeConcurrent(ctx context.Context,
 	}
 	err = g.conns.Range(func(addr string, p pool.Conn) bool {
 		eg.Go(safety.RecoverFunc(func() (err error) {
-			ssctx, sspan := trace.StartSpan(sctx, apiName+"/Client.RangeConcurrent/"+addr)
+			ssctx, sspan := trace.StartSpan(egctx, apiName+"/Client.RangeConcurrent/"+addr)
 			defer func() {
 				if sspan != nil {
 					sspan.End()
@@ -438,6 +438,11 @@ func (g *gRPCClient) RangeConcurrent(ctx context.Context,
 			}()
 			select {
 			case <-egctx.Done():
+				err = egctx.Err()
+				if err != nil && (errors.Is(err, context.Canceled) ||
+					errors.Is(err, context.DeadlineExceeded)) {
+					return err
+				}
 				return nil
 			default:
 				_, err = g.connectWithBackoff(ssctx, p, addr, true, func(ictx context.Context,
@@ -446,13 +451,22 @@ func (g *gRPCClient) RangeConcurrent(ctx context.Context,
 					err := f(ictx, addr, conn, copts...)
 					return nil, err
 				})
-				if err != nil && sspan != nil {
-					sspan.RecordError(err)
-					st, ok := status.FromError(err)
-					if ok && st != nil {
-						sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), err.Error())...)
+				if err != nil {
+					if sspan != nil {
+						sspan.RecordError(err)
+						st, ok := status.FromError(err)
+						if ok && st != nil {
+							sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), err.Error())...)
+						}
+						sspan.SetStatus(trace.StatusError, err.Error())
+						switch st.Code() {
+						case codes.Canceled, codes.DeadlineExceeded:
+							return err
+						}
+					} else if errors.Is(err, context.Canceled) ||
+						errors.Is(err, context.DeadlineExceeded) {
+						return err
 					}
-					sspan.SetStatus(trace.StatusError, err.Error())
 				}
 				return nil
 			}
