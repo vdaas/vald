@@ -17,6 +17,8 @@
 // Package algorithm provides core interface
 package algorithm
 
+import "context"
+
 type Mode uint32
 
 const (
@@ -29,7 +31,7 @@ type Closer interface {
 }
 
 type Bit32 interface {
-	Search(vec []float32, size int, epsilon, radius float32) (interface{}, error)
+	Search(ctx context.Context, vec []float32, size int, epsilon, radius float32) (interface{}, error)
 	Insert(vec []float32) (uint, error)
 	InsertCommit(vec []float32, poolSize uint32) (uint, error)
 	BulkInsert(vecs [][]float32) ([]uint, []error)
