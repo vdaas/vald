@@ -37,6 +37,7 @@ import (
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/slices"
+	valdsync "github.com/vdaas/vald/internal/sync"
 )
 
 type Discoverer interface {
@@ -47,10 +48,10 @@ type Discoverer interface {
 
 type discoverer struct {
 	maxPods         int
-	nodes           nodeMap
-	nodeMetrics     nodeMetricsMap
-	pods            podsMap
-	podMetrics      podMetricsMap
+	nodes           valdsync.Map[string, *node.Node]
+	nodeMetrics     valdsync.Map[string, mnode.Node]
+	pods            valdsync.Map[string, []pod.Pod]
+	podMetrics      valdsync.Map[string, mpod.Pod]
 	podsByNode      atomic.Value
 	podsByNamespace atomic.Value
 	podsByName      atomic.Value
