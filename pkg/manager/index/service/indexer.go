@@ -276,7 +276,7 @@ func (idx *index) loadInfos(ctx context.Context) (err error) {
 	}()
 
 	var u, ucu uint32
-	var infoMap indexInfos
+	var infoMap valdsync.Map[string, *payload.Info_Index_Count]
 	err = idx.client.GetClient().RangeConcurrent(ctx, len(idx.client.GetAddrs(ctx)),
 		func(ctx context.Context,
 			addr string, conn *grpc.ClientConn, copts ...grpc.CallOption,

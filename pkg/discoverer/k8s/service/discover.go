@@ -49,8 +49,8 @@ type Discoverer interface {
 type discoverer struct {
 	maxPods         int
 	nodes           valdsync.Map[string, *node.Node]
-	nodeMetrics     nodeMetricsMap
-	pods            podsMap
+	nodeMetrics     valdsync.Map[string, mnode.Node]
+	pods            valdsync.Map[string, []pod.Pod]
 	podMetrics      valdsync.Map[string, mpod.Pod]
 	podsByNode      atomic.Value
 	podsByNamespace atomic.Value
