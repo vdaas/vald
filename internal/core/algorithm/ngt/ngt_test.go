@@ -1829,7 +1829,7 @@ func Test_ngt_Search(t *testing.T) {
 			},
 			fields: fields{
 				inMemory:            false,
-				idxPath:             "/tmp/ngt-813",
+				idxPath:             "/tmp/ngt-814",
 				bulkInsertChunkSize: 100,
 				dimension:           9,
 				objectType:          Float,
