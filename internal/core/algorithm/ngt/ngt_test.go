@@ -1397,7 +1397,7 @@ func Test_ngt_Search(t *testing.T) {
 			},
 			fields: fields{
 				inMemory:            false,
-				idxPath:             "/tmp/ngt-81",
+				idxPath:             t.TempDir(),
 				bulkInsertChunkSize: 100,
 				dimension:           9,
 				objectType:          Uint8,
@@ -1425,7 +1425,7 @@ func Test_ngt_Search(t *testing.T) {
 			},
 			fields: fields{
 				inMemory:            false,
-				idxPath:             "/tmp/ngt-82",
+				idxPath:             t.TempDir(),
 				bulkInsertChunkSize: 100,
 				dimension:           9,
 				objectType:          Uint8,
@@ -1453,7 +1453,7 @@ func Test_ngt_Search(t *testing.T) {
 			},
 			fields: fields{
 				inMemory:            false,
-				idxPath:             "/tmp/ngt-83",
+				idxPath:             t.TempDir(),
 				bulkInsertChunkSize: 100,
 				dimension:           9,
 				objectType:          Uint8,
@@ -1487,7 +1487,7 @@ func Test_ngt_Search(t *testing.T) {
 			},
 			fields: fields{
 				inMemory:            false,
-				idxPath:             "/tmp/ngt-84",
+				idxPath:             t.TempDir(),
 				bulkInsertChunkSize: 100,
 				dimension:           9,
 				objectType:          Uint8,
@@ -1528,7 +1528,7 @@ func Test_ngt_Search(t *testing.T) {
 			},
 			fields: fields{
 				inMemory:            false,
-				idxPath:             "/tmp/ngt-85",
+				idxPath:             t.TempDir(),
 				bulkInsertChunkSize: 100,
 				dimension:           9,
 				objectType:          Uint8,
@@ -1574,7 +1574,7 @@ func Test_ngt_Search(t *testing.T) {
 			},
 			fields: fields{
 				inMemory:            false,
-				idxPath:             "/tmp/ngt-86",
+				idxPath:             t.TempDir(),
 				bulkInsertChunkSize: 100,
 				dimension:           9,
 				objectType:          Float,
@@ -1602,7 +1602,7 @@ func Test_ngt_Search(t *testing.T) {
 			},
 			fields: fields{
 				inMemory:            false,
-				idxPath:             "/tmp/ngt-87",
+				idxPath:             t.TempDir(),
 				bulkInsertChunkSize: 100,
 				dimension:           9,
 				objectType:          Float,
@@ -1630,7 +1630,7 @@ func Test_ngt_Search(t *testing.T) {
 			},
 			fields: fields{
 				inMemory:            false,
-				idxPath:             "/tmp/ngt-88",
+				idxPath:             t.TempDir(),
 				bulkInsertChunkSize: 100,
 				dimension:           9,
 				objectType:          Float,
@@ -1663,7 +1663,7 @@ func Test_ngt_Search(t *testing.T) {
 			},
 			fields: fields{
 				inMemory:            false,
-				idxPath:             "/tmp/ngt-89",
+				idxPath:             t.TempDir(),
 				bulkInsertChunkSize: 100,
 				dimension:           9,
 				objectType:          Float,
@@ -1704,7 +1704,7 @@ func Test_ngt_Search(t *testing.T) {
 			},
 			fields: fields{
 				inMemory:            false,
-				idxPath:             "/tmp/ngt-810",
+				idxPath:             t.TempDir(),
 				bulkInsertChunkSize: 100,
 				dimension:           9,
 				objectType:          Float,
@@ -1750,7 +1750,7 @@ func Test_ngt_Search(t *testing.T) {
 			},
 			fields: fields{
 				inMemory:            false,
-				idxPath:             "/tmp/ngt-811",
+				idxPath:             t.TempDir(),
 				bulkInsertChunkSize: 100,
 				dimension:           9,
 				objectType:          Uint8,
@@ -1778,7 +1778,7 @@ func Test_ngt_Search(t *testing.T) {
 			},
 			fields: fields{
 				inMemory:            false,
-				idxPath:             "/tmp/ngt-812",
+				idxPath:             t.TempDir(),
 				bulkInsertChunkSize: 100,
 				dimension:           9,
 				objectType:          Uint8,
@@ -1804,7 +1804,7 @@ func Test_ngt_Search(t *testing.T) {
 			},
 			fields: fields{
 				inMemory:            false,
-				idxPath:             "/tmp/ngt-813",
+				idxPath:             t.TempDir(),
 				bulkInsertChunkSize: 100,
 				dimension:           9,
 				objectType:          Float,
@@ -1829,7 +1829,7 @@ func Test_ngt_Search(t *testing.T) {
 			},
 			fields: fields{
 				inMemory:            false,
-				idxPath:             "/tmp/ngt-814",
+				idxPath:             t.TempDir(),
 				bulkInsertChunkSize: 100,
 				dimension:           9,
 				objectType:          Float,
