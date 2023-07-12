@@ -95,22 +95,21 @@ func TestNew(t *testing.T) {
 		err  error
 	}
 	type test struct {
-		name       string
-		args       args
-		want       want
-		checkFunc  func(want, NGT, error) error
-		beforeFunc func(args)
-		afterFunc  func(*testing.T, NGT) error
+		name        string
+		args        args
+		want        want
+		comparators []comparator.Option
+		checkFunc   func(want, NGT, error, ...comparator.Option) error
+		beforeFunc  func(args)
+		afterFunc   func(*testing.T, NGT) error
 	}
-	defaultCheckFunc := func(w want, got NGT, err error) error {
+	defaultComprators := append(ngtComparator, comparator.CompareField("idxPath", cmp.Comparer(func(s1, s2 string) bool {
+		return s1 == s2
+	})))
+	defaultCheckFunc := func(w want, got NGT, err error, comparators ...comparator.Option) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
-
-		// comparator for idxPath
-		comparators := append(ngtComparator, comparator.CompareField("idxPath", cmp.Comparer(func(s1, s2 string) bool {
-			return s1 == s2
-		})))
 
 		if diff := comparator.Diff(got, w.want, comparators...); diff != "" {
 			return errors.Errorf("diff: %s", diff)
@@ -143,23 +142,9 @@ func TestNew(t *testing.T) {
 						mu:                  &sync.RWMutex{},
 					},
 				},
-				checkFunc: func(w want, got NGT, err error) error {
-					if !errors.Is(err, w.err) {
-						return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-					}
-					comparators := append(ngtComparator, comparator.CompareField("idxPath", cmp.Comparer(func(s1, s2 string) bool {
-						return strings.HasPrefix(s1, "/tmp/ngt-") || strings.HasPrefix(s2, "/tmp/ngt-")
-					})))
-					if diff := comparator.Diff(got, w.want, comparators...); diff != "" {
-						return errors.Errorf("diff: %s", diff)
-					}
-					if ngt, ok := got.(*ngt); ok {
-						if _, err := os.Stat(ngt.idxPath); errors.Is(err, fs.ErrNotExist) {
-							return errors.Errorf("index file not exists, path: %s", ngt.idxPath)
-						}
-					}
-					return nil
-				},
+				comparators: append(ngtComparator, comparator.CompareField("idxPath", cmp.Comparer(func(s1, s2 string) bool {
+					return strings.HasPrefix(s1, "/tmp/ngt-") || strings.HasPrefix(s2, "/tmp/ngt-")
+				}))),
 			}
 		}(),
 		func() test {
@@ -238,6 +223,10 @@ func TestNew(t *testing.T) {
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
+			comparators := test.comparators
+			if test.comparators == nil || len(test.comparators) == 0 {
+				comparators = defaultComprators
+			}
 
 			got, err := New(test.args.opts...)
 			defer func() {
@@ -245,7 +234,7 @@ func TestNew(t *testing.T) {
 					tt.Error(err)
 				}
 			}()
-			if err := checkFunc(test.want, got, err); err != nil {
+			if err := checkFunc(test.want, got, err, comparators...); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -674,22 +663,21 @@ func Test_gen(t *testing.T) {
 		err  error
 	}
 	type test struct {
-		name       string
-		args       args
-		want       want
-		checkFunc  func(context.Context, want, NGT, error) error
-		beforeFunc func(*testing.T, args)
-		afterFunc  func(*testing.T, NGT) error
+		name        string
+		args        args
+		want        want
+		comparators []comparator.Option
+		checkFunc   func(context.Context, want, NGT, error, ...comparator.Option) error
+		beforeFunc  func(*testing.T, args)
+		afterFunc   func(*testing.T, NGT) error
 	}
-	defaultCheckFunc := func(_ context.Context, w want, got NGT, err error) error {
+	defaultComprators := append(ngtComparator, comparator.CompareField("idxPath", cmp.Comparer(func(s1, s2 string) bool {
+		return s1 == s2
+	})))
+	defaultCheckFunc := func(_ context.Context, w want, got NGT, err error, comparators ...comparator.Option) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
-
-		// comparator for idxPath
-		comparators := append(ngtComparator, comparator.CompareField("idxPath", cmp.Comparer(func(s1, s2 string) bool {
-			return s1 == s2
-		})))
 
 		if diff := comparator.Diff(got, w.want, comparators...); diff != "" {
 			return errors.Errorf("diff: %s", diff)
@@ -721,24 +709,9 @@ func Test_gen(t *testing.T) {
 					mu:                  &sync.RWMutex{},
 				},
 			},
-			checkFunc: func(ctx context.Context, w want, got NGT, err error) error {
-				if !errors.Is(err, w.err) {
-					return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-				}
-				comparators := append(ngtComparator, comparator.CompareField("idxPath", cmp.Comparer(func(s1, s2 string) bool {
-					return strings.HasPrefix(s1, "/tmp/ngt-") || strings.HasPrefix(s2, "/tmp/ngt-")
-				})))
-				if diff := comparator.Diff(got, w.want, comparators...); diff != "" {
-					return errors.Errorf("diff: %s", diff)
-				}
-				if ngt, ok := got.(*ngt); ok {
-					if _, err := os.Stat(ngt.idxPath); errors.Is(err, fs.ErrNotExist) {
-						return errors.Errorf("index file not exists, path: %s", ngt.idxPath)
-					}
-				}
-
-				return nil
-			},
+			comparators: append(ngtComparator, comparator.CompareField("idxPath", cmp.Comparer(func(s1, s2 string) bool {
+				return strings.HasPrefix(s1, "/tmp/ngt-") || strings.HasPrefix(s2, "/tmp/ngt-")
+			}))),
 		},
 		func() test {
 			idxPath := idxTempDir(t)
@@ -782,8 +755,8 @@ func Test_gen(t *testing.T) {
 						mu:                  &sync.RWMutex{},
 					},
 				},
-				checkFunc: func(ctx context.Context, w want, n NGT, e error) error {
-					if err := defaultCheckFunc(ctx, w, n, e); err != nil {
+				checkFunc: func(ctx context.Context, w want, n NGT, e error, comparators ...comparator.Option) error {
+					if err := defaultCheckFunc(ctx, w, n, e, comparators...); err != nil {
 						return err
 					}
 
@@ -837,6 +810,10 @@ func Test_gen(t *testing.T) {
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
+			comparators := test.comparators
+			if test.comparators == nil || len(test.comparators) == 0 {
+				comparators = defaultComprators
+			}
 
 			got, err := gen(test.args.isLoad, test.args.opts...)
 			defer func() {
@@ -847,7 +824,7 @@ func Test_gen(t *testing.T) {
 			ctx, cancel := context.WithCancel(context.Background())
 			defer cancel()
 
-			if err := checkFunc(ctx, test.want, got, err); err != nil {
+			if err := checkFunc(ctx, test.want, got, err, comparators...); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
