@@ -1366,25 +1366,25 @@ tests := []test {
 
 ## Testing policy
 
-In Vald, implementation code are divided in different packages based on the context of the implementation.
+In Vald, the implementation code is divided into different packages based on the context of the implementation.
 
-Based on the context of the package, we decided to apply different testing policies on each packages to fit their needs.
+Based on the context of the package, we decided to apply different testing policies on each package to fit their needs.
 
 ### Internal package
 
-Internal package `./internal` contains internal used library code. It is written to be reuseable to solve common problems.
+Internal package `./internal` contains internal used library code. It is written to be reusable to solve common problems.
 
-It is very important to make sure that these commonly used library code works correctly, we decided to apply C1 coverage (branch coverage) to `./internal` package.
+It is very important to make sure that the commonly used library code works correctly, so we decided to apply C1 coverage (branch coverage) to the `./internal` package.
 
-C1 coverage means that to cover the test on each coditiations and ensure each conditions (true and false) are evaluated on the test code.
+C1 coverage means to cover the test on each condition and ensure each condition (true and false) is evaluated on the test code.
 
 ### Pkg package
 
-Pkg package `./pkg` contains business logic of the component in Vald.
+Pkg package `./pkg` contains the business logic of the component in Vald.
 
-In `./pkg` package, the business logic implementation is divided in each component, and then in each component package, the specific business logic is divided in different packages.
+In the `./pkg` package, the business logic implementation is divided into each component, and then in each component package, the specific business logic is divided into different packages.
 
-Here is the common example of package strcture in `./pkg` package.
+Here is a common example of the package structure in `./pkg` package.
 
 - ./pkg/{component}/config
 - ./pkg/{component}/handler
@@ -1392,9 +1392,9 @@ Here is the common example of package strcture in `./pkg` package.
 - ./pkg/{component}/service
 - ./pkg/{component}/usecase
 
-For example, the implementation of the usecase layer of the Vald LB gateway will be `./pkg/gateway/lb/usecase`.
+For example, the implementation of the use case layer of the Vald LB gateway will be `./pkg/gateway/lb/usecase`.
 
-Since each package has its own purpose, we decided to apply different strategy on each package to fit its purpose.
+Since each package has its purpose, we decided to apply different strategies to each package to fit its purpose.
 
 | Package                        | Testing strategy                                                                                               |
 | ------------------------------ | -------------------------------------------------------------------------------------------------------------- |
