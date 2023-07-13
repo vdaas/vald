@@ -18,8 +18,12 @@
 {{- $discoverer := .Values.discoverer -}}
 {{- $index := .Values.manager.index -}}
 {{- if .Values.defaults.networkPolicy.enabled }}
-kind: NetworkPolicy
+{{- if (.Capabilities.APIVersions.Has "networking.k8s.io/v1alpha1") }}
+apiVersion: networking.k8s.io/v1alpha1
+{{- else }}
 apiVersion: networking.k8s.io/v1
+{{- end }}
+kind: NetworkPolicy
 metadata:
   name: index-allow
 spec:
