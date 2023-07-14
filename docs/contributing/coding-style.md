@@ -1405,4 +1405,6 @@ Since each package has its purpose, we decided to apply different strategies to 
 | ./pkg/{component}/service      | Test only interface functions                                                                                  |
 | ./pkg/{component}/usecase      | Test only New() function                                                                                       |
 
-For the unit test of other packages, please follow the [unit test guideline](./unit-test-guideline.md) for more details on how to implement good unit test.
+For the rest of the `./pkg` packages, we decided to implement the unit test for the exported function only.
+
+Please follow the [unit test guideline](./unit-test-guideline.md) for more details on how to implement good unit test.
