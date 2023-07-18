@@ -265,10 +265,13 @@ func TestNewDialer(t *testing.T) {
 			return errors.Errorf("got: \"%+v\" is not a dialer", gotDer)
 		}
 		// skipcq: VET-V0008
+		//nolint: govet,copylocks
 		if diff := comparator.Diff(*want, *got,
 			// skipcq: VET-V0008
+			//nolint: govet,copylocks
 			comparator.IgnoreFields(*want, "dialer", "der", "addrs", "dnsCachedOnce", "dnsCache", "ctrl", "tmu"),
 			// skipcq: VET-V0008
+			//nolint: govet,copylocks
 			comparator.AllowUnexported(*want),
 			comparator.Comparer(func(x, y cacher.Cache[*dialerCache]) bool {
 				if x == nil && y == nil {
