@@ -31,6 +31,7 @@ var defaultMultiInsertReqComparators = []comparator.Option{
 }
 
 func TestGenMultiInsertReq(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		t    ObjectType
 		dist vector.Distribution
@@ -243,6 +244,7 @@ func TestGenMultiInsertReq(t *testing.T) {
 }
 
 func TestGenSameVecMultiInsertReq(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		num int
 		vec []float32

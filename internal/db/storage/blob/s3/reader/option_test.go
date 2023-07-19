@@ -435,7 +435,7 @@ func TestWithBackoffOpts(t *testing.T) {
 			}
 		}(),
 		func() test {
-			defaultOptions := []backoff.Option{}
+			var defaultOptions []backoff.Option
 			opts := []backoff.Option{
 				backoff.WithRetryCount(1),
 			}

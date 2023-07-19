@@ -29,6 +29,7 @@ var defaultObjectLocationComparators = []comparator.Option{
 }
 
 func TestGenObjectLocations(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		num    int
 		name   string
@@ -151,6 +152,7 @@ func TestGenObjectLocations(t *testing.T) {
 }
 
 func TestGenObjectStreamLocation(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		num    int
 		name   string
