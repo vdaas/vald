@@ -69,7 +69,7 @@ func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *
 		return nil, err
 	}
 	res, err = toSearchResponse(
-		s.ngt.Search(
+		s.ngt.Search(ctx,
 			req.GetVector(),
 			req.GetConfig().GetNum(),
 			req.GetConfig().GetEpsilon(),
@@ -207,7 +207,7 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 		}
 		return nil, err
 	}
-	vec, dst, err := s.ngt.SearchByID(
+	vec, dst, err := s.ngt.SearchByID(ctx,
 		uuid,
 		req.GetConfig().GetNum(),
 		req.GetConfig().GetEpsilon(),

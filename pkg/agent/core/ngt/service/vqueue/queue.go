@@ -26,6 +26,7 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/slices"
+	valdsync "github.com/vdaas/vald/internal/sync"
 )
 
 // Queue represents vector queue cache interface
@@ -42,7 +43,7 @@ type Queue interface {
 }
 
 type vqueue struct {
-	il, dl indexMap
+	il, dl valdsync.Map[string, *index]
 	ic, dc uint64
 }
 
@@ -82,10 +83,10 @@ func (v *vqueue) PushInsert(uuid string, vector []float32, date int64) error {
 		vector: vector,
 		date:   date,
 	}
-	oidx, loaded := v.il.LoadOrStore(uuid, idx)
+	oidx, loaded := v.il.LoadOrStore(uuid, &idx)
 	if loaded {
 		if date > oidx.date { // if data already exists and existing index is older than new one
-			v.il.Store(uuid, idx)
+			v.il.Store(uuid, &idx)
 		}
 	} else {
 		_ = atomic.AddUint64(&v.ic, 1)
@@ -101,10 +102,10 @@ func (v *vqueue) PushDelete(uuid string, date int64) error {
 		uuid: uuid,
 		date: date,
 	}
-	oidx, loaded := v.dl.LoadOrStore(uuid, idx)
+	oidx, loaded := v.dl.LoadOrStore(uuid, &idx)
 	if loaded {
 		if date > oidx.date { // if data already exists and existing index is older than new one
-			v.dl.Store(uuid, idx)
+			v.dl.Store(uuid, &idx)
 		}
 	} else {
 		_ = atomic.AddUint64(&v.dc, 1)
@@ -172,7 +173,7 @@ func (v *vqueue) DVExists(uuid string) bool {
 
 func (v *vqueue) RangePopInsert(ctx context.Context, now int64, f func(uuid string, vector []float32, date int64) bool) {
 	uii := make([]index, 0, atomic.LoadUint64(&v.ic))
-	v.il.Range(func(uuid string, idx index) bool {
+	v.il.Range(func(uuid string, idx *index) bool {
 		if idx.date > now {
 			return true
 		}
@@ -184,7 +185,7 @@ func (v *vqueue) RangePopInsert(ctx context.Context, now int64, f func(uuid stri
 			}
 			return true
 		}
-		uii = append(uii, idx)
+		uii = append(uii, *idx)
 		select {
 		case <-ctx.Done():
 			return false
@@ -212,11 +213,11 @@ func (v *vqueue) RangePopInsert(ctx context.Context, now int64, f func(uuid stri
 
 func (v *vqueue) RangePopDelete(ctx context.Context, now int64, f func(uuid string) bool) {
 	udi := make([]index, 0, atomic.LoadUint64(&v.dc))
-	v.dl.Range(func(uuid string, idx index) bool {
+	v.dl.Range(func(_ string, idx *index) bool {
 		if idx.date > now {
 			return true
 		}
-		udi = append(udi, idx)
+		udi = append(udi, *idx)
 		select {
 		case <-ctx.Done():
 			return false

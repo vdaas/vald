@@ -37,9 +37,7 @@ import (
 	"github.com/vdaas/vald/internal/conv"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/io"
-	"github.com/vdaas/vald/internal/net/control"
 	"github.com/vdaas/vald/internal/strings"
-	"github.com/vdaas/vald/internal/test/goleak"
 	"github.com/vdaas/vald/internal/tls"
 )
 
@@ -273,7 +271,7 @@ func TestNewDialer(t *testing.T) {
 			cmpopts.IgnoreFields(*want, "dialer", "der", "addrs", "dnsCachedOnce", "dnsCache", "ctrl", "tmu"),
 			// skipcq: VET-V0008
 			cmp.AllowUnexported(*want),
-			cmp.Comparer(func(x, y cacher.Cache) bool {
+			cmp.Comparer(func(x, y cacher.Cache[*dialerCache]) bool {
 				if x == nil && y == nil {
 					return true
 				}
@@ -493,7 +491,7 @@ func Test_dialer_lookup(t *testing.T) {
 				addr: "google.com",
 			},
 			opts: []DialerOption{
-				WithDNSCache(gache.New()),
+				WithDNSCache(gache.New[*dialerCache]()),
 				WithDisableDialerDualStack(),
 			},
 			checkFunc: func(ctx context.Context, w want, got *dialerCache, err error, d *dialer) error {
@@ -533,8 +531,8 @@ func Test_dialer_lookup(t *testing.T) {
 				addr: "addr",
 			},
 			opts: []DialerOption{
-				WithDNSCache(func() cacher.Cache {
-					g := gache.New()
+				WithDNSCache(func() cacher.Cache[*dialerCache] {
+					g := gache.New[*dialerCache]()
 					g.Set("addr", &dialerCache{
 						ips: []string{"999.999.999.999"},
 					})
@@ -604,7 +602,7 @@ func Test_dialer_StartDialerCache(t *testing.T) {
 	tests := []test{
 		func() test {
 			addr := "localhost"
-			ips := []string{}
+			var ips []string
 
 			return test{
 				name: "cache refresh when it is expired",
@@ -629,7 +627,7 @@ func Test_dialer_StartDialerCache(t *testing.T) {
 						if !ok {
 							return errors.New("cache not found")
 						}
-						if val == nil || len(val.(*dialerCache).ips) != ipLen {
+						if val == nil || len(val.ips) != ipLen {
 							return errors.Errorf("cache is not correct, gotLen: %v, want: %v", val, ipLen)
 						}
 						return nil
@@ -923,7 +921,7 @@ func Test_dialer_cachedDialer(t *testing.T) {
 				w.WriteHeader(200)
 			}))
 
-			c, err := cache.New()
+			c, err := cache.New[*dialerCache]()
 			if err != nil {
 				t.Error(err)
 			}
@@ -977,7 +975,7 @@ func Test_dialer_cachedDialer(t *testing.T) {
 			}))
 			srv.TLS.InsecureSkipVerify = true
 
-			c, err := cache.New()
+			c, err := cache.New[*dialerCache]()
 			if err != nil {
 				t.Error(err)
 			}
@@ -1033,7 +1031,7 @@ func Test_dialer_cachedDialer(t *testing.T) {
 		func() test {
 			addr := "invalid_ip"
 
-			c, err := cache.New()
+			c, err := cache.New[*dialerCache]()
 			if err != nil {
 				t.Error(err)
 			}
@@ -1071,7 +1069,7 @@ func Test_dialer_cachedDialer(t *testing.T) {
 		}(),
 		func() test {
 			addr := "google.com"
-			c, err := cache.New()
+			c, err := cache.New[*dialerCache]()
 			if err != nil {
 				t.Error(err)
 			}
@@ -1124,7 +1122,7 @@ func Test_dialer_cachedDialer(t *testing.T) {
 				addrs[i] = JoinHostPort(hosts[i], ports[i])
 			}
 
-			c, err := cache.New()
+			c, err := cache.New[*dialerCache]()
 			if err != nil {
 				t.Error(err)
 			}
@@ -1225,7 +1223,7 @@ func Test_dialer_cachedDialer(t *testing.T) {
 				t.Error(err)
 			}
 
-			c, err := cache.New()
+			c, err := cache.New[*dialerCache]()
 			if err != nil {
 				t.Error(err)
 			}
@@ -1255,8 +1253,8 @@ func Test_dialer_cachedDialer(t *testing.T) {
 						return errors.New("conn is nil")
 					}
 
-					c, _ := d.dnsCache.Get(host)
-					if dc := c.(*dialerCache); dc.cnt != 0 {
+					dc, _ := d.dnsCache.Get(host)
+					if dc.cnt != 0 {
 						return errors.Errorf("count do not reset, cnt: %v", dc.cnt)
 					}
 
@@ -1823,164 +1821,165 @@ func Test_dialer_tlsHandshake(t *testing.T) {
 }
 
 // NOT IMPLEMENTED BELOW
-
-func Test_dialer_lookupIPAddrs(t *testing.T) {
-	type args struct {
-		ctx  context.Context
-		host string
-	}
-	type fields struct {
-		dnsCache              cacher.Cache
-		enableDNSCache        bool
-		tlsConfig             *tls.Config
-		dnsRefreshDurationStr string
-		dnsCacheExpirationStr string
-		dnsRefreshDuration    time.Duration
-		dnsCacheExpiration    time.Duration
-		dialerTimeout         time.Duration
-		dialerKeepalive       time.Duration
-		dialerFallbackDelay   time.Duration
-		ctrl                  control.SocketController
-		sockFlg               control.SocketFlag
-		dialerDualStack       bool
-		der                   *net.Dialer
-		dialer                func(ctx context.Context, network, addr string) (Conn, error)
-	}
-	type want struct {
-		wantIps []string
-		err     error
-	}
-	type test struct {
-		name       string
-		args       args
-		fields     fields
-		want       want
-		checkFunc  func(want, []string, error) error
-		beforeFunc func(*testing.T, args)
-		afterFunc  func(*testing.T, args)
-	}
-	defaultCheckFunc := func(w want, gotIps []string, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-		}
-		if !reflect.DeepEqual(gotIps, w.wantIps) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotIps, w.wantIps)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ctx:nil,
-		           host:"",
-		       },
-		       fields: fields {
-		           dnsCache:nil,
-		           enableDNSCache:false,
-		           tlsConfig:nil,
-		           dnsRefreshDurationStr:"",
-		           dnsCacheExpirationStr:"",
-		           dnsRefreshDuration:nil,
-		           dnsCacheExpiration:nil,
-		           dialerTimeout:nil,
-		           dialerKeepalive:nil,
-		           dialerFallbackDelay:nil,
-		           ctrl:nil,
-		           sockFlg:nil,
-		           dialerDualStack:false,
-		           der:net.Dialer{},
-		           dialer:nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		       beforeFunc: func(t *testing.T, args args) {
-		           t.Helper()
-		       },
-		       afterFunc: func(t *testing.T, args args) {
-		           t.Helper()
-		       },
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ctx:nil,
-		           host:"",
-		           },
-		           fields: fields {
-		           dnsCache:nil,
-		           enableDNSCache:false,
-		           tlsConfig:nil,
-		           dnsRefreshDurationStr:"",
-		           dnsCacheExpirationStr:"",
-		           dnsRefreshDuration:nil,
-		           dnsCacheExpiration:nil,
-		           dialerTimeout:nil,
-		           dialerKeepalive:nil,
-		           dialerFallbackDelay:nil,
-		           ctrl:nil,
-		           sockFlg:nil,
-		           dialerDualStack:false,
-		           der:net.Dialer{},
-		           dialer:nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		           beforeFunc: func(t *testing.T, args args) {
-		               t.Helper()
-		           },
-		           afterFunc: func(t *testing.T, args args) {
-		               t.Helper()
-		           },
-		       }
-		   }(),
-		*/
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-			if test.beforeFunc != nil {
-				test.beforeFunc(tt, test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(tt, test.args)
-			}
-			checkFunc := test.checkFunc
-			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
-			}
-			d := &dialer{
-				dnsCache:              test.fields.dnsCache,
-				enableDNSCache:        test.fields.enableDNSCache,
-				tlsConfig:             test.fields.tlsConfig,
-				dnsRefreshDurationStr: test.fields.dnsRefreshDurationStr,
-				dnsCacheExpirationStr: test.fields.dnsCacheExpirationStr,
-				dnsRefreshDuration:    test.fields.dnsRefreshDuration,
-				dnsCacheExpiration:    test.fields.dnsCacheExpiration,
-				dialerTimeout:         test.fields.dialerTimeout,
-				dialerKeepalive:       test.fields.dialerKeepalive,
-				dialerFallbackDelay:   test.fields.dialerFallbackDelay,
-				ctrl:                  test.fields.ctrl,
-				sockFlg:               test.fields.sockFlg,
-				dialerDualStack:       test.fields.dialerDualStack,
-				der:                   test.fields.der,
-				dialer:                test.fields.dialer,
-			}
-
-			gotIps, err := d.lookupIPAddrs(test.args.ctx, test.args.host)
-			if err := checkFunc(test.want, gotIps, err); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
+//
+// func Test_dialer_lookupIPAddrs(t *testing.T) {
+// 	type args struct {
+// 		ctx  context.Context
+// 		host string
+// 	}
+// 	type fields struct {
+// 		dnsCache              cacher.Cache
+// 		enableDNSCache        bool
+// 		tlsConfig             *tls.Config
+// 		dnsRefreshDurationStr string
+// 		dnsCacheExpirationStr string
+// 		dnsRefreshDuration    time.Duration
+// 		dnsCacheExpiration    time.Duration
+// 		dialerTimeout         time.Duration
+// 		dialerKeepalive       time.Duration
+// 		dialerFallbackDelay   time.Duration
+// 		ctrl                  control.SocketController
+// 		sockFlg               control.SocketFlag
+// 		dialerDualStack       bool
+// 		der                   *net.Dialer
+// 		dialer                func(ctx context.Context, network, addr string) (Conn, error)
+// 	}
+// 	type want struct {
+// 		wantIps []string
+// 		err     error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, []string, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, gotIps []string, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		if !reflect.DeepEqual(gotIps, w.wantIps) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotIps, w.wantIps)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           ctx:nil,
+// 		           host:"",
+// 		       },
+// 		       fields: fields {
+// 		           dnsCache:nil,
+// 		           enableDNSCache:false,
+// 		           tlsConfig:nil,
+// 		           dnsRefreshDurationStr:"",
+// 		           dnsCacheExpirationStr:"",
+// 		           dnsRefreshDuration:nil,
+// 		           dnsCacheExpiration:nil,
+// 		           dialerTimeout:nil,
+// 		           dialerKeepalive:nil,
+// 		           dialerFallbackDelay:nil,
+// 		           ctrl:nil,
+// 		           sockFlg:nil,
+// 		           dialerDualStack:false,
+// 		           der:net.Dialer{},
+// 		           dialer:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           ctx:nil,
+// 		           host:"",
+// 		           },
+// 		           fields: fields {
+// 		           dnsCache:nil,
+// 		           enableDNSCache:false,
+// 		           tlsConfig:nil,
+// 		           dnsRefreshDurationStr:"",
+// 		           dnsCacheExpirationStr:"",
+// 		           dnsRefreshDuration:nil,
+// 		           dnsCacheExpiration:nil,
+// 		           dialerTimeout:nil,
+// 		           dialerKeepalive:nil,
+// 		           dialerFallbackDelay:nil,
+// 		           ctrl:nil,
+// 		           sockFlg:nil,
+// 		           dialerDualStack:false,
+// 		           der:net.Dialer{},
+// 		           dialer:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			d := &dialer{
+// 				dnsCache:              test.fields.dnsCache,
+// 				enableDNSCache:        test.fields.enableDNSCache,
+// 				tlsConfig:             test.fields.tlsConfig,
+// 				dnsRefreshDurationStr: test.fields.dnsRefreshDurationStr,
+// 				dnsCacheExpirationStr: test.fields.dnsCacheExpirationStr,
+// 				dnsRefreshDuration:    test.fields.dnsRefreshDuration,
+// 				dnsCacheExpiration:    test.fields.dnsCacheExpiration,
+// 				dialerTimeout:         test.fields.dialerTimeout,
+// 				dialerKeepalive:       test.fields.dialerKeepalive,
+// 				dialerFallbackDelay:   test.fields.dialerFallbackDelay,
+// 				ctrl:                  test.fields.ctrl,
+// 				sockFlg:               test.fields.sockFlg,
+// 				dialerDualStack:       test.fields.dialerDualStack,
+// 				der:                   test.fields.der,
+// 				dialer:                test.fields.dialer,
+// 			}
+//
+// 			gotIps, err := d.lookupIPAddrs(test.args.ctx, test.args.host)
+// 			if err := checkFunc(test.want, gotIps, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+//
+// 		})
+// 	}
+// }

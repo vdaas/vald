@@ -20,7 +20,6 @@ package grpc
 import (
 	"context"
 	"math"
-	"sync"
 	"sync/atomic"
 	"time"
 
@@ -38,6 +37,7 @@ import (
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/singleflight"
 	"github.com/vdaas/vald/internal/strings"
+	valdsync "github.com/vdaas/vald/internal/sync"
 	"google.golang.org/grpc"
 	gbackoff "google.golang.org/grpc/backoff"
 )
@@ -110,7 +110,7 @@ type gRPCClient struct {
 	gbo                 gbackoff.Config // grpc's original backoff configuration
 	mcd                 time.Duration   // minimum connection timeout duration
 	group               singleflight.Group[pool.Conn]
-	crl                 sync.Map // connection request list
+	crl                 valdsync.Map[string, bool] // connection request list
 
 	ech            <-chan error
 	monitorRunning atomic.Bool
@@ -302,18 +302,15 @@ func (g *gRPCClient) StartConnectionMonitor(ctx context.Context) (<-chan error, 
 				}
 			}
 			clctx, cancel := context.WithTimeout(ctx, reconnLimitDuration)
-			g.crl.Range(func(a, bo interface{}) bool {
+			g.crl.Range(func(addr string, enabled bool) bool {
 				select {
 				case <-clctx.Done():
 					return false
 				default:
-					defer g.crl.Delete(a)
-					addr, ok := a.(string)
-					if !ok {
-						return true
-					}
+					defer g.crl.Delete(addr)
+
 					var p pool.Conn
-					if enabled, ok := bo.(bool); ok && enabled && g.bo != nil {
+					if enabled && g.bo != nil {
 						_, err = g.bo.Do(clctx, func(ictx context.Context) (r interface{}, ret bool, err error) {
 							p, err = g.Connect(ictx, addr)
 							return nil, err != nil, err
@@ -433,7 +430,7 @@ func (g *gRPCClient) RangeConcurrent(ctx context.Context,
 	}
 	err = g.conns.Range(func(addr string, p pool.Conn) bool {
 		eg.Go(safety.RecoverFunc(func() (err error) {
-			ssctx, sspan := trace.StartSpan(sctx, apiName+"/Client.RangeConcurrent/"+addr)
+			ssctx, sspan := trace.StartSpan(egctx, apiName+"/Client.RangeConcurrent/"+addr)
 			defer func() {
 				if sspan != nil {
 					sspan.End()
@@ -441,6 +438,11 @@ func (g *gRPCClient) RangeConcurrent(ctx context.Context,
 			}()
 			select {
 			case <-egctx.Done():
+				err = egctx.Err()
+				if err != nil && (errors.Is(err, context.Canceled) ||
+					errors.Is(err, context.DeadlineExceeded)) {
+					return err
+				}
 				return nil
 			default:
 				_, err = g.connectWithBackoff(ssctx, p, addr, true, func(ictx context.Context,
@@ -449,13 +451,22 @@ func (g *gRPCClient) RangeConcurrent(ctx context.Context,
 					err := f(ictx, addr, conn, copts...)
 					return nil, err
 				})
-				if err != nil && sspan != nil {
-					sspan.RecordError(err)
-					st, ok := status.FromError(err)
-					if ok && st != nil {
-						sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), err.Error())...)
+				if err != nil {
+					if sspan != nil {
+						sspan.RecordError(err)
+						st, ok := status.FromError(err)
+						if ok && st != nil {
+							sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), err.Error())...)
+						}
+						sspan.SetStatus(trace.StatusError, err.Error())
+						switch st.Code() {
+						case codes.Canceled, codes.DeadlineExceeded:
+							return err
+						}
+					} else if errors.Is(err, context.Canceled) ||
+						errors.Is(err, context.DeadlineExceeded) {
+						return err
 					}
-					sspan.SetStatus(trace.StatusError, err.Error())
 				}
 				return nil
 			}

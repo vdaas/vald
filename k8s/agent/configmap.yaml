@@ -44,18 +44,18 @@ data:
             connection_timeout: ""
             enable_reflection: true
             header_table_size: 0
-            initial_conn_window_size: 0
-            initial_window_size: 0
+            initial_conn_window_size: 2097152
+            initial_window_size: 1048576
             interceptors:
             - RecoverInterceptor
             keepalive:
               max_conn_age: ""
               max_conn_age_grace: ""
               max_conn_idle: ""
-              min_time: 60s
-              permit_without_stream: true
-              time: 120s
-              timeout: 30s
+              min_time: 10m
+              permit_without_stream: false
+              time: 3h
+              timeout: 60s
             max_header_list_size: 0
             max_receive_message_size: 0
             max_send_message_size: 0
@@ -71,10 +71,10 @@ data:
             reuse_addr: true
             reuse_port: true
             tcp_cork: false
-            tcp_defer_accept: true
-            tcp_fast_open: true
-            tcp_no_delay: true
-            tcp_quick_ack: true
+            tcp_defer_accept: false
+            tcp_fast_open: false
+            tcp_no_delay: false
+            tcp_quick_ack: false
           socket_path: ""
       health_check_servers:
         - name: liveness
@@ -96,7 +96,7 @@ data:
             reuse_addr: true
             reuse_port: true
             tcp_cork: false
-            tcp_defer_accept: true
+            tcp_defer_accept: false
             tcp_fast_open: true
             tcp_no_delay: true
             tcp_quick_ack: true
@@ -120,7 +120,7 @@ data:
             reuse_addr: true
             reuse_port: true
             tcp_cork: false
-            tcp_defer_accept: true
+            tcp_defer_accept: false
             tcp_fast_open: true
             tcp_no_delay: true
             tcp_quick_ack: true
@@ -144,17 +144,22 @@ data:
             ip_transparent: false
             reuse_addr: true
             reuse_port: true
-            tcp_cork: false
-            tcp_defer_accept: true
-            tcp_fast_open: true
-            tcp_no_delay: true
-            tcp_quick_ack: true
+            tcp_cork: true
+            tcp_defer_accept: false
+            tcp_fast_open: false
+            tcp_no_delay: false
+            tcp_quick_ack: false
           socket_path: ""
       startup_strategy:
         - liveness
         - pprof
         - grpc
         - readiness
+      shutdown_strategy:
+        - readiness
+        - grpc
+        - pprof
+        - liveness
       full_shutdown_duration: 600s
       tls:
         ca: /path/to/ca

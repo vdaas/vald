@@ -20,7 +20,6 @@ package service
 import (
 	"context"
 	"reflect"
-	"sync"
 	"sync/atomic"
 
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
@@ -29,6 +28,7 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/observability/trace"
+	valdsync "github.com/vdaas/vald/internal/sync"
 )
 
 type Gateway interface {
@@ -102,7 +102,7 @@ func (g *gateway) DoMulti(ctx context.Context, num int,
 	} else {
 		limit = uint32(num)
 	}
-	var visited sync.Map
+	var visited valdsync.Map[string, any]
 	err = g.client.GetClient().OrderedRange(sctx, addrs, func(ictx context.Context,
 		addr string,
 		conn *grpc.ClientConn,

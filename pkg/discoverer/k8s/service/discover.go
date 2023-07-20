@@ -37,6 +37,7 @@ import (
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/slices"
+	valdsync "github.com/vdaas/vald/internal/sync"
 )
 
 type Discoverer interface {
@@ -47,10 +48,10 @@ type Discoverer interface {
 
 type discoverer struct {
 	maxPods         int
-	nodes           nodeMap
-	nodeMetrics     nodeMetricsMap
-	pods            podsMap
-	podMetrics      podMetricsMap
+	nodes           valdsync.Map[string, *node.Node]
+	nodeMetrics     valdsync.Map[string, mnode.Node]
+	pods            valdsync.Map[string, *[]pod.Pod]
+	podMetrics      valdsync.Map[string, mpod.Pod]
 	podsByNode      atomic.Value
 	podsByNamespace atomic.Value
 	podsByName      atomic.Value
@@ -133,9 +134,9 @@ func New(selector *config.Selectors, opts ...Option) (dsc Discoverer, err error)
 					if len(pods) > d.maxPods {
 						d.maxPods = len(pods)
 					}
-					d.pods.Store(name, pods)
+					d.pods.Store(name, &pods)
 				}
-				d.pods.Range(func(name string, _ []pod.Pod) bool {
+				d.pods.Range(func(name string, _ *[]pod.Pod) bool {
 					_, ok := podList[name]
 					if !ok {
 						d.pods.Delete(name)
@@ -231,12 +232,12 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 						return true
 					}
 				})
-				d.pods.Range(func(appName string, pods []pod.Pod) bool {
+				d.pods.Range(func(appName string, pods *[]pod.Pod) bool {
 					select {
 					case <-ctx.Done():
 						return false
 					default:
-						for _, p := range pods {
+						for _, p := range *pods {
 							select {
 							case <-ctx.Done():
 								return false
@@ -270,23 +271,23 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 								}
 								_, ok = podsByNode[p.NodeName][p.Namespace]
 								if !ok {
-									podsByNode[p.NodeName][p.Namespace] = make(map[string][]*payload.Info_Pod, len(pods))
+									podsByNode[p.NodeName][p.Namespace] = make(map[string][]*payload.Info_Pod, len(*pods))
 								}
 								_, ok = podsByNamespace[p.Namespace]
 								if !ok {
-									podsByNamespace[p.Namespace] = make(map[string][]*payload.Info_Pod, len(pods))
+									podsByNamespace[p.Namespace] = make(map[string][]*payload.Info_Pod, len(*pods))
 								}
 								_, ok = podsByNode[p.NodeName][p.Namespace][appName]
 								if !ok {
-									podsByNode[p.NodeName][p.Namespace][appName] = make([]*payload.Info_Pod, 0, len(pods))
+									podsByNode[p.NodeName][p.Namespace][appName] = make([]*payload.Info_Pod, 0, len(*pods))
 								}
 								_, ok = podsByNamespace[p.Namespace][appName]
 								if !ok {
-									podsByNamespace[p.Namespace][appName] = make([]*payload.Info_Pod, 0, len(pods))
+									podsByNamespace[p.Namespace][appName] = make([]*payload.Info_Pod, 0, len(*pods))
 								}
 								_, ok = podsByName[appName]
 								if !ok {
-									podsByName[appName] = make([]*payload.Info_Pod, 0, len(pods))
+									podsByName[appName] = make([]*payload.Info_Pod, 0, len(*pods))
 								}
 								podsByNode[p.NodeName][p.Namespace][appName] = append(podsByNode[p.NodeName][p.Namespace][appName], pi)
 								podsByNamespace[p.Namespace][appName] = append(podsByNamespace[p.Namespace][appName], pi)

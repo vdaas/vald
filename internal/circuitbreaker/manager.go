@@ -20,6 +20,7 @@ import (
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
+	valdsync "github.com/vdaas/vald/internal/sync"
 )
 
 // NOTE: This variable is for observability package.
@@ -36,7 +37,7 @@ type CircuitBreaker interface {
 }
 
 type breakerManager struct {
-	m    sync.Map // breaker group. key: string, value: *breaker.
+	m    valdsync.Map[string, *breaker]
 	opts []BreakerOption
 }
 
@@ -72,24 +73,16 @@ func (bm *breakerManager) Do(ctx context.Context, key string, fn func(ctx contex
 		mu.Unlock()
 	}()
 
-	var br *breaker
 	// Pre-loading to prevent a lot of object generation.
-	obj, ok := bm.m.Load(key)
+	br, ok := bm.m.Load(key)
 	if !ok {
 		br, err = newBreaker(key, bm.opts...)
 		if err != nil {
 			return nil, err
 		}
-		obj, _ = bm.m.LoadOrStore(key, br)
+		br, _ = bm.m.LoadOrStore(key, br)
 	}
-	br, ok = obj.(*breaker)
-	if !ok {
-		br, err = newBreaker(key, bm.opts...)
-		if err != nil {
-			return nil, err
-		}
-		bm.m.Store(key, br)
-	}
+
 	val, st, err = br.do(ctx, fn)
 	if err != nil {
 		switch st {

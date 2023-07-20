@@ -23,27 +23,27 @@ $(BINDIR)/golangci-lint:
 		| sh -s -- -b $(BINDIR) $(GOLANGCILINT_VERSION)
 
 .PHONY: goimports/install
-goimports/install: $(GOPATH)/bin/goimports
+goimports/install: $(GOBIN)/goimports
 
-$(GOPATH)/bin/goimports:
+$(GOBIN)/goimports:
 	$(call go-install, golang.org/x/tools/cmd/goimports)
 
 .PHONY: strictgoimports/install
-strictgoimports/install: $(GOPATH)/bin/strictgoimports
+strictgoimports/install: $(GOBIN)/strictgoimports
 
-$(GOPATH)/bin/strictgoimports:
+$(GOBIN)/strictgoimports:
 	$(call go-install, github.com/momotaro98/strictgoimports/cmd/strictgoimports)
 
 .PHONY: gofumpt/install
-gofumpt/install: $(GOPATH)/bin/gofumpt
+gofumpt/install: $(GOBIN)/gofumpt
 
-$(GOPATH)/bin/gofumpt:
+$(GOBIN)/gofumpt:
 	$(call go-install, mvdan.cc/gofumpt)
 
 .PHONY: golines/install
-golines/install: $(GOPATH)/bin/golines
+golines/install: $(GOBIN)/golines
 
-$(GOPATH)/bin/golines:
+$(GOBIN)/golines:
 	$(call go-install, github.com/segmentio/golines)
 
 .PHONY: prettier/install
@@ -92,3 +92,15 @@ $(BINDIR)/buf:
 	"https://github.com/bufbuild/buf/releases/download/$(BUF_VERSION)/buf-$(shell uname -s)-$(shell uname -m)" \
 	-o "${BINDIR}/buf" && \
 	chmod +x "${BINDIR}/buf"
+
+.PHONY: k9s/install
+k9s/install: $(GOPATH)/bin/k9s
+
+$(GOPATH)/bin/k9s:
+	$(call go-install, github.com/derailed/k9s)
+
+.PHONY: stern/install
+stern/install: $(GOPATH)/bin/stern
+
+$(GOPATH)/bin/stern:
+	$(call go-install, github.com/stern/stern)

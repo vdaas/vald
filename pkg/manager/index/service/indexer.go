@@ -21,7 +21,6 @@ import (
 	"context"
 	"math"
 	"reflect"
-	"sync"
 	"sync/atomic"
 	"time"
 
@@ -36,6 +35,7 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
+	valdsync "github.com/vdaas/vald/internal/sync"
 )
 
 type Indexer interface {
@@ -54,9 +54,9 @@ type index struct {
 	saveIndexDurationLimit time.Duration
 	saveIndexWaitDuration  time.Duration
 	saveIndexTargetAddrCh  chan string
-	schMap                 sync.Map
+	schMap                 valdsync.Map[string, any]
 	concurrency            int
-	indexInfos             indexInfos
+	indexInfos             valdsync.Map[string, *payload.Info_Index_Count]
 	indexing               atomic.Value // bool
 	minUncommitted         uint32
 	uuidsCount             uint32
@@ -276,7 +276,7 @@ func (idx *index) loadInfos(ctx context.Context) (err error) {
 	}()
 
 	var u, ucu uint32
-	var infoMap indexInfos
+	var infoMap valdsync.Map[string, *payload.Info_Index_Count]
 	err = idx.client.GetClient().RangeConcurrent(ctx, len(idx.client.GetAddrs(ctx)),
 		func(ctx context.Context,
 			addr string, conn *grpc.ClientConn, copts ...grpc.CallOption,
