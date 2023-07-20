@@ -64,7 +64,7 @@ Please refer to [Cluster Role Configuration](https://vald.vdaas.org/docs/user-gu
 
 The Mirror Gateway is not connected to other mirror gateways when deployed.
 
-The Vald Mirror gateway connects to another Mirror Gateway component specified in the `ValdMirrorTarget` resource (Custom Resource).
+The Vald Mirror Gateway connects to another Mirror Gateway component specified in the `ValdMirrorTarget` resource (Custom Resource).
 
 Based on this resource, if the connection succeeds, the Mirror Gateway will interconnect with another.
 
