@@ -33,7 +33,7 @@ import (
 type Queue interface {
 	PushInsert(uuid string, vector []float32, date int64) error
 	PushDelete(uuid string, date int64) error
-	GetVector(uuid string) ([]float32, bool)
+	GetVector(uuid string) (vec []float32, timestamp int64, exists bool)
 	RangePopInsert(ctx context.Context, now int64, f func(uuid string, vector []float32, date int64) bool)
 	RangePopDelete(ctx context.Context, now int64, f func(uuid string) bool)
 	IVExists(uuid string) bool
@@ -116,22 +116,22 @@ func (v *vqueue) PushDelete(uuid string, date int64) error {
 // GetVector returns the vector stored in the queue.
 // If the same UUID exists in the insert queue and the delete queue, the timestamp is compared.
 // And the vector is returned if the timestamp in the insert queue is newer than the delete queue.
-func (v *vqueue) GetVector(uuid string) ([]float32, bool) {
+func (v *vqueue) GetVector(uuid string) (vec []float32, timestamp int64, exists bool) {
 	idx, ok := v.il.Load(uuid)
 	if !ok {
 		// data not in the insert queue then return not exists(false)
-		return nil, false
+		return nil, 0, false
 	}
 	didx, ok := v.dl.Load(uuid)
 	if !ok {
 		// data not in the delete queue but exists in insert queue then return exists(true)
-		return idx.vector, true
+		return idx.vector, idx.date, true
 	}
 	// data exists both queue, compare data timestamp if insert queue timestamp is newer than delete one, this function returns exists(true)
 	if didx.date <= idx.date {
-		return idx.vector, true
+		return idx.vector, idx.date, true
 	}
-	return nil, false
+	return nil, 0, false
 }
 
 // IVExists returns true if there is the UUID in the insert queue.
