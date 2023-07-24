@@ -19,14 +19,13 @@ package singleflight
 
 import (
 	"context"
-	"sync"
 	"sync/atomic"
 
 	valdsync "github.com/vdaas/vald/internal/sync"
 )
 
 type call[V any] struct {
-	wg   sync.WaitGroup
+	c    chan struct{}
 	val  V
 	err  error
 	dups uint64
@@ -54,13 +53,14 @@ func (g *group[V]) Do(_ context.Context, key string, fn func() (V, error)) (v V,
 	c, loaded := g.m.LoadOrStore(key, new(call[V]))
 	if loaded {
 		atomic.AddUint64(&c.dups, 1)
-		c.wg.Wait()
+		<-c.c
 		v, err = c.val, c.err
 		return v, true, err
 	}
-	c.wg.Add(1)
+	c.c = make(chan struct{}, 1)
 	c.val, c.err = fn()
-	c.wg.Done()
+	c.c <- struct{}{}
+	c.c <- struct{}{}
 
 	g.m.LoadAndDelete(key)
 
