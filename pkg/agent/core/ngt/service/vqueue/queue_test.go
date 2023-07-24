@@ -17,6 +17,46 @@
 // Package vqueue manages the vector cache layer for reducing FFI overhead for fast Agent processing.
 package vqueue
 
+import (
+	"reflect"
+	"testing"
+	"time"
+)
+
+func TestGetVector(t *testing.T) {
+    vq, err := New()
+	if err != nil {
+		t.Errorf("New() returned error: %v", err)
+	}
+    uuid := "test-uuid"
+    vec := []float32{1.0, 2.0, 3.0}
+    timestamp := time.Now().Unix()
+
+    // Insert data into the queue
+    vq.PushInsert(uuid, vec, timestamp)
+
+    // Test that the data exists in the queue
+    gotVec, gotTimestamp, exists := vq.GetVector(uuid)
+    if !exists {
+        t.Errorf("GetVector(%q) = (_, _, false), want (_, _, true)", uuid)
+    }
+    if !reflect.DeepEqual(gotVec, vec) {
+        t.Errorf("GetVector(%q) returned vector %v, want %v", uuid, gotVec, vec)
+    }
+    if gotTimestamp != timestamp {
+        t.Errorf("GetVector(%q) returned timestamp %d, want %d", uuid, gotTimestamp, timestamp)
+    }
+
+    // Delete data from the queue
+    vq.PushDelete(uuid, time.Now().UnixNano())
+
+    // Test that the data no longer exists in the queue
+    _, _, exists = vq.GetVector(uuid)
+    if exists {
+        t.Errorf("GetVector(%q) = (_, _, true), want (_, _, false)", uuid)
+    }
+}
+
 // NOT IMPLEMENTED BELOW
 //
 // func TestNew(t *testing.T) {
