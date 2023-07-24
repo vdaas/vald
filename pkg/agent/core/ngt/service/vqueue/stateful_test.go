@@ -696,9 +696,9 @@ var (
 
 			vec, ts, exists := q.GetVector(idA)
 			return &resultContainer{
-				vector: vec,
+				vector:    vec,
 				timestamp: ts,
-				exists: exists,
+				exists:    exists,
 			}
 		},
 		NextStateFunc: func(state commands.State) commands.State {
@@ -759,9 +759,9 @@ var (
 
 			vec, ts, exists := q.GetVector(idB)
 			return &resultContainer{
-				vector: vec,
+				vector:    vec,
 				timestamp: ts,
-				exists: exists,
+				exists:    exists,
 			}
 		},
 		NextStateFunc: func(state commands.State) commands.State {
@@ -822,9 +822,9 @@ var (
 
 			vec, ts, exists := q.GetVector(idC)
 			return &resultContainer{
-				vector: vec,
+				vector:    vec,
 				timestamp: ts,
-				exists: exists,
+				exists:    exists,
 			}
 		},
 		NextStateFunc: func(state commands.State) commands.State {

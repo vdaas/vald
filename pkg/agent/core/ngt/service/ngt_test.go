@@ -50,22 +50,20 @@ import (
 	"google.golang.org/grpc"
 )
 
-var (
-	defaultConfig = config.NGT{
-		Dimension:           100,
-		DistanceType:        "l2",
-		ObjectType:          "float",
-		BulkInsertChunkSize: 10,
-		CreationEdgeSize:    20,
-		SearchEdgeSize:      10,
-		EnableProactiveGC:   false,
-		EnableCopyOnWrite:   false,
-		KVSDB: &config.KVSDB{
-			Concurrency: 10,
-		},
-		BrokenIndexHistoryLimit: 1,
-	}
-)
+var defaultConfig = config.NGT{
+	Dimension:           100,
+	DistanceType:        "l2",
+	ObjectType:          "float",
+	BulkInsertChunkSize: 10,
+	CreationEdgeSize:    20,
+	SearchEdgeSize:      10,
+	EnableProactiveGC:   false,
+	EnableCopyOnWrite:   false,
+	KVSDB: &config.KVSDB{
+		Concurrency: 10,
+	},
+	BrokenIndexHistoryLimit: 1,
+}
 
 type index struct {
 	uuid string

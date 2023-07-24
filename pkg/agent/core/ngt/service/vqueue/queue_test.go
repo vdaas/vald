@@ -59,7 +59,7 @@ func TestGetVector(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			vq, err := New()
 			require.NoError(t, err)
-			
+
 			// Insert data into the queue
 			vq.PushInsert(test.uuid, test.vec, test.timestamp)
 
