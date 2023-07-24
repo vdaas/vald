@@ -627,7 +627,12 @@ func Test_server_SaveIndex(t *testing.T) {
 			if err != nil {
 				return err
 			}
-			if !reflect.DeepEqual(obj, ir.GetVector()) {
+
+			// FIXME: remove these 2 lines after migrating Config.Timestamp to Vector.Timestamp
+			wantVec := ir.GetVector()
+			wantVec.Timestamp = obj.Timestamp
+
+			if !reflect.DeepEqual(obj, wantVec) {
 				return errors.Errorf("vector is not match, got: %v, want: %v", obj, ir)
 			}
 		}
@@ -1156,6 +1161,11 @@ func Test_server_CreateAndSaveIndex(t *testing.T) {
 			if err != nil {
 				return err
 			}
+
+			// FIXME: remove these 2 lines after migrating Config.Timestamp to Vector.Timestamp
+			wantVec := ir.GetVector()
+			wantVec.Timestamp = obj.Timestamp
+
 			if !reflect.DeepEqual(obj, ir.GetVector()) {
 				return errors.Errorf("vector is not match, got: %v, want: %v", obj, ir)
 			}

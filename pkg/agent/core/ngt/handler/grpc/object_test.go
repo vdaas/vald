@@ -423,6 +423,12 @@ func Test_server_GetObject(t *testing.T) {
 				return errors.Errorf("got code: \"%#v\",\n\t\t\t\twant code: \"%#v\"", st.Code(), w.errCode)
 			}
 		}
+
+		// FIXME: remove these lines after migrating Config.Timestamp to Vector.Timestamp
+		if gotRes != nil {
+			w.wantRes.Timestamp = gotRes.Timestamp
+		}
+
 		if !reflect.DeepEqual(gotRes, w.wantRes) {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
 		}
