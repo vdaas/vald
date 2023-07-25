@@ -6,18 +6,16 @@ import (
 	"runtime/trace"
 	"testing"
 
+	stdlog "log"
+
 	"github.com/kpango/fuid"
 	"github.com/vdaas/vald/internal/config"
+	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/log/logger"
 	"github.com/vdaas/vald/internal/rand"
 	"gonum.org/v1/hdf5"
 )
-
-func init() {
-	testing.Init()
-	log.Init(log.WithLoggerType(logger.NOP.String()))
-}
 
 // load function loads training and test vector from hdf file. The size of ids is same to the number of training data.
 // Each id, which is an element of ids, will be set a random number.
@@ -86,10 +84,12 @@ func load(path string) (ids []string, train, test [][]float32, err error) {
 		ids = append(ids, fuid.String())
 	}
 
-	return
+	return ids, train, test, err
 }
 
 func BenchmarkGetObjectWithUpdate(b *testing.B) {
+	log.Init(log.WithLoggerType(logger.NOP.String()))
+
 	datasetPath := "fashion-mnist-784-euclidean.hdf5"
 	insertCount := 10000
 	defaultConfig := config.NGT{
@@ -139,6 +139,7 @@ func BenchmarkGetObjectWithUpdate(b *testing.B) {
 
 	trace.Start(f)
 	defer trace.Stop()
+
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
 			go func() {
@@ -147,6 +148,110 @@ func BenchmarkGetObjectWithUpdate(b *testing.B) {
 				n.Update(ids[id], train[id2])
 			}()
 			_, _ = n.GetObject(ids[rand.LimitedUint32(uint64(insertCount))])
+		}
+	})
+
+	b.StopTimer()
+}
+
+func BenchmarkSeachWithCreateIndex(b *testing.B) {
+	log.Init(log.WithLoggerType(logger.NOP.String()))
+
+	datasetPath := "fashion-mnist-784-euclidean.hdf5"
+	insertCount := 10000
+	defaultConfig := config.NGT{
+		Dimension:           784,
+		DistanceType:        "l2",
+		ObjectType:          "float",
+		BulkInsertChunkSize: 10,
+		CreationEdgeSize:    20,
+		SearchEdgeSize:      10,
+		EnableProactiveGC:   false,
+		EnableCopyOnWrite:   false,
+		KVSDB: &config.KVSDB{
+			Concurrency: 10,
+		},
+		BrokenIndexHistoryLimit: 1,
+	}
+
+	/**
+	Gets training data, test data and ids based on the dataset path.
+	the number of ids is equal to that of training dataset.
+	**/
+	ids, train, _, err := load(datasetPath)
+	if err != nil {
+		b.Error(err)
+	}
+	maxindex := len(ids)
+
+	n, err := New(&defaultConfig)
+	if err != nil {
+		b.Error(err)
+	}
+
+	f, err := os.Create("trace.out")
+	if err != nil {
+		b.Error(err)
+	}
+	defer f.Close()
+
+	b.StopTimer()
+	b.ResetTimer()
+	b.ReportAllocs()
+	b.StartTimer()
+
+	trace.Start(f)
+	defer trace.Stop()
+
+	b.RunParallel(func(pb *testing.PB) {
+		go func() {
+			for {
+				var err2 error
+				idxs := make([]uint32, 0, insertCount)
+
+				for i := 0; i < insertCount; i++ {
+					idx := rand.LimitedUint32(uint64(maxindex))
+					idxs = append(idxs, idx)
+
+					err2 = n.Insert(ids[idx], train[idx])
+					if err2 != nil {
+						if errors.Is(err2, errors.ErrUUIDAlreadyExists(ids[idx])) {
+							continue
+						}
+						stdlog.Println(err2, ": insert error")
+					}
+				}
+
+				err2 = n.CreateIndex(context.Background(), uint32(insertCount))
+				if err2 != nil {
+					stdlog.Fatal(err2, "create index error")
+				}
+
+				for _, idx := range idxs {
+					err2 = n.Delete(ids[idx])
+					if err2 != nil {
+						if errors.Is(err2, errors.ErrObjectIDNotFound(ids[idx])) {
+							continue
+						}
+						stdlog.Println(err2, "delete error")
+					}
+				}
+			}
+		}()
+		for pb.Next() {
+			_, err := n.Search(
+				context.Background(),
+				train[insertCount],
+				uint32(defaultConfig.SearchEdgeSize),
+				defaultConfig.DefaultEpsilon,
+				defaultConfig.DefaultRadius,
+			)
+			if err != nil {
+				if errors.Is(err, errors.ErrCreateIndexingIsInProgress) {
+					// Check if it returns is_indexing error
+					// stdlog.Println(err)
+				}
+			}
 		}
 	})
 
