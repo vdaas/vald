@@ -252,7 +252,7 @@ func BenchmarkSeachWithCreateIndex(b *testing.B) {
 		for pb.Next() {
 			_, err := n.Search(
 				ctx,
-				train[insertCount],
+				train[12345], // use this random vector as query
 				uint32(defaultConfig.SearchEdgeSize),
 				defaultConfig.DefaultEpsilon,
 				defaultConfig.DefaultRadius,
