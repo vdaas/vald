@@ -43,13 +43,11 @@ jobs:
     container:
       image: ghcr.io/vdaas/vald/vald-ci-container:nightly
     steps:
-      - name: Check out code.
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 10
-      - name: set git config
-        run: |
-          git config --global --add safe.directory ${GITHUB_WORKSPACE}
+          path: ${{ github.workspace }}
+          set-safe-directory: true
       - name: Run coverage
         continue-on-error: true
         run: |
