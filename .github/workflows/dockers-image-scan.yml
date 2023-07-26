@@ -18,6 +18,11 @@ on:
   schedule:
     - cron: "0 1 * * *"
 
+  # TODO: Delete it later.
+  push:
+    branches:
+      - "refactor/ci/update-action"
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref != 'refs/heads/main' && github.ref || github.sha }}-${{ github.event_name }}
   cancel-in-progress: true
@@ -30,266 +35,34 @@ jobs:
       - uses: ./.github/actions/dump-context
 
   agent-ngt:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: set git config
-        run: |
-          git config --global --add safe.directory ${GITHUB_WORKSPACE}
-      - name: Build the Docker image
-        id: build_image
-        run: |
-          make docker/build/agent-ngt
-          imagename=`make docker/name/agent-ngt`
-          docker tag ${imagename} ${imagename}:${{ github.sha }}
-          echo "IMAGE_NAME=${imagename}" >> $GITHUB_OUTPUT
-        env:
-          DOCKER_BUILDKIT: 1
-      - name: Run vulnerability scanner
-        uses: aquasecurity/trivy-action@master
-        with:
-          image-ref: "${{ steps.build_image.outputs.IMAGE_NAME }}:${{ github.sha }}"
-          format: "table"
-      - name: Run vulnerability scanner
-        uses: aquasecurity/trivy-action@master
-        with:
-          image-ref: "${{ steps.build_image.outputs.IMAGE_NAME }}:${{ github.sha }}"
-          format: "template"
-          template: "@/contrib/sarif.tpl"
-          output: "trivy-results.sarif"
-          severity: "HIGH,CRITICAL"
-      - name: Upload Trivy scan results to Security tab
-        uses: github/codeql-action/upload-sarif@v2
-        with:
-          sarif_file: "trivy-results.sarif"
+    uses: ./.github/workflows/_docker-image.yaml
+    with:
+      target: agent-ngt
   agent-sidecar:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: set git config
-        run: |
-          git config --global --add safe.directory ${GITHUB_WORKSPACE}
-      - name: Build the Docker image
-        id: build_image
-        run: |
-          make docker/build/agent-sidecar
-          imagename=`make docker/name/agent-sidecar`
-          docker tag ${imagename} ${imagename}:${{ github.sha }}
-          echo "IMAGE_NAME=${imagename}" >> $GITHUB_OUTPUT
-        env:
-          DOCKER_BUILDKIT: 1
-      - name: Run vulnerability scanner
-        uses: aquasecurity/trivy-action@master
-        with:
-          image-ref: "${{ steps.build_image.outputs.IMAGE_NAME }}:${{ github.sha }}"
-          format: "table"
-      - name: Run vulnerability scanner
-        uses: aquasecurity/trivy-action@master
-        with:
-          image-ref: "${{ steps.build_image.outputs.IMAGE_NAME }}:${{ github.sha }}"
-          format: "template"
-          template: "@/contrib/sarif.tpl"
-          output: "trivy-results.sarif"
-          severity: "HIGH,CRITICAL"
-      - name: Upload Trivy scan results to Security tab
-        uses: github/codeql-action/upload-sarif@v2
-        with:
-          sarif_file: "trivy-results.sarif"
+    uses: ./.github/workflows/_docker-image.yaml
+    with:
+      target: agent-sidecar
   discoverer-k8s:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: set git config
-        run: |
-          git config --global --add safe.directory ${GITHUB_WORKSPACE}
-      - name: Build the Docker image
-        id: build_image
-        run: |
-          make docker/build/discoverer-k8s
-          imagename=`make docker/name/discoverer-k8s`
-          docker tag ${imagename} ${imagename}:${{ github.sha }}
-          echo "IMAGE_NAME=${imagename}" >> $GITHUB_OUTPUT
-        env:
-          DOCKER_BUILDKIT: 1
-      - name: Run vulnerability scanner
-        uses: aquasecurity/trivy-action@master
-        with:
-          image-ref: "${{ steps.build_image.outputs.IMAGE_NAME }}:${{ github.sha }}"
-          format: "table"
-      - name: Run vulnerability scanner
-        uses: aquasecurity/trivy-action@master
-        with:
-          image-ref: "${{ steps.build_image.outputs.IMAGE_NAME }}:${{ github.sha }}"
-          format: "template"
-          template: "@/contrib/sarif.tpl"
-          output: "trivy-results.sarif"
-          severity: "HIGH,CRITICAL"
-      - name: Upload Trivy scan results to Security tab
-        uses: github/codeql-action/upload-sarif@v2
-        with:
-          sarif_file: "trivy-results.sarif"
+    uses: ./.github/workflows/_docker-image.yaml
+    with:
+      target: discoverer-k8s
   manager-index:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: set git config
-        run: |
-          git config --global --add safe.directory ${GITHUB_WORKSPACE}
-      - name: Build the Docker image
-        id: build_image
-        run: |
-          make docker/build/manager-index
-          imagename=`make docker/name/manager-index`
-          docker tag ${imagename} ${imagename}:${{ github.sha }}
-          echo "IMAGE_NAME=${imagename}" >> $GITHUB_OUTPUT
-        env:
-          DOCKER_BUILDKIT: 1
-      - name: Run vulnerability scanner
-        uses: aquasecurity/trivy-action@master
-        with:
-          image-ref: "${{ steps.build_image.outputs.IMAGE_NAME }}:${{ github.sha }}"
-          format: "table"
-      - name: Run vulnerability scanner
-        uses: aquasecurity/trivy-action@master
-        with:
-          image-ref: "${{ steps.build_image.outputs.IMAGE_NAME }}:${{ github.sha }}"
-          format: "template"
-          template: "@/contrib/sarif.tpl"
-          output: "trivy-results.sarif"
-          severity: "HIGH,CRITICAL"
-      - name: Upload Trivy scan results to Security tab
-        uses: github/codeql-action/upload-sarif@v2
-        with:
-          sarif_file: "trivy-results.sarif"
+    uses: ./.github/workflows/_docker-image.yaml
+    with:
+      target: manager-index
   operator-helm:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: set git config
-        run: |
-          git config --global --add safe.directory ${GITHUB_WORKSPACE}
-      - name: Build the Docker image
-        id: build_image
-        run: |
-          make docker/build/operator/helm
-          imagename=`make docker/name/operator/helm`
-          docker tag ${imagename} ${imagename}:${{ github.sha }}
-          echo "IMAGE_NAME=${imagename}" >> $GITHUB_OUTPUT
-        env:
-          DOCKER_BUILDKIT: 1
-      - name: Run vulnerability scanner
-        uses: aquasecurity/trivy-action@master
-        with:
-          image-ref: "${{ steps.build_image.outputs.IMAGE_NAME }}:${{ github.sha }}"
-          format: "table"
-      - name: Run vulnerability scanner
-        uses: aquasecurity/trivy-action@master
-        with:
-          image-ref: "${{ steps.build_image.outputs.IMAGE_NAME }}:${{ github.sha }}"
-          format: "template"
-          template: "@/contrib/sarif.tpl"
-          output: "trivy-results.sarif"
-          severity: "HIGH,CRITICAL"
-      - name: Upload Trivy scan results to Security tab
-        uses: github/codeql-action/upload-sarif@v2
-        with:
-          sarif_file: "trivy-results.sarif"
+    uses: ./.github/workflows/_docker-image.yaml
+    with:
+      target: operator/helm
   loadtest:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: set git config
-        run: |
-          git config --global --add safe.directory ${GITHUB_WORKSPACE}
-      - name: Build the Docker image
-        id: build_image
-        run: |
-          make docker/build/loadtest
-          imagename=`make docker/name/loadtest`
-          docker tag ${imagename} ${imagename}:${{ github.sha }}
-          echo "IMAGE_NAME=${imagename}" >> $GITHUB_OUTPUT
-        env:
-          DOCKER_BUILDKIT: 1
-      - name: Run vulnerability scanner
-        uses: aquasecurity/trivy-action@master
-        with:
-          image-ref: "${{ steps.build_image.outputs.IMAGE_NAME }}:${{ github.sha }}"
-          format: "table"
-      - name: Run vulnerability scanner
-        uses: aquasecurity/trivy-action@master
-        with:
-          image-ref: "${{ steps.build_image.outputs.IMAGE_NAME }}:${{ github.sha }}"
-          format: "template"
-          template: "@/contrib/sarif.tpl"
-          output: "trivy-results.sarif"
-          severity: "HIGH,CRITICAL"
-      - name: Upload Trivy scan results to Security tab
-        uses: github/codeql-action/upload-sarif@v2
-        with:
-          sarif_file: "trivy-results.sarif"
+    uses: ./.github/workflows/_docker-image.yaml
+    with:
+      target: loadtest
   gateway-lb:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: set git config
-        run: |
-          git config --global --add safe.directory ${GITHUB_WORKSPACE}
-      - name: Build the Docker image
-        id: build_image
-        run: |
-          make docker/build/gateway-lb
-          imagename=`make docker/name/gateway-lb`
-          docker tag ${imagename} ${imagename}:${{ github.sha }}
-          echo "IMAGE_NAME=${imagename}" >> $GITHUB_OUTPUT
-        env:
-          DOCKER_BUILDKIT: 1
-      - name: Run vulnerability scanner
-        uses: aquasecurity/trivy-action@master
-        with:
-          image-ref: "${{ steps.build_image.outputs.IMAGE_NAME }}:${{ github.sha }}"
-          format: "table"
-      - name: Run vulnerability scanner
-        uses: aquasecurity/trivy-action@master
-        with:
-          image-ref: "${{ steps.build_image.outputs.IMAGE_NAME }}:${{ github.sha }}"
-          format: "template"
-          template: "@/contrib/sarif.tpl"
-          output: "trivy-results.sarif"
-          severity: "HIGH,CRITICAL"
-      - name: Upload Trivy scan results to Security tab
-        uses: github/codeql-action/upload-sarif@v2
-        with:
-          sarif_file: "trivy-results.sarif"
+    uses: ./.github/workflows/_docker-image.yaml
+    with:
+      target: gateway-lb
   gateway-filter:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: set git config
-        run: |
-          git config --global --add safe.directory ${GITHUB_WORKSPACE}
-      - name: Build the Docker image
-        id: build_image
-        run: |
-          make docker/build/gateway-filter
-          imagename=`make docker/name/gateway-filter`
-          docker tag ${imagename} ${imagename}:${{ github.sha }}
-          echo "IMAGE_NAME=${imagename}" >> $GITHUB_OUTPUT
-        env:
-          DOCKER_BUILDKIT: 1
-      - name: Run vulnerability scanner
-        uses: aquasecurity/trivy-action@master
-        with:
-          image-ref: "${{ steps.build_image.outputs.IMAGE_NAME }}:${{ github.sha }}"
-          format: "table"
-      - name: Run vulnerability scanner
-        uses: aquasecurity/trivy-action@master
-        with:
-          image-ref: "${{ steps.build_image.outputs.IMAGE_NAME }}:${{ github.sha }}"
-          format: "template"
-          template: "@/contrib/sarif.tpl"
-          output: "trivy-results.sarif"
-          severity: "HIGH,CRITICAL"
-      - name: Upload Trivy scan results to Security tab
-        uses: github/codeql-action/upload-sarif@v2
-        with:
-          sarif_file: "trivy-results.sarif"
+    uses: ./.github/workflows/_docker-image.yaml
+    with:
+      target: gateway-filter
