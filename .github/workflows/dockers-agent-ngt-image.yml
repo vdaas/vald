@@ -71,6 +71,7 @@ on:
       - "versions/GO_VERSION"
       - "versions/NGT_VERSION"
 
+
 jobs:
   build:
     uses: ./.github/workflows/_docker-image.yaml
