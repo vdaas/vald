@@ -33,6 +33,7 @@ on:
       - "internal/**"
       - "pkg/**"
       - "cmd/**"
+  merge_group:
 
 jobs:
   dump_contexts_to_log:
