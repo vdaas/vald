@@ -1,0 +1,36 @@
+name: "Dump context to log"
+description: "Dump context to log"
+
+runs:
+  using: "composite"
+  steps:
+    - name: "Dump GitHub context"
+      shell: bash
+      run: echo $JSON
+      env:
+        JSON: ${{toJSON(github)}}
+    - name: "Dump job context"
+      shell: bash
+      run: echo $JSON
+      env:
+        JSON: ${{ toJSON(job) }}
+    - name: "Dump steps context"
+      shell: bash
+      run: echo $JSON
+      env:
+        JSON: ${{toJSON(steps)}}
+    - name: "Dump runner context"
+      shell: bash
+      run: echo $JSON
+      env:
+        JSON: ${{toJSON(runner)}}
+    - name: "Dump strategy context"
+      shell: bash
+      run: echo $JSON
+      env:
+        JSON: ${{toJSON(strategy)}}
+    - name: "Dump matrix context"
+      shell: bash
+      run: echo $JSON
+      env:
+        JSON: ${{toJSON(matrix)}}
