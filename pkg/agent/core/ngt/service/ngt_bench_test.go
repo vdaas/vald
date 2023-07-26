@@ -206,6 +206,7 @@ func BenchmarkSeachWithCreateIndex(b *testing.B) {
 	defer trace.Stop()
 
 	b.RunParallel(func(pb *testing.PB) {
+		// Keep creating and deleting index
 		go func(ctx context.Context) {
 			for {
 				select {
@@ -246,6 +247,8 @@ func BenchmarkSeachWithCreateIndex(b *testing.B) {
 				}
 			}
 		}(ctx)
+
+		// Bench serch
 		for pb.Next() {
 			_, err := n.Search(
 				ctx,
