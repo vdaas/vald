@@ -6,8 +6,6 @@ import (
 	"runtime/trace"
 	"testing"
 
-	stdlog "log"
-
 	"github.com/kpango/fuid"
 	"github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errors"
@@ -155,6 +153,10 @@ func BenchmarkGetObjectWithUpdate(b *testing.B) {
 }
 
 func BenchmarkSeachWithCreateIndex(b *testing.B) {
+	// stdlog.Println("starting benchmark")
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
 	log.Init(log.WithLoggerType(logger.NOP.String()))
 
 	datasetPath := "fashion-mnist-784-euclidean.hdf5"
@@ -204,43 +206,49 @@ func BenchmarkSeachWithCreateIndex(b *testing.B) {
 	defer trace.Stop()
 
 	b.RunParallel(func(pb *testing.PB) {
-		go func() {
+		go func(ctx context.Context) {
 			for {
-				var err2 error
-				idxs := make([]uint32, 0, insertCount)
+				select {
+				case <-ctx.Done():
+					// stdlog.Println("done")
+					return
+				default:
+					var err2 error
+					idxs := make([]uint32, 0, insertCount)
 
-				for i := 0; i < insertCount; i++ {
-					idx := rand.LimitedUint32(uint64(maxindex))
-					idxs = append(idxs, idx)
+					for i := 0; i < insertCount; i++ {
+						idx := rand.LimitedUint32(uint64(maxindex))
+						idxs = append(idxs, idx)
 
-					err2 = n.Insert(ids[idx], train[idx])
-					if err2 != nil {
-						if errors.Is(err2, errors.ErrUUIDAlreadyExists(ids[idx])) {
-							continue
+						err2 = n.Insert(ids[idx], train[idx])
+						if err2 != nil {
+							if errors.Is(err2, errors.ErrUUIDAlreadyExists(ids[idx])) {
+								continue
+							}
+							// stdlog.Println(err2, ": insert error")
 						}
-						stdlog.Println(err2, ": insert error")
 					}
-				}
 
-				err2 = n.CreateIndex(context.Background(), uint32(insertCount))
-				if err2 != nil {
-					stdlog.Fatal(err2, "create index error")
-				}
-
-				for _, idx := range idxs {
-					err2 = n.Delete(ids[idx])
+					err2 = n.CreateIndex(ctx, uint32(insertCount))
 					if err2 != nil {
-						if errors.Is(err2, errors.ErrObjectIDNotFound(ids[idx])) {
-							continue
+						// stdlog.Println(err2, "create index error")
+					}
+
+					for _, idx := range idxs {
+						err2 = n.Delete(ids[idx])
+						if err2 != nil {
+							if errors.Is(err2, errors.ErrObjectIDNotFound(ids[idx])) {
+								continue
+							}
+							// stdlog.Println(err2, "delete error")
 						}
-						stdlog.Println(err2, "delete error")
 					}
 				}
 			}
-		}()
+		}(ctx)
 		for pb.Next() {
 			_, err := n.Search(
-				context.Background(),
+				ctx,
 				train[insertCount],
 				uint32(defaultConfig.SearchEdgeSize),
 				defaultConfig.DefaultEpsilon,
