@@ -34,17 +34,9 @@ jobs:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 10
-      - name: set git config
-        run: |
-          git config --global --add safe.directory ${GITHUB_WORKSPACE}
-      - name: Fetch golang version
-        run: |
-          GO_VERSION=`make version/go`
-          echo "version=${GO_VERSION}" >> $GITHUB_OUTPUT
-        id: golang_version
-      - uses: actions/setup-go@v3
-        with:
-          go-version: ${{ steps.golang_version.outputs.version }}
+          path: ${{ github.workspace }}
+          set-safe-directory: true
+      - uses: ./.github/actions/setup-go
       - name: Build and zip
         run: |
           make binary/build/zip
