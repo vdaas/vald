@@ -16,7 +16,6 @@ package request
 import (
 	"testing"
 
-	"github.com/google/go-cmp/cmp"
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/test/comparator"
@@ -24,7 +23,7 @@ import (
 	"github.com/vdaas/vald/internal/test/goleak"
 )
 
-var defaultMultiInsertReqComparators = []cmp.Option{
+var defaultMultiInsertReqComparators = []comparator.Option{
 	comparator.IgnoreUnexported(payload.Insert_Request{}),
 	comparator.IgnoreUnexported(payload.Insert_MultiRequest{}),
 	comparator.IgnoreUnexported(payload.Object_Vector{}),
@@ -32,6 +31,7 @@ var defaultMultiInsertReqComparators = []cmp.Option{
 }
 
 func TestGenMultiInsertReq(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		t    ObjectType
 		dist vector.Distribution
@@ -244,6 +244,7 @@ func TestGenMultiInsertReq(t *testing.T) {
 }
 
 func TestGenSameVecMultiInsertReq(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		num int
 		vec []float32

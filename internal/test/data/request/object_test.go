@@ -17,19 +17,19 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/google/go-cmp/cmp"
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/test/comparator"
 	"github.com/vdaas/vald/internal/test/goleak"
 )
 
-var defaultObjectLocationComparators = []cmp.Option{
+var defaultObjectLocationComparators = []comparator.Option{
 	comparator.IgnoreUnexported(payload.Object_Locations{}),
 	comparator.IgnoreUnexported(payload.Object_Location{}),
 }
 
 func TestGenObjectLocations(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		num    int
 		name   string
@@ -152,6 +152,7 @@ func TestGenObjectLocations(t *testing.T) {
 }
 
 func TestGenObjectStreamLocation(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		num    int
 		name   string
