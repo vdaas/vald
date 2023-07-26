@@ -66,7 +66,7 @@ type NGT interface {
 	DeleteWithTime(uuid string, t int64) (err error)
 	DeleteMultiple(uuids ...string) (err error)
 	DeleteMultipleWithTime(uuids []string, t int64) (err error)
-	GetObject(uuid string) (vec []float32, err error)
+	GetObject(uuid string) (vec []float32, timestamp int64, err error)
 	CreateIndex(ctx context.Context, poolSize uint32) (err error)
 	SaveIndex(ctx context.Context) (err error)
 	Exists(string) (uint32, bool)
@@ -915,7 +915,7 @@ func (n *ngt) SearchByID(ctx context.Context, uuid string, size uint32, epsilon,
 	if n.IsIndexing() {
 		return nil, nil, errors.ErrCreateIndexingIsInProgress
 	}
-	vec, err = n.GetObject(uuid)
+	vec, _, err = n.GetObject(uuid)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -967,7 +967,7 @@ func (n *ngt) LinearSearchByID(uuid string, size uint32) (vec []float32, dst []m
 	if n.IsIndexing() {
 		return nil, nil, errors.ErrCreateIndexingIsInProgress
 	}
-	vec, err = n.GetObject(uuid)
+	vec, _, err = n.GetObject(uuid)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -1585,25 +1585,30 @@ func (n *ngt) Exists(uuid string) (oid uint32, ok bool) {
 	return oid, ok
 }
 
-func (n *ngt) GetObject(uuid string) (vec []float32, err error) {
-	vec, ok := n.vq.GetVector(uuid)
-	if !ok {
-		oid, _, ok := n.kvs.Get(uuid)
-		if !ok {
-			log.Debugf("GetObject\tuuid: %s's data not found in kvsdb and insert vqueue", uuid)
-			return nil, errors.ErrObjectIDNotFound(uuid)
-		}
-		if n.vq.DVExists(uuid) {
-			log.Debugf("GetObject\tuuid: %s's data found in kvsdb and not found in insert vqueue, but delete vqueue data exists. the object will be delete soon", uuid)
-			return nil, errors.ErrObjectIDNotFound(uuid)
-		}
-		vec, err = n.core.GetVector(uint(oid))
-		if err != nil {
-			log.Debugf("GetObject\tuuid: %s oid: %d's vector not found in ngt index", uuid, oid)
-			return nil, errors.ErrObjectNotFound(err, uuid)
-		}
+func (n *ngt) GetObject(uuid string) (vec []float32, timestamp int64, err error) {
+	vec, ts, exists := n.vq.GetVector(uuid)
+	if exists {
+		return vec, ts, nil
 	}
-	return vec, nil
+
+	oid, ts, ok := n.kvs.Get(uuid)
+	if !ok {
+		log.Debugf("GetObject\tuuid: %s's data not found in kvsdb and insert vqueue", uuid)
+		return nil, 0, errors.ErrObjectIDNotFound(uuid)
+	}
+
+	if n.vq.DVExists(uuid) {
+		log.Debugf("GetObject\tuuid: %s's data found in kvsdb and not found in insert vqueue, but delete vqueue data exists. the object will be delete soon", uuid)
+		return nil, 0, errors.ErrObjectIDNotFound(uuid)
+	}
+
+	vec, err = n.core.GetVector(uint(oid))
+	if err != nil {
+		log.Debugf("GetObject\tuuid: %s oid: %d's vector not found in ngt index", uuid, oid)
+		return nil, 0, errors.ErrObjectNotFound(err, uuid)
+	}
+
+	return vec, ts, nil
 }
 
 func (n *ngt) readyForUpdate(uuid string, vec []float32) (err error) {
@@ -1613,7 +1618,7 @@ func (n *ngt) readyForUpdate(uuid string, vec []float32) (err error) {
 	if len(vec) != n.GetDimensionSize() {
 		return errors.ErrInvalidDimensionSize(len(vec), n.GetDimensionSize())
 	}
-	ovec, err := n.GetObject(uuid)
+	ovec, _, err := n.GetObject(uuid)
 	// if error (GetObject cannot find vector) return error
 	if err != nil {
 		return err

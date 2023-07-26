@@ -17,6 +17,68 @@
 // Package vqueue manages the vector cache layer for reducing FFI overhead for fast Agent processing.
 package vqueue
 
+import (
+	"testing"
+	"time"
+
+	"github.com/stretchr/testify/require"
+)
+
+func TestGetVector(t *testing.T) {
+	type want struct {
+		vec       []float32
+		timestamp int64
+		exists    bool
+	}
+	type test struct {
+		name      string
+		uuid      string
+		vec       []float32
+		timestamp int64
+		want      want
+	}
+
+	now := time.Now().UnixNano()
+
+	tests := []test{
+		{
+			name:      "success insert and delete",
+			uuid:      "test-uuid",
+			vec:       []float32{1.0, 2.0, 3.0},
+			timestamp: now,
+			want: want{
+				vec:       []float32{1.0, 2.0, 3.0},
+				timestamp: now,
+				exists:    true,
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(t *testing.T) {
+			vq, err := New()
+			require.NoError(t, err)
+
+			// Insert data into the queue
+			vq.PushInsert(test.uuid, test.vec, test.timestamp)
+
+			// Test that the data exists in the queue
+			gotVec, gotTimestamp, exists := vq.GetVector(test.uuid)
+			require.Equal(t, test.want.vec, gotVec)
+			require.Equal(t, test.want.timestamp, gotTimestamp)
+			require.Equal(t, test.want.exists, exists)
+
+			// Delete data from the queue
+			vq.PushDelete(test.uuid, time.Now().UnixNano())
+
+			// Test that the data no longer exists in the queue
+			_, _, exists = vq.GetVector(test.uuid)
+			require.False(t, exists)
+		})
+	}
+}
+
 // NOT IMPLEMENTED BELOW
 //
 // func TestNew(t *testing.T) {
