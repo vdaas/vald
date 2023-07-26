@@ -35,34 +35,34 @@ jobs:
       - uses: ./.github/actions/dump-context
 
   agent-ngt:
-    uses: ./.github/workflows/_docker-image.yaml
+    uses: ./.github/workflows/_docker-image_scan.yaml
     with:
       target: agent-ngt
   agent-sidecar:
-    uses: ./.github/workflows/_docker-image.yaml
+    uses: ./.github/workflows/_docker-image_scan.yaml
     with:
       target: agent-sidecar
   discoverer-k8s:
-    uses: ./.github/workflows/_docker-image.yaml
+    uses: ./.github/workflows/_docker-image_scan.yaml
     with:
       target: discoverer-k8s
   manager-index:
-    uses: ./.github/workflows/_docker-image.yaml
+    uses: ./.github/workflows/_docker-image_scan.yaml
     with:
       target: manager-index
   operator-helm:
-    uses: ./.github/workflows/_docker-image.yaml
+    uses: ./.github/workflows/_docker-image_scan.yaml
     with:
       target: operator/helm
   loadtest:
-    uses: ./.github/workflows/_docker-image.yaml
+    uses: ./.github/workflows/_docker-image_scan.yaml
     with:
       target: loadtest
   gateway-lb:
-    uses: ./.github/workflows/_docker-image.yaml
+    uses: ./.github/workflows/_docker-image_scan.yaml
     with:
       target: gateway-lb
   gateway-filter:
-    uses: ./.github/workflows/_docker-image.yaml
+    uses: ./.github/workflows/_docker-image_scan.yaml
     with:
       target: gateway-filter
