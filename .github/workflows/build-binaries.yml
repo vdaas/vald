@@ -40,11 +40,11 @@ jobs:
       - name: Build and zip
         run: |
           make binary/build/zip
-      - name: Upload artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: artifacts-linux
-          path: ./artifacts/
+      # - name: Upload artifact
+      #   uses: actions/upload-artifact@v3
+      #   with:
+      #     name: artifacts-linux
+      #     path: ./artifacts/
   # build-macos: ## or using cross-compiler?
   #   runs-on: macos-latest
   #   steps:
