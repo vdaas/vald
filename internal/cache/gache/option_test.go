@@ -24,9 +24,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/google/go-cmp/cmp"
 	gache "github.com/kpango/gache/v2"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/test/comparator"
 	"github.com/vdaas/vald/internal/test/goleak"
 )
 
@@ -45,14 +45,14 @@ func TestDefaultOptions(t *testing.T) {
 	}
 
 	defaultCheckFunc := func(w want, got *cache[any]) error {
-		opts := []cmp.Option{
-			cmp.AllowUnexported(*w.want),
-			cmp.AllowUnexported(*got),
-			cmp.Comparer(func(want, got *cache[any]) bool {
+		opts := []comparator.Option{
+			comparator.AllowUnexported(*w.want),
+			comparator.AllowUnexported(*got),
+			comparator.Comparer(func(want, got *cache[any]) bool {
 				return want.gache != nil && got.gache != nil
 			}),
 		}
-		if diff := cmp.Diff(w.want, got, opts...); diff != "" {
+		if diff := comparator.Diff(w.want, got, opts...); diff != "" {
 			return errors.Errorf("got = %v, want = %v", got, w.want)
 		}
 		return nil

@@ -26,12 +26,11 @@ import (
 	"time"
 
 	redis "github.com/go-redis/redis/v8"
-	"github.com/google/go-cmp/cmp"
-	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/log/logger"
 	"github.com/vdaas/vald/internal/net"
+	"github.com/vdaas/vald/internal/test/comparator"
 	"github.com/vdaas/vald/internal/test/goleak"
 )
 
@@ -565,24 +564,24 @@ func Test_redisClient_newClient(t *testing.T) {
 						got  = gotc.Options()
 					)
 
-					opts := []cmp.Option{
-						cmpopts.IgnoreUnexported(*want),
-						cmpopts.IgnoreUnexported(*got),
-						cmpopts.IgnoreFields(redis.Options{}, "OnConnect"),
-						cmp.Comparer(func(want, got *tls.Config) bool {
+					opts := []comparator.Option{
+						comparator.IgnoreUnexported(*want),
+						comparator.IgnoreUnexported(*got),
+						comparator.IgnoreFields(redis.Options{}, "OnConnect"),
+						comparator.Comparer(func(want, got *tls.Config) bool {
 							return reflect.ValueOf(want).Pointer() == reflect.ValueOf(got).Pointer()
 						}),
-						cmp.Comparer(func(want, got func(ctx context.Context, network, addr string) (net.Conn, error)) bool {
+						comparator.Comparer(func(want, got func(ctx context.Context, network, addr string) (net.Conn, error)) bool {
 							return reflect.ValueOf(want).Pointer() == reflect.ValueOf(got).Pointer()
 						}),
-						cmp.Comparer(func(want, got func(*redis.Conn) error) bool {
+						comparator.Comparer(func(want, got func(*redis.Conn) error) bool {
 							return reflect.ValueOf(want).Pointer() == reflect.ValueOf(got).Pointer()
 						}),
-						cmp.Comparer(func(want, got []redis.Hook) bool {
+						comparator.Comparer(func(want, got []redis.Hook) bool {
 							return reflect.ValueOf(want).Pointer() == reflect.ValueOf(got).Pointer()
 						}),
 					}
-					if diff := cmp.Diff(want, got, opts...); diff != "" {
+					if diff := comparator.Diff(want, got, opts...); diff != "" {
 						return errors.Errorf("client options diff: %s", diff)
 					}
 
@@ -799,39 +798,39 @@ func Test_redisClient_newClusterClient(t *testing.T) {
 						got  = gotc.Options()
 					)
 
-					opts := []cmp.Option{
-						cmpopts.IgnoreUnexported(*want),
-						cmpopts.IgnoreUnexported(*got),
-						cmp.Comparer(func(want, got func(opt *redis.Options) *redis.Client) bool {
+					opts := []comparator.Option{
+						comparator.IgnoreUnexported(*want),
+						comparator.IgnoreUnexported(*got),
+						comparator.Comparer(func(want, got func(opt *redis.Options) *redis.Client) bool {
 							// TODO fix this code later
 							return true
 						}),
-						cmp.Comparer(func(want, got func(*redis.Client)) bool {
+						comparator.Comparer(func(want, got func(*redis.Client)) bool {
 							return reflect.ValueOf(want).Pointer() == reflect.ValueOf(got).Pointer()
 						}),
-						cmp.Comparer(func(want, got func(context.Context) ([]redis.ClusterSlot, error)) bool {
+						comparator.Comparer(func(want, got func(context.Context) ([]redis.ClusterSlot, error)) bool {
 							return reflect.ValueOf(want).Pointer() == reflect.ValueOf(got).Pointer()
 						}),
-						cmp.Comparer(func(want, got func() ([]redis.ClusterSlot, error)) bool {
+						comparator.Comparer(func(want, got func() ([]redis.ClusterSlot, error)) bool {
 							return reflect.ValueOf(want).Pointer() == reflect.ValueOf(got).Pointer()
 						}),
-						cmp.Comparer(func(want, got func(ctx context.Context, network, addr string) (net.Conn, error)) bool {
+						comparator.Comparer(func(want, got func(ctx context.Context, network, addr string) (net.Conn, error)) bool {
 							return reflect.ValueOf(want).Pointer() == reflect.ValueOf(got).Pointer()
 						}),
-						cmp.Comparer(func(want, got func(context.Context, *redis.Conn) error) bool {
+						comparator.Comparer(func(want, got func(context.Context, *redis.Conn) error) bool {
 							return reflect.ValueOf(want).Pointer() == reflect.ValueOf(got).Pointer()
 						}),
-						cmp.Comparer(func(want, got func(*redis.Conn) error) bool {
+						comparator.Comparer(func(want, got func(*redis.Conn) error) bool {
 							return reflect.ValueOf(want).Pointer() == reflect.ValueOf(got).Pointer()
 						}),
-						cmp.Comparer(func(want, got *tls.Config) bool {
+						comparator.Comparer(func(want, got *tls.Config) bool {
 							return reflect.ValueOf(want).Pointer() == reflect.ValueOf(got).Pointer()
 						}),
-						cmp.Comparer(func(want, got []redis.Hook) bool {
+						comparator.Comparer(func(want, got []redis.Hook) bool {
 							return reflect.ValueOf(want).Pointer() == reflect.ValueOf(got).Pointer()
 						}),
 					}
-					if diff := cmp.Diff(want, got, opts...); diff != "" {
+					if diff := comparator.Diff(want, got, opts...); diff != "" {
 						fmt.Println(diff)
 						return errors.Errorf("got = %v, want = %v", got, want)
 					}
