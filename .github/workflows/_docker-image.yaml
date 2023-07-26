@@ -7,6 +7,11 @@ on:
         type: string
         description: 'Build target. e.g. `agent-ngt`'
         required: true
+      platforms:
+        type: string
+        description: "if it is specified, specified platforms will be used."
+        required: false
+        default: ""
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref != 'refs/heads/main' && github.ref || github.sha }}-${{ github.event_name }}
@@ -59,17 +64,12 @@ jobs:
           registry: ghcr.io
           username: ${{ secrets.PACKAGE_USER }}
           password: ${{ secrets.PACKAGE_TOKEN }}
-      - name: Test
-        run: |
-          echo ${{ steps.ref.outputs.ref }}
-          echo ${{ steps.buildx.outputs.name }}
-          echo ${{ inputs.target }}
-          exit 1
       - name: Build and Publish
         id: build_and_publish
         uses: ./.github/actions/docker-build
         with:
           target: ${{ inputs.target }}
+          platforms: ${{ inputs.platforms }}
           builder: ${{ steps.buildx.outputs.name }}
       - name: Initialize CodeQL
         if: startsWith( github.ref, 'refs/tags/')
