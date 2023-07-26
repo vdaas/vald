@@ -39,7 +39,8 @@ jobs:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/dump-context
 
-  CodeQL-Build:
+  codeQL-build:
+    name: CodeQL
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/vdaas/vald/vald-ci-container:nightly
