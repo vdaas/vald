@@ -19,6 +19,11 @@ on:
     types:
       - created
 
+  # TODO: Delete it later.
+  push:
+    branches:
+      - "refactor/ci/update-action"
+
 jobs:
   dump_contexts_to_log:
     runs-on: ubuntu-latest
