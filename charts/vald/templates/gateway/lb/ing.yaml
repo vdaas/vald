@@ -15,7 +15,11 @@
 #
 {{- $gateway := .Values.gateway.lb -}}
 {{- if and $gateway.enabled $gateway.ingress.enabled }}
+{{- if (.Capabilities.APIVersions.Has "networking.k8s.io/v1alpha1") }}
+apiVersion: networking.k8s.io/v1alpha1
+{{- else }}
 apiVersion: networking.k8s.io/v1
+{{- end }}
 kind: Ingress
 metadata:
   annotations:
