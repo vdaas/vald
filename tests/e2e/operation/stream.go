@@ -1089,6 +1089,10 @@ func (c *client) GetObject(
 					ds.Train[idx],
 				)
 			}
+
+			if ts := resp.GetTimestamp(); ts <= 0 {
+				t.Error("timestamp is not set properly")
+			}
 		}
 	}()
 
