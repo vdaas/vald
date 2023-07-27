@@ -21,7 +21,7 @@ runs:
         HELM_VERSION: ${{ inputs.helm_version }}
     - uses: azure/setup-helm@v3
       with:
-        helm-version: ${{ steps.helm_version.outputs.version }}
+        version: ${{ steps.helm_version.outputs.version }}
     - name: Check Helm version
       shell: bash
       run: |
