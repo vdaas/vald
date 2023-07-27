@@ -55,13 +55,13 @@ jobs:
     container:
       image: ghcr.io/vdaas/vald/vald-ci-container:nightly
     steps:
-      - name: Check out code.
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
         with:
-          persist-credentials: false
-      - name: set git config
-        run: |
-          git config --global --add safe.directory ${GITHUB_WORKSPACE}
+          path: ${{ github.workspace }}
+          set-safe-directory: true
+
+      - uses: ./.github/actions/setup-go
+
       - name: Run grpc-sequential
         run: |
           make hack/benchmark/assets/dataset/${DATASET}
@@ -69,6 +69,7 @@ jobs:
         env:
           DATASET: fashion-mnist-784-euclidean.hdf5
           DATASET_ARGS: fashion-mnist
+
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
@@ -87,11 +88,13 @@ jobs:
     container:
       image: ghcr.io/vdaas/vald/vald-ci-container:nightly
     steps:
-      - name: Check out code.
-        uses: actions/checkout@v3
-      - name: set git config
-        run: |
-          git config --global --add safe.directory ${GITHUB_WORKSPACE}
+      - uses: actions/checkout@v3
+        with:
+          path: ${{ github.workspace }}
+          set-safe-directory: true
+
+      - uses: ./.github/actions/setup-go
+
       - name: Run grpc-stream
         run: |
           make hack/benchmark/assets/dataset/${DATASET}
@@ -99,6 +102,7 @@ jobs:
         env:
           DATASET: fashion-mnist-784-euclidean.hdf5
           DATASET_ARGS: fashion-mnist
+
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
