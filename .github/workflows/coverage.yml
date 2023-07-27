@@ -38,6 +38,7 @@ jobs:
       - uses: ./.github/actions/dump-context
 
   coverage:
+    name: Coverage
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/vdaas/vald/vald-ci-container:nightly
