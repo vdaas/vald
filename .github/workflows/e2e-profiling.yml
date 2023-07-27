@@ -39,66 +39,32 @@ jobs:
     if: startsWith( github.ref, 'refs/tags/') || github.event.action == 'labeled' && github.event.label.name == 'actions/e2e-profiling'
     steps:
       - uses: actions/checkout@v3
-      - name: set git config
-        run: |
-          git config --global --add safe.directory ${GITHUB_WORKSPACE}
-      - name: Wait for Docker images
-        if: startsWith( github.ref, 'refs/tags/')
-        id: wait_for_docker_images
-        uses: ./.github/actions/wait-for-docker-image
-      - name: Get PR number
-        id: get_pr_number
-        if: github.event.action == 'labeled' && github.event.label.name == 'actions/e2e-profiling'
-        run: |
-          pr_num=`cat $GITHUB_EVENT_PATH | jq -r ".number"`
-          echo "PR_NUM=${pr_num}" >> $GITHUB_OUTPUT
-      - name: Specify container versions
-        if: github.event.action == 'labeled' && github.event.label.name == 'actions/e2e-profiling'
-        id: specify_container_versions
-        uses: ./.github/actions/detect-docker-image-tags
         with:
-          tag_name: pr-${{ steps.get_pr_number.outputs.PR_NUM }}
-      - name: Fetch Helm version
-        run: |
-          HELM_VERSION=`make version/helm`
-          echo "helm=${HELM_VERSION}" >> $GITHUB_OUTPUT
-        id: version
-      - uses: rinx/setup-k3d@v0.0.4
+          path: ${{ github.workspace }}
+          set-safe-directory: true
+
+      - name: Setup E2E environment
+        id: setup_e2e
+        uses: ./.github/actions/setup-e2e
         with:
-          version: latest
-          name: vald
-          agents: 3
-      - name: check k3d
-        run: |
-          kubectl cluster-info
-      - uses: azure/setup-helm@v3
-        with:
-          version: ${{ steps.version.outputs.helm }}
-      - name: Helm version
-        run: |
-          helm version
-      - name: deploy Vald
+          require_libhdf5: "true"
+
+      - name: Deploy Vald
         id: deploy_vald
         uses: ./.github/actions/e2e-deploy-vald
         with:
           require_libhdf5: "true"
-          helm_extra_options: ${{ steps.specify_container_versions.outputs.HELM_EXTRA_OPTIONS }}
+          helm_extra_options: ${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }}
           values: .github/helm/values/values-profile.yaml
           wait_for_selector: app=vald-lb-gateway
-      - name: deploy profefe
+
+      - name: Deploy profefe
         run: |
           make k8s/metrics/profefe/deploy
           kubectl patch cronjob kprofefe -p '{"spec": {"schedule": "*/1 * * * *"}}'
           kubectl wait --for=condition=ready pod -l app=profefe --timeout=300s
-      - name: Fetch golang version
-        run: |
-          GO_VERSION=`make version/go`
-          echo "version=${GO_VERSION}" >> $GITHUB_OUTPUT
-        id: golang_version
-      - uses: actions/setup-go@v3
-        with:
-          go-version: ${{ steps.golang_version.outputs.version }}
-      - name: run E2E CRUD
+
+      - name: Run E2E CRUD
         continue-on-error: true
         run: |
           make hack/benchmark/assets/dataset/${DATASET}
@@ -118,6 +84,7 @@ jobs:
         env:
           DATASET: fashion-mnist-784-euclidean.hdf5
           POD_NAME: ${{ steps.deploy_vald.outputs.POD_NAME }}
+
       - name: Get profiles
         run: |
           mkdir -p profiles
@@ -131,20 +98,24 @@ jobs:
                 --output profiles/${svc}-${t}.pb
             done
           done
+
       - uses: actions/upload-artifact@v3
         with:
           name: profiles
           path: profiles/*
+
       - uses: actions/cache@v2
         id: cache
         with:
           path: ./profiles-main
           key: ${{ runner.os }}-profiles-main-${{ github.sha }}
           restore-keys: ${{ runner.os }}-profiles-main-
+
       - name: Install dependencies
         run: |
           sudo apt update
           sudo apt install -y graphviz
+
       - name: Generate graphs
         run: |
           tag=$(cat profiles-main/VALD_VERSION || echo "unknown")
@@ -167,16 +138,19 @@ jobs:
               fi
             done
           done
+
       - uses: actions/upload-artifact@v3
         with:
           name: graphs
           path: graphs/*
+
       - name: Update cache
         if: startsWith( github.ref, 'refs/tags/')
         run: |
           mkdir -p profiles-main
           cp -f profiles/* profiles-main/
           cp -f versions/VALD_VERSION profiles-main/
+
       - name: Upload to vald-ci-images repository
         if: github.event.action == 'labeled' && github.event.label.name == 'actions/e2e-profiling'
         run: |
@@ -192,6 +166,7 @@ jobs:
         env:
           GITHUB_USER: ${{ secrets.DISPATCH_USER }}
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
+
       - name: Comment
         if: github.event.action == 'labeled' && github.event.label.name == 'actions/e2e-profiling'
         run: |
