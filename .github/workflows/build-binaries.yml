@@ -36,10 +36,13 @@ jobs:
           fetch-depth: 10
           path: ${{ github.workspace }}
           set-safe-directory: true
+
       - uses: ./.github/actions/setup-go
+
       - name: Build and zip
         run: |
           make binary/build/zip
+
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
