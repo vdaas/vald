@@ -39,13 +39,14 @@ runs:
       uses: ./.github/actions/setup-helm
 
     - name: Get PR number
+      # TODO: add if statement
       id: get_pr_number
       shell: bash
       run: |
         pr_num=`cat $GITHUB_EVENT_PATH | jq -r ".number"`
         echo "PR_NUM=${pr_num}" >> $GITHUB_OUTPUT
 
-    - name: Wait for E2E target Docker images
+    - name: Wait for target Docker images
       if: startsWith( github.ref, 'refs/tags/')
       uses: ./.github/actions/wait-for-docker-image
       with:
