@@ -44,6 +44,8 @@ on:
       - "Makefile.d/**"
       - "versions/GO_VERSION"
       - "versions/NGT_VERSION"
+  schedule:
+    - cron: "0 1 * * *"
 
 jobs:
   build:
