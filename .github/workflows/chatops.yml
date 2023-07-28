@@ -40,11 +40,13 @@ jobs:
           TRIGGER_PHRASE: "/label"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: install yq
         if: steps.check_comments_label.outputs.BOOL_TRIGGERED == 'true'
         run: |
           sudo curl -Lo /usr/local/bin/yq https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64
           sudo chmod a+x /usr/local/bin/yq
+
       - name: check permissions
         if: steps.check_comments_label.outputs.BOOL_TRIGGERED == 'true'
         id: check_permissions
@@ -65,6 +67,7 @@ jobs:
         env:
           USERNAME: ${{ steps.check_comments_label.outputs.COMMENTER_USERNAME }}
           REQUIRED_POLICY: label
+
       - name: add label
         if: steps.check_comments_label.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         run: |
@@ -96,11 +99,13 @@ jobs:
           TRIGGER_PHRASE: "/gen-test"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: install yq
         if: steps.check_comments_gen_test.outputs.BOOL_TRIGGERED == 'true'
         run: |
           sudo curl -Lo /usr/local/bin/yq https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64
           sudo chmod a+x /usr/local/bin/yq
+
       - name: check permissions
         if: steps.check_comments_gen_test.outputs.BOOL_TRIGGERED == 'true'
         id: check_permissions
@@ -121,6 +126,7 @@ jobs:
         env:
           USERNAME: ${{ steps.check_comments_gen_test.outputs.COMMENTER_USERNAME }}
           REQUIRED_POLICY: gen-test
+
       - name: check executable
         if: steps.check_comments_gen_test.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         run: |
@@ -136,29 +142,35 @@ jobs:
           USERNAME: ${{ steps.check_comments_gen_test.outputs.COMMENTER_USERNAME }}
           PR_AUTHOR: ${{ github.event.issue.user.login }}
           API_URL: ${{ github.event.issue.comments_url }}
+
       - uses: actions/checkout@v3
         if: steps.check_comments_gen_test.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         with:
           fetch-depth: 0
+
       - name: set git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
+
       - uses: crazy-max/ghaction-import-gpg@v4
         if: steps.check_comments_gen_test.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         with:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           git_user_signingkey: true
           git_commit_gpgsign: true
+
       - name: Fetch golang version
         if: steps.check_comments_gen_test.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         run: |
           GO_VERSION=`make version/go`
           echo "version=${GO_VERSION}" >> $GITHUB_OUTPUT
         id: golang_version
+
       - uses: actions/setup-go@v3
         if: steps.check_comments_gen_test.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         with:
           go-version: ${{ steps.golang_version.outputs.version }}
+
       - name: Generate tests and push
         id: gen_test
         if: steps.check_comments_gen_test.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
@@ -193,6 +205,7 @@ jobs:
           PR_INFO_URL: ${{ github.event.issue.pull_request.url }}
           PR_AUTHOR: ${{ github.event.issue.user.login }}
           PR_NUM: ${{ github.event.issue.number }}
+
       - name: failure comment
         if: failure()
         run: |
@@ -207,6 +220,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
           API_URL: ${{ github.event.issue.comments_url }}
+
   format:
     name: Add license and run golines + gofumpt + goimports
     needs:
@@ -222,11 +236,13 @@ jobs:
           TRIGGER_PHRASE: "/format"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: install yq
         if: steps.check_comments_format.outputs.BOOL_TRIGGERED == 'true'
         run: |
           sudo curl -Lo /usr/local/bin/yq https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64
           sudo chmod a+x /usr/local/bin/yq
+
       - name: check permissions
         if: steps.check_comments_format.outputs.BOOL_TRIGGERED == 'true'
         id: check_permissions
@@ -247,6 +263,7 @@ jobs:
         env:
           USERNAME: ${{ steps.check_comments_format.outputs.COMMENTER_USERNAME }}
           REQUIRED_POLICY: format
+
       - name: check executable
         if: steps.check_comments_format.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         run: |
@@ -261,30 +278,36 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
           USERNAME: ${{ steps.check_comments_format.outputs.COMMENTER_USERNAME }}
           API_URL: ${{ github.event.issue.comments_url }}
+
       - uses: actions/checkout@v3
         if: steps.check_comments_format.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         with:
           fetch-depth: 0
           token: ${{ secrets.DISPATCH_TOKEN }}
+
       - name: set git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
+
       - uses: crazy-max/ghaction-import-gpg@v4
         if: steps.check_comments_format.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         with:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           git_user_signingkey: true
           git_commit_gpgsign: true
+
       - name: Fetch golang version
         if: steps.check_comments_format.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         run: |
           GO_VERSION=`make version/go`
           echo "version=${GO_VERSION}" >> $GITHUB_OUTPUT
         id: golang_version
+
       - uses: actions/setup-go@v3
         if: steps.check_comments_format.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         with:
           go-version: ${{ steps.golang_version.outputs.version }}
+
       - name: update and push
         id: format_push
         if: steps.check_comments_format.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
@@ -326,6 +349,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
           PR_INFO_URL: ${{ github.event.issue.pull_request.url }}
           PR_NUM: ${{ github.event.issue.number }}
+
       - name: no changes
         if: steps.check_comments_format.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true' && steps.format_push.outputs.UPDATED == 'false'
         run: |
@@ -339,6 +363,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
           API_URL: ${{ github.event.issue.comments_url }}
+
       - name: failure comment
         if: failure()
         run: |
@@ -368,11 +393,13 @@ jobs:
           TRIGGER_PHRASE: "/approve"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: install yq
         if: steps.check_comments_approve.outputs.BOOL_TRIGGERED == 'true'
         run: |
           sudo curl -Lo /usr/local/bin/yq https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64
           sudo chmod a+x /usr/local/bin/yq
+
       - name: check permissions
         if: steps.check_comments_approve.outputs.BOOL_TRIGGERED == 'true'
         id: check_permissions
@@ -393,6 +420,7 @@ jobs:
         env:
           USERNAME: ${{ steps.check_comments_approve.outputs.COMMENTER_USERNAME }}
           REQUIRED_POLICY: approve
+
       - name: approve
         if: steps.check_comments_approve.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         run: |

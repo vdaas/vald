@@ -32,14 +32,17 @@ jobs:
       - uses: actions/labeler@v4
         with:
           repo-token: "${{ secrets.GITHUB_TOKEN }}"
+
       - name: Checkout PR branch
         uses: actions/checkout@v3
         with:
           ref: ${{ github.head_ref }}
           fetch-depth: 0
+
       - name: set git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
+
       - name: Add labels
         run: |
           pr_num=`cat $GITHUB_EVENT_PATH | jq -r ".number"`
@@ -93,6 +96,7 @@ jobs:
         env:
           REPOSITORY: ${{ github.repository }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
   remove-duplication:
     name: Remove duplication
     needs:
