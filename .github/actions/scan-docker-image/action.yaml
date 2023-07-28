@@ -17,18 +17,18 @@ runs:
     - name: Run vulnerability scanner (table)
       uses: aquasecurity/trivy-action@master
       with:
-        image-ref: {{ inputs.image_ref }}
+        image-ref: ${{ inputs.image_ref }}
         format: "table"
-        severity: {{ inputs.severity }}
+        severity: ${{ inputs.severity }}
 
     - name: Run vulnerability scanner (sarif)
       uses: aquasecurity/trivy-action@master
       with:
-        image-ref: {{ inputs.image_ref }}
+        image-ref: ${{ inputs.image_ref }}
         format: "template"
         template: "@/contrib/sarif.tpl"
         output: "trivy-results.sarif"
-        severity: {{ inputs.severity }}
+        severity: ${{ inputs.severity }}
 
     # - name: Upload Trivy scan results to Security tab
     #   uses: github/codeql-action/upload-sarif@v2
