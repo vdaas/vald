@@ -33,9 +33,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+
       - name: set git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
+
       - name: LanguageTool
         uses: reviewdog/action-languagetool@v1
         with:
@@ -51,9 +53,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+
       - name: set git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
+
       - name: LanguageTool
         uses: reviewdog/action-languagetool@v1
         with:
@@ -70,16 +74,20 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+
       - name: set git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
+
       - name: Setup node/npm
         uses: actions/setup-node@v3
         with:
           node-version: "16"
+
       - name: Install textlint
         run: |
           make textlint/ci/install
+
       - name: textlint-github-pr-review
         uses: tsuyoshicho/action-textlint@v3
         with:

@@ -48,15 +48,18 @@ jobs:
           fetch-depth: 10
           path: ${{ github.workspace }}
           set-safe-directory: true
+
       - name: Run coverage
         continue-on-error: true
         run: |
           make coverage
+
       - name: Upload coverage report to Codecov
         uses: codecov/codecov-action@v3
         with:
           token: ${{secrets.CODECOV_TOKEN}}
           file: ./coverage.out
+
       - name: Upload coverage report to deepsource
         run: |
           mv ./coverage.out ./cover.out

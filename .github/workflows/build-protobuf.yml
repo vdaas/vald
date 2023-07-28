@@ -43,6 +43,7 @@ jobs:
         with:
           path: ${{ github.workspace }}
           set-safe-directory: true
-      - name: build protobuf
+
+      - name: Build protobuf
         run: |
           make proto/all

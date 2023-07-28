@@ -40,6 +40,7 @@ jobs:
           REPO: vdaas/vald-client-go
           USER: ${{ secrets.DISPATCH_USER }}
           TOKEN: ${{ secrets.DISPATCH_TOKEN }}
+
       - name: client-java
         run: |
           curl --fail -u "${USER}:${TOKEN}" -X POST https://api.github.com/repos/${REPO}/dispatches -H 'Accept: application/vnd.github.everest-preview+json' --data '{"event_type": "update-protobuf"}'
@@ -47,6 +48,7 @@ jobs:
           REPO: vdaas/vald-client-java
           USER: ${{ secrets.DISPATCH_USER }}
           TOKEN: ${{ secrets.DISPATCH_TOKEN }}
+
       - name: client-python
         run: |
           curl --fail -u "${USER}:${TOKEN}" -X POST https://api.github.com/repos/${REPO}/dispatches -H 'Accept: application/vnd.github.everest-preview+json' --data '{"event_type": "update-protobuf"}'
@@ -54,6 +56,7 @@ jobs:
           REPO: vdaas/vald-client-python
           USER: ${{ secrets.DISPATCH_USER }}
           TOKEN: ${{ secrets.DISPATCH_TOKEN }}
+
       - name: client-node
         run: |
           curl --fail -u "${USER}:${TOKEN}" -X POST https://api.github.com/repos/${REPO}/dispatches -H 'Accept: application/vnd.github.everest-preview+json' --data '{"event_type": "update-protobuf"}'

@@ -40,9 +40,11 @@ jobs:
       - name: set git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
+
       - name: "Install fossa-cli"
         run: |
           curl -H 'Cache-Control: no-cache' https://raw.githubusercontent.com/fossas/fossa-cli/master/install.sh | bash
+
       - name: "Run for main branch"
         if: github.ref == 'refs/heads/main'
         run: |
@@ -51,6 +53,7 @@ jobs:
           FOSSA_API_KEY: ${{ secrets.FOSSA_API_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_SHA: ${{ github.sha }}
+
       - name: "Run for PRs"
         if: github.event_name == 'pull_request'
         run: |

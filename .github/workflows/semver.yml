@@ -37,14 +37,17 @@ jobs:
         with:
           fetch-depth: 0
           token: ${{ secrets.DISPATCH_TOKEN }}
+
       - name: set git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
+
       - uses: crazy-max/ghaction-import-gpg@v4
         with:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           git_user_signingkey: true
           git_commit_gpgsign: true
+
       - name: Get latest gitwerk
         run: |
           curl -fsSLO \
@@ -53,6 +56,7 @@ jobs:
           unzip gitwerk-linux-amd64.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Run gitwerk semver-auto
         id: semver
         run: |
@@ -134,6 +138,7 @@ jobs:
         env:
           GITHUB_USER: ${{ secrets.DISPATCH_USER }}
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
+
       - name: Create release
         if: steps.semver.outputs.RELEASE == 'true'
         id: create_release
@@ -147,6 +152,7 @@ jobs:
             See [CHANGELOG.md](https://github.com/vdaas/vald/blob/${{ steps.semver.outputs.VERSION }}/CHANGELOG.md) for details.
           draft: false
           prerelease: false
+
       - name: Add the version to goproxy
         run: |
           curl "https://proxy.golang.org/github.com/vdaas/vald/@v/${{ steps.semver.outputs.VERSION }}.info"

@@ -250,6 +250,7 @@ jobs:
     if: github.ref == 'refs/heads/main' || startsWith( github.ref, 'refs/tags/')
     steps:
       - uses: actions/checkout@v3
+
       - uses: ./.github/actions/notify-slack
         with:
           author_name: E2E Chaos test
