@@ -169,10 +169,8 @@ jobs:
           echo "helm=${HELM_VERSION}" >> $GITHUB_OUTPUT
         id: version
 
-      - uses: rinx/setup-k3d@v0.0.4
+      - uses: ./.github/actions/setup-k3d
         with:
-          version: latest
-          name: vald
           agents: 3
 
       - name: check k3d

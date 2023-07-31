@@ -1,0 +1,63 @@
+name: "Setup k3d environment"
+description: "GitHub Action for setting up k3d (k3s in Docker). It's lighter than KinD (Kubernetes in Docker)"
+
+inputs:
+  version:
+    description: 'k3d version'
+    required: false
+    default: 'latest'
+  name:
+    description: 'cluster name'
+    required: false
+    default: 'vald'
+  agents:
+    description: 'number of agents'
+    required: false
+    default: '3'
+  options:
+    description: 'options for k3d cluster create command'
+    required: false
+    default: ''
+
+runs:
+  using: "composite"
+  steps:
+    - name: Detect k3d version
+      id: k3d_version
+      shell: bash
+      run: |
+        if [ "${K3D_VERSION}" != "latest" ]; then
+          TAG="TAG=v${K3D_VERSION}"
+        fi
+        echo "tag=${TAG}" >> $GITHUB_OUTPUT
+      env:
+        K3D_VERSION: ${{ inputs.version }}
+
+    - name: Install k3d
+      shell: bash
+      run: |
+        curl -s ${REPO_URL} | ${{ steps.k3d_version.outputs.tag }} bash
+      env:
+        REPO_URL: "https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh"
+
+    - name: Check k3d version
+      shell: bash
+      run: |
+        k3d version
+
+    - name: Setup k3d options
+      shell: bash
+      id: k3d_options
+      run: |
+        if [ "${AGENTS}" != 0 ]; then
+          OPTIONS="${OPTIONS} --agents ${AGENTS}"
+        fi
+        echo "options=${OPTIONS}" >> $GITHUB_OUTPUT
+      env:
+        AGENTS: ${{ inputs.agents }}
+        OPTIONS: ${{ inputs.options }}
+
+    - name: Create k8s cluster
+      shell: bash
+      run: |
+        k3d cluster create ${{ inputs.name }} ${{ steps.k3d_options.outputs.options }}

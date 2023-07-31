@@ -61,10 +61,8 @@ runs:
         tag_name: nightly
         images: ${{ inputs.target_images }}
 
-    - uses: rinx/setup-k3d@v0.0.4
+    - uses: ./.github/actions/setup-k3d
       with:
-        version: latest
-        name: vald
         agents: 3
         options: "--image docker.io/rancher/k3s:latest"
 
