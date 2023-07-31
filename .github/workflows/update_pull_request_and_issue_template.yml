@@ -18,7 +18,6 @@ on:
   push:
     branches:
       - main
-      - refactor/ci/update-action
     paths:
       - "versions/GO_VERSION"
       - "versions/NGT_VERSION"
@@ -47,43 +46,43 @@ jobs:
           git_user_signingkey: true
           git_commit_gpgsign: true
 
-      # - name: Push to main
-      #   run: |
-      #     TIMESTAMP=$(date +%Y%m%d_%H%M%S_%3N)
-      #     BRANCH_NAME="documentation/pull_request_and_issue_template/update_versions_${TIMESTAMP}"
-      #     git checkout main
-      #     git checkout -b ${BRANCH_NAME}
-      #
-      #     GO_VERSION=$(make version/go)
-      #     NGT_VERSION=$(make version/ngt)
-      #     KUBECTL_VERSION=$(make version/k8s)
-      #
-      #     sed -i -e "s/^- Go Version: .*$/- Go Version: ${GO_VERSION}/" .github/ISSUE_TEMPLATE/bug_report.md
-      #     sed -i -e "s/^- Go Version: .*$/- Go Version: ${GO_VERSION}/" .github/ISSUE_TEMPLATE/security_issue_report.md
-      #     sed -i -e "s/^- Go Version: .*$/- Go Version: ${GO_VERSION}/" .github/PULL_REQUEST_TEMPLATE.md
-      #
-      #     sed -i -e "s/^- NGT Version: .*$/- NGT Version: ${NGT_VERSION}/" .github/ISSUE_TEMPLATE/bug_report.md
-      #     sed -i -e "s/^- NGT Version: .*$/- NGT Version: ${NGT_VERSION}/" .github/ISSUE_TEMPLATE/security_issue_report.md
-      #     sed -i -e "s/^- NGT Version: .*$/- NGT Version: ${NGT_VERSION}/" .github/PULL_REQUEST_TEMPLATE.md
-      #
-      #     sed -i -e "s/^- Kubernetes Version: .*$/- Kubernetes Version: ${KUBECTL_VERSION}/" .github/ISSUE_TEMPLATE/bug_report.md
-      #     sed -i -e "s/^- Kubernetes Version: .*$/- Kubernetes Version: ${KUBECTL_VERSION}/" .github/ISSUE_TEMPLATE/security_issue_report.md
-      #     sed -i -e "s/^- Kubernetes Version: .*$/- Kubernetes Version: ${KUBECTL_VERSION}/" .github/PULL_REQUEST_TEMPLATE.md
-      #
-      #     git add .github/PULL_REQUEST_TEMPLATE.md .github/ISSUE_TEMPLATE/bug_report.md .github/ISSUE_TEMPLATE/security_issue_report.md
-      #     git commit -S --signoff -m ":robot: Automatically update PULL_REQUEST_TEMPLATE and ISSUE_TEMPLATE"
-      #
-      #     git remote set-url origin "https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
-      #     git push -u origin ${BRANCH_NAME}
-      #
-      #     curl --include --verbose --fail \
-      #     -H "Accept: application/json" \
-      #     -H "Content-Type:application/json" \
-      #     -H "Authorization: token ${GITHUB_TOKEN}" \
-      #     --request POST \
-      #     --data "{\"title\": \"Update PULL_REQUEST_TEMPLATE and ISSUE_TEMPLATE\", \"head\": \"${BRANCH_NAME}\", \"base\": \"main\", \"body\": \"PULL_REQUEST_TEMPLATE and ISSUE_TEMPLATE are updated.\", \"maintainer_can_modify\": true}" \
-      #     $API_URL
-      #   env:
-      #     GITHUB_USER: ${{ secrets.DISPATCH_USER }}
-      #     GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
-      #     API_URL: https://api.github.com/repos/vdaas/vald/pulls
+      - name: Push to main
+        run: |
+          TIMESTAMP=$(date +%Y%m%d_%H%M%S_%3N)
+          BRANCH_NAME="documentation/pull_request_and_issue_template/update_versions_${TIMESTAMP}"
+          git checkout main
+          git checkout -b ${BRANCH_NAME}
+
+          GO_VERSION=$(make version/go)
+          NGT_VERSION=$(make version/ngt)
+          KUBECTL_VERSION=$(make version/k8s)
+
+          sed -i -e "s/^- Go Version: .*$/- Go Version: ${GO_VERSION}/" .github/ISSUE_TEMPLATE/bug_report.md
+          sed -i -e "s/^- Go Version: .*$/- Go Version: ${GO_VERSION}/" .github/ISSUE_TEMPLATE/security_issue_report.md
+          sed -i -e "s/^- Go Version: .*$/- Go Version: ${GO_VERSION}/" .github/PULL_REQUEST_TEMPLATE.md
+
+          sed -i -e "s/^- NGT Version: .*$/- NGT Version: ${NGT_VERSION}/" .github/ISSUE_TEMPLATE/bug_report.md
+          sed -i -e "s/^- NGT Version: .*$/- NGT Version: ${NGT_VERSION}/" .github/ISSUE_TEMPLATE/security_issue_report.md
+          sed -i -e "s/^- NGT Version: .*$/- NGT Version: ${NGT_VERSION}/" .github/PULL_REQUEST_TEMPLATE.md
+
+          sed -i -e "s/^- Kubernetes Version: .*$/- Kubernetes Version: ${KUBECTL_VERSION}/" .github/ISSUE_TEMPLATE/bug_report.md
+          sed -i -e "s/^- Kubernetes Version: .*$/- Kubernetes Version: ${KUBECTL_VERSION}/" .github/ISSUE_TEMPLATE/security_issue_report.md
+          sed -i -e "s/^- Kubernetes Version: .*$/- Kubernetes Version: ${KUBECTL_VERSION}/" .github/PULL_REQUEST_TEMPLATE.md
+
+          git add .github/PULL_REQUEST_TEMPLATE.md .github/ISSUE_TEMPLATE/bug_report.md .github/ISSUE_TEMPLATE/security_issue_report.md
+          git commit -S --signoff -m ":robot: Automatically update PULL_REQUEST_TEMPLATE and ISSUE_TEMPLATE"
+
+          git remote set-url origin "https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git push -u origin ${BRANCH_NAME}
+
+          curl --include --verbose --fail \
+          -H "Accept: application/json" \
+          -H "Content-Type:application/json" \
+          -H "Authorization: token ${GITHUB_TOKEN}" \
+          --request POST \
+          --data "{\"title\": \"Update PULL_REQUEST_TEMPLATE and ISSUE_TEMPLATE\", \"head\": \"${BRANCH_NAME}\", \"base\": \"main\", \"body\": \"PULL_REQUEST_TEMPLATE and ISSUE_TEMPLATE are updated.\", \"maintainer_can_modify\": true}" \
+          $API_URL
+        env:
+          GITHUB_USER: ${{ secrets.DISPATCH_USER }}
+          GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
+          API_URL: https://api.github.com/repos/vdaas/vald/pulls
