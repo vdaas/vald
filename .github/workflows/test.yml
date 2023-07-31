@@ -47,12 +47,10 @@ jobs:
     container:
       image: ghcr.io/vdaas/vald/vald-ci-container:nightly
     steps:
-      - name: Check out code.
-        uses: actions/checkout@v3
-
-      - name: set git config
-        run: |
-          git config --global --add safe.directory ${GITHUB_WORKSPACE}
+      - uses: actions/checkout@v3
+        with:
+          path: ${{ github.workspace }}
+          set-safe-directory: true
 
       - name: Run tests for cmd packages / gotestfmt
         run: |
@@ -68,12 +66,10 @@ jobs:
     container:
       image: ghcr.io/vdaas/vald/vald-ci-container:nightly
     steps:
-      - name: Check out code.
-        uses: actions/checkout@v3
-
-      - name: set git config
-        run: |
-          git config --global --add safe.directory ${GITHUB_WORKSPACE}
+      - uses: actions/checkout@v3
+        with:
+          path: ${{ github.workspace }}
+          set-safe-directory: true
 
       - name: Run tests for internal packages / gotestfmt
         run: |
@@ -89,12 +85,10 @@ jobs:
     container:
       image: ghcr.io/vdaas/vald/vald-ci-container:nightly
     steps:
-      - name: Check out code.
-        uses: actions/checkout@v3
-
-      - name: set git config
-        run: |
-          git config --global --add safe.directory ${GITHUB_WORKSPACE}
+      - uses: actions/checkout@v3
+        with:
+          path: ${{ github.workspace }}
+          set-safe-directory: true
 
       - name: Run tests for pkg packages / gotestfmt
         run: |
