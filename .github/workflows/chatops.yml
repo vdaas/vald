@@ -22,7 +22,7 @@ env:
   YQ_VERSION: 3.2.1
 
 jobs:
-  dump_contexts_to_log:
+  dump-contexts-to-log:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
