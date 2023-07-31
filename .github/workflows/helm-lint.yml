@@ -127,10 +127,7 @@ jobs:
         run: |
           make helm/schema/crd/vald
 
-      - uses: rinx/setup-k3d@v0.0.4
-        with:
-          version: latest
-          name: vald
+      - uses: ./.github/actions/setup-k3d
 
       - name: check k3d
         run: |
