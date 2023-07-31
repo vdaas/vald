@@ -60,14 +60,12 @@ jobs:
 
       - name: Install Proto dependencies
         run: |
-          GOPATH=${GITHUB_WORKSPACE} make proto/deps
-        working-directory: src/github.com/vdaas/vald
+          make proto/deps
 
       - name: Run tests for hack packages / gotestfmt
         run: |
-          GOPATH=${GITHUB_WORKSPACE} TEST_RESULT_DIR=${GITHUB_WORKSPACE}/src/github.com/vdaas/vald make test/hack/gotestfmt
-        working-directory: src/github.com/vdaas/vald
+          TEST_RESULT_DIR=${GITHUB_WORKSPACE} make test/hack/gotestfmt
 
       - name: Print tparse result
         run: |
-          tparse -notests -smallscreen -sort cover -format markdown -file ${GITHUB_WORKSPACE}/src/github.com/vdaas/vald/test-hack-gotestfmt-result.json
+          tparse -notests -smallscreen -sort cover -format markdown -file ${GITHUB_WORKSPACE}/test-hack-gotestfmt-result.json
