@@ -52,18 +52,13 @@ jobs:
       run:
         working-directory: src/github.com/vdaas/vald
     steps:
-      - name: Check out code.
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 1
-          path: src/github.com/vdaas/vald
+          path: ${{ github.workspace }}
+          set-safe-directory: true
 
-      - name: set git config
-        run: |
-          git config --global --add safe.directory ${GITHUB_WORKSPACE}/src/github.com/vdaas/vald
-        working-directory: src/github.com/vdaas/vald
-
-      - name: dependencies
+      - name: Install Proto dependencies
         run: |
           GOPATH=${GITHUB_WORKSPACE} make proto/deps
         working-directory: src/github.com/vdaas/vald
@@ -73,6 +68,6 @@ jobs:
           GOPATH=${GITHUB_WORKSPACE} TEST_RESULT_DIR=${GITHUB_WORKSPACE}/src/github.com/vdaas/vald make test/hack/gotestfmt
         working-directory: src/github.com/vdaas/vald
 
-      - name: print tparse result
+      - name: Print tparse result
         run: |
           tparse -notests -smallscreen -sort cover -format markdown -file ${GITHUB_WORKSPACE}/src/github.com/vdaas/vald/test-hack-gotestfmt-result.json

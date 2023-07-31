@@ -56,7 +56,7 @@ jobs:
         run: |
           TEST_RESULT_DIR=${GITHUB_WORKSPACE} make test/cmd/gotestfmt
 
-      - name: print tparse result
+      - name: Print tparse result
         run: |
           tparse -notests -smallscreen -sort cover -format markdown -file "${GITHUB_WORKSPACE}/test-cmd-gotestfmt-result.json"
 
@@ -75,7 +75,7 @@ jobs:
         run: |
           TEST_RESULT_DIR=${GITHUB_WORKSPACE} make test/internal/gotestfmt
 
-      - name: print tparse result
+      - name: Print tparse result
         run: |
           tparse -notests -smallscreen -sort cover -format markdown -file "${GITHUB_WORKSPACE}/test-internal-gotestfmt-result.json"
 
@@ -94,6 +94,6 @@ jobs:
         run: |
           TEST_RESULT_DIR=${GITHUB_WORKSPACE} make test/pkg/gotestfmt
 
-      - name: print tparse result
+      - name: Print tparse result
         run: |
           tparse -notests -smallscreen -sort cover -format markdown -file "${GITHUB_WORKSPACE}/test-pkg-gotestfmt-result.json"
