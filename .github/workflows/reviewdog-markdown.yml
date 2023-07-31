@@ -32,11 +32,11 @@ jobs:
     name: runner / LanguageTool / apis & charts
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-
-      - name: set git config
-        run: |
-          git config --global --add safe.directory ${GITHUB_WORKSPACE}
+      - name: Check out code.
+        uses: actions/checkout@v3
+        with:
+          path: ${{ github.workspace }}
+          set-safe-directory: true
 
       - name: LanguageTool
         uses: reviewdog/action-languagetool@v1
@@ -48,15 +48,15 @@ jobs:
           language: en-US
           disabled_rules: "DOUBLE_PUNCTUATION,WORD_CONTAINS_UNDERSCORE,ARROWS,CURRENCY,DASH_RULE,EN_QUOTES"
           disabled_categories: "TYPOS,TYPOGRAPHY,STYLE,CASING"
+
   languagetool_docs:
     name: runner / LanguageTool / Docs
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-
-      - name: set git config
-        run: |
-          git config --global --add safe.directory ${GITHUB_WORKSPACE}
+        with:
+          path: ${{ github.workspace }}
+          set-safe-directory: true
 
       - name: LanguageTool
         uses: reviewdog/action-languagetool@v1
@@ -68,16 +68,15 @@ jobs:
           language: en-US
           disabled_rules: "DOUBLE_PUNCTUATION,WORD_CONTAINS_UNDERSCORE,ARROWS,CURRENCY,DASH_RULE,EN_QUOTES"
           disabled_categories: "TYPOS,TYPOGRAPHY,STYLE"
+
   textlint:
     name: runner / textlint
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: set git config
-        run: |
-          git config --global --add safe.directory ${GITHUB_WORKSPACE}
+      - uses: actions/checkout@v3
+        with:
+          path: ${{ github.workspace }}
+          set-safe-directory: true
 
       - name: Setup node/npm
         uses: actions/setup-node@v3

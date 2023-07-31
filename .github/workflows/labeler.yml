@@ -33,15 +33,12 @@ jobs:
         with:
           repo-token: "${{ secrets.GITHUB_TOKEN }}"
 
-      - name: Checkout PR branch
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
         with:
           ref: ${{ github.head_ref }}
           fetch-depth: 0
-
-      - name: set git config
-        run: |
-          git config --global --add safe.directory ${GITHUB_WORKSPACE}
+          path: ${{ github.workspace }}
+          set-safe-directory: true
 
       - name: Add labels
         run: |
