@@ -48,9 +48,6 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/vdaas/vald/vald-ci-container:nightly
-    defaults:
-      run:
-        working-directory: src/github.com/vdaas/vald
     steps:
       - uses: actions/checkout@v3
         with:
