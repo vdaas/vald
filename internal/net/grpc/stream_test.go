@@ -22,6 +22,8 @@ import (
 	"reflect"
 	"testing"
 
+	tmock "github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/io"
@@ -29,7 +31,64 @@ import (
 	"github.com/vdaas/vald/internal/test/data/vector"
 	"github.com/vdaas/vald/internal/test/goleak"
 	"github.com/vdaas/vald/internal/test/mock"
+	"google.golang.org/grpc/metadata"
 )
+
+type MockServerStream struct {
+	tmock.Mock
+}
+
+func (m *MockServerStream) SendMsg(msg interface{}) error {
+	args := m.Called(msg)
+	return args.Error(0)
+}
+
+func (m *MockServerStream) SetHeader(metadata.MD) error {
+	return nil
+}
+
+func (m *MockServerStream) SendHeader(metadata.MD) error {
+	return nil
+}
+
+func (m *MockServerStream) SetTrailer(metadata.MD) {
+}
+
+func (m *MockServerStream) Context() context.Context {
+	return context.Background()
+}
+
+func (m *MockServerStream) SendMsgWithContext(ctx context.Context, msg interface{}) error {
+	args := m.Called(msg)
+	return args.Error(0)
+}
+
+func (m *MockServerStream) RecvMsg(msg interface{}) error {
+	return nil
+}
+
+func TestServerSideStream_Success(t *testing.T) {
+	// Create a new mock server stream
+	mockStream := new(MockServerStream)
+
+	// Set expectations for the mock stream
+	mockStream.On("SendMsg", tmock.AnythingOfType("*string")).Return(nil).Times(3)
+
+	// Define the function to be passed to ServerSideStream
+	f := func(ctx context.Context, req *string) (*string, error) {
+		return req, nil
+	}
+
+	// Call the ServerSideStream function
+	r := "test"
+	err := ServerSideStream(context.Background(), &r, mockStream, 3, f)
+
+	// Assert that the function returned no errors
+	require.NoError(t, err)
+
+	// Assert that the mock stream expectations were met
+	mockStream.AssertExpectations(t)
+}
 
 func TestBidirectionalStream(t *testing.T) {
 	type args struct {

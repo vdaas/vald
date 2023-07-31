@@ -418,6 +418,17 @@ message Object {
   message Locations {
     repeated Location locations = 1;
   }
+
+  message List {
+    message Request {}
+
+    message Response {
+      oneof payload {
+        Vector vector = 1;
+        google.rpc.Status status = 2;
+      }
+    }
+  }
 }
 
 // Control related messages.

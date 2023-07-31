@@ -27,6 +27,7 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc/errdetails"
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/observability/trace"
+	"github.com/vdaas/vald/internal/slices"
 )
 
 func (s *server) Exists(ctx context.Context, uid *payload.Object_ID) (res *payload.Object_ID, err error) {
@@ -194,6 +195,61 @@ func (s *server) StreamGetObject(stream vald.Object_StreamGetObjectServer) (err 
 		}
 
 		log.Error(err)
+		return err
+	}
+	return nil
+}
+
+func (s *server) StreamListObject(_ *payload.Object_List_Request, stream vald.Object_StreamListObjectServer) (err error) {
+	ctx, span := trace.StartSpan(stream.Context(), apiName+"/"+vald.StreamListObjectRPCName)
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+
+	errs := make([]error, 0, s.ngt.Len())
+	s.ngt.ListObjectFunc(ctx, func(uuid string, _ uint32, _ int64) bool {
+		vec, ts, err := s.ngt.GetObject(uuid)
+		if err != nil {
+			st := status.CreateWithNotFound(fmt.Sprintf("failed to get object with uuid: %s", uuid), err)
+			err := stream.Send(&payload.Object_List_Response{
+				Payload: &payload.Object_List_Response_Status{
+					Status: st.Proto(),
+				},
+			})
+			if err != nil {
+				errs = append(errs, err)
+			}
+			return true
+		}
+
+		err = stream.Send(&payload.Object_List_Response{
+			Payload: &payload.Object_List_Response_Vector{
+				Vector: &payload.Object_Vector{
+					Id:        uuid,
+					Vector:    vec,
+					Timestamp: ts,
+				},
+			},
+		})
+		if err != nil {
+			errs = append(errs, err)
+		}
+		return true
+	})
+
+	if len(errs) != 0 {
+		slices.RemoveDuplicates(errs, func(left, right error) bool {
+			return left.Error() < right.Error()
+		})
+		err = errors.Join(errs...)
+		st, msg, err := status.ParseError(err, codes.Internal, "failed to parse StreamListObject final gRPC error response")
+		if span != nil {
+			span.RecordError(err)
+			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+			span.SetStatus(trace.StatusError, msg)
+		}
 		return err
 	}
 	return nil
