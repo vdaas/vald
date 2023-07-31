@@ -58,7 +58,6 @@ runs:
       with:
         # TODO: Change it later
         # tag_name: pr-${{ steps.get_pr_number.outputs.PR_NUM }}
-        # images: ${{ inputs.target_images }}
         tag_name: nightly
         images: ${{ inputs.target_images }}
 
