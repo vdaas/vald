@@ -16,6 +16,7 @@ package grpc
 import (
 	"context"
 	"fmt"
+	"sync"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
@@ -208,22 +209,33 @@ func (s *server) StreamListObject(_ *payload.Object_List_Request, stream vald.Ob
 		}
 	}()
 
-	errs := make([]error, 0, s.ngt.Len())
+	var (
+		mu   sync.Mutex
+		emu  sync.Mutex
+		errs = make([]error, 0, s.ngt.Len())
+	)
 	s.ngt.ListObjectFunc(ctx, func(uuid string, _ uint32, _ int64) bool {
 		vec, ts, err := s.ngt.GetObject(uuid)
 		if err != nil {
 			st := status.CreateWithNotFound(fmt.Sprintf("failed to get object with uuid: %s", uuid), err)
+
+			mu.Lock()
 			err := stream.Send(&payload.Object_List_Response{
 				Payload: &payload.Object_List_Response_Status{
 					Status: st.Proto(),
 				},
 			})
+			mu.Unlock()
+
 			if err != nil {
+				emu.Lock()
 				errs = append(errs, err)
+				emu.Unlock()
 			}
 			return true
 		}
 
+		mu.Lock()
 		err = stream.Send(&payload.Object_List_Response{
 			Payload: &payload.Object_List_Response_Vector{
 				Vector: &payload.Object_Vector{
@@ -233,8 +245,12 @@ func (s *server) StreamListObject(_ *payload.Object_List_Request, stream vald.Ob
 				},
 			},
 		})
+		mu.Unlock()
+
 		if err != nil {
+			emu.Lock()
 			errs = append(errs, err)
+			emu.Unlock()
 		}
 		return true
 	})
