@@ -18,14 +18,13 @@ on:
   push:
     branches:
       - main
-      - refactor/ci/update-action
-  #   paths:
-  #     - "apis/proto/**"
-  #     - "versions/GO_VERSION"
-  # pull_request:
-  #   paths:
-  #     - "apis/proto/**"
-  #     - "versions/GO_VERSION"
+    paths:
+      - "apis/proto/**"
+      - "versions/GO_VERSION"
+  pull_request:
+    paths:
+      - "apis/proto/**"
+      - "versions/GO_VERSION"
 
 jobs:
   dump-contexts-to-log:
