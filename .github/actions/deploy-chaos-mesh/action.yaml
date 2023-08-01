@@ -23,15 +23,18 @@ runs:
         echo "version=${CHAOS_MESH_VERSION}" >> $GITHUB_OUTPUT
       env:
         CHAOS_MESH_VERSION: ${{ inputs.chaos_mesh_version }}
+
     - name: Check k3d
       shell: bash
       id: check_k3d
       run: |
         kubectl cluster-info
+
     - name: Check Helm
       shell: bash
       run: |
         helm version
+
     - name: Deploy Chaos Mesh
       shell: bash
       run: |

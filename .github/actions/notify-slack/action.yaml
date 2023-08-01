@@ -22,6 +22,7 @@ runs:
     - uses: technote-space/workflow-conclusion-action@v2
       with:
         GITHUB_TOKEN: ${{ inputs.token }}
+
     - uses: 8398a7/action-slack@v3
       with:
         author_name: ${{ inputs.author_name }}
