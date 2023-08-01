@@ -18,13 +18,14 @@ on:
   push:
     branches:
       - main
-    paths:
-      - "apis/proto/**"
-      - "versions/GO_VERSION"
-  pull_request:
-    paths:
-      - "apis/proto/**"
-      - "versions/GO_VERSION"
+      - refactor/ci/update-action
+  #   paths:
+  #     - "apis/proto/**"
+  #     - "versions/GO_VERSION"
+  # pull_request:
+  #   paths:
+  #     - "apis/proto/**"
+  #     - "versions/GO_VERSION"
 
 jobs:
   dump-contexts-to-log:
@@ -34,7 +35,6 @@ jobs:
       - uses: ./.github/actions/dump-context
 
   build:
-    name: build all
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/vdaas/vald/vald-ci-container:nightly
