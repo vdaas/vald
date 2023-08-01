@@ -419,12 +419,15 @@ message Object {
     repeated Location locations = 1;
   }
 
+  // Represent the list object vector stream request and response.
   message List {
     message Request {}
 
     message Response {
       oneof payload {
+        // The vector
         Vector vector = 1;
+        // The RPC error status.
         google.rpc.Status status = 2;
       }
     }
