@@ -15,9 +15,7 @@
 #
 {{- $gateway := .Values.gateway.filter -}}
 {{- if and $gateway.enabled $gateway.hpa.enabled }}
-{{- if (.Capabilities.APIVersions.Has "autoscaling/v2") }}
-apiVersion: autoscaling/v2
-{{- else if (.Capabilities.APIVersions.Has "autoscaling/v1") }}
+{{- if (.Capabilities.APIVersions.Has "autoscaling/v1") }}
 apiVersion: autoscaling/v1
 {{- else if (.Capabilities.APIVersions.Has "autoscaling/v2beta2") }}
 apiVersion: autoscaling/v2beta2
