@@ -31,7 +31,6 @@ type Backoff struct {
 }
 
 // Bind binds the actual data from the Backoff receiver fields.
-// Bind binds the actual data from the Backoff receiver fields.
 func (b *Backoff) Bind() *Backoff {
 	b.InitialDuration = GetActualValue(b.InitialDuration)
 	b.BackoffTimeLimit = GetActualValue(b.BackoffTimeLimit)
