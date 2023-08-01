@@ -20,12 +20,13 @@ jobs:
       - name: Build the Docker image
         id: build_image
         run: |
-          make docker/build/${{ inputs.target }}
-          imagename=`make docker/name/${{ inputs.target }}`
+          make docker/build/${TARGET}
+          imagename=`make docker/name/${TARGET}`
           docker tag ${imagename} ${imagename}:${{ github.sha }}
           echo "IMAGE_NAME=${imagename}" >> $GITHUB_OUTPUT
         env:
           DOCKER_BUILDKIT: 1
+          TARGET: ${{ inputs.target }}
 
       - name: Scan the Docker image
         uses: ./.github/actions/scan-docker-image
