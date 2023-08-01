@@ -15,10 +15,6 @@
 #
 name: "ChatOps help"
 on:
-  push:
-    branches:
-      - refactor/ci/update-action
-
   pull_request:
     types: [opened]
 
@@ -45,6 +41,5 @@ jobs:
           $API_URL
         env:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
-          # API_URL: ${{ github.event.pull_request.comments_url }}
-          API_URL: "https://api.github.com/repos/vdaas/vald/issues/2141/comments"
+          API_URL: ${{ github.event.pull_request.comments_url }}
           PR_NUM: ${{ github.event.issue.number }}
