@@ -28,7 +28,6 @@ jobs:
       - uses: ./.github/actions/dump-context
 
   warning:
-    name: warn internal config changes
     runs-on: ubuntu-latest
     steps:
       - name: Warn
