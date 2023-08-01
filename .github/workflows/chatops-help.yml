@@ -15,6 +15,10 @@
 #
 name: "ChatOps help"
 on:
+  push:
+    branches:
+      - refactor/ci/update-action
+
   pull_request:
     types: [opened]
 
@@ -25,11 +29,10 @@ jobs:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/dump-context
 
-  print-help:
-    name: print help
+  print:
     runs-on: ubuntu-latest
     steps:
-      - name: comment to PR
+      - name: Comment to PR
         run: |
           curl -o chatops_commands.md https://raw.githubusercontent.com/vdaas/vald/main/.github/chatops_commands.md
           BODY=`cat chatops_commands.md | sed ':a;N;$!ba;s/\n/\\\\n/g'`
