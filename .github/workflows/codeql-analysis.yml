@@ -51,8 +51,10 @@ jobs:
           # We must fetch at least the immediate parents so that if this is
           # a pull request then we can checkout the head.
           fetch-depth: 2
-          path: ${{ github.workspace }}
-          set-safe-directory: true
+
+      - name: Set Git config
+        run: |
+          git config --global --add safe.directory ${GITHUB_WORKSPACE}
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v2
