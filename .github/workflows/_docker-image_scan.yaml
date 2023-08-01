@@ -1,5 +1,4 @@
 name: "Docker image scanning"
-
 on:
   workflow_call:
     inputs:
@@ -13,9 +12,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-        with:
-          path: ${{ github.workspace }}
-          set-safe-directory: true
+
+      - name: Set Git config
+        run: |
+          git config --global --add safe.directory ${GITHUB_WORKSPACE}
 
       - name: Build the Docker image
         id: build_image
