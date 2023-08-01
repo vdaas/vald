@@ -49,13 +49,14 @@ outputs:
 runs:
   using: "composite"
   steps:
-    - name: deploy Minio
+    - name: Deploy Minio
       id: deploy_minio
       shell: bash
       if: ${{ inputs.require_minio == 'true' }}
       run: |
         make K8S_SLEEP_DURATION_FOR_WAIT_COMMAND=10 k8s/external/minio/deploy
-    - name: deploy vald helm operator from remote charts
+
+    - name: Deploy vald helm operator from remote charts
       shell: bash
       id: deploy_vald_helm_operator_remote
       if: ${{ inputs.use_local_charts == 'false' }}
@@ -65,14 +66,16 @@ runs:
           charts/vald-helm-operator/.
 
         sleep 3
-    - name: deploy vald helm operator from local charts
+
+    - name: Deploy vald helm operator from local charts
       shell: bash
       id: deploy_vald_helm_operator_local
       if: ${{ inputs.use_local_charts == 'true' }}
       run: |
         make k8s/vald-helm-operator/deploy
         sleep 3
-    - name: deploy vald
+
+    - name: Deploy vald
       shell: bash
       id: deploy_vald
       run: |

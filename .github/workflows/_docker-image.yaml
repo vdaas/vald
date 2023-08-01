@@ -14,7 +14,7 @@ on:
         default: ""
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref != 'refs/heads/main' && github.ref || github.sha }}-${{ github.event_name }}
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref != 'refs/heads/main' && github.ref || github.sha }}-${{ github.event_name }}-${{ inputs.target }}
   cancel-in-progress: true
 
 jobs:

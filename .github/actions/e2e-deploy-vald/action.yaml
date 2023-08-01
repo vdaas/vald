@@ -53,13 +53,14 @@ outputs:
 runs:
   using: "composite"
   steps:
-    - name: deploy Minio
+    - name: Deploy Minio
       id: deploy_minio
       shell: bash
       if: ${{ inputs.require_minio == 'true' }}
       run: |
         make K8S_SLEEP_DURATION_FOR_WAIT_COMMAND=10 k8s/external/minio/deploy
-    - name: deploy vald from remote charts
+
+    - name: Deploy vald from remote charts
       shell: bash
       id: deploy_vald_remote
       if: ${{ inputs.use_local_charts == 'false' }}
@@ -83,7 +84,8 @@ runs:
         HELM_EXTRA_OPTIONS: ${{ inputs.helm_extra_options }}
         WAIT_FOR_SELECTOR: ${{ inputs.wait_for_selector }}
         WAIT_FOR_TIMEOUT: ${{ inputs.wait_for_timeout }}
-    - name: deploy vald from local charts
+
+    - name: Deploy vald from local charts
       shell: bash
       id: deploy_vald_local
       if: ${{ inputs.use_local_charts == 'true' }}
@@ -103,7 +105,8 @@ runs:
         HELM_EXTRA_OPTIONS: ${{ inputs.helm_extra_options }}
         WAIT_FOR_SELECTOR: ${{ inputs.wait_for_selector }}
         WAIT_FOR_TIMEOUT: ${{ inputs.wait_for_timeout }}
-    - name: get real pod name
+
+    - name: Get real pod name
       shell: bash
       id: get_real_pod_name
       env:
