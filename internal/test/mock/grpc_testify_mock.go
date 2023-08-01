@@ -26,29 +26,29 @@ type ServerStreamTestifyMock struct {
 	mock.Mock
 }
 
-func (sssm *ServerStreamTestifyMock) SendMsg(msg interface{}) error {
+func (*ServerStreamTestifyMock) SendMsg(_ interface{}) error {
 	return nil
 }
 
-func (sssm *ServerStreamTestifyMock) SetHeader(metadata.MD) error {
+func (*ServerStreamTestifyMock) SetHeader(metadata.MD) error {
 	return nil
 }
 
-func (sssm *ServerStreamTestifyMock) SendHeader(metadata.MD) error {
+func (*ServerStreamTestifyMock) SendHeader(metadata.MD) error {
 	return nil
 }
 
-func (sssm *ServerStreamTestifyMock) SetTrailer(metadata.MD) {
+func (*ServerStreamTestifyMock) SetTrailer(metadata.MD) {
 }
 
-func (sssm *ServerStreamTestifyMock) Context() context.Context {
+func (*ServerStreamTestifyMock) Context() context.Context {
 	return context.Background()
 }
 
-func (sssm *ServerStreamTestifyMock) SendMsgWithContext(ctx context.Context, msg interface{}) error {
+func (*ServerStreamTestifyMock) SendMsgWithContext(_ context.Context, _ interface{}) error {
 	return nil
 }
 
-func (sssm *ServerStreamTestifyMock) RecvMsg(msg interface{}) error {
+func (*ServerStreamTestifyMock) RecvMsg(_ interface{}) error {
 	return nil
 }

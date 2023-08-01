@@ -42,13 +42,10 @@ type (
 	ServerStream = grpc.ServerStream
 )
 
-// BidirectionalStream[Q any, R any] represents gRPC bidirectional stream server handler.
-// It receives a context, a server stream, a concurrency integer, and a function that takes a context and a pointer to Q and returns a pointer to R and an error.
-// It returns an error.
+// BidirectionalStream represents gRPC bidirectional stream server handler.
 // It receives messages from the stream, calls the function with the received message, and sends the returned message to the stream.
 // It limits the number of concurrent calls to the function with the concurrency integer.
 // It records errors and returns them as a single error.
-// It uses the context to control the lifecycle of the stream.
 func BidirectionalStream[Q any, R any](ctx context.Context, stream ServerStream,
 	concurrency int,
 	f func(context.Context, *Q) (*R, error),
