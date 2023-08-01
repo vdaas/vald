@@ -17,6 +17,7 @@ import (
 	"context"
 
 	"github.com/stretchr/testify/mock"
+	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"google.golang.org/grpc/metadata"
 )
 
@@ -51,4 +52,14 @@ func (*ServerStreamTestifyMock) SendMsgWithContext(_ context.Context, _ interfac
 
 func (*ServerStreamTestifyMock) RecvMsg(_ interface{}) error {
 	return nil
+}
+
+// ListObjectStreamMock is a testify mock struct for ListObjectStream based on ServerStreamTestifyMock
+type ListObjectStreamMock struct {
+	ServerStreamTestifyMock
+}
+
+func (losm *ListObjectStreamMock) Send(res *payload.Object_List_Response) error {
+	args := losm.Called(res)
+	return args.Error(0)
 }

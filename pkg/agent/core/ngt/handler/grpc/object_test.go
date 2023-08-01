@@ -1188,15 +1188,6 @@ func Test_server_GetObject(t *testing.T) {
 	}
 }
 
-type ListObjectStreamMock struct {
-	mock.ServerStreamTestifyMock
-}
-
-func (sssm *ListObjectStreamMock) Send(res *payload.Object_List_Response) error {
-	args := sssm.Called(res)
-	return args.Error(0)
-}
-
 func Test_server_StreamGetObject(t *testing.T) {
 	t.Parallel()
 
@@ -1258,7 +1249,7 @@ func Test_server_StreamGetObject(t *testing.T) {
 				require.NoError(t, err)
 
 				// Set mock and expectations
-				stream := ListObjectStreamMock{}
+				stream := mock.ListObjectStreamMock{}
 				stream.On("Send", tmock.Anything).Return(nil)
 
 				// Call the method under test
@@ -1302,7 +1293,7 @@ func Test_server_StreamGetObject(t *testing.T) {
 				require.NoError(t, err)
 
 				// Set mock and expectations
-				stream := ListObjectStreamMock{}
+				stream := mock.ListObjectStreamMock{}
 				stream.On("Send", tmock.Anything).Return(status.New(codes.Unknown, "foo").Err()).Once()
 				stream.On("Send", tmock.Anything).Return(status.New(codes.Aborted, "bar").Err())
 
@@ -1324,7 +1315,7 @@ func Test_server_StreamGetObject(t *testing.T) {
 				_, s := setup(t)
 
 				// Set mock and expectations
-				stream := ListObjectStreamMock{}
+				stream := mock.ListObjectStreamMock{}
 				stream.On("Send", tmock.Anything).Return(nil)
 
 				// Call the method under test
