@@ -18,11 +18,6 @@ on:
   schedule:
     - cron: "0 1 * * *"
 
-  # TODO: Delete it later.
-  push:
-    branches:
-      - "refactor/ci/update-action"
-
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref != 'refs/heads/main' && github.ref || github.sha }}-${{ github.event_name }}
   cancel-in-progress: true
