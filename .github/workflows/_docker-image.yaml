@@ -76,10 +76,6 @@ jobs:
           platforms: ${{ inputs.platforms }}
           builder: ${{ steps.buildx.outputs.name }}
 
-      - name: Initialize CodeQL
-        if: startsWith( github.ref, 'refs/tags/')
-        uses: github/codeql-action/init@v2
-
       - name: Scan the Docker image
         if: startsWith( github.ref, 'refs/tags/')
         uses: ./.github/actions/scan-docker-image
