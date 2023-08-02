@@ -106,7 +106,6 @@ func BidirectionalStream[Q any, R any](ctx context.Context, stream ServerStream,
 					log.Errorf("failed to receive stream message: %v", err)
 				}
 				return finalize()
-
 			}
 			if data != nil {
 				eg.Go(safety.RecoverWithoutPanicFunc(func() (err error) {

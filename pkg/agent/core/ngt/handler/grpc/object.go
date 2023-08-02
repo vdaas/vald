@@ -216,35 +216,28 @@ func (s *server) StreamListObject(_ *payload.Object_List_Request, stream vald.Ob
 	)
 	s.ngt.ListObjectFunc(ctx, func(uuid string, _ uint32, _ int64) bool {
 		vec, ts, err := s.ngt.GetObject(uuid)
+		var res *payload.Object_List_Response
 		if err != nil {
 			st := status.CreateWithNotFound(fmt.Sprintf("failed to get object with uuid: %s", uuid), err)
-
-			mu.Lock()
-			err := stream.Send(&payload.Object_List_Response{
+			res = &payload.Object_List_Response{
 				Payload: &payload.Object_List_Response_Status{
 					Status: st.Proto(),
 				},
-			})
-			mu.Unlock()
-
-			if err != nil {
-				emu.Lock()
-				errs = append(errs, err)
-				emu.Unlock()
 			}
-			return true
+		} else {
+			res = &payload.Object_List_Response{
+				Payload: &payload.Object_List_Response_Vector{
+					Vector: &payload.Object_Vector{
+						Id:        uuid,
+						Vector:    vec,
+						Timestamp: ts,
+					},
+				},
+			}
 		}
 
 		mu.Lock()
-		err = stream.Send(&payload.Object_List_Response{
-			Payload: &payload.Object_List_Response_Vector{
-				Vector: &payload.Object_Vector{
-					Id:        uuid,
-					Vector:    vec,
-					Timestamp: ts,
-				},
-			},
-		})
+		err = stream.Send(res)
 		mu.Unlock()
 
 		if err != nil {
@@ -252,6 +245,8 @@ func (s *server) StreamListObject(_ *payload.Object_List_Request, stream vald.Ob
 			errs = append(errs, err)
 			emu.Unlock()
 		}
+
+		// always return true to continue streaming and let the context cancel the Range when stream closes.
 		return true
 	})
 
