@@ -77,7 +77,7 @@ jobs:
           builder: ${{ steps.buildx.outputs.name }}
 
       - name: Scan the Docker image
-        if: startsWith( github.ref, 'refs/tags/')
+        # if: startsWith( github.ref, 'refs/tags/')
         uses: ./.github/actions/scan-docker-image
         with:
           image_ref: "${{ steps.build_and_publish.outputs.IMAGE_NAME }}:${{ steps.build_and_publish.outputs.PRIMARY_TAG }}"
