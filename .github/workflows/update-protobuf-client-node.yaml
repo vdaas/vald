@@ -1,0 +1,16 @@
+name: "Update protobuf: client-node"
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "*.*.*"
+      - "v*.*.*"
+      - "*.*.*-*"
+      - "v*.*.*-*"
+
+jobs:
+  client-node:
+    uses: ./.github/workflows/_protobuf-update-dispatch.yaml
+    with:
+      repo: vdaas/vald-client-node
+    secrets: inherit

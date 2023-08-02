@@ -4,7 +4,7 @@ on:
     inputs:
       target:
         type: string
-        description: 'Build target. e.g. `agent-ngt`'
+        description: "Build target. e.g. `agent-ngt`"
         required: true
       platforms:
         type: string
