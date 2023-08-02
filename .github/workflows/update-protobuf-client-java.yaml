@@ -1,0 +1,16 @@
+name: "Update protobuf: client-java"
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "*.*.*"
+      - "v*.*.*"
+      - "*.*.*-*"
+      - "v*.*.*-*"
+
+jobs:
+  client-jave:
+    uses: ./.github/workflows/_protobuf-update-dispatch.yaml
+    with:
+      repo: vdaas/vald-client-java
+    secrets: inherit

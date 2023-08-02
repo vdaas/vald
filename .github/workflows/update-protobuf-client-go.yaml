@@ -1,0 +1,16 @@
+name: "Update protobuf: client-go"
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "*.*.*"
+      - "v*.*.*"
+      - "*.*.*-*"
+      - "v*.*.*-*"
+
+jobs:
+  client-go:
+    uses: ./.github/workflows/_protobuf-update-dispatch.yaml
+    with:
+      repo: vdaas/vald-client-go
+    secrets: inherit

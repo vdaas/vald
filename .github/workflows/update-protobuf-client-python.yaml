@@ -1,0 +1,16 @@
+name: "Update protobuf: client-python"
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "*.*.*"
+      - "v*.*.*"
+      - "*.*.*-*"
+      - "v*.*.*-*"
+
+jobs:
+  client-python:
+    uses: ./.github/workflows/_protobuf-update-dispatch.yaml
+    with:
+      repo: vdaas/vald-client-python
+    secrets: inherit
