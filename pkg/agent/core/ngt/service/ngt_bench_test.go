@@ -2,9 +2,11 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"runtime/trace"
 	"testing"
+	"time"
 
 	"github.com/kpango/fuid"
 	"github.com/vdaas/vald/internal/config"
@@ -153,7 +155,10 @@ func BenchmarkGetObjectWithUpdate(b *testing.B) {
 }
 
 func BenchmarkSeachWithCreateIndex(b *testing.B) {
-	// stdlog.Println("starting benchmark")
+	print("starting benchmark\n")
+	maxDur := int64(0)
+	var finalDur time.Duration
+
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -250,6 +255,8 @@ func BenchmarkSeachWithCreateIndex(b *testing.B) {
 
 		// Bench serch
 		for pb.Next() {
+			start := time.Now()
+
 			_, err := n.Search(
 				ctx,
 				train[12345], // use this random vector as query
@@ -263,8 +270,17 @@ func BenchmarkSeachWithCreateIndex(b *testing.B) {
 					// stdlog.Println(err)
 				}
 			}
+
+			dur := time.Since(start)
+			nano := dur.Nanoseconds()
+			if nano > maxDur {
+				maxDur = nano
+				finalDur = dur
+			}
 		}
 	})
 
 	b.StopTimer()
+
+	fmt.Println("max duration:", finalDur.String())
 }
