@@ -676,17 +676,13 @@ func (n *ngt) GetVector(id uint) (ret []float32, err error) {
 	ebuf := n.GetErrorBuffer()
 	switch n.objectType {
 	case Float:
-		n.mu.RLock()
 		results := C.ngt_get_object_as_float(n.ospace, C.ObjectID(id), ebuf)
-		n.mu.RUnlock()
 		if results == nil {
 			return nil, n.newGoError(ebuf)
 		}
 		ret = (*[algorithm.MaximumVectorDimensionSize]float32)(unsafe.Pointer(results))[:dimension:dimension]
 	case HalfFloat:
-		n.mu.RLock()
 		results := C.ngt_get_allocated_object_as_float(n.ospace, C.ObjectID(id), ebuf)
-		n.mu.RUnlock()
 		defer C.free(unsafe.Pointer(results))
 		if results == nil {
 			return nil, n.newGoError(ebuf)
@@ -696,9 +692,7 @@ func (n *ngt) GetVector(id uint) (ret []float32, err error) {
 			ret[i] = elem
 		}
 	case Uint8:
-		n.mu.RLock()
 		results := C.ngt_get_object_as_integer(n.ospace, C.ObjectID(id), ebuf)
-		n.mu.RUnlock()
 		if results == nil {
 			return nil, n.newGoError(ebuf)
 		}
