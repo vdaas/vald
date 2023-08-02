@@ -15,13 +15,7 @@
 #
 {{- $gateway := .Values.gateway.lb -}}
 {{- if and $gateway.enabled $gateway.hpa.enabled }}
-{{- if (.Capabilities.APIVersions.Has "autoscaling/v1") }}
 apiVersion: autoscaling/v1
-{{- else if (.Capabilities.APIVersions.Has "autoscaling/v2beta2") }}
-apiVersion: autoscaling/v2beta2
-{{- else }}
-apiVersion: autoscaling/v2beta1
-{{- end }}
 kind: HorizontalPodAutoscaler
 metadata:
   name: {{ $gateway.name }}
