@@ -36,6 +36,10 @@ on:
       - "hack/license/**"
       - "hack/tools/**"
 
+env:
+  GOPATH: ${{ github.workspace }}
+  PROJECT_ROOT_DIR: src/github.com/vdaas/vald
+
 jobs:
   dump-contexts-to-log:
     runs-on: ubuntu-latest
@@ -50,6 +54,8 @@ jobs:
       image: ghcr.io/vdaas/vald/vald-ci-container:nightly
     steps:
       - uses: actions/checkout@v3
+        with:
+          path: ${{ env.PROJECT_ROOT_DIR }}
 
       - name: Set Git config
         run: |
