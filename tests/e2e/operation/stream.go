@@ -1091,7 +1091,7 @@ func (c *client) GetObject(
 			}
 
 			if ts := resp.GetTimestamp(); ts <= 0 {
-				t.Error("timestamp is not set properly")
+				t.Error("timestamp is not set properly, ts: %s", ts)
 			}
 		}
 	}()
