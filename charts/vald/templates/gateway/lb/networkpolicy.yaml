@@ -19,12 +19,8 @@
 {{- $filter := .Values.gateway.filter -}}
 {{- $discoverer := .Values.discoverer -}}
 {{- if .Values.defaults.networkPolicy.enabled }}
-{{- if (.Capabilities.APIVersions.Has "networking.k8s.io/v1alpha1") }}
-apiVersion: networking.k8s.io/v1alpha1
-{{- else }}
-apiVersion: networking.k8s.io/v1
-{{- end }}
 kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
 metadata:
   name: lb-allow
 spec:
