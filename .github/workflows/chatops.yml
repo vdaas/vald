@@ -41,11 +41,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: install yq
+      - uses: ./.github/actions/setup-yq
         if: steps.check_comments_label.outputs.BOOL_TRIGGERED == 'true'
-        run: |
-          sudo curl -Lo /usr/local/bin/yq https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64
-          sudo chmod a+x /usr/local/bin/yq
 
       - name: check permissions
         if: steps.check_comments_label.outputs.BOOL_TRIGGERED == 'true'
@@ -100,11 +97,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: install yq
+      - uses: ./.github/actions/setup-yq
         if: steps.check_comments_gen_test.outputs.BOOL_TRIGGERED == 'true'
-        run: |
-          sudo curl -Lo /usr/local/bin/yq https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64
-          sudo chmod a+x /usr/local/bin/yq
 
       - name: check permissions
         if: steps.check_comments_gen_test.outputs.BOOL_TRIGGERED == 'true'
@@ -237,11 +231,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: install yq
+      - uses: ./.github/actions/setup-yq
         if: steps.check_comments_format.outputs.BOOL_TRIGGERED == 'true'
-        run: |
-          sudo curl -Lo /usr/local/bin/yq https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64
-          sudo chmod a+x /usr/local/bin/yq
 
       - name: check permissions
         if: steps.check_comments_format.outputs.BOOL_TRIGGERED == 'true'
@@ -394,11 +385,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: install yq
+      - uses: ./.github/actions/setup-yq
         if: steps.check_comments_approve.outputs.BOOL_TRIGGERED == 'true'
-        run: |
-          sudo curl -Lo /usr/local/bin/yq https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64
-          sudo chmod a+x /usr/local/bin/yq
 
       - name: check permissions
         if: steps.check_comments_approve.outputs.BOOL_TRIGGERED == 'true'
