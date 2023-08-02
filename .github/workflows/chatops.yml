@@ -18,9 +18,6 @@ on:
   issue_comment:
     types: [created]
 
-env:
-  YQ_VERSION: 3.2.1
-
 jobs:
   dump-contexts-to-log:
     runs-on: ubuntu-latest
