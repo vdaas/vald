@@ -25,6 +25,7 @@ on:
       - "v*.*.*-*"
     paths:
       - ".github/actions/docker-build/actions.yaml"
+      - ".github/workflows/_docker-image.yaml"
       - ".github/workflows/dockers-helm-operator-image.yml"
       - "dockers/operator/helm/Dockerfile"
       - "charts/vald/Chart.yaml"
@@ -37,6 +38,7 @@ on:
   pull_request:
     paths:
       - ".github/actions/docker-build/actions.yaml"
+      - ".github/workflows/_docker-image.yaml"
       - ".github/workflows/dockers-helm-operator-image.yml"
       - "dockers/operator/helm/Dockerfile"
       - "charts/vald/Chart.yaml"
@@ -49,6 +51,7 @@ on:
   pull_request_target:
     paths:
       - ".github/actions/docker-build/actions.yaml"
+      - ".github/workflows/_docker-image.yaml"
       - ".github/workflows/dockers-helm-operator-image.yml"
       - "dockers/operator/helm/Dockerfile"
       - "charts/vald/Chart.yaml"
