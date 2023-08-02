@@ -25,6 +25,7 @@ on:
       - "v*.*.*-*"
     paths:
       - ".github/actions/docker-build/actions.yaml"
+      - ".github/workflows/_docker-image.yaml"
       - ".github/workflows/dockers-discoverer-k8s-image.yml"
       - "go.mod"
       - "go.sum"
@@ -39,6 +40,7 @@ on:
   pull_request:
     paths:
       - ".github/actions/docker-build/actions.yaml"
+      - ".github/workflows/_docker-image.yaml"
       - ".github/workflows/dockers-discoverer-k8s-image.yml"
       - "go.mod"
       - "go.sum"
@@ -53,6 +55,7 @@ on:
   pull_request_target:
     paths:
       - ".github/actions/docker-build/actions.yaml"
+      - ".github/workflows/_docker-image.yaml"
       - ".github/workflows/dockers-discoverer-k8s-image.yml"
       - "go.mod"
       - "go.sum"
