@@ -31,25 +31,25 @@ jobs:
       - uses: ./.github/actions/dump-context
 
   client-go:
-    uses: ./.github/workflows/_protobuf-update-dispatch.yaml
+    uses: ./.github/workflows/_update-protobuf.yaml
     with:
       repo: vald-client-go
     secrets: inherit
 
   client-jave:
-    uses: ./.github/workflows/_protobuf-update-dispatch.yaml
+    uses: ./.github/workflows/_update-protobuf.yaml
     with:
       repo: vald-client-java
     secrets: inherit
 
   client-node:
-    uses: ./.github/workflows/_protobuf-update-dispatch.yaml
+    uses: ./.github/workflows/_update-protobuf.yaml
     with:
       repo: vald-client-node
     secrets: inherit
 
   client-python:
-    uses: ./.github/workflows/_protobuf-update-dispatch.yaml
+    uses: ./.github/workflows/_update-protobuf.yaml
     with:
       repo: vald-client-python
     secrets: inherit
