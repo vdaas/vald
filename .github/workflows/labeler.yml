@@ -37,8 +37,10 @@ jobs:
         with:
           ref: ${{ github.head_ref }}
           fetch-depth: 0
-          path: ${{ github.workspace }}
-          set-safe-directory: true
+
+      - name: Set Git config
+        run: |
+          git config --global --add safe.directory ${GITHUB_WORKSPACE}
 
       - name: Add labels
         run: |
