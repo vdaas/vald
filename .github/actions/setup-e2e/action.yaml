@@ -38,27 +38,21 @@ runs:
     - name: Setup Helm environment
       uses: ./.github/actions/setup-helm
 
-    - name: Get PR number
-      # TODO: add if statement
-      id: get_pr_number
-      shell: bash
-      run: |
-        pr_num=`cat $GITHUB_EVENT_PATH | jq -r ".number"`
-        echo "PR_NUM=${pr_num}" >> $GITHUB_OUTPUT
-
     - name: Wait for target Docker images
       if: startsWith( github.ref, 'refs/tags/')
       uses: ./.github/actions/wait-for-docker-image
       with:
         images: ${{ inputs.target_images }}
 
+    - name: Determine Docker image tag
+      id: determine_tag_name
+      uses: ./.github/actions/determine-docker-image-tag
+
     - name: Specify container versions
       id: specify_container_versions
       uses: ./.github/actions/detect-docker-image-tags
       with:
-        # TODO: Change it later
-        # tag_name: pr-${{ steps.get_pr_number.outputs.PR_NUM }}
-        tag_name: nightly
+        tag_name: ${{ steps.determine_tag_name.outputs.PRIMARY_TAG }}
         images: ${{ inputs.target_images }}
 
     - uses: ./.github/actions/setup-k3d
