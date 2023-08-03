@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-name: "reviewdog - Markdown"
+name: "Reviewdog - Markdown"
 on:
   pull_request:
     paths-ignore:

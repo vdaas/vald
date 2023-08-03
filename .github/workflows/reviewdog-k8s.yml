@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-name: "reviewdog - K8s manifests"
+name: "Reviewdog - K8s manifests"
 on:
   pull_request:
     paths:
@@ -35,11 +35,12 @@ jobs:
       image: mumoshu/conflint:latest
     steps:
       - uses: actions/checkout@v3
-        with:
-          path: ${{ github.workspace }}
-          set-safe-directory: true
 
-      - name: kubeval-conflint
+      - name: Set Git config
+        run: |
+          git config --global --add safe.directory ${GITHUB_WORKSPACE}
+
+      - name: Run kubeval-conflint
         run: |
           set -vx
           conflint run -c .github/conflint.yaml -efm "%f:%l:%c: %m" || true
@@ -56,11 +57,12 @@ jobs:
       image: ghcr.io/vdaas/vald/vald-ci-container:nightly
     steps:
       - uses: actions/checkout@v3
-        with:
-          path: ${{ github.workspace }}
-          set-safe-directory: true
 
-      - name: kubelinter for k8s directory
+      - name: Set Git config
+        run: |
+          git config --global --add safe.directory ${GITHUB_WORKSPACE}
+
+      - name: Run kubelinter for k8s directory
         run: |
           kube-linter lint \
             --config .github/kubelinter.yaml \
@@ -76,11 +78,12 @@ jobs:
       image: ghcr.io/vdaas/vald/vald-ci-container:nightly
     steps:
       - uses: actions/checkout@v3
-        with:
-          path: ${{ github.workspace }}
-          set-safe-directory: true
 
-      - name: kubelinter for generated manifests
+      - name: Set Git config
+        run: |
+          git config --global --add safe.directory ${GITHUB_WORKSPACE}
+
+      - name: Run kubelinter for generated manifests
         run: |
           kube-linter lint \
             --config .github/kubelinter.yaml \
