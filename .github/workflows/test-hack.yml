@@ -52,6 +52,9 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/vdaas/vald/vald-ci-container:nightly
+    defaults:
+      run:
+        working-directory: ${{ env.GOPATH }}/${{ env.PROJECT_ROOT_DIR }}
     steps:
       - uses: actions/checkout@v3
         with:
