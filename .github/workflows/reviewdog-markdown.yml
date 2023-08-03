@@ -32,11 +32,11 @@ jobs:
     name: runner / LanguageTool / apis & charts
     runs-on: ubuntu-latest
     steps:
-      - name: Check out code.
-        uses: actions/checkout@v3
-        with:
-          path: ${{ github.workspace }}
-          set-safe-directory: true
+      - uses: actions/checkout@v3
+
+      - name: Set Git config
+        run: |
+          git config --global --add safe.directory ${GITHUB_WORKSPACE}
 
       - name: LanguageTool
         uses: reviewdog/action-languagetool@v1
@@ -54,9 +54,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-        with:
-          path: ${{ github.workspace }}
-          set-safe-directory: true
+
+      - name: Set Git config
+        run: |
+          git config --global --add safe.directory ${GITHUB_WORKSPACE}
 
       - name: LanguageTool
         uses: reviewdog/action-languagetool@v1
@@ -74,9 +75,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-        with:
-          path: ${{ github.workspace }}
-          set-safe-directory: true
+
+      - name: Set Git config
+        run: |
+          git config --global --add safe.directory ${GITHUB_WORKSPACE}
 
       - name: Setup node/npm
         uses: actions/setup-node@v3

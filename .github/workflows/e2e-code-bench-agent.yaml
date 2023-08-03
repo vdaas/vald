@@ -56,9 +56,10 @@ jobs:
       image: ghcr.io/vdaas/vald/vald-ci-container:nightly
     steps:
       - uses: actions/checkout@v3
-        with:
-          path: ${{ github.workspace }}
-          set-safe-directory: true
+
+      - name: Set Git config
+        run: |
+          git config --global --add safe.directory ${GITHUB_WORKSPACE}
 
       - uses: ./.github/actions/setup-go
 
@@ -89,9 +90,10 @@ jobs:
       image: ghcr.io/vdaas/vald/vald-ci-container:nightly
     steps:
       - uses: actions/checkout@v3
-        with:
-          path: ${{ github.workspace }}
-          set-safe-directory: true
+
+      - name: Set Git config
+        run: |
+          git config --global --add safe.directory ${GITHUB_WORKSPACE}
 
       - uses: ./.github/actions/setup-go
 
