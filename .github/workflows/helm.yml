@@ -35,12 +35,11 @@ jobs:
     container:
       image: ghcr.io/vdaas/vald/vald-ci-container:nightly
     steps:
-      - name: Check out code.
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
-      - name: set git config
+      - name: Set Git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
 
@@ -50,11 +49,10 @@ jobs:
           git_user_signingkey: true
           git_commit_gpgsign: true
 
-      - name: Helm version
-        run: |
-          helm version
+      - name: Setup Helm environment
+        uses: ./.github/actions/setup-helm
 
-      - name: switch new branch
+      - name: Switch new branch
         id: switch_to_new_branch
         run: |
           TIMESTAMP=$(date +%Y%m%d_%H%M%S_%3N)
@@ -101,13 +99,12 @@ jobs:
     container:
       image: ghcr.io/vdaas/vald/vald-ci-container:nightly
     steps:
-      - name: Check out code.
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
           token: ${{ secrets.DISPATCH_TOKEN }}
 
-      - name: set git config
+      - name: Set Git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
 
@@ -117,9 +114,8 @@ jobs:
           git_user_signingkey: true
           git_commit_gpgsign: true
 
-      - name: Helm version
-        run: |
-          helm version
+      - name: Setup Helm environment
+        uses: ./.github/actions/setup-helm
 
       - name: Packaging
         run: |
@@ -149,66 +145,28 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: set git config
+      - name: Set Git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
 
-      - name: Wait for Docker images
-        id: wait_for_docker_images
-        uses: ./.github/actions/wait-for-docker-image
-
-      - name: Specify container versions
-        id: specify_container_versions
-        uses: ./.github/actions/detect-docker-image-tags
+      - name: Setup E2E environment
+        id: setup_e2e
+        uses: ./.github/actions/setup-e2e
         with:
-          tag_name: ${{ github.ref_name }}
+          require_libhdf5: "true"
 
-      - name: Fetch Helm version
-        run: |
-          HELM_VERSION=`make version/helm`
-          echo "helm=${HELM_VERSION}" >> $GITHUB_OUTPUT
-        id: version
-
-      - uses: ./.github/actions/setup-k3d
-        with:
-          agents: 3
-
-      - name: check k3d
-        run: |
-          kubectl cluster-info
-
-      - uses: azure/setup-helm@v3
-        with:
-          version: ${{ steps.version.outputs.helm }}
-
-      - name: Helm version
-        run: |
-          helm version
-
-      - name: deploy Vald
+      - name: Deploy Vald
         id: deploy_vald
         uses: ./.github/actions/e2e-deploy-vald
         with:
-          require_libhdf5: "true"
-          helm_extra_options: ${{ steps.specify_container_versions.outputs.HELM_EXTRA_OPTIONS }}
+          helm_extra_options: ${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }}
           values: .github/helm/values/values-lb.yaml
           wait_for_selector: app=vald-lb-gateway
           use_local_charts: false
 
-      - name: Fetch golang version
-        run: |
-          GO_VERSION=`make version/go`
-          echo "version=${GO_VERSION}" >> $GITHUB_OUTPUT
-        id: golang_version
-
-      - uses: actions/setup-go@v3
-        with:
-          go-version: ${{ steps.golang_version.outputs.version }}
-
       - name: Run E2E CRUD
         run: |
           make hack/benchmark/assets/dataset/${DATASET}
-          go version
           make E2E_BIND_PORT=8081 \
             E2E_DATASET_NAME=${DATASET} \
             E2E_INSERT_COUNT=60000 \
