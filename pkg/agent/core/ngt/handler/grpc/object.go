@@ -258,9 +258,9 @@ func (s *server) StreamListObject(_ *payload.Object_List_Request, stream vald.Ob
 
 	if len(errs) != 0 {
 		// Register all the gRPC codes to the span. Doing this because ParseError cannot parse joined error.
-		for _, e := range errs {
-			st, msg, err := status.ParseError(e, codes.Internal, "failed to parse StreamListObject final gRPC error response")
-			if span != nil {
+		if span != nil {
+			for _, e := range errs {
+				st, msg, err := status.ParseError(e, codes.Internal, "failed to parse StreamListObject final gRPC error response")
 				span.RecordError(err)
 				span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
 				span.SetStatus(trace.StatusError, msg)
