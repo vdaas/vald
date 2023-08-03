@@ -32,13 +32,14 @@ jobs:
     container:
       image: ghcr.io/vdaas/vald/vald-ci-container:nightly
     steps:
-      - name: Check out code.
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
           token: ${{ secrets.DISPATCH_TOKEN }}
-          path: ${{ github.workspace }}
-          set-safe-directory: true
+
+      - name: Set Git config
+        run: |
+          git config --global --add safe.directory ${GITHUB_WORKSPACE}
 
       - uses: crazy-max/ghaction-import-gpg@v4
         with:
