@@ -1092,6 +1092,15 @@ func (c *client) GetObject(
 
 			if ts := resp.GetTimestamp(); ts <= 0 {
 				t.Error("timestamp is not set properly")
+				t.Log("printing debug info...")
+				t.Logf("vector payload: %v", res)
+				t.Logf("id: %v", resp.GetId())
+				t.Logf("vector: %v", resp.GetVector())
+				t.Logf("timestamp: %v", resp.GetTimestamp())
+				t.Logf("status payload: %v", res.GetStatus())
+				t.Logf("code: %v", res.GetStatus().GetCode())
+				t.Logf("message: %v", res.GetStatus().GetMessage())
+				t.Logf("details: %v", res.GetStatus().GetDetails())
 			}
 		}
 	}()
