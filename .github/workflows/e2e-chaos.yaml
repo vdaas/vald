@@ -63,21 +63,21 @@ jobs:
         with:
           helm_extra_options: "--set podChaos.failure.enabled=true"
 
-      # - name: Run Insert and Search operations
-      #   run: |
-      #     make hack/benchmark/assets/dataset/${DATASET}
-      #     make E2E_BIND_PORT=8081 \
-      #       E2E_DATASET_NAME=${DATASET} \
-      #       E2E_TIMEOUT=15m \
-      #       E2E_INSERT_COUNT=10000 \
-      #       E2E_SEARCH_COUNT=10000 \
-      #       E2E_WAIT_FOR_CREATE_INDEX_DURATION=5m \
-      #       E2E_TARGET_POD_NAME=${POD_NAME} \
-      #       E2E_TARGET_NAMESPACE=default \
-      #       e2e/insert/search
-      #   env:
-      #     DATASET: fashion-mnist-784-euclidean.hdf5
-      #     POD_NAME: ${{ steps.deploy_vald.outputs.POD_NAME }}
+      - name: Run Insert and Search operations
+        run: |
+          make hack/benchmark/assets/dataset/${DATASET}
+          make E2E_BIND_PORT=8081 \
+            E2E_DATASET_NAME=${DATASET} \
+            E2E_TIMEOUT=15m \
+            E2E_INSERT_COUNT=10000 \
+            E2E_SEARCH_COUNT=10000 \
+            E2E_WAIT_FOR_CREATE_INDEX_DURATION=5m \
+            E2E_TARGET_POD_NAME=${POD_NAME} \
+            E2E_TARGET_NAMESPACE=default \
+            e2e/insert/search
+        env:
+          DATASET: fashion-mnist-784-euclidean.hdf5
+          POD_NAME: ${{ steps.deploy_vald.outputs.POD_NAME }}
 
   random-pod-failure:
     name: "E2E chaos test (random Pod failure: to test redundancy)"
@@ -111,21 +111,21 @@ jobs:
         with:
           helm_extra_options: "--set podChaos.kill.enabled=true"
 
-      # - name: Run Insert and Search operations
-      #   run: |
-      #     make hack/benchmark/assets/dataset/${DATASET}
-      #     make E2E_BIND_PORT=8081 \
-      #       E2E_DATASET_NAME=${DATASET} \
-      #       E2E_TIMEOUT=15m \
-      #       E2E_INSERT_COUNT=10000 \
-      #       E2E_SEARCH_COUNT=10000 \
-      #       E2E_WAIT_FOR_CREATE_INDEX_DURATION=5m \
-      #       E2E_TARGET_POD_NAME=${POD_NAME} \
-      #       E2E_TARGET_NAMESPACE=default \
-      #       e2e/insert/search
-      #   env:
-      #     DATASET: fashion-mnist-784-euclidean.hdf5
-      #     POD_NAME: ${{ steps.deploy_vald.outputs.POD_NAME }}
+      - name: Run Insert and Search operations
+        run: |
+          make hack/benchmark/assets/dataset/${DATASET}
+          make E2E_BIND_PORT=8081 \
+            E2E_DATASET_NAME=${DATASET} \
+            E2E_TIMEOUT=15m \
+            E2E_INSERT_COUNT=10000 \
+            E2E_SEARCH_COUNT=10000 \
+            E2E_WAIT_FOR_CREATE_INDEX_DURATION=5m \
+            E2E_TARGET_POD_NAME=${POD_NAME} \
+            E2E_TARGET_NAMESPACE=default \
+            e2e/insert/search
+        env:
+          DATASET: fashion-mnist-784-euclidean.hdf5
+          POD_NAME: ${{ steps.deploy_vald.outputs.POD_NAME }}
 
   agent-network-partition:
     name: "E2E chaos test (agent network partition: to test retries)"
@@ -158,21 +158,21 @@ jobs:
         with:
           helm_extra_options: "--set networkChaos.partition.enabled=true"
 
-      # - name: Run Insert and Search operations
-      #   run: |
-      #     make hack/benchmark/assets/dataset/${DATASET}
-      #     make E2E_BIND_PORT=8081 \
-      #       E2E_DATASET_NAME=${DATASET} \
-      #       E2E_TIMEOUT=15m \
-      #       E2E_INSERT_COUNT=10000 \
-      #       E2E_SEARCH_COUNT=10000 \
-      #       E2E_WAIT_FOR_CREATE_INDEX_DURATION=2m \
-      #       E2E_TARGET_POD_NAME=${POD_NAME} \
-      #       E2E_TARGET_NAMESPACE=default \
-      #       e2e/insert/search
-      #   env:
-      #     DATASET: fashion-mnist-784-euclidean.hdf5
-      #     POD_NAME: ${{ steps.deploy_vald.outputs.POD_NAME }}
+      - name: Run Insert and Search operations
+        run: |
+          make hack/benchmark/assets/dataset/${DATASET}
+          make E2E_BIND_PORT=8081 \
+            E2E_DATASET_NAME=${DATASET} \
+            E2E_TIMEOUT=15m \
+            E2E_INSERT_COUNT=10000 \
+            E2E_SEARCH_COUNT=10000 \
+            E2E_WAIT_FOR_CREATE_INDEX_DURATION=2m \
+            E2E_TARGET_POD_NAME=${POD_NAME} \
+            E2E_TARGET_NAMESPACE=default \
+            e2e/insert/search
+        env:
+          DATASET: fashion-mnist-784-euclidean.hdf5
+          POD_NAME: ${{ steps.deploy_vald.outputs.POD_NAME }}
 
   clusterwide-network-bandwidth:
     name: "E2E chaos test (network bandwidth: to test it works properly under bandwidth limitation)"
@@ -206,35 +206,35 @@ jobs:
         with:
           helm_extra_options: "--set networkChaos.bandwidth.enabled=true"
 
- #      - name: Run Insert operations
- #        run: |
- #          make hack/benchmark/assets/dataset/${DATASET}
- #          make E2E_BIND_PORT=8081 \
- #            E2E_DATASET_NAME=${DATASET} \
- #            E2E_TIMEOUT=15m \
- #            E2E_INSERT_COUNT=10000 \
- #            E2E_WAIT_FOR_CREATE_INDEX_DURATION=2m \
- #            E2E_TARGET_POD_NAME=${POD_NAME} \
- #            E2E_TARGET_NAMESPACE=default \
- #            e2e/insert
- #        env:
- #          DATASET: fashion-mnist-784-euclidean.hdf5
- #          POD_NAME: ${{ steps.deploy_vald.outputs.POD_NAME }}
- #
- #      - name: Run Search operations
- #        run: |
- #          make hack/benchmark/assets/dataset/${DATASET}
- #          make E2E_BIND_PORT=8081 \
- #            E2E_DATASET_NAME=${DATASET} \
- #            E2E_TIMEOUT=15m \
- #            E2E_SEARCH_COUNT=10000 \
- #            E2E_WAIT_FOR_CREATE_INDEX_DURATION=2m \
- #            E2E_TARGET_POD_NAME=${POD_NAME} \
- #            E2E_TARGET_NAMESPACE=default \
- #            e2e/search
- #        env:
- #          DATASET: fashion-mnist-784-euclidean.hdf5
- #          POD_NAME: ${{ steps.deploy_vald.outputs.POD_NAME }}
+      - name: Run Insert operations
+        run: |
+          make hack/benchmark/assets/dataset/${DATASET}
+          make E2E_BIND_PORT=8081 \
+            E2E_DATASET_NAME=${DATASET} \
+            E2E_TIMEOUT=15m \
+            E2E_INSERT_COUNT=10000 \
+            E2E_WAIT_FOR_CREATE_INDEX_DURATION=2m \
+            E2E_TARGET_POD_NAME=${POD_NAME} \
+            E2E_TARGET_NAMESPACE=default \
+            e2e/insert
+        env:
+          DATASET: fashion-mnist-784-euclidean.hdf5
+          POD_NAME: ${{ steps.deploy_vald.outputs.POD_NAME }}
+
+      - name: Run Search operations
+        run: |
+          make hack/benchmark/assets/dataset/${DATASET}
+          make E2E_BIND_PORT=8081 \
+            E2E_DATASET_NAME=${DATASET} \
+            E2E_TIMEOUT=15m \
+            E2E_SEARCH_COUNT=10000 \
+            E2E_WAIT_FOR_CREATE_INDEX_DURATION=2m \
+            E2E_TARGET_POD_NAME=${POD_NAME} \
+            E2E_TARGET_NAMESPACE=default \
+            e2e/search
+        env:
+          DATASET: fashion-mnist-784-euclidean.hdf5
+          POD_NAME: ${{ steps.deploy_vald.outputs.POD_NAME }}
 
   slack-notification:
     name: "Slack notification"
