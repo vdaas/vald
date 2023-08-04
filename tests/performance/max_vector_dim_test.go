@@ -16,6 +16,7 @@ package performance
 import (
 	"bufio"
 	"context"
+	"flag"
 	"os"
 	"strconv"
 	"sync"
@@ -81,6 +82,7 @@ func parse(raw string) (key string, value int) {
 }
 
 func TestMain(m *testing.M) {
+	flag.Parse()
 	if testing.Short() {
 		log.Info("skipping this pkg test when -short because it takes a long time")
 		os.Exit(0)
