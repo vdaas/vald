@@ -81,3 +81,10 @@ jobs:
         with:
           token: ${{secrets.CODECOV_TOKEN}}
           file: ./coverage.out
+      - name: Upload coverage report to deepsource
+        run: |
+          mv ./coverage.out ./cover.out
+          curl https://deepsource.io/cli | sh
+          ./bin/deepsource report --analyzer test-coverage --key go --value-file ./cover.out
+        env:
+          DEEPSOURCE_DSN: ${{ secrets.DEEPSOURCE_DSN }}
