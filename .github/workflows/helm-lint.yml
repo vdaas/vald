@@ -46,6 +46,7 @@ jobs:
       - name: Generate schema for charts/vald
         run: |
           make helm/schema/vald
+
       - name: Run lint for charts/vald
         run: |
           helm lint charts/vald
@@ -70,6 +71,7 @@ jobs:
       - name: Generate schema for charts/vald-helm-operator
         run: |
           make helm/schema/vald-helm-operator
+
       - name: Run lint for charts/vald-helm-operator
         run: |
           helm lint charts/vald-helm-operator
