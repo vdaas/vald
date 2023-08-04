@@ -67,6 +67,7 @@ type NGT interface {
 	DeleteMultiple(uuids ...string) (err error)
 	DeleteMultipleWithTime(uuids []string, t int64) (err error)
 	GetObject(uuid string) (vec []float32, timestamp int64, err error)
+	ListObjectFunc(ctx context.Context, f func(uuid string, oid uint32, timestamp int64) bool)
 	CreateIndex(ctx context.Context, poolSize uint32) (err error)
 	SaveIndex(ctx context.Context) (err error)
 	Exists(string) (uint32, bool)
@@ -1713,4 +1714,10 @@ func (n *ngt) Close(ctx context.Context) (err error) {
 
 func (n *ngt) BrokenIndexCount() uint64 {
 	return atomic.LoadUint64(&n.nobic)
+}
+
+// ListObjectFunc applies the input function on each index stored in the kvs.
+// Use this function for performing something on each object with caring about the memory usage.
+func (n *ngt) ListObjectFunc(ctx context.Context, f func(uuid string, oid uint32, ts int64) bool) {
+	n.kvs.Range(ctx, f)
 }
