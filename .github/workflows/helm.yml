@@ -16,8 +16,6 @@
 name: "Update Helm charts"
 on:
   push:
-    branches:
-      - "refactor/ci/update-action"
     tags:
       - "*.*.*"
       - "v*.*.*"
@@ -73,27 +71,27 @@ jobs:
           make format/yaml
           make license
 
-      # - name: Push to main
-      #   continue-on-error: true
-      #   run: |
-      #     git add k8s
-      #     git commit -S --signoff -m ":robot: Automatically update k8s manifests"
-      #
-      #     git remote set-url origin "https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
-      #     git push -u origin ${BRANCH_NAME}
-      #
-      #     curl --include --verbose --fail \
-      #     -H "Accept: application/json" \
-      #     -H "Content-Type:application/json" \
-      #     -H "Authorization: token ${GITHUB_TOKEN}" \
-      #     --request POST \
-      #     --data "{\"title\": \"Update K8s manifests\", \"head\": \"${BRANCH_NAME}\", \"base\": \"main\", \"body\": \"K8s manifests are updated.\", \"maintainer_can_modify\": true}" \
-      #     $API_URL
-      #   env:
-      #     GITHUB_USER: ${{ secrets.DISPATCH_USER }}
-      #     GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
-      #     API_URL: https://api.github.com/repos/vdaas/vald/pulls
-      #     BRANCH_NAME: ${{ steps.switch_to_new_branch.outputs.BRANCH_NAME }}
+      - name: Push to main
+        continue-on-error: true
+        run: |
+          git add k8s
+          git commit -S --signoff -m ":robot: Automatically update k8s manifests"
+
+          git remote set-url origin "https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git push -u origin ${BRANCH_NAME}
+
+          curl --include --verbose --fail \
+          -H "Accept: application/json" \
+          -H "Content-Type:application/json" \
+          -H "Authorization: token ${GITHUB_TOKEN}" \
+          --request POST \
+          --data "{\"title\": \"Update K8s manifests\", \"head\": \"${BRANCH_NAME}\", \"base\": \"main\", \"body\": \"K8s manifests are updated.\", \"maintainer_can_modify\": true}" \
+          $API_URL
+        env:
+          GITHUB_USER: ${{ secrets.DISPATCH_USER }}
+          GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
+          API_URL: https://api.github.com/repos/vdaas/vald/pulls
+          BRANCH_NAME: ${{ steps.switch_to_new_branch.outputs.BRANCH_NAME }}
 
   update-helm-chart:
     name: Update Helm chart
@@ -124,21 +122,21 @@ jobs:
           make helm/package/vald
           make helm/package/vald-helm-operator
 
-      # - name: Push to gh-pages
-      #   run: |
-      #     git checkout .
-      #     git checkout gh-pages
-      #     mv -f vald-*.tgz charts/
-      #     helm repo index --url https://vald.vdaas.org/charts charts/
-      #
-      #     git add charts
-      #     git commit -S --signoff -m ":robot: Automatically update Helm charts"
-      #
-      #     git remote set-url origin "https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
-      #     git push origin gh-pages
-      #   env:
-      #     GITHUB_USER: ${{ secrets.DISPATCH_USER }}
-      #     GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
+      - name: Push to gh-pages
+        run: |
+          git checkout .
+          git checkout gh-pages
+          mv -f vald-*.tgz charts/
+          helm repo index --url https://vald.vdaas.org/charts charts/
+
+          git add charts
+          git commit -S --signoff -m ":robot: Automatically update Helm charts"
+
+          git remote set-url origin "https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git push origin gh-pages
+        env:
+          GITHUB_USER: ${{ secrets.DISPATCH_USER }}
+          GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
 
   crud-on-remote-helm-chart:
     name: CRUD test on remote Helm chart
