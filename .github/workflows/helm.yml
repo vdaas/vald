@@ -15,9 +15,10 @@
 #
 name: "Update Helm charts"
 on:
+  pull_request:
+    paths:
+      - ".github/workflows/helm.yml"
   push:
-    branches:
-      - "refactor/ci/update-action"
     tags:
       - "*.*.*"
       - "v*.*.*"
