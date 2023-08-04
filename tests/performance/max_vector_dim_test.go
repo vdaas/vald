@@ -82,8 +82,7 @@ func parse(raw string) (key string, value int) {
 // Test for investigation of max dimension size for agent handler
 func TestMaxDimInsert(t *testing.T) {
 	if testing.Short() {
-		t.Skip()
-		return
+		t.SkipNow()
 	}
 
 	t.Helper()
@@ -189,8 +188,7 @@ func TestMaxDimInsert(t *testing.T) {
 // Test for investigation of max dimension size for agent handler with gRPC
 func TestMaxDimInsertGRPC(t *testing.T) {
 	if testing.Short() {
-		t.Skip()
-		return
+		t.SkipNow()
 	}
 
 	// MaxUint64 cannot be used due to overflows
