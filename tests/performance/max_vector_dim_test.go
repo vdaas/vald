@@ -28,6 +28,7 @@ import (
 	"github.com/vdaas/vald/internal/core/algorithm/ngt"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/test/data/vector"
@@ -79,12 +80,16 @@ func parse(raw string) (key string, value int) {
 	return keyValue[0], val
 }
 
+func TestMain(m *testing.M) {
+	if testing.Short() {
+		log.Info("skipping this pkg test when -short because it takes a long time")
+		os.Exit(0)
+	}
+	os.Exit(m.Run())
+}
+
 // Test for investigation of max dimension size for agent handler
 func TestMaxDimInsert(t *testing.T) {
-	if testing.Short() {
-		t.SkipNow()
-	}
-
 	t.Helper()
 	eg, ctx := errgroup.New(context.Background())
 	mu := sync.Mutex{}
@@ -187,10 +192,6 @@ func TestMaxDimInsert(t *testing.T) {
 
 // Test for investigation of max dimension size for agent handler with gRPC
 func TestMaxDimInsertGRPC(t *testing.T) {
-	if testing.Short() {
-		t.SkipNow()
-	}
-
 	// MaxUint64 cannot be used due to overflows
 	t.Helper()
 	eg, ctx := errgroup.New(context.Background())
