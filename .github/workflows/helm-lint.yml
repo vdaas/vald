@@ -91,15 +91,11 @@ jobs:
 
       - uses: ./.github/actions/setup-helm
 
+      - uses: ./.github/actions/setup-k3d
+
       - name: Generate ValdRelease schema
         run: |
           make helm/schema/crd/vald
-
-      - uses: ./.github/actions/setup-k3d
-
-      - name: check k3d
-        run: |
-          kubectl cluster-info
 
       - name: Test to apply
         run: |
