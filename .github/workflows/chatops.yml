@@ -150,17 +150,8 @@ jobs:
           git_user_signingkey: true
           git_commit_gpgsign: true
 
-      - name: Fetch golang version
+      - uses: ./.github/actions/setup-go
         if: steps.check_comments_gen_test.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
-        run: |
-          GO_VERSION=`make version/go`
-          echo "version=${GO_VERSION}" >> $GITHUB_OUTPUT
-        id: golang_version
-
-      - uses: actions/setup-go@v3
-        if: steps.check_comments_gen_test.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
-        with:
-          go-version: ${{ steps.golang_version.outputs.version }}
 
       - name: Generate tests and push
         id: gen_test
@@ -284,17 +275,8 @@ jobs:
           git_user_signingkey: true
           git_commit_gpgsign: true
 
-      - name: Fetch golang version
-        if: steps.check_comments_format.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
-        run: |
-          GO_VERSION=`make version/go`
-          echo "version=${GO_VERSION}" >> $GITHUB_OUTPUT
-        id: golang_version
-
-      - uses: actions/setup-go@v3
-        if: steps.check_comments_format.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
-        with:
-          go-version: ${{ steps.golang_version.outputs.version }}
+      - uses: ./.github/actions/setup-go
+        if: steps.check_comments_gen_test.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
 
       - name: update and push
         id: format_push

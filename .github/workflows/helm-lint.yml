@@ -39,19 +39,9 @@ jobs:
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
 
-      - name: Helm version
-        run: |
-          helm version
+      - uses: ./.github/actions/setup-go
 
-      - name: Fetch golang version
-        run: |
-          GO_VERSION=`make version/go`
-          echo "version=${GO_VERSION}" >> $GITHUB_OUTPUT
-        id: golang_version
-
-      - uses: actions/setup-go@v3
-        with:
-          go-version: ${{ steps.golang_version.outputs.version }}
+      - uses: ./.github/actions/setup-helm
 
       - name: Generate schema for charts/vald
         run: |
@@ -73,19 +63,9 @@ jobs:
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
 
-      - name: Helm version
-        run: |
-          helm version
+      - uses: ./.github/actions/setup-go
 
-      - name: Fetch golang version
-        run: |
-          GO_VERSION=`make version/go`
-          echo "version=${GO_VERSION}" >> $GITHUB_OUTPUT
-        id: golang_version
-
-      - uses: actions/setup-go@v3
-        with:
-          go-version: ${{ steps.golang_version.outputs.version }}
+      - uses: ./.github/actions/setup-helm
 
       - name: Generate schema for charts/vald-helm-operator
         run: |
@@ -105,23 +85,11 @@ jobs:
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
 
-      - name: Helm version
-        run: |
-          helm version
+      - uses: ./.github/actions/setup-yq
 
-      - name: install YQ
-        run: |
-          sudo make yq/install
+      - uses: ./.github/actions/setup-go
 
-      - name: Fetch golang version
-        run: |
-          GO_VERSION=`make version/go`
-          echo "version=${GO_VERSION}" >> $GITHUB_OUTPUT
-        id: golang_version
-
-      - uses: actions/setup-go@v3
-        with:
-          go-version: ${{ steps.golang_version.outputs.version }}
+      - uses: ./.github/actions/setup-helm
 
       - name: Generate ValdRelease schema
         run: |
