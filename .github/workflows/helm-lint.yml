@@ -15,6 +15,9 @@
 #
 name: "Run Helm lint"
 on:
+  push:
+    branches:
+      - "refactor/ci/update-action"
   pull_request:
     paths:
       - "charts/**"
