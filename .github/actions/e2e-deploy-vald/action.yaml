@@ -113,7 +113,7 @@ runs:
       id: deploy_vald_local
       if: ${{ inputs.use_local_charts == 'true' }}
       run: |
-        make k8s/vald/deploy HELM_VALUES=${VALUES} HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIONS}" VERSION=nightly
+        make k8s/vald/deploy HELM_VALUES=${VALUES} HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIONS}"
 
         sleep 3
 
