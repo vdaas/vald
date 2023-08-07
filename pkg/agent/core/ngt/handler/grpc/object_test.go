@@ -18,6 +18,8 @@ import (
 	"reflect"
 	"testing"
 
+	tmock "github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/conv"
@@ -29,6 +31,7 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/test/data/request"
 	"github.com/vdaas/vald/internal/test/data/vector"
+	"github.com/vdaas/vald/internal/test/mock"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/service"
 )
 
@@ -133,7 +136,7 @@ func Test_server_Exists(t *testing.T) {
 			- case 3.6: success exists with euc-jp ID from euc-jp index
 			- case 4.1: success exists with 😀
 		- Decision Table Testing
-		    - NONE
+			- NONE
 	*/
 	tests := []test{
 		{
@@ -1181,6 +1184,155 @@ func Test_server_GetObject(t *testing.T) {
 			if err := checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
+		})
+	}
+}
+
+func Test_server_StreamGetObject(t *testing.T) {
+	t.Parallel()
+
+	defaultConfig := config.NGT{
+		Dimension:           100,
+		DistanceType:        "l2",
+		ObjectType:          "float",
+		BulkInsertChunkSize: 10,
+		CreationEdgeSize:    20,
+		SearchEdgeSize:      10,
+		EnableProactiveGC:   false,
+		EnableCopyOnWrite:   false,
+		KVSDB: &config.KVSDB{
+			Concurrency: 10,
+		},
+		BrokenIndexHistoryLimit: 1,
+	}
+
+	setup := func(t *testing.T) (context.Context, Server) {
+		t.Helper()
+		ngt, err := service.New(&defaultConfig)
+		require.NoError(t, err)
+
+		ctx := context.Background()
+		eg, ectx := errgroup.New(ctx)
+		opts := []Option{
+			WithIP(net.LoadLocalIP()),
+			WithNGT(ngt),
+			WithErrGroup(eg),
+		}
+		s, err := New(opts...)
+		require.NoError(t, err)
+
+		return ectx, s
+	}
+
+	type test struct {
+		name     string
+		testfunc func(t *testing.T)
+	}
+
+	tests := []test{
+		{
+			name: "returns multiple objects",
+			testfunc: func(t *testing.T) {
+				ectx, s := setup(t)
+
+				// insert and create `num` index
+				num := 42
+				req, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, num, 100, &payload.Insert_Config{})
+				require.NoError(t, err)
+
+				_, err = s.MultiInsert(ectx, req)
+				require.NoError(t, err)
+
+				_, err = s.CreateIndex(ectx, &payload.Control_CreateIndexRequest{
+					PoolSize: uint32(len(req.Requests)),
+				})
+				require.NoError(t, err)
+
+				// Set mock and expectations
+				stream := mock.ListObjectStreamMock{}
+				stream.On("Send", tmock.Anything).Return(nil)
+
+				// Call the method under test
+				err = s.StreamListObject(&payload.Object_List_Request{}, &stream)
+				require.NoError(t, err)
+
+				// Check results
+				stream.AssertExpectations(t)
+				stream.AssertNumberOfCalls(t, "Send", num)
+				for _, req := range req.Requests {
+					stream.AssertCalled(t, "Send", tmock.MatchedBy(func(r *payload.Object_List_Response) bool {
+						vec := *r.GetVector()
+						wantVec := req.GetVector()
+						// Check every fields but timestamp
+						if vec.GetId() != wantVec.GetId() {
+							return false
+						}
+						if !reflect.DeepEqual(vec.GetVector(), wantVec.GetVector()) {
+							return false
+						}
+						return true
+					}))
+				}
+			},
+		},
+		{
+			name: "returns joined error when Send fails in the stream",
+			testfunc: func(t *testing.T) {
+				ectx, s := setup(t)
+
+				// insert and create some index
+				req, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, 2, 100, &payload.Insert_Config{})
+				require.NoError(t, err)
+
+				_, err = s.MultiInsert(ectx, req)
+				require.NoError(t, err)
+
+				_, err = s.CreateIndex(ectx, &payload.Control_CreateIndexRequest{
+					PoolSize: uint32(len(req.Requests)),
+				})
+				require.NoError(t, err)
+
+				// Set mock and expectations
+				stream := mock.ListObjectStreamMock{}
+				stream.On("Send", tmock.Anything).Return(status.New(codes.Unknown, "foo").Err()).Once()
+				stream.On("Send", tmock.Anything).Return(status.New(codes.Aborted, "bar").Err())
+
+				// Call the method under test
+				err = s.StreamListObject(&payload.Object_List_Request{}, &stream)
+
+				// Check the errros are joined and its a gRPC error
+				require.ErrorContains(t, err, "foo")
+				require.ErrorContains(t, err, "bar")
+				_, ok := status.FromError(err)
+				require.True(t, ok, "err should be a gRPC error")
+
+				stream.AssertExpectations(t)
+			},
+		},
+		{
+			name: "Send must not be called when there is no index",
+			testfunc: func(t *testing.T) {
+				_, s := setup(t)
+
+				// Set mock and expectations
+				stream := mock.ListObjectStreamMock{}
+				stream.On("Send", tmock.Anything).Return(nil)
+
+				// Call the method under test
+				err := s.StreamListObject(&payload.Object_List_Request{}, &stream)
+				require.NoError(t, err)
+
+				// Check results
+				stream.AssertNotCalled(t, "Send", tmock.Anything)
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			test.testfunc(tt)
 		})
 	}
 }
