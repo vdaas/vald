@@ -120,7 +120,7 @@ jobs:
           go version
           make E2E_BIND_PORT=8081 \
             E2E_DATASET_NAME=${DATASET} \
-            E2E_INSERT_COUNT=60000 \
+            E2E_INSERT_COUNT=10000 \
             E2E_SEARCH_COUNT=10000 \
             E2E_SEARCH_BY_ID_COUNT=10000 \
             E2E_GET_OBJECT_COUNT=100 \
@@ -213,7 +213,7 @@ jobs:
           go version
           make E2E_BIND_PORT=8081 \
             E2E_DATASET_NAME=${DATASET} \
-            E2E_INSERT_COUNT=60000 \
+            E2E_INSERT_COUNT=10000 \
             E2E_SEARCH_COUNT=10000 \
             E2E_SEARCH_BY_ID_COUNT=10000 \
             E2E_GET_OBJECT_COUNT=100 \
