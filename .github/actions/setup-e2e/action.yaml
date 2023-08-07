@@ -3,9 +3,9 @@ description: 'Setup the environment to run E2E test'
 
 inputs:
   require_libhdf5:
-    description: "If libhdf5 is required, set this to true."
+    description: "If libhdf5 is not required, set this to false"
     required: false
-    default: "false"
+    default: "true"
   target_images:
     description: "image names"
     required: false
