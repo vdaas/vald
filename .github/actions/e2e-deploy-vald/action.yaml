@@ -56,6 +56,11 @@ runs:
       run: |
         make K8S_SLEEP_DURATION_FOR_WAIT_COMMAND=10 k8s/external/minio/deploy
 
+    - name: Output values
+      shell: bash
+      run: |
+        cat ${{ inputs.values }}
+
     - name: Deploy vald from remote charts
       shell: bash
       id: deploy_vald_remote
