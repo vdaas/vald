@@ -17,10 +17,6 @@ name: "Setting E2E test environment"
 description: "A workflow to set E2E test environment"
 
 inputs:
-  require_libhdf5:
-    description: "If libhdf5 is required, set this to true."
-    required: false
-    default: "false"
   require_minio:
     description: "If Minio is required, set this to true."
     required: false
