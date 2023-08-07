@@ -48,8 +48,6 @@ jobs:
       - name: Setup E2E environment
         id: setup_e2e
         uses: ./.github/actions/setup-e2e
-        with:
-          require_libhdf5: "true"
 
       - name: Deploy Vald
         id: deploy_vald
