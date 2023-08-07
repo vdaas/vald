@@ -212,7 +212,6 @@ jobs:
       - name: Run E2E CRUD
         run: |
           make hack/benchmark/assets/dataset/${DATASET}
-          go version
           make E2E_BIND_PORT=8081 \
             E2E_DATASET_NAME=${DATASET} \
             E2E_INSERT_COUNT=100 \
