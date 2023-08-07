@@ -24,6 +24,7 @@ on:
 
 jobs:
   dump-contexts-to-log:
+    if: github.ref == 'refs/heads/main' || github.event.action == 'labeled' && github.event.label.name == 'actions/fossa'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -31,10 +32,10 @@ jobs:
 
   fossa-scan:
     name: "trigger FOSSA scan"
+    needs: [dump-contexts-to-log]
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/vdaas/vald/vald-ci-container:nightly
-    if: github.ref == 'refs/heads/main' || github.event.action == 'labeled' && github.event.label.name == 'actions/fossa'
     steps:
       - uses: actions/checkout@v3
 
