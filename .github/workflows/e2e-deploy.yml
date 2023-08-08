@@ -243,6 +243,8 @@ jobs:
       - name: Setup E2E environment
         id: setup_e2e
         uses: ./.github/actions/setup-e2e
+        with:
+          target_images: vdaas/vald-agent-ngt vdaas/vald-agent-sidecar
 
       - name: Deploy Vald
         id: deploy_vald
