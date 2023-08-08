@@ -92,6 +92,16 @@ jobs:
         id: setup_e2e
         uses: ./.github/actions/setup-e2e
 
+      - name: Create Helm options for vald-helm-operator
+        uses: ./.github/actions/setup-e2e
+        id: vald_helm_operator
+        with:
+          target_images: "vdaas/vald-helm-operator"
+          require_libhdf5: false
+          require_go: false
+          require_helm: false
+          require_k3d: false
+
       - name: Merge Docker image tag
         run: |
           IMAGE_TAGS=(${{ steps.setup_e2e.outputs.IMAGE_TAGS }})
@@ -110,6 +120,7 @@ jobs:
         id: deploy_vald
         uses: ./.github/actions/e2e-deploy-vald-helm-operator
         with:
+          helm_extra_options: ${{ steps.vald_helm_operator.outputs.HELM_EXTRA_OPTIONS }}
           valdrelease: ./.github/valdrelease/valdrelease.yaml
           wait_for_selector: app=vald-lb-gateway
 

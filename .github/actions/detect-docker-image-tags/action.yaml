@@ -49,6 +49,7 @@ runs:
           ["vdaas/vald-discoverer-k8s"]="discoverer.image.tag"
           ["vdaas/vald-lb-gateway"]="gateway.lb.image.tag"
           ["vdaas/vald-manager-index"]="manager.index.image.tag"
+          ["vdaas/vald-helm-operator"]="image.tag"
         )
 
         for image in ${IMAGES}
