@@ -116,7 +116,7 @@ jobs:
             yq e ".spec.$FIELD=$TAG" -i ./.github/valdrelease/valdrelease.yaml
           done
 
-      - name: Deploy Vald
+      - name: Deploy Vald using Vald Helm Operator
         id: deploy_vald
         uses: ./.github/actions/e2e-deploy-vald-helm-operator
         with:
