@@ -36,7 +36,7 @@ jobs:
       repo: vald-client-go
     secrets: inherit
 
-  client-jave:
+  client-java:
     uses: ./.github/workflows/_update-protobuf.yaml
     with:
       repo: vald-client-java
