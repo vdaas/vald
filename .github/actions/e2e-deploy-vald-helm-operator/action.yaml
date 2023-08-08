@@ -80,7 +80,7 @@ runs:
       id: deploy_vald_helm_operator_local
       if: ${{ inputs.use_local_charts == 'true' }}
       run: |
-        make k8s/vald-helm-operator/deploy VERSION=nightly HELM_EXTRA_OPTIONS=${HELM_EXTRA_OPTIONS}
+        make k8s/vald-helm-operator/deploy VERSION=nightly HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIONS}"
         sleep 3
       env:
         HELM_EXTRA_OPTIONS: ${{ inputs.helm_extra_options }}
