@@ -6,6 +6,18 @@ inputs:
     description: "If libhdf5 is not required, set this to false"
     required: false
     default: "true"
+  require_go:
+    description: "If go is not required, set this to false"
+    required: false
+    default: "true"
+  require_helm:
+    description: "If helm is not required, set this to false"
+    required: false
+    default: "true"
+  require_k3d:
+    description: "If k3d is not required, set this to false"
+    required: false
+    default: "true"
   target_images:
     description: "image names"
     required: false
@@ -33,9 +45,11 @@ runs:
         sudo apt-get install -y libhdf5-dev
 
     - name: Setup Go environment
+      if: ${{ inputs.require_go == 'true' }}
       uses: ./.github/actions/setup-go
 
     - name: Setup Helm environment
+      if: ${{ inputs.require_helm == 'true' }}
       uses: ./.github/actions/setup-helm
 
     - name: Wait for target Docker images
@@ -56,6 +70,7 @@ runs:
         images: ${{ inputs.target_images }}
 
     - uses: ./.github/actions/setup-k3d
+      if: ${{ inputs.require_k3d == 'true' }}
       with:
         agents: 3
         options: "--image docker.io/rancher/k3s:latest"

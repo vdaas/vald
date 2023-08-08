@@ -21,8 +21,12 @@ inputs:
     description: "If Minio is required, set this to true."
     required: false
     default: "false"
+  helm_extra_options:
+    description: "extra options that passed to Helm command to deploy vald helm operator"
+    required: false
+    default: ""
   valdrelease:
-    description: "path to the valdrelease.yaml that apply to cluster."
+    description: "path to the valdrelease.yaml that apply to cluster"
     required: true
     default: "true"
   wait_for_selector:
@@ -64,17 +68,22 @@ runs:
       run: |
         helm install vald-helm-operator \
           --set image.tag=nightly \
+          ${HELM_EXTRA_OPTIONS} \
           charts/vald-helm-operator/.
 
         sleep 3
+      env:
+        HELM_EXTRA_OPTIONS: ${{ inputs.helm_extra_options }}
 
     - name: Deploy vald helm operator from local charts
       shell: bash
       id: deploy_vald_helm_operator_local
       if: ${{ inputs.use_local_charts == 'true' }}
       run: |
-        make k8s/vald-helm-operator/deploy
+        make k8s/vald-helm-operator/deploy VERSION=nightly HELM_EXTRA_OPTIONS=${HELM_EXTRA_OPTIONS}
         sleep 3
+      env:
+        HELM_EXTRA_OPTIONS: ${{ inputs.helm_extra_options }}
 
     - name: Deploy vald
       shell: bash
