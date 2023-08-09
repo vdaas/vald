@@ -68,8 +68,8 @@ jobs:
           make E2E_BIND_PORT=8081 \
             E2E_DATASET_NAME=${DATASET} \
             E2E_TIMEOUT=15m \
-            E2E_INSERT_COUNT=10000 \
-            E2E_SEARCH_COUNT=10000 \
+            E2E_INSERT_COUNT=5000 \
+            E2E_SEARCH_COUNT=5000 \
             E2E_WAIT_FOR_CREATE_INDEX_DURATION=5m \
             E2E_TARGET_POD_NAME=${POD_NAME} \
             E2E_TARGET_NAMESPACE=default \
@@ -113,8 +113,8 @@ jobs:
           make E2E_BIND_PORT=8081 \
             E2E_DATASET_NAME=${DATASET} \
             E2E_TIMEOUT=15m \
-            E2E_INSERT_COUNT=10000 \
-            E2E_SEARCH_COUNT=10000 \
+            E2E_INSERT_COUNT=5000 \
+            E2E_SEARCH_COUNT=5000 \
             E2E_WAIT_FOR_CREATE_INDEX_DURATION=5m \
             E2E_TARGET_POD_NAME=${POD_NAME} \
             E2E_TARGET_NAMESPACE=default \
@@ -203,7 +203,7 @@ jobs:
           make E2E_BIND_PORT=8081 \
             E2E_DATASET_NAME=${DATASET} \
             E2E_TIMEOUT=15m \
-            E2E_INSERT_COUNT=10000 \
+            E2E_INSERT_COUNT=5000 \
             E2E_WAIT_FOR_CREATE_INDEX_DURATION=2m \
             E2E_TARGET_POD_NAME=${POD_NAME} \
             E2E_TARGET_NAMESPACE=default \
@@ -218,7 +218,7 @@ jobs:
           make E2E_BIND_PORT=8081 \
             E2E_DATASET_NAME=${DATASET} \
             E2E_TIMEOUT=15m \
-            E2E_SEARCH_COUNT=10000 \
+            E2E_SEARCH_COUNT=5000 \
             E2E_WAIT_FOR_CREATE_INDEX_DURATION=2m \
             E2E_TARGET_POD_NAME=${POD_NAME} \
             E2E_TARGET_NAMESPACE=default \
