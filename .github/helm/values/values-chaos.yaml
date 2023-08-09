@@ -49,6 +49,8 @@ gateway:
         memory: 50Mi
     gateway_config:
       index_replica: 2
+      discoverer:
+        duration: 50ms
 
 agent:
   minReplicas: 5
@@ -75,7 +77,7 @@ discoverer:
       cpu: 100m
       memory: 50Mi
   discoverer:
-    discovery_duration: 300ms
+    discovery_duration: 50ms
 
 manager:
   index:
