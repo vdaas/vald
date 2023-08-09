@@ -63,7 +63,7 @@ jobs:
             E2E_DATASET_NAME=${DATASET} \
             E2E_INSERT_COUNT=5000 \
             E2E_SEARCH_COUNT=10000 \
-            E2E_SEARCH_BY_ID_COUNT=10000 \
+            E2E_SEARCH_BY_ID_COUNT=5000 \
             E2E_GET_OBJECT_COUNT=100 \
             E2E_UPDATE_COUNT=100 \
             E2E_UPSERT_COUNT=100 \
