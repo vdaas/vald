@@ -56,6 +56,10 @@ agent:
   minReplicas: 5
   maxReplicas: 10
   podManagementPolicy: Parallel
+  persistentVolume:
+    enabled: true
+    storageClass: local-path
+    size: 200Mi
   hpa:
     enabled: false
   resources:
@@ -63,6 +67,8 @@ agent:
       cpu: 100m
       memory: 50Mi
   ngt:
+    index_path: "/var/ngt/index"
+    enable_in_memory_mode: false
     auto_index_duration_limit: 3m
     auto_index_check_duration: 1m
     auto_index_length: 1000
