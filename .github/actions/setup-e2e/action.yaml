@@ -1,5 +1,5 @@
 name: "Setup E2E environment"
-description: 'Setup the environment to run E2E test'
+description: "Setup the environment to run E2E test"
 
 inputs:
   require_libhdf5:
@@ -21,7 +21,7 @@ inputs:
   ingress_port:
     description: 'if it is not "0", ingress will be exposed to the specified port'
     required: false
-    default: '0'
+    default: "0"
   target_images:
     description: "image names"
     required: false
