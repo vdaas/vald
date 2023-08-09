@@ -48,6 +48,8 @@ jobs:
       - name: Setup E2E environment
         id: setup_e2e
         uses: ./.github/actions/setup-e2e
+        with:
+          ingress_port: 8081
 
       - name: Deploy Vald
         id: deploy_vald
@@ -65,7 +67,9 @@ jobs:
       - name: Run Insert and Search operations
         run: |
           make hack/benchmark/assets/dataset/${DATASET}
-          make E2E_BIND_PORT=8081 \
+          make E2E_BIND_HOST=localhost \
+            E2E_BIND_PORT=8081 \
+            E2E_PORTFORWARD_ENABLED=false \
             E2E_DATASET_NAME=${DATASET} \
             E2E_TIMEOUT=15m \
             E2E_INSERT_COUNT=5000 \
@@ -93,6 +97,8 @@ jobs:
       - name: Setup E2E environment
         id: setup_e2e
         uses: ./.github/actions/setup-e2e
+        with:
+          ingress_port: 8081
 
       - name: Deploy Vald
         id: deploy_vald
@@ -110,7 +116,9 @@ jobs:
       - name: Run Insert and Search operations
         run: |
           make hack/benchmark/assets/dataset/${DATASET}
-          make E2E_BIND_PORT=8081 \
+          make E2E_BIND_HOST=localhost \
+            E2E_BIND_PORT=8081 \
+            E2E_PORTFORWARD_ENABLED=false \
             E2E_DATASET_NAME=${DATASET} \
             E2E_TIMEOUT=15m \
             E2E_INSERT_COUNT=5000 \
@@ -138,6 +146,8 @@ jobs:
       - name: Setup E2E environment
         id: setup_e2e
         uses: ./.github/actions/setup-e2e
+        with:
+          ingress_port: 8081
 
       - name: Deploy Vald
         id: deploy_vald
@@ -155,7 +165,9 @@ jobs:
       - name: Run Insert and Search operations
         run: |
           make hack/benchmark/assets/dataset/${DATASET}
-          make E2E_BIND_PORT=8081 \
+          make E2E_BIND_HOST=localhost \
+            E2E_BIND_PORT=8081 \
+            E2E_PORTFORWARD_ENABLED=false \
             E2E_DATASET_NAME=${DATASET} \
             E2E_TIMEOUT=15m \
             E2E_INSERT_COUNT=10000 \
@@ -183,6 +195,8 @@ jobs:
       - name: Setup E2E environment
         id: setup_e2e
         uses: ./.github/actions/setup-e2e
+        with:
+          ingress_port: 8081
 
       - name: Deploy Vald
         id: deploy_vald
@@ -200,7 +214,9 @@ jobs:
       - name: Run Insert operations
         run: |
           make hack/benchmark/assets/dataset/${DATASET}
-          make E2E_BIND_PORT=8081 \
+          make E2E_BIND_HOST=localhost \
+            E2E_BIND_PORT=8081 \
+            E2E_PORTFORWARD_ENABLED=false \
             E2E_DATASET_NAME=${DATASET} \
             E2E_TIMEOUT=15m \
             E2E_INSERT_COUNT=5000 \
@@ -215,7 +231,9 @@ jobs:
       - name: Run Search operations
         run: |
           make hack/benchmark/assets/dataset/${DATASET}
-          make E2E_BIND_PORT=8081 \
+          make E2E_BIND_HOST=localhost \
+            E2E_BIND_PORT=8081 \
+            E2E_PORTFORWARD_ENABLED=false \
             E2E_DATASET_NAME=${DATASET} \
             E2E_TIMEOUT=15m \
             E2E_SEARCH_COUNT=5000 \

@@ -10,6 +10,10 @@ inputs:
     description: 'cluster name'
     required: false
     default: 'vald'
+  ingress_port:
+    description: 'if it is not "0", ingress will be exposed to the specified port'
+    required: false
+    default: '0'
   agents:
     description: 'number of agents'
     required: false
@@ -52,9 +56,13 @@ runs:
         if [ "${AGENTS}" != 0 ]; then
           OPTIONS="${OPTIONS} --agents ${AGENTS}"
         fi
+        if [ "${INGRESS_PORT}" != 0 ]; then
+          OPTIONS="${OPTIONS} -p ${INGRESS_PORT}:80@loadbalancer"
+        fi
         echo "options=${OPTIONS}" >> $GITHUB_OUTPUT
       env:
         AGENTS: ${{ inputs.agents }}
+        INGRESS_PORT: ${{ inputs.ingress_port }}
         OPTIONS: ${{ inputs.options }}
 
     - name: Create k8s cluster

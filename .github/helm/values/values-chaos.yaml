@@ -33,6 +33,13 @@ defaults:
 gateway:
   lb:
     enabled: true
+    ingress:
+      enabled: true
+      host: "localhost"
+    service:
+      # NOTE: https://doc.traefik.io/traefik/routing/providers/kubernetes-ingress/#on-service
+      annotations:
+        traefik.ingress.kubernetes.io/service.serversscheme: h2c
     minReplicas: 2
     hpa:
       enabled: false
