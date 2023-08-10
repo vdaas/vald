@@ -48,7 +48,7 @@ gateway:
         cpu: 100m
         memory: 50Mi
     gateway_config:
-      index_replica: 2
+      index_replica: 3
       discoverer:
         duration: 50ms
 
