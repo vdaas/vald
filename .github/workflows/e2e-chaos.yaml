@@ -211,7 +211,7 @@ jobs:
         with:
           helm_extra_options: "--set networkChaos.bandwidth.enabled=true"
 
-      - name: Run Insert operations
+      - name: Run Insert and Search operations
         run: |
           make hack/benchmark/assets/dataset/${DATASET}
           make E2E_BIND_HOST=localhost \
@@ -220,27 +220,10 @@ jobs:
             E2E_DATASET_NAME=${DATASET} \
             E2E_TIMEOUT=15m \
             E2E_INSERT_COUNT=5000 \
-            E2E_WAIT_FOR_CREATE_INDEX_DURATION=2m \
+            E2E_WAIT_FOR_CREATE_INDEX_DURATION=5m \
             E2E_TARGET_POD_NAME=${POD_NAME} \
             E2E_TARGET_NAMESPACE=default \
-            e2e/insert
-        env:
-          DATASET: fashion-mnist-784-euclidean.hdf5
-          POD_NAME: ${{ steps.deploy_vald.outputs.POD_NAME }}
-
-      - name: Run Search operations
-        run: |
-          make hack/benchmark/assets/dataset/${DATASET}
-          make E2E_BIND_HOST=localhost \
-            E2E_BIND_PORT=8081 \
-            E2E_PORTFORWARD_ENABLED=false \
-            E2E_DATASET_NAME=${DATASET} \
-            E2E_TIMEOUT=15m \
-            E2E_SEARCH_COUNT=5000 \
-            E2E_WAIT_FOR_CREATE_INDEX_DURATION=2m \
-            E2E_TARGET_POD_NAME=${POD_NAME} \
-            E2E_TARGET_NAMESPACE=default \
-            e2e/search
+            e2e/insert/search
         env:
           DATASET: fashion-mnist-784-euclidean.hdf5
           POD_NAME: ${{ steps.deploy_vald.outputs.POD_NAME }}
