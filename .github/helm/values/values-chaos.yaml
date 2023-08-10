@@ -59,6 +59,7 @@ agent:
   persistentVolume:
     enabled: true
     storageClass: local-path
+    accessMode: ReadWriteOnce
     size: 200Mi
   hpa:
     enabled: false
