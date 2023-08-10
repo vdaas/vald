@@ -28,6 +28,7 @@ on:
 env:
   VALUES: .github/helm/values/values-chaos.yaml
   DATASET: fashion-mnist-784-euclidean.hdf5
+  INGRESS_PORT: 8081
 
 jobs:
   dump-contexts-to-log:
@@ -53,7 +54,7 @@ jobs:
         id: setup_e2e
         uses: ./.github/actions/setup-e2e
         with:
-          ingress_port: 8081
+          ingress_port: ${{ env.INGRESS_PORT }}
 
       - name: Deploy Vald
         id: deploy_vald
@@ -97,7 +98,7 @@ jobs:
         id: setup_e2e
         uses: ./.github/actions/setup-e2e
         with:
-          ingress_port: 8081
+          ingress_port: ${{ env.INGRESS_PORT }}
 
       - name: Deploy Vald
         id: deploy_vald
@@ -141,7 +142,7 @@ jobs:
         id: setup_e2e
         uses: ./.github/actions/setup-e2e
         with:
-          ingress_port: 8081
+          ingress_port: ${{ env.INGRESS_PORT }}
 
       - name: Deploy Vald
         id: deploy_vald
@@ -185,7 +186,7 @@ jobs:
         id: setup_e2e
         uses: ./.github/actions/setup-e2e
         with:
-          ingress_port: 8081
+          ingress_port: ${{ env.INGRESS_PORT }}
 
       - name: Deploy Vald
         id: deploy_vald
