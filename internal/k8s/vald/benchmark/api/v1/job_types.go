@@ -23,6 +23,8 @@ import (
 )
 
 type BenchmarkJobSpec struct {
+	*config.GlobalConfig    `json:",omitempty"              yaml:""`
+	ServerConfig            *config.Servers            `json:"server_config,omitempty"              yaml:"server_config"`
 	Target                  *BenchmarkTarget           `json:"target,omitempty"                     yaml:"target"`
 	Dataset                 *BenchmarkDataset          `json:"dataset,omitempty"                    yaml:"dataset"`
 	Dimension               int                        `json:"dimension,omitempty"                  yaml:"dimension"`
@@ -40,8 +42,6 @@ type BenchmarkJobSpec struct {
 	RPS                     int                        `json:"rps,omitempty"                        yaml:"rps"`
 	ConcurrencyLimit        int                        `json:"concurrency_limit,omitempty"          yaml:"concurrency_limit"`
 	TTLSecondsAfterFinished int                        `json:"ttl_seconds_after_finished,omitempty" yaml:"ttl_seconds_after_finished"`
-	GlobalConfig            *config.GlobalConfig       `json:"global_config,omitempty"              yaml:"global_config"`
-	ServerConfig            *config.Servers            `json:"server_config,omitempty"              yaml:"server_config"`
 }
 
 type BenchmarkJobStatus string

@@ -19,7 +19,9 @@ package config
 
 import (
 	"context"
+	"encoding/json"
 	"os"
+	"reflect"
 
 	"github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/k8s/client"
@@ -45,7 +47,7 @@ type Config struct {
 	Job *config.BenchmarkJob `json:"job" yaml:"job"`
 
 	// K8sClient represents kubernetes clients
-	K8sClient client.Client
+	K8sClient client.Client `json:"k8s_client" yaml:"k8s_client"`
 }
 
 var (
@@ -61,7 +63,6 @@ func NewConfig(ctx context.Context, path string) (cfg *Config, err error) {
 	if err != nil {
 		return nil, err
 	}
-
 	if cfg != nil {
 		cfg.Bind()
 	}
@@ -98,120 +99,318 @@ func NewConfig(ctx context.Context, path string) (cfg *Config, err error) {
 		}
 		cfg.K8sClient = c
 	}
+
 	err = cfg.K8sClient.Get(ctx, NAME, NAMESPACE, &jobResource)
 	if err != nil {
 		log.Warn(err.Error())
 	} else {
-		// GlobalConfig
+		// create override Config
+		overrideCfg := new(Config)
 		if jobResource.Spec.GlobalConfig != nil {
-			cfg.GlobalConfig = *jobResource.Spec.GlobalConfig
+			overrideCfg.GlobalConfig = *jobResource.Spec.Bind()
 		}
-		// ServerConfig
 		if jobResource.Spec.ServerConfig != nil {
-			cfg.Server = jobResource.Spec.ServerConfig
+			overrideCfg.Server = (*jobResource.Spec.ServerConfig).Bind()
 		}
-		// Job
-		cfg.Job.Target = (*config.BenchmarkTarget)(jobResource.Spec.Target)
-		cfg.Job.Dataset = (*config.BenchmarkDataset)(jobResource.Spec.Dataset)
-		cfg.Job.Dimension = jobResource.Spec.Dimension
-		cfg.Job.Replica = jobResource.Spec.Replica
-		cfg.Job.Repetition = jobResource.Spec.Repetition
-		cfg.Job.JobType = jobResource.Spec.JobType
-		cfg.Job.Rules = jobResource.Spec.Rules
-		if jobResource.Spec.InsertConfig != nil {
-			cfg.Job.InsertConfig = jobResource.Spec.InsertConfig.Bind()
+		// jobResource.Spec has another field comparering Config.Job, so json.Marshal and Unmarshal are used for embedding field value of Config.Job from jobResource.Spec
+		var overrideJobCfg config.BenchmarkJob
+		b, err := json.Marshal(*jobResource.Spec.DeepCopy())
+		if err == nil {
+			err = json.Unmarshal([]byte(b), &overrideJobCfg)
+			if err != nil {
+				log.Warn(err.Error())
+			}
+			overrideCfg.Job = overrideJobCfg.Bind()
 		}
-		if jobResource.Spec.UpdateConfig != nil {
-			cfg.Job.UpdateConfig = jobResource.Spec.UpdateConfig.Bind()
-		}
-		if jobResource.Spec.UpsertConfig != nil {
-			cfg.Job.UpsertConfig = jobResource.Spec.UpsertConfig.Bind()
-		}
-		if jobResource.Spec.SearchConfig != nil {
-			cfg.Job.SearchConfig = jobResource.Spec.SearchConfig.Bind()
-		}
-		if jobResource.Spec.RemoveConfig != nil {
-			cfg.Job.RemoveConfig = jobResource.Spec.RemoveConfig.Bind()
-		}
-		if jobResource.Spec.ObjectConfig != nil {
-			cfg.Job.ObjectConfig = jobResource.Spec.ObjectConfig.Bind()
-		}
-		if jobResource.Spec.ClientConfig != nil {
-			cfg.Job.ClientConfig = jobResource.Spec.ClientConfig.Bind()
-		}
-		cfg.Job.RPS = jobResource.Spec.RPS
-		cfg.Job.ConcurrencyLimit = jobResource.Spec.ConcurrencyLimit
 		if annotations := jobResource.GetAnnotations(); annotations != nil {
-			cfg.Job.BeforeJobName = annotations[JOBNAME_ANNOTATION]
-			cfg.Job.BeforeJobNamespace = annotations[JOBNAMESPACE_ANNOTATION]
+			overrideCfg.Job.BeforeJobName = annotations[JOBNAME_ANNOTATION]
+			overrideCfg.Job.BeforeJobNamespace = annotations[JOBNAMESPACE_ANNOTATION]
+		}
+		Merge(cfg, overrideCfg)
+	}
+	return cfg, nil
+}
+
+func deepMerge(dst, src reflect.Value) {
+	// check invalid value
+	switch dst.Kind() {
+	case reflect.Bool:
+		if !src.IsValid() {
+			return
+		}
+	case reflect.Ptr:
+		if src.IsZero() {
+			return
+		}
+	default:
+		if src.IsZero() {
+			return
 		}
 	}
+	// deepMerge
+	switch dst.Kind() {
+	case reflect.Ptr:
+		if dst.IsZero() {
+			dst.Set(reflect.New(dst.Type().Elem()))
+		}
+		deepMerge(dst.Elem(), src.Elem())
+	case reflect.Struct:
+		for i := 0; i < dst.NumField(); i++ {
+			deepMerge(dst.Field(i), src.Field(i))
+		}
+	case reflect.Slice:
+		srcLen := src.Len()
+		if srcLen == 0 {
+			return
+		}
+		if dst.IsNil() {
+			dst.Set(reflect.MakeSlice(dst.Type(), srcLen, srcLen))
+			for i := 0; i < srcLen; i++ {
+				deepMerge(dst.Index(i), src.Index(i))
+			}
+		} else {
+			mergeSlice(dst, src)
+		}
+	case reflect.Array:
+		srcLen := src.Len()
+		for i := 0; i < srcLen; i++ {
+			deepMerge(dst.Index(i), src.Index(i))
+		}
+	case reflect.Map:
+		dType := dst.Type()
+		if dst.IsNil() {
+			dst.Set(reflect.MakeMapWithSize(dType, src.Len()))
+		}
+		dElem := dType.Elem()
+		for _, key := range src.MapKeys() {
+			vdst := dst.MapIndex(key)
+			if !vdst.IsValid() {
+				vdst = reflect.New(dElem).Elem()
+			}
+			deepMerge(vdst, src.MapIndex(key))
+			dst.SetMapIndex(key, vdst)
+		}
+	default:
+		dst.Set(src)
+	}
+}
 
-	return cfg, nil
+func mergeSlice(dst, src reflect.Value) {
+	if dst.Kind() != reflect.Slice || src.Len() == 0 {
+		return
+	}
+	switch src.Type().Elem().Kind() {
+	case reflect.Ptr:
+		dstNames := map[string]int{}
+		for i := 0; i < dst.Len(); i++ {
+			n := dst.Index(i).Elem().FieldByName("Name").String()
+			dstNames[n] = i
+		}
+		as := reflect.MakeSlice(dst.Type(), 0, 0)
+		for i := 0; i < src.Len(); i++ {
+			s := src.Index(i).Elem().FieldByName("Name").String()
+			if v, ok := dstNames[s]; ok {
+				deepMerge(dst.Index(v), src.Index(i))
+			} else {
+				as = reflect.Append(as, src.Index(i))
+			}
+		}
+		if as.Len() > 0 {
+			dst.Set(reflect.AppendSlice(dst, as))
+		}
+	case reflect.String:
+		ds := dst.Interface().([]string)
+		as := reflect.MakeSlice(dst.Type(), 0, 0)
+		for i, v := range src.Interface().([]string) {
+			if ok, _ := contains(ds, v); !ok {
+				as = reflect.Append(as, src.Index(i))
+			}
+		}
+		dst.Set(reflect.AppendSlice(dst, as))
+	default:
+		ds := dst.Interface().([]interface{})
+		as := reflect.MakeSlice(dst.Type(), 0, 0)
+		for i, v := range src.Interface().([]interface{}) {
+			if ok, _ := contains(ds, v); !ok {
+				as = reflect.Append(as, src.Index(i))
+			}
+		}
+		dst.Set(reflect.Append(dst, as))
+
+	}
+}
+
+func Merge[T any](dst, src T) T {
+	deepMerge(reflect.ValueOf(dst).Elem(), reflect.ValueOf(src).Elem())
+	return dst
+}
+
+func contains[T comparable](base []T, v T) (bool, int) {
+	switch reflect.TypeOf(v).Kind() {
+	default:
+		if len(base) == 0 {
+			return false, 0
+		}
+		for idx, value := range base {
+			if v == value {
+				return true, idx
+			}
+		}
+		return false, 0
+	}
 }
 
 // func FakeData() {
 // 	d := Config{
-// 		Version: "v0.0.1",
+// 		GlobalConfig: config.GlobalConfig{
+// 			Version: "v0.0.1",
+// 			TZ:      "JST",
+// 			Logging: &config.Logging{
+// 				Format: "raw",
+// 				Level:  "debug",
+// 				Logger: "glg",
+// 			},
+// 		},
 // 		Server: &config.Servers{
 // 			Servers: []*config.Server{
 // 				{
-// 					Name:          "agent-rest",
-// 					Host:          "127.0.0.1",
-// 					Port:          8080,
-// 					Mode:          "REST",
+// 					Name:          "grpc",
+// 					Host:          "0.0.0.0",
+// 					Port:          8081,
+// 					Mode:          "GRPC",
 // 					ProbeWaitTime: "3s",
+// 					SocketPath:    "",
+// 					GRPC: &config.GRPC{
+// 						BidirectionalStreamConcurrency: 20,
+// 						MaxReceiveMessageSize:          0,
+// 						MaxSendMessageSize:             0,
+// 						InitialWindowSize:              1048576,
+// 						InitialConnWindowSize:          2097152,
+// 						Keepalive: &config.GRPCKeepalive{
+// 							MaxConnIdle:         "",
+// 							MaxConnAge:          "",
+// 							MaxConnAgeGrace:     "",
+// 							Time:                "3h",
+// 							Timeout:             "60s",
+// 							MinTime:             "10m",
+// 							PermitWithoutStream: true,
+// 						},
+// 						WriteBufferSize:   0,
+// 						ReadBufferSize:    0,
+// 						ConnectionTimeout: "",
+// 						MaxHeaderListSize: 0,
+// 						HeaderTableSize:   0,
+// 						Interceptors: []string{
+// 							"RecoverInterceptor",
+// 						},
+// 						EnableReflection: true,
+// 					},
+// 					SocketOption: &config.SocketOption{
+// 						ReusePort:                true,
+// 						ReuseAddr:                true,
+// 						TCPFastOpen:              false,
+// 						TCPNoDelay:               false,
+// 						TCPCork:                  false,
+// 						TCPQuickAck:              false,
+// 						TCPDeferAccept:           false,
+// 						IPTransparent:            false,
+// 						IPRecoverDestinationAddr: false,
+// 					},
+// 					Restart: true,
+// 				},
+// 			},
+// 			HealthCheckServers: []*config.Server{
+// 				{
+// 					Name:          "livenesss",
+// 					Host:          "0.0.0.0",
+// 					Port:          3000,
+// 					Mode:          "",
+// 					Network:       "tcp",
+// 					ProbeWaitTime: "3s",
+// 					SocketPath:    "",
 // 					HTTP: &config.HTTP{
+// 						HandlerTimeout:    "",
+// 						IdleTimeout:       "",
+// 						ReadHeaderTimeout: "",
+// 						ReadTimeout:       "",
 // 						ShutdownDuration:  "5s",
-// 						HandlerTimeout:    "5s",
-// 						IdleTimeout:       "2s",
-// 						ReadHeaderTimeout: "1s",
-// 						ReadTimeout:       "1s",
-// 						WriteTimeout:      "1s",
+// 						WriteTimeout:      "",
+// 					},
+// 					SocketOption: &config.SocketOption{
+// 						ReusePort:                true,
+// 						ReuseAddr:                true,
+// 						TCPFastOpen:              true,
+// 						TCPNoDelay:               true,
+// 						TCPCork:                  false,
+// 						TCPQuickAck:              true,
+// 						TCPDeferAccept:           false,
+// 						IPTransparent:            false,
+// 						IPRecoverDestinationAddr: false,
 // 					},
 // 				},
 // 				{
-// 					Name: "agent-grpc",
-// 					Host: "127.0.0.1",
-// 					Port: 8082,
-// 					Mode: "GRPC",
+// 					Name:          "readiness",
+// 					Host:          "0.0.0.0",
+// 					Port:          3001,
+// 					Mode:          "",
+// 					Network:       "tcp",
+// 					ProbeWaitTime: "3s",
+// 					SocketPath:    "",
+// 					HTTP: &config.HTTP{
+// 						HandlerTimeout:    "",
+// 						IdleTimeout:       "",
+// 						ReadHeaderTimeout: "",
+// 						ReadTimeout:       "",
+// 						ShutdownDuration:  "0s",
+// 						WriteTimeout:      "",
+// 					},
+// 					SocketOption: &config.SocketOption{
+// 						ReusePort:                true,
+// 						ReuseAddr:                true,
+// 						TCPFastOpen:              true,
+// 						TCPNoDelay:               true,
+// 						TCPCork:                  false,
+// 						TCPQuickAck:              true,
+// 						TCPDeferAccept:           false,
+// 						IPTransparent:            false,
+// 						IPRecoverDestinationAddr: false,
+// 					},
 // 				},
 // 			},
 // 			MetricsServers: []*config.Server{
 // 				{
 // 					Name:          "pprof",
-// 					Host:          "127.0.0.1",
+// 					Host:          "0.0.0.0",
 // 					Port:          6060,
 // 					Mode:          "REST",
+// 					Network:       "tcp",
 // 					ProbeWaitTime: "3s",
+// 					SocketPath:    "",
 // 					HTTP: &config.HTTP{
-// 						ShutdownDuration:  "5s",
 // 						HandlerTimeout:    "5s",
 // 						IdleTimeout:       "2s",
 // 						ReadHeaderTimeout: "1s",
 // 						ReadTimeout:       "1s",
-// 						WriteTimeout:      "1s",
+// 						ShutdownDuration:  "5s",
+// 						WriteTimeout:      "1m",
 // 					},
-// 				},
-// 			},
-// 			HealthCheckServers: []*config.Server{
-// 				{
-// 					Name: "livenesss",
-// 					Host: "127.0.0.1",
-// 					Port: 3000,
-// 				},
-// 				{
-// 					Name: "readiness",
-// 					Host: "127.0.0.1",
-// 					Port: 3001,
+// 					SocketOption: &config.SocketOption{
+// 						ReusePort:                true,
+// 						ReuseAddr:                true,
+// 						TCPFastOpen:              false,
+// 						TCPNoDelay:               false,
+// 						TCPCork:                  false,
+// 						TCPQuickAck:              false,
+// 						TCPDeferAccept:           false,
+// 						IPTransparent:            false,
+// 						IPRecoverDestinationAddr: false,
+// 					},
 // 				},
 // 			},
 // 			StartUpStrategy: []string{
 // 				"livenesss",
-// 				"pprof",
-// 				"agent-grpc",
-// 				"agent-rest",
 // 				"readiness",
+// 				"pprof",
 // 			},
 // 			ShutdownStrategy: []string{
 // 				"readiness",
@@ -226,6 +425,42 @@ func NewConfig(ctx context.Context, path string) (cfg *Config, err error) {
 // 				Cert:    "/path/to/cert",
 // 				Key:     "/path/to/key",
 // 				CA:      "/path/to/ca",
+// 			},
+// 		},
+// 		Observability: &config.Observability{
+// 			Enabled: true,
+// 			OTLP: &config.OTLP{
+// 				CollectorEndpoint: "",
+// 				Attribute: &config.OTLPAttribute{
+// 					Namespace:   NAMESPACE,
+// 					PodName:     NAME,
+// 					NodeName:    "",
+// 					ServiceName: "vald",
+// 				},
+// 				TraceBatchTimeout:       "1s",
+// 				TraceExportTimeout:      "1m",
+// 				TraceMaxExportBatchSize: 1024,
+// 				TraceMaxQueueSize:       256,
+// 				MetricsExportInterval:   "1s",
+// 				MetricsExportTimeout:    "1m",
+// 			},
+// 			Metrics: &config.Metrics{
+// 				EnableVersionInfo: true,
+// 				EnableMemory:      true,
+// 				EnableGoroutine:   true,
+// 				EnableCGO:         true,
+// 				VersionInfoLabels: []string{
+// 					"vald_version",
+// 					"server_name",
+// 					"git_commit",
+// 					"build_time",
+// 					"go_version",
+// 					"go_arch",
+// 					"ngt_version",
+// 				},
+// 			},
+// 			Trace: &config.Trace{
+// 				Enabled: true,
 // 			},
 // 		},
 // 		Job: &config.BenchmarkJob{
@@ -285,15 +520,15 @@ func NewConfig(ctx context.Context, path string) (cfg *Config, err error) {
 // 				DialOption: &config.DialOption{
 // 					WriteBufferSize:             0,
 // 					ReadBufferSize:              0,
-// 					InitialWindowSize:           0,
-// 					InitialConnectionWindowSize: 0,
+// 					InitialWindowSize:           1048576,
+// 					InitialConnectionWindowSize: 2097152,
 // 					MaxMsgSize:                  0,
 // 					BackoffMaxDelay:             "120s",
 // 					BackoffBaseDelay:            "1s",
 // 					BackoffJitter:               0.2,
 // 					BackoffMultiplier:           1.6,
 // 					MinimumConnectionTimeout:    "20s",
-// 					EnableBackoff:               true,
+// 					EnableBackoff:               false,
 // 					Insecure:                    true,
 // 					Timeout:                     "",
 // 					Interceptors:                []string{},
@@ -319,11 +554,11 @@ func NewConfig(ctx context.Context, path string) (cfg *Config, err error) {
 // 						SocketOption: &config.SocketOption{
 // 							ReusePort:                true,
 // 							ReuseAddr:                true,
-// 							TCPFastOpen:              true,
-// 							TCPNoDelay:               true,
-// 							TCPQuickAck:              true,
+// 							TCPFastOpen:              false,
+// 							TCPNoDelay:               false,
+// 							TCPQuickAck:              false,
 // 							TCPCork:                  false,
-// 							TCPDeferAccept:           true,
+// 							TCPDeferAccept:           false,
 // 							IPTransparent:            false,
 // 							IPRecoverDestinationAddr: false,
 // 						},
