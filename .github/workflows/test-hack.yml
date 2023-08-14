@@ -30,13 +30,14 @@ on:
     paths:
       - "go.mod"
       - "go.sum"
-      - ".github/workflows/test.yml"
+      - ".github/workflows/test-hack.yml"
       - "hack/gorules/**"
       - "hack/helm/**"
       - "hack/license/**"
       - "hack/tools/**"
 
 env:
+  # NOTE: This variable is used to make gorules run properly.
   GOPATH: ${{ github.workspace }}
   PROJECT_ROOT_DIR: src/github.com/vdaas/vald
 
