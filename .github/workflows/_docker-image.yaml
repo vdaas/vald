@@ -8,7 +8,7 @@ on:
         required: true
       platforms:
         type: string
-        description: "if it is specified, specified platforms will be used."
+        description: "If it is specified, specified platforms will be used."
         required: false
         default: ""
 
