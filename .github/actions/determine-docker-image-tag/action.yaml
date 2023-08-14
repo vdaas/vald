@@ -1,9 +1,9 @@
 name: "Determine Docker image tag"
-description: "Determine Docker image tag"
+description: "A action to determine Docker image tag"
 
 outputs:
   PRIMARY_TAG:
-    description: "primary tag"
+    description: "Primary tag"
     value: ${{ steps.determine_tag_name.outputs.PRIMARY_TAG }}
 
 runs:

@@ -1,5 +1,5 @@
 name: "Setup Go environment"
-description: "Setup Go environment"
+description: "A action to set up Go environment"
 
 inputs:
   go_version:

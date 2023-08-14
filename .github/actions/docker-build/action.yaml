@@ -14,36 +14,36 @@
 # limitations under the License.
 #
 name: "Build Docker images"
-description: "Build Docker images and publish them"
+description: "A action to build Docker images and publish them"
 
 inputs:
   target:
-    description: "build target"
+    description: "Build target"
     required: true
     default: "base"
   builder:
-    description: "buildx builder name"
+    description: "Buildx builder name"
     required: true
     default: ""
   platforms:
-    description: "if it is specified, specified platforms will be used."
+    description: "If it is specified, specified platforms will be used."
     required: false
     default: ""
 outputs:
   IMAGE_NAME:
-    description: "image name"
+    description: "Image name"
     value: ${{ steps.image_name.outputs.IMAGE_NAME }}
   ALTER_IMAGE_NAME:
-    description: "alter image name"
+    description: "Alter image name"
     value: ${{ steps.image_name.outputs.ALTER_IMAGE_NAME }}
   PRIMARY_TAG:
-    description: "primary tag"
+    description: "Primary tag"
     value: ${{ steps.determine_tag_name.outputs.PRIMARY_TAG }}
   PLATFORMS:
-    description: "target platforms"
+    description: "Target platforms"
     value: ${{ steps.determine_platforms.outputs.PLATFORMS }}
   EXTRA_TAGS:
-    description: "extra tags"
+    description: "Extra tags"
     value: ${{ steps.add_extra_tags.outputs.EXTRA_TAGS }}
 
 runs:

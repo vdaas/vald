@@ -1,5 +1,5 @@
 name: "Setup yq environment"
-description: "GitHub Action for setting up yq"
+description: "A action to set up yq"
 
 inputs:
   yq_version:

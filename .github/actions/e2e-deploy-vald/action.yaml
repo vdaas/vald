@@ -13,8 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-name: "Setting E2E test environment"
-description: "A workflow to set E2E test environment"
+name: "Deploy Vald for E2E test"
+description: "A action to deploy vald for E2E test"
 
 inputs:
   require_minio:
@@ -22,19 +22,19 @@ inputs:
     required: false
     default: "false"
   helm_extra_options:
-    description: "extra options that passed to Helm command."
+    description: "Extra options that passed to Helm command."
     required: false
     default: ""
   values:
-    description: "path to the values.yaml that passed to Helm command."
+    description: "Path to the values.yaml that passed to Helm command."
     required: false
     default: "false"
   wait_for_selector:
-    description: "label selector used for specifying a pod waited for"
+    description: "Label selector used for specifying a pod waited for"
     required: false
     default: "app=vald-lb-gateway"
   wait_for_timeout:
-    description: "timeout used for waiting for pods"
+    description: "Timeout used for waiting for pods"
     required: false
     default: "600s"
   use_local_charts:
@@ -43,7 +43,7 @@ inputs:
     default: "true"
 outputs:
   POD_NAME:
-    description: "a pod name that waited for"
+    description: "A pod name that waited for"
     value: ${{ steps.get_real_pod_name.outputs.POD_NAME }}
 
 runs:
@@ -56,7 +56,7 @@ runs:
       run: |
         make K8S_SLEEP_DURATION_FOR_WAIT_COMMAND=10 k8s/external/minio/deploy
 
-    - name: Output values
+    - name: Dump Helm values
       shell: bash
       run: |
         cat ${{ inputs.values }}

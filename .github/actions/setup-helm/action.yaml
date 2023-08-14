@@ -1,5 +1,5 @@
 name: "Setup Helm environment"
-description: "Setup Helm environment"
+description: "A action to set up Helm environment"
 
 inputs:
   helm_version:

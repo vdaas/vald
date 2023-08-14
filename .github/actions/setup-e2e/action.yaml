@@ -1,5 +1,5 @@
 name: "Setup E2E environment"
-description: "Setup the environment to run E2E test"
+description: "A action to set up the environment for executing E2E test"
 
 inputs:
   require_libhdf5:
@@ -19,11 +19,11 @@ inputs:
     required: false
     default: "true"
   ingress_port:
-    description: 'if it is not "0", ingress will be exposed to the specified port'
+    description: 'If it is not "0", ingress will be exposed to the specified port'
     required: false
     default: "0"
   target_images:
-    description: "image names"
+    description: "Image names"
     required: false
     default: "vdaas/vald-agent-ngt \
       vdaas/vald-discoverer-k8s \
@@ -32,10 +32,10 @@ inputs:
 
 outputs:
   HELM_EXTRA_OPTIONS:
-    description: "helm extra options that specifies E2E target image tags"
+    description: "Helm extra options that specifies E2E target image tags"
     value: ${{ steps.specify_container_versions.outputs.HELM_EXTRA_OPTIONS }}
   IMAGE_TAGS:
-    description: "specifies E2E target image tags"
+    description: "Specifies E2E target image tags"
     value: ${{ steps.specify_container_versions.outputs.IMAGE_TAGS }}
 
 runs:

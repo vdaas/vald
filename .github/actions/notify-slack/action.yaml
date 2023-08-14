@@ -1,5 +1,5 @@
 name: "Notify Slack"
-description: "Notify Slack"
+description: "A action to notify Slack"
 
 inputs:
   author_name:
@@ -13,7 +13,7 @@ inputs:
     description: "Slack Notify Webhook URL"
     required: true
   status:
-    description: "Specify success or failure or cancelled or custom."
+    description: "Specify success or failure or cancelled or custom"
     required: false
 
 runs:

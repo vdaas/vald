@@ -1,5 +1,5 @@
 name: "Setup k3d environment"
-description: "GitHub Action for setting up k3d (k3s in Docker). It's lighter than KinD (Kubernetes in Docker)"
+description: "A action to set up k3d (k3s in Docker)"
 
 inputs:
   version:
@@ -7,19 +7,19 @@ inputs:
     required: false
     default: "latest"
   name:
-    description: "cluster name"
+    description: "Cluster name"
     required: false
     default: "vald"
   ingress_port:
-    description: 'if it is not "0", ingress will be exposed to the specified port'
+    description: 'If it is not "0", ingress will be exposed to the specified port'
     required: false
     default: "0"
   agents:
-    description: "number of agents"
+    description: "Number of agents"
     required: false
     default: "3"
   options:
-    description: "options for k3d cluster create command"
+    description: "Options for k3d cluster create command"
     required: false
     default: ""
 

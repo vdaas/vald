@@ -1,5 +1,5 @@
 name: "Scan the Docker image"
-description: "Scan the Docker image"
+description: "A action to scan the Docker image"
 
 inputs:
   image_ref:
@@ -7,7 +7,7 @@ inputs:
     required: true
     default: ""
   severity:
-    description: "severities of vulnerabilities to be displayed"
+    description: "Severities of vulnerabilities to be displayed"
     required: false
     default: "UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL"
 

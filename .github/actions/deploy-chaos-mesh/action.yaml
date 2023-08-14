@@ -1,5 +1,5 @@
 name: "Deploy Chaos Mesh"
-description: "Deploy Chaos Mesh"
+description: "A action to deploy Chaos Mesh"
 
 inputs:
   chaos_mesh_version:
