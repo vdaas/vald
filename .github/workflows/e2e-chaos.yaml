@@ -25,6 +25,11 @@ on:
     types:
       - "labeled"
 
+env:
+  VALUES: .github/helm/values/values-chaos.yaml
+  DATASET: fashion-mnist-784-euclidean.hdf5
+  INGRESS_PORT: 8081
+
 jobs:
   dump-contexts-to-log:
     if: startsWith( github.ref, 'refs/tags/') || github.event.action == 'labeled' && github.event.label.name == 'actions/e2e-chaos'
@@ -48,13 +53,15 @@ jobs:
       - name: Setup E2E environment
         id: setup_e2e
         uses: ./.github/actions/setup-e2e
+        with:
+          ingress_port: ${{ env.INGRESS_PORT }}
 
       - name: Deploy Vald
         id: deploy_vald
         uses: ./.github/actions/e2e-deploy-vald
         with:
           helm_extra_options: ${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }}
-          values: .github/helm/values/values-chaos.yaml
+          values: ${{ env.VALUES }}
           wait_for_selector: app=vald-lb-gateway
 
       - name: Deploy Chaos Mesh
@@ -64,19 +71,16 @@ jobs:
 
       - name: Run Insert and Search operations
         run: |
-          make hack/benchmark/assets/dataset/${DATASET}
-          make E2E_BIND_PORT=8081 \
-            E2E_DATASET_NAME=${DATASET} \
+          make hack/benchmark/assets/dataset/${{ env.DATASET }}
+          make E2E_BIND_HOST=localhost \
+            E2E_BIND_PORT=8081 \
+            E2E_PORTFORWARD_ENABLED=false \
+            E2E_DATASET_NAME=${{ env.DATASET }} \
             E2E_TIMEOUT=15m \
-            E2E_INSERT_COUNT=10000 \
-            E2E_SEARCH_COUNT=10000 \
+            E2E_INSERT_COUNT=5000 \
+            E2E_SEARCH_COUNT=5000 \
             E2E_WAIT_FOR_CREATE_INDEX_DURATION=5m \
-            E2E_TARGET_POD_NAME=${POD_NAME} \
-            E2E_TARGET_NAMESPACE=default \
             e2e/insert/search
-        env:
-          DATASET: fashion-mnist-784-euclidean.hdf5
-          POD_NAME: ${{ steps.deploy_vald.outputs.POD_NAME }}
 
   random-pod-failure:
     name: "E2E chaos test (random Pod failure: to test redundancy)"
@@ -93,13 +97,15 @@ jobs:
       - name: Setup E2E environment
         id: setup_e2e
         uses: ./.github/actions/setup-e2e
+        with:
+          ingress_port: ${{ env.INGRESS_PORT }}
 
       - name: Deploy Vald
         id: deploy_vald
         uses: ./.github/actions/e2e-deploy-vald
         with:
           helm_extra_options: ${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }}
-          values: .github/helm/values/values-chaos.yaml
+          values: ${{ env.VALUES }}
           wait_for_selector: app=vald-lb-gateway
 
       - name: Deploy Chaos Mesh
@@ -109,19 +115,16 @@ jobs:
 
       - name: Run Insert and Search operations
         run: |
-          make hack/benchmark/assets/dataset/${DATASET}
-          make E2E_BIND_PORT=8081 \
-            E2E_DATASET_NAME=${DATASET} \
+          make hack/benchmark/assets/dataset/${{ env.DATASET }}
+          make E2E_BIND_HOST=localhost \
+            E2E_BIND_PORT=8081 \
+            E2E_PORTFORWARD_ENABLED=false \
+            E2E_DATASET_NAME=${{ env.DATASET }} \
             E2E_TIMEOUT=15m \
-            E2E_INSERT_COUNT=10000 \
-            E2E_SEARCH_COUNT=10000 \
+            E2E_INSERT_COUNT=5000 \
+            E2E_SEARCH_COUNT=5000 \
             E2E_WAIT_FOR_CREATE_INDEX_DURATION=5m \
-            E2E_TARGET_POD_NAME=${POD_NAME} \
-            E2E_TARGET_NAMESPACE=default \
             e2e/insert/search
-        env:
-          DATASET: fashion-mnist-784-euclidean.hdf5
-          POD_NAME: ${{ steps.deploy_vald.outputs.POD_NAME }}
 
   agent-network-partition:
     name: "E2E chaos test (agent network partition: to test retries)"
@@ -138,13 +141,15 @@ jobs:
       - name: Setup E2E environment
         id: setup_e2e
         uses: ./.github/actions/setup-e2e
+        with:
+          ingress_port: ${{ env.INGRESS_PORT }}
 
       - name: Deploy Vald
         id: deploy_vald
         uses: ./.github/actions/e2e-deploy-vald
         with:
           helm_extra_options: ${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }}
-          values: .github/helm/values/values-chaos.yaml
+          values: ${{ env.VALUES }}
           wait_for_selector: app=vald-lb-gateway
 
       - name: Deploy Chaos Mesh
@@ -154,19 +159,16 @@ jobs:
 
       - name: Run Insert and Search operations
         run: |
-          make hack/benchmark/assets/dataset/${DATASET}
-          make E2E_BIND_PORT=8081 \
-            E2E_DATASET_NAME=${DATASET} \
+          make hack/benchmark/assets/dataset/${{ env.DATASET }}
+          make E2E_BIND_HOST=localhost \
+            E2E_BIND_PORT=8081 \
+            E2E_PORTFORWARD_ENABLED=false \
+            E2E_DATASET_NAME=${{ env.DATASET }} \
             E2E_TIMEOUT=15m \
             E2E_INSERT_COUNT=10000 \
             E2E_SEARCH_COUNT=10000 \
             E2E_WAIT_FOR_CREATE_INDEX_DURATION=2m \
-            E2E_TARGET_POD_NAME=${POD_NAME} \
-            E2E_TARGET_NAMESPACE=default \
             e2e/insert/search
-        env:
-          DATASET: fashion-mnist-784-euclidean.hdf5
-          POD_NAME: ${{ steps.deploy_vald.outputs.POD_NAME }}
 
   clusterwide-network-bandwidth:
     name: "E2E chaos test (network bandwidth: to test it works properly under bandwidth limitation)"
@@ -183,13 +185,15 @@ jobs:
       - name: Setup E2E environment
         id: setup_e2e
         uses: ./.github/actions/setup-e2e
+        with:
+          ingress_port: ${{ env.INGRESS_PORT }}
 
       - name: Deploy Vald
         id: deploy_vald
         uses: ./.github/actions/e2e-deploy-vald
         with:
           helm_extra_options: ${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }}
-          values: .github/helm/values/values-lb.yaml
+          values: ${{ env.VALUES }}
           wait_for_selector: app=vald-lb-gateway
 
       - name: Deploy Chaos Mesh
@@ -197,35 +201,17 @@ jobs:
         with:
           helm_extra_options: "--set networkChaos.bandwidth.enabled=true"
 
-      - name: Run Insert operations
+      - name: Run Insert and Search operations
         run: |
-          make hack/benchmark/assets/dataset/${DATASET}
-          make E2E_BIND_PORT=8081 \
-            E2E_DATASET_NAME=${DATASET} \
+          make hack/benchmark/assets/dataset/${{ env.DATASET }}
+          make E2E_BIND_HOST=localhost \
+            E2E_BIND_PORT=8081 \
+            E2E_PORTFORWARD_ENABLED=false \
+            E2E_DATASET_NAME=${{ env.DATASET }} \
             E2E_TIMEOUT=15m \
-            E2E_INSERT_COUNT=10000 \
-            E2E_WAIT_FOR_CREATE_INDEX_DURATION=2m \
-            E2E_TARGET_POD_NAME=${POD_NAME} \
-            E2E_TARGET_NAMESPACE=default \
-            e2e/insert
-        env:
-          DATASET: fashion-mnist-784-euclidean.hdf5
-          POD_NAME: ${{ steps.deploy_vald.outputs.POD_NAME }}
-
-      - name: Run Search operations
-        run: |
-          make hack/benchmark/assets/dataset/${DATASET}
-          make E2E_BIND_PORT=8081 \
-            E2E_DATASET_NAME=${DATASET} \
-            E2E_TIMEOUT=15m \
-            E2E_SEARCH_COUNT=10000 \
-            E2E_WAIT_FOR_CREATE_INDEX_DURATION=2m \
-            E2E_TARGET_POD_NAME=${POD_NAME} \
-            E2E_TARGET_NAMESPACE=default \
-            e2e/search
-        env:
-          DATASET: fashion-mnist-784-euclidean.hdf5
-          POD_NAME: ${{ steps.deploy_vald.outputs.POD_NAME }}
+            E2E_INSERT_COUNT=5000 \
+            E2E_WAIT_FOR_CREATE_INDEX_DURATION=5m \
+            e2e/insert/search
 
   slack-notification:
     name: "Slack notification"

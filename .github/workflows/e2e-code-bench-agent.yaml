@@ -42,6 +42,10 @@ on:
       - "versions/GO_VERSION"
       - "versions/NGT_VERSION"
 
+env:
+  DATASET: fashion-mnist-784-euclidean.hdf5
+  DATASET_ARGS: fashion-mnist
+
 jobs:
   dump-contexts-to-log:
     runs-on: ubuntu-latest
@@ -65,11 +69,8 @@ jobs:
 
       - name: Run grpc-sequential
         run: |
-          make hack/benchmark/assets/dataset/${DATASET}
-          DATASET_ARGS=${DATASET_ARGS} make bench/agent/sequential/grpc
-        env:
-          DATASET: fashion-mnist-784-euclidean.hdf5
-          DATASET_ARGS: fashion-mnist
+          make hack/benchmark/assets/dataset/${{ env.DATASET }}
+          DATASET_ARGS=${{ env.DATASET_ARGS }} make bench/agent/sequential/grpc
 
       - name: Upload artifact
         uses: actions/upload-artifact@v3
@@ -99,11 +100,8 @@ jobs:
 
       - name: Run grpc-stream
         run: |
-          make hack/benchmark/assets/dataset/${DATASET}
-          DATASET_ARGS=${DATASET_ARGS} make bench/agent/stream
-        env:
-          DATASET: fashion-mnist-784-euclidean.hdf5
-          DATASET_ARGS: fashion-mnist
+          make hack/benchmark/assets/dataset/${{ env.DATASET }}
+          DATASET_ARGS=${{ env.DATASET_ARGS }} make bench/agent/stream
 
       - name: Upload artifact
         uses: actions/upload-artifact@v3
