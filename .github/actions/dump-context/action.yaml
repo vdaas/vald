@@ -1,5 +1,5 @@
 name: "Dump context to log"
-description: "Dump context to log"
+description: "A action to dump context to log"
 
 runs:
   using: "composite"
