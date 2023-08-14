@@ -30,7 +30,7 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event.comment.user.login != 'vdaas-ci'
     steps:
-      - name: check PR Comments
+      - name: Check PR Comments
         id: check_comments_label
         uses: machine-learning-apps/actions-chatops@master
         with:
@@ -41,7 +41,7 @@ jobs:
       - uses: ./.github/actions/setup-yq
         if: steps.check_comments_label.outputs.BOOL_TRIGGERED == 'true'
 
-      - name: check permissions
+      - name: Check permissions
         if: steps.check_comments_label.outputs.BOOL_TRIGGERED == 'true'
         id: check_permissions
         run: |
@@ -62,7 +62,7 @@ jobs:
           USERNAME: ${{ steps.check_comments_label.outputs.COMMENTER_USERNAME }}
           REQUIRED_POLICY: label
 
-      - name: add label
+      - name: Add label
         if: steps.check_comments_label.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         run: |
           labels=`echo "${TRAILING_LINE}" | jq -cMR 'split(" ")'`
@@ -78,6 +78,88 @@ jobs:
           ISSUE_URL: ${{ github.event.issue.labels_url }}
           USERNAME: ${{ steps.check_comments_label.outputs.COMMENTER_USERNAME }}
           TRAILING_LINE: ${{ steps.check_comments_label.outputs.TRAILING_LINE }}
+  rebase:
+    name: Rebase
+    runs-on: ubuntu-latest
+    if: github.event.comment.user.login != 'vdaas-ci'
+    steps:
+      - name: Check PR Comments
+        id: check_comments_rebase
+        uses: machine-learning-apps/actions-chatops@master
+        with:
+          TRIGGER_PHRASE: "/rebase"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: ./.github/actions/setup-yq
+        if: steps.check_comments_rebase.outputs.BOOL_TRIGGERED == 'true'
+
+      - name: Check permissions
+        if: steps.check_comments_rebase.outputs.BOOL_TRIGGERED == 'true'
+        id: check_permissions
+        run: |
+          curl -o chatops_permissions.yaml https://raw.githubusercontent.com/vdaas/vald/main/.github/chatops_permissions.yaml
+          roles=`yq r chatops_permissions.yaml "users.${USERNAME}.role.*"`
+          if [ "$roles" = "" ]; then
+            roles=`yq r chatops_permissions.yaml "default-roles.*"`
+          fi
+          for role in `echo $roles`
+          do
+              if yq r chatops_permissions.yaml "roles.${role}.policies.*" | grep "^${REQUIRED_POLICY}$" > /dev/null 2>&1 ; then
+                echo "[OK] rebase requested by ${USERNAME}"
+                echo "EXECUTABLE=true" >> $GITHUB_OUTPUT
+                break
+              fi
+          done
+        env:
+          USERNAME: ${{ steps.check_comments_rebase.outputs.COMMENTER_USERNAME }}
+          REQUIRED_POLICY: rebase
+
+      - name: Comment back to PR
+        if: steps.check_comments_rebase.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
+        run: |
+          curl --include --verbose --fail \
+          -H "Accept: application/json" \
+          -H "Content-Type:application/json" \
+          -H "Authorization: token ${GITHUB_TOKEN}" \
+          --request POST \
+          --data "{\"body\": \"**[REBASE]** Rebase triggered by ${USERNAME} for branch: ${BRANCH}\"}" \
+          $API_URL
+        env:
+          GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
+          API_URL: ${{ github.event.issue.comments_url }}
+          BRANCH: ${{ steps.check_comments_rebase.outputs.BRANCH_NAME }}
+          USERNAME: ${{ steps.check_comments_rebase.outputs.COMMENTER_USERNAME }}
+
+      - uses: actions/checkout@v3
+        if: steps.check_comments_rebase.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.DISPATCH_TOKEN }}
+
+      - name: Set Git config
+        run: |
+          git config --global --add safe.directory ${GITHUB_WORKSPACE}
+
+      - name: Automatic Rebase
+        if: steps.check_comments_rebase.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
+        uses: cirrus-actions/rebase@1.5
+        env:
+          GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
+
+      - name: Failure comment
+        if: failure()
+        run: |
+          curl --include --verbose --fail \
+          -H "Accept: application/json" \
+          -H "Content-Type:application/json" \
+          -H "Authorization: token ${GITHUB_TOKEN}" \
+          --request POST \
+          --data "{\"body\": \"**[REBASE]** Failed to rebase.\"}" \
+          $API_URL
+        env:
+          GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
+          API_URL: ${{ github.event.issue.comments_url }}
 
   gentest:
     name: Add tests
