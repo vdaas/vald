@@ -2631,3 +2631,29 @@ manager:
             net:
               dialer:
                 keepalive: 15m #indexer fetches uncommitted index length, which includes huge payload so we need to set keepalive longer than usual
+    # @schema {"name": "manager.index.corrector", "type": "object"}
+    corrector:
+      # @schema {"name": "manager.index.corrector.agent_namespace", "type": "string"}
+      # manager.index.corrector.agent_namespace -- namespace of agent pods to manage
+      agent_namespace: _MY_POD_NAMESPACE_
+      # @schema {"name": "manager.index.corrector.node_name", "type": "string"}
+      # manager.index.corrector.node_name -- node name
+      node_name: "" # _MY_NODE_NAME_
+      # @schema {"name": "manager.index.corrector.concurrency", "type": "integer", "minimum": 1}
+      # manager.index.corrector.concurrency -- concurrency
+      concurrency: 1
+      # @schema {"name": "manager.index.corrector.discoverer", "type": "object"}
+      discoverer:
+        # @schema {"name": "manager.index.corrector.discoverer.duration", "type": "string"}
+        # manager.index.corrector.discoverer.duration -- refresh duration to discover
+        duration: 500ms
+        # @schema {"name": "manager.index.corrector.discoverer.client", "alias": "grpc.client"}
+        # manager.index.corrector.discoverer.client -- gRPC client for discoverer (overrides defaults.grpc.client)
+        client: {}
+        # @schema {"name": "manager.index.corrector.discoverer.agent_client_options", "alias": "grpc.client"}
+        # manager.index.corrector.discoverer.agent_client_options -- gRPC client options for agents (overrides defaults.grpc.client)
+        agent_client_options:
+          dial_option:
+            net:
+              dialer:
+                keepalive: 15m #indexer fetches uncommitted index length, which includes huge payload so we need to set keepalive longer than usual

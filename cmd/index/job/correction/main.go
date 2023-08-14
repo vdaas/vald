@@ -1,3 +1,16 @@
+// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//	https://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 package main
 
 import (
@@ -8,10 +21,8 @@ import (
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/runner"
 	"github.com/vdaas/vald/internal/safety"
+	"github.com/vdaas/vald/pkg/index/job/correction/config"
 	"github.com/vdaas/vald/pkg/index/job/correction/usecase"
-
-
-	"github.com/vdaas/vald/pkg/manager/index/config" // FIXME: あとで独自のconfigに切り替え
 )
 
 const (
@@ -21,7 +32,6 @@ const (
 )
 
 func main() {
-	// FIXME: demon前提なので基本的に止まらない。独自のrunnerを作る必要があるか
 	if err := safety.RecoverFunc(func() error {
 		return runner.Do(
 			context.Background(),
@@ -35,7 +45,7 @@ func main() {
 				return cfg, &cfg.GlobalConfig, nil
 			}),
 			runner.WithDaemonInitializer(func(cfg interface{}) (runner.Runner, error) {
-				return usecase.New()
+				return usecase.New(cfg.(*config.Data))
 			}),
 		)
 	})(); err != nil {

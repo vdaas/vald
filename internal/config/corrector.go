@@ -41,14 +41,14 @@ type Corrector struct {
 }
 
 // Bind binds the actual data from the Indexer receiver field.
-func (im *Corrector) Bind() *Corrector {
-	im.AgentName = GetActualValue(im.AgentName)
-	im.AgentNamespace = GetActualValue(im.AgentNamespace)
-	im.AgentDNS = GetActualValue(im.AgentDNS)
-	im.NodeName = GetActualValue(im.NodeName)
+func (c *Corrector) Bind() *Corrector {
+	c.AgentName = GetActualValue(c.AgentName)
+	c.AgentNamespace = GetActualValue(c.AgentNamespace)
+	c.AgentDNS = GetActualValue(c.AgentDNS)
+	c.NodeName = GetActualValue(c.NodeName)
 
-	if im.Discoverer != nil {
-		im.Discoverer = im.Discoverer.Bind()
+	if c.Discoverer != nil {
+		c.Discoverer = c.Discoverer.Bind()
 	}
-	return im
+	return c
 }

@@ -334,7 +334,6 @@ func (s *server) ListenAndServe(ctx context.Context, ech chan<- error) (err erro
 				s.mu.RUnlock()
 				log.Infof("%s server %s stopped", s.mode.String(), s.name)
 			}
-			return nil
 		}))
 	}
 	return nil

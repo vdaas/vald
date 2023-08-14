@@ -215,6 +215,8 @@ func Run(ctx context.Context, run Runner, name string) (err error) {
 				emap[err.Error()]++
 			}
 
+			// waif for all the goroutines to finish.
+			// this errgroup is global across the program
 			err = errgroup.Wait()
 			if err != nil &&
 				!errors.Is(err, context.DeadlineExceeded) &&
