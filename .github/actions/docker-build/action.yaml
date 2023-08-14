@@ -63,7 +63,7 @@ runs:
       env:
         TARGET: ${{ inputs.target }}
 
-    - name: Determine Docker image tag
+    - name: Determine tag name
       id: determine_tag_name
       uses: ./.github/actions/determine-docker-image-tag
 
