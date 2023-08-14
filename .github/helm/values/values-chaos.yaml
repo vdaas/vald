@@ -17,6 +17,7 @@
 defaults:
   grpc:
     client:
+      health_check_duration: 50ms
       dial_option:
         enable_backoff: true
   server_config:
