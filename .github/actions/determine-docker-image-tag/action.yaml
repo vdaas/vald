@@ -9,14 +9,18 @@ outputs:
 runs:
   using: "composite"
   steps:
-    - name: Determine tag name
+    - name: Dump Github context
       shell: bash
-      id: determine_tag_name
       run: |
         echo "GITHUB_REF $GITHUB_REF"
         echo "GITHUB_EVENT_PATH $GITHUB_EVENT_PATH"
         echo "GITHUB_EVENT_NAME ${{ github.event_name }}"
         echo "GITHUB_EVENT_NUMBER  ${{ github.event.number }}"
+
+    - name: Determine tag name
+      shell: bash
+      id: determine_tag_name
+      run: |
         if [[ "$GITHUB_REF" =~ ^refs/tags/.* ]]; then
           tag_name=`echo $GITHUB_REF | sed -e 's:^refs/tags/::'`
           primary_tag="${tag_name}"
