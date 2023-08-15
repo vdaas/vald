@@ -52,9 +52,10 @@ type mockClient struct {
 	StreamRemoveFunc func(ctx context.Context, opts ...grpc.CallOption) (vald.Remove_StreamRemoveClient, error)
 	MultiRemoveFunc  func(ctx context.Context, in *payload.Remove_MultiRequest, opts ...grpc.CallOption) (*payload.Object_Locations, error)
 
-	ExistsFunc          func(ctx context.Context, in *payload.Object_ID, opts ...grpc.CallOption) (*payload.Object_ID, error)
-	GetObjectFunc       func(ctx context.Context, in *payload.Object_VectorRequest, opts ...grpc.CallOption) (*payload.Object_Vector, error)
-	StreamGetObjectFunc func(ctx context.Context, opts ...grpc.CallOption) (vald.Object_StreamGetObjectClient, error)
+	ExistsFunc           func(ctx context.Context, in *payload.Object_ID, opts ...grpc.CallOption) (*payload.Object_ID, error)
+	GetObjectFunc        func(ctx context.Context, in *payload.Object_VectorRequest, opts ...grpc.CallOption) (*payload.Object_Vector, error)
+	StreamGetObjectFunc  func(ctx context.Context, opts ...grpc.CallOption) (vald.Object_StreamGetObjectClient, error)
+	StreamListObjectFunc func(ctx context.Context, opts ...grpc.CallOption) (vald.Object_StreamListObjectClient, error)
 
 	RegisterFunc  func(ctx context.Context, in *payload.Mirror_Targets, opts ...grpc.CallOption) (*payload.Mirror_Targets, error)
 	AdvertiseFunc func(ctx context.Context, in *payload.Mirror_Targets, opts ...grpc.CallOption) (*payload.Mirror_Targets, error)
@@ -166,6 +167,10 @@ func (m *mockClient) GetObject(ctx context.Context, in *payload.Object_VectorReq
 
 func (m *mockClient) StreamGetObject(ctx context.Context, opts ...grpc.CallOption) (vald.Object_StreamGetObjectClient, error) {
 	return m.StreamGetObjectFunc(ctx, opts...)
+}
+
+func (m *mockClient) StreamListObject(ctx context.Context, in *payload.Object_List_Request, opts ...grpc.CallOption) (vald.Object_StreamListObjectClient, error) {
+	return m.StreamListObjectFunc(ctx, opts...)
 }
 
 func (m *mockClient) Register(ctx context.Context, in *payload.Mirror_Targets, opts ...grpc.CallOption) (*payload.Mirror_Targets, error) {
