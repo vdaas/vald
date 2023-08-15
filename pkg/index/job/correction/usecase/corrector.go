@@ -15,6 +15,7 @@ package usecase
 
 import (
 	"context"
+	"time"
 
 	"github.com/vdaas/vald/internal/client/v1/client/discoverer"
 	"github.com/vdaas/vald/internal/errgroup"
@@ -107,7 +108,10 @@ func (c *run) Start(ctx context.Context) (<-chan error, error) {
 
 	log.Info("starting index correction...")
 
+	start := time.Now()
 	dech, err := c.corrector.Start(ctx)
+	end := time.Since(start)
+	log.Infof("correction finished in %v", end)
 
 	// FIXME: 以下をやめてシンプルにStartを抜けたらself SIGTERMで終了させる方がいいかも
 	// 	      その場合echは無視する
