@@ -83,9 +83,6 @@ spec:
             spec:
               type: object
               properties:
-                colocation:
-                  type: string
-                  minLength: 1
                 target:
                   type: object
                   properties:
