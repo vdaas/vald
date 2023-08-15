@@ -142,9 +142,6 @@ const (
 	GetObjectRPCName        = "GetObject"
 	StreamGetObjectRPCName  = "StreamGetObject"
 	StreamListObjectRPCName = "StreamListObject"
-	ExistsRPCName           = "Exists"
-	GetObjectRPCName        = "GetObject"
-	StreamGetObjectRPCName  = "StreamGetObject"
 
 	RegisterRPCName  = "Register"
 	AdvertiseRPCName = "Advertise"
