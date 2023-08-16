@@ -40,7 +40,6 @@ type Corrector interface {
 }
 
 type correct struct {
-	eg                    errgroup.Group
 	cfg                   *config.Data
 	discoverer            discoverer.Client
 	indexInfos            valdsync.Map[string, *payload.Info_Index_Count]
@@ -74,6 +73,12 @@ func (c *correct) Start(ctx context.Context) (<-chan error, error) {
 		return nil, err
 	}
 
+	// DEBUG:
+	c.indexInfos.Range(func(addr string, info *payload.Info_Index_Count) bool {
+		log.Debugf("index info: addr(%s), stored(%d), uncommitted(%d)", addr, info.GetStored(), info.GetUncommitted())
+		return true
+	})
+
 	// This blocks. Should we run with errorgroup?
 	log.Info("starting correction...")
 	if err := c.correct(ctx, addrs); err != nil {
@@ -104,10 +109,22 @@ func (c *correct) Start(ctx context.Context) (<-chan error, error) {
 func (c *correct) correct(ctx context.Context, addrs []string) (err error) {
 	if err := c.discoverer.GetClient().OrderedRange(ctx, addrs,
 		func(ctx context.Context, addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
+			eg, ctx := errgroup.New(ctx)
+			eg.Limitation(c.cfg.Server.GetGRPCStreamConcurrency())
+
 			vc := vald.NewValdClient(conn)
 			stream, err := vc.StreamListObject(ctx, &payload.Object_List_Request{})
 			if err != nil {
 				return err
+			}
+
+			finalize := func() error {
+				err = eg.Wait()
+				if err != nil {
+					log.Errorf("err group returned error: %v", err)
+					return err
+				}
+				return nil
 			}
 
 			for {
@@ -118,9 +135,10 @@ func (c *correct) correct(ctx context.Context, addrs []string) (err error) {
 					res, err := stream.Recv()
 					if errors.Is(err, io.EOF) {
 						log.Debugf("StreamListObject stream finished for agent %s", addr)
-						return nil
+						return finalize()
 					}
 					if err != nil {
+						log.Errorf("StreamListObject stream finished unexpectedly: %v", err)
 						return err
 					}
 
@@ -132,19 +150,23 @@ func (c *correct) correct(ctx context.Context, addrs []string) (err error) {
 					}
 
 					log.Debugf("received object in StreamListObject: agent(%s), id(%s), timestamp(%v)", addr, res.GetVector().GetId(), res.GetVector().GetTimestamp())
-					if err := c.checkConsistency(
-						ctx,
-						&vectorReplica{
-							addr: addr,
-							vec:  res.GetVector(),
-						},
-						addrs,
-					); err != nil {
-						// TODO: errors.Join?
-						// keep processing other vectors even if one vector failed
-						log.Error(err)
-						continue
-					}
+					eg.Go(func() error {
+						if err := c.checkConsistency(
+							ctx,
+							&vectorReplica{
+								addr: addr,
+								vec:  res.GetVector(),
+							},
+							addrs,
+						); err != nil {
+							// TODO: errors.Join?
+							// keep processing other vectors even if one vector failed
+							log.Error(err)
+							// continue
+							return err
+						}
+						return nil
+					})
 				}
 			}
 		},

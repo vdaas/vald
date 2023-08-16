@@ -110,11 +110,15 @@ func (c *run) Start(ctx context.Context) (<-chan error, error) {
 
 	start := time.Now()
 	dech, err := c.corrector.Start(ctx)
+	if err != nil {
+		log.Errorf("index correction process failed: %v", err)
+		return nil, err
+	}
 	end := time.Since(start)
 	log.Infof("correction finished in %v", end)
 
 	// FIXME: 以下をやめてシンプルにStartを抜けたらself SIGTERMで終了させる方がいいかも
-	// 	      その場合echは無視する
+	// 	      その場合echは無視することになる
 	ech := make(chan error, 100)
 	c.eg.Go(safety.RecoverFunc(func() error {
 		for {
