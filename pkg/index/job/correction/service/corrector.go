@@ -144,7 +144,6 @@ func (c *correct) correct(ctx context.Context, addrs []string) (err error) {
 
 					if res.GetVector() == nil {
 						st := res.GetStatus()
-						// TODO: errors.Join?
 						log.Error(st.GetCode(), st.GetMessage(), st.GetDetails())
 						continue
 					}
@@ -159,10 +158,7 @@ func (c *correct) correct(ctx context.Context, addrs []string) (err error) {
 							},
 							addrs,
 						); err != nil {
-							// TODO: errors.Join?
-							// keep processing other vectors even if one vector failed
-							log.Error(err)
-							// continue
+							log.Errorf("failed to check consistency: %v", err)
 							return err
 						}
 						return nil
@@ -171,6 +167,7 @@ func (c *correct) correct(ctx context.Context, addrs []string) (err error) {
 			}
 		},
 	); err != nil {
+		log.Errorf("failed to range over agents(%v): %v", addrs, err)
 		return err
 	}
 
