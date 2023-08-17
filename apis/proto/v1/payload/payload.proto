@@ -349,6 +349,8 @@ message Object {
     string id = 1 [(validate.rules).string.min_len = 1];
     // The vector.
     repeated float vector = 2 [(validate.rules).repeated.min_items = 2];
+    // timestamp represents when this vector inserted.
+    int64 timestamp = 3;
   }
 
   // Represent multiple vectors.
@@ -415,6 +417,20 @@ message Object {
   // Represent multiple vector locations.
   message Locations {
     repeated Location locations = 1;
+  }
+
+  // Represent the list object vector stream request and response.
+  message List {
+    message Request {}
+
+    message Response {
+      oneof payload {
+        // The vector
+        Vector vector = 1;
+        // The RPC error status.
+        google.rpc.Status status = 2;
+      }
+    }
   }
 }
 

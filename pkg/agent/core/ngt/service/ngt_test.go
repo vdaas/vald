@@ -30,6 +30,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/stretchr/testify/require"
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/client/v1/client/vald"
 	"github.com/vdaas/vald/internal/config"
@@ -48,6 +49,21 @@ import (
 	"github.com/vdaas/vald/pkg/agent/internal/metadata"
 	"google.golang.org/grpc"
 )
+
+var defaultConfig = config.NGT{
+	Dimension:           100,
+	DistanceType:        "l2",
+	ObjectType:          "float",
+	BulkInsertChunkSize: 10,
+	CreationEdgeSize:    20,
+	SearchEdgeSize:      10,
+	EnableProactiveGC:   false,
+	EnableCopyOnWrite:   false,
+	KVSDB: &config.KVSDB{
+		Concurrency: 10,
+	},
+	BrokenIndexHistoryLimit: 1,
+}
 
 type index struct {
 	uuid string
@@ -75,20 +91,6 @@ func TestNew(t *testing.T) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 		return nil
-	}
-	defaultConfig := config.NGT{
-		Dimension:           100,
-		DistanceType:        "l2",
-		ObjectType:          "float",
-		BulkInsertChunkSize: 10,
-		CreationEdgeSize:    20,
-		SearchEdgeSize:      10,
-		EnableProactiveGC:   false,
-		EnableCopyOnWrite:   false,
-		KVSDB: &config.KVSDB{
-			Concurrency: 10,
-		},
-		BrokenIndexHistoryLimit: 1,
 	}
 	tests := []test{
 		func() test {
@@ -812,6 +814,111 @@ func Test_needsBackup(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestNGT_GetObject(t *testing.T) {
+	t.Parallel()
+
+	type test struct {
+		name     string
+		testfunc func(t *testing.T)
+	}
+
+	tests := []test{
+		{
+			"returns vector and timestamp when vector is found in vqueue",
+			testReturnFromVq,
+		},
+		{
+			"returns vector and timestamp when vector is found in kvs",
+			testReturnFromKvs,
+		},
+		{
+			"returns error when vector is not found in vector queue or kvs",
+			testNotFoundInBothVqAndKvs,
+		},
+		{
+			"returns error when vector is not found in vq found in kvs but also in delete queue",
+			testFoundInBothIvqAndDvq,
+		},
+	}
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			test.testfunc(tt)
+		})
+	}
+}
+
+func testReturnFromVq(t *testing.T) {
+	ngt, err := New(&defaultConfig)
+	require.NoError(t, err)
+
+	now := time.Now().UnixNano()
+	err = ngt.InsertWithTime("test-uuid", []float32{1.0, 2.0, 3.0}, now)
+	require.NoError(t, err)
+
+	vec, ts, err := ngt.GetObject("test-uuid")
+	require.NoError(t, err)
+	require.Equal(t, []float32{1.0, 2.0, 3.0}, vec)
+	require.Equal(t, now, ts)
+}
+
+func testReturnFromKvs(t *testing.T) {
+	config := defaultConfig
+	config.Dimension = 3
+	ngt, err := New(&config)
+	require.NoError(t, err)
+
+	now := time.Now().UnixNano()
+	err = ngt.InsertWithTime("test-uuid", []float32{1.0, 2.0, 3.0}, now)
+	require.NoError(t, err)
+
+	err = ngt.CreateIndex(context.Background(), 10)
+	require.NoError(t, err)
+
+	buflen := ngt.InsertVQueueBufferLen()
+	require.Equal(t, buflen, uint64(0))
+
+	vec, ts, err := ngt.GetObject("test-uuid")
+	require.NoError(t, err)
+	require.Equal(t, []float32{1.0, 2.0, 3.0}, vec)
+	require.Equal(t, now, ts)
+}
+
+func testNotFoundInBothVqAndKvs(t *testing.T) {
+	ngt, err := New(&defaultConfig)
+	require.NoError(t, err)
+
+	_, _, err = ngt.GetObject("test-uuid")
+	want := errors.ErrObjectIDNotFound("test-uuid")
+	require.Equal(t, err.Error(), want.Error())
+}
+
+func testFoundInBothIvqAndDvq(t *testing.T) {
+	config := defaultConfig
+	config.Dimension = 3
+	ngt, err := New(&config)
+	require.NoError(t, err)
+
+	now := time.Now().UnixNano()
+	err = ngt.InsertWithTime("test-uuid", []float32{1.0, 2.0, 3.0}, now)
+	require.NoError(t, err)
+
+	err = ngt.CreateIndex(context.Background(), 10)
+	require.NoError(t, err)
+
+	buflen := ngt.InsertVQueueBufferLen()
+	require.Equal(t, buflen, uint64(0))
+
+	err = ngt.Delete("test-uuid")
+	require.NoError(t, err)
+
+	_, _, err = ngt.GetObject("test-uuid")
+	want := errors.ErrObjectIDNotFound("test-uuid")
+	require.Equal(t, err.Error(), want.Error())
 }
 
 func Test_ngt_InsertUpsert(t *testing.T) {

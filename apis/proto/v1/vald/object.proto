@@ -40,4 +40,9 @@ service Object {
 
   // A method to fetch vectors by bidirectional streaming.
   rpc StreamGetObject(stream payload.v1.Object.VectorRequest) returns (stream payload.v1.Object.StreamVector) {}
+
+  // A method to get all the vectors with server streaming
+  rpc StreamListObject(payload.v1.Object.List.Request) returns (stream payload.v1.Object.List.Response) {
+    option (google.api.http).get = "/object/list";
+  }
 }

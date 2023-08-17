@@ -41,10 +41,11 @@ type ngtSystem struct {
 }
 
 type resultContainer struct {
-	err     error
-	results []model.Distance
-	vector  []float32
-	exists  bool
+	err       error
+	results   []model.Distance
+	vector    []float32
+	timestamp int64
+	exists    bool
 }
 
 type ngtState struct {
@@ -1108,10 +1109,11 @@ var (
 		) commands.Result {
 			ngt := systemUnderTest.(*ngtSystem).ngt
 
-			vec, err := ngt.GetObject(idA)
+			vec, ts, err := ngt.GetObject(idA)
 			return &resultContainer{
-				vector: vec,
-				err:    err,
+				vector:    vec,
+				timestamp: ts,
+				err:       err,
 			}
 		},
 		NextStateFunc: func(state commands.State) commands.State {
@@ -1166,10 +1168,11 @@ var (
 		) commands.Result {
 			ngt := systemUnderTest.(*ngtSystem).ngt
 
-			vec, err := ngt.GetObject(idB)
+			vec, ts, err := ngt.GetObject(idB)
 			return &resultContainer{
-				vector: vec,
-				err:    err,
+				vector:    vec,
+				timestamp: ts,
+				err:       err,
 			}
 		},
 		NextStateFunc: func(state commands.State) commands.State {
@@ -1224,10 +1227,11 @@ var (
 		) commands.Result {
 			ngt := systemUnderTest.(*ngtSystem).ngt
 
-			vec, err := ngt.GetObject(idC)
+			vec, ts, err := ngt.GetObject(idC)
 			return &resultContainer{
-				vector: vec,
-				err:    err,
+				vector:    vec,
+				timestamp: ts,
+				err:       err,
 			}
 		},
 		NextStateFunc: func(state commands.State) commands.State {

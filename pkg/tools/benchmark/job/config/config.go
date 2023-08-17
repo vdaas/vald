@@ -98,7 +98,6 @@ func NewConfig(ctx context.Context, path string) (cfg *Config, err error) {
 		}
 		cfg.K8sClient = c
 	}
-
 	err = cfg.K8sClient.Get(ctx, NAME, NAMESPACE, &jobResource)
 	if err != nil {
 		log.Warn(err.Error())

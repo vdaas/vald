@@ -28,7 +28,6 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/google/go-cmp/cmp"
 	"github.com/vdaas/vald/internal/core/algorithm"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/file"
@@ -50,7 +49,7 @@ var (
 	}
 
 	searchResultComparator = []comparator.Option{
-		comparator.CompareField("Distance", cmp.Comparer(func(s1, s2 float32) bool {
+		comparator.CompareField("Distance", comparator.Comparer(func(s1, s2 float32) bool {
 			if s1 == 0 { // if vec1 is same as vec2, the distance should be same
 				return s2 == 0
 			}
@@ -103,7 +102,7 @@ func TestNew(t *testing.T) {
 		beforeFunc  func(args)
 		afterFunc   func(*testing.T, NGT) error
 	}
-	defaultComprators := append(ngtComparator, comparator.CompareField("idxPath", cmp.Comparer(func(s1, s2 string) bool {
+	defaultComprators := append(ngtComparator, comparator.CompareField("idxPath", comparator.Comparer(func(s1, s2 string) bool {
 		return s1 == s2
 	})))
 	defaultCheckFunc := func(w want, got NGT, err error, comparators ...comparator.Option) error {
@@ -142,7 +141,7 @@ func TestNew(t *testing.T) {
 						mu:                  &sync.RWMutex{},
 					},
 				},
-				comparators: append(ngtComparator, comparator.CompareField("idxPath", cmp.Comparer(func(s1, s2 string) bool {
+				comparators: append(ngtComparator, comparator.CompareField("idxPath", comparator.Comparer(func(s1, s2 string) bool {
 					return strings.HasPrefix(s1, "/tmp/ngt-") || strings.HasPrefix(s2, "/tmp/ngt-")
 				}))),
 			}
@@ -263,7 +262,7 @@ func TestLoad(t *testing.T) {
 		}
 
 		// comparator for idxPath
-		comparators := append(ngtComparator, comparator.CompareField("idxPath", cmp.Comparer(func(s1, s2 string) bool {
+		comparators := append(ngtComparator, comparator.CompareField("idxPath", comparator.Comparer(func(s1, s2 string) bool {
 			return s1 == s2
 		})))
 
@@ -671,7 +670,7 @@ func Test_gen(t *testing.T) {
 		beforeFunc  func(*testing.T, args)
 		afterFunc   func(*testing.T, NGT) error
 	}
-	defaultComprators := append(ngtComparator, comparator.CompareField("idxPath", cmp.Comparer(func(s1, s2 string) bool {
+	defaultComprators := append(ngtComparator, comparator.CompareField("idxPath", comparator.Comparer(func(s1, s2 string) bool {
 		return s1 == s2
 	})))
 	defaultCheckFunc := func(_ context.Context, w want, got NGT, err error, comparators ...comparator.Option) error {
@@ -709,7 +708,7 @@ func Test_gen(t *testing.T) {
 					mu:                  &sync.RWMutex{},
 				},
 			},
-			comparators: append(ngtComparator, comparator.CompareField("idxPath", cmp.Comparer(func(s1, s2 string) bool {
+			comparators: append(ngtComparator, comparator.CompareField("idxPath", comparator.Comparer(func(s1, s2 string) bool {
 				return strings.HasPrefix(s1, "/tmp/ngt-") || strings.HasPrefix(s2, "/tmp/ngt-")
 			}))),
 		},
