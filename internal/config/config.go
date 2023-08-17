@@ -19,9 +19,11 @@ package config
 
 import (
 	"bytes"
+	"fmt"
 	"io/fs"
 	"os"
 	"path/filepath"
+	"reflect"
 
 	"github.com/vdaas/vald/internal/conv"
 	"github.com/vdaas/vald/internal/encoding/json"
@@ -130,4 +132,125 @@ func ToRawYaml(data interface{}) string {
 		log.Error(err)
 	}
 	return buf.String()
+}
+
+// Merge merges multiple objects to one object.
+// the value of each field is prioritized the value of last index of `objs`.
+// if the length of `objs` is zero, it returns initial value of type T.
+func Merge[T any](objs ...T) (dst T, err error) {
+	switch len(objs) {
+	case 0:
+		return dst, nil
+	case 1:
+		dst = objs[0]
+		return dst, nil
+	default:
+		dst = objs[0]
+		visited := make(map[uintptr]bool)
+		rdst := reflect.ValueOf(&dst)
+		for _, src := range objs[1:] {
+			err = deepMerge(rdst, reflect.ValueOf(&src), visited, "")
+			if err != nil {
+				return dst, err
+			}
+		}
+	}
+	return dst, err
+}
+
+func deepMerge(dst, src reflect.Value, visited map[uintptr]bool, fieldPath string) (err error) {
+	if !src.IsValid() || src.IsZero() {
+		return nil
+	} else if !dst.IsValid() {
+		dst = src
+		log.Info(dst.Type(), dst, src)
+	}
+	dType := dst.Type()
+	sType := src.Type()
+	if dType != sType {
+		return errors.ErrNotMatchFieldType(fieldPath, dType, sType)
+	}
+	sKind := src.Kind()
+	if sKind == reflect.Ptr {
+		src = src.Elem()
+	}
+	if sKind == reflect.Struct && src.CanAddr() {
+		addr := src.Addr().Pointer()
+		if visited[addr] {
+			return nil
+		}
+		visited[addr] = true
+	}
+	switch dst.Kind() {
+	case reflect.Ptr:
+		if dst.IsNil() {
+			dst.Set(reflect.New(dst.Type().Elem()))
+		}
+		return deepMerge(dst.Elem(), src, visited, fieldPath)
+	case reflect.Struct:
+		dnum := dst.NumField()
+		snum := src.NumField()
+		if dnum != snum {
+			return errors.ErrNotMatchFieldNum(fieldPath, dnum, snum)
+		}
+		for i := 0; i < dnum; i++ {
+			dstField := dst.Field(i)
+			if dstField.CanSet() {
+				nf := fmt.Sprintf("%s.%s(%d)", fieldPath, dType.Field(i).Name, i)
+				if err = deepMerge(dstField, src.Field(i), visited, nf); err != nil {
+					return errors.ErrDeepMergeKind(dst.Kind().String(), nf, err)
+				}
+			}
+		}
+	case reflect.Slice:
+		srcLen := src.Len()
+		if srcLen > 0 {
+			if dst.IsNil() {
+				dst.Set(reflect.MakeSlice(dType, srcLen, srcLen))
+			} else {
+				diffLen := srcLen - dst.Len()
+				if diffLen > 0 {
+					dst.Set(reflect.AppendSlice(dst, reflect.MakeSlice(dType, diffLen, diffLen)))
+				}
+			}
+			for i := 0; i < srcLen; i++ {
+				nf := fmt.Sprintf("%s[%d]", fieldPath, i)
+				if err = deepMerge(dst.Index(i), src.Index(i), visited, nf); err != nil {
+					return errors.ErrDeepMergeKind(dst.Kind().String(), nf, err)
+				}
+			}
+		}
+	case reflect.Array:
+		srcLen := src.Len()
+		if srcLen != dst.Len() {
+			return errors.ErrNotMatchArrayLength(fieldPath, dst.Len(), srcLen)
+		}
+		for i := 0; i < srcLen; i++ {
+			nf := fmt.Sprintf("%s[%d]", fieldPath, i)
+			if err = deepMerge(dst.Index(i), src.Index(i), visited, nf); err != nil {
+				return errors.ErrDeepMergeKind(dst.Kind().String(), nf, err)
+			}
+		}
+	case reflect.Map:
+		if dst.IsNil() {
+			dst.Set(reflect.MakeMapWithSize(dType, src.Len()))
+		}
+		dElem := dType.Elem()
+		for _, key := range src.MapKeys() {
+			vdst := dst.MapIndex(key)
+			if !vdst.IsValid() {
+				vdst = reflect.New(dElem).Elem()
+			}
+			nf := fmt.Sprintf("%s[%s]", fieldPath, key)
+			if err = deepMerge(vdst, src.MapIndex(key), visited, nf); err != nil {
+				return errors.Errorf("error in array at %s: %w", nf, err)
+			}
+			dst.SetMapIndex(key, vdst)
+		}
+	default:
+		if dst.CanSet() {
+			dst.Set(src)
+		}
+	}
+	return nil
 }

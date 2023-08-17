@@ -21,7 +21,6 @@ import (
 	"context"
 	"encoding/json"
 	"os"
-	"reflect"
 
 	"github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/k8s/client"
@@ -126,138 +125,9 @@ func NewConfig(ctx context.Context, path string) (cfg *Config, err error) {
 			overrideCfg.Job.BeforeJobName = annotations[JOBNAME_ANNOTATION]
 			overrideCfg.Job.BeforeJobNamespace = annotations[JOBNAMESPACE_ANNOTATION]
 		}
-		Merge(cfg, overrideCfg)
+		return config.Merge(cfg, overrideCfg)
 	}
 	return cfg, nil
-}
-
-func deepMerge(dst, src reflect.Value) {
-	// check invalid value
-	switch dst.Kind() {
-	case reflect.Bool:
-		if !src.IsValid() {
-			return
-		}
-	case reflect.Ptr:
-		if src.IsZero() {
-			return
-		}
-	default:
-		if src.IsZero() {
-			return
-		}
-	}
-	// deepMerge
-	switch dst.Kind() {
-	case reflect.Ptr:
-		if dst.IsZero() {
-			dst.Set(reflect.New(dst.Type().Elem()))
-		}
-		deepMerge(dst.Elem(), src.Elem())
-	case reflect.Struct:
-		for i := 0; i < dst.NumField(); i++ {
-			deepMerge(dst.Field(i), src.Field(i))
-		}
-	case reflect.Slice:
-		srcLen := src.Len()
-		if srcLen == 0 {
-			return
-		}
-		if dst.IsNil() {
-			dst.Set(reflect.MakeSlice(dst.Type(), srcLen, srcLen))
-			for i := 0; i < srcLen; i++ {
-				deepMerge(dst.Index(i), src.Index(i))
-			}
-		} else {
-			mergeSlice(dst, src)
-		}
-	case reflect.Array:
-		srcLen := src.Len()
-		for i := 0; i < srcLen; i++ {
-			deepMerge(dst.Index(i), src.Index(i))
-		}
-	case reflect.Map:
-		dType := dst.Type()
-		if dst.IsNil() {
-			dst.Set(reflect.MakeMapWithSize(dType, src.Len()))
-		}
-		dElem := dType.Elem()
-		for _, key := range src.MapKeys() {
-			vdst := dst.MapIndex(key)
-			if !vdst.IsValid() {
-				vdst = reflect.New(dElem).Elem()
-			}
-			deepMerge(vdst, src.MapIndex(key))
-			dst.SetMapIndex(key, vdst)
-		}
-	default:
-		dst.Set(src)
-	}
-}
-
-func mergeSlice(dst, src reflect.Value) {
-	if dst.Kind() != reflect.Slice || src.Len() == 0 {
-		return
-	}
-	switch src.Type().Elem().Kind() {
-	case reflect.Ptr:
-		dstNames := map[string]int{}
-		for i := 0; i < dst.Len(); i++ {
-			n := dst.Index(i).Elem().FieldByName("Name").String()
-			dstNames[n] = i
-		}
-		as := reflect.MakeSlice(dst.Type(), 0, 0)
-		for i := 0; i < src.Len(); i++ {
-			s := src.Index(i).Elem().FieldByName("Name").String()
-			if v, ok := dstNames[s]; ok {
-				deepMerge(dst.Index(v), src.Index(i))
-			} else {
-				as = reflect.Append(as, src.Index(i))
-			}
-		}
-		if as.Len() > 0 {
-			dst.Set(reflect.AppendSlice(dst, as))
-		}
-	case reflect.String:
-		ds := dst.Interface().([]string)
-		as := reflect.MakeSlice(dst.Type(), 0, 0)
-		for i, v := range src.Interface().([]string) {
-			if ok, _ := contains(ds, v); !ok {
-				as = reflect.Append(as, src.Index(i))
-			}
-		}
-		dst.Set(reflect.AppendSlice(dst, as))
-	default:
-		ds := dst.Interface().([]interface{})
-		as := reflect.MakeSlice(dst.Type(), 0, 0)
-		for i, v := range src.Interface().([]interface{}) {
-			if ok, _ := contains(ds, v); !ok {
-				as = reflect.Append(as, src.Index(i))
-			}
-		}
-		dst.Set(reflect.Append(dst, as))
-
-	}
-}
-
-func Merge[T any](dst, src T) T {
-	deepMerge(reflect.ValueOf(dst).Elem(), reflect.ValueOf(src).Elem())
-	return dst
-}
-
-func contains[T comparable](base []T, v T) (bool, int) {
-	switch reflect.TypeOf(v).Kind() {
-	default:
-		if len(base) == 0 {
-			return false, 0
-		}
-		for idx, value := range base {
-			if v == value {
-				return true, idx
-			}
-		}
-		return false, 0
-	}
 }
 
 // func FakeData() {

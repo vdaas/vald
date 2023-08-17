@@ -136,8 +136,8 @@ server_config:
         ip_recover_destination_addr: false
   startup_strategy:
     - liveness
-    - grpc
     - readiness
+    - grpc
   full_shutdown_duration: 30s
   tls:
     ca: /path/to/ca
