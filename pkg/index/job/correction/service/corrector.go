@@ -117,7 +117,7 @@ func (c *correct) correct(ctx context.Context, addrs []string) (err error) {
 			}
 
 			seg, ctx := stdeg.WithContext(ctx)
-			seg.SetLimit(100) // FIXME: server settingsをそのまま流用で良いのか？
+			seg.SetLimit(c.cfg.Server.GetGRPCStreamConcurrency()) // FIXME: server settingsをそのまま流用で良いのか？
 
 			finalize := func() error {
 				err = seg.Wait()
@@ -205,7 +205,7 @@ func (c *correct) correct2(ctx context.Context, addrs []string) (err error) {
 	if err := c.discoverer.GetClient().OrderedRange(ctx, addrs,
 		func(ctx context.Context, addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
 			eg, ctx := errgroup.New(ctx)
-			eg.Limitation(100)
+			eg.Limitation(c.cfg.Server.GetGRPCStreamConcurrency())
 
 			vc := vald.NewValdClient(conn)
 			stream, err := vc.StreamListObject(ctx, &payload.Object_List_Request{})
