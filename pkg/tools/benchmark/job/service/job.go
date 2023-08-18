@@ -323,6 +323,7 @@ func calcRecall(linearRes, searchRes *payload.Search_Response) (recall float64) 
 func addNoiseToVec(oVec []float32) []float32 {
 	noise := rand.Float32()
 	vec := oVec
-	vec[0] += noise
+	idx := rand.LimitedUint32(uint64(len(oVec) - 1))
+	vec[idx] += noise
 	return vec
 }
