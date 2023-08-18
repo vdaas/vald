@@ -36,6 +36,10 @@ type Corrector struct {
 	// NodeName represents node name
 	NodeName string `json:"node_name" yaml:"node_name"`
 
+	// StreamConcurrency represent stream concurrency for StreamListObject rpc client
+	// this directly affects the memory usage of this job
+	StreamListConcurrency int `json:"stream_list_concurrency" yaml:"stream_list_concurrency"`
+
 	// Discoverer represent agent discoverer service configuration
 	Discoverer *DiscovererClient `json:"discoverer" yaml:"discoverer"`
 }
@@ -51,4 +55,12 @@ func (c *Corrector) Bind() *Corrector {
 		c.Discoverer = c.Discoverer.Bind()
 	}
 	return c
+}
+
+// GetStreamListConcurrency returns the StreamListConcurrency field value if set, -1 otherwise, which means no limit.
+func (c *Corrector) GetStreamListConcurrency() int {
+	if c != nil {
+		return c.StreamListConcurrency
+	}
+	return -1
 }

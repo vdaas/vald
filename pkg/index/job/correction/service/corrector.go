@@ -117,7 +117,10 @@ func (c *correct) correct(ctx context.Context, addrs []string) (err error) {
 			}
 
 			seg, ctx := stdeg.WithContext(ctx)
-			seg.SetLimit(c.cfg.Server.GetGRPCStreamConcurrency()) // FIXME: server settingsをそのまま流用で良いのか？
+			concurrency := c.cfg.Corrector.GetStreamListConcurrency()
+			seg.SetLimit(concurrency) // FIXME: server settingsをそのまま流用で良いのか？
+
+			log.Infof("starting correction for agent %s, concurrency: %d", addr, concurrency)
 
 			finalize := func() error {
 				err = seg.Wait()
@@ -205,7 +208,7 @@ func (c *correct) correct2(ctx context.Context, addrs []string) (err error) {
 	if err := c.discoverer.GetClient().OrderedRange(ctx, addrs,
 		func(ctx context.Context, addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
 			eg, ctx := errgroup.New(ctx)
-			eg.Limitation(c.cfg.Server.GetGRPCStreamConcurrency())
+			eg.Limitation(c.cfg.Corrector.GetStreamListConcurrency())
 
 			vc := vald.NewValdClient(conn)
 			stream, err := vc.StreamListObject(ctx, &payload.Object_List_Request{})
