@@ -24,7 +24,6 @@ import (
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
 	"github.com/vdaas/vald/internal/client/v1/client/discoverer"
-	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc"
@@ -46,12 +45,15 @@ type correct struct {
 	indexInfos            valdsync.Map[string, *payload.Info_Index_Count]
 	uuidsCount            uint32
 	uncommittedUUIDsCount uint32
+	checkedId             map[string]struct{} // TODO: use mmap if necessary
+	rwmu                  sync.RWMutex
 }
 
 func New(cfg *config.Data, discoverer discoverer.Client) (Corrector, error) {
 	return &correct{
 		cfg:        cfg,
 		discoverer: discoverer,
+		checkedId:  make(map[string]struct{}),
 	}, nil
 }
 
@@ -118,7 +120,7 @@ func (c *correct) correct(ctx context.Context, addrs []string) (err error) {
 
 			seg, ctx := stdeg.WithContext(ctx)
 			concurrency := c.cfg.Corrector.GetStreamListConcurrency()
-			seg.SetLimit(concurrency) // FIXME: server settingsをそのまま流用で良いのか？
+			seg.SetLimit(concurrency)
 
 			log.Infof("starting correction for agent %s, concurrency: %d", addr, concurrency)
 
@@ -175,6 +177,16 @@ func (c *correct) correct(ctx context.Context, addrs []string) (err error) {
 						}
 
 						log.Debugf("received object in StreamListObject: agent(%s), id(%s), timestamp(%v)", addr, res.GetVector().GetId(), res.GetVector().GetTimestamp())
+
+						// check if the index is already checked
+						c.rwmu.RLock()
+						_, ok := c.checkedId[res.GetVector().GetId()]
+						c.rwmu.RUnlock()
+						if ok {
+							// already checked index
+							return nil
+						}
+
 						if err := c.checkConsistency(
 							ctx,
 							&vectorReplica{
@@ -190,75 +202,10 @@ func (c *correct) correct(ctx context.Context, addrs []string) (err error) {
 							return nil // continue other processes
 						}
 
-						return nil
-					})
-				}
-			}
-		},
-	); err != nil {
-		log.Errorf("failed to range over agents(%v): %v", addrs, err)
-		return err
-	}
+						c.rwmu.Lock()
+						c.checkedId[res.GetVector().GetId()] = struct{}{}
+						c.rwmu.Unlock()
 
-	return nil
-}
-
-// stream.Recvぶん回しバージョン。メモリ使用率が高くなる可能性があるのでできれば避けたい。パフォーマンスとしては理論上最も良いはず
-func (c *correct) correct2(ctx context.Context, addrs []string) (err error) {
-	if err := c.discoverer.GetClient().OrderedRange(ctx, addrs,
-		func(ctx context.Context, addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
-			eg, ctx := errgroup.New(ctx)
-			eg.Limitation(c.cfg.Corrector.GetStreamListConcurrency())
-
-			vc := vald.NewValdClient(conn)
-			stream, err := vc.StreamListObject(ctx, &payload.Object_List_Request{})
-			if err != nil {
-				return err
-			}
-
-			finalize := func() error {
-				err = eg.Wait()
-				if err != nil {
-					log.Errorf("err group returned error: %v", err)
-					return err
-				}
-				return nil
-			}
-
-			for {
-				select {
-				case <-ctx.Done():
-					return ctx.Err()
-				default:
-					res, err := stream.Recv()
-					if errors.Is(err, io.EOF) {
-						log.Debugf("StreamListObject stream finished for agent %s", addr)
-						return finalize()
-					}
-					if err != nil {
-						log.Errorf("StreamListObject stream finished unexpectedly: %v", err)
-						return err
-					}
-
-					if res.GetVector() == nil {
-						st := res.GetStatus()
-						log.Error(st.GetCode(), st.GetMessage(), st.GetDetails())
-						continue
-					}
-
-					log.Debugf("received object in StreamListObject: agent(%s), id(%s), timestamp(%v)", addr, res.GetVector().GetId(), res.GetVector().GetTimestamp())
-					eg.Go(func() error {
-						if err := c.checkConsistency(
-							ctx,
-							&vectorReplica{
-								addr: addr,
-								vec:  res.GetVector(),
-							},
-							addrs,
-						); err != nil {
-							log.Errorf("failed to check consistency: %v", err)
-							return err
-						}
 						return nil
 					})
 				}
