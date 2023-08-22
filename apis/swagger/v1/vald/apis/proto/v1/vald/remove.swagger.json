@@ -68,6 +68,37 @@
         ],
         "tags": ["Remove"]
       }
+    },
+    "/remove/timestamp": {
+      "post": {
+        "summary": "A method to remove an indexed vector based on timestamp.",
+        "operationId": "Remove_RemoveWithTimestamp",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/ObjectLocations"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/RemoveTimestampRequest"
+            }
+          }
+        ],
+        "tags": ["Remove"]
+      }
     }
   },
   "definitions": {
@@ -105,6 +136,25 @@
         }
       },
       "description": "Represent the stream response of the vector location."
+    },
+    "RemoveTimestampRequest": {
+      "type": "object",
+      "properties": {
+        "timestamps": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1RemoveTimestamp"
+          },
+          "description": "Represent the multiple remove request contents based on timestamp."
+        }
+      },
+      "description": "Represent the remove request based on timestamp."
+    },
+    "TimestampOperator": {
+      "type": "string",
+      "enum": ["Eq", "Ne", "Ge", "Gt", "Le", "Lt"],
+      "default": "Eq",
+      "description": "Operator is enum of each conditional operator."
     },
     "protobufAny": {
       "type": "object",
@@ -251,6 +301,20 @@
         }
       },
       "description": "Represent the remove request."
+    },
+    "v1RemoveTimestamp": {
+      "type": "object",
+      "properties": {
+        "timestamp": {
+          "type": "string",
+          "format": "int64",
+          "description": "The timestamp."
+        },
+        "operator": {
+          "$ref": "#/definitions/TimestampOperator",
+          "description": "The conditional operator."
+        }
+      }
     }
   }
 }
