@@ -1101,7 +1101,6 @@ Update service provides ways to update indexed vectors.
 | StreamUpdate | [.payload.v1.Update.Request](#payload-v1-Update-Request) stream    | [.payload.v1.Object.StreamLocation](#payload-v1-Object-StreamLocation) stream | A method to update multiple indexed vectors by bidirectional streaming. |
 | MultiUpdate  | [.payload.v1.Update.MultiRequest](#payload-v1-Update-MultiRequest) | [.payload.v1.Object.Locations](#payload-v1-Object-Locations)                  | A method to update multiple indexed vectors in a single request.        |
 
-
 <a name="apis_proto_v1_vald_upsert-proto"></a>
 
 <p align="right"><a href="#top">Top</a></p>
