@@ -41,6 +41,10 @@ func (j *job) insert(ctx context.Context, ech chan error) error {
 
 	eg, egctx := errgroup.WithContext(ctx)
 	eg.SetLimit(j.concurrencyLimit)
+	log.Warnf("concurrency limit: %v", j.concurrencyLimit)
+	log.Warnf("start: %v, end: %v", j.dataset.Range.Start, j.dataset.Range.End)
+	log.Warnf("vecs len: %v", len(vecs))
+
 	for i := j.dataset.Range.Start; i <= j.dataset.Range.End; i++ {
 		iter := i
 		eg.Go(func() error {
