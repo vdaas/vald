@@ -79,6 +79,7 @@ corrector:
   agent_namespace: "default"
   node_name: ""
   stream_list_concurrency: 100
+  use_cache: false
   discoverer:
     duration: 500ms
     client:

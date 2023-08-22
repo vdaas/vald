@@ -84,10 +84,23 @@ func (c *correct) Start(ctx context.Context) (<-chan error, error) {
 
 	// This blocks. Should we run with errorgroup?
 	log.Info("starting correction...")
-	if err := c.correct(ctx, addrs); err != nil {
-		log.Errorf("there's some errors while correction: %v", err)
-		return nil, err
+	if c.cfg.Corrector.UseCache{
+		log.Info("with cache...")
+		if err := c.correctWithCache(ctx, addrs); err != nil {
+			log.Errorf("there's some errors while correction: %v", err)
+			return nil, err
+		}
+	} else {
+		log.Info("without cache...")
+		if err := c.correct(ctx, addrs); err != nil {
+			log.Errorf("there's some errors while correction: %v", err)
+			return nil, err
+		}
 	}
+	// if err := c.correct(ctx, addrs); err != nil {
+	// 	log.Errorf("there's some errors while correction: %v", err)
+	// 	return nil, err
+	// }
 	log.Info("correction finished successfully")
 
 	// ech := make(chan error, 100)
@@ -110,6 +123,102 @@ func (c *correct) Start(ctx context.Context) (<-chan error, error) {
 }
 
 func (c *correct) correct(ctx context.Context, addrs []string) (err error) {
+	if err := c.discoverer.GetClient().OrderedRange(ctx, addrs,
+		func(ctx context.Context, addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
+			vc := vald.NewValdClient(conn)
+			stream, err := vc.StreamListObject(ctx, &payload.Object_List_Request{})
+			if err != nil {
+				return err
+			}
+
+			seg, ctx := stdeg.WithContext(ctx)
+			concurrency := c.cfg.Corrector.GetStreamListConcurrency()
+			seg.SetLimit(concurrency) // FIXME: server settingsをそのまま流用で良いのか？
+
+			log.Infof("starting correction for agent %s, concurrency: %d", addr, concurrency)
+
+			finalize := func() error {
+				err = seg.Wait()
+				if err != nil {
+					log.Errorf("err group returned error: %v", err)
+					return err
+				}
+				log.Infof("correction finished for agent %s", addr)
+				return nil
+			}
+			defer finalize()
+
+			streamEnd := make(chan struct{})
+			var once sync.Once
+			var mu sync.Mutex
+			// これをさらにerrgroupで囲みたくなるが、さすがに頭がおかしくなりそう
+			// 事前にRecvすべき件数はわかるのだからその回数だけfor文を回すようにする方がいいか
+			for {
+				select {
+				case <-ctx.Done():
+					return ctx.Err()
+				case <-streamEnd:
+					return nil
+				default:
+					// TODO: when vald internal errgroup is changed to block when eg limitation is reached,
+					//       switch to vald version of errgroup.
+					seg.Go(func() error {
+						mu.Lock()
+						// As long as we don't stream.Recv() from the stream, we do not consume the memory of the message.
+						// So by limiting the number of this errgroup.Go instances, we can limit the memory usage
+						// https://github.com/grpc/grpc-go/blob/33f9fa2e6e5bcf4cf8fe45133e23779ae6e43f6c/rpc_util.go#L795
+						res, err := stream.Recv()
+						mu.Unlock()
+
+						if errors.Is(err, io.EOF) {
+							log.Debugf("StreamListObject stream finished for agent %s", addr)
+							once.Do(func() {
+								close(streamEnd)
+							})
+							return nil
+						}
+						if err != nil {
+							log.Errorf("StreamListObject stream finished unexpectedly: %v", err)
+							return err
+						}
+
+						if res.GetVector() == nil {
+							st := res.GetStatus()
+							log.Error(st.GetCode(), st.GetMessage(), st.GetDetails())
+							// continue
+							return nil
+						}
+
+						log.Debugf("received object in StreamListObject: agent(%s), id(%s), timestamp(%v)", addr, res.GetVector().GetId(), res.GetVector().GetTimestamp())
+						if err := c.checkConsistency(
+							ctx,
+							&vectorReplica{
+								addr: addr,
+								vec:  res.GetVector(),
+							},
+							addrs,
+						); err != nil {
+							// TODO: valdとstdでerrorの処理が違うので注意
+							// （valdはerrが着信するまでにスタートしていた処理は行われる）
+							// (stdはerrが着信すると他は全て止まる)
+							log.Errorf("failed to check consistency: %v", err)
+							return nil // continue other processes
+						}
+
+						return nil
+					})
+				}
+			}
+		},
+	); err != nil {
+		log.Errorf("failed to range over agents(%v): %v", addrs, err)
+		return err
+	}
+
+	return nil
+}
+
+func (c *correct) correctWithCache(ctx context.Context, addrs []string) (err error) {
 	if err := c.discoverer.GetClient().OrderedRange(ctx, addrs,
 		func(ctx context.Context, addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
 			vc := vald.NewValdClient(conn)
@@ -187,6 +296,7 @@ func (c *correct) correct(ctx context.Context, addrs []string) (err error) {
 							return nil
 						}
 
+						// FIXME: When caching mode, already checked agent can be omitted here
 						if err := c.checkConsistency(
 							ctx,
 							&vectorReplica{
