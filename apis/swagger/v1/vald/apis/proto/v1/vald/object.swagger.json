@@ -125,10 +125,12 @@
       "type": "object",
       "properties": {
         "vector": {
-          "$ref": "#/definitions/ObjectVector"
+          "$ref": "#/definitions/ObjectVector",
+          "title": "The vector"
         },
         "status": {
-          "$ref": "#/definitions/rpcStatus"
+          "$ref": "#/definitions/rpcStatus",
+          "description": "The RPC error status."
         }
       }
     },
