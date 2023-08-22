@@ -17,8 +17,8 @@
 {{- $lb := .Values.gateway.lb -}}
 {{- $filter := .Values.gateway.filter -}}
 {{- if .Values.defaults.networkPolicy.enabled }}
-kind: NetworkPolicy
 apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
 metadata:
   name: filter-allow
 spec:

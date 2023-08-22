@@ -16,6 +16,7 @@ package performance
 import (
 	"bufio"
 	"context"
+	"flag"
 	"os"
 	"strconv"
 	"sync"
@@ -28,6 +29,7 @@ import (
 	"github.com/vdaas/vald/internal/core/algorithm/ngt"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/test/data/vector"
@@ -77,6 +79,15 @@ func parse(raw string) (key string, value int) {
 		return keyValue[0], val
 	}
 	return keyValue[0], val
+}
+
+func TestMain(m *testing.M) {
+	flag.Parse()
+	if testing.Short() {
+		log.Info("skipping this pkg test when -short because it takes a long time")
+		os.Exit(0)
+	}
+	os.Exit(m.Run())
 }
 
 // Test for investigation of max dimension size for agent handler
