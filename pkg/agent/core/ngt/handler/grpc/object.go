@@ -21,7 +21,6 @@ import (
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
 	"github.com/vdaas/vald/internal/errors"
-	"github.com/vdaas/vald/internal/info"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/grpc/codes"
@@ -67,17 +66,7 @@ func (s *server) Exists(ctx context.Context, uid *payload.Object_ID) (res *paylo
 		return nil, err
 	}
 	if _, ok := s.ngt.Exists(uuid); !ok {
-		err = errors.ErrObjectIDNotFound(uid.GetId())
-		err = status.WrapWithNotFound(fmt.Sprintf("Exists API meta %s's uuid not found", uid.GetId()), err,
-			&errdetails.RequestInfo{
-				RequestId:   uid.GetId(),
-				ServingData: errdetails.Serialize(uid),
-			},
-			&errdetails.ResourceInfo{
-				ResourceType: ngtResourceType + "/ngt.Exists",
-				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-			},
-			uid.GetId())
+		err = status.New(codes.NotFound, errors.ErrObjectIDNotFound(uid.GetId()).Error()).Err()
 		if span != nil {
 			span.RecordError(err)
 			span.SetAttributes(trace.StatusCodeNotFound(err.Error())...)
@@ -125,16 +114,7 @@ func (s *server) GetObject(ctx context.Context, id *payload.Object_VectorRequest
 	}
 	vec, ts, err := s.ngt.GetObject(uuid)
 	if err != nil || vec == nil {
-		err = errors.ErrObjectNotFound(err, uuid)
-		err = status.WrapWithNotFound("GetObject API failed to remove request", err,
-			&errdetails.RequestInfo{
-				RequestId:   uuid,
-				ServingData: errdetails.Serialize(id),
-			},
-			&errdetails.ResourceInfo{
-				ResourceType: ngtResourceType + "/ngt.GetObject",
-				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-			}, info.Get())
+		err = status.New(codes.NotFound, errors.ErrObjectNotFound(err, uuid).Error()).Err()
 		if span != nil {
 			span.RecordError(err)
 			span.SetAttributes(trace.StatusCodeNotFound(err.Error())...)
