@@ -84,7 +84,7 @@ func (c *correct) Start(ctx context.Context) (<-chan error, error) {
 
 	// This blocks. Should we run with errorgroup?
 	log.Info("starting correction...")
-	if c.cfg.Corrector.UseCache{
+	if c.cfg.Corrector.UseCache {
 		log.Info("with cache...")
 		if err := c.correctWithCache(ctx, addrs); err != nil {
 			log.Errorf("there's some errors while correction: %v", err)
