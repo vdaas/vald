@@ -296,6 +296,28 @@ message Remove {
     repeated Request requests = 1;
   }
 
+  // Represent the remove request based on timestamp.
+  message TimestampRequest {
+    // Represent the multiple remove request contents based on timestamp.
+    repeated Timestamp timestamps = 1;
+  }
+
+  message Timestamp {
+    // Operator is enum of each conditional operator.
+    enum Operator {
+      Eq = 0;
+      Ne = 1;
+      Ge = 2;
+      Gt = 3;
+      Le = 4;
+      Lt = 5;
+    }
+    // The timestamp.
+    int64 timestamp = 1;
+    // The conditional operator.
+    Operator operator = 2;
+  }
+
   // Represent the remove configuration.
   message Config {
     // A flag to skip exist check during upsert operation.
