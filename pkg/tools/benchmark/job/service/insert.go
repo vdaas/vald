@@ -23,9 +23,9 @@ import (
 	"strconv"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
-	"golang.org/x/sync/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
+	"golang.org/x/sync/errgroup"
 )
 
 func (j *job) insert(ctx context.Context, ech chan error) error {
