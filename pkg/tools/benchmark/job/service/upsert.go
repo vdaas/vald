@@ -39,7 +39,7 @@ func (j *job) upsert(ctx context.Context, ech chan error) error {
 	if j.timestamp > int64(0) {
 		cfg.Timestamp = j.timestamp
 	}
-	
+
 	eg, egctx := errgroup.WithContext(ctx)
 	eg.SetLimit(j.concurrencyLimit)
 	log.Warnf("concurrency limit: %v", j.concurrencyLimit)
