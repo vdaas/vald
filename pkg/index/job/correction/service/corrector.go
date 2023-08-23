@@ -63,6 +63,9 @@ func (c *correct) Start(ctx context.Context) (<-chan error, error) {
 		return nil, err
 	}
 
+	// addrs is sorted by the memory usage of each agent(descending order)
+	// this is decending because it's supposed to be used for index manager to decide
+	// which pod to make a create index rpc(higher memory, first to commit)
 	addrs := c.discoverer.GetAddrs(ctx)
 	log.Debug("agent addrs found:", addrs)
 
@@ -146,7 +149,6 @@ func (c *correct) correct(ctx context.Context, addrs []string) (err error) {
 				log.Infof("correction finished for agent %s", addr)
 				return nil
 			}
-			defer finalize()
 
 			streamEnd := make(chan struct{})
 			var once sync.Once
@@ -156,9 +158,9 @@ func (c *correct) correct(ctx context.Context, addrs []string) (err error) {
 			for {
 				select {
 				case <-ctx.Done():
-					return ctx.Err()
+					return finalize()
 				case <-streamEnd:
-					return nil
+					return finalize()
 				default:
 					// TODO: when vald internal errgroup is changed to block when eg limitation is reached,
 					//       switch to vald version of errgroup.
@@ -247,7 +249,6 @@ func (c *correct) correctWithCache(ctx context.Context, addrs []string) (err err
 			streamEnd := make(chan struct{})
 			var once sync.Once
 			var mu sync.Mutex
-			// これをさらにerrgroupで囲みたくなるが、さすがに頭がおかしくなりそう
 			// 事前にRecvすべき件数はわかるのだからその回数だけfor文を回すようにする方がいいか
 			for {
 				select {
@@ -336,19 +337,18 @@ type vectorReplica struct {
 
 // Validate len(addrs) >= 2 before calling this function
 func (c *correct) checkConsistency(ctx context.Context, targetReplica *vectorReplica, addrs []string) error {
-	// copy the addrs slice but delete the curAgentAddr
-	otherAddrs := make([]string, 0, len(addrs)-1)
-	availableAddrs := make(map[string]struct{})
+	// availableAddrs is the agents' addr that doesn't have the target replica thus is available to insert the replica
+	// to fix the index replica number if required.
+	availableAddrs := make([]string, 0, len(addrs)-1)
 	for _, addr := range addrs {
 		if addr != targetReplica.addr {
-			otherAddrs = append(otherAddrs, addr)
-			availableAddrs[addr] = struct{}{}
+			availableAddrs = append(availableAddrs, addr)
 		}
 	}
 
-	foundReplicas := make([]*vectorReplica, 0, len(otherAddrs))
+	foundReplicas := make([]*vectorReplica, 0, len(availableAddrs))
 	var mu sync.Mutex
-	if err := c.discoverer.GetClient().OrderedRangeConcurrent(ctx, otherAddrs, len(otherAddrs),
+	if err := c.discoverer.GetClient().OrderedRangeConcurrent(ctx, availableAddrs, len(availableAddrs),
 		func(ctx context.Context, addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
 			select {
 			case <-ctx.Done():
@@ -375,12 +375,18 @@ func (c *correct) checkConsistency(ctx context.Context, targetReplica *vectorRep
 			}
 
 			log.Debugf("object found: agent(%s), id(%v), timestamp(%v)", addr, v.GetId(), v.GetTimestamp())
+
 			mu.Lock()
 			foundReplicas = append(foundReplicas, &vectorReplica{
 				addr: addr,
 				vec:  v,
 			})
-			delete(availableAddrs, addr)
+			for i, a := range availableAddrs {
+				if a == addr {
+					availableAddrs = availableAddrs[:i+copy(availableAddrs[i:], availableAddrs[i+1:])]
+					break
+				}
+			}
 			mu.Unlock()
 
 			return nil
@@ -445,7 +451,7 @@ func (c *correct) correctReplica(
 	targetReplica *vectorReplica,
 	foundReplicas []*vectorReplica,
 	replica int,
-	availableAddrs map[string]struct{},
+	availableAddrs []string,
 ) error {
 	// diff < 0 means there is less replica than the correct number
 	diff := replica - c.cfg.Gateway.IndexReplica
@@ -464,13 +470,9 @@ func (c *correct) correctReplica(
 			return fmt.Errorf("no available agent to insert replica")
 		}
 
-		// availableAddrsからdiff個選んでinsert処理する
-		// TODO:　どのagentにinsertするのが最適化のロジックを考える
-		//       とりあえずはランダムに入れとく
-		for addr := range availableAddrs {
-			if diff == 0 {
-				break
-			}
+		// inserting with the reverse order of availableAddrs since the last agent has the lowest memory usage
+		for i := len(availableAddrs) - 1; i >= 0 && diff < 0; i-- {
+			addr := availableAddrs[i]
 			log.Infof("inserting replica to %s", addr)
 			if err := c.insertObject(ctx, addr, targetReplica.vec); err != nil {
 				log.Errorf("failed to insert object to agent(%s): %v", addr, err)
@@ -496,7 +498,7 @@ func (c *correct) correctReplica(
 		diff--
 	}
 
-	// delte from others
+	// delte from others if there's more to delete
 	for _, replica := range foundReplicas {
 		if diff == 0 {
 			break
