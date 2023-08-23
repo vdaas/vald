@@ -2765,7 +2765,7 @@ func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequ
 	return locs, errs
 }
 
-func (s *server) RemoveWithTimestamp(ctx context.Context, req *payload.Remove_TimestampRequest) (locs *payload.Object_Locations, err error) {
+func (s *server) RemoveWithTimestamp(ctx context.Context, req *payload.Remove_TimestampRequest) (locs *payload.Object_Locations, errs error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.RemoveRPCServiceName+"/"+vald.RemoveWithTimestampRPCName), apiName+"/"+vald.RemoveWithTimestampRPCName)
 	defer func() {
 		if span != nil {
@@ -2773,14 +2773,12 @@ func (s *server) RemoveWithTimestamp(ctx context.Context, req *payload.Remove_Ti
 		}
 	}()
 
-	// TODO: I will improve error handling. (result of "gateway.BroadCast" and "eg.Go")
-
-	var mu sync.Mutex
+	var mu, emu sync.Mutex
 	visited := make(map[string]int) // map[uuid: position of locs]
 	locs = new(payload.Object_Locations)
 
 	timestampOpFn := timestampOpsFunc(req.GetTimestamps())
-	err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) (err error) {
+	err := s.gateway.BroadCast(ctx, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) (err error) {
 		sctx, sspan := trace.StartSpan(grpc.WithGRPCMethod(ctx, "BroadCast/"+target), apiName+"/removeWithTimestamp/BroadCast/"+target)
 		defer func() {
 			if sspan != nil {
@@ -2818,19 +2816,26 @@ func (s *server) RemoveWithTimestamp(ctx context.Context, req *payload.Remove_Ti
 					}
 				}
 			}
+			emu.Lock()
+			errs = errors.Join(errs, err)
+			emu.Unlock()
 		}()
+
+		// The mutex for error used within the scope of eg.Go.
+		var egemu sync.Mutex
+		var egerr error
 
 		for {
 			select {
 			case <-egctx.Done():
-				return egctx.Err()
+				return errors.Join(egctx.Err(), egerr)
 			default:
 				res, err := stream.Recv()
 				if err != nil {
 					if err != io.EOF && !errors.Is(err, io.EOF) {
 						log.Errorf("failed to receive stream message: %v\ttarget: %s", err, target)
 					}
-					return err
+					return errors.Join(err, egerr)
 				}
 				if timestampOpFn(res.GetVector().GetTimestamp()) {
 					rreq := &payload.Remove_Request{
@@ -2861,8 +2866,10 @@ func (s *server) RemoveWithTimestamp(ctx context.Context, req *payload.Remove_Ti
 									sspan.SetStatus(trace.StatusError, err.Error())
 								}
 								log.Error(err)
-								// TODO: is it better to return not nil in any case.
-								return err
+								egemu.Lock()
+								egerr = errors.Join(egerr, err)
+								egemu.Unlock()
+								return nil
 							}
 							st, msg, err := status.ParseError(err, codes.Internal,
 								vald.RemoveRPCName+" for "+vald.RemoveWithTimestampRPCName+" gRPC error response",
@@ -2873,9 +2880,10 @@ func (s *server) RemoveWithTimestamp(ctx context.Context, req *payload.Remove_Ti
 								sspan.SetStatus(trace.StatusError, err.Error())
 							}
 							if err != nil && st.Code() != codes.NotFound {
-								log.Error(err)
-								// TODO: is it better to return not nil in any case.
-								return err
+								egemu.Lock()
+								egerr = errors.Join(egerr, err)
+								egemu.Unlock()
+								return nil
 							}
 						}
 						if res != nil && len(res.GetUuid()) != 0 && res.GetUuid() == rreq.GetId().GetId() && len(res.GetIps()) > 0 {
@@ -2897,6 +2905,9 @@ func (s *server) RemoveWithTimestamp(ctx context.Context, req *payload.Remove_Ti
 			}
 		}
 	})
+	if errs != nil {
+		err = errors.Join(err, errs)
+	}
 	if err != nil {
 		st, msg, err := status.ParseError(err, codes.Internal,
 			"failed to parse "+vald.RemoveWithTimestampRPCName+" gRPC error response",
