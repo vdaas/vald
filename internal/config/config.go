@@ -179,7 +179,9 @@ func deepMerge(dst, src reflect.Value, visited map[uintptr]bool, fieldPath strin
 		if visited[addr] {
 			return nil
 		}
-		visited[addr] = true
+		if src.NumField() > 1 {
+			visited[addr] = true
+		}
 	}
 	switch dst.Kind() {
 	case reflect.Ptr:
@@ -238,14 +240,19 @@ func deepMerge(dst, src reflect.Value, visited map[uintptr]bool, fieldPath strin
 		dElem := dType.Elem()
 		for _, key := range src.MapKeys() {
 			vdst := dst.MapIndex(key)
+			// fmt.Println(vdst.IsValid(), key, vdst)
 			if !vdst.IsValid() {
 				vdst = reflect.New(dElem).Elem()
 			}
 			nf := fmt.Sprintf("%s[%s]", fieldPath, key)
-			if err = deepMerge(vdst, src.MapIndex(key), visited, nf); err != nil {
-				return errors.Errorf("error in array at %s: %w", nf, err)
+			if vdst.CanSet() {
+				if err = deepMerge(vdst, src.MapIndex(key), visited, nf); err != nil {
+					return errors.Errorf("error in array at %s: %w", nf, err)
+				}
+				dst.SetMapIndex(key, vdst)
+			} else {
+				dst.SetMapIndex(key, src.MapIndex(key))
 			}
-			dst.SetMapIndex(key, vdst)
 		}
 	default:
 		if dst.CanSet() {
