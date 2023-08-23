@@ -1836,8 +1836,7 @@ func Test_deepMerge(t *testing.T) {
 					visited:   visited,
 					fieldPath: "",
 				},
-				want: want{
-				},
+				want:       want{},
 				checkFunc:  defaultCheckFunc,
 				beforeFunc: defaultBeforeFunc,
 				afterFunc:  defaultAfterFunc,
@@ -1859,8 +1858,7 @@ func Test_deepMerge(t *testing.T) {
 					visited:   visited,
 					fieldPath: "",
 				},
-				want: want{
-				},
+				want:       want{},
 				checkFunc:  defaultCheckFunc,
 				beforeFunc: defaultBeforeFunc,
 				afterFunc:  defaultAfterFunc,
