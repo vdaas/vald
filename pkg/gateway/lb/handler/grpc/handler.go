@@ -2917,7 +2917,7 @@ func (s *server) RemoveWithTimestamp(ctx context.Context, req *payload.Remove_Ti
 		}
 		return nil, err
 	}
-	if locs == nil || len(locs.Locations) == 0 {
+	if locs == nil || len(locs.GetLocations()) == 0 {
 		err = status.WrapWithNotFound(
 			vald.RemoveWithTimestampRPCName+" API remove target not found", errors.ErrIndexNotFound,
 		)
