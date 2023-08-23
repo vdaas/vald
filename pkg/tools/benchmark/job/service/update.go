@@ -23,9 +23,9 @@ import (
 	"strconv"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
-	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
+	"golang.org/x/sync/errgroup"
 )
 
 func (j *job) update(ctx context.Context, ech chan error) error {
@@ -39,8 +39,10 @@ func (j *job) update(ctx context.Context, ech chan error) error {
 	if j.timestamp > int64(0) {
 		cfg.Timestamp = j.timestamp
 	}
-	eg, egctx := errgroup.New(ctx)
-	eg.Limitation(j.concurrencyLimit)
+	eg, egctx := errgroup.WithContext(ctx)
+	eg.SetLimit(j.concurrencyLimit)
+	// eg, egctx := errgroup.New(ctx)
+	// eg.Limitation(j.concurrencyLimit)
 	for i := j.dataset.Range.Start; i <= j.dataset.Range.End; i++ {
 		iter := i
 		eg.Go(func() error {
