@@ -2795,9 +2795,7 @@ func (s *server) RemoveWithTimestamp(ctx context.Context, req *payload.Remove_Ti
 		}
 		defer func() {
 			if werr := eg.Wait(); werr != nil {
-				err = errors.Join(err, werr, stream.CloseSend())
-			} else {
-				err = errors.Join(err, stream.CloseSend())
+				err = errors.Join(err, werr)
 			}
 
 			if err != nil {
