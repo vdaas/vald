@@ -2813,10 +2813,10 @@ func (s *server) RemoveWithTimestamp(ctx context.Context, req *payload.Remove_Ti
 						sspan.SetStatus(trace.StatusError, msg)
 					}
 				}
+				emu.Lock()
+				errs = errors.Join(errs, err)
+				emu.Unlock()
 			}
-			emu.Lock()
-			errs = errors.Join(errs, err)
-			emu.Unlock()
 		}()
 
 		// The mutex for error used within the scope of eg.Go.
