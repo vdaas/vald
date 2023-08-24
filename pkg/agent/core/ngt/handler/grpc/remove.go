@@ -284,6 +284,28 @@ func (s *server) RemoveWithTimestamp(ctx context.Context, req *payload.Remove_Ti
 		}
 		return true
 	})
+	if errs != nil {
+		st, msg, err := status.ParseError(errs, codes.Internal,
+			"failed to parse "+vald.RemoveRPCName+" gRPC error response",
+		)
+		if span != nil {
+			span.RecordError(err)
+			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+			span.SetStatus(trace.StatusError, err.Error())
+		}
+		return nil, err
+	}
+	if locs == nil || len(locs.GetLocations()) == 0 {
+		err := status.WrapWithNotFound(
+			vald.RemoveWithTimestampRPCName+" API remove target not found", errors.ErrIndexNotFound,
+		)
+		if span != nil {
+			span.RecordError(err)
+			span.SetAttributes(trace.StatusCodeNotFound(err.Error())...)
+			span.SetStatus(trace.StatusError, err.Error())
+		}
+		return nil, err
+	}
 	return locs, nil
 }
 
