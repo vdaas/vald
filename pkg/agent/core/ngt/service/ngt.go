@@ -83,6 +83,7 @@ type NGT interface {
 	GetDimensionSize() int
 	Close(ctx context.Context) error
 	BrokenIndexCount() uint64
+	KvsRangeDuration() int64
 }
 
 type ngt struct {
@@ -1746,4 +1747,8 @@ func (n *ngt) toSearchResponse(sr []core.SearchResult) (res *payload.Search_Resp
 		return nil, errors.ErrEmptySearchResult
 	}
 	return res, nil
+}
+
+func (n *ngt) KvsRangeDuration() int64 {
+	return n.kvs.RangeDuration()
 }
