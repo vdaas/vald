@@ -2772,7 +2772,7 @@ func (s *server) RemoveWithTimestamp(ctx context.Context, req *payload.Remove_Ti
 		}
 	}()
 
-	var mu sync.RWMutex
+	var mu sync.Mutex
 	var emu sync.Mutex
 	visited := make(map[string]int) // map[uuid: position of locs]
 	locs = new(payload.Object_Locations)
@@ -2789,7 +2789,7 @@ func (s *server) RemoveWithTimestamp(ctx context.Context, req *payload.Remove_Ti
 		if err != nil {
 			if errors.Is(err, errors.ErrGRPCClientConnNotFound("*")) {
 				err = status.WrapWithInternal(
-					vald.RemoveRPCName+" for "+vald.RemoveWithTimestampRPCName+" API connection not found", err,
+					vald.RemoveWithTimestampRPCName+" API connection not found", err,
 				)
 				if sspan != nil {
 					sspan.RecordError(err)
@@ -2853,6 +2853,12 @@ func (s *server) RemoveWithTimestamp(ctx context.Context, req *payload.Remove_Ti
 	if err != nil {
 		st, msg, err := status.ParseError(err, codes.Internal,
 			"failed to parse "+vald.RemoveWithTimestampRPCName+" gRPC error response",
+			&errdetails.RequestInfo{
+				ServingData: errdetails.Serialize(req),
+			},
+			&errdetails.ResourceInfo{
+				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+			},
 		)
 		if span != nil {
 			span.RecordError(err)
@@ -2864,6 +2870,12 @@ func (s *server) RemoveWithTimestamp(ctx context.Context, req *payload.Remove_Ti
 	if locs == nil || len(locs.GetLocations()) == 0 {
 		err = status.WrapWithNotFound(
 			vald.RemoveWithTimestampRPCName+" API remove target not found", errors.ErrIndexNotFound,
+			&errdetails.RequestInfo{
+				ServingData: errdetails.Serialize(req),
+			},
+			&errdetails.ResourceInfo{
+				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+			},
 		)
 		if span != nil {
 			span.RecordError(err)
