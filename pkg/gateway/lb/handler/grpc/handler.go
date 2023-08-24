@@ -2777,8 +2777,11 @@ func (s *server) RemoveWithTimestamp(ctx context.Context, req *payload.Remove_Ti
 	visited := make(map[string]int) // map[uuid: position of locs]
 	locs = new(payload.Object_Locations)
 
+	eg, egctx := errgroup.New(ctx)
+	eg.Limitation(s.streamConcurrency)
+
 	timestampOpFn := timestampOpsFunc(req.GetTimestamps())
-	err := s.gateway.BroadCast(ctx, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) (err error) {
+	err := s.gateway.BroadCast(egctx, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) (err error) {
 		sctx, sspan := trace.StartSpan(grpc.WithGRPCMethod(ctx, "BroadCast/"+target), apiName+"/removeWithTimestamp/BroadCast/"+target)
 		defer func() {
 			if sspan != nil {
@@ -2786,18 +2789,11 @@ func (s *server) RemoveWithTimestamp(ctx context.Context, req *payload.Remove_Ti
 			}
 		}()
 
-		eg, egctx := errgroup.New(sctx)
-		eg.Limitation(s.streamConcurrency)
-
-		stream, err := vc.StreamListObject(egctx, new(payload.Object_List_Request), copts...)
+		stream, err := vc.StreamListObject(sctx, new(payload.Object_List_Request), copts...)
 		if err != nil {
 			return err
 		}
 		defer func() {
-			if werr := eg.Wait(); werr != nil {
-				err = errors.Join(err, werr)
-			}
-
 			if err != nil {
 				if sspan != nil {
 					var (
@@ -2825,8 +2821,8 @@ func (s *server) RemoveWithTimestamp(ctx context.Context, req *payload.Remove_Ti
 
 		for {
 			select {
-			case <-egctx.Done():
-				return errors.Join(egctx.Err(), egerr)
+			case <-sctx.Done():
+				return errors.Join(sctx.Err(), egerr)
 			default:
 				res, err := stream.Recv()
 				if err != nil {
@@ -2845,14 +2841,14 @@ func (s *server) RemoveWithTimestamp(ctx context.Context, req *payload.Remove_Ti
 						},
 					}
 					eg.Go(func() error {
-						egctx, sspan := trace.StartSpan(grpc.WrapGRPCMethod(egctx, "eg.Go"), apiName+"/"+vald.RemoveRPCName+"/id-"+rreq.GetId().GetId())
+						sctx, sspan := trace.StartSpan(grpc.WrapGRPCMethod(sctx, "eg.Go"), apiName+"/"+vald.RemoveRPCName+"/id-"+rreq.GetId().GetId())
 						defer func() {
 							if sspan != nil {
 								sspan.End()
 							}
 						}()
 
-						res, err := vc.Remove(egctx, rreq)
+						res, err := vc.Remove(sctx, rreq)
 						if err != nil {
 							if errors.Is(err, errors.ErrGRPCClientConnNotFound("*")) {
 								err = status.WrapWithInternal(
@@ -2892,7 +2888,15 @@ func (s *server) RemoveWithTimestamp(ctx context.Context, req *payload.Remove_Ti
 							} else {
 								if pos < len(locs.GetLocations()) {
 									locs.GetLocations()[pos].Ips = append(locs.GetLocations()[pos].Ips, res.GetIps()...)
-									locs.GetLocations()[pos].Name += "," + res.GetName()
+									// locs.GetLocations()[pos].Name += "," + res.GetName()
+
+									if s := locs.GetLocations()[pos].Name; len(s) == 0 {
+										locs.GetLocations()[pos].Name = res.GetName()
+									} else {
+										locs.GetLocations()[pos].Name = strings.Join([]string{
+											s, res.GetName(),
+										}, ",")
+									}
 								}
 							}
 							mu.Unlock()
@@ -2903,6 +2907,9 @@ func (s *server) RemoveWithTimestamp(ctx context.Context, req *payload.Remove_Ti
 			}
 		}
 	})
+	if werr := eg.Wait(); werr != nil {
+		err = errors.Join(err, werr)
+	}
 	if errs != nil {
 		err = errors.Join(err, errs)
 	}
