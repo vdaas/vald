@@ -16,6 +16,7 @@ package grpc
 import (
 	"context"
 	"fmt"
+	"sync"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
@@ -248,4 +249,88 @@ func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequ
 		return nil, err
 	}
 	return s.newLocations(uuids...), nil
+}
+
+func (s *server) RemoveWithTimestamp(ctx context.Context, req *payload.Remove_TimestampRequest) (locs *payload.Object_Locations, errs error) {
+	ctx, span := trace.StartSpan(ctx, apiName+"/"+vald.RemoveWithTimestampRPCName)
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+
+	var mu, emu sync.Mutex
+	locs = new(payload.Object_Locations)
+
+	timestampOpFn := timestampOpsFunc(req.GetTimestamps())
+	s.ngt.ListObjectFunc(ctx, func(uuid string, oid uint32, timestamp int64) bool {
+		if !timestampOpFn(timestamp) {
+			return true
+		}
+		res, err := s.Remove(ctx, &payload.Remove_Request{
+			Id: &payload.Object_ID{
+				Id: uuid,
+			},
+		})
+		if err != nil {
+			emu.Lock()
+			err = errors.Join(errs, err)
+			emu.Lock()
+		}
+		if res != nil {
+			mu.Lock()
+			locs.Locations = append(locs.Locations, res)
+			mu.Unlock()
+		}
+		return true
+	})
+	return locs, nil
+}
+
+func timestampOpsFunc(ts []*payload.Remove_Timestamp) func(int64) bool {
+	fns := make([]func(int64) bool, 0, len(ts))
+	for _, t := range ts {
+		fns = append(fns, timestampOpFunc(t))
+	}
+	return func(t int64) bool {
+		for _, fn := range fns {
+			if !fn(t) {
+				return false
+			}
+		}
+		return true
+	}
+}
+
+func timestampOpFunc(ts *payload.Remove_Timestamp) func(int64) bool {
+	switch ts.GetOperator() {
+	case payload.Remove_Timestamp_Eq:
+		return func(t int64) bool {
+			return ts.GetTimestamp() == t
+		}
+	case payload.Remove_Timestamp_Ne:
+		return func(t int64) bool {
+			return ts.GetTimestamp() != t
+		}
+	case payload.Remove_Timestamp_Ge:
+		return func(t int64) bool {
+			return ts.GetTimestamp() <= t
+		}
+	case payload.Remove_Timestamp_Gt:
+		return func(t int64) bool {
+			return ts.GetTimestamp() < t
+		}
+	case payload.Remove_Timestamp_Le:
+		return func(t int64) bool {
+			return ts.GetTimestamp() >= t
+		}
+	case payload.Remove_Timestamp_Lt:
+		return func(t int64) bool {
+			return ts.GetTimestamp() > t
+		}
+	default:
+		return func(timestamp int64) bool {
+			return false
+		}
+	}
 }

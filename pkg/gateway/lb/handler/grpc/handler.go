@@ -20,7 +20,6 @@ package grpc
 import (
 	"context"
 	"fmt"
-	"io"
 	"strconv"
 	"sync/atomic"
 	"time"
@@ -2773,15 +2772,12 @@ func (s *server) RemoveWithTimestamp(ctx context.Context, req *payload.Remove_Ti
 		}
 	}()
 
-	var mu, emu sync.Mutex
+	var mu sync.RWMutex
+	var emu sync.Mutex
 	visited := make(map[string]int) // map[uuid: position of locs]
 	locs = new(payload.Object_Locations)
 
-	eg, egctx := errgroup.New(ctx)
-	eg.Limitation(s.streamConcurrency)
-
-	timestampOpFn := timestampOpsFunc(req.GetTimestamps())
-	err := s.gateway.BroadCast(egctx, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) (err error) {
+	err := s.gateway.BroadCast(ctx, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) (err error) {
 		sctx, sspan := trace.StartSpan(grpc.WithGRPCMethod(ctx, "BroadCast/"+target), apiName+"/removeWithTimestamp/BroadCast/"+target)
 		defer func() {
 			if sspan != nil {
@@ -2789,127 +2785,68 @@ func (s *server) RemoveWithTimestamp(ctx context.Context, req *payload.Remove_Ti
 			}
 		}()
 
-		stream, err := vc.StreamListObject(sctx, new(payload.Object_List_Request), copts...)
+		res, err := vc.RemoveWithTimestamp(sctx, req, copts...)
 		if err != nil {
-			return err
-		}
-		defer func() {
-			if err != nil {
+			if errors.Is(err, errors.ErrGRPCClientConnNotFound("*")) {
+				err = status.WrapWithInternal(
+					vald.RemoveRPCName+" for "+vald.RemoveWithTimestampRPCName+" API connection not found", err,
+				)
 				if sspan != nil {
-					var (
-						st  *status.Status
-						msg string
-					)
-					st, msg, err = status.ParseError(err, codes.Internal,
-						vald.RemoveWithTimestampRPCName+" gRPC error response",
-					)
-					if sspan != nil {
-						sspan.RecordError(err)
-						sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
-						sspan.SetStatus(trace.StatusError, msg)
-					}
+					sspan.RecordError(err)
+					sspan.SetAttributes(trace.StatusCodeInternal(err.Error())...)
+					sspan.SetStatus(trace.StatusError, err.Error())
 				}
+				log.Error(err)
 				emu.Lock()
 				errs = errors.Join(errs, err)
 				emu.Unlock()
+				return nil
 			}
-		}()
+			var (
+				st  *status.Status
+				msg string
+			)
+			st, msg, err = status.ParseError(err, codes.Internal,
+				vald.RemoveWithTimestampRPCName+" gRPC error response",
+			)
+			if sspan != nil {
+				sspan.RecordError(err)
+				sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+				sspan.SetStatus(trace.StatusError, err.Error())
+			}
+			if err != nil && st.Code() != codes.NotFound {
+				log.Error(err)
+				emu.Lock()
+				errs = errors.Join(errs, err)
+				emu.Unlock()
+				return nil
+			}
 
-		// The mutex for error used within the scope of eg.Go.
-		var egemu sync.Mutex
-		var egerr error
-
-		for {
-			select {
-			case <-sctx.Done():
-				return errors.Join(sctx.Err(), egerr)
-			default:
-				res, err := stream.Recv()
-				if err != nil {
-					if err != io.EOF && !errors.Is(err, io.EOF) {
-						log.Errorf("failed to receive stream message: %v\ttarget: %s", err, target)
-					}
-					return errors.Join(err, egerr)
-				}
-				if timestampOpFn(res.GetVector().GetTimestamp()) {
-					rreq := &payload.Remove_Request{
-						Id: &payload.Object_ID{
-							Id: res.GetVector().GetId(),
-						},
-						Config: &payload.Remove_Config{
-							SkipStrictExistCheck: true,
-						},
-					}
-					eg.Go(func() error {
-						sctx, sspan := trace.StartSpan(grpc.WrapGRPCMethod(sctx, "eg.Go"), apiName+"/"+vald.RemoveRPCName+"/id-"+rreq.GetId().GetId())
-						defer func() {
-							if sspan != nil {
-								sspan.End()
-							}
-						}()
-
-						res, err := vc.Remove(sctx, rreq)
-						if err != nil {
-							if errors.Is(err, errors.ErrGRPCClientConnNotFound("*")) {
-								err = status.WrapWithInternal(
-									vald.RemoveRPCName+" for "+vald.RemoveWithTimestampRPCName+" API connection not found", err,
-								)
-								if sspan != nil {
-									sspan.RecordError(err)
-									sspan.SetAttributes(trace.StatusCodeInternal(err.Error())...)
-									sspan.SetStatus(trace.StatusError, err.Error())
-								}
-								log.Error(err)
-								egemu.Lock()
-								egerr = errors.Join(egerr, err)
-								egemu.Unlock()
-								return nil
-							}
-							st, msg, err := status.ParseError(err, codes.Internal,
-								vald.RemoveRPCName+" for "+vald.RemoveWithTimestampRPCName+" gRPC error response",
-							)
-							if sspan != nil {
-								sspan.RecordError(err)
-								sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
-								sspan.SetStatus(trace.StatusError, err.Error())
-							}
-							if err != nil && st.Code() != codes.NotFound {
-								egemu.Lock()
-								egerr = errors.Join(egerr, err)
-								egemu.Unlock()
-								return nil
-							}
-						}
-						if res != nil && len(res.GetUuid()) != 0 && res.GetUuid() == rreq.GetId().GetId() && len(res.GetIps()) > 0 {
-							mu.Lock()
-							if pos, ok := visited[res.GetUuid()]; !ok {
-								locs.Locations = append(locs.GetLocations(), res)
-								visited[res.GetUuid()] = len(locs.Locations) - 1
+			if res != nil && len(res.GetLocations()) > 0 {
+				for _, loc := range res.GetLocations() {
+					mu.Lock()
+					if pos, ok := visited[loc.GetUuid()]; !ok {
+						locs.Locations = append(locs.GetLocations(), loc)
+						visited[loc.GetUuid()] = len(locs.Locations) - 1
+					} else {
+						if pos < len(locs.GetLocations()) {
+							locs.GetLocations()[pos].Ips = append(locs.GetLocations()[pos].Ips, loc.GetIps()...)
+							// locs.GetLocations()[pos].Name += "," + loc.GetName()
+							if s := locs.GetLocations()[pos].Name; len(s) == 0 {
+								locs.GetLocations()[pos].Name = loc.GetName()
 							} else {
-								if pos < len(locs.GetLocations()) {
-									locs.GetLocations()[pos].Ips = append(locs.GetLocations()[pos].Ips, res.GetIps()...)
-									// locs.GetLocations()[pos].Name += "," + res.GetName()
-
-									if s := locs.GetLocations()[pos].Name; len(s) == 0 {
-										locs.GetLocations()[pos].Name = res.GetName()
-									} else {
-										locs.GetLocations()[pos].Name = strings.Join([]string{
-											s, res.GetName(),
-										}, ",")
-									}
-								}
+								locs.GetLocations()[pos].Name = strings.Join([]string{
+									s, loc.GetName(),
+								}, ",")
 							}
-							mu.Unlock()
 						}
-						return nil
-					})
+					}
+					mu.Unlock()
 				}
 			}
 		}
+		return nil
 	})
-	if werr := eg.Wait(); werr != nil {
-		err = errors.Join(err, werr)
-	}
 	if errs != nil {
 		err = errors.Join(err, errs)
 	}
@@ -2936,54 +2873,6 @@ func (s *server) RemoveWithTimestamp(ctx context.Context, req *payload.Remove_Ti
 		return nil, err
 	}
 	return locs, nil
-}
-
-func timestampOpsFunc(ts []*payload.Remove_Timestamp) func(int64) bool {
-	fns := make([]func(int64) bool, 0, len(ts))
-	for _, t := range ts {
-		fns = append(fns, timestampOpFunc(t))
-	}
-	return func(t int64) bool {
-		for _, fn := range fns {
-			if !fn(t) {
-				return false
-			}
-		}
-		return true
-	}
-}
-
-func timestampOpFunc(ts *payload.Remove_Timestamp) func(int64) bool {
-	switch ts.GetOperator() {
-	case payload.Remove_Timestamp_Eq:
-		return func(t int64) bool {
-			return ts.GetTimestamp() == t
-		}
-	case payload.Remove_Timestamp_Ne:
-		return func(t int64) bool {
-			return ts.GetTimestamp() != t
-		}
-	case payload.Remove_Timestamp_Ge:
-		return func(t int64) bool {
-			return ts.GetTimestamp() <= t
-		}
-	case payload.Remove_Timestamp_Gt:
-		return func(t int64) bool {
-			return ts.GetTimestamp() < t
-		}
-	case payload.Remove_Timestamp_Le:
-		return func(t int64) bool {
-			return ts.GetTimestamp() >= t
-		}
-	case payload.Remove_Timestamp_Lt:
-		return func(t int64) bool {
-			return ts.GetTimestamp() > t
-		}
-	default:
-		return func(timestamp int64) bool {
-			return false
-		}
-	}
 }
 
 func (s *server) getObject(ctx context.Context, uuid string) (vec *payload.Object_Vector, err error) {
