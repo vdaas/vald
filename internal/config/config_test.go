@@ -18,6 +18,7 @@
 package config
 
 import (
+	"encoding/json"
 	"io/fs"
 	"os"
 	"reflect"
@@ -1431,4 +1432,460 @@ func TestToRawYaml(t *testing.T) {
 	}
 }
 
-// NOT IMPLEMENTED BELOW
+func TestMerge(t *testing.T) {
+	type config struct {
+		// Config     GlobalConfig
+		Discoverer *Discoverer
+	}
+
+	type args struct {
+		objs []*config
+	}
+	type want struct {
+		wantDst *config
+		err     error
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, *config, error) error
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
+	}
+	defaultCheckFunc := func(w want, gotDst *config, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(gotDst, w.wantDst) {
+			gb, _ := json.Marshal(gotDst)
+			wb, _ := json.Marshal(w.wantDst)
+			return errors.Errorf("got:  \"%s\",\n\t\t\t\twant: \"%s\"", string(gb), string(wb))
+		}
+		return nil
+	}
+	defaultBeforeFunc := func(t *testing.T, _ args) {
+		t.Helper()
+	}
+	defaultAfterFunc := func(t *testing.T, _ args) {
+		t.Helper()
+	}
+
+	// dst
+	dst := &config{
+		Discoverer: &Discoverer{
+			Name:              "dst",
+			Namespace:         "dst",
+			DiscoveryDuration: "1m",
+			Net: &Net{
+				DNS: &DNS{
+					RefreshDuration: "2s",
+					CacheExpiration: "10s",
+				},
+				Dialer: &Dialer{
+					Timeout:          "2s",
+					Keepalive:        "1m",
+					FallbackDelay:    "2s",
+					DualStackEnabled: true,
+				},
+				SocketOption: &SocketOption{
+					ReusePort:                true,
+					ReuseAddr:                true,
+					TCPFastOpen:              false,
+					TCPNoDelay:               true,
+					TCPCork:                  true,
+					TCPQuickAck:              false,
+					TCPDeferAccept:           true,
+					IPTransparent:            true,
+					IPRecoverDestinationAddr: true,
+				},
+				TLS: &TLS{
+					Enabled:            false,
+					Cert:               "/path/to/cert",
+					Key:                "/path/to/key",
+					CA:                 "/path/to/ca",
+					InsecureSkipVerify: false,
+				},
+			},
+			Selectors: &Selectors{
+				Pod: &Selector{
+					Labels: map[string]string{
+						"vald.vdaas.org":     "dst",
+						"vald.vdaas.org/pod": "dst",
+					},
+					Fields: map[string]string{
+						"vald.vdaas.org":     "dst",
+						"vald.vdaas.org/pod": "dst",
+					},
+				},
+				Node: &Selector{
+					Labels: map[string]string{
+						"vald.vdaas.org":      "dst",
+						"vald.vdaas.org/node": "dst",
+					},
+					Fields: map[string]string{
+						"vald.vdaas.org":      "dst",
+						"vald.vdaas.org/node": "dst",
+					},
+				},
+				NodeMetrics: &Selector{
+					Labels: map[string]string{
+						"vald.vdaas.org":      "dst",
+						"vald.vdaas.org/node": "dst",
+					},
+					Fields: map[string]string{
+						"vald.vdaas.org":      "dst",
+						"vald.vdaas.org/node": "dst",
+					},
+				},
+				PodMetrics: &Selector{
+					Labels: map[string]string{
+						"vald.vdaas.org":     "dst",
+						"vald.vdaas.org/pod": "dst",
+					},
+					Fields: map[string]string{
+						"vald.vdaas.org":     "dst",
+						"vald.vdaas.org/pod": "dst",
+					},
+				},
+			},
+		},
+	}
+	// src
+	src := &config{
+		Discoverer: &Discoverer{
+			Name:              "src",
+			Namespace:         "src",
+			DiscoveryDuration: "10m",
+			Net: &Net{
+				DNS: &DNS{
+					RefreshDuration: "20s",
+					CacheExpiration: "1s",
+				},
+				Dialer: &Dialer{
+					Timeout:          "20s",
+					Keepalive:        "10m",
+					FallbackDelay:    "20s",
+					DualStackEnabled: true,
+				},
+				SocketOption: &SocketOption{
+					TCPFastOpen: true,
+				},
+				TLS: &TLS{
+					Cert:               "/path/to/cert",
+					Key:                "/path/to/key",
+					CA:                 "/path/to/ca",
+					InsecureSkipVerify: false,
+				},
+			},
+			Selectors: &Selectors{
+				Pod: &Selector{
+					Labels: map[string]string{
+						"vald.vdaas.org":     "src",
+						"vald.vdaas.org/pod": "src",
+					},
+					Fields: map[string]string{
+						"vald.vdaas.org":     "src",
+						"vald.vdaas.org/pod": "src",
+					},
+				},
+				Node: &Selector{
+					Labels: map[string]string{
+						"vald.vdaas.org":     "src",
+						"vald.vdaas.org/src": "src",
+					},
+					Fields: map[string]string{
+						"vald.vdaas.org":      "src",
+						"vald.vdaas.org/node": "src",
+					},
+				},
+				NodeMetrics: &Selector{
+					Labels: map[string]string{
+						"vald.vdaas.org":      "src",
+						"vald.vdaas.org/node": "src",
+					},
+					Fields: map[string]string{
+						"vald.vdaas.org":      "src",
+						"vald.vdaas.org/node": "src",
+					},
+				},
+				PodMetrics: &Selector{
+					Labels: map[string]string{
+						"vald.vdaas.org":     "src",
+						"vald.vdaas.org/pod": "src",
+					},
+					Fields: map[string]string{
+						"vald.vdaas.org":     "src",
+						"vald.vdaas.org/pod": "src",
+					},
+				},
+			},
+		},
+	}
+	w := &config{
+		Discoverer: &Discoverer{
+			Name:              "src",
+			Namespace:         "src",
+			DiscoveryDuration: "10m",
+			Net: &Net{
+				DNS: &DNS{
+					CacheEnabled:    false,
+					RefreshDuration: "20s",
+					CacheExpiration: "1s",
+				},
+				Dialer: &Dialer{
+					Timeout:          "20s",
+					Keepalive:        "10m",
+					FallbackDelay:    "20s",
+					DualStackEnabled: true,
+				},
+				SocketOption: &SocketOption{
+					ReusePort:                true,
+					ReuseAddr:                true,
+					TCPFastOpen:              true,
+					TCPNoDelay:               true,
+					TCPCork:                  true,
+					TCPQuickAck:              false,
+					TCPDeferAccept:           true,
+					IPTransparent:            true,
+					IPRecoverDestinationAddr: true,
+				},
+				TLS: &TLS{
+					Enabled:            false,
+					Cert:               "/path/to/cert",
+					Key:                "/path/to/key",
+					CA:                 "/path/to/ca",
+					InsecureSkipVerify: false,
+				},
+			},
+			Selectors: &Selectors{
+				Pod: &Selector{
+					Labels: map[string]string{
+						"vald.vdaas.org":     "src",
+						"vald.vdaas.org/pod": "src",
+					},
+					Fields: map[string]string{
+						"vald.vdaas.org":     "src",
+						"vald.vdaas.org/pod": "src",
+					},
+				},
+				Node: &Selector{
+					Labels: map[string]string{
+						"vald.vdaas.org":      "src",
+						"vald.vdaas.org/node": "dst",
+						"vald.vdaas.org/src":  "src",
+					},
+					Fields: map[string]string{
+						"vald.vdaas.org":      "src",
+						"vald.vdaas.org/node": "src",
+					},
+				},
+				NodeMetrics: &Selector{
+					Labels: map[string]string{
+						"vald.vdaas.org":      "src",
+						"vald.vdaas.org/node": "src",
+					},
+					Fields: map[string]string{
+						"vald.vdaas.org":      "src",
+						"vald.vdaas.org/node": "src",
+					},
+				},
+				PodMetrics: &Selector{
+					Labels: map[string]string{
+						"vald.vdaas.org":     "src",
+						"vald.vdaas.org/pod": "src",
+					},
+					Fields: map[string]string{
+						"vald.vdaas.org":     "src",
+						"vald.vdaas.org/pod": "src",
+					},
+				},
+			},
+		},
+	}
+
+	tests := []test{
+		{
+			name: "return nil config when len(objs) is 0.",
+			args: args{
+				objs: []*config{},
+			},
+			want:       want{},
+			checkFunc:  defaultCheckFunc,
+			beforeFunc: defaultBeforeFunc,
+			afterFunc:  defaultAfterFunc,
+		},
+		{
+			name: "return dst config when len(objs) is 1.",
+			args: args{
+				objs: []*config{
+					dst,
+				},
+			},
+			want: want{
+				wantDst: dst,
+			},
+			checkFunc:  defaultCheckFunc,
+			beforeFunc: defaultBeforeFunc,
+			afterFunc:  defaultAfterFunc,
+		},
+		{
+			name: "return merged config when len(objs) is 2.",
+			args: args{
+				objs: []*config{
+					dst,
+					src,
+				},
+			},
+			want: want{
+				wantDst: w,
+			},
+			checkFunc:  defaultCheckFunc,
+			beforeFunc: defaultBeforeFunc,
+			afterFunc:  defaultAfterFunc,
+		},
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(tt, test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(tt, test.args)
+			}
+			checkFunc := test.checkFunc
+			if test.checkFunc == nil {
+				checkFunc = defaultCheckFunc
+			}
+			gotDst, err := Merge(test.args.objs...)
+			t.Log("err: \t", err, "\n\t", gotDst, "\n\t", test.want.wantDst)
+			if err := checkFunc(test.want, gotDst, err); err != nil {
+				tt.Errorf("error: \n\t\t\t\t%v", err)
+			}
+		})
+	}
+}
+
+func Test_deepMerge(t *testing.T) {
+	type config struct {
+		Slice []int
+		GlobalConfig
+	}
+	type args struct {
+		dst       reflect.Value
+		src       reflect.Value
+		visited   map[uintptr]bool
+		fieldPath string
+	}
+	type want struct {
+		err error
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, error) error
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
+	}
+	defaultCheckFunc := func(w want, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		return nil
+	}
+	defaultBeforeFunc := func(t *testing.T, _ args) {
+		t.Helper()
+	}
+	defaultAfterFunc := func(t *testing.T, _ args) {
+		t.Helper()
+	}
+	tests := []test{
+		func() test {
+			dst := &config{
+				GlobalConfig: GlobalConfig{
+					Version: "v0.0.1",
+					TZ:      "UTC",
+					Logging: &Logging{
+						Logger: "glg",
+						Level:  "debug",
+						Format: "raw",
+					},
+				},
+			}
+			src := &config{
+				GlobalConfig: GlobalConfig{
+					Version: "v1.0.1",
+					TZ:      "JST",
+					Logging: &Logging{
+						Logger: "glg",
+						Format: "json",
+					},
+				},
+			}
+			visited := make(map[uintptr]bool)
+			return test{
+				name: "success merge struct by src",
+				args: args{
+					dst:       reflect.ValueOf(dst),
+					src:       reflect.ValueOf(src),
+					visited:   visited,
+					fieldPath: "",
+				},
+				want:       want{},
+				checkFunc:  defaultCheckFunc,
+				beforeFunc: defaultBeforeFunc,
+				afterFunc:  defaultAfterFunc,
+			}
+		}(),
+		func() test {
+			dst := &config{
+				Slice: []int{1, 2, 3},
+			}
+			src := &config{
+				Slice: []int{4, 5},
+			}
+			visited := make(map[uintptr]bool)
+			return test{
+				name: "success merge struct by slice",
+				args: args{
+					dst:       reflect.ValueOf(dst),
+					src:       reflect.ValueOf(src),
+					visited:   visited,
+					fieldPath: "",
+				},
+				want:       want{},
+				checkFunc:  defaultCheckFunc,
+				beforeFunc: defaultBeforeFunc,
+				afterFunc:  defaultAfterFunc,
+			}
+		}(),
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(tt, test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(tt, test.args)
+			}
+			checkFunc := test.checkFunc
+			if test.checkFunc == nil {
+				checkFunc = defaultCheckFunc
+			}
+
+			err := deepMerge(test.args.dst, test.args.src, test.args.visited, test.args.fieldPath)
+			if err := checkFunc(test.want, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}

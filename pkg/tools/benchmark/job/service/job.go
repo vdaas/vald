@@ -33,6 +33,7 @@ import (
 	"github.com/vdaas/vald/internal/k8s/client"
 	v1 "github.com/vdaas/vald/internal/k8s/vald/benchmark/api/v1"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/rand"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/test/data/hdf5"
 	"github.com/vdaas/vald/internal/timeutil/rate"
@@ -245,34 +246,6 @@ func (j *job) PreStart(ctx context.Context) error {
 			return err
 		}
 	}
-	// Wait for beforeJob completed if exists
-	if len(j.beforeJobName) != 0 {
-		var jobResource v1.ValdBenchmarkJob
-		log.Info("[benchmark job] check before benchjob is completed or not...")
-		j.eg.Go(safety.RecoverFunc(func() error {
-			dt := time.NewTicker(j.beforeJobDur)
-			defer dt.Stop()
-			for {
-				select {
-				case <-ctx.Done():
-					return nil
-				case <-dt.C:
-					err := j.k8sClient.Get(ctx, j.beforeJobName, j.beforeJobNamespace, &jobResource)
-					if err != nil {
-						return err
-					}
-					if jobResource.Status == v1.BenchmarkJobCompleted {
-						log.Infof("[benchmark job ] before job (%s) is completed, job service will start soon.", j.beforeJobName)
-						return nil
-					}
-					log.Infof("[benchmark job] before job (%s) is not completed...", j.beforeJobName)
-				}
-			}
-		}))
-		if err := j.eg.Wait(); err != nil {
-			return err
-		}
-	}
 	return nil
 }
 
@@ -344,4 +317,13 @@ func calcRecall(linearRes, searchRes *payload.Search_Response) (recall float64) 
 		}
 	}
 	return recall / float64(len(lres))
+}
+
+// TODO: apply many object type
+func addNoiseToVec(oVec []float32) []float32 {
+	noise := rand.Float32()
+	vec := oVec
+	idx := rand.LimitedUint32(uint64(len(oVec) - 1))
+	vec[idx] += noise
+	return vec
 }
