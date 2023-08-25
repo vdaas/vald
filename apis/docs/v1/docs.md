@@ -126,6 +126,7 @@
   - [ResourceInfo](#rpc-v1-ResourceInfo)
   - [RetryInfo](#rpc-v1-RetryInfo)
 - [apis/proto/v1/benchmark/benchmark.proto](#apis_proto_v1_benchmark_benchmark-proto)
+
   - [Controller](#benchmark-v1-Controller)
   - [Job](#benchmark-v1-Job)
 
@@ -1401,6 +1402,30 @@ reached.
 | Field       | Type                                                  | Label | Description                                                               |
 | ----------- | ----------------------------------------------------- | ----- | ------------------------------------------------------------------------- |
 | retry_delay | [google.protobuf.Duration](#google-protobuf-Duration) |       | Clients should wait at least this long between retrying the same request. |
+
+<a name="apis_proto_v1_benchmark_benchmark-proto"></a>
+
+<p align="right"><a href="#top">Top</a></p>
+
+## apis/proto/v1/benchmark/benchmark.proto
+
+<a name="benchmark-v1-Controller"></a>
+
+### Controller
+
+TODO define API spec here
+
+| Method Name | Request Type | Response Type | Description |
+| ----------- | ------------ | ------------- | ----------- |
+
+<a name="benchmark-v1-Job"></a>
+
+### Job
+
+TODO define API spec here
+
+| Method Name | Request Type | Response Type | Description |
+| ----------- | ------------ | ------------- | ----------- |
 
 ## Scalar Value Types
 
