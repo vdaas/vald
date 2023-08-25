@@ -19,9 +19,8 @@
 target:
   # @schema {"name": "target.host", "type": "string", "minLength": 1}
   # target.host -- target cluster host
-  host:
-    "vald-lb-gateway.default.svc.cluster.local"
-    # @schema {"name": "target.port", "type": "integer", "minimum": 0, "maximum": 65535}
+  host: "vald-lb-gateway.default.svc.cluster.local"
+  # @schema {"name": "target.port", "type": "integer", "minimum": 0, "maximum": 65535}
   # target.port -- target cluster port
   port: 8081
 # @schema {"name": "dataset", "type": "object", "required": ["name", "indexes", "group", "range"]}
@@ -57,6 +56,18 @@ replica: 1
 # @schema {"name": "repetition", "type": "integer", "minimum": 1}
 # repetition -- the number of repeat job
 repetition: 1
+# @schema {"name": "rules", "type": "array", "items": {"type": "string"}}
+# rules -- executing rule
+rules: []
+# @schema {"name": "rps", "type": "integer", "minimum": 0, "maximum": 65535}
+# rps -- desired request per sec
+rps: 1000
+# @schema {"name": "concurrency_limit", "type": "integer", "minimum": 0, "maximum": 65535}
+# concurrency_limit -- concurrency_limit represents the goroutine limit count. It affects the job performance.
+concurrency_limit: 200
+# @schema {"name": "ttl_seconds_after_finished", "type": "integer", "minimum": 0, "maximum": 65535}
+# ttl_seconds_after_finished -- limits the lifetime of a Job that has finished execution.
+ttl_seconds_after_finished: 10
 # @schema {"name": "job_type", "type": "string", "enum": ["insert", "update", "upsert", "search", "remove", "getobject", "exists"]}
 # job_type -- job type name
 job_type: "search"
@@ -117,7 +128,6 @@ search_config:
   # @schema {"name": "search_config.aggregation_algorithm", "type": "string", "enum": ["Unknown", "ConcurrentQueue", "SortSlice", "SortPoolSlice", "PairingHeap"]}
   # search_config.aggregation_algorithm -- search result aggregation algorithm
   aggregation_algorithm: "Unknown"
-
 # @schema {"name": "remove_config", "type": "object"}
 # remove_config -- remove config
 remove_config:
@@ -361,15 +371,449 @@ client_config:
     # @schema {"name": "client_config.tls.insecure_skip_verify", "type": "boolean"}
     # client_config.tls.insecure_skip_verify -- enable/disable skip SSL certificate verification
     insecure_skip_verify: false
-# @schema {"name": "rules", "type": "array", "items": {"type": "string"}}
-# rules -- executing rule
-rules: []
-# @schema {"name": "rps", "type": "integer", "minimum": 0, "maximum": 65535}
-# rps -- desired request per sec
-rps: 1000
-# @schema {"name": "concurrency_limit", "type": "integer", "minimum": 0, "maximum": 65535}
-# concurrency_limit -- concurrency_limit represents the goroutine limit count. It affects the job performance.
-concurrency_limit: 200
-# @schema {"name": "ttl_seconds_after_finished", "type": "integer", "minimum": 0, "maximum": 65535}
-# ttl_seconds_after_finished -- limits the lifetime of a Job that has finished execution.
-ttl_seconds_after_finished: 10
+# @schema {"name": "global_config", "type": "object"}
+global_config:
+  # @schema {"name": "global_config.version", "type": "string", "default": "v0.0.1"}
+  # version -- version info
+  version: "v0.0.1"
+  # @schema {"name": "global_config.time_zone", "type": "string"}
+  # time_zone -- Time zone
+  time_zone: UTC
+  # @schema {"name": "global_config.logging", "type": "object", "anchor": "logging"}
+  logging:
+    # @schema {"name": "global_config.logging.logger", "type": "string", "enum": ["glg", "zap"]}
+    # logging.logger -- logger name.
+    # currently logger must be `glg` or `zap`.
+    logger: glg
+    # @schema {"name": "global_config.logging.level", "type": "string", "enum": ["debug", "info", "warn", "error", "fatal"]}
+    # logging.level -- logging level.
+    # logging level must be `debug`, `info`, `warn`, `error` or `fatal`.
+    level: debug
+    # @schema {"name": "global_config.logging.format", "type": "string", "enum": ["raw", "json"]}
+    # logging.format -- logging format.
+    # logging format must be `raw` or `json`
+    format: raw
+# @schema {"name": "server_config", "type": "object", "anchor": "server_config"}
+server_config:
+  # @schema {"name": "server_config.servers", "type": "object"}
+  servers:
+    # @schema {"name": "server_config.servers.rest", "type": "object"}
+    rest:
+      # @schema {"name": "server_config.servers.rest.enabled", "type": "boolean"}
+      # server_config.servers.rest.enabled -- REST server enabled
+      enabled: false
+      # @schema {"name": "server_config.servers.rest.host", "type": "string"}
+      # server_config.servers.rest.host -- REST server host
+      host: 0.0.0.0
+      # @schema {"name": "server_config.servers.rest.port", "type": "integer", "minimum": 0, "maximum": 65535}
+      # server_config.servers.rest.port -- REST server port
+      port: 8080
+      # @schema {"name": "server_config.servers.rest.servicePort", "type": "integer", "minimum": 0, "maximum": 65535}
+      # server_config.servers.rest.servicePort -- REST server service port
+      servicePort: 8080
+      # @schema {"name": "server_config.servers.rest.server", "type": "object"}
+      server:
+        # @schema {"name": "server_config.servers.rest.server.mode", "type": "string"}
+        # server_config.servers.rest.server.mode -- REST server server mode
+        mode: REST
+        # @schema {"name": "server_config.servers.rest.server.probe_wait_time", "type": "string"}
+        # server_config.servers.rest.server.probe_wait_time -- REST server probe wait time
+        probe_wait_time: 3s
+        # @schema {"name": "server_config.servers.rest.server.network", "type": "string", "enum": ["tcp", "tcp4", "tcp6", "udp", "udp4", "udp6", "unix", "unixgram", "unixpacket"]}
+        # server_config.servers.rest.server.network -- mysql network
+        network: tcp
+        # @schema {"name": "server_config.servers.rest.server.socket_path", "type": "string"}
+        # server_config.servers.rest.server.socket_path -- mysql socket_path
+        socket_path: ""
+        # @schema {"name": "server_config.servers.rest.server.http", "type": "object"}
+        http:
+          # @schema {"name": "server_config.servers.rest.server.http.shutdown_duration", "type": "string"}
+          # server_config.servers.rest.server.http.shutdown_duration -- REST server shutdown duration
+          shutdown_duration: 5s
+          # @schema {"name": "server_config.servers.rest.server.http.handler_timeout", "type": "string"}
+          # server_config.servers.rest.server.http.handler_timeout -- REST server handler timeout
+          handler_timeout: 5s
+          # @schema {"name": "server_config.servers.rest.server.http.idle_timeout", "type": "string"}
+          # server_config.servers.rest.server.http.idle_timeout -- REST server idle timeout
+          idle_timeout: 2s
+          # @schema {"name": "server_config.servers.rest.server.http.read_header_timeout", "type": "string"}
+          # server_config.servers.rest.server.http.read_header_timeout -- REST server read header timeout
+          read_header_timeout: 1s
+          # @schema {"name": "server_config.servers.rest.server.http.read_timeout", "type": "string"}
+          # server_config.servers.rest.server.http.read_timeout -- REST server read timeout
+          read_timeout: 1s
+          # @schema {"name": "server_config.servers.rest.server.http.write_timeout", "type": "string"}
+          # server_config.servers.rest.server.http.write_timeout -- REST server write timeout
+          write_timeout: 1s
+        # @schema {"name": "server_config.servers.rest.server.socket_option", "type": "object", "anchor": "socket_option"}
+        socket_option:
+          # @schema {"name": "server_config.servers.rest.server.socket_option.reuse_port", "type": "boolean"}
+          # server_config.servers.rest.server.socket_option.reuse_port -- server listen socket option for reuse_port functionality
+          reuse_port: true
+          # @schema {"name": "server_config.servers.rest.server.socket_option.reuse_addr", "type": "boolean"}
+          # server_config.servers.rest.server.socket_option.reuse_addr -- server listen socket option for reuse_addr functionality
+          reuse_addr: true
+          # @schema {"name": "server_config.servers.rest.server.socket_option.tcp_fast_open", "type": "boolean"}
+          # server_config.servers.rest.server.socket_option.tcp_fast_open -- server listen socket option for tcp_fast_open functionality
+          tcp_fast_open: true
+          # @schema {"name": "server_config.servers.rest.server.socket_option.tcp_no_delay", "type": "boolean"}
+          # server_config.servers.rest.server.socket_option.tcp_no_delay -- server listen socket option for tcp_no_delay functionality
+          tcp_no_delay: true
+          # @schema {"name": "server_config.servers.rest.server.socket_option.tcp_cork", "type": "boolean"}
+          # server_config.servers.rest.server.socket_option.tcp_cork -- server listen socket option for tcp_cork functionality
+          tcp_cork: false
+          # @schema {"name": "server_config.servers.rest.server.socket_option.tcp_quick_ack", "type": "boolean"}
+          # server_config.servers.rest.server.socket_option.tcp_quick_ack -- server listen socket option for tcp_quick_ack functionality
+          tcp_quick_ack: true
+          # @schema {"name": "server_config.servers.rest.server.socket_option.tcp_defer_accept", "type": "boolean"}
+          # server_config.servers.rest.server.socket_option.tcp_defer_accept -- server listen socket option for tcp_defer_accept functionality
+          tcp_defer_accept: true
+          # @schema {"name": "server_config.servers.rest.server.socket_option.ip_transparent", "type": "boolean"}
+          # server_config.servers.rest.server.socket_option.ip_transparent -- server listen socket option for ip_transparent functionality
+          ip_transparent: false
+          # @schema {"name": "server_config.servers.rest.server.socket_option.ip_recover_destination_addr", "type": "boolean"}
+          # server_config.servers.rest.server.socket_option.ip_recover_destination_addr -- server listen socket option for ip_recover_destination_addr functionality
+          ip_recover_destination_addr: false
+    # @schema {"name": "server_config.servers.grpc", "type": "object"}
+    grpc:
+      # @schema {"name": "server_config.servers.grpc.enabled", "type": "boolean"}
+      # server_config.servers.grpc.enabled -- gRPC server enabled
+      enabled: true
+      # @schema {"name": "server_config.servers.grpc.host", "type": "string"}
+      # server_config.servers.grpc.host -- gRPC server host
+      host: 0.0.0.0
+      # @schema {"name": "server_config.servers.grpc.port", "type": "integer", "minimum": 0, "maximum": 65535}
+      # server_config.servers.grpc.port -- gRPC server port
+      port: 8081
+      # @schema {"name": "server_config.servers.grpc.servicePort", "type": "integer", "minimum": 0, "maximum": 65535}
+      # server_config.servers.grpc.servicePort -- gRPC server service port
+      servicePort: 8081
+      # @schema {"name": "server_config.servers.grpc.server", "type": "object"}
+      server:
+        # @schema {"name": "server_config.servers.grpc.server.mode", "type": "string"}
+        # server_config.servers.grpc.server.mode -- gRPC server server mode
+        mode: GRPC
+        # @schema {"name": "server_config.servers.grpc.server.probe_wait_time", "type": "string"}
+        # server_config.servers.grpc.server.probe_wait_time -- gRPC server probe wait time
+        probe_wait_time: "3s"
+        # @schema {"name": "server_config.servers.grpc.server.network", "type": "string", "enum": ["tcp", "tcp4", "tcp6", "udp", "udp4", "udp6", "unix", "unixgram", "unixpacket"]}
+        # server_config.servers.grpc.server.network -- mysql network
+        network: tcp
+        # @schema {"name": "server_config.servers.grpc.server.socket_path", "type": "string"}
+        # server_config.servers.grpc.server.socket_path -- mysql socket_path
+        socket_path: ""
+        # @schema {"name": "server_config.servers.grpc.server.grpc", "type": "object"}
+        grpc:
+          # @schema {"name": "server_config.servers.grpc.server.grpc.bidirectional_stream_concurrency", "type": "integer"}
+          # server_config.servers.grpc.server.grpc.bidirectional_stream_concurrency -- gRPC server bidirectional stream concurrency
+          bidirectional_stream_concurrency: 20
+          # @schema {"name": "server_config.servers.grpc.server.grpc.max_receive_message_size", "type": "integer"}
+          # server_config.servers.grpc.server.grpc.max_receive_message_size -- gRPC server max receive message size
+          max_receive_message_size: 0
+          # @schema {"name": "server_config.servers.grpc.server.grpc.max_send_message_size", "type": "integer"}
+          # server_config.servers.grpc.server.grpc.max_send_message_size -- gRPC server max send message size
+          max_send_message_size: 0
+          # @schema {"name": "server_config.servers.grpc.server.grpc.initial_window_size", "type": "integer"}
+          # server_config.servers.grpc.server.grpc.initial_window_size -- gRPC server initial window size
+          initial_window_size: 0
+          # @schema {"name": "server_config.servers.grpc.server.grpc.initial_conn_window_size", "type": "integer"}
+          # server_config.servers.grpc.server.grpc.initial_conn_window_size -- gRPC server initial connection window size
+          initial_conn_window_size: 0
+          # @schema {"name": "server_config.servers.grpc.server.grpc.keepalive", "type": "object"}
+          keepalive:
+            # @schema {"name": "server_config.servers.grpc.server.grpc.keepalive.max_conn_idle", "type": "string"}
+            # server_config.servers.grpc.server.grpc.keepalive.max_conn_idle -- gRPC server keep alive max connection idle
+            max_conn_idle: ""
+            # @schema {"name": "server_config.servers.grpc.server.grpc.keepalive.max_conn_age", "type": "string"}
+            # server_config.servers.grpc.server.grpc.keepalive.max_conn_age -- gRPC server keep alive max connection age
+            max_conn_age: ""
+            # @schema {"name": "server_config.servers.grpc.server.grpc.keepalive.max_conn_age_grace", "type": "string"}
+            # server_config.servers.grpc.server.grpc.keepalive.max_conn_age_grace -- gRPC server keep alive max connection age grace
+            max_conn_age_grace: ""
+            # @schema {"name": "server_config.servers.grpc.server.grpc.keepalive.time", "type": "string"}
+            # server_config.servers.grpc.server.grpc.keepalive.time -- gRPC server keep alive time
+            time: "120s"
+            # @schema {"name": "server_config.servers.grpc.server.grpc.keepalive.timeout", "type": "string"}
+            # server_config.servers.grpc.server.grpc.keepalive.timeout -- gRPC server keep alive timeout
+            timeout: "30s"
+            # @schema {"name": "server_config.servers.grpc.server.grpc.keepalive.min_time", "type": "string"}
+            # server_config.servers.grpc.server.grpc.keepalive.min_time -- gRPC server keep alive min_time
+            min_time: "60s"
+            # @schema {"name": "server_config.servers.grpc.server.grpc.keepalive.permit_without_stream", "type": "boolean"}
+            # server_config.servers.grpc.server.grpc.keepalive.permit_without_stream -- gRPC server keep alive permit_without_stream
+            permit_without_stream: true
+          # @schema {"name": "server_config.servers.grpc.server.grpc.write_buffer_size", "type": "integer"}
+          # server_config.servers.grpc.server.grpc.write_buffer_size -- gRPC server write buffer size
+          write_buffer_size: 0
+          # @schema {"name": "server_config.servers.grpc.server.grpc.read_buffer_size", "type": "integer"}
+          # server_config.servers.grpc.server.grpc.read_buffer_size -- gRPC server read buffer size
+          read_buffer_size: 0
+          # @schema {"name": "server_config.servers.grpc.server.grpc.connection_timeout", "type": "string"}
+          # server_config.servers.grpc.server.grpc.connection_timeout -- gRPC server connection timeout
+          connection_timeout: ""
+          # @schema {"name": "server_config.servers.grpc.server.grpc.max_header_list_size", "type": "integer"}
+          # server_config.servers.grpc.server.grpc.max_header_list_size -- gRPC server max header list size
+          max_header_list_size: 0
+          # @schema {"name": "server_config.servers.grpc.server.grpc.header_table_size", "type": "integer"}
+          # server_config.servers.grpc.server.grpc.header_table_size -- gRPC server header table size
+          header_table_size: 0
+          # @schema {"name": "server_config.servers.grpc.server.grpc.interceptors", "type": "array", "items": {"type": "string", "enum": ["RecoverInterceptor", "AccessLogInterceptor", "TraceInterceptor", "MetricInterceptor"]}}
+          # server_config.servers.grpc.server.grpc.interceptors -- gRPC server interceptors
+          interceptors:
+            - "RecoverInterceptor"
+          # @schema {"name": "server_config.servers.grpc.server.grpc.enable_reflection", "type": "boolean"}
+          # server_config.servers.grpc.server.grpc.enable_reflection -- gRPC server reflection option
+          enable_reflection: true
+        # @schema {"name": "server_config.servers.grpc.server.socket_option", "alias": "socket_option"}
+        socket_option:
+          # server_config.servers.grpc.server.socket_option.reuse_port -- server listen socket option for reuse_port functionality
+          reuse_port: true
+          # server_config.servers.grpc.server.socket_option.reuse_addr -- server listen socket option for reuse_addr functionality
+          reuse_addr: true
+          # server_config.servers.grpc.server.socket_option.tcp_fast_open -- server listen socket option for tcp_fast_open functionality
+          tcp_fast_open: true
+          # server_config.servers.grpc.server.socket_option.tcp_no_delay -- server listen socket option for tcp_no_delay functionality
+          tcp_no_delay: true
+          # server_config.servers.grpc.server.socket_option.tcp_cork -- server listen socket option for tcp_cork functionality
+          tcp_cork: false
+          # server_config.servers.grpc.server.socket_option.tcp_quick_ack -- server listen socket option for tcp_quick_ack functionality
+          tcp_quick_ack: true
+          # server_config.servers.grpc.server.socket_option.tcp_defer_accept -- server listen socket option for tcp_defer_accept functionality
+          tcp_defer_accept: true
+          # server_config.servers.grpc.server.socket_option.ip_transparent -- server listen socket option for ip_transparent functionality
+          ip_transparent: false
+          # server_config.servers.grpc.server.socket_option.ip_recover_destination_addr -- server listen socket option for ip_recover_destination_addr functionality
+          ip_recover_destination_addr: false
+        # @schema {"name": "server_config.servers.grpc.server.restart", "type": "boolean"}
+        # server_config.servers.grpc.server.restart -- gRPC server restart
+        restart: true
+  # @schema {"name": "server_config.healths", "type": "object"}
+  healths:
+    # @schema {"name": "server_config.healths.startup", "type": "object"}
+    startup:
+      # @schema {"name": "server_config.healths.startup.enabled", "type": "boolean"}
+      # server_config.healths.startup.enabled -- startup server enabled
+      enabled: true
+      # @schema {"name": "server_config.healths.startup.port", "type": "integer", "minimum": 0, "maximum": 65535}
+      # server_config.healths.startup.port -- startup server port
+      port: 3000
+      # @schema {"name": "server_config.healths.startup.startupProbe", "type": "object"}
+      startupProbe:
+        # @schema {"name": "server_config.healths.startup.startupProbe.httpGet", "type": "object"}
+        httpGet:
+          # @schema {"name": "server_config.healths.startup.startupProbe.httpGet.path", "type": "string"}
+          # server_config.healths.startup.startupProbe.httpGet.path -- startup probe path
+          path: /liveness
+          # @schema {"name": "server_config.healths.startup.startupProbe.httpGet.port", "type": "string"}
+          # server_config.healths.startup.startupProbe.httpGet.port -- startup probe port
+          port: liveness
+          # @schema {"name": "server_config.healths.startup.startupProbe.httpGet.scheme", "type": "string"}
+          # server_config.healths.startup.startupProbe.httpGet.scheme -- startup probe scheme
+          scheme: HTTP
+        # @schema {"name": "server_config.healths.startup.startupProbe.initialDelaySeconds", "type": "integer"}
+        # server_config.healths.startup.startupProbe.initialDelaySeconds -- startup probe initial delay seconds
+        initialDelaySeconds: 5
+        # @schema {"name": "server_config.healths.startup.startupProbe.timeoutSeconds", "type": "integer"}
+        # server_config.healths.startup.startupProbe.timeoutSeconds -- startup probe timeout seconds
+        timeoutSeconds: 2
+        # @schema {"name": "server_config.healths.startup.startupProbe.successThreshold", "type": "integer"}
+        # server_config.healths.startup.startupProbe.successThreshold -- startup probe success threshold
+        successThreshold: 1
+        # @schema {"name": "server_config.healths.startup.startupProbe.failureThreshold", "type": "integer"}
+        # server_config.healths.startup.startupProbe.failureThreshold -- startup probe failure threshold
+        failureThreshold: 30
+        # @schema {"name": "server_config.healths.startup.startupProbe.periodSeconds", "type": "integer"}
+        # server_config.healths.startup.startupProbe.periodSeconds -- startup probe period seconds
+        periodSeconds: 5
+    # @schema {"name": "server_config.healths.liveness", "type": "object"}
+    liveness:
+      # @schema {"name": "server_config.healths.liveness.enabled", "type": "boolean"}
+      # server_config.healths.liveness.enabled -- liveness server enabled
+      enabled: true
+      # @schema {"name": "server_config.healths.liveness.host", "type": "string"}
+      # server_config.healths.liveness.host -- liveness server host
+      host: 0.0.0.0
+      # @schema {"name": "server_config.healths.liveness.port", "type": "integer", "minimum": 0, "maximum": 65535}
+      # server_config.healths.liveness.port -- liveness server port
+      port: 3000
+      # @schema {"name": "server_config.healths.liveness.servicePort", "type": "integer", "minimum": 0, "maximum": 65535}
+      # server_config.healths.liveness.servicePort -- liveness server service port
+      servicePort: 3000
+      # @schema {"name": "server_config.healths.liveness.livenessProbe", "type": "object"}
+      livenessProbe:
+        # @schema {"name": "server_config.healths.liveness.livenessProbe.httpGet", "type": "object"}
+        httpGet:
+          # @schema {"name": "server_config.healths.liveness.livenessProbe.httpGet.path", "type": "string"}
+          # server_config.healths.liveness.livenessProbe.httpGet.path -- liveness probe path
+          path: /liveness
+          # @schema {"name": "server_config.healths.liveness.livenessProbe.httpGet.port", "type": "string"}
+          # server_config.healths.liveness.livenessProbe.httpGet.port -- liveness probe port
+          port: liveness
+          # @schema {"name": "server_config.healths.liveness.livenessProbe.httpGet.scheme", "type": "string"}
+          # server_config.healths.liveness.livenessProbe.httpGet.scheme -- liveness probe scheme
+          scheme: HTTP
+        # @schema {"name": "server_config.healths.liveness.livenessProbe.initialDelaySeconds", "type": "integer"}
+        # server_config.healths.liveness.livenessProbe.initialDelaySeconds -- liveness probe initial delay seconds
+        initialDelaySeconds: 5
+        # @schema {"name": "server_config.healths.liveness.livenessProbe.timeoutSeconds", "type": "integer"}
+        # server_config.healths.liveness.livenessProbe.timeoutSeconds -- liveness probe timeout seconds
+        timeoutSeconds: 2
+        # @schema {"name": "server_config.healths.liveness.livenessProbe.successThreshold", "type": "integer"}
+        # server_config.healths.liveness.livenessProbe.successThreshold -- liveness probe success threshold
+        successThreshold: 1
+        # @schema {"name": "server_config.healths.liveness.livenessProbe.failureThreshold", "type": "integer"}
+        # server_config.healths.liveness.livenessProbe.failureThreshold -- liveness probe failure threshold
+        failureThreshold: 2
+        # @schema {"name": "server_config.healths.liveness.livenessProbe.periodSeconds", "type": "integer"}
+        # server_config.healths.liveness.livenessProbe.periodSeconds -- liveness probe period seconds
+        periodSeconds: 3
+      # @schema {"name": "server_config.healths.liveness.server", "type": "object"}
+      server:
+        # @schema {"name": "server_config.healths.liveness.server.mode", "type": "string"}
+        # server_config.healths.liveness.server.mode -- liveness server mode
+        mode: ""
+        # @schema {"name": "server_config.healths.liveness.server.probe_wait_time", "type": "string"}
+        # server_config.healths.liveness.server.probe_wait_time -- liveness server probe wait time
+        probe_wait_time: "3s"
+        # @schema {"name": "server_config.healths.liveness.server.network", "type": "string", "enum": ["tcp", "tcp4", "tcp6", "udp", "udp4", "udp6", "unix", "unixgram", "unixpacket"]}
+        # server_config.healths.liveness.server.network -- mysql network
+        network: tcp
+        # @schema {"name": "server_config.healths.liveness.server.socket_path", "type": "string"}
+        # server_config.healths.liveness.server.socket_path -- mysql socket_path
+        socket_path: ""
+        # @schema {"name": "server_config.healths.liveness.server.http", "type": "object"}
+        http:
+          # @schema {"name": "server_config.healths.liveness.server.http.shutdown_duration", "type": "string"}
+          # server_config.healths.liveness.server.http.shutdown_duration -- liveness server shutdown duration
+          shutdown_duration: "5s"
+          # @schema {"name": "server_config.healths.liveness.server.http.handler_timeout", "type": "string"}
+          # server_config.healths.liveness.server.http.handler_timeout -- liveness server handler timeout
+          handler_timeout: ""
+          # @schema {"name": "server_config.healths.liveness.server.http.idle_timeout", "type": "string"}
+          # server_config.healths.liveness.server.http.idle_timeout -- liveness server idle timeout
+          idle_timeout: ""
+          # @schema {"name": "server_config.healths.liveness.server.http.read_header_timeout", "type": "string"}
+          # server_config.healths.liveness.server.http.read_header_timeout -- liveness server read header timeout
+          read_header_timeout: ""
+          # @schema {"name": "server_config.healths.liveness.server.http.read_timeout", "type": "string"}
+          # server_config.healths.liveness.server.http.read_timeout -- liveness server read timeout
+          read_timeout: ""
+          # @schema {"name": "server_config.healths.liveness.server.http.write_timeout", "type": "string"}
+          # server_config.healths.liveness.server.http.write_timeout -- liveness server write timeout
+          write_timeout: ""
+        # @schema {"name": "server_config.healths.liveness.server.socket_option", "alias": "socket_option"}
+        socket_option:
+          # server_config.healths.liveness.server.socket_option.reuse_port -- server listen socket option for reuse_port functionality
+          reuse_port: true
+          # server_config.healths.liveness.server.socket_option.reuse_addr -- server listen socket option for reuse_addr functionality
+          reuse_addr: true
+          # server_config.healths.liveness.server.socket_option.tcp_fast_open -- server listen socket option for tcp_fast_open functionality
+          tcp_fast_open: true
+          # server_config.healths.liveness.server.socket_option.tcp_no_delay -- server listen socket option for tcp_no_delay functionality
+          tcp_no_delay: true
+          # server_config.healths.liveness.server.socket_option.tcp_cork -- server listen socket option for tcp_cork functionality
+          tcp_cork: false
+          # server_config.healths.liveness.server.socket_option.tcp_quick_ack -- server listen socket option for tcp_quick_ack functionality
+          tcp_quick_ack: true
+          # server_config.healths.liveness.server.socket_option.tcp_defer_accept -- server listen socket option for tcp_defer_accept functionality
+          tcp_defer_accept: true
+          # server_config.healths.liveness.server.socket_option.ip_transparent -- server listen socket option for ip_transparent functionality
+          ip_transparent: false
+          # server_config.healths.liveness.server.socket_option.ip_recover_destination_addr -- server listen socket option for ip_recover_destination_addr functionality
+          ip_recover_destination_addr: false
+    # @schema {"name": "server_config.healths.readiness", "type": "object"}
+    readiness:
+      # @schema {"name": "server_config.healths.readiness.enabled", "type": "boolean"}
+      # server_config.healths.readiness.enabled -- readiness server enabled
+      enabled: true
+      # @schema {"name": "server_config.healths.readiness.host", "type": "string"}
+      # server_config.healths.readiness.host -- readiness server host
+      host: 0.0.0.0
+      # @schema {"name": "server_config.healths.readiness.port", "type": "integer", "minimum": 0, "maximum": 65535}
+      # server_config.healths.readiness.port -- readiness server port
+      port: 3001
+      # @schema {"name": "server_config.healths.readiness.servicePort", "type": "integer", "minimum": 0, "maximum": 65535}
+      # server_config.healths.readiness.servicePort -- readiness server service port
+      servicePort: 3001
+      # @schema {"name": "server_config.healths.readiness.readinessProbe", "type": "object"}
+      readinessProbe:
+        # @schema {"name": "server_config.healths.readiness.readinessProbe.httpGet", "type": "object"}
+        httpGet:
+          # @schema {"name": "server_config.healths.readiness.readinessProbe.httpGet.path", "type": "string"}
+          # server_config.healths.readiness.readinessProbe.httpGet.path -- readiness probe path
+          path: /readiness
+          # @schema {"name": "server_config.healths.readiness.readinessProbe.httpGet.port", "type": "string"}
+          # server_config.healths.readiness.readinessProbe.httpGet.port -- readiness probe port
+          port: readiness
+          # @schema {"name": "server_config.healths.readiness.readinessProbe.httpGet.scheme", "type": "string"}
+          # server_config.healths.readiness.readinessProbe.httpGet.scheme -- readiness probe scheme
+          scheme: HTTP
+        # @schema {"name": "server_config.healths.readiness.readinessProbe.initialDelaySeconds", "type": "integer"}
+        # server_config.healths.readiness.readinessProbe.initialDelaySeconds -- readiness probe initial delay seconds
+        initialDelaySeconds: 10
+        # @schema {"name": "server_config.healths.readiness.readinessProbe.timeoutSeconds", "type": "integer"}
+        # server_config.healths.readiness.readinessProbe.timeoutSeconds -- readiness probe timeout seconds
+        timeoutSeconds: 2
+        # @schema {"name": "server_config.healths.readiness.readinessProbe.successThreshold", "type": "integer"}
+        # server_config.healths.readiness.readinessProbe.successThreshold -- readiness probe success threshold
+        successThreshold: 1
+        # @schema {"name": "server_config.healths.readiness.readinessProbe.failureThreshold", "type": "integer"}
+        # server_config.healths.readiness.readinessProbe.failureThreshold -- readiness probe failure threshold
+        failureThreshold: 2
+        # @schema {"name": "server_config.healths.readiness.readinessProbe.periodSeconds", "type": "integer"}
+        # server_config.healths.readiness.readinessProbe.periodSeconds -- readiness probe period seconds
+        periodSeconds: 3
+      # @schema {"name": "server_config.healths.readiness.server", "type": "object"}
+      server:
+        # @schema {"name": "server_config.healths.readiness.server.mode", "type": "string"}
+        # server_config.healths.readiness.server.mode -- readiness server mode
+        mode: ""
+        # @schema {"name": "server_config.healths.readiness.server.probe_wait_time", "type": "string"}
+        # server_config.healths.readiness.server.probe_wait_time -- readiness server probe wait time
+        probe_wait_time: "3s"
+        # @schema {"name": "server_config.healths.readiness.server.network", "type": "string", "enum": ["tcp", "tcp4", "tcp6", "udp", "udp4", "udp6", "unix", "unixgram", "unixpacket"]}
+        # server_config.healths.readiness.server.network -- mysql network
+        network: tcp
+        # @schema {"name": "server_config.healths.readiness.server.socket_path", "type": "string"}
+        # server_config.healths.readiness.server.socket_path -- mysql socket_path
+        socket_path: ""
+        # @schema {"name": "server_config.healths.readiness.server.http", "type": "object"}
+        http:
+          # @schema {"name": "server_config.healths.readiness.server.http.shutdown_duration", "type": "string"}
+          # server_config.healths.readiness.server.http.shutdown_duration -- readiness server shutdown duration
+          shutdown_duration: "0s"
+          # @schema {"name": "server_config.healths.readiness.server.http.handler_timeout", "type": "string"}
+          # server_config.healths.readiness.server.http.handler_timeout -- readiness server handler timeout
+          handler_timeout: ""
+          # @schema {"name": "server_config.healths.readiness.server.http.idle_timeout", "type": "string"}
+          # server_config.healths.readiness.server.http.idle_timeout -- readiness server idle timeout
+          idle_timeout: ""
+          # @schema {"name": "server_config.healths.readiness.server.http.read_header_timeout", "type": "string"}
+          # server_config.healths.readiness.server.http.read_header_timeout -- readiness server read header timeout
+          read_header_timeout: ""
+          # @schema {"name": "server_config.healths.readiness.server.http.read_timeout", "type": "string"}
+          # server_config.healths.readiness.server.http.read_timeout -- readiness server read timeout
+          read_timeout: ""
+          # @schema {"name": "server_config.healths.readiness.server.http.write_timeout", "type": "string"}
+          # server_config.healths.readiness.server.http.write_timeout -- readiness server write timeout
+          write_timeout: ""
+        # @schema {"name": "server_config.healths.readiness.server.socket_option", "alias": "socket_option"}
+        socket_option:
+          # server_config.healths.readiness.server.socket_option.reuse_port -- server listen socket option for reuse_port functionality
+          reuse_port: true
+          # server_config.healths.readiness.server.socket_option.reuse_addr -- server listen socket option for reuse_addr functionality
+          reuse_addr: true
+          # server_config.healths.readiness.server.socket_option.tcp_fast_oepn -- server listen socket option for tcp_fast_open functionality
+          tcp_fast_open: true
+          # server_config.healths.readiness.server.socket_option.tcp_no_delay -- server listen socket option for tcp_no_delay functionality
+          tcp_no_delay: true
+          # server_config.healths.readiness.server.socket_option.tcp_cork -- server listen socket option for tcp_cork functionality
+          tcp_cork: false
+          # server_config.healths.readiness.server.socket_option.tcp_quick_ack -- server listen socket option for tcp_quick_ack functionality
+          tcp_quick_ack: true
+          # server_config.healths.readiness.server.socket_option.tcp_defer_accept -- server listen socket option for tcp_defer_accept functionality
+          tcp_defer_accept: true
+          # server_config.healths.readiness.server.socket_option.ip_transparent -- server listen socket option for ip_transparent functionality
+          ip_transparent: false
+          # server_config.healths.readiness.server.socket_option.ip_recover_destination_addr -- server listen socket option for ip_recover_destination_addr functionality
+          ip_recover_destination_addr: false

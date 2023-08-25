@@ -1139,6 +1139,30 @@ Upsert service provides ways to insert/update vectors.
 | StreamUpsert | [.payload.v1.Upsert.Request](#payload-v1-Upsert-Request) stream    | [.payload.v1.Object.StreamLocation](#payload-v1-Object-StreamLocation) stream | A method to insert/update multiple vectors by bidirectional streaming. |
 | MultiUpsert  | [.payload.v1.Upsert.MultiRequest](#payload-v1-Upsert-MultiRequest) | [.payload.v1.Object.Locations](#payload-v1-Object-Locations)                  | A method to insert/update multiple vectors in a single request.        |
 
+<a name="apis_proto_v1_benchmark_benchmark-proto"></a>
+
+<p align="right"><a href="#top">Top</a></p>
+
+## apis/proto/v1/benchmark/benchmark.proto
+
+<a name="benchmark-v1-Controller"></a>
+
+### Controller
+
+TODO define API spec here
+
+| Method Name | Request Type | Response Type | Description |
+| ----------- | ------------ | ------------- | ----------- |
+
+<a name="benchmark-v1-Job"></a>
+
+### Job
+
+TODO define API spec here
+
+| Method Name | Request Type | Response Type | Description |
+| ----------- | ------------ | ------------- | ----------- |
+
 ## Scalar Value Types
 
 | .proto Type                    | Notes                                                                                                                                           | C++    | Java       | Python      | Go      | C#         | PHP            | Ruby                           |
