@@ -53,8 +53,8 @@ type Client interface {
 }
 
 type client struct {
-	scheme *runtime.Scheme
-	reader cli.Reader
+	scheme *runtime.Scheme `json:"scheme,omitempty" yaml:"scheme"`
+	reader cli.Reader      `json:"reader,omitempty" yaml:"reader"`
 }
 
 func New(opts ...Option) (Client, error) {
