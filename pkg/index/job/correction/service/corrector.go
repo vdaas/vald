@@ -42,6 +42,7 @@ type Corrector interface {
 type correct struct {
 	cfg                   *config.Data
 	discoverer            discoverer.Client
+	agentAddrs            []string
 	indexInfos            valdsync.Map[string, *payload.Info_Index_Count]
 	uuidsCount            uint32
 	uncommittedUUIDsCount uint32
@@ -66,10 +67,10 @@ func (c *correct) Start(ctx context.Context) (<-chan error, error) {
 	// addrs is sorted by the memory usage of each agent(descending order)
 	// this is decending because it's supposed to be used for index manager to decide
 	// which pod to make a create index rpc(higher memory, first to commit)
-	addrs := c.discoverer.GetAddrs(ctx)
-	log.Debug("agent addrs found:", addrs)
+	c.agentAddrs = c.discoverer.GetAddrs(ctx)
+	log.Debug("agent addrs found:", c.agentAddrs)
 
-	if l := len(addrs); l <= 1 {
+	if l := len(c.agentAddrs); l <= 1 {
 		log.Warn("only %d agent found, there must be more than two agents for correction to happen", l)
 		return nil, err
 	}
@@ -89,13 +90,13 @@ func (c *correct) Start(ctx context.Context) (<-chan error, error) {
 	log.Info("starting correction...")
 	if c.cfg.Corrector.UseCache {
 		log.Info("with cache...")
-		if err := c.correctWithCache(ctx, addrs); err != nil {
+		if err := c.correctWithCache(ctx); err != nil {
 			log.Errorf("there's some errors while correction: %v", err)
 			return nil, err
 		}
 	} else {
 		log.Info("without cache...")
-		if err := c.correct(ctx, addrs); err != nil {
+		if err := c.correct(ctx); err != nil {
 			log.Errorf("there's some errors while correction: %v", err)
 			return nil, err
 		}
@@ -125,8 +126,8 @@ func (c *correct) Start(ctx context.Context) (<-chan error, error) {
 	return dech, nil
 }
 
-func (c *correct) correct(ctx context.Context, addrs []string) (err error) {
-	if err := c.discoverer.GetClient().OrderedRange(ctx, addrs,
+func (c *correct) correct(ctx context.Context) (err error) {
+	if err := c.discoverer.GetClient().OrderedRange(ctx, c.agentAddrs,
 		func(ctx context.Context, addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
 			vc := vald.NewValdClient(conn)
 			stream, err := vc.StreamListObject(ctx, &payload.Object_List_Request{})
@@ -198,7 +199,7 @@ func (c *correct) correct(ctx context.Context, addrs []string) (err error) {
 								addr: addr,
 								vec:  res.GetVector(),
 							},
-							addrs,
+							c.agentAddrs, // FIXME: no cache pattern always have to check all the agents
 						); err != nil {
 							// TODO: valdとstdでerrorの処理が違うので注意
 							// （valdはerrが着信するまでにスタートしていた処理は行われる）
@@ -213,16 +214,30 @@ func (c *correct) correct(ctx context.Context, addrs []string) (err error) {
 			}
 		},
 	); err != nil {
-		log.Errorf("failed to range over agents(%v): %v", addrs, err)
+		log.Errorf("failed to range over agents(%v): %v", c.agentAddrs, err)
 		return err
 	}
 
 	return nil
 }
 
-func (c *correct) correctWithCache(ctx context.Context, addrs []string) (err error) {
-	if err := c.discoverer.GetClient().OrderedRange(ctx, addrs,
+func (c *correct) correctWithCache(ctx context.Context) (err error) {
+	// leftAgentAddrs is the agents' addr that hasn't been corrected yet.
+	// This is used to know which agents possibly have the same index as the target replica.
+	// We can say this because, thanks to caching, there is no way that the target replica is
+	// in the agent that has already been corrected.
+	leftAgentAddrs := make([]string, len(c.agentAddrs))
+	n := copy(leftAgentAddrs, c.agentAddrs)
+	if n != len(c.agentAddrs) {
+		return fmt.Errorf("failed to copy agentAddrs")
+	}
+
+	if err := c.discoverer.GetClient().OrderedRange(ctx, c.agentAddrs,
 		func(ctx context.Context, addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
+			// current address is the leftAgentAddrs[0] because this is OrderedRange and
+			// leftAgentAddrs is copied from c.agentAddrs
+			leftAgentAddrs = leftAgentAddrs[1:]
+
 			vc := vald.NewValdClient(conn)
 			stream, err := vc.StreamListObject(ctx, &payload.Object_List_Request{})
 			if err != nil {
@@ -297,14 +312,13 @@ func (c *correct) correctWithCache(ctx context.Context, addrs []string) (err err
 							return nil
 						}
 
-						// FIXME: When caching mode, already checked agent can be omitted here
 						if err := c.checkConsistency(
 							ctx,
 							&vectorReplica{
 								addr: addr,
 								vec:  res.GetVector(),
 							},
-							addrs,
+							leftAgentAddrs,
 						); err != nil {
 							// TODO: valdとstdでerrorの処理が違うので注意
 							// （valdはerrが着信するまでにスタートしていた処理は行われる）
@@ -323,7 +337,7 @@ func (c *correct) correctWithCache(ctx context.Context, addrs []string) (err err
 			}
 		},
 	); err != nil {
-		log.Errorf("failed to range over agents(%v): %v", addrs, err)
+		log.Errorf("failed to range over agents(%v): %v", c.agentAddrs, err)
 		return err
 	}
 
@@ -336,11 +350,11 @@ type vectorReplica struct {
 }
 
 // Validate len(addrs) >= 2 before calling this function
-func (c *correct) checkConsistency(ctx context.Context, targetReplica *vectorReplica, addrs []string) error {
+func (c *correct) checkConsistency(ctx context.Context, targetReplica *vectorReplica, leftAgentAddrs []string) error {
 	// availableAddrs is the agents' addr that doesn't have the target replica thus is available to insert the replica
 	// to fix the index replica number if required.
-	availableAddrs := make([]string, 0, len(addrs)-1)
-	for _, addr := range addrs {
+	availableAddrs := make([]string, 0, len(c.agentAddrs)-1)
+	for _, addr := range c.agentAddrs {
 		if addr != targetReplica.addr {
 			availableAddrs = append(availableAddrs, addr)
 		}
@@ -348,7 +362,7 @@ func (c *correct) checkConsistency(ctx context.Context, targetReplica *vectorRep
 
 	foundReplicas := make([]*vectorReplica, 0, len(availableAddrs))
 	var mu sync.Mutex
-	if err := c.discoverer.GetClient().OrderedRangeConcurrent(ctx, availableAddrs, len(availableAddrs),
+	if err := c.discoverer.GetClient().OrderedRangeConcurrent(ctx, leftAgentAddrs, len(leftAgentAddrs),
 		func(ctx context.Context, addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
 			select {
 			case <-ctx.Done():
@@ -401,8 +415,7 @@ func (c *correct) checkConsistency(ctx context.Context, targetReplica *vectorRep
 	}
 
 	// check replica number
-	replica := len(foundReplicas) + 1
-	if err := c.correctReplica(ctx, targetReplica, foundReplicas, replica, availableAddrs); err != nil {
+	if err := c.correctReplica(ctx, targetReplica, foundReplicas, availableAddrs); err != nil {
 		return fmt.Errorf("failed to fix index replica: %w", err)
 	}
 
@@ -450,11 +463,11 @@ func (c *correct) correctReplica(
 	ctx context.Context,
 	targetReplica *vectorReplica,
 	foundReplicas []*vectorReplica,
-	replica int,
 	availableAddrs []string,
 ) error {
 	// diff < 0 means there is less replica than the correct number
-	diff := replica - c.cfg.Gateway.IndexReplica
+	existReplica := len(foundReplicas) + 1
+	diff := existReplica - c.cfg.Gateway.IndexReplica
 	if diff == 0 {
 		// replica number is correct
 		return nil
