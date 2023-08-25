@@ -19,7 +19,6 @@ package kvs
 import (
 	"context"
 	"sync/atomic"
-	"time"
 
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/sync"
@@ -37,7 +36,6 @@ type BidiMap interface {
 	Range(ctx context.Context, f func(string, uint32, int64) bool)
 	Len() uint64
 	Close() error
-	RangeDuration() int64
 }
 
 type valueStructOu struct {
@@ -65,11 +63,6 @@ const (
 	// mask is slen-1 Hex value.
 	mask = 0x1FF
 	// mask = 0xFFF.
-)
-
-var (
-	tmu      sync.RWMutex
-	rangeDur int64
 )
 
 // New returns the bidi that satisfies the BidiMap interface.
@@ -158,8 +151,6 @@ func (b *bidi) DeleteInverse(val uint32) (key string, ok bool) {
 
 // Range retrieves all set keys and values and calls the callback function f.
 func (b *bidi) Range(ctx context.Context, f func(string, uint32, int64) bool) {
-	start := time.Now()
-
 	var wg sync.WaitGroup
 	for i := range b.uo {
 		idx := i
@@ -178,11 +169,6 @@ func (b *bidi) Range(ctx context.Context, f func(string, uint32, int64) bool) {
 		}))
 	}
 	wg.Wait()
-
-	dur := time.Since(start).Nanoseconds()
-	tmu.Lock()
-	rangeDur = dur
-	tmu.Unlock()
 }
 
 // Len returns the length of the cache that is set in the bidi.
@@ -205,10 +191,4 @@ func getShardID(key string) (id uint64) {
 		return xxh3.HashString(key[:128]) & mask
 	}
 	return xxh3.HashString(key) & mask
-}
-
-func (b *bidi) RangeDuration() int64 {
-	tmu.RLock()
-	defer tmu.RUnlock()
-	return rangeDur
 }

@@ -49,9 +49,6 @@ const (
 
 	brokenIndexStoreCountMetricsName        = "agent_core_ngt_broken_index_store_count"
 	brokenIndexStoreCountMetricsDescription = "How many broken index generations have been stored"
-
-	kvsRangeDurationMetricsName        = "agent_core_ngt_kvs_range_duration"
-	kvsRangeDurationMetricsDescription = "The duration of the kvs range method"
 )
 
 type ngtMetrics struct {
@@ -146,15 +143,6 @@ func (n *ngtMetrics) View() ([]*metrics.View, error) {
 		return nil, err
 	}
 
-	kvsRangeDuration, err := view.New(
-		view.MatchInstrumentName(kvsRangeDurationMetricsName),
-		view.WithSetDescription(kvsRangeDurationMetricsDescription),
-		view.WithSetAggregation(aggregation.LastValue{}),
-	)
-	if err != nil {
-		return nil, err
-	}
-
 	return []*metrics.View{
 		&indexCount,
 		&uncommittedIndexCount,
@@ -165,7 +153,6 @@ func (n *ngtMetrics) View() ([]*metrics.View, error) {
 		&isIndexing,
 		&isSaving,
 		&brokenIndexCount,
-		&kvsRangeDuration,
 	}, nil
 }
 
@@ -251,15 +238,6 @@ func (n *ngtMetrics) Register(m metrics.Meter) error {
 		return err
 	}
 
-	kvsRangeDuration, err := m.AsyncInt64().Gauge(
-		kvsRangeDurationMetricsName,
-		metrics.WithDescription(kvsRangeDurationMetricsDescription),
-		metrics.WithUnit(metrics.Dimensionless),
-	)
-	if err != nil {
-		return err
-	}
-
 	return m.RegisterCallback(
 		[]metrics.AsynchronousInstrument{
 			indexCount,
@@ -271,7 +249,6 @@ func (n *ngtMetrics) Register(m metrics.Meter) error {
 			isIndexing,
 			isSaving,
 			brokenIndexCount,
-			kvsRangeDuration,
 		},
 		func(ctx context.Context) {
 			var indexing int64
@@ -293,7 +270,6 @@ func (n *ngtMetrics) Register(m metrics.Meter) error {
 			isIndexing.Observe(ctx, int64(indexing))
 			isSaving.Observe(ctx, int64(saving))
 			brokenIndexCount.Observe(ctx, int64(n.ngt.BrokenIndexCount()))
-			kvsRangeDuration.Observe(ctx, n.ngt.KvsRangeDuration())
 		},
 	)
 }
