@@ -1,5 +1,5 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "https://json-schema.org/draft-07/schema#",
   "title": "Values",
   "type": "object",
   "properties": {
@@ -342,6 +342,24 @@
       "description": "vector dimension",
       "minimum": 1
     },
+    "global_config": {
+      "type": "object",
+      "properties": {
+        "logging": {
+          "type": "object",
+          "properties": {
+            "format": { "type": "string", "enum": ["raw", "json"] },
+            "level": {
+              "type": "string",
+              "enum": ["debug", "info", "warn", "error", "fatal"]
+            },
+            "logger": { "type": "string", "enum": ["glg", "zap"] }
+          }
+        },
+        "time_zone": { "type": "string" },
+        "version": { "type": "string" }
+      }
+    },
     "insert_config": {
       "type": "object",
       "description": "insert config",
@@ -440,6 +458,734 @@
         "timeout": {
           "type": "string",
           "description": "search operation timeout"
+        }
+      }
+    },
+    "server_config": {
+      "type": "object",
+      "properties": {
+        "healths": {
+          "type": "object",
+          "properties": {
+            "liveness": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "description": "liveness server enabled"
+                },
+                "host": {
+                  "type": "string",
+                  "description": "liveness server host"
+                },
+                "livenessProbe": {
+                  "type": "object",
+                  "properties": {
+                    "failureThreshold": {
+                      "type": "integer",
+                      "description": "liveness probe failure threshold"
+                    },
+                    "httpGet": {
+                      "type": "object",
+                      "properties": {
+                        "path": {
+                          "type": "string",
+                          "description": "liveness probe path"
+                        },
+                        "port": {
+                          "type": "string",
+                          "description": "liveness probe port"
+                        },
+                        "scheme": {
+                          "type": "string",
+                          "description": "liveness probe scheme"
+                        }
+                      }
+                    },
+                    "initialDelaySeconds": {
+                      "type": "integer",
+                      "description": "liveness probe initial delay seconds"
+                    },
+                    "periodSeconds": {
+                      "type": "integer",
+                      "description": "liveness probe period seconds"
+                    },
+                    "successThreshold": {
+                      "type": "integer",
+                      "description": "liveness probe success threshold"
+                    },
+                    "timeoutSeconds": {
+                      "type": "integer",
+                      "description": "liveness probe timeout seconds"
+                    }
+                  }
+                },
+                "port": {
+                  "type": "integer",
+                  "description": "liveness server port",
+                  "maximum": 65535,
+                  "minimum": 0
+                },
+                "server": {
+                  "type": "object",
+                  "properties": {
+                    "http": {
+                      "type": "object",
+                      "properties": {
+                        "handler_timeout": {
+                          "type": "string",
+                          "description": "liveness server handler timeout"
+                        },
+                        "idle_timeout": {
+                          "type": "string",
+                          "description": "liveness server idle timeout"
+                        },
+                        "read_header_timeout": {
+                          "type": "string",
+                          "description": "liveness server read header timeout"
+                        },
+                        "read_timeout": {
+                          "type": "string",
+                          "description": "liveness server read timeout"
+                        },
+                        "shutdown_duration": {
+                          "type": "string",
+                          "description": "liveness server shutdown duration"
+                        },
+                        "write_timeout": {
+                          "type": "string",
+                          "description": "liveness server write timeout"
+                        }
+                      }
+                    },
+                    "mode": {
+                      "type": "string",
+                      "description": "liveness server mode"
+                    },
+                    "network": {
+                      "type": "string",
+                      "description": "mysql network",
+                      "enum": [
+                        "tcp",
+                        "tcp4",
+                        "tcp6",
+                        "udp",
+                        "udp4",
+                        "udp6",
+                        "unix",
+                        "unixgram",
+                        "unixpacket"
+                      ]
+                    },
+                    "probe_wait_time": {
+                      "type": "string",
+                      "description": "liveness server probe wait time"
+                    },
+                    "socket_option": {
+                      "type": "object",
+                      "properties": {
+                        "ip_recover_destination_addr": {
+                          "type": "boolean",
+                          "description": "server listen socket option for ip_recover_destination_addr functionality"
+                        },
+                        "ip_transparent": {
+                          "type": "boolean",
+                          "description": "server listen socket option for ip_transparent functionality"
+                        },
+                        "reuse_addr": {
+                          "type": "boolean",
+                          "description": "server listen socket option for reuse_addr functionality"
+                        },
+                        "reuse_port": {
+                          "type": "boolean",
+                          "description": "server listen socket option for reuse_port functionality"
+                        },
+                        "tcp_cork": {
+                          "type": "boolean",
+                          "description": "server listen socket option for tcp_cork functionality"
+                        },
+                        "tcp_defer_accept": {
+                          "type": "boolean",
+                          "description": "server listen socket option for tcp_defer_accept functionality"
+                        },
+                        "tcp_fast_open": {
+                          "type": "boolean",
+                          "description": "server listen socket option for tcp_fast_open functionality"
+                        },
+                        "tcp_no_delay": {
+                          "type": "boolean",
+                          "description": "server listen socket option for tcp_no_delay functionality"
+                        },
+                        "tcp_quick_ack": {
+                          "type": "boolean",
+                          "description": "server listen socket option for tcp_quick_ack functionality"
+                        }
+                      }
+                    },
+                    "socket_path": {
+                      "type": "string",
+                      "description": "mysql socket_path"
+                    }
+                  }
+                },
+                "servicePort": {
+                  "type": "integer",
+                  "description": "liveness server service port",
+                  "maximum": 65535,
+                  "minimum": 0
+                }
+              }
+            },
+            "readiness": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "description": "readiness server enabled"
+                },
+                "host": {
+                  "type": "string",
+                  "description": "readiness server host"
+                },
+                "port": {
+                  "type": "integer",
+                  "description": "readiness server port",
+                  "maximum": 65535,
+                  "minimum": 0
+                },
+                "readinessProbe": {
+                  "type": "object",
+                  "properties": {
+                    "failureThreshold": {
+                      "type": "integer",
+                      "description": "readiness probe failure threshold"
+                    },
+                    "httpGet": {
+                      "type": "object",
+                      "properties": {
+                        "path": {
+                          "type": "string",
+                          "description": "readiness probe path"
+                        },
+                        "port": {
+                          "type": "string",
+                          "description": "readiness probe port"
+                        },
+                        "scheme": {
+                          "type": "string",
+                          "description": "readiness probe scheme"
+                        }
+                      }
+                    },
+                    "initialDelaySeconds": {
+                      "type": "integer",
+                      "description": "readiness probe initial delay seconds"
+                    },
+                    "periodSeconds": {
+                      "type": "integer",
+                      "description": "readiness probe period seconds"
+                    },
+                    "successThreshold": {
+                      "type": "integer",
+                      "description": "readiness probe success threshold"
+                    },
+                    "timeoutSeconds": {
+                      "type": "integer",
+                      "description": "readiness probe timeout seconds"
+                    }
+                  }
+                },
+                "server": {
+                  "type": "object",
+                  "properties": {
+                    "http": {
+                      "type": "object",
+                      "properties": {
+                        "handler_timeout": {
+                          "type": "string",
+                          "description": "readiness server handler timeout"
+                        },
+                        "idle_timeout": {
+                          "type": "string",
+                          "description": "readiness server idle timeout"
+                        },
+                        "read_header_timeout": {
+                          "type": "string",
+                          "description": "readiness server read header timeout"
+                        },
+                        "read_timeout": {
+                          "type": "string",
+                          "description": "readiness server read timeout"
+                        },
+                        "shutdown_duration": {
+                          "type": "string",
+                          "description": "readiness server shutdown duration"
+                        },
+                        "write_timeout": {
+                          "type": "string",
+                          "description": "readiness server write timeout"
+                        }
+                      }
+                    },
+                    "mode": {
+                      "type": "string",
+                      "description": "readiness server mode"
+                    },
+                    "network": {
+                      "type": "string",
+                      "description": "mysql network",
+                      "enum": [
+                        "tcp",
+                        "tcp4",
+                        "tcp6",
+                        "udp",
+                        "udp4",
+                        "udp6",
+                        "unix",
+                        "unixgram",
+                        "unixpacket"
+                      ]
+                    },
+                    "probe_wait_time": {
+                      "type": "string",
+                      "description": "readiness server probe wait time"
+                    },
+                    "socket_option": {
+                      "type": "object",
+                      "properties": {
+                        "ip_recover_destination_addr": {
+                          "type": "boolean",
+                          "description": "server listen socket option for ip_recover_destination_addr functionality"
+                        },
+                        "ip_transparent": {
+                          "type": "boolean",
+                          "description": "server listen socket option for ip_transparent functionality"
+                        },
+                        "reuse_addr": {
+                          "type": "boolean",
+                          "description": "server listen socket option for reuse_addr functionality"
+                        },
+                        "reuse_port": {
+                          "type": "boolean",
+                          "description": "server listen socket option for reuse_port functionality"
+                        },
+                        "tcp_cork": {
+                          "type": "boolean",
+                          "description": "server listen socket option for tcp_cork functionality"
+                        },
+                        "tcp_defer_accept": {
+                          "type": "boolean",
+                          "description": "server listen socket option for tcp_defer_accept functionality"
+                        },
+                        "tcp_fast_open": {
+                          "type": "boolean",
+                          "description": "server listen socket option for tcp_fast_open functionality"
+                        },
+                        "tcp_no_delay": {
+                          "type": "boolean",
+                          "description": "server listen socket option for tcp_no_delay functionality"
+                        },
+                        "tcp_quick_ack": {
+                          "type": "boolean",
+                          "description": "server listen socket option for tcp_quick_ack functionality"
+                        }
+                      }
+                    },
+                    "socket_path": {
+                      "type": "string",
+                      "description": "mysql socket_path"
+                    }
+                  }
+                },
+                "servicePort": {
+                  "type": "integer",
+                  "description": "readiness server service port",
+                  "maximum": 65535,
+                  "minimum": 0
+                }
+              }
+            },
+            "startup": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "description": "startup server enabled"
+                },
+                "port": {
+                  "type": "integer",
+                  "description": "startup server port",
+                  "maximum": 65535,
+                  "minimum": 0
+                },
+                "startupProbe": {
+                  "type": "object",
+                  "properties": {
+                    "failureThreshold": {
+                      "type": "integer",
+                      "description": "startup probe failure threshold"
+                    },
+                    "httpGet": {
+                      "type": "object",
+                      "properties": {
+                        "path": {
+                          "type": "string",
+                          "description": "startup probe path"
+                        },
+                        "port": {
+                          "type": "string",
+                          "description": "startup probe port"
+                        },
+                        "scheme": {
+                          "type": "string",
+                          "description": "startup probe scheme"
+                        }
+                      }
+                    },
+                    "initialDelaySeconds": {
+                      "type": "integer",
+                      "description": "startup probe initial delay seconds"
+                    },
+                    "periodSeconds": {
+                      "type": "integer",
+                      "description": "startup probe period seconds"
+                    },
+                    "successThreshold": {
+                      "type": "integer",
+                      "description": "startup probe success threshold"
+                    },
+                    "timeoutSeconds": {
+                      "type": "integer",
+                      "description": "startup probe timeout seconds"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "servers": {
+          "type": "object",
+          "properties": {
+            "grpc": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "description": "gRPC server enabled"
+                },
+                "host": { "type": "string", "description": "gRPC server host" },
+                "port": {
+                  "type": "integer",
+                  "description": "gRPC server port",
+                  "maximum": 65535,
+                  "minimum": 0
+                },
+                "server": {
+                  "type": "object",
+                  "properties": {
+                    "grpc": {
+                      "type": "object",
+                      "properties": {
+                        "bidirectional_stream_concurrency": {
+                          "type": "integer",
+                          "description": "gRPC server bidirectional stream concurrency"
+                        },
+                        "connection_timeout": {
+                          "type": "string",
+                          "description": "gRPC server connection timeout"
+                        },
+                        "enable_reflection": {
+                          "type": "boolean",
+                          "description": "gRPC server reflection option"
+                        },
+                        "header_table_size": {
+                          "type": "integer",
+                          "description": "gRPC server header table size"
+                        },
+                        "initial_conn_window_size": {
+                          "type": "integer",
+                          "description": "gRPC server initial connection window size"
+                        },
+                        "initial_window_size": {
+                          "type": "integer",
+                          "description": "gRPC server initial window size"
+                        },
+                        "interceptors": {
+                          "type": "array",
+                          "description": "gRPC server interceptors",
+                          "items": {
+                            "type": "string",
+                            "enum": [
+                              "RecoverInterceptor",
+                              "AccessLogInterceptor",
+                              "TraceInterceptor",
+                              "MetricInterceptor"
+                            ]
+                          }
+                        },
+                        "keepalive": {
+                          "type": "object",
+                          "properties": {
+                            "max_conn_age": {
+                              "type": "string",
+                              "description": "gRPC server keep alive max connection age"
+                            },
+                            "max_conn_age_grace": {
+                              "type": "string",
+                              "description": "gRPC server keep alive max connection age grace"
+                            },
+                            "max_conn_idle": {
+                              "type": "string",
+                              "description": "gRPC server keep alive max connection idle"
+                            },
+                            "min_time": {
+                              "type": "string",
+                              "description": "gRPC server keep alive min_time"
+                            },
+                            "permit_without_stream": {
+                              "type": "boolean",
+                              "description": "gRPC server keep alive permit_without_stream"
+                            },
+                            "time": {
+                              "type": "string",
+                              "description": "gRPC server keep alive time"
+                            },
+                            "timeout": {
+                              "type": "string",
+                              "description": "gRPC server keep alive timeout"
+                            }
+                          }
+                        },
+                        "max_header_list_size": {
+                          "type": "integer",
+                          "description": "gRPC server max header list size"
+                        },
+                        "max_receive_message_size": {
+                          "type": "integer",
+                          "description": "gRPC server max receive message size"
+                        },
+                        "max_send_message_size": {
+                          "type": "integer",
+                          "description": "gRPC server max send message size"
+                        },
+                        "read_buffer_size": {
+                          "type": "integer",
+                          "description": "gRPC server read buffer size"
+                        },
+                        "write_buffer_size": {
+                          "type": "integer",
+                          "description": "gRPC server write buffer size"
+                        }
+                      }
+                    },
+                    "mode": {
+                      "type": "string",
+                      "description": "gRPC server server mode"
+                    },
+                    "network": {
+                      "type": "string",
+                      "description": "mysql network",
+                      "enum": [
+                        "tcp",
+                        "tcp4",
+                        "tcp6",
+                        "udp",
+                        "udp4",
+                        "udp6",
+                        "unix",
+                        "unixgram",
+                        "unixpacket"
+                      ]
+                    },
+                    "probe_wait_time": {
+                      "type": "string",
+                      "description": "gRPC server probe wait time"
+                    },
+                    "restart": {
+                      "type": "boolean",
+                      "description": "gRPC server restart"
+                    },
+                    "socket_option": {
+                      "type": "object",
+                      "properties": {
+                        "ip_recover_destination_addr": {
+                          "type": "boolean",
+                          "description": "server listen socket option for ip_recover_destination_addr functionality"
+                        },
+                        "ip_transparent": {
+                          "type": "boolean",
+                          "description": "server listen socket option for ip_transparent functionality"
+                        },
+                        "reuse_addr": {
+                          "type": "boolean",
+                          "description": "server listen socket option for reuse_addr functionality"
+                        },
+                        "reuse_port": {
+                          "type": "boolean",
+                          "description": "server listen socket option for reuse_port functionality"
+                        },
+                        "tcp_cork": {
+                          "type": "boolean",
+                          "description": "server listen socket option for tcp_cork functionality"
+                        },
+                        "tcp_defer_accept": {
+                          "type": "boolean",
+                          "description": "server listen socket option for tcp_defer_accept functionality"
+                        },
+                        "tcp_fast_open": {
+                          "type": "boolean",
+                          "description": "server listen socket option for tcp_fast_open functionality"
+                        },
+                        "tcp_no_delay": {
+                          "type": "boolean",
+                          "description": "server listen socket option for tcp_no_delay functionality"
+                        },
+                        "tcp_quick_ack": {
+                          "type": "boolean",
+                          "description": "server listen socket option for tcp_quick_ack functionality"
+                        }
+                      }
+                    },
+                    "socket_path": {
+                      "type": "string",
+                      "description": "mysql socket_path"
+                    }
+                  }
+                },
+                "servicePort": {
+                  "type": "integer",
+                  "description": "gRPC server service port",
+                  "maximum": 65535,
+                  "minimum": 0
+                }
+              }
+            },
+            "rest": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "description": "REST server enabled"
+                },
+                "host": { "type": "string", "description": "REST server host" },
+                "port": {
+                  "type": "integer",
+                  "description": "REST server port",
+                  "maximum": 65535,
+                  "minimum": 0
+                },
+                "server": {
+                  "type": "object",
+                  "properties": {
+                    "http": {
+                      "type": "object",
+                      "properties": {
+                        "handler_timeout": {
+                          "type": "string",
+                          "description": "REST server handler timeout"
+                        },
+                        "idle_timeout": {
+                          "type": "string",
+                          "description": "REST server idle timeout"
+                        },
+                        "read_header_timeout": {
+                          "type": "string",
+                          "description": "REST server read header timeout"
+                        },
+                        "read_timeout": {
+                          "type": "string",
+                          "description": "REST server read timeout"
+                        },
+                        "shutdown_duration": {
+                          "type": "string",
+                          "description": "REST server shutdown duration"
+                        },
+                        "write_timeout": {
+                          "type": "string",
+                          "description": "REST server write timeout"
+                        }
+                      }
+                    },
+                    "mode": {
+                      "type": "string",
+                      "description": "REST server server mode"
+                    },
+                    "network": {
+                      "type": "string",
+                      "description": "mysql network",
+                      "enum": [
+                        "tcp",
+                        "tcp4",
+                        "tcp6",
+                        "udp",
+                        "udp4",
+                        "udp6",
+                        "unix",
+                        "unixgram",
+                        "unixpacket"
+                      ]
+                    },
+                    "probe_wait_time": {
+                      "type": "string",
+                      "description": "REST server probe wait time"
+                    },
+                    "socket_option": {
+                      "type": "object",
+                      "properties": {
+                        "ip_recover_destination_addr": {
+                          "type": "boolean",
+                          "description": "server listen socket option for ip_recover_destination_addr functionality"
+                        },
+                        "ip_transparent": {
+                          "type": "boolean",
+                          "description": "server listen socket option for ip_transparent functionality"
+                        },
+                        "reuse_addr": {
+                          "type": "boolean",
+                          "description": "server listen socket option for reuse_addr functionality"
+                        },
+                        "reuse_port": {
+                          "type": "boolean",
+                          "description": "server listen socket option for reuse_port functionality"
+                        },
+                        "tcp_cork": {
+                          "type": "boolean",
+                          "description": "server listen socket option for tcp_cork functionality"
+                        },
+                        "tcp_defer_accept": {
+                          "type": "boolean",
+                          "description": "server listen socket option for tcp_defer_accept functionality"
+                        },
+                        "tcp_fast_open": {
+                          "type": "boolean",
+                          "description": "server listen socket option for tcp_fast_open functionality"
+                        },
+                        "tcp_no_delay": {
+                          "type": "boolean",
+                          "description": "server listen socket option for tcp_no_delay functionality"
+                        },
+                        "tcp_quick_ack": {
+                          "type": "boolean",
+                          "description": "server listen socket option for tcp_quick_ack functionality"
+                        }
+                      }
+                    },
+                    "socket_path": {
+                      "type": "string",
+                      "description": "mysql socket_path"
+                    }
+                  }
+                },
+                "servicePort": {
+                  "type": "integer",
+                  "description": "REST server service port",
+                  "maximum": 65535,
+                  "minimum": 0
+                }
+              }
+            }
+          }
         }
       }
     },

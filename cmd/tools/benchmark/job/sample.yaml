@@ -24,58 +24,121 @@ server_config:
     - name: grpc
       host: 0.0.0.0
       port: 8081
+      probe_wait_time: 3s
+      socket_path: ""
+      mode: GRPC
       grpc:
         bidirectional_stream_concurrency: 20
-        connection_timeout: ""
-        header_table_size: 0
-        initial_conn_window_size: 0
-        initial_window_size: 0
-        interceptors: []
-        keepalive:
-          max_conn_age: ""
-          max_conn_age_grace: ""
-          max_conn_idle: ""
-          time: ""
-          timeout: ""
-        max_header_list_size: 0
         max_receive_message_size: 0
         max_send_message_size: 0
-        read_buffer_size: 0
+        initial_window_size: 1048576
+        initial_conn_window_size: 2097152
+        keepalive:
+          max_conn_idle: ""
+          max_conn_age: ""
+          max_conn_age_grace: ""
+          time: "3h"
+          timeout: "60s"
+          min_time: "10m"
+          permit_without_stream: true
         write_buffer_size: 0
-      mode: GRPC
-      probe_wait_time: 60s
+        read_buffer_size: 0
+        connection_timeout: ""
+        max_header_list_size: 0
+        header_table_size: 0
+        interceptors:
+          - "RecoverInterceptor"
+        enable_reflection: true
+      socket_option:
+        reuse_port: true
+        reuse_addr: true
+        tcp_fast_open: false
+        tcp_no_delay: false
+        tcp_cork: false
+        tcp_quick_ack: false
+        tcp_defer_accept: false
+        ip_transparent: false
+        ip_recover_destination_addr: false
       restart: true
   health_check_servers:
     - name: liveness
       host: 0.0.0.0
       port: 3000
+      mode: ""
+      probe_wait_time: "3s"
+      network: tcp
+      socket_path: ""
       http:
+        shutdown_duration: "5s"
         handler_timeout: ""
         idle_timeout: ""
         read_header_timeout: ""
         read_timeout: ""
-        shutdown_duration: 5s
         write_timeout: ""
-      mode: ""
-      probe_wait_time: 60s
+      socket_option:
+        reuse_port: true
+        reuse_addr: true
+        tcp_fast_open: true
+        tcp_no_delay: true
+        tcp_cork: false
+        tcp_quick_ack: true
+        tcp_defer_accept: false
+        ip_transparent: false
+        ip_recover_destination_addr: false
     - name: readiness
       host: 0.0.0.0
       port: 3001
+      mode: ""
+      probe_wait_time: "3s"
+      network: tcp
+      socket_path: ""
       http:
+        shutdown_duration: "0s"
         handler_timeout: ""
         idle_timeout: ""
         read_header_timeout: ""
         read_timeout: ""
-        shutdown_duration: 0s
         write_timeout: ""
-      mode: ""
-      probe_wait_time: 60s
+      socket_option:
+        reuse_port: true
+        reuse_addr: true
+        tcp_fast_open: true
+        tcp_no_delay: true
+        tcp_cork: false
+        tcp_quick_ack: true
+        tcp_defer_accept: false
+        ip_transparent: false
+        ip_recover_destination_addr: false
   metrics_servers:
+    - name: pprof
+      host: 0.0.0.0
+      port: 8081
+      probe_wait_time: "3s"
+      socket_path: ""
+      mode: REST
+      network: tcp
+      http:
+        handler_timeout: "5s"
+        idle_timeout: "2s"
+        read_header_timeout: "1s"
+        read_timeout: "1s"
+        shutdown_duration: "5s"
+        write_timeout: "1m"
+      socket_option:
+        reuse_port: true
+        reuse_addr: true
+        tcp_fast_open: false
+        tcp_no_delay: false
+        tcp_cork: false
+        tcp_quick_ack: false
+        tcp_defer_accept: false
+        ip_transparent: false
+        ip_recover_destination_addr: false
   startup_strategy:
     - liveness
-    - grpc
     - readiness
-  full_shutdown_duration: 600s
+    - grpc
+  full_shutdown_duration: 30s
   tls:
     ca: /path/to/ca
     cert: /path/to/cert
@@ -83,86 +146,115 @@ server_config:
     key: /path/to/key
 observability:
   enabled: false
-  collector:
-    duration: 5s
-    metrics:
-      enable_cgo: true
-      enable_goroutine: true
-      enable_memory: true
-      enable_version_info: true
-      version_info_labels:
-        - vald_version
-        - server_name
-        - git_commit
-        - build_time
-        - go_version
-        - go_os
-        - go_arch
-        - ngt_version
+  otlp:
+    collector_endpoint: ""
+    attribute:
+      namespace: _MY_POD_NAMESPACE_
+      pod_name: _MY_POD_NAME_
+      node_name: _MY_NODE_NAME_
+      service_name: vald-benchmark
+    trace_batch_timeout: "1s"
+    trace_export_timeout: "1m"
+    trace_max_export_batch_size: 1024
+    trace_max_queue_size: 256
+  metrics:
+    enable_cgo: true
+    enable_goroutine: true
+    enable_memory: true
+    enable_version_info: true
+    version_info_labels:
+      - vald_version
+      - server_name
+      - git_commit
+      - build_time
+      - go_version
+      - go_os
+      - go_arch
+      - ngt_version
   trace:
     enabled: false
-    sampling_rate: 1
-  prometheus:
-    enabled: false
-    endpoint: /metrics
-    namespace: vald
-  jaeger:
-    enabled: false
-    collector_endpoint: ""
-    agent_endpoint: "jaeger-agent.default.svc.cluster.local:6831"
-    username: ""
-    password: ""
-    service_name: "vald-benchmark-job"
-    buffer_max_count: 10
-  stackdriver:
-    project_id: ""
-    client:
-      api_key: ""
-      audiences: []
-      authentication_enabled: true
-      credentials_file: ""
-      credentials_json: ""
-      endpoint: ""
-      quota_project: ""
-      request_reason: ""
-      scopes: []
-      telemetry_enabled: true
-      user_agent: ""
-    exporter:
-      bundle_count_threshold: 0
-      bundle_delay_threshold: "0"
-      location: ""
-      metric_prefix: vald.vdaas.org
-      monitoring_enabled: false
-      number_of_workers: 1
-      reporting_interval: 1m
-      skip_cmd: false
-      timeout: 5s
-      trace_spans_buffer_max_bytes: 0
-      tracing_enabled: false
-    profiler:
-      enabled: false
-      service: "vald-benchmark-job"
-      service_version: ""
-      debug_logging: false
-      mutex_profiling: true
-      cpu_profiling: true
-      alloc_profiling: true
-      heap_profiling: true
-      goroutine_profiling: true
-      alloc_force_gc: false
-      api_addr: ""
-      instance: ""
-      zone: ""
 job:
-  job_type: "search"
-  dimension: 784
-  iter: 100
-  num: 10
-  minNum: 10
-  radius: -1
-  epsilon: 0.1
-  timeout: 5s
-  gateway_client:
-    addrs:
-      - vald-lb-gateway.default.svc.cluster.local:8081
+  replica: 1
+  repetition: 1
+  before_job_name: ""
+  before_job_namespace: ""
+  rps: 200
+  concurrency_limit: 200
+  client_config:
+    health_check_duration: "1s"
+    connection_pool:
+      enable_dns_resolver: true
+      enable_rebalance: true
+      rebalance_duration: "30m"
+      size: 3
+      old_conn_close_duration: "2m"
+    backoff:
+      initial_duration: "5ms"
+      backoff_time_limit: "5s"
+      maximum_duration: "5s"
+      jitter_limit: "100ms"
+      backoff_factor: 1.1
+      retry_count: 100
+      enable_error_log: true
+    circuit_breaker:
+      closed_error_rate: 0.7
+      half_open_error_rate: 0.5
+      min_samples: 1000
+      open_timeout: "1s"
+      closed_refresh_timeout: "10s"
+    call_option:
+      wait_for_ready: true
+      max_retry_rpc_buffer_size: 0
+      max_recv_msg_size: 0
+      max_send_msg_size: 0
+    dial_option:
+      write_buffer_size: 0
+      read_buffer_size: 0
+      initial_window_size: 1048576
+      initial_connection_window_size: 2097152
+      max_msg_size: 0
+      backoff_max_delay: "120s"
+      backoff_base_delay: "1s"
+      backoff_multiplier: 1.6
+      backoff_jitter: 0.2
+      min_connection_timeout: "20s"
+      enable_backoff: false
+      insecure: true
+      timeout: ""
+      interceptors: []
+      net:
+        dns:
+          cache_enabled: true
+          refresh_duration: "30m"
+          cache_expiration: "1h"
+        dialer:
+          timeout: ""
+          keepalive: ""
+          fallback_delay: ""
+          dual_stack_enabled: true
+        tls:
+          enabled: false
+          cert: /path/to/cert
+          key: /path/to/key
+          ca: /path/to/ca
+          insecure_skip_verify: false
+        socket_option:
+          reuse_port: true
+          reuse_addr: true
+          tcp_fast_open: false
+          tcp_no_delay: false
+          tcp_cork: false
+          tcp_quick_ack: false
+          tcp_defer_accept: false
+          ip_transparent: false
+          ip_recover_destination_addr: false
+      keepalive:
+        time: "120s"
+        timeout: "30s"
+        permit_without_stream: false
+    tls:
+      enabled: false
+      cert: /path/to/cert
+      key: /path/to/key
+      ca: /path/to/ca
+      insecure_skip_verify: false
