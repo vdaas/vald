@@ -22,15 +22,17 @@ import (
 	"strconv"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
-	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
+	"golang.org/x/sync/errgroup"
 )
 
 func (j *job) exists(ctx context.Context, ech chan error) error {
 	log.Info("[benchmark job] Start benchmarking exists")
-	eg, egctx := errgroup.New(ctx)
-	eg.Limitation(j.concurrencyLimit)
+	eg, egctx := errgroup.WithContext(ctx)
+	eg.SetLimit(j.concurrencyLimit)
+	// eg, egctx := errgroup.New(ctx)
+	// eg.Limitation(j.concurrencyLimit)
 	for i := j.dataset.Range.Start; i <= j.dataset.Range.End; i++ {
 		idx := i
 		eg.Go(func() error {
@@ -78,8 +80,10 @@ func (j *job) exists(ctx context.Context, ech chan error) error {
 
 func (j *job) getObject(ctx context.Context, ech chan error) error {
 	log.Info("[benchmark job] Start benchmarking getObject")
-	eg, egctx := errgroup.New(ctx)
-	eg.Limitation(j.concurrencyLimit)
+	eg, egctx := errgroup.WithContext(ctx)
+	eg.SetLimit(j.concurrencyLimit)
+	// eg, egctx := errgroup.New(ctx)
+	// eg.Limitation(j.concurrencyLimit)
 	for i := j.dataset.Range.Start; i <= j.dataset.Range.End; i++ {
 		log.Infof("[benchmark job] Start get object: iter = %d", i)
 		ft := []*payload.Filter_Target{}

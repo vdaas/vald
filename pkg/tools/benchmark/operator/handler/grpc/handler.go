@@ -21,7 +21,6 @@ import (
 	"context"
 
 	"github.com/vdaas/vald/apis/grpc/v1/benchmark"
-	"github.com/vdaas/vald/internal/singleflight"
 	"github.com/vdaas/vald/pkg/tools/benchmark/operator/service"
 )
 
@@ -34,7 +33,6 @@ type server struct {
 	benchmark.UnimplementedJobServer
 
 	operator service.Operator
-	group    singleflight.Group
 }
 
 func New(opts ...Option) (bm Benchmark, err error) {
@@ -46,8 +44,6 @@ func New(opts ...Option) (bm Benchmark, err error) {
 			return nil, err
 		}
 	}
-
-	b.group = singleflight.New()
 
 	return b, nil
 }
