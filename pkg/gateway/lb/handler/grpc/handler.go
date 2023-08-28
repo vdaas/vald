@@ -2821,28 +2821,28 @@ func (s *server) RemoveByTimestamp(ctx context.Context, req *payload.Remove_Time
 				emu.Unlock()
 				return nil
 			}
+		}
 
-			if res != nil && len(res.GetLocations()) > 0 {
-				for _, loc := range res.GetLocations() {
-					mu.Lock()
-					if pos, ok := visited[loc.GetUuid()]; !ok {
-						locs.Locations = append(locs.GetLocations(), loc)
-						visited[loc.GetUuid()] = len(locs.Locations) - 1
-					} else {
-						if pos < len(locs.GetLocations()) {
-							locs.GetLocations()[pos].Ips = append(locs.GetLocations()[pos].Ips, loc.GetIps()...)
+		if res != nil && len(res.GetLocations()) > 0 {
+			for _, loc := range res.GetLocations() {
+				mu.Lock()
+				if pos, ok := visited[loc.GetUuid()]; !ok {
+					locs.Locations = append(locs.GetLocations(), loc)
+					visited[loc.GetUuid()] = len(locs.Locations) - 1
+				} else {
+					if pos < len(locs.GetLocations()) {
+						locs.GetLocations()[pos].Ips = append(locs.GetLocations()[pos].Ips, loc.GetIps()...)
+						if s := locs.GetLocations()[pos].Name; len(s) == 0 {
+							locs.GetLocations()[pos].Name = loc.GetName()
+						} else {
 							// locs.GetLocations()[pos].Name += "," + loc.GetName()
-							if s := locs.GetLocations()[pos].Name; len(s) == 0 {
-								locs.GetLocations()[pos].Name = loc.GetName()
-							} else {
-								locs.GetLocations()[pos].Name = strings.Join([]string{
-									s, loc.GetName(),
-								}, ",")
-							}
+							locs.GetLocations()[pos].Name = strings.Join([]string{
+								s, loc.GetName(),
+							}, ",")
 						}
 					}
-					mu.Unlock()
 				}
+				mu.Unlock()
 			}
 		}
 		return nil
