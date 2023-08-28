@@ -22,6 +22,7 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc"
+	"github.com/vdaas/vald/internal/observability"
 	"github.com/vdaas/vald/internal/runner"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/pkg/index/job/correction/config"
@@ -29,9 +30,10 @@ import (
 )
 
 type run struct {
-	eg        errgroup.Group
-	cfg       *config.Data
-	corrector service.Corrector
+	eg            errgroup.Group
+	cfg           *config.Data
+	observability observability.Observability
+	corrector     service.Corrector
 }
 
 func New(cfg *config.Data) (r runner.Runner, err error) {
@@ -87,18 +89,31 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		return nil, err
 	}
 
+	var obs observability.Observability
+	if cfg.Observability.Enabled {
+		obs, err = observability.NewWithConfig(cfg.Observability)
+		if err != nil {
+			log.Error("failed to initialize observability")
+			return nil, err
+		}
+	}
+
 	return &run{
-		eg:        eg,
-		cfg:       cfg,
-		corrector: corrector,
+		eg:            eg,
+		cfg:           cfg,
+		observability: obs,
+		corrector:     corrector,
 	}, nil
 }
 
-func (c *run) PreStart(ctx context.Context) error {
+func (r *run) PreStart(ctx context.Context) error {
+	if r.observability != nil {
+		return r.observability.PreStart(ctx)
+	}
 	return nil
 }
 
-func (c *run) Start(ctx context.Context) (<-chan error, error) {
+func (r *run) Start(ctx context.Context) (<-chan error, error) {
 	// TODO: timeoutはconfigから指定
 	// Setting timeout because job resource needs to be finished at some point
 	// ここでcancelしても親は終了しないので、結局self SIGTERMしかなさそう
@@ -106,10 +121,13 @@ func (c *run) Start(ctx context.Context) (<-chan error, error) {
 	// ctx, cancel = context.WithTimeout(ctx, time.Second*20)
 	// defer cancel() // ここでdeferすると関数はすぐ抜けちゃうので意味ない
 
-	log.Info("starting index correction...")
+	log.Info("starting index correction job")
+	if r.observability != nil {
+		_ = r.observability.Start(ctx) // FIXME: listen this returned err channel
+	}
 
 	start := time.Now()
-	dech, err := c.corrector.Start(ctx)
+	dech, err := r.corrector.Start(ctx)
 	if err != nil {
 		log.Errorf("index correction process failed: %v", err)
 		return nil, err
@@ -120,7 +138,7 @@ func (c *run) Start(ctx context.Context) (<-chan error, error) {
 	// FIXME: 以下をやめてシンプルにStartを抜けたらself SIGTERMで終了させる方がいいかも
 	// 	      その場合echは無視することになる
 	ech := make(chan error, 100)
-	c.eg.Go(safety.RecoverFunc(func() error {
+	r.eg.Go(safety.RecoverFunc(func() error {
 		for {
 			select {
 			case <-ctx.Done():
