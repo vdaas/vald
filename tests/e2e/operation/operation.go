@@ -88,6 +88,7 @@ type Client interface {
 	Update(t *testing.T, ctx context.Context, ds Dataset) error
 	Upsert(t *testing.T, ctx context.Context, ds Dataset) error
 	Remove(t *testing.T, ctx context.Context, ds Dataset) error
+	RemoveByTimestamp(t *testing.T, ctx context.Context, timestamp int64) error
 	InsertWithParameters(
 		t *testing.T,
 		ctx context.Context,
