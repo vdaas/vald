@@ -34,4 +34,3 @@ jobs:
           REPO: ${{ inputs.repo }}
           USER: ${{ secrets.DISPATCH_USER }}
           TOKEN: ${{ secrets.DISPATCH_TOKEN }}
-
