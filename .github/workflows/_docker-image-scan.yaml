@@ -1,0 +1,35 @@
+name: "Docker image scanning"
+on:
+  workflow_call:
+    inputs:
+      target:
+        type: string
+        description: 'Build target. e.g. `agent-ngt`'
+        required: true
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set Git config
+        run: |
+          git config --global --add safe.directory ${GITHUB_WORKSPACE}
+
+      - name: Build the Docker image
+        id: build_image
+        run: |
+          make docker/build/${TARGET}
+          imagename=`make docker/name/${TARGET}`
+          docker tag ${imagename} ${imagename}:${{ github.sha }}
+          echo "IMAGE_NAME=${imagename}" >> $GITHUB_OUTPUT
+        env:
+          DOCKER_BUILDKIT: 1
+          TARGET: ${{ inputs.target }}
+
+      - name: Scan the Docker image
+        uses: ./.github/actions/scan-docker-image
+        with:
+          image_ref: "${{ steps.build_image.outputs.IMAGE_NAME }}:${{ github.sha }}"
+          severity: "HIGH,CRITICAL"

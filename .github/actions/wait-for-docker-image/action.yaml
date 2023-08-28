@@ -14,7 +14,8 @@
 # limitations under the License.
 #
 name: "Wait for Docker Images"
-description: "Wait for Docker images to be published"
+description: "A action to wait for Docker images to be published"
+
 inputs:
   images:
     description: "image names"
@@ -24,6 +25,7 @@ inputs:
       vdaas/vald-lb-gateway \
       vdaas/vald-manager-index"
 outputs: {}
+
 runs:
   using: "composite"
   steps:

@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-name: build protobuf
+name: "Build protobuf"
 on:
   push:
     branches:
@@ -27,46 +27,23 @@ on:
       - "versions/GO_VERSION"
 
 jobs:
-  dump_contexts_to_log:
+  dump-contexts-to-log:
     runs-on: ubuntu-latest
     steps:
-      - name: Dump GitHub context
-        id: github_context_step
-        run: echo $JSON
-        env:
-          JSON: ${{ toJSON(github) }}
-      - name: Dump job context
-        run: echo $JSON
-        env:
-          JSON: ${{ toJSON(job) }}
-      - name: Dump steps context
-        run: echo $JSON
-        env:
-          JSON: ${{ toJSON(steps) }}
-      - name: Dump runner context
-        run: echo $JSON
-        env:
-          JSON: ${{ toJSON(runner) }}
-      - name: Dump strategy context
-        run: echo $JSON
-        env:
-          JSON: ${{ toJSON(strategy) }}
-      - name: Dump matrix context
-        run: echo $JSON
-        env:
-          JSON: ${{ toJSON(matrix) }}
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/dump-context
+
   build:
-    name: build all
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/vdaas/vald/vald-ci-container:nightly
     steps:
       - uses: actions/checkout@v3
-        with:
-          persist-credentials: false
-      - name: set git config
+
+      - name: Set Git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
-      - name: build protobuf
+
+      - name: Build protobuf
         run: |
           make proto/all

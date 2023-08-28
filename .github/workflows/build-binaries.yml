@@ -20,34 +20,12 @@ on:
       - created
 
 jobs:
-  dump_contexts_to_log:
+  dump-contexts-to-log:
     runs-on: ubuntu-latest
     steps:
-      - name: Dump GitHub context
-        id: github_context_step
-        run: echo $JSON
-        env:
-          JSON: ${{ toJSON(github) }}
-      - name: Dump job context
-        run: echo $JSON
-        env:
-          JSON: ${{ toJSON(job) }}
-      - name: Dump steps context
-        run: echo $JSON
-        env:
-          JSON: ${{ toJSON(steps) }}
-      - name: Dump runner context
-        run: echo $JSON
-        env:
-          JSON: ${{ toJSON(runner) }}
-      - name: Dump strategy context
-        run: echo $JSON
-        env:
-          JSON: ${{ toJSON(strategy) }}
-      - name: Dump matrix context
-        run: echo $JSON
-        env:
-          JSON: ${{ toJSON(matrix) }}
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/dump-context
+
   build-linux:
     runs-on: ubuntu-latest
     container:
@@ -56,64 +34,33 @@ jobs:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 10
-      - name: set git config
+
+      - name: Set Git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
-      - name: Fetch golang version
-        run: |
-          GO_VERSION=`make version/go`
-          echo "version=${GO_VERSION}" >> $GITHUB_OUTPUT
-        id: golang_version
-      - uses: actions/setup-go@v3
-        with:
-          go-version: ${{ steps.golang_version.outputs.version }}
+
+      - uses: ./.github/actions/setup-go
+
       - name: Build and zip
         run: |
           make binary/build/zip
+
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
           name: artifacts-linux
           path: ./artifacts/
-  # build-macos: ## or using cross-compiler?
-  #   runs-on: macos-latest
-  #   steps:
-  #     - uses: actions/checkout@v3
-  #       with:
-  #         fetch-depth: 10
-  #     - name: Fetch golang version
-  #       run: |
-  #         GO_VERSION=`make version/go`
-  #         echo "version=${GO_VERSION}" >> $GITHUB_OUTPUT
-  #       id: golang_version
-  #     - uses: actions/setup-go@v3
-  #       with:
-  #         go-version: ${{ steps.golang_version.outputs.version }}
-  #     - name: Build and zip
-  #       run: |
-  #         export PATH=$PATH:$(go env GOPATH)/bin
-  #         brew install llvm libomp protobuf ngt
-  #         make CXXFLAGS="-I/usr/local/opt/llvm/include -mno-avx512f -mno-avx512dq -mno-avx512cd -mno-avx512bw -mno-avx512vl" binary/build/zip
-  #     - name: Upload artifact
-  #       uses: actions/upload-artifact@v3
-  #       with:
-  #         name: artifacts-macos
-  #         path: ./artifacts
+
   publish:
     runs-on: ubuntu-latest
     needs:
       - build-linux
-      # - build-macos
-      # - build-windows
     steps:
       - uses: actions/download-artifact@v2
         with:
           name: artifacts-linux
           path: tmp/linux
-      # - uses: actions/download-artifact@v2
-      #   with:
-      #     name: artifacts-macos
-      #     path: tmp/macos
+
       - uses: shogo82148/actions-upload-release-asset@v1
         with:
           upload_url: ${{ github.event.release.upload_url }}

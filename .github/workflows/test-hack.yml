@@ -30,41 +30,24 @@ on:
     paths:
       - "go.mod"
       - "go.sum"
-      - ".github/workflows/test.yml"
+      - ".github/workflows/test-hack.yml"
       - "hack/gorules/**"
       - "hack/helm/**"
       - "hack/license/**"
       - "hack/tools/**"
 
+env:
+  # NOTE: This variable is used to make gorules run properly.
+  GOPATH: ${{ github.workspace }}
+  PROJECT_ROOT_DIR: src/github.com/vdaas/vald
+
 jobs:
-  dump_contexts_to_log:
+  dump-contexts-to-log:
     runs-on: ubuntu-latest
     steps:
-      - name: Dump GitHub context
-        id: github_context_step
-        run: echo $JSON
-        env:
-          JSON: ${{ toJSON(github) }}
-      - name: Dump job context
-        run: echo $JSON
-        env:
-          JSON: ${{ toJSON(job) }}
-      - name: Dump steps context
-        run: echo $JSON
-        env:
-          JSON: ${{ toJSON(steps) }}
-      - name: Dump runner context
-        run: echo $JSON
-        env:
-          JSON: ${{ toJSON(runner) }}
-      - name: Dump strategy context
-        run: echo $JSON
-        env:
-          JSON: ${{ toJSON(strategy) }}
-      - name: Dump matrix context
-        run: echo $JSON
-        env:
-          JSON: ${{ toJSON(matrix) }}
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/dump-context
+
   test-hack:
     name: Run tests for hack packages
     runs-on: ubuntu-latest
@@ -72,25 +55,24 @@ jobs:
       image: ghcr.io/vdaas/vald/vald-ci-container:nightly
     defaults:
       run:
-        working-directory: src/github.com/vdaas/vald
+        working-directory: ${{ env.GOPATH }}/${{ env.PROJECT_ROOT_DIR }}
     steps:
-      - name: Check out code.
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
         with:
-          fetch-depth: 1
-          path: src/github.com/vdaas/vald
-      - name: set git config
+          path: ${{ env.PROJECT_ROOT_DIR }}
+
+      - name: Set Git config
         run: |
-          git config --global --add safe.directory ${GITHUB_WORKSPACE}/src/github.com/vdaas/vald
-        working-directory: src/github.com/vdaas/vald
-      - name: dependencies
+          git config --global --add safe.directory ${GITHUB_WORKSPACE}
+
+      - name: Install Proto dependencies
         run: |
-          GOPATH=${GITHUB_WORKSPACE} make proto/deps
-        working-directory: src/github.com/vdaas/vald
+          make proto/deps
+
       - name: Run tests for hack packages / gotestfmt
         run: |
-          GOPATH=${GITHUB_WORKSPACE} TEST_RESULT_DIR=${GITHUB_WORKSPACE}/src/github.com/vdaas/vald make test/hack/gotestfmt
-        working-directory: src/github.com/vdaas/vald
-      - name: print tparse result
+          TEST_RESULT_DIR=${GITHUB_WORKSPACE} make test/hack/gotestfmt
+
+      - name: Print tparse result
         run: |
-          tparse -notests -smallscreen -sort cover -format markdown -file ${GITHUB_WORKSPACE}/src/github.com/vdaas/vald/test-hack-gotestfmt-result.json
+          tparse -notests -smallscreen -sort cover -format markdown -file ${GITHUB_WORKSPACE}/test-hack-gotestfmt-result.json

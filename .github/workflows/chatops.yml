@@ -13,59 +13,35 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+name: ChatOps
 on:
   issue_comment:
     types: [created]
-env:
-  YQ_VERSION: 3.2.1
-name: ChatOps
+
 jobs:
-  dump_contexts_to_log:
+  dump-contexts-to-log:
     runs-on: ubuntu-latest
     steps:
-      - name: Dump GitHub context
-        id: github_context_step
-        run: echo $JSON
-        env:
-          JSON: ${{ toJSON(github) }}
-      - name: Dump job context
-        run: echo $JSON
-        env:
-          JSON: ${{ toJSON(job) }}
-      - name: Dump steps context
-        run: echo $JSON
-        env:
-          JSON: ${{ toJSON(steps) }}
-      - name: Dump runner context
-        run: echo $JSON
-        env:
-          JSON: ${{ toJSON(runner) }}
-      - name: Dump strategy context
-        run: echo $JSON
-        env:
-          JSON: ${{ toJSON(strategy) }}
-      - name: Dump matrix context
-        run: echo $JSON
-        env:
-          JSON: ${{ toJSON(matrix) }}
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/dump-context
+
   label:
     name: Add labels
     runs-on: ubuntu-latest
     if: github.event.comment.user.login != 'vdaas-ci'
     steps:
-      - name: check PR Comments
+      - name: Check PR Comments
         id: check_comments_label
         uses: machine-learning-apps/actions-chatops@master
         with:
           TRIGGER_PHRASE: "/label"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: install yq
+
+      - uses: ./.github/actions/setup-yq
         if: steps.check_comments_label.outputs.BOOL_TRIGGERED == 'true'
-        run: |
-          sudo curl -Lo /usr/local/bin/yq https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64
-          sudo chmod a+x /usr/local/bin/yq
-      - name: check permissions
+
+      - name: Check permissions
         if: steps.check_comments_label.outputs.BOOL_TRIGGERED == 'true'
         id: check_permissions
         run: |
@@ -85,7 +61,8 @@ jobs:
         env:
           USERNAME: ${{ steps.check_comments_label.outputs.COMMENTER_USERNAME }}
           REQUIRED_POLICY: label
-      - name: add label
+
+      - name: Add label
         if: steps.check_comments_label.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         run: |
           labels=`echo "${TRAILING_LINE}" | jq -cMR 'split(" ")'`
@@ -101,96 +78,23 @@ jobs:
           ISSUE_URL: ${{ github.event.issue.labels_url }}
           USERNAME: ${{ steps.check_comments_label.outputs.COMMENTER_USERNAME }}
           TRAILING_LINE: ${{ steps.check_comments_label.outputs.TRAILING_LINE }}
-  changelog:
-    name: Add draft comment for a new CHANGELOG entry
-    runs-on: ubuntu-latest
-    if: github.event.comment.user.login != 'vdaas-ci'
-    steps:
-      - name: check PR Comments
-        id: check_comments_changelog
-        uses: machine-learning-apps/actions-chatops@master
-        with:
-          TRIGGER_PHRASE: "/changelog"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: install yq
-        if: steps.check_comments_changelog.outputs.BOOL_TRIGGERED == 'true'
-        run: |
-          sudo curl -Lo /usr/local/bin/yq https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64
-          sudo chmod a+x /usr/local/bin/yq
-      - name: check permissions
-        if: steps.check_comments_changelog.outputs.BOOL_TRIGGERED == 'true'
-        id: check_permissions
-        run: |
-          curl -o chatops_permissions.yaml https://raw.githubusercontent.com/vdaas/vald/main/.github/chatops_permissions.yaml
-          roles=`yq r chatops_permissions.yaml "users.${USERNAME}.role.*"`
-          if [ "$roles" = "" ]; then
-            roles=`yq r chatops_permissions.yaml "default-roles.*"`
-          fi
-          for role in `echo $roles`
-          do
-              if yq r chatops_permissions.yaml "roles.${role}.policies.*" | grep "^${REQUIRED_POLICY}$" > /dev/null 2>&1 ; then
-                echo "[OK] changelog requested by ${USERNAME}"
-                echo "EXECUTABLE=true" >> $GITHUB_OUTPUT
-                break
-              fi
-          done
-        env:
-          USERNAME: ${{ steps.check_comments_changelog.outputs.COMMENTER_USERNAME }}
-          REQUIRED_POLICY: changelog
-      - uses: actions/checkout@v3
-        if: steps.check_comments_changelog.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
-        with:
-          fetch-depth: 0
-      - name: set git config
-        run: |
-          git config --global --add safe.directory ${GITHUB_WORKSPACE}
-      - name: comment to PR
-        if: steps.check_comments_changelog.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
-        run: |
-          git checkout main
-          PREVIOUS_VERSION=$(git describe --tags $(git rev-list --tags --max-count=1))
-          BODY=`git log --pretty=format:'- %s' ${PREVIOUS_VERSION}..main | grep "#[[:digit:]]\+" | sed -e "s/\[\(patch\|minor\|major\)\] *//g" | sed -e "s%#\([[:digit:]]\+\)%[&](https://github.com/vdaas/vald/pull/\1)%g" | sed ':a;N;$!ba;s/\n/\\\\n/g'`
-          CURRENT="- ${PR_TITLE} ([#${PR_NUM}](https://github.com/vdaas/vald/pull/${PR_NUM}))"
-
-          curl --include --verbose --fail \
-          -H "Accept: application/json" \
-          -H "Content-Type:application/json" \
-          -H "Authorization: token ${GITHUB_TOKEN}" \
-          --request PATCH \
-          --data "{\"body\": \"${CURRENT}\\n${BODY}\"}" \
-          https://api.github.com/repos/vdaas/vald/pulls/${PR_NUM}
-
-          curl --include --verbose --fail \
-          -H "Accept: application/json" \
-          -H "Content-Type:application/json" \
-          -H "Authorization: token ${GITHUB_TOKEN}" \
-          --request POST \
-          --data "{\"body\": \"**[CHANGELOG]** The description of this PR is updated. Please edit it.\"}" \
-          $API_URL
-        env:
-          GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
-          API_URL: ${{ github.event.issue.comments_url }}
-          PR_TITLE: ${{ github.event.issue.title }}
-          PR_NUM: ${{ github.event.issue.number }}
   rebase:
     name: Rebase
     runs-on: ubuntu-latest
     if: github.event.comment.user.login != 'vdaas-ci'
     steps:
-      - name: check PR Comments
+      - name: Check PR Comments
         id: check_comments_rebase
         uses: machine-learning-apps/actions-chatops@master
         with:
           TRIGGER_PHRASE: "/rebase"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: install yq
+
+      - uses: ./.github/actions/setup-yq
         if: steps.check_comments_rebase.outputs.BOOL_TRIGGERED == 'true'
-        run: |
-          sudo curl -Lo /usr/local/bin/yq https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64
-          sudo chmod a+x /usr/local/bin/yq
-      - name: check permissions
+
+      - name: Check permissions
         if: steps.check_comments_rebase.outputs.BOOL_TRIGGERED == 'true'
         id: check_permissions
         run: |
@@ -210,7 +114,8 @@ jobs:
         env:
           USERNAME: ${{ steps.check_comments_rebase.outputs.COMMENTER_USERNAME }}
           REQUIRED_POLICY: rebase
-      - name: comment back to PR
+
+      - name: Comment back to PR
         if: steps.check_comments_rebase.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         run: |
           curl --include --verbose --fail \
@@ -225,20 +130,24 @@ jobs:
           API_URL: ${{ github.event.issue.comments_url }}
           BRANCH: ${{ steps.check_comments_rebase.outputs.BRANCH_NAME }}
           USERNAME: ${{ steps.check_comments_rebase.outputs.COMMENTER_USERNAME }}
+
       - uses: actions/checkout@v3
         if: steps.check_comments_rebase.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         with:
           fetch-depth: 0
           token: ${{ secrets.DISPATCH_TOKEN }}
-      - name: set git config
+
+      - name: Set Git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
+
       - name: Automatic Rebase
         if: steps.check_comments_rebase.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         uses: cirrus-actions/rebase@1.5
         env:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
-      - name: failure comment
+
+      - name: Failure comment
         if: failure()
         run: |
           curl --include --verbose --fail \
@@ -251,6 +160,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
           API_URL: ${{ github.event.issue.comments_url }}
+
   gentest:
     name: Add tests
     needs:
@@ -265,11 +175,10 @@ jobs:
           TRIGGER_PHRASE: "/gen-test"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: install yq
+
+      - uses: ./.github/actions/setup-yq
         if: steps.check_comments_gen_test.outputs.BOOL_TRIGGERED == 'true'
-        run: |
-          sudo curl -Lo /usr/local/bin/yq https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64
-          sudo chmod a+x /usr/local/bin/yq
+
       - name: check permissions
         if: steps.check_comments_gen_test.outputs.BOOL_TRIGGERED == 'true'
         id: check_permissions
@@ -290,6 +199,7 @@ jobs:
         env:
           USERNAME: ${{ steps.check_comments_gen_test.outputs.COMMENTER_USERNAME }}
           REQUIRED_POLICY: gen-test
+
       - name: check executable
         if: steps.check_comments_gen_test.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         run: |
@@ -305,29 +215,26 @@ jobs:
           USERNAME: ${{ steps.check_comments_gen_test.outputs.COMMENTER_USERNAME }}
           PR_AUTHOR: ${{ github.event.issue.user.login }}
           API_URL: ${{ github.event.issue.comments_url }}
+
       - uses: actions/checkout@v3
         if: steps.check_comments_gen_test.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         with:
           fetch-depth: 0
+
       - name: set git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
+
       - uses: crazy-max/ghaction-import-gpg@v4
         if: steps.check_comments_gen_test.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         with:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           git_user_signingkey: true
           git_commit_gpgsign: true
-      - name: Fetch golang version
+
+      - uses: ./.github/actions/setup-go
         if: steps.check_comments_gen_test.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
-        run: |
-          GO_VERSION=`make version/go`
-          echo "version=${GO_VERSION}" >> $GITHUB_OUTPUT
-        id: golang_version
-      - uses: actions/setup-go@v3
-        if: steps.check_comments_gen_test.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
-        with:
-          go-version: ${{ steps.golang_version.outputs.version }}
+
       - name: Generate tests and push
         id: gen_test
         if: steps.check_comments_gen_test.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
@@ -362,6 +269,7 @@ jobs:
           PR_INFO_URL: ${{ github.event.issue.pull_request.url }}
           PR_AUTHOR: ${{ github.event.issue.user.login }}
           PR_NUM: ${{ github.event.issue.number }}
+
       - name: failure comment
         if: failure()
         run: |
@@ -376,6 +284,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
           API_URL: ${{ github.event.issue.comments_url }}
+
   format:
     name: Add license and run golines + gofumpt + goimports
     needs:
@@ -391,11 +300,10 @@ jobs:
           TRIGGER_PHRASE: "/format"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: install yq
+
+      - uses: ./.github/actions/setup-yq
         if: steps.check_comments_format.outputs.BOOL_TRIGGERED == 'true'
-        run: |
-          sudo curl -Lo /usr/local/bin/yq https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64
-          sudo chmod a+x /usr/local/bin/yq
+
       - name: check permissions
         if: steps.check_comments_format.outputs.BOOL_TRIGGERED == 'true'
         id: check_permissions
@@ -416,6 +324,7 @@ jobs:
         env:
           USERNAME: ${{ steps.check_comments_format.outputs.COMMENTER_USERNAME }}
           REQUIRED_POLICY: format
+
       - name: check executable
         if: steps.check_comments_format.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         run: |
@@ -430,30 +339,27 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
           USERNAME: ${{ steps.check_comments_format.outputs.COMMENTER_USERNAME }}
           API_URL: ${{ github.event.issue.comments_url }}
+
       - uses: actions/checkout@v3
         if: steps.check_comments_format.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         with:
           fetch-depth: 0
           token: ${{ secrets.DISPATCH_TOKEN }}
+
       - name: set git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
+
       - uses: crazy-max/ghaction-import-gpg@v4
         if: steps.check_comments_format.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         with:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           git_user_signingkey: true
           git_commit_gpgsign: true
-      - name: Fetch golang version
-        if: steps.check_comments_format.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
-        run: |
-          GO_VERSION=`make version/go`
-          echo "version=${GO_VERSION}" >> $GITHUB_OUTPUT
-        id: golang_version
-      - uses: actions/setup-go@v3
-        if: steps.check_comments_format.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
-        with:
-          go-version: ${{ steps.golang_version.outputs.version }}
+
+      - uses: ./.github/actions/setup-go
+        if: steps.check_comments_gen_test.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
+
       - name: update and push
         id: format_push
         if: steps.check_comments_format.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
@@ -495,6 +401,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
           PR_INFO_URL: ${{ github.event.issue.pull_request.url }}
           PR_NUM: ${{ github.event.issue.number }}
+
       - name: no changes
         if: steps.check_comments_format.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true' && steps.format_push.outputs.UPDATED == 'false'
         run: |
@@ -508,6 +415,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
           API_URL: ${{ github.event.issue.comments_url }}
+
       - name: failure comment
         if: failure()
         run: |
@@ -521,6 +429,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
           API_URL: ${{ github.event.issue.comments_url }}
+
   approve:
     name: Approve
     needs:
@@ -536,11 +445,10 @@ jobs:
           TRIGGER_PHRASE: "/approve"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: install yq
+
+      - uses: ./.github/actions/setup-yq
         if: steps.check_comments_approve.outputs.BOOL_TRIGGERED == 'true'
-        run: |
-          sudo curl -Lo /usr/local/bin/yq https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64
-          sudo chmod a+x /usr/local/bin/yq
+
       - name: check permissions
         if: steps.check_comments_approve.outputs.BOOL_TRIGGERED == 'true'
         id: check_permissions
@@ -561,6 +469,7 @@ jobs:
         env:
           USERNAME: ${{ steps.check_comments_approve.outputs.COMMENTER_USERNAME }}
           REQUIRED_POLICY: approve
+
       - name: approve
         if: steps.check_comments_approve.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         run: |

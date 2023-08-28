@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-name: "reviewdog - Markdown"
+name: "Reviewdog - Markdown"
 on:
   pull_request:
     paths-ignore:
@@ -22,42 +22,22 @@ on:
       - "CHANGELOG.md"
 
 jobs:
-  dump_contexts_to_log:
+  dump-contexts-to-log:
     runs-on: ubuntu-latest
     steps:
-      - name: Dump GitHub context
-        id: github_context_step
-        run: echo $JSON
-        env:
-          JSON: ${{ toJSON(github) }}
-      - name: Dump job context
-        run: echo $JSON
-        env:
-          JSON: ${{ toJSON(job) }}
-      - name: Dump steps context
-        run: echo $JSON
-        env:
-          JSON: ${{ toJSON(steps) }}
-      - name: Dump runner context
-        run: echo $JSON
-        env:
-          JSON: ${{ toJSON(runner) }}
-      - name: Dump strategy context
-        run: echo $JSON
-        env:
-          JSON: ${{ toJSON(strategy) }}
-      - name: Dump matrix context
-        run: echo $JSON
-        env:
-          JSON: ${{ toJSON(matrix) }}
-  languagetool_apis_charts:
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/dump-context
+
+  languagetool-apis-charts:
     name: runner / LanguageTool / apis & charts
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: set git config
+
+      - name: Set Git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
+
       - name: LanguageTool
         uses: reviewdog/action-languagetool@v1
         with:
@@ -68,14 +48,17 @@ jobs:
           language: en-US
           disabled_rules: "DOUBLE_PUNCTUATION,WORD_CONTAINS_UNDERSCORE,ARROWS,CURRENCY,DASH_RULE,EN_QUOTES"
           disabled_categories: "TYPOS,TYPOGRAPHY,STYLE,CASING"
-  languagetool_docs:
+
+  languagetool-docs:
     name: runner / LanguageTool / Docs
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: set git config
+
+      - name: Set Git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
+
       - name: LanguageTool
         uses: reviewdog/action-languagetool@v1
         with:
@@ -86,22 +69,26 @@ jobs:
           language: en-US
           disabled_rules: "DOUBLE_PUNCTUATION,WORD_CONTAINS_UNDERSCORE,ARROWS,CURRENCY,DASH_RULE,EN_QUOTES"
           disabled_categories: "TYPOS,TYPOGRAPHY,STYLE"
+
   textlint:
     name: runner / textlint
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-      - name: set git config
+      - uses: actions/checkout@v3
+
+      - name: Set Git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
+
       - name: Setup node/npm
         uses: actions/setup-node@v3
         with:
           node-version: "16"
+
       - name: Install textlint
         run: |
           make textlint/ci/install
+
       - name: textlint-github-pr-review
         uses: tsuyoshicho/action-textlint@v3
         with:

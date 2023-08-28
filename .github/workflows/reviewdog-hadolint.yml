@@ -14,50 +14,30 @@
 # limitations under the License.
 #
 
-name: "reviewdog - Dockerfiles"
+name: "Reviewdog - Dockerfiles"
 on:
   pull_request:
     paths:
       - "dockers/**"
 
 jobs:
-  dump_contexts_to_log:
+  dump-contexts-to-log:
     runs-on: ubuntu-latest
     steps:
-      - name: Dump GitHub context
-        id: github_context_step
-        run: echo $JSON
-        env:
-          JSON: ${{ toJSON(github) }}
-      - name: Dump job context
-        run: echo $JSON
-        env:
-          JSON: ${{ toJSON(job) }}
-      - name: Dump steps context
-        run: echo $JSON
-        env:
-          JSON: ${{ toJSON(steps) }}
-      - name: Dump runner context
-        run: echo $JSON
-        env:
-          JSON: ${{ toJSON(runner) }}
-      - name: Dump strategy context
-        run: echo $JSON
-        env:
-          JSON: ${{ toJSON(strategy) }}
-      - name: Dump matrix context
-        run: echo $JSON
-        env:
-          JSON: ${{ toJSON(matrix) }}
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/dump-context
+
   hadolint:
     name: runner / hadolint
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: set git config
+
+      - name: Set Git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
-      - name: hadolint
+
+      - name: Run hadolint
         uses: reviewdog/action-hadolint@v1
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}

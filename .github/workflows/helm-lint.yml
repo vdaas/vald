@@ -20,34 +20,12 @@ on:
       - "charts/**"
 
 jobs:
-  dump_contexts_to_log:
+  dump-contexts-to-log:
     runs-on: ubuntu-latest
     steps:
-      - name: Dump GitHub context
-        id: github_context_step
-        run: echo $JSON
-        env:
-          JSON: ${{ toJSON(github) }}
-      - name: Dump job context
-        run: echo $JSON
-        env:
-          JSON: ${{ toJSON(job) }}
-      - name: Dump steps context
-        run: echo $JSON
-        env:
-          JSON: ${{ toJSON(steps) }}
-      - name: Dump runner context
-        run: echo $JSON
-        env:
-          JSON: ${{ toJSON(runner) }}
-      - name: Dump strategy context
-        run: echo $JSON
-        env:
-          JSON: ${{ toJSON(strategy) }}
-      - name: Dump matrix context
-        run: echo $JSON
-        env:
-          JSON: ${{ toJSON(matrix) }}
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/dump-context
+
   lint-vald-chart:
     name: lint for vald chart
     runs-on: ubuntu-latest
@@ -56,27 +34,23 @@ jobs:
     steps:
       - name: Check out code.
         uses: actions/checkout@v3
+
       - name: set git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
-      - name: Helm version
-        run: |
-          helm version
-      - name: Fetch golang version
-        run: |
-          GO_VERSION=`make version/go`
-          echo "version=${GO_VERSION}" >> $GITHUB_OUTPUT
-        id: golang_version
-      - uses: actions/setup-go@v3
-        with:
-          go-version: ${{ steps.golang_version.outputs.version }}
+
+      - uses: ./.github/actions/setup-go
+
+      - uses: ./.github/actions/setup-helm
 
       - name: Generate schema for charts/vald
         run: |
           make helm/schema/vald
+
       - name: Run lint for charts/vald
         run: |
           helm lint charts/vald
+
   lint-vald-helm-operator-chart:
     name: lint for vald-helm-operator chart
     runs-on: ubuntu-latest
@@ -85,60 +59,46 @@ jobs:
     steps:
       - name: Check out code.
         uses: actions/checkout@v3
+
       - name: set git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
-      - name: Helm version
-        run: |
-          helm version
-      - name: Fetch golang version
-        run: |
-          GO_VERSION=`make version/go`
-          echo "version=${GO_VERSION}" >> $GITHUB_OUTPUT
-        id: golang_version
-      - uses: actions/setup-go@v3
-        with:
-          go-version: ${{ steps.golang_version.outputs.version }}
+
+      - uses: ./.github/actions/setup-go
+
+      - uses: ./.github/actions/setup-helm
 
       - name: Generate schema for charts/vald-helm-operator
         run: |
           make helm/schema/vald-helm-operator
+
       - name: Run lint for charts/vald-helm-operator
         run: |
           helm lint charts/vald-helm-operator
+
   lint-values-schema:
     name: lint for values schema
     runs-on: ubuntu-latest
     steps:
       - name: Check out code.
         uses: actions/checkout@v3
+
       - name: set git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
-      - name: Helm version
-        run: |
-          helm version
-      - name: install YQ
-        run: |
-          sudo make yq/install
-      - name: Fetch golang version
-        run: |
-          GO_VERSION=`make version/go`
-          echo "version=${GO_VERSION}" >> $GITHUB_OUTPUT
-        id: golang_version
-      - uses: actions/setup-go@v3
-        with:
-          go-version: ${{ steps.golang_version.outputs.version }}
+
+      - uses: ./.github/actions/setup-yq
+
+      - uses: ./.github/actions/setup-go
+
+      - uses: ./.github/actions/setup-helm
+
+      - uses: ./.github/actions/setup-k3d
+
       - name: Generate ValdRelease schema
         run: |
           make helm/schema/crd/vald
-      - uses: rinx/setup-k3d@v0.0.4
-        with:
-          version: latest
-          name: vald
-      - name: check k3d
-        run: |
-          kubectl cluster-info
+
       - name: Test to apply
         run: |
           kubectl create -f charts/vald-helm-operator/crds/valdrelease.yaml

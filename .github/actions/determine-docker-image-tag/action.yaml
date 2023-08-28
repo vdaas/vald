@@ -1,0 +1,42 @@
+name: "Determine Docker image tag"
+description: "A action to determine Docker image tag"
+
+outputs:
+  PRIMARY_TAG:
+    description: "Primary tag"
+    value: ${{ steps.determine_tag_name.outputs.PRIMARY_TAG }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Dump Github context
+      shell: bash
+      run: |
+        echo "GITHUB_REF $GITHUB_REF"
+        echo "GITHUB_EVENT_PATH $GITHUB_EVENT_PATH"
+        echo "GITHUB_EVENT_NAME ${{ github.event_name }}"
+        echo "GITHUB_EVENT_NUMBER  ${{ github.event.number }}"
+
+    - name: Determine tag name
+      shell: bash
+      id: determine_tag_name
+      run: |
+        if [[ "$GITHUB_REF" =~ ^refs/tags/.* ]]; then
+          tag_name=`echo $GITHUB_REF | sed -e 's:^refs/tags/::'`
+          primary_tag="${tag_name}"
+        elif [ "${{ github.event_name }}" = "pull_request" ]; then
+          pr_num=`cat $GITHUB_EVENT_PATH | jq -r ".number"`
+          echo "PR-${pr_num}" > versions/VALD_VERSION
+          primary_tag="pr-${pr_num}"
+        elif [ "${{ github.event_name }}" = "pull_request_target" ]; then
+          pr_num=`cat $GITHUB_EVENT_PATH | jq -r ".number"`
+          echo "PR-${pr_num}" > versions/VALD_VERSION
+          primary_tag="pr-${pr_num}"
+        elif [ "$GITHUB_REF" = "refs/heads/main" ]; then
+          echo "nightly" > versions/VALD_VERSION
+          primary_tag="nightly"
+        else
+          primary_tag="unknown"
+        fi
+        echo "PRIMARY_TAG is determined: ${primary_tag}"
+        echo "PRIMARY_TAG=${primary_tag}" >> $GITHUB_OUTPUT

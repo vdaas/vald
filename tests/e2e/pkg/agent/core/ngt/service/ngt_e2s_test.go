@@ -66,9 +66,9 @@ func registerVector(ctx context.Context, n service.NGT) error {
 	for i := int64(0); i < maxIDNum; i++ {
 		uuid := strconv.FormatInt(i, 10)
 
-		_, err := n.GetObject(uuid)
-		if err != nil {
-			return err
+		vec, _, err := n.GetObject(uuid)
+		if err != nil || len(vec) == 0 {
+			return errors.ErrObjectNotFound(err, uuid)
 		}
 	}
 	return nil
@@ -150,9 +150,9 @@ func Test_ngt_parallel_delete_and_insert(t *testing.T) {
 
 	for i := int64(0); i < maxIDNum; i++ {
 		uuid := strconv.FormatInt(i, 10)
-		_, err := n.GetObject(uuid)
-		if err != nil {
-			t.Error(err)
+		vec, _, err := n.GetObject(uuid)
+		if err != nil || len(vec) == 0 {
+			t.Error(errors.ErrObjectNotFound(err, uuid))
 		}
 		err = n.Insert(uuid, []float32{1, 2})
 		if err == nil {

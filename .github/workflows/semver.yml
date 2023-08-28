@@ -20,53 +20,33 @@ on:
       - main
 
 jobs:
-  dump_contexts_to_log:
+  dump-contexts-to-log:
     runs-on: ubuntu-latest
     steps:
-      - name: Dump GitHub context
-        id: github_context_step
-        run: echo $JSON
-        env:
-          JSON: ${{ toJSON(github) }}
-      - name: Dump job context
-        run: echo $JSON
-        env:
-          JSON: ${{ toJSON(job) }}
-      - name: Dump steps context
-        run: echo $JSON
-        env:
-          JSON: ${{ toJSON(steps) }}
-      - name: Dump runner context
-        run: echo $JSON
-        env:
-          JSON: ${{ toJSON(runner) }}
-      - name: Dump strategy context
-        run: echo $JSON
-        env:
-          JSON: ${{ toJSON(strategy) }}
-      - name: Dump matrix context
-        run: echo $JSON
-        env:
-          JSON: ${{ toJSON(matrix) }}
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/dump-context
+
   semver-auto:
     name: Run semver-auto
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/vdaas/vald/vald-ci-container:nightly
     steps:
-      - name: Check out code.
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
           token: ${{ secrets.DISPATCH_TOKEN }}
-      - name: set git config
+
+      - name: Set Git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
+
       - uses: crazy-max/ghaction-import-gpg@v4
         with:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           git_user_signingkey: true
           git_commit_gpgsign: true
+
       - name: Get latest gitwerk
         run: |
           curl -fsSLO \
@@ -75,6 +55,7 @@ jobs:
           unzip gitwerk-linux-amd64.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Run gitwerk semver-auto
         id: semver
         run: |
@@ -156,6 +137,7 @@ jobs:
         env:
           GITHUB_USER: ${{ secrets.DISPATCH_USER }}
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
+
       - name: Create release
         if: steps.semver.outputs.RELEASE == 'true'
         id: create_release
@@ -169,6 +151,7 @@ jobs:
             See [CHANGELOG.md](https://github.com/vdaas/vald/blob/${{ steps.semver.outputs.VERSION }}/CHANGELOG.md) for details.
           draft: false
           prerelease: false
+
       - name: Add the version to goproxy
         run: |
           curl "https://proxy.golang.org/github.com/vdaas/vald/@v/${{ steps.semver.outputs.VERSION }}.info"

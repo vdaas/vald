@@ -18,55 +18,36 @@ on:
   push:
     branches:
       - main
+
 jobs:
-  dump_contexts_to_log:
+  dump-contexts-to-log:
     runs-on: ubuntu-latest
     steps:
-      - name: Dump GitHub context
-        id: github_context_step
-        run: echo $JSON
-        env:
-          JSON: ${{ toJSON(github) }}
-      - name: Dump job context
-        run: echo $JSON
-        env:
-          JSON: ${{ toJSON(job) }}
-      - name: Dump steps context
-        run: echo $JSON
-        env:
-          JSON: ${{ toJSON(steps) }}
-      - name: Dump runner context
-        run: echo $JSON
-        env:
-          JSON: ${{ toJSON(runner) }}
-      - name: Dump strategy context
-        run: echo $JSON
-        env:
-          JSON: ${{ toJSON(strategy) }}
-      - name: Dump matrix context
-        run: echo $JSON
-        env:
-          JSON: ${{ toJSON(matrix) }}
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/dump-context
+
   format:
     name: Run formatter
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/vdaas/vald/vald-ci-container:nightly
     steps:
-      - name: Check out code.
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
           token: ${{ secrets.DISPATCH_TOKEN }}
-      - name: set git config
+
+      - name: Set Git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
+
       - uses: crazy-max/ghaction-import-gpg@v4
         with:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           git_user_signingkey: true
           git_commit_gpgsign: true
-      - name: switch new branch
+
+      - name: Switch new branch
         id: switch_to_new_branch
         run: |
           TIMESTAMP=$(date +%Y%m%d_%H%M%S_%3N)
@@ -74,19 +55,16 @@ jobs:
           git checkout main
           git checkout -b ${BRANCH_NAME}
           echo "BRANCH_NAME=${BRANCH_NAME}" >> $GITHUB_OUTPUT
-      - name: Fetch golang version
-        run: |
-          GO_VERSION=`make version/go`
-          echo "version=${GO_VERSION}" >> $GITHUB_OUTPUT
-        id: golang_version
-      - uses: actions/setup-go@v3
-        with:
-          go-version: ${{ steps.golang_version.outputs.version }}
+
+      - name: Setup Go environment
+        uses: ./.github/actions/setup-go
+
       - name: Run formatter and license.go
         run: |
           make deps/install
           make format
           git checkout go.mod go.sum
+
       - name: Check and Push to main branch
         continue-on-error: true
         run: |
