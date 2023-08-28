@@ -424,7 +424,7 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 		Timestamp:            defaultTimestamp,
 	}
 
-	defaultBeforeFunc := func(ctx context.Context, a args) (Server, error) {
+	defaultBeforeFunc := func(ctx context.Context, _ args) (Server, error) {
 		eg, ctx := errgroup.New(ctx)
 		ngt, err := service.New(defaultNgtConfig,
 			service.WithErrGroup(eg),
