@@ -459,7 +459,7 @@ func Test_server_RemoveWithTimestamp(t *testing.T) {
 			}
 		}
 		err = ngt.CreateIndex(ctx, 1000)
-		return s, nil
+		return s, err
 	}
 	tests := []test{
 		{
