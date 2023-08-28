@@ -295,6 +295,7 @@ func (s *server) RemoveByTimestamp(ctx context.Context, req *payload.Remove_Time
 				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
 			},
 		)
+		log.Error(err)
 		if span != nil {
 			span.RecordError(err)
 			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
@@ -313,6 +314,7 @@ func (s *server) RemoveByTimestamp(ctx context.Context, req *payload.Remove_Time
 				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
 			},
 		)
+		log.Error(err)
 		if span != nil {
 			span.RecordError(err)
 			span.SetAttributes(trace.StatusCodeNotFound(err.Error())...)

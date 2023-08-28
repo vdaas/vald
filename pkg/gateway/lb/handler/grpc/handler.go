@@ -2835,7 +2835,7 @@ func (s *server) RemoveByTimestamp(ctx context.Context, req *payload.Remove_Time
 						if s := locs.GetLocations()[pos].Name; len(s) == 0 {
 							locs.GetLocations()[pos].Name = loc.GetName()
 						} else {
-							// locs.GetLocations()[pos].Name += "," + loc.GetName()
+							// strings.Join is used because '+=' causes performance degradation when the number of characters is large.
 							locs.GetLocations()[pos].Name = strings.Join([]string{
 								s, loc.GetName(),
 							}, ",")
