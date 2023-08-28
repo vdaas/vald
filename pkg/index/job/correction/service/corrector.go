@@ -154,8 +154,8 @@ func (c *correct) correct(ctx context.Context) (err error) {
 			streamEnd := make(chan struct{})
 			var once sync.Once
 			var mu sync.Mutex
-			// これをさらにerrgroupで囲みたくなるが、さすがに頭がおかしくなりそう
-			// 事前にRecvすべき件数はわかるのだからその回数だけfor文を回すようにする方がいいか
+			// maybe just iterate through the number of indexes is ok?
+			// that way, we don't have to use this `streamEnd` channel
 			for {
 				select {
 				case <-ctx.Done():
@@ -304,8 +304,9 @@ func (c *correct) correctWithCache(ctx context.Context) (err error) {
 						log.Debugf("received object in StreamListObject: agent(%s), id(%s), timestamp(%v)", addr, res.GetVector().GetId(), res.GetVector().GetTimestamp())
 
 						// check if the index is already checked
+						id := res.GetVector().GetId()
 						c.rwmu.RLock()
-						_, ok := c.checkedId[res.GetVector().GetId()]
+						_, ok := c.checkedId[id]
 						c.rwmu.RUnlock()
 						if ok {
 							// already checked index
@@ -328,7 +329,7 @@ func (c *correct) correctWithCache(ctx context.Context) (err error) {
 						}
 
 						c.rwmu.Lock()
-						c.checkedId[res.GetVector().GetId()] = struct{}{}
+						c.checkedId[id] = struct{}{}
 						c.rwmu.Unlock()
 
 						return nil
