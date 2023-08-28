@@ -368,7 +368,7 @@ func Test_server_Remove(t *testing.T) {
 	}
 }
 
-func Test_server_RemoveWithTimestamp(t *testing.T) {
+func Test_server_RemoveByTimestamp(t *testing.T) {
 	type args struct {
 		req *payload.Remove_TimestampRequest
 	}
@@ -612,7 +612,7 @@ func Test_server_RemoveWithTimestamp(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 
-			gotLocs, err := s.RemoveWithTimestamp(ctx, test.args.req)
+			gotLocs, err := s.RemoveByTimestamp(ctx, test.args.req)
 			if err := checkFunc(test.want, gotLocs, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}

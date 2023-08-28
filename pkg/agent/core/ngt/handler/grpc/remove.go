@@ -251,8 +251,8 @@ func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequ
 	return s.newLocations(uuids...), nil
 }
 
-func (s *server) RemoveWithTimestamp(ctx context.Context, req *payload.Remove_TimestampRequest) (locs *payload.Object_Locations, errs error) {
-	ctx, span := trace.StartSpan(ctx, apiName+"/"+vald.RemoveWithTimestampRPCName)
+func (s *server) RemoveByTimestamp(ctx context.Context, req *payload.Remove_TimestampRequest) (locs *payload.Object_Locations, errs error) {
+	ctx, span := trace.StartSpan(ctx, apiName+"/"+vald.RemoveByTimestampRPCName)
 	defer func() {
 		if span != nil {
 			span.End()
@@ -286,7 +286,7 @@ func (s *server) RemoveWithTimestamp(ctx context.Context, req *payload.Remove_Ti
 	})
 	if errs != nil {
 		st, msg, err := status.ParseError(errs, codes.Internal,
-			"failed to parse "+vald.RemoveWithTimestampRPCName+" gRPC error response",
+			"failed to parse "+vald.RemoveByTimestampRPCName+" gRPC error response",
 			&errdetails.RequestInfo{
 				ServingData: errdetails.Serialize(req),
 			},
@@ -304,7 +304,7 @@ func (s *server) RemoveWithTimestamp(ctx context.Context, req *payload.Remove_Ti
 	}
 	if locs == nil || len(locs.GetLocations()) == 0 {
 		err := status.WrapWithNotFound(
-			vald.RemoveWithTimestampRPCName+" API remove target not found", errors.ErrIndexNotFound,
+			vald.RemoveByTimestampRPCName+" API remove target not found", errors.ErrIndexNotFound,
 			&errdetails.RequestInfo{
 				ServingData: errdetails.Serialize(req),
 			},

@@ -116,10 +116,10 @@ const (
 	StreamLinearSearchObjectRPCName = "StreamLinearSearchObject"
 	StreamSearchObjectRPCName       = "StreamSearchObject"
 
-	RemoveRPCName              = "Remove"
-	StreamRemoveRPCName        = "StreamRemove"
-	MultiRemoveRPCName         = "MultiRemove"
-	RemoveWithTimestampRPCName = "RemoveWithTimestamp"
+	RemoveRPCName            = "Remove"
+	StreamRemoveRPCName      = "StreamRemove"
+	MultiRemoveRPCName       = "MultiRemove"
+	RemoveByTimestampRPCName = "RemoveByTimestamp"
 
 	ExistsRPCName           = "Exists"
 	GetObjectRPCName        = "GetObject"

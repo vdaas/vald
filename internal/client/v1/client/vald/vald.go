@@ -581,8 +581,8 @@ func (c *client) MultiRemove(ctx context.Context, in *payload.Remove_MultiReques
 	return res, nil
 }
 
-func (c *client) RemoveWithTimestamp(ctx context.Context, in *payload.Remove_TimestampRequest, opts ...grpc.CallOption) (res *payload.Object_Locations, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+vald.RemoveWithTimestampRPCName), apiName+"/"+vald.RemoveWithTimestampRPCName)
+func (c *client) RemoveByTimestamp(ctx context.Context, in *payload.Remove_TimestampRequest, opts ...grpc.CallOption) (res *payload.Object_Locations, err error) {
+	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+vald.RemoveByTimestampRPCName), apiName+"/"+vald.RemoveByTimestampRPCName)
 	defer func() {
 		if span != nil {
 			span.End()
@@ -592,7 +592,7 @@ func (c *client) RemoveWithTimestamp(ctx context.Context, in *payload.Remove_Tim
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
 	) (interface{}, error) {
-		res, err = vald.NewValdClient(conn).RemoveWithTimestamp(ctx, in, append(copts, opts...)...)
+		res, err = vald.NewValdClient(conn).RemoveByTimestamp(ctx, in, append(copts, opts...)...)
 		return nil, err
 	})
 	if err != nil {
@@ -922,14 +922,14 @@ func (c *singleClient) MultiRemove(ctx context.Context, in *payload.Remove_Multi
 	return c.vc.MultiRemove(ctx, in, opts...)
 }
 
-func (c *singleClient) RemoveWithTimestamp(ctx context.Context, in *payload.Remove_TimestampRequest, opts ...grpc.CallOption) (res *payload.Object_Locations, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/singleClient/"+vald.RemoveWithTimestampRPCName), apiName+"/"+vald.RemoveWithTimestampRPCName)
+func (c *singleClient) RemoveByTimestamp(ctx context.Context, in *payload.Remove_TimestampRequest, opts ...grpc.CallOption) (res *payload.Object_Locations, err error) {
+	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/singleClient/"+vald.RemoveByTimestampRPCName), apiName+"/"+vald.RemoveByTimestampRPCName)
 	defer func() {
 		if span != nil {
 			span.End()
 		}
 	}()
-	return c.vc.RemoveWithTimestamp(ctx, in, opts...)
+	return c.vc.RemoveByTimestamp(ctx, in, opts...)
 }
 
 func (c *singleClient) GetObject(ctx context.Context, in *payload.Object_VectorRequest, opts ...grpc.CallOption) (res *payload.Object_Vector, err error) {

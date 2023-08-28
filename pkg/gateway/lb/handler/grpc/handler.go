@@ -2764,8 +2764,8 @@ func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequ
 	return locs, errs
 }
 
-func (s *server) RemoveWithTimestamp(ctx context.Context, req *payload.Remove_TimestampRequest) (locs *payload.Object_Locations, errs error) {
-	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.RemoveRPCServiceName+"/"+vald.RemoveWithTimestampRPCName), apiName+"/"+vald.RemoveWithTimestampRPCName)
+func (s *server) RemoveByTimestamp(ctx context.Context, req *payload.Remove_TimestampRequest) (locs *payload.Object_Locations, errs error) {
+	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.RemoveRPCServiceName+"/"+vald.RemoveByTimestampRPCName), apiName+"/"+vald.RemoveByTimestampRPCName)
 	defer func() {
 		if span != nil {
 			span.End()
@@ -2778,18 +2778,18 @@ func (s *server) RemoveWithTimestamp(ctx context.Context, req *payload.Remove_Ti
 	locs = new(payload.Object_Locations)
 
 	err := s.gateway.BroadCast(ctx, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) (err error) {
-		sctx, sspan := trace.StartSpan(grpc.WithGRPCMethod(ctx, "BroadCast/"+target), apiName+"/removeWithTimestamp/BroadCast/"+target)
+		sctx, sspan := trace.StartSpan(grpc.WithGRPCMethod(ctx, "BroadCast/"+target), apiName+"/removeByTimestamp/BroadCast/"+target)
 		defer func() {
 			if sspan != nil {
 				sspan.End()
 			}
 		}()
 
-		res, err := vc.RemoveWithTimestamp(sctx, req, copts...)
+		res, err := vc.RemoveByTimestamp(sctx, req, copts...)
 		if err != nil {
 			if errors.Is(err, errors.ErrGRPCClientConnNotFound("*")) {
 				err = status.WrapWithInternal(
-					vald.RemoveWithTimestampRPCName+" API connection not found", err,
+					vald.RemoveByTimestampRPCName+" API connection not found", err,
 				)
 				if sspan != nil {
 					sspan.RecordError(err)
@@ -2807,7 +2807,7 @@ func (s *server) RemoveWithTimestamp(ctx context.Context, req *payload.Remove_Ti
 				msg string
 			)
 			st, msg, err = status.ParseError(err, codes.Internal,
-				vald.RemoveWithTimestampRPCName+" gRPC error response",
+				vald.RemoveByTimestampRPCName+" gRPC error response",
 			)
 			if sspan != nil {
 				sspan.RecordError(err)
@@ -2852,7 +2852,7 @@ func (s *server) RemoveWithTimestamp(ctx context.Context, req *payload.Remove_Ti
 	}
 	if err != nil {
 		st, msg, err := status.ParseError(err, codes.Internal,
-			"failed to parse "+vald.RemoveWithTimestampRPCName+" gRPC error response",
+			"failed to parse "+vald.RemoveByTimestampRPCName+" gRPC error response",
 			&errdetails.RequestInfo{
 				ServingData: errdetails.Serialize(req),
 			},
@@ -2869,7 +2869,7 @@ func (s *server) RemoveWithTimestamp(ctx context.Context, req *payload.Remove_Ti
 	}
 	if locs == nil || len(locs.GetLocations()) == 0 {
 		err = status.WrapWithNotFound(
-			vald.RemoveWithTimestampRPCName+" API remove target not found", errors.ErrIndexNotFound,
+			vald.RemoveByTimestampRPCName+" API remove target not found", errors.ErrIndexNotFound,
 			&errdetails.RequestInfo{
 				ServingData: errdetails.Serialize(req),
 			},
