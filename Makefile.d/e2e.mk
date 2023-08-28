@@ -60,7 +60,7 @@ e2e/remove:
 	$(call run-e2e-crud-test,-run TestE2ERemoveOnly)
 
 .PHONY: e2e/remove/timestamp
-## run remove by timestamp e2e
+## run removeByTimestamp e2e
 e2e/remove:
 	$(call run-e2e-crud-test,-run TestE2ERemoveByTimestampOnly)
 
