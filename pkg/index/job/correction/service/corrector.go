@@ -137,7 +137,7 @@ func (c *correct) correct(ctx context.Context) (err error) {
 
 			seg, ctx := stdeg.WithContext(ctx)
 			concurrency := c.cfg.Corrector.GetStreamListConcurrency()
-			seg.SetLimit(concurrency) // FIXME: server settingsをそのまま流用で良いのか？
+			seg.SetLimit(concurrency)
 
 			log.Infof("starting correction for agent %s, concurrency: %d", addr, concurrency)
 
@@ -365,6 +365,11 @@ func (c *correct) checkConsistency(ctx context.Context, targetReplica *vectorRep
 	var mu sync.Mutex
 	if err := c.discoverer.GetClient().OrderedRangeConcurrent(ctx, leftAgentAddrs, len(leftAgentAddrs),
 		func(ctx context.Context, addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
+			// To avoid GetObject to myself. To maintain backward compatibility for withoug cache operation
+			if addr == targetReplica.addr {
+				return nil
+			}
+
 			select {
 			case <-ctx.Done():
 				return ctx.Err()
