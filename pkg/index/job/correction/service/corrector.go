@@ -80,7 +80,7 @@ func (c *correct) Start(ctx context.Context) (<-chan error, error) {
 		return nil, err
 	}
 
-	// DEBUG:
+	// For debugging
 	c.indexInfos.Range(func(addr string, info *payload.Info_Index_Count) bool {
 		log.Debugf("index info: addr(%s), stored(%d), uncommitted(%d)", addr, info.GetStored(), info.GetUncommitted())
 		return true
@@ -101,10 +101,6 @@ func (c *correct) Start(ctx context.Context) (<-chan error, error) {
 			return nil, err
 		}
 	}
-	// if err := c.correct(ctx, addrs); err != nil {
-	// 	log.Errorf("there's some errors while correction: %v", err)
-	// 	return nil, err
-	// }
 	log.Info("correction finished successfully")
 
 	// ech := make(chan error, 100)
@@ -604,14 +600,6 @@ func (c *correct) deleteObject(ctx context.Context, addr string, vector *payload
 }
 
 func (c *correct) loadInfos(ctx context.Context) (err error) {
-	// FIXME: o11yは最後に整える
-	// ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, "core.v1.Agent/IndexInfo"), "vald/manager-index/service/Indexer.loadInfos")
-	// defer func() {
-	// 	if span != nil {
-	// 		span.End()
-	// 	}
-	// }()
-
 	var u, ucu uint32
 	var infoMap valdsync.Map[string, *payload.Info_Index_Count]
 	err = c.discoverer.GetClient().RangeConcurrent(ctx, len(c.discoverer.GetAddrs(ctx)),
