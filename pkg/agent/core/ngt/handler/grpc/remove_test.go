@@ -16,6 +16,7 @@ package grpc
 import (
 	"context"
 	"reflect"
+	"strconv"
 	"testing"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
@@ -381,7 +382,7 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 		args       args
 		want       want
 		checkFunc  func(want, *payload.Object_Locations, error) error
-		beforeFunc func(context.Context, args) (Server, error)
+		beforeFunc func(context.Context, args) (Server, func(context.Context) error, error)
 		afterFunc  func(args)
 	}
 
@@ -396,7 +397,7 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 			}
 		}
 		if len(gotLocs.GetLocations()) != w.wantLen {
-			return errors.Errorf("got Len: \"%#v\",\n\t\t\t\twant Len: \"%#v\"", w.wantLen, w.wantLen)
+			return errors.Errorf("got Len: \"%#v\",\n\t\t\t\twant Len: \"%#v\"", len(gotLocs.GetLocations()), w.wantLen)
 		}
 		return nil
 	}
@@ -419,19 +420,27 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 	defaultInsertNum := 100
 	defaultTimestamp := int64(1000)
 
-	defaultInsertConfig := &payload.Insert_Config{
-		SkipStrictExistCheck: true,
-		Timestamp:            defaultTimestamp,
+	createInsertReq := func(num int) (*payload.Insert_MultiRequest, error) {
+		return request.GenMultiInsertReq(
+			request.Float,
+			vector.Gaussian,
+			num,
+			defaultNgtConfig.Dimension,
+			&payload.Insert_Config{
+				SkipStrictExistCheck: true,
+				Timestamp:            defaultTimestamp,
+			},
+		)
 	}
 
-	defaultBeforeFunc := func(ctx context.Context, _ args) (Server, error) {
+	defaultBeforeFunc := func(ctx context.Context, _ args) (Server, func(ctx context.Context) error, error) {
 		eg, ctx := errgroup.New(ctx)
 		ngt, err := service.New(defaultNgtConfig,
 			service.WithErrGroup(eg),
 			service.WithEnableInMemoryMode(true),
 		)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 
 		s, err := New(
@@ -439,27 +448,22 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 			WithNGT(ngt),
 		)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 
-		req, err := request.GenMultiInsertReq(
-			request.Float,
-			vector.Gaussian,
-			defaultInsertNum,
-			ngt.GetDimensionSize(),
-			defaultInsertConfig,
-		)
+		req, err := createInsertReq(defaultInsertNum)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 		for _, req := range req.GetRequests() {
 			_, err := s.Insert(ctx, req)
 			if err != nil {
-				return nil, err
+				return nil, nil, err
 			}
 		}
-		err = ngt.CreateIndex(ctx, 1000)
-		return s, err
+		return s, func(ctx context.Context) error {
+			return ngt.CreateIndex(ctx, 1000)
+		}, err
 	}
 	tests := []test{
 		{
@@ -494,6 +498,48 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 			want: want{
 				code:    codes.OK,
 				wantLen: defaultInsertNum,
+			},
+		},
+		{
+			name: "succeeds if one vector data is deleted when the operator are Gt and Lt",
+			args: args{
+				req: &payload.Remove_TimestampRequest{
+					Timestamps: []*payload.Remove_Timestamp{
+						{
+							Timestamp: defaultTimestamp,
+							Operator:  payload.Remove_Timestamp_Gt,
+						},
+						{
+							Timestamp: defaultTimestamp + 2,
+							Operator:  payload.Remove_Timestamp_Lt,
+						},
+					},
+				},
+			},
+			// Insert two additional vectors.
+			beforeFunc: func(ctx context.Context, a args) (Server, func(context.Context) error, error) {
+				s, fn, err := defaultBeforeFunc(ctx, a)
+				if err != nil {
+					return nil, nil, err
+				}
+
+				req, err := createInsertReq(2)
+				if err != nil {
+					return nil, nil, err
+				}
+				for i := range req.GetRequests() {
+					req.Requests[i].Vector.Id += "-" + strconv.Itoa(i+1)
+					req.Requests[i].Config.Timestamp += int64(i + 1)
+					_, err := s.Insert(ctx, req.Requests[i])
+					if err != nil {
+						return nil, nil, err
+					}
+				}
+				return s, fn, nil
+			},
+			want: want{
+				code:    codes.OK,
+				wantLen: 1,
 			},
 		},
 		{
@@ -599,8 +645,12 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 			if test.beforeFunc == nil {
 				test.beforeFunc = defaultBeforeFunc
 			}
-			s, err := test.beforeFunc(ctx, test.args)
+			s, fn, err := test.beforeFunc(ctx, test.args)
 			if err != nil {
+				t.Errorf("error = %v", err)
+				return
+			}
+			if err := fn(ctx); err != nil {
 				t.Errorf("error = %v", err)
 				return
 			}
