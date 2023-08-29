@@ -16,11 +16,11 @@ package operation
 import (
 	"context"
 	"strconv"
-	"sync"
 	"testing"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/io"
+	"github.com/vdaas/vald/internal/sync"
 )
 
 func (o *operation) Remove(ctx context.Context, b *testing.B, maxIdNum int) {

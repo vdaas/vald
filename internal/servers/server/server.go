@@ -24,11 +24,9 @@ import (
 	"os"
 	"reflect"
 	"strconv"
-	"sync"
 	"syscall"
 	"time"
 
-	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net"
@@ -39,6 +37,8 @@ import (
 	glog "github.com/vdaas/vald/internal/net/grpc/logger"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/strings"
+	"github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/internal/sync/errgroup"
 )
 
 type Server interface {

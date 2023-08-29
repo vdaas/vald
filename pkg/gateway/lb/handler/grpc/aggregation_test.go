@@ -24,6 +24,7 @@ package grpc
 // 		dch     chan DistPayload
 // 		closed  atomic.Bool
 // 		maxDist atomic.Value
+// 		visited sync.Map[string, any]
 // 		result  []*payload.Object_Distance
 // 		cancel  context.CancelFunc
 // 	}
@@ -54,6 +55,7 @@ package grpc
 // 		           dch:nil,
 // 		           closed:nil,
 // 		           maxDist:nil,
+// 		           visited:nil,
 // 		           result:nil,
 // 		           cancel:nil,
 // 		       },
@@ -81,6 +83,7 @@ package grpc
 // 		           dch:nil,
 // 		           closed:nil,
 // 		           maxDist:nil,
+// 		           visited:nil,
 // 		           result:nil,
 // 		           cancel:nil,
 // 		           },
@@ -117,6 +120,7 @@ package grpc
 // 				dch:     test.fields.dch,
 // 				closed:  test.fields.closed,
 // 				maxDist: test.fields.maxDist,
+// 				visited: test.fields.visited,
 // 				result:  test.fields.result,
 // 				cancel:  test.fields.cancel,
 // 			}
@@ -139,6 +143,7 @@ package grpc
 // 		dch     chan DistPayload
 // 		closed  atomic.Bool
 // 		maxDist atomic.Value
+// 		visited sync.Map[string, any]
 // 		result  []*payload.Object_Distance
 // 		cancel  context.CancelFunc
 // 	}
@@ -170,6 +175,7 @@ package grpc
 // 		           dch:nil,
 // 		           closed:nil,
 // 		           maxDist:nil,
+// 		           visited:nil,
 // 		           result:nil,
 // 		           cancel:nil,
 // 		       },
@@ -198,6 +204,7 @@ package grpc
 // 		           dch:nil,
 // 		           closed:nil,
 // 		           maxDist:nil,
+// 		           visited:nil,
 // 		           result:nil,
 // 		           cancel:nil,
 // 		           },
@@ -234,6 +241,7 @@ package grpc
 // 				dch:     test.fields.dch,
 // 				closed:  test.fields.closed,
 // 				maxDist: test.fields.maxDist,
+// 				visited: test.fields.visited,
 // 				result:  test.fields.result,
 // 				cancel:  test.fields.cancel,
 // 			}
@@ -252,6 +260,7 @@ package grpc
 // 		dch     chan DistPayload
 // 		closed  atomic.Bool
 // 		maxDist atomic.Value
+// 		visited sync.Map[string, any]
 // 		result  []*payload.Object_Distance
 // 		cancel  context.CancelFunc
 // 	}
@@ -282,6 +291,7 @@ package grpc
 // 		           dch:nil,
 // 		           closed:nil,
 // 		           maxDist:nil,
+// 		           visited:nil,
 // 		           result:nil,
 // 		           cancel:nil,
 // 		       },
@@ -306,6 +316,7 @@ package grpc
 // 		           dch:nil,
 // 		           closed:nil,
 // 		           maxDist:nil,
+// 		           visited:nil,
 // 		           result:nil,
 // 		           cancel:nil,
 // 		           },
@@ -342,6 +353,7 @@ package grpc
 // 				dch:     test.fields.dch,
 // 				closed:  test.fields.closed,
 // 				maxDist: test.fields.maxDist,
+// 				visited: test.fields.visited,
 // 				result:  test.fields.result,
 // 				cancel:  test.fields.cancel,
 // 			}
@@ -360,9 +372,10 @@ package grpc
 // 		in0 context.Context
 // 	}
 // 	type fields struct {
-// 		num    int
-// 		ph     *PairingHeap
-// 		result []*payload.Object_Distance
+// 		num     int
+// 		ph      *PairingHeap
+// 		visited sync.Map[string, any]
+// 		result  []*payload.Object_Distance
 // 	}
 // 	type want struct {
 // 	}
@@ -389,6 +402,7 @@ package grpc
 // 		       fields: fields {
 // 		           num:0,
 // 		           ph:PairingHeap{},
+// 		           visited:nil,
 // 		           result:nil,
 // 		       },
 // 		       want: want{},
@@ -413,6 +427,7 @@ package grpc
 // 		           fields: fields {
 // 		           num:0,
 // 		           ph:PairingHeap{},
+// 		           visited:nil,
 // 		           result:nil,
 // 		           },
 // 		           want: want{},
@@ -444,9 +459,10 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			v := &valdPairingHeapAggr{
-// 				num:    test.fields.num,
-// 				ph:     test.fields.ph,
-// 				result: test.fields.result,
+// 				num:     test.fields.num,
+// 				ph:      test.fields.ph,
+// 				visited: test.fields.visited,
+// 				result:  test.fields.result,
 // 			}
 //
 // 			v.Start(test.args.in0)
@@ -463,9 +479,10 @@ package grpc
 // 		data *payload.Search_Response
 // 	}
 // 	type fields struct {
-// 		num    int
-// 		ph     *PairingHeap
-// 		result []*payload.Object_Distance
+// 		num     int
+// 		ph      *PairingHeap
+// 		visited sync.Map[string, any]
+// 		result  []*payload.Object_Distance
 // 	}
 // 	type want struct {
 // 	}
@@ -493,6 +510,7 @@ package grpc
 // 		       fields: fields {
 // 		           num:0,
 // 		           ph:PairingHeap{},
+// 		           visited:nil,
 // 		           result:nil,
 // 		       },
 // 		       want: want{},
@@ -518,6 +536,7 @@ package grpc
 // 		           fields: fields {
 // 		           num:0,
 // 		           ph:PairingHeap{},
+// 		           visited:nil,
 // 		           result:nil,
 // 		           },
 // 		           want: want{},
@@ -549,9 +568,10 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			v := &valdPairingHeapAggr{
-// 				num:    test.fields.num,
-// 				ph:     test.fields.ph,
-// 				result: test.fields.result,
+// 				num:     test.fields.num,
+// 				ph:      test.fields.ph,
+// 				visited: test.fields.visited,
+// 				result:  test.fields.result,
 // 			}
 //
 // 			v.Send(test.args.ctx, test.args.data)
@@ -564,9 +584,10 @@ package grpc
 //
 // func Test_valdPairingHeapAggr_Result(t *testing.T) {
 // 	type fields struct {
-// 		num    int
-// 		ph     *PairingHeap
-// 		result []*payload.Object_Distance
+// 		num     int
+// 		ph      *PairingHeap
+// 		visited sync.Map[string, any]
+// 		result  []*payload.Object_Distance
 // 	}
 // 	type want struct {
 // 		want *payload.Search_Response
@@ -593,6 +614,7 @@ package grpc
 // 		       fields: fields {
 // 		           num:0,
 // 		           ph:PairingHeap{},
+// 		           visited:nil,
 // 		           result:nil,
 // 		       },
 // 		       want: want{},
@@ -614,6 +636,7 @@ package grpc
 // 		           fields: fields {
 // 		           num:0,
 // 		           ph:PairingHeap{},
+// 		           visited:nil,
 // 		           result:nil,
 // 		           },
 // 		           want: want{},
@@ -645,9 +668,10 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			v := &valdPairingHeapAggr{
-// 				num:    test.fields.num,
-// 				ph:     test.fields.ph,
-// 				result: test.fields.result,
+// 				num:     test.fields.num,
+// 				ph:      test.fields.ph,
+// 				visited: test.fields.visited,
+// 				result:  test.fields.result,
 // 			}
 //
 // 			got := v.Result()

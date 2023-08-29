@@ -21,10 +21,8 @@ import (
 	"context"
 	"fmt"
 	"runtime"
-	"sync"
 	"sync/atomic"
 
-	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/io"
 	"github.com/vdaas/vald/internal/log"
@@ -34,6 +32,8 @@ import (
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/slices"
+	"github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/internal/sync/errgroup"
 	"google.golang.org/grpc"
 )
 
@@ -58,7 +58,7 @@ func BidirectionalStream[Q any, R any](ctx context.Context, stream ServerStream,
 	}()
 	eg, ctx := errgroup.New(ctx)
 	if concurrency > 0 {
-		eg.Limitation(concurrency)
+		eg.SetLimit(concurrency)
 	}
 
 	var (

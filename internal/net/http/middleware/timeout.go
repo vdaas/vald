@@ -24,10 +24,10 @@ import (
 	"time"
 
 	"github.com/kpango/fastime"
-	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/http/rest"
 	"github.com/vdaas/vald/internal/safety"
+	"github.com/vdaas/vald/internal/sync/errgroup"
 )
 
 type timeout struct {

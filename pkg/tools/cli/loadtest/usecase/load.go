@@ -19,12 +19,12 @@ package usecase
 import (
 	"context"
 
-	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/runner"
 	"github.com/vdaas/vald/internal/safety"
+	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/pkg/tools/cli/loadtest/config"
 	"github.com/vdaas/vald/pkg/tools/cli/loadtest/service"
 )

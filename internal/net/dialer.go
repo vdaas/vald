@@ -21,7 +21,6 @@ import (
 	"context"
 	"net"
 	"strconv"
-	"sync"
 	"sync/atomic"
 	"syscall"
 	"time"
@@ -33,7 +32,7 @@ import (
 	"github.com/vdaas/vald/internal/net/control"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
-	valdsync "github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/internal/sync"
 	"github.com/vdaas/vald/internal/tls"
 )
 
@@ -60,7 +59,7 @@ type dialer struct {
 	ctrl                  control.SocketController
 	sockFlg               control.SocketFlag
 	dialerDualStack       bool
-	addrs                 valdsync.Map[string, *addrInfo]
+	addrs                 sync.Map[string, *addrInfo]
 	der                   *net.Dialer
 	dialer                func(ctx context.Context, network, addr string) (Conn, error)
 }

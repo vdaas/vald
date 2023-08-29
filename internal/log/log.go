@@ -17,8 +17,6 @@
 package log
 
 import (
-	"sync"
-
 	"github.com/vdaas/vald/internal/log/format"
 	"github.com/vdaas/vald/internal/log/glg"
 	"github.com/vdaas/vald/internal/log/level"
@@ -26,6 +24,7 @@ import (
 	"github.com/vdaas/vald/internal/log/nop"
 	"github.com/vdaas/vald/internal/log/retry"
 	"github.com/vdaas/vald/internal/log/zap"
+	"github.com/vdaas/vald/internal/sync"
 )
 
 var (

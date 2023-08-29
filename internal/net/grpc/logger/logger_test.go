@@ -17,10 +17,10 @@ import (
 	"os"
 	"os/exec"
 	"reflect"
-	"sync"
 	"testing"
 
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/sync"
 	"github.com/vdaas/vald/internal/test/goleak"
 	"google.golang.org/grpc/grpclog"
 )

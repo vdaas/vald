@@ -152,6 +152,12 @@ linters:
     - path: internal/test/comparator/standard\.go
       linters:
         - depguard
+    - path: internal/sync/alias\.go
+      linters:
+        - depguard
+    - path: hack/benchmark/src/singleflight/singleflight_bench_test\.go
+      linters:
+        - depguard
 linters-settings:
   gocritic:
     enabled-checks:
@@ -169,6 +175,14 @@ linters-settings:
     rules:
       main:
         deny:
+          - pkg: "sync"
+            desc: "sync is allowed only by internal/sync"
+          - pkg: "golang.org/x/sync"
+            desc: "golang.org/x/sync is allowed only by internal/sync"
+          - pkg: "golang.org/x/sync/singleflight"
+            desc: "golang.org/x/sync/singleflight is allowed only by internal/sync/singleflight"
+          - pkg: "golang.org/x/sync/semaphore"
+            desc: "golang.org/x/sync/semaphore is allowed only by internal/sync/semaphore"
           - pkg: "errors"
             desc: "errors is allowed only by internal/errors"
           - pkg: "k8s.io/apimachinery/pkg/api/errors"

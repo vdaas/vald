@@ -18,7 +18,6 @@ import (
 	"reflect"
 
 	"github.com/vdaas/vald/internal/config"
-	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/observability/exporter"
@@ -30,6 +29,7 @@ import (
 	"github.com/vdaas/vald/internal/observability/metrics/runtime/goroutine"
 	"github.com/vdaas/vald/internal/observability/metrics/version"
 	"github.com/vdaas/vald/internal/observability/trace"
+	"github.com/vdaas/vald/internal/sync/errgroup"
 )
 
 type Observability interface {

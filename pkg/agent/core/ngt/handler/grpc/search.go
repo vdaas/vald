@@ -16,7 +16,6 @@ package grpc
 import (
 	"context"
 	"fmt"
-	"sync"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
@@ -30,7 +29,7 @@ import (
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/strings"
-	"github.com/vdaas/vald/pkg/agent/core/ngt/model"
+	"github.com/vdaas/vald/internal/sync"
 	"go.opentelemetry.io/otel/attribute"
 )
 
@@ -68,12 +67,11 @@ func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *
 		}
 		return nil, err
 	}
-	res, err = toSearchResponse(
-		s.ngt.Search(ctx,
-			req.GetVector(),
-			req.GetConfig().GetNum(),
-			req.GetConfig().GetEpsilon(),
-			req.GetConfig().GetRadius()))
+	res, err = s.ngt.Search(ctx,
+		req.GetVector(),
+		req.GetConfig().GetNum(),
+		req.GetConfig().GetEpsilon(),
+		req.GetConfig().GetRadius())
 	if err != nil || res == nil {
 		var attrs []attribute.KeyValue
 		switch {
@@ -195,12 +193,11 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 		}
 		return nil, err
 	}
-	vec, dst, err := s.ngt.SearchByID(ctx,
+	vec, res, err := s.ngt.SearchByID(ctx,
 		uuid,
 		req.GetConfig().GetNum(),
 		req.GetConfig().GetEpsilon(),
 		req.GetConfig().GetRadius())
-	res, err = toSearchResponse(dst, err)
 	if err != nil || res == nil {
 		var attrs []attribute.KeyValue
 		switch {
@@ -540,24 +537,6 @@ func (s *server) MultiSearchByID(ctx context.Context, reqs *payload.Search_Multi
 			span.SetStatus(trace.StatusError, err.Error())
 		}
 		return nil, err
-	}
-	return res, nil
-}
-
-func toSearchResponse(dists []model.Distance, err error) (res *payload.Search_Response, rerr error) {
-	if err != nil {
-		return nil, err
-	}
-	if len(dists) == 0 {
-		return nil, errors.ErrEmptySearchResult
-	}
-	res = new(payload.Search_Response)
-	res.Results = make([]*payload.Object_Distance, 0, len(dists))
-	for _, dist := range dists {
-		res.Results = append(res.GetResults(), &payload.Object_Distance{
-			Id:       dist.ID,
-			Distance: dist.Distance,
-		})
 	}
 	return res, nil
 }
