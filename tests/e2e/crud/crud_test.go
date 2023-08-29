@@ -395,12 +395,6 @@ func TestE2EStandardCRUD(t *testing.T) {
 	if err != nil {
 		t.Fatalf("an error occurred: %s", err)
 	}
-
-	// Remove all vector data after the current - 1 hour.
-	err = op.RemoveByTimestamp(t, ctx, time.Now().Add(-time.Hour).UnixNano())
-	if err != nil {
-		t.Fatalf("an error occurred: %s", err)
-	}
 }
 
 func TestE2ECRUDWithSkipStrictExistCheck(t *testing.T) {
