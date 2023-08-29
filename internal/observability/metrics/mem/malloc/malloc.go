@@ -54,7 +54,7 @@ func New() metrics.Metric {
 	return &mallocMetrics{}
 }
 
-func (m *mallocMetrics) View() ([]*metrics.View, error) {
+func (*mallocMetrics) View() ([]*metrics.View, error) {
 	totalFastCount, err := view.New(
 		view.MatchInstrumentName(totalFastCountMetricsName),
 		view.WithSetDescription(totalFastCountMetricsDescription),
@@ -139,7 +139,7 @@ func (m *mallocMetrics) View() ([]*metrics.View, error) {
 	}, nil
 }
 
-func (mm *mallocMetrics) Register(m metrics.Meter) error {
+func (*mallocMetrics) Register(m metrics.Meter) error {
 	totalFastCount, err := m.AsyncInt64().Gauge(
 		totalFastCountMetricsName,
 		metrics.WithDescription(totalFastCountMetricsDescription),
