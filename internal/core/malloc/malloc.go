@@ -49,26 +49,36 @@ type Sizes struct {
 	Unsorted Size    `xml:"unsorted"`
 }
 
-type Memory struct {
+type Total struct {
 	Type  string `xml:"fast,attr"`
 	Count int    `xml:"count,attr"`
 	Size  int    `xml:"size,attr"`
 }
 
+type System struct {
+	Type string `xml:"fast,attr"`
+	Size int    `xml:"size,attr"`
+}
+
+type Aspace struct {
+	Type string `xml:"fast,attr"`
+	Size int    `xml:"size,attr"`
+}
+
 type Heap struct {
 	Nr     string    `xml:"nr,attr"`
 	Sizes  Sizes     `xml:"sizes"`
-	Total  []*Memory `xml:"total"`
-	System []*Memory `xml:"system"`
-	Aspace []*Memory `xml:"aspace"`
+	Total  []*Total  `xml:"total"`
+	System []*System `xml:"system"`
+	Aspace []*Aspace `xml:"aspace"`
 }
 
 type MallocInfo struct {
 	Version string    `xml:"version,attr"`
 	Heap    []*Heap   `xml:"heap"`
-	Total   []*Memory `xml:"total"`
-	System  []*Memory `xml:"system"`
-	Aspace  []*Memory `xml:"aspace"`
+	Total   []*Total  `xml:"total"`
+	System  []*System `xml:"system"`
+	Aspace  []*Aspace `xml:"aspace"`
 }
 
 func convert(body string) (*MallocInfo, error) {
