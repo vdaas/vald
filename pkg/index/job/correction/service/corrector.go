@@ -86,7 +86,7 @@ func (c *correct) Start(ctx context.Context) (<-chan error, error) {
 		return true
 	})
 
-	// This blocks. Should we run with errorgroup?
+	// FIXME: This blocks. Should we run with errorgroup?
 	log.Info("starting correction...")
 	if c.cfg.Corrector.UseCache {
 		log.Info("with cache...")

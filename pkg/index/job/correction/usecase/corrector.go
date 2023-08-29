@@ -15,6 +15,8 @@ package usecase
 
 import (
 	"context"
+	"os"
+	"syscall"
 	"time"
 
 	"github.com/vdaas/vald/internal/client/v1/client/discoverer"
@@ -24,7 +26,6 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/observability"
 	"github.com/vdaas/vald/internal/runner"
-	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/pkg/index/job/correction/config"
 	"github.com/vdaas/vald/pkg/index/job/correction/service"
 )
@@ -114,20 +115,32 @@ func (r *run) PreStart(ctx context.Context) error {
 }
 
 func (r *run) Start(ctx context.Context) (<-chan error, error) {
-	// TODO: timeoutはconfigから指定
-	// Setting timeout because job resource needs to be finished at some point
-	// ここでcancelしても親は終了しないので、結局self SIGTERMしかなさそう
-	// timeout設定はして、finalizeを呼ぶのが良いか
-	// ctx, cancel = context.WithTimeout(ctx, time.Second*20)
-	// defer cancel() // ここでdeferすると関数はすぐ抜けちゃうので意味ない
+	// TODO: Set timeout?
+	// ctx, cancel := context.WithTimeout(ctx, time.Microsecond*10)
+	// defer cancel()
+
+	defer func() {
+		log.Info("fiding my pid to kill myself")
+		p, err := os.FindProcess(os.Getpid())
+		if err != nil {
+			// using Fatal to avoid this process to be zombie
+			log.Fatalf("failed to find my pid to kill %v", err)
+			return
+		}
+
+		log.Info("sending SIGTERM to myself to stop this job")
+		if err := p.Signal(syscall.SIGTERM); err != nil {
+			log.Error(err)
+		}
+	}()
 
 	log.Info("starting index correction job")
 	if r.observability != nil {
-		_ = r.observability.Start(ctx) // FIXME: listen this returned err channel
+		_ = r.observability.Start(ctx) // TODO: listen this returned err channel
 	}
 
 	start := time.Now()
-	dech, err := r.corrector.Start(ctx)
+	_, err := r.corrector.Start(ctx)
 	if err != nil {
 		log.Errorf("index correction process failed: %v", err)
 		return nil, err
@@ -135,20 +148,9 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 	end := time.Since(start)
 	log.Infof("correction finished in %v", end)
 
-	// FIXME: 以下をやめてシンプルにStartを抜けたらself SIGTERMで終了させる方がいいかも
-	// 	      その場合echは無視することになる
-	ech := make(chan error, 100)
-	r.eg.Go(safety.RecoverFunc(func() error {
-		for {
-			select {
-			case <-ctx.Done():
-				log.Debug("======= ctx.Done at corrector start")
-				return ctx.Err()
-			case err = <-dech:
-				ech <- err
-			}
-		}
-	}))
+	// this ech is just a placeholder to return. this is not a daemon but a job.
+	// so after returning, this process will be SIGTERMed by myself immediately.
+	ech := make(chan error)
 	return ech, nil
 }
 
