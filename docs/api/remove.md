@@ -47,21 +47,21 @@ Remove RPC is the method to remove a single vector.
 
   - Remove.Request
 
-    | field  | type      | label | required | desc.                                   |
+    | field  | type      | label | required | description                             |
     | :----: | :-------- | :---- | :------: | :-------------------------------------- |
     |   id   | Object.ID |       |    \*    | the id of vector                        |
     | config | Config    |       |    \*    | the configuration of the remove request |
 
   - Remove.Config
 
-    |          field          | type  | label | required | desc.                                                                                                |
+    |          field          | type  | label | required | description                                                                                          |
     | :---------------------: | :---- | :---- | :------: | :--------------------------------------------------------------------------------------------------- |
     | skip_strict_exist_check | bool  |       |          | check the same vector is already inserted or not.<br>the ID should be unique if the value is `true`. |
     |        timestamp        | int64 |       |          | the timestamp of the vector removed.<br>if it is N/A, the current time will be used.                 |
 
   - Object.ID
 
-    | field | type   | label | required | desc.                                                          |
+    | field | type   | label | required | description                                                    |
     | :---: | :----- | :---- | :------: | :------------------------------------------------------------- |
     |  id   | string |       |    \*    | the ID of a vector. ID should consist of 1 or more characters. |
 
@@ -81,7 +81,7 @@ Remove RPC is the method to remove a single vector.
 
   - Object.Location
 
-    | field | type   | label                   | desc.                                                                 |
+    | field | type   | label                   | description                                                           |
     | :---: | :----- | :---------------------- | :-------------------------------------------------------------------- |
     | name  | string |                         | the name of vald agent pod where the request vector is removed.       |
     | uuid  | string |                         | the ID of the removed vector. It is the same as an `Object.ID`.       |
@@ -89,7 +89,7 @@ Remove RPC is the method to remove a single vector.
 
 ### Status Code
 
-| code | desc.             |
+| code | name              |
 | :--: | :---------------- |
 |  0   | OK                |
 |  1   | CANCELLED         |
@@ -97,6 +97,22 @@ Remove RPC is the method to remove a single vector.
 |  4   | DEADLINE_EXCEEDED |
 |  5   | NOT_FOUND         |
 |  13  | INTERNAL          |
+
+For more details, please refer to [Response Status Code](./status.md).
+
+### Troubleshooting
+
+When the response code is NOT `0 (OK)`, the request process may not be completed.
+
+Here are some common reason and how to resolve of each error.
+
+| name              | common reason                                                                                            | how to resolve                                                                           |
+| :---------------- | :------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
+| CANCELLED         | executed cancel() of rpc from client/server side or something network problems between client and server | verify connection between client and server side<BR>check client code and fix if needed. |
+| INVALID_ARGUMENT  | requested vector's ID is ""                                                                              | send request config whose ID is NOT ""                                                   |
+| DEADLINE_EXCEEDED | RPC timeout setting is too short on client or server side                                                | check gRPC timeout setting both of client side and server side and fix if needed         |
+| NOT_FOUND         | requested ID is NOT inserted                                                                             | send request with ID which is already inserted                                           |
+| INTERNAL          | target Vald cluster has some critical error                                                              | check target Vald cluster at first                                                       |
 
 ## StreamRemove RPC
 
@@ -131,21 +147,21 @@ It's the recommended method to remove a large number of vectors.
 
   - Remove.Request
 
-    | field  | type      | label | required | desc.                                   |
+    | field  | type      | label | required | description                             |
     | :----: | :-------- | :---- | :------: | :-------------------------------------- |
     |   id   | Object.ID |       |    \*    | the id of vector                        |
     | config | Config    |       |    \*    | the configuration of the insert request |
 
   - Remove.Config
 
-    |          field          | type  | label | required | desc.                                                                                                |
+    |          field          | type  | label | required | description                                                                                          |
     | :---------------------: | :---- | :---- | :------: | :--------------------------------------------------------------------------------------------------- |
     | skip_strict_exist_check | bool  |       |          | check the same vector is already inserted or not.<br>the ID should be unique if the value is `true`. |
     |        timestamp        | int64 |       |          | the timestamp of the vector removed.<br>if it is N/A, the current time will be used.                 |
 
   - Object.ID
 
-    | field | type   | label | required | desc.                                                          |
+    | field | type   | label | required | description                                                    |
     | :---: | :----- | :---- | :------: | :------------------------------------------------------------- |
     |  id   | string |       |    \*    | the ID of a vector. ID should consist of 1 or more characters. |
 
@@ -172,14 +188,14 @@ It's the recommended method to remove a large number of vectors.
 
   - Object.StreamLocation
 
-    |  field   | type              | label | desc.                                      |
+    |  field   | type              | label | description                                |
     | :------: | :---------------- | :---- | :----------------------------------------- |
     | location | Object.Location   |       | the information of `Object.Location` data. |
     |  status  | google.rpc.Status |       | the status of google RPC                   |
 
   - Object.Location
 
-    | field | type   | label                   | desc.                                                                 |
+    | field | type   | label                   | description                                                           |
     | :---: | :----- | :---------------------- | :-------------------------------------------------------------------- |
     | name  | string |                         | the name of vald agent pod where the request vector is removed.       |
     | uuid  | string |                         | the ID of the removed vector. It is the same as an `Object.ID`.       |
@@ -187,7 +203,7 @@ It's the recommended method to remove a large number of vectors.
 
   - [google.rpc.Status](https://github.com/googleapis/googleapis/blob/master/google/rpc/status.proto)
 
-    |  field  | type                | label                | desc.                                   |
+    |  field  | type                | label                | description                             |
     | :-----: | :------------------ | :------------------- | :-------------------------------------- |
     |  code   | int32               |                      | status code (code list is next section) |
     | message | string              |                      | error message                           |
@@ -195,7 +211,7 @@ It's the recommended method to remove a large number of vectors.
 
 ### Status Code
 
-| code | desc.             |
+| code | name              |
 | :--: | :---------------- |
 |  0   | OK                |
 |  1   | CANCELLED         |
@@ -203,6 +219,22 @@ It's the recommended method to remove a large number of vectors.
 |  4   | DEADLINE_EXCEEDED |
 |  5   | NOT_FOUND         |
 |  13  | INTERNAL          |
+
+For more details, please refer to [Response Status Code](./status.md).
+
+### Troubleshooting
+
+When the response code is NOT `0 (OK)`, the request process may not be completed.
+
+Here are some common reason and how to resolve of each error.
+
+| name              | common reason                                                                                            | how to resolve                                                                           |
+| :---------------- | :------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
+| CANCELLED         | executed cancel() of rpc from client/server side or something network problems between client and server | verify connection between client and server side<BR>check client code and fix if needed. |
+| INVALID_ARGUMENT  | requested vector's ID is ""                                                                              | send request config whose ID is NOT ""                                                   |
+| DEADLINE_EXCEEDED | RPC timeout setting is too short on client or server side                                                | check gRPC timeout setting both of client side and server side and fix if needed         |
+| NOT_FOUND         | requested ID is NOT inserted                                                                             | send request with ID which is already inserted                                           |
+| INTERNAL          | target Vald cluster has some critical error                                                              | check target Vald cluster at first                                                       |
 
 ## MultiRemove RPC
 
@@ -243,27 +275,27 @@ Please be careful that the size of the request exceeds the limit.
 
   - Remove.MultiRequest
 
-    |  field   | type           | label                           | required | desc.            |
+    |  field   | type           | label                           | required | description      |
     | :------: | :------------- | :------------------------------ | :------: | :--------------- |
     | requests | Remove.Request | repeated(Array[Insert.Request]) |    \*    | the request list |
 
   - Remove.Request
 
-    | field  | type      | label | required | desc.                                   |
+    | field  | type      | label | required | description                             |
     | :----: | :-------- | :---- | :------: | :-------------------------------------- |
     |   id   | Object.ID |       |    \*    | the id of vector                        |
     | config | Config    |       |    \*    | the configuration of the remove request |
 
   - Remove.Config
 
-    |          field          | type  | label | required | desc.                                                                                                |
+    |          field          | type  | label | required | description                                                                                          |
     | :---------------------: | :---- | :---- | :------: | :--------------------------------------------------------------------------------------------------- |
     | skip_strict_exist_check | bool  |       |          | check the same vector is already inserted or not.<br>the ID should be unique if the value is `true`. |
     |        timestamp        | int64 |       |          | the timestamp of the vector removed.<br>if it is N/A, the current time will be used.                 |
 
   - Object.ID
 
-    | field | type   | label | required | desc.                                                          |
+    | field | type   | label | required | description                                                    |
     | :---: | :----- | :---- | :------: | :------------------------------------------------------------- |
     |  id   | string |       |    \*    | the ID of a vector. ID should consist of 1 or more characters. |
 
@@ -285,13 +317,13 @@ Please be careful that the size of the request exceeds the limit.
 
   - Object.Locations
 
-    |  field   | type            | label                            | desc.                          |
+    |  field   | type            | label                            | description                    |
     | :------: | :-------------- | :------------------------------- | :----------------------------- |
     | location | Object.Location | repeated(Array[Object.Location]) | the list of `Object.Location`. |
 
   - Object.Location
 
-    | field | type   | label                   | desc.                                                                 |
+    | field | type   | label                   | description                                                           |
     | :---: | :----- | :---------------------- | :-------------------------------------------------------------------- |
     | name  | string |                         | the name of vald agent pod where the request vector is removed.       |
     | uuid  | string |                         | the ID of the removed vector. It is the same as an `Object.Vector`.   |
@@ -299,7 +331,7 @@ Please be careful that the size of the request exceeds the limit.
 
 ### Status Code
 
-| code | desc.             |
+| code | name              |
 | :--: | :---------------- |
 |  0   | OK                |
 |  1   | CANCELLED         |
@@ -307,3 +339,19 @@ Please be careful that the size of the request exceeds the limit.
 |  4   | DEADLINE_EXCEEDED |
 |  5   | NOT_FOUND         |
 |  13  | INTERNAL          |
+
+For more details, please refer to [Response Status Code](./status.md).
+
+### Troubleshooting
+
+When the response code is NOT `0 (OK)`, the request process may not be completed.
+
+Here are some common reason and how to resolve of each error.
+
+| name              | common reason                                                                                            | how to resolve                                                                           |
+| :---------------- | :------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
+| CANCELLED         | executed cancel() of rpc from client/server side or something network problems between client and server | verify connection between client and server side<BR>check client code and fix if needed. |
+| INVALID_ARGUMENT  | requested vector's ID is ""                                                                              | send request config whose ID is NOT ""                                                   |
+| DEADLINE_EXCEEDED | RPC timeout setting is too short on client or server side                                                | check gRPC timeout setting both of client side and server side and fix if needed         |
+| NOT_FOUND         | requested ID is NOT inserted                                                                             | send request with ID which is already inserted                                           |
+| INTERNAL          | target Vald cluster has some critical error                                                              | check target Vald cluster at first                                                       |

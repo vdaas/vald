@@ -46,14 +46,14 @@ Inset RPC is the method to add a new single vector.
 
   - Insert.Request
 
-    | field  | type          | label | required | desc.                                   |
+    | field  | type          | label | required | description                             |
     | :----: | :------------ | :---- | :------: | :-------------------------------------- |
     | vector | Object.Vector |       |    \*    | the information of vector               |
     | config | Config        |       |    \*    | the configuration of the insert request |
 
   - Insert.Config
 
-    |          field          | type          | label | required | desc.                                                                                                |
+    |          field          | type          | label | required | description                                                                                          |
     | :---------------------: | :------------ | :---- | :------: | :--------------------------------------------------------------------------------------------------- |
     | skip_strict_exist_check | bool          |       |          | check the same vector is already inserted or not.<br>the ID should be unique if the value is `true`. |
     |        timestamp        | int64         |       |          | the timestamp of the vector inserted.<br>if it is N/A, the current time will be used.                |
@@ -61,7 +61,7 @@ Inset RPC is the method to add a new single vector.
 
   - Object.Vector
 
-    | field  | type   | label                  | required | desc.                                                          |
+    | field  | type   | label                  | required | description                                                    |
     | :----: | :----- | :--------------------- | :------: | :------------------------------------------------------------- |
     |   id   | string |                        |    \*    | the ID of a vector. ID should consist of 1 or more characters. |
     | vector | float  | repeated(Array[float]) |    \*    | the vector data. its dimension is between 2 and 65,536.        |
@@ -82,7 +82,7 @@ Inset RPC is the method to add a new single vector.
 
   - Object.Location
 
-    | field | type   | label                   | desc.                                                                  |
+    | field | type   | label                   | description                                                            |
     | :---: | :----- | :---------------------- | :--------------------------------------------------------------------- |
     | name  | string |                         | the name of vald agent pod where the request vector is inserted.       |
     | uuid  | string |                         | the ID of the inserted vector. It is the same as an `Object.Vector`.   |
@@ -90,7 +90,7 @@ Inset RPC is the method to add a new single vector.
 
 ### Status Code
 
-| code | desc.             |
+| code | name              |
 | :--: | :---------------- |
 |  0   | OK                |
 |  1   | CANCELLED         |
@@ -98,6 +98,22 @@ Inset RPC is the method to add a new single vector.
 |  4   | DEADLINE_EXCEEDED |
 |  6   | ALREADY_EXISTS    |
 |  13  | INTERNAL          |
+
+For more details, please refer to [Response Status Code](./status.md).
+
+### Troubleshooting
+
+When the response code is NOT `0 (OK)`, the request process may not be completed.
+
+Here are some common reason and how to resolve of each error.
+
+| name              | common reason                                                                                            | how to resolve                                            |
+| :---------------- | :------------------------------------------------------------------------------------------------------- | :-------------------------------------------------------- |
+| CANCELLED         | executed cancel() of rpc from client/server side or something network problems between client and server | check your client code and fix if needed.                 |
+| INVALID_ARGUMENT  | dimension of request vector is NOT same as Vald Agent's config or requested vector's ID is ""            | check Agent config and fix request config or Agent config |
+| DEADLINE_EXCEEDED | RPC timeout setting is too short on client or server side                                                | check timeout setting and fix if needed                   |
+| ALREADY_EXISTS    | request ID is already inserted                                                                           | change request ID                                         |
+| INTERNAL          | target Vald cluster has some critical error                                                              | check target Vald cluster at first                        |
 
 ## StreamInsert RPC
 
@@ -133,14 +149,14 @@ It's the recommended method to insert a large number of vectors.
 
   - Insert.Request
 
-    | field  | type          | label | required | desc.                                   |
+    | field  | type          | label | required | description                             |
     | :----: | :------------ | :---- | :------: | :-------------------------------------- |
     | vector | Object.Vector |       |    \*    | the information of vector               |
     | config | Config        |       |    \*    | the configuration of the insert request |
 
   - Insert.Config
 
-    |          field          | type          | label | required | desc.                                                                                                |
+    |          field          | type          | label | required | description                                                                                          |
     | :---------------------: | :------------ | :---- | :------: | :--------------------------------------------------------------------------------------------------- |
     | skip_strict_exist_check | bool          |       |          | check the same vector is already inserted or not.<br>the ID should be unique if the value is `true`. |
     |        timestamp        | int64         |       |          | the timestamp of the vector inserted.<br>if it is N/A, the current time will be used.                |
@@ -148,7 +164,7 @@ It's the recommended method to insert a large number of vectors.
 
   - Object.Vector
 
-    | field  | type   | label                  | required | desc.                                                            |
+    | field  | type   | label                  | required | description                                                      |
     | :----: | :----- | :--------------------- | :------: | :--------------------------------------------------------------- |
     |   id   | string |                        |    \*    | the ID of the vector. ID should consist of 1 or more characters. |
     | vector | float  | repeated(Array[float]) |    \*    | the vector data. its dimension is between 2 and 65,536.          |
@@ -176,14 +192,14 @@ It's the recommended method to insert a large number of vectors.
 
   - Object.StreamLocation
 
-    |  field   | type              | label | desc.                                      |
+    |  field   | type              | label | description                                |
     | :------: | :---------------- | :---- | :----------------------------------------- |
     | location | Object.Location   |       | the information of `Object.Location` data. |
     |  status  | google.rpc.Status |       | the status of google RPC.                  |
 
   - Object.Location
 
-    | field | type   | label                   | desc.                                                                  |
+    | field | type   | label                   | description                                                            |
     | :---: | :----- | :---------------------- | :--------------------------------------------------------------------- |
     | name  | string |                         | the name of vald agent pod where the request vector is inserted.       |
     | uuid  | string |                         | the ID of the inserted vector. It is the same as an `Object.Vector`.   |
@@ -191,7 +207,7 @@ It's the recommended method to insert a large number of vectors.
 
   - [google.rpc.Status](https://github.com/googleapis/googleapis/blob/master/google/rpc/status.proto)
 
-    |  field  | type                | label                | desc.                                   |
+    |  field  | type                | label                | description                             |
     | :-----: | :------------------ | :------------------- | :-------------------------------------- |
     |  code   | int32               |                      | status code (code list is next section) |
     | message | string              |                      | error message                           |
@@ -199,7 +215,7 @@ It's the recommended method to insert a large number of vectors.
 
 ### Status Code
 
-| code | desc.             |
+| code | name              |
 | :--: | :---------------- |
 |  0   | OK                |
 |  1   | CANCELLED         |
@@ -207,6 +223,22 @@ It's the recommended method to insert a large number of vectors.
 |  4   | DEADLINE_EXCEEDED |
 |  6   | ALREADY_EXISTS    |
 |  13  | INTERNAL          |
+
+For more details, please refer to [Response Status Code](./status.md).
+
+### Troubleshooting
+
+When the response code is NOT `0 (OK)`, the request process may not be completed.
+
+Here are some common reason and how to resolve of each error.
+
+| name              | common reason                                                                                            | how to resolve                                                                           |
+| :---------------- | :------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
+| CANCELLED         | executed cancel() of rpc from client/server side or something network problems between client and server | verify connection between client and server side<BR>check client code and fix if needed. |
+| INVALID_ARGUMENT  | dimension of request vector is NOT same as Vald Agent's config or requested vector's ID is ""            | check request config and Agent config, and fix if needed                                 |
+| DEADLINE_EXCEEDED | RPC timeout setting is too short on client or server side                                                | check gRPC timeout setting both of client side and server side and fix if needed         |
+| ALREADY_EXISTS    | request ID is already inserted                                                                           | change request ID then retry insert                                                      |
+| INTERNAL          | target Vald cluster has some critical error                                                              | check target Vald cluster at first                                                       |
 
 ## MultiInsert RPC
 
@@ -247,20 +279,20 @@ Please be careful that the size of the request exceeds the limit.
 
   - Insert.MultiRequest
 
-    |  field   | type           | label                           | required | desc.            |
+    |  field   | type           | label                           | required | description      |
     | :------: | :------------- | :------------------------------ | :------: | :--------------- |
     | requests | Insert.Request | repeated(Array[Insert.Request]) |    \*    | the request list |
 
   - Insert.Request
 
-    | field  | type          | label | required | desc.                                   |
+    | field  | type          | label | required | description                             |
     | :----: | :------------ | :---- | :------: | :-------------------------------------- |
     | vector | Object.Vector |       |    \*    | the information of vector               |
     | config | Config        |       |    \*    | the configuration of the insert request |
 
   - Insert.Config
 
-    |          field          | type          | label | required | desc.                                                                                                |
+    |          field          | type          | label | required | description                                                                                          |
     | :---------------------: | :------------ | :---- | :------: | :--------------------------------------------------------------------------------------------------- |
     | skip_strict_exist_check | bool          |       |          | check the same vector is already inserted or not.<br>the ID should be unique if the value is `true`. |
     |        timestamp        | int64         |       |          | the timestamp of the vector inserted.<br>if it is N/A, the current time will be used.                |
@@ -268,7 +300,7 @@ Please be careful that the size of the request exceeds the limit.
 
   - Object.Vector
 
-    | field  | type   | label                  | required | desc.                                                          |
+    | field  | type   | label                  | required | description                                                    |
     | :----: | :----- | :--------------------- | :------: | :------------------------------------------------------------- |
     |   id   | string |                        |    \*    | the ID of a vector. ID should consist of 1 or more characters. |
     | vector | float  | repeated(Array[float]) |    \*    | the vector data. its dimension is between 2 and 65,536.        |
@@ -291,13 +323,13 @@ Please be careful that the size of the request exceeds the limit.
 
   - Object.Locations
 
-    |  field   | type            | label                            | desc.                          |
+    |  field   | type            | label                            | description                    |
     | :------: | :-------------- | :------------------------------- | :----------------------------- |
     | location | Object.Location | repeated(Array[Object.Location]) | the list of `Object.Location`. |
 
   - Object.Location
 
-    | field | type   | label                   | desc.                                                                  |
+    | field | type   | label                   | description                                                            |
     | :---: | :----- | :---------------------- | :--------------------------------------------------------------------- |
     | name  | string |                         | the name of vald agent pod where the request vector is inserted.       |
     | uuid  | string |                         | the ID of the inserted vector. It is the same as an `Object.Vector`.   |
@@ -305,7 +337,7 @@ Please be careful that the size of the request exceeds the limit.
 
 ### Status Code
 
-| code | desc.             |
+| code | name              |
 | :--: | :---------------- |
 |  0   | OK                |
 |  1   | CANCELLED         |
@@ -313,3 +345,19 @@ Please be careful that the size of the request exceeds the limit.
 |  4   | DEADLINE_EXCEEDED |
 |  6   | ALREADY_EXISTS    |
 |  13  | INTERNAL          |
+
+For more details, please refer to [Response Status Code](./status.md).
+
+### Troubleshooting
+
+When the response code is NOT `0 (OK)`, the request process may not be completed.
+
+Here are some common reason and how to resolve of each error.
+
+| name              | common reason                                                                                            | how to resolve                                                                           |
+| :---------------- | :------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
+| CANCELLED         | executed cancel() of rpc from client/server side or something network problems between client and server | verify connection between client and server side<BR>check client code and fix if needed. |
+| INVALID_ARGUMENT  | dimension of request vector is NOT same as Vald Agent's config or requested vector's ID is ""            | check request config and Agent config, and fix if needed                                 |
+| DEADLINE_EXCEEDED | RPC timeout setting is too short on client or server side                                                | check gRPC timeout setting both of client side and server side and fix if needed         |
+| ALREADY_EXISTS    | request ID is already inserted                                                                           | change request ID then retry insert                                                      |
+| INTERNAL          | target Vald cluster has some critical error                                                              | check target Vald cluster at first                                                       |
