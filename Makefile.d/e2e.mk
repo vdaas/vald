@@ -61,7 +61,7 @@ e2e/remove:
 
 .PHONY: e2e/remove/timestamp
 ## run removeByTimestamp e2e
-e2e/remove:
+e2e/remove/timestamp:
 	$(call run-e2e-crud-test,-run TestE2ERemoveByTimestampOnly)
 
 .PHONY: e2e/insert/search
