@@ -43,7 +43,7 @@ replace (
 	github.com/ajstarks/svgo => github.com/ajstarks/svgo v0.0.0-20211024235047-1546f124cd8b
 	github.com/antihax/optional => github.com/antihax/optional v1.0.0
 	github.com/armon/go-socks5 => github.com/armon/go-socks5 v0.0.0-20160902184237-e75332964ef5
-	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.44.334
+	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.45.0
 	github.com/aws/aws-sdk-go-v2 => github.com/aws/aws-sdk-go-v2 v1.21.0
 	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream => github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.4.13
 	github.com/aws/aws-sdk-go-v2/config => github.com/aws/aws-sdk-go-v2/config v1.18.37
@@ -120,7 +120,7 @@ replace (
 	github.com/go-playground/assert/v2 => github.com/go-playground/assert/v2 v2.2.0
 	github.com/go-playground/locales => github.com/go-playground/locales v0.14.1
 	github.com/go-playground/universal-translator => github.com/go-playground/universal-translator v0.18.1
-	github.com/go-playground/validator/v10 => github.com/go-playground/validator/v10 v10.15.2
+	github.com/go-playground/validator/v10 => github.com/go-playground/validator/v10 v10.15.3
 	github.com/go-redis/redis/v8 => github.com/go-redis/redis/v8 v8.11.5
 	github.com/go-sql-driver/mysql => github.com/go-sql-driver/mysql v1.7.1
 	github.com/go-task/slim-sprig => github.com/go-task/slim-sprig v2.20.0+incompatible
