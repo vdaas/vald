@@ -2764,6 +2764,131 @@ func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequ
 	return locs, errs
 }
 
+func (s *server) RemoveByTimestamp(ctx context.Context, req *payload.Remove_TimestampRequest) (locs *payload.Object_Locations, errs error) {
+	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.RemoveRPCServiceName+"/"+vald.RemoveByTimestampRPCName), apiName+"/"+vald.RemoveByTimestampRPCName)
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+
+	var mu sync.Mutex
+	var emu sync.Mutex
+	visited := make(map[string]int) // map[uuid: position of locs]
+	locs = new(payload.Object_Locations)
+
+	err := s.gateway.BroadCast(ctx, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) (err error) {
+		sctx, sspan := trace.StartSpan(grpc.WithGRPCMethod(ctx, "BroadCast/"+target), apiName+"/removeByTimestamp/BroadCast/"+target)
+		defer func() {
+			if sspan != nil {
+				sspan.End()
+			}
+		}()
+
+		res, err := vc.RemoveByTimestamp(sctx, req, copts...)
+		if err != nil {
+			if errors.Is(err, errors.ErrGRPCClientConnNotFound("*")) {
+				err = status.WrapWithInternal(
+					vald.RemoveByTimestampRPCName+" API connection not found", err,
+				)
+				if sspan != nil {
+					sspan.RecordError(err)
+					sspan.SetAttributes(trace.StatusCodeInternal(err.Error())...)
+					sspan.SetStatus(trace.StatusError, err.Error())
+				}
+				log.Error(err)
+				emu.Lock()
+				errs = errors.Join(errs, err)
+				emu.Unlock()
+				return nil
+			}
+			var (
+				st  *status.Status
+				msg string
+			)
+			st, msg, err = status.ParseError(err, codes.Internal,
+				vald.RemoveByTimestampRPCName+" gRPC error response",
+			)
+			if sspan != nil {
+				sspan.RecordError(err)
+				sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+				sspan.SetStatus(trace.StatusError, err.Error())
+			}
+			if err != nil && st.Code() != codes.NotFound {
+				log.Error(err)
+				emu.Lock()
+				errs = errors.Join(errs, err)
+				emu.Unlock()
+				return nil
+			}
+		}
+
+		if res != nil && len(res.GetLocations()) > 0 {
+			for _, loc := range res.GetLocations() {
+				mu.Lock()
+				if pos, ok := visited[loc.GetUuid()]; !ok {
+					locs.Locations = append(locs.GetLocations(), loc)
+					visited[loc.GetUuid()] = len(locs.Locations) - 1
+				} else {
+					if pos < len(locs.GetLocations()) {
+						locs.GetLocations()[pos].Ips = append(locs.GetLocations()[pos].Ips, loc.GetIps()...)
+						if s := locs.GetLocations()[pos].Name; len(s) == 0 {
+							locs.GetLocations()[pos].Name = loc.GetName()
+						} else {
+							// strings.Join is used because '+=' causes performance degradation when the number of characters is large.
+							locs.GetLocations()[pos].Name = strings.Join([]string{
+								s, loc.GetName(),
+							}, ",")
+						}
+					}
+				}
+				mu.Unlock()
+			}
+		}
+		return nil
+	})
+	if errs != nil {
+		err = errors.Join(err, errs)
+	}
+	if err != nil {
+		st, msg, err := status.ParseError(err, codes.Internal,
+			"failed to parse "+vald.RemoveByTimestampRPCName+" gRPC error response",
+			&errdetails.RequestInfo{
+				ServingData: errdetails.Serialize(req),
+			},
+			&errdetails.ResourceInfo{
+				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+			},
+		)
+		log.Error(err)
+		if span != nil {
+			span.RecordError(err)
+			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+			span.SetStatus(trace.StatusError, err.Error())
+		}
+		return nil, err
+	}
+	if locs == nil || len(locs.GetLocations()) == 0 {
+		err = status.WrapWithNotFound(
+			vald.RemoveByTimestampRPCName+" API remove target not found", errors.ErrIndexNotFound,
+			&errdetails.RequestInfo{
+				ServingData: errdetails.Serialize(req),
+			},
+			&errdetails.ResourceInfo{
+				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+			},
+		)
+		log.Error(err)
+		if span != nil {
+			span.RecordError(err)
+			span.SetAttributes(trace.StatusCodeNotFound(err.Error())...)
+			span.SetStatus(trace.StatusError, err.Error())
+		}
+		return nil, err
+	}
+	return locs, nil
+}
+
 func (s *server) getObject(ctx context.Context, uuid string) (vec *payload.Object_Vector, err error) {
 	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "getObject"), apiName+"/"+vald.GetObjectRPCName+"/getObject")
 	defer func() {

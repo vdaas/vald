@@ -245,6 +245,22 @@ func TestE2ERemoveOnly(t *testing.T) {
 	}
 }
 
+func TestE2ERemoveByTimestampOnly(t *testing.T) {
+	t.Cleanup(teardown)
+	ctx := context.Background()
+
+	op, err := operation.New(host, port)
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	// Remove all vector data after the current - 1 hour.
+	err = op.RemoveByTimestamp(t, ctx, time.Now().Add(-time.Hour).UnixNano())
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+}
+
 func TestE2EInsertAndSearch(t *testing.T) {
 	t.Cleanup(teardown)
 	ctx := context.Background()
@@ -376,6 +392,12 @@ func TestE2EStandardCRUD(t *testing.T) {
 	err = op.Remove(t, ctx, operation.Dataset{
 		Train: ds.Train[removeFrom : removeFrom+removeNum],
 	})
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	// Remove all vector data after the current - 1 hour.
+	err = op.RemoveByTimestamp(t, ctx, time.Now().Add(-time.Hour).UnixNano())
 	if err != nil {
 		t.Fatalf("an error occurred: %s", err)
 	}
