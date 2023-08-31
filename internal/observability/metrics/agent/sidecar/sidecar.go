@@ -15,11 +15,11 @@ package sidecar
 
 import (
 	"context"
-	"sync"
 	"time"
 
 	"github.com/vdaas/vald/internal/observability/attribute"
 	"github.com/vdaas/vald/internal/observability/metrics"
+	"github.com/vdaas/vald/internal/sync"
 	"github.com/vdaas/vald/pkg/agent/sidecar/service/observer"
 	"go.opentelemetry.io/otel/sdk/metric/aggregation"
 	"go.opentelemetry.io/otel/sdk/metric/view"

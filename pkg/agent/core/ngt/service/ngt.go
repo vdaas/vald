@@ -27,14 +27,13 @@ import (
 	"path/filepath"
 	"reflect"
 	"runtime"
-	"sync"
 	"sync/atomic"
 	"time"
 
+	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/conv"
 	core "github.com/vdaas/vald/internal/core/algorithm/ngt"
-	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/file"
 	"github.com/vdaas/vald/internal/log"
@@ -42,7 +41,8 @@ import (
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/slices"
 	"github.com/vdaas/vald/internal/strings"
-	"github.com/vdaas/vald/pkg/agent/core/ngt/model"
+	"github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/service/kvs"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/service/vqueue"
 	"github.com/vdaas/vald/pkg/agent/internal/metadata"
@@ -50,10 +50,10 @@ import (
 
 type NGT interface {
 	Start(ctx context.Context) <-chan error
-	Search(ctx context.Context, vec []float32, size uint32, epsilon, radius float32) ([]model.Distance, error)
-	SearchByID(ctx context.Context, uuid string, size uint32, epsilon, radius float32) ([]float32, []model.Distance, error)
-	LinearSearch(vec []float32, size uint32) ([]model.Distance, error)
-	LinearSearchByID(uuid string, size uint32) ([]float32, []model.Distance, error)
+	Search(ctx context.Context, vec []float32, size uint32, epsilon, radius float32) (*payload.Search_Response, error)
+	SearchByID(ctx context.Context, uuid string, size uint32, epsilon, radius float32) ([]float32, *payload.Search_Response, error)
+	LinearSearch(vec []float32, size uint32) (*payload.Search_Response, error)
+	LinearSearchByID(uuid string, size uint32) ([]float32, *payload.Search_Response, error)
 	Insert(uuid string, vec []float32) (err error)
 	InsertWithTime(uuid string, vec []float32, t int64) (err error)
 	InsertMultiple(vecs map[string][]float32) (err error)
@@ -870,7 +870,7 @@ func (n *ngt) Start(ctx context.Context) <-chan error {
 	return ech
 }
 
-func (n *ngt) Search(ctx context.Context, vec []float32, size uint32, epsilon, radius float32) ([]model.Distance, error) {
+func (n *ngt) Search(ctx context.Context, vec []float32, size uint32, epsilon, radius float32) (res *payload.Search_Response, err error) {
 	if n.IsIndexing() {
 		return nil, errors.ErrCreateIndexingIsInProgress
 	}
@@ -883,36 +883,10 @@ func (n *ngt) Search(ctx context.Context, vec []float32, size uint32, epsilon, r
 		return nil, err
 	}
 
-	if len(sr) == 0 {
-		return nil, errors.ErrEmptySearchResult
-	}
-
-	ds := make([]model.Distance, 0, len(sr))
-	for _, d := range sr {
-		select {
-		case <-ctx.Done():
-			return ds, nil
-		default:
-		}
-		if err = d.Error; d.ID == 0 && err != nil {
-			log.Warnf("an error occurred while searching: %s", err)
-			continue
-		}
-		key, _, ok := n.kvs.GetInverse(d.ID)
-		if ok {
-			ds = append(ds, model.Distance{
-				ID:       key,
-				Distance: d.Distance,
-			})
-		} else {
-			log.Warn("not found", d.ID, d.Distance)
-		}
-	}
-
-	return ds, nil
+	return n.toSearchResponse(sr)
 }
 
-func (n *ngt) SearchByID(ctx context.Context, uuid string, size uint32, epsilon, radius float32) (vec []float32, dst []model.Distance, err error) {
+func (n *ngt) SearchByID(ctx context.Context, uuid string, size uint32, epsilon, radius float32) (vec []float32, dst *payload.Search_Response, err error) {
 	if n.IsIndexing() {
 		return nil, nil, errors.ErrCreateIndexingIsInProgress
 	}
@@ -927,7 +901,7 @@ func (n *ngt) SearchByID(ctx context.Context, uuid string, size uint32, epsilon,
 	return vec, dst, nil
 }
 
-func (n *ngt) LinearSearch(vec []float32, size uint32) ([]model.Distance, error) {
+func (n *ngt) LinearSearch(vec []float32, size uint32) (res *payload.Search_Response, err error) {
 	if n.IsIndexing() {
 		return nil, errors.ErrCreateIndexingIsInProgress
 	}
@@ -940,31 +914,10 @@ func (n *ngt) LinearSearch(vec []float32, size uint32) ([]model.Distance, error)
 		return nil, err
 	}
 
-	if len(sr) == 0 {
-		return nil, errors.ErrEmptySearchResult
-	}
-
-	ds := make([]model.Distance, 0, len(sr))
-	for _, d := range sr {
-		if err = d.Error; d.ID == 0 && err != nil {
-			log.Warnf("an error occurred while searching: %s", err)
-			continue
-		}
-		key, _, ok := n.kvs.GetInverse(d.ID)
-		if ok {
-			ds = append(ds, model.Distance{
-				ID:       key,
-				Distance: d.Distance,
-			})
-		} else {
-			log.Warn("not found", d.ID, d.Distance)
-		}
-	}
-
-	return ds, nil
+	return n.toSearchResponse(sr)
 }
 
-func (n *ngt) LinearSearchByID(uuid string, size uint32) (vec []float32, dst []model.Distance, err error) {
+func (n *ngt) LinearSearchByID(uuid string, size uint32) (vec []float32, dst *payload.Search_Response, err error) {
 	if n.IsIndexing() {
 		return nil, nil, errors.ErrCreateIndexingIsInProgress
 	}
@@ -1720,4 +1673,39 @@ func (n *ngt) BrokenIndexCount() uint64 {
 // Use this function for performing something on each object with caring about the memory usage.
 func (n *ngt) ListObjectFunc(ctx context.Context, f func(uuid string, oid uint32, ts int64) bool) {
 	n.kvs.Range(ctx, f)
+}
+
+func (n *ngt) toSearchResponse(sr []core.SearchResult) (res *payload.Search_Response, err error) {
+	if len(sr) == 0 {
+		if n.Len() == 0 {
+			return nil, nil
+		}
+		return nil, errors.ErrEmptySearchResult
+	}
+
+	res = &payload.Search_Response{
+		Results: make([]*payload.Object_Distance, 0, len(sr)),
+	}
+	for _, d := range sr {
+		if err = d.Error; d.ID == 0 && err != nil {
+			log.Warnf("an error occurred while searching: %v", err)
+			continue
+		}
+		key, _, ok := n.kvs.GetInverse(d.ID)
+		if ok {
+			res.Results = append(res.GetResults(), &payload.Object_Distance{
+				Id:       key,
+				Distance: d.Distance,
+			})
+		} else {
+			log.Warn("not found", d.ID, d.Distance)
+		}
+	}
+	if len(res.GetResults()) == 0 {
+		if n.Len() == 0 {
+			return nil, nil
+		}
+		return nil, errors.ErrEmptySearchResult
+	}
+	return res, nil
 }

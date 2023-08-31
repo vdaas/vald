@@ -80,6 +80,12 @@ func TestParse(t *testing.T) {
 			want:    0,
 			wantErr: true,
 		},
+		{
+			name:    "returns 0 and incorrect string error when t is minus value",
+			t:       "-1",
+			want:    0,
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

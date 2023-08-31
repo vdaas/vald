@@ -19,9 +19,7 @@ package safety
 
 import (
 	"runtime"
-	"runtime/debug"
 
-	"github.com/vdaas/vald/internal/conv"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/info"
 	"github.com/vdaas/vald/internal/log"
@@ -39,13 +37,13 @@ func recoverFn(fn func() error, withPanic bool) func() error {
 	return func() (err error) {
 		defer func() {
 			if r := recover(); r != nil {
-				stack := conv.Btoa(debug.Stack())
-				log.Warnf("recovered: %#v\nstacktrace:\n%s", r, stack)
+				infoStr := info.Get().String()
+				log.Warnf("recovered: %#v\nstacktrace:\n%s", r, infoStr)
 				switch x := r.(type) {
 				case runtime.Error:
 					err = errors.ErrRuntimeError(err, x)
 					if withPanic {
-						log.Errorf("recovered but this thread is going to panic: the reason is runtimer.Error\nerror: %v\ninfo:\n%s\nstacktrace:\n%s", err, info.Get().String(), stack)
+						log.Errorf("recovered but this thread is going to panic: the reason is runtimer.Error\nerror: %v\ninfo:\n%s\nstacktrace:\n%s", err, infoStr)
 
 						panic(err)
 					}
@@ -57,7 +55,7 @@ func recoverFn(fn func() error, withPanic bool) func() error {
 					err = errors.ErrPanicRecovered(err, x)
 				}
 				if err != nil {
-					log.Errorf("recovered error: %v\ninfo:\n%s\nstacktrace:\n%s", err, info.Get().String(), stack)
+					log.Errorf("recovered error: %v\ninfo:\n%s\nstacktrace:\n%s", err, infoStr)
 				}
 			}
 		}()

@@ -112,6 +112,7 @@ package circuitbreaker
 // 		fn  func(ctx context.Context) (interface{}, error)
 // 	}
 // 	type fields struct {
+// 		m    sync.Map[string, *breaker]
 // 		opts []BreakerOption
 // 	}
 // 	type want struct {
@@ -147,6 +148,7 @@ package circuitbreaker
 // 		           fn:nil,
 // 		       },
 // 		       fields: fields {
+// 		           m:nil,
 // 		           opts:nil,
 // 		       },
 // 		       want: want{},
@@ -171,6 +173,7 @@ package circuitbreaker
 // 		           fn:nil,
 // 		           },
 // 		           fields: fields {
+// 		           m:nil,
 // 		           opts:nil,
 // 		           },
 // 		           want: want{},
@@ -202,6 +205,7 @@ package circuitbreaker
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			bm := &breakerManager{
+// 				m:    test.fields.m,
 // 				opts: test.fields.opts,
 // 			}
 //

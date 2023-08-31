@@ -16,11 +16,10 @@ package circuitbreaker
 import (
 	"context"
 	"reflect"
-	"sync"
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
-	valdsync "github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/internal/sync"
 )
 
 // NOTE: This variable is for observability package.
@@ -37,7 +36,7 @@ type CircuitBreaker interface {
 }
 
 type breakerManager struct {
-	m    valdsync.Map[string, *breaker]
+	m    sync.Map[string, *breaker]
 	opts []BreakerOption
 }
 

@@ -18,12 +18,12 @@
 package grpc
 
 import (
-	"sync"
 	"sync/atomic"
 	"unsafe"
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc/pool"
+	"github.com/vdaas/vald/internal/sync"
 )
 
 type grpcConns struct {

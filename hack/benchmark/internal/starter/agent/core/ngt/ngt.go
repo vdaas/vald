@@ -19,7 +19,6 @@ package ngt
 
 import (
 	"context"
-	"sync"
 	"testing"
 	"time"
 
@@ -27,6 +26,7 @@ import (
 	"github.com/vdaas/vald/internal/client/v1/client/vald"
 	"github.com/vdaas/vald/internal/info"
 	"github.com/vdaas/vald/internal/runner"
+	"github.com/vdaas/vald/internal/sync"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/config"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/usecase"
 )

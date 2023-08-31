@@ -18,13 +18,11 @@ import (
 	"fmt"
 	"math"
 	"math/big"
-	"sync"
 	"sync/atomic"
 	"time"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
-	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/info"
 	"github.com/vdaas/vald/internal/log"
@@ -35,7 +33,8 @@ import (
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/slices"
-	valdsync "github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/internal/sync/errgroup"
 )
 
 type Aggregator interface {
@@ -366,7 +365,7 @@ type valdStdAggr struct {
 	dch     chan DistPayload
 	closed  atomic.Bool
 	maxDist atomic.Value
-	visited valdsync.Map[string, any]
+	visited sync.Map[string, any]
 	result  []*payload.Object_Distance
 	cancel  context.CancelFunc
 }
@@ -496,7 +495,7 @@ type valdPairingHeapAggr struct {
 	num     int
 	ph      *PairingHeap
 	mu      sync.Mutex
-	visited valdsync.Map[string, any]
+	visited sync.Map[string, any]
 	result  []*payload.Object_Distance
 }
 

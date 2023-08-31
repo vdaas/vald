@@ -28,10 +28,10 @@ import (
 	"github.com/leanovate/gopter"
 	"github.com/leanovate/gopter/commands"
 	"github.com/leanovate/gopter/gen"
+	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
-	"github.com/vdaas/vald/pkg/agent/core/ngt/model"
 )
 
 type ngtSystem struct {
@@ -42,7 +42,7 @@ type ngtSystem struct {
 
 type resultContainer struct {
 	err       error
-	results   []model.Distance
+	results   *payload.Search_Response
 	vector    []float32
 	timestamp int64
 	exists    bool

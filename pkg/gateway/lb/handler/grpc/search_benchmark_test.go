@@ -18,15 +18,15 @@ import (
 	"flag"
 	"fmt"
 	"runtime"
-	"sync"
 	"sync/atomic"
 	"testing"
 	"time"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
-	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/rand"
 	"github.com/vdaas/vald/internal/slices"
+	"github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/internal/test/data/strings"
 )
 
@@ -116,7 +116,7 @@ func doSearchWithAggregator(ctx context.Context, k, concurrency int, anew func(n
 	f func(ctx context.Context) *payload.Search_Response,
 ) (res *payload.Search_Response, err error) {
 	eg, ectx := errgroup.New(ctx)
-	eg.Limitation(concurrency)
+	eg.SetLimit(concurrency)
 	aggr := anew(k, concurrency)
 	aggr.Start(ectx)
 	for i := 0; i < concurrency; i++ {

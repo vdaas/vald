@@ -22,11 +22,11 @@ import (
 	"reflect"
 	"sync/atomic"
 
-	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
+	"github.com/vdaas/vald/internal/sync/errgroup"
 )
 
 // JobFunc represents the function of a job that works in the worker.
@@ -133,7 +133,7 @@ func (w *worker) startJobLoop(ctx context.Context) <-chan error {
 	w.eg.Go(safety.RecoverFunc(func() (err error) {
 		defer close(ech)
 		eg, ctx := errgroup.New(ctx)
-		eg.Limitation(w.limitation)
+		eg.SetLimit(w.limitation)
 
 		limitation := make(chan struct{}, w.limitation)
 		defer close(limitation)

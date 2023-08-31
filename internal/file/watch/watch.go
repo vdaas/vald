@@ -19,13 +19,13 @@ package watch
 import (
 	"context"
 	"reflect"
-	"sync"
 
 	"github.com/fsnotify/fsnotify"
-	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/safety"
+	"github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/internal/sync/errgroup"
 )
 
 // Watcher is an interface that represents a file monitor.

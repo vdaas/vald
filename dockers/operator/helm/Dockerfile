@@ -100,6 +100,9 @@ COPY internal/log .
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/internal/conv
 COPY internal/conv .
 
+WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/internal/sync
+COPY internal/sync .
+
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/internal/strings
 COPY internal/strings .
 

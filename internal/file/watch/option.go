@@ -19,7 +19,7 @@ package watch
 import (
 	"context"
 
-	"github.com/vdaas/vald/internal/errgroup"
+	"github.com/vdaas/vald/internal/sync/errgroup"
 )
 
 type Option func(w *watch) error

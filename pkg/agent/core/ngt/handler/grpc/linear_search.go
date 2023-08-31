@@ -16,7 +16,6 @@ package grpc
 import (
 	"context"
 	"fmt"
-	"sync"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
@@ -30,6 +29,7 @@ import (
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/strings"
+	"github.com/vdaas/vald/internal/sync"
 	"go.opentelemetry.io/otel/attribute"
 )
 
@@ -67,10 +67,9 @@ func (s *server) LinearSearch(ctx context.Context, req *payload.Search_Request) 
 		}
 		return nil, err
 	}
-	res, err = toSearchResponse(
-		s.ngt.LinearSearch(
-			req.GetVector(),
-			req.GetConfig().GetNum()))
+	res, err = s.ngt.LinearSearch(
+		req.GetVector(),
+		req.GetConfig().GetNum())
 	if err != nil || res == nil {
 		var attrs []attribute.KeyValue
 		switch {
@@ -192,10 +191,9 @@ func (s *server) LinearSearchByID(ctx context.Context, req *payload.Search_IDReq
 		}
 		return nil, err
 	}
-	vec, dst, err := s.ngt.LinearSearchByID(
+	vec, res, err := s.ngt.LinearSearchByID(
 		uuid,
 		req.GetConfig().GetNum())
-	res, err = toSearchResponse(dst, err)
 	if err != nil || res == nil {
 		var attrs []attribute.KeyValue
 		switch {

@@ -20,13 +20,11 @@ package service
 import (
 	"context"
 	"reflect"
-	"sync"
 	"sync/atomic"
 	"time"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/config"
-	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/k8s"
 	mnode "github.com/vdaas/vald/internal/k8s/metrics/node"
@@ -37,7 +35,8 @@ import (
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/slices"
-	valdsync "github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/internal/sync/errgroup"
 )
 
 type Discoverer interface {
@@ -48,10 +47,10 @@ type Discoverer interface {
 
 type discoverer struct {
 	maxPods         int
-	nodes           valdsync.Map[string, *node.Node]
-	nodeMetrics     valdsync.Map[string, mnode.Node]
-	pods            valdsync.Map[string, *[]pod.Pod]
-	podMetrics      valdsync.Map[string, mpod.Pod]
+	nodes           sync.Map[string, *node.Node]
+	nodeMetrics     sync.Map[string, mnode.Node]
+	pods            sync.Map[string, *[]pod.Pod]
+	podMetrics      sync.Map[string, mpod.Pod]
 	podsByNode      atomic.Value
 	podsByNamespace atomic.Value
 	podsByName      atomic.Value
