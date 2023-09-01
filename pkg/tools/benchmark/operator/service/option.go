@@ -20,8 +20,8 @@ package service
 import (
 	"time"
 
-	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/sync/errgroup"
 )
 
 // Option represents the functional option for scenario struct.
