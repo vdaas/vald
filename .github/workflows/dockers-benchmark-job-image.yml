@@ -17,7 +17,7 @@ name: "Build docker image: benchmark-job"
 on:
   push:
     branches:
-      - master
+      - main
     tags:
       - "*.*.*"
       - "v*.*.*"
@@ -25,109 +25,58 @@ on:
       - "v*.*.*-*"
     paths:
       - ".github/actions/docker-build/actions.yaml"
+      - ".github/workflows/_docker-image.yaml"
       - ".github/workflows/dockers-benchmak-job-image.yml"
       - "go.mod"
       - "go.sum"
       - "internal/**"
       - "!internal/**/*_test.go"
       - "!internal/db/**"
-      - "!internal/k8s/**"
       - "apis/grpc/**"
+      - "pkg/benchmark/operator/**"
+      - "cmd/benchmark/operator/**"
       - "pkg/benchmark/job/**"
       - "cmd/benchmark/job/**"
-      - "dockers/benchmark/job/Dockerfile"
+      - "dockers/tools/benchmark/job/Dockerfile"
       - "versions/GO_VERSION"
-      - "versions/NGT_VERSION"
   pull_request:
     paths:
       - ".github/actions/docker-build/actions.yaml"
+      - ".github/workflows/_docker-image.yaml"
       - ".github/workflows/dockers-benchmak-job-image.yml"
       - "go.mod"
       - "go.sum"
       - "internal/**"
       - "!internal/**/*_test.go"
       - "!internal/db/**"
-      - "!internal/k8s/**"
       - "apis/grpc/**"
+      - "pkg/benchmark/operator/**"
+      - "cmd/benchmark/operator/**"
       - "pkg/benchmark/job/**"
       - "cmd/benchmark/job/**"
-      - "dockers/benchmark/job/Dockerfile"
+      - "dockers/tools/benchmark/job/Dockerfile"
       - "versions/GO_VERSION"
-      - "versions/NGT_VERSION"
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref != 'refs/heads/main' && github.ref || github.sha }}-${{ github.event_name }}
-  cancel-in-progress: true
+  pull_request_target:
+    paths:
+      - ".github/actions/docker-build/actions.yaml"
+      - ".github/workflows/_docker-image.yaml"
+      - ".github/workflows/dockers-benchmak-job-image.yml"
+      - "go.mod"
+      - "go.sum"
+      - "internal/**"
+      - "!internal/**/*_test.go"
+      - "!internal/db/**"
+      - "apis/grpc/**"
+      - "pkg/benchmark/operator/**"
+      - "cmd/benchmark/operator/**"
+      - "pkg/benchmark/job/**"
+      - "cmd/benchmark/job/**"
+      - "dockers/tools/benchmark/job/Dockerfile"
+      - "versions/GO_VERSION"
 
 jobs:
   build:
-    strategy:
-      max-parallel: 4
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: Setup QEMU
-        uses: docker/setup-qemu-action@v1
-        with:
-          platforms: all
-      - name: Setup Docker Buildx
-        id: buildx
-        uses: docker/setup-buildx-action@v1
-        with:
-          buildkitd-flags: "--debug"
-      - name: Login to DockerHub
-        uses: docker/login-action@v1
-        with:
-          username: ${{ secrets.DOCKERHUB_USER }}
-          password: ${{ secrets.DOCKERHUB_PASS }}
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v1
-        with:
-          registry: ghcr.io
-          username: ${{ secrets.PACKAGE_USER }}
-          password: ${{ secrets.PACKAGE_TOKEN }}
-      - name: Build and Publish
-        id: build_and_publish
-        uses: ./.github/actions/docker-build
-        with:
-          target: benchmark-job
-          builder: ${{ steps.buildx.outputs.name }}
-      - name: Initialize CodeQL
-        if: startsWith( github.ref, 'refs/tags/')
-        uses: github/codeql-action/init@v2
-      - name: Run vulnerability scanner (table)
-        if: startsWith( github.ref, 'refs/tags/')
-        uses: aquasecurity/trivy-action@master
-        with:
-          image-ref: "${{ steps.build_and_publish.outputs.IMAGE_NAME }}:${{ steps.build_and_publish.outputs.PRIMARY_TAG }}"
-          format: "table"
-      - name: Run vulnerability scanner (sarif)
-        if: startsWith( github.ref, 'refs/tags/')
-        uses: aquasecurity/trivy-action@master
-        with:
-          image-ref: "${{ steps.build_and_publish.outputs.IMAGE_NAME }}:${{ steps.build_and_publish.outputs.PRIMARY_TAG }}"
-          format: "template"
-          template: "@/contrib/sarif.tpl"
-          output: "trivy-results.sarif"
-      - name: Upload Trivy scan results to Security tab
-        if: startsWith( github.ref, 'refs/tags/')
-        uses: github/codeql-action/upload-sarif@v2
-        with:
-          sarif_file: "trivy-results.sarif"
-  slack:
-    name: Slack notification
-    needs: build
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' || startsWith( github.ref, 'refs/tags/')
-    steps:
-      - uses: technote-space/workflow-conclusion-action@v2
-        with:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - uses: 8398a7/action-slack@v3
-        with:
-          author_name: benchmark-job image build
-          status: ${{ env.WORKFLOW_CONCLUSION }}
-          only_mention_fail: channel
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_NOTIFY_WEBHOOK_URL }}
+    uses: ./.github/workflows/_docker-image.yaml
+    with:
+      target: benchmark-job
+    secrets: inherit
