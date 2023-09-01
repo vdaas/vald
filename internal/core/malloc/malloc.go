@@ -26,7 +26,6 @@ package malloc
 char* strerror2() {
 	return strerror(errno);
 }
-
 */
 import "C"
 
@@ -108,4 +107,8 @@ func GetMallocInfo() (*MallocInfo, error) {
 	default:
 		return nil, errors.ErrUnexpectedReturnCode(int(ret))
 	}
+}
+
+func MallocTrim() int {
+	return int(C.malloc_trim(C.size_t(0)))
 }
