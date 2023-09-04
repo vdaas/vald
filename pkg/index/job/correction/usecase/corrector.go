@@ -20,12 +20,17 @@ import (
 	"time"
 
 	"github.com/vdaas/vald/internal/client/v1/client/discoverer"
-	"github.com/vdaas/vald/internal/errgroup"
+	iconf "github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc"
+	"github.com/vdaas/vald/internal/net/grpc/interceptor/server/recover"
 	"github.com/vdaas/vald/internal/observability"
 	"github.com/vdaas/vald/internal/runner"
+	"github.com/vdaas/vald/internal/safety"
+	"github.com/vdaas/vald/internal/servers/server"
+	"github.com/vdaas/vald/internal/servers/starter"
+	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/pkg/index/job/correction/config"
 	"github.com/vdaas/vald/pkg/index/job/correction/service"
 )
@@ -34,6 +39,7 @@ type run struct {
 	eg            errgroup.Group
 	cfg           *config.Data
 	observability observability.Observability
+	server        starter.Server
 	corrector     service.Corrector
 }
 
@@ -85,6 +91,23 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		return nil, err
 	}
 
+	grpcServerOptions := []server.Option{
+		server.WithGRPCOption(
+			grpc.ChainUnaryInterceptor(recover.RecoverInterceptor()),
+			grpc.ChainStreamInterceptor(recover.RecoverStreamInterceptor()),
+		),
+	}
+
+	// For health check and metrics
+	srv, err := starter.New(starter.WithConfig(cfg.Server),
+		starter.WithGRPC(func(sc *iconf.Server) []server.Option {
+			return grpcServerOptions
+		}),
+	)
+	if err != nil {
+		return nil, err
+	}
+
 	corrector, err := service.New(cfg, discoverer)
 	if err != nil {
 		return nil, err
@@ -103,6 +126,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		eg:            eg,
 		cfg:           cfg,
 		observability: obs,
+		server:        srv,
 		corrector:     corrector,
 	}, nil
 }
@@ -119,38 +143,61 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 	// ctx, cancel := context.WithTimeout(ctx, time.Microsecond*10)
 	// defer cancel()
 
-	defer func() {
-		log.Info("fiding my pid to kill myself")
-		p, err := os.FindProcess(os.Getpid())
+	log.Info("starting servers")
+	ech := make(chan error, 3)
+	var oech, nech, sech <-chan error
+	r.eg.Go(safety.RecoverFunc(func() (err error) {
+		defer close(ech)
+		if r.observability != nil {
+			oech = r.observability.Start(ctx)
+		}
+		sech = r.server.ListenAndServe(ctx)
+		for {
+			select {
+			case <-ctx.Done():
+				return ctx.Err()
+			case err = <-oech:
+			case err = <-nech:
+			case err = <-sech:
+			}
+			if err != nil {
+				select {
+				case <-ctx.Done():
+					return ctx.Err()
+				case ech <- err:
+				}
+			}
+		}
+	}))
+
+	// main groutine to run the job
+	r.eg.Go(safety.RecoverFunc(func() (err error) {
+		defer func() {
+			log.Info("fiding my pid to kill myself")
+			p, err := os.FindProcess(os.Getpid())
+			if err != nil {
+				// using Fatal to avoid this process to be zombie
+				log.Fatalf("failed to find my pid to kill %v", err)
+				return
+			}
+
+			log.Info("sending SIGTERM to myself to stop this job")
+			if err := p.Signal(syscall.SIGTERM); err != nil {
+				log.Error(err)
+			}
+		}()
+
+		start := time.Now()
+		_, err = r.corrector.Start(ctx)
 		if err != nil {
-			// using Fatal to avoid this process to be zombie
-			log.Fatalf("failed to find my pid to kill %v", err)
-			return
+			log.Errorf("index correction process failed: %v", err)
+			return err
 		}
+		end := time.Since(start)
+		log.Infof("correction finished in %v", end)
+		return nil
+	}))
 
-		log.Info("sending SIGTERM to myself to stop this job")
-		if err := p.Signal(syscall.SIGTERM); err != nil {
-			log.Error(err)
-		}
-	}()
-
-	log.Info("starting index correction job")
-	if r.observability != nil {
-		_ = r.observability.Start(ctx) // TODO: listen this returned err channel
-	}
-
-	start := time.Now()
-	_, err := r.corrector.Start(ctx)
-	if err != nil {
-		log.Errorf("index correction process failed: %v", err)
-		return nil, err
-	}
-	end := time.Since(start)
-	log.Infof("correction finished in %v", end)
-
-	// this ech is just a placeholder to return. this is not a daemon but a job.
-	// so after returning, this process will be SIGTERMed by myself immediately.
-	ech := make(chan error)
 	return ech, nil
 }
 
