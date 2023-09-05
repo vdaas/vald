@@ -50,18 +50,18 @@ type Sizes struct {
 }
 
 type Total struct {
-	Type  string `xml:"fast,attr"`
+	Type  string `xml:"type,attr"`
 	Count int    `xml:"count,attr"`
 	Size  int    `xml:"size,attr"`
 }
 
 type System struct {
-	Type string `xml:"fast,attr"`
+	Type string `xml:"type,attr"`
 	Size int    `xml:"size,attr"`
 }
 
 type Aspace struct {
-	Type string `xml:"fast,attr"`
+	Type string `xml:"type,attr"`
 	Size int    `xml:"size,attr"`
 }
 
