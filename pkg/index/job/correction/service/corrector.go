@@ -103,22 +103,6 @@ func (c *correct) Start(ctx context.Context) (<-chan error, error) {
 	}
 	log.Info("correction finished successfully")
 
-	// ech := make(chan error, 100)
-	// c.eg.Go(safety.RecoverFunc(func() (err error) {
-	// 	defer close(ech)
-	// 	for {
-	// 		select {
-	// 		case <-ctx.Done():
-	// 			err = ctx.Err()
-	// 			if err != nil && err != context.Canceled {
-	// 				return err
-	// 			}
-	// 			return nil
-	// 		case err = <-dech:
-	// 			ech <- err
-	// 		}
-	// 	}
-	// }))
 	return dech, nil
 }
 
