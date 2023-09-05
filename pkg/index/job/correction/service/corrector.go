@@ -17,12 +17,14 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"os"
 	"sync"
 	"sync/atomic"
 
 	agent "github.com/vdaas/vald/apis/grpc/v1/agent/core"
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
+	"github.com/vdaas/vald/internal/cache/persistent"
 	"github.com/vdaas/vald/internal/client/v1/client/discoverer"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
@@ -47,14 +49,21 @@ type correct struct {
 	uuidsCount            uint32
 	uncommittedUUIDsCount uint32
 	checkedId             map[string]struct{} // TODO: use mmap if necessary
+	checkedIdPersistent   persistent.PCache
 	rwmu                  sync.RWMutex
 }
 
 func New(cfg *config.Data, discoverer discoverer.Client) (Corrector, error) {
+	p, err := persistent.NewPCache(os.TempDir())
+	if err != nil {
+		return nil, err
+	}
+
 	return &correct{
-		cfg:        cfg,
-		discoverer: discoverer,
-		checkedId:  make(map[string]struct{}),
+		cfg:                 cfg,
+		discoverer:          discoverer,
+		checkedId:           make(map[string]struct{}),
+		checkedIdPersistent: p,
 	}, nil
 }
 
@@ -285,9 +294,13 @@ func (c *correct) correctWithCache(ctx context.Context) (err error) {
 
 						// check if the index is already checked
 						id := res.GetVector().GetId()
-						c.rwmu.RLock()
-						_, ok := c.checkedId[id]
-						c.rwmu.RUnlock()
+						// c.rwmu.RLock()
+						// _, ok := c.checkedId[id]
+						// c.rwmu.RUnlock()
+						_, ok, err := c.checkedIdPersistent.Get(id)
+						if err != nil {
+							return err
+						}
 						if ok {
 							// already checked index
 							return nil
@@ -308,9 +321,13 @@ func (c *correct) correctWithCache(ctx context.Context) (err error) {
 							return nil // continue other processes
 						}
 
-						c.rwmu.Lock()
-						c.checkedId[id] = struct{}{}
-						c.rwmu.Unlock()
+						// c.rwmu.Lock()
+						// c.checkedId[id] = struct{}{}
+						// c.rwmu.Unlock()
+						err = c.checkedIdPersistent.Set(id, struct{}{})
+						if err != nil {
+							return err
+						}
 
 						return nil
 					})
