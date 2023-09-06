@@ -303,15 +303,20 @@ func (c *correct) correctWithCache(ctx context.Context) (err error) {
 
 						// check if the index is already checked
 						id := res.GetVector().GetId()
-						// c.rwmu.RLock()
-						// _, ok := c.checkedId[id]
-						// c.rwmu.RUnlock()
-						c.rwmu.RLock()
-						_, ok, err := c.checkedIdPersistent.Get(id)
-						c.rwmu.RUnlock()
-						if err != nil {
-							return err
+
+						// DEBUG: configで切り替え
+						ok := false
+						if c.cfg.Corrector.PCache {
+							_, ok, err = c.checkedIdPersistent.Get(id)
+							if err != nil {
+								return err
+							}
+						} else {
+							c.rwmu.RLock()
+							_, ok = c.checkedId[id]
+							c.rwmu.RUnlock()
 						}
+
 						if ok {
 							// already checked index
 							return nil
@@ -332,14 +337,16 @@ func (c *correct) correctWithCache(ctx context.Context) (err error) {
 							return nil // continue other processes
 						}
 
-						// c.rwmu.Lock()
-						// c.checkedId[id] = struct{}{}
-						// c.rwmu.Unlock()
-						c.rwmu.Lock()
-						err = c.checkedIdPersistent.Set(id, struct{}{})
-						c.rwmu.Unlock()
-						if err != nil {
-							return err
+						// DEBUG: Testing pcache
+						if c.cfg.Corrector.PCache {
+							err = c.checkedIdPersistent.Set(id, struct{}{})
+							if err != nil {
+								return err
+							}
+						} else {
+							c.rwmu.Lock()
+							c.checkedId[id] = struct{}{}
+							c.rwmu.Unlock()
 						}
 
 						return nil
