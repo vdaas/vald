@@ -2,10 +2,12 @@ package persistent
 
 import (
 	"encoding/gob"
+	"io"
 	"io/fs"
 	"os"
 	"sync"
 
+	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/file"
 	"github.com/zeebo/xxh3"
 )
@@ -119,7 +121,11 @@ func (s *shard) Get(key string) (data struct{}, ok bool, err error) {
 
 	err = gob.NewDecoder(f).Decode(&s.m)
 	if err != nil {
-		return
+		// empty shard file returns EOF
+		if errors.Is(err, io.EOF) {
+			return data, false, nil
+		}
+		return data, false, err
 	}
 
 	data, ok = s.m[key]
