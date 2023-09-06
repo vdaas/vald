@@ -38,6 +38,7 @@ type pcache struct {
 type shard struct {
 	path string
 	dl   int
+	l    int
 	mu   sync.Mutex
 	perm fs.FileMode
 }
@@ -119,7 +120,7 @@ func (s *shard) Get(key string) (data struct{}, ok bool, err error) {
 	}
 	defer f.Close()
 
-	m := make(map[string]struct{}, 1000)
+	m := make(map[string]struct{}, s.l)
 	err = gob.NewDecoder(f).Decode(&m)
 	if err != nil {
 		// empty shard file returns EOF
@@ -146,7 +147,7 @@ func (s *shard) Set(key string, data struct{}) (err error) {
 	}
 	defer f.Close()
 
-	m := make(map[string]struct{}, s.dl)
+	m := make(map[string]struct{}, s.l)
 	if s.dl != 0 {
 		err = gob.NewDecoder(f).Decode(&m)
 		if err != nil {
@@ -174,6 +175,7 @@ func (s *shard) Set(key string, data struct{}) (err error) {
 		return err
 	}
 	s.dl = int(fi.Size())
+	s.l++
 
 	return f.Sync()
 }
@@ -188,7 +190,7 @@ func (s *shard) Delete(key string) (err error) {
 	}
 	defer f.Close()
 
-	m := make(map[string]struct{}, s.dl)
+	m := make(map[string]struct{}, s.l)
 	err = gob.NewDecoder(f).Decode(&m)
 	if err != nil {
 		return
@@ -217,6 +219,7 @@ func (s *shard) Delete(key string) (err error) {
 		return err
 	}
 	s.dl = int(fi.Size())
+	s.l--
 
 	return f.Sync()
 }
