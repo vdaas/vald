@@ -297,7 +297,9 @@ func (c *correct) correctWithCache(ctx context.Context) (err error) {
 						// c.rwmu.RLock()
 						// _, ok := c.checkedId[id]
 						// c.rwmu.RUnlock()
+						c.rwmu.RLock()
 						_, ok, err := c.checkedIdPersistent.Get(id)
+						c.rwmu.RUnlock()
 						if err != nil {
 							return err
 						}
@@ -324,7 +326,9 @@ func (c *correct) correctWithCache(ctx context.Context) (err error) {
 						// c.rwmu.Lock()
 						// c.checkedId[id] = struct{}{}
 						// c.rwmu.Unlock()
+						c.rwmu.Lock()
 						err = c.checkedIdPersistent.Set(id, struct{}{})
+						c.rwmu.Unlock()
 						if err != nil {
 							return err
 						}
