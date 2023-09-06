@@ -26,8 +26,10 @@ type Shard interface {
 	Close() error
 }
 
-var _ PCache = (*pcache)(nil)
-var _ Shard = (*shard)(nil)
+var (
+	_ PCache = (*pcache)(nil)
+	_ Shard  = (*shard)(nil)
+)
 
 type pcache struct {
 	shards [slen]Shard
