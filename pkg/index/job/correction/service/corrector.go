@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 	"sync"
 	"sync/atomic"
 
@@ -27,6 +28,7 @@ import (
 	"github.com/vdaas/vald/internal/cache/persistent"
 	"github.com/vdaas/vald/internal/client/v1/client/discoverer"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/file"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/grpc/codes"
@@ -39,6 +41,7 @@ import (
 
 type Corrector interface {
 	Start(ctx context.Context) (<-chan error, error)
+	PreStop(ctx context.Context) error
 }
 
 type correct struct {
@@ -54,7 +57,9 @@ type correct struct {
 }
 
 func New(cfg *config.Data, discoverer discoverer.Client) (Corrector, error) {
-	p, err := persistent.NewPCache(os.TempDir())
+	p := filepath.Join(os.TempDir(), "pcache")
+	file.MkdirAll(p, os.ModePerm)
+	pc, err := persistent.NewPCache(p)
 	if err != nil {
 		return nil, err
 	}
@@ -63,7 +68,7 @@ func New(cfg *config.Data, discoverer discoverer.Client) (Corrector, error) {
 		cfg:                 cfg,
 		discoverer:          discoverer,
 		checkedId:           make(map[string]struct{}),
-		checkedIdPersistent: p,
+		checkedIdPersistent: pc,
 	}, nil
 }
 
@@ -95,7 +100,6 @@ func (c *correct) Start(ctx context.Context) (<-chan error, error) {
 		return true
 	})
 
-	// FIXME: This blocks. Should we run with errorgroup?
 	log.Info("starting correction...")
 	if c.cfg.Corrector.UseCache {
 		log.Info("with cache...")
@@ -113,6 +117,11 @@ func (c *correct) Start(ctx context.Context) (<-chan error, error) {
 	log.Info("correction finished successfully")
 
 	return dech, nil
+}
+
+func (c *correct) PreStop(_ context.Context) error {
+	log.Info("removing persistent cache files...")
+	return c.checkedIdPersistent.Close()
 }
 
 func (c *correct) correct(ctx context.Context) (err error) {

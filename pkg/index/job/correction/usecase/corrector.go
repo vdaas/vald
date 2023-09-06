@@ -201,7 +201,8 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 	return ech, nil
 }
 
-func (*run) PreStop(context.Context) error {
+func (r *run) PreStop(ctx context.Context) error {
+	r.corrector.PreStop(ctx)
 	return nil
 }
 
