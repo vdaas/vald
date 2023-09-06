@@ -17,6 +17,12 @@ func TestPersistentCache(t *testing.T) {
 	len := 4096
 
 	for i := 0; i < len; i++ {
+		_, ok, err := pc.Get(fmt.Sprint(i))
+		require.NoError(t, err)
+		require.False(t, ok, fmt.Sprintf("i: %d", i))
+	}
+
+	for i := 0; i < len; i++ {
 		err := pc.Set(fmt.Sprint(i), struct{}{})
 		require.NoError(t, err)
 	}
