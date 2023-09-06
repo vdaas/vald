@@ -130,8 +130,6 @@ func (s *shard) Get(key string) (data struct{}, ok bool, err error) {
 
 	data, ok = m[key]
 
-	m = nil // TODO: clear
-
 	return data, ok, nil
 }
 
@@ -210,7 +208,6 @@ func (s *shard) Delete(key string) (err error) {
 	if err != nil {
 		return err
 	}
-	m = nil // TODO: use clear after 1.21
 
 	fi, err := f.Stat()
 	if err != nil {
