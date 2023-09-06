@@ -36,7 +36,6 @@ type pcache struct {
 type shard struct {
 	path string
 	dl   int
-	m    map[string]struct{}
 	mu   sync.Mutex
 	perm fs.FileMode
 }
@@ -103,7 +102,6 @@ func newShard(basePath string) (*shard, error) {
 	defer f.Close()
 
 	return &shard{
-		m:    make(map[string]struct{}),
 		perm: 0600,
 		path: f.Name(),
 	}, nil
@@ -119,7 +117,8 @@ func (s *shard) Get(key string) (data struct{}, ok bool, err error) {
 	}
 	defer f.Close()
 
-	err = gob.NewDecoder(f).Decode(&s.m)
+	m := make(map[string]struct{}, 1000)
+	err = gob.NewDecoder(f).Decode(&m)
 	if err != nil {
 		// empty shard file returns EOF
 		if errors.Is(err, io.EOF) {
@@ -128,9 +127,9 @@ func (s *shard) Get(key string) (data struct{}, ok bool, err error) {
 		return data, false, err
 	}
 
-	data, ok = s.m[key]
+	data, ok = m[key]
 
-	s.m = nil // TODO: clear
+	m = nil // TODO: clear
 
 	return data, ok, nil
 }
@@ -145,9 +144,25 @@ func (s *shard) Set(key string, data struct{}) (err error) {
 	}
 	defer f.Close()
 
-	s.m[key] = data
+	m := make(map[string]struct{}, s.dl)
+	if s.dl != 0 {
+		err = gob.NewDecoder(f).Decode(&m)
+		if err != nil {
+			return err
+		}
+	}
 
-	err = gob.NewEncoder(f).Encode(s.m)
+	m[key] = data
+
+	err = f.Truncate(0)
+	if err != nil {
+		return err
+	}
+	_, err = f.Seek(0, 0)
+	if err != nil {
+		return err
+	}
+	err = gob.NewEncoder(f).Encode(m)
 	if err != nil {
 		return err
 	}
@@ -171,12 +186,13 @@ func (s *shard) Delete(key string) (err error) {
 	}
 	defer f.Close()
 
-	err = gob.NewDecoder(f).Decode(&s.m)
+	m := make(map[string]struct{}, s.dl)
+	err = gob.NewDecoder(f).Decode(&m)
 	if err != nil {
 		return
 	}
 
-	delete(s.m, key)
+	delete(m, key)
 
 	// Write the updated data to the file
 	err = f.Truncate(0)
@@ -188,11 +204,11 @@ func (s *shard) Delete(key string) (err error) {
 		return err
 	}
 
-	err = gob.NewEncoder(f).Encode(s.m)
+	err = gob.NewEncoder(f).Encode(m)
 	if err != nil {
 		return err
 	}
-	s.m = nil // TODO: use clear after 1.21
+	m = nil // TODO: use clear after 1.21
 
 	fi, err := f.Stat()
 	if err != nil {
@@ -206,8 +222,6 @@ func (s *shard) Delete(key string) (err error) {
 func (s *shard) Close() error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-
-	s.m = nil
 
 	if err := os.Remove(s.path); err != nil {
 		return err

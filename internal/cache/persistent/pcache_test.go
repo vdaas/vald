@@ -34,6 +34,11 @@ func TestPersistentCache(t *testing.T) {
 	}
 
 	for i := 0; i < len; i++ {
+		err := pc.Set(fmt.Sprint(i), struct{}{})
+		require.NoError(t, err)
+	}
+
+	for i := 0; i < len; i++ {
 		err := pc.Delete(fmt.Sprint(i))
 		require.NoError(t, err)
 	}
