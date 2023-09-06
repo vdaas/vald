@@ -102,7 +102,11 @@ func (c *correct) Start(ctx context.Context) (<-chan error, error) {
 
 	log.Info("starting correction...")
 	if c.cfg.Corrector.UseCache {
-		log.Info("with cache...")
+		if c.cfg.Corrector.PCache {
+			log.Info("with persistent cache...")
+		} else {
+			log.Info("with in-memory cache...")
+		}
 		if err := c.correctWithCache(ctx); err != nil {
 			log.Errorf("there's some errors while correction: %v", err)
 			return nil, err
