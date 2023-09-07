@@ -47,6 +47,10 @@ outputs:
   IMAGE_TAGS:
     description: "Specifies E2E target image tags"
     value: ${{ steps.specify_container_versions.outputs.IMAGE_TAGS }}
+  DEFAULT_IMAGE_TAG:
+    description: "Default E2E target image tag"
+    value: ${{ steps.determine_tag_name.outputs.DEFAULT_TAG }}
+
 runs:
   using: "composite"
   steps:

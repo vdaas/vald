@@ -157,6 +157,7 @@ jobs:
         id: deploy_vald
         uses: ./.github/actions/e2e-deploy-vald
         with:
+          default_image_tag: ${{ steps.setup_e2e.outputs.DEFAULT_IMAGE_TAG }}
           helm_extra_options: ${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }}
           values: .github/helm/values/values-lb.yaml
           wait_for_selector: app=vald-lb-gateway

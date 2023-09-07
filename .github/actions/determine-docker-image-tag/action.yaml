@@ -20,6 +20,9 @@ outputs:
   PRIMARY_TAG:
     description: "Primary tag"
     value: ${{ steps.determine_tag_name.outputs.PRIMARY_TAG }}
+  DEFAULT_TAG:
+    description: "default tag. Tag to be used if the primary tag does not exist"
+    value: ${{ steps.determine_tag_name.outputs.DEFAULT_TAG }}
 
 runs:
   using: "composite"
@@ -28,6 +31,7 @@ runs:
       shell: bash
       run: |
         echo "GITHUB_REF $GITHUB_REF"
+        echo "GITHUB_BASE_REF $GITHUB_BASE_REF"
         echo "GITHUB_EVENT_PATH $GITHUB_EVENT_PATH"
         echo "GITHUB_EVENT_NAME ${{ github.event_name }}"
         echo "GITHUB_EVENT_NUMBER  ${{ github.event.number }}"
@@ -38,20 +42,40 @@ runs:
       run: |
         if [[ "$GITHUB_REF" =~ ^refs/tags/.* ]]; then
           tag_name=`echo $GITHUB_REF | sed -e 's:^refs/tags/::'`
+          echo "${tag_name}" > versions/VALD_VERSION
+
           primary_tag="${tag_name}"
-        elif [ "${{ github.event_name }}" = "pull_request" ]; then
+          default_tag="${tag_name}"
+        elif [[ "${{ github.event_name }}" = "pull_request" || "${{ github.event_name }}" = "pull_request_target" ]]; then
           pr_num=`cat $GITHUB_EVENT_PATH | jq -r ".number"`
           echo "PR-${pr_num}" > versions/VALD_VERSION
+
           primary_tag="pr-${pr_num}"
-        elif [ "${{ github.event_name }}" = "pull_request_target" ]; then
-          pr_num=`cat $GITHUB_EVENT_PATH | jq -r ".number"`
-          echo "PR-${pr_num}" > versions/VALD_VERSION
-          primary_tag="pr-${pr_num}"
+          default_tag="nightly"
+
+          # For pull request to the release branch, use the release branch latest tag as the default tag (vx.x).
+          # This is only set if the event that triggers the workflow execution is pull_request or pull_request_target.
+          if [[ "$GITHUB_BASE_REF" =~ ^release/v([0-9]+)\.([0-9]+)$ ]]; then
+            tag_name=`echo $GITHUB_BASE_REF | sed -e 's:^release/::'`
+            default_tag="${tag_name}"
+          fi
         elif [ "$GITHUB_REF" = "refs/heads/main" ]; then
           echo "nightly" > versions/VALD_VERSION
+
           primary_tag="nightly"
+          default_tag="nightly"
+        elif [[ "$GITHUB_REF" =~ ^refs/heads/release/v([0-9]+)\.([0-9]+)$ ]]; then
+          tag_name=`echo $GITHUB_REF | sed -e 's:^refs/heads/release/::'`
+          echo "${tag_name}" > versions/VALD_VERSION
+
+          primary_tag="${tag_name}"
+          default_tag="${tag_name}"
         else
           primary_tag="unknown"
+          default_tag="unknown"
         fi
+
         echo "PRIMARY_TAG is determined: ${primary_tag}"
+        echo "DEFAULT_TAG is determined: ${default_tag}"
         echo "PRIMARY_TAG=${primary_tag}" >> $GITHUB_OUTPUT
+        echo "DEFAULT_TAG=${default_tag}" >> $GITHUB_OUTPUT
