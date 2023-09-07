@@ -46,7 +46,7 @@ spec:
         app.kubernetes.io/instance: release-name
         app.kubernetes.io/component: gateway-lb
       annotations:
-        checksum/configmap: 4017f4ca9781cdc35c738fc95d1350bce4a1bbf2e9bdbc484d8d1f51181a85c4
+        checksum/configmap: 225c9643f78e0fee642d37b0033d1f8ac027d26e7803c6bcf58d9b5e80a932a4
         profefe.com/enable: "true"
         profefe.com/port: "6060"
         profefe.com/service: vald-lb-gateway
