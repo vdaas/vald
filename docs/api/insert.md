@@ -109,11 +109,11 @@ Here are some common reason and how to resolve of each error.
 
 | name              | common reason                                                                                            | how to resolve                                            |
 | :---------------- | :------------------------------------------------------------------------------------------------------- | :-------------------------------------------------------- |
-| CANCELLED         | executed cancel() of rpc from client/server side or something network problems between client and server | check your client code and fix if needed.                 |
-| INVALID_ARGUMENT  | dimension of request vector is NOT same as Vald Agent's config or requested vector's ID is ""            | check Agent config and fix request config or Agent config |
+| CANCELLED         | executed cancel() of rpc from client/server side or something network problems between client and server | Check the code, especially around timeout and connection management and fix if needed.                 |
+| INVALID_ARGUMENT  | dimension of request vector is NOT same as Vald Agent's config or requested vector's ID is empty or some request payload is invalid.           | check Agent config and request payload and fix request payload or Agent config |
 | DEADLINE_EXCEEDED | RPC timeout setting is too short on client or server side                                                | check timeout setting and fix if needed                   |
 | ALREADY_EXISTS    | request ID is already inserted                                                                           | change request ID                                         |
-| INTERNAL          | target Vald cluster has some critical error                                                              | check target Vald cluster at first                        |
+| INTERNAL          | target Vald cluster or network route has some critical error                                                              | check target Vald cluster at first and check network route including ingress as second                       |
 
 ## StreamInsert RPC
 
