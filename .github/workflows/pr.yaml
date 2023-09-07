@@ -1,0 +1,56 @@
+name: "Run backport PR creation"
+on:
+  pull_request:
+    types:
+      - "labeled"
+
+jobs:
+  dump-contexts-to-log:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.action == 'labeled' && startsWith( github.event.label.name, 'actions/backport/' ) }} # e.g.) actions/backport/v1.7
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/dump-context
+
+  create:
+    runs-on: ubuntu-latest
+    needs: [dump-contexts-to-log]
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Set Git config
+        run: |
+          git config --global --add safe.directory ${GITHUB_WORKSPACE}
+
+      - name: Set Github context
+        id: set_context
+        run: |
+          RELEASE_BASE=`echo "${HOOKED_LABEL_NAME}" | sed -e "s:^${TARGET_LABEL_NAME_PREFIX}::"` # e.g) vx.x
+          RELEASE_BRANCH_NAME=release/${RELEASE_BASE}                                            # e.g) release/vx.x
+          BACKPORT_BRANCH_NAME=backport/${RELEASE_BASE}/${GITHUB_HEAD_REF}                       # e.g) backport/vx.x/{current branch name}
+
+          echo "RELEASE_BASE=${RELEASE_BASE}"                  >> $GITHUB_OUTPUT
+          echo "RELEASE_BRANCH_NAME=${RELEASE_BRANCH_NAME}"    >> $GITHUB_OUTPUT
+          echo "BACKPORT_BRANCH_NAME=${BACKPORT_BRANCH_NAME}"  >> $GITHUB_OUTPUT
+
+          echo "${RELEASE_BASE}"
+          echo "${RELEASE_BRANCH_NAME}"
+          echo "${BACKPORT_BRANCH_NAME}"
+        env:
+          TARGET_LABEL_NAME_PREFIX: 'actions/backport/'
+          HOOKED_LABEL_NAME: ${{ github.event.label.name }}
+
+      - name: Create PR
+        run: |
+          git checkout -b ${BACKPORT_BRANCH_NAME}
+          git push origin ${BACKPORT_BRANCH_NAME}
+          gh pr create --base ${RELEASE_BRANCH_NAME} \
+                       --title "Backport to release/${RELEASE_BASE}" \
+                       --body ""
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_BASE: ${{ steps.set_context.outputs.RELEASE_BASE }}
+          RELEASE_BRANCH_NAME: ${{ steps.set_context.outputs.RELEASE_BRANCH_NAME }}
+          BACKPORT_BRANCH_NAME: ${{ steps.set_context.outputs.BACKPORT_BRANCH_NAME }}
