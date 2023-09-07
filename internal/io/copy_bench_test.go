@@ -82,6 +82,15 @@ func BenchmarkValdIOCopy(b *testing.B) {
 	}
 }
 
+func BenchmarkValdIOCopyBuffer(b *testing.B) {
+	c := NewCopier(bufferLength)
+	for i := 0; i < b.N; i++ {
+		w := &writer{}
+		r := &reader{len: readerLength}
+		c.CopyBuffer(w, r, nil)
+	}
+}
+
 func BenchmarkStandardIOCopyParallel(b *testing.B) {
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
@@ -110,6 +119,17 @@ func BenchmarkValdIOCopyParallel(b *testing.B) {
 			w := &writer{}
 			r := &reader{len: readerLength}
 			c.Copy(w, r)
+		}
+	})
+}
+
+func BenchmarkValdIOCopyBufferParallel(b *testing.B) {
+	c := NewCopier(bufferLength)
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			w := &writer{}
+			r := &reader{len: readerLength}
+			c.CopyBuffer(w, r, nil)
 		}
 	})
 }
