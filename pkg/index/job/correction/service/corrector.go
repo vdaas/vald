@@ -249,7 +249,6 @@ func (c *correct) correctWithCache(ctx context.Context) (err error) {
 
 	if err := c.discoverer.GetClient().OrderedRange(ctx, c.agentAddrs,
 		func(ctx context.Context, addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
-
 			// DEBUG:
 			tmpSet := make(map[string]struct{})
 			// ~DEBUG:
