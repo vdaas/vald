@@ -15,7 +15,6 @@
 #
 name: "Setup E2E environment"
 description: "A action to set up the environment for executing E2E test"
-
 inputs:
   require_libhdf5:
     description: "If libhdf5 is not required, set this to false"
@@ -40,11 +39,7 @@ inputs:
   target_images:
     description: "Image names"
     required: false
-    default: "vdaas/vald-agent-ngt \
-      vdaas/vald-discoverer-k8s \
-      vdaas/vald-lb-gateway \
-      vdaas/vald-manager-index"
-
+    default: "vdaas/vald-agent-ngt vdaas/vald-discoverer-k8s vdaas/vald-lb-gateway vdaas/vald-manager-index"
 outputs:
   HELM_EXTRA_OPTIONS:
     description: "Helm extra options that specifies E2E target image tags"
@@ -52,7 +47,6 @@ outputs:
   IMAGE_TAGS:
     description: "Specifies E2E target image tags"
     value: ${{ steps.specify_container_versions.outputs.IMAGE_TAGS }}
-
 runs:
   using: "composite"
   steps:
@@ -62,40 +56,33 @@ runs:
       run: |
         sudo apt-get update
         sudo apt-get install -y libhdf5-dev
-
     - name: Setup Go environment
       if: ${{ inputs.require_go == 'true' }}
       uses: ./.github/actions/setup-go
-
     - name: Setup Helm environment
       if: ${{ inputs.require_helm == 'true' }}
       uses: ./.github/actions/setup-helm
-
     - name: Wait for target Docker images
       if: startsWith( github.ref, 'refs/tags/')
       uses: ./.github/actions/wait-for-docker-image
       with:
         images: ${{ inputs.target_images }}
-
     - name: Determine Docker image tag
       id: determine_tag_name
       uses: ./.github/actions/determine-docker-image-tag
-
     - name: Specify container versions
       id: specify_container_versions
       uses: ./.github/actions/detect-docker-image-tags
       with:
         tag_name: ${{ steps.determine_tag_name.outputs.PRIMARY_TAG }}
         images: ${{ inputs.target_images }}
-
     - uses: ./.github/actions/setup-k3d
       if: ${{ inputs.require_k3d == 'true' }}
       with:
         agents: 3
         ingress_port: ${{ inputs.ingress_port }}
         options: "--image docker.io/rancher/k3s:latest"
-
     - name: Check Kubernetes cluster
       shell: bash
       run: |
-        kubectl cluster-info
+        kubectl cluster-info dump
