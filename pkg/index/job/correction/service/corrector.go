@@ -19,6 +19,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"runtime"
 	"sync"
 	"sync/atomic"
 
@@ -287,6 +288,7 @@ func (c *correct) correctWithCache(ctx context.Context) (err error) {
 					delete(tmpSet, k)
 				}
 				tmpSet = nil
+				runtime.GC()
 				// ~DEBUG:
 
 				log.Infof("correction finished for agent %s", addr)
