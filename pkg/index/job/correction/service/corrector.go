@@ -25,6 +25,7 @@ import (
 	agent "github.com/vdaas/vald/apis/grpc/v1/agent/core"
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
+	"github.com/vdaas/vald/internal/cache/bbolt"
 	"github.com/vdaas/vald/internal/cache/persistent"
 	"github.com/vdaas/vald/internal/client/v1/client/discoverer"
 	"github.com/vdaas/vald/internal/errors"
@@ -53,6 +54,7 @@ type correct struct {
 	uncommittedUUIDsCount uint32
 	checkedId             map[string]struct{} // TODO: use mmap if necessary
 	checkedIdPersistent   persistent.PCache
+	checkedIdBbolt        *bbolt.Bbolt
 	rwmu                  sync.RWMutex
 }
 
@@ -64,11 +66,20 @@ func New(cfg *config.Data, discoverer discoverer.Client) (Corrector, error) {
 		return nil, err
 	}
 
+	d := filepath.Join(os.TempDir(), "bbolt")
+	file.MkdirAll(d, os.ModePerm)
+	p = filepath.Join(d, "checkedid.db")
+	b, err := bbolt.New(p)
+	if err != nil {
+		return nil, err
+	}
+
 	return &correct{
 		cfg:                 cfg,
 		discoverer:          discoverer,
 		checkedId:           make(map[string]struct{}),
 		checkedIdPersistent: pc,
+		checkedIdBbolt:      b,
 	}, nil
 }
 
@@ -125,7 +136,9 @@ func (c *correct) Start(ctx context.Context) (<-chan error, error) {
 
 func (c *correct) PreStop(_ context.Context) error {
 	log.Info("removing persistent cache files...")
-	return c.checkedIdPersistent.Close()
+	err1 := c.checkedIdPersistent.Close()
+	err2 := c.checkedIdBbolt.Close()
+	return errors.Join(err1, err2)
 }
 
 func (c *correct) correct(ctx context.Context) (err error) {
@@ -308,10 +321,10 @@ func (c *correct) correctWithCache(ctx context.Context) (err error) {
 						// check if the index is already checked
 						id := res.GetVector().GetId()
 
-						// DEBUG: configで切り替え
 						ok := false
 						if c.cfg.Corrector.PCache {
-							_, ok, err = c.checkedIdPersistent.Get(id)
+							// _, ok, err = c.checkedIdPersistent.Get(id)
+							_, ok, err = c.checkedIdBbolt.Get(id)
 							if err != nil {
 								return err
 							}
@@ -343,7 +356,8 @@ func (c *correct) correctWithCache(ctx context.Context) (err error) {
 
 						// DEBUG: Testing pcache
 						if c.cfg.Corrector.PCache {
-							err = c.checkedIdPersistent.Set(id, struct{}{})
+							// err = c.checkedIdPersistent.Set(id, struct{}{})
+							err = c.checkedIdBbolt.Set(id, nil)
 							if err != nil {
 								return err
 							}
