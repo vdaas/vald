@@ -36,8 +36,8 @@ func New(filepath string) (*Bbolt, error) {
 
 func (b *Bbolt) Set(key string, val []byte) error {
 	if err := b.db.Update(func(tx *bolt.Tx) error {
-		b := tx.Bucket(val)
-		err := b.Put([]byte(key), nil)
+		b := tx.Bucket([]byte(bucket))
+		err := b.Put([]byte(key), val)
 		return err
 	}); err != nil {
 		return err
@@ -50,7 +50,13 @@ func (b *Bbolt) Get(key string) ([]byte, bool, error) {
 	var val []byte
 	if err := b.db.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(bucket))
-		copy(val, b.Get([]byte(key)))
+		ret := b.Get([]byte(key))
+		if ret == nil {
+			// key not found
+			return nil
+		}
+		val = make([]byte, len(ret))
+		copy(val, ret)
 		return nil
 	}); err != nil {
 		return nil, false, err
