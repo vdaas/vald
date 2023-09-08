@@ -33,6 +33,8 @@ jobs:
 
   semver-auto:
     runs-on: ubuntu-latest
+    outputs:
+      RELEASE_TAG: ${{ steps.upgrade_semver.outputs.RELEASE_TAG }}
     steps:
       - uses: actions/checkout@v3
         with:
@@ -54,6 +56,7 @@ jobs:
           echo "${RELEASE_KIND}"
 
       - name: Upgrade semver
+        id: upgrade_semver
         if: ${{ steps.set_context.outputs.RELEASE_KIND != '' }}
         env:
           RELEASE_BRANCH_NAME: ${{ steps.set_context.outputs.RELEASE_BRANCH_NAME }}
@@ -89,6 +92,8 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/vdaas/vald/vald-ci-container:${{ needs.detect-ci-container.outputs.TAG_NAME }}
+    env:
+      RELEASE_TAG: ${{ needs.semver-auto.outputs.RELEASE_TAG }}
     steps:
       - uses: actions/checkout@v3
         with:
@@ -103,8 +108,43 @@ jobs:
           LAST_COMMIT_MESSAGE=`git log --pretty=format:%s -1`
           PR_NUM=`echo "${LAST_COMMIT_MESSAGE}" | grep -o "#[[:digit:]]\+" | sed -e 's/#//' | head -1`
 
-          # TODO
-          echo "${PR_NUM}"
-          echo "${LAST_COMMIT_MESSAGE}"
-          echo "${PREVIOUS_VERSION}"
-          cat versions/VALD_VERSION
+          make helm/docs/vald
+          make helm/docs/vald-helm-operator
+
+          make helm/schema/vald
+          make helm/schema/vald-helm-operator
+
+          BODY=""
+          if [ ! -z "${PR_NUM}" ]; then
+            BODY=`curl -s -H "Authorization: Bearer ${GITHUB_TOKEN}" "https://api.github.com/repos/${GITHUB_REPOSITORY}/pulls/${PR_NUM}" | jq -r '.body'`
+          fi
+
+          if [ -z "$BODY" ]; then
+            BODY=`git log --pretty=format:'- %s' ${PREVIOUS_VERSION}..main | grep "#[[:digit:]]\+" | sed -e "s/\[\(patch\|minor\|major\)\] *//g" | sed -e "s%#\([[:digit:]]\+\)%[&](https://github.com/vdaas/vald/pull/\1)%"`
+          fi
+
+          CHANGELOG=`make changelog/next/print BODY="$BODY"`
+          make changelog/update BODY="$BODY"
+
+          git add \
+            versions/VALD_VERSION \
+            charts/vald/Chart.yaml \
+            charts/vald/values.yaml \
+            charts/vald/values.schema.json \
+            charts/vald/README.md \
+            charts/vald-helm-operator/Chart.yaml \
+            charts/vald-helm-operator/values.yaml \
+            charts/vald-helm-operator/values.schema.json \
+            charts/vald-helm-operator/README.md \
+            CHANGELOG.md
+          git commit -S --signoff -m ":bookmark: :robot: Release ${GITWERK_RESULT}"
+
+          git tag ${RELEASE_TAG}
+
+          git remote set-url origin "https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+
+          git push origin main
+          git push origin ${RELEASE_TAG}
+
+          echo "RELEASE=true" >> $GITHUB_OUTPUT
+          echo "VERSION=${RELEASE_TAG}" >> $GITHUB_OUTPUT
