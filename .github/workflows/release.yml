@@ -100,14 +100,8 @@ jobs:
 
       - name: Update for new release
         run: |
-          git branch
-
           LAST_COMMIT_MESSAGE=`git log --pretty=format:%s -1`
           PR_NUM=`echo "${LAST_COMMIT_MESSAGE}" | grep -o "#[[:digit:]]\+" | sed -e 's/#//' | head -1`
-
-          PREVIOUS_VERSION=`cat versions/VALD_VERSION`
-
-          echo "${GITWERK_RESULT}" > versions/VALD_VERSION
 
           # TODO
           echo "${PR_NUM}"
