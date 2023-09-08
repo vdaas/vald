@@ -1,0 +1,79 @@
+name: Build docker images when the Release branch is created
+on:
+  push:
+    branches:
+      - "release/v*.*"
+      - "!release/v*.*.*"
+
+jobs:
+  dump-contexts-to-log:
+    if: github.event.created
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/dump-context
+
+  agent-ngt:
+    needs: [dump-contexts-to-log]
+    uses: ./.github/workflows/_docker-image.yaml
+    with:
+      target: agent-ngt
+    secrets: inherit
+
+  agent-sidecar:
+    needs: [dump-contexts-to-log]
+    uses: ./.github/workflows/_docker-image.yaml
+    with:
+      target: agent-sidecar
+    secrets: inherit
+
+  discoverer-k8s:
+    needs: [dump-contexts-to-log]
+    uses: ./.github/workflows/_docker-image.yaml
+    with:
+      target: discoverer-k8s
+    secrets: inherit
+
+  manager-index:
+    needs: [dump-contexts-to-log]
+    uses: ./.github/workflows/_docker-image.yaml
+    with:
+      target: manager-index
+    secrets: inherit
+
+  operator-helm:
+    needs: [dump-contexts-to-log]
+    uses: ./.github/workflows/_docker-image.yaml
+    with:
+      target: operator/helm
+    secrets: inherit
+
+  gateway-lb:
+    needs: [dump-contexts-to-log]
+    uses: ./.github/workflows/_docker-image.yaml
+    with:
+      target: gateway-lb
+    secrets: inherit
+
+  gateway-filter:
+    needs: [dump-contexts-to-log]
+    uses: ./.github/workflows/_docker-image.yaml
+    with:
+      target: gateway-filter
+    secrets: inherit
+
+  loadtest:
+    needs: [dump-contexts-to-log]
+    uses: ./.github/workflows/_docker-image.yaml
+    with:
+      target: loadtest
+      platforms: linux/amd64
+    secrets: inherit
+
+  ci-container:
+    needs: [dump-contexts-to-log]
+    uses: ./.github/workflows/_docker-image.yaml
+    with:
+      target: ci-container
+      platforms: linux/amd64
+    secrets: inherit
