@@ -137,7 +137,7 @@ jobs:
             charts/vald-helm-operator/values.schema.json \
             charts/vald-helm-operator/README.md \
             CHANGELOG.md
-          git commit -S --signoff -m ":bookmark: :robot: Release ${GITWERK_RESULT}"
+          git commit -S --signoff -m ":bookmark: :robot: Release ${RELEASE_TAG}"
 
           git tag ${RELEASE_TAG}
 
