@@ -282,6 +282,11 @@ func (c *correct) correctWithCache(ctx context.Context) (err error) {
 					log.Errorf("SetBatch failed: %v", err)
 					return err
 				}
+				// delete all the key from the tmpSet
+				for k := range tmpSet {
+					delete(tmpSet, k)
+				}
+				tmpSet = nil
 				// ~DEBUG:
 
 				log.Infof("correction finished for agent %s", addr)
