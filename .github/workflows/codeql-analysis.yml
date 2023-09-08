@@ -18,6 +18,8 @@ on:
   push:
     branches:
       - main
+      - "release/v*.*"
+      - "!release/v*.*.*"
     tags:
       - "*.*.*"
       - "v*.*.*"
@@ -26,6 +28,8 @@ on:
   pull_request:
     branches:
       - main
+      - "release/v*.*"
+      - "!release/v*.*.*"
     paths:
       - ".github/workflows/codeql-analysis.yml"
       - "**.go"
