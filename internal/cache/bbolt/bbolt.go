@@ -50,7 +50,7 @@ func (b *Bbolt) Set(key string, val []byte) error {
 
 func (b *Bbolt) SetBatch(kv map[string]struct{}) error {
 	eg, _ := errgroup.WithContext(context.Background())
-	eg.SetLimit(200)
+	eg.SetLimit(b.db.MaxBatchSize)
 	for k := range kv {
 		key := k
 		eg.Go(func() error {
