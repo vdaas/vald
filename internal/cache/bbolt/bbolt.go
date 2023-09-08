@@ -80,4 +80,3 @@ func (b *Bbolt) Close() (err error) {
 
 	return err
 }
-
