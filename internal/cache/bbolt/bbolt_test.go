@@ -30,3 +30,30 @@ func TestBbolt(t *testing.T) {
 	err = b.Close()
 	require.NoError(t, err)
 }
+
+func TestSetBatch(t *testing.T) {
+	tempdir := t.TempDir()
+	tmpfile := filepath.Join(tempdir, "test.db")
+	b, err := bbolt.New(tmpfile)
+	require.NoError(t, err)
+
+	kv := map[string]struct{}{
+		"key1": {},
+		"key2": {},
+		"key3": {},
+		"key4": {},
+		"key5": {},
+	}
+
+	err = b.SetBatch(kv)
+	require.NoError(t, err)
+
+	for k := range kv {
+		_, ok, err := b.Get(k)
+		require.NoError(t, err)
+		require.True(t, ok)
+	}
+
+	err = b.Close()
+	require.NoError(t, err)
+}

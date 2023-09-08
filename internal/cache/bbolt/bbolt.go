@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/sync"
 	bolt "go.etcd.io/bbolt"
 )
 
@@ -42,6 +43,25 @@ func (b *Bbolt) Set(key string, val []byte) error {
 	}); err != nil {
 		return err
 	}
+
+	return nil
+}
+
+func (b *Bbolt) SetBatch(kv map[string]struct{}) error {
+	var wg sync.WaitGroup
+	for k := range kv {
+		wg.Add(1)
+		go func(key string) {
+			defer wg.Done()
+			b.db.Batch(func(tx *bolt.Tx) error {
+				b := tx.Bucket([]byte(bucket))
+				// FIXME: for index correction, value doesn't matter, but for more general use, it should be considered
+				err := b.Put([]byte(key), nil)
+				return err
+			})
+		}(k)
+	}
+	wg.Wait()
 
 	return nil
 }
