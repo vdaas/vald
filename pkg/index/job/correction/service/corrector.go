@@ -249,6 +249,11 @@ func (c *correct) correctWithCache(ctx context.Context) (err error) {
 
 	if err := c.discoverer.GetClient().OrderedRange(ctx, c.agentAddrs,
 		func(ctx context.Context, addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
+
+			// DEBUG:
+			tmpSet := make(map[string]struct{})
+			// ~DEBUG:
+
 			// current address is the leftAgentAddrs[0] because this is OrderedRange and
 			// leftAgentAddrs is copied from c.agentAddrs
 			leftAgentAddrs = leftAgentAddrs[1:]
@@ -271,6 +276,15 @@ func (c *correct) correctWithCache(ctx context.Context) (err error) {
 					log.Errorf("err group returned error: %v", err)
 					return err
 				}
+
+				// DEBUG:
+				log.Info("writing cache to disk...")
+				if err := c.checkedIdBbolt.SetBatch(tmpSet); err != nil {
+					log.Errorf("SetBatch failed: %v", err)
+					return err
+				}
+				// ~DEBUG:
+
 				log.Infof("correction finished for agent %s", addr)
 				return nil
 			}
@@ -357,10 +371,13 @@ func (c *correct) correctWithCache(ctx context.Context) (err error) {
 						// DEBUG: Testing pcache
 						if c.cfg.Corrector.PCache {
 							// err = c.checkedIdPersistent.Set(id, struct{}{})
-							err = c.checkedIdBbolt.Set(id, nil)
-							if err != nil {
-								return err
-							}
+							// err = c.checkedIdBbolt.Set(id, nil)
+							// if err != nil {
+							// 	return err
+							// }
+							c.rwmu.Lock()
+							tmpSet[id] = struct{}{}
+							c.rwmu.Unlock()
 						} else {
 							c.rwmu.Lock()
 							c.checkedId[id] = struct{}{}
