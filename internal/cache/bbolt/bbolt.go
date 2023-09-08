@@ -1,12 +1,13 @@
 package bbolt
 
 import (
+	"context"
 	"fmt"
 	"os"
 
 	"github.com/vdaas/vald/internal/errors"
-	"github.com/vdaas/vald/internal/sync"
 	bolt "go.etcd.io/bbolt"
+	"golang.org/x/sync/errgroup"
 )
 
 type Bbolt struct {
@@ -48,20 +49,21 @@ func (b *Bbolt) Set(key string, val []byte) error {
 }
 
 func (b *Bbolt) SetBatch(kv map[string]struct{}) error {
-	var wg sync.WaitGroup
+	eg, _ := errgroup.WithContext(context.Background())
+	eg.SetLimit(200)
 	for k := range kv {
-		wg.Add(1)
-		go func(key string) {
-			defer wg.Done()
+		key := k
+		eg.Go(func() error {
 			b.db.Batch(func(tx *bolt.Tx) error {
 				b := tx.Bucket([]byte(bucket))
 				// FIXME: for index correction, value doesn't matter, but for more general use, it should be considered
 				err := b.Put([]byte(key), nil)
 				return err
 			})
-		}(k)
+			return nil
+		})
 	}
-	wg.Wait()
+	eg.Wait()
 
 	return nil
 }
