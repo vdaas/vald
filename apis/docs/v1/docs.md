@@ -110,6 +110,7 @@
 - [apis/proto/v1/vald/upsert.proto](#apis_proto_v1_vald_upsert-proto)
   - [Upsert](#vald-v1-Upsert)
 - [apis/proto/v1/benchmark/benchmark.proto](#apis_proto_v1_benchmark_benchmark-proto)
+
   - [Controller](#benchmark-v1-Controller)
   - [Job](#benchmark-v1-Job)
 
