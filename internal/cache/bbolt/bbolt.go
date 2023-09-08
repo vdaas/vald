@@ -1,17 +1,37 @@
 package bbolt
 
 import (
+	"fmt"
+	"os"
+
+	"github.com/vdaas/vald/internal/errors"
 	bolt "go.etcd.io/bbolt"
 )
 
 type Bbolt struct {
-	db     *bolt.DB
-	bucket string
+	db   *bolt.DB
+	file string
 }
 
-func New(path string) *Bbolt {
+const bucket = "vald-bbolt-bucket"
+
+func New(filepath string) (*Bbolt, error) {
 	// TODO: 初期化をここでするか、DIするか。ライフタイムを管理するのだるいのでDIの方がいいかも
-	return &Bbolt{}
+	db, err := bolt.Open(filepath, 0600, nil)
+	if err != nil {
+		return nil, err
+	}
+	db.Update(func(tx *bolt.Tx) error {
+		_, err := tx.CreateBucket([]byte(bucket))
+		if err != nil {
+			return fmt.Errorf("failed to create bucket: %w", err)
+		}
+		return nil
+	})
+	return &Bbolt{
+		db:   db,
+		file: filepath,
+	}, nil
 }
 
 func (b *Bbolt) Set(key string, val []byte) error {
@@ -29,7 +49,7 @@ func (b *Bbolt) Set(key string, val []byte) error {
 func (b *Bbolt) Get(key string) ([]byte, bool, error) {
 	var val []byte
 	if err := b.db.View(func(tx *bolt.Tx) error {
-		b := tx.Bucket([]byte(b.bucket))
+		b := tx.Bucket([]byte(bucket))
 		copy(val, b.Get([]byte(key)))
 		return nil
 	}); err != nil {
@@ -43,40 +63,15 @@ func (b *Bbolt) Get(key string) ([]byte, bool, error) {
 	return val, true, nil
 }
 
-// func main() {
-// 	f, err := os.Create("my.db")
-// 	f.Close()
-// 	defer os.Remove(f.Name())
+func (b *Bbolt) Close() (err error) {
+	if cerr := b.db.Close(); cerr != nil {
+		err = cerr
+	}
 
-// 	// Open the my.db data file in your current directory.
-// 	// It will be created if it doesn't exist.
-// 	db, err := bolt.Open("my.db", 0600, nil)
-// 	if err != nil {
-// 		log.Fatal(err)
-// 	}
-// 	defer db.Close()
+	if rerr := os.RemoveAll(b.file); rerr != nil {
+		err = errors.Wrap(rerr, err.Error())
+	}
 
-// 	db.Update(func(tx *bolt.Tx) error {
-// 		_, err := tx.CreateBucket([]byte("MyBucket"))
-// 		if err != nil {
-// 			return fmt.Errorf("create bucket: %s", err)
-// 		}
-// 		return nil
-// 	})
+	return err
+}
 
-// 	db.Update(func(tx *bolt.Tx) error {
-// 		b := tx.Bucket([]byte("MyBucket"))
-// 		err := b.Put([]byte("answer"), nil)
-// 		return err
-// 	})
-
-// 	db.View(func(tx *bolt.Tx) error {
-// 		b := tx.Bucket([]byte("MyBucket"))
-// 		v := b.Get([]byte("answer"))
-// 		if v == nil {
-// 			fmt.Println("No answer found. We can differentiate this from the empty value")
-// 		}
-// 		fmt.Println("The key exists")
-// 		return nil
-// 	})
-// }
