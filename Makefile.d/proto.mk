@@ -58,7 +58,30 @@ proto/deps: \
 	$(GOPATH)/src/github.com/planetscale/vtprotobuf \
 	$(GOPATH)/src/github.com/protocolbuffers/protobuf \
 	$(GOPATH)/src/google.golang.org/genproto \
-	$(GOPATH)/src/google.golang.org/protobuf
+	$(GOPATH)/src/google.golang.org/protobuf \
+	$(ROOTDIR)/apis/proto/v1/rpc/error_details.proto
+
+.PHONY: proto/clean/deps
+## uninstall all protobuf dependencies
+proto/clean/deps:
+	rm -rf $(GOBIN)/protoc-gen-doc \
+	$(GOBIN)/protoc-gen-go \
+	$(GOBIN)/protoc-gen-go-grpc \
+	$(GOBIN)/protoc-gen-go-vtproto \
+	$(GOBIN)/protoc-gen-grpc-gateway \
+	$(GOBIN)/protoc-gen-swagger \
+	$(GOBIN)/protoc-gen-validate \
+	$(GOBIN)/prototool \
+	$(GOBIN)/swagger \
+	$(GOPATH)/src/github.com/envoyproxy/protoc-gen-validate \
+	$(GOPATH)/src/github.com/golang/protobuf \
+	$(GOPATH)/src/github.com/googleapis/googleapis \
+	$(GOPATH)/src/github.com/planetscale/vtprotobuf \
+	$(GOPATH)/src/github.com/protocolbuffers/protobuf \
+	$(GOPATH)/src/google.golang.org/genproto \
+	$(GOPATH)/src/google.golang.org/protobuf \
+	$(ROOTDIR)/apis/proto/v1/rpc/error_details.proto
+
 
 $(GOPATH)/src/github.com/protocolbuffers/protobuf:
 	git clone \
@@ -129,6 +152,12 @@ $(GOBIN)/protoc-gen-go-vtproto:
 $(GOBIN)/swagger:
 	$(call go-install, github.com/go-swagger/go-swagger/cmd/swagger)
 
+$(ROOTDIR)/apis/proto/v1/rpc/error_details.proto:
+	curl -fsSL https://raw.githubusercontent.com/googleapis/googleapis/master/google/rpc/error_details.proto -o $(ROOTDIR)/apis/proto/v1/rpc/error_details.proto
+	sed  -i -e "s/package google.rpc/package rpc.v1/" $(ROOTDIR)/apis/proto/v1/rpc/error_details.proto
+	sed  -i -e "s%google.golang.org/genproto/googleapis/rpc/errdetails;errdetails%github.com/vdaas/vald/apis/grpc/v1/rpc/errdetails%" $(ROOTDIR)/apis/proto/v1/rpc/error_details.proto
+	sed  -i -e "s/com.google.rpc/org.vdaas.vald.api.v1.rpc/" $(ROOTDIR)/apis/proto/v1/rpc/error_details.proto
+
 $(PBGOS): \
 	$(PROTOS) \
 	proto/deps
@@ -139,6 +168,8 @@ $(PBGOS): \
 	find $(ROOTDIR)/apis/grpc/* -name '*.go' | xargs sed -i -E "s%google.golang.org/grpc/status%github.com/vdaas/vald/internal/net/grpc/status%g"
 	find $(ROOTDIR)/apis/grpc/* -name '*.go' | xargs sed -i -E "s%\"io\"%\"github.com/vdaas/vald/internal/io\"%g"
 	find $(ROOTDIR)/apis/grpc/* -name '*.go' | xargs sed -i -E "s%\"sync\"%\"github.com/vdaas/vald/internal/sync\"%g"
+	find $(ROOTDIR)/apis/grpc/* -name '*.go' | xargs sed -i -E "s/Vector = &Object_Vector\{\}/Vector = Object_VectorFromVTPool\(\)/g"
+	find $(ROOTDIR)/apis/grpc/* -name '*.go' | xargs sed -i -E "s/v := &Object_Vector\{\}/v := Object_VectorFromVTPool\(\)/g"
 
 $(SWAGGERS): \
 	$(PROTOS) \

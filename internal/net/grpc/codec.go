@@ -33,28 +33,43 @@ type vtprotoMessage interface {
 	UnmarshalVT([]byte) error
 }
 
+type vtprotoPoolMessage interface {
+	MarshalVT() ([]byte, error)
+	UnmarshalVT([]byte) error
+	ResetVT()
+	ReturnToVTPool()
+}
+
 // Marshal returns byte slice representing the proto message marshalling result.
-func (Codec) Marshal(obj interface{}) ([]byte, error) {
+func (Codec) Marshal(obj interface{}) (data []byte, err error) {
 	switch v := obj.(type) {
+	case vtprotoPoolMessage:
+		data, err = v.MarshalVT()
+		v.ReturnToVTPool()
 	case vtprotoMessage:
-		return v.MarshalVT()
+		data, err = v.MarshalVT()
 	case proto.Message:
-		return proto.Marshal(v)
+		data, err = proto.Marshal(v)
 	default:
-		return nil, errors.ErrInvalidProtoMessageType(v)
+		err = errors.ErrInvalidProtoMessageType(v)
 	}
+	if err != nil {
+		return nil, err
+	}
+	return data, nil
 }
 
 // Unmarshal parses the byte stream data into v.
-func (Codec) Unmarshal(data []byte, obj interface{}) error {
+func (Codec) Unmarshal(data []byte, obj interface{}) (err error) {
 	switch v := obj.(type) {
 	case vtprotoMessage:
-		return v.UnmarshalVT(data)
+		err = v.UnmarshalVT(data)
 	case proto.Message:
-		return proto.Unmarshal(data, v)
+		err = proto.Unmarshal(data, v)
 	default:
-		return errors.ErrInvalidProtoMessageType(v)
+		err = errors.ErrInvalidProtoMessageType(v)
 	}
+	return err
 }
 
 func (Codec) Name() string {
