@@ -36,6 +36,7 @@ jobs:
     outputs:
       RELEASE_BRANCH_NAME_PREFIX: ${{ steps.set_context.outputs.RELEASE_BRANCH_NAME }}
       RELEASE_TAG: ${{ steps.upgrade_semver.outputs.RELEASE_TAG }}
+      RELEASE: ${{ steps.upgrade_semver.outputs.RELEASE }}
     steps:
       - uses: actions/checkout@v3
         with:
@@ -83,7 +84,9 @@ jobs:
             exit 1
           fi
 
+          echo "RELEASE=true"             >> $GITHUB_OUTPUT
           echo "RELEASE_TAG=$RELEASE_TAG" >> $GITHUB_OUTPUT # e.g) vx.x.x
+
           echo "${RELEASE_TAG}"
 
   release:
@@ -91,10 +94,11 @@ jobs:
       - detect-ci-container
       - semver-auto
     runs-on: ubuntu-latest
+    if: ${{ needs.semver-auto.outputs.RELEASE == 'true' }}
     container:
       image: ghcr.io/vdaas/vald/vald-ci-container:${{ needs.detect-ci-container.outputs.TAG_NAME }}
     env:
-      RELEASE_BRANCH_NAME: release/${{ steps.semver-auto.outputs.RELEASE_BRANCH_NAME_PREFIX }}
+      RELEASE_BRANCH_NAME: release/${{ needs.semver-auto.outputs.RELEASE_BRANCH_NAME_PREFIX }}
       RELEASE_TAG: ${{ needs.semver-auto.outputs.RELEASE_TAG }}
     steps:
       - uses: actions/checkout@v3
@@ -157,20 +161,18 @@ jobs:
           git push origin ${RELEASE_BRANCH_NAME}
           git push origin ${RELEASE_TAG}
 
-          echo "RELEASE=true" >> $GITHUB_OUTPUT
           echo "VERSION=${RELEASE_TAG}" >> $GITHUB_OUTPUT
         env:
           GITHUB_USER: ${{ secrets.DISPATCH_USER }}
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
 
       - name: Create release
-        if: steps.update_for_new_release.outputs.RELEASE == 'true'
         uses: softprops/action-gh-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
         with:
           tag_name: ${{ steps.update_for_new_release.outputs.VERSION }}
-          release_name: Release ${{ steps.update_for_new_release.outputs.VERSION }}
+          name: Release ${{ steps.update_for_new_release.outputs.VERSION }}
           body: |
             See [CHANGELOG.md](https://github.com/vdaas/vald/blob/${{ steps.update_for_new_release.outputs.VERSION }}/CHANGELOG.md) for details.
           draft: false
