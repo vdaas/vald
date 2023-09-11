@@ -50,6 +50,25 @@ var (
 {{.Escape}} limitations under the License.
 {{.Escape}}
 `))
+
+	googleProtoApache = template.Must(template.New("Google Proto Apache License").Parse(`{{.Escape}}
+{{.Escape}} Copyright (C) {{.Year}} Google LLC
+{{.Escape}} Modified by {{.Maintainer}}
+{{.Escape}}
+{{.Escape}} Licensed under the Apache License, Version 2.0 (the "License");
+{{.Escape}} You may not use this file except in compliance with the License.
+{{.Escape}} You may obtain a copy of the License at
+{{.Escape}}
+{{.Escape}}    https://www.apache.org/licenses/LICENSE-2.0
+{{.Escape}}
+{{.Escape}} Unless required by applicable law or agreed to in writing, software
+{{.Escape}} distributed under the License is distributed on an "AS IS" BASIS,
+{{.Escape}} WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+{{.Escape}} See the License for the specific language governing permissions and
+{{.Escape}} limitations under the License.
+{{.Escape}}
+`))
+
 	goStandard = template.Must(template.New("Go License").Parse(`{{.Escape}}
 {{.Escape}} Copyright (c) 2009-{{.Year}} The Go Authors. All rights resered.
 {{.Escape}} Modified by {{.Maintainer}}
@@ -236,6 +255,9 @@ func readAndRewrite(path string) error {
 			default:
 			}
 		case ".proto":
+			if fi.Name() == "error_details.proto" {
+				tmpl = googleProtoApache
+			}
 			d.Escape = slushEscape
 		}
 		lf := true

@@ -23,6 +23,7 @@ import (
 	bits "math/bits"
 
 	io "github.com/vdaas/vald/internal/io"
+	sync "github.com/vdaas/vald/internal/sync"
 	status "google.golang.org/genproto/googleapis/rpc/status"
 	proto "google.golang.org/protobuf/proto"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
@@ -7719,6 +7720,27 @@ func encodeVarint(dAtA []byte, offset int, v uint64) int {
 	dAtA[offset] = uint8(v)
 	return base
 }
+
+var vtprotoPool_Object_Vector = sync.Pool{
+	New: func() interface{} {
+		return &Object_Vector{}
+	},
+}
+
+func (m *Object_Vector) ResetVT() {
+	f0 := m.Vector[:0]
+	m.Reset()
+	m.Vector = f0
+}
+func (m *Object_Vector) ReturnToVTPool() {
+	if m != nil {
+		m.ResetVT()
+		vtprotoPool_Object_Vector.Put(m)
+	}
+}
+func Object_VectorFromVTPool() *Object_Vector {
+	return vtprotoPool_Object_Vector.Get().(*Object_Vector)
+}
 func (m *Search_Request) SizeVT() (n int) {
 	if m == nil {
 		return 0
@@ -10758,7 +10780,7 @@ func (m *Insert_Request) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if m.Vector == nil {
-				m.Vector = &Object_Vector{}
+				m.Vector = Object_VectorFromVTPool()
 			}
 			if err := m.Vector.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
@@ -11387,7 +11409,7 @@ func (m *Update_Request) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if m.Vector == nil {
-				m.Vector = &Object_Vector{}
+				m.Vector = Object_VectorFromVTPool()
 			}
 			if err := m.Vector.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
@@ -12036,7 +12058,7 @@ func (m *Upsert_Request) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if m.Vector == nil {
-				m.Vector = &Object_Vector{}
+				m.Vector = Object_VectorFromVTPool()
 			}
 			if err := m.Vector.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
@@ -13780,7 +13802,7 @@ func (m *Object_Vector) UnmarshalVT(dAtA []byte) error {
 				}
 				var elementCount int
 				elementCount = packedLen / 4
-				if elementCount != 0 && len(m.Vector) == 0 {
+				if elementCount != 0 && len(m.Vector) == 0 && cap(m.Vector) < elementCount {
 					m.Vector = make([]float32, 0, elementCount)
 				}
 				for iNdEx < postIndex {
@@ -13985,7 +14007,7 @@ func (m *Object_StreamVector) UnmarshalVT(dAtA []byte) error {
 					return err
 				}
 			} else {
-				v := &Object_Vector{}
+				v := Object_VectorFromVTPool()
 				if err := v.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 					return err
 				}
@@ -14993,7 +15015,7 @@ func (m *Object_List_Response) UnmarshalVT(dAtA []byte) error {
 					return err
 				}
 			} else {
-				v := &Object_Vector{}
+				v := Object_VectorFromVTPool()
 				if err := v.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 					return err
 				}
