@@ -68,6 +68,20 @@ func (b *Bbolt) SetBatch(kv map[string]struct{}) error {
 	return nil
 }
 
+// wait for this eg to make sure all the batches finished
+func (b *Bbolt) SetBatch2(eg *errgroup.Group, key string, val []byte) error {
+	eg.Go(func() error {
+		b.db.Batch(func(tx *bolt.Tx) error {
+			b := tx.Bucket([]byte(bucket))
+			// FIXME: for index correction, value doesn't matter, but for more general use, it should be considered
+			err := b.Put([]byte(key), nil)
+			return err
+		})
+		return nil
+	})
+	return nil
+}
+
 func (b *Bbolt) Get(key string) ([]byte, bool, error) {
 	var val []byte
 	if err := b.db.View(func(tx *bolt.Tx) error {

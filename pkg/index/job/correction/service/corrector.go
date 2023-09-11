@@ -249,9 +249,8 @@ func (c *correct) correctWithCache(ctx context.Context) (err error) {
 
 	if err := c.discoverer.GetClient().OrderedRange(ctx, c.agentAddrs,
 		func(ctx context.Context, addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
-			// DEBUG:
-			tmpSet := make(map[string]struct{})
-			// ~DEBUG:
+			// FIXME: set ch size with cfg or something
+			wch := make(chan string, 1024)
 
 			// current address is the leftAgentAddrs[0] because this is OrderedRange and
 			// leftAgentAddrs is copied from c.agentAddrs
@@ -269,6 +268,20 @@ func (c *correct) correctWithCache(ctx context.Context) (err error) {
 
 			log.Infof("starting correction for agent %s, concurrency: %d", addr, concurrency)
 
+			bolteg := stdeg.Group{}
+			bolteg.SetLimit(1000)
+			go func() {
+				for {
+					select {
+					case <-ctx.Done():
+						log.Info("bbolt write goroutine finished")
+						return
+					case id := <-wch:
+						c.checkedIdBbolt.SetBatch2(&bolteg, id, nil)
+					}
+				}
+			}()
+
 			finalize := func() error {
 				err = seg.Wait()
 				if err != nil {
@@ -276,15 +289,12 @@ func (c *correct) correctWithCache(ctx context.Context) (err error) {
 					return err
 				}
 
-				// DEBUG:
-				log.Info("writing cache to disk...")
-				if err := c.checkedIdBbolt.SetBatch(tmpSet); err != nil {
-					log.Errorf("SetBatch failed: %v", err)
+				err = bolteg.Wait()
+				if err != nil {
+					log.Errorf("bolt err group returned error: %v", err)
 					return err
 				}
-				// delete all the key from the tmpSet
-				tmpSet = nil
-				// ~DEBUG:
+				log.Info("bbolt all batch finished")
 
 				log.Infof("correction finished for agent %s", addr)
 				return nil
@@ -376,9 +386,10 @@ func (c *correct) correctWithCache(ctx context.Context) (err error) {
 							// if err != nil {
 							// 	return err
 							// }
-							c.rwmu.Lock()
-							tmpSet[id] = struct{}{}
-							c.rwmu.Unlock()
+							// c.rwmu.Lock()
+							// tmpSet[id] = struct{}{}
+							wch <- id
+							// c.rwmu.Unlock()
 						} else {
 							c.rwmu.Lock()
 							c.checkedId[id] = struct{}{}
