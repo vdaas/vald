@@ -24,7 +24,6 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/k8s"
 	"github.com/vdaas/vald/internal/k8s/client"
@@ -33,6 +32,7 @@ import (
 	benchjob "github.com/vdaas/vald/internal/k8s/vald/benchmark/job"
 	benchscenario "github.com/vdaas/vald/internal/k8s/vald/benchmark/scenario"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/sync/errgroup"
 )
 
 type Operator interface {

@@ -24,15 +24,13 @@ import (
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
-	"golang.org/x/sync/errgroup"
+	"github.com/vdaas/vald/internal/sync/errgroup"
 )
 
 func (j *job) exists(ctx context.Context, ech chan error) error {
 	log.Info("[benchmark job] Start benchmarking exists")
-	eg, egctx := errgroup.WithContext(ctx)
+	eg, egctx := errgroup.New(ctx)
 	eg.SetLimit(j.concurrencyLimit)
-	// eg, egctx := errgroup.New(ctx)
-	// eg.Limitation(j.concurrencyLimit)
 	for i := j.dataset.Range.Start; i <= j.dataset.Range.End; i++ {
 		idx := i
 		eg.Go(func() error {
@@ -42,7 +40,6 @@ func (j *job) exists(ctx context.Context, ech chan error) error {
 				log.Errorf("[benchmark job] limiter error is detected: %s", err.Error())
 				if errors.Is(err, context.Canceled) {
 					return nil
-					// return errors.Join(err, context.Canceled)
 				}
 				select {
 				case <-egctx.Done():
@@ -58,11 +55,7 @@ func (j *job) exists(ctx context.Context, ech chan error) error {
 				case <-egctx.Done():
 					log.Errorf("[benchmark job] context error is detected: %s\t%s", err.Error(), egctx.Err())
 					return nil
-					// return errors.Join(err, egctx.Err())
 				default:
-					// if st, ok := status.FromError(err); ok {
-					// 	log.Warnf("[benchmark job] exists error is detected: code = %d, msg = %s", st.Code(), err.Error())
-					// }
 				}
 			}
 			log.Debugf("[benchmark job] Finish exists: iter= %d \n%v\n", idx, res)
@@ -80,10 +73,8 @@ func (j *job) exists(ctx context.Context, ech chan error) error {
 
 func (j *job) getObject(ctx context.Context, ech chan error) error {
 	log.Info("[benchmark job] Start benchmarking getObject")
-	eg, egctx := errgroup.WithContext(ctx)
+	eg, egctx := errgroup.New(ctx)
 	eg.SetLimit(j.concurrencyLimit)
-	// eg, egctx := errgroup.New(ctx)
-	// eg.Limitation(j.concurrencyLimit)
 	for i := j.dataset.Range.Start; i <= j.dataset.Range.End; i++ {
 		log.Infof("[benchmark job] Start get object: iter = %d", i)
 		ft := []*payload.Filter_Target{}
@@ -102,7 +93,6 @@ func (j *job) getObject(ctx context.Context, ech chan error) error {
 			if err != nil {
 				log.Errorf("[benchmark job] limiter error is detected: %s", err.Error())
 				if errors.Is(err, context.Canceled) {
-					// return errors.Join(err, context.Canceled)
 					return nil
 				}
 				select {
@@ -123,12 +113,8 @@ func (j *job) getObject(ctx context.Context, ech chan error) error {
 				select {
 				case <-egctx.Done():
 					log.Errorf("[benchmark job] context error is detected: %s\t%s", err.Error(), egctx.Err())
-					// return errors.Join(err, egctx.Err())
 					return nil
 				default:
-					// if st, ok := status.FromError(err); ok {
-					// 	log.Warnf("[benchmark job] object error is detected: code = %d, msg = %s", st.Code(), err.Error())
-					// }
 				}
 			}
 			if res != nil {
