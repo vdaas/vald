@@ -367,6 +367,7 @@ require (
 	github.com/leanovate/gopter v0.0.0-00010101000000-000000000000
 	github.com/lucasb-eyer/go-colorful v0.0.0-00010101000000-000000000000
 	github.com/pierrec/lz4/v3 v3.0.0-00010101000000-000000000000
+	github.com/planetscale/vtprotobuf v0.5.0
 	github.com/quasilyte/go-ruleguard v0.0.0-00010101000000-000000000000
 	github.com/quasilyte/go-ruleguard/dsl v0.3.22
 	github.com/scylladb/gocqlx v0.0.0-00010101000000-000000000000

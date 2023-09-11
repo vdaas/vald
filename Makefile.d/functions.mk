@@ -21,7 +21,9 @@ pink   = printf "\x1b[35m\#\# %s\x1b[0m\n" $1
 cyan   = printf "\x1b[36m\#\# %s\x1b[0m\n" $1
 
 define go-install
-	GO111MODULE=on go install $1@latest
+	GO111MODULE=on go install \
+	    -mod=readonly \
+	    $1@latest
 endef
 
 define mkdir
@@ -31,12 +33,16 @@ endef
 define proto-code-gen
 	protoc \
 		$(PROTO_PATHS:%=-I %) \
-                --go_out=$(GOPATH)/src --plugin protoc-gen-go="$(GOBIN)/protoc-gen-go" \
-                --go-vtproto_out=$(GOPATH)/src --plugin protoc-gen-go-vtproto="$(GOBIN)/protoc-gen-go-vtproto" \
-                --go-vtproto_opt=features=grpc+marshal+unmarshal+size+equal+clone \
+                --go_out=$(GOPATH)/src \
+		--plugin protoc-gen-go="$(GOBIN)/protoc-gen-go" \
+                --go-vtproto_out=$(GOPATH)/src \
+		--plugin protoc-gen-go-vtproto="$(GOBIN)/protoc-gen-go-vtproto" \
+                --go-vtproto_opt=features=grpc+marshal+unmarshal+size+equal+clone+pool \
+                --go-vtproto_opt=pool=$(ROOTDIR)/apis/proto/v1/payload.Object.Vector \
 		$1
 endef
-                # --go-vtproto_opt=pool=$(ROOTDIR)/apis/proto/v1/payload.Object.Vector \
+		# --go-grpc_out=$(GOPATH)/src \
+		# --plugin protoc-gen-go-grpc="${GOBIN}/protoc-gen-go-grpc" \
                 # --go-vtproto_opt=pool=$(ROOTDIR)/apis/proto/v1/payload.Insert.MultiRequest \
                 # --go-vtproto_opt=pool=$(ROOTDIR)/apis/proto/v1/payload.Insert.Request \
                 # --go-vtproto_opt=pool=$(ROOTDIR)/apis/proto/v1/payload.Object.Vector \
