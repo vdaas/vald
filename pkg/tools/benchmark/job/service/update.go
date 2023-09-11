@@ -25,7 +25,7 @@ import (
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
-	"golang.org/x/sync/errgroup"
+	"github.com/vdaas/vald/internal/sync/errgroup"
 )
 
 func (j *job) update(ctx context.Context, ech chan error) error {
@@ -39,10 +39,8 @@ func (j *job) update(ctx context.Context, ech chan error) error {
 	if j.timestamp > int64(0) {
 		cfg.Timestamp = j.timestamp
 	}
-	eg, egctx := errgroup.WithContext(ctx)
+	eg, egctx := errgroup.New(ctx)
 	eg.SetLimit(j.concurrencyLimit)
-	// eg, egctx := errgroup.New(ctx)
-	// eg.Limitation(j.concurrencyLimit)
 	for i := j.dataset.Range.Start; i <= j.dataset.Range.End; i++ {
 		iter := i
 		eg.Go(func() error {
@@ -51,7 +49,6 @@ func (j *job) update(ctx context.Context, ech chan error) error {
 			if err != nil {
 				log.Errorf("[benchmark job] limiter error is detected: %s", err.Error())
 				if errors.Is(err, context.Canceled) {
-					// return errors.Join(err, context.Canceled)
 					return nil
 				}
 				select {
@@ -75,9 +72,6 @@ func (j *job) update(ctx context.Context, ech chan error) error {
 					log.Errorf("[benchmark job] context error is detected: %s\t%s", err.Error(), egctx.Err())
 					return errors.Join(err, egctx.Err())
 				default:
-					// if st, ok := status.FromError(err); ok {
-					// 	log.Warnf("[benchmark job] update error is detected: code = %d, msg = %s\n", st.Code(), err.Error())
-					// }
 				}
 			}
 			if res != nil {
