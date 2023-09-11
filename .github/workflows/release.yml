@@ -131,7 +131,7 @@ jobs:
           fi
 
           if [ -z "$BODY" ]; then
-            BODY=`git log --pretty=format:'- %s' ${PREVIOUS_VERSION}..main | grep "#[[:digit:]]\+" | sed -e "s/\[\(patch\|minor\|major\)\] *//g" | sed -e "s%#\([[:digit:]]\+\)%[&](https://github.com/vdaas/vald/pull/\1)%"`
+            BODY=`git log --pretty=format:'- %s' ${PREVIOUS_VERSION}..${RELEASE_BRANCH_NAME} | grep "#[[:digit:]]\+" | sed -e "s/\[\(patch\|minor\|major\)\] *//g" | sed -e "s%#\([[:digit:]]\+\)%[&](https://github.com/vdaas/vald/pull/\1)%"`
           fi
 
           CHANGELOG=`make changelog/next/print BODY="$BODY"`
