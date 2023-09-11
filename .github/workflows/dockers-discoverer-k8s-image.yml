@@ -17,7 +17,7 @@ name: "Build docker image: discoverer-k8s"
 on:
   push:
     branches:
-      - main
+      - "main"
       - "release/v*.*"
       - "!release/v*.*.*"
     tags:

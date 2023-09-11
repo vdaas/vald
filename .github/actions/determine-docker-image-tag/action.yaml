@@ -45,7 +45,7 @@ runs:
           echo "${tag_name}" > versions/VALD_VERSION
 
           primary_tag="${tag_name}"
-          default_tag="${tag_name}"
+          default_tag="nightly"
         elif [[ "${{ github.event_name }}" = "pull_request" || "${{ github.event_name }}" = "pull_request_target" ]]; then
           pr_num=`cat $GITHUB_EVENT_PATH | jq -r ".number"`
           echo "PR-${pr_num}" > versions/VALD_VERSION
@@ -69,7 +69,7 @@ runs:
           echo "${tag_name}" > versions/VALD_VERSION
 
           primary_tag="${tag_name}"
-          default_tag="${tag_name}"
+          default_tag="nightly"
         else
           primary_tag="unknown"
           default_tag="unknown"

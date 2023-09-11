@@ -34,6 +34,7 @@ jobs:
   semver-auto:
     runs-on: ubuntu-latest
     outputs:
+      RELEASE_BRANCH_NAME_PREFIX: ${{ steps.set_context.outputs.RELEASE_BRANCH_NAME }}
       RELEASE_TAG: ${{ steps.upgrade_semver.outputs.RELEASE_TAG }}
     steps:
       - uses: actions/checkout@v3
@@ -43,15 +44,15 @@ jobs:
       - name: Set Github context
         id: set_context
         run: |
-          RELEASE_BRANCH_NAME=`echo '${{ github.ref }}' | sed -e 's:^refs/heads/release/::'`
-          BRANCH_LATEST_TAG=`git tag | grep ${RELEASE_BRANCH_NAME} | tail -n 1`
+          RELEASE_BRANCH_NAME_PREFIX=`echo '${{ github.ref }}' | sed -e 's:^refs/heads/release/::'`
+          BRANCH_LATEST_TAG=`git tag | grep ${RELEASE_BRANCH_NAME_PREFIX} | tail -n 1`
           RELEASE_KIND=`echo "${{ github.event.head_commit.message }}" | sed -n -E 's:^\[(major|minor|patch)\].*:\1:p'`
 
-          echo "RELEASE_BRANCH_NAME=${RELEASE_BRANCH_NAME}" >> $GITHUB_OUTPUT # e.g) vx.x
-          echo "BRANCH_LATEST_TAG=${BRANCH_LATEST_TAG}"     >> $GITHUB_OUTPUT # e.g) vx.x.x or empty
-          echo "RELEASE_KIND=${RELEASE_KIND}"               >> $GITHUB_OUTPUT # e.g) major or minor or patch or empty
+          echo "RELEASE_BRANCH_NAME_PREFIX=${RELEASE_BRANCH_NAME_PREFIX}" >> $GITHUB_OUTPUT # e.g) vx.x
+          echo "BRANCH_LATEST_TAG=${BRANCH_LATEST_TAG}"                   >> $GITHUB_OUTPUT # e.g) vx.x.x or empty
+          echo "RELEASE_KIND=${RELEASE_KIND}"                             >> $GITHUB_OUTPUT # e.g) major or minor or patch or empty
 
-          echo "${RELEASE_BRANCH_NAME}"
+          echo "${RELEASE_BRANCH_NAME_PREFIX}"
           echo "${BRANCH_LATEST_TAG}"
           echo "${RELEASE_KIND}"
 
@@ -59,13 +60,13 @@ jobs:
         id: upgrade_semver
         if: ${{ steps.set_context.outputs.RELEASE_KIND != '' }}
         env:
-          RELEASE_BRANCH_NAME: ${{ steps.set_context.outputs.RELEASE_BRANCH_NAME }}
+          RELEASE_BRANCH_NAME_PREFIX: ${{ steps.set_context.outputs.RELEASE_BRANCH_NAME_PREFIX }}
           BRANCH_LATEST_TAG: ${{ steps.set_context.outputs.BRANCH_LATEST_TAG }}
           RELEASE_KIND: ${{ steps.set_context.outputs.RELEASE_KIND }}
         run: |
           if [ -z "${BRANCH_LATEST_TAG}" ]; then
             case ${RELEASE_KIND} in
-            major | minor) RELEASE_TAG="${RELEASE_BRANCH_NAME}.0"; ;;
+            major | minor) RELEASE_TAG="${RELEASE_BRANCH_NAME_PREFIX}.0"; ;;
             *) echo "not supported semver kind"; exit 1; ;;
             esac
           else
@@ -93,6 +94,7 @@ jobs:
     container:
       image: ghcr.io/vdaas/vald/vald-ci-container:${{ needs.detect-ci-container.outputs.TAG_NAME }}
     env:
+      RELEASE_BRANCH_NAME: release/${{ steps.semver-auto.outputs.RELEASE_BRANCH_NAME_PREFIX }}
       RELEASE_TAG: ${{ needs.semver-auto.outputs.RELEASE_TAG }}
     steps:
       - uses: actions/checkout@v3
@@ -104,9 +106,20 @@ jobs:
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
 
       - name: Update for new release
+        id: update_for_new_release
         run: |
+          # git checkout ${RELEASE_BRANCH_NAME} // TODO Check in the vald-ci-labs
+
           LAST_COMMIT_MESSAGE=`git log --pretty=format:%s -1`
           PR_NUM=`echo "${LAST_COMMIT_MESSAGE}" | grep -o "#[[:digit:]]\+" | sed -e 's/#//' | head -1`
+
+          PREVIOUS_VERSION=`cat versions/VALD_VERSION`
+          echo "${RELEASE_TAG}" > versions/VALD_VERSION
+
+          sed -i -e "s/^version: .*$/version: ${RELEASE_TAG}/" charts/vald/Chart.yaml
+          sed -i -r "s/^(\s*)tag\s*:\s*v[0-9]+\.[0-9]+\.[0-9]+\s*$/\1tag: ${RELEASE_TAG}/" charts/vald/values.yaml
+          sed -i -e "s/^version: .*$/version: ${RELEASE_TAG}/" charts/vald-helm-operator/Chart.yaml
+          sed -i -r "s/^(\s*)tag\s*:\s*v[0-9]+\.[0-9]+\.[0-9]+\s*$/\1tag: ${RELEASE_TAG}/" charts/vald-helm-operator/values.yaml
 
           make helm/docs/vald
           make helm/docs/vald-helm-operator
@@ -143,8 +156,28 @@ jobs:
 
           git remote set-url origin "https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
 
-          git push origin main
+          git push origin ${RELEASE_BRANCH_NAME}
           git push origin ${RELEASE_TAG}
 
           echo "RELEASE=true" >> $GITHUB_OUTPUT
           echo "VERSION=${RELEASE_TAG}" >> $GITHUB_OUTPUT
+        env:
+          GITHUB_USER: ${{ secrets.DISPATCH_USER }}
+          GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
+
+      - name: Create release
+        if: steps.update_for_new_release.outputs.RELEASE == 'true'
+        uses: softprops/action-gh-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
+        with:
+          tag_name: ${{ steps.update_for_new_release.outputs.VERSION }}
+          release_name: Release ${{ steps.update_for_new_release.outputs.VERSION }}
+          body: |
+            See [CHANGELOG.md](https://github.com/vdaas/vald/blob/${{ steps.update_for_new_release.outputs.VERSION }}/CHANGELOG.md) for details.
+          draft: false
+          prerelease: false
+
+      - name: Add the version to goproxy
+        run: |
+          curl "https://proxy.golang.org/github.com/vdaas/vald/@v/${{ steps.update_for_new_release.outputs.VERSION }}.info"
