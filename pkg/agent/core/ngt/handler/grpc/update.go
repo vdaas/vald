@@ -90,7 +90,8 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (res *
 		log.Warn(err)
 		return nil, err
 	}
-	err = s.ngt.UpdateWithTime(uuid, vec.GetVector(), req.GetConfig().GetTimestamp())
+	cfg := req.GetConfig()
+	err = s.ngt.UpdateWithTime(uuid, vec.GetVector(), cfg.GetTimestamp(), cfg.GetUpdateTimestampIfExists())
 	if err != nil {
 		var attrs []attribute.KeyValue
 		if errors.Is(err, errors.ErrObjectIDNotFound(vec.GetId())) {

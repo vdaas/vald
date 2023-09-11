@@ -1640,7 +1640,7 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (res *
 		return nil, err
 	}
 
-	if req.GetConfig().GetDisableBalancedUpdate() {
+	broadcastUpdate := func() (res *payload.Object_Location, err error) {
 		var (
 			mu      sync.RWMutex
 			aeCount atomic.Uint64
@@ -1779,6 +1779,10 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (res *
 		return locs, nil
 	}
 
+	if req.GetConfig().GetDisableBalancedUpdate() {
+		return broadcastUpdate()
+	}
+
 	if !req.GetConfig().GetSkipStrictExistCheck() {
 		vec, err := s.getObject(ctx, uuid)
 		if err != nil || vec == nil {
@@ -1833,6 +1837,10 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (res *
 			return nil, err
 		}
 		if conv.F32stos(vec.GetVector()) == conv.F32stos(req.GetVector().GetVector()) {
+			if req.GetConfig().GetUpdateTimestampIfExists() {
+				// if the vector is the same, boardcast update request to update index timestamp
+				return broadcastUpdate()
+			}
 			if err == nil {
 				err = errors.ErrSameVectorAlreadyExists(uuid, vec.GetVector(), req.GetVector().GetVector())
 			}

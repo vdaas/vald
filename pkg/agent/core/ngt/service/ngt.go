@@ -58,8 +58,8 @@ type NGT interface {
 	InsertWithTime(uuid string, vec []float32, t int64) (err error)
 	InsertMultiple(vecs map[string][]float32) (err error)
 	InsertMultipleWithTime(vecs map[string][]float32, t int64) (err error)
-	Update(uuid string, vec []float32) (err error)
-	UpdateWithTime(uuid string, vec []float32, t int64) (err error)
+	Update(uuid string, vec []float32, updateTs bool) (err error)
+	UpdateWithTime(uuid string, vec []float32, t int64, updateTs bool) (err error)
 	UpdateMultiple(vecs map[string][]float32) (err error)
 	UpdateMultipleWithTime(vecs map[string][]float32, t int64) (err error)
 	Delete(uuid string) (err error)
@@ -992,19 +992,23 @@ func (n *ngt) insertMultiple(vecs map[string][]float32, now int64, validation bo
 	return err
 }
 
-func (n *ngt) Update(uuid string, vec []float32) (err error) {
-	return n.update(uuid, vec, time.Now().UnixNano())
+func (n *ngt) Update(uuid string, vec []float32, updateTs bool) (err error) {
+	return n.update(uuid, vec, time.Now().UnixNano(), updateTs)
 }
 
-func (n *ngt) UpdateWithTime(uuid string, vec []float32, t int64) (err error) {
+func (n *ngt) UpdateWithTime(uuid string, vec []float32, t int64, updateTs bool) (err error) {
 	if t <= 0 {
 		t = time.Now().UnixNano()
 	}
-	return n.update(uuid, vec, t)
+	return n.update(uuid, vec, t, updateTs)
 }
 
-func (n *ngt) update(uuid string, vec []float32, t int64) (err error) {
+func (n *ngt) update(uuid string, vec []float32, t int64, updateTs bool) (err error) {
 	if err = n.readyForUpdate(uuid, vec); err != nil {
+		if updateTs && errors.Is(err, errors.ErrUUIDAlreadyExists(uuid)) {
+			// update timestamp if UUID already exists
+			return n.updateTimestamp(uuid, vec, t)
+		}
 		return err
 	}
 	err = n.delete(uuid, t, true) // `true` is to return NotFound error with non-existent ID
@@ -1041,6 +1045,24 @@ func (n *ngt) updateMultiple(vecs map[string][]float32, t int64) (err error) {
 	}
 	t++
 	return n.insertMultiple(vecs, t, false)
+}
+
+func (n *ngt) updateTimestamp(uuid string, vec []float32, t int64) error {
+	uid, ts, ok := n.kvs.Get(uuid)
+	if !ok {
+		return errors.ErrObjectIDNotFound(uuid)
+	}
+	if ts == t {
+		return errors.ErrUUIDAlreadyExists(uuid)
+	}
+
+	// PushInsert will update the timestamp even the index existed in vqueue
+	if err := n.vq.PushInsert(uuid, vec, t); err != nil {
+		return err
+	}
+	n.kvs.Set(uuid, uid, t)
+
+	return nil
 }
 
 func (n *ngt) Delete(uuid string) (err error) {

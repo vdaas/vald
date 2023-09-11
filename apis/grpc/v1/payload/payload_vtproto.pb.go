@@ -576,10 +576,11 @@ func (m *Update_Config) CloneVT() *Update_Config {
 		return (*Update_Config)(nil)
 	}
 	r := &Update_Config{
-		SkipStrictExistCheck:  m.SkipStrictExistCheck,
-		Filters:               m.Filters.CloneVT(),
-		Timestamp:             m.Timestamp,
-		DisableBalancedUpdate: m.DisableBalancedUpdate,
+		SkipStrictExistCheck:    m.SkipStrictExistCheck,
+		Filters:                 m.Filters.CloneVT(),
+		Timestamp:               m.Timestamp,
+		DisableBalancedUpdate:   m.DisableBalancedUpdate,
+		UpdateTimestampIfExists: m.UpdateTimestampIfExists,
 	}
 	if len(m.unknownFields) > 0 {
 		r.unknownFields = make([]byte, len(m.unknownFields))
@@ -698,10 +699,11 @@ func (m *Upsert_Config) CloneVT() *Upsert_Config {
 		return (*Upsert_Config)(nil)
 	}
 	r := &Upsert_Config{
-		SkipStrictExistCheck:  m.SkipStrictExistCheck,
-		Filters:               m.Filters.CloneVT(),
-		Timestamp:             m.Timestamp,
-		DisableBalancedUpdate: m.DisableBalancedUpdate,
+		SkipStrictExistCheck:    m.SkipStrictExistCheck,
+		Filters:                 m.Filters.CloneVT(),
+		Timestamp:               m.Timestamp,
+		DisableBalancedUpdate:   m.DisableBalancedUpdate,
+		UpdateTimestampIfExists: m.UpdateTimestampIfExists,
 	}
 	if len(m.unknownFields) > 0 {
 		r.unknownFields = make([]byte, len(m.unknownFields))
@@ -2432,6 +2434,9 @@ func (this *Update_Config) EqualVT(that *Update_Config) bool {
 	if this.DisableBalancedUpdate != that.DisableBalancedUpdate {
 		return false
 	}
+	if this.UpdateTimestampIfExists != that.UpdateTimestampIfExists {
+		return false
+	}
 	return string(this.unknownFields) == string(that.unknownFields)
 }
 
@@ -2587,6 +2592,9 @@ func (this *Upsert_Config) EqualVT(that *Upsert_Config) bool {
 		return false
 	}
 	if this.DisableBalancedUpdate != that.DisableBalancedUpdate {
+		return false
+	}
+	if this.UpdateTimestampIfExists != that.UpdateTimestampIfExists {
 		return false
 	}
 	return string(this.unknownFields) == string(that.unknownFields)
@@ -5173,6 +5181,16 @@ func (m *Update_Config) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 		i -= len(m.unknownFields)
 		copy(dAtA[i:], m.unknownFields)
 	}
+	if m.UpdateTimestampIfExists {
+		i--
+		if m.UpdateTimestampIfExists {
+			dAtA[i] = 1
+		} else {
+			dAtA[i] = 0
+		}
+		i--
+		dAtA[i] = 0x28
+	}
 	if m.DisableBalancedUpdate {
 		i--
 		if m.DisableBalancedUpdate {
@@ -5479,6 +5497,16 @@ func (m *Upsert_Config) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 	if m.unknownFields != nil {
 		i -= len(m.unknownFields)
 		copy(dAtA[i:], m.unknownFields)
+	}
+	if m.UpdateTimestampIfExists {
+		i--
+		if m.UpdateTimestampIfExists {
+			dAtA[i] = 1
+		} else {
+			dAtA[i] = 0
+		}
+		i--
+		dAtA[i] = 0x28
 	}
 	if m.DisableBalancedUpdate {
 		i--
@@ -8211,6 +8239,9 @@ func (m *Update_Config) SizeVT() (n int) {
 	if m.DisableBalancedUpdate {
 		n += 2
 	}
+	if m.UpdateTimestampIfExists {
+		n += 2
+	}
 	n += len(m.unknownFields)
 	return n
 }
@@ -8314,6 +8345,9 @@ func (m *Upsert_Config) SizeVT() (n int) {
 		n += 1 + sov(uint64(m.Timestamp))
 	}
 	if m.DisableBalancedUpdate {
+		n += 2
+	}
+	if m.UpdateTimestampIfExists {
 		n += 2
 	}
 	n += len(m.unknownFields)
@@ -11926,6 +11960,26 @@ func (m *Update_Config) UnmarshalVT(dAtA []byte) error {
 				}
 			}
 			m.DisableBalancedUpdate = bool(v != 0)
+		case 5:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field UpdateTimestampIfExists", wireType)
+			}
+			var v int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			m.UpdateTimestampIfExists = bool(v != 0)
 		default:
 			iNdEx = preIndex
 			skippy, err := skip(dAtA[iNdEx:])
@@ -12575,6 +12629,26 @@ func (m *Upsert_Config) UnmarshalVT(dAtA []byte) error {
 				}
 			}
 			m.DisableBalancedUpdate = bool(v != 0)
+		case 5:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field UpdateTimestampIfExists", wireType)
+			}
+			var v int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			m.UpdateTimestampIfExists = bool(v != 0)
 		default:
 			iNdEx = preIndex
 			skippy, err := skip(dAtA[iNdEx:])
