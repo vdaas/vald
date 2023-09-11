@@ -24,7 +24,7 @@ import (
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
-	"golang.org/x/sync/errgroup"
+	"github.com/vdaas/vald/internal/sync/errgroup"
 )
 
 func (j *job) search(ctx context.Context, ech chan error) error {
@@ -47,10 +47,8 @@ func (j *job) search(ctx context.Context, ech chan error) error {
 		}(),
 	}
 	sres := make([]*payload.Search_Response, j.dataset.Indexes)
-	eg, egctx := errgroup.WithContext(ctx)
+	eg, egctx := errgroup.New(ctx)
 	eg.SetLimit(j.concurrencyLimit)
-	// eg, egctx := errgroup.New(ctx)
-	// eg.Limitation(j.concurrencyLimit)
 	for i := j.dataset.Range.Start; i <= j.dataset.Range.End; i++ {
 		iter := i
 		eg.Go(func() error {
@@ -60,7 +58,6 @@ func (j *job) search(ctx context.Context, ech chan error) error {
 				log.Errorf("[benchmark job] limiter error is detected: %s", err.Error())
 				if errors.Is(err, context.Canceled) {
 					return nil
-					// return errors.Join(err, context.Canceled)
 				}
 				select {
 				case <-egctx.Done():
@@ -83,13 +80,7 @@ func (j *job) search(ctx context.Context, ech chan error) error {
 				case <-egctx.Done():
 					log.Errorf("[benchmark job] context error is detected: %s\t%s", err.Error(), egctx.Err())
 					return nil
-					// return errors.Join(err, egctx.Err())
 				default:
-					// if st, ok := status.FromError(err); ok {
-					// 	if st.Code() != codes.NotFound {
-					// 		log.Warnf("[benchmark job] search error is detected: code = %d, msg = %s", st.Code(), err.Error())
-					// 	}
-					// }
 				}
 			}
 			if res != nil && j.searchConfig.EnableLinearSearch {
@@ -116,7 +107,6 @@ func (j *job) search(ctx context.Context, ech chan error) error {
 				if err != nil {
 					log.Errorf("[benchmark job] limiter error is detected: %s", err.Error())
 					if errors.Is(err, context.Canceled) {
-						// return errors.Join(err, context.Canceled)
 						return nil
 					}
 					select {
@@ -142,11 +132,6 @@ func (j *job) search(ctx context.Context, ech chan error) error {
 						log.Errorf("[benchmark job] context error is detected: %s\t%s", err.Error(), egctx.Err())
 						return errors.Join(err, egctx.Err())
 					default:
-						// if st, ok := status.FromError(err); ok {
-						// 	if st.Code() != codes.NotFound {
-						// 		log.Warnf("[benchmark job] linear search error is detected: code = %d, msg = %s", st.Code(), err.Error())
-						// 	}
-						// }
 					}
 				}
 				if res != nil {
