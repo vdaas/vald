@@ -22,7 +22,6 @@ import (
 	"os"
 
 	iconf "github.com/vdaas/vald/internal/config"
-	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc"
@@ -33,6 +32,7 @@ import (
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/servers/server"
 	"github.com/vdaas/vald/internal/servers/starter"
+	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/pkg/tools/benchmark/operator/config"
 	handler "github.com/vdaas/vald/pkg/tools/benchmark/operator/handler/grpc"
 	"github.com/vdaas/vald/pkg/tools/benchmark/operator/handler/rest"
