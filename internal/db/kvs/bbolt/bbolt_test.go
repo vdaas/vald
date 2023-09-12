@@ -101,7 +101,7 @@ func Test_bbolt_AsyncSet(t *testing.T) {
 
 	eg, _ := errgroup.New(context.Background())
 	for k, v := range kv {
-		b.AsyncSet(&eg, []byte(k), []byte(v))
+		b.AsyncSet(eg, []byte(k), []byte(v))
 	}
 
 	// wait until all set is done

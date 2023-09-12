@@ -25,7 +25,7 @@ import (
 type Bbolt interface {
 	Set(key, val []byte) error
 	Get(key []byte) ([]byte, bool, error)
-	AsyncSet(eg *errgroup.Group, key, val []byte) error
+	AsyncSet(eg errgroup.Group, key, val []byte) error
 	Close(remove bool) error
 }
 
@@ -99,11 +99,8 @@ func (b *bbolt) Get(key []byte) ([]byte, bool, error) {
 // AsyncSet sets the key and value asynchronously for better write performance.
 // It accumulates the keys and values until the batch size is reached or the timeout comes, then
 // writes them all at once. Wait for the errgroup to make sure all the batches finished if required.
-func (b *bbolt) AsyncSet(eg *errgroup.Group, key, val []byte) error {
-	if eg == nil {
-		return errors.ErrNilErrGroup
-	}
-	(*eg).Go(func() error {
+func (b *bbolt) AsyncSet(eg errgroup.Group, key, val []byte) error {
+	eg.Go(func() error {
 		b.db.Batch(func(tx *bolt.Tx) error {
 			b := tx.Bucket([]byte(b.bucket))
 			err := b.Put(key, val)
