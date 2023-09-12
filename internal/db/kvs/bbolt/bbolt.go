@@ -43,7 +43,7 @@ func New(file, bucket string, opts *bolt.Options) (*Bbolt, error) {
 	}, nil
 }
 
-func (b *Bbolt) Set(key []byte, val []byte) error {
+func (b *Bbolt) Set(key, val []byte) error {
 	return b.db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(b.bucket))
 		err := b.Put(key, val)
@@ -79,7 +79,7 @@ func (b *Bbolt) Get(key []byte) ([]byte, bool, error) {
 // AsyncSet sets the key and value asynchronously for better write performance.
 // It accumulates the keys and values until the batch size is reached or the timeout comes, then
 // writes them all at once. Wait for the errgroup to make sure all the batches finished if required.
-func (b *Bbolt) AsyncSet(eg *errgroup.Group, key []byte, val []byte) error {
+func (b *Bbolt) AsyncSet(eg *errgroup.Group, key, val []byte) error {
 	if eg == nil {
 		return errors.ErrNilErrGroup
 	}
