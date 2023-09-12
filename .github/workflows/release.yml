@@ -34,7 +34,7 @@ jobs:
   semver-auto:
     runs-on: ubuntu-latest
     outputs:
-      RELEASE_BRANCH_NAME_PREFIX: ${{ steps.set_context.outputs.RELEASE_BRANCH_NAME_PREFIX }}
+      RELEASE_BRANCH_NAME_SUFFIX: ${{ steps.set_context.outputs.RELEASE_BRANCH_NAME_SUFFIX }}
       RELEASE_TAG: ${{ steps.upgrade_semver.outputs.RELEASE_TAG }}
       RELEASE: ${{ steps.upgrade_semver.outputs.RELEASE }}
     steps:
@@ -45,15 +45,15 @@ jobs:
       - name: Set Github context
         id: set_context
         run: |
-          RELEASE_BRANCH_NAME_PREFIX=`echo '${{ github.ref }}' | sed -e 's:^refs/heads/release/::'`
-          BRANCH_LATEST_TAG=`git tag | grep ${RELEASE_BRANCH_NAME_PREFIX} | tail -n 1`
+          RELEASE_BRANCH_NAME_SUFFIX=`echo '${{ github.ref }}' | sed -e 's:^refs/heads/release/::'`
+          BRANCH_LATEST_TAG=`git tag | grep ${RELEASE_BRANCH_NAME_SUFFIX} | tail -n 1`
           RELEASE_KIND=`echo "${{ github.event.head_commit.message }}" | sed -n -E 's:^\[(major|minor|patch)\].*:\1:p'`
 
-          echo "RELEASE_BRANCH_NAME_PREFIX=${RELEASE_BRANCH_NAME_PREFIX}" >> $GITHUB_OUTPUT # e.g) vx.x
+          echo "RELEASE_BRANCH_NAME_SUFFIX=${RELEASE_BRANCH_NAME_SUFFIX}" >> $GITHUB_OUTPUT # e.g) vx.x
           echo "BRANCH_LATEST_TAG=${BRANCH_LATEST_TAG}"                   >> $GITHUB_OUTPUT # e.g) vx.x.x or empty
           echo "RELEASE_KIND=${RELEASE_KIND}"                             >> $GITHUB_OUTPUT # e.g) major or minor or patch or empty
 
-          echo "${RELEASE_BRANCH_NAME_PREFIX}"
+          echo "${RELEASE_BRANCH_NAME_SUFFIX}"
           echo "${BRANCH_LATEST_TAG}"
           echo "${RELEASE_KIND}"
 
@@ -61,13 +61,13 @@ jobs:
         id: upgrade_semver
         if: ${{ steps.set_context.outputs.RELEASE_KIND != '' }}
         env:
-          RELEASE_BRANCH_NAME_PREFIX: ${{ steps.set_context.outputs.RELEASE_BRANCH_NAME_PREFIX }}
+          RELEASE_BRANCH_NAME_SUFFIX: ${{ steps.set_context.outputs.RELEASE_BRANCH_NAME_SUFFIX }}
           BRANCH_LATEST_TAG: ${{ steps.set_context.outputs.BRANCH_LATEST_TAG }}
           RELEASE_KIND: ${{ steps.set_context.outputs.RELEASE_KIND }}
         run: |
           if [ -z "${BRANCH_LATEST_TAG}" ]; then
             case ${RELEASE_KIND} in
-            major | minor) RELEASE_TAG="${RELEASE_BRANCH_NAME_PREFIX}.0"; ;;
+            major | minor) RELEASE_TAG="${RELEASE_BRANCH_NAME_SUFFIX}.0"; ;;
             *) echo "not supported semver kind"; exit 1; ;;
             esac
           else
@@ -98,7 +98,7 @@ jobs:
     container:
       image: ghcr.io/vdaas/vald/vald-ci-container:${{ needs.detect-ci-container.outputs.TAG_NAME }}
     env:
-      RELEASE_BRANCH_NAME: release/${{ needs.semver-auto.outputs.RELEASE_BRANCH_NAME_PREFIX }}
+      RELEASE_BRANCH_NAME: release/${{ needs.semver-auto.outputs.RELEASE_BRANCH_NAME_SUFFIX }}
       RELEASE_TAG: ${{ needs.semver-auto.outputs.RELEASE_TAG }}
     steps:
       - uses: actions/checkout@v3
