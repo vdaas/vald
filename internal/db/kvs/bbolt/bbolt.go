@@ -15,19 +15,19 @@ type Bbolt struct {
 	bucket string
 }
 
-const default_bucket = "vald-bbolt-bucket"
+const defaultBucket = "vald-bbolt-bucket"
 
 // New returns a new Bbolt instance.
 // If file does not exist, it creates a new file. If bucket is empty, it uses default_bucket.
 // If opts is nil, it uses default options.
-func New(file string, bucket string, opts *bolt.Options) (*Bbolt, error) {
+func New(file, bucket string, opts *bolt.Options) (*Bbolt, error) {
 	db, err := bolt.Open(file, 0600, opts)
 	if err != nil {
 		return nil, err
 	}
 
 	if bucket == "" {
-		bucket = default_bucket
+		bucket = defaultBucket
 	}
 	db.Update(func(tx *bolt.Tx) error {
 		_, err := tx.CreateBucket([]byte(bucket))
@@ -43,23 +43,19 @@ func New(file string, bucket string, opts *bolt.Options) (*Bbolt, error) {
 	}, nil
 }
 
-func (b *Bbolt) Set(key string, val []byte) error {
-	if err := b.db.Update(func(tx *bolt.Tx) error {
+func (b *Bbolt) Set(key []byte, val []byte) error {
+	return b.db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(b.bucket))
-		err := b.Put([]byte(key), val)
+		err := b.Put(key, val)
 		return err
-	}); err != nil {
-		return err
-	}
-
-	return nil
+	})
 }
 
-func (b *Bbolt) Get(key string) ([]byte, bool, error) {
+func (b *Bbolt) Get(key []byte) ([]byte, bool, error) {
 	var val []byte
 	if err := b.db.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(b.bucket))
-		ret := b.Get([]byte(key))
+		ret := b.Get(key)
 		if ret == nil {
 			// key not found. just return without copying anything to val
 			return nil
@@ -83,14 +79,14 @@ func (b *Bbolt) Get(key string) ([]byte, bool, error) {
 // AsyncSet sets the key and value asynchronously for better write performance.
 // It accumulates the keys and values until the batch size is reached or the timeout comes, then
 // writes them all at once. Wait for the errgroup to make sure all the batches finished if required.
-func (b *Bbolt) AsyncSet(eg *errgroup.Group, key string, val []byte) error {
+func (b *Bbolt) AsyncSet(eg *errgroup.Group, key []byte, val []byte) error {
 	if eg == nil {
 		return errors.ErrNilErrGroup
 	}
 	(*eg).Go(func() error {
 		b.db.Batch(func(tx *bolt.Tx) error {
 			b := tx.Bucket([]byte(b.bucket))
-			err := b.Put([]byte(key), val)
+			err := b.Put(key, val)
 			return err
 		})
 		return nil

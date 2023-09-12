@@ -19,15 +19,15 @@ func TestGetSetClose(t *testing.T) {
 	b, err := bbolt.New(tmpfile, "", nil)
 	require.NoError(t, err)
 
-	err = b.Set("key", []byte("value"))
+	err = b.Set([]byte("key"), []byte("value"))
 	require.NoError(t, err)
 
-	val, ok, err := b.Get("key")
+	val, ok, err := b.Get([]byte("key"))
 	require.NoError(t, err)
 	require.True(t, ok)
 	require.Equal(t, []byte("value"), val)
 
-	val, ok, err = b.Get("no exist key")
+	val, ok, err = b.Get([]byte("no exist key"))
 	require.NoError(t, err)
 	require.False(t, ok)
 	require.Nil(t, val)
@@ -39,7 +39,7 @@ func TestGetSetClose(t *testing.T) {
 	require.NoError(t, err)
 
 	// recover from the file
-	val, ok, err = b.Get("key")
+	val, ok, err = b.Get([]byte("key"))
 	require.NoError(t, err)
 	require.True(t, ok)
 	require.Equal(t, []byte("value"), val)
@@ -70,14 +70,14 @@ func TestAsyncSet(t *testing.T) {
 
 	eg, _ := errgroup.New(context.Background())
 	for k, v := range kv {
-		b.AsyncSet(&eg, k, []byte(v))
+		b.AsyncSet(&eg, []byte(k), []byte(v))
 	}
 
 	// wait until all set is done
 	eg.Wait()
 
 	for k := range kv {
-		_, ok, err := b.Get(k)
+		_, ok, err := b.Get([]byte(k))
 		require.NoError(t, err)
 		require.True(t, ok)
 	}
