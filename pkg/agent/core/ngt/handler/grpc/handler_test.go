@@ -66,7 +66,7 @@ func newIndexedNGTService(ctx context.Context, eg errgroup.Group, t request.Obje
 
 		// insert and create index
 		for _, req := range reqs.GetRequests() {
-			err := ngt.Insert(req.GetVector().GetId(), req.GetVector().GetVector())
+			err := ngt.InsertWithTime(req.GetVector().GetId(), req.GetVector().GetVector(), req.GetVector().GetTimestamp())
 			if err != nil {
 				return nil, err
 			}
