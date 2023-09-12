@@ -233,6 +233,8 @@ message Update {
     // A flag to disable balanced update (split remove -> insert operation)
     // during update operation.
     bool disable_balanced_update = 4;
+    // A flag to enable timestamp update when the same index exists.
+    bool update_timestamp_if_exists = 5;
   }
 }
 
@@ -279,6 +281,8 @@ message Upsert {
     // A flag to disable balanced update (split remove -> insert operation)
     // during update operation.
     bool disable_balanced_update = 4;
+    // A flag to enable timestamp update when the same index exists.
+    bool update_timestamp_if_exists = 5;
   }
 }
 
