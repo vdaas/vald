@@ -27,60 +27,150 @@ import (
 func TestNew(t *testing.T) {
 	t.Parallel()
 
-	tempdir := t.TempDir()
-	tmpfile := filepath.Join(tempdir, "test.db")
+	type test struct {
+		name     string
+		testfunc func(t *testing.T)
+	}
 
-	b, err := bbolt.New(tmpfile, "", nil)
-	require.NoError(t, err)
-	err = b.Close(false)
-	require.NoError(t, err)
+	tests := []test{
+		{
+			name: "New returns bbolt instance with new file when file does not exist",
+			testfunc: func(t *testing.T) {
+				tempdir := t.TempDir()
+				tmpfile := filepath.Join(tempdir, "test.db")
 
-	// can add new......
-	_, err = bbolt.New(tmpfile, "mybucket", nil)
-	require.NoError(t, err)
-	err = b.Close(true)
-	require.NoError(t, err)
+				b, err := bbolt.New(tmpfile, "", nil)
+				require.NoError(t, err)
+				require.NotNil(t, b)
+			},
+		},
+		{
+			name: "New returns bbolt instance with existing file",
+			testfunc: func(t *testing.T) {
+				tempdir := t.TempDir()
+				tmpfile := filepath.Join(tempdir, "test.db")
+
+				// create a file
+				f, err := os.Create(tmpfile)
+				require.NoError(t, err)
+				err = f.Close()
+				require.NoError(t, err)
+
+				b, err := bbolt.New(f.Name(), "", nil)
+				require.NoError(t, err)
+				require.NotNil(t, b)
+			},
+		},
+		{
+			name: "New returns bbolt with custom bucket name",
+			testfunc: func(t *testing.T) {
+				tempdir := t.TempDir()
+				tmpfile := filepath.Join(tempdir, "test.db")
+
+				b, err := bbolt.New(tmpfile, "my bucket name", nil)
+				require.NoError(t, err)
+				require.NotNil(t, b)
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			test.testfunc(tt)
+		})
+	}
 }
 
 func Test_bbolt_GetSetClose(t *testing.T) {
 	t.Parallel()
 
-	tempdir := t.TempDir()
-	tmpfile := filepath.Join(tempdir, "test.db")
-	b, err := bbolt.New(tmpfile, "", nil)
-	require.NoError(t, err)
+	type test struct {
+		name     string
+		testfunc func(t *testing.T)
+	}
 
-	err = b.Set([]byte("key"), []byte("value"))
-	require.NoError(t, err)
+	setup := func(t *testing.T) (b bbolt.Bbolt, file string) {
+		tempdir := t.TempDir()
+		tmpfile := filepath.Join(tempdir, "test.db")
+		b, err := bbolt.New(tmpfile, "", nil)
+		require.NoError(t, err)
 
-	val, ok, err := b.Get([]byte("key"))
-	require.NoError(t, err)
-	require.True(t, ok)
-	require.Equal(t, []byte("value"), val)
+		return b, tmpfile
+	}
 
-	val, ok, err = b.Get([]byte("no exist key"))
-	require.NoError(t, err)
-	require.False(t, ok)
-	require.Nil(t, val)
+	tests := []test{
+		{
+			name: "Succeed to set and get with the key returns the value",
+			testfunc: func(t *testing.T) {
+				b, _ := setup(t)
 
-	err = b.Close(false)
-	require.NoError(t, err)
+				k, v := []byte("key"), []byte("value")
+				err := b.Set(k, v)
+				require.NoError(t, err)
 
-	b, err = bbolt.New(tmpfile, "", nil)
-	require.NoError(t, err)
+				val, ok, err := b.Get(k)
+				require.NoError(t, err)
+				require.True(t, ok)
+				require.Equal(t, v, val)
+			},
+		},
+		{
+			name: "Get with non-existing key returns false",
+			testfunc: func(t *testing.T) {
+				b, _ := setup(t)
+				val, ok, err := b.Get([]byte("no exist key"))
+				require.NoError(t, err)
+				require.False(t, ok)
+				require.Nil(t, val)
+			},
+		},
+		{
+			name: "Successfully close without removing and recover from the db file",
+			testfunc: func(t *testing.T) {
+				b, file := setup(t)
+				k, v := []byte("key"), []byte("value")
+				err := b.Set(k, v)
+				require.NoError(t, err)
 
-	// recover from the file
-	val, ok, err = b.Get([]byte("key"))
-	require.NoError(t, err)
-	require.True(t, ok)
-	require.Equal(t, []byte("value"), val)
+				err = b.Close(false)
+				require.NoError(t, err)
 
-	err = b.Close(true)
-	require.NoError(t, err)
+				// recover from the file
+				b, err = bbolt.New(file, "", nil)
+				require.NoError(t, err)
 
-	// now the file is deleted
-	_, err = os.Stat(tmpfile)
-	require.True(t, os.IsNotExist(err))
+				res, ok, err := b.Get(k)
+				require.NoError(t, err)
+				require.True(t, ok)
+				require.Equal(t, v, res)
+			},
+		},
+		{
+			name: "Successfully close with removing",
+			testfunc: func(t *testing.T) {
+				b, file := setup(t)
+				k, v := []byte("key"), []byte("value")
+				err := b.Set(k, v)
+				require.NoError(t, err)
+
+				// set remove flag to true
+				err = b.Close(true)
+				require.NoError(t, err)
+
+				require.NoFileExists(t, file)
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			test.testfunc(tt)
+		})
+	}
 }
 
 func Test_bbolt_AsyncSet(t *testing.T) {
