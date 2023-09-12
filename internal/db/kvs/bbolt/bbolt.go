@@ -22,7 +22,14 @@ import (
 	bolt "go.etcd.io/bbolt"
 )
 
-type Bbolt struct {
+type Bbolt interface {
+	Set(key, val []byte) error
+	Get(key []byte) ([]byte, bool, error)
+	AsyncSet(eg *errgroup.Group, key, val []byte) error
+	Close(remove bool) error
+}
+
+type bbolt struct {
 	db     *bolt.DB
 	file   string
 	bucket string
@@ -33,7 +40,7 @@ const defaultBucket = "vald-bbolt-bucket"
 // New returns a new Bbolt instance.
 // If file does not exist, it creates a new file. If bucket is empty, it uses default_bucket.
 // If opts is nil, it uses default options.
-func New(file, bucket string, opts *bolt.Options) (*Bbolt, error) {
+func New(file, bucket string, opts *bolt.Options) (Bbolt, error) {
 	db, err := bolt.Open(file, 0o600, opts)
 	if err != nil {
 		return nil, err
@@ -49,14 +56,14 @@ func New(file, bucket string, opts *bolt.Options) (*Bbolt, error) {
 		}
 		return nil
 	})
-	return &Bbolt{
+	return &bbolt{
 		db:     db,
 		file:   file,
 		bucket: bucket,
 	}, nil
 }
 
-func (b *Bbolt) Set(key, val []byte) error {
+func (b *bbolt) Set(key, val []byte) error {
 	return b.db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(b.bucket))
 		err := b.Put(key, val)
@@ -64,7 +71,7 @@ func (b *Bbolt) Set(key, val []byte) error {
 	})
 }
 
-func (b *Bbolt) Get(key []byte) ([]byte, bool, error) {
+func (b *bbolt) Get(key []byte) ([]byte, bool, error) {
 	var val []byte
 	if err := b.db.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(b.bucket))
@@ -92,7 +99,7 @@ func (b *Bbolt) Get(key []byte) ([]byte, bool, error) {
 // AsyncSet sets the key and value asynchronously for better write performance.
 // It accumulates the keys and values until the batch size is reached or the timeout comes, then
 // writes them all at once. Wait for the errgroup to make sure all the batches finished if required.
-func (b *Bbolt) AsyncSet(eg *errgroup.Group, key, val []byte) error {
+func (b *bbolt) AsyncSet(eg *errgroup.Group, key, val []byte) error {
 	if eg == nil {
 		return errors.ErrNilErrGroup
 	}
@@ -109,7 +116,7 @@ func (b *Bbolt) AsyncSet(eg *errgroup.Group, key, val []byte) error {
 }
 
 // Close closes the database and removes the file if remove is true.
-func (b *Bbolt) Close(remove bool) (err error) {
+func (b *bbolt) Close(remove bool) (err error) {
 	if cerr := b.db.Close(); cerr != nil {
 		err = cerr
 	}
