@@ -24,7 +24,25 @@ import (
 	"github.com/vdaas/vald/internal/sync/errgroup"
 )
 
-func TestGetSetClose(t *testing.T) {
+func TestNew(t *testing.T) {
+	t.Parallel()
+
+	tempdir := t.TempDir()
+	tmpfile := filepath.Join(tempdir, "test.db")
+
+	b, err := bbolt.New(tmpfile, "", nil)
+	require.NoError(t, err)
+	err = b.Close(false)
+	require.NoError(t, err)
+
+	// can add new......
+	_, err = bbolt.New(tmpfile, "mybucket", nil)
+	require.NoError(t, err)
+	err = b.Close(true)
+	require.NoError(t, err)
+}
+
+func Test_bbolt_GetSetClose(t *testing.T) {
 	t.Parallel()
 
 	tempdir := t.TempDir()
@@ -65,7 +83,7 @@ func TestGetSetClose(t *testing.T) {
 	require.True(t, os.IsNotExist(err))
 }
 
-func TestAsyncSet(t *testing.T) {
+func Test_bbolt_AsyncSet(t *testing.T) {
 	t.Parallel()
 
 	tempdir := t.TempDir()
@@ -98,3 +116,5 @@ func TestAsyncSet(t *testing.T) {
 	err = b.Close(true)
 	require.NoError(t, err)
 }
+
+// NOT IMPLEMENTED BELOW
