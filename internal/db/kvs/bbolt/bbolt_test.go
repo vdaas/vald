@@ -195,7 +195,8 @@ func Test_bbolt_AsyncSet(t *testing.T) {
 	}
 
 	// wait until all set is done
-	eg.Wait()
+	err = eg.Wait()
+	require.NoError(t, err)
 
 	for k := range kv {
 		_, ok, err := b.Get([]byte(k))
