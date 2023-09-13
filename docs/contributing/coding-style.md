@@ -1363,3 +1363,48 @@ tests := []test {
     }
 }
 ```
+
+## Testing policy
+
+In Vald, the implementation code is divided into different packages based on the context of the implementation.
+
+Based on the context of the package, we decided to apply different testing policies on each package to fit their needs.
+
+### Internal package
+
+Internal package `./internal` contains internal used library code. It is written to be reusable to solve common problems.
+
+It is very important to make sure that the commonly used library code works correctly, so we decided to apply C1 coverage (branch coverage) to the `./internal` package.
+
+C1 coverage means to cover the test on each condition and ensure each condition (true and false) is evaluated on the test code.
+
+### Pkg package
+
+Pkg package `./pkg` contains the business logic of the component in Vald.
+
+In the `./pkg` package, the business logic implementation is divided into each component, and then in each component package, the specific business logic is divided into different packages.
+
+Here is a common example of the package structure in `./pkg` package.
+
+- ./pkg/{component}/config
+- ./pkg/{component}/handler
+- ./pkg/{component}/router
+- ./pkg/{component}/service
+- ./pkg/{component}/usecase
+
+For example, the implementation of the use case layer of the Vald LB gateway will be `./pkg/gateway/lb/usecase`.
+
+Since each package has its purpose, we decided to apply different strategies to each package to fit its purpose.
+
+| Package                        | Testing strategy                                                                                               |
+| ------------------------------ | -------------------------------------------------------------------------------------------------------------- |
+| ./pkg/{component}/config       | Only test if config file can be read and the corresponding value is set                                        |
+| ./pkg/{component}/handler/rest | No need to test                                                                                                |
+| ./pkg/{component}/handler/grpc | Basically no test, other than testing bugfix (Detailed tests of business logic should be written in E2E tests) |
+| ./pkg/{component}/router       | No need to test                                                                                                |
+| ./pkg/{component}/service      | Test only interface functions                                                                                  |
+| ./pkg/{component}/usecase      | Test only New() function                                                                                       |
+
+For the rest of the `./pkg` packages, we decided to implement the unit test for the exported function only.
+
+Please follow the [unit test guideline](./unit-test-guideline.md) for more details on how to implement good unit test.
