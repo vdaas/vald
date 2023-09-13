@@ -32,7 +32,7 @@ type Bbolt interface {
 type bbolt struct {
 	db     *bolt.DB
 	file   string
-	bucket string
+	bucket []byte
 }
 
 const defaultBucket = "vald-bbolt-bucket"
@@ -46,11 +46,12 @@ func New(file, bucket string, opts *bolt.Options) (Bbolt, error) {
 		return nil, err
 	}
 
-	if bucket == "" {
-		bucket = defaultBucket
+	bk := []byte(defaultBucket)
+	if bucket != "" {
+		bk = []byte(bucket)
 	}
 	db.Update(func(tx *bolt.Tx) error {
-		_, err := tx.CreateBucket([]byte(bucket))
+		_, err := tx.CreateBucket(bk)
 		if err != nil {
 			return fmt.Errorf("failed to create bucket: %w", err)
 		}
@@ -59,22 +60,21 @@ func New(file, bucket string, opts *bolt.Options) (Bbolt, error) {
 	return &bbolt{
 		db:     db,
 		file:   file,
-		bucket: bucket,
+		bucket: bk,
 	}, nil
 }
 
 func (b *bbolt) Set(key, val []byte) error {
 	return b.db.Update(func(tx *bolt.Tx) error {
-		b := tx.Bucket([]byte(b.bucket))
+		b := tx.Bucket(b.bucket)
 		err := b.Put(key, val)
 		return err
 	})
 }
 
-func (b *bbolt) Get(key []byte) ([]byte, bool, error) {
-	var val []byte
+func (b *bbolt) Get(key []byte) (val []byte, ok bool, err error) {
 	if err := b.db.View(func(tx *bolt.Tx) error {
-		b := tx.Bucket([]byte(b.bucket))
+		b := tx.Bucket(b.bucket)
 		ret := b.Get(key)
 		if ret == nil {
 			// key not found. just return without copying anything to val
@@ -102,7 +102,7 @@ func (b *bbolt) Get(key []byte) ([]byte, bool, error) {
 func (b *bbolt) AsyncSet(eg errgroup.Group, key, val []byte) error {
 	eg.Go(func() error {
 		b.db.Batch(func(tx *bolt.Tx) error {
-			b := tx.Bucket([]byte(b.bucket))
+			b := tx.Bucket(b.bucket)
 			err := b.Put(key, val)
 			return err
 		})
