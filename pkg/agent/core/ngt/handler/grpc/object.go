@@ -122,12 +122,11 @@ func (s *server) GetObject(ctx context.Context, id *payload.Object_VectorRequest
 		}
 		return nil, err
 	}
-
-	return &payload.Object_Vector{
-		Id:        uuid,
-		Vector:    vec,
-		Timestamp: ts,
-	}, nil
+	res = payload.Object_VectorFromVTPool()
+	res.Id = uuid
+	res.Vector = vec
+	res.Timestamp = ts
+	return res, nil
 }
 
 func (s *server) StreamGetObject(stream vald.Object_StreamGetObjectServer) (err error) {
@@ -205,13 +204,13 @@ func (s *server) StreamListObject(_ *payload.Object_List_Request, stream vald.Ob
 				},
 			}
 		} else {
+			ovec := payload.Object_VectorFromVTPool()
+			ovec.Id = uuid
+			ovec.Vector = vec
+			ovec.Timestamp = ts
 			res = &payload.Object_List_Response{
 				Payload: &payload.Object_List_Response_Vector{
-					Vector: &payload.Object_Vector{
-						Id:        uuid,
-						Vector:    vec,
-						Timestamp: ts,
-					},
+					Vector: ovec,
 				},
 			}
 		}

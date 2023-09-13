@@ -52,8 +52,8 @@ type NGT interface {
 	Start(ctx context.Context) <-chan error
 	Search(ctx context.Context, vec []float32, size uint32, epsilon, radius float32) (*payload.Search_Response, error)
 	SearchByID(ctx context.Context, uuid string, size uint32, epsilon, radius float32) ([]float32, *payload.Search_Response, error)
-	LinearSearch(vec []float32, size uint32) (*payload.Search_Response, error)
-	LinearSearchByID(uuid string, size uint32) ([]float32, *payload.Search_Response, error)
+	LinearSearch(ctx context.Context, vec []float32, size uint32) (*payload.Search_Response, error)
+	LinearSearchByID(ctx context.Context, uuid string, size uint32) ([]float32, *payload.Search_Response, error)
 	Insert(uuid string, vec []float32) (err error)
 	InsertWithTime(uuid string, vec []float32, t int64) (err error)
 	InsertMultiple(vecs map[string][]float32) (err error)
@@ -779,6 +779,8 @@ func (n *ngt) loadKVS(ctx context.Context, path string, timeout time.Duration) (
 
 	err = eg.Wait()
 	if err != nil {
+		m = nil
+		mt = nil
 		return err
 	}
 
@@ -802,6 +804,8 @@ func (n *ngt) loadKVS(ctx context.Context, path string, timeout time.Duration) (
 			n.fmap[k] = noTimeStampFile
 		}
 	}
+	m = nil
+	mt = nil
 
 	return nil
 }
@@ -879,7 +883,10 @@ func (n *ngt) Search(ctx context.Context, vec []float32, size uint32, epsilon, r
 		if n.IsIndexing() {
 			return nil, errors.ErrCreateIndexingIsInProgress
 		}
-		log.Errorf("cgo error detected: ngt api returned error %v", err)
+		if errors.Is(err, errors.ErrSearchResultEmptyButNoDataStored) && n.Len() == 0 {
+			return nil, nil
+		}
+		log.Errorf("cgo error detected during search: ngt api returned error %v", err)
 		return nil, err
 	}
 
@@ -901,23 +908,26 @@ func (n *ngt) SearchByID(ctx context.Context, uuid string, size uint32, epsilon,
 	return vec, dst, nil
 }
 
-func (n *ngt) LinearSearch(vec []float32, size uint32) (res *payload.Search_Response, err error) {
+func (n *ngt) LinearSearch(ctx context.Context, vec []float32, size uint32) (res *payload.Search_Response, err error) {
 	if n.IsIndexing() {
 		return nil, errors.ErrCreateIndexingIsInProgress
 	}
-	sr, err := n.core.LinearSearch(vec, int(size))
+	sr, err := n.core.LinearSearch(ctx, vec, int(size))
 	if err != nil {
 		if n.IsIndexing() {
 			return nil, errors.ErrCreateIndexingIsInProgress
 		}
-		log.Errorf("cgo error detected: ngt api returned error %v", err)
+		if errors.Is(err, errors.ErrSearchResultEmptyButNoDataStored) && n.Len() == 0 {
+			return nil, nil
+		}
+		log.Errorf("cgo error detected during linear search: ngt api returned error %v", err)
 		return nil, err
 	}
 
 	return n.toSearchResponse(sr)
 }
 
-func (n *ngt) LinearSearchByID(uuid string, size uint32) (vec []float32, dst *payload.Search_Response, err error) {
+func (n *ngt) LinearSearchByID(ctx context.Context, uuid string, size uint32) (vec []float32, dst *payload.Search_Response, err error) {
 	if n.IsIndexing() {
 		return nil, nil, errors.ErrCreateIndexingIsInProgress
 	}
@@ -925,7 +935,7 @@ func (n *ngt) LinearSearchByID(uuid string, size uint32) (vec []float32, dst *pa
 	if err != nil {
 		return nil, nil, err
 	}
-	dst, err = n.LinearSearch(vec, size)
+	dst, err = n.LinearSearch(ctx, vec, size)
 	if err != nil {
 		return vec, nil, err
 	}
@@ -1306,11 +1316,15 @@ func (n *ngt) saveIndex(ctx context.Context) (err error) {
 	defer n.smu.Unlock()
 	log.Infof("save index operation started, the number of create index execution = %d", nocie)
 
-	eg.Go(safety.RecoverFunc(func() (err error) {
-		log.Debugf("start save operation for kvsdb, the number of kvsdb = %d", n.kvs.Len())
-		if n.kvs.Len() > 0 && path != "" {
+	if n.kvs.Len() > 0 && path != "" {
+		eg.Go(safety.RecoverFunc(func() (err error) {
+			log.Debugf("start save operation for kvsdb, the number of kvsdb = %d", n.kvs.Len())
 			m := make(map[string]uint32, n.Len())
 			mt := make(map[string]int64, n.Len())
+			defer func() {
+				m = nil
+				mt = nil
+			}()
 			var mu sync.Mutex
 			n.kvs.Range(ectx, func(key string, id uint32, ts int64) bool {
 				mu.Lock()
@@ -1320,37 +1334,43 @@ func (n *ngt) saveIndex(ctx context.Context) (err error) {
 				atomic.AddUint64(&kvsLen, 1)
 				return true
 			})
-			var f *os.File
-			f, err = file.Open(
-				file.Join(path, kvsFileName),
-				os.O_WRONLY|os.O_CREATE|os.O_TRUNC,
-				fs.ModePerm,
-			)
-			if err != nil {
-				log.Warnf("failed to create or open kvsdb file, err: %v", err)
-				return err
-			}
-			defer func() {
-				if f != nil {
-					derr := f.Close()
-					if derr != nil {
-						err = errors.Join(err, derr)
-					}
-				}
-			}()
-			gob.Register(map[string]uint32{})
-			err = gob.NewEncoder(f).Encode(&m)
-			if err != nil {
-				log.Warnf("failed to encode kvsdb data, err: %v", err)
-				return err
-			}
-			err = f.Sync()
-			if err != nil {
-				log.Warnf("failed to flush all kvsdb data to storage, err: %v", err)
-				return err
-			}
-			m = make(map[string]uint32)
 
+			var wg sync.WaitGroup
+			wg.Add(1)
+			defer wg.Wait()
+			eg.Go(safety.RecoverFunc(func() (err error) {
+				defer wg.Done()
+				var f *os.File
+				f, err = file.Open(
+					file.Join(path, kvsFileName),
+					os.O_WRONLY|os.O_CREATE|os.O_TRUNC,
+					fs.ModePerm,
+				)
+				if err != nil {
+					log.Warnf("failed to create or open kvsdb file, err: %v", err)
+					return err
+				}
+				defer func() {
+					if f != nil {
+						derr := f.Close()
+						if derr != nil {
+							err = errors.Join(err, derr)
+						}
+					}
+				}()
+				gob.Register(map[string]uint32{})
+				err = gob.NewEncoder(f).Encode(&m)
+				if err != nil {
+					log.Warnf("failed to encode kvsdb data, err: %v", err)
+					return err
+				}
+				err = f.Sync()
+				if err != nil {
+					log.Warnf("failed to flush all kvsdb data to storage, err: %v", err)
+					return err
+				}
+				return nil
+			}))
 			var ft *os.File
 			ft, err = file.Open(
 				file.Join(path, kvsTimestampFileName),
@@ -1380,11 +1400,10 @@ func (n *ngt) saveIndex(ctx context.Context) (err error) {
 				log.Warnf("failed to flush all kvsdb timestamp data to storage, err: %v", err)
 				return err
 			}
-			mt = make(map[string]int64)
-		}
-		log.Debug("save operation for kvsdb finished")
-		return nil
-	}))
+			log.Debug("save operation for kvsdb finished")
+			return nil
+		}))
+	}
 
 	eg.Go(safety.RecoverFunc(func() (err error) {
 		n.fmu.Lock()

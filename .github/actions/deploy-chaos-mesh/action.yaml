@@ -15,7 +15,6 @@
 #
 name: "Deploy Chaos Mesh"
 description: "A action to deploy Chaos Mesh"
-
 inputs:
   chaos_mesh_version:
     description: "The Chaos Mesh version to use. The default version is `versions/CHAOS_MESH_VERSION`"
@@ -25,7 +24,6 @@ inputs:
     description: "Extra options that passed to Helm command"
     required: false
     default: ""
-
 runs:
   using: "composite"
   steps:
@@ -38,18 +36,15 @@ runs:
         echo "version=${CHAOS_MESH_VERSION}" >> $GITHUB_OUTPUT
       env:
         CHAOS_MESH_VERSION: ${{ inputs.chaos_mesh_version }}
-
     - name: Check k3d
       shell: bash
       id: check_k3d
       run: |
-        kubectl cluster-info
-
+        kubectl cluster-info dump
     - name: Check Helm
       shell: bash
       run: |
         helm version
-
     - name: Deploy Chaos Mesh
       shell: bash
       run: |
