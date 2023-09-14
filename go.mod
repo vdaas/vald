@@ -3,14 +3,14 @@ module github.com/vdaas/vald
 go 1.21
 
 replace (
-	cloud.google.com/go => cloud.google.com/go v0.110.7
-	cloud.google.com/go/bigquery => cloud.google.com/go/bigquery v1.54.0
+	cloud.google.com/go => cloud.google.com/go v0.110.8
+	cloud.google.com/go/bigquery => cloud.google.com/go/bigquery v1.55.0
 	cloud.google.com/go/compute => cloud.google.com/go/compute v1.23.0
 	cloud.google.com/go/datastore => cloud.google.com/go/datastore v1.14.0
 	cloud.google.com/go/firestore => cloud.google.com/go/firestore v1.12.0
 	cloud.google.com/go/iam => cloud.google.com/go/iam v1.1.2
-	cloud.google.com/go/kms => cloud.google.com/go/kms v1.15.1
-	cloud.google.com/go/monitoring => cloud.google.com/go/monitoring v1.15.1
+	cloud.google.com/go/kms => cloud.google.com/go/kms v1.15.2
+	cloud.google.com/go/monitoring => cloud.google.com/go/monitoring v1.16.0
 	cloud.google.com/go/pubsub => cloud.google.com/go/pubsub v1.33.0
 	cloud.google.com/go/secretmanager => cloud.google.com/go/secretmanager v1.11.1
 	cloud.google.com/go/storage => cloud.google.com/go/storage v1.33.0
@@ -43,7 +43,7 @@ replace (
 	github.com/ajstarks/svgo => github.com/ajstarks/svgo v0.0.0-20211024235047-1546f124cd8b
 	github.com/antihax/optional => github.com/antihax/optional v1.0.0
 	github.com/armon/go-socks5 => github.com/armon/go-socks5 v0.0.0-20160902184237-e75332964ef5
-	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.45.6
+	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.45.9
 	github.com/aws/aws-sdk-go-v2 => github.com/aws/aws-sdk-go-v2 v1.21.0
 	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream => github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.4.13
 	github.com/aws/aws-sdk-go-v2/config => github.com/aws/aws-sdk-go-v2/config v1.18.39
@@ -120,7 +120,7 @@ replace (
 	github.com/go-playground/assert/v2 => github.com/go-playground/assert/v2 v2.2.0
 	github.com/go-playground/locales => github.com/go-playground/locales v0.14.1
 	github.com/go-playground/universal-translator => github.com/go-playground/universal-translator v0.18.1
-	github.com/go-playground/validator/v10 => github.com/go-playground/validator/v10 v10.15.3
+	github.com/go-playground/validator/v10 => github.com/go-playground/validator/v10 v10.15.4
 	github.com/go-redis/redis/v8 => github.com/go-redis/redis/v8 v8.11.5
 	github.com/go-sql-driver/mysql => github.com/go-sql-driver/mysql v1.7.1
 	github.com/go-task/slim-sprig => github.com/go-task/slim-sprig v2.20.0+incompatible
@@ -153,7 +153,7 @@ replace (
 	github.com/google/gofuzz => github.com/google/gofuzz v1.2.0
 	github.com/google/martian => github.com/google/martian v2.1.0+incompatible
 	github.com/google/martian/v3 => github.com/google/martian/v3 v3.3.2
-	github.com/google/pprof => github.com/google/pprof v0.0.0-20230907193218-d3ddc7976beb
+	github.com/google/pprof => github.com/google/pprof v0.0.0-20230912144702-c363fe2c2ed8
 	github.com/google/shlex => github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
 	github.com/google/subcommands => github.com/google/subcommands v1.2.0
 	github.com/google/uuid => github.com/google/uuid v1.3.1
@@ -283,7 +283,7 @@ replace (
 	go.opentelemetry.io/otel/sdk/metric => go.opentelemetry.io/otel/sdk/metric v0.33.0
 	go.opentelemetry.io/otel/trace => go.opentelemetry.io/otel/trace v1.11.1
 	go.opentelemetry.io/proto/otlp => go.opentelemetry.io/proto/otlp v1.0.0
-	go.starlark.net => go.starlark.net v0.0.0-20230831151029-c9e9adf3fde2
+	go.starlark.net => go.starlark.net v0.0.0-20230912135651-745481cf39ed
 	go.uber.org/atomic => go.uber.org/atomic v1.11.0
 	go.uber.org/automaxprocs => go.uber.org/automaxprocs v1.5.3
 	go.uber.org/goleak => go.uber.org/goleak v1.2.1
@@ -310,11 +310,11 @@ replace (
 	gonum.org/v1/gonum => gonum.org/v1/gonum v0.14.0
 	gonum.org/v1/hdf5 => gonum.org/v1/hdf5 v0.0.0-20210714002203-8c5d23bc6946
 	gonum.org/v1/plot => gonum.org/v1/plot v0.14.0
-	google.golang.org/api => google.golang.org/api v0.139.0
+	google.golang.org/api => google.golang.org/api v0.140.0
 	google.golang.org/appengine => google.golang.org/appengine v1.6.8
-	google.golang.org/genproto => google.golang.org/genproto v0.0.0-20230822172742-b8732ec3820d
-	google.golang.org/genproto/googleapis/api => google.golang.org/genproto/googleapis/api v0.0.0-20230822172742-b8732ec3820d
-	google.golang.org/genproto/googleapis/rpc => google.golang.org/genproto/googleapis/rpc v0.0.0-20230822172742-b8732ec3820d
+	google.golang.org/genproto => google.golang.org/genproto v0.0.0-20230913181813-007df8e322eb
+	google.golang.org/genproto/googleapis/api => google.golang.org/genproto/googleapis/api v0.0.0-20230913181813-007df8e322eb
+	google.golang.org/genproto/googleapis/rpc => google.golang.org/genproto/googleapis/rpc v0.0.0-20230913181813-007df8e322eb
 	google.golang.org/grpc => google.golang.org/grpc v1.58.0
 	google.golang.org/grpc/cmd/protoc-gen-go-grpc => google.golang.org/grpc/cmd/protoc-gen-go-grpc v1.3.0
 	google.golang.org/protobuf => google.golang.org/protobuf v1.31.0
@@ -324,7 +324,7 @@ replace (
 	gopkg.in/tomb.v1 => gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7
 	gopkg.in/yaml.v2 => gopkg.in/yaml.v2 v2.4.0
 	gopkg.in/yaml.v3 => gopkg.in/yaml.v3 v3.0.1
-	honnef.co/go/tools => honnef.co/go/tools v0.4.5
+	honnef.co/go/tools => honnef.co/go/tools v0.4.6
 	k8s.io/api => k8s.io/api v0.27.3
 	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.27.3
 	k8s.io/apimachinery => k8s.io/apimachinery v0.27.3
@@ -356,7 +356,7 @@ require (
 	github.com/gocql/gocql v0.0.0-20200131111108-92af2e088537
 	github.com/gocraft/dbr/v2 v2.0.0-00010101000000-000000000000
 	github.com/google/go-cmp v0.5.9
-	github.com/google/uuid v1.3.0
+	github.com/google/uuid v1.3.1
 	github.com/gorilla/mux v0.0.0-00010101000000-000000000000
 	github.com/hashicorp/go-version v0.0.0-00010101000000-000000000000
 	github.com/klauspost/compress v1.15.9
@@ -396,7 +396,7 @@ require (
 	gonum.org/v1/hdf5 v0.0.0-00010101000000-000000000000
 	gonum.org/v1/plot v0.10.1
 	google.golang.org/genproto/googleapis/api v0.0.0-20230822172742-b8732ec3820d
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20230822172742-b8732ec3820d
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20230911183012-2d3300fd4832
 	google.golang.org/grpc v1.58.0
 	google.golang.org/protobuf v1.31.0
 	gopkg.in/yaml.v2 v2.4.0
