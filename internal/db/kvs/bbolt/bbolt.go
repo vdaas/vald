@@ -15,6 +15,7 @@ package bbolt
 
 import (
 	"fmt"
+	"io/fs"
 	"os"
 
 	"github.com/vdaas/vald/internal/errors"
@@ -40,8 +41,8 @@ const defaultBucket = "vald-bbolt-bucket"
 // New returns a new Bbolt instance.
 // If file does not exist, it creates a new file. If bucket is empty, it uses default_bucket.
 // If opts is nil, it uses default options.
-func New(file, bucket string, opts *bolt.Options) (Bbolt, error) {
-	db, err := bolt.Open(file, 0o600, opts)
+func New(file, bucket string, mode fs.FileMode, opts *bolt.Options) (Bbolt, error) {
+	db, err := bolt.Open(file, mode, opts)
 	if err != nil {
 		return nil, err
 	}
