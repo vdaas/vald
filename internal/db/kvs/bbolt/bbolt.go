@@ -53,7 +53,7 @@ func New(file, bucket string, mode fs.FileMode, opts *bolt.Options) (Bbolt, erro
 	}
 
 	if err := db.Update(func(tx *bolt.Tx) error {
-		_, err := tx.CreateBucket(bk)
+		_, err := tx.CreateBucketIfNotExists(bk)
 		if err != nil {
 			return fmt.Errorf("failed to create bucket: %w", err)
 		}
