@@ -51,13 +51,17 @@ func New(file, bucket string, mode fs.FileMode, opts *bolt.Options) (Bbolt, erro
 	if bucket != "" {
 		bk = []byte(bucket)
 	}
-	db.Update(func(tx *bolt.Tx) error {
+
+	if err := db.Update(func(tx *bolt.Tx) error {
 		_, err := tx.CreateBucket(bk)
 		if err != nil {
 			return fmt.Errorf("failed to create bucket: %w", err)
 		}
 		return nil
-	})
+	}); err != nil {
+		return nil, err
+	}
+
 	return &bbolt{
 		db:     db,
 		file:   file,
@@ -67,16 +71,13 @@ func New(file, bucket string, mode fs.FileMode, opts *bolt.Options) (Bbolt, erro
 
 func (b *bbolt) Set(key, val []byte) error {
 	return b.db.Update(func(tx *bolt.Tx) error {
-		b := tx.Bucket(b.bucket)
-		err := b.Put(key, val)
-		return err
+		return tx.Bucket(b.bucket).Put(key, val)
 	})
 }
 
 func (b *bbolt) Get(key []byte) (val []byte, ok bool, err error) {
 	if err := b.db.View(func(tx *bolt.Tx) error {
-		b := tx.Bucket(b.bucket)
-		ret := b.Get(key)
+		ret := tx.Bucket(b.bucket).Get(key)
 		if ret == nil {
 			// key not found. just return without copying anything to val
 			return nil
@@ -103,9 +104,7 @@ func (b *bbolt) Get(key []byte) (val []byte, ok bool, err error) {
 func (b *bbolt) AsyncSet(eg errgroup.Group, key, val []byte) {
 	eg.Go(func() error {
 		return b.db.Batch(func(tx *bolt.Tx) error {
-			b := tx.Bucket(b.bucket)
-			err := b.Put(key, val)
-			return err
+			return tx.Bucket(b.bucket).Put(key, val)
 		})
 	})
 }
@@ -118,7 +117,7 @@ func (b *bbolt) Close(remove bool) (err error) {
 
 	if remove {
 		if rerr := os.RemoveAll(b.file); rerr != nil {
-			err = errors.Wrap(rerr, err.Error())
+			err = errors.Join(err, rerr)
 		}
 	}
 
