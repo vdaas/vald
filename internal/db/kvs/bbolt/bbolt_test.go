@@ -24,7 +24,7 @@ import (
 	"github.com/vdaas/vald/internal/sync/errgroup"
 )
 
-const mode = os.FileMode(0600)
+const mode = os.FileMode(0o600)
 
 func TestNew(t *testing.T) {
 	t.Parallel()
