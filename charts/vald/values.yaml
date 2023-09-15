@@ -1652,7 +1652,7 @@ agent:
     auto_save_index_duration: 35m
     # @schema {"name": "agent.ngt.auto_create_index_pool_size", "type": "integer"}
     # agent.ngt.auto_create_index_pool_size -- batch process pool size of automatic create index operation
-    auto_create_index_pool_size: 10000
+    auto_create_index_pool_size: 16
     # @schema {"name": "agent.ngt.initial_delay_max_duration", "type": "string"}
     # agent.ngt.initial_delay_max_duration -- maximum duration for initial delay
     initial_delay_max_duration: 3m
@@ -1684,7 +1684,7 @@ agent:
     enable_in_memory_mode: true
     # @schema {"name": "agent.ngt.default_pool_size", "type": "integer"}
     # agent.ngt.default_pool_size -- default create index batch pool size
-    default_pool_size: 10000
+    default_pool_size: 16
     # @schema {"name": "agent.ngt.default_radius", "type": "number"}
     # agent.ngt.default_radius -- default radius used for search
     default_radius: -1.0
@@ -2615,7 +2615,7 @@ manager:
       auto_index_length: 100
       # @schema {"name": "manager.index.indexer.creation_pool_size", "type": "integer"}
       # manager.index.indexer.creation_pool_size -- number of pool size of create index processing
-      creation_pool_size: 10000
+      creation_pool_size: 16
       # @schema {"name": "manager.index.indexer.discoverer", "type": "object"}
       discoverer:
         # @schema {"name": "manager.index.indexer.discoverer.duration", "type": "string"}

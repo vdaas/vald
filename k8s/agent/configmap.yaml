@@ -199,7 +199,7 @@ data:
       trace:
         enabled: false
     ngt:
-      auto_create_index_pool_size: 10000
+      auto_create_index_pool_size: 16
       auto_index_check_duration: 30m
       auto_index_duration_limit: 24h
       auto_index_length: 100
@@ -208,7 +208,7 @@ data:
       bulk_insert_chunk_size: 10
       creation_edge_size: 20
       default_epsilon: 0.1
-      default_pool_size: 10000
+      default_pool_size: 16
       default_radius: -1
       dimension: 784
       distance_type: l2
