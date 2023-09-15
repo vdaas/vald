@@ -51,8 +51,7 @@ type correct struct {
 	indexInfos            valdsync.Map[string, *payload.Info_Index_Count]
 	uuidsCount            uint32
 	uncommittedUUIDsCount uint32
-	checkedId             bbolt.Bbolt
-	rwmu                  sync.RWMutex
+	checkedID             bbolt.Bbolt
 }
 
 func New(cfg *config.Data, discoverer discoverer.Client) (Corrector, error) {
@@ -67,7 +66,7 @@ func New(cfg *config.Data, discoverer discoverer.Client) (Corrector, error) {
 	return &correct{
 		cfg:        cfg,
 		discoverer: discoverer,
-		checkedId:  bolt,
+		checkedID:  bolt,
 	}, nil
 }
 
@@ -120,7 +119,7 @@ func (c *correct) Start(ctx context.Context) (<-chan error, error) {
 
 func (c *correct) PreStop(_ context.Context) error {
 	log.Info("removing persistent cache files...")
-	if err := c.checkedId.Close(true); err != nil {
+	if err := c.checkedID.Close(true); err != nil {
 		return err
 	}
 	return nil
@@ -319,7 +318,7 @@ func (c *correct) correctWithCache(ctx context.Context) (err error) {
 						id := res.GetVector().GetId()
 
 						ok := false
-						_, ok, err = c.checkedId.Get([]byte(id))
+						_, ok, err = c.checkedID.Get([]byte(id))
 						if err != nil {
 							log.Errorf("failed to perform Get from bbolt: %v", err)
 						}
@@ -345,7 +344,7 @@ func (c *correct) correctWithCache(ctx context.Context) (err error) {
 						}
 
 						// TODO: define error group
-						c.checkedId.AsyncSet(bolteg, []byte(id), nil)
+						c.checkedID.AsyncSet(bolteg, []byte(id), nil)
 
 						return nil
 					})
