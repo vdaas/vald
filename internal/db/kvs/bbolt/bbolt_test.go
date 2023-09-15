@@ -41,7 +41,7 @@ func TestNew(t *testing.T) {
 				tempdir := t.TempDir()
 				tmpfile := filepath.Join(tempdir, "test.db")
 
-				b, err := bbolt.New(tmpfile, "", mode, nil)
+				b, err := bbolt.New(tmpfile, "", mode)
 				require.NoError(t, err)
 				require.NotNil(t, b)
 			},
@@ -58,7 +58,7 @@ func TestNew(t *testing.T) {
 				err = f.Close()
 				require.NoError(t, err)
 
-				b, err := bbolt.New(f.Name(), "", mode, nil)
+				b, err := bbolt.New(f.Name(), "", mode)
 				require.NoError(t, err)
 				require.NotNil(t, b)
 			},
@@ -69,7 +69,7 @@ func TestNew(t *testing.T) {
 				tempdir := t.TempDir()
 				tmpfile := filepath.Join(tempdir, "test.db")
 
-				b, err := bbolt.New(tmpfile, "my bucket name", mode, nil)
+				b, err := bbolt.New(tmpfile, "my bucket name", mode)
 				require.NoError(t, err)
 				require.NotNil(t, b)
 			},
@@ -96,7 +96,7 @@ func Test_bbolt_GetSetClose(t *testing.T) {
 	setup := func(t *testing.T) (b bbolt.Bbolt, file string) {
 		tempdir := t.TempDir()
 		tmpfile := filepath.Join(tempdir, "test.db")
-		b, err := bbolt.New(tmpfile, "", mode, nil)
+		b, err := bbolt.New(tmpfile, "", mode)
 		require.NoError(t, err)
 
 		return b, tmpfile
@@ -140,7 +140,7 @@ func Test_bbolt_GetSetClose(t *testing.T) {
 				require.NoError(t, err)
 
 				// recover from the file
-				b, err = bbolt.New(file, "", mode, nil)
+				b, err = bbolt.New(file, "", mode)
 				require.NoError(t, err)
 
 				res, ok, err := b.Get(k)
@@ -180,7 +180,7 @@ func Test_bbolt_AsyncSet(t *testing.T) {
 
 	tempdir := t.TempDir()
 	tmpfile := filepath.Join(tempdir, "test.db")
-	b, err := bbolt.New(tmpfile, "", mode, nil)
+	b, err := bbolt.New(tmpfile, "", mode)
 	require.NoError(t, err)
 
 	kv := map[string]string{
