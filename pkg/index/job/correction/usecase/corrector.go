@@ -206,7 +206,13 @@ func (r *run) PreStop(ctx context.Context) error {
 	return nil
 }
 
-func (*run) Stop(context.Context) error {
+func (r *run) Stop(ctx context.Context) error {
+	if r.observability != nil {
+		r.observability.Stop(ctx)
+	}
+	if r.server != nil {
+		r.server.Shutdown(ctx)
+	}
 	return nil
 }
 
