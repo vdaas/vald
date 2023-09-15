@@ -1688,10 +1688,29 @@ func (n *ngt) BrokenIndexCount() uint64 {
 	return atomic.LoadUint64(&n.nobic)
 }
 
-// ListObjectFunc applies the input function on each index stored in the kvs.
+// ListObjectFunc applies the input function on each index stored in the kvs and vqueue.
 // Use this function for performing something on each object with caring about the memory usage.
+// If the vector exists in the vqueue, this vector is not indexed so the oid(object ID) is processed as 0.
 func (n *ngt) ListObjectFunc(ctx context.Context, f func(uuid string, oid uint32, ts int64) bool) {
-	n.kvs.Range(ctx, f)
+	dup := make(map[string]bool)
+	n.vq.Range(ctx, func(uuid string, vec []float32, ts int64) (ok bool) {
+		ok = f(uuid, 0, ts)
+		if !ok {
+			return false
+		}
+		var kts int64
+		_, kts, ok = n.kvs.Get(uuid)
+		if ok && ts > kts {
+			dup[uuid] = true
+		}
+		return true
+	})
+	n.kvs.Range(ctx, func(uuid string, oid uint32, ts int64) (ok bool) {
+		if dup[uuid] {
+			return true
+		}
+		return f(uuid, oid, ts)
+	})
 }
 
 func (n *ngt) toSearchResponse(sr []core.SearchResult) (res *payload.Search_Response, err error) {

@@ -34,6 +34,7 @@ type Queue interface {
 	PushInsert(uuid string, vector []float32, date int64) error
 	PushDelete(uuid string, date int64) error
 	GetVector(uuid string) (vec []float32, timestamp int64, exists bool)
+	Range(ctx context.Context, f func(uuid string, vector []float32, ts int64) bool)
 	RangePopInsert(ctx context.Context, now int64, f func(uuid string, vector []float32, date int64) bool)
 	RangePopDelete(ctx context.Context, now int64, f func(uuid string) bool)
 	IVExists(uuid string) bool
@@ -253,6 +254,20 @@ func (v *vqueue) RangePopDelete(ctx context.Context, now int64, f func(uuid stri
 		}
 
 	}
+}
+
+// Range calls f sequentially for each key and value present in the vqueue.
+func (v *vqueue) Range(ctx context.Context, f func(uuid string, vector []float32, ts int64) bool) {
+	v.il.Range(func(uuid string, idx *index) bool {
+		if idx == nil {
+			return true
+		}
+		didx, ok := v.dl.Load(uuid)
+		if !ok || (didx != nil && idx.date > didx.date) {
+			return f(uuid, idx.vector, idx.date)
+		}
+		return true
+	})
 }
 
 // IVQLen returns the number of uninserted indexes stored in the insert queue.
