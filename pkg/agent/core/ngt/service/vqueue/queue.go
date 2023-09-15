@@ -256,6 +256,7 @@ func (v *vqueue) RangePopDelete(ctx context.Context, now int64, f func(uuid stri
 	}
 }
 
+// Range calls f sequentially for each key and value present in the vqueue.
 func (v *vqueue) Range(ctx context.Context, f func(uuid string, vector []float32, ts int64) bool) {
 	v.il.Range(func(uuid string, idx *index) bool {
 		if idx == nil {
