@@ -25,9 +25,8 @@ import (
 	agent "github.com/vdaas/vald/apis/grpc/v1/agent/core"
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
-	"github.com/vdaas/vald/internal/cache/bbolt"
-	"github.com/vdaas/vald/internal/cache/persistent"
 	"github.com/vdaas/vald/internal/client/v1/client/discoverer"
+	"github.com/vdaas/vald/internal/db/kvs/bbolt"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/file"
 	"github.com/vdaas/vald/internal/log"
@@ -52,34 +51,23 @@ type correct struct {
 	indexInfos            valdsync.Map[string, *payload.Info_Index_Count]
 	uuidsCount            uint32
 	uncommittedUUIDsCount uint32
-	checkedId             map[string]struct{} // TODO: use mmap if necessary
-	checkedIdPersistent   persistent.PCache
-	checkedIdBbolt        *bbolt.Bbolt
+	checkedId             bbolt.Bbolt
 	rwmu                  sync.RWMutex
 }
 
 func New(cfg *config.Data, discoverer discoverer.Client) (Corrector, error) {
-	p := filepath.Join(os.TempDir(), "pcache")
-	file.MkdirAll(p, os.ModePerm)
-	pc, err := persistent.NewPCache(p)
-	if err != nil {
-		return nil, err
-	}
-
 	d := filepath.Join(os.TempDir(), "bbolt")
 	file.MkdirAll(d, os.ModePerm)
-	p = filepath.Join(d, "checkedid.db")
-	b, err := bbolt.New(p)
+	dbfile := filepath.Join(d, "checkedid.db")
+	bolt, err := bbolt.New(dbfile, "", os.FileMode(0o600))
 	if err != nil {
 		return nil, err
 	}
 
 	return &correct{
-		cfg:                 cfg,
-		discoverer:          discoverer,
-		checkedId:           make(map[string]struct{}),
-		checkedIdPersistent: pc,
-		checkedIdBbolt:      b,
+		cfg:        cfg,
+		discoverer: discoverer,
+		checkedId:  bolt,
 	}, nil
 }
 
@@ -113,11 +101,7 @@ func (c *correct) Start(ctx context.Context) (<-chan error, error) {
 
 	log.Info("starting correction...")
 	if c.cfg.Corrector.UseCache {
-		if c.cfg.Corrector.PCache {
-			log.Info("with persistent cache...")
-		} else {
-			log.Info("with in-memory cache...")
-		}
+		log.Info("with bbolt disk cache...")
 		if err := c.correctWithCache(ctx); err != nil {
 			log.Errorf("there's some errors while correction: %v", err)
 			return nil, err
@@ -136,9 +120,10 @@ func (c *correct) Start(ctx context.Context) (<-chan error, error) {
 
 func (c *correct) PreStop(_ context.Context) error {
 	log.Info("removing persistent cache files...")
-	err1 := c.checkedIdPersistent.Close()
-	err2 := c.checkedIdBbolt.Close()
-	return errors.Join(err1, err2)
+	if err := c.checkedId.Close(true); err != nil {
+		return err
+	}
+	return nil
 }
 
 func (c *correct) correct(ctx context.Context) (err error) {
@@ -249,9 +234,6 @@ func (c *correct) correctWithCache(ctx context.Context) (err error) {
 
 	if err := c.discoverer.GetClient().OrderedRange(ctx, c.agentAddrs,
 		func(ctx context.Context, addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
-			// FIXME: set ch size with cfg or something
-			wch := make(chan string, 1024)
-
 			// current address is the leftAgentAddrs[0] because this is OrderedRange and
 			// leftAgentAddrs is copied from c.agentAddrs
 			leftAgentAddrs = leftAgentAddrs[1:]
@@ -266,21 +248,8 @@ func (c *correct) correctWithCache(ctx context.Context) (err error) {
 			concurrency := c.cfg.Corrector.GetStreamListConcurrency()
 			seg.SetLimit(concurrency)
 
-			log.Infof("starting correction for agent %s, concurrency: %d", addr, concurrency)
-
-			bolteg := stdeg.Group{}
-			bolteg.SetLimit(1000)
-			go func() {
-				for {
-					select {
-					case <-ctx.Done():
-						log.Info("bbolt write goroutine finished")
-						return
-					case id := <-wch:
-						c.checkedIdBbolt.SetBatch2(&bolteg, id, nil)
-					}
-				}
-			}()
+			bolteg, ctx := stdeg.WithContext(ctx)
+			bolteg.SetLimit(2048)
 
 			finalize := func() error {
 				err = seg.Wait()
@@ -304,6 +273,9 @@ func (c *correct) correctWithCache(ctx context.Context) (err error) {
 			streamEnd := make(chan struct{})
 			var once sync.Once
 			var mu sync.Mutex
+
+			log.Infof("starting correction for agent %s, concurrency: %d", addr, concurrency)
+
 			// 事前にRecvすべき件数はわかるのだからその回数だけfor文を回すようにする方がいいか
 			for {
 				select {
@@ -347,16 +319,9 @@ func (c *correct) correctWithCache(ctx context.Context) (err error) {
 						id := res.GetVector().GetId()
 
 						ok := false
-						if c.cfg.Corrector.PCache {
-							// _, ok, err = c.checkedIdPersistent.Get(id)
-							_, ok, err = c.checkedIdBbolt.Get(id)
-							if err != nil {
-								return err
-							}
-						} else {
-							c.rwmu.RLock()
-							_, ok = c.checkedId[id]
-							c.rwmu.RUnlock()
+						_, ok, err = c.checkedId.Get([]byte(id))
+						if err != nil {
+							log.Errorf("failed to perform Get from bbolt: %v", err)
 						}
 
 						if ok {
@@ -379,22 +344,8 @@ func (c *correct) correctWithCache(ctx context.Context) (err error) {
 							return nil // continue other processes
 						}
 
-						// DEBUG: Testing pcache
-						if c.cfg.Corrector.PCache {
-							// err = c.checkedIdPersistent.Set(id, struct{}{})
-							// err = c.checkedIdBbolt.Set(id, nil)
-							// if err != nil {
-							// 	return err
-							// }
-							// c.rwmu.Lock()
-							// tmpSet[id] = struct{}{}
-							wch <- id
-							// c.rwmu.Unlock()
-						} else {
-							c.rwmu.Lock()
-							c.checkedId[id] = struct{}{}
-							c.rwmu.Unlock()
-						}
+						// TODO: define error group
+						c.checkedId.AsyncSet(bolteg, []byte(id), nil)
 
 						return nil
 					})
