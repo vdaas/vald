@@ -31,6 +31,8 @@
   - [Info.IPs](#payload-v1-Info-IPs)
   - [Info.Index](#payload-v1-Info-Index)
   - [Info.Index.Count](#payload-v1-Info-Index-Count)
+  - [Info.Index.Detail](#payload-v1-Info-Index-Detail)
+  - [Info.Index.Detail.CountsEntry](#payload-v1-Info-Index-Detail-CountsEntry)
   - [Info.Index.UUID](#payload-v1-Info-Index-UUID)
   - [Info.Index.UUID.Committed](#payload-v1-Info-Index-UUID-Committed)
   - [Info.Index.UUID.Uncommitted](#payload-v1-Info-Index-UUID-Uncommitted)
@@ -224,9 +226,10 @@ Represent the ingress filter service.
 
 Represent the index manager service.
 
-| Method Name | Request Type                           | Response Type                                                | Description                                     |
-| ----------- | -------------------------------------- | ------------------------------------------------------------ | ----------------------------------------------- |
-| IndexInfo   | [.payload.v1.Empty](#payload-v1-Empty) | [.payload.v1.Info.Index.Count](#payload-v1-Info-Index-Count) | Represent the RPC to get the index information. |
+| Method Name | Request Type                           | Response Type                                                  | Description                                                     |
+| ----------- | -------------------------------------- | -------------------------------------------------------------- | --------------------------------------------------------------- |
+| IndexInfo   | [.payload.v1.Empty](#payload-v1-Empty) | [.payload.v1.Info.Index.Count](#payload-v1-Info-Index-Count)   | Represent the RPC to get the index information.                 |
+| IndexDetail | [.payload.v1.Empty](#payload-v1-Empty) | [.payload.v1.Info.Index.Detail](#payload-v1-Info-Index-Detail) | Represent the RPC to get the index information for each agents. |
 
 <a name="apis_proto_v1_payload_payload-proto"></a>
 
@@ -347,6 +350,25 @@ Represent the index count message.
 | uncommitted | [uint32](#uint32) |       | The uncommitted index count. |
 | indexing    | [bool](#bool)     |       | The indexing index count.    |
 | saving      | [bool](#bool)     |       | The saving index count.      |
+
+<a name="payload-v1-Info-Index-Detail"></a>
+
+### Info.Index.Detail
+
+Represent the index count for each Agents message.
+
+| Field  | Type                                                                       | Label    | Description                 |
+| ------ | -------------------------------------------------------------------------- | -------- | --------------------------- |
+| counts | [Info.Index.Detail.CountsEntry](#payload-v1-Info-Index-Detail-CountsEntry) | repeated | count infos for each agents |
+
+<a name="payload-v1-Info-Index-Detail-CountsEntry"></a>
+
+### Info.Index.Detail.CountsEntry
+
+| Field | Type                                             | Label | Description |
+| ----- | ------------------------------------------------ | ----- | ----------- |
+| key   | [string](#string)                                |       |             |
+| value | [Info.Index.Count](#payload-v1-Info-Index-Count) |       |             |
 
 <a name="payload-v1-Info-Index-UUID"></a>
 

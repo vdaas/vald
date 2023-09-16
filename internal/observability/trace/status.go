@@ -19,7 +19,7 @@ package trace
 
 import (
 	"github.com/vdaas/vald/internal/net/grpc/codes"
-	"go.opentelemetry.io/otel/attribute"
+	"github.com/vdaas/vald/internal/observability/attribute"
 	ocodes "go.opentelemetry.io/otel/codes"
 	semconv "go.opentelemetry.io/otel/semconv/v1.12.0"
 )

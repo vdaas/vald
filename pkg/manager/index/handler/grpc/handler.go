@@ -53,3 +53,13 @@ func (s *server) IndexInfo(ctx context.Context, _ *payload.Empty) (res *payload.
 		Indexing:    s.indexer.IsIndexing(),
 	}, nil
 }
+
+func (s *server) IndexDetail(ctx context.Context, _ *payload.Empty) (res *payload.Info_Index_Detail, err error) {
+	ctx, span := trace.StartSpan(ctx, "vald/manager-index.IndexDetail")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	return s.indexer.LoadIndexDetail(), nil
+}
