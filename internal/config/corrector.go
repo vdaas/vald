@@ -42,10 +42,6 @@ type Corrector struct {
 
 	// Discoverer represent agent discoverer service configuration
 	Discoverer *DiscovererClient `json:"discoverer" yaml:"discoverer"`
-
-	// FIXME: Debug
-	UseCache bool `json:"use_cache" yaml:"use_cache"`
-	PCache   bool `json:"p_cache" yaml:"p_cache"`
 }
 
 // Bind binds the actual data from the Indexer receiver field.
