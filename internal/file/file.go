@@ -18,10 +18,12 @@
 package file
 
 import (
+	"cmp"
 	"context"
 	"io/fs"
 	"os"
 	"path/filepath"
+	"slices"
 	"strconv"
 	"time"
 
@@ -30,7 +32,6 @@ import (
 	"github.com/vdaas/vald/internal/io"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/safety"
-	"github.com/vdaas/vald/internal/slices"
 	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 )
@@ -338,7 +339,7 @@ func ReadDir(path string) (dirs []fs.DirEntry, err error) {
 	}()
 
 	dirs, err = f.ReadDir(-1)
-	slices.SortFunc(dirs, func(a, b fs.DirEntry) bool { return a.Name() < b.Name() })
+	slices.SortFunc(dirs, func(a, b fs.DirEntry) int { return cmp.Compare(a.Name(), b.Name()) })
 	return dirs, err
 }
 

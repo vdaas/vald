@@ -580,8 +580,8 @@ func (v *valdSliceAggr) Send(ctx context.Context, data *payload.Search_Response)
 }
 
 func (v *valdSliceAggr) Result() (res *payload.Search_Response) {
-	slices.RemoveDuplicates(v.result, func(l, r *DistPayload) bool {
-		return l.distance.Cmp(r.distance) < 0
+	slices.RemoveDuplicates(v.result, func(l, r *DistPayload) int {
+		return l.distance.Cmp(r.distance)
 	})
 
 	if len(v.result) > v.num {
@@ -646,8 +646,8 @@ func (v *valdPoolSliceAggr) Send(ctx context.Context, data *payload.Search_Respo
 }
 
 func (v *valdPoolSliceAggr) Result() (res *payload.Search_Response) {
-	slices.RemoveDuplicates(v.result, func(l, r *DistPayload) bool {
-		return l.distance.Cmp(r.distance) < 0
+	slices.RemoveDuplicates(v.result, func(l, r *DistPayload) int {
+		return l.distance.Cmp(r.distance)
 	})
 
 	if len(v.result) > v.num {

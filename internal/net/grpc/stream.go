@@ -18,6 +18,7 @@
 package grpc
 
 import (
+	"cmp"
 	"context"
 	"fmt"
 	"runtime"
@@ -74,8 +75,8 @@ func BidirectionalStream[Q any, R any](ctx context.Context, stream ServerStream,
 			errs = append(errs, err)
 			emu.Unlock()
 		}
-		slices.RemoveDuplicates(errs, func(left, right error) bool {
-			return left.Error() < right.Error()
+		slices.RemoveDuplicates(errs, func(left, right error) int {
+			return cmp.Compare(left.Error(), right.Error())
 		})
 		emu.Lock()
 		err = errors.Join(errs...)

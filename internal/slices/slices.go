@@ -14,27 +14,14 @@
 package slices
 
 import (
-	"golang.org/x/exp/constraints"
-	"golang.org/x/exp/slices"
+	"slices"
 )
 
-func Sort[E constraints.Ordered](x []E) {
-	slices.Sort(x)
-}
-
-func SortFunc[E any](x []E, less func(left, right E) bool) {
-	slices.SortFunc(x, less)
-}
-
-func SortStableFunc[E any](x []E, less func(left, right E) bool) {
-	slices.SortStableFunc(x, less)
-}
-
-func RemoveDuplicates[E comparable](x []E, less func(left, right E) bool) []E {
+func RemoveDuplicates[E comparable](x []E, less func(left, right E) int) []E {
 	if len(x) < 2 {
 		return x
 	}
-	SortStableFunc(x, less)
+	slices.SortStableFunc(x, less)
 	up := 0 // uniqPointer
 	for i := 1; i < len(x); i++ {
 		if x[up] != x[i] {
