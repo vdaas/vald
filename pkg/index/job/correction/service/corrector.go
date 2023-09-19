@@ -448,6 +448,7 @@ func (c *correct) correctReplica(
 func (c *correct) updateObject(ctx context.Context, addr string, vector *payload.Object_Vector) error {
 	res, err := c.discoverer.GetClient().
 		Do(grpc.WithGRPCMethod(ctx, "core.v1.Vald/Update"), addr, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
+			// TODO: use UpdateTimestamp when it's implemented because here we just want to update only the timestamp but not the vector
 			return vald.NewUpdateClient(conn).Update(ctx, &payload.Update_Request{
 				Vector: vector,
 				// FIXME: this should be deleted after Config.Timestamp deprecation
