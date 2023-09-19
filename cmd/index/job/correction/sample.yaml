@@ -221,13 +221,13 @@ observability:
     enable_memory: true
     enable_version_info: true
     version_info_labels:
-    - vald_version
-    - server_name
-    - git_commit
-    - build_time
-    - go_version
-    - go_os
-    - go_arch
-    - ngt_version
+      - vald_version
+      - server_name
+      - git_commit
+      - build_time
+      - go_version
+      - go_os
+      - go_arch
+      - ngt_version
   trace:
     enabled: true
