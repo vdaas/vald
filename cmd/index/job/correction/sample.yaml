@@ -19,7 +19,7 @@ version: v0.0.0
 time_zone: JST
 logging:
   format: raw
-  level: debug
+  level: info
   logger: glg
 server_config:
   servers:
@@ -79,7 +79,6 @@ corrector:
   agent_namespace: "default"
   node_name: ""
   stream_list_concurrency: 100
-  use_cache: false
   discoverer:
     duration: 500ms
     client:
@@ -201,3 +200,34 @@ corrector:
         cert: /path/to/cert
         enabled: false
         key: /path/to/key
+observability:
+  enabled: false
+  otlp:
+    collector_endpoint: "otel-collector.monitoring.svc.cluster.local:4317"
+    trace_batch_timeout: "1s"
+    trace_export_timeout: "1m"
+    trace_max_export_batch_size: 1024
+    trace_max_queue_size: 256
+    metrics_export_interval: "1s"
+    metrics_export_timeout: "1m"
+    attribute:
+      namespace: "_MY_POD_NAMESPACE_"
+      pod_name: "_MY_POD_NAME_"
+      node_name: "_MY_NODE_NAME_"
+      service_name: "vald-index-job-correction"
+  metrics:
+    enable_cgo: true
+    enable_goroutine: true
+    enable_memory: true
+    enable_version_info: true
+    version_info_labels:
+    - vald_version
+    - server_name
+    - git_commit
+    - build_time
+    - go_version
+    - go_os
+    - go_arch
+    - ngt_version
+  trace:
+    enabled: true
