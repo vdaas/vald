@@ -14,11 +14,13 @@
 package service
 
 import (
+	"cmp"
 	"context"
 	"fmt"
 	"io"
 	"os"
 	"path/filepath"
+	"slices"
 	"sync"
 	"sync/atomic"
 
@@ -33,7 +35,6 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/net/grpc/status"
-	"github.com/vdaas/vald/internal/slices"
 	valdsync "github.com/vdaas/vald/internal/sync"
 	"github.com/vdaas/vald/pkg/index/job/correction/config"
 	stdeg "golang.org/x/sync/errgroup"
@@ -347,9 +348,9 @@ func (c *correct) correctTimestamp(ctx context.Context, targetReplica *vectorRep
 	allReplicas := append(foundReplicas, targetReplica)
 
 	// sort by timestamp
-	slices.SortFunc(allReplicas, func(i, j *vectorReplica) bool {
+	slices.SortFunc(allReplicas, func(i, j *vectorReplica) int {
 		// largest timestamp means the latest
-		return i.vec.GetTimestamp() > j.vec.GetTimestamp()
+		return cmp.Compare(j.vec.GetTimestamp(), i.vec.GetTimestamp())
 	})
 
 	latest := allReplicas[0]
