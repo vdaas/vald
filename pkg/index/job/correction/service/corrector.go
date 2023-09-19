@@ -21,7 +21,6 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
-	"sync"
 	"sync/atomic"
 
 	agent "github.com/vdaas/vald/apis/grpc/v1/agent/core"
@@ -35,7 +34,7 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/net/grpc/status"
-	valdsync "github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/internal/sync"
 	"github.com/vdaas/vald/pkg/index/job/correction/config"
 	stdeg "golang.org/x/sync/errgroup"
 )
@@ -49,7 +48,7 @@ type correct struct {
 	cfg                   *config.Data
 	discoverer            discoverer.Client
 	agentAddrs            []string
-	indexInfos            valdsync.Map[string, *payload.Info_Index_Count]
+	indexInfos            sync.Map[string, *payload.Info_Index_Count]
 	uuidsCount            uint32
 	uncommittedUUIDsCount uint32
 	checkedID             bbolt.Bbolt
@@ -515,7 +514,7 @@ func (c *correct) deleteObject(ctx context.Context, addr string, vector *payload
 
 func (c *correct) loadInfos(ctx context.Context) (err error) {
 	var u, ucu uint32
-	var infoMap valdsync.Map[string, *payload.Info_Index_Count]
+	var infoMap sync.Map[string, *payload.Info_Index_Count]
 	err = c.discoverer.GetClient().RangeConcurrent(ctx, len(c.discoverer.GetAddrs(ctx)),
 		func(ctx context.Context,
 			addr string, conn *grpc.ClientConn, copts ...grpc.CallOption,
