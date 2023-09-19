@@ -213,13 +213,10 @@ func (c *correct) correct(ctx context.Context) (err error) {
 
 						// check if the index is already checked
 						id := res.GetVector().GetId()
-
-						ok := false
-						_, ok, err = c.checkedID.Get([]byte(id))
+						_, ok, err := c.checkedID.Get([]byte(id))
 						if err != nil {
 							log.Errorf("failed to perform Get from bbolt: %v", err)
 						}
-
 						if ok {
 							// already checked index
 							return nil
@@ -240,7 +237,7 @@ func (c *correct) correct(ctx context.Context) (err error) {
 							return nil // continue other processes
 						}
 
-						// TODO: define error group
+						//  now this id is checked so set it to the disk cache
 						c.checkedID.AsyncSet(bolteg, []byte(id), nil)
 
 						return nil
@@ -305,6 +302,7 @@ func (c *correct) checkConsistency(ctx context.Context, targetReplica *vectorRep
 				}
 			}
 
+			// the target replica is found in this agent with the addr
 			log.Debugf("object found: agent(%s), id(%v), timestamp(%v)", addr, v.GetId(), v.GetTimestamp())
 
 			mu.Lock()
@@ -312,12 +310,12 @@ func (c *correct) checkConsistency(ctx context.Context, targetReplica *vectorRep
 				addr: addr,
 				vec:  v,
 			})
-			for i, a := range availableAddrs {
-				if a == addr {
-					availableAddrs = availableAddrs[:i+copy(availableAddrs[i:], availableAddrs[i+1:])]
-					break
-				}
-			}
+
+			// Remove this addr from availableAddrs because this addr has the target replica
+			// and not available to insert the replica to fix the index replica number
+			slices.DeleteFunc(availableAddrs, func(availableAddr string) bool {
+				return availableAddr == addr
+			})
 			mu.Unlock()
 
 			return nil
