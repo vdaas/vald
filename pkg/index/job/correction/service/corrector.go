@@ -35,8 +35,8 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/pkg/index/job/correction/config"
-	stdeg "golang.org/x/sync/errgroup"
 )
 
 type Corrector interface {
@@ -139,11 +139,11 @@ func (c *correct) correct(ctx context.Context) (err error) {
 				return err
 			}
 
-			seg, ctx := stdeg.WithContext(ctx)
+			seg, ctx := errgroup.WithContext(ctx)
 			concurrency := c.cfg.Corrector.GetStreamListConcurrency()
 			seg.SetLimit(concurrency)
 
-			bolteg, ctx := stdeg.WithContext(ctx)
+			bolteg, ctx := errgroup.WithContext(ctx)
 			bolteg.SetLimit(2048)
 
 			finalize := func() error {
