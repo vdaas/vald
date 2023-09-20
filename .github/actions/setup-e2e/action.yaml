@@ -40,10 +40,7 @@ inputs:
   target_images:
     description: "Image names"
     required: false
-    default: "vdaas/vald-agent-ngt \
-      vdaas/vald-discoverer-k8s \
-      vdaas/vald-lb-gateway \
-      vdaas/vald-manager-index"
+    default: "vdaas/vald-agent-ngt vdaas/vald-discoverer-k8s vdaas/vald-lb-gateway vdaas/vald-manager-index"
 
 outputs:
   HELM_EXTRA_OPTIONS:
