@@ -837,8 +837,8 @@ func Test_server_Update(t *testing.T) {
 		func() test {
 			indexID := "test"
 			indexVector := vector.GaussianDistributedFloat32VectorGenerator(1, dimension)[0]
-			newTs := time.Now()
-			ts := newTs.Add(-2 * time.Minute)
+			newTS := time.Now()
+			ts := newTS.Add(-2 * time.Minute)
 
 			return test{
 				name: "Decision Table Testing case 3.1: success update timestamp with one same ID and vector, and UpdateTimestampIfExists is true",
@@ -851,7 +851,7 @@ func Test_server_Update(t *testing.T) {
 						Vector: &payload.Object_Vector{
 							Id:        indexID,
 							Vector:    indexVector,
-							Timestamp: newTs.UnixNano(),
+							Timestamp: newTS.UnixNano(),
 						},
 						Config: &payload.Update_Config{
 							SkipStrictExistCheck:    false,
@@ -876,7 +876,7 @@ func Test_server_Update(t *testing.T) {
 					}
 
 					got := ov.GetTimestamp()
-					want := newTs.UnixNano()
+					want := newTS.UnixNano()
 					if got != want {
 						return errors.Errorf("timestamp is not updated, got: %v, want: %v", got, want)
 					}
