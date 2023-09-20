@@ -144,7 +144,7 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 	// defer cancel()
 
 	log.Info("starting servers")
-	ech := make(chan error, 3)
+	ech := make(chan error, 3) //nolint:gomnd
 	var oech, nech, sech <-chan error
 	r.eg.Go(safety.RecoverFunc(func() (err error) {
 		defer close(ech)
