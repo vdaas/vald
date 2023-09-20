@@ -384,11 +384,9 @@ func (c *correct) correctReplica(
 	// when there are less replicas than the correct number, add the extra replicas
 	// TODO: refine this logic. pretty complicated
 	if diff < 0 {
-		log.Infof("replica shortage of vector %s. inserting to other agents...",
-			targetReplica.vec.GetId())
+		log.Infof("replica shortage of vector %s. inserting to other agents...", targetReplica.vec.GetId())
 		if len(availableAddrs) == 0 {
-			// TODO: define errors in errors pkg
-			return fmt.Errorf("no available agent to insert replica")
+			return errors.ErrNoAvailableAgentToInsert
 		}
 
 		// inserting with the reverse order of availableAddrs since the last agent has the lowest memory usage
