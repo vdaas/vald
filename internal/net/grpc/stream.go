@@ -230,7 +230,7 @@ func BidirectionalStreamClient(stream ClientStream,
 	}()
 }
 
-func removeDuplicates[E comparable](x []E, less func(left, right E) int) []E {
+func removeDuplicates[S ~[]E, E comparable](x S, less func(left, right E) int) S {
 	if len(x) < 2 {
 		return x
 	}
