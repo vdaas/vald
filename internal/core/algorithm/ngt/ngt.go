@@ -97,9 +97,11 @@ type (
 		radius              float32
 		epsilon             float32
 		poolSize            uint32
-		cnt                 uint64
+		cnt                 atomic.Uint64
 		prop                C.NGTProperty
-		epool               sync.Pool
+		epool               sync.Pool     // NGT error buffer pool
+		eps                 atomic.Uint64 // NGT error buffer pool size
+		epl                 uint64        // NGT error buffer pool size limit
 		index               C.NGTIndex
 		ospace              C.NGTObjectSpace
 		mu                  *sync.RWMutex
@@ -276,7 +278,7 @@ func (n *ngt) setup() error {
 		},
 	}
 
-	for i := 0; i < 20; i++ {
+	for i := uint64(0); i < n.epl; i++ {
 		n.PutErrorBuffer(C.ngt_create_error_object())
 	}
 
@@ -411,7 +413,7 @@ func (n *ngt) Search(ctx context.Context, vec []float32, size int, epsilon, radi
 
 	rsize := int(C.ngt_get_result_size(results, ebuf))
 	if rsize <= 0 {
-		if atomic.LoadUint64(&n.cnt) == 0 {
+		if n.cnt.Load() == 0 {
 			n.PutErrorBuffer(ebuf)
 			return nil, errors.ErrSearchResultEmptyButNoDataStored
 		}
@@ -476,7 +478,7 @@ func (n *ngt) LinearSearch(ctx context.Context, vec []float32, size int) (result
 
 	rsize := int(C.ngt_get_result_size(results, ebuf))
 	if rsize <= 0 {
-		if atomic.LoadUint64(&n.cnt) == 0 {
+		if n.cnt.Load() == 0 {
 			n.PutErrorBuffer(ebuf)
 			return nil, errors.ErrSearchResultEmptyButNoDataStored
 		}
@@ -510,21 +512,24 @@ func (n *ngt) LinearSearch(ctx context.Context, vec []float32, size int) (result
 // Insert returns NGT object id.
 // This only stores not indexing, you must call CreateIndex and SaveIndex.
 func (n *ngt) Insert(vec []float32) (id uint, err error) {
-	dim := int(n.dimension)
-	if len(vec) != dim {
-		return 0, errors.ErrIncompatibleDimensionSize(len(vec), dim)
+	if len(vec) != int(n.dimension) {
+		return 0, errors.ErrIncompatibleDimensionSize(len(vec), int(n.dimension))
 	}
-
+	dim := C.uint32_t(n.dimension)
+	cvec := (*C.float)(&vec[0])
 	ebuf := n.GetErrorBuffer()
 	n.lock(true)
-	id = uint(C.ngt_insert_index_as_float(n.index, (*C.float)(&vec[0]), C.uint32_t(n.dimension), ebuf))
+	oid := C.ngt_insert_index_as_float(n.index, cvec, dim, ebuf)
 	n.unlock(true)
+	id = uint(oid)
+	cvec = nil
+	vec = vec[:0:0]
 	vec = nil
 	if id == 0 {
 		return 0, n.newGoError(ebuf)
 	}
 	n.PutErrorBuffer(ebuf)
-	atomic.AddUint64(&n.cnt, 1)
+	n.cnt.Add(1)
 
 	return id, nil
 }
@@ -676,7 +681,7 @@ func (n *ngt) Remove(id uint) error {
 	}
 	n.PutErrorBuffer(ebuf)
 
-	atomic.AddUint64(&n.cnt, ^uint64(0))
+	n.cnt.Add(^uint64(0))
 
 	return nil
 }
@@ -742,19 +747,11 @@ func (n *ngt) newGoError(ebuf C.NGTError) (err error) {
 		n.PutErrorBuffer(ebuf)
 		return nil
 	}
-	n.PutErrorBuffer(C.ngt_create_error_object())
+	if n.epl == 0 || n.eps.Load() < n.epl {
+		n.PutErrorBuffer(C.ngt_create_error_object())
+	}
 	C.ngt_destroy_error_object(ebuf)
 	return errors.NewNGTError(msg)
-}
-
-// Close NGT index.
-func (n *ngt) Close() {
-	if n.index != nil {
-		C.ngt_close_index(n.index)
-		n.index = nil
-		n.prop = nil
-		n.ospace = nil
-	}
 }
 
 func (n *ngt) GetErrorBuffer() (ebuf C.NGTError) {
@@ -763,11 +760,17 @@ func (n *ngt) GetErrorBuffer() (ebuf C.NGTError) {
 	if !ok {
 		ebuf = C.ngt_create_error_object()
 	}
+	n.eps.Add(^uint64(0))
 	return ebuf
 }
 
 func (n *ngt) PutErrorBuffer(ebuf C.NGTError) {
+	if n.epl != 0 && n.eps.Load() > n.epl {
+		C.ngt_destroy_error_object(ebuf)
+		return
+	}
 	n.epool.Put(ebuf)
+	n.eps.Add(1)
 }
 
 func (n *ngt) lock(cLock bool) {
@@ -795,5 +798,15 @@ func (n *ngt) rUnlock(cLock bool) {
 	n.mu.RUnlock()
 	if cLock {
 		n.cmu.RUnlock()
+	}
+}
+
+// Close NGT index.
+func (n *ngt) Close() {
+	if n.index != nil {
+		C.ngt_close_index(n.index)
+		n.index = nil
+		n.prop = nil
+		n.ospace = nil
 	}
 }

@@ -250,6 +250,9 @@ spec:
                           type: boolean
                         enable_proactive_gc:
                           type: boolean
+                        error_buffer_limit:
+                          type: integer
+                          minimum: 1
                         index_path:
                           type: string
                         initial_delay_max_duration:
