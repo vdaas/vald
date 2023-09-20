@@ -145,15 +145,16 @@ func (c *correct) correct(ctx context.Context) (err error) {
 			sctx, scancel := context.WithCancel(ctx)
 			defer scancel()
 			seg, sctx := errgroup.WithContext(sctx)
-			concurrency := c.cfg.Corrector.GetStreamListConcurrency()
-			seg.SetLimit(concurrency)
+			sconcurrency := c.cfg.Corrector.GetStreamListConcurrency()
+			seg.SetLimit(sconcurrency)
 
 			// errgroup for bbolt AsyncSet
 			bolteg, ctx := errgroup.WithContext(ctx)
-			bolteg.SetLimit(2048)
+			bconcurrency := c.cfg.Corrector.GetBboltAsyncWriteConcurrency()
+			bolteg.SetLimit(bconcurrency)
 
 			var mu sync.Mutex
-			log.Infof("starting correction for agent %s, concurrency: %d", addr, concurrency)
+			log.Infof("starting correction for agent %s, stream concurrency: %d, bbolt concurrency: %d", addr, sconcurrency, bconcurrency)
 
 			// The number of items to be received in advance is not known in advance.
 			// This is because there is a possibility of new items being inserted during processing.

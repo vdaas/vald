@@ -40,6 +40,9 @@ type Corrector struct {
 	// this directly affects the memory usage of this job
 	StreamListConcurrency int `json:"stream_list_concurrency" yaml:"stream_list_concurrency"`
 
+	// BboltAsyncWriteConcurrency represent concurrency for bbolt async write
+	BboltAsyncWriteConcurrency int `json:"bbolt_async_write_concurrency" yaml:"bbolt_async_write_concurrency"`
+
 	// Discoverer represent agent discoverer service configuration
 	Discoverer *DiscovererClient `json:"discoverer" yaml:"discoverer"`
 }
@@ -62,5 +65,13 @@ func (c *Corrector) GetStreamListConcurrency() int {
 	if c != nil {
 		return c.StreamListConcurrency
 	}
-	return -1
+	return 200
+}
+
+// Returns 2048 when not specified since not setting this could use up all the available momory
+func (c *Corrector) GetBboltAsyncWriteConcurrency() int {
+	if c != nil {
+		return c.BboltAsyncWriteConcurrency
+	}
+	return 2048
 }

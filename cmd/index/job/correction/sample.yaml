@@ -78,7 +78,8 @@ corrector:
   agent_dns: vald-agent-ngt.default.svc.cluster.local
   agent_namespace: "default"
   node_name: ""
-  stream_list_concurrency: 100
+  stream_list_concurrency: 200
+  bbolt_async_write_concurrency: 2048
   discoverer:
     duration: 500ms
     client:
