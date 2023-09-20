@@ -126,7 +126,6 @@ jobs:
             --request POST \
             --data "{\"title\": \"Release ${RELEASE_TAG}\", \"head\": \"${PREPARE_RELEASE_BRANCH_NAME}\", \"base\": \"${RELEASE_BRANCH_NAME}\", \"body\": \"Release PR for ${RELEASE_TAG}.\", \"maintainer_can_modify\": true}" \
             $API_URL
-
         env:
           GITHUB_USER: ${{ secrets.DISPATCH_USER }}
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
