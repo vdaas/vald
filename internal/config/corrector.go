@@ -60,12 +60,13 @@ func (c *Corrector) Bind() *Corrector {
 	return c
 }
 
-// GetStreamListConcurrency returns the StreamListConcurrency field value if set, -1 otherwise, which means no limit.
+// GetStreamListConcurrency returns the StreamListConcurrency field value if set, otherwise 200 is set,
+// since not setting this could use up all the available momory
 func (c *Corrector) GetStreamListConcurrency() int {
 	if c != nil {
 		return c.StreamListConcurrency
 	}
-	return 200
+	return 200 //nolint:gomnd
 }
 
 // Returns 2048 when not specified since not setting this could use up all the available momory
@@ -73,5 +74,5 @@ func (c *Corrector) GetBboltAsyncWriteConcurrency() int {
 	if c != nil {
 		return c.BboltAsyncWriteConcurrency
 	}
-	return 2048
+	return 2048 //nolint:gomnd
 }

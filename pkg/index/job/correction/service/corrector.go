@@ -445,7 +445,7 @@ func (c *correct) updateObject(ctx context.Context, addr string, vector *payload
 			// TODO: use UpdateTimestamp when it's implemented because here we just want to update only the timestamp but not the vector
 			return vald.NewUpdateClient(conn).Update(ctx, &payload.Update_Request{
 				Vector: vector,
-				// FIXME: this should be deleted after Config.Timestamp deprecation
+				// TODO: this should be deleted after Config.Timestamp deprecation
 				Config: &payload.Update_Config{
 					// TODO: Decrementing because it's gonna be incremented befor being pushed
 					// to vqueue in the agent. This is a not ideal workaround for the current vqueue implementation
