@@ -348,9 +348,9 @@ func (c *correct) correctTimestamp(ctx context.Context, targetReplica *vectorRep
 	})
 
 	latest := allReplicas[0]
-	latestTs := latest.vec.GetTimestamp()
+	latestTS := latest.vec.GetTimestamp()
 	for _, replica := range allReplicas {
-		if replica.vec.GetTimestamp() == latestTs {
+		if replica.vec.GetTimestamp() == latestTS {
 			// no inconsistency
 			continue
 		}
