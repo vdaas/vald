@@ -1838,7 +1838,7 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (res *
 		}
 		if conv.F32stos(vec.GetVector()) == conv.F32stos(req.GetVector().GetVector()) {
 			if req.GetConfig().GetUpdateTimestampIfExists() {
-				// if the vector is the same, boardcast update request to update index timestamp
+				// if the vector is the same, broadcast update request to update index timestamp
 				return broadcastUpdate()
 			}
 			if err == nil {
