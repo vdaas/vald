@@ -18,8 +18,10 @@
 package service
 
 import (
+	"cmp"
 	"context"
 	"reflect"
+	"slices"
 	"sync/atomic"
 	"time"
 
@@ -34,7 +36,6 @@ import (
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/safety"
-	"github.com/vdaas/vald/internal/slices"
 	"github.com/vdaas/vald/internal/sync"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 )
@@ -303,8 +304,8 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 					for nodeName := range podsByNode {
 						for namespace := range podsByNode[nodeName] {
 							for appName, p := range podsByNode[nodeName][namespace] {
-								slices.SortFunc(p, func(left, right *payload.Info_Pod) bool {
-									return left.GetMemory().GetUsage() < right.GetMemory().GetUsage()
+								slices.SortFunc(p, func(left, right *payload.Info_Pod) int {
+									return cmp.Compare(left.GetMemory().GetUsage(), right.GetMemory().GetUsage())
 								})
 								podsByNode[nodeName][namespace][appName] = p
 								nn, ok := nodeByName[nodeName]
@@ -330,8 +331,8 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 						nn, ok := nodeByName[nodeName]
 						if ok && nn.GetPods() != nil && nn.GetPods().GetPods() != nil {
 							p := nn.GetPods().Pods
-							slices.SortFunc(p, func(left, right *payload.Info_Pod) bool {
-								return left.GetMemory().GetUsage() < right.GetMemory().GetUsage()
+							slices.SortFunc(p, func(left, right *payload.Info_Pod) int {
+								return cmp.Compare(left.GetMemory().GetUsage(), right.GetMemory().GetUsage())
 							})
 							nodeByName[nodeName].GetPods().Pods = p
 						}
@@ -345,8 +346,8 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 					defer wg.Done()
 					for namespace := range podsByNamespace {
 						for appName, p := range podsByNamespace[namespace] {
-							slices.SortFunc(p, func(left, right *payload.Info_Pod) bool {
-								return left.GetMemory().GetUsage() < right.GetMemory().GetUsage()
+							slices.SortFunc(p, func(left, right *payload.Info_Pod) int {
+								return cmp.Compare(left.GetMemory().GetUsage(), right.GetMemory().GetUsage())
 							})
 							podsByNamespace[namespace][appName] = p
 						}
@@ -358,8 +359,8 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 				d.eg.Go(safety.RecoverFunc(func() error {
 					defer wg.Done()
 					for appName, p := range podsByName {
-						slices.SortFunc(p, func(left, right *payload.Info_Pod) bool {
-							return left.GetMemory().GetUsage() < right.GetMemory().GetUsage()
+						slices.SortFunc(p, func(left, right *payload.Info_Pod) int {
+							return cmp.Compare(left.GetMemory().GetUsage(), right.GetMemory().GetUsage())
 						})
 						podsByName[appName] = p
 					}
@@ -467,16 +468,16 @@ func (d *discoverer) GetNodes(req *payload.Discoverer_Request) (nodes *payload.I
 				for i := range ps.Pods {
 					ps.GetPods()[i].Node = nil
 				}
-				slices.SortFunc(ps.Pods, func(left, right *payload.Info_Pod) bool {
-					return left.GetMemory().GetUsage() < right.GetMemory().GetUsage()
+				slices.SortFunc(ps.Pods, func(left, right *payload.Info_Pod) int {
+					return cmp.Compare(left.GetMemory().GetUsage(), right.GetMemory().GetUsage())
 				})
 				n.Pods = ps
 			}
 		}
 		ns = append(ns, n)
 	}
-	slices.SortFunc(ns, func(left, right *payload.Info_Node) bool {
-		return left.GetMemory().GetUsage() < right.GetMemory().GetUsage()
+	slices.SortFunc(ns, func(left, right *payload.Info_Node) int {
+		return cmp.Compare(left.GetMemory().GetUsage(), right.GetMemory().GetUsage())
 	})
 
 	nodes.Nodes = ns
