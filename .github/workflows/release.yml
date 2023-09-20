@@ -25,7 +25,7 @@ on:
 jobs:
   dump-contexts-to-log:
     if: >-
-      ${{ github.event.pull_request.merged == true && startsWith(github.event.head_commit.message, ':bookmark: :robot: Release') }}
+      ${{ github.event.pull_request.merged == true && startsWith(github.event.pull_request.title, ':bookmark: :robot: Release') }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
