@@ -282,7 +282,6 @@ func (c *correct) checkConsistency(ctx context.Context, targetReplica *vectorRep
 					Id: targetReplica.vec.GetId(),
 				},
 			})
-
 			if err != nil {
 				if st, ok := status.FromError(err); !ok {
 					log.Errorf("gRPC call returned not a gRPC status error: %v", err)
