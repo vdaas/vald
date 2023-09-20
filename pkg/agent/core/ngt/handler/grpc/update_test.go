@@ -849,11 +849,11 @@ func Test_server_Update(t *testing.T) {
 
 					req: &payload.Update_Request{
 						Vector: &payload.Object_Vector{
-							Id:        indexID,
-							Vector:    indexVector,
-							Timestamp: newTS.UnixNano(),
+							Id:     indexID,
+							Vector: indexVector,
 						},
 						Config: &payload.Update_Config{
+							Timestamp:               newTS.UnixNano(),
 							SkipStrictExistCheck:    false,
 							UpdateTimestampIfExists: true,
 						},
@@ -866,6 +866,7 @@ func Test_server_Update(t *testing.T) {
 					if err := defaultCheckFunc(w, o, s, err); err != nil {
 						return err
 					}
+
 					ov, err := s.GetObject(context.Background(), &payload.Object_VectorRequest{
 						Id: &payload.Object_ID{
 							Id: indexID,
