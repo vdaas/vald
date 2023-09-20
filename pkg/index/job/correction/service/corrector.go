@@ -54,11 +54,13 @@ type correct struct {
 	checkedID             bbolt.Bbolt
 }
 
+const filemode = 0o600
+
 func New(cfg *config.Data, discoverer discoverer.Client) (Corrector, error) {
 	d := filepath.Join(os.TempDir(), "bbolt")
 	file.MkdirAll(d, os.ModePerm)
 	dbfile := filepath.Join(d, "checkedid.db")
-	bolt, err := bbolt.New(dbfile, "", os.FileMode(0o600))
+	bolt, err := bbolt.New(dbfile, "", os.FileMode(filemode))
 	if err != nil {
 		return nil, err
 	}
