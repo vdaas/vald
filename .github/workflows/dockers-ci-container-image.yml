@@ -20,6 +20,11 @@ on:
       - "main"
       - "release/v*.*"
       - "!release/v*.*.*"
+    tags:
+      - "*.*.*"
+      - "v*.*.*"
+      - "*.*.*-*"
+      - "v*.*.*-*"
     paths:
       - ".github/actions/docker-build/actions.yaml"
       - ".github/workflows/_docker-image.yaml"

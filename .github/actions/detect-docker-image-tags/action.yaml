@@ -50,6 +50,7 @@ runs:
           ["vdaas/vald-lb-gateway"]="gateway.lb.image.tag"
           ["vdaas/vald-manager-index"]="manager.index.image.tag"
           ["vdaas/vald-helm-operator"]="image.tag"
+          ["vdaas/vald-ci-container"]=""
         )
 
         for image in ${IMAGES}
