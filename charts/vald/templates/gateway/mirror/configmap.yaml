@@ -48,7 +48,7 @@ data:
       discovery_duration: {{ $gateway.gateway_config.discovery_duration }}
       colocation: {{ $gateway.gateway_config.colocation }}
       group: {{ $gateway.gateway_config.group }}
-      net: 
+      net:
       {{- toYaml $gateway.gateway_config.net | nindent 8 }}
       client:
         {{- $client := $gateway.gateway_config.client }}
@@ -69,7 +69,7 @@ data:
         {{- include "vald.grpc.client" $GRPCClient | nindent 8 }}
       self_mirror_addr:
         {{- if $gateway.ingress.enabled -}}
-        {{- $gateway.gateway_config.self_mirror_addr | indent 1 }}
+        {{- printf "%s:%d" $gateway.ingress.host 80 | indent 1 }}
         {{- else -}}
         {{- $defaultHost := printf "%s.%s.svc.cluster.local" $gateway.name .Release.Namespace }}
         {{- $defaultPort := default .Values.defaults.server_config.servers.grpc.port $gateway.server_config.servers.grpc.port }}

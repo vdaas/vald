@@ -75,6 +75,7 @@ k8s/vald/deploy:
 	    --set discoverer.image.repository=$(CRORG)/$(DISCOVERER_IMAGE) \
 	    --set gateway.filter.image.repository=$(CRORG)/$(FILTER_GATEWAY_IMAGE) \
 	    --set gateway.lb.image.repository=$(CRORG)/$(LB_GATEWAY_IMAGE) \
+	    --set gateway.mirror.image.repository=$(CRORG)/$(MIRROR_GATEWAY_IMAGE) \
 	    --set manager.index.image.repository=$(CRORG)/$(MANAGER_INDEX_IMAGE) \
 	    $(HELM_EXTRA_OPTIONS) \
 	    --output-dir $(TEMP_DIR) \
@@ -84,6 +85,7 @@ k8s/vald/deploy:
 	kubectl apply -f $(TEMP_DIR)/vald/templates/agent || true
 	kubectl apply -f $(TEMP_DIR)/vald/templates/discoverer || true
 	kubectl apply -f $(TEMP_DIR)/vald/templates/gateway/lb || true
+	kubectl apply -f $(TEMP_DIR)/vald/templates/gateway/mirror || true
 	rm -rf $(TEMP_DIR)
 	kubectl get pods -o jsonpath="{.items[*].spec.containers[*].image}" | tr " " "\n"
 
@@ -98,9 +100,11 @@ k8s/vald/delete:
 	    --set discoverer.image.repository=$(CRORG)/$(DISCOVERER_IMAGE) \
 	    --set gateway.filter.image.repository=$(CRORG)/$(FILTER_GATEWAY_IMAGE) \
 	    --set gateway.lb.image.repository=$(CRORG)/$(LB_GATEWAY_IMAGE) \
+	    --set gateway.mirror.image.repository=$(CRORG)/$(MIRROR_GATEWAY_IMAGE) \
 	    --set manager.index.image.repository=$(CRORG)/$(MANAGER_INDEX_IMAGE) \
 	    --output-dir $(TEMP_DIR) \
 	    charts/vald
+	kubectl delete -f $(TEMP_DIR)/vald/templates/gateway/mirror
 	kubectl delete -f $(TEMP_DIR)/vald/templates/gateway/lb
 	kubectl delete -f $(TEMP_DIR)/vald/templates/manager/index
 	kubectl delete -f $(TEMP_DIR)/vald/templates/discoverer
