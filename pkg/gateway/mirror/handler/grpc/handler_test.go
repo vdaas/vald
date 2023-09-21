@@ -16,7 +16,6 @@ package grpc
 import (
 	"context"
 	"reflect"
-	"sync"
 	"sync/atomic"
 	"testing"
 
@@ -26,6 +25,7 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/net/grpc/status"
+	"github.com/vdaas/vald/internal/sync"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/internal/test/data/vector"
 	"github.com/vdaas/vald/internal/test/goleak"
@@ -5288,7 +5288,7 @@ func Test_server_getObjects(t *testing.T) {
 		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
 	}
 	type want struct {
-		wantVecs *sync.Map
+		wantVecs *sync.Map[string, *payload.Object_Vector]
 		err      error
 	}
 	type test struct {
@@ -5296,11 +5296,11 @@ func Test_server_getObjects(t *testing.T) {
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, *sync.Map, error) error
+		checkFunc  func(want, *sync.Map[string, *payload.Object_Vector], error) error
 		beforeFunc func(*testing.T, args)
 		afterFunc  func(*testing.T, args)
 	}
-	defaultCheckFunc := func(w want, gotVecs *sync.Map, err error) error {
+	defaultCheckFunc := func(w want, gotVecs *sync.Map[string, *payload.Object_Vector], err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}

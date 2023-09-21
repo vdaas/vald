@@ -17,7 +17,6 @@ import (
 	"context"
 	"fmt"
 	"reflect"
-	"sync"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
@@ -29,6 +28,7 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
+	"github.com/vdaas/vald/internal/sync"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/pkg/gateway/mirror/service"
 )
@@ -1043,7 +1043,7 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (loc *
 	}
 
 	var mu sync.Mutex
-	var result sync.Map
+	var result sync.Map[string, error]
 	loc = &payload.Object_Location{
 		Uuid: req.GetVector().GetId(),
 		Ips:  make([]string, 0),
@@ -1120,17 +1120,11 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (loc *
 
 	var errs error
 	targets := make([]string, 0, 10)
-	result.Range(func(target, err any) bool {
+	result.Range(func(target string, err error) bool {
 		if err == nil {
-			targets = append(targets, target.(string))
+			targets = append(targets, target)
 		} else {
-			if err, ok := err.(error); ok && err != nil {
-				if errs != nil {
-					errs = errors.Join(errs, err)
-				} else {
-					errs = err
-				}
-			}
+			errs = errors.Join(errs, err)
 		}
 		return true
 	})
@@ -1540,7 +1534,7 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (loc *
 	}
 
 	var mu sync.Mutex
-	var result sync.Map
+	var result sync.Map[string, error]
 	loc = &payload.Object_Location{
 		Uuid: req.GetVector().GetId(),
 		Ips:  make([]string, 0),
@@ -1620,17 +1614,11 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (loc *
 
 	var errs error
 	targets := make([]string, 0, 10)
-	result.Range(func(target, err any) bool {
+	result.Range(func(target string, err error) bool {
 		if err == nil {
-			targets = append(targets, target.(string))
+			targets = append(targets, target)
 		} else {
-			if err, ok := err.(error); ok && err != nil {
-				if errs != nil {
-					errs = errors.Join(errs, err)
-				} else {
-					errs = err
-				}
-			}
+			errs = errors.Join(errs, err)
 		}
 		return true
 	})
@@ -1708,7 +1696,7 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (loc *
 			}
 
 			req := &payload.Update_Request{
-				Vector: oldVec.(*payload.Object_Vector),
+				Vector: oldVec,
 				Config: &payload.Update_Config{
 					SkipStrictExistCheck: true,
 				},
@@ -2075,7 +2063,7 @@ func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *
 	}
 
 	var mu sync.Mutex
-	var result sync.Map
+	var result sync.Map[string, error]
 	loc = &payload.Object_Location{
 		Uuid: req.GetVector().GetId(),
 		Ips:  make([]string, 0),
@@ -2152,17 +2140,11 @@ func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *
 
 	var errs error
 	targets := make([]string, 0, 10)
-	result.Range(func(target, err any) bool {
+	result.Range(func(target string, err error) bool {
 		if err == nil {
-			targets = append(targets, target.(string))
+			targets = append(targets, target)
 		} else {
-			if err, ok := err.(error); ok && err != nil {
-				if errs != nil {
-					errs = errors.Join(errs, err)
-				} else {
-					errs = err
-				}
-			}
+			errs = errors.Join(errs, err)
 		}
 		return true
 	})
@@ -2239,7 +2221,7 @@ func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *
 			}
 
 			req := &payload.Update_Request{
-				Vector: oldVec.(*payload.Object_Vector),
+				Vector: oldVec,
 				Config: &payload.Update_Config{
 					SkipStrictExistCheck: true,
 				},
@@ -2606,7 +2588,7 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (loc *
 	}
 
 	var mu sync.Mutex
-	var result sync.Map
+	var result sync.Map[string, error]
 	loc = &payload.Object_Location{
 		Uuid: req.GetId().GetId(),
 		Ips:  make([]string, 0),
@@ -2684,17 +2666,11 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (loc *
 
 	var errs error
 	targets := make([]string, 0, 10)
-	result.Range(func(target, err any) bool {
+	result.Range(func(target string, err error) bool {
 		if err == nil {
-			targets = append(targets, target.(string))
+			targets = append(targets, target)
 		} else {
-			if err, ok := err.(error); ok && err != nil {
-				if errs != nil {
-					errs = errors.Join(errs, err)
-				} else {
-					errs = err
-				}
-			}
+			errs = errors.Join(errs, err)
 		}
 		return true
 	})
@@ -2741,7 +2717,7 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (loc *
 				return nil
 			}
 			req := &payload.Upsert_Request{
-				Vector: objv.(*payload.Object_Vector),
+				Vector: objv,
 				Config: &payload.Upsert_Config{
 					SkipStrictExistCheck: true,
 				},
@@ -3091,7 +3067,7 @@ func (s *server) GetObject(ctx context.Context, req *payload.Object_VectorReques
 	return vec, nil
 }
 
-func (s *server) getObjects(ctx context.Context, req *payload.Object_VectorRequest) (vecs *sync.Map, err error) {
+func (s *server) getObjects(ctx context.Context, req *payload.Object_VectorRequest) (vecs *sync.Map[string, *payload.Object_Vector], err error) {
 	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "getObjects"), apiName+"/"+vald.GetObjectRPCName+"/getObjects")
 	defer func() {
 		if span != nil {
@@ -3101,7 +3077,7 @@ func (s *server) getObjects(ctx context.Context, req *payload.Object_VectorReque
 
 	var errs error
 	var emu sync.Mutex
-	vecs = new(sync.Map)
+	vecs = new(sync.Map[string, *payload.Object_Vector])
 	err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error {
 		ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "BroadCast/"+target), apiName+"/"+vald.GetObjectRPCName+"/getObjects/"+target)
 		defer func() {

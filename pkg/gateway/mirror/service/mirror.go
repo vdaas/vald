@@ -16,7 +16,6 @@ package service
 import (
 	"context"
 	"reflect"
-	"sync"
 	"time"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
@@ -29,6 +28,7 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc/errdetails"
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/observability/trace"
+	"github.com/vdaas/vald/internal/sync"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 )
 
@@ -45,10 +45,10 @@ type Mirror interface {
 }
 
 type mirr struct {
-	addrl         sync.Map                 // List of all connected addresses
+	addrl         sync.Map[string, any]    // List of all connected addresses
 	selfMirrTgts  []*payload.Mirror_Target // Targets of self mirror gateway
-	selfMirrAddrl sync.Map                 // List of self Mirror gateway addresses
-	gwAddrl       sync.Map                 // List of Vald Gateway addresses
+	selfMirrAddrl sync.Map[string, any]    // List of self Mirror gateway addresses
+	gwAddrl       sync.Map[string, any]    // List of Vald Gateway addresses
 	eg            errgroup.Group
 	advertiseDur  time.Duration
 	gateway       Gateway
@@ -69,12 +69,12 @@ func NewMirror(opts ...MirrorOption) (_ Mirror, err error) {
 	}
 
 	m.selfMirrTgts = make([]*payload.Mirror_Target, 0)
-	m.selfMirrAddrl.Range(func(addr, _ any) bool {
+	m.selfMirrAddrl.Range(func(addr string, _ any) bool {
 		var (
 			host string
 			port uint16
 		)
-		host, port, err = net.SplitHostPort(addr.(string))
+		host, port, err = net.SplitHostPort(addr)
 		if err != nil {
 			return false
 		}
@@ -473,10 +473,9 @@ func (m *mirr) connectedMirrorAddrs() []string {
 }
 
 func (m *mirr) RangeAllMirrorAddr(f func(addr string, _ any) bool) {
-	m.addrl.Range(func(key, value any) bool {
-		addr := key.(string)
+	m.addrl.Range(func(addr string, value any) bool {
 		if !m.isGatewayAddr(addr) {
-			if !f(key.(string), value) {
+			if !f(addr, value) {
 				return false
 			}
 		}
