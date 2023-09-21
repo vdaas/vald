@@ -69,7 +69,7 @@ data:
         {{- include "vald.grpc.client" $GRPCClient | nindent 8 }}
       self_mirror_addr:
         {{- if $gateway.ingress.enabled -}}
-        {{- printf "%s:%d" $gateway.ingress.host 80 | indent 1 }}
+        {{- $gateway.gateway_config.self_mirror_addr | default (printf "%s:%d" $gateway.ingress.host 80) | indent 1 }}
         {{- else -}}
         {{- $defaultHost := printf "%s.%s.svc.cluster.local" $gateway.name .Release.Namespace }}
         {{- $defaultPort := default .Values.defaults.server_config.servers.grpc.port $gateway.server_config.servers.grpc.port }}
