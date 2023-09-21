@@ -1,7 +1,7 @@
 // Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //	https://www.apache.org/licenses/LICENSE-2.0
@@ -48,9 +48,10 @@ type mockClient struct {
 	MultiLinearSearchFunc      func(ctx context.Context, in *payload.Search_MultiRequest, opts ...grpc.CallOption) (*payload.Search_Responses, error)
 	MultiLinearSearchByIDFunc  func(ctx context.Context, in *payload.Search_MultiIDRequest, opts ...grpc.CallOption) (*payload.Search_Responses, error)
 
-	RemoveFunc       func(ctx context.Context, in *payload.Remove_Request, opts ...grpc.CallOption) (*payload.Object_Location, error)
-	StreamRemoveFunc func(ctx context.Context, opts ...grpc.CallOption) (vald.Remove_StreamRemoveClient, error)
-	MultiRemoveFunc  func(ctx context.Context, in *payload.Remove_MultiRequest, opts ...grpc.CallOption) (*payload.Object_Locations, error)
+	RemoveFunc            func(ctx context.Context, in *payload.Remove_Request, opts ...grpc.CallOption) (*payload.Object_Location, error)
+	RemoveByTimestampFunc func(ctx context.Context, in *payload.Remove_TimestampRequest, opts ...grpc.CallOption) (*payload.Object_Locations, error)
+	StreamRemoveFunc      func(ctx context.Context, opts ...grpc.CallOption) (vald.Remove_StreamRemoveClient, error)
+	MultiRemoveFunc       func(ctx context.Context, in *payload.Remove_MultiRequest, opts ...grpc.CallOption) (*payload.Object_Locations, error)
 
 	ExistsFunc           func(ctx context.Context, in *payload.Object_ID, opts ...grpc.CallOption) (*payload.Object_ID, error)
 	GetObjectFunc        func(ctx context.Context, in *payload.Object_VectorRequest, opts ...grpc.CallOption) (*payload.Object_Vector, error)
@@ -147,6 +148,10 @@ func (m *mockClient) MultiLinearSearchByID(ctx context.Context, in *payload.Sear
 
 func (m *mockClient) Remove(ctx context.Context, in *payload.Remove_Request, opts ...grpc.CallOption) (*payload.Object_Location, error) {
 	return m.RemoveFunc(ctx, in, opts...)
+}
+
+func (m *mockClient) RemoveByTimestamp(ctx context.Context, in *payload.Remove_TimestampRequest, opts ...grpc.CallOption) (*payload.Object_Locations, error) {
+	return m.RemoveByTimestamp(ctx, in, opts...)
 }
 
 func (m *mockClient) StreamRemove(ctx context.Context, opts ...grpc.CallOption) (vald.Remove_StreamRemoveClient, error) {
