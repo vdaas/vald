@@ -181,6 +181,9 @@ func Test_server_Update(t *testing.T) {
 			- case 2.2: success update with one different vector, duplicated ID and SkipStrictExistsCheck is false
 			- case 2.3: success update with one duplicated vector, different ID and SkipStrictExistCheck is false
 			- case 3.1: success update timestamp with one same ID and vector, and UpdateTimestampIfExists is true
+			- case 3.2: success update timestamp with one same ID and vector, and UpdateTimestampIfExists and SkipStrictExistCheck are true
+			- case 4.1: fail update timestamp with one same ID, vector and timestamp, and UpdateTimestampIfExists is true
+			- case 4.2: fail update timestamp with one same ID, vector and timestamp, and UpdateTimestampIfExists and SkipStrictExistCheck are true
 	*/
 	tests := []test{
 		{
@@ -878,6 +881,157 @@ func Test_server_Update(t *testing.T) {
 
 					got := ov.GetTimestamp()
 					want := newTS.UnixNano()
+					if got != want {
+						return errors.Errorf("timestamp is not updated, got: %v, want: %v", got, want)
+					}
+					return nil
+				},
+			}
+		}(),
+		func() test {
+			indexID := "test"
+			indexVector := vector.GaussianDistributedFloat32VectorGenerator(1, dimension)[0]
+			newTS := time.Now()
+			ts := newTS.Add(-2 * time.Minute)
+
+			return test{
+				name: "Decision Table Testing case 3.2: success update timestamp with one same ID and vector, and UpdateTimestampIfExists and SkipStrictExistCheck are true",
+				args: args{
+					indexID:     indexID,
+					indexVector: indexVector,
+					indexTS:     ts.UnixNano(),
+
+					req: &payload.Update_Request{
+						Vector: &payload.Object_Vector{
+							Id:     indexID,
+							Vector: indexVector,
+						},
+						Config: &payload.Update_Config{
+							Timestamp:               newTS.UnixNano(),
+							SkipStrictExistCheck:    true,
+							UpdateTimestampIfExists: true,
+						},
+					},
+				},
+				want: want{
+					wantUUID: indexID,
+				},
+				checkFunc: func(w want, o *payload.Object_Location, s Server, err error) error {
+					if err := defaultCheckFunc(w, o, s, err); err != nil {
+						return err
+					}
+
+					ov, err := s.GetObject(context.Background(), &payload.Object_VectorRequest{
+						Id: &payload.Object_ID{
+							Id: indexID,
+						},
+					})
+					if err != nil {
+						return err
+					}
+
+					got := ov.GetTimestamp()
+					want := newTS.UnixNano()
+					if got != want {
+						return errors.Errorf("timestamp is not updated, got: %v, want: %v", got, want)
+					}
+					return nil
+				},
+			}
+		}(),
+		func() test {
+			indexID := "test"
+			indexVector := vector.GaussianDistributedFloat32VectorGenerator(1, dimension)[0]
+			ts := time.Now()
+
+			return test{
+				name: "Decision Table Testing case 4.1: fail update timestamp with one same ID, vector and timestamp, and UpdateTimestampIfExists is true",
+				args: args{
+					indexID:     indexID,
+					indexVector: indexVector,
+					indexTS:     ts.UnixNano(),
+
+					req: &payload.Update_Request{
+						Vector: &payload.Object_Vector{
+							Id:     indexID,
+							Vector: indexVector,
+						},
+						Config: &payload.Update_Config{
+							Timestamp:               ts.UnixNano(),
+							SkipStrictExistCheck:    false,
+							UpdateTimestampIfExists: true,
+						},
+					},
+				},
+				want: want{
+					code: codes.AlreadyExists,
+				},
+				checkFunc: func(w want, o *payload.Object_Location, s Server, err error) error {
+					if err := defaultCheckFunc(w, o, s, err); err != nil {
+						return err
+					}
+
+					ov, err := s.GetObject(context.Background(), &payload.Object_VectorRequest{
+						Id: &payload.Object_ID{
+							Id: indexID,
+						},
+					})
+					if err != nil {
+						return err
+					}
+
+					got := ov.GetTimestamp()
+					want := ts.UnixNano()
+					if got != want {
+						return errors.Errorf("timestamp is not updated, got: %v, want: %v", got, want)
+					}
+					return nil
+				},
+			}
+		}(),
+		func() test {
+			indexID := "test"
+			indexVector := vector.GaussianDistributedFloat32VectorGenerator(1, dimension)[0]
+			ts := time.Now()
+
+			return test{
+				name: "Decision Table Testing case 4.2: fail update timestamp with one same ID, vector and timestamp, and UpdateTimestampIfExists and SkipStrictExistCheck are true",
+				args: args{
+					indexID:     indexID,
+					indexVector: indexVector,
+					indexTS:     ts.UnixNano(),
+
+					req: &payload.Update_Request{
+						Vector: &payload.Object_Vector{
+							Id:     indexID,
+							Vector: indexVector,
+						},
+						Config: &payload.Update_Config{
+							Timestamp:               ts.UnixNano(),
+							SkipStrictExistCheck:    true,
+							UpdateTimestampIfExists: true,
+						},
+					},
+				},
+				want: want{
+					code: codes.AlreadyExists,
+				},
+				checkFunc: func(w want, o *payload.Object_Location, s Server, err error) error {
+					if err := defaultCheckFunc(w, o, s, err); err != nil {
+						return err
+					}
+
+					ov, err := s.GetObject(context.Background(), &payload.Object_VectorRequest{
+						Id: &payload.Object_ID{
+							Id: indexID,
+						},
+					})
+					if err != nil {
+						return err
+					}
+
+					got := ov.GetTimestamp()
+					want := ts.UnixNano()
 					if got != want {
 						return errors.Errorf("timestamp is not updated, got: %v, want: %v", got, want)
 					}
