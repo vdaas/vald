@@ -1187,11 +1187,7 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (loc *
 					return nil
 				}
 				emu.Lock()
-				if rerrs != nil {
-					rerrs = errors.Join(rerrs, err)
-				} else {
-					rerrs = err
-				}
+				rerrs = errors.Join(rerrs, err)
 				emu.Unlock()
 				return err
 			}
@@ -1418,11 +1414,7 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 					span.SetStatus(trace.StatusError, err.Error())
 				}
 				emu.Lock()
-				if errs != nil {
-					errs = errors.Join(errs, err)
-				} else {
-					errs = err
-				}
+				errs = errors.Join(errs, err)
 				emu.Unlock()
 				return nil
 			}
@@ -1684,11 +1676,7 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (loc *
 						return nil
 					}
 					emu.Lock()
-					if rerrs != nil {
-						rerrs = errors.Join(rerrs, err)
-					} else {
-						rerrs = err
-					}
+					rerrs = errors.Join(rerrs, err)
 					emu.Unlock()
 					return err
 				}
@@ -1718,11 +1706,7 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (loc *
 					return nil
 				}
 				emu.Lock()
-				if rerrs != nil {
-					rerrs = errors.Join(rerrs, err)
-				} else {
-					rerrs = err
-				}
+				rerrs = errors.Join(rerrs, err)
 				emu.Unlock()
 				return err
 			}
@@ -1947,11 +1931,7 @@ func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequ
 					span.SetStatus(trace.StatusError, err.Error())
 				}
 				emu.Lock()
-				if errs != nil {
-					errs = errors.Join(errs, err)
-				} else {
-					errs = err
-				}
+				errs = errors.Join(errs, err)
 				emu.Unlock()
 				return nil
 			}
@@ -2209,11 +2189,7 @@ func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *
 						return nil
 					}
 					emu.Lock()
-					if rerrs != nil {
-						rerrs = errors.Join(rerrs, err)
-					} else {
-						rerrs = err
-					}
+					rerrs = errors.Join(rerrs, err)
 					emu.Unlock()
 					return err
 				}
@@ -2243,11 +2219,7 @@ func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *
 					return nil
 				}
 				emu.Lock()
-				if rerrs != nil {
-					rerrs = errors.Join(rerrs, err)
-				} else {
-					rerrs = err
-				}
+				rerrs = errors.Join(rerrs, err)
 				emu.Unlock()
 				return err
 			}
@@ -2472,11 +2444,7 @@ func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequ
 					span.SetStatus(trace.StatusError, err.Error())
 				}
 				emu.Lock()
-				if errs != nil {
-					errs = errors.Join(errs, err)
-				} else {
-					errs = err
-				}
+				errs = errors.Join(errs, err)
 				emu.Unlock()
 				return nil
 			}
@@ -2739,11 +2707,7 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (loc *
 					return nil
 				}
 				emu.Lock()
-				if rerrs != nil {
-					rerrs = errors.Join(rerrs, err)
-				} else {
-					rerrs = err
-				}
+				rerrs = errors.Join(rerrs, err)
 				emu.Unlock()
 				return err
 			}
@@ -2968,11 +2932,7 @@ func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequ
 					span.SetStatus(trace.StatusError, err.Error())
 				}
 				emu.Lock()
-				if errs != nil {
-					errs = errors.Join(errs, err)
-				} else {
-					errs = err
-				}
+				errs = errors.Join(errs, err)
 				emu.Unlock()
 				return nil
 			}
@@ -3145,11 +3105,7 @@ func (s *server) getObjects(ctx context.Context, req *payload.Object_VectorReque
 				return nil
 			}
 			emu.Lock()
-			if errs == nil {
-				errs = err
-			} else {
-				errs = errors.Join(errs, err)
-			}
+			errs = errors.Join(errs, err)
 			emu.Unlock()
 			return err
 		}
