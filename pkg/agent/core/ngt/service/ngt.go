@@ -1007,7 +1007,7 @@ func (n *ngt) update(uuid string, vec []float32, t int64, updateTS bool) (err er
 	if err = n.readyForUpdate(uuid, vec); err != nil {
 		if updateTS && errors.Is(err, errors.ErrUUIDAlreadyExists(uuid)) {
 			// update timestamp if UUID already exists
-			return n.updateTimestamp(uuid, vec, t)
+			return n.updateTimestamp(uuid, t)
 		}
 		return err
 	}
@@ -1047,23 +1047,27 @@ func (n *ngt) updateMultiple(vecs map[string][]float32, t int64) (err error) {
 	return n.insertMultiple(vecs, t, false)
 }
 
-func (n *ngt) updateTimestamp(uuid string, vec []float32, t int64) error {
+func (n *ngt) updateTimestamp(uuid string, t int64) error {
+	// update kvs if it is exists in kvs
 	uid, ts, ok := n.kvs.Get(uuid)
-	if !ok {
-		return errors.ErrObjectIDNotFound(uuid)
-	}
-	if ts == t {
-		return errors.ErrUUIDAlreadyExists(uuid)
+	if ok {
+		if ts == t {
+			return errors.ErrUUIDAlreadyExists(uuid)
+		}
+		n.kvs.Set(uuid, uid, t)
 	}
 
-	// update vqueue only if it is exists
-	if n.vq.IVExists(uuid) {
+	// update vqueue if it is exists and to be inserted
+	vec, ts, ok := n.vq.GetVector(uuid)
+	if ok {
+		if ts == t {
+			return errors.ErrUUIDAlreadyExists(uuid)
+		}
 		// PushInsert will update the timestamp even the index existed in vqueue
 		if err := n.vq.PushInsert(uuid, vec, t); err != nil {
 			return err
 		}
 	}
-	n.kvs.Set(uuid, uid, t)
 
 	return nil
 }
