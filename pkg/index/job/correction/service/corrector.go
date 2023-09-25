@@ -39,6 +39,12 @@ import (
 	"github.com/vdaas/vald/pkg/index/job/correction/config"
 )
 
+const (
+	insertMethod = "core.v1.Vald/Insert"
+	updateMethod = "core.v1.Vald/Update"
+	deleteMethod = "core.v1.Vald/Delete"
+)
+
 type Corrector interface {
 	Start(ctx context.Context) (<-chan error, error)
 	PreStop(ctx context.Context) error
@@ -385,7 +391,6 @@ func (c *correct) correctReplica(
 	}
 
 	// when there are less replicas than the correct number, add the extra replicas
-	// TODO: refine this logic. pretty complicated
 	if diff < 0 {
 		log.Infof("replica shortage of vector %s. inserting to other agents...", targetReplica.vec.GetId())
 		if len(availableAddrs) == 0 {
@@ -404,7 +409,7 @@ func (c *correct) correctReplica(
 		}
 
 		if diff < 0 {
-			return fmt.Errorf("failed to insert the sufficient amount of index to meet the replica setting")
+			return errors.ErrFailedToCorrectReplicaNum
 		}
 
 		return nil
@@ -433,7 +438,7 @@ func (c *correct) correctReplica(
 	}
 
 	if diff > 0 {
-		return fmt.Errorf("failed to delete the sufficient amount of index to meet the replica setting")
+		return errors.ErrFailedToCorrectReplicaNum
 	}
 
 	return nil
@@ -441,7 +446,7 @@ func (c *correct) correctReplica(
 
 func (c *correct) updateObject(ctx context.Context, addr string, vector *payload.Object_Vector) error {
 	res, err := c.discoverer.GetClient().
-		Do(grpc.WithGRPCMethod(ctx, "core.v1.Vald/Update"), addr, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
+		Do(grpc.WithGRPCMethod(ctx, updateMethod), addr, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
 			// TODO: use UpdateTimestamp when it's implemented because here we just want to update only the timestamp but not the vector
 			return vald.NewUpdateClient(conn).Update(ctx, &payload.Update_Request{
 				Vector: vector,
@@ -467,7 +472,7 @@ func (c *correct) updateObject(ctx context.Context, addr string, vector *payload
 
 func (c *correct) insertObject(ctx context.Context, addr string, vector *payload.Object_Vector) error {
 	res, err := c.discoverer.GetClient().
-		Do(grpc.WithGRPCMethod(ctx, "core.v1.Vald/Insert"), addr, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
+		Do(grpc.WithGRPCMethod(ctx, insertMethod), addr, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
 			return vald.NewInsertClient(conn).Insert(ctx, &payload.Insert_Request{
 				Vector: vector,
 				// FIXME: this should be deleted after Config.Timestamp deprecation
@@ -489,7 +494,7 @@ func (c *correct) insertObject(ctx context.Context, addr string, vector *payload
 
 func (c *correct) deleteObject(ctx context.Context, addr string, vector *payload.Object_Vector) error {
 	res, err := c.discoverer.GetClient().
-		Do(grpc.WithGRPCMethod(ctx, "core.v1.Vald/Delete"), addr, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
+		Do(grpc.WithGRPCMethod(ctx, deleteMethod), addr, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
 			return vald.NewRemoveClient(conn).Remove(ctx, &payload.Remove_Request{
 				Id: &payload.Object_ID{
 					Id: vector.GetId(),

@@ -20,3 +20,5 @@ package errors
 var ErrIndexReplicaOne = New("nothing to correct when index replica is 1")
 
 var ErrNoAvailableAgentToInsert = New("no available agent to insert replica")
+
+var ErrFailedToCorrectReplicaNum = New("failed to correct replica number after correction process")

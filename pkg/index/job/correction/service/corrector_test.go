@@ -1,5 +1,452 @@
 package service
 
+import (
+	"context"
+	"testing"
+
+	tmock "github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
+	"github.com/vdaas/vald/apis/grpc/v1/payload"
+	iconfig "github.com/vdaas/vald/internal/config"
+	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/net/grpc"
+	"github.com/vdaas/vald/internal/test/mock"
+	"github.com/vdaas/vald/pkg/index/job/correction/config"
+)
+
+type mockDiscovererClient struct {
+	client mock.ClientInternal
+}
+
+func (*mockDiscovererClient) Start(ctx context.Context) (<-chan error, error) {
+	return nil, nil
+}
+
+func (*mockDiscovererClient) GetAddrs(ctx context.Context) []string {
+	return nil
+}
+
+func (m *mockDiscovererClient) GetClient() grpc.Client {
+	return &m.client
+}
+
+func Test_correct_correctTimestamp(t *testing.T) {
+	t.Parallel()
+
+	// This mock just returns nil and record args inside
+	m := mockDiscovererClient{}
+	m.client.On("Do", tmock.Anything, tmock.Anything, tmock.Anything).Return(nil, nil)
+	c := &correct{
+		discoverer: &m,
+	}
+
+	type args struct {
+		target *vectorReplica
+		found  []*vectorReplica
+	}
+
+	type want struct {
+		addrs []string
+		err   error
+	}
+
+	type test struct {
+		name string
+		args args
+		want want
+	}
+
+	tests := []test{
+		{
+			name: "nothing happens when no replica is found",
+			args: args{
+				target: &vectorReplica{
+					addr: "target",
+					vec: &payload.Object_Vector{
+						Id:        "target",
+						Timestamp: 100,
+					},
+				},
+				found: []*vectorReplica{},
+			},
+			want: want{
+				addrs: nil,
+				err:   nil,
+			},
+		},
+		{
+			name: "updates one found vec when found vecs are older than target",
+			args: args{
+				target: &vectorReplica{
+					addr: "target",
+					vec: &payload.Object_Vector{
+						Id:        "target",
+						Timestamp: 100,
+					},
+				},
+				found: []*vectorReplica{
+					{
+						addr: "found",
+						vec: &payload.Object_Vector{
+							Id:        "found",
+							Timestamp: 99,
+						},
+					},
+				},
+			},
+			want: want{
+				addrs: []string{"found"},
+				err:   nil,
+			},
+		},
+		{
+			name: "updates multiple found vecs when found vecs are older than target",
+			args: args{
+				target: &vectorReplica{
+					addr: "target",
+					vec: &payload.Object_Vector{
+						Id:        "target",
+						Timestamp: 100,
+					},
+				},
+				found: []*vectorReplica{
+					{
+						addr: "found1",
+						vec: &payload.Object_Vector{
+							Id:        "found",
+							Timestamp: 99,
+						},
+					},
+					{
+						addr: "found2",
+						vec: &payload.Object_Vector{
+							Id:        "found",
+							Timestamp: 98,
+						},
+					},
+				},
+			},
+			want: want{
+				addrs: []string{"found1", "found2"},
+				err:   nil,
+			},
+		},
+		{
+			name: "updates target vec when found vecs are newer than target",
+			args: args{
+				target: &vectorReplica{
+					addr: "target",
+					vec: &payload.Object_Vector{
+						Id:        "target",
+						Timestamp: 0,
+					},
+				},
+				found: []*vectorReplica{
+					{
+						addr: "found1",
+						vec: &payload.Object_Vector{
+							Id:        "found",
+							Timestamp: 99,
+						},
+					},
+				},
+			},
+			want: want{
+				addrs: []string{"target"},
+				err:   nil,
+			},
+		},
+		{
+			name: "updates target vec and one of found vecs with the latest found vec",
+			args: args{
+				target: &vectorReplica{
+					addr: "target",
+					vec: &payload.Object_Vector{
+						Id:        "target",
+						Timestamp: 0,
+					},
+				},
+				found: []*vectorReplica{
+					{
+						addr: "found1",
+						vec: &payload.Object_Vector{
+							Id:        "found",
+							Timestamp: 99,
+						},
+					},
+					{
+						addr: "latest",
+						vec: &payload.Object_Vector{
+							Id:        "found",
+							Timestamp: 100,
+						},
+					},
+				},
+			},
+			want: want{
+				addrs: []string{"target", "found1"},
+				err:   nil,
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			err := c.correctTimestamp(context.Background(), test.args.target, test.args.found)
+			require.Equal(tt, test.want.err, err)
+
+			for _, addr := range test.want.addrs {
+				// check if the agents which need to be corrected are called
+				// checking calling parameter, like timestamp, is impossible because its inside of the function arg
+				m.client.AssertCalled(tt, "Do", tmock.Anything, addr, tmock.Anything)
+			}
+		})
+	}
+}
+
+func Test_correct_correctReplica(t *testing.T) {
+	t.Parallel()
+
+	// This mock just returns nil and record args inside
+	m := mockDiscovererClient{}
+	m.client.On("Do", tmock.Anything, tmock.Anything, tmock.Anything).Return(nil, nil)
+
+	type args struct {
+		indexReplica   int
+		target         *vectorReplica
+		found          []*vectorReplica
+		availableAddrs []string
+	}
+
+	type addrMethod struct {
+		addr   string
+		method string
+	}
+
+	type want struct {
+		addrMethods []addrMethod
+		err         error
+	}
+
+	type test struct {
+		name string
+		args args
+		want want
+	}
+
+	tests := []test{
+		{
+			name: "nothing happens when replica number sutisfies",
+			args: args{
+				indexReplica: 2,
+				target: &vectorReplica{
+					addr: "target",
+					vec: &payload.Object_Vector{
+						Id: "target",
+					},
+				},
+				found: []*vectorReplica{
+					{
+						addr: "found",
+						vec: &payload.Object_Vector{
+							Id: "found",
+						},
+					},
+				},
+				availableAddrs: []string{},
+			},
+			want: want{
+				addrMethods: nil,
+				err:         nil,
+			},
+		},
+		{
+			name: "insert replica when replica number is not enough",
+			args: args{
+				indexReplica: 2,
+				target: &vectorReplica{
+					addr: "target",
+					vec: &payload.Object_Vector{
+						Id: "target",
+					},
+				},
+				found:          []*vectorReplica{},
+				availableAddrs: []string{"available"},
+			},
+			want: want{
+				addrMethods: []addrMethod{
+					{
+						addr:   "available",
+						method: insertMethod,
+					},
+				},
+				err: nil,
+			},
+		},
+		{
+			name: "insert replica to the agent with most memory available",
+			args: args{
+				indexReplica: 2,
+				target: &vectorReplica{
+					addr: "target",
+					vec: &payload.Object_Vector{
+						Id: "target",
+					},
+				},
+				found: []*vectorReplica{},
+				// this is supposed to be sorted by memory usage with descending order
+				availableAddrs: []string{"most memory used", "second memory used"},
+			},
+			want: want{
+				addrMethods: []addrMethod{
+					{
+						addr:   "second memory used",
+						method: insertMethod,
+					},
+				},
+				err: nil,
+			},
+		},
+		{
+			name: "delete replica from myself when replica number is too much by one",
+			args: args{
+				indexReplica: 2,
+				target: &vectorReplica{
+					addr: "target",
+					vec: &payload.Object_Vector{
+						Id: "target",
+					},
+				},
+				found: []*vectorReplica{
+					{
+						addr: "found1",
+					},
+					{
+						addr: "found2",
+					},
+				},
+				availableAddrs: []string{},
+			},
+			want: want{
+				addrMethods: []addrMethod{
+					{
+						addr:   "target",
+						method: deleteMethod,
+					},
+				},
+				err: nil,
+			},
+		},
+		{
+			name: "delete replica from myself and most memory used agent when replica number is too much by more than one",
+			args: args{
+				indexReplica: 2,
+				target: &vectorReplica{
+					addr: "target",
+					vec: &payload.Object_Vector{
+						Id: "target",
+					},
+				},
+				found: []*vectorReplica{
+					{
+						addr: "found1",
+					},
+					{
+						addr: "found2",
+					},
+					{
+						addr: "found3",
+					},
+				},
+				availableAddrs: []string{},
+			},
+			want: want{
+				addrMethods: []addrMethod{
+					{
+						addr:   "target",
+						method: deleteMethod,
+					},
+					{
+						addr:   "found1",
+						method: deleteMethod,
+					},
+				},
+				err: nil,
+			},
+		},
+		{
+			name: "return ErrNoAvailableAgentToInsert when availableAddrs is empty when insertion required",
+			args: args{
+				indexReplica: 2,
+				target: &vectorReplica{
+					addr: "target",
+					vec: &payload.Object_Vector{
+						Id: "target",
+					},
+				},
+				found:          []*vectorReplica{},
+				availableAddrs: []string{},
+			},
+			want: want{
+				addrMethods: nil,
+				err:         errors.ErrNoAvailableAgentToInsert,
+			},
+		},
+		{
+			name: "return ErrFailedToCorrectReplicaNum when there is not enough number of availableAddrs",
+			args: args{
+				indexReplica: 3,
+				target: &vectorReplica{
+					addr: "target",
+					vec: &payload.Object_Vector{
+						Id: "target",
+					},
+				},
+				found:          []*vectorReplica{},
+				availableAddrs: []string{"available"},
+			},
+			want: want{
+				addrMethods: nil,
+				err:         errors.ErrFailedToCorrectReplicaNum,
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		test := tc
+		c := &correct{
+			discoverer: &m,
+			cfg: &config.Data{
+				Corrector: &iconfig.Corrector{
+					IndexReplica: test.args.indexReplica,
+				},
+			},
+		}
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			err := c.correctReplica(context.Background(), test.args.target, test.args.found, test.args.availableAddrs)
+			if test.want.err != nil {
+				require.ErrorIs(t, test.want.err, err)
+			}
+
+			for _, am := range test.want.addrMethods {
+				// check if the agents which need to be corrected are called with the required method
+				// checking calling parameter, like timestamp, is impossible because its inside of the function arg
+				m.client.AssertCalled(tt, "Do", tmock.MatchedBy(func(ctx context.Context) bool {
+					method := ctx.Value(grpc.GrpcMethodContextKey)
+					val, ok := method.(string)
+					if !ok {
+						return false
+					}
+					return val == am.method
+				}), am.addr, tmock.Anything)
+			}
+		})
+	}
+}
+
 // NOT IMPLEMENTED BELOW
 //
 // func TestNew(t *testing.T) {
