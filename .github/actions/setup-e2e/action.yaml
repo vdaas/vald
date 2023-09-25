@@ -97,4 +97,4 @@ runs:
     - name: Check Kubernetes cluster
       shell: bash
       run: |
-        kubectl cluster-info
+        kubectl cluster-info dump
