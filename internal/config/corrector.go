@@ -43,6 +43,9 @@ type Corrector struct {
 	// BboltAsyncWriteConcurrency represent concurrency for bbolt async write
 	BboltAsyncWriteConcurrency int `json:"bbolt_async_write_concurrency" yaml:"bbolt_async_write_concurrency"`
 
+	// IndexReplica represent index replica count. This should be equal to the lb setting
+	IndexReplica int `json:"index_replica" yaml:"index_replica"`
+
 	// Discoverer represent agent discoverer service configuration
 	Discoverer *DiscovererClient `json:"discoverer" yaml:"discoverer"`
 }

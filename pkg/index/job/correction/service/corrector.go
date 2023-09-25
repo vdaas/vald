@@ -378,7 +378,7 @@ func (c *correct) correctReplica(
 ) error {
 	// diff < 0 means there is less replica than the correct number
 	existReplica := len(foundReplicas) + 1
-	diff := existReplica - c.cfg.Gateway.IndexReplica
+	diff := existReplica - c.cfg.Corrector.IndexReplica
 	if diff == 0 {
 		// replica number is correct
 		return nil

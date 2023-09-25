@@ -38,7 +38,6 @@ type Data struct {
 	// Indexer represent agent auto indexing service configuration
 	Corrector *config.Corrector `json:"corrector" yaml:"corrector"`
 
-	// FIXME: ここから読み込むときLB側の設定とのconsistencyをどう担保するのか
 	// Gateway represent agent gateway service configuration
 	Gateway *config.LB `json:"gateway" yaml:"gateway"`
 }
