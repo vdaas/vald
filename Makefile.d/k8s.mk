@@ -78,6 +78,7 @@ k8s/vald/deploy:
 	    --set gateway.mirror.image.repository=$(CRORG)/$(MIRROR_GATEWAY_IMAGE) \
 	    --set manager.index.image.repository=$(CRORG)/$(MANAGER_INDEX_IMAGE) \
 	    $(HELM_EXTRA_OPTIONS) \
+        --include-crds \
 	    --output-dir $(TEMP_DIR) \
 	    charts/vald
 	@echo "Permitting error because there's some cases nothing to apply"
@@ -85,6 +86,7 @@ k8s/vald/deploy:
 	kubectl apply -f $(TEMP_DIR)/vald/templates/agent || true
 	kubectl apply -f $(TEMP_DIR)/vald/templates/discoverer || true
 	kubectl apply -f $(TEMP_DIR)/vald/templates/gateway/lb || true
+	kubectl apply -f $(TEMP_DIR)/vald/crds || true
 	kubectl apply -f $(TEMP_DIR)/vald/templates/gateway/mirror || true
 	rm -rf $(TEMP_DIR)
 	kubectl get pods -o jsonpath="{.items[*].spec.containers[*].image}" | tr " " "\n"
@@ -102,6 +104,7 @@ k8s/vald/delete:
 	    --set gateway.lb.image.repository=$(CRORG)/$(LB_GATEWAY_IMAGE) \
 	    --set gateway.mirror.image.repository=$(CRORG)/$(MIRROR_GATEWAY_IMAGE) \
 	    --set manager.index.image.repository=$(CRORG)/$(MANAGER_INDEX_IMAGE) \
+        --include-crds \
 	    --output-dir $(TEMP_DIR) \
 	    charts/vald
 	kubectl delete -f $(TEMP_DIR)/vald/templates/gateway/mirror
@@ -109,6 +112,7 @@ k8s/vald/delete:
 	kubectl delete -f $(TEMP_DIR)/vald/templates/manager/index
 	kubectl delete -f $(TEMP_DIR)/vald/templates/discoverer
 	kubectl delete -f $(TEMP_DIR)/vald/templates/agent
+	kubectl delete -f $(TEMP_DIR)/vald/crds
 	rm -rf $(TEMP_DIR)
 
 .PHONY: k8s/multi/vald/deploy
