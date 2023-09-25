@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
+# @schema {"name": "colocation", "type": "string"}
+# colocation -- The colocation name
 colocation: dc1
 # @schema {"name": "target", "type": "object", "required": ["host", "port"]}
 # target -- Mirror target information
