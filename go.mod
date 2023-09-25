@@ -396,6 +396,7 @@ require (
 	golang.org/x/text v0.13.0
 	golang.org/x/tools v0.14.0
 	golang.org/x/time v0.3.0
+	golang.org/x/tools v0.13.0
 	gonum.org/v1/hdf5 v0.0.0-00010101000000-000000000000
 	gonum.org/v1/plot v0.10.1
 	google.golang.org/genproto/googleapis/api v0.0.0-20231012201019-e917dd12ba7a
