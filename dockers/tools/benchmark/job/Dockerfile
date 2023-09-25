@@ -13,11 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
 ARG GO_VERSION=latest
 ARG DISTROLESS_IMAGE=gcr.io/distroless/static
 ARG DISTROLESS_IMAGE_TAG=nonroot
 ARG UPX_OPTIONS=-9
 ARG MAINTAINER="vdaas.org vald team <vald@vdaas.org>"
+
+FROM golang:${GO_VERSION} AS golang
 
 FROM ubuntu:devel AS builder
 
@@ -47,17 +50,19 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-RUN mkdir -p ${GOPATH}/src
-
 COPY --from=golang /usr/local/go $GOROOT
 RUN mkdir -p "$GOPATH/src"
 
-WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}
+WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/Makefile.d
+COPY Makefile.d .
 
+WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}
+COPY Makefile .
+COPY .git .
 COPY go.mod .
 COPY go.sum .
 
-RUN go mod download
+RUN make go/download
 
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/internal
 COPY internal .
@@ -74,22 +79,15 @@ COPY cmd/${PKG} .
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/versions
 COPY versions .
 
-WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/Makefile.d
-COPY Makefile.d .
-
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}
-COPY Makefile .
-
-COPY .git .
-
 RUN make REPO=${ORG} NAME=${REPO} cmd/${PKG}/${APP_NAME} \
-    && upx ${UPX_OPTIONS} -o "/usr/bin/${APP_NAME}" "cmd/${PKG}/${APP_NAME}"
+    && mv "cmd/${PKG}/${APP_NAME}" "/usr/bin/${APP_NAME}"
 
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/cmd/${PKG}
 RUN cp sample.yaml /tmp/config.yaml
 
 FROM ${DISTROLESS_IMAGE}:${DISTROLESS_IMAGE_TAG}
-LABEL maintainer "Vald team <vald@vdaas.org>"
+LABEL maintainer="${MAINTAINER}"
 ENV APP_NAME job
 
 COPY --from=builder /usr/lib/x86_64-linux-gnu/libaec*  /usr/lib/x86_64-linux-gnu/
@@ -131,7 +129,6 @@ COPY --from=builder /lib/x86_64-linux-gnu/libtasn1.so.6 /lib/x86_64-linux-gnu/
 COPY --from=builder /lib/x86_64-linux-gnu/libkeyutils.so.1 /lib/x86_64-linux-gnu/
 COPY --from=builder /lib/x86_64-linux-gnu/libresolv.so.2 /lib/x86_64-linux-gnu/
 COPY --from=builder /lib/x86_64-linux-gnu/libffi.so.8 /lib/x86_64-linux-gnu/
-# COPY --from=builder /lib/x86_64-linux-gnu/ /lib/x86_64-linux-gnu/
 COPY --from=builder /lib64/ld-linux-x86-64.so.2 /lib64/
 
 COPY --from=builder /usr/bin/${APP_NAME} /go/bin/${APP_NAME}
