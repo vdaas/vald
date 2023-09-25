@@ -101,7 +101,8 @@ func (c *ClientInternal) Range(ctx context.Context,
 	f func(ctx context.Context,
 		addr string,
 		conn *ClientConn,
-		copts ...CallOption) error) error {
+		copts ...CallOption) error,
+) error {
 	args := c.Called(ctx, f)
 	return args.Error(0)
 }
@@ -111,7 +112,8 @@ func (c *ClientInternal) RangeConcurrent(ctx context.Context,
 	f func(ctx context.Context,
 		addr string,
 		conn *ClientConn,
-		copts ...CallOption) error) error {
+		copts ...CallOption) error,
+) error {
 	args := c.Called(ctx, concurrency, f)
 	return args.Error(0)
 }
@@ -121,7 +123,8 @@ func (c *ClientInternal) OrderedRange(ctx context.Context,
 	f func(ctx context.Context,
 		addr string,
 		conn *ClientConn,
-		copts ...CallOption) error) error {
+		copts ...CallOption) error,
+) error {
 	args := c.Called(ctx, order, f)
 	return args.Error(0)
 }
@@ -132,7 +135,8 @@ func (c *ClientInternal) OrderedRangeConcurrent(ctx context.Context,
 	f func(ctx context.Context,
 		addr string,
 		conn *ClientConn,
-		copts ...CallOption) error) error {
+		copts ...CallOption) error,
+) error {
 	args := c.Called(ctx, order, concurrency, f)
 	return args.Error(0)
 }
@@ -140,14 +144,16 @@ func (c *ClientInternal) OrderedRangeConcurrent(ctx context.Context,
 func (c *ClientInternal) Do(ctx context.Context, addr string,
 	f func(ctx context.Context,
 		conn *ClientConn,
-		copts ...CallOption) (interface{}, error)) (interface{}, error) {
+		copts ...CallOption) (interface{}, error),
+) (interface{}, error) {
 	args := c.Called(ctx, addr, f)
 	return args.Get(0), args.Error(1)
 }
 
 func (c *ClientInternal) RoundRobin(ctx context.Context, f func(ctx context.Context,
 	conn *ClientConn,
-	copts ...CallOption) (interface{}, error)) (interface{}, error) {
+	copts ...CallOption) (interface{}, error),
+) (interface{}, error) {
 	args := c.Called(ctx, f)
 	return args.Get(0), args.Error(1)
 }
