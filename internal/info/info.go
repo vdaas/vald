@@ -21,11 +21,11 @@ import (
 	"fmt"
 	"reflect"
 	"runtime"
+	"slices"
 	"strconv"
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
-	"github.com/vdaas/vald/internal/slices"
 	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/sync"
 )

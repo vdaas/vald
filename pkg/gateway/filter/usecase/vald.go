@@ -18,6 +18,7 @@ package usecase
 
 import (
 	"context"
+	"slices"
 
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
 	"github.com/vdaas/vald/internal/client/v1/client/filter/egress"
@@ -32,7 +33,6 @@ import (
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/servers/server"
 	"github.com/vdaas/vald/internal/servers/starter"
-	"github.com/vdaas/vald/internal/slices"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/pkg/gateway/filter/config"
 	handler "github.com/vdaas/vald/pkg/gateway/filter/handler/grpc"
