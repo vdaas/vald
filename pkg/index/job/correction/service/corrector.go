@@ -603,5 +603,5 @@ func getCorrectionStartTime(ctx context.Context) (time.Time, error) {
 	if t, ok := v.(time.Time); ok {
 		return t, nil
 	}
-	return time.Time{}, fmt.Errorf("timeKey is not embeded in context")
+	return time.Time{}, fmt.Errorf("timeKey is not embedded in context")
 }
