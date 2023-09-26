@@ -1051,18 +1051,20 @@ func (n *ngt) updateTimestamp(uuid string, t int64) error {
 	// update kvs if it is exists in kvs
 	uid, ts, ok := n.kvs.Get(uuid)
 	if ok {
-		if ts == t {
+		if ts >= t {
 			return errors.ErrUUIDAlreadyExists(uuid)
 		}
+		log.Debugf("Update kvs timestamp, uuid: %s", uuid)
 		n.kvs.Set(uuid, uid, t)
 	}
 
 	// update vqueue if it is exists and to be inserted
 	vec, ts, ok := n.vq.GetVector(uuid)
 	if ok {
-		if ts == t {
+		if ts >= t {
 			return errors.ErrUUIDAlreadyExists(uuid)
 		}
+		log.Debugf("Update vqueue timestamp, uuid: %s", uuid)
 		// PushInsert will update the timestamp even the index existed in vqueue
 		if err := n.vq.PushInsert(uuid, vec, t); err != nil {
 			return err

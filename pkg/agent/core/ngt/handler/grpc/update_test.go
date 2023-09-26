@@ -189,6 +189,10 @@ func Test_server_Update(t *testing.T) {
 			- case 5.2: success update timestamp with one same ID and vector, and UpdateTimestampIfExists and SkipStrictExistCheck are true without indexing
 			- case 6.1: fail update timestamp with one same ID, vector and timestamp, and UpdateTimestampIfExists is true without indexing
 			- case 6.2: fail update timestamp with one same ID, vector and timestamp, and UpdateTimestampIfExists and SkipStrictExistCheck are true without indexing
+			- case 7.1: fail update timestamp with one same ID and vector, and UpdateTimestampIfExists is false and SkipStrictExistCheck is true
+			- case 7.2: fail update timestamp with one same ID and vector, and UpdateTimestampIfExists is false and SkipStrictExistCheck is true without indexing
+			- case 7.3: fail update timestamp with one same ID and vector, and UpdateTimestampIfExists and SkipStrictExistCheck are false
+			- case 7.4: fail update timestamp with one same ID and vector, and UpdateTimestampIfExists and SkipStrictExistCheck are without indexing
 	*/
 	tests := []test{
 		{
@@ -1256,6 +1260,132 @@ func Test_server_Update(t *testing.T) {
 						return errors.Errorf("timestamp is not updated, got: %v, want: %v", got, want)
 					}
 					return nil
+				},
+			}
+		}(),
+		func() test {
+			indexID := "test"
+			indexVector := vector.GaussianDistributedFloat32VectorGenerator(1, dimension)[0]
+			newTS := time.Now()
+			ts := newTS.Add(-2 * time.Minute)
+
+			return test{
+				name: "Decision Table Testing case 7.1: fail update timestamp with one same ID and vector, and UpdateTimestampIfExists is false and SkipStrictExistCheck is true",
+				args: args{
+					indexID:     indexID,
+					indexVector: indexVector,
+					indexTS:     ts.UnixNano(),
+
+					req: &payload.Update_Request{
+						Vector: &payload.Object_Vector{
+							Id:     indexID,
+							Vector: indexVector,
+						},
+						Config: &payload.Update_Config{
+							Timestamp:               newTS.UnixNano(),
+							SkipStrictExistCheck:    true,
+							UpdateTimestampIfExists: false,
+						},
+					},
+				},
+				want: want{
+					code: codes.AlreadyExists,
+				},
+			}
+		}(),
+		func() test {
+			indexID := "test"
+			indexVector := vector.GaussianDistributedFloat32VectorGenerator(1, dimension)[0]
+			newTS := time.Now()
+			ts := newTS.Add(-2 * time.Minute)
+
+			return test{
+				name: "Decision Table Testing case 7.2: fail update timestamp with one same ID and vector, and UpdateTimestampIfExists is false and SkipStrictExistCheck is true without indexing",
+				fields: fields{
+					skipIndexing: true,
+				},
+				args: args{
+					indexID:     indexID,
+					indexVector: indexVector,
+					indexTS:     ts.UnixNano(),
+
+					req: &payload.Update_Request{
+						Vector: &payload.Object_Vector{
+							Id:     indexID,
+							Vector: indexVector,
+						},
+						Config: &payload.Update_Config{
+							Timestamp:               newTS.UnixNano(),
+							SkipStrictExistCheck:    true,
+							UpdateTimestampIfExists: false,
+						},
+					},
+				},
+				want: want{
+					code: codes.AlreadyExists,
+				},
+			}
+		}(),
+		func() test {
+			indexID := "test"
+			indexVector := vector.GaussianDistributedFloat32VectorGenerator(1, dimension)[0]
+			newTS := time.Now()
+			ts := newTS.Add(-2 * time.Minute)
+
+			return test{
+				name: "Decision Table Testing case 7.3: fail update timestamp with one same ID and vector, and UpdateTimestampIfExists and SkipStrictExistCheck are false",
+				args: args{
+					indexID:     indexID,
+					indexVector: indexVector,
+					indexTS:     ts.UnixNano(),
+
+					req: &payload.Update_Request{
+						Vector: &payload.Object_Vector{
+							Id:     indexID,
+							Vector: indexVector,
+						},
+						Config: &payload.Update_Config{
+							Timestamp:               newTS.UnixNano(),
+							SkipStrictExistCheck:    false,
+							UpdateTimestampIfExists: false,
+						},
+					},
+				},
+				want: want{
+					code: codes.AlreadyExists,
+				},
+			}
+		}(),
+		func() test {
+			indexID := "test"
+			indexVector := vector.GaussianDistributedFloat32VectorGenerator(1, dimension)[0]
+			newTS := time.Now()
+			ts := newTS.Add(-2 * time.Minute)
+
+			return test{
+				name: "Decision Table Testing case 7.4: fail update timestamp with one same ID and vector, and UpdateTimestampIfExists and SkipStrictExistCheck are without indexing",
+				fields: fields{
+					skipIndexing: true,
+				},
+				args: args{
+					indexID:     indexID,
+					indexVector: indexVector,
+					indexTS:     ts.UnixNano(),
+
+					req: &payload.Update_Request{
+						Vector: &payload.Object_Vector{
+							Id:     indexID,
+							Vector: indexVector,
+						},
+						Config: &payload.Update_Config{
+							Timestamp:               newTS.UnixNano(),
+							SkipStrictExistCheck:    false,
+							UpdateTimestampIfExists: false,
+						},
+					},
+				},
+				want: want{
+					code: codes.AlreadyExists,
 				},
 			}
 		}(),
