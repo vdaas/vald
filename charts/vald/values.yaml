@@ -2633,7 +2633,7 @@ manager:
                 keepalive: 15m #indexer fetches uncommitted index length, which includes huge payload so we need to set keepalive longer than usual
     # @schema {"name": "manager.index.corrector", "type": "object"}
     corrector:
-      # @schema {"name": "manager.index.corrector.enabled", "type": "bool"}
+      # @schema {"name": "manager.index.corrector.enabled", "type": "boolean"}
       # manager.index.corrector.enabled -- enable index correction CronJob
       enabled: false
       # @schema {"name": "manager.index.corrector.check_duration", "type": "string"}
