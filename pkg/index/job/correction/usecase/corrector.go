@@ -139,10 +139,6 @@ func (r *run) PreStart(ctx context.Context) error {
 }
 
 func (r *run) Start(ctx context.Context) (<-chan error, error) {
-	// TODO: Set timeout?
-	// ctx, cancel := context.WithTimeout(ctx, time.Microsecond*10)
-	// defer cancel()
-
 	log.Info("starting servers")
 	ech := make(chan error, 3) //nolint:gomnd
 	var oech, nech, sech <-chan error
