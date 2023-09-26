@@ -72,7 +72,7 @@ func (c *Corrector) GetStreamListConcurrency() int {
 	return 200 //nolint:gomnd
 }
 
-// Returns 2048 when not specified since not setting this could use up all the available momory
+// GetBboltAsyncWriteConcurrency returns 2048 when not specified since not setting this could use up all the available momory
 func (c *Corrector) GetBboltAsyncWriteConcurrency() int {
 	if c != nil {
 		return c.BboltAsyncWriteConcurrency

@@ -125,12 +125,10 @@ func (c *correct) Start(ctx context.Context) (<-chan error, error) {
 
 func (c *correct) PreStop(_ context.Context) error {
 	log.Info("removing persistent cache files...")
-	if err := c.checkedID.Close(true); err != nil {
-		return err
-	}
-	return nil
+	return c.checkedID.Close(true)
 }
 
+// skipcq: GO-R1005
 func (c *correct) correct(ctx context.Context) (err error) {
 	// leftAgentAddrs is the agents' addr that hasn't been corrected yet.
 	// This is used to know which agents possibly have the same index as the target replica.
@@ -381,6 +379,7 @@ func (c *correct) correctTimestamp(ctx context.Context, targetReplica *vectorRep
 		return nil
 	}
 
+	// skipcq: CRT-D0001
 	allReplicas := append(foundReplicas, targetReplica)
 
 	// sort by timestamp

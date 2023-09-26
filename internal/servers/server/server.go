@@ -22,6 +22,7 @@ import (
 	"crypto/tls"
 	"net/http"
 	"os"
+	"path/filepath"
 	"reflect"
 	"strconv"
 	"syscall"
@@ -128,6 +129,7 @@ type grpcKeepalive struct {
 	permitWithoutStream bool
 }
 
+// skipcq: GO-R1005
 func New(opts ...Option) (Server, error) {
 	srv := new(server)
 
@@ -253,6 +255,7 @@ func (s *server) Name() string {
 	return s.name
 }
 
+// skipcq: GO-R1005
 func (s *server) ListenAndServe(ctx context.Context, ech chan<- error) (err error) {
 	if !s.IsRunning() {
 		s.mu.Lock()
@@ -274,8 +277,8 @@ func (s *server) ListenAndServe(ctx context.Context, ech chan<- error) (err erro
 			return s.network.String()
 		}(), func() string {
 			if s.network == net.UNIX {
-				if len(s.socketPath) == 0 {
-					s.socketPath = os.TempDir() + string(os.PathSeparator) + s.name + "." + strconv.Itoa(os.Getpid()) + ".sock"
+				if s.socketPath == "" {
+					s.socketPath = filepath.Join(os.TempDir(), string(os.PathSeparator), s.name, ".", strconv.Itoa(os.Getpid()), ".sock")
 				}
 				return s.socketPath
 			}
@@ -339,6 +342,7 @@ func (s *server) ListenAndServe(ctx context.Context, ech chan<- error) (err erro
 	return nil
 }
 
+// skipcq: GO-R1005
 func (s *server) Shutdown(ctx context.Context) (rerr error) {
 	if !s.IsRunning() {
 		return nil
@@ -385,7 +389,7 @@ func (s *server) Shutdown(ctx context.Context) (rerr error) {
 		}
 	}
 
-	if len(s.socketPath) != 0 {
+	if s.socketPath != "" {
 		defer func() {
 			err := os.RemoveAll(s.socketPath)
 			if err != nil {

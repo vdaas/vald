@@ -31,11 +31,11 @@ type mockDiscovererClient struct {
 	client mock.ClientInternal
 }
 
-func (*mockDiscovererClient) Start(ctx context.Context) (<-chan error, error) {
+func (*mockDiscovererClient) Start(context.Context) (<-chan error, error) {
 	return nil, nil
 }
 
-func (*mockDiscovererClient) GetAddrs(ctx context.Context) []string {
+func (*mockDiscovererClient) GetAddrs(context.Context) []string {
 	return nil
 }
 

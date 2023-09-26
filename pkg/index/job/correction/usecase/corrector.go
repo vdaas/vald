@@ -177,6 +177,7 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 			p, err := os.FindProcess(os.Getpid())
 			if err != nil {
 				// using Fatal to avoid this process to be zombie
+				// skipcq: RVV-A0003
 				log.Fatalf("failed to find my pid to kill %v", err)
 				return
 			}
@@ -216,6 +217,6 @@ func (r *run) Stop(ctx context.Context) error {
 	return nil
 }
 
-func (*run) PostStop(ctx context.Context) error {
+func (*run) PostStop(_ context.Context) error {
 	return nil
 }

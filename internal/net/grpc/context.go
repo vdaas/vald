@@ -20,7 +20,8 @@ import (
 
 type contextKey string
 
-// exported only for testing
+// GrpcMethodContextKey represents a context key for grpc method.
+// This is exported only for testing.
 const GrpcMethodContextKey contextKey = "grpc_method"
 
 // WrapGRPCMethod returns a copy of parent in which the method associated with key (grpcMethodContextKey).
