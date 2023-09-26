@@ -510,7 +510,7 @@ func (c *correct) insertObject(ctx context.Context, addr string, vector *payload
 		Do(grpc.WithGRPCMethod(ctx, insertMethod), addr, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
 			return vald.NewInsertClient(conn).Insert(ctx, &payload.Insert_Request{
 				Vector: vector,
-				// FIXME: this should be deleted after Config.Timestamp deprecation
+				// TODO: this should be deleted after Config.Timestamp deprecation
 				Config: &payload.Insert_Config{
 					Timestamp: vector.GetTimestamp(),
 				},
