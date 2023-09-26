@@ -29,6 +29,9 @@ inputs:
     description: "Path to the values.yaml that passed to Helm command."
     required: false
     default: "false"
+  namespace:
+    description: "Namespace to deploy."
+    required: false
   wait_for_selector:
     description: "Label selector used for specifying a pod waited for"
     required: false
@@ -60,6 +63,14 @@ runs:
       shell: bash
       run: |
         cat ${{ inputs.values }}
+
+    - name: Change namespace
+      if: ${{ inputs.namespace != '' }}
+      shell: bash
+      run: |
+        kubectl create ns ${NAMESPACE} || kubectl config set-context --current --namespace=${NAMESPACE}
+      env:
+        NAMESPACE: ${{ inputs.namespace }}
 
     - name: Deploy vald from remote charts
       shell: bash
