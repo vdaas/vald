@@ -44,7 +44,7 @@ type run struct {
 }
 
 func New(cfg *config.Data) (r runner.Runner, err error) {
-	if cfg.Gateway.IndexReplica == 1 {
+	if cfg.Corrector.IndexReplica == 1 {
 		return nil, errors.ErrIndexReplicaOne
 	}
 

@@ -37,9 +37,6 @@ type Data struct {
 
 	// Indexer represent agent auto indexing service configuration
 	Corrector *config.Corrector `json:"corrector" yaml:"corrector"`
-
-	// Gateway represent agent gateway service configuration
-	Gateway *config.LB `json:"gateway" yaml:"gateway"`
 }
 
 func NewConfig(path string) (cfg *Data, err error) {
@@ -73,12 +70,6 @@ func NewConfig(path string) (cfg *Data, err error) {
 		cfg.Corrector = cfg.Corrector.Bind()
 	} else {
 		cfg.Corrector = new(config.Corrector).Bind()
-	}
-
-	if cfg.Gateway != nil {
-		cfg.Gateway = cfg.Gateway.Bind()
-	} else {
-		cfg.Gateway = new(config.LB).Bind()
 	}
 
 	return cfg, nil
