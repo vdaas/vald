@@ -15,6 +15,7 @@ package mock
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/stretchr/testify/mock"
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
@@ -160,22 +161,42 @@ func (c *ClientInternal) RoundRobin(ctx context.Context, f func(ctx context.Cont
 
 func (c *ClientInternal) GetDialOption() []DialOption {
 	args := c.Called()
-	return args.Get(0).([]DialOption)
+	v, ok := args.Get(0).([]DialOption)
+	if !ok {
+		// panic here like testify mock does
+		panic(fmt.Sprintf("The provided arg(%v) is not type []DialOption", args.Get(0)))
+	}
+	return v
 }
 
 func (c *ClientInternal) GetCallOption() []CallOption {
 	args := c.Called()
-	return args.Get(0).([]CallOption)
+	v, ok := args.Get(0).([]CallOption)
+	if !ok {
+		// panic here like testify mock does
+		panic(fmt.Sprintf("The provided arg(%v) is not type []CallOption", args.Get(0)))
+	}
+	return v
 }
 
 func (c *ClientInternal) GetBackoff() backoff.Backoff {
 	args := c.Called()
-	return args.Get(0).(backoff.Backoff)
+	v, ok := args.Get(0).(backoff.Backoff)
+	if !ok {
+		// panic here like testify mock does
+		panic(fmt.Sprintf("The provided arg(%v) is not type backoff.Backoff", args.Get(0)))
+	}
+	return v
 }
 
 func (c *ClientInternal) ConnectedAddrs() []string {
 	args := c.Called()
-	return args.Get(0).([]string)
+	v, ok := args.Get(0).([]string)
+	if !ok {
+		// panic here like testify mock does
+		panic(fmt.Sprintf("The provided arg(%v) is not type []string", args.Get(0)))
+	}
+	return v
 }
 
 func (c *ClientInternal) Close(ctx context.Context) error {
