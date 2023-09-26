@@ -24,7 +24,7 @@ import (
 
 type GlobalConfig = config.GlobalConfig
 
-// Config represent a application setting data content (config.yaml).
+// Data represents a application setting data content (config.yaml).
 // In K8s environment, this configuration is stored in K8s ConfigMap.
 type Data struct {
 	config.GlobalConfig `json:",inline" yaml:",inline"`

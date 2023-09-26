@@ -129,6 +129,7 @@ type grpcKeepalive struct {
 	permitWithoutStream bool
 }
 
+// New returns Server implementation.
 // skipcq: GO-R1005
 func New(opts ...Option) (Server, error) {
 	srv := new(server)
