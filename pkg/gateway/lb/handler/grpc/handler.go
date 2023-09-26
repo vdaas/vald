@@ -1688,7 +1688,6 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (res *
 						locs.Ips = append(locs.GetIps(), host)
 						ls = append(ls, host)
 						mu.Unlock()
-
 					}
 				}
 				return nil

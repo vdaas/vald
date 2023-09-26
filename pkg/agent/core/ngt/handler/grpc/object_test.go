@@ -101,7 +101,7 @@ func Test_server_Exists(t *testing.T) {
 	defaultBeforeFunc := func(t *testing.T, ctx context.Context, a args) (Server, error) {
 		t.Helper()
 		eg, ctx := errgroup.New(ctx)
-		ngt, err := newIndexedNGTService(ctx, eg, request.Float, vector.Gaussian, insertNum, defaultInsertConfig, defaultNgtConfig, nil, []string{a.indexID}, nil)
+		ngt, err := newNGTService(ctx, eg, request.Float, vector.Gaussian, insertNum, defaultInsertConfig, defaultNgtConfig, nil, []string{a.indexID}, nil, false)
 		if err != nil {
 			return nil, err
 		}

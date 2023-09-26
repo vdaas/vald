@@ -71,7 +71,7 @@ func Test_server_Search(t *testing.T) {
 	defaultBeforeFunc := func(t *testing.T, ctx context.Context, f fields, a args) (Server, error) {
 		t.Helper()
 		eg, ctx := errgroup.New(ctx)
-		ngt, err := newIndexedNGTService(ctx, eg, f.objectType, f.distribution, a.insertNum, defaultInsertConfig, f.ngtCfg, f.ngtOpts, nil, f.overwriteVec)
+		ngt, err := newNGTService(ctx, eg, f.objectType, f.distribution, a.insertNum, defaultInsertConfig, f.ngtCfg, f.ngtOpts, nil, f.overwriteVec, false)
 		if err != nil {
 			return nil, err
 		}
@@ -862,7 +862,7 @@ func Test_server_SearchByID(t *testing.T) {
 	defaultBeforeFunc := func(t *testing.T, ctx context.Context, a args) (Server, error) {
 		t.Helper()
 		eg, ctx := errgroup.New(ctx)
-		ngt, err := newIndexedNGTService(ctx, eg, request.Float, vector.Gaussian, insertNum, defaultInsertConfig, defaultNgtConfig, nil, []string{a.indexID}, nil)
+		ngt, err := newNGTService(ctx, eg, request.Float, vector.Gaussian, insertNum, defaultInsertConfig, defaultNgtConfig, nil, []string{a.indexID}, nil, false)
 		if err != nil {
 			return nil, err
 		}
