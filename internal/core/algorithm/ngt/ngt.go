@@ -517,18 +517,16 @@ func (n *ngt) Insert(vec []float32) (id uint, err error) {
 	}
 	dim := C.uint32_t(n.dimension)
 	cvec := (*C.float)(&vec[0])
-	ebuf := n.GetErrorBuffer()
 	n.lock(true)
-	oid := C.ngt_insert_index_as_float(n.index, cvec, dim, ebuf)
+	oid := C.ngt_insert_index_as_float(nil, cvec, dim, nil)
 	n.unlock(true)
 	id = uint(oid)
 	cvec = nil
 	vec = vec[:0:0]
 	vec = nil
 	if id == 0 {
-		return 0, n.newGoError(ebuf)
+		return 0, errors.Errorf("Insert Error")
 	}
-	n.PutErrorBuffer(ebuf)
 	n.cnt.Add(1)
 
 	return id, nil
@@ -622,14 +620,12 @@ func (n *ngt) CreateIndex(poolSize uint32) error {
 	if poolSize == 0 {
 		poolSize = n.poolSize
 	}
-	ebuf := n.GetErrorBuffer()
 	n.lock(true)
-	ret := C.ngt_create_index(n.index, C.uint32_t(poolSize), ebuf)
+	ret := C.ngt_create_index(nil, C.uint32_t(poolSize), nil)
 	n.unlock(true)
 	if ret == ErrorCode {
-		return n.newGoError(ebuf)
+		return errors.Errorf("CreateIndex Error")
 	}
-	n.PutErrorBuffer(ebuf)
 
 	return nil
 }
@@ -672,14 +668,12 @@ func (n *ngt) SaveIndexWithPath(idxPath string) error {
 
 // Remove removes from NGT index.
 func (n *ngt) Remove(id uint) error {
-	ebuf := n.GetErrorBuffer()
 	n.lock(true)
-	ret := C.ngt_remove_index(n.index, C.ObjectID(id), ebuf)
+	ret := C.ngt_remove_index(nil, C.ObjectID(id), nil)
 	n.unlock(true)
 	if ret == ErrorCode {
-		return n.newGoError(ebuf)
+		return errors.Errorf("Remove Error")
 	}
-	n.PutErrorBuffer(ebuf)
 
 	n.cnt.Add(^uint64(0))
 
