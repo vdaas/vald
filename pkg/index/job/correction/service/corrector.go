@@ -176,7 +176,6 @@ func (c *correct) correct(ctx context.Context) (err error) {
 
 			// The number of items to be received in advance is not known in advance.
 			// This is because there is a possibility of new items being inserted during processing.
-			// TODO: BTW, we need to ignore these index by checking the timestamp.
 			for {
 				select {
 				case <-sctx.Done():
