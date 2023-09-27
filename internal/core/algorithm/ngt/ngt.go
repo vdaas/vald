@@ -517,7 +517,7 @@ func (n *ngt) Insert(vec []float32) (id uint, err error) {
 		return 0, errors.ErrIncompatibleDimensionSize(len(vec), int(n.dimension))
 	}
 	dim := n.dimension
-	cvec := &vec[0]
+	cvec := vec
 	n.lock(true)
 	oid := func(dim int, vec []float32) int {
 		vector := make([]float32, dim)
@@ -525,7 +525,7 @@ func (n *ngt) Insert(vec []float32) (id uint, err error) {
 			vector[i] = vec[i]
 		}
 		return int(n.cnt.Load())
-	}(dim, cvec)
+	}(int(dim), cvec)
 	n.unlock(true)
 	id = uint(oid)
 	cvec = nil
@@ -626,12 +626,12 @@ func (n *ngt) CreateIndex(poolSize uint32) error {
 		poolSize = n.poolSize
 	}
 	n.lock(true)
-	ret := func(poolSize uint32) int {
+	ret := func(poolSize uint32) bool {
 		time.Sleep(2 * time.Second)
-		return 1
+		return true
 	}(poolSize)
 	n.unlock(true)
-	if ret == ErrorCode {
+	if ret == bool(ErrorCode) {
 		return errors.Errorf("remove error")
 	}
 
@@ -677,11 +677,11 @@ func (n *ngt) SaveIndexWithPath(idxPath string) error {
 // Remove removes from NGT index.
 func (n *ngt) Remove(id uint) error {
 	n.lock(true)
-	ret := func(id uint) int {
-		return 1
+	ret := func(id uint) bool {
+		return true
 	}(id)
 	n.unlock(true)
-	if ret == ErrorCode {
+	if ret == bool(ErrorCode) {
 		return errors.Errorf("remove error")
 	}
 
