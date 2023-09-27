@@ -680,10 +680,10 @@ func (n *ngt) Remove(id uint) error {
 	ret := func(id uint) int {
 		return 1
 	}(id)
+	n.unlock(true)
 	if ret == ErrorCode {
 		return errors.Errorf("remove error")
 	}
-	n.unlock(true)
 
 	n.cnt.Add(^uint64(0))
 
