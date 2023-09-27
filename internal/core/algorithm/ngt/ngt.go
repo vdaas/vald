@@ -523,7 +523,7 @@ func (n *ngt) Insert(vec []float32) (id uint, err error) {
 		for i := 0; i < dim; i++ {
 			vector[i] = vec[i]
 		}
-		return 1
+		return int(n.cnt.Load())
 	}(dim, cvec)
 	n.unlock(true)
 	id = uint(oid)
