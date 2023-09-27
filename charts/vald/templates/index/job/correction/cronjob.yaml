@@ -1,0 +1,59 @@
+#
+# Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# You may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+{{- $corrector := .Values.manager.index.corrector -}}
+{{- if $corrector.enabled }}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ $corrector.name }}
+  labels:
+    app: {{ $corrector.name }}
+    app.kubernetes.io/name: {{ include "vald.name" . }}
+    helm.sh/chart: {{ include "vald.chart" . }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/version: {{ .Chart.Version }}
+spec:
+  schedule: {{ $corrector.schedule }}
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            app: {{ $corrector.name }}
+        spec:
+          containers:
+            - name: {{ $corrector.name }}
+              image: "{{ $corrector.image.repository }}:{{ default .Values.defaults.image.tag $corrector.image.tag }}"
+              imagePullPolicy: {{ $corrector.image.pullPolicy }}
+              volumeMounts:
+                - name: {{ $corrector.name }}-config
+                  mountPath: /etc/server/
+              {{- $servers := dict "Values" $corrector.server_config "default" .Values.defaults.server_config -}}
+              {{- include "vald.containerPorts" $servers | trim | nindent 14 }}
+              {{- if $corrector.env }}
+              env:
+                {{- toYaml $corrector.env | nindent 16 }}
+              {{- end }}
+          restartPolicy: OnFailure
+          volumes:
+            - name: {{ $corrector.name }}-config
+              configMap:
+                defaultMode: 420
+                name: {{ $corrector.name }}-config
+{{- end }}
