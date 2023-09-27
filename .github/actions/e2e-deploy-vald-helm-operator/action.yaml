@@ -91,7 +91,10 @@ runs:
       run: |
         kubectl apply -f ${VALDRELEASE}
 
-        sleep 3
+        sleep 10s
+        kubectl logs -l name=vald-helm-operator
+        echo "WAIT_FOR_TIMEOUT = ${WAIT_FOR_TIMEOUT}"
+        echo "WAIT_FOR_TIMEOUT = ${WAIT_FOR_TIMEOUT}"
 
         kubectl wait --for=condition=ready pod -l ${WAIT_FOR_SELECTOR} --timeout=${WAIT_FOR_TIMEOUT}
 
