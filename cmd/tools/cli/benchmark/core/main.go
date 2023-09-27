@@ -288,7 +288,7 @@ func main() {
 	})
 
 	ids := make([]uint, len(vectors))
-	run(ctx, false, path, len(vectors[0]), vectors, ids, time.Hour*2, output)
+	run(ctx, false, path, len(vectors[0]), vectors, ids, time.Hour*1, output)
 	sleep(ctx, time.Second*5, time.Minute*4, func() {
 		output("waiting for next")
 	}, func() {
@@ -297,16 +297,16 @@ func main() {
 		time.Sleep(time.Minute)
 		output("starting")
 	})
-	run(ctx, true, path, len(vectors[0]), nil, nil, 0, output)
-	sleep(ctx, time.Second*5, time.Minute*4, func() {
-		output("waiting for next")
-	}, func() {
-		runtime.GC()
-		output("gc")
-		time.Sleep(time.Minute)
-		output("starting")
-	})
-	run(ctx, true, path, len(vectors[0]), vectors, ids, time.Hour*2, output)
+	// run(ctx, true, path, len(vectors[0]), nil, nil, 0, output)
+	// sleep(ctx, time.Second*5, time.Minute*4, func() {
+	// 	output("waiting for next")
+	// }, func() {
+	// 	runtime.GC()
+	// 	output("gc")
+	// 	time.Sleep(time.Minute)
+	// 	output("starting")
+	// })
+	// run(ctx, true, path, len(vectors[0]), vectors, ids, time.Hour*2, output)
 
 	ids = ids[:0:0]
 	ids = nil

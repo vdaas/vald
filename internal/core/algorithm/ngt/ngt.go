@@ -28,6 +28,7 @@ import (
 	"context"
 	"reflect"
 	"sync/atomic"
+	"time"
 	"unsafe"
 
 	"github.com/vdaas/vald/internal/core/algorithm"
@@ -626,6 +627,7 @@ func (n *ngt) CreateIndex(poolSize uint32) error {
 	}
 	n.lock(true)
 	ret := func(poolSize uint32) int {
+		time.Sleep(2 * time.Second)
 		return 1
 	}(poolSize)
 	n.unlock(true)
