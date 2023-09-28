@@ -35,7 +35,7 @@ import (
 // Mirror manages other mirror gateway connection.
 // If there is a new Mirror Gateway components, registers new connection.
 type Mirror interface {
-	Start(ctx context.Context) (<-chan error, error)
+	Start(ctx context.Context) <-chan error
 	Connect(ctx context.Context, targets ...*payload.Mirror_Target) error
 	Disconnect(ctx context.Context, targets ...*payload.Mirror_Target) error
 	IsConnected(ctx context.Context, addr string) bool
@@ -87,37 +87,8 @@ func NewMirror(opts ...MirrorOption) (_ Mirror, err error) {
 	return m, err
 }
 
-func (m *mirr) Start(ctx context.Context) (<-chan error, error) {
-	ech := make(chan error, 100)
-
-	rech, err := m.startRegister(ctx)
-	if err != nil {
-		close(ech)
-		return nil, err
-	}
-
-	m.eg.Go(func() (err error) {
-		defer close(ech)
-		for {
-			select {
-			case <-ctx.Done():
-				return ctx.Err()
-			case err = <-rech:
-			}
-			if err != nil {
-				select {
-				case <-ctx.Done():
-				case ech <- err:
-				}
-				err = nil
-			}
-		}
-	})
-	return ech, nil
-}
-
-func (m *mirr) startRegister(ctx context.Context) (<-chan error, error) {
-	ctx, span := trace.StartSpan(ctx, "vald/gateway/mirror/service/Mirror.startRegister")
+func (m *mirr) Start(ctx context.Context) <-chan error {
+	ctx, span := trace.StartSpan(ctx, "vald/gateway/mirror/service/Mirror.Start")
 	defer func() {
 		if span != nil {
 			span.End()
@@ -127,7 +98,7 @@ func (m *mirr) startRegister(ctx context.Context) (<-chan error, error) {
 
 	m.eg.Go(func() error {
 		// TODO: change variable names.
-		tic := time.NewTimer(m.advertiseDur)
+		tic := time.NewTicker(m.advertiseDur)
 		defer close(ech)
 		defer tic.Stop()
 
@@ -171,7 +142,7 @@ func (m *mirr) startRegister(ctx context.Context) (<-chan error, error) {
 			}
 		}
 	})
-	return ech, nil
+	return ech
 }
 
 func (m *mirr) registers(ctx context.Context, tgts *payload.Mirror_Targets) ([]*payload.Mirror_Target, error) {

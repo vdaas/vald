@@ -198,11 +198,7 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 		}
 	}
 	if r.mirr != nil {
-		mech, err = r.mirr.Start(ctx)
-		if err != nil {
-			close(ech)
-			return nil, err
-		}
+		mech = r.mirr.Start(ctx)
 	}
 	if r.dsc != nil {
 		dech, err = r.dsc.Start(ctx)
