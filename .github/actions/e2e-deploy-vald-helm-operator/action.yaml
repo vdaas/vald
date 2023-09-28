@@ -71,7 +71,7 @@ runs:
           ${HELM_EXTRA_OPTIONS} \
           charts/vald-helm-operator/.
 
-        sleep 3
+        sleep 6
       env:
         HELM_EXTRA_OPTIONS: ${{ inputs.helm_extra_options }}
 
@@ -91,7 +91,7 @@ runs:
       run: |
         kubectl apply -f ${VALDRELEASE}
 
-        sleep 3
+        sleep 6
 
         kubectl wait --for=condition=ready pod -l ${WAIT_FOR_SELECTOR} --timeout=${WAIT_FOR_TIMEOUT}
 
