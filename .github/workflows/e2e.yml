@@ -308,7 +308,7 @@ jobs:
       - name: Deploy Mirror Target
         run: |
           kubectl apply -f .github/helm/values/vald-mirror-target.yaml -n vald-01
-          sleep 10s
+          sleep 5s
           kubectl get pods -A && kubectl get vmt -o wide -A
 
       - name: Run E2E CRUD
