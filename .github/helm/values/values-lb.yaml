@@ -69,3 +69,8 @@ manager:
       auto_index_duration_limit: 2m
       auto_index_check_duration: 30s
       auto_index_length: 1000
+    corrector:
+      enabled: true
+      # suspend because you do not want corrector to start automatically in CI
+      # instead run it manually
+      suspend: true

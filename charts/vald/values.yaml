@@ -2683,12 +2683,18 @@ manager:
       # @schema {"name": "manager.index.corrector.enabled", "type": "string"}
       # manager.index.corrector.schedule -- CronJob schedule setting for index correction
       schedule: "5 * * * *"
+      # @schema {"name": "manager.index.corrector.suspend", "type": "boolean"}
+      # manager.index.corrector.suspend -- CronJob suspend setting for index correction
+      suspend: false
+      # @schema {"name": "manager.index.corrector.ttlSecondsAfterFinished", "type": "integer"}
+      # manager.index.corrector.ttlSecondsAfterFinished -- ttl setting for K8s completed jobs
+      ttlSecondsAfterFinished: 86400
+      # @schema {"name": "manager.index.corrector.startingDeadlineSeconds", "type": "integer"}
+      # manager.index.corrector.startingDeadlineSeconds -- startingDeadlineSeconds setting for K8s completed jobs
+      startingDeadlineSeconds: 86400
       # @schema {"name": "manager.index.corrector.version", "alias": "version"}
       # manager.index.corrector.version -- version of index manager config
       version: v0.0.0
-      # @schema {"name": "manager.index.corrector.check_duration", "type": "string"}
-      # manager.index.corrector.enabled -- check duration of index correction CronJob
-      check_duration: 24h
       # @schema {"name": "manager.index.corrector.stream_list_concurrency", "type": "integer", "minimum": 1}
       # manager.index.corrector.stream_list_concurrency -- concurrency for stream list object rpc
       stream_list_concurrency: 200

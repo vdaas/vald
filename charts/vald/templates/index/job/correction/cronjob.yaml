@@ -30,8 +30,11 @@ metadata:
 spec:
   schedule: {{ $corrector.schedule }}
   concurrencyPolicy: Forbid
+  suspend: {{ $corrector.suspend }}
+  startingDeadlineSeconds: {{ $corrector.startingDeadlineSeconds }}
   jobTemplate:
     spec:
+      ttlSecondsAfterFinished: {{ $corrector.ttlSecondsAfterFinished }}
       template:
         metadata:
           labels:
