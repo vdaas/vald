@@ -519,7 +519,7 @@ func (n *ngt) Insert(vec []float32) (id uint, err error) {
 	cvec := (*C.float)(&vec[0])
 	ebuf := n.GetErrorBuffer()
 	n.lock(true)
-	oid := C.ngt_insert_index_as_float(n.index, cvec, dim, ebuf)
+	oid := C.ngt_insert_index_as_float(nil, cvec, dim, ebuf)
 	n.unlock(true)
 	id = uint(oid)
 	cvec = nil
@@ -624,7 +624,7 @@ func (n *ngt) CreateIndex(poolSize uint32) error {
 	}
 	ebuf := n.GetErrorBuffer()
 	n.lock(true)
-	ret := C.ngt_create_index(n.index, C.uint32_t(poolSize), ebuf)
+	ret := C.ngt_create_index(nil, C.uint32_t(poolSize), ebuf)
 	n.unlock(true)
 	if ret == ErrorCode {
 		return n.newGoError(ebuf)
@@ -674,7 +674,7 @@ func (n *ngt) SaveIndexWithPath(idxPath string) error {
 func (n *ngt) Remove(id uint) error {
 	ebuf := n.GetErrorBuffer()
 	n.lock(true)
-	ret := C.ngt_remove_index(n.index, C.ObjectID(id), ebuf)
+	ret := C.ngt_remove_index(nil, C.ObjectID(id), ebuf)
 	n.unlock(true)
 	if ret == ErrorCode {
 		return n.newGoError(ebuf)
