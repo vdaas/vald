@@ -2644,7 +2644,7 @@ manager:
         tag: ""
         # manager.index.image.pullPolicy -- image pull policy
         pullPolicy: Always
-      # @schema {"name": "manager.index.corrector.server_config", "alias": "server_config"
+      # @schema {"name": "manager.index.corrector.server_config", "alias": "server_config"}
       # manager.index.corrector.server_config -- server config (overrides defaults.server_config)
       server_config:
         servers:
