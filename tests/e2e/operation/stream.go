@@ -722,6 +722,8 @@ func (c *client) Update(t *testing.T, ctx context.Context, ds Dataset) error {
 		ctx,
 		ds,
 		false,
+		0,
+		false,
 		1,
 		DefaultStatusValidator,
 		ParseAndLogError,
@@ -733,6 +735,8 @@ func (c *client) UpdateWithParameters(
 	ctx context.Context,
 	ds Dataset,
 	skipStrictExistCheck bool,
+	ts int64,
+	updateTs bool,
 	offset int,
 	svalidator StatusValidator,
 	evalidator ErrorValidator,
@@ -804,7 +808,9 @@ func (c *client) UpdateWithParameters(
 				Vector: append(v[offset:], v[:offset]...),
 			},
 			Config: &payload.Update_Config{
-				SkipStrictExistCheck: skipStrictExistCheck,
+				SkipStrictExistCheck:    skipStrictExistCheck,
+				Timestamp:               ts,
+				UpdateTimestampIfExists: updateTs,
 			},
 		})
 		if err != nil {
