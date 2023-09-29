@@ -102,6 +102,8 @@ type Client interface {
 		ctx context.Context,
 		ds Dataset,
 		skipStrictExistCheck bool,
+		timestamp int64,
+		UpdateTimestampIfExists bool,
 		offset int,
 		statusValidator StatusValidator,
 		errorValidator ErrorValidator,
