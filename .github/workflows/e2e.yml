@@ -251,18 +251,15 @@ jobs:
           values: .github/helm/values/values-lb.yaml
           wait_for_selector: app=vald-lb-gateway
 
-      - name: Run E2E CRUD
+      - name: Run E2E Jobs
         run: |
           make hack/benchmark/assets/dataset/${{ env.DATASET }}
           make E2E_BIND_PORT=8081 \
-            E2E_DATASET_NAME=${{ env.DATASET }} \
-            E2E_INSERT_COUNT=100 \
-            E2E_SEARCH_COUNT=10 \
-            E2E_SEARCH_BY_ID_COUNT=10 \
-            E2E_WAIT_FOR_CREATE_INDEX_DURATION=2m \
+            E2E_INSERT_COUNT=10000\
+            E2E_WAIT_FOR_CREATE_INDEX_DURATION=3m \
             E2E_TARGET_POD_NAME=${POD_NAME} \
             E2E_TARGET_NAMESPACE=default \
-            e2e/multi
+            e2e/index/job/correction
         env:
           POD_NAME: ${{ steps.deploy_vald.outputs.POD_NAME }}
 
