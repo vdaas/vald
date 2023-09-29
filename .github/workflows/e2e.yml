@@ -227,6 +227,45 @@ jobs:
         env:
           POD_NAME: ${{ steps.deploy_vald.outputs.POD_NAME }}
 
+  e2e-jobs:
+    name: "E2E test (Jobs)"
+    needs: [dump-contexts-to-log]
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set Git config
+        run: |
+          git config --global --add safe.directory ${GITHUB_WORKSPACE}
+
+      - name: Setup E2E environment
+        id: setup_e2e
+        uses: ./.github/actions/setup-e2e
+
+      - name: Deploy Vald
+        id: deploy_vald
+        uses: ./.github/actions/e2e-deploy-vald
+        with:
+          helm_extra_options: ${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }}
+          values: .github/helm/values/values-lb.yaml
+          wait_for_selector: app=vald-lb-gateway
+
+      - name: Run E2E CRUD
+        run: |
+          make hack/benchmark/assets/dataset/${{ env.DATASET }}
+          make E2E_BIND_PORT=8081 \
+            E2E_DATASET_NAME=${{ env.DATASET }} \
+            E2E_INSERT_COUNT=100 \
+            E2E_SEARCH_COUNT=10 \
+            E2E_SEARCH_BY_ID_COUNT=10 \
+            E2E_WAIT_FOR_CREATE_INDEX_DURATION=2m \
+            E2E_TARGET_POD_NAME=${POD_NAME} \
+            E2E_TARGET_NAMESPACE=default \
+            e2e/multi
+        env:
+          POD_NAME: ${{ steps.deploy_vald.outputs.POD_NAME }}
+
   e2e-agent-and-sidecar:
     name: "E2E Agent & Sidecar test"
     needs: [dump-contexts-to-log]
