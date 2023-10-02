@@ -437,9 +437,17 @@ func Test_correct_correctReplica(t *testing.T) {
 				},
 			},
 		}
+
+		// agentAddrs = availableAddrs + target.addr + found.addr
+		// skipcq: CRT-D0001
+		c.agentAddrs = append(test.args.availableAddrs, test.args.target.addr)
+		for _, found := range test.args.found {
+			c.agentAddrs = append(c.agentAddrs, found.addr)
+		}
+
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			err := c.correctReplica(context.Background(), test.args.target, test.args.found, test.args.availableAddrs)
+			err := c.correctReplica(context.Background(), test.args.target, test.args.found)
 			if test.want.err != nil {
 				require.ErrorIs(t, test.want.err, err)
 			}
