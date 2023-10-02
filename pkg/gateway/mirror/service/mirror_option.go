@@ -23,7 +23,7 @@ import (
 type MirrorOption func(m *mirr) error
 
 var defaultMirrOpts = []MirrorOption{
-	WithAdvertiseInterval("1s"),
+	WithRegisterDuration("1s"),
 }
 
 func WithErrorGroup(eg errgroup.Group) MirrorOption {
@@ -68,16 +68,16 @@ func WithGateway(g Gateway) MirrorOption {
 	}
 }
 
-func WithAdvertiseInterval(s string) MirrorOption {
+func WithRegisterDuration(s string) MirrorOption {
 	return func(m *mirr) error {
 		if len(s) == 0 {
-			return errors.NewErrInvalidOption("advertiseInterval", s)
+			return errors.NewErrInvalidOption("registerDuration", s)
 		}
 		dur, err := time.ParseDuration(s)
 		if err != nil {
-			return errors.NewErrInvalidOption("advertiseInterval", s, err)
+			return errors.NewErrInvalidOption("registerDuration", s, err)
 		}
-		m.advertiseDur = dur
+		m.registerDur = dur
 		return nil
 	}
 }

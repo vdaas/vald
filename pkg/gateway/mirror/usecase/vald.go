@@ -83,7 +83,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	}
 	mirr, err := service.NewMirror(
 		service.WithErrorGroup(eg),
-		service.WithAdvertiseInterval(cfg.Mirror.AdvertiseInterval),
+		service.WithRegisterDuration(cfg.Mirror.RegisterDuration),
 		service.WithValdAddrs(cfg.Mirror.GatewayAddr),
 		service.WithSelfMirrorAddrs(cfg.Mirror.SelfMirrorAddr),
 		service.WithGateway(gw),

@@ -50,7 +50,7 @@ type mirr struct {
 	selfMirrAddrl sync.Map[string, any]    // List of self Mirror gateway addresses
 	gwAddrl       sync.Map[string, any]    // List of Vald Gateway addresses
 	eg            errgroup.Group
-	advertiseDur  time.Duration
+	registerDur   time.Duration
 	gateway       Gateway
 }
 
@@ -97,8 +97,7 @@ func (m *mirr) Start(ctx context.Context) <-chan error {
 	ech := make(chan error, 100)
 
 	m.eg.Go(func() error {
-		// TODO: change variable names.
-		tic := time.NewTicker(m.advertiseDur)
+		tic := time.NewTicker(m.registerDur)
 		defer close(ech)
 		defer tic.Stop()
 

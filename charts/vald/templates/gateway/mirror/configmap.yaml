@@ -43,7 +43,7 @@ data:
       {{- include "vald.observability" $observability | nindent 6 }}
     gateway:
       pod_name: {{ $gateway.gateway_config.pod_name }}
-      advertise_interval: {{ $gateway.gateway_config.advertise_interval }}
+      register_duration: {{ $gateway.gateway_config.register_duration }}
       namespace: {{ $gateway.gateway_config.namespace }}
       discovery_duration: {{ $gateway.gateway_config.discovery_duration }}
       colocation: {{ $gateway.gateway_config.colocation }}
