@@ -189,16 +189,16 @@ docker/build/loadtest:
 	    --build-arg MAINTAINER=$(MAINTAINER) \
 	    --build-arg GO_VERSION=$(GO_VERSION)
 
-.PHONY: docker/name/index-job-correction
-docker/name/index-job-correction:
-	@echo "$(ORG)/$(INDEX_JOB_CORRECTION_IMAGE)"
+.PHONY: docker/name/index-correction
+docker/name/index-correction:
+	@echo "$(ORG)/$(INDEX_CORRECTION_IMAGE)"
 
-.PHONY: docker/build/index-job-correction
-## build index-job-correction image
-docker/build/index-job-correction:
+.PHONY: docker/build/index-correction
+## build index-correction image
+docker/build/index-correction:
 	$(DOCKER) build \
 	    $(DOCKER_OPTS) \
 	    -f dockers/index/job/correction/Dockerfile \
-	    -t $(ORG)/$(INDEX_JOB_CORRECTION_IMAGE):$(TAG) . \
+	    -t $(ORG)/$(INDEX_CORRECTION_IMAGE):$(TAG) . \
 	    --build-arg MAINTAINER=$(MAINTAINER) \
 	    --build-arg GO_VERSION=$(GO_VERSION)

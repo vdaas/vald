@@ -206,7 +206,7 @@ cmd/manager/index/index: \
 		$(dir $@)main.go
 	$@ -version
 
-cmd/index/job/correction/correction: \
+cmd/index/job/correction/index-correction: \
 	$(GO_SOURCES_INTERNAL) \
 	$(PBGOS) \
 	$(shell find $(ROOTDIR)/cmd/index/job/correction/correction -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go') \

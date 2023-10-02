@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-name: "Build docker image: index-job-correction"
+name: "Build docker image: index-correction"
 on:
   push:
     branches:
@@ -25,7 +25,7 @@ on:
       - "v*.*.*-*"
     paths:
       - ".github/actions/docker-build/actions.yaml"
-      - ".github/workflows/dockers-index-job-correction.yml"
+      - ".github/workflows/dockers-index-correction.yml"
       - "go.mod"
       - "go.sum"
       - "internal/**"
@@ -41,7 +41,7 @@ on:
     paths:
       - ".github/actions/docker-build/actions.yaml"
       - ".github/workflows/_docker-image.yaml"
-      - ".github/workflows/dockers-index-job-correction.yml"
+      - ".github/workflows/dockers-index-correction.yml"
       - "go.mod"
       - "go.sum"
       - "internal/**"
@@ -57,7 +57,7 @@ on:
     paths:
       - ".github/actions/docker-build/actions.yaml"
       - ".github/workflows/_docker-image.yaml"
-      - ".github/workflows/dockers-index-job-correction.yml"
+      - ".github/workflows/dockers-index-correction.yml"
       - "go.mod"
       - "go.sum"
       - "internal/**"
@@ -74,5 +74,5 @@ jobs:
   build:
     uses: ./.github/workflows/_docker-image.yaml
     with:
-      target: index-job-correction
+      target: index-correction
     secrets: inherit
