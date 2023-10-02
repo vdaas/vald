@@ -119,19 +119,11 @@ func (s *server) Register(ctx context.Context, req *payload.Mirror_Targets) (*pa
 		}
 		return nil, err
 	}
-	return req, nil
-}
 
-func (s *server) Advertise(ctx context.Context, req *payload.Mirror_Targets) (res *payload.Mirror_Targets, err error) {
-	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.MirrorRPCServiceName+"/"+vald.AdvertiseRPCName), apiName+"/"+vald.AdvertiseRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
+	// Get own address and the addresses of other mirror gateways to which this gateway is currently connected.
 	tgts, err := s.mirror.MirrorTargets()
 	if err != nil {
-		err = status.WrapWithInternal(vald.AdvertiseRPCName+" API failed to get connected vald gateway targets", err,
+		err = status.WrapWithInternal(vald.RegisterRPCName+" API failed to get connected vald gateway targets", err,
 			&errdetails.BadRequest{
 				FieldViolations: []*errdetails.BadRequestFieldViolation{
 					{
@@ -141,7 +133,7 @@ func (s *server) Advertise(ctx context.Context, req *payload.Mirror_Targets) (re
 				},
 			},
 			&errdetails.ResourceInfo{
-				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.AdvertiseRPCName,
+				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.RegisterRPCName,
 				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
 			},
 		)

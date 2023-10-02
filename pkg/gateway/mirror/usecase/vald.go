@@ -83,7 +83,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	}
 	mirr, err := service.NewMirror(
 		service.WithErrorGroup(eg),
-		service.WithAdvertiseInterval(cfg.Mirror.AdvertiseInterval),
+		service.WithRegisterDuration(cfg.Mirror.RegisterDuration),
 		service.WithValdAddrs(cfg.Mirror.GatewayAddr),
 		service.WithSelfMirrorAddrs(cfg.Mirror.SelfMirrorAddr),
 		service.WithGateway(gw),
@@ -198,11 +198,7 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 		}
 	}
 	if r.mirr != nil {
-		mech, err = r.mirr.Start(ctx)
-		if err != nil {
-			close(ech)
-			return nil, err
-		}
+		mech = r.mirr.Start(ctx)
 	}
 	if r.dsc != nil {
 		dech, err = r.dsc.Start(ctx)
