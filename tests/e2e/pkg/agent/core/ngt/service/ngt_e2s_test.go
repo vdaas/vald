@@ -1,3 +1,5 @@
+//go:build e2e
+
 //
 // Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //

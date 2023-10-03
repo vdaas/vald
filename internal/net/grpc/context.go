@@ -20,28 +20,30 @@ import (
 
 type contextKey string
 
-const grpcMethodContextKey contextKey = "grpc_method"
+// GRPCMethodContextKey represents a context key for gRPC method.
+// This is exported only for testing.
+const GRPCMethodContextKey contextKey = "grpc_method"
 
 // WrapGRPCMethod returns a copy of parent in which the method associated with key (grpcMethodContextKey).
 func WrapGRPCMethod(ctx context.Context, method string) context.Context {
 	m := FromGRPCMethod(ctx)
 	if m == "" {
-		return context.WithValue(ctx, grpcMethodContextKey, method)
+		return context.WithValue(ctx, GRPCMethodContextKey, method)
 	}
 	if strings.HasSuffix(m, method) {
 		return ctx
 	}
-	return context.WithValue(ctx, grpcMethodContextKey, m+"/"+method)
+	return context.WithValue(ctx, GRPCMethodContextKey, m+"/"+method)
 }
 
 // WithGRPCMethod returns a copy of parent in which the method associated with key (grpcMethodContextKey).
 func WithGRPCMethod(ctx context.Context, method string) context.Context {
-	return context.WithValue(ctx, grpcMethodContextKey, method)
+	return context.WithValue(ctx, GRPCMethodContextKey, method)
 }
 
 // FromGRPCMethod returns the value associated with this context for key (grpcMethodContextKey).
 func FromGRPCMethod(ctx context.Context) string {
-	if v := ctx.Value(grpcMethodContextKey); v != nil {
+	if v := ctx.Value(GRPCMethodContextKey); v != nil {
 		if method, ok := v.(string); ok {
 			return method
 		}
