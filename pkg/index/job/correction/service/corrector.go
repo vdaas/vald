@@ -278,7 +278,6 @@ type vectorReplica struct {
 }
 
 // Validate len(addrs) >= 2 before calling this function
-// idxだけ渡せば良い？c.addrsに全ての情報があるので？
 func (c *correct) checkConsistency(ctx context.Context, targetReplica *vectorReplica, targetAgentIdx int) error {
 	// leftAgentAddrs is the agents' addr that hasn't been corrected yet.
 	leftAgentAddrs := c.agentAddrs[targetAgentIdx+1:]
