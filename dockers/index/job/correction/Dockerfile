@@ -33,7 +33,7 @@ ENV PATH ${PATH}:${GOROOT}/bin:${GOPATH}/bin
 ENV ORG vdaas
 ENV REPO vald
 ENV PKG index/job/correction
-ENV APP_NAME correction
+ENV APP_NAME index-correction
 
 # skipcq: DOK-DL3008
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -83,11 +83,11 @@ RUN cp sample.yaml /tmp/config.yaml
 FROM ${DISTROLESS_IMAGE}:${DISTROLESS_IMAGE_TAG}
 LABEL maintainer="${MAINTAINER}"
 
-ENV APP_NAME correction
+ENV APP_NAME index-correction
 
 COPY --from=builder /usr/bin/${APP_NAME} /go/bin/${APP_NAME}
 COPY --from=builder /tmp/config.yaml /etc/server/config.yaml
 
 USER nonroot:nonroot
 
-ENTRYPOINT ["/go/bin/correction"]
+ENTRYPOINT ["/go/bin/index-correction"]

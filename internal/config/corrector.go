@@ -31,8 +31,6 @@ type Corrector struct {
 	// AgentDNS represent agents dns A record for service discovery
 	AgentDNS string `json:"agent_dns" yaml:"agent_dns"`
 
-	CreationPoolSize uint32 `json:"creation_pool_size" yaml:"creation_pool_size"`
-
 	// NodeName represents node name
 	NodeName string `json:"node_name" yaml:"node_name"`
 

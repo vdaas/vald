@@ -437,9 +437,17 @@ func Test_correct_correctReplica(t *testing.T) {
 				},
 			},
 		}
+
+		// agentAddrs = availableAddrs + target.addr + found.addr
+		// skipcq: CRT-D0001
+		c.agentAddrs = append(test.args.availableAddrs, test.args.target.addr)
+		for _, found := range test.args.found {
+			c.agentAddrs = append(c.agentAddrs, found.addr)
+		}
+
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			err := c.correctReplica(context.Background(), test.args.target, test.args.found, test.args.availableAddrs)
+			err := c.correctReplica(context.Background(), test.args.target, test.args.found)
 			if test.want.err != nil {
 				require.ErrorIs(t, test.want.err, err)
 			}
@@ -448,7 +456,7 @@ func Test_correct_correctReplica(t *testing.T) {
 				// check if the agents which need to be corrected are called with the required method
 				// checking calling parameter, like timestamp, is impossible because its inside of the function arg
 				m.client.AssertCalled(tt, "Do", tmock.MatchedBy(func(ctx context.Context) bool {
-					method := ctx.Value(grpc.GrpcMethodContextKey)
+					method := ctx.Value(grpc.GRPCMethodContextKey)
 					val, ok := method.(string)
 					if !ok {
 						return false

@@ -29,6 +29,7 @@ import (
 	"time"
 
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/file"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/net/control"
@@ -279,7 +280,8 @@ func (s *server) ListenAndServe(ctx context.Context, ech chan<- error) (err erro
 		}(), func() string {
 			if s.network == net.UNIX {
 				if s.socketPath == "" {
-					s.socketPath = filepath.Join(os.TempDir(), string(os.PathSeparator), s.name, ".", strconv.Itoa(os.Getpid()), ".sock")
+					sockFile := strings.Join([]string{s.name, strconv.Itoa(os.Getpid()), "sock"}, ".")
+					s.socketPath = file.Join(os.TempDir(), sockFile)
 				}
 				return s.socketPath
 			}
