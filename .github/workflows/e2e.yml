@@ -314,6 +314,7 @@ jobs:
       - e2e-stream-crud
       - e2e-stream-crud-for-operator
       - e2e-stream-crud-skip-exist-check
+      - e2e-jobs
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
