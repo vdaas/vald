@@ -22,7 +22,6 @@ import (
 	"crypto/tls"
 	"net/http"
 	"os"
-	"path/filepath"
 	"reflect"
 	"strconv"
 	"syscall"
