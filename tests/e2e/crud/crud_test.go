@@ -761,7 +761,7 @@ func TestE2EIndexJobCorrection(t *testing.T) {
 
 	sleep(t, waitAfterInsertDuration)
 
-	exe := operation.NewCronJobExecutor("vald-index-job-correction")
+	exe := operation.NewCronJobExecutor("vald-index-correction")
 	err = exe.CreateAndWait(t, ctx, "correction-test")
 	if err != nil {
 		t.Fatalf("an error occurred: %s", err)
