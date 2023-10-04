@@ -2635,11 +2635,11 @@ manager:
     corrector:
       # @schema {"name": "manager.index.corrector.name", "type": "string"}
       # manager.index.corrector.name -- name of index correction job
-      name: vald-index-job-correction
+      name: vald-index-correction
       # @schema {"name": "manager.index.corrector.image", "alias": "image"}
       image:
         # manager.index.corrector.image.repository -- image repository
-        repository: vdaas/vald-index-job-correction
+        repository: vdaas/vald-index-correction
         # manager.index.corrector.image.tag -- image tag (overrides defaults.image.tag)
         tag: ""
         # manager.index.image.pullPolicy -- image pull policy
