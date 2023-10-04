@@ -6519,6 +6519,8 @@ spec:
                                   properties:
                                     enabled:
                                       type: boolean
+                            schedule:
+                              type: string
                             server_config:
                               type: object
                               properties:
