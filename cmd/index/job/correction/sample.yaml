@@ -70,8 +70,6 @@ server_config:
     cert: /path/to/cert
     enabled: false
     key: /path/to/key
-gateway:
-  index_replica: 3
 corrector:
   agent_port: 8081
   agent_name: "vald-agent-ngt"
@@ -80,6 +78,7 @@ corrector:
   node_name: ""
   stream_list_concurrency: 200
   bbolt_async_write_concurrency: 2048
+  index_replica: 3
   discoverer:
     duration: 500ms
     client:
@@ -215,7 +214,7 @@ observability:
       namespace: "_MY_POD_NAMESPACE_"
       pod_name: "_MY_POD_NAME_"
       node_name: "_MY_NODE_NAME_"
-      service_name: "vald-index-job-correction"
+      service_name: "vald-index-correction"
   metrics:
     enable_cgo: true
     enable_goroutine: true
