@@ -1879,7 +1879,7 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (res *
 		},
 		Config: &payload.Remove_Config{
 			SkipStrictExistCheck: true,
-			Timestamp:            now,
+			Timestamp:            now - 1, // set remove timestamp to the value less than insert timestamp
 		},
 	}
 	res, err = s.Remove(ctx, rreq)
@@ -1920,7 +1920,6 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (res *
 		}
 		return nil, err
 	}
-	now++
 	ireq := &payload.Insert_Request{
 		Vector: req.GetVector(),
 		Config: &payload.Insert_Config{
