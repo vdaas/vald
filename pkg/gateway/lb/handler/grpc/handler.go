@@ -3158,7 +3158,7 @@ func (s *server) StreamListObject(req *payload.Object_List_Request, stream vald.
 
 		client, err := vc.StreamListObject(ctx, req, copts...)
 		if err != nil {
-			_, _, err := status.ParseError(err, codes.Internal, "failed to parse "+vald.StreamListObjectRPCName+" gRPC error response")
+			log.Errorf("failed to get StreamListObject client for agent(%s): %v", target, err)
 			return err
 		}
 
