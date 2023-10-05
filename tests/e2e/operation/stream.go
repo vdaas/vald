@@ -17,6 +17,7 @@ package operation
 
 import (
 	"context"
+	"fmt"
 	"reflect"
 	"strconv"
 	"testing"
@@ -1166,4 +1167,52 @@ func (c *client) GetObject(
 	t.Log("getObject operation finished")
 
 	return rerr
+}
+
+func (c *client) StreamListObject(
+	t *testing.T,
+	ctx context.Context,
+	ds Dataset,
+) error {
+	t.Log("StreamListObject operation started")
+
+	client, err := c.getClient(ctx)
+	if err != nil {
+		return err
+	}
+
+	sc, err := client.StreamListObject(ctx, &payload.Object_List_Request{})
+	if err != nil {
+		return err
+	}
+
+	gotVecCnt := 0
+exit_loop:
+	for {
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		default:
+			res, err := sc.Recv()
+			if err != nil {
+				if errors.Is(err, io.EOF) {
+					break exit_loop
+				}
+				return err
+			}
+			vec := res.GetVector()
+			if vec == nil {
+				st := res.GetStatus()
+				return fmt.Errorf("returned vector is empty: code: %v, msg: %v, details: %v", st.GetCode(), st.GetMessage(), st.GetDetails())
+			}
+			gotVecCnt++
+		}
+	}
+
+	// Doing this because getVecCnt differs depending on the index replica setting on LB.
+	if gotVecCnt == 0 || gotVecCnt%len(ds.Train) != 0 {
+		return fmt.Errorf("got %d vectors, expected a multiple of %d", gotVecCnt, len(ds.Train))
+	}
+
+	return nil
 }
