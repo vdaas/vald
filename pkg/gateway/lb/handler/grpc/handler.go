@@ -20,6 +20,7 @@ package grpc
 import (
 	"context"
 	"fmt"
+	"io"
 	"slices"
 	"strconv"
 	"sync/atomic"
@@ -2907,7 +2908,7 @@ func (s *server) getObject(ctx context.Context, uuid string) (vec *payload.Objec
 		ech <- s.gateway.BroadCast(ctx, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error {
 			sctx, sspan := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "BroadCast/"+target), apiName+"/getObject/BroadCast/"+target)
 			defer func() {
-				if span != nil {
+				if sspan != nil {
 					sspan.End()
 				}
 			}()
@@ -3133,4 +3134,91 @@ func (s *server) StreamGetObject(stream vald.Object_StreamGetObjectServer) (err 
 		return err
 	}
 	return nil
+}
+
+func (s *server) StreamListObject(req *payload.Object_List_Request, stream vald.Object_StreamListObjectServer) error {
+	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(stream.Context(), vald.PackageName+"."+vald.ObjectRPCServiceName+"/"+vald.StreamListObjectRPCName), apiName+"/"+vald.StreamListObjectRPCName)
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
+	var rmu, smu sync.Mutex
+	err := s.gateway.BroadCast(ctx, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error {
+		ctx, sspan := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "BroadCast/"+target), apiName+"/"+vald.StreamListObjectRPCName+"/"+target)
+		defer func() {
+			if sspan != nil {
+				sspan.End()
+			}
+		}()
+
+		client, err := vc.StreamListObject(ctx, req, copts...)
+		if err != nil {
+			_, _, err := status.ParseError(err, codes.Internal, "failed to parse "+vald.StreamListObjectRPCName+" gRPC error response")
+			return err
+		}
+
+		eg, ctx := errgroup.WithContext(ctx)
+		ectx, ecancel := context.WithCancel(ctx)
+		defer ecancel()
+		eg.SetLimit(s.streamConcurrency)
+
+		for {
+			select {
+			case <-ectx.Done():
+				var err error
+				if !errors.Is(ctx.Err(), context.Canceled) {
+					err = errors.Join(err, ctx.Err())
+				}
+				if egerr := eg.Wait(); err != nil {
+					err = errors.Join(err, egerr)
+				}
+				return err
+			default:
+				eg.Go(safety.RecoverFunc(func() error {
+					rmu.Lock()
+					res, err := client.Recv()
+					rmu.Unlock()
+					if err != nil {
+						if errors.Is(err, io.EOF) {
+							ecancel()
+							return nil
+						}
+						return errors.ErrServerStreamClientRecv(err)
+					}
+
+					vec := res.GetVector()
+					if vec == nil {
+						st := res.GetStatus()
+						log.Warnf("received empty vector: code %v: details %v: message %v",
+							st.GetCode(),
+							st.GetDetails(),
+							st.GetMessage(),
+						)
+						return nil
+					}
+
+					smu.Lock()
+					err = stream.Send(res)
+					smu.Unlock()
+					if err != nil {
+						if sspan != nil {
+							st, msg, err := status.ParseError(err, codes.Internal, "failed to parse StreamListObject send gRPC error response")
+							sspan.RecordError(err)
+							sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+							sspan.SetStatus(trace.StatusError, err.Error())
+						}
+						return errors.ErrServerStreamServerSend(err)
+					}
+
+					return nil
+				}))
+			}
+		}
+	})
+	return err
 }
