@@ -1186,7 +1186,8 @@ func (c *client) StreamListObject(
 		return err
 	}
 
-	gotVecCnt := 0
+	// kv : [indexId]count
+	indexCnt := make(map[string]int)
 exit_loop:
 	for {
 		select {
@@ -1205,14 +1206,23 @@ exit_loop:
 				st := res.GetStatus()
 				return fmt.Errorf("returned vector is empty: code: %v, msg: %v, details: %v", st.GetCode(), st.GetMessage(), st.GetDetails())
 			}
-			gotVecCnt++
+			indexCnt[vec.GetId()]++
 		}
 	}
 
-	// Doing this because getVecCnt differs depending on the index replica setting on LB.
-	if gotVecCnt == 0 || gotVecCnt%len(ds.Train) != 0 {
-		return fmt.Errorf("got %d vectors, expected a multiple of %d", gotVecCnt, len(ds.Train))
+	if len(indexCnt) != len(ds.Train) {
+		return fmt.Errorf("the number of vectors returned is different: got %v, want %v", len(indexCnt), len(ds.Train))
 	}
 
+	replica := -1
+	for k, v := range indexCnt {
+		if replica == -1 {
+			replica = v
+			continue
+		}
+		if v != replica {
+			return fmt.Errorf("the number of vectors returned is different at index id %v: got %v, want %v", k, v, replica)
+		}
+	}
 	return nil
 }
