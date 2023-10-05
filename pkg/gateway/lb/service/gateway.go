@@ -36,9 +36,9 @@ type Gateway interface {
 	GetAgentCount(ctx context.Context) int
 	Addrs(ctx context.Context) []string
 	DoMulti(ctx context.Context, num int,
-		f func(ctx context.Context, tgt string, ac vald.Client, copts ...grpc.CallOption) error) error
+		f func(ctx context.Context, target string, ac vald.Client, copts ...grpc.CallOption) error) error
 	BroadCast(ctx context.Context,
-		f func(ctx context.Context, tgt string, ac vald.Client, copts ...grpc.CallOption) error) error
+		f func(ctx context.Context, target string, ac vald.Client, copts ...grpc.CallOption) error) error
 }
 
 type gateway struct {

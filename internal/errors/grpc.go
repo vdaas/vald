@@ -70,4 +70,14 @@ var (
 	ErrInvalidProtoMessageType = func(v interface{}) error {
 		return Errorf("failed to marshal/unmarshal proto message, message type is %T (missing vtprotobuf/protobuf helpers)", v)
 	}
+
+	// ErrGRPCClientConnClose represents a function to generate an error that the gRPC client couldn't receive from stream.
+	ErrServerStreamClientRecv = func(err error) error {
+		return Wrap(err, "gRPC client failed to receive from stream")
+	}
+
+	// ErrServerStreamClientSend represents a function to generate an error that the gRPC server couldn't send to stream.
+	ErrServerStreamServerSend = func(err error) error {
+		return Wrap(err, "gRPC server failed to send to stream")
+	}
 )
