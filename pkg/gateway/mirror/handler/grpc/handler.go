@@ -946,14 +946,13 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (loc *
 	// When this condition is matched, the request is proxied to another Mirror gateway.
 	// So this component sends requests only to the Vald gateway (LB gateway) of its own cluster.
 	if len(reqSrcPodName) != 0 {
-		loc, err = s.doInsert(ctx, req,
-			func(ctx context.Context) (*payload.Object_Location, error) {
-				s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, vc vald.ClientWithMirror, copts ...grpc.CallOption) (interface{}, error) {
-					loc, err = vc.Insert(ctx, req, copts...)
-					return loc, err
-				})
+		loc, err = s.doInsert(ctx, req, func(ctx context.Context) (*payload.Object_Location, error) {
+			s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, vc vald.ClientWithMirror, copts ...grpc.CallOption) (interface{}, error) {
+				loc, err = vc.Insert(ctx, req, copts...)
 				return loc, err
-			},
+			})
+			return loc, err
+		},
 		)
 		if err != nil {
 			reqInfo := &errdetails.RequestInfo{
@@ -1123,51 +1122,50 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (loc *
 			Timestamp:            req.GetConfig().GetTimestamp(),
 		},
 	}
-	err = s.gateway.DoMulti(ctx, alreadyExistsTgts,
-		func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error {
-			ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "DoMulti/"+target), apiName+"/"+vald.UpdateRPCName+"/"+target)
-			defer func() {
-				if span != nil {
-					span.End()
-				}
-			}()
+	err = s.gateway.DoMulti(ctx, alreadyExistsTgts, func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error {
+		ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "DoMulti/"+target), apiName+"/"+vald.UpdateRPCName+"/"+target)
+		defer func() {
+			if span != nil {
+				span.End()
+			}
+		}()
 
-			code := codes.OK
-			ce, err := s.doUpdate(ctx, updateReq, func(ctx context.Context) (*payload.Object_Location, error) {
-				return vc.Update(ctx, updateReq, copts...)
-			})
-			if err != nil {
-				var (
-					st  *status.Status
-					msg string
-				)
-				st, msg, err = status.ParseError(err, codes.Internal,
-					"failed to parse "+vald.UpdateRPCName+" gRPC error response",
-					&errdetails.RequestInfo{
-						RequestId: req.GetVector().GetId(),
-					},
-					&errdetails.ResourceInfo{
-						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.UpdateRPCName + ".DoMulti/" + target,
-						ResourceName: fmt.Sprintf("%s: %s(%s) to %s", apiName, s.name, s.ip, target),
-					},
-				)
-				log.Warn(err)
-				if span != nil {
-					span.RecordError(err)
-					span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
-					span.SetStatus(trace.StatusError, err.Error())
-				}
-				code = st.Code()
+		code := codes.OK
+		ce, err := s.doUpdate(ctx, updateReq, func(ctx context.Context) (*payload.Object_Location, error) {
+			return vc.Update(ctx, updateReq, copts...)
+		})
+		if err != nil {
+			var (
+				st  *status.Status
+				msg string
+			)
+			st, msg, err = status.ParseError(err, codes.Internal,
+				"failed to parse "+vald.UpdateRPCName+" gRPC error response",
+				&errdetails.RequestInfo{
+					RequestId: req.GetVector().GetId(),
+				},
+				&errdetails.ResourceInfo{
+					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.UpdateRPCName + ".DoMulti/" + target,
+					ResourceName: fmt.Sprintf("%s: %s(%s) to %s", apiName, s.name, s.ip, target),
+				},
+			)
+			log.Warn(err)
+			if span != nil {
+				span.RecordError(err)
+				span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+				span.SetStatus(trace.StatusError, err.Error())
 			}
-			if err == nil && ce != nil {
-				mu.Lock()
-				loc.Name = ce.GetName()
-				loc.Ips = append(loc.Ips, ce.GetIps()...)
-				mu.Unlock()
-			}
-			result.Store(target, &errorState{err, code})
-			return err
-		},
+			code = st.Code()
+		}
+		if err == nil && ce != nil {
+			mu.Lock()
+			loc.Name = ce.GetName()
+			loc.Ips = append(loc.Ips, ce.GetIps()...)
+			mu.Unlock()
+		}
+		result.Store(target, &errorState{err, code})
+		return err
+	},
 	)
 	if err != nil {
 		reqInfo := &errdetails.RequestInfo{
@@ -1213,7 +1211,7 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (loc *
 			alreadyExistsTgts = append(alreadyExistsTgts, target)
 			err = errors.Join(err, es.err)
 		default:
-			err = errors.Join(err, es.err)
+			err = errors.Join(es.err, err)
 		}
 		return true
 	})
