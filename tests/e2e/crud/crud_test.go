@@ -375,6 +375,13 @@ func TestE2EStandardCRUD(t *testing.T) {
 		t.Fatalf("an error occurred: %s", err)
 	}
 
+	err = op.StreamListObject(t, ctx, operation.Dataset{
+		Train: ds.Train[insertFrom : insertFrom+insertNum],
+	})
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
 	err = op.Update(t, ctx, operation.Dataset{
 		Train: ds.Train[updateFrom : updateFrom+updateNum],
 	})

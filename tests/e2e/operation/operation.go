@@ -132,6 +132,7 @@ type Client interface {
 	MultiUpsert(t *testing.T, ctx context.Context, ds Dataset) error
 	MultiRemove(t *testing.T, ctx context.Context, ds Dataset) error
 	GetObject(t *testing.T, ctx context.Context, ds Dataset) error
+	StreamListObject(t *testing.T, ctx context.Context, ds Dataset) error
 	Exists(t *testing.T, ctx context.Context, id string) error
 	CreateIndex(t *testing.T, ctx context.Context) error
 	SaveIndex(t *testing.T, ctx context.Context) error
