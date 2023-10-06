@@ -1224,5 +1224,7 @@ exit_loop:
 			return fmt.Errorf("the number of vectors returned is different at index id %v: got %v, want %v", k, v, replica)
 		}
 	}
+
+	t.Log("StreamListObject operation finished successfully and all vectors are returned with correct replica number")
 	return nil
 }

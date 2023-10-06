@@ -56,8 +56,8 @@ func deleteJob(t *testing.T, jobName string) error {
 func waitJob(t *testing.T, ctx context.Context, jobName string) error {
 	t.Helper()
 	t.Log("waiting for the correction job to complete or fail")
-	waitCompleteCmd := fmt.Sprintf("kubectl wait --timeout=-1s job/%s --for=condition=complete", jobName)
-	waitFailedCmd := fmt.Sprintf("kubectl wait --timeout=-1s job/%s --for=condition=failed", jobName)
+	waitCompleteCmd := fmt.Sprintf("kubectl wait --timeout=10m job/%s --for=condition=complete", jobName)
+	waitFailedCmd := fmt.Sprintf("kubectl wait --timeout=10m job/%s --for=condition=failed", jobName)
 
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
