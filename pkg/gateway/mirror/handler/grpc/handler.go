@@ -1162,8 +1162,7 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (loc *
 		}
 		result.Store(target, &errorState{err, code})
 		return err
-	},
-	)
+	})
 	if err != nil {
 		reqInfo := &errdetails.RequestInfo{
 			RequestId: updateReq.GetVector().GetId(),
@@ -1630,7 +1629,6 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (loc *
 			Timestamp: req.GetConfig().GetTimestamp(),
 		},
 	}
-
 	err = s.gateway.DoMulti(ctx, notFoundTgts, func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error {
 		ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "BroadCast/"+target), apiName+"/"+vald.InsertRPCName+"/"+target)
 		defer func() {
@@ -2049,8 +2047,7 @@ func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *
 		}
 		result.Store(target, &errorState{err, code})
 		return err
-	},
-	)
+	})
 	if err != nil {
 		reqInfo := &errdetails.RequestInfo{
 			RequestId:   req.GetVector().GetId(),
