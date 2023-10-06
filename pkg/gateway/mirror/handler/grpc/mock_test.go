@@ -151,7 +151,7 @@ func (m *mockClient) Remove(ctx context.Context, in *payload.Remove_Request, opt
 }
 
 func (m *mockClient) RemoveByTimestamp(ctx context.Context, in *payload.Remove_TimestampRequest, opts ...grpc.CallOption) (*payload.Object_Locations, error) {
-	return m.RemoveByTimestamp(ctx, in, opts...)
+	return m.RemoveByTimestampFunc(ctx, in, opts...)
 }
 
 func (m *mockClient) StreamRemove(ctx context.Context, opts ...grpc.CallOption) (vald.Remove_StreamRemoveClient, error) {

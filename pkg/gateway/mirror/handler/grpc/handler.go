@@ -2817,7 +2817,7 @@ func (s *server) RemoveByTimestamp(ctx context.Context, req *payload.Remove_Time
 
 	switch {
 	case result.Len() == notFoundCnt:
-		err = status.WrapWithNotFound(vald.RemoveByTimestampRPCName+" API target same vector already exists", err, reqInfo, resInfo)
+		err = status.WrapWithNotFound(vald.RemoveByTimestampRPCName+" API target not found", err, reqInfo, resInfo)
 		log.Warn(err)
 		if span != nil {
 			span.RecordError(err)

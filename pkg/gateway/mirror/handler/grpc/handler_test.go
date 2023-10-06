@@ -1528,7 +1528,7 @@ func Test_server_Remove(t *testing.T) {
 				},
 			}
 			return test{
-				name: "Success: when the status code are (NotFound, OK)",
+				name: "Success: when the status codes are (NotFound, OK)",
 				args: args{
 					ctx: egctx,
 					req: &payload.Remove_Request{
@@ -1751,6 +1751,310 @@ func Test_server_Remove(t *testing.T) {
 
 			gotLoc, err := s.Remove(test.args.ctx, test.args.req)
 			if err := checkFunc(test.want, gotLoc, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func Test_server_RemoveByTimestamp(t *testing.T) {
+	defaultRemoveByTimestampReq := &payload.Remove_TimestampRequest{
+		Timestamps: []*payload.Remove_Timestamp{},
+	}
+	type args struct {
+		ctx context.Context
+		req *payload.Remove_TimestampRequest
+	}
+	type fields struct {
+		eg                                errgroup.Group
+		gateway                           service.Gateway
+		mirror                            service.Mirror
+		vAddr                             string
+		streamConcurrency                 int
+		name                              string
+		ip                                string
+		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
+	}
+	type want struct {
+		wantLocs *payload.Object_Locations
+		err      error
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, *payload.Object_Locations, error) error
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
+	}
+	defaultCheckFunc := func(w want, gotLocs *payload.Object_Locations, err error) error {
+		if !errors.Is(err, w.err) {
+			gotSt, gotOk := status.FromError(err)
+			wantSt, wantOk := status.FromError(w.err)
+			if gotOk != wantOk || gotSt.Code() != wantSt.Code() {
+				return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+			}
+		}
+		if !reflect.DeepEqual(gotLocs, w.wantLocs) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotLocs, w.wantLocs)
+		}
+		return nil
+	}
+	tests := []test{
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			eg, egctx := errgroup.New(ctx)
+
+			loc := &payload.Object_Location{
+				Uuid: "test",
+				Ips: []string{
+					"127.0.0.1",
+				},
+			}
+			loc2 := &payload.Object_Location{
+				Uuid: "test02",
+				Ips: []string{
+					"127.0.0.1",
+				},
+			}
+			cmap := map[string]vald.ClientWithMirror{
+				"vald-01": &mockClient{
+					RemoveByTimestampFunc: func(_ context.Context, _ *payload.Remove_TimestampRequest, _ ...grpc.CallOption) (*payload.Object_Locations, error) {
+						return &payload.Object_Locations{
+							Locations: []*payload.Object_Location{
+								loc,
+							},
+						}, nil
+					},
+				},
+				"vald-02": &mockClient{
+					RemoveByTimestampFunc: func(_ context.Context, _ *payload.Remove_TimestampRequest, _ ...grpc.CallOption) (*payload.Object_Locations, error) {
+						return &payload.Object_Locations{
+							Locations: []*payload.Object_Location{
+								loc2,
+							},
+						}, nil
+					},
+				},
+			}
+			return test{
+				name: "Success: removeByTimestamp",
+				args: args{
+					ctx: egctx,
+					req: defaultRemoveByTimestampReq,
+				},
+				fields: fields{
+					eg: eg,
+					gateway: &mockGateway{
+						FromForwardedContextFunc: func(_ context.Context) string {
+							return ""
+						},
+						BroadCastFunc: func(ctx context.Context, f func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error) error {
+							for tgt, c := range cmap {
+								f(ctx, tgt, c)
+							}
+							return nil
+						},
+					},
+				},
+				want: want{
+					wantLocs: &payload.Object_Locations{
+						Locations: []*payload.Object_Location{
+							loc, loc2,
+						},
+					},
+				},
+				afterFunc: func(t *testing.T, args args) {
+					t.Helper()
+					cancel()
+				},
+			}
+		}(),
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			eg, egctx := errgroup.New(ctx)
+
+			loc := &payload.Object_Location{
+				Uuid: "test",
+				Ips: []string{
+					"127.0.0.1",
+				},
+			}
+			cmap := map[string]vald.ClientWithMirror{
+				"vald-01": &mockClient{
+					RemoveByTimestampFunc: func(_ context.Context, _ *payload.Remove_TimestampRequest, _ ...grpc.CallOption) (*payload.Object_Locations, error) {
+						return &payload.Object_Locations{
+							Locations: []*payload.Object_Location{
+								loc,
+							},
+						}, nil
+					},
+				},
+				"vald-02": &mockClient{
+					RemoveByTimestampFunc: func(_ context.Context, _ *payload.Remove_TimestampRequest, _ ...grpc.CallOption) (*payload.Object_Locations, error) {
+						return nil, status.Error(codes.NotFound, errors.ErrObjectIDNotFound("test02").Error())
+					},
+				},
+			}
+			return test{
+				name: "Success: when the status codes are (NotFound, OK)",
+				args: args{
+					ctx: egctx,
+					req: defaultRemoveByTimestampReq,
+				},
+				fields: fields{
+					eg: eg,
+					gateway: &mockGateway{
+						FromForwardedContextFunc: func(_ context.Context) string {
+							return ""
+						},
+						BroadCastFunc: func(ctx context.Context, f func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error) error {
+							for tgt, c := range cmap {
+								f(ctx, tgt, c)
+							}
+							return nil
+						},
+					},
+				},
+				want: want{
+					wantLocs: &payload.Object_Locations{
+						Locations: []*payload.Object_Location{
+							loc,
+						},
+					},
+				},
+				afterFunc: func(t *testing.T, args args) {
+					t.Helper()
+					cancel()
+				},
+			}
+		}(),
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			eg, egctx := errgroup.New(ctx)
+
+			cmap := map[string]vald.ClientWithMirror{
+				"vald-01": &mockClient{
+					RemoveByTimestampFunc: func(_ context.Context, _ *payload.Remove_TimestampRequest, _ ...grpc.CallOption) (*payload.Object_Locations, error) {
+						return nil, status.Error(codes.Internal, errors.ErrCircuitBreakerHalfOpenFlowLimitation.Error())
+					},
+				},
+				"vald-02": &mockClient{
+					RemoveByTimestampFunc: func(_ context.Context, _ *payload.Remove_TimestampRequest, _ ...grpc.CallOption) (*payload.Object_Locations, error) {
+						return nil, status.Error(codes.Internal, errors.ErrCircuitBreakerOpenState.Error())
+					},
+				},
+			}
+			return test{
+				name: "Success: when the status codes are (Internal, Internal)",
+				args: args{
+					ctx: egctx,
+					req: defaultRemoveByTimestampReq,
+				},
+				fields: fields{
+					eg: eg,
+					gateway: &mockGateway{
+						FromForwardedContextFunc: func(_ context.Context) string {
+							return ""
+						},
+						BroadCastFunc: func(ctx context.Context, f func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error) error {
+							for tgt, c := range cmap {
+								f(ctx, tgt, c)
+							}
+							return nil
+						},
+					},
+				},
+				want: want{
+					err: status.Error(codes.Internal, errors.Join(
+						status.Error(codes.Internal, errors.ErrCircuitBreakerHalfOpenFlowLimitation.Error()),
+						status.Error(codes.Internal, errors.ErrCircuitBreakerOpenState.Error()),
+					).Error()),
+				},
+				afterFunc: func(t *testing.T, args args) {
+					t.Helper()
+					cancel()
+				},
+			}
+		}(),
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			eg, egctx := errgroup.New(ctx)
+
+			uuid1 := "test01"
+			uuid2 := "test02"
+			cmap := map[string]vald.ClientWithMirror{
+				"vald-01": &mockClient{
+					RemoveByTimestampFunc: func(_ context.Context, _ *payload.Remove_TimestampRequest, _ ...grpc.CallOption) (*payload.Object_Locations, error) {
+						return nil, status.Error(codes.NotFound, errors.ErrObjectIDNotFound(uuid1).Error())
+					},
+				},
+				"vald-02": &mockClient{
+					RemoveByTimestampFunc: func(_ context.Context, _ *payload.Remove_TimestampRequest, _ ...grpc.CallOption) (*payload.Object_Locations, error) {
+						return nil, status.Error(codes.NotFound, errors.ErrObjectIDNotFound(uuid2).Error())
+					},
+				},
+			}
+			return test{
+				name: "Success: when the status codes are (NotFound, NotFound)",
+				args: args{
+					ctx: egctx,
+					req: defaultRemoveByTimestampReq,
+				},
+				fields: fields{
+					eg: eg,
+					gateway: &mockGateway{
+						FromForwardedContextFunc: func(_ context.Context) string {
+							return ""
+						},
+						BroadCastFunc: func(ctx context.Context, f func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error) error {
+							for tgt, c := range cmap {
+								f(ctx, tgt, c)
+							}
+							return nil
+						},
+					},
+				},
+				want: want{
+					err: status.Error(codes.NotFound, vald.RemoveByTimestampRPCName+" API target not found"),
+				},
+				afterFunc: func(t *testing.T, args args) {
+					t.Helper()
+					cancel()
+				},
+			}
+		}(),
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(tt, test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(tt, test.args)
+			}
+			checkFunc := test.checkFunc
+			if test.checkFunc == nil {
+				checkFunc = defaultCheckFunc
+			}
+			s := &server{
+				eg:                                test.fields.eg,
+				gateway:                           test.fields.gateway,
+				mirror:                            test.fields.mirror,
+				vAddr:                             test.fields.vAddr,
+				streamConcurrency:                 test.fields.streamConcurrency,
+				name:                              test.fields.name,
+				ip:                                test.fields.ip,
+				UnimplementedValdServerWithMirror: test.fields.UnimplementedValdServerWithMirror,
+			}
+
+			gotLocs, err := s.RemoveByTimestamp(test.args.ctx, test.args.req)
+			if err := checkFunc(test.want, gotLocs, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
