@@ -218,7 +218,9 @@ func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequ
 	}()
 
 	uuids := make([]string, 0, len(reqs.GetRequests()))
-	vmap := make(map[string][]float32, len(reqs.GetRequests()))
+	reqMap := make(map[string]*payload.Update_Request, len(reqs.GetRequests()))
+
+	// check dimension and remove duplicated ID
 	for _, req := range reqs.GetRequests() {
 		vec := req.GetVector()
 		if len(vec.GetVector()) != s.ngt.GetDimensionSize() {
@@ -249,100 +251,112 @@ func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequ
 			}
 			return nil, err
 		}
-		vmap[vec.GetId()] = vec.GetVector()
+		reqMap[vec.GetId()] = req
 		uuids = append(uuids, vec.GetId())
 	}
 
-	err = s.ngt.UpdateMultiple(vmap)
-	if err != nil {
-		var attrs []attribute.KeyValue
-		if notFoundIDs := func() []string {
-			aids := make([]string, 0, len(uuids))
-			for _, id := range uuids {
-				if errors.Is(err, errors.ErrObjectIDNotFound(id)) {
-					aids = append(aids, id)
-				}
+	if len(uuids) == 0 {
+		return s.newLocations(), nil
+	}
+
+	notFoundIDs := make([]string, 0)
+	invalidArgumentIDs := make([]string, 0)
+	alreadyExistsIDs := make([]string, 0)
+	otherIDs := make([]string, 0)
+
+	for _, req := range reqMap {
+		vec := req.GetVector()
+		id := vec.GetId()
+		v := vec.GetVector()
+
+		err := s.ngt.UpdateWithTime(id, v, vec.GetTimestamp(), req.GetConfig().GetUpdateTimestampIfExists())
+		if err != nil {
+			if errors.Is(err, errors.ErrObjectIDNotFound(id)) {
+				notFoundIDs = append(notFoundIDs, id)
+			} else if errors.Is(err, errors.ErrInvalidDimensionSize(len(v), s.ngt.GetDimensionSize())) || errors.Is(err, errors.ErrUUIDNotFound(0)) {
+				invalidArgumentIDs = append(invalidArgumentIDs, id)
+			} else if errors.Is(err, errors.ErrUUIDAlreadyExists(id)) {
+				alreadyExistsIDs = append(alreadyExistsIDs, id)
+			} else {
+				otherIDs = append(otherIDs, id)
 			}
-			return aids
-		}(); len(notFoundIDs) != 0 {
-			err = status.WrapWithNotFound(fmt.Sprintf("MultiUpdate API uuids %v not found", notFoundIDs), err,
-				&errdetails.RequestInfo{
-					RequestId:   strings.Join(uuids, ", "),
-					ServingData: errdetails.Serialize(reqs),
-				},
-				&errdetails.ResourceInfo{
-					ResourceType: ngtResourceType + "/ngt.MultiUpdate",
-					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-				})
+		}
+	}
+
+	var errs error
+	handleErrIDs := func(ids []string, errFunc func() error, attrsFunc func(string) []attribute.KeyValue) {
+		if len(ids) != 0 {
+			err := errFunc()
 			log.Warn(err)
-			attrs = trace.StatusCodeNotFound(err.Error())
-		} else if invalidDimensionIDs := func() []string {
-			idis := make([]string, 0, len(uuids))
-			for id, vec := range vmap {
-				if errors.Is(err, errors.ErrInvalidDimensionSize(len(vec), s.ngt.GetDimensionSize())) {
-					idis = append(idis, id)
-				}
+			errs = errors.Join(errs, err)
+
+			if span != nil {
+				span.RecordError(err)
+				span.SetAttributes(attrsFunc(err.Error())...)
+				span.SetStatus(trace.StatusError, err.Error())
 			}
-			return idis
-		}(); len(invalidDimensionIDs) != 0 || errors.Is(err, errors.ErrUUIDNotFound(0)) {
-			err = status.WrapWithInvalidArgument(fmt.Sprintf("MultiUpdate API invalid argument for uuids \"%v\" detected", invalidDimensionIDs), err,
-				&errdetails.RequestInfo{
-					RequestId:   strings.Join(uuids, ", "),
-					ServingData: errdetails.Serialize(reqs),
-				},
-				&errdetails.BadRequest{
-					FieldViolations: []*errdetails.BadRequestFieldViolation{
-						{
-							Field:       "uuid or vector",
-							Description: err.Error(),
-						},
+		}
+	}
+
+	handleErrIDs(notFoundIDs, func() error {
+		return status.WrapWithNotFound(fmt.Sprintf("MultiUpdate API uuids %v not found", notFoundIDs), err,
+			&errdetails.RequestInfo{
+				RequestId:   strings.Join(notFoundIDs, ", "),
+				ServingData: errdetails.Serialize(reqs),
+			},
+			&errdetails.ResourceInfo{
+				ResourceType: ngtResourceType + "/ngt.MultiUpdate",
+				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+			})
+	}, trace.StatusCodeNotFound)
+
+	handleErrIDs(invalidArgumentIDs, func() error {
+		return status.WrapWithInvalidArgument(fmt.Sprintf("MultiUpdate API invalid argument for uuids \"%v\" detected", invalidArgumentIDs), err,
+			&errdetails.RequestInfo{
+				RequestId:   strings.Join(invalidArgumentIDs, ", "),
+				ServingData: errdetails.Serialize(reqs),
+			},
+			&errdetails.BadRequest{
+				FieldViolations: []*errdetails.BadRequestFieldViolation{
+					{
+						Field:       "uuid or vector",
+						Description: err.Error(),
 					},
 				},
-				&errdetails.ResourceInfo{
-					ResourceType: ngtResourceType + "/ngt.MultiUpdate",
-					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-				})
-			log.Warn(err)
-			attrs = trace.StatusCodeInvalidArgument(err.Error())
-		} else if alreadyExistsIDs := func() []string {
-			aids := make([]string, 0, len(uuids))
-			for _, id := range uuids {
-				if errors.Is(err, errors.ErrUUIDAlreadyExists(id)) {
-					aids = append(aids, id)
-				}
-			}
-			return aids
-		}(); len(alreadyExistsIDs) != 0 {
-			err = status.WrapWithAlreadyExists(fmt.Sprintf("MultiUpdate API uuids %v already exists", alreadyExistsIDs), err,
-				&errdetails.RequestInfo{
-					RequestId:   strings.Join(uuids, ", "),
-					ServingData: errdetails.Serialize(reqs),
-				},
-				&errdetails.ResourceInfo{
-					ResourceType: ngtResourceType + "/ngt.MultiUpdate",
-					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-				})
-			log.Warn(err)
-			attrs = trace.StatusCodeAlreadyExists(err.Error())
-		} else {
-			err = status.WrapWithInternal("Update API failed", err,
-				&errdetails.RequestInfo{
-					RequestId:   strings.Join(uuids, ", "),
-					ServingData: errdetails.Serialize(reqs),
-				},
-				&errdetails.ResourceInfo{
-					ResourceType: ngtResourceType + "/ngt.Update",
-					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-				}, info.Get())
-			log.Error(err)
-			attrs = trace.StatusCodeInternal(err.Error())
-		}
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(attrs...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
-		return nil, err
+			},
+			&errdetails.ResourceInfo{
+				ResourceType: ngtResourceType + "/ngt.MultiUpdate",
+				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+			})
+	}, trace.StatusCodeInvalidArgument)
+
+	handleErrIDs(alreadyExistsIDs, func() error {
+		return status.WrapWithAlreadyExists(fmt.Sprintf("MultiUpdate API uuids %v already exists", alreadyExistsIDs), err,
+			&errdetails.RequestInfo{
+				RequestId:   strings.Join(alreadyExistsIDs, ", "),
+				ServingData: errdetails.Serialize(reqs),
+			},
+			&errdetails.ResourceInfo{
+				ResourceType: ngtResourceType + "/ngt.MultiUpdate",
+				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+			})
+	}, trace.StatusCodeAlreadyExists)
+
+	handleErrIDs(otherIDs, func() error {
+		return status.WrapWithInternal("Update API failed", err,
+			&errdetails.RequestInfo{
+				RequestId:   strings.Join(otherIDs, ", "),
+				ServingData: errdetails.Serialize(reqs),
+			},
+			&errdetails.ResourceInfo{
+				ResourceType: ngtResourceType + "/ngt.Update",
+				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+			}, info.Get())
+	}, trace.StatusCodeInternal)
+
+	if errs != nil {
+		return nil, errs
 	}
+
 	return s.newLocations(uuids...), nil
 }
