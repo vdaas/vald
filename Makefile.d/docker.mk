@@ -2,7 +2,7 @@
 # Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
+# You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
 #    https://www.apache.org/licenses/LICENSE-2.0
@@ -186,5 +186,19 @@ docker/build/loadtest:
 	    $(DOCKER_OPTS) \
 	    -f dockers/tools/cli/loadtest/Dockerfile \
 	    -t $(ORG)/$(LOADTEST_IMAGE):$(TAG) . \
+	    --build-arg MAINTAINER=$(MAINTAINER) \
+	    --build-arg GO_VERSION=$(GO_VERSION)
+
+.PHONY: docker/name/index-correction
+docker/name/index-correction:
+	@echo "$(ORG)/$(INDEX_CORRECTION_IMAGE)"
+
+.PHONY: docker/build/index-correction
+## build index-correction image
+docker/build/index-correction:
+	$(DOCKER) build \
+	    $(DOCKER_OPTS) \
+	    -f dockers/index/job/correction/Dockerfile \
+	    -t $(ORG)/$(INDEX_CORRECTION_IMAGE):$(TAG) . \
 	    --build-arg MAINTAINER=$(MAINTAINER) \
 	    --build-arg GO_VERSION=$(GO_VERSION)

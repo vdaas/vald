@@ -1,7 +1,7 @@
 // Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //	https://www.apache.org/licenses/LICENSE-2.0
@@ -14,17 +14,18 @@
 package grpc
 
 import (
+	"cmp"
 	"context"
 	"flag"
 	"fmt"
 	"runtime"
+	"slices"
 	"sync/atomic"
 	"testing"
 	"time"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/rand"
-	"github.com/vdaas/vald/internal/slices"
 	"github.com/vdaas/vald/internal/sync"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/internal/test/data/strings"
@@ -79,8 +80,8 @@ func newRandomResponse() (res *payload.Search_Response) {
 			Distance: rand.Float32(),
 		})
 	}
-	slices.SortFunc(res.Results, func(left, right *payload.Object_Distance) bool {
-		return left.GetDistance() < right.GetDistance()
+	slices.SortFunc(res.Results, func(left, right *payload.Object_Distance) int {
+		return cmp.Compare(left.GetDistance(), right.GetDistance())
 	})
 	return res
 }

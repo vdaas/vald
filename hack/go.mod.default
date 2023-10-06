@@ -1,6 +1,6 @@
 module github.com/vdaas/vald
 
-go 1.20
+go 1.21
 
 replace (
 	cloud.google.com/go => cloud.google.com/go latest
@@ -271,6 +271,7 @@ replace (
 	github.com/zeebo/assert => github.com/zeebo/assert latest
 	github.com/zeebo/xxh3 => github.com/zeebo/xxh3 latest
 	go.opencensus.io => go.opencensus.io latest
+	go.etcd.io/bbolt => go.etcd.io/bbolt latest
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc => go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.37.0
 	go.opentelemetry.io/otel => go.opentelemetry.io/otel v1.11.1
 	go.opentelemetry.io/otel/exporters/otlp/internal/retry => go.opentelemetry.io/otel/exporters/otlp/internal/retry v1.11.1
@@ -291,7 +292,7 @@ replace (
 	go.uber.org/zap => go.uber.org/zap latest
 	gocloud.dev => gocloud.dev latest
 	golang.org/x/crypto => golang.org/x/crypto latest
-	golang.org/x/exp => golang.org/x/exp v0.0.0-20230711153332-06a737ee72cb
+	golang.org/x/exp => golang.org/x/exp latest
 	golang.org/x/exp/typeparams => golang.org/x/exp/typeparams latest
 	golang.org/x/image => golang.org/x/image latest
 	golang.org/x/lint => golang.org/x/lint latest

@@ -2,7 +2,7 @@
 // Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -18,9 +18,11 @@
 package grpc
 
 import (
+	"cmp"
 	"context"
 	"fmt"
 	"runtime"
+	"slices"
 	"sync/atomic"
 
 	"github.com/vdaas/vald/internal/errors"
@@ -31,7 +33,6 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
-	"github.com/vdaas/vald/internal/slices"
 	"github.com/vdaas/vald/internal/sync"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 	"google.golang.org/grpc"
@@ -74,8 +75,8 @@ func BidirectionalStream[Q any, R any](ctx context.Context, stream ServerStream,
 			errs = append(errs, err)
 			emu.Unlock()
 		}
-		slices.RemoveDuplicates(errs, func(left, right error) bool {
-			return left.Error() < right.Error()
+		removeDuplicates(errs, func(left, right error) int {
+			return cmp.Compare(left.Error(), right.Error())
 		})
 		emu.Lock()
 		err = errors.Join(errs...)
@@ -227,4 +228,12 @@ func BidirectionalStreamClient(stream ClientStream,
 			}
 		}
 	}()
+}
+
+func removeDuplicates[S ~[]E, E comparable](x S, less func(left, right E) int) S {
+	if len(x) < 2 {
+		return x
+	}
+	slices.SortStableFunc(x, less)
+	return slices.Compact(x)
 }

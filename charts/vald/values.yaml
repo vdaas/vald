@@ -2,7 +2,7 @@
 # Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
+# You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
 #    https://www.apache.org/licenses/LICENSE-2.0
@@ -38,7 +38,7 @@ defaults:
   image:
     # @schema {"name": "defaults.image.tag", "type": "string"}
     # defaults.image.tag -- docker image tag
-    tag: v1.7.6
+    tag: v1.7.8
   # @schema {"name": "defaults.server_config", "type": "object", "anchor": "server_config"}
   server_config:
     # @schema {"name": "defaults.server_config.servers", "type": "object"}
@@ -1652,7 +1652,7 @@ agent:
     auto_save_index_duration: 35m
     # @schema {"name": "agent.ngt.auto_create_index_pool_size", "type": "integer"}
     # agent.ngt.auto_create_index_pool_size -- batch process pool size of automatic create index operation
-    auto_create_index_pool_size: 10000
+    auto_create_index_pool_size: 16
     # @schema {"name": "agent.ngt.initial_delay_max_duration", "type": "string"}
     # agent.ngt.initial_delay_max_duration -- maximum duration for initial delay
     initial_delay_max_duration: 3m
@@ -1684,7 +1684,7 @@ agent:
     enable_in_memory_mode: true
     # @schema {"name": "agent.ngt.default_pool_size", "type": "integer"}
     # agent.ngt.default_pool_size -- default create index batch pool size
-    default_pool_size: 10000
+    default_pool_size: 16
     # @schema {"name": "agent.ngt.default_radius", "type": "number"}
     # agent.ngt.default_radius -- default radius used for search
     default_radius: -1.0
@@ -2615,7 +2615,7 @@ manager:
       auto_index_length: 100
       # @schema {"name": "manager.index.indexer.creation_pool_size", "type": "integer"}
       # manager.index.indexer.creation_pool_size -- number of pool size of create index processing
-      creation_pool_size: 10000
+      creation_pool_size: 16
       # @schema {"name": "manager.index.indexer.discoverer", "type": "object"}
       discoverer:
         # @schema {"name": "manager.index.indexer.discoverer.duration", "type": "string"}
@@ -2626,6 +2626,41 @@ manager:
         client: {}
         # @schema {"name": "manager.index.indexer.discoverer.agent_client_options", "alias": "grpc.client"}
         # manager.index.indexer.discoverer.agent_client_options -- gRPC client options for agents (overrides defaults.grpc.client)
+        agent_client_options:
+          dial_option:
+            net:
+              dialer:
+                keepalive: 15m #indexer fetches uncommitted index length, which includes huge payload so we need to set keepalive longer than usual
+    # @schema {"name": "manager.index.corrector", "type": "object"}
+    corrector:
+      # @schema {"name": "manager.index.corrector.enabled", "type": "boolean"}
+      # manager.index.corrector.enabled -- enable index correction CronJob
+      enabled: false
+      # @schema {"name": "manager.index.corrector.check_duration", "type": "string"}
+      # manager.index.corrector.enabled -- check duration of index correction CronJob
+      check_duration: 24h
+      # @schema {"name": "manager.index.corrector.stream_list_concurrency", "type": "integer", "minimum": 1}
+      # manager.index.corrector.stream_list_concurrency -- concurrency for stream list object rpc
+      stream_list_concurrency: 200
+      # @schema {"name": "manager.index.corrector.bbolt_async_write_concurrency", "type": "integer", "minimum": 1}
+      # manager.index.corrector.bbolt_async_write_concurrency -- concurrency for bbolt async write
+      bbolt_async_write_concurrency: 2048
+      # @schema {"name": "manager.index.corrector.agent_namespace", "type": "string"}
+      # manager.index.corrector.agent_namespace -- namespace of agent pods to manage
+      agent_namespace: _MY_POD_NAMESPACE_
+      # @schema {"name": "manager.index.corrector.node_name", "type": "string"}
+      # manager.index.corrector.node_name -- node name
+      node_name: "" # _MY_NODE_NAME_
+      # @schema {"name": "manager.index.corrector.discoverer", "type": "object"}
+      discoverer:
+        # @schema {"name": "manager.index.corrector.discoverer.duration", "type": "string"}
+        # manager.index.corrector.discoverer.duration -- refresh duration to discover
+        duration: 500ms
+        # @schema {"name": "manager.index.corrector.discoverer.client", "alias": "grpc.client"}
+        # manager.index.corrector.discoverer.client -- gRPC client for discoverer (overrides defaults.grpc.client)
+        client: {}
+        # @schema {"name": "manager.index.corrector.discoverer.agent_client_options", "alias": "grpc.client"}
+        # manager.index.corrector.discoverer.agent_client_options -- gRPC client options for agents (overrides defaults.grpc.client)
         agent_client_options:
           dial_option:
             net:

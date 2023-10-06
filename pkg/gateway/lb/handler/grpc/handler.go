@@ -2,7 +2,7 @@
 // Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -20,6 +20,7 @@ package grpc
 import (
 	"context"
 	"fmt"
+	"slices"
 	"strconv"
 	"sync/atomic"
 	"time"
@@ -38,7 +39,6 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
-	"github.com/vdaas/vald/internal/slices"
 	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/sync"
 	"github.com/vdaas/vald/internal/sync/errgroup"
@@ -2973,10 +2973,15 @@ func (s *server) getObject(ctx context.Context, uuid string) (vec *payload.Objec
 				return nil
 			}
 			if ovec != nil && ovec.GetId() != "" && ovec.GetVector() != nil {
+				var send bool
 				once.Do(func() {
 					vch <- ovec
+					send = true
 					cancel(doneErr)
 				})
+				if !send {
+					ovec.ReturnToVTPool()
+				}
 			}
 			return nil
 		})

@@ -3,7 +3,7 @@
 # Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
+# You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
 #    https://www.apache.org/licenses/LICENSE-2.0
@@ -20,10 +20,10 @@ metadata:
   name: vald-agent-ngt-config
   labels:
     app.kubernetes.io/name: vald
-    helm.sh/chart: vald-v1.7.6
+    helm.sh/chart: vald-v1.7.8
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: release-name
-    app.kubernetes.io/version: v1.7.6
+    app.kubernetes.io/version: v1.7.8
     app.kubernetes.io/component: agent
 data:
   config.yaml: |
@@ -199,7 +199,7 @@ data:
       trace:
         enabled: false
     ngt:
-      auto_create_index_pool_size: 10000
+      auto_create_index_pool_size: 16
       auto_index_check_duration: 30m
       auto_index_duration_limit: 24h
       auto_index_length: 100
@@ -208,7 +208,7 @@ data:
       bulk_insert_chunk_size: 10
       creation_edge_size: 20
       default_epsilon: 0.1
-      default_pool_size: 10000
+      default_pool_size: 16
       default_radius: -1
       dimension: 784
       distance_type: l2
