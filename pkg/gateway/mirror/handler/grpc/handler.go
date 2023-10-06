@@ -1576,7 +1576,7 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (loc *
 		}
 		return true
 	})
-	if err == nil || result.Len() == len(successTgts)+alreadyExistsCnt {
+	if err == nil || (len(successTgts) > 0 && result.Len() == len(successTgts)+alreadyExistsCnt) {
 		log.Debugf(vald.UpdateRPCName+" API request succeeded to %#v", loc)
 		return loc, nil
 	}
@@ -1729,7 +1729,7 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (loc *
 		}
 		return true
 	})
-	if err == nil || result.Len() == len(successTgts)+alreadyExistsCnt {
+	if err == nil || (len(successTgts) > 0 && result.Len() == len(successTgts)+alreadyExistsCnt) {
 		log.Debugf(vald.InsertRPCName+" for "+vald.UpdateRPCName+" API request succeeded to %#v", loc)
 		return loc, nil
 	}

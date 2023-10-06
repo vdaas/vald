@@ -739,6 +739,61 @@ func Test_server_Update(t *testing.T) {
 				},
 			}
 		}(),
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			eg, egctx := errgroup.New(ctx)
+
+			uuid := "test"
+			targets := []string{
+				"vald-01", "vald-02",
+			}
+			cmap := map[string]vald.ClientWithMirror{
+				targets[0]: &mockClient{
+					UpdateFunc: func(_ context.Context, _ *payload.Update_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
+						return nil, status.Error(codes.NotFound, errors.ErrObjectIDNotFound(uuid).Error())
+					},
+				},
+				targets[1]: &mockClient{
+					UpdateFunc: func(_ context.Context, _ *payload.Update_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
+						return nil, status.Error(codes.NotFound, errors.ErrObjectIDNotFound(uuid).Error())
+					},
+				},
+			}
+			return test{
+				name: "Fail: when the status codes are (NotFound, NotFound)",
+				args: args{
+					ctx: egctx,
+					req: &payload.Update_Request{
+						Vector: &payload.Object_Vector{
+							Id:     uuid,
+							Vector: vector.GaussianDistributedFloat32VectorGenerator(1, dimension)[0],
+						},
+						Config: defaultUpdateConfig,
+					},
+				},
+				fields: fields{
+					eg: eg,
+					gateway: &mockGateway{
+						FromForwardedContextFunc: func(_ context.Context) string {
+							return ""
+						},
+						BroadCastFunc: func(ctx context.Context, f func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error) error {
+							for _, tgt := range targets {
+								f(ctx, tgt, cmap[tgt])
+							}
+							return nil
+						},
+					},
+				},
+				want: want{
+					err: status.Error(codes.NotFound, vald.UpdateRPCName+" API id "+uuid+" not found"),
+				},
+				afterFunc: func(t *testing.T, args args) {
+					t.Helper()
+					cancel()
+				},
+			}
+		}(),
 
 		func() test {
 			ctx, cancel := context.WithCancel(context.Background())
@@ -1026,6 +1081,80 @@ func Test_server_Update(t *testing.T) {
 			eg, egctx := errgroup.New(ctx)
 
 			uuid := "test"
+			targets := []string{
+				"vald-01", "vald-02", "vald-03",
+			}
+			cmap := map[string]vald.ClientWithMirror{
+				targets[0]: &mockClient{
+					UpdateFunc: func(_ context.Context, _ *payload.Update_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
+						return nil, status.Error(codes.AlreadyExists, errors.ErrMetaDataAlreadyExists(uuid).Error())
+					},
+				},
+				targets[1]: &mockClient{
+					UpdateFunc: func(_ context.Context, _ *payload.Update_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
+						return nil, status.Error(codes.NotFound, errors.ErrObjectIDNotFound(uuid).Error())
+					},
+					InsertFunc: func(_ context.Context, _ *payload.Insert_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
+						return nil, status.Error(codes.AlreadyExists, errors.ErrMetaDataAlreadyExists(uuid).Error())
+					},
+				},
+				targets[2]: &mockClient{
+					UpdateFunc: func(_ context.Context, _ *payload.Update_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
+						return nil, status.Error(codes.AlreadyExists, errors.ErrMetaDataAlreadyExists(uuid).Error())
+					},
+				},
+			}
+			return test{
+				name: "Fail: when the last status codes are (AlreadyExists, AlreadyExists, AlreadyExists) after inserting the target that returned NotFound",
+				args: args{
+					ctx: egctx,
+					req: &payload.Update_Request{
+						Vector: &payload.Object_Vector{
+							Id:     uuid,
+							Vector: vector.GaussianDistributedFloat32VectorGenerator(1, dimension)[0],
+						},
+						Config: defaultUpdateConfig,
+					},
+				},
+				fields: fields{
+					eg: eg,
+					gateway: &mockGateway{
+						FromForwardedContextFunc: func(_ context.Context) string {
+							return ""
+						},
+						BroadCastFunc: func(ctx context.Context, f func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error) error {
+							for _, tgt := range targets {
+								f(ctx, tgt, cmap[tgt])
+							}
+							return nil
+						},
+						DoMultiFunc: func(ctx context.Context, targets []string, f func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error) error {
+							for _, target := range targets {
+								if c, ok := cmap[target]; !ok {
+									return errors.ErrTargetNotFound
+								} else {
+									f(ctx, target, c)
+								}
+							}
+							return nil
+						},
+					},
+				},
+				want: want{
+					err: status.Error(codes.AlreadyExists, vald.InsertRPCName+" for "+vald.UpdateRPCName+" API target same vector already exists"),
+				},
+				afterFunc: func(t *testing.T, args args) {
+					t.Helper()
+					cancel()
+				},
+			}
+		}(),
+
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			eg, egctx := errgroup.New(ctx)
+
+			uuid := "test"
 			loc := &payload.Object_Location{
 				Uuid: uuid,
 				Ips:  []string{"127.0.0.1"},
@@ -1294,6 +1423,61 @@ func Test_server_Upsert(t *testing.T) {
 				},
 				want: want{
 					wantLoc: loc,
+				},
+				afterFunc: func(t *testing.T, args args) {
+					t.Helper()
+					cancel()
+				},
+			}
+		}(),
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			eg, egctx := errgroup.New(ctx)
+
+			uuid := "test"
+			targets := []string{
+				"vald-01", "vald-02",
+			}
+			cmap := map[string]vald.ClientWithMirror{
+				targets[0]: &mockClient{
+					UpsertFunc: func(_ context.Context, _ *payload.Upsert_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
+						return nil, status.Error(codes.AlreadyExists, errors.ErrMetaDataAlreadyExists(uuid).Error())
+					},
+				},
+				targets[1]: &mockClient{
+					UpsertFunc: func(ctx context.Context, in *payload.Upsert_Request, opts ...grpc.CallOption) (*payload.Object_Location, error) {
+						return nil, status.Error(codes.AlreadyExists, errors.ErrMetaDataAlreadyExists(uuid).Error())
+					},
+				},
+			}
+			return test{
+				name: "Fail: when the status codes are (AlreadyExists, AlreadyExists)",
+				args: args{
+					ctx: egctx,
+					req: &payload.Upsert_Request{
+						Vector: &payload.Object_Vector{
+							Id:     uuid,
+							Vector: vector.GaussianDistributedFloat32VectorGenerator(1, dimension)[0],
+						},
+						Config: defaultUpsertConfig,
+					},
+				},
+				fields: fields{
+					eg: eg,
+					gateway: &mockGateway{
+						FromForwardedContextFunc: func(_ context.Context) string {
+							return ""
+						},
+						BroadCastFunc: func(ctx context.Context, f func(_ context.Context, _ string, _ vald.ClientWithMirror, _ ...grpc.CallOption) error) error {
+							for _, tgt := range targets {
+								f(ctx, tgt, cmap[tgt])
+							}
+							return nil
+						},
+					},
+				},
+				want: want{
+					err: status.Error(codes.AlreadyExists, vald.UpsertRPCName+" API target same vector already exists"),
 				},
 				afterFunc: func(t *testing.T, args args) {
 					t.Helper()
