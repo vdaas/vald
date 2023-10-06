@@ -15,7 +15,6 @@ package grpc
 
 import (
 	"context"
-	"fmt"
 	"reflect"
 	"testing"
 
@@ -1086,7 +1085,6 @@ func Test_server_Update(t *testing.T) {
 			}
 
 			gotLoc, err := s.Update(test.args.ctx, test.args.req)
-			fmt.Println(err)
 			if err := checkFunc(test.want, gotLoc, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -1818,8 +1816,12 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 					"127.0.0.1",
 				},
 			}
+			targets := []string{
+				"vald-01",
+				"vald-02",
+			}
 			cmap := map[string]vald.ClientWithMirror{
-				"vald-01": &mockClient{
+				targets[0]: &mockClient{
 					RemoveByTimestampFunc: func(_ context.Context, _ *payload.Remove_TimestampRequest, _ ...grpc.CallOption) (*payload.Object_Locations, error) {
 						return &payload.Object_Locations{
 							Locations: []*payload.Object_Location{
@@ -1828,7 +1830,7 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 						}, nil
 					},
 				},
-				"vald-02": &mockClient{
+				targets[1]: &mockClient{
 					RemoveByTimestampFunc: func(_ context.Context, _ *payload.Remove_TimestampRequest, _ ...grpc.CallOption) (*payload.Object_Locations, error) {
 						return &payload.Object_Locations{
 							Locations: []*payload.Object_Location{
@@ -1851,8 +1853,8 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 							return ""
 						},
 						BroadCastFunc: func(ctx context.Context, f func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error) error {
-							for tgt, c := range cmap {
-								f(ctx, tgt, c)
+							for _, tgt := range targets {
+								f(ctx, tgt, cmap[tgt])
 							}
 							return nil
 						},
