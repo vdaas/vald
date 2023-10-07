@@ -943,7 +943,7 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (loc *
 
 	reqSrcPodName := s.gateway.FromForwardedContext(ctx)
 
-	// When this condition is matched, the request is proxied to another Mirror gateway.
+	// If this condition is matched, it means that the request was proxied from another Mirror Gateway.
 	// So this component sends requests only to the Vald gateway (LB gateway) of its own cluster.
 	if len(reqSrcPodName) != 0 {
 		loc, err = s.doInsert(ctx, req, func(ctx context.Context) (*payload.Object_Location, error) {
@@ -977,7 +977,7 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (loc *
 	}
 
 	var mu sync.Mutex
-	var result sync.Map[string, *errorState] // map[target: errorState]
+	var result sync.Map[string, *errorState] // map[target host: error state]
 	loc = &payload.Object_Location{
 		Uuid: req.GetVector().GetId(),
 		Ips:  make([]string, 0),
@@ -1110,7 +1110,7 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (loc *
 	}
 
 	// In this case, the status code in the result object contains only OK or ALREADY_EXIST.
-	// And send Update API requst to ALREADY_EXIST cluster using query requested by the user.
+	// And send Update API requst to ALREADY_EXIST cluster using the query requested by the user.
 	log.Warnf("failed to "+vald.InsertRPCName+" API: %#v", err)
 
 	updateReq := &payload.Update_Request{
@@ -1211,7 +1211,7 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (loc *
 		}
 		return true
 	})
-	if err == nil {
+	if err == nil || (len(successTgts) > 0 && result.Len() == len(successTgts)+len(alreadyExistsTgts)) {
 		log.Debugf(vald.UpdateRPCName+"for "+vald.InsertRPCName+" API request succeeded to %#v", loc)
 		return loc, nil
 	}
@@ -1234,7 +1234,7 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (loc *
 			span.SetStatus(trace.StatusError, err.Error())
 		}
 		return nil, err
-	case result.Len() > len(successTgts)+len(alreadyExistsTgts): // Contains errors except for NOT_FOUND and ALREADY_EXIST.
+	case result.Len() > len(successTgts)+len(alreadyExistsTgts): // Contains errors except for ALREADY_EXIST.
 		st, msg, err := status.ParseError(err, codes.Internal,
 			"failed to parse "+vald.UpdateRPCName+" for "+vald.InsertRPCName+" gRPC error response", reqInfo, resInfo,
 		)
@@ -1438,7 +1438,7 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (loc *
 
 	reqSrcPodName := s.gateway.FromForwardedContext(ctx)
 
-	// When this condition is matched, the request is proxied to another Mirror gateway.
+	// If this condition is matched, it means that the request was proxied from another Mirror Gateway.
 	// So this component sends requests only to the Vald gateway (LB gateway) of its own cluster.
 	if len(reqSrcPodName) != 0 {
 		loc, err = s.doUpdate(ctx, req, func(ctx context.Context) (*payload.Object_Location, error) {
@@ -1472,7 +1472,7 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (loc *
 	}
 
 	var mu sync.Mutex
-	var result sync.Map[string, *errorState]
+	var result sync.Map[string, *errorState] // map[target host: error state]
 	loc = &payload.Object_Location{
 		Uuid: req.GetVector().GetId(),
 		Ips:  make([]string, 0),
@@ -1619,7 +1619,7 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (loc *
 		return nil, err
 	}
 
-	// In this case, the status code in the result object contains only OK or ALREADY_EXIST.
+	// In this case, the status code in the result object contains only OK or ALREADY_EXIST or NOT_FOUND.
 	// And send Insert API requst to NOT_FOUND cluster using query requested by the user.
 	log.Warnf("failed to "+vald.UpdateRPCName+" API: %#v", err)
 
@@ -1963,7 +1963,7 @@ func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *
 
 	reqSrcPodName := s.gateway.FromForwardedContext(ctx)
 
-	// When this condition is matched, the request is proxied to another Mirror gateway.
+	// If this condition is matched, it means that the request was proxied from another Mirror Gateway.
 	// So this component sends requests only to the Vald gateway (LB gateway) of its own cluster.
 	if len(reqSrcPodName) != 0 {
 		loc, err = s.doUpsert(ctx, req, func(ctx context.Context) (*payload.Object_Location, error) {
@@ -1998,7 +1998,7 @@ func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *
 	}
 
 	var mu sync.Mutex
-	var result sync.Map[string, *errorState]
+	var result sync.Map[string, *errorState] // map[target host: error state]
 	loc = &payload.Object_Location{
 		Uuid: req.GetVector().GetId(),
 		Ips:  make([]string, 0),
@@ -2321,8 +2321,8 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (loc *
 
 	reqSrcPodName := s.gateway.FromForwardedContext(ctx)
 
-	// When this condition is matched, the request is proxied to another Mirror gateway.
-	// So this component sends the request only to the Vald gateway (LB gateway) of own cluster.
+	// If this condition is matched, it means that the request was proxied from another Mirror Gateway.
+	// So this component sends requests only to the Vald gateway (LB gateway) of its own cluster.
 	if len(reqSrcPodName) != 0 {
 		loc, err = s.doRemove(ctx, req, func(ctx context.Context) (*payload.Object_Location, error) {
 			s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, vc vald.ClientWithMirror, copts ...grpc.CallOption) (interface{}, error) {
@@ -2355,7 +2355,7 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (loc *
 	}
 
 	var mu sync.Mutex
-	var result sync.Map[string, *errorState]
+	var result sync.Map[string, *errorState] // map[target host: error state]
 	loc = &payload.Object_Location{
 		Uuid: req.GetId().GetId(),
 		Ips:  make([]string, 0),
@@ -2674,7 +2674,7 @@ func (s *server) RemoveByTimestamp(ctx context.Context, req *payload.Remove_Time
 
 	reqSrcPodName := s.gateway.FromForwardedContext(ctx)
 
-	// When this condition is matched, the request is proxied to another Mirror gateway.
+	// If this condition is matched, it means that the request was proxied from another Mirror Gateway.
 	// So this component sends requests only to the Vald gateway (LB gateway) of its own cluster.
 	if len(reqSrcPodName) != 0 {
 		locs, err = s.doRemoveByTimestamp(ctx, req, func(ctx context.Context) (*payload.Object_Locations, error) {
@@ -2708,7 +2708,7 @@ func (s *server) RemoveByTimestamp(ctx context.Context, req *payload.Remove_Time
 	}
 
 	var mu sync.Mutex
-	var result sync.Map[string, *errorState]
+	var result sync.Map[string, *errorState] // map[target host: error state]
 	locs = new(payload.Object_Locations)
 
 	err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error {
