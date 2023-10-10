@@ -744,179 +744,6 @@ func Test_server_Update(t *testing.T) {
 			eg, egctx := errgroup.New(ctx)
 
 			uuid := "test"
-			targets := []string{
-				"vald-01", "vald-02",
-			}
-			cmap := map[string]vald.ClientWithMirror{
-				targets[0]: &mockClient{
-					UpdateFunc: func(_ context.Context, _ *payload.Update_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
-						return nil, status.Error(codes.NotFound, errors.ErrObjectIDNotFound(uuid).Error())
-					},
-				},
-				targets[1]: &mockClient{
-					UpdateFunc: func(_ context.Context, _ *payload.Update_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
-						return nil, status.Error(codes.NotFound, errors.ErrObjectIDNotFound(uuid).Error())
-					},
-				},
-			}
-			return test{
-				name: "Fail: when the status codes are (NotFound, NotFound)",
-				args: args{
-					ctx: egctx,
-					req: &payload.Update_Request{
-						Vector: &payload.Object_Vector{
-							Id:     uuid,
-							Vector: vector.GaussianDistributedFloat32VectorGenerator(1, dimension)[0],
-						},
-						Config: defaultUpdateConfig,
-					},
-				},
-				fields: fields{
-					eg: eg,
-					gateway: &mockGateway{
-						FromForwardedContextFunc: func(_ context.Context) string {
-							return ""
-						},
-						BroadCastFunc: func(ctx context.Context, f func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error) error {
-							for _, tgt := range targets {
-								f(ctx, tgt, cmap[tgt])
-							}
-							return nil
-						},
-					},
-				},
-				want: want{
-					err: status.Error(codes.NotFound, vald.UpdateRPCName+" API id "+uuid+" not found"),
-				},
-				afterFunc: func(t *testing.T, args args) {
-					t.Helper()
-					cancel()
-				},
-			}
-		}(),
-
-		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
-			eg, egctx := errgroup.New(ctx)
-
-			uuid := "test"
-			loc := &payload.Object_Location{
-				Uuid: uuid,
-				Ips:  []string{"127.0.0.1"},
-			}
-			targets := []string{
-				"vald-01", "vald-02",
-			}
-			cmap := map[string]vald.ClientWithMirror{
-				targets[0]: &mockClient{
-					UpdateFunc: func(_ context.Context, _ *payload.Update_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
-						return loc, nil
-					},
-				},
-				targets[1]: &mockClient{
-					UpdateFunc: func(_ context.Context, _ *payload.Update_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
-						return nil, status.Error(codes.Internal, errors.ErrCircuitBreakerHalfOpenFlowLimitation.Error())
-					},
-				},
-			}
-			return test{
-				name: "Fail: when the status codes are (Internal, OK)",
-				args: args{
-					ctx: egctx,
-					req: &payload.Update_Request{
-						Vector: &payload.Object_Vector{
-							Id:     uuid,
-							Vector: vector.GaussianDistributedFloat32VectorGenerator(1, dimension)[0],
-						},
-						Config: defaultUpdateConfig,
-					},
-				},
-				fields: fields{
-					eg: eg,
-					gateway: &mockGateway{
-						FromForwardedContextFunc: func(_ context.Context) string {
-							return ""
-						},
-						BroadCastFunc: func(ctx context.Context, f func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error) error {
-							for _, tgt := range targets {
-								f(ctx, tgt, cmap[tgt])
-							}
-							return nil
-						},
-					},
-				},
-				want: want{
-					err: status.Error(codes.Internal, errors.ErrCircuitBreakerHalfOpenFlowLimitation.Error()),
-				},
-				afterFunc: func(t *testing.T, args args) {
-					t.Helper()
-					cancel()
-				},
-			}
-		}(),
-		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
-			eg, egctx := errgroup.New(ctx)
-
-			uuid := "test"
-			targets := []string{
-				"vald-01", "vald-02",
-			}
-			cmap := map[string]vald.ClientWithMirror{
-				targets[0]: &mockClient{
-					UpdateFunc: func(_ context.Context, _ *payload.Update_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
-						return nil, status.Error(codes.Internal, errors.ErrCircuitBreakerHalfOpenFlowLimitation.Error())
-					},
-				},
-				targets[1]: &mockClient{
-					UpdateFunc: func(_ context.Context, _ *payload.Update_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
-						return nil, status.Error(codes.AlreadyExists, errors.ErrMetaDataAlreadyExists(uuid).Error())
-					},
-				},
-			}
-			return test{
-				name: "Fail: when the status codes are (Internal, AlreadyExists)",
-				args: args{
-					ctx: egctx,
-					req: &payload.Update_Request{
-						Vector: &payload.Object_Vector{
-							Id:     uuid,
-							Vector: vector.GaussianDistributedFloat32VectorGenerator(1, dimension)[0],
-						},
-						Config: defaultUpdateConfig,
-					},
-				},
-				fields: fields{
-					eg: eg,
-					gateway: &mockGateway{
-						FromForwardedContextFunc: func(_ context.Context) string {
-							return ""
-						},
-						BroadCastFunc: func(ctx context.Context, f func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error) error {
-							for _, tgt := range targets {
-								f(ctx, tgt, cmap[tgt])
-							}
-							return nil
-						},
-					},
-				},
-				want: want{
-					err: status.Error(codes.Internal, errors.Join(
-						status.Error(codes.Internal, errors.ErrCircuitBreakerHalfOpenFlowLimitation.Error()),
-						status.Error(codes.AlreadyExists, errors.ErrMetaDataAlreadyExists(uuid).Error()),
-					).Error()),
-				},
-				afterFunc: func(t *testing.T, args args) {
-					t.Helper()
-					cancel()
-				},
-			}
-		}(),
-		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
-			eg, egctx := errgroup.New(ctx)
-
-			uuid := "test"
 			loc := &payload.Object_Location{
 				Uuid: uuid,
 				Ips:  []string{"127.0.0.1"},
@@ -1082,6 +909,178 @@ func Test_server_Update(t *testing.T) {
 
 			uuid := "test"
 			targets := []string{
+				"vald-01", "vald-02",
+			}
+			cmap := map[string]vald.ClientWithMirror{
+				targets[0]: &mockClient{
+					UpdateFunc: func(_ context.Context, _ *payload.Update_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
+						return nil, status.Error(codes.NotFound, errors.ErrObjectIDNotFound(uuid).Error())
+					},
+				},
+				targets[1]: &mockClient{
+					UpdateFunc: func(_ context.Context, _ *payload.Update_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
+						return nil, status.Error(codes.NotFound, errors.ErrObjectIDNotFound(uuid).Error())
+					},
+				},
+			}
+			return test{
+				name: "Fail: when the status codes are (NotFound, NotFound)",
+				args: args{
+					ctx: egctx,
+					req: &payload.Update_Request{
+						Vector: &payload.Object_Vector{
+							Id:     uuid,
+							Vector: vector.GaussianDistributedFloat32VectorGenerator(1, dimension)[0],
+						},
+						Config: defaultUpdateConfig,
+					},
+				},
+				fields: fields{
+					eg: eg,
+					gateway: &mockGateway{
+						FromForwardedContextFunc: func(_ context.Context) string {
+							return ""
+						},
+						BroadCastFunc: func(ctx context.Context, f func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error) error {
+							for _, tgt := range targets {
+								f(ctx, tgt, cmap[tgt])
+							}
+							return nil
+						},
+					},
+				},
+				want: want{
+					err: status.Error(codes.NotFound, vald.UpdateRPCName+" API id "+uuid+" not found"),
+				},
+				afterFunc: func(t *testing.T, args args) {
+					t.Helper()
+					cancel()
+				},
+			}
+		}(),
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			eg, egctx := errgroup.New(ctx)
+
+			uuid := "test"
+			loc := &payload.Object_Location{
+				Uuid: uuid,
+				Ips:  []string{"127.0.0.1"},
+			}
+			targets := []string{
+				"vald-01", "vald-02",
+			}
+			cmap := map[string]vald.ClientWithMirror{
+				targets[0]: &mockClient{
+					UpdateFunc: func(_ context.Context, _ *payload.Update_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
+						return loc, nil
+					},
+				},
+				targets[1]: &mockClient{
+					UpdateFunc: func(_ context.Context, _ *payload.Update_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
+						return nil, status.Error(codes.Internal, errors.ErrCircuitBreakerHalfOpenFlowLimitation.Error())
+					},
+				},
+			}
+			return test{
+				name: "Fail: when the status codes are (Internal, OK)",
+				args: args{
+					ctx: egctx,
+					req: &payload.Update_Request{
+						Vector: &payload.Object_Vector{
+							Id:     uuid,
+							Vector: vector.GaussianDistributedFloat32VectorGenerator(1, dimension)[0],
+						},
+						Config: defaultUpdateConfig,
+					},
+				},
+				fields: fields{
+					eg: eg,
+					gateway: &mockGateway{
+						FromForwardedContextFunc: func(_ context.Context) string {
+							return ""
+						},
+						BroadCastFunc: func(ctx context.Context, f func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error) error {
+							for _, tgt := range targets {
+								f(ctx, tgt, cmap[tgt])
+							}
+							return nil
+						},
+					},
+				},
+				want: want{
+					err: status.Error(codes.Internal, errors.ErrCircuitBreakerHalfOpenFlowLimitation.Error()),
+				},
+				afterFunc: func(t *testing.T, args args) {
+					t.Helper()
+					cancel()
+				},
+			}
+		}(),
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			eg, egctx := errgroup.New(ctx)
+
+			uuid := "test"
+			targets := []string{
+				"vald-01", "vald-02",
+			}
+			cmap := map[string]vald.ClientWithMirror{
+				targets[0]: &mockClient{
+					UpdateFunc: func(_ context.Context, _ *payload.Update_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
+						return nil, status.Error(codes.Internal, errors.ErrCircuitBreakerHalfOpenFlowLimitation.Error())
+					},
+				},
+				targets[1]: &mockClient{
+					UpdateFunc: func(_ context.Context, _ *payload.Update_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
+						return nil, status.Error(codes.AlreadyExists, errors.ErrMetaDataAlreadyExists(uuid).Error())
+					},
+				},
+			}
+			return test{
+				name: "Fail: when the status codes are (Internal, AlreadyExists)",
+				args: args{
+					ctx: egctx,
+					req: &payload.Update_Request{
+						Vector: &payload.Object_Vector{
+							Id:     uuid,
+							Vector: vector.GaussianDistributedFloat32VectorGenerator(1, dimension)[0],
+						},
+						Config: defaultUpdateConfig,
+					},
+				},
+				fields: fields{
+					eg: eg,
+					gateway: &mockGateway{
+						FromForwardedContextFunc: func(_ context.Context) string {
+							return ""
+						},
+						BroadCastFunc: func(ctx context.Context, f func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error) error {
+							for _, tgt := range targets {
+								f(ctx, tgt, cmap[tgt])
+							}
+							return nil
+						},
+					},
+				},
+				want: want{
+					err: status.Error(codes.Internal, errors.Join(
+						status.Error(codes.Internal, errors.ErrCircuitBreakerHalfOpenFlowLimitation.Error()),
+						status.Error(codes.AlreadyExists, errors.ErrMetaDataAlreadyExists(uuid).Error()),
+					).Error()),
+				},
+				afterFunc: func(t *testing.T, args args) {
+					t.Helper()
+					cancel()
+				},
+			}
+		}(),
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			eg, egctx := errgroup.New(ctx)
+
+			uuid := "test"
+			targets := []string{
 				"vald-01", "vald-02", "vald-03",
 			}
 			cmap := map[string]vald.ClientWithMirror{
@@ -1149,7 +1148,6 @@ func Test_server_Update(t *testing.T) {
 				},
 			}
 		}(),
-
 		func() test {
 			ctx, cancel := context.WithCancel(context.Background())
 			eg, egctx := errgroup.New(ctx)
@@ -2207,7 +2205,7 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 				},
 			}
 			return test{
-				name: "Success: when the status codes are (Internal, Internal)",
+				name: "Fail: when the status codes are (Internal, Internal)",
 				args: args{
 					ctx: egctx,
 					req: defaultRemoveByTimestampReq,
@@ -2260,7 +2258,7 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 				},
 			}
 			return test{
-				name: "Success: when the status codes are (NotFound, NotFound)",
+				name: "Fail: when the status codes are (NotFound, NotFound)",
 				args: args{
 					ctx: egctx,
 					req: defaultRemoveByTimestampReq,
