@@ -976,6 +976,9 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (loc *
 		return loc, nil
 	}
 
+	// If this condition is matched, it means the request from user.
+	// So this component sends requests to other Mirror gateways and the Vald gateway (LB gateway) of its own cluster.
+
 	var mu sync.Mutex
 	var result sync.Map[string, *errorState] // map[target host: error state]
 	loc = &payload.Object_Location{
@@ -1470,6 +1473,9 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (loc *
 		log.Debugf("Update API succeeded to %#v", loc)
 		return loc, nil
 	}
+
+	// If this condition is matched, it means the request from user.
+	// So this component sends requests to other Mirror gateways and the Vald gateway (LB gateway) of its own cluster.
 
 	var mu sync.Mutex
 	var result sync.Map[string, *errorState] // map[target host: error state]
@@ -1997,6 +2003,9 @@ func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *
 		return loc, nil
 	}
 
+	// If this condition is matched, it means the request from user.
+	// So this component sends requests to other Mirror gateways and the Vald gateway (LB gateway) of its own cluster.
+
 	var mu sync.Mutex
 	var result sync.Map[string, *errorState] // map[target host: error state]
 	loc = &payload.Object_Location{
@@ -2354,6 +2363,9 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (loc *
 		return loc, nil
 	}
 
+	// If this condition is matched, it means the request from user.
+	// So this component sends requests to other Mirror gateways and the Vald gateway (LB gateway) of its own cluster.
+
 	var mu sync.Mutex
 	var result sync.Map[string, *errorState] // map[target host: error state]
 	loc = &payload.Object_Location{
@@ -2706,6 +2718,9 @@ func (s *server) RemoveByTimestamp(ctx context.Context, req *payload.Remove_Time
 		log.Debugf("RemoveByTimestamp API remove succeeded to %#v", locs)
 		return locs, nil
 	}
+
+	// If this condition is matched, it means the request from user.
+	// So this component sends requests to other Mirror gateways and the Vald gateway (LB gateway) of its own cluster.
 
 	var mu sync.Mutex
 	var result sync.Map[string, *errorState] // map[target host: error state]
