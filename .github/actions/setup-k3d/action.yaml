@@ -58,7 +58,7 @@ runs:
       run: |
         TAG=`curl https://hub.docker.com/v2/repositories/rancher/k3s/tags | jq -r '.results[].name' | grep -E '.*-k3s1$' | sort -V | tail -n 1`
         TAG=${TAG:-latest}
-        echo "tag=${TAG:-}" >> $GITHUB_OUTPUT
+        echo "tag=${TAG}" >> $GITHUB_OUTPUT
 
     - name: Install k3d
       shell: bash
