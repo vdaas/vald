@@ -24,9 +24,10 @@ update/libs: \
 	update/helm-docs \
 	update/helm-operator \
 	update/jaeger-operator \
+	update/k3s \
 	update/kind \
-	update/kubectl \
 	update/kube-linter \
+	update/kubectl \
 	update/ngt \
 	update/prometheus-stack \
 	update/protobuf \
@@ -76,6 +77,11 @@ go/example/deps:
 ## update chaos-mesh version
 update/chaos-mesh:
 	curl --silent https://api.github.com/repos/chaos-mesh/chaos-mesh/releases/latest | grep -Po '"tag_name": "\K.*?(?=")' | sed 's/v//g' > $(ROOTDIR)/versions/CHAOS_MESH_VERSION
+
+.PHONY: update/k3s
+## update k3s version
+update/k3s:
+	curl --silent https://hub.docker.com/v2/repositories/rancher/k3s/tags | jq -r '.results[].name' | grep -E '.*-k3s1$$' | sort -V | tail -n 1 > $(ROOTDIR)/versions/K3S_VERSION
 
 .PHONY: update/go
 ## update go version

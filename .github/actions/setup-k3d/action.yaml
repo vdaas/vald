@@ -21,6 +21,10 @@ inputs:
     description: "k3d version"
     required: false
     default: "latest"
+  k3s_version:
+    description: "The k3s to use. The default version is `versions/K3S_VERSION`"
+    required: false
+    default: ""
   name:
     description: "Cluster name"
     required: false
@@ -52,13 +56,15 @@ runs:
       env:
         K3D_VERSION: ${{ inputs.version }}
 
-    - name: Detect k3s latest version
+    - name: Detect k3s version
       id: k3s_version
       shell: bash
       run: |
-        TAG=`curl https://hub.docker.com/v2/repositories/rancher/k3s/tags | jq -r '.results[].name' | grep -E '.*-k3s1$' | sort -V | tail -n 1`
-        TAG=${TAG:-latest}
-        echo "tag=${TAG}" >> $GITHUB_OUTPUT
+        K3S_VERSION=${K3S_VERSION:-`cat versions/K3S_VERSION`}
+
+        echo "tag=${K3S_VERSION=$}" >> $GITHUB_OUTPUT
+      env:
+        K3S_VERSION: ${{ inputs.k3s_version }}
 
     - name: Install k3d
       shell: bash
