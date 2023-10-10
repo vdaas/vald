@@ -199,7 +199,7 @@ func main() {
 		if _, err := rclient.Remove(ctx, rreq); err != nil {
 			glg.Errorf("Failed to remove, ID: %v", ds.id)
 		} else {
-			glg.Info("Remove ID %v successed", ds.id)
+			glg.Infof("Remove ID %v successed", ds.id)
 		}
 	}
 }
