@@ -81,9 +81,6 @@ runs:
       with:
         agents: 3
         ingress_port: ${{ inputs.ingress_port }}
-        # Even if the latest is specified, it will not be the latest version.
-        # Therefore, a fixed version is specified.
-        options: "--image rancher/k3s:v1.28.2-k3s1"
     - name: Check Kubernetes cluster
       shell: bash
       run: |
