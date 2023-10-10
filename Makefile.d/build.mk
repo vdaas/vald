@@ -209,7 +209,7 @@ cmd/manager/index/index: \
 cmd/index/job/correction/index-correction: \
 	$(GO_SOURCES_INTERNAL) \
 	$(PBGOS) \
-	$(shell find $(ROOTDIR)/cmd/index/job/correction/correction -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go') \
+	$(shell find $(ROOTDIR)/cmd/index/job/correction -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go') \
 	$(shell find $(ROOTDIR)/pkg/index/job/correction -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
 	$(eval CGO_ENABLED = 0)
 	CGO_ENABLED=$(CGO_ENABLED) \
