@@ -74,6 +74,7 @@ runs:
         if [ "${INGRESS_PORT}" != 0 ]; then
           OPTIONS="${OPTIONS} -p ${INGRESS_PORT}:80@loadbalancer"
         fi
+        OPTIONS="${OPTIONS} --image rancher/k3s:latest"
         echo "options=${OPTIONS}" >> $GITHUB_OUTPUT
       env:
         AGENTS: ${{ inputs.agents }}
