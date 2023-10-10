@@ -2835,7 +2835,11 @@ func (s *server) RemoveByTimestamp(ctx context.Context, req *payload.Remove_Time
 	}
 }
 
-func (s *server) doRemoveByTimestamp(ctx context.Context, req *payload.Remove_TimestampRequest, f func(ctx context.Context) (*payload.Object_Locations, error)) (locs *payload.Object_Locations, err error) {
+func (s *server) doRemoveByTimestamp(
+	ctx context.Context,
+	req *payload.Remove_TimestampRequest,
+	f func(ctx context.Context) (*payload.Object_Locations, error),
+) (locs *payload.Object_Locations, err error) {
 	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "doRemoveByTimestamp"), apiName+"/doRemoveByTimestamp")
 	defer func() {
 		if span != nil {
