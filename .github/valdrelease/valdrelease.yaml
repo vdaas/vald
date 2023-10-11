@@ -79,3 +79,4 @@ spec:
       corrector:
         enabled: true
         suspend: true
+        schedule: "1 2 3 4 5"
