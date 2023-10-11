@@ -76,3 +76,6 @@ spec:
         auto_index_duration_limit: 2m
         auto_index_check_duration: 30s
         auto_index_length: 1000
+      corrector:
+        enabled: true
+        suspend: true
