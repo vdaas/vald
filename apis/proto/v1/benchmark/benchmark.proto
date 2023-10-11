@@ -2,7 +2,7 @@
 // Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -20,13 +20,13 @@ package benchmark.v1;
 
 option go_package = "github.com/vdaas/vald/apis/grpc/v1/benchmark";
 option java_multiple_files = true;
-option java_package = "org.vdaas.vald.api.v1.benchmark";
 option java_outer_classname = "Benchmark";
+option java_package = "org.vdaas.vald.api.v1.benchmark";
 
 service Controller {
-    // TODO define API spec here
+  // TODO define API spec here
 }
 
 service Job {
-    // TODO define API spec here
+  // TODO define API spec here
 }
