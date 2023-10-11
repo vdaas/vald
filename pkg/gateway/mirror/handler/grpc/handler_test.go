@@ -16,7 +16,6 @@ package grpc
 import (
 	"context"
 	"reflect"
-	"sync/atomic"
 	"testing"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
@@ -25,7 +24,6 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/net/grpc/status"
-	"github.com/vdaas/vald/internal/sync"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/internal/test/data/vector"
 	"github.com/vdaas/vald/internal/test/goleak"
@@ -66,7 +64,11 @@ func Test_server_Insert(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotCe *payload.Object_Location, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+			gotSt, gotOk := status.FromError(err)
+			wantSt, wantOk := status.FromError(w.err)
+			if gotOk != wantOk || gotSt.Code() != wantSt.Code() {
+				return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+			}
 		}
 		if !reflect.DeepEqual(gotCe, w.wantCe) {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotCe, w.wantCe)
@@ -83,24 +85,23 @@ func Test_server_Insert(t *testing.T) {
 				Uuid: uuid,
 				Ips:  []string{"127.0.0.1"},
 			}
-			cmap := map[string]vald.ClientWithMirror{
-				"vald-mirror-01": &mockClient{
-					InsertFunc: func(_ context.Context, _ *payload.Insert_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
-						return loc, nil
-					},
-				},
-				"vald-lb-gateway-01": &mockClient{
-					InsertFunc: func(_ context.Context, _ *payload.Insert_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
-						return loc, nil
-					},
-				},
+			targets := []string{
+				"vald-01", "vald-02",
 			}
-			wantLoc := &payload.Object_Location{
-				Uuid: uuid,
-				Ips:  []string{"127.0.0.1", "127.0.0.1"},
+			cmap := map[string]vald.ClientWithMirror{
+				targets[0]: &mockClient{
+					InsertFunc: func(_ context.Context, _ *payload.Insert_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
+						return loc, nil
+					},
+				},
+				targets[1]: &mockClient{
+					InsertFunc: func(_ context.Context, _ *payload.Insert_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
+						return loc, nil
+					},
+				},
 			}
 			return test{
-				name: "success insert with new ID",
+				name: "Success: insert with new ID",
 				args: args{
 					ctx: egctx,
 					req: &payload.Insert_Request{
@@ -118,15 +119,18 @@ func Test_server_Insert(t *testing.T) {
 							return ""
 						},
 						BroadCastFunc: func(ctx context.Context, f func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error) error {
-							for tgt, c := range cmap {
-								f(ctx, tgt, c)
+							for _, tgt := range targets {
+								f(ctx, tgt, cmap[tgt])
 							}
 							return nil
 						},
 					},
 				},
 				want: want{
-					wantCe: wantLoc,
+					wantCe: &payload.Object_Location{
+						Uuid: uuid,
+						Ips:  []string{"127.0.0.1", "127.0.0.1"},
+					},
 				},
 				afterFunc: func(t *testing.T, args args) {
 					t.Helper()
@@ -143,23 +147,29 @@ func Test_server_Insert(t *testing.T) {
 				Uuid: uuid,
 				Ips:  []string{"127.0.0.1"},
 			}
+			targets := []string{
+				"vald-01", "vald-02",
+			}
 			cmap := map[string]vald.ClientWithMirror{
-				"vald-mirror-01": &mockClient{
+				targets[0]: &mockClient{
 					InsertFunc: func(_ context.Context, _ *payload.Insert_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
-						return loc, nil
-					},
-					RemoveFunc: func(_ context.Context, _ *payload.Remove_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
-						return loc, nil
+						return &payload.Object_Location{
+							Uuid: uuid,
+							Ips:  []string{"127.0.0.1"},
+						}, nil
 					},
 				},
-				"vald-lb-gateway-01": &mockClient{
+				targets[1]: &mockClient{
 					InsertFunc: func(_ context.Context, _ *payload.Insert_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
-						return nil, status.Error(codes.Internal, errors.ErrCircuitBreakerHalfOpenFlowLimitation.Error())
+						return nil, status.Error(codes.AlreadyExists, errors.ErrMetaDataAlreadyExists(uuid).Error())
+					},
+					UpdateFunc: func(_ context.Context, _ *payload.Update_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
+						return loc, nil
 					},
 				},
 			}
 			return test{
-				name: "fail insert with new ID but remove rollback success",
+				name: "Success: when the last status codes are (OK, OK) after updating the target that returned AlreadyExists",
 				args: args{
 					ctx: egctx,
 					req: &payload.Insert_Request{
@@ -176,18 +186,210 @@ func Test_server_Insert(t *testing.T) {
 						FromForwardedContextFunc: func(_ context.Context) string {
 							return ""
 						},
-						BroadCastFunc: func(ctx context.Context, f func(_ context.Context, _ string, _ vald.ClientWithMirror, _ ...grpc.CallOption) error) error {
-							for tgt, c := range cmap {
-								f(ctx, tgt, c)
+						BroadCastFunc: func(ctx context.Context, f func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error) error {
+							for _, tgt := range targets {
+								f(ctx, tgt, cmap[tgt])
 							}
 							return nil
 						},
 						DoMultiFunc: func(ctx context.Context, targets []string, f func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error) error {
-							if len(targets) != 1 {
-								return errors.New("invalid target")
+							for _, target := range targets {
+								if c, ok := cmap[target]; !ok {
+									return errors.ErrTargetNotFound
+								} else {
+									f(ctx, target, c)
+								}
 							}
-							if c, ok := cmap[targets[0]]; ok {
-								f(ctx, targets[0], c)
+							return nil
+						},
+					},
+				},
+				want: want{
+					wantCe: &payload.Object_Location{
+						Uuid: uuid,
+						Ips:  []string{"127.0.0.1", "127.0.0.1"},
+					},
+				},
+				afterFunc: func(t *testing.T, args args) {
+					t.Helper()
+					cancel()
+				},
+			}
+		}(),
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			eg, egctx := errgroup.New(ctx)
+
+			uuid := "test"
+			targets := []string{
+				"vald-01", "vald-02",
+			}
+			cmap := map[string]vald.ClientWithMirror{
+				targets[0]: &mockClient{
+					InsertFunc: func(_ context.Context, _ *payload.Insert_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
+						return &payload.Object_Location{
+							Uuid: uuid,
+							Ips:  []string{"127.0.0.1"},
+						}, nil
+					},
+				},
+				targets[1]: &mockClient{
+					InsertFunc: func(_ context.Context, _ *payload.Insert_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
+						return nil, status.Error(codes.AlreadyExists, errors.ErrMetaDataAlreadyExists(uuid).Error())
+					},
+					UpdateFunc: func(_ context.Context, _ *payload.Update_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
+						return nil, status.Error(codes.AlreadyExists, errors.ErrMetaDataAlreadyExists(uuid).Error())
+					},
+				},
+			}
+			return test{
+				name: "Success: when the last status codes are (OK, AlreadyExists) after updating the target that returned AlreadyExists",
+				args: args{
+					ctx: egctx,
+					req: &payload.Insert_Request{
+						Vector: &payload.Object_Vector{
+							Id:     uuid,
+							Vector: vector.GaussianDistributedFloat32VectorGenerator(1, dimension)[0],
+						},
+						Config: defaultInsertConfig,
+					},
+				},
+				fields: fields{
+					eg: eg,
+					gateway: &mockGateway{
+						FromForwardedContextFunc: func(_ context.Context) string {
+							return ""
+						},
+						BroadCastFunc: func(ctx context.Context, f func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error) error {
+							for _, tgt := range targets {
+								f(ctx, tgt, cmap[tgt])
+							}
+							return nil
+						},
+						DoMultiFunc: func(ctx context.Context, targets []string, f func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error) error {
+							for _, target := range targets {
+								if c, ok := cmap[target]; !ok {
+									return errors.New("target not found")
+								} else {
+									f(ctx, target, c)
+								}
+							}
+							return nil
+						},
+					},
+				},
+				want: want{
+					wantCe: &payload.Object_Location{
+						Uuid: uuid,
+						Ips:  []string{"127.0.0.1"},
+					},
+				},
+				afterFunc: func(t *testing.T, args args) {
+					t.Helper()
+					cancel()
+				},
+			}
+		}(),
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			eg, egctx := errgroup.New(ctx)
+
+			uuid := "test"
+			targets := []string{
+				"vald-01", "vald-02",
+			}
+			cmap := map[string]vald.ClientWithMirror{
+				targets[0]: &mockClient{
+					InsertFunc: func(_ context.Context, _ *payload.Insert_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
+						return nil, status.Error(codes.AlreadyExists, errors.ErrMetaDataAlreadyExists(uuid).Error())
+					},
+				},
+				targets[1]: &mockClient{
+					InsertFunc: func(_ context.Context, _ *payload.Insert_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
+						return nil, status.Error(codes.AlreadyExists, errors.ErrMetaDataAlreadyExists(uuid).Error())
+					},
+				},
+			}
+			return test{
+				name: "Fail: when the status codes are (AlreadyExists, AlreadyExists)",
+				args: args{
+					ctx: egctx,
+					req: &payload.Insert_Request{
+						Vector: &payload.Object_Vector{
+							Id:     uuid,
+							Vector: vector.GaussianDistributedFloat32VectorGenerator(1, dimension)[0],
+						},
+						Config: defaultInsertConfig,
+					},
+				},
+				fields: fields{
+					eg: eg,
+					gateway: &mockGateway{
+						FromForwardedContextFunc: func(_ context.Context) string {
+							return ""
+						},
+						BroadCastFunc: func(ctx context.Context, f func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error) error {
+							for _, tgt := range targets {
+								f(ctx, tgt, cmap[tgt])
+							}
+							return nil
+						},
+					},
+				},
+				want: want{
+					err: status.Error(codes.AlreadyExists, vald.InsertRPCName+" API target same vector already exists"),
+				},
+				afterFunc: func(t *testing.T, args args) {
+					t.Helper()
+					cancel()
+				},
+			}
+		}(),
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			eg, egctx := errgroup.New(ctx)
+
+			uuid := "test"
+			loc := &payload.Object_Location{
+				Uuid: uuid,
+				Ips:  []string{"127.0.0.1"},
+			}
+			targets := []string{
+				"vald-01", "vald-02",
+			}
+			cmap := map[string]vald.ClientWithMirror{
+				targets[0]: &mockClient{
+					InsertFunc: func(_ context.Context, _ *payload.Insert_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
+						return loc, nil
+					},
+				},
+				targets[1]: &mockClient{
+					InsertFunc: func(_ context.Context, _ *payload.Insert_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
+						return nil, status.Error(codes.Internal, errors.ErrCircuitBreakerHalfOpenFlowLimitation.Error())
+					},
+				},
+			}
+			return test{
+				name: "Fail: when the status codes are (OK, Internal)",
+				args: args{
+					ctx: egctx,
+					req: &payload.Insert_Request{
+						Vector: &payload.Object_Vector{
+							Id:     uuid,
+							Vector: vector.GaussianDistributedFloat32VectorGenerator(1, dimension)[0],
+						},
+						Config: defaultInsertConfig,
+					},
+				},
+				fields: fields{
+					eg: eg,
+					gateway: &mockGateway{
+						FromForwardedContextFunc: func(_ context.Context) string {
+							return ""
+						},
+						BroadCastFunc: func(ctx context.Context, f func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error) error {
+							for _, tgt := range targets {
+								f(ctx, tgt, cmap[tgt])
 							}
 							return nil
 						},
@@ -207,27 +409,23 @@ func Test_server_Insert(t *testing.T) {
 			eg, egctx := errgroup.New(ctx)
 
 			uuid := "test"
-			loc := &payload.Object_Location{
-				Uuid: uuid,
-				Ips:  []string{"127.0.0.1"},
+			targets := []string{
+				"vald-01", "vald-02",
 			}
 			cmap := map[string]vald.ClientWithMirror{
-				"vald-mirror-01": &mockClient{
+				targets[0]: &mockClient{
 					InsertFunc: func(_ context.Context, _ *payload.Insert_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
-						return loc, nil
-					},
-					RemoveFunc: func(_ context.Context, _ *payload.Remove_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
 						return nil, status.Error(codes.Internal, errors.ErrCircuitBreakerHalfOpenFlowLimitation.Error())
 					},
 				},
-				"vald-lb-gateway-01": &mockClient{
+				targets[1]: &mockClient{
 					InsertFunc: func(_ context.Context, _ *payload.Insert_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
 						return nil, status.Error(codes.Internal, errors.ErrCircuitBreakerOpenState.Error())
 					},
 				},
 			}
 			return test{
-				name: "fail insert with new ID and fail remove rollback",
+				name: "Fail: when the status codes are (Internal, Internal)",
 				args: args{
 					ctx: egctx,
 					req: &payload.Insert_Request{
@@ -244,18 +442,83 @@ func Test_server_Insert(t *testing.T) {
 						FromForwardedContextFunc: func(_ context.Context) string {
 							return ""
 						},
-						BroadCastFunc: func(ctx context.Context, f func(_ context.Context, _ string, _ vald.ClientWithMirror, _ ...grpc.CallOption) error) error {
-							for tgt, c := range cmap {
-								f(ctx, tgt, c)
+						BroadCastFunc: func(ctx context.Context, f func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error) error {
+							for _, tgt := range targets {
+								f(ctx, tgt, cmap[tgt])
+							}
+							return nil
+						},
+					},
+				},
+				want: want{
+					err: status.Error(codes.Internal, errors.Join(
+						status.Error(codes.Internal, errors.ErrCircuitBreakerOpenState.Error()),
+						status.Error(codes.Internal, errors.ErrCircuitBreakerHalfOpenFlowLimitation.Error()),
+					).Error()),
+				},
+				afterFunc: func(t *testing.T, args args) {
+					t.Helper()
+					cancel()
+				},
+			}
+		}(),
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			eg, egctx := errgroup.New(ctx)
+
+			uuid := "test"
+			targets := []string{
+				"vald-01", "vald-02",
+			}
+			cmap := map[string]vald.ClientWithMirror{
+				targets[0]: &mockClient{
+					InsertFunc: func(_ context.Context, _ *payload.Insert_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
+						return &payload.Object_Location{
+							Uuid: uuid,
+							Ips:  []string{"127.0.0.1"},
+						}, nil
+					},
+				},
+				targets[1]: &mockClient{
+					InsertFunc: func(_ context.Context, _ *payload.Insert_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
+						return nil, status.Error(codes.AlreadyExists, errors.ErrMetaDataAlreadyExists(uuid).Error())
+					},
+					UpdateFunc: func(_ context.Context, _ *payload.Update_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
+						return nil, status.Error(codes.Internal, errors.ErrCircuitBreakerHalfOpenFlowLimitation.Error())
+					},
+				},
+			}
+			return test{
+				name: "Fail: when the last status codes are (OK, Internal) after updating the target that returned AlreadyExists",
+				args: args{
+					ctx: egctx,
+					req: &payload.Insert_Request{
+						Vector: &payload.Object_Vector{
+							Id:     uuid,
+							Vector: vector.GaussianDistributedFloat32VectorGenerator(1, dimension)[0],
+						},
+						Config: defaultInsertConfig,
+					},
+				},
+				fields: fields{
+					eg: eg,
+					gateway: &mockGateway{
+						FromForwardedContextFunc: func(_ context.Context) string {
+							return ""
+						},
+						BroadCastFunc: func(ctx context.Context, f func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error) error {
+							for _, tgt := range targets {
+								f(ctx, tgt, cmap[tgt])
 							}
 							return nil
 						},
 						DoMultiFunc: func(ctx context.Context, targets []string, f func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error) error {
-							if len(targets) != 1 {
-								return errors.New("invalid target")
-							}
-							if c, ok := cmap[targets[0]]; ok {
-								f(ctx, targets[0], c)
+							for _, target := range targets {
+								if c, ok := cmap[target]; !ok {
+									return errors.New("target not found")
+								} else {
+									f(ctx, target, c)
+								}
 							}
 							return nil
 						},
@@ -340,7 +603,11 @@ func Test_server_Update(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotLoc *payload.Object_Location, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+			gotSt, gotOk := status.FromError(err)
+			wantSt, wantOk := status.FromError(w.err)
+			if gotOk != wantOk || gotSt.Code() != wantSt.Code() {
+				return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+			}
 		}
 		if !reflect.DeepEqual(gotLoc, w.wantLoc) {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotLoc, w.wantLoc)
@@ -357,30 +624,23 @@ func Test_server_Update(t *testing.T) {
 				Uuid: uuid,
 				Ips:  []string{"127.0.0.1"},
 			}
-			cmap := map[string]vald.ClientWithMirror{
-				"vald-mirror-01": &mockClient{
-					GetObjectFunc: func(_ context.Context, _ *payload.Object_VectorRequest, _ ...grpc.CallOption) (*payload.Object_Vector, error) {
-						return nil, status.Error(codes.NotFound, errors.ErrObjectIDNotFound(uuid).Error())
-					},
-					UpdateFunc: func(_ context.Context, _ *payload.Update_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
-						return loc, nil
-					},
-				},
-				"vald-lb-gateway-01": &mockClient{
-					GetObjectFunc: func(_ context.Context, _ *payload.Object_VectorRequest, _ ...grpc.CallOption) (*payload.Object_Vector, error) {
-						return nil, status.Error(codes.NotFound, errors.ErrObjectIDNotFound(uuid).Error())
-					},
-					UpdateFunc: func(_ context.Context, _ *payload.Update_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
-						return loc, nil
-					},
-				},
+			targets := []string{
+				"vald-01", "vald-02",
 			}
-			wantLoc := &payload.Object_Location{
-				Uuid: uuid,
-				Ips:  []string{"127.0.0.1", "127.0.0.1"},
+			cmap := map[string]vald.ClientWithMirror{
+				targets[0]: &mockClient{
+					UpdateFunc: func(_ context.Context, _ *payload.Update_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
+						return loc, nil
+					},
+				},
+				targets[1]: &mockClient{
+					UpdateFunc: func(_ context.Context, _ *payload.Update_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
+						return loc, nil
+					},
+				},
 			}
 			return test{
-				name: "success update with new ID",
+				name: "Success: update with new ID",
 				args: args{
 					ctx: egctx,
 					req: &payload.Update_Request{
@@ -398,15 +658,18 @@ func Test_server_Update(t *testing.T) {
 							return ""
 						},
 						BroadCastFunc: func(ctx context.Context, f func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error) error {
-							for tgt, c := range cmap {
-								f(ctx, tgt, c)
+							for _, tgt := range targets {
+								f(ctx, tgt, cmap[tgt])
 							}
 							return nil
 						},
 					},
 				},
 				want: want{
-					wantLoc: wantLoc,
+					wantLoc: &payload.Object_Location{
+						Uuid: uuid,
+						Ips:  []string{"127.0.0.1", "127.0.0.1"},
+					},
 				},
 				afterFunc: func(t *testing.T, args args) {
 					t.Helper()
@@ -423,29 +686,23 @@ func Test_server_Update(t *testing.T) {
 				Uuid: uuid,
 				Ips:  []string{"127.0.0.1"},
 			}
+			targets := []string{
+				"vald-01", "vald-02",
+			}
 			cmap := map[string]vald.ClientWithMirror{
-				"vald-mirror-01": &mockClient{
-					GetObjectFunc: func(_ context.Context, _ *payload.Object_VectorRequest, _ ...grpc.CallOption) (*payload.Object_Vector, error) {
-						return nil, status.Error(codes.NotFound, errors.ErrObjectIDNotFound(uuid).Error())
-					},
+				targets[0]: &mockClient{
 					UpdateFunc: func(_ context.Context, _ *payload.Update_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
-						return loc, nil
-					},
-					RemoveFunc: func(_ context.Context, _ *payload.Remove_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
 						return loc, nil
 					},
 				},
-				"vald-lb-gateway-01": &mockClient{
-					GetObjectFunc: func(_ context.Context, _ *payload.Object_VectorRequest, _ ...grpc.CallOption) (*payload.Object_Vector, error) {
-						return nil, status.Error(codes.NotFound, errors.ErrObjectIDNotFound(uuid).Error())
-					},
+				targets[1]: &mockClient{
 					UpdateFunc: func(_ context.Context, _ *payload.Update_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
-						return nil, status.Error(codes.Internal, errors.ErrCircuitBreakerHalfOpenFlowLimitation.Error())
+						return nil, status.Error(codes.AlreadyExists, errors.ErrMetaDataAlreadyExists(uuid).Error())
 					},
 				},
 			}
 			return test{
-				name: "fail update with new ID but remove rollback success",
+				name: "Success: when the status codes are (AlreadyExists, OK)",
 				args: args{
 					ctx: egctx,
 					req: &payload.Update_Request{
@@ -462,18 +719,290 @@ func Test_server_Update(t *testing.T) {
 						FromForwardedContextFunc: func(_ context.Context) string {
 							return ""
 						},
-						BroadCastFunc: func(ctx context.Context, f func(_ context.Context, _ string, _ vald.ClientWithMirror, _ ...grpc.CallOption) error) error {
-							for tgt, c := range cmap {
-								f(ctx, tgt, c)
+						BroadCastFunc: func(ctx context.Context, f func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error) error {
+							for _, tgt := range targets {
+								f(ctx, tgt, cmap[tgt])
+							}
+							return nil
+						},
+					},
+				},
+				want: want{
+					wantLoc: &payload.Object_Location{
+						Uuid: uuid,
+						Ips:  []string{"127.0.0.1"},
+					},
+				},
+				afterFunc: func(t *testing.T, args args) {
+					t.Helper()
+					cancel()
+				},
+			}
+		}(),
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			eg, egctx := errgroup.New(ctx)
+
+			uuid := "test"
+			loc := &payload.Object_Location{
+				Uuid: uuid,
+				Ips:  []string{"127.0.0.1"},
+			}
+			targets := []string{
+				"vald-01", "vald-02", "vald-03",
+			}
+			cmap := map[string]vald.ClientWithMirror{
+				targets[0]: &mockClient{
+					UpdateFunc: func(_ context.Context, _ *payload.Update_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
+						return loc, nil
+					},
+				},
+				targets[1]: &mockClient{
+					UpdateFunc: func(_ context.Context, _ *payload.Update_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
+						return nil, status.Error(codes.NotFound, errors.ErrObjectIDNotFound(uuid).Error())
+					},
+					InsertFunc: func(_ context.Context, _ *payload.Insert_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
+						return loc, nil
+					},
+				},
+				targets[2]: &mockClient{
+					UpdateFunc: func(_ context.Context, _ *payload.Update_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
+						return loc, nil
+					},
+				},
+			}
+			return test{
+				name: "Success: when the last status codes are (OK, OK, OK) after inserting the target that returned NotFound",
+				args: args{
+					ctx: egctx,
+					req: &payload.Update_Request{
+						Vector: &payload.Object_Vector{
+							Id:     uuid,
+							Vector: vector.GaussianDistributedFloat32VectorGenerator(1, dimension)[0],
+						},
+						Config: defaultUpdateConfig,
+					},
+				},
+				fields: fields{
+					eg: eg,
+					gateway: &mockGateway{
+						FromForwardedContextFunc: func(_ context.Context) string {
+							return ""
+						},
+						BroadCastFunc: func(ctx context.Context, f func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error) error {
+							for _, tgt := range targets {
+								f(ctx, tgt, cmap[tgt])
 							}
 							return nil
 						},
 						DoMultiFunc: func(ctx context.Context, targets []string, f func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error) error {
-							if len(targets) != 1 {
-								return errors.New("invalid target")
+							for _, target := range targets {
+								if c, ok := cmap[target]; !ok {
+									return errors.ErrTargetNotFound
+								} else {
+									f(ctx, target, c)
+								}
 							}
-							if c, ok := cmap[targets[0]]; ok {
-								f(ctx, targets[0], c)
+							return nil
+						},
+					},
+				},
+				want: want{
+					wantLoc: &payload.Object_Location{
+						Uuid: uuid,
+						Ips: []string{
+							"127.0.0.1", "127.0.0.1", "127.0.0.1",
+						},
+					},
+				},
+				afterFunc: func(t *testing.T, args args) {
+					t.Helper()
+					cancel()
+				},
+			}
+		}(),
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			eg, egctx := errgroup.New(ctx)
+
+			uuid := "test"
+			loc := &payload.Object_Location{
+				Uuid: uuid,
+				Ips:  []string{"127.0.0.1"},
+			}
+			targets := []string{
+				"vald-01", "vald-02", "vald-03",
+			}
+			cmap := map[string]vald.ClientWithMirror{
+				targets[0]: &mockClient{
+					UpdateFunc: func(_ context.Context, _ *payload.Update_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
+						return loc, nil
+					},
+				},
+				targets[1]: &mockClient{
+					UpdateFunc: func(_ context.Context, _ *payload.Update_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
+						return nil, status.Error(codes.NotFound, errors.ErrObjectIDNotFound(uuid).Error())
+					},
+					InsertFunc: func(_ context.Context, _ *payload.Insert_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
+						return loc, nil
+					},
+				},
+				targets[2]: &mockClient{
+					UpdateFunc: func(_ context.Context, _ *payload.Update_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
+						return nil, status.Error(codes.AlreadyExists, errors.ErrMetaDataAlreadyExists(uuid).Error())
+					},
+				},
+			}
+			return test{
+				name: "Success: when the last status codes are (OK, OK, AlreadyExists) after inserting the target that returned NotFound",
+				args: args{
+					ctx: egctx,
+					req: &payload.Update_Request{
+						Vector: &payload.Object_Vector{
+							Id:     uuid,
+							Vector: vector.GaussianDistributedFloat32VectorGenerator(1, dimension)[0],
+						},
+						Config: defaultUpdateConfig,
+					},
+				},
+				fields: fields{
+					eg: eg,
+					gateway: &mockGateway{
+						FromForwardedContextFunc: func(_ context.Context) string {
+							return ""
+						},
+						BroadCastFunc: func(ctx context.Context, f func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error) error {
+							for _, tgt := range targets {
+								f(ctx, tgt, cmap[tgt])
+							}
+							return nil
+						},
+						DoMultiFunc: func(ctx context.Context, targets []string, f func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error) error {
+							for _, target := range targets {
+								if c, ok := cmap[target]; !ok {
+									return errors.ErrTargetNotFound
+								} else {
+									f(ctx, target, c)
+								}
+							}
+							return nil
+						},
+					},
+				},
+				want: want{
+					wantLoc: &payload.Object_Location{
+						Uuid: uuid,
+						Ips: []string{
+							"127.0.0.1", "127.0.0.1",
+						},
+					},
+				},
+				afterFunc: func(t *testing.T, args args) {
+					t.Helper()
+					cancel()
+				},
+			}
+		}(),
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			eg, egctx := errgroup.New(ctx)
+
+			uuid := "test"
+			targets := []string{
+				"vald-01", "vald-02",
+			}
+			cmap := map[string]vald.ClientWithMirror{
+				targets[0]: &mockClient{
+					UpdateFunc: func(_ context.Context, _ *payload.Update_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
+						return nil, status.Error(codes.NotFound, errors.ErrObjectIDNotFound(uuid).Error())
+					},
+				},
+				targets[1]: &mockClient{
+					UpdateFunc: func(_ context.Context, _ *payload.Update_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
+						return nil, status.Error(codes.NotFound, errors.ErrObjectIDNotFound(uuid).Error())
+					},
+				},
+			}
+			return test{
+				name: "Fail: when the status codes are (NotFound, NotFound)",
+				args: args{
+					ctx: egctx,
+					req: &payload.Update_Request{
+						Vector: &payload.Object_Vector{
+							Id:     uuid,
+							Vector: vector.GaussianDistributedFloat32VectorGenerator(1, dimension)[0],
+						},
+						Config: defaultUpdateConfig,
+					},
+				},
+				fields: fields{
+					eg: eg,
+					gateway: &mockGateway{
+						FromForwardedContextFunc: func(_ context.Context) string {
+							return ""
+						},
+						BroadCastFunc: func(ctx context.Context, f func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error) error {
+							for _, tgt := range targets {
+								f(ctx, tgt, cmap[tgt])
+							}
+							return nil
+						},
+					},
+				},
+				want: want{
+					err: status.Error(codes.NotFound, vald.UpdateRPCName+" API id "+uuid+" not found"),
+				},
+				afterFunc: func(t *testing.T, args args) {
+					t.Helper()
+					cancel()
+				},
+			}
+		}(),
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			eg, egctx := errgroup.New(ctx)
+
+			uuid := "test"
+			loc := &payload.Object_Location{
+				Uuid: uuid,
+				Ips:  []string{"127.0.0.1"},
+			}
+			targets := []string{
+				"vald-01", "vald-02",
+			}
+			cmap := map[string]vald.ClientWithMirror{
+				targets[0]: &mockClient{
+					UpdateFunc: func(_ context.Context, _ *payload.Update_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
+						return loc, nil
+					},
+				},
+				targets[1]: &mockClient{
+					UpdateFunc: func(_ context.Context, _ *payload.Update_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
+						return nil, status.Error(codes.Internal, errors.ErrCircuitBreakerHalfOpenFlowLimitation.Error())
+					},
+				},
+			}
+			return test{
+				name: "Fail: when the status codes are (Internal, OK)",
+				args: args{
+					ctx: egctx,
+					req: &payload.Update_Request{
+						Vector: &payload.Object_Vector{
+							Id:     uuid,
+							Vector: vector.GaussianDistributedFloat32VectorGenerator(1, dimension)[0],
+						},
+						Config: defaultUpdateConfig,
+					},
+				},
+				fields: fields{
+					eg: eg,
+					gateway: &mockGateway{
+						FromForwardedContextFunc: func(_ context.Context) string {
+							return ""
+						},
+						BroadCastFunc: func(ctx context.Context, f func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error) error {
+							for _, tgt := range targets {
+								f(ctx, tgt, cmap[tgt])
 							}
 							return nil
 						},
@@ -493,105 +1022,23 @@ func Test_server_Update(t *testing.T) {
 			eg, egctx := errgroup.New(ctx)
 
 			uuid := "test"
-			loc := &payload.Object_Location{
-				Uuid: uuid,
-				Ips:  []string{"127.0.0.1"},
-			}
-			ovec := &payload.Object_Vector{
-				Id:     uuid,
-				Vector: vector.GaussianDistributedFloat32VectorGenerator(1, dimension)[0],
+			targets := []string{
+				"vald-01", "vald-02",
 			}
 			cmap := map[string]vald.ClientWithMirror{
-				"vald-mirror-01": &mockClient{
-					GetObjectFunc: func(_ context.Context, _ *payload.Object_VectorRequest, _ ...grpc.CallOption) (*payload.Object_Vector, error) {
-						return ovec, nil
-					},
-					UpdateFunc: func(_ context.Context, _ *payload.Update_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
-						return loc, nil
-					},
-				},
-				"vald-lb-gateway-01": &mockClient{
-					GetObjectFunc: func(_ context.Context, _ *payload.Object_VectorRequest, _ ...grpc.CallOption) (*payload.Object_Vector, error) {
-						return nil, status.Error(codes.NotFound, errors.ErrObjectIDNotFound(uuid).Error())
-					},
+				targets[0]: &mockClient{
 					UpdateFunc: func(_ context.Context, _ *payload.Update_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
 						return nil, status.Error(codes.Internal, errors.ErrCircuitBreakerHalfOpenFlowLimitation.Error())
 					},
 				},
-			}
-			return test{
-				name: "fail update with new ID but update rollback success",
-				args: args{
-					ctx: egctx,
-					req: &payload.Update_Request{
-						Vector: ovec,
-						Config: defaultUpdateConfig,
-					},
-				},
-				fields: fields{
-					eg: eg,
-					gateway: &mockGateway{
-						FromForwardedContextFunc: func(_ context.Context) string {
-							return ""
-						},
-						BroadCastFunc: func(ctx context.Context, f func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error) error {
-							for tgt, c := range cmap {
-								f(ctx, tgt, c)
-							}
-							return nil
-						},
-						DoMultiFunc: func(ctx context.Context, targets []string, f func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error) error {
-							if len(targets) != 1 {
-								return errors.New("invalid target")
-							}
-							if c, ok := cmap[targets[0]]; ok {
-								f(ctx, targets[0], c)
-							}
-							return nil
-						},
-					},
-				},
-				want: want{
-					err: status.Error(codes.Internal, errors.ErrCircuitBreakerHalfOpenFlowLimitation.Error()),
-				},
-				afterFunc: func(t *testing.T, args args) {
-					t.Helper()
-					cancel()
-				},
-			}
-		}(),
-		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
-			eg, egctx := errgroup.New(ctx)
-
-			uuid := "test"
-			loc := &payload.Object_Location{
-				Uuid: uuid,
-				Ips:  []string{"127.0.0.1"},
-			}
-			cmap := map[string]vald.ClientWithMirror{
-				"vald-mirror-01": &mockClient{
-					GetObjectFunc: func(_ context.Context, _ *payload.Object_VectorRequest, _ ...grpc.CallOption) (*payload.Object_Vector, error) {
-						return nil, status.Error(codes.NotFound, errors.ErrObjectIDNotFound(uuid).Error())
-					},
+				targets[1]: &mockClient{
 					UpdateFunc: func(_ context.Context, _ *payload.Update_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
-						return loc, nil
-					},
-					RemoveFunc: func(_ context.Context, _ *payload.Remove_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
-						return nil, status.Error(codes.Internal, errors.ErrCircuitBreakerHalfOpenFlowLimitation.Error())
-					},
-				},
-				"vald-lb-gateway-01": &mockClient{
-					GetObjectFunc: func(ctx context.Context, in *payload.Object_VectorRequest, opts ...grpc.CallOption) (*payload.Object_Vector, error) {
-						return nil, status.Error(codes.NotFound, errors.ErrObjectIDNotFound(uuid).Error())
-					},
-					UpdateFunc: func(_ context.Context, _ *payload.Update_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
-						return nil, status.Error(codes.Internal, errors.ErrCircuitBreakerOpenState.Error())
+						return nil, status.Error(codes.AlreadyExists, errors.ErrMetaDataAlreadyExists(uuid).Error())
 					},
 				},
 			}
 			return test{
-				name: "fail update with new ID and fail remove rollback",
+				name: "Fail: when the status codes are (Internal, AlreadyExists)",
 				args: args{
 					ctx: egctx,
 					req: &payload.Update_Request{
@@ -608,25 +1055,92 @@ func Test_server_Update(t *testing.T) {
 						FromForwardedContextFunc: func(_ context.Context) string {
 							return ""
 						},
-						BroadCastFunc: func(ctx context.Context, f func(_ context.Context, _ string, _ vald.ClientWithMirror, _ ...grpc.CallOption) error) error {
-							for tgt, c := range cmap {
-								f(ctx, tgt, c)
-							}
-							return nil
-						},
-						DoMultiFunc: func(ctx context.Context, targets []string, f func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error) error {
-							if len(targets) != 1 {
-								return errors.New("invalid target")
-							}
-							if c, ok := cmap[targets[0]]; ok {
-								f(ctx, targets[0], c)
+						BroadCastFunc: func(ctx context.Context, f func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error) error {
+							for _, tgt := range targets {
+								f(ctx, tgt, cmap[tgt])
 							}
 							return nil
 						},
 					},
 				},
 				want: want{
-					err: status.Error(codes.Internal, errors.ErrCircuitBreakerHalfOpenFlowLimitation.Error()),
+					err: status.Error(codes.Internal, errors.Join(
+						status.Error(codes.Internal, errors.ErrCircuitBreakerHalfOpenFlowLimitation.Error()),
+						status.Error(codes.AlreadyExists, errors.ErrMetaDataAlreadyExists(uuid).Error()),
+					).Error()),
+				},
+				afterFunc: func(t *testing.T, args args) {
+					t.Helper()
+					cancel()
+				},
+			}
+		}(),
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			eg, egctx := errgroup.New(ctx)
+
+			uuid := "test"
+			targets := []string{
+				"vald-01", "vald-02", "vald-03",
+			}
+			cmap := map[string]vald.ClientWithMirror{
+				targets[0]: &mockClient{
+					UpdateFunc: func(_ context.Context, _ *payload.Update_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
+						return nil, status.Error(codes.AlreadyExists, errors.ErrMetaDataAlreadyExists(uuid).Error())
+					},
+				},
+				targets[1]: &mockClient{
+					UpdateFunc: func(_ context.Context, _ *payload.Update_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
+						return nil, status.Error(codes.NotFound, errors.ErrObjectIDNotFound(uuid).Error())
+					},
+					InsertFunc: func(_ context.Context, _ *payload.Insert_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
+						return nil, status.Error(codes.AlreadyExists, errors.ErrMetaDataAlreadyExists(uuid).Error())
+					},
+				},
+				targets[2]: &mockClient{
+					UpdateFunc: func(_ context.Context, _ *payload.Update_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
+						return nil, status.Error(codes.AlreadyExists, errors.ErrMetaDataAlreadyExists(uuid).Error())
+					},
+				},
+			}
+			return test{
+				name: "Fail: when the last status codes are (AlreadyExists, AlreadyExists, AlreadyExists) after inserting the target that returned NotFound",
+				args: args{
+					ctx: egctx,
+					req: &payload.Update_Request{
+						Vector: &payload.Object_Vector{
+							Id:     uuid,
+							Vector: vector.GaussianDistributedFloat32VectorGenerator(1, dimension)[0],
+						},
+						Config: defaultUpdateConfig,
+					},
+				},
+				fields: fields{
+					eg: eg,
+					gateway: &mockGateway{
+						FromForwardedContextFunc: func(_ context.Context) string {
+							return ""
+						},
+						BroadCastFunc: func(ctx context.Context, f func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error) error {
+							for _, tgt := range targets {
+								f(ctx, tgt, cmap[tgt])
+							}
+							return nil
+						},
+						DoMultiFunc: func(ctx context.Context, targets []string, f func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error) error {
+							for _, target := range targets {
+								if c, ok := cmap[target]; !ok {
+									return errors.ErrTargetNotFound
+								} else {
+									f(ctx, target, c)
+								}
+							}
+							return nil
+						},
+					},
+				},
+				want: want{
+					err: status.Error(codes.AlreadyExists, vald.InsertRPCName+" for "+vald.UpdateRPCName+" API target same vector already exists"),
 				},
 				afterFunc: func(t *testing.T, args args) {
 					t.Helper()
@@ -643,38 +1157,38 @@ func Test_server_Update(t *testing.T) {
 				Uuid: uuid,
 				Ips:  []string{"127.0.0.1"},
 			}
-			ovec := &payload.Object_Vector{
-				Id:     uuid,
-				Vector: vector.GaussianDistributedFloat32VectorGenerator(1, dimension)[0],
+			targets := []string{
+				"vald-01", "vald-02", "vald-03",
 			}
-			var cnt uint32
 			cmap := map[string]vald.ClientWithMirror{
-				"vald-mirror-01": &mockClient{
-					GetObjectFunc: func(_ context.Context, _ *payload.Object_VectorRequest, _ ...grpc.CallOption) (*payload.Object_Vector, error) {
-						return ovec, nil
-					},
+				targets[0]: &mockClient{
 					UpdateFunc: func(_ context.Context, _ *payload.Update_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
-						if atomic.AddUint32(&cnt, 1) == 1 {
-							return loc, nil
-						}
+						return loc, nil
+					},
+				},
+				targets[1]: &mockClient{
+					UpdateFunc: func(_ context.Context, _ *payload.Update_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
+						return nil, status.Error(codes.NotFound, errors.ErrObjectIDNotFound(uuid).Error())
+					},
+					InsertFunc: func(_ context.Context, _ *payload.Insert_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
 						return nil, status.Error(codes.Internal, errors.ErrCircuitBreakerHalfOpenFlowLimitation.Error())
 					},
 				},
-				"vald-lb-gateway-01": &mockClient{
-					GetObjectFunc: func(_ context.Context, _ *payload.Object_VectorRequest, _ ...grpc.CallOption) (*payload.Object_Vector, error) {
-						return nil, status.Error(codes.NotFound, errors.ErrObjectIDNotFound(uuid).Error())
-					},
+				targets[2]: &mockClient{
 					UpdateFunc: func(_ context.Context, _ *payload.Update_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
-						return nil, status.Error(codes.Internal, errors.ErrCircuitBreakerOpenState.Error())
+						return loc, nil
 					},
 				},
 			}
 			return test{
-				name: "fail update with new ID and fail update rollback",
+				name: "Fail: when the last status codes are (OK, OK, Internal) after inserting the target that returned NotFound",
 				args: args{
 					ctx: egctx,
 					req: &payload.Update_Request{
-						Vector: ovec,
+						Vector: &payload.Object_Vector{
+							Id:     uuid,
+							Vector: vector.GaussianDistributedFloat32VectorGenerator(1, dimension)[0],
+						},
 						Config: defaultUpdateConfig,
 					},
 				},
@@ -685,17 +1199,18 @@ func Test_server_Update(t *testing.T) {
 							return ""
 						},
 						BroadCastFunc: func(ctx context.Context, f func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error) error {
-							for tgt, c := range cmap {
-								f(ctx, tgt, c)
+							for _, tgt := range targets {
+								f(ctx, tgt, cmap[tgt])
 							}
 							return nil
 						},
-						DoMultiFunc: func(ctx context.Context, targets []string, f func(ctx context.Context, target string, vc vald.ClientWithMirror, _ ...grpc.CallOption) error) error {
-							if len(targets) != 1 {
-								return errors.New("invalid target")
-							}
-							if c, ok := cmap[targets[0]]; ok {
-								f(ctx, targets[0], c)
+						DoMultiFunc: func(ctx context.Context, targets []string, f func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error) error {
+							for _, target := range targets {
+								if c, ok := cmap[target]; !ok {
+									return errors.New("target not found")
+								} else {
+									f(ctx, target, c)
+								}
 							}
 							return nil
 						},
@@ -780,7 +1295,11 @@ func Test_server_Upsert(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotLoc *payload.Object_Location, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+			gotSt, gotOk := status.FromError(err)
+			wantSt, wantOk := status.FromError(w.err)
+			if gotOk != wantOk || gotSt.Code() != wantSt.Code() {
+				return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+			}
 		}
 		if !reflect.DeepEqual(gotLoc, w.wantLoc) {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotLoc, w.wantLoc)
@@ -797,30 +1316,23 @@ func Test_server_Upsert(t *testing.T) {
 				Uuid: uuid,
 				Ips:  []string{"127.0.0.1"},
 			}
-			cmap := map[string]vald.ClientWithMirror{
-				"vald-mirror-01": &mockClient{
-					GetObjectFunc: func(_ context.Context, _ *payload.Object_VectorRequest, _ ...grpc.CallOption) (*payload.Object_Vector, error) {
-						return nil, status.Error(codes.NotFound, errors.ErrObjectIDNotFound(uuid).Error())
-					},
-					UpsertFunc: func(_ context.Context, _ *payload.Upsert_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
-						return loc, nil
-					},
-				},
-				"vald-lb-gateway-01": &mockClient{
-					GetObjectFunc: func(_ context.Context, _ *payload.Object_VectorRequest, _ ...grpc.CallOption) (*payload.Object_Vector, error) {
-						return nil, status.Error(codes.NotFound, errors.ErrObjectIDNotFound(uuid).Error())
-					},
-					UpsertFunc: func(_ context.Context, _ *payload.Upsert_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
-						return loc, nil
-					},
-				},
+			targets := []string{
+				"vald-01", "vald-02",
 			}
-			wantLoc := &payload.Object_Location{
-				Uuid: uuid,
-				Ips:  []string{"127.0.0.1", "127.0.0.1"},
+			cmap := map[string]vald.ClientWithMirror{
+				targets[0]: &mockClient{
+					UpsertFunc: func(_ context.Context, _ *payload.Upsert_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
+						return loc, nil
+					},
+				},
+				targets[1]: &mockClient{
+					UpsertFunc: func(_ context.Context, _ *payload.Upsert_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
+						return loc, nil
+					},
+				},
 			}
 			return test{
-				name: "success upsert with new ID",
+				name: "Success: upsert with new ID",
 				args: args{
 					ctx: egctx,
 					req: &payload.Upsert_Request{
@@ -838,15 +1350,18 @@ func Test_server_Upsert(t *testing.T) {
 							return ""
 						},
 						BroadCastFunc: func(ctx context.Context, f func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error) error {
-							for tgt, c := range cmap {
-								f(ctx, tgt, c)
+							for _, tgt := range targets {
+								f(ctx, tgt, cmap[tgt])
 							}
 							return nil
 						},
 					},
 				},
 				want: want{
-					wantLoc: wantLoc,
+					wantLoc: &payload.Object_Location{
+						Uuid: uuid,
+						Ips:  []string{"127.0.0.1", "127.0.0.1"},
+					},
 				},
 				afterFunc: func(t *testing.T, args args) {
 					t.Helper()
@@ -863,29 +1378,23 @@ func Test_server_Upsert(t *testing.T) {
 				Uuid: uuid,
 				Ips:  []string{"127.0.0.1"},
 			}
+			targets := []string{
+				"vald-01", "vald-02",
+			}
 			cmap := map[string]vald.ClientWithMirror{
-				"vald-mirror-01": &mockClient{
-					GetObjectFunc: func(_ context.Context, _ *payload.Object_VectorRequest, _ ...grpc.CallOption) (*payload.Object_Vector, error) {
-						return nil, status.Error(codes.NotFound, errors.ErrObjectIDNotFound(uuid).Error())
-					},
+				targets[0]: &mockClient{
 					UpsertFunc: func(_ context.Context, _ *payload.Upsert_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
 						return loc, nil
 					},
-					RemoveFunc: func(_ context.Context, _ *payload.Remove_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
-						return loc, nil
-					},
 				},
-				"vald-lb-gateway-01": &mockClient{
-					GetObjectFunc: func(_ context.Context, _ *payload.Object_VectorRequest, _ ...grpc.CallOption) (*payload.Object_Vector, error) {
-						return nil, status.Error(codes.NotFound, errors.ErrObjectIDNotFound(uuid).Error())
-					},
+				targets[1]: &mockClient{
 					UpsertFunc: func(ctx context.Context, in *payload.Upsert_Request, opts ...grpc.CallOption) (*payload.Object_Location, error) {
-						return nil, status.Error(codes.Internal, errors.ErrCircuitBreakerHalfOpenFlowLimitation.Error())
+						return nil, status.Error(codes.AlreadyExists, errors.ErrMetaDataAlreadyExists(uuid).Error())
 					},
 				},
 			}
 			return test{
-				name: "fail upsert with new ID but remove rollback success",
+				name: "Success: when the status codes are (AlreadyExists, OK)",
 				args: args{
 					ctx: egctx,
 					req: &payload.Upsert_Request{
@@ -903,24 +1412,15 @@ func Test_server_Upsert(t *testing.T) {
 							return ""
 						},
 						BroadCastFunc: func(ctx context.Context, f func(_ context.Context, _ string, _ vald.ClientWithMirror, _ ...grpc.CallOption) error) error {
-							for tgt, c := range cmap {
-								f(ctx, tgt, c)
-							}
-							return nil
-						},
-						DoMultiFunc: func(ctx context.Context, targets []string, f func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error) error {
-							if len(targets) != 1 {
-								return errors.New("invalid target")
-							}
-							if c, ok := cmap[targets[0]]; ok {
-								f(ctx, targets[0], c)
+							for _, tgt := range targets {
+								f(ctx, tgt, cmap[tgt])
 							}
 							return nil
 						},
 					},
 				},
 				want: want{
-					err: status.Error(codes.Internal, errors.ErrCircuitBreakerHalfOpenFlowLimitation.Error()),
+					wantLoc: loc,
 				},
 				afterFunc: func(t *testing.T, args args) {
 					t.Helper()
@@ -933,108 +1433,23 @@ func Test_server_Upsert(t *testing.T) {
 			eg, egctx := errgroup.New(ctx)
 
 			uuid := "test"
-			loc := &payload.Object_Location{
-				Uuid: uuid,
-				Ips:  []string{"127.0.0.1"},
-			}
-			ovec := &payload.Object_Vector{
-				Id:     uuid,
-				Vector: vector.GaussianDistributedFloat32VectorGenerator(1, dimension)[0],
+			targets := []string{
+				"vald-01", "vald-02",
 			}
 			cmap := map[string]vald.ClientWithMirror{
-				"vald-mirror-01": &mockClient{
-					GetObjectFunc: func(_ context.Context, _ *payload.Object_VectorRequest, _ ...grpc.CallOption) (*payload.Object_Vector, error) {
-						return ovec, nil
-					},
+				targets[0]: &mockClient{
 					UpsertFunc: func(_ context.Context, _ *payload.Upsert_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
-						return loc, nil
-					},
-					UpdateFunc: func(_ context.Context, _ *payload.Update_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
-						return loc, nil
+						return nil, status.Error(codes.AlreadyExists, errors.ErrMetaDataAlreadyExists(uuid).Error())
 					},
 				},
-				"vald-lb-gateway-01": &mockClient{
-					GetObjectFunc: func(_ context.Context, _ *payload.Object_VectorRequest, _ ...grpc.CallOption) (*payload.Object_Vector, error) {
-						return nil, status.Error(codes.NotFound, errors.ErrObjectIDNotFound(uuid).Error())
-					},
-					UpsertFunc: func(_ context.Context, _ *payload.Upsert_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
-						return nil, status.Error(codes.Internal, errors.ErrCircuitBreakerHalfOpenFlowLimitation.Error())
-					},
-				},
-			}
-			return test{
-				name: "fail upsert with new ID but update rollback success",
-				args: args{
-					ctx: egctx,
-					req: &payload.Upsert_Request{
-						Vector: ovec,
-						Config: defaultUpsertConfig,
-					},
-				},
-				fields: fields{
-					eg: eg,
-					gateway: &mockGateway{
-						FromForwardedContextFunc: func(_ context.Context) string {
-							return ""
-						},
-						BroadCastFunc: func(ctx context.Context, f func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error) error {
-							for tgt, c := range cmap {
-								f(ctx, tgt, c)
-							}
-							return nil
-						},
-						DoMultiFunc: func(ctx context.Context, targets []string, f func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error) error {
-							if len(targets) != 1 {
-								return errors.New("invalid target")
-							}
-							if c, ok := cmap[targets[0]]; ok {
-								f(ctx, targets[0], c)
-							}
-							return nil
-						},
-					},
-				},
-				want: want{
-					err: status.Error(codes.Internal, errors.ErrCircuitBreakerHalfOpenFlowLimitation.Error()),
-				},
-				afterFunc: func(t *testing.T, args args) {
-					t.Helper()
-					cancel()
-				},
-			}
-		}(),
-		func() test {
-			ctx, cancel := context.WithCancel(context.Background())
-			eg, egctx := errgroup.New(ctx)
-
-			uuid := "test"
-			loc := &payload.Object_Location{
-				Uuid: uuid,
-				Ips:  []string{"127.0.0.1"},
-			}
-			cmap := map[string]vald.ClientWithMirror{
-				"vald-mirror-01": &mockClient{
-					GetObjectFunc: func(_ context.Context, _ *payload.Object_VectorRequest, _ ...grpc.CallOption) (*payload.Object_Vector, error) {
-						return nil, status.Error(codes.NotFound, errors.ErrObjectIDNotFound(uuid).Error())
-					},
-					UpsertFunc: func(_ context.Context, _ *payload.Upsert_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
-						return loc, nil
-					},
-					RemoveFunc: func(_ context.Context, _ *payload.Remove_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
-						return nil, status.Error(codes.Internal, errors.ErrCircuitBreakerHalfOpenFlowLimitation.Error())
-					},
-				},
-				"vald-lb-gateway-01": &mockClient{
-					GetObjectFunc: func(ctx context.Context, in *payload.Object_VectorRequest, opts ...grpc.CallOption) (*payload.Object_Vector, error) {
-						return nil, status.Error(codes.NotFound, errors.ErrObjectIDNotFound(uuid).Error())
-					},
+				targets[1]: &mockClient{
 					UpsertFunc: func(ctx context.Context, in *payload.Upsert_Request, opts ...grpc.CallOption) (*payload.Object_Location, error) {
-						return nil, status.Error(codes.Internal, errors.ErrCircuitBreakerOpenState.Error())
+						return nil, status.Error(codes.AlreadyExists, errors.ErrMetaDataAlreadyExists(uuid).Error())
 					},
 				},
 			}
 			return test{
-				name: "fail upsert with new ID and fail remove rollback",
+				name: "Fail: when the status codes are (AlreadyExists, AlreadyExists)",
 				args: args{
 					ctx: egctx,
 					req: &payload.Upsert_Request{
@@ -1052,17 +1467,67 @@ func Test_server_Upsert(t *testing.T) {
 							return ""
 						},
 						BroadCastFunc: func(ctx context.Context, f func(_ context.Context, _ string, _ vald.ClientWithMirror, _ ...grpc.CallOption) error) error {
-							for tgt, c := range cmap {
-								f(ctx, tgt, c)
+							for _, tgt := range targets {
+								f(ctx, tgt, cmap[tgt])
 							}
 							return nil
 						},
-						DoMultiFunc: func(ctx context.Context, targets []string, f func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error) error {
-							if len(targets) != 1 {
-								return errors.New("invalid target")
-							}
-							if c, ok := cmap[targets[0]]; ok {
-								f(ctx, targets[0], c)
+					},
+				},
+				want: want{
+					err: status.Error(codes.AlreadyExists, vald.UpsertRPCName+" API target same vector already exists"),
+				},
+				afterFunc: func(t *testing.T, args args) {
+					t.Helper()
+					cancel()
+				},
+			}
+		}(),
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			eg, egctx := errgroup.New(ctx)
+
+			uuid := "test"
+			loc := &payload.Object_Location{
+				Uuid: uuid,
+				Ips:  []string{"127.0.0.1"},
+			}
+			targets := []string{
+				"vald-01", "vald-02",
+			}
+			cmap := map[string]vald.ClientWithMirror{
+				targets[0]: &mockClient{
+					UpsertFunc: func(_ context.Context, _ *payload.Upsert_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
+						return loc, nil
+					},
+				},
+				targets[1]: &mockClient{
+					UpsertFunc: func(_ context.Context, _ *payload.Upsert_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
+						return nil, status.Error(codes.Internal, errors.ErrCircuitBreakerHalfOpenFlowLimitation.Error())
+					},
+				},
+			}
+			return test{
+				name: "Fail: when the status codes are (Internal, OK)",
+				args: args{
+					ctx: egctx,
+					req: &payload.Upsert_Request{
+						Vector: &payload.Object_Vector{
+							Id:     uuid,
+							Vector: vector.GaussianDistributedFloat32VectorGenerator(1, dimension)[0],
+						},
+						Config: defaultUpsertConfig,
+					},
+				},
+				fields: fields{
+					eg: eg,
+					gateway: &mockGateway{
+						FromForwardedContextFunc: func(_ context.Context) string {
+							return ""
+						},
+						BroadCastFunc: func(ctx context.Context, f func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error) error {
+							for _, tgt := range targets {
+								f(ctx, tgt, cmap[tgt])
 							}
 							return nil
 						},
@@ -1082,41 +1547,30 @@ func Test_server_Upsert(t *testing.T) {
 			eg, egctx := errgroup.New(ctx)
 
 			uuid := "test"
-			loc := &payload.Object_Location{
-				Uuid: uuid,
-				Ips:  []string{"127.0.0.1"},
-			}
-			ovec := &payload.Object_Vector{
-				Id:     uuid,
-				Vector: vector.GaussianDistributedFloat32VectorGenerator(1, dimension)[0],
+			targets := []string{
+				"vald-01", "vald-02",
 			}
 			cmap := map[string]vald.ClientWithMirror{
-				"vald-mirror-01": &mockClient{
-					GetObjectFunc: func(_ context.Context, _ *payload.Object_VectorRequest, _ ...grpc.CallOption) (*payload.Object_Vector, error) {
-						return ovec, nil
-					},
+				targets[0]: &mockClient{
 					UpsertFunc: func(_ context.Context, _ *payload.Upsert_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
-						return loc, nil
-					},
-					UpdateFunc: func(_ context.Context, _ *payload.Update_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
 						return nil, status.Error(codes.Internal, errors.ErrCircuitBreakerHalfOpenFlowLimitation.Error())
 					},
 				},
-				"vald-lb-gateway-01": &mockClient{
-					GetObjectFunc: func(_ context.Context, _ *payload.Object_VectorRequest, _ ...grpc.CallOption) (*payload.Object_Vector, error) {
-						return nil, status.Error(codes.NotFound, errors.ErrObjectIDNotFound(uuid).Error())
-					},
+				targets[1]: &mockClient{
 					UpsertFunc: func(_ context.Context, _ *payload.Upsert_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
 						return nil, status.Error(codes.Internal, errors.ErrCircuitBreakerOpenState.Error())
 					},
 				},
 			}
 			return test{
-				name: "fail upsert with new ID and fail update rollback",
+				name: "Fail: upsert when the status codes are (Internal, Internal)",
 				args: args{
 					ctx: egctx,
 					req: &payload.Upsert_Request{
-						Vector: ovec,
+						Vector: &payload.Object_Vector{
+							Id:     uuid,
+							Vector: vector.GaussianDistributedFloat32VectorGenerator(1, dimension)[0],
+						},
 						Config: defaultUpsertConfig,
 					},
 				},
@@ -1127,24 +1581,18 @@ func Test_server_Upsert(t *testing.T) {
 							return ""
 						},
 						BroadCastFunc: func(ctx context.Context, f func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error) error {
-							for tgt, c := range cmap {
-								f(ctx, tgt, c)
-							}
-							return nil
-						},
-						DoMultiFunc: func(ctx context.Context, targets []string, f func(ctx context.Context, target string, vc vald.ClientWithMirror, _ ...grpc.CallOption) error) error {
-							if len(targets) != 1 {
-								return errors.New("invalid target")
-							}
-							if c, ok := cmap[targets[0]]; ok {
-								f(ctx, targets[0], c)
+							for _, tgt := range targets {
+								f(ctx, tgt, cmap[tgt])
 							}
 							return nil
 						},
 					},
 				},
 				want: want{
-					err: status.Error(codes.Internal, errors.ErrCircuitBreakerHalfOpenFlowLimitation.Error()),
+					err: status.Error(codes.Internal, errors.Join(
+						status.Error(codes.Internal, errors.ErrCircuitBreakerHalfOpenFlowLimitation.Error()),
+						status.Error(codes.Internal, errors.ErrCircuitBreakerOpenState.Error()),
+					).Error()),
 				},
 				afterFunc: func(t *testing.T, args args) {
 					t.Helper()
@@ -1222,7 +1670,11 @@ func Test_server_Remove(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotLoc *payload.Object_Location, err error) error {
 		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+			gotSt, gotOk := status.FromError(err)
+			wantSt, wantOk := status.FromError(w.err)
+			if gotOk != wantOk || gotSt.Code() != wantSt.Code() {
+				return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+			}
 		}
 		if !reflect.DeepEqual(gotLoc, w.wantLoc) {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotLoc, w.wantLoc)
@@ -1239,34 +1691,23 @@ func Test_server_Remove(t *testing.T) {
 				Uuid: uuid,
 				Ips:  []string{"127.0.0.1"},
 			}
-			ovec := &payload.Object_Vector{
-				Id:     uuid,
-				Vector: vector.GaussianDistributedFloat32VectorGenerator(1, dimension)[0],
+			targets := []string{
+				"vald-01", "vald-02",
 			}
 			cmap := map[string]vald.ClientWithMirror{
-				"vald-mirror-01": &mockClient{
-					GetObjectFunc: func(_ context.Context, _ *payload.Object_VectorRequest, _ ...grpc.CallOption) (*payload.Object_Vector, error) {
-						return ovec, nil
-					},
+				targets[0]: &mockClient{
 					RemoveFunc: func(_ context.Context, _ *payload.Remove_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
 						return loc, nil
 					},
 				},
-				"vald-lb-gateway-01": &mockClient{
-					GetObjectFunc: func(_ context.Context, _ *payload.Object_VectorRequest, _ ...grpc.CallOption) (*payload.Object_Vector, error) {
-						return nil, status.Error(codes.NotFound, errors.ErrObjectIDNotFound(uuid).Error())
-					},
+				targets[1]: &mockClient{
 					RemoveFunc: func(_ context.Context, _ *payload.Remove_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
-						return nil, status.Error(codes.NotFound, errors.ErrObjectIDNotFound(uuid).Error())
+						return loc, nil
 					},
 				},
 			}
-			wantLoc := &payload.Object_Location{
-				Uuid: uuid,
-				Ips:  []string{"127.0.0.1"},
-			}
 			return test{
-				name: "success remove with existing ID",
+				name: "Success: remove with existing ID",
 				args: args{
 					ctx: egctx,
 					req: &payload.Remove_Request{
@@ -1283,15 +1724,18 @@ func Test_server_Remove(t *testing.T) {
 							return ""
 						},
 						BroadCastFunc: func(ctx context.Context, f func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error) error {
-							for tgt, c := range cmap {
-								f(ctx, tgt, c)
+							for _, tgt := range targets {
+								f(ctx, tgt, cmap[tgt])
 							}
 							return nil
 						},
 					},
 				},
 				want: want{
-					wantLoc: wantLoc,
+					wantLoc: &payload.Object_Location{
+						Uuid: uuid,
+						Ips:  []string{"127.0.0.1", "127.0.0.1"},
+					},
 				},
 				afterFunc: func(t *testing.T, args args) {
 					t.Helper()
@@ -1308,33 +1752,23 @@ func Test_server_Remove(t *testing.T) {
 				Uuid: uuid,
 				Ips:  []string{"127.0.0.1"},
 			}
-			ovec := &payload.Object_Vector{
-				Id:     uuid,
-				Vector: vector.GaussianDistributedFloat32VectorGenerator(1, dimension)[0],
+			targets := []string{
+				"vald-01", "vald-02",
 			}
 			cmap := map[string]vald.ClientWithMirror{
-				"vald-mirror-01": &mockClient{
-					GetObjectFunc: func(_ context.Context, _ *payload.Object_VectorRequest, _ ...grpc.CallOption) (*payload.Object_Vector, error) {
-						return ovec, nil
-					},
+				targets[0]: &mockClient{
 					RemoveFunc: func(_ context.Context, _ *payload.Remove_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
-						return loc, nil
-					},
-					UpsertFunc: func(_ context.Context, _ *payload.Upsert_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
 						return loc, nil
 					},
 				},
-				"vald-lb-gateway-01": &mockClient{
-					GetObjectFunc: func(_ context.Context, _ *payload.Object_VectorRequest, _ ...grpc.CallOption) (*payload.Object_Vector, error) {
-						return nil, status.Error(codes.NotFound, errors.ErrObjectIDNotFound(uuid).Error())
-					},
+				targets[1]: &mockClient{
 					RemoveFunc: func(_ context.Context, _ *payload.Remove_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
-						return nil, status.Error(codes.Internal, errors.ErrCircuitBreakerHalfOpenFlowLimitation.Error())
+						return nil, status.Error(codes.NotFound, errors.ErrObjectIDNotFound(uuid).Error())
 					},
 				},
 			}
 			return test{
-				name: "fail remove with existing ID but upsert rollback success",
+				name: "Success: when the status codes are (NotFound, OK)",
 				args: args{
 					ctx: egctx,
 					req: &payload.Remove_Request{
@@ -1350,18 +1784,67 @@ func Test_server_Remove(t *testing.T) {
 						FromForwardedContextFunc: func(_ context.Context) string {
 							return ""
 						},
-						BroadCastFunc: func(ctx context.Context, f func(_ context.Context, _ string, _ vald.ClientWithMirror, _ ...grpc.CallOption) error) error {
-							for tgt, c := range cmap {
-								f(ctx, tgt, c)
+						BroadCastFunc: func(ctx context.Context, f func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error) error {
+							for _, tgt := range targets {
+								f(ctx, tgt, cmap[tgt])
 							}
 							return nil
 						},
-						DoMultiFunc: func(ctx context.Context, targets []string, f func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error) error {
-							if len(targets) != 1 {
-								return errors.New("invalid target")
-							}
-							if c, ok := cmap[targets[0]]; ok {
-								f(ctx, targets[0], c)
+					},
+				},
+				want: want{
+					wantLoc: loc,
+				},
+				afterFunc: func(t *testing.T, args args) {
+					t.Helper()
+					cancel()
+				},
+			}
+		}(),
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			eg, egctx := errgroup.New(ctx)
+
+			uuid := "test"
+			loc := &payload.Object_Location{
+				Uuid: uuid,
+				Ips:  []string{"127.0.0.1"},
+			}
+			targets := []string{
+				"vald-01", "vald-02",
+			}
+			cmap := map[string]vald.ClientWithMirror{
+				targets[0]: &mockClient{
+					RemoveFunc: func(_ context.Context, _ *payload.Remove_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
+						return loc, nil
+					},
+				},
+				targets[1]: &mockClient{
+					RemoveFunc: func(_ context.Context, _ *payload.Remove_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
+						return nil, status.Error(codes.Internal, errors.ErrCircuitBreakerHalfOpenFlowLimitation.Error())
+					},
+				},
+			}
+			return test{
+				name: "Fail: when the status codes are (Internal, OK)",
+				args: args{
+					ctx: egctx,
+					req: &payload.Remove_Request{
+						Id: &payload.Object_ID{
+							Id: uuid,
+						},
+						Config: defaultRemoveConfig,
+					},
+				},
+				fields: fields{
+					eg: eg,
+					gateway: &mockGateway{
+						FromForwardedContextFunc: func(_ context.Context) string {
+							return ""
+						},
+						BroadCastFunc: func(ctx context.Context, f func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error) error {
+							for _, tgt := range targets {
+								f(ctx, tgt, cmap[tgt])
 							}
 							return nil
 						},
@@ -1381,37 +1864,23 @@ func Test_server_Remove(t *testing.T) {
 			eg, egctx := errgroup.New(ctx)
 
 			uuid := "test"
-			loc := &payload.Object_Location{
-				Uuid: uuid,
-				Ips:  []string{"127.0.0.1"},
-			}
-			ovec := &payload.Object_Vector{
-				Id:     uuid,
-				Vector: vector.GaussianDistributedFloat32VectorGenerator(1, dimension)[0],
+			targets := []string{
+				"vald-01", "vald-02",
 			}
 			cmap := map[string]vald.ClientWithMirror{
-				"vald-mirror-01": &mockClient{
-					GetObjectFunc: func(_ context.Context, _ *payload.Object_VectorRequest, _ ...grpc.CallOption) (*payload.Object_Vector, error) {
-						return ovec, nil
-					},
+				targets[0]: &mockClient{
 					RemoveFunc: func(_ context.Context, _ *payload.Remove_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
-						return loc, nil
-					},
-					UpsertFunc: func(_ context.Context, _ *payload.Upsert_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
 						return nil, status.Error(codes.Internal, errors.ErrCircuitBreakerHalfOpenFlowLimitation.Error())
 					},
 				},
-				"vald-lb-gateway-01": &mockClient{
-					GetObjectFunc: func(_ context.Context, _ *payload.Object_VectorRequest, _ ...grpc.CallOption) (*payload.Object_Vector, error) {
-						return nil, status.Error(codes.NotFound, errors.ErrObjectIDNotFound(uuid).Error())
-					},
+				targets[1]: &mockClient{
 					RemoveFunc: func(_ context.Context, _ *payload.Remove_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
-						return loc, status.Error(codes.Internal, errors.ErrCircuitBreakerOpenState.Error())
+						return nil, status.Error(codes.Internal, errors.ErrCircuitBreakerOpenState.Error())
 					},
 				},
 			}
 			return test{
-				name: "fail remove with existing ID and fail upsert rollback",
+				name: "Fail: when the status codes are (Internal, Internal)",
 				args: args{
 					ctx: egctx,
 					req: &payload.Remove_Request{
@@ -1428,24 +1897,72 @@ func Test_server_Remove(t *testing.T) {
 							return ""
 						},
 						BroadCastFunc: func(ctx context.Context, f func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error) error {
-							for tgt, c := range cmap {
-								f(ctx, tgt, c)
-							}
-							return nil
-						},
-						DoMultiFunc: func(ctx context.Context, targets []string, f func(ctx context.Context, target string, vc vald.ClientWithMirror, _ ...grpc.CallOption) error) error {
-							if len(targets) != 1 {
-								return errors.New("invalid target")
-							}
-							if c, ok := cmap[targets[0]]; ok {
-								f(ctx, targets[0], c)
+							for _, tgt := range targets {
+								f(ctx, tgt, cmap[tgt])
 							}
 							return nil
 						},
 					},
 				},
 				want: want{
-					err: status.Error(codes.Internal, errors.ErrCircuitBreakerHalfOpenFlowLimitation.Error()),
+					err: status.Error(codes.Internal, errors.Join(
+						status.Error(codes.Internal, errors.ErrCircuitBreakerHalfOpenFlowLimitation.Error()),
+						status.Error(codes.Internal, errors.ErrCircuitBreakerOpenState.Error()),
+					).Error()),
+				},
+				afterFunc: func(t *testing.T, args args) {
+					t.Helper()
+					cancel()
+				},
+			}
+		}(),
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			eg, egctx := errgroup.New(ctx)
+
+			uuid := "test"
+			targets := []string{
+				"vald-01", "vald-02",
+			}
+			cmap := map[string]vald.ClientWithMirror{
+				targets[0]: &mockClient{
+					RemoveFunc: func(_ context.Context, _ *payload.Remove_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
+						return nil, status.Error(codes.NotFound, errors.ErrIndexNotFound.Error())
+					},
+				},
+				targets[1]: &mockClient{
+					RemoveFunc: func(_ context.Context, _ *payload.Remove_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
+						return nil, status.Error(codes.NotFound, errors.ErrIndexNotFound.Error())
+					},
+				},
+			}
+			return test{
+				name: "Fail: when the status codes are (NotFound, NotFound)",
+				args: args{
+					ctx: egctx,
+					req: &payload.Remove_Request{
+						Id: &payload.Object_ID{
+							Id: uuid,
+						},
+						Config: defaultRemoveConfig,
+					},
+				},
+				fields: fields{
+					eg: eg,
+					gateway: &mockGateway{
+						FromForwardedContextFunc: func(_ context.Context) string {
+							return ""
+						},
+						BroadCastFunc: func(ctx context.Context, f func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error) error {
+							for _, tgt := range targets {
+								f(ctx, tgt, cmap[tgt])
+							}
+							return nil
+						},
+					},
+				},
+				want: want{
+					err: status.Error(codes.NotFound, vald.RemoveRPCName+" API id "+uuid+" not found"),
 				},
 				afterFunc: func(t *testing.T, args args) {
 					t.Helper()
@@ -1483,6 +2000,322 @@ func Test_server_Remove(t *testing.T) {
 
 			gotLoc, err := s.Remove(test.args.ctx, test.args.req)
 			if err := checkFunc(test.want, gotLoc, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func Test_server_RemoveByTimestamp(t *testing.T) {
+	defaultRemoveByTimestampReq := &payload.Remove_TimestampRequest{
+		Timestamps: []*payload.Remove_Timestamp{},
+	}
+	type args struct {
+		ctx context.Context
+		req *payload.Remove_TimestampRequest
+	}
+	type fields struct {
+		eg                                errgroup.Group
+		gateway                           service.Gateway
+		mirror                            service.Mirror
+		vAddr                             string
+		streamConcurrency                 int
+		name                              string
+		ip                                string
+		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
+	}
+	type want struct {
+		wantLocs *payload.Object_Locations
+		err      error
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, *payload.Object_Locations, error) error
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
+	}
+	defaultCheckFunc := func(w want, gotLocs *payload.Object_Locations, err error) error {
+		if !errors.Is(err, w.err) {
+			gotSt, gotOk := status.FromError(err)
+			wantSt, wantOk := status.FromError(w.err)
+			if gotOk != wantOk || gotSt.Code() != wantSt.Code() {
+				return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+			}
+		}
+		if !reflect.DeepEqual(gotLocs, w.wantLocs) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotLocs, w.wantLocs)
+		}
+		return nil
+	}
+	tests := []test{
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			eg, egctx := errgroup.New(ctx)
+
+			loc := &payload.Object_Location{
+				Uuid: "test",
+				Ips: []string{
+					"127.0.0.1",
+				},
+			}
+			loc2 := &payload.Object_Location{
+				Uuid: "test02",
+				Ips: []string{
+					"127.0.0.1",
+				},
+			}
+			targets := []string{
+				"vald-01", "vald-02",
+			}
+			cmap := map[string]vald.ClientWithMirror{
+				targets[0]: &mockClient{
+					RemoveByTimestampFunc: func(_ context.Context, _ *payload.Remove_TimestampRequest, _ ...grpc.CallOption) (*payload.Object_Locations, error) {
+						return &payload.Object_Locations{
+							Locations: []*payload.Object_Location{
+								loc,
+							},
+						}, nil
+					},
+				},
+				targets[1]: &mockClient{
+					RemoveByTimestampFunc: func(_ context.Context, _ *payload.Remove_TimestampRequest, _ ...grpc.CallOption) (*payload.Object_Locations, error) {
+						return &payload.Object_Locations{
+							Locations: []*payload.Object_Location{
+								loc2,
+							},
+						}, nil
+					},
+				},
+			}
+			return test{
+				name: "Success: removeByTimestamp",
+				args: args{
+					ctx: egctx,
+					req: defaultRemoveByTimestampReq,
+				},
+				fields: fields{
+					eg: eg,
+					gateway: &mockGateway{
+						FromForwardedContextFunc: func(_ context.Context) string {
+							return ""
+						},
+						BroadCastFunc: func(ctx context.Context, f func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error) error {
+							for _, tgt := range targets {
+								f(ctx, tgt, cmap[tgt])
+							}
+							return nil
+						},
+					},
+				},
+				want: want{
+					wantLocs: &payload.Object_Locations{
+						Locations: []*payload.Object_Location{
+							loc, loc2,
+						},
+					},
+				},
+				afterFunc: func(t *testing.T, args args) {
+					t.Helper()
+					cancel()
+				},
+			}
+		}(),
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			eg, egctx := errgroup.New(ctx)
+
+			loc := &payload.Object_Location{
+				Uuid: "test",
+				Ips: []string{
+					"127.0.0.1",
+				},
+			}
+			targets := []string{
+				"vald-01", "vald-02",
+			}
+			cmap := map[string]vald.ClientWithMirror{
+				targets[0]: &mockClient{
+					RemoveByTimestampFunc: func(_ context.Context, _ *payload.Remove_TimestampRequest, _ ...grpc.CallOption) (*payload.Object_Locations, error) {
+						return &payload.Object_Locations{
+							Locations: []*payload.Object_Location{
+								loc,
+							},
+						}, nil
+					},
+				},
+				targets[1]: &mockClient{
+					RemoveByTimestampFunc: func(_ context.Context, _ *payload.Remove_TimestampRequest, _ ...grpc.CallOption) (*payload.Object_Locations, error) {
+						return nil, status.Error(codes.NotFound, errors.ErrObjectIDNotFound("test02").Error())
+					},
+				},
+			}
+			return test{
+				name: "Success: when the status codes are (NotFound, OK)",
+				args: args{
+					ctx: egctx,
+					req: defaultRemoveByTimestampReq,
+				},
+				fields: fields{
+					eg: eg,
+					gateway: &mockGateway{
+						FromForwardedContextFunc: func(_ context.Context) string {
+							return ""
+						},
+						BroadCastFunc: func(ctx context.Context, f func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error) error {
+							for _, tgt := range targets {
+								f(ctx, tgt, cmap[tgt])
+							}
+							return nil
+						},
+					},
+				},
+				want: want{
+					wantLocs: &payload.Object_Locations{
+						Locations: []*payload.Object_Location{
+							loc,
+						},
+					},
+				},
+				afterFunc: func(t *testing.T, args args) {
+					t.Helper()
+					cancel()
+				},
+			}
+		}(),
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			eg, egctx := errgroup.New(ctx)
+
+			targets := []string{
+				"vald-01", "vald-02",
+			}
+			cmap := map[string]vald.ClientWithMirror{
+				targets[0]: &mockClient{
+					RemoveByTimestampFunc: func(_ context.Context, _ *payload.Remove_TimestampRequest, _ ...grpc.CallOption) (*payload.Object_Locations, error) {
+						return nil, status.Error(codes.Internal, errors.ErrCircuitBreakerHalfOpenFlowLimitation.Error())
+					},
+				},
+				targets[1]: &mockClient{
+					RemoveByTimestampFunc: func(_ context.Context, _ *payload.Remove_TimestampRequest, _ ...grpc.CallOption) (*payload.Object_Locations, error) {
+						return nil, status.Error(codes.Internal, errors.ErrCircuitBreakerOpenState.Error())
+					},
+				},
+			}
+			return test{
+				name: "Fail: when the status codes are (Internal, Internal)",
+				args: args{
+					ctx: egctx,
+					req: defaultRemoveByTimestampReq,
+				},
+				fields: fields{
+					eg: eg,
+					gateway: &mockGateway{
+						FromForwardedContextFunc: func(_ context.Context) string {
+							return ""
+						},
+						BroadCastFunc: func(ctx context.Context, f func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error) error {
+							for _, tgt := range targets {
+								f(ctx, tgt, cmap[tgt])
+							}
+							return nil
+						},
+					},
+				},
+				want: want{
+					err: status.Error(codes.Internal, errors.Join(
+						status.Error(codes.Internal, errors.ErrCircuitBreakerHalfOpenFlowLimitation.Error()),
+						status.Error(codes.Internal, errors.ErrCircuitBreakerOpenState.Error()),
+					).Error()),
+				},
+				afterFunc: func(t *testing.T, args args) {
+					t.Helper()
+					cancel()
+				},
+			}
+		}(),
+		func() test {
+			ctx, cancel := context.WithCancel(context.Background())
+			eg, egctx := errgroup.New(ctx)
+
+			uuid1 := "test01"
+			uuid2 := "test02"
+			targets := []string{
+				"vald-01", "vald-02",
+			}
+			cmap := map[string]vald.ClientWithMirror{
+				targets[0]: &mockClient{
+					RemoveByTimestampFunc: func(_ context.Context, _ *payload.Remove_TimestampRequest, _ ...grpc.CallOption) (*payload.Object_Locations, error) {
+						return nil, status.Error(codes.NotFound, errors.ErrObjectIDNotFound(uuid1).Error())
+					},
+				},
+				targets[1]: &mockClient{
+					RemoveByTimestampFunc: func(_ context.Context, _ *payload.Remove_TimestampRequest, _ ...grpc.CallOption) (*payload.Object_Locations, error) {
+						return nil, status.Error(codes.NotFound, errors.ErrObjectIDNotFound(uuid2).Error())
+					},
+				},
+			}
+			return test{
+				name: "Fail: when the status codes are (NotFound, NotFound)",
+				args: args{
+					ctx: egctx,
+					req: defaultRemoveByTimestampReq,
+				},
+				fields: fields{
+					eg: eg,
+					gateway: &mockGateway{
+						FromForwardedContextFunc: func(_ context.Context) string {
+							return ""
+						},
+						BroadCastFunc: func(ctx context.Context, f func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error) error {
+							for _, tgt := range targets {
+								f(ctx, tgt, cmap[tgt])
+							}
+							return nil
+						},
+					},
+				},
+				want: want{
+					err: status.Error(codes.NotFound, vald.RemoveByTimestampRPCName+" API target not found"),
+				},
+				afterFunc: func(t *testing.T, args args) {
+					t.Helper()
+					cancel()
+				},
+			}
+		}(),
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(tt, test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(tt, test.args)
+			}
+			checkFunc := test.checkFunc
+			if test.checkFunc == nil {
+				checkFunc = defaultCheckFunc
+			}
+			s := &server{
+				eg:                                test.fields.eg,
+				gateway:                           test.fields.gateway,
+				mirror:                            test.fields.mirror,
+				vAddr:                             test.fields.vAddr,
+				streamConcurrency:                 test.fields.streamConcurrency,
+				name:                              test.fields.name,
+				ip:                                test.fields.ip,
+				UnimplementedValdServerWithMirror: test.fields.UnimplementedValdServerWithMirror,
+			}
+
+			gotLocs, err := s.RemoveByTimestamp(test.args.ctx, test.args.req)
+			if err := checkFunc(test.want, gotLocs, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -3547,145 +4380,6 @@ func Test_server_MultiLinearSearchByID(t *testing.T) {
 	}
 }
 
-func Test_server_insert(t *testing.T) {
-	type args struct {
-		ctx    context.Context
-		client vald.InsertClient
-		req    *payload.Insert_Request
-		opts   []grpc.CallOption
-	}
-	type fields struct {
-		eg                                errgroup.Group
-		gateway                           service.Gateway
-		mirror                            service.Mirror
-		vAddr                             string
-		streamConcurrency                 int
-		name                              string
-		ip                                string
-		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
-	}
-	type want struct {
-		wantLoc *payload.Object_Location
-		err     error
-	}
-	type test struct {
-		name       string
-		args       args
-		fields     fields
-		want       want
-		checkFunc  func(want, *payload.Object_Location, error) error
-		beforeFunc func(*testing.T, args)
-		afterFunc  func(*testing.T, args)
-	}
-	defaultCheckFunc := func(w want, gotLoc *payload.Object_Location, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-		}
-		if !reflect.DeepEqual(gotLoc, w.wantLoc) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotLoc, w.wantLoc)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ctx:nil,
-		           client:nil,
-		           req:nil,
-		           opts:nil,
-		       },
-		       fields: fields {
-		           eg:nil,
-		           gateway:nil,
-		           mirror:nil,
-		           vAddr:"",
-		           streamConcurrency:0,
-		           name:"",
-		           ip:"",
-		           UnimplementedValdServerWithMirror:nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		       beforeFunc: func(t *testing.T, args args) {
-		           t.Helper()
-		       },
-		       afterFunc: func(t *testing.T, args args) {
-		           t.Helper()
-		       },
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ctx:nil,
-		           client:nil,
-		           req:nil,
-		           opts:nil,
-		           },
-		           fields: fields {
-		           eg:nil,
-		           gateway:nil,
-		           mirror:nil,
-		           vAddr:"",
-		           streamConcurrency:0,
-		           name:"",
-		           ip:"",
-		           UnimplementedValdServerWithMirror:nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		           beforeFunc: func(t *testing.T, args args) {
-		               t.Helper()
-		           },
-		           afterFunc: func(t *testing.T, args args) {
-		               t.Helper()
-		           },
-		       }
-		   }(),
-		*/
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-			if test.beforeFunc != nil {
-				test.beforeFunc(tt, test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(tt, test.args)
-			}
-			checkFunc := test.checkFunc
-			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
-			}
-			s := &server{
-				eg:                                test.fields.eg,
-				gateway:                           test.fields.gateway,
-				mirror:                            test.fields.mirror,
-				vAddr:                             test.fields.vAddr,
-				streamConcurrency:                 test.fields.streamConcurrency,
-				name:                              test.fields.name,
-				ip:                                test.fields.ip,
-				UnimplementedValdServerWithMirror: test.fields.UnimplementedValdServerWithMirror,
-			}
-
-			gotLoc, err := s.insert(test.args.ctx, test.args.client, test.args.req, test.args.opts...)
-			if err := checkFunc(test.want, gotLoc, err); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
-
 func Test_server_StreamInsert(t *testing.T) {
 	type args struct {
 		stream vald.Insert_StreamInsertServer
@@ -3939,145 +4633,6 @@ func Test_server_MultiInsert(t *testing.T) {
 
 			gotRes, err := s.MultiInsert(test.args.ctx, test.args.reqs)
 			if err := checkFunc(test.want, gotRes, err); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
-
-func Test_server_update(t *testing.T) {
-	type args struct {
-		ctx    context.Context
-		client vald.UpdateClient
-		req    *payload.Update_Request
-		opts   []grpc.CallOption
-	}
-	type fields struct {
-		eg                                errgroup.Group
-		gateway                           service.Gateway
-		mirror                            service.Mirror
-		vAddr                             string
-		streamConcurrency                 int
-		name                              string
-		ip                                string
-		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
-	}
-	type want struct {
-		wantLoc *payload.Object_Location
-		err     error
-	}
-	type test struct {
-		name       string
-		args       args
-		fields     fields
-		want       want
-		checkFunc  func(want, *payload.Object_Location, error) error
-		beforeFunc func(*testing.T, args)
-		afterFunc  func(*testing.T, args)
-	}
-	defaultCheckFunc := func(w want, gotLoc *payload.Object_Location, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-		}
-		if !reflect.DeepEqual(gotLoc, w.wantLoc) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotLoc, w.wantLoc)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ctx:nil,
-		           client:nil,
-		           req:nil,
-		           opts:nil,
-		       },
-		       fields: fields {
-		           eg:nil,
-		           gateway:nil,
-		           mirror:nil,
-		           vAddr:"",
-		           streamConcurrency:0,
-		           name:"",
-		           ip:"",
-		           UnimplementedValdServerWithMirror:nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		       beforeFunc: func(t *testing.T, args args) {
-		           t.Helper()
-		       },
-		       afterFunc: func(t *testing.T, args args) {
-		           t.Helper()
-		       },
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ctx:nil,
-		           client:nil,
-		           req:nil,
-		           opts:nil,
-		           },
-		           fields: fields {
-		           eg:nil,
-		           gateway:nil,
-		           mirror:nil,
-		           vAddr:"",
-		           streamConcurrency:0,
-		           name:"",
-		           ip:"",
-		           UnimplementedValdServerWithMirror:nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		           beforeFunc: func(t *testing.T, args args) {
-		               t.Helper()
-		           },
-		           afterFunc: func(t *testing.T, args args) {
-		               t.Helper()
-		           },
-		       }
-		   }(),
-		*/
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-			if test.beforeFunc != nil {
-				test.beforeFunc(tt, test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(tt, test.args)
-			}
-			checkFunc := test.checkFunc
-			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
-			}
-			s := &server{
-				eg:                                test.fields.eg,
-				gateway:                           test.fields.gateway,
-				mirror:                            test.fields.mirror,
-				vAddr:                             test.fields.vAddr,
-				streamConcurrency:                 test.fields.streamConcurrency,
-				name:                              test.fields.name,
-				ip:                                test.fields.ip,
-				UnimplementedValdServerWithMirror: test.fields.UnimplementedValdServerWithMirror,
-			}
-
-			gotLoc, err := s.update(test.args.ctx, test.args.client, test.args.req, test.args.opts...)
-			if err := checkFunc(test.want, gotLoc, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -4343,145 +4898,6 @@ func Test_server_MultiUpdate(t *testing.T) {
 	}
 }
 
-func Test_server_upsert(t *testing.T) {
-	type args struct {
-		ctx    context.Context
-		client vald.UpsertClient
-		req    *payload.Upsert_Request
-		opts   []grpc.CallOption
-	}
-	type fields struct {
-		eg                                errgroup.Group
-		gateway                           service.Gateway
-		mirror                            service.Mirror
-		vAddr                             string
-		streamConcurrency                 int
-		name                              string
-		ip                                string
-		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
-	}
-	type want struct {
-		wantLoc *payload.Object_Location
-		err     error
-	}
-	type test struct {
-		name       string
-		args       args
-		fields     fields
-		want       want
-		checkFunc  func(want, *payload.Object_Location, error) error
-		beforeFunc func(*testing.T, args)
-		afterFunc  func(*testing.T, args)
-	}
-	defaultCheckFunc := func(w want, gotLoc *payload.Object_Location, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-		}
-		if !reflect.DeepEqual(gotLoc, w.wantLoc) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotLoc, w.wantLoc)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ctx:nil,
-		           client:nil,
-		           req:nil,
-		           opts:nil,
-		       },
-		       fields: fields {
-		           eg:nil,
-		           gateway:nil,
-		           mirror:nil,
-		           vAddr:"",
-		           streamConcurrency:0,
-		           name:"",
-		           ip:"",
-		           UnimplementedValdServerWithMirror:nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		       beforeFunc: func(t *testing.T, args args) {
-		           t.Helper()
-		       },
-		       afterFunc: func(t *testing.T, args args) {
-		           t.Helper()
-		       },
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ctx:nil,
-		           client:nil,
-		           req:nil,
-		           opts:nil,
-		           },
-		           fields: fields {
-		           eg:nil,
-		           gateway:nil,
-		           mirror:nil,
-		           vAddr:"",
-		           streamConcurrency:0,
-		           name:"",
-		           ip:"",
-		           UnimplementedValdServerWithMirror:nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		           beforeFunc: func(t *testing.T, args args) {
-		               t.Helper()
-		           },
-		           afterFunc: func(t *testing.T, args args) {
-		               t.Helper()
-		           },
-		       }
-		   }(),
-		*/
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-			if test.beforeFunc != nil {
-				test.beforeFunc(tt, test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(tt, test.args)
-			}
-			checkFunc := test.checkFunc
-			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
-			}
-			s := &server{
-				eg:                                test.fields.eg,
-				gateway:                           test.fields.gateway,
-				mirror:                            test.fields.mirror,
-				vAddr:                             test.fields.vAddr,
-				streamConcurrency:                 test.fields.streamConcurrency,
-				name:                              test.fields.name,
-				ip:                                test.fields.ip,
-				UnimplementedValdServerWithMirror: test.fields.UnimplementedValdServerWithMirror,
-			}
-
-			gotLoc, err := s.upsert(test.args.ctx, test.args.client, test.args.req, test.args.opts...)
-			if err := checkFunc(test.want, gotLoc, err); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
-
 func Test_server_StreamUpsert(t *testing.T) {
 	type args struct {
 		stream vald.Upsert_StreamUpsertServer
@@ -4735,145 +5151,6 @@ func Test_server_MultiUpsert(t *testing.T) {
 
 			gotRes, err := s.MultiUpsert(test.args.ctx, test.args.reqs)
 			if err := checkFunc(test.want, gotRes, err); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
-
-func Test_server_remove(t *testing.T) {
-	type args struct {
-		ctx    context.Context
-		client vald.RemoveClient
-		req    *payload.Remove_Request
-		opts   []grpc.CallOption
-	}
-	type fields struct {
-		eg                                errgroup.Group
-		gateway                           service.Gateway
-		mirror                            service.Mirror
-		vAddr                             string
-		streamConcurrency                 int
-		name                              string
-		ip                                string
-		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
-	}
-	type want struct {
-		want *payload.Object_Location
-		err  error
-	}
-	type test struct {
-		name       string
-		args       args
-		fields     fields
-		want       want
-		checkFunc  func(want, *payload.Object_Location, error) error
-		beforeFunc func(*testing.T, args)
-		afterFunc  func(*testing.T, args)
-	}
-	defaultCheckFunc := func(w want, got *payload.Object_Location, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-		}
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ctx:nil,
-		           client:nil,
-		           req:nil,
-		           opts:nil,
-		       },
-		       fields: fields {
-		           eg:nil,
-		           gateway:nil,
-		           mirror:nil,
-		           vAddr:"",
-		           streamConcurrency:0,
-		           name:"",
-		           ip:"",
-		           UnimplementedValdServerWithMirror:nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		       beforeFunc: func(t *testing.T, args args) {
-		           t.Helper()
-		       },
-		       afterFunc: func(t *testing.T, args args) {
-		           t.Helper()
-		       },
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ctx:nil,
-		           client:nil,
-		           req:nil,
-		           opts:nil,
-		           },
-		           fields: fields {
-		           eg:nil,
-		           gateway:nil,
-		           mirror:nil,
-		           vAddr:"",
-		           streamConcurrency:0,
-		           name:"",
-		           ip:"",
-		           UnimplementedValdServerWithMirror:nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		           beforeFunc: func(t *testing.T, args args) {
-		               t.Helper()
-		           },
-		           afterFunc: func(t *testing.T, args args) {
-		               t.Helper()
-		           },
-		       }
-		   }(),
-		*/
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-			if test.beforeFunc != nil {
-				test.beforeFunc(tt, test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(tt, test.args)
-			}
-			checkFunc := test.checkFunc
-			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
-			}
-			s := &server{
-				eg:                                test.fields.eg,
-				gateway:                           test.fields.gateway,
-				mirror:                            test.fields.mirror,
-				vAddr:                             test.fields.vAddr,
-				streamConcurrency:                 test.fields.streamConcurrency,
-				name:                              test.fields.name,
-				ip:                                test.fields.ip,
-				UnimplementedValdServerWithMirror: test.fields.UnimplementedValdServerWithMirror,
-			}
-
-			got, err := s.remove(test.args.ctx, test.args.client, test.args.req, test.args.opts...)
-			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -5266,139 +5543,6 @@ func Test_server_GetObject(t *testing.T) {
 
 			gotVec, err := s.GetObject(test.args.ctx, test.args.req)
 			if err := checkFunc(test.want, gotVec, err); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
-
-func Test_server_getObjects(t *testing.T) {
-	type args struct {
-		ctx context.Context
-		req *payload.Object_VectorRequest
-	}
-	type fields struct {
-		eg                                errgroup.Group
-		gateway                           service.Gateway
-		mirror                            service.Mirror
-		vAddr                             string
-		streamConcurrency                 int
-		name                              string
-		ip                                string
-		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
-	}
-	type want struct {
-		wantVecs *sync.Map[string, *payload.Object_Vector]
-		err      error
-	}
-	type test struct {
-		name       string
-		args       args
-		fields     fields
-		want       want
-		checkFunc  func(want, *sync.Map[string, *payload.Object_Vector], error) error
-		beforeFunc func(*testing.T, args)
-		afterFunc  func(*testing.T, args)
-	}
-	defaultCheckFunc := func(w want, gotVecs *sync.Map[string, *payload.Object_Vector], err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-		}
-		if !reflect.DeepEqual(gotVecs, w.wantVecs) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotVecs, w.wantVecs)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ctx:nil,
-		           req:nil,
-		       },
-		       fields: fields {
-		           eg:nil,
-		           gateway:nil,
-		           mirror:nil,
-		           vAddr:"",
-		           streamConcurrency:0,
-		           name:"",
-		           ip:"",
-		           UnimplementedValdServerWithMirror:nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		       beforeFunc: func(t *testing.T, args args) {
-		           t.Helper()
-		       },
-		       afterFunc: func(t *testing.T, args args) {
-		           t.Helper()
-		       },
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ctx:nil,
-		           req:nil,
-		           },
-		           fields: fields {
-		           eg:nil,
-		           gateway:nil,
-		           mirror:nil,
-		           vAddr:"",
-		           streamConcurrency:0,
-		           name:"",
-		           ip:"",
-		           UnimplementedValdServerWithMirror:nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		           beforeFunc: func(t *testing.T, args args) {
-		               t.Helper()
-		           },
-		           afterFunc: func(t *testing.T, args args) {
-		               t.Helper()
-		           },
-		       }
-		   }(),
-		*/
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-			if test.beforeFunc != nil {
-				test.beforeFunc(tt, test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(tt, test.args)
-			}
-			checkFunc := test.checkFunc
-			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
-			}
-			s := &server{
-				eg:                                test.fields.eg,
-				gateway:                           test.fields.gateway,
-				mirror:                            test.fields.mirror,
-				vAddr:                             test.fields.vAddr,
-				streamConcurrency:                 test.fields.streamConcurrency,
-				name:                              test.fields.name,
-				ip:                                test.fields.ip,
-				UnimplementedValdServerWithMirror: test.fields.UnimplementedValdServerWithMirror,
-			}
-
-			gotVecs, err := s.getObjects(test.args.ctx, test.args.req)
-			if err := checkFunc(test.want, gotVecs, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
