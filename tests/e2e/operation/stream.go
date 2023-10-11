@@ -17,6 +17,7 @@ package operation
 
 import (
 	"context"
+	"fmt"
 	"reflect"
 	"strconv"
 	"testing"
@@ -1166,4 +1167,62 @@ func (c *client) GetObject(
 	t.Log("getObject operation finished")
 
 	return rerr
+}
+
+func (c *client) StreamListObject(
+	t *testing.T,
+	ctx context.Context,
+	ds Dataset,
+) error {
+	t.Log("StreamListObject operation started")
+
+	client, err := c.getClient(ctx)
+	if err != nil {
+		return err
+	}
+
+	sc, err := client.StreamListObject(ctx, &payload.Object_List_Request{})
+	if err != nil {
+		return err
+	}
+
+	// kv : [indexId]count
+	indexCnt := make(map[string]int)
+exit_loop:
+	for {
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		default:
+			res, err := sc.Recv()
+			if err != nil {
+				if errors.Is(err, io.EOF) {
+					break exit_loop
+				}
+				return err
+			}
+			vec := res.GetVector()
+			if vec == nil {
+				st := res.GetStatus()
+				return fmt.Errorf("returned vector is empty: code: %v, msg: %v, details: %v", st.GetCode(), st.GetMessage(), st.GetDetails())
+			}
+			indexCnt[vec.GetId()]++
+		}
+	}
+
+	if len(indexCnt) != len(ds.Train) {
+		return fmt.Errorf("the number of vectors returned is different: got %v, want %v", len(indexCnt), len(ds.Train))
+	}
+
+	replica := -1
+	for k, v := range indexCnt {
+		if replica == -1 {
+			replica = v
+			continue
+		}
+		if v != replica {
+			return fmt.Errorf("the number of vectors returned is different at index id %v: got %v, want %v", k, v, replica)
+		}
+	}
+	return nil
 }
