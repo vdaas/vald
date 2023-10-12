@@ -55,24 +55,24 @@ The following is an overview of the process for each request.
 - Insert Request
 
   - If the target host returns a status of `ALREADY_EXISTS`, the Update request is sent to this host.
-  - If all target hosts returns a status of `ALREADY_EXISTS`, returns `ALREADY_EXISTS` to the user without continuous processing.
-  - If all target hosts returns a status of `OK` or `ALREADY_EXISTS`, returns `OK` to the user without continuous processing.
+  - If all target hosts returns a status of `ALREADY_EXISTS`, the Mirror Gateway returns `ALREADY_EXISTS` to the user without continuous processing.
+  - If all target hosts returns a status of `OK` or `ALREADY_EXISTS`, the Mirror Gateway returns `OK` to the user without continuous processing.
 
 - Update Request
 
   - If the target host returns a status of `NOT_FOUND`, the Insert request is sent to this host.
-  - If all target hosts returns a status of `ALREADY_EXISTS`, returns `ALREADY_EXISTS` to the user without continuous processing.
-  - If all target hosts returns a status of `OK` or `ALREADY_EXISTS`, returns `OK` to the user without continuous processing.
+  - If all target hosts returns a status of `ALREADY_EXISTS`, the Mirror Gateway returns `ALREADY_EXISTS` to the user without continuous processing.
+  - If all target hosts returns a status of `OK` or `ALREADY_EXISTS`, the Mirror Gateway returns `OK` to the user without continuous processing.
 
 - Upsert Request
 
-  - If all target hosts returns a status of `OK` or `ALREADY_EXISTS`, returns `OK` to the user without continuous processing.
-  - If all target hosts returns a status of `ALREADY_EXISTS`, returns `ALREADY_EXISTS` to the user without continuous processing.
+  - If all target hosts returns a status of `OK` or `ALREADY_EXISTS`, the Mirror Gateway returns `OK` to the user without continuous processing.
+  - If all target hosts returns a status of `ALREADY_EXISTS`, the Mirror Gateway returns `ALREADY_EXISTS` to the user without continuous processing.
 
 - Remove Request
 
-  - If all target hosts returns a status of `OK` or `NOT_FOUND`, returns `OK` to the user without continuous processing.
-  - If all target hosts returns a status of `NOT_FOUND`, returns `NOT_FOUND` to the user without continuous processing.
+  - If all target hosts returns a status of `OK` or `NOT_FOUND`, the Mirror Gateway returns `OK` to the user without continuous processing.
+  - If all target hosts returns a status of `NOT_FOUND`, the Mirror Gateway returns `NOT_FOUND` to the user without continuous processing.
 
 - RemoveByTimestamp Request
 
