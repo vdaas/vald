@@ -74,4 +74,8 @@ The following is an overview of the process for each request.
   - If all target hosts returns a status of `OK` or `NOT_FOUND`, returns `OK` to the user without continuous processing.
   - If all target hosts returns a status of `NOT_FOUND`, returns `NOT_FOUND` to the user without continuous processing.
 
+- RemoveByTimestamp Request
+
+  - Same as `Remove Request`.
+
 For more information, please refer to [Mirror Gateway Troubleshooting](https://vald.vdaas.org/docs/troubleshooting/mirror-gateway/).
