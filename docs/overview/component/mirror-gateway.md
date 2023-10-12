@@ -44,35 +44,33 @@ Then, while forwarding the user request, the Vald Mirror Gateway bypasses the in
 
 On the other hand, if the incoming user request is an [Object API](https://vald.vdaas.org/docs/api/object/) or [Search API](https://vald.vdaas.org/docs/api/search/), it is bypassed to only a Vald LB Gateway in its own cluster without forwarding it to other Vald Mirror Gateways.
 
-### Automatic rollback on failure
+### Continuous processing on failure
 
 The request may fail at the forwarding destination or the bypass destination.
 
-If some requests fail, the vector data will not be consistent across Vald clusters.
+If some of the requests fails, the processing continues based on their status code.
 
-To keep index state consistency, the Vald Mirror Gateway will send the rollback request for the failed request. After the rollback request succeeds, the index state will be the same as before requesting.
-
-The following is the list of rollback types.
+The following is an overview of the process for each request.
 
 - Insert Request
-  - Rollback Condition/Trigger
-    - Status code other than `ALREADY_EXISTS` exists
-  - Rollback request to the successful request
-    - REMOVE request
-- Remove Request
-  - Rollback Condition/Trigger
-    - Status code other than `NOT_FOUND` exists
-  - Rollback request to the successful request
-    - UPSERT Request with old vector
+
+  - If the target host returns a status of `ALREADY_EXISTS`, the Update request is sent to this host.
+  - If all target hosts returns a status of `ALREADY_EXISTS`, returns `ALREADY_EXISTS` to the user without continuous processing.
+  - If all target hosts returns a status of `OK` or `ALREADY_EXISTS`, returns `OK` to the user without continuous processing.
+
 - Update Request
-  - Rollback Condition/Trigger
-    - Status code other than `ALREADY_EXISTS` exists
-  - Rollback request to the successful request
-    - REMOVE Request if there is no old vector data
-    - UPDATE Request if there is old vector data
+
+  - If the target host returns a status of `NOT_FOUND`, the Insert request is sent to this host.
+  - If all target hosts returns a status of `ALREADY_EXISTS`, returns `ALREADY_EXISTS` to the user without continuous processing.
+  - If all target hosts returns a status of `OK` or `ALREADY_EXISTS`, returns `OK` to the user without continuous processing.
+
 - Upsert Request
-  - Rollback Condition/Trigger
-    - Status code other than `ALREADY_EXISTS` exists
-  - Rollback request to the successful request
-    - REMOVE Request if there is no old vector data
-    - UPDATE Request if there is old vector data
+
+  - If all target hosts returns a status of `OK` or `ALREADY_EXISTS`, returns `OK` to the user without continuous processing.
+  - If all target hosts returns a status of `ALREADY_EXISTS`, returns `ALREADY_EXISTS` to the user without continuous processing.
+
+- Remove Request
+  - If all target hosts returns a status of `OK` or `NOT_FOUND`, returns `OK` to the user without continuous processing.
+  - If all target hosts returns a status of `NOT_FOUND`, returns `NOT_FOUND` to the user without continuous processing.
+
+For more information, please refer to [Mirror Gateway Troubleshooting](https://vald.vdaas.org/docs/troubleshooting/mirror-gateway/).

@@ -41,8 +41,8 @@ gateway:
     ...
       # gRPC client configuration (overrides defaults.grpc.client)
       client: {}
-      # The interval to advertise addresses of Mirror Gateway to other Mirror Gateway.
-      advertise_interval: "1s"
+      # The duration to register other Mirror Gateways.
+      register_duration: "1s"
       # The target namespace to discover ValdMirrorTarget (CR) resource.
       # The default value is its own namespace.
       namespace: "vald"
