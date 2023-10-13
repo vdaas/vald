@@ -2682,7 +2682,7 @@ manager:
       enabled: false
       # @schema {"name": "manager.index.corrector.schedule", "type": "string"}
       # manager.index.corrector.schedule -- CronJob schedule setting for index correction
-      schedule: ""
+      schedule: "6 3 * * *"
       # @schema {"name": "manager.index.corrector.suspend", "type": "boolean"}
       # manager.index.corrector.suspend -- CronJob suspend setting for index correction
       suspend: false
