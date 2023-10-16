@@ -10,7 +10,7 @@ This component makes it possible to enhance availability during a cluster failur
 
 Vald Mirror Gateway is responsible for the followings:
 
-- Forward user requests ([Insert](https://vald.vdaas.org/docs/api/insert/) / [Upsert](https://vald.vdaas.org/docs/api/upsert/) / [Update](https://vald.vdaas.org/docs/api/update/) / [Remove](https://vald.vdaas.org/docs/api/remove/)) to the other Vald Mirror Gateways in the same group.
+- Forward user requests ([Insert](../../api/insert.md) / [Upsert](../../api/upsert.md) / [Update](../../api/update.md) / [Remove](../../api/remove.md)) to the other Vald Mirror Gateways in the same group.
 - Manages the state of indexes stored in all clusters to ensure they are consistent.
 
 ## Features
@@ -33,16 +33,16 @@ The `ValdMirrorTarget` is a Custom Resource related to the connection destinatio
 
 When two Vald clusters contain Vald Mirror Gateways, Vald Mirror Gateways can send the request to each other by applying `ValdMirrorTarget`.
 
-For more information about `ValdMirrorTarget` configuration, please refer to [Custom Resource Configuration](https://vald.vdaas.org/docs/user-guides/mirroring-configuration/).
+For more information about `ValdMirrorTarget` configuration, please refer to [Custom Resource Configuration](../../user-guides/mirroring-configuration.md).
 
 ### Request forwarding
 
 <img src="../../../assets/docs/overview/component/mirror-gateway/request-forwarding.png">
 
-The Vald Mirror Gateway forwards the incoming user request ([Insert](https://vald.vdaas.org/docs/api/insert/) / [Upsert](https://vald.vdaas.org/docs/api/upsert/) / [Update](https://vald.vdaas.org/docs/api/update/) / [Remove](https://vald.vdaas.org/docs/api/remove/)) to other Vald Mirror Gateways.
+The Vald Mirror Gateway forwards the incoming user request ([Insert](../../api/insert.md) / [Upsert](../../api/upsert.md) / [Update](../../api/update.md) / [Remove](../../api/remove.md)) to other Vald Mirror Gateways.
 Then, while forwarding the user request, the Vald Mirror Gateway bypasses the incoming user request to Vald LB Gateway in its own cluster.
 
-On the other hand, if the incoming user request is an [Object API](https://vald.vdaas.org/docs/api/object/) or [Search API](https://vald.vdaas.org/docs/api/search/), it is bypassed to only a Vald LB Gateway in its own cluster without forwarding it to other Vald Mirror Gateways.
+On the other hand, if the incoming user request is an [Object API](../../api/object.md) or [Search API](../../api/search.md), it is bypassed to only a Vald LB Gateway in its own cluster without forwarding it to other Vald Mirror Gateways.
 
 ### Continuous processing on failure
 
@@ -79,4 +79,4 @@ The following is an overview of the process for each request.
 
   - Same as `Remove Request`.
 
-For more information, please refer to [Mirror Gateway Troubleshooting](https://vald.vdaas.org/docs/troubleshooting/mirror-gateway/).
+For more information, please refer to [Mirror Gateway Troubleshooting](../../troubleshooting/mirror-gateway.md).
