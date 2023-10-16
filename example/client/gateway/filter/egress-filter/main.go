@@ -99,7 +99,7 @@ func main() {
 	})
 	if err != nil {
 		glg.Error(err)
-	} else {
-		glg.Info("FilterVector Vector: ", r.GetVector())
+		return
 	}
+	glg.Info("FilterVector Vector: ", r.GetVector())
 }

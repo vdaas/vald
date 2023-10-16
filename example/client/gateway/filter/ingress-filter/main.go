@@ -71,7 +71,7 @@ func main() {
 	res, err = client.FilterVector(context.Background(), &payload.Object_Vector{Id: "1", Vector: make([]float32, dimension)})
 	if err != nil {
 		glg.Error(err)
-	} else {
-		glg.Info("FilterVector Id: ", res.GetId())
+		return
 	}
+	glg.Info("FilterVector Id: ", res.GetId())
 }
