@@ -40,7 +40,7 @@ Here are some common reasons of error.
 | ALREADY_EXISTS    | Request a pair of ID and vector is already inserted. This status code is returned when all hosts return `ALREADY_EXISTS`.                           |
 | INTERNAL          | Target Vald cluster or network route has some critical error.                                                                                       |
 
-`0 (OK)` is also returned in the following cases:
+`0 (OK)` is also returned to the following cases:
 
 - All hosts return `OK` and `NOT_FOUND`.
 - All hosts return `OK` and `ALREADY_EXISTS`.
