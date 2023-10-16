@@ -70,13 +70,9 @@ The following is an overview of the process for each request.
   - If all target hosts return a status of `ALREADY_EXISTS`, the Mirror Gateway returns `ALREADY_EXISTS`.
   - If all target hosts return a status of `OK` or `ALREADY_EXISTS`, the Mirror Gateway returns `OK`.
 
-- Remove Request
+- Remove/RemoveByTimestamp Request
 
   - If all target hosts return a status of `NOT_FOUND`, the Mirror Gateway returns `NOT_FOUND`.
   - If all target hosts return a status of `OK` or `NOT_FOUND`, the Mirror Gateway returns `OK`.
-
-- RemoveByTimestamp Request
-
-  - Same as `Remove Request`.
 
 For more information, please refer to [Mirror Gateway Troubleshooting](../../troubleshooting/mirror-gateway.md).
