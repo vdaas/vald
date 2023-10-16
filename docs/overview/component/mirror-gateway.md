@@ -63,6 +63,7 @@ The following is an overview of the process for each request.
   - If the target host returns a status of `NOT_FOUND`, the Insert request is sent to this host.
   - If all target hosts return a status of `ALREADY_EXISTS`, the Mirror Gateway returns `ALREADY_EXISTS`.
   - If all target hosts return a status of `OK` or `ALREADY_EXISTS`, the Mirror Gateway returns `OK`.
+  - If all target hosts return a status of `OK` or `NOT_FOUND`, the Mirror Gateway returns `OK`.
 
 - Upsert Request
 
