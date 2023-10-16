@@ -50,7 +50,9 @@ The request may fail at the forwarding destination or the bypass destination.
 
 If some of the requests fails, the processing continues based on their status code.
 
-Here's an overview of how the Mirror Gateway handles failures for each type of request:
+Here's an overview of how the Mirror Gateway handles failures for each type of request.
+
+For more information about status code, please refer to [Mirror Gateway Troubleshooting](../../troubleshooting/mirror-gateway.md).
 
 - Insert Request
 
@@ -77,5 +79,3 @@ Here's an overview of how the Mirror Gateway handles failures for each type of r
   - If all target hosts return a status code `NOT_FOUND`, the Mirror Gateway returns `NOT_FOUND`.
   - If the target host returns a status code other than `OK` or `NOT_FOUND`, the Mirror Gateway returns that status code without continuous processing.
   - If all target hosts return a status code `OK` or `NOT_FOUND`, the Mirror Gateway returns `OK`.
-
-For more information, please refer to [Mirror Gateway Troubleshooting](../../troubleshooting/mirror-gateway.md).
