@@ -50,29 +50,32 @@ The request may fail at the forwarding destination or the bypass destination.
 
 If some of the requests fails, the processing continues based on their status code.
 
-The following is an overview of the process for each request.
+Here's an overview of how the Mirror Gateway handles failures for each type of request:
 
 - Insert Request
 
-  - If the target host returns a status of `ALREADY_EXISTS`, the Update request is sent to this host.
-  - If all target hosts return a status of `ALREADY_EXISTS`, the Mirror Gateway returns `ALREADY_EXISTS`.
-  - If all target hosts return a status of `OK` or `ALREADY_EXISTS`, the Mirror Gateway returns `OK`.
+  - If the target host returns a status code of `ALREADY_EXISTS`, the Update request is sent to this host.
+  - If the target host returns a status code other than `OK`, `ALREADY_EXISTS`, the Mirror Gateway returns that status code without continuous processing.
+  - If all target hosts return a status code `ALREADY_EXISTS`, the Mirror Gateway returns `ALREADY_EXISTS`.
+  - If all target hosts return a status code `OK` or `ALREADY_EXISTS`, the Mirror Gateway returns `OK`.
 
 - Update Request
 
-  - If the target host returns a status of `NOT_FOUND`, the Insert request is sent to this host.
-  - If all target hosts return a status of `ALREADY_EXISTS`, the Mirror Gateway returns `ALREADY_EXISTS`.
-  - If all target hosts return a status of `OK` or `ALREADY_EXISTS`, the Mirror Gateway returns `OK`.
-  - If all target hosts return a status of `OK` or `NOT_FOUND`, the Mirror Gateway returns `OK`.
+  - If the target host returns a status code `NOT_FOUND`, the Insert request is sent to this host.
+  - If the target host returns a status code other than `OK`, `ALREADY_EXISTS`, the Mirror Gateway returns that status code without continuous processing.
+  - If all target hosts return a status code `ALREADY_EXISTS`, the Mirror Gateway returns `ALREADY_EXISTS`.
+  - If all target hosts return a status code `OK` or `ALREADY_EXISTS`, the Mirror Gateway returns `OK`.
 
 - Upsert Request
 
-  - If all target hosts return a status of `ALREADY_EXISTS`, the Mirror Gateway returns `ALREADY_EXISTS`.
-  - If all target hosts return a status of `OK` or `ALREADY_EXISTS`, the Mirror Gateway returns `OK`.
+  - If all target hosts return a status code `ALREADY_EXISTS`, the Mirror Gateway returns `ALREADY_EXISTS`.
+  - If the target host returns a status code other than `OK` or `ALREADY_EXISTS`, the Mirror Gateway returns that status code without continuous processing.
+  - If all target hosts return a status code `OK` or `ALREADY_EXISTS`, the Mirror Gateway returns `OK`.
 
 - Remove/RemoveByTimestamp Request
 
-  - If all target hosts return a status of `NOT_FOUND`, the Mirror Gateway returns `NOT_FOUND`.
-  - If all target hosts return a status of `OK` or `NOT_FOUND`, the Mirror Gateway returns `OK`.
+  - If all target hosts return a status code `NOT_FOUND`, the Mirror Gateway returns `NOT_FOUND`.
+  - If the target host returns a status code other than `OK` or `NOT_FOUND`, the Mirror Gateway returns that status code without continuous processing.
+  - If all target hosts return a status code `OK` or `NOT_FOUND`, the Mirror Gateway returns `OK`.
 
 For more information, please refer to [Mirror Gateway Troubleshooting](../../troubleshooting/mirror-gateway.md).
