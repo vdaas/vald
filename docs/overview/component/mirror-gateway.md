@@ -54,13 +54,13 @@ The following is an overview of the process for each request.
 
 - Insert Request
 
-  - If the target host return a status of `ALREADY_EXISTS`, the Update request is sent to this host.
+  - If the target host returns a status of `ALREADY_EXISTS`, the Update request is sent to this host.
   - If all target hosts return a status of `ALREADY_EXISTS`, the Mirror Gateway returns `ALREADY_EXISTS`.
   - If all target hosts return a status of `OK` or `ALREADY_EXISTS`, the Mirror Gateway returns `OK`.
 
 - Update Request
 
-  - If the target host return a status of `NOT_FOUND`, the Insert request is sent to this host.
+  - If the target host returns a status of `NOT_FOUND`, the Insert request is sent to this host.
   - If all target hosts return a status of `ALREADY_EXISTS`, the Mirror Gateway returns `ALREADY_EXISTS`.
   - If all target hosts return a status of `OK` or `ALREADY_EXISTS`, the Mirror Gateway returns `OK`.
 
