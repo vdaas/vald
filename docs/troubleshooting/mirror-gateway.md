@@ -21,7 +21,7 @@ Here are some common reasons of error.
 | NOT_FOUND         | Requested ID is NOT inserted. This is the status code of the Update request.                                                                        |
 | INTERNAL          | Target Vald cluster or network route has some critical error.                                                                                       |
 
-`0 (OK)` is also returned when all hosts return `OK` and `ALREADY_EXISTS`.
+`0 (OK)` is also returned when all hosts return `OK` or `ALREADY_EXISTS`.
 
 ## Update Operation
 
@@ -42,8 +42,8 @@ Here are some common reasons of error.
 
 `0 (OK)` is also returned to the following cases:
 
-- All hosts return `OK` and `NOT_FOUND`.
-- All hosts return `OK` and `ALREADY_EXISTS`.
+- All hosts return `OK` or `NOT_FOUND`.
+- All hosts return `OK` or `ALREADY_EXISTS`.
 
 ## Upsert Operation
 
@@ -59,7 +59,7 @@ Here are some common reasons of error.
 | ALREADY_EXISTS    | Requested pair of ID and vector is already inserted. This status code is returned when all hosts return `ALREADY_EXISTS`.                           |
 | INTERNAL          | Target Vald cluster or network route has some critical error.                                                                                       |
 
-`0 (OK)` is also returned when all hosts return `OK` and `ALREADY_EXISTS`.
+`0 (OK)` is also returned when all hosts return `OK` or `ALREADY_EXISTS`.
 
 ## Remove Operation
 
@@ -75,20 +75,4 @@ Here are some common reasons of error.
 | NOT_FOUND         | Requested ID is NOT inserted. This status code is returned when all hosts return `NOT_FOUND`.   |
 | INTERNAL          | Target Vald cluster or network route has some critical error.                                   |
 
-`0 (OK)` is also returned when all hosts return `OK` and `NOT_FOUND`.
-
-## RemoveByTimestamp Operation
-
-The request process may not be completed when the response code is NOT `0 (OK)`.
-
-Here are some common reasons of error.
-
-| name              | common reason                                                                                   |
-| :---------------- | :---------------------------------------------------------------------------------------------- |
-| CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server. |
-| INVALID_ARGUMENT  | The Requested vector's ID is empty, or some request payload is invalid.                         |
-| DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                 |
-| NOT_FOUND         | Requested ID is NOT inserted. This status code is returned when all hosts return `NOT_FOUND`.   |
-| INTERNAL          | Target Vald cluster or network route has some critical error.                                   |
-
-`0 (OK)` is also returned when all hosts return `OK` and `NOT_FOUND`.
+`0 (OK)` is also returned when all hosts return `OK` or `NOT_FOUND`.
