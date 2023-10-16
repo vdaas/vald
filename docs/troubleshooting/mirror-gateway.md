@@ -37,10 +37,10 @@ Here are some common reasons of error.
 | INVALID_ARGUMENT  | The Dimension of the request vector is NOT the same as Vald Agent's config, the requested vector's ID is empty, or some request payload is invalid. |
 | DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                                                     |
 | NOT_FOUND         | Requested ID is NOT inserted. This status code is returned when all hosts return `NOT_FOUND`.                                                       |
-| ALREADY_EXISTS    | Request pair of ID and vector is already inserted. This status code is returned when all hosts return `ALREADY_EXISTS`.                             |
+| ALREADY_EXISTS    | Request a pair of ID and vector is already inserted. This status code is returned when all hosts return `ALREADY_EXISTS`.                           |
 | INTERNAL          | Target Vald cluster or network route has some critical error.                                                                                       |
 
-`0 (OK)` is also returned in the following cases.
+`0 (OK)` is also returned in the following cases:
 
 - All hosts return `OK` and `NOT_FOUND`.
 - All hosts return `OK` and `ALREADY_EXISTS`.
