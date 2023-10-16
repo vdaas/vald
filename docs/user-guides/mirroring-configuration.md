@@ -2,7 +2,7 @@
 
 This page describes how to enable mirroring features on the Vald cluster.
 
-Before you use the mirroring functions, please look at [the Vald Mirror Gateway document](../../docs/overview/component/mirror-gateway.md) for what you can do.
+Before you use the mirroring functions, please look at [the Vald Mirror Gateway document](../overview/component/mirror-gateway.md) for what you can do.
 
 ## Requirement
 
@@ -58,7 +58,7 @@ gateway:
 
 The cluster role configuration is required when you deploy Vald clusters with Vald Mirror Gateway on multiple Namespaces in the Kubernetes cluster.
 
-Please refer to [Cluster Role Configuration](https://vald.vdaas.org/docs/user-guides/cluster-role-binding/) about cluster role settings for Mirror Gateway.
+Please refer to [Cluster Role Configuration](./cluster-role-binding.md) about cluster role settings for Mirror Gateway.
 
 ### Custom Resource Configuration
 
