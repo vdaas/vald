@@ -11,4 +11,3 @@ Additionally, if you encounter some errors when using API, the [API status code]
 ## Remove Operation
 
 ## RemoveByTimestamp Operation
-
