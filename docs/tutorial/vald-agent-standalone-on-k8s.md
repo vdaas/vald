@@ -285,6 +285,7 @@ This chapter uses [NGT](https://github.com/yahoojapan/ngt) as Vald Agent to perf
             </details>
 
         - [Optional] Indexing manually instead of waiting for auto indexing.
+
           You can set Agent NGT configuration `auto_index_duration_limit` and `auto_index_check_duration` for auto indexing.
           In this example, you can create index manually using `CreateAndSaveIndex()` method in the client library
 
@@ -356,6 +357,7 @@ This chapter uses [NGT](https://github.com/yahoojapan/ngt) as Vald Agent to perf
             </details>
 
         - Remove from the index manually instead of waiting for auto indexing.
+
           The removed vectors still exist in the NGT graph index before the SaveIndex (or CreateAndSaveIndex) API is called.
           If you run the below code, the indexes will be removed completely from the Vald Agent NGT graph and the Backup file.
 
