@@ -64,9 +64,9 @@ func main() {
 	res, err := client.GenVector(context.Background(), &payload.Object_Blob{Id: "1", Object: make([]byte, 0)})
 	if err != nil {
 		glg.Error(err)
-	} else {
-		glg.Info("GenVector Vector: ", res.GetVector())
+		return
 	}
+	glg.Info("GenVector Vector: ", res.GetVector())
 
 	res, err = client.FilterVector(context.Background(), &payload.Object_Vector{Id: "1", Vector: make([]float32, dimension)})
 	if err != nil {

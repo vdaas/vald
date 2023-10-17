@@ -87,9 +87,9 @@ func main() {
 	res, err := client.FilterDistance(context.Background(), fdr)
 	if err != nil {
 		glg.Error(err)
-	} else {
-		glg.Info("FilterDistance Distance: ", res.GetDistance())
+		return
 	}
+	glg.Info("FilterDistance Distance: ", res.GetDistance())
 
 	r, err := client.FilterVector(context.Background(), &payload.Filter_VectorRequest{
 		Vector: &payload.Object_Vector{
