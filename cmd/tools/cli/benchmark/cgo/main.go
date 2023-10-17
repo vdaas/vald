@@ -344,10 +344,10 @@ func main() {
 	// })
 	// run(ctx, true, path, len(vectors[0]), vectors, ids, time.Hour*2, output)
 
-	//ids = ids[:0:0]
-	//ids = nil
-	//vectors = vectors[:0:0]
-	//vectors = nil
+	// ids = ids[:0:0]
+	// ids = nil
+	// vectors = vectors[:0:0]
+	// vectors = nil
 	sleep(ctx, time.Second*5, time.Minute*1, func() {
 		output("waiting for gc")
 	}, func() {
