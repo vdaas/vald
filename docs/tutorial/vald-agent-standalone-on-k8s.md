@@ -165,11 +165,11 @@ This chapter uses [NGT](https://github.com/yahoojapan/ngt) as Vald Agent to perf
               "github.com/kpango/fuid"
               "github.com/kpango/glg"
               agent "github.com/vdaas/vald-client-go/v1/agent/core"
-              "github.com/vdaas/vald-client-go/v1/vald"
               "github.com/vdaas/vald-client-go/v1/payload"
-
+              "github.com/vdaas/vald-client-go/v1/vald"
               "gonum.org/v1/hdf5"
               "google.golang.org/grpc"
+              "google.golang.org/grpc/credentials/insecure"
           )
           ```
 
@@ -236,7 +236,7 @@ This chapter uses [NGT](https://github.com/yahoojapan/ngt) as Vald Agent to perf
         ```go
         ctx := context.Background()
 
-        conn, err := grpc.DialContext(ctx, grpcServerAddr, grpc.WithInsecure())
+        conn, err := grpc.DialContext(ctx, grpcServerAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
         if err != nil {
             glg.Fatal(err)
         }
@@ -375,7 +375,7 @@ This chapter uses [NGT](https://github.com/yahoojapan/ngt) as Vald Agent to perf
     It would be best to run CreateIndex() after Insert() without waiting for auto-indexing in your client code, even you can wait for the finishing auto createIndex function, which sometimes takes a long time.
     The backup files (e.g., ngt-meta.kvsdb) will be in your mount directory when vald-agent-ngt finishes indexing.
     </div>
-      
+
     <div class="warning">
     If you use Go(v1.16~) and catch the error like `missing go.sum entry to add it` when running `go run main.go`, please run `go mod tidy` and retry.
     This error comes from Go Command Changes of Go 1.16 Release Notes.(Please refer to https://golang.org/doc/go1.16#go-command for more details).
