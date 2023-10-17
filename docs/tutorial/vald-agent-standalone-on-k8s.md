@@ -333,43 +333,41 @@ This chapter uses [NGT](https://github.com/yahoojapan/ngt) as Vald Agent to perf
 
     1.  Remove
 
-            - Remove indexed 400 training datasets from the Vald agent.
-                <details><summary>example code</summary><br>
+         - Remove indexed 400 training datasets from the Vald agent.
+             <details><summary>example code</summary><br>
 
-                ```go
-                for i := range ids [:insertCount] {
-                    _, err := client.Remove(ctx, &payload.Remove_Request{
-                        Id: &payload.Object_ID{
-                            Id: ids[i],
-                        },
-                    })
-                    if err != nil {
-                        glg.Fatal(err)
-                    }
-                    if i%10 == 0 {
-                        glg.Infof("Removed %d", i)
-                    }
-                }
-                ```
+           ```go
+           for i := range ids [:insertCount] {
+               _, err := client.Remove(ctx, &payload.Remove_Request{
+                   Id: &payload.Object_ID{
+                       Id: ids[i],
+                   },
+               })
+               if err != nil {
+                   glg.Fatal(err)
+               }
+               if i%10 == 0 {
+                   glg.Infof("Removed %d", i)
+               }
+           }
+           ```
 
-                </details>
+             </details>
 
 
-            - Remove from the index manually instead of waiting for auto indexing.
-            The removed vectors still exist in the NGT graph index before the SaveIndex (or CreateAndSaveIndex) API is called.
-            If you run the below code, the indexes will be removed completely from the Vald Agent NGT graph and the Backup file.
-                <details><summary>example code</summary><br>
+         - Remove from the index manually instead of waiting for auto indexing.
+         The removed vectors still exist in the NGT graph index before the SaveIndex (or CreateAndSaveIndex) API is called.
+         If you run the below code, the indexes will be removed completely from the Vald Agent NGT graph and the Backup file.
+             <details><summary>example code</summary><br>
 
-                ```go
-                _, err = client.SaveIndex(ctx, &payload.Empty{})
-                if err != nil {
-                    glg.Fatal(err)
-                }
-                ```
+           ```go
+           _, err = client.SaveIndex(ctx, &payload.Empty{})
+           if err != nil {
+               glg.Fatal(err)
+           }
+           ```
 
-                </details>
-
-        </details>
+             </details>
 
     <div class="caution">
     It would be best to run CreateIndex() after Insert() without waiting for auto-indexing in your client code, even you can wait for the finishing auto createIndex function, which sometimes takes a long time.
