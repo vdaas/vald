@@ -284,21 +284,22 @@ This chapter uses [NGT](https://github.com/yahoojapan/ngt) as Vald Agent to perf
 
             </details>
 
-        - [Optional] Indexing manually instead of waiting for auto indexing
+        - [Optional] Indexing manually instead of waiting for auto indexing.
           You can set Agent NGT configuration `auto_index_duration_limit` and `auto_index_check_duration` for auto indexing.
           In this example, you can create index manually using `CreateAndSaveIndex()` method in the client library
-          <details><summary>example code</summary><br>
 
-              ```go
-              _, err = client.CreateAndSaveIndex(ctx, &payload.Control_CreateIndexRequest{
-                  PoolSize: uint32(insertCount),
-              })
-              if err != nil {
-                  glg.Fatal(err)
-              }
-              ```
+            <details><summary>example code</summary><br>
 
-              </details>
+          ```go
+          _, err = client.CreateAndSaveIndex(ctx, &payload.Control_CreateIndexRequest{
+              PoolSize: uint32(insertCount),
+          })
+          if err != nil {
+              glg.Fatal(err)
+          }
+          ```
+
+            </details>
 
     1.  Search
 
