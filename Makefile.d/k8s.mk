@@ -32,7 +32,7 @@ k8s/manifest/update: \
 	k8s/manifest/clean
 	helm template \
 		--values $(HELM_VALUES) \
-		--set defaults.image.tag=$(VERSION) \
+		$(HELM_EXTRA_OPTIONS) \
 		--output-dir $(TEMP_DIR) \
 		charts/vald
 	mkdir -p k8s/gateway
