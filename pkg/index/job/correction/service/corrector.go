@@ -52,16 +52,21 @@ const (
 type Corrector interface {
 	Start(ctx context.Context) (<-chan error, error)
 	PreStop(ctx context.Context) error
+	// For metrics
+	NumberOfCorrectedOldIndex() uint64
+	NumberOfCorrectedReplication() uint64
 }
 
 type correct struct {
-	cfg                   *config.Data
-	discoverer            discoverer.Client
-	agentAddrs            []string
-	indexInfos            sync.Map[string, *payload.Info_Index_Count]
-	uuidsCount            uint32
-	uncommittedUUIDsCount uint32
-	checkedID             bbolt.Bbolt
+	cfg                       *config.Data
+	discoverer                discoverer.Client
+	agentAddrs                []string
+	indexInfos                sync.Map[string, *payload.Info_Index_Count]
+	uuidsCount                uint32
+	uncommittedUUIDsCount     uint32
+	checkedID                 bbolt.Bbolt
+	correctedOldIndexCount    atomic.Uint64
+	correctedReplicationCount atomic.Uint64
 }
 
 const filemode = 0o600
@@ -125,6 +130,14 @@ func (c *correct) Start(ctx context.Context) (<-chan error, error) {
 func (c *correct) PreStop(_ context.Context) error {
 	log.Info("removing persistent cache files...")
 	return c.checkedID.Close(true)
+}
+
+func (c *correct) NumberOfCorrectedOldIndex() uint64 {
+	return c.correctedOldIndexCount.Load()
+}
+
+func (c *correct) NumberOfCorrectedReplication() uint64 {
+	return c.correctedReplicationCount.Load()
 }
 
 // skipcq: GO-R1005
@@ -377,6 +390,7 @@ func (c *correct) correctTimestamp(ctx context.Context, targetReplica *vectorRep
 			latest.vec.GetId(),
 			latest.vec.GetTimestamp(),
 		)
+		c.correctedOldIndexCount.Add(1)
 		if err := c.updateObject(ctx, replica.addr, latest.vec); err != nil {
 			return err
 		}
@@ -417,6 +431,7 @@ func (c *correct) correctReplica(
 	// when there are less replicas than the correct number, add the extra replicas
 	if diff < 0 {
 		log.Infof("replica shortage of vector %s. inserting to other agents...", targetReplica.vec.GetId())
+		c.correctedReplicationCount.Add(1)
 		if len(availableAddrs) == 0 {
 			return errors.ErrNoAvailableAgentToInsert
 		}
@@ -442,6 +457,7 @@ func (c *correct) correctReplica(
 	// when there are more replicas than the correct number, delete the extra replicas
 	log.Infof("replica oversupply of vector %s. deleting...",
 		targetReplica.vec.GetId())
+	c.correctedReplicationCount.Add(1)
 	// delete from myself
 	if err := c.deleteObject(ctx, targetReplica.addr, targetReplica.vec); err != nil {
 		log.Errorf("failed to delete object from agent(%s): %v", targetReplica.addr, err)
