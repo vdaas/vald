@@ -35,7 +35,8 @@ update/libs: \
 	update/telepresence \
 	update/vald \
 	update/valdcli \
-	update/yq
+	update/yq \
+	update/template
 
 .PHONY: go/download
 ## download Go package dependencies
@@ -172,3 +173,21 @@ update/vald:
 ## update vald client library made by clojure self version
 update/valdcli:
 	curl --silent https://api.github.com/repos/vdaas/vald-client-clj/releases/latest | grep -Po '"tag_name": "\K.*?(?=")' > $(ROOTDIR)/versions/VALDCLI_VERSION
+
+.PHONY: update/template
+## update PULL_REQUEST_TEMPLATE and ISSUE_TEMPLATE
+update/template:
+	$(eval TMP_GO_VERSION      := $(shell cat $(ROOTDIR)/versions/GO_VERSION))
+	$(eval TMP_KUBECTL_VERSION := $(shell cat $(ROOTDIR)/versions/KUBECTL_VERSION))
+	$(eval TMP_NGT_VERSION     := $(shell cat $(ROOTDIR)/versions/NGT_VERSION))
+	sed -i -e "s/^- Go Version: .*$$/- Go Version: $(TMP_GO_VERSION)/" $(ROOTDIR)/.github/ISSUE_TEMPLATE/bug_report.md
+	sed -i -e "s/^- Go Version: .*$$/- Go Version: $(TMP_GO_VERSION)/" $(ROOTDIR)/.github/ISSUE_TEMPLATE/security_issue_report.md
+	sed -i -e "s/^- Go Version: .*$$/- Go Version: $(TMP_GO_VERSION)/" $(ROOTDIR)/.github/PULL_REQUEST_TEMPLATE.md
+
+	sed -i -e "s/^- NGT Version: .*$$/- NGT Version: $(TMP_NGT_VERSION)/" $(ROOTDIR)/.github/ISSUE_TEMPLATE/bug_report.md
+	sed -i -e "s/^- NGT Version: .*$$/- NGT Version: $(TMP_NGT_VERSION)/" $(ROOTDIR)/.github/ISSUE_TEMPLATE/security_issue_report.md
+	sed -i -e "s/^- NGT Version: .*$$/- NGT Version: $(TMP_NGT_VERSION)/" $(ROOTDIR)/.github/PULL_REQUEST_TEMPLATE.md
+
+	sed -i -e "s/^- Kubernetes Version: .*$$/- Kubernetes Version: $(TMP_KUBECTL_VERSION)/" $(ROOTDIR)/.github/ISSUE_TEMPLATE/bug_report.md
+	sed -i -e "s/^- Kubernetes Version: .*$$/- Kubernetes Version: $(TMP_KUBECTL_VERSION)/" $(ROOTDIR)/.github/ISSUE_TEMPLATE/security_issue_report.md
+	sed -i -e "s/^- Kubernetes Version: .*$$/- Kubernetes Version: $(TMP_KUBECTL_VERSION)/" $(ROOTDIR)/.github/PULL_REQUEST_TEMPLATE.md
