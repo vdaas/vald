@@ -93,7 +93,7 @@ jobs:
           BRANCH_NAME: ${{ steps.switch_to_new_branch.outputs.BRANCH_NAME }}
 
   check-format-diff:
-    if: ${{ github.event_name == 'pull_request' && github.event.repository.fork == 'false' }}
+    if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == false }}
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/vdaas/vald/vald-ci-container:nightly
