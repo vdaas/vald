@@ -176,17 +176,17 @@ update/valdcli:
 .PHONY: update/template
 ## update PULL_REQUEST_TEMPLATE and ISSUE_TEMPLATE
 update/template:
-	$(eval TMPL_GO_VERSION      := $(shell cat $(ROOTDIR)/versions/GO_VERSION))
-	$(eval TMPL_KUBECTL_VERSION := $(shell cat $(ROOTDIR)/versions/KUBECTL_VERSION))
-	$(eval TMPL_NGT_VERSION     := $(shell cat $(ROOTDIR)/versions/NGT_VERSION))
-	sed -i -e "s/^- Go Version: .*$$/- Go Version: $(TMPL_GO_VERSION)/" $(ROOTDIR)/.github/ISSUE_TEMPLATE/bug_report.md
-	sed -i -e "s/^- Go Version: .*$$/- Go Version: $(TMPL_GO_VERSION)/" $(ROOTDIR)/.github/ISSUE_TEMPLATE/security_issue_report.md
-	sed -i -e "s/^- Go Version: .*$$/- Go Version: $(TMPL_GO_VERSION)/" $(ROOTDIR)/.github/PULL_REQUEST_TEMPLATE.md
+	$(eval GO_VERSION      := $(shell $(MAKE) -s version/go))
+	$(eval NGT_VERSION     := $(shell $(MAKE) -s version/ngt))
+	$(eval KUBECTL_VERSION := $(shell $(MAKE) -s version/k8s))
+	sed -i -e "s/^- Go Version: .*$$/- Go Version: $(GO_VERSION)/" $(ROOTDIR)/.github/ISSUE_TEMPLATE/bug_report.md
+	sed -i -e "s/^- Go Version: .*$$/- Go Version: $(GO_VERSION)/" $(ROOTDIR)/.github/ISSUE_TEMPLATE/security_issue_report.md
+	sed -i -e "s/^- Go Version: .*$$/- Go Version: $(GO_VERSION)/" $(ROOTDIR)/.github/PULL_REQUEST_TEMPLATE.md
 
-	sed -i -e "s/^- NGT Version: .*$$/- NGT Version: $(TMPL_NGT_VERSION)/" $(ROOTDIR)/.github/ISSUE_TEMPLATE/bug_report.md
-	sed -i -e "s/^- NGT Version: .*$$/- NGT Version: $(TMPL_NGT_VERSION)/" $(ROOTDIR)/.github/ISSUE_TEMPLATE/security_issue_report.md
-	sed -i -e "s/^- NGT Version: .*$$/- NGT Version: $(TMPL_NGT_VERSION)/" $(ROOTDIR)/.github/PULL_REQUEST_TEMPLATE.md
+	sed -i -e "s/^- NGT Version: .*$$/- NGT Version: $(NGT_VERSION)/" $(ROOTDIR)/.github/ISSUE_TEMPLATE/bug_report.md
+	sed -i -e "s/^- NGT Version: .*$$/- NGT Version: $(NGT_VERSION)/" $(ROOTDIR)/.github/ISSUE_TEMPLATE/security_issue_report.md
+	sed -i -e "s/^- NGT Version: .*$$/- NGT Version: $(NGT_VERSION)/" $(ROOTDIR)/.github/PULL_REQUEST_TEMPLATE.md
 
-	sed -i -e "s/^- Kubernetes Version: .*$$/- Kubernetes Version: $(TMPL_KUBECTL_VERSION)/" $(ROOTDIR)/.github/ISSUE_TEMPLATE/bug_report.md
-	sed -i -e "s/^- Kubernetes Version: .*$$/- Kubernetes Version: $(TMPL_KUBECTL_VERSION)/" $(ROOTDIR)/.github/ISSUE_TEMPLATE/security_issue_report.md
-	sed -i -e "s/^- Kubernetes Version: .*$$/- Kubernetes Version: $(TMPL_KUBECTL_VERSION)/" $(ROOTDIR)/.github/PULL_REQUEST_TEMPLATE.md
+	sed -i -e "s/^- Kubernetes Version: .*$$/- Kubernetes Version: $(KUBECTL_VERSION)/" $(ROOTDIR)/.github/ISSUE_TEMPLATE/bug_report.md
+	sed -i -e "s/^- Kubernetes Version: .*$$/- Kubernetes Version: $(KUBECTL_VERSION)/" $(ROOTDIR)/.github/ISSUE_TEMPLATE/security_issue_report.md
+	sed -i -e "s/^- Kubernetes Version: .*$$/- Kubernetes Version: $(KUBECTL_VERSION)/" $(ROOTDIR)/.github/PULL_REQUEST_TEMPLATE.md
