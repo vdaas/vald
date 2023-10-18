@@ -51,6 +51,7 @@ var (
 		WithObjectType(Float),
 		WithDistanceType(L2),
 		WithBulkInsertChunkSize(100),
+		WithErrorBufferLimit(10),
 	}
 )
 
@@ -312,6 +313,17 @@ func WithDefaultEpsilon(epsilon float32) Option {
 			return errors.NewErrInvalidOption("defaultEpsilon", epsilon)
 		}
 		n.epsilon = epsilon
+		return nil
+	}
+}
+
+// WithErrorBufferLimit represents the option to set the default error buffer pool size limit for NGT.
+func WithErrorBufferLimit(limit uint64) Option {
+	return func(n *ngt) error {
+		if limit == 0 {
+			return errors.NewErrInvalidOption("errorBufferLimit", limit)
+		}
+		n.epl = limit
 		return nil
 	}
 }

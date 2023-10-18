@@ -322,9 +322,9 @@ func TestAllocCancelDoesntStarve(t *testing.T) {
 // 		n   int64
 // 	}
 // 	type fields struct {
+// 		waiters list.List
 // 		size    int64
 // 		cur     int64
-// 		waiters list.List
 // 	}
 // 	type want struct {
 // 		err error
@@ -354,9 +354,9 @@ func TestAllocCancelDoesntStarve(t *testing.T) {
 // 		           n:0,
 // 		       },
 // 		       fields: fields {
+// 		           waiters:nil,
 // 		           size:0,
 // 		           cur:0,
-// 		           waiters:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -379,9 +379,9 @@ func TestAllocCancelDoesntStarve(t *testing.T) {
 // 		           n:0,
 // 		           },
 // 		           fields: fields {
+// 		           waiters:nil,
 // 		           size:0,
 // 		           cur:0,
-// 		           waiters:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -412,9 +412,9 @@ func TestAllocCancelDoesntStarve(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &Weighted{
+// 				waiters: test.fields.waiters,
 // 				size:    test.fields.size,
 // 				cur:     test.fields.cur,
-// 				waiters: test.fields.waiters,
 // 			}
 //
 // 			err := s.Acquire(test.args.ctx, test.args.n)
@@ -431,9 +431,9 @@ func TestAllocCancelDoesntStarve(t *testing.T) {
 // 		n int64
 // 	}
 // 	type fields struct {
+// 		waiters list.List
 // 		size    int64
 // 		cur     int64
-// 		waiters list.List
 // 	}
 // 	type want struct {
 // 		want bool
@@ -462,9 +462,9 @@ func TestAllocCancelDoesntStarve(t *testing.T) {
 // 		           n:0,
 // 		       },
 // 		       fields: fields {
+// 		           waiters:nil,
 // 		           size:0,
 // 		           cur:0,
-// 		           waiters:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -486,9 +486,9 @@ func TestAllocCancelDoesntStarve(t *testing.T) {
 // 		           n:0,
 // 		           },
 // 		           fields: fields {
+// 		           waiters:nil,
 // 		           size:0,
 // 		           cur:0,
-// 		           waiters:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -519,9 +519,9 @@ func TestAllocCancelDoesntStarve(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &Weighted{
+// 				waiters: test.fields.waiters,
 // 				size:    test.fields.size,
 // 				cur:     test.fields.cur,
-// 				waiters: test.fields.waiters,
 // 			}
 //
 // 			got := s.TryAcquire(test.args.n)
@@ -538,9 +538,9 @@ func TestAllocCancelDoesntStarve(t *testing.T) {
 // 		n int64
 // 	}
 // 	type fields struct {
+// 		waiters list.List
 // 		size    int64
 // 		cur     int64
-// 		waiters list.List
 // 	}
 // 	type want struct {
 // 	}
@@ -565,9 +565,9 @@ func TestAllocCancelDoesntStarve(t *testing.T) {
 // 		           n:0,
 // 		       },
 // 		       fields: fields {
+// 		           waiters:nil,
 // 		           size:0,
 // 		           cur:0,
-// 		           waiters:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -589,9 +589,9 @@ func TestAllocCancelDoesntStarve(t *testing.T) {
 // 		           n:0,
 // 		           },
 // 		           fields: fields {
+// 		           waiters:nil,
 // 		           size:0,
 // 		           cur:0,
-// 		           waiters:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -622,9 +622,9 @@ func TestAllocCancelDoesntStarve(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &Weighted{
+// 				waiters: test.fields.waiters,
 // 				size:    test.fields.size,
 // 				cur:     test.fields.cur,
-// 				waiters: test.fields.waiters,
 // 			}
 //
 // 			s.Release(test.args.n)
@@ -640,9 +640,9 @@ func TestAllocCancelDoesntStarve(t *testing.T) {
 // 		n int64
 // 	}
 // 	type fields struct {
+// 		waiters list.List
 // 		size    int64
 // 		cur     int64
-// 		waiters list.List
 // 	}
 // 	type want struct {
 // 	}
@@ -667,9 +667,9 @@ func TestAllocCancelDoesntStarve(t *testing.T) {
 // 		           n:0,
 // 		       },
 // 		       fields: fields {
+// 		           waiters:nil,
 // 		           size:0,
 // 		           cur:0,
-// 		           waiters:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -691,9 +691,9 @@ func TestAllocCancelDoesntStarve(t *testing.T) {
 // 		           n:0,
 // 		           },
 // 		           fields: fields {
+// 		           waiters:nil,
 // 		           size:0,
 // 		           cur:0,
-// 		           waiters:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -724,9 +724,9 @@ func TestAllocCancelDoesntStarve(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &Weighted{
+// 				waiters: test.fields.waiters,
 // 				size:    test.fields.size,
 // 				cur:     test.fields.cur,
-// 				waiters: test.fields.waiters,
 // 			}
 //
 // 			s.Resize(test.args.n)
@@ -739,9 +739,9 @@ func TestAllocCancelDoesntStarve(t *testing.T) {
 //
 // func TestWeighted_notifyWaiters(t *testing.T) {
 // 	type fields struct {
+// 		waiters list.List
 // 		size    int64
 // 		cur     int64
-// 		waiters list.List
 // 	}
 // 	type want struct {
 // 	}
@@ -762,9 +762,9 @@ func TestAllocCancelDoesntStarve(t *testing.T) {
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
+// 		           waiters:nil,
 // 		           size:0,
 // 		           cur:0,
-// 		           waiters:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -783,9 +783,9 @@ func TestAllocCancelDoesntStarve(t *testing.T) {
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
+// 		           waiters:nil,
 // 		           size:0,
 // 		           cur:0,
-// 		           waiters:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -816,9 +816,9 @@ func TestAllocCancelDoesntStarve(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &Weighted{
+// 				waiters: test.fields.waiters,
 // 				size:    test.fields.size,
 // 				cur:     test.fields.cur,
-// 				waiters: test.fields.waiters,
 // 			}
 //
 // 			s.notifyWaiters()

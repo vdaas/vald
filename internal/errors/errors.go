@@ -22,8 +22,8 @@ import (
 	"fmt"
 	"reflect"
 	"runtime"
-	"strings"
 
+	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/sync"
 )
 

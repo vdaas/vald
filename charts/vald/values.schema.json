@@ -241,6 +241,11 @@
               "type": "boolean",
               "description": "enable proactive GC call for reducing heap memory allocation"
             },
+            "error_buffer_limit": {
+              "type": "integer",
+              "description": "maximum number of core ngt error buffer pool size limit",
+              "minimum": 1
+            },
             "index_path": {
               "type": "string",
               "description": "path to index data"

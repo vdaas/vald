@@ -967,6 +967,115 @@ func TestGetVector(t *testing.T) {
 // 	}
 // }
 //
+// func Test_vqueue_Range(t *testing.T) {
+// 	type args struct {
+// 		ctx context.Context
+// 		f   func(uuid string, vector []float32, ts int64) bool
+// 	}
+// 	type fields struct {
+// 		il sync.Map[string, *index]
+// 		dl sync.Map[string, *index]
+// 		ic uint64
+// 		dc uint64
+// 	}
+// 	type want struct {
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want) error {
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           ctx:nil,
+// 		           f:nil,
+// 		       },
+// 		       fields: fields {
+// 		           il:nil,
+// 		           dl:nil,
+// 		           ic:0,
+// 		           dc:0,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           ctx:nil,
+// 		           f:nil,
+// 		           },
+// 		           fields: fields {
+// 		           il:nil,
+// 		           dl:nil,
+// 		           ic:0,
+// 		           dc:0,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			v := &vqueue{
+// 				il: test.fields.il,
+// 				dl: test.fields.dl,
+// 				ic: test.fields.ic,
+// 				dc: test.fields.dc,
+// 			}
+//
+// 			v.Range(test.args.ctx, test.args.f)
+// 			if err := checkFunc(test.want); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
 // func Test_vqueue_IVQLen(t *testing.T) {
 // 	type fields struct {
 // 		il sync.Map[string, *index]
