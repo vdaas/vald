@@ -71,22 +71,6 @@ jobs:
           if git diff --quiet --exit-code; then
             echo "Nothing updated"
           else
-            git add .
-            git commit -S --signoff -m ":robot: Update license headers / Format Go codes and YAML files"
-
-            git remote set-url origin "https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
-            git push -u origin ${BRANCH_NAME}
-
-            curl --include --verbose --fail \
-            -H "Accept: application/json" \
-            -H "Content-Type:application/json" \
-            -H "Authorization: token ${GITHUB_TOKEN}" \
-            --request POST \
-            --data "{\"title\": \"Update license headers / Format codes\", \"head\": \"${BRANCH_NAME}\", \"base\": \"main\", \"body\": \"Update license headers / Format Go codes and YAML files.\", \"maintainer_can_modify\": true}" \
-            $API_URL
+            echo "Please execute \`make format\` locally."
+            exit 1
           fi
-        env:
-          GITHUB_USER: ${{ secrets.DISPATCH_USER }}
-          GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
-          API_URL: https://api.github.com/repos/vdaas/vald/pulls
-          BRANCH_NAME: ${{ steps.switch_to_new_branch.outputs.BRANCH_NAME }}
