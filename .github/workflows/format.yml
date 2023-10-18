@@ -15,9 +15,7 @@
 #
 name: Run formatter
 on:
-  push:
-    branches:
-      - main
+  pull_request:
 
 jobs:
   dump-contexts-to-log:
@@ -65,8 +63,7 @@ jobs:
           make format
           git checkout go.mod go.sum
 
-      - name: Check and Push to main branch
-        continue-on-error: true
+      - name: Check git difference
         run: |
           if git diff --quiet --exit-code; then
             echo "Nothing updated"
