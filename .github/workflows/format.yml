@@ -18,6 +18,7 @@ on:
   push:
     branches:
       - main
+  pull_request:
 
 jobs:
   dump-contexts-to-log:
@@ -27,7 +28,7 @@ jobs:
       - uses: ./.github/actions/dump-context
 
   format:
-    name: Run formatter
+    if: ${{ github.event_name == 'push' }}
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/vdaas/vald/vald-ci-container:nightly
@@ -90,3 +91,37 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
           API_URL: https://api.github.com/repos/vdaas/vald/pulls
           BRANCH_NAME: ${{ steps.switch_to_new_branch.outputs.BRANCH_NAME }}
+
+  check-format-diff:
+    if: ${{ github.event_name == 'pull_request' && github.event.repository.fork == 'false' }}
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/vdaas/vald/vald-ci-container:nightly
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.DISPATCH_TOKEN }}
+
+      - name: Set Git config
+        run: |
+          git config --global --add safe.directory ${GITHUB_WORKSPACE}
+
+      - name: Setup Go environment
+        uses: ./.github/actions/setup-go
+
+      - name: Run formatter and license.go
+        run: |
+          make deps/install
+          make format
+          git checkout go.mod go.sum
+
+      - name: Check format difference
+        continue-on-error: true
+        run: |
+          if git diff --quiet --exit-code; then
+            echo "Nothing updated"
+          else
+            echo "Please execute \`make format\` locally."
+            exit 1
+          fi
