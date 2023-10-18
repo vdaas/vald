@@ -35,8 +35,7 @@ update/libs: \
 	update/telepresence \
 	update/vald \
 	update/valdcli \
-	update/yq \
-	update/template
+	update/yq
 
 .PHONY: go/download
 ## download Go package dependencies
