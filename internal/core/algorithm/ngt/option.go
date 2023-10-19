@@ -93,12 +93,12 @@ func WithDimension(size int) Option {
 			return errors.NewErrCriticalOption("dimension", size, err)
 		}
 
-		ebuf := n.GetErrorBuffer()
-		if C.ngt_set_property_dimension(n.prop, C.int32_t(size), ebuf) == ErrorCode {
-			err := errors.ErrFailedToSetDimension(n.newGoError(ebuf))
+		ne := n.GetErrorBuffer()
+		if C.ngt_set_property_dimension(n.prop, C.int32_t(size), ne.err) == ErrorCode {
+			err := errors.ErrFailedToSetDimension(n.newGoError(ne))
 			return errors.NewErrCriticalOption("dimension", size, err)
 		}
-		n.PutErrorBuffer(ebuf)
+		n.PutErrorBuffer(ne)
 
 		n.dimension = C.int32_t(size)
 
@@ -141,74 +141,74 @@ func WithDistanceTypeByString(dt string) Option {
 // WithDistanceType represents the option to set the distance type for NGT.
 func WithDistanceType(t distanceType) Option {
 	return func(n *ngt) error {
-		ebuf := n.GetErrorBuffer()
+		ne := n.GetErrorBuffer()
 		switch t {
 		case L1:
-			if C.ngt_set_property_distance_type_l1(n.prop, ebuf) == ErrorCode {
-				err := errors.ErrFailedToSetDistanceType(n.newGoError(ebuf), t.String())
+			if C.ngt_set_property_distance_type_l1(n.prop, ne.err) == ErrorCode {
+				err := errors.ErrFailedToSetDistanceType(n.newGoError(ne), t.String())
 				return errors.NewErrCriticalOption("distanceType", t, err)
 			}
 		case L2:
-			if C.ngt_set_property_distance_type_l2(n.prop, ebuf) == ErrorCode {
-				err := errors.ErrFailedToSetDistanceType(n.newGoError(ebuf), t.String())
+			if C.ngt_set_property_distance_type_l2(n.prop, ne.err) == ErrorCode {
+				err := errors.ErrFailedToSetDistanceType(n.newGoError(ne), t.String())
 				return errors.NewErrCriticalOption("distanceType", t, err)
 			}
 		case Angle:
-			if C.ngt_set_property_distance_type_angle(n.prop, ebuf) == ErrorCode {
-				err := errors.ErrFailedToSetDistanceType(n.newGoError(ebuf), t.String())
+			if C.ngt_set_property_distance_type_angle(n.prop, ne.err) == ErrorCode {
+				err := errors.ErrFailedToSetDistanceType(n.newGoError(ne), t.String())
 				return errors.NewErrCriticalOption("distanceType", t, err)
 			}
 		case Hamming:
-			if C.ngt_set_property_distance_type_hamming(n.prop, ebuf) == ErrorCode {
-				err := errors.ErrFailedToSetDistanceType(n.newGoError(ebuf), t.String())
+			if C.ngt_set_property_distance_type_hamming(n.prop, ne.err) == ErrorCode {
+				err := errors.ErrFailedToSetDistanceType(n.newGoError(ne), t.String())
 				return errors.NewErrCriticalOption("distanceType", t, err)
 			}
 		case Cosine:
-			if C.ngt_set_property_distance_type_cosine(n.prop, ebuf) == ErrorCode {
-				err := errors.ErrFailedToSetDistanceType(n.newGoError(ebuf), t.String())
+			if C.ngt_set_property_distance_type_cosine(n.prop, ne.err) == ErrorCode {
+				err := errors.ErrFailedToSetDistanceType(n.newGoError(ne), t.String())
 				return errors.NewErrCriticalOption("distanceType", t, err)
 			}
 		case Poincare:
-			if C.ngt_set_property_distance_type_poincare(n.prop, ebuf) == ErrorCode {
-				err := errors.ErrFailedToSetDistanceType(n.newGoError(ebuf), t.String())
+			if C.ngt_set_property_distance_type_poincare(n.prop, ne.err) == ErrorCode {
+				err := errors.ErrFailedToSetDistanceType(n.newGoError(ne), t.String())
 				return errors.NewErrCriticalOption("distanceType", t, err)
 			}
 		case Lorentz:
-			if C.ngt_set_property_distance_type_lorentz(n.prop, ebuf) == ErrorCode {
-				err := errors.ErrFailedToSetDistanceType(n.newGoError(ebuf), t.String())
+			if C.ngt_set_property_distance_type_lorentz(n.prop, ne.err) == ErrorCode {
+				err := errors.ErrFailedToSetDistanceType(n.newGoError(ne), t.String())
 				return errors.NewErrCriticalOption("distanceType", t, err)
 			}
 		case Jaccard:
-			if C.ngt_set_property_distance_type_jaccard(n.prop, ebuf) == ErrorCode {
-				err := errors.ErrFailedToSetDistanceType(n.newGoError(ebuf), t.String())
+			if C.ngt_set_property_distance_type_jaccard(n.prop, ne.err) == ErrorCode {
+				err := errors.ErrFailedToSetDistanceType(n.newGoError(ne), t.String())
 				return errors.NewErrCriticalOption("distanceType", t, err)
 			}
 		case SparseJaccard:
-			if C.ngt_set_property_distance_type_sparse_jaccard(n.prop, ebuf) == ErrorCode {
-				err := errors.ErrFailedToSetDistanceType(n.newGoError(ebuf), t.String())
+			if C.ngt_set_property_distance_type_sparse_jaccard(n.prop, ne.err) == ErrorCode {
+				err := errors.ErrFailedToSetDistanceType(n.newGoError(ne), t.String())
 				return errors.NewErrCriticalOption("distanceType", t, err)
 			}
 		case NormalizedL2:
-			if C.ngt_set_property_distance_type_normalized_l2(n.prop, ebuf) == ErrorCode {
-				err := errors.ErrFailedToSetDistanceType(n.newGoError(ebuf), t.String())
+			if C.ngt_set_property_distance_type_normalized_l2(n.prop, ne.err) == ErrorCode {
+				err := errors.ErrFailedToSetDistanceType(n.newGoError(ne), t.String())
 				return errors.NewErrCriticalOption("distanceType", t, err)
 			}
 		case NormalizedAngle:
-			if C.ngt_set_property_distance_type_normalized_angle(n.prop, ebuf) == ErrorCode {
-				err := errors.ErrFailedToSetDistanceType(n.newGoError(ebuf), t.String())
+			if C.ngt_set_property_distance_type_normalized_angle(n.prop, ne.err) == ErrorCode {
+				err := errors.ErrFailedToSetDistanceType(n.newGoError(ne), t.String())
 				return errors.NewErrCriticalOption("distanceType", t, err)
 			}
 		case NormalizedCosine:
-			if C.ngt_set_property_distance_type_normalized_cosine(n.prop, ebuf) == ErrorCode {
-				err := errors.ErrFailedToSetDistanceType(n.newGoError(ebuf), t.String())
+			if C.ngt_set_property_distance_type_normalized_cosine(n.prop, ne.err) == ErrorCode {
+				err := errors.ErrFailedToSetDistanceType(n.newGoError(ne), t.String())
 				return errors.NewErrCriticalOption("distanceType", t, err)
 			}
 		default:
 			err := errors.ErrUnsupportedDistanceType
-			n.PutErrorBuffer(ebuf)
+			n.PutErrorBuffer(ne)
 			return errors.NewErrCriticalOption("distanceType", t, err)
 		}
-		n.PutErrorBuffer(ebuf)
+		n.PutErrorBuffer(ne)
 		return nil
 	}
 }
@@ -230,29 +230,29 @@ func WithObjectTypeByString(ot string) Option {
 // WithObjectType represents the option to set the object type for NGT.
 func WithObjectType(t objectType) Option {
 	return func(n *ngt) error {
-		ebuf := n.GetErrorBuffer()
+		ne := n.GetErrorBuffer()
 		switch t {
 		case Uint8:
-			if C.ngt_set_property_object_type_integer(n.prop, ebuf) == ErrorCode {
-				err := errors.ErrFailedToSetObjectType(n.newGoError(ebuf), t.String())
+			if C.ngt_set_property_object_type_integer(n.prop, ne.err) == ErrorCode {
+				err := errors.ErrFailedToSetObjectType(n.newGoError(ne), t.String())
 				return errors.NewErrCriticalOption("objectType", t, err)
 			}
 		case HalfFloat:
-			if C.ngt_set_property_object_type_float16(n.prop, ebuf) == ErrorCode {
-				err := errors.ErrFailedToSetObjectType(n.newGoError(ebuf), t.String())
+			if C.ngt_set_property_object_type_float16(n.prop, ne.err) == ErrorCode {
+				err := errors.ErrFailedToSetObjectType(n.newGoError(ne), t.String())
 				return errors.NewErrCriticalOption("objectType", t, err)
 			}
 		case Float:
-			if C.ngt_set_property_object_type_float(n.prop, ebuf) == ErrorCode {
-				err := errors.ErrFailedToSetObjectType(n.newGoError(ebuf), t.String())
+			if C.ngt_set_property_object_type_float(n.prop, ne.err) == ErrorCode {
+				err := errors.ErrFailedToSetObjectType(n.newGoError(ne), t.String())
 				return errors.NewErrCriticalOption("objectType", t, err)
 			}
 		default:
-			n.PutErrorBuffer(ebuf)
+			n.PutErrorBuffer(ne)
 			err := errors.ErrUnsupportedObjectType
 			return errors.NewErrCriticalOption("objectType", t, err)
 		}
-		n.PutErrorBuffer(ebuf)
+		n.PutErrorBuffer(ne)
 		n.objectType = t
 		return nil
 	}
@@ -261,12 +261,12 @@ func WithObjectType(t objectType) Option {
 // WithCreationEdgeSize represents the option to set the creation edge size for NGT.
 func WithCreationEdgeSize(size int) Option {
 	return func(n *ngt) error {
-		ebuf := n.GetErrorBuffer()
-		if C.ngt_set_property_edge_size_for_creation(n.prop, C.int16_t(size), ebuf) == ErrorCode {
-			err := errors.ErrFailedToSetCreationEdgeSize(n.newGoError(ebuf))
+		ne := n.GetErrorBuffer()
+		if C.ngt_set_property_edge_size_for_creation(n.prop, C.int16_t(size), ne.err) == ErrorCode {
+			err := errors.ErrFailedToSetCreationEdgeSize(n.newGoError(ne))
 			return errors.NewErrCriticalOption("creationEdgeSize", size, err)
 		}
-		n.PutErrorBuffer(ebuf)
+		n.PutErrorBuffer(ne)
 		return nil
 	}
 }
@@ -274,12 +274,12 @@ func WithCreationEdgeSize(size int) Option {
 // WithSearchEdgeSize represents the option to set the search edge size for NGT.
 func WithSearchEdgeSize(size int) Option {
 	return func(n *ngt) error {
-		ebuf := n.GetErrorBuffer()
-		if C.ngt_set_property_edge_size_for_search(n.prop, C.int16_t(size), ebuf) == ErrorCode {
-			err := errors.ErrFailedToSetSearchEdgeSize(n.newGoError(ebuf))
+		ne := n.GetErrorBuffer()
+		if C.ngt_set_property_edge_size_for_search(n.prop, C.int16_t(size), ne.err) == ErrorCode {
+			err := errors.ErrFailedToSetSearchEdgeSize(n.newGoError(ne))
 			return errors.NewErrCriticalOption("searchEdgeSize", size, err)
 		}
-		n.PutErrorBuffer(ebuf)
+		n.PutErrorBuffer(ne)
 		return nil
 	}
 }

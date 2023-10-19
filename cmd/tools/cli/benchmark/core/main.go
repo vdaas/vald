@@ -278,7 +278,7 @@ func main() {
 	}, "\t"))
 	output("start")
 	path, _ := file.MkdirTemp("")
-	sleep(ctx, time.Second*5, time.Minute*4, func() {
+	sleep(ctx, time.Second*5, time.Minute*1, func() {
 		output("waiting for start")
 	}, func() {
 		runtime.GC()
@@ -289,7 +289,7 @@ func main() {
 
 	ids := make([]uint, len(vectors))
 	run(ctx, false, path, len(vectors[0]), vectors, ids, time.Hour*2, output)
-	sleep(ctx, time.Second*5, time.Minute*4, func() {
+	sleep(ctx, time.Second*5, time.Minute*2, func() {
 		output("waiting for next")
 	}, func() {
 		runtime.GC()
@@ -298,7 +298,7 @@ func main() {
 		output("starting")
 	})
 	run(ctx, true, path, len(vectors[0]), nil, nil, 0, output)
-	sleep(ctx, time.Second*5, time.Minute*4, func() {
+	sleep(ctx, time.Second*5, time.Minute*2, func() {
 		output("waiting for next")
 	}, func() {
 		runtime.GC()
