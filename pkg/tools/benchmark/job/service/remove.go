@@ -65,6 +65,9 @@ func (j *job) remove(ctx context.Context, ech chan error) error {
 					log.Errorf("[benchmark job] context error is detected: %s\t%s", err.Error(), egctx.Err())
 					return errors.Join(err, egctx.Err())
 				default:
+					// TODO: count up error for observe benchmark job
+					// We should wait for refactoring internal/o11y.
+					log.Errorf("[benchmark job] err: %s", err.Error())
 				}
 			}
 			log.Debugf("[benchmark job] Finish remove: iter= %d \n%v", idx, res)
