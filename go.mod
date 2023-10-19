@@ -15,7 +15,7 @@ replace (
 	cloud.google.com/go/secretmanager => cloud.google.com/go/secretmanager v1.11.2
 	cloud.google.com/go/storage => cloud.google.com/go/storage v1.33.0
 	cloud.google.com/go/trace => cloud.google.com/go/trace v1.10.2
-	code.cloudfoundry.org/bytefmt => code.cloudfoundry.org/bytefmt v0.0.0-20230612151507-41ef4d1f67a4
+	code.cloudfoundry.org/bytefmt => code.cloudfoundry.org/bytefmt v0.0.0-20231017140541-3b893ed0421b
 	contrib.go.opencensus.io/exporter/aws => contrib.go.opencensus.io/exporter/aws v0.0.0-20230502192102-15967c811cec
 	contrib.go.opencensus.io/exporter/prometheus => contrib.go.opencensus.io/exporter/prometheus v0.4.2
 	contrib.go.opencensus.io/integrations/ocsql => contrib.go.opencensus.io/integrations/ocsql v0.1.7
@@ -24,7 +24,7 @@ replace (
 	github.com/Azure/azure-sdk-for-go => github.com/Azure/azure-sdk-for-go v68.0.0+incompatible
 	github.com/Azure/azure-sdk-for-go/sdk/azcore => github.com/Azure/azure-sdk-for-go/sdk/azcore v1.8.0
 	github.com/Azure/azure-sdk-for-go/sdk/azidentity => github.com/Azure/azure-sdk-for-go/sdk/azidentity v1.4.0
-	github.com/Azure/azure-sdk-for-go/sdk/internal => github.com/Azure/azure-sdk-for-go/sdk/internal v1.3.0
+	github.com/Azure/azure-sdk-for-go/sdk/internal => github.com/Azure/azure-sdk-for-go/sdk/internal v1.4.0
 	github.com/Azure/go-amqp => github.com/Azure/go-amqp v1.0.2
 	github.com/Azure/go-autorest => github.com/Azure/go-autorest v14.2.1-0.20230905222633-df94ce56f001+incompatible
 	github.com/Azure/go-autorest/autorest => github.com/Azure/go-autorest/autorest v0.11.30-0.20230905222633-df94ce56f001
@@ -36,14 +36,14 @@ replace (
 	github.com/Azure/go-autorest/tracing => github.com/Azure/go-autorest/tracing v0.6.1-0.20230905222633-df94ce56f001
 	github.com/BurntSushi/toml => github.com/BurntSushi/toml v1.3.2
 	github.com/DATA-DOG/go-sqlmock => github.com/DATA-DOG/go-sqlmock v1.5.0
-	github.com/GoogleCloudPlatform/cloudsql-proxy => github.com/GoogleCloudPlatform/cloudsql-proxy v1.33.11
+	github.com/GoogleCloudPlatform/cloudsql-proxy => github.com/GoogleCloudPlatform/cloudsql-proxy v1.33.12
 	github.com/Masterminds/semver/v3 => github.com/Masterminds/semver/v3 v3.2.1
 	github.com/ajstarks/deck => github.com/ajstarks/deck v0.0.0-20231012031509-f833e437b68a
 	github.com/ajstarks/deck/generate => github.com/ajstarks/deck/generate v0.0.0-20231012031509-f833e437b68a
 	github.com/ajstarks/svgo => github.com/ajstarks/svgo v0.0.0-20211024235047-1546f124cd8b
 	github.com/antihax/optional => github.com/antihax/optional v1.0.0
 	github.com/armon/go-socks5 => github.com/armon/go-socks5 v0.0.0-20160902184237-e75332964ef5
-	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.45.26
+	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.45.28
 	github.com/aws/aws-sdk-go-v2 => github.com/aws/aws-sdk-go-v2 v1.21.2
 	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream => github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.4.14
 	github.com/aws/aws-sdk-go-v2/config => github.com/aws/aws-sdk-go-v2/config v1.19.0
@@ -207,7 +207,7 @@ replace (
 	github.com/lucasb-eyer/go-colorful => github.com/lucasb-eyer/go-colorful v1.2.0
 	github.com/mailru/easyjson => github.com/mailru/easyjson v0.7.7
 	github.com/mattn/go-colorable => github.com/mattn/go-colorable v0.1.13
-	github.com/mattn/go-isatty => github.com/mattn/go-isatty v0.0.19
+	github.com/mattn/go-isatty => github.com/mattn/go-isatty v0.0.20
 	github.com/mattn/go-sqlite3 => github.com/mattn/go-sqlite3 v1.14.17
 	github.com/matttproud/golang_protobuf_extensions => github.com/matttproud/golang_protobuf_extensions v1.0.4
 	github.com/mitchellh/colorstring => github.com/mitchellh/colorstring v0.0.0-20190213212951-d06e56a500db
@@ -236,7 +236,7 @@ replace (
 	github.com/prashantv/gostub => github.com/prashantv/gostub v1.1.0
 	github.com/prometheus/client_golang => github.com/prometheus/client_golang v1.17.0
 	github.com/prometheus/client_model => github.com/prometheus/client_model v0.5.0
-	github.com/prometheus/common => github.com/prometheus/common v0.44.0
+	github.com/prometheus/common => github.com/prometheus/common v0.45.0
 	github.com/prometheus/procfs => github.com/prometheus/procfs v0.12.0
 	github.com/prometheus/prometheus => github.com/prometheus/prometheus v1.99.0
 	github.com/quasilyte/go-ruleguard => github.com/quasilyte/go-ruleguard v0.4.0
@@ -316,7 +316,7 @@ replace (
 	google.golang.org/genproto => google.golang.org/genproto v0.0.0-20231016165738-49dd2c1f3d0b
 	google.golang.org/genproto/googleapis/api => google.golang.org/genproto/googleapis/api v0.0.0-20231016165738-49dd2c1f3d0b
 	google.golang.org/genproto/googleapis/rpc => google.golang.org/genproto/googleapis/rpc v0.0.0-20231016165738-49dd2c1f3d0b
-	google.golang.org/grpc => google.golang.org/grpc v1.58.3
+	google.golang.org/grpc => google.golang.org/grpc v1.59.0
 	google.golang.org/grpc/cmd/protoc-gen-go-grpc => google.golang.org/grpc/cmd/protoc-gen-go-grpc v1.3.0
 	google.golang.org/protobuf => google.golang.org/protobuf v1.31.0
 	gopkg.in/check.v1 => gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c
@@ -394,9 +394,8 @@ require (
 	golang.org/x/sync v0.4.0
 	golang.org/x/sys v0.13.0
 	golang.org/x/text v0.13.0
-	golang.org/x/tools v0.14.0
 	golang.org/x/time v0.3.0
-	golang.org/x/tools v0.13.0
+	golang.org/x/tools v0.14.0
 	gonum.org/v1/hdf5 v0.0.0-00010101000000-000000000000
 	gonum.org/v1/plot v0.10.1
 	google.golang.org/genproto/googleapis/api v0.0.0-20231012201019-e917dd12ba7a
@@ -469,7 +468,7 @@ require (
 	github.com/klauspost/cpuid/v2 v2.0.9 // indirect
 	github.com/liggitt/tabwriter v0.0.0-20181228230101-89fcab3d43de // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
-	github.com/matttproud/golang_protobuf_extensions v1.0.4 // indirect
+	github.com/matttproud/golang_protobuf_extensions/v2 v2.0.0 // indirect
 	github.com/moby/spdystream v0.2.0 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
@@ -478,7 +477,7 @@ require (
 	github.com/peterbourgon/diskv v2.0.1+incompatible // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	github.com/prometheus/client_golang v1.15.1 // indirect
+	github.com/prometheus/client_golang v1.17.0 // indirect
 	github.com/prometheus/client_model v0.4.1-0.20230718164431-9a2bf3000d16 // indirect
 	github.com/prometheus/common v0.44.0 // indirect
 	github.com/prometheus/procfs v0.11.1 // indirect
@@ -500,7 +499,6 @@ require (
 	golang.org/x/image v0.13.0 // indirect
 	golang.org/x/mod v0.13.0 // indirect
 	golang.org/x/term v0.13.0 // indirect
-	golang.org/x/time v0.3.0 // indirect
 	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 // indirect
 	gomodules.xyz/jsonpatch/v2 v2.3.0 // indirect
 	google.golang.org/api v0.139.0 // indirect

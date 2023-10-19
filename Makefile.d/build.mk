@@ -282,6 +282,10 @@ cmd/tools/benchmark/operator/operator: \
 	CGO_CXXFLAGS="-g -Ofast -march=native" \
 	CGO_FFLAGS="-g -Ofast -march=native" \
 	CGO_LDFLAGS="-g -Ofast -march=native" \
+	GO111MODULE=on \
+	GOPRIVATE=$(GOPRIVATE) \
+	go build \
+		--ldflags "-s -w \
 		-X '$(GOPKG)/internal/info.CGOEnabled=$${CGO_ENABLED}' \
 		-X '$(GOPKG)/internal/info.NGTVersion=$(NGT_VERSION)' \
 		-X '$(GOPKG)/internal/info.BuildCPUInfoFlags=$(CPU_INFO_FLAGS)' \
