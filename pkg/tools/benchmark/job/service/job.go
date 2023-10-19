@@ -254,6 +254,7 @@ func (j *job) Start(ctx context.Context) (<-chan error, error) {
 	cech, err := j.client.Start(ctx)
 	if err != nil {
 		log.Error("[benchmark job] failed to start connection monitor")
+		close(ech)
 		return nil, err
 	}
 	j.eg.Go(func() error {
@@ -280,6 +281,7 @@ func (j *job) Start(ctx context.Context) (<-chan error, error) {
 				case ech <- err:
 				}
 			}
+			close(ech)
 			if err := p.Signal(syscall.SIGTERM); err != nil {
 				log.Error(err)
 			}
