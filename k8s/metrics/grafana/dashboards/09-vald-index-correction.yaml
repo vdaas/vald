@@ -1314,14 +1314,14 @@ data:
           {
             "current": {
               "selected": false,
-              "text": "vald-lb-gateway",
-              "value": "vald-lb-gateway"
+              "text": "vald-index-correction",
+              "value": "vald-index-correction"
             },
             "datasource": {
               "type": "prometheus",
               "uid": "prometheus"
             },
-            "definition": "label_values(app_version_info{server_name=~\"gateway lb.*\"}, kubernetes_name)",
+            "definition": "label_values(app_version_info{server_name=~\"index correction job\"}, kubernetes_name)",
             "hide": 0,
             "includeAll": false,
             "label": "name",
@@ -1329,14 +1329,17 @@ data:
             "name": "ReplicaSet",
             "options": [],
             "query": {
-              "query": "label_values(app_version_info{server_name=~\"gateway lb.*\"}, kubernetes_name)",
+              "query": "label_values(app_version_info{server_name=~\"index correction job\"}, kubernetes_name)",
               "refId": "StandardVariableQuery"
             },
             "refresh": 1,
             "regex": "",
             "skipUrlSync": false,
             "sort": 0,
-            "type": "query"
+            "tagValuesQuery": "",
+            "tagsQuery": "",
+            "type": "query",
+            "useTags": false
           },
           {
             "allValue": ".+",
@@ -1349,7 +1352,7 @@ data:
               "type": "prometheus",
               "uid": "prometheus"
             },
-            "definition": "label_values(app_version_info{server_name=~\"gateway lb.*\", kubernetes_name=\"$ReplicaSet\"}, target_pod)",
+            "definition": "label_values(app_version_info{server_name=~\"index correction job\", kubernetes_name=\"$ReplicaSet\"}, target_pod)",
             "hide": 0,
             "includeAll": true,
             "label": "pod",
@@ -1357,7 +1360,7 @@ data:
             "name": "PodName",
             "options": [],
             "query": {
-              "query": "label_values(app_version_info{server_name=~\"gateway lb.*\", kubernetes_name=\"$ReplicaSet\"}, target_pod)",
+              "query": "label_values(app_version_info{server_name=~\"index correction job\", kubernetes_name=\"$ReplicaSet\"}, target_pod)",
               "refId": "StandardVariableQuery"
             },
             "refresh": 1,
