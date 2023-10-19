@@ -56,6 +56,9 @@ func (j *job) exists(ctx context.Context, ech chan error) error {
 					log.Errorf("[benchmark job] context error is detected: %s\t%s", err.Error(), egctx.Err())
 					return nil
 				default:
+					// TODO: count up error for observe benchmark job
+					// We should wait for refactoring internal/o11y.
+					log.Errorf("[benchmark job] err: %s", err.Error())
 				}
 			}
 			log.Debugf("[benchmark job] Finish exists: iter= %d \n%v\n", idx, res)
@@ -115,6 +118,9 @@ func (j *job) getObject(ctx context.Context, ech chan error) error {
 					log.Errorf("[benchmark job] context error is detected: %s\t%s", err.Error(), egctx.Err())
 					return nil
 				default:
+					// TODO: count up error for observe benchmark job
+					// We should wait for refactoring internal/o11y.
+					log.Errorf("[benchmark job] err: %s", err.Error())
 				}
 			}
 			if res != nil {

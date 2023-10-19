@@ -57,9 +57,9 @@ type operator struct {
 	jobNamespace       string
 	jobImage           string
 	jobImagePullPolicy string
-	scenarios          atomic.Pointer[map[string]*scenario]
-	benchjobs          atomic.Pointer[map[string]*v1.ValdBenchmarkJob]
-	jobs               atomic.Pointer[map[string]string]
+	scenarios          *atomic.Pointer[map[string]*scenario]
+	benchjobs          *atomic.Pointer[map[string]*v1.ValdBenchmarkJob]
+	jobs               *atomic.Pointer[map[string]string]
 	rcd                time.Duration // reconcile check duration
 	eg                 errgroup.Group
 	ctrl               k8s.Controller
@@ -137,6 +137,10 @@ func (o *operator) initCtrl() error {
 }
 
 func (o *operator) getAtomicScenario() map[string]*scenario {
+	if o.scenarios == nil {
+		o.scenarios = &atomic.Pointer[map[string]*scenario]{}
+		return nil
+	}
 	if v := o.scenarios.Load(); v != nil {
 		return *(v)
 	}
@@ -144,6 +148,10 @@ func (o *operator) getAtomicScenario() map[string]*scenario {
 }
 
 func (o *operator) getAtomicBenchJob() map[string]*v1.ValdBenchmarkJob {
+	if o.benchjobs == nil {
+		o.benchjobs = &atomic.Pointer[map[string]*v1.ValdBenchmarkJob]{}
+		return nil
+	}
 	if v := o.benchjobs.Load(); v != nil {
 		return *(v)
 	}
@@ -151,6 +159,10 @@ func (o *operator) getAtomicBenchJob() map[string]*v1.ValdBenchmarkJob {
 }
 
 func (o *operator) getAtomicJob() map[string]string {
+	if o.jobs == nil {
+		o.jobs = &atomic.Pointer[map[string]string]{}
+		return nil
+	}
 	if v := o.jobs.Load(); v != nil {
 		return *(v)
 	}
@@ -171,7 +183,7 @@ func (o *operator) jobReconcile(ctx context.Context, jobList map[string][]job.Jo
 	if cjobs == nil {
 		cjobs = map[string]string{}
 	}
-	// jobStatus is used for update benchmark job resource status
+	// benchmarkJobStatus is used for update benchmark job resource status
 	benchmarkJobStatus := make(map[string]v1.BenchmarkJobStatus)
 	// jobNames is used for check whether cjobs has delted job.
 	// If cjobs has the delted job, it will be remove the end of jobReconcile function.
@@ -215,7 +227,7 @@ func (o *operator) jobReconcile(ctx context.Context, jobList map[string][]job.Jo
 	log.Debug("[reconcile job] finish")
 }
 
-// benchmarkJobReconcile gets the vald benchmark job resource list and create Job for running benchmark job.
+// benchJobReconcile gets the vald benchmark job resource list and create Job for running benchmark job.
 func (o *operator) benchJobReconcile(ctx context.Context, benchJobList map[string]v1.ValdBenchmarkJob) {
 	log.Debugf("[reconcile benchmark job resource] job list: %#v", benchJobList)
 	if len(benchJobList) == 0 {
@@ -228,6 +240,7 @@ func (o *operator) benchJobReconcile(ctx context.Context, benchJobList map[strin
 	if cbjl == nil {
 		cbjl = make(map[string]*v1.ValdBenchmarkJob, 0)
 	}
+	// jobStatus is used for update benchmarkJob CR status if updating is needed.
 	jobStatus := make(map[string]v1.BenchmarkJobStatus)
 	for k := range benchJobList {
 		// update scenario status
@@ -475,7 +488,7 @@ func (o *operator) createJob(ctx context.Context, bjr v1.ValdBenchmarkJob) error
 		benchjob.WithTTLSecondsAfterFinished(int32(bjr.Spec.TTLSecondsAfterFinished)),
 	)
 	if err != nil {
-		return nil
+		return err
 	}
 	// create job
 	c := o.ctrl.GetManager().GetClient()
