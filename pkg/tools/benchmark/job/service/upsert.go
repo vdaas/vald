@@ -57,6 +57,10 @@ func (j *job) upsert(ctx context.Context, ech chan error) error {
 				case ech <- err:
 				}
 			}
+			// loopCnt represents the quotient of iter divided by the len(vecs).
+			// This is to account for when iter exceeds len(vecs).
+			// It is used to calculate idx to determine which index of vecs to access.
+			// idx takes between <0, len(vecs)-1>.
 			loopCnt := math.Floor(float64(iter-1) / float64(len(vecs)))
 			idx := iter - 1 - (len(vecs) * int(loopCnt))
 			res, err := j.client.Upsert(egctx, &payload.Upsert_Request{
@@ -72,6 +76,9 @@ func (j *job) upsert(ctx context.Context, ech chan error) error {
 					log.Errorf("[benchmark job] context error is detected: %s\t%s", err.Error(), egctx.Err())
 					return errors.Join(err, egctx.Err())
 				default:
+					// TODO: count up error for observe benchmark job
+					// We should wait for refactoring internal/o11y.
+					log.Errorf("[benchmark job] err: %s", err.Error())
 				}
 			}
 			if res != nil {

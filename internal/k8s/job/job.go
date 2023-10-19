@@ -48,6 +48,9 @@ type reconciler struct {
 // Job is a type alias for the k8s job definition.
 type Job = batchv1.Job
 
+// JobStatus is a type alias for the k8s job status definition.
+type JobStatus = batchv1.JobStatus
+
 // New returns the JobWatcher that implements reconciliation loop, or any errors occurred.
 func New(opts ...Option) (JobWatcher, error) {
 	r := &reconciler{
