@@ -108,7 +108,7 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "9.2.4",
+          "pluginVersion": "10.1.5",
           "targets": [
             {
               "datasource": {
@@ -186,7 +186,7 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "9.2.4",
+          "pluginVersion": "10.1.5",
           "targets": [
             {
               "datasource": {
@@ -264,7 +264,7 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "9.2.4",
+          "pluginVersion": "10.1.5",
           "targets": [
             {
               "datasource": {
@@ -346,7 +346,7 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "9.2.4",
+          "pluginVersion": "10.1.5",
           "targets": [
             {
               "datasource": {
@@ -430,7 +430,7 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "9.2.4",
+          "pluginVersion": "10.1.5",
           "targets": [
             {
               "datasource": {
@@ -509,7 +509,7 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "9.2.4",
+          "pluginVersion": "10.1.5",
           "targets": [
             {
               "datasource": {
@@ -587,7 +587,7 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "9.2.4",
+          "pluginVersion": "10.1.5",
           "targets": [
             {
               "datasource": {
@@ -647,7 +647,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "9.2.4",
+          "pluginVersion": "10.1.5",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -732,6 +732,255 @@ data:
           }
         },
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "mappings": [
+                {
+                  "options": {
+                    "match": "null",
+                    "result": {
+                      "text": "N/A"
+                    }
+                  },
+                  "type": "special"
+                }
+              ],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "#299c46",
+                    "value": null
+                  },
+                  {
+                    "color": "rgba(237, 129, 40, 0.89)",
+                    "value": 100
+                  },
+                  {
+                    "color": "#d44a3a",
+                    "value": 300
+                  }
+                ]
+              },
+              "unit": "none"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 6,
+            "w": 4,
+            "x": 12,
+            "y": 6
+          },
+          "id": 27,
+          "links": [],
+          "maxDataPoints": 100,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "none",
+            "justifyMode": "auto",
+            "orientation": "horizontal",
+            "reduceOptions": {
+              "calcs": [
+                "mean"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "text": {},
+            "textMode": "auto"
+          },
+          "pluginVersion": "10.1.5",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "index_job_correction_checked_index_count{namespace=\"$Namespace\", pod=~\"$ReplicaSet.*\"}",
+              "format": "table",
+              "hide": false,
+              "instant": true,
+              "interval": "",
+              "legendFormat": "",
+              "refId": "A"
+            }
+          ],
+          "title": "checked index count",
+          "type": "stat"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "mappings": [
+                {
+                  "options": {
+                    "match": "null",
+                    "result": {
+                      "text": "N/A"
+                    }
+                  },
+                  "type": "special"
+                }
+              ],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "#299c46",
+                    "value": null
+                  },
+                  {
+                    "color": "rgba(237, 129, 40, 0.89)",
+                    "value": 100
+                  },
+                  {
+                    "color": "#d44a3a",
+                    "value": 300
+                  }
+                ]
+              },
+              "unit": "none"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 6,
+            "w": 4,
+            "x": 16,
+            "y": 6
+          },
+          "id": 28,
+          "links": [],
+          "maxDataPoints": 100,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "none",
+            "justifyMode": "auto",
+            "orientation": "horizontal",
+            "reduceOptions": {
+              "calcs": [
+                "mean"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "text": {},
+            "textMode": "auto"
+          },
+          "pluginVersion": "10.1.5",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "index_job_correction_corrected_old_index_count{namespace=\"$Namespace\", pod=~\"$ReplicaSet.*\"}",
+              "format": "table",
+              "hide": false,
+              "instant": true,
+              "interval": "",
+              "legendFormat": "",
+              "refId": "A"
+            }
+          ],
+          "title": "corrected old index count",
+          "type": "stat"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "mappings": [
+                {
+                  "options": {
+                    "match": "null",
+                    "result": {
+                      "text": "N/A"
+                    }
+                  },
+                  "type": "special"
+                }
+              ],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "#299c46",
+                    "value": null
+                  },
+                  {
+                    "color": "rgba(237, 129, 40, 0.89)",
+                    "value": 100
+                  },
+                  {
+                    "color": "#d44a3a",
+                    "value": 300
+                  }
+                ]
+              },
+              "unit": "none"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 6,
+            "w": 4,
+            "x": 20,
+            "y": 6
+          },
+          "id": 29,
+          "links": [],
+          "maxDataPoints": 100,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "none",
+            "justifyMode": "auto",
+            "orientation": "horizontal",
+            "reduceOptions": {
+              "calcs": [
+                "mean"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "text": {},
+            "textMode": "auto"
+          },
+          "pluginVersion": "10.1.5",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "index_job_correction_corrected_replication_count{namespace=\"$Namespace\", pod=~\"$ReplicaSet.*\"}",
+              "format": "table",
+              "hide": false,
+              "instant": true,
+              "interval": "",
+              "legendFormat": "",
+              "refId": "A"
+            }
+          ],
+          "title": "corrected replication count",
+          "type": "stat"
+        },
+        {
           "aliasColors": {},
           "bars": false,
           "dashLength": 10,
@@ -752,7 +1001,7 @@ data:
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 6
+            "y": 12
           },
           "hiddenSeries": false,
           "id": 18,
@@ -772,7 +1021,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "9.2.4",
+          "pluginVersion": "10.1.5",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -898,7 +1147,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "9.2.4",
+          "pluginVersion": "10.1.5",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -986,7 +1235,7 @@ data:
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 14
+            "y": 20
           },
           "hiddenSeries": false,
           "id": 22,
@@ -1007,7 +1256,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "9.2.4",
+          "pluginVersion": "10.1.5",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -1128,7 +1377,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "9.2.3",
+          "pluginVersion": "10.1.5",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -1203,7 +1452,7 @@ data:
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 22
+            "y": 28
           },
           "hiddenSeries": false,
           "id": 26,
@@ -1224,7 +1473,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "9.2.3",
+          "pluginVersion": "10.1.5",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -1279,7 +1528,8 @@ data:
           }
         }
       ],
-      "schemaVersion": 37,
+      "refresh": "",
+      "schemaVersion": 38,
       "style": "dark",
       "tags": [],
       "templating": {
