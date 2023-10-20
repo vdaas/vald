@@ -53,6 +53,7 @@ type Corrector interface {
 	Start(ctx context.Context) (<-chan error, error)
 	PreStop(ctx context.Context) error
 	// For metrics
+	NumberOfCheckedIndex() uint64
 	NumberOfCorrectedOldIndex() uint64
 	NumberOfCorrectedReplication() uint64
 }
@@ -65,6 +66,7 @@ type correct struct {
 	uuidsCount                uint32
 	uncommittedUUIDsCount     uint32
 	checkedID                 bbolt.Bbolt
+	checkedIndexCount         atomic.Uint64
 	correctedOldIndexCount    atomic.Uint64
 	correctedReplicationCount atomic.Uint64
 }
@@ -130,6 +132,10 @@ func (c *correct) Start(ctx context.Context) (<-chan error, error) {
 func (c *correct) PreStop(_ context.Context) error {
 	log.Info("removing persistent cache files...")
 	return c.checkedID.Close(true)
+}
+
+func (c *correct) NumberOfCheckedIndex() uint64 {
+	return c.checkedIndexCount.Load()
 }
 
 func (c *correct) NumberOfCorrectedOldIndex() uint64 {
@@ -271,6 +277,7 @@ func (c *correct) correct(ctx context.Context) (err error) {
 
 						//  now this id is checked so set it to the disk cache
 						c.checkedID.AsyncSet(bolteg, []byte(id), nil)
+						c.checkedIndexCount.Add(1)
 
 						return nil
 					}))
