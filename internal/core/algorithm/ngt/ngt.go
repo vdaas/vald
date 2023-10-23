@@ -519,7 +519,7 @@ func (n *ngt) Insert(vec []float32) (id uint, err error) {
 	}
 	dim := C.uint32_t(n.dimension)
 	// cvec := (*C.float)(&vec[0])
-	C.copy_buffer((*C.float)(&vec[0]), )
+	C.copy_buffer((*C.float)(&vec[0]))
 	cvec := C.get_buffer()
 	ebuf := n.GetErrorBuffer()
 	n.lock(true)
