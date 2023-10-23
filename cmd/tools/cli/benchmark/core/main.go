@@ -278,7 +278,7 @@ func main() {
 	}, "\t"))
 	output("start")
 	path, _ := file.MkdirTemp("")
-	sleep(ctx, time.Second*5, time.Minute*4, func() {
+	sleep(ctx, time.Second*10, time.Minute*1, func() {
 		output("waiting for start")
 	}, func() {
 		runtime.GC()
@@ -288,8 +288,8 @@ func main() {
 	})
 
 	ids := make([]uint, len(vectors))
-	run(ctx, false, path, len(vectors[0]), vectors, ids, time.Hour*1, output)
-	sleep(ctx, time.Second*5, time.Minute*4, func() {
+	run(ctx, false, path, len(vectors[0]), vectors, ids, time.Minute*10, output)
+	sleep(ctx, time.Second*10, time.Minute*1, func() {
 		output("waiting for next")
 	}, func() {
 		runtime.GC()
@@ -312,19 +312,19 @@ func main() {
 	ids = nil
 	vectors = vectors[:0:0]
 	vectors = nil
-	sleep(ctx, time.Second*5, time.Minute*5, func() {
+	sleep(ctx, time.Second*10, time.Minute*1, func() {
 		output("waiting for gc")
 	}, func() {
 		runtime.GC()
 		output("gc")
 	})
-	sleep(ctx, time.Second*5, time.Minute*5, func() {
+	sleep(ctx, time.Second*10, time.Minute*1, func() {
 		output("waiting for gc")
 	}, func() {
 		runtime.GC()
 		output("gc")
 	})
-	sleep(ctx, time.Second*5, time.Minute*5, func() {
+	sleep(ctx, time.Second*10, time.Minute*1, func() {
 		output("finalizing")
 	}, func() {
 		cancel()
@@ -402,7 +402,7 @@ func run(ctx context.Context, load bool, path string, dim int, vectors [][]float
 			output("save index")
 		})
 	}
-	sleep(ctx, time.Second*5, time.Minute*10, func() {
+	sleep(ctx, time.Second*10, time.Minute*1, func() {
 		output("finalizing")
 	}, func() {
 		n.Close()

@@ -268,6 +268,8 @@ func gen(isLoad bool, opts ...Option) (NGT, error) {
 		return nil, err
 	}
 
+	C.init_buffer(C.size_t(n.dimension))
+
 	return n, nil
 }
 
@@ -516,7 +518,9 @@ func (n *ngt) Insert(vec []float32) (id uint, err error) {
 		return 0, errors.ErrIncompatibleDimensionSize(len(vec), int(n.dimension))
 	}
 	dim := C.uint32_t(n.dimension)
-	cvec := (*C.float)(&vec[0])
+	// cvec := (*C.float)(&vec[0])
+	C.copy_buffer((*C.float)(&vec[0]), )
+	cvec := C.get_buffer()
 	ebuf := n.GetErrorBuffer()
 	n.lock(true)
 	oid := C.ngt_insert_index_as_float(n.index, cvec, dim, ebuf)
@@ -805,6 +809,7 @@ func (n *ngt) rUnlock(cLock bool) {
 func (n *ngt) Close() {
 	if n.index != nil {
 		C.ngt_close_index(n.index)
+		C.destruct_buffer()
 		n.index = nil
 		n.prop = nil
 		n.ospace = nil
