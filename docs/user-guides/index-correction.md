@@ -12,11 +12,11 @@ To resolve these inconsistencies, you can use the `Index Correction` feature.
 ## Settings
 
 - enabled  
-Turns the index correction feature on/off.
+  Turns the index correction feature on/off.
 - schedule  
-Sets the interval for the job start in cron notation (the default value is `3 6 * * *`, which means 3:06 AM every day).
+  Sets the interval for the job start in cron notation (the default value is `3 6 * * *`, which means 3:06 AM every day).
 - suspend  
-[Temporary suspension setting](https://kubernetes.io/docs/concepts/workloads/controllers/cron-jobs/#schedule-suspension) for CronJob.
+  [Temporary suspension setting](https://kubernetes.io/docs/concepts/workloads/controllers/cron-jobs/#schedule-suspension) for CronJob.
 
 ```yaml
 manager:
@@ -30,8 +30,8 @@ manager:
 ## Important Notes
 
 - Processing time  
-Under conditions of 10 million vectors and agent replica *10, it takes about 10~20 minutes. The process is O(MN) where M is the number of vector items and N is the number of agent replicas.
+  Under conditions of 10 million vectors and agent replica \*10, it takes about 10~20 minutes. The process is O(MN) where M is the number of vector items and N is the number of agent replicas.
 - concurrencyPolicy  
-`Forbid` is set internally, so a new job will not be created while an existing job is running. In other words, if the process does not finish within the interval specified by the schedule, the next job will not be scheduled.
+  `Forbid` is set internally, so a new job will not be created while an existing job is running. In other words, if the process does not finish within the interval specified by the schedule, the next job will not be scheduled.
 - Index operations during correction  
-Vector operations performed after the start of the index correction job are not considered in that job.
+  Vector operations performed after the start of the index correction job are not considered in that job.
