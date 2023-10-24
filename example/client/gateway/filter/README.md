@@ -48,15 +48,16 @@ After launching the k8s cluster, do the following steps at the root directory.
     ```
 
 3. Deploy ingress filter server and egress filter server
-```bash
-# deploy ingress filter
-sed -e "s/DOCKERHUB_ID/${DOCKERHUB_ID}/g" example/manifest/filter/egress/deployment.yaml | kubectl apply -f - \
-&& kubectl apply -f example/manifest/filter/egress/service.yaml
 
-# deploy egress filter
-sed -e "s/DOCKERHUB_ID/${DOCKERHUB_ID}/g" example/manifest/filter/ingress/deployment.yaml | kubectl apply -f - \
-&& kubectl apply -f example/manifest/filter/ingress/service.yaml
-```
+    ```bash
+    # deploy ingress filter
+    sed -e "s/DOCKERHUB_ID/${DOCKERHUB_ID}/g" example/manifest/filter/egress/deployment.yaml | kubectl apply -f - \
+    && kubectl apply -f example/manifest/filter/egress/service.yaml
+    
+    # deploy egress filter
+    sed -e "s/DOCKERHUB_ID/${DOCKERHUB_ID}/g" example/manifest/filter/ingress/deployment.yaml | kubectl apply -f - \
+    && kubectl apply -f example/manifest/filter/ingress/service.yaml
+    ```
 
 4. Run test
 
