@@ -25,27 +25,27 @@ After launching the k8s cluster, do the following steps at the root directory.
 
 2. Build and publish example ingress filter and egress filter docker image
 
-```bash
-# login to docker if needed, and setup your DockerHub ID
-docker login
-export DOCKERHUB_ID=<DOCKERHUB_ID>
-
-# build and publish ingress filter image
-docker build \
-    -f example/manifest/filter/ingress/Dockerfile \
-    -t $DOCKERHUB_ID/vald-ingress-filter:latest . \
-    --build-arg GO_VERSION=$(make version/go)
-
-docker push ${DOCKERHUB_ID}/vald-ingress-filter:latest
-
-# build and publish egress filter image
-docker build \
-    -f example/manifest/filter/egress/Dockerfile \
-    -t $DOCKERHUB_ID/vald-egress-filter:latest . \
-    --build-arg GO_VERSION=$(make version/go)
-
-docker push ${DOCKERHUB_ID}/vald-egress-filter:latest
-```
+    ```bash
+    # login to docker if needed, and setup your DockerHub ID
+    docker login
+    export DOCKERHUB_ID=<DOCKERHUB_ID>
+    
+    # build and publish ingress filter image
+    docker build \
+        -f example/manifest/filter/ingress/Dockerfile \
+        -t $DOCKERHUB_ID/vald-ingress-filter:latest . \
+        --build-arg GO_VERSION=$(make version/go)
+    
+    docker push ${DOCKERHUB_ID}/vald-ingress-filter:latest
+    
+    # build and publish egress filter image
+    docker build \
+        -f example/manifest/filter/egress/Dockerfile \
+        -t $DOCKERHUB_ID/vald-egress-filter:latest . \
+        --build-arg GO_VERSION=$(make version/go)
+    
+    docker push ${DOCKERHUB_ID}/vald-egress-filter:latest
+    ```
 
 3. Deploy ingress filter server and egress filter server
 ```bash
