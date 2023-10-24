@@ -2,25 +2,26 @@
 After launching the k8s cluster, do the following steps at the root directory.
 
 1. Deploy Vald cluster with filter-gateway
-```bash
-vim example/helm/values.yaml
----
-...
-gateway:
-...
-    filter:
-        enabled: true
-...
-agent:
-    ngt:
-        dimension: 784
-        distance_type: l2
-...
 
-# deploy vald cluster
-helm repo add vald https://vald.vdaas.org/charts
-helm install vald vald/vald --values example/helm/values.yaml
-```
+      ```bash
+      vim example/helm/values.yaml
+      ---
+      ...
+      gateway:
+      ...
+      filter:
+          enabled: true
+      ...
+      agent:
+          ngt:
+              dimension: 784
+              distance_type: l2
+      ...
+      
+      # deploy vald cluster
+      helm repo add vald https://vald.vdaas.org/charts
+      helm install vald vald/vald --values example/helm/values.yaml
+      ```
 
 2. Build and publish example ingress filter and egress filter docker image
 
