@@ -21,7 +21,6 @@ on:
         type: string
         description: "Dispatch target repository"
         required: true
-        default: ""
 
 jobs:
   dispatch:

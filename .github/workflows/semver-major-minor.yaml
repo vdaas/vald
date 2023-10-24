@@ -50,7 +50,7 @@ jobs:
         run: |
           LATEST_TAG=`git tag --sort=v:refname | tail -n 1`
           UNSUPPORTED_VERSION=`git tag --sort=v:refname | sed -E 's/^v([0-9]+\.[0-9]+).*$/v\1/' | uniq | tail -n 2 | head -n 1`
-          RELEASE_KIND=`echo "${{ github.event.head_commit.message }}" | sed -n -E 's:^\[(major|minor)\].*:\1:p'`
+          RELEASE_KIND=`git log --pretty=format:%s -1 | sed -n -E 's:^\[(major|minor)\].*:\1:p'`
 
           echo "LATEST_TAG=${LATEST_TAG}"                   >> $GITHUB_OUTPUT # e.g) v1.7.6
           echo "RELEASE_KIND=${RELEASE_KIND}"               >> $GITHUB_OUTPUT # e.g) major or minor

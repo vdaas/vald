@@ -43,7 +43,7 @@ jobs:
         run: |
           RELEASE_BRANCH_NAME_SUFFIX=`echo '${{ github.ref }}' | sed -e 's:^refs/heads/release/::'`
           BRANCH_LATEST_TAG=`git tag --sort=v:refname | grep ${RELEASE_BRANCH_NAME_SUFFIX} | tail -n 1`
-          RELEASE_KIND=`echo "${{ github.event.head_commit.message }}" | sed -n -E 's:^\[(patch)\].*:\1:p'`
+          RELEASE_KIND=`git log --pretty=format:%s -1 | sed -n -E 's:^\[(patch)\].*:\1:p'`
 
           echo "RELEASE_BRANCH_NAME_SUFFIX=${RELEASE_BRANCH_NAME_SUFFIX}" >> $GITHUB_OUTPUT # e.g) vx.x
           echo "BRANCH_LATEST_TAG=${BRANCH_LATEST_TAG}"                   >> $GITHUB_OUTPUT # e.g) vx.x.x or empty
