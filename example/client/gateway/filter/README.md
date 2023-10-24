@@ -69,7 +69,8 @@ sed -e "s/DOCKERHUB_ID/${DOCKERHUB_ID}/g" example/manifest/filter/ingress/deploy
     ```
 
 5. Cleanup
-```bash
-helm uninstall vald
-kubectl delete -f ./example/manifest/filter/egress/deployment.yaml -f ./example/manifest/filter/egress/service.yaml -f ./example/manifest/filter/ingress/deployment.yaml -f ./example/manifest/filter/ingress/service.yaml
-```
+
+    ```bash
+    helm uninstall vald
+    kubectl delete -f ./example/manifest/filter/egress/deployment.yaml -f ./example/manifest/filter/egress/service.yaml -f ./example/manifest/filter/ingress/deployment.yaml -f ./example/manifest/filter/ingress/service.yaml
+    ```
