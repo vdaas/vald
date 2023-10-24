@@ -59,13 +59,14 @@ sed -e "s/DOCKERHUB_ID/${DOCKERHUB_ID}/g" example/manifest/filter/ingress/deploy
 ```
 
 4. Run test
-```bash
-# if you don't use the Kubernetes ingress, set the port forward
-kubectl port-forward deployment/vald-filter-gateway 8081:8081
 
-# Please change the argument according to your environment.
-go run ./example/client/gateway/filter/main.go -addr "localhost:8081" -ingresshost "vald-ingress-filter.default.svc.cluster.local" -ingressport 8082 -egresshost "vald-egress-filter.default.svc.cluster.local" -egressport 8083
-```
+    ```bash
+    # if you don't use the Kubernetes ingress, set the port forward
+    kubectl port-forward deployment/vald-filter-gateway 8081:8081
+    
+    # Please change the argument according to your environment.
+    go run ./example/client/gateway/filter/main.go -addr "localhost:8081" -ingresshost "vald-ingress-filter.default.svc.cluster.local" -ingressport 8082 -egresshost "vald-egress-filter.default.svc.cluster.local" -egressport 8083
+    ```
 
 5. Cleanup
 ```bash
