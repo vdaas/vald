@@ -77,7 +77,7 @@ func New(opts ...Option) (Client, error) {
 	return c, nil
 }
 
-func (c *client) Get(ctx context.Context, name string, namespace string, obj cli.Object, opts ...cli.GetOption) error {
+func (c *client) Get(ctx context.Context, name, namespace string, obj cli.Object, opts ...cli.GetOption) error {
 	return c.reader.Get(
 		ctx,
 		cli.ObjectKey{

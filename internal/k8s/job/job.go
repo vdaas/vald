@@ -78,7 +78,7 @@ func New(opts ...Option) (JobWatcher, error) {
 }
 
 // Reconcile implements k8s reconciliation loop to retrieve the Job information from k8s.
-func (r *reconciler) Reconcile(ctx context.Context, req reconcile.Request) (res reconcile.Result, err error) {
+func (r *reconciler) Reconcile(ctx context.Context, _ reconcile.Request) (res reconcile.Result, err error) {
 	js := new(batchv1.JobList)
 
 	err = r.mgr.GetClient().List(ctx, js, r.listOpts...)
@@ -101,7 +101,8 @@ func (r *reconciler) Reconcile(ctx context.Context, req reconcile.Request) (res 
 	}
 
 	jobs := r.jobsByAppNamePool.Get().(map[string][]Job)
-	for _, job := range js.Items {
+	for idx := range js.Items {
+		job := js.Items[idx]
 		name, ok := job.GetObjectMeta().GetLabels()["app"]
 		if !ok {
 			jns := strings.Split(job.GetName(), "-")
@@ -133,7 +134,7 @@ func (r *reconciler) GetName() string {
 }
 
 // NewReconciler returns the reconciler for the Job.
-func (r *reconciler) NewReconciler(ctx context.Context, mgr manager.Manager) reconcile.Reconciler {
+func (r *reconciler) NewReconciler(_ context.Context, mgr manager.Manager) reconcile.Reconciler {
 	if r.mgr == nil && mgr != nil {
 		r.mgr = mgr
 	}
@@ -143,19 +144,19 @@ func (r *reconciler) NewReconciler(ctx context.Context, mgr manager.Manager) rec
 }
 
 // For returns the runtime.Object which is job.
-func (r *reconciler) For() (client.Object, []builder.ForOption) {
+func (*reconciler) For() (client.Object, []builder.ForOption) {
 	return new(batchv1.Job), nil
 }
 
 // Owns returns the owner of the job watcher.
 // It will always return nil.
-func (r *reconciler) Owns() (client.Object, []builder.OwnsOption) {
+func (*reconciler) Owns() (client.Object, []builder.OwnsOption) {
 	return nil, nil
 }
 
 // Watches returns the kind of the job and the event handler.
 // It will always return nil.
-func (r *reconciler) Watches() (client.Object, handler.EventHandler, []builder.WatchesOption) {
+func (*reconciler) Watches() (client.Object, handler.EventHandler, []builder.WatchesOption) {
 	// return &source.Kind{Type: new(corev1.Pod)}, &handler.EnqueueRequestForObject{}
 	return nil, nil, nil
 }

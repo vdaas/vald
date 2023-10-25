@@ -72,7 +72,7 @@ func (r *reconciler) AddListOpts(opt client.ListOption) {
 	r.lopts = append(r.lopts, opt)
 }
 
-func (r *reconciler) Reconcile(ctx context.Context, req reconcile.Request) (res reconcile.Result, err error) {
+func (r *reconciler) Reconcile(ctx context.Context, _ reconcile.Request) (res reconcile.Result, err error) {
 	bj := new(v1.ValdBenchmarkJobList)
 
 	if r.lopts == nil {
@@ -115,7 +115,7 @@ func (r *reconciler) GetName() string {
 	return r.name
 }
 
-func (r *reconciler) NewReconciler(ctx context.Context, mgr manager.Manager) reconcile.Reconciler {
+func (r *reconciler) NewReconciler(_ context.Context, mgr manager.Manager) reconcile.Reconciler {
 	if r.mgr == nil && mgr != nil {
 		r.mgr = mgr
 	}
@@ -125,15 +125,15 @@ func (r *reconciler) NewReconciler(ctx context.Context, mgr manager.Manager) rec
 	return r
 }
 
-func (r *reconciler) For() (client.Object, []builder.ForOption) {
+func (*reconciler) For() (client.Object, []builder.ForOption) {
 	return new(v1.ValdBenchmarkJob), nil
 }
 
-func (r *reconciler) Owns() (client.Object, []builder.OwnsOption) {
+func (*reconciler) Owns() (client.Object, []builder.OwnsOption) {
 	return nil, nil
 }
 
-func (r *reconciler) Watches() (client.Object, handler.EventHandler, []builder.WatchesOption) {
+func (*reconciler) Watches() (client.Object, handler.EventHandler, []builder.WatchesOption) {
 	// return &source.Kind{Type: new(corev1.Pod)}, &handler.EnqueueRequestForObject{}
 	return nil, nil, nil
 }

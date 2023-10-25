@@ -1434,7 +1434,6 @@ func TestToRawYaml(t *testing.T) {
 
 func TestMerge(t *testing.T) {
 	type config struct {
-		// Config     GlobalConfig
 		Discoverer *Discoverer
 	}
 
