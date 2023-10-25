@@ -17,7 +17,7 @@ const (
 	correctedOldIndexCountDesc = "The number of corrected old indexes while index correction job"
 
 	correctedReplicationCount     = "index_job_correction_corrected_replication_count"
-	correctedReplicationCountDesc = "The number of operation happend to correct replication number while index correction job"
+	correctedReplicationCountDesc = "The number of operation happened to correct replication number while index correction job"
 )
 
 type correctionMetrics struct {
