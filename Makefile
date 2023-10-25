@@ -388,6 +388,7 @@ update: \
 	update/libs \
 	proto/all \
 	deps \
+	update/template \
 	format \
 	go/deps
 
