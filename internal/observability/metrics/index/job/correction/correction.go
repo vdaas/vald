@@ -30,7 +30,7 @@ func New(c service.Corrector) metrics.Metric {
 	}
 }
 
-func (c *correctionMetrics) View() ([]*metrics.View, error) {
+func (*correctionMetrics) View() ([]*metrics.View, error) {
 	checkedIndexCount, err := view.New(
 		view.MatchInstrumentName(checkedIndexCount),
 		view.WithSetDescription(checkedIndexCountDesc),
