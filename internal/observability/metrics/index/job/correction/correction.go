@@ -1,4 +1,4 @@
-package job
+package correction
 
 import (
 	"context"
@@ -66,7 +66,6 @@ func (c *correctionMetrics) View() ([]*metrics.View, error) {
 }
 
 func (c *correctionMetrics) Register(m metrics.Meter) error {
-	// TODO: Use Counter instead?
 	checkedIndexCount, err := m.AsyncInt64().Gauge(
 		checkedIndexCount,
 		metrics.WithDescription(checkedIndexCountDesc),
