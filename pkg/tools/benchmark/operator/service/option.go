@@ -60,7 +60,7 @@ func WithReconcileCheckDuration(ts string) Option {
 // WithJobNamespace sets the namespace for running benchmark job.
 func WithJobNamespace(ns string) Option {
 	return func(o *operator) error {
-		if len(ns) == 0 {
+		if ns == "" {
 			o.jobNamespace = "default"
 		} else {
 			o.jobNamespace = ns
@@ -72,7 +72,7 @@ func WithJobNamespace(ns string) Option {
 // WithJobImage sets the benchmark job docker image info.
 func WithJobImage(image string) Option {
 	return func(o *operator) error {
-		if len(image) > 0 {
+		if image != "" {
 			o.jobImage = image
 		}
 		return nil
@@ -82,7 +82,7 @@ func WithJobImage(image string) Option {
 // WithJobImagePullPolicy sets the benchmark job docker image pullPolicy.
 func WithJobImagePullPolicy(p string) Option {
 	return func(o *operator) error {
-		if len(p) > 0 {
+		if p != "" {
 			o.jobImagePullPolicy = p
 		}
 		return nil
