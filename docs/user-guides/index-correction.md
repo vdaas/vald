@@ -31,7 +31,9 @@ manager:
 
 - Processing time  
   Under conditions of 10 million vectors and agent replica \*10, it takes about 10~20 minutes. The process is O(MN) where M is the number of vector items and N is the number of agent replicas.
+
 - concurrencyPolicy  
   `Forbid` is set internally, so a new job will not be created while an existing job is running. In other words, if the process does not finish within the interval specified by the schedule, the next job will not be scheduled.
+
 - Index operations during correction  
   Vector operations performed after the start of the index correction job are not considered in that job.
