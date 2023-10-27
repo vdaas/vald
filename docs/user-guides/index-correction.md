@@ -30,7 +30,7 @@ manager:
 ## Important Notes
 
 - Processing time  
-  Under conditions of 10 million vectors and agent replica \*10, it takes about 10~20 minutes. The process is O(MN) where M is the number of vector items and N is the number of agent replicas.
+  Under conditions of 10 million identical vectors(not including `index_replica`) and 10 agent replicas, the processing takes about 30~40 minutes (this is only a reference, and the actual execution time may vary depending on the infrastructure). Time complexity of the process is `O(MN)` where M is the number of identical vector items and N is the number of agent replicas. `index_replica` does not matter for the processing time.
 
 - concurrencyPolicy  
   `Forbid` is set internally, so a new job will not be created while an existing job is running. In other words, if the process does not finish within the interval specified by the schedule, the next job will not be scheduled.
