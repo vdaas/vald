@@ -337,6 +337,8 @@ message Object {
     ID id = 1 [(validate.rules).repeated.min_items = 2];
     // Filter configurations.
     Filter.Config filters = 2;
+    // Only fetch the vector id and timestamp
+    bool without_vector = 3;
   }
 
   // Represent the ID and distance pair.

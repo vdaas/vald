@@ -90,6 +90,13 @@
             "in": "path",
             "required": true,
             "type": "string"
+          },
+          {
+            "name": "withoutVector",
+            "description": "Only fetch the vector id and timestamp.",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
           }
         ],
         "tags": ["Object"]
