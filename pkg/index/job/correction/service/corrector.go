@@ -297,6 +297,9 @@ func (c *correct) checkConsistency(ctx context.Context, targetReplica *vectorRep
 				Id: &payload.Object_ID{
 					Id: targetReplica.vec.GetId(),
 				},
+				// FIXME: To make the processing faster. We can do this because there's no need to get the vector itself to detect inconsistency.
+				// If a vector turned out to be corrected, then we need to get the vector again with the vector data.
+				WithoutVector: true,
 			})
 			if err != nil {
 				if st, ok := status.FromError(err); !ok {
