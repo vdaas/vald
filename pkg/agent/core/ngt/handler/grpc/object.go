@@ -124,8 +124,10 @@ func (s *server) GetObject(ctx context.Context, id *payload.Object_VectorRequest
 	}
 	res = payload.Object_VectorFromVTPool()
 	res.Id = uuid
-	res.Vector = vec
 	res.Timestamp = ts
+	if !id.GetWithoutVector() {
+		res.Vector = vec
+	}
 	return res, nil
 }
 
