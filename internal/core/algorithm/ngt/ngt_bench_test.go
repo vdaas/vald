@@ -34,7 +34,11 @@ var (
 )
 
 func init() {
-	vectors, _, _ = load("sift-128-euclidean.hdf5")
+	filename := os.Getenv("DATA_PATH")
+	if _, err := os.Stat(filename); err != nil {
+		return
+	}
+	vectors, _, _ = load(filename)
 	n, _ = New(
 		WithDimension(len(vectors[0])),
 		WithDefaultPoolSize(8),
@@ -45,6 +49,9 @@ func init() {
 }
 
 func BenchmarkNGT(b *testing.B) {
+	if len(vectors) == 0 {
+		return
+	}
 	b.Logf("# of vectors: %v", len(vectors))
 	output := func(header string) {
 		status := fmt.Sprintf("/proc/%d/status", pid)
