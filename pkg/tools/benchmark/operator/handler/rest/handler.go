@@ -24,7 +24,7 @@ import (
 type Handler interface{}
 
 type handler struct {
-	js benchmark.JobServer
+	benchmark.JobServer
 }
 
 func New(opts ...Option) Handler {

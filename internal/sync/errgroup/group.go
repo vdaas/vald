@@ -21,9 +21,8 @@ import (
 	"context"
 	"runtime"
 
-	"github.com/vdaas/vald/internal/sync"
-
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/sync"
 	"github.com/vdaas/vald/internal/sync/semaphore"
 )
 
