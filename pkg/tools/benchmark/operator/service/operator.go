@@ -191,7 +191,8 @@ func (o *operator) jobReconcile(ctx context.Context, jobList map[string][]job.Jo
 	for _, jobs := range jobList {
 		cnt := len(jobs)
 		var name string
-		for _, job := range jobs {
+		for idx := range jobs {
+			job := jobs[idx]
 			if job.GetNamespace() != o.jobNamespace {
 				continue
 			}
@@ -200,14 +201,13 @@ func (o *operator) jobReconcile(ctx context.Context, jobList map[string][]job.Jo
 				cjobs[job.GetName()] = job.Namespace
 				benchmarkJobStatus[job.GetName()] = v1.BenchmarkJobAvailable
 				continue
-			} else {
-				name = job.GetName()
 			}
+			name = job.GetName()
 			if job.Status.Active == 0 && job.Status.Succeeded != 0 {
 				cnt--
 			}
 		}
-		if cnt == 0 && len(name) != 0 {
+		if cnt == 0 && name != "" {
 			benchmarkJobStatus[name] = v1.BenchmarkJobCompleted
 		}
 	}
@@ -263,7 +263,7 @@ func (o *operator) benchJobReconcile(ctx context.Context, benchJobList map[strin
 			if oldJob.GetGeneration() != job.GetGeneration() {
 				if job.Status != "" && oldJob.Status != v1.BenchmarkJobCompleted {
 					// delete old version job
-					err := o.deleteJob(ctx, oldJob.GetName(), oldJob.GetGeneration())
+					err := o.deleteJob(ctx, oldJob.GetName())
 					if err != nil {
 						log.Warnf("[reconcile benchmark job resource] failed to delete old version job: job name=%s, version=%d\t%s", oldJob.GetName(), oldJob.GetGeneration(), err.Error())
 					}
@@ -359,11 +359,9 @@ func (o *operator) benchScenarioReconcile(ctx context.Context, scenarioList map[
 						return s
 					}(),
 				}
-			} else {
+			} else if oldScenario.Crd.Status != sc.Status {
 				// only update status
-				if oldScenario.Crd.Status != sc.Status {
-					cbsl[name].Crd.Status = sc.Status
-				}
+				cbsl[name].Crd.Status = sc.Status
 			}
 		}
 	}
@@ -393,7 +391,7 @@ func (o *operator) deleteBenchmarkJob(ctx context.Context, name string, generati
 }
 
 // deleteJob deletes job resource according to given benchmark job name and generation.
-func (o *operator) deleteJob(ctx context.Context, name string, generation int64) error {
+func (o *operator) deleteJob(ctx context.Context, name string) error {
 	cj := new(job.Job)
 	err := o.ctrl.GetManager().GetClient().Get(ctx, client.ObjectKey{
 		Namespace: o.jobNamespace,
@@ -639,7 +637,7 @@ func (o *operator) checkAtomics() error {
 	return nil
 }
 
-func (o *operator) PreStart(ctx context.Context) error {
+func (o *operator) PreStart(_ context.Context) error {
 	log.Infof("[benchmark scenario operator] start vald benchmark scenario operator")
 	return nil
 }

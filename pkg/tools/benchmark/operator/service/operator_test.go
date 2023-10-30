@@ -3039,7 +3039,7 @@ func Test_operator_checkAtomics(t *testing.T) {
 				val = *v
 				benchJobMap[k] = &val
 			}
-			ors := []metav1.OwnerReference{}
+			var ors []metav1.OwnerReference
 			for _, v := range benchJobMap["scenario-search"].OwnerReferences {
 				or := v.DeepCopy()
 				or.Name = "incorrectName"

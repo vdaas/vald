@@ -31,8 +31,7 @@ type Benchmark interface {
 
 type server struct {
 	benchmark.UnimplementedJobServer
-
-	operator service.Operator
+	service.Operator
 }
 
 func New(opts ...Option) (bm Benchmark, err error) {
@@ -48,5 +47,5 @@ func New(opts ...Option) (bm Benchmark, err error) {
 	return b, nil
 }
 
-func (s *server) Start(ctx context.Context) {
+func (s *server) Start(_ context.Context) {
 }
