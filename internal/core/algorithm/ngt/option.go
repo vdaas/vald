@@ -36,9 +36,10 @@ import (
 type Option func(*ngt) error
 
 var (
-	DefaultPoolSize = uint32(10000)
-	DefaultRadius   = float32(-1.0)
-	DefaultEpsilon  = float32(0.1)
+	DefaultPoolSize         = uint32(10000)
+	DefaultRadius           = float32(-1.0)
+	DefaultEpsilon          = float32(0.1)
+	DefaultErrorBufferLimit = uint64(10)
 
 	defaultOptions = []Option{
 		WithIndexPath("/tmp/ngt-" + strconv.FormatInt(fastime.UnixNanoNow(), 10)),
@@ -51,7 +52,7 @@ var (
 		WithObjectType(Float),
 		WithDistanceType(L2),
 		WithBulkInsertChunkSize(100),
-		WithErrorBufferLimit(10),
+		WithErrorBufferLimit(DefaultErrorBufferLimit),
 	}
 )
 

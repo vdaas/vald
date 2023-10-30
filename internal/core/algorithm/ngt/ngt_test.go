@@ -43,9 +43,10 @@ var (
 		// !!! These fields will not be verified in the entire test
 		// Do not validate C dependencies
 		comparator.IgnoreFields(ngt{},
-			"dimension", "prop", "epool", "index", "ospace"),
+			"dimension", "prop", "epool", "index", "ospace", "eps"),
 		comparator.RWMutexComparer,
 		comparator.ErrorComparer,
+		comparator.AtomicUint64Comparator,
 	}
 
 	searchResultComparator = []comparator.Option{
@@ -140,6 +141,7 @@ func TestNew(t *testing.T) {
 						objectType:          Float,
 						mu:                  &sync.RWMutex{},
 						cmu:                 &sync.RWMutex{},
+						epl:                 DefaultErrorBufferLimit,
 					},
 				},
 				comparators: append(ngtComparator, comparator.CompareField("idxPath", comparator.Comparer(func(s1, s2 string) bool {
@@ -166,6 +168,7 @@ func TestNew(t *testing.T) {
 						objectType:          Float,
 						mu:                  &sync.RWMutex{},
 						cmu:                 &sync.RWMutex{},
+						epl:                 DefaultErrorBufferLimit,
 					},
 				},
 			}
@@ -191,6 +194,7 @@ func TestNew(t *testing.T) {
 						objectType:          Uint8,
 						mu:                  &sync.RWMutex{},
 						cmu:                 &sync.RWMutex{},
+						epl:                 DefaultErrorBufferLimit,
 					},
 				},
 			}
@@ -320,6 +324,7 @@ func TestLoad(t *testing.T) {
 						objectType:          Uint8,
 						mu:                  &sync.RWMutex{},
 						cmu:                 &sync.RWMutex{},
+						epl:                 DefaultErrorBufferLimit,
 					},
 				},
 				checkFunc: func(ctx context.Context, w want, n NGT, e error) error {
@@ -386,6 +391,7 @@ func TestLoad(t *testing.T) {
 						objectType:          Uint8,
 						mu:                  &sync.RWMutex{},
 						cmu:                 &sync.RWMutex{},
+						epl:                 DefaultErrorBufferLimit,
 					},
 				},
 				checkFunc: func(ctx context.Context, w want, n NGT, e error) error {
@@ -452,6 +458,7 @@ func TestLoad(t *testing.T) {
 						objectType:          Float,
 						mu:                  &sync.RWMutex{},
 						cmu:                 &sync.RWMutex{},
+						epl:                 DefaultErrorBufferLimit,
 					},
 				},
 				checkFunc: func(ctx context.Context, w want, n NGT, e error) error {
@@ -518,6 +525,7 @@ func TestLoad(t *testing.T) {
 						objectType:          Float,
 						mu:                  &sync.RWMutex{},
 						cmu:                 &sync.RWMutex{},
+						epl:                 DefaultErrorBufferLimit,
 					},
 				},
 				checkFunc: func(ctx context.Context, w want, n NGT, e error) error {
@@ -714,6 +722,7 @@ func Test_gen(t *testing.T) {
 					objectType:          Float,
 					mu:                  &sync.RWMutex{},
 					cmu:                 &sync.RWMutex{},
+					epl:                 DefaultErrorBufferLimit,
 				},
 			},
 			comparators: append(ngtComparator, comparator.CompareField("idxPath", comparator.Comparer(func(s1, s2 string) bool {
@@ -761,6 +770,7 @@ func Test_gen(t *testing.T) {
 						objectType:          Uint8,
 						mu:                  &sync.RWMutex{},
 						cmu:                 &sync.RWMutex{},
+						epl:                 DefaultErrorBufferLimit,
 					},
 				},
 				checkFunc: func(ctx context.Context, w want, n NGT, e error, comparators ...comparator.Option) error {
