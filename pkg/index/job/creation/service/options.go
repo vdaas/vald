@@ -48,7 +48,7 @@ func WithIndexingConcurrency(num int) Option {
 	}
 }
 
-// WithIndexingConcurrency returns Option that sets indexing pool size.
+// WithCreationPoolSize returns Option that sets indexing pool size.
 func WithCreationPoolSize(size uint32) Option {
 	return func(idx *index) error {
 		if size <= 0 {

@@ -103,6 +103,9 @@ func New(cfg *config.Data) (_ runner.Runner, err error) {
 			}
 		}),
 	)
+	if err != nil {
+		return nil, err
+	}
 
 	var obs observability.Observability
 	if cfg.Observability.Enabled {
@@ -191,7 +194,7 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 }
 
 // PreStop is a method called before execution of Stop.
-func (_ *run) PreStop(_ context.Context) error {
+func (*run) PreStop(_ context.Context) error {
 	return nil
 }
 
@@ -211,6 +214,6 @@ func (r *run) Stop(ctx context.Context) (errs error) {
 }
 
 // PtopStop is a method called after execution of Stop.
-func (_ *run) PostStop(_ context.Context) error {
+func (*run) PostStop(_ context.Context) error {
 	return nil
 }
