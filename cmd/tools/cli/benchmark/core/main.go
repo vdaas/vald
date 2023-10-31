@@ -37,6 +37,7 @@ import (
 )
 
 func main() {
+	const columnSize = 42
 	var (
 		buf           []byte
 		err           error
@@ -60,7 +61,7 @@ func main() {
 
 		pfile  = fmt.Sprintf("/proc/%d/status", os.Getpid())
 		zero   = float64(0.0)
-		format = "%s\t" + strings.TrimSuffix(strings.Repeat("%.2f\t", 42), "\t")
+		format = "%s\t" + strings.TrimSuffix(strings.Repeat("%.2f\t", columnSize), "\t")
 	)
 	output := func(header string) {
 		buf, err = os.ReadFile(pfile)
@@ -228,9 +229,7 @@ func main() {
 		}
 		go srv.ListenAndServe()
 		<-ctx.Done()
-		ctx, cancel := context.WithCancel(context.Background())
-		defer cancel()
-		srv.Shutdown(ctx)
+		srv.Shutdown(context.Background())
 	}()
 
 	vectors, _, _ := load(os.Getenv("DATA_PATH"))
@@ -326,19 +325,19 @@ func main() {
 		waitForGC      = time.Minute * 5
 		timeToFinalize = time.Minute * 5
 	)
-	sleep(ctx, time.Second*5, waitForGC, func() {
+	sleep(ctx, logInterval, waitForGC, func() {
 		output("waiting for gc")
 	}, func() {
 		runtime.GC()
 		output("gc")
 	})
-	sleep(ctx, time.Second*5, waitForGC, func() {
+	sleep(ctx, logInterval, waitForGC, func() {
 		output("waiting for gc")
 	}, func() {
 		runtime.GC()
 		output("gc")
 	})
-	sleep(ctx, time.Second*5, timeToFinalize, func() {
+	sleep(ctx, logInterval, timeToFinalize, func() {
 		output("finalizing")
 	}, func() {
 		cancel()
