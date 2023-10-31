@@ -46,14 +46,14 @@ type run struct {
 func New(cfg *config.Data) (_ runner.Runner, err error) {
 	eg := errgroup.Get()
 
-	dOpts, err := cfg.Creator.Discoverer.Client.Opts()
+	dOpts, err := cfg.Creation.Discoverer.Client.Opts()
 	if err != nil {
 		return nil, err
 	}
 	// skipcq: CRT-D0001
 	dOpts = append(dOpts, grpc.WithErrGroup(eg))
 
-	acOpts, err := cfg.Creator.Discoverer.AgentClientOptions.Opts()
+	acOpts, err := cfg.Creation.Discoverer.AgentClientOptions.Opts()
 	if err != nil {
 		return nil, err
 	}
@@ -62,14 +62,14 @@ func New(cfg *config.Data) (_ runner.Runner, err error) {
 
 	discoverer, err := discoverer.New(
 		discoverer.WithAutoConnect(true),
-		discoverer.WithName(cfg.Creator.AgentName),
-		discoverer.WithNamespace(cfg.Creator.AgentNamespace),
-		discoverer.WithPort(cfg.Creator.AgentPort),
-		discoverer.WithServiceDNSARecord(cfg.Creator.AgentDNS),
+		discoverer.WithName(cfg.Creation.AgentName),
+		discoverer.WithNamespace(cfg.Creation.AgentNamespace),
+		discoverer.WithPort(cfg.Creation.AgentPort),
+		discoverer.WithServiceDNSARecord(cfg.Creation.AgentDNS),
 		discoverer.WithDiscovererClient(grpc.New(dOpts...)),
-		discoverer.WithDiscoverDuration(cfg.Creator.Discoverer.Duration),
+		discoverer.WithDiscoverDuration(cfg.Creation.Discoverer.Duration),
 		discoverer.WithOptions(acOpts...),
-		discoverer.WithNodeName(cfg.Creator.NodeName),
+		discoverer.WithNodeName(cfg.Creation.NodeName),
 		discoverer.WithOnDiscoverFunc(func(ctx context.Context, c discoverer.Client, addrs []string) error {
 			last := len(addrs) - 1
 			for i := 0; i < len(addrs)/2; i++ {
@@ -84,9 +84,9 @@ func New(cfg *config.Data) (_ runner.Runner, err error) {
 
 	indexer, err := service.New(
 		service.WithDiscoverer(discoverer),
-		service.WithIndexingConcurrency(cfg.Creator.Concurrency),
-		service.WithCreationPoolSize(cfg.Creator.CreationPoolSize),
-		service.WithTargetAddrs(cfg.Creator.TargetAddrs...),
+		service.WithIndexingConcurrency(cfg.Creation.Concurrency),
+		service.WithCreationPoolSize(cfg.Creation.CreationPoolSize),
+		service.WithTargetAddrs(cfg.Creation.TargetAddrs...),
 	)
 	if err != nil {
 		return nil, err

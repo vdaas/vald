@@ -13,8 +13,8 @@
 // limitations under the License.
 package config
 
-// IndexCreator represents the index creator configurations.
-type IndexCreator struct {
+// IndexCreation represents the configurations for index creation.
+type IndexCreation struct {
 	// AgentPort represent agent port number
 	AgentPort int `json:"agent_port" yaml:"agent_port"`
 
@@ -34,16 +34,16 @@ type IndexCreator struct {
 	Concurrency int `json:"concurrency" yaml:"concurrency"`
 
 	// CreationPoolSize represents batch pool size for indexing.
-	CreationPoolSize uint32 `yaml:"creation_pool_size" json:"creation_pool_size"`
+	CreationPoolSize uint32 `json:"creation_pool_size" yaml:"creation_pool_size"`
 
 	// TargetAddrs represents indexing target addresses.
-	TargetAddrs []string `yaml:"target_addrs" json:"target_addrs"`
+	TargetAddrs []string `json:"target_addrs" yaml:"target_addrs"`
 
 	// Discoverer represents agent discoverer service configuration.
 	Discoverer *DiscovererClient `json:"discoverer" yaml:"discoverer"`
 }
 
-func (ic *IndexCreator) Bind() *IndexCreator {
+func (ic *IndexCreation) Bind() *IndexCreation {
 	ic.AgentName = GetActualValue(ic.AgentName)
 	ic.AgentNamespace = GetActualValue(ic.AgentNamespace)
 	ic.AgentDNS = GetActualValue(ic.AgentDNS)
