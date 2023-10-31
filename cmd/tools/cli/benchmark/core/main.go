@@ -219,14 +219,18 @@ func main() {
 	var wg sync.WaitGroup
 	wg.Add(1)
 	go func() {
+		const timeout = time.Second * 5
 		defer wg.Done()
 		srv := &http.Server{
-			Addr:    "0.0.0.0:6060",
-			Handler: metrics.NewPProfHandler(),
+			Addr:              "0.0.0.0:6060",
+			Handler:           metrics.NewPProfHandler(),
+			ReadHeaderTimeout: timeout,
 		}
 		go srv.ListenAndServe()
 		<-ctx.Done()
-		srv.Shutdown(context.Background())
+		ctx, cancel := context.WithCancel(context.Background())
+		defer cancel()
+		srv.Shutdown(ctx)
 	}()
 
 	vectors, _, _ := load(os.Getenv("DATA_PATH"))
@@ -278,7 +282,11 @@ func main() {
 	}, "\t"))
 	output("start")
 	path, _ := file.MkdirTemp("")
-	sleep(ctx, time.Second*5, time.Minute*1, func() {
+	const (
+		logInterval  = time.Second * 5
+		waitForStart = time.Minute * 1
+	)
+	sleep(ctx, logInterval, waitForStart, func() {
 		output("waiting for start")
 	}, func() {
 		runtime.GC()
@@ -288,8 +296,10 @@ func main() {
 	})
 
 	ids := make([]uint, len(vectors))
-	run(ctx, false, path, len(vectors[0]), vectors, ids, time.Hour*2, output)
-	sleep(ctx, time.Second*5, time.Minute*2, func() {
+	const timeToRun = time.Hour * 2
+	run(ctx, false, path, len(vectors[0]), vectors, ids, timeToRun, output)
+	const waitForNext = time.Minute * 2
+	sleep(ctx, logInterval, waitForNext, func() {
 		output("waiting for next")
 	}, func() {
 		runtime.GC()
@@ -298,7 +308,7 @@ func main() {
 		output("starting")
 	})
 	run(ctx, true, path, len(vectors[0]), nil, nil, 0, output)
-	sleep(ctx, time.Second*5, time.Minute*2, func() {
+	sleep(ctx, logInterval, waitForNext, func() {
 		output("waiting for next")
 	}, func() {
 		runtime.GC()
@@ -306,25 +316,29 @@ func main() {
 		time.Sleep(time.Minute)
 		output("starting")
 	})
-	run(ctx, true, path, len(vectors[0]), vectors, ids, time.Hour*2, output)
+	run(ctx, true, path, len(vectors[0]), vectors, ids, timeToRun, output)
 
 	ids = ids[:0:0]
 	ids = nil
 	vectors = vectors[:0:0]
 	vectors = nil
-	sleep(ctx, time.Second*5, time.Minute*5, func() {
+	const (
+		waitForGC      = time.Minute * 5
+		timeToFinalize = time.Minute * 5
+	)
+	sleep(ctx, time.Second*5, waitForGC, func() {
 		output("waiting for gc")
 	}, func() {
 		runtime.GC()
 		output("gc")
 	})
-	sleep(ctx, time.Second*5, time.Minute*5, func() {
+	sleep(ctx, time.Second*5, waitForGC, func() {
 		output("waiting for gc")
 	}, func() {
 		runtime.GC()
 		output("gc")
 	})
-	sleep(ctx, time.Second*5, time.Minute*5, func() {
+	sleep(ctx, time.Second*5, timeToFinalize, func() {
 		output("finalizing")
 	}, func() {
 		cancel()
@@ -333,18 +347,19 @@ func main() {
 }
 
 func run(ctx context.Context, load bool, path string, dim int, vectors [][]float32, ids []uint, dur time.Duration, output func(header string)) {
+	const poolSize = 8
 	var n ngt.NGT
 	if load {
 		n, _ = ngt.Load(
 			ngt.WithDimension(dim),
-			ngt.WithDefaultPoolSize(8),
+			ngt.WithDefaultPoolSize(poolSize),
 			ngt.WithObjectType(ngt.Float),
 			ngt.WithDistanceType(ngt.L2),
 		)
 	} else {
 		n, _ = ngt.New(
 			ngt.WithDimension(dim),
-			ngt.WithDefaultPoolSize(8),
+			ngt.WithDefaultPoolSize(poolSize),
 			ngt.WithObjectType(ngt.Float),
 			ngt.WithDistanceType(ngt.L2),
 		)
@@ -374,7 +389,7 @@ func run(ctx context.Context, load bool, path string, dim int, vectors [][]float
 				ids[i] = id
 			}
 			output("insert")
-			if err = n.CreateIndex(8); err != nil {
+			if err = n.CreateIndex(poolSize); err != nil {
 				log.Fatal(err)
 			}
 			output("create index")
@@ -392,7 +407,7 @@ func run(ctx context.Context, load bool, path string, dim int, vectors [][]float
 				}
 			}
 			output("insert")
-			if err = n.CreateIndex(8); err != nil {
+			if err = n.CreateIndex(poolSize); err != nil {
 				log.Fatal(err)
 			}
 			output("create index")
@@ -431,7 +446,6 @@ func sleep(ctx context.Context, duration, limit time.Duration, fn, efn func()) {
 				fn()
 			}
 		}
-		return
 	}
 	ticker := time.NewTicker(duration)
 	defer ticker.Stop()
@@ -445,7 +459,6 @@ func sleep(ctx context.Context, duration, limit time.Duration, fn, efn func()) {
 			fn()
 		}
 	}
-	return
 }
 
 // load function loads training and test vector from hdf file. The size of ids is same to the number of training data.
@@ -490,7 +503,7 @@ func load(path string) (train, test [][]float32, err error) {
 		for i := 0; i < row; i++ {
 			vecs[i] = make([]float32, dim)
 			for j := 0; j < dim; j++ {
-				vecs[i][j] = float32(vec[i*dim+j])
+				vecs[i][j] = vec[i*dim+j]
 			}
 		}
 
