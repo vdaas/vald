@@ -50,6 +50,8 @@ spec:
               mountPath: /var/lib/grafana/dashboards-vald/07
             - name: grafana-dashboards-vald-lb-gateway
               mountPath: /var/lib/grafana/dashboards-vald/08
+            - name: grafana-dashboards-vald-index-correction
+              mountPath: /var/lib/grafana/dashboards-vald/09
       volumes:
         - name: grafana-datasource-provider
           configMap:
@@ -83,3 +85,7 @@ spec:
           configMap:
             defaultMode: 420
             name: grafana-dashboards-vald-lb-gateway
+        - name: grafana-dashboards-vald-index-correction
+          configMap:
+            defaultMode: 420
+            name: grafana-dashboards-vald-index-correction
