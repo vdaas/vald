@@ -234,6 +234,13 @@ message Update {
     // during update operation.
     bool disable_balanced_update = 4;
   }
+  // Represent the update request.
+  message TimestampRequest {
+    // The vector to be updated.
+    Object.Vector vector = 1 [(validate.rules).repeated.min_items = 2];
+    // The configuration of the update request.
+    bool force = 2;
+  }
 }
 
 // Upsert related messages.

@@ -93,7 +93,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/RemoveTimestampRequest"
+              "$ref": "#/definitions/v1RemoveTimestampRequest"
             }
           }
         ],
@@ -136,19 +136,6 @@
         }
       },
       "description": "Represent the stream response of the vector location."
-    },
-    "RemoveTimestampRequest": {
-      "type": "object",
-      "properties": {
-        "timestamps": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/v1RemoveTimestamp"
-          },
-          "description": "Represent the multiple remove request contents based on timestamp."
-        }
-      },
-      "description": "Represent the remove request based on timestamp."
     },
     "TimestampOperator": {
       "type": "string",
@@ -315,6 +302,19 @@
           "description": "The conditional operator."
         }
       }
+    },
+    "v1RemoveTimestampRequest": {
+      "type": "object",
+      "properties": {
+        "timestamps": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1RemoveTimestamp"
+          },
+          "description": "Represent the multiple remove request contents based on timestamp."
+        }
+      },
+      "description": "Represent the remove request based on timestamp."
     }
   }
 }

@@ -68,6 +68,37 @@
         ],
         "tags": ["Update"]
       }
+    },
+    "/update/timestamp": {
+      "post": {
+        "summary": "A method to update an indexed vector.",
+        "operationId": "Update_UpdateTimestamp",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/ObjectVector"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1UpdateTimestampRequest"
+            }
+          }
+        ],
+        "tags": ["Update"]
+      }
     }
   },
   "definitions": {
@@ -297,6 +328,20 @@
         },
         "config": {
           "$ref": "#/definitions/v1UpdateConfig",
+          "description": "The configuration of the update request."
+        }
+      },
+      "description": "Represent the update request."
+    },
+    "v1UpdateTimestampRequest": {
+      "type": "object",
+      "properties": {
+        "vector": {
+          "$ref": "#/definitions/ObjectVector",
+          "description": "The vector to be updated."
+        },
+        "force": {
+          "type": "boolean",
           "description": "The configuration of the update request."
         }
       },

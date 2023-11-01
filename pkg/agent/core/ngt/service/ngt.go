@@ -60,6 +60,7 @@ type NGT interface {
 	InsertMultipleWithTime(vecs map[string][]float32, t int64) (err error)
 	Update(uuid string, vec []float32) (err error)
 	UpdateWithTime(uuid string, vec []float32, t int64) (err error)
+	UpdateTimestamp(uuid string, vec []float32, t int64) (last int64, err error)
 	UpdateMultiple(vecs map[string][]float32) (err error)
 	UpdateMultipleWithTime(vecs map[string][]float32, t int64) (err error)
 	Delete(uuid string) (err error)
@@ -1015,6 +1016,105 @@ func (n *ngt) update(uuid string, vec []float32, t int64) (err error) {
 	return n.insert(uuid, vec, t, false)
 }
 
+func (n *ngt) UpdateTimestamp(uuid string, vec []float32, ts int64, force bool) (last int64, err error) {
+	if len(uuid) == 0 {
+		return 0, errors.ErrUUIDNotFound(0)
+	}
+	if !force && ts == 0 {
+		return 0, errors.ErrZeroTimestamp
+	}
+	if vec != nil && len(vec) != n.GetDimensionSize() {
+		return 0, errors.ErrInvalidDimensionSize(len(vec), n.GetDimensionSize())
+	}
+	ovec, ivqts, dvqts, vqexists := n.vq.GetVectorWithVQTimestamp(uuid)
+	if vqexists && ivqts != 0 {
+		if force || ivqts < ts {
+			// found in vqueue and stored vector timestamp is older than query
+			if vec == nil && ovec != nil ||
+				// query vector is nil
+				len(vec) == len(ovec) && conv.F32stos(vec) == conv.F32stos(ovec) {
+				// or query vector is totally same as stored vector
+				return n.vq.PushInsert(uuid, ovec, ts)
+			}
+			if vec != nil {
+				// diffrent vector detected between vqueue and query should update because query timestamp is more newer
+				return n.vq.PushInsert(uuid, vec, ts)
+			}
+		}
+	}
+	oid, kts, ok := n.kvs.Get(uuid)
+	if !ok || oid == 0 {
+		// not found in kvsdb and ivq
+		if !vqexists && dvqts != 0 && dvqts < ts &&
+			// found in dvq and query is newer than dvq ts lets try insert
+			(vec == nil && ovec != nil ||
+				// query vec is nil but stored vec is not nil
+				ovec != nil && vec != nil && len(vec) == len(ovec) && conv.F32stos(vec) == conv.F32stos(ovec)) {
+			// or query vec and stored vec is not nil and totally same vector lets just update timestamp only
+			// if delete vqueue data exists and query timestamp is newer than dvq
+			dts, ok := n.vq.PopDelete(uuid)
+			if ok && dts != dvqts && dts >= ts {
+				// deleted but stored timestamp is different from last vqueue fetched dvqts and dts is newer than query
+				return errors.Join(n.vq.PushDelete(uuid, dts), n.vq.PushInsert(uuid, ovec, ts))
+			}
+			return n.vq.PushInsert(uuid, ovec, ts)
+		}
+		// not found in kvsdb and ivq and dvq
+		// or found in dvq and query is newer than dvq ts but diffrent vector detected between vqueue and query should update because query timestamp is more newer
+		if vec != nil {
+			if dvqts != 0 && dvqts < ts {
+				dts, ok := n.vq.PopDelete(uuid)
+				if ok && dts != dvqts && dts >= ts {
+					// deleted but stored timestamp is different from last vqueue fetched dvqts and dts is newer than query
+					return errors.Join(n.vq.PushDelete(uuid, dts), n.vq.PushInsert(uuid, ovec, ts))
+				}
+			}
+			return n.vq.PushInsert(uuid, vec, ts)
+		}
+		// there is nothing to be update or insert new data
+		return errors.ErrObjectIDNotFound(uuid)
+	}
+
+	if !force && kts > ts {
+		// stored timestamp is newer than query then return already exists error
+		return kts, errors.ErrUUIDAlreadyExists(uuid)
+	}
+
+	if !vqexists && dvqts != 0 && dvqts < ts {
+		// found in kvs and dvq but not found in ivq and
+		// requested newer timestamp than dvq
+		// which means dvq shouldn't delete existing kvs data
+		// and should remove dvq and update ts in kvs
+		dts, ok := n.vq.PopDelete(uuid)
+		if ok && dts != dvqts && dts >= ts {
+			// deleted but stored timestamp is different from last vqueue fetched dvqts and dts is newer than query
+			_ = n.vq.PushDelete(uuid, dts)
+		}
+	}
+
+	// found in kvs and no same uuid data exists in vqueue prepare for update
+	if vec != nil {
+		// if query vec is not empty it should be compare with stored vector object
+		ovec, err = n.core.GetVector(uint(oid))
+		if err != nil || ovec == nil {
+			// if no vector found from core index, the index is invalid
+			// Should delete from kvs
+			n.kvs.Delete(uuid)
+			// and Insert new query data using vqueue
+			return n.vq.PushInsert(uuid, vec, ts)
+		}
+		if len(vec) != len(ovec) || conv.F32stos(vec) != conv.F32stos(ovec) {
+			// different vector detected between query and stored vector lets overwrite using vqueue
+			return errors.Join(n.vq.PushDelete(uuid, ts-1), n.vq.PushInsert(uuid, vec, ts))
+		}
+	}
+
+	// found in kvs and stored data is completely same as query or query vector is empty, we can update timestamp only
+	n.kvs.Set(uuid, oid, ts)
+
+	return nil
+}
+
 func (n *ngt) UpdateMultiple(vecs map[string][]float32) (err error) {
 	return n.updateMultiple(vecs, time.Now().UnixNano())
 }
@@ -1061,8 +1161,11 @@ func (n *ngt) delete(uuid string, t int64, validation bool) (err error) {
 	}
 	if validation {
 		_, _, ok := n.kvs.Get(uuid)
-		if !ok && !n.vq.IVExists(uuid) {
-			return errors.ErrObjectIDNotFound(uuid)
+		if !ok {
+			_, ok := n.vq.IVExists(uuid)
+			if !ok {
+				return errors.ErrObjectIDNotFound(uuid)
+			}
 		}
 	}
 	return n.vq.PushDelete(uuid, t)
@@ -1539,14 +1642,17 @@ func (n *ngt) mktmp() (err error) {
 }
 
 func (n *ngt) Exists(uuid string) (oid uint32, ok bool) {
-	ok = n.vq.IVExists(uuid)
+	_, ok = n.vq.IVExists(uuid)
 	if !ok {
-		oid, _, ok = n.kvs.Get(uuid)
+		var ts int64
+		oid, ts, ok = n.kvs.Get(uuid)
 		if !ok {
 			log.Debugf("Exists\tuuid: %s's data not found in kvsdb and insert vqueue\terror: %v", uuid, errors.ErrObjectIDNotFound(uuid))
 			return 0, false
 		}
-		if n.vq.DVExists(uuid) {
+		var dts int64
+		dts, ok = n.vq.DVExists(uuid)
+		if ok && dts >= ts {
 			log.Debugf(
 				"Exists\tuuid: %s's data found in kvsdb and not found in insert vqueue, but delete vqueue data exists. the object will be delete soon\terror: %v",
 				uuid,
@@ -1570,7 +1676,9 @@ func (n *ngt) GetObject(uuid string) (vec []float32, timestamp int64, err error)
 		return nil, 0, errors.ErrObjectIDNotFound(uuid)
 	}
 
-	if n.vq.DVExists(uuid) {
+	var dts int64
+	dts, ok = n.vq.DVExists(uuid)
+	if ok && dts >= ts {
 		log.Debugf("GetObject\tuuid: %s's data found in kvsdb and not found in insert vqueue, but delete vqueue data exists. the object will be delete soon", uuid)
 		return nil, 0, errors.ErrObjectIDNotFound(uuid)
 	}
@@ -1700,13 +1808,17 @@ func (n *ngt) ListObjectFunc(ctx context.Context, f func(uuid string, oid uint32
 		}
 		var kts int64
 		_, kts, ok = n.kvs.Get(uuid)
-		if ok && ts > kts {
+		if ok && ts >= kts {
 			dup[uuid] = true
 		}
 		return true
 	})
 	n.kvs.Range(ctx, func(uuid string, oid uint32, ts int64) (ok bool) {
 		if dup[uuid] {
+			return true
+		}
+		dts, ok := n.vq.DVExists(uuid)
+		if ok && dts >= ts {
 			return true
 		}
 		return f(uuid, oid, ts)

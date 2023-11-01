@@ -86,6 +86,7 @@
   - [Update.MultiRequest](#payload-v1-Update-MultiRequest)
   - [Update.ObjectRequest](#payload-v1-Update-ObjectRequest)
   - [Update.Request](#payload-v1-Update-Request)
+  - [Update.TimestampRequest](#payload-v1-Update-TimestampRequest)
   - [Upsert](#payload-v1-Upsert)
   - [Upsert.Config](#payload-v1-Upsert-Config)
   - [Upsert.MultiObjectRequest](#payload-v1-Upsert-MultiObjectRequest)
@@ -105,10 +106,10 @@
   - [Remove](#vald-v1-Remove)
 - [apis/proto/v1/vald/search.proto](#apis_proto_v1_vald_search-proto)
   - [Search](#vald-v1-Search)
-- [apis/proto/v1/vald/update.proto](#apis_proto_v1_vald_update-proto)
-  - [Update](#vald-v1-Update)
 - [apis/proto/v1/vald/upsert.proto](#apis_proto_v1_vald_upsert-proto)
   - [Upsert](#vald-v1-Upsert)
+- [apis/proto/v1/vald/update.proto](#apis_proto_v1_vald_update-proto)
+  - [Update](#vald-v1-Update)
 - [apis/proto/v1/rpc/error_details.proto](#apis_proto_v1_rpc_error_details-proto)
   - [BadRequest](#rpc-v1-BadRequest)
   - [BadRequest.FieldViolation](#rpc-v1-BadRequest-FieldViolation)
@@ -914,6 +915,17 @@ Represent the update request.
 | vector | [Object.Vector](#payload-v1-Object-Vector) |       | The vector to be updated.                |
 | config | [Update.Config](#payload-v1-Update-Config) |       | The configuration of the update request. |
 
+<a name="payload-v1-Update-TimestampRequest"></a>
+
+### Update.TimestampRequest
+
+Represent the update request.
+
+| Field  | Type                                       | Label | Description                              |
+| ------ | ------------------------------------------ | ----- | ---------------------------------------- |
+| vector | [Object.Vector](#payload-v1-Object-Vector) |       | The vector to be updated.                |
+| force  | [bool](#bool)                              |       | The configuration of the update request. |
+
 <a name="payload-v1-Upsert"></a>
 
 ### Upsert
@@ -1115,24 +1127,6 @@ Search service provides ways to search indexed vectors.
 | MultiLinearSearch      | [.payload.v1.Search.MultiRequest](#payload-v1-Search-MultiRequest)     | [.payload.v1.Search.Responses](#payload-v1-Search-Responses)                  | A method to linear search indexed vectors by multiple vectors in a single request. |
 | MultiLinearSearchByID  | [.payload.v1.Search.MultiIDRequest](#payload-v1-Search-MultiIDRequest) | [.payload.v1.Search.Responses](#payload-v1-Search-Responses)                  | A method to linear search indexed vectors by multiple IDs in a single request.     |
 
-<a name="apis_proto_v1_vald_update-proto"></a>
-
-<p align="right"><a href="#top">Top</a></p>
-
-## apis/proto/v1/vald/update.proto
-
-<a name="vald-v1-Update"></a>
-
-### Update
-
-Update service provides ways to update indexed vectors.
-
-| Method Name  | Request Type                                                       | Response Type                                                                 | Description                                                             |
-| ------------ | ------------------------------------------------------------------ | ----------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
-| Update       | [.payload.v1.Update.Request](#payload-v1-Update-Request)           | [.payload.v1.Object.Location](#payload-v1-Object-Location)                    | A method to update an indexed vector.                                   |
-| StreamUpdate | [.payload.v1.Update.Request](#payload-v1-Update-Request) stream    | [.payload.v1.Object.StreamLocation](#payload-v1-Object-StreamLocation) stream | A method to update multiple indexed vectors by bidirectional streaming. |
-| MultiUpdate  | [.payload.v1.Update.MultiRequest](#payload-v1-Update-MultiRequest) | [.payload.v1.Object.Locations](#payload-v1-Object-Locations)                  | A method to update multiple indexed vectors in a single request.        |
-
 <a name="apis_proto_v1_vald_upsert-proto"></a>
 
 <p align="right"><a href="#top">Top</a></p>
@@ -1150,6 +1144,25 @@ Upsert service provides ways to insert/update vectors.
 | Upsert       | [.payload.v1.Upsert.Request](#payload-v1-Upsert-Request)           | [.payload.v1.Object.Location](#payload-v1-Object-Location)                    | A method to insert/update a vector.                                    |
 | StreamUpsert | [.payload.v1.Upsert.Request](#payload-v1-Upsert-Request) stream    | [.payload.v1.Object.StreamLocation](#payload-v1-Object-StreamLocation) stream | A method to insert/update multiple vectors by bidirectional streaming. |
 | MultiUpsert  | [.payload.v1.Upsert.MultiRequest](#payload-v1-Upsert-MultiRequest) | [.payload.v1.Object.Locations](#payload-v1-Object-Locations)                  | A method to insert/update multiple vectors in a single request.        |
+
+<a name="apis_proto_v1_vald_update-proto"></a>
+
+<p align="right"><a href="#top">Top</a></p>
+
+## apis/proto/v1/vald/update.proto
+
+<a name="vald-v1-Update"></a>
+
+### Update
+
+Update service provides ways to update indexed vectors.
+
+| Method Name     | Request Type                                                               | Response Type                                                                 | Description                                                             |
+| --------------- | -------------------------------------------------------------------------- | ----------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| Update          | [.payload.v1.Update.Request](#payload-v1-Update-Request)                   | [.payload.v1.Object.Location](#payload-v1-Object-Location)                    | A method to update an indexed vector.                                   |
+| StreamUpdate    | [.payload.v1.Update.Request](#payload-v1-Update-Request) stream            | [.payload.v1.Object.StreamLocation](#payload-v1-Object-StreamLocation) stream | A method to update multiple indexed vectors by bidirectional streaming. |
+| MultiUpdate     | [.payload.v1.Update.MultiRequest](#payload-v1-Update-MultiRequest)         | [.payload.v1.Object.Locations](#payload-v1-Object-Locations)                  | A method to update multiple indexed vectors in a single request.        |
+| UpdateTimestamp | [.payload.v1.Update.TimestampRequest](#payload-v1-Update-TimestampRequest) | [.payload.v1.Object.Vector](#payload-v1-Object-Vector)                        | A method to update an indexed vector.                                   |
 
 <a name="apis_proto_v1_rpc_error_details-proto"></a>
 

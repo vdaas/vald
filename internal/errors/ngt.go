@@ -36,6 +36,9 @@ var (
 		return Errorf("ngt uuid %s's object id not found", uuid)
 	}
 
+	// ErrZeroTimestamp represents an error that the timestamp is zero.
+	ErrZeroTimestamp = New("zero timestamp for index detected")
+
 	// ErrRemoveRequestedBeforeIndexing represents a function to generate an error that the object is not indexed so can not remove it.
 	ErrRemoveRequestedBeforeIndexing = func(oid uint) error {
 		return Errorf("object id %d is not indexed we cannot remove it", oid)

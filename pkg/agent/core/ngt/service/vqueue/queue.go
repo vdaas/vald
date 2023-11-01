@@ -32,14 +32,16 @@ import (
 
 // Queue represents vector queue cache interface
 type Queue interface {
-	PushInsert(uuid string, vector []float32, date int64) error
-	PushDelete(uuid string, date int64) error
+	PushInsert(uuid string, vector []float32, timestamp int64) error
+	PushDelete(uuid string, timestamp int64) error
+	PopDelete(uuid string) (timestamp int64, ok bool)
 	GetVector(uuid string) (vec []float32, timestamp int64, exists bool)
 	Range(ctx context.Context, f func(uuid string, vector []float32, ts int64) bool)
-	RangePopInsert(ctx context.Context, now int64, f func(uuid string, vector []float32, date int64) bool)
+	GetVectorWithVQTimestamp(uuid string) (vec []float32, its, dts int64, exists bool)
+	RangePopInsert(ctx context.Context, now int64, f func(uuid string, vector []float32, timestamp int64) bool)
 	RangePopDelete(ctx context.Context, now int64, f func(uuid string) bool)
-	IVExists(uuid string) bool
-	DVExists(uuid string) bool
+	IVExists(uuid string) (timestamp int64, ok bool)
+	DVExists(uuid string) (timestamp int64, ok bool)
 	IVQLen() int
 	DVQLen() int
 }
@@ -50,9 +52,9 @@ type vqueue struct {
 }
 
 type index struct {
-	date   int64
-	vector []float32
-	uuid   string
+	timestamp int64
+	vector    []float32
+	uuid      string
 }
 
 func New(opts ...Option) (Queue, error) {
@@ -72,22 +74,25 @@ func New(opts ...Option) (Queue, error) {
 	return vq, nil
 }
 
-func (v *vqueue) PushInsert(uuid string, vector []float32, date int64) error {
-	if date == 0 {
-		date = time.Now().UnixNano()
+func (v *vqueue) PushInsert(uuid string, vector []float32, timestamp int64) error {
+	if len(uuid) == 0 || vector == nil {
+		return nil
+	}
+	if timestamp == 0 {
+		timestamp = time.Now().UnixNano()
 	}
 	didx, ok := v.dl.Load(uuid)
-	if ok && didx.date > date {
+	if ok && didx.timestamp > timestamp {
 		return nil
 	}
 	idx := index{
-		uuid:   uuid,
-		vector: vector,
-		date:   date,
+		uuid:      uuid,
+		vector:    vector,
+		timestamp: timestamp,
 	}
 	oidx, loaded := v.il.LoadOrStore(uuid, &idx)
 	if loaded {
-		if date > oidx.date { // if data already exists and existing index is older than new one
+		if timestamp > oidx.timestamp { // if data already exists and existing index is older than new one
 			v.il.Store(uuid, &idx)
 		}
 	} else {
@@ -96,23 +101,36 @@ func (v *vqueue) PushInsert(uuid string, vector []float32, date int64) error {
 	return nil
 }
 
-func (v *vqueue) PushDelete(uuid string, date int64) error {
-	if date == 0 {
-		date = time.Now().UnixNano()
+func (v *vqueue) PushDelete(uuid string, timestamp int64) error {
+	if len(uuid) == 0 {
+		return nil
+	}
+	if timestamp == 0 {
+		timestamp = time.Now().UnixNano()
 	}
 	idx := index{
-		uuid: uuid,
-		date: date,
+		uuid:      uuid,
+		timestamp: timestamp,
 	}
 	oidx, loaded := v.dl.LoadOrStore(uuid, &idx)
 	if loaded {
-		if date > oidx.date { // if data already exists and existing index is older than new one
+		if timestamp > oidx.timestamp { // if data already exists and existing index is older than new one
 			v.dl.Store(uuid, &idx)
 		}
 	} else {
 		_ = atomic.AddUint64(&v.dc, 1)
 	}
 	return nil
+}
+
+func (v *vqueue) PopDelete(uuid string) (timestamp int64, ok bool) {
+	var idx *index
+	idx, ok = v.dl.LoadAndDelete(uuid)
+	if !ok || idx == nil {
+		return 0, false
+	}
+	_ = atomic.AddUint64(&v.dc, ^uint64(0))
+	return idx.timestamp, ok
 }
 
 // GetVector returns the vector stored in the queue.
@@ -127,64 +145,96 @@ func (v *vqueue) GetVector(uuid string) (vec []float32, timestamp int64, exists 
 	didx, ok := v.dl.Load(uuid)
 	if !ok {
 		// data not in the delete queue but exists in insert queue then return exists(true)
-		return idx.vector, idx.date, true
+		return idx.vector, idx.timestamp, true
 	}
 	// data exists both queue, compare data timestamp if insert queue timestamp is newer than delete one, this function returns exists(true)
-	if didx.date <= idx.date {
-		return idx.vector, idx.date, true
+	if didx.timestamp <= idx.timestamp {
+		return idx.vector, idx.timestamp, true
 	}
 	return nil, 0, false
 }
 
-// IVExists returns true if there is the UUID in the insert queue.
+// GetVectorWithTimestamp returns the vector and timestamps stored in the queue.
+// If the same UUID exists in the insert queue and the delete queue, the timestamp is compared.
+// And the vector is returned if the timestamp in the insert queue is newer than the delete queue.
+func (v *vqueue) GetVectorWithVQTimestamp(uuid string) (vec []float32, its, dts int64, valid bool) {
+	var (
+		idx, didx *index
+		ok        bool
+	)
+	idx, ok = v.il.Load(uuid)
+	if !ok || idx == nil {
+		// data not in the insert queue then return not exists(false)
+		didx, ok = v.dl.Load(uuid)
+		if !ok {
+			// data not in the delete queue and insert queue then return not exists(false)
+			return nil, 0, 0, false
+		}
+		// data not in theinsert queue and exists in delete queue then return not exists(false) with delete index timestamp
+		return nil, 0, didx.timestamp, false
+	}
+	didx, ok = v.dl.Load(uuid)
+	if !ok || didx == nil {
+		// data not in the delete queue but exists in insert queue then return exists(true)
+		return idx.vector, idx.timestamp, 0, true
+	}
+	// data exists both queue, compare data timestamp if insert queue timestamp is newer than delete one, this function returns exists(true)
+	if didx.timestamp <= idx.timestamp {
+		return idx.vector, idx.timestamp, didx.timestamp, true
+	}
+	// data exists both queue, compare data timestamp if insert queue timestamp is older than delete one, this function returns exists(false) with each indices timestmap
+	return idx.vector, idx.timestamp, didx.timestamp, false
+}
+
+// IVExists returns timestamp of iv and true if there is the UUID in the insert queue.
 // If the same UUID exists in the insert queue and the delete queue, the timestamp is compared.
 // And the true is returned if the timestamp in the insert queue is newer than the delete queue.
-func (v *vqueue) IVExists(uuid string) bool {
+func (v *vqueue) IVExists(uuid string) (timestamp int64, ok bool) {
 	idx, ok := v.il.Load(uuid)
 	if !ok {
 		// data not in the insert queue then return not exists(false)
-		return false
+		return 0, false
 	}
 	didx, ok := v.dl.Load(uuid)
 	if !ok {
 		// data not in the delete queue but exists in insert queue then return exists(true)
-		return true
+		return idx.timestamp, true
 	}
 	// data exists both queue, compare data timestamp if insert queue timestamp is newer than delete one, this function returns exists(true)
-	// However, if insert and delete are sent by the update instruction, the timestamp will be the same
-	return didx.date <= idx.date
+	// However, if insert and delete are sent by the uptimestamp instruction, the timestamp will be the same
+	return idx.timestamp, didx.timestamp <= idx.timestamp
 }
 
-// DVExists returns true if there is the UUID in the delete queue.
+// DVExists returns timestamp of dv and true if there is the UUID in the delete queue.
 // If the same UUID exists in the insert queue and the delete queue, the timestamp is compared.
 // And the true is returned if the timestamp in the delete queue is newer than the insert queue.
-func (v *vqueue) DVExists(uuid string) bool {
+func (v *vqueue) DVExists(uuid string) (timestamp int64, ok bool) {
 	didx, ok := v.dl.Load(uuid)
 	if !ok {
-		return false
+		return 0, false
 	}
 	idx, ok := v.il.Load(uuid)
 	if !ok {
 		// data not in the insert queue then return not exists(false)
-		return true
+		return didx.timestamp, true
 	}
 
 	// data exists both queue, compare data timestamp if insert queue timestamp is newer than delete one, this function returns exists(true)
-	return didx.date > idx.date
+	return didx.timestamp, didx.timestamp > idx.timestamp
 }
 
-func (v *vqueue) RangePopInsert(ctx context.Context, now int64, f func(uuid string, vector []float32, date int64) bool) {
+func (v *vqueue) RangePopInsert(ctx context.Context, now int64, f func(uuid string, vector []float32, timestamp int64) bool) {
 	uii := make([]index, 0, atomic.LoadUint64(&v.ic))
 	defer func() {
 		uii = nil
 	}()
 	v.il.Range(func(uuid string, idx *index) bool {
-		if idx.date > now {
+		if idx.timestamp > now {
 			return true
 		}
 		didx, ok := v.dl.Load(uuid)
 		if ok {
-			if idx.date < didx.date {
+			if idx.timestamp < didx.timestamp {
 				v.il.Delete(idx.uuid)
 				atomic.AddUint64(&v.ic, ^uint64(0))
 			}
@@ -199,10 +249,10 @@ func (v *vqueue) RangePopInsert(ctx context.Context, now int64, f func(uuid stri
 		return true
 	})
 	slices.SortFunc(uii, func(left, right index) int {
-		return cmp.Compare(right.date, left.date)
+		return cmp.Compare(right.timestamp, left.timestamp)
 	})
 	for _, idx := range uii {
-		if !f(idx.uuid, idx.vector, idx.date) {
+		if !f(idx.uuid, idx.vector, idx.timestamp) {
 			return
 		}
 		v.il.Delete(idx.uuid)
@@ -221,7 +271,7 @@ func (v *vqueue) RangePopDelete(ctx context.Context, now int64, f func(uuid stri
 		udi = nil
 	}()
 	v.dl.Range(func(_ string, idx *index) bool {
-		if idx.date > now {
+		if idx.timestamp > now {
 			return true
 		}
 		udi = append(udi, *idx)
@@ -233,7 +283,7 @@ func (v *vqueue) RangePopDelete(ctx context.Context, now int64, f func(uuid stri
 		return true
 	})
 	slices.SortFunc(udi, func(left, right index) int {
-		return cmp.Compare(right.date, left.date)
+		return cmp.Compare(right.timestamp, left.timestamp)
 	})
 	for _, idx := range udi {
 		if !f(idx.uuid) {
@@ -242,7 +292,7 @@ func (v *vqueue) RangePopDelete(ctx context.Context, now int64, f func(uuid stri
 		v.dl.Delete(idx.uuid)
 		atomic.AddUint64(&v.dc, ^uint64(0))
 		iidx, ok := v.il.Load(idx.uuid)
-		if ok && idx.date > iidx.date {
+		if ok && idx.timestamp > iidx.timestamp {
 			v.il.Delete(idx.uuid)
 			atomic.AddUint64(&v.ic, ^uint64(0))
 		}
@@ -262,8 +312,8 @@ func (v *vqueue) Range(ctx context.Context, f func(uuid string, vector []float32
 			return true
 		}
 		didx, ok := v.dl.Load(uuid)
-		if !ok || (didx != nil && idx.date > didx.date) {
-			return f(uuid, idx.vector, idx.date)
+		if !ok || didx == nil || (didx != nil && idx.timestamp > didx.timestamp) {
+			return f(uuid, idx.vector, idx.timestamp)
 		}
 		return true
 	})

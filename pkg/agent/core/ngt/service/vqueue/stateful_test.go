@@ -388,7 +388,7 @@ var (
 			sy := systemUnderTest.(*qSystem)
 			q := sy.q
 
-			exists := q.IVExists(idA)
+			_, exists := q.IVExists(idA)
 			return &resultContainer{
 				exists: exists,
 			}
@@ -439,7 +439,7 @@ var (
 			sy := systemUnderTest.(*qSystem)
 			q := sy.q
 
-			exists := q.IVExists(idB)
+			_, exists := q.IVExists(idB)
 			return &resultContainer{
 				exists: exists,
 			}
@@ -490,7 +490,7 @@ var (
 			sy := systemUnderTest.(*qSystem)
 			q := sy.q
 
-			exists := q.IVExists(idC)
+			_, exists := q.IVExists(idC)
 			return &resultContainer{
 				exists: exists,
 			}
@@ -541,7 +541,7 @@ var (
 			sy := systemUnderTest.(*qSystem)
 			q := sy.q
 
-			exists := q.DVExists(idA)
+			_, exists := q.DVExists(idA)
 			return &resultContainer{
 				exists: exists,
 			}
@@ -592,7 +592,7 @@ var (
 			sy := systemUnderTest.(*qSystem)
 			q := sy.q
 
-			exists := q.DVExists(idB)
+			_, exists := q.DVExists(idB)
 			return &resultContainer{
 				exists: exists,
 			}
@@ -643,7 +643,7 @@ var (
 			sy := systemUnderTest.(*qSystem)
 			q := sy.q
 
-			exists := q.DVExists(idC)
+			_, exists := q.DVExists(idC)
 			return &resultContainer{
 				exists: exists,
 			}
@@ -894,7 +894,7 @@ var (
 			q.RangePopInsert(
 				sy.ctx,
 				now,
-				func(uuid string, vector []float32, date int64) bool { return true },
+				func(uuid string, vector []float32, timestamp int64) bool { return true },
 			)
 
 			return &resultContainer{}
