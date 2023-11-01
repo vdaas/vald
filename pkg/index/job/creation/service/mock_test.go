@@ -38,6 +38,7 @@ func (mc *mockGrpcClient) OrderedRangeConcurrent(ctx context.Context,
 	f func(ctx context.Context,
 		addr string,
 		conn *grpc.ClientConn,
-		copts ...grpc.CallOption) error) error {
+		copts ...grpc.CallOption) error,
+) error {
 	return mc.OrderedRangeConcurrentFunc(ctx, order, concurrency, f)
 }
