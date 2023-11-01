@@ -37,6 +37,7 @@ const (
 
 // Indexer represents an interface for indexing.
 type Indexer interface {
+	PreStart(ctx context.Context) (<-chan error, error)
 	Start(ctx context.Context) error
 }
 
@@ -68,6 +69,11 @@ func New(opts ...Option) (Indexer, error) {
 		idx.targetAddrList[addr] = true
 	}
 	return idx, nil
+}
+
+// PreStart starts the preparation process.
+func (idx *index) PreStart(ctx context.Context) (<-chan error, error) {
+	return idx.client.Start(ctx)
 }
 
 // Start starts indexing process.

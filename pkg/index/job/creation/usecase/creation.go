@@ -138,15 +138,18 @@ func (r *run) PreStart(ctx context.Context) error {
 // during the operation and an error representing any initialization errors.
 func (r *run) Start(ctx context.Context) (<-chan error, error) {
 	ech := make(chan error, 4)
-	iech := make(chan error, 1)
 	var sech, oech <-chan error
 	if r.observability != nil {
 		oech = r.observability.Start(ctx)
 	}
 	sech = r.server.ListenAndServe(ctx)
+	ipech, err := r.indexer.PreStart(ctx)
+	if err != nil {
+		close(ech)
+		return nil, err
+	}
 
 	r.eg.Go(safety.RecoverFunc(func() (err error) {
-		defer close(iech)
 		defer func() {
 			p, err := os.FindProcess(os.Getpid())
 			if err != nil {
@@ -160,14 +163,7 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 				log.Error(err)
 			}
 		}()
-		if err = r.indexer.Start(ctx); err != nil {
-			select {
-			case <-ctx.Done():
-				return errors.Join(ctx.Err(), err)
-			case iech <- err:
-			}
-		}
-		return err
+		return r.indexer.Start(ctx)
 	}))
 
 	r.eg.Go(safety.RecoverFunc(func() (err error) {
@@ -178,7 +174,7 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 				return ctx.Err()
 			case err = <-oech:
 			case err = <-sech:
-			case err = <-iech:
+			case err = <-ipech:
 			}
 			if err != nil {
 				select {
@@ -189,7 +185,6 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 			}
 		}
 	}))
-
 	return ech, nil
 }
 
