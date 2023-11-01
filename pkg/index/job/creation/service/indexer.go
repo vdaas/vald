@@ -90,6 +90,7 @@ func (idx *index) Start(ctx context.Context) error {
 		st, msg, err := status.ParseError(err, codes.Internal,
 			"failed to parse "+agent.CreateIndexRPCName+" gRPC error response",
 		)
+		log.Warn(err)
 		if span != nil {
 			span.RecordError(err)
 			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)

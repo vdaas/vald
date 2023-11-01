@@ -13,6 +13,172 @@
 // limitations under the License.
 package service
 
+import (
+	"context"
+	"testing"
+
+	agent "github.com/vdaas/vald/apis/grpc/v1/agent/core"
+	"github.com/vdaas/vald/internal/client/v1/client/discoverer"
+	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/net/grpc"
+	"github.com/vdaas/vald/internal/net/grpc/codes"
+	"github.com/vdaas/vald/internal/net/grpc/status"
+	"github.com/vdaas/vald/internal/test/goleak"
+)
+
+func Test_index_Start(t *testing.T) {
+	type args struct {
+		ctx context.Context
+	}
+	type fields struct {
+		client           discoverer.Client
+		targetAddrs      []string
+		targetAddrList   map[string]bool
+		creationPoolSize uint32
+		concurrency      int
+	}
+	type want struct {
+		err error
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, error) error
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
+	}
+	defaultCheckFunc := func(w want, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		return nil
+	}
+	tests := []test{
+		func() test {
+			addrs := []string{
+				"127.0.0.1:8080",
+			}
+			return test{
+				name: "Success: when there is no error in the indexing request process",
+				args: args{
+					ctx: context.Background(),
+				},
+
+				fields: fields{
+					client: &mockDiscovererClient{
+						GetAddrsFunc: func(_ context.Context) []string {
+							return addrs
+						},
+						GetClientFunc: func() grpc.Client {
+							return &mockGrpcClient{
+								OrderedRangeConcurrentFunc: func(_ context.Context, _ []string, _ int,
+									_ func(_ context.Context, _ string, _ *grpc.ClientConn, _ ...grpc.CallOption) error,
+								) error {
+									return nil
+								},
+							}
+						},
+					},
+				},
+			}
+		}(),
+		func() test {
+			addrs := []string{
+				"127.0.0.1:8080",
+			}
+			return test{
+				name: "Fail: when there is an error in the indexing request process",
+				args: args{
+					ctx: context.Background(),
+				},
+
+				fields: fields{
+					client: &mockDiscovererClient{
+						GetAddrsFunc: func(_ context.Context) []string {
+							return addrs
+						},
+						GetClientFunc: func() grpc.Client {
+							return &mockGrpcClient{
+								OrderedRangeConcurrentFunc: func(_ context.Context, _ []string, _ int,
+									_ func(_ context.Context, _ string, _ *grpc.ClientConn, _ ...grpc.CallOption) error,
+								) error {
+									return status.WrapWithInternal(
+										agent.CreateIndexRPCName+" API connection not found",
+										errors.ErrGRPCClientConnNotFound("*"),
+									)
+								},
+							}
+						},
+					},
+				},
+				want: want{
+					err: status.Error(codes.Internal,
+						agent.CreateIndexRPCName+" API connection not found"),
+				},
+			}
+		}(),
+		func() test {
+			targetAddrs := []string{
+				"127.0.0.1:8080",
+			}
+			targetAddrList := map[string]bool{
+				targetAddrs[0]: true,
+			}
+			return test{
+				name: "Fail: when there is no address matching targetAddrList",
+				args: args{
+					ctx: context.Background(),
+				},
+				fields: fields{
+					client: &mockDiscovererClient{
+						GetAddrsFunc: func(_ context.Context) []string {
+							return nil
+						},
+					},
+					targetAddrs:    targetAddrs,
+					targetAddrList: targetAddrList,
+				},
+				want: want{
+					err: status.Error(codes.Internal,
+						"failed to parse "+agent.CreateIndexRPCName+" gRPC error response"),
+				},
+			}
+		}(),
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(tt, test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(tt, test.args)
+			}
+			checkFunc := test.checkFunc
+			if test.checkFunc == nil {
+				checkFunc = defaultCheckFunc
+			}
+			idx := &index{
+				client:           test.fields.client,
+				targetAddrs:      test.fields.targetAddrs,
+				targetAddrList:   test.fields.targetAddrList,
+				creationPoolSize: test.fields.creationPoolSize,
+				concurrency:      test.fields.concurrency,
+			}
+
+			err := idx.Start(test.args.ctx)
+			if err := checkFunc(test.want, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
 // NOT IMPLEMENTED BELOW
 //
 // func TestNew(t *testing.T) {
@@ -105,117 +271,3 @@ package service
 // 	}
 // }
 //
-// func Test_index_Start(t *testing.T) {
-// 	type args struct {
-// 		ctx context.Context
-// 	}
-// 	type fields struct {
-// 		client           discoverer.Client
-// 		targetAddrs      []string
-// 		targetAddrList   map[string]bool
-// 		creationPoolSize uint32
-// 		concurrency      int
-// 	}
-// 	type want struct {
-// 		err error
-// 	}
-// 	type test struct {
-// 		name       string
-// 		args       args
-// 		fields     fields
-// 		want       want
-// 		checkFunc  func(want, error) error
-// 		beforeFunc func(*testing.T, args)
-// 		afterFunc  func(*testing.T, args)
-// 	}
-// 	defaultCheckFunc := func(w want, err error) error {
-// 		if !errors.Is(err, w.err) {
-// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-// 		}
-// 		return nil
-// 	}
-// 	tests := []test{
-// 		// TODO test cases
-// 		/*
-// 		   {
-// 		       name: "test_case_1",
-// 		       args: args {
-// 		           ctx:nil,
-// 		       },
-// 		       fields: fields {
-// 		           client:nil,
-// 		           targetAddrs:nil,
-// 		           targetAddrList:nil,
-// 		           creationPoolSize:0,
-// 		           concurrency:0,
-// 		       },
-// 		       want: want{},
-// 		       checkFunc: defaultCheckFunc,
-// 		       beforeFunc: func(t *testing.T, args args) {
-// 		           t.Helper()
-// 		       },
-// 		       afterFunc: func(t *testing.T, args args) {
-// 		           t.Helper()
-// 		       },
-// 		   },
-// 		*/
-//
-// 		// TODO test cases
-// 		/*
-// 		   func() test {
-// 		       return test {
-// 		           name: "test_case_2",
-// 		           args: args {
-// 		           ctx:nil,
-// 		           },
-// 		           fields: fields {
-// 		           client:nil,
-// 		           targetAddrs:nil,
-// 		           targetAddrList:nil,
-// 		           creationPoolSize:0,
-// 		           concurrency:0,
-// 		           },
-// 		           want: want{},
-// 		           checkFunc: defaultCheckFunc,
-// 		           beforeFunc: func(t *testing.T, args args) {
-// 		               t.Helper()
-// 		           },
-// 		           afterFunc: func(t *testing.T, args args) {
-// 		               t.Helper()
-// 		           },
-// 		       }
-// 		   }(),
-// 		*/
-// 	}
-//
-// 	for _, tc := range tests {
-// 		test := tc
-// 		t.Run(test.name, func(tt *testing.T) {
-// 			tt.Parallel()
-// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-// 			if test.beforeFunc != nil {
-// 				test.beforeFunc(tt, test.args)
-// 			}
-// 			if test.afterFunc != nil {
-// 				defer test.afterFunc(tt, test.args)
-// 			}
-// 			checkFunc := test.checkFunc
-// 			if test.checkFunc == nil {
-// 				checkFunc = defaultCheckFunc
-// 			}
-// 			idx := &index{
-// 				client:           test.fields.client,
-// 				targetAddrs:      test.fields.targetAddrs,
-// 				targetAddrList:   test.fields.targetAddrList,
-// 				creationPoolSize: test.fields.creationPoolSize,
-// 				concurrency:      test.fields.concurrency,
-// 			}
-//
-// 			err := idx.Start(test.args.ctx)
-// 			if err := checkFunc(test.want, err); err != nil {
-// 				tt.Errorf("error = %v", err)
-// 			}
-//
-// 		})
-// 	}
-// }
