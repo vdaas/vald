@@ -90,8 +90,7 @@ func TestWeightedTryAcquire(t *testing.T) {
 	sem := semaphore.NewWeighted(2)
 	tries := []bool{}
 	sem.Acquire(ctx, 1)
-	tries = append(tries, sem.TryAcquire(1))
-	tries = append(tries, sem.TryAcquire(1))
+	tries = append(tries, sem.TryAcquire(1), sem.TryAcquire(1))
 
 	sem.Release(2)
 
@@ -120,8 +119,7 @@ func TestWeightedAcquire(t *testing.T) {
 
 	tries := []bool{}
 	sem.Acquire(ctx, 1)
-	tries = append(tries, tryAcquire(1))
-	tries = append(tries, tryAcquire(1))
+	tries = append(tries, tryAcquire(1), tryAcquire(1))
 
 	sem.Release(2)
 

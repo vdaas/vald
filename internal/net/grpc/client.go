@@ -161,7 +161,7 @@ func (g *gRPCClient) StartConnectionMonitor(ctx context.Context) (<-chan error, 
 
 	ech := make(chan error, len(addrs))
 	for _, addr := range addrs {
-		if len(addr) != 0 {
+		if addr != "" {
 			_, err := g.Connect(ctx, addr, grpc.WithBlock())
 			if err != nil {
 				if !errors.Is(err, context.Canceled) &&
@@ -218,7 +218,7 @@ func (g *gRPCClient) StartConnectionMonitor(ctx context.Context) (<-chan error, 
 				if g.enablePoolRebalance {
 					err = g.rangeConns(func(addr string, p pool.Conn) bool {
 						// if addr or pool is nil or empty the registration of conns is invalid let's disconnect them
-						if len(addr) == 0 || p == nil {
+						if addr == "" || p == nil {
 							disconnectTargets = append(disconnectTargets, addr)
 							return true
 						}
@@ -255,7 +255,7 @@ func (g *gRPCClient) StartConnectionMonitor(ctx context.Context) (<-chan error, 
 			case <-hcTick.C:
 				err = g.rangeConns(func(addr string, p pool.Conn) bool {
 					// if addr or pool is nil or empty the registration of conns is invalid let's disconnect them
-					if len(addr) == 0 || p == nil {
+					if addr == "" || p == nil {
 						disconnectTargets = append(disconnectTargets, addr)
 						return true
 					}
@@ -295,7 +295,7 @@ func (g *gRPCClient) StartConnectionMonitor(ctx context.Context) (<-chan error, 
 			}
 			if err != nil && errors.Is(err, errors.ErrGRPCClientConnNotFound("*")) && len(addrs) != 0 {
 				for _, addr := range addrs {
-					if len(addr) != 0 {
+					if addr != "" {
 						log.Debugf("connection for %s not found in connection map will re-connect soon", addr)
 						g.crl.Store(addr, false)
 					}
@@ -639,7 +639,7 @@ func (g *gRPCClient) RoundRobin(ctx context.Context, f func(ctx context.Context,
 	}
 
 	var boName string
-	if boName = FromGRPCMethod(sctx); len(boName) != 0 {
+	if boName = FromGRPCMethod(sctx); boName != "" {
 		sctx = backoff.WithBackoffName(sctx, boName)
 	}
 
@@ -659,7 +659,7 @@ func (g *gRPCClient) RoundRobin(ctx context.Context, f func(ctx context.Context,
 					}()
 					var boName string
 					ctx = WrapGRPCMethod(ctx, addr)
-					if boName = FromGRPCMethod(ctx); len(boName) != 0 {
+					if boName = FromGRPCMethod(ctx); boName != "" {
 						ctx = backoff.WithBackoffName(ctx, boName)
 					}
 					if g.cb != nil && len(boName) > 0 {
@@ -790,7 +790,7 @@ func (g *gRPCClient) connectWithBackoff(ctx context.Context, p pool.Conn, addr s
 	if g.bo != nil && enableBackoff {
 		var boName string
 		sctx = WrapGRPCMethod(sctx, addr)
-		if boName = FromGRPCMethod(sctx); len(boName) != 0 {
+		if boName = FromGRPCMethod(sctx); boName != "" {
 			sctx = backoff.WithBackoffName(sctx, boName)
 		}
 		do := func(ctx context.Context) (r interface{}, ret bool, err error) {
