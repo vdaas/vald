@@ -26,6 +26,7 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/observability/trace"
+	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/sync"
 )
 
@@ -66,7 +67,6 @@ func New(opts ...Option) (Indexer, error) {
 	for _, addr := range idx.targetAddrs {
 		idx.targetAddrList[addr] = true
 	}
-
 	return idx, nil
 }
 
@@ -87,13 +87,32 @@ func (idx *index) Start(ctx context.Context) error {
 		},
 	)
 	if err != nil {
-		st, msg, err := status.ParseError(err, codes.Internal,
-			"failed to parse "+agent.CreateIndexRPCName+" gRPC error response",
-		)
+		var attrs trace.Attributes
+		switch {
+		case errors.Is(err, errors.ErrGRPCClientConnNotFound("*")):
+			err = status.WrapWithInternal(
+				agent.CreateIndexRPCName+" API connection not found", err,
+			)
+			attrs = trace.StatusCodeInternal(err.Error())
+		case errors.Is(err, errors.ErrGRPCTargetAddrNotFound):
+			err = status.WrapWithInternal(
+				agent.CreateIndexRPCName+" API connection target address \""+strings.Join(idx.targetAddrs, ",")+"\" not found", err,
+			)
+			attrs = trace.StatusCodeInternal(err.Error())
+		default:
+			var (
+				st  *status.Status
+				msg string
+			)
+			st, msg, err = status.ParseError(err, codes.Internal,
+				"failed to parse "+agent.CreateIndexRPCName+" gRPC error response",
+			)
+			attrs = trace.FromGRPCStatus(st.Code(), msg)
+		}
 		log.Warn(err)
 		if span != nil {
 			span.RecordError(err)
-			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+			span.SetAttributes(attrs...)
 			span.SetStatus(trace.StatusError, err.Error())
 		}
 		return err
@@ -179,7 +198,7 @@ func (idx *index) doCreateIndex(ctx context.Context, fn func(_ context.Context, 
 			return err
 		},
 	)
-	return errors.Join(errs, err)
+	return errors.Join(err, errs)
 }
 
 // extractTargetAddresses filters and extracts target addresses registered in targetAddrList from the given address list.

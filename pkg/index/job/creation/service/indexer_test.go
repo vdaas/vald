@@ -89,11 +89,10 @@ func Test_index_Start(t *testing.T) {
 				"127.0.0.1:8080",
 			}
 			return test{
-				name: "Fail: when there is an error in the indexing request process",
+				name: "Fail: when there is an error wrapped with gRPC status in the indexing request process",
 				args: args{
 					ctx: context.Background(),
 				},
-
 				fields: fields{
 					client: &mockDiscovererClient{
 						GetAddrsFunc: func(_ context.Context) []string {
@@ -108,6 +107,38 @@ func Test_index_Start(t *testing.T) {
 										agent.CreateIndexRPCName+" API connection not found",
 										errors.ErrGRPCClientConnNotFound("*"),
 									)
+								},
+							}
+						},
+					},
+				},
+				want: want{
+					err: status.Error(codes.Internal,
+						agent.CreateIndexRPCName+" API connection not found"),
+				},
+			}
+		}(),
+		func() test {
+			addrs := []string{
+				"127.0.0.1:8080",
+			}
+			return test{
+				name: "Fail: When the OrderedRangeConcurrent method returns a gRPC client conn not found error",
+				args: args{
+					ctx: context.Background(),
+				},
+
+				fields: fields{
+					client: &mockDiscovererClient{
+						GetAddrsFunc: func(_ context.Context) []string {
+							return addrs
+						},
+						GetClientFunc: func() grpc.Client {
+							return &mockGrpcClient{
+								OrderedRangeConcurrentFunc: func(_ context.Context, _ []string, _ int,
+									_ func(_ context.Context, _ string, _ *grpc.ClientConn, _ ...grpc.CallOption) error,
+								) error {
+									return errors.ErrGRPCClientConnNotFound("*")
 								},
 							}
 						},
@@ -142,7 +173,7 @@ func Test_index_Start(t *testing.T) {
 				},
 				want: want{
 					err: status.Error(codes.Internal,
-						"failed to parse "+agent.CreateIndexRPCName+" gRPC error response"),
+						agent.CreateIndexRPCName+" API connection target address \"127.0.0.1:8080\" not found"),
 				},
 			}
 		}(),
