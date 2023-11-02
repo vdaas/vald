@@ -143,6 +143,7 @@ func (idx *index) doCreateIndex(ctx context.Context, fn func(_ context.Context, 
 			return errors.ErrGRPCTargetAddrNotFound
 		}
 	}
+	log.Infof("target agent addrs: %v", targetAddrs)
 
 	var emu sync.Mutex
 	err := idx.client.GetClient().OrderedRangeConcurrent(ctx, targetAddrs, idx.concurrency,
@@ -186,12 +187,12 @@ func (idx *index) doCreateIndex(ctx context.Context, fn func(_ context.Context, 
 						"failed to parse "+agent.CreateIndexRPCName+" gRPC error response",
 					)
 					if st != nil && err != nil && st.Code() == codes.FailedPrecondition {
-						log.Debugf("CreateIndex of %s skipped, message: %s, err: %v", target, st.Message(), errors.Join(st.Err(), err))
+						log.Warnf("CreateIndex of %s skipped, message: %s, err: %v", target, st.Message(), errors.Join(st.Err(), err))
 						return nil
 					}
 					attrs = trace.FromGRPCStatus(st.Code(), msg)
 				}
-				log.Warn(err)
+				log.Warnf("an error occurred in (%s) during indexing: %v", target, err)
 				if span != nil {
 					span.RecordError(err)
 					span.SetAttributes(attrs...)
