@@ -79,8 +79,7 @@ proto/clean/deps:
 	$(GOPATH)/src/github.com/planetscale/vtprotobuf \
 	$(GOPATH)/src/github.com/protocolbuffers/protobuf \
 	$(GOPATH)/src/google.golang.org/genproto \
-	$(GOPATH)/src/google.golang.org/protobuf \
-	$(ROOTDIR)/apis/proto/v1/rpc/error_details.proto
+	$(GOPATH)/src/google.golang.org/protobuf
 
 
 $(GOPATH)/src/github.com/protocolbuffers/protobuf:
