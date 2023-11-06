@@ -579,3 +579,4 @@ include Makefile.d/kind.mk
 include Makefile.d/proto.mk
 include Makefile.d/test.mk
 include Makefile.d/tools.mk
+include Makefile.d/minikube.mk
