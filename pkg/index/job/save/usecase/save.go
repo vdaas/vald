@@ -84,7 +84,7 @@ func New(cfg *config.Data) (_ runner.Runner, err error) {
 
 	indexer, err := service.New(
 		service.WithDiscoverer(discoverer),
-		service.WithIndexingConcurrency(cfg.Save.Concurrency),
+		service.WithSaveIndexingConcurrency(cfg.Save.Concurrency),
 		service.WithTargetAddrs(cfg.Save.TargetAddrs...),
 	)
 	if err != nil {

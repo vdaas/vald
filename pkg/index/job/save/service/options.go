@@ -22,7 +22,7 @@ import (
 type Option func(_ *index) error
 
 var defaultOpts = []Option{
-	WithIndexingConcurrency(1),
+	WithSaveIndexingConcurrency(1),
 }
 
 // WithDiscoverer returns Option that sets discoverer client.
@@ -36,11 +36,11 @@ func WithDiscoverer(client discoverer.Client) Option {
 	}
 }
 
-// WithIndexingConcurrency returns Option that sets indexing concurrency.
-func WithIndexingConcurrency(num int) Option {
+// WithSaveIndexingConcurrency returns Option that sets save indexing concurrency.
+func WithSaveIndexingConcurrency(num int) Option {
 	return func(idx *index) error {
 		if num <= 0 {
-			return errors.NewErrInvalidOption("indexingConcurrency", num)
+			return errors.NewErrInvalidOption("saveIndexingConcurrency", num)
 		}
 		idx.concurrency = num
 		return nil

@@ -101,7 +101,7 @@ package service
 // 	}
 // }
 //
-// func TestWithIndexingConcurrency(t *testing.T) {
+// func TestWithSaveIndexingConcurrency(t *testing.T) {
 // 	type args struct {
 // 		num int
 // 	}
@@ -178,7 +178,7 @@ package service
 // 				checkFunc = defaultCheckFunc
 // 			}
 //
-// 			got := WithIndexingConcurrency(test.args.num)
+// 			got := WithSaveIndexingConcurrency(test.args.num)
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
