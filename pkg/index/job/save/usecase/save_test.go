@@ -11,33 +11,30 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-package config
+package usecase
 
 // NOT IMPLEMENTED BELOW
 //
-// func TestIndexSave_Bind(t *testing.T) {
-// 	type fields struct {
-// 		AgentPort      int
-// 		AgentName      string
-// 		AgentNamespace string
-// 		AgentDNS       string
-// 		NodeName       string
-// 		Concurrency    int
-// 		TargetAddrs    []string
-// 		Discoverer     *DiscovererClient
+// func TestNew(t *testing.T) {
+// 	type args struct {
+// 		cfg *config.Data
 // 	}
 // 	type want struct {
-// 		want *IndexSave
+// 		want runner.Runner
+// 		err  error
 // 	}
 // 	type test struct {
 // 		name       string
-// 		fields     fields
+// 		args       args
 // 		want       want
-// 		checkFunc  func(want, *IndexSave) error
-// 		beforeFunc func(*testing.T)
-// 		afterFunc  func(*testing.T)
+// 		checkFunc  func(want, runner.Runner, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
 // 	}
-// 	defaultCheckFunc := func(w want, got *IndexSave) error {
+// 	defaultCheckFunc := func(w want, got runner.Runner, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
 // 		if !reflect.DeepEqual(got, w.want) {
 // 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 // 		}
@@ -48,22 +45,15 @@ package config
 // 		/*
 // 		   {
 // 		       name: "test_case_1",
-// 		       fields: fields {
-// 		           AgentPort:0,
-// 		           AgentName:"",
-// 		           AgentNamespace:"",
-// 		           AgentDNS:"",
-// 		           NodeName:"",
-// 		           Concurrency:0,
-// 		           TargetAddrs:nil,
-// 		           Discoverer:DiscovererClient{},
+// 		       args: args {
+// 		           cfg:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
-// 		       beforeFunc: func(t *testing.T,) {
+// 		       beforeFunc: func(t *testing.T, args args) {
 // 		           t.Helper()
 // 		       },
-// 		       afterFunc: func(t *testing.T,) {
+// 		       afterFunc: func(t *testing.T, args args) {
 // 		           t.Helper()
 // 		       },
 // 		   },
@@ -74,22 +64,15 @@ package config
 // 		   func() test {
 // 		       return test {
 // 		           name: "test_case_2",
-// 		           fields: fields {
-// 		           AgentPort:0,
-// 		           AgentName:"",
-// 		           AgentNamespace:"",
-// 		           AgentDNS:"",
-// 		           NodeName:"",
-// 		           Concurrency:0,
-// 		           TargetAddrs:nil,
-// 		           Discoverer:DiscovererClient{},
+// 		           args: args {
+// 		           cfg:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
-// 		           beforeFunc: func(t *testing.T,) {
+// 		           beforeFunc: func(t *testing.T, args args) {
 // 		               t.Helper()
 // 		           },
-// 		           afterFunc: func(t *testing.T,) {
+// 		           afterFunc: func(t *testing.T, args args) {
 // 		               t.Helper()
 // 		           },
 // 		       }
@@ -103,28 +86,18 @@ package config
 // 			tt.Parallel()
 // 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 // 			if test.beforeFunc != nil {
-// 				test.beforeFunc(tt)
+// 				test.beforeFunc(tt, test.args)
 // 			}
 // 			if test.afterFunc != nil {
-// 				defer test.afterFunc(tt)
+// 				defer test.afterFunc(tt, test.args)
 // 			}
 // 			checkFunc := test.checkFunc
 // 			if test.checkFunc == nil {
 // 				checkFunc = defaultCheckFunc
 // 			}
-// 			is := &IndexSave{
-// 				AgentPort:      test.fields.AgentPort,
-// 				AgentName:      test.fields.AgentName,
-// 				AgentNamespace: test.fields.AgentNamespace,
-// 				AgentDNS:       test.fields.AgentDNS,
-// 				NodeName:       test.fields.NodeName,
-// 				Concurrency:    test.fields.Concurrency,
-// 				TargetAddrs:    test.fields.TargetAddrs,
-// 				Discoverer:     test.fields.Discoverer,
-// 			}
 //
-// 			got := is.Bind()
-// 			if err := checkFunc(test.want, got); err != nil {
+// 			got, err := New(test.args.cfg)
+// 			if err := checkFunc(test.want, got, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
 //
