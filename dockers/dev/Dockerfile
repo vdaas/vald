@@ -64,4 +64,5 @@ RUN make deps \
 # additional deps
 RUN make k3d/install \
     && make buf/install \
-    && make k9s/install
+    && make k9s/install \
+    && make minikube/install
