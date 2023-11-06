@@ -185,7 +185,7 @@ func (idx *index) doSaveIndex(ctx context.Context, fn func(_ context.Context, _ 
 					)
 					attrs = trace.FromGRPCStatus(st.Code(), msg)
 				}
-				log.Warnf("an error occurred in (%s) during indexing: %v", target, err)
+				log.Warnf("an error occurred in (%s) during save indexing: %v", target, err)
 				if span != nil {
 					span.RecordError(err)
 					span.SetAttributes(attrs...)
