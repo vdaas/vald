@@ -183,10 +183,6 @@ func (idx *index) doSaveIndex(ctx context.Context, fn func(_ context.Context, _ 
 					st, msg, err = status.ParseError(err, codes.Internal,
 						"failed to parse "+agent.SaveIndexRPCName+" gRPC error response",
 					)
-					if st != nil && err != nil && st.Code() == codes.FailedPrecondition {
-						log.Warnf("SaveIndex of %s skipped, message: %s, err: %v", target, st.Message(), errors.Join(st.Err(), err))
-						return nil
-					}
 					attrs = trace.FromGRPCStatus(st.Code(), msg)
 				}
 				log.Warnf("an error occurred in (%s) during indexing: %v", target, err)
