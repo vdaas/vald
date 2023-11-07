@@ -50,7 +50,8 @@ const (
 )
 
 type Corrector interface {
-	Start(ctx context.Context) (<-chan error, error)
+	Start(ctx context.Context) error
+	PreStart(ctx context.Context) (<-chan error, error)
 	PreStop(ctx context.Context) error
 	// For metrics
 	NumberOfCheckedIndex() uint64
@@ -89,14 +90,17 @@ func New(cfg *config.Data, discoverer discoverer.Client) (Corrector, error) {
 	}, nil
 }
 
-func (c *correct) Start(ctx context.Context) (<-chan error, error) {
-	// set current time to context
-	ctx = embedTime(ctx)
-
+func (c *correct) PreStart(ctx context.Context) (<-chan error, error) {
 	dech, err := c.discoverer.Start(ctx)
 	if err != nil {
 		return nil, err
 	}
+	return dech, nil
+}
+
+func (c *correct) Start(ctx context.Context) error {
+	// set current time to context
+	ctx = embedTime(ctx)
 
 	// addrs is sorted by the memory usage of each agent(descending order)
 	// this is decending because it's supposed to be used for index manager to decide
@@ -106,12 +110,12 @@ func (c *correct) Start(ctx context.Context) (<-chan error, error) {
 
 	if l := len(c.agentAddrs); l <= 1 {
 		log.Warn("only %d agent found, there must be more than two agents for correction to happen", l)
-		return nil, err
+		return errors.ErrAgentReplicaOne
 	}
 
-	err = c.loadInfos(ctx)
+	err := c.loadInfos(ctx)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	c.indexInfos.Range(func(addr string, info *payload.Info_Index_Count) bool {
@@ -122,11 +126,11 @@ func (c *correct) Start(ctx context.Context) (<-chan error, error) {
 	log.Info("starting correction with bbolt disk cache...")
 	if err := c.correct(ctx); err != nil {
 		log.Errorf("there's some errors while correction: %v", err)
-		return nil, err
+		return err
 	}
 	log.Info("correction finished successfully")
 
-	return dech, nil
+	return nil
 }
 
 func (c *correct) PreStop(_ context.Context) error {

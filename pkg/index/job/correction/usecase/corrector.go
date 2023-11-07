@@ -145,13 +145,19 @@ func (r *run) PreStart(ctx context.Context) error {
 func (r *run) Start(ctx context.Context) (<-chan error, error) {
 	log.Info("starting servers")
 	ech := make(chan error, 3) //nolint:gomnd
-	var oech, nech, sech <-chan error
+	var oech <-chan error
+	if r.observability != nil {
+		oech = r.observability.Start(ctx)
+	}
+	sech := r.server.ListenAndServe(ctx)
+	nech, err := r.corrector.PreStart(ctx)
+	if err != nil {
+		close(ech)
+		return nil, err
+	}
+
 	r.eg.Go(safety.RecoverFunc(func() (err error) {
 		defer close(ech)
-		if r.observability != nil {
-			oech = r.observability.Start(ctx)
-		}
-		sech = r.server.ListenAndServe(ctx)
 		for {
 			select {
 			case <-ctx.Done():
@@ -189,7 +195,7 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 		}()
 
 		start := time.Now()
-		_, err = r.corrector.Start(ctx)
+		err = r.corrector.Start(ctx)
 		if err != nil {
 			log.Errorf("index correction process failed: %v", err)
 			return err
