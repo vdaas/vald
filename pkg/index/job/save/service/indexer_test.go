@@ -60,7 +60,7 @@ func Test_index_Start(t *testing.T) {
 				"127.0.0.1:8080",
 			}
 			return test{
-				name: "Success: when there is no error in the indexing request process",
+				name: "Success: when there is no error in the save indexing request process",
 				args: args{
 					ctx: context.Background(),
 				},
@@ -88,7 +88,7 @@ func Test_index_Start(t *testing.T) {
 				"127.0.0.1:8080",
 			}
 			return test{
-				name: "Fail: when there is an error wrapped with gRPC status in the indexing request process",
+				name: "Fail: when there is an error wrapped with gRPC status in the save indexing request process",
 				args: args{
 					ctx: context.Background(),
 				},
