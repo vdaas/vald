@@ -37,7 +37,7 @@ const (
 
 // Indexer represents an interface for indexing.
 type Indexer interface {
-	PreStart(ctx context.Context) (<-chan error, error)
+	StartClient(ctx context.Context) (<-chan error, error)
 	Start(ctx context.Context) error
 }
 
@@ -70,8 +70,8 @@ func New(opts ...Option) (Indexer, error) {
 	return idx, nil
 }
 
-// PreStart starts the preparation process.
-func (idx *index) PreStart(ctx context.Context) (<-chan error, error) {
+// StartClient starts the gRPC client.
+func (idx *index) StartClient(ctx context.Context) (<-chan error, error) {
 	return idx.client.Start(ctx)
 }
 

@@ -301,7 +301,7 @@ func Test_index_Start(t *testing.T) {
 // 	}
 // }
 //
-// func Test_index_PreStart(t *testing.T) {
+// func Test_index_StartClient(t *testing.T) {
 // 	type args struct {
 // 		ctx context.Context
 // 	}
@@ -407,7 +407,7 @@ func Test_index_Start(t *testing.T) {
 // 				concurrency:    test.fields.concurrency,
 // 			}
 //
-// 			got, err := idx.PreStart(test.args.ctx)
+// 			got, err := idx.StartClient(test.args.ctx)
 // 			if err := checkFunc(test.want, got, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
