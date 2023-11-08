@@ -48,6 +48,7 @@ func init() {
 	pid = os.Getpid()
 }
 
+// BenchmarkNGT measures memory usage in insert/create index/remove steps.
 func BenchmarkNGT(b *testing.B) {
 	if len(vectors) == 0 {
 		return

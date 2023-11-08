@@ -24,7 +24,6 @@ import (
 	"os"
 	"runtime"
 	"strconv"
-	"sync"
 	"time"
 
 	"github.com/vdaas/vald/internal/conv"
@@ -33,9 +32,11 @@ import (
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/http/metrics"
 	"github.com/vdaas/vald/internal/strings"
+	"github.com/vdaas/vald/internal/sync"
 	"gonum.org/v1/hdf5"
 )
 
+// This program is intended to get long-running results that are difficult to measure with Go standard benchmarks.
 func main() {
 	const columnSize = 42
 	var (
