@@ -91,11 +91,7 @@ func New(cfg *config.Data, discoverer discoverer.Client) (Corrector, error) {
 }
 
 func (c *correct) StartMonitoring(ctx context.Context) (<-chan error, error) {
-	dech, err := c.discoverer.Start(ctx)
-	if err != nil {
-		return nil, err
-	}
-	return dech, nil
+	return c.discoverer.Start(ctx)
 }
 
 func (c *correct) Start(ctx context.Context) error {
