@@ -150,7 +150,7 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 		oech = r.observability.Start(ctx)
 	}
 	sech := r.server.ListenAndServe(ctx)
-	nech, err := r.corrector.StartMonitoring(ctx)
+	nech, err := r.corrector.StartClient(ctx)
 	if err != nil {
 		close(ech)
 		return nil, err

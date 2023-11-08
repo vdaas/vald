@@ -51,7 +51,7 @@ const (
 
 type Corrector interface {
 	Start(ctx context.Context) error
-	StartMonitoring(ctx context.Context) (<-chan error, error)
+	StartClient(ctx context.Context) (<-chan error, error)
 	PreStop(ctx context.Context) error
 	// For metrics
 	NumberOfCheckedIndex() uint64
@@ -90,7 +90,7 @@ func New(cfg *config.Data, discoverer discoverer.Client) (Corrector, error) {
 	}, nil
 }
 
-func (c *correct) StartMonitoring(ctx context.Context) (<-chan error, error) {
+func (c *correct) StartClient(ctx context.Context) (<-chan error, error) {
 	return c.discoverer.Start(ctx)
 }
 
