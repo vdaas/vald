@@ -33,7 +33,7 @@ type Data struct {
 	Observability *config.Observability `json:"observability" yaml:"observability"`
 
 	// Save represents auto save indexing service configurations.
-	Save *config.IndexSave `json:"savior" yaml:"savior"`
+	Save *config.IndexSave `json:"saver" yaml:"saver"`
 }
 
 // NewConfig loads configurations from the file path.
