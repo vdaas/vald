@@ -24,6 +24,7 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/test/goleak"
+	"github.com/vdaas/vald/internal/test/mock"
 )
 
 func Test_index_Start(t *testing.T) {
@@ -66,12 +67,12 @@ func Test_index_Start(t *testing.T) {
 				},
 
 				fields: fields{
-					client: &mockDiscovererClient{
+					client: &mock.DiscovererClientMock{
 						GetAddrsFunc: func(_ context.Context) []string {
 							return addrs
 						},
 						GetClientFunc: func() grpc.Client {
-							return &mockGrpcClient{
+							return &mock.GRPCClientMock{
 								OrderedRangeConcurrentFunc: func(_ context.Context, _ []string, _ int,
 									_ func(_ context.Context, _ string, _ *grpc.ClientConn, _ ...grpc.CallOption) error,
 								) error {
@@ -93,12 +94,12 @@ func Test_index_Start(t *testing.T) {
 					ctx: context.Background(),
 				},
 				fields: fields{
-					client: &mockDiscovererClient{
+					client: &mock.DiscovererClientMock{
 						GetAddrsFunc: func(_ context.Context) []string {
 							return addrs
 						},
 						GetClientFunc: func() grpc.Client {
-							return &mockGrpcClient{
+							return &mock.GRPCClientMock{
 								OrderedRangeConcurrentFunc: func(_ context.Context, _ []string, _ int,
 									_ func(_ context.Context, _ string, _ *grpc.ClientConn, _ ...grpc.CallOption) error,
 								) error {
@@ -128,12 +129,12 @@ func Test_index_Start(t *testing.T) {
 				},
 
 				fields: fields{
-					client: &mockDiscovererClient{
+					client: &mock.DiscovererClientMock{
 						GetAddrsFunc: func(_ context.Context) []string {
 							return addrs
 						},
 						GetClientFunc: func() grpc.Client {
-							return &mockGrpcClient{
+							return &mock.GRPCClientMock{
 								OrderedRangeConcurrentFunc: func(_ context.Context, _ []string, _ int,
 									_ func(_ context.Context, _ string, _ *grpc.ClientConn, _ ...grpc.CallOption) error,
 								) error {
@@ -162,7 +163,7 @@ func Test_index_Start(t *testing.T) {
 					ctx: context.Background(),
 				},
 				fields: fields{
-					client: &mockDiscovererClient{
+					client: &mock.DiscovererClientMock{
 						GetAddrsFunc: func(_ context.Context) []string {
 							// NOTE: This function returns nil, meaning that the targetAddrs stored in the field are invalid values.
 							return nil
