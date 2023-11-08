@@ -36,7 +36,7 @@ type Data struct {
 	Save *config.IndexSave `json:"savior" yaml:"savior"`
 }
 
-// NewConfig load configurations from file path.
+// NewConfig loads configurations from the file path.
 func NewConfig(path string) (cfg *Data, err error) {
 	cfg = new(Data)
 
