@@ -288,9 +288,7 @@ func RemoveDuplicates(errs []error) []error {
 	slices.SortStableFunc(errs, func(l error, r error) int {
 		return cmp.Compare(l.Error(), r.Error())
 	})
-	return slices.CompactFunc(errs, func(l error, r error) bool {
-		return Is(l, r)
-	})
+	return slices.CompactFunc(errs, Is)
 }
 
 type joinError struct {
