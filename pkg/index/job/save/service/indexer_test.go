@@ -164,6 +164,7 @@ func Test_index_Start(t *testing.T) {
 				fields: fields{
 					client: &mockDiscovererClient{
 						GetAddrsFunc: func(_ context.Context) []string {
+							// NOTE: This function returns nil, meaning that the targetAddrs stored in the field are invalid values.
 							return nil
 						},
 					},
