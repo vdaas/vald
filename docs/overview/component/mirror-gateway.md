@@ -10,7 +10,7 @@ This component makes it possible to enhance availability during a cluster failur
 
 Vald Mirror Gateway is responsible for the followings:
 
-- Forward user requests ([Insert](https://vald.vdaas.org/docs/api/insert/) / [Upsert](https://vald.vdaas.org/docs/api/upsert/) / [Update](https://vald.vdaas.org/docs/api/update/) / [Remove](https://vald.vdaas.org/docs/api/remove/)) to the other Vald Mirror Gateways in the same group.
+- Forward user requests ([Insert](../../api/insert.md) / [Upsert](../../api/upsert.md) / [Update](../../api/update.md) / [Remove](../../api/remove.md)) to the other Vald Mirror Gateways in the same group.
 - Manages the state of indexes stored in all clusters to ensure they are consistent.
 
 ## Features
@@ -33,46 +33,49 @@ The `ValdMirrorTarget` is a Custom Resource related to the connection destinatio
 
 When two Vald clusters contain Vald Mirror Gateways, Vald Mirror Gateways can send the request to each other by applying `ValdMirrorTarget`.
 
-For more information about `ValdMirrorTarget` configuration, please refer to [Custom Resource Configuration](https://vald.vdaas.org/docs/user-guides/mirroring-configuration/).
+For more information about `ValdMirrorTarget` configuration, please refer to [Custom Resource Configuration](../../user-guides/mirroring-configuration.md).
 
 ### Request forwarding
 
 <img src="../../../assets/docs/overview/component/mirror-gateway/request-forwarding.png">
 
-The Vald Mirror Gateway forwards the incoming user request ([Insert](https://vald.vdaas.org/docs/api/insert/) / [Upsert](https://vald.vdaas.org/docs/api/upsert/) / [Update](https://vald.vdaas.org/docs/api/update/) / [Remove](https://vald.vdaas.org/docs/api/remove/)) to other Vald Mirror Gateways.
+The Vald Mirror Gateway forwards the incoming user request ([Insert](../../api/insert.md) / [Upsert](../../api/upsert.md) / [Update](../../api/update.md) / [Remove](../../api/remove.md)) to other Vald Mirror Gateways.
 Then, while forwarding the user request, the Vald Mirror Gateway bypasses the incoming user request to Vald LB Gateway in its own cluster.
 
-On the other hand, if the incoming user request is an [Object API](https://vald.vdaas.org/docs/api/object/) or [Search API](https://vald.vdaas.org/docs/api/search/), it is bypassed to only a Vald LB Gateway in its own cluster without forwarding it to other Vald Mirror Gateways.
+On the other hand, if the incoming user request is an [Object API](../../api/object.md) or [Search API](../../api/search.md), it is bypassed to only a Vald LB Gateway in its own cluster without forwarding it to other Vald Mirror Gateways.
 
-### Automatic rollback on failure
+### Continuous processing on failure
 
 The request may fail at the forwarding destination or the bypass destination.
 
-If some requests fail, the vector data will not be consistent across Vald clusters.
+If some of the requests fails, the processing continues based on their status code.
 
-To keep index state consistency, the Vald Mirror Gateway will send the rollback request for the failed request. After the rollback request succeeds, the index state will be the same as before requesting.
+Here's an overview of how the Mirror Gateway handles failures for each type of request.
 
-The following is the list of rollback types.
+For more information about status code, please refer to [Mirror Gateway Troubleshooting](../../troubleshooting/mirror-gateway.md).
 
 - Insert Request
-  - Rollback Condition/Trigger
-    - Status code other than `ALREADY_EXISTS` exists
-  - Rollback request to the successful request
-    - REMOVE request
-- Remove Request
-  - Rollback Condition/Trigger
-    - Status code other than `NOT_FOUND` exists
-  - Rollback request to the successful request
-    - UPSERT Request with old vector
+
+  - If the target host returns a status code of `ALREADY_EXISTS`, the Update request is sent to this host.
+  - If the target host returns a status code other than `OK`, `ALREADY_EXISTS`, the Mirror Gateway returns that status code without continuous processing.
+  - If all target hosts return a status code `ALREADY_EXISTS`, the Mirror Gateway returns `ALREADY_EXISTS`.
+  - If all target hosts return a status code `OK` or `ALREADY_EXISTS`, the Mirror Gateway returns `OK`.
+
 - Update Request
-  - Rollback Condition/Trigger
-    - Status code other than `ALREADY_EXISTS` exists
-  - Rollback request to the successful request
-    - REMOVE Request if there is no old vector data
-    - UPDATE Request if there is old vector data
+
+  - If the target host returns a status code `NOT_FOUND`, the Insert request is sent to this host.
+  - If the target host returns a status code other than `OK`, `ALREADY_EXISTS`, the Mirror Gateway returns that status code without continuous processing.
+  - If all target hosts return a status code `ALREADY_EXISTS`, the Mirror Gateway returns `ALREADY_EXISTS`.
+  - If all target hosts return a status code `OK` or `ALREADY_EXISTS`, the Mirror Gateway returns `OK`.
+
 - Upsert Request
-  - Rollback Condition/Trigger
-    - Status code other than `ALREADY_EXISTS` exists
-  - Rollback request to the successful request
-    - REMOVE Request if there is no old vector data
-    - UPDATE Request if there is old vector data
+
+  - If all target hosts return a status code `ALREADY_EXISTS`, the Mirror Gateway returns `ALREADY_EXISTS`.
+  - If the target host returns a status code other than `OK` or `ALREADY_EXISTS`, the Mirror Gateway returns that status code without continuous processing.
+  - If all target hosts return a status code `OK` or `ALREADY_EXISTS`, the Mirror Gateway returns `OK`.
+
+- Remove/RemoveByTimestamp Request
+
+  - If all target hosts return a status code `NOT_FOUND`, the Mirror Gateway returns `NOT_FOUND`.
+  - If the target host returns a status code other than `OK` or `NOT_FOUND`, the Mirror Gateway returns that status code without continuous processing.
+  - If all target hosts return a status code `OK` or `NOT_FOUND`, the Mirror Gateway returns `OK`.
