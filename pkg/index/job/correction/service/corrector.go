@@ -90,13 +90,13 @@ func New(opts ...Option) (_ Corrector, err error) {
 			log.Warn(oerr)
 		}
 	}
-	if err := c.kvsInit(); err != nil {
+	if err := c.bboltInit(); err != nil {
 		return nil, err
 	}
 	return c, nil
 }
 
-func (c *correct) kvsInit() error {
+func (c *correct) bboltInit() error {
 	dpath := file.Join(os.TempDir(), "bbolt")
 	err := file.MkdirAll(dpath, os.ModePerm)
 	if err != nil {
