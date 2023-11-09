@@ -135,11 +135,6 @@ func (c *correct) Start(ctx context.Context) error {
 		return err
 	}
 
-	c.indexInfos.Range(func(addr string, info *payload.Info_Index_Count) bool {
-		log.Infof("index info: addr(%s), stored(%d), uncommitted(%d)", addr, info.GetStored(), info.GetUncommitted())
-		return true
-	})
-
 	log.Info("starting correction with bbolt disk cache...")
 	if err := c.correct(ctx); err != nil {
 		log.Errorf("there's some errors while correction: %v", err)
@@ -619,6 +614,7 @@ func (c *correct) loadInfos(ctx context.Context) (err error) {
 		return true
 	})
 	infoMap.Range(func(addr string, info *payload.Info_Index_Count) bool {
+		log.Infof("index info: addr(%s), stored(%d), uncommitted(%d)", addr, info.GetStored(), info.GetUncommitted())
 		c.indexInfos.Store(addr, info)
 		return true
 	})
