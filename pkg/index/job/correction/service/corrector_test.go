@@ -466,8 +466,7 @@ func Test_correct_correctReplica(t *testing.T) {
 //
 // func TestNew(t *testing.T) {
 // 	type args struct {
-// 		cfg        *config.Data
-// 		discoverer discoverer.Client
+// 		opts []Option
 // 	}
 // 	type want struct {
 // 		want Corrector
@@ -496,8 +495,7 @@ func Test_correct_correctReplica(t *testing.T) {
 // 		   {
 // 		       name: "test_case_1",
 // 		       args: args {
-// 		           cfg:nil,
-// 		           discoverer:nil,
+// 		           opts:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -516,8 +514,7 @@ func Test_correct_correctReplica(t *testing.T) {
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           args: args {
-// 		           cfg:nil,
-// 		           discoverer:nil,
+// 		           opts:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -548,7 +545,7 @@ func Test_correct_correctReplica(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 //
-// 			got, err := New(test.args.cfg, test.args.discoverer)
+// 			got, err := New(test.args.opts...)
 // 			if err := checkFunc(test.want, got, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
@@ -557,18 +554,23 @@ func Test_correct_correctReplica(t *testing.T) {
 // 	}
 // }
 //
-// func Test_correct_Start(t *testing.T) {
+// func Test_correct_StartClient(t *testing.T) {
 // 	type args struct {
 // 		ctx context.Context
 // 	}
 // 	type fields struct {
-// 		cfg                   *config.Data
-// 		discoverer            discoverer.Client
-// 		agentAddrs            []string
-// 		indexInfos            sync.Map[string, *payload.Info_Index_Count]
-// 		uuidsCount            uint32
-// 		uncommittedUUIDsCount uint32
-// 		checkedID             bbolt.Bbolt
+// 		discoverer                 discoverer.Client
+// 		agentAddrs                 []string
+// 		indexInfos                 sync.Map[string, *payload.Info_Index_Count]
+// 		uuidsCount                 uint32
+// 		uncommittedUUIDsCount      uint32
+// 		checkedID                  bbolt.Bbolt
+// 		checkedIndexCount          atomic.Uint64
+// 		correctedOldIndexCount     atomic.Uint64
+// 		correctedReplicationCount  atomic.Uint64
+// 		indexReplica               int
+// 		streamListConcurrency      int
+// 		bboltAsyncWriteConcurrency int
 // 	}
 // 	type want struct {
 // 		want <-chan error
@@ -601,13 +603,18 @@ func Test_correct_correctReplica(t *testing.T) {
 // 		           ctx:nil,
 // 		       },
 // 		       fields: fields {
-// 		           cfg:nil,
 // 		           discoverer:nil,
 // 		           agentAddrs:nil,
 // 		           indexInfos:nil,
 // 		           uuidsCount:0,
 // 		           uncommittedUUIDsCount:0,
 // 		           checkedID:nil,
+// 		           checkedIndexCount:nil,
+// 		           correctedOldIndexCount:nil,
+// 		           correctedReplicationCount:nil,
+// 		           indexReplica:0,
+// 		           streamListConcurrency:0,
+// 		           bboltAsyncWriteConcurrency:0,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -629,13 +636,18 @@ func Test_correct_correctReplica(t *testing.T) {
 // 		           ctx:nil,
 // 		           },
 // 		           fields: fields {
-// 		           cfg:nil,
 // 		           discoverer:nil,
 // 		           agentAddrs:nil,
 // 		           indexInfos:nil,
 // 		           uuidsCount:0,
 // 		           uncommittedUUIDsCount:0,
 // 		           checkedID:nil,
+// 		           checkedIndexCount:nil,
+// 		           correctedOldIndexCount:nil,
+// 		           correctedReplicationCount:nil,
+// 		           indexReplica:0,
+// 		           streamListConcurrency:0,
+// 		           bboltAsyncWriteConcurrency:0,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -666,17 +678,165 @@ func Test_correct_correctReplica(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			c := &correct{
-// 				cfg:                   test.fields.cfg,
-// 				discoverer:            test.fields.discoverer,
-// 				agentAddrs:            test.fields.agentAddrs,
-// 				indexInfos:            test.fields.indexInfos,
-// 				uuidsCount:            test.fields.uuidsCount,
-// 				uncommittedUUIDsCount: test.fields.uncommittedUUIDsCount,
-// 				checkedID:             test.fields.checkedID,
+// 				discoverer:                 test.fields.discoverer,
+// 				agentAddrs:                 test.fields.agentAddrs,
+// 				indexInfos:                 test.fields.indexInfos,
+// 				uuidsCount:                 test.fields.uuidsCount,
+// 				uncommittedUUIDsCount:      test.fields.uncommittedUUIDsCount,
+// 				checkedID:                  test.fields.checkedID,
+// 				checkedIndexCount:          test.fields.checkedIndexCount,
+// 				correctedOldIndexCount:     test.fields.correctedOldIndexCount,
+// 				correctedReplicationCount:  test.fields.correctedReplicationCount,
+// 				indexReplica:               test.fields.indexReplica,
+// 				streamListConcurrency:      test.fields.streamListConcurrency,
+// 				bboltAsyncWriteConcurrency: test.fields.bboltAsyncWriteConcurrency,
 // 			}
 //
-// 			got, err := c.Start(test.args.ctx)
+// 			got, err := c.StartClient(test.args.ctx)
 // 			if err := checkFunc(test.want, got, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+//
+// 		})
+// 	}
+// }
+//
+// func Test_correct_Start(t *testing.T) {
+// 	type args struct {
+// 		ctx context.Context
+// 	}
+// 	type fields struct {
+// 		discoverer                 discoverer.Client
+// 		agentAddrs                 []string
+// 		indexInfos                 sync.Map[string, *payload.Info_Index_Count]
+// 		uuidsCount                 uint32
+// 		uncommittedUUIDsCount      uint32
+// 		checkedID                  bbolt.Bbolt
+// 		checkedIndexCount          atomic.Uint64
+// 		correctedOldIndexCount     atomic.Uint64
+// 		correctedReplicationCount  atomic.Uint64
+// 		indexReplica               int
+// 		streamListConcurrency      int
+// 		bboltAsyncWriteConcurrency int
+// 	}
+// 	type want struct {
+// 		err error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           ctx:nil,
+// 		       },
+// 		       fields: fields {
+// 		           discoverer:nil,
+// 		           agentAddrs:nil,
+// 		           indexInfos:nil,
+// 		           uuidsCount:0,
+// 		           uncommittedUUIDsCount:0,
+// 		           checkedID:nil,
+// 		           checkedIndexCount:nil,
+// 		           correctedOldIndexCount:nil,
+// 		           correctedReplicationCount:nil,
+// 		           indexReplica:0,
+// 		           streamListConcurrency:0,
+// 		           bboltAsyncWriteConcurrency:0,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           ctx:nil,
+// 		           },
+// 		           fields: fields {
+// 		           discoverer:nil,
+// 		           agentAddrs:nil,
+// 		           indexInfos:nil,
+// 		           uuidsCount:0,
+// 		           uncommittedUUIDsCount:0,
+// 		           checkedID:nil,
+// 		           checkedIndexCount:nil,
+// 		           correctedOldIndexCount:nil,
+// 		           correctedReplicationCount:nil,
+// 		           indexReplica:0,
+// 		           streamListConcurrency:0,
+// 		           bboltAsyncWriteConcurrency:0,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			c := &correct{
+// 				discoverer:                 test.fields.discoverer,
+// 				agentAddrs:                 test.fields.agentAddrs,
+// 				indexInfos:                 test.fields.indexInfos,
+// 				uuidsCount:                 test.fields.uuidsCount,
+// 				uncommittedUUIDsCount:      test.fields.uncommittedUUIDsCount,
+// 				checkedID:                  test.fields.checkedID,
+// 				checkedIndexCount:          test.fields.checkedIndexCount,
+// 				correctedOldIndexCount:     test.fields.correctedOldIndexCount,
+// 				correctedReplicationCount:  test.fields.correctedReplicationCount,
+// 				indexReplica:               test.fields.indexReplica,
+// 				streamListConcurrency:      test.fields.streamListConcurrency,
+// 				bboltAsyncWriteConcurrency: test.fields.bboltAsyncWriteConcurrency,
+// 			}
+//
+// 			err := c.Start(test.args.ctx)
+// 			if err := checkFunc(test.want, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
 //
@@ -689,13 +849,18 @@ func Test_correct_correctReplica(t *testing.T) {
 // 		in0 context.Context
 // 	}
 // 	type fields struct {
-// 		cfg                   *config.Data
-// 		discoverer            discoverer.Client
-// 		agentAddrs            []string
-// 		indexInfos            sync.Map[string, *payload.Info_Index_Count]
-// 		uuidsCount            uint32
-// 		uncommittedUUIDsCount uint32
-// 		checkedID             bbolt.Bbolt
+// 		discoverer                 discoverer.Client
+// 		agentAddrs                 []string
+// 		indexInfos                 sync.Map[string, *payload.Info_Index_Count]
+// 		uuidsCount                 uint32
+// 		uncommittedUUIDsCount      uint32
+// 		checkedID                  bbolt.Bbolt
+// 		checkedIndexCount          atomic.Uint64
+// 		correctedOldIndexCount     atomic.Uint64
+// 		correctedReplicationCount  atomic.Uint64
+// 		indexReplica               int
+// 		streamListConcurrency      int
+// 		bboltAsyncWriteConcurrency int
 // 	}
 // 	type want struct {
 // 		err error
@@ -724,13 +889,18 @@ func Test_correct_correctReplica(t *testing.T) {
 // 		           in0:nil,
 // 		       },
 // 		       fields: fields {
-// 		           cfg:nil,
 // 		           discoverer:nil,
 // 		           agentAddrs:nil,
 // 		           indexInfos:nil,
 // 		           uuidsCount:0,
 // 		           uncommittedUUIDsCount:0,
 // 		           checkedID:nil,
+// 		           checkedIndexCount:nil,
+// 		           correctedOldIndexCount:nil,
+// 		           correctedReplicationCount:nil,
+// 		           indexReplica:0,
+// 		           streamListConcurrency:0,
+// 		           bboltAsyncWriteConcurrency:0,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -752,13 +922,18 @@ func Test_correct_correctReplica(t *testing.T) {
 // 		           in0:nil,
 // 		           },
 // 		           fields: fields {
-// 		           cfg:nil,
 // 		           discoverer:nil,
 // 		           agentAddrs:nil,
 // 		           indexInfos:nil,
 // 		           uuidsCount:0,
 // 		           uncommittedUUIDsCount:0,
 // 		           checkedID:nil,
+// 		           checkedIndexCount:nil,
+// 		           correctedOldIndexCount:nil,
+// 		           correctedReplicationCount:nil,
+// 		           indexReplica:0,
+// 		           streamListConcurrency:0,
+// 		           bboltAsyncWriteConcurrency:0,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -789,17 +964,421 @@ func Test_correct_correctReplica(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			c := &correct{
-// 				cfg:                   test.fields.cfg,
-// 				discoverer:            test.fields.discoverer,
-// 				agentAddrs:            test.fields.agentAddrs,
-// 				indexInfos:            test.fields.indexInfos,
-// 				uuidsCount:            test.fields.uuidsCount,
-// 				uncommittedUUIDsCount: test.fields.uncommittedUUIDsCount,
-// 				checkedID:             test.fields.checkedID,
+// 				discoverer:                 test.fields.discoverer,
+// 				agentAddrs:                 test.fields.agentAddrs,
+// 				indexInfos:                 test.fields.indexInfos,
+// 				uuidsCount:                 test.fields.uuidsCount,
+// 				uncommittedUUIDsCount:      test.fields.uncommittedUUIDsCount,
+// 				checkedID:                  test.fields.checkedID,
+// 				checkedIndexCount:          test.fields.checkedIndexCount,
+// 				correctedOldIndexCount:     test.fields.correctedOldIndexCount,
+// 				correctedReplicationCount:  test.fields.correctedReplicationCount,
+// 				indexReplica:               test.fields.indexReplica,
+// 				streamListConcurrency:      test.fields.streamListConcurrency,
+// 				bboltAsyncWriteConcurrency: test.fields.bboltAsyncWriteConcurrency,
 // 			}
 //
 // 			err := c.PreStop(test.args.in0)
 // 			if err := checkFunc(test.want, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+//
+// 		})
+// 	}
+// }
+//
+// func Test_correct_NumberOfCheckedIndex(t *testing.T) {
+// 	type fields struct {
+// 		discoverer                 discoverer.Client
+// 		agentAddrs                 []string
+// 		indexInfos                 sync.Map[string, *payload.Info_Index_Count]
+// 		uuidsCount                 uint32
+// 		uncommittedUUIDsCount      uint32
+// 		checkedID                  bbolt.Bbolt
+// 		checkedIndexCount          atomic.Uint64
+// 		correctedOldIndexCount     atomic.Uint64
+// 		correctedReplicationCount  atomic.Uint64
+// 		indexReplica               int
+// 		streamListConcurrency      int
+// 		bboltAsyncWriteConcurrency int
+// 	}
+// 	type want struct {
+// 		want uint64
+// 	}
+// 	type test struct {
+// 		name       string
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, uint64) error
+// 		beforeFunc func(*testing.T)
+// 		afterFunc  func(*testing.T)
+// 	}
+// 	defaultCheckFunc := func(w want, got uint64) error {
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       fields: fields {
+// 		           discoverer:nil,
+// 		           agentAddrs:nil,
+// 		           indexInfos:nil,
+// 		           uuidsCount:0,
+// 		           uncommittedUUIDsCount:0,
+// 		           checkedID:nil,
+// 		           checkedIndexCount:nil,
+// 		           correctedOldIndexCount:nil,
+// 		           correctedReplicationCount:nil,
+// 		           indexReplica:0,
+// 		           streamListConcurrency:0,
+// 		           bboltAsyncWriteConcurrency:0,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           fields: fields {
+// 		           discoverer:nil,
+// 		           agentAddrs:nil,
+// 		           indexInfos:nil,
+// 		           uuidsCount:0,
+// 		           uncommittedUUIDsCount:0,
+// 		           checkedID:nil,
+// 		           checkedIndexCount:nil,
+// 		           correctedOldIndexCount:nil,
+// 		           correctedReplicationCount:nil,
+// 		           indexReplica:0,
+// 		           streamListConcurrency:0,
+// 		           bboltAsyncWriteConcurrency:0,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			c := &correct{
+// 				discoverer:                 test.fields.discoverer,
+// 				agentAddrs:                 test.fields.agentAddrs,
+// 				indexInfos:                 test.fields.indexInfos,
+// 				uuidsCount:                 test.fields.uuidsCount,
+// 				uncommittedUUIDsCount:      test.fields.uncommittedUUIDsCount,
+// 				checkedID:                  test.fields.checkedID,
+// 				checkedIndexCount:          test.fields.checkedIndexCount,
+// 				correctedOldIndexCount:     test.fields.correctedOldIndexCount,
+// 				correctedReplicationCount:  test.fields.correctedReplicationCount,
+// 				indexReplica:               test.fields.indexReplica,
+// 				streamListConcurrency:      test.fields.streamListConcurrency,
+// 				bboltAsyncWriteConcurrency: test.fields.bboltAsyncWriteConcurrency,
+// 			}
+//
+// 			got := c.NumberOfCheckedIndex()
+// 			if err := checkFunc(test.want, got); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+//
+// 		})
+// 	}
+// }
+//
+// func Test_correct_NumberOfCorrectedOldIndex(t *testing.T) {
+// 	type fields struct {
+// 		discoverer                 discoverer.Client
+// 		agentAddrs                 []string
+// 		indexInfos                 sync.Map[string, *payload.Info_Index_Count]
+// 		uuidsCount                 uint32
+// 		uncommittedUUIDsCount      uint32
+// 		checkedID                  bbolt.Bbolt
+// 		checkedIndexCount          atomic.Uint64
+// 		correctedOldIndexCount     atomic.Uint64
+// 		correctedReplicationCount  atomic.Uint64
+// 		indexReplica               int
+// 		streamListConcurrency      int
+// 		bboltAsyncWriteConcurrency int
+// 	}
+// 	type want struct {
+// 		want uint64
+// 	}
+// 	type test struct {
+// 		name       string
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, uint64) error
+// 		beforeFunc func(*testing.T)
+// 		afterFunc  func(*testing.T)
+// 	}
+// 	defaultCheckFunc := func(w want, got uint64) error {
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       fields: fields {
+// 		           discoverer:nil,
+// 		           agentAddrs:nil,
+// 		           indexInfos:nil,
+// 		           uuidsCount:0,
+// 		           uncommittedUUIDsCount:0,
+// 		           checkedID:nil,
+// 		           checkedIndexCount:nil,
+// 		           correctedOldIndexCount:nil,
+// 		           correctedReplicationCount:nil,
+// 		           indexReplica:0,
+// 		           streamListConcurrency:0,
+// 		           bboltAsyncWriteConcurrency:0,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           fields: fields {
+// 		           discoverer:nil,
+// 		           agentAddrs:nil,
+// 		           indexInfos:nil,
+// 		           uuidsCount:0,
+// 		           uncommittedUUIDsCount:0,
+// 		           checkedID:nil,
+// 		           checkedIndexCount:nil,
+// 		           correctedOldIndexCount:nil,
+// 		           correctedReplicationCount:nil,
+// 		           indexReplica:0,
+// 		           streamListConcurrency:0,
+// 		           bboltAsyncWriteConcurrency:0,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			c := &correct{
+// 				discoverer:                 test.fields.discoverer,
+// 				agentAddrs:                 test.fields.agentAddrs,
+// 				indexInfos:                 test.fields.indexInfos,
+// 				uuidsCount:                 test.fields.uuidsCount,
+// 				uncommittedUUIDsCount:      test.fields.uncommittedUUIDsCount,
+// 				checkedID:                  test.fields.checkedID,
+// 				checkedIndexCount:          test.fields.checkedIndexCount,
+// 				correctedOldIndexCount:     test.fields.correctedOldIndexCount,
+// 				correctedReplicationCount:  test.fields.correctedReplicationCount,
+// 				indexReplica:               test.fields.indexReplica,
+// 				streamListConcurrency:      test.fields.streamListConcurrency,
+// 				bboltAsyncWriteConcurrency: test.fields.bboltAsyncWriteConcurrency,
+// 			}
+//
+// 			got := c.NumberOfCorrectedOldIndex()
+// 			if err := checkFunc(test.want, got); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+//
+// 		})
+// 	}
+// }
+//
+// func Test_correct_NumberOfCorrectedReplication(t *testing.T) {
+// 	type fields struct {
+// 		discoverer                 discoverer.Client
+// 		agentAddrs                 []string
+// 		indexInfos                 sync.Map[string, *payload.Info_Index_Count]
+// 		uuidsCount                 uint32
+// 		uncommittedUUIDsCount      uint32
+// 		checkedID                  bbolt.Bbolt
+// 		checkedIndexCount          atomic.Uint64
+// 		correctedOldIndexCount     atomic.Uint64
+// 		correctedReplicationCount  atomic.Uint64
+// 		indexReplica               int
+// 		streamListConcurrency      int
+// 		bboltAsyncWriteConcurrency int
+// 	}
+// 	type want struct {
+// 		want uint64
+// 	}
+// 	type test struct {
+// 		name       string
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, uint64) error
+// 		beforeFunc func(*testing.T)
+// 		afterFunc  func(*testing.T)
+// 	}
+// 	defaultCheckFunc := func(w want, got uint64) error {
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       fields: fields {
+// 		           discoverer:nil,
+// 		           agentAddrs:nil,
+// 		           indexInfos:nil,
+// 		           uuidsCount:0,
+// 		           uncommittedUUIDsCount:0,
+// 		           checkedID:nil,
+// 		           checkedIndexCount:nil,
+// 		           correctedOldIndexCount:nil,
+// 		           correctedReplicationCount:nil,
+// 		           indexReplica:0,
+// 		           streamListConcurrency:0,
+// 		           bboltAsyncWriteConcurrency:0,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           fields: fields {
+// 		           discoverer:nil,
+// 		           agentAddrs:nil,
+// 		           indexInfos:nil,
+// 		           uuidsCount:0,
+// 		           uncommittedUUIDsCount:0,
+// 		           checkedID:nil,
+// 		           checkedIndexCount:nil,
+// 		           correctedOldIndexCount:nil,
+// 		           correctedReplicationCount:nil,
+// 		           indexReplica:0,
+// 		           streamListConcurrency:0,
+// 		           bboltAsyncWriteConcurrency:0,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			c := &correct{
+// 				discoverer:                 test.fields.discoverer,
+// 				agentAddrs:                 test.fields.agentAddrs,
+// 				indexInfos:                 test.fields.indexInfos,
+// 				uuidsCount:                 test.fields.uuidsCount,
+// 				uncommittedUUIDsCount:      test.fields.uncommittedUUIDsCount,
+// 				checkedID:                  test.fields.checkedID,
+// 				checkedIndexCount:          test.fields.checkedIndexCount,
+// 				correctedOldIndexCount:     test.fields.correctedOldIndexCount,
+// 				correctedReplicationCount:  test.fields.correctedReplicationCount,
+// 				indexReplica:               test.fields.indexReplica,
+// 				streamListConcurrency:      test.fields.streamListConcurrency,
+// 				bboltAsyncWriteConcurrency: test.fields.bboltAsyncWriteConcurrency,
+// 			}
+//
+// 			got := c.NumberOfCorrectedReplication()
+// 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
 //
