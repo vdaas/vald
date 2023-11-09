@@ -20,8 +20,24 @@ package errors
 // ErrIndexReplicaOne represents an error that nothing to correct when index replica is 1.
 var ErrIndexReplicaOne = New("nothing to correct when index replica is 1")
 
+// ErrAgentReplicaOne represents an error that nothing to correct when agent replica is 1.
+var ErrAgentReplicaOne = New("nothing to correct when agent replica is 1")
+
 // ErrNoAvailableAgentToInsert represents an error that no available agent to insert replica.
 var ErrNoAvailableAgentToInsert = New("no available agent to insert replica")
 
 // ErrFailedToCorrectReplicaNum represents an error that failed to correct replica number after correction process.
 var ErrFailedToCorrectReplicaNum = New("failed to correct replica number after correction process")
+
+// ErrFailedToReceiveVectorFromStream represents an error that failed to receive vector from stream while index correction process.
+var ErrFailedToReceiveVectorFromStream = New("failed to receive vector from stream")
+
+// ErrFailedToCheckConsistency represents an error that failed to check consistency process while index correction process.
+var ErrFailedToCheckConsistency = func(err error) error {
+	return Wrap(err, "failed to check consistency while index correctioin process")
+}
+
+// ErrStreamListObjectStreamFinishedUnexpectedly represents an error that StreamListObject finished not because of io.EOF.
+var ErrStreamListObjectStreamFinishedUnexpectedly = func(err error) error {
+	return Wrap(err, "stream list object stream finished unexpectedly")
+}
