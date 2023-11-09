@@ -51,23 +51,19 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 
 	eg := errgroup.Get()
 
-	cOpts, err := cfg.Corrector.Discoverer.Client.Opts()
+	dOpts, err := cfg.Corrector.Discoverer.Client.Opts()
 	if err != nil {
 		return nil, err
 	}
 	// skipcq: CRT-D0001
-	dopts := append(
-		cOpts,
-		grpc.WithErrGroup(eg))
+	dopts := append(dOpts, grpc.WithErrGroup(eg))
 
 	acOpts, err := cfg.Corrector.Discoverer.AgentClientOptions.Opts()
 	if err != nil {
 		return nil, err
 	}
 	// skipcq: CRT-D0001
-	aopts := append(
-		acOpts,
-		grpc.WithErrGroup(eg))
+	aopts := append(acOpts, grpc.WithErrGroup(eg))
 
 	// Construct discoverer
 	discoverer, err := discoverer.New(
