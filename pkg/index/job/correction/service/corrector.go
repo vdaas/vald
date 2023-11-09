@@ -244,11 +244,11 @@ func (c *correct) correct(ctx context.Context) (err error) {
 						res, err := stream.Recv()
 						mu.Unlock()
 
-						if errors.Is(err, io.EOF) {
-							scancel()
-							return nil
-						}
 						if err != nil {
+							if errors.Is(err, io.EOF) {
+								scancel()
+								return nil
+							}
 							return errors.ErrStreamListObjectStreamFinishedUnexpectedly(err)
 						}
 
