@@ -117,7 +117,6 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 			correction.New(corrector),
 		)
 		if err != nil {
-			log.Error("failed to initialize observability")
 			return nil, err
 		}
 	}
