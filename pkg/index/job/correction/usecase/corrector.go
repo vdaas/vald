@@ -15,6 +15,7 @@ package usecase
 
 import (
 	"context"
+	"errors"
 	"os"
 	"syscall"
 	"time"
@@ -199,23 +200,25 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 		log.Infof("correction finished in %v", end)
 		return nil
 	}))
-
 	return ech, nil
 }
 
 func (r *run) PreStop(ctx context.Context) error {
-	r.corrector.PreStop(ctx)
-	return nil
+	return r.corrector.PreStop(ctx)
 }
 
-func (r *run) Stop(ctx context.Context) error {
+func (r *run) Stop(ctx context.Context) (errs error) {
 	if r.observability != nil {
-		r.observability.Stop(ctx)
+		if err := r.observability.Stop(ctx); err != nil {
+			errs = errors.Join(errs, err)
+		}
 	}
 	if r.server != nil {
-		r.server.Shutdown(ctx)
+		if err := r.server.Shutdown(ctx); err != nil {
+			errs = errors.Join(errs, err)
+		}
 	}
-	return nil
+	return errs
 }
 
 func (*run) PostStop(_ context.Context) error {
