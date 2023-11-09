@@ -56,14 +56,14 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		return nil, err
 	}
 	// skipcq: CRT-D0001
-	dopts := append(dOpts, grpc.WithErrGroup(eg))
+	dOpts = append(dOpts, grpc.WithErrGroup(eg))
 
 	acOpts, err := cfg.Corrector.Discoverer.AgentClientOptions.Opts()
 	if err != nil {
 		return nil, err
 	}
 	// skipcq: CRT-D0001
-	aopts := append(acOpts, grpc.WithErrGroup(eg))
+	acOpts = append(acOpts, grpc.WithErrGroup(eg))
 
 	// Construct discoverer
 	discoverer, err := discoverer.New(
@@ -72,9 +72,9 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		discoverer.WithNamespace(cfg.Corrector.AgentNamespace),
 		discoverer.WithPort(cfg.Corrector.AgentPort),
 		discoverer.WithServiceDNSARecord(cfg.Corrector.AgentDNS),
-		discoverer.WithDiscovererClient(grpc.New(dopts...)),
+		discoverer.WithDiscovererClient(grpc.New(dOpts...)),
 		discoverer.WithDiscoverDuration(cfg.Corrector.Discoverer.Duration),
-		discoverer.WithOptions(aopts...),
+		discoverer.WithOptions(acOpts...),
 		discoverer.WithNodeName(cfg.Corrector.NodeName),
 		discoverer.WithOnDiscoverFunc(func(ctx context.Context, c discoverer.Client, addrs []string) error {
 			last := len(addrs) - 1
