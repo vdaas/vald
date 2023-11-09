@@ -199,15 +199,13 @@ func (c *correct) correct(ctx context.Context) (err error) {
 			sctx, scancel := context.WithCancel(ctx)
 			defer scancel()
 			seg, sctx := errgroup.WithContext(sctx)
-			sconcurrency := c.streamListConcurrency
-			seg.SetLimit(sconcurrency)
+			seg.SetLimit(c.streamListConcurrency)
 
 			// errgroup for bbolt AsyncSet
 			bolteg, ctx := errgroup.WithContext(ctx)
-			bconcurrency := c.bboltAsyncWriteConcurrency
-			bolteg.SetLimit(bconcurrency)
+			bolteg.SetLimit(c.bboltAsyncWriteConcurrency)
 
-			log.Infof("starting correction for agent %s, stream concurrency: %d, bbolt concurrency: %d", addr, sconcurrency, bconcurrency)
+			log.Infof("starting correction for agent %s, stream concurrency: %d, bbolt concurrency: %d", addr, c.streamListConcurrency, c.bboltAsyncWriteConcurrency)
 
 			vc := vald.NewValdClient(conn)
 			stream, err := vc.StreamListObject(ctx, &payload.Object_List_Request{})
