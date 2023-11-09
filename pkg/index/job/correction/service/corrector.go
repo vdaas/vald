@@ -123,21 +123,18 @@ func (c *correct) Start(ctx context.Context) error {
 	// this is decending because it's supposed to be used for index manager to decide
 	// which pod to make a create index rpc(higher memory, first to commit)
 	c.agentAddrs = c.discoverer.GetAddrs(ctx)
-	log.Debug("agent addrs found:", c.agentAddrs)
-
-	if l := len(c.agentAddrs); l <= 1 {
-		log.Warn("only %d agent found, there must be more than two agents for correction to happen", l)
+	if len(c.agentAddrs) <= 1 {
+		log.Warnf("target agent (%v) found, but there must be more than two agents for correction to happen", c.agentAddrs)
 		return errors.ErrAgentReplicaOne
 	}
+	log.Debugf("target agent addrs: %v", c.agentAddrs)
 
-	err := c.loadInfos(ctx)
-	if err != nil {
+	if err := c.loadInfos(ctx); err != nil {
 		return err
 	}
 
 	log.Info("starting correction with bbolt disk cache...")
 	if err := c.correct(ctx); err != nil {
-		log.Errorf("there's some errors while correction: %v", err)
 		return err
 	}
 	log.Info("correction finished successfully")
