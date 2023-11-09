@@ -4,8 +4,12 @@
     "title": "apis/proto/v1/vald/upsert.proto",
     "version": "version not set"
   },
-  "consumes": ["application/json"],
-  "produces": ["application/json"],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
   "paths": {
     "/upsert": {
       "post": {
@@ -35,7 +39,9 @@
             }
           }
         ],
-        "tags": ["Upsert"]
+        "tags": [
+          "Upsert"
+        ]
       }
     },
     "/upsert/multiple": {
@@ -66,7 +72,9 @@
             }
           }
         ],
-        "tags": ["Upsert"]
+        "tags": [
+          "Upsert"
+        ]
       }
     }
   },
@@ -271,6 +279,10 @@
         "disableBalancedUpdate": {
           "type": "boolean",
           "description": "A flag to disable balanced update (split remove -\u003e insert operation)\nduring update operation."
+        },
+        "updateTimestampIfExists": {
+          "type": "boolean",
+          "description": "A flag to enable timestamp update when the same index exists."
         }
       },
       "description": "Represent the upsert configuration."

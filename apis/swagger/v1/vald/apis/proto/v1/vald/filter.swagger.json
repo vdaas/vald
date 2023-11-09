@@ -4,8 +4,12 @@
     "title": "apis/proto/v1/vald/filter.proto",
     "version": "version not set"
   },
-  "consumes": ["application/json"],
-  "produces": ["application/json"],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
   "paths": {
     "/insert/object": {
       "post": {
@@ -35,7 +39,9 @@
             }
           }
         ],
-        "tags": ["Filter"]
+        "tags": [
+          "Filter"
+        ]
       }
     },
     "/insert/object/multiple": {
@@ -66,7 +72,9 @@
             }
           }
         ],
-        "tags": ["Filter"]
+        "tags": [
+          "Filter"
+        ]
       }
     },
     "/search/object": {
@@ -97,7 +105,9 @@
             }
           }
         ],
-        "tags": ["Filter"]
+        "tags": [
+          "Filter"
+        ]
       }
     },
     "/search/object/multiple": {
@@ -128,7 +138,9 @@
             }
           }
         ],
-        "tags": ["Filter"]
+        "tags": [
+          "Filter"
+        ]
       }
     },
     "/update/object": {
@@ -159,7 +171,9 @@
             }
           }
         ],
-        "tags": ["Filter"]
+        "tags": [
+          "Filter"
+        ]
       }
     },
     "/update/object/multiple": {
@@ -190,7 +204,9 @@
             }
           }
         ],
-        "tags": ["Filter"]
+        "tags": [
+          "Filter"
+        ]
       }
     },
     "/upsert/object": {
@@ -221,7 +237,9 @@
             }
           }
         ],
-        "tags": ["Filter"]
+        "tags": [
+          "Filter"
+        ]
       }
     },
     "/upsert/object/multiple": {
@@ -252,7 +270,9 @@
             }
           }
         ],
-        "tags": ["Filter"]
+        "tags": [
+          "Filter"
+        ]
       }
     }
   },
@@ -649,6 +669,10 @@
         "disableBalancedUpdate": {
           "type": "boolean",
           "description": "A flag to disable balanced update (split remove -\u003e insert operation)\nduring update operation."
+        },
+        "updateTimestampIfExists": {
+          "type": "boolean",
+          "description": "A flag to enable timestamp update when the same index exists."
         }
       },
       "description": "Represent the update configuration."
@@ -703,6 +727,10 @@
         "disableBalancedUpdate": {
           "type": "boolean",
           "description": "A flag to disable balanced update (split remove -\u003e insert operation)\nduring update operation."
+        },
+        "updateTimestampIfExists": {
+          "type": "boolean",
+          "description": "A flag to enable timestamp update when the same index exists."
         }
       },
       "description": "Represent the upsert configuration."

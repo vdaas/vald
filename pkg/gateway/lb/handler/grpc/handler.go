@@ -1641,7 +1641,7 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (res *
 		return nil, err
 	}
 
-	if req.GetConfig().GetDisableBalancedUpdate() {
+	broadcastUpdate := func() (res *payload.Object_Location, err error) {
 		var (
 			mu      sync.RWMutex
 			aeCount atomic.Uint64
@@ -1689,7 +1689,6 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (res *
 						locs.Ips = append(locs.GetIps(), host)
 						ls = append(ls, host)
 						mu.Unlock()
-
 					}
 				}
 				return nil
@@ -1780,6 +1779,10 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (res *
 		return locs, nil
 	}
 
+	if req.GetConfig().GetDisableBalancedUpdate() {
+		return broadcastUpdate()
+	}
+
 	if !req.GetConfig().GetSkipStrictExistCheck() {
 		vec, err := s.getObject(ctx, uuid)
 		if err != nil || vec == nil {
@@ -1834,6 +1837,10 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (res *
 			return nil, err
 		}
 		if conv.F32stos(vec.GetVector()) == conv.F32stos(req.GetVector().GetVector()) {
+			if req.GetConfig().GetUpdateTimestampIfExists() && vec.Timestamp < req.GetConfig().GetTimestamp() {
+				// if the request vector timestamp is lager than existed one, broadcast update request to update index timestamp
+				return broadcastUpdate()
+			}
 			if err == nil {
 				err = errors.ErrSameVectorAlreadyExists(uuid, vec.GetVector(), req.GetVector().GetVector())
 			}
@@ -1873,7 +1880,7 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (res *
 		},
 		Config: &payload.Remove_Config{
 			SkipStrictExistCheck: true,
-			Timestamp:            now,
+			Timestamp:            now - 1, // set remove timestamp to the value less than insert timestamp
 		},
 	}
 	res, err = s.Remove(ctx, rreq)
@@ -1914,7 +1921,6 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (res *
 		}
 		return nil, err
 	}
-	now++
 	ireq := &payload.Insert_Request{
 		Vector: req.GetVector(),
 		Config: &payload.Insert_Config{

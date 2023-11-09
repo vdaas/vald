@@ -39,8 +39,8 @@ func TestMain(m *testing.M) {
 	goleak.VerifyTestMain(m)
 }
 
-func newIndexedNGTService(ctx context.Context, eg errgroup.Group, t request.ObjectType, dist vector.Distribution, num int, insertCfg *payload.Insert_Config,
-	ngtCfg *config.NGT, ngtOpts []service.Option, overwriteIDs []string, overwriteVectors [][]float32,
+func newNGTService(ctx context.Context, eg errgroup.Group, t request.ObjectType, dist vector.Distribution, num int, insertCfg *payload.Insert_Config,
+	ngtCfg *config.NGT, ngtOpts []service.Option, overwriteIDs []string, overwriteVectors [][]float32, skipIndexing bool,
 ) (service.NGT, error) {
 	ngt, err := service.New(ngtCfg, append(ngtOpts, service.WithErrGroup(eg), service.WithEnableInMemoryMode(true))...)
 	if err != nil {
@@ -66,14 +66,16 @@ func newIndexedNGTService(ctx context.Context, eg errgroup.Group, t request.Obje
 
 		// insert and create index
 		for _, req := range reqs.GetRequests() {
-			err := ngt.Insert(req.GetVector().GetId(), req.GetVector().GetVector())
+			err := ngt.InsertWithTime(req.GetVector().GetId(), req.GetVector().GetVector(), insertCfg.GetTimestamp())
 			if err != nil {
 				return nil, err
 			}
 		}
-		err = ngt.CreateIndex(ctx, 1000)
-		if err != nil {
-			return nil, err
+		if !skipIndexing {
+			err = ngt.CreateIndex(ctx, 1000)
+			if err != nil {
+				return nil, err
+			}
 		}
 	}
 

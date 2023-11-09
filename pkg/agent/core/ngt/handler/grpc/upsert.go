@@ -95,11 +95,13 @@ func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *
 	rtName := "/ngt.Upsert"
 	_, exists := s.ngt.Exists(req.GetVector().GetId())
 	if exists {
+		cfg := req.GetConfig()
 		loc, err = s.Update(ctx, &payload.Update_Request{
 			Vector: req.GetVector(),
 			Config: &payload.Update_Config{
-				Timestamp:            req.GetConfig().GetTimestamp(),
-				SkipStrictExistCheck: true,
+				Timestamp:               cfg.GetTimestamp(),
+				SkipStrictExistCheck:    true,
+				UpdateTimestampIfExists: cfg.GetUpdateTimestampIfExists(),
 			},
 		})
 		rtName += "/ngt.Update"

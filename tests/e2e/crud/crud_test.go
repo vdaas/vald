@@ -430,6 +430,8 @@ func TestE2ECRUDWithSkipStrictExistCheck(t *testing.T) {
 			Train: ds.Train[updateFrom : updateFrom+updateNum],
 		},
 		true,
+		0,
+		false,
 		1,
 		func(t *testing.T, status int32, msg string) error {
 			t.Helper()
@@ -464,6 +466,8 @@ func TestE2ECRUDWithSkipStrictExistCheck(t *testing.T) {
 		operation.Dataset{
 			Train: ds.Train[updateFrom : updateFrom+updateNum],
 		},
+		false,
+		0,
 		false,
 		1,
 		func(t *testing.T, status int32, msg string) error {
@@ -517,6 +521,8 @@ func TestE2ECRUDWithSkipStrictExistCheck(t *testing.T) {
 			Train: ds.Train[updateFrom : updateFrom+updateNum],
 		},
 		false,
+		0,
+		false,
 		1,
 		operation.DefaultStatusValidator,
 		operation.ParseAndLogError,
@@ -532,6 +538,8 @@ func TestE2ECRUDWithSkipStrictExistCheck(t *testing.T) {
 		operation.Dataset{
 			Train: ds.Train[updateFrom : updateFrom+updateNum],
 		},
+		false,
+		0,
 		false,
 		1,
 		func(t *testing.T, status int32, msg string) error {
@@ -570,6 +578,8 @@ func TestE2ECRUDWithSkipStrictExistCheck(t *testing.T) {
 			Train: ds.Train[updateFrom : updateFrom+updateNum],
 		},
 		true,
+		0,
+		false,
 		1,
 		operation.DefaultStatusValidator,
 		operation.ParseAndLogError,
@@ -578,7 +588,27 @@ func TestE2ECRUDWithSkipStrictExistCheck(t *testing.T) {
 		t.Fatalf("an error occurred on #6: %s", err)
 	}
 
-	// #7 remove the vector in 6 with SkipStrictExistCheck=false and check that it succeeds
+	ts := time.Now().UnixNano()
+
+	// #7 run Update with the same vector as UpdateTimestampIfExists=true and check that it succeeds
+	err = op.UpdateWithParameters(
+		t,
+		ctx,
+		operation.Dataset{
+			Train: ds.Train[updateFrom : updateFrom+updateNum],
+		},
+		false,
+		ts,
+		true,
+		1,
+		operation.DefaultStatusValidator,
+		operation.ParseAndLogError,
+	)
+	if err != nil {
+		t.Fatalf("an error occurred on #6: %s", err)
+	}
+
+	// #8 remove the vector in 6 with SkipStrictExistCheck=false and check that it succeeds
 	err = op.RemoveWithParameters(
 		t,
 		ctx,
@@ -593,7 +623,7 @@ func TestE2ECRUDWithSkipStrictExistCheck(t *testing.T) {
 		t.Fatalf("an error occurred on #7: %s", err)
 	}
 
-	// #8 removed the vector of 6 with SkipStrictExistCheck=false and confirmed that it became NotFound
+	// #9 removed the vector of 6 with SkipStrictExistCheck=false and confirmed that it became NotFound
 	err = op.RemoveWithParameters(
 		t,
 		ctx,
@@ -629,7 +659,7 @@ func TestE2ECRUDWithSkipStrictExistCheck(t *testing.T) {
 		t.Fatalf("an error occurred: %s", err)
 	}
 
-	// #9 remove vector 6 with SkipStrictExistCheck=true and check that it also becomes NotFound
+	// #10 remove vector 6 with SkipStrictExistCheck=true and check that it also becomes NotFound
 	err = op.RemoveWithParameters(
 		t,
 		ctx,
@@ -663,7 +693,7 @@ func TestE2ECRUDWithSkipStrictExistCheck(t *testing.T) {
 		t.Fatalf("an error occurred: %s", err)
 	}
 
-	// #10 execute Upsert with SkipStrictExistCheck=false and check that it succeeds
+	// #11 execute Upsert with SkipStrictExistCheck=false and check that it succeeds
 	err = op.UpsertWithParameters(
 		t,
 		ctx,
@@ -679,7 +709,7 @@ func TestE2ECRUDWithSkipStrictExistCheck(t *testing.T) {
 		t.Fatalf("an error occurred on #10: %s", err)
 	}
 
-	// #11 executed Upsert with SkipStrictExistCheck=false using the same vector as 10 and confirmed that AlreadyExists was returned
+	// #12 executed Upsert with SkipStrictExistCheck=false using the same vector as 10 and confirmed that AlreadyExists was returned
 	err = op.UpsertWithParameters(
 		t,
 		ctx,
@@ -716,7 +746,7 @@ func TestE2ECRUDWithSkipStrictExistCheck(t *testing.T) {
 		t.Fatalf("an error occurred: %s", err)
 	}
 
-	// #12 executed SkipStrictExistCheck=false using a different vector than 10 for Upsert and confirmed that it succeeded
+	// #13 executed SkipStrictExistCheck=false using a different vector than 10 for Upsert and confirmed that it succeeded
 	err = op.UpsertWithParameters(
 		t,
 		ctx,
@@ -732,7 +762,7 @@ func TestE2ECRUDWithSkipStrictExistCheck(t *testing.T) {
 		t.Fatalf("an error occurred on #12: %s", err)
 	}
 
-	// #13 executed SkipStrictExistCheck=true using the same vector as Upsert 12 and confirmed that it succeeded
+	// #14 executed SkipStrictExistCheck=true using the same vector as Upsert 12 and confirmed that it succeeded
 	err = op.UpsertWithParameters(
 		t,
 		ctx,

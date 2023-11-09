@@ -827,7 +827,7 @@ var (
 		) commands.Result {
 			ngt := systemUnderTest.(*ngtSystem).ngt
 
-			err := ngt.Update(idA, vectors[idA][1])
+			err := ngt.Update(idA, vectors[idA][1], false)
 			return &resultContainer{
 				err: err,
 			}
@@ -874,7 +874,7 @@ var (
 		) commands.Result {
 			ngt := systemUnderTest.(*ngtSystem).ngt
 
-			err := ngt.Update(idB, vectors[idB][1])
+			err := ngt.Update(idB, vectors[idB][1], false)
 			return &resultContainer{
 				err: err,
 			}
@@ -921,7 +921,7 @@ var (
 		) commands.Result {
 			ngt := systemUnderTest.(*ngtSystem).ngt
 
-			err := ngt.Update(idC, vectors[idC][1])
+			err := ngt.Update(idC, vectors[idC][1], false)
 			return &resultContainer{
 				err: err,
 			}
