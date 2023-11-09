@@ -20,11 +20,9 @@ import (
 	tmock "github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
-	iconfig "github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/test/mock"
-	"github.com/vdaas/vald/pkg/index/job/correction/config"
 )
 
 type mockDiscovererClient struct {
@@ -430,12 +428,8 @@ func Test_correct_correctReplica(t *testing.T) {
 	for _, tc := range tests {
 		test := tc
 		c := &correct{
-			discoverer: &m,
-			cfg: &config.Data{
-				Corrector: &iconfig.Corrector{
-					IndexReplica: test.args.indexReplica,
-				},
-			},
+			discoverer:   &m,
+			indexReplica: test.args.indexReplica,
 		}
 
 		// agentAddrs = availableAddrs + target.addr + found.addr

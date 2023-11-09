@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"reflect"
 	"slices"
 	"sync/atomic"
 	"time"
@@ -37,7 +38,6 @@ import (
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/sync"
 	"github.com/vdaas/vald/internal/sync/errgroup"
-	"github.com/vdaas/vald/pkg/index/job/correction/config"
 )
 
 type contextTimeKey string
@@ -60,7 +60,6 @@ type Corrector interface {
 }
 
 type correct struct {
-	cfg                       *config.Data
 	discoverer                discoverer.Client
 	agentAddrs                []string
 	indexInfos                sync.Map[string, *payload.Info_Index_Count]
@@ -70,24 +69,46 @@ type correct struct {
 	checkedIndexCount         atomic.Uint64
 	correctedOldIndexCount    atomic.Uint64
 	correctedReplicationCount atomic.Uint64
+
+	indexReplica               int
+	streamListConcurrency      int
+	bboltAsyncWriteConcurrency int
 }
 
 const filemode = 0o600
 
-func New(cfg *config.Data, discoverer discoverer.Client) (Corrector, error) {
-	d := file.Join(os.TempDir(), "bbolt")
-	file.MkdirAll(d, os.ModePerm)
-	dbfile := file.Join(d, "checkedid.db")
-	bolt, err := bbolt.New(dbfile, "", os.FileMode(filemode))
-	if err != nil {
+func New(opts ...Option) (_ Corrector, err error) {
+	c := new(correct)
+	for _, opt := range append(defaultOpts, opts...) {
+		if err := opt(c); err != nil {
+			oerr := errors.ErrOptionFailed(err, reflect.ValueOf(opt))
+			e := &errors.ErrCriticalOption{}
+			if errors.As(oerr, &e) {
+				log.Error(err)
+				return nil, oerr
+			}
+			log.Warn(oerr)
+		}
+	}
+	if err := c.kvsInit(); err != nil {
 		return nil, err
 	}
+	return c, nil
+}
 
-	return &correct{
-		cfg:        cfg,
-		discoverer: discoverer,
-		checkedID:  bolt,
-	}, nil
+func (c *correct) kvsInit() error {
+	dpath := file.Join(os.TempDir(), "bbolt")
+	err := file.MkdirAll(dpath, os.ModePerm)
+	if err != nil {
+		return err
+	}
+
+	dbfile := file.Join(dpath, "checkedid.db")
+	c.checkedID, err = bbolt.New(dbfile, "", os.FileMode(filemode))
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (c *correct) StartClient(ctx context.Context) (<-chan error, error) {
@@ -161,7 +182,7 @@ func (c *correct) correct(ctx context.Context) (err error) {
 	}
 
 	curTargetAgent := 0
-	jobErrs := make([]error, 0, c.cfg.Corrector.StreamListConcurrency)
+	jobErrs := make([]error, 0, c.streamListConcurrency)
 	if err := c.discoverer.GetClient().OrderedRange(ctx, c.agentAddrs,
 		func(ctx context.Context, addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) (err error) {
 			// current address is the leftAgentAddrs[0] because this is OrderedRange and
@@ -178,12 +199,12 @@ func (c *correct) correct(ctx context.Context) (err error) {
 			sctx, scancel := context.WithCancel(ctx)
 			defer scancel()
 			seg, sctx := errgroup.WithContext(sctx)
-			sconcurrency := c.cfg.Corrector.GetStreamListConcurrency()
+			sconcurrency := c.streamListConcurrency
 			seg.SetLimit(sconcurrency)
 
 			// errgroup for bbolt AsyncSet
 			bolteg, ctx := errgroup.WithContext(ctx)
-			bconcurrency := c.cfg.Corrector.GetBboltAsyncWriteConcurrency()
+			bconcurrency := c.bboltAsyncWriteConcurrency
 			bolteg.SetLimit(bconcurrency)
 
 			log.Infof("starting correction for agent %s, stream concurrency: %d, bbolt concurrency: %d", addr, sconcurrency, bconcurrency)
@@ -419,7 +440,7 @@ func (c *correct) correctReplica(
 ) error {
 	// diff < 0 means there is less replica than the correct number
 	existReplica := len(foundReplicas) + 1
-	diff := existReplica - c.cfg.Corrector.IndexReplica
+	diff := existReplica - c.indexReplica
 	if diff == 0 {
 		// replica number is correct
 		return nil

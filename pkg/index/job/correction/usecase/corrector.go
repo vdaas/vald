@@ -21,7 +21,6 @@ import (
 
 	"github.com/vdaas/vald/internal/client/v1/client/discoverer"
 	iconf "github.com/vdaas/vald/internal/config"
-	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/grpc/interceptor/server/recover"
@@ -45,10 +44,6 @@ type run struct {
 }
 
 func New(cfg *config.Data) (r runner.Runner, err error) {
-	if cfg.Corrector.IndexReplica == 1 {
-		return nil, errors.ErrIndexReplicaOne
-	}
-
 	eg := errgroup.Get()
 
 	dOpts, err := cfg.Corrector.Discoverer.Client.Opts()
@@ -105,7 +100,12 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		return nil, err
 	}
 
-	corrector, err := service.New(cfg, discoverer)
+	corrector, err := service.New(
+		service.WithDiscoverer(discoverer),
+		service.WithIndexReplica(cfg.Corrector.IndexReplica),
+		service.WithBboltAsyncWriteConcurrency(cfg.Corrector.BboltAsyncWriteConcurrency),
+		service.WithStreamListConcurrency(cfg.Corrector.StreamListConcurrency),
+	)
 	if err != nil {
 		return nil, err
 	}
