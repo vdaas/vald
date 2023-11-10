@@ -1408,7 +1408,6 @@ func Test_server_GetObjectMeta(t *testing.T) {
 			},
 		},
 		{
-
 			name: "returns error when the given ID is invalid",
 			testfunc: func(t *testing.T) {
 				ectx, s := setup(t)
@@ -1422,7 +1421,6 @@ func Test_server_GetObjectMeta(t *testing.T) {
 			},
 		},
 		{
-
 			name: "returns error when the given ID is not found",
 			testfunc: func(t *testing.T) {
 				ectx, s := setup(t)

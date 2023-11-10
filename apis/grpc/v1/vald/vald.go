@@ -121,9 +121,9 @@ const (
 	MultiRemoveRPCName       = "MultiRemove"
 	RemoveByTimestampRPCName = "RemoveByTimestamp"
 
-	ExistsRPCName    = "Exists"
-	GetObjectRPCName = "GetObject"
-	GetObjectMetaRPCName = "GetObjectMeta"
+	ExistsRPCName           = "Exists"
+	GetObjectRPCName        = "GetObject"
+	GetObjectMetaRPCName    = "GetObjectMeta"
 	StreamGetObjectRPCName  = "StreamGetObject"
 	StreamListObjectRPCName = "StreamListObject"
 )
