@@ -251,3 +251,56 @@ func (s *server) StreamListObject(_ *payload.Object_List_Request, stream vald.Ob
 	}
 	return nil
 }
+
+// GetObjectMeta returns meta information of the object specified by uuid.
+// This rpc is only served in AgentServer and not served in LB. Only for internal use mainly for index correction to reduce
+// network bandwidth(because vector itself is not required for index correction logic) while processing.
+func (s *server) GetObjectMeta(ctx context.Context, id *payload.Object_VectorMetaRequest) (res *payload.Object_VectorMeta, err error) {
+	_, span := trace.StartSpan(ctx, apiName+"/"+vald.GetObjectMetaRPCName)
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	uuid := id.GetId().GetId()
+	if len(uuid) == 0 {
+		err = errors.ErrInvalidUUID(uuid)
+		err = status.WrapWithInvalidArgument(fmt.Sprintf("GetObjectMeta API invalid argument for uuid \"%s\" detected", uuid), err,
+			&errdetails.RequestInfo{
+				RequestId:   uuid,
+				ServingData: errdetails.Serialize(id),
+			},
+			&errdetails.BadRequest{
+				FieldViolations: []*errdetails.BadRequestFieldViolation{
+					{
+						Field:       "uuid",
+						Description: err.Error(),
+					},
+				},
+			},
+			&errdetails.ResourceInfo{
+				ResourceType: ngtResourceType + "/ngt.GetObjectMeta",
+				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+			})
+		log.Warn(err)
+		if span != nil {
+			span.RecordError(err)
+			span.SetAttributes(trace.StatusCodeInvalidArgument(err.Error())...)
+			span.SetStatus(trace.StatusError, err.Error())
+		}
+		return nil, err
+	}
+	_, ts, err := s.ngt.GetObject(uuid)
+	if err != nil {
+		err = status.New(codes.NotFound, errors.ErrObjectNotFound(err, uuid).Error()).Err()
+		if span != nil {
+			span.RecordError(err)
+			span.SetAttributes(trace.StatusCodeNotFound(err.Error())...)
+			span.SetStatus(trace.StatusError, err.Error())
+		}
+		return nil, err
+	}
+	res.Id = uuid
+	res.Timestamp = ts
+	return res, nil
+}
