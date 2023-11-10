@@ -317,7 +317,7 @@ func (c *correct) checkConsistency(ctx context.Context, targetReplica *vectorRep
 	var mu sync.Mutex
 	if err := c.discoverer.GetClient().OrderedRangeConcurrent(ctx, leftAgentAddrs, len(leftAgentAddrs),
 		func(ctx context.Context, addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
-			vec, err := vald.NewValdClient(conn).GetObject(ctx, &payload.Object_VectorRequest{
+			vecMeta, err := agent.NewAgentClient(conn).GetObjectMeta(ctx, &payload.Object_VectorMetaRequest{
 				Id: &payload.Object_ID{
 					Id: targetReplica.vec.GetId(),
 				},
@@ -336,10 +336,10 @@ func (c *correct) checkConsistency(ctx context.Context, targetReplica *vectorRep
 			}
 
 			// skip if the vector is inserted after correction start
-			if vec.GetTimestamp() > correctionStartTime.UnixNano() {
+			if vecMeta.GetTimestamp() > correctionStartTime.UnixNano() {
 				log.Debugf("timestamp of vector(id: %s, timestamp: %v) is newer than correction start time(%v). skipping...",
-					vec.GetId(),
-					vec.GetTimestamp(),
+					vecMeta.GetId(),
+					vecMeta.GetTimestamp(),
 					correctionStartTime.UnixNano(),
 				)
 				return nil
@@ -348,7 +348,12 @@ func (c *correct) checkConsistency(ctx context.Context, targetReplica *vectorRep
 			mu.Lock()
 			foundReplicas = append(foundReplicas, &vectorReplica{
 				addr: addr,
-				vec:  vec,
+				vec: &payload.Object_Vector{
+					Id:        vecMeta.GetId(),
+					Timestamp: vecMeta.GetTimestamp(),
+					// FIXME: probably should change the interface of foundReplicas
+					// vector itself is not acuired at this point
+				},
 			})
 			mu.Unlock()
 
