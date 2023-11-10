@@ -180,6 +180,32 @@ func (c *agentClient) IndexInfo(
 	return res, nil
 }
 
+func (c *agentClient) GetObjectMeta(
+	ctx context.Context,
+	req *client.ObjectMetaRequest,
+	_ ...grpc.CallOption,
+) (res *client.ObjectMeta, err error) {
+	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+agent.GetObjectMetaRPCName), apiName+"/"+agent.GetObjectMetaRPCName)
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	_, err = c.c.RoundRobin(ctx, func(ctx context.Context,
+		conn *grpc.ClientConn, copts ...grpc.CallOption,
+	) (interface{}, error) {
+		res, err := agent.NewAgentClient(conn).GetObjectMeta(ctx, req, copts...)
+		if err != nil {
+			return nil, err
+		}
+		return res, err
+	})
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
+}
+
 func (c *singleAgentClient) CreateIndex(
 	ctx context.Context,
 	req *client.ControlCreateIndexRequest,
@@ -234,4 +260,18 @@ func (c *singleAgentClient) IndexInfo(
 		}
 	}()
 	return c.ac.IndexInfo(ctx, new(client.Empty), opts...)
+}
+
+func (c *singleAgentClient) GetObjectMeta(
+	ctx context.Context,
+	req *client.ObjectMetaRequest,
+	opts ...grpc.CallOption,
+) (res *client.ObjectMeta, err error) {
+	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/singleClient/"+agent.IndexInfoRPCName), apiName+"/"+agent.IndexInfoRPCName)
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	return c.ac.GetObjectMeta(ctx, req, opts...)
 }

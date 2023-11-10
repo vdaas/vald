@@ -50,6 +50,8 @@ type (
 	Empty                     = payload.Empty
 	SearchConfig              = payload.Search_Config
 	ObjectDistance            = payload.Object_Distance
+	ObjectMeta                = payload.Object_VectorMeta
+	ObjectMetaRequest         = payload.Object_VectorMetaRequest
 
 	Searcher     = vald.SearchClient
 	Inserter     = vald.InsertClient
