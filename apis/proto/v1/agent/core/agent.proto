@@ -47,4 +47,9 @@ service Agent {
   rpc IndexInfo(payload.v1.Empty) returns (payload.v1.Info.Index.Count) {
     option (google.api.http).get = "/index/info";
   }
+
+  // Represent the RPC to get the vector metadata. This RPC is mainly used for index correction process
+  rpc GetObjectMeta(payload.v1.Object.VectorMetaRequest) returns (payload.v1.Object.VectorMeta) {
+    option (google.api.http).get = "/object/meta";
+  }
 }
