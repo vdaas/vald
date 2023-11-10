@@ -1188,7 +1188,7 @@ func Test_server_GetObject(t *testing.T) {
 	}
 }
 
-func Test_server_StreamGetObject(t *testing.T) {
+func Test_server_StreamListObject(t *testing.T) {
 	t.Parallel()
 
 	defaultConfig := config.NGT{
@@ -1324,6 +1324,118 @@ func Test_server_StreamGetObject(t *testing.T) {
 
 				// Check results
 				stream.AssertNotCalled(t, "Send", tmock.Anything)
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			test.testfunc(tt)
+		})
+	}
+}
+
+func Test_server_GetObjectMeta(t *testing.T) {
+	t.Parallel()
+
+	defaultConfig := config.NGT{
+		Dimension:           100,
+		DistanceType:        "l2",
+		ObjectType:          "float",
+		BulkInsertChunkSize: 10,
+		CreationEdgeSize:    20,
+		SearchEdgeSize:      10,
+		EnableProactiveGC:   false,
+		EnableCopyOnWrite:   false,
+		KVSDB: &config.KVSDB{
+			Concurrency: 10,
+		},
+		BrokenIndexHistoryLimit: 1,
+	}
+
+	setup := func(t *testing.T) (context.Context, Server) {
+		t.Helper()
+		ngt, err := service.New(&defaultConfig)
+		require.NoError(t, err)
+
+		ctx := context.Background()
+		eg, ectx := errgroup.New(ctx)
+		opts := []Option{
+			WithIP(net.LoadLocalIP()),
+			WithNGT(ngt),
+			WithErrGroup(eg),
+		}
+		s, err := New(opts...)
+		require.NoError(t, err)
+
+		return ectx, s
+	}
+
+	type test struct {
+		name     string
+		testfunc func(t *testing.T)
+	}
+
+	tests := []test{
+		{
+			name: "succeeds to get object meta",
+			testfunc: func(t *testing.T) {
+				ectx, s := setup(t)
+
+				// insert and create `num` index
+				num := 42
+				req, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, num, 100, &payload.Insert_Config{})
+				require.NoError(t, err)
+
+				_, err = s.MultiInsert(ectx, req)
+				require.NoError(t, err)
+
+				_, err = s.CreateIndex(ectx, &payload.Control_CreateIndexRequest{
+					PoolSize: uint32(len(req.Requests)),
+				})
+				require.NoError(t, err)
+
+				res, err := s.GetObjectMeta(ectx, &payload.Object_VectorMetaRequest{
+					Id: &payload.Object_ID{
+						Id: req.GetRequests()[0].GetVector().GetId(),
+					},
+				})
+				require.NoError(t, err)
+
+				require.Equal(t, req.GetRequests()[0].GetVector().GetId(), res.GetId())
+			},
+		},
+		{
+
+			name: "returns error when the given ID is invalid",
+			testfunc: func(t *testing.T) {
+				ectx, s := setup(t)
+
+				_, err := s.GetObjectMeta(ectx, &payload.Object_VectorMetaRequest{
+					Id: &payload.Object_ID{
+						Id: "",
+					},
+				})
+				require.Error(t, err)
+			},
+		},
+		{
+
+			name: "returns error when the given ID is not found",
+			testfunc: func(t *testing.T) {
+				ectx, s := setup(t)
+
+				_, err := s.GetObjectMeta(ectx, &payload.Object_VectorMetaRequest{
+					Id: &payload.Object_ID{
+						Id: "not exist ID",
+					},
+				})
+				require.Error(t, err)
+
+				st, _ := status.FromError(err)
+				require.Equal(t, codes.NotFound, st.Code())
 			},
 		},
 	}

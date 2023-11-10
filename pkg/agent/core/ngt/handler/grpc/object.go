@@ -300,7 +300,8 @@ func (s *server) GetObjectMeta(ctx context.Context, id *payload.Object_VectorMet
 		}
 		return nil, err
 	}
-	res.Id = uuid
-	res.Timestamp = ts
-	return res, nil
+	return &payload.Object_VectorMeta{
+		Id: uuid,
+		Timestamp: ts,
+	}, nil
 }
