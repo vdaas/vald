@@ -50,6 +50,8 @@ type AgentClient interface {
 	CreateAndSaveIndex(ctx context.Context, in *payload.Control_CreateIndexRequest, opts ...grpc.CallOption) (*payload.Empty, error)
 	// Represent the RPC to get the agent index information.
 	IndexInfo(ctx context.Context, in *payload.Empty, opts ...grpc.CallOption) (*payload.Info_Index_Count, error)
+	// Represent the RPC to get the vector metadata. This RPC is mainly used for index correction process
+	GetObjectMeta(ctx context.Context, in *payload.Object_VectorMetaRequest, opts ...grpc.CallOption) (*payload.Object_VectorMeta, error)
 }
 
 type agentClient struct {
@@ -96,6 +98,15 @@ func (c *agentClient) IndexInfo(ctx context.Context, in *payload.Empty, opts ...
 	return out, nil
 }
 
+func (c *agentClient) GetObjectMeta(ctx context.Context, in *payload.Object_VectorMetaRequest, opts ...grpc.CallOption) (*payload.Object_VectorMeta, error) {
+	out := new(payload.Object_VectorMeta)
+	err := c.cc.Invoke(ctx, "/core.v1.Agent/GetObjectMeta", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AgentServer is the server API for Agent service.
 // All implementations must embed UnimplementedAgentServer
 // for forward compatibility
@@ -108,6 +119,8 @@ type AgentServer interface {
 	CreateAndSaveIndex(context.Context, *payload.Control_CreateIndexRequest) (*payload.Empty, error)
 	// Represent the RPC to get the agent index information.
 	IndexInfo(context.Context, *payload.Empty) (*payload.Info_Index_Count, error)
+	// Represent the RPC to get the vector metadata. This RPC is mainly used for index correction process
+	GetObjectMeta(context.Context, *payload.Object_VectorMetaRequest) (*payload.Object_VectorMeta, error)
 	mustEmbedUnimplementedAgentServer()
 }
 
@@ -126,6 +139,9 @@ func (UnimplementedAgentServer) CreateAndSaveIndex(context.Context, *payload.Con
 }
 func (UnimplementedAgentServer) IndexInfo(context.Context, *payload.Empty) (*payload.Info_Index_Count, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method IndexInfo not implemented")
+}
+func (UnimplementedAgentServer) GetObjectMeta(context.Context, *payload.Object_VectorMetaRequest) (*payload.Object_VectorMeta, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetObjectMeta not implemented")
 }
 func (UnimplementedAgentServer) mustEmbedUnimplementedAgentServer() {}
 
@@ -212,6 +228,24 @@ func _Agent_IndexInfo_Handler(srv interface{}, ctx context.Context, dec func(int
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Agent_GetObjectMeta_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(payload.Object_VectorMetaRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AgentServer).GetObjectMeta(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/core.v1.Agent/GetObjectMeta",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AgentServer).GetObjectMeta(ctx, req.(*payload.Object_VectorMetaRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Agent_ServiceDesc is the grpc.ServiceDesc for Agent service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -234,6 +268,10 @@ var Agent_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "IndexInfo",
 			Handler:    _Agent_IndexInfo_Handler,
+		},
+		{
+			MethodName: "GetObjectMeta",
+			Handler:    _Agent_GetObjectMeta_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
