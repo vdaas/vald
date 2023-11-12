@@ -30,7 +30,9 @@ FILTER_GATEWAY_IMAGE            = $(NAME)-filter-gateway
 HELM_OPERATOR_IMAGE             = $(NAME)-helm-operator
 LB_GATEWAY_IMAGE                = $(NAME)-lb-gateway
 LOADTEST_IMAGE                  = $(NAME)-loadtest
-INDEX_CORRECTION_IMAGE      	= $(NAME)-index-correction
+INDEX_CORRECTION_IMAGE          = $(NAME)-index-correction
+INDEX_CREATION_IMAGE            = $(NAME)-index-creation
+INDEX_SAVE_IMAGE                = $(NAME)-index-save
 MANAGER_INDEX_IMAGE             = $(NAME)-manager-index
 MAINTAINER                      = "$(ORG).org $(NAME) team <$(NAME)@$(ORG).org>"
 
@@ -578,3 +580,4 @@ include Makefile.d/kind.mk
 include Makefile.d/proto.mk
 include Makefile.d/test.mk
 include Makefile.d/tools.mk
+include Makefile.d/minikube.mk

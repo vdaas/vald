@@ -3293,12 +3293,14 @@
               "description": "custom network policies that a user can add",
               "properties": {
                 "egress": {
-                  "type": "object",
-                  "description": "custom egress network policies that a user can add"
+                  "type": "array",
+                  "description": "custom egress network policies that a user can add",
+                  "items": { "type": "object" }
                 },
                 "ingress": {
-                  "type": "object",
-                  "description": "custom ingress network policies that a user can add"
+                  "type": "array",
+                  "description": "custom ingress network policies that a user can add",
+                  "items": { "type": "object" }
                 }
               }
             },
