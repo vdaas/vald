@@ -24,7 +24,7 @@ docker/build: \
 	docker/build/manager-index \
 	docker/build/benchmark-job \
 	docker/build/benchmark-operator \
-	docker/build/helm-operator
+	docker/build/operator/helm
 
 .PHONY: docker/name/org
 docker/name/org:

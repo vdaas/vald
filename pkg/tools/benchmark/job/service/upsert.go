@@ -19,7 +19,6 @@ package service
 
 import (
 	"context"
-	"math"
 	"strconv"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
@@ -57,12 +56,8 @@ func (j *job) upsert(ctx context.Context, ech chan error) error {
 				case ech <- err:
 				}
 			}
-			// loopCnt represents the quotient of iter divided by the len(vecs).
-			// This is to account for when iter exceeds len(vecs).
-			// It is used to calculate idx to determine which index of vecs to access.
-			// idx takes between <0, len(vecs)-1>.
-			loopCnt := math.Floor(float64(iter-1) / float64(len(vecs)))
-			idx := iter - 1 - (len(vecs) * int(loopCnt))
+			// idx is the modulo, which takes between <0, len(vecs)-1>.
+			idx := (iter - 1) % len(vecs)
 			res, err := j.client.Upsert(egctx, &payload.Upsert_Request{
 				Vector: &payload.Object_Vector{
 					Id:     strconv.Itoa(iter),
