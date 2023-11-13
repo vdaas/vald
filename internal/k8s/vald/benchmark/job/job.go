@@ -18,12 +18,14 @@ package job
 
 import (
 	"context"
+	"reflect"
 	"time"
 
+	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/k8s"
 	v1 "github.com/vdaas/vald/internal/k8s/vald/benchmark/api/v1"
 	"github.com/vdaas/vald/internal/log"
-	"k8s.io/apimachinery/pkg/api/errors"
+	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -56,8 +58,10 @@ type reconciler struct {
 func New(opts ...Option) (BenchmarkJobWatcher, error) {
 	r := new(reconciler)
 	for _, opt := range append(defaultOpts, opts...) {
-		// TODO: impl error handling after implement functional option
-		opt(r)
+		err := opt(r)
+		if err != nil {
+			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
+		}
 	}
 	return r, nil
 }
@@ -89,7 +93,7 @@ func (r *reconciler) Reconcile(ctx context.Context, _ reconcile.Request) (res re
 			Requeue:      true,
 			RequeueAfter: time.Millisecond * 100,
 		}
-		if errors.IsNotFound(err) {
+		if k8serrors.IsNotFound(err) {
 			log.Errorf("not found: %s", err)
 			return reconcile.Result{
 				Requeue:      true,

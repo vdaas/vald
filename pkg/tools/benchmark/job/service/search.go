@@ -19,7 +19,6 @@ package service
 
 import (
 	"context"
-	"math"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/errors"
@@ -65,12 +64,8 @@ func (j *job) search(ctx context.Context, ech chan error) error {
 				case ech <- err:
 				}
 			}
-			// loopCnt represents the quotient of iter divided by the len(vecs).
-			// This is to account for when iter exceeds len(vecs).
-			// It is used to calculate idx to determine which index of vecs to access.
-			// idx takes between <0, len(vecs)-1>.
-			loopCnt := math.Floor(float64(iter-1) / float64(len(vecs)))
-			idx := iter - 1 - (len(vecs) * int(loopCnt))
+			// idx is the modulo, which takes between <0, len(vecs)-1>.
+			idx := (iter - 1) % len(vecs)
 			if len(vecs[idx]) != j.dimension {
 				log.Warn("len(vecs) ", len(vecs[iter]), "is not matched with ", j.dimension)
 				return nil
@@ -123,12 +118,8 @@ func (j *job) search(ctx context.Context, ech chan error) error {
 					}
 				}
 				log.Debugf("[benchmark job] Start linear search: iter = %d", iter)
-				// loopCnt represents the quotient of iter divided by the len(vecs).
-				// This is to account for when iter exceeds len(vecs).
-				// It is used to calculate idx to determine which index of vecs to access.
-				// idx takes between <0, len(vecs)-1>.
-				loopCnt := math.Floor(float64(i-1) / float64(len(vecs)))
-				idx := iter - 1 - (len(vecs) * int(loopCnt))
+				// idx is the modulo, which takes between <0, len(vecs)-1>.
+				idx := (iter - 1) % len(vecs)
 				if len(vecs[idx]) != j.dimension {
 					log.Warn("len(vecs) ", len(vecs[idx]), "is not matched with ", j.dimension)
 					return nil
