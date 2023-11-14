@@ -42,7 +42,7 @@ spec:
             app.kubernetes.io/instance: {{ .Release.Name }}
             app.kubernetes.io/component: {{ $saver.name }}
           annotations:
-            {{ $pprof := default .Values.defaults.server_config.metrics.pprof $saver.server_config.metrics.pprof }}
+            {{- $pprof := default .Values.defaults.server_config.metrics.pprof $saver.server_config.metrics.pprof -}}
             {{- if $pprof.enabled }}
             pyroscope.io/scrape: "true"
             pyroscope.io/application-name: {{ $saver.name }}

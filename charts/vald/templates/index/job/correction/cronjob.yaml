@@ -40,7 +40,7 @@ spec:
           labels:
             app: {{ $corrector.name }}
           annotations:
-            {{ $pprof := default .Values.defaults.server_config.metrics.pprof $corrector.server_config.metrics.pprof }}
+            {{- $pprof := default .Values.defaults.server_config.metrics.pprof $corrector.server_config.metrics.pprof -}}
             {{- if $pprof.enabled }}
             pyroscope.io/scrape: "true"
             pyroscope.io/application-name: {{ $corrector.name }}
