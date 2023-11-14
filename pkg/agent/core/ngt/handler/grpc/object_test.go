@@ -1397,14 +1397,16 @@ func Test_server_GetTimestamp(t *testing.T) {
 				})
 				require.NoError(t, err)
 
-				res, err := s.GetTimestamp(ectx, &payload.Object_GetTimestampRequest{
-					Id: &payload.Object_ID{
-						Id: req.GetRequests()[0].GetVector().GetId(),
-					},
-				})
-				require.NoError(t, err)
-
-				require.Equal(t, req.GetRequests()[0].GetVector().GetId(), res.GetId())
+				for i := 0; i < num; i++ {
+					testvec := req.GetRequests()[i].GetVector()
+					res, err := s.GetTimestamp(ectx, &payload.Object_GetTimestampRequest{
+						Id: &payload.Object_ID{
+							Id: testvec.GetId(),
+						},
+					})
+					require.NoError(t, err)
+					require.Equal(t, testvec.GetId(), res.GetId())
+				}
 			},
 		},
 		{
