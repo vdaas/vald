@@ -165,11 +165,6 @@ func (c *correct) NumberOfCorrectedReplication() uint64 {
 
 // skipcq: GO-R1005
 func (c *correct) correct(ctx context.Context) (err error) {
-	// leftAgentAddrs is the agents' addr that hasn't been corrected yet.
-	// This is used to know which agents possibly have the same index as the target replica.
-	// We can say this because, thanks to caching, there is no way that the target replica is
-	// in the agent that has already been corrected.
-
 	// Vector with time after this should not be processed
 	correctionStartTime, err := correctionStartTime(ctx)
 	if err != nil {
@@ -181,8 +176,6 @@ func (c *correct) correct(ctx context.Context) (err error) {
 	jobErrs := make([]error, 0, c.streamListConcurrency)
 	if err := c.discoverer.GetClient().OrderedRange(ctx, c.agentAddrs,
 		func(ctx context.Context, addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) (err error) {
-			// current address is the leftAgentAddrs[0] because this is OrderedRange and
-			// leftAgentAddrs is copied from c.agentAddrs
 			defer func() {
 				if err != nil {
 					// catch the err that happened in this scope using named return err
