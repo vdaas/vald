@@ -359,8 +359,6 @@ func (c *correct) checkConsistency(ctx context.Context, targetReplica *vectorRep
 				vec: &payload.Object_Vector{
 					Id:        vecMeta.GetId(),
 					Timestamp: vecMeta.GetTimestamp(),
-					// FIXME: probably should change the interface of foundReplicas
-					// vector itself is not acuired at this point
 				},
 			})
 			mu.Unlock()
@@ -415,7 +413,7 @@ func (c *correct) correctTimestamp(ctx context.Context, targetReplica *vectorRep
 			latest.vec.GetTimestamp(),
 		)
 		c.correctedOldIndexCount.Add(1)
-		if err := c.updateObject(ctx, replica.addr, latest.vec); err != nil {
+		if err := c.updateObject(ctx, replica, latest); err != nil {
 			return err
 		}
 	}
@@ -508,18 +506,25 @@ func (c *correct) correctReplica(
 	return nil
 }
 
-func (c *correct) updateObject(ctx context.Context, addr string, vector *payload.Object_Vector) error {
+func (c *correct) updateObject(ctx context.Context, dest, src *vectorReplica) error {
+	// check if the src vector has content not just timestamp
+	if vec := src.vec.GetVector(); len(vec) == 0 {
+		if err := c.fillVectorField(ctx, src); err != nil {
+			return err
+		}
+	}
+
 	res, err := c.discoverer.GetClient().
-		Do(grpc.WithGRPCMethod(ctx, updateMethod), addr, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
+		Do(grpc.WithGRPCMethod(ctx, updateMethod), dest.addr, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
 			// TODO: use UpdateTimestamp when it's implemented because here we just want to update only the timestamp but not the vector
 			return vald.NewUpdateClient(conn).Update(ctx, &payload.Update_Request{
-				Vector: vector,
+				Vector: src.vec,
 				// TODO: this should be deleted after Config.Timestamp deprecation
 				Config: &payload.Update_Config{
 					// TODO: Decrementing because it's gonna be incremented befor being pushed
 					// to vqueue in the agent. This is a not ideal workaround for the current vqueue implementation
 					// so we should consider refactoring vqueue.
-					Timestamp: vector.GetTimestamp() - 1,
+					Timestamp: src.vec.GetTimestamp() - 1,
 				},
 			}, copts...)
 		})
@@ -528,7 +533,31 @@ func (c *correct) updateObject(ctx context.Context, addr string, vector *payload
 	}
 
 	if v, ok := res.(*payload.Object_Location); ok {
-		log.Infof("vector successfully updated. address: %s, uuid: %v", addr, v.GetUuid())
+		log.Infof("vector successfully updated. address: %s, uuid: %v", dest.addr, v.GetUuid())
+	}
+
+	return nil
+}
+
+func (c *correct) fillVectorField(ctx context.Context, replica *vectorReplica) error {
+	res, err := c.discoverer.GetClient().
+		Do(grpc.WithGRPCMethod(ctx, "core.v1.Vald/GetObject"), replica.addr, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
+			return vald.NewValdClient(conn).GetObject(ctx, &payload.Object_VectorRequest{
+				Id: &payload.Object_ID{
+					Id: replica.vec.GetId(),
+				},
+			}, copts...)
+		})
+	if err != nil {
+		return err
+	}
+
+	if v, ok := res.(*payload.Object_Vector); ok {
+		vec := v.GetVector()
+		if len(vec) == 0 {
+			return err
+		}
+		replica.vec.Vector = v.GetVector()
 	}
 
 	return nil
