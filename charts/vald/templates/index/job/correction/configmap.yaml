@@ -56,7 +56,7 @@ data:
       discoverer:
         duration: {{ $corrector.discoverer.duration }}
         client:
-          {{- $discovererClient := $index.indexer.discoverer.client }}
+          {{- $discovererClient := $index.corrector.discoverer.client }}
           {{- $discovererServerPort := $discoverer.server_config.servers.grpc.port }}
           {{- $defaultDiscovererHost := printf "%s.%s.svc.cluster.local" $discoverer.name .Release.Namespace }}
           {{- $defaultDiscovererPort := default .Values.defaults.server_config.servers.grpc.port $discovererServerPort }}
