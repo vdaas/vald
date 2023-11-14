@@ -69,7 +69,7 @@ func NewConfig(path string) (cfg *Data, err error) {
 	if cfg.Corrector != nil {
 		cfg.Corrector = cfg.Corrector.Bind()
 	} else {
-		cfg.Corrector = new(config.Corrector).Bind()
+		return nil, errors.ErrInvalidConfig
 	}
 
 	return cfg, nil
