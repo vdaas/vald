@@ -996,11 +996,11 @@ func (m *Object_Vector) CloneMessageVT() proto.Message {
 	return m.CloneVT()
 }
 
-func (m *Object_VectorMetaRequest) CloneVT() *Object_VectorMetaRequest {
+func (m *Object_GetTimestampRequest) CloneVT() *Object_GetTimestampRequest {
 	if m == nil {
-		return (*Object_VectorMetaRequest)(nil)
+		return (*Object_GetTimestampRequest)(nil)
 	}
-	r := &Object_VectorMetaRequest{
+	r := &Object_GetTimestampRequest{
 		Id: m.Id.CloneVT(),
 	}
 	if len(m.unknownFields) > 0 {
@@ -1010,15 +1010,15 @@ func (m *Object_VectorMetaRequest) CloneVT() *Object_VectorMetaRequest {
 	return r
 }
 
-func (m *Object_VectorMetaRequest) CloneMessageVT() proto.Message {
+func (m *Object_GetTimestampRequest) CloneMessageVT() proto.Message {
 	return m.CloneVT()
 }
 
-func (m *Object_VectorMeta) CloneVT() *Object_VectorMeta {
+func (m *Object_Timestamp) CloneVT() *Object_Timestamp {
 	if m == nil {
-		return (*Object_VectorMeta)(nil)
+		return (*Object_Timestamp)(nil)
 	}
-	r := &Object_VectorMeta{
+	r := &Object_Timestamp{
 		Id:        m.Id,
 		Timestamp: m.Timestamp,
 	}
@@ -1029,7 +1029,7 @@ func (m *Object_VectorMeta) CloneVT() *Object_VectorMeta {
 	return r
 }
 
-func (m *Object_VectorMeta) CloneMessageVT() proto.Message {
+func (m *Object_Timestamp) CloneMessageVT() proto.Message {
 	return m.CloneVT()
 }
 
@@ -3001,7 +3001,7 @@ func (this *Object_Vector) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
-func (this *Object_VectorMetaRequest) EqualVT(that *Object_VectorMetaRequest) bool {
+func (this *Object_GetTimestampRequest) EqualVT(that *Object_GetTimestampRequest) bool {
 	if this == that {
 		return true
 	} else if this == nil || that == nil {
@@ -3013,14 +3013,14 @@ func (this *Object_VectorMetaRequest) EqualVT(that *Object_VectorMetaRequest) bo
 	return string(this.unknownFields) == string(that.unknownFields)
 }
 
-func (this *Object_VectorMetaRequest) EqualMessageVT(thatMsg proto.Message) bool {
-	that, ok := thatMsg.(*Object_VectorMetaRequest)
+func (this *Object_GetTimestampRequest) EqualMessageVT(thatMsg proto.Message) bool {
+	that, ok := thatMsg.(*Object_GetTimestampRequest)
 	if !ok {
 		return false
 	}
 	return this.EqualVT(that)
 }
-func (this *Object_VectorMeta) EqualVT(that *Object_VectorMeta) bool {
+func (this *Object_Timestamp) EqualVT(that *Object_Timestamp) bool {
 	if this == that {
 		return true
 	} else if this == nil || that == nil {
@@ -3035,8 +3035,8 @@ func (this *Object_VectorMeta) EqualVT(that *Object_VectorMeta) bool {
 	return string(this.unknownFields) == string(that.unknownFields)
 }
 
-func (this *Object_VectorMeta) EqualMessageVT(thatMsg proto.Message) bool {
-	that, ok := thatMsg.(*Object_VectorMeta)
+func (this *Object_Timestamp) EqualMessageVT(thatMsg proto.Message) bool {
+	that, ok := thatMsg.(*Object_Timestamp)
 	if !ok {
 		return false
 	}
@@ -6224,7 +6224,7 @@ func (m *Object_Vector) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *Object_VectorMetaRequest) MarshalVT() (dAtA []byte, err error) {
+func (m *Object_GetTimestampRequest) MarshalVT() (dAtA []byte, err error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -6237,12 +6237,12 @@ func (m *Object_VectorMetaRequest) MarshalVT() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *Object_VectorMetaRequest) MarshalToVT(dAtA []byte) (int, error) {
+func (m *Object_GetTimestampRequest) MarshalToVT(dAtA []byte) (int, error) {
 	size := m.SizeVT()
 	return m.MarshalToSizedBufferVT(dAtA[:size])
 }
 
-func (m *Object_VectorMetaRequest) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
+func (m *Object_GetTimestampRequest) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 	if m == nil {
 		return 0, nil
 	}
@@ -6267,7 +6267,7 @@ func (m *Object_VectorMetaRequest) MarshalToSizedBufferVT(dAtA []byte) (int, err
 	return len(dAtA) - i, nil
 }
 
-func (m *Object_VectorMeta) MarshalVT() (dAtA []byte, err error) {
+func (m *Object_Timestamp) MarshalVT() (dAtA []byte, err error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -6280,12 +6280,12 @@ func (m *Object_VectorMeta) MarshalVT() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *Object_VectorMeta) MarshalToVT(dAtA []byte) (int, error) {
+func (m *Object_Timestamp) MarshalToVT(dAtA []byte) (int, error) {
 	size := m.SizeVT()
 	return m.MarshalToSizedBufferVT(dAtA[:size])
 }
 
-func (m *Object_VectorMeta) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
+func (m *Object_Timestamp) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 	if m == nil {
 		return 0, nil
 	}
@@ -8716,7 +8716,7 @@ func (m *Object_Vector) SizeVT() (n int) {
 	return n
 }
 
-func (m *Object_VectorMetaRequest) SizeVT() (n int) {
+func (m *Object_GetTimestampRequest) SizeVT() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -8730,7 +8730,7 @@ func (m *Object_VectorMetaRequest) SizeVT() (n int) {
 	return n
 }
 
-func (m *Object_VectorMeta) SizeVT() (n int) {
+func (m *Object_Timestamp) SizeVT() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -14056,7 +14056,7 @@ func (m *Object_Vector) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *Object_VectorMetaRequest) UnmarshalVT(dAtA []byte) error {
+func (m *Object_GetTimestampRequest) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -14079,10 +14079,10 @@ func (m *Object_VectorMetaRequest) UnmarshalVT(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: Object_VectorMetaRequest: wiretype end group for non-group")
+			return fmt.Errorf("proto: Object_GetTimestampRequest: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: Object_VectorMetaRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: Object_GetTimestampRequest: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -14143,7 +14143,7 @@ func (m *Object_VectorMetaRequest) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *Object_VectorMeta) UnmarshalVT(dAtA []byte) error {
+func (m *Object_Timestamp) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -14166,10 +14166,10 @@ func (m *Object_VectorMeta) UnmarshalVT(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: Object_VectorMeta: wiretype end group for non-group")
+			return fmt.Errorf("proto: Object_Timestamp: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: Object_VectorMeta: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: Object_Timestamp: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:

@@ -317,7 +317,7 @@ func (c *correct) checkConsistency(ctx context.Context, targetReplica *vectorRep
 	var mu sync.Mutex
 	if err := c.discoverer.GetClient().OrderedRangeConcurrent(ctx, leftAgentAddrs, len(leftAgentAddrs),
 		func(ctx context.Context, addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
-			vecMeta, err := agent.NewAgentClient(conn).GetObjectMeta(ctx, &payload.Object_VectorMetaRequest{
+			vecMeta, err := agent.NewAgentClient(conn).GetTimestamp(ctx, &payload.Object_GetTimestampRequest{
 				Id: &payload.Object_ID{
 					Id: targetReplica.vec.GetId(),
 				},

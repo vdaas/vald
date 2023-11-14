@@ -49,7 +49,7 @@ service Agent {
   }
 
   // Represent the RPC to get the vector metadata. This RPC is mainly used for index correction process
-  rpc GetObjectMeta(payload.v1.Object.VectorMetaRequest) returns (payload.v1.Object.VectorMeta) {
+  rpc GetTimestamp(payload.v1.Object.GetTimestampRequest) returns (payload.v1.Object.Timestamp) {
     option (google.api.http).get = "/object/meta";
   }
 }

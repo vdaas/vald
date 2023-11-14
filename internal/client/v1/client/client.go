@@ -50,8 +50,8 @@ type (
 	Empty                     = payload.Empty
 	SearchConfig              = payload.Search_Config
 	ObjectDistance            = payload.Object_Distance
-	ObjectMeta                = payload.Object_VectorMeta
-	ObjectMetaRequest         = payload.Object_VectorMetaRequest
+	ObjectTimestamp           = payload.Object_Timestamp
+	ObjectGetTimestampRequest = payload.Object_GetTimestampRequest
 
 	Searcher     = vald.SearchClient
 	Inserter     = vald.InsertClient

@@ -180,12 +180,12 @@ func (c *agentClient) IndexInfo(
 	return res, nil
 }
 
-func (c *agentClient) GetObjectMeta(
+func (c *agentClient) GetTimestamp(
 	ctx context.Context,
-	req *client.ObjectMetaRequest,
+	req *client.ObjectGetTimestampRequest,
 	_ ...grpc.CallOption,
-) (res *client.ObjectMeta, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+agent.GetObjectMetaRPCName), apiName+"/"+agent.GetObjectMetaRPCName)
+) (res *client.ObjectTimestamp, err error) {
+	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+agent.GetTimestampRPCName), apiName+"/"+agent.GetTimestampRPCName)
 	defer func() {
 		if span != nil {
 			span.End()
@@ -194,7 +194,7 @@ func (c *agentClient) GetObjectMeta(
 	_, err = c.c.RoundRobin(ctx, func(ctx context.Context,
 		conn *grpc.ClientConn, copts ...grpc.CallOption,
 	) (interface{}, error) {
-		res, err := agent.NewAgentClient(conn).GetObjectMeta(ctx, req, copts...)
+		res, err := agent.NewAgentClient(conn).GetTimestamp(ctx, req, copts...)
 		if err != nil {
 			return nil, err
 		}
@@ -262,16 +262,16 @@ func (c *singleAgentClient) IndexInfo(
 	return c.ac.IndexInfo(ctx, new(client.Empty), opts...)
 }
 
-func (c *singleAgentClient) GetObjectMeta(
+func (c *singleAgentClient) GetTimestamp(
 	ctx context.Context,
-	req *client.ObjectMetaRequest,
+	req *client.ObjectGetTimestampRequest,
 	opts ...grpc.CallOption,
-) (res *client.ObjectMeta, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/singleClient/"+agent.IndexInfoRPCName), apiName+"/"+agent.IndexInfoRPCName)
+) (res *client.ObjectTimestamp, err error) {
+	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/singleClient/"+agent.GetTimestampRPCName), apiName+"/"+agent.GetTimestampRPCName)
 	defer func() {
 		if span != nil {
 			span.End()
 		}
 	}()
-	return c.ac.GetObjectMeta(ctx, req, opts...)
+	return c.ac.GetTimestamp(ctx, req, opts...)
 }

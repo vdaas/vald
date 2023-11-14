@@ -252,11 +252,11 @@ func (s *server) StreamListObject(_ *payload.Object_List_Request, stream vald.Ob
 	return nil
 }
 
-// GetObjectMeta returns meta information of the object specified by uuid.
+// GetTimestamp returns meta information of the object specified by uuid.
 // This rpc is only served in AgentServer and not served in LB. Only for internal use mainly for index correction to reduce
 // network bandwidth(because vector itself is not required for index correction logic) while processing.
-func (s *server) GetObjectMeta(ctx context.Context, id *payload.Object_VectorMetaRequest) (res *payload.Object_VectorMeta, err error) {
-	_, span := trace.StartSpan(ctx, apiName+"/"+vald.GetObjectMetaRPCName)
+func (s *server) GetTimestamp(ctx context.Context, id *payload.Object_GetTimestampRequest) (res *payload.Object_Timestamp, err error) {
+	_, span := trace.StartSpan(ctx, apiName+"/"+vald.GetTimestampRPCName)
 	defer func() {
 		if span != nil {
 			span.End()
@@ -265,7 +265,7 @@ func (s *server) GetObjectMeta(ctx context.Context, id *payload.Object_VectorMet
 	uuid := id.GetId().GetId()
 	if len(uuid) == 0 {
 		err = errors.ErrInvalidUUID(uuid)
-		err = status.WrapWithInvalidArgument(fmt.Sprintf("GetObjectMeta API invalid argument for uuid \"%s\" detected", uuid), err,
+		err = status.WrapWithInvalidArgument(fmt.Sprintf("GetTimestamp API invalid argument for uuid \"%s\" detected", uuid), err,
 			&errdetails.RequestInfo{
 				RequestId:   uuid,
 				ServingData: errdetails.Serialize(id),
@@ -279,7 +279,7 @@ func (s *server) GetObjectMeta(ctx context.Context, id *payload.Object_VectorMet
 				},
 			},
 			&errdetails.ResourceInfo{
-				ResourceType: ngtResourceType + "/ngt.GetObjectMeta",
+				ResourceType: ngtResourceType + "/ngt.GetTimestamp",
 				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
 			})
 		log.Warn(err)
@@ -300,7 +300,7 @@ func (s *server) GetObjectMeta(ctx context.Context, id *payload.Object_VectorMet
 		}
 		return nil, err
 	}
-	return &payload.Object_VectorMeta{
+	return &payload.Object_Timestamp{
 		Id:        uuid,
 		Timestamp: ts,
 	}, nil

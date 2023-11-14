@@ -62,6 +62,7 @@
   - [Object](#payload-v1-Object)
   - [Object.Blob](#payload-v1-Object-Blob)
   - [Object.Distance](#payload-v1-Object-Distance)
+  - [Object.GetTimestampRequest](#payload-v1-Object-GetTimestampRequest)
   - [Object.ID](#payload-v1-Object-ID)
   - [Object.IDs](#payload-v1-Object-IDs)
   - [Object.List](#payload-v1-Object-List)
@@ -74,9 +75,8 @@
   - [Object.StreamDistance](#payload-v1-Object-StreamDistance)
   - [Object.StreamLocation](#payload-v1-Object-StreamLocation)
   - [Object.StreamVector](#payload-v1-Object-StreamVector)
+  - [Object.Timestamp](#payload-v1-Object-Timestamp)
   - [Object.Vector](#payload-v1-Object-Vector)
-  - [Object.VectorMeta](#payload-v1-Object-VectorMeta)
-  - [Object.VectorMetaRequest](#payload-v1-Object-VectorMetaRequest)
   - [Object.VectorRequest](#payload-v1-Object-VectorRequest)
   - [Object.Vectors](#payload-v1-Object-Vectors)
   - [Remove](#payload-v1-Remove)
@@ -453,13 +453,13 @@ Represent the agent sidecar service.
 
 Represent the agent service.
 
-| Method Name        | Request Type                                                                     | Response Type                                                  | Description                                                                                        |
-| ------------------ | -------------------------------------------------------------------------------- | -------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
-| CreateIndex        | [.payload.v1.Control.CreateIndexRequest](#payload-v1-Control-CreateIndexRequest) | [.payload.v1.Empty](#payload-v1-Empty)                         | Represent the creating index RPC.                                                                  |
-| SaveIndex          | [.payload.v1.Empty](#payload-v1-Empty)                                           | [.payload.v1.Empty](#payload-v1-Empty)                         | Represent the saving index RPC.                                                                    |
-| CreateAndSaveIndex | [.payload.v1.Control.CreateIndexRequest](#payload-v1-Control-CreateIndexRequest) | [.payload.v1.Empty](#payload-v1-Empty)                         | Represent the creating and saving index RPC.                                                       |
-| IndexInfo          | [.payload.v1.Empty](#payload-v1-Empty)                                           | [.payload.v1.Info.Index.Count](#payload-v1-Info-Index-Count)   | Represent the RPC to get the agent index information.                                              |
-| GetObjectMeta      | [.payload.v1.Object.VectorMetaRequest](#payload-v1-Object-VectorMetaRequest)     | [.payload.v1.Object.VectorMeta](#payload-v1-Object-VectorMeta) | Represent the RPC to get the vector metadata. This RPC is mainly used for index correction process |
+| Method Name        | Request Type                                                                     | Response Type                                                | Description                                                                                        |
+| ------------------ | -------------------------------------------------------------------------------- | ------------------------------------------------------------ | -------------------------------------------------------------------------------------------------- |
+| CreateIndex        | [.payload.v1.Control.CreateIndexRequest](#payload-v1-Control-CreateIndexRequest) | [.payload.v1.Empty](#payload-v1-Empty)                       | Represent the creating index RPC.                                                                  |
+| SaveIndex          | [.payload.v1.Empty](#payload-v1-Empty)                                           | [.payload.v1.Empty](#payload-v1-Empty)                       | Represent the saving index RPC.                                                                    |
+| CreateAndSaveIndex | [.payload.v1.Control.CreateIndexRequest](#payload-v1-Control-CreateIndexRequest) | [.payload.v1.Empty](#payload-v1-Empty)                       | Represent the creating and saving index RPC.                                                       |
+| IndexInfo          | [.payload.v1.Empty](#payload-v1-Empty)                                           | [.payload.v1.Info.Index.Count](#payload-v1-Info-Index-Count) | Represent the RPC to get the agent index information.                                              |
+| GetTimestamp       | [.payload.v1.Object.GetTimestampRequest](#payload-v1-Object-GetTimestampRequest) | [.payload.v1.Object.Timestamp](#payload-v1-Object-Timestamp) | Represent the RPC to get the vector metadata. This RPC is mainly used for index correction process |
 
 <a name="apis_proto_v1_payload_payload-proto"></a>
 
@@ -759,6 +759,16 @@ Represent the ID and distance pair.
 | id       | [string](#string) |       | The vector ID. |
 | distance | [float](#float)   |       | The distance.  |
 
+<a name="payload-v1-Object-GetTimestampRequest"></a>
+
+### Object.GetTimestampRequest
+
+Represent a request to fetch vector meta data.
+
+| Field | Type                               | Label | Description                  |
+| ----- | ---------------------------------- | ----- | ---------------------------- |
+| id    | [Object.ID](#payload-v1-Object-ID) |       | The vector ID to be fetched. |
+
 <a name="payload-v1-Object-ID"></a>
 
 ### Object.ID
@@ -875,6 +885,17 @@ Represent stream response of the vector.
 | vector | [Object.Vector](#payload-v1-Object-Vector) |       | The vector.           |
 | status | [google.rpc.Status](#google-rpc-Status)    |       | The RPC error status. |
 
+<a name="payload-v1-Object-Timestamp"></a>
+
+### Object.Timestamp
+
+Represent a vector meta data.
+
+| Field     | Type              | Label | Description                                     |
+| --------- | ----------------- | ----- | ----------------------------------------------- |
+| id        | [string](#string) |       | The vector ID.                                  |
+| timestamp | [int64](#int64)   |       | timestamp represents when this vector inserted. |
+
 <a name="payload-v1-Object-Vector"></a>
 
 ### Object.Vector
@@ -886,27 +907,6 @@ Represent a vector.
 | id        | [string](#string) |          | The vector ID.                                  |
 | vector    | [float](#float)   | repeated | The vector.                                     |
 | timestamp | [int64](#int64)   |          | timestamp represents when this vector inserted. |
-
-<a name="payload-v1-Object-VectorMeta"></a>
-
-### Object.VectorMeta
-
-Represent a vector meta data.
-
-| Field     | Type              | Label | Description                                     |
-| --------- | ----------------- | ----- | ----------------------------------------------- |
-| id        | [string](#string) |       | The vector ID.                                  |
-| timestamp | [int64](#int64)   |       | timestamp represents when this vector inserted. |
-
-<a name="payload-v1-Object-VectorMetaRequest"></a>
-
-### Object.VectorMetaRequest
-
-Represent a request to fetch vector meta data.
-
-| Field | Type                               | Label | Description                  |
-| ----- | ---------------------------------- | ----- | ---------------------------- |
-| id    | [Object.ID](#payload-v1-Object-ID) |       | The vector ID to be fetched. |
 
 <a name="payload-v1-Object-VectorRequest"></a>
 

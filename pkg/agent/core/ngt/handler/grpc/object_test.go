@@ -1337,7 +1337,7 @@ func Test_server_StreamListObject(t *testing.T) {
 	}
 }
 
-func Test_server_GetObjectMeta(t *testing.T) {
+func Test_server_GetTimestamp(t *testing.T) {
 	t.Parallel()
 
 	defaultConfig := config.NGT{
@@ -1397,7 +1397,7 @@ func Test_server_GetObjectMeta(t *testing.T) {
 				})
 				require.NoError(t, err)
 
-				res, err := s.GetObjectMeta(ectx, &payload.Object_VectorMetaRequest{
+				res, err := s.GetTimestamp(ectx, &payload.Object_GetTimestampRequest{
 					Id: &payload.Object_ID{
 						Id: req.GetRequests()[0].GetVector().GetId(),
 					},
@@ -1412,7 +1412,7 @@ func Test_server_GetObjectMeta(t *testing.T) {
 			testfunc: func(t *testing.T) {
 				ectx, s := setup(t)
 
-				_, err := s.GetObjectMeta(ectx, &payload.Object_VectorMetaRequest{
+				_, err := s.GetTimestamp(ectx, &payload.Object_GetTimestampRequest{
 					Id: &payload.Object_ID{
 						Id: "",
 					},
@@ -1425,7 +1425,7 @@ func Test_server_GetObjectMeta(t *testing.T) {
 			testfunc: func(t *testing.T) {
 				ectx, s := setup(t)
 
-				_, err := s.GetObjectMeta(ectx, &payload.Object_VectorMetaRequest{
+				_, err := s.GetTimestamp(ectx, &payload.Object_GetTimestampRequest{
 					Id: &payload.Object_ID{
 						Id: "not exist ID",
 					},
