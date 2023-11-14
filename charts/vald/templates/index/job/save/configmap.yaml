@@ -44,7 +44,7 @@ data:
     observability:
       {{- $observability := dict "Values" $saver.observability "default" .Values.defaults.observability }}
       {{- include "vald.observability" $observability | nindent 6 }}
-    creator:
+    saver:
       agent_port: {{ default .Values.defaults.server_config.servers.grpc.port $agent.server_config.servers.grpc.port }}
       agent_name: {{ $agent.name | quote }}
       agent_dns: {{ $agent.name }}.{{ .Release.Namespace }}.svc.cluster.local
