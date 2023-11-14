@@ -28,7 +28,7 @@ metadata:
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/version: {{ .Chart.Version }}
 spec:
-  schedule: {{ $corrector.schedule }}
+  schedule: {{ $corrector.schedule | quote }}
   concurrencyPolicy: Forbid
   suspend: {{ $corrector.suspend }}
   startingDeadlineSeconds: {{ $corrector.startingDeadlineSeconds }}
