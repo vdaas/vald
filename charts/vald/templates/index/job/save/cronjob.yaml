@@ -48,7 +48,7 @@ spec:
             pyroscope.io/application-name: {{ $saver.name }}
             pyroscope.io/profile-cpu-enabled: "true"
             pyroscope.io/profile-mem-enabled: "true"
-            pyroscope.io/port: "{{ $pprof.port }}"
+            pyroscope.io/port: {{ $pprof.port | quote }}
             {{- end }}
         spec:
           containers:
