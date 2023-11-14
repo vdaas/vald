@@ -1,0 +1,16 @@
+version: v1
+managed:
+  enabled: false
+  go_package_prefix:
+    default: github.com/vdaas/vald/apis/grpc
+    except:
+      - buf.build/googleapis/googleapis
+plugins:
+  - plugin: buf.build/protocolbuffers/go
+    out: apis/grpc
+    opt:
+      - paths=source_relative
+  - plugin: buf.build/community/planetscale-vtprotobuf
+    out: apis/grpc
+    opt:
+      - paths=source_relative,features=grpc+marshal+unmarshal+size+equal+clone+pool

@@ -2974,10 +2974,15 @@ func (s *server) getObject(ctx context.Context, uuid string) (vec *payload.Objec
 				return nil
 			}
 			if ovec != nil && ovec.GetId() != "" && ovec.GetVector() != nil {
+				var send bool
 				once.Do(func() {
 					vch <- ovec
+					send = true
 					cancel(doneErr)
 				})
+				if !send {
+					//ovec.ReturnToVTPool()
+				}
 			}
 			return nil
 		})
