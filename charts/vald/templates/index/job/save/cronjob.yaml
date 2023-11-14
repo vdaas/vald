@@ -42,7 +42,6 @@ spec:
             app.kubernetes.io/instance: {{ .Release.Name }}
             app.kubernetes.io/component: {{ $saver.name }}
           annotations:
-            checksum/configmap: {{ include (print $.Template.BasePath "/index/job/save/configmap.yaml") . | sha256sum }}
             {{ $pprof := default .Values.defaults.server_config.metrics.pprof $saver.server_config.metrics.pprof }}
             {{- if $pprof.enabled }}
             pyroscope.io/scrape: "true"
