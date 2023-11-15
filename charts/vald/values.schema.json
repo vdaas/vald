@@ -10068,11 +10068,6 @@
                   "type": "string",
                   "description": "namespace of agent pods to manage"
                 },
-                "bbolt_async_write_concurrency": {
-                  "type": "integer",
-                  "description": "concurrency for bbolt async write",
-                  "minimum": 1
-                },
                 "discoverer": {
                   "type": "object",
                   "properties": {
@@ -10736,6 +10731,11 @@
                       "description": "image tag (overrides defaults.image.tag)"
                     }
                   }
+                },
+                "kvs_async_write_concurrency": {
+                  "type": "integer",
+                  "description": "concurrency for kvs async write",
+                  "minimum": 1
                 },
                 "name": {
                   "type": "string",

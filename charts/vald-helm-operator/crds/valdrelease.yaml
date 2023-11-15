@@ -6077,9 +6077,6 @@ spec:
                           properties:
                             agent_namespace:
                               type: string
-                            bbolt_async_write_concurrency:
-                              type: integer
-                              minimum: 1
                             discoverer:
                               type: object
                               properties:
@@ -6455,6 +6452,9 @@ spec:
                                   type: string
                                 tag:
                                   type: string
+                            kvs_async_write_concurrency:
+                              type: integer
+                              minimum: 1
                             name:
                               type: string
                             node_name:
