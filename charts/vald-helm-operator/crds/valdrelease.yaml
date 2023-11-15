@@ -6452,6 +6452,11 @@ spec:
                                   type: string
                                 tag:
                                   type: string
+                            initContainers:
+                              type: array
+                              items:
+                                type: object
+                                x-kubernetes-preserve-unknown-fields: true
                             kvs_async_write_concurrency:
                               type: integer
                               minimum: 1
@@ -7422,6 +7427,11 @@ spec:
                                   type: string
                                 tag:
                                   type: string
+                            initContainers:
+                              type: array
+                              items:
+                                type: object
+                                x-kubernetes-preserve-unknown-fields: true
                             name:
                               type: string
                             node_name:
@@ -8928,6 +8938,11 @@ spec:
                                   type: string
                                 tag:
                                   type: string
+                            initContainers:
+                              type: array
+                              items:
+                                type: object
+                                x-kubernetes-preserve-unknown-fields: true
                             name:
                               type: string
                             node_name:

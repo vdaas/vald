@@ -10732,6 +10732,11 @@
                     }
                   }
                 },
+                "initContainers": {
+                  "type": "array",
+                  "description": "init containers",
+                  "items": { "type": "object" }
+                },
                 "kvs_async_write_concurrency": {
                   "type": "integer",
                   "description": "concurrency for kvs async write",
@@ -12457,6 +12462,11 @@
                       "description": "image tag (overrides defaults.image.tag)"
                     }
                   }
+                },
+                "initContainers": {
+                  "type": "array",
+                  "description": "init containers",
+                  "items": { "type": "object" }
                 },
                 "name": {
                   "type": "string",
@@ -15093,6 +15103,11 @@
                       "description": "image tag (overrides defaults.image.tag)"
                     }
                   }
+                },
+                "initContainers": {
+                  "type": "array",
+                  "description": "init containers",
+                  "items": { "type": "object" }
                 },
                 "name": {
                   "type": "string",
