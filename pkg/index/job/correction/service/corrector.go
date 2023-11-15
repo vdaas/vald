@@ -75,11 +75,6 @@ type correct struct {
 	bboltAsyncWriteConcurrency int
 }
 
-type indexInfo struct {
-	stored int
-	addr   string
-}
-
 const filemode = 0o600
 
 func New(opts ...Option) (_ Corrector, err error) {
@@ -134,7 +129,7 @@ func (c *correct) Start(ctx context.Context) error {
 	}
 	log.Debugf("target agent addrs: %v", c.agentAddrs)
 
-	if err := c.loadInfos(ctx); err != nil {
+	if err := c.loadAgentIndexInfo(ctx); err != nil {
 		return err
 	}
 
@@ -609,7 +604,11 @@ func (c *correct) deleteObject(ctx context.Context, addr string, vector *payload
 	return nil
 }
 
-func (c *correct) loadInfos(ctx context.Context) (err error) {
+// loadAgentIndexInfo loads the index info of each agent and sort them by the number of indexes
+// then append the result to c.sortedByIndexCntAddrs.
+// This sort is required because we want to process the agents with the least number of indexes first
+// for performance to filter out the agent as early as possible from broadcast in checkConsistency function.
+func (c *correct) loadAgentIndexInfo(ctx context.Context) (err error) {
 	var u, ucu uint32
 	var infoMap sync.Map[string, *payload.Info_Index_Count]
 	err = c.discoverer.GetClient().RangeConcurrent(ctx, len(c.discoverer.GetAddrs(ctx)),
@@ -636,6 +635,11 @@ func (c *correct) loadInfos(ctx context.Context) (err error) {
 	}
 	atomic.StoreUint32(&c.uuidsCount, atomic.LoadUint32(&u))
 	atomic.StoreUint32(&c.uncommittedUUIDsCount, atomic.LoadUint32(&ucu))
+
+	type indexInfo struct {
+		stored int
+		addr   string
+	}
 
 	infos := []indexInfo{}
 	infoMap.Range(func(addr string, info *payload.Info_Index_Count) bool {
