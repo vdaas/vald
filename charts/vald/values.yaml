@@ -2799,7 +2799,7 @@ manager:
       enabled: false
       # @schema {"name": "manager.index.creator.schedule", "type": "string"}
       # manager.index.creator.schedule -- CronJob schedule setting for index creation
-      schedule: "*/1 * * * *"
+      schedule: "* * * * *"
       # @schema {"name": "manager.index.creator.suspend", "type": "boolean"}
       # manager.index.creator.suspend -- CronJob suspend setting for index creation
       suspend: false
@@ -2906,7 +2906,7 @@ manager:
       enabled: false
       # @schema {"name": "manager.index.saver.schedule", "type": "string"}
       # manager.index.saver.schedule -- CronJob schedule setting for index save
-      schedule: "* */3 * * *"
+      schedule: "0 */3 * * *"
       # @schema {"name": "manager.index.saver.suspend", "type": "boolean"}
       # manager.index.saver.suspend -- CronJob suspend setting for index creation
       suspend: false
