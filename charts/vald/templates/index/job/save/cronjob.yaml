@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-{{- $index     := .Values.manager.index -}}
 {{- $saver     := .Values.manager.index.saver -}}
 {{- if $saver.enabled }}
 apiVersion: batch/v1
@@ -52,9 +51,9 @@ spec:
             pyroscope.io/port: {{ $pprof.port | quote }}
             {{- end }}
         spec:
-          {{- if $index.initContainers }}
+          {{- if $saver.initContainers }}
           initContainers:
-            {{- $initContainers := dict "initContainers" $index.initContainers "Values" .Values "namespace" .Release.Namespace -}}
+            {{- $initContainers := dict "initContainers" $saver.initContainers "Values" .Values "namespace" .Release.Namespace -}}
             {{- include "vald.initContainers" $initContainers | trim | nindent 12 }}
           {{- end }}
           containers:

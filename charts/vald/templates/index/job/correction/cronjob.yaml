@@ -13,8 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
-{{- $index     := .Values.manager.index -}}
 {{- $corrector := .Values.manager.index.corrector -}}
 {{- if $corrector.enabled }}
 apiVersion: batch/v1
@@ -50,9 +48,9 @@ spec:
             pyroscope.io/port: {{ $pprof.port | quote }}
             {{- end }}
         spec:
-          {{- if $index.initContainers }}
+          {{- if $corrector.initContainers }}
           initContainers:
-            {{- $initContainers := dict "initContainers" $index.initContainers "Values" .Values "namespace" .Release.Namespace -}}
+            {{- $initContainers := dict "initContainers" $corrector.initContainers "Values" .Values "namespace" .Release.Namespace -}}
             {{- include "vald.initContainers" $initContainers | trim | nindent 12 }}
           {{- end }}
           containers:

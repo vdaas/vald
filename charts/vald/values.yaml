@@ -2656,6 +2656,19 @@ manager:
           startup: {}
         metrics:
           pprof: {}
+      # @schema {"name": "manager.index.corrector.initContainers", "alias": "initContainers"}
+      # manager.index.corrector.initContainers -- init containers
+      initContainers:
+        - type: wait-for
+          name: wait-for-agent
+          target: agent
+          image: busybox:stable
+          sleepDuration: 2
+        - type: wait-for
+          name: wait-for-discoverer
+          target: discoverer
+          image: busybox:stable
+          sleepDuration: 2
       # @schema {"name": "manager.index.corrector.env", "alias": "env"}
       # manager.index.corrector.env -- environment variables
       env:
@@ -2747,6 +2760,19 @@ manager:
           startup: {}
         metrics:
           pprof: {}
+      # @schema {"name": "manager.index.creator.initContainers", "alias": "initContainers"}
+      # manager.index.creator.initContainers -- init containers
+      initContainers:
+        - type: wait-for
+          name: wait-for-agent
+          target: agent
+          image: busybox:stable
+          sleepDuration: 2
+        - type: wait-for
+          name: wait-for-discoverer
+          target: discoverer
+          image: busybox:stable
+          sleepDuration: 2
       # @schema {"name": "manager.index.creator.env", "alias": "env"}
       # manager.index.creator.env -- environment variables
       env:
@@ -2841,6 +2867,19 @@ manager:
           startup: {}
         metrics:
           pprof: {}
+      # @schema {"name": "manager.index.saver.initContainers", "alias": "initContainers"}
+      # manager.index.saver.initContainers -- init containers
+      initContainers:
+        - type: wait-for
+          name: wait-for-agent
+          target: agent
+          image: busybox:stable
+          sleepDuration: 2
+        - type: wait-for
+          name: wait-for-discoverer
+          target: discoverer
+          image: busybox:stable
+          sleepDuration: 2
       # @schema {"name": "manager.index.saver.env", "alias": "env"}
       # manager.index.saver.env -- environment variables
       env:
