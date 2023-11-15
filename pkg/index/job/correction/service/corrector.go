@@ -129,6 +129,9 @@ func (c *correct) Start(ctx context.Context) error {
 	}
 	log.Debugf("target agent addrs: %v", c.agentAddrs)
 
+	// reverse to process from the least memory usage agent so that we can decrease the number of broadcast
+	slices.Reverse(c.agentAddrs)
+
 	if err := c.loadInfos(ctx); err != nil {
 		return err
 	}
@@ -356,6 +359,7 @@ func (c *correct) checkConsistency(ctx context.Context, targetReplica *vectorRep
 			mu.Lock()
 			foundReplicas = append(foundReplicas, &vectorReplica{
 				addr: addr,
+				// the vector itself will be fetched when it's needed
 				vec: &payload.Object_Vector{
 					Id:        vecMeta.GetId(),
 					Timestamp: vecMeta.GetTimestamp(),
