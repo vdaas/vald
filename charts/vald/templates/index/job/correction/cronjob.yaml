@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 
+{{- $index     := .Values.manager.index -}}
 {{- $corrector := .Values.manager.index.corrector -}}
 {{- if $corrector.enabled }}
 apiVersion: batch/v1
@@ -49,6 +50,11 @@ spec:
             pyroscope.io/port: {{ $pprof.port | quote }}
             {{- end }}
         spec:
+          {{- if $index.initContainers }}
+          initContainers:
+            {{- $initContainers := dict "initContainers" $index.initContainers "Values" .Values "namespace" .Release.Namespace -}}
+            {{- include "vald.initContainers" $initContainers | trim | nindent 12 }}
+          {{- end }}
           containers:
             - name: {{ $corrector.name }}
               image: "{{ $corrector.image.repository }}:{{ default .Values.defaults.image.tag $corrector.image.tag }}"

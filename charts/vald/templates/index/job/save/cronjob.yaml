@@ -13,7 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-{{- $saver := .Values.manager.index.saver -}}
+{{- $index     := .Values.manager.index -}}
+{{- $saver     := .Values.manager.index.saver -}}
 {{- if $saver.enabled }}
 apiVersion: batch/v1
 kind: CronJob
@@ -51,6 +52,11 @@ spec:
             pyroscope.io/port: {{ $pprof.port | quote }}
             {{- end }}
         spec:
+          {{- if $index.initContainers }}
+          initContainers:
+            {{- $initContainers := dict "initContainers" $index.initContainers "Values" .Values "namespace" .Release.Namespace -}}
+            {{- include "vald.initContainers" $initContainers | trim | nindent 12 }}
+          {{- end }}
           containers:
             - name: {{ $saver.name }}
               image: "{{ $saver.image.repository }}:{{ default .Values.defaults.image.tag $saver.image.tag }}"
