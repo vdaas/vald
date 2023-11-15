@@ -62,7 +62,7 @@ type Corrector interface {
 type correct struct {
 	discoverer                discoverer.Client
 	agentAddrs                []string
-	indexInfos                sync.Map[string, *payload.Info_Index_Count]
+	sortedByIndexCntAddrs     []string
 	uuidsCount                uint32
 	uncommittedUUIDsCount     uint32
 	checkedID                 bbolt.Bbolt
@@ -73,6 +73,11 @@ type correct struct {
 	indexReplica               int
 	streamListConcurrency      int
 	bboltAsyncWriteConcurrency int
+}
+
+type indexInfo struct {
+	stored int
+	addr   string
 }
 
 const filemode = 0o600
@@ -129,16 +134,9 @@ func (c *correct) Start(ctx context.Context) error {
 	}
 	log.Debugf("target agent addrs: %v", c.agentAddrs)
 
-	// reverse to process from the least memory usage agent so that we can decrease the number of broadcast
-	slices.Reverse(c.agentAddrs)
-
 	if err := c.loadInfos(ctx); err != nil {
 		return err
 	}
-	c.indexInfos.Range(func(addr string, info *payload.Info_Index_Count) bool {
-		log.Infof("index info: addr(%s), stored(%d), uncommitted(%d)", addr, info.GetStored(), info.GetUncommitted())
-		return true
-	})
 
 	log.Info("starting correction with bbolt disk cache...")
 	if err := c.correct(ctx); err != nil {
@@ -177,7 +175,7 @@ func (c *correct) correct(ctx context.Context) (err error) {
 
 	curTargetAgent := 0
 	jobErrs := make([]error, 0, c.streamListConcurrency)
-	if err := c.discoverer.GetClient().OrderedRange(ctx, c.agentAddrs,
+	if err := c.discoverer.GetClient().OrderedRange(ctx, c.sortedByIndexCntAddrs,
 		func(ctx context.Context, addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) (err error) {
 			defer func() {
 				if err != nil {
@@ -315,7 +313,7 @@ type vectorReplica struct {
 // Validate len(addrs) >= 2 before calling this function
 func (c *correct) checkConsistency(ctx context.Context, targetReplica *vectorReplica, targetAgentIdx int) error {
 	// leftAgentAddrs is the agents' addr that hasn't been corrected yet.
-	leftAgentAddrs := c.agentAddrs[targetAgentIdx+1:]
+	leftAgentAddrs := c.sortedByIndexCntAddrs[targetAgentIdx+1:]
 
 	// Vector with time after this should not be processed
 	correctionStartTime, err := correctionStartTime(ctx)
@@ -324,7 +322,7 @@ func (c *correct) checkConsistency(ctx context.Context, targetReplica *vectorRep
 		return err
 	}
 
-	foundReplicas := make([]*vectorReplica, 0, len(c.agentAddrs))
+	foundReplicas := make([]*vectorReplica, 0, len(c.sortedByIndexCntAddrs))
 	var mu sync.Mutex
 	if err := c.discoverer.GetClient().OrderedRangeConcurrent(ctx, leftAgentAddrs, len(leftAgentAddrs),
 		func(ctx context.Context, addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
@@ -441,6 +439,8 @@ func (c *correct) correctReplica(
 	}
 
 	// availableAddrs = c.agentAddrs - foundReplicas - targetReplica.addr
+	// here we use c.agentAddrs because we want to decide by memory usage order
+	// not the number of indexes
 	availableAddrs := make([]string, 0, len(c.agentAddrs))
 	for _, addr := range c.agentAddrs {
 		if addr == targetReplica.addr {
@@ -636,19 +636,25 @@ func (c *correct) loadInfos(ctx context.Context) (err error) {
 	}
 	atomic.StoreUint32(&c.uuidsCount, atomic.LoadUint32(&u))
 	atomic.StoreUint32(&c.uncommittedUUIDsCount, atomic.LoadUint32(&ucu))
-	c.indexInfos.Range(func(addr string, _ *payload.Info_Index_Count) bool {
-		info, ok := infoMap.Load(addr)
-		if !ok {
-			c.indexInfos.Delete(addr)
-		}
-		c.indexInfos.Store(addr, info)
-		infoMap.Delete(addr)
-		return true
-	})
+
+	infos := []indexInfo{}
 	infoMap.Range(func(addr string, info *payload.Info_Index_Count) bool {
-		c.indexInfos.Store(addr, info)
+		log.Infof("index info: addr(%s), stored(%d), uncommitted(%d)", addr, info.GetStored(), info.GetUncommitted())
+
+		infos = append(infos, indexInfo{
+			addr:   addr,
+			stored: int(info.GetStored() + info.GetUncommitted()),
+		})
 		return true
 	})
+
+	slices.SortFunc(infos, func(i, j indexInfo) int {
+		return cmp.Compare(i.stored, j.stored)
+	})
+	for _, info := range infos {
+		c.sortedByIndexCntAddrs = append(c.sortedByIndexCntAddrs, info.addr)
+	}
+	log.Infof("processing order of agents: %v", c.sortedByIndexCntAddrs)
 	return nil
 }
 
