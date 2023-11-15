@@ -51,7 +51,7 @@ data:
       agent_namespace: {{ $index.indexer.agent_namespace | quote }}
       node_name: {{ $index.indexer.node_name | quote }}
       stream_list_concurrency: {{ $corrector.stream_list_concurrency }}
-      bbolt_async_write_concurrency: {{ $corrector.bbolt_async_write_concurrency }}
+      kvs_async_write_concurrency: {{ $corrector.kvs_async_write_concurrency }}
       index_replica: {{ $gateway.gateway_config.index_replica }}
       discoverer:
         duration: {{ $corrector.discoverer.duration }}

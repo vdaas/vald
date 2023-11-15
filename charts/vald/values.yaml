@@ -2698,9 +2698,9 @@ manager:
       # @schema {"name": "manager.index.corrector.stream_list_concurrency", "type": "integer", "minimum": 1}
       # manager.index.corrector.stream_list_concurrency -- concurrency for stream list object rpc
       stream_list_concurrency: 200
-      # @schema {"name": "manager.index.corrector.bbolt_async_write_concurrency", "type": "integer", "minimum": 1}
-      # manager.index.corrector.bbolt_async_write_concurrency -- concurrency for bbolt async write
-      bbolt_async_write_concurrency: 2048
+      # @schema {"name": "manager.index.corrector.kvs_async_write_concurrency", "type": "integer", "minimum": 1}
+      # manager.index.corrector.kvs_async_write_concurrency -- concurrency for kvs async write
+      kvs_async_write_concurrency: 2048
       # @schema {"name": "manager.index.corrector.agent_namespace", "type": "string"}
       # manager.index.corrector.agent_namespace -- namespace of agent pods to manage
       agent_namespace: _MY_POD_NAMESPACE_
