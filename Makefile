@@ -32,6 +32,7 @@ LB_GATEWAY_IMAGE                = $(NAME)-lb-gateway
 LOADTEST_IMAGE                  = $(NAME)-loadtest
 INDEX_CORRECTION_IMAGE          = $(NAME)-index-correction
 INDEX_CREATION_IMAGE            = $(NAME)-index-creation
+INDEX_SAVE_IMAGE                = $(NAME)-index-save
 MANAGER_INDEX_IMAGE             = $(NAME)-manager-index
 MAINTAINER                      = "$(ORG).org $(NAME) team <$(NAME)@$(ORG).org>"
 

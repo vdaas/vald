@@ -11,7 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-package service
+package client
 
 import (
 	"context"
@@ -20,38 +20,19 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc"
 )
 
-type mockDiscovererClient struct {
+// DiscovererClientMock is the mock for discoverer client.
+type DiscovererClientMock struct {
 	discoverer.Client
 	GetAddrsFunc  func(ctx context.Context) []string
 	GetClientFunc func() grpc.Client
 }
 
-func (mc *mockDiscovererClient) GetAddrs(ctx context.Context) []string {
-	return mc.GetAddrsFunc(ctx)
+// GetAddrs calls the GetAddrsFunc object.
+func (dc *DiscovererClientMock) GetAddrs(ctx context.Context) []string {
+	return dc.GetAddrsFunc(ctx)
 }
 
-func (mc *mockDiscovererClient) GetClient() grpc.Client {
-	return mc.GetClientFunc()
-}
-
-type mockGrpcClient struct {
-	grpc.Client
-	OrderedRangeConcurrentFunc func(ctx context.Context,
-		order []string,
-		concurrency int,
-		f func(ctx context.Context,
-			addr string,
-			conn *grpc.ClientConn,
-			copts ...grpc.CallOption) error) error
-}
-
-func (mc *mockGrpcClient) OrderedRangeConcurrent(ctx context.Context,
-	order []string,
-	concurrency int,
-	f func(ctx context.Context,
-		addr string,
-		conn *grpc.ClientConn,
-		copts ...grpc.CallOption) error,
-) error {
-	return mc.OrderedRangeConcurrentFunc(ctx, order, concurrency, f)
+// GetClient calls GetClientFunc object.
+func (dc *DiscovererClientMock) GetClient() grpc.Client {
+	return dc.GetClientFunc()
 }

@@ -31,8 +31,8 @@ import (
 )
 
 const (
-	apiName        = "vald/index/job/create"
-	grpcMethodName = "core.v1.Agent/" + agent.CreateIndexRPCName
+	apiName        = "vald/index/job/save"
+	grpcMethodName = "core.v1.Agent/" + agent.SaveIndexRPCName
 )
 
 // Indexer represents an interface for indexing.
@@ -46,8 +46,7 @@ type index struct {
 	targetAddrs    []string
 	targetAddrList map[string]bool
 
-	creationPoolSize uint32
-	concurrency      int
+	concurrency int
 }
 
 // New returns Indexer object if no error occurs.
@@ -85,11 +84,9 @@ func (idx *index) Start(ctx context.Context) error {
 		}
 	}()
 
-	err := idx.doCreateIndex(ctx,
+	err := idx.doSaveIndex(ctx,
 		func(ctx context.Context, ac agent.AgentClient, copts ...grpc.CallOption) (*payload.Empty, error) {
-			return ac.CreateIndex(ctx, &payload.Control_CreateIndexRequest{
-				PoolSize: idx.creationPoolSize,
-			}, copts...)
+			return ac.SaveIndex(ctx, &payload.Empty{}, copts...)
 		},
 	)
 	if err != nil {
@@ -97,12 +94,12 @@ func (idx *index) Start(ctx context.Context) error {
 		switch {
 		case errors.Is(err, errors.ErrGRPCClientConnNotFound("*")):
 			err = status.WrapWithInternal(
-				agent.CreateIndexRPCName+" API connection not found", err,
+				agent.SaveIndexRPCName+" API connection not found", err,
 			)
 			attrs = trace.StatusCodeInternal(err.Error())
 		case errors.Is(err, errors.ErrGRPCTargetAddrNotFound):
 			err = status.WrapWithInternal(
-				agent.CreateIndexRPCName+" API connection target address \""+strings.Join(idx.targetAddrs, ",")+"\" not found", err,
+				agent.SaveIndexRPCName+" API connection target address \""+strings.Join(idx.targetAddrs, ",")+"\" not found", err,
 			)
 			attrs = trace.StatusCodeInternal(err.Error())
 		default:
@@ -111,7 +108,7 @@ func (idx *index) Start(ctx context.Context) error {
 				msg string
 			)
 			st, msg, err = status.ParseError(err, codes.Internal,
-				"failed to parse "+agent.CreateIndexRPCName+" gRPC error response",
+				"failed to parse "+agent.SaveIndexRPCName+" gRPC error response",
 			)
 			attrs = trace.FromGRPCStatus(st.Code(), msg)
 		}
@@ -126,8 +123,8 @@ func (idx *index) Start(ctx context.Context) error {
 	return nil
 }
 
-func (idx *index) doCreateIndex(ctx context.Context, fn func(_ context.Context, _ agent.AgentClient, _ ...grpc.CallOption) (*payload.Empty, error)) (errs error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, grpcMethodName), apiName+"/service/index.doCreateIndex")
+func (idx *index) doSaveIndex(ctx context.Context, fn func(_ context.Context, _ agent.AgentClient, _ ...grpc.CallOption) (*payload.Empty, error)) (errs error) {
+	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, grpcMethodName), apiName+"/service/index.doSaveIndex")
 	defer func() {
 		if span != nil {
 			span.End()
@@ -148,7 +145,7 @@ func (idx *index) doCreateIndex(ctx context.Context, fn func(_ context.Context, 
 	var emu sync.Mutex
 	err := idx.client.GetClient().OrderedRangeConcurrent(ctx, targetAddrs, idx.concurrency,
 		func(ctx context.Context, target string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
-			ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "OrderedRangeConcurrent/"+target), agent.CreateIndexRPCName+"/"+target)
+			ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "OrderedRangeConcurrent/"+target), agent.SaveIndexRPCName+"/"+target)
 			defer func() {
 				if span != nil {
 					span.End()
@@ -160,22 +157,22 @@ func (idx *index) doCreateIndex(ctx context.Context, fn func(_ context.Context, 
 				switch {
 				case errors.Is(err, context.Canceled):
 					err = status.WrapWithCanceled(
-						agent.CreateIndexRPCName+" API canceld", err,
+						agent.SaveIndexRPCName+" API canceld", err,
 					)
 					attrs = trace.StatusCodeCancelled(err.Error())
 				case errors.Is(err, context.DeadlineExceeded):
 					err = status.WrapWithCanceled(
-						agent.CreateIndexRPCName+" API deadline exceeded", err,
+						agent.SaveIndexRPCName+" API deadline exceeded", err,
 					)
 					attrs = trace.StatusCodeDeadlineExceeded(err.Error())
 				case errors.Is(err, errors.ErrGRPCClientConnNotFound("*")):
 					err = status.WrapWithInternal(
-						agent.CreateIndexRPCName+" API connection not found", err,
+						agent.SaveIndexRPCName+" API connection not found", err,
 					)
 					attrs = trace.StatusCodeInternal(err.Error())
 				case errors.Is(err, errors.ErrTargetNotFound):
 					err = status.WrapWithInvalidArgument(
-						agent.CreateIndexRPCName+" API target not found", err,
+						agent.SaveIndexRPCName+" API target not found", err,
 					)
 					attrs = trace.StatusCodeInternal(err.Error())
 				default:
@@ -184,15 +181,11 @@ func (idx *index) doCreateIndex(ctx context.Context, fn func(_ context.Context, 
 						msg string
 					)
 					st, msg, err = status.ParseError(err, codes.Internal,
-						"failed to parse "+agent.CreateIndexRPCName+" gRPC error response",
+						"failed to parse "+agent.SaveIndexRPCName+" gRPC error response",
 					)
-					if st != nil && err != nil && st.Code() == codes.FailedPrecondition {
-						log.Warnf("CreateIndex of %s skipped, message: %s, err: %v", target, st.Message(), errors.Join(st.Err(), err))
-						return nil
-					}
 					attrs = trace.FromGRPCStatus(st.Code(), msg)
 				}
-				log.Warnf("an error occurred in (%s) during indexing: %v", target, err)
+				log.Warnf("an error occurred in (%s) during save indexing: %v", target, err)
 				if span != nil {
 					span.RecordError(err)
 					span.SetAttributes(attrs...)

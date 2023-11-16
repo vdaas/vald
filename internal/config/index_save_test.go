@@ -15,30 +15,29 @@ package config
 
 // NOT IMPLEMENTED BELOW
 //
-// func TestCorrector_Bind(t *testing.T) {
+// func TestIndexSave_Bind(t *testing.T) {
 // 	type fields struct {
-// 		AgentPort                  int
-// 		AgentName                  string
-// 		AgentNamespace             string
-// 		AgentDNS                   string
-// 		NodeName                   string
-// 		StreamListConcurrency      int
-// 		BboltAsyncWriteConcurrency int
-// 		IndexReplica               int
-// 		Discoverer                 *DiscovererClient
+// 		AgentPort      int
+// 		AgentName      string
+// 		AgentNamespace string
+// 		AgentDNS       string
+// 		NodeName       string
+// 		Concurrency    int
+// 		TargetAddrs    []string
+// 		Discoverer     *DiscovererClient
 // 	}
 // 	type want struct {
-// 		want *Corrector
+// 		want *IndexSave
 // 	}
 // 	type test struct {
 // 		name       string
 // 		fields     fields
 // 		want       want
-// 		checkFunc  func(want, *Corrector) error
+// 		checkFunc  func(want, *IndexSave) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)
 // 	}
-// 	defaultCheckFunc := func(w want, got *Corrector) error {
+// 	defaultCheckFunc := func(w want, got *IndexSave) error {
 // 		if !reflect.DeepEqual(got, w.want) {
 // 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 // 		}
@@ -55,9 +54,8 @@ package config
 // 		           AgentNamespace:"",
 // 		           AgentDNS:"",
 // 		           NodeName:"",
-// 		           StreamListConcurrency:0,
-// 		           BboltAsyncWriteConcurrency:0,
-// 		           IndexReplica:0,
+// 		           Concurrency:0,
+// 		           TargetAddrs:nil,
 // 		           Discoverer:DiscovererClient{},
 // 		       },
 // 		       want: want{},
@@ -82,9 +80,8 @@ package config
 // 		           AgentNamespace:"",
 // 		           AgentDNS:"",
 // 		           NodeName:"",
-// 		           StreamListConcurrency:0,
-// 		           BboltAsyncWriteConcurrency:0,
-// 		           IndexReplica:0,
+// 		           Concurrency:0,
+// 		           TargetAddrs:nil,
 // 		           Discoverer:DiscovererClient{},
 // 		           },
 // 		           want: want{},
@@ -115,19 +112,18 @@ package config
 // 			if test.checkFunc == nil {
 // 				checkFunc = defaultCheckFunc
 // 			}
-// 			c := &Corrector{
-// 				AgentPort:                  test.fields.AgentPort,
-// 				AgentName:                  test.fields.AgentName,
-// 				AgentNamespace:             test.fields.AgentNamespace,
-// 				AgentDNS:                   test.fields.AgentDNS,
-// 				NodeName:                   test.fields.NodeName,
-// 				StreamListConcurrency:      test.fields.StreamListConcurrency,
-// 				BboltAsyncWriteConcurrency: test.fields.BboltAsyncWriteConcurrency,
-// 				IndexReplica:               test.fields.IndexReplica,
-// 				Discoverer:                 test.fields.Discoverer,
+// 			is := &IndexSave{
+// 				AgentPort:      test.fields.AgentPort,
+// 				AgentName:      test.fields.AgentName,
+// 				AgentNamespace: test.fields.AgentNamespace,
+// 				AgentDNS:       test.fields.AgentDNS,
+// 				NodeName:       test.fields.NodeName,
+// 				Concurrency:    test.fields.Concurrency,
+// 				TargetAddrs:    test.fields.TargetAddrs,
+// 				Discoverer:     test.fields.Discoverer,
 // 			}
 //
-// 			got := c.Bind()
+// 			got := is.Bind()
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}

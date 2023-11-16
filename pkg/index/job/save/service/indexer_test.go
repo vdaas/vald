@@ -29,16 +29,14 @@ import (
 )
 
 func Test_index_Start(t *testing.T) {
-	t.Parallel()
 	type args struct {
 		ctx context.Context
 	}
 	type fields struct {
-		client           discoverer.Client
-		targetAddrs      []string
-		targetAddrList   map[string]bool
-		creationPoolSize uint32
-		concurrency      int
+		client         discoverer.Client
+		targetAddrs    []string
+		targetAddrList map[string]bool
+		concurrency    int
 	}
 	type want struct {
 		err error
@@ -64,7 +62,7 @@ func Test_index_Start(t *testing.T) {
 				"127.0.0.1:8080",
 			}
 			return test{
-				name: "Success: when there is no error in the indexing request process",
+				name: "Success: when there is no error in the save indexing request process",
 				args: args{
 					ctx: context.Background(),
 				},
@@ -92,7 +90,7 @@ func Test_index_Start(t *testing.T) {
 				"127.0.0.1:8080",
 			}
 			return test{
-				name: "Fail: when there is an error wrapped with gRPC status in the indexing request process",
+				name: "Fail: when there is an error wrapped with gRPC status in the save indexing request process",
 				args: args{
 					ctx: context.Background(),
 				},
@@ -107,7 +105,7 @@ func Test_index_Start(t *testing.T) {
 									_ func(_ context.Context, _ string, _ *grpc.ClientConn, _ ...grpc.CallOption) error,
 								) error {
 									return status.WrapWithInternal(
-										agent.CreateIndexRPCName+" API connection not found",
+										agent.SaveIndexRPCName+" API connection not found",
 										errors.ErrGRPCClientConnNotFound("*"),
 									)
 								},
@@ -117,7 +115,7 @@ func Test_index_Start(t *testing.T) {
 				},
 				want: want{
 					err: status.Error(codes.Internal,
-						agent.CreateIndexRPCName+" API connection not found"),
+						agent.SaveIndexRPCName+" API connection not found"),
 				},
 			}
 		}(),
@@ -149,7 +147,7 @@ func Test_index_Start(t *testing.T) {
 				},
 				want: want{
 					err: status.Error(codes.Internal,
-						agent.CreateIndexRPCName+" API connection not found"),
+						agent.SaveIndexRPCName+" API connection not found"),
 				},
 			}
 		}(),
@@ -168,6 +166,7 @@ func Test_index_Start(t *testing.T) {
 				fields: fields{
 					client: &clientmock.DiscovererClientMock{
 						GetAddrsFunc: func(_ context.Context) []string {
+							// NOTE: This function returns nil, meaning that the targetAddrs stored in the field are invalid values.
 							return nil
 						},
 					},
@@ -176,7 +175,7 @@ func Test_index_Start(t *testing.T) {
 				},
 				want: want{
 					err: status.Error(codes.Internal,
-						agent.CreateIndexRPCName+" API connection target address \"127.0.0.1:8080\" not found"),
+						agent.SaveIndexRPCName+" API connection target address \"127.0.0.1:8080\" not found"),
 				},
 			}
 		}(),
@@ -198,11 +197,10 @@ func Test_index_Start(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 			idx := &index{
-				client:           test.fields.client,
-				targetAddrs:      test.fields.targetAddrs,
-				targetAddrList:   test.fields.targetAddrList,
-				creationPoolSize: test.fields.creationPoolSize,
-				concurrency:      test.fields.concurrency,
+				client:         test.fields.client,
+				targetAddrs:    test.fields.targetAddrs,
+				targetAddrList: test.fields.targetAddrList,
+				concurrency:    test.fields.concurrency,
 			}
 
 			err := idx.Start(test.args.ctx)
@@ -310,11 +308,10 @@ func Test_index_Start(t *testing.T) {
 // 		ctx context.Context
 // 	}
 // 	type fields struct {
-// 		client           discoverer.Client
-// 		targetAddrs      []string
-// 		targetAddrList   map[string]bool
-// 		creationPoolSize uint32
-// 		concurrency      int
+// 		client         discoverer.Client
+// 		targetAddrs    []string
+// 		targetAddrList map[string]bool
+// 		concurrency    int
 // 	}
 // 	type want struct {
 // 		want <-chan error
@@ -350,7 +347,6 @@ func Test_index_Start(t *testing.T) {
 // 		           client:nil,
 // 		           targetAddrs:nil,
 // 		           targetAddrList:nil,
-// 		           creationPoolSize:0,
 // 		           concurrency:0,
 // 		       },
 // 		       want: want{},
@@ -376,7 +372,6 @@ func Test_index_Start(t *testing.T) {
 // 		           client:nil,
 // 		           targetAddrs:nil,
 // 		           targetAddrList:nil,
-// 		           creationPoolSize:0,
 // 		           concurrency:0,
 // 		           },
 // 		           want: want{},
@@ -408,11 +403,10 @@ func Test_index_Start(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			idx := &index{
-// 				client:           test.fields.client,
-// 				targetAddrs:      test.fields.targetAddrs,
-// 				targetAddrList:   test.fields.targetAddrList,
-// 				creationPoolSize: test.fields.creationPoolSize,
-// 				concurrency:      test.fields.concurrency,
+// 				client:         test.fields.client,
+// 				targetAddrs:    test.fields.targetAddrs,
+// 				targetAddrList: test.fields.targetAddrList,
+// 				concurrency:    test.fields.concurrency,
 // 			}
 //
 // 			got, err := idx.StartClient(test.args.ctx)

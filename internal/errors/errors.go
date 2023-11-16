@@ -18,10 +18,12 @@
 package errors
 
 import (
+	"cmp"
 	"errors"
 	"fmt"
 	"reflect"
 	"runtime"
+	"slices"
 	"strings"
 
 	"github.com/vdaas/vald/internal/sync"
@@ -277,6 +279,16 @@ func Join(errs ...error) error {
 		}
 	}
 	return e
+}
+
+func RemoveDuplicates(errs []error) []error {
+	if len(errs) < 2 {
+		return errs
+	}
+	slices.SortStableFunc(errs, func(l error, r error) int {
+		return cmp.Compare(l.Error(), r.Error())
+	})
+	return slices.CompactFunc(errs, Is)
 }
 
 type joinError struct {
