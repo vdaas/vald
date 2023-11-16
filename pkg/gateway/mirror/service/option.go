@@ -22,7 +22,7 @@ import (
 // Option represents the functional option for gateway.
 type Option func(g *gateway) error
 
-var defaultGWOpts = []Option{
+var defaultGatewayOpts = []Option{
 	WithErrGroup(errgroup.Get()),
 }
 

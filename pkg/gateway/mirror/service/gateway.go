@@ -58,7 +58,7 @@ type gateway struct {
 // NewGateway returns Gateway object if no error occurs.
 func NewGateway(opts ...Option) (Gateway, error) {
 	g := new(gateway)
-	for _, opt := range append(defaultGWOpts, opts...) {
+	for _, opt := range append(defaultGatewayOpts, opts...) {
 		if err := opt(g); err != nil {
 			oerr := errors.ErrOptionFailed(err, reflect.ValueOf(opt))
 			e := &errors.ErrCriticalOption{}

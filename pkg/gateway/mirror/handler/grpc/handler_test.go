@@ -2707,12 +2707,12 @@ func Test_server_Exists(t *testing.T) {
 		beforeFunc func(*testing.T, args)
 		afterFunc  func(*testing.T, args)
 	}
-	defaultCheckFunc := func(w want, gotId *payload.Object_ID, err error) error {
+	defaultCheckFunc := func(w want, gotID *payload.Object_ID, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
-		if !reflect.DeepEqual(gotId, w.wantId) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotId, w.wantId)
+		if !reflect.DeepEqual(gotID, w.wantId) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotID, w.wantId)
 		}
 		return nil
 	}
@@ -2804,8 +2804,8 @@ func Test_server_Exists(t *testing.T) {
 				UnimplementedValdServerWithMirror: test.fields.UnimplementedValdServerWithMirror,
 			}
 
-			gotId, err := s.Exists(test.args.ctx, test.args.meta)
-			if err := checkFunc(test.want, gotId, err); err != nil {
+			gotID, err := s.Exists(test.args.ctx, test.args.meta)
+			if err := checkFunc(test.want, gotID, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
