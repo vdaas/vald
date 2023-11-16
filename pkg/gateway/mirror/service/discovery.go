@@ -304,7 +304,8 @@ func (d *discovery) updateMirrorTargetPhase(ctx context.Context, name string, ph
 	mt := &target.MirrorTarget{}
 	err := c.Get(ctx, k8s.ObjectKey{
 		Namespace: d.namespace,
-		Name:      name}, mt)
+		Name:      name,
+	}, mt)
 	if err != nil {
 		return err
 	}
