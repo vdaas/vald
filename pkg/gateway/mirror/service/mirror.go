@@ -32,8 +32,10 @@ import (
 	"github.com/vdaas/vald/internal/sync/errgroup"
 )
 
-// Mirror manages other mirror gateway connection.
-// If there is a new Mirror Gateway components, registers new connection.
+// Mirror represents an interface for managing mirroring operations.
+// It provides methods for starting the mirroring service, connecting and disconnecting targets,
+// checking the connectivity status of a given address, checking the existence of an address,
+// retrieving all mirror targets, and iterating over all mirror addresses.
 type Mirror interface {
 	Start(ctx context.Context) <-chan error
 	Connect(ctx context.Context, targets ...*payload.Mirror_Target) error
@@ -54,6 +56,8 @@ type mirr struct {
 	gateway       Gateway
 }
 
+// NewMirror creates the Mirror object with optional configuration options.
+// It returns the initialized Mirror object and an error if the creation process fails.
 func NewMirror(opts ...MirrorOption) (_ Mirror, err error) {
 	m := new(mirr)
 	for _, opt := range append(defaultMirrOpts, opts...) {
@@ -87,6 +91,8 @@ func NewMirror(opts ...MirrorOption) (_ Mirror, err error) {
 	return m, err
 }
 
+// Start starts the mirroring service.
+// It returns a channel for receiving errors during the mirroring process.
 func (m *mirr) Start(ctx context.Context) <-chan error {
 	ctx, span := trace.StartSpan(ctx, "vald/gateway/mirror/service/Mirror.Start")
 	defer func() {
@@ -109,6 +115,7 @@ func (m *mirr) Start(ctx context.Context) <-chan error {
 				if err != nil {
 					select {
 					case <-ctx.Done():
+						return ctx.Err()
 					case ech <- err:
 						break
 					}
@@ -151,6 +158,7 @@ func (m *mirr) registers(ctx context.Context, tgts *payload.Mirror_Targets) ([]*
 			span.End()
 		}
 	}()
+
 	reqInfo := &errdetails.RequestInfo{
 		ServingData: errdetails.Serialize(tgts),
 	}
@@ -158,7 +166,7 @@ func (m *mirr) registers(ctx context.Context, tgts *payload.Mirror_Targets) ([]*
 		ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.RegisterRPCName,
 	}
 	resTgts := make([]*payload.Mirror_Target, 0, len(tgts.GetTargets()))
-	exists := make(map[string]struct{})
+	exists := make(map[string]bool)
 	var mu sync.Mutex
 
 	err := m.gateway.DoMulti(ctx, m.connectedMirrorAddrs(), func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error {
@@ -198,7 +206,7 @@ func (m *mirr) registers(ctx context.Context, tgts *payload.Mirror_Targets) ([]*
 				)
 				attrs = trace.FromGRPCStatus(st.Code(), msg)
 
-				// When ingress is deleted, the controller's default backend results(Unimplemented error) are returned so that the connection should be disconnected.
+				// When the ingress resource is deleted, the controller's default backend results(Unimplemented error) are returned so that the connection should be disconnected.
 				// If it is a different namespace on the same cluster, the connection is automatically disconnected because the net.grpc health check fails.
 				if st != nil && st.Code() == codes.Unimplemented {
 					host, port, err := net.SplitHostPort(target)
@@ -226,8 +234,8 @@ func (m *mirr) registers(ctx context.Context, tgts *payload.Mirror_Targets) ([]*
 			for _, tgt := range res.GetTargets() {
 				addr := net.JoinHostPort(tgt.Host, uint16(tgt.Port))
 				mu.Lock()
-				if _, ok := exists[addr]; !ok {
-					exists[addr] = struct{}{}
+				if !exists[addr] {
+					exists[addr] = true
 					resTgts = append(resTgts, res.GetTargets()...)
 				}
 				mu.Unlock()
@@ -238,6 +246,7 @@ func (m *mirr) registers(ctx context.Context, tgts *payload.Mirror_Targets) ([]*
 	return resTgts, err
 }
 
+// Connect establishes gRPC connections to the specified Mirror targets, excluding this gateway and the LB Gateway.
 func (m *mirr) Connect(ctx context.Context, targets ...*payload.Mirror_Target) error {
 	ctx, span := trace.StartSpan(ctx, "vald/gateway/mirror/service/Mirror.Connect")
 	defer func() {
@@ -265,6 +274,7 @@ func (m *mirr) Connect(ctx context.Context, targets ...*payload.Mirror_Target) e
 	return nil
 }
 
+// Disconnect terminates gRPC connections to the specified Mirror targets.
 func (m *mirr) Disconnect(ctx context.Context, targets ...*payload.Mirror_Target) error {
 	ctx, span := trace.StartSpan(ctx, "vald/gateway/mirror/service/Mirror.Disconnect")
 	defer func() {
@@ -280,7 +290,8 @@ func (m *mirr) Disconnect(ctx context.Context, targets ...*payload.Mirror_Target
 		if _, ok := m.gwAddrl.Load(addr); !ok {
 			_, ok := m.addrl.Load(addr)
 			if ok || m.IsConnected(ctx, addr) {
-				if err := m.gateway.GRPCClient().Disconnect(ctx, addr); err != nil && !errors.Is(err, errors.ErrGRPCClientConnNotFound(addr)) {
+				if err := m.gateway.GRPCClient().Disconnect(ctx, addr); err != nil &&
+					!errors.Is(err, errors.ErrGRPCClientConnNotFound(addr)) {
 					return err
 				}
 				m.addrl.Delete(addr)
@@ -290,16 +301,19 @@ func (m *mirr) Disconnect(ctx context.Context, targets ...*payload.Mirror_Target
 	return nil
 }
 
+// IsConnected checks if the gRPC connection to the given address is connected.
 func (m *mirr) IsConnected(ctx context.Context, addr string) bool {
 	return m.gateway.GRPCClient().IsConnected(ctx, addr)
 }
 
+// Exist checks if the given address exists in the Mmirror.
 func (m *mirr) Exist(_ context.Context, addr string) bool {
 	_, ok := m.addrl.Load(addr)
 	return ok
 }
 
-// MirrorTargets returns own address and the addresses of other mirror gateways to which this gateway is currently connected.
+// MirrorTargets returns the Mirror targets, including the address of this gateway and the addresses of other Mirror Gateways
+// to which this gateway is currently connected.
 func (m *mirr) MirrorTargets() ([]*payload.Mirror_Target, error) {
 	addrs := m.gateway.GRPCClient().ConnectedAddrs()
 	tgts := make([]*payload.Mirror_Target, 0, len(addrs)+1)
@@ -329,7 +343,7 @@ func (m *mirr) isGatewayAddr(addr string) bool {
 	return ok
 }
 
-// connected returns the addresses of other mirror gateways to which this gateway is currently connected.
+// connectedMirrorAddrs returns the addresses of other Mirror Gateways to which this gateway is currently connected.
 func (m *mirr) connectedMirrorAddrs() []string {
 	connectedAddrs := m.gateway.GRPCClient().ConnectedAddrs()
 	addrs := make([]string, 0, len(connectedAddrs))

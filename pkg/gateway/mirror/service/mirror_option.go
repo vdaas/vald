@@ -20,12 +20,14 @@ import (
 	"github.com/vdaas/vald/internal/sync/errgroup"
 )
 
+// MirrorOption represents the functional option for mirror.
 type MirrorOption func(m *mirr) error
 
 var defaultMirrOpts = []MirrorOption{
-	WithRegisterDuration("1s"),
+	WithRegisterDuration("500ms"),
 }
 
+// WithErrorGroup returns the option to set the error group.
 func WithErrorGroup(eg errgroup.Group) MirrorOption {
 	return func(m *mirr) error {
 		if eg != nil {
@@ -35,7 +37,8 @@ func WithErrorGroup(eg errgroup.Group) MirrorOption {
 	}
 }
 
-func WithValdAddrs(addrs ...string) MirrorOption {
+// WithGatewayAddrs returns the option to set the gateway addresses.
+func WithGatewayAddrs(addrs ...string) MirrorOption {
 	return func(m *mirr) error {
 		if len(addrs) == 0 {
 			return errors.NewErrCriticalOption("lbAddrs", addrs)
@@ -47,6 +50,7 @@ func WithValdAddrs(addrs ...string) MirrorOption {
 	}
 }
 
+// WithSelfMirrorAddrs returns the option to set the self Mirror Gateway addresses.
 func WithSelfMirrorAddrs(addrs ...string) MirrorOption {
 	return func(m *mirr) error {
 		if len(addrs) == 0 {
@@ -59,6 +63,7 @@ func WithSelfMirrorAddrs(addrs ...string) MirrorOption {
 	}
 }
 
+// WithGatewayAddrs returns the option to set the Gateway service.
 func WithGateway(g Gateway) MirrorOption {
 	return func(m *mirr) error {
 		if g != nil {
@@ -68,6 +73,7 @@ func WithGateway(g Gateway) MirrorOption {
 	}
 }
 
+// WithRegisterDuration returns the option to set the register duration.
 func WithRegisterDuration(s string) MirrorOption {
 	return func(m *mirr) error {
 		if len(s) == 0 {

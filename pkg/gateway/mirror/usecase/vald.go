@@ -17,13 +17,14 @@ import (
 	"context"
 
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
-	mclient "github.com/vdaas/vald/internal/client/v1/client/mirror"
+	"github.com/vdaas/vald/internal/client/v1/client/mirror"
+	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/observability"
-	backoffmetrics "github.com/vdaas/vald/internal/observability/metrics/backoff"
+	bometrics "github.com/vdaas/vald/internal/observability/metrics/backoff"
 	cbmetrics "github.com/vdaas/vald/internal/observability/metrics/circuitbreaker"
-	mirrormetrics "github.com/vdaas/vald/internal/observability/metrics/gateway/mirror"
+	mirrmetrics "github.com/vdaas/vald/internal/observability/metrics/gateway/mirror"
 	"github.com/vdaas/vald/internal/runner"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/servers/server"
@@ -38,23 +39,25 @@ import (
 
 type run struct {
 	eg            errgroup.Group
-	der           net.Dialer
+	dialer        net.Dialer
 	cfg           *config.Data
 	server        starter.Server
-	c             mclient.Client
-	gw            service.Gateway
-	mirr          service.Mirror
-	dsc           service.Discoverer
+	client        mirror.Client
+	gateway       service.Gateway
+	mirror        service.Mirror
+	discover      service.Discovery
 	observability observability.Observability
 }
 
+// New returns Runner instance.
 func New(cfg *config.Data) (r runner.Runner, err error) {
 	eg := errgroup.Get()
+
 	netOpts, err := cfg.Mirror.Net.Opts()
 	if err != nil {
 		return nil, err
 	}
-	der, err := net.NewDialer(netOpts...)
+	dialer, err := net.NewDialer(netOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -63,43 +66,44 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	if err != nil {
 		return nil, err
 	}
+	// skipcq: CRT-D0001
 	cOpts = append(cOpts, grpc.WithErrGroup(eg))
 
-	c, err := mclient.New(
-		mclient.WithAddrs(cfg.Mirror.Client.Addrs...),
-		mclient.WithClient(grpc.New(cOpts...)),
+	client, err := mirror.New(
+		mirror.WithAddrs(cfg.Mirror.Client.Addrs...),
+		mirror.WithClient(grpc.New(cOpts...)),
 	)
 	if err != nil {
 		return nil, err
 	}
 
-	gw, err := service.NewGateway(
+	gateway, err := service.NewGateway(
 		service.WithErrGroup(eg),
-		service.WithMirrorClient(c),
+		service.WithMirrorClient(client),
 		service.WithPodName(cfg.Mirror.PodName),
 	)
 	if err != nil {
 		return nil, err
 	}
-	mirr, err := service.NewMirror(
+	mirror, err := service.NewMirror(
 		service.WithErrorGroup(eg),
 		service.WithRegisterDuration(cfg.Mirror.RegisterDuration),
-		service.WithValdAddrs(cfg.Mirror.GatewayAddr),
+		service.WithGatewayAddrs(cfg.Mirror.GatewayAddr),
 		service.WithSelfMirrorAddrs(cfg.Mirror.SelfMirrorAddr),
-		service.WithGateway(gw),
+		service.WithGateway(gateway),
 	)
 	if err != nil {
 		return nil, err
 	}
-	dsc, err := service.NewDiscoverer(
-		service.WithDiscovererNamespace(cfg.Mirror.Namespace),
-		service.WithDiscovererGroup(cfg.Mirror.Group),
-		service.WithDiscovererDuration(cfg.Mirror.DiscoveryDuration),
-		service.WithDiscovererSelfMirrorAddrs(cfg.Mirror.SelfMirrorAddr),
-		service.WithDiscovererColocation(cfg.Mirror.Colocation),
-		service.WithDiscovererDialer(der),
-		service.WithDiscovererMirror(mirr),
-		service.WithDiscovererErrGroup(eg),
+	discover, err := service.NewDiscovery(
+		service.WithDiscoveryNamespace(cfg.Mirror.Namespace),
+		service.WithDiscoveryGroup(cfg.Mirror.Group),
+		service.WithDiscoveryDuration(cfg.Mirror.DiscoveryDuration),
+		service.WithDiscoverySelfMirrorAddrs(cfg.Mirror.SelfMirrorAddr),
+		service.WithDiscoveryColocation(cfg.Mirror.Colocation),
+		service.WithDiscoveryDialer(dialer),
+		service.WithDiscoveryMirror(mirror),
+		service.WithDiscoveryErrGroup(eg),
 	)
 	if err != nil {
 		return nil, err
@@ -108,8 +112,8 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	v, err := handler.New(
 		handler.WithValdAddr(cfg.Mirror.GatewayAddr),
 		handler.WithErrGroup(eg),
-		handler.WithGateway(gw),
-		handler.WithMirror(mirr),
+		handler.WithGateway(gateway),
+		handler.WithMirror(mirror),
 		handler.WithStreamConcurrency(cfg.Server.GetGRPCStreamConcurrency()),
 	)
 	if err != nil {
@@ -129,9 +133,9 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	if cfg.Observability.Enabled {
 		obs, err = observability.NewWithConfig(
 			cfg.Observability,
-			backoffmetrics.New(),
+			bometrics.New(),
 			cbmetrics.New(),
-			mirrormetrics.New(mirr),
+			mirrmetrics.New(mirror),
 		)
 		if err != nil {
 			return nil, err
@@ -163,20 +167,21 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 
 	return &run{
 		eg:            eg,
-		der:           der,
+		dialer:        dialer,
 		cfg:           cfg,
 		server:        srv,
-		c:             c,
-		gw:            gw,
-		mirr:          mirr,
-		dsc:           dsc,
+		client:        client,
+		gateway:       gateway,
+		mirror:        mirror,
+		discover:      discover,
 		observability: obs,
 	}, nil
 }
 
+// PreStart is a method called before execution of Start.
 func (r *run) PreStart(ctx context.Context) error {
-	if r.der != nil {
-		r.der.StartDialerCache(ctx)
+	if r.dialer != nil {
+		r.dialer.StartDialerCache(ctx)
 	}
 	if r.observability != nil {
 		return r.observability.PreStart(ctx)
@@ -184,24 +189,25 @@ func (r *run) PreStart(ctx context.Context) error {
 	return nil
 }
 
-func (r *run) Start(ctx context.Context) (<-chan error, error) {
+// Start is a method used to initiate an operation in the run, and it returns a channel for receiving errors
+// during the operation and an error representing any initialization errors.
+func (r *run) Start(ctx context.Context) (_ <-chan error, err error) {
 	ech := make(chan error, 6)
 	var mech, dech, cech, sech, oech <-chan error
-	var err error
 
 	sech = r.server.ListenAndServe(ctx)
-	if r.c != nil {
-		cech, err = r.c.Start(ctx)
+	if r.client != nil {
+		cech, err = r.client.Start(ctx)
 		if err != nil {
 			close(ech)
 			return nil, err
 		}
 	}
-	if r.mirr != nil {
-		mech = r.mirr.Start(ctx)
+	if r.mirror != nil {
+		mech = r.mirror.Start(ctx)
 	}
-	if r.dsc != nil {
-		dech, err = r.dsc.Start(ctx)
+	if r.discover != nil {
+		dech, err = r.discover.Start(ctx)
 		if err != nil {
 			close(ech)
 			return nil, err
@@ -226,7 +232,7 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 			if err != nil {
 				select {
 				case <-ctx.Done():
-					return ctx.Err()
+					return errors.Join(ctx.Err(), err)
 				case ech <- err:
 				}
 			}
@@ -235,17 +241,27 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 	return ech, nil
 }
 
-func (r *run) PreStop(ctx context.Context) error {
+// PreStop is a method called before execution of Stop.
+func (*run) PreStop(_ context.Context) error {
 	return nil
 }
 
-func (r *run) Stop(ctx context.Context) error {
+// Stop is a method used to stop an operation in the run.
+func (r *run) Stop(ctx context.Context) (errs error) {
 	if r.observability != nil {
-		r.observability.Stop(ctx)
+		if err := r.observability.Stop(ctx); err != nil {
+			errs = errors.Join(errs, err)
+		}
 	}
-	return r.server.Shutdown(ctx)
+	if r.server != nil {
+		if err := r.server.Shutdown(ctx); err != nil {
+			errs = errors.Join(errs, err)
+		}
+	}
+	return errs
 }
 
+// PtopStop is a method called after execution of Stop.
 func (*run) PostStop(_ context.Context) error {
 	return nil
 }

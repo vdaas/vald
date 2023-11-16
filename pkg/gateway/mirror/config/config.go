@@ -19,8 +19,11 @@ import (
 )
 
 type (
+	// GlobalConfig is a type alias of config.GlobalConfig representing application base configurations.
 	GlobalConfig = config.GlobalConfig
-	Server       = config.Server
+
+	// Server is a type alias of config.Server representing server base configurations.
+	Server = config.Server
 )
 
 // Config represent a application setting data content (config.yaml).
@@ -38,6 +41,7 @@ type Data struct {
 	Mirror *config.Mirror `json:"gateway" yaml:"gateway"`
 }
 
+// NewConfig load configurations from file path.
 func NewConfig(path string) (cfg *Data, err error) {
 	cfg = new(Data)
 
@@ -46,7 +50,7 @@ func NewConfig(path string) (cfg *Data, err error) {
 	}
 
 	if cfg != nil {
-		cfg.Bind()
+		_ = cfg.Bind()
 	} else {
 		return nil, errors.ErrInvalidConfig
 	}
@@ -70,83 +74,3 @@ func NewConfig(path string) (cfg *Data, err error) {
 	}
 	return cfg, nil
 }
-
-// func FakeData() {
-// 	d := Data{
-// 		Version: "v0.0.1",
-// 		Server: &config.Servers{
-// 			Servers: []*config.Server{
-// 				{
-// 					Name:              "agent-rest",
-// 					Host:              "127.0.0.1",
-// 					Port:              8080,
-// 					Mode:              "REST",
-// 					ProbeWaitTime:     "3s",
-// 					ShutdownDuration:  "5s",
-// 					HandlerTimeout:    "5s",
-// 					IdleTimeout:       "2s",
-// 					ReadHeaderTimeout: "1s",
-// 					ReadTimeout:       "1s",
-// 					WriteTimeout:      "1s",
-// 				},
-// 				{
-// 					Name: "agent-grpc",
-// 					Host: "127.0.0.1",
-// 					Port: 8082,
-// 					Mode: "GRPC",
-// 				},
-// 			},
-// 			MetricsServers: []*config.Server{
-// 				{
-// 					Name:              "pprof",
-// 					Host:              "127.0.0.1",
-// 					Port:              6060,
-// 					Mode:              "REST",
-// 					ProbeWaitTime:     "3s",
-// 					ShutdownDuration:  "5s",
-// 					HandlerTimeout:    "5s",
-// 					IdleTimeout:       "2s",
-// 					ReadHeaderTimeout: "1s",
-// 					ReadTimeout:       "1s",
-// 					WriteTimeout:      "1s",
-// 				},
-// 			},
-// 			HealthCheckServers: []*config.Server{
-// 				{
-// 					Name: "livenesss",
-// 					Host: "127.0.0.1",
-// 					Port: 3000,
-// 				},
-// 				{
-// 					Name: "readiness",
-// 					Host: "127.0.0.1",
-// 					Port: 3001,
-// 				},
-// 			},
-// 			StartUpStrategy: []string{
-// 				"livenesss",
-// 				"pprof",
-// 				"agent-grpc",
-// 				"agent-rest",
-// 				"readiness",
-// 			},
-// 			ShutdownStrategy: []string{
-// 				"readiness",
-// 				"agent-rest",
-// 				"agent-grpc",
-// 				"pprof",
-// 				"livenesss",
-// 			},
-// 			FullShutdownDuration: "30s",
-// 			TLS: &config.TLS{
-// 				Enabled: false,
-// 				Cert:    "/path/to/cert",
-// 				Key:     "/path/to/key",
-// 				CA:      "/path/to/ca",
-// 			},
-// 		},
-// 		Mirror: &config.Mirror{
-// 		},
-// 	}
-// 	fmt.Println(config.ToRawYaml(d))
-// }

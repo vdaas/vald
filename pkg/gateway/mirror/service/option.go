@@ -19,12 +19,14 @@ import (
 	"github.com/vdaas/vald/internal/sync/errgroup"
 )
 
+// Option represents the functional option for gateway.
 type Option func(g *gateway) error
 
 var defaultGWOpts = []Option{
 	WithErrGroup(errgroup.Get()),
 }
 
+// WithMirrorClient returns the option to set the Mirror client.
 func WithMirrorClient(c mirror.Client) Option {
 	return func(g *gateway) error {
 		if c != nil {
@@ -34,6 +36,7 @@ func WithMirrorClient(c mirror.Client) Option {
 	}
 }
 
+// WithErrGroup returns the option to set the error group.
 func WithErrGroup(eg errgroup.Group) Option {
 	return func(g *gateway) error {
 		if eg != nil {
@@ -43,6 +46,7 @@ func WithErrGroup(eg errgroup.Group) Option {
 	}
 }
 
+// WithErrGroup returns the option to set the pod name.
 func WithPodName(s string) Option {
 	return func(g *gateway) error {
 		if len(s) == 0 {

@@ -36,11 +36,14 @@ const (
 	groupKey       = "group"
 )
 
-type Discoverer interface {
+// Discovery represents an interface for the main logic of service discovery.
+// The primary purpose of the Discovery interface is to reconcile custom resources,
+// initiating or terminating gRPC connections based on the state of the custom resources.
+type Discovery interface {
 	Start(ctx context.Context) (<-chan error, error)
 }
 
-type discoverer struct {
+type discovery struct {
 	namespace  string
 	labels     map[string]string
 	colocation string
@@ -56,8 +59,10 @@ type discoverer struct {
 	eg   errgroup.Group
 }
 
-func NewDiscoverer(opts ...DiscovererOption) (dsc Discoverer, err error) {
-	d := new(discoverer)
+// NewDiscovery creates the Discovery object with optional configuration options.
+// It returns the initialized Discovery object and an error if the creation process fails.
+func NewDiscovery(opts ...DiscoveryOption) (dsc Discovery, err error) {
+	d := new(discovery)
 	for _, opt := range append(defaultDiscovererOpts, opts...) {
 		if err := opt(d); err != nil {
 			oerr := errors.ErrOptionFailed(err, reflect.ValueOf(opt))
@@ -73,7 +78,7 @@ func NewDiscoverer(opts ...DiscovererOption) (dsc Discoverer, err error) {
 	d.selfMirrAddrStr = strings.Join(d.selfMirrAddrs, ",")
 
 	watcher, err := target.New(
-		target.WithControllerName("mirror discoverer"),
+		target.WithControllerName("mirror discovery"),
 		target.WithNamespace(d.namespace),
 		target.WithLabels(d.labels),
 		target.WithOnErrorFunc(func(err error) {
@@ -89,17 +94,16 @@ func NewDiscoverer(opts ...DiscovererOption) (dsc Discoverer, err error) {
 	}
 	d.ctrl, err = k8s.New(
 		k8s.WithDialer(d.der),
-		k8s.WithControllerName("vald k8s mirror discoverer"),
+		k8s.WithControllerName("vald k8s mirror discovery"),
 		k8s.WithDisableLeaderElection(),
 		k8s.WithResourceController(watcher),
 	)
-	if err != nil {
-		return nil, err
-	}
-	return d, nil
+	return d, err
 }
 
-func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
+// Start initiates the service discovery process.
+// It returns a channel for receiving errors and an error if the initialization fails.
+func (d *discovery) Start(ctx context.Context) (<-chan error, error) {
 	dech, err := d.ctrl.Start(ctx)
 	if err != nil {
 		return nil, err
@@ -138,7 +142,7 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 	return ech, nil
 }
 
-func (d *discoverer) loadTargets() map[string]target.Target {
+func (d *discovery) loadTargets() map[string]target.Target {
 	if v := d.targetsByName.Load(); v != nil {
 		return *v
 	}
@@ -162,13 +166,13 @@ type deletedTarget struct {
 	port uint32
 }
 
-func (d *discoverer) startSync(ctx context.Context, prev map[string]target.Target) (cur map[string]target.Target, err error) {
-	cur = d.loadTargets()
+func (d *discovery) startSync(ctx context.Context, prev map[string]target.Target) (current map[string]target.Target, err error) {
+	current = d.loadTargets()
 	curAddrs := make(map[string]string) // map[addr: metadata.name]
 
 	created := map[string]*createdTarget{} // map[addr: target.Target]
 	updated := map[string]*updatedTarget{} // map[addr: *updatedTarget]
-	for name, ctgt := range cur {
+	for name, ctgt := range current {
 		addr := net.JoinHostPort(ctgt.Host, uint16(ctgt.Port))
 		curAddrs[addr] = name
 		if ptgt, ok := prev[name]; !ok {
@@ -178,16 +182,24 @@ func (d *discoverer) startSync(ctx context.Context, prev map[string]target.Targe
 			}
 		} else {
 			if ptgt.Host != ctgt.Host || ptgt.Port != ctgt.Port {
-				updated[addr] = &updatedTarget{name: name, old: ptgt, new: ctgt}
+				updated[addr] = &updatedTarget{
+					name: name,
+					old:  ptgt,
+					new:  ctgt,
+				}
 			}
 		}
 	}
 
 	deleted := map[string]*deletedTarget{} // map[addr: *deletedTarget]
 	for name, ptgt := range prev {
-		if _, ok := cur[name]; !ok {
+		if _, ok := current[name]; !ok {
 			addr := net.JoinHostPort(ptgt.Host, uint16(ptgt.Port))
-			deleted[addr] = &deletedTarget{name: name, host: ptgt.Host, port: uint32(ptgt.Port)}
+			deleted[addr] = &deletedTarget{
+				name: name,
+				host: ptgt.Host,
+				port: uint32(ptgt.Port),
+			}
 		}
 	}
 
@@ -195,19 +207,16 @@ func (d *discoverer) startSync(ctx context.Context, prev map[string]target.Targe
 		log.Infof("created: %#v\tupdated: %#v\tdeleted: %#v", created, updated, deleted)
 		err = errors.Join(
 			errors.Join(
-				d.createTarget(ctx, created),
-				d.deleteTarget(ctx, deleted)),
+				d.connectTarget(ctx, created),
+				d.disconnectTarget(ctx, deleted)),
 			d.updateTarget(ctx, updated))
-		if err != nil {
-			return cur, err
-		}
-		return cur, nil
+		return current, err
 	}
 
 	for addr, name := range curAddrs {
-		// When the status code of a regularly running Advertise RPC is Unimplemented, the connection to the target will be disconnected
+		// When the status code of a regularly running Register RPC is Unimplemented, the connection to the target will be disconnected
 		// so the status of the resource (CR) may be misaligned. To prevent this, change the status of the resource to Disconnected.
-		if !d.mirr.Exist(ctx, addr) && cur[name].Phase == target.MirrorTargetPhaseConnected {
+		if !d.mirr.Exist(ctx, addr) && current[name].Phase == target.MirrorTargetPhaseConnected {
 			err = errors.Join(err, d.updateMirrorTargetPhase(ctx, name, target.MirrorTargetPhaseDisconnected))
 		}
 	}
@@ -215,10 +224,10 @@ func (d *discoverer) startSync(ctx context.Context, prev map[string]target.Targe
 	d.mirr.RangeAllMirrorAddr(func(addr string, _ any) bool {
 		connected := d.mirr.IsConnected(ctx, addr)
 		if name, ok := curAddrs[addr]; ok {
-			if st := target.MirrorTargetPhaseConnected; connected && cur[name].Phase != st {
+			if st := target.MirrorTargetPhaseConnected; connected && current[name].Phase != st {
 				err = errors.Join(err,
 					d.updateMirrorTargetPhase(ctx, name, st))
-			} else if st := target.MirrorTargetPhaseDisconnected; !connected && cur[name].Phase != st {
+			} else if st := target.MirrorTargetPhaseDisconnected; !connected && current[name].Phase != st {
 				err = errors.Join(err,
 					d.updateMirrorTargetPhase(ctx, name, st))
 			}
@@ -236,13 +245,10 @@ func (d *discoverer) startSync(ctx context.Context, prev map[string]target.Targe
 		}
 		return true
 	})
-	return cur, err
+	return current, err
 }
 
-func (d *discoverer) createTarget(ctx context.Context, req map[string]*createdTarget) (err error) {
-	if len(req) == 0 {
-		return nil
-	}
+func (d *discovery) connectTarget(ctx context.Context, req map[string]*createdTarget) (err error) {
 	for _, created := range req {
 		phase := target.MirrorTargetPhaseConnected
 		cerr := d.mirr.Connect(ctx, &payload.Mirror_Target{
@@ -261,7 +267,7 @@ func (d *discoverer) createTarget(ctx context.Context, req map[string]*createdTa
 	return err
 }
 
-func (d *discoverer) createMirrorTargetResource(ctx context.Context, name, host string, port int) error {
+func (d *discovery) createMirrorTargetResource(ctx context.Context, name, host string, port int) error {
 	mt, err := target.NewMirrorTargetTemplate(
 		target.WithMirrorTargetName(name),
 		target.WithMirrorTargetNamespace(d.namespace),
@@ -279,7 +285,7 @@ func (d *discoverer) createMirrorTargetResource(ctx context.Context, name, host 
 	return d.ctrl.GetManager().GetClient().Create(ctx, mt)
 }
 
-func (d *discoverer) deleteTarget(ctx context.Context, req map[string]*deletedTarget) error {
+func (d *discovery) disconnectTarget(ctx context.Context, req map[string]*deletedTarget) error {
 	if len(req) == 0 {
 		return nil
 	}
@@ -293,13 +299,13 @@ func (d *discoverer) deleteTarget(ctx context.Context, req map[string]*deletedTa
 	return d.mirr.Disconnect(ctx, tgts...)
 }
 
-func (d *discoverer) updateMirrorTargetPhase(ctx context.Context, name string, phase target.MirrorTargetPhase) error {
+func (d *discovery) updateMirrorTargetPhase(ctx context.Context, name string, phase target.MirrorTargetPhase) error {
 	c := d.ctrl.GetManager().GetClient()
 	mt := &target.MirrorTarget{}
-	if err := c.Get(ctx, k8s.ObjectKey{
+	err := c.Get(ctx, k8s.ObjectKey{
 		Namespace: d.namespace,
-		Name:      name,
-	}, mt); err != nil {
+		Name:      name}, mt)
+	if err != nil {
 		return err
 	}
 	if mt.Status.Phase == phase {
@@ -310,10 +316,7 @@ func (d *discoverer) updateMirrorTargetPhase(ctx context.Context, name string, p
 	return c.Status().Update(ctx, mt)
 }
 
-func (d *discoverer) updateTarget(ctx context.Context, req map[string]*updatedTarget) (err error) {
-	if len(req) == 0 {
-		return nil
-	}
+func (d *discovery) updateTarget(ctx context.Context, req map[string]*updatedTarget) (err error) {
 	for _, updated := range req {
 		derr := d.mirr.Disconnect(ctx, &payload.Mirror_Target{
 			Host: updated.old.Host,

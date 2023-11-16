@@ -27,10 +27,15 @@ import (
 )
 
 const (
-	forwardedContextKey   = "forwarded-for"
+	// forwardedContextKey is the key used to store forwarding-related information in a context.
+	forwardedContextKey = "forwarded-for"
+
+	// forwardedContextValue is the value associated with the forwardedContextKey
+	// to indicate that the context is related to forwarding through the mirror gateway.
 	forwardedContextValue = "gateway mirror"
 )
 
+// Gateway represents an interface for interacting with gRPC clients.
 type Gateway interface {
 	ForwardedContext(ctx context.Context, podName string) context.Context
 	FromForwardedContext(ctx context.Context) string
@@ -44,11 +49,13 @@ type Gateway interface {
 }
 
 type gateway struct {
-	client  mirror.Client // Mirror Gateway client for other clusters and to the Vald gateway (LB gateway) client for own cluster.
+	// client is the Mirror Gateway client for other clusters and the Vald gateway (e.g. LB gateway) client for the own cluster.
+	client  mirror.Client
 	eg      errgroup.Group
 	podName string
 }
 
+// NewGateway returns Gateway object if no error occurs.
 func NewGateway(opts ...Option) (Gateway, error) {
 	g := new(gateway)
 	for _, opt := range append(defaultGWOpts, opts...) {
@@ -60,16 +67,19 @@ func NewGateway(opts ...Option) (Gateway, error) {
 				return nil, oerr
 			}
 			log.Warn(oerr)
-			return nil, oerr
 		}
 	}
 	return g, nil
 }
 
+// GRPCClient returns the underlying gRPC client associated with this object.
+// It provides access to the low-level gRPC client for advanced use cases.
 func (g *gateway) GRPCClient() grpc.Client {
 	return g.client.GRPCClient()
 }
 
+// ForwardedContext takes a context and a podName, returning a new context
+// with additional information related to forwarding.
 func (g *gateway) ForwardedContext(ctx context.Context, podName string) context.Context {
 	return grpc.NewOutgoingContext(ctx, grpc.MD{
 		forwardedContextKey: []string{
@@ -78,6 +88,8 @@ func (g *gateway) ForwardedContext(ctx context.Context, podName string) context.
 	})
 }
 
+// FromForwardedContext extracts information from the forwarded context
+// and returns the podName associated with it.
 func (g *gateway) FromForwardedContext(ctx context.Context) string {
 	md, ok := grpc.FromIncomingContext(ctx)
 	if !ok {
@@ -93,6 +105,9 @@ func (g *gateway) FromForwardedContext(ctx context.Context) string {
 	return ""
 }
 
+// BroadCast performs a broadcast operation using the provided function
+// to interact with gRPC clients for multiple targets.
+// The provided function should handle the communication logic for a target.
 func (g *gateway) BroadCast(ctx context.Context,
 	f func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error,
 ) (err error) {
@@ -109,15 +124,14 @@ func (g *gateway) BroadCast(ctx context.Context,
 		case <-ictx.Done():
 			return nil
 		default:
-			err = f(ictx, addr, vald.NewValdClientWithMirror(conn), copts...)
-			if err != nil {
-				return err
-			}
+			return f(ictx, addr, vald.NewValdClientWithMirror(conn), copts...)
 		}
-		return nil
 	})
 }
 
+// Do performs a gRPC operation on a single target using the provided function.
+// It returns the result of the operation and any associated error.
+// The provided function should handle the communication logic for a target.
 func (g *gateway) Do(ctx context.Context, target string,
 	f func(ctx context.Context, vc vald.ClientWithMirror, copts ...grpc.CallOption) (interface{}, error),
 ) (res interface{}, err error) {
@@ -138,6 +152,9 @@ func (g *gateway) Do(ctx context.Context, target string,
 	)
 }
 
+// DoMulti performs a gRPC operation on multiple targets using the provided function.
+// It returns an error if any of the operations fails.
+// The provided function should handle the communication logic for a target.
 func (g *gateway) DoMulti(ctx context.Context, targets []string,
 	f func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error,
 ) error {
@@ -157,12 +174,8 @@ func (g *gateway) DoMulti(ctx context.Context, targets []string,
 			case <-ictx.Done():
 				return nil
 			default:
-				err = f(ictx, addr, vald.NewValdClientWithMirror(conn), copts...)
-				if err != nil {
-					return err
-				}
+				return f(ictx, addr, vald.NewValdClientWithMirror(conn), copts...)
 			}
-			return nil
 		},
 	)
 }
