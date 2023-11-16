@@ -6095,8 +6095,6 @@ spec:
                         gateway_config:
                           type: object
                           properties:
-                            advertise_interval:
-                              type: string
                             client:
                               type: object
                               properties:
@@ -6338,6 +6336,8 @@ spec:
                                     key:
                                       type: string
                             pod_name:
+                              type: string
+                            register_duration:
                               type: string
                             self_mirror_addr:
                               type: string

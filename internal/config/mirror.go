@@ -26,7 +26,7 @@ type Mirror struct {
 	// PodName represents the mirror gateway pod name.
 	PodName string `json:"pod_name"           yaml:"pod_name"`
 	// RegisterDuration represents the duration to register Mirror Gateway.
-	RegisterDuration string `json:"register_duration" yaml:"register_duration"`
+	RegisterDuration string `json:"register_duration"  yaml:"register_duration"`
 	// Namespace represents the target namespace to discover ValdMirrorTarget resource.
 	Namespace string `json:"namespace"          yaml:"namespace"`
 	// DiscoveryDuration represents the duration to discover.

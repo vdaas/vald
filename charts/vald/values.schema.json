@@ -10095,10 +10095,6 @@
             "gateway_config": {
               "type": "object",
               "properties": {
-                "advertise_interval": {
-                  "type": "string",
-                  "description": "interval to advertise mirror-gateway information to other mirror-gateway."
-                },
                 "client": {
                   "type": "object",
                   "properties": {
@@ -10541,6 +10537,10 @@
                 "pod_name": {
                   "type": "string",
                   "description": "self mirror gateway pod name"
+                },
+                "register_duration": {
+                  "type": "string",
+                  "description": "duration to register mirror-gateway."
                 },
                 "self_mirror_addr": {
                   "type": "string",
