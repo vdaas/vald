@@ -27,6 +27,7 @@ import (
 	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/internal/test/data/vector"
 	"github.com/vdaas/vald/internal/test/goleak"
+	clientmock "github.com/vdaas/vald/internal/test/mock/client"
 	"github.com/vdaas/vald/pkg/gateway/mirror/service"
 )
 
@@ -89,12 +90,12 @@ func Test_server_Insert(t *testing.T) {
 				"vald-01", "vald-02",
 			}
 			cmap := map[string]vald.ClientWithMirror{
-				targets[0]: &mockClient{
+				targets[0]: &clientmock.MirrorClientMock{
 					InsertFunc: func(_ context.Context, _ *payload.Insert_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
 						return loc, nil
 					},
 				},
-				targets[1]: &mockClient{
+				targets[1]: &clientmock.MirrorClientMock{
 					InsertFunc: func(_ context.Context, _ *payload.Insert_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
 						return loc, nil
 					},
@@ -114,7 +115,7 @@ func Test_server_Insert(t *testing.T) {
 				},
 				fields: fields{
 					eg: eg,
-					gateway: &mockGateway{
+					gateway: &gatewayMock{
 						FromForwardedContextFunc: func(_ context.Context) string {
 							return ""
 						},
@@ -151,7 +152,7 @@ func Test_server_Insert(t *testing.T) {
 				"vald-01", "vald-02",
 			}
 			cmap := map[string]vald.ClientWithMirror{
-				targets[0]: &mockClient{
+				targets[0]: &clientmock.MirrorClientMock{
 					InsertFunc: func(_ context.Context, _ *payload.Insert_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
 						return &payload.Object_Location{
 							Uuid: uuid,
@@ -159,7 +160,7 @@ func Test_server_Insert(t *testing.T) {
 						}, nil
 					},
 				},
-				targets[1]: &mockClient{
+				targets[1]: &clientmock.MirrorClientMock{
 					InsertFunc: func(_ context.Context, _ *payload.Insert_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
 						return nil, status.Error(codes.AlreadyExists, errors.ErrMetaDataAlreadyExists(uuid).Error())
 					},
@@ -182,7 +183,7 @@ func Test_server_Insert(t *testing.T) {
 				},
 				fields: fields{
 					eg: eg,
-					gateway: &mockGateway{
+					gateway: &gatewayMock{
 						FromForwardedContextFunc: func(_ context.Context) string {
 							return ""
 						},
@@ -225,7 +226,7 @@ func Test_server_Insert(t *testing.T) {
 				"vald-01", "vald-02",
 			}
 			cmap := map[string]vald.ClientWithMirror{
-				targets[0]: &mockClient{
+				targets[0]: &clientmock.MirrorClientMock{
 					InsertFunc: func(_ context.Context, _ *payload.Insert_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
 						return &payload.Object_Location{
 							Uuid: uuid,
@@ -233,7 +234,7 @@ func Test_server_Insert(t *testing.T) {
 						}, nil
 					},
 				},
-				targets[1]: &mockClient{
+				targets[1]: &clientmock.MirrorClientMock{
 					InsertFunc: func(_ context.Context, _ *payload.Insert_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
 						return nil, status.Error(codes.AlreadyExists, errors.ErrMetaDataAlreadyExists(uuid).Error())
 					},
@@ -256,7 +257,7 @@ func Test_server_Insert(t *testing.T) {
 				},
 				fields: fields{
 					eg: eg,
-					gateway: &mockGateway{
+					gateway: &gatewayMock{
 						FromForwardedContextFunc: func(_ context.Context) string {
 							return ""
 						},
@@ -299,12 +300,12 @@ func Test_server_Insert(t *testing.T) {
 				"vald-01", "vald-02",
 			}
 			cmap := map[string]vald.ClientWithMirror{
-				targets[0]: &mockClient{
+				targets[0]: &clientmock.MirrorClientMock{
 					InsertFunc: func(_ context.Context, _ *payload.Insert_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
 						return nil, status.Error(codes.AlreadyExists, errors.ErrMetaDataAlreadyExists(uuid).Error())
 					},
 				},
-				targets[1]: &mockClient{
+				targets[1]: &clientmock.MirrorClientMock{
 					InsertFunc: func(_ context.Context, _ *payload.Insert_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
 						return nil, status.Error(codes.AlreadyExists, errors.ErrMetaDataAlreadyExists(uuid).Error())
 					},
@@ -324,7 +325,7 @@ func Test_server_Insert(t *testing.T) {
 				},
 				fields: fields{
 					eg: eg,
-					gateway: &mockGateway{
+					gateway: &gatewayMock{
 						FromForwardedContextFunc: func(_ context.Context) string {
 							return ""
 						},
@@ -358,12 +359,12 @@ func Test_server_Insert(t *testing.T) {
 				"vald-01", "vald-02",
 			}
 			cmap := map[string]vald.ClientWithMirror{
-				targets[0]: &mockClient{
+				targets[0]: &clientmock.MirrorClientMock{
 					InsertFunc: func(_ context.Context, _ *payload.Insert_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
 						return loc, nil
 					},
 				},
-				targets[1]: &mockClient{
+				targets[1]: &clientmock.MirrorClientMock{
 					InsertFunc: func(_ context.Context, _ *payload.Insert_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
 						return nil, status.Error(codes.Internal, errors.ErrCircuitBreakerHalfOpenFlowLimitation.Error())
 					},
@@ -383,7 +384,7 @@ func Test_server_Insert(t *testing.T) {
 				},
 				fields: fields{
 					eg: eg,
-					gateway: &mockGateway{
+					gateway: &gatewayMock{
 						FromForwardedContextFunc: func(_ context.Context) string {
 							return ""
 						},
@@ -413,12 +414,12 @@ func Test_server_Insert(t *testing.T) {
 				"vald-01", "vald-02",
 			}
 			cmap := map[string]vald.ClientWithMirror{
-				targets[0]: &mockClient{
+				targets[0]: &clientmock.MirrorClientMock{
 					InsertFunc: func(_ context.Context, _ *payload.Insert_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
 						return nil, status.Error(codes.Internal, errors.ErrCircuitBreakerHalfOpenFlowLimitation.Error())
 					},
 				},
-				targets[1]: &mockClient{
+				targets[1]: &clientmock.MirrorClientMock{
 					InsertFunc: func(_ context.Context, _ *payload.Insert_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
 						return nil, status.Error(codes.Internal, errors.ErrCircuitBreakerOpenState.Error())
 					},
@@ -438,7 +439,7 @@ func Test_server_Insert(t *testing.T) {
 				},
 				fields: fields{
 					eg: eg,
-					gateway: &mockGateway{
+					gateway: &gatewayMock{
 						FromForwardedContextFunc: func(_ context.Context) string {
 							return ""
 						},
@@ -471,7 +472,7 @@ func Test_server_Insert(t *testing.T) {
 				"vald-01", "vald-02",
 			}
 			cmap := map[string]vald.ClientWithMirror{
-				targets[0]: &mockClient{
+				targets[0]: &clientmock.MirrorClientMock{
 					InsertFunc: func(_ context.Context, _ *payload.Insert_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
 						return &payload.Object_Location{
 							Uuid: uuid,
@@ -479,7 +480,7 @@ func Test_server_Insert(t *testing.T) {
 						}, nil
 					},
 				},
-				targets[1]: &mockClient{
+				targets[1]: &clientmock.MirrorClientMock{
 					InsertFunc: func(_ context.Context, _ *payload.Insert_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
 						return nil, status.Error(codes.AlreadyExists, errors.ErrMetaDataAlreadyExists(uuid).Error())
 					},
@@ -502,7 +503,7 @@ func Test_server_Insert(t *testing.T) {
 				},
 				fields: fields{
 					eg: eg,
-					gateway: &mockGateway{
+					gateway: &gatewayMock{
 						FromForwardedContextFunc: func(_ context.Context) string {
 							return ""
 						},
@@ -628,12 +629,12 @@ func Test_server_Update(t *testing.T) {
 				"vald-01", "vald-02",
 			}
 			cmap := map[string]vald.ClientWithMirror{
-				targets[0]: &mockClient{
+				targets[0]: &clientmock.MirrorClientMock{
 					UpdateFunc: func(_ context.Context, _ *payload.Update_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
 						return loc, nil
 					},
 				},
-				targets[1]: &mockClient{
+				targets[1]: &clientmock.MirrorClientMock{
 					UpdateFunc: func(_ context.Context, _ *payload.Update_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
 						return loc, nil
 					},
@@ -653,7 +654,7 @@ func Test_server_Update(t *testing.T) {
 				},
 				fields: fields{
 					eg: eg,
-					gateway: &mockGateway{
+					gateway: &gatewayMock{
 						FromForwardedContextFunc: func(_ context.Context) string {
 							return ""
 						},
@@ -690,12 +691,12 @@ func Test_server_Update(t *testing.T) {
 				"vald-01", "vald-02",
 			}
 			cmap := map[string]vald.ClientWithMirror{
-				targets[0]: &mockClient{
+				targets[0]: &clientmock.MirrorClientMock{
 					UpdateFunc: func(_ context.Context, _ *payload.Update_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
 						return loc, nil
 					},
 				},
-				targets[1]: &mockClient{
+				targets[1]: &clientmock.MirrorClientMock{
 					UpdateFunc: func(_ context.Context, _ *payload.Update_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
 						return nil, status.Error(codes.AlreadyExists, errors.ErrMetaDataAlreadyExists(uuid).Error())
 					},
@@ -715,7 +716,7 @@ func Test_server_Update(t *testing.T) {
 				},
 				fields: fields{
 					eg: eg,
-					gateway: &mockGateway{
+					gateway: &gatewayMock{
 						FromForwardedContextFunc: func(_ context.Context) string {
 							return ""
 						},
@@ -752,12 +753,12 @@ func Test_server_Update(t *testing.T) {
 				"vald-01", "vald-02", "vald-03",
 			}
 			cmap := map[string]vald.ClientWithMirror{
-				targets[0]: &mockClient{
+				targets[0]: &clientmock.MirrorClientMock{
 					UpdateFunc: func(_ context.Context, _ *payload.Update_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
 						return loc, nil
 					},
 				},
-				targets[1]: &mockClient{
+				targets[1]: &clientmock.MirrorClientMock{
 					UpdateFunc: func(_ context.Context, _ *payload.Update_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
 						return nil, status.Error(codes.NotFound, errors.ErrObjectIDNotFound(uuid).Error())
 					},
@@ -765,7 +766,7 @@ func Test_server_Update(t *testing.T) {
 						return loc, nil
 					},
 				},
-				targets[2]: &mockClient{
+				targets[2]: &clientmock.MirrorClientMock{
 					UpdateFunc: func(_ context.Context, _ *payload.Update_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
 						return loc, nil
 					},
@@ -785,7 +786,7 @@ func Test_server_Update(t *testing.T) {
 				},
 				fields: fields{
 					eg: eg,
-					gateway: &mockGateway{
+					gateway: &gatewayMock{
 						FromForwardedContextFunc: func(_ context.Context) string {
 							return ""
 						},
@@ -834,12 +835,12 @@ func Test_server_Update(t *testing.T) {
 				"vald-01", "vald-02", "vald-03",
 			}
 			cmap := map[string]vald.ClientWithMirror{
-				targets[0]: &mockClient{
+				targets[0]: &clientmock.MirrorClientMock{
 					UpdateFunc: func(_ context.Context, _ *payload.Update_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
 						return loc, nil
 					},
 				},
-				targets[1]: &mockClient{
+				targets[1]: &clientmock.MirrorClientMock{
 					UpdateFunc: func(_ context.Context, _ *payload.Update_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
 						return nil, status.Error(codes.NotFound, errors.ErrObjectIDNotFound(uuid).Error())
 					},
@@ -847,7 +848,7 @@ func Test_server_Update(t *testing.T) {
 						return loc, nil
 					},
 				},
-				targets[2]: &mockClient{
+				targets[2]: &clientmock.MirrorClientMock{
 					UpdateFunc: func(_ context.Context, _ *payload.Update_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
 						return nil, status.Error(codes.AlreadyExists, errors.ErrMetaDataAlreadyExists(uuid).Error())
 					},
@@ -867,7 +868,7 @@ func Test_server_Update(t *testing.T) {
 				},
 				fields: fields{
 					eg: eg,
-					gateway: &mockGateway{
+					gateway: &gatewayMock{
 						FromForwardedContextFunc: func(_ context.Context) string {
 							return ""
 						},
@@ -912,12 +913,12 @@ func Test_server_Update(t *testing.T) {
 				"vald-01", "vald-02",
 			}
 			cmap := map[string]vald.ClientWithMirror{
-				targets[0]: &mockClient{
+				targets[0]: &clientmock.MirrorClientMock{
 					UpdateFunc: func(_ context.Context, _ *payload.Update_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
 						return nil, status.Error(codes.NotFound, errors.ErrObjectIDNotFound(uuid).Error())
 					},
 				},
-				targets[1]: &mockClient{
+				targets[1]: &clientmock.MirrorClientMock{
 					UpdateFunc: func(_ context.Context, _ *payload.Update_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
 						return nil, status.Error(codes.NotFound, errors.ErrObjectIDNotFound(uuid).Error())
 					},
@@ -937,7 +938,7 @@ func Test_server_Update(t *testing.T) {
 				},
 				fields: fields{
 					eg: eg,
-					gateway: &mockGateway{
+					gateway: &gatewayMock{
 						FromForwardedContextFunc: func(_ context.Context) string {
 							return ""
 						},
@@ -971,12 +972,12 @@ func Test_server_Update(t *testing.T) {
 				"vald-01", "vald-02",
 			}
 			cmap := map[string]vald.ClientWithMirror{
-				targets[0]: &mockClient{
+				targets[0]: &clientmock.MirrorClientMock{
 					UpdateFunc: func(_ context.Context, _ *payload.Update_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
 						return loc, nil
 					},
 				},
-				targets[1]: &mockClient{
+				targets[1]: &clientmock.MirrorClientMock{
 					UpdateFunc: func(_ context.Context, _ *payload.Update_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
 						return nil, status.Error(codes.Internal, errors.ErrCircuitBreakerHalfOpenFlowLimitation.Error())
 					},
@@ -996,7 +997,7 @@ func Test_server_Update(t *testing.T) {
 				},
 				fields: fields{
 					eg: eg,
-					gateway: &mockGateway{
+					gateway: &gatewayMock{
 						FromForwardedContextFunc: func(_ context.Context) string {
 							return ""
 						},
@@ -1026,12 +1027,12 @@ func Test_server_Update(t *testing.T) {
 				"vald-01", "vald-02",
 			}
 			cmap := map[string]vald.ClientWithMirror{
-				targets[0]: &mockClient{
+				targets[0]: &clientmock.MirrorClientMock{
 					UpdateFunc: func(_ context.Context, _ *payload.Update_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
 						return nil, status.Error(codes.Internal, errors.ErrCircuitBreakerHalfOpenFlowLimitation.Error())
 					},
 				},
-				targets[1]: &mockClient{
+				targets[1]: &clientmock.MirrorClientMock{
 					UpdateFunc: func(_ context.Context, _ *payload.Update_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
 						return nil, status.Error(codes.AlreadyExists, errors.ErrMetaDataAlreadyExists(uuid).Error())
 					},
@@ -1051,7 +1052,7 @@ func Test_server_Update(t *testing.T) {
 				},
 				fields: fields{
 					eg: eg,
-					gateway: &mockGateway{
+					gateway: &gatewayMock{
 						FromForwardedContextFunc: func(_ context.Context) string {
 							return ""
 						},
@@ -1084,12 +1085,12 @@ func Test_server_Update(t *testing.T) {
 				"vald-01", "vald-02", "vald-03",
 			}
 			cmap := map[string]vald.ClientWithMirror{
-				targets[0]: &mockClient{
+				targets[0]: &clientmock.MirrorClientMock{
 					UpdateFunc: func(_ context.Context, _ *payload.Update_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
 						return nil, status.Error(codes.AlreadyExists, errors.ErrMetaDataAlreadyExists(uuid).Error())
 					},
 				},
-				targets[1]: &mockClient{
+				targets[1]: &clientmock.MirrorClientMock{
 					UpdateFunc: func(_ context.Context, _ *payload.Update_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
 						return nil, status.Error(codes.NotFound, errors.ErrObjectIDNotFound(uuid).Error())
 					},
@@ -1097,7 +1098,7 @@ func Test_server_Update(t *testing.T) {
 						return nil, status.Error(codes.AlreadyExists, errors.ErrMetaDataAlreadyExists(uuid).Error())
 					},
 				},
-				targets[2]: &mockClient{
+				targets[2]: &clientmock.MirrorClientMock{
 					UpdateFunc: func(_ context.Context, _ *payload.Update_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
 						return nil, status.Error(codes.AlreadyExists, errors.ErrMetaDataAlreadyExists(uuid).Error())
 					},
@@ -1117,7 +1118,7 @@ func Test_server_Update(t *testing.T) {
 				},
 				fields: fields{
 					eg: eg,
-					gateway: &mockGateway{
+					gateway: &gatewayMock{
 						FromForwardedContextFunc: func(_ context.Context) string {
 							return ""
 						},
@@ -1161,12 +1162,12 @@ func Test_server_Update(t *testing.T) {
 				"vald-01", "vald-02", "vald-03",
 			}
 			cmap := map[string]vald.ClientWithMirror{
-				targets[0]: &mockClient{
+				targets[0]: &clientmock.MirrorClientMock{
 					UpdateFunc: func(_ context.Context, _ *payload.Update_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
 						return loc, nil
 					},
 				},
-				targets[1]: &mockClient{
+				targets[1]: &clientmock.MirrorClientMock{
 					UpdateFunc: func(_ context.Context, _ *payload.Update_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
 						return nil, status.Error(codes.NotFound, errors.ErrObjectIDNotFound(uuid).Error())
 					},
@@ -1174,7 +1175,7 @@ func Test_server_Update(t *testing.T) {
 						return nil, status.Error(codes.Internal, errors.ErrCircuitBreakerHalfOpenFlowLimitation.Error())
 					},
 				},
-				targets[2]: &mockClient{
+				targets[2]: &clientmock.MirrorClientMock{
 					UpdateFunc: func(_ context.Context, _ *payload.Update_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
 						return loc, nil
 					},
@@ -1194,7 +1195,7 @@ func Test_server_Update(t *testing.T) {
 				},
 				fields: fields{
 					eg: eg,
-					gateway: &mockGateway{
+					gateway: &gatewayMock{
 						FromForwardedContextFunc: func(_ context.Context) string {
 							return ""
 						},
@@ -1320,12 +1321,12 @@ func Test_server_Upsert(t *testing.T) {
 				"vald-01", "vald-02",
 			}
 			cmap := map[string]vald.ClientWithMirror{
-				targets[0]: &mockClient{
+				targets[0]: &clientmock.MirrorClientMock{
 					UpsertFunc: func(_ context.Context, _ *payload.Upsert_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
 						return loc, nil
 					},
 				},
-				targets[1]: &mockClient{
+				targets[1]: &clientmock.MirrorClientMock{
 					UpsertFunc: func(_ context.Context, _ *payload.Upsert_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
 						return loc, nil
 					},
@@ -1345,7 +1346,7 @@ func Test_server_Upsert(t *testing.T) {
 				},
 				fields: fields{
 					eg: eg,
-					gateway: &mockGateway{
+					gateway: &gatewayMock{
 						FromForwardedContextFunc: func(_ context.Context) string {
 							return ""
 						},
@@ -1382,12 +1383,12 @@ func Test_server_Upsert(t *testing.T) {
 				"vald-01", "vald-02",
 			}
 			cmap := map[string]vald.ClientWithMirror{
-				targets[0]: &mockClient{
+				targets[0]: &clientmock.MirrorClientMock{
 					UpsertFunc: func(_ context.Context, _ *payload.Upsert_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
 						return loc, nil
 					},
 				},
-				targets[1]: &mockClient{
+				targets[1]: &clientmock.MirrorClientMock{
 					UpsertFunc: func(ctx context.Context, in *payload.Upsert_Request, opts ...grpc.CallOption) (*payload.Object_Location, error) {
 						return nil, status.Error(codes.AlreadyExists, errors.ErrMetaDataAlreadyExists(uuid).Error())
 					},
@@ -1407,7 +1408,7 @@ func Test_server_Upsert(t *testing.T) {
 				},
 				fields: fields{
 					eg: eg,
-					gateway: &mockGateway{
+					gateway: &gatewayMock{
 						FromForwardedContextFunc: func(_ context.Context) string {
 							return ""
 						},
@@ -1437,12 +1438,12 @@ func Test_server_Upsert(t *testing.T) {
 				"vald-01", "vald-02",
 			}
 			cmap := map[string]vald.ClientWithMirror{
-				targets[0]: &mockClient{
+				targets[0]: &clientmock.MirrorClientMock{
 					UpsertFunc: func(_ context.Context, _ *payload.Upsert_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
 						return nil, status.Error(codes.AlreadyExists, errors.ErrMetaDataAlreadyExists(uuid).Error())
 					},
 				},
-				targets[1]: &mockClient{
+				targets[1]: &clientmock.MirrorClientMock{
 					UpsertFunc: func(ctx context.Context, in *payload.Upsert_Request, opts ...grpc.CallOption) (*payload.Object_Location, error) {
 						return nil, status.Error(codes.AlreadyExists, errors.ErrMetaDataAlreadyExists(uuid).Error())
 					},
@@ -1462,7 +1463,7 @@ func Test_server_Upsert(t *testing.T) {
 				},
 				fields: fields{
 					eg: eg,
-					gateway: &mockGateway{
+					gateway: &gatewayMock{
 						FromForwardedContextFunc: func(_ context.Context) string {
 							return ""
 						},
@@ -1496,12 +1497,12 @@ func Test_server_Upsert(t *testing.T) {
 				"vald-01", "vald-02",
 			}
 			cmap := map[string]vald.ClientWithMirror{
-				targets[0]: &mockClient{
+				targets[0]: &clientmock.MirrorClientMock{
 					UpsertFunc: func(_ context.Context, _ *payload.Upsert_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
 						return loc, nil
 					},
 				},
-				targets[1]: &mockClient{
+				targets[1]: &clientmock.MirrorClientMock{
 					UpsertFunc: func(_ context.Context, _ *payload.Upsert_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
 						return nil, status.Error(codes.Internal, errors.ErrCircuitBreakerHalfOpenFlowLimitation.Error())
 					},
@@ -1521,7 +1522,7 @@ func Test_server_Upsert(t *testing.T) {
 				},
 				fields: fields{
 					eg: eg,
-					gateway: &mockGateway{
+					gateway: &gatewayMock{
 						FromForwardedContextFunc: func(_ context.Context) string {
 							return ""
 						},
@@ -1551,12 +1552,12 @@ func Test_server_Upsert(t *testing.T) {
 				"vald-01", "vald-02",
 			}
 			cmap := map[string]vald.ClientWithMirror{
-				targets[0]: &mockClient{
+				targets[0]: &clientmock.MirrorClientMock{
 					UpsertFunc: func(_ context.Context, _ *payload.Upsert_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
 						return nil, status.Error(codes.Internal, errors.ErrCircuitBreakerHalfOpenFlowLimitation.Error())
 					},
 				},
-				targets[1]: &mockClient{
+				targets[1]: &clientmock.MirrorClientMock{
 					UpsertFunc: func(_ context.Context, _ *payload.Upsert_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
 						return nil, status.Error(codes.Internal, errors.ErrCircuitBreakerOpenState.Error())
 					},
@@ -1576,7 +1577,7 @@ func Test_server_Upsert(t *testing.T) {
 				},
 				fields: fields{
 					eg: eg,
-					gateway: &mockGateway{
+					gateway: &gatewayMock{
 						FromForwardedContextFunc: func(_ context.Context) string {
 							return ""
 						},
@@ -1695,12 +1696,12 @@ func Test_server_Remove(t *testing.T) {
 				"vald-01", "vald-02",
 			}
 			cmap := map[string]vald.ClientWithMirror{
-				targets[0]: &mockClient{
+				targets[0]: &clientmock.MirrorClientMock{
 					RemoveFunc: func(_ context.Context, _ *payload.Remove_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
 						return loc, nil
 					},
 				},
-				targets[1]: &mockClient{
+				targets[1]: &clientmock.MirrorClientMock{
 					RemoveFunc: func(_ context.Context, _ *payload.Remove_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
 						return loc, nil
 					},
@@ -1719,7 +1720,7 @@ func Test_server_Remove(t *testing.T) {
 				},
 				fields: fields{
 					eg: eg,
-					gateway: &mockGateway{
+					gateway: &gatewayMock{
 						FromForwardedContextFunc: func(_ context.Context) string {
 							return ""
 						},
@@ -1756,12 +1757,12 @@ func Test_server_Remove(t *testing.T) {
 				"vald-01", "vald-02",
 			}
 			cmap := map[string]vald.ClientWithMirror{
-				targets[0]: &mockClient{
+				targets[0]: &clientmock.MirrorClientMock{
 					RemoveFunc: func(_ context.Context, _ *payload.Remove_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
 						return loc, nil
 					},
 				},
-				targets[1]: &mockClient{
+				targets[1]: &clientmock.MirrorClientMock{
 					RemoveFunc: func(_ context.Context, _ *payload.Remove_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
 						return nil, status.Error(codes.NotFound, errors.ErrObjectIDNotFound(uuid).Error())
 					},
@@ -1780,7 +1781,7 @@ func Test_server_Remove(t *testing.T) {
 				},
 				fields: fields{
 					eg: eg,
-					gateway: &mockGateway{
+					gateway: &gatewayMock{
 						FromForwardedContextFunc: func(_ context.Context) string {
 							return ""
 						},
@@ -1814,12 +1815,12 @@ func Test_server_Remove(t *testing.T) {
 				"vald-01", "vald-02",
 			}
 			cmap := map[string]vald.ClientWithMirror{
-				targets[0]: &mockClient{
+				targets[0]: &clientmock.MirrorClientMock{
 					RemoveFunc: func(_ context.Context, _ *payload.Remove_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
 						return loc, nil
 					},
 				},
-				targets[1]: &mockClient{
+				targets[1]: &clientmock.MirrorClientMock{
 					RemoveFunc: func(_ context.Context, _ *payload.Remove_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
 						return nil, status.Error(codes.Internal, errors.ErrCircuitBreakerHalfOpenFlowLimitation.Error())
 					},
@@ -1838,7 +1839,7 @@ func Test_server_Remove(t *testing.T) {
 				},
 				fields: fields{
 					eg: eg,
-					gateway: &mockGateway{
+					gateway: &gatewayMock{
 						FromForwardedContextFunc: func(_ context.Context) string {
 							return ""
 						},
@@ -1868,12 +1869,12 @@ func Test_server_Remove(t *testing.T) {
 				"vald-01", "vald-02",
 			}
 			cmap := map[string]vald.ClientWithMirror{
-				targets[0]: &mockClient{
+				targets[0]: &clientmock.MirrorClientMock{
 					RemoveFunc: func(_ context.Context, _ *payload.Remove_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
 						return nil, status.Error(codes.Internal, errors.ErrCircuitBreakerHalfOpenFlowLimitation.Error())
 					},
 				},
-				targets[1]: &mockClient{
+				targets[1]: &clientmock.MirrorClientMock{
 					RemoveFunc: func(_ context.Context, _ *payload.Remove_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
 						return nil, status.Error(codes.Internal, errors.ErrCircuitBreakerOpenState.Error())
 					},
@@ -1892,7 +1893,7 @@ func Test_server_Remove(t *testing.T) {
 				},
 				fields: fields{
 					eg: eg,
-					gateway: &mockGateway{
+					gateway: &gatewayMock{
 						FromForwardedContextFunc: func(_ context.Context) string {
 							return ""
 						},
@@ -1925,12 +1926,12 @@ func Test_server_Remove(t *testing.T) {
 				"vald-01", "vald-02",
 			}
 			cmap := map[string]vald.ClientWithMirror{
-				targets[0]: &mockClient{
+				targets[0]: &clientmock.MirrorClientMock{
 					RemoveFunc: func(_ context.Context, _ *payload.Remove_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
 						return nil, status.Error(codes.NotFound, errors.ErrIndexNotFound.Error())
 					},
 				},
-				targets[1]: &mockClient{
+				targets[1]: &clientmock.MirrorClientMock{
 					RemoveFunc: func(_ context.Context, _ *payload.Remove_Request, _ ...grpc.CallOption) (*payload.Object_Location, error) {
 						return nil, status.Error(codes.NotFound, errors.ErrIndexNotFound.Error())
 					},
@@ -1949,7 +1950,7 @@ func Test_server_Remove(t *testing.T) {
 				},
 				fields: fields{
 					eg: eg,
-					gateway: &mockGateway{
+					gateway: &gatewayMock{
 						FromForwardedContextFunc: func(_ context.Context) string {
 							return ""
 						},
@@ -2071,7 +2072,7 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 				"vald-01", "vald-02",
 			}
 			cmap := map[string]vald.ClientWithMirror{
-				targets[0]: &mockClient{
+				targets[0]: &clientmock.MirrorClientMock{
 					RemoveByTimestampFunc: func(_ context.Context, _ *payload.Remove_TimestampRequest, _ ...grpc.CallOption) (*payload.Object_Locations, error) {
 						return &payload.Object_Locations{
 							Locations: []*payload.Object_Location{
@@ -2080,7 +2081,7 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 						}, nil
 					},
 				},
-				targets[1]: &mockClient{
+				targets[1]: &clientmock.MirrorClientMock{
 					RemoveByTimestampFunc: func(_ context.Context, _ *payload.Remove_TimestampRequest, _ ...grpc.CallOption) (*payload.Object_Locations, error) {
 						return &payload.Object_Locations{
 							Locations: []*payload.Object_Location{
@@ -2098,7 +2099,7 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 				},
 				fields: fields{
 					eg: eg,
-					gateway: &mockGateway{
+					gateway: &gatewayMock{
 						FromForwardedContextFunc: func(_ context.Context) string {
 							return ""
 						},
@@ -2137,7 +2138,7 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 				"vald-01", "vald-02",
 			}
 			cmap := map[string]vald.ClientWithMirror{
-				targets[0]: &mockClient{
+				targets[0]: &clientmock.MirrorClientMock{
 					RemoveByTimestampFunc: func(_ context.Context, _ *payload.Remove_TimestampRequest, _ ...grpc.CallOption) (*payload.Object_Locations, error) {
 						return &payload.Object_Locations{
 							Locations: []*payload.Object_Location{
@@ -2146,7 +2147,7 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 						}, nil
 					},
 				},
-				targets[1]: &mockClient{
+				targets[1]: &clientmock.MirrorClientMock{
 					RemoveByTimestampFunc: func(_ context.Context, _ *payload.Remove_TimestampRequest, _ ...grpc.CallOption) (*payload.Object_Locations, error) {
 						return nil, status.Error(codes.NotFound, errors.ErrObjectIDNotFound("test02").Error())
 					},
@@ -2160,7 +2161,7 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 				},
 				fields: fields{
 					eg: eg,
-					gateway: &mockGateway{
+					gateway: &gatewayMock{
 						FromForwardedContextFunc: func(_ context.Context) string {
 							return ""
 						},
@@ -2193,12 +2194,12 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 				"vald-01", "vald-02",
 			}
 			cmap := map[string]vald.ClientWithMirror{
-				targets[0]: &mockClient{
+				targets[0]: &clientmock.MirrorClientMock{
 					RemoveByTimestampFunc: func(_ context.Context, _ *payload.Remove_TimestampRequest, _ ...grpc.CallOption) (*payload.Object_Locations, error) {
 						return nil, status.Error(codes.Internal, errors.ErrCircuitBreakerHalfOpenFlowLimitation.Error())
 					},
 				},
-				targets[1]: &mockClient{
+				targets[1]: &clientmock.MirrorClientMock{
 					RemoveByTimestampFunc: func(_ context.Context, _ *payload.Remove_TimestampRequest, _ ...grpc.CallOption) (*payload.Object_Locations, error) {
 						return nil, status.Error(codes.Internal, errors.ErrCircuitBreakerOpenState.Error())
 					},
@@ -2212,7 +2213,7 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 				},
 				fields: fields{
 					eg: eg,
-					gateway: &mockGateway{
+					gateway: &gatewayMock{
 						FromForwardedContextFunc: func(_ context.Context) string {
 							return ""
 						},
@@ -2246,12 +2247,12 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 				"vald-01", "vald-02",
 			}
 			cmap := map[string]vald.ClientWithMirror{
-				targets[0]: &mockClient{
+				targets[0]: &clientmock.MirrorClientMock{
 					RemoveByTimestampFunc: func(_ context.Context, _ *payload.Remove_TimestampRequest, _ ...grpc.CallOption) (*payload.Object_Locations, error) {
 						return nil, status.Error(codes.NotFound, errors.ErrObjectIDNotFound(uuid1).Error())
 					},
 				},
-				targets[1]: &mockClient{
+				targets[1]: &clientmock.MirrorClientMock{
 					RemoveByTimestampFunc: func(_ context.Context, _ *payload.Remove_TimestampRequest, _ ...grpc.CallOption) (*payload.Object_Locations, error) {
 						return nil, status.Error(codes.NotFound, errors.ErrObjectIDNotFound(uuid2).Error())
 					},
@@ -2265,7 +2266,7 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 				},
 				fields: fields{
 					eg: eg,
-					gateway: &mockGateway{
+					gateway: &gatewayMock{
 						FromForwardedContextFunc: func(_ context.Context) string {
 							return ""
 						},
