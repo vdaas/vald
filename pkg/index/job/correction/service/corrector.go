@@ -641,7 +641,7 @@ func (c *correct) loadAgentIndexInfo(ctx context.Context) (err error) {
 		addr   string
 	}
 
-	infos := []indexInfo{}
+	var infos []indexInfo
 	infoMap.Range(func(addr string, info *payload.Info_Index_Count) bool {
 		log.Infof("index info: addr(%s), stored(%d), uncommitted(%d)", addr, info.GetStored(), info.GetUncommitted())
 
