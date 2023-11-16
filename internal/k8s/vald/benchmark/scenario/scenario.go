@@ -68,11 +68,7 @@ func (r *reconciler) AddListOpts(opt client.ListOption) {
 func (r *reconciler) Reconcile(ctx context.Context, _ reconcile.Request) (res reconcile.Result, err error) {
 	bs := new(v1.ValdBenchmarkScenarioList)
 
-	if r.lopts == nil {
-		err = r.mgr.GetClient().List(ctx, bs, r.lopts...)
-	} else {
-		err = r.mgr.GetClient().List(ctx, bs)
-	}
+	err = r.mgr.GetClient().List(ctx, bs, r.lopts...)
 
 	if err != nil {
 		if r.onError != nil {
