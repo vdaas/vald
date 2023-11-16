@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"reflect"
 	"slices"
 	"sync/atomic"
 	"time"
@@ -37,7 +38,6 @@ import (
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/sync"
 	"github.com/vdaas/vald/internal/sync/errgroup"
-	"github.com/vdaas/vald/pkg/index/job/correction/config"
 )
 
 type contextTimeKey string
@@ -50,63 +50,88 @@ const (
 )
 
 type Corrector interface {
-	Start(ctx context.Context) (<-chan error, error)
+	Start(ctx context.Context) error
+	StartClient(ctx context.Context) (<-chan error, error)
 	PreStop(ctx context.Context) error
+	// For metrics
+	NumberOfCheckedIndex() uint64
+	NumberOfCorrectedOldIndex() uint64
+	NumberOfCorrectedReplication() uint64
 }
 
 type correct struct {
-	cfg                   *config.Data
-	discoverer            discoverer.Client
-	agentAddrs            []string
-	indexInfos            sync.Map[string, *payload.Info_Index_Count]
-	uuidsCount            uint32
-	uncommittedUUIDsCount uint32
-	checkedID             bbolt.Bbolt
+	discoverer                discoverer.Client
+	agentAddrs                []string
+	indexInfos                sync.Map[string, *payload.Info_Index_Count]
+	uuidsCount                uint32
+	uncommittedUUIDsCount     uint32
+	checkedID                 bbolt.Bbolt
+	checkedIndexCount         atomic.Uint64
+	correctedOldIndexCount    atomic.Uint64
+	correctedReplicationCount atomic.Uint64
+
+	indexReplica               int
+	streamListConcurrency      int
+	bboltAsyncWriteConcurrency int
 }
 
 const filemode = 0o600
 
-func New(cfg *config.Data, discoverer discoverer.Client) (Corrector, error) {
-	d := file.Join(os.TempDir(), "bbolt")
-	file.MkdirAll(d, os.ModePerm)
-	dbfile := file.Join(d, "checkedid.db")
-	bolt, err := bbolt.New(dbfile, "", os.FileMode(filemode))
-	if err != nil {
+func New(opts ...Option) (_ Corrector, err error) {
+	c := new(correct)
+	for _, opt := range append(defaultOpts, opts...) {
+		if err := opt(c); err != nil {
+			oerr := errors.ErrOptionFailed(err, reflect.ValueOf(opt))
+			e := &errors.ErrCriticalOption{}
+			if errors.As(oerr, &e) {
+				log.Error(err)
+				return nil, oerr
+			}
+			log.Warn(oerr)
+		}
+	}
+	if err := c.bboltInit(); err != nil {
 		return nil, err
 	}
-
-	return &correct{
-		cfg:        cfg,
-		discoverer: discoverer,
-		checkedID:  bolt,
-	}, nil
+	return c, nil
 }
 
-func (c *correct) Start(ctx context.Context) (<-chan error, error) {
+func (c *correct) bboltInit() error {
+	dpath := file.Join(os.TempDir(), "bbolt")
+	err := file.MkdirAll(dpath, os.ModePerm)
+	if err != nil {
+		return err
+	}
+
+	dbfile := file.Join(dpath, "checkedid.db")
+	c.checkedID, err = bbolt.New(dbfile, "", os.FileMode(filemode))
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (c *correct) StartClient(ctx context.Context) (<-chan error, error) {
+	return c.discoverer.Start(ctx)
+}
+
+func (c *correct) Start(ctx context.Context) error {
 	// set current time to context
 	ctx = embedTime(ctx)
-
-	dech, err := c.discoverer.Start(ctx)
-	if err != nil {
-		return nil, err
-	}
 
 	// addrs is sorted by the memory usage of each agent(descending order)
 	// this is decending because it's supposed to be used for index manager to decide
 	// which pod to make a create index rpc(higher memory, first to commit)
 	c.agentAddrs = c.discoverer.GetAddrs(ctx)
-	log.Debug("agent addrs found:", c.agentAddrs)
-
-	if l := len(c.agentAddrs); l <= 1 {
-		log.Warn("only %d agent found, there must be more than two agents for correction to happen", l)
-		return nil, err
+	if len(c.agentAddrs) <= 1 {
+		log.Warnf("target agent (%v) found, but there must be more than two agents for correction to happen", c.agentAddrs)
+		return errors.ErrAgentReplicaOne
 	}
+	log.Debugf("target agent addrs: %v", c.agentAddrs)
 
-	err = c.loadInfos(ctx)
-	if err != nil {
-		return nil, err
+	if err := c.loadInfos(ctx); err != nil {
+		return err
 	}
-
 	c.indexInfos.Range(func(addr string, info *payload.Info_Index_Count) bool {
 		log.Infof("index info: addr(%s), stored(%d), uncommitted(%d)", addr, info.GetStored(), info.GetUncommitted())
 		return true
@@ -114,17 +139,28 @@ func (c *correct) Start(ctx context.Context) (<-chan error, error) {
 
 	log.Info("starting correction with bbolt disk cache...")
 	if err := c.correct(ctx); err != nil {
-		log.Errorf("there's some errors while correction: %v", err)
-		return nil, err
+		return err
 	}
 	log.Info("correction finished successfully")
 
-	return dech, nil
+	return nil
 }
 
 func (c *correct) PreStop(_ context.Context) error {
 	log.Info("removing persistent cache files...")
 	return c.checkedID.Close(true)
+}
+
+func (c *correct) NumberOfCheckedIndex() uint64 {
+	return c.checkedIndexCount.Load()
+}
+
+func (c *correct) NumberOfCorrectedOldIndex() uint64 {
+	return c.correctedOldIndexCount.Load()
+}
+
+func (c *correct) NumberOfCorrectedReplication() uint64 {
+	return c.correctedReplicationCount.Load()
 }
 
 // skipcq: GO-R1005
@@ -142,11 +178,16 @@ func (c *correct) correct(ctx context.Context) (err error) {
 	}
 
 	curTargetAgent := 0
+	jobErrs := make([]error, 0, c.streamListConcurrency)
 	if err := c.discoverer.GetClient().OrderedRange(ctx, c.agentAddrs,
-		func(ctx context.Context, addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
+		func(ctx context.Context, addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) (err error) {
 			// current address is the leftAgentAddrs[0] because this is OrderedRange and
 			// leftAgentAddrs is copied from c.agentAddrs
 			defer func() {
+				if err != nil {
+					// catch the err that happened in this scope using named return err
+					jobErrs = append(jobErrs, err)
+				}
 				curTargetAgent++
 			}()
 
@@ -154,16 +195,13 @@ func (c *correct) correct(ctx context.Context) (err error) {
 			sctx, scancel := context.WithCancel(ctx)
 			defer scancel()
 			seg, sctx := errgroup.WithContext(sctx)
-			sconcurrency := c.cfg.Corrector.GetStreamListConcurrency()
-			seg.SetLimit(sconcurrency)
+			seg.SetLimit(c.streamListConcurrency)
 
 			// errgroup for bbolt AsyncSet
 			bolteg, ctx := errgroup.WithContext(ctx)
-			bconcurrency := c.cfg.Corrector.GetBboltAsyncWriteConcurrency()
-			bolteg.SetLimit(bconcurrency)
+			bolteg.SetLimit(c.bboltAsyncWriteConcurrency)
 
-			var mu sync.Mutex
-			log.Infof("starting correction for agent %s, stream concurrency: %d, bbolt concurrency: %d", addr, sconcurrency, bconcurrency)
+			log.Infof("starting correction for agent %s, stream concurrency: %d, bbolt concurrency: %d", addr, c.streamListConcurrency, c.bboltAsyncWriteConcurrency)
 
 			vc := vald.NewValdClient(conn)
 			stream, err := vc.StreamListObject(ctx, &payload.Object_List_Request{})
@@ -171,6 +209,7 @@ func (c *correct) correct(ctx context.Context) (err error) {
 				return err
 			}
 
+			var mu sync.Mutex
 			// The number of items to be received in advance is not known in advance.
 			// This is because there is a possibility of new items being inserted during processing.
 			for {
@@ -206,21 +245,19 @@ func (c *correct) correct(ctx context.Context) (err error) {
 						res, err := stream.Recv()
 						mu.Unlock()
 
-						if errors.Is(err, io.EOF) {
-							scancel()
-							return nil
-						}
 						if err != nil {
-							log.Errorf("StreamListObject stream finished unexpectedly: %v", err)
-							return err
+							if errors.Is(err, io.EOF) {
+								scancel()
+								return nil
+							}
+							return errors.ErrStreamListObjectStreamFinishedUnexpectedly(err)
 						}
 
 						vec := res.GetVector()
 						if vec == nil {
 							st := res.GetStatus()
 							log.Error(st.GetCode(), st.GetMessage(), st.GetDetails())
-							// continue
-							return nil
+							return errors.ErrFailedToReceiveVectorFromStream
 						}
 
 						// skip if the vector is inserted after correction start
@@ -237,7 +274,7 @@ func (c *correct) correct(ctx context.Context) (err error) {
 						id := vec.GetId()
 						_, ok, err := c.checkedID.Get([]byte(id))
 						if err != nil {
-							log.Errorf("failed to perform Get from bbolt: %v", err)
+							log.Errorf("failed to perform Get from bbolt but still try to finish processing without cache: %v", err)
 						}
 						if ok {
 							// already checked index
@@ -252,12 +289,12 @@ func (c *correct) correct(ctx context.Context) (err error) {
 							},
 							curTargetAgent,
 						); err != nil {
-							log.Errorf("failed to check consistency: %v", err)
-							return nil // continue other processes
+							return errors.ErrFailedToCheckConsistency(err)
 						}
 
 						//  now this id is checked so set it to the disk cache
 						c.checkedID.AsyncSet(bolteg, []byte(id), nil)
+						c.checkedIndexCount.Add(1)
 
 						return nil
 					}))
@@ -265,11 +302,13 @@ func (c *correct) correct(ctx context.Context) (err error) {
 			}
 		},
 	); err != nil {
-		log.Errorf("failed to range over agents(%v): %v", c.agentAddrs, err)
+		// This only happnes when ErrGRPCClientConnNotFound is returned.
+		// In other cases, OrderedRange continues processing, so jobErrrs is used to keep track of the error status of correction.
 		return err
 	}
 
-	return nil
+	jobErrs = errors.RemoveDuplicates(jobErrs)
+	return errors.Join(jobErrs...)
 }
 
 type vectorReplica struct {
@@ -377,6 +416,7 @@ func (c *correct) correctTimestamp(ctx context.Context, targetReplica *vectorRep
 			latest.vec.GetId(),
 			latest.vec.GetTimestamp(),
 		)
+		c.correctedOldIndexCount.Add(1)
 		if err := c.updateObject(ctx, replica.addr, latest.vec); err != nil {
 			return err
 		}
@@ -394,7 +434,7 @@ func (c *correct) correctReplica(
 ) error {
 	// diff < 0 means there is less replica than the correct number
 	existReplica := len(foundReplicas) + 1
-	diff := existReplica - c.cfg.Corrector.IndexReplica
+	diff := existReplica - c.indexReplica
 	if diff == 0 {
 		// replica number is correct
 		return nil
@@ -417,6 +457,7 @@ func (c *correct) correctReplica(
 	// when there are less replicas than the correct number, add the extra replicas
 	if diff < 0 {
 		log.Infof("replica shortage of vector %s. inserting to other agents...", targetReplica.vec.GetId())
+		c.correctedReplicationCount.Add(1)
 		if len(availableAddrs) == 0 {
 			return errors.ErrNoAvailableAgentToInsert
 		}
@@ -442,6 +483,7 @@ func (c *correct) correctReplica(
 	// when there are more replicas than the correct number, delete the extra replicas
 	log.Infof("replica oversupply of vector %s. deleting...",
 		targetReplica.vec.GetId())
+	c.correctedReplicationCount.Add(1)
 	// delete from myself
 	if err := c.deleteObject(ctx, targetReplica.addr, targetReplica.vec); err != nil {
 		log.Errorf("failed to delete object from agent(%s): %v", targetReplica.addr, err)

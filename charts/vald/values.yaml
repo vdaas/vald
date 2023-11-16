@@ -838,12 +838,12 @@ defaults:
     # @schema {"name": "defaults.networkPolicy.custom", "type": "object"}
     # defaults.networkPolicy.custom -- custom network policies that a user can add
     custom:
-      # @schema {"name": "defaults.networkPolicy.custom.ingress", "type": "object"}
+      # @schema {"name": "defaults.networkPolicy.custom.ingress", "type": "array", "items": {"type": "object"}}
       # defaults.networkPolicy.custom.ingress -- custom ingress network policies that a user can add
-      ingress: {}
-      # @schema {"name": "defaults.networkPolicy.custom.egress", "type": "object"}
+      ingress: []
+      # @schema {"name": "defaults.networkPolicy.custom.egress", "type": "array", "items": {"type": "object"}}
       # defaults.networkPolicy.custom.egress -- custom egress network policies that a user can add
-      egress: {}
+      egress: []
 # @schema {"name": "gateway", "type": "object"}
 gateway:
   # @schema {"name": "gateway.lb", "type": "object"}
@@ -2676,7 +2676,7 @@ manager:
       observability:
         otlp:
           attribute:
-            service_name: vald-manager-index
+            service_name: vald-index-correction
       # @schema {"name": "manager.index.corrector.enabled", "type": "boolean"}
       # manager.index.corrector.enabled -- enable index correction CronJob
       enabled: false
