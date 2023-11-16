@@ -13,6 +13,7 @@ import (
 	io "io"
 	math "math"
 	bits "math/bits"
+	sync "sync"
 )
 
 const (
@@ -7872,6 +7873,27 @@ func encodeVarint(dAtA []byte, offset int, v uint64) int {
 	dAtA[offset] = uint8(v)
 	return base
 }
+
+var vtprotoPool_Object_Vector = sync.Pool{
+	New: func() interface{} {
+		return &Object_Vector{}
+	},
+}
+
+func (m *Object_Vector) ResetVT() {
+	f0 := m.Vector[:0]
+	m.Reset()
+	m.Vector = f0
+}
+func (m *Object_Vector) ReturnToVTPool() {
+	if m != nil {
+		m.ResetVT()
+		vtprotoPool_Object_Vector.Put(m)
+	}
+}
+func Object_VectorFromVTPool() *Object_Vector {
+	return vtprotoPool_Object_Vector.Get().(*Object_Vector)
+}
 func (m *Search_Request) SizeVT() (n int) {
 	if m == nil {
 		return 0
@@ -13964,7 +13986,7 @@ func (m *Object_Vector) UnmarshalVT(dAtA []byte) error {
 				}
 				var elementCount int
 				elementCount = packedLen / 4
-				if elementCount != 0 && len(m.Vector) == 0 {
+				if elementCount != 0 && len(m.Vector) == 0 && cap(m.Vector) < elementCount {
 					m.Vector = make([]float32, 0, elementCount)
 				}
 				for iNdEx < postIndex {

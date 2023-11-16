@@ -2981,7 +2981,7 @@ func (s *server) getObject(ctx context.Context, uuid string) (vec *payload.Objec
 					cancel(doneErr)
 				})
 				if !send {
-					//ovec.ReturnToVTPool()
+					ovec.ReturnToVTPool()
 				}
 			}
 			return nil

@@ -122,7 +122,7 @@ func (s *server) GetObject(ctx context.Context, id *payload.Object_VectorRequest
 		}
 		return nil, err
 	}
-	res = &payload.Object_Vector{}
+	res = payload.Object_VectorFromVTPool()
 	res.Id = uuid
 	res.Vector = vec
 	res.Timestamp = ts
@@ -204,7 +204,7 @@ func (s *server) StreamListObject(_ *payload.Object_List_Request, stream vald.Ob
 				},
 			}
 		} else {
-			ovec := &payload.Object_Vector{}
+			ovec := payload.Object_VectorFromVTPool()
 			ovec.Id = uuid
 			ovec.Vector = vec
 			ovec.Timestamp = ts

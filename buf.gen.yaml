@@ -13,4 +13,18 @@ plugins:
   - plugin: buf.build/community/planetscale-vtprotobuf
     out: apis/grpc
     opt:
-      - paths=source_relative,features=grpc+marshal+unmarshal+size+equal+clone+pool
+      - paths=source_relative
+      - features=grpc+marshal+unmarshal+size+equal+clone+pool
+      - pool=github.com/vdaas/vald/apis/grpc/v1/payload.Object_Vector
+  # - plugin: prost
+  #   out: src/gen
+  #   opt:
+  #     #     - bytes=.
+  #     - compile_well_known_types
+  #     - extern_path=.google.protobuf=::pbjson_types
+  #     - file_descriptor_set
+  # - plugin: tonic
+  #   out: src/gen
+  #   opt:
+  #     - compile_well_known_types
+  #     - extern_path=.google.protobuf=::pbjson_types
