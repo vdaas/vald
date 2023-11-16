@@ -28,7 +28,7 @@ import (
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	durationpb "google.golang.org/protobuf/types/known/durationpb"
 	reflect "reflect"
-	sync "sync"
+	sync "github.com/vdaas/vald/internal/sync"
 )
 
 const (
