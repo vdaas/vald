@@ -61,7 +61,7 @@ func (c *client) Start(ctx context.Context) (<-chan error, error) {
 }
 
 func (c *client) Stop(ctx context.Context) error {
-	return c.Stop(ctx)
+	return c.c.Close(ctx)
 }
 
 func (c *client) GRPCClient() grpc.Client {
