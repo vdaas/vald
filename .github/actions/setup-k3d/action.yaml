@@ -21,6 +21,10 @@ inputs:
     description: "k3d version"
     required: false
     default: "latest"
+  k3s_version:
+    description: "The k3s to use. The default version is `versions/K3S_VERSION`"
+    required: false
+    default: ""
   name:
     description: "Cluster name"
     required: false
@@ -52,6 +56,16 @@ runs:
       env:
         K3D_VERSION: ${{ inputs.version }}
 
+    - name: Detect k3s version
+      id: k3s_version
+      shell: bash
+      run: |
+        K3S_VERSION=${K3S_VERSION:-`cat versions/K3S_VERSION`}
+
+        echo "tag=${K3S_VERSION=$}" >> $GITHUB_OUTPUT
+      env:
+        K3S_VERSION: ${{ inputs.k3s_version }}
+
     - name: Install k3d
       shell: bash
       run: |
@@ -74,11 +88,13 @@ runs:
         if [ "${INGRESS_PORT}" != 0 ]; then
           OPTIONS="${OPTIONS} -p ${INGRESS_PORT}:80@loadbalancer"
         fi
+        OPTIONS="${OPTIONS} --image rancher/k3s:${K3S_VERSION}"
         echo "options=${OPTIONS}" >> $GITHUB_OUTPUT
       env:
         AGENTS: ${{ inputs.agents }}
         INGRESS_PORT: ${{ inputs.ingress_port }}
         OPTIONS: ${{ inputs.options }}
+        K3S_VERSION: ${{ steps.k3s_version.outputs.tag }}
 
     - name: Create k8s cluster
       shell: bash

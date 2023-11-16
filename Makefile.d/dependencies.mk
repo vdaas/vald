@@ -24,9 +24,10 @@ update/libs: \
 	update/helm-docs \
 	update/helm-operator \
 	update/jaeger-operator \
+	update/k3s \
 	update/kind \
-	update/kubectl \
 	update/kube-linter \
+	update/kubectl \
 	update/ngt \
 	update/prometheus-stack \
 	update/protobuf \
@@ -76,6 +77,11 @@ go/example/deps:
 ## update chaos-mesh version
 update/chaos-mesh:
 	curl --silent https://api.github.com/repos/chaos-mesh/chaos-mesh/releases/latest | grep -Po '"tag_name": "\K.*?(?=")' | sed 's/v//g' > $(ROOTDIR)/versions/CHAOS_MESH_VERSION
+
+.PHONY: update/k3s
+## update k3s version
+update/k3s:
+	curl --silent https://hub.docker.com/v2/repositories/rancher/k3s/tags | jq -r '.results[].name' | grep -E '.*-k3s1$$' | sort -V | tail -n 1 > $(ROOTDIR)/versions/K3S_VERSION
 
 .PHONY: update/go
 ## update go version
@@ -166,3 +172,21 @@ update/vald:
 ## update vald client library made by clojure self version
 update/valdcli:
 	curl --silent https://api.github.com/repos/vdaas/vald-client-clj/releases/latest | grep -Po '"tag_name": "\K.*?(?=")' > $(ROOTDIR)/versions/VALDCLI_VERSION
+
+.PHONY: update/template
+## update PULL_REQUEST_TEMPLATE and ISSUE_TEMPLATE
+update/template:
+	$(eval GO_VERSION      := $(shell $(MAKE) -s version/go))
+	$(eval NGT_VERSION     := $(shell $(MAKE) -s version/ngt))
+	$(eval KUBECTL_VERSION := $(shell $(MAKE) -s version/k8s))
+	sed -i -e "s/^- Go Version: .*$$/- Go Version: $(GO_VERSION)/" $(ROOTDIR)/.github/ISSUE_TEMPLATE/bug_report.md
+	sed -i -e "s/^- Go Version: .*$$/- Go Version: $(GO_VERSION)/" $(ROOTDIR)/.github/ISSUE_TEMPLATE/security_issue_report.md
+	sed -i -e "s/^- Go Version: .*$$/- Go Version: $(GO_VERSION)/" $(ROOTDIR)/.github/PULL_REQUEST_TEMPLATE.md
+
+	sed -i -e "s/^- NGT Version: .*$$/- NGT Version: $(NGT_VERSION)/" $(ROOTDIR)/.github/ISSUE_TEMPLATE/bug_report.md
+	sed -i -e "s/^- NGT Version: .*$$/- NGT Version: $(NGT_VERSION)/" $(ROOTDIR)/.github/ISSUE_TEMPLATE/security_issue_report.md
+	sed -i -e "s/^- NGT Version: .*$$/- NGT Version: $(NGT_VERSION)/" $(ROOTDIR)/.github/PULL_REQUEST_TEMPLATE.md
+
+	sed -i -e "s/^- Kubernetes Version: .*$$/- Kubernetes Version: $(KUBECTL_VERSION)/" $(ROOTDIR)/.github/ISSUE_TEMPLATE/bug_report.md
+	sed -i -e "s/^- Kubernetes Version: .*$$/- Kubernetes Version: $(KUBECTL_VERSION)/" $(ROOTDIR)/.github/ISSUE_TEMPLATE/security_issue_report.md
+	sed -i -e "s/^- Kubernetes Version: .*$$/- Kubernetes Version: $(KUBECTL_VERSION)/" $(ROOTDIR)/.github/PULL_REQUEST_TEMPLATE.md

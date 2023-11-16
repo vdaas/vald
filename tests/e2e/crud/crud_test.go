@@ -24,6 +24,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"os/exec"
 	"testing"
 	"time"
 
@@ -42,13 +43,14 @@ var (
 	port int
 	ds   *hdf5.Dataset
 
-	insertNum     int
-	searchNum     int
-	searchByIDNum int
-	getObjectNum  int
-	updateNum     int
-	upsertNum     int
-	removeNum     int
+	insertNum           int
+	correctionInsertNum int
+	searchNum           int
+	searchByIDNum       int
+	getObjectNum        int
+	updateNum           int
+	upsertNum           int
+	removeNum           int
 
 	insertFrom     int
 	searchFrom     int
@@ -73,6 +75,7 @@ func init() {
 	flag.IntVar(&port, "port", 8081, "gRPC port")
 
 	flag.IntVar(&insertNum, "insert-num", 10000, "number of id-vector pairs used for insert")
+	flag.IntVar(&correctionInsertNum, "correction-insert-num", 3000, "number of id-vector pairs used for insert")
 	flag.IntVar(&searchNum, "search-num", 10000, "number of id-vector pairs used for search")
 	flag.IntVar(&searchByIDNum, "search-by-id-num", 100, "number of id-vector pairs used for search-by-id")
 	flag.IntVar(&getObjectNum, "get-object-num", 100, "number of id-vector pairs used for get-object")
@@ -370,6 +373,13 @@ func TestE2EStandardCRUD(t *testing.T) {
 
 	err = op.GetObject(t, ctx, operation.Dataset{
 		Train: ds.Train[getObjectFrom : getObjectFrom+getObjectNum],
+	})
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	err = op.StreamListObject(t, ctx, operation.Dataset{
+		Train: ds.Train[insertFrom : insertFrom+insertNum],
 	})
 	if err != nil {
 		t.Fatalf("an error occurred: %s", err)
@@ -736,5 +746,80 @@ func TestE2ECRUDWithSkipStrictExistCheck(t *testing.T) {
 	)
 	if err != nil {
 		t.Fatalf("an error occurred on #13: %s", err)
+	}
+}
+
+// TestE2EIndexJobCorrection tests the index correction job.
+// It inserts vectors, runs the index correction job, and then removes the vectors.
+// TODO: Add index replica count check after inplementing StreamListObject in LB
+func TestE2EIndexJobCorrection(t *testing.T) {
+	t.Cleanup(teardown)
+	ctx := context.Background()
+
+	op, err := operation.New(host, port)
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	// prepare train data
+	train := ds.Train[insertFrom : insertFrom+correctionInsertNum]
+
+	err = op.Insert(t, ctx, operation.Dataset{
+		Train: train,
+	})
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	sleep(t, waitAfterInsertDuration)
+
+	t.Log("Test case 1: just execute index correction and check if replica number is correct after correction")
+	exe := operation.NewCronJobExecutor("vald-index-correction")
+	err = exe.CreateAndWait(t, ctx, "correction-test")
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	// check if replica number is correct
+	err = op.StreamListObject(t, ctx, operation.Dataset{
+		Train: train,
+	})
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	t.Log("Test case 2: execute index correction after one agent removed")
+	t.Log("removing vald-agent-ngt-0...")
+	cmd := exec.CommandContext(ctx, "sh", "-c", "kubectl delete pod vald-agent-ngt-0 && kubectl wait --for=condition=Ready pod/vald-agent-ngt-0")
+	out, err := cmd.Output()
+	if err != nil {
+		if exitErr, ok := err.(*exec.ExitError); ok {
+			t.Fatalf("%s, %s, %v", string(out), string(exitErr.Stderr), err)
+		} else {
+			t.Fatalf("unexpected error on creating job: %v", err)
+		}
+	}
+	t.Log(string(out))
+
+	// correct the deleted index
+	err = exe.CreateAndWait(t, ctx, "correction-test")
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	// check if replica number is correct
+	err = op.StreamListObject(t, ctx, operation.Dataset{
+		Train: train,
+	})
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	t.Log("Tear down. Removing all vectors...")
+	err = op.Remove(t, ctx, operation.Dataset{
+		Train: train,
+	})
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
 	}
 }

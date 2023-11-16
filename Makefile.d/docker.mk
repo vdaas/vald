@@ -203,3 +203,45 @@ docker/build/loadtest:
 	    -t $(ORG)/$(LOADTEST_IMAGE):$(TAG) . \
 	    --build-arg MAINTAINER=$(MAINTAINER) \
 	    --build-arg GO_VERSION=$(GO_VERSION)
+
+.PHONY: docker/name/index-correction
+docker/name/index-correction:
+	@echo "$(ORG)/$(INDEX_CORRECTION_IMAGE)"
+
+.PHONY: docker/build/index-correction
+## build index-correction image
+docker/build/index-correction:
+	$(DOCKER) build \
+	    $(DOCKER_OPTS) \
+	    -f dockers/index/job/correction/Dockerfile \
+	    -t $(ORG)/$(INDEX_CORRECTION_IMAGE):$(TAG) . \
+	    --build-arg MAINTAINER=$(MAINTAINER) \
+	    --build-arg GO_VERSION=$(GO_VERSION)
+
+.PHONY: docker/name/index-creation
+docker/name/index-creation:
+	@echo "$(ORG)/$(INDEX_CREATION_IMAGE)"
+
+.PHONY: docker/build/index-creation
+## build index-creation image
+docker/build/index-creation:
+	$(DOCKER) build \
+	    $(DOCKER_OPTS) \
+	    -f dockers/index/job/creation/Dockerfile \
+	    -t $(ORG)/$(INDEX_CREATION_IMAGE):$(TAG) . \
+	    --build-arg MAINTAINER=$(MAINTAINER) \
+	    --build-arg GO_VERSION=$(GO_VERSION)
+
+.PHONY: docker/name/index-save
+docker/name/index-save:
+	@echo "$(ORG)/$(INDEX_SAVE_IMAGE)"
+
+.PHONY: docker/build/index-save
+## build index-save image
+docker/build/index-save:
+	$(DOCKER) build \
+	    $(DOCKER_OPTS) \
+	    -f dockers/index/job/save/Dockerfile \
+	    -t $(ORG)/$(INDEX_SAVE_IMAGE):$(TAG) . \
+	    --build-arg MAINTAINER=$(MAINTAINER) \
+	    --build-arg GO_VERSION=$(GO_VERSION)

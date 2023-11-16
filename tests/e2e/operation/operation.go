@@ -28,11 +28,6 @@ import (
 	"google.golang.org/grpc/keepalive"
 )
 
-type client struct {
-	host string
-	port int
-}
-
 type Dataset struct {
 	Train     [][]float32
 	Test      [][]float32
@@ -132,15 +127,19 @@ type Client interface {
 	MultiUpsert(t *testing.T, ctx context.Context, ds Dataset) error
 	MultiRemove(t *testing.T, ctx context.Context, ds Dataset) error
 	GetObject(t *testing.T, ctx context.Context, ds Dataset) error
+	StreamListObject(t *testing.T, ctx context.Context, ds Dataset) error
 	Exists(t *testing.T, ctx context.Context, id string) error
 	CreateIndex(t *testing.T, ctx context.Context) error
 	SaveIndex(t *testing.T, ctx context.Context) error
 	IndexInfo(t *testing.T, ctx context.Context) (*payload.Info_Index_Count, error)
 }
 
-const (
-	defaultSearchTimeout = 4 * int64(time.Second)
-)
+type client struct {
+	host string
+	port int
+}
+
+var _ Client = (*client)(nil)
 
 func New(host string, port int) (Client, error) {
 	return &client{
@@ -228,4 +227,20 @@ func (c *client) recall(results []string, neighbors []int) (recall float64) {
 	}
 
 	return recall / float64(len(neighbors))
+}
+
+type JobExecutor interface {
+	CreateAndWait(t *testing.T, ctx context.Context, jobName string) error
+}
+
+type cronJobExecute struct {
+	cronJob string
+}
+
+var _ JobExecutor = (*cronJobExecute)(nil)
+
+func NewCronJobExecutor(cronJob string) JobExecutor {
+	return &cronJobExecute{
+		cronJob: cronJob,
+	}
 }
