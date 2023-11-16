@@ -21,10 +21,10 @@ package config
 // 		AgentName                  string
 // 		AgentNamespace             string
 // 		AgentDNS                   string
-// 		CreationPoolSize           uint32
 // 		NodeName                   string
 // 		StreamListConcurrency      int
 // 		BboltAsyncWriteConcurrency int
+// 		IndexReplica               int
 // 		Discoverer                 *DiscovererClient
 // 	}
 // 	type want struct {
@@ -54,10 +54,10 @@ package config
 // 		           AgentName:"",
 // 		           AgentNamespace:"",
 // 		           AgentDNS:"",
-// 		           CreationPoolSize:0,
 // 		           NodeName:"",
 // 		           StreamListConcurrency:0,
 // 		           BboltAsyncWriteConcurrency:0,
+// 		           IndexReplica:0,
 // 		           Discoverer:DiscovererClient{},
 // 		       },
 // 		       want: want{},
@@ -81,10 +81,10 @@ package config
 // 		           AgentName:"",
 // 		           AgentNamespace:"",
 // 		           AgentDNS:"",
-// 		           CreationPoolSize:0,
 // 		           NodeName:"",
 // 		           StreamListConcurrency:0,
 // 		           BboltAsyncWriteConcurrency:0,
+// 		           IndexReplica:0,
 // 		           Discoverer:DiscovererClient{},
 // 		           },
 // 		           want: want{},
@@ -120,256 +120,14 @@ package config
 // 				AgentName:                  test.fields.AgentName,
 // 				AgentNamespace:             test.fields.AgentNamespace,
 // 				AgentDNS:                   test.fields.AgentDNS,
-// 				CreationPoolSize:           test.fields.CreationPoolSize,
 // 				NodeName:                   test.fields.NodeName,
 // 				StreamListConcurrency:      test.fields.StreamListConcurrency,
 // 				BboltAsyncWriteConcurrency: test.fields.BboltAsyncWriteConcurrency,
+// 				IndexReplica:               test.fields.IndexReplica,
 // 				Discoverer:                 test.fields.Discoverer,
 // 			}
 //
 // 			got := c.Bind()
-// 			if err := checkFunc(test.want, got); err != nil {
-// 				tt.Errorf("error = %v", err)
-// 			}
-//
-// 		})
-// 	}
-// }
-//
-// func TestCorrector_GetStreamListConcurrency(t *testing.T) {
-// 	type fields struct {
-// 		AgentPort                  int
-// 		AgentName                  string
-// 		AgentNamespace             string
-// 		AgentDNS                   string
-// 		CreationPoolSize           uint32
-// 		NodeName                   string
-// 		StreamListConcurrency      int
-// 		BboltAsyncWriteConcurrency int
-// 		Discoverer                 *DiscovererClient
-// 	}
-// 	type want struct {
-// 		want int
-// 	}
-// 	type test struct {
-// 		name       string
-// 		fields     fields
-// 		want       want
-// 		checkFunc  func(want, int) error
-// 		beforeFunc func(*testing.T)
-// 		afterFunc  func(*testing.T)
-// 	}
-// 	defaultCheckFunc := func(w want, got int) error {
-// 		if !reflect.DeepEqual(got, w.want) {
-// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-// 		}
-// 		return nil
-// 	}
-// 	tests := []test{
-// 		// TODO test cases
-// 		/*
-// 		   {
-// 		       name: "test_case_1",
-// 		       fields: fields {
-// 		           AgentPort:0,
-// 		           AgentName:"",
-// 		           AgentNamespace:"",
-// 		           AgentDNS:"",
-// 		           CreationPoolSize:0,
-// 		           NodeName:"",
-// 		           StreamListConcurrency:0,
-// 		           BboltAsyncWriteConcurrency:0,
-// 		           Discoverer:DiscovererClient{},
-// 		       },
-// 		       want: want{},
-// 		       checkFunc: defaultCheckFunc,
-// 		       beforeFunc: func(t *testing.T,) {
-// 		           t.Helper()
-// 		       },
-// 		       afterFunc: func(t *testing.T,) {
-// 		           t.Helper()
-// 		       },
-// 		   },
-// 		*/
-//
-// 		// TODO test cases
-// 		/*
-// 		   func() test {
-// 		       return test {
-// 		           name: "test_case_2",
-// 		           fields: fields {
-// 		           AgentPort:0,
-// 		           AgentName:"",
-// 		           AgentNamespace:"",
-// 		           AgentDNS:"",
-// 		           CreationPoolSize:0,
-// 		           NodeName:"",
-// 		           StreamListConcurrency:0,
-// 		           BboltAsyncWriteConcurrency:0,
-// 		           Discoverer:DiscovererClient{},
-// 		           },
-// 		           want: want{},
-// 		           checkFunc: defaultCheckFunc,
-// 		           beforeFunc: func(t *testing.T,) {
-// 		               t.Helper()
-// 		           },
-// 		           afterFunc: func(t *testing.T,) {
-// 		               t.Helper()
-// 		           },
-// 		       }
-// 		   }(),
-// 		*/
-// 	}
-//
-// 	for _, tc := range tests {
-// 		test := tc
-// 		t.Run(test.name, func(tt *testing.T) {
-// 			tt.Parallel()
-// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-// 			if test.beforeFunc != nil {
-// 				test.beforeFunc(tt)
-// 			}
-// 			if test.afterFunc != nil {
-// 				defer test.afterFunc(tt)
-// 			}
-// 			checkFunc := test.checkFunc
-// 			if test.checkFunc == nil {
-// 				checkFunc = defaultCheckFunc
-// 			}
-// 			c := &Corrector{
-// 				AgentPort:                  test.fields.AgentPort,
-// 				AgentName:                  test.fields.AgentName,
-// 				AgentNamespace:             test.fields.AgentNamespace,
-// 				AgentDNS:                   test.fields.AgentDNS,
-// 				CreationPoolSize:           test.fields.CreationPoolSize,
-// 				NodeName:                   test.fields.NodeName,
-// 				StreamListConcurrency:      test.fields.StreamListConcurrency,
-// 				BboltAsyncWriteConcurrency: test.fields.BboltAsyncWriteConcurrency,
-// 				Discoverer:                 test.fields.Discoverer,
-// 			}
-//
-// 			got := c.GetStreamListConcurrency()
-// 			if err := checkFunc(test.want, got); err != nil {
-// 				tt.Errorf("error = %v", err)
-// 			}
-//
-// 		})
-// 	}
-// }
-//
-// func TestCorrector_GetBboltAsyncWriteConcurrency(t *testing.T) {
-// 	type fields struct {
-// 		AgentPort                  int
-// 		AgentName                  string
-// 		AgentNamespace             string
-// 		AgentDNS                   string
-// 		CreationPoolSize           uint32
-// 		NodeName                   string
-// 		StreamListConcurrency      int
-// 		BboltAsyncWriteConcurrency int
-// 		Discoverer                 *DiscovererClient
-// 	}
-// 	type want struct {
-// 		want int
-// 	}
-// 	type test struct {
-// 		name       string
-// 		fields     fields
-// 		want       want
-// 		checkFunc  func(want, int) error
-// 		beforeFunc func(*testing.T)
-// 		afterFunc  func(*testing.T)
-// 	}
-// 	defaultCheckFunc := func(w want, got int) error {
-// 		if !reflect.DeepEqual(got, w.want) {
-// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-// 		}
-// 		return nil
-// 	}
-// 	tests := []test{
-// 		// TODO test cases
-// 		/*
-// 		   {
-// 		       name: "test_case_1",
-// 		       fields: fields {
-// 		           AgentPort:0,
-// 		           AgentName:"",
-// 		           AgentNamespace:"",
-// 		           AgentDNS:"",
-// 		           CreationPoolSize:0,
-// 		           NodeName:"",
-// 		           StreamListConcurrency:0,
-// 		           BboltAsyncWriteConcurrency:0,
-// 		           Discoverer:DiscovererClient{},
-// 		       },
-// 		       want: want{},
-// 		       checkFunc: defaultCheckFunc,
-// 		       beforeFunc: func(t *testing.T,) {
-// 		           t.Helper()
-// 		       },
-// 		       afterFunc: func(t *testing.T,) {
-// 		           t.Helper()
-// 		       },
-// 		   },
-// 		*/
-//
-// 		// TODO test cases
-// 		/*
-// 		   func() test {
-// 		       return test {
-// 		           name: "test_case_2",
-// 		           fields: fields {
-// 		           AgentPort:0,
-// 		           AgentName:"",
-// 		           AgentNamespace:"",
-// 		           AgentDNS:"",
-// 		           CreationPoolSize:0,
-// 		           NodeName:"",
-// 		           StreamListConcurrency:0,
-// 		           BboltAsyncWriteConcurrency:0,
-// 		           Discoverer:DiscovererClient{},
-// 		           },
-// 		           want: want{},
-// 		           checkFunc: defaultCheckFunc,
-// 		           beforeFunc: func(t *testing.T,) {
-// 		               t.Helper()
-// 		           },
-// 		           afterFunc: func(t *testing.T,) {
-// 		               t.Helper()
-// 		           },
-// 		       }
-// 		   }(),
-// 		*/
-// 	}
-//
-// 	for _, tc := range tests {
-// 		test := tc
-// 		t.Run(test.name, func(tt *testing.T) {
-// 			tt.Parallel()
-// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-// 			if test.beforeFunc != nil {
-// 				test.beforeFunc(tt)
-// 			}
-// 			if test.afterFunc != nil {
-// 				defer test.afterFunc(tt)
-// 			}
-// 			checkFunc := test.checkFunc
-// 			if test.checkFunc == nil {
-// 				checkFunc = defaultCheckFunc
-// 			}
-// 			c := &Corrector{
-// 				AgentPort:                  test.fields.AgentPort,
-// 				AgentName:                  test.fields.AgentName,
-// 				AgentNamespace:             test.fields.AgentNamespace,
-// 				AgentDNS:                   test.fields.AgentDNS,
-// 				CreationPoolSize:           test.fields.CreationPoolSize,
-// 				NodeName:                   test.fields.NodeName,
-// 				StreamListConcurrency:      test.fields.StreamListConcurrency,
-// 				BboltAsyncWriteConcurrency: test.fields.BboltAsyncWriteConcurrency,
-// 				Discoverer:                 test.fields.Discoverer,
-// 			}
-//
-// 			got := c.GetBboltAsyncWriteConcurrency()
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
