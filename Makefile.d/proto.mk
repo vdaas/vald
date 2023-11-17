@@ -52,7 +52,7 @@ $(ROOTDIR)/apis/proto/v1/rpc/errdetails/error_details.proto:
 proto/gen: \
 	$(PROTOS) \
 	proto/deps
-	@$(call green, "generating pb.go, swagger.json files and documents for API v1...")
+	@$(call green, "generating pb.go and swagger.json files and documents for API v1...")
 	buf generate
 	find $(ROOTDIR)/apis/grpc/* -name '*.go' | xargs sed -i -E "s%google.golang.org/grpc/codes%github.com/vdaas/vald/internal/net/grpc/codes%g"
 	find $(ROOTDIR)/apis/grpc/* -name '*.go' | xargs sed -i -E "s%google.golang.org/grpc/status%github.com/vdaas/vald/internal/net/grpc/status%g"

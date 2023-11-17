@@ -66,12 +66,6 @@ $(BINDIR)/kubectl:
 	curl -L "https://dl.k8s.io/release/$(KUBECTL_VERSION)/bin/$(shell echo $(UNAME) | tr '[:upper:]' '[:lower:]')/$(subst x86_64,amd64,$(shell echo $(ARCH) | tr '[:upper:]' '[:lower:]'))/kubectl" -o $(BINDIR)/kubectl
 	chmod a+x $(BINDIR)/kubectl
 
-.PHONY: protobuf/install
-protobuf/install: $(GOBIN)/buf
-
-$(GOBIN)/buf:
-	$(call go-install, github.com/bufbuild/buf/cmd/buf)
-
 .PHONY: textlint/install
 textlint/install:
 	npm install -g textlint textlint-rule-en-spell textlint-rule-prh textlint-rule-write-good
