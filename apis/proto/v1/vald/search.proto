@@ -18,8 +18,8 @@ syntax = "proto3";
 
 package vald.v1;
 
-import "v1/payload/payload.proto";
 import "google/api/annotations.proto";
+import "v1/payload/payload.proto";
 
 option go_package = "github.com/vdaas/vald/apis/grpc/v1/vald";
 option java_multiple_files = true;
