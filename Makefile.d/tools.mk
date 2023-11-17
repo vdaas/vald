@@ -67,13 +67,10 @@ $(BINDIR)/kubectl:
 	chmod a+x $(BINDIR)/kubectl
 
 .PHONY: protobuf/install
-protobuf/install: $(BINDIR)/protoc
+protobuf/install: $(GOBIN)/buf
 
-$(BINDIR)/protoc:
-	curl -L "https://github.com/protocolbuffers/protobuf/releases/download/v$(PROTOBUF_VERSION)/protoc-$(PROTOBUF_VERSION)-$(subst darwin,osx,$(shell echo $(UNAME) | tr '[:upper:]' '[:lower:]'))-$(ARCH).zip" -o /tmp/protoc.zip
-	unzip -o /tmp/protoc.zip -d /usr/local bin/protoc
-	unzip -o /tmp/protoc.zip -d /usr/local 'include/*'
-	rm -f /tmp/protoc.zip
+$(GOBIN)/buf:
+	$(call go-install, github.com/bufbuild/buf/cmd/buf)
 
 .PHONY: textlint/install
 textlint/install:
