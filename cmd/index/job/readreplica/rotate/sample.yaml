@@ -71,10 +71,11 @@ server_config:
     enabled: false
     key: /path/to/key
 rotator:
-  agent_port: 8081
-  agent_name: "vald-agent-ngt"
-  agent_dns: vald-agent-ngt.default.svc.cluster.local
   agent_namespace: "default"
+  deployment_prefix: "vald-agent-ngt-readreplica"
+  snapshot_prefix: vald-agent-ngt-snapshot
+  pvc_prefix: "vald-agent-ngt-readreplica-pvc"
+  volume_name: "vald-agent-ngt-readreplica-pvc"
 observability:
   enabled: false
   otlp:

@@ -82,16 +82,15 @@ func New(cfg *config.Data) (_ runner.Runner, err error) {
 		return nil, fmt.Errorf("failed to get kubernetes client: %w", err)
 	}
 
-	// TODO: この辺はconfigから取得するようにする
 	rotator, err := service.New(
 		client,
 		sclient,
-		service.WithDeploymentPrefix("vald-agent-ngt-readreplica"),
-		service.WithNamespace("default"),
+		service.WithDeploymentPrefix(cfg.ReadreplicaRotate.DeploymentPrefix),
+		service.WithNamespace(cfg.ReadreplicaRotate.AgentNamespace),
 		service.WithReplicaId(0),
-		service.WithPvcPrefix("vald-agent-ngt-readreplica-pvc"),
-		service.WithSnapshotPrefix("vald-agent-ngt-snapshot"),
-		service.WithVolumeName("vald-agent-ngt-readreplica-pvc"),
+		service.WithPvcPrefix(cfg.ReadreplicaRotate.PvcPrefix),
+		service.WithSnapshotPrefix(cfg.ReadreplicaRotate.SnapshotPrefix),
+		service.WithVolumeName(cfg.ReadreplicaRotate.VolumeName),
 	)
 	if err != nil {
 		return nil, err
