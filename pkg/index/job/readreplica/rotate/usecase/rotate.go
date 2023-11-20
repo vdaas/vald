@@ -15,9 +15,12 @@ package usecase
 
 import (
 	"context"
+	"fmt"
 	"os"
+	"path/filepath"
 	"syscall"
 
+	snapshotclient "github.com/kubernetes-csi/external-snapshotter/client/v6/clientset/versioned"
 	iconfig "github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
@@ -31,6 +34,8 @@ import (
 	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/pkg/index/job/readreplica/rotate/config"
 	"github.com/vdaas/vald/pkg/index/job/readreplica/rotate/service"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/tools/clientcmd"
 )
 
 type run struct {
@@ -38,14 +43,56 @@ type run struct {
 	cfg           *config.Data
 	observability observability.Observability
 	server        starter.Server
-	indexer       service.Rotator
+	rotator       service.Rotator
+}
+
+// FIXME: get clients from internal/k8s
+func getClients() (*kubernetes.Clientset, *snapshotclient.Clientset, error) {
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		panic(err)
+	}
+
+	kubeconfig := filepath.Join(homeDir, ".kube", "config")
+
+	cfg, err := clientcmd.BuildConfigFromFlags("", kubeconfig)
+	if err != nil {
+		panic(err)
+	}
+
+	client, err := kubernetes.NewForConfig(cfg)
+	if err != nil {
+		panic(err)
+	}
+
+	sclient, err := snapshotclient.NewForConfig(cfg)
+	if err != nil {
+		panic(err)
+	}
+
+	return client, sclient, nil
 }
 
 // New returns Runner instance.
 func New(cfg *config.Data) (_ runner.Runner, err error) {
 	eg := errgroup.Get()
 
-	indexer, err := service.New()
+	client, sclient, err := getClients()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get kubernetes client: %w", err)
+	}
+
+	// TODO: この辺はconfigから取得するようにする
+	rotator, err := service.New(
+		client,
+		sclient,
+		service.WithDeploymentPrefix("vald-agent-ngt-readreplica"),
+		service.WithNamespace("default"),
+		service.WithReplicaId(0),
+		service.WithPvcPrefix("vald-agent-ngt-readreplica-pvc"),
+		service.WithSnapshotPrefix("vald-agent-ngt-snapshot"),
+		service.WithVolumeName("vald-agent-ngt-readreplica-pvc"),
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -80,7 +127,7 @@ func New(cfg *config.Data) (_ runner.Runner, err error) {
 		cfg:           cfg,
 		observability: obs,
 		server:        srv,
-		indexer:       indexer,
+		rotator:       rotator,
 	}, nil
 }
 
@@ -116,7 +163,7 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 				log.Error(err)
 			}
 		}()
-		return r.indexer.Start(ctx)
+		return r.rotator.Start(ctx)
 	}))
 
 	r.eg.Go(safety.RecoverFunc(func() (err error) {

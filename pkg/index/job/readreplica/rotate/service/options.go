@@ -52,3 +52,10 @@ func WithPvcPrefix(pp string) Option {
 		return nil
 	}
 }
+
+func WithVolumeName(vn string) Option {
+	return func(r *rotator) error {
+		r.volumeName = vn
+		return nil
+	}
+}
