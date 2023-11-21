@@ -100,11 +100,17 @@ func (Search_AggregationAlgorithm) EnumDescriptor() ([]byte, []int) {
 type Remove_Timestamp_Operator int32
 
 const (
+	// The timestamp is equal to the specified value in the request.
 	Remove_Timestamp_Eq Remove_Timestamp_Operator = 0
+	// The timestamp is not equal to the specified value in the request.
 	Remove_Timestamp_Ne Remove_Timestamp_Operator = 1
+	// The timestamp is greater than or equal to the specified value in the request.
 	Remove_Timestamp_Ge Remove_Timestamp_Operator = 2
+	// The timestamp is greater than the specified value in the request.
 	Remove_Timestamp_Gt Remove_Timestamp_Operator = 3
+	// The timestamp is less than or equal to the specified value in the request.
 	Remove_Timestamp_Le Remove_Timestamp_Operator = 4
+	// The timestamp is less than the specified value in the request.
 	Remove_Timestamp_Lt Remove_Timestamp_Operator = 5
 )
 

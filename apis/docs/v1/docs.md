@@ -92,6 +92,7 @@
   - [Upsert.MultiRequest](#payload-v1-Upsert-MultiRequest)
   - [Upsert.ObjectRequest](#payload-v1-Upsert-ObjectRequest)
   - [Upsert.Request](#payload-v1-Upsert-Request)
+
   - [Remove.Timestamp.Operator](#payload-v1-Remove-Timestamp-Operator)
   - [Search.AggregationAlgorithm](#payload-v1-Search-AggregationAlgorithm)
 
@@ -982,14 +983,14 @@ Represent the upsert request.
 
 Operator is enum of each conditional operator.
 
-| Name | Number | Description |
-| ---- | ------ | ----------- |
-| Eq   | 0      |             |
-| Ne   | 1      |             |
-| Ge   | 2      |             |
-| Gt   | 3      |             |
-| Le   | 4      |             |
-| Lt   | 5      |             |
+| Name | Number | Description                                                                   |
+| ---- | ------ | ----------------------------------------------------------------------------- |
+| Eq   | 0      | The timestamp is equal to the specified value in the request.                 |
+| Ne   | 1      | The timestamp is not equal to the specified value in the request.             |
+| Ge   | 2      | The timestamp is greater than or equal to the specified value in the request. |
+| Gt   | 3      | The timestamp is greater than the specified value in the request.             |
+| Le   | 4      | The timestamp is less than or equal to the specified value in the request.    |
+| Lt   | 5      | The timestamp is less than the specified value in the request.                |
 
 <a name="payload-v1-Search-AggregationAlgorithm"></a>
 

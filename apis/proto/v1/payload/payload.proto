@@ -307,11 +307,17 @@ message Remove {
   message Timestamp {
     // Operator is enum of each conditional operator.
     enum Operator {
+      // The timestamp is equal to the specified value in the request.
       Eq = 0;
+      // The timestamp is not equal to the specified value in the request.
       Ne = 1;
+      // The timestamp is greater than or equal to the specified value in the request.
       Ge = 2;
+      // The timestamp is greater than the specified value in the request.
       Gt = 3;
+      // The timestamp is less than or equal to the specified value in the request.
       Le = 4;
+      // The timestamp is less than the specified value in the request.
       Lt = 5;
     }
     // The timestamp.
