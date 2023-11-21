@@ -1355,7 +1355,7 @@ func Test_server_GetTimestamp(t *testing.T) {
 		BrokenIndexHistoryLimit: 1,
 	}
 
-	setup := func(t *testing.T) (context.Context, Server) {
+	setup := func(t *testing.T) (errgroup.Group, context.Context, Server) {
 		t.Helper()
 		ngt, err := service.New(&defaultConfig)
 		require.NoError(t, err)
@@ -1370,7 +1370,7 @@ func Test_server_GetTimestamp(t *testing.T) {
 		s, err := New(opts...)
 		require.NoError(t, err)
 
-		return ectx, s
+		return eg, ectx, s
 	}
 
 	type test struct {
@@ -1382,7 +1382,8 @@ func Test_server_GetTimestamp(t *testing.T) {
 		{
 			name: "succeeds to get object meta",
 			testfunc: func(t *testing.T) {
-				ectx, s := setup(t)
+				eg, ectx, s := setup(t)
+				defer eg.Wait()
 
 				// insert and create `num` index
 				num := 42
@@ -1413,7 +1414,8 @@ func Test_server_GetTimestamp(t *testing.T) {
 		{
 			name: "returns error when the given ID is invalid",
 			testfunc: func(t *testing.T) {
-				ectx, s := setup(t)
+				eg, ectx, s := setup(t)
+				defer eg.Wait()
 
 				_, err := s.GetTimestamp(ectx, &payload.Object_GetTimestampRequest{
 					Id: &payload.Object_ID{
@@ -1426,7 +1428,8 @@ func Test_server_GetTimestamp(t *testing.T) {
 		{
 			name: "returns error when the given ID is not found",
 			testfunc: func(t *testing.T) {
-				ectx, s := setup(t)
+				eg, ectx, s := setup(t)
+				defer eg.Wait()
 
 				_, err := s.GetTimestamp(ectx, &payload.Object_GetTimestampRequest{
 					Id: &payload.Object_ID{
