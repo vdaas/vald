@@ -153,15 +153,15 @@ RemoveByTimestamp RPC is the method to remove vectors based on timestamp.
 
   - Remove.TimestampRequest
 
-    | field      | type             | label                             | required | description                                                                                   |
+    |   field    | type             | label                             | required | description                                                                                   |
     | :--------: | :--------------- | :-------------------------------- | :------: | :-------------------------------------------------------------------------------------------- |
     | timestamps | Remove.Timestamp | repeated(Array[Remove.Timestamp]) |    \*    | The timestamp comparison list.<br>If more than one is specified, the `AND` search is applied. |
 
   - Remove.Timestamp
 
-    | field     | type                      | label | required | description                                        |
-    | :-------: | :------------------------ | :---- | :------: | :------------------------------------------------- |
-    | timestamp | int64                     |       |    \*    | The timestamp.               |
+    |   field   | type                      | label | required | description                                       |
+    | :-------: | :------------------------ | :---- | :------: | :------------------------------------------------ |
+    | timestamp | int64                     |       |    \*    | The timestamp.                                    |
     | operator  | Remove.Timestamp.Operator |       |          | The conditionl operator. (default value is `Eq`). |
 
   - Remove.Timestamp.Operator
