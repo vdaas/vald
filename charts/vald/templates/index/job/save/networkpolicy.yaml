@@ -14,21 +14,18 @@
 # limitations under the License.
 #
 
+{{- $agent      := .Values.agent -}}
 {{- $discoverer := .Values.discoverer -}}
-{{- $lb         := .Values.gateway.lb -}}
-{{- $index      := .Values.manager.index -}}
-{{- $corrector  := .Values.manager.index.corrector -}}
-{{- $creator    := .Values.manager.index.creator -}}
 {{- $saver      := .Values.manager.index.saver -}}
-{{- if .Values.defaults.networkPolicy.enabled }}
+{{- if and .Values.defaults.networkPolicy.enabled $saver.enabled }}
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: discoverer-allow
+  name: {{ $saver.name }}-allow
 spec:
   podSelector:
     matchLabels:
-      app: {{ $discoverer.name }}
+      app: {{ $saver.name }}
   policyTypes:
     - Ingress
     - Egress
@@ -37,45 +34,27 @@ spec:
       - namespaceSelector:
           matchLabels:
             kubernetes.io/metadata.name: kube-system
-      - namespaceSelector:
-          matchLabels:
-            kubernetes.io/metadata.name: {{ .Release.Namespace }}
-        podSelector:
-          matchLabels:
-            app: {{ $lb.name }}
-      - namespaceSelector:
-          matchLabels:
-            kubernetes.io/metadata.name: {{ .Release.Namespace }}
-        podSelector:
-          matchLabels:
-            app: {{ $index.name }}
-      - namespaceSelector:
-          matchLabels:
-            kubernetes.io/metadata.name: {{ .Release.Namespace }}
-        podSelector:
-          matchLabels:
-            app: {{ $corrector.name }}
-      - namespaceSelector:
-          matchLabels:
-            kubernetes.io/metadata.name: {{ .Release.Namespace }}
-        podSelector:
-          matchLabels:
-            app: {{ $creator.name }}
-      - namespaceSelector:
-          matchLabels:
-            kubernetes.io/metadata.name: {{ .Release.Namespace }}
-        podSelector:
-          matchLabels:
-            app: {{ $saver.name }}
-      {{- if .Values.defaults.networkPolicy.custom.ingress }}
-      {{- toYaml .Values.defaults.networkPolicy.custom.ingress | nindent 4 }}
-      {{- end }}
+    {{- if .Values.defaults.networkPolicy.custom.ingress }}
+    {{- toYaml .Values.defaults.networkPolicy.custom.ingress | nindent 4 }}
+    {{- end }}
   egress:
     - to:
       - namespaceSelector:
           matchLabels:
+            kubernetes.io/metadata.name: {{ .Release.Namespace }}
+        podSelector:
+          matchLabels:
+            app: {{ $agent.name }}
+      - namespaceSelector:
+          matchLabels:
+            kubernetes.io/metadata.name: {{ .Release.Namespace }}
+        podSelector:
+          matchLabels:
+            app: {{ $discoverer.name }}
+      - namespaceSelector:
+          matchLabels:
             kubernetes.io/metadata.name: kube-system
-      {{- if .Values.defaults.networkPolicy.custom.egress }}
-      {{- toYaml .Values.defaults.networkPolicy.custom.egress | nindent 4 }}
-      {{- end }}
+    {{- if .Values.defaults.networkPolicy.custom.egress }}
+    {{- toYaml .Values.defaults.networkPolicy.custom.egress | nindent 4 }}
+    {{- end }}
 {{- end }}

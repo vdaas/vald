@@ -104,7 +104,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	corrector, err := service.New(
 		service.WithDiscoverer(discoverer),
 		service.WithIndexReplica(cfg.Corrector.IndexReplica),
-		service.WithBboltAsyncWriteConcurrency(cfg.Corrector.BboltAsyncWriteConcurrency),
+		service.WithKvsAsyncWriteConcurrency(cfg.Corrector.KvsAsyncWriteConcurrency),
 		service.WithStreamListConcurrency(cfg.Corrector.StreamListConcurrency),
 	)
 	if err != nil {
