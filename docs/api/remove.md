@@ -118,7 +118,7 @@ Here are some common reasons and how to resolve each error.
 
 ## RemoveByTimestamp RPC
 
-RemoveByTimestamp RPC is the method to remove vectors by timestamp.
+RemoveByTimestamp RPC is the method to remove vectors based on timestamp.
 
 ### Input
 
@@ -155,14 +155,14 @@ RemoveByTimestamp RPC is the method to remove vectors by timestamp.
 
     | field      | type             | label                             | required | description                                                                                   |
     | :--------: | :--------------- | :-------------------------------- | :------: | :-------------------------------------------------------------------------------------------- |
-    | timestamps | Remove.Timestamp | repeated(Array[Remove.Timestamp]) |    \*    | The Timestamp comparison list.<br>If more than one is specified, the `AND` search is applied. |
+    | timestamps | Remove.Timestamp | repeated(Array[Remove.Timestamp]) |    \*    | The timestamp comparison list.<br>If more than one is specified, the `AND` search is applied. |
 
   - Remove.Timestamp
 
-    | field     | type                      | label | required | description                                                                  |
-    | :-------: | :------------------------ | :---- | :------: | :-------------------------------------------------------------------------   |
-    | timestamp | int64                     |       |    \*    | The timestamp of the vector removed.                                         |
-    | operator  | Remove.Timestamp.Operator |       |          | The conditional operator for timestamp comparisons. (default value is `Eq`). |
+    | field     | type                      | label | required | description                                        |
+    | :-------: | :------------------------ | :---- | :------: | :------------------------------------------------- |
+    | timestamp | int64                     |       |    \*    | The timestamp.               |
+    | operator  | Remove.Timestamp.Operator |       |          | The conditionl operator. (default value is `Eq`). |
 
   - Remove.Timestamp.Operator
 

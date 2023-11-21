@@ -300,10 +300,11 @@ message Remove {
 
   // Represent the remove request based on timestamp.
   message TimestampRequest {
-    // Represent the multiple remove request contents based on timestamp.
+    // The timestamp comparison list. If more than one is specified, the `AND` search is applied.
     repeated Timestamp timestamps = 1;
   }
 
+  // Represent the timestamp comparison.
   message Timestamp {
     // Operator is enum of each conditional operator.
     enum Operator {
