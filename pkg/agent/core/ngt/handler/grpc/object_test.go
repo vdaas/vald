@@ -1397,6 +1397,7 @@ func Test_server_GetTimestamp(t *testing.T) {
 				})
 				require.NoError(t, err)
 
+				// now test if the timestamp can be returned correctly
 				for i := 0; i < num; i++ {
 					testvec := req.GetRequests()[i].GetVector()
 					res, err := s.GetTimestamp(ectx, &payload.Object_GetTimestampRequest{
