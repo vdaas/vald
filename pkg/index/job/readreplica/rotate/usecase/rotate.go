@@ -85,11 +85,9 @@ func New(cfg *config.Data) (_ runner.Runner, err error) {
 	rotator, err := service.New(
 		client,
 		sclient,
-		service.WithDeploymentPrefix(cfg.ReadreplicaRotate.DeploymentPrefix),
 		service.WithNamespace(cfg.ReadreplicaRotate.AgentNamespace),
-		service.WithReplicaId(0),
-		service.WithPvcPrefix(cfg.ReadreplicaRotate.PvcPrefix),
-		service.WithSnapshotPrefix(cfg.ReadreplicaRotate.SnapshotPrefix),
+		service.WithReplicaId(cfg.ReadreplicaRotate.ReadReplicaId),
+		service.WithReadReplicaLabelKey(cfg.ReadreplicaRotate.ReadReplicaLabelKey),
 		service.WithVolumeName(cfg.ReadreplicaRotate.VolumeName),
 	)
 	if err != nil {

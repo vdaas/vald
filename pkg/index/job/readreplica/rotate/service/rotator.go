@@ -42,12 +42,10 @@ type Rotator interface {
 }
 
 type rotator struct {
-	replicaid        int
-	namespace        string
-	deploymentPrefix string
-	snapshotPrefix   string
-	pvcPrefix        string
-	volumeName       string
+	namespace           string
+	volumeName          string
+	readReplicaLabelKey string
+	readReplicaId       string
 	// TODO: この辺はconbenchがマージされたあと、GetClientとかで引っ張ってくる
 	clientset  *kubernetes.Clientset
 	sClientset *snapshotclient.Clientset
@@ -141,26 +139,23 @@ func (r *rotator) rotate(ctx context.Context) error {
 func (r *rotator) createSnapshot(ctx context.Context) (new, old *snapshotv1.VolumeSnapshot, err error) {
 	snapshotInterface := r.sClientset.SnapshotV1().VolumeSnapshots(r.namespace)
 
-	list, err := snapshotInterface.List(ctx, metav1.ListOptions{})
+	list, err := snapshotInterface.List(ctx, metav1.ListOptions{
+		LabelSelector: fmt.Sprintf("%s=%s", r.readReplicaLabelKey, r.readReplicaId),
+	})
 	if err != nil {
 		return nil, nil, err
 	}
-
-	snapshotname := fmt.Sprintf("%s-%d", r.snapshotPrefix, r.replicaid)
-	for _, snap := range list.Items {
-		if strings.HasPrefix(snap.Name, snapshotname) {
-			old = &snap
-			break
-		}
-	}
-	if old == nil {
+	if len(list.Items) == 0 {
 		return nil, nil, fmt.Errorf("old snapshot not found")
 	}
 
+	old = &list.Items[0]
+	newNameBase := getNewBaseName(old.GetObjectMeta().GetName())
 	new = &snapshotv1.VolumeSnapshot{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      fmt.Sprintf(snapshotname+"-%d", time.Now().Unix()),
-			Namespace: old.Namespace,
+			Name:      fmt.Sprintf("%s%d", newNameBase, time.Now().Unix()),
+			Namespace: old.GetNamespace(),
+			Labels:    old.GetObjectMeta().GetLabels(),
 		},
 		Spec: old.Spec,
 	}
@@ -174,26 +169,25 @@ func (r *rotator) createSnapshot(ctx context.Context) (new, old *snapshotv1.Volu
 
 func (r *rotator) createPVC(ctx context.Context, newSnapShot string) (new, old *v1.PersistentVolumeClaim, err error) {
 	pvcInterface := r.clientset.CoreV1().PersistentVolumeClaims(r.namespace)
-	list, err := pvcInterface.List(ctx, metav1.ListOptions{})
+	list, err := pvcInterface.List(ctx, metav1.ListOptions{
+		LabelSelector: fmt.Sprintf("%s=%s", r.readReplicaLabelKey, r.readReplicaId),
+	})
 	if err != nil {
 		return nil, nil, err
 	}
-
-	pvcname := fmt.Sprintf("%s-%d", r.pvcPrefix, r.replicaid)
-	for _, pvc := range list.Items {
-		if strings.HasPrefix(pvc.Name, pvcname) {
-			old = &pvc
-			break
-		}
-	}
-	if old == nil {
+	if len(list.Items) == 0 {
 		return nil, nil, fmt.Errorf("old pvc not found")
 	}
 
+	old = &list.Items[0]
+	newNameBase := getNewBaseName(old.GetObjectMeta().GetName())
+
+	// remove timestamp from old pvc name
 	new = &v1.PersistentVolumeClaim{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      fmt.Sprintf(pvcname+"-%d", time.Now().Unix()),
-			Namespace: old.Namespace,
+			Name:      fmt.Sprintf("%s%d", newNameBase, time.Now().Unix()),
+			Namespace: old.GetNamespace(),
+			Labels:    old.GetObjectMeta().GetLabels(),
 		},
 		Spec: v1.PersistentVolumeClaimSpec{
 			AccessModes: old.Spec.AccessModes,
@@ -216,12 +210,17 @@ func (r *rotator) createPVC(ctx context.Context, newSnapShot string) (new, old *
 func (r *rotator) updateDeployment(ctx context.Context, newPVC string) error {
 	deploymentInterface := r.clientset.AppsV1().Deployments(r.namespace)
 
-	deploymentname := fmt.Sprintf("%s-%d", r.deploymentPrefix, r.replicaid)
-	deployment, err := deploymentInterface.Get(ctx, deploymentname, metav1.GetOptions{})
+	list, err := deploymentInterface.List(ctx, metav1.ListOptions{
+		LabelSelector: fmt.Sprintf("%s=%s", r.readReplicaLabelKey, r.readReplicaId),
+	})
 	if err != nil {
 		return err
 	}
+	if len(list.Items) == 0 {
+		return fmt.Errorf("deployment not found")
+	}
 
+	deployment := &list.Items[0]
 	if deployment.Spec.Template.ObjectMeta.Annotations == nil {
 		deployment.Spec.Template.ObjectMeta.Annotations = map[string]string{}
 	}
@@ -244,7 +243,9 @@ func (r *rotator) updateDeployment(ctx context.Context, newPVC string) error {
 func (r *rotator) deleteSnapshot(ctx context.Context, snapshot string) error {
 	snapshotInterface := r.sClientset.SnapshotV1().VolumeSnapshots(r.namespace)
 
-	watcher, err := snapshotInterface.Watch(ctx, metav1.ListOptions{})
+	watcher, err := snapshotInterface.Watch(ctx, metav1.ListOptions{
+		LabelSelector: fmt.Sprintf("%s=%s", r.readReplicaLabelKey, r.readReplicaId),
+	})
 	if err != nil {
 		return fmt.Errorf("failed to watch snapshot: %w", err)
 	}
@@ -279,7 +280,9 @@ func (r *rotator) deleteSnapshot(ctx context.Context, snapshot string) error {
 func (r *rotator) deletePVC(ctx context.Context, pvc string) error {
 	pvcInterface := r.clientset.CoreV1().PersistentVolumeClaims(r.namespace)
 
-	watcher, err := pvcInterface.Watch(ctx, metav1.ListOptions{})
+	watcher, err := pvcInterface.Watch(ctx, metav1.ListOptions{
+		LabelSelector: fmt.Sprintf("%s=%s", r.readReplicaLabelKey, r.readReplicaId),
+	})
 	if err != nil {
 		return fmt.Errorf("failed to watch PVC: %w", err)
 	}
@@ -309,4 +312,16 @@ func (r *rotator) deletePVC(ctx context.Context, pvc string) error {
 	}
 
 	return eg.Wait()
+}
+
+func getNewBaseName(old string) string {
+	splits := strings.SplitAfter(old, "-")
+	newNameBase := old + "-"
+	// if this is not the first rotation, remove timestamp from the name
+	// e.g. vald-agent-ngt-readreplica-0 -> the last element will be "0" which len is 1
+	// so this means this is the first rotation
+	if len(splits[len(splits)-1]) != 1 {
+		newNameBase = strings.Join(splits[:len(splits)-1], "")
+	}
+	return newNameBase
 }

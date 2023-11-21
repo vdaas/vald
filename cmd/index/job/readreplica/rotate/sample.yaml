@@ -72,9 +72,8 @@ server_config:
     key: /path/to/key
 rotator:
   agent_namespace: "default"
-  deployment_prefix: "vald-agent-ngt-readreplica"
-  snapshot_prefix: vald-agent-ngt-snapshot
-  pvc_prefix: "vald-agent-ngt-readreplica-pvc"
+  read_replica_label_key: "vald-readreplica-id"
+  read_replica_id: "0"
   volume_name: "vald-agent-ngt-readreplica-pvc"
 observability:
   enabled: false

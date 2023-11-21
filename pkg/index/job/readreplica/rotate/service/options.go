@@ -18,9 +18,9 @@ type Option func(_ *rotator) error
 
 var defaultOpts = []Option{}
 
-func WithReplicaId(id int) Option {
+func WithReplicaId(id string) Option {
 	return func(r *rotator) error {
-		r.replicaid = id
+		r.readReplicaId = id
 		return nil
 	}
 }
@@ -32,30 +32,16 @@ func WithNamespace(ns string) Option {
 	}
 }
 
-func WithDeploymentPrefix(dp string) Option {
-	return func(r *rotator) error {
-		r.deploymentPrefix = dp
-		return nil
-	}
-}
-
-func WithSnapshotPrefix(sp string) Option {
-	return func(r *rotator) error {
-		r.snapshotPrefix = sp
-		return nil
-	}
-}
-
-func WithPvcPrefix(pp string) Option {
-	return func(r *rotator) error {
-		r.pvcPrefix = pp
-		return nil
-	}
-}
-
 func WithVolumeName(vn string) Option {
 	return func(r *rotator) error {
 		r.volumeName = vn
+		return nil
+	}
+}
+
+func WithReadReplicaLabelKey(key string) Option {
+	return func(r *rotator) error {
+		r.readReplicaLabelKey = key
 		return nil
 	}
 }
