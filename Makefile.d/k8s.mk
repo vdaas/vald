@@ -43,6 +43,8 @@ k8s/manifest/update: \
 	mv $(TEMP_DIR)/vald/templates/gateway/lb k8s/gateway/lb
 	mv $(TEMP_DIR)/vald/templates/manager/index k8s/manager/index
 	mv $(TEMP_DIR)/vald/templates/index/job/correction k8s/index/job/correction
+	mv $(TEMP_DIR)/vald/templates/index/job/creation k8s/index/job/creation
+	mv $(TEMP_DIR)/vald/templates/index/job/save k8s/index/job/save
 	rm -rf $(TEMP_DIR)
 
 .PHONY: k8s/manifest/helm-operator/clean
