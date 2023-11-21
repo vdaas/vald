@@ -2342,7 +2342,7 @@ type Remove_TimestampRequest struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// Represent the multiple remove request contents based on timestamp.
+	// The timestamp comparison list. If more than one is specified, the `AND` search is applied.
 	Timestamps []*Remove_Timestamp `protobuf:"bytes,1,rep,name=timestamps,proto3" json:"timestamps,omitempty"`
 }
 
@@ -2385,6 +2385,7 @@ func (x *Remove_TimestampRequest) GetTimestamps() []*Remove_Timestamp {
 	return nil
 }
 
+// Represent the timestamp comparison.
 type Remove_Timestamp struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache

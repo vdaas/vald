@@ -718,6 +718,8 @@ Represent the remove request.
 
 ### Remove.Timestamp
 
+Represent the timestamp comparison.
+
 | Field     | Type                                                               | Label | Description               |
 | --------- | ------------------------------------------------------------------ | ----- | ------------------------- |
 | timestamp | [int64](#int64)                                                    |       | The timestamp.            |
@@ -729,9 +731,9 @@ Represent the remove request.
 
 Represent the remove request based on timestamp.
 
-| Field      | Type                                             | Label    | Description                                                        |
-| ---------- | ------------------------------------------------ | -------- | ------------------------------------------------------------------ |
-| timestamps | [Remove.Timestamp](#payload-v1-Remove-Timestamp) | repeated | Represent the multiple remove request contents based on timestamp. |
+| Field      | Type                                             | Label    | Description                                                                                |
+| ---------- | ------------------------------------------------ | -------- | ------------------------------------------------------------------------------------------ |
+| timestamps | [Remove.Timestamp](#payload-v1-Remove-Timestamp) | repeated | The timestamp comparison list. If more than one is specified, the `AND` search is applied. |
 
 <a name="payload-v1-Search"></a>
 

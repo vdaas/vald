@@ -145,7 +145,7 @@
           "items": {
             "$ref": "#/definitions/v1RemoveTimestamp"
           },
-          "description": "Represent the multiple remove request contents based on timestamp."
+          "description": "The timestamp comparison list. If more than one is specified, the `AND` search is applied."
         }
       },
       "description": "Represent the remove request based on timestamp."
@@ -314,7 +314,8 @@
           "$ref": "#/definitions/TimestampOperator",
           "description": "The conditional operator."
         }
-      }
+      },
+      "description": "Represent the timestamp comparison."
     }
   }
 }
