@@ -2798,7 +2798,6 @@ func (s *server) RemoveByTimestamp(ctx context.Context, req *payload.Remove_Time
 	// If this condition is matched, it means the request from user.
 	// So this component sends requests to other Mirror gateways and the Vald gateway (LB gateway) of its own cluster.
 	return s.handleRemoveByTimestamp(ctx, req)
-
 }
 
 func (s *server) handleRemoveByTimestamp(ctx context.Context, req *payload.Remove_TimestampRequest) (locs *payload.Object_Locations, err error) {
