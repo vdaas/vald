@@ -378,6 +378,20 @@ message Object {
     int64 timestamp = 3;
   }
 
+  // Represent a request to fetch vector meta data.
+  message GetTimestampRequest {
+    // The vector ID to be fetched.
+    ID id = 1 [(validate.rules).repeated.min_items = 2];
+  }
+
+  // Represent a vector meta data.
+  message Timestamp {
+    // The vector ID.
+    string id = 1 [(validate.rules).string.min_len = 1];
+    // timestamp represents when this vector inserted.
+    int64 timestamp = 2;
+  }
+
   // Represent multiple vectors.
   message Vectors {
     repeated Vector vectors = 1;
