@@ -17,7 +17,6 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"path/filepath"
 	"syscall"
 
 	iconfig "github.com/vdaas/vald/internal/config"
@@ -34,7 +33,7 @@ import (
 	"github.com/vdaas/vald/pkg/index/job/readreplica/rotate/config"
 	"github.com/vdaas/vald/pkg/index/job/readreplica/rotate/service"
 	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/tools/clientcmd"
+	ctrl "sigs.k8s.io/controller-runtime"
 )
 
 type run struct {
@@ -47,18 +46,7 @@ type run struct {
 
 // FIXME: get clients from internal/k8s
 func getClients() (*kubernetes.Clientset, error) {
-	homeDir, err := os.UserHomeDir()
-	if err != nil {
-		panic(err)
-	}
-
-	kubeconfig := filepath.Join(homeDir, ".kube", "config")
-
-	cfg, err := clientcmd.BuildConfigFromFlags("", kubeconfig)
-	if err != nil {
-		panic(err)
-	}
-
+	cfg := ctrl.GetConfigOrDie()
 	client, err := kubernetes.NewForConfig(cfg)
 	if err != nil {
 		panic(err)
