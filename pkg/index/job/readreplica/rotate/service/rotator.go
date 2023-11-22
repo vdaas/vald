@@ -21,14 +21,20 @@ import (
 	"time"
 
 	"github.com/vdaas/vald/internal/errors"
+	client "github.com/vdaas/vald/internal/k8s/client"
 	sclient "github.com/vdaas/vald/internal/k8s/snapshot/client"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/selection"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/kubernetes"
+
+	snapshotv1 "github.com/kubernetes-csi/external-snapshotter/client/v6/apis/volumesnapshot/v1"
+	appsv1 "k8s.io/api/apps/v1"
 )
 
 const (
@@ -48,6 +54,7 @@ type rotator struct {
 	// TODO: この辺はconbenchがマージされたあと、GetClientとかで引っ張ってくる
 	clientset *kubernetes.Clientset
 	sClient   sclient.Client
+	client    client.Client
 }
 
 // New returns Indexer object if no error occurs.
@@ -70,6 +77,17 @@ func New(clientset *kubernetes.Clientset, opts ...Option) (Rotator, error) {
 			log.Warn(oerr)
 		}
 	}
+
+	client, err := client.New(
+		// TODO: この辺のscheme定義はinternal/k8sに押し込んでaliasとして参照する
+		client.WithRuntimeSchemeBuilder(v1.SchemeBuilder),
+		client.WithRuntimeSchemeBuilder(appsv1.SchemeBuilder),
+		client.WithRuntimeSchemeBuilder(snapshotv1.SchemeBuilder),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create kubernetes client: %w", err)
+	}
+	r.client = client
 
 	sclient, err := sclient.New(sclient.WithNamespace(r.namespace))
 	if err != nil {
@@ -138,14 +156,17 @@ func (r *rotator) rotate(ctx context.Context) error {
 }
 
 func (r *rotator) createSnapshot(ctx context.Context) (new, old *sclient.VolumeSnapshot, err error) {
-	list, err := r.sClient.List(ctx, sclient.ListOptions{
-		LabelSelector: fmt.Sprintf("%s=%s", r.readReplicaLabelKey, r.readReplicaId),
-	})
+	list := snapshotv1.VolumeSnapshotList{}
+	req, err := labels.NewRequirement(r.readReplicaLabelKey, selection.Equals, []string{r.readReplicaId})
 	if err != nil {
 		return nil, nil, err
 	}
-	if len(list.Items) == 0 {
-		return nil, nil, fmt.Errorf("old snapshot not found")
+	opts := client.ListOptions{
+		Namespace:     r.namespace,
+		LabelSelector: labels.NewSelector().Add(*req),
+	}
+	if err := r.client.List(ctx, &list, &opts); err != nil {
+		return nil, nil, fmt.Errorf("failed to get snapshot: %w", err)
 	}
 
 	old = &list.Items[0]
@@ -169,14 +190,19 @@ func (r *rotator) createSnapshot(ctx context.Context) (new, old *sclient.VolumeS
 
 func (r *rotator) createPVC(ctx context.Context, newSnapShot string) (new, old *v1.PersistentVolumeClaim, err error) {
 	pvcInterface := r.clientset.CoreV1().PersistentVolumeClaims(r.namespace)
-	list, err := pvcInterface.List(ctx, metav1.ListOptions{
-		LabelSelector: fmt.Sprintf("%s=%s", r.readReplicaLabelKey, r.readReplicaId),
-	})
+
+	list := v1.PersistentVolumeClaimList{}
+	// TODO: requirementとoptsは全体で使いまわせる
+	req, err := labels.NewRequirement(r.readReplicaLabelKey, selection.Equals, []string{r.readReplicaId})
 	if err != nil {
 		return nil, nil, err
 	}
-	if len(list.Items) == 0 {
-		return nil, nil, fmt.Errorf("old pvc not found")
+	opts := client.ListOptions{
+		Namespace:     r.namespace,
+		LabelSelector: labels.NewSelector().Add(*req),
+	}
+	if err := r.client.List(ctx, &list, &opts); err != nil {
+		return nil, nil, fmt.Errorf("failed to get PVC: %w", err)
 	}
 
 	old = &list.Items[0]
@@ -210,17 +236,21 @@ func (r *rotator) createPVC(ctx context.Context, newSnapShot string) (new, old *
 func (r *rotator) updateDeployment(ctx context.Context, newPVC string) error {
 	deploymentInterface := r.clientset.AppsV1().Deployments(r.namespace)
 
-	list, err := deploymentInterface.List(ctx, metav1.ListOptions{
-		LabelSelector: fmt.Sprintf("%s=%s", r.readReplicaLabelKey, r.readReplicaId),
-	})
+	list := appsv1.DeploymentList{}
+	requirement, err := labels.NewRequirement(r.readReplicaLabelKey, selection.Equals, []string{r.readReplicaId})
 	if err != nil {
 		return err
 	}
-	if len(list.Items) == 0 {
-		return fmt.Errorf("deployment not found")
+	opt := client.ListOptions{
+		Namespace:     r.namespace,
+		LabelSelector: labels.NewSelector().Add(*requirement),
+	}
+	opt.LabelSelector.Add(*requirement)
+	if err := r.client.List(ctx, &list, &opt); err != nil {
+		return fmt.Errorf("failed to get deployment through client: %w", err)
 	}
 
-	deployment := &list.Items[0]
+	deployment := list.Items[0]
 	if deployment.Spec.Template.ObjectMeta.Annotations == nil {
 		deployment.Spec.Template.ObjectMeta.Annotations = map[string]string{}
 	}
@@ -232,7 +262,7 @@ func (r *rotator) updateDeployment(ctx context.Context, newPVC string) error {
 		}
 	}
 
-	_, err = deploymentInterface.Update(ctx, deployment, metav1.UpdateOptions{})
+	_, err = deploymentInterface.Update(ctx, &deployment, metav1.UpdateOptions{})
 	if err != nil {
 		return err
 	}
