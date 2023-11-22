@@ -20,7 +20,6 @@ import (
 	"path/filepath"
 	"syscall"
 
-	snapshotclient "github.com/kubernetes-csi/external-snapshotter/client/v6/clientset/versioned"
 	iconfig "github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
@@ -47,7 +46,7 @@ type run struct {
 }
 
 // FIXME: get clients from internal/k8s
-func getClients() (*kubernetes.Clientset, *snapshotclient.Clientset, error) {
+func getClients() (*kubernetes.Clientset, error) {
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
 		panic(err)
@@ -65,26 +64,20 @@ func getClients() (*kubernetes.Clientset, *snapshotclient.Clientset, error) {
 		panic(err)
 	}
 
-	sclient, err := snapshotclient.NewForConfig(cfg)
-	if err != nil {
-		panic(err)
-	}
-
-	return client, sclient, nil
+	return client, nil
 }
 
 // New returns Runner instance.
 func New(cfg *config.Data) (_ runner.Runner, err error) {
 	eg := errgroup.Get()
 
-	client, sclient, err := getClients()
+	client, err := getClients()
 	if err != nil {
 		return nil, fmt.Errorf("failed to get kubernetes client: %w", err)
 	}
 
 	rotator, err := service.New(
 		client,
-		sclient,
 		service.WithNamespace(cfg.ReadreplicaRotate.AgentNamespace),
 		service.WithReplicaId(cfg.ReadreplicaRotate.ReadReplicaId),
 		service.WithReadReplicaLabelKey(cfg.ReadreplicaRotate.ReadReplicaLabelKey),

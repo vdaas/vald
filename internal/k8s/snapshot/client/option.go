@@ -15,7 +15,7 @@ package client
 
 type Option func(*client) error
 
-var defaultOptions = []Option{
+var defaultOpts = []Option{
 	WithNamespace("default"),
 }
 

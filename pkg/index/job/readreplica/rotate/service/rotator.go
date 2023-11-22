@@ -20,9 +20,8 @@ import (
 	"strings"
 	"time"
 
-	snapshotv1 "github.com/kubernetes-csi/external-snapshotter/client/v6/apis/volumesnapshot/v1"
-	snapshotclient "github.com/kubernetes-csi/external-snapshotter/client/v6/clientset/versioned"
 	"github.com/vdaas/vald/internal/errors"
+	sclient "github.com/vdaas/vald/internal/k8s/snapshot/client"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/sync/errgroup"
@@ -47,23 +46,18 @@ type rotator struct {
 	readReplicaLabelKey string
 	readReplicaId       string
 	// TODO: この辺はconbenchがマージされたあと、GetClientとかで引っ張ってくる
-	clientset  *kubernetes.Clientset
-	sClientset *snapshotclient.Clientset
+	clientset *kubernetes.Clientset
+	sClient   sclient.Client
 }
 
 // New returns Indexer object if no error occurs.
-func New(clientset *kubernetes.Clientset, sClientset *snapshotclient.Clientset, opts ...Option) (Rotator, error) {
+func New(clientset *kubernetes.Clientset, opts ...Option) (Rotator, error) {
 	r := new(rotator)
 
 	if clientset == nil {
 		return nil, fmt.Errorf("clientset is nil")
 	}
-	if sClientset == nil {
-		return nil, fmt.Errorf("snapshot clientset is nil")
-	}
-
 	r.clientset = clientset
-	r.sClientset = sClientset
 
 	for _, opt := range append(defaultOpts, opts...) {
 		if err := opt(r); err != nil {
@@ -76,6 +70,13 @@ func New(clientset *kubernetes.Clientset, sClientset *snapshotclient.Clientset, 
 			log.Warn(oerr)
 		}
 	}
+
+	sclient, err := sclient.New(sclient.WithNamespace(r.namespace))
+	if err != nil {
+		return nil, fmt.Errorf("failed to create snapshot client: %w", err)
+	}
+	r.sClient = sclient
+
 	return r, nil
 }
 
@@ -136,10 +137,8 @@ func (r *rotator) rotate(ctx context.Context) error {
 	return nil
 }
 
-func (r *rotator) createSnapshot(ctx context.Context) (new, old *snapshotv1.VolumeSnapshot, err error) {
-	snapshotInterface := r.sClientset.SnapshotV1().VolumeSnapshots(r.namespace)
-
-	list, err := snapshotInterface.List(ctx, metav1.ListOptions{
+func (r *rotator) createSnapshot(ctx context.Context) (new, old *sclient.VolumeSnapshot, err error) {
+	list, err := r.sClient.List(ctx, sclient.ListOptions{
 		LabelSelector: fmt.Sprintf("%s=%s", r.readReplicaLabelKey, r.readReplicaId),
 	})
 	if err != nil {
@@ -151,7 +150,7 @@ func (r *rotator) createSnapshot(ctx context.Context) (new, old *snapshotv1.Volu
 
 	old = &list.Items[0]
 	newNameBase := getNewBaseName(old.GetObjectMeta().GetName())
-	new = &snapshotv1.VolumeSnapshot{
+	new = &sclient.VolumeSnapshot{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      fmt.Sprintf("%s%d", newNameBase, time.Now().Unix()),
 			Namespace: old.GetNamespace(),
@@ -160,10 +159,11 @@ func (r *rotator) createSnapshot(ctx context.Context) (new, old *snapshotv1.Volu
 		Spec: old.Spec,
 	}
 
-	new, err = snapshotInterface.Create(ctx, new, metav1.CreateOptions{})
+	new, err = r.sClient.Create(ctx, new, sclient.CreateOptions{})
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to create snapshot: %w", err)
 	}
+
 	return new, old, nil
 }
 
@@ -241,9 +241,7 @@ func (r *rotator) updateDeployment(ctx context.Context, newPVC string) error {
 }
 
 func (r *rotator) deleteSnapshot(ctx context.Context, snapshot string) error {
-	snapshotInterface := r.sClientset.SnapshotV1().VolumeSnapshots(r.namespace)
-
-	watcher, err := snapshotInterface.Watch(ctx, metav1.ListOptions{
+	watcher, err := r.sClient.Watch(ctx, sclient.ListOptions{
 		LabelSelector: fmt.Sprintf("%s=%s", r.readReplicaLabelKey, r.readReplicaId),
 	})
 	if err != nil {
@@ -269,7 +267,7 @@ func (r *rotator) deleteSnapshot(ctx context.Context, snapshot string) error {
 		}
 	})
 
-	err = snapshotInterface.Delete(ctx, snapshot, metav1.DeleteOptions{})
+	err = r.sClient.Delete(ctx, snapshot, sclient.DeleteOptions{})
 	if err != nil {
 		return fmt.Errorf("failed to delete snapshot: %w", err)
 	}
