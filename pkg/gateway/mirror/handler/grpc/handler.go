@@ -943,11 +943,9 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (loc *
 		}
 	}()
 
-	reqSrcPodName := s.gateway.FromForwardedContext(ctx)
-
 	// If this condition is matched, it means that the request was proxied from another Mirror Gateway.
 	// So this component sends requests only to the Vald gateway (LB gateway) of its own cluster.
-	if len(reqSrcPodName) != 0 {
+	if s.isProxied(ctx) {
 		loc, err = s.doInsert(ctx, req, func(ctx context.Context) (*payload.Object_Location, error) {
 			_, derr := s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, _ string, vc vald.ClientWithMirror, copts ...grpc.CallOption) (interface{}, error) {
 				loc, err = vc.Insert(ctx, req, copts...)
@@ -980,6 +978,16 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (loc *
 
 	// If this condition is matched, it means the request from user.
 	// So this component sends requests to other Mirror gateways and the Vald gateway (LB gateway) of its own cluster.
+	return s.handleInsert(ctx, req)
+}
+
+func (s *server) handleInsert(ctx context.Context, req *payload.Insert_Request) (loc *payload.Object_Location, err error) {
+	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, "handleInsert"), apiName+"/handleInsert")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
 
 	var mu sync.Mutex
 	var result sync.Map[string, *errorState] // map[target host: error state]
@@ -1118,12 +1126,34 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (loc *
 	// And send Update API requst to ALREADY_EXIST cluster using the query requested by the user.
 	log.Warnf("failed to "+vald.InsertRPCName+" API: %#v", err)
 
-	updateReq := &payload.Update_Request{
+	resLoc, err := s.handleInsertResult(ctx, alreadyExistsTgts, &payload.Update_Request{
 		Vector: req.GetVector(),
 		Config: &payload.Update_Config{
 			Timestamp: req.GetConfig().GetTimestamp(),
 		},
+	}, &result)
+	if err != nil {
+		return nil, err
 	}
+	loc.Name = resLoc.Name
+	loc.Ips = append(loc.Ips, resLoc.Ips...)
+	return loc, nil
+}
+
+func (s *server) handleInsertResult(ctx context.Context, alreadyExistsTgts []string, req *payload.Update_Request, result *sync.Map[string, *errorState]) (loc *payload.Object_Location, err error) {
+	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, "handleInsertResult"), apiName+"/handleInsertResult")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+
+	var mu sync.Mutex
+	loc = &payload.Object_Location{
+		Uuid: req.GetVector().GetId(),
+		Ips:  make([]string, 0),
+	}
+
 	err = s.gateway.DoMulti(ctx, alreadyExistsTgts, func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error {
 		ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "DoMulti/"+target), apiName+"/"+vald.UpdateRPCName+"/"+target)
 		defer func() {
@@ -1133,8 +1163,8 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (loc *
 		}()
 
 		code := codes.OK
-		ce, err := s.doUpdate(ctx, updateReq, func(ctx context.Context) (*payload.Object_Location, error) {
-			return vc.Update(ctx, updateReq, copts...)
+		ce, err := s.doUpdate(ctx, req, func(ctx context.Context) (*payload.Object_Location, error) {
+			return vc.Update(ctx, req, copts...)
 		})
 		if err != nil {
 			var (
@@ -1170,7 +1200,7 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (loc *
 	})
 	if err != nil {
 		reqInfo := &errdetails.RequestInfo{
-			RequestId: updateReq.GetVector().GetId(),
+			RequestId: req.GetVector().GetId(),
 		}
 		resInfo := &errdetails.ResourceInfo{
 			ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.UpdateRPCName + "." + vald.InsertRPCName + ".DoMulti",
@@ -1203,7 +1233,7 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (loc *
 	}
 
 	alreadyExistsTgts = alreadyExistsTgts[0:0]
-	successTgts = successTgts[0:0]
+	successTgts := make([]string, 0, result.Len()/2)
 	result.Range(func(target string, es *errorState) bool {
 		switch {
 		case es.err == nil:
@@ -1217,14 +1247,14 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (loc *
 		return true
 	})
 	if err == nil || (len(successTgts) > 0 && result.Len() == len(successTgts)+len(alreadyExistsTgts)) {
-		log.Debugf(vald.UpdateRPCName+"for "+vald.InsertRPCName+" API request succeeded to %#v", loc)
+		log.Debugf(vald.UpdateRPCName+" for "+vald.InsertRPCName+" API request succeeded to %#v", loc)
 		return loc, nil
 	}
 
-	reqInfo = &errdetails.RequestInfo{
+	reqInfo := &errdetails.RequestInfo{
 		RequestId: req.GetVector().GetId(),
 	}
-	resInfo = &errdetails.ResourceInfo{
+	resInfo := &errdetails.ResourceInfo{
 		ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.InsertRPCName + "." + vald.UpdateRPCName,
 		ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
 	}
@@ -1441,11 +1471,9 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (loc *
 		}
 	}()
 
-	reqSrcPodName := s.gateway.FromForwardedContext(ctx)
-
 	// If this condition is matched, it means that the request was proxied from another Mirror Gateway.
 	// So this component sends requests only to the Vald gateway (LB gateway) of its own cluster.
-	if len(reqSrcPodName) != 0 {
+	if s.isProxied(ctx) {
 		loc, err = s.doUpdate(ctx, req, func(ctx context.Context) (*payload.Object_Location, error) {
 			_, derr := s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, _ string, vc vald.ClientWithMirror, copts ...grpc.CallOption) (interface{}, error) {
 				loc, err = vc.Update(ctx, req, copts...)
@@ -1478,6 +1506,16 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (loc *
 
 	// If this condition is matched, it means the request from user.
 	// So this component sends requests to other Mirror gateways and the Vald gateway (LB gateway) of its own cluster.
+	return s.handleUpdate(ctx, req)
+}
+
+func (s *server) handleUpdate(ctx context.Context, req *payload.Update_Request) (loc *payload.Object_Location, err error) {
+	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, "handleUpdate"), apiName+"/handleUpdate")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
 
 	var mu sync.Mutex
 	var result sync.Map[string, *errorState] // map[target host: error state]
@@ -1631,12 +1669,34 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (loc *
 	// And send Insert API requst to NOT_FOUND cluster using query requested by the user.
 	log.Warnf("failed to "+vald.UpdateRPCName+" API: %#v", err)
 
-	insReq := &payload.Insert_Request{
+	resLoc, err := s.handleUpdateResult(ctx, notFoundTgts, &payload.Insert_Request{
 		Vector: req.GetVector(),
 		Config: &payload.Insert_Config{
 			Timestamp: req.GetConfig().GetTimestamp(),
 		},
+	}, &result)
+	if err != nil {
+		return nil, err
 	}
+	loc.Name = resLoc.Name
+	loc.Ips = append(loc.Ips, resLoc.Ips...)
+	return loc, nil
+}
+
+func (s *server) handleUpdateResult(ctx context.Context, notFoundTgts []string, req *payload.Insert_Request, result *sync.Map[string, *errorState]) (loc *payload.Object_Location, err error) {
+	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, "handleUpdateResult"), apiName+"/handleUpdateResult")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+
+	var mu sync.Mutex
+	loc = &payload.Object_Location{
+		Uuid: req.GetVector().GetId(),
+		Ips:  make([]string, 0),
+	}
+
 	err = s.gateway.DoMulti(ctx, notFoundTgts, func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error {
 		ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "BroadCast/"+target), apiName+"/"+vald.InsertRPCName+"/"+target)
 		defer func() {
@@ -1646,8 +1706,8 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (loc *
 		}()
 
 		code := codes.OK
-		ce, err := s.doInsert(ctx, insReq, func(ctx context.Context) (*payload.Object_Location, error) {
-			return vc.Insert(ctx, insReq, copts...)
+		ce, err := s.doInsert(ctx, req, func(ctx context.Context) (*payload.Object_Location, error) {
+			return vc.Insert(ctx, req, copts...)
 		})
 		if err != nil {
 			var (
@@ -1717,9 +1777,9 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (loc *
 		return nil, err
 	}
 
-	alreadyExistsCnt = 0
+	alreadyExistsCnt := 0
 	notFoundTgts = notFoundTgts[0:0]
-	successTgts = successTgts[0:0]
+	successTgts := make([]string, 0, result.Len()/2)
 	result.Range(func(target string, em *errorState) bool {
 		switch {
 		case em.err == nil:
@@ -1740,11 +1800,11 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (loc *
 		return loc, nil
 	}
 
-	reqInfo = &errdetails.RequestInfo{
+	reqInfo := &errdetails.RequestInfo{
 		RequestId:   req.GetVector().GetId(),
 		ServingData: errdetails.Serialize(req),
 	}
-	resInfo = &errdetails.ResourceInfo{
+	resInfo := &errdetails.ResourceInfo{
 		ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.UpdateRPCName + "." + vald.InsertRPCName,
 		ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
 	}
@@ -1969,11 +2029,9 @@ func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *
 		}
 	}()
 
-	reqSrcPodName := s.gateway.FromForwardedContext(ctx)
-
 	// If this condition is matched, it means that the request was proxied from another Mirror Gateway.
 	// So this component sends requests only to the Vald gateway (LB gateway) of its own cluster.
-	if len(reqSrcPodName) != 0 {
+	if s.isProxied(ctx) {
 		loc, err = s.doUpsert(ctx, req, func(ctx context.Context) (*payload.Object_Location, error) {
 			s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, _ string, vc vald.ClientWithMirror, copts ...grpc.CallOption) (interface{}, error) {
 				loc, err = vc.Upsert(ctx, req, copts...)
@@ -2007,6 +2065,16 @@ func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *
 
 	// If this condition is matched, it means the request from user.
 	// So this component sends requests to other Mirror gateways and the Vald gateway (LB gateway) of its own cluster.
+	return s.handleUpsert(ctx, req)
+}
+
+func (s *server) handleUpsert(ctx context.Context, req *payload.Upsert_Request) (loc *payload.Object_Location, err error) {
+	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, "handleUpsert"), apiName+"/handleUpsert")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
 
 	var mu sync.Mutex
 	var result sync.Map[string, *errorState] // map[target host: error state]
@@ -2330,11 +2398,9 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (loc *
 		}
 	}()
 
-	reqSrcPodName := s.gateway.FromForwardedContext(ctx)
-
 	// If this condition is matched, it means that the request was proxied from another Mirror Gateway.
 	// So this component sends requests only to the Vald gateway (LB gateway) of its own cluster.
-	if len(reqSrcPodName) != 0 {
+	if s.isProxied(ctx) {
 		loc, err = s.doRemove(ctx, req, func(ctx context.Context) (*payload.Object_Location, error) {
 			s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, _ string, vc vald.ClientWithMirror, copts ...grpc.CallOption) (interface{}, error) {
 				loc, err = vc.Remove(ctx, req, copts...)
@@ -2367,6 +2433,16 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (loc *
 
 	// If this condition is matched, it means the request from user.
 	// So this component sends requests to other Mirror gateways and the Vald gateway (LB gateway) of its own cluster.
+	return s.handleRemove(ctx, req)
+}
+
+func (s *server) handleRemove(ctx context.Context, req *payload.Remove_Request) (loc *payload.Object_Location, err error) {
+	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, "handleRemove"), apiName+"/handleRemove")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
 
 	var mu sync.Mutex
 	var result sync.Map[string, *errorState] // map[target host: error state]
@@ -2686,11 +2762,9 @@ func (s *server) RemoveByTimestamp(ctx context.Context, req *payload.Remove_Time
 		}
 	}()
 
-	reqSrcPodName := s.gateway.FromForwardedContext(ctx)
-
 	// If this condition is matched, it means that the request was proxied from another Mirror Gateway.
 	// So this component sends requests only to the Vald gateway (LB gateway) of its own cluster.
-	if len(reqSrcPodName) != 0 {
+	if s.isProxied(ctx) {
 		locs, err = s.doRemoveByTimestamp(ctx, req, func(ctx context.Context) (*payload.Object_Locations, error) {
 			_, derr := s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, _ string, vc vald.ClientWithMirror, copts ...grpc.CallOption) (interface{}, error) {
 				locs, err = vc.RemoveByTimestamp(ctx, req, copts...)
@@ -2723,6 +2797,17 @@ func (s *server) RemoveByTimestamp(ctx context.Context, req *payload.Remove_Time
 
 	// If this condition is matched, it means the request from user.
 	// So this component sends requests to other Mirror gateways and the Vald gateway (LB gateway) of its own cluster.
+	return s.handleRemoveByTimestamp(ctx, req)
+
+}
+
+func (s *server) handleRemoveByTimestamp(ctx context.Context, req *payload.Remove_TimestampRequest) (locs *payload.Object_Locations, err error) {
+	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, "handleRemoveByTimestamp"), apiName+"/handleRemoveByTimestamp")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
 
 	var mu sync.Mutex
 	var result sync.Map[string, *errorState] // map[target host: error state]
@@ -3170,6 +3255,10 @@ func (s *server) streamListObject(ctx context.Context, clientS vald.Object_Strea
 			}))
 		}
 	}
+}
+
+func (s *server) isProxied(ctx context.Context) bool {
+	return len(s.gateway.FromForwardedContext(ctx)) != 0
 }
 
 type errorState struct {
