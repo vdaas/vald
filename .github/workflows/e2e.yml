@@ -171,7 +171,7 @@ jobs:
         id: deploy_vald
         uses: ./.github/actions/e2e-deploy-vald
         env:
-          HELM_EXTRA_OPTIONS: "--values .github/helm/values/values-disable-indexing.yaml"
+          HELM_EXTRA_OPTIONS: "--values .github/helm/values/values-index-management-job.yaml"
         with:
           helm_extra_options: ${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }} ${{ env.HELM_EXTRA_OPTIONS }}
           values: .github/helm/values/values-lb.yaml
