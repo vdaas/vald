@@ -175,7 +175,6 @@ RemoveByTimestamp RPC is the method to remove vectors based on timestamp.
     |  Le   | Less than or Equal.    |
     |  Lt   | Less than.             |
 
-
   <div class="notice">
   In the TimestampRequest message, the 'timestamps' field is repeated, allowing the inclusion of multiple Timestamp.<br>
   When multiple Timestamps are provided, it results in an `AND` condition, enabling the realization of deletions with specified ranges.<br>
