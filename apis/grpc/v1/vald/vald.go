@@ -123,6 +123,7 @@ const (
 
 	ExistsRPCName           = "Exists"
 	GetObjectRPCName        = "GetObject"
+	GetTimestampRPCName     = "GetTimestamp"
 	StreamGetObjectRPCName  = "StreamGetObject"
 	StreamListObjectRPCName = "StreamListObject"
 )
