@@ -73,7 +73,7 @@ server_config:
 rotator:
   agent_namespace: "default"
   read_replica_label_key: "vald-readreplica-id"
-  read_replica_id: "0"
+  read_replica_id: "_MY_TARGET_REPLICA_ID_"
   volume_name: "vald-agent-ngt-readreplica-pvc"
 observability:
   enabled: false
