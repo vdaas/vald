@@ -78,6 +78,8 @@ k8s/vald/deploy:
 	    --set gateway.filter.image.repository=$(CRORG)/$(FILTER_GATEWAY_IMAGE) \
 	    --set gateway.lb.image.repository=$(CRORG)/$(LB_GATEWAY_IMAGE) \
 	    --set manager.index.image.repository=$(CRORG)/$(MANAGER_INDEX_IMAGE) \
+	    --set manager.index.creator.image.repository=$(CRORG)/$(MANAGER_INDEX_IMAGE) \
+	    --set manager.index.saver.image.repository=$(CRORG)/$(INDEX_SAVE_IMAGE) \
 	    $(HELM_EXTRA_OPTIONS) \
 	    --output-dir $(TEMP_DIR) \
 	    charts/vald
@@ -87,6 +89,8 @@ k8s/vald/deploy:
 	kubectl apply -f $(TEMP_DIR)/vald/templates/discoverer || true
 	kubectl apply -f $(TEMP_DIR)/vald/templates/gateway/lb || true
 	kubectl apply -f $(TEMP_DIR)/vald/templates/index/job/correction || true
+	kubectl apply -f $(TEMP_DIR)/vald/templates/index/job/creation || true
+	kubectl apply -f $(TEMP_DIR)/vald/templates/index/job/save || true
 	rm -rf $(TEMP_DIR)
 	kubectl get pods -o jsonpath="{.items[*].spec.containers[*].image}" | tr " " "\n"
 
@@ -105,6 +109,8 @@ k8s/vald/delete:
 	    --output-dir $(TEMP_DIR) \
 	    charts/vald
 	kubectl delete -f $(TEMP_DIR)/vald/templates/index/job/correction
+	kubectl delete -f $(TEMP_DIR)/vald/templates/index/job/creation
+	kubectl delete -f $(TEMP_DIR)/vald/templates/index/job/save
 	kubectl delete -f $(TEMP_DIR)/vald/templates/gateway/lb
 	kubectl delete -f $(TEMP_DIR)/vald/templates/manager/index
 	kubectl delete -f $(TEMP_DIR)/vald/templates/discoverer
