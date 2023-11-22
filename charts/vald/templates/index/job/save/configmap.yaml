@@ -13,50 +13,49 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-{{- $corrector := .Values.manager.index.corrector -}}
-{{- $gateway := .Values.gateway.lb -}}
-{{- $index := .Values.manager.index -}}
-{{- $agent := .Values.agent -}}
+{{- $saver      := .Values.manager.index.saver -}}
+{{- $gateway    := .Values.gateway.lb -}}
+{{- $index      := .Values.manager.index -}}
+{{- $agent      := .Values.agent -}}
 {{- $discoverer := .Values.discoverer -}}
-{{- if $corrector.enabled }}
+{{- if $saver.enabled }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ $corrector.name }}-config
+  name: {{ $saver.name }}-config
   labels:
     app.kubernetes.io/name: {{ include "vald.name" . }}
     helm.sh/chart: {{ include "vald.chart" . }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/version: {{ .Chart.Version }}
-    app.kubernetes.io/component: {{ $corrector.name }}
+    app.kubernetes.io/component: {{ $saver.name }}
 data:
   config.yaml: |
     ---
-    version: {{ $corrector.version }}
-    time_zone: {{ default .Values.defaults.time_zone $corrector.time_zone }}
+    version: {{ $saver.version }}
+    time_zone: {{ default .Values.defaults.time_zone $saver.time_zone }}
     logging:
-      {{- $logging := dict "Values" $corrector.logging "default" .Values.defaults.logging }}
+      {{- $logging := dict "Values" $saver.logging "default" .Values.defaults.logging }}
       {{- include "vald.logging" $logging | nindent 6 }}
     server_config:
-      {{- $servers := dict "Values" $corrector.server_config "default" .Values.defaults.server_config }}
+      {{- $servers := dict "Values" $saver.server_config "default" .Values.defaults.server_config }}
       {{- include "vald.servers" $servers | nindent 6 }}
     observability:
-      {{- $observability := dict "Values" $corrector.observability "default" .Values.defaults.observability }}
+      {{- $observability := dict "Values" $saver.observability "default" .Values.defaults.observability }}
       {{- include "vald.observability" $observability | nindent 6 }}
-    corrector:
+    saver:
       agent_port: {{ default .Values.defaults.server_config.servers.grpc.port $agent.server_config.servers.grpc.port }}
       agent_name: {{ $agent.name | quote }}
       agent_dns: {{ $agent.name }}.{{ .Release.Namespace }}.svc.cluster.local
-      agent_namespace: {{ $index.indexer.agent_namespace | quote }}
-      node_name: {{ $index.indexer.node_name | quote }}
-      stream_list_concurrency: {{ $corrector.stream_list_concurrency }}
-      kvs_async_write_concurrency: {{ $corrector.kvs_async_write_concurrency }}
-      index_replica: {{ $gateway.gateway_config.index_replica }}
+      agent_namespace: {{ $saver.agent_namespace | quote }}
+      node_name: {{ $saver.node_name | quote }}
+      concurrency: {{ $saver.concurrency }}
+      target_addrs: {{ $saver.target_addrs }}
       discoverer:
-        duration: {{ $corrector.discoverer.duration }}
+        duration: {{ $saver.discoverer.duration }}
         client:
-          {{- $discovererClient := $index.corrector.discoverer.client }}
+          {{- $discovererClient := $saver.discoverer.client }}
           {{- $discovererServerPort := $discoverer.server_config.servers.grpc.port }}
           {{- $defaultDiscovererHost := printf "%s.%s.svc.cluster.local" $discoverer.name .Release.Namespace }}
           {{- $defaultDiscovererPort := default .Values.defaults.server_config.servers.grpc.port $discovererServerPort }}
@@ -66,6 +65,6 @@ data:
           {{- $discovererGRPCclient := dict "Values" $discovererClient "default" .Values.defaults.grpc.client }}
           {{- include "vald.grpc.client" $discovererGRPCclient | nindent 10 }}
         agent_client_options:
-          {{- include "vald.grpc.client.addrs" (dict "Values" $corrector.discoverer.agent_client_options.addrs) | nindent 10 }}
-          {{- include "vald.grpc.client" (dict "Values" $corrector.discoverer.agent_client_options "default" .Values.defaults.grpc.client) | nindent 10 }}
+          {{- include "vald.grpc.client.addrs" (dict "Values" $saver.discoverer.agent_client_options.addrs) | nindent 10 }}
+          {{- include "vald.grpc.client" (dict "Values" $saver.discoverer.agent_client_options "default" .Values.defaults.grpc.client) | nindent 10 }}
 {{- end }}

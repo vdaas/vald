@@ -14,10 +14,12 @@
 # limitations under the License.
 #
 
-{{- $agent := .Values.agent -}}
-{{- $lb := .Values.gateway.lb -}}
-{{- $index := .Values.manager.index -}}
+{{- $agent     := .Values.agent -}}
+{{- $lb        := .Values.gateway.lb -}}
+{{- $index     := .Values.manager.index -}}
 {{- $corrector := .Values.manager.index.corrector -}}
+{{- $creator   := .Values.manager.index.creator -}}
+{{- $saver     := .Values.manager.index.saver -}}
 {{- if .Values.defaults.networkPolicy.enabled }}
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
@@ -51,6 +53,18 @@ spec:
           podSelector:
             matchLabels:
               app: {{ $corrector.name }}
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: {{ .Release.Namespace }}
+          podSelector:
+            matchLabels:
+              app: {{ $creator.name }}
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: {{ .Release.Namespace }}
+          podSelector:
+            matchLabels:
+              app: {{ $saver.name }}
     {{- if .Values.defaults.networkPolicy.custom.ingress }}
     {{- toYaml .Values.defaults.networkPolicy.custom.ingress | nindent 4 }}
     {{- end }}
