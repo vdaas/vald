@@ -29,4 +29,3 @@ manager:
     saver:
       enabled: true
       schedule: "2 * * * *"
-
