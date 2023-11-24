@@ -160,6 +160,9 @@ func (r *rotator) createSnapshot(ctx context.Context) (newSnap, oldSnap *client.
 	cur := &list.Items[0]
 	oldSnap = cur.DeepCopy()
 	newNameBase := getNewBaseName(cur.GetObjectMeta().GetName())
+	if newNameBase == "" {
+		return nil, nil, fmt.Errorf("the name(%s) doesn't seem to have replicaid", cur.GetObjectMeta().GetName())
+	}
 	newSnap = &client.VolumeSnapshot{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      fmt.Sprintf("%s%d", newNameBase, time.Now().Unix()),
@@ -189,6 +192,9 @@ func (r *rotator) createPVC(ctx context.Context, newSnapShot string) (newPvc, ol
 	cur := &list.Items[0]
 	oldPvc = cur.DeepCopy()
 	newNameBase := getNewBaseName(cur.GetObjectMeta().GetName())
+	if newNameBase == "" {
+		return nil, nil, fmt.Errorf("the name(%s) doesn't seem to have replicaid", cur.GetObjectMeta().GetName())
+	}
 
 	// remove timestamp from old pvc name
 	newPvc = &v1.PersistentVolumeClaim{

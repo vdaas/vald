@@ -1,5 +1,69 @@
 package service
 
+import (
+	"testing"
+)
+
+func Test_getNewBaseName(t *testing.T) {
+	type args struct {
+		old string
+	}
+	type want struct {
+		want string
+	}
+	tests := []struct {
+		name string
+		args args
+		want want
+	}{
+		{
+			name: "fist rotation just returns the name",
+			args: args{
+				old: "vald-agent-ngt-readreplica-0",
+			},
+			want: want{
+				want: "vald-agent-ngt-readreplica-0-",
+			},
+		},
+		{
+			name: "succesfully remove timestamp",
+			args: args{
+				old: "vald-agent-ngt-readreplica-0-20220101",
+			},
+			want: want{
+				want: "vald-agent-ngt-readreplica-0-",
+			},
+		},
+		{
+			name: "succesfully remove timestamp when the name has no dashes",
+			args: args{
+				old: "vald-1-20220101",
+			},
+			want: want{
+				want: "vald-1-",
+			},
+		},
+		{
+			name: "no replica id basename returns empty string",
+			args: args{
+				old: "vald",
+			},
+			want: want{
+				want: "",
+			},
+		},
+	}
+	for _, test := range tests {
+		tt := test
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			if got := getNewBaseName(tt.args.old); got != tt.want.want {
+				t.Errorf("getNewBaseName() = %v, want %v", got, tt.want.want)
+			}
+		})
+	}
+}
+
 // NOT IMPLEMENTED BELOW
 //
 // func TestNew(t *testing.T) {
