@@ -42,7 +42,6 @@ linters:
     - errorlint
     - execinquery
     - exhaustive
-    - exhaustruct
     - exportloopref
     - forcetypeassert
     - ginkgolinter
@@ -92,6 +91,7 @@ linters:
     # Disabled by your configuration linters
     # - cyclop
     # - errcheck
+    # - exhaustruct
     # - forbidigo
     # - funlen
     # - gci
