@@ -44,19 +44,19 @@ type rotator struct {
 	namespace           string
 	volumeName          string
 	readReplicaLabelKey string
-	readReplicaId       string
+	readReplicaID       string
 	client              client.Client
 	listOpts            client.ListOptions
 }
 
 // New returns Indexer object if no error occurs.
-func New(replicaId string, opts ...Option) (Rotator, error) {
+func New(replicaID string, opts ...Option) (Rotator, error) {
 	r := new(rotator)
 
-	if replicaId == "" {
+	if replicaID == "" {
 		return nil, fmt.Errorf("readreplica id is empty. it should be set via MY_TARGET_REPLICA_ID env var")
 	}
-	r.readReplicaId = replicaId
+	r.readReplicaID = replicaID
 
 	for _, opt := range append(defaultOpts, opts...) {
 		if err := opt(r); err != nil {
@@ -76,7 +76,7 @@ func New(replicaId string, opts ...Option) (Rotator, error) {
 	}
 	r.client = c
 
-	selector, err := c.LabelSelector(r.readReplicaLabelKey, client.SelectionOpEquals, []string{r.readReplicaId})
+	selector, err := c.LabelSelector(r.readReplicaLabelKey, client.SelectionOpEquals, []string{r.readReplicaID})
 	if err != nil {
 		return nil, err
 	}
