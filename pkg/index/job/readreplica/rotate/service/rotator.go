@@ -148,7 +148,7 @@ func (r *rotator) rotate(ctx context.Context) error {
 	return nil
 }
 
-func (r *rotator) createSnapshot(ctx context.Context) (new, old *client.VolumeSnapshot, err error) {
+func (r *rotator) createSnapshot(ctx context.Context) (newSnap, oldSnap *client.VolumeSnapshot, err error) {
 	list := snapshotv1.VolumeSnapshotList{}
 	if err := r.client.List(ctx, &list, &r.listOpts); err != nil {
 		return nil, nil, fmt.Errorf("failed to get snapshot: %w", err)
@@ -158,9 +158,9 @@ func (r *rotator) createSnapshot(ctx context.Context) (new, old *client.VolumeSn
 	}
 
 	cur := &list.Items[0]
-	old = cur.DeepCopy()
+	oldSnap = cur.DeepCopy()
 	newNameBase := getNewBaseName(cur.GetObjectMeta().GetName())
-	new = &client.VolumeSnapshot{
+	newSnap = &client.VolumeSnapshot{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      fmt.Sprintf("%s%d", newNameBase, time.Now().Unix()),
 			Namespace: cur.GetNamespace(),
@@ -169,15 +169,15 @@ func (r *rotator) createSnapshot(ctx context.Context) (new, old *client.VolumeSn
 		Spec: cur.Spec,
 	}
 
-	err = r.client.Create(ctx, new)
+	err = r.client.Create(ctx, newSnap)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to create snapshot: %w", err)
 	}
 
-	return new, old, nil
+	return newSnap, oldSnap, nil
 }
 
-func (r *rotator) createPVC(ctx context.Context, newSnapShot string) (new, old *v1.PersistentVolumeClaim, err error) {
+func (r *rotator) createPVC(ctx context.Context, newSnapShot string) (newPvc, oldPvc *v1.PersistentVolumeClaim, err error) {
 	list := v1.PersistentVolumeClaimList{}
 	if err := r.client.List(ctx, &list, &r.listOpts); err != nil {
 		return nil, nil, fmt.Errorf("failed to get PVC: %w", err)
@@ -187,11 +187,11 @@ func (r *rotator) createPVC(ctx context.Context, newSnapShot string) (new, old *
 	}
 
 	cur := &list.Items[0]
-	old = cur.DeepCopy()
+	oldPvc = cur.DeepCopy()
 	newNameBase := getNewBaseName(cur.GetObjectMeta().GetName())
 
 	// remove timestamp from old pvc name
-	new = &v1.PersistentVolumeClaim{
+	newPvc = &v1.PersistentVolumeClaim{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      fmt.Sprintf("%s%d", newNameBase, time.Now().Unix()),
 			Namespace: cur.GetNamespace(),
@@ -208,11 +208,11 @@ func (r *rotator) createPVC(ctx context.Context, newSnapShot string) (new, old *
 		},
 	}
 
-	if err := r.client.Create(ctx, new); err != nil {
-		return nil, nil, fmt.Errorf("failed to create PVC(%s): %w", new.GetName(), err)
+	if err := r.client.Create(ctx, newPvc); err != nil {
+		return nil, nil, fmt.Errorf("failed to create PVC(%s): %w", newPvc.GetName(), err)
 	}
 
-	return new, old, nil
+	return newPvc, oldPvc, nil
 }
 
 func (r *rotator) updateDeployment(ctx context.Context, newPVC string) error {
