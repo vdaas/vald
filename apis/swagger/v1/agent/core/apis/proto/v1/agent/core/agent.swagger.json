@@ -110,6 +110,35 @@
         },
         "tags": ["Agent"]
       }
+    },
+    "/object/meta": {
+      "get": {
+        "summary": "Represent the RPC to get the vector metadata. This RPC is mainly used for index correction process",
+        "operationId": "Agent_GetTimestamp",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ObjectTimestamp"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id.id",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": ["Agent"]
+      }
     }
   },
   "definitions": {
@@ -136,6 +165,15 @@
         }
       },
       "description": "Represent the index count message."
+    },
+    "ObjectID": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        }
+      },
+      "description": "Represent the vector ID."
     },
     "protobufAny": {
       "type": "object",
@@ -176,6 +214,21 @@
     "v1Empty": {
       "type": "object",
       "description": "Represent an empty message."
+    },
+    "v1ObjectTimestamp": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "The vector ID."
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "int64",
+          "description": "timestamp represents when this vector inserted."
+        }
+      },
+      "description": "Represent a vector meta data."
     }
   }
 }
