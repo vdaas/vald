@@ -15,11 +15,15 @@ package client
 
 import (
 	"context"
+	"fmt"
 
 	snapshotv1 "github.com/kubernetes-csi/external-snapshotter/client/v6/apis/volumesnapshot/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/selection"
 	"k8s.io/apimachinery/pkg/watch"
+	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	ctrl "sigs.k8s.io/controller-runtime"
 	cli "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
@@ -42,13 +46,15 @@ type (
 
 const (
 	DeletePropagationBackground = metav1.DeletePropagationBackground
+	WatchDeletedEvent           = watch.Deleted
+	SelectionOpEquals           = selection.Equals
 )
 
 type Client interface {
 	// Get retrieves an obj for the given object key from the Kubernetes Cluster.
 	// obj must be a struct pointer so that obj can be updated with the response
 	// returned by the Server.
-	Get(ctx context.Context, name string, namespace string, obj cli.Object, opts ...cli.GetOption) error
+	Get(ctx context.Context, name string, namespace string, obj Object, opts ...cli.GetOption) error
 	// List retrieves list of objects for a given namespace and list options. On a
 	// successful call, Items field in the list will be populated with the
 	// result returned from the server.
@@ -67,6 +73,9 @@ type Client interface {
 
 	// Watch watches the given obj for changes and takes the appropriate callbacks.
 	Watch(ctx context.Context, obj cli.ObjectList, opts ...ListOption) (watch.Interface, error)
+
+	// LabelSelector creates labels.Selector for Options like ListOptions.
+	LabelSelector(key string, op selection.Operator, vals []string) (labels.Selector, error)
 }
 
 type client struct {
@@ -85,6 +94,14 @@ func New(opts ...Option) (Client, error) {
 		if err := opt(c); err != nil {
 			return nil, err
 		}
+	}
+
+	// Add the core schemes
+	if err := clientgoscheme.AddToScheme(c.scheme); err != nil {
+		return nil, err
+	}
+	if err := snapshotv1.AddToScheme(c.scheme); err != nil {
+		return nil, err
 	}
 
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), manager.Options{
@@ -134,4 +151,12 @@ func (c *client) Update(ctx context.Context, obj Object, opts ...cli.UpdateOptio
 
 func (c *client) Watch(ctx context.Context, obj cli.ObjectList, opts ...ListOption) (watch.Interface, error) {
 	return c.withWatch.Watch(ctx, obj, opts...)
+}
+
+func (c *client) LabelSelector(key string, op selection.Operator, vals []string) (labels.Selector, error) {
+	requirements, err := labels.NewRequirement(key, op, vals)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create requirement on creating label selector: %w", err)
+	}
+	return labels.NewSelector().Add(*requirements), nil
 }

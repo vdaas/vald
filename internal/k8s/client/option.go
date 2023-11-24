@@ -18,20 +18,12 @@
 package client
 
 import (
-	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/scheme"
 )
 
 type Option func(*client) error
 
 func WithSchemeBuilder(sb scheme.Builder) Option {
-	return func(c *client) error {
-		sb.AddToScheme(c.scheme)
-		return nil
-	}
-}
-
-func WithRuntimeSchemeBuilder(sb runtime.SchemeBuilder) Option {
 	return func(c *client) error {
 		sb.AddToScheme(c.scheme)
 		return nil

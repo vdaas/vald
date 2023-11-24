@@ -29,9 +29,6 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/labels"
-	"k8s.io/apimachinery/pkg/selection"
-	"k8s.io/apimachinery/pkg/watch"
 )
 
 const (
@@ -73,25 +70,19 @@ func New(replicaId string, opts ...Option) (Rotator, error) {
 		}
 	}
 
-	c, err := client.New(
-		// TODO: この辺のscheme定義はinternal/k8sに押し込んでaliasとして参照する
-		client.WithRuntimeSchemeBuilder(v1.SchemeBuilder),
-		client.WithRuntimeSchemeBuilder(appsv1.SchemeBuilder),
-		client.WithRuntimeSchemeBuilder(snapshotv1.SchemeBuilder),
-	)
+	c, err := client.New()
 	if err != nil {
 		return nil, fmt.Errorf("failed to create kubernetes client: %w", err)
 	}
 	r.client = c
 
-	// Construct list options for the readreplica label
-	req, err := labels.NewRequirement(r.readReplicaLabelKey, selection.Equals, []string{r.readReplicaId})
+	selector, err := c.LabelSelector(r.readReplicaLabelKey, client.SelectionOpEquals, []string{r.readReplicaId})
 	if err != nil {
 		return nil, err
 	}
 	r.listOpts = client.ListOptions{
 		Namespace:     r.namespace,
-		LabelSelector: labels.NewSelector().Add(*req),
+		LabelSelector: selector,
 	}
 
 	return r, nil
@@ -269,7 +260,7 @@ func (r *rotator) deleteSnapshot(ctx context.Context, snapshot *snapshotv1.Volum
 			case <-egctx.Done():
 				return egctx.Err()
 			case event := <-watcher.ResultChan():
-				if event.Type == watch.Deleted {
+				if event.Type == client.WatchDeletedEvent {
 					log.Infof("volume snapshot(%v) deleted", snapshot.GetName())
 					return nil
 				} else {
@@ -305,7 +296,7 @@ func (r *rotator) deletePVC(ctx context.Context, pvc *v1.PersistentVolumeClaim) 
 			case <-egctx.Done():
 				return egctx.Err()
 			case event := <-watcher.ResultChan():
-				if event.Type == watch.Deleted {
+				if event.Type == client.WatchDeletedEvent {
 					log.Infof("PVC(%s) deleted", pvc.GetName())
 					return nil
 				} else {
