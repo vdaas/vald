@@ -98,7 +98,10 @@ func (r *rotator) Start(ctx context.Context) error {
 	}()
 
 	if err := r.rotate(ctx); err != nil {
-		// TODO: better error handling
+		if span != nil {
+			span.RecordError(err)
+			span.SetStatus(trace.StatusError, err.Error())
+		}
 		return err
 	}
 
