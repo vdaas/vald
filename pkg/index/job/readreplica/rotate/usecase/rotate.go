@@ -15,7 +15,6 @@ package usecase
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"syscall"
 
@@ -32,8 +31,6 @@ import (
 	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/pkg/index/job/readreplica/rotate/config"
 	"github.com/vdaas/vald/pkg/index/job/readreplica/rotate/service"
-	"k8s.io/client-go/kubernetes"
-	ctrl "sigs.k8s.io/controller-runtime"
 )
 
 type run struct {
@@ -44,28 +41,11 @@ type run struct {
 	rotator       service.Rotator
 }
 
-// FIXME: get clients from internal/k8s
-func getClients() (*kubernetes.Clientset, error) {
-	cfg := ctrl.GetConfigOrDie()
-	client, err := kubernetes.NewForConfig(cfg)
-	if err != nil {
-		panic(err)
-	}
-
-	return client, nil
-}
-
 // New returns Runner instance.
 func New(cfg *config.Data) (_ runner.Runner, err error) {
 	eg := errgroup.Get()
 
-	client, err := getClients()
-	if err != nil {
-		return nil, fmt.Errorf("failed to get kubernetes client: %w", err)
-	}
-
 	rotator, err := service.New(
-		client,
 		cfg.ReadreplicaRotate.ReadReplicaId,
 		service.WithNamespace(cfg.ReadreplicaRotate.AgentNamespace),
 		service.WithReadReplicaLabelKey(cfg.ReadreplicaRotate.ReadReplicaLabelKey),

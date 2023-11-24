@@ -23,7 +23,6 @@ import (
 	snapshotv1 "github.com/kubernetes-csi/external-snapshotter/client/v6/apis/volumesnapshot/v1"
 	"github.com/vdaas/vald/internal/errors"
 	client "github.com/vdaas/vald/internal/k8s/client"
-	sclient "github.com/vdaas/vald/internal/k8s/snapshot/client"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/sync/errgroup"
@@ -33,7 +32,6 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/selection"
 	"k8s.io/apimachinery/pkg/watch"
-	"k8s.io/client-go/kubernetes"
 )
 
 const (
@@ -50,21 +48,13 @@ type rotator struct {
 	volumeName          string
 	readReplicaLabelKey string
 	readReplicaId       string
-	// TODO: この辺はconbenchがマージされたあと、GetClientとかで引っ張ってくる
-	clientset *kubernetes.Clientset
-	sClient   sclient.Client
-	client    client.Client
-	listOpts  client.ListOptions
+	client              client.Client
+	listOpts            client.ListOptions
 }
 
 // New returns Indexer object if no error occurs.
-func New(clientset *kubernetes.Clientset, replicaId string, opts ...Option) (Rotator, error) {
+func New(replicaId string, opts ...Option) (Rotator, error) {
 	r := new(rotator)
-
-	if clientset == nil {
-		return nil, fmt.Errorf("clientset is nil")
-	}
-	r.clientset = clientset
 
 	if replicaId == "" {
 		return nil, fmt.Errorf("readreplica id is empty. it should be set via MY_TARGET_REPLICA_ID env var")
@@ -93,12 +83,6 @@ func New(clientset *kubernetes.Clientset, replicaId string, opts ...Option) (Rot
 		return nil, fmt.Errorf("failed to create kubernetes client: %w", err)
 	}
 	r.client = c
-
-	sclient, err := sclient.New(sclient.WithNamespace(r.namespace))
-	if err != nil {
-		return nil, fmt.Errorf("failed to create snapshot client: %w", err)
-	}
-	r.sClient = sclient
 
 	// Construct list options for the readreplica label
 	req, err := labels.NewRequirement(r.readReplicaLabelKey, selection.Equals, []string{r.readReplicaId})
@@ -170,7 +154,7 @@ func (r *rotator) rotate(ctx context.Context) error {
 	return nil
 }
 
-func (r *rotator) createSnapshot(ctx context.Context) (new, old *sclient.VolumeSnapshot, err error) {
+func (r *rotator) createSnapshot(ctx context.Context) (new, old *client.VolumeSnapshot, err error) {
 	list := snapshotv1.VolumeSnapshotList{}
 	if err := r.client.List(ctx, &list, &r.listOpts); err != nil {
 		return nil, nil, fmt.Errorf("failed to get snapshot: %w", err)
@@ -182,7 +166,7 @@ func (r *rotator) createSnapshot(ctx context.Context) (new, old *sclient.VolumeS
 	cur := &list.Items[0]
 	old = cur.DeepCopy()
 	newNameBase := getNewBaseName(cur.GetObjectMeta().GetName())
-	new = &sclient.VolumeSnapshot{
+	new = &client.VolumeSnapshot{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      fmt.Sprintf("%s%d", newNameBase, time.Now().Unix()),
 			Namespace: cur.GetNamespace(),

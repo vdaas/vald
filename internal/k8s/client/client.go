@@ -16,6 +16,7 @@ package client
 import (
 	"context"
 
+	snapshotv1 "github.com/kubernetes-csi/external-snapshotter/client/v6/apis/volumesnapshot/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/watch"
@@ -36,6 +37,7 @@ type (
 	UpdateOptions      = cli.UpdateOptions
 	MatchingLabels     = cli.MatchingLabels
 	InNamespace        = cli.InNamespace
+	VolumeSnapshot     = snapshotv1.VolumeSnapshot
 )
 
 const (
@@ -63,6 +65,7 @@ type Client interface {
 	// struct pointer so that obj can be updated with the content returned by the Server.
 	Update(ctx context.Context, obj Object, opts ...cli.UpdateOption) error
 
+	// Watch watches the given obj for changes and takes the appropriate callbacks.
 	Watch(ctx context.Context, obj cli.ObjectList, opts ...ListOption) (watch.Interface, error)
 }
 
