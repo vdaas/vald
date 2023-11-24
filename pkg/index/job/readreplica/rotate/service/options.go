@@ -16,13 +16,10 @@ package service
 // Option represents the functional option for index.
 type Option func(_ *rotator) error
 
-var defaultOpts = []Option{}
-
-func WithReplicaId(id string) Option {
-	return func(r *rotator) error {
-		r.readReplicaId = id
-		return nil
-	}
+var defaultOpts = []Option{
+	WithNamespace("default"),
+	WithReadReplicaLabelKey("vald-readreplica-id"),
+	WithVolumeName("vald-agent-ngt-readreplica-pvc"),
 }
 
 func WithNamespace(ns string) Option {
