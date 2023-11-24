@@ -169,7 +169,7 @@ func (r *rotator) createSnapshot(ctx context.Context) (new, old *client.VolumeSn
 		Spec: cur.Spec,
 	}
 
-	err = r.client.Create(ctx, new, &client.CreateOptions{})
+	err = r.client.Create(ctx, new)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to create snapshot: %w", err)
 	}
@@ -208,7 +208,7 @@ func (r *rotator) createPVC(ctx context.Context, newSnapShot string) (new, old *
 		},
 	}
 
-	if err := r.client.Create(ctx, new, &client.CreateOptions{}); err != nil {
+	if err := r.client.Create(ctx, new); err != nil {
 		return nil, nil, fmt.Errorf("failed to create PVC(%s): %w", new.GetName(), err)
 	}
 
@@ -236,7 +236,7 @@ func (r *rotator) updateDeployment(ctx context.Context, newPVC string) error {
 		}
 	}
 
-	if err := r.client.Update(ctx, &deployment, &client.UpdateOptions{}); err != nil {
+	if err := r.client.Update(ctx, &deployment); err != nil {
 		return fmt.Errorf("failed to update deployment: %w", err)
 	}
 
@@ -273,7 +273,7 @@ func (r *rotator) deleteSnapshot(ctx context.Context, snapshot *snapshotv1.Volum
 		}
 	})
 
-	if err := r.client.Delete(ctx, snapshot, &client.DeleteOptions{}); err != nil {
+	if err := r.client.Delete(ctx, snapshot); err != nil {
 		return fmt.Errorf("failed to delete snapshot: %w", err)
 	}
 	return eg.Wait()
