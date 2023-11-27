@@ -2946,3 +2946,65 @@ manager:
             net:
               dialer:
                 keepalive: 15m #indexer fetches uncommitted index length, which includes huge payload so we need to set keepalive longer than usual
+    readreplica:
+      # @schema {"name": "manager.index.readreplica.rotator", "type": "object"}
+      rotator:
+        # @schema {"name": "manager.index.readreplica.rotator.name", "type": "string"}
+        # manager.index.readreplica.rotator.name -- name of index correction job
+        name: vald-readreplica-rotate
+        # @schema {"name": "manager.index.readreplica.rotator.image", "alias": "image"}
+        image:
+          # manager.index.readreplica.rotator.image.repository -- image repository
+          repository: vdaas/vald-readreplica-rotate
+          # manager.index.readreplica.rotator.image.tag -- image tag (overrides defaults.image.tag)
+          tag: ""
+          # manager.index.image.pullPolicy -- image pull policy
+          pullPolicy: Always
+        # @schema {"name": "manager.index.readreplica.rotator.server_config", "alias": "server_config"}
+        # manager.index.readreplica.rotator.server_config -- server config (overrides defaults.server_config)
+        server_config:
+          servers:
+            rest: {}
+            grpc: {}
+          healths:
+            liveness: {}
+            readiness: {}
+            startup: {}
+          metrics:
+            pprof: {}
+        # @schema {"name": "manager.index.readreplica.rotator.initContainers", "alias": "initContainers"}
+        # manager.index.readreplica.rotator.initContainers -- init containers
+        initContainers: []
+        # @schema {"name": "manager.index.readreplica.rotator.env", "alias": "env"}
+        # manager.index.readreplica.rotator.env -- environment variables
+        env:
+          - name: MY_NODE_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: spec.nodeName
+          - name: MY_POD_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
+          - name: MY_POD_NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+        # @schema {"name": "manager.index.readreplica.rotator.observability", "alias": "observability"}
+        # manager.index.readreplica.rotator.observability -- observability config (overrides defaults.observability)
+        observability:
+          otlp:
+            attribute:
+              service_name: vald-readreplica-rotation
+        # @schema {"name": "manager.index.readreplica.rotator.ttlSecondsAfterFinished", "type": "integer"}
+        # manager.index.readreplica.rotator.ttlSecondsAfterFinished -- ttl setting for K8s completed jobs
+        ttlSecondsAfterFinished: 86400
+        # @schema {"name": "manager.index.readreplica.rotator.version", "alias": "version"}
+        # manager.index.readreplica.rotator.version -- version of readreplica rotator config
+        version: v0.0.0
+        # @schema {"name": "manager.index.readreplica.rotator.agent_namespace", "type": "string"}
+        # manager.index.readreplica.rotator.agent_namespace -- namespace of agent pods to manage
+        agent_namespace: _MY_POD_NAMESPACE_
+        # @schema {"name": "manager.index.readreplica.rotator.read_replica_id", "type": "string"}
+        # manager.index.readreplica.rotator.read_replica_id -- read replica id to perform rotation
+        read_replica_id: _MY_TARGET_REPLICA_ID_
