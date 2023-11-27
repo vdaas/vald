@@ -26,7 +26,7 @@ func Test_getNewBaseName(t *testing.T) {
 			},
 		},
 		{
-			name: "succesfully remove timestamp",
+			name: "successfully remove timestamp",
 			args: args{
 				old: "vald-agent-ngt-readreplica-0-20220101",
 			},
@@ -35,7 +35,7 @@ func Test_getNewBaseName(t *testing.T) {
 			},
 		},
 		{
-			name: "succesfully remove timestamp when the name has no dashes",
+			name: "successfully remove timestamp when the name has no dashes",
 			args: args{
 				old: "vald-1-20220101",
 			},
