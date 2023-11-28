@@ -1,0 +1,30 @@
+#
+# Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# You may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+{{- $agent := .Values.agent -}}
+{{- $readreplica := .Values.agent.readreplica -}}
+{{- if $readreplica.enabled }}
+apiVersion: snapshot.storage.k8s.io/v1
+kind: VolumeSnapshot
+metadata:
+  labels:
+    {{ $readreplica.label_key }}: "0" # FIXME: replace this with loop var
+  name: {{ $readreplica.name }}-snapshot-0 # FIXME:
+spec:
+  volumeSnapshotClassName: csi-hostpath-snapclass
+  source:
+    # Specify the PVCs for which you want to take snapshots
+    persistentVolumeClaimName: {{ $agent.name }}-pvc-{{ $agent.name }}-0
+{{- end }}

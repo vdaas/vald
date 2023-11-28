@@ -1633,6 +1633,13 @@ agent:
     requests:
       cpu: 300m
       memory: 4Gi
+  readreplica:
+    enabled: true
+    name: vald-agent-ngt-readreplica
+    label_key: vald-readreplica-id
+    volume_name: vald-agent-ngt-readreplica-pvc
+    snapshot_classname: ""
+    replica: 2
   # @schema {"name": "agent.ngt", "type": "object"}
   ngt:
     # @schema {"name": "agent.ngt.index_path", "type": "string"}
@@ -2997,7 +3004,7 @@ manager:
         observability:
           otlp:
             attribute:
-              service_name: vald-readreplica-rotation
+              service_name: vald-readreplica-rotate
         # @schema {"name": "manager.index.readreplica.rotator.ttlSecondsAfterFinished", "type": "integer"}
         # manager.index.readreplica.rotator.ttlSecondsAfterFinished -- ttl setting for K8s completed jobs
         ttlSecondsAfterFinished: 86400
