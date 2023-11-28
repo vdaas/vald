@@ -300,18 +300,25 @@ message Remove {
 
   // Represent the remove request based on timestamp.
   message TimestampRequest {
-    // Represent the multiple remove request contents based on timestamp.
+    // The timestamp comparison list. If more than one is specified, the `AND` search is applied.
     repeated Timestamp timestamps = 1;
   }
 
+  // Represent the timestamp comparison.
   message Timestamp {
     // Operator is enum of each conditional operator.
     enum Operator {
+      // The timestamp is equal to the specified value in the request.
       Eq = 0;
+      // The timestamp is not equal to the specified value in the request.
       Ne = 1;
+      // The timestamp is greater than or equal to the specified value in the request.
       Ge = 2;
+      // The timestamp is greater than the specified value in the request.
       Gt = 3;
+      // The timestamp is less than or equal to the specified value in the request.
       Le = 4;
+      // The timestamp is less than the specified value in the request.
       Lt = 5;
     }
     // The timestamp.
