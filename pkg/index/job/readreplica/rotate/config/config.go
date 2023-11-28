@@ -32,8 +32,8 @@ type Data struct {
 	// Observability represents observability configurations.
 	Observability *config.Observability `json:"observability" yaml:"observability"`
 
-	// TODO:
-	ReadreplicaRotate *config.ReadreplicaRotate `json:"rotator" yaml:"rotator"`
+	// ReadReplicaRotate represents read replica rotate configurations.
+	ReadReplicaRotate *config.ReadReplicaRotate `json:"rotator" yaml:"rotator"`
 }
 
 // NewConfig loads configurations from the file path.
@@ -62,8 +62,8 @@ func NewConfig(path string) (cfg *Data, err error) {
 		cfg.Observability = new(config.Observability).Bind()
 	}
 
-	if cfg.ReadreplicaRotate != nil {
-		_ = cfg.ReadreplicaRotate.Bind()
+	if cfg.ReadReplicaRotate != nil {
+		_ = cfg.ReadReplicaRotate.Bind()
 	} else {
 		return nil, errors.ErrInvalidConfig
 	}
