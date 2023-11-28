@@ -162,10 +162,10 @@ jobs:
         uses: ./.github/actions/setup-e2e
         with:
           target_images: "vdaas/vald-agent-ngt \
-                          vdaas/vald-discoverer-k8s \
-                          vdaas/vald-lb-gateway \
-                          vdaas/vald-index-creation \
-                          vdaas/vald-index-save"
+            vdaas/vald-discoverer-k8s \
+            vdaas/vald-lb-gateway \
+            vdaas/vald-index-creation \
+            vdaas/vald-index-save"
 
       - name: Deploy Vald
         id: deploy_vald

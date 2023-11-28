@@ -100,10 +100,10 @@ jobs:
         with:
           ingress_port: ${{ env.INGRESS_PORT }}
           target_images: "vdaas/vald-agent-ngt \
-                          vdaas/vald-discoverer-k8s \
-                          vdaas/vald-lb-gateway \
-                          vdaas/vald-index-creation \
-                          vdaas/vald-index-save"
+            vdaas/vald-discoverer-k8s \
+            vdaas/vald-lb-gateway \
+            vdaas/vald-index-creation \
+            vdaas/vald-index-save"
 
       - name: Deploy Vald
         id: deploy_vald
