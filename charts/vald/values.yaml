@@ -3008,3 +3008,27 @@ manager:
         # @schema {"name": "manager.index.readreplica.rotator.read_replica_id", "type": "string"}
         # manager.index.readreplica.rotator.read_replica_id -- read replica id to perform rotation
         read_replica_id: _MY_TARGET_REPLICA_ID_
+        # @schema {"name": "manager.index.readreplica.rotator.serviceAccount", "type": "object"}
+        serviceAccount:
+          # @schema {"name": "manager.index.readreplica.rotator.serviceAccount.enabled", "type": "boolean"}
+          # manager.index.readreplica.rotator.serviceAccount.enabled -- creates service account
+          enabled: true
+          # @schema {"name": "manager.index.readreplica.rotator.serviceAccount.name", "type": "string"}
+          # manager.index.readreplica.rotator.serviceAccount.name -- name of service account
+          name: vald-readreplica-rotate
+        # @schema {"name": "manager.index.readreplica.rotator.clusterRole", "type": "object"}
+        clusterRole:
+          # @schema {"name": "manager.index.readreplica.rotator.clusterRole.enabled", "type": "boolean"}
+          # manager.index.readreplica.rotator.clusterRole.enabled -- creates clusterRole resource
+          enabled: true
+          # @schema {"name": "manager.index.readreplica.rotator.clusterRole.name", "type": "string"}
+          # manager.index.readreplica.rotator.clusterRole.name -- name of clusterRole
+          name: vald-readreplica-rotate
+        # @schema {"name": "manager.index.readreplica.rotator.clusterRoleBinding", "type": "object"}
+        clusterRoleBinding:
+          # @schema {"name": "manager.index.readreplica.rotator.clusterRoleBinding.enabled", "type": "boolean"}
+          # manager.index.readreplica.rotator.clusterRoleBinding.enabled -- creates clusterRoleBinding resource
+          enabled: true
+          # @schema {"name": "manager.index.readreplica.rotator.clusterRoleBinding.name", "type": "string"}
+          # manager.index.readreplica.rotator.clusterRoleBinding.name -- name of clusterRoleBinding
+          name: vald-readreplica-rotate

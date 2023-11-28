@@ -75,4 +75,5 @@ spec:
               configMap:
                 defaultMode: 420
                 name: {{ $rotator.name }}-config
+          serviceAccountName: {{ $rotator.serviceAccount.name }}
 {{- end }}
