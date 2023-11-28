@@ -27,5 +27,5 @@ manager:
       enabled: true
       schedule: "* * * * *"
     saver:
-      enabled: true
+      enabled: false
       schedule: "2 * * * *"
