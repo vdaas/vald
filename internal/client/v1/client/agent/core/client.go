@@ -180,6 +180,32 @@ func (c *agentClient) IndexInfo(
 	return res, nil
 }
 
+func (c *agentClient) GetTimestamp(
+	ctx context.Context,
+	req *client.ObjectGetTimestampRequest,
+	_ ...grpc.CallOption,
+) (res *client.ObjectTimestamp, err error) {
+	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+agent.GetTimestampRPCName), apiName+"/"+agent.GetTimestampRPCName)
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	_, err = c.c.RoundRobin(ctx, func(ctx context.Context,
+		conn *grpc.ClientConn, copts ...grpc.CallOption,
+	) (interface{}, error) {
+		res, err := agent.NewAgentClient(conn).GetTimestamp(ctx, req, copts...)
+		if err != nil {
+			return nil, err
+		}
+		return res, err
+	})
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
+}
+
 func (c *singleAgentClient) CreateIndex(
 	ctx context.Context,
 	req *client.ControlCreateIndexRequest,
@@ -234,4 +260,18 @@ func (c *singleAgentClient) IndexInfo(
 		}
 	}()
 	return c.ac.IndexInfo(ctx, new(client.Empty), opts...)
+}
+
+func (c *singleAgentClient) GetTimestamp(
+	ctx context.Context,
+	req *client.ObjectGetTimestampRequest,
+	opts ...grpc.CallOption,
+) (res *client.ObjectTimestamp, err error) {
+	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/singleClient/"+agent.GetTimestampRPCName), apiName+"/"+agent.GetTimestampRPCName)
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	return c.ac.GetTimestamp(ctx, req, opts...)
 }
