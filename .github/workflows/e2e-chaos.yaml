@@ -219,7 +219,6 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - agent-failure
-      - agent-failure-under-index-management-jobs
       - agent-network-partition
       - clusterwide-network-bandwidth
       - random-pod-failure
