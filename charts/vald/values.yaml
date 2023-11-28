@@ -101,19 +101,19 @@ defaults:
             reuse_addr: true
             # @schema {"name": "defaults.server_config.servers.rest.server.socket_option.tcp_fast_open", "type": "boolean"}
             # defaults.server_config.servers.rest.server.socket_option.tcp_fast_open -- server listen socket option for tcp_fast_open functionality
-            tcp_fast_open: false
+            tcp_fast_open: true
             # @schema {"name": "defaults.server_config.servers.rest.server.socket_option.tcp_no_delay", "type": "boolean"}
             # defaults.server_config.servers.rest.server.socket_option.tcp_no_delay -- server listen socket option for tcp_no_delay functionality
-            tcp_no_delay: false
+            tcp_no_delay: true
             # @schema {"name": "defaults.server_config.servers.rest.server.socket_option.tcp_cork", "type": "boolean"}
             # defaults.server_config.servers.rest.server.socket_option.tcp_cork -- server listen socket option for tcp_cork functionality
             tcp_cork: false
             # @schema {"name": "defaults.server_config.servers.rest.server.socket_option.tcp_quick_ack", "type": "boolean"}
             # defaults.server_config.servers.rest.server.socket_option.tcp_quick_ack -- server listen socket option for tcp_quick_ack functionality
-            tcp_quick_ack: false
+            tcp_quick_ack: true
             # @schema {"name": "defaults.server_config.servers.rest.server.socket_option.tcp_defer_accept", "type": "boolean"}
             # defaults.server_config.servers.rest.server.socket_option.tcp_defer_accept -- server listen socket option for tcp_defer_accept functionality
-            tcp_defer_accept: false
+            tcp_defer_accept: true
             # @schema {"name": "defaults.server_config.servers.rest.server.socket_option.ip_transparent", "type": "boolean"}
             # defaults.server_config.servers.rest.server.socket_option.ip_transparent -- server listen socket option for ip_transparent functionality
             ip_transparent: false
@@ -161,10 +161,10 @@ defaults:
             max_send_message_size: 0
             # @schema {"name": "defaults.server_config.servers.grpc.server.grpc.initial_window_size", "type": "integer"}
             # defaults.server_config.servers.grpc.server.grpc.initial_window_size -- gRPC server initial window size
-            initial_window_size: 1048576
+            initial_window_size: 0
             # @schema {"name": "defaults.server_config.servers.grpc.server.grpc.initial_conn_window_size", "type": "integer"}
             # defaults.server_config.servers.grpc.server.grpc.initial_conn_window_size -- gRPC server initial connection window size
-            initial_conn_window_size: 2097152
+            initial_conn_window_size: 0
             # @schema {"name": "defaults.server_config.servers.grpc.server.grpc.keepalive", "type": "object"}
             keepalive:
               # @schema {"name": "defaults.server_config.servers.grpc.server.grpc.keepalive.max_conn_idle", "type": "string"}
@@ -178,16 +178,16 @@ defaults:
               max_conn_age_grace: ""
               # @schema {"name": "defaults.server_config.servers.grpc.server.grpc.keepalive.time", "type": "string"}
               # defaults.server_config.servers.grpc.server.grpc.keepalive.time -- gRPC server keep alive time
-              time: "3h"
+              time: "120s"
               # @schema {"name": "defaults.server_config.servers.grpc.server.grpc.keepalive.timeout", "type": "string"}
               # defaults.server_config.servers.grpc.server.grpc.keepalive.timeout -- gRPC server keep alive timeout
-              timeout: "60s"
+              timeout: "30s"
               # @schema {"name": "defaults.server_config.servers.grpc.server.grpc.keepalive.min_time", "type": "string"}
               # defaults.server_config.servers.grpc.server.grpc.keepalive.min_time -- gRPC server keep alive min_time
-              min_time: "10m"
+              min_time: "60s"
               # @schema {"name": "defaults.server_config.servers.grpc.server.grpc.keepalive.permit_without_stream", "type": "boolean"}
               # defaults.server_config.servers.grpc.server.grpc.keepalive.permit_without_stream -- gRPC server keep alive permit_without_stream
-              permit_without_stream: false
+              permit_without_stream: true
             # @schema {"name": "defaults.server_config.servers.grpc.server.grpc.write_buffer_size", "type": "integer"}
             # defaults.server_config.servers.grpc.server.grpc.write_buffer_size -- gRPC server write buffer size
             write_buffer_size: 0
@@ -217,15 +217,15 @@ defaults:
             # defaults.server_config.servers.grpc.server.socket_option.reuse_addr -- server listen socket option for reuse_addr functionality
             reuse_addr: true
             # defaults.server_config.servers.grpc.server.socket_option.tcp_fast_open -- server listen socket option for tcp_fast_open functionality
-            tcp_fast_open: false
+            tcp_fast_open: true
             # defaults.server_config.servers.grpc.server.socket_option.tcp_no_delay -- server listen socket option for tcp_no_delay functionality
-            tcp_no_delay: false
+            tcp_no_delay: true
             # defaults.server_config.servers.grpc.server.socket_option.tcp_cork -- server listen socket option for tcp_cork functionality
             tcp_cork: false
             # defaults.server_config.servers.grpc.server.socket_option.tcp_quick_ack -- server listen socket option for tcp_quick_ack functionality
-            tcp_quick_ack: false
+            tcp_quick_ack: true
             # defaults.server_config.servers.grpc.server.socket_option.tcp_defer_accept -- server listen socket option for tcp_defer_accept functionality
-            tcp_defer_accept: false
+            tcp_defer_accept: true
             # defaults.server_config.servers.grpc.server.socket_option.ip_transparent -- server listen socket option for ip_transparent functionality
             ip_transparent: false
             # defaults.server_config.servers.grpc.server.socket_option.ip_recover_destination_addr -- server listen socket option for ip_recover_destination_addr functionality
@@ -362,7 +362,7 @@ defaults:
             # defaults.server_config.healths.liveness.server.socket_option.tcp_quick_ack -- server listen socket option for tcp_quick_ack functionality
             tcp_quick_ack: true
             # defaults.server_config.healths.liveness.server.socket_option.tcp_defer_accept -- server listen socket option for tcp_defer_accept functionality
-            tcp_defer_accept: false
+            tcp_defer_accept: true
             # defaults.server_config.healths.liveness.server.socket_option.ip_transparent -- server listen socket option for ip_transparent functionality
             ip_transparent: false
             # defaults.server_config.healths.liveness.server.socket_option.ip_recover_destination_addr -- server listen socket option for ip_recover_destination_addr functionality
@@ -458,7 +458,7 @@ defaults:
             # defaults.server_config.healths.readiness.server.socket_option.tcp_quick_ack -- server listen socket option for tcp_quick_ack functionality
             tcp_quick_ack: true
             # defaults.server_config.healths.readiness.server.socket_option.tcp_defer_accept -- server listen socket option for tcp_defer_accept functionality
-            tcp_defer_accept: false
+            tcp_defer_accept: true
             # defaults.server_config.healths.readiness.server.socket_option.ip_transparent -- server listen socket option for ip_transparent functionality
             ip_transparent: false
             # defaults.server_config.healths.readiness.server.socket_option.ip_recover_destination_addr -- server listen socket option for ip_recover_destination_addr functionality
@@ -520,15 +520,15 @@ defaults:
             # defaults.server_config.metrics.pprof.server.socket_option.reuse_addr -- server listen socket option for reuse_addr functionality
             reuse_addr: true
             # defaults.server_config.metrics.pprof.server.socket_option.tcp_fast_open -- server listen socket option for tcp_fast_open functionality
-            tcp_fast_open: false
+            tcp_fast_open: true
             # defaults.server_config.metrics.pprof.server.socket_option.tcp_no_delay -- server listen socket option for tcp_no_delay functionality
-            tcp_no_delay: false
+            tcp_no_delay: true
             # defaults.server_config.metrics.pprof.server.socket_option.tcp_cork -- server listen socket option for tcp_cork functionality
-            tcp_cork: true
+            tcp_cork: false
             # defaults.server_config.metrics.pprof.server.socket_option.tcp_quick_ack -- server listen socket option for tcp_quick_ack functionality
-            tcp_quick_ack: false
+            tcp_quick_ack: true
             # defaults.server_config.metrics.pprof.server.socket_option.tcp_defer_accept -- server listen socket option for tcp_defer_accept functionality
-            tcp_defer_accept: false
+            tcp_defer_accept: true
             # defaults.server_config.metrics.pprof.server.socket_option.ip_transparent -- server listen socket option for ip_transparent functionality
             ip_transparent: false
             # defaults.server_config.metrics.pprof.server.socket_option.ip_recover_destination_addr -- server listen socket option for ip_recover_destination_addr functionality
@@ -644,10 +644,10 @@ defaults:
         read_buffer_size: 0
         # @schema {"name": "defaults.grpc.client.dial_option.initial_window_size", "type": "integer"}
         # defaults.grpc.client.dial_option.initial_window_size -- gRPC client dial option initial window size
-        initial_window_size: 1048576
+        initial_window_size: 0
         # @schema {"name": "defaults.grpc.client.dial_option.initial_connection_window_size", "type": "integer"}
         # defaults.grpc.client.dial_option.initial_connection_window_size -- gRPC client dial option initial connection window size
-        initial_connection_window_size: 2097152
+        initial_connection_window_size: 0
         # @schema {"name": "defaults.grpc.client.dial_option.max_msg_size", "type": "integer"}
         # defaults.grpc.client.dial_option.max_msg_size -- gRPC client dial option max message size
         max_msg_size: 0
@@ -721,15 +721,15 @@ defaults:
             # defaults.grpc.client.dial_option.net.socket_option.reuse_addr -- server listen socket option for reuse_addr functionality
             reuse_addr: true
             # defaults.grpc.client.dial_option.net.socket_option.tcp_fast_open -- server listen socket option for tcp_fast_open functionality
-            tcp_fast_open: false
+            tcp_fast_open: true
             # defaults.grpc.client.dial_option.net.socket_option.tcp_no_delay -- server listen socket option for tcp_no_delay functionality
-            tcp_no_delay: false
+            tcp_no_delay: true
             # defaults.grpc.client.dial_option.net.socket_option.tcp_cork -- server listen socket option for tcp_cork functionality
             tcp_cork: false
             # defaults.grpc.client.dial_option.net.socket_option.tcp_quick_ack -- server listen socket option for tcp_quick_ack functionality
-            tcp_quick_ack: false
+            tcp_quick_ack: true
             # defaults.grpc.client.dial_option.net.socket_option.tcp_defer_accept -- server listen socket option for tcp_defer_accept functionality
-            tcp_defer_accept: false
+            tcp_defer_accept: true
             # defaults.grpc.client.dial_option.net.socket_option.ip_transparent -- server listen socket option for ip_transparent functionality
             ip_transparent: false
             # defaults.grpc.client.dial_option.net.socket_option.ip_recover_destination_addr -- server listen socket option for ip_recover_destination_addr functionality
@@ -738,13 +738,13 @@ defaults:
         keepalive:
           # @schema {"name": "defaults.grpc.client.dial_option.keepalive.time", "type": "string"}
           # defaults.grpc.client.dial_option.keepalive.time -- gRPC client keep alive time
-          time: ""
+          time: "120s"
           # @schema {"name": "defaults.grpc.client.dial_option.keepalive.timeout", "type": "string"}
           # defaults.grpc.client.dial_option.keepalive.timeout -- gRPC client keep alive timeout
           timeout: "30s"
           # @schema {"name": "defaults.grpc.client.dial_option.keepalive.permit_without_stream", "type": "boolean"}
           # defaults.grpc.client.dial_option.keepalive.permit_without_stream -- gRPC client keep alive permit without stream
-          permit_without_stream: false
+          permit_without_stream: true
       # @schema {"name": "defaults.grpc.client.tls", "alias": "tls"}
       tls:
         # defaults.grpc.client.tls.enabled -- TLS enabled
@@ -2000,13 +2000,13 @@ agent:
             # agent.sidecar.config.client.net.socket_option.tcp_fast_open -- server listen socket option for tcp_fast_open functionality
             tcp_fast_open: true
             # agent.sidecar.config.client.net.socket_option.tcp_no_delay -- server listen socket option for tcp_no_delay functionality
-            tcp_no_delay: false
+            tcp_no_delay: true
             # agent.sidecar.config.client.net.socket_option.tcp_cork -- server listen socket option for tcp_cork functionality
-            tcp_cork: true
+            tcp_cork: false
             # agent.sidecar.config.client.net.socket_option.tcp_quick_ack -- server listen socket option for tcp_quick_ack functionality
-            tcp_quick_ack: false
+            tcp_quick_ack: true
             # agent.sidecar.config.client.net.socket_option.tcp_defer_accept -- server listen socket option for tcp_defer_accept functionality
-            tcp_defer_accept: false
+            tcp_defer_accept: true
             # agent.sidecar.config.client.net.socket_option.ip_transparent -- server listen socket option for ip_transparent functionality
             ip_transparent: false
             # agent.sidecar.config.client.net.socket_option.ip_recover_destination_addr -- server listen socket option for ip_recover_destination_addr functionality
@@ -2364,15 +2364,15 @@ discoverer:
         # discoverer.discoverer.net.socket_option.reuse_addr -- server listen socket option for reuse_addr functionality
         reuse_addr: true
         # discoverer.discoverer.net.socket_option.tcp_fast_open -- server listen socket option for tcp_fast_open functionality
-        tcp_fast_open: false
+        tcp_fast_open: true
         # discoverer.discoverer.net.socket_option.tcp_no_delay -- server listen socket option for tcp_no_delay functionality
-        tcp_no_delay: false
+        tcp_no_delay: true
         # discoverer.discoverer.net.socket_option.tcp_cork -- server listen socket option for tcp_cork functionality
         tcp_cork: false
         # discoverer.discoverer.net.socket_option.tcp_quick_ack -- server listen socket option for tcp_quick_ack functionality
-        tcp_quick_ack: false
+        tcp_quick_ack: true
         # discoverer.discoverer.net.socket_option.tcp_defer_accept -- server listen socket option for tcp_defer_accept functionality
-        tcp_defer_accept: false
+        tcp_defer_accept: true
         # discoverer.discoverer.net.socket_option.ip_transparent -- server listen socket option for ip_transparent functionality
         ip_transparent: false
         # discoverer.discoverer.net.socket_option.ip_recover_destination_addr -- server listen socket option for ip_recover_destination_addr functionality
