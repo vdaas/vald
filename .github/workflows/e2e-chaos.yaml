@@ -82,6 +82,57 @@ jobs:
             E2E_WAIT_FOR_CREATE_INDEX_DURATION=5m \
             e2e/insert/search
 
+  agent-failure-under-index-management-jobs:
+    name: "E2E chaos test (Agent failure: to test insert/search works even if one of the agents is failing under index management job)"
+    needs: [dump-contexts-to-log]
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set Git config
+        run: |
+          git config --global --add safe.directory ${GITHUB_WORKSPACE}
+
+      - name: Setup E2E environment
+        id: setup_e2e
+        uses: ./.github/actions/setup-e2e
+        with:
+          ingress_port: ${{ env.INGRESS_PORT }}
+          target_images: "vdaas/vald-agent-ngt \
+                          vdaas/vald-discoverer-k8s \
+                          vdaas/vald-lb-gateway \
+                          vdaas/vald-index-creation \
+                          vdaas/vald-index-save"
+
+      - name: Deploy Vald
+        id: deploy_vald
+        uses: ./.github/actions/e2e-deploy-vald
+        env:
+          HELM_EXTRA_OPTIONS: "--values .github/helm/values/values-index-management-jobs.yaml"
+        with:
+          helm_extra_options: ${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }} ${{ env.HELM_EXTRA_OPTIONS }}
+          values: ${{ env.VALUES }}
+          wait_for_selector: app=vald-lb-gateway
+
+      - name: Deploy Chaos Mesh
+        uses: ./.github/actions/deploy-chaos-mesh
+        with:
+          helm_extra_options: "--set podChaos.failure.enabled=true"
+
+      - name: Run Insert and Search operations
+        run: |
+          make hack/benchmark/assets/dataset/${{ env.DATASET }}
+          make E2E_BIND_HOST=localhost \
+            E2E_BIND_PORT=8081 \
+            E2E_PORTFORWARD_ENABLED=false \
+            E2E_DATASET_NAME=${{ env.DATASET }} \
+            E2E_TIMEOUT=15m \
+            E2E_INSERT_COUNT=5000 \
+            E2E_SEARCH_COUNT=5000 \
+            E2E_WAIT_FOR_CREATE_INDEX_DURATION=5m \
+            e2e/insert/search
+
   random-pod-failure:
     name: "E2E chaos test (random Pod failure: to test redundancy)"
     needs: [dump-contexts-to-log]
@@ -219,9 +270,10 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - agent-failure
-      - random-pod-failure
+      - agent-failure-under-index-management-jobs
       - agent-network-partition
       - clusterwide-network-bandwidth
+      - random-pod-failure
     steps:
       - uses: actions/checkout@v3
 
