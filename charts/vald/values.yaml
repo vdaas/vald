@@ -2947,9 +2947,9 @@ manager:
               dialer:
                 keepalive: 15m #indexer fetches uncommitted index length, which includes huge payload so we need to set keepalive longer than usual
     # @schema {"name": "manager.index.readreplica", "type": "object"}
-    # manager.index.readreplica -- [This feature is work in progress] readreplica agents rotation job
     readreplica:
       # @schema {"name": "manager.index.readreplica.rotator", "type": "object"}
+        # manager.index.readreplica.rotator -- [This feature is work in progress] readreplica agents rotation job
       rotator:
         # @schema {"name": "manager.index.readreplica.rotator.name", "type": "string"}
         # manager.index.readreplica.rotator.name -- name of readreplica rotator job
