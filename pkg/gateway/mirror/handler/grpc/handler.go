@@ -3136,8 +3136,8 @@ func (s *server) StreamListObject(req *payload.Object_List_Request, stream vald.
 		return obj, s.streamListObject(ctx, client, stream)
 	})
 	if err != nil {
+		st, msg, err := status.ParseError(err, codes.Internal, "failed to parse "+vald.StreamListObjectRPCName+" gRPC error response")
 		if span != nil {
-			st, msg, err := status.ParseError(err, codes.Internal, "failed to parse "+vald.StreamListObjectRPCName+" gRPC error response")
 			span.RecordError(err)
 			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
 			span.SetStatus(trace.StatusError, err.Error())
