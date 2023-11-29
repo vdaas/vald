@@ -46,10 +46,10 @@ func New(cfg *config.Data) (_ runner.Runner, err error) {
 	eg := errgroup.Get()
 
 	rotator, err := service.New(
-		cfg.ReadreplicaRotate.ReadReplicaID,
-		service.WithNamespace(cfg.ReadreplicaRotate.AgentNamespace),
-		service.WithReadReplicaLabelKey(cfg.ReadreplicaRotate.ReadReplicaLabelKey),
-		service.WithVolumeName(cfg.ReadreplicaRotate.VolumeName),
+		cfg.ReadReplicaRotate.ReadReplicaID,
+		service.WithNamespace(cfg.ReadReplicaRotate.AgentNamespace),
+		service.WithReadReplicaLabelKey(cfg.ReadReplicaRotate.ReadReplicaLabelKey),
+		service.WithVolumeName(cfg.ReadReplicaRotate.VolumeName),
 	)
 	if err != nil {
 		return nil, err
