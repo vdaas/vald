@@ -8536,6 +8536,9 @@ spec:
                         readreplica:
                           type: object
                           properties:
+                            "":
+                              type: object
+                              x-kubernetes-preserve-unknown-fields: true
                             agent_namespace:
                               type: string
                             clusterRole:
