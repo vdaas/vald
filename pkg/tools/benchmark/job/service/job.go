@@ -258,6 +258,7 @@ func (j *job) Start(ctx context.Context) (<-chan error, error) {
 		return nil, err
 	}
 	j.eg.Go(func() error {
+		defer close(ech)
 		for {
 			select {
 			case <-ctx.Done():
@@ -281,7 +282,6 @@ func (j *job) Start(ctx context.Context) (<-chan error, error) {
 				case ech <- err:
 				}
 			}
-			close(ech)
 			if err := p.Signal(syscall.SIGTERM); err != nil {
 				log.Error(err)
 			}
