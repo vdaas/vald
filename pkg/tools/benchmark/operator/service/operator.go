@@ -173,15 +173,15 @@ func (o *operator) getAtomicJob() map[string]string {
 // Then, it processes according STATUS.
 func (o *operator) jobReconcile(ctx context.Context, jobList map[string][]job.Job) {
 	log.Debug("[reconcile job] start")
-	if len(jobList) == 0 {
-		log.Info("[reconcile job] no job is founded")
-		o.jobs.Store(&map[string]string{})
-		log.Debug("[reconcile job] finish")
-		return
-	}
 	cjobs := o.getAtomicJob()
 	if cjobs == nil {
 		cjobs = map[string]string{}
+	}
+	if len(jobList) == 0 {
+		log.Info("[reconcile job] no job is founded")
+		o.jobs.Store(&(map[string]string{}))
+		log.Debug("[reconcile job] finish")
+		return
 	}
 	// benchmarkJobStatus is used for update benchmark job resource status
 	benchmarkJobStatus := make(map[string]v1.BenchmarkJobStatus)
@@ -230,15 +230,15 @@ func (o *operator) jobReconcile(ctx context.Context, jobList map[string][]job.Jo
 // benchJobReconcile gets the vald benchmark job resource list and create Job for running benchmark job.
 func (o *operator) benchJobReconcile(ctx context.Context, benchJobList map[string]v1.ValdBenchmarkJob) {
 	log.Debugf("[reconcile benchmark job resource] job list: %#v", benchJobList)
+	cbjl := o.getAtomicBenchJob()
+	if cbjl == nil {
+		cbjl = make(map[string]*v1.ValdBenchmarkJob, 0)
+	}
 	if len(benchJobList) == 0 {
 		log.Info("[reconcile benchmark job resource] job resource not found")
 		o.benchjobs.Store(&(map[string]*v1.ValdBenchmarkJob{}))
 		log.Debug("[reconcile benchmark job resource] finish")
 		return
-	}
-	cbjl := o.getAtomicBenchJob()
-	if cbjl == nil {
-		cbjl = make(map[string]*v1.ValdBenchmarkJob, 0)
 	}
 	// jobStatus is used for update benchmarkJob CR status if updating is needed.
 	jobStatus := make(map[string]v1.BenchmarkJobStatus)
@@ -306,15 +306,15 @@ func (o *operator) benchJobReconcile(ctx context.Context, benchJobList map[strin
 // benchScenarioReconcile gets the vald benchmark scenario list and create vald benchmark job resource according to it.
 func (o *operator) benchScenarioReconcile(ctx context.Context, scenarioList map[string]v1.ValdBenchmarkScenario) {
 	log.Debugf("[reconcile benchmark scenario resource] scenario list: %#v", scenarioList)
+	cbsl := o.getAtomicScenario()
+	if cbsl == nil {
+		cbsl = map[string]*scenario{}
+	}
 	if len(scenarioList) == 0 {
 		log.Info("[reconcile benchmark scenario resource]: scenario not found")
 		o.scenarios.Store(&(map[string]*scenario{}))
 		log.Debug("[reconcile benchmark scenario resource] finish")
 		return
-	}
-	cbsl := o.getAtomicScenario()
-	if cbsl == nil {
-		cbsl = map[string]*scenario{}
 	}
 	scenarioStatus := make(map[string]v1.ValdBenchmarkScenarioStatus)
 	for name := range scenarioList {

@@ -85,13 +85,14 @@ func (j *job) search(ctx context.Context, ech chan error) error {
 					log.Errorf("[benchmark job] err: %s", err.Error())
 				}
 			}
-			if res != nil && j.searchConfig.EnableLinearSearch {
-				sres[iter-j.dataset.Range.Start] = res
+			if res != nil {
+				if j.searchConfig.EnableLinearSearch {
+					sres[iter-j.dataset.Range.Start] = res
+				}
 				log.Debugf("[benchmark job] Finish search: iter = %d, len = %d", iter, len(res.Results))
 			} else {
 				log.Debugf("[benchmark job] Finish search: iter = %d, res = %v", iter, res)
 			}
-			log.Debugf("[benchmark job] Finish search: iter = %d, len = %d", iter, len(res.Results))
 			return nil
 		})
 	}

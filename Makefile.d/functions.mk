@@ -237,3 +237,12 @@ define gen-go-option-test-sources
 		fi; \
 	done
 endef
+
+define gen-vald-crd
+	mv charts/$1/crds/$2.yaml $(TEMP_DIR)/$2.yaml
+	GOPRIVATE=$(GOPRIVATE) \
+	go run -mod=readonly hack/helm/schema/crd/main.go \
+	charts/$1/$3.yaml > $(TEMP_DIR)/$2-spec.yaml
+	$(BINDIR)/yq eval-all 'select(fileIndex==0).spec.versions[0].schema.openAPIV3Schema.properties.spec = select(fileIndex==1).spec | select(fileIndex==0)' \
+	$(TEMP_DIR)/$2.yaml $(TEMP_DIR)/$2-spec.yaml > charts/$1/crds/$2.yaml
+endef
