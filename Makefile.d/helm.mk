@@ -167,31 +167,16 @@ helm/schema/crd/vald-helm-operator: \
 ## generate OpenAPI v3 schema for ValdBenchmarkJobRelease
 helm/schema/crd/vald-benchmark-job: \
 	yq/install
-	mv charts/vald-benchmark-operator/crds/valdbenchmarkjob.yaml $(TEMP_DIR)/valdbenchmarkjob.yaml
-	GOPRIVATE=$(GOPRIVATE) \
-	go run -mod=readonly hack/helm/schema/crd/main.go \
-	charts/vald-benchmark-operator/schemas/job-values.yaml > $(TEMP_DIR)/valdbenchmarkjob-spec.yaml
-	$(BINDIR)/yq eval-all 'select(fileIndex==0).spec.versions[0].schema.openAPIV3Schema.properties.spec = select(fileIndex==1).spec | select(fileIndex==0)' \
-	$(TEMP_DIR)/valdbenchmarkjob.yaml $(TEMP_DIR)/valdbenchmarkjob-spec.yaml > charts/vald-benchmark-operator/crds/valdbenchmarkjob.yaml
+	@$(call gen-vald-crd,vald-benchmark-operator,valdbenchmarkjob,schemas/job-values)
 
 .PHONY: helm/schema/crd/vald-benchmark-scenario
 ## generate OpenAPI v3 schema for ValdBenchmarkScenarioRelease
 helm/schema/crd/vald-benchmark-scenario: \
 	yq/install
-	mv charts/vald-benchmark-operator/crds/valdbenchmarkscenario.yaml $(TEMP_DIR)/valdbenchmarkscenario.yaml
-	GOPRIVATE=$(GOPRIVATE) \
-	go run -mod=readonly hack/helm/schema/crd/main.go \
-	charts/vald-benchmark-operator/schemas/scenario-values.yaml > $(TEMP_DIR)/valdbenchmarkscenario-spec.yaml
-	$(BINDIR)/yq eval-all 'select(fileIndex==0).spec.versions[0].schema.openAPIV3Schema.properties.spec = select(fileIndex==1).spec | select(fileIndex==0)' \
-	$(TEMP_DIR)/valdbenchmarkscenario.yaml $(TEMP_DIR)/valdbenchmarkscenario-spec.yaml > charts/vald-benchmark-operator/crds/valdbenchmarkscenario.yaml
+	@$(call gen-vald-crd,vald-benchmark-operator,valdbenchmarkscenario,schemas/scenario-values)
 
 .PHONY: helm/schema/crd/vald-benchmark-operator
 ## generate OpenAPI v3 schema for ValdBenchmarkOperatorRelease
 helm/schema/crd/vald-benchmark-operator: \
 	yq/install
-	mv charts/vald-benchmark-operator/crds/valdbenchmarkoperatorrelease.yaml $(TEMP_DIR)/valdbenchmarkoperatorrelease.yaml
-	GOPRIVATE=$(GOPRIVATE) \
-	go run -mod=readonly hack/helm/schema/crd/main.go \
-	charts/vald-benchmark-operator/values.yaml > $(TEMP_DIR)/valdbenchmarkoperatorrelease-spec.yaml
-	$(BINDIR)/yq eval-all 'select(fileIndex==0).spec.versions[0].schema.openAPIV3Schema.properties.spec = select(fileIndex==1).spec | select(fileIndex==0)' \
-	$(TEMP_DIR)/valdbenchmarkoperatorrelease.yaml $(TEMP_DIR)/valdbenchmarkoperatorrelease-spec.yaml > charts/vald-benchmark-operator/crds/valdbenchmarkoperatorrelease.yaml
+	@$(call gen-vald-crd,vald-benchmark-operator,valdbenchmarkoperatorrelease,values)

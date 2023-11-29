@@ -53,10 +53,6 @@ const (
 	SelectionOpEquals           = selection.Equals
 )
 
-const (
-	DeletePropagationBackground = metav1.DeletePropagationBackground
-)
-
 type Client interface {
 	// Get retrieves an obj for the given object key from the Kubernetes Cluster.
 	// obj must be a struct pointer so that obj can be updated with the response
