@@ -1,0 +1,78 @@
+#
+# Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# You may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+{{- $saver     := .Values.manager.index.saver -}}
+{{- if $saver.enabled }}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ $saver.name }}
+  labels:
+    app: {{ $saver.name }}
+    app.kubernetes.io/name: {{ include "vald.name" . }}
+    helm.sh/chart: {{ include "vald.chart" . }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/version: {{ .Chart.Version }}
+spec:
+  schedule: {{ $saver.schedule | quote }}
+  concurrencyPolicy: Forbid
+  suspend: {{ $saver.suspend }}
+  startingDeadlineSeconds: {{ $saver.startingDeadlineSeconds }}
+  jobTemplate:
+    spec:
+      ttlSecondsAfterFinished: {{ $saver.ttlSecondsAfterFinished }}
+      template:
+        metadata:
+          labels:
+            app: {{ $saver.name }}
+            app.kubernetes.io/name: {{ include "vald.name" . }}
+            app.kubernetes.io/instance: {{ .Release.Name }}
+            app.kubernetes.io/component: {{ $saver.name }}
+          annotations:
+            {{- $pprof := default .Values.defaults.server_config.metrics.pprof $saver.server_config.metrics.pprof -}}
+            {{- if $pprof.enabled }}
+            pyroscope.io/scrape: "true"
+            pyroscope.io/application-name: {{ $saver.name }}
+            pyroscope.io/profile-cpu-enabled: "true"
+            pyroscope.io/profile-mem-enabled: "true"
+            pyroscope.io/port: {{ $pprof.port | quote }}
+            {{- end }}
+        spec:
+          {{- if $saver.initContainers }}
+          initContainers:
+            {{- $initContainers := dict "initContainers" $saver.initContainers "Values" .Values "namespace" .Release.Namespace -}}
+            {{- include "vald.initContainers" $initContainers | trim | nindent 12 }}
+          {{- end }}
+          containers:
+            - name: {{ $saver.name }}
+              image: "{{ $saver.image.repository }}:{{ default .Values.defaults.image.tag $saver.image.tag }}"
+              imagePullPolicy: {{ $saver.image.pullPolicy }}
+              volumeMounts:
+                - name: {{ $saver.name }}-config
+                  mountPath: /etc/server/
+              {{- $servers := dict "Values" $saver.server_config "default" .Values.defaults.server_config -}}
+              {{- include "vald.containerPorts" $servers | trim | nindent 14 }}
+              {{- if $saver.env }}
+              env:
+                {{- toYaml $saver.env | nindent 16 }}
+              {{- end }}
+          restartPolicy: OnFailure
+          volumes:
+            - name: {{ $saver.name }}-config
+              configMap:
+                defaultMode: 420
+                name: {{ $saver.name }}-config
+{{- end }}
