@@ -233,7 +233,7 @@ docker/build/index-save:
 
 .PHONY: docker/name/readreplica-rotate
 docker/name/readreplica-rotate:
-	@echo "$(ORG)/$(INDEX_SAVE_IMAGE)"
+	@echo "$(ORG)/$(READREPLICA_ROTATE_IMAGE)"
 
 .PHONY: docker/build/readreplica-rotate
 ## build readreplica-rotate image
