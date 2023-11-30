@@ -1778,108 +1778,107 @@ func Test_bidi_Len(t *testing.T) {
 }
 
 // NOT IMPLEMENTED BELOW
-//
-// func Test_bidi_Close(t *testing.T) {
-// 	type fields struct {
-// 		concurrency int
-// 		l           uint64
-// 		ou          [slen]*ou
-// 		uo          [slen]*uo
-// 		eg          errgroup.Group
-// 	}
-// 	type want struct {
-// 		err error
-// 	}
-// 	type test struct {
-// 		name       string
-// 		fields     fields
-// 		want       want
-// 		checkFunc  func(want, error) error
-// 		beforeFunc func(*testing.T)
-// 		afterFunc  func(*testing.T)
-// 	}
-// 	defaultCheckFunc := func(w want, err error) error {
-// 		if !errors.Is(err, w.err) {
-// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-// 		}
-// 		return nil
-// 	}
-// 	tests := []test{
-// 		// TODO test cases
-// 		/*
-// 		   {
-// 		       name: "test_case_1",
-// 		       fields: fields {
-// 		           concurrency:0,
-// 		           l:0,
-// 		           ou:nil,
-// 		           uo:nil,
-// 		           eg:nil,
-// 		       },
-// 		       want: want{},
-// 		       checkFunc: defaultCheckFunc,
-// 		       beforeFunc: func(t *testing.T,) {
-// 		           t.Helper()
-// 		       },
-// 		       afterFunc: func(t *testing.T,) {
-// 		           t.Helper()
-// 		       },
-// 		   },
-// 		*/
-//
-// 		// TODO test cases
-// 		/*
-// 		   func() test {
-// 		       return test {
-// 		           name: "test_case_2",
-// 		           fields: fields {
-// 		           concurrency:0,
-// 		           l:0,
-// 		           ou:nil,
-// 		           uo:nil,
-// 		           eg:nil,
-// 		           },
-// 		           want: want{},
-// 		           checkFunc: defaultCheckFunc,
-// 		           beforeFunc: func(t *testing.T,) {
-// 		               t.Helper()
-// 		           },
-// 		           afterFunc: func(t *testing.T,) {
-// 		               t.Helper()
-// 		           },
-// 		       }
-// 		   }(),
-// 		*/
-// 	}
-//
-// 	for _, tc := range tests {
-// 		test := tc
-// 		t.Run(test.name, func(tt *testing.T) {
-// 			tt.Parallel()
-// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-// 			if test.beforeFunc != nil {
-// 				test.beforeFunc(tt)
-// 			}
-// 			if test.afterFunc != nil {
-// 				defer test.afterFunc(tt)
-// 			}
-// 			checkFunc := test.checkFunc
-// 			if test.checkFunc == nil {
-// 				checkFunc = defaultCheckFunc
-// 			}
-// 			b := &bidi{
-// 				concurrency: test.fields.concurrency,
-// 				l:           test.fields.l,
-// 				ou:          test.fields.ou,
-// 				uo:          test.fields.uo,
-// 				eg:          test.fields.eg,
-// 			}
-//
-// 			err := b.Close()
-// 			if err := checkFunc(test.want, err); err != nil {
-// 				tt.Errorf("error = %v", err)
-// 			}
-//
-// 		})
-// 	}
-// }
+
+func Test_bidi_Close(t *testing.T) {
+	type fields struct {
+		concurrency int
+		l           uint64
+		ou          [slen]*ou
+		uo          [slen]*uo
+		eg          errgroup.Group
+	}
+	type want struct {
+		err error
+	}
+	type test struct {
+		name       string
+		fields     fields
+		want       want
+		checkFunc  func(want, error) error
+		beforeFunc func(*testing.T)
+		afterFunc  func(*testing.T)
+	}
+	defaultCheckFunc := func(w want, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       fields: fields {
+		           concurrency:0,
+		           l:0,
+		           ou:nil,
+		           uo:nil,
+		           eg:nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           fields: fields {
+		           concurrency:0,
+		           l:0,
+		           ou:nil,
+		           uo:nil,
+		           eg:nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(tt)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(tt)
+			}
+			checkFunc := test.checkFunc
+			if test.checkFunc == nil {
+				checkFunc = defaultCheckFunc
+			}
+			b := &bidi{
+				concurrency: test.fields.concurrency,
+				l:           test.fields.l,
+				ou:          test.fields.ou,
+				uo:          test.fields.uo,
+				eg:          test.fields.eg,
+			}
+
+			err := b.Close()
+			if err := checkFunc(test.want, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}

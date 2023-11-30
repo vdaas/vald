@@ -1679,108 +1679,107 @@ func Test_logger_Fatald(t *testing.T) {
 }
 
 // NOT IMPLEMENTED BELOW
-//
-// func Test_logger_Close(t *testing.T) {
-// 	type fields struct {
-// 		format       format.Format
-// 		level        level.Level
-// 		enableCaller bool
-// 		logger       *zap.Logger
-// 		sugar        *zap.SugaredLogger
-// 	}
-// 	type want struct {
-// 		err error
-// 	}
-// 	type test struct {
-// 		name       string
-// 		fields     fields
-// 		want       want
-// 		checkFunc  func(want, error) error
-// 		beforeFunc func(*testing.T)
-// 		afterFunc  func(*testing.T)
-// 	}
-// 	defaultCheckFunc := func(w want, err error) error {
-// 		if !errors.Is(err, w.err) {
-// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-// 		}
-// 		return nil
-// 	}
-// 	tests := []test{
-// 		// TODO test cases
-// 		/*
-// 		   {
-// 		       name: "test_case_1",
-// 		       fields: fields {
-// 		           format:nil,
-// 		           level:nil,
-// 		           enableCaller:false,
-// 		           logger:nil,
-// 		           sugar:nil,
-// 		       },
-// 		       want: want{},
-// 		       checkFunc: defaultCheckFunc,
-// 		       beforeFunc: func(t *testing.T,) {
-// 		           t.Helper()
-// 		       },
-// 		       afterFunc: func(t *testing.T,) {
-// 		           t.Helper()
-// 		       },
-// 		   },
-// 		*/
-//
-// 		// TODO test cases
-// 		/*
-// 		   func() test {
-// 		       return test {
-// 		           name: "test_case_2",
-// 		           fields: fields {
-// 		           format:nil,
-// 		           level:nil,
-// 		           enableCaller:false,
-// 		           logger:nil,
-// 		           sugar:nil,
-// 		           },
-// 		           want: want{},
-// 		           checkFunc: defaultCheckFunc,
-// 		           beforeFunc: func(t *testing.T,) {
-// 		               t.Helper()
-// 		           },
-// 		           afterFunc: func(t *testing.T,) {
-// 		               t.Helper()
-// 		           },
-// 		       }
-// 		   }(),
-// 		*/
-// 	}
-//
-// 	for _, tc := range tests {
-// 		test := tc
-// 		t.Run(test.name, func(tt *testing.T) {
-// 			tt.Parallel()
-// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-// 			if test.beforeFunc != nil {
-// 				test.beforeFunc(tt)
-// 			}
-// 			if test.afterFunc != nil {
-// 				defer test.afterFunc(tt)
-// 			}
-// 			checkFunc := test.checkFunc
-// 			if test.checkFunc == nil {
-// 				checkFunc = defaultCheckFunc
-// 			}
-// 			l := &logger{
-// 				format:       test.fields.format,
-// 				level:        test.fields.level,
-// 				enableCaller: test.fields.enableCaller,
-// 				logger:       test.fields.logger,
-// 				sugar:        test.fields.sugar,
-// 			}
-//
-// 			err := l.Close()
-// 			if err := checkFunc(test.want, err); err != nil {
-// 				tt.Errorf("error = %v", err)
-// 			}
-//
-// 		})
-// 	}
-// }
+
+func Test_logger_Close(t *testing.T) {
+	type fields struct {
+		format       format.Format
+		level        level.Level
+		enableCaller bool
+		logger       *zap.Logger
+		sugar        *zap.SugaredLogger
+	}
+	type want struct {
+		err error
+	}
+	type test struct {
+		name       string
+		fields     fields
+		want       want
+		checkFunc  func(want, error) error
+		beforeFunc func(*testing.T)
+		afterFunc  func(*testing.T)
+	}
+	defaultCheckFunc := func(w want, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		return nil
+	}
+	tests := []test{
+		// TODO test cases
+		/*
+		   {
+		       name: "test_case_1",
+		       fields: fields {
+		           format:nil,
+		           level:nil,
+		           enableCaller:false,
+		           logger:nil,
+		           sugar:nil,
+		       },
+		       want: want{},
+		       checkFunc: defaultCheckFunc,
+		       beforeFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
+		       afterFunc: func(t *testing.T,) {
+		           t.Helper()
+		       },
+		   },
+		*/
+
+		// TODO test cases
+		/*
+		   func() test {
+		       return test {
+		           name: "test_case_2",
+		           fields: fields {
+		           format:nil,
+		           level:nil,
+		           enableCaller:false,
+		           logger:nil,
+		           sugar:nil,
+		           },
+		           want: want{},
+		           checkFunc: defaultCheckFunc,
+		           beforeFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
+		           afterFunc: func(t *testing.T,) {
+		               t.Helper()
+		           },
+		       }
+		   }(),
+		*/
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(tt)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(tt)
+			}
+			checkFunc := test.checkFunc
+			if test.checkFunc == nil {
+				checkFunc = defaultCheckFunc
+			}
+			l := &logger{
+				format:       test.fields.format,
+				level:        test.fields.level,
+				enableCaller: test.fields.enableCaller,
+				logger:       test.fields.logger,
+				sugar:        test.fields.sugar,
+			}
+
+			err := l.Close()
+			if err := checkFunc(test.want, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}

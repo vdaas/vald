@@ -43,7 +43,7 @@ replace (
 	github.com/ajstarks/svgo => github.com/ajstarks/svgo v0.0.0-20211024235047-1546f124cd8b
 	github.com/antihax/optional => github.com/antihax/optional v1.0.0
 	github.com/armon/go-socks5 => github.com/armon/go-socks5 v0.0.0-20160902184237-e75332964ef5
-	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.44.295
+	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.44.293
 	github.com/aws/aws-sdk-go-v2 => github.com/aws/aws-sdk-go-v2 v1.18.1
 	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream => github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.4.10
 	github.com/aws/aws-sdk-go-v2/config => github.com/aws/aws-sdk-go-v2/config v1.18.27
@@ -190,7 +190,7 @@ replace (
 	github.com/jstemmer/go-junit-report => github.com/jstemmer/go-junit-report v1.0.0
 	github.com/kisielk/errcheck => github.com/kisielk/errcheck v1.6.3
 	github.com/kisielk/gotool => github.com/kisielk/gotool v1.0.0
-	github.com/klauspost/compress => github.com/klauspost/compress v1.16.7
+	github.com/klauspost/compress => github.com/klauspost/compress v1.16.7-0.20230622111944-67a538e2b4df
 	github.com/klauspost/cpuid/v2 => github.com/klauspost/cpuid/v2 v2.2.5
 	github.com/kpango/fastime => github.com/kpango/fastime v1.1.9
 	github.com/kpango/fuid => github.com/kpango/fuid v0.0.0-20221203053508-503b5ad89aa1
@@ -244,7 +244,7 @@ replace (
 	github.com/quasilyte/gogrep => github.com/quasilyte/gogrep v0.5.0
 	github.com/quasilyte/stdinfo => github.com/quasilyte/stdinfo v0.0.0-20220114132959-f7386bf02567
 	github.com/rogpeppe/fastuuid => github.com/rogpeppe/fastuuid v1.2.0
-	github.com/rogpeppe/go-internal => github.com/rogpeppe/go-internal v1.11.0
+	github.com/rogpeppe/go-internal => github.com/rogpeppe/go-internal v1.10.0
 	github.com/rs/xid => github.com/rs/xid v1.5.0
 	github.com/rs/zerolog => github.com/rs/zerolog v1.29.1
 	github.com/russross/blackfriday/v2 => github.com/russross/blackfriday/v2 v2.1.0
@@ -254,8 +254,8 @@ replace (
 	github.com/scylladb/gocqlx => github.com/scylladb/gocqlx v1.5.0
 	github.com/sergi/go-diff => github.com/sergi/go-diff v1.3.1
 	github.com/shopspring/decimal => github.com/shopspring/decimal v1.3.1
-	github.com/shurcooL/httpfs => github.com/shurcooL/httpfs v0.0.0-20230704072500-f1e31cf0ba5c
-	github.com/shurcooL/vfsgen => github.com/shurcooL/vfsgen v0.0.0-20230704071429-0000e147ea92
+	github.com/shurcooL/httpfs => github.com/shurcooL/httpfs v0.0.0-20190707220628-8d4bc4ba7749
+	github.com/shurcooL/vfsgen => github.com/shurcooL/vfsgen v0.0.0-20200824052919-0d455de96546
 	github.com/sirupsen/logrus => github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/afero => github.com/spf13/afero v1.9.5
 	github.com/spf13/cobra => github.com/spf13/cobra v1.7.0
