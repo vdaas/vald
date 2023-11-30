@@ -2631,38 +2631,3 @@ manager:
             net:
               dialer:
                 keepalive: 15m #indexer fetches uncommitted index length, which includes huge payload so we need to set keepalive longer than usual
-    # @schema {"name": "manager.index.corrector", "type": "object"}
-    corrector:
-      # @schema {"name": "manager.index.corrector.enabled", "type": "boolean"}
-      # manager.index.corrector.enabled -- enable index correction CronJob
-      enabled: false
-      # @schema {"name": "manager.index.corrector.check_duration", "type": "string"}
-      # manager.index.corrector.enabled -- check duration of index correction CronJob
-      check_duration: 24h
-      # @schema {"name": "manager.index.corrector.stream_list_concurrency", "type": "integer", "minimum": 1}
-      # manager.index.corrector.stream_list_concurrency -- concurrency for stream list object rpc
-      stream_list_concurrency: 200
-      # @schema {"name": "manager.index.corrector.bbolt_async_write_concurrency", "type": "integer", "minimum": 1}
-      # manager.index.corrector.bbolt_async_write_concurrency -- concurrency for bbolt async write
-      bbolt_async_write_concurrency: 2048
-      # @schema {"name": "manager.index.corrector.agent_namespace", "type": "string"}
-      # manager.index.corrector.agent_namespace -- namespace of agent pods to manage
-      agent_namespace: _MY_POD_NAMESPACE_
-      # @schema {"name": "manager.index.corrector.node_name", "type": "string"}
-      # manager.index.corrector.node_name -- node name
-      node_name: "" # _MY_NODE_NAME_
-      # @schema {"name": "manager.index.corrector.discoverer", "type": "object"}
-      discoverer:
-        # @schema {"name": "manager.index.corrector.discoverer.duration", "type": "string"}
-        # manager.index.corrector.discoverer.duration -- refresh duration to discover
-        duration: 500ms
-        # @schema {"name": "manager.index.corrector.discoverer.client", "alias": "grpc.client"}
-        # manager.index.corrector.discoverer.client -- gRPC client for discoverer (overrides defaults.grpc.client)
-        client: {}
-        # @schema {"name": "manager.index.corrector.discoverer.agent_client_options", "alias": "grpc.client"}
-        # manager.index.corrector.discoverer.agent_client_options -- gRPC client options for agents (overrides defaults.grpc.client)
-        agent_client_options:
-          dial_option:
-            net:
-              dialer:
-                keepalive: 15m #indexer fetches uncommitted index length, which includes huge payload so we need to set keepalive longer than usual
