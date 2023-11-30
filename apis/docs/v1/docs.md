@@ -48,9 +48,6 @@
   - [Object.Distance](#payload-v1-Object-Distance)
   - [Object.ID](#payload-v1-Object-ID)
   - [Object.IDs](#payload-v1-Object-IDs)
-  - [Object.List](#payload-v1-Object-List)
-  - [Object.List.Request](#payload-v1-Object-List-Request)
-  - [Object.List.Response](#payload-v1-Object-List-Response)
   - [Object.Location](#payload-v1-Object-Location)
   - [Object.Locations](#payload-v1-Object-Locations)
   - [Object.ReshapeVector](#payload-v1-Object-ReshapeVector)
@@ -510,23 +507,6 @@ Represent multiple vector IDs.
 | Field | Type              | Label    | Description |
 | ----- | ----------------- | -------- | ----------- |
 | ids   | [string](#string) | repeated |             |
-
-<a name="payload-v1-Object-List"></a>
-
-### Object.List
-
-<a name="payload-v1-Object-List-Request"></a>
-
-### Object.List.Request
-
-<a name="payload-v1-Object-List-Response"></a>
-
-### Object.List.Response
-
-| Field  | Type                                       | Label | Description |
-| ------ | ------------------------------------------ | ----- | ----------- |
-| vector | [Object.Vector](#payload-v1-Object-Vector) |       |             |
-| status | [google.rpc.Status](#google-rpc-Status)    |       |             |
 
 <a name="payload-v1-Object-Location"></a>
 
@@ -1017,12 +997,11 @@ Upsert service provides ways to insert/update vectors.
 
 Object service provides ways to fetch indexed vectors.
 
-| Method Name      | Request Type                                                                | Response Type                                                               | Description                                                 |
-| ---------------- | --------------------------------------------------------------------------- | --------------------------------------------------------------------------- | ----------------------------------------------------------- |
-| Exists           | [.payload.v1.Object.ID](#payload-v1-Object-ID)                              | [.payload.v1.Object.ID](#payload-v1-Object-ID)                              | A method to check whether a specified ID is indexed or not. |
-| GetObject        | [.payload.v1.Object.VectorRequest](#payload-v1-Object-VectorRequest)        | [.payload.v1.Object.Vector](#payload-v1-Object-Vector)                      | A method to fetch a vector.                                 |
-| StreamGetObject  | [.payload.v1.Object.VectorRequest](#payload-v1-Object-VectorRequest) stream | [.payload.v1.Object.StreamVector](#payload-v1-Object-StreamVector) stream   | A method to fetch vectors by bidirectional streaming.       |
-| StreamListObject | [.payload.v1.Object.List.Request](#payload-v1-Object-List-Request)          | [.payload.v1.Object.List.Response](#payload-v1-Object-List-Response) stream | A method to get all the vectors with server streaming       |
+| Method Name     | Request Type                                                                | Response Type                                                             | Description                                                 |
+| --------------- | --------------------------------------------------------------------------- | ------------------------------------------------------------------------- | ----------------------------------------------------------- |
+| Exists          | [.payload.v1.Object.ID](#payload-v1-Object-ID)                              | [.payload.v1.Object.ID](#payload-v1-Object-ID)                            | A method to check whether a specified ID is indexed or not. |
+| GetObject       | [.payload.v1.Object.VectorRequest](#payload-v1-Object-VectorRequest)        | [.payload.v1.Object.Vector](#payload-v1-Object-Vector)                    | A method to fetch a vector.                                 |
+| StreamGetObject | [.payload.v1.Object.VectorRequest](#payload-v1-Object-VectorRequest) stream | [.payload.v1.Object.StreamVector](#payload-v1-Object-StreamVector) stream | A method to fetch vectors by bidirectional streaming.       |
 
 <a name="apis_proto_v1_vald_filter-proto"></a>
 

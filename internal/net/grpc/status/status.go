@@ -110,10 +110,6 @@ func WrapWithUnauthenticated(msg string, err error, details ...interface{}) erro
 	return newStatus(codes.Unauthenticated, msg, err, details...).Err()
 }
 
-func CreateWithNotFound(msg string, err error, details ...interface{}) *Status {
-	return newStatus(codes.NotFound, msg, err, details...)
-}
-
 func Error(code codes.Code, msg string) error {
 	return status.Error(code, msg)
 }

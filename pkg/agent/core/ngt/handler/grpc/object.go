@@ -16,7 +16,6 @@ package grpc
 import (
 	"context"
 	"fmt"
-	"sync"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
@@ -196,79 +195,6 @@ func (s *server) StreamGetObject(stream vald.Object_StreamGetObjectServer) (err 
 
 		log.Error(err)
 		return err
-	}
-	return nil
-}
-
-func (s *server) StreamListObject(_ *payload.Object_List_Request, stream vald.Object_StreamListObjectServer) (err error) {
-	ctx, span := trace.StartSpan(stream.Context(), apiName+"/"+vald.StreamListObjectRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
-
-	var (
-		mu   sync.Mutex
-		emu  sync.RWMutex
-		errs = make([]error, 0, s.ngt.Len())
-		emap = make(map[string]struct{})
-	)
-	s.ngt.ListObjectFunc(ctx, func(uuid string, _ uint32, _ int64) bool {
-		vec, ts, err := s.ngt.GetObject(uuid)
-		var res *payload.Object_List_Response
-		if err != nil {
-			st := status.CreateWithNotFound(fmt.Sprintf("failed to get object with uuid: %s", uuid), err)
-			res = &payload.Object_List_Response{
-				Payload: &payload.Object_List_Response_Status{
-					Status: st.Proto(),
-				},
-			}
-		} else {
-			res = &payload.Object_List_Response{
-				Payload: &payload.Object_List_Response_Vector{
-					Vector: &payload.Object_Vector{
-						Id:        uuid,
-						Vector:    vec,
-						Timestamp: ts,
-					},
-				},
-			}
-		}
-
-		mu.Lock()
-		err = stream.Send(res)
-		mu.Unlock()
-
-		if err != nil {
-			emu.RLock()
-			_, ok := emap[err.Error()]
-			emu.RUnlock()
-			if !ok {
-				emu.Lock()
-				errs = append(errs, err)
-				emap[err.Error()] = struct{}{}
-				emu.Unlock()
-			}
-		}
-
-		// always return true to continue streaming and let the context cancel the Range when stream closes.
-		return true
-	})
-
-	if len(errs) != 0 {
-		// Register all the gRPC codes to the span. Doing this because ParseError cannot parse joined error.
-		if span != nil {
-			for _, e := range errs {
-				st, msg, err := status.ParseError(e, codes.Internal, "failed to parse StreamListObject final gRPC error response")
-				span.RecordError(err)
-				span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
-				span.SetStatus(trace.StatusError, msg)
-			}
-		}
-
-		// now join all the errors to return
-		return errors.Join(errs...)
 	}
 	return nil
 }

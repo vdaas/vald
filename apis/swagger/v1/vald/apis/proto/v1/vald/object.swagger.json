@@ -36,36 +36,6 @@
         "tags": ["Object"]
       }
     },
-    "/object/list": {
-      "get": {
-        "summary": "A method to get all the vectors with server streaming",
-        "operationId": "Object_StreamListObject",
-        "responses": {
-          "200": {
-            "description": "A successful response.(streaming responses)",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "result": {
-                  "$ref": "#/definitions/ObjectListResponse"
-                },
-                "error": {
-                  "$ref": "#/definitions/runtimeStreamError"
-                }
-              },
-              "title": "Stream result of ObjectListResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "tags": ["Object"]
-      }
-    },
     "/object/{id.id}": {
       "get": {
         "summary": "A method to fetch a vector.",
@@ -120,17 +90,6 @@
         }
       },
       "description": "Represent the vector ID."
-    },
-    "ObjectListResponse": {
-      "type": "object",
-      "properties": {
-        "vector": {
-          "$ref": "#/definitions/ObjectVector"
-        },
-        "status": {
-          "$ref": "#/definitions/rpcStatus"
-        }
-      }
     },
     "ObjectStreamVector": {
       "type": "object",

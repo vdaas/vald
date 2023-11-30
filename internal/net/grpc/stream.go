@@ -43,14 +43,11 @@ type (
 )
 
 // BidirectionalStream represents gRPC bidirectional stream server handler.
-// It receives messages from the stream, calls the function with the received message, and sends the returned message to the stream.
-// It limits the number of concurrent calls to the function with the concurrency integer.
-// It records errors and returns them as a single error.
 func BidirectionalStream[Q any, R any](ctx context.Context, stream ServerStream,
 	concurrency int,
 	f func(context.Context, *Q) (*R, error),
 ) (err error) {
-	ctx, span := trace.StartSpan(ctx, apiName+"/BidirectionalStream")
+	ctx, span := trace.StartSpan(stream.Context(), apiName+"/BidirectionalStream")
 	defer func() {
 		if span != nil {
 			span.End()
@@ -106,6 +103,7 @@ func BidirectionalStream[Q any, R any](ctx context.Context, stream ServerStream,
 					log.Errorf("failed to receive stream message: %v", err)
 				}
 				return finalize()
+
 			}
 			if data != nil {
 				eg.Go(safety.RecoverWithoutPanicFunc(func() (err error) {
