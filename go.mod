@@ -3,13 +3,13 @@ module github.com/vdaas/vald
 go 1.20
 
 replace (
-	cloud.google.com/go => cloud.google.com/go v0.110.5
+	cloud.google.com/go => cloud.google.com/go v0.110.4
 	cloud.google.com/go/bigquery => cloud.google.com/go/bigquery v1.52.0
-	cloud.google.com/go/compute => cloud.google.com/go/compute v1.21.0
-	cloud.google.com/go/datastore => cloud.google.com/go/datastore v1.12.1
+	cloud.google.com/go/compute => cloud.google.com/go/compute v1.20.1
+	cloud.google.com/go/datastore => cloud.google.com/go/datastore v1.12.0
 	cloud.google.com/go/firestore => cloud.google.com/go/firestore v1.11.0
 	cloud.google.com/go/iam => cloud.google.com/go/iam v1.1.1
-	cloud.google.com/go/kms => cloud.google.com/go/kms v1.13.0
+	cloud.google.com/go/kms => cloud.google.com/go/kms v1.12.1
 	cloud.google.com/go/monitoring => cloud.google.com/go/monitoring v1.15.1
 	cloud.google.com/go/pubsub => cloud.google.com/go/pubsub v1.32.0
 	cloud.google.com/go/secretmanager => cloud.google.com/go/secretmanager v1.11.1
@@ -43,7 +43,7 @@ replace (
 	github.com/ajstarks/svgo => github.com/ajstarks/svgo v0.0.0-20211024235047-1546f124cd8b
 	github.com/antihax/optional => github.com/antihax/optional v1.0.0
 	github.com/armon/go-socks5 => github.com/armon/go-socks5 v0.0.0-20160902184237-e75332964ef5
-	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.44.299
+	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.44.297
 	github.com/aws/aws-sdk-go-v2 => github.com/aws/aws-sdk-go-v2 v1.18.1
 	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream => github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.4.10
 	github.com/aws/aws-sdk-go-v2/config => github.com/aws/aws-sdk-go-v2/config v1.18.27
@@ -190,11 +190,11 @@ replace (
 	github.com/jstemmer/go-junit-report => github.com/jstemmer/go-junit-report v1.0.0
 	github.com/kisielk/errcheck => github.com/kisielk/errcheck v1.6.3
 	github.com/kisielk/gotool => github.com/kisielk/gotool v1.0.0
-	github.com/klauspost/compress => github.com/klauspost/compress v1.16.8-0.20230710085017-b7fbbd3fb210
+	github.com/klauspost/compress => github.com/klauspost/compress v1.16.7
 	github.com/klauspost/cpuid/v2 => github.com/klauspost/cpuid/v2 v2.2.5
 	github.com/kpango/fastime => github.com/kpango/fastime v1.1.9
 	github.com/kpango/fuid => github.com/kpango/fuid v0.0.0-20221203053508-503b5ad89aa1
-	github.com/kpango/gache/v2 => github.com/kpango/gache/v2 v2.0.9
+	github.com/kpango/gache/v2 => github.com/kpango/gache/v2 v2.0.8
 	github.com/kpango/glg => github.com/kpango/glg v1.6.15
 	github.com/kr/fs => github.com/kr/fs v0.1.0
 	github.com/kr/pretty => github.com/kr/pretty v0.3.1
@@ -291,8 +291,8 @@ replace (
 	go.uber.org/zap => go.uber.org/zap v1.24.0
 	gocloud.dev => gocloud.dev v0.30.0
 	golang.org/x/crypto => golang.org/x/crypto v0.11.0
-	golang.org/x/exp => golang.org/x/exp v0.0.0-20230711023510-fffb14384f22
-	golang.org/x/exp/typeparams => golang.org/x/exp/typeparams v0.0.0-20230711023510-fffb14384f22
+	golang.org/x/exp => golang.org/x/exp v0.0.0-20230626212559-97b1e661b5df
+	golang.org/x/exp/typeparams => golang.org/x/exp/typeparams v0.0.0-20230626212559-97b1e661b5df
 	golang.org/x/image => golang.org/x/image v0.9.0
 	golang.org/x/lint => golang.org/x/lint v0.0.0-20210508222113-6edffad5e616
 	golang.org/x/mobile => golang.org/x/mobile v0.0.0-20230531173138-3c911d8e3eda
@@ -312,9 +312,9 @@ replace (
 	gonum.org/v1/plot => gonum.org/v1/plot v0.13.0
 	google.golang.org/api => google.golang.org/api v0.130.0
 	google.golang.org/appengine => google.golang.org/appengine v1.6.7
-	google.golang.org/genproto => google.golang.org/genproto v0.0.0-20230710151506-e685fd7b542b
-	google.golang.org/genproto/googleapis/api => google.golang.org/genproto/googleapis/api v0.0.0-20230710151506-e685fd7b542b
-	google.golang.org/genproto/googleapis/rpc => google.golang.org/genproto/googleapis/rpc v0.0.0-20230710151506-e685fd7b542b
+	google.golang.org/genproto => google.golang.org/genproto v0.0.0-20230629202037-9506855d4529
+	google.golang.org/genproto/googleapis/api => google.golang.org/genproto/googleapis/api v0.0.0-20230629202037-9506855d4529
+	google.golang.org/genproto/googleapis/rpc => google.golang.org/genproto/googleapis/rpc v0.0.0-20230629202037-9506855d4529
 	google.golang.org/grpc => google.golang.org/grpc v1.56.2
 	google.golang.org/grpc/cmd/protoc-gen-go-grpc => google.golang.org/grpc/cmd/protoc-gen-go-grpc v1.3.0
 	google.golang.org/protobuf => google.golang.org/protobuf v1.31.0
@@ -393,9 +393,9 @@ require (
 	golang.org/x/tools v0.10.0
 	gonum.org/v1/hdf5 v0.0.0-00010101000000-000000000000
 	gonum.org/v1/plot v0.10.1
-	google.golang.org/genproto/googleapis/api v0.0.0-20230706204954-ccb25ca9f130
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20230706204954-ccb25ca9f130
-	google.golang.org/grpc v1.56.2
+	google.golang.org/genproto/googleapis/api v0.0.0-20230530153820-e85fd2cbaebc
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20230629202037-9506855d4529
+	google.golang.org/grpc v1.56.1
 	google.golang.org/protobuf v1.31.0
 	gopkg.in/yaml.v2 v2.4.0
 	k8s.io/api v0.27.3
@@ -407,10 +407,10 @@ require (
 )
 
 require (
-	cloud.google.com/go v0.110.4 // indirect
+	cloud.google.com/go v0.110.2 // indirect
 	cloud.google.com/go/compute v1.20.1 // indirect
 	cloud.google.com/go/compute/metadata v0.2.3 // indirect
-	cloud.google.com/go/iam v1.1.1 // indirect
+	cloud.google.com/go/iam v1.1.0 // indirect
 	git.sr.ht/~sbinet/gg v0.4.1 // indirect
 	github.com/Masterminds/goutils v1.1.1 // indirect
 	github.com/Masterminds/semver v1.5.0 // indirect
@@ -496,7 +496,7 @@ require (
 	gomodules.xyz/jsonpatch/v2 v2.3.0 // indirect
 	google.golang.org/api v0.128.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
-	google.golang.org/genproto v0.0.0-20230706204954-ccb25ca9f130 // indirect
+	google.golang.org/genproto v0.0.0-20230530153820-e85fd2cbaebc // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	k8s.io/apiextensions-apiserver v0.27.2 // indirect
