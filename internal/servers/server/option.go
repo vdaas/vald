@@ -30,6 +30,7 @@ import (
 	"github.com/vdaas/vald/internal/net/control"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/grpc/interceptor/server/logging"
+	"github.com/vdaas/vald/internal/net/grpc/interceptor/server/metadata"
 	"github.com/vdaas/vald/internal/net/grpc/interceptor/server/metric"
 	"github.com/vdaas/vald/internal/net/grpc/interceptor/server/recover"
 	"github.com/vdaas/vald/internal/net/grpc/interceptor/server/trace"
@@ -559,6 +560,10 @@ func WithGRPCInterceptors(names ...string) Option {
 			default:
 			}
 		}
+		s.grpc.opts = append(s.grpc.opts,
+			grpc.ChainUnaryInterceptor(metadata.MetadataInterceptor()),
+			grpc.ChainStreamInterceptor(metadata.MetadataStreamInterceptor()),
+		)
 		return nil
 	}
 }
