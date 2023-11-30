@@ -101,7 +101,6 @@ type (
 		index               C.NGTIndex
 		ospace              C.NGTObjectSpace
 		mu                  *sync.RWMutex
-		cmu                 *sync.RWMutex
 	}
 )
 
@@ -222,7 +221,6 @@ func gen(isLoad bool, opts ...Option) (NGT, error) {
 		err error
 	)
 	n.mu = new(sync.RWMutex)
-	n.cmu = new(sync.RWMutex)
 
 	defer func() {
 		if err != nil {
@@ -389,7 +387,7 @@ func (n *ngt) Search(ctx context.Context, vec []float32, size int, epsilon, radi
 		radius = n.radius
 	}
 
-	n.rLock(true)
+	n.mu.RLock()
 	ret := C.ngt_search_index_as_float(
 		n.index,
 		(*C.float)(&vec[0]),
@@ -402,10 +400,10 @@ func (n *ngt) Search(ctx context.Context, vec []float32, size int, epsilon, radi
 
 	if ret == ErrorCode {
 		ne := ebuf
-		n.rUnlock(true)
+		n.mu.RUnlock()
 		return nil, n.newGoError(ne)
 	}
-	n.rUnlock(true)
+	n.mu.RUnlock()
 
 	rsize := int(C.ngt_get_result_size(results, ebuf))
 	if rsize <= 0 {
@@ -450,7 +448,7 @@ func (n *ngt) LinearSearch(vec []float32, size int) (result []SearchResult, err 
 		return nil, n.newGoError(ebuf)
 	}
 
-	n.rLock(true)
+	n.mu.RLock()
 	ret := C.ngt_linear_search_index_as_float(
 		n.index,
 		(*C.float)(&vec[0]),
@@ -462,10 +460,10 @@ func (n *ngt) LinearSearch(vec []float32, size int) (result []SearchResult, err 
 
 	if ret == ErrorCode {
 		ne := ebuf
-		n.rUnlock(true)
+		n.mu.RUnlock()
 		return nil, n.newGoError(ne)
 	}
-	n.rUnlock(true)
+	n.mu.RUnlock()
 
 	rsize := int(C.ngt_get_result_size(results, ebuf))
 	if rsize <= 0 {
@@ -500,9 +498,9 @@ func (n *ngt) Insert(vec []float32) (id uint, err error) {
 	}
 
 	ebuf := n.GetErrorBuffer()
-	n.lock(true)
+	n.mu.Lock()
 	id = uint(C.ngt_insert_index_as_float(n.index, (*C.float)(&vec[0]), C.uint32_t(n.dimension), ebuf))
-	n.unlock(true)
+	n.mu.Unlock()
 	if id == 0 {
 		return 0, n.newGoError(ebuf)
 	}
@@ -600,9 +598,9 @@ func (n *ngt) CreateIndex(poolSize uint32) error {
 		poolSize = n.poolSize
 	}
 	ebuf := n.GetErrorBuffer()
-	n.lock(true)
+	n.mu.Lock()
 	ret := C.ngt_create_index(n.index, C.uint32_t(poolSize), ebuf)
-	n.unlock(true)
+	n.mu.Unlock()
 	if ret == ErrorCode {
 		return n.newGoError(ebuf)
 	}
@@ -617,9 +615,9 @@ func (n *ngt) SaveIndex() error {
 		path := C.CString(n.idxPath)
 		defer C.free(unsafe.Pointer(path))
 		ebuf := n.GetErrorBuffer()
-		n.rLock(true)
+		n.mu.Lock()
 		ret := C.ngt_save_index(n.index, path, ebuf)
-		n.rUnlock(true)
+		n.mu.Unlock()
 		if ret == ErrorCode {
 			return n.newGoError(ebuf)
 		}
@@ -635,9 +633,9 @@ func (n *ngt) SaveIndexWithPath(idxPath string) error {
 		path := C.CString(idxPath)
 		defer C.free(unsafe.Pointer(path))
 		ebuf := n.GetErrorBuffer()
-		n.rLock(true)
+		n.mu.Lock()
 		ret := C.ngt_save_index(n.index, path, ebuf)
-		n.rUnlock(true)
+		n.mu.Unlock()
 		if ret == ErrorCode {
 			return n.newGoError(ebuf)
 		}
@@ -650,9 +648,9 @@ func (n *ngt) SaveIndexWithPath(idxPath string) error {
 // Remove removes from NGT index.
 func (n *ngt) Remove(id uint) error {
 	ebuf := n.GetErrorBuffer()
-	n.lock(true)
+	n.mu.Lock()
 	ret := C.ngt_remove_index(n.index, C.ObjectID(id), ebuf)
-	n.unlock(true)
+	n.mu.Unlock()
 	if ret == ErrorCode {
 		return n.newGoError(ebuf)
 	}
@@ -678,17 +676,17 @@ func (n *ngt) GetVector(id uint) (ret []float32, err error) {
 	ebuf := n.GetErrorBuffer()
 	switch n.objectType {
 	case Float:
-		n.rLock(false)
+		n.mu.RLock()
 		results := C.ngt_get_object_as_float(n.ospace, C.ObjectID(id), ebuf)
-		n.rUnlock(false)
+		n.mu.RUnlock()
 		if results == nil {
 			return nil, n.newGoError(ebuf)
 		}
 		ret = (*[algorithm.MaximumVectorDimensionSize]float32)(unsafe.Pointer(results))[:dimension:dimension]
 	case HalfFloat:
-		n.rLock(false)
+		n.mu.RLock()
 		results := C.ngt_get_allocated_object_as_float(n.ospace, C.ObjectID(id), ebuf)
-		n.rUnlock(false)
+		n.mu.RUnlock()
 		defer C.free(unsafe.Pointer(results))
 		if results == nil {
 			return nil, n.newGoError(ebuf)
@@ -698,9 +696,9 @@ func (n *ngt) GetVector(id uint) (ret []float32, err error) {
 			ret[i] = elem
 		}
 	case Uint8:
-		n.rLock(false)
+		n.mu.RLock()
 		results := C.ngt_get_object_as_integer(n.ospace, C.ObjectID(id), ebuf)
-		n.rUnlock(false)
+		n.mu.RUnlock()
 		if results == nil {
 			return nil, n.newGoError(ebuf)
 		}
@@ -748,32 +746,4 @@ func (n *ngt) GetErrorBuffer() (ebuf C.NGTError) {
 
 func (n *ngt) PutErrorBuffer(ebuf C.NGTError) {
 	n.epool.Put(ebuf)
-}
-
-func (n *ngt) lock(cLock bool) {
-	if cLock {
-		n.cmu.Lock()
-	}
-	n.mu.Lock()
-}
-
-func (n *ngt) unlock(cLock bool) {
-	n.mu.Unlock()
-	if cLock {
-		n.cmu.Unlock()
-	}
-}
-
-func (n *ngt) rLock(cLock bool) {
-	if cLock {
-		n.cmu.RLock()
-	}
-	n.mu.RLock()
-}
-
-func (n *ngt) rUnlock(cLock bool) {
-	n.mu.RUnlock()
-	if cLock {
-		n.cmu.RUnlock()
-	}
 }
