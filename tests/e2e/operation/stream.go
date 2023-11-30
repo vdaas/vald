@@ -19,6 +19,7 @@ import (
 	"context"
 	"reflect"
 	"strconv"
+	"sync"
 	"testing"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
@@ -28,7 +29,6 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc/errdetails"
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/strings"
-	"github.com/vdaas/vald/internal/sync"
 )
 
 type (
@@ -104,7 +104,6 @@ func (c *client) SearchWithParameters(
 
 	wg := sync.WaitGroup{}
 	wg.Add(1)
-	var mu sync.Mutex
 	go func() {
 		defer wg.Done()
 
@@ -116,7 +115,6 @@ func (c *client) SearchWithParameters(
 
 			if err != nil {
 				if err := evalidator(t, err); err != nil {
-					mu.Lock()
 					rerr = errors.Join(
 						rerr,
 						errors.Errorf(
@@ -124,7 +122,6 @@ func (c *client) SearchWithParameters(
 							err.Error(),
 						),
 					)
-					mu.Unlock()
 				}
 				return
 			}
@@ -138,9 +135,7 @@ func (c *client) SearchWithParameters(
 							status.GetCode(),
 							status.GetMessage(),
 							errdetails.Serialize(status.GetDetails()))
-						mu.Lock()
 						rerr = errors.Join(rerr, e)
-						mu.Unlock()
 					}
 					continue
 				}
@@ -187,8 +182,6 @@ func (c *client) SearchWithParameters(
 			},
 		})
 		if err != nil {
-			mu.Lock()
-			defer mu.Unlock()
 			return err
 		}
 		err = sc.Send(&payload.Search_Request{
@@ -203,8 +196,6 @@ func (c *client) SearchWithParameters(
 			},
 		})
 		if err != nil {
-			mu.Lock()
-			defer mu.Unlock()
 			return err
 		}
 		err = sc.Send(&payload.Search_Request{
@@ -219,8 +210,6 @@ func (c *client) SearchWithParameters(
 			},
 		})
 		if err != nil {
-			mu.Lock()
-			defer mu.Unlock()
 			return err
 		}
 		err = sc.Send(&payload.Search_Request{
@@ -235,8 +224,6 @@ func (c *client) SearchWithParameters(
 			},
 		})
 		if err != nil {
-			mu.Lock()
-			defer mu.Unlock()
 			return err
 		}
 		err = sc.Send(&payload.Search_Request{
@@ -251,8 +238,6 @@ func (c *client) SearchWithParameters(
 			},
 		})
 		if err != nil {
-			mu.Lock()
-			defer mu.Unlock()
 			return err
 		}
 	}
@@ -304,7 +289,6 @@ func (c *client) SearchByIDWithParameters(
 
 	wg := sync.WaitGroup{}
 	wg.Add(1)
-	var mu sync.Mutex
 	go func() {
 		defer wg.Done()
 
@@ -316,7 +300,6 @@ func (c *client) SearchByIDWithParameters(
 
 			if err != nil {
 				if err := evalidator(t, err); err != nil {
-					mu.Lock()
 					rerr = errors.Join(
 						rerr,
 						errors.Errorf(
@@ -324,7 +307,6 @@ func (c *client) SearchByIDWithParameters(
 							err.Error(),
 						),
 					)
-					mu.Unlock()
 				}
 				return
 			}
@@ -338,9 +320,7 @@ func (c *client) SearchByIDWithParameters(
 							status.GetCode(),
 							status.GetMessage(),
 							errdetails.Serialize(status.GetDetails()))
-						mu.Lock()
 						rerr = errors.Join(rerr, e)
-						mu.Unlock()
 					}
 					continue
 				}
@@ -372,8 +352,6 @@ func (c *client) SearchByIDWithParameters(
 			},
 		})
 		if err != nil {
-			mu.Lock()
-			defer mu.Unlock()
 			return err
 		}
 	}
@@ -384,8 +362,6 @@ func (c *client) SearchByIDWithParameters(
 
 	t.Log("searchByID operation finished")
 
-	mu.Lock()
-	defer mu.Unlock()
 	return rerr
 }
 

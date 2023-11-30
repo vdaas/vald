@@ -27,6 +27,7 @@ import (
 	agent "github.com/vdaas/vald/apis/grpc/v1/agent/core"
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/client/v1/client/discoverer"
+	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc"
@@ -34,8 +35,7 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
-	"github.com/vdaas/vald/internal/sync"
-	"github.com/vdaas/vald/internal/sync/errgroup"
+	valdsync "github.com/vdaas/vald/internal/sync"
 )
 
 type Indexer interface {
@@ -54,9 +54,9 @@ type index struct {
 	saveIndexDurationLimit time.Duration
 	saveIndexWaitDuration  time.Duration
 	saveIndexTargetAddrCh  chan string
-	schMap                 sync.Map[string, any]
+	schMap                 valdsync.Map[string, any]
 	concurrency            int
-	indexInfos             sync.Map[string, *payload.Info_Index_Count]
+	indexInfos             valdsync.Map[string, *payload.Info_Index_Count]
 	indexing               atomic.Value // bool
 	minUncommitted         uint32
 	uuidsCount             uint32
@@ -276,7 +276,7 @@ func (idx *index) loadInfos(ctx context.Context) (err error) {
 	}()
 
 	var u, ucu uint32
-	var infoMap sync.Map[string, *payload.Info_Index_Count]
+	var infoMap valdsync.Map[string, *payload.Info_Index_Count]
 	err = idx.client.GetClient().RangeConcurrent(ctx, len(idx.client.GetAddrs(ctx)),
 		func(ctx context.Context,
 			addr string, conn *grpc.ClientConn, copts ...grpc.CallOption,

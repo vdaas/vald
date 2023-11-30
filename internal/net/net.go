@@ -23,14 +23,14 @@ import (
 	"net"
 	"net/netip"
 	"strconv"
+	"sync"
 	"syscall"
 
+	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/strings"
-	"github.com/vdaas/vald/internal/sync"
-	"github.com/vdaas/vald/internal/sync/errgroup"
 )
 
 type (
@@ -234,7 +234,7 @@ func ScanPorts(ctx context.Context, start, end uint16, host string) (ports []uin
 		return nil, err
 	}
 	eg, egctx := errgroup.New(ctx)
-	eg.SetLimit(int(rl.Max) / 2)
+	eg.Limitation(int(rl.Max) / 2)
 
 	var mu sync.Mutex
 

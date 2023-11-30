@@ -80,7 +80,7 @@ update/chaos-mesh:
 .PHONY: update/go
 ## update go version
 update/go:
-	curl --silent https://go.dev/VERSION?m=text | head -n 1 | sed -e 's/go//g' > $(ROOTDIR)/versions/GO_VERSION
+	curl --silent https://go.dev/VERSION?m=text | sed -e 's/go//g' > $(ROOTDIR)/versions/GO_VERSION
 
 .PHONY: update/golangci-lint
 ## update golangci-lint version

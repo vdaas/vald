@@ -25,6 +25,7 @@ import (
 
 	"github.com/vdaas/vald/internal/backoff"
 	"github.com/vdaas/vald/internal/circuitbreaker"
+	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net"
@@ -34,10 +35,9 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
+	"github.com/vdaas/vald/internal/singleflight"
 	"github.com/vdaas/vald/internal/strings"
-	"github.com/vdaas/vald/internal/sync"
-	"github.com/vdaas/vald/internal/sync/errgroup"
-	"github.com/vdaas/vald/internal/sync/singleflight"
+	valdsync "github.com/vdaas/vald/internal/sync"
 	"google.golang.org/grpc"
 	gbackoff "google.golang.org/grpc/backoff"
 )
@@ -110,7 +110,7 @@ type gRPCClient struct {
 	gbo                 gbackoff.Config // grpc's original backoff configuration
 	mcd                 time.Duration   // minimum connection timeout duration
 	group               singleflight.Group[pool.Conn]
-	crl                 sync.Map[string, bool] // connection request list
+	crl                 valdsync.Map[string, bool] // connection request list
 
 	ech            <-chan error
 	monitorRunning atomic.Bool
@@ -424,7 +424,7 @@ func (g *gRPCClient) RangeConcurrent(ctx context.Context,
 		return g.Range(ctx, f)
 	}
 	eg, egctx := errgroup.New(sctx)
-	eg.SetLimit(concurrency)
+	eg.Limitation(concurrency)
 	if g.conns.Len() == 0 {
 		return errors.ErrGRPCClientConnNotFound("*")
 	}
@@ -570,11 +570,11 @@ func (g *gRPCClient) OrderedRangeConcurrent(ctx context.Context,
 	if g.conns.Len() == 0 {
 		return errors.ErrGRPCClientConnNotFound("*")
 	}
-	if concurrency == 0 || concurrency == 1 {
+	if concurrency < 2 {
 		return g.OrderedRange(ctx, orders, f)
 	}
 	eg, egctx := errgroup.New(sctx)
-	eg.SetLimit(concurrency)
+	eg.Limitation(concurrency)
 	for _, order := range orders {
 		addr := order
 		eg.Go(safety.RecoverFunc(func() (err error) {
@@ -893,7 +893,7 @@ func (g *gRPCClient) Connect(ctx context.Context, addr string, dopts ...DialOpti
 			span.End()
 		}
 	}()
-	sconn, shared, err := g.group.Do(ctx, "connect-"+addr, func(ctx context.Context) (pool.Conn, error) {
+	sconn, shared, err := g.group.Do(ctx, "connect-"+addr, func() (pool.Conn, error) {
 		var ok bool
 		conn, ok = g.conns.Load(addr)
 		if ok && conn != nil {
@@ -978,7 +978,7 @@ func (g *gRPCClient) Disconnect(ctx context.Context, addr string) error {
 			span.End()
 		}
 	}()
-	_, _, err := g.group.Do(ctx, "disconnect-"+addr, func(ctx context.Context) (pool.Conn, error) {
+	_, _, err := g.group.Do(ctx, "disconnect-"+addr, func() (pool.Conn, error) {
 		p, ok := g.conns.Load(addr)
 		if !ok || p == nil {
 			g.conns.Delete(addr)

@@ -16,10 +16,10 @@ package info
 import (
 	"reflect"
 	"runtime"
+	"sync"
 	"testing"
 
 	"github.com/vdaas/vald/internal/errors"
-	"github.com/vdaas/vald/internal/sync"
 	"github.com/vdaas/vald/internal/test/comparator"
 	"github.com/vdaas/vald/internal/test/goleak"
 )

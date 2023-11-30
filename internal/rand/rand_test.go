@@ -15,11 +15,11 @@ package rand
 
 import (
 	"fmt"
+	"sync"
 	"sync/atomic"
 	"testing"
 
 	"github.com/vdaas/vald/internal/errors"
-	"github.com/vdaas/vald/internal/sync"
 	"github.com/vdaas/vald/internal/test/goleak"
 )
 
