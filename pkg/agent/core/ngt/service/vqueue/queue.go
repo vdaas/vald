@@ -18,15 +18,14 @@
 package vqueue
 
 import (
-	"cmp"
 	"context"
 	"reflect"
-	"slices"
 	"sync/atomic"
 	"time"
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/slices"
 	"github.com/vdaas/vald/internal/sync"
 )
 
@@ -198,8 +197,9 @@ func (v *vqueue) RangePopInsert(ctx context.Context, now int64, f func(uuid stri
 		}
 		return true
 	})
-	slices.SortFunc(uii, func(left, right index) int {
-		return cmp.Compare(right.date, left.date)
+	slices.SortFunc(uii, func(left, right index) bool {
+		// sort by latest unix time order
+		return left.date > right.date
 	})
 	for _, idx := range uii {
 		if !f(idx.uuid, idx.vector, idx.date) {
@@ -232,8 +232,9 @@ func (v *vqueue) RangePopDelete(ctx context.Context, now int64, f func(uuid stri
 		}
 		return true
 	})
-	slices.SortFunc(udi, func(left, right index) int {
-		return cmp.Compare(right.date, left.date)
+	slices.SortFunc(udi, func(left, right index) bool {
+		// sort by latest unix time order
+		return left.date > right.date
 	})
 	for _, idx := range udi {
 		if !f(idx.uuid) {
