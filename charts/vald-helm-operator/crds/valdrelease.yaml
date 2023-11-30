@@ -2032,15 +2032,11 @@ spec:
                           type: object
                           properties:
                             egress:
-                              type: array
-                              items:
-                                type: object
-                                x-kubernetes-preserve-unknown-fields: true
+                              type: object
+                              x-kubernetes-preserve-unknown-fields: true
                             ingress:
-                              type: array
-                              items:
-                                type: object
-                                x-kubernetes-preserve-unknown-fields: true
+                              type: object
+                              x-kubernetes-preserve-unknown-fields: true
                         enabled:
                           type: boolean
                     observability:
