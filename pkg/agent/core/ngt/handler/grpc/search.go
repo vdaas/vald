@@ -72,9 +72,6 @@ func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *
 		req.GetConfig().GetNum(),
 		req.GetConfig().GetEpsilon(),
 		req.GetConfig().GetRadius())
-	if err == nil && res == nil {
-		return nil, nil
-	}
 	if err != nil || res == nil {
 		var attrs []attribute.KeyValue
 		switch {
@@ -201,9 +198,6 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 		req.GetConfig().GetNum(),
 		req.GetConfig().GetEpsilon(),
 		req.GetConfig().GetRadius())
-	if err == nil && res == nil {
-		return nil, nil
-	}
 	if err != nil || res == nil {
 		var attrs []attribute.KeyValue
 		switch {

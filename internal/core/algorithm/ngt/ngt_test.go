@@ -335,7 +335,7 @@ func TestLoad(t *testing.T) {
 
 					// check no vector can be searched
 					vs, err := n.Search(ctx, []float32{0, 1, 2, 3, 4, 5, 6, 7, 8}, 10, 0, 0)
-					if err != nil && !errors.Is(err, errors.ErrSearchResultEmptyButNoDataStored) {
+					if err != nil && !errors.Is(err, errors.ErrEmptySearchResult) {
 						return err
 					}
 					if len(vs) != 0 {
@@ -467,7 +467,7 @@ func TestLoad(t *testing.T) {
 
 					// check no vector can be searched
 					vs, err := n.Search(ctx, []float32{0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8}, 10, 0, 0)
-					if err != nil && !errors.Is(err, errors.ErrSearchResultEmptyButNoDataStored) {
+					if err != nil && !errors.Is(err, errors.ErrEmptySearchResult) {
 						return err
 					}
 					if len(vs) != 0 {
@@ -1836,7 +1836,7 @@ func Test_ngt_Search(t *testing.T) {
 			},
 		},
 		{
-			name: "return  ErrSearchResultEmptyButNoDataStored error if there is no inserted vector",
+			name: "return ErrEmptySearchResult error if there is no inserted vector",
 			args: args{
 				ctx:  context.Background(),
 				vec:  []float32{0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9},
@@ -1853,11 +1853,11 @@ func Test_ngt_Search(t *testing.T) {
 			},
 			createFunc: defaultCreateFunc,
 			want: want{
-				err: errors.ErrSearchResultEmptyButNoDataStored,
+				err: errors.ErrEmptySearchResult,
 			},
 		},
 		{
-			name: "return ErrSearchResultEmptyButNoDataStored error if the context is canceled",
+			name: "return ErrEmptySearchResult error if the context is canceled",
 			args: args{
 				ctx: func() context.Context {
 					ctx, cancel := context.WithCancel(context.Background())
@@ -1878,7 +1878,7 @@ func Test_ngt_Search(t *testing.T) {
 			},
 			createFunc: defaultCreateFunc,
 			want: want{
-				err: errors.ErrSearchResultEmptyButNoDataStored,
+				err: errors.ErrEmptySearchResult,
 			},
 		},
 	}
