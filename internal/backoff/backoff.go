@@ -21,6 +21,7 @@ import (
 	"context"
 	"math"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/vdaas/vald/internal/errors"
@@ -29,7 +30,6 @@ import (
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/rand"
 	"github.com/vdaas/vald/internal/strings"
-	"github.com/vdaas/vald/internal/sync"
 )
 
 // NOTE: This variable is for observability package.

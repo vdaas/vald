@@ -1830,7 +1830,7 @@ func Test_dialer_tlsHandshake(t *testing.T) {
 // 		host string
 // 	}
 // 	type fields struct {
-// 		dnsCache              cacher.Cache[*dialerCache]
+// 		dnsCache              cacher.Cache
 // 		enableDNSCache        bool
 // 		tlsConfig             *tls.Config
 // 		dnsRefreshDurationStr string
@@ -1843,7 +1843,6 @@ func Test_dialer_tlsHandshake(t *testing.T) {
 // 		ctrl                  control.SocketController
 // 		sockFlg               control.SocketFlag
 // 		dialerDualStack       bool
-// 		addrs                 sync.Map[string, *addrInfo]
 // 		der                   *net.Dialer
 // 		dialer                func(ctx context.Context, network, addr string) (Conn, error)
 // 	}
@@ -1892,7 +1891,6 @@ func Test_dialer_tlsHandshake(t *testing.T) {
 // 		           ctrl:nil,
 // 		           sockFlg:nil,
 // 		           dialerDualStack:false,
-// 		           addrs:nil,
 // 		           der:net.Dialer{},
 // 		           dialer:nil,
 // 		       },
@@ -1930,7 +1928,6 @@ func Test_dialer_tlsHandshake(t *testing.T) {
 // 		           ctrl:nil,
 // 		           sockFlg:nil,
 // 		           dialerDualStack:false,
-// 		           addrs:nil,
 // 		           der:net.Dialer{},
 // 		           dialer:nil,
 // 		           },
@@ -1976,7 +1973,6 @@ func Test_dialer_tlsHandshake(t *testing.T) {
 // 				ctrl:                  test.fields.ctrl,
 // 				sockFlg:               test.fields.sockFlg,
 // 				dialerDualStack:       test.fields.dialerDualStack,
-// 				addrs:                 test.fields.addrs,
 // 				der:                   test.fields.der,
 // 				dialer:                test.fields.dialer,
 // 			}

@@ -19,9 +19,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/servers/server"
-	"github.com/vdaas/vald/internal/sync/errgroup"
 )
 
 func TestNew(t *testing.T) {

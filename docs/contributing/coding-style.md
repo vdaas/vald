@@ -385,7 +385,7 @@ if err := srv.Run(); err != nil {
 
 All errors should define in [internal/errors package](https://github.com/vdaas/vald/blob/main/internal/errors). All errors should be start with `Err` prefix, and all errors should be handle if possible.
 
-Please use [internal/sync/errgroup](https://github.com/vdaas/vald/blob/main/internal/sync/errgroup) for synchronized error handling on multi-goroutine processing.
+Please use [internal/errgroup](https://github.com/vdaas/vald/blob/main/internal/errgroup) for synchronized error handling on multi-goroutine processing.
 
 ### Error checking
 

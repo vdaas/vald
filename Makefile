@@ -17,6 +17,7 @@
 ORG                             ?= vdaas
 NAME                            = vald
 GOPKG                           = github.com/$(ORG)/$(NAME)
+GOPRIVATE                       = $(GOPKG),$(GOPKG)/apis,$(GOPKG)-client-go
 DATETIME                        = $(eval DATETIME := $(shell date -u +%Y/%m/%d_%H:%M:%S%z))$(DATETIME)
 TAG                            ?= latest
 CRORG                          ?= $(ORG)
@@ -38,8 +39,7 @@ VERSION ?= $(eval VERSION := $(shell cat versions/VALD_VERSION))$(VERSION)
 NGT_VERSION := $(eval NGT_VERSION := $(shell cat versions/NGT_VERSION))$(NGT_VERSION)
 NGT_REPO = github.com/yahoojapan/NGT
 
-GOPRIVATE = $(GOPKG),$(GOPKG)/apis,$(GOPKG)-client-go
-GOPROXY = "https://proxy.golang.org,direct"
+GOPROXY=direct
 GOPATH := $(eval GOPATH := $(shell go env GOPATH))$(GOPATH)
 GO_VERSION := $(eval GO_VERSION := $(shell cat versions/GO_VERSION))$(GO_VERSION)
 GOARCH := $(eval GOARCH := $(shell go env GOARCH))$(GOARCH)
@@ -361,7 +361,7 @@ clean:
 license:
 	GOPRIVATE=$(GOPRIVATE) \
 	MAINTAINER=$(MAINTAINER) \
-	go run -mod=readonly hack/license/gen/main.go $(ROOTDIR)
+	go run -mod=readonly hack/license/gen/main.go ./
 
 .PHONY: init
 ## initialize development environment

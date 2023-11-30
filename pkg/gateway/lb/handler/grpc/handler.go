@@ -21,6 +21,7 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"sync"
 	"sync/atomic"
 	"time"
 
@@ -28,6 +29,7 @@ import (
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
 	"github.com/vdaas/vald/internal/conv"
 	"github.com/vdaas/vald/internal/core/algorithm"
+	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/info"
 	"github.com/vdaas/vald/internal/log"
@@ -40,8 +42,6 @@ import (
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/slices"
 	"github.com/vdaas/vald/internal/strings"
-	"github.com/vdaas/vald/internal/sync"
-	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/pkg/gateway/lb/service"
 )
 
@@ -1484,7 +1484,7 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 		lmu sync.Mutex
 	)
 	eg, ectx := errgroup.New(ctx)
-	eg.SetLimit(s.multiConcurrency)
+	eg.Limitation(s.multiConcurrency)
 	locs = &payload.Object_Locations{
 		Locations: make([]*payload.Object_Location, len(reqs.GetRequests())),
 	}
@@ -2021,7 +2021,7 @@ func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequ
 		lmu sync.Mutex
 	)
 	eg, ectx := errgroup.New(ctx)
-	eg.SetLimit(s.multiConcurrency)
+	eg.Limitation(s.multiConcurrency)
 	locs = &payload.Object_Locations{
 		Locations: make([]*payload.Object_Location, len(reqs.GetRequests())),
 	}
@@ -2370,7 +2370,7 @@ func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequ
 		lmu sync.Mutex
 	)
 	eg, ectx := errgroup.New(ctx)
-	eg.SetLimit(s.multiConcurrency)
+	eg.Limitation(s.multiConcurrency)
 	locs = &payload.Object_Locations{
 		Locations: make([]*payload.Object_Location, len(reqs.GetRequests())),
 	}
@@ -2674,7 +2674,7 @@ func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequ
 		lmu sync.Mutex
 	)
 	eg, ectx := errgroup.New(ctx)
-	eg.SetLimit(s.multiConcurrency)
+	eg.Limitation(s.multiConcurrency)
 	locs = &payload.Object_Locations{
 		Locations: make([]*payload.Object_Location, len(reqs.GetRequests())),
 	}

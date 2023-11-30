@@ -19,6 +19,7 @@ package pool
 
 import (
 	"context"
+	"sync"
 	"testing"
 
 	"github.com/vdaas/vald/apis/grpc/v1/discoverer"
@@ -26,7 +27,7 @@ import (
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/log/level"
 	"github.com/vdaas/vald/internal/net"
-	"github.com/vdaas/vald/internal/sync"
+	valdsync "github.com/vdaas/vald/internal/sync"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -133,7 +134,7 @@ func Benchmark_StaticDial(b *testing.B) {
 		b.Error(err)
 	}
 
-	conns := new(sync.Map[string, *grpc.ClientConn])
+	conns := new(valdsync.Map[string, *grpc.ClientConn])
 	conns.Store(DefaultServerAddr, conn)
 
 	b.StopTimer()
@@ -190,7 +191,7 @@ func BenchmarkParallel_StaticDial(b *testing.B) {
 		b.Error(err)
 	}
 
-	conns := new(sync.Map[string, *grpc.ClientConn])
+	conns := new(valdsync.Map[string, *grpc.ClientConn])
 	conns.Store(DefaultServerAddr, conn)
 
 	b.StopTimer()

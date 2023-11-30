@@ -178,8 +178,8 @@ func TestGetVector(t *testing.T) {
 // 		date   int64
 // 	}
 // 	type fields struct {
-// 		il sync.Map[string, *index]
-// 		dl sync.Map[string, *index]
+// 		il indexMap
+// 		dl indexMap
 // 		ic uint64
 // 		dc uint64
 // 	}
@@ -212,8 +212,8 @@ func TestGetVector(t *testing.T) {
 // 		           date:0,
 // 		       },
 // 		       fields: fields {
-// 		           il:nil,
-// 		           dl:nil,
+// 		           il:indexMap{},
+// 		           dl:indexMap{},
 // 		           ic:0,
 // 		           dc:0,
 // 		       },
@@ -239,8 +239,8 @@ func TestGetVector(t *testing.T) {
 // 		           date:0,
 // 		           },
 // 		           fields: fields {
-// 		           il:nil,
-// 		           dl:nil,
+// 		           il:indexMap{},
+// 		           dl:indexMap{},
 // 		           ic:0,
 // 		           dc:0,
 // 		           },
@@ -294,8 +294,8 @@ func TestGetVector(t *testing.T) {
 // 		date int64
 // 	}
 // 	type fields struct {
-// 		il sync.Map[string, *index]
-// 		dl sync.Map[string, *index]
+// 		il indexMap
+// 		dl indexMap
 // 		ic uint64
 // 		dc uint64
 // 	}
@@ -327,8 +327,8 @@ func TestGetVector(t *testing.T) {
 // 		           date:0,
 // 		       },
 // 		       fields: fields {
-// 		           il:nil,
-// 		           dl:nil,
+// 		           il:indexMap{},
+// 		           dl:indexMap{},
 // 		           ic:0,
 // 		           dc:0,
 // 		       },
@@ -353,8 +353,8 @@ func TestGetVector(t *testing.T) {
 // 		           date:0,
 // 		           },
 // 		           fields: fields {
-// 		           il:nil,
-// 		           dl:nil,
+// 		           il:indexMap{},
+// 		           dl:indexMap{},
 // 		           ic:0,
 // 		           dc:0,
 // 		           },
@@ -407,34 +407,30 @@ func TestGetVector(t *testing.T) {
 // 		uuid string
 // 	}
 // 	type fields struct {
-// 		il sync.Map[string, *index]
-// 		dl sync.Map[string, *index]
+// 		il indexMap
+// 		dl indexMap
 // 		ic uint64
 // 		dc uint64
 // 	}
 // 	type want struct {
-// 		wantVec       []float32
-// 		wantTimestamp int64
-// 		wantExists    bool
+// 		want  []float32
+// 		want1 bool
 // 	}
 // 	type test struct {
 // 		name       string
 // 		args       args
 // 		fields     fields
 // 		want       want
-// 		checkFunc  func(want, []float32, int64, bool) error
+// 		checkFunc  func(want, []float32, bool) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
 // 	}
-// 	defaultCheckFunc := func(w want, gotVec []float32, gotTimestamp int64, gotExists bool) error {
-// 		if !reflect.DeepEqual(gotVec, w.wantVec) {
-// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotVec, w.wantVec)
+// 	defaultCheckFunc := func(w want, got []float32, got1 bool) error {
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 // 		}
-// 		if !reflect.DeepEqual(gotTimestamp, w.wantTimestamp) {
-// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotTimestamp, w.wantTimestamp)
-// 		}
-// 		if !reflect.DeepEqual(gotExists, w.wantExists) {
-// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotExists, w.wantExists)
+// 		if !reflect.DeepEqual(got1, w.want1) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got1, w.want1)
 // 		}
 // 		return nil
 // 	}
@@ -447,8 +443,8 @@ func TestGetVector(t *testing.T) {
 // 		           uuid:"",
 // 		       },
 // 		       fields: fields {
-// 		           il:nil,
-// 		           dl:nil,
+// 		           il:indexMap{},
+// 		           dl:indexMap{},
 // 		           ic:0,
 // 		           dc:0,
 // 		       },
@@ -472,8 +468,8 @@ func TestGetVector(t *testing.T) {
 // 		           uuid:"",
 // 		           },
 // 		           fields: fields {
-// 		           il:nil,
-// 		           dl:nil,
+// 		           il:indexMap{},
+// 		           dl:indexMap{},
 // 		           ic:0,
 // 		           dc:0,
 // 		           },
@@ -512,8 +508,8 @@ func TestGetVector(t *testing.T) {
 // 				dc: test.fields.dc,
 // 			}
 //
-// 			gotVec, gotTimestamp, gotExists := v.GetVector(test.args.uuid)
-// 			if err := checkFunc(test.want, gotVec, gotTimestamp, gotExists); err != nil {
+// 			got, got1 := v.GetVector(test.args.uuid)
+// 			if err := checkFunc(test.want, got, got1); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
 //
@@ -526,8 +522,8 @@ func TestGetVector(t *testing.T) {
 // 		uuid string
 // 	}
 // 	type fields struct {
-// 		il sync.Map[string, *index]
-// 		dl sync.Map[string, *index]
+// 		il indexMap
+// 		dl indexMap
 // 		ic uint64
 // 		dc uint64
 // 	}
@@ -558,8 +554,8 @@ func TestGetVector(t *testing.T) {
 // 		           uuid:"",
 // 		       },
 // 		       fields: fields {
-// 		           il:nil,
-// 		           dl:nil,
+// 		           il:indexMap{},
+// 		           dl:indexMap{},
 // 		           ic:0,
 // 		           dc:0,
 // 		       },
@@ -583,8 +579,8 @@ func TestGetVector(t *testing.T) {
 // 		           uuid:"",
 // 		           },
 // 		           fields: fields {
-// 		           il:nil,
-// 		           dl:nil,
+// 		           il:indexMap{},
+// 		           dl:indexMap{},
 // 		           ic:0,
 // 		           dc:0,
 // 		           },
@@ -637,8 +633,8 @@ func TestGetVector(t *testing.T) {
 // 		uuid string
 // 	}
 // 	type fields struct {
-// 		il sync.Map[string, *index]
-// 		dl sync.Map[string, *index]
+// 		il indexMap
+// 		dl indexMap
 // 		ic uint64
 // 		dc uint64
 // 	}
@@ -669,8 +665,8 @@ func TestGetVector(t *testing.T) {
 // 		           uuid:"",
 // 		       },
 // 		       fields: fields {
-// 		           il:nil,
-// 		           dl:nil,
+// 		           il:indexMap{},
+// 		           dl:indexMap{},
 // 		           ic:0,
 // 		           dc:0,
 // 		       },
@@ -694,8 +690,8 @@ func TestGetVector(t *testing.T) {
 // 		           uuid:"",
 // 		           },
 // 		           fields: fields {
-// 		           il:nil,
-// 		           dl:nil,
+// 		           il:indexMap{},
+// 		           dl:indexMap{},
 // 		           ic:0,
 // 		           dc:0,
 // 		           },
@@ -750,8 +746,8 @@ func TestGetVector(t *testing.T) {
 // 		f   func(uuid string, vector []float32, date int64) bool
 // 	}
 // 	type fields struct {
-// 		il sync.Map[string, *index]
-// 		dl sync.Map[string, *index]
+// 		il indexMap
+// 		dl indexMap
 // 		ic uint64
 // 		dc uint64
 // 	}
@@ -780,8 +776,8 @@ func TestGetVector(t *testing.T) {
 // 		           f:nil,
 // 		       },
 // 		       fields: fields {
-// 		           il:nil,
-// 		           dl:nil,
+// 		           il:indexMap{},
+// 		           dl:indexMap{},
 // 		           ic:0,
 // 		           dc:0,
 // 		       },
@@ -807,8 +803,8 @@ func TestGetVector(t *testing.T) {
 // 		           f:nil,
 // 		           },
 // 		           fields: fields {
-// 		           il:nil,
-// 		           dl:nil,
+// 		           il:indexMap{},
+// 		           dl:indexMap{},
 // 		           ic:0,
 // 		           dc:0,
 // 		           },
@@ -862,8 +858,8 @@ func TestGetVector(t *testing.T) {
 // 		f   func(uuid string) bool
 // 	}
 // 	type fields struct {
-// 		il sync.Map[string, *index]
-// 		dl sync.Map[string, *index]
+// 		il indexMap
+// 		dl indexMap
 // 		ic uint64
 // 		dc uint64
 // 	}
@@ -892,8 +888,8 @@ func TestGetVector(t *testing.T) {
 // 		           f:nil,
 // 		       },
 // 		       fields: fields {
-// 		           il:nil,
-// 		           dl:nil,
+// 		           il:indexMap{},
+// 		           dl:indexMap{},
 // 		           ic:0,
 // 		           dc:0,
 // 		       },
@@ -919,8 +915,8 @@ func TestGetVector(t *testing.T) {
 // 		           f:nil,
 // 		           },
 // 		           fields: fields {
-// 		           il:nil,
-// 		           dl:nil,
+// 		           il:indexMap{},
+// 		           dl:indexMap{},
 // 		           ic:0,
 // 		           dc:0,
 // 		           },
@@ -969,8 +965,8 @@ func TestGetVector(t *testing.T) {
 //
 // func Test_vqueue_IVQLen(t *testing.T) {
 // 	type fields struct {
-// 		il sync.Map[string, *index]
-// 		dl sync.Map[string, *index]
+// 		il indexMap
+// 		dl indexMap
 // 		ic uint64
 // 		dc uint64
 // 	}
@@ -997,8 +993,8 @@ func TestGetVector(t *testing.T) {
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
-// 		           il:nil,
-// 		           dl:nil,
+// 		           il:indexMap{},
+// 		           dl:indexMap{},
 // 		           ic:0,
 // 		           dc:0,
 // 		       },
@@ -1019,8 +1015,8 @@ func TestGetVector(t *testing.T) {
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
-// 		           il:nil,
-// 		           dl:nil,
+// 		           il:indexMap{},
+// 		           dl:indexMap{},
 // 		           ic:0,
 // 		           dc:0,
 // 		           },
@@ -1070,8 +1066,8 @@ func TestGetVector(t *testing.T) {
 //
 // func Test_vqueue_DVQLen(t *testing.T) {
 // 	type fields struct {
-// 		il sync.Map[string, *index]
-// 		dl sync.Map[string, *index]
+// 		il indexMap
+// 		dl indexMap
 // 		ic uint64
 // 		dc uint64
 // 	}
@@ -1098,8 +1094,8 @@ func TestGetVector(t *testing.T) {
 // 		   {
 // 		       name: "test_case_1",
 // 		       fields: fields {
-// 		           il:nil,
-// 		           dl:nil,
+// 		           il:indexMap{},
+// 		           dl:indexMap{},
 // 		           ic:0,
 // 		           dc:0,
 // 		       },
@@ -1120,8 +1116,8 @@ func TestGetVector(t *testing.T) {
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           fields: fields {
-// 		           il:nil,
-// 		           dl:nil,
+// 		           il:indexMap{},
+// 		           dl:indexMap{},
 // 		           ic:0,
 // 		           dc:0,
 // 		           },

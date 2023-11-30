@@ -27,13 +27,13 @@ import "C"
 import (
 	"context"
 	"reflect"
+	"sync"
 	"unsafe"
 
 	"github.com/vdaas/vald/internal/core/algorithm"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/file"
 	"github.com/vdaas/vald/internal/log"
-	"github.com/vdaas/vald/internal/sync"
 )
 
 type (

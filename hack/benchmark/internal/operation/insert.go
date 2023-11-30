@@ -16,6 +16,7 @@ package operation
 import (
 	"context"
 	"strconv"
+	"sync"
 	"sync/atomic"
 	"testing"
 
@@ -24,7 +25,6 @@ import (
 	"github.com/vdaas/vald/internal/io"
 	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/net/grpc/status"
-	"github.com/vdaas/vald/internal/sync"
 )
 
 func (o *operation) Insert(ctx context.Context, b *testing.B, ds assets.Dataset) (insertedNum int) {
