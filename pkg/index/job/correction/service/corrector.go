@@ -62,7 +62,7 @@ type Corrector interface {
 type correct struct {
 	discoverer                discoverer.Client
 	agentAddrs                []string
-	sortedByIndexCntAddrs     []string
+	indexInfos                sync.Map[string, *payload.Info_Index_Count]
 	uuidsCount                uint32
 	uncommittedUUIDsCount     uint32
 	checkedID                 bbolt.Bbolt
@@ -129,9 +129,13 @@ func (c *correct) Start(ctx context.Context) error {
 	}
 	log.Debugf("target agent addrs: %v", c.agentAddrs)
 
-	if err := c.loadAgentIndexInfo(ctx); err != nil {
+	if err := c.loadInfos(ctx); err != nil {
 		return err
 	}
+	c.indexInfos.Range(func(addr string, info *payload.Info_Index_Count) bool {
+		log.Infof("index info: addr(%s), stored(%d), uncommitted(%d)", addr, info.GetStored(), info.GetUncommitted())
+		return true
+	})
 
 	log.Info("starting correction with bbolt disk cache...")
 	if err := c.correct(ctx); err != nil {
@@ -161,6 +165,11 @@ func (c *correct) NumberOfCorrectedReplication() uint64 {
 
 // skipcq: GO-R1005
 func (c *correct) correct(ctx context.Context) (err error) {
+	// leftAgentAddrs is the agents' addr that hasn't been corrected yet.
+	// This is used to know which agents possibly have the same index as the target replica.
+	// We can say this because, thanks to caching, there is no way that the target replica is
+	// in the agent that has already been corrected.
+
 	// Vector with time after this should not be processed
 	correctionStartTime, err := correctionStartTime(ctx)
 	if err != nil {
@@ -170,8 +179,10 @@ func (c *correct) correct(ctx context.Context) (err error) {
 
 	curTargetAgent := 0
 	jobErrs := make([]error, 0, c.streamListConcurrency)
-	if err := c.discoverer.GetClient().OrderedRange(ctx, c.sortedByIndexCntAddrs,
+	if err := c.discoverer.GetClient().OrderedRange(ctx, c.agentAddrs,
 		func(ctx context.Context, addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) (err error) {
+			// current address is the leftAgentAddrs[0] because this is OrderedRange and
+			// leftAgentAddrs is copied from c.agentAddrs
 			defer func() {
 				if err != nil {
 					// catch the err that happened in this scope using named return err
@@ -308,7 +319,7 @@ type vectorReplica struct {
 // Validate len(addrs) >= 2 before calling this function
 func (c *correct) checkConsistency(ctx context.Context, targetReplica *vectorReplica, targetAgentIdx int) error {
 	// leftAgentAddrs is the agents' addr that hasn't been corrected yet.
-	leftAgentAddrs := c.sortedByIndexCntAddrs[targetAgentIdx+1:]
+	leftAgentAddrs := c.agentAddrs[targetAgentIdx+1:]
 
 	// Vector with time after this should not be processed
 	correctionStartTime, err := correctionStartTime(ctx)
@@ -317,11 +328,11 @@ func (c *correct) checkConsistency(ctx context.Context, targetReplica *vectorRep
 		return err
 	}
 
-	foundReplicas := make([]*vectorReplica, 0, len(c.sortedByIndexCntAddrs))
+	foundReplicas := make([]*vectorReplica, 0, len(c.agentAddrs))
 	var mu sync.Mutex
 	if err := c.discoverer.GetClient().OrderedRangeConcurrent(ctx, leftAgentAddrs, len(leftAgentAddrs),
 		func(ctx context.Context, addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
-			vecMeta, err := agent.NewAgentClient(conn).GetTimestamp(ctx, &payload.Object_GetTimestampRequest{
+			vec, err := vald.NewValdClient(conn).GetObject(ctx, &payload.Object_VectorRequest{
 				Id: &payload.Object_ID{
 					Id: targetReplica.vec.GetId(),
 				},
@@ -340,10 +351,10 @@ func (c *correct) checkConsistency(ctx context.Context, targetReplica *vectorRep
 			}
 
 			// skip if the vector is inserted after correction start
-			if vecMeta.GetTimestamp() > correctionStartTime.UnixNano() {
+			if vec.GetTimestamp() > correctionStartTime.UnixNano() {
 				log.Debugf("timestamp of vector(id: %s, timestamp: %v) is newer than correction start time(%v). skipping...",
-					vecMeta.GetId(),
-					vecMeta.GetTimestamp(),
+					vec.GetId(),
+					vec.GetTimestamp(),
 					correctionStartTime.UnixNano(),
 				)
 				return nil
@@ -352,11 +363,7 @@ func (c *correct) checkConsistency(ctx context.Context, targetReplica *vectorRep
 			mu.Lock()
 			foundReplicas = append(foundReplicas, &vectorReplica{
 				addr: addr,
-				// the vector itself will be fetched when it's needed
-				vec: &payload.Object_Vector{
-					Id:        vecMeta.GetId(),
-					Timestamp: vecMeta.GetTimestamp(),
-				},
+				vec:  vec,
 			})
 			mu.Unlock()
 
@@ -410,7 +417,7 @@ func (c *correct) correctTimestamp(ctx context.Context, targetReplica *vectorRep
 			latest.vec.GetTimestamp(),
 		)
 		c.correctedOldIndexCount.Add(1)
-		if err := c.updateObject(ctx, replica, latest); err != nil {
+		if err := c.updateObject(ctx, replica.addr, latest.vec); err != nil {
 			return err
 		}
 	}
@@ -434,8 +441,6 @@ func (c *correct) correctReplica(
 	}
 
 	// availableAddrs = c.agentAddrs - foundReplicas - targetReplica.addr
-	// here we use c.agentAddrs because we want to decide by memory usage order
-	// not the number of indexes
 	availableAddrs := make([]string, 0, len(c.agentAddrs))
 	for _, addr := range c.agentAddrs {
 		if addr == targetReplica.addr {
@@ -505,25 +510,18 @@ func (c *correct) correctReplica(
 	return nil
 }
 
-func (c *correct) updateObject(ctx context.Context, dest, src *vectorReplica) error {
-	// check if the src vector has content not just timestamp
-	if vec := src.vec.GetVector(); len(vec) == 0 {
-		if err := c.fillVectorField(ctx, src); err != nil {
-			return err
-		}
-	}
-
+func (c *correct) updateObject(ctx context.Context, addr string, vector *payload.Object_Vector) error {
 	res, err := c.discoverer.GetClient().
-		Do(grpc.WithGRPCMethod(ctx, updateMethod), dest.addr, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
+		Do(grpc.WithGRPCMethod(ctx, updateMethod), addr, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
 			// TODO: use UpdateTimestamp when it's implemented because here we just want to update only the timestamp but not the vector
 			return vald.NewUpdateClient(conn).Update(ctx, &payload.Update_Request{
-				Vector: src.vec,
+				Vector: vector,
 				// TODO: this should be deleted after Config.Timestamp deprecation
 				Config: &payload.Update_Config{
 					// TODO: Decrementing because it's gonna be incremented befor being pushed
 					// to vqueue in the agent. This is a not ideal workaround for the current vqueue implementation
 					// so we should consider refactoring vqueue.
-					Timestamp: src.vec.GetTimestamp() - 1,
+					Timestamp: vector.GetTimestamp() - 1,
 				},
 			}, copts...)
 		})
@@ -532,31 +530,7 @@ func (c *correct) updateObject(ctx context.Context, dest, src *vectorReplica) er
 	}
 
 	if v, ok := res.(*payload.Object_Location); ok {
-		log.Infof("vector successfully updated. address: %s, uuid: %v", dest.addr, v.GetUuid())
-	}
-
-	return nil
-}
-
-func (c *correct) fillVectorField(ctx context.Context, replica *vectorReplica) error {
-	res, err := c.discoverer.GetClient().
-		Do(grpc.WithGRPCMethod(ctx, "core.v1.Vald/GetObject"), replica.addr, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
-			return vald.NewValdClient(conn).GetObject(ctx, &payload.Object_VectorRequest{
-				Id: &payload.Object_ID{
-					Id: replica.vec.GetId(),
-				},
-			}, copts...)
-		})
-	if err != nil {
-		return err
-	}
-
-	if v, ok := res.(*payload.Object_Vector); ok {
-		vec := v.GetVector()
-		if len(vec) == 0 {
-			return err
-		}
-		replica.vec.Vector = v.GetVector()
+		log.Infof("vector successfully updated. address: %s, uuid: %v", addr, v.GetUuid())
 	}
 
 	return nil
@@ -604,11 +578,7 @@ func (c *correct) deleteObject(ctx context.Context, addr string, vector *payload
 	return nil
 }
 
-// loadAgentIndexInfo loads the index info of each agent and sort them by the number of indexes
-// then append the result to c.sortedByIndexCntAddrs.
-// This sort is required because we want to process the agents with the least number of indexes first
-// for performance to filter out the agent as early as possible from broadcast in checkConsistency function.
-func (c *correct) loadAgentIndexInfo(ctx context.Context) (err error) {
+func (c *correct) loadInfos(ctx context.Context) (err error) {
 	var u, ucu uint32
 	var infoMap sync.Map[string, *payload.Info_Index_Count]
 	err = c.discoverer.GetClient().RangeConcurrent(ctx, len(c.discoverer.GetAddrs(ctx)),
@@ -635,30 +605,19 @@ func (c *correct) loadAgentIndexInfo(ctx context.Context) (err error) {
 	}
 	atomic.StoreUint32(&c.uuidsCount, atomic.LoadUint32(&u))
 	atomic.StoreUint32(&c.uncommittedUUIDsCount, atomic.LoadUint32(&ucu))
-
-	type indexInfo struct {
-		stored int
-		addr   string
-	}
-
-	var infos []indexInfo
-	infoMap.Range(func(addr string, info *payload.Info_Index_Count) bool {
-		log.Infof("index info: addr(%s), stored(%d), uncommitted(%d)", addr, info.GetStored(), info.GetUncommitted())
-
-		infos = append(infos, indexInfo{
-			addr:   addr,
-			stored: int(info.GetStored() + info.GetUncommitted()),
-		})
+	c.indexInfos.Range(func(addr string, _ *payload.Info_Index_Count) bool {
+		info, ok := infoMap.Load(addr)
+		if !ok {
+			c.indexInfos.Delete(addr)
+		}
+		c.indexInfos.Store(addr, info)
+		infoMap.Delete(addr)
 		return true
 	})
-
-	slices.SortFunc(infos, func(i, j indexInfo) int {
-		return cmp.Compare(i.stored, j.stored)
+	infoMap.Range(func(addr string, info *payload.Info_Index_Count) bool {
+		c.indexInfos.Store(addr, info)
+		return true
 	})
-	for _, info := range infos {
-		c.sortedByIndexCntAddrs = append(c.sortedByIndexCntAddrs, info.addr)
-	}
-	log.Infof("processing order of agents: %v", c.sortedByIndexCntAddrs)
 	return nil
 }
 
