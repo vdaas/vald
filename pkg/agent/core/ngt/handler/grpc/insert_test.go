@@ -5569,13 +5569,7 @@ func Test_server_MultiInsert(t *testing.T) {
 
 			gotRes, err := s.MultiInsert(ctx, test.args.reqs)
 			if err := checkFunc(test.want, gotRes, err); err != nil {
-				tt.Errorf(
-					"error = %v, dim = %d, len(reqs) = %d, len(reqs[0]) = %d",
-					err,
-					test.fields.svcCfg.Dimension,
-					len(test.args.reqs.GetRequests()),
-					len(test.args.reqs.GetRequests()[0].GetVector().GetVector()),
-				)
+				tt.Errorf("error = %v", err)
 			}
 		})
 	}
