@@ -14,38 +14,36 @@
 # limitations under the License.
 #
 name: "Build Docker images"
-description: "A action to build Docker images and publish them"
-
+description: "Build Docker images and publish them"
 inputs:
   target:
-    description: "Build target"
+    description: "build target"
     required: true
     default: "base"
   builder:
-    description: "Buildx builder name"
+    description: "buildx builder name"
     required: true
     default: ""
   platforms:
-    description: "If it is specified, specified platforms will be used."
+    description: "if it is specified, specified platforms will be used."
     required: false
     default: ""
 outputs:
   IMAGE_NAME:
-    description: "Image name"
+    description: "image name"
     value: ${{ steps.image_name.outputs.IMAGE_NAME }}
   ALTER_IMAGE_NAME:
-    description: "Alter image name"
+    description: "alter image name"
     value: ${{ steps.image_name.outputs.ALTER_IMAGE_NAME }}
   PRIMARY_TAG:
-    description: "Primary tag"
+    description: "primary tag"
     value: ${{ steps.determine_tag_name.outputs.PRIMARY_TAG }}
   PLATFORMS:
-    description: "Target platforms"
+    description: "target platforms"
     value: ${{ steps.determine_platforms.outputs.PLATFORMS }}
   EXTRA_TAGS:
-    description: "Extra tags"
+    description: "extra tags"
     value: ${{ steps.add_extra_tags.outputs.EXTRA_TAGS }}
-
 runs:
   using: "composite"
   steps:
@@ -62,11 +60,33 @@ runs:
         echo "ALTER_IMAGE_NAME=${alter_image_name}" >> $GITHUB_OUTPUT
       env:
         TARGET: ${{ inputs.target }}
-
     - name: Determine tag name
+      shell: bash
       id: determine_tag_name
-      uses: ./.github/actions/determine-docker-image-tag
-
+      run: |
+        echo "GITHUB_REF $GITHUB_REF"
+        echo "GITHUB_EVENT_PATH $GITHUB_EVENT_PATH"
+        echo "GITHUB_EVENT_NAME ${{ github.event_name }}"
+        echo "GITHUB_EVENT_NUMBER  ${{ github.event.number }}"
+        if [[ "$GITHUB_REF" =~ ^refs/tags/.* ]]; then
+          tag_name=`echo $GITHUB_REF | sed -e 's:^refs/tags/::'`
+          primary_tag="${tag_name}"
+        elif [ "${{ github.event_name }}" = "pull_request" ]; then
+          pr_num=`cat $GITHUB_EVENT_PATH | jq -r ".number"`
+          echo "PR-${pr_num}" > versions/VALD_VERSION
+          primary_tag="pr-${pr_num}"
+        elif [ "${{ github.event_name }}" = "pull_request_target" ]; then
+          pr_num=`cat $GITHUB_EVENT_PATH | jq -r ".number"`
+          echo "PR-${pr_num}" > versions/VALD_VERSION
+          primary_tag="pr-${pr_num}"
+        elif [ "$GITHUB_REF" = "refs/heads/main" ]; then
+          echo "nightly" > versions/VALD_VERSION
+          primary_tag="nightly"
+        else
+          primary_tag="unknown"
+        fi
+        echo "PRIMARY_TAG is determined: ${primary_tag}"
+        echo "PRIMARY_TAG=${primary_tag}" >> $GITHUB_OUTPUT
     - name: Determine platforms
       shell: bash
       id: determine_platforms
@@ -86,7 +106,6 @@ runs:
         echo "PLATFORMS=${platforms}" >> $GITHUB_OUTPUT
       env:
         TARGET_PLATFORMS: ${{ inputs.platforms }}
-
     - name: Add extra tags
       shell: bash
       id: add_extra_tags
@@ -102,7 +121,6 @@ runs:
         IMAGE_NAME: ${{ steps.image_name.outputs.IMAGE_NAME }}
         ALTER_IMAGE_NAME: ${{ steps.image_name.outputs.ALTER_IMAGE_NAME }}
         PRIMARY_TAG: ${{ steps.determine_tag_name.outputs.PRIMARY_TAG }}
-
     - name: Build and Push
       shell: bash
       id: build_and_push

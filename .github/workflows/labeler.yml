@@ -18,12 +18,34 @@ on:
   - pull_request
 
 jobs:
-  dump-contexts-to-log:
+  dump_contexts_to_log:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: ./.github/actions/dump-context
-
+      - name: Dump GitHub context
+        id: github_context_step
+        run: echo $JSON
+        env:
+          JSON: ${{ toJSON(github) }}
+      - name: Dump job context
+        run: echo $JSON
+        env:
+          JSON: ${{ toJSON(job) }}
+      - name: Dump steps context
+        run: echo $JSON
+        env:
+          JSON: ${{ toJSON(steps) }}
+      - name: Dump runner context
+        run: echo $JSON
+        env:
+          JSON: ${{ toJSON(runner) }}
+      - name: Dump strategy context
+        run: echo $JSON
+        env:
+          JSON: ${{ toJSON(strategy) }}
+      - name: Dump matrix context
+        run: echo $JSON
+        env:
+          JSON: ${{ toJSON(matrix) }}
   triage:
     name: Triage
     runs-on: ubuntu-latest
@@ -32,16 +54,14 @@ jobs:
       - uses: actions/labeler@v4
         with:
           repo-token: "${{ secrets.GITHUB_TOKEN }}"
-
-      - uses: actions/checkout@v3
+      - name: Checkout PR branch
+        uses: actions/checkout@v3
         with:
           ref: ${{ github.head_ref }}
           fetch-depth: 0
-
-      - name: Set Git config
+      - name: set git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
-
       - name: Add labels
         run: |
           pr_num=`cat $GITHUB_EVENT_PATH | jq -r ".number"`
@@ -95,7 +115,6 @@ jobs:
         env:
           REPOSITORY: ${{ github.repository }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
   remove-duplication:
     name: Remove duplication
     needs:
