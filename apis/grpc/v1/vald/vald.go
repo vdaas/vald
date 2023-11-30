@@ -120,10 +120,9 @@ const (
 	StreamRemoveRPCName = "StreamRemove"
 	MultiRemoveRPCName  = "MultiRemove"
 
-	ExistsRPCName           = "Exists"
-	GetObjectRPCName        = "GetObject"
-	StreamGetObjectRPCName  = "StreamGetObject"
-	StreamListObjectRPCName = "StreamListObject"
+	ExistsRPCName          = "Exists"
+	GetObjectRPCName       = "GetObject"
+	StreamGetObjectRPCName = "StreamGetObject"
 )
 
 type client struct {

@@ -621,25 +621,6 @@ func (c *client) StreamGetObject(ctx context.Context, opts ...grpc.CallOption) (
 	return res, nil
 }
 
-func (c *client) StreamListObject(ctx context.Context, in *payload.Object_List_Request, opts ...grpc.CallOption) (res vald.Object_StreamListObjectClient, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+vald.StreamListObjectRPCName), apiName+"/"+vald.StreamListObjectRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
-	_, err = c.c.RoundRobin(ctx, func(ctx context.Context,
-		conn *grpc.ClientConn,
-		copts ...grpc.CallOption,
-	) (interface{}, error) {
-		return vald.NewValdClient(conn).StreamListObject(ctx, in, append(copts, opts...)...)
-	})
-	if err != nil {
-		return nil, err
-	}
-	return res, nil
-}
-
 func (*singleClient) Start(context.Context) (<-chan error, error) {
 	return nil, nil
 }
@@ -920,14 +901,4 @@ func (c *singleClient) StreamGetObject(ctx context.Context, opts ...grpc.CallOpt
 		}
 	}()
 	return c.vc.StreamGetObject(ctx, opts...)
-}
-
-func (c *singleClient) StreamListObject(ctx context.Context, in *payload.Object_List_Request, opts ...grpc.CallOption) (res vald.Object_StreamListObjectClient, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/singleClient/"+vald.StreamListObjectRPCName), apiName+"/"+vald.StreamListObjectRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
-	return c.vc.StreamListObject(ctx, in, opts...)
 }
