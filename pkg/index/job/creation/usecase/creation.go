@@ -143,7 +143,7 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 		oech = r.observability.Start(ctx)
 	}
 	sech = r.server.ListenAndServe(ctx)
-	cech, err := r.indexer.StartClient(ctx)
+	ipech, err := r.indexer.PreStart(ctx)
 	if err != nil {
 		close(ech)
 		return nil, err
@@ -174,7 +174,7 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 				return ctx.Err()
 			case err = <-oech:
 			case err = <-sech:
-			case err = <-cech:
+			case err = <-ipech:
 			}
 			if err != nil {
 				select {
