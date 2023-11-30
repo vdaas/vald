@@ -7,7 +7,7 @@ replace (
 	cloud.google.com/go/bigquery => cloud.google.com/go/bigquery v1.55.0
 	cloud.google.com/go/compute => cloud.google.com/go/compute v1.23.0
 	cloud.google.com/go/datastore => cloud.google.com/go/datastore v1.14.0
-	cloud.google.com/go/firestore => cloud.google.com/go/firestore v1.13.0
+	cloud.google.com/go/firestore => cloud.google.com/go/firestore v1.12.0
 	cloud.google.com/go/iam => cloud.google.com/go/iam v1.1.2
 	cloud.google.com/go/kms => cloud.google.com/go/kms v1.15.2
 	cloud.google.com/go/monitoring => cloud.google.com/go/monitoring v1.16.0
@@ -38,18 +38,18 @@ replace (
 	github.com/DATA-DOG/go-sqlmock => github.com/DATA-DOG/go-sqlmock v1.5.0
 	github.com/GoogleCloudPlatform/cloudsql-proxy => github.com/GoogleCloudPlatform/cloudsql-proxy v1.33.10
 	github.com/Masterminds/semver/v3 => github.com/Masterminds/semver/v3 v3.2.1
-	github.com/ajstarks/deck => github.com/ajstarks/deck v0.0.0-20230917174535-ca5324ee72b2
-	github.com/ajstarks/deck/generate => github.com/ajstarks/deck/generate v0.0.0-20230917174535-ca5324ee72b2
+	github.com/ajstarks/deck => github.com/ajstarks/deck v0.0.0-20230713212537-3862a8c503c2
+	github.com/ajstarks/deck/generate => github.com/ajstarks/deck/generate v0.0.0-20230713212537-3862a8c503c2
 	github.com/ajstarks/svgo => github.com/ajstarks/svgo v0.0.0-20211024235047-1546f124cd8b
 	github.com/antihax/optional => github.com/antihax/optional v1.0.0
 	github.com/armon/go-socks5 => github.com/armon/go-socks5 v0.0.0-20160902184237-e75332964ef5
-	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.45.12
+	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.45.10
 	github.com/aws/aws-sdk-go-v2 => github.com/aws/aws-sdk-go-v2 v1.21.0
 	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream => github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.4.13
-	github.com/aws/aws-sdk-go-v2/config => github.com/aws/aws-sdk-go-v2/config v1.18.40
-	github.com/aws/aws-sdk-go-v2/credentials => github.com/aws/aws-sdk-go-v2/credentials v1.13.38
+	github.com/aws/aws-sdk-go-v2/config => github.com/aws/aws-sdk-go-v2/config v1.18.39
+	github.com/aws/aws-sdk-go-v2/credentials => github.com/aws/aws-sdk-go-v2/credentials v1.13.37
 	github.com/aws/aws-sdk-go-v2/feature/ec2/imds => github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.13.11
-	github.com/aws/aws-sdk-go-v2/feature/s3/manager => github.com/aws/aws-sdk-go-v2/feature/s3/manager v1.11.84
+	github.com/aws/aws-sdk-go-v2/feature/s3/manager => github.com/aws/aws-sdk-go-v2/feature/s3/manager v1.11.83
 	github.com/aws/aws-sdk-go-v2/internal/configsources => github.com/aws/aws-sdk-go-v2/internal/configsources v1.1.41
 	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 => github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.4.35
 	github.com/aws/aws-sdk-go-v2/internal/ini => github.com/aws/aws-sdk-go-v2/internal/ini v1.3.42
@@ -60,11 +60,11 @@ replace (
 	github.com/aws/aws-sdk-go-v2/service/kms => github.com/aws/aws-sdk-go-v2/service/kms v1.24.5
 	github.com/aws/aws-sdk-go-v2/service/s3 => github.com/aws/aws-sdk-go-v2/service/s3 v1.38.5
 	github.com/aws/aws-sdk-go-v2/service/secretsmanager => github.com/aws/aws-sdk-go-v2/service/secretsmanager v1.21.3
-	github.com/aws/aws-sdk-go-v2/service/sns => github.com/aws/aws-sdk-go-v2/service/sns v1.22.0
+	github.com/aws/aws-sdk-go-v2/service/sns => github.com/aws/aws-sdk-go-v2/service/sns v1.21.5
 	github.com/aws/aws-sdk-go-v2/service/sqs => github.com/aws/aws-sdk-go-v2/service/sqs v1.24.5
 	github.com/aws/aws-sdk-go-v2/service/ssm => github.com/aws/aws-sdk-go-v2/service/ssm v1.37.5
-	github.com/aws/aws-sdk-go-v2/service/sso => github.com/aws/aws-sdk-go-v2/service/sso v1.14.0
-	github.com/aws/aws-sdk-go-v2/service/sts => github.com/aws/aws-sdk-go-v2/service/sts v1.22.0
+	github.com/aws/aws-sdk-go-v2/service/sso => github.com/aws/aws-sdk-go-v2/service/sso v1.13.6
+	github.com/aws/aws-sdk-go-v2/service/sts => github.com/aws/aws-sdk-go-v2/service/sts v1.21.5
 	github.com/aws/smithy-go => github.com/aws/smithy-go v1.14.2
 	github.com/benbjohnson/clock => github.com/benbjohnson/clock v1.3.5
 	github.com/beorn7/perks => github.com/beorn7/perks v1.0.1
@@ -190,7 +190,7 @@ replace (
 	github.com/jstemmer/go-junit-report => github.com/jstemmer/go-junit-report v1.0.0
 	github.com/kisielk/errcheck => github.com/kisielk/errcheck v1.6.3
 	github.com/kisielk/gotool => github.com/kisielk/gotool v1.0.0
-	github.com/klauspost/compress => github.com/klauspost/compress v1.17.1-0.20230918170125-6125c11bae77
+	github.com/klauspost/compress => github.com/klauspost/compress v1.16.8-0.20230909131757-0e8837ceede6
 	github.com/klauspost/cpuid/v2 => github.com/klauspost/cpuid/v2 v2.2.5
 	github.com/kpango/fastime => github.com/kpango/fastime v1.1.9
 	github.com/kpango/fuid => github.com/kpango/fuid v0.0.0-20221203053508-503b5ad89aa1
@@ -292,7 +292,7 @@ replace (
 	go.uber.org/zap => go.uber.org/zap v1.26.0
 	gocloud.dev => gocloud.dev v0.34.0
 	golang.org/x/crypto => golang.org/x/crypto v0.13.0
-	golang.org/x/exp => golang.org/x/exp v0.0.0-20230905200255-921286631fa9
+	golang.org/x/exp => golang.org/x/exp v0.0.0-20230711153332-06a737ee72cb
 	golang.org/x/exp/typeparams => golang.org/x/exp/typeparams v0.0.0-20230905200255-921286631fa9
 	golang.org/x/image => golang.org/x/image v0.12.0
 	golang.org/x/lint => golang.org/x/lint v0.0.0-20210508222113-6edffad5e616
@@ -388,6 +388,7 @@ require (
 	go.uber.org/goleak v1.2.1
 	go.uber.org/zap v1.24.0
 	gocloud.dev v0.0.0-00010101000000-000000000000
+	golang.org/x/exp v0.0.0-20230801115018-d63ba01acd4b
 	golang.org/x/net v0.15.0
 	golang.org/x/oauth2 v0.12.0
 	golang.org/x/sync v0.3.0
@@ -435,7 +436,7 @@ require (
 	github.com/go-openapi/jsonpointer v0.19.6 // indirect
 	github.com/go-openapi/jsonreference v0.20.1 // indirect
 	github.com/go-openapi/swag v0.22.4 // indirect
-	github.com/go-pdf/fpdf v0.9.0 // indirect
+	github.com/go-pdf/fpdf v0.8.0 // indirect
 	github.com/go-toolsmith/astcopy v1.0.2 // indirect
 	github.com/go-toolsmith/astequal v1.1.0 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
