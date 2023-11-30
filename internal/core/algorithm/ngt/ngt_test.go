@@ -22,9 +22,7 @@ import (
 	"io/fs"
 	"math"
 	"os"
-	"path/filepath"
 	"reflect"
-	"strings"
 	"sync"
 	"testing"
 
@@ -34,6 +32,7 @@ import (
 	"github.com/vdaas/vald/internal/file"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/log/logger"
+	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/test/comparator"
 	"github.com/vdaas/vald/internal/test/goleak"
 )
@@ -76,11 +75,6 @@ var (
 	}
 )
 
-func idxTempDir(t *testing.T) string {
-	t.Helper()
-	return filepath.Join(t.TempDir(), "index")
-}
-
 func TestMain(m *testing.M) {
 	log.Init(log.WithLoggerType(logger.NOP.String()))
 	os.Exit(m.Run())
@@ -95,21 +89,22 @@ func TestNew(t *testing.T) {
 		err  error
 	}
 	type test struct {
-		name        string
-		args        args
-		want        want
-		comparators []comparator.Option
-		checkFunc   func(want, NGT, error, ...comparator.Option) error
-		beforeFunc  func(args)
-		afterFunc   func(*testing.T, NGT) error
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, NGT, error) error
+		beforeFunc func(args)
+		afterFunc  func(*testing.T, NGT) error
 	}
-	defaultComprators := append(ngtComparator, comparator.CompareField("idxPath", cmp.Comparer(func(s1, s2 string) bool {
-		return s1 == s2
-	})))
-	defaultCheckFunc := func(w want, got NGT, err error, comparators ...comparator.Option) error {
+	defaultCheckFunc := func(w want, got NGT, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
+
+		// comparator for idxPath
+		comparators := append(ngtComparator, comparator.CompareField("idxPath", cmp.Comparer(func(s1, s2 string) bool {
+			return strings.HasPrefix(s1, "/tmp/ngt-") || strings.HasPrefix(s2, "/tmp/ngt-")
+		})))
 
 		if diff := comparator.Diff(got, w.want, comparators...); diff != "" {
 			return errors.Errorf("diff: %s", diff)
@@ -125,87 +120,74 @@ func TestNew(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		func() test {
-			return test{
-				name: "return NGT when no option is set",
-				args: args{
-					opts: nil,
+		{
+			name: "return NGT when no option is set",
+			args: args{
+				opts: nil,
+			},
+			want: want{
+				want: &ngt{
+					idxPath:             "/tmp/ngt-",
+					radius:              DefaultRadius,
+					epsilon:             DefaultEpsilon,
+					poolSize:            DefaultPoolSize,
+					bulkInsertChunkSize: 100,
+					objectType:          Float,
+					mu:                  &sync.RWMutex{},
 				},
-				want: want{
-					want: &ngt{
-						idxPath:             "/tmp/ngt-",
-						radius:              DefaultRadius,
-						epsilon:             DefaultEpsilon,
-						poolSize:            DefaultPoolSize,
-						bulkInsertChunkSize: 100,
-						objectType:          Float,
-						mu:                  &sync.RWMutex{},
-					},
+			},
+		},
+		{
+			name: "return NGT when 1 option is set",
+			args: args{
+				opts: []Option{
+					WithIndexPath("/tmp/ngt-01"),
 				},
-				comparators: append(ngtComparator, comparator.CompareField("idxPath", cmp.Comparer(func(s1, s2 string) bool {
-					return strings.HasPrefix(s1, "/tmp/ngt-") || strings.HasPrefix(s2, "/tmp/ngt-")
-				}))),
-			}
-		}(),
-		func() test {
-			idxPath := idxTempDir(t)
-			return test{
-				name: "return NGT when 1 option is set",
-				args: args{
-					opts: []Option{
-						WithIndexPath(idxPath),
-					},
+			},
+			want: want{
+				want: &ngt{
+					idxPath:             "/tmp/ngt-01",
+					radius:              DefaultRadius,
+					epsilon:             DefaultEpsilon,
+					poolSize:            DefaultPoolSize,
+					bulkInsertChunkSize: 100,
+					objectType:          Float,
+					mu:                  &sync.RWMutex{},
 				},
-				want: want{
-					want: &ngt{
-						idxPath:             idxPath,
-						radius:              DefaultRadius,
-						epsilon:             DefaultEpsilon,
-						poolSize:            DefaultPoolSize,
-						bulkInsertChunkSize: 100,
-						objectType:          Float,
-						mu:                  &sync.RWMutex{},
-					},
+			},
+		},
+		{
+			name: "return NGT when multiple options are set",
+			args: args{
+				opts: []Option{
+					WithObjectType(Uint8),
+					WithDefaultPoolSize(100),
+					WithIndexPath("/tmp/ngt-02"),
 				},
-			}
-		}(),
-		func() test {
-			idxPath := idxTempDir(t)
-			return test{
-				name: "return NGT when multiple options are set",
-				args: args{
-					opts: []Option{
-						WithObjectType(Uint8),
-						WithDefaultPoolSize(100),
-						WithIndexPath(idxPath),
-					},
+			},
+			want: want{
+				want: &ngt{
+					idxPath:             "/tmp/ngt-02",
+					radius:              DefaultRadius,
+					epsilon:             DefaultEpsilon,
+					poolSize:            100,
+					bulkInsertChunkSize: 100,
+					objectType:          Uint8,
+					mu:                  &sync.RWMutex{},
 				},
-				want: want{
-					want: &ngt{
-						idxPath:             idxPath,
-						radius:              DefaultRadius,
-						epsilon:             DefaultEpsilon,
-						poolSize:            100,
-						bulkInsertChunkSize: 100,
-						objectType:          Uint8,
-						mu:                  &sync.RWMutex{},
-					},
+			},
+		},
+		{
+			name: "return error when option return error",
+			args: args{
+				opts: []Option{
+					WithDimension(1),
 				},
-			}
-		}(),
-		func() test {
-			return test{
-				name: "return error when option return error",
-				args: args{
-					opts: []Option{
-						WithDimension(1),
-					},
-				},
-				want: want{
-					err: errors.NewErrCriticalOption("dimension", 1, errors.ErrInvalidDimensionSize(1, algorithm.MaximumVectorDimensionSize)),
-				},
-			}
-		}(),
+			},
+			want: want{
+				err: errors.NewErrCriticalOption("dimension", 1, errors.ErrInvalidDimensionSize(1, algorithm.MaximumVectorDimensionSize)),
+			},
+		},
 	}
 
 	for _, tc := range tests {
@@ -223,10 +205,6 @@ func TestNew(t *testing.T) {
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
-			comparators := test.comparators
-			if test.comparators == nil || len(test.comparators) == 0 {
-				comparators = defaultComprators
-			}
 
 			got, err := New(test.args.opts...)
 			defer func() {
@@ -234,7 +212,7 @@ func TestNew(t *testing.T) {
 					tt.Error(err)
 				}
 			}()
-			if err := checkFunc(test.want, got, err, comparators...); err != nil {
+			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -264,7 +242,7 @@ func TestLoad(t *testing.T) {
 
 		// comparator for idxPath
 		comparators := append(ngtComparator, comparator.CompareField("idxPath", cmp.Comparer(func(s1, s2 string) bool {
-			return s1 == s2
+			return strings.HasPrefix(s1, "/tmp/ngt-") || strings.HasPrefix(s2, "/tmp/ngt-")
 		})))
 
 		if diff := comparator.Diff(got, w.want, comparators...); diff != "" {
@@ -283,7 +261,7 @@ func TestLoad(t *testing.T) {
 	tests := []test{
 		// uint
 		func() test {
-			idxPath := idxTempDir(t)
+			idxPath := "/tmp/ngt-11"
 			opts := []Option{
 				WithDimension(9),
 				WithIndexPath(idxPath),
@@ -344,7 +322,7 @@ func TestLoad(t *testing.T) {
 			}
 		}(),
 		func() test {
-			idxPath := idxTempDir(t)
+			idxPath := "/tmp/ngt-12"
 			vec := []float32{0, 1, 2, 3, 4, 5, 6, 7, 8}
 			opts := []Option{
 				WithDimension(9),
@@ -413,7 +391,7 @@ func TestLoad(t *testing.T) {
 		}(),
 		// float
 		func() test {
-			idxPath := idxTempDir(t)
+			idxPath := "/tmp/ngt-13"
 			opts := []Option{
 				WithDimension(9),
 				WithIndexPath(idxPath),
@@ -474,7 +452,7 @@ func TestLoad(t *testing.T) {
 			}
 		}(),
 		func() test {
-			idxPath := idxTempDir(t)
+			idxPath := "/tmp/ngt-14"
 			vec := []float32{0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8}
 			opts := []Option{
 				WithDimension(9),
@@ -543,7 +521,7 @@ func TestLoad(t *testing.T) {
 		}(),
 		// other
 		func() test {
-			idxPath := idxTempDir(t)
+			idxPath := "/tmp/ngt-15"
 			vec := []float32{0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8}
 			opts := []Option{
 				WithDimension(9),
@@ -588,7 +566,7 @@ func TestLoad(t *testing.T) {
 			}
 		}(),
 		func() test {
-			idxPath := idxTempDir(t)
+			idxPath := "/tmp/ngt-16"
 			opts := []Option{
 				WithDimension(9),
 				WithIndexPath(idxPath),
@@ -663,21 +641,22 @@ func Test_gen(t *testing.T) {
 		err  error
 	}
 	type test struct {
-		name        string
-		args        args
-		want        want
-		comparators []comparator.Option
-		checkFunc   func(context.Context, want, NGT, error, ...comparator.Option) error
-		beforeFunc  func(*testing.T, args)
-		afterFunc   func(*testing.T, NGT) error
+		name       string
+		args       args
+		want       want
+		checkFunc  func(context.Context, want, NGT, error) error
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, NGT) error
 	}
-	defaultComprators := append(ngtComparator, comparator.CompareField("idxPath", cmp.Comparer(func(s1, s2 string) bool {
-		return s1 == s2
-	})))
-	defaultCheckFunc := func(_ context.Context, w want, got NGT, err error, comparators ...comparator.Option) error {
+	defaultCheckFunc := func(_ context.Context, w want, got NGT, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
+
+		// comparator for idxPath
+		comparators := append(ngtComparator, comparator.CompareField("idxPath", cmp.Comparer(func(s1, s2 string) bool {
+			return strings.HasPrefix(s1, "/tmp/ngt-") || strings.HasPrefix(s2, "/tmp/ngt-")
+		})))
 
 		if diff := comparator.Diff(got, w.want, comparators...); diff != "" {
 			return errors.Errorf("diff: %s", diff)
@@ -709,12 +688,9 @@ func Test_gen(t *testing.T) {
 					mu:                  &sync.RWMutex{},
 				},
 			},
-			comparators: append(ngtComparator, comparator.CompareField("idxPath", cmp.Comparer(func(s1, s2 string) bool {
-				return strings.HasPrefix(s1, "/tmp/ngt-") || strings.HasPrefix(s2, "/tmp/ngt-")
-			}))),
 		},
 		func() test {
-			idxPath := idxTempDir(t)
+			idxPath := "/tmp/ngt-21"
 			vec := []float32{0, 1, 2, 3, 4, 5, 6, 7, 8}
 			opts := []Option{
 				WithDimension(9),
@@ -755,8 +731,8 @@ func Test_gen(t *testing.T) {
 						mu:                  &sync.RWMutex{},
 					},
 				},
-				checkFunc: func(ctx context.Context, w want, n NGT, e error, comparators ...comparator.Option) error {
-					if err := defaultCheckFunc(ctx, w, n, e, comparators...); err != nil {
+				checkFunc: func(ctx context.Context, w want, n NGT, e error) error {
+					if err := defaultCheckFunc(ctx, w, n, e); err != nil {
 						return err
 					}
 
@@ -810,10 +786,6 @@ func Test_gen(t *testing.T) {
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
-			comparators := test.comparators
-			if test.comparators == nil || len(test.comparators) == 0 {
-				comparators = defaultComprators
-			}
 
 			got, err := gen(test.args.isLoad, test.args.opts...)
 			defer func() {
@@ -824,7 +796,7 @@ func Test_gen(t *testing.T) {
 			ctx, cancel := context.WithCancel(context.Background())
 			defer cancel()
 
-			if err := checkFunc(ctx, test.want, got, err, comparators...); err != nil {
+			if err := checkFunc(ctx, test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
@@ -1102,10 +1074,10 @@ func Test_ngt_open(t *testing.T) {
 	type test struct {
 		name       string
 		fields     fields
-		createFunc func(*testing.T, fields) (NGT, error)
+		createFunc func(t *testing.T, fields fields) (NGT, error)
 		want       want
 		checkFunc  func(want, error) error
-		beforeFunc func(*testing.T, fields)
+		beforeFunc func(*testing.T)
 		afterFunc  func(*testing.T, NGT) error
 	}
 	defaultCreateFunc := func(t *testing.T, fields fields) (NGT, error) {
@@ -1137,17 +1109,17 @@ func Test_ngt_open(t *testing.T) {
 		{
 			name: "return nil when index exists",
 			fields: fields{
-				idxPath:    idxTempDir(t),
+				idxPath:    "/tmp/ngt-61",
 				inMemory:   false,
 				dimension:  9,
 				objectType: Float,
 				mu:         &sync.RWMutex{},
 			},
-			beforeFunc: func(t *testing.T, fields fields) {
+			beforeFunc: func(t *testing.T) {
 				t.Helper()
 
 				n, err := New(
-					WithIndexPath(fields.idxPath),
+					WithIndexPath("/tmp/ngt-61"),
 					WithDimension(9),
 					WithObjectType(Float),
 				)
@@ -1171,7 +1143,7 @@ func Test_ngt_open(t *testing.T) {
 		{
 			name: "return error when index path is not exists",
 			fields: fields{
-				idxPath:    idxTempDir(t),
+				idxPath:    "/tmp/ngt-62",
 				inMemory:   false,
 				dimension:  9,
 				objectType: Float,
@@ -1184,15 +1156,15 @@ func Test_ngt_open(t *testing.T) {
 		{
 			name: "return error when index path contains no file",
 			fields: fields{
-				idxPath:    idxTempDir(t),
+				idxPath:    "/tmp/ngt-63",
 				inMemory:   false,
 				dimension:  9,
 				objectType: Float,
 				mu:         &sync.RWMutex{},
 			},
-			beforeFunc: func(t *testing.T, fields fields) {
+			beforeFunc: func(*testing.T) {
 				t.Helper()
-				_ = file.MkdirAll(fields.idxPath, fs.ModePerm)
+				_ = file.MkdirAll("/tmp/ngt-63", fs.ModePerm)
 			},
 			checkFunc: func(w want, e error) error {
 				if e == nil {
@@ -1209,7 +1181,7 @@ func Test_ngt_open(t *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
-				test.beforeFunc(tt, test.fields)
+				test.beforeFunc(tt)
 			}
 			if test.afterFunc == nil {
 				test.afterFunc = defaultAfterFunc
@@ -1292,7 +1264,7 @@ func Test_ngt_loadObjectSpace(t *testing.T) {
 		{
 			name: "return nil when load object space success",
 			fields: fields{
-				idxPath:    idxTempDir(t),
+				idxPath:    "/tmp/ngt-71",
 				dimension:  9,
 				objectType: Float,
 			},
@@ -1425,7 +1397,7 @@ func Test_ngt_Search(t *testing.T) {
 			},
 			fields: fields{
 				inMemory:            false,
-				idxPath:             idxTempDir(t),
+				idxPath:             "/tmp/ngt-81",
 				bulkInsertChunkSize: 100,
 				dimension:           9,
 				objectType:          Uint8,
@@ -1453,7 +1425,7 @@ func Test_ngt_Search(t *testing.T) {
 			},
 			fields: fields{
 				inMemory:            false,
-				idxPath:             idxTempDir(t),
+				idxPath:             "/tmp/ngt-82",
 				bulkInsertChunkSize: 100,
 				dimension:           9,
 				objectType:          Uint8,
@@ -1481,7 +1453,7 @@ func Test_ngt_Search(t *testing.T) {
 			},
 			fields: fields{
 				inMemory:            false,
-				idxPath:             idxTempDir(t),
+				idxPath:             "/tmp/ngt-83",
 				bulkInsertChunkSize: 100,
 				dimension:           9,
 				objectType:          Uint8,
@@ -1515,7 +1487,7 @@ func Test_ngt_Search(t *testing.T) {
 			},
 			fields: fields{
 				inMemory:            false,
-				idxPath:             idxTempDir(t),
+				idxPath:             "/tmp/ngt-84",
 				bulkInsertChunkSize: 100,
 				dimension:           9,
 				objectType:          Uint8,
@@ -1556,7 +1528,7 @@ func Test_ngt_Search(t *testing.T) {
 			},
 			fields: fields{
 				inMemory:            false,
-				idxPath:             idxTempDir(t),
+				idxPath:             "/tmp/ngt-85",
 				bulkInsertChunkSize: 100,
 				dimension:           9,
 				objectType:          Uint8,
@@ -1602,7 +1574,7 @@ func Test_ngt_Search(t *testing.T) {
 			},
 			fields: fields{
 				inMemory:            false,
-				idxPath:             idxTempDir(t),
+				idxPath:             "/tmp/ngt-86",
 				bulkInsertChunkSize: 100,
 				dimension:           9,
 				objectType:          Float,
@@ -1630,7 +1602,7 @@ func Test_ngt_Search(t *testing.T) {
 			},
 			fields: fields{
 				inMemory:            false,
-				idxPath:             idxTempDir(t),
+				idxPath:             "/tmp/ngt-87",
 				bulkInsertChunkSize: 100,
 				dimension:           9,
 				objectType:          Float,
@@ -1658,7 +1630,7 @@ func Test_ngt_Search(t *testing.T) {
 			},
 			fields: fields{
 				inMemory:            false,
-				idxPath:             idxTempDir(t),
+				idxPath:             "/tmp/ngt-88",
 				bulkInsertChunkSize: 100,
 				dimension:           9,
 				objectType:          Float,
@@ -1691,7 +1663,7 @@ func Test_ngt_Search(t *testing.T) {
 			},
 			fields: fields{
 				inMemory:            false,
-				idxPath:             idxTempDir(t),
+				idxPath:             "/tmp/ngt-89",
 				bulkInsertChunkSize: 100,
 				dimension:           9,
 				objectType:          Float,
@@ -1732,7 +1704,7 @@ func Test_ngt_Search(t *testing.T) {
 			},
 			fields: fields{
 				inMemory:            false,
-				idxPath:             idxTempDir(t),
+				idxPath:             "/tmp/ngt-810",
 				bulkInsertChunkSize: 100,
 				dimension:           9,
 				objectType:          Float,
@@ -1778,7 +1750,7 @@ func Test_ngt_Search(t *testing.T) {
 			},
 			fields: fields{
 				inMemory:            false,
-				idxPath:             idxTempDir(t),
+				idxPath:             "/tmp/ngt-811",
 				bulkInsertChunkSize: 100,
 				dimension:           9,
 				objectType:          Uint8,
@@ -1806,7 +1778,7 @@ func Test_ngt_Search(t *testing.T) {
 			},
 			fields: fields{
 				inMemory:            false,
-				idxPath:             idxTempDir(t),
+				idxPath:             "/tmp/ngt-812",
 				bulkInsertChunkSize: 100,
 				dimension:           9,
 				objectType:          Uint8,
@@ -1832,7 +1804,7 @@ func Test_ngt_Search(t *testing.T) {
 			},
 			fields: fields{
 				inMemory:            false,
-				idxPath:             idxTempDir(t),
+				idxPath:             "/tmp/ngt-813",
 				bulkInsertChunkSize: 100,
 				dimension:           9,
 				objectType:          Float,
@@ -1857,7 +1829,7 @@ func Test_ngt_Search(t *testing.T) {
 			},
 			fields: fields{
 				inMemory:            false,
-				idxPath:             idxTempDir(t),
+				idxPath:             "/tmp/ngt-813",
 				bulkInsertChunkSize: 100,
 				dimension:           9,
 				objectType:          Float,
@@ -1997,7 +1969,7 @@ func Test_ngt_Insert(t *testing.T) {
 				vec: []float32{0, 1, 2, 3, 4, 5, 6, 7, 8},
 			},
 			fields: fields{
-				idxPath:    idxTempDir(t),
+				idxPath:    "/tmp/ngt-91",
 				inMemory:   false,
 				dimension:  9,
 				objectType: Uint8,
@@ -2012,7 +1984,7 @@ func Test_ngt_Insert(t *testing.T) {
 				vec: []float32{0, 0, 0, 0, 0, 0, 0, 0, 0},
 			},
 			fields: fields{
-				idxPath:    idxTempDir(t),
+				idxPath:    "/tmp/ngt-92",
 				inMemory:   false,
 				dimension:  9,
 				objectType: Uint8,
@@ -2030,7 +2002,7 @@ func Test_ngt_Insert(t *testing.T) {
 				},
 			},
 			fields: fields{
-				idxPath:    idxTempDir(t),
+				idxPath:    "/tmp/ngt-93",
 				inMemory:   false,
 				dimension:  9,
 				objectType: Uint8,
@@ -2048,7 +2020,7 @@ func Test_ngt_Insert(t *testing.T) {
 				},
 			},
 			fields: fields{
-				idxPath:    idxTempDir(t),
+				idxPath:    "/tmp/ngt-94",
 				inMemory:   false,
 				dimension:  9,
 				objectType: Uint8,
@@ -2063,7 +2035,7 @@ func Test_ngt_Insert(t *testing.T) {
 				vec: []float32{0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8},
 			},
 			fields: fields{
-				idxPath:    idxTempDir(t),
+				idxPath:    "/tmp/ngt-95",
 				inMemory:   false,
 				dimension:  9,
 				objectType: Float,
@@ -2078,7 +2050,7 @@ func Test_ngt_Insert(t *testing.T) {
 				vec: []float32{0, 0, 0, 0, 0, 0, 0, 0, 0},
 			},
 			fields: fields{
-				idxPath:    idxTempDir(t),
+				idxPath:    "/tmp/ngt-96",
 				inMemory:   false,
 				dimension:  9,
 				objectType: Float,
@@ -2096,7 +2068,7 @@ func Test_ngt_Insert(t *testing.T) {
 				},
 			},
 			fields: fields{
-				idxPath:    idxTempDir(t),
+				idxPath:    "/tmp/ngt-97",
 				inMemory:   false,
 				dimension:  9,
 				objectType: Float,
@@ -2114,7 +2086,7 @@ func Test_ngt_Insert(t *testing.T) {
 				},
 			},
 			fields: fields{
-				idxPath:    idxTempDir(t),
+				idxPath:    "/tmp/ngt-98",
 				inMemory:   false,
 				dimension:  9,
 				objectType: Float,
@@ -2129,7 +2101,7 @@ func Test_ngt_Insert(t *testing.T) {
 				vec: []float32{0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8},
 			},
 			fields: fields{
-				idxPath:    idxTempDir(t),
+				idxPath:    "/tmp/ngt-99",
 				inMemory:   false,
 				dimension:  5,
 				objectType: Float,
@@ -2253,7 +2225,7 @@ func Test_ngt_InsertCommit(t *testing.T) {
 				vec: []float32{0, 1, 2, 3, 4, 5, 6, 7, 8},
 			},
 			fields: fields{
-				idxPath:    idxTempDir(t),
+				idxPath:    "/tmp/ngt-101",
 				inMemory:   false,
 				dimension:  9,
 				objectType: Uint8,
@@ -2268,7 +2240,7 @@ func Test_ngt_InsertCommit(t *testing.T) {
 				vec: []float32{0, 0, 0, 0, 0, 0, 0, 0, 0},
 			},
 			fields: fields{
-				idxPath:    idxTempDir(t),
+				idxPath:    "/tmp/ngt-102",
 				inMemory:   false,
 				dimension:  9,
 				objectType: Uint8,
@@ -2286,7 +2258,7 @@ func Test_ngt_InsertCommit(t *testing.T) {
 				},
 			},
 			fields: fields{
-				idxPath:    idxTempDir(t),
+				idxPath:    "/tmp/ngt-103",
 				inMemory:   false,
 				dimension:  9,
 				objectType: Uint8,
@@ -2304,7 +2276,7 @@ func Test_ngt_InsertCommit(t *testing.T) {
 				},
 			},
 			fields: fields{
-				idxPath:    idxTempDir(t),
+				idxPath:    "/tmp/ngt-104",
 				inMemory:   false,
 				dimension:  9,
 				objectType: Uint8,
@@ -2319,7 +2291,7 @@ func Test_ngt_InsertCommit(t *testing.T) {
 				vec: []float32{0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8},
 			},
 			fields: fields{
-				idxPath:    idxTempDir(t),
+				idxPath:    "/tmp/ngt-105",
 				inMemory:   false,
 				dimension:  9,
 				objectType: Float,
@@ -2334,7 +2306,7 @@ func Test_ngt_InsertCommit(t *testing.T) {
 				vec: []float32{0, 0, 0, 0, 0, 0, 0, 0, 0},
 			},
 			fields: fields{
-				idxPath:    idxTempDir(t),
+				idxPath:    "/tmp/ngt-106",
 				inMemory:   false,
 				dimension:  9,
 				objectType: Float,
@@ -2352,7 +2324,7 @@ func Test_ngt_InsertCommit(t *testing.T) {
 				},
 			},
 			fields: fields{
-				idxPath:    idxTempDir(t),
+				idxPath:    "/tmp/ngt-107",
 				inMemory:   false,
 				dimension:  9,
 				objectType: Float,
@@ -2370,7 +2342,7 @@ func Test_ngt_InsertCommit(t *testing.T) {
 				},
 			},
 			fields: fields{
-				idxPath:    idxTempDir(t),
+				idxPath:    "/tmp/ngt-108",
 				inMemory:   false,
 				dimension:  9,
 				objectType: Float,
@@ -2385,7 +2357,7 @@ func Test_ngt_InsertCommit(t *testing.T) {
 				vec: []float32{0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8},
 			},
 			fields: fields{
-				idxPath:    idxTempDir(t),
+				idxPath:    "/tmp/ngt-109",
 				inMemory:   false,
 				dimension:  5,
 				objectType: Float,
@@ -2540,7 +2512,7 @@ func Test_ngt_BulkInsert(t *testing.T) {
 				},
 			},
 			fields: fields{
-				idxPath:             idxTempDir(t),
+				idxPath:             "/tmp/ngt-111",
 				inMemory:            false,
 				bulkInsertChunkSize: 5,
 				dimension:           9,
@@ -2563,7 +2535,7 @@ func Test_ngt_BulkInsert(t *testing.T) {
 				},
 			},
 			fields: fields{
-				idxPath:             idxTempDir(t),
+				idxPath:             "/tmp/ngt-112",
 				inMemory:            false,
 				bulkInsertChunkSize: 5,
 				dimension:           9,
@@ -2583,7 +2555,7 @@ func Test_ngt_BulkInsert(t *testing.T) {
 				},
 			},
 			fields: fields{
-				idxPath:             idxTempDir(t),
+				idxPath:             "/tmp/ngt-113",
 				inMemory:            false,
 				bulkInsertChunkSize: 5,
 				dimension:           9,
@@ -2605,7 +2577,7 @@ func Test_ngt_BulkInsert(t *testing.T) {
 				},
 			},
 			fields: fields{
-				idxPath:             idxTempDir(t),
+				idxPath:             "/tmp/ngt-114",
 				inMemory:            false,
 				bulkInsertChunkSize: 5,
 				dimension:           9,
@@ -2628,7 +2600,7 @@ func Test_ngt_BulkInsert(t *testing.T) {
 				},
 			},
 			fields: fields{
-				idxPath:             idxTempDir(t),
+				idxPath:             "/tmp/ngt-115",
 				inMemory:            false,
 				bulkInsertChunkSize: 5,
 				dimension:           9,
@@ -2651,7 +2623,7 @@ func Test_ngt_BulkInsert(t *testing.T) {
 				},
 			},
 			fields: fields{
-				idxPath:             idxTempDir(t),
+				idxPath:             "/tmp/ngt-116",
 				inMemory:            false,
 				bulkInsertChunkSize: 5,
 				dimension:           9,
@@ -2671,7 +2643,7 @@ func Test_ngt_BulkInsert(t *testing.T) {
 				},
 			},
 			fields: fields{
-				idxPath:             idxTempDir(t),
+				idxPath:             "/tmp/ngt-117",
 				inMemory:            false,
 				bulkInsertChunkSize: 5,
 				dimension:           9,
@@ -2693,7 +2665,7 @@ func Test_ngt_BulkInsert(t *testing.T) {
 				},
 			},
 			fields: fields{
-				idxPath:             idxTempDir(t),
+				idxPath:             "/tmp/ngt-118",
 				inMemory:            false,
 				bulkInsertChunkSize: 5,
 				dimension:           9,
@@ -2836,7 +2808,7 @@ func Test_ngt_BulkInsertCommit(t *testing.T) {
 				},
 			},
 			fields: fields{
-				idxPath:             idxTempDir(t),
+				idxPath:             "/tmp/ngt-121",
 				inMemory:            false,
 				bulkInsertChunkSize: 5,
 				dimension:           9,
@@ -2859,7 +2831,7 @@ func Test_ngt_BulkInsertCommit(t *testing.T) {
 				},
 			},
 			fields: fields{
-				idxPath:             idxTempDir(t),
+				idxPath:             "/tmp/ngt-122",
 				inMemory:            false,
 				bulkInsertChunkSize: 5,
 				dimension:           9,
@@ -2879,7 +2851,7 @@ func Test_ngt_BulkInsertCommit(t *testing.T) {
 				},
 			},
 			fields: fields{
-				idxPath:             idxTempDir(t),
+				idxPath:             "/tmp/ngt-123",
 				inMemory:            false,
 				bulkInsertChunkSize: 5,
 				dimension:           9,
@@ -2901,7 +2873,7 @@ func Test_ngt_BulkInsertCommit(t *testing.T) {
 				},
 			},
 			fields: fields{
-				idxPath:             idxTempDir(t),
+				idxPath:             "/tmp/ngt-124",
 				inMemory:            false,
 				bulkInsertChunkSize: 5,
 				dimension:           9,
@@ -2924,7 +2896,7 @@ func Test_ngt_BulkInsertCommit(t *testing.T) {
 				},
 			},
 			fields: fields{
-				idxPath:             idxTempDir(t),
+				idxPath:             "/tmp/ngt-125",
 				inMemory:            false,
 				bulkInsertChunkSize: 5,
 				dimension:           9,
@@ -2947,7 +2919,7 @@ func Test_ngt_BulkInsertCommit(t *testing.T) {
 				},
 			},
 			fields: fields{
-				idxPath:             idxTempDir(t),
+				idxPath:             "/tmp/ngt-126",
 				inMemory:            false,
 				bulkInsertChunkSize: 5,
 				dimension:           9,
@@ -2967,7 +2939,7 @@ func Test_ngt_BulkInsertCommit(t *testing.T) {
 				},
 			},
 			fields: fields{
-				idxPath:             idxTempDir(t),
+				idxPath:             "/tmp/ngt-127",
 				inMemory:            false,
 				bulkInsertChunkSize: 5,
 				dimension:           9,
@@ -2989,7 +2961,7 @@ func Test_ngt_BulkInsertCommit(t *testing.T) {
 				},
 			},
 			fields: fields{
-				idxPath:             idxTempDir(t),
+				idxPath:             "/tmp/ngt-128",
 				inMemory:            false,
 				bulkInsertChunkSize: 5,
 				dimension:           9,
@@ -3111,7 +3083,7 @@ func Test_ngt_CreateAndSaveIndex(t *testing.T) {
 				poolSize: 0,
 			},
 			fields: fields{
-				idxPath:             idxTempDir(t),
+				idxPath:             "/tmp/ngt-131",
 				inMemory:            false,
 				bulkInsertChunkSize: 5,
 				dimension:           9,
@@ -3124,7 +3096,7 @@ func Test_ngt_CreateAndSaveIndex(t *testing.T) {
 				poolSize: 100,
 			},
 			fields: fields{
-				idxPath:             idxTempDir(t),
+				idxPath:             "/tmp/ngt-132",
 				inMemory:            false,
 				bulkInsertChunkSize: 5,
 				dimension:           9,
@@ -3151,7 +3123,7 @@ func Test_ngt_CreateAndSaveIndex(t *testing.T) {
 					poolSize: 0,
 				},
 				fields: fields{
-					idxPath:             idxTempDir(t),
+					idxPath:             "/tmp/ngt-133",
 					inMemory:            false,
 					bulkInsertChunkSize: 100,
 					dimension:           9,
@@ -3210,7 +3182,7 @@ func Test_ngt_CreateAndSaveIndex(t *testing.T) {
 					poolSize: 100,
 				},
 				fields: fields{
-					idxPath:             idxTempDir(t),
+					idxPath:             "/tmp/ngt-134",
 					inMemory:            false,
 					bulkInsertChunkSize: 5,
 					dimension:           9,
@@ -3255,7 +3227,7 @@ func Test_ngt_CreateAndSaveIndex(t *testing.T) {
 				poolSize: 100,
 			},
 			fields: fields{
-				idxPath:             idxTempDir(t),
+				idxPath:             "/tmp/ngt-135",
 				inMemory:            true,
 				bulkInsertChunkSize: 5,
 				dimension:           9,
@@ -3370,7 +3342,7 @@ func Test_ngt_CreateIndex(t *testing.T) {
 				poolSize: 0,
 			},
 			fields: fields{
-				idxPath:             idxTempDir(t),
+				idxPath:             "/tmp/ngt-141",
 				inMemory:            false,
 				bulkInsertChunkSize: 5,
 				dimension:           9,
@@ -3383,7 +3355,7 @@ func Test_ngt_CreateIndex(t *testing.T) {
 				poolSize: 100,
 			},
 			fields: fields{
-				idxPath:             idxTempDir(t),
+				idxPath:             "/tmp/ngt-142",
 				inMemory:            false,
 				bulkInsertChunkSize: 5,
 				dimension:           9,
@@ -3410,7 +3382,7 @@ func Test_ngt_CreateIndex(t *testing.T) {
 					poolSize: 0,
 				},
 				fields: fields{
-					idxPath:             idxTempDir(t),
+					idxPath:             "/tmp/ngt-143",
 					inMemory:            false,
 					bulkInsertChunkSize: 100,
 					dimension:           9,
@@ -3469,7 +3441,7 @@ func Test_ngt_CreateIndex(t *testing.T) {
 					poolSize: 100,
 				},
 				fields: fields{
-					idxPath:             idxTempDir(t),
+					idxPath:             "/tmp/ngt-144",
 					inMemory:            false,
 					bulkInsertChunkSize: 5,
 					dimension:           9,
@@ -3514,7 +3486,7 @@ func Test_ngt_CreateIndex(t *testing.T) {
 				poolSize: 100,
 			},
 			fields: fields{
-				idxPath:             idxTempDir(t),
+				idxPath:             "/tmp/ngt-145",
 				inMemory:            true,
 				bulkInsertChunkSize: 5,
 				dimension:           9,
@@ -3626,7 +3598,7 @@ func Test_ngt_SaveIndex(t *testing.T) {
 				poolSize: 0,
 			},
 			fields: fields{
-				idxPath:             idxTempDir(t),
+				idxPath:             "/tmp/ngt-151",
 				inMemory:            false,
 				bulkInsertChunkSize: 5,
 				dimension:           9,
@@ -3639,7 +3611,7 @@ func Test_ngt_SaveIndex(t *testing.T) {
 				poolSize: 100,
 			},
 			fields: fields{
-				idxPath:             idxTempDir(t),
+				idxPath:             "/tmp/ngt-152",
 				inMemory:            false,
 				bulkInsertChunkSize: 5,
 				dimension:           9,
@@ -3666,7 +3638,7 @@ func Test_ngt_SaveIndex(t *testing.T) {
 					poolSize: 0,
 				},
 				fields: fields{
-					idxPath:             idxTempDir(t),
+					idxPath:             "/tmp/ngt-153",
 					inMemory:            false,
 					bulkInsertChunkSize: 100,
 					dimension:           9,
@@ -3725,7 +3697,7 @@ func Test_ngt_SaveIndex(t *testing.T) {
 					poolSize: 100,
 				},
 				fields: fields{
-					idxPath:             idxTempDir(t),
+					idxPath:             "/tmp/ngt-154",
 					inMemory:            false,
 					bulkInsertChunkSize: 5,
 					dimension:           9,
@@ -3770,7 +3742,7 @@ func Test_ngt_SaveIndex(t *testing.T) {
 				poolSize: 100,
 			},
 			fields: fields{
-				idxPath:             idxTempDir(t),
+				idxPath:             "/tmp/ngt-155",
 				inMemory:            true,
 				bulkInsertChunkSize: 5,
 				dimension:           9,
@@ -3889,7 +3861,7 @@ func Test_ngt_Remove(t *testing.T) {
 				id: 1,
 			},
 			fields: fields{
-				idxPath:             idxTempDir(t),
+				idxPath:             "/tmp/ngt-161",
 				inMemory:            false,
 				bulkInsertChunkSize: 100,
 				dimension:           9,
@@ -3921,7 +3893,7 @@ func Test_ngt_Remove(t *testing.T) {
 				id: 999,
 			},
 			fields: fields{
-				idxPath:             idxTempDir(t),
+				idxPath:             "/tmp/ngt-162",
 				inMemory:            false,
 				bulkInsertChunkSize: 100,
 				dimension:           9,
@@ -3955,7 +3927,7 @@ func Test_ngt_Remove(t *testing.T) {
 				id: 1,
 			},
 			fields: fields{
-				idxPath:             idxTempDir(t),
+				idxPath:             "/tmp/ngt-163",
 				inMemory:            false,
 				bulkInsertChunkSize: 100,
 				dimension:           9,
@@ -3987,7 +3959,7 @@ func Test_ngt_Remove(t *testing.T) {
 				id: 999,
 			},
 			fields: fields{
-				idxPath:             idxTempDir(t),
+				idxPath:             "/tmp/ngt-164",
 				inMemory:            false,
 				bulkInsertChunkSize: 100,
 				dimension:           9,
@@ -4123,7 +4095,7 @@ func Test_ngt_BulkRemove(t *testing.T) {
 				ids: []uint{1},
 			},
 			fields: fields{
-				idxPath:             idxTempDir(t),
+				idxPath:             "/tmp/ngt-171",
 				inMemory:            false,
 				bulkInsertChunkSize: 100,
 				dimension:           9,
@@ -4155,7 +4127,7 @@ func Test_ngt_BulkRemove(t *testing.T) {
 				ids: []uint{999},
 			},
 			fields: fields{
-				idxPath:             idxTempDir(t),
+				idxPath:             "/tmp/ngt-172",
 				inMemory:            false,
 				bulkInsertChunkSize: 100,
 				dimension:           9,
@@ -4188,7 +4160,7 @@ func Test_ngt_BulkRemove(t *testing.T) {
 				ids: []uint{1, 999},
 			},
 			fields: fields{
-				idxPath:             idxTempDir(t),
+				idxPath:             "/tmp/ngt-173",
 				inMemory:            false,
 				bulkInsertChunkSize: 100,
 				dimension:           9,
@@ -4234,7 +4206,7 @@ func Test_ngt_BulkRemove(t *testing.T) {
 				ids: []uint{1},
 			},
 			fields: fields{
-				idxPath:             idxTempDir(t),
+				idxPath:             "/tmp/ngt-174",
 				inMemory:            false,
 				bulkInsertChunkSize: 100,
 				dimension:           9,
@@ -4266,7 +4238,7 @@ func Test_ngt_BulkRemove(t *testing.T) {
 				ids: []uint{999},
 			},
 			fields: fields{
-				idxPath:             idxTempDir(t),
+				idxPath:             "/tmp/ngt-175",
 				inMemory:            false,
 				bulkInsertChunkSize: 100,
 				dimension:           9,
@@ -4299,7 +4271,7 @@ func Test_ngt_BulkRemove(t *testing.T) {
 				ids: []uint{1, 999},
 			},
 			fields: fields{
-				idxPath:             idxTempDir(t),
+				idxPath:             "/tmp/ngt-176",
 				inMemory:            false,
 				bulkInsertChunkSize: 100,
 				dimension:           9,
@@ -4450,7 +4422,7 @@ func Test_ngt_GetVector(t *testing.T) {
 				id: 1,
 			},
 			fields: fields{
-				idxPath:             idxTempDir(t),
+				idxPath:             "/tmp/ngt-181",
 				inMemory:            false,
 				bulkInsertChunkSize: 100,
 				dimension:           9,
@@ -4480,7 +4452,7 @@ func Test_ngt_GetVector(t *testing.T) {
 				id: 10,
 			},
 			fields: fields{
-				idxPath:             idxTempDir(t),
+				idxPath:             "/tmp/ngt-182",
 				inMemory:            false,
 				bulkInsertChunkSize: 100,
 				dimension:           9,
@@ -4511,7 +4483,7 @@ func Test_ngt_GetVector(t *testing.T) {
 				id: 1,
 			},
 			fields: fields{
-				idxPath:             idxTempDir(t),
+				idxPath:             "/tmp/ngt-183",
 				inMemory:            false,
 				bulkInsertChunkSize: 100,
 				dimension:           9,
@@ -4541,7 +4513,7 @@ func Test_ngt_GetVector(t *testing.T) {
 				id: 10,
 			},
 			fields: fields{
-				idxPath:             idxTempDir(t),
+				idxPath:             "/tmp/ngt-184",
 				inMemory:            false,
 				bulkInsertChunkSize: 100,
 				dimension:           9,
@@ -4572,7 +4544,7 @@ func Test_ngt_GetVector(t *testing.T) {
 				id: 10,
 			},
 			fields: fields{
-				idxPath:             idxTempDir(t),
+				idxPath:             "/tmp/ngt-185",
 				inMemory:            false,
 				bulkInsertChunkSize: 100,
 				dimension:           9,
@@ -4686,8 +4658,8 @@ func Test_ngt_Close(t *testing.T) {
 		{
 			name: "close success",
 			fields: fields{
-				idxPath:             idxTempDir(t),
 				inMemory:            false,
+				idxPath:             "/tmp/ngt-191",
 				bulkInsertChunkSize: 100,
 				dimension:           9,
 				objectType:          Float,
