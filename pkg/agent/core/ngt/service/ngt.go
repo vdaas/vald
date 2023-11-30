@@ -52,8 +52,8 @@ type NGT interface {
 	Start(ctx context.Context) <-chan error
 	Search(ctx context.Context, vec []float32, size uint32, epsilon, radius float32) (*payload.Search_Response, error)
 	SearchByID(ctx context.Context, uuid string, size uint32, epsilon, radius float32) ([]float32, *payload.Search_Response, error)
-	LinearSearch(ctx context.Context, vec []float32, size uint32) (*payload.Search_Response, error)
-	LinearSearchByID(ctx context.Context, uuid string, size uint32) ([]float32, *payload.Search_Response, error)
+	LinearSearch(vec []float32, size uint32) (*payload.Search_Response, error)
+	LinearSearchByID(uuid string, size uint32) ([]float32, *payload.Search_Response, error)
 	Insert(uuid string, vec []float32) (err error)
 	InsertWithTime(uuid string, vec []float32, t int64) (err error)
 	InsertMultiple(vecs map[string][]float32) (err error)
@@ -883,10 +883,7 @@ func (n *ngt) Search(ctx context.Context, vec []float32, size uint32, epsilon, r
 		if n.IsIndexing() {
 			return nil, errors.ErrCreateIndexingIsInProgress
 		}
-		if errors.Is(err, errors.ErrSearchResultEmptyButNoDataStored) && n.Len() == 0 {
-			return nil, nil
-		}
-		log.Errorf("cgo error detected during search: ngt api returned error %v", err)
+		log.Errorf("cgo error detected: ngt api returned error %v", err)
 		return nil, err
 	}
 
@@ -908,26 +905,23 @@ func (n *ngt) SearchByID(ctx context.Context, uuid string, size uint32, epsilon,
 	return vec, dst, nil
 }
 
-func (n *ngt) LinearSearch(ctx context.Context, vec []float32, size uint32) (res *payload.Search_Response, err error) {
+func (n *ngt) LinearSearch(vec []float32, size uint32) (res *payload.Search_Response, err error) {
 	if n.IsIndexing() {
 		return nil, errors.ErrCreateIndexingIsInProgress
 	}
-	sr, err := n.core.LinearSearch(ctx, vec, int(size))
+	sr, err := n.core.LinearSearch(vec, int(size))
 	if err != nil {
 		if n.IsIndexing() {
 			return nil, errors.ErrCreateIndexingIsInProgress
 		}
-		if errors.Is(err, errors.ErrSearchResultEmptyButNoDataStored) && n.Len() == 0 {
-			return nil, nil
-		}
-		log.Errorf("cgo error detected during linear search: ngt api returned error %v", err)
+		log.Errorf("cgo error detected: ngt api returned error %v", err)
 		return nil, err
 	}
 
 	return n.toSearchResponse(sr)
 }
 
-func (n *ngt) LinearSearchByID(ctx context.Context, uuid string, size uint32) (vec []float32, dst *payload.Search_Response, err error) {
+func (n *ngt) LinearSearchByID(uuid string, size uint32) (vec []float32, dst *payload.Search_Response, err error) {
 	if n.IsIndexing() {
 		return nil, nil, errors.ErrCreateIndexingIsInProgress
 	}
@@ -935,7 +929,7 @@ func (n *ngt) LinearSearchByID(ctx context.Context, uuid string, size uint32) (v
 	if err != nil {
 		return nil, nil, err
 	}
-	dst, err = n.LinearSearch(ctx, vec, size)
+	dst, err = n.LinearSearch(vec, size)
 	if err != nil {
 		return vec, nil, err
 	}

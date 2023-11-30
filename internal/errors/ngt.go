@@ -40,8 +40,6 @@ var (
 	ErrRemoveRequestedBeforeIndexing = func(oid uint) error {
 		return Errorf("object id %d is not indexed we cannot remove it", oid)
 	}
-
-	ErrSearchResultEmptyButNoDataStored = New("empty search result from cgo but no index data stored in ngt, this error can be ignored.")
 )
 
 type NGTError struct {
