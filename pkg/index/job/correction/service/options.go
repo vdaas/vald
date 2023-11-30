@@ -22,8 +22,8 @@ import (
 type Option func(*correct) error
 
 var defaultOpts = []Option{
-	WithStreamListConcurrency(200),     //nolint:gomnd
-	WithKvsAsyncWriteConcurrency(2048), //nolint:gomnd
+	WithStreamListConcurrency(200),       //nolint:gomnd
+	WithBboltAsyncWriteConcurrency(2048), //nolint:gomnd
 }
 
 // WithIndexReplica returns Option that sets index replica.
@@ -59,11 +59,11 @@ func WithStreamListConcurrency(num int) Option {
 	}
 }
 
-// WithKvsAsyncWriteConcurrency returns Option that sets concurrency for kvs async write.
-func WithKvsAsyncWriteConcurrency(num int) Option {
+// WithBboltAsyncWriteConcurrency returns Option that sets concurrency for kvs async write.
+func WithBboltAsyncWriteConcurrency(num int) Option {
 	return func(c *correct) error {
 		if num <= 0 {
-			return errors.NewErrInvalidOption("kvsAsyncWriteConcurrency", num)
+			return errors.NewErrInvalidOption("bboltAsyncWriteConcurrency", num)
 		}
 		c.bboltAsyncWriteConcurrency = num
 		return nil
