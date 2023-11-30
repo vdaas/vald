@@ -42,36 +42,55 @@ on:
       - "versions/GO_VERSION"
       - "versions/NGT_VERSION"
 
-env:
-  DATASET: fashion-mnist-784-euclidean.hdf5
-  DATASET_ARGS: fashion-mnist
-
 jobs:
-  dump-contexts-to-log:
+  dump_contexts_to_log:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: ./.github/actions/dump-context
-
+      - name: Dump GitHub context
+        id: github_context_step
+        run: echo $JSON
+        env:
+          JSON: ${{ toJSON(github) }}
+      - name: Dump job context
+        run: echo $JSON
+        env:
+          JSON: ${{ toJSON(job) }}
+      - name: Dump steps context
+        run: echo $JSON
+        env:
+          JSON: ${{ toJSON(steps) }}
+      - name: Dump runner context
+        run: echo $JSON
+        env:
+          JSON: ${{ toJSON(runner) }}
+      - name: Dump strategy context
+        run: echo $JSON
+        env:
+          JSON: ${{ toJSON(strategy) }}
+      - name: Dump matrix context
+        run: echo $JSON
+        env:
+          JSON: ${{ toJSON(matrix) }}
   grpc-sequential:
     name: grpc-sequential
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/vdaas/vald/vald-ci-container:nightly
     steps:
-      - uses: actions/checkout@v3
-
-      - name: Set Git config
+      - name: Check out code.
+        uses: actions/checkout@v3
+        with:
+          persist-credentials: false
+      - name: set git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
-
-      - uses: ./.github/actions/setup-go
-
       - name: Run grpc-sequential
         run: |
-          make hack/benchmark/assets/dataset/${{ env.DATASET }}
-          DATASET_ARGS=${{ env.DATASET_ARGS }} make bench/agent/sequential/grpc
-
+          make hack/benchmark/assets/dataset/${DATASET}
+          DATASET_ARGS=${DATASET_ARGS} make bench/agent/sequential/grpc
+        env:
+          DATASET: fashion-mnist-784-euclidean.hdf5
+          DATASET_ARGS: fashion-mnist
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
@@ -90,19 +109,18 @@ jobs:
     container:
       image: ghcr.io/vdaas/vald/vald-ci-container:nightly
     steps:
-      - uses: actions/checkout@v3
-
-      - name: Set Git config
+      - name: Check out code.
+        uses: actions/checkout@v3
+      - name: set git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
-
-      - uses: ./.github/actions/setup-go
-
       - name: Run grpc-stream
         run: |
-          make hack/benchmark/assets/dataset/${{ env.DATASET }}
-          DATASET_ARGS=${{ env.DATASET_ARGS }} make bench/agent/stream
-
+          make hack/benchmark/assets/dataset/${DATASET}
+          DATASET_ARGS=${DATASET_ARGS} make bench/agent/stream
+        env:
+          DATASET: fashion-mnist-784-euclidean.hdf5
+          DATASET_ARGS: fashion-mnist
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:

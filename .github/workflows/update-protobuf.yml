@@ -1,0 +1,85 @@
+#
+# Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+name: update protobuf
+on:
+  push:
+    tags:
+      - "*.*.*"
+      - "v*.*.*"
+      - "*.*.*-*"
+      - "v*.*.*-*"
+
+jobs:
+  dump_contexts_to_log:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dump GitHub context
+        id: github_context_step
+        run: echo $JSON
+        env:
+          JSON: ${{ toJSON(github) }}
+      - name: Dump job context
+        run: echo $JSON
+        env:
+          JSON: ${{ toJSON(job) }}
+      - name: Dump steps context
+        run: echo $JSON
+        env:
+          JSON: ${{ toJSON(steps) }}
+      - name: Dump runner context
+        run: echo $JSON
+        env:
+          JSON: ${{ toJSON(runner) }}
+      - name: Dump strategy context
+        run: echo $JSON
+        env:
+          JSON: ${{ toJSON(strategy) }}
+      - name: Dump matrix context
+        run: echo $JSON
+        env:
+          JSON: ${{ toJSON(matrix) }}
+  dispatches:
+    name: Dispatches
+    runs-on: ubuntu-latest
+    steps:
+      - name: client-go
+        run: |
+          curl --fail -u "${USER}:${TOKEN}" -X POST https://api.github.com/repos/${REPO}/dispatches -H 'Accept: application/vnd.github.everest-preview+json' --data '{"event_type": "update-protobuf"}'
+        env:
+          REPO: vdaas/vald-client-go
+          USER: ${{ secrets.DISPATCH_USER }}
+          TOKEN: ${{ secrets.DISPATCH_TOKEN }}
+      - name: client-java
+        run: |
+          curl --fail -u "${USER}:${TOKEN}" -X POST https://api.github.com/repos/${REPO}/dispatches -H 'Accept: application/vnd.github.everest-preview+json' --data '{"event_type": "update-protobuf"}'
+        env:
+          REPO: vdaas/vald-client-java
+          USER: ${{ secrets.DISPATCH_USER }}
+          TOKEN: ${{ secrets.DISPATCH_TOKEN }}
+      - name: client-python
+        run: |
+          curl --fail -u "${USER}:${TOKEN}" -X POST https://api.github.com/repos/${REPO}/dispatches -H 'Accept: application/vnd.github.everest-preview+json' --data '{"event_type": "update-protobuf"}'
+        env:
+          REPO: vdaas/vald-client-python
+          USER: ${{ secrets.DISPATCH_USER }}
+          TOKEN: ${{ secrets.DISPATCH_TOKEN }}
+      - name: client-node
+        run: |
+          curl --fail -u "${USER}:${TOKEN}" -X POST https://api.github.com/repos/${REPO}/dispatches -H 'Accept: application/vnd.github.everest-preview+json' --data '{"event_type": "update-protobuf"}'
+        env:
+          REPO: vdaas/vald-client-node
+          USER: ${{ secrets.DISPATCH_USER }}
+          TOKEN: ${{ secrets.DISPATCH_TOKEN }}

@@ -504,10 +504,6 @@ version/kind:
 version/helm:
 	@echo $(HELM_VERSION)
 
-.PHONY: version/yq
-version/yq:
-	@echo $(YQ_VERSION)
-
 .PHONY: version/valdcli
 version/valdcli:
 	@echo $(VALDCLI_VERSION)
