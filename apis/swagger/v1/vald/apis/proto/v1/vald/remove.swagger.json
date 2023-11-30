@@ -145,7 +145,7 @@
           "items": {
             "$ref": "#/definitions/v1RemoveTimestamp"
           },
-          "description": "The timestamp comparison list. If more than one is specified, the `AND` search is applied."
+          "description": "Represent the multiple remove request contents based on timestamp."
         }
       },
       "description": "Represent the remove request based on timestamp."
@@ -154,7 +154,7 @@
       "type": "string",
       "enum": ["Eq", "Ne", "Ge", "Gt", "Le", "Lt"],
       "default": "Eq",
-      "description": "Operator is enum of each conditional operator.\n\n - Eq: The timestamp is equal to the specified value in the request.\n - Ne: The timestamp is not equal to the specified value in the request.\n - Ge: The timestamp is greater than or equal to the specified value in the request.\n - Gt: The timestamp is greater than the specified value in the request.\n - Le: The timestamp is less than or equal to the specified value in the request.\n - Lt: The timestamp is less than the specified value in the request."
+      "description": "Operator is enum of each conditional operator."
     },
     "protobufAny": {
       "type": "object",
@@ -314,8 +314,7 @@
           "$ref": "#/definitions/TimestampOperator",
           "description": "The conditional operator."
         }
-      },
-      "description": "Represent the timestamp comparison."
+      }
     }
   }
 }
