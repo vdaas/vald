@@ -22,31 +22,22 @@ on:
       - ".github/actions/docker-build/actions.yaml"
       - ".github/workflows/_docker-image.yaml"
       - ".github/workflows/dockers-dev-container-image.yml"
+      - "dockers/ci/**"
       - "dockers/dev/**"
-      - "Makefile"
-      - "Makefile.d/**"
-      - "versions/GO_VERSION"
-      - "versions/NGT_VERSION"
   pull_request:
     paths:
       - ".github/actions/docker-build/actions.yaml"
       - ".github/workflows/_docker-image.yaml"
       - ".github/workflows/dockers-dev-container-image.yml"
+      - "dockers/ci/**"
       - "dockers/dev/**"
-      - "Makefile"
-      - "Makefile.d/**"
-      - "versions/GO_VERSION"
-      - "versions/NGT_VERSION"
   pull_request_target:
     paths:
       - ".github/actions/docker-build/actions.yaml"
       - ".github/workflows/_docker-image.yaml"
       - ".github/workflows/dockers-dev-container-image.yml"
+      - "dockers/ci/**"
       - "dockers/dev/**"
-      - "Makefile"
-      - "Makefile.d/**"
-      - "versions/GO_VERSION"
-      - "versions/NGT_VERSION"
   schedule:
     - cron: "0 1 * * *"
 
