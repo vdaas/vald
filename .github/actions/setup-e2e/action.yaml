@@ -81,6 +81,7 @@ runs:
       with:
         agents: 3
         ingress_port: ${{ inputs.ingress_port }}
+        options: "--image docker.io/rancher/k3s:latest"
     - name: Check Kubernetes cluster
       shell: bash
       run: |
