@@ -15,15 +15,7 @@
 #
 {{- $discoverer := .Values.discoverer -}}
 {{- if $discoverer.hpa.enabled }}
-{{- if (.Capabilities.APIVersions.Has "autoscaling/v2") }}
-apiVersion: autoscaling/v2
-{{- else if (.Capabilities.APIVersions.Has "autoscaling/v2beta2") }}
-apiVersion: autoscaling/v2beta2
-{{- else if (.Capabilities.APIVersions.Has "autoscaling/v2beta1") }}
-apiVersion: autoscaling/v2beta1
-{{- else }}
 apiVersion: autoscaling/v1
-{{- end }}
 kind: HorizontalPodAutoscaler
 metadata:
   name: {{ $discoverer.name }}
@@ -41,16 +33,6 @@ spec:
     apiVersion: apps/v1
     kind: {{ $discoverer.kind }}
     name: {{ $discoverer.name }}
-{{- if or (.Capabilities.APIVersions.Has "autoscaling/v2") (.Capabilities.APIVersions.Has "autoscaling/v2beta2") (.Capabilities.APIVersions.Has "autoscaling/v2beta1") }}
-  metrics:
-  - type: Resource
-    resource:
-      name: cpu
-      target:
-        type: Utilization
-        averageUtilization: {{ $discoverer.hpa.targetCPUUtilizationPercentage }}
-{{- else }}
   targetCPUUtilizationPercentage: {{ $discoverer.hpa.targetCPUUtilizationPercentage }}
-{{- end }}
 status:
 {{- end }}
