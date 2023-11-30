@@ -16,7 +16,6 @@ package strings
 import (
 	"bytes"
 	"strings"
-	"syscall"
 
 	"github.com/vdaas/vald/internal/sync"
 )
@@ -55,7 +54,7 @@ var (
 
 	bufferPool = sync.Pool{
 		New: func() interface{} {
-			return bytes.NewBuffer(make([]byte, 0, syscall.Getpagesize()))
+			return bytes.NewBuffer(make([]byte, 0, 1024))
 		},
 	}
 )
