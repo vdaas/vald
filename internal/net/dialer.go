@@ -44,7 +44,7 @@ type Dialer interface {
 }
 
 type dialer struct {
-	dnsCache              cacher.Cache[*dialerCache]
+	dnsCache              cacher.Cache
 	enableDNSCache        bool
 	dnsCachedOnce         sync.Once
 	tlsConfig             *tls.Config
@@ -121,9 +121,9 @@ func NewDialer(opts ...DialerOption) (der Dialer, err error) {
 		}
 		if d.dnsCache == nil {
 			if d.dnsCache, err = cache.New(
-				cache.WithExpireDuration[*dialerCache](d.dnsCacheExpirationStr),
-				cache.WithExpireCheckDuration[*dialerCache](d.dnsRefreshDurationStr),
-				cache.WithExpiredHook[*dialerCache](d.cacheExpireHook),
+				cache.WithExpireDuration(d.dnsCacheExpirationStr),
+				cache.WithExpireCheckDuration(d.dnsRefreshDurationStr),
+				cache.WithExpiredHook(d.cacheExpireHook),
 			); err != nil {
 				return nil, err
 			}
@@ -146,8 +146,10 @@ func (d *dialer) GetDialer() func(ctx context.Context, network, addr string) (Co
 
 func (d *dialer) lookup(ctx context.Context, host string) (dc *dialerCache, err error) {
 	if d.enableDNSCache {
-		if dc, ok := d.dnsCache.Get(host); ok {
-			if dc != nil && len(dc.ips) > 0 {
+		dnsCache, ok := d.dnsCache.Get(host)
+		if ok && dnsCache != nil {
+			dc, ok = dnsCache.(*dialerCache)
+			if ok && dc != nil && len(dc.ips) > 0 {
 				return dc, nil
 			}
 		}

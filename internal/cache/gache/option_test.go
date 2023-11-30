@@ -15,7 +15,6 @@
 //
 
 // Package gache provides implementation of cache using gache
-
 package gache
 
 import (
@@ -25,7 +24,7 @@ import (
 	"time"
 
 	"github.com/google/go-cmp/cmp"
-	gache "github.com/kpango/gache/v2"
+	"github.com/kpango/gache"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/test/goleak"
 )
@@ -33,22 +32,22 @@ import (
 func TestDefaultOptions(t *testing.T) {
 	type args struct{}
 	type want struct {
-		want *cache[any]
+		want *cache
 	}
 	type test struct {
 		name       string
 		args       args
 		want       want
-		checkFunc  func(want, *cache[any]) error
+		checkFunc  func(want, *cache) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
 
-	defaultCheckFunc := func(w want, got *cache[any]) error {
+	defaultCheckFunc := func(w want, got *cache) error {
 		opts := []cmp.Option{
 			cmp.AllowUnexported(*w.want),
 			cmp.AllowUnexported(*got),
-			cmp.Comparer(func(want, got *cache[any]) bool {
+			cmp.Comparer(func(want, got *cache) bool {
 				return want.gache != nil && got.gache != nil
 			}),
 		}
@@ -62,8 +61,8 @@ func TestDefaultOptions(t *testing.T) {
 		{
 			name: "set succuess",
 			want: want{
-				want: &cache[any]{
-					gache: gache.New[any](),
+				want: &cache{
+					gache: gache.New(),
 				},
 			},
 		},
@@ -83,8 +82,8 @@ func TestDefaultOptions(t *testing.T) {
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
-			g := new(cache[any])
-			for _, opt := range defaultOptions[any]() {
+			g := new(cache)
+			for _, opt := range defaultOptions() {
 				opt(g)
 			}
 			if err := checkFunc(test.want, g); err != nil {
@@ -95,9 +94,9 @@ func TestDefaultOptions(t *testing.T) {
 }
 
 func TestWithGache(t *testing.T) {
-	type T = cache[any]
+	type T = cache
 	type args struct {
-		g gache.Gache[any]
+		g gache.Gache
 	}
 	type want struct {
 		want *T
@@ -120,7 +119,7 @@ func TestWithGache(t *testing.T) {
 
 	tests := []test{
 		func() test {
-			ga := gache.New[any]()
+			ga := gache.New()
 			return test{
 				name: "set succuess when g is not nil",
 				args: args{
@@ -168,7 +167,7 @@ func TestWithGache(t *testing.T) {
 }
 
 func TestWithExpiredHook(t *testing.T) {
-	type T = cache[any]
+	type T = cache
 	type args struct {
 		f func(context.Context, string)
 	}
@@ -236,7 +235,7 @@ func TestWithExpiredHook(t *testing.T) {
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
-			got := WithExpiredHook[any](test.args.f)
+			got := WithExpiredHook(test.args.f)
 			want := new(T)
 			got(want)
 			if err := checkFunc(test.want, want); err != nil {
@@ -247,7 +246,7 @@ func TestWithExpiredHook(t *testing.T) {
 }
 
 func TestWithExpireDuration(t *testing.T) {
-	type T = cache[any]
+	type T = cache
 	type args struct {
 		dur time.Duration
 	}
@@ -308,7 +307,7 @@ func TestWithExpireDuration(t *testing.T) {
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
-			got := WithExpireDuration[any](test.args.dur)
+			got := WithExpireDuration(test.args.dur)
 			want := new(T)
 			got(want)
 			if err := checkFunc(test.want, want); err != nil {
@@ -319,7 +318,7 @@ func TestWithExpireDuration(t *testing.T) {
 }
 
 func TestWithExpireCheckDuration(t *testing.T) {
-	type T = cache[any]
+	type T = cache
 	type args struct {
 		dur time.Duration
 	}
@@ -379,7 +378,7 @@ func TestWithExpireCheckDuration(t *testing.T) {
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
-			got := WithExpireCheckDuration[any](test.args.dur)
+			got := WithExpireCheckDuration(test.args.dur)
 			want := new(T)
 			got(want)
 			if err := checkFunc(test.want, want); err != nil {

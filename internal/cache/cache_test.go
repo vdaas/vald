@@ -33,21 +33,21 @@ var goleakIgnoreOptions = []goleak.Option{
 
 func TestNew(t *testing.T) {
 	type args struct {
-		opts []Option[any]
+		opts []Option
 	}
 	type want struct {
-		wantCc cacher.Cache[any]
+		wantCc cacher.Cache
 		err    error
 	}
 	type test struct {
 		name       string
 		args       args
 		want       want
-		checkFunc  func(want, cacher.Cache[any], error) error
+		checkFunc  func(want, cacher.Cache, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, gotCc cacher.Cache[any], err error) error {
+	defaultCheckFunc := func(w want, gotCc cacher.Cache, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
@@ -60,9 +60,9 @@ func TestNew(t *testing.T) {
 		{
 			name: "return gache cacher",
 			args: args{
-				opts: []Option[any]{WithType[any]("gache")},
+				opts: []Option{WithType("gache")},
 			},
-			checkFunc: func(w want, got cacher.Cache[any], err error) error {
+			checkFunc: func(w want, got cacher.Cache, err error) error {
 				if err != nil {
 					return err
 				}
@@ -76,7 +76,7 @@ func TestNew(t *testing.T) {
 		{
 			name: "return unknown error when type is unknown",
 			args: args{
-				opts: []Option[any]{WithType[any]("unknown")},
+				opts: []Option{WithType("unknown")},
 			},
 			want: want{
 				err: errors.ErrInvalidCacherType,
@@ -85,9 +85,9 @@ func TestNew(t *testing.T) {
 		{
 			name: "return cache when type is empty",
 			args: args{
-				opts: []Option[any]{WithType[any]("")},
+				opts: []Option{WithType("")},
 			},
-			checkFunc: func(w want, got cacher.Cache[any], err error) error {
+			checkFunc: func(w want, got cacher.Cache, err error) error {
 				if err != nil {
 					return err
 				}
@@ -101,7 +101,7 @@ func TestNew(t *testing.T) {
 		{
 			name: "return unknown error when type is dummy string",
 			args: args{
-				opts: []Option[any]{WithType[any]("dummy")},
+				opts: []Option{WithType("dummy")},
 			},
 			want: want{
 				err: errors.ErrInvalidCacherType,
@@ -124,7 +124,7 @@ func TestNew(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 
-			gotCc, err := New[any](test.args.opts...)
+			gotCc, err := New(test.args.opts...)
 			if err := checkFunc(test.want, gotCc, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}

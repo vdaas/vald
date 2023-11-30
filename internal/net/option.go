@@ -38,7 +38,7 @@ var defaultDialerOptions = []DialerOption{
 }
 
 // WithDNSCache returns the functional option to set the cache.
-func WithDNSCache(c cacher.Cache[*dialerCache]) DialerOption {
+func WithDNSCache(c cacher.Cache) DialerOption {
 	return func(d *dialer) {
 		d.dnsCache = c
 		if d.dnsCache != nil {

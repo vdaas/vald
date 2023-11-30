@@ -26,7 +26,7 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 )
 
-type cache[V any] struct {
+type cache struct {
 	cacher         cacher.Type
 	expireDur      time.Duration
 	expireCheckDur time.Duration
@@ -34,17 +34,17 @@ type cache[V any] struct {
 }
 
 // New returns the Cache instance or error.
-func New[V any](opts ...Option[V]) (cc cacher.Cache[V], err error) {
-	c := new(cache[V])
-	for _, opt := range append(defaultOptions[V](), opts...) {
+func New(opts ...Option) (cc cacher.Cache, err error) {
+	c := new(cache)
+	for _, opt := range append(defaultOptions, opts...) {
 		opt(c)
 	}
 	switch c.cacher {
 	case cacher.GACHE:
-		return gache.New[V](
-			gache.WithExpireDuration[V](c.expireDur),
-			gache.WithExpireCheckDuration[V](c.expireCheckDur),
-			gache.WithExpiredHook[V](c.expiredHook),
+		return gache.New(
+			gache.WithExpireDuration(c.expireDur),
+			gache.WithExpireCheckDuration(c.expireCheckDur),
+			gache.WithExpiredHook(c.expiredHook),
 		), nil
 	default:
 		return nil, errors.ErrInvalidCacherType
