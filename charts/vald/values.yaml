@@ -107,10 +107,10 @@ defaults:
             tcp_no_delay: false
             # @schema {"name": "defaults.server_config.servers.rest.server.socket_option.tcp_cork", "type": "boolean"}
             # defaults.server_config.servers.rest.server.socket_option.tcp_cork -- server listen socket option for tcp_cork functionality
-            tcp_cork: false
+            tcp_cork: true
             # @schema {"name": "defaults.server_config.servers.rest.server.socket_option.tcp_quick_ack", "type": "boolean"}
             # defaults.server_config.servers.rest.server.socket_option.tcp_quick_ack -- server listen socket option for tcp_quick_ack functionality
-            tcp_quick_ack: false
+            tcp_quick_ack: true
             # @schema {"name": "defaults.server_config.servers.rest.server.socket_option.tcp_defer_accept", "type": "boolean"}
             # defaults.server_config.servers.rest.server.socket_option.tcp_defer_accept -- server listen socket option for tcp_defer_accept functionality
             tcp_defer_accept: false
@@ -221,9 +221,9 @@ defaults:
             # defaults.server_config.servers.grpc.server.socket_option.tcp_no_delay -- server listen socket option for tcp_no_delay functionality
             tcp_no_delay: false
             # defaults.server_config.servers.grpc.server.socket_option.tcp_cork -- server listen socket option for tcp_cork functionality
-            tcp_cork: false
+            tcp_cork: true
             # defaults.server_config.servers.grpc.server.socket_option.tcp_quick_ack -- server listen socket option for tcp_quick_ack functionality
-            tcp_quick_ack: false
+            tcp_quick_ack: true
             # defaults.server_config.servers.grpc.server.socket_option.tcp_defer_accept -- server listen socket option for tcp_defer_accept functionality
             tcp_defer_accept: false
             # defaults.server_config.servers.grpc.server.socket_option.ip_transparent -- server listen socket option for ip_transparent functionality
@@ -526,7 +526,7 @@ defaults:
             # defaults.server_config.metrics.pprof.server.socket_option.tcp_cork -- server listen socket option for tcp_cork functionality
             tcp_cork: true
             # defaults.server_config.metrics.pprof.server.socket_option.tcp_quick_ack -- server listen socket option for tcp_quick_ack functionality
-            tcp_quick_ack: false
+            tcp_quick_ack: true
             # defaults.server_config.metrics.pprof.server.socket_option.tcp_defer_accept -- server listen socket option for tcp_defer_accept functionality
             tcp_defer_accept: false
             # defaults.server_config.metrics.pprof.server.socket_option.ip_transparent -- server listen socket option for ip_transparent functionality
@@ -725,9 +725,9 @@ defaults:
             # defaults.grpc.client.dial_option.net.socket_option.tcp_no_delay -- server listen socket option for tcp_no_delay functionality
             tcp_no_delay: false
             # defaults.grpc.client.dial_option.net.socket_option.tcp_cork -- server listen socket option for tcp_cork functionality
-            tcp_cork: false
+            tcp_cork: true
             # defaults.grpc.client.dial_option.net.socket_option.tcp_quick_ack -- server listen socket option for tcp_quick_ack functionality
-            tcp_quick_ack: false
+            tcp_quick_ack: true
             # defaults.grpc.client.dial_option.net.socket_option.tcp_defer_accept -- server listen socket option for tcp_defer_accept functionality
             tcp_defer_accept: false
             # defaults.grpc.client.dial_option.net.socket_option.ip_transparent -- server listen socket option for ip_transparent functionality
@@ -1998,13 +1998,13 @@ agent:
             # agent.sidecar.config.client.net.socket_option.reuse_addr -- server listen socket option for reuse_addr functionality
             reuse_addr: true
             # agent.sidecar.config.client.net.socket_option.tcp_fast_open -- server listen socket option for tcp_fast_open functionality
-            tcp_fast_open: true
+            tcp_fast_open: false
             # agent.sidecar.config.client.net.socket_option.tcp_no_delay -- server listen socket option for tcp_no_delay functionality
             tcp_no_delay: false
             # agent.sidecar.config.client.net.socket_option.tcp_cork -- server listen socket option for tcp_cork functionality
             tcp_cork: true
             # agent.sidecar.config.client.net.socket_option.tcp_quick_ack -- server listen socket option for tcp_quick_ack functionality
-            tcp_quick_ack: false
+            tcp_quick_ack: true
             # agent.sidecar.config.client.net.socket_option.tcp_defer_accept -- server listen socket option for tcp_defer_accept functionality
             tcp_defer_accept: false
             # agent.sidecar.config.client.net.socket_option.ip_transparent -- server listen socket option for ip_transparent functionality
@@ -2364,15 +2364,15 @@ discoverer:
         # discoverer.discoverer.net.socket_option.reuse_addr -- server listen socket option for reuse_addr functionality
         reuse_addr: true
         # discoverer.discoverer.net.socket_option.tcp_fast_open -- server listen socket option for tcp_fast_open functionality
-        tcp_fast_open: false
+        tcp_fast_open: true
         # discoverer.discoverer.net.socket_option.tcp_no_delay -- server listen socket option for tcp_no_delay functionality
-        tcp_no_delay: false
+        tcp_no_delay: true
         # discoverer.discoverer.net.socket_option.tcp_cork -- server listen socket option for tcp_cork functionality
         tcp_cork: false
         # discoverer.discoverer.net.socket_option.tcp_quick_ack -- server listen socket option for tcp_quick_ack functionality
-        tcp_quick_ack: false
+        tcp_quick_ack: true
         # discoverer.discoverer.net.socket_option.tcp_defer_accept -- server listen socket option for tcp_defer_accept functionality
-        tcp_defer_accept: false
+        tcp_defer_accept: true
         # discoverer.discoverer.net.socket_option.ip_transparent -- server listen socket option for ip_transparent functionality
         ip_transparent: false
         # discoverer.discoverer.net.socket_option.ip_recover_destination_addr -- server listen socket option for ip_recover_destination_addr functionality
