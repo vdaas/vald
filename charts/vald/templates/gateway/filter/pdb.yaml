@@ -15,11 +15,7 @@
 #
 {{- $gateway := .Values.gateway.filter -}}
 {{- if $gateway.enabled }}
-{{- if (.Capabilities.APIVersions.Has "policy/v1beta1") }}
-apiVersion: policy/v1beta1
-{{- else }}
 apiVersion: policy/v1
-{{- end }}
 kind: PodDisruptionBudget
 metadata:
   name: {{ $gateway.name }}
