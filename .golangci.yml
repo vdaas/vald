@@ -149,9 +149,6 @@ linters:
     - path: internal/errors/errors_benchmark_test\.go
       linters:
         - depguard
-    - path: internal/test/comparator/standard\.go
-      linters:
-        - depguard
 linters-settings:
   gocritic:
     enabled-checks:
@@ -179,10 +176,6 @@ linters-settings:
             desc: "errors is allowed only by internal/errors"
           - pkg: github.com/go-errors/errors
             desc: "errors is allowed only by internal/errors"
-          - pkg: github.com/google/go-cmp/cmp
-            desc: "cmp is allowed only by internal/test/comparator"
-          - pkg: github.com/google/go-cmp/cmp/cmpopts
-            desc: "cmpopts is allowed only by internal/test/comparator"
   govet:
     check-shadowing: true
     enable-all: true

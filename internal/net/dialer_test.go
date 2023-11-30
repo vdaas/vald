@@ -29,6 +29,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/vdaas/vald/internal/cache"
 	"github.com/vdaas/vald/internal/cache/cacher"
 	"github.com/vdaas/vald/internal/cache/gache"
@@ -36,7 +38,6 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/io"
 	"github.com/vdaas/vald/internal/strings"
-	"github.com/vdaas/vald/internal/test/comparator"
 	"github.com/vdaas/vald/internal/tls"
 )
 
@@ -265,21 +266,18 @@ func TestNewDialer(t *testing.T) {
 			return errors.Errorf("got: \"%+v\" is not a dialer", gotDer)
 		}
 		// skipcq: VET-V0008
-		//nolint: govet,copylocks
-		if diff := comparator.Diff(*want, *got,
+		if diff := cmp.Diff(*want, *got,
 			// skipcq: VET-V0008
-			//nolint: govet,copylocks
-			comparator.IgnoreFields(*want, "dialer", "der", "addrs", "dnsCachedOnce", "dnsCache", "ctrl", "tmu"),
+			cmpopts.IgnoreFields(*want, "dialer", "der", "addrs", "dnsCachedOnce", "dnsCache", "ctrl", "tmu"),
 			// skipcq: VET-V0008
-			//nolint: govet,copylocks
-			comparator.AllowUnexported(*want),
-			comparator.Comparer(func(x, y cacher.Cache[*dialerCache]) bool {
+			cmp.AllowUnexported(*want),
+			cmp.Comparer(func(x, y cacher.Cache[*dialerCache]) bool {
 				if x == nil && y == nil {
 					return true
 				}
 				return reflect.DeepEqual(x, y)
 			}),
-			comparator.Comparer(func(x, y *tls.Config) bool {
+			cmp.Comparer(func(x, y *tls.Config) bool {
 				return reflect.DeepEqual(x, y)
 			}),
 		); diff != "" {
