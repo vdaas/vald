@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
 {{- $corrector := .Values.manager.index.corrector -}}
 {{- if $corrector.enabled }}
 apiVersion: batch/v1
@@ -27,7 +28,7 @@ metadata:
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/version: {{ .Chart.Version }}
 spec:
-  schedule: {{ $corrector.schedule | quote }}
+  schedule: {{ $corrector.schedule }}
   concurrencyPolicy: Forbid
   suspend: {{ $corrector.suspend }}
   startingDeadlineSeconds: {{ $corrector.startingDeadlineSeconds }}
@@ -38,21 +39,7 @@ spec:
         metadata:
           labels:
             app: {{ $corrector.name }}
-          annotations:
-            {{- $pprof := default .Values.defaults.server_config.metrics.pprof $corrector.server_config.metrics.pprof -}}
-            {{- if $pprof.enabled }}
-            pyroscope.io/scrape: "true"
-            pyroscope.io/application-name: {{ $corrector.name }}
-            pyroscope.io/profile-cpu-enabled: "true"
-            pyroscope.io/profile-mem-enabled: "true"
-            pyroscope.io/port: {{ $pprof.port | quote }}
-            {{- end }}
         spec:
-          {{- if $corrector.initContainers }}
-          initContainers:
-            {{- $initContainers := dict "initContainers" $corrector.initContainers "Values" .Values "namespace" .Release.Namespace -}}
-            {{- include "vald.initContainers" $initContainers | trim | nindent 12 }}
-          {{- end }}
           containers:
             - name: {{ $corrector.name }}
               image: "{{ $corrector.image.repository }}:{{ default .Values.defaults.image.tag $corrector.image.tag }}"
