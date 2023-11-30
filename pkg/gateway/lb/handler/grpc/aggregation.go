@@ -529,11 +529,7 @@ func (v *valdPairingHeapAggr) Result() *payload.Search_Response {
 	for !v.ph.IsEmpty() && len(v.result) <= v.num {
 		var min *DistPayload
 		min, v.ph = v.ph.ExtractMin()
-		if min != nil {
-			v.result = append(v.result, min.raw)
-		} else if v.ph == nil {
-			break
-		}
+		v.result = append(v.result, min.raw)
 	}
 	if len(v.result) > v.num {
 		v.result = v.result[:v.num]
