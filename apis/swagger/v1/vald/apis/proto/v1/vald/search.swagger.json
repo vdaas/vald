@@ -15,7 +15,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/v1SearchResponse"
+              "$ref": "#/definitions/SearchResponse"
             }
           },
           "default": {
@@ -46,7 +46,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/v1SearchResponse"
+              "$ref": "#/definitions/SearchResponse"
             }
           },
           "default": {
@@ -139,7 +139,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/v1SearchResponse"
+              "$ref": "#/definitions/SearchResponse"
             }
           },
           "default": {
@@ -170,7 +170,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/v1SearchResponse"
+              "$ref": "#/definitions/SearchResponse"
             }
           },
           "default": {
@@ -326,13 +326,30 @@
       },
       "description": "Represent the multiple search by ID request."
     },
+    "SearchResponse": {
+      "type": "object",
+      "properties": {
+        "requestId": {
+          "type": "string",
+          "description": "The unique request ID."
+        },
+        "results": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ObjectDistance"
+          },
+          "description": "Search results."
+        }
+      },
+      "description": "Represent a search response."
+    },
     "SearchResponses": {
       "type": "object",
       "properties": {
         "responses": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/v1SearchResponse"
+            "$ref": "#/definitions/SearchResponse"
           },
           "description": "Represent the multiple search response content."
         }
@@ -343,7 +360,7 @@
       "type": "object",
       "properties": {
         "response": {
-          "$ref": "#/definitions/v1SearchResponse",
+          "$ref": "#/definitions/SearchResponse",
           "description": "Represent the search response."
         },
         "status": {
@@ -526,23 +543,6 @@
         }
       },
       "description": "Represent a search request."
-    },
-    "v1SearchResponse": {
-      "type": "object",
-      "properties": {
-        "requestId": {
-          "type": "string",
-          "description": "The unique request ID."
-        },
-        "results": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/ObjectDistance"
-          },
-          "description": "Search results."
-        }
-      },
-      "description": "Represent a search response."
     }
   }
 }

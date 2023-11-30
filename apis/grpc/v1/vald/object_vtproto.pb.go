@@ -48,8 +48,6 @@ type ObjectClient interface {
 	GetObject(ctx context.Context, in *payload.Object_VectorRequest, opts ...grpc.CallOption) (*payload.Object_Vector, error)
 	// A method to fetch vectors by bidirectional streaming.
 	StreamGetObject(ctx context.Context, opts ...grpc.CallOption) (Object_StreamGetObjectClient, error)
-	// A method to get all the vectors with server streaming
-	StreamListObject(ctx context.Context, in *payload.Object_List_Request, opts ...grpc.CallOption) (Object_StreamListObjectClient, error)
 }
 
 type objectClient struct {
@@ -109,38 +107,6 @@ func (x *objectStreamGetObjectClient) Recv() (*payload.Object_StreamVector, erro
 	return m, nil
 }
 
-func (c *objectClient) StreamListObject(ctx context.Context, in *payload.Object_List_Request, opts ...grpc.CallOption) (Object_StreamListObjectClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Object_ServiceDesc.Streams[1], "/vald.v1.Object/StreamListObject", opts...)
-	if err != nil {
-		return nil, err
-	}
-	x := &objectStreamListObjectClient{stream}
-	if err := x.ClientStream.SendMsg(in); err != nil {
-		return nil, err
-	}
-	if err := x.ClientStream.CloseSend(); err != nil {
-		return nil, err
-	}
-	return x, nil
-}
-
-type Object_StreamListObjectClient interface {
-	Recv() (*payload.Object_List_Response, error)
-	grpc.ClientStream
-}
-
-type objectStreamListObjectClient struct {
-	grpc.ClientStream
-}
-
-func (x *objectStreamListObjectClient) Recv() (*payload.Object_List_Response, error) {
-	m := new(payload.Object_List_Response)
-	if err := x.ClientStream.RecvMsg(m); err != nil {
-		return nil, err
-	}
-	return m, nil
-}
-
 // ObjectServer is the server API for Object service.
 // All implementations must embed UnimplementedObjectServer
 // for forward compatibility
@@ -151,8 +117,6 @@ type ObjectServer interface {
 	GetObject(context.Context, *payload.Object_VectorRequest) (*payload.Object_Vector, error)
 	// A method to fetch vectors by bidirectional streaming.
 	StreamGetObject(Object_StreamGetObjectServer) error
-	// A method to get all the vectors with server streaming
-	StreamListObject(*payload.Object_List_Request, Object_StreamListObjectServer) error
 	mustEmbedUnimplementedObjectServer()
 }
 
@@ -168,9 +132,6 @@ func (UnimplementedObjectServer) GetObject(context.Context, *payload.Object_Vect
 }
 func (UnimplementedObjectServer) StreamGetObject(Object_StreamGetObjectServer) error {
 	return status.Errorf(codes.Unimplemented, "method StreamGetObject not implemented")
-}
-func (UnimplementedObjectServer) StreamListObject(*payload.Object_List_Request, Object_StreamListObjectServer) error {
-	return status.Errorf(codes.Unimplemented, "method StreamListObject not implemented")
 }
 func (UnimplementedObjectServer) mustEmbedUnimplementedObjectServer() {}
 
@@ -247,27 +208,6 @@ func (x *objectStreamGetObjectServer) Recv() (*payload.Object_VectorRequest, err
 	return m, nil
 }
 
-func _Object_StreamListObject_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(payload.Object_List_Request)
-	if err := stream.RecvMsg(m); err != nil {
-		return err
-	}
-	return srv.(ObjectServer).StreamListObject(m, &objectStreamListObjectServer{stream})
-}
-
-type Object_StreamListObjectServer interface {
-	Send(*payload.Object_List_Response) error
-	grpc.ServerStream
-}
-
-type objectStreamListObjectServer struct {
-	grpc.ServerStream
-}
-
-func (x *objectStreamListObjectServer) Send(m *payload.Object_List_Response) error {
-	return x.ServerStream.SendMsg(m)
-}
-
 // Object_ServiceDesc is the grpc.ServiceDesc for Object service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -290,11 +230,6 @@ var Object_ServiceDesc = grpc.ServiceDesc{
 			Handler:       _Object_StreamGetObject_Handler,
 			ServerStreams: true,
 			ClientStreams: true,
-		},
-		{
-			StreamName:    "StreamListObject",
-			Handler:       _Object_StreamListObject_Handler,
-			ServerStreams: true,
 		},
 	},
 	Metadata: "apis/proto/v1/vald/object.proto",

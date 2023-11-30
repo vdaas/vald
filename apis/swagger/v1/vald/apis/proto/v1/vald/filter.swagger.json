@@ -77,7 +77,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/v1SearchResponse"
+              "$ref": "#/definitions/SearchResponse"
             }
           },
           "default": {
@@ -340,13 +340,30 @@
       "default": "Unknown",
       "title": "AggregationAlgorithm is enum of each aggregation algorithms"
     },
+    "SearchResponse": {
+      "type": "object",
+      "properties": {
+        "requestId": {
+          "type": "string",
+          "description": "The unique request ID."
+        },
+        "results": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ObjectDistance"
+          },
+          "description": "Search results."
+        }
+      },
+      "description": "Represent a search response."
+    },
     "SearchResponses": {
       "type": "object",
       "properties": {
         "responses": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/v1SearchResponse"
+            "$ref": "#/definitions/SearchResponse"
           },
           "description": "Represent the multiple search response content."
         }
@@ -357,7 +374,7 @@
       "type": "object",
       "properties": {
         "response": {
-          "$ref": "#/definitions/v1SearchResponse",
+          "$ref": "#/definitions/SearchResponse",
           "description": "Represent the search response."
         },
         "status": {
@@ -612,23 +629,6 @@
         }
       },
       "description": "Represent a search by binary object request."
-    },
-    "v1SearchResponse": {
-      "type": "object",
-      "properties": {
-        "requestId": {
-          "type": "string",
-          "description": "The unique request ID."
-        },
-        "results": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/ObjectDistance"
-          },
-          "description": "Search results."
-        }
-      },
-      "description": "Represent a search response."
     },
     "v1UpdateConfig": {
       "type": "object",
