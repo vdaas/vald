@@ -93,7 +93,7 @@ func New(opts ...Option) BidiMap {
 
 // Get returns the value and boolean from the given key.
 // If the value does not exist, it returns nil and false.
-func (b *bidi) Get(key string) (oid uint32, timestamp int64, exists bool) {
+func (b *bidi) Get(key string) (uint32, int64, bool) {
 	vs, ok := b.uo[xxh3.HashString(key)&mask].Load(key)
 	if !ok {
 		return 0, 0, false

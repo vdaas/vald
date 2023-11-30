@@ -122,7 +122,7 @@ func (s *server) GetObject(ctx context.Context, id *payload.Object_VectorRequest
 		}
 		return nil, err
 	}
-	vec, ts, err := s.ngt.GetObject(uuid)
+	vec, err := s.ngt.GetObject(uuid)
 	if err != nil || vec == nil {
 		err = errors.ErrObjectNotFound(err, uuid)
 		err = status.WrapWithNotFound("GetObject API failed to remove request", err,
@@ -143,9 +143,8 @@ func (s *server) GetObject(ctx context.Context, id *payload.Object_VectorRequest
 	}
 
 	return &payload.Object_Vector{
-		Id:        uuid,
-		Vector:    vec,
-		Timestamp: ts,
+		Id:     uuid,
+		Vector: vec,
 	}, nil
 }
 
