@@ -24,8 +24,6 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/test/goleak"
-	clientmock "github.com/vdaas/vald/internal/test/mock/client"
-	grpcmock "github.com/vdaas/vald/internal/test/mock/grpc"
 )
 
 func Test_index_Start(t *testing.T) {
@@ -70,12 +68,12 @@ func Test_index_Start(t *testing.T) {
 				},
 
 				fields: fields{
-					client: &clientmock.DiscovererClientMock{
+					client: &mockDiscovererClient{
 						GetAddrsFunc: func(_ context.Context) []string {
 							return addrs
 						},
 						GetClientFunc: func() grpc.Client {
-							return &grpcmock.GRPCClientMock{
+							return &mockGrpcClient{
 								OrderedRangeConcurrentFunc: func(_ context.Context, _ []string, _ int,
 									_ func(_ context.Context, _ string, _ *grpc.ClientConn, _ ...grpc.CallOption) error,
 								) error {
@@ -97,12 +95,12 @@ func Test_index_Start(t *testing.T) {
 					ctx: context.Background(),
 				},
 				fields: fields{
-					client: &clientmock.DiscovererClientMock{
+					client: &mockDiscovererClient{
 						GetAddrsFunc: func(_ context.Context) []string {
 							return addrs
 						},
 						GetClientFunc: func() grpc.Client {
-							return &grpcmock.GRPCClientMock{
+							return &mockGrpcClient{
 								OrderedRangeConcurrentFunc: func(_ context.Context, _ []string, _ int,
 									_ func(_ context.Context, _ string, _ *grpc.ClientConn, _ ...grpc.CallOption) error,
 								) error {
@@ -132,12 +130,12 @@ func Test_index_Start(t *testing.T) {
 				},
 
 				fields: fields{
-					client: &clientmock.DiscovererClientMock{
+					client: &mockDiscovererClient{
 						GetAddrsFunc: func(_ context.Context) []string {
 							return addrs
 						},
 						GetClientFunc: func() grpc.Client {
-							return &grpcmock.GRPCClientMock{
+							return &mockGrpcClient{
 								OrderedRangeConcurrentFunc: func(_ context.Context, _ []string, _ int,
 									_ func(_ context.Context, _ string, _ *grpc.ClientConn, _ ...grpc.CallOption) error,
 								) error {
@@ -166,7 +164,7 @@ func Test_index_Start(t *testing.T) {
 					ctx: context.Background(),
 				},
 				fields: fields{
-					client: &clientmock.DiscovererClientMock{
+					client: &mockDiscovererClient{
 						GetAddrsFunc: func(_ context.Context) []string {
 							return nil
 						},
@@ -305,7 +303,7 @@ func Test_index_Start(t *testing.T) {
 // 	}
 // }
 //
-// func Test_index_StartClient(t *testing.T) {
+// func Test_index_PreStart(t *testing.T) {
 // 	type args struct {
 // 		ctx context.Context
 // 	}
@@ -415,7 +413,7 @@ func Test_index_Start(t *testing.T) {
 // 				concurrency:      test.fields.concurrency,
 // 			}
 //
-// 			got, err := idx.StartClient(test.args.ctx)
+// 			got, err := idx.PreStart(test.args.ctx)
 // 			if err := checkFunc(test.want, got, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
