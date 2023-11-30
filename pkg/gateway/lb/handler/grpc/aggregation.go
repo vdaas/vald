@@ -18,7 +18,6 @@ import (
 	"fmt"
 	"math"
 	"math/big"
-	"slices"
 	"sync/atomic"
 	"time"
 
@@ -32,6 +31,7 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc/errdetails"
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/observability/trace"
+	"github.com/vdaas/vald/internal/slices"
 	"github.com/vdaas/vald/internal/sync"
 )
 
@@ -557,7 +557,7 @@ func newSlice(num, replica int) Aggregator {
 	}
 }
 
-func (*valdSliceAggr) Start(_ context.Context) {}
+func (_ *valdSliceAggr) Start(_ context.Context) {}
 
 func (v *valdSliceAggr) Send(ctx context.Context, data *payload.Search_Response) {
 	result := data.GetResults()
@@ -580,8 +580,8 @@ func (v *valdSliceAggr) Send(ctx context.Context, data *payload.Search_Response)
 }
 
 func (v *valdSliceAggr) Result() (res *payload.Search_Response) {
-	removeDuplicates(v.result, func(l, r *DistPayload) int {
-		return l.distance.Cmp(r.distance)
+	slices.RemoveDuplicates(v.result, func(l, r *DistPayload) bool {
+		return l.distance.Cmp(r.distance) < 0
 	})
 
 	if len(v.result) > v.num {
@@ -646,8 +646,8 @@ func (v *valdPoolSliceAggr) Send(ctx context.Context, data *payload.Search_Respo
 }
 
 func (v *valdPoolSliceAggr) Result() (res *payload.Search_Response) {
-	removeDuplicates(v.result, func(l, r *DistPayload) int {
-		return l.distance.Cmp(r.distance)
+	slices.RemoveDuplicates(v.result, func(l, r *DistPayload) bool {
+		return l.distance.Cmp(r.distance) < 0
 	})
 
 	if len(v.result) > v.num {
@@ -661,12 +661,4 @@ func (v *valdPoolSliceAggr) Result() (res *payload.Search_Response) {
 	}
 	poolDist.Put(v.result[:0])
 	return res
-}
-
-func removeDuplicates[S ~[]E, E comparable](x S, less func(left, right E) int) S {
-	if len(x) < 2 {
-		return x
-	}
-	slices.SortStableFunc(x, less)
-	return slices.Compact(x)
 }
