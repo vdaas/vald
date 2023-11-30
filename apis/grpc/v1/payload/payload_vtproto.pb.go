@@ -934,8 +934,7 @@ func (m *Object_Vector) CloneVT() *Object_Vector {
 		return (*Object_Vector)(nil)
 	}
 	r := &Object_Vector{
-		Id:        m.Id,
-		Timestamp: m.Timestamp,
+		Id: m.Id,
 	}
 	if rhs := m.Vector; rhs != nil {
 		tmpContainer := make([]float32, len(rhs))
@@ -2774,9 +2773,6 @@ func (this *Object_Vector) EqualVT(that *Object_Vector) bool {
 		if vx != vy {
 			return false
 		}
-	}
-	if this.Timestamp != that.Timestamp {
-		return false
 	}
 	return string(this.unknownFields) == string(that.unknownFields)
 }
@@ -5743,11 +5739,6 @@ func (m *Object_Vector) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 		i -= len(m.unknownFields)
 		copy(dAtA[i:], m.unknownFields)
 	}
-	if m.Timestamp != 0 {
-		i = encodeVarint(dAtA, i, uint64(m.Timestamp))
-		i--
-		dAtA[i] = 0x18
-	}
 	if len(m.Vector) > 0 {
 		for iNdEx := len(m.Vector) - 1; iNdEx >= 0; iNdEx-- {
 			f1 := math.Float32bits(float32(m.Vector[iNdEx]))
@@ -7953,9 +7944,6 @@ func (m *Object_Vector) SizeVT() (n int) {
 	}
 	if len(m.Vector) > 0 {
 		n += 1 + sov(uint64(len(m.Vector)*4)) + len(m.Vector)*4
-	}
-	if m.Timestamp != 0 {
-		n += 1 + sov(uint64(m.Timestamp))
 	}
 	n += len(m.unknownFields)
 	return n
@@ -12991,25 +12979,6 @@ func (m *Object_Vector) UnmarshalVT(dAtA []byte) error {
 				}
 			} else {
 				return fmt.Errorf("proto: wrong wireType = %d for field Vector", wireType)
-			}
-		case 3:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Timestamp", wireType)
-			}
-			m.Timestamp = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflow
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.Timestamp |= int64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
 			}
 		default:
 			iNdEx = preIndex

@@ -100,11 +100,6 @@
             "format": "float"
           },
           "description": "The vector."
-        },
-        "timestamp": {
-          "type": "string",
-          "format": "int64",
-          "description": "timestamp represents when this vector inserted."
         }
       },
       "description": "Represent a vector."
