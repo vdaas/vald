@@ -18,7 +18,6 @@
 package ngt
 
 import (
-	"context"
 	"os"
 
 	c "github.com/vdaas/vald/hack/benchmark/internal/core/algorithm"
@@ -75,8 +74,8 @@ func New(opts ...Option) (c.Bit32, error) {
 	return c, nil
 }
 
-func (c *core) Search(ctx context.Context, vec []float32, size int, epsilon, radius float32) (interface{}, error) {
-	return c.NGT.Search(ctx, vec, size, epsilon, radius)
+func (c *core) Search(vec []float32, size int, epsilon, radius float32) (interface{}, error) {
+	return c.NGT.Search(vec, size, epsilon, radius)
 }
 
 func (c *core) Close() {

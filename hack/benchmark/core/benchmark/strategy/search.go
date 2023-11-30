@@ -43,7 +43,7 @@ func NewSearch(size int, epsilon, radius float32, opts ...StrategyOption) benchm
 				}
 				b.StartTimer()
 				defer b.StopTimer()
-				return c.Search(ctx, v.([]float32), size, epsilon, radius)
+				return c.Search(v.([]float32), size, epsilon, radius)
 			},
 		),
 		WithPreProp64(
@@ -59,7 +59,7 @@ func NewSearch(size int, epsilon, radius float32, opts ...StrategyOption) benchm
 				}
 				b.StartTimer()
 				defer b.StopTimer()
-				return c.Search(ctx, float32To64(v.([]float32)), size, epsilon, radius)
+				return c.Search(float32To64(v.([]float32)), size, epsilon, radius)
 			},
 		),
 	}, opts...)...)
