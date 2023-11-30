@@ -18,9 +18,11 @@
 package grpc
 
 import (
+	"cmp"
 	"context"
 	"fmt"
 	"runtime"
+	"slices"
 	"sync/atomic"
 
 	"github.com/vdaas/vald/internal/errors"
@@ -73,7 +75,9 @@ func BidirectionalStream[Q any, R any](ctx context.Context, stream ServerStream,
 			errs = append(errs, err)
 			emu.Unlock()
 		}
-		errs := errors.RemoveDuplicates(errs)
+		removeDuplicates(errs, func(left, right error) int {
+			return cmp.Compare(left.Error(), right.Error())
+		})
 		emu.Lock()
 		err = errors.Join(errs...)
 		emu.Unlock()
@@ -224,4 +228,12 @@ func BidirectionalStreamClient(stream ClientStream,
 			}
 		}
 	}()
+}
+
+func removeDuplicates[S ~[]E, E comparable](x S, less func(left, right E) int) S {
+	if len(x) < 2 {
+		return x
+	}
+	slices.SortStableFunc(x, less)
+	return slices.Compact(x)
 }
