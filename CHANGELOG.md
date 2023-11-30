@@ -62,16 +62,14 @@
 - [Helm Operator Chart Reference](https://github.com/vdaas/vald/blob/v1.7.7/charts/vald-helm-operator/README.md)
 
 ### Changes
-
 :sparkles: New feature
-
 - Add CopyBuffer to copy.go [#2167](https://github.com/vdaas/vald/pull/2167)
 - Add Vald standard internal/sync package [#2153](https://github.com/vdaas/vald/pull/2153)
 - Add RemoveByTimestamp RPC [#2158](https://github.com/vdaas/vald/pull/2158)
 - Implement StreamListObject and its tests [#2145](https://github.com/vdaas/vald/pull/2145)
 - Add apiversion capabilities check to helm template [#2137](https://github.com/vdaas/vald/pull/2137)
 - Add timestamp field to Object.Vector [#2136](https://github.com/vdaas/vald/pull/2136)
-- Add gache's generic Map as internal/sync.Map and replace standard sync.Map with it [#2115](https://github.com/vdaas/vald/pull/2115)
+- Add gache's generic Map as internal/sync.Map and replace standard sync.Map with it  [#2115](https://github.com/vdaas/vald/pull/2115)
 - Make internal/cache generic [#2104](https://github.com/vdaas/vald/pull/2104)
 - Install additional tools for docker image for devcontainer [#2101](https://github.com/vdaas/vald/pull/2101)
 - Install buf and apply buf format [#2094](https://github.com/vdaas/vald/pull/2094)
@@ -80,7 +78,6 @@
 - Add user custom network policy [#2078](https://github.com/vdaas/vald/pull/2078)
 
 :recycle: Refactor
-
 - Refactor agent ngt core. [#2172](https://github.com/vdaas/vald/pull/2172)
 - Refactor proto [#2173](https://github.com/vdaas/vald/pull/2173)
 - Refactor search status [#2168](https://github.com/vdaas/vald/pull/2168)
@@ -95,7 +92,6 @@
 - Update "make gotests/gen" command [#2085](https://github.com/vdaas/vald/pull/2085)
 
 :bug: Bugfix
-
 - Fix duplicate make command [#2165](https://github.com/vdaas/vald/pull/2165)
 - Add timestamp check for GetObject e2e [#2142](https://github.com/vdaas/vald/pull/2142)
 - Modified apiversion capabilities check [#2149](https://github.com/vdaas/vald/pull/2149)
@@ -111,7 +107,6 @@
 - Bugfix lb gateway pacicked caused by pairing heap search aggregator makes nil pointer when empty search result [#2181](https://github.com/vdaas/vald/pull/2181)
 
 :pencil2: Document
-
 - Update testing guideline for updated testing policy [#2131](https://github.com/vdaas/vald/pull/2131)
 - Add troubleshooting for each rpc [#2163](https://github.com/vdaas/vald/pull/2163)
 - Fix format network policy document [#2108](https://github.com/vdaas/vald/pull/2108)
@@ -123,27 +118,23 @@
 - Update docs: search API and client API config [#2081](https://github.com/vdaas/vald/pull/2081)
 
 :white_check_mark: Testing
-
 - Re-Generate test codes [#2107](https://github.com/vdaas/vald/pull/2107)
 - Update golangci-lint configuration: use white-list configuration pattern [#2106](https://github.com/vdaas/vald/pull/2106)
 
 :green_heart: CI
-
 - Fix coverage CI error [#2150](https://github.com/vdaas/vald/pull/2150)
 - Remove some linters to make ci faster [#2116](https://github.com/vdaas/vald/pull/2116)
 
 :chart_with_upwards_trend: Metrics/Tracing
-
 - Divide latency of CreateIndex and SaveIndex metrics [#2099](https://github.com/vdaas/vald/pull/2099)
 - Add broken index count metrics [#2083](https://github.com/vdaas/vald/pull/2083)
 
 :arrow_up: Update dependencies
-
 - Update go modules [#2092](https://github.com/vdaas/vald/pull/2092)
 
 :art: Design
-
 - Modified svg images [#2178](https://github.com/vdaas/vald/pull/2178)
+
 
 ## v1.7.6
 
