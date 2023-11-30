@@ -74,4 +74,3 @@ manager:
       # suspend because you do not want corrector to start automatically in CI
       # instead run it manually
       suspend: true
-      schedule: "1 2 3 4 5"
