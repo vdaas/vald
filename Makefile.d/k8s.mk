@@ -23,26 +23,22 @@ k8s/manifest/clean:
 		k8s/agent \
 		k8s/discoverer \
 		k8s/gateway \
-		k8s/manager \
-		k8s/index
+		k8s/manager
 
 .PHONY: k8s/manifest/update
 ## update k8s manifests using helm templates
 k8s/manifest/update: \
 	k8s/manifest/clean
 	helm template \
-		--values $(HELM_VALUES) \
-		--set defaults.image.tag=$(VERSION) \
-		--output-dir $(TEMP_DIR) \
-		charts/vald
+	    --values $(HELM_VALUES) \
+	    --output-dir $(TEMP_DIR) \
+	    charts/vald
 	mkdir -p k8s/gateway
 	mkdir -p k8s/manager
-	mkdir -p k8s/index/job
 	mv $(TEMP_DIR)/vald/templates/agent k8s/agent
 	mv $(TEMP_DIR)/vald/templates/discoverer k8s/discoverer
 	mv $(TEMP_DIR)/vald/templates/gateway/lb k8s/gateway/lb
 	mv $(TEMP_DIR)/vald/templates/manager/index k8s/manager/index
-	mv $(TEMP_DIR)/vald/templates/index/job/correction k8s/index/job/correction
 	rm -rf $(TEMP_DIR)
 
 .PHONY: k8s/manifest/helm-operator/clean
@@ -84,7 +80,6 @@ k8s/vald/deploy:
 	kubectl apply -f $(TEMP_DIR)/vald/templates/agent || true
 	kubectl apply -f $(TEMP_DIR)/vald/templates/discoverer || true
 	kubectl apply -f $(TEMP_DIR)/vald/templates/gateway/lb || true
-	kubectl apply -f $(TEMP_DIR)/vald/templates/index/job/correction || true
 	rm -rf $(TEMP_DIR)
 	kubectl get pods -o jsonpath="{.items[*].spec.containers[*].image}" | tr " " "\n"
 
@@ -102,7 +97,6 @@ k8s/vald/delete:
 	    --set manager.index.image.repository=$(CRORG)/$(MANAGER_INDEX_IMAGE) \
 	    --output-dir $(TEMP_DIR) \
 	    charts/vald
-	kubectl delete -f $(TEMP_DIR)/vald/templates/index/job/correction
 	kubectl delete -f $(TEMP_DIR)/vald/templates/gateway/lb
 	kubectl delete -f $(TEMP_DIR)/vald/templates/manager/index
 	kubectl delete -f $(TEMP_DIR)/vald/templates/discoverer
