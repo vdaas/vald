@@ -581,26 +581,6 @@ func (c *client) MultiRemove(ctx context.Context, in *payload.Remove_MultiReques
 	return res, nil
 }
 
-func (c *client) RemoveByTimestamp(ctx context.Context, in *payload.Remove_TimestampRequest, opts ...grpc.CallOption) (res *payload.Object_Locations, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+vald.RemoveByTimestampRPCName), apiName+"/"+vald.RemoveByTimestampRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
-	_, err = c.c.RoundRobin(ctx, func(ctx context.Context,
-		conn *grpc.ClientConn,
-		copts ...grpc.CallOption,
-	) (interface{}, error) {
-		res, err = vald.NewValdClient(conn).RemoveByTimestamp(ctx, in, append(copts, opts...)...)
-		return nil, err
-	})
-	if err != nil {
-		return nil, err
-	}
-	return res, nil
-}
-
 func (c *client) GetObject(ctx context.Context, in *payload.Object_VectorRequest, opts ...grpc.CallOption) (res *payload.Object_Vector, err error) {
 	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+vald.GetObjectRPCName), apiName+"/"+vald.GetObjectRPCName)
 	defer func() {
@@ -920,16 +900,6 @@ func (c *singleClient) MultiRemove(ctx context.Context, in *payload.Remove_Multi
 		}
 	}()
 	return c.vc.MultiRemove(ctx, in, opts...)
-}
-
-func (c *singleClient) RemoveByTimestamp(ctx context.Context, in *payload.Remove_TimestampRequest, opts ...grpc.CallOption) (res *payload.Object_Locations, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/singleClient/"+vald.RemoveByTimestampRPCName), apiName+"/"+vald.RemoveByTimestampRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
-	return c.vc.RemoveByTimestamp(ctx, in, opts...)
 }
 
 func (c *singleClient) GetObject(ctx context.Context, in *payload.Object_VectorRequest, opts ...grpc.CallOption) (res *payload.Object_Vector, err error) {

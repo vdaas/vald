@@ -36,14 +36,6 @@ service Remove {
     };
   }
 
-  // A method to remove an indexed vector based on timestamp.
-  rpc RemoveByTimestamp(payload.v1.Remove.TimestampRequest) returns (payload.v1.Object.Locations) {
-    option (google.api.http) = {
-      post: "/remove/timestamp"
-      body: "*"
-    };
-  }
-
   // A method to remove multiple indexed vectors by bidirectional streaming.
   rpc StreamRemove(stream payload.v1.Remove.Request) returns (stream payload.v1.Object.StreamLocation) {}
 
