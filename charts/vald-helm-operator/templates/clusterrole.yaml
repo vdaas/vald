@@ -175,17 +175,4 @@ rules:
       - get
       - patch
       - update
-  - apiGroups:
-      - batch
-    resources:
-      - cronjobs
-    verbs:
-      - create
-      - delete
-      - get
-      - list
-      - patch
-      - update
-      - watch
-
 {{- end }}
