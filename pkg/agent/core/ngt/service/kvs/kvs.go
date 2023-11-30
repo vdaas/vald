@@ -23,7 +23,6 @@ import (
 
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/safety"
-	valdsync "github.com/vdaas/vald/internal/sync"
 	"github.com/zeebo/xxh3"
 )
 
@@ -39,21 +38,11 @@ type BidiMap interface {
 	Close() error
 }
 
-type valueStructOu struct {
-	value     string
-	timestamp int64
-}
-
-type ValueStructUo struct {
-	value     uint32
-	timestamp int64
-}
-
 type bidi struct {
 	concurrency int
 	l           uint64
-	ou          [slen]*valdsync.Map[uint32, valueStructOu]
-	uo          [slen]*valdsync.Map[string, ValueStructUo]
+	ou          [slen]*ou
+	uo          [slen]*uo
 	eg          errgroup.Group
 }
 
@@ -76,8 +65,8 @@ func New(opts ...Option) BidiMap {
 		opt(b)
 	}
 	for i := range b.ou {
-		b.ou[i] = new(valdsync.Map[uint32, valueStructOu])
-		b.uo[i] = new(valdsync.Map[string, ValueStructUo])
+		b.ou[i] = new(ou)
+		b.uo[i] = new(uo)
 	}
 
 	if b.eg == nil {
@@ -94,43 +83,32 @@ func New(opts ...Option) BidiMap {
 // Get returns the value and boolean from the given key.
 // If the value does not exist, it returns nil and false.
 func (b *bidi) Get(key string) (uint32, int64, bool) {
-	vs, ok := b.uo[xxh3.HashString(key)&mask].Load(key)
-	if !ok {
-		return 0, 0, false
-	}
-	return vs.value, vs.timestamp, true
+	return b.uo[xxh3.HashString(key)&mask].Load(key)
 }
 
 // GetInverse returns the key and the boolean from the given val.
 // If the key does not exist, it returns nil and false.
 func (b *bidi) GetInverse(val uint32) (string, int64, bool) {
-	vs, ok := b.ou[val&mask].Load(val)
-	if !ok {
-		return "", 0, false
-	}
-
-	return vs.value, vs.timestamp, true
+	return b.ou[val&mask].Load(val)
 }
 
 // Set sets the key and val to the bidi.
 func (b *bidi) Set(key string, val uint32, ts int64) {
 	id := xxh3.HashString(key) & mask
-	vs, loaded := b.uo[id].LoadOrStore(key, ValueStructUo{value: val, timestamp: ts})
-	old := vs.value
+	old, _, loaded := b.uo[id].LoadOrStore(key, ValueStructUo{value: val, timestamp: ts})
 	if !loaded { // increase the count only if the key is not exists before
 		atomic.AddUint64(&b.l, 1)
 	} else {
 		b.ou[val&mask].Delete(old)                                    // delete paired map value using old value_key
 		b.uo[id].Store(key, ValueStructUo{value: val, timestamp: ts}) // store if loaded for overwrite new value
 	}
-	b.ou[val&mask].Store(val, valueStructOu{value: key, timestamp: ts}) // store anytime
+	b.ou[val&mask].Store(val, ValueStructOu{value: key, timestamp: ts}) // store anytime
 }
 
 // Delete deletes the key and the value from the bidi by the given key and returns val and true.
 // If the value for the key does not exist, it returns nil and false.
 func (b *bidi) Delete(key string) (val uint32, ok bool) {
-	vs, ok := b.uo[xxh3.HashString(key)&mask].LoadAndDelete(key)
-	val = vs.value
+	val, _, ok = b.uo[xxh3.HashString(key)&mask].LoadAndDelete(key)
 	if ok {
 		b.ou[val&mask].Delete(val)
 		atomic.AddUint64(&b.l, ^uint64(0))
@@ -141,8 +119,7 @@ func (b *bidi) Delete(key string) (val uint32, ok bool) {
 // DeleteInverse deletes the key and the value from the bidi by the given val and returns the key and true.
 // If the key for the val does not exist, it returns nil and false.
 func (b *bidi) DeleteInverse(val uint32) (key string, ok bool) {
-	vs, ok := b.ou[val&mask].LoadAndDelete(val)
-	key = vs.value
+	key, _, ok = b.ou[val&mask].LoadAndDelete(val)
 	if ok {
 		b.uo[xxh3.HashString(key)&mask].Delete(key)
 		atomic.AddUint64(&b.l, ^uint64(0))

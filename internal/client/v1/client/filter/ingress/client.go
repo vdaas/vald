@@ -20,6 +20,7 @@ package ingress
 import (
 	"context"
 	"reflect"
+	"sync"
 
 	"github.com/vdaas/vald/apis/grpc/v1/filter/ingress"
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
@@ -27,7 +28,6 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/strings"
-	valdsync "github.com/vdaas/vald/internal/sync"
 )
 
 type Client interface {
@@ -40,7 +40,7 @@ type Client interface {
 
 type client struct {
 	addrs []string
-	cl    valdsync.Map[string, any]
+	cl    sync.Map
 	c     grpc.Client
 }
 

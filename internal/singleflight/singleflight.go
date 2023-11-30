@@ -21,8 +21,6 @@ import (
 	"context"
 	"sync"
 	"sync/atomic"
-
-	valdsync "github.com/vdaas/vald/internal/sync"
 )
 
 type call[V any] struct {
@@ -38,7 +36,7 @@ type Group[V any] interface {
 }
 
 type group[V any] struct {
-	m valdsync.Map[string, *call[V]]
+	m sync.Map
 }
 
 // New returns Group implementation.
@@ -51,7 +49,8 @@ func New[V any]() Group[V] {
 // If duplicate comes, the duplicated call with the same key will wait for the first caller return.
 // It returns the result and the error of the given function, and whether the result is shared from the first caller.
 func (g *group[V]) Do(_ context.Context, key string, fn func() (V, error)) (v V, shared bool, err error) {
-	c, loaded := g.m.LoadOrStore(key, new(call[V]))
+	actual, loaded := g.m.LoadOrStore(key, new(call[V]))
+	c := actual.(*call[V])
 	if loaded {
 		atomic.AddUint64(&c.dups, 1)
 		c.wg.Wait()

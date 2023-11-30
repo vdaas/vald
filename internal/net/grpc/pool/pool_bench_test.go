@@ -27,7 +27,6 @@ import (
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/log/level"
 	"github.com/vdaas/vald/internal/net"
-	valdsync "github.com/vdaas/vald/internal/sync"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -134,7 +133,7 @@ func Benchmark_StaticDial(b *testing.B) {
 		b.Error(err)
 	}
 
-	conns := new(valdsync.Map[string, *grpc.ClientConn])
+	conns := new(sync.Map)
 	conns.Store(DefaultServerAddr, conn)
 
 	b.StopTimer()
@@ -144,7 +143,7 @@ func Benchmark_StaticDial(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		val, ok := conns.Load(DefaultServerAddr)
 		if ok {
-			do(b, val)
+			do(b, val.(*ClientConn))
 		}
 	}
 	b.StopTimer()
@@ -191,7 +190,7 @@ func BenchmarkParallel_StaticDial(b *testing.B) {
 		b.Error(err)
 	}
 
-	conns := new(valdsync.Map[string, *grpc.ClientConn])
+	conns := new(sync.Map)
 	conns.Store(DefaultServerAddr, conn)
 
 	b.StopTimer()
@@ -202,7 +201,7 @@ func BenchmarkParallel_StaticDial(b *testing.B) {
 		for pb.Next() {
 			val, ok := conns.Load(DefaultServerAddr)
 			if ok {
-				do(b, val)
+				do(b, val.(*ClientConn))
 			}
 		}
 	})
