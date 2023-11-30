@@ -2,7 +2,7 @@
 
 ## Overview
 
-Object Service is responsible for getting inserted vectors and checking whether vectors are inserted into the `vald-agent`.
+Object Service is responsible for getting inserted vectors and checking whether vectors are inserted into the `vald-agent` or not.
 
 ```rpc
 service Object {
@@ -18,7 +18,7 @@ service Object {
 
 ## Exists RPC
 
-Exists RPC is the method to check that a vector exists in the `vald-agent`.
+Exists RPC is the method to check the a vector exists in the `vald-agent`.
 
 ### Input
 
@@ -34,9 +34,9 @@ Exists RPC is the method to check that a vector exists in the `vald-agent`.
 
   - Object.ID
 
-    | field | type   | label | required | description                                                    |
+    | field | type   | label | required | desc.                                                          |
     | :---: | :----- | :---- | :------: | :------------------------------------------------------------- |
-    |  id   | string |       |    \*    | The ID of a vector. ID should consist of 1 or more characters. |
+    |  id   | string |       |    \*    | the ID of a vector. ID should consist of 1 or more characters. |
 
 ### Output
 
@@ -52,13 +52,13 @@ Exists RPC is the method to check that a vector exists in the `vald-agent`.
 
   - Object.ID
 
-    | field | type   | label | description                                                    |
+    | field | type   | label | desc.                                                          |
     | :---: | :----- | :---- | :------------------------------------------------------------- |
-    |  id   | string |       | The ID of a vector. ID should consist of 1 or more characters. |
+    |  id   | string |       | the ID of a vector. ID should consist of 1 or more characters. |
 
 ### Status Code
 
-| code | name              |
+| code | desc.             |
 | :--: | :---------------- |
 |  0   | OK                |
 |  1   | CANCELLED         |
@@ -66,22 +66,6 @@ Exists RPC is the method to check that a vector exists in the `vald-agent`.
 |  4   | DEADLINE_EXCEEDED |
 |  5   | NOT_FOUND         |
 |  13  | INTERNAL          |
-
-Please refer to [Response Status Code](./status.md) for more details.
-
-### Troubleshooting
-
-The request process may not be completed when the response code is NOT `0 (OK)`.
-
-Here are some common reasons and how to resolve each error.
-
-| name              | common reason                                                                                   | how to resolve                                                                           |
-| :---------------- | :---------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
-| CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server. | Check the code, especially around timeout and connection management, and fix if needed.  |
-| INVALID_ARGUMENT  | The Requested vector's ID is empty, or some request payload is invalid.                         | Check request payload and fix request payload.                                           |
-| DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                 | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
-| NOT_FOUND         | Requested ID is NOT inserted.                                                                   | Send a request with an ID that is already inserted.                                      |
-| INTERNAL          | Target Vald cluster or network route has some critical error.                                   | Check target Vald cluster first and check network route including ingress as second.     |
 
 ## GetObject RPC
 
@@ -106,16 +90,16 @@ GetObject RPC is the method to get the metadata of a vector inserted into the `v
 
   - Object.VectorRequest
 
-    |  field  | type          | label | required | description                                                    |
+    |  field  | type          | label | required | desc.                                                          |
     | :-----: | :------------ | :---- | :------: | :------------------------------------------------------------- |
-    |   id    | Object.ID     |       |    \*    | The ID of a vector. ID should consist of 1 or more characters. |
-    | filters | Filter.Config |       |          | Configuration for filter.                                      |
+    |   id    | Object.ID     |       |    \*    | the ID of a vector. ID should consist of 1 or more characters. |
+    | filters | Filter.Config |       |          | configuration for filter.                                      |
 
   - Object.ID
 
-    | field | type   | label | required | description                                                    |
+    | field | type   | label | required | desc.                                                          |
     | :---: | :----- | :---- | :------: | :------------------------------------------------------------- |
-    |  id   | string |       |    \*    | The ID of a vector. ID should consist of 1 or more characters. |
+    |  id   | string |       |    \*    | the ID of a vector. ID should consist of 1 or more characters. |
 
 ### Output
 
@@ -132,14 +116,14 @@ GetObject RPC is the method to get the metadata of a vector inserted into the `v
 
   - Object.Vector
 
-    | field  | type   | label                  | description                                                    |
+    | field  | type   | label                  | desc.                                                          |
     | :----: | :----- | :--------------------- | :------------------------------------------------------------- |
-    |   id   | string |                        | The ID of a vector. ID should consist of 1 or more characters. |
-    | vector | float  | repeated(Array[float]) | The vector data. Its dimension is between 2 and 65,536.        |
+    |   id   | string |                        | the ID of a vector. ID should consist of 1 or more characters. |
+    | vector | float  | repeated(Array[float]) | the vector data. its dimension is between 2 and 65,536.        |
 
 ### Status Code
 
-| code | name              |
+| code | desc.             |
 | :--: | :---------------- |
 |  0   | OK                |
 |  1   | CANCELLED         |
@@ -148,26 +132,10 @@ GetObject RPC is the method to get the metadata of a vector inserted into the `v
 |  5   | NOT_FOUND         |
 |  13  | INTERNAL          |
 
-Please refer to [Response Status Code](./status.md) for more details.
-
-### Troubleshooting
-
-The request process may not be completed when the response code is NOT `0 (OK)`.
-
-Here are some common reasons and how to resolve each error.
-
-| name              | common reason                                                                                   | how to resolve                                                                           |
-| :---------------- | :---------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
-| CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server. | Check the code, especially around timeout and connection management, and fix if needed.  |
-| INVALID_ARGUMENT  | The Requested vector's ID is empty, or some request payload is invalid.                         | Check request payload and fix request payload.                                           |
-| DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                 | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
-| NOT_FOUND         | Requested ID is NOT inserted.                                                                   | Send a request with an ID that is already inserted.                                      |
-| INTERNAL          | Target Vald cluster or network route has some critical error.                                   | Check target Vald cluster first and check network route including ingress as second.     |
-
 ## StreamGetObject RPC
 
 StreamGetObject RPC is the method to get the metadata of multiple existing vectors using the [bidirectional streaming RPC](https://grpc.io/docs/what-is-grpc/core-concepts/#bidirectional-streaming-rpc).<br>
-Using the bidirectional streaming RPC, the GetObject request can be communicated in any order between client and server.
+By using the bidirectional streaming RPC, the GetObject request can be communicated in any order between client and server.
 Each Upsert request and response are independent.
 
 - the scheme of `payload.v1.Object.VectorRequest stream`
@@ -187,16 +155,16 @@ Each Upsert request and response are independent.
 
   - Object.VectorRequest
 
-    |  field  | type          | label | required | description                                                    |
+    |  field  | type          | label | required | desc.                                                          |
     | :-----: | :------------ | :---- | :------: | :------------------------------------------------------------- |
-    |   id    | Object.ID     |       |    \*    | The ID of a vector. ID should consist of 1 or more characters. |
-    | filters | Filter.Config |       |          | Configuration for the filter targets.                          |
+    |   id    | Object.ID     |       |    \*    | the ID of a vector. ID should consist of 1 or more characters. |
+    | filters | Filter.Config |       |          | configuration for filter.                                      |
 
   - Object.ID
 
-    | field | type   | label | required | description                                                    |
+    | field | type   | label | required | desc.                                                          |
     | :---: | :----- | :---- | :------: | :------------------------------------------------------------- |
-    |  id   | string |       |    \*    | The ID of a vector. ID should consist of 1 or more characters. |
+    |  id   | string |       |    \*    | the ID of a vector. ID should consist of 1 or more characters. |
 
 ### Output
 
@@ -219,21 +187,21 @@ Each Upsert request and response are independent.
 
   - Object.StreamVector
 
-    | field  | type              | label | description                            |
+    | field  | type              | label | desc.                                  |
     | :----: | :---------------- | :---- | :------------------------------------- |
-    | vector | Vector            |       | The information of Object.Vector data. |
-    | status | google.rpc.Status |       | The status of Google RPC.              |
+    | vector | Vector            |       | the information of Object.Vector data. |
+    | status | google.rpc.Status |       | the status of google RPC.              |
 
   - Object.Vector
 
-    | field  | type   | label                  | description                                                    |
+    | field  | type   | label                  | desc.                                                          |
     | :----: | :----- | :--------------------- | :------------------------------------------------------------- |
-    |   id   | string |                        | The ID of a vector. ID should consist of 1 or more characters. |
-    | vector | float  | repeated(Array[float]) | The vector data. Its dimension is between 2 and 65,536.        |
+    |   id   | string |                        | the ID of a vector. ID should consist of 1 or more characters. |
+    | vector | float  | repeated(Array[float]) | the vector data. its dimension is between 2 and 65,536.        |
 
 ### Status Code
 
-| code | name              |
+| code | desc.             |
 | :--: | :---------------- |
 |  0   | OK                |
 |  1   | CANCELLED         |
@@ -241,19 +209,3 @@ Each Upsert request and response are independent.
 |  4   | DEADLINE_EXCEEDED |
 |  5   | NOT_FOUND         |
 |  13  | INTERNAL          |
-
-Please refer to [Response Status Code](./status.md) for more details.
-
-### Troubleshooting
-
-The request process may not be completed when the response code is NOT `0 (OK)`.
-
-Here are some common reasons and how to resolve each error.
-
-| name              | common reason                                                                                   | how to resolve                                                                           |
-| :---------------- | :---------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
-| CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server. | Check the code, especially around timeout and connection management, and fix if needed.  |
-| INVALID_ARGUMENT  | The Requested vector's ID is empty, or some request payload is invalid.                         | Check request payload and fix request payload.                                           |
-| DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                 | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
-| NOT_FOUND         | Requested ID is NOT inserted.                                                                   | Send a request with an ID that is already inserted.                                      |
-| INTERNAL          | Target Vald cluster or network route has some critical error.                                   | Check target Vald cluster first and check network route including ingress as second.     |
