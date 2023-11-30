@@ -55,12 +55,21 @@ jobs:
           git checkout main
           git checkout -b ${BRANCH_NAME}
 
-          make update/template
+          GO_VERSION=$(make version/go)
+          NGT_VERSION=$(make version/ngt)
+          KUBECTL_VERSION=$(make version/k8s)
 
-          if git diff --quiet --exit-code; then
-            echo "Nothing updated"
-            exit 0
-          fi
+          sed -i -e "s/^- Go Version: .*$/- Go Version: ${GO_VERSION}/" .github/ISSUE_TEMPLATE/bug_report.md
+          sed -i -e "s/^- Go Version: .*$/- Go Version: ${GO_VERSION}/" .github/ISSUE_TEMPLATE/security_issue_report.md
+          sed -i -e "s/^- Go Version: .*$/- Go Version: ${GO_VERSION}/" .github/PULL_REQUEST_TEMPLATE.md
+
+          sed -i -e "s/^- NGT Version: .*$/- NGT Version: ${NGT_VERSION}/" .github/ISSUE_TEMPLATE/bug_report.md
+          sed -i -e "s/^- NGT Version: .*$/- NGT Version: ${NGT_VERSION}/" .github/ISSUE_TEMPLATE/security_issue_report.md
+          sed -i -e "s/^- NGT Version: .*$/- NGT Version: ${NGT_VERSION}/" .github/PULL_REQUEST_TEMPLATE.md
+
+          sed -i -e "s/^- Kubernetes Version: .*$/- Kubernetes Version: ${KUBECTL_VERSION}/" .github/ISSUE_TEMPLATE/bug_report.md
+          sed -i -e "s/^- Kubernetes Version: .*$/- Kubernetes Version: ${KUBECTL_VERSION}/" .github/ISSUE_TEMPLATE/security_issue_report.md
+          sed -i -e "s/^- Kubernetes Version: .*$/- Kubernetes Version: ${KUBECTL_VERSION}/" .github/PULL_REQUEST_TEMPLATE.md
 
           git add .github/PULL_REQUEST_TEMPLATE.md .github/ISSUE_TEMPLATE/bug_report.md .github/ISSUE_TEMPLATE/security_issue_report.md
           git commit -S --signoff -m ":robot: Automatically update PULL_REQUEST_TEMPLATE and ISSUE_TEMPLATE"
