@@ -230,9 +230,6 @@ func Join(errs ...error) error {
 	case 2:
 		switch {
 		case errs[0] != nil && errs[1] != nil:
-			if errs[0] == errs[1] || errors.Is(errs[0], errs[1]) {
-				return errs[0]
-			}
 			var es []error
 			switch x := errs[1].(type) {
 			case *joinError:
