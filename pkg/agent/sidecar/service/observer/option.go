@@ -18,8 +18,8 @@
 package observer
 
 import (
+	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/file"
-	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/internal/timeutil"
 	"github.com/vdaas/vald/pkg/agent/internal/metadata"
 	"github.com/vdaas/vald/pkg/agent/sidecar/service/storage"

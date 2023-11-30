@@ -16,9 +16,9 @@ package logger
 import (
 	"os"
 	"strconv"
+	"sync"
 
 	"github.com/vdaas/vald/internal/log"
-	"github.com/vdaas/vald/internal/sync"
 	glog "google.golang.org/grpc/grpclog"
 )
 

@@ -23,8 +23,7 @@ import (
 	"reflect"
 	"runtime"
 	"strings"
-
-	"github.com/vdaas/vald/internal/sync"
+	"sync"
 )
 
 var (

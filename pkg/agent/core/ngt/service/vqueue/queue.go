@@ -26,7 +26,7 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/slices"
-	"github.com/vdaas/vald/internal/sync"
+	valdsync "github.com/vdaas/vald/internal/sync"
 )
 
 // Queue represents vector queue cache interface
@@ -43,7 +43,7 @@ type Queue interface {
 }
 
 type vqueue struct {
-	il, dl sync.Map[string, *index]
+	il, dl valdsync.Map[string, *index]
 	ic, dc uint64
 }
 
