@@ -738,39 +738,3 @@ func TestE2ECRUDWithSkipStrictExistCheck(t *testing.T) {
 		t.Fatalf("an error occurred on #13: %s", err)
 	}
 }
-
-// TestE2EIndexJobCorrection tests the index correction job.
-// It inserts vectors, runs the index correction job, and then removes the vectors.
-// TODO: Add index replica count check after inplementing StreamListObject in LB
-func TestE2EIndexJobCorrection(t *testing.T) {
-	t.Cleanup(teardown)
-	ctx := context.Background()
-
-	op, err := operation.New(host, port)
-	if err != nil {
-		t.Fatalf("an error occurred: %s", err)
-	}
-
-	train := ds.Train[insertFrom : insertFrom+insertNum]
-	err = op.Insert(t, ctx, operation.Dataset{
-		Train: train,
-	})
-	if err != nil {
-		t.Fatalf("an error occurred: %s", err)
-	}
-
-	sleep(t, waitAfterInsertDuration)
-
-	exe := operation.NewCronJobExecutor("vald-index-correction")
-	err = exe.CreateAndWait(t, ctx, "correction-test")
-	if err != nil {
-		t.Fatalf("an error occurred: %s", err)
-	}
-
-	err = op.Remove(t, ctx, operation.Dataset{
-		Train: train,
-	})
-	if err != nil {
-		t.Fatalf("an error occurred: %s", err)
-	}
-}

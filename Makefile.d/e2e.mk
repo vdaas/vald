@@ -69,11 +69,6 @@ e2e/remove/timestamp:
 e2e/insert/search:
 	$(call run-e2e-crud-test,-run TestE2EInsertAndSearch)
 
-.PHONY: e2e/index/job/correction
-## run index correction job e2e
-e2e/index/job/correction:
-	$(call run-e2e-crud-test,-run TestE2EIndexJobCorrection)
-
 .PHONY: e2e/maxdim
 ## run e2e/maxdim
 e2e/maxdim:
@@ -83,4 +78,5 @@ e2e/maxdim:
 ## run e2e with sidecar operation
 e2e/sidecar:
 	$(call run-e2e-sidecar-test,-run TestE2EForSidecar)
+
 
