@@ -16,8 +16,7 @@ package strings
 import (
 	"bytes"
 	"strings"
-
-	"github.com/vdaas/vald/internal/sync"
+	"sync"
 )
 
 type (

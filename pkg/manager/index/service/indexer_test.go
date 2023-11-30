@@ -122,9 +122,8 @@ package service
 // 		saveIndexDurationLimit time.Duration
 // 		saveIndexWaitDuration  time.Duration
 // 		saveIndexTargetAddrCh  chan string
-// 		schMap                 sync.Map[string, any]
 // 		concurrency            int
-// 		indexInfos             sync.Map[string, *payload.Info_Index_Count]
+// 		indexInfos             indexInfos
 // 		indexing               atomic.Value
 // 		minUncommitted         uint32
 // 		uuidsCount             uint32
@@ -169,9 +168,8 @@ package service
 // 		           saveIndexDurationLimit:nil,
 // 		           saveIndexWaitDuration:nil,
 // 		           saveIndexTargetAddrCh:nil,
-// 		           schMap:nil,
 // 		           concurrency:0,
-// 		           indexInfos:nil,
+// 		           indexInfos:indexInfos{},
 // 		           indexing:nil,
 // 		           minUncommitted:0,
 // 		           uuidsCount:0,
@@ -205,9 +203,8 @@ package service
 // 		           saveIndexDurationLimit:nil,
 // 		           saveIndexWaitDuration:nil,
 // 		           saveIndexTargetAddrCh:nil,
-// 		           schMap:nil,
 // 		           concurrency:0,
-// 		           indexInfos:nil,
+// 		           indexInfos:indexInfos{},
 // 		           indexing:nil,
 // 		           minUncommitted:0,
 // 		           uuidsCount:0,
@@ -250,7 +247,6 @@ package service
 // 				saveIndexDurationLimit: test.fields.saveIndexDurationLimit,
 // 				saveIndexWaitDuration:  test.fields.saveIndexWaitDuration,
 // 				saveIndexTargetAddrCh:  test.fields.saveIndexTargetAddrCh,
-// 				schMap:                 test.fields.schMap,
 // 				concurrency:            test.fields.concurrency,
 // 				indexInfos:             test.fields.indexInfos,
 // 				indexing:               test.fields.indexing,
@@ -278,9 +274,8 @@ package service
 // 		saveIndexDurationLimit time.Duration
 // 		saveIndexWaitDuration  time.Duration
 // 		saveIndexTargetAddrCh  chan string
-// 		schMap                 sync.Map[string, any]
 // 		concurrency            int
-// 		indexInfos             sync.Map[string, *payload.Info_Index_Count]
+// 		indexInfos             indexInfos
 // 		indexing               atomic.Value
 // 		minUncommitted         uint32
 // 		uuidsCount             uint32
@@ -317,9 +312,8 @@ package service
 // 		           saveIndexDurationLimit:nil,
 // 		           saveIndexWaitDuration:nil,
 // 		           saveIndexTargetAddrCh:nil,
-// 		           schMap:nil,
 // 		           concurrency:0,
-// 		           indexInfos:nil,
+// 		           indexInfos:indexInfos{},
 // 		           indexing:nil,
 // 		           minUncommitted:0,
 // 		           uuidsCount:0,
@@ -350,9 +344,8 @@ package service
 // 		           saveIndexDurationLimit:nil,
 // 		           saveIndexWaitDuration:nil,
 // 		           saveIndexTargetAddrCh:nil,
-// 		           schMap:nil,
 // 		           concurrency:0,
-// 		           indexInfos:nil,
+// 		           indexInfos:indexInfos{},
 // 		           indexing:nil,
 // 		           minUncommitted:0,
 // 		           uuidsCount:0,
@@ -395,7 +388,6 @@ package service
 // 				saveIndexDurationLimit: test.fields.saveIndexDurationLimit,
 // 				saveIndexWaitDuration:  test.fields.saveIndexWaitDuration,
 // 				saveIndexTargetAddrCh:  test.fields.saveIndexTargetAddrCh,
-// 				schMap:                 test.fields.schMap,
 // 				concurrency:            test.fields.concurrency,
 // 				indexInfos:             test.fields.indexInfos,
 // 				indexing:               test.fields.indexing,
@@ -423,9 +415,8 @@ package service
 // 		saveIndexDurationLimit time.Duration
 // 		saveIndexWaitDuration  time.Duration
 // 		saveIndexTargetAddrCh  chan string
-// 		schMap                 sync.Map[string, any]
 // 		concurrency            int
-// 		indexInfos             sync.Map[string, *payload.Info_Index_Count]
+// 		indexInfos             indexInfos
 // 		indexing               atomic.Value
 // 		minUncommitted         uint32
 // 		uuidsCount             uint32
@@ -462,9 +453,8 @@ package service
 // 		           saveIndexDurationLimit:nil,
 // 		           saveIndexWaitDuration:nil,
 // 		           saveIndexTargetAddrCh:nil,
-// 		           schMap:nil,
 // 		           concurrency:0,
-// 		           indexInfos:nil,
+// 		           indexInfos:indexInfos{},
 // 		           indexing:nil,
 // 		           minUncommitted:0,
 // 		           uuidsCount:0,
@@ -495,9 +485,8 @@ package service
 // 		           saveIndexDurationLimit:nil,
 // 		           saveIndexWaitDuration:nil,
 // 		           saveIndexTargetAddrCh:nil,
-// 		           schMap:nil,
 // 		           concurrency:0,
-// 		           indexInfos:nil,
+// 		           indexInfos:indexInfos{},
 // 		           indexing:nil,
 // 		           minUncommitted:0,
 // 		           uuidsCount:0,
@@ -540,7 +529,6 @@ package service
 // 				saveIndexDurationLimit: test.fields.saveIndexDurationLimit,
 // 				saveIndexWaitDuration:  test.fields.saveIndexWaitDuration,
 // 				saveIndexTargetAddrCh:  test.fields.saveIndexTargetAddrCh,
-// 				schMap:                 test.fields.schMap,
 // 				concurrency:            test.fields.concurrency,
 // 				indexInfos:             test.fields.indexInfos,
 // 				indexing:               test.fields.indexing,
@@ -568,9 +556,8 @@ package service
 // 		saveIndexDurationLimit time.Duration
 // 		saveIndexWaitDuration  time.Duration
 // 		saveIndexTargetAddrCh  chan string
-// 		schMap                 sync.Map[string, any]
 // 		concurrency            int
-// 		indexInfos             sync.Map[string, *payload.Info_Index_Count]
+// 		indexInfos             indexInfos
 // 		indexing               atomic.Value
 // 		minUncommitted         uint32
 // 		uuidsCount             uint32
@@ -607,9 +594,8 @@ package service
 // 		           saveIndexDurationLimit:nil,
 // 		           saveIndexWaitDuration:nil,
 // 		           saveIndexTargetAddrCh:nil,
-// 		           schMap:nil,
 // 		           concurrency:0,
-// 		           indexInfos:nil,
+// 		           indexInfos:indexInfos{},
 // 		           indexing:nil,
 // 		           minUncommitted:0,
 // 		           uuidsCount:0,
@@ -640,9 +626,8 @@ package service
 // 		           saveIndexDurationLimit:nil,
 // 		           saveIndexWaitDuration:nil,
 // 		           saveIndexTargetAddrCh:nil,
-// 		           schMap:nil,
 // 		           concurrency:0,
-// 		           indexInfos:nil,
+// 		           indexInfos:indexInfos{},
 // 		           indexing:nil,
 // 		           minUncommitted:0,
 // 		           uuidsCount:0,
@@ -685,7 +670,6 @@ package service
 // 				saveIndexDurationLimit: test.fields.saveIndexDurationLimit,
 // 				saveIndexWaitDuration:  test.fields.saveIndexWaitDuration,
 // 				saveIndexTargetAddrCh:  test.fields.saveIndexTargetAddrCh,
-// 				schMap:                 test.fields.schMap,
 // 				concurrency:            test.fields.concurrency,
 // 				indexInfos:             test.fields.indexInfos,
 // 				indexing:               test.fields.indexing,

@@ -393,16 +393,16 @@ func TestWithExpireCheckDuration(t *testing.T) {
 //
 // func Test_defaultOptions(t *testing.T) {
 // 	type want struct {
-// 		want []Option[V]
+// 		want []Option
 // 	}
 // 	type test struct {
 // 		name       string
 // 		want       want
-// 		checkFunc  func(want, []Option[V]) error
+// 		checkFunc  func(want, []Option) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)
 // 	}
-// 	defaultCheckFunc := func(w want, got []Option[V]) error {
+// 	defaultCheckFunc := func(w want, got []Option) error {
 // 		if !reflect.DeepEqual(got, w.want) {
 // 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 // 		}

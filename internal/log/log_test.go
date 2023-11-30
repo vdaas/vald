@@ -18,6 +18,7 @@ package log
 
 import (
 	"reflect"
+	"sync"
 	"testing"
 
 	"github.com/vdaas/vald/internal/errors"
@@ -26,7 +27,6 @@ import (
 	logger "github.com/vdaas/vald/internal/log/logger"
 	"github.com/vdaas/vald/internal/log/mock"
 	"github.com/vdaas/vald/internal/log/nop"
-	"github.com/vdaas/vald/internal/sync"
 	"github.com/vdaas/vald/internal/test/goleak"
 )
 

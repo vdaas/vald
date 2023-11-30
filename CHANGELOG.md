@@ -4750,7 +4750,7 @@
 - :white_check_mark: add internal/config/ngt test ([#554](https://github.com/vdaas/vald/pull/554))
 - :white_check_mark: internal/cache/cacher test ([#553](https://github.com/vdaas/vald/pull/553))
 - :white_check_mark: Add test case for `internal/file` ([#550](https://github.com/vdaas/vald/pull/550))
-- :white_check_mark: add internal/sync/singleflight test ([#542](https://github.com/vdaas/vald/pull/542))
+- :white_check_mark: add internal/singleflight test ([#542](https://github.com/vdaas/vald/pull/542))
 - not to force rebuild gotests ([#548](https://github.com/vdaas/vald/pull/548))
 - :pencil: Add use case document ([#482](https://github.com/vdaas/vald/pull/482))
 - :white_check_mark: add internal/log/mock/retry test ([#549](https://github.com/vdaas/vald/pull/549))
@@ -5272,7 +5272,7 @@
 - internal gRPC client for Vald
 - Cassandra NewConvictionPolicy
 - dicoverer now returns clone object
-- new internal/sync/singleflight package
+- new internal/singleflight package
 - new internal/net package
 - coding guideline
 

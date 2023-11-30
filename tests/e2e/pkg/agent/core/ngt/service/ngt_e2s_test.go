@@ -20,12 +20,12 @@ package service
 import (
 	"context"
 	"strconv"
+	"sync"
 	"testing"
 	"time"
 
 	"github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errors"
-	"github.com/vdaas/vald/internal/sync"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/service"
 )
 

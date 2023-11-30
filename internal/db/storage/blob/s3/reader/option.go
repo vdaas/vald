@@ -20,7 +20,7 @@ import (
 	"github.com/vdaas/vald/internal/backoff"
 	"github.com/vdaas/vald/internal/db/storage/blob/s3/reader/io"
 	"github.com/vdaas/vald/internal/db/storage/blob/s3/sdk/s3/s3iface"
-	"github.com/vdaas/vald/internal/sync/errgroup"
+	"github.com/vdaas/vald/internal/errgroup"
 )
 
 // Option represents the functional option for reader.

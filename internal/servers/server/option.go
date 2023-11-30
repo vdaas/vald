@@ -23,6 +23,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/info"
 	"github.com/vdaas/vald/internal/log"
@@ -35,7 +36,6 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc/interceptor/server/trace"
 	"github.com/vdaas/vald/internal/net/http/rest"
 	"github.com/vdaas/vald/internal/strings"
-	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/internal/timeutil"
 )
 

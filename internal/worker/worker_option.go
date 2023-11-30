@@ -18,7 +18,7 @@
 package worker
 
 import (
-	"github.com/vdaas/vald/internal/sync/errgroup"
+	"github.com/vdaas/vald/internal/errgroup"
 )
 
 type WorkerOption func(w *worker) error

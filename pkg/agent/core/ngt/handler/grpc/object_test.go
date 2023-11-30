@@ -24,11 +24,11 @@ import (
 	"github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/conv"
 	"github.com/vdaas/vald/internal/core/algorithm/ngt"
+	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/net/grpc/status"
-	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/internal/test/data/request"
 	"github.com/vdaas/vald/internal/test/data/vector"
 	"github.com/vdaas/vald/internal/test/mock"
@@ -1339,10 +1339,9 @@ func Test_server_StreamGetObject(t *testing.T) {
 
 // NOT IMPLEMENTED BELOW
 //
-// func Test_server_StreamListObject(t *testing.T) {
+// func Test_server_StreamGetObject(t *testing.T) {
 // 	type args struct {
-// 		in0    *payload.Object_List_Request
-// 		stream vald.Object_StreamListObjectServer
+// 		stream vald.Object_StreamGetObjectServer
 // 	}
 // 	type fields struct {
 // 		name                     string
@@ -1377,7 +1376,6 @@ func Test_server_StreamGetObject(t *testing.T) {
 // 		   {
 // 		       name: "test_case_1",
 // 		       args: args {
-// 		           in0:nil,
 // 		           stream:nil,
 // 		       },
 // 		       fields: fields {
@@ -1406,7 +1404,6 @@ func Test_server_StreamGetObject(t *testing.T) {
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           args: args {
-// 		           in0:nil,
 // 		           stream:nil,
 // 		           },
 // 		           fields: fields {
@@ -1456,7 +1453,7 @@ func Test_server_StreamGetObject(t *testing.T) {
 // 				UnimplementedValdServer:  test.fields.UnimplementedValdServer,
 // 			}
 //
-// 			err := s.StreamListObject(test.args.in0, test.args.stream)
+// 			err := s.StreamGetObject(test.args.stream)
 // 			if err := checkFunc(test.want, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
