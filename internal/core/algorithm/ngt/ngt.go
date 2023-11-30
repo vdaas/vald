@@ -27,7 +27,6 @@ import "C"
 import (
 	"context"
 	"reflect"
-	"sync/atomic"
 	"unsafe"
 
 	"github.com/vdaas/vald/internal/core/algorithm"
@@ -45,7 +44,7 @@ type (
 		Search(ctx context.Context, vec []float32, size int, epsilon, radius float32) ([]SearchResult, error)
 
 		// Linear Search returns linear search result as []SearchResult
-		LinearSearch(ctx context.Context, vec []float32, size int) ([]SearchResult, error)
+		LinearSearch(vec []float32, size int) ([]SearchResult, error)
 
 		// Insert returns NGT object id.
 		// This only stores not indexing, you must call CreateIndex and SaveIndex.
@@ -97,7 +96,6 @@ type (
 		radius              float32
 		epsilon             float32
 		poolSize            uint32
-		cnt                 uint64
 		prop                C.NGTProperty
 		epool               sync.Pool
 		index               C.NGTIndex
@@ -401,7 +399,7 @@ func (n *ngt) Search(ctx context.Context, vec []float32, size int, epsilon, radi
 		*(*C.float)(unsafe.Pointer(&radius)),
 		results,
 		ebuf)
-	vec = nil
+
 	if ret == ErrorCode {
 		ne := ebuf
 		n.rUnlock(true)
@@ -411,15 +409,11 @@ func (n *ngt) Search(ctx context.Context, vec []float32, size int, epsilon, radi
 
 	rsize := int(C.ngt_get_result_size(results, ebuf))
 	if rsize <= 0 {
-		if atomic.LoadUint64(&n.cnt) == 0 {
-			n.PutErrorBuffer(ebuf)
-			return nil, errors.ErrSearchResultEmptyButNoDataStored
-		}
 		err = n.newGoError(ebuf)
-		if err != nil {
-			return nil, err
+		if err == nil {
+			err = errors.ErrEmptySearchResult
 		}
-		return nil, errors.ErrEmptySearchResult
+		return nil, err
 	}
 	result = make([]SearchResult, rsize)
 
@@ -444,7 +438,7 @@ func (n *ngt) Search(ctx context.Context, vec []float32, size int, epsilon, radi
 }
 
 // Linear Search returns linear search result as []SearchResult.
-func (n *ngt) LinearSearch(ctx context.Context, vec []float32, size int) (result []SearchResult, err error) {
+func (n *ngt) LinearSearch(vec []float32, size int) (result []SearchResult, err error) {
 	if len(vec) != int(n.dimension) {
 		return nil, errors.ErrIncompatibleDimensionSize(len(vec), int(n.dimension))
 	}
@@ -465,7 +459,6 @@ func (n *ngt) LinearSearch(ctx context.Context, vec []float32, size int) (result
 		*(*C.size_t)(unsafe.Pointer(&size)),
 		results,
 		ebuf)
-	vec = nil
 
 	if ret == ErrorCode {
 		ne := ebuf
@@ -476,24 +469,15 @@ func (n *ngt) LinearSearch(ctx context.Context, vec []float32, size int) (result
 
 	rsize := int(C.ngt_get_result_size(results, ebuf))
 	if rsize <= 0 {
-		if atomic.LoadUint64(&n.cnt) == 0 {
-			n.PutErrorBuffer(ebuf)
-			return nil, errors.ErrSearchResultEmptyButNoDataStored
-		}
 		err = n.newGoError(ebuf)
-		if err != nil {
-			return nil, err
+		if err == nil {
+			err = errors.ErrEmptySearchResult
 		}
-		return nil, errors.ErrEmptySearchResult
+		return nil, err
 	}
 	result = make([]SearchResult, rsize)
+
 	for i := range result {
-		select {
-		case <-ctx.Done():
-			n.PutErrorBuffer(ebuf)
-			return result[:i], nil
-		default:
-		}
 		d := C.ngt_get_result(results, C.uint32_t(i), ebuf)
 		if d.id == 0 && d.distance == 0 {
 			result[i] = SearchResult{0, 0, n.newGoError(ebuf)}
@@ -519,12 +503,10 @@ func (n *ngt) Insert(vec []float32) (id uint, err error) {
 	n.lock(true)
 	id = uint(C.ngt_insert_index_as_float(n.index, (*C.float)(&vec[0]), C.uint32_t(n.dimension), ebuf))
 	n.unlock(true)
-	vec = nil
 	if id == 0 {
 		return 0, n.newGoError(ebuf)
 	}
 	n.PutErrorBuffer(ebuf)
-	atomic.AddUint64(&n.cnt, 1)
 
 	return id, nil
 }
@@ -675,8 +657,6 @@ func (n *ngt) Remove(id uint) error {
 		return n.newGoError(ebuf)
 	}
 	n.PutErrorBuffer(ebuf)
-
-	atomic.AddUint64(&n.cnt, ^uint64(0))
 
 	return nil
 }
