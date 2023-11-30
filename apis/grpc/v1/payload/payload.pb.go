@@ -100,17 +100,11 @@ func (Search_AggregationAlgorithm) EnumDescriptor() ([]byte, []int) {
 type Remove_Timestamp_Operator int32
 
 const (
-	// The timestamp is equal to the specified value in the request.
 	Remove_Timestamp_Eq Remove_Timestamp_Operator = 0
-	// The timestamp is not equal to the specified value in the request.
 	Remove_Timestamp_Ne Remove_Timestamp_Operator = 1
-	// The timestamp is greater than or equal to the specified value in the request.
 	Remove_Timestamp_Ge Remove_Timestamp_Operator = 2
-	// The timestamp is greater than the specified value in the request.
 	Remove_Timestamp_Gt Remove_Timestamp_Operator = 3
-	// The timestamp is less than or equal to the specified value in the request.
 	Remove_Timestamp_Le Remove_Timestamp_Operator = 4
-	// The timestamp is less than the specified value in the request.
 	Remove_Timestamp_Lt Remove_Timestamp_Operator = 5
 )
 
@@ -2342,7 +2336,7 @@ type Remove_TimestampRequest struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// The timestamp comparison list. If more than one is specified, the `AND` search is applied.
+	// Represent the multiple remove request contents based on timestamp.
 	Timestamps []*Remove_Timestamp `protobuf:"bytes,1,rep,name=timestamps,proto3" json:"timestamps,omitempty"`
 }
 
@@ -2385,7 +2379,6 @@ func (x *Remove_TimestampRequest) GetTimestamps() []*Remove_Timestamp {
 	return nil
 }
 
-// Represent the timestamp comparison.
 type Remove_Timestamp struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
