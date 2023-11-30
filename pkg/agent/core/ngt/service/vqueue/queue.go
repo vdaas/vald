@@ -173,9 +173,6 @@ func (v *vqueue) DVExists(uuid string) bool {
 
 func (v *vqueue) RangePopInsert(ctx context.Context, now int64, f func(uuid string, vector []float32, date int64) bool) {
 	uii := make([]index, 0, atomic.LoadUint64(&v.ic))
-	defer func() {
-		uii = nil
-	}()
 	v.il.Range(func(uuid string, idx *index) bool {
 		if idx.date > now {
 			return true
@@ -216,9 +213,6 @@ func (v *vqueue) RangePopInsert(ctx context.Context, now int64, f func(uuid stri
 
 func (v *vqueue) RangePopDelete(ctx context.Context, now int64, f func(uuid string) bool) {
 	udi := make([]index, 0, atomic.LoadUint64(&v.dc))
-	defer func() {
-		udi = nil
-	}()
 	v.dl.Range(func(_ string, idx *index) bool {
 		if idx.date > now {
 			return true
