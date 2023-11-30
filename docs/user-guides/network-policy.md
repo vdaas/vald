@@ -17,12 +17,12 @@ defaults:
 This sets the following ingress/egress rules between Vald components (these are the minimum required rules for a Vald cluster to work).
 
 | from / to      | agent | discoverer | filter gateway | lb gateway | index manager | kube-system |
-| :------------- | :---: | :--------: | :------------: | :--------: | :-----------: | :---------: |
-| agent          |  N/A  |     ⛔     |       ⛔       |     ⛔     |      ⛔       |     ✅      |
-| discoverer     |  ⛔   |    N/A     |       ⛔       |     ⛔     |      ⛔       |     ✅      |
-| filter gateway |  ⛔   |     ⛔     |      N/A       |     ✅     |      ⛔       |     ✅      |
-| lb gateway     |  ✅   |     ✅     |       ⛔       |    N/A     |      ⛔       |     ✅      |
-| index manager  |  ✅   |     ✅     |       ⛔       |     ⛔     |      N/A      |     ✅      |
+| -------------- | ----- | ---------- | -------------- | ---------- | ------------- | ----------- |
+| agent          | N/A   | ⛔         | ⛔             | ⛔         | ⛔            | ✅          |
+| discoverer     | ⛔    | N/A        | ⛔             | ⛔         | ⛔            | ✅          |
+| filter gateway | ⛔    | ⛔         | N/A            | ✅         | ⛔            | ✅          |
+| lb gateway     | ✅    | ✅         | ⛔             | N/A        | ⛔            | ✅          |
+| index manager  | ✅    | ✅         | ⛔             | ⛔         | N/A           | ✅          |
 
 # Add a user custom Network Policy
 
