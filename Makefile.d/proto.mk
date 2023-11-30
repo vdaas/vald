@@ -43,15 +43,15 @@ proto/paths/print:
 .PHONY: proto/deps
 ## install protobuf dependencies
 proto/deps: \
-	$(GOBIN)/protoc-gen-doc \
-	$(GOBIN)/protoc-gen-go \
-	$(GOBIN)/protoc-gen-go-grpc \
-	$(GOBIN)/protoc-gen-go-vtproto \
-	$(GOBIN)/protoc-gen-grpc-gateway \
-	$(GOBIN)/protoc-gen-swagger \
-	$(GOBIN)/protoc-gen-validate \
-	$(GOBIN)/prototool \
-	$(GOBIN)/swagger \
+	$(GOPATH)/bin/protoc-gen-doc \
+	$(GOPATH)/bin/protoc-gen-go \
+	$(GOPATH)/bin/protoc-gen-go-grpc \
+	$(GOPATH)/bin/protoc-gen-go-vtproto \
+	$(GOPATH)/bin/protoc-gen-grpc-gateway \
+	$(GOPATH)/bin/protoc-gen-swagger \
+	$(GOPATH)/bin/protoc-gen-validate \
+	$(GOPATH)/bin/prototool \
+	$(GOPATH)/bin/swagger \
 	$(GOPATH)/src/github.com/envoyproxy/protoc-gen-validate \
 	$(GOPATH)/src/github.com/golang/protobuf \
 	$(GOPATH)/src/github.com/googleapis/googleapis \
@@ -102,31 +102,31 @@ $(GOPATH)/src/google.golang.org/genproto:
 		https://github.com/googleapis/go-genproto \
 		$(GOPATH)/src/google.golang.org/genproto
 
-$(GOBIN)/protoc-gen-go:
+$(GOPATH)/bin/protoc-gen-go:
 	$(call go-install, google.golang.org/protobuf/cmd/protoc-gen-go)
 
-$(GOBIN)/protoc-gen-go-grpc:
+$(GOPATH)/bin/protoc-gen-go-grpc:
 	$(call go-install, google.golang.org/grpc/cmd/protoc-gen-go-grpc)
 
-$(GOBIN)/protoc-gen-grpc-gateway:
+$(GOPATH)/bin/protoc-gen-grpc-gateway:
 	$(call go-install, github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway)
 
-$(GOBIN)/protoc-gen-swagger:
+$(GOPATH)/bin/protoc-gen-swagger:
 	$(call go-install, github.com/grpc-ecosystem/grpc-gateway/protoc-gen-swagger)
 
-$(GOBIN)/protoc-gen-validate:
+$(GOPATH)/bin/protoc-gen-validate:
 	$(call go-install, github.com/envoyproxy/protoc-gen-validate)
 
-$(GOBIN)/prototool:
+$(GOPATH)/bin/prototool:
 	$(call go-install, github.com/uber/prototool/cmd/prototool)
 
-$(GOBIN)/protoc-gen-doc:
+$(GOPATH)/bin/protoc-gen-doc:
 	$(call go-install, github.com/pseudomuto/protoc-gen-doc/cmd/protoc-gen-doc)
 
-$(GOBIN)/protoc-gen-go-vtproto:
+$(GOPATH)/bin/protoc-gen-go-vtproto:
 	$(call go-install, github.com/planetscale/vtprotobuf/cmd/protoc-gen-go-vtproto)
 
-$(GOBIN)/swagger:
+$(GOPATH)/bin/swagger:
 	$(call go-install, github.com/go-swagger/go-swagger/cmd/swagger)
 
 $(PBGOS): \
@@ -153,4 +153,4 @@ $(PBDOCS): \
 apis/docs/v1/docs.md: $(PROTOS_V1)
 	@$(call green, "generating documents for API v1...")
 	$(call mkdir, $(dir $@))
-	$(call protoc-gen, $(PROTOS_V1), --plugin=protoc-gen-doc=$(GOBIN)/protoc-gen-doc --doc_opt=markdown$(COMMA)docs.md --doc_out=$(dir $@))
+	$(call protoc-gen, $(PROTOS_V1), --plugin=protoc-gen-doc=$(GOPATH)/bin/protoc-gen-doc --doc_opt=markdown$(COMMA)docs.md --doc_out=$(dir $@))
