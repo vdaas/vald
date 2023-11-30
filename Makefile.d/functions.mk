@@ -31,8 +31,8 @@ endef
 define proto-code-gen
 	protoc \
 		$(PROTO_PATHS:%=-I %) \
-                --go_out=$(GOPATH)/src --plugin protoc-gen-go="$(GOBIN)/protoc-gen-go" \
-                --go-vtproto_out=$(GOPATH)/src --plugin protoc-gen-go-vtproto="$(GOBIN)/protoc-gen-go-vtproto" \
+                --go_out=$(GOPATH)/src --plugin protoc-gen-go="$(GOPATH)/bin/protoc-gen-go" \
+                --go-vtproto_out=$(GOPATH)/src --plugin protoc-gen-go-vtproto="$(GOPATH)/bin/protoc-gen-go-vtproto" \
                 --go-vtproto_opt=features=grpc+marshal+unmarshal+size+equal+clone \
 		$1
 endef

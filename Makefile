@@ -40,12 +40,12 @@ NGT_VERSION := $(eval NGT_VERSION := $(shell cat versions/NGT_VERSION))$(NGT_VER
 NGT_REPO = github.com/yahoojapan/NGT
 
 GOPROXY=direct
-GOPATH := $(eval GOPATH := $(shell go env GOPATH))$(GOPATH)
 GO_VERSION := $(eval GO_VERSION := $(shell cat versions/GO_VERSION))$(GO_VERSION)
 GOARCH := $(eval GOARCH := $(shell go env GOARCH))$(GOARCH)
-GOBIN := $(eval GOBIN := $(or $(shell go env GOBIN),$(GOPATH)/bin))$(GOBIN)
+GOBIN := $(eval GOBIN := $(shell go env GOBIN))$(GOBIN)
 GOCACHE := $(eval GOCACHE := $(shell go env GOCACHE))$(GOCACHE)
 GOOS := $(eval GOOS := $(shell go env GOOS))$(GOOS)
+GOPATH := $(eval GOPATH := $(shell go env GOPATH))$(GOPATH)
 GOTEST_TIMEOUT = 30m
 TEST_NOT_IMPL_PLACEHOLDER = NOT IMPLEMENTED BELOW
 
@@ -407,10 +407,10 @@ format/go: \
 	gofumpt/install \
 	strictgoimports/install \
 	goimports/install
-	find ./ -type d -name .git -prune -o -type f -regex '.*[^\.pb]\.go' -print | xargs $(GOBIN)/golines -w -m $(GOLINES_MAX_WIDTH)
-	find ./ -type d -name .git -prune -o -type f -regex '.*[^\.pb]\.go' -print | xargs $(GOBIN)/gofumpt -w
-	find ./ -type d -name .git -prune -o -type f -regex '.*[^\.pb]\.go' -print | xargs $(GOBIN)/strictgoimports -w
-	find ./ -type d -name .git -prune -o -type f -regex '.*\.go' -print | xargs $(GOBIN)/goimports -w
+	find ./ -type d -name .git -prune -o -type f -regex '.*[^\.pb]\.go' -print | xargs $(GOPATH)/bin/golines -w -m $(GOLINES_MAX_WIDTH)
+	find ./ -type d -name .git -prune -o -type f -regex '.*[^\.pb]\.go' -print | xargs $(GOPATH)/bin/gofumpt -w
+	find ./ -type d -name .git -prune -o -type f -regex '.*[^\.pb]\.go' -print | xargs $(GOPATH)/bin/strictgoimports -w
+	find ./ -type d -name .git -prune -o -type f -regex '.*\.go' -print | xargs $(GOPATH)/bin/goimports -w
 
 .PHONY: format/go/test
 ## run golines, gofumpt, goimports for go test files
@@ -419,10 +419,10 @@ format/go/test: \
 	gofumpt/install \
 	strictgoimports/install \
 	goimports/install
-	find $(ROOTDIR)/* -name '*_test.go' | xargs $(GOBIN)/golines -w -m $(GOLINES_MAX_WIDTH)
-	find $(ROOTDIR)/* -name '*_test.go' | xargs $(GOBIN)/gofumpt -w
-	find $(ROOTDIR)/* -name '*_test.go' | xargs $(GOBIN)/strictgoimports -w
-	find $(ROOTDIR)/* -name '*_test.go' | xargs $(GOBIN)/goimports -w
+	find $(ROOTDIR)/* -name '*_test.go' | xargs $(GOPATH)/bin/golines -w -m $(GOLINES_MAX_WIDTH)
+	find $(ROOTDIR)/* -name '*_test.go' | xargs $(GOPATH)/bin/gofumpt -w
+	find $(ROOTDIR)/* -name '*_test.go' | xargs $(GOPATH)/bin/strictgoimports -w
+	find $(ROOTDIR)/* -name '*_test.go' | xargs $(GOPATH)/bin/goimports -w
 
 .PHONY: format/yaml
 format/yaml: \

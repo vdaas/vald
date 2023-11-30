@@ -23,27 +23,27 @@ $(BINDIR)/golangci-lint:
 		| sh -s -- -b $(BINDIR) $(GOLANGCILINT_VERSION)
 
 .PHONY: goimports/install
-goimports/install: $(GOBIN)/goimports
+goimports/install: $(GOPATH)/bin/goimports
 
-$(GOBIN)/goimports:
+$(GOPATH)/bin/goimports:
 	$(call go-install, golang.org/x/tools/cmd/goimports)
 
 .PHONY: strictgoimports/install
-strictgoimports/install: $(GOBIN)/strictgoimports
+strictgoimports/install: $(GOPATH)/bin/strictgoimports
 
-$(GOBIN)/strictgoimports:
+$(GOPATH)/bin/strictgoimports:
 	$(call go-install, github.com/momotaro98/strictgoimports/cmd/strictgoimports)
 
 .PHONY: gofumpt/install
-gofumpt/install: $(GOBIN)/gofumpt
+gofumpt/install: $(GOPATH)/bin/gofumpt
 
-$(GOBIN)/gofumpt:
+$(GOPATH)/bin/gofumpt:
 	$(call go-install, mvdan.cc/gofumpt)
 
 .PHONY: golines/install
-golines/install: $(GOBIN)/golines
+golines/install: $(GOPATH)/bin/golines
 
-$(GOBIN)/golines:
+$(GOPATH)/bin/golines:
 	$(call go-install, github.com/segmentio/golines)
 
 .PHONY: prettier/install
