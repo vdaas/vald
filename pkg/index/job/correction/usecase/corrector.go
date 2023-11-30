@@ -45,21 +45,29 @@ type run struct {
 }
 
 func New(cfg *config.Data) (r runner.Runner, err error) {
+	if cfg.Corrector.IndexReplica == 1 {
+		return nil, errors.ErrIndexReplicaOne
+	}
+
 	eg := errgroup.Get()
 
-	dOpts, err := cfg.Corrector.Discoverer.Client.Opts()
+	cOpts, err := cfg.Corrector.Discoverer.Client.Opts()
 	if err != nil {
 		return nil, err
 	}
 	// skipcq: CRT-D0001
-	dOpts = append(dOpts, grpc.WithErrGroup(eg))
+	dopts := append(
+		cOpts,
+		grpc.WithErrGroup(eg))
 
 	acOpts, err := cfg.Corrector.Discoverer.AgentClientOptions.Opts()
 	if err != nil {
 		return nil, err
 	}
 	// skipcq: CRT-D0001
-	acOpts = append(acOpts, grpc.WithErrGroup(eg))
+	aopts := append(
+		acOpts,
+		grpc.WithErrGroup(eg))
 
 	// Construct discoverer
 	discoverer, err := discoverer.New(
@@ -68,9 +76,9 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		discoverer.WithNamespace(cfg.Corrector.AgentNamespace),
 		discoverer.WithPort(cfg.Corrector.AgentPort),
 		discoverer.WithServiceDNSARecord(cfg.Corrector.AgentDNS),
-		discoverer.WithDiscovererClient(grpc.New(dOpts...)),
+		discoverer.WithDiscovererClient(grpc.New(dopts...)),
 		discoverer.WithDiscoverDuration(cfg.Corrector.Discoverer.Duration),
-		discoverer.WithOptions(acOpts...),
+		discoverer.WithOptions(aopts...),
 		discoverer.WithNodeName(cfg.Corrector.NodeName),
 		discoverer.WithOnDiscoverFunc(func(ctx context.Context, c discoverer.Client, addrs []string) error {
 			last := len(addrs) - 1
@@ -101,12 +109,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		return nil, err
 	}
 
-	corrector, err := service.New(
-		service.WithDiscoverer(discoverer),
-		service.WithIndexReplica(cfg.Corrector.IndexReplica),
-		service.WithBboltAsyncWriteConcurrency(cfg.Corrector.BboltAsyncWriteConcurrency),
-		service.WithStreamListConcurrency(cfg.Corrector.StreamListConcurrency),
-	)
+	corrector, err := service.New(cfg, discoverer)
 	if err != nil {
 		return nil, err
 	}
@@ -118,6 +121,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 			correction.New(corrector),
 		)
 		if err != nil {
+			log.Error("failed to initialize observability")
 			return nil, err
 		}
 	}
@@ -200,25 +204,23 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 		log.Infof("correction finished in %v", end)
 		return nil
 	}))
+
 	return ech, nil
 }
 
 func (r *run) PreStop(ctx context.Context) error {
-	return r.corrector.PreStop(ctx)
+	r.corrector.PreStop(ctx)
+	return nil
 }
 
-func (r *run) Stop(ctx context.Context) (errs error) {
+func (r *run) Stop(ctx context.Context) error {
 	if r.observability != nil {
-		if err := r.observability.Stop(ctx); err != nil {
-			errs = errors.Join(errs, err)
-		}
+		r.observability.Stop(ctx)
 	}
 	if r.server != nil {
-		if err := r.server.Shutdown(ctx); err != nil {
-			errs = errors.Join(errs, err)
-		}
+		r.server.Shutdown(ctx)
 	}
-	return errs
+	return nil
 }
 
 func (*run) PostStop(_ context.Context) error {
