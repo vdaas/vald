@@ -2676,7 +2676,7 @@ manager:
       observability:
         otlp:
           attribute:
-            service_name: vald-index-correction
+            service_name: vald-manager-index
       # @schema {"name": "manager.index.corrector.enabled", "type": "boolean"}
       # manager.index.corrector.enabled -- enable index correction CronJob
       enabled: false
