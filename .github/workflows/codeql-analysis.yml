@@ -13,7 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-name: "Code scanning"
+name: "Code scanning - action"
+
 on:
   push:
     branches:
@@ -33,17 +34,36 @@ on:
     - cron: "0 1 * * *"
 
 jobs:
-  dump-contexts-to-log:
+  dump_contexts_to_log:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: ./.github/actions/dump-context
-
-  codeql-build:
-    name: CodeQL
+      - name: Dump GitHub context
+        id: github_context_step
+        run: echo $JSON
+        env:
+          JSON: ${{ toJSON(github) }}
+      - name: Dump job context
+        run: echo $JSON
+        env:
+          JSON: ${{ toJSON(job) }}
+      - name: Dump steps context
+        run: echo $JSON
+        env:
+          JSON: ${{ toJSON(steps) }}
+      - name: Dump runner context
+        run: echo $JSON
+        env:
+          JSON: ${{ toJSON(runner) }}
+      - name: Dump strategy context
+        run: echo $JSON
+        env:
+          JSON: ${{ toJSON(strategy) }}
+      - name: Dump matrix context
+        run: echo $JSON
+        env:
+          JSON: ${{ toJSON(matrix) }}
+  CodeQL-Build:
     runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/vdaas/vald/vald-ci-container:nightly
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -51,19 +71,20 @@ jobs:
           # We must fetch at least the immediate parents so that if this is
           # a pull request then we can checkout the head.
           fetch-depth: 2
-
-      - name: Set Git config
+      - name: set git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
-
+      - name: Install dependencies
+        run: |
+          sudo apt-get update && \
+          sudo apt-get install -y --no-install-recommends libhdf5-dev
+          sudo make ngt/install
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v2
         with:
           languages: go
           config-file: ./.github/codeql/codeql-config.yaml
-
       - name: Autobuild
         uses: github/codeql-action/autobuild@v2
-
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v2

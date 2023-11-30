@@ -14,19 +14,41 @@
 # limitations under the License.
 #
 
-name: "Reviewdog - Go"
+name: reviewdog
 on:
   pull_request:
     paths:
       - "**.go"
 
 jobs:
-  dump-contexts-to-log:
+  dump_contexts_to_log:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: ./.github/actions/dump-context
-
+      - name: Dump GitHub context
+        id: github_context_step
+        run: echo $JSON
+        env:
+          JSON: ${{ toJSON(github) }}
+      - name: Dump job context
+        run: echo $JSON
+        env:
+          JSON: ${{ toJSON(job) }}
+      - name: Dump steps context
+        run: echo $JSON
+        env:
+          JSON: ${{ toJSON(steps) }}
+      - name: Dump runner context
+        run: echo $JSON
+        env:
+          JSON: ${{ toJSON(runner) }}
+      - name: Dump strategy context
+        run: echo $JSON
+        env:
+          JSON: ${{ toJSON(strategy) }}
+      - name: Dump matrix context
+        run: echo $JSON
+        env:
+          JSON: ${{ toJSON(matrix) }}
   golangci-lint:
     name: runner / golangci-lint
     runs-on: ubuntu-latest
@@ -34,15 +56,14 @@ jobs:
       image: ghcr.io/vdaas/vald/vald-ci-container:nightly
     steps:
       - uses: actions/checkout@v3
-
-      - name: Set Git config
+        with:
+          persist-credentials: false
+      - name: set git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
-
-      - name: Go build
+      - name: go build
         run: |
           go build -mod=readonly ./...
-
       - name: Run golangci-lint
         run: |
           golangci-lint run --config .golangci.yml \

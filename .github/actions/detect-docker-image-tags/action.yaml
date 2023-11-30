@@ -14,15 +14,14 @@
 # limitations under the License.
 #
 name: "Detect Docker image tags"
-description: "A action to detect Docker image tags"
-
+description: "Detect Docker image tags"
 inputs:
   tag_name:
-    description: "Tag name to check whether exists or not"
+    description: "tag name to check whether exists or not"
     required: true
     default: ""
   images:
-    description: "Image names"
+    description: "image names"
     required: false
     default: "vdaas/vald-agent-ngt \
       vdaas/vald-discoverer-k8s \
@@ -30,12 +29,11 @@ inputs:
       vdaas/vald-manager-index"
 outputs:
   HELM_EXTRA_OPTIONS:
-    description: "Helm extra options that specifies image tags"
+    description: "helm extra options that specifies image tags"
     value: ${{ steps.specify_container_versions.outputs.HELM_EXTRA_OPTIONS }}
   IMAGE_TAGS:
-    description: "Specifies image tags"
+    description: "specifies image tags"
     value: ${{ steps.specify_container_versions.outputs.IMAGE_TAGS }}
-
 runs:
   using: "composite"
   steps:
@@ -49,7 +47,6 @@ runs:
           ["vdaas/vald-discoverer-k8s"]="discoverer.image.tag"
           ["vdaas/vald-lb-gateway"]="gateway.lb.image.tag"
           ["vdaas/vald-manager-index"]="manager.index.image.tag"
-          ["vdaas/vald-helm-operator"]="image.tag"
         )
 
         for image in ${IMAGES}

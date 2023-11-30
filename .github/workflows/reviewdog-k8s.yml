@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-name: "Reviewdog - K8s manifests"
+name: "reviewdog - K8s manifests"
 on:
   pull_request:
     paths:
@@ -22,12 +22,34 @@ on:
       - "k8s/**"
 
 jobs:
-  dump-contexts-to-log:
+  dump_contexts_to_log:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: ./.github/actions/dump-context
-
+      - name: Dump GitHub context
+        id: github_context_step
+        run: echo $JSON
+        env:
+          JSON: ${{ toJSON(github) }}
+      - name: Dump job context
+        run: echo $JSON
+        env:
+          JSON: ${{ toJSON(job) }}
+      - name: Dump steps context
+        run: echo $JSON
+        env:
+          JSON: ${{ toJSON(steps) }}
+      - name: Dump runner context
+        run: echo $JSON
+        env:
+          JSON: ${{ toJSON(runner) }}
+      - name: Dump strategy context
+        run: echo $JSON
+        env:
+          JSON: ${{ toJSON(strategy) }}
+      - name: Dump matrix context
+        run: echo $JSON
+        env:
+          JSON: ${{ toJSON(matrix) }}
   kubeval-conflint:
     name: runner / kubeval-conflint
     runs-on: ubuntu-latest
@@ -35,12 +57,10 @@ jobs:
       image: mumoshu/conflint:latest
     steps:
       - uses: actions/checkout@v3
-
-      - name: Set Git config
+      - name: set git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
-
-      - name: Run kubeval-conflint
+      - name: kubeval-conflint
         run: |
           set -vx
           conflint run -c .github/conflint.yaml -efm "%f:%l:%c: %m" || true
@@ -49,7 +69,6 @@ jobs:
           CONFLINT_LOG: DEBUG
           REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPORTER: github-pr-review
-
   kubelinter-k8s-manifests:
     name: runner / kubelinter
     runs-on: ubuntu-latest
@@ -57,12 +76,10 @@ jobs:
       image: ghcr.io/vdaas/vald/vald-ci-container:nightly
     steps:
       - uses: actions/checkout@v3
-
-      - name: Set Git config
+      - name: set git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
-
-      - name: Run kubelinter for k8s directory
+      - name: kubelinter for k8s directory
         run: |
           kube-linter lint \
             --config .github/kubelinter.yaml \
@@ -70,7 +87,6 @@ jobs:
             k8s/discoverer \
             k8s/gateway \
             k8s/manager
-
   kubelinter-vald-chart:
     name: runner / kubelinter for vald chart
     runs-on: ubuntu-latest
@@ -78,12 +94,10 @@ jobs:
       image: ghcr.io/vdaas/vald/vald-ci-container:nightly
     steps:
       - uses: actions/checkout@v3
-
-      - name: Set Git config
+      - name: set git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
-
-      - name: Run kubelinter for generated manifests
+      - name: kubelinter for generated manifests
         run: |
           kube-linter lint \
             --config .github/kubelinter.yaml \
