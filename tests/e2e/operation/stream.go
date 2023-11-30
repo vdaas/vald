@@ -1206,9 +1206,6 @@ exit_loop:
 				st := res.GetStatus()
 				return fmt.Errorf("returned vector is empty: code: %v, msg: %v, details: %v", st.GetCode(), st.GetMessage(), st.GetDetails())
 			}
-			if len(vec.GetVector()) == 0 {
-				return fmt.Errorf("returned vector is empty: id: %v", vec.GetId())
-			}
 			indexCnt[vec.GetId()]++
 		}
 	}
