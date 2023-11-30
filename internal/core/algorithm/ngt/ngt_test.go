@@ -139,7 +139,6 @@ func TestNew(t *testing.T) {
 						bulkInsertChunkSize: 100,
 						objectType:          Float,
 						mu:                  &sync.RWMutex{},
-						cmu:                 &sync.RWMutex{},
 					},
 				},
 				comparators: append(ngtComparator, comparator.CompareField("idxPath", comparator.Comparer(func(s1, s2 string) bool {
@@ -165,7 +164,6 @@ func TestNew(t *testing.T) {
 						bulkInsertChunkSize: 100,
 						objectType:          Float,
 						mu:                  &sync.RWMutex{},
-						cmu:                 &sync.RWMutex{},
 					},
 				},
 			}
@@ -190,7 +188,6 @@ func TestNew(t *testing.T) {
 						bulkInsertChunkSize: 100,
 						objectType:          Uint8,
 						mu:                  &sync.RWMutex{},
-						cmu:                 &sync.RWMutex{},
 					},
 				},
 			}
@@ -319,7 +316,6 @@ func TestLoad(t *testing.T) {
 						bulkInsertChunkSize: 100,
 						objectType:          Uint8,
 						mu:                  &sync.RWMutex{},
-						cmu:                 &sync.RWMutex{},
 					},
 				},
 				checkFunc: func(ctx context.Context, w want, n NGT, e error) error {
@@ -385,7 +381,6 @@ func TestLoad(t *testing.T) {
 						bulkInsertChunkSize: 100,
 						objectType:          Uint8,
 						mu:                  &sync.RWMutex{},
-						cmu:                 &sync.RWMutex{},
 					},
 				},
 				checkFunc: func(ctx context.Context, w want, n NGT, e error) error {
@@ -451,7 +446,6 @@ func TestLoad(t *testing.T) {
 						bulkInsertChunkSize: 100,
 						objectType:          Float,
 						mu:                  &sync.RWMutex{},
-						cmu:                 &sync.RWMutex{},
 					},
 				},
 				checkFunc: func(ctx context.Context, w want, n NGT, e error) error {
@@ -517,7 +511,6 @@ func TestLoad(t *testing.T) {
 						bulkInsertChunkSize: 100,
 						objectType:          Float,
 						mu:                  &sync.RWMutex{},
-						cmu:                 &sync.RWMutex{},
 					},
 				},
 				checkFunc: func(ctx context.Context, w want, n NGT, e error) error {
@@ -713,7 +706,6 @@ func Test_gen(t *testing.T) {
 					bulkInsertChunkSize: 100,
 					objectType:          Float,
 					mu:                  &sync.RWMutex{},
-					cmu:                 &sync.RWMutex{},
 				},
 			},
 			comparators: append(ngtComparator, comparator.CompareField("idxPath", comparator.Comparer(func(s1, s2 string) bool {
@@ -760,7 +752,6 @@ func Test_gen(t *testing.T) {
 						bulkInsertChunkSize: 100,
 						objectType:          Uint8,
 						mu:                  &sync.RWMutex{},
-						cmu:                 &sync.RWMutex{},
 					},
 				},
 				checkFunc: func(ctx context.Context, w want, n NGT, e error, comparators ...comparator.Option) error {
@@ -1103,7 +1094,6 @@ func Test_ngt_open(t *testing.T) {
 		epsilon             float32
 		poolSize            uint32
 		mu                  *sync.RWMutex
-		cmu                 *sync.RWMutex
 	}
 	type want struct {
 		err error
@@ -1151,7 +1141,6 @@ func Test_ngt_open(t *testing.T) {
 				dimension:  9,
 				objectType: Float,
 				mu:         &sync.RWMutex{},
-				cmu:        &sync.RWMutex{},
 			},
 			beforeFunc: func(t *testing.T, fields fields) {
 				t.Helper()
@@ -1186,7 +1175,6 @@ func Test_ngt_open(t *testing.T) {
 				dimension:  9,
 				objectType: Float,
 				mu:         &sync.RWMutex{},
-				cmu:        &sync.RWMutex{},
 			},
 			want: want{
 				err: errors.ErrIndexFileNotFound,
@@ -1200,7 +1188,6 @@ func Test_ngt_open(t *testing.T) {
 				dimension:  9,
 				objectType: Float,
 				mu:         &sync.RWMutex{},
-				cmu:        &sync.RWMutex{},
 			},
 			beforeFunc: func(t *testing.T, fields fields) {
 				t.Helper()
