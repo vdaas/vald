@@ -13,9 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
-JAEGER_OPERATOR_WAIT_DURATION := 0
-
 .PHONY: k8s/manifest/clean
 ## clean k8s manifests
 k8s/manifest/clean:
@@ -230,8 +227,7 @@ k8s/metrics/jaeger/deploy:
 	helm repo add jaegertracing https://jaegertracing.github.io/helm-charts
 	helm install jaeger jaegertracing/jaeger-operator --version $(JAEGER_OPERATOR_VERSION)
 	kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=jaeger-operator --timeout=60s
-	kubectl wait --for=condition=available deployment/jaeger-jaeger-operator --timeout=60s
-	sleep $(JAEGER_OPERATOR_WAIT_DURATION)
+	until kubectl run busybox --restart=Never --image=busybox --rm -it -- wget -q -S --spider "https://jaeger-operator-webhook-service.default.svc:443/mutate-jaegertracing-io-v1-jaeger"; do sleep 1; done
 	kubectl apply -f k8s/metrics/jaeger/jaeger.yaml
 
 .PHONY: k8s/metrics/jaeger/delete
