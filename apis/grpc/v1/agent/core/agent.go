@@ -22,5 +22,4 @@ const (
 	SaveIndexRPCName          = "SaveIndex"
 	CreateAndSaveIndexRPCName = "CreateAndSaveIndex"
 	IndexInfoRPCName          = "IndexInfo"
-	GetTimestampRPCName       = "GetTimestamp"
 )
