@@ -59,11 +59,6 @@ e2e/upsert:
 e2e/remove:
 	$(call run-e2e-crud-test,-run TestE2ERemoveOnly)
 
-.PHONY: e2e/remove/timestamp
-## run removeByTimestamp e2e
-e2e/remove:
-	$(call run-e2e-crud-test,-run TestE2ERemoveByTimestampOnly)
-
 .PHONY: e2e/insert/search
 ## run insert and search e2e
 e2e/insert/search:
