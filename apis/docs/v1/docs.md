@@ -108,7 +108,6 @@
   - [Upsert.MultiRequest](#payload-v1-Upsert-MultiRequest)
   - [Upsert.ObjectRequest](#payload-v1-Upsert-ObjectRequest)
   - [Upsert.Request](#payload-v1-Upsert-Request)
-
   - [Remove.Timestamp.Operator](#payload-v1-Remove-Timestamp-Operator)
   - [Search.AggregationAlgorithm](#payload-v1-Search-AggregationAlgorithm)
 
@@ -972,8 +971,6 @@ Represent the remove request.
 
 ### Remove.Timestamp
 
-Represent the timestamp comparison.
-
 | Field     | Type                                                               | Label | Description               |
 | --------- | ------------------------------------------------------------------ | ----- | ------------------------- |
 | timestamp | [int64](#int64)                                                    |       | The timestamp.            |
@@ -985,9 +982,9 @@ Represent the timestamp comparison.
 
 Represent the remove request based on timestamp.
 
-| Field      | Type                                             | Label    | Description                                                                                |
-| ---------- | ------------------------------------------------ | -------- | ------------------------------------------------------------------------------------------ |
-| timestamps | [Remove.Timestamp](#payload-v1-Remove-Timestamp) | repeated | The timestamp comparison list. If more than one is specified, the `AND` search is applied. |
+| Field      | Type                                             | Label    | Description                                                        |
+| ---------- | ------------------------------------------------ | -------- | ------------------------------------------------------------------ |
+| timestamps | [Remove.Timestamp](#payload-v1-Remove-Timestamp) | repeated | Represent the multiple remove request contents based on timestamp. |
 
 <a name="payload-v1-Search"></a>
 
@@ -1239,14 +1236,14 @@ Represent the upsert request.
 
 Operator is enum of each conditional operator.
 
-| Name | Number | Description                                                                   |
-| ---- | ------ | ----------------------------------------------------------------------------- |
-| Eq   | 0      | The timestamp is equal to the specified value in the request.                 |
-| Ne   | 1      | The timestamp is not equal to the specified value in the request.             |
-| Ge   | 2      | The timestamp is greater than or equal to the specified value in the request. |
-| Gt   | 3      | The timestamp is greater than the specified value in the request.             |
-| Le   | 4      | The timestamp is less than or equal to the specified value in the request.    |
-| Lt   | 5      | The timestamp is less than the specified value in the request.                |
+| Name | Number | Description |
+| ---- | ------ | ----------- |
+| Eq   | 0      |             |
+| Ne   | 1      |             |
+| Ge   | 2      |             |
+| Gt   | 3      |             |
+| Le   | 4      |             |
+| Lt   | 5      |             |
 
 <a name="payload-v1-Search-AggregationAlgorithm"></a>
 
