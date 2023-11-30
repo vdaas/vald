@@ -23,7 +23,7 @@ package config
 // 		AgentDNS                   string
 // 		NodeName                   string
 // 		StreamListConcurrency      int
-// 		KvsAsyncWriteConcurrency   int
+// 		BboltAsyncWriteConcurrency int
 // 		IndexReplica               int
 // 		Discoverer                 *DiscovererClient
 // 	}
@@ -56,7 +56,7 @@ package config
 // 		           AgentDNS:"",
 // 		           NodeName:"",
 // 		           StreamListConcurrency:0,
-// 		           KvsAsyncWriteConcurrency:0,
+// 		           BboltAsyncWriteConcurrency:0,
 // 		           IndexReplica:0,
 // 		           Discoverer:DiscovererClient{},
 // 		       },
@@ -83,7 +83,7 @@ package config
 // 		           AgentDNS:"",
 // 		           NodeName:"",
 // 		           StreamListConcurrency:0,
-// 		           KvsAsyncWriteConcurrency:0,
+// 		           BboltAsyncWriteConcurrency:0,
 // 		           IndexReplica:0,
 // 		           Discoverer:DiscovererClient{},
 // 		           },
@@ -122,7 +122,7 @@ package config
 // 				AgentDNS:                   test.fields.AgentDNS,
 // 				NodeName:                   test.fields.NodeName,
 // 				StreamListConcurrency:      test.fields.StreamListConcurrency,
-// 				KvsAsyncWriteConcurrency:   test.fields.KvsAsyncWriteConcurrency,
+// 				BboltAsyncWriteConcurrency: test.fields.BboltAsyncWriteConcurrency,
 // 				IndexReplica:               test.fields.IndexReplica,
 // 				Discoverer:                 test.fields.Discoverer,
 // 			}
