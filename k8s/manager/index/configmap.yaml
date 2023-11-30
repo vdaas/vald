@@ -369,4 +369,4 @@ data:
       auto_save_index_duration_limit: 3h
       auto_save_index_wait_duration: 10m
       auto_index_length: 100
-      creation_pool_size: 16
+      creation_pool_size: 10000
