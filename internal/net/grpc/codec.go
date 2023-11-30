@@ -43,9 +43,6 @@ type vtprotoPoolMessage interface {
 // Marshal returns byte slice representing the proto message marshalling result.
 func (Codec) Marshal(obj interface{}) (data []byte, err error) {
 	switch v := obj.(type) {
-	case vtprotoPoolMessage:
-		data, err = v.MarshalVT()
-		v.ReturnToVTPool()
 	case vtprotoMessage:
 		data, err = v.MarshalVT()
 	case proto.Message:
