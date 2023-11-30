@@ -22,13 +22,13 @@ import (
 	"reflect"
 	"strconv"
 
-	"github.com/vdaas/vald/apis/grpc/v1/rpc/errdetails"
 	"github.com/vdaas/vald/internal/encoding/json"
 	"github.com/vdaas/vald/internal/info"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc/proto"
 	"github.com/vdaas/vald/internal/net/grpc/types"
 	"github.com/vdaas/vald/internal/strings"
+	"google.golang.org/genproto/googleapis/rpc/errdetails"
 	spb "google.golang.org/genproto/googleapis/rpc/status"
 	"google.golang.org/grpc/status"
 )
@@ -129,6 +129,16 @@ func decodeDetails(objs ...interface{}) (details []Detail) {
 					},
 				},
 			}, decodeDetails(v.Proto().Details)...)...)
+		case *types.Any:
+			details = append(details, Detail{
+				TypeURL: v.GetTypeUrl(),
+				Message: AnyToErrorDetail(v),
+			})
+		case types.Any:
+			details = append(details, Detail{
+				TypeURL: v.GetTypeUrl(),
+				Message: AnyToErrorDetail(&v),
+			})
 		case *proto.Message:
 			details = append(details, Detail{
 				TypeURL: string((*v).ProtoReflect().Descriptor().FullName()),
@@ -143,16 +153,6 @@ func decodeDetails(objs ...interface{}) (details []Detail) {
 			details = append(details, *v)
 		case Detail:
 			details = append(details, v)
-		case *types.Any:
-			details = append(details, Detail{
-				TypeURL: v.GetTypeUrl(),
-				Message: AnyToErrorDetail(v),
-			})
-		case types.Any:
-			details = append(details, Detail{
-				TypeURL: v.GetTypeUrl(),
-				Message: AnyToErrorDetail(&v),
-			})
 		}
 	}
 	return details
