@@ -44,14 +44,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR ${GOPATH}/src/github.com/vdaas/vald
+
 COPY Makefile .
 COPY Makefile.d Makefile.d
 COPY versions versions
-COPY hack/go.mod.default hack/go.mod.default
 
-# basic deps
-RUN make deps \
-    && make ngt/install \
+RUN make ngt/install \
     && make helm/install \
     && make helm-docs/install \
     && make valdcli/install \
@@ -59,9 +57,18 @@ RUN make deps \
     && make golangci-lint/install \
     && make reviewdog/install \
     && make protobuf/install \
-    && make kubectl/install
+    && make kubectl/install \
+    && make k3d/install
 
-# additional deps
-RUN make k3d/install \
-    && make buf/install \
-    && make k9s/install
+# change GOPATH owner to vscode to run commands as user vscode without root permission
+RUN chown -R vscode:vscode "${GOPATH}" \
+    # mkdir for agent configuration install
+    && mkdir -p /etc/server
+
+# k9s installs the binary to the current user which is root for devcontainer
+# so change the current user to vscode to user afterwards
+USER vscode
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+RUN curl -sS https://webinstall.dev/k9s | bash
+
+RUN go install github.com/stern/stern@latest

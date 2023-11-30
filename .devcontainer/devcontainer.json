@@ -10,8 +10,7 @@
       "moby": "true"
     }
   },
-  "remoteUser": "root",
   "postCreateCommand": "go version",
-  "postAttachCommand": "mkdir -p /etc/server && ln -s $(pwd)/cmd/agent/core/ngt/sample.yaml /etc/server/config.yaml",
+  "postAttachCommand": "sudo ln -s $(pwd)/cmd/agent/core/ngt/sample.yaml /etc/server/config.yaml",
   "appPort": "3000:3000"
 }
