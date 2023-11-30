@@ -34,7 +34,7 @@ import (
 )
 
 func (s *server) LinearSearch(ctx context.Context, req *payload.Search_Request) (res *payload.Search_Response, err error) {
-	ctx, span := trace.StartSpan(ctx, apiName+"/"+vald.LinearSearchRPCName)
+	_, span := trace.StartSpan(ctx, apiName+"/"+vald.LinearSearchRPCName)
 	defer func() {
 		if span != nil {
 			span.End()
@@ -67,12 +67,9 @@ func (s *server) LinearSearch(ctx context.Context, req *payload.Search_Request) 
 		}
 		return nil, err
 	}
-	res, err = s.ngt.LinearSearch(ctx,
+	res, err = s.ngt.LinearSearch(
 		req.GetVector(),
 		req.GetConfig().GetNum())
-	if err == nil && res == nil {
-		return nil, nil
-	}
 	if err != nil || res == nil {
 		var attrs []attribute.KeyValue
 		switch {
@@ -160,7 +157,7 @@ func (s *server) LinearSearch(ctx context.Context, req *payload.Search_Request) 
 }
 
 func (s *server) LinearSearchByID(ctx context.Context, req *payload.Search_IDRequest) (res *payload.Search_Response, err error) {
-	ctx, span := trace.StartSpan(ctx, apiName+"/"+vald.LinearSearchByIDRPCName)
+	_, span := trace.StartSpan(ctx, apiName+"/"+vald.LinearSearchByIDRPCName)
 	defer func() {
 		if span != nil {
 			span.End()
@@ -194,12 +191,9 @@ func (s *server) LinearSearchByID(ctx context.Context, req *payload.Search_IDReq
 		}
 		return nil, err
 	}
-	vec, res, err := s.ngt.LinearSearchByID(ctx,
+	vec, res, err := s.ngt.LinearSearchByID(
 		uuid,
 		req.GetConfig().GetNum())
-	if err == nil && res == nil {
-		return nil, nil
-	}
 	if err != nil || res == nil {
 		var attrs []attribute.KeyValue
 		switch {
