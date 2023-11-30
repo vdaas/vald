@@ -67,8 +67,6 @@
   - [Remove.Config](#payload-v1-Remove-Config)
   - [Remove.MultiRequest](#payload-v1-Remove-MultiRequest)
   - [Remove.Request](#payload-v1-Remove-Request)
-  - [Remove.Timestamp](#payload-v1-Remove-Timestamp)
-  - [Remove.TimestampRequest](#payload-v1-Remove-TimestampRequest)
   - [Search](#payload-v1-Search)
   - [Search.Config](#payload-v1-Search-Config)
   - [Search.IDRequest](#payload-v1-Search-IDRequest)
@@ -92,8 +90,6 @@
   - [Upsert.MultiRequest](#payload-v1-Upsert-MultiRequest)
   - [Upsert.ObjectRequest](#payload-v1-Upsert-ObjectRequest)
   - [Upsert.Request](#payload-v1-Upsert-Request)
-
-  - [Remove.Timestamp.Operator](#payload-v1-Remove-Timestamp-Operator)
   - [Search.AggregationAlgorithm](#payload-v1-Search-AggregationAlgorithm)
 
 - [apis/proto/v1/vald/filter.proto](#apis_proto_v1_vald_filter-proto)
@@ -102,14 +98,14 @@
   - [Insert](#vald-v1-Insert)
 - [apis/proto/v1/vald/object.proto](#apis_proto_v1_vald_object-proto)
   - [Object](#vald-v1-Object)
+- [apis/proto/v1/vald/remove.proto](#apis_proto_v1_vald_remove-proto)
+  - [Remove](#vald-v1-Remove)
 - [apis/proto/v1/vald/search.proto](#apis_proto_v1_vald_search-proto)
   - [Search](#vald-v1-Search)
 - [apis/proto/v1/vald/update.proto](#apis_proto_v1_vald_update-proto)
   - [Update](#vald-v1-Update)
 - [apis/proto/v1/vald/upsert.proto](#apis_proto_v1_vald_upsert-proto)
   - [Upsert](#vald-v1-Upsert)
-- [apis/proto/v1/vald/remove.proto](#apis_proto_v1_vald_remove-proto)
-  - [Remove](#vald-v1-Remove)
 - [Scalar Value Types](#scalar-value-types)
 
 <a name="apis_proto_v1_agent_core_agent-proto"></a>
@@ -698,25 +694,6 @@ Represent the remove request.
 | id     | [Object.ID](#payload-v1-Object-ID)         |       | The object ID to be removed.             |
 | config | [Remove.Config](#payload-v1-Remove-Config) |       | The configuration of the remove request. |
 
-<a name="payload-v1-Remove-Timestamp"></a>
-
-### Remove.Timestamp
-
-| Field     | Type                                                               | Label | Description               |
-| --------- | ------------------------------------------------------------------ | ----- | ------------------------- |
-| timestamp | [int64](#int64)                                                    |       | The timestamp.            |
-| operator  | [Remove.Timestamp.Operator](#payload-v1-Remove-Timestamp-Operator) |       | The conditional operator. |
-
-<a name="payload-v1-Remove-TimestampRequest"></a>
-
-### Remove.TimestampRequest
-
-Represent the remove request based on timestamp.
-
-| Field      | Type                                             | Label    | Description                                                        |
-| ---------- | ------------------------------------------------ | -------- | ------------------------------------------------------------------ |
-| timestamps | [Remove.Timestamp](#payload-v1-Remove-Timestamp) | repeated | Represent the multiple remove request contents based on timestamp. |
-
 <a name="payload-v1-Search"></a>
 
 ### Search
@@ -961,21 +938,6 @@ Represent the upsert request.
 | vector | [Object.Vector](#payload-v1-Object-Vector) |       | The vector to be upserted.               |
 | config | [Upsert.Config](#payload-v1-Upsert-Config) |       | The configuration of the upsert request. |
 
-<a name="payload-v1-Remove-Timestamp-Operator"></a>
-
-### Remove.Timestamp.Operator
-
-Operator is enum of each conditional operator.
-
-| Name | Number | Description |
-| ---- | ------ | ----------- |
-| Eq   | 0      |             |
-| Ne   | 1      |             |
-| Ge   | 2      |             |
-| Gt   | 3      |             |
-| Le   | 4      |             |
-| Lt   | 5      |             |
-
 <a name="payload-v1-Search-AggregationAlgorithm"></a>
 
 ### Search.AggregationAlgorithm
@@ -1054,6 +1016,24 @@ Object service provides ways to fetch indexed vectors.
 | StreamGetObject  | [.payload.v1.Object.VectorRequest](#payload-v1-Object-VectorRequest) stream | [.payload.v1.Object.StreamVector](#payload-v1-Object-StreamVector) stream   | A method to fetch vectors by bidirectional streaming.       |
 | StreamListObject | [.payload.v1.Object.List.Request](#payload-v1-Object-List-Request)          | [.payload.v1.Object.List.Response](#payload-v1-Object-List-Response) stream | A method to get all the vectors with server streaming       |
 
+<a name="apis_proto_v1_vald_remove-proto"></a>
+
+<p align="right"><a href="#top">Top</a></p>
+
+## apis/proto/v1/vald/remove.proto
+
+<a name="vald-v1-Remove"></a>
+
+### Remove
+
+Remove service provides ways to remove indexed vectors.
+
+| Method Name  | Request Type                                                       | Response Type                                                                 | Description                                                             |
+| ------------ | ------------------------------------------------------------------ | ----------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| Remove       | [.payload.v1.Remove.Request](#payload-v1-Remove-Request)           | [.payload.v1.Object.Location](#payload-v1-Object-Location)                    | A method to remove an indexed vector.                                   |
+| StreamRemove | [.payload.v1.Remove.Request](#payload-v1-Remove-Request) stream    | [.payload.v1.Object.StreamLocation](#payload-v1-Object-StreamLocation) stream | A method to remove multiple indexed vectors by bidirectional streaming. |
+| MultiRemove  | [.payload.v1.Remove.MultiRequest](#payload-v1-Remove-MultiRequest) | [.payload.v1.Object.Locations](#payload-v1-Object-Locations)                  | A method to remove multiple indexed vectors in a single request.        |
+
 <a name="apis_proto_v1_vald_search-proto"></a>
 
 <p align="right"><a href="#top">Top</a></p>
@@ -1116,25 +1096,6 @@ Upsert service provides ways to insert/update vectors.
 | Upsert       | [.payload.v1.Upsert.Request](#payload-v1-Upsert-Request)           | [.payload.v1.Object.Location](#payload-v1-Object-Location)                    | A method to insert/update a vector.                                    |
 | StreamUpsert | [.payload.v1.Upsert.Request](#payload-v1-Upsert-Request) stream    | [.payload.v1.Object.StreamLocation](#payload-v1-Object-StreamLocation) stream | A method to insert/update multiple vectors by bidirectional streaming. |
 | MultiUpsert  | [.payload.v1.Upsert.MultiRequest](#payload-v1-Upsert-MultiRequest) | [.payload.v1.Object.Locations](#payload-v1-Object-Locations)                  | A method to insert/update multiple vectors in a single request.        |
-
-<a name="apis_proto_v1_vald_remove-proto"></a>
-
-<p align="right"><a href="#top">Top</a></p>
-
-## apis/proto/v1/vald/remove.proto
-
-<a name="vald-v1-Remove"></a>
-
-### Remove
-
-Remove service provides ways to remove indexed vectors.
-
-| Method Name       | Request Type                                                               | Response Type                                                                 | Description                                                             |
-| ----------------- | -------------------------------------------------------------------------- | ----------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
-| Remove            | [.payload.v1.Remove.Request](#payload-v1-Remove-Request)                   | [.payload.v1.Object.Location](#payload-v1-Object-Location)                    | A method to remove an indexed vector.                                   |
-| RemoveByTimestamp | [.payload.v1.Remove.TimestampRequest](#payload-v1-Remove-TimestampRequest) | [.payload.v1.Object.Locations](#payload-v1-Object-Locations)                  | A method to remove an indexed vector based on timestamp.                |
-| StreamRemove      | [.payload.v1.Remove.Request](#payload-v1-Remove-Request) stream            | [.payload.v1.Object.StreamLocation](#payload-v1-Object-StreamLocation) stream | A method to remove multiple indexed vectors by bidirectional streaming. |
-| MultiRemove       | [.payload.v1.Remove.MultiRequest](#payload-v1-Remove-MultiRequest)         | [.payload.v1.Object.Locations](#payload-v1-Object-Locations)                  | A method to remove multiple indexed vectors in a single request.        |
 
 ## Scalar Value Types
 

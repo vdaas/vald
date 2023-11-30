@@ -1025,33 +1025,6 @@ func (c *client) RemoveWithParameters(
 	return rerr
 }
 
-func (c *client) RemoveByTimestamp(t *testing.T, ctx context.Context, timestamp int64) error {
-	t.Log("removeByTimestamp operation started")
-
-	client, err := c.getClient(ctx)
-	if err != nil {
-		return err
-	}
-
-	req := &payload.Remove_TimestampRequest{
-		Timestamps: []*payload.Remove_Timestamp{
-			{
-				Timestamp: timestamp,
-				Operator:  payload.Remove_Timestamp_Gt,
-			},
-		},
-	}
-
-	_, err = client.RemoveByTimestamp(ctx, req)
-	if err != nil {
-		return err
-	}
-
-	t.Log("removeByTimestamp operation finished")
-
-	return nil
-}
-
 func (c *client) Exists(t *testing.T, ctx context.Context, id string) error {
 	t.Log("exists operation started")
 
