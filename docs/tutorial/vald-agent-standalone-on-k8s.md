@@ -129,7 +129,7 @@ This chapter uses [NGT](https://github.com/yahoojapan/ngt) as Vald Agent to perf
 
     ```bash
     # download Fashion-MNIST testing dataset
-    wget https://ann-benchmarks.com/fashion-mnist-784-euclidean.hdf5
+    wget http://ann-benchmarks.com/fashion-mnist-784-euclidean.hdf5
     ```
 
 1.  Run Example

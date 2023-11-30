@@ -164,7 +164,7 @@ This chapter will use NGT for the core engine of Vald Agent.
 
    ```bash
    # download Fashion-MNIST testing dataset
-   wget https://ann-benchmarks.com/fashion-mnist-784-euclidean.hdf5
+   wget http://ann-benchmarks.com/fashion-mnist-784-euclidean.hdf5
    ```
 
 1. Running example
