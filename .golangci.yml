@@ -51,6 +51,7 @@ linters:
     - gochecknoinits
     - goconst
     - godot
+    - godox
     - gofumpt
     - goimports
     - gomnd
@@ -98,7 +99,6 @@ linters:
     # - gocognit
     # - gocritic
     # - gocyclo
-    # - godox
     # - goerr113
     # - gofmt
     # - goheader
