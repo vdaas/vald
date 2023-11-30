@@ -109,7 +109,6 @@ k8s/vald-helm-operator/deploy:
 	helm template \
 	    --output-dir $(TEMP_DIR) \
 	    --set image.tag=$(VERSION) \
-	    $(HELM_EXTRA_OPTIONS) \
 	    --include-crds \
 	    charts/vald-helm-operator
 	kubectl create -f $(TEMP_DIR)/vald-helm-operator/crds/valdrelease.yaml

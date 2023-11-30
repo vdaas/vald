@@ -20,8 +20,6 @@ metadata:
   name: vald-cluster
 spec:
   defaults:
-    image:
-      tag: nightly
     logging:
       level: info
     networkPolicy:
