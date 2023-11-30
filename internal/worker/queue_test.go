@@ -24,9 +24,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
-	"github.com/vdaas/vald/internal/test/comparator"
 	"github.com/vdaas/vald/internal/test/goleak"
 )
 
@@ -72,15 +72,15 @@ func TestNewQueue(t *testing.T) {
 		atomicComparator := func(want, got atomic.Value) bool {
 			return reflect.DeepEqual(want.Load(), got.Load())
 		}
-		opts := []comparator.Option{
-			comparator.AllowUnexported(*(w.want).(*queue)),
-			comparator.Comparer(egComparator),
-			comparator.Comparer(atomicComparator),
-			comparator.Comparer(func(want, got chan JobFunc) bool {
+		opts := []cmp.Option{
+			cmp.AllowUnexported(*(w.want).(*queue)),
+			cmp.Comparer(egComparator),
+			cmp.Comparer(atomicComparator),
+			cmp.Comparer(func(want, got chan JobFunc) bool {
 				return len(want) == len(got)
 			}),
 		}
-		if diff := comparator.Diff(w.want, got, opts...); diff != "" {
+		if diff := cmp.Diff(w.want, got, opts...); diff != "" {
 			return errors.Errorf("diff = %s", diff)
 		}
 		return nil
