@@ -77,7 +77,7 @@ corrector:
   agent_namespace: "default"
   node_name: ""
   stream_list_concurrency: 200
-  kvs_async_write_concurrency: 2048
+  bbolt_async_write_concurrency: 2048
   index_replica: 3
   discoverer:
     duration: 500ms

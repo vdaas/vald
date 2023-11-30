@@ -38,8 +38,8 @@ type Corrector struct {
 	// this directly affects the memory usage of this job
 	StreamListConcurrency int `json:"stream_list_concurrency" yaml:"stream_list_concurrency"`
 
-	// KvsAsyncWriteConcurrency represent concurrency for kvs async write
-	KvsAsyncWriteConcurrency int `json:"kvs_async_write_concurrency" yaml:"kvs_async_write_concurrency"`
+	// BboltAsyncWriteConcurrency represent concurrency for bbolt async write
+	BboltAsyncWriteConcurrency int `json:"bbolt_async_write_concurrency" yaml:"bbolt_async_write_concurrency"`
 
 	// IndexReplica represent index replica count. This should be equal to the lb setting
 	IndexReplica int `json:"index_replica" yaml:"index_replica"`
