@@ -33,8 +33,11 @@ var zstdCompressorComparatorOptions = []comparator.Option{
 	comparator.Comparer(func(x, y gobCompressor) bool {
 		return reflect.DeepEqual(x, y)
 	}),
-	comparator.Comparer(func(x, y []zstd.EOption) bool {
-		return len(x) == len(y)
+	comparator.Comparer(func(x, y zstd.EOption) bool {
+		if (x == nil && y != nil) || (x != nil && y == nil) {
+			return false
+		}
+		return reflect.ValueOf(x).Pointer() == reflect.ValueOf(y).Pointer()
 	}),
 }
 
