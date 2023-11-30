@@ -2633,68 +2633,12 @@ manager:
                 keepalive: 15m #indexer fetches uncommitted index length, which includes huge payload so we need to set keepalive longer than usual
     # @schema {"name": "manager.index.corrector", "type": "object"}
     corrector:
-      # @schema {"name": "manager.index.corrector.name", "type": "string"}
-      # manager.index.corrector.name -- name of index correction job
-      name: vald-index-correction
-      # @schema {"name": "manager.index.corrector.image", "alias": "image"}
-      image:
-        # manager.index.corrector.image.repository -- image repository
-        repository: vdaas/vald-index-correction
-        # manager.index.corrector.image.tag -- image tag (overrides defaults.image.tag)
-        tag: ""
-        # manager.index.image.pullPolicy -- image pull policy
-        pullPolicy: Always
-      # @schema {"name": "manager.index.corrector.server_config", "alias": "server_config"}
-      # manager.index.corrector.server_config -- server config (overrides defaults.server_config)
-      server_config:
-        servers:
-          rest: {}
-          grpc: {}
-        healths:
-          liveness: {}
-          readiness: {}
-          startup: {}
-        metrics:
-          pprof: {}
-      # @schema {"name": "manager.index.corrector.env", "alias": "env"}
-      # manager.index.corrector.env -- environment variables
-      env:
-        - name: MY_NODE_NAME
-          valueFrom:
-            fieldRef:
-              fieldPath: spec.nodeName
-        - name: MY_POD_NAME
-          valueFrom:
-            fieldRef:
-              fieldPath: metadata.name
-        - name: MY_POD_NAMESPACE
-          valueFrom:
-            fieldRef:
-              fieldPath: metadata.namespace
-      # @schema {"name": "manager.index.corrector.observability", "alias": "observability"}
-      # manager.index.corrector.observability -- observability config (overrides defaults.observability)
-      observability:
-        otlp:
-          attribute:
-            service_name: vald-manager-index
       # @schema {"name": "manager.index.corrector.enabled", "type": "boolean"}
       # manager.index.corrector.enabled -- enable index correction CronJob
       enabled: false
-      # @schema {"name": "manager.index.corrector.schedule", "type": "string"}
-      # manager.index.corrector.schedule -- CronJob schedule setting for index correction
-      schedule: "5 * * * *"
-      # @schema {"name": "manager.index.corrector.suspend", "type": "boolean"}
-      # manager.index.corrector.suspend -- CronJob suspend setting for index correction
-      suspend: false
-      # @schema {"name": "manager.index.corrector.ttlSecondsAfterFinished", "type": "integer"}
-      # manager.index.corrector.ttlSecondsAfterFinished -- ttl setting for K8s completed jobs
-      ttlSecondsAfterFinished: 86400
-      # @schema {"name": "manager.index.corrector.startingDeadlineSeconds", "type": "integer"}
-      # manager.index.corrector.startingDeadlineSeconds -- startingDeadlineSeconds setting for K8s completed jobs
-      startingDeadlineSeconds: 86400
-      # @schema {"name": "manager.index.corrector.version", "alias": "version"}
-      # manager.index.corrector.version -- version of index manager config
-      version: v0.0.0
+      # @schema {"name": "manager.index.corrector.check_duration", "type": "string"}
+      # manager.index.corrector.enabled -- check duration of index correction CronJob
+      check_duration: 24h
       # @schema {"name": "manager.index.corrector.stream_list_concurrency", "type": "integer", "minimum": 1}
       # manager.index.corrector.stream_list_concurrency -- concurrency for stream list object rpc
       stream_list_concurrency: 200
