@@ -41,13 +41,15 @@ gateway:
       enabled: false
     ingress:
       # if enabled is true, vald-lb-gateway can be connected through Kubernetes ingress from the external network.
-      enabled: true
+      enabled: false
       # TODO: Set your ingress host.
       host: localhost
-    service:
-      # NOTE: https://doc.traefik.io/traefik/routing/providers/kubernetes-ingress/#on-service
       annotations:
-        traefik.ingress.kubernetes.io/service.serversscheme: h2c
+        # TODO: Set annotations which you have to set for your k8s cluster.
+        ingress.kubernetes.io/protocol: "h2c"
+        ingress.kubernetes.io/ssl-passthrough: "true"
+        kubernetes.io/ingress.class: "traefik"
+        traefik.protocol: "h2c"
 
 ## vald-agent settings
 agent:
@@ -62,7 +64,7 @@ agent:
       memory: 150Mi
   ngt:
     # The number of dimensions for feature vector of fashion-mnist dataset.
-    dimension: 784
+    dimension: 300
     # We use L2-Norm for distance_type.
     distance_type: cos
     # The type of fashion-mnist's feature vectors.
