@@ -26,7 +26,6 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/grpc/interceptor/server/recover"
 	"github.com/vdaas/vald/internal/observability"
-	"github.com/vdaas/vald/internal/observability/metrics/index/job/correction"
 	"github.com/vdaas/vald/internal/runner"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/servers/server"
@@ -116,10 +115,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 
 	var obs observability.Observability
 	if cfg.Observability.Enabled {
-		obs, err = observability.NewWithConfig(
-			cfg.Observability,
-			correction.New(corrector),
-		)
+		obs, err = observability.NewWithConfig(cfg.Observability)
 		if err != nil {
 			log.Error("failed to initialize observability")
 			return nil, err
