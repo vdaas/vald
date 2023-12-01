@@ -37,12 +37,12 @@ define proto-code-gen
 		--plugin protoc-gen-go="$(GOBIN)/protoc-gen-go" \
                 --go-vtproto_out=$(GOPATH)/src \
 		--plugin protoc-gen-go-vtproto="$(GOBIN)/protoc-gen-go-vtproto" \
-                --go-vtproto_opt=features=grpc+marshal+unmarshal+size+equal+clone+pool \
-                --go-vtproto_opt=pool=$(ROOTDIR)/apis/proto/v1/payload.Object.Vector \
+                --go-vtproto_opt=features=grpc+marshal+unmarshal+size+equal+clone \
 		$1
 endef
 		# --go-grpc_out=$(GOPATH)/src \
 		# --plugin protoc-gen-go-grpc="${GOBIN}/protoc-gen-go-grpc" \
+                # --go-vtproto_opt=pool=$(ROOTDIR)/apis/proto/v1/payload.Object.Vector \
                 # --go-vtproto_opt=pool=$(ROOTDIR)/apis/proto/v1/payload.Insert.MultiRequest \
                 # --go-vtproto_opt=pool=$(ROOTDIR)/apis/proto/v1/payload.Insert.Request \
                 # --go-vtproto_opt=pool=$(ROOTDIR)/apis/proto/v1/payload.Object.Vector \

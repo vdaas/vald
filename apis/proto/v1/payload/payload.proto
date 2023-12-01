@@ -20,7 +20,6 @@ package payload.v1;
 
 import "github.com/envoyproxy/protoc-gen-validate/validate/validate.proto";
 import "github.com/googleapis/googleapis/google/rpc/status.proto";
-import "github.com/planetscale/vtprotobuf/include/github.com/planetscale/vtprotobuf/vtproto/ext.proto";
 
 option go_package = "github.com/vdaas/vald/apis/grpc/v1/payload";
 option java_multiple_files = true;
@@ -376,7 +375,6 @@ message Object {
 
   // Represent a vector.
   message Vector {
-    option (vtproto.mempool) = true;
     // The vector ID.
     string id = 1 [(validate.rules).string.min_len = 1];
     // The vector.
