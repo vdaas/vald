@@ -1640,6 +1640,10 @@ agent:
     volume_name: vald-agent-ngt-readreplica-pvc
     snapshot_classname: ""
     replica: 2
+    service:
+      # @schema {"name": "agent.readreplica.service.annotations", "type": "object"}
+      # agent.readreplica.service.annotations -- readreplica deployment annotations
+      annotations: {}
   # @schema {"name": "agent.ngt", "type": "object"}
   ngt:
     # @schema {"name": "agent.ngt.index_path", "type": "string"}
