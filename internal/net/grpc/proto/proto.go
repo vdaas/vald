@@ -55,7 +55,7 @@ func ToMessageV1(m Message) MessageV1 {
 	return protoimpl.X.ProtoMessageV1Of(m)
 }
 
-// ToMessageV1 downcasts Messages to V1 protobuf MessageV1
+// ToMessageV2 upcasts V1 Message to V2 protobuf MessageV2
 func ToMessageV2(m MessageV1) Message {
 	return protoimpl.X.ProtoMessageV2Of(m)
 }
