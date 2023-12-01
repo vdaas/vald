@@ -16,15 +16,18 @@
 {{- $agent := .Values.agent -}}
 {{- $readreplica := .Values.agent.readreplica -}}
 {{- if $readreplica.enabled }}
+{{ range $id := until (int $agent.minReplicas) }}
+---
 apiVersion: snapshot.storage.k8s.io/v1
 kind: VolumeSnapshot
 metadata:
   labels:
-    {{ $readreplica.label_key }}: "0" # FIXME: replace this with loop var
-  name: {{ $readreplica.name }}-snapshot-0 # FIXME:
+    {{ $readreplica.label_key }}: "{{ $id }}"
+  name: {{ $readreplica.name }}-snapshot-{{ $id }}
 spec:
   volumeSnapshotClassName: csi-hostpath-snapclass
   source:
     # Specify the PVCs for which you want to take snapshots
-    persistentVolumeClaimName: {{ $agent.name }}-pvc-{{ $agent.name }}-0
+    persistentVolumeClaimName: {{ $agent.name }}-pvc-{{ $agent.name }}-{{ $id }}
+{{- end }}
 {{- end }}

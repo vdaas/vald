@@ -17,12 +17,14 @@
 {{- $agent := .Values.agent -}}
 {{- $readreplica := .Values.agent.readreplica -}}
 {{- if $readreplica.enabled }}
+{{ range $id := until (int $agent.minReplicas) }}
+---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: {{ $readreplica.name }}-pvc-0
+  name: {{ $readreplica.name }}-pvc-{{ $id }}
   labels:
-    {{ $readreplica.label_key }}: "0" # FIXME: replace this with loop var
+    {{ $readreplica.label_key }}: "{{ $id }}"
 spec:
   accessModes:
     - ReadOnlyMany
@@ -30,7 +32,8 @@ spec:
     requests:
       storage: 1Gi
   dataSource:
-    name: {{ $readreplica.name }}-snapshot-0
+    name: {{ $readreplica.name }}-snapshot-{{ $id }}
     kind: VolumeSnapshot
     apiGroup: snapshot.storage.k8s.io
+{{- end }}
 {{- end }}

@@ -15,22 +15,29 @@
 #
 {{- $agent := .Values.agent -}}
 {{- $readreplica := .Values.agent.readreplica -}}
+{{- $defaults := .Values.defaults -}}
+{{- $release := .Release -}}
+{{- $chart := .Chart -}}
+{{- $valdname := include "vald.name" . -}}
+{{- $valdchart := include "vald.chart" . -}}
 # if agent.enabled is true and agent.kind is StatefulSet and readreplica.enabled is true
 # then create StatefulSet for agent and readreplica
 {{- if and $agent.enabled (eq .Values.agent.kind "StatefulSet") $readreplica.enabled }}
+{{ range $id := until (int $agent.minReplicas) }}
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ $readreplica.name }}-0 # FIXME: replace this id with loop var
+  name: {{ $readreplica.name }}-{{ $id }}
   labels:
-    app: {{ $readreplica.name }}-0 # FIXME: replace this id with loop var
-    app.kubernetes.io/name: {{ include "vald.name" . }}
-    helm.sh/chart: {{ include "vald.chart" . }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
-    app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/version: {{ .Chart.Version }}
+    app: {{ $readreplica.name }}-{{ $id }}
+    app.kubernetes.io/name: {{ $valdname }}
+    helm.sh/chart: {{ $valdchart }}
+    app.kubernetes.io/managed-by: {{ $release.Service }}
+    app.kubernetes.io/instance: {{ $release.Name }}
+    app.kubernetes.io/version: {{ $chart.Version }}
     app.kubernetes.io/component: agent
-    {{ $readreplica.label_key }}: "0" # FIXME: replace this id with loop var
+    {{ $readreplica.label_key }}: "{{ $id }}"
   {{- if $agent.annotations }}
   annotations:
     {{- toYaml $agent.annotations | nindent 4 }}
@@ -42,16 +49,16 @@ spec:
   revisionHistoryLimit: {{ $agent.revisionHistoryLimit }}
   selector:
     matchLabels:
-      app: {{ $agent.name }}
+      app: {{ $readreplica.name }}-{{ $id }}
   template:
     metadata:
       creationTimestamp: null
       labels:
-        app: {{ $agent.name }}
-        app.kubernetes.io/name: {{ include "vald.name" . }}
-        app.kubernetes.io/instance: {{ .Release.Name }}
+        app: {{ $readreplica.name }}-{{ $id }}
+        app.kubernetes.io/name: {{ $valdname }}
+        app.kubernetes.io/instance: {{ $release.Name }}
         app.kubernetes.io/component: agent
-      {{- $pprof := default .Values.defaults.server_config.metrics.pprof $agent.server_config.metrics.pprof }}
+      {{- $pprof := default $defaults.server_config.metrics.pprof $agent.server_config.metrics.pprof }}
       {{- if or $agent.podAnnotations $agent.sidecar.enabled $pprof.enabled }}
       annotations:
         {{- if $agent.podAnnotations }}
@@ -78,9 +85,9 @@ spec:
         {{- end }}
         {{- if $agent.sidecar.initContainerEnabled }}
         - name: {{ $agent.sidecar.name }}-init
-          image: "{{ $agent.sidecar.image.repository }}:{{ default .Values.defaults.image.tag $agent.sidecar.image.tag }}"
+          image: "{{ $agent.sidecar.image.repository }}:{{ default $defaults.image.tag $agent.sidecar.image.tag }}"
           imagePullPolicy: {{ $agent.sidecar.image.pullPolicy }}
-          {{- $servers := dict "Values" $agent.sidecar.server_config "default" .Values.defaults.server_config -}}
+          {{- $servers := dict "Values" $agent.sidecar.server_config "default" $defaults.server_config -}}
           {{- include "vald.containerPorts" $servers | trim | nindent 10 }}
           resources:
             {{- toYaml $agent.sidecar.resources | nindent 12 }}
@@ -124,9 +131,9 @@ spec:
       {{- end }}
       containers:
         - name: {{ $agent.name }}
-          image: "{{ $agent.image.repository }}:{{ default .Values.defaults.image.tag $agent.image.tag }}"
+          image: "{{ $agent.image.repository }}:{{ default $defaults.image.tag $agent.image.tag }}"
           imagePullPolicy: {{ $agent.image.pullPolicy }}
-          {{- $servers := dict "Values" $agent.server_config "default" .Values.defaults.server_config -}}
+          {{- $servers := dict "Values" $agent.server_config "default" $defaults.server_config -}}
           {{- include "vald.containerPorts" $servers | trim | nindent 10 }}
           resources:
             {{- toYaml $agent.resources | nindent 12 }}
@@ -173,7 +180,7 @@ spec:
             name: {{ $agent.name }}-config
         - name: {{ $readreplica.volume_name }}
           persistentVolumeClaim:
-            claimName: {{ $readreplica.name }}-pvc-0 # FIXME: replace this id with loop var
+            claimName: {{ $readreplica.name }}-pvc-{{ $id }}
       {{- if $agent.nodeName }}
       nodeName: {{ $agent.nodeName }}
       {{- end }}
@@ -187,7 +194,8 @@ spec:
       {{- end }}
       {{- if $agent.podPriority }}
       {{- if $agent.podPriority.enabled }}
-      priorityClassName: {{ .Release.Namespace }}-{{ $agent.name }}-priority
+      priorityClassName: {{ $release.Namespace }}-{{ $agent.name }}-priority
       {{- end }}
       {{- end }}
+{{- end }}
 {{- end }}
