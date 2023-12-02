@@ -19,7 +19,7 @@ ARG MAINTAINER="vdaas.org vald team <vald@vdaas.org>"
 
 FROM golang:${GO_VERSION} AS golang
 
-FROM ubuntu:devel AS builder
+FROM ubuntu:23.10 AS builder
 
 ENV GO111MODULE on
 ENV DEBIAN_FRONTEND noninteractive
@@ -107,7 +107,7 @@ RUN GO_VERSION="$(< GO_VERSION)" \
     && upx -9 -o "/usr/bin/${APP_NAME}" "${APP_NAME}"
 
 # Start From Scratch For Running Environment
-FROM ubuntu:devel
+FROM ubuntu:23.10
 # Start From Alpine For Debug Environment
 # FROM alpine:latest
 LABEL maintainer="${MAINTAINER}"
