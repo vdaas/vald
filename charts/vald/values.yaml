@@ -1633,13 +1633,29 @@ agent:
     requests:
       cpu: 300m
       memory: 4Gi
+  # @schema {"name": "agent.readreplica", "type": "object"}
+  # agent.readreplica -- readreplica deployment annotations
   readreplica:
+    # @schema {"name": "agent.readreplica.enabled", "type": "boolean"}
+    # agent.readreplica.enabled -- enable agent readreplica
     enabled: true
+    # @schema {"name": "agent.readreplica.name", "type": "string"}
+    # agent.readreplica.name -- name of agent readreplica
     name: vald-agent-ngt-readreplica
+    # @schema {"name": "agent.readreplica.label_key", "type": "string"}
+    # agent.readreplica.label_key -- label key to identify read replica resources
     label_key: vald-readreplica-id
+    # @schema {"name": "agent.readreplica.volume_name", "type": "string"}
+    # agent.readreplica.volume_name -- name of clone volume of agent pvc for read replica
     volume_name: vald-agent-ngt-readreplica-pvc
+    # @schema {"name": "agent.readreplica.snapshot_classname", "type": "string"}
+    # agent.readreplica.snapshot_classname -- snapshot class name for snapshotter used for read replica
     snapshot_classname: ""
+    # @schema {"name": "agent.readreplica.replica", "type": "integer"}
+    # agent.readreplica.replica -- replica number of read replica
     replica: 2
+    # @schema {"name": "agent.readreplica.service", "type": "object"}
+    # agent.readreplica.service -- service settings for read replica service resources
     service:
       # @schema {"name": "agent.readreplica.service.annotations", "type": "object"}
       # agent.readreplica.service.annotations -- readreplica deployment annotations
