@@ -45,9 +45,6 @@
   - [Insert.MultiRequest](#payload-v1-Insert-MultiRequest)
   - [Insert.ObjectRequest](#payload-v1-Insert-ObjectRequest)
   - [Insert.Request](#payload-v1-Insert-Request)
-  - [Mirror](#payload-v1-Mirror)
-  - [Mirror.Target](#payload-v1-Mirror-Target)
-  - [Mirror.Targets](#payload-v1-Mirror-Targets)
   - [Object](#payload-v1-Object)
   - [Object.Blob](#payload-v1-Object-Blob)
   - [Object.Distance](#payload-v1-Object-Distance)
@@ -97,24 +94,9 @@
   - [Upsert.MultiRequest](#payload-v1-Upsert-MultiRequest)
   - [Upsert.ObjectRequest](#payload-v1-Upsert-ObjectRequest)
   - [Upsert.Request](#payload-v1-Upsert-Request)
-
   - [Remove.Timestamp.Operator](#payload-v1-Remove-Timestamp-Operator)
   - [Search.AggregationAlgorithm](#payload-v1-Search-AggregationAlgorithm)
 
-- [apis/proto/v1/vald/filter.proto](#apis_proto_v1_vald_filter-proto)
-  - [Filter](#vald-v1-Filter)
-- [apis/proto/v1/vald/insert.proto](#apis_proto_v1_vald_insert-proto)
-  - [Insert](#vald-v1-Insert)
-- [apis/proto/v1/vald/object.proto](#apis_proto_v1_vald_object-proto)
-  - [Object](#vald-v1-Object)
-- [apis/proto/v1/vald/remove.proto](#apis_proto_v1_vald_remove-proto)
-  - [Remove](#vald-v1-Remove)
-- [apis/proto/v1/vald/search.proto](#apis_proto_v1_vald_search-proto)
-  - [Search](#vald-v1-Search)
-- [apis/proto/v1/vald/update.proto](#apis_proto_v1_vald_update-proto)
-  - [Update](#vald-v1-Update)
-- [apis/proto/v1/vald/upsert.proto](#apis_proto_v1_vald_upsert-proto)
-  - [Upsert](#vald-v1-Upsert)
 - [apis/proto/v1/rpc/error_details.proto](#apis_proto_v1_rpc_error_details-proto)
   - [BadRequest](#rpc-v1-BadRequest)
   - [BadRequest.FieldViolation](#rpc-v1-BadRequest-FieldViolation)
@@ -131,8 +113,20 @@
   - [RequestInfo](#rpc-v1-RequestInfo)
   - [ResourceInfo](#rpc-v1-ResourceInfo)
   - [RetryInfo](#rpc-v1-RetryInfo)
-- [apis/proto/v1/mirror/mirror.proto](#apis_proto_v1_mirror_mirror-proto)
-  - [Mirror](#mirror-v1-Mirror)
+- [apis/proto/v1/vald/filter.proto](#apis_proto_v1_vald_filter-proto)
+  - [Filter](#vald-v1-Filter)
+- [apis/proto/v1/vald/insert.proto](#apis_proto_v1_vald_insert-proto)
+  - [Insert](#vald-v1-Insert)
+- [apis/proto/v1/vald/object.proto](#apis_proto_v1_vald_object-proto)
+  - [Object](#vald-v1-Object)
+- [apis/proto/v1/vald/remove.proto](#apis_proto_v1_vald_remove-proto)
+  - [Remove](#vald-v1-Remove)
+- [apis/proto/v1/vald/search.proto](#apis_proto_v1_vald_search-proto)
+  - [Search](#vald-v1-Search)
+- [apis/proto/v1/vald/update.proto](#apis_proto_v1_vald_update-proto)
+  - [Update](#vald-v1-Update)
+- [apis/proto/v1/vald/upsert.proto](#apis_proto_v1_vald_upsert-proto)
+  - [Upsert](#vald-v1-Upsert)
 - [Scalar Value Types](#scalar-value-types)
 
 <a name="apis_proto_v1_agent_core_agent-proto"></a>
@@ -506,33 +500,6 @@ Represent the insert request.
 | ------ | ------------------------------------------ | ----- | ---------------------------------------- |
 | vector | [Object.Vector](#payload-v1-Object-Vector) |       | The vector to be inserted.               |
 | config | [Insert.Config](#payload-v1-Insert-Config) |       | The configuration of the insert request. |
-
-<a name="payload-v1-Mirror"></a>
-
-### Mirror
-
-Mirror related messages.
-
-<a name="payload-v1-Mirror-Target"></a>
-
-### Mirror.Target
-
-Represent server information.
-
-| Field | Type              | Label | Description          |
-| ----- | ----------------- | ----- | -------------------- |
-| host  | [string](#string) |       | The target hostname. |
-| port  | [uint32](#uint32) |       | The target port.     |
-
-<a name="payload-v1-Mirror-Targets"></a>
-
-### Mirror.Targets
-
-Represent the multiple Target message.
-
-| Field   | Type                                       | Label    | Description                      |
-| ------- | ------------------------------------------ | -------- | -------------------------------- |
-| targets | [Mirror.Target](#payload-v1-Mirror-Target) | repeated | The multiple target information. |
 
 <a name="payload-v1-Object"></a>
 
@@ -1064,152 +1031,6 @@ AggregationAlgorithm is enum of each aggregation algorithms
 | SortPoolSlice   | 3      |             |
 | PairingHeap     | 4      |             |
 
-<a name="apis_proto_v1_vald_filter-proto"></a>
-
-<p align="right"><a href="#top">Top</a></p>
-
-## apis/proto/v1/vald/filter.proto
-
-<a name="vald-v1-Filter"></a>
-
-### Filter
-
-Filter service provides ways to connect to Vald through filter.
-
-| Method Name        | Request Type                                                                   | Response Type                                                                 | Description                                                              |
-| ------------------ | ------------------------------------------------------------------------------ | ----------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
-| SearchObject       | [.payload.v1.Search.ObjectRequest](#payload-v1-Search-ObjectRequest)           | [.payload.v1.Search.Response](#payload-v1-Search-Response)                    | A method to search object.                                               |
-| MultiSearchObject  | [.payload.v1.Search.MultiObjectRequest](#payload-v1-Search-MultiObjectRequest) | [.payload.v1.Search.Responses](#payload-v1-Search-Responses)                  | A method to search multiple objects.                                     |
-| StreamSearchObject | [.payload.v1.Search.ObjectRequest](#payload-v1-Search-ObjectRequest) stream    | [.payload.v1.Search.StreamResponse](#payload-v1-Search-StreamResponse) stream | A method to search object by bidirectional streaming.                    |
-| InsertObject       | [.payload.v1.Insert.ObjectRequest](#payload-v1-Insert-ObjectRequest)           | [.payload.v1.Object.Location](#payload-v1-Object-Location)                    | A method insert object.                                                  |
-| StreamInsertObject | [.payload.v1.Insert.ObjectRequest](#payload-v1-Insert-ObjectRequest) stream    | [.payload.v1.Object.StreamLocation](#payload-v1-Object-StreamLocation) stream | Represent the streaming RPC to insert object by bidirectional streaming. |
-| MultiInsertObject  | [.payload.v1.Insert.MultiObjectRequest](#payload-v1-Insert-MultiObjectRequest) | [.payload.v1.Object.Locations](#payload-v1-Object-Locations)                  | A method to insert multiple objects.                                     |
-| UpdateObject       | [.payload.v1.Update.ObjectRequest](#payload-v1-Update-ObjectRequest)           | [.payload.v1.Object.Location](#payload-v1-Object-Location)                    | A method to update object.                                               |
-| StreamUpdateObject | [.payload.v1.Update.ObjectRequest](#payload-v1-Update-ObjectRequest) stream    | [.payload.v1.Object.StreamLocation](#payload-v1-Object-StreamLocation) stream | A method to update object by bidirectional streaming.                    |
-| MultiUpdateObject  | [.payload.v1.Update.MultiObjectRequest](#payload-v1-Update-MultiObjectRequest) | [.payload.v1.Object.Locations](#payload-v1-Object-Locations)                  | A method to update multiple objects.                                     |
-| UpsertObject       | [.payload.v1.Upsert.ObjectRequest](#payload-v1-Upsert-ObjectRequest)           | [.payload.v1.Object.Location](#payload-v1-Object-Location)                    | A method to upsert object.                                               |
-| StreamUpsertObject | [.payload.v1.Upsert.ObjectRequest](#payload-v1-Upsert-ObjectRequest) stream    | [.payload.v1.Object.StreamLocation](#payload-v1-Object-StreamLocation) stream | A method to upsert object by bidirectional streaming.                    |
-| MultiUpsertObject  | [.payload.v1.Upsert.MultiObjectRequest](#payload-v1-Upsert-MultiObjectRequest) | [.payload.v1.Object.Locations](#payload-v1-Object-Locations)                  | A method to upsert multiple objects.                                     |
-
-<a name="apis_proto_v1_vald_insert-proto"></a>
-
-<p align="right"><a href="#top">Top</a></p>
-
-## apis/proto/v1/vald/insert.proto
-
-<a name="vald-v1-Insert"></a>
-
-### Insert
-
-Insert service provides ways to add new vectors.
-
-| Method Name  | Request Type                                                       | Response Type                                                                 | Description                                                      |
-| ------------ | ------------------------------------------------------------------ | ----------------------------------------------------------------------------- | ---------------------------------------------------------------- |
-| Insert       | [.payload.v1.Insert.Request](#payload-v1-Insert-Request)           | [.payload.v1.Object.Location](#payload-v1-Object-Location)                    | A method to add a new single vector.                             |
-| StreamInsert | [.payload.v1.Insert.Request](#payload-v1-Insert-Request) stream    | [.payload.v1.Object.StreamLocation](#payload-v1-Object-StreamLocation) stream | A method to add new multiple vectors by bidirectional streaming. |
-| MultiInsert  | [.payload.v1.Insert.MultiRequest](#payload-v1-Insert-MultiRequest) | [.payload.v1.Object.Locations](#payload-v1-Object-Locations)                  | A method to add new multiple vectors in a single request.        |
-
-<a name="apis_proto_v1_vald_object-proto"></a>
-
-<p align="right"><a href="#top">Top</a></p>
-
-## apis/proto/v1/vald/object.proto
-
-<a name="vald-v1-Object"></a>
-
-### Object
-
-Object service provides ways to fetch indexed vectors.
-
-| Method Name      | Request Type                                                                | Response Type                                                               | Description                                                 |
-| ---------------- | --------------------------------------------------------------------------- | --------------------------------------------------------------------------- | ----------------------------------------------------------- |
-| Exists           | [.payload.v1.Object.ID](#payload-v1-Object-ID)                              | [.payload.v1.Object.ID](#payload-v1-Object-ID)                              | A method to check whether a specified ID is indexed or not. |
-| GetObject        | [.payload.v1.Object.VectorRequest](#payload-v1-Object-VectorRequest)        | [.payload.v1.Object.Vector](#payload-v1-Object-Vector)                      | A method to fetch a vector.                                 |
-| StreamGetObject  | [.payload.v1.Object.VectorRequest](#payload-v1-Object-VectorRequest) stream | [.payload.v1.Object.StreamVector](#payload-v1-Object-StreamVector) stream   | A method to fetch vectors by bidirectional streaming.       |
-| StreamListObject | [.payload.v1.Object.List.Request](#payload-v1-Object-List-Request)          | [.payload.v1.Object.List.Response](#payload-v1-Object-List-Response) stream | A method to get all the vectors with server streaming       |
-
-<a name="apis_proto_v1_vald_remove-proto"></a>
-
-<p align="right"><a href="#top">Top</a></p>
-
-## apis/proto/v1/vald/remove.proto
-
-<a name="vald-v1-Remove"></a>
-
-### Remove
-
-Remove service provides ways to remove indexed vectors.
-
-| Method Name       | Request Type                                                               | Response Type                                                                 | Description                                                             |
-| ----------------- | -------------------------------------------------------------------------- | ----------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
-| Remove            | [.payload.v1.Remove.Request](#payload-v1-Remove-Request)                   | [.payload.v1.Object.Location](#payload-v1-Object-Location)                    | A method to remove an indexed vector.                                   |
-| RemoveByTimestamp | [.payload.v1.Remove.TimestampRequest](#payload-v1-Remove-TimestampRequest) | [.payload.v1.Object.Locations](#payload-v1-Object-Locations)                  | A method to remove an indexed vector based on timestamp.                |
-| StreamRemove      | [.payload.v1.Remove.Request](#payload-v1-Remove-Request) stream            | [.payload.v1.Object.StreamLocation](#payload-v1-Object-StreamLocation) stream | A method to remove multiple indexed vectors by bidirectional streaming. |
-| MultiRemove       | [.payload.v1.Remove.MultiRequest](#payload-v1-Remove-MultiRequest)         | [.payload.v1.Object.Locations](#payload-v1-Object-Locations)                  | A method to remove multiple indexed vectors in a single request.        |
-
-<a name="apis_proto_v1_vald_search-proto"></a>
-
-<p align="right"><a href="#top">Top</a></p>
-
-## apis/proto/v1/vald/search.proto
-
-<a name="vald-v1-Search"></a>
-
-### Search
-
-Search service provides ways to search indexed vectors.
-
-| Method Name            | Request Type                                                           | Response Type                                                                 | Description                                                                        |
-| ---------------------- | ---------------------------------------------------------------------- | ----------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
-| Search                 | [.payload.v1.Search.Request](#payload-v1-Search-Request)               | [.payload.v1.Search.Response](#payload-v1-Search-Response)                    | A method to search indexed vectors by a raw vector.                                |
-| SearchByID             | [.payload.v1.Search.IDRequest](#payload-v1-Search-IDRequest)           | [.payload.v1.Search.Response](#payload-v1-Search-Response)                    | A method to search indexed vectors by ID.                                          |
-| StreamSearch           | [.payload.v1.Search.Request](#payload-v1-Search-Request) stream        | [.payload.v1.Search.StreamResponse](#payload-v1-Search-StreamResponse) stream | A method to search indexed vectors by multiple vectors.                            |
-| StreamSearchByID       | [.payload.v1.Search.IDRequest](#payload-v1-Search-IDRequest) stream    | [.payload.v1.Search.StreamResponse](#payload-v1-Search-StreamResponse) stream | A method to search indexed vectors by multiple IDs.                                |
-| MultiSearch            | [.payload.v1.Search.MultiRequest](#payload-v1-Search-MultiRequest)     | [.payload.v1.Search.Responses](#payload-v1-Search-Responses)                  | A method to search indexed vectors by multiple vectors in a single request.        |
-| MultiSearchByID        | [.payload.v1.Search.MultiIDRequest](#payload-v1-Search-MultiIDRequest) | [.payload.v1.Search.Responses](#payload-v1-Search-Responses)                  | A method to search indexed vectors by multiple IDs in a single request.            |
-| LinearSearch           | [.payload.v1.Search.Request](#payload-v1-Search-Request)               | [.payload.v1.Search.Response](#payload-v1-Search-Response)                    | A method to linear search indexed vectors by a raw vector.                         |
-| LinearSearchByID       | [.payload.v1.Search.IDRequest](#payload-v1-Search-IDRequest)           | [.payload.v1.Search.Response](#payload-v1-Search-Response)                    | A method to linear search indexed vectors by ID.                                   |
-| StreamLinearSearch     | [.payload.v1.Search.Request](#payload-v1-Search-Request) stream        | [.payload.v1.Search.StreamResponse](#payload-v1-Search-StreamResponse) stream | A method to linear search indexed vectors by multiple vectors.                     |
-| StreamLinearSearchByID | [.payload.v1.Search.IDRequest](#payload-v1-Search-IDRequest) stream    | [.payload.v1.Search.StreamResponse](#payload-v1-Search-StreamResponse) stream | A method to linear search indexed vectors by multiple IDs.                         |
-| MultiLinearSearch      | [.payload.v1.Search.MultiRequest](#payload-v1-Search-MultiRequest)     | [.payload.v1.Search.Responses](#payload-v1-Search-Responses)                  | A method to linear search indexed vectors by multiple vectors in a single request. |
-| MultiLinearSearchByID  | [.payload.v1.Search.MultiIDRequest](#payload-v1-Search-MultiIDRequest) | [.payload.v1.Search.Responses](#payload-v1-Search-Responses)                  | A method to linear search indexed vectors by multiple IDs in a single request.     |
-
-<a name="apis_proto_v1_vald_update-proto"></a>
-
-<p align="right"><a href="#top">Top</a></p>
-
-## apis/proto/v1/vald/update.proto
-
-<a name="vald-v1-Update"></a>
-
-### Update
-
-Update service provides ways to update indexed vectors.
-
-| Method Name  | Request Type                                                       | Response Type                                                                 | Description                                                             |
-| ------------ | ------------------------------------------------------------------ | ----------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
-| Update       | [.payload.v1.Update.Request](#payload-v1-Update-Request)           | [.payload.v1.Object.Location](#payload-v1-Object-Location)                    | A method to update an indexed vector.                                   |
-| StreamUpdate | [.payload.v1.Update.Request](#payload-v1-Update-Request) stream    | [.payload.v1.Object.StreamLocation](#payload-v1-Object-StreamLocation) stream | A method to update multiple indexed vectors by bidirectional streaming. |
-| MultiUpdate  | [.payload.v1.Update.MultiRequest](#payload-v1-Update-MultiRequest) | [.payload.v1.Object.Locations](#payload-v1-Object-Locations)                  | A method to update multiple indexed vectors in a single request.        |
-
-<a name="apis_proto_v1_vald_upsert-proto"></a>
-
-<p align="right"><a href="#top">Top</a></p>
-
-## apis/proto/v1/vald/upsert.proto
-
-<a name="vald-v1-Upsert"></a>
-
-### Upsert
-
-Upsert service provides ways to insert/update vectors.
-
-| Method Name  | Request Type                                                       | Response Type                                                                 | Description                                                            |
-| ------------ | ------------------------------------------------------------------ | ----------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
-| Upsert       | [.payload.v1.Upsert.Request](#payload-v1-Upsert-Request)           | [.payload.v1.Object.Location](#payload-v1-Object-Location)                    | A method to insert/update a vector.                                    |
-| StreamUpsert | [.payload.v1.Upsert.Request](#payload-v1-Upsert-Request) stream    | [.payload.v1.Object.StreamLocation](#payload-v1-Object-StreamLocation) stream | A method to insert/update multiple vectors by bidirectional streaming. |
-| MultiUpsert  | [.payload.v1.Upsert.MultiRequest](#payload-v1-Upsert-MultiRequest) | [.payload.v1.Object.Locations](#payload-v1-Object-Locations)                  | A method to insert/update multiple vectors in a single request.        |
-
 <a name="apis_proto_v1_rpc_error_details-proto"></a>
 
 <p align="right"><a href="#top">Top</a></p>
@@ -1457,36 +1278,151 @@ reached.
 | ----------- | ----------------------------------------------------- | ----- | ------------------------------------------------------------------------- |
 | retry_delay | [google.protobuf.Duration](#google-protobuf-Duration) |       | Clients should wait at least this long between retrying the same request. |
 
-<a name="apis_proto_v1_mirror_mirror-proto"></a>
+<a name="apis_proto_v1_vald_filter-proto"></a>
 
 <p align="right"><a href="#top">Top</a></p>
 
-## apis/proto/v1/mirror/mirror.proto
+## apis/proto/v1/vald/filter.proto
 
-Copyright (C) 2019-2023 vdaas.org vald team &lt;vald@vdaas.org&gt;
+<a name="vald-v1-Filter"></a>
 
-Licensed under the Apache License, Version 2.0 (the &#34;License&#34;);
-You may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+### Filter
 
-https://www.apache.org/licenses/LICENSE-2.0
+Filter service provides ways to connect to Vald through filter.
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an &#34;AS IS&#34; BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+| Method Name        | Request Type                                                                   | Response Type                                                                 | Description                                                              |
+| ------------------ | ------------------------------------------------------------------------------ | ----------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| SearchObject       | [.payload.v1.Search.ObjectRequest](#payload-v1-Search-ObjectRequest)           | [.payload.v1.Search.Response](#payload-v1-Search-Response)                    | A method to search object.                                               |
+| MultiSearchObject  | [.payload.v1.Search.MultiObjectRequest](#payload-v1-Search-MultiObjectRequest) | [.payload.v1.Search.Responses](#payload-v1-Search-Responses)                  | A method to search multiple objects.                                     |
+| StreamSearchObject | [.payload.v1.Search.ObjectRequest](#payload-v1-Search-ObjectRequest) stream    | [.payload.v1.Search.StreamResponse](#payload-v1-Search-StreamResponse) stream | A method to search object by bidirectional streaming.                    |
+| InsertObject       | [.payload.v1.Insert.ObjectRequest](#payload-v1-Insert-ObjectRequest)           | [.payload.v1.Object.Location](#payload-v1-Object-Location)                    | A method insert object.                                                  |
+| StreamInsertObject | [.payload.v1.Insert.ObjectRequest](#payload-v1-Insert-ObjectRequest) stream    | [.payload.v1.Object.StreamLocation](#payload-v1-Object-StreamLocation) stream | Represent the streaming RPC to insert object by bidirectional streaming. |
+| MultiInsertObject  | [.payload.v1.Insert.MultiObjectRequest](#payload-v1-Insert-MultiObjectRequest) | [.payload.v1.Object.Locations](#payload-v1-Object-Locations)                  | A method to insert multiple objects.                                     |
+| UpdateObject       | [.payload.v1.Update.ObjectRequest](#payload-v1-Update-ObjectRequest)           | [.payload.v1.Object.Location](#payload-v1-Object-Location)                    | A method to update object.                                               |
+| StreamUpdateObject | [.payload.v1.Update.ObjectRequest](#payload-v1-Update-ObjectRequest) stream    | [.payload.v1.Object.StreamLocation](#payload-v1-Object-StreamLocation) stream | A method to update object by bidirectional streaming.                    |
+| MultiUpdateObject  | [.payload.v1.Update.MultiObjectRequest](#payload-v1-Update-MultiObjectRequest) | [.payload.v1.Object.Locations](#payload-v1-Object-Locations)                  | A method to update multiple objects.                                     |
+| UpsertObject       | [.payload.v1.Upsert.ObjectRequest](#payload-v1-Upsert-ObjectRequest)           | [.payload.v1.Object.Location](#payload-v1-Object-Location)                    | A method to upsert object.                                               |
+| StreamUpsertObject | [.payload.v1.Upsert.ObjectRequest](#payload-v1-Upsert-ObjectRequest) stream    | [.payload.v1.Object.StreamLocation](#payload-v1-Object-StreamLocation) stream | A method to upsert object by bidirectional streaming.                    |
+| MultiUpsertObject  | [.payload.v1.Upsert.MultiObjectRequest](#payload-v1-Upsert-MultiObjectRequest) | [.payload.v1.Object.Locations](#payload-v1-Object-Locations)                  | A method to upsert multiple objects.                                     |
 
-<a name="mirror-v1-Mirror"></a>
+<a name="apis_proto_v1_vald_insert-proto"></a>
 
-### Mirror
+<p align="right"><a href="#top">Top</a></p>
 
-Represent the mirror service.
+## apis/proto/v1/vald/insert.proto
 
-| Method Name | Request Type                                             | Response Type                                            | Description                                             |
-| ----------- | -------------------------------------------------------- | -------------------------------------------------------- | ------------------------------------------------------- |
-| Register    | [.payload.v1.Mirror.Targets](#payload-v1-Mirror-Targets) | [.payload.v1.Mirror.Targets](#payload-v1-Mirror-Targets) | Register is the RPC to register other mirror servers.   |
-| Advertise   | [.payload.v1.Mirror.Targets](#payload-v1-Mirror-Targets) | [.payload.v1.Mirror.Targets](#payload-v1-Mirror-Targets) | Advertise is the RPC to advertise other mirror servers. |
+<a name="vald-v1-Insert"></a>
+
+### Insert
+
+Insert service provides ways to add new vectors.
+
+| Method Name  | Request Type                                                       | Response Type                                                                 | Description                                                      |
+| ------------ | ------------------------------------------------------------------ | ----------------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| Insert       | [.payload.v1.Insert.Request](#payload-v1-Insert-Request)           | [.payload.v1.Object.Location](#payload-v1-Object-Location)                    | A method to add a new single vector.                             |
+| StreamInsert | [.payload.v1.Insert.Request](#payload-v1-Insert-Request) stream    | [.payload.v1.Object.StreamLocation](#payload-v1-Object-StreamLocation) stream | A method to add new multiple vectors by bidirectional streaming. |
+| MultiInsert  | [.payload.v1.Insert.MultiRequest](#payload-v1-Insert-MultiRequest) | [.payload.v1.Object.Locations](#payload-v1-Object-Locations)                  | A method to add new multiple vectors in a single request.        |
+
+<a name="apis_proto_v1_vald_object-proto"></a>
+
+<p align="right"><a href="#top">Top</a></p>
+
+## apis/proto/v1/vald/object.proto
+
+<a name="vald-v1-Object"></a>
+
+### Object
+
+Object service provides ways to fetch indexed vectors.
+
+| Method Name      | Request Type                                                                | Response Type                                                               | Description                                                 |
+| ---------------- | --------------------------------------------------------------------------- | --------------------------------------------------------------------------- | ----------------------------------------------------------- |
+| Exists           | [.payload.v1.Object.ID](#payload-v1-Object-ID)                              | [.payload.v1.Object.ID](#payload-v1-Object-ID)                              | A method to check whether a specified ID is indexed or not. |
+| GetObject        | [.payload.v1.Object.VectorRequest](#payload-v1-Object-VectorRequest)        | [.payload.v1.Object.Vector](#payload-v1-Object-Vector)                      | A method to fetch a vector.                                 |
+| StreamGetObject  | [.payload.v1.Object.VectorRequest](#payload-v1-Object-VectorRequest) stream | [.payload.v1.Object.StreamVector](#payload-v1-Object-StreamVector) stream   | A method to fetch vectors by bidirectional streaming.       |
+| StreamListObject | [.payload.v1.Object.List.Request](#payload-v1-Object-List-Request)          | [.payload.v1.Object.List.Response](#payload-v1-Object-List-Response) stream | A method to get all the vectors with server streaming       |
+
+<a name="apis_proto_v1_vald_remove-proto"></a>
+
+<p align="right"><a href="#top">Top</a></p>
+
+## apis/proto/v1/vald/remove.proto
+
+<a name="vald-v1-Remove"></a>
+
+### Remove
+
+Remove service provides ways to remove indexed vectors.
+
+| Method Name       | Request Type                                                               | Response Type                                                                 | Description                                                             |
+| ----------------- | -------------------------------------------------------------------------- | ----------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| Remove            | [.payload.v1.Remove.Request](#payload-v1-Remove-Request)                   | [.payload.v1.Object.Location](#payload-v1-Object-Location)                    | A method to remove an indexed vector.                                   |
+| RemoveByTimestamp | [.payload.v1.Remove.TimestampRequest](#payload-v1-Remove-TimestampRequest) | [.payload.v1.Object.Locations](#payload-v1-Object-Locations)                  | A method to remove an indexed vector based on timestamp.                |
+| StreamRemove      | [.payload.v1.Remove.Request](#payload-v1-Remove-Request) stream            | [.payload.v1.Object.StreamLocation](#payload-v1-Object-StreamLocation) stream | A method to remove multiple indexed vectors by bidirectional streaming. |
+| MultiRemove       | [.payload.v1.Remove.MultiRequest](#payload-v1-Remove-MultiRequest)         | [.payload.v1.Object.Locations](#payload-v1-Object-Locations)                  | A method to remove multiple indexed vectors in a single request.        |
+
+<a name="apis_proto_v1_vald_search-proto"></a>
+
+<p align="right"><a href="#top">Top</a></p>
+
+## apis/proto/v1/vald/search.proto
+
+<a name="vald-v1-Search"></a>
+
+### Search
+
+Search service provides ways to search indexed vectors.
+
+| Method Name            | Request Type                                                           | Response Type                                                                 | Description                                                                        |
+| ---------------------- | ---------------------------------------------------------------------- | ----------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| Search                 | [.payload.v1.Search.Request](#payload-v1-Search-Request)               | [.payload.v1.Search.Response](#payload-v1-Search-Response)                    | A method to search indexed vectors by a raw vector.                                |
+| SearchByID             | [.payload.v1.Search.IDRequest](#payload-v1-Search-IDRequest)           | [.payload.v1.Search.Response](#payload-v1-Search-Response)                    | A method to search indexed vectors by ID.                                          |
+| StreamSearch           | [.payload.v1.Search.Request](#payload-v1-Search-Request) stream        | [.payload.v1.Search.StreamResponse](#payload-v1-Search-StreamResponse) stream | A method to search indexed vectors by multiple vectors.                            |
+| StreamSearchByID       | [.payload.v1.Search.IDRequest](#payload-v1-Search-IDRequest) stream    | [.payload.v1.Search.StreamResponse](#payload-v1-Search-StreamResponse) stream | A method to search indexed vectors by multiple IDs.                                |
+| MultiSearch            | [.payload.v1.Search.MultiRequest](#payload-v1-Search-MultiRequest)     | [.payload.v1.Search.Responses](#payload-v1-Search-Responses)                  | A method to search indexed vectors by multiple vectors in a single request.        |
+| MultiSearchByID        | [.payload.v1.Search.MultiIDRequest](#payload-v1-Search-MultiIDRequest) | [.payload.v1.Search.Responses](#payload-v1-Search-Responses)                  | A method to search indexed vectors by multiple IDs in a single request.            |
+| LinearSearch           | [.payload.v1.Search.Request](#payload-v1-Search-Request)               | [.payload.v1.Search.Response](#payload-v1-Search-Response)                    | A method to linear search indexed vectors by a raw vector.                         |
+| LinearSearchByID       | [.payload.v1.Search.IDRequest](#payload-v1-Search-IDRequest)           | [.payload.v1.Search.Response](#payload-v1-Search-Response)                    | A method to linear search indexed vectors by ID.                                   |
+| StreamLinearSearch     | [.payload.v1.Search.Request](#payload-v1-Search-Request) stream        | [.payload.v1.Search.StreamResponse](#payload-v1-Search-StreamResponse) stream | A method to linear search indexed vectors by multiple vectors.                     |
+| StreamLinearSearchByID | [.payload.v1.Search.IDRequest](#payload-v1-Search-IDRequest) stream    | [.payload.v1.Search.StreamResponse](#payload-v1-Search-StreamResponse) stream | A method to linear search indexed vectors by multiple IDs.                         |
+| MultiLinearSearch      | [.payload.v1.Search.MultiRequest](#payload-v1-Search-MultiRequest)     | [.payload.v1.Search.Responses](#payload-v1-Search-Responses)                  | A method to linear search indexed vectors by multiple vectors in a single request. |
+| MultiLinearSearchByID  | [.payload.v1.Search.MultiIDRequest](#payload-v1-Search-MultiIDRequest) | [.payload.v1.Search.Responses](#payload-v1-Search-Responses)                  | A method to linear search indexed vectors by multiple IDs in a single request.     |
+
+<a name="apis_proto_v1_vald_update-proto"></a>
+
+<p align="right"><a href="#top">Top</a></p>
+
+## apis/proto/v1/vald/update.proto
+
+<a name="vald-v1-Update"></a>
+
+### Update
+
+Update service provides ways to update indexed vectors.
+
+| Method Name  | Request Type                                                       | Response Type                                                                 | Description                                                             |
+| ------------ | ------------------------------------------------------------------ | ----------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| Update       | [.payload.v1.Update.Request](#payload-v1-Update-Request)           | [.payload.v1.Object.Location](#payload-v1-Object-Location)                    | A method to update an indexed vector.                                   |
+| StreamUpdate | [.payload.v1.Update.Request](#payload-v1-Update-Request) stream    | [.payload.v1.Object.StreamLocation](#payload-v1-Object-StreamLocation) stream | A method to update multiple indexed vectors by bidirectional streaming. |
+| MultiUpdate  | [.payload.v1.Update.MultiRequest](#payload-v1-Update-MultiRequest) | [.payload.v1.Object.Locations](#payload-v1-Object-Locations)                  | A method to update multiple indexed vectors in a single request.        |
+
+<a name="apis_proto_v1_vald_upsert-proto"></a>
+
+<p align="right"><a href="#top">Top</a></p>
+
+## apis/proto/v1/vald/upsert.proto
+
+<a name="vald-v1-Upsert"></a>
+
+### Upsert
+
+Upsert service provides ways to insert/update vectors.
+
+| Method Name  | Request Type                                                       | Response Type                                                                 | Description                                                            |
+| ------------ | ------------------------------------------------------------------ | ----------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| Upsert       | [.payload.v1.Upsert.Request](#payload-v1-Upsert-Request)           | [.payload.v1.Object.Location](#payload-v1-Object-Location)                    | A method to insert/update a vector.                                    |
+| StreamUpsert | [.payload.v1.Upsert.Request](#payload-v1-Upsert-Request) stream    | [.payload.v1.Object.StreamLocation](#payload-v1-Object-StreamLocation) stream | A method to insert/update multiple vectors by bidirectional streaming. |
+| MultiUpsert  | [.payload.v1.Upsert.MultiRequest](#payload-v1-Upsert-MultiRequest) | [.payload.v1.Object.Locations](#payload-v1-Object-Locations)                  | A method to insert/update multiple vectors in a single request.        |
 
 ## Scalar Value Types
 

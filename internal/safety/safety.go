@@ -47,6 +47,8 @@ func recoverFn(fn func() error, withPanic bool) func() error {
 
 						panic(err)
 					}
+				case *string:
+					err = errors.ErrPanicString(err, *x)
 				case string:
 					err = errors.ErrPanicString(err, x)
 				case error:
