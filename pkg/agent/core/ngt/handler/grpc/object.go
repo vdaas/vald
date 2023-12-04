@@ -122,6 +122,7 @@ func (s *server) GetObject(ctx context.Context, id *payload.Object_VectorRequest
 		}
 		return nil, err
 	}
+
 	return &payload.Object_Vector{
 		Id:        uuid,
 		Vector:    vec,
