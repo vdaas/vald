@@ -9,8 +9,12 @@
       "name": "Remove"
     }
   ],
-  "consumes": ["application/json"],
-  "produces": ["application/json"],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
   "paths": {
     "/remove": {
       "post": {
@@ -41,7 +45,9 @@
             }
           }
         ],
-        "tags": ["Remove"]
+        "tags": [
+          "Remove"
+        ]
       }
     },
     "/remove/multiple": {
@@ -73,7 +79,9 @@
             }
           }
         ],
-        "tags": ["Remove"]
+        "tags": [
+          "Remove"
+        ]
       }
     },
     "/remove/timestamp": {
@@ -105,7 +113,9 @@
             }
           }
         ],
-        "tags": ["Remove"]
+        "tags": [
+          "Remove"
+        ]
       }
     }
   },
@@ -162,7 +172,14 @@
     },
     "TimestampOperator": {
       "type": "string",
-      "enum": ["Eq", "Ne", "Ge", "Gt", "Le", "Lt"],
+      "enum": [
+        "Eq",
+        "Ne",
+        "Ge",
+        "Gt",
+        "Le",
+        "Lt"
+      ],
       "default": "Eq",
       "description": "Operator is enum of each conditional operator.\n\n - Eq: The timestamp is equal to the specified value in the request.\n - Ne: The timestamp is not equal to the specified value in the request.\n - Ge: The timestamp is greater than or equal to the specified value in the request.\n - Gt: The timestamp is greater than the specified value in the request.\n - Le: The timestamp is less than or equal to the specified value in the request.\n - Lt: The timestamp is less than the specified value in the request."
     },

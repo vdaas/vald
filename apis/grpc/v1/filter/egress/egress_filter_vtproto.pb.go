@@ -8,8 +8,8 @@ import (
 	context "context"
 	payload "github.com/vdaas/vald/apis/grpc/v1/payload"
 	grpc "google.golang.org/grpc"
-	codes "github.com/vdaas/vald/internal/net/grpc/codes"
-	status "github.com/vdaas/vald/internal/net/grpc/status"
+	codes "google.golang.org/grpc/codes"
+	status "google.golang.org/grpc/status"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 )
 
@@ -53,7 +53,7 @@ func (c *filterClient) FilterDistance(ctx context.Context, in *payload.Object_Di
 }
 
 func (c *filterClient) FilterVector(ctx context.Context, in *payload.Object_Vector, opts ...grpc.CallOption) (*payload.Object_Vector, error) {
-	out := payload.Object_VectorFromVTPool()
+	out := new(payload.Object_Vector)
 	err := c.cc.Invoke(ctx, "/filter.egress.v1.Filter/FilterVector", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -114,7 +114,7 @@ func _Filter_FilterDistance_Handler(srv interface{}, ctx context.Context, dec fu
 }
 
 func _Filter_FilterVector_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := payload.Object_VectorFromVTPool()
+	in := new(payload.Object_Vector)
 	if err := dec(in); err != nil {
 		return nil, err
 	}

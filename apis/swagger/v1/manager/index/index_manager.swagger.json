@@ -9,8 +9,12 @@
       "name": "Index"
     }
   ],
-  "consumes": ["application/json"],
-  "produces": ["application/json"],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
   "paths": {
     "/index/info": {
       "get": {
@@ -30,7 +34,9 @@
             }
           }
         },
-        "tags": ["Index"]
+        "tags": [
+          "Index"
+        ]
       }
     }
   },

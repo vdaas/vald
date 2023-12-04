@@ -8,8 +8,8 @@ import (
 	context "context"
 	payload "github.com/vdaas/vald/apis/grpc/v1/payload"
 	grpc "google.golang.org/grpc"
-	codes "github.com/vdaas/vald/internal/net/grpc/codes"
-	status "github.com/vdaas/vald/internal/net/grpc/status"
+	codes "google.golang.org/grpc/codes"
+	status "google.golang.org/grpc/status"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 )
 
@@ -57,7 +57,7 @@ func (c *objectClient) Exists(ctx context.Context, in *payload.Object_ID, opts .
 }
 
 func (c *objectClient) GetObject(ctx context.Context, in *payload.Object_VectorRequest, opts ...grpc.CallOption) (*payload.Object_Vector, error) {
-	out := payload.Object_VectorFromVTPool()
+	out := new(payload.Object_Vector)
 	err := c.cc.Invoke(ctx, "/vald.v1.Object/GetObject", in, out, opts...)
 	if err != nil {
 		return nil, err

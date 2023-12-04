@@ -9,7 +9,7 @@ import (
 	proto "google.golang.org/protobuf/proto"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	durationpb "google.golang.org/protobuf/types/known/durationpb"
-	io "github.com/vdaas/vald/internal/io"
+	io "io"
 	bits "math/bits"
 )
 

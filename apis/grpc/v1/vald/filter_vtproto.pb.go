@@ -8,8 +8,8 @@ import (
 	context "context"
 	payload "github.com/vdaas/vald/apis/grpc/v1/payload"
 	grpc "google.golang.org/grpc"
-	codes "github.com/vdaas/vald/internal/net/grpc/codes"
-	status "github.com/vdaas/vald/internal/net/grpc/status"
+	codes "google.golang.org/grpc/codes"
+	status "google.golang.org/grpc/status"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 )
 
