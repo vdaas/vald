@@ -58,5 +58,3 @@ proto/gen: \
 	find $(ROOTDIR)/apis/grpc/* -name '*.go' | xargs sed -i -E "s%google.golang.org/grpc/status%github.com/vdaas/vald/internal/net/grpc/status%g"
 	find $(ROOTDIR)/apis/grpc/* -name '*.go' | xargs sed -i -E "s%\"io\"%\"github.com/vdaas/vald/internal/io\"%g"
 	find $(ROOTDIR)/apis/grpc/* -name '*.go' | xargs sed -i -E "s%\"sync\"%\"github.com/vdaas/vald/internal/sync\"%g"
-	find $(ROOTDIR)/apis/grpc/* -name '*.go' | xargs sed -i -E "s/Vector = &Object_Vector\{\}/Vector = Object_VectorFromVTPool\(\)/g"
-	find $(ROOTDIR)/apis/grpc/* -name '*.go' | xargs sed -i -E "s/v := &Object_Vector\{\}/v := Object_VectorFromVTPool\(\)/g"
