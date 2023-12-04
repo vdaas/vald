@@ -382,6 +382,9 @@ spec:
                       x-kubernetes-preserve-unknown-fields: true
                     progressDeadlineSeconds:
                       type: integer
+                    readreplica:
+                      type: object
+                      x-kubernetes-preserve-unknown-fields: true
                     resources:
                       type: object
                       properties:
@@ -8536,6 +8539,9 @@ spec:
                         readreplica:
                           type: object
                           properties:
+                            "":
+                              type: object
+                              x-kubernetes-preserve-unknown-fields: true
                             agent_namespace:
                               type: string
                             clusterRole:
