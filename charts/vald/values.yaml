@@ -2988,6 +2988,26 @@ manager:
         # @schema {"name": "manager.index.readreplica.rotator.initContainers", "alias": "initContainers"}
         # manager.index.readreplica.rotator.initContainers -- init containers
         initContainers: []
+        # @schema {"name": "manager.index.readreplica.rotator.podSecurityContext", "type": "object"}
+        # manager.index.readreplica.rotator.podSecurityContext -- security context for pod
+        podSecurityContext:
+          runAsUser: 65532
+          runAsNonRoot: true
+          runAsGroup: 65532
+          fsGroup: 65532
+          fsGroupChangePolicy: "OnRootMismatch"
+        # @schema {"name": "manager.index.readreplica.rotator.securityContext", "type": "object"}
+        # manager.index.readreplica.rotator.securityContext -- security context for container
+        securityContext:
+          runAsUser: 65532
+          runAsNonRoot: true
+          runAsGroup: 65532
+          privileged: false
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+              - ALL
         # @schema {"name": "manager.index.readreplica.rotator.env", "alias": "env"}
         # manager.index.readreplica.rotator.env -- environment variables
         env:

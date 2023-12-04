@@ -124,7 +124,17 @@ spec:
         {{- end }}
       {{- end }}
       affinity:
-        {{- include "vald.affinity" $agent.affinity | nindent 8 }}
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                  - key: app
+                    operator: In
+                    values:
+                    - {{ $readreplica.name }}-{{ $id }}
+                topologyKey: kubernetes.io/hostname
+              weight: 100
       {{- if $agent.topologySpreadConstraints }}
       topologySpreadConstraints:
         {{- toYaml $agent.topologySpreadConstraints | nindent 8 }}
