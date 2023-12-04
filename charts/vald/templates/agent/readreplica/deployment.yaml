@@ -57,7 +57,7 @@ spec:
         app: {{ $readreplica.name }}-{{ $id }}
         app.kubernetes.io/name: {{ $valdname }}
         app.kubernetes.io/instance: {{ $release.Name }}
-        app.kubernetes.io/component: agent
+        app.kubernetes.io/component: agent-replica
       {{- $pprof := default $defaults.server_config.metrics.pprof $agent.server_config.metrics.pprof }}
       {{- if or $agent.podAnnotations $agent.sidecar.enabled $pprof.enabled }}
       annotations:
