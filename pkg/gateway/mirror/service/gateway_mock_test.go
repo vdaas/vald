@@ -33,23 +33,23 @@ func (gm *GatewayMock) FromForwardedContext(ctx context.Context) string {
 
 // BroadCast calls BroadCastFunc object.
 func (gm *GatewayMock) BroadCast(ctx context.Context,
-	f func(_ context.Context, _ string, _ vald.ClientWithMirror, _ ...grpc.CallOption) error) error {
+	f func(_ context.Context, _ string, _ vald.ClientWithMirror, _ ...grpc.CallOption) error,
+) error {
 	return gm.BroadCastFunc(ctx, f)
-
 }
 
 // Do calls DoFunc object.
 func (gm *GatewayMock) Do(ctx context.Context, target string,
-	f func(_ context.Context, _ string, _ vald.ClientWithMirror, _ ...grpc.CallOption) (interface{}, error)) (interface{}, error) {
+	f func(_ context.Context, _ string, _ vald.ClientWithMirror, _ ...grpc.CallOption) (interface{}, error),
+) (interface{}, error) {
 	return gm.DoFunc(ctx, target, f)
-
 }
 
 // DoMulti calls DoMultiFunc object.
 func (gm *GatewayMock) DoMulti(ctx context.Context, targets []string,
-	f func(_ context.Context, _ string, _ vald.ClientWithMirror, _ ...grpc.CallOption) error) error {
+	f func(_ context.Context, _ string, _ vald.ClientWithMirror, _ ...grpc.CallOption) error,
+) error {
 	return gm.DoMultiFunc(ctx, targets, f)
-
 }
 
 // GRPCClient calls GRPCClientFunc object.
