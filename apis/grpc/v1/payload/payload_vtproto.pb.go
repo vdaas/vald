@@ -11916,7 +11916,7 @@ func (m *Filter_VectorRequest) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if m.Vector == nil {
-				m.Vector = Object_VectorFromVTPool()
+				m.Vector = &Object_Vector{}
 			}
 			if err := m.Vector.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
@@ -12039,7 +12039,7 @@ func (m *Filter_VectorResponse) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if m.Vector == nil {
-				m.Vector = Object_VectorFromVTPool()
+				m.Vector = &Object_Vector{}
 			}
 			if err := m.Vector.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
 				return err
