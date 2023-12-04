@@ -199,6 +199,7 @@ replace (
 	github.com/kr/fs => github.com/kr/fs upgrade
 	github.com/kr/pretty => github.com/kr/pretty upgrade
 	github.com/kr/text => github.com/kr/text upgrade
+	github.com/kubernetes-csi/external-snapshotter/client/v6 => github.com/kubernetes-csi/external-snapshotter/client/v6 upgrade
 	github.com/kylelemons/godebug => github.com/kylelemons/godebug upgrade
 	github.com/leanovate/gopter => github.com/leanovate/gopter upgrade
 	github.com/leodido/go-urn => github.com/leodido/go-urn upgrade

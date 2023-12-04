@@ -85,6 +85,9 @@ func decodeDetails(objs ...interface{}) (details []Detail) {
 	}
 	details = make([]Detail, 0, len(objs))
 	for _, obj := range objs {
+		if obj == nil {
+			continue
+		}
 		v := reflect.ValueOf(obj)
 		if v.Kind() == reflect.Ptr {
 			v = v.Elem()
@@ -109,16 +112,30 @@ func decodeDetails(objs ...interface{}) (details []Detail) {
 			continue
 		}
 		switch v := obj.(type) {
+		case *spb.Status:
+			if v != nil {
+				details = append(details, Detail{
+					TypeURL: string((*v).ProtoReflect().Descriptor().FullName()),
+					Message: v,
+				})
+			}
+		case spb.Status:
+			details = append(details, Detail{
+				TypeURL: string(v.ProtoReflect().Descriptor().FullName()),
+				Message: &v,
+			})
 		case *status.Status:
-			details = append(details, append([]Detail{
-				{
-					TypeURL: string(v.Proto().ProtoReflect().Descriptor().FullName()),
-					Message: &spb.Status{
-						Code:    v.Proto().GetCode(),
-						Message: v.Message(),
+			if v != nil {
+				details = append(details, append([]Detail{
+					{
+						TypeURL: string(v.Proto().ProtoReflect().Descriptor().FullName()),
+						Message: &spb.Status{
+							Code:    v.Proto().GetCode(),
+							Message: v.Message(),
+						},
 					},
-				},
-			}, decodeDetails(v.Proto().Details)...)...)
+				}, decodeDetails(v.Proto().Details)...)...)
+			}
 		case status.Status:
 			details = append(details, append([]Detail{
 				{
@@ -129,29 +146,63 @@ func decodeDetails(objs ...interface{}) (details []Detail) {
 					},
 				},
 			}, decodeDetails(v.Proto().Details)...)...)
-		case *proto.Message:
+		case *Detail:
+			if v != nil {
+				details = append(details, *v)
+			}
+		case Detail:
+			details = append(details, v)
+		case *info.Detail:
+			if v != nil {
+				di := DebugInfoFromInfoDetail(v)
+				details = append(details, Detail{
+					TypeURL: string(di.ProtoReflect().Descriptor().FullName()),
+					Message: di,
+				})
+			}
+		case info.Detail:
+			di := DebugInfoFromInfoDetail(&v)
 			details = append(details, Detail{
-				TypeURL: string((*v).ProtoReflect().Descriptor().FullName()),
-				Message: *v,
+				TypeURL: string(di.ProtoReflect().Descriptor().FullName()),
+				Message: di,
 			})
+		case *types.Any:
+			if v != nil {
+				details = append(details, Detail{
+					TypeURL: v.GetTypeUrl(),
+					Message: AnyToErrorDetail(v),
+				})
+			}
+		case types.Any:
+			details = append(details, Detail{
+				TypeURL: v.GetTypeUrl(),
+				Message: AnyToErrorDetail(&v),
+			})
+		case *proto.Message:
+			if v != nil {
+				details = append(details, Detail{
+					TypeURL: string((*v).ProtoReflect().Descriptor().FullName()),
+					Message: *v,
+				})
+			}
 		case proto.Message:
 			details = append(details, Detail{
 				TypeURL: string(v.ProtoReflect().Descriptor().FullName()),
 				Message: v,
 			})
-		case *Detail:
-			details = append(details, *v)
-		case Detail:
-			details = append(details, v)
-		case *types.Any:
+		case *proto.MessageV1:
+			if v != nil {
+				v2 := proto.ToMessageV2(*v)
+				details = append(details, Detail{
+					TypeURL: string(v2.ProtoReflect().Descriptor().FullName()),
+					Message: v2,
+				})
+			}
+		case proto.MessageV1:
+			v2 := proto.ToMessageV2(v)
 			details = append(details, Detail{
-				TypeURL: v.GetTypeUrl(),
-				Message: AnyToErrorDetail(v),
-			})
-		case types.Any:
-			details = append(details, Detail{
-				TypeURL: v.GetTypeUrl(),
-				Message: AnyToErrorDetail(&v),
+				TypeURL: string(v2.ProtoReflect().Descriptor().FullName()),
+				Message: v2,
 			})
 		}
 	}
