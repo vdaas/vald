@@ -53,11 +53,11 @@ func (cm *ClientMock) Create(ctx context.Context, obj client.Object, opts ...cli
 }
 
 func (cm *ClientMock) Delete(ctx context.Context, obj client.Object, opts ...client.DeleteOption) error {
-	return cm.Delete(ctx, obj, opts...)
+	return cm.DeleteFunc(ctx, obj, opts...)
 }
 
 func (cm *ClientMock) DeleteAllOf(ctx context.Context, obj client.Object, opts ...client.DeleteAllOfOption) error {
-	return cm.DeleteAllOf(ctx, obj, opts...)
+	return cm.DeleteAllOfFunc(ctx, obj, opts...)
 }
 
 type ManagerMock struct {
