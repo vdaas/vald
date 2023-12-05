@@ -33,7 +33,7 @@ LOADTEST_IMAGE                  = $(NAME)-loadtest
 INDEX_CORRECTION_IMAGE          = $(NAME)-index-correction
 INDEX_CREATION_IMAGE            = $(NAME)-index-creation
 INDEX_SAVE_IMAGE                = $(NAME)-index-save
-READREPLICA_ROTATE_IMAGE  		= $(NAME)-readreplica-rotate
+READREPLICA_ROTATE_IMAGE        = $(NAME)-readreplica-rotate
 MANAGER_INDEX_IMAGE             = $(NAME)-manager-index
 MAINTAINER                      = "$(ORG).org $(NAME) team <$(NAME)@$(ORG).org>"
 
