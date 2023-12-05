@@ -49,9 +49,6 @@ spec:
   selector:
     app: {{ $readreplica.name }}-{{ $id }}
     app.kubernetes.io/name: {{ $valdname }}
-  {{- if eq $agent.serviceType "ClusterIP" }}
-  clusterIP: None
-  {{- end }}
   type: {{ $agent.serviceType }}
   {{- if $agent.externalTrafficPolicy }}
   externalTrafficPolicy: {{ $agent.externalTrafficPolicy }}
