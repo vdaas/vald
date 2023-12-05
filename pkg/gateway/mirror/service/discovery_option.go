@@ -15,6 +15,7 @@ package service
 
 import (
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/k8s"
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/internal/timeutil"
@@ -115,6 +116,17 @@ func WithDiscoverySelfMirrorAddrs(addrs ...string) DiscoveryOption {
 			return errors.NewErrCriticalOption("discoverySelfMirrorAddrs", addrs)
 		}
 		d.selfMirrAddrs = append(d.selfMirrAddrs, addrs...)
+		return nil
+	}
+}
+
+// WithDiscoveryController returns the option to set the k8s controller.
+func WithDiscoveryController(ctrl k8s.Controller) DiscoveryOption {
+	return func(d *discovery) error {
+		if ctrl == nil {
+			return errors.NewErrInvalidOption("discoveryController", ctrl)
+		}
+		d.ctrl = ctrl
 		return nil
 	}
 }
