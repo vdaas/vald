@@ -192,6 +192,7 @@ func New(cfg *config.NGT, opts ...Option) (nn NGT, err error) {
 		core.WithBulkInsertChunkSize(cfg.BulkInsertChunkSize),
 		core.WithCreationEdgeSize(cfg.CreationEdgeSize),
 		core.WithSearchEdgeSize(cfg.SearchEdgeSize),
+		core.WithErrorBufferLimit(cfg.ErrorBufferLimit),
 	)
 	if err != nil {
 		return nil, err

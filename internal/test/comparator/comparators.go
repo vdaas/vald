@@ -15,6 +15,7 @@ package comparator
 
 import (
 	"reflect"
+	"sync/atomic"
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/sync"
@@ -47,6 +48,12 @@ var (
 
 	// skipcq: VET-V0008
 	WaitGroupComparer = Comparer(func(x, y sync.WaitGroup) bool {
+		// skipcq: VET-V0008
+		return reflect.DeepEqual(x, y)
+	})
+
+	// skipcq: VET-V0008
+	AtomicUint64Comparator = Comparer(func(x, y atomic.Uint64) bool {
 		// skipcq: VET-V0008
 		return reflect.DeepEqual(x, y)
 	})
