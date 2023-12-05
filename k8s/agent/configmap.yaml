@@ -215,6 +215,7 @@ data:
       enable_copy_on_write: false
       enable_in_memory_mode: true
       enable_proactive_gc: false
+      error_buffer_limit: 10
       index_path: ""
       initial_delay_max_duration: 3m
       kvsdb:

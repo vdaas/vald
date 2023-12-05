@@ -15,7 +15,8 @@ package grpc
 
 import (
 	"context"
-	"strings"
+
+	"github.com/vdaas/vald/internal/strings"
 )
 
 type contextKey string

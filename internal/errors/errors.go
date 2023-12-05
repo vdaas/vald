@@ -24,8 +24,8 @@ import (
 	"reflect"
 	"runtime"
 	"slices"
-	"strings"
 
+	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/sync"
 )
 

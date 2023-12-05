@@ -25,13 +25,13 @@ import (
 	"os/exec"
 	"reflect"
 	"runtime"
-	"strings"
 	"sync/atomic"
 	"testing"
 	"time"
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/info"
+	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/sync"
 	"github.com/vdaas/vald/internal/test/goleak"
 )
