@@ -123,7 +123,7 @@ func (s *server) Register(ctx context.Context, req *payload.Mirror_Targets) (*pa
 	}
 
 	// Get own address and the addresses of other mirror gateways to which this gateway is currently connected.
-	tgts, err := s.mirror.MirrorTargets()
+	tgts, err := s.mirror.MirrorTargets(ctx)
 	if err != nil {
 		err = status.WrapWithInternal(vald.RegisterRPCName+" API failed to get connected vald gateway targets", err,
 			&errdetails.BadRequest{

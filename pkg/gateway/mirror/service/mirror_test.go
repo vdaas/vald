@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"net"
 	"reflect"
 	"testing"
 
@@ -281,9 +280,13 @@ func Test_mirr_Disconnect(t *testing.T) {
 }
 
 func Test_mirr_MirrorTargets(t *testing.T) {
+	type args struct {
+		ctx context.Context
+	}
 	type fields struct {
-		gatewayAddr string
-		gateway     Gateway
+		gatewayAddr  string
+		selfMirrAddr string
+		gateway      Gateway
 	}
 	type want struct {
 		want []*payload.Mirror_Target
@@ -291,10 +294,11 @@ func Test_mirr_MirrorTargets(t *testing.T) {
 	}
 	type test struct {
 		name       string
+		args       args
 		fields     fields
 		want       want
 		checkFunc  func(want, []*payload.Mirror_Target, error) error
-		beforeFunc func(*testing.T)
+		beforeFunc func(*testing.T, Mirror)
 		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want, got []*payload.Mirror_Target, err error) error {
@@ -308,65 +312,65 @@ func Test_mirr_MirrorTargets(t *testing.T) {
 	}
 	tests := []test{
 		func() test {
-			gatewayAddr := "192.168.1.3:8081"
-			connectedAddrs := []string{
-				"192.168.1.2:8081", // mirror gateway address.
-				"192.168.2.2:8081", // mirror gateway address.
-				gatewayAddr,
+			gatewayAddr := "192.168.1.2:8081"
+			selfMirrorAddr := "192.168.1.3:8081"
+			connectTargets := []*payload.Mirror_Target{
+				{
+					Host: "192.168.1.2", // gateway addresses
+					Port: 8081,
+				},
+				{
+					Host: "192.168.2.2", // other mirror address
+					Port: 8081,
+				},
+				{
+					Host: "192.168.3.2", // other mirror address
+					Port: 8081,
+				},
 			}
+			connected := make(map[string]bool)
 			return test{
 				name: "returns only the addresses of the mirror gateways",
+				args: args{
+					ctx: context.Background(),
+				},
 				fields: fields{
-					gatewayAddr: gatewayAddr,
+					gatewayAddr:  gatewayAddr,
+					selfMirrAddr: selfMirrorAddr,
 					gateway: &GatewayMock{
 						GRPCClientFunc: func() grpc.Client {
 							return &grpcmock.GRPCClientMock{
-								ConnectedAddrsFunc: func() []string {
-									return connectedAddrs
+								ConnectFunc: func(_ context.Context, addr string, _ ...grpc.DialOption) (conn pool.Conn, err error) {
+									connected[addr] = true
+									return conn, err
+								},
+								IsConnectedFunc: func(_ context.Context, addr string) bool {
+									return connected[addr]
 								},
 							}
 						},
 					},
+				},
+				beforeFunc: func(t *testing.T, m Mirror) {
+					t.Helper()
+					if err := m.Connect(context.Background(), connectTargets...); err != nil {
+						t.Fatal(err)
+					}
 				},
 				want: want{
 					want: []*payload.Mirror_Target{
 						{
-							Host: "192.168.1.2",
+							Host: "192.168.2.2", // other mirror address
 							Port: 8081,
 						},
 						{
-							Host: "192.168.2.2",
+							Host: "192.168.3.2", // other mirror address
 							Port: 8081,
 						},
-					},
-				},
-			}
-		}(),
-		func() test {
-			gatewayAddr := "192.168.1.3:8081"
-			connectedAddrs := []string{
-				"192.168.1.2:8081", // mirror gateway address.
-				"192.168.2.2",      // mirror gateway address.
-				gatewayAddr,
-			}
-			return test{
-				name: "returns an error when there is invalid address",
-				fields: fields{
-					gatewayAddr: gatewayAddr,
-					gateway: &GatewayMock{
-						GRPCClientFunc: func() grpc.Client {
-							return &grpcmock.GRPCClientMock{
-								ConnectedAddrsFunc: func() []string {
-									return connectedAddrs
-								},
-							}
+						{
+							Host: "192.168.1.3", // self mirror address
+							Port: 8081,
 						},
-					},
-				},
-				want: want{
-					err: &net.AddrError{
-						Err:  "missing port in address",
-						Addr: "192.168.2.2",
 					},
 				},
 			}
@@ -378,8 +382,18 @@ func Test_mirr_MirrorTargets(t *testing.T) {
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+
+			m, err := NewMirror(
+				WithSelfMirrorAddrs(test.fields.selfMirrAddr),
+				WithGatewayAddrs(test.fields.gatewayAddr),
+				WithGateway(test.fields.gateway),
+			)
+			if err != nil {
+				t.Fatal(err)
+			}
+
 			if test.beforeFunc != nil {
-				test.beforeFunc(tt)
+				test.beforeFunc(tt, m)
 			}
 			if test.afterFunc != nil {
 				defer test.afterFunc(tt)
@@ -389,15 +403,7 @@ func Test_mirr_MirrorTargets(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 
-			m, err := NewMirror(
-				WithGatewayAddrs(test.fields.gatewayAddr),
-				WithGateway(test.fields.gateway),
-			)
-			if err != nil {
-				t.Fatal(err)
-			}
-
-			got, err := m.MirrorTargets()
+			got, err := m.MirrorTargets(test.args.ctx)
 			if err := checkFunc(test.want, got, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -406,6 +412,9 @@ func Test_mirr_MirrorTargets(t *testing.T) {
 }
 
 func Test_mirr_connectedOtherMirrorAddrs(t *testing.T) {
+	type args struct {
+		ctx context.Context
+	}
 	type fields struct {
 		gatewayAddr  string
 		selfMirrAddr string
@@ -416,10 +425,11 @@ func Test_mirr_connectedOtherMirrorAddrs(t *testing.T) {
 	}
 	type test struct {
 		name       string
+		args       args
 		fields     fields
 		want       want
 		checkFunc  func(want, []string) error
-		beforeFunc func(*testing.T)
+		beforeFunc func(*testing.T, Mirror)
 		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want, got []string) error {
@@ -430,27 +440,46 @@ func Test_mirr_connectedOtherMirrorAddrs(t *testing.T) {
 	}
 	tests := []test{
 		func() test {
-			gatewayAddr := "192.168.1.3:8081"
-			selfMirrorAddr := "192.168.1.2:8081"
-			connectedAddrs := []string{
-				selfMirrorAddr,
-				"192.168.2.2:8081", // othre mirror gateway address.
-				gatewayAddr,
+			gatewayAddr := "192.168.1.2:8081"
+			selfMirrorAddr := "192.168.1.3:8081"
+			connectTargets := []*payload.Mirror_Target{
+				{
+					Host: "192.168.1.2", // gateway addresses
+					Port: 8081,
+				},
+				{
+					Host: "192.168.2.2", // other mirror address
+					Port: 8081,
+				},
 			}
+			connected := make(map[string]bool)
 			return test{
 				name: "returns only the address of the other mirror gateway",
+				args: args{
+					ctx: context.Background(),
+				},
 				fields: fields{
 					selfMirrAddr: selfMirrorAddr,
 					gatewayAddr:  gatewayAddr,
 					gateway: &GatewayMock{
 						GRPCClientFunc: func() grpc.Client {
 							return &grpcmock.GRPCClientMock{
-								ConnectedAddrsFunc: func() []string {
-									return connectedAddrs
+								ConnectFunc: func(_ context.Context, addr string, _ ...grpc.DialOption) (conn pool.Conn, err error) {
+									connected[addr] = true
+									return conn, err
+								},
+								IsConnectedFunc: func(_ context.Context, addr string) bool {
+									return connected[addr]
 								},
 							}
 						},
 					},
+				},
+				beforeFunc: func(t *testing.T, m Mirror) {
+					t.Helper()
+					if err := m.Connect(context.Background(), connectTargets...); err != nil {
+						t.Fatal(err)
+					}
 				},
 				want: want{
 					want: []string{
@@ -466,16 +495,6 @@ func Test_mirr_connectedOtherMirrorAddrs(t *testing.T) {
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-			if test.beforeFunc != nil {
-				test.beforeFunc(tt)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(tt)
-			}
-			checkFunc := test.checkFunc
-			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
-			}
 
 			m, err := NewMirror(
 				WithSelfMirrorAddrs(test.fields.selfMirrAddr),
@@ -485,8 +504,20 @@ func Test_mirr_connectedOtherMirrorAddrs(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
+
+			if test.beforeFunc != nil {
+				test.beforeFunc(tt, m)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(tt)
+			}
+			checkFunc := test.checkFunc
+			if test.checkFunc == nil {
+				checkFunc = defaultCheckFunc
+			}
+
 			if mirr, ok := m.(*mirr); ok {
-				got := mirr.connectedOtherMirrorAddrs()
+				got := mirr.connectedOtherMirrorAddrs(test.args.ctx)
 				if err := checkFunc(test.want, got); err != nil {
 					tt.Errorf("error = %v", err)
 				}

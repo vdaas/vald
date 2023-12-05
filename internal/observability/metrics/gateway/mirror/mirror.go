@@ -68,7 +68,7 @@ func (mm *mirrorMetrics) Register(m metrics.Meter) error {
 			targetGauge,
 		},
 		func(ctx context.Context) {
-			mm.mirr.RangeAllMirrorAddr(func(addr string, _ any) bool {
+			mm.mirr.RangeMirrorAddr(func(addr string, _ any) bool {
 				targetGauge.Observe(ctx, 1, attribute.String(targetAddrKey, addr))
 				return true
 			})

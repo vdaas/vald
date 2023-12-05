@@ -221,7 +221,7 @@ func (d *discovery) startSync(ctx context.Context, prev map[string]target.Target
 		}
 	}
 
-	d.mirr.RangeAllMirrorAddr(func(addr string, _ any) bool {
+	d.mirr.RangeMirrorAddr(func(addr string, _ any) bool {
 		connected := d.mirr.IsConnected(ctx, addr)
 		if name, ok := curAddrs[addr]; ok {
 			if st := target.MirrorTargetPhaseConnected; connected && current[name].Phase != st {

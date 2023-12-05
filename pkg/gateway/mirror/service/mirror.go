@@ -41,8 +41,8 @@ type Mirror interface {
 	Connect(ctx context.Context, targets ...*payload.Mirror_Target) error
 	Disconnect(ctx context.Context, targets ...*payload.Mirror_Target) error
 	IsConnected(ctx context.Context, addr string) bool
-	MirrorTargets() ([]*payload.Mirror_Target, error)
-	RangeAllMirrorAddr(f func(addr string, _ any) bool)
+	MirrorTargets(ctx context.Context) ([]*payload.Mirror_Target, error)
+	RangeMirrorAddr(f func(addr string, _ any) bool)
 }
 
 type mirr struct {
@@ -110,7 +110,7 @@ func (m *mirr) Start(ctx context.Context) <-chan error {
 			select {
 			case <-ctx.Done():
 			case <-tic.C:
-				tgt, err := m.MirrorTargets()
+				tgt, err := m.MirrorTargets(ctx)
 				if err != nil {
 					select {
 					case <-ctx.Done():
@@ -139,7 +139,6 @@ func (m *mirr) Start(ctx context.Context) <-chan error {
 						case <-ctx.Done():
 							return ctx.Err()
 						case ech <- err:
-							break
 						}
 					}
 				}
@@ -168,7 +167,7 @@ func (m *mirr) registers(ctx context.Context, tgts *payload.Mirror_Targets) ([]*
 	exists := make(map[string]bool)
 	var mu sync.Mutex
 
-	err := m.gateway.DoMulti(ctx, m.connectedOtherMirrorAddrs(), func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error {
+	err := m.gateway.DoMulti(ctx, m.connectedOtherMirrorAddrs(ctx), func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error {
 		ctx, span := trace.StartSpan(ctx, "vald/gateway/mirror/service/Mirror.registers/"+target)
 		defer func() {
 			if span != nil {
@@ -307,23 +306,29 @@ func (m *mirr) IsConnected(ctx context.Context, addr string) bool {
 
 // MirrorTargets returns the Mirror targets, including the address of this gateway and the addresses of other Mirror Gateways
 // to which this gateway is currently connected.
-func (m *mirr) MirrorTargets() ([]*payload.Mirror_Target, error) {
-	addrs := m.gateway.GRPCClient().ConnectedAddrs()
-	tgts := make([]*payload.Mirror_Target, 0, len(addrs)+1)
-	tgts = append(tgts, m.selfMirrTgts...)
-	for _, addr := range addrs {
-		if !m.isGatewayAddr(addr) {
-			host, port, err := net.SplitHostPort(addr)
+func (m *mirr) MirrorTargets(ctx context.Context) (tgts []*payload.Mirror_Target, err error) {
+	tgts = make([]*payload.Mirror_Target, 0, m.addrl.Len())
+	m.RangeMirrorAddr(func(addr string, _ any) bool {
+		if m.IsConnected(ctx, addr) {
+			var (
+				host string
+				port uint16
+			)
+			host, port, err = net.SplitHostPort(addr)
 			if err != nil {
-				return nil, err
+				return false
 			}
 			tgts = append(tgts, &payload.Mirror_Target{
 				Host: host,
 				Port: uint32(port),
 			})
 		}
+		return true
+	})
+	if err != nil {
+		return nil, err
 	}
-	return tgts, nil
+	return append(tgts, m.selfMirrTgts...), nil
 }
 
 func (m *mirr) isSelfMirrorAddr(addr string) bool {
@@ -337,21 +342,19 @@ func (m *mirr) isGatewayAddr(addr string) bool {
 }
 
 // connectedOtherMirrorAddrs returns the addresses of other Mirror Gateways to which this gateway is currently connected.
-func (m *mirr) connectedOtherMirrorAddrs() []string {
-	connectedAddrs := m.gateway.GRPCClient().ConnectedAddrs()
-	addrs := make([]string, 0, len(connectedAddrs))
-	for _, addr := range connectedAddrs {
-		if !m.isSelfMirrorAddr(addr) &&
-			!m.isGatewayAddr(addr) {
+func (m *mirr) connectedOtherMirrorAddrs(ctx context.Context) (addrs []string) {
+	m.RangeMirrorAddr(func(addr string, _ any) bool {
+		if m.IsConnected(ctx, addr) {
 			addrs = append(addrs, addr)
 		}
-	}
+		return true
+	})
 	return addrs
 }
 
-func (m *mirr) RangeAllMirrorAddr(f func(addr string, _ any) bool) {
+func (m *mirr) RangeMirrorAddr(f func(addr string, _ any) bool) {
 	m.addrl.Range(func(addr string, value any) bool {
-		if !m.isGatewayAddr(addr) {
+		if !m.isGatewayAddr(addr) && !m.isSelfMirrorAddr(addr) {
 			if !f(addr, value) {
 				return false
 			}
