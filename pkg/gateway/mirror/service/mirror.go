@@ -287,7 +287,7 @@ func (m *mirr) Disconnect(ctx context.Context, targets ...*payload.Mirror_Target
 	}
 	for _, target := range targets {
 		addr := net.JoinHostPort(target.GetHost(), uint16(target.GetPort()))
-		if _, ok := m.gwAddrl.Load(addr); !ok {
+		if !m.isGatewayAddr(addr) {
 			_, ok := m.addrl.Load(addr)
 			if ok || m.IsConnected(ctx, addr) {
 				if err := m.gateway.GRPCClient().Disconnect(ctx, addr); err != nil &&
