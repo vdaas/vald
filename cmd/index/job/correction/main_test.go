@@ -11,37 +11,21 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-package config
+package correction
 
 // NOT IMPLEMENTED BELOW
 //
-// func TestCorrector_Bind(t *testing.T) {
-// 	type fields struct {
-// 		AgentPort                int
-// 		AgentName                string
-// 		AgentNamespace           string
-// 		AgentDNS                 string
-// 		NodeName                 string
-// 		StreamListConcurrency    int
-// 		KvsAsyncWriteConcurrency int
-// 		IndexReplica             int
-// 		Discoverer               *DiscovererClient
-// 	}
+// func Test_main(t *testing.T) {
 // 	type want struct {
-// 		want *Corrector
 // 	}
 // 	type test struct {
 // 		name       string
-// 		fields     fields
 // 		want       want
-// 		checkFunc  func(want, *Corrector) error
+// 		checkFunc  func(want) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)
 // 	}
-// 	defaultCheckFunc := func(w want, got *Corrector) error {
-// 		if !reflect.DeepEqual(got, w.want) {
-// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-// 		}
+// 	defaultCheckFunc := func(w want) error {
 // 		return nil
 // 	}
 // 	tests := []test{
@@ -49,17 +33,6 @@ package config
 // 		/*
 // 		   {
 // 		       name: "test_case_1",
-// 		       fields: fields {
-// 		           AgentPort:0,
-// 		           AgentName:"",
-// 		           AgentNamespace:"",
-// 		           AgentDNS:"",
-// 		           NodeName:"",
-// 		           StreamListConcurrency:0,
-// 		           KvsAsyncWriteConcurrency:0,
-// 		           IndexReplica:0,
-// 		           Discoverer:DiscovererClient{},
-// 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
 // 		       beforeFunc: func(t *testing.T,) {
@@ -76,17 +49,6 @@ package config
 // 		   func() test {
 // 		       return test {
 // 		           name: "test_case_2",
-// 		           fields: fields {
-// 		           AgentPort:0,
-// 		           AgentName:"",
-// 		           AgentNamespace:"",
-// 		           AgentDNS:"",
-// 		           NodeName:"",
-// 		           StreamListConcurrency:0,
-// 		           KvsAsyncWriteConcurrency:0,
-// 		           IndexReplica:0,
-// 		           Discoverer:DiscovererClient{},
-// 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
 // 		           beforeFunc: func(t *testing.T,) {
@@ -115,23 +77,11 @@ package config
 // 			if test.checkFunc == nil {
 // 				checkFunc = defaultCheckFunc
 // 			}
-// 			c := &Corrector{
-// 				AgentPort:                test.fields.AgentPort,
-// 				AgentName:                test.fields.AgentName,
-// 				AgentNamespace:           test.fields.AgentNamespace,
-// 				AgentDNS:                 test.fields.AgentDNS,
-// 				NodeName:                 test.fields.NodeName,
-// 				StreamListConcurrency:    test.fields.StreamListConcurrency,
-// 				KvsAsyncWriteConcurrency: test.fields.KvsAsyncWriteConcurrency,
-// 				IndexReplica:             test.fields.IndexReplica,
-// 				Discoverer:               test.fields.Discoverer,
-// 			}
 //
-// 			got := c.Bind()
-// 			if err := checkFunc(test.want, got); err != nil {
+// 			main()
+// 			if err := checkFunc(test.want); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
