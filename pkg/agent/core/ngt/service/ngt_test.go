@@ -1553,8 +1553,8 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		historyLimit      int
 // 	}
 // 	type want struct {
-// 		want *payload.Search_Response
-// 		err  error
+// 		wantRes *payload.Search_Response
+// 		err     error
 // 	}
 // 	type test struct {
 // 		name       string
@@ -1565,12 +1565,12 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
 // 	}
-// 	defaultCheckFunc := func(w want, got *payload.Search_Response, err error) error {
+// 	defaultCheckFunc := func(w want, gotRes *payload.Search_Response, err error) error {
 // 		if !errors.Is(err, w.err) {
 // 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 // 		}
-// 		if !reflect.DeepEqual(got, w.want) {
-// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		if !reflect.DeepEqual(gotRes, w.wantRes) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
 // 		}
 // 		return nil
 // 	}
@@ -1752,8 +1752,8 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 				historyLimit:      test.fields.historyLimit,
 // 			}
 //
-// 			got, err := n.Search(test.args.ctx, test.args.vec, test.args.size, test.args.epsilon, test.args.radius)
-// 			if err := checkFunc(test.want, got, err); err != nil {
+// 			gotRes, err := n.Search(test.args.ctx, test.args.vec, test.args.size, test.args.epsilon, test.args.radius)
+// 			if err := checkFunc(test.want, gotRes, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
 //
@@ -2022,6 +2022,7 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 //
 // func Test_ngt_LinearSearch(t *testing.T) {
 // 	type args struct {
+// 		ctx  context.Context
 // 		vec  []float32
 // 		size uint32
 // 	}
@@ -2064,8 +2065,8 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		historyLimit      int
 // 	}
 // 	type want struct {
-// 		want *payload.Search_Response
-// 		err  error
+// 		wantRes *payload.Search_Response
+// 		err     error
 // 	}
 // 	type test struct {
 // 		name       string
@@ -2076,12 +2077,12 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
 // 	}
-// 	defaultCheckFunc := func(w want, got *payload.Search_Response, err error) error {
+// 	defaultCheckFunc := func(w want, gotRes *payload.Search_Response, err error) error {
 // 		if !errors.Is(err, w.err) {
 // 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 // 		}
-// 		if !reflect.DeepEqual(got, w.want) {
-// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		if !reflect.DeepEqual(gotRes, w.wantRes) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
 // 		}
 // 		return nil
 // 	}
@@ -2091,6 +2092,7 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		   {
 // 		       name: "test_case_1",
 // 		       args: args {
+// 		           ctx:nil,
 // 		           vec:nil,
 // 		           size:0,
 // 		       },
@@ -2149,6 +2151,7 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           args: args {
+// 		           ctx:nil,
 // 		           vec:nil,
 // 		           size:0,
 // 		           },
@@ -2257,8 +2260,8 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 				historyLimit:      test.fields.historyLimit,
 // 			}
 //
-// 			got, err := n.LinearSearch(test.args.vec, test.args.size)
-// 			if err := checkFunc(test.want, got, err); err != nil {
+// 			gotRes, err := n.LinearSearch(test.args.ctx, test.args.vec, test.args.size)
+// 			if err := checkFunc(test.want, gotRes, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
 //
@@ -2268,6 +2271,7 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 //
 // func Test_ngt_LinearSearchByID(t *testing.T) {
 // 	type args struct {
+// 		ctx  context.Context
 // 		uuid string
 // 		size uint32
 // 	}
@@ -2341,6 +2345,7 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		   {
 // 		       name: "test_case_1",
 // 		       args: args {
+// 		           ctx:nil,
 // 		           uuid:"",
 // 		           size:0,
 // 		       },
@@ -2399,6 +2404,7 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           args: args {
+// 		           ctx:nil,
 // 		           uuid:"",
 // 		           size:0,
 // 		           },
@@ -2507,7 +2513,7 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 				historyLimit:      test.fields.historyLimit,
 // 			}
 //
-// 			gotVec, gotDst, err := n.LinearSearchByID(test.args.uuid, test.args.size)
+// 			gotVec, gotDst, err := n.LinearSearchByID(test.args.ctx, test.args.uuid, test.args.size)
 // 			if err := checkFunc(test.want, gotVec, gotDst, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
