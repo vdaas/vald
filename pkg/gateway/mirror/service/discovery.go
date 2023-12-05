@@ -216,7 +216,7 @@ func (d *discovery) startSync(ctx context.Context, prev map[string]target.Target
 	for addr, name := range curAddrs {
 		// When the status code of a regularly running Register RPC is Unimplemented, the connection to the target will be disconnected
 		// so the status of the resource (CR) may be misaligned. To prevent this, change the status of the resource to Disconnected.
-		if !d.mirr.Exist(ctx, addr) && current[name].Phase == target.MirrorTargetPhaseConnected {
+		if !d.mirr.IsConnected(ctx, addr) && current[name].Phase == target.MirrorTargetPhaseConnected {
 			err = errors.Join(err, d.updateMirrorTargetPhase(ctx, name, target.MirrorTargetPhaseDisconnected))
 		}
 	}

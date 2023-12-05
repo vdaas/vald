@@ -41,7 +41,6 @@ type Mirror interface {
 	Connect(ctx context.Context, targets ...*payload.Mirror_Target) error
 	Disconnect(ctx context.Context, targets ...*payload.Mirror_Target) error
 	IsConnected(ctx context.Context, addr string) bool
-	Exist(ctx context.Context, addr string) bool
 	MirrorTargets() ([]*payload.Mirror_Target, error)
 	RangeAllMirrorAddr(f func(addr string, _ any) bool)
 }
@@ -304,12 +303,6 @@ func (m *mirr) Disconnect(ctx context.Context, targets ...*payload.Mirror_Target
 // IsConnected checks if the gRPC connection to the given address is connected.
 func (m *mirr) IsConnected(ctx context.Context, addr string) bool {
 	return m.gateway.GRPCClient().IsConnected(ctx, addr)
-}
-
-// Exist checks if the given address exists in the Mmirror.
-func (m *mirr) Exist(_ context.Context, addr string) bool {
-	_, ok := m.addrl.Load(addr)
-	return ok
 }
 
 // MirrorTargets returns the Mirror targets, including the address of this gateway and the addresses of other Mirror Gateways
