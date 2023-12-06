@@ -1455,10 +1455,9 @@ func Test_server_GetTimestamp(t *testing.T) {
 
 // NOT IMPLEMENTED BELOW
 //
-// func Test_server_StreamListObject(t *testing.T) {
+// func Test_server_StreamGetObject(t *testing.T) {
 // 	type args struct {
-// 		in0    *payload.Object_List_Request
-// 		stream vald.Object_StreamListObjectServer
+// 		stream vald.Object_StreamGetObjectServer
 // 	}
 // 	type fields struct {
 // 		name                     string
@@ -1493,7 +1492,6 @@ func Test_server_GetTimestamp(t *testing.T) {
 // 		   {
 // 		       name: "test_case_1",
 // 		       args: args {
-// 		           in0:nil,
 // 		           stream:nil,
 // 		       },
 // 		       fields: fields {
@@ -1522,7 +1520,6 @@ func Test_server_GetTimestamp(t *testing.T) {
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           args: args {
-// 		           in0:nil,
 // 		           stream:nil,
 // 		           },
 // 		           fields: fields {
@@ -1572,7 +1569,7 @@ func Test_server_GetTimestamp(t *testing.T) {
 // 				UnimplementedValdServer:  test.fields.UnimplementedValdServer,
 // 			}
 //
-// 			err := s.StreamListObject(test.args.in0, test.args.stream)
+// 			err := s.StreamGetObject(test.args.stream)
 // 			if err := checkFunc(test.want, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
