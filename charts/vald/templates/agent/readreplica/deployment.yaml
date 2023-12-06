@@ -59,68 +59,12 @@ spec:
         app.kubernetes.io/instance: {{ $release.Name }}
         app.kubernetes.io/component: agent-replica
       {{- $pprof := default $defaults.server_config.metrics.pprof $agent.server_config.metrics.pprof }}
-      {{- if or $agent.podAnnotations $agent.sidecar.enabled $pprof.enabled }}
-      annotations:
-        {{- if $agent.podAnnotations }}
-        {{- toYaml $agent.podAnnotations | nindent 8 }}
-        {{- end }}
-        {{- if $pprof.enabled }}
-        pyroscope.io/scrape: "true"
-        pyroscope.io/application-name: {{ $agent.name }}
-        pyroscope.io/profile-cpu-enabled: "true"
-        pyroscope.io/profile-mem-enabled: "true"
-        pyroscope.io/port: "{{ $pprof.port }}"
-        {{- end }}
-        {{- if $agent.sidecar.enabled }}
-        checksum/configmap: {{ include (print $.Template.BasePath "/agent/configmap.yaml") . | sha256sum }}
-        checksum/sidecar-configmap: {{ include (print $.Template.BasePath "/agent/sidecar-configmap.yaml") . | sha256sum }}
-        {{- end }}
-      {{- end }}
     spec:
-      {{- if or $agent.initContainers $agent.sidecar.initContainerEnabled }}
+      {{- if $agent.initContainers }}
       initContainers:
         {{- if $agent.initContainers }}
         {{- $initContainers := dict "initContainers" $agent.initContainers "Values" .Values "namespace" .Release.Namespace -}}
         {{- include "vald.initContainers" $initContainers | trim | nindent 8 }}
-        {{- end }}
-        {{- if $agent.sidecar.initContainerEnabled }}
-        - name: {{ $agent.sidecar.name }}-init
-          image: "{{ $agent.sidecar.image.repository }}:{{ default $defaults.image.tag $agent.sidecar.image.tag }}"
-          imagePullPolicy: {{ $agent.sidecar.image.pullPolicy }}
-          {{- $servers := dict "Values" $agent.sidecar.server_config "default" $defaults.server_config -}}
-          {{- include "vald.containerPorts" $servers | trim | nindent 10 }}
-          resources:
-            {{- toYaml $agent.sidecar.resources | nindent 12 }}
-          terminationMessagePath: /dev/termination-log
-          terminationMessagePolicy: File
-          {{- if $agent.securityContext }}
-          securityContext:
-            {{- toYaml $agent.securityContext | nindent 12 }}
-          {{- end }}
-          env:
-            - name: VALD_AGENT_SIDECAR_MODE
-              value: "initcontainer"
-            {{- if $agent.sidecar.env }}
-            {{- toYaml $agent.sidecar.env | nindent 12 }}
-            {{- end }}
-          volumeMounts:
-            - name: {{ $agent.sidecar.name }}-config
-              mountPath: /etc/server/
-            {{- if not $agent.ngt.enable_in_memory_mode }}
-            {{- if $agent.ngt.index_path }}
-            {{- if $agent.persistentVolume.enabled }}
-            - name: {{ $agent.name }}-pvc
-              mountPath: {{ dir $agent.ngt.index_path }}
-              mountPropagation: {{ $agent.persistentVolume.mountPropagation }}
-            {{- else }}
-            - name: {{ $agent.name }}-local
-              mountPath: {{ dir $agent.ngt.index_path }}
-            {{- end }}
-            {{- end }}
-            {{- end }}
-            {{- if $agent.volumeMounts }}
-            {{- toYaml $agent.volumeMounts | nindent 12 }}
-            {{- end }}
         {{- end }}
       {{- end }}
       affinity:
