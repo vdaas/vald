@@ -11,29 +11,26 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-package config
+package client
 
 // NOT IMPLEMENTED BELOW
 //
-// func TestReadReplicaRotate_Bind(t *testing.T) {
-// 	type fields struct {
-// 		AgentNamespace      string
-// 		ReadReplicaLabelKey string
-// 		ReadReplicaID       string
-// 		VolumeName          string
+// func TestWithSchemeBuilder(t *testing.T) {
+// 	type args struct {
+// 		sb scheme.Builder
 // 	}
 // 	type want struct {
-// 		want *ReadReplicaRotate
+// 		want Option
 // 	}
 // 	type test struct {
 // 		name       string
-// 		fields     fields
+// 		args       args
 // 		want       want
-// 		checkFunc  func(want, *ReadReplicaRotate) error
-// 		beforeFunc func(*testing.T)
-// 		afterFunc  func(*testing.T)
+// 		checkFunc  func(want, Option) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
 // 	}
-// 	defaultCheckFunc := func(w want, got *ReadReplicaRotate) error {
+// 	defaultCheckFunc := func(w want, got Option) error {
 // 		if !reflect.DeepEqual(got, w.want) {
 // 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 // 		}
@@ -44,18 +41,15 @@ package config
 // 		/*
 // 		   {
 // 		       name: "test_case_1",
-// 		       fields: fields {
-// 		           AgentNamespace:"",
-// 		           ReadReplicaLabelKey:"",
-// 		           ReadReplicaID:"",
-// 		           VolumeName:"",
+// 		       args: args {
+// 		           sb:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
-// 		       beforeFunc: func(t *testing.T,) {
+// 		       beforeFunc: func(t *testing.T, args args) {
 // 		           t.Helper()
 // 		       },
-// 		       afterFunc: func(t *testing.T,) {
+// 		       afterFunc: func(t *testing.T, args args) {
 // 		           t.Helper()
 // 		       },
 // 		   },
@@ -66,18 +60,15 @@ package config
 // 		   func() test {
 // 		       return test {
 // 		           name: "test_case_2",
-// 		           fields: fields {
-// 		           AgentNamespace:"",
-// 		           ReadReplicaLabelKey:"",
-// 		           ReadReplicaID:"",
-// 		           VolumeName:"",
+// 		           args: args {
+// 		           sb:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
-// 		           beforeFunc: func(t *testing.T,) {
+// 		           beforeFunc: func(t *testing.T, args args) {
 // 		               t.Helper()
 // 		           },
-// 		           afterFunc: func(t *testing.T,) {
+// 		           afterFunc: func(t *testing.T, args args) {
 // 		               t.Helper()
 // 		           },
 // 		       }
@@ -91,23 +82,17 @@ package config
 // 			tt.Parallel()
 // 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 // 			if test.beforeFunc != nil {
-// 				test.beforeFunc(tt)
+// 				test.beforeFunc(tt, test.args)
 // 			}
 // 			if test.afterFunc != nil {
-// 				defer test.afterFunc(tt)
+// 				defer test.afterFunc(tt, test.args)
 // 			}
 // 			checkFunc := test.checkFunc
 // 			if test.checkFunc == nil {
 // 				checkFunc = defaultCheckFunc
 // 			}
-// 			r := &ReadReplicaRotate{
-// 				AgentNamespace:      test.fields.AgentNamespace,
-// 				ReadReplicaLabelKey: test.fields.ReadReplicaLabelKey,
-// 				ReadReplicaID:       test.fields.ReadReplicaID,
-// 				VolumeName:          test.fields.VolumeName,
-// 			}
 //
-// 			got := r.Bind()
+// 			got := WithSchemeBuilder(test.args.sb)
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
