@@ -229,9 +229,9 @@ func (d *discovery) syncWithAddr(ctx context.Context, current map[string]target.
 		// When the status code of a regularly running Register RPC is Unimplemented, the connection to the target will be disconnected
 		// so the status of the resource (CR) may be misaligned. To prevent this, change the status of the resource to Disconnected.
 		connected := d.mirr.IsConnected(ctx, addr)
-		if !connected && current[name].Phase == target.MirrorTargetPhaseConnected {
+		if !connected && isConnectedPhase(current[name].Phase) {
 			errs = errors.Join(errs, d.updateMirrorTargetPhase(ctx, name, target.MirrorTargetPhaseDisconnected))
-		} else if connected && current[name].Phase != target.MirrorTargetPhaseConnected {
+		} else if connected && !isConnectedPhase(current[name].Phase) {
 			errs = errors.Join(errs, d.updateMirrorTargetPhase(ctx, name, target.MirrorTargetPhaseConnected))
 		}
 	}
@@ -239,10 +239,14 @@ func (d *discovery) syncWithAddr(ctx context.Context, current map[string]target.
 	d.mirr.RangeMirrorAddr(func(addr string, _ any) bool {
 		connected := d.mirr.IsConnected(ctx, addr)
 		if name, ok := curAddrs[addr]; ok {
-			if st := target.MirrorTargetPhaseConnected; connected && current[name].Phase != st {
-				errs = errors.Join(errs, d.updateMirrorTargetPhase(ctx, name, st))
-			} else if st := target.MirrorTargetPhaseDisconnected; !connected && current[name].Phase != st {
-				errs = errors.Join(errs, d.updateMirrorTargetPhase(ctx, name, st))
+			if connected && !isConnectedPhase(current[name].Phase) {
+				errs = errors.Join(errs,
+					d.updateMirrorTargetPhase(ctx, name, target.MirrorTargetPhaseConnected),
+				)
+			} else if !connected && !isDisconnectedPhase(current[name].Phase) {
+				errs = errors.Join(errs,
+					d.updateMirrorTargetPhase(ctx, name, target.MirrorTargetPhaseDisconnected),
+				)
 			}
 		} else if !ok && connected {
 			host, port, err := net.SplitHostPort(addr)
@@ -345,4 +349,12 @@ func (d *discovery) updateTarget(ctx context.Context, req map[string]*updatedTar
 		}
 	}
 	return errs
+}
+
+func isConnectedPhase(phase target.MirrorTargetPhase) bool {
+	return phase == target.MirrorTargetPhaseConnected
+}
+
+func isDisconnectedPhase(phase target.MirrorTargetPhase) bool {
+	return phase == target.MirrorTargetPhaseDisconnected
 }

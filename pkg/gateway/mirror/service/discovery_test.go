@@ -26,7 +26,7 @@ import (
 	k8smock "github.com/vdaas/vald/internal/test/mock/k8s"
 )
 
-func Test_discovery_Start(t *testing.T) {
+func Test_discovery_startSync(t *testing.T) {
 	type args struct {
 		ctx  context.Context
 		prev map[string]target.Target
@@ -317,6 +317,183 @@ func Test_discovery_Start(t *testing.T) {
 
 				got, err := dis.startSync(test.args.ctx, test.args.prev)
 				if err := checkFunc(test.want, got, err); err != nil {
+					tt.Errorf("error = %v", err)
+				}
+			}
+		})
+	}
+}
+
+func Test_discovery_syncWithAddr(t *testing.T) {
+	type args struct {
+		ctx      context.Context
+		current  map[string]target.Target
+		curAddrs map[string]string
+	}
+	type fields struct {
+		ctrl k8s.Controller
+		mirr Mirror
+	}
+	type want struct {
+		err error
+	}
+	type test struct {
+		name       string
+		args       args
+		fields     fields
+		want       want
+		checkFunc  func(want, error) error
+		beforeFunc func(*testing.T, *discovery, args)
+		afterFunc  func(*testing.T, args)
+	}
+	defaultCheckFunc := func(w want, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		return nil
+	}
+	tests := []test{
+		func() test {
+			current := map[string]target.Target{
+				"mirror-1": {
+					Host:  "192.168.1.2",
+					Port:  8081,
+					Phase: target.MirrorTargetPhaseConnected,
+				},
+			}
+			curAddrs := map[string]string{
+				"192.168.1.2:8081": "mirror-1",
+			}
+
+			return test{
+				name: "Succeeded to change to disconnected phase when curAddrs are not connected",
+				args: args{
+					ctx:      context.Background(),
+					current:  current,
+					curAddrs: curAddrs,
+				},
+				fields: fields{
+					mirr: &MirrorMock{
+						IsConnectedFunc: func(_ context.Context, _ string) bool {
+							return false
+						},
+						RangeMirrorAddrFunc: func(_ func(addr string, _ any) bool) {
+							// There is no connection.
+						},
+					},
+					ctrl: &k8smock.ControllerMock{
+						GetManagerFunc: func() k8s.Manager {
+							return k8smock.NewDefaultManagerMock()
+						},
+					},
+				},
+				beforeFunc: func(t *testing.T, d *discovery, _ args) {
+					t.Helper()
+					d.onReconcile(context.Background(), current)
+				},
+			}
+		}(),
+		func() test {
+			current := map[string]target.Target{
+				"mirror-1": {
+					Host:  "192.168.1.2",
+					Port:  8081,
+					Phase: target.MirrorTargetPhaseDisconnected,
+				},
+			}
+			curAddrs := map[string]string{
+				"192.168.1.2:8081": "mirror-1",
+			}
+
+			return test{
+				name: "Succeeded to change to connected phase when curAddrs are connected",
+				args: args{
+					ctx:      context.Background(),
+					current:  current,
+					curAddrs: curAddrs,
+				},
+				fields: fields{
+					mirr: &MirrorMock{
+						IsConnectedFunc: func(_ context.Context, _ string) bool {
+							return true
+						},
+						RangeMirrorAddrFunc: func(f func(addr string, _ any) bool) {
+							for addr := range curAddrs {
+								f(addr, struct{}{})
+							}
+						},
+					},
+					ctrl: &k8smock.ControllerMock{
+						GetManagerFunc: func() k8s.Manager {
+							return k8smock.NewDefaultManagerMock()
+						},
+					},
+				},
+			}
+		}(),
+		func() test {
+			current := map[string]target.Target{}
+			curAddrs := map[string]string{}
+			newAddrs := []string{
+				"192.168.1.2:8081",
+			}
+
+			return test{
+				name: "Succeeded to create new resource when there is a new connection",
+				args: args{
+					ctx:      context.Background(),
+					current:  current,
+					curAddrs: curAddrs,
+				},
+				fields: fields{
+					mirr: &MirrorMock{
+						IsConnectedFunc: func(_ context.Context, _ string) bool {
+							return true
+						},
+						RangeMirrorAddrFunc: func(f func(addr string, _ any) bool) {
+							for _, addr := range newAddrs {
+								f(addr, struct{}{})
+							}
+						},
+					},
+					ctrl: &k8smock.ControllerMock{
+						GetManagerFunc: func() k8s.Manager {
+							return k8smock.NewDefaultManagerMock()
+						},
+					},
+				},
+			}
+		}(),
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+
+			d, err := NewDiscovery(
+				WithDiscoveryController(test.fields.ctrl),
+				WithDiscoveryMirror(test.fields.mirr),
+			)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			if dis, ok := d.(*discovery); ok {
+				if test.beforeFunc != nil {
+					test.beforeFunc(tt, dis, test.args)
+				}
+				if test.afterFunc != nil {
+					defer test.afterFunc(tt, test.args)
+				}
+				checkFunc := test.checkFunc
+				if test.checkFunc == nil {
+					checkFunc = defaultCheckFunc
+				}
+
+				err := dis.syncWithAddr(test.args.ctx, test.args.current, test.args.curAddrs)
+				if err := checkFunc(test.want, err); err != nil {
 					tt.Errorf("error = %v", err)
 				}
 			}

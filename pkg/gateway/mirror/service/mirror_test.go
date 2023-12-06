@@ -16,6 +16,7 @@ package service
 import (
 	"context"
 	"reflect"
+	"sort"
 	"testing"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
@@ -318,6 +319,15 @@ func Test_mirr_MirrorTargets(t *testing.T) {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
+		if len(got) != len(w.want) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+		}
+		sort.Slice(got, func(i, j int) bool {
+			return got[i].Host > got[j].Host
+		})
+		sort.Slice(w.want, func(i, j int) bool {
+			return w.want[i].Host > w.want[j].Host
+		})
 		if !reflect.DeepEqual(got, w.want) {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
