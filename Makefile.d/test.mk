@@ -200,6 +200,9 @@ test/create-empty:
 			echo "Creating empty test file $$f"; \
 			package="$$(dirname $$f)" ; \
 			package="$$(basename $$package)" ; \
+			if [ "$$(basename $$f)" = "main.go" ]; then \
+				package="main"; \
+			fi; \
 			echo "package $$package" >> "$$f"; \
 		fi; \
 	done

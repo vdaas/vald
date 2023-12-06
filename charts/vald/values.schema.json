@@ -14404,7 +14404,9 @@
             },
             "readreplica": {
               "type": "object",
+              "description": "[This feature is work in progress] readreplica agents rotation job",
               "properties": {
+                "": { "type": "object" },
                 "agent_namespace": {
                   "type": "string",
                   "description": "namespace of agent pods to manage"
@@ -14465,7 +14467,7 @@
                 },
                 "name": {
                   "type": "string",
-                  "description": "name of index correction job"
+                  "description": "name of readreplica rotator job"
                 },
                 "observability": {
                   "type": "object",

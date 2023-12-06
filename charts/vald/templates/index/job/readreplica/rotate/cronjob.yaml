@@ -14,8 +14,7 @@
 # limitations under the License.
 #
 {{- $rotator := .Values.manager.index.readreplica.rotator -}}
-{{- $agent := .Values.agent }}
-{{- if $agent.readreplica.enabled }}
+{{- if $rotator.enabled }}
 apiVersion: batch/v1
 kind: CronJob
 metadata:
