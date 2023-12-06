@@ -88,8 +88,14 @@ package main
 //
 // func Test_run(t *testing.T) {
 // 	type args struct {
-// 		dur    time.Duration
-// 		output func(header string)
+// 		ctx     context.Context
+// 		load    bool
+// 		path    string
+// 		dim     int
+// 		vectors [][]float32
+// 		ids     []uint
+// 		dur     time.Duration
+// 		output  func(header string)
 // 	}
 // 	type want struct {
 // 	}
@@ -110,6 +116,12 @@ package main
 // 		   {
 // 		       name: "test_case_1",
 // 		       args: args {
+// 		           ctx:nil,
+// 		           load:false,
+// 		           path:"",
+// 		           dim:0,
+// 		           vectors:nil,
+// 		           ids:nil,
 // 		           dur:nil,
 // 		           output:nil,
 // 		       },
@@ -130,6 +142,12 @@ package main
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           args: args {
+// 		           ctx:nil,
+// 		           load:false,
+// 		           path:"",
+// 		           dim:0,
+// 		           vectors:nil,
+// 		           ids:nil,
 // 		           dur:nil,
 // 		           output:nil,
 // 		           },
@@ -162,7 +180,100 @@ package main
 // 				checkFunc = defaultCheckFunc
 // 			}
 //
-// 			run(test.args.dur, test.args.output)
+// 			run(test.args.ctx, test.args.load, test.args.path, test.args.dim, test.args.vectors, test.args.ids, test.args.dur, test.args.output)
+// 			if err := checkFunc(test.want); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_sleep(t *testing.T) {
+// 	type args struct {
+// 		ctx      context.Context
+// 		duration time.Duration
+// 		limit    time.Duration
+// 		fn       func()
+// 		efn      func()
+// 	}
+// 	type want struct {
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		want       want
+// 		checkFunc  func(want) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want) error {
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           ctx:nil,
+// 		           duration:nil,
+// 		           limit:nil,
+// 		           fn:nil,
+// 		           efn:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           ctx:nil,
+// 		           duration:nil,
+// 		           limit:nil,
+// 		           fn:nil,
+// 		           efn:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+//
+// 			sleep(test.args.ctx, test.args.duration, test.args.limit, test.args.fn, test.args.efn)
 // 			if err := checkFunc(test.want); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}

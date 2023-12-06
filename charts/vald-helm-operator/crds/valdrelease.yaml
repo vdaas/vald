@@ -9592,6 +9592,631 @@ spec:
                           x-kubernetes-preserve-unknown-fields: true
                         progressDeadlineSeconds:
                           type: integer
+                        readreplica:
+                          type: object
+                          properties:
+                            rotator:
+                              type: object
+                              properties:
+                                agent_namespace:
+                                  type: string
+                                clusterRole:
+                                  type: object
+                                  properties:
+                                    enabled:
+                                      type: boolean
+                                    name:
+                                      type: string
+                                clusterRoleBinding:
+                                  type: object
+                                  properties:
+                                    enabled:
+                                      type: boolean
+                                    name:
+                                      type: string
+                                env:
+                                  type: array
+                                  items:
+                                    type: object
+                                    x-kubernetes-preserve-unknown-fields: true
+                                image:
+                                  type: object
+                                  properties:
+                                    pullPolicy:
+                                      type: string
+                                      enum:
+                                        - Always
+                                        - Never
+                                        - IfNotPresent
+                                    repository:
+                                      type: string
+                                    tag:
+                                      type: string
+                                initContainers:
+                                  type: array
+                                  items:
+                                    type: object
+                                    x-kubernetes-preserve-unknown-fields: true
+                                name:
+                                  type: string
+                                observability:
+                                  type: object
+                                  properties:
+                                    enabled:
+                                      type: boolean
+                                    metrics:
+                                      type: object
+                                      properties:
+                                        enable_cgo:
+                                          type: boolean
+                                        enable_goroutine:
+                                          type: boolean
+                                        enable_memory:
+                                          type: boolean
+                                        enable_version_info:
+                                          type: boolean
+                                        version_info_labels:
+                                          type: array
+                                          items:
+                                            type: string
+                                            enum:
+                                              - vald_version
+                                              - server_name
+                                              - git_commit
+                                              - build_time
+                                              - go_version
+                                              - go_os
+                                              - go_arch
+                                              - cgo_enabled
+                                              - ngt_version
+                                              - build_cpu_info_flags
+                                    otlp:
+                                      type: object
+                                      properties:
+                                        attribute:
+                                          type: object
+                                          properties:
+                                            namespace:
+                                              type: string
+                                            node_name:
+                                              type: string
+                                            pod_name:
+                                              type: string
+                                            service_name:
+                                              type: string
+                                        collector_endpoint:
+                                          type: string
+                                        metrics_export_interval:
+                                          type: string
+                                        metrics_export_timeout:
+                                          type: string
+                                        trace_batch_timeout:
+                                          type: string
+                                        trace_export_timeout:
+                                          type: string
+                                        trace_max_export_batch_size:
+                                          type: integer
+                                        trace_max_queue_size:
+                                          type: integer
+                                    trace:
+                                      type: object
+                                      properties:
+                                        enabled:
+                                          type: boolean
+                                read_replica_id:
+                                  type: string
+                                server_config:
+                                  type: object
+                                  properties:
+                                    full_shutdown_duration:
+                                      type: string
+                                    healths:
+                                      type: object
+                                      properties:
+                                        liveness:
+                                          type: object
+                                          properties:
+                                            enabled:
+                                              type: boolean
+                                            host:
+                                              type: string
+                                            livenessProbe:
+                                              type: object
+                                              properties:
+                                                failureThreshold:
+                                                  type: integer
+                                                httpGet:
+                                                  type: object
+                                                  properties:
+                                                    path:
+                                                      type: string
+                                                    port:
+                                                      type: string
+                                                    scheme:
+                                                      type: string
+                                                initialDelaySeconds:
+                                                  type: integer
+                                                periodSeconds:
+                                                  type: integer
+                                                successThreshold:
+                                                  type: integer
+                                                timeoutSeconds:
+                                                  type: integer
+                                            port:
+                                              type: integer
+                                              maximum: 65535
+                                              minimum: 0
+                                            server:
+                                              type: object
+                                              properties:
+                                                http:
+                                                  type: object
+                                                  properties:
+                                                    handler_timeout:
+                                                      type: string
+                                                    idle_timeout:
+                                                      type: string
+                                                    read_header_timeout:
+                                                      type: string
+                                                    read_timeout:
+                                                      type: string
+                                                    shutdown_duration:
+                                                      type: string
+                                                    write_timeout:
+                                                      type: string
+                                                mode:
+                                                  type: string
+                                                network:
+                                                  type: string
+                                                  enum:
+                                                    - tcp
+                                                    - tcp4
+                                                    - tcp6
+                                                    - udp
+                                                    - udp4
+                                                    - udp6
+                                                    - unix
+                                                    - unixgram
+                                                    - unixpacket
+                                                probe_wait_time:
+                                                  type: string
+                                                socket_option:
+                                                  type: object
+                                                  properties:
+                                                    ip_recover_destination_addr:
+                                                      type: boolean
+                                                    ip_transparent:
+                                                      type: boolean
+                                                    reuse_addr:
+                                                      type: boolean
+                                                    reuse_port:
+                                                      type: boolean
+                                                    tcp_cork:
+                                                      type: boolean
+                                                    tcp_defer_accept:
+                                                      type: boolean
+                                                    tcp_fast_open:
+                                                      type: boolean
+                                                    tcp_no_delay:
+                                                      type: boolean
+                                                    tcp_quick_ack:
+                                                      type: boolean
+                                                socket_path:
+                                                  type: string
+                                            servicePort:
+                                              type: integer
+                                              maximum: 65535
+                                              minimum: 0
+                                        readiness:
+                                          type: object
+                                          properties:
+                                            enabled:
+                                              type: boolean
+                                            host:
+                                              type: string
+                                            port:
+                                              type: integer
+                                              maximum: 65535
+                                              minimum: 0
+                                            readinessProbe:
+                                              type: object
+                                              properties:
+                                                failureThreshold:
+                                                  type: integer
+                                                httpGet:
+                                                  type: object
+                                                  properties:
+                                                    path:
+                                                      type: string
+                                                    port:
+                                                      type: string
+                                                    scheme:
+                                                      type: string
+                                                initialDelaySeconds:
+                                                  type: integer
+                                                periodSeconds:
+                                                  type: integer
+                                                successThreshold:
+                                                  type: integer
+                                                timeoutSeconds:
+                                                  type: integer
+                                            server:
+                                              type: object
+                                              properties:
+                                                http:
+                                                  type: object
+                                                  properties:
+                                                    handler_timeout:
+                                                      type: string
+                                                    idle_timeout:
+                                                      type: string
+                                                    read_header_timeout:
+                                                      type: string
+                                                    read_timeout:
+                                                      type: string
+                                                    shutdown_duration:
+                                                      type: string
+                                                    write_timeout:
+                                                      type: string
+                                                mode:
+                                                  type: string
+                                                network:
+                                                  type: string
+                                                  enum:
+                                                    - tcp
+                                                    - tcp4
+                                                    - tcp6
+                                                    - udp
+                                                    - udp4
+                                                    - udp6
+                                                    - unix
+                                                    - unixgram
+                                                    - unixpacket
+                                                probe_wait_time:
+                                                  type: string
+                                                socket_option:
+                                                  type: object
+                                                  properties:
+                                                    ip_recover_destination_addr:
+                                                      type: boolean
+                                                    ip_transparent:
+                                                      type: boolean
+                                                    reuse_addr:
+                                                      type: boolean
+                                                    reuse_port:
+                                                      type: boolean
+                                                    tcp_cork:
+                                                      type: boolean
+                                                    tcp_defer_accept:
+                                                      type: boolean
+                                                    tcp_fast_open:
+                                                      type: boolean
+                                                    tcp_no_delay:
+                                                      type: boolean
+                                                    tcp_quick_ack:
+                                                      type: boolean
+                                                socket_path:
+                                                  type: string
+                                            servicePort:
+                                              type: integer
+                                              maximum: 65535
+                                              minimum: 0
+                                        startup:
+                                          type: object
+                                          properties:
+                                            enabled:
+                                              type: boolean
+                                            port:
+                                              type: integer
+                                              maximum: 65535
+                                              minimum: 0
+                                            startupProbe:
+                                              type: object
+                                              properties:
+                                                failureThreshold:
+                                                  type: integer
+                                                httpGet:
+                                                  type: object
+                                                  properties:
+                                                    path:
+                                                      type: string
+                                                    port:
+                                                      type: string
+                                                    scheme:
+                                                      type: string
+                                                initialDelaySeconds:
+                                                  type: integer
+                                                periodSeconds:
+                                                  type: integer
+                                                successThreshold:
+                                                  type: integer
+                                                timeoutSeconds:
+                                                  type: integer
+                                    metrics:
+                                      type: object
+                                      properties:
+                                        pprof:
+                                          type: object
+                                          properties:
+                                            enabled:
+                                              type: boolean
+                                            host:
+                                              type: string
+                                            port:
+                                              type: integer
+                                              maximum: 65535
+                                              minimum: 0
+                                            server:
+                                              type: object
+                                              properties:
+                                                http:
+                                                  type: object
+                                                  properties:
+                                                    handler_timeout:
+                                                      type: string
+                                                    idle_timeout:
+                                                      type: string
+                                                    read_header_timeout:
+                                                      type: string
+                                                    read_timeout:
+                                                      type: string
+                                                    shutdown_duration:
+                                                      type: string
+                                                    write_timeout:
+                                                      type: string
+                                                mode:
+                                                  type: string
+                                                network:
+                                                  type: string
+                                                  enum:
+                                                    - tcp
+                                                    - tcp4
+                                                    - tcp6
+                                                    - udp
+                                                    - udp4
+                                                    - udp6
+                                                    - unix
+                                                    - unixgram
+                                                    - unixpacket
+                                                probe_wait_time:
+                                                  type: string
+                                                socket_option:
+                                                  type: object
+                                                  properties:
+                                                    ip_recover_destination_addr:
+                                                      type: boolean
+                                                    ip_transparent:
+                                                      type: boolean
+                                                    reuse_addr:
+                                                      type: boolean
+                                                    reuse_port:
+                                                      type: boolean
+                                                    tcp_cork:
+                                                      type: boolean
+                                                    tcp_defer_accept:
+                                                      type: boolean
+                                                    tcp_fast_open:
+                                                      type: boolean
+                                                    tcp_no_delay:
+                                                      type: boolean
+                                                    tcp_quick_ack:
+                                                      type: boolean
+                                                socket_path:
+                                                  type: string
+                                            servicePort:
+                                              type: integer
+                                              maximum: 65535
+                                              minimum: 0
+                                    servers:
+                                      type: object
+                                      properties:
+                                        grpc:
+                                          type: object
+                                          properties:
+                                            enabled:
+                                              type: boolean
+                                            host:
+                                              type: string
+                                            port:
+                                              type: integer
+                                              maximum: 65535
+                                              minimum: 0
+                                            server:
+                                              type: object
+                                              properties:
+                                                grpc:
+                                                  type: object
+                                                  properties:
+                                                    bidirectional_stream_concurrency:
+                                                      type: integer
+                                                    connection_timeout:
+                                                      type: string
+                                                    enable_reflection:
+                                                      type: boolean
+                                                    header_table_size:
+                                                      type: integer
+                                                    initial_conn_window_size:
+                                                      type: integer
+                                                    initial_window_size:
+                                                      type: integer
+                                                    interceptors:
+                                                      type: array
+                                                      items:
+                                                        type: string
+                                                        enum:
+                                                          - RecoverInterceptor
+                                                          - AccessLogInterceptor
+                                                          - TraceInterceptor
+                                                          - MetricInterceptor
+                                                    keepalive:
+                                                      type: object
+                                                      properties:
+                                                        max_conn_age:
+                                                          type: string
+                                                        max_conn_age_grace:
+                                                          type: string
+                                                        max_conn_idle:
+                                                          type: string
+                                                        min_time:
+                                                          type: string
+                                                        permit_without_stream:
+                                                          type: boolean
+                                                        time:
+                                                          type: string
+                                                        timeout:
+                                                          type: string
+                                                    max_header_list_size:
+                                                      type: integer
+                                                    max_receive_message_size:
+                                                      type: integer
+                                                    max_send_message_size:
+                                                      type: integer
+                                                    read_buffer_size:
+                                                      type: integer
+                                                    write_buffer_size:
+                                                      type: integer
+                                                mode:
+                                                  type: string
+                                                network:
+                                                  type: string
+                                                  enum:
+                                                    - tcp
+                                                    - tcp4
+                                                    - tcp6
+                                                    - udp
+                                                    - udp4
+                                                    - udp6
+                                                    - unix
+                                                    - unixgram
+                                                    - unixpacket
+                                                probe_wait_time:
+                                                  type: string
+                                                restart:
+                                                  type: boolean
+                                                socket_option:
+                                                  type: object
+                                                  properties:
+                                                    ip_recover_destination_addr:
+                                                      type: boolean
+                                                    ip_transparent:
+                                                      type: boolean
+                                                    reuse_addr:
+                                                      type: boolean
+                                                    reuse_port:
+                                                      type: boolean
+                                                    tcp_cork:
+                                                      type: boolean
+                                                    tcp_defer_accept:
+                                                      type: boolean
+                                                    tcp_fast_open:
+                                                      type: boolean
+                                                    tcp_no_delay:
+                                                      type: boolean
+                                                    tcp_quick_ack:
+                                                      type: boolean
+                                                socket_path:
+                                                  type: string
+                                            servicePort:
+                                              type: integer
+                                              maximum: 65535
+                                              minimum: 0
+                                        rest:
+                                          type: object
+                                          properties:
+                                            enabled:
+                                              type: boolean
+                                            host:
+                                              type: string
+                                            port:
+                                              type: integer
+                                              maximum: 65535
+                                              minimum: 0
+                                            server:
+                                              type: object
+                                              properties:
+                                                http:
+                                                  type: object
+                                                  properties:
+                                                    handler_timeout:
+                                                      type: string
+                                                    idle_timeout:
+                                                      type: string
+                                                    read_header_timeout:
+                                                      type: string
+                                                    read_timeout:
+                                                      type: string
+                                                    shutdown_duration:
+                                                      type: string
+                                                    write_timeout:
+                                                      type: string
+                                                mode:
+                                                  type: string
+                                                network:
+                                                  type: string
+                                                  enum:
+                                                    - tcp
+                                                    - tcp4
+                                                    - tcp6
+                                                    - udp
+                                                    - udp4
+                                                    - udp6
+                                                    - unix
+                                                    - unixgram
+                                                    - unixpacket
+                                                probe_wait_time:
+                                                  type: string
+                                                socket_option:
+                                                  type: object
+                                                  properties:
+                                                    ip_recover_destination_addr:
+                                                      type: boolean
+                                                    ip_transparent:
+                                                      type: boolean
+                                                    reuse_addr:
+                                                      type: boolean
+                                                    reuse_port:
+                                                      type: boolean
+                                                    tcp_cork:
+                                                      type: boolean
+                                                    tcp_defer_accept:
+                                                      type: boolean
+                                                    tcp_fast_open:
+                                                      type: boolean
+                                                    tcp_no_delay:
+                                                      type: boolean
+                                                    tcp_quick_ack:
+                                                      type: boolean
+                                                socket_path:
+                                                  type: string
+                                            servicePort:
+                                              type: integer
+                                              maximum: 65535
+                                              minimum: 0
+                                    tls:
+                                      type: object
+                                      properties:
+                                        ca:
+                                          type: string
+                                        cert:
+                                          type: string
+                                        enabled:
+                                          type: boolean
+                                        insecure_skip_verify:
+                                          type: boolean
+                                        key:
+                                          type: string
+                                serviceAccount:
+                                  type: object
+                                  properties:
+                                    enabled:
+                                      type: boolean
+                                    name:
+                                      type: string
+                                ttlSecondsAfterFinished:
+                                  type: integer
+                                version:
+                                  type: string
+                                  pattern: ^v[0-9]+\.[0-9]+\.[0-9]$
                         replicas:
                           type: integer
                           minimum: 0

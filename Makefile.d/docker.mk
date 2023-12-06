@@ -245,3 +245,17 @@ docker/build/index-save:
 	    -t $(ORG)/$(INDEX_SAVE_IMAGE):$(TAG) . \
 	    --build-arg MAINTAINER=$(MAINTAINER) \
 	    --build-arg GO_VERSION=$(GO_VERSION)
+
+.PHONY: docker/name/readreplica-rotate
+docker/name/readreplica-rotate:
+	@echo "$(ORG)/$(READREPLICA_ROTATE_IMAGE)"
+
+.PHONY: docker/build/readreplica-rotate
+## build readreplica-rotate image
+docker/build/readreplica-rotate:
+	$(DOCKER) build \
+	    $(DOCKER_OPTS) \
+	    -f dockers/index/job/readreplica/rotate/Dockerfile \
+	    -t $(ORG)/$(READREPLICA_ROTATE_IMAGE):$(TAG) . \
+	    --build-arg MAINTAINER=$(MAINTAINER) \
+	    --build-arg GO_VERSION=$(GO_VERSION)
