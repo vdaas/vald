@@ -1637,8 +1637,8 @@ agent:
   # agent.readreplica -- readreplica deployment annotations
   readreplica:
     # @schema {"name": "agent.readreplica.enabled", "type": "boolean"}
-    # agent.readreplica.enabled -- enable agent readreplica
-    enabled: true
+    # agent.readreplica.enabled -- [This feature is WORK IN PROGRESS]enable agent readreplica
+    enabled: false
     # @schema {"name": "agent.readreplica.name", "type": "string"}
     # agent.readreplica.name -- name of agent readreplica
     name: vald-agent-ngt-readreplica
