@@ -11,29 +11,21 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-package service
+package main
 
 // NOT IMPLEMENTED BELOW
 //
-// func TestWithIndexReplica(t *testing.T) {
-// 	type args struct {
-// 		num int
-// 	}
+// func Test_main(t *testing.T) {
 // 	type want struct {
-// 		want Option
 // 	}
 // 	type test struct {
 // 		name       string
-// 		args       args
 // 		want       want
-// 		checkFunc  func(want, Option) error
-// 		beforeFunc func(*testing.T, args)
-// 		afterFunc  func(*testing.T, args)
+// 		checkFunc  func(want) error
+// 		beforeFunc func(*testing.T)
+// 		afterFunc  func(*testing.T)
 // 	}
-// 	defaultCheckFunc := func(w want, got Option) error {
-// 		if !reflect.DeepEqual(got, w.want) {
-// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-// 		}
+// 	defaultCheckFunc := func(w want) error {
 // 		return nil
 // 	}
 // 	tests := []test{
@@ -41,15 +33,12 @@ package service
 // 		/*
 // 		   {
 // 		       name: "test_case_1",
-// 		       args: args {
-// 		           num:0,
-// 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
-// 		       beforeFunc: func(t *testing.T, args args) {
+// 		       beforeFunc: func(t *testing.T,) {
 // 		           t.Helper()
 // 		       },
-// 		       afterFunc: func(t *testing.T, args args) {
+// 		       afterFunc: func(t *testing.T,) {
 // 		           t.Helper()
 // 		       },
 // 		   },
@@ -60,15 +49,12 @@ package service
 // 		   func() test {
 // 		       return test {
 // 		           name: "test_case_2",
-// 		           args: args {
-// 		           num:0,
-// 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
-// 		           beforeFunc: func(t *testing.T, args args) {
+// 		           beforeFunc: func(t *testing.T,) {
 // 		               t.Helper()
 // 		           },
-// 		           afterFunc: func(t *testing.T, args args) {
+// 		           afterFunc: func(t *testing.T,) {
 // 		               t.Helper()
 // 		           },
 // 		       }
@@ -82,44 +68,46 @@ package service
 // 			tt.Parallel()
 // 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 // 			if test.beforeFunc != nil {
-// 				test.beforeFunc(tt, test.args)
+// 				test.beforeFunc(tt)
 // 			}
 // 			if test.afterFunc != nil {
-// 				defer test.afterFunc(tt, test.args)
+// 				defer test.afterFunc(tt)
 // 			}
 // 			checkFunc := test.checkFunc
 // 			if test.checkFunc == nil {
 // 				checkFunc = defaultCheckFunc
 // 			}
 //
-// 			got := WithIndexReplica(test.args.num)
-// 			if err := checkFunc(test.want, got); err != nil {
+// 			main()
+// 			if err := checkFunc(test.want); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
 //
-// func TestWithDiscoverer(t *testing.T) {
+// func Test_run(t *testing.T) {
 // 	type args struct {
-// 		client discoverer.Client
+// 		ctx     context.Context
+// 		load    bool
+// 		path    string
+// 		dim     int
+// 		vectors [][]float32
+// 		ids     []uint
+// 		dur     time.Duration
+// 		output  func(header string)
 // 	}
 // 	type want struct {
-// 		want Option
 // 	}
 // 	type test struct {
 // 		name       string
 // 		args       args
 // 		want       want
-// 		checkFunc  func(want, Option) error
+// 		checkFunc  func(want) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
 // 	}
-// 	defaultCheckFunc := func(w want, got Option) error {
-// 		if !reflect.DeepEqual(got, w.want) {
-// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-// 		}
+// 	defaultCheckFunc := func(w want) error {
 // 		return nil
 // 	}
 // 	tests := []test{
@@ -128,7 +116,14 @@ package service
 // 		   {
 // 		       name: "test_case_1",
 // 		       args: args {
-// 		           client:nil,
+// 		           ctx:nil,
+// 		           load:false,
+// 		           path:"",
+// 		           dim:0,
+// 		           vectors:nil,
+// 		           ids:nil,
+// 		           dur:nil,
+// 		           output:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -147,7 +142,14 @@ package service
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           args: args {
-// 		           client:nil,
+// 		           ctx:nil,
+// 		           load:false,
+// 		           path:"",
+// 		           dim:0,
+// 		           vectors:nil,
+// 		           ids:nil,
+// 		           dur:nil,
+// 		           output:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -178,34 +180,33 @@ package service
 // 				checkFunc = defaultCheckFunc
 // 			}
 //
-// 			got := WithDiscoverer(test.args.client)
-// 			if err := checkFunc(test.want, got); err != nil {
+// 			run(test.args.ctx, test.args.load, test.args.path, test.args.dim, test.args.vectors, test.args.ids, test.args.dur, test.args.output)
+// 			if err := checkFunc(test.want); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
 //
-// func TestWithStreamListConcurrency(t *testing.T) {
+// func Test_sleep(t *testing.T) {
 // 	type args struct {
-// 		num int
+// 		ctx      context.Context
+// 		duration time.Duration
+// 		limit    time.Duration
+// 		fn       func()
+// 		efn      func()
 // 	}
 // 	type want struct {
-// 		want Option
 // 	}
 // 	type test struct {
 // 		name       string
 // 		args       args
 // 		want       want
-// 		checkFunc  func(want, Option) error
+// 		checkFunc  func(want) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
 // 	}
-// 	defaultCheckFunc := func(w want, got Option) error {
-// 		if !reflect.DeepEqual(got, w.want) {
-// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-// 		}
+// 	defaultCheckFunc := func(w want) error {
 // 		return nil
 // 	}
 // 	tests := []test{
@@ -214,7 +215,11 @@ package service
 // 		   {
 // 		       name: "test_case_1",
 // 		       args: args {
-// 		           num:0,
+// 		           ctx:nil,
+// 		           duration:nil,
+// 		           limit:nil,
+// 		           fn:nil,
+// 		           efn:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -233,7 +238,11 @@ package service
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           args: args {
-// 		           num:0,
+// 		           ctx:nil,
+// 		           duration:nil,
+// 		           limit:nil,
+// 		           fn:nil,
+// 		           efn:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -264,33 +273,40 @@ package service
 // 				checkFunc = defaultCheckFunc
 // 			}
 //
-// 			got := WithStreamListConcurrency(test.args.num)
-// 			if err := checkFunc(test.want, got); err != nil {
+// 			sleep(test.args.ctx, test.args.duration, test.args.limit, test.args.fn, test.args.efn)
+// 			if err := checkFunc(test.want); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
 //
-// func TestWithKvsAsyncWriteConcurrency(t *testing.T) {
+// func Test_load(t *testing.T) {
 // 	type args struct {
-// 		num int
+// 		path string
 // 	}
 // 	type want struct {
-// 		want Option
+// 		wantTrain [][]float32
+// 		wantTest  [][]float32
+// 		err       error
 // 	}
 // 	type test struct {
 // 		name       string
 // 		args       args
 // 		want       want
-// 		checkFunc  func(want, Option) error
+// 		checkFunc  func(want, [][]float32, [][]float32, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
 // 	}
-// 	defaultCheckFunc := func(w want, got Option) error {
-// 		if !reflect.DeepEqual(got, w.want) {
-// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 	defaultCheckFunc := func(w want, gotTrain [][]float32, gotTest [][]float32, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		if !reflect.DeepEqual(gotTrain, w.wantTrain) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotTrain, w.wantTrain)
+// 		}
+// 		if !reflect.DeepEqual(gotTest, w.wantTest) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotTest, w.wantTest)
 // 		}
 // 		return nil
 // 	}
@@ -300,7 +316,7 @@ package service
 // 		   {
 // 		       name: "test_case_1",
 // 		       args: args {
-// 		           num:0,
+// 		           path:"",
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -319,7 +335,7 @@ package service
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           args: args {
-// 		           num:0,
+// 		           path:"",
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -350,8 +366,8 @@ package service
 // 				checkFunc = defaultCheckFunc
 // 			}
 //
-// 			got := WithKvsAsyncWriteConcurrency(test.args.num)
-// 			if err := checkFunc(test.want, got); err != nil {
+// 			gotTrain, gotTest, err := load(test.args.path)
+// 			if err := checkFunc(test.want, gotTrain, gotTest, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
 //
