@@ -151,7 +151,7 @@ func (d *discovery) loadTargets() map[string]target.Target {
 	if v := d.targetsByName.Load(); v != nil {
 		return *v
 	}
-	return nil
+	return map[string]target.Target{}
 }
 
 type createdTarget struct {
@@ -171,9 +171,9 @@ type deletedTarget struct {
 	port uint32
 }
 
-func (d *discovery) startSync(ctx context.Context, prev map[string]target.Target) (current map[string]target.Target, err error) {
+func (d *discovery) startSync(ctx context.Context, prev map[string]target.Target) (current map[string]target.Target, errs error) {
 	current = d.loadTargets()
-	curAddrs := make(map[string]string) // map[addr: metadata.name]
+	curAddrs := map[string]string{} // map[addr: metadata.name]
 
 	created := map[string]*createdTarget{} // map[addr: target.Target]
 	updated := map[string]*updatedTarget{} // map[addr: *updatedTarget]
@@ -210,22 +210,29 @@ func (d *discovery) startSync(ctx context.Context, prev map[string]target.Target
 
 	if len(created) != 0 || len(deleted) != 0 || len(updated) != 0 {
 		log.Infof("created: %#v\tupdated: %#v\tdeleted: %#v", created, updated, deleted)
-		err = errors.Join(
-			errors.Join(
-				d.connectTarget(ctx, created),
-				d.disconnectTarget(ctx, deleted)),
-			d.updateTarget(ctx, updated))
-		return current, err
+		if err := d.connectTarget(ctx, created); err != nil {
+			errs = errors.Join(errs, err)
+		}
+		if err := d.disconnectTarget(ctx, deleted); err != nil {
+			errs = errors.Join(errs, err)
+		}
+		if err := d.updateTarget(ctx, updated); err != nil {
+			errs = errors.Join(errs, err)
+		}
+		return current, errs
 	}
 	return current, d.syncWithAddr(ctx, current, curAddrs)
 }
 
-func (d *discovery) syncWithAddr(ctx context.Context, current map[string]target.Target, curAddrs map[string]string) (err error) {
+func (d *discovery) syncWithAddr(ctx context.Context, current map[string]target.Target, curAddrs map[string]string) (errs error) {
 	for addr, name := range curAddrs {
 		// When the status code of a regularly running Register RPC is Unimplemented, the connection to the target will be disconnected
 		// so the status of the resource (CR) may be misaligned. To prevent this, change the status of the resource to Disconnected.
-		if !d.mirr.IsConnected(ctx, addr) && current[name].Phase == target.MirrorTargetPhaseConnected {
-			err = errors.Join(err, d.updateMirrorTargetPhase(ctx, name, target.MirrorTargetPhaseDisconnected))
+		connected := d.mirr.IsConnected(ctx, addr)
+		if !connected && current[name].Phase == target.MirrorTargetPhaseConnected {
+			errs = errors.Join(errs, d.updateMirrorTargetPhase(ctx, name, target.MirrorTargetPhaseDisconnected))
+		} else if connected && current[name].Phase != target.MirrorTargetPhaseConnected {
+			errs = errors.Join(errs, d.updateMirrorTargetPhase(ctx, name, target.MirrorTargetPhaseConnected))
 		}
 	}
 
@@ -233,43 +240,38 @@ func (d *discovery) syncWithAddr(ctx context.Context, current map[string]target.
 		connected := d.mirr.IsConnected(ctx, addr)
 		if name, ok := curAddrs[addr]; ok {
 			if st := target.MirrorTargetPhaseConnected; connected && current[name].Phase != st {
-				err = errors.Join(err,
-					d.updateMirrorTargetPhase(ctx, name, st))
+				errs = errors.Join(errs, d.updateMirrorTargetPhase(ctx, name, st))
 			} else if st := target.MirrorTargetPhaseDisconnected; !connected && current[name].Phase != st {
-				err = errors.Join(err,
-					d.updateMirrorTargetPhase(ctx, name, st))
+				errs = errors.Join(errs, d.updateMirrorTargetPhase(ctx, name, st))
 			}
 		} else if !ok && connected {
-			var (
-				host string
-				port uint16
-			)
-			host, port, err = net.SplitHostPort(addr)
+			host, port, err := net.SplitHostPort(addr)
 			if err != nil {
 				log.Error(err)
+				return true
 			}
 			name := resourcePrefix + "-" + strconv.FormatUint(xxh3.HashString(d.selfMirrAddrStr+addr), 10)
-			err = errors.Join(err, d.createMirrorTargetResource(ctx, name, host, int(port)))
+			errs = errors.Join(errs, d.createMirrorTargetResource(ctx, name, host, int(port)))
 		}
 		return true
 	})
-	return err
+	return errs
 }
 
-func (d *discovery) connectTarget(ctx context.Context, req map[string]*createdTarget) (err error) {
+func (d *discovery) connectTarget(ctx context.Context, req map[string]*createdTarget) (errs error) {
 	for _, created := range req {
 		phase := target.MirrorTargetPhaseConnected
-		cerr := d.mirr.Connect(ctx, &payload.Mirror_Target{
+		err := d.mirr.Connect(ctx, &payload.Mirror_Target{
 			Host: created.tgt.Host,
 			Port: uint32(created.tgt.Port),
 		})
-		if cerr != nil {
-			err = errors.Join(err, cerr)
+		if err != nil {
+			errs = errors.Join(errs, err)
 			phase = target.MirrorTargetPhaseDisconnected
 		}
-		err = errors.Join(err, d.updateMirrorTargetPhase(ctx, created.name, phase))
+		errs = errors.Join(errs, d.updateMirrorTargetPhase(ctx, created.name, phase))
 	}
-	return err
+	return errs
 }
 
 func (d *discovery) createMirrorTargetResource(ctx context.Context, name, host string, port int) error {
@@ -290,20 +292,20 @@ func (d *discovery) createMirrorTargetResource(ctx context.Context, name, host s
 	return d.ctrl.GetManager().GetClient().Create(ctx, mt)
 }
 
-func (d *discovery) disconnectTarget(ctx context.Context, req map[string]*deletedTarget) (err error) {
+func (d *discovery) disconnectTarget(ctx context.Context, req map[string]*deletedTarget) (errs error) {
 	for _, deleted := range req {
 		phase := target.MirrorTargetPhaseDisconnected
-		derr := d.mirr.Disconnect(ctx, &payload.Mirror_Target{
+		err := d.mirr.Disconnect(ctx, &payload.Mirror_Target{
 			Host: deleted.host,
 			Port: deleted.port,
 		})
-		if derr != nil {
-			err = errors.Join(err, derr)
+		if err != nil {
+			errs = errors.Join(errs, err)
 			phase = target.MirrorTargetPhaseUnknown
 		}
-		err = errors.Join(err, d.updateMirrorTargetPhase(ctx, deleted.name, phase))
+		errs = errors.Join(errs, d.updateMirrorTargetPhase(ctx, deleted.name, phase))
 	}
-	return err
+	return errs
 }
 
 func (d *discovery) updateMirrorTargetPhase(ctx context.Context, name string, phase target.MirrorTargetPhase) error {
@@ -324,26 +326,23 @@ func (d *discovery) updateMirrorTargetPhase(ctx context.Context, name string, ph
 	return c.Status().Update(ctx, mt)
 }
 
-func (d *discovery) updateTarget(ctx context.Context, req map[string]*updatedTarget) (err error) {
+func (d *discovery) updateTarget(ctx context.Context, req map[string]*updatedTarget) (errs error) {
 	for _, updated := range req {
-		derr := d.mirr.Disconnect(ctx, &payload.Mirror_Target{
+		err := d.mirr.Disconnect(ctx, &payload.Mirror_Target{
 			Host: updated.old.Host,
 			Port: uint32(updated.old.Port),
 		})
-		if derr != nil {
-			err = errors.Join(err, derr)
-			err = errors.Join(err, d.updateMirrorTargetPhase(ctx, updated.name, target.MirrorTargetPhaseUnknown))
+		if err != nil {
+			errs = errors.Join(errs, err, d.updateMirrorTargetPhase(ctx, updated.name, target.MirrorTargetPhaseUnknown))
 		} else {
-			if cerr := d.mirr.Connect(ctx, &payload.Mirror_Target{
+			err := d.mirr.Connect(ctx, &payload.Mirror_Target{
 				Host: updated.new.Host,
 				Port: uint32(updated.new.Port),
-			}); cerr != nil {
-				err = errors.Join(cerr, err)
-				if uerr := d.updateMirrorTargetPhase(ctx, updated.name, target.MirrorTargetPhaseDisconnected); uerr != nil {
-					err = errors.Join(err, uerr)
-				}
+			})
+			if err != nil {
+				errs = errors.Join(errs, err, d.updateMirrorTargetPhase(ctx, updated.name, target.MirrorTargetPhaseDisconnected))
 			}
 		}
 	}
-	return err
+	return errs
 }
