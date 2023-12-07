@@ -30,11 +30,46 @@ docker/name/org:
 
 .PHONY: docker/name/org/alter
 docker/name/org/alter:
-	@echo "ghcr.io/vdaas/vald"
+	@echo "$(GHCRORG)"
 
 .PHONY: docker/platforms
 docker/platforms:
 	@echo "linux/amd64,linux/arm64"
+
+.PHONY: docker/build/image
+## Generalized docker build function
+docker/build/image:
+ifeq ($(REMOTE),true)
+	@echo "starting remote build for $(IMAGE):$(TAG)"
+	DOCKER_BUILDKIT=1 $(DOCKER) buildx build \
+		$(DOCKER_OPTS) \
+		--cache-to type=registry,ref=$(GHCRORG)/$(IMAGE):$(TAG)-buildcache,mode=max \
+		--cache-from type=registry,ref=$(GHCRORG)/$(IMAGE):$(TAG)-buildcache \
+		--build-arg BUILDKIT_INLINE_CACHE=1 \
+		--build-arg GO_VERSION=$(GO_VERSION) \
+		--build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
+		--build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
+		--build-arg MAINTAINER=$(MAINTAINER) \
+		$(EXTRA_ARGS) \
+		--sbom=true \
+		--provenance=mode=max \
+		-t $(CRORG)/$(IMAGE):$(TAG) \
+		-t $(GHCRORG)/$(IMAGE):$(TAG) \
+		--output type=registry,oci-mediatypes=true,compression=zstd,compression-level=5,force-compression=true,push=true \
+		-f $(DOCKERFILE) .
+else
+	@echo "starting local build for $(IMAGE):$(TAG)"
+	DOCKER_BUILDKIT=1 $(DOCKER) build \
+		$(DOCKER_OPTS) \
+		--build-arg BUILDKIT_INLINE_CACHE=1 \
+		--build-arg GO_VERSION=$(GO_VERSION) \
+		--build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
+		--build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
+		--build-arg MAINTAINER=$(MAINTAINER) \
+		$(EXTRA_ARGS) \
+		-t $(IMAGE):$(TAG) \
+		-f $(DOCKERFILE) .
+endif
 
 .PHONY: docker/name/agent-ngt
 docker/name/agent-ngt:
@@ -43,14 +78,9 @@ docker/name/agent-ngt:
 .PHONY: docker/build/agent-ngt
 ## build agent-ngt image
 docker/build/agent-ngt:
-	$(DOCKER) build \
-	    $(DOCKER_OPTS) \
-	    -f dockers/agent/core/ngt/Dockerfile \
-	    -t $(ORG)/$(AGENT_IMAGE):$(TAG) . \
-	    --build-arg GO_VERSION=$(GO_VERSION) \
-	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
-	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
-	    --build-arg MAINTAINER=$(MAINTAINER)
+	@make DOCKERFILE="$(ROOTDIR)/dockers/agent/core/ngt/Dockerfile" \
+		IMAGE=$(AGENT_IMAGE) \
+		docker/build/image
 
 .PHONY: docker/name/agent-sidecar
 docker/name/agent-sidecar:
@@ -59,14 +89,9 @@ docker/name/agent-sidecar:
 .PHONY: docker/build/agent-sidecar
 ## build agent-sidecar image
 docker/build/agent-sidecar:
-	$(DOCKER) build \
-	    $(DOCKER_OPTS) \
-	    -f dockers/agent/sidecar/Dockerfile \
-	    -t $(ORG)/$(AGENT_SIDECAR_IMAGE):$(TAG) . \
-	    --build-arg GO_VERSION=$(GO_VERSION) \
-	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
-	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
-	    --build-arg MAINTAINER=$(MAINTAINER)
+	@make DOCKERFILE="$(ROOTDIR)/dockers/agent/sidecar/Dockerfile" \
+		IMAGE=$(AGENT_SIDECAR_IMAGE) \
+		docker/build/image
 
 .PHONY: docker/name/discoverer-k8s
 docker/name/discoverer-k8s:
@@ -75,14 +100,9 @@ docker/name/discoverer-k8s:
 .PHONY: docker/build/discoverer-k8s
 ## build discoverer-k8s image
 docker/build/discoverer-k8s:
-	$(DOCKER) build \
-	    $(DOCKER_OPTS) \
-	    -f dockers/discoverer/k8s/Dockerfile \
-	    -t $(ORG)/$(DISCOVERER_IMAGE):$(TAG) . \
-	    --build-arg GO_VERSION=$(GO_VERSION) \
-	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
-	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
-	    --build-arg MAINTAINER=$(MAINTAINER)
+	@make DOCKERFILE="$(ROOTDIR)/dockers/discoverer/k8s/Dockerfile" \
+		IMAGE=$(DISCOVERER_IMAGE) \
+		docker/build/image
 
 .PHONY: docker/name/gateway-lb
 docker/name/gateway-lb:
@@ -91,13 +111,9 @@ docker/name/gateway-lb:
 .PHONY: docker/build/gateway-lb
 ## build gateway-lb image
 docker/build/gateway-lb:
-	$(DOCKER) build \
-	    $(DOCKER_OPTS) \
-	    -f dockers/gateway/lb/Dockerfile \
-	    -t $(ORG)/$(LB_GATEWAY_IMAGE):$(TAG) . \
-	    --build-arg GO_VERSION=$(GO_VERSION) \
-	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
-	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG)
+	@make DOCKERFILE="$(ROOTDIR)/dockers/gateway/lb/Dockerfile" \
+		IMAGE=$(LB_GATEWAY_IMAGE) \
+		docker/build/image
 
 .PHONY: docker/name/gateway-filter
 docker/name/gateway-filter:
@@ -106,13 +122,9 @@ docker/name/gateway-filter:
 .PHONY: docker/build/gateway-filter
 ## build gateway-filter image
 docker/build/gateway-filter:
-	$(DOCKER) build \
-	    $(DOCKER_OPTS) \
-	    -f dockers/gateway/filter/Dockerfile \
-	    -t $(ORG)/$(FILTER_GATEWAY_IMAGE):$(TAG) . \
-	    --build-arg GO_VERSION=$(GO_VERSION) \
-	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
-	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG)
+	@make DOCKERFILE="$(ROOTDIR)/dockers/gateway/filter/Dockerfile" \
+		IMAGE=$(FILTER_GATEWAY_IMAGE) \
+		docker/build/image
 
 .PHONY: docker/name/manager-index
 docker/name/manager-index:
@@ -121,14 +133,9 @@ docker/name/manager-index:
 .PHONY: docker/build/manager-index
 ## build manager-index image
 docker/build/manager-index:
-	$(DOCKER) build \
-	    $(DOCKER_OPTS) \
-	    -f dockers/manager/index/Dockerfile \
-	    -t $(ORG)/$(MANAGER_INDEX_IMAGE):$(TAG) . \
-	    --build-arg GO_VERSION=$(GO_VERSION) \
-	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
-	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
-	    --build-arg MAINTAINER=$(MAINTAINER)
+	@make DOCKERFILE="$(ROOTDIR)/dockers/manager/index/Dockerfile" \
+		IMAGE=$(MANAGER_INDEX_IMAGE) \
+		docker/build/image
 
 .PHONY: docker/name/ci-container
 docker/name/ci-container:
@@ -137,12 +144,9 @@ docker/name/ci-container:
 .PHONY: docker/build/ci-container
 ## build ci-container image
 docker/build/ci-container:
-	$(DOCKER) build \
-	    $(DOCKER_OPTS) \
-	    -f dockers/ci/base/Dockerfile \
-	    -t $(ORG)/$(CI_CONTAINER_IMAGE):$(TAG) . \
-	    --build-arg MAINTAINER=$(MAINTAINER) \
-	    --build-arg GO_VERSION=$(GO_VERSION)
+	@make DOCKERFILE="$(ROOTDIR)/dockers/ci/base/Dockerfile" \
+		IMAGE=$(CI_CONTAINER_IMAGE) \
+		docker/build/image
 
 .PHONY: docker/name/dev-container
 docker/name/dev-container:
@@ -151,11 +155,9 @@ docker/name/dev-container:
 .PHONY: docker/build/dev-container
 ## build dev-container image
 docker/build/dev-container:
-	$(DOCKER) build \
-	    $(DOCKER_OPTS) \
-	    -f dockers/dev/Dockerfile \
-	    -t $(ORG)/$(DEV_CONTAINER_IMAGE):$(TAG) . \
-	    --build-arg MAINTAINER=$(MAINTAINER)
+	@make DOCKERFILE="$(ROOTDIR)/dockers/dev/Dockerfile" \
+		IMAGE=$(DEV_CONTAINER_IMAGE) \
+		docker/build/image
 
 .PHONY: docker/name/operator/helm
 docker/name/operator/helm:
@@ -164,16 +166,10 @@ docker/name/operator/helm:
 .PHONY: docker/build/operator/helm
 ## build helm-operator image
 docker/build/operator/helm:
-	$(DOCKER) build \
-	    $(DOCKER_OPTS) \
-	    -f dockers/operator/helm/Dockerfile \
-	    -t $(ORG)/$(HELM_OPERATOR_IMAGE):$(TAG) . \
-	    --build-arg GO_VERSION=$(GO_VERSION) \
-	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
-	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
-	    --build-arg MAINTAINER=$(MAINTAINER) \
-	    --build-arg OPERATOR_SDK_VERSION=$(OPERATOR_SDK_VERSION) \
-	    --build-arg UPX_OPTIONS=$(UPX_OPTIONS)
+	@make DOCKERFILE="$(ROOTDIR)/dockers/operator/helm/Dockerfile" \
+		IMAGE=$(HELM_OPERATOR_IMAGE) \
+		EXTRA_ARGS="--build-arg OPERATOR_SDK_VERSION=$(OPERATOR_SDK_VERSION) --build-arg UPX_OPTIONS=$(UPX_OPTIONS)" \
+		docker/build/image
 
 .PHONY: docker/name/loadtest
 docker/name/loadtest:
@@ -182,12 +178,9 @@ docker/name/loadtest:
 .PHONY: docker/build/loadtest
 ## build loadtest image
 docker/build/loadtest:
-	$(DOCKER) build \
-	    $(DOCKER_OPTS) \
-	    -f dockers/tools/cli/loadtest/Dockerfile \
-	    -t $(ORG)/$(LOADTEST_IMAGE):$(TAG) . \
-	    --build-arg MAINTAINER=$(MAINTAINER) \
-	    --build-arg GO_VERSION=$(GO_VERSION)
+	@make DOCKERFILE="$(ROOTDIR)/dockers/tools/cli/loadtest/Dockerfile" \
+		IMAGE=$(LOADTEST_IMAGE) \
+		docker/build/image
 
 .PHONY: docker/name/index-correction
 docker/name/index-correction:
@@ -196,12 +189,9 @@ docker/name/index-correction:
 .PHONY: docker/build/index-correction
 ## build index-correction image
 docker/build/index-correction:
-	$(DOCKER) build \
-	    $(DOCKER_OPTS) \
-	    -f dockers/index/job/correction/Dockerfile \
-	    -t $(ORG)/$(INDEX_CORRECTION_IMAGE):$(TAG) . \
-	    --build-arg MAINTAINER=$(MAINTAINER) \
-	    --build-arg GO_VERSION=$(GO_VERSION)
+	@make DOCKERFILE="$(ROOTDIR)/dockers/index/job/correction/Dockerfile" \
+		IMAGE=$(INDEX_CORRECTION_IMAGE) \
+		docker/build/image
 
 .PHONY: docker/name/index-creation
 docker/name/index-creation:
@@ -210,12 +200,9 @@ docker/name/index-creation:
 .PHONY: docker/build/index-creation
 ## build index-creation image
 docker/build/index-creation:
-	$(DOCKER) build \
-	    $(DOCKER_OPTS) \
-	    -f dockers/index/job/creation/Dockerfile \
-	    -t $(ORG)/$(INDEX_CREATION_IMAGE):$(TAG) . \
-	    --build-arg MAINTAINER=$(MAINTAINER) \
-	    --build-arg GO_VERSION=$(GO_VERSION)
+	@make DOCKERFILE="$(ROOTDIR)/dockers/index/job/creation/Dockerfile" \
+		IMAGE=$(INDEX_CREATION_IMAGE) \
+		docker/build/image
 
 .PHONY: docker/name/index-save
 docker/name/index-save:
@@ -224,9 +211,17 @@ docker/name/index-save:
 .PHONY: docker/build/index-save
 ## build index-save image
 docker/build/index-save:
-	$(DOCKER) build \
-	    $(DOCKER_OPTS) \
-	    -f dockers/index/job/save/Dockerfile \
-	    -t $(ORG)/$(INDEX_SAVE_IMAGE):$(TAG) . \
-	    --build-arg MAINTAINER=$(MAINTAINER) \
-	    --build-arg GO_VERSION=$(GO_VERSION)
+	@make DOCKERFILE="$(ROOTDIR)/dockers/index/job/save/Dockerfile" \
+		IMAGE=$(INDEX_SAVE_IMAGE) \
+		docker/build/image
+
+.PHONY: docker/name/readreplica-rotate
+docker/name/readreplica-rotate:
+	@echo "$(ORG)/$(READREPLICA_ROTATE_IMAGE)"
+
+.PHONY: docker/build/readreplica-rotate
+## build readreplica-rotate image
+docker/build/readreplica-rotate:
+	@make DOCKERFILE="$(ROOTDIR)/dockers/index/job/readreplica/rotate/Dockerfile" \
+		IMAGE=$(READREPLICA_ROTATE_IMAGE) \
+		docker/build/image

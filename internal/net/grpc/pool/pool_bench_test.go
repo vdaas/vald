@@ -33,7 +33,7 @@ import (
 
 const (
 	DefaultServerAddr = "localhost:5001"
-	DefaultPoolSize   = 10
+	DefaultPoolSize   = 4
 )
 
 type server struct {
@@ -61,6 +61,7 @@ func (*server) Nodes(context.Context, *payload.Discoverer_Request) (*payload.Inf
 }
 
 func ListenAndServe(b *testing.B, addr string) func() {
+	b.Helper()
 	lis, err := net.Listen("tcp", addr)
 	if err != nil {
 		b.Error(err)
