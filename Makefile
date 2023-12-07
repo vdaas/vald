@@ -20,7 +20,7 @@ GOPKG                           = github.com/$(ORG)/$(NAME)
 DATETIME                        = $(eval DATETIME := $(shell date -u +%Y/%m/%d_%H:%M:%S%z))$(DATETIME)
 TAG                            ?= latest
 CRORG                          ?= $(ORG)
-# CRORG                           = ghcr.io/vdaas/vald
+GHCRORG                         = ghcr.io/$(ORG)/$(NAME)
 AGENT_IMAGE                     = $(NAME)-agent-ngt
 AGENT_SIDECAR_IMAGE             = $(NAME)-agent-sidecar
 CI_CONTAINER_IMAGE              = $(NAME)-ci-container
