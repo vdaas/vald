@@ -20,9 +20,9 @@ import (
 	context "context"
 
 	payload "github.com/vdaas/vald/apis/grpc/v1/payload"
-	codes "github.com/vdaas/vald/internal/net/grpc/codes"
-	status "github.com/vdaas/vald/internal/net/grpc/status"
 	grpc "google.golang.org/grpc"
+	codes "google.golang.org/grpc/codes"
+	status "google.golang.org/grpc/status"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 )
 
@@ -275,5 +275,5 @@ var Agent_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "apis/proto/v1/agent/core/agent.proto",
+	Metadata: "v1/agent/core/agent.proto",
 }

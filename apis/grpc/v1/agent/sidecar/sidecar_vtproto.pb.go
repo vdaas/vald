@@ -79,5 +79,5 @@ var Sidecar_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*SidecarServer)(nil),
 	Methods:     []grpc.MethodDesc{},
 	Streams:     []grpc.StreamDesc{},
-	Metadata:    "apis/proto/v1/agent/sidecar/sidecar.proto",
+	Metadata:    "v1/agent/sidecar/sidecar.proto",
 }
