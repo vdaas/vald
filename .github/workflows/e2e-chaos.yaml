@@ -223,9 +223,9 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - agent-failure
-      - random-pod-failure
       - agent-network-partition
       - clusterwide-network-bandwidth
+      - random-pod-failure
     steps:
       - uses: actions/checkout@v3
 
