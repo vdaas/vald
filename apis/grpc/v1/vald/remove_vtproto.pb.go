@@ -270,5 +270,5 @@ var Remove_ServiceDesc = grpc.ServiceDesc{
 			ClientStreams: true,
 		},
 	},
-	Metadata: "apis/proto/v1/vald/remove.proto",
+	Metadata: "v1/vald/remove.proto",
 }

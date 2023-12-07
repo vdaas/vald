@@ -275,5 +275,5 @@ var Agent_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "apis/proto/v1/agent/core/agent.proto",
+	Metadata: "v1/agent/core/agent.proto",
 }

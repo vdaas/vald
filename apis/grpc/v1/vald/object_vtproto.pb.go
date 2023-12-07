@@ -297,5 +297,5 @@ var Object_ServiceDesc = grpc.ServiceDesc{
 			ServerStreams: true,
 		},
 	},
-	Metadata: "apis/proto/v1/vald/object.proto",
+	Metadata: "v1/vald/object.proto",
 }

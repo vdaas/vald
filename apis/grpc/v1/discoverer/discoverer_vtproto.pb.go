@@ -161,5 +161,5 @@ var Discoverer_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "apis/proto/v1/discoverer/discoverer.proto",
+	Metadata: "v1/discoverer/discoverer.proto",
 }

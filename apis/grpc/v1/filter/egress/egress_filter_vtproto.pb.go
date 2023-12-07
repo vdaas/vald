@@ -161,5 +161,5 @@ var Filter_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "apis/proto/v1/filter/egress/egress_filter.proto",
+	Metadata: "v1/filter/egress/egress_filter.proto",
 }

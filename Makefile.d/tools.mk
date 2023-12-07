@@ -66,15 +66,6 @@ $(BINDIR)/kubectl:
 	curl -L "https://dl.k8s.io/release/$(KUBECTL_VERSION)/bin/$(shell echo $(UNAME) | tr '[:upper:]' '[:lower:]')/$(subst x86_64,amd64,$(shell echo $(ARCH) | tr '[:upper:]' '[:lower:]'))/kubectl" -o $(BINDIR)/kubectl
 	chmod a+x $(BINDIR)/kubectl
 
-.PHONY: protobuf/install
-protobuf/install: $(BINDIR)/protoc
-
-$(BINDIR)/protoc:
-	curl -L "https://github.com/protocolbuffers/protobuf/releases/download/v$(PROTOBUF_VERSION)/protoc-$(PROTOBUF_VERSION)-$(subst darwin,osx,$(shell echo $(UNAME) | tr '[:upper:]' '[:lower:]'))-$(ARCH).zip" -o /tmp/protoc.zip
-	unzip -o /tmp/protoc.zip -d /usr/local bin/protoc
-	unzip -o /tmp/protoc.zip -d /usr/local 'include/*'
-	rm -f /tmp/protoc.zip
-
 .PHONY: textlint/install
 textlint/install:
 	npm install -g textlint textlint-rule-en-spell textlint-rule-prh textlint-rule-write-good

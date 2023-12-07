@@ -232,5 +232,5 @@ var Update_ServiceDesc = grpc.ServiceDesc{
 			ClientStreams: true,
 		},
 	},
-	Metadata: "apis/proto/v1/vald/update.proto",
+	Metadata: "v1/vald/update.proto",
 }
