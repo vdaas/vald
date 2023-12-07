@@ -59,7 +59,6 @@ RUN make deps \
     && make yq/install \
     && make golangci-lint/install \
     && make reviewdog/install \
-    && make protobuf/install \
     && make kubectl/install
 
 # additional deps

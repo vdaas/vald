@@ -30,37 +30,6 @@ define mkdir
 	mkdir -p $1
 endef
 
-define proto-code-gen
-	protoc \
-		$(PROTO_PATHS:%=-I %) \
-                --go_out=$(GOPATH)/src \
-		--plugin protoc-gen-go="$(GOBIN)/protoc-gen-go" \
-                --go-vtproto_out=$(GOPATH)/src \
-		--plugin protoc-gen-go-vtproto="$(GOBIN)/protoc-gen-go-vtproto" \
-                --go-vtproto_opt=features=grpc+marshal+unmarshal+size+equal+clone \
-		$1
-endef
-		# --go-grpc_out=$(GOPATH)/src \
-		# --plugin protoc-gen-go-grpc="${GOBIN}/protoc-gen-go-grpc" \
-                # --go-vtproto_opt=pool=$(ROOTDIR)/apis/proto/v1/payload.Object.Vector \
-                # --go-vtproto_opt=pool=$(ROOTDIR)/apis/proto/v1/payload.Insert.MultiRequest \
-                # --go-vtproto_opt=pool=$(ROOTDIR)/apis/proto/v1/payload.Insert.Request \
-                # --go-vtproto_opt=pool=$(ROOTDIR)/apis/proto/v1/payload.Object.Vector \
-                # --go-vtproto_opt=pool=$(ROOTDIR)/apis/proto/v1/payload.Object.Vectors \
-                # --go-vtproto_opt=pool=$(ROOTDIR)/apis/proto/v1/payload.Search.ObjectRequest \
-                # --go-vtproto_opt=pool=$(ROOTDIR)/apis/proto/v1/payload.Search.Request \
-                # --go-vtproto_opt=pool=$(ROOTDIR)/apis/proto/v1/payload.Update.MultiRequest \
-                # --go-vtproto_opt=pool=$(ROOTDIR)/apis/proto/v1/payload.Update.Request \
-                # --go-vtproto_opt=pool=$(ROOTDIR)/apis/proto/v1/payload.Upsert.MultiRequest \
-                # --go-vtproto_opt=pool=$(ROOTDIR)/apis/proto/v1/payload.Upsert.Request \
-
-define protoc-gen
-	protoc \
-		$(PROTO_PATHS:%=-I %) \
-		$2 \
-		$1
-endef
-
 define profile-web
 	go tool pprof -http=":6061" \
 		$1.bin \
