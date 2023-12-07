@@ -18,9 +18,9 @@ package errdetails
 
 import (
 	fmt "fmt"
-	io "io"
 	bits "math/bits"
 
+	io "github.com/vdaas/vald/internal/io"
 	proto "google.golang.org/protobuf/proto"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	durationpb "google.golang.org/protobuf/types/known/durationpb"

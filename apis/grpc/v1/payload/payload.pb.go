@@ -24,9 +24,9 @@ package payload
 
 import (
 	reflect "reflect"
-	sync "sync"
 
 	_ "buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go/buf/validate"
+	sync "github.com/vdaas/vald/internal/sync"
 	status "google.golang.org/genproto/googleapis/rpc/status"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
