@@ -24,8 +24,8 @@ package errdetails
 
 import (
 	reflect "reflect"
-	sync "sync"
 
+	sync "github.com/vdaas/vald/internal/sync"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	durationpb "google.golang.org/protobuf/types/known/durationpb"
