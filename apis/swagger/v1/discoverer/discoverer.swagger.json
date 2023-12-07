@@ -90,13 +90,14 @@
           "default": {
             "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
         "parameters": [
           {
             "name": "body",
+            "description": "Represent the dicoverer svc request.",
             "in": "body",
             "required": true,
             "schema": {
@@ -282,6 +283,7 @@
         "svcs": {
           "type": "array",
           "items": {
+            "type": "object",
             "$ref": "#/definitions/InfoReadReplicaSvc"
           },
           "description": "The multiple node information."
