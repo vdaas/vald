@@ -109,12 +109,13 @@ func (m *mirr) Start(ctx context.Context) <-chan error {
 		for {
 			select {
 			case <-ctx.Done():
+				return ctx.Err()
 			case <-tic.C:
 				tgt, err := m.MirrorTargets(ctx)
 				if err != nil {
 					select {
 					case <-ctx.Done():
-						return ctx.Err()
+						return errors.Join(ctx.Err(), err)
 					case ech <- err:
 						break
 					}
@@ -129,7 +130,7 @@ func (m *mirr) Start(ctx context.Context) <-chan error {
 					}
 					select {
 					case <-ctx.Done():
-						return ctx.Err()
+						return errors.Join(ctx.Err(), err)
 					case ech <- err:
 					}
 				}
@@ -137,7 +138,7 @@ func (m *mirr) Start(ctx context.Context) <-chan error {
 					if err := m.Connect(ctx, resTgts...); err != nil {
 						select {
 						case <-ctx.Done():
-							return ctx.Err()
+							return errors.Join(ctx.Err(), err)
 						case ech <- err:
 						}
 					}
@@ -165,6 +166,7 @@ func (m *mirr) registers(ctx context.Context, tgts *payload.Mirror_Targets) ([]*
 	}
 	resTgts := make([]*payload.Mirror_Target, 0, len(tgts.GetTargets()))
 	exists := make(map[string]bool)
+	var result sync.Map[string, error] // map[target host: error]
 	var mu sync.Mutex
 
 	err := m.gateway.DoMulti(ctx, m.connectedOtherMirrorAddrs(ctx), func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error {
@@ -194,6 +196,11 @@ func (m *mirr) registers(ctx context.Context, tgts *payload.Mirror_Targets) ([]*
 					vald.RegisterRPCName+" API connection not found", err, reqInfo, resInfo,
 				)
 				attrs = trace.StatusCodeInternal(err.Error())
+			case errors.Is(err, errors.ErrTargetNotFound):
+				err = status.WrapWithInvalidArgument(
+					vald.RegisterRPCName+" API target not found", err, reqInfo, resInfo,
+				)
+				attrs = trace.StatusCodeInvalidArgument(err.Error())
 			default:
 				var (
 					st  *status.Status
@@ -226,6 +233,7 @@ func (m *mirr) registers(ctx context.Context, tgts *payload.Mirror_Targets) ([]*
 				span.SetAttributes(attrs...)
 				span.SetStatus(trace.StatusError, err.Error())
 			}
+			result.Store(target, err)
 			return err
 		}
 		if res != nil && len(res.GetTargets()) > 0 {
@@ -241,6 +249,37 @@ func (m *mirr) registers(ctx context.Context, tgts *payload.Mirror_Targets) ([]*
 		}
 		return nil
 	})
+	result.Range(func(target string, rerr error) bool {
+		if rerr != nil {
+			err = errors.Join(err, errors.Wrapf(rerr, "failed to "+vald.RegisterRPCName+" API to %s", target))
+		}
+		return true
+	})
+	if err != nil {
+		if errors.Is(err, errors.ErrGRPCClientConnNotFound("*")) {
+			err = status.WrapWithInternal(
+				vald.RegisterRPCName+" API connection not found", err, reqInfo, resInfo,
+			)
+			log.Warn(err)
+			if span != nil {
+				span.RecordError(err)
+				span.SetAttributes(trace.StatusCodeInternal(err.Error())...)
+				span.SetStatus(trace.StatusError, err.Error())
+			}
+			return nil, err
+		}
+
+		st, msg, err := status.ParseError(err, codes.Internal,
+			"failed to parse "+vald.RegisterRPCName+" gRPC error response", reqInfo, resInfo,
+		)
+		log.Warn(err)
+		if span != nil {
+			span.RecordError(err)
+			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+			span.SetStatus(trace.StatusError, err.Error())
+		}
+		return resTgts, err
+	}
 	return resTgts, err
 }
 
@@ -352,6 +391,7 @@ func (m *mirr) connectedOtherMirrorAddrs(ctx context.Context) (addrs []string) {
 	return addrs
 }
 
+// RangeMirrorAddr calls f sequentially for each key and value present in the connection map. If f returns false, range stops the iteration.
 func (m *mirr) RangeMirrorAddr(f func(addr string, _ any) bool) {
 	m.addrl.Range(func(addr string, value any) bool {
 		if !m.isGatewayAddr(addr) && !m.isSelfMirrorAddr(addr) {

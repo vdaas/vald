@@ -129,7 +129,7 @@ func (d *discovery) Start(ctx context.Context) (<-chan error, error) {
 				if err != nil {
 					select {
 					case <-ctx.Done():
-						return errors.Join(err, ctx.Err())
+						return errors.Join(ctx.Err(), err)
 					case ech <- err:
 					}
 				}
@@ -137,7 +137,7 @@ func (d *discovery) Start(ctx context.Context) (<-chan error, error) {
 				if err != nil {
 					select {
 					case <-ctx.Done():
-						return errors.Join(err, ctx.Err())
+						return errors.Join(ctx.Err(), err)
 					case ech <- err:
 					}
 				}
