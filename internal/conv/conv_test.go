@@ -16,11 +16,11 @@ package conv
 import (
 	"io"
 	"reflect"
-	"strings"
 	"testing"
 	"testing/iotest"
 
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/test/goleak"
 	"golang.org/x/text/encoding/japanese"
 	"golang.org/x/text/transform"

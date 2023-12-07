@@ -17,15 +17,15 @@ package config
 //
 // func TestCorrector_Bind(t *testing.T) {
 // 	type fields struct {
-// 		AgentPort                  int
-// 		AgentName                  string
-// 		AgentNamespace             string
-// 		AgentDNS                   string
-// 		NodeName                   string
-// 		StreamListConcurrency      int
-// 		KvsAsyncWriteConcurrency   int
-// 		IndexReplica               int
-// 		Discoverer                 *DiscovererClient
+// 		AgentPort                int
+// 		AgentName                string
+// 		AgentNamespace           string
+// 		AgentDNS                 string
+// 		NodeName                 string
+// 		StreamListConcurrency    int
+// 		KvsAsyncWriteConcurrency int
+// 		IndexReplica             int
+// 		Discoverer               *DiscovererClient
 // 	}
 // 	type want struct {
 // 		want *Corrector
@@ -116,15 +116,15 @@ package config
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			c := &Corrector{
-// 				AgentPort:                  test.fields.AgentPort,
-// 				AgentName:                  test.fields.AgentName,
-// 				AgentNamespace:             test.fields.AgentNamespace,
-// 				AgentDNS:                   test.fields.AgentDNS,
-// 				NodeName:                   test.fields.NodeName,
-// 				StreamListConcurrency:      test.fields.StreamListConcurrency,
-// 				KvsAsyncWriteConcurrency:   test.fields.KvsAsyncWriteConcurrency,
-// 				IndexReplica:               test.fields.IndexReplica,
-// 				Discoverer:                 test.fields.Discoverer,
+// 				AgentPort:                test.fields.AgentPort,
+// 				AgentName:                test.fields.AgentName,
+// 				AgentNamespace:           test.fields.AgentNamespace,
+// 				AgentDNS:                 test.fields.AgentDNS,
+// 				NodeName:                 test.fields.NodeName,
+// 				StreamListConcurrency:    test.fields.StreamListConcurrency,
+// 				KvsAsyncWriteConcurrency: test.fields.KvsAsyncWriteConcurrency,
+// 				IndexReplica:             test.fields.IndexReplica,
+// 				Discoverer:               test.fields.Discoverer,
 // 			}
 //
 // 			got := c.Bind()

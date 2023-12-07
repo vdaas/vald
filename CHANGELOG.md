@@ -1,5 +1,119 @@
 # CHANGELOG
 
+## v1.7.9
+
+### Docker images
+
+<table>
+  <tr>
+    <th>component</th>
+    <th>Docker pull</th>
+  </tr>
+  <tr>
+    <td>Agent NGT</td>
+    <td>
+      <code>docker pull vdaas/vald-agent-ngt:v1.7.9</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-agent-ngt:v1.7.9</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Agent sidecar</td>
+    <td>
+      <code>docker pull vdaas/vald-agent-sidecar:v1.7.9</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-agent-sidecar:v1.7.9</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Discoverers</td>
+    <td>
+      <code>docker pull vdaas/vald-discoverer-k8s:v1.7.9</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-discoverer-k8s:v1.7.9</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Gateways</td>
+    <td>
+      <code>docker pull vdaas/vald-lb-gateway:v1.7.9</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-lb-gateway:v1.7.9</code><br/>
+      <code>docker pull vdaas/vald-filter-gateway:v1.7.9</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-filter-gateway:v1.7.9</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Index Manager</td>
+    <td>
+      <code>docker pull vdaas/vald-manager-index:v1.7.9</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-manager-index:v1.7.9</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Helm Operator</td>
+    <td>
+      <code>docker pull vdaas/vald-helm-operator:v1.7.9</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-helm-operator:v1.7.9</code>
+    </td>
+  </tr>
+</table>
+
+### Documents
+
+- [GoDoc](https://pkg.go.dev/github.com/vdaas/vald@v1.7.9)
+- [Helm Chart Reference](https://github.com/vdaas/vald/blob/v1.7.9/charts/vald/README.md)
+- [Helm Operator Chart Reference](https://github.com/vdaas/vald/blob/v1.7.9/charts/vald-helm-operator/README.md)
+
+### Changes
+
+:sparkles: New feature
+
+- Add read replica rotator [#2241](https://github.com/vdaas/vald/pull/2241)
+- Implement manifests for Index Management Job [#2235](https://github.com/vdaas/vald/pull/2235)
+- Add job error to report index correction error status [#2231](https://github.com/vdaas/vald/pull/2231)
+- Add implementation for save index job [#2227](https://github.com/vdaas/vald/pull/2227)
+- Add implementation for create index job [#2223](https://github.com/vdaas/vald/pull/2223)
+- Add index correction metrics [#2215](https://github.com/vdaas/vald/pull/2215)
+- Add index correction document [#2217](https://github.com/vdaas/vald/pull/2217)
+- Add make command to update template [#2212](https://github.com/vdaas/vald/pull/2212)
+- Add job to check format difference [#2214](https://github.com/vdaas/vald/pull/2214)
+- Add verification for index correction e2e and add clusterrole cronjobs for operator to deploy index correction [#2205](https://github.com/vdaas/vald/pull/2205)
+- Add StreamListObject to LB [#2203](https://github.com/vdaas/vald/pull/2203)
+- Add index correction helm templates and E2E [#2200](https://github.com/vdaas/vald/pull/2200)
+- Add index correction internal logic [#2194](https://github.com/vdaas/vald/pull/2194)
+- Add bbolt as internal/db/kvs [#2177](https://github.com/vdaas/vald/pull/2177)
+
+:zap: Improve performance
+
+- Improve index correction performance [#2234](https://github.com/vdaas/vald/pull/2234)
+
+:recycle: Refactor
+
+- Refactor Index Management Job [#2232](https://github.com/vdaas/vald/pull/2232)
+- Fix invalid network policy schema [#2230](https://github.com/vdaas/vald/pull/2230)
+- Add minikube to create volume snapshot development environment locally [#2228](https://github.com/vdaas/vald/pull/2228)
+- Enable ingress resource in the get started document [#2211](https://github.com/vdaas/vald/pull/2211)
+- Add step to get k3s latest version [#2206](https://github.com/vdaas/vald/pull/2206)
+- Update telepresence and helm-docs installer and update deps [#2195](https://github.com/vdaas/vald/pull/2195)
+- Replace x/slices with standard slices pkg [#2193](https://github.com/vdaas/vald/pull/2193)
+- add benchmark and check program for core ngt [#2179](https://github.com/vdaas/vald/pull/2179)
+
+:bug: Bugfix
+
+- Revert vtpool for ResourceExhausted problem [#2255](https://github.com/vdaas/vald/pull/2255)
+- Fix deleted contour ingress controller apply [#2229](https://github.com/vdaas/vald/pull/2229)
+
+:pencil2: Document
+
+- Add document for RemoveByTimestamp RPC [#2238](https://github.com/vdaas/vald/pull/2238)
+
+:green_heart: CI
+
+- Disable exhaustruct [#2240](https://github.com/vdaas/vald/pull/2240)
+- Fix fails when there are format differences [#2226](https://github.com/vdaas/vald/pull/2226)
+
+:arrow_up: Update dependencies
+
+- update deps [#2208](https://github.com/vdaas/vald/pull/2208)
+- update dependencies [#2260](https://github.com/vdaas/vald/pull/2260)
+
 ## v1.7.8
 
 ### Docker images

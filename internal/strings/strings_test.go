@@ -14,10 +14,10 @@
 package strings
 
 import (
+	"fmt"
 	"reflect"
 	"testing"
 
-	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/test/goleak"
 )
 
@@ -39,7 +39,7 @@ func TestJoin(t *testing.T) {
 	}
 	defaultCheckFunc := func(w want, gotStr string) error {
 		if !reflect.DeepEqual(gotStr, w.wantStr) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotStr, w.wantStr)
+			return fmt.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotStr, w.wantStr)
 		}
 		return nil
 	}

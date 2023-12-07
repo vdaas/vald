@@ -106,7 +106,7 @@ func fitos(path string, fi os.FileInfo) string {
 		var err error
 		fi, err = os.Stat(path)
 		if err != nil || fi == nil {
-			return fmt.Sprintf("unknown file info: %v", fi)
+			return fmt.Sprintf("unknown file info: for %s\t%v", path, fi)
 		}
 	}
 	if fi != nil {

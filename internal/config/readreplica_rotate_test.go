@@ -15,7 +15,7 @@ package config
 
 // NOT IMPLEMENTED BELOW
 //
-// func TestReadreplicaRotate_Bind(t *testing.T) {
+// func TestReadReplicaRotate_Bind(t *testing.T) {
 // 	type fields struct {
 // 		AgentNamespace      string
 // 		ReadReplicaLabelKey string
@@ -23,17 +23,17 @@ package config
 // 		VolumeName          string
 // 	}
 // 	type want struct {
-// 		want *ReadreplicaRotate
+// 		want *ReadReplicaRotate
 // 	}
 // 	type test struct {
 // 		name       string
 // 		fields     fields
 // 		want       want
-// 		checkFunc  func(want, *ReadreplicaRotate) error
+// 		checkFunc  func(want, *ReadReplicaRotate) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)
 // 	}
-// 	defaultCheckFunc := func(w want, got *ReadreplicaRotate) error {
+// 	defaultCheckFunc := func(w want, got *ReadReplicaRotate) error {
 // 		if !reflect.DeepEqual(got, w.want) {
 // 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 // 		}
@@ -100,7 +100,7 @@ package config
 // 			if test.checkFunc == nil {
 // 				checkFunc = defaultCheckFunc
 // 			}
-// 			r := &ReadreplicaRotate{
+// 			r := &ReadReplicaRotate{
 // 				AgentNamespace:      test.fields.AgentNamespace,
 // 				ReadReplicaLabelKey: test.fields.ReadReplicaLabelKey,
 // 				ReadReplicaID:       test.fields.ReadReplicaID,

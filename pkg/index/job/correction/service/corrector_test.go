@@ -561,7 +561,7 @@ func Test_correct_correctReplica(t *testing.T) {
 // 	type fields struct {
 // 		discoverer                 discoverer.Client
 // 		agentAddrs                 []string
-// 		indexInfos                 sync.Map[string, *payload.Info_Index_Count]
+// 		sortedByIndexCntAddrs      []string
 // 		uuidsCount                 uint32
 // 		uncommittedUUIDsCount      uint32
 // 		checkedID                  bbolt.Bbolt
@@ -605,7 +605,7 @@ func Test_correct_correctReplica(t *testing.T) {
 // 		       fields: fields {
 // 		           discoverer:nil,
 // 		           agentAddrs:nil,
-// 		           indexInfos:nil,
+// 		           sortedByIndexCntAddrs:nil,
 // 		           uuidsCount:0,
 // 		           uncommittedUUIDsCount:0,
 // 		           checkedID:nil,
@@ -638,7 +638,7 @@ func Test_correct_correctReplica(t *testing.T) {
 // 		           fields: fields {
 // 		           discoverer:nil,
 // 		           agentAddrs:nil,
-// 		           indexInfos:nil,
+// 		           sortedByIndexCntAddrs:nil,
 // 		           uuidsCount:0,
 // 		           uncommittedUUIDsCount:0,
 // 		           checkedID:nil,
@@ -680,7 +680,7 @@ func Test_correct_correctReplica(t *testing.T) {
 // 			c := &correct{
 // 				discoverer:                 test.fields.discoverer,
 // 				agentAddrs:                 test.fields.agentAddrs,
-// 				indexInfos:                 test.fields.indexInfos,
+// 				sortedByIndexCntAddrs:      test.fields.sortedByIndexCntAddrs,
 // 				uuidsCount:                 test.fields.uuidsCount,
 // 				uncommittedUUIDsCount:      test.fields.uncommittedUUIDsCount,
 // 				checkedID:                  test.fields.checkedID,
@@ -708,7 +708,7 @@ func Test_correct_correctReplica(t *testing.T) {
 // 	type fields struct {
 // 		discoverer                 discoverer.Client
 // 		agentAddrs                 []string
-// 		indexInfos                 sync.Map[string, *payload.Info_Index_Count]
+// 		sortedByIndexCntAddrs      []string
 // 		uuidsCount                 uint32
 // 		uncommittedUUIDsCount      uint32
 // 		checkedID                  bbolt.Bbolt
@@ -748,7 +748,7 @@ func Test_correct_correctReplica(t *testing.T) {
 // 		       fields: fields {
 // 		           discoverer:nil,
 // 		           agentAddrs:nil,
-// 		           indexInfos:nil,
+// 		           sortedByIndexCntAddrs:nil,
 // 		           uuidsCount:0,
 // 		           uncommittedUUIDsCount:0,
 // 		           checkedID:nil,
@@ -781,7 +781,7 @@ func Test_correct_correctReplica(t *testing.T) {
 // 		           fields: fields {
 // 		           discoverer:nil,
 // 		           agentAddrs:nil,
-// 		           indexInfos:nil,
+// 		           sortedByIndexCntAddrs:nil,
 // 		           uuidsCount:0,
 // 		           uncommittedUUIDsCount:0,
 // 		           checkedID:nil,
@@ -823,7 +823,7 @@ func Test_correct_correctReplica(t *testing.T) {
 // 			c := &correct{
 // 				discoverer:                 test.fields.discoverer,
 // 				agentAddrs:                 test.fields.agentAddrs,
-// 				indexInfos:                 test.fields.indexInfos,
+// 				sortedByIndexCntAddrs:      test.fields.sortedByIndexCntAddrs,
 // 				uuidsCount:                 test.fields.uuidsCount,
 // 				uncommittedUUIDsCount:      test.fields.uncommittedUUIDsCount,
 // 				checkedID:                  test.fields.checkedID,
@@ -851,7 +851,7 @@ func Test_correct_correctReplica(t *testing.T) {
 // 	type fields struct {
 // 		discoverer                 discoverer.Client
 // 		agentAddrs                 []string
-// 		indexInfos                 sync.Map[string, *payload.Info_Index_Count]
+// 		sortedByIndexCntAddrs      []string
 // 		uuidsCount                 uint32
 // 		uncommittedUUIDsCount      uint32
 // 		checkedID                  bbolt.Bbolt
@@ -891,7 +891,7 @@ func Test_correct_correctReplica(t *testing.T) {
 // 		       fields: fields {
 // 		           discoverer:nil,
 // 		           agentAddrs:nil,
-// 		           indexInfos:nil,
+// 		           sortedByIndexCntAddrs:nil,
 // 		           uuidsCount:0,
 // 		           uncommittedUUIDsCount:0,
 // 		           checkedID:nil,
@@ -924,7 +924,7 @@ func Test_correct_correctReplica(t *testing.T) {
 // 		           fields: fields {
 // 		           discoverer:nil,
 // 		           agentAddrs:nil,
-// 		           indexInfos:nil,
+// 		           sortedByIndexCntAddrs:nil,
 // 		           uuidsCount:0,
 // 		           uncommittedUUIDsCount:0,
 // 		           checkedID:nil,
@@ -966,7 +966,7 @@ func Test_correct_correctReplica(t *testing.T) {
 // 			c := &correct{
 // 				discoverer:                 test.fields.discoverer,
 // 				agentAddrs:                 test.fields.agentAddrs,
-// 				indexInfos:                 test.fields.indexInfos,
+// 				sortedByIndexCntAddrs:      test.fields.sortedByIndexCntAddrs,
 // 				uuidsCount:                 test.fields.uuidsCount,
 // 				uncommittedUUIDsCount:      test.fields.uncommittedUUIDsCount,
 // 				checkedID:                  test.fields.checkedID,
@@ -991,7 +991,7 @@ func Test_correct_correctReplica(t *testing.T) {
 // 	type fields struct {
 // 		discoverer                 discoverer.Client
 // 		agentAddrs                 []string
-// 		indexInfos                 sync.Map[string, *payload.Info_Index_Count]
+// 		sortedByIndexCntAddrs      []string
 // 		uuidsCount                 uint32
 // 		uncommittedUUIDsCount      uint32
 // 		checkedID                  bbolt.Bbolt
@@ -1027,7 +1027,7 @@ func Test_correct_correctReplica(t *testing.T) {
 // 		       fields: fields {
 // 		           discoverer:nil,
 // 		           agentAddrs:nil,
-// 		           indexInfos:nil,
+// 		           sortedByIndexCntAddrs:nil,
 // 		           uuidsCount:0,
 // 		           uncommittedUUIDsCount:0,
 // 		           checkedID:nil,
@@ -1057,7 +1057,7 @@ func Test_correct_correctReplica(t *testing.T) {
 // 		           fields: fields {
 // 		           discoverer:nil,
 // 		           agentAddrs:nil,
-// 		           indexInfos:nil,
+// 		           sortedByIndexCntAddrs:nil,
 // 		           uuidsCount:0,
 // 		           uncommittedUUIDsCount:0,
 // 		           checkedID:nil,
@@ -1099,7 +1099,7 @@ func Test_correct_correctReplica(t *testing.T) {
 // 			c := &correct{
 // 				discoverer:                 test.fields.discoverer,
 // 				agentAddrs:                 test.fields.agentAddrs,
-// 				indexInfos:                 test.fields.indexInfos,
+// 				sortedByIndexCntAddrs:      test.fields.sortedByIndexCntAddrs,
 // 				uuidsCount:                 test.fields.uuidsCount,
 // 				uncommittedUUIDsCount:      test.fields.uncommittedUUIDsCount,
 // 				checkedID:                  test.fields.checkedID,
@@ -1124,7 +1124,7 @@ func Test_correct_correctReplica(t *testing.T) {
 // 	type fields struct {
 // 		discoverer                 discoverer.Client
 // 		agentAddrs                 []string
-// 		indexInfos                 sync.Map[string, *payload.Info_Index_Count]
+// 		sortedByIndexCntAddrs      []string
 // 		uuidsCount                 uint32
 // 		uncommittedUUIDsCount      uint32
 // 		checkedID                  bbolt.Bbolt
@@ -1160,7 +1160,7 @@ func Test_correct_correctReplica(t *testing.T) {
 // 		       fields: fields {
 // 		           discoverer:nil,
 // 		           agentAddrs:nil,
-// 		           indexInfos:nil,
+// 		           sortedByIndexCntAddrs:nil,
 // 		           uuidsCount:0,
 // 		           uncommittedUUIDsCount:0,
 // 		           checkedID:nil,
@@ -1190,7 +1190,7 @@ func Test_correct_correctReplica(t *testing.T) {
 // 		           fields: fields {
 // 		           discoverer:nil,
 // 		           agentAddrs:nil,
-// 		           indexInfos:nil,
+// 		           sortedByIndexCntAddrs:nil,
 // 		           uuidsCount:0,
 // 		           uncommittedUUIDsCount:0,
 // 		           checkedID:nil,
@@ -1232,7 +1232,7 @@ func Test_correct_correctReplica(t *testing.T) {
 // 			c := &correct{
 // 				discoverer:                 test.fields.discoverer,
 // 				agentAddrs:                 test.fields.agentAddrs,
-// 				indexInfos:                 test.fields.indexInfos,
+// 				sortedByIndexCntAddrs:      test.fields.sortedByIndexCntAddrs,
 // 				uuidsCount:                 test.fields.uuidsCount,
 // 				uncommittedUUIDsCount:      test.fields.uncommittedUUIDsCount,
 // 				checkedID:                  test.fields.checkedID,
@@ -1257,7 +1257,7 @@ func Test_correct_correctReplica(t *testing.T) {
 // 	type fields struct {
 // 		discoverer                 discoverer.Client
 // 		agentAddrs                 []string
-// 		indexInfos                 sync.Map[string, *payload.Info_Index_Count]
+// 		sortedByIndexCntAddrs      []string
 // 		uuidsCount                 uint32
 // 		uncommittedUUIDsCount      uint32
 // 		checkedID                  bbolt.Bbolt
@@ -1293,7 +1293,7 @@ func Test_correct_correctReplica(t *testing.T) {
 // 		       fields: fields {
 // 		           discoverer:nil,
 // 		           agentAddrs:nil,
-// 		           indexInfos:nil,
+// 		           sortedByIndexCntAddrs:nil,
 // 		           uuidsCount:0,
 // 		           uncommittedUUIDsCount:0,
 // 		           checkedID:nil,
@@ -1323,7 +1323,7 @@ func Test_correct_correctReplica(t *testing.T) {
 // 		           fields: fields {
 // 		           discoverer:nil,
 // 		           agentAddrs:nil,
-// 		           indexInfos:nil,
+// 		           sortedByIndexCntAddrs:nil,
 // 		           uuidsCount:0,
 // 		           uncommittedUUIDsCount:0,
 // 		           checkedID:nil,
@@ -1365,7 +1365,7 @@ func Test_correct_correctReplica(t *testing.T) {
 // 			c := &correct{
 // 				discoverer:                 test.fields.discoverer,
 // 				agentAddrs:                 test.fields.agentAddrs,
-// 				indexInfos:                 test.fields.indexInfos,
+// 				sortedByIndexCntAddrs:      test.fields.sortedByIndexCntAddrs,
 // 				uuidsCount:                 test.fields.uuidsCount,
 // 				uncommittedUUIDsCount:      test.fields.uncommittedUUIDsCount,
 // 				checkedID:                  test.fields.checkedID,

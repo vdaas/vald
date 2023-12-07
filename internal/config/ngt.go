@@ -91,6 +91,9 @@ type NGT struct {
 
 	// BrokenIndexHistoryLimit represents the maximum number of broken index generations that will be backed up
 	BrokenIndexHistoryLimit int `yaml:"broken_index_history_limit" json:"broken_index_history_limit,omitempty"`
+
+	// ErrorBufferLimit represents the maximum number of core ngt error buffer pool size limit
+	ErrorBufferLimit uint64 `yaml:"error_buffer_limit" json:"error_buffer_limit,omitempty"`
 }
 
 // KVSDB represent the ngt vector bidirectional kv store configuration
