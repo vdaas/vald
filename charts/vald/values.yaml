@@ -1642,6 +1642,9 @@ agent:
     # @schema {"name": "agent.readreplica.name", "type": "string"}
     # agent.readreplica.name -- name of agent readreplica
     name: vald-agent-ngt-readreplica
+    # @schema {"name": "agent.readreplica.component_name", "type": "string"}
+    # agent.readreplica.component_name -- app.kubernetes.io/component name of agent readreplica
+    component_name: agent-readreplica
     # @schema {"name": "agent.readreplica.label_key", "type": "string"}
     # agent.readreplica.label_key -- label key to identify read replica resources
     label_key: vald-readreplica-id

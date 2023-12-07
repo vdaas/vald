@@ -36,7 +36,7 @@ metadata:
     app.kubernetes.io/managed-by: {{ $release.Service }}
     app.kubernetes.io/instance: {{ $release.Name }}
     app.kubernetes.io/version: {{ $chart.Version }}
-    app.kubernetes.io/component: agent-replica
+    app.kubernetes.io/component: {{ $readreplica.component_name }}
     {{ $readreplica.label_key }}: "{{ $id }}"
   {{- if $agent.annotations }}
   annotations:
@@ -57,7 +57,7 @@ spec:
         app: {{ $readreplica.name }}-{{ $id }}
         app.kubernetes.io/name: {{ $valdname }}
         app.kubernetes.io/instance: {{ $release.Name }}
-        app.kubernetes.io/component: agent-replica
+        app.kubernetes.io/component: {{ $readreplica.component_name }}
       {{- $pprof := default $defaults.server_config.metrics.pprof $agent.server_config.metrics.pprof }}
     spec:
       {{- if $agent.initContainers }}
