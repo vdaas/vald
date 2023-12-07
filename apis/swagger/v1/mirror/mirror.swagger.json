@@ -1,26 +1,26 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "v1/vald/insert.proto",
+    "title": "v1/mirror/mirror.proto",
     "version": "version not set"
   },
   "tags": [
     {
-      "name": "Insert"
+      "name": "Mirror"
     }
   ],
   "consumes": ["application/json"],
   "produces": ["application/json"],
   "paths": {
-    "/insert": {
+    "/mirror/register": {
       "post": {
-        "summary": "A method to add a new single vector.",
-        "operationId": "Insert_Insert",
+        "summary": "Register is the RPC to register other mirror servers.",
+        "operationId": "Mirror_Register",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/v1ObjectLocation"
+              "$ref": "#/definitions/MirrorTargets"
             }
           },
           "default": {
@@ -33,100 +33,32 @@
         "parameters": [
           {
             "name": "body",
-            "description": "Represent the insert request.",
+            "description": "Represent the multiple Target message.",
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/v1InsertRequest"
+              "$ref": "#/definitions/MirrorTargets"
             }
           }
         ],
-        "tags": ["Insert"]
-      }
-    },
-    "/insert/multiple": {
-      "post": {
-        "summary": "A method to add new multiple vectors in a single request.",
-        "operationId": "Insert_MultiInsert",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/ObjectLocations"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "description": "Represent the multiple insert request.",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/v1InsertMultiRequest"
-            }
-          }
-        ],
-        "tags": ["Insert"]
+        "tags": ["Mirror"]
       }
     }
   },
   "definitions": {
-    "ObjectLocations": {
+    "MirrorTargets": {
       "type": "object",
       "properties": {
-        "locations": {
+        "targets": {
           "type": "array",
           "items": {
             "type": "object",
-            "$ref": "#/definitions/v1ObjectLocation"
-          }
-        }
-      },
-      "description": "Represent multiple vector locations."
-    },
-    "ObjectStreamLocation": {
-      "type": "object",
-      "properties": {
-        "location": {
-          "$ref": "#/definitions/v1ObjectLocation",
-          "description": "The vector location."
-        },
-        "status": {
-          "$ref": "#/definitions/rpcStatus",
-          "description": "The RPC error status."
-        }
-      },
-      "description": "Represent the stream response of the vector location."
-    },
-    "ObjectVector": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "The vector ID."
-        },
-        "vector": {
-          "type": "array",
-          "items": {
-            "type": "number",
-            "format": "float"
+            "$ref": "#/definitions/v1MirrorTarget"
           },
-          "description": "The vector."
-        },
-        "timestamp": {
-          "type": "string",
-          "format": "int64",
-          "description": "timestamp represents when this vector inserted."
+          "description": "The multiple target information."
         }
       },
-      "description": "Represent a vector."
+      "description": "Represent the multiple Target message."
     },
     "protobufAny": {
       "type": "object",
@@ -162,21 +94,7 @@
       },
       "description": "The `Status` type defines a logical error model that is suitable for\ndifferent programming environments, including REST APIs and RPC APIs. It is\nused by [gRPC](https://github.com/grpc). Each `Status` message contains\nthree pieces of data: error code, error message, and error details.\n\nYou can find out more about this error model and how to work with it in the\n[API Design Guide](https://cloud.google.com/apis/design/errors)."
     },
-    "v1FilterConfig": {
-      "type": "object",
-      "properties": {
-        "targets": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "$ref": "#/definitions/v1FilterTarget"
-          },
-          "description": "Represent the filter target configuration."
-        }
-      },
-      "description": "Represent filter configuration."
-    },
-    "v1FilterTarget": {
+    "v1MirrorTarget": {
       "type": "object",
       "properties": {
         "host": {
@@ -189,75 +107,7 @@
           "description": "The target port."
         }
       },
-      "description": "Represent the target filter server."
-    },
-    "v1InsertConfig": {
-      "type": "object",
-      "properties": {
-        "skipStrictExistCheck": {
-          "type": "boolean",
-          "description": "A flag to skip exist check during insert operation."
-        },
-        "filters": {
-          "$ref": "#/definitions/v1FilterConfig",
-          "description": "Filter configurations."
-        },
-        "timestamp": {
-          "type": "string",
-          "format": "int64",
-          "description": "Insert timestamp."
-        }
-      },
-      "description": "Represent insert configurations."
-    },
-    "v1InsertMultiRequest": {
-      "type": "object",
-      "properties": {
-        "requests": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "$ref": "#/definitions/v1InsertRequest"
-          },
-          "description": "Represent multiple insert request content."
-        }
-      },
-      "description": "Represent the multiple insert request."
-    },
-    "v1InsertRequest": {
-      "type": "object",
-      "properties": {
-        "vector": {
-          "$ref": "#/definitions/ObjectVector",
-          "description": "The vector to be inserted."
-        },
-        "config": {
-          "$ref": "#/definitions/v1InsertConfig",
-          "description": "The configuration of the insert request."
-        }
-      },
-      "description": "Represent the insert request."
-    },
-    "v1ObjectLocation": {
-      "type": "object",
-      "properties": {
-        "name": {
-          "type": "string",
-          "description": "The name of the location."
-        },
-        "uuid": {
-          "type": "string",
-          "description": "The UUID of the vector."
-        },
-        "ips": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "description": "The IP list."
-        }
-      },
-      "description": "Represent the vector location."
+      "description": "Represent server information."
     }
   }
 }

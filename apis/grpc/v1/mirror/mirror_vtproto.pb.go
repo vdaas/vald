@@ -123,5 +123,5 @@ var Mirror_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "apis/proto/v1/mirror/mirror.proto",
+	Metadata: "v1/mirror/mirror.proto",
 }

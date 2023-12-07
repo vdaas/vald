@@ -78,21 +78,6 @@
     }
   },
   "definitions": {
-    "FilterTarget": {
-      "type": "object",
-      "properties": {
-        "host": {
-          "type": "string",
-          "description": "The target hostname."
-        },
-        "port": {
-          "type": "integer",
-          "format": "int64",
-          "description": "The target port."
-        }
-      },
-      "description": "Represent the target filter server."
-    },
     "ObjectLocations": {
       "type": "object",
       "properties": {
@@ -184,12 +169,27 @@
           "type": "array",
           "items": {
             "type": "object",
-            "$ref": "#/definitions/FilterTarget"
+            "$ref": "#/definitions/v1FilterTarget"
           },
           "description": "Represent the filter target configuration."
         }
       },
       "description": "Represent filter configuration."
+    },
+    "v1FilterTarget": {
+      "type": "object",
+      "properties": {
+        "host": {
+          "type": "string",
+          "description": "The target hostname."
+        },
+        "port": {
+          "type": "integer",
+          "format": "int64",
+          "description": "The target port."
+        }
+      },
+      "description": "Represent the target filter server."
     },
     "v1ObjectLocation": {
       "type": "object",
