@@ -388,6 +388,8 @@ spec:
                     readreplica:
                       type: object
                       properties:
+                        component_name:
+                          type: string
                         enabled:
                           type: boolean
                         label_key:
