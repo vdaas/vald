@@ -29,7 +29,7 @@ var defaultOptions = []Option{}
 // WithControllerName returns the option to set the name of controller.
 func WithControllerName(name string) Option {
 	return func(r *reconciler) error {
-		if len(name) == 0 {
+		if name == "" {
 			return errors.NewErrInvalidOption("controllerName", name)
 		}
 		r.name = name

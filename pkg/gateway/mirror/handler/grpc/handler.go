@@ -3133,7 +3133,7 @@ func (s *server) StreamListObject(req *payload.Object_List_Request, stream vald.
 		if err != nil {
 			return nil, err
 		}
-		return obj, s.streamListObject(ctx, client, stream)
+		return obj, s.doStreamListObject(ctx, client, stream)
 	})
 	if err != nil {
 		st, msg, err := status.ParseError(err, codes.Internal, "failed to parse "+vald.StreamListObjectRPCName+" gRPC error response")
@@ -3147,7 +3147,7 @@ func (s *server) StreamListObject(req *payload.Object_List_Request, stream vald.
 	return nil
 }
 
-func (s *server) streamListObject(ctx context.Context, clientS vald.Object_StreamListObjectClient, serverS vald.Object_StreamListObjectServer) (err error) {
+func (s *server) doStreamListObject(ctx context.Context, client vald.Object_StreamListObjectClient, server vald.Object_StreamListObjectServer) (err error) {
 	cctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 	eg, egctx := errgroup.WithContext(cctx)
@@ -3177,7 +3177,7 @@ func (s *server) streamListObject(ctx context.Context, clientS vald.Object_Strea
 				}()
 
 				rmu.Lock()
-				res, err := clientS.Recv()
+				res, err := client.Recv()
 				rmu.Unlock()
 				if err != nil {
 					if errors.Is(err, io.EOF) {
@@ -3216,7 +3216,7 @@ func (s *server) streamListObject(ctx context.Context, clientS vald.Object_Strea
 				}
 
 				mu.Lock()
-				err = serverS.Send(res)
+				err = server.Send(res)
 				mu.Unlock()
 				if err != nil {
 					if errors.Is(err, io.EOF) {
@@ -3257,7 +3257,7 @@ func (s *server) streamListObject(ctx context.Context, clientS vald.Object_Strea
 }
 
 func (s *server) isProxied(ctx context.Context) bool {
-	return len(s.gateway.FromForwardedContext(ctx)) != 0
+	return s.gateway.FromForwardedContext(ctx) != ""
 }
 
 type errorState struct {

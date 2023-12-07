@@ -142,7 +142,7 @@ func (g *gateway) Do(ctx context.Context, target string,
 		}
 	}()
 
-	if len(target) == 0 {
+	if target == "" {
 		return nil, errors.ErrTargetNotFound
 	}
 	return g.client.GRPCClient().Do(g.ForwardedContext(ctx, g.podName), target,

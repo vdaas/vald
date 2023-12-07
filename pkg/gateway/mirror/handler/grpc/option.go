@@ -42,7 +42,7 @@ var defaultOptions = []Option{
 // WithIP returns the option to set the IP for server.
 func WithIP(ip string) Option {
 	return func(s *server) error {
-		if len(ip) != 0 {
+		if ip != "" {
 			s.ip = ip
 		}
 		return nil
@@ -52,7 +52,7 @@ func WithIP(ip string) Option {
 // WithName returns the option to set the name for server.
 func WithName(name string) Option {
 	return func(s *server) error {
-		if len(name) != 0 {
+		if name != "" {
 			s.name = name
 		}
 		return nil
@@ -97,7 +97,7 @@ func WithStreamConcurrency(c int) Option {
 
 func WithValdAddr(addr string) Option {
 	return func(s *server) error {
-		if len(addr) == 0 {
+		if addr == "" {
 			return errors.NewErrCriticalOption("valdAddr", addr)
 		}
 		s.vAddr = addr

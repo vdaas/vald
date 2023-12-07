@@ -49,7 +49,7 @@ func WithErrGroup(eg errgroup.Group) Option {
 // WithErrGroup returns the option to set the pod name.
 func WithPodName(s string) Option {
 	return func(g *gateway) error {
-		if len(s) == 0 {
+		if s == "" {
 			return errors.NewErrCriticalOption("podName", s)
 		}
 		g.podName = s

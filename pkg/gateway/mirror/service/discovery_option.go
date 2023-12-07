@@ -54,7 +54,7 @@ func WithDiscoveryDialer(der net.Dialer) DiscoveryOption {
 // WithDiscoveryNamespace returns the option to set the namespace for discovery.
 func WithDiscoveryNamespace(ns string) DiscoveryOption {
 	return func(d *discovery) error {
-		if len(ns) != 0 {
+		if ns != "" {
 			d.namespace = ns
 		}
 		return nil
@@ -64,7 +64,7 @@ func WithDiscoveryNamespace(ns string) DiscoveryOption {
 // WithDiscoveryGroup returns the option to set the Mirror group for discovery.
 func WithDiscoveryGroup(g string) DiscoveryOption {
 	return func(d *discovery) error {
-		if len(g) != 0 {
+		if g != "" {
 			if d.labels == nil {
 				d.labels = make(map[string]string)
 			}
@@ -77,7 +77,7 @@ func WithDiscoveryGroup(g string) DiscoveryOption {
 // WithDiscoveryColocation returns the option to set the colocation name of datacenter.
 func WithDiscoveryColocation(loc string) DiscoveryOption {
 	return func(d *discovery) error {
-		if len(loc) != 0 {
+		if loc != "" {
 			d.colocation = loc
 		}
 		return nil

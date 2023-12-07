@@ -26,7 +26,7 @@ var defaultMirrorTargetOptions = []MirrorTargetOption{
 
 func WithMirrorTargetNamespace(ns string) MirrorTargetOption {
 	return func(mt *MirrorTarget) error {
-		if len(ns) != 0 {
+		if ns != "" {
 			mt.ObjectMeta.Namespace = ns
 		}
 		return nil
@@ -35,7 +35,7 @@ func WithMirrorTargetNamespace(ns string) MirrorTargetOption {
 
 func WithMirrorTargetName(name string) MirrorTargetOption {
 	return func(mt *MirrorTarget) error {
-		if len(name) == 0 {
+		if name == "" {
 			return errors.NewErrCriticalOption("name", name)
 		}
 		mt.ObjectMeta.Name = name
@@ -61,7 +61,7 @@ func WithMirrorTargetLabels(labels map[string]string) MirrorTargetOption {
 
 func WithMirrorTargetColocation(n string) MirrorTargetOption {
 	return func(mt *MirrorTarget) error {
-		if len(n) == 0 {
+		if n == "" {
 			return errors.NewErrCriticalOption("colocation", n)
 		}
 		mt.Spec.Colocation = n
@@ -71,7 +71,7 @@ func WithMirrorTargetColocation(n string) MirrorTargetOption {
 
 func WithMirrorTargetHost(n string) MirrorTargetOption {
 	return func(mt *MirrorTarget) error {
-		if len(n) == 0 {
+		if n == "" {
 			return errors.NewErrCriticalOption("host", n)
 		}
 		mt.Spec.Target.Host = n

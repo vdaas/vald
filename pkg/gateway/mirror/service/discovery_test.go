@@ -79,9 +79,7 @@ func Test_discovery_startSync(t *testing.T) {
 						},
 					},
 					ctrl: &k8smock.ControllerMock{
-						GetManagerFunc: func() k8s.Manager {
-							return k8smock.NewDefaultManagerMock()
-						},
+						GetManagerFunc: k8smock.NewDefaultManagerMock,
 					},
 				},
 				beforeFunc: func(t *testing.T, d *discovery, _ args) {
@@ -114,9 +112,7 @@ func Test_discovery_startSync(t *testing.T) {
 						},
 					},
 					ctrl: &k8smock.ControllerMock{
-						GetManagerFunc: func() k8s.Manager {
-							return k8smock.NewDefaultManagerMock()
-						},
+						GetManagerFunc: k8smock.NewDefaultManagerMock,
 					},
 				},
 				beforeFunc: func(t *testing.T, d *discovery, _ args) {
@@ -150,9 +146,7 @@ func Test_discovery_startSync(t *testing.T) {
 						},
 					},
 					ctrl: &k8smock.ControllerMock{
-						GetManagerFunc: func() k8s.Manager {
-							return k8smock.NewDefaultManagerMock()
-						},
+						GetManagerFunc: k8smock.NewDefaultManagerMock,
 					},
 				},
 				beforeFunc: func(t *testing.T, d *discovery, _ args) {
@@ -185,9 +179,7 @@ func Test_discovery_startSync(t *testing.T) {
 						},
 					},
 					ctrl: &k8smock.ControllerMock{
-						GetManagerFunc: func() k8s.Manager {
-							return k8smock.NewDefaultManagerMock()
-						},
+						GetManagerFunc: k8smock.NewDefaultManagerMock,
 					},
 				},
 				beforeFunc: func(t *testing.T, d *discovery, _ args) {
@@ -229,9 +221,7 @@ func Test_discovery_startSync(t *testing.T) {
 						},
 					},
 					ctrl: &k8smock.ControllerMock{
-						GetManagerFunc: func() k8s.Manager {
-							return k8smock.NewDefaultManagerMock()
-						},
+						GetManagerFunc: k8smock.NewDefaultManagerMock,
 					},
 				},
 				beforeFunc: func(t *testing.T, d *discovery, _ args) {
@@ -272,9 +262,7 @@ func Test_discovery_startSync(t *testing.T) {
 						},
 					},
 					ctrl: &k8smock.ControllerMock{
-						GetManagerFunc: func() k8s.Manager {
-							return k8smock.NewDefaultManagerMock()
-						},
+						GetManagerFunc: k8smock.NewDefaultManagerMock,
 					},
 				},
 				beforeFunc: func(t *testing.T, d *discovery, _ args) {
@@ -382,9 +370,7 @@ func Test_discovery_syncWithAddr(t *testing.T) {
 						},
 					},
 					ctrl: &k8smock.ControllerMock{
-						GetManagerFunc: func() k8s.Manager {
-							return k8smock.NewDefaultManagerMock()
-						},
+						GetManagerFunc: k8smock.NewDefaultManagerMock,
 					},
 				},
 				beforeFunc: func(t *testing.T, d *discovery, _ args) {
@@ -424,9 +410,7 @@ func Test_discovery_syncWithAddr(t *testing.T) {
 						},
 					},
 					ctrl: &k8smock.ControllerMock{
-						GetManagerFunc: func() k8s.Manager {
-							return k8smock.NewDefaultManagerMock()
-						},
+						GetManagerFunc: k8smock.NewDefaultManagerMock,
 					},
 				},
 			}
@@ -457,9 +441,7 @@ func Test_discovery_syncWithAddr(t *testing.T) {
 						},
 					},
 					ctrl: &k8smock.ControllerMock{
-						GetManagerFunc: func() k8s.Manager {
-							return k8smock.NewDefaultManagerMock()
-						},
+						GetManagerFunc: k8smock.NewDefaultManagerMock,
 					},
 				},
 			}

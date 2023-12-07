@@ -76,7 +76,7 @@ func WithGateway(g Gateway) MirrorOption {
 // WithRegisterDuration returns the option to set the register duration.
 func WithRegisterDuration(s string) MirrorOption {
 	return func(m *mirr) error {
-		if len(s) == 0 {
+		if s == "" {
 			return errors.NewErrInvalidOption("registerDuration", s)
 		}
 		dur, err := time.ParseDuration(s)

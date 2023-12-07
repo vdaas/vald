@@ -101,7 +101,7 @@ func NewDiscovery(opts ...DiscoveryOption) (dsc Discovery, err error) {
 	return d, err
 }
 
-func (d *discovery) onReconcile(ctx context.Context, list map[string]target.Target) {
+func (d *discovery) onReconcile(_ context.Context, list map[string]target.Target) {
 	log.Debugf("mirror reconciled\t%#v", list)
 	d.targetsByName.Store(&list)
 }
@@ -185,13 +185,11 @@ func (d *discovery) startSync(ctx context.Context, prev map[string]target.Target
 				name: name,
 				tgt:  ctgt,
 			}
-		} else {
-			if ptgt.Host != ctgt.Host || ptgt.Port != ctgt.Port {
-				updated[addr] = &updatedTarget{
-					name: name,
-					old:  ptgt,
-					new:  ctgt,
-				}
+		} else if ptgt.Host != ctgt.Host || ptgt.Port != ctgt.Port {
+			updated[addr] = &updatedTarget{
+				name: name,
+				old:  ptgt,
+				new:  ctgt,
 			}
 		}
 	}
