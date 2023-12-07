@@ -1,3 +1,4 @@
+# syntax = docker/dockerfile:latest
 #
 # Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 #
@@ -25,9 +26,9 @@ ARG VALD_HELM_OPERATOR_KIND="ValdHelmOperatorRelease"
 ARG MAINTAINER="vdaas.org vald team <vald@vdaas.org>"
 
 # skipcq: DOK-DL3026
-FROM quay.io/operator-framework/helm-operator:${OPERATOR_SDK_VERSION} AS operator
-FROM golang:${GO_VERSION} AS golang
-FROM ubuntu:devel AS builder
+FROM --platform=${BUILDPLATFORM} quay.io/operator-framework/helm-operator:${OPERATOR_SDK_VERSION} AS operator
+FROM --platform=${BUILDPLATFORM} golang:${GO_VERSION} AS golang
+FROM --platform=${BUILDPLATFORM} ubuntu:devel AS builder
 
 ARG OPERATOR_SDK_VERSION
 ARG VERSION
@@ -123,7 +124,7 @@ COPY --from=operator /usr/local/bin/${APP_NAME} /usr/bin/${APP_NAME}
 
 RUN upx ${UPX_OPTIONS} "/usr/bin/${APP_NAME}"
 
-FROM ${DISTROLESS_IMAGE}:${DISTROLESS_IMAGE_TAG}
+FROM --platform=${BUILDPLATFORM} ${DISTROLESS_IMAGE}:${DISTROLESS_IMAGE_TAG}
 LABEL maintainer="${MAINTAINER}"
 
 ENV APP_NAME helm-operator
