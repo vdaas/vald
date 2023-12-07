@@ -85,7 +85,7 @@ RUN make ngt/install \
     && make golangci-lint/install \
     && make reviewdog/install \
     && make kubectl/install \
-    && make protobuf/install
+    && make buf/install
 
 ENV PATH=$PATH:$GOPATH/bin
 
