@@ -75,9 +75,54 @@
         ],
         "tags": ["Discoverer"]
       }
+    },
+    "/discover/svcs": {
+      "post": {
+        "summary": "Represent the RPC to get the readreplica svc information.",
+        "operationId": "Discoverer_ReadReplicaSvcs",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/InfoReadReplicaSvcs"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/DiscovererReadReplicaSvcsRequest"
+            }
+          }
+        ],
+        "tags": ["Discoverer"]
+      }
     }
   },
   "definitions": {
+    "DiscovererReadReplicaSvcsRequest": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The svc name to be discovered."
+        },
+        "namespace": {
+          "type": "string",
+          "description": "The namespace to be discovered."
+        }
+      },
+      "description": "Represent the dicoverer svc request."
+    },
     "InfoCPU": {
       "type": "object",
       "properties": {
@@ -211,6 +256,38 @@
         }
       },
       "description": "Represent the multiple pod information message."
+    },
+    "InfoReadReplicaSvc": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The name of the svc."
+        },
+        "addr": {
+          "type": "string",
+          "description": "The IP address of the svc."
+        },
+        "replicaid": {
+          "type": "string",
+          "format": "uint64",
+          "description": "The replicaid of the readreplica svc."
+        }
+      },
+      "description": "Represent the svc information message."
+    },
+    "InfoReadReplicaSvcs": {
+      "type": "object",
+      "properties": {
+        "svcs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/InfoReadReplicaSvc"
+          },
+          "description": "The multiple node information."
+        }
+      },
+      "description": "Represent the multiple svc information message."
     },
     "protobufAny": {
       "type": "object",

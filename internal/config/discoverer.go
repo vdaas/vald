@@ -19,18 +19,20 @@ package config
 
 // Discoverer represents the Discoverer configurations.
 type Discoverer struct {
-	Name              string     `json:"name,omitempty"               yaml:"name"`
-	Namespace         string     `json:"namespace,omitempty"          yaml:"namespace"`
-	DiscoveryDuration string     `json:"discovery_duration,omitempty" yaml:"discovery_duration"`
-	Net               *Net       `json:"net,omitempty"                yaml:"net"`
-	Selectors         *Selectors `json:"selectors,omitempty"          yaml:"selectors"`
+	Name              string     `json:"name,omitempty"                yaml:"name"`
+	Namespace         string     `json:"namespace,omitempty"           yaml:"namespace"`
+	DiscoveryDuration string     `json:"discovery_duration,omitempty"  yaml:"discovery_duration"`
+	Net               *Net       `json:"net,omitempty"                 yaml:"net"`
+	Selectors         *Selectors `json:"selectors,omitempty"           yaml:"selectors"`
+	ReadReplicaIdKey  string     `json:"read_replica_id_key,omitempty" yaml:"read_replica_id_key"`
 }
 
 type Selectors struct {
-	Pod         *Selector `json:"pod,omitempty"          yaml:"pod"`
-	Node        *Selector `json:"node,omitempty"         yaml:"node"`
-	NodeMetrics *Selector `json:"node_metrics,omitempty" yaml:"node_metrics"`
-	PodMetrics  *Selector `json:"pod_metrics,omitempty"  yaml:"pod_metrics"`
+	Pod            *Selector `json:"pod,omitempty"             yaml:"pod"`
+	Node           *Selector `json:"node,omitempty"            yaml:"node"`
+	NodeMetrics    *Selector `json:"node_metrics,omitempty"    yaml:"node_metrics"`
+	PodMetrics     *Selector `json:"pod_metrics,omitempty"     yaml:"pod_metrics"`
+	ReadReplicaSvc *Selector `json:"readreplica_svc,omitempty" yaml:"readreplica_svc"`
 }
 
 func (s *Selectors) GetPodFields() map[string]string {
@@ -87,6 +89,20 @@ func (s *Selectors) GetNodeMetricsLabels() map[string]string {
 		return nil
 	}
 	return s.NodeMetrics.GetLabels()
+}
+
+func (s *Selectors) GetReadReplicaSvcFields() map[string]string {
+	if s == nil {
+		return nil
+	}
+	return s.ReadReplicaSvc.GetFields()
+}
+
+func (s *Selectors) GetReadReplicaSvcLabels() map[string]string {
+	if s == nil {
+		return nil
+	}
+	return s.ReadReplicaSvc.GetLabels()
 }
 
 type Selector struct {

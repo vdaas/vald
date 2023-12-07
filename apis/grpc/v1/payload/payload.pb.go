@@ -3777,6 +3777,64 @@ func (x *Discoverer_Request) GetNode() string {
 	return ""
 }
 
+// Represent the dicoverer svc request.
+type Discoverer_ReadReplicaSvcsRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	// The svc name to be discovered.
+	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	// The namespace to be discovered.
+	Namespace string `protobuf:"bytes,2,opt,name=namespace,proto3" json:"namespace,omitempty"`
+}
+
+func (x *Discoverer_ReadReplicaSvcsRequest) Reset() {
+	*x = Discoverer_ReadReplicaSvcsRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_apis_proto_v1_payload_payload_proto_msgTypes[64]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *Discoverer_ReadReplicaSvcsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Discoverer_ReadReplicaSvcsRequest) ProtoMessage() {}
+
+func (x *Discoverer_ReadReplicaSvcsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_apis_proto_v1_payload_payload_proto_msgTypes[64]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Discoverer_ReadReplicaSvcsRequest.ProtoReflect.Descriptor instead.
+func (*Discoverer_ReadReplicaSvcsRequest) Descriptor() ([]byte, []int) {
+	return file_apis_proto_v1_payload_payload_proto_rawDescGZIP(), []int{8, 1}
+}
+
+func (x *Discoverer_ReadReplicaSvcsRequest) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *Discoverer_ReadReplicaSvcsRequest) GetNamespace() string {
+	if x != nil {
+		return x.Namespace
+	}
+	return ""
+}
+
 // Represent the index information messages.
 type Info_Index struct {
 	state         protoimpl.MessageState
@@ -4013,6 +4071,73 @@ func (x *Info_Node) GetPods() *Info_Pods {
 	return nil
 }
 
+// Represent the svc information message.
+type Info_ReadReplicaSvc struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	// The name of the svc.
+	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	// The IP address of the svc.
+	Addr string `protobuf:"bytes,2,opt,name=addr,proto3" json:"addr,omitempty"`
+	// The replicaid of the readreplica svc.
+	Replicaid uint64 `protobuf:"varint,3,opt,name=replicaid,proto3" json:"replicaid,omitempty"`
+}
+
+func (x *Info_ReadReplicaSvc) Reset() {
+	*x = Info_ReadReplicaSvc{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_apis_proto_v1_payload_payload_proto_msgTypes[68]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *Info_ReadReplicaSvc) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Info_ReadReplicaSvc) ProtoMessage() {}
+
+func (x *Info_ReadReplicaSvc) ProtoReflect() protoreflect.Message {
+	mi := &file_apis_proto_v1_payload_payload_proto_msgTypes[68]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Info_ReadReplicaSvc.ProtoReflect.Descriptor instead.
+func (*Info_ReadReplicaSvc) Descriptor() ([]byte, []int) {
+	return file_apis_proto_v1_payload_payload_proto_rawDescGZIP(), []int{9, 3}
+}
+
+func (x *Info_ReadReplicaSvc) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *Info_ReadReplicaSvc) GetAddr() string {
+	if x != nil {
+		return x.Addr
+	}
+	return ""
+}
+
+func (x *Info_ReadReplicaSvc) GetReplicaid() uint64 {
+	if x != nil {
+		return x.Replicaid
+	}
+	return 0
+}
+
 // Represent the CPU information message.
 type Info_CPU struct {
 	state         protoimpl.MessageState
@@ -4241,6 +4366,55 @@ func (*Info_Nodes) Descriptor() ([]byte, []int) {
 func (x *Info_Nodes) GetNodes() []*Info_Node {
 	if x != nil {
 		return x.Nodes
+	}
+	return nil
+}
+
+// Represent the multiple svc information message.
+type Info_ReadReplicaSvcs struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	// The multiple node information.
+	Svcs []*Info_ReadReplicaSvc `protobuf:"bytes,1,rep,name=svcs,proto3" json:"svcs,omitempty"`
+}
+
+func (x *Info_ReadReplicaSvcs) Reset() {
+	*x = Info_ReadReplicaSvcs{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_apis_proto_v1_payload_payload_proto_msgTypes[73]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *Info_ReadReplicaSvcs) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Info_ReadReplicaSvcs) ProtoMessage() {}
+
+func (x *Info_ReadReplicaSvcs) ProtoReflect() protoreflect.Message {
+	mi := &file_apis_proto_v1_payload_payload_proto_msgTypes[73]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Info_ReadReplicaSvcs.ProtoReflect.Descriptor instead.
+func (*Info_ReadReplicaSvcs) Descriptor() ([]byte, []int) {
+	return file_apis_proto_v1_payload_payload_proto_rawDescGZIP(), []int{9, 8}
+}
+
+func (x *Info_ReadReplicaSvcs) GetSvcs() []*Info_ReadReplicaSvc {
+	if x != nil {
+		return x.Svcs
 	}
 	return nil
 }
@@ -5047,7 +5221,7 @@ var file_v1_payload_payload_proto_depIdxs = []int32{
 	46, // 10: payload.v1.Search.Response.results:type_name -> payload.v1.Object.Distance
 	20, // 11: payload.v1.Search.Responses.responses:type_name -> payload.v1.Search.Response
 	20, // 12: payload.v1.Search.StreamResponse.response:type_name -> payload.v1.Search.Response
-	78, // 13: payload.v1.Search.StreamResponse.status:type_name -> google.rpc.Status
+	81, // 13: payload.v1.Search.StreamResponse.status:type_name -> google.rpc.Status
 	23, // 14: payload.v1.Filter.Config.targets:type_name -> payload.v1.Filter.Target
 	50, // 15: payload.v1.Insert.Request.vector:type_name -> payload.v1.Object.Vector
 	29, // 16: payload.v1.Insert.Request.config:type_name -> payload.v1.Insert.Config
@@ -5081,31 +5255,32 @@ var file_v1_payload_payload_proto_depIdxs = []int32{
 	48, // 44: payload.v1.Object.VectorRequest.id:type_name -> payload.v1.Object.ID
 	24, // 45: payload.v1.Object.VectorRequest.filters:type_name -> payload.v1.Filter.Config
 	46, // 46: payload.v1.Object.StreamDistance.distance:type_name -> payload.v1.Object.Distance
-	78, // 47: payload.v1.Object.StreamDistance.status:type_name -> google.rpc.Status
+	81, // 47: payload.v1.Object.StreamDistance.status:type_name -> google.rpc.Status
 	48, // 48: payload.v1.Object.GetTimestampRequest.id:type_name -> payload.v1.Object.ID
 	50, // 49: payload.v1.Object.Vectors.vectors:type_name -> payload.v1.Object.Vector
 	50, // 50: payload.v1.Object.StreamVector.vector:type_name -> payload.v1.Object.Vector
-	78, // 51: payload.v1.Object.StreamVector.status:type_name -> google.rpc.Status
+	81, // 51: payload.v1.Object.StreamVector.status:type_name -> google.rpc.Status
 	56, // 52: payload.v1.Object.StreamBlob.blob:type_name -> payload.v1.Object.Blob
-	78, // 53: payload.v1.Object.StreamBlob.status:type_name -> google.rpc.Status
+	81, // 53: payload.v1.Object.StreamBlob.status:type_name -> google.rpc.Status
 	58, // 54: payload.v1.Object.StreamLocation.location:type_name -> payload.v1.Object.Location
-	78, // 55: payload.v1.Object.StreamLocation.status:type_name -> google.rpc.Status
+	81, // 55: payload.v1.Object.StreamLocation.status:type_name -> google.rpc.Status
 	58, // 56: payload.v1.Object.Locations.locations:type_name -> payload.v1.Object.Location
 	50, // 57: payload.v1.Object.List.Response.vector:type_name -> payload.v1.Object.Vector
-	78, // 58: payload.v1.Object.List.Response.status:type_name -> google.rpc.Status
-	69, // 59: payload.v1.Info.Pod.cpu:type_name -> payload.v1.Info.CPU
-	70, // 60: payload.v1.Info.Pod.memory:type_name -> payload.v1.Info.Memory
-	68, // 61: payload.v1.Info.Pod.node:type_name -> payload.v1.Info.Node
-	69, // 62: payload.v1.Info.Node.cpu:type_name -> payload.v1.Info.CPU
-	70, // 63: payload.v1.Info.Node.memory:type_name -> payload.v1.Info.Memory
-	71, // 64: payload.v1.Info.Node.Pods:type_name -> payload.v1.Info.Pods
-	67, // 65: payload.v1.Info.Pods.pods:type_name -> payload.v1.Info.Pod
-	68, // 66: payload.v1.Info.Nodes.nodes:type_name -> payload.v1.Info.Node
-	67, // [67:67] is the sub-list for method output_type
-	67, // [67:67] is the sub-list for method input_type
-	67, // [67:67] is the sub-list for extension type_name
-	67, // [67:67] is the sub-list for extension extendee
-	0,  // [0:67] is the sub-list for field type_name
+	81, // 58: payload.v1.Object.List.Response.status:type_name -> google.rpc.Status
+	71, // 59: payload.v1.Info.Pod.cpu:type_name -> payload.v1.Info.CPU
+	72, // 60: payload.v1.Info.Pod.memory:type_name -> payload.v1.Info.Memory
+	69, // 61: payload.v1.Info.Pod.node:type_name -> payload.v1.Info.Node
+	71, // 62: payload.v1.Info.Node.cpu:type_name -> payload.v1.Info.CPU
+	72, // 63: payload.v1.Info.Node.memory:type_name -> payload.v1.Info.Memory
+	73, // 64: payload.v1.Info.Node.Pods:type_name -> payload.v1.Info.Pods
+	68, // 65: payload.v1.Info.Pods.pods:type_name -> payload.v1.Info.Pod
+	69, // 66: payload.v1.Info.Nodes.nodes:type_name -> payload.v1.Info.Node
+	70, // 67: payload.v1.Info.ReadReplicaSvcs.svcs:type_name -> payload.v1.Info.ReadReplicaSvc
+	68, // [68:68] is the sub-list for method output_type
+	68, // [68:68] is the sub-list for method input_type
+	68, // [68:68] is the sub-list for extension type_name
+	68, // [68:68] is the sub-list for extension extendee
+	0,  // [0:68] is the sub-list for field type_name
 }
 
 func init() { file_v1_payload_payload_proto_init() }
@@ -6057,7 +6232,7 @@ func file_v1_payload_payload_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_v1_payload_payload_proto_rawDesc,
 			NumEnums:      2,
-			NumMessages:   76,
+			NumMessages:   79,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

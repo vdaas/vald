@@ -38,6 +38,11 @@ var (
 		return Errorf("discover pod %s not found", name)
 	}
 
+	// ErrSvcNameNotFound represents a function to generate an error of discover svc not found.
+	ErrSvcNameNotFound = func(name string) error {
+		return Errorf("discover svc %s not found", name)
+	}
+
 	// ErrInvalidDiscoveryCache represents an error that type conversion of discovery cache failed.
 	ErrInvalidDiscoveryCache = New("cache type cast failed")
 )

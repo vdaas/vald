@@ -75,7 +75,9 @@ func (c *client) Start(ctx context.Context) (<-chan error, error) {
 	}
 
 	ech := make(chan error, 100)
-	addrs, err := c.dnsDiscovery(ctx, ech)
+	addrs, err := c.dnsDiscovery(ctx, ech) //　ひとまずのagent addrsを取得
+	// FIXME: readreplica svcのaddrsを取得する
+	//        起動時にclientから取得できるかわからないのでひとまず推測で取得する
 	if err != nil {
 		close(ech)
 		return nil, err
@@ -83,7 +85,24 @@ func (c *client) Start(ctx context.Context) (<-chan error, error) {
 	c.addrs.Store(&addrs)
 
 	var aech <-chan error
-	if c.autoconn {
+	if c.autoconn { // jidousetuzokusurubaai
+		// FIXME:
+		// clientをreadreplicaについても作成する？
+		// そもそもdiscoverer側にreadreplicaの情報がないので、clientを作成できるのか？
+
+		// その場合どういうグループでgrpc.Newするか。repcalica idごとか？
+		// そうなると問題なのはreadreplicaについてはidごとのsvcとなっているから
+		// 全svcのipを集約して、適切にgrpc.Newする必要がある。
+		// gatewayはg.client.GetClient().RangeConcurrentでbroadcastするので、
+		// broadcastしたい単位でclientを持っておくのが良い すなわち
+		// 従来のclient, replica id 0のclient, replica id 1のclient, ... という感じで
+		// それをするためには
+		// svc -> replica idごとのipaddrsを取得 -> replicaidごとのaddrsに変換
+		//
+		// それのラウンドロビンは誰が管理する？
+		// それかsvcのラウンドロビンをうまく利用できる？
+		//
+		// あとreadreplicaが再起動した後の再接続はどうする？
 		c.client = grpc.New(
 			append(
 				c.opts,
@@ -242,6 +261,9 @@ func (c *client) discover(ctx context.Context, ech chan<- error) (err error) {
 	} else {
 		connected, err = c.updateDiscoveryInfo(ctx, ech)
 	}
+	// FIXME: ここでk8s APIからの取得に失敗した場合に初めてdnsDiscoveryする
+	//        これをreadreplicaに関しては常に行い、しかもagent groupを管理できる形の構造体へ格納する。
+	//        普通に考えると connectedを二次元にするか
 	if err != nil {
 		log.Warnf("failed to discover addrs from discoverer API, error: %v,\ttrying to dns discovery from %s...", err, c.dns)
 		connected, err = c.dnsDiscovery(ctx, ech)

@@ -9,6 +9,7 @@
   - [Control](#payload-v1-Control)
   - [Control.CreateIndexRequest](#payload-v1-Control-CreateIndexRequest)
   - [Discoverer](#payload-v1-Discoverer)
+  - [Discoverer.ReadReplicaSvcsRequest](#payload-v1-Discoverer-ReadReplicaSvcsRequest)
   - [Discoverer.Request](#payload-v1-Discoverer-Request)
   - [Empty](#payload-v1-Empty)
   - [Filter](#payload-v1-Filter)
@@ -27,6 +28,8 @@
   - [Info.Nodes](#payload-v1-Info-Nodes)
   - [Info.Pod](#payload-v1-Info-Pod)
   - [Info.Pods](#payload-v1-Info-Pods)
+  - [Info.ReadReplicaSvc](#payload-v1-Info-ReadReplicaSvc)
+  - [Info.ReadReplicaSvcs](#payload-v1-Info-ReadReplicaSvcs)
   - [Insert](#payload-v1-Insert)
   - [Insert.Config](#payload-v1-Insert-Config)
   - [Insert.MultiObjectRequest](#payload-v1-Insert-MultiObjectRequest)
@@ -156,6 +159,17 @@ Represent the create index request.
 ### Discoverer
 
 Discoverer related messages.
+
+<a name="payload-v1-Discoverer-ReadReplicaSvcsRequest"></a>
+
+### Discoverer.ReadReplicaSvcsRequest
+
+Represent the dicoverer svc request.
+
+| Field     | Type              | Label | Description                     |
+| --------- | ----------------- | ----- | ------------------------------- |
+| name      | [string](#string) |       | The svc name to be discovered.  |
+| namespace | [string](#string) |       | The namespace to be discovered. |
 
 <a name="payload-v1-Discoverer-Request"></a>
 
@@ -337,6 +351,28 @@ Represent the multiple pod information message.
 | Field | Type                             | Label    | Description                   |
 | ----- | -------------------------------- | -------- | ----------------------------- |
 | pods  | [Info.Pod](#payload-v1-Info-Pod) | repeated | The multiple pod information. |
+
+<a name="payload-v1-Info-ReadReplicaSvc"></a>
+
+### Info.ReadReplicaSvc
+
+Represent the svc information message.
+
+| Field     | Type              | Label | Description                           |
+| --------- | ----------------- | ----- | ------------------------------------- |
+| name      | [string](#string) |       | The name of the svc.                  |
+| addr      | [string](#string) |       | The IP address of the svc.            |
+| replicaid | [uint64](#uint64) |       | The replicaid of the readreplica svc. |
+
+<a name="payload-v1-Info-ReadReplicaSvcs"></a>
+
+### Info.ReadReplicaSvcs
+
+Represent the multiple svc information message.
+
+| Field | Type                                                   | Label    | Description                    |
+| ----- | ------------------------------------------------------ | -------- | ------------------------------ |
+| svcs  | [Info.ReadReplicaSvc](#payload-v1-Info-ReadReplicaSvc) | repeated | The multiple node information. |
 
 <a name="payload-v1-Insert"></a>
 
@@ -1037,246 +1073,91 @@ Represent the index manager service.
 
 ## v1/rpc/errdetails/error_details.proto
 
-<a name="rpc-v1-BadRequest"></a>
+<a name="discoverer-v1-Discoverer"></a>
 
-### BadRequest
+### Discoverer
 
-Describes violations in a client request. This error type focuses on the
-syntactic aspects of the request.
+Represent the discoverer service.
 
-| Field            | Type                                                           | Label    | Description                                   |
-| ---------------- | -------------------------------------------------------------- | -------- | --------------------------------------------- |
-| field_violations | [BadRequest.FieldViolation](#rpc-v1-BadRequest-FieldViolation) | repeated | Describes all violations in a client request. |
+| Method Name     | Request Type                                                                                   | Response Type                                                        | Description                                               |
+| --------------- | ---------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- | --------------------------------------------------------- |
+| Pods            | [.payload.v1.Discoverer.Request](#payload-v1-Discoverer-Request)                               | [.payload.v1.Info.Pods](#payload-v1-Info-Pods)                       | Represent the RPC to get the agent pods information.      |
+| Nodes           | [.payload.v1.Discoverer.Request](#payload-v1-Discoverer-Request)                               | [.payload.v1.Info.Nodes](#payload-v1-Info-Nodes)                     | Represent the RPC to get the node information.            |
+| ReadReplicaSvcs | [.payload.v1.Discoverer.ReadReplicaSvcsRequest](#payload-v1-Discoverer-ReadReplicaSvcsRequest) | [.payload.v1.Info.ReadReplicaSvcs](#payload-v1-Info-ReadReplicaSvcs) | Represent the RPC to get the readreplica svc information. |
 
-<a name="rpc-v1-BadRequest-FieldViolation"></a>
+<a name="apis_proto_v1_vald_remove-proto"></a>
 
-### BadRequest.FieldViolation
+<p align="right"><a href="#top">Top</a></p>
 
-A message type used to describe a single bad request field.
+## apis/proto/v1/vald/remove.proto
 
-| Field | Type              | Label | Description                                                                                                                                        |
-| ----- | ----------------- | ----- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| field | [string](#string) |       | A path that leads to a field in the request body. The value will be a sequence of dot-separated identifiers that identify a protocol buffer field. |
+<a name="vald-v1-Remove"></a>
 
-Consider the following:
+### Remove
 
-message CreateContactRequest { message EmailAddress { enum Type { TYPE_UNSPECIFIED = 0; HOME = 1; WORK = 2; }
+Remove service provides ways to remove indexed vectors.
 
-optional string email = 1; repeated EmailType type = 2; }
+| Method Name       | Request Type                                                               | Response Type                                                                 | Description                                                             |
+| ----------------- | -------------------------------------------------------------------------- | ----------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| Remove            | [.payload.v1.Remove.Request](#payload-v1-Remove-Request)                   | [.payload.v1.Object.Location](#payload-v1-Object-Location)                    | A method to remove an indexed vector.                                   |
+| RemoveByTimestamp | [.payload.v1.Remove.TimestampRequest](#payload-v1-Remove-TimestampRequest) | [.payload.v1.Object.Locations](#payload-v1-Object-Locations)                  | A method to remove an indexed vector based on timestamp.                |
+| StreamRemove      | [.payload.v1.Remove.Request](#payload-v1-Remove-Request) stream            | [.payload.v1.Object.StreamLocation](#payload-v1-Object-StreamLocation) stream | A method to remove multiple indexed vectors by bidirectional streaming. |
+| MultiRemove       | [.payload.v1.Remove.MultiRequest](#payload-v1-Remove-MultiRequest)         | [.payload.v1.Object.Locations](#payload-v1-Object-Locations)                  | A method to remove multiple indexed vectors in a single request.        |
 
-string full_name = 1; repeated EmailAddress email_addresses = 2; }
+<a name="apis_proto_v1_vald_insert-proto"></a>
 
-In this example, in proto `field` could take one of the following values:
+<p align="right"><a href="#top">Top</a></p>
 
-- `full_name` for a violation in the `full_name` value _ `email_addresses[1].email` for a violation in the `email` field of the first `email_addresses` message _ `email_addresses[3].type[2]` for a violation in the second `type` value in the third `email_addresses` message.
+## apis/proto/v1/vald/insert.proto
 
-In JSON, the same values are represented as:
+<a name="vald-v1-Insert"></a>
 
-- `fullName` for a violation in the `fullName` value _ `emailAddresses[1].email` for a violation in the `email` field of the first `emailAddresses` message _ `emailAddresses[3].type[2]` for a violation in the second `type` value in the third `emailAddresses` message. |
-  | description | [string](#string) | | A description of why the request element is bad. |
+### Insert
 
-<a name="rpc-v1-DebugInfo"></a>
+Insert service provides ways to add new vectors.
 
-### DebugInfo
+| Method Name  | Request Type                                                       | Response Type                                                                 | Description                                                      |
+| ------------ | ------------------------------------------------------------------ | ----------------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| Insert       | [.payload.v1.Insert.Request](#payload-v1-Insert-Request)           | [.payload.v1.Object.Location](#payload-v1-Object-Location)                    | A method to add a new single vector.                             |
+| StreamInsert | [.payload.v1.Insert.Request](#payload-v1-Insert-Request) stream    | [.payload.v1.Object.StreamLocation](#payload-v1-Object-StreamLocation) stream | A method to add new multiple vectors by bidirectional streaming. |
+| MultiInsert  | [.payload.v1.Insert.MultiRequest](#payload-v1-Insert-MultiRequest) | [.payload.v1.Object.Locations](#payload-v1-Object-Locations)                  | A method to add new multiple vectors in a single request.        |
 
-Describes additional debugging info.
+<a name="apis_proto_v1_vald_upsert-proto"></a>
 
-| Field         | Type              | Label    | Description                                                  |
-| ------------- | ----------------- | -------- | ------------------------------------------------------------ |
-| stack_entries | [string](#string) | repeated | The stack trace entries indicating where the error occurred. |
-| detail        | [string](#string) |          | Additional debugging information provided by the server.     |
+<p align="right"><a href="#top">Top</a></p>
 
-<a name="rpc-v1-ErrorInfo"></a>
+## apis/proto/v1/vald/upsert.proto
 
-### ErrorInfo
+<a name="vald-v1-Upsert"></a>
 
-Describes the cause of the error with structured details.
+### Upsert
 
-Example of an error when contacting the &#34;pubsub.googleapis.com&#34; API when it
-is not enabled:
+Upsert service provides ways to insert/update vectors.
 
-    { &#34;reason&#34;: &#34;API_DISABLED&#34;
-      &#34;domain&#34;: &#34;googleapis.com&#34;
-      &#34;metadata&#34;: {
-        &#34;resource&#34;: &#34;projects/123&#34;,
-        &#34;service&#34;: &#34;pubsub.googleapis.com&#34;
-      }
-    }
+| Method Name  | Request Type                                                       | Response Type                                                                 | Description                                                            |
+| ------------ | ------------------------------------------------------------------ | ----------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| Upsert       | [.payload.v1.Upsert.Request](#payload-v1-Upsert-Request)           | [.payload.v1.Object.Location](#payload-v1-Object-Location)                    | A method to insert/update a vector.                                    |
+| StreamUpsert | [.payload.v1.Upsert.Request](#payload-v1-Upsert-Request) stream    | [.payload.v1.Object.StreamLocation](#payload-v1-Object-StreamLocation) stream | A method to insert/update multiple vectors by bidirectional streaming. |
+| MultiUpsert  | [.payload.v1.Upsert.MultiRequest](#payload-v1-Upsert-MultiRequest) | [.payload.v1.Object.Locations](#payload-v1-Object-Locations)                  | A method to insert/update multiple vectors in a single request.        |
 
-This response indicates that the pubsub.googleapis.com API is not enabled.
+<a name="apis_proto_v1_vald_object-proto"></a>
 
-Example of an error that is returned when attempting to create a Spanner
-instance in a region that is out of stock:
+<p align="right"><a href="#top">Top</a></p>
 
-    { &#34;reason&#34;: &#34;STOCKOUT&#34;
-      &#34;domain&#34;: &#34;spanner.googleapis.com&#34;,
-      &#34;metadata&#34;: {
-        &#34;availableRegions&#34;: &#34;us-central1,us-east2&#34;
-      }
-    }
+## apis/proto/v1/vald/object.proto
 
-| Field    | Type                                                       | Label    | Description                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| -------- | ---------------------------------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| reason   | [string](#string)                                          |          | The reason of the error. This is a constant value that identifies the proximate cause of the error. Error reasons are unique within a particular domain of errors. This should be at most 63 characters and match a regular expression of `[A-Z][A-Z0-9_]&#43;[A-Z0-9]`, which represents UPPER_SNAKE_CASE.                                                                                                                                 |
-| domain   | [string](#string)                                          |          | The logical grouping to which the &#34;reason&#34; belongs. The error domain is typically the registered service name of the tool or product that generates the error. Example: &#34;pubsub.googleapis.com&#34;. If the error is generated by some common infrastructure, the error domain must be a globally unique value that identifies the infrastructure. For Google API infrastructure, the error domain is &#34;googleapis.com&#34;. |
-| metadata | [ErrorInfo.MetadataEntry](#rpc-v1-ErrorInfo-MetadataEntry) | repeated | Additional structured details about this error.                                                                                                                                                                                                                                                                                                                                                                                             |
+<a name="vald-v1-Object"></a>
 
-Keys should match /[a-zA-Z0-9-_]/ and be limited to 64 characters in length. When identifying the current value of an exceeded limit, the units should be contained in the key, not the value. For example, rather than {&#34;instanceLimit&#34;: &#34;100/request&#34;}, should be returned as, {&#34;instanceLimitPerRequest&#34;: &#34;100&#34;}, if the client exceeds the number of instances that can be created in a single (batch) request. |
+### Object
 
-<a name="rpc-v1-ErrorInfo-MetadataEntry"></a>
+Object service provides ways to fetch indexed vectors.
 
-### ErrorInfo.MetadataEntry
-
-| Field | Type              | Label | Description |
-| ----- | ----------------- | ----- | ----------- |
-| key   | [string](#string) |       |             |
-| value | [string](#string) |       |             |
-
-<a name="rpc-v1-Help"></a>
-
-### Help
-
-Provides links to documentation or for performing an out of band action.
-
-For example, if a quota check failed with an error indicating the calling
-project hasn&#39;t enabled the accessed service, this can contain a URL pointing
-directly to the right place in the developer console to flip the bit.
-
-| Field | Type                           | Label    | Description                                                              |
-| ----- | ------------------------------ | -------- | ------------------------------------------------------------------------ |
-| links | [Help.Link](#rpc-v1-Help-Link) | repeated | URL(s) pointing to additional information on handling the current error. |
-
-<a name="rpc-v1-Help-Link"></a>
-
-### Help.Link
-
-Describes a URL link.
-
-| Field       | Type              | Label | Description                     |
-| ----------- | ----------------- | ----- | ------------------------------- |
-| description | [string](#string) |       | Describes what the link offers. |
-| url         | [string](#string) |       | The URL of the link.            |
-
-<a name="rpc-v1-LocalizedMessage"></a>
-
-### LocalizedMessage
-
-Provides a localized error message that is safe to return to the user
-which can be attached to an RPC error.
-
-| Field   | Type              | Label | Description                                                                                                                                                          |
-| ------- | ----------------- | ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| locale  | [string](#string) |       | The locale used following the specification defined at https://www.rfc-editor.org/rfc/bcp/bcp47.txt. Examples are: &#34;en-US&#34;, &#34;fr-CH&#34;, &#34;es-MX&#34; |
-| message | [string](#string) |       | The localized error message in the above locale.                                                                                                                     |
-
-<a name="rpc-v1-PreconditionFailure"></a>
-
-### PreconditionFailure
-
-Describes what preconditions have failed.
-
-For example, if an RPC failed because it required the Terms of Service to be
-acknowledged, it could list the terms of service violation in the
-PreconditionFailure message.
-
-| Field      | Type                                                                   | Label    | Description                            |
-| ---------- | ---------------------------------------------------------------------- | -------- | -------------------------------------- |
-| violations | [PreconditionFailure.Violation](#rpc-v1-PreconditionFailure-Violation) | repeated | Describes all precondition violations. |
-
-<a name="rpc-v1-PreconditionFailure-Violation"></a>
-
-### PreconditionFailure.Violation
-
-A message type used to describe a single precondition failure.
-
-| Field       | Type              | Label | Description                                                                                                                                                                                                    |
-| ----------- | ----------------- | ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| type        | [string](#string) |       | The type of PreconditionFailure. We recommend using a service-specific enum type to define the supported precondition violation subjects. For example, &#34;TOS&#34; for &#34;Terms of Service violation&#34;. |
-| subject     | [string](#string) |       | The subject, relative to the type, that failed. For example, &#34;google.com/cloud&#34; relative to the &#34;TOS&#34; type would indicate which terms of service is being referenced.                          |
-| description | [string](#string) |       | A description of how the precondition failed. Developers can use this description to understand how to fix the failure.                                                                                        |
-
-For example: &#34;Terms of service not accepted&#34;. |
-
-<a name="rpc-v1-QuotaFailure"></a>
-
-### QuotaFailure
-
-Describes how a quota check failed.
-
-For example if a daily limit was exceeded for the calling project,
-a service could respond with a QuotaFailure detail containing the project
-id and the description of the quota limit that was exceeded. If the
-calling project hasn&#39;t enabled the service in the developer console, then
-a service could respond with the project id and set `service_disabled`
-to true.
-
-Also see RetryInfo and Help types for other details about handling a
-quota failure.
-
-| Field      | Type                                                     | Label    | Description                     |
-| ---------- | -------------------------------------------------------- | -------- | ------------------------------- |
-| violations | [QuotaFailure.Violation](#rpc-v1-QuotaFailure-Violation) | repeated | Describes all quota violations. |
-
-<a name="rpc-v1-QuotaFailure-Violation"></a>
-
-### QuotaFailure.Violation
-
-A message type used to describe a single quota violation. For example, a
-daily quota or a custom quota that was exceeded.
-
-| Field       | Type              | Label | Description                                                                                                                                                                                                                               |
-| ----------- | ----------------- | ----- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| subject     | [string](#string) |       | The subject on which the quota check failed. For example, &#34;clientip:&lt;ip address of client&gt;&#34; or &#34;project:&lt;Google developer project id&gt;&#34;.                                                                       |
-| description | [string](#string) |       | A description of how the quota check failed. Clients can use this description to find more about the quota configuration in the service&#39;s public documentation, or find the relevant quota limit to adjust through developer console. |
-
-For example: &#34;Service disabled&#34; or &#34;Daily Limit for read operations exceeded&#34;. |
-
-<a name="rpc-v1-RequestInfo"></a>
-
-### RequestInfo
-
-Contains metadata about the request that clients can attach when filing a bug
-or providing other forms of feedback.
-
-| Field        | Type              | Label | Description                                                                                                                                                |
-| ------------ | ----------------- | ----- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| request_id   | [string](#string) |       | An opaque string that should only be interpreted by the service generating it. For example, it can be used to identify requests in the service&#39;s logs. |
-| serving_data | [string](#string) |       | Any data that was used to serve this request. For example, an encrypted stack trace that can be sent back to the service provider for debugging.           |
-
-<a name="rpc-v1-ResourceInfo"></a>
-
-### ResourceInfo
-
-Describes the resource that is being accessed.
-
-| Field         | Type              | Label | Description                                                                                                                                                                                                                                      |
-| ------------- | ----------------- | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| resource_type | [string](#string) |       | A name for the type of resource being accessed, e.g. &#34;sql table&#34;, &#34;cloud storage bucket&#34;, &#34;file&#34;, &#34;Google calendar&#34;; or the type URL of the resource: e.g. &#34;type.googleapis.com/google.pubsub.v1.Topic&#34;. |
-| resource_name | [string](#string) |       | The name of the resource being accessed. For example, a shared calendar name: &#34;example.com_4fghdhgsrgh@group.calendar.google.com&#34;, if the current error is [google.rpc.Code.PERMISSION_DENIED][google.rpc.Code.PERMISSION_DENIED].       |
-| owner         | [string](#string) |       | The owner of the resource (optional). For example, &#34;user:&lt;owner email&gt;&#34; or &#34;project:&lt;Google developer project id&gt;&#34;.                                                                                                  |
-| description   | [string](#string) |       | Describes what error is encountered when accessing this resource. For example, updating a cloud project may require the `writer` permission on the developer console project.                                                                    |
-
-<a name="rpc-v1-RetryInfo"></a>
-
-### RetryInfo
-
-Describes when the clients can retry a failed request. Clients could ignore
-the recommendation here or retry when this information is missing from error
-responses.
-
-It&#39;s always recommended that clients should use exponential backoff when
-retrying.
-
-Clients should wait until `retry_delay` amount of time has passed since
-receiving the error response before retrying. If retrying requests also
-fail, clients should use an exponential backoff scheme to gradually increase
-the delay between retries based on `retry_delay`, until either a maximum
-number of retries have been reached or a maximum retry delay cap has been
-reached.
-
-| Field       | Type                                                  | Label | Description                                                               |
-| ----------- | ----------------------------------------------------- | ----- | ------------------------------------------------------------------------- |
-| retry_delay | [google.protobuf.Duration](#google-protobuf-Duration) |       | Clients should wait at least this long between retrying the same request. |
+| Method Name      | Request Type                                                                | Response Type                                                               | Description                                                 |
+| ---------------- | --------------------------------------------------------------------------- | --------------------------------------------------------------------------- | ----------------------------------------------------------- |
+| Exists           | [.payload.v1.Object.ID](#payload-v1-Object-ID)                              | [.payload.v1.Object.ID](#payload-v1-Object-ID)                              | A method to check whether a specified ID is indexed or not. |
+| GetObject        | [.payload.v1.Object.VectorRequest](#payload-v1-Object-VectorRequest)        | [.payload.v1.Object.Vector](#payload-v1-Object-Vector)                      | A method to fetch a vector.                                 |
+| StreamGetObject  | [.payload.v1.Object.VectorRequest](#payload-v1-Object-VectorRequest) stream | [.payload.v1.Object.StreamVector](#payload-v1-Object-StreamVector) stream   | A method to fetch vectors by bidirectional streaming.       |
+| StreamListObject | [.payload.v1.Object.List.Request](#payload-v1-Object-List-Request)          | [.payload.v1.Object.List.Response](#payload-v1-Object-List-Response) stream | A method to get all the vectors with server streaming       |
 
 <a name="v1_vald_filter-proto"></a>
 

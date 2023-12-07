@@ -33,6 +33,7 @@ import (
 	mpod "github.com/vdaas/vald/internal/k8s/metrics/pod"
 	"github.com/vdaas/vald/internal/k8s/node"
 	"github.com/vdaas/vald/internal/k8s/pod"
+	"github.com/vdaas/vald/internal/k8s/readreplica/svc"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/safety"
@@ -44,6 +45,7 @@ type Discoverer interface {
 	Start(context.Context) (<-chan error, error)
 	GetPods(*payload.Discoverer_Request) (*payload.Info_Pods, error)
 	GetNodes(*payload.Discoverer_Request) (*payload.Info_Nodes, error)
+	GetReadReplicaSvcs(*payload.Discoverer_ReadReplicaSvcsRequest) (*payload.Info_ReadReplicaSvcs, error)
 }
 
 type discoverer struct {
@@ -52,16 +54,19 @@ type discoverer struct {
 	nodeMetrics     sync.Map[string, mnode.Node]
 	pods            sync.Map[string, *[]pod.Pod]
 	podMetrics      sync.Map[string, mpod.Pod]
+	svcs            sync.Map[string, svc.Svc]
 	podsByNode      atomic.Value
 	podsByNamespace atomic.Value
 	podsByName      atomic.Value
 	nodeByName      atomic.Value
+	svcsByName      atomic.Value
 	ctrl            k8s.Controller
 	namespace       string
 	name            string
 	csd             time.Duration
 	der             net.Dialer
 	eg              errgroup.Group
+	replicaIdKey    string
 }
 
 func New(selector *config.Selectors, opts ...Option) (dsc Discoverer, err error) {
@@ -71,6 +76,7 @@ func New(selector *config.Selectors, opts ...Option) (dsc Discoverer, err error)
 			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
 		}
 	}
+
 	d.podsByNode.Store(make(map[string]map[string]map[string][]*payload.Info_Pod))
 	d.podsByNamespace.Store(make(map[string]map[string][]*payload.Info_Pod))
 	d.podsByName.Store(make(map[string][]*payload.Info_Pod))
@@ -172,6 +178,32 @@ func New(selector *config.Selectors, opts ...Option) (dsc Discoverer, err error)
 			node.WithFields(selector.GetNodeFields()),
 			node.WithLabels(selector.GetNodeLabels()),
 		)),
+		k8s.WithResourceController(svc.New(
+			selector.GetReadReplicaSvcLabels(),
+			d.replicaIdKey,
+			svc.WithControllerName("readreplica svc discoverer"),
+			svc.WithOnErrorFunc(func(err error) {
+				log.Error("failed to reconcile:", err)
+			}),
+			svc.WithOnReconcileFunc(func(svcs []svc.Svc) {
+				log.Debugf("svc resource reconciled\t%#v", svcs)
+				svcsmap := make(map[string]struct{}, len(svcs))
+				for _, svc := range svcs {
+					svcsmap[svc.Name] = struct{}{}
+					d.svcs.Store(svc.Name, svc)
+				}
+				d.svcs.Range(func(name string, _ svc.Svc) bool {
+					_, ok := svcsmap[name]
+					if !ok {
+						d.svcs.Delete(name)
+					}
+					return true
+				})
+			}),
+			svc.WithNamespace(d.namespace),
+			svc.WithFields(selector.GetReadReplicaSvcFields()),
+			svc.WithLabels(selector.GetReadReplicaSvcLabels()),
+		)),
 	)
 	if err != nil {
 		return nil, err
@@ -200,6 +232,7 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 					podsByNamespace = make(map[string]map[string][]*payload.Info_Pod)            // map[namespace][name][]pod
 					podsByName      = make(map[string][]*payload.Info_Pod)                       // map[name][]pod
 					nodeByName      = make(map[string]*payload.Info_Node)                        // map[name]node
+					svcsByName      = make(map[string]*payload.Info_ReadReplicaSvc)              // map[name]svc
 				)
 
 				d.nodes.Range(func(nodeName string, n *node.Node) bool {
@@ -297,6 +330,22 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 						return true
 					}
 				})
+				d.svcs.Range(func(key string, svc svc.Svc) bool {
+					select {
+					case <-ctx.Done():
+						return false
+					default:
+						ni := &payload.Info_ReadReplicaSvc{
+							Name:      svc.Name,
+							Addr:      svc.Addr,
+							Replicaid: svc.ReplicaId,
+						}
+						svcsByName[svc.Name] = ni
+						return true
+					}
+				})
+				d.svcsByName.Store(svcsByName)
+
 				var wg sync.WaitGroup
 				wg.Add(1)
 				d.eg.Go(safety.RecoverFunc(func() error {
@@ -482,4 +531,26 @@ func (d *discoverer) GetNodes(req *payload.Discoverer_Request) (nodes *payload.I
 
 	nodes.Nodes = ns
 	return nodes, nil
+}
+
+func (d *discoverer) GetReadReplicaSvcs(req *payload.Discoverer_ReadReplicaSvcsRequest) (svcs *payload.Info_ReadReplicaSvcs, err error) {
+	svcs = new(payload.Info_ReadReplicaSvcs)
+	sbn, ok := d.svcsByName.Load().(map[string]*payload.Info_ReadReplicaSvc)
+	if !ok {
+		return nil, errors.ErrInvalidDiscoveryCache
+	}
+
+	if req.GetName() != "" && req.GetName() != "*" {
+		v, ok := sbn[req.GetName()]
+		if !ok {
+			return nil, errors.ErrSvcNameNotFound(req.GetName())
+		}
+		svcs.Svcs = append(svcs.Svcs, v)
+	} else {
+		for _, svc := range sbn {
+			svcs.Svcs = append(svcs.Svcs, svc)
+		}
+	}
+
+	return svcs, nil
 }

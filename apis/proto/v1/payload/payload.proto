@@ -498,6 +498,14 @@ message Discoverer {
     // The node to be discovered.
     string node = 3;
   }
+
+  // Represent the dicoverer svc request.
+  message ReadReplicaSvcsRequest {
+    // The svc name to be discovered.
+    string name = 1 [(validate.rules).string.min_len = 1];
+    // The namespace to be discovered.
+    string namespace = 2;
+  }
 }
 
 // Info related messages.
@@ -563,6 +571,16 @@ message Info {
     Pods Pods = 6;
   }
 
+  // Represent the svc information message.
+  message ReadReplicaSvc {
+    // The name of the svc.
+    string name = 1;
+    // The IP address of the svc.
+    string addr = 2;
+    // The replicaid of the readreplica svc.
+    uint64 replicaid = 3;
+  }
+
   // Represent the CPU information message.
   message CPU {
     // The CPU resource limit.
@@ -593,6 +611,12 @@ message Info {
   message Nodes {
     // The multiple node information.
     repeated Node nodes = 1 [(buf.validate.field).repeated.min_items = 1];
+  }
+
+  // Represent the multiple svc information message.
+  message ReadReplicaSvcs {
+    // The multiple node information.
+    repeated ReadReplicaSvc svcs = 1 [(validate.rules).repeated.min_items = 1];
   }
 
   // Represent the multiple IP message.

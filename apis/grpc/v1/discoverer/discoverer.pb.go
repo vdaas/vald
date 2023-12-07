@@ -77,10 +77,12 @@ var file_v1_discoverer_discoverer_proto_goTypes = []interface{}{
 var file_v1_discoverer_discoverer_proto_depIdxs = []int32{
 	0, // 0: discoverer.v1.Discoverer.Pods:input_type -> payload.v1.Discoverer.Request
 	0, // 1: discoverer.v1.Discoverer.Nodes:input_type -> payload.v1.Discoverer.Request
-	1, // 2: discoverer.v1.Discoverer.Pods:output_type -> payload.v1.Info.Pods
-	2, // 3: discoverer.v1.Discoverer.Nodes:output_type -> payload.v1.Info.Nodes
-	2, // [2:4] is the sub-list for method output_type
-	0, // [0:2] is the sub-list for method input_type
+	1, // 2: discoverer.v1.Discoverer.ReadReplicaSvcs:input_type -> payload.v1.Discoverer.ReadReplicaSvcsRequest
+	2, // 3: discoverer.v1.Discoverer.Pods:output_type -> payload.v1.Info.Pods
+	3, // 4: discoverer.v1.Discoverer.Nodes:output_type -> payload.v1.Info.Nodes
+	4, // 5: discoverer.v1.Discoverer.ReadReplicaSvcs:output_type -> payload.v1.Info.ReadReplicaSvcs
+	3, // [3:6] is the sub-list for method output_type
+	0, // [0:3] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name
 	0, // [0:0] is the sub-list for extension extendee
 	0, // [0:0] is the sub-list for field type_name
