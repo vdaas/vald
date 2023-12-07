@@ -22,36 +22,63 @@ import (
 )
 
 type (
-	Builder = strings.Builder
+	Builder  = strings.Builder
+	Reader   = strings.Reader
+	Replacer = strings.Replacer
 )
 
 var (
+	Clone          = strings.Clone
+	Compare        = strings.Compare
 	Contains       = strings.Contains
+	ContainsAny    = strings.ContainsAny
+	ContainsFunc   = strings.ContainsFunc
+	ContainsRune   = strings.ContainsRune
 	Count          = strings.Count
 	Cut            = strings.Cut
+	CutPrefix      = strings.CutPrefix
+	CutSuffix      = strings.CutSuffix
 	EqualFold      = strings.EqualFold
+	Fields         = strings.Fields
+	FieldsFunc     = strings.FieldsFunc
 	HasPrefix      = strings.HasPrefix
 	HasSuffix      = strings.HasSuffix
 	Index          = strings.Index
 	IndexAny       = strings.IndexAny
-	NewReader      = strings.NewReader
-	NewReplacer    = strings.NewReplacer
+	IndexByte      = strings.IndexByte
+	IndexFunc      = strings.IndexFunc
+	IndexRune      = strings.IndexRune
+	LastIndex      = strings.LastIndex
+	LastIndexAny   = strings.LastIndexAny
+	LastIndexByte  = strings.LastIndexByte
+	LastIndexFunc  = strings.LastIndexFunc
+	Map            = strings.Map
+	Repeat         = strings.Repeat
 	Replace        = strings.Replace
 	ReplaceAll     = strings.ReplaceAll
 	Split          = strings.Split
 	SplitAfter     = strings.SplitAfter
 	SplitAfterN    = strings.SplitAfterN
 	SplitN         = strings.SplitN
+	Title          = strings.Title
 	ToLower        = strings.ToLower
 	ToLowerSpecial = strings.ToLowerSpecial
+	ToTitle        = strings.ToTitle
+	ToTitleSpecial = strings.ToTitleSpecial
 	ToUpper        = strings.ToUpper
 	ToUpperSpecial = strings.ToUpperSpecial
+	ToValidUTF8    = strings.ToValidUTF8
 	Trim           = strings.Trim
+	TrimFunc       = strings.TrimFunc
 	TrimLeft       = strings.TrimLeft
+	TrimLeftFunc   = strings.TrimLeftFunc
 	TrimPrefix     = strings.TrimPrefix
 	TrimRight      = strings.TrimRight
+	TrimRightFunc  = strings.TrimRightFunc
 	TrimSpace      = strings.TrimSpace
 	TrimSuffix     = strings.TrimSuffix
+	NewReader      = strings.NewReader
+	NewReplacer    = strings.NewReplacer
 
 	bufferPool = sync.Pool{
 		New: func() interface{} {

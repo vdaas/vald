@@ -15,9 +15,9 @@ package conv
 
 import (
 	"io"
-	"strings"
 	"unsafe"
 
+	"github.com/vdaas/vald/internal/strings"
 	"golang.org/x/text/encoding/japanese"
 	"golang.org/x/text/transform"
 )
