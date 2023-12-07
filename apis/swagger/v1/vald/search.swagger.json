@@ -9,12 +9,8 @@
       "name": "Search"
     }
   ],
-  "consumes": [
-    "application/json"
-  ],
-  "produces": [
-    "application/json"
-  ],
+  "consumes": ["application/json"],
+  "produces": ["application/json"],
   "paths": {
     "/linearsearch": {
       "post": {
@@ -45,9 +41,7 @@
             }
           }
         ],
-        "tags": [
-          "Search"
-        ]
+        "tags": ["Search"]
       }
     },
     "/linearsearch/id": {
@@ -79,9 +73,7 @@
             }
           }
         ],
-        "tags": [
-          "Search"
-        ]
+        "tags": ["Search"]
       }
     },
     "/linearsearch/id/multiple": {
@@ -113,9 +105,7 @@
             }
           }
         ],
-        "tags": [
-          "Search"
-        ]
+        "tags": ["Search"]
       }
     },
     "/linearsearch/multiple": {
@@ -147,9 +137,7 @@
             }
           }
         ],
-        "tags": [
-          "Search"
-        ]
+        "tags": ["Search"]
       }
     },
     "/search": {
@@ -181,9 +169,7 @@
             }
           }
         ],
-        "tags": [
-          "Search"
-        ]
+        "tags": ["Search"]
       }
     },
     "/search/id": {
@@ -215,9 +201,7 @@
             }
           }
         ],
-        "tags": [
-          "Search"
-        ]
+        "tags": ["Search"]
       }
     },
     "/search/id/multiple": {
@@ -249,9 +233,7 @@
             }
           }
         ],
-        "tags": [
-          "Search"
-        ]
+        "tags": ["Search"]
       }
     },
     "/search/multiple": {
@@ -283,9 +265,7 @@
             }
           }
         ],
-        "tags": [
-          "Search"
-        ]
+        "tags": ["Search"]
       }
     }
   },
