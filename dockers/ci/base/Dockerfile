@@ -1,3 +1,4 @@
+# syntax = docker/dockerfile:latest
 #
 # Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 #
@@ -17,9 +18,9 @@
 ARG GO_VERSION=latest
 ARG MAINTAINER="vdaas.org vald team <vald@vdaas.org>"
 
-FROM golang:${GO_VERSION} AS golang
+FROM --platform=${BUILDPLATFORM} golang:${GO_VERSION} AS golang
 
-FROM ubuntu:devel AS builder
+FROM --platform=${BUILDPLATFORM} ubuntu:devel AS builder
 LABEL maintainer="${MAINTAINER}"
 
 ENV GO111MODULE on
