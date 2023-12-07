@@ -13,7 +13,12 @@
   - [Empty](#payload-v1-Empty)
   - [Filter](#payload-v1-Filter)
   - [Filter.Config](#payload-v1-Filter-Config)
+  - [Filter.DistanceRequest](#payload-v1-Filter-DistanceRequest)
+  - [Filter.DistanceResponse](#payload-v1-Filter-DistanceResponse)
+  - [Filter.Query](#payload-v1-Filter-Query)
   - [Filter.Target](#payload-v1-Filter-Target)
+  - [Filter.VectorRequest](#payload-v1-Filter-VectorRequest)
+  - [Filter.VectorResponse](#payload-v1-Filter-VectorResponse)
   - [Info](#payload-v1-Info)
   - [Info.CPU](#payload-v1-Info-CPU)
   - [Info.IPs](#payload-v1-Info-IPs)
@@ -82,6 +87,7 @@
   - [Upsert.MultiRequest](#payload-v1-Upsert-MultiRequest)
   - [Upsert.ObjectRequest](#payload-v1-Upsert-ObjectRequest)
   - [Upsert.Request](#payload-v1-Upsert-Request)
+
   - [Remove.Timestamp.Operator](#payload-v1-Remove-Timestamp-Operator)
   - [Search.AggregationAlgorithm](#payload-v1-Search-AggregationAlgorithm)
 
@@ -187,9 +193,41 @@ Filter related messages.
 
 Represent filter configuration.
 
-| Field   | Type                                       | Label    | Description                                |
-| ------- | ------------------------------------------ | -------- | ------------------------------------------ |
-| targets | [Filter.Target](#payload-v1-Filter-Target) | repeated | Represent the filter target configuration. |
+| Field  | Type                                       | Label | Description                                |
+| ------ | ------------------------------------------ | ----- | ------------------------------------------ |
+| target | [Filter.Target](#payload-v1-Filter-Target) |       | Represent the filter target configuration. |
+| query  | [Filter.Query](#payload-v1-Filter-Query)   |       | The target query.                          |
+
+<a name="payload-v1-Filter-DistanceRequest"></a>
+
+### Filter.DistanceRequest
+
+Represent the ID and distance pair.
+
+| Field    | Type                                           | Label    | Description |
+| -------- | ---------------------------------------------- | -------- | ----------- |
+| distance | [Object.Distance](#payload-v1-Object-Distance) | repeated | Distance    |
+| query    | [Filter.Query](#payload-v1-Filter-Query)       |          | Query       |
+
+<a name="payload-v1-Filter-DistanceResponse"></a>
+
+### Filter.DistanceResponse
+
+Represent the ID and distance pair.
+
+| Field    | Type                                           | Label    | Description |
+| -------- | ---------------------------------------------- | -------- | ----------- |
+| distance | [Object.Distance](#payload-v1-Object-Distance) | repeated | Distance    |
+
+<a name="payload-v1-Filter-Query"></a>
+
+### Filter.Query
+
+Represent the filter query.
+
+| Field | Type              | Label | Description           |
+| ----- | ----------------- | ----- | --------------------- |
+| query | [string](#string) |       | The raw query string. |
 
 <a name="payload-v1-Filter-Target"></a>
 
@@ -201,6 +239,27 @@ Represent the target filter server.
 | ----- | ----------------- | ----- | -------------------- |
 | host  | [string](#string) |       | The target hostname. |
 | port  | [uint32](#uint32) |       | The target port.     |
+
+<a name="payload-v1-Filter-VectorRequest"></a>
+
+### Filter.VectorRequest
+
+Represent the ID and vector pair.
+
+| Field  | Type                                       | Label | Description |
+| ------ | ------------------------------------------ | ----- | ----------- |
+| vector | [Object.Vector](#payload-v1-Object-Vector) |       | Vector      |
+| query  | [Filter.Query](#payload-v1-Filter-Query)   |       | Query       |
+
+<a name="payload-v1-Filter-VectorResponse"></a>
+
+### Filter.VectorResponse
+
+Represent the ID and vector pair.
+
+| Field  | Type                                       | Label | Description |
+| ------ | ------------------------------------------ | ----- | ----------- |
+| vector | [Object.Vector](#payload-v1-Object-Vector) |       | Distance    |
 
 <a name="payload-v1-Info"></a>
 
@@ -350,11 +409,11 @@ Insert related messages.
 
 Represent insert configurations.
 
-| Field                   | Type                                       | Label | Description                                         |
-| ----------------------- | ------------------------------------------ | ----- | --------------------------------------------------- |
-| skip_strict_exist_check | [bool](#bool)                              |       | A flag to skip exist check during insert operation. |
-| filters                 | [Filter.Config](#payload-v1-Filter-Config) |       | Filter configurations.                              |
-| timestamp               | [int64](#int64)                            |       | Insert timestamp.                                   |
+| Field                   | Type                                       | Label    | Description                                         |
+| ----------------------- | ------------------------------------------ | -------- | --------------------------------------------------- |
+| skip_strict_exist_check | [bool](#bool)                              |          | A flag to skip exist check during insert operation. |
+| filters                 | [Filter.Config](#payload-v1-Filter-Config) | repeated | Filter configurations.                              |
+| timestamp               | [int64](#int64)                            |          | Insert timestamp.                                   |
 
 <a name="payload-v1-Insert-MultiObjectRequest"></a>
 
@@ -582,10 +641,10 @@ Represent a vector.
 
 Represent a request to fetch raw vector.
 
-| Field   | Type                                       | Label | Description                  |
-| ------- | ------------------------------------------ | ----- | ---------------------------- |
-| id      | [Object.ID](#payload-v1-Object-ID)         |       | The vector ID to be fetched. |
-| filters | [Filter.Config](#payload-v1-Filter-Config) |       | Filter configurations.       |
+| Field   | Type                                       | Label    | Description                  |
+| ------- | ------------------------------------------ | -------- | ---------------------------- |
+| id      | [Object.ID](#payload-v1-Object-ID)         |          | The vector ID to be fetched. |
+| filters | [Filter.Config](#payload-v1-Filter-Config) | repeated | Filter configurations.       |
 
 <a name="payload-v1-Object-Vectors"></a>
 
@@ -668,17 +727,17 @@ Search related messages.
 
 Represent search configuration.
 
-| Field                 | Type                                                                   | Label | Description                              |
-| --------------------- | ---------------------------------------------------------------------- | ----- | ---------------------------------------- |
-| request_id            | [string](#string)                                                      |       | Unique request ID.                       |
-| num                   | [uint32](#uint32)                                                      |       | Maximum number of result to be returned. |
-| radius                | [float](#float)                                                        |       | Search radius.                           |
-| epsilon               | [float](#float)                                                        |       | Search coefficient.                      |
-| timeout               | [int64](#int64)                                                        |       | Search timeout in nanoseconds.           |
-| ingress_filters       | [Filter.Config](#payload-v1-Filter-Config)                             |       | Ingress filter configurations.           |
-| egress_filters        | [Filter.Config](#payload-v1-Filter-Config)                             |       | Egress filter configurations.            |
-| min_num               | [uint32](#uint32)                                                      |       | Minimum number of result to be returned. |
-| aggregation_algorithm | [Search.AggregationAlgorithm](#payload-v1-Search-AggregationAlgorithm) |       | Aggregation Algorithm                    |
+| Field                 | Type                                                                   | Label    | Description                              |
+| --------------------- | ---------------------------------------------------------------------- | -------- | ---------------------------------------- |
+| request_id            | [string](#string)                                                      |          | Unique request ID.                       |
+| num                   | [uint32](#uint32)                                                      |          | Maximum number of result to be returned. |
+| radius                | [float](#float)                                                        |          | Search radius.                           |
+| epsilon               | [float](#float)                                                        |          | Search coefficient.                      |
+| timeout               | [int64](#int64)                                                        |          | Search timeout in nanoseconds.           |
+| ingress_filters       | [Filter.Config](#payload-v1-Filter-Config)                             | repeated | Ingress filter configurations.           |
+| egress_filters        | [Filter.Config](#payload-v1-Filter-Config)                             | repeated | Egress filter configurations.            |
+| min_num               | [uint32](#uint32)                                                      |          | Minimum number of result to be returned. |
+| aggregation_algorithm | [Search.AggregationAlgorithm](#payload-v1-Search-AggregationAlgorithm) |          | Aggregation Algorithm                    |
 
 <a name="payload-v1-Search-IDRequest"></a>
 
@@ -788,12 +847,12 @@ Update related messages
 
 Represent the update configuration.
 
-| Field                   | Type                                       | Label | Description                                                                                      |
-| ----------------------- | ------------------------------------------ | ----- | ------------------------------------------------------------------------------------------------ |
-| skip_strict_exist_check | [bool](#bool)                              |       | A flag to skip exist check during update operation.                                              |
-| filters                 | [Filter.Config](#payload-v1-Filter-Config) |       | Filter configuration.                                                                            |
-| timestamp               | [int64](#int64)                            |       | Update timestamp.                                                                                |
-| disable_balanced_update | [bool](#bool)                              |       | A flag to disable balanced update (split remove -&gt; insert operation) during update operation. |
+| Field                   | Type                                       | Label    | Description                                                                                      |
+| ----------------------- | ------------------------------------------ | -------- | ------------------------------------------------------------------------------------------------ |
+| skip_strict_exist_check | [bool](#bool)                              |          | A flag to skip exist check during update operation.                                              |
+| filters                 | [Filter.Config](#payload-v1-Filter-Config) | repeated | Filter configuration.                                                                            |
+| timestamp               | [int64](#int64)                            |          | Update timestamp.                                                                                |
+| disable_balanced_update | [bool](#bool)                              |          | A flag to disable balanced update (split remove -&gt; insert operation) during update operation. |
 
 <a name="payload-v1-Update-MultiObjectRequest"></a>
 
@@ -850,12 +909,12 @@ Upsert related messages.
 
 Represent the upsert configuration.
 
-| Field                   | Type                                       | Label | Description                                                                                      |
-| ----------------------- | ------------------------------------------ | ----- | ------------------------------------------------------------------------------------------------ |
-| skip_strict_exist_check | [bool](#bool)                              |       | A flag to skip exist check during upsert operation.                                              |
-| filters                 | [Filter.Config](#payload-v1-Filter-Config) |       | Filter configuration.                                                                            |
-| timestamp               | [int64](#int64)                            |       | Upsert timestamp.                                                                                |
-| disable_balanced_update | [bool](#bool)                              |       | A flag to disable balanced update (split remove -&gt; insert operation) during update operation. |
+| Field                   | Type                                       | Label    | Description                                                                                      |
+| ----------------------- | ------------------------------------------ | -------- | ------------------------------------------------------------------------------------------------ |
+| skip_strict_exist_check | [bool](#bool)                              |          | A flag to skip exist check during upsert operation.                                              |
+| filters                 | [Filter.Config](#payload-v1-Filter-Config) | repeated | Filter configuration.                                                                            |
+| timestamp               | [int64](#int64)                            |          | Upsert timestamp.                                                                                |
+| disable_balanced_update | [bool](#bool)                              |          | A flag to disable balanced update (split remove -&gt; insert operation) during update operation. |
 
 <a name="payload-v1-Upsert-MultiObjectRequest"></a>
 
@@ -993,10 +1052,10 @@ Represent the discoverer service.
 
 Represent the egress filter service.
 
-| Method Name    | Request Type                                               | Response Type                                              | Description                               |
-| -------------- | ---------------------------------------------------------- | ---------------------------------------------------------- | ----------------------------------------- |
-| FilterDistance | [.payload.v1.Object.Distance](#payload-v1-Object-Distance) | [.payload.v1.Object.Distance](#payload-v1-Object-Distance) | Represent the RPC to filter the distance. |
-| FilterVector   | [.payload.v1.Object.Vector](#payload-v1-Object-Vector)     | [.payload.v1.Object.Vector](#payload-v1-Object-Vector)     | Represent the RPC to filter the vector.   |
+| Method Name    | Request Type                                                             | Response Type                                                              | Description                               |
+| -------------- | ------------------------------------------------------------------------ | -------------------------------------------------------------------------- | ----------------------------------------- |
+| FilterDistance | [.payload.v1.Filter.DistanceRequest](#payload-v1-Filter-DistanceRequest) | [.payload.v1.Filter.DistanceResponse](#payload-v1-Filter-DistanceResponse) | Represent the RPC to filter the distance. |
+| FilterVector   | [.payload.v1.Filter.VectorRequest](#payload-v1-Filter-VectorRequest)     | [.payload.v1.Filter.VectorResponse](#payload-v1-Filter-VectorResponse)     | Represent the RPC to filter the vector.   |
 
 <a name="v1_filter_ingress_ingress_filter-proto"></a>
 

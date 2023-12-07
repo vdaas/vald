@@ -102,6 +102,16 @@
     }
   },
   "definitions": {
+    "FilterQuery": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "type": "string",
+          "description": "The raw query string."
+        }
+      },
+      "description": "Represent the filter query."
+    },
     "FilterTarget": {
       "type": "object",
       "properties": {
@@ -213,13 +223,13 @@
     "v1FilterConfig": {
       "type": "object",
       "properties": {
-        "targets": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "$ref": "#/definitions/FilterTarget"
-          },
+        "target": {
+          "$ref": "#/definitions/FilterTarget",
           "description": "Represent the filter target configuration."
+        },
+        "query": {
+          "$ref": "#/definitions/FilterQuery",
+          "description": "The target query."
         }
       },
       "description": "Represent filter configuration."
