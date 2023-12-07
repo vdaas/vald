@@ -144,8 +144,7 @@ const (
 	StreamGetObjectRPCName  = "StreamGetObject"
 	StreamListObjectRPCName = "StreamListObject"
 
-	RegisterRPCName  = "Register"
-	AdvertiseRPCName = "Advertise"
+	RegisterRPCName = "Register"
 )
 
 type client struct {

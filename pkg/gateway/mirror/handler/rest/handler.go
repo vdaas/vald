@@ -24,7 +24,6 @@ import (
 
 type Handler interface {
 	Register(w http.ResponseWriter, r *http.Request) (int, error)
-	Advertise(w http.ResponseWriter, r *http.Request) (int, error)
 	Index(w http.ResponseWriter, r *http.Request) (int, error)
 	Exists(w http.ResponseWriter, r *http.Request) (int, error)
 	Search(w http.ResponseWriter, r *http.Request) (int, error)
@@ -63,13 +62,6 @@ func (h *handler) Register(w http.ResponseWriter, r *http.Request) (code int, er
 	var req *payload.Mirror_Targets
 	return json.Handler(w, r, &req, func() (interface{}, error) {
 		return h.vald.Register(r.Context(), req)
-	})
-}
-
-func (h *handler) Advertise(w http.ResponseWriter, r *http.Request) (code int, err error) {
-	var req *payload.Mirror_Targets
-	return json.Handler(w, r, &req, func() (interface{}, error) {
-		return h.vald.Advertise(r.Context(), req)
 	})
 }
 

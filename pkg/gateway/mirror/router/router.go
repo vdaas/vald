@@ -54,14 +54,6 @@ func New(opts ...Option) http.Handler {
 				h.Register,
 			},
 			{
-				"Advertise",
-				[]string{
-					http.MethodPost,
-				},
-				"/register",
-				h.Advertise,
-			},
-			{
 				"Search",
 				[]string{
 					http.MethodPost,

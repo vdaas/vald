@@ -1483,10 +1483,9 @@ limitations under the License.
 
 Represent the mirror service.
 
-| Method Name | Request Type                                             | Response Type                                            | Description                                             |
-| ----------- | -------------------------------------------------------- | -------------------------------------------------------- | ------------------------------------------------------- |
-| Register    | [.payload.v1.Mirror.Targets](#payload-v1-Mirror-Targets) | [.payload.v1.Mirror.Targets](#payload-v1-Mirror-Targets) | Register is the RPC to register other mirror servers.   |
-| Advertise   | [.payload.v1.Mirror.Targets](#payload-v1-Mirror-Targets) | [.payload.v1.Mirror.Targets](#payload-v1-Mirror-Targets) | Advertise is the RPC to advertise other mirror servers. |
+| Method Name | Request Type                                             | Response Type                                            | Description                                           |
+| ----------- | -------------------------------------------------------- | -------------------------------------------------------- | ----------------------------------------------------- |
+| Register    | [.payload.v1.Mirror.Targets](#payload-v1-Mirror-Targets) | [.payload.v1.Mirror.Targets](#payload-v1-Mirror-Targets) | Register is the RPC to register other mirror servers. |
 
 ## Scalar Value Types
 

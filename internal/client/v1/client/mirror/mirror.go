@@ -88,24 +88,3 @@ func (c *client) Register(ctx context.Context, in *payload.Mirror_Targets, opts 
 	}
 	return res, nil
 }
-
-func (c *client) Advertise(ctx context.Context, in *payload.Mirror_Targets, opts ...grpc.CallOption) (res *payload.Mirror_Targets, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+vald.AdvertiseRPCName), apiName+"/"+vald.AdvertiseRPCName)
-	defer func() {
-		if span != nil {
-			span.End()
-		}
-	}()
-
-	_, err = c.c.RoundRobin(ctx, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
-		res, err = mirror.NewMirrorClient(conn).Advertise(ctx, in, append(copts, opts...)...)
-		if err != nil {
-			return nil, err
-		}
-		return res, nil
-	})
-	if err != nil {
-		return nil, err
-	}
-	return res, nil
-}

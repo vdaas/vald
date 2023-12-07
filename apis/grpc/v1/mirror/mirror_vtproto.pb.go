@@ -44,8 +44,6 @@ const _ = grpc.SupportPackageIsVersion7
 type MirrorClient interface {
 	// Register is the RPC to register other mirror servers.
 	Register(ctx context.Context, in *payload.Mirror_Targets, opts ...grpc.CallOption) (*payload.Mirror_Targets, error)
-	// Advertise is the RPC to advertise other mirror servers.
-	Advertise(ctx context.Context, in *payload.Mirror_Targets, opts ...grpc.CallOption) (*payload.Mirror_Targets, error)
 }
 
 type mirrorClient struct {
@@ -65,23 +63,12 @@ func (c *mirrorClient) Register(ctx context.Context, in *payload.Mirror_Targets,
 	return out, nil
 }
 
-func (c *mirrorClient) Advertise(ctx context.Context, in *payload.Mirror_Targets, opts ...grpc.CallOption) (*payload.Mirror_Targets, error) {
-	out := new(payload.Mirror_Targets)
-	err := c.cc.Invoke(ctx, "/mirror.v1.Mirror/Advertise", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 // MirrorServer is the server API for Mirror service.
 // All implementations must embed UnimplementedMirrorServer
 // for forward compatibility
 type MirrorServer interface {
 	// Register is the RPC to register other mirror servers.
 	Register(context.Context, *payload.Mirror_Targets) (*payload.Mirror_Targets, error)
-	// Advertise is the RPC to advertise other mirror servers.
-	Advertise(context.Context, *payload.Mirror_Targets) (*payload.Mirror_Targets, error)
 	mustEmbedUnimplementedMirrorServer()
 }
 
@@ -91,9 +78,6 @@ type UnimplementedMirrorServer struct {
 
 func (UnimplementedMirrorServer) Register(context.Context, *payload.Mirror_Targets) (*payload.Mirror_Targets, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Register not implemented")
-}
-func (UnimplementedMirrorServer) Advertise(context.Context, *payload.Mirror_Targets) (*payload.Mirror_Targets, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Advertise not implemented")
 }
 func (UnimplementedMirrorServer) mustEmbedUnimplementedMirrorServer() {}
 
@@ -126,24 +110,6 @@ func _Mirror_Register_Handler(srv interface{}, ctx context.Context, dec func(int
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Mirror_Advertise_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(payload.Mirror_Targets)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(MirrorServer).Advertise(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/mirror.v1.Mirror/Advertise",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MirrorServer).Advertise(ctx, req.(*payload.Mirror_Targets))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 // Mirror_ServiceDesc is the grpc.ServiceDesc for Mirror service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -154,10 +120,6 @@ var Mirror_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Register",
 			Handler:    _Mirror_Register_Handler,
-		},
-		{
-			MethodName: "Advertise",
-			Handler:    _Mirror_Advertise_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
