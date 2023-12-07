@@ -92,6 +92,7 @@ k8s/vald/deploy:
 	@echo "Permitting error because there's some cases nothing to apply"
 	kubectl apply -f $(TEMP_DIR)/vald/templates/manager/index || true
 	kubectl apply -f $(TEMP_DIR)/vald/templates/agent || true
+	kubectl apply -f $(TEMP_DIR)/vald/templates/agent/readreplica || true
 	kubectl apply -f $(TEMP_DIR)/vald/templates/discoverer || true
 	kubectl apply -f $(TEMP_DIR)/vald/templates/gateway/lb || true
 	kubectl apply -f $(TEMP_DIR)/vald/crds || true
@@ -127,6 +128,7 @@ k8s/vald/delete:
 	kubectl delete -f $(TEMP_DIR)/vald/templates/gateway/lb
 	kubectl delete -f $(TEMP_DIR)/vald/templates/manager/index
 	kubectl delete -f $(TEMP_DIR)/vald/templates/discoverer
+	kubectl delete -f $(TEMP_DIR)/vald/templates/agent/readreplica || true
 	kubectl delete -f $(TEMP_DIR)/vald/templates/agent
 	kubectl delete -f $(TEMP_DIR)/vald/crds
 	rm -rf $(TEMP_DIR)

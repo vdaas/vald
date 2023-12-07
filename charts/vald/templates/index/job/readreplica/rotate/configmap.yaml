@@ -46,7 +46,7 @@ data:
       {{- include "vald.observability" $observability | nindent 6 }}
     rotator:
       agent_namespace: {{ $rotator.agent_namespace | quote }}
-      read_replica_label_key: "vald-readreplica-id"
+      read_replica_label_key: {{ $agent.readreplica.label_key | quote }}
       read_replica_id: "_MY_TARGET_REPLICA_ID_"
-      volume_name: "vald-agent-ngt-readreplica-pvc"
+      volume_name: {{ $agent.readreplica.volume_name | quote }}
 {{- end }}
