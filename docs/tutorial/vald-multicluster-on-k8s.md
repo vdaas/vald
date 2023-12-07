@@ -121,24 +121,24 @@ In this section, you will deploy three Vald clusters consisting of `vald-agent-n
 
     <details><summary>vald-01 Namespace</summary><br>
 
-     ```bash
-     kubectl get pods -n vald-01
-     NAME                                   READY   STATUS    RESTARTS   AGE
-     vald-agent-ngt-0                       1/1     Running   0          2m41s
-     vald-agent-ngt-2                       1/1     Running   0          2m41s
-     vald-agent-ngt-3                       1/1     Running   0          2m41s
-     vald-agent-ngt-4                       1/1     Running   0          2m41s
-     vald-agent-ngt-5                       1/1     Running   0          2m41s
-     vald-agent-ngt-1                       1/1     Running   0          2m41s
-     vald-discoverer-77967c9697-brbsp       1/1     Running   0          2m41s
-     vald-lb-gateway-587879d598-xmws7       1/1     Running   0          2m41s
-     vald-lb-gateway-587879d598-dzn9c       1/1     Running   0          2m41s
-     vald-manager-index-56d474c848-wkh6b    1/1     Running   0          2m41s
-     vald-lb-gateway-587879d598-9wb5q       1/1     Running   0          2m41s
-     vald-mirror-gateway-6df75cf7cf-gzcr4   1/1     Running   0          2m26s
-     vald-mirror-gateway-6df75cf7cf-vjbqx   1/1     Running   0          2m26s
-     vald-mirror-gateway-6df75cf7cf-c2g7t   1/1     Running   0          2m41s
-     ```
+   ```bash
+   kubectl get pods -n vald-01
+   NAME                                   READY   STATUS    RESTARTS   AGE
+   vald-agent-ngt-0                       1/1     Running   0          2m41s
+   vald-agent-ngt-2                       1/1     Running   0          2m41s
+   vald-agent-ngt-3                       1/1     Running   0          2m41s
+   vald-agent-ngt-4                       1/1     Running   0          2m41s
+   vald-agent-ngt-5                       1/1     Running   0          2m41s
+   vald-agent-ngt-1                       1/1     Running   0          2m41s
+   vald-discoverer-77967c9697-brbsp       1/1     Running   0          2m41s
+   vald-lb-gateway-587879d598-xmws7       1/1     Running   0          2m41s
+   vald-lb-gateway-587879d598-dzn9c       1/1     Running   0          2m41s
+   vald-manager-index-56d474c848-wkh6b    1/1     Running   0          2m41s
+   vald-lb-gateway-587879d598-9wb5q       1/1     Running   0          2m41s
+   vald-mirror-gateway-6df75cf7cf-gzcr4   1/1     Running   0          2m26s
+   vald-mirror-gateway-6df75cf7cf-vjbqx   1/1     Running   0          2m26s
+   vald-mirror-gateway-6df75cf7cf-c2g7t   1/1     Running   0          2m41s
+   ```
 
     </details>
 
