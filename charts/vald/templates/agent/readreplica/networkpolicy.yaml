@@ -29,7 +29,7 @@ metadata:
 spec:
   podSelector:
     matchLabels:
-      app: {{ $readreplica.name }}
+      app.kubernetes.io/component: {{ $readreplica.component_name }}
   policyTypes:
     - Ingress
     - Egress
