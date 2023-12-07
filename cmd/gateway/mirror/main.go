@@ -45,7 +45,11 @@ func main() {
 				return cfg, &cfg.GlobalConfig, nil
 			}),
 			runner.WithDaemonInitializer(func(cfg interface{}) (runner.Runner, error) {
-				return usecase.New(cfg.(*config.Data))
+				c, ok := cfg.(*config.Data)
+				if !ok {
+					return nil, errors.ErrInvalidConfig
+				}
+				return usecase.New(c)
 			}),
 		)
 	})(); err != nil {

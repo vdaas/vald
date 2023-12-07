@@ -4,7 +4,7 @@ This article shows how to deploy multiple Vald clusters on your Kubernetes clust
 
 ## Overview
 
-Vald cluster consists of multiple micro-services.
+Vald cluster consists of multiple microservices.
 
 In [Get Started](https://vald.vdaas.org/docs/tutorial/get-started), you may use 4 kinds of components to deploy the Vald cluster.
 
@@ -120,7 +120,7 @@ In this section, you will deploy three Vald clusters consisting of `vald-agent-n
    If success deployment, the Vald cluster’s components should run on each Kubernetes Namespace.
 
     <details><summary>vald-01 Namespace</summary><br>
-    
+
      ```bash
      kubectl get pods -n vald-01
      NAME                                   READY   STATUS    RESTARTS   AGE
