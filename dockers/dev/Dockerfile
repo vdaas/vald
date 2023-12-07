@@ -1,3 +1,4 @@
+# syntax = docker/dockerfile:latest
 #
 # Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 #
@@ -17,7 +18,7 @@
 ARG MAINTAINER="vdaas.org vald team <vald@vdaas.org>"
 
 # skipcq: DOK-DL3026
-FROM mcr.microsoft.com/vscode/devcontainers/go:1 AS base
+FROM --platform=${BUILDPLATFORM} mcr.microsoft.com/vscode/devcontainers/go:1 AS base
 LABEL maintainer="${MAINTAINER}"
 
 # skipcq: DOK-DL3008
