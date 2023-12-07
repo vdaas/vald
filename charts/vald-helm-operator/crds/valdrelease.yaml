@@ -3778,11 +3778,13 @@ spec:
                                 distance_filters:
                                   type: array
                                   items:
-                                    type: string
+                                    type: object
+                                    x-kubernetes-preserve-unknown-fields: true
                                 object_filters:
                                   type: array
                                   items:
-                                    type: string
+                                    type: object
+                                    x-kubernetes-preserve-unknown-fields: true
                             gateway_client:
                               type: object
                               properties:
