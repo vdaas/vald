@@ -66,7 +66,7 @@ type discoverer struct {
 	csd             time.Duration
 	der             net.Dialer
 	eg              errgroup.Group
-	replicaIdKey    string
+	replicaIDKey    string
 }
 
 func New(selector *config.Selectors, opts ...Option) (dsc Discoverer, err error) {
@@ -180,7 +180,7 @@ func New(selector *config.Selectors, opts ...Option) (dsc Discoverer, err error)
 		)),
 		k8s.WithResourceController(svc.New(
 			selector.GetReadReplicaSvcLabels(),
-			d.replicaIdKey,
+			d.replicaIDKey,
 			svc.WithControllerName("readreplica svc discoverer"),
 			svc.WithOnErrorFunc(func(err error) {
 				log.Error("failed to reconcile:", err)
@@ -338,7 +338,7 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 						ni := &payload.Info_ReadReplicaSvc{
 							Name:      svc.Name,
 							Addr:      svc.Addr,
-							Replicaid: svc.ReplicaId,
+							Replicaid: svc.ReplicaID,
 						}
 						svcsByName[svc.Name] = ni
 						return true

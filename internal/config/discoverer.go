@@ -24,7 +24,7 @@ type Discoverer struct {
 	DiscoveryDuration string     `json:"discovery_duration,omitempty"  yaml:"discovery_duration"`
 	Net               *Net       `json:"net,omitempty"                 yaml:"net"`
 	Selectors         *Selectors `json:"selectors,omitempty"           yaml:"selectors"`
-	ReadReplicaIdKey  string     `json:"read_replica_id_key,omitempty" yaml:"read_replica_id_key"`
+	ReadReplicaIDKey  string     `json:"read_replica_id_key,omitempty" yaml:"read_replica_id_key"`
 }
 
 type Selectors struct {

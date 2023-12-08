@@ -82,10 +82,10 @@ func WithErrGroup(eg errgroup.Group) Option {
 	}
 }
 
-func WithReadReplicaIdKey(key string) Option {
+func WithReadReplicaIDKey(key string) Option {
 	return func(d *discoverer) error {
 		if key != "" {
-			d.replicaIdKey = key
+			d.replicaIDKey = key
 		}
 		return nil
 	}

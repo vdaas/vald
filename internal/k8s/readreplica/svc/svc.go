@@ -50,7 +50,7 @@ type reconciler struct {
 type ReadReplicaSvc struct {
 	Name      string
 	Addr      string
-	ReplicaId uint64
+	ReplicaID uint64
 }
 
 func New(readreplicaLabel map[string]string, idKey string, opts ...Option) SvcWatcher {
@@ -90,7 +90,7 @@ func (r *reconciler) Reconcile(ctx context.Context, _ reconcile.Request) (res re
 		}
 		res = reconcile.Result{
 			Requeue:      true,
-			RequeueAfter: time.Millisecond * 100,
+			RequeueAfter: time.Millisecond * 100, //nolint:gomnd
 		}
 		if errors.IsNotFound(err) {
 			res = reconcile.Result{
@@ -98,7 +98,7 @@ func (r *reconciler) Reconcile(ctx context.Context, _ reconcile.Request) (res re
 				RequeueAfter: time.Second,
 			}
 		}
-		return
+		return res, err
 	}
 
 	svcs := make([]ReadReplicaSvc, 0, len(svcList.Items))
@@ -124,14 +124,14 @@ func (r *reconciler) Reconcile(ctx context.Context, _ reconcile.Request) (res re
 		svcs = append(svcs, ReadReplicaSvc{
 			Name:      svc.GetName(),
 			Addr:      svc.Spec.ClusterIP,
-			ReplicaId: id,
+			ReplicaID: id,
 		})
 	}
 	if r.onReconcile != nil {
 		r.onReconcile(svcs)
 	}
 
-	return
+	return res, nil
 }
 
 func (r *reconciler) GetName() string {
