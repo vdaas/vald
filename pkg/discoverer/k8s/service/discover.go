@@ -211,6 +211,8 @@ func New(selector *config.Selectors, opts ...Option) (dsc Discoverer, err error)
 	return d, nil
 }
 
+// Start starts the discoverer.
+// skipcq: GO-R1005
 func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 	dech, err := d.ctrl.Start(ctx)
 	if err != nil {
