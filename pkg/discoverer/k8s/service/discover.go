@@ -54,7 +54,7 @@ type discoverer struct {
 	nodeMetrics     sync.Map[string, mnode.Node]
 	pods            sync.Map[string, *[]pod.Pod]
 	podMetrics      sync.Map[string, mpod.Pod]
-	svcs            sync.Map[string, svc.Svc]
+	svcs            sync.Map[string, svc.ReadReplicaSvc]
 	podsByNode      atomic.Value
 	podsByNamespace atomic.Value
 	podsByName      atomic.Value
@@ -185,14 +185,14 @@ func New(selector *config.Selectors, opts ...Option) (dsc Discoverer, err error)
 			svc.WithOnErrorFunc(func(err error) {
 				log.Error("failed to reconcile:", err)
 			}),
-			svc.WithOnReconcileFunc(func(svcs []svc.Svc) {
+			svc.WithOnReconcileFunc(func(svcs []svc.ReadReplicaSvc) {
 				log.Debugf("svc resource reconciled\t%#v", svcs)
 				svcsmap := make(map[string]struct{}, len(svcs))
 				for _, svc := range svcs {
 					svcsmap[svc.Name] = struct{}{}
 					d.svcs.Store(svc.Name, svc)
 				}
-				d.svcs.Range(func(name string, _ svc.Svc) bool {
+				d.svcs.Range(func(name string, _ svc.ReadReplicaSvc) bool {
 					_, ok := svcsmap[name]
 					if !ok {
 						d.svcs.Delete(name)
@@ -330,7 +330,7 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 						return true
 					}
 				})
-				d.svcs.Range(func(key string, svc svc.Svc) bool {
+				d.svcs.Range(func(key string, svc svc.ReadReplicaSvc) bool {
 					select {
 					case <-ctx.Done():
 						return false

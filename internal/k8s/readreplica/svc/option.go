@@ -47,7 +47,7 @@ func WithOnErrorFunc(f func(err error)) Option {
 	}
 }
 
-func WithOnReconcileFunc(f func(nodes []Svc)) Option {
+func WithOnReconcileFunc(f func(nodes []ReadReplicaSvc)) Option {
 	return func(r *reconciler) error {
 		r.onReconcile = f
 		return nil

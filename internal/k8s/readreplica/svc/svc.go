@@ -43,11 +43,11 @@ type reconciler struct {
 	namespace   string
 	idKey       string // readreplica.label_key
 	onError     func(err error)
-	onReconcile func(svcs []Svc)
+	onReconcile func(svcs []ReadReplicaSvc)
 	lopts       []client.ListOption
 }
 
-type Svc struct {
+type ReadReplicaSvc struct {
 	Name      string
 	Addr      string
 	ReplicaId uint64
@@ -101,7 +101,7 @@ func (r *reconciler) Reconcile(ctx context.Context, _ reconcile.Request) (res re
 		return
 	}
 
-	svcs := make([]Svc, 0, len(svcList.Items))
+	svcs := make([]ReadReplicaSvc, 0, len(svcList.Items))
 	for _, svc := range svcList.Items {
 		if svc.GetDeletionTimestamp() != nil {
 			log.Debugf("reconcile process will be skipped for node: %s, status: %v, deletion timestamp: %s",
@@ -121,7 +121,7 @@ func (r *reconciler) Reconcile(ctx context.Context, _ reconcile.Request) (res re
 			log.Error(err)
 			return reconcile.Result{}, err
 		}
-		svcs = append(svcs, Svc{
+		svcs = append(svcs, ReadReplicaSvc{
 			Name:      svc.GetName(),
 			Addr:      svc.Spec.ClusterIP,
 			ReplicaId: id,
