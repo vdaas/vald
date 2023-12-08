@@ -69,7 +69,6 @@ func (g *gateway) BroadCast(ctx context.Context,
 			span.End()
 		}
 	}()
-	// TODO: ここで自然とreadreplicaにもリクエストが送られるようにする？
 	return g.client.GetClient().RangeConcurrent(fctx, -1, func(ictx context.Context,
 		addr string, conn *grpc.ClientConn, copts ...grpc.CallOption,
 	) (err error) {
