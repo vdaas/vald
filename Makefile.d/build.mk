@@ -334,14 +334,14 @@ cmd/tools/benchmark/job/job: \
 	GOPRIVATE=$(GOPRIVATE) \
 	go build \
 		--ldflags "-w -linkmode 'external' \
-		-extldflags '-static -fPIC -pthread -fopenmp -std=gnu++20' \
+		-extldflags '-static -fPIC -pthread -fopenmp -std=gnu++20 -lhdf5 -lhdf5_hl -lm -ldl' \
 		-X '$(GOPKG)/internal/info.Version=$(VERSION)' \
 		-X '$(GOPKG)/internal/info.GitCommit=$(GIT_COMMIT)' \
 		-X '$(GOPKG)/internal/info.BuildTime=$(DATETIME)' \
 		-X '$(GOPKG)/internal/info.GoVersion=$(GO_VERSION)' \
 		-X '$(GOPKG)/internal/info.GoOS=$(GOOS)' \
 		-X '$(GOPKG)/internal/info.GoArch=$(GOARCH)' \
-		-X '$(GOPKG)/internal/info.CGOEnabled=$${CGO_ENABLED}' \
+		-X '$(GOPKG)/internal/info.CGOEnabled=${CGO_ENABLED}' \
 		-X '$(GOPKG)/internal/info.NGTVersion=$(NGT_VERSION)' \
 		-X '$(GOPKG)/internal/info.BuildCPUInfoFlags=$(CPU_INFO_FLAGS)' \
 		-buildid=" \
@@ -368,15 +368,15 @@ cmd/tools/benchmark/operator/operator: \
 	GO111MODULE=on \
 	GOPRIVATE=$(GOPRIVATE) \
 	go build \
-		--ldflags "-s -w \
-		-X '$(GOPKG)/internal/info.CGOEnabled=$${CGO_ENABLED}' \
+		--ldflags "-w -extldflags=-static \
+		-X '$(GOPKG)/internal/info.CGOEnabled=${CGO_ENABLED}' \
 		-X '$(GOPKG)/internal/info.NGTVersion=$(NGT_VERSION)' \
 		-X '$(GOPKG)/internal/info.BuildCPUInfoFlags=$(CPU_INFO_FLAGS)' \
 		-buildid=" \
 		-mod=readonly \
 		-modcacherw \
 		-a \
-		-tags "cgo osusergo netgo" \
+		-tags "osusergo netgo static_build" \
 		-trimpath \
 		-o $@ \
 		$(dir $@)main.go

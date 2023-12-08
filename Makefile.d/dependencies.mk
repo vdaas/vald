@@ -35,7 +35,9 @@ update/libs: \
 	update/telepresence \
 	update/vald \
 	update/valdcli \
-	update/yq
+	update/yq \
+	update/zlib \
+	update/hdf5
 
 .PHONY: go/download
 ## download Go package dependencies
@@ -162,6 +164,16 @@ update/telepresence:
 ## update YQ version
 update/yq:
 	curl --silent https://api.github.com/repos/mikefarah/yq/releases/latest | grep -Po '"tag_name": "\K.*?(?=")' > $(ROOTDIR)/versions/YQ_VERSION
+
+.PHONY: update/zlib
+## update zlib version
+update/zlib:
+	curl --silent https://api.github.com/repos/madler/zlib/releases/latest | grep -Po '"tag_name": "\K.*?(?=")' | sed 's/v//g' > $(ROOTDIR)/versions/ZLIB_VERSION
+
+.PHONY: update/hdf5
+## update hdf5 version
+update/hdf5:
+	curl --silent https://api.github.com/repos/HDFGroup/hdf5/releases/latest | grep -Po '"tag_name": "\K.*?(?=")' | sed 's/v//g' > $(ROOTDIR)/versions/HDF5_VERSION
 
 .PHONY: update/vald
 ## update vald it's self version

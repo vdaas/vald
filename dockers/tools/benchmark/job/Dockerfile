@@ -15,18 +15,20 @@
 #
 
 ARG GO_VERSION=latest
+ARG ZLIB_VERSION
+ARG HDF5_VERSION
 ARG DISTROLESS_IMAGE=gcr.io/distroless/static
 ARG DISTROLESS_IMAGE_TAG=nonroot
 ARG UPX_OPTIONS=-9
 ARG MAINTAINER="vdaas.org vald team <vald@vdaas.org>"
-ARG TARGETARCH
 
 FROM golang:${GO_VERSION} AS golang
 
 FROM ubuntu:devel AS builder
 
 ARG UPX_OPTIONS
-ARG TARGETARCH
+ARG ZLIB_VERSION
+ARG HDF5_VERSION
 
 ENV GO111MODULE on
 ENV DEBIAN_FRONTEND noninteractive
@@ -39,11 +41,9 @@ ENV ORG vdaas
 ENV REPO vald
 ENV APP_NAME job
 ENV PKG tools/benchmark/${APP_NAME}
+ENV BUILD_DIR=/usr/local
 ENV LIB_DIR=/usr/local/lib
-ENV LD_LIBRARY_PATH $LD_LIBRARY_PATH:${LIB_DIR}
-ENV ARCH=${TARGETARCH}
-ENV XARCH x86_64
-ENV AARCH aarch64
+ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${LIB_DIR}:/lib
 
 # skipcq: DOK-DL3008
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -57,31 +57,23 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* \
     && mkdir -p ${LIB_DIR} \
-    && curl -sOL https://github.com/madler/zlib/releases/download/v1.3/zlib-1.3.tar.gz \
-    && tar -xzvf zlib-1.3.tar.gz \
-    && cd zlib-1.3 \
-    && ./configure --prefix="${LIB_DIR}" --static --shared \
+    && curl -sOL https://github.com/madler/zlib/releases/download/v${ZLIB_VERSION}/zlib-${ZLIB_VERSION}.tar.gz \
+    && mkdir -p zlib \
+    && tar -xzvf zlib-${ZLIB_VERSION}.tar.gz -C zlib --strip-components 1 \
+    && cd zlib \
+    && ./configure --prefix=${LIB_DIR} --static \
     && make \
     && make test \
     && make install \
     && cd / \
-    && curl -sOL https://github.com/HDFGroup/hdf5/releases/download/hdf5-1_14_3/hdf5-1_14_3.tar.gz \
-    && tar -xzvf hdf5-1_14_3.tar.gz \
-    && cd hdfsrc \
-    && ./configure --enable-build-mode=production --enable-static-exec --disable-shared --prefix="/usr/local" --with-zlib=/usr/local/include,/usr/local/lib LDFLAGS="-Wl,-rpath,${LIB_DIR}" \
+    && mkdir -p hdf5 \
+    && curl -sOL https://github.com/HDFGroup/hdf5/releases/download/${HDF5_VERSION}/${HDF5_VERSION}.tar.gz \
+    && tar -xzvf ${HDF5_VERSION}.tar.gz -C hdf5 --strip-components 2 \
+    && cd hdf5 \
+    && ./configure --enable-build-mode=production --enable-static-exec --disable-shared --prefix=${BUILD_DIR} --with-zlib=${BUILD_DIR}/include,${LIB_DIR} LDFLAGS="-Wl,-rpath,${LIB_DIR}" \
     && make check \
     && make install \
     && ldconfig
- #    && mkdir -p /usr/local/lib/linux-gnu \
- #    && if [ "${ARCH}" = "amd64" ]; then \
-	# ARCH=${XARCH} ; \
-	# # mv /lib64/ld-linux-x86-64.so.2 /usr/local/lib/linux-gnu ; \
- #    else \
-	# ARCH=${AARCH}; \
- #    fi \
- #    && mv /usr/lib/${ARCH}-linux-gnu/libc.so.6 /usr/local/lib/linux-gnu/ \
- #    && /usr/sbin/ldconfig
-
 
 COPY --from=golang /usr/local/go $GOROOT
 RUN mkdir -p "$GOPATH/src"
@@ -119,22 +111,14 @@ RUN make REPO=${ORG} NAME=${REPO} cmd/${PKG}/${APP_NAME} \
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/cmd/${PKG}
 RUN cp sample.yaml /tmp/config.yaml
 
-# CMD ["/usr/bin/bash"]
-
 FROM ${DISTROLESS_IMAGE}:${DISTROLESS_IMAGE_TAG}
 LABEL maintainer="${MAINTAINER}"
 
 ENV APP_NAME job
 
-ENV LD_LIBRARY_PATH $LD_LIBRARY_PATH:/usr/lib
-
-COPY --from=builder /usr/local/lib/* /usr/lib/
-COPY --from=builder /usr/local/include/* /usr/include
-COPY --from=builder /lib/x86_64-linux-gnu/libc.so.6 /lib/x86_64-linux-gnu/
-# COPY --from=builder /lib64/* /lib64/
-COPY --from=builder /usr/bin/${APP_NAME} /usr/bin/${APP_NAME}
+COPY --from=builder /usr/bin/${APP_NAME} /go/bin/${APP_NAME}
 COPY --from=builder /tmp/config.yaml /etc/server/config.yaml
 
 USER nonroot:nonroot
 
-ENTRYPOINT ["/usr/bin/job"]
+ENTRYPOINT ["/go/bin/job"]
