@@ -329,16 +329,12 @@ cmd/tools/benchmark/job/job: \
 	$(PBGOS) \
 	$(shell find ./cmd/tools/benchmark/job -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go') \
 	$(shell find ./pkg/tools/benchmark/job -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
-	CFLAGS="$(CFLAGS)" \
-	CXXFLAGS="$(CXXFLAGS)" \
-	CGO_ENABLED=1 \
-	CGO_CXXFLAGS="-g -Ofast -march=native" \
-	CGO_FFLAGS="-g -Ofast -march=native" \
-	CGO_LDFLAGS="-g -Ofast -march=native" \
+	CGO_ENABLED=$(CGO_ENABLED) \
 	GO111MODULE=on \
 	GOPRIVATE=$(GOPRIVATE) \
 	go build \
-		--ldflags "-s -w \
+		--ldflags "-w -linkmode 'external' \
+		-extldflags '-static -fPIC -pthread -fopenmp -std=gnu++20' \
 		-X '$(GOPKG)/internal/info.Version=$(VERSION)' \
 		-X '$(GOPKG)/internal/info.GitCommit=$(GIT_COMMIT)' \
 		-X '$(GOPKG)/internal/info.BuildTime=$(DATETIME)' \
@@ -352,7 +348,7 @@ cmd/tools/benchmark/job/job: \
 		-mod=readonly \
 		-modcacherw \
 		-a \
-		-tags "cgo osusergo netgo" \
+		-tags "osusergo netgo static_build" \
 		-trimpath \
 		-o $@ \
 		$(dir $@)main.go
