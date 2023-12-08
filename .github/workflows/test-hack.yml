@@ -45,7 +45,7 @@ jobs:
   dump-contexts-to-log:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: ./.github/actions/dump-context
 
   test-hack:
@@ -57,7 +57,7 @@ jobs:
       run:
         working-directory: ${{ env.GOPATH }}/${{ env.PROJECT_ROOT_DIR }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           path: ${{ env.PROJECT_ROOT_DIR }}
 
