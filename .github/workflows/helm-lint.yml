@@ -23,7 +23,7 @@ jobs:
   dump-contexts-to-log:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: ./.github/actions/dump-context
 
   lint-vald-chart:
@@ -33,7 +33,7 @@ jobs:
       image: ghcr.io/vdaas/vald/vald-ci-container:nightly
     steps:
       - name: Check out code.
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: set git config
         run: |
@@ -58,7 +58,7 @@ jobs:
       image: ghcr.io/vdaas/vald/vald-ci-container:nightly
     steps:
       - name: Check out code.
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: set git config
         run: |
@@ -81,7 +81,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out code.
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: set git config
         run: |
