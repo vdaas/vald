@@ -21,28 +21,30 @@ on:
         type: string
         description: "Build target. e.g. `agent-ngt`"
         required: true
-
 jobs:
   scan:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - name: Set Git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
-
       - name: Build the Docker image
         id: build_image
         run: |
-          make docker/build/${TARGET}
+          make \
+            REMOTE="false" \
+            DOCKER="docker" \
+            DOCKER_OPTS="${LABEL_OPTS}  --label org.opencontainers.image.version=${PRIMARY_TAG} --label org.opencontainers.image.title=${TARGET}" \
+            TAG="${PRIMARY_TAG}" \
+            docker/build/${TARGET}
           imagename=`make docker/name/${TARGET}`
-          docker tag ${imagename} ${imagename}:${{ github.sha }}
           echo "IMAGE_NAME=${imagename}" >> $GITHUB_OUTPUT
         env:
           DOCKER_BUILDKIT: 1
           TARGET: ${{ inputs.target }}
-
+          LABEL_OPTS: "--label org.opencontainers.image.url=${{ github.event.repository.html_url }} --label org.opencontainers.image.source=${{ github.event.repository.html_url }} --label org.opencontainers.image.revision=${{ github.sha }}"
+          PRIMARY_TAG: ${{ github.sha }}
       - name: Scan the Docker image
         uses: ./.github/actions/scan-docker-image
         with:
