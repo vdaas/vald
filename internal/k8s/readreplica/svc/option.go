@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-// Package node provides kubernetes node information and preriodically update
+// Package svc provides kubernetes svc information and preriodically update
 package svc
 
 import (
@@ -47,7 +47,7 @@ func WithOnErrorFunc(f func(err error)) Option {
 	}
 }
 
-func WithOnReconcileFunc(f func(nodes []ReadReplicaSvc)) Option {
+func WithOnReconcileFunc(f func(svcs []ReadReplicaSvc)) Option {
 	return func(r *reconciler) error {
 		r.onReconcile = f
 		return nil

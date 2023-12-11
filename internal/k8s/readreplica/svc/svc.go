@@ -105,7 +105,7 @@ func (r *reconciler) Reconcile(ctx context.Context, _ reconcile.Request) (res re
 	for i := range svcList.Items {
 		svc := &svcList.Items[i]
 		if svc.GetDeletionTimestamp() != nil {
-			log.Debugf("reconcile process will be skipped for node: %s, status: %v, deletion timestamp: %s",
+			log.Debugf("reconcile process will be skipped for svc: %s, status: %v, deletion timestamp: %s",
 				svc.GetName(),
 				svc.Status,
 				svc.GetDeletionTimestamp())
