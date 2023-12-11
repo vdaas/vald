@@ -290,10 +290,11 @@ func TestDiscovererClient_Bind(t *testing.T) {
 //
 // func TestSelectors_GetPodFields(t *testing.T) {
 // 	type fields struct {
-// 		Pod         *Selector
-// 		Node        *Selector
-// 		NodeMetrics *Selector
-// 		PodMetrics  *Selector
+// 		Pod            *Selector
+// 		Node           *Selector
+// 		NodeMetrics    *Selector
+// 		PodMetrics     *Selector
+// 		ReadReplicaSvc *Selector
 // 	}
 // 	type want struct {
 // 		want map[string]string
@@ -322,6 +323,7 @@ func TestDiscovererClient_Bind(t *testing.T) {
 // 		           Node:Selector{},
 // 		           NodeMetrics:Selector{},
 // 		           PodMetrics:Selector{},
+// 		           ReadReplicaSvc:Selector{},
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -344,6 +346,7 @@ func TestDiscovererClient_Bind(t *testing.T) {
 // 		           Node:Selector{},
 // 		           NodeMetrics:Selector{},
 // 		           PodMetrics:Selector{},
+// 		           ReadReplicaSvc:Selector{},
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -374,10 +377,11 @@ func TestDiscovererClient_Bind(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &Selectors{
-// 				Pod:         test.fields.Pod,
-// 				Node:        test.fields.Node,
-// 				NodeMetrics: test.fields.NodeMetrics,
-// 				PodMetrics:  test.fields.PodMetrics,
+// 				Pod:            test.fields.Pod,
+// 				Node:           test.fields.Node,
+// 				NodeMetrics:    test.fields.NodeMetrics,
+// 				PodMetrics:     test.fields.PodMetrics,
+// 				ReadReplicaSvc: test.fields.ReadReplicaSvc,
 // 			}
 //
 // 			got := s.GetPodFields()
@@ -391,10 +395,11 @@ func TestDiscovererClient_Bind(t *testing.T) {
 //
 // func TestSelectors_GetPodLabels(t *testing.T) {
 // 	type fields struct {
-// 		Pod         *Selector
-// 		Node        *Selector
-// 		NodeMetrics *Selector
-// 		PodMetrics  *Selector
+// 		Pod            *Selector
+// 		Node           *Selector
+// 		NodeMetrics    *Selector
+// 		PodMetrics     *Selector
+// 		ReadReplicaSvc *Selector
 // 	}
 // 	type want struct {
 // 		want map[string]string
@@ -423,6 +428,7 @@ func TestDiscovererClient_Bind(t *testing.T) {
 // 		           Node:Selector{},
 // 		           NodeMetrics:Selector{},
 // 		           PodMetrics:Selector{},
+// 		           ReadReplicaSvc:Selector{},
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -445,6 +451,7 @@ func TestDiscovererClient_Bind(t *testing.T) {
 // 		           Node:Selector{},
 // 		           NodeMetrics:Selector{},
 // 		           PodMetrics:Selector{},
+// 		           ReadReplicaSvc:Selector{},
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -475,10 +482,11 @@ func TestDiscovererClient_Bind(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &Selectors{
-// 				Pod:         test.fields.Pod,
-// 				Node:        test.fields.Node,
-// 				NodeMetrics: test.fields.NodeMetrics,
-// 				PodMetrics:  test.fields.PodMetrics,
+// 				Pod:            test.fields.Pod,
+// 				Node:           test.fields.Node,
+// 				NodeMetrics:    test.fields.NodeMetrics,
+// 				PodMetrics:     test.fields.PodMetrics,
+// 				ReadReplicaSvc: test.fields.ReadReplicaSvc,
 // 			}
 //
 // 			got := s.GetPodLabels()
@@ -492,10 +500,11 @@ func TestDiscovererClient_Bind(t *testing.T) {
 //
 // func TestSelectors_GetNodeFields(t *testing.T) {
 // 	type fields struct {
-// 		Pod         *Selector
-// 		Node        *Selector
-// 		NodeMetrics *Selector
-// 		PodMetrics  *Selector
+// 		Pod            *Selector
+// 		Node           *Selector
+// 		NodeMetrics    *Selector
+// 		PodMetrics     *Selector
+// 		ReadReplicaSvc *Selector
 // 	}
 // 	type want struct {
 // 		want map[string]string
@@ -524,6 +533,7 @@ func TestDiscovererClient_Bind(t *testing.T) {
 // 		           Node:Selector{},
 // 		           NodeMetrics:Selector{},
 // 		           PodMetrics:Selector{},
+// 		           ReadReplicaSvc:Selector{},
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -546,6 +556,7 @@ func TestDiscovererClient_Bind(t *testing.T) {
 // 		           Node:Selector{},
 // 		           NodeMetrics:Selector{},
 // 		           PodMetrics:Selector{},
+// 		           ReadReplicaSvc:Selector{},
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -576,10 +587,11 @@ func TestDiscovererClient_Bind(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &Selectors{
-// 				Pod:         test.fields.Pod,
-// 				Node:        test.fields.Node,
-// 				NodeMetrics: test.fields.NodeMetrics,
-// 				PodMetrics:  test.fields.PodMetrics,
+// 				Pod:            test.fields.Pod,
+// 				Node:           test.fields.Node,
+// 				NodeMetrics:    test.fields.NodeMetrics,
+// 				PodMetrics:     test.fields.PodMetrics,
+// 				ReadReplicaSvc: test.fields.ReadReplicaSvc,
 // 			}
 //
 // 			got := s.GetNodeFields()
@@ -593,10 +605,11 @@ func TestDiscovererClient_Bind(t *testing.T) {
 //
 // func TestSelectors_GetNodeLabels(t *testing.T) {
 // 	type fields struct {
-// 		Pod         *Selector
-// 		Node        *Selector
-// 		NodeMetrics *Selector
-// 		PodMetrics  *Selector
+// 		Pod            *Selector
+// 		Node           *Selector
+// 		NodeMetrics    *Selector
+// 		PodMetrics     *Selector
+// 		ReadReplicaSvc *Selector
 // 	}
 // 	type want struct {
 // 		want map[string]string
@@ -625,6 +638,7 @@ func TestDiscovererClient_Bind(t *testing.T) {
 // 		           Node:Selector{},
 // 		           NodeMetrics:Selector{},
 // 		           PodMetrics:Selector{},
+// 		           ReadReplicaSvc:Selector{},
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -647,6 +661,7 @@ func TestDiscovererClient_Bind(t *testing.T) {
 // 		           Node:Selector{},
 // 		           NodeMetrics:Selector{},
 // 		           PodMetrics:Selector{},
+// 		           ReadReplicaSvc:Selector{},
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -677,10 +692,11 @@ func TestDiscovererClient_Bind(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &Selectors{
-// 				Pod:         test.fields.Pod,
-// 				Node:        test.fields.Node,
-// 				NodeMetrics: test.fields.NodeMetrics,
-// 				PodMetrics:  test.fields.PodMetrics,
+// 				Pod:            test.fields.Pod,
+// 				Node:           test.fields.Node,
+// 				NodeMetrics:    test.fields.NodeMetrics,
+// 				PodMetrics:     test.fields.PodMetrics,
+// 				ReadReplicaSvc: test.fields.ReadReplicaSvc,
 // 			}
 //
 // 			got := s.GetNodeLabels()
@@ -694,10 +710,11 @@ func TestDiscovererClient_Bind(t *testing.T) {
 //
 // func TestSelectors_GetPodMetricsFields(t *testing.T) {
 // 	type fields struct {
-// 		Pod         *Selector
-// 		Node        *Selector
-// 		NodeMetrics *Selector
-// 		PodMetrics  *Selector
+// 		Pod            *Selector
+// 		Node           *Selector
+// 		NodeMetrics    *Selector
+// 		PodMetrics     *Selector
+// 		ReadReplicaSvc *Selector
 // 	}
 // 	type want struct {
 // 		want map[string]string
@@ -726,6 +743,7 @@ func TestDiscovererClient_Bind(t *testing.T) {
 // 		           Node:Selector{},
 // 		           NodeMetrics:Selector{},
 // 		           PodMetrics:Selector{},
+// 		           ReadReplicaSvc:Selector{},
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -748,6 +766,7 @@ func TestDiscovererClient_Bind(t *testing.T) {
 // 		           Node:Selector{},
 // 		           NodeMetrics:Selector{},
 // 		           PodMetrics:Selector{},
+// 		           ReadReplicaSvc:Selector{},
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -778,10 +797,11 @@ func TestDiscovererClient_Bind(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &Selectors{
-// 				Pod:         test.fields.Pod,
-// 				Node:        test.fields.Node,
-// 				NodeMetrics: test.fields.NodeMetrics,
-// 				PodMetrics:  test.fields.PodMetrics,
+// 				Pod:            test.fields.Pod,
+// 				Node:           test.fields.Node,
+// 				NodeMetrics:    test.fields.NodeMetrics,
+// 				PodMetrics:     test.fields.PodMetrics,
+// 				ReadReplicaSvc: test.fields.ReadReplicaSvc,
 // 			}
 //
 // 			got := s.GetPodMetricsFields()
@@ -795,10 +815,11 @@ func TestDiscovererClient_Bind(t *testing.T) {
 //
 // func TestSelectors_GetPodMetricsLabels(t *testing.T) {
 // 	type fields struct {
-// 		Pod         *Selector
-// 		Node        *Selector
-// 		NodeMetrics *Selector
-// 		PodMetrics  *Selector
+// 		Pod            *Selector
+// 		Node           *Selector
+// 		NodeMetrics    *Selector
+// 		PodMetrics     *Selector
+// 		ReadReplicaSvc *Selector
 // 	}
 // 	type want struct {
 // 		want map[string]string
@@ -827,6 +848,7 @@ func TestDiscovererClient_Bind(t *testing.T) {
 // 		           Node:Selector{},
 // 		           NodeMetrics:Selector{},
 // 		           PodMetrics:Selector{},
+// 		           ReadReplicaSvc:Selector{},
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -849,6 +871,7 @@ func TestDiscovererClient_Bind(t *testing.T) {
 // 		           Node:Selector{},
 // 		           NodeMetrics:Selector{},
 // 		           PodMetrics:Selector{},
+// 		           ReadReplicaSvc:Selector{},
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -879,10 +902,11 @@ func TestDiscovererClient_Bind(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &Selectors{
-// 				Pod:         test.fields.Pod,
-// 				Node:        test.fields.Node,
-// 				NodeMetrics: test.fields.NodeMetrics,
-// 				PodMetrics:  test.fields.PodMetrics,
+// 				Pod:            test.fields.Pod,
+// 				Node:           test.fields.Node,
+// 				NodeMetrics:    test.fields.NodeMetrics,
+// 				PodMetrics:     test.fields.PodMetrics,
+// 				ReadReplicaSvc: test.fields.ReadReplicaSvc,
 // 			}
 //
 // 			got := s.GetPodMetricsLabels()
@@ -896,10 +920,11 @@ func TestDiscovererClient_Bind(t *testing.T) {
 //
 // func TestSelectors_GetNodeMetricsFields(t *testing.T) {
 // 	type fields struct {
-// 		Pod         *Selector
-// 		Node        *Selector
-// 		NodeMetrics *Selector
-// 		PodMetrics  *Selector
+// 		Pod            *Selector
+// 		Node           *Selector
+// 		NodeMetrics    *Selector
+// 		PodMetrics     *Selector
+// 		ReadReplicaSvc *Selector
 // 	}
 // 	type want struct {
 // 		want map[string]string
@@ -928,6 +953,7 @@ func TestDiscovererClient_Bind(t *testing.T) {
 // 		           Node:Selector{},
 // 		           NodeMetrics:Selector{},
 // 		           PodMetrics:Selector{},
+// 		           ReadReplicaSvc:Selector{},
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -950,6 +976,7 @@ func TestDiscovererClient_Bind(t *testing.T) {
 // 		           Node:Selector{},
 // 		           NodeMetrics:Selector{},
 // 		           PodMetrics:Selector{},
+// 		           ReadReplicaSvc:Selector{},
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -980,10 +1007,11 @@ func TestDiscovererClient_Bind(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &Selectors{
-// 				Pod:         test.fields.Pod,
-// 				Node:        test.fields.Node,
-// 				NodeMetrics: test.fields.NodeMetrics,
-// 				PodMetrics:  test.fields.PodMetrics,
+// 				Pod:            test.fields.Pod,
+// 				Node:           test.fields.Node,
+// 				NodeMetrics:    test.fields.NodeMetrics,
+// 				PodMetrics:     test.fields.PodMetrics,
+// 				ReadReplicaSvc: test.fields.ReadReplicaSvc,
 // 			}
 //
 // 			got := s.GetNodeMetricsFields()
@@ -997,10 +1025,11 @@ func TestDiscovererClient_Bind(t *testing.T) {
 //
 // func TestSelectors_GetNodeMetricsLabels(t *testing.T) {
 // 	type fields struct {
-// 		Pod         *Selector
-// 		Node        *Selector
-// 		NodeMetrics *Selector
-// 		PodMetrics  *Selector
+// 		Pod            *Selector
+// 		Node           *Selector
+// 		NodeMetrics    *Selector
+// 		PodMetrics     *Selector
+// 		ReadReplicaSvc *Selector
 // 	}
 // 	type want struct {
 // 		want map[string]string
@@ -1029,6 +1058,7 @@ func TestDiscovererClient_Bind(t *testing.T) {
 // 		           Node:Selector{},
 // 		           NodeMetrics:Selector{},
 // 		           PodMetrics:Selector{},
+// 		           ReadReplicaSvc:Selector{},
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1051,6 +1081,7 @@ func TestDiscovererClient_Bind(t *testing.T) {
 // 		           Node:Selector{},
 // 		           NodeMetrics:Selector{},
 // 		           PodMetrics:Selector{},
+// 		           ReadReplicaSvc:Selector{},
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1081,13 +1112,224 @@ func TestDiscovererClient_Bind(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &Selectors{
-// 				Pod:         test.fields.Pod,
-// 				Node:        test.fields.Node,
-// 				NodeMetrics: test.fields.NodeMetrics,
-// 				PodMetrics:  test.fields.PodMetrics,
+// 				Pod:            test.fields.Pod,
+// 				Node:           test.fields.Node,
+// 				NodeMetrics:    test.fields.NodeMetrics,
+// 				PodMetrics:     test.fields.PodMetrics,
+// 				ReadReplicaSvc: test.fields.ReadReplicaSvc,
 // 			}
 //
 // 			got := s.GetNodeMetricsLabels()
+// 			if err := checkFunc(test.want, got); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+//
+// 		})
+// 	}
+// }
+//
+// func TestSelectors_GetReadReplicaSvcFields(t *testing.T) {
+// 	type fields struct {
+// 		Pod            *Selector
+// 		Node           *Selector
+// 		NodeMetrics    *Selector
+// 		PodMetrics     *Selector
+// 		ReadReplicaSvc *Selector
+// 	}
+// 	type want struct {
+// 		want map[string]string
+// 	}
+// 	type test struct {
+// 		name       string
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, map[string]string) error
+// 		beforeFunc func(*testing.T)
+// 		afterFunc  func(*testing.T)
+// 	}
+// 	defaultCheckFunc := func(w want, got map[string]string) error {
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       fields: fields {
+// 		           Pod:Selector{},
+// 		           Node:Selector{},
+// 		           NodeMetrics:Selector{},
+// 		           PodMetrics:Selector{},
+// 		           ReadReplicaSvc:Selector{},
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           fields: fields {
+// 		           Pod:Selector{},
+// 		           Node:Selector{},
+// 		           NodeMetrics:Selector{},
+// 		           PodMetrics:Selector{},
+// 		           ReadReplicaSvc:Selector{},
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			s := &Selectors{
+// 				Pod:            test.fields.Pod,
+// 				Node:           test.fields.Node,
+// 				NodeMetrics:    test.fields.NodeMetrics,
+// 				PodMetrics:     test.fields.PodMetrics,
+// 				ReadReplicaSvc: test.fields.ReadReplicaSvc,
+// 			}
+//
+// 			got := s.GetReadReplicaSvcFields()
+// 			if err := checkFunc(test.want, got); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+//
+// 		})
+// 	}
+// }
+//
+// func TestSelectors_GetReadReplicaSvcLabels(t *testing.T) {
+// 	type fields struct {
+// 		Pod            *Selector
+// 		Node           *Selector
+// 		NodeMetrics    *Selector
+// 		PodMetrics     *Selector
+// 		ReadReplicaSvc *Selector
+// 	}
+// 	type want struct {
+// 		want map[string]string
+// 	}
+// 	type test struct {
+// 		name       string
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, map[string]string) error
+// 		beforeFunc func(*testing.T)
+// 		afterFunc  func(*testing.T)
+// 	}
+// 	defaultCheckFunc := func(w want, got map[string]string) error {
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       fields: fields {
+// 		           Pod:Selector{},
+// 		           Node:Selector{},
+// 		           NodeMetrics:Selector{},
+// 		           PodMetrics:Selector{},
+// 		           ReadReplicaSvc:Selector{},
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           fields: fields {
+// 		           Pod:Selector{},
+// 		           Node:Selector{},
+// 		           NodeMetrics:Selector{},
+// 		           PodMetrics:Selector{},
+// 		           ReadReplicaSvc:Selector{},
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			s := &Selectors{
+// 				Pod:            test.fields.Pod,
+// 				Node:           test.fields.Node,
+// 				NodeMetrics:    test.fields.NodeMetrics,
+// 				PodMetrics:     test.fields.PodMetrics,
+// 				ReadReplicaSvc: test.fields.ReadReplicaSvc,
+// 			}
+//
+// 			got := s.GetReadReplicaSvcLabels()
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
@@ -1284,10 +1526,11 @@ func TestDiscovererClient_Bind(t *testing.T) {
 //
 // func TestSelectors_Bind(t *testing.T) {
 // 	type fields struct {
-// 		Pod         *Selector
-// 		Node        *Selector
-// 		NodeMetrics *Selector
-// 		PodMetrics  *Selector
+// 		Pod            *Selector
+// 		Node           *Selector
+// 		NodeMetrics    *Selector
+// 		PodMetrics     *Selector
+// 		ReadReplicaSvc *Selector
 // 	}
 // 	type want struct {
 // 		want *Selectors
@@ -1316,6 +1559,7 @@ func TestDiscovererClient_Bind(t *testing.T) {
 // 		           Node:Selector{},
 // 		           NodeMetrics:Selector{},
 // 		           PodMetrics:Selector{},
+// 		           ReadReplicaSvc:Selector{},
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1338,6 +1582,7 @@ func TestDiscovererClient_Bind(t *testing.T) {
 // 		           Node:Selector{},
 // 		           NodeMetrics:Selector{},
 // 		           PodMetrics:Selector{},
+// 		           ReadReplicaSvc:Selector{},
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1368,10 +1613,11 @@ func TestDiscovererClient_Bind(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &Selectors{
-// 				Pod:         test.fields.Pod,
-// 				Node:        test.fields.Node,
-// 				NodeMetrics: test.fields.NodeMetrics,
-// 				PodMetrics:  test.fields.PodMetrics,
+// 				Pod:            test.fields.Pod,
+// 				Node:           test.fields.Node,
+// 				NodeMetrics:    test.fields.NodeMetrics,
+// 				PodMetrics:     test.fields.PodMetrics,
+// 				ReadReplicaSvc: test.fields.ReadReplicaSvc,
 // 			}
 //
 // 			got := s.Bind()
