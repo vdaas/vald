@@ -69,7 +69,8 @@ else
 		--build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
 		--build-arg MAINTAINER=$(MAINTAINER) \
 		$(EXTRA_ARGS) \
-		-t $(IMAGE):$(TAG) \
+		-t $(CRORG)/$(IMAGE):$(TAG) \
+		-t $(GHCRORG)/$(IMAGE):$(TAG) \
 		-f $(DOCKERFILE) .
 endif
 

@@ -232,5 +232,5 @@ var Upsert_ServiceDesc = grpc.ServiceDesc{
 			ClientStreams: true,
 		},
 	},
-	Metadata: "apis/proto/v1/vald/upsert.proto",
+	Metadata: "v1/vald/upsert.proto",
 }

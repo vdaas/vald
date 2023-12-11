@@ -385,6 +385,29 @@ spec:
                       x-kubernetes-preserve-unknown-fields: true
                     progressDeadlineSeconds:
                       type: integer
+                    readreplica:
+                      type: object
+                      properties:
+                        component_name:
+                          type: string
+                        enabled:
+                          type: boolean
+                        label_key:
+                          type: string
+                        name:
+                          type: string
+                        replica:
+                          type: integer
+                        service:
+                          type: object
+                          properties:
+                            annotations:
+                              type: object
+                              x-kubernetes-preserve-unknown-fields: true
+                        snapshot_classname:
+                          type: string
+                        volume_name:
+                          type: string
                     resources:
                       type: object
                       properties:
@@ -8647,8 +8670,14 @@ spec:
                                       properties:
                                         enabled:
                                           type: boolean
+                                podSecurityContext:
+                                  type: object
+                                  x-kubernetes-preserve-unknown-fields: true
                                 read_replica_id:
                                   type: string
+                                securityContext:
+                                  type: object
+                                  x-kubernetes-preserve-unknown-fields: true
                                 server_config:
                                   type: object
                                   properties:

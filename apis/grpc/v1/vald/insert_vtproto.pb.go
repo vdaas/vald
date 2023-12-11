@@ -232,5 +232,5 @@ var Insert_ServiceDesc = grpc.ServiceDesc{
 			ClientStreams: true,
 		},
 	},
-	Metadata: "apis/proto/v1/vald/insert.proto",
+	Metadata: "v1/vald/insert.proto",
 }

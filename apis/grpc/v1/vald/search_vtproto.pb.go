@@ -674,5 +674,5 @@ var Search_ServiceDesc = grpc.ServiceDesc{
 			ClientStreams: true,
 		},
 	},
-	Metadata: "apis/proto/v1/vald/search.proto",
+	Metadata: "v1/vald/search.proto",
 }

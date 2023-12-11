@@ -18,8 +18,8 @@ syntax = "proto3";
 
 package filter.ingress.v1;
 
-import "apis/proto/v1/payload/payload.proto";
-import "github.com/googleapis/googleapis/google/api/annotations.proto";
+import "google/api/annotations.proto";
+import "v1/payload/payload.proto";
 
 option go_package = "github.com/vdaas/vald/apis/grpc/v1/filter/ingress";
 option java_multiple_files = true;
