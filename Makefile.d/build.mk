@@ -376,7 +376,7 @@ cmd/tools/benchmark/operator/operator: \
 		-mod=readonly \
 		-modcacherw \
 		-a \
-		-tags "osusergo netgo static_build" \
+		-tags "cgo osusergo netgo static_build" \
 		-trimpath \
 		-o $@ \
 		$(dir $@)main.go
