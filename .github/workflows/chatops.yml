@@ -22,7 +22,7 @@ jobs:
   dump-contexts-to-log:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: ./.github/actions/dump-context
 
   label:
@@ -131,7 +131,7 @@ jobs:
           BRANCH: ${{ steps.check_comments_rebase.outputs.BRANCH_NAME }}
           USERNAME: ${{ steps.check_comments_rebase.outputs.COMMENTER_USERNAME }}
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         if: steps.check_comments_rebase.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         with:
           fetch-depth: 0
@@ -216,7 +216,7 @@ jobs:
           PR_AUTHOR: ${{ github.event.issue.user.login }}
           API_URL: ${{ github.event.issue.comments_url }}
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         if: steps.check_comments_gen_test.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         with:
           fetch-depth: 0
@@ -340,7 +340,7 @@ jobs:
           USERNAME: ${{ steps.check_comments_format.outputs.COMMENTER_USERNAME }}
           API_URL: ${{ github.event.issue.comments_url }}
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         if: steps.check_comments_format.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         with:
           fetch-depth: 0
