@@ -158,6 +158,7 @@ func Merge[T any](objs ...T) (dst T, err error) {
 	return dst, err
 }
 
+// skipcq: GO-R1005
 func deepMerge(dst, src reflect.Value, visited map[uintptr]bool, fieldPath string) (err error) {
 	if !src.IsValid() || src.IsZero() {
 		return nil

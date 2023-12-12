@@ -387,9 +387,8 @@ require (
 	go.opentelemetry.io/otel/trace v1.19.0
 	go.uber.org/automaxprocs v0.0.0-00010101000000-000000000000
 	go.uber.org/goleak v1.2.1
-	go.uber.org/zap v1.26.0
 	go.uber.org/ratelimit v0.3.0
-	go.uber.org/zap v1.24.0
+	go.uber.org/zap v1.26.0
 	gocloud.dev v0.0.0-00010101000000-000000000000
 	golang.org/x/net v0.19.0
 	golang.org/x/oauth2 v0.15.0
@@ -501,7 +500,6 @@ require (
 	golang.org/x/image v0.14.0 // indirect
 	golang.org/x/mod v0.14.0 // indirect
 	golang.org/x/term v0.15.0 // indirect
-	golang.org/x/time v0.5.0 // indirect
 	golang.org/x/xerrors v0.0.0-20231012003039-104605ab7028 // indirect
 	gomodules.xyz/jsonpatch/v2 v2.3.0 // indirect
 	google.golang.org/api v0.152.0 // indirect
