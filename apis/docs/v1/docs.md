@@ -85,7 +85,6 @@
   - [Upsert.MultiRequest](#payload-v1-Upsert-MultiRequest)
   - [Upsert.ObjectRequest](#payload-v1-Upsert-ObjectRequest)
   - [Upsert.Request](#payload-v1-Upsert-Request)
-
   - [Remove.Timestamp.Operator](#payload-v1-Remove-Timestamp-Operator)
   - [Search.AggregationAlgorithm](#payload-v1-Search-AggregationAlgorithm)
 
