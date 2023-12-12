@@ -18,78 +18,92 @@
 package ngt
 
 import (
+	"fmt"
+	"os"
 	"runtime"
 	"testing"
 
-	"github.com/vdaas/vald/internal/core/malloc"
+	"github.com/vdaas/vald/internal/strings"
 	"gonum.org/v1/hdf5"
 )
 
 var (
 	vectors [][]float32
 	n       NGT
-	ids     []uint
+	pid     int
 )
 
 func init() {
-	vectors, _, _ = load("sift-128-euclidean.hdf5")
+	filename := os.Getenv("DATA_PATH")
+	if _, err := os.Stat(filename); err != nil {
+		return
+	}
+	vectors, _, _ = load(filename)
 	n, _ = New(
 		WithDimension(len(vectors[0])),
 		WithDefaultPoolSize(8),
 		WithObjectType(Float),
 		WithDistanceType(L2),
 	)
-	runtime.GC()
+	pid = os.Getpid()
 }
 
+// BenchmarkNGT measures memory usage in insert/create index/remove steps.
 func BenchmarkNGT(b *testing.B) {
-	log := func() {
-		mem := new(runtime.MemStats)
-		runtime.ReadMemStats(mem)
-		b.Logf("           heap in use: %v", mem.HeapInuse)
-		b.Logf("           total alloc: %v", mem.TotalAlloc)
-
-		m, _ := malloc.GetMallocInfo()
-		b.Logf("       total fast size: %v", m.Total[0].Size)
-		b.Logf("       total rest size: %v", m.Total[1].Size)
-		b.Logf("   system current size: %v", m.System[0].Size)
-		b.Logf("       system max size: %v", m.System[1].Size)
-		b.Logf("     aspace total size: %v", m.Aspace[0].Size)
-		b.Logf("  aspace mprotect size: %v", m.Aspace[1].Size)
+	if len(vectors) == 0 {
+		return
 	}
-
-	b.Log("start")
-	log()
-	defer func() {
-		b.Log("end")
-		log()
-	}()
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		ids = make([]uint, len(vectors))
-		for i, vector := range vectors {
-			id, err := n.Insert(vector)
-			if err != nil {
-				b.Fatal(err)
-			}
-			ids[i] = id
-		}
-		b.Log("insert")
-		log()
-
-		if err := n.CreateIndex(8); err != nil {
+	b.Logf("# of vectors: %v", len(vectors))
+	output := func(header string) {
+		status := fmt.Sprintf("/proc/%d/status", pid)
+		buf, err := os.ReadFile(status)
+		if err != nil {
 			b.Fatal(err)
 		}
-		b.Log("create index")
-		log()
-
-		for _, id := range ids {
-			if err := n.Remove(id); err != nil {
-				b.Fatal(err)
+		var vmpeak, vmrss, vmhwm string
+		for _, line := range strings.Split(string(buf), "\n") {
+			switch {
+			case strings.HasPrefix(line, "VmPeak"):
+				vmpeak = strings.Fields(line)[1]
+			case strings.HasPrefix(line, "VmHWM"):
+				vmhwm = strings.Fields(line)[1]
+			case strings.HasPrefix(line, "VmRSS"):
+				vmrss = strings.Fields(line)[1]
 			}
 		}
-		b.Log("remove")
-		log()
+
+		var m runtime.MemStats
+		runtime.ReadMemStats(&m)
+		b.Logf("%v\t%v\t%v\t%v\t%v\t%v\t%v\t%v\t%v", header, vmpeak, vmhwm, vmrss, m.Alloc/1024, m.TotalAlloc/1024, m.HeapAlloc/1024, m.HeapSys/1024, m.HeapInuse/1024)
+	}
+	b.Logf("   operation\tVmPeak\tVmHWM\tVmRSS\tAlloc\tTotalAlloc\tHeapAlloc\tHeapSys\tHeapInuse")
+	b.ResetTimer()
+	output("       start")
+	defer output("         end")
+	for N := 0; N < b.N; N++ {
+		for i := 0; i < 3; i++ {
+			ids := make([]uint, len(vectors))
+			for idx, vector := range vectors {
+				id, err := n.Insert(vector)
+				if err != nil {
+					b.Fatal(err)
+				}
+				ids[idx] = id
+			}
+			output("      insert")
+
+			if err := n.CreateIndex(8); err != nil {
+				b.Fatal(err)
+			}
+			output("create index")
+
+			for _, id := range ids {
+				if err := n.Remove(id); err != nil {
+					b.Fatal(err)
+				}
+			}
+			output("      remove")
+		}
 	}
 }
 

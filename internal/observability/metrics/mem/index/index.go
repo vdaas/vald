@@ -373,6 +373,8 @@ func (*memoryMetrics) View() ([]*metrics.View, error) {
 		&stackSys,
 		&mspanInuse,
 		&mspanSys,
+		&mcacheInuse,
+		&mcacheSys,
 		&buckHashSys,
 		&gcSys,
 		&otherSys,
