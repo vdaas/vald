@@ -49,12 +49,12 @@ data:
       selectors:
         {{- $selectors := dict "Values" $discoverer.discoverer.selectors "chart" . "agent" $agent }}
         {{- include "vald.discoverer.selector" $selectors | nindent 10 }}
-      {{- if $readreplica.enabled }}
           readreplica_svc:
             labels:
               app.kubernetes.io/component: {{ $readreplica.component_name | quote }}
-      read_replica_id_key: {{ $readreplica.label_key | quote }}
-      {{- end }}
+      read_replica:
+        enabled: {{ $readreplica.enabled }}
+        id_key: {{ $readreplica.label_key | quote }}
       net:
       {{- toYaml $discoverer.discoverer.net | nindent 8 }}
 {{- end }}

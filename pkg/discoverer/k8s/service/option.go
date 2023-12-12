@@ -83,6 +83,13 @@ func WithErrGroup(eg errgroup.Group) Option {
 	}
 }
 
+func WithReadReplicaEnabled(enabled bool) Option {
+	return func(d *discoverer) error {
+		d.readReplicaEnabled = enabled
+		return nil
+	}
+}
+
 func WithReadReplicaIDKey(key string) Option {
 	return func(d *discoverer) error {
 		if key == "" {

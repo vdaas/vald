@@ -56,24 +56,25 @@ type readReplicaSvc struct {
 }
 
 type discoverer struct {
-	maxPods         int
-	nodes           sync.Map[string, *node.Node]
-	nodeMetrics     sync.Map[string, mnode.Node]
-	pods            sync.Map[string, *[]pod.Pod]
-	podMetrics      sync.Map[string, mpod.Pod]
-	svcs            sync.Map[string, readReplicaSvc]
-	podsByNode      atomic.Value
-	podsByNamespace atomic.Value
-	podsByName      atomic.Value
-	nodeByName      atomic.Value
-	svcsByName      atomic.Value
-	ctrl            k8s.Controller
-	namespace       string
-	name            string
-	csd             time.Duration
-	der             net.Dialer
-	eg              errgroup.Group
-	replicaIDKey    string
+	maxPods            int
+	nodes              sync.Map[string, *node.Node]
+	nodeMetrics        sync.Map[string, mnode.Node]
+	pods               sync.Map[string, *[]pod.Pod]
+	podMetrics         sync.Map[string, mpod.Pod]
+	svcs               sync.Map[string, readReplicaSvc]
+	podsByNode         atomic.Value
+	podsByNamespace    atomic.Value
+	podsByName         atomic.Value
+	nodeByName         atomic.Value
+	svcsByName         atomic.Value
+	ctrl               k8s.Controller
+	namespace          string
+	name               string
+	csd                time.Duration
+	der                net.Dialer
+	eg                 errgroup.Group
+	readReplicaEnabled bool
+	replicaIDKey       string
 }
 
 // New returns Discoverer implementation.
@@ -90,7 +91,9 @@ func New(selector *config.Selectors, opts ...Option) (dsc Discoverer, err error)
 	d.podsByNamespace.Store(make(map[string]map[string][]*payload.Info_Pod))
 	d.podsByName.Store(make(map[string][]*payload.Info_Pod))
 	d.nodeByName.Store(make(map[string]*payload.Info_Node))
-	d.ctrl, err = k8s.New(
+
+	var k8sOpts []k8s.Option
+	k8sOpts = append(k8sOpts,
 		k8s.WithDialer(d.der),
 		k8s.WithControllerName("vald k8s agent discoverer"),
 		k8s.WithDisableLeaderElection(),
@@ -187,50 +190,57 @@ func New(selector *config.Selectors, opts ...Option) (dsc Discoverer, err error)
 			node.WithFields(selector.GetNodeFields()),
 			node.WithLabels(selector.GetNodeLabels()),
 		)),
-		k8s.WithResourceController(svc.New(
-			svc.WithControllerName("readreplica svc discoverer"),
-			svc.WithOnErrorFunc(func(err error) {
-				log.Error("failed to reconcile:", err)
-			}),
-			svc.WithOnReconcileFunc(func(svcs []svc.Svc) {
-				log.Debugf("svc resource reconciled\t%#v", svcs)
-				svcsmap := make(map[string]struct{}, len(svcs))
-				for i := range svcs {
-					svc := &svcs[i]
-					svcsmap[svc.Name] = struct{}{}
-
-					labels := svc.GetLabels()
-					v, ok := labels[d.replicaIDKey]
-					if !ok {
-						log.Errorf("this svc(%s) does not have readreplica id label(%s)", svc.GetName(), d.replicaIDKey)
-						continue
-					}
-					id, err := strconv.ParseUint(v, 10, 32)
-					if err != nil {
-						log.Errorf("failed to parse readreplica id string to uint: %w", err)
-						continue
-					}
-
-					rrsvc := readReplicaSvc{
-						Name:      svc.GetName(),
-						Addr:      svc.Spec.ClusterIP,
-						ReplicaID: id,
-					}
-					d.svcs.Store(svc.Name, rrsvc)
-				}
-				d.svcs.Range(func(name string, _ readReplicaSvc) bool {
-					_, ok := svcsmap[name]
-					if !ok {
-						d.svcs.Delete(name)
-					}
-					return true
-				})
-			}),
-			svc.WithNamespace(d.namespace),
-			svc.WithFields(selector.GetReadReplicaSvcFields()),
-			svc.WithLabels(selector.GetReadReplicaSvcLabels()),
-		)),
 	)
+
+	if d.readReplicaEnabled {
+		k8sOpts = append(k8sOpts,
+			k8s.WithResourceController(svc.New(
+				svc.WithControllerName("readreplica svc discoverer"),
+				svc.WithOnErrorFunc(func(err error) {
+					log.Error("failed to reconcile:", err)
+				}),
+				svc.WithOnReconcileFunc(func(svcs []svc.Svc) {
+					log.Debugf("svc resource reconciled\t%#v", svcs)
+					svcsmap := make(map[string]struct{}, len(svcs))
+					for i := range svcs {
+						svc := &svcs[i]
+						svcsmap[svc.Name] = struct{}{}
+
+						labels := svc.GetLabels()
+						v, ok := labels[d.replicaIDKey]
+						if !ok {
+							log.Errorf("this svc(%s) does not have readreplica id label(%s)", svc.GetName(), d.replicaIDKey)
+							continue
+						}
+						id, err := strconv.ParseUint(v, 10, 32)
+						if err != nil {
+							log.Errorf("failed to parse readreplica id string to uint: %w", err)
+							continue
+						}
+
+						rrsvc := readReplicaSvc{
+							Name:      svc.GetName(),
+							Addr:      svc.Spec.ClusterIP,
+							ReplicaID: id,
+						}
+						d.svcs.Store(svc.Name, rrsvc)
+					}
+					d.svcs.Range(func(name string, _ readReplicaSvc) bool {
+						_, ok := svcsmap[name]
+						if !ok {
+							d.svcs.Delete(name)
+						}
+						return true
+					})
+				}),
+				svc.WithNamespace(d.namespace),
+				svc.WithFields(selector.GetReadReplicaSvcFields()),
+				svc.WithLabels(selector.GetReadReplicaSvcLabels()),
+			)),
+		)
+	}
+
+	d.ctrl, err = k8s.New(k8sOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -562,6 +572,9 @@ func (d *discoverer) GetNodes(req *payload.Discoverer_Request) (nodes *payload.I
 }
 
 func (d *discoverer) GetReadReplicaSvcs(req *payload.Discoverer_ReadReplicaSvcsRequest) (svcs *payload.Info_ReadReplicaSvcs, err error) {
+	if !d.readReplicaEnabled {
+		return nil, errors.ErrReadReplicaDisabled
+	}
 	svcs = new(payload.Info_ReadReplicaSvcs)
 	sbn, ok := d.svcsByName.Load().(map[string]*payload.Info_ReadReplicaSvc)
 	if !ok {

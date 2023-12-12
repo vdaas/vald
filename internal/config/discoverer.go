@@ -19,12 +19,12 @@ package config
 
 // Discoverer represents the Discoverer configurations.
 type Discoverer struct {
-	Name              string     `json:"name,omitempty"                yaml:"name"`
-	Namespace         string     `json:"namespace,omitempty"           yaml:"namespace"`
-	DiscoveryDuration string     `json:"discovery_duration,omitempty"  yaml:"discovery_duration"`
-	Net               *Net       `json:"net,omitempty"                 yaml:"net"`
-	Selectors         *Selectors `json:"selectors,omitempty"           yaml:"selectors"`
-	ReadReplicaIDKey  string     `json:"read_replica_id_key,omitempty" yaml:"read_replica_id_key"`
+	Name              string       `json:"name,omitempty"               yaml:"name"`
+	Namespace         string       `json:"namespace,omitempty"          yaml:"namespace"`
+	DiscoveryDuration string       `json:"discovery_duration,omitempty" yaml:"discovery_duration"`
+	Net               *Net         `json:"net,omitempty"                yaml:"net"`
+	Selectors         *Selectors   `json:"selectors,omitempty"          yaml:"selectors"`
+	ReadReplica       *ReadReplica `json:"read_replica,omitempty"       yaml:"read_replica"`
 }
 
 type Selectors struct {
@@ -124,6 +124,25 @@ func (s *Selector) GetFields() map[string]string {
 	return s.Fields
 }
 
+type ReadReplica struct {
+	Enabled bool   `json:"enabled,omitempty" yaml:"enabled"`
+	IDKey   string `json:"id_key,omitempty"  yaml:"id_key"`
+}
+
+func (r *ReadReplica) GetEnabled() bool {
+	if r == nil {
+		return false
+	}
+	return r.Enabled
+}
+
+func (r *ReadReplica) GetIDKey() string {
+	if r == nil {
+		return ""
+	}
+	return r.IDKey
+}
+
 // Bind binds the actual data from the Discoverer receiver field.
 func (d *Discoverer) Bind() *Discoverer {
 	d.Name = GetActualValue(d.Name)
@@ -134,6 +153,19 @@ func (d *Discoverer) Bind() *Discoverer {
 	} else {
 		d.Net = new(Net)
 	}
+
+	if d.Selectors != nil {
+		d.Selectors.Bind()
+	} else {
+		d.Selectors = new(Selectors)
+	}
+
+	if d.ReadReplica != nil {
+		d.ReadReplica.Bind()
+	} else {
+		d.ReadReplica = new(ReadReplica)
+	}
+
 	return d
 }
 
@@ -146,6 +178,7 @@ func (s *Selectors) Bind() *Selectors {
 	s.Node = s.Node.Bind()
 	s.PodMetrics = s.PodMetrics.Bind()
 	s.NodeMetrics = s.NodeMetrics.Bind()
+	s.ReadReplicaSvc = s.ReadReplicaSvc.Bind()
 	return s
 }
 
@@ -161,6 +194,14 @@ func (s *Selector) Bind() *Selector {
 		s.Fields[k] = GetActualValue(v)
 	}
 	return s
+}
+
+func (r *ReadReplica) Bind() *ReadReplica {
+	if r == nil {
+		return new(ReadReplica)
+	}
+	r.IDKey = GetActualValue(r.IDKey)
+	return r
 }
 
 // DiscovererClient represents the DiscovererClient configurations.
