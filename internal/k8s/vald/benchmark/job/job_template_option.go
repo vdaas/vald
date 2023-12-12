@@ -64,10 +64,13 @@ func WithImagePullPolicy(p ImagePullPolicy) BenchmarkJobTplOption {
 // BenchmarkJobOption represents the option for create benchmark job template.
 type BenchmarkJobOption func(b *jobs.Job) error
 
+// defaultTTLSeconds represents the default TTLSecondsAfterFinished for benchmark job template.
+const defaultTTLSeconds int32 = 600
+
 var defaultBenchmarkJobOpts = []BenchmarkJobOption{
 	WithSvcAccountName(svcAccount),
 	WithRestartPolicy(RestartPolicyNever),
-	WithTTLSecondsAfterFinished(int32(600)),
+	WithTTLSecondsAfterFinished(defaultTTLSeconds),
 }
 
 // WithSvcAccountName sets the service account name for benchmark job.
