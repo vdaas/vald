@@ -122,7 +122,7 @@ package service
 // 		nodeMetrics     sync.Map[string, mnode.Node]
 // 		pods            sync.Map[string, *[]pod.Pod]
 // 		podMetrics      sync.Map[string, mpod.Pod]
-// 		svcs            sync.Map[string, svc.ReadReplicaSvc]
+// 		svcs            sync.Map[string, ReadReplicaSvc]
 // 		podsByNode      atomic.Value
 // 		podsByNamespace atomic.Value
 // 		podsByName      atomic.Value
@@ -293,7 +293,7 @@ package service
 // 		nodeMetrics     sync.Map[string, mnode.Node]
 // 		pods            sync.Map[string, *[]pod.Pod]
 // 		podMetrics      sync.Map[string, mpod.Pod]
-// 		svcs            sync.Map[string, svc.ReadReplicaSvc]
+// 		svcs            sync.Map[string, ReadReplicaSvc]
 // 		podsByNode      atomic.Value
 // 		podsByNamespace atomic.Value
 // 		podsByName      atomic.Value
@@ -464,7 +464,7 @@ package service
 // 		nodeMetrics     sync.Map[string, mnode.Node]
 // 		pods            sync.Map[string, *[]pod.Pod]
 // 		podMetrics      sync.Map[string, mpod.Pod]
-// 		svcs            sync.Map[string, svc.ReadReplicaSvc]
+// 		svcs            sync.Map[string, ReadReplicaSvc]
 // 		podsByNode      atomic.Value
 // 		podsByNamespace atomic.Value
 // 		podsByName      atomic.Value
@@ -635,7 +635,7 @@ package service
 // 		nodeMetrics     sync.Map[string, mnode.Node]
 // 		pods            sync.Map[string, *[]pod.Pod]
 // 		podMetrics      sync.Map[string, mpod.Pod]
-// 		svcs            sync.Map[string, svc.ReadReplicaSvc]
+// 		svcs            sync.Map[string, ReadReplicaSvc]
 // 		podsByNode      atomic.Value
 // 		podsByNamespace atomic.Value
 // 		podsByName      atomic.Value

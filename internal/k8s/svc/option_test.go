@@ -275,7 +275,7 @@ package svc
 //
 // func TestWithOnReconcileFunc(t *testing.T) {
 // 	type args struct {
-// 		f func(svcs []ReadReplicaSvc)
+// 		f func(svcs []Svc)
 // 	}
 // 	type want struct {
 // 		want Option

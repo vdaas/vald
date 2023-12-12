@@ -19,8 +19,6 @@ package svc
 
 import (
 	"context"
-	"fmt"
-	"strconv"
 	"time"
 
 	"github.com/vdaas/vald/internal/k8s"
@@ -35,33 +33,26 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
 
-type SvcWatcher k8s.ResourceController
+type (
+	SvcWatcher k8s.ResourceController
+	Svc        = corev1.Service
+)
 
 type reconciler struct {
 	mgr         manager.Manager
 	name        string
 	namespace   string
-	idKey       string // readreplica.label_key
 	onError     func(err error)
-	onReconcile func(svcs []ReadReplicaSvc)
+	onReconcile func(svcs []Svc)
 	lopts       []client.ListOption
 }
 
-type ReadReplicaSvc struct {
-	Name      string
-	Addr      string
-	ReplicaID uint64
-}
-
-func New(readreplicaLabel map[string]string, idKey string, opts ...Option) SvcWatcher {
+func New(opts ...Option) SvcWatcher {
 	r := new(reconciler)
-
-	opts = append(opts, WithLabels(readreplicaLabel))
 	for _, opt := range append(defaultOptions, opts...) {
 		opt(r)
 	}
 
-	r.idKey = idKey
 	return r
 }
 
@@ -101,7 +92,7 @@ func (r *reconciler) Reconcile(ctx context.Context, _ reconcile.Request) (res re
 		return res, err
 	}
 
-	svcs := make([]ReadReplicaSvc, 0, len(svcList.Items))
+	svcs := make([]Svc, 0, len(svcList.Items))
 	for i := range svcList.Items {
 		svc := &svcList.Items[i]
 		if svc.GetDeletionTimestamp() != nil {
@@ -111,22 +102,7 @@ func (r *reconciler) Reconcile(ctx context.Context, _ reconcile.Request) (res re
 				svc.GetDeletionTimestamp())
 			continue
 		}
-		labels := svc.GetLabels()
-		v, ok := labels[r.idKey]
-		if !ok {
-			log.Errorf("this svc(%s) does not have readreplica id label(%s)", svc.GetName(), r.idKey)
-			return reconcile.Result{}, fmt.Errorf("no valid label is put in the svc")
-		}
-		id, err := strconv.ParseUint(v, 10, 32)
-		if err != nil {
-			log.Error(err)
-			return reconcile.Result{}, err
-		}
-		svcs = append(svcs, ReadReplicaSvc{
-			Name:      svc.GetName(),
-			Addr:      svc.Spec.ClusterIP,
-			ReplicaID: id,
-		})
+		svcs = append(svcs, *svc)
 	}
 	if r.onReconcile != nil {
 		r.onReconcile(svcs)

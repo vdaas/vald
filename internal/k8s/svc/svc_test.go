@@ -21,9 +21,7 @@ import (
 //
 // func TestNew(t *testing.T) {
 // 	type args struct {
-// 		readreplicaLabel map[string]string
-// 		idKey            string
-// 		opts             []Option
+// 		opts []Option
 // 	}
 // 	type want struct {
 // 		want SvcWatcher
@@ -48,8 +46,6 @@ import (
 // 		   {
 // 		       name: "test_case_1",
 // 		       args: args {
-// 		           readreplicaLabel:nil,
-// 		           idKey:"",
 // 		           opts:nil,
 // 		       },
 // 		       want: want{},
@@ -69,8 +65,6 @@ import (
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           args: args {
-// 		           readreplicaLabel:nil,
-// 		           idKey:"",
 // 		           opts:nil,
 // 		           },
 // 		           want: want{},
@@ -102,7 +96,7 @@ import (
 // 				checkFunc = defaultCheckFunc
 // 			}
 //
-// 			got := New(test.args.readreplicaLabel, test.args.idKey, test.args.opts...)
+// 			got := New(test.args.opts...)
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
@@ -119,9 +113,8 @@ import (
 // 		mgr         manager.Manager
 // 		name        string
 // 		namespace   string
-// 		idKey       string
 // 		onError     func(err error)
-// 		onReconcile func(svcs []ReadReplicaSvc)
+// 		onReconcile func(svcs []Svc)
 // 		lopts       []client.ListOption
 // 	}
 // 	type want struct {
@@ -150,7 +143,6 @@ import (
 // 		           mgr:nil,
 // 		           name:"",
 // 		           namespace:"",
-// 		           idKey:"",
 // 		           onError:nil,
 // 		           onReconcile:nil,
 // 		           lopts:nil,
@@ -178,7 +170,6 @@ import (
 // 		           mgr:nil,
 // 		           name:"",
 // 		           namespace:"",
-// 		           idKey:"",
 // 		           onError:nil,
 // 		           onReconcile:nil,
 // 		           lopts:nil,
@@ -215,7 +206,6 @@ import (
 // 				mgr:         test.fields.mgr,
 // 				name:        test.fields.name,
 // 				namespace:   test.fields.namespace,
-// 				idKey:       test.fields.idKey,
 // 				onError:     test.fields.onError,
 // 				onReconcile: test.fields.onReconcile,
 // 				lopts:       test.fields.lopts,
@@ -238,9 +228,8 @@ import (
 // 		mgr         manager.Manager
 // 		name        string
 // 		namespace   string
-// 		idKey       string
 // 		onError     func(err error)
-// 		onReconcile func(svcs []ReadReplicaSvc)
+// 		onReconcile func(svcs []Svc)
 // 		lopts       []client.ListOption
 // 	}
 // 	type want struct {
@@ -278,7 +267,6 @@ import (
 // 		           mgr:nil,
 // 		           name:"",
 // 		           namespace:"",
-// 		           idKey:"",
 // 		           onError:nil,
 // 		           onReconcile:nil,
 // 		           lopts:nil,
@@ -307,7 +295,6 @@ import (
 // 		           mgr:nil,
 // 		           name:"",
 // 		           namespace:"",
-// 		           idKey:"",
 // 		           onError:nil,
 // 		           onReconcile:nil,
 // 		           lopts:nil,
@@ -344,7 +331,6 @@ import (
 // 				mgr:         test.fields.mgr,
 // 				name:        test.fields.name,
 // 				namespace:   test.fields.namespace,
-// 				idKey:       test.fields.idKey,
 // 				onError:     test.fields.onError,
 // 				onReconcile: test.fields.onReconcile,
 // 				lopts:       test.fields.lopts,
@@ -364,9 +350,8 @@ import (
 // 		mgr         manager.Manager
 // 		name        string
 // 		namespace   string
-// 		idKey       string
 // 		onError     func(err error)
-// 		onReconcile func(svcs []ReadReplicaSvc)
+// 		onReconcile func(svcs []Svc)
 // 		lopts       []client.ListOption
 // 	}
 // 	type want struct {
@@ -395,7 +380,6 @@ import (
 // 		           mgr:nil,
 // 		           name:"",
 // 		           namespace:"",
-// 		           idKey:"",
 // 		           onError:nil,
 // 		           onReconcile:nil,
 // 		           lopts:nil,
@@ -420,7 +404,6 @@ import (
 // 		           mgr:nil,
 // 		           name:"",
 // 		           namespace:"",
-// 		           idKey:"",
 // 		           onError:nil,
 // 		           onReconcile:nil,
 // 		           lopts:nil,
@@ -457,7 +440,6 @@ import (
 // 				mgr:         test.fields.mgr,
 // 				name:        test.fields.name,
 // 				namespace:   test.fields.namespace,
-// 				idKey:       test.fields.idKey,
 // 				onError:     test.fields.onError,
 // 				onReconcile: test.fields.onReconcile,
 // 				lopts:       test.fields.lopts,
@@ -481,9 +463,8 @@ import (
 // 		mgr         manager.Manager
 // 		name        string
 // 		namespace   string
-// 		idKey       string
 // 		onError     func(err error)
-// 		onReconcile func(svcs []ReadReplicaSvc)
+// 		onReconcile func(svcs []Svc)
 // 		lopts       []client.ListOption
 // 	}
 // 	type want struct {
@@ -517,7 +498,6 @@ import (
 // 		           mgr:nil,
 // 		           name:"",
 // 		           namespace:"",
-// 		           idKey:"",
 // 		           onError:nil,
 // 		           onReconcile:nil,
 // 		           lopts:nil,
@@ -546,7 +526,6 @@ import (
 // 		           mgr:nil,
 // 		           name:"",
 // 		           namespace:"",
-// 		           idKey:"",
 // 		           onError:nil,
 // 		           onReconcile:nil,
 // 		           lopts:nil,
@@ -583,7 +562,6 @@ import (
 // 				mgr:         test.fields.mgr,
 // 				name:        test.fields.name,
 // 				namespace:   test.fields.namespace,
-// 				idKey:       test.fields.idKey,
 // 				onError:     test.fields.onError,
 // 				onReconcile: test.fields.onReconcile,
 // 				lopts:       test.fields.lopts,
@@ -603,9 +581,8 @@ import (
 // 		mgr         manager.Manager
 // 		name        string
 // 		namespace   string
-// 		idKey       string
 // 		onError     func(err error)
-// 		onReconcile func(svcs []ReadReplicaSvc)
+// 		onReconcile func(svcs []Svc)
 // 		lopts       []client.ListOption
 // 	}
 // 	type want struct {
@@ -638,7 +615,6 @@ import (
 // 		           mgr:nil,
 // 		           name:"",
 // 		           namespace:"",
-// 		           idKey:"",
 // 		           onError:nil,
 // 		           onReconcile:nil,
 // 		           lopts:nil,
@@ -663,7 +639,6 @@ import (
 // 		           mgr:nil,
 // 		           name:"",
 // 		           namespace:"",
-// 		           idKey:"",
 // 		           onError:nil,
 // 		           onReconcile:nil,
 // 		           lopts:nil,
@@ -700,7 +675,6 @@ import (
 // 				mgr:         test.fields.mgr,
 // 				name:        test.fields.name,
 // 				namespace:   test.fields.namespace,
-// 				idKey:       test.fields.idKey,
 // 				onError:     test.fields.onError,
 // 				onReconcile: test.fields.onReconcile,
 // 				lopts:       test.fields.lopts,
@@ -720,9 +694,8 @@ import (
 // 		mgr         manager.Manager
 // 		name        string
 // 		namespace   string
-// 		idKey       string
 // 		onError     func(err error)
-// 		onReconcile func(svcs []ReadReplicaSvc)
+// 		onReconcile func(svcs []Svc)
 // 		lopts       []client.ListOption
 // 	}
 // 	type want struct {
@@ -755,7 +728,6 @@ import (
 // 		           mgr:nil,
 // 		           name:"",
 // 		           namespace:"",
-// 		           idKey:"",
 // 		           onError:nil,
 // 		           onReconcile:nil,
 // 		           lopts:nil,
@@ -780,7 +752,6 @@ import (
 // 		           mgr:nil,
 // 		           name:"",
 // 		           namespace:"",
-// 		           idKey:"",
 // 		           onError:nil,
 // 		           onReconcile:nil,
 // 		           lopts:nil,
@@ -817,7 +788,6 @@ import (
 // 				mgr:         test.fields.mgr,
 // 				name:        test.fields.name,
 // 				namespace:   test.fields.namespace,
-// 				idKey:       test.fields.idKey,
 // 				onError:     test.fields.onError,
 // 				onReconcile: test.fields.onReconcile,
 // 				lopts:       test.fields.lopts,
@@ -837,9 +807,8 @@ import (
 // 		mgr         manager.Manager
 // 		name        string
 // 		namespace   string
-// 		idKey       string
 // 		onError     func(err error)
-// 		onReconcile func(svcs []ReadReplicaSvc)
+// 		onReconcile func(svcs []Svc)
 // 		lopts       []client.ListOption
 // 	}
 // 	type want struct {
@@ -876,7 +845,6 @@ import (
 // 		           mgr:nil,
 // 		           name:"",
 // 		           namespace:"",
-// 		           idKey:"",
 // 		           onError:nil,
 // 		           onReconcile:nil,
 // 		           lopts:nil,
@@ -901,7 +869,6 @@ import (
 // 		           mgr:nil,
 // 		           name:"",
 // 		           namespace:"",
-// 		           idKey:"",
 // 		           onError:nil,
 // 		           onReconcile:nil,
 // 		           lopts:nil,
@@ -938,7 +905,6 @@ import (
 // 				mgr:         test.fields.mgr,
 // 				name:        test.fields.name,
 // 				namespace:   test.fields.namespace,
-// 				idKey:       test.fields.idKey,
 // 				onError:     test.fields.onError,
 // 				onReconcile: test.fields.onReconcile,
 // 				lopts:       test.fields.lopts,
