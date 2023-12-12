@@ -45,7 +45,7 @@ ifeq ($(REMOTE),true)
 		$(DOCKER_OPTS) \
 		--cache-to type=registry,ref=$(GHCRORG)/$(IMAGE):$(TAG)-buildcache,mode=max \
 		--cache-from type=registry,ref=$(GHCRORG)/$(IMAGE):$(TAG)-buildcache \
-		--build-arg BUILDKIT_INLINE_CACHE=1 \
+		--build-arg BUILDKIT_INLINE_CACHE=$(BUILDKIT_INLINE_CACHE) \
 		--build-arg GO_VERSION=$(GO_VERSION) \
 		--build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
 		--build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
@@ -61,7 +61,7 @@ else
 	@echo "starting local build for $(IMAGE):$(TAG)"
 	DOCKER_BUILDKIT=1 $(DOCKER) build \
 		$(DOCKER_OPTS) \
-		--build-arg BUILDKIT_INLINE_CACHE=1 \
+		--build-arg BUILDKIT_INLINE_CACHE=$(BUILDKIT_INLINE_CACHE) \
 		--build-arg GO_VERSION=$(GO_VERSION) \
 		--build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
 		--build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
