@@ -236,13 +236,10 @@ docker/name/benchmark-job:
 .PHONY: docker/build/benchmark-job
 ## build benchmark job
 docker/build/benchmark-job:
-	$(DOCKER) build \
-	    $(DOCKER_OPTS) \
-	    -f dockers/tools/benchmark/job/Dockerfile \
-	    -t $(ORG)/$(BENCHMARK_JOB_IMAGE):$(TAG) . \
-	    --build-arg GO_VERSION=$(GO_VERSION) \
-	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
-	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG)
+	@make DOCKERFILE="$(ROOTDIR)/dockers/tools/benchmark/job/Dockerfile" \
+		IMAGE=$(BENCHMARK_JOB_IMAGE) \
+		DOCKER_OPTS="--build-arg ZLIB_VERSION=$(ZLIB_VERSION) --build-arg HDF5_VERSION=$(HDF5_VERSION)" \
+		docker/build/image
 
 .PHONY: docker/name/benchmark-operator
 docker/name/benchmark-operator:
@@ -251,10 +248,6 @@ docker/name/benchmark-operator:
 .PHONY: docker/build/benchmark-operator
 ## build benchmark operator
 docker/build/benchmark-operator:
-	$(DOCKER) build \
-	    $(DOCKER_OPTS) \
-	    -f dockers/tools/benchmark/operator/Dockerfile \
-	    -t $(ORG)/$(BENCHMARK_OPERATOR_IMAGE):$(TAG) . \
-	    --build-arg GO_VERSION=$(GO_VERSION) \
-	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
-	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG)
+	@make DOCKERFILE="$(ROOTDIR)/dockers/tools/benchmark/operator/Dockerfile" \
+		IMAGE=$(BENCHMARK_OPERATOR_IMAGE) \
+		docker/build/image

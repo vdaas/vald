@@ -67,6 +67,7 @@ type BenchmarkJobOption func(b *jobs.Job) error
 var defaultBenchmarkJobOpts = []BenchmarkJobOption{
 	WithSvcAccountName(svcAccount),
 	WithRestartPolicy(RestartPolicyNever),
+	WithTTLSecondsAfterFinished(int32(600)),
 }
 
 // WithSvcAccountName sets the service account name for benchmark job.

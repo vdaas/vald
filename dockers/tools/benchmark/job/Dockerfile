@@ -15,6 +15,8 @@
 #
 
 ARG GO_VERSION=latest
+ARG ZLIB_VERSION
+ARG HDF5_VERSION
 ARG DISTROLESS_IMAGE=gcr.io/distroless/static
 ARG DISTROLESS_IMAGE_TAG=nonroot
 ARG UPX_OPTIONS=-9
@@ -25,6 +27,8 @@ FROM golang:${GO_VERSION} AS golang
 FROM ubuntu:devel AS builder
 
 ARG UPX_OPTIONS
+ARG ZLIB_VERSION
+ARG HDF5_VERSION
 
 ENV GO111MODULE on
 ENV DEBIAN_FRONTEND noninteractive
@@ -37,18 +41,39 @@ ENV ORG vdaas
 ENV REPO vald
 ENV APP_NAME job
 ENV PKG tools/benchmark/${APP_NAME}
+ENV BUILD_DIR=/usr/local
+ENV LIB_DIR=/usr/local/lib
+ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${LIB_DIR}:/lib
 
 # skipcq: DOK-DL3008
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
     build-essential \
-    libhdf5-dev \
     curl \
     upx \
+    g++ \
     git \
     && ldconfig \
     && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    && mkdir -p ${LIB_DIR} \
+    && curl -sOL https://github.com/madler/zlib/releases/download/v${ZLIB_VERSION}/zlib-${ZLIB_VERSION}.tar.gz \
+    && mkdir -p zlib \
+    && tar -xzvf zlib-${ZLIB_VERSION}.tar.gz -C zlib --strip-components 1 \
+    && cd zlib \
+    && ./configure --prefix=${LIB_DIR} --static \
+    && make \
+    && make test \
+    && make install \
+    && cd / \
+    && mkdir -p hdf5 \
+    && curl -sOL https://github.com/HDFGroup/hdf5/releases/download/${HDF5_VERSION}/${HDF5_VERSION}.tar.gz \
+    && tar -xzvf ${HDF5_VERSION}.tar.gz -C hdf5 --strip-components 2 \
+    && cd hdf5 \
+    && ./configure --enable-build-mode=production --enable-static-exec --disable-shared --prefix=${BUILD_DIR} --with-zlib=${BUILD_DIR}/include,${LIB_DIR} LDFLAGS="-Wl,-rpath,${LIB_DIR}" \
+    && make check \
+    && make install \
+    && ldconfig
 
 COPY --from=golang /usr/local/go $GOROOT
 RUN mkdir -p "$GOPATH/src"
@@ -86,30 +111,14 @@ RUN make REPO=${ORG} NAME=${REPO} cmd/${PKG}/${APP_NAME} \
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/cmd/${PKG}
 RUN cp sample.yaml /tmp/config.yaml
 
-
-# FROM ${DISTROLESS_IMAGE}:${DISTROLESS_IMAGE_TAG}
-FROM ubuntu:devel
+FROM ${DISTROLESS_IMAGE}:${DISTROLESS_IMAGE_TAG}
 LABEL maintainer="${MAINTAINER}"
 
 ENV APP_NAME job
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    libhdf5-dev \
-    && ldconfig \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
-
-# Copy certificates for SSL/TLS
-COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
-# Copy permissions
-COPY --from=builder /etc/passwd /etc/passwd
-# workaround: https://github.com/moby/moby/issues/37965
-RUN true
-
 COPY --from=builder /usr/bin/${APP_NAME} /go/bin/${APP_NAME}
 COPY --from=builder /tmp/config.yaml /etc/server/config.yaml
 
-# For distroless
-# USER nonroot:nonroot
+USER nonroot:nonroot
 
 ENTRYPOINT ["/go/bin/job"]
