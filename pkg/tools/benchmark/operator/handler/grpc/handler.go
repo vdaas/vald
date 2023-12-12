@@ -47,5 +47,5 @@ func New(opts ...Option) (bm Benchmark, err error) {
 	return b, nil
 }
 
-func (s *server) Start(_ context.Context) {
+func (*server) Start(context.Context) {
 }

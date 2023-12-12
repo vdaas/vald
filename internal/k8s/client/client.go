@@ -154,7 +154,7 @@ func (c *client) Watch(ctx context.Context, obj cli.ObjectList, opts ...ListOpti
 	return c.withWatch.Watch(ctx, obj, opts...)
 }
 
-func (c *client) LabelSelector(key string, op selection.Operator, vals []string) (labels.Selector, error) {
+func (*client) LabelSelector(key string, op selection.Operator, vals []string) (labels.Selector, error) {
 	requirements, err := labels.NewRequirement(key, op, vals)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create requirement on creating label selector: %w", err)

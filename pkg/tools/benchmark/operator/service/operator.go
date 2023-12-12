@@ -171,6 +171,7 @@ func (o *operator) getAtomicJob() map[string]string {
 
 // jobReconcile gets k8s job list and watches theirs STATUS.
 // Then, it processes according STATUS.
+// skipcq: GO-R1005
 func (o *operator) jobReconcile(ctx context.Context, jobList map[string][]job.Job) {
 	log.Debug("[reconcile job] start")
 	cjobs := o.getAtomicJob()
@@ -228,6 +229,7 @@ func (o *operator) jobReconcile(ctx context.Context, jobList map[string][]job.Jo
 }
 
 // benchJobReconcile gets the vald benchmark job resource list and create Job for running benchmark job.
+// skipcq: GO-R1005
 func (o *operator) benchJobReconcile(ctx context.Context, benchJobList map[string]v1.ValdBenchmarkJob) {
 	log.Debugf("[reconcile benchmark job resource] job list: %#v", benchJobList)
 	cbjl := o.getAtomicBenchJob()
@@ -576,6 +578,7 @@ func (o *operator) checkJobsStatus(ctx context.Context, jobs map[string]string) 
 }
 
 // checkAtomics checks each atomic keeps consistency.
+// skipcq: GO-R1005
 func (o *operator) checkAtomics() error {
 	cjl := o.getAtomicJob()
 	cbjl := o.getAtomicBenchJob()
@@ -637,11 +640,12 @@ func (o *operator) checkAtomics() error {
 	return nil
 }
 
-func (o *operator) PreStart(_ context.Context) error {
+func (*operator) PreStart(context.Context) error {
 	log.Infof("[benchmark scenario operator] start vald benchmark scenario operator")
 	return nil
 }
 
+// skipcq: GO-R1005
 func (o *operator) Start(ctx context.Context) (<-chan error, error) {
 	scch, err := o.ctrl.Start(ctx)
 	if err != nil {

@@ -24,7 +24,7 @@ type MockSubResourceWriter struct {
 	client.SubResourceWriter
 }
 
-func (s *MockSubResourceWriter) Update(context.Context, client.Object, ...client.SubResourceUpdateOption) error {
+func (*MockSubResourceWriter) Update(context.Context, client.Object, ...client.SubResourceUpdateOption) error {
 	return nil
 }
 
@@ -59,7 +59,7 @@ type MockManager struct {
 	manager.Manager
 }
 
-func (m *MockManager) GetClient() client.Client {
+func (*MockManager) GetClient() client.Client {
 	c := &MockClient{
 		Client: &MockClient{},
 	}

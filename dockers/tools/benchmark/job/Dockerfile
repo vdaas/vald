@@ -45,6 +45,7 @@ ENV BUILD_DIR=/usr/local
 ENV LIB_DIR=/usr/local/lib
 ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${LIB_DIR}:/lib
 
+WORKDIR /
 # skipcq: DOK-DL3008
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \

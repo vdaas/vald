@@ -46,6 +46,7 @@ func (m *mockCtrl) GetManager() k8s.Manager {
 }
 
 func Test_operator_getAtomicScenario(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		scenarios *atomic.Pointer[map[string]*scenario]
 	}
@@ -225,6 +226,7 @@ func Test_operator_getAtomicScenario(t *testing.T) {
 }
 
 func Test_operator_getAtomicBenchJob(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		benchjobs *atomic.Pointer[map[string]*v1.ValdBenchmarkJob]
 	}
@@ -419,6 +421,7 @@ func Test_operator_getAtomicBenchJob(t *testing.T) {
 }
 
 func Test_operator_getAtomicJob(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		jobs *atomic.Pointer[map[string]string]
 	}
@@ -511,6 +514,7 @@ func Test_operator_getAtomicJob(t *testing.T) {
 }
 
 func Test_operator_jobReconcile(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx     context.Context
 		jobList map[string][]job.Job
@@ -837,6 +841,7 @@ func Test_operator_jobReconcile(t *testing.T) {
 }
 
 func Test_operator_benchJobReconcile(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx          context.Context
 		benchJobList map[string]v1.ValdBenchmarkJob
@@ -1867,6 +1872,7 @@ func Test_operator_benchJobReconcile(t *testing.T) {
 }
 
 func Test_operator_benchScenarioReconcile(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx          context.Context
 		scenarioList map[string]v1.ValdBenchmarkScenario
@@ -2700,6 +2706,7 @@ func Test_operator_benchScenarioReconcile(t *testing.T) {
 }
 
 func Test_operator_checkAtomics(t *testing.T) {
+	t.Parallel()
 	type fields struct {
 		scenarios *atomic.Pointer[map[string]*scenario]
 		benchjobs *atomic.Pointer[map[string]*v1.ValdBenchmarkJob]

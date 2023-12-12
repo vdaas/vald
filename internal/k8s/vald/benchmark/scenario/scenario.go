@@ -113,15 +113,15 @@ func (r *reconciler) NewReconciler(_ context.Context, mgr manager.Manager) recon
 	return r
 }
 
-func (r *reconciler) For() (client.Object, []builder.ForOption) {
+func (*reconciler) For() (client.Object, []builder.ForOption) {
 	return new(v1.ValdBenchmarkScenario), nil
 }
 
-func (r *reconciler) Owns() (client.Object, []builder.OwnsOption) {
+func (*reconciler) Owns() (client.Object, []builder.OwnsOption) {
 	return nil, nil
 }
 
-func (r *reconciler) Watches() (client.Object, handler.EventHandler, []builder.WatchesOption) {
+func (*reconciler) Watches() (client.Object, handler.EventHandler, []builder.WatchesOption) {
 	// return &source.Kind{Type: new(corev1.Pod)}, &handler.EnqueueRequestForObject{}
 	// return &source.Kind{Type: new(v1.ValdBenchmarkScenario)}, &handler.EnqueueRequestForObject{}, nil
 	return nil, &handler.EnqueueRequestForObject{}, nil

@@ -1433,6 +1433,7 @@ func TestToRawYaml(t *testing.T) {
 }
 
 func TestMerge(t *testing.T) {
+	t.Parallel()
 	type config struct {
 		Discoverer *Discoverer
 	}
@@ -1770,6 +1771,7 @@ func TestMerge(t *testing.T) {
 }
 
 func Test_deepMerge(t *testing.T) {
+	t.Parallel()
 	type config struct {
 		Slice []int
 		GlobalConfig
