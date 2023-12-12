@@ -31,6 +31,8 @@ func TestDiscoverer_Bind(t *testing.T) {
 		Namespace         string
 		DiscoveryDuration string
 		Net               *Net
+		Selectors         *Selectors
+		ReadReplica       *ReadReplica
 	}
 	type want struct {
 		want *Discoverer
@@ -64,6 +66,8 @@ func TestDiscoverer_Bind(t *testing.T) {
 						Namespace:         "vald",
 						DiscoveryDuration: "10ms",
 						Net:               new(Net),
+						Selectors:         new(Selectors),
+						ReadReplica:       new(ReadReplica),
 					},
 				},
 			}
@@ -83,6 +87,8 @@ func TestDiscoverer_Bind(t *testing.T) {
 						Namespace:         "vald",
 						DiscoveryDuration: "10ms",
 						Net:               new(Net),
+						Selectors:         new(Selectors),
+						ReadReplica:       new(ReadReplica),
 					},
 				},
 			}
@@ -113,6 +119,8 @@ func TestDiscoverer_Bind(t *testing.T) {
 						Namespace:         "vald",
 						DiscoveryDuration: "10ms",
 						Net:               new(Net),
+						Selectors:         new(Selectors),
+						ReadReplica:       new(ReadReplica),
 					},
 				},
 			}
@@ -137,6 +145,9 @@ func TestDiscoverer_Bind(t *testing.T) {
 				Name:              test.fields.Name,
 				Namespace:         test.fields.Namespace,
 				DiscoveryDuration: test.fields.DiscoveryDuration,
+				Net:               test.fields.Net,
+				Selectors:         test.fields.Selectors,
+				ReadReplica:       test.fields.ReadReplica,
 			}
 
 			got := d.Bind()
