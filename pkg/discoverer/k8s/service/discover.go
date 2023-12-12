@@ -61,7 +61,7 @@ type discoverer struct {
 	nodeMetrics        sync.Map[string, mnode.Node]
 	pods               sync.Map[string, *[]pod.Pod]
 	podMetrics         sync.Map[string, mpod.Pod]
-	svcs               sync.Map[string, readReplicaSvc]
+	rrsvcs             sync.Map[string, readReplicaSvc]
 	podsByNode         atomic.Value
 	podsByNamespace    atomic.Value
 	podsByName         atomic.Value
@@ -223,12 +223,12 @@ func New(selector *config.Selectors, opts ...Option) (dsc Discoverer, err error)
 							Addr:      svc.Spec.ClusterIP,
 							ReplicaID: id,
 						}
-						d.svcs.Store(svc.Name, rrsvc)
+						d.rrsvcs.Store(svc.Name, rrsvc)
 					}
-					d.svcs.Range(func(name string, _ readReplicaSvc) bool {
+					d.rrsvcs.Range(func(name string, _ readReplicaSvc) bool {
 						_, ok := svcsmap[name]
 						if !ok {
-							d.svcs.Delete(name)
+							d.rrsvcs.Delete(name)
 						}
 						return true
 					})
@@ -368,7 +368,7 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 						return true
 					}
 				})
-				d.svcs.Range(func(key string, rrsvc readReplicaSvc) bool {
+				d.rrsvcs.Range(func(key string, rrsvc readReplicaSvc) bool {
 					select {
 					case <-ctx.Done():
 						return false
