@@ -108,7 +108,3 @@ func GetMallocInfo() (*MallocInfo, error) {
 		return nil, errors.ErrUnexpectedReturnCode(int(ret))
 	}
 }
-
-func MallocTrim() int {
-	return int(C.malloc_trim(C.size_t(0)))
-}

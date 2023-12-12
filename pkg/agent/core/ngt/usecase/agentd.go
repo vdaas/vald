@@ -27,6 +27,7 @@ import (
 	ngtmetrics "github.com/vdaas/vald/internal/observability/metrics/agent/core/ngt"
 	infometrics "github.com/vdaas/vald/internal/observability/metrics/info"
 	mallocmetrics "github.com/vdaas/vald/internal/observability/metrics/mem/malloc"
+	procmetrics "github.com/vdaas/vald/internal/observability/metrics/mem/proc"
 	"github.com/vdaas/vald/internal/runner"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/servers/server"
@@ -99,6 +100,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 			ngtmetrics.New(ngt),
 			infometrics.New("agent_core_ngt_info", "Agent NGT info", *cfg.NGT),
 			mallocmetrics.New(),
+			procmetrics.New(),
 		)
 		if err != nil {
 			return nil, err

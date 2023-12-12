@@ -35,7 +35,6 @@ import (
 	"github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/conv"
 	core "github.com/vdaas/vald/internal/core/algorithm/ngt"
-	"github.com/vdaas/vald/internal/core/malloc"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/file"
 	"github.com/vdaas/vald/internal/log"
@@ -1126,13 +1125,6 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 			}
 		}
 		atomic.AddUint64(&n.wfci, ^uint64(0))
-
-		switch ret := malloc.MallocTrim(); ret {
-		case 0:
-			log.Debug("not release any memory")
-		case 1:
-			log.Debug("release memory")
-		}
 		return nil
 	}()
 	if err != nil {
