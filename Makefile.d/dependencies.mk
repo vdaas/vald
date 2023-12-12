@@ -81,7 +81,7 @@ update/chaos-mesh:
 .PHONY: update/k3s
 ## update k3s version
 update/k3s:
-	curl --silent https://hub.docker.com/v2/repositories/rancher/k3s/tags | jq -r '.results[].name' | grep -E '.*-k3s1$$' | sort -V | tail -n 1 > $(ROOTDIR)/versions/K3S_VERSION
+	curl --silent https://hub.docker.com/v2/repositories/rancher/k3s/tags | jq -r '.results[].name' | grep -E '.*-k3s.$$' | grep -v rc | sort -V | tail -n 1 > $(ROOTDIR)/versions/K3S_VERSION
 
 .PHONY: update/go
 ## update go version
