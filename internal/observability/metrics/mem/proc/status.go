@@ -62,6 +62,8 @@ const (
 
 	vmpteMetricsName        = "vmpte_bytes"
 	vmpteMetricsDescription = "size of page table entries"
+
+	kilo = 1024
 )
 
 type procStatusMetrics struct {
@@ -334,62 +336,62 @@ func (p *procStatusMetrics) Register(m metrics.Meter) error {
 				case strings.HasPrefix(line, "VmPeak"):
 					f, err := strconv.ParseInt(fields[1], 10, 64)
 					if err == nil {
-						vmpeak.Observe(ctx, f*1024)
+						vmpeak.Observe(ctx, f*kilo)
 					}
 				case strings.HasPrefix(line, "VmSize"):
 					f, err := strconv.ParseInt(fields[1], 10, 64)
 					if err == nil {
-						vmsize.Observe(ctx, f*1024)
+						vmsize.Observe(ctx, f*kilo)
 					}
 				case strings.HasPrefix(line, "VmHWM"):
 					f, err := strconv.ParseInt(fields[1], 10, 64)
 					if err == nil {
-						vmhwm.Observe(ctx, f*1024)
+						vmhwm.Observe(ctx, f*kilo)
 					}
 				case strings.HasPrefix(line, "VmRSS"):
 					f, err := strconv.ParseInt(fields[1], 10, 64)
 					if err == nil {
-						vmrss.Observe(ctx, f*1024)
+						vmrss.Observe(ctx, f*kilo)
 					}
 				case strings.HasPrefix(line, "VmData"):
 					f, err := strconv.ParseInt(fields[1], 10, 64)
 					if err == nil {
-						vmdata.Observe(ctx, f*1024)
+						vmdata.Observe(ctx, f*kilo)
 					}
 				case strings.HasPrefix(line, "VmStk"):
 					f, err := strconv.ParseInt(fields[1], 10, 64)
 					if err == nil {
-						vmstk.Observe(ctx, f*1024)
+						vmstk.Observe(ctx, f*kilo)
 					}
 				case strings.HasPrefix(line, "VmExe"):
 					f, err := strconv.ParseInt(fields[1], 10, 64)
 					if err == nil {
-						vmexe.Observe(ctx, f*1024)
+						vmexe.Observe(ctx, f*kilo)
 					}
 				case strings.HasPrefix(line, "VmLck"):
 					f, err := strconv.ParseInt(fields[1], 10, 64)
 					if err == nil {
-						vmlck.Observe(ctx, f*1024)
+						vmlck.Observe(ctx, f*kilo)
 					}
 				case strings.HasPrefix(line, "VmLib"):
 					f, err := strconv.ParseInt(fields[1], 10, 64)
 					if err == nil {
-						vmlib.Observe(ctx, f*1024)
+						vmlib.Observe(ctx, f*kilo)
 					}
 				case strings.HasPrefix(line, "VmPTE"):
 					f, err := strconv.ParseInt(fields[1], 10, 64)
 					if err == nil {
-						vmpte.Observe(ctx, f*1024)
+						vmpte.Observe(ctx, f*kilo)
 					}
 				case strings.HasPrefix(line, "VmSwap"):
 					f, err := strconv.ParseInt(fields[1], 10, 64)
 					if err == nil {
-						vmswap.Observe(ctx, f*1024)
+						vmswap.Observe(ctx, f*kilo)
 					}
 				case strings.HasPrefix(line, "VmPin"):
 					f, err := strconv.ParseInt(fields[1], 10, 64)
 					if err == nil {
-						vmpin.Observe(ctx, f*1024)
+						vmpin.Observe(ctx, f*kilo)
 					}
 				}
 			}

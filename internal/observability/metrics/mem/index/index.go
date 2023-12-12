@@ -420,6 +420,9 @@ func (*memoryMetrics) Register(m metrics.Meter) error {
 		metrics.WithDescription(lookupsMetricsDescription),
 		metrics.WithUnit(metrics.Dimensionless),
 	)
+	if err != nil {
+		return err
+	}
 
 	mallocs, err := m.AsyncInt64().Gauge(
 		mallocsMetricsName,
