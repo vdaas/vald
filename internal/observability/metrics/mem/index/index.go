@@ -685,7 +685,6 @@ func (*memoryMetrics) Register(m metrics.Meter) error {
 			otherSys.Observe(ctx, int64(mstats.OtherSys))
 			nextGcSys.Observe(ctx, int64(mstats.NextGC))
 
-
 			ptMs := int64(0)
 			if mstats.PauseTotalNs > 0 {
 				ptMs = int64(mstats.PauseTotalNs / uint64(time.Millisecond))
@@ -693,9 +692,9 @@ func (*memoryMetrics) Register(m metrics.Meter) error {
 			pauseTotalMs.Observe(ctx, ptMs)
 			numGC.Observe(ctx, int64(mstats.NumGC))
 			numForcedGC.Observe(ctx, int64(mstats.NumForcedGC))
-			
-			heapWillReturn.Observe(ctx, int64(mstats.HeapIdle - mstats.HeapReleased))
-			liveObjects.Observe(ctx, int64(mstats.Mallocs - mstats.Frees))
+
+			heapWillReturn.Observe(ctx, int64(mstats.HeapIdle-mstats.HeapReleased))
+			liveObjects.Observe(ctx, int64(mstats.Mallocs-mstats.Frees))
 		},
 	)
 }
