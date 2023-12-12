@@ -42,25 +42,19 @@ jobs:
       target: agent-sidecar
     secrets: inherit
 
+  ci-container:
+    needs: [dump-contexts-to-log]
+    uses: ./.github/workflows/_docker-image.yaml
+    with:
+      target: ci-container
+      platforms: linux/amd64
+    secrets: inherit
+
   discoverer-k8s:
     needs: [dump-contexts-to-log]
     uses: ./.github/workflows/_docker-image.yaml
     with:
       target: discoverer-k8s
-    secrets: inherit
-
-  manager-index:
-    needs: [dump-contexts-to-log]
-    uses: ./.github/workflows/_docker-image.yaml
-    with:
-      target: manager-index
-    secrets: inherit
-
-  operator-helm:
-    needs: [dump-contexts-to-log]
-    uses: ./.github/workflows/_docker-image.yaml
-    with:
-      target: operator/helm
     secrets: inherit
 
   gateway-lb:
@@ -77,6 +71,27 @@ jobs:
       target: gateway-filter
     secrets: inherit
 
+  index-correction:
+    needs: [dump-contexts-to-log]
+    uses: ./.github/workflows/_docker-image.yaml
+    with:
+      target: index-correction
+    secrets: inherit
+
+  index-creation:
+    needs: [dump-contexts-to-log]
+    uses: ./.github/workflows/_docker-image.yaml
+    with:
+      target: index-creation
+    secrets: inherit
+
+  index-save:
+    needs: [dump-contexts-to-log]
+    uses: ./.github/workflows/_docker-image.yaml
+    with:
+      target: index-save
+    secrets: inherit
+
   loadtest:
     needs: [dump-contexts-to-log]
     uses: ./.github/workflows/_docker-image.yaml
@@ -85,10 +100,23 @@ jobs:
       platforms: linux/amd64
     secrets: inherit
 
-  ci-container:
+  manager-index:
     needs: [dump-contexts-to-log]
     uses: ./.github/workflows/_docker-image.yaml
     with:
-      target: ci-container
-      platforms: linux/amd64
+      target: manager-index
+    secrets: inherit
+
+  operator-helm:
+    needs: [dump-contexts-to-log]
+    uses: ./.github/workflows/_docker-image.yaml
+    with:
+      target: operator/helm
+    secrets: inherit
+
+  readreplica-rotate:
+    needs: [dump-contexts-to-log]
+    uses: ./.github/workflows/_docker-image.yaml
+    with:
+      target: readreplica-rotate
     secrets: inherit
