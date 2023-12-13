@@ -14,8 +14,176 @@
 package service
 
 import (
+	"reflect"
+	"testing"
+
+	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/test/goleak"
+	corev1 "k8s.io/api/core/v1"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 )
+
+func Test_extractAPIPorts(t *testing.T) {
+	type args struct {
+		ports []corev1.ServicePort
+	}
+	type want struct {
+		ports []servicePort
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, []servicePort) error
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
+	}
+	defaultCheckFunc := func(w want, got []servicePort) error {
+		if !reflect.DeepEqual(got, w.ports) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.ports)
+		}
+		return nil
+	}
+	tests := []test{
+		{
+			name: "success to parse grpc",
+			args: args{
+				ports: []corev1.ServicePort{
+					{
+						Name: "grpc",
+						Port: 8081,
+					},
+					{
+						Name: "readiness",
+						Port: 3000,
+					},
+					{
+						Name: "liveness",
+						Port: 3001,
+					},
+					{
+						Name: "pprof",
+						Port: 6060,
+					},
+				},
+			},
+			want: want{
+				ports: []servicePort{
+					{
+						Name: "grpc",
+						Port: 8081,
+					},
+				},
+			},
+			checkFunc: defaultCheckFunc,
+		},
+		{
+			name: "success to parse rest",
+			args: args{
+				ports: []corev1.ServicePort{
+					{
+						Name: "rest",
+						Port: 8082,
+					},
+					{
+						Name: "readiness",
+						Port: 3000,
+					},
+					{
+						Name: "liveness",
+						Port: 3001,
+					},
+					{
+						Name: "pprof",
+						Port: 6060,
+					},
+				},
+			},
+			want: want{
+				ports: []servicePort{
+					{
+						Name: "rest",
+						Port: 8082,
+					},
+				},
+			},
+			checkFunc: defaultCheckFunc,
+		},
+		{
+			name: "success to parse grpc and rest",
+			args: args{
+				ports: []corev1.ServicePort{
+					{
+						Name: "rest",
+						Port: 8082,
+					},
+					{
+						Name: "grpc",
+						Port: 8081,
+					},
+					{
+						Name: "readiness",
+						Port: 3000,
+					},
+					{
+						Name: "liveness",
+						Port: 3001,
+					},
+					{
+						Name: "pprof",
+						Port: 6060,
+					},
+				},
+			},
+			want: want{
+				ports: []servicePort{
+					{
+						Name: "rest",
+						Port: 8082,
+					},
+					{
+						Name: "grpc",
+						Port: 8081,
+					},
+				},
+			},
+			checkFunc: defaultCheckFunc,
+		},
+		{
+			name: "empty input returns empty",
+			args: args{
+				ports: nil,
+			},
+			want: want{
+				ports: nil,
+			},
+			checkFunc: defaultCheckFunc,
+		},
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(tt, test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(tt, test.args)
+			}
+			checkFunc := test.checkFunc
+			if test.checkFunc == nil {
+				checkFunc = defaultCheckFunc
+			}
+
+			got := extractAPIPorts(test.args.ports)
+			if err := checkFunc(test.want, got); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
 
 // NOT IMPLEMENTED BELOW
 //
@@ -345,91 +513,6 @@ import (
 // 	}
 // }
 //
-// func Test_extractApiPorts(t *testing.T) {
-// 	type args struct {
-// 		ports []corev1.ServicePort
-// 	}
-// 	type want struct {
-// 		want []servicePort
-// 	}
-// 	type test struct {
-// 		name       string
-// 		args       args
-// 		want       want
-// 		checkFunc  func(want, []servicePort) error
-// 		beforeFunc func(*testing.T, args)
-// 		afterFunc  func(*testing.T, args)
-// 	}
-// 	defaultCheckFunc := func(w want, got []servicePort) error {
-// 		if !reflect.DeepEqual(got, w.want) {
-// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-// 		}
-// 		return nil
-// 	}
-// 	tests := []test{
-// 		// TODO test cases
-// 		/*
-// 		   {
-// 		       name: "test_case_1",
-// 		       args: args {
-// 		           ports:nil,
-// 		       },
-// 		       want: want{},
-// 		       checkFunc: defaultCheckFunc,
-// 		       beforeFunc: func(t *testing.T, args args) {
-// 		           t.Helper()
-// 		       },
-// 		       afterFunc: func(t *testing.T, args args) {
-// 		           t.Helper()
-// 		       },
-// 		   },
-// 		*/
-//
-// 		// TODO test cases
-// 		/*
-// 		   func() test {
-// 		       return test {
-// 		           name: "test_case_2",
-// 		           args: args {
-// 		           ports:nil,
-// 		           },
-// 		           want: want{},
-// 		           checkFunc: defaultCheckFunc,
-// 		           beforeFunc: func(t *testing.T, args args) {
-// 		               t.Helper()
-// 		           },
-// 		           afterFunc: func(t *testing.T, args args) {
-// 		               t.Helper()
-// 		           },
-// 		       }
-// 		   }(),
-// 		*/
-// 	}
-//
-// 	for _, tc := range tests {
-// 		test := tc
-// 		t.Run(test.name, func(tt *testing.T) {
-// 			tt.Parallel()
-// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-// 			if test.beforeFunc != nil {
-// 				test.beforeFunc(tt, test.args)
-// 			}
-// 			if test.afterFunc != nil {
-// 				defer test.afterFunc(tt, test.args)
-// 			}
-// 			checkFunc := test.checkFunc
-// 			if test.checkFunc == nil {
-// 				checkFunc = defaultCheckFunc
-// 			}
-//
-// 			got := extractApiPorts(test.args.ports)
-// 			if err := checkFunc(test.want, got); err != nil {
-// 				tt.Errorf("error = %v", err)
-// 			}
-//
-// 		})
-// 	}
-// }
 //
 // func Test_reconciler_GetName(t *testing.T) {
 // 	type fields struct {

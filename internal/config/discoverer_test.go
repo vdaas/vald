@@ -67,7 +67,6 @@ func TestDiscoverer_Bind(t *testing.T) {
 						DiscoveryDuration: "10ms",
 						Net:               new(Net),
 						Selectors:         new(Selectors),
-						ReadReplica:       new(ReadReplica),
 					},
 				},
 			}
@@ -88,7 +87,6 @@ func TestDiscoverer_Bind(t *testing.T) {
 						DiscoveryDuration: "10ms",
 						Net:               new(Net),
 						Selectors:         new(Selectors),
-						ReadReplica:       new(ReadReplica),
 					},
 				},
 			}
@@ -120,7 +118,6 @@ func TestDiscoverer_Bind(t *testing.T) {
 						DiscoveryDuration: "10ms",
 						Net:               new(Net),
 						Selectors:         new(Selectors),
-						ReadReplica:       new(ReadReplica),
 					},
 				},
 			}
@@ -147,7 +144,6 @@ func TestDiscoverer_Bind(t *testing.T) {
 				DiscoveryDuration: test.fields.DiscoveryDuration,
 				Net:               test.fields.Net,
 				Selectors:         test.fields.Selectors,
-				ReadReplica:       test.fields.ReadReplica,
 			}
 
 			got := d.Bind()

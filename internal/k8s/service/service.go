@@ -77,6 +77,19 @@ func (r *reconciler) addListOpts(opt client.ListOption) {
 	r.lopts = append(r.lopts, opt)
 }
 
+func extractAPIPorts(ports []corev1.ServicePort) []servicePort {
+	var apiPorts []servicePort
+	for _, port := range ports {
+		if port.Name == "grpc" || port.Name == "rest" {
+			apiPorts = append(apiPorts, servicePort{
+				Name: port.Name,
+				Port: port.Port,
+			})
+		}
+	}
+	return apiPorts
+}
+
 func (r *reconciler) Reconcile(ctx context.Context, _ reconcile.Request) (res reconcile.Result, err error) {
 	svcList := &corev1.ServiceList{}
 
@@ -114,7 +127,7 @@ func (r *reconciler) Reconcile(ctx context.Context, _ reconcile.Request) (res re
 			continue
 		}
 
-		ports := extractApiPorts(svc.Spec.Ports)
+		ports := extractAPIPorts(svc.Spec.Ports)
 		svcs = append(svcs, Service{
 			Name:        svc.GetName(),
 			ClusterIP:   svc.Spec.ClusterIP,
@@ -129,19 +142,6 @@ func (r *reconciler) Reconcile(ctx context.Context, _ reconcile.Request) (res re
 	}
 
 	return res, nil
-}
-
-func extractApiPorts(ports []corev1.ServicePort) []servicePort {
-	var apiPorts []servicePort
-	for _, port := range ports {
-		if port.Name == "grpc" || port.Name == "rest" {
-			apiPorts = append(apiPorts, servicePort{
-				Name: port.Name,
-				Port: port.Port,
-			})
-		}
-	}
-	return apiPorts
 }
 
 func (r *reconciler) GetName() string {
