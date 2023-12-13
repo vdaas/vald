@@ -336,10 +336,7 @@ message Remove {
 }
 
 message Flush {
-  message Request {
-
-  }
-  
+  message Request {}
 }
 
 // Common messages.

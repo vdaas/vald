@@ -1034,7 +1034,6 @@ func (c *client) Flush(t *testing.T, ctx context.Context) error {
 		return err
 	}
 
-
 	_, err = client.Flush(ctx, &payload.Flush_Request{})
 	if err != nil {
 		return err

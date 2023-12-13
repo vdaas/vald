@@ -117,7 +117,7 @@
   - [RetryInfo](#rpc-v1-RetryInfo)
 - [v1/vald/filter.proto](#v1_vald_filter-proto)
   - [Filter](#vald-v1-Filter)
-- [apis/proto/v1/vald/flush.proto](#apis_proto_v1_vald_flush-proto)
+- [v1/vald/flush.proto](#v1_vald_flush-proto)
   - [Flush](#vald-v1-Flush)
 - [v1/vald/insert.proto](#v1_vald_insert-proto)
   - [Insert](#vald-v1-Insert)
@@ -1317,11 +1317,11 @@ Filter service provides ways to connect to Vald through filter.
 | StreamUpsertObject | [.payload.v1.Upsert.ObjectRequest](#payload-v1-Upsert-ObjectRequest) stream    | [.payload.v1.Object.StreamLocation](#payload-v1-Object-StreamLocation) stream | A method to upsert object by bidirectional streaming.                    |
 | MultiUpsertObject  | [.payload.v1.Upsert.MultiObjectRequest](#payload-v1-Upsert-MultiObjectRequest) | [.payload.v1.Object.Locations](#payload-v1-Object-Locations)                  | A method to upsert multiple objects.                                     |
 
-<a name="apis_proto_v1_vald_flush-proto"></a>
+<a name="v1_vald_flush-proto"></a>
 
 <p align="right"><a href="#top">Top</a></p>
 
-## apis/proto/v1/vald/flush.proto
+## v1/vald/flush.proto
 
 <a name="vald-v1-Flush"></a>
 
