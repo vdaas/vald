@@ -46,6 +46,10 @@ In addition, as you need, please refer to the followings:
 Moreover, we publish the example configuration files for each use case.
 Please also refer to [here](https://github.com/vdaas/vald/tree/main/charts/vald/values).
 
+<div class="caution">
+For vald-discoverer to work correctly, if you deploy multiple Vald clusters in the same Kubernetes cluster, please deploy one Vald cluster in one namespace.
+</div>
+
 ## Use Helm command
 
 ### Deployment
