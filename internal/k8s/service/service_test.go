@@ -25,7 +25,7 @@ import (
 
 func Test_extractAPIPorts(t *testing.T) {
 	t.Parallel()
-	
+
 	type args struct {
 		ports []corev1.ServicePort
 	}
