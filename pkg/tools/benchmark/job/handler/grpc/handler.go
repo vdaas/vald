@@ -20,18 +20,14 @@ package grpc
 import (
 	"context"
 
-	"github.com/vdaas/vald/apis/grpc/v1/benchmark"
 	"github.com/vdaas/vald/pkg/tools/benchmark/job/service"
 )
 
 type Benchmark interface {
-	benchmark.JobServer
 	Start(context.Context)
 }
 
 type server struct {
-	benchmark.UnimplementedJobServer
-
 	job service.Job
 }
 

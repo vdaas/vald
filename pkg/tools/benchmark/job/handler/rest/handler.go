@@ -17,15 +17,9 @@
 // Package rest provides rest api logic
 package rest
 
-import (
-	"github.com/vdaas/vald/apis/grpc/v1/benchmark"
-)
-
 type Handler interface{}
 
-type handler struct {
-	benchmark.JobServer
-}
+type handler struct {}
 
 func New(opts ...Option) Handler {
 	h := new(handler)
