@@ -54,7 +54,7 @@ type discoverer struct {
 	nodeMetrics     sync.Map[string, mnode.Node]
 	pods            sync.Map[string, *[]pod.Pod]
 	podMetrics      sync.Map[string, mpod.Pod]
-	services          sync.Map[string, *service.Service]
+	services        sync.Map[string, *service.Service]
 	podsByNode      atomic.Value
 	podsByNamespace atomic.Value
 	podsByName      atomic.Value
