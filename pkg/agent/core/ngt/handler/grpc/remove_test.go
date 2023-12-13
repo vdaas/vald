@@ -1,7 +1,7 @@
 // Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //	https://www.apache.org/licenses/LICENSE-2.0
@@ -16,18 +16,21 @@ package grpc
 import (
 	"context"
 	"reflect"
+	"strconv"
 	"testing"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/conv"
 	"github.com/vdaas/vald/internal/core/algorithm/ngt"
-	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/net/grpc/status"
+	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/internal/test/data/request"
 	"github.com/vdaas/vald/internal/test/data/vector"
+	"github.com/vdaas/vald/internal/test/goleak"
+	"github.com/vdaas/vald/pkg/agent/core/ngt/service"
 )
 
 func Test_server_Remove(t *testing.T) {
@@ -360,6 +363,628 @@ func Test_server_Remove(t *testing.T) {
 			}
 			gotRes, err := s.Remove(ctx, req)
 			if err := checkFunc(test.want, gotRes, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func Test_server_RemoveByTimestamp(t *testing.T) {
+	type args struct {
+		req *payload.Remove_TimestampRequest
+	}
+	type want struct {
+		code    codes.Code
+		wantLen int
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, *payload.Object_Locations, error) error
+		beforeFunc func(context.Context, args) (Server, func(context.Context) error, error)
+		afterFunc  func(args)
+	}
+
+	defaultCheckFunc := func(w want, gotLocs *payload.Object_Locations, err error) error {
+		if err != nil {
+			st, ok := status.FromError(err)
+			if !ok {
+				errors.Errorf("got error cannot convert to Status: \"%#v\"", err)
+			}
+			if st.Code() != w.code {
+				return errors.Errorf("got code: \"%#v\",\n\t\t\t\twant code: \"%#v\"", st.Code().String(), w.code.String())
+			}
+		}
+		if len(gotLocs.GetLocations()) != w.wantLen {
+			return errors.Errorf("got Len: \"%#v\",\n\t\t\t\twant Len: \"%#v\"", len(gotLocs.GetLocations()), w.wantLen)
+		}
+		return nil
+	}
+
+	defaultNgtConfig := &config.NGT{
+		Dimension:        128,
+		DistanceType:     ngt.L2.String(),
+		ObjectType:       ngt.Float.String(),
+		CreationEdgeSize: 60,
+		SearchEdgeSize:   20,
+		KVSDB: &config.KVSDB{
+			Concurrency: 10,
+		},
+		VQueue: &config.VQueue{
+			InsertBufferPoolSize: 1000,
+			DeleteBufferPoolSize: 1000,
+		},
+	}
+
+	defaultInsertNum := 100
+	defaultTimestamp := int64(1000)
+
+	createInsertReq := func(num int) (*payload.Insert_MultiRequest, error) {
+		return request.GenMultiInsertReq(
+			request.Float,
+			vector.Gaussian,
+			num,
+			defaultNgtConfig.Dimension,
+			&payload.Insert_Config{
+				SkipStrictExistCheck: true,
+				Timestamp:            defaultTimestamp,
+			},
+		)
+	}
+
+	defaultBeforeFunc := func(ctx context.Context, _ args) (Server, func(ctx context.Context) error, error) {
+		eg, ctx := errgroup.New(ctx)
+		ngt, err := service.New(defaultNgtConfig,
+			service.WithErrGroup(eg),
+			service.WithEnableInMemoryMode(true),
+		)
+		if err != nil {
+			return nil, nil, err
+		}
+
+		s, err := New(
+			WithErrGroup(eg),
+			WithNGT(ngt),
+		)
+		if err != nil {
+			return nil, nil, err
+		}
+
+		req, err := createInsertReq(defaultInsertNum)
+		if err != nil {
+			return nil, nil, err
+		}
+		for _, req := range req.GetRequests() {
+			_, err := s.Insert(ctx, req)
+			if err != nil {
+				return nil, nil, err
+			}
+		}
+		return s, func(ctx context.Context) error {
+			return ngt.CreateIndex(ctx, 1000)
+		}, err
+	}
+	tests := []test{
+		{
+			name: "succeeds if all vector data is deleted when the operator is Eq",
+			args: args{
+				req: &payload.Remove_TimestampRequest{
+					Timestamps: []*payload.Remove_Timestamp{
+						{
+							Timestamp: defaultTimestamp,
+							Operator:  payload.Remove_Timestamp_Eq,
+						},
+					},
+				},
+			},
+			want: want{
+				code:    codes.OK,
+				wantLen: defaultInsertNum,
+			},
+		},
+		{
+			name: "succeeds if all vector data is deleted when the operator is Ge",
+			args: args{
+				req: &payload.Remove_TimestampRequest{
+					Timestamps: []*payload.Remove_Timestamp{
+						{
+							Timestamp: defaultTimestamp,
+							Operator:  payload.Remove_Timestamp_Ge,
+						},
+					},
+				},
+			},
+			want: want{
+				code:    codes.OK,
+				wantLen: defaultInsertNum,
+			},
+		},
+		{
+			name: "succeeds if one vector data is deleted when the operator are Gt and Lt",
+			args: args{
+				req: &payload.Remove_TimestampRequest{
+					Timestamps: []*payload.Remove_Timestamp{
+						{
+							Timestamp: defaultTimestamp,
+							Operator:  payload.Remove_Timestamp_Gt,
+						},
+						{
+							Timestamp: defaultTimestamp + 2,
+							Operator:  payload.Remove_Timestamp_Lt,
+						},
+					},
+				},
+			},
+			// Insert two additional vectors.
+			beforeFunc: func(ctx context.Context, a args) (Server, func(context.Context) error, error) {
+				s, fn, err := defaultBeforeFunc(ctx, a)
+				if err != nil {
+					return nil, nil, err
+				}
+
+				req, err := createInsertReq(2)
+				if err != nil {
+					return nil, nil, err
+				}
+				for i := range req.GetRequests() {
+					req.Requests[i].Vector.Id += "-" + strconv.Itoa(i+1)
+					req.Requests[i].Config.Timestamp += int64(i + 1)
+					_, err := s.Insert(ctx, req.Requests[i])
+					if err != nil {
+						return nil, nil, err
+					}
+				}
+				return s, fn, nil
+			},
+			want: want{
+				code:    codes.OK,
+				wantLen: 1,
+			},
+		},
+		{
+			name: "succeeds if all vector data is deleted when the operator is Le",
+			args: args{
+				req: &payload.Remove_TimestampRequest{
+					Timestamps: []*payload.Remove_Timestamp{
+						{
+							Timestamp: defaultTimestamp,
+							Operator:  payload.Remove_Timestamp_Le,
+						},
+					},
+				},
+			},
+			want: want{
+				code:    codes.OK,
+				wantLen: defaultInsertNum,
+			},
+		},
+		{
+			name: "succeeds if all vector data is deleted when the operator is Gt and Lt",
+			args: args{
+				req: &payload.Remove_TimestampRequest{
+					Timestamps: []*payload.Remove_Timestamp{
+						{
+							Timestamp: defaultTimestamp / 2,
+							Operator:  payload.Remove_Timestamp_Gt,
+						},
+						{
+							Timestamp: defaultTimestamp * 2,
+							Operator:  payload.Remove_Timestamp_Lt,
+						},
+					},
+				},
+			},
+			want: want{
+				code:    codes.OK,
+				wantLen: defaultInsertNum,
+			},
+		},
+		{
+			name: "fails if the target vector is not found when the operator is Eq",
+			args: args{
+				req: &payload.Remove_TimestampRequest{
+					Timestamps: []*payload.Remove_Timestamp{
+						{
+							Timestamp: defaultTimestamp * 2,
+							Operator:  payload.Remove_Timestamp_Eq,
+						},
+					},
+				},
+			},
+			want: want{
+				code: codes.NotFound,
+			},
+		},
+		{
+			name: "fails if target vector is not found when the operator is Gt",
+			args: args{
+				req: &payload.Remove_TimestampRequest{
+					Timestamps: []*payload.Remove_Timestamp{
+						{
+							Timestamp: defaultTimestamp * 2,
+							Operator:  payload.Remove_Timestamp_Gt,
+						},
+					},
+				},
+			},
+			want: want{
+				code: codes.NotFound,
+			},
+		},
+		{
+			name: "fails if all vector data is deleted when the operator is Lt",
+			args: args{
+				req: &payload.Remove_TimestampRequest{
+					Timestamps: []*payload.Remove_Timestamp{
+						{
+							Timestamp: defaultTimestamp / 2,
+							Operator:  payload.Remove_Timestamp_Lt,
+						},
+					},
+				},
+			},
+			want: want{
+				code: codes.NotFound,
+			},
+		},
+	}
+
+	ctx, cancel := context.WithCancel(context.Background())
+	t.Cleanup(func() { cancel() })
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+
+			ctx, cancel := context.WithCancel(ctx)
+			defer cancel()
+
+			if test.beforeFunc == nil {
+				test.beforeFunc = defaultBeforeFunc
+			}
+			s, fn, err := test.beforeFunc(ctx, test.args)
+			if err != nil {
+				t.Errorf("error = %v", err)
+				return
+			}
+			if err := fn(ctx); err != nil {
+				t.Errorf("error = %v", err)
+				return
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(test.args)
+			}
+			checkFunc := test.checkFunc
+			if test.checkFunc == nil {
+				checkFunc = defaultCheckFunc
+			}
+
+			gotLocs, err := s.RemoveByTimestamp(ctx, test.args.req)
+			if err := checkFunc(test.want, gotLocs, err); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func Test_timestampOpsFunc(t *testing.T) {
+	type args struct {
+		timestamp int64
+		ts        []*payload.Remove_Timestamp
+	}
+	type want struct {
+		want bool
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, bool) error
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
+	}
+	defaultCheckFunc := func(w want, got bool) error {
+		if got != w.want {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		{
+			name: "return true when the timestamp is equal",
+			args: args{
+				timestamp: 1000,
+				ts: []*payload.Remove_Timestamp{
+					{
+						Timestamp: 1000,
+						Operator:  payload.Remove_Timestamp_Eq,
+					},
+				},
+			},
+			want: want{
+				want: true,
+			},
+		},
+		{
+			name: "return true when timestamps is within range",
+			args: args{
+				timestamp: 1001,
+				ts: []*payload.Remove_Timestamp{
+					{
+						Timestamp: 1000,
+						Operator:  payload.Remove_Timestamp_Gt,
+					},
+					{
+						Timestamp: 2000,
+						Operator:  payload.Remove_Timestamp_Lt,
+					},
+				},
+			},
+			want: want{
+				want: true,
+			},
+		},
+		{
+			name: "return true when timestamps is not within range",
+			args: args{
+				timestamp: 900,
+				ts: []*payload.Remove_Timestamp{
+					{
+						Timestamp: 1000,
+						Operator:  payload.Remove_Timestamp_Gt,
+					},
+					{
+						Timestamp: 2000,
+						Operator:  payload.Remove_Timestamp_Lt,
+					},
+				},
+			},
+			want: want{
+				want: false,
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(tt, test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(tt, test.args)
+			}
+			checkFunc := test.checkFunc
+			if test.checkFunc == nil {
+				checkFunc = defaultCheckFunc
+			}
+
+			got := timestampOpsFunc(test.args.ts)(test.args.timestamp)
+			if err := checkFunc(test.want, got); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func Test_timestampOpFunc(t *testing.T) {
+	type args struct {
+		timestamp int64
+		ts        *payload.Remove_Timestamp
+	}
+	type want struct {
+		want bool
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, bool) error
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
+	}
+	defaultCheckFunc := func(w want, got bool) error {
+		if got != w.want {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+		}
+		return nil
+	}
+	tests := []test{
+		{
+			name: "return true when the timestamp is equal",
+			args: args{
+				timestamp: 1000,
+				ts: &payload.Remove_Timestamp{
+					Timestamp: 1000,
+					Operator:  payload.Remove_Timestamp_Eq,
+				},
+			},
+			want: want{
+				want: true,
+			},
+		},
+		{
+			name: "return true when the timestamp is not equal",
+			args: args{
+				timestamp: 1100,
+				ts: &payload.Remove_Timestamp{
+					Timestamp: 1000,
+					Operator:  payload.Remove_Timestamp_Ne,
+				},
+			},
+			want: want{
+				want: true,
+			},
+		},
+		{
+			name: "return true when the timestamp greater or equal",
+			args: args{
+				timestamp: 1000,
+				ts: &payload.Remove_Timestamp{
+					Timestamp: 1000,
+					Operator:  payload.Remove_Timestamp_Ge,
+				},
+			},
+			want: want{
+				want: true,
+			},
+		},
+		{
+			name: "return true when the timestamp is greater",
+			args: args{
+				timestamp: 1100,
+				ts: &payload.Remove_Timestamp{
+					Timestamp: 1000,
+					Operator:  payload.Remove_Timestamp_Gt,
+				},
+			},
+			want: want{
+				want: true,
+			},
+		},
+		{
+			name: "return true when the timestamp is less or equal",
+			args: args{
+				timestamp: 1000,
+				ts: &payload.Remove_Timestamp{
+					Timestamp: 1000,
+					Operator:  payload.Remove_Timestamp_Le,
+				},
+			},
+			want: want{
+				want: true,
+			},
+		},
+		{
+			name: "return true when the timestamp is less",
+			args: args{
+				timestamp: 900,
+				ts: &payload.Remove_Timestamp{
+					Timestamp: 1000,
+					Operator:  payload.Remove_Timestamp_Lt,
+				},
+			},
+			want: want{
+				want: true,
+			},
+		},
+		{
+			name: "return false when the operator is invalid",
+			args: args{
+				timestamp: 1000,
+				ts: &payload.Remove_Timestamp{
+					Timestamp: 1000,
+					Operator:  payload.Remove_Timestamp_Operator(100),
+				},
+			},
+			want: want{
+				want: false,
+			},
+		},
+
+		{
+			name: "return false when the timestamp does not match the Eq operator",
+			args: args{
+				timestamp: 1100,
+				ts: &payload.Remove_Timestamp{
+					Timestamp: 1000,
+					Operator:  payload.Remove_Timestamp_Eq,
+				},
+			},
+			want: want{
+				want: false,
+			},
+		},
+		{
+			name: "return false when the timestamp does not match the Ne operator",
+			args: args{
+				timestamp: 1000,
+				ts: &payload.Remove_Timestamp{
+					Timestamp: 1000,
+					Operator:  payload.Remove_Timestamp_Ne,
+				},
+			},
+			want: want{
+				want: false,
+			},
+		},
+		{
+			name: "return false when the timestamp does not match the Ge operator",
+			args: args{
+				timestamp: 900,
+				ts: &payload.Remove_Timestamp{
+					Timestamp: 1000,
+					Operator:  payload.Remove_Timestamp_Ge,
+				},
+			},
+			want: want{
+				want: false,
+			},
+		},
+		{
+			name: "return false when the timestamp does not match the Gt operator",
+			args: args{
+				timestamp: 900,
+				ts: &payload.Remove_Timestamp{
+					Timestamp: 1000,
+					Operator:  payload.Remove_Timestamp_Gt,
+				},
+			},
+			want: want{
+				want: false,
+			},
+		},
+		{
+			name: "return false when the timestamp does not match the Le operator",
+			args: args{
+				timestamp: 1100,
+				ts: &payload.Remove_Timestamp{
+					Timestamp: 1000,
+					Operator:  payload.Remove_Timestamp_Le,
+				},
+			},
+			want: want{
+				want: false,
+			},
+		},
+		{
+			name: "return false when the timestamp does not match the Lt operator",
+			args: args{
+				timestamp: 1100,
+				ts: &payload.Remove_Timestamp{
+					Timestamp: 1000,
+					Operator:  payload.Remove_Timestamp_Lt,
+				},
+			},
+			want: want{
+				want: false,
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(tt, test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(tt, test.args)
+			}
+			checkFunc := test.checkFunc
+			if test.checkFunc == nil {
+				checkFunc = defaultCheckFunc
+			}
+
+			got := timestampOpFunc(test.args.ts)(test.args.timestamp)
+			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

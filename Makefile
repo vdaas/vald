@@ -2,7 +2,7 @@
 # Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
+# You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
 #    https://www.apache.org/licenses/LICENSE-2.0
@@ -17,11 +17,10 @@
 ORG                             ?= vdaas
 NAME                            = vald
 GOPKG                           = github.com/$(ORG)/$(NAME)
-GOPRIVATE                       = $(GOPKG),$(GOPKG)/apis,$(GOPKG)-client-go
 DATETIME                        = $(eval DATETIME := $(shell date -u +%Y/%m/%d_%H:%M:%S%z))$(DATETIME)
 TAG                            ?= latest
 CRORG                          ?= $(ORG)
-# CRORG                           = ghcr.io/vdaas/vald
+GHCRORG                         = ghcr.io/$(ORG)/$(NAME)
 AGENT_IMAGE                     = $(NAME)-agent-ngt
 AGENT_SIDECAR_IMAGE             = $(NAME)-agent-sidecar
 CI_CONTAINER_IMAGE              = $(NAME)-ci-container
@@ -31,6 +30,10 @@ FILTER_GATEWAY_IMAGE            = $(NAME)-filter-gateway
 HELM_OPERATOR_IMAGE             = $(NAME)-helm-operator
 LB_GATEWAY_IMAGE                = $(NAME)-lb-gateway
 LOADTEST_IMAGE                  = $(NAME)-loadtest
+INDEX_CORRECTION_IMAGE          = $(NAME)-index-correction
+INDEX_CREATION_IMAGE            = $(NAME)-index-creation
+INDEX_SAVE_IMAGE                = $(NAME)-index-save
+READREPLICA_ROTATE_IMAGE        = $(NAME)-readreplica-rotate
 MANAGER_INDEX_IMAGE             = $(NAME)-manager-index
 MAINTAINER                      = "$(ORG).org $(NAME) team <$(NAME)@$(ORG).org>"
 
@@ -39,7 +42,8 @@ VERSION ?= $(eval VERSION := $(shell cat versions/VALD_VERSION))$(VERSION)
 NGT_VERSION := $(eval NGT_VERSION := $(shell cat versions/NGT_VERSION))$(NGT_VERSION)
 NGT_REPO = github.com/yahoojapan/NGT
 
-GOPROXY=direct
+GOPRIVATE = $(GOPKG),$(GOPKG)/apis,$(GOPKG)-client-go
+GOPROXY = "https://proxy.golang.org,direct"
 GOPATH := $(eval GOPATH := $(shell go env GOPATH))$(GOPATH)
 GO_VERSION := $(eval GO_VERSION := $(shell cat versions/GO_VERSION))$(GO_VERSION)
 GOARCH := $(eval GOARCH := $(shell go env GOARCH))$(GOARCH)
@@ -256,8 +260,9 @@ GO_OPTION_TEST_SOURCES = $(GO_OPTION_SOURCES:%.go=%_test.go)
 
 GO_ALL_TEST_SOURCES = $(GO_TEST_SOURCES) $(GO_OPTION_TEST_SOURCES)
 
-DOCKER           ?= docker
-DOCKER_OPTS      ?=
+DOCKER                ?= docker
+DOCKER_OPTS           ?=
+BUILDKIT_INLINE_CACHE ?= 1
 
 DISTROLESS_IMAGE      ?= gcr.io/distroless/static
 DISTROLESS_IMAGE_TAG  ?= nonroot
@@ -361,7 +366,7 @@ clean:
 license:
 	GOPRIVATE=$(GOPRIVATE) \
 	MAINTAINER=$(MAINTAINER) \
-	go run -mod=readonly hack/license/gen/main.go ./
+	go run -mod=readonly hack/license/gen/main.go $(ROOTDIR)
 
 .PHONY: init
 ## initialize development environment
@@ -386,6 +391,7 @@ update: \
 	update/libs \
 	proto/all \
 	deps \
+	update/template \
 	format \
 	go/deps
 
@@ -503,6 +509,10 @@ version/kind:
 version/helm:
 	@echo $(HELM_VERSION)
 
+.PHONY: version/yq
+version/yq:
+	@echo $(YQ_VERSION)
+
 .PHONY: version/valdcli
 version/valdcli:
 	@echo $(VALDCLI_VERSION)
@@ -571,3 +581,4 @@ include Makefile.d/kind.mk
 include Makefile.d/proto.mk
 include Makefile.d/test.mk
 include Makefile.d/tools.mk
+include Makefile.d/minikube.mk

@@ -2,7 +2,7 @@
 // Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -27,7 +27,6 @@ import (
 	agent "github.com/vdaas/vald/apis/grpc/v1/agent/core"
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/client/v1/client/discoverer"
-	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc"
@@ -35,7 +34,8 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
-	valdsync "github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/internal/sync/errgroup"
 )
 
 type Indexer interface {
@@ -54,9 +54,9 @@ type index struct {
 	saveIndexDurationLimit time.Duration
 	saveIndexWaitDuration  time.Duration
 	saveIndexTargetAddrCh  chan string
-	schMap                 valdsync.Map[string, any]
+	schMap                 sync.Map[string, any]
 	concurrency            int
-	indexInfos             valdsync.Map[string, *payload.Info_Index_Count]
+	indexInfos             sync.Map[string, *payload.Info_Index_Count]
 	indexing               atomic.Value // bool
 	minUncommitted         uint32
 	uuidsCount             uint32
@@ -276,7 +276,7 @@ func (idx *index) loadInfos(ctx context.Context) (err error) {
 	}()
 
 	var u, ucu uint32
-	var infoMap valdsync.Map[string, *payload.Info_Index_Count]
+	var infoMap sync.Map[string, *payload.Info_Index_Count]
 	err = idx.client.GetClient().RangeConcurrent(ctx, len(idx.client.GetAddrs(ctx)),
 		func(ctx context.Context,
 			addr string, conn *grpc.ClientConn, copts ...grpc.CallOption,

@@ -3,7 +3,7 @@
 // Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //	https://www.apache.org/licenses/LICENSE-2.0
@@ -17,9 +17,9 @@ package operation
 
 import (
 	"context"
+	"fmt"
 	"reflect"
 	"strconv"
-	"sync"
 	"testing"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
@@ -29,6 +29,7 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc/errdetails"
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/strings"
+	"github.com/vdaas/vald/internal/sync"
 )
 
 type (
@@ -104,6 +105,7 @@ func (c *client) SearchWithParameters(
 
 	wg := sync.WaitGroup{}
 	wg.Add(1)
+	var mu sync.Mutex
 	go func() {
 		defer wg.Done()
 
@@ -115,6 +117,7 @@ func (c *client) SearchWithParameters(
 
 			if err != nil {
 				if err := evalidator(t, err); err != nil {
+					mu.Lock()
 					rerr = errors.Join(
 						rerr,
 						errors.Errorf(
@@ -122,6 +125,7 @@ func (c *client) SearchWithParameters(
 							err.Error(),
 						),
 					)
+					mu.Unlock()
 				}
 				return
 			}
@@ -135,7 +139,9 @@ func (c *client) SearchWithParameters(
 							status.GetCode(),
 							status.GetMessage(),
 							errdetails.Serialize(status.GetDetails()))
+						mu.Lock()
 						rerr = errors.Join(rerr, e)
+						mu.Unlock()
 					}
 					continue
 				}
@@ -182,6 +188,8 @@ func (c *client) SearchWithParameters(
 			},
 		})
 		if err != nil {
+			mu.Lock()
+			defer mu.Unlock()
 			return err
 		}
 		err = sc.Send(&payload.Search_Request{
@@ -196,6 +204,8 @@ func (c *client) SearchWithParameters(
 			},
 		})
 		if err != nil {
+			mu.Lock()
+			defer mu.Unlock()
 			return err
 		}
 		err = sc.Send(&payload.Search_Request{
@@ -210,6 +220,8 @@ func (c *client) SearchWithParameters(
 			},
 		})
 		if err != nil {
+			mu.Lock()
+			defer mu.Unlock()
 			return err
 		}
 		err = sc.Send(&payload.Search_Request{
@@ -224,6 +236,8 @@ func (c *client) SearchWithParameters(
 			},
 		})
 		if err != nil {
+			mu.Lock()
+			defer mu.Unlock()
 			return err
 		}
 		err = sc.Send(&payload.Search_Request{
@@ -238,6 +252,8 @@ func (c *client) SearchWithParameters(
 			},
 		})
 		if err != nil {
+			mu.Lock()
+			defer mu.Unlock()
 			return err
 		}
 	}
@@ -289,6 +305,7 @@ func (c *client) SearchByIDWithParameters(
 
 	wg := sync.WaitGroup{}
 	wg.Add(1)
+	var mu sync.Mutex
 	go func() {
 		defer wg.Done()
 
@@ -300,6 +317,7 @@ func (c *client) SearchByIDWithParameters(
 
 			if err != nil {
 				if err := evalidator(t, err); err != nil {
+					mu.Lock()
 					rerr = errors.Join(
 						rerr,
 						errors.Errorf(
@@ -307,6 +325,7 @@ func (c *client) SearchByIDWithParameters(
 							err.Error(),
 						),
 					)
+					mu.Unlock()
 				}
 				return
 			}
@@ -320,7 +339,9 @@ func (c *client) SearchByIDWithParameters(
 							status.GetCode(),
 							status.GetMessage(),
 							errdetails.Serialize(status.GetDetails()))
+						mu.Lock()
 						rerr = errors.Join(rerr, e)
+						mu.Unlock()
 					}
 					continue
 				}
@@ -352,6 +373,8 @@ func (c *client) SearchByIDWithParameters(
 			},
 		})
 		if err != nil {
+			mu.Lock()
+			defer mu.Unlock()
 			return err
 		}
 	}
@@ -362,6 +385,8 @@ func (c *client) SearchByIDWithParameters(
 
 	t.Log("searchByID operation finished")
 
+	mu.Lock()
+	defer mu.Unlock()
 	return rerr
 }
 
@@ -1009,12 +1034,40 @@ func (c *client) Flush(t *testing.T, ctx context.Context) error {
 		return err
 	}
 
+
 	_, err = client.Flush(ctx, &payload.Flush_Request{})
 	if err != nil {
 		return err
 	}
 
 	t.Log("flush operation finished")
+
+	return nil
+}
+
+func (c *client) RemoveByTimestamp(t *testing.T, ctx context.Context, timestamp int64) error {
+	t.Log("removeByTimestamp operation started")
+
+	client, err := c.getClient(ctx)
+	if err != nil {
+		return err
+	}
+
+	req := &payload.Remove_TimestampRequest{
+		Timestamps: []*payload.Remove_Timestamp{
+			{
+				Timestamp: timestamp,
+				Operator:  payload.Remove_Timestamp_Gt,
+			},
+		},
+	}
+
+	_, err = client.RemoveByTimestamp(ctx, req)
+	if err != nil {
+		return err
+	}
+
+	t.Log("removeByTimestamp operation finished")
 
 	return nil
 }
@@ -1107,6 +1160,10 @@ func (c *client) GetObject(
 					ds.Train[idx],
 				)
 			}
+
+			if ts := resp.GetTimestamp(); ts <= 0 {
+				t.Error("timestamp is not set properly")
+			}
 		}
 	}()
 
@@ -1129,4 +1186,67 @@ func (c *client) GetObject(
 	t.Log("getObject operation finished")
 
 	return rerr
+}
+
+func (c *client) StreamListObject(
+	t *testing.T,
+	ctx context.Context,
+	ds Dataset,
+) error {
+	t.Log("StreamListObject operation started")
+
+	client, err := c.getClient(ctx)
+	if err != nil {
+		return err
+	}
+
+	sc, err := client.StreamListObject(ctx, &payload.Object_List_Request{})
+	if err != nil {
+		return err
+	}
+
+	// kv : [indexId]count
+	indexCnt := make(map[string]int)
+exit_loop:
+	for {
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		default:
+			res, err := sc.Recv()
+			if err != nil {
+				if errors.Is(err, io.EOF) {
+					break exit_loop
+				}
+				return err
+			}
+			vec := res.GetVector()
+			if vec == nil {
+				st := res.GetStatus()
+				return fmt.Errorf("returned vector is empty: code: %v, msg: %v, details: %v", st.GetCode(), st.GetMessage(), st.GetDetails())
+			}
+			if len(vec.GetVector()) == 0 {
+				return fmt.Errorf("returned vector is empty: id: %v", vec.GetId())
+			}
+			indexCnt[vec.GetId()]++
+		}
+	}
+
+	if len(indexCnt) != len(ds.Train) {
+		return fmt.Errorf("the number of vectors returned is different: got %v, want %v", len(indexCnt), len(ds.Train))
+	}
+
+	replica := -1
+	for k, v := range indexCnt {
+		if replica == -1 {
+			replica = v
+			continue
+		}
+		if v != replica {
+			return fmt.Errorf("the number of vectors returned is different at index id %v: got %v, want %v", k, v, replica)
+		}
+	}
+
+	t.Log("StreamListObject operation finished successfully and all vectors are returned with correct replica number")
+	return nil
 }

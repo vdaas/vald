@@ -2,7 +2,7 @@
 // Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -18,12 +18,11 @@ package kvs
 
 import (
 	"context"
-	"sync"
 	"sync/atomic"
 
-	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/safety"
-	valdsync "github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/zeebo/xxh3"
 )
 
@@ -52,8 +51,8 @@ type ValueStructUo struct {
 type bidi struct {
 	concurrency int
 	l           uint64
-	ou          [slen]*valdsync.Map[uint32, valueStructOu]
-	uo          [slen]*valdsync.Map[string, ValueStructUo]
+	ou          [slen]*sync.Map[uint32, valueStructOu]
+	uo          [slen]*sync.Map[string, ValueStructUo]
 	eg          errgroup.Group
 }
 
@@ -76,8 +75,8 @@ func New(opts ...Option) BidiMap {
 		opt(b)
 	}
 	for i := range b.ou {
-		b.ou[i] = new(valdsync.Map[uint32, valueStructOu])
-		b.uo[i] = new(valdsync.Map[string, ValueStructUo])
+		b.ou[i] = new(sync.Map[uint32, valueStructOu])
+		b.uo[i] = new(sync.Map[string, ValueStructUo])
 	}
 
 	if b.eg == nil {
@@ -85,7 +84,7 @@ func New(opts ...Option) BidiMap {
 	}
 
 	if b.concurrency > 0 {
-		b.eg.Limitation(b.concurrency)
+		b.eg.SetLimit(b.concurrency)
 	}
 
 	return b
@@ -93,8 +92,8 @@ func New(opts ...Option) BidiMap {
 
 // Get returns the value and boolean from the given key.
 // If the value does not exist, it returns nil and false.
-func (b *bidi) Get(key string) (uint32, int64, bool) {
-	vs, ok := b.uo[xxh3.HashString(key)&mask].Load(key)
+func (b *bidi) Get(key string) (oid uint32, timestamp int64, exists bool) {
+	vs, ok := b.uo[getShardID(key)].Load(key)
 	if !ok {
 		return 0, 0, false
 	}
@@ -114,7 +113,7 @@ func (b *bidi) GetInverse(val uint32) (string, int64, bool) {
 
 // Set sets the key and val to the bidi.
 func (b *bidi) Set(key string, val uint32, ts int64) {
-	id := xxh3.HashString(key) & mask
+	id := getShardID(key)
 	vs, loaded := b.uo[id].LoadOrStore(key, ValueStructUo{value: val, timestamp: ts})
 	old := vs.value
 	if !loaded { // increase the count only if the key is not exists before
@@ -129,7 +128,7 @@ func (b *bidi) Set(key string, val uint32, ts int64) {
 // Delete deletes the key and the value from the bidi by the given key and returns val and true.
 // If the value for the key does not exist, it returns nil and false.
 func (b *bidi) Delete(key string) (val uint32, ok bool) {
-	vs, ok := b.uo[xxh3.HashString(key)&mask].LoadAndDelete(key)
+	vs, ok := b.uo[getShardID(key)].LoadAndDelete(key)
 	val = vs.value
 	if ok {
 		b.ou[val&mask].Delete(val)
@@ -144,7 +143,7 @@ func (b *bidi) DeleteInverse(val uint32) (key string, ok bool) {
 	vs, ok := b.ou[val&mask].LoadAndDelete(val)
 	key = vs.value
 	if ok {
-		b.uo[xxh3.HashString(key)&mask].Delete(key)
+		b.uo[getShardID(key)].LoadAndDelete(key)
 		atomic.AddUint64(&b.l, ^uint64(0))
 	}
 	return key, ok
@@ -158,12 +157,11 @@ func (b *bidi) Range(ctx context.Context, f func(string, uint32, int64) bool) {
 		wg.Add(1)
 		b.eg.Go(safety.RecoverFunc(func() (err error) {
 			b.uo[idx].Range(func(uuid string, val ValueStructUo) bool {
-				f(uuid, val.value, val.timestamp)
 				select {
 				case <-ctx.Done():
 					return false
 				default:
-					return true
+					return f(uuid, val.value, val.timestamp)
 				}
 			})
 			wg.Done()
@@ -186,4 +184,11 @@ func (b *bidi) Close() error {
 		return nil
 	}
 	return b.eg.Wait()
+}
+
+func getShardID(key string) (id uint64) {
+	if len(key) > 128 {
+		return xxh3.HashString(key[:128]) & mask
+	}
+	return xxh3.HashString(key) & mask
 }

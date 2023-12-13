@@ -2,7 +2,7 @@
 // Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -24,9 +24,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/google/go-cmp/cmp"
 	gache "github.com/kpango/gache/v2"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/test/comparator"
 	"github.com/vdaas/vald/internal/test/goleak"
 )
 
@@ -45,14 +45,14 @@ func TestDefaultOptions(t *testing.T) {
 	}
 
 	defaultCheckFunc := func(w want, got *cache[any]) error {
-		opts := []cmp.Option{
-			cmp.AllowUnexported(*w.want),
-			cmp.AllowUnexported(*got),
-			cmp.Comparer(func(want, got *cache[any]) bool {
+		opts := []comparator.Option{
+			comparator.AllowUnexported(*w.want),
+			comparator.AllowUnexported(*got),
+			comparator.Comparer(func(want, got *cache[any]) bool {
 				return want.gache != nil && got.gache != nil
 			}),
 		}
-		if diff := cmp.Diff(w.want, got, opts...); diff != "" {
+		if diff := comparator.Diff(w.want, got, opts...); diff != "" {
 			return errors.Errorf("got = %v, want = %v", got, w.want)
 		}
 		return nil
@@ -393,16 +393,16 @@ func TestWithExpireCheckDuration(t *testing.T) {
 //
 // func Test_defaultOptions(t *testing.T) {
 // 	type want struct {
-// 		want []Option
+// 		want []Option[V]
 // 	}
 // 	type test struct {
 // 		name       string
 // 		want       want
-// 		checkFunc  func(want, []Option) error
+// 		checkFunc  func(want, []Option[V]) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)
 // 	}
-// 	defaultCheckFunc := func(w want, got []Option) error {
+// 	defaultCheckFunc := func(w want, got []Option[V]) error {
 // 		if !reflect.DeepEqual(got, w.want) {
 // 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 // 		}

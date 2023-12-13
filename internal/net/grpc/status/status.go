@@ -2,7 +2,7 @@
 // Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -108,6 +108,10 @@ func WrapWithDataLoss(msg string, err error, details ...interface{}) error {
 
 func WrapWithUnauthenticated(msg string, err error, details ...interface{}) error {
 	return newStatus(codes.Unauthenticated, msg, err, details...).Err()
+}
+
+func CreateWithNotFound(msg string, err error, details ...interface{}) *Status {
+	return newStatus(codes.NotFound, msg, err, details...)
 }
 
 func Error(code codes.Code, msg string) error {
@@ -246,11 +250,26 @@ func withDetails(st *Status, err error, details ...interface{}) *Status {
 		})
 	}
 	for _, detail := range details {
+		if detail == nil {
+			continue
+		}
 		switch v := detail.(type) {
+		case *spb.Status:
+			if v != nil {
+				msgs = append(msgs, proto.ToMessageV1(v))
+			}
 		case spb.Status:
 			msgs = append(msgs, proto.ToMessageV1(&v))
-		case *spb.Status:
-			msgs = append(msgs, proto.ToMessageV1(v))
+		case *status.Status:
+			if v != nil {
+				msgs = append(msgs, proto.ToMessageV1(&spb.Status{
+					Code:    v.Proto().GetCode(),
+					Message: v.Message(),
+				}))
+				for _, d := range v.Proto().Details {
+					msgs = append(msgs, proto.ToMessageV1(errdetails.AnyToErrorDetail(d)))
+				}
+			}
 		case status.Status:
 			msgs = append(msgs, proto.ToMessageV1(&spb.Status{
 				Code:    v.Proto().GetCode(),
@@ -259,28 +278,38 @@ func withDetails(st *Status, err error, details ...interface{}) *Status {
 			for _, d := range v.Proto().Details {
 				msgs = append(msgs, proto.ToMessageV1(errdetails.AnyToErrorDetail(d)))
 			}
-		case *status.Status:
-			msgs = append(msgs, proto.ToMessageV1(&spb.Status{
-				Code:    v.Proto().GetCode(),
-				Message: v.Message(),
-			}))
-			for _, d := range v.Proto().Details {
-				msgs = append(msgs, proto.ToMessageV1(errdetails.AnyToErrorDetail(d)))
+		case *info.Detail:
+			if v != nil {
+				msgs = append(msgs, errdetails.DebugInfoFromInfoDetail(v))
 			}
 		case info.Detail:
 			msgs = append(msgs, errdetails.DebugInfoFromInfoDetail(&v))
-		case *info.Detail:
-			msgs = append(msgs, errdetails.DebugInfoFromInfoDetail(v))
-		case proto.Message:
-			msgs = append(msgs, proto.ToMessageV1(v))
-		case *proto.Message:
-			msgs = append(msgs, proto.ToMessageV1(*v))
-		case proto.MessageV1:
-			msgs = append(msgs, v)
-		case *proto.MessageV1:
-			msgs = append(msgs, *v)
+		case *types.Any:
+			if v != nil {
+				msgs = append(msgs, proto.ToMessageV1(errdetails.AnyToErrorDetail(v)))
+			}
 		case types.Any:
 			msgs = append(msgs, proto.ToMessageV1(errdetails.AnyToErrorDetail(&v)))
+		case *proto.Message:
+			if v != nil {
+				msgs = append(msgs, proto.ToMessageV1(*v))
+			}
+		case proto.Message:
+			msgs = append(msgs, proto.ToMessageV1(v))
+		case *proto.MessageV1:
+			if v != nil {
+				msgs = append(msgs, *v)
+			}
+		case proto.MessageV1:
+			msgs = append(msgs, v)
+		}
+	}
+
+	if st == nil {
+		if err != nil {
+			st = New(codes.Unknown, err.Error())
+		} else {
+			st = New(codes.Unknown, "")
 		}
 	}
 

@@ -2,7 +2,7 @@
 # Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
+# You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
 #    https://www.apache.org/licenses/LICENSE-2.0
@@ -17,40 +17,18 @@ name: "ChatOps help"
 on:
   pull_request:
     types: [opened]
+
 jobs:
-  dump_contexts_to_log:
+  dump-contexts-to-log:
     runs-on: ubuntu-latest
     steps:
-      - name: Dump GitHub context
-        id: github_context_step
-        run: echo $JSON
-        env:
-          JSON: ${{ toJSON(github) }}
-      - name: Dump job context
-        run: echo $JSON
-        env:
-          JSON: ${{ toJSON(job) }}
-      - name: Dump steps context
-        run: echo $JSON
-        env:
-          JSON: ${{ toJSON(steps) }}
-      - name: Dump runner context
-        run: echo $JSON
-        env:
-          JSON: ${{ toJSON(runner) }}
-      - name: Dump strategy context
-        run: echo $JSON
-        env:
-          JSON: ${{ toJSON(strategy) }}
-      - name: Dump matrix context
-        run: echo $JSON
-        env:
-          JSON: ${{ toJSON(matrix) }}
-  print-help:
-    name: print help
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/dump-context
+
+  print:
     runs-on: ubuntu-latest
     steps:
-      - name: comment to PR
+      - name: Comment to PR
         run: |
           curl -o chatops_commands.md https://raw.githubusercontent.com/vdaas/vald/main/.github/chatops_commands.md
           BODY=`cat chatops_commands.md | sed ':a;N;$!ba;s/\n/\\\\n/g'`

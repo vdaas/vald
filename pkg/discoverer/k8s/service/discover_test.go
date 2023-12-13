@@ -2,7 +2,7 @@
 // Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -118,10 +118,10 @@ package service
 // 	}
 // 	type fields struct {
 // 		maxPods         int
-// 		nodes           nodeMap
-// 		nodeMetrics     nodeMetricsMap
-// 		pods            podsMap
-// 		podMetrics      podMetricsMap
+// 		nodes           sync.Map[string, *node.Node]
+// 		nodeMetrics     sync.Map[string, mnode.Node]
+// 		pods            sync.Map[string, *[]pod.Pod]
+// 		podMetrics      sync.Map[string, mpod.Pod]
 // 		podsByNode      atomic.Value
 // 		podsByNamespace atomic.Value
 // 		podsByName      atomic.Value
@@ -165,10 +165,10 @@ package service
 // 		       },
 // 		       fields: fields {
 // 		           maxPods:0,
-// 		           nodes:nodeMap{},
-// 		           nodeMetrics:nodeMetricsMap{},
-// 		           pods:podsMap{},
-// 		           podMetrics:podMetricsMap{},
+// 		           nodes:nil,
+// 		           nodeMetrics:nil,
+// 		           pods:nil,
+// 		           podMetrics:nil,
 // 		           podsByNode:nil,
 // 		           podsByNamespace:nil,
 // 		           podsByName:nil,
@@ -201,10 +201,10 @@ package service
 // 		           },
 // 		           fields: fields {
 // 		           maxPods:0,
-// 		           nodes:nodeMap{},
-// 		           nodeMetrics:nodeMetricsMap{},
-// 		           pods:podsMap{},
-// 		           podMetrics:podMetricsMap{},
+// 		           nodes:nil,
+// 		           nodeMetrics:nil,
+// 		           pods:nil,
+// 		           podMetrics:nil,
 // 		           podsByNode:nil,
 // 		           podsByNamespace:nil,
 // 		           podsByName:nil,
@@ -277,10 +277,10 @@ package service
 // 	}
 // 	type fields struct {
 // 		maxPods         int
-// 		nodes           nodeMap
-// 		nodeMetrics     nodeMetricsMap
-// 		pods            podsMap
-// 		podMetrics      podMetricsMap
+// 		nodes           sync.Map[string, *node.Node]
+// 		nodeMetrics     sync.Map[string, mnode.Node]
+// 		pods            sync.Map[string, *[]pod.Pod]
+// 		podMetrics      sync.Map[string, mpod.Pod]
 // 		podsByNode      atomic.Value
 // 		podsByNamespace atomic.Value
 // 		podsByName      atomic.Value
@@ -324,10 +324,10 @@ package service
 // 		       },
 // 		       fields: fields {
 // 		           maxPods:0,
-// 		           nodes:nodeMap{},
-// 		           nodeMetrics:nodeMetricsMap{},
-// 		           pods:podsMap{},
-// 		           podMetrics:podMetricsMap{},
+// 		           nodes:nil,
+// 		           nodeMetrics:nil,
+// 		           pods:nil,
+// 		           podMetrics:nil,
 // 		           podsByNode:nil,
 // 		           podsByNamespace:nil,
 // 		           podsByName:nil,
@@ -360,10 +360,10 @@ package service
 // 		           },
 // 		           fields: fields {
 // 		           maxPods:0,
-// 		           nodes:nodeMap{},
-// 		           nodeMetrics:nodeMetricsMap{},
-// 		           pods:podsMap{},
-// 		           podMetrics:podMetricsMap{},
+// 		           nodes:nil,
+// 		           nodeMetrics:nil,
+// 		           pods:nil,
+// 		           podMetrics:nil,
 // 		           podsByNode:nil,
 // 		           podsByNamespace:nil,
 // 		           podsByName:nil,
@@ -436,10 +436,10 @@ package service
 // 	}
 // 	type fields struct {
 // 		maxPods         int
-// 		nodes           nodeMap
-// 		nodeMetrics     nodeMetricsMap
-// 		pods            podsMap
-// 		podMetrics      podMetricsMap
+// 		nodes           sync.Map[string, *node.Node]
+// 		nodeMetrics     sync.Map[string, mnode.Node]
+// 		pods            sync.Map[string, *[]pod.Pod]
+// 		podMetrics      sync.Map[string, mpod.Pod]
 // 		podsByNode      atomic.Value
 // 		podsByNamespace atomic.Value
 // 		podsByName      atomic.Value
@@ -483,10 +483,10 @@ package service
 // 		       },
 // 		       fields: fields {
 // 		           maxPods:0,
-// 		           nodes:nodeMap{},
-// 		           nodeMetrics:nodeMetricsMap{},
-// 		           pods:podsMap{},
-// 		           podMetrics:podMetricsMap{},
+// 		           nodes:nil,
+// 		           nodeMetrics:nil,
+// 		           pods:nil,
+// 		           podMetrics:nil,
 // 		           podsByNode:nil,
 // 		           podsByNamespace:nil,
 // 		           podsByName:nil,
@@ -519,10 +519,10 @@ package service
 // 		           },
 // 		           fields: fields {
 // 		           maxPods:0,
-// 		           nodes:nodeMap{},
-// 		           nodeMetrics:nodeMetricsMap{},
-// 		           pods:podsMap{},
-// 		           podMetrics:podMetricsMap{},
+// 		           nodes:nil,
+// 		           nodeMetrics:nil,
+// 		           pods:nil,
+// 		           podMetrics:nil,
 // 		           podsByNode:nil,
 // 		           podsByNamespace:nil,
 // 		           podsByName:nil,

@@ -1,8 +1,9 @@
+# syntax = docker/dockerfile:latest
 #
 # Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
+# You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
 #    https://www.apache.org/licenses/LICENSE-2.0
@@ -17,9 +18,9 @@
 ARG GO_VERSION=latest
 ARG MAINTAINER="vdaas.org vald team <vald@vdaas.org>"
 
-FROM golang:${GO_VERSION} AS golang
+FROM --platform=${BUILDPLATFORM} golang:${GO_VERSION} AS golang
 
-FROM ubuntu:devel AS builder
+FROM --platform=${BUILDPLATFORM} ubuntu:devel AS builder
 
 ENV GO111MODULE on
 ENV DEBIAN_FRONTEND noninteractive
@@ -107,9 +108,9 @@ RUN GO_VERSION="$(< GO_VERSION)" \
     && upx -9 -o "/usr/bin/${APP_NAME}" "${APP_NAME}"
 
 # Start From Scratch For Running Environment
-FROM ubuntu:devel
+FROM --platform=${BUILDPLATFORM} ubuntu:devel
 # Start From Alpine For Debug Environment
-# FROM alpine:latest
+# FROM --platform=${BUILDPLATFORM} alpine:latest
 LABEL maintainer="${MAINTAINER}"
 
 ENV APP_NAME loadtest

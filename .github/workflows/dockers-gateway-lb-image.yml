@@ -2,7 +2,7 @@
 # Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
+# You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
 #    https://www.apache.org/licenses/LICENSE-2.0
@@ -25,6 +25,7 @@ on:
       - "v*.*.*-*"
     paths:
       - ".github/actions/docker-build/actions.yaml"
+      - ".github/workflows/_docker-image.yaml"
       - ".github/workflows/dockers-gateway-lb-image.yml"
       - "go.mod"
       - "go.sum"
@@ -42,6 +43,7 @@ on:
   pull_request:
     paths:
       - ".github/actions/docker-build/actions.yaml"
+      - ".github/workflows/_docker-image.yaml"
       - ".github/workflows/dockers-gateway-lb-image.yml"
       - "go.mod"
       - "go.sum"
@@ -59,6 +61,7 @@ on:
   pull_request_target:
     paths:
       - ".github/actions/docker-build/actions.yaml"
+      - ".github/workflows/_docker-image.yaml"
       - ".github/workflows/dockers-gateway-lb-image.yml"
       - "go.mod"
       - "go.sum"
@@ -74,121 +77,9 @@ on:
       - "dockers/gateway/lb/Dockerfile"
       - "versions/GO_VERSION"
 
-concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref != 'refs/heads/main' && github.ref || github.sha }}-${{ github.event_name }}
-  cancel-in-progress: true
-
 jobs:
-  dump_contexts_to_log:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Dump GitHub context
-        id: github_context_step
-        run: echo $JSON
-        env:
-          JSON: ${{ toJSON(github) }}
-      - name: Dump job context
-        run: echo $JSON
-        env:
-          JSON: ${{ toJSON(job) }}
-      - name: Dump steps context
-        run: echo $JSON
-        env:
-          JSON: ${{ toJSON(steps) }}
-      - name: Dump runner context
-        run: echo $JSON
-        env:
-          JSON: ${{ toJSON(runner) }}
-      - name: Dump strategy context
-        run: echo $JSON
-        env:
-          JSON: ${{ toJSON(strategy) }}
-      - name: Dump matrix context
-        run: echo $JSON
-        env:
-          JSON: ${{ toJSON(matrix) }}
   build:
-    strategy:
-      max-parallel: 4
-    runs-on: ubuntu-latest
-    if: ${{ (github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == false) || (github.event.pull_request.head.repo.fork == true && github.event_name == 'pull_request_target' && contains(github.event.pull_request.labels.*.name, 'ci/approved')) || (github.event_name == 'push' && github.ref == 'refs/heads/main') || startsWith( github.ref, 'refs/tags/') }}
-    steps:
-      - name: Get ref
-        id: ref
-        run: |
-          if [ ${{ github.event.pull_request.head.sha }} != "" ]; then
-            echo ref=${{ github.event.pull_request.head.sha }} >> $GITHUB_OUTPUT
-          else
-            echo ref=${{ github.sha }} >> $GITHUB_OUTPUT
-          fi
-      - uses: actions/checkout@v3
-        with:
-          ref: ${{ steps.ref.outputs.ref }}
-      - name: set git config
-        run: |
-          git config --global --add safe.directory ${GITHUB_WORKSPACE}
-      - name: Setup QEMU
-        uses: docker/setup-qemu-action@v2
-        with:
-          platforms: all
-      - name: Setup Docker Buildx
-        id: buildx
-        uses: docker/setup-buildx-action@v2
-        with:
-          buildkitd-flags: "--debug"
-      - name: Login to DockerHub
-        uses: docker/login-action@v2
-        with:
-          username: ${{ secrets.DOCKERHUB_USER }}
-          password: ${{ secrets.DOCKERHUB_PASS }}
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v2
-        with:
-          registry: ghcr.io
-          username: ${{ secrets.PACKAGE_USER }}
-          password: ${{ secrets.PACKAGE_TOKEN }}
-      - name: Build and Publish
-        id: build_and_publish
-        uses: ./.github/actions/docker-build
-        with:
-          target: gateway-lb
-          builder: ${{ steps.buildx.outputs.name }}
-      - name: Initialize CodeQL
-        if: startsWith( github.ref, 'refs/tags/')
-        uses: github/codeql-action/init@v2
-      - name: Run vulnerability scanner (table)
-        if: startsWith( github.ref, 'refs/tags/')
-        uses: aquasecurity/trivy-action@master
-        with:
-          image-ref: "${{ steps.build_and_publish.outputs.IMAGE_NAME }}:${{ steps.build_and_publish.outputs.PRIMARY_TAG }}"
-          format: "table"
-      - name: Run vulnerability scanner (sarif)
-        if: startsWith( github.ref, 'refs/tags/')
-        uses: aquasecurity/trivy-action@master
-        with:
-          image-ref: "${{ steps.build_and_publish.outputs.IMAGE_NAME }}:${{ steps.build_and_publish.outputs.PRIMARY_TAG }}"
-          format: "template"
-          template: "@/contrib/sarif.tpl"
-          output: "trivy-results.sarif"
-      - name: Upload Trivy scan results to Security tab
-        if: startsWith( github.ref, 'refs/tags/')
-        uses: github/codeql-action/upload-sarif@v2
-        with:
-          sarif_file: "trivy-results.sarif"
-  slack:
-    name: Slack notification
-    needs: build
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' || startsWith( github.ref, 'refs/tags/')
-    steps:
-      - uses: technote-space/workflow-conclusion-action@v2
-        with:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - uses: 8398a7/action-slack@v3
-        with:
-          author_name: vald-lb-gateway image build
-          status: ${{ env.WORKFLOW_CONCLUSION }}
-          only_mention_fail: channel
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_NOTIFY_WEBHOOK_URL }}
+    uses: ./.github/workflows/_docker-image.yaml
+    with:
+      target: gateway-lb
+    secrets: inherit

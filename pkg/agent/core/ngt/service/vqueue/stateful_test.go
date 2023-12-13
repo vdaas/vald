@@ -2,7 +2,7 @@
 // Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -36,9 +36,10 @@ type qSystem struct {
 }
 
 type resultContainer struct {
-	err    error
-	vector []float32
-	exists bool
+	err       error
+	vector    []float32
+	timestamp int64
+	exists    bool
 }
 
 type qState struct {
@@ -693,10 +694,11 @@ var (
 			sy := systemUnderTest.(*qSystem)
 			q := sy.q
 
-			vec, exists := q.GetVector(idA)
+			vec, ts, exists := q.GetVector(idA)
 			return &resultContainer{
-				vector: vec,
-				exists: exists,
+				vector:    vec,
+				timestamp: ts,
+				exists:    exists,
 			}
 		},
 		NextStateFunc: func(state commands.State) commands.State {
@@ -755,10 +757,11 @@ var (
 			sy := systemUnderTest.(*qSystem)
 			q := sy.q
 
-			vec, exists := q.GetVector(idB)
+			vec, ts, exists := q.GetVector(idB)
 			return &resultContainer{
-				vector: vec,
-				exists: exists,
+				vector:    vec,
+				timestamp: ts,
+				exists:    exists,
 			}
 		},
 		NextStateFunc: func(state commands.State) commands.State {
@@ -817,10 +820,11 @@ var (
 			sy := systemUnderTest.(*qSystem)
 			q := sy.q
 
-			vec, exists := q.GetVector(idC)
+			vec, ts, exists := q.GetVector(idC)
 			return &resultContainer{
-				vector: vec,
-				exists: exists,
+				vector:    vec,
+				timestamp: ts,
+				exists:    exists,
 			}
 		},
 		NextStateFunc: func(state commands.State) commands.State {

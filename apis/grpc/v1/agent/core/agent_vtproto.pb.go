@@ -2,7 +2,7 @@
 // Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -50,6 +50,8 @@ type AgentClient interface {
 	CreateAndSaveIndex(ctx context.Context, in *payload.Control_CreateIndexRequest, opts ...grpc.CallOption) (*payload.Empty, error)
 	// Represent the RPC to get the agent index information.
 	IndexInfo(ctx context.Context, in *payload.Empty, opts ...grpc.CallOption) (*payload.Info_Index_Count, error)
+	// Represent the RPC to get the vector metadata. This RPC is mainly used for index correction process
+	GetTimestamp(ctx context.Context, in *payload.Object_GetTimestampRequest, opts ...grpc.CallOption) (*payload.Object_Timestamp, error)
 }
 
 type agentClient struct {
@@ -96,6 +98,15 @@ func (c *agentClient) IndexInfo(ctx context.Context, in *payload.Empty, opts ...
 	return out, nil
 }
 
+func (c *agentClient) GetTimestamp(ctx context.Context, in *payload.Object_GetTimestampRequest, opts ...grpc.CallOption) (*payload.Object_Timestamp, error) {
+	out := new(payload.Object_Timestamp)
+	err := c.cc.Invoke(ctx, "/core.v1.Agent/GetTimestamp", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AgentServer is the server API for Agent service.
 // All implementations must embed UnimplementedAgentServer
 // for forward compatibility
@@ -108,6 +119,8 @@ type AgentServer interface {
 	CreateAndSaveIndex(context.Context, *payload.Control_CreateIndexRequest) (*payload.Empty, error)
 	// Represent the RPC to get the agent index information.
 	IndexInfo(context.Context, *payload.Empty) (*payload.Info_Index_Count, error)
+	// Represent the RPC to get the vector metadata. This RPC is mainly used for index correction process
+	GetTimestamp(context.Context, *payload.Object_GetTimestampRequest) (*payload.Object_Timestamp, error)
 	mustEmbedUnimplementedAgentServer()
 }
 
@@ -126,6 +139,9 @@ func (UnimplementedAgentServer) CreateAndSaveIndex(context.Context, *payload.Con
 }
 func (UnimplementedAgentServer) IndexInfo(context.Context, *payload.Empty) (*payload.Info_Index_Count, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method IndexInfo not implemented")
+}
+func (UnimplementedAgentServer) GetTimestamp(context.Context, *payload.Object_GetTimestampRequest) (*payload.Object_Timestamp, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetTimestamp not implemented")
 }
 func (UnimplementedAgentServer) mustEmbedUnimplementedAgentServer() {}
 
@@ -212,6 +228,24 @@ func _Agent_IndexInfo_Handler(srv interface{}, ctx context.Context, dec func(int
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Agent_GetTimestamp_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(payload.Object_GetTimestampRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AgentServer).GetTimestamp(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/core.v1.Agent/GetTimestamp",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AgentServer).GetTimestamp(ctx, req.(*payload.Object_GetTimestampRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Agent_ServiceDesc is the grpc.ServiceDesc for Agent service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -235,7 +269,11 @@ var Agent_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "IndexInfo",
 			Handler:    _Agent_IndexInfo_Handler,
 		},
+		{
+			MethodName: "GetTimestamp",
+			Handler:    _Agent_GetTimestamp_Handler,
+		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "apis/proto/v1/agent/core/agent.proto",
+	Metadata: "v1/agent/core/agent.proto",
 }

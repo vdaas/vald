@@ -2,7 +2,7 @@
 # Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
+# You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
 #    https://www.apache.org/licenses/LICENSE-2.0
@@ -21,38 +21,13 @@ pink   = printf "\x1b[35m\#\# %s\x1b[0m\n" $1
 cyan   = printf "\x1b[36m\#\# %s\x1b[0m\n" $1
 
 define go-install
-	GO111MODULE=on go install $1@latest
+	GO111MODULE=on go install \
+	    -mod=readonly \
+	    $1@latest
 endef
 
 define mkdir
 	mkdir -p $1
-endef
-
-define proto-code-gen
-	protoc \
-		$(PROTO_PATHS:%=-I %) \
-                --go_out=$(GOPATH)/src --plugin protoc-gen-go="$(GOBIN)/protoc-gen-go" \
-                --go-vtproto_out=$(GOPATH)/src --plugin protoc-gen-go-vtproto="$(GOBIN)/protoc-gen-go-vtproto" \
-                --go-vtproto_opt=features=grpc+marshal+unmarshal+size+equal+clone \
-		$1
-endef
-                # --go-vtproto_opt=pool=$(ROOTDIR)/apis/proto/v1/payload.Object.Vector \
-                # --go-vtproto_opt=pool=$(ROOTDIR)/apis/proto/v1/payload.Insert.MultiRequest \
-                # --go-vtproto_opt=pool=$(ROOTDIR)/apis/proto/v1/payload.Insert.Request \
-                # --go-vtproto_opt=pool=$(ROOTDIR)/apis/proto/v1/payload.Object.Vector \
-                # --go-vtproto_opt=pool=$(ROOTDIR)/apis/proto/v1/payload.Object.Vectors \
-                # --go-vtproto_opt=pool=$(ROOTDIR)/apis/proto/v1/payload.Search.ObjectRequest \
-                # --go-vtproto_opt=pool=$(ROOTDIR)/apis/proto/v1/payload.Search.Request \
-                # --go-vtproto_opt=pool=$(ROOTDIR)/apis/proto/v1/payload.Update.MultiRequest \
-                # --go-vtproto_opt=pool=$(ROOTDIR)/apis/proto/v1/payload.Update.Request \
-                # --go-vtproto_opt=pool=$(ROOTDIR)/apis/proto/v1/payload.Upsert.MultiRequest \
-                # --go-vtproto_opt=pool=$(ROOTDIR)/apis/proto/v1/payload.Upsert.Request \
-
-define protoc-gen
-	protoc \
-		$(PROTO_PATHS:%=-I %) \
-		$2 \
-		$1
 endef
 
 define profile-web

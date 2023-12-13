@@ -2,7 +2,7 @@
 # Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
+# You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
 #    https://www.apache.org/licenses/LICENSE-2.0
@@ -23,22 +23,30 @@ k8s/manifest/clean:
 		k8s/agent \
 		k8s/discoverer \
 		k8s/gateway \
-		k8s/manager
+		k8s/manager \
+		k8s/index
 
 .PHONY: k8s/manifest/update
 ## update k8s manifests using helm templates
 k8s/manifest/update: \
 	k8s/manifest/clean
 	helm template \
-	    --values $(HELM_VALUES) \
-	    --output-dir $(TEMP_DIR) \
-	    charts/vald
+		--values $(HELM_VALUES) \
+		$(HELM_EXTRA_OPTIONS) \
+		--output-dir $(TEMP_DIR) \
+		charts/vald
 	mkdir -p k8s/gateway
 	mkdir -p k8s/manager
+	mkdir -p k8s/index/job
+	mkdir -p k8s/index/job/readreplica
 	mv $(TEMP_DIR)/vald/templates/agent k8s/agent
 	mv $(TEMP_DIR)/vald/templates/discoverer k8s/discoverer
 	mv $(TEMP_DIR)/vald/templates/gateway/lb k8s/gateway/lb
 	mv $(TEMP_DIR)/vald/templates/manager/index k8s/manager/index
+	mv $(TEMP_DIR)/vald/templates/index/job/correction k8s/index/job/correction
+	mv $(TEMP_DIR)/vald/templates/index/job/creation k8s/index/job/creation
+	mv $(TEMP_DIR)/vald/templates/index/job/save k8s/index/job/save
+	mv $(TEMP_DIR)/vald/templates/index/job/readreplica/rotate k8s/index/job/readreplica/rotate
 	rm -rf $(TEMP_DIR)
 
 .PHONY: k8s/manifest/helm-operator/clean
@@ -72,14 +80,21 @@ k8s/vald/deploy:
 	    --set gateway.filter.image.repository=$(CRORG)/$(FILTER_GATEWAY_IMAGE) \
 	    --set gateway.lb.image.repository=$(CRORG)/$(LB_GATEWAY_IMAGE) \
 	    --set manager.index.image.repository=$(CRORG)/$(MANAGER_INDEX_IMAGE) \
+	    --set manager.index.creator.image.repository=$(CRORG)/$(INDEX_CREATION_IMAGE) \
+	    --set manager.index.saver.image.repository=$(CRORG)/$(INDEX_SAVE_IMAGE) \
 	    $(HELM_EXTRA_OPTIONS) \
 	    --output-dir $(TEMP_DIR) \
 	    charts/vald
 	@echo "Permitting error because there's some cases nothing to apply"
 	kubectl apply -f $(TEMP_DIR)/vald/templates/manager/index || true
 	kubectl apply -f $(TEMP_DIR)/vald/templates/agent || true
+	kubectl apply -f $(TEMP_DIR)/vald/templates/agent/readreplica || true
 	kubectl apply -f $(TEMP_DIR)/vald/templates/discoverer || true
 	kubectl apply -f $(TEMP_DIR)/vald/templates/gateway/lb || true
+	kubectl apply -f $(TEMP_DIR)/vald/templates/index/job/correction || true
+	kubectl apply -f $(TEMP_DIR)/vald/templates/index/job/creation || true
+	kubectl apply -f $(TEMP_DIR)/vald/templates/index/job/save || true
+	kubectl apply -f $(TEMP_DIR)/vald/templates/index/job/readreplica/rotate || true
 	rm -rf $(TEMP_DIR)
 	kubectl get pods -o jsonpath="{.items[*].spec.containers[*].image}" | tr " " "\n"
 
@@ -97,9 +112,16 @@ k8s/vald/delete:
 	    --set manager.index.image.repository=$(CRORG)/$(MANAGER_INDEX_IMAGE) \
 	    --output-dir $(TEMP_DIR) \
 	    charts/vald
+	kubectl delete -f $(TEMP_DIR)/vald/templates/index/job/readreplica/rotate
+	kubectl delete -f $(TEMP_DIR)/vald/templates/index/job/save
+	kubectl delete -f $(TEMP_DIR)/vald/templates/index/job/creation
+	kubectl delete -f $(TEMP_DIR)/vald/templates/index/job/correction
+	kubectl delete -f $(TEMP_DIR)/vald/templates/index/job/creation
+	kubectl delete -f $(TEMP_DIR)/vald/templates/index/job/save
 	kubectl delete -f $(TEMP_DIR)/vald/templates/gateway/lb
 	kubectl delete -f $(TEMP_DIR)/vald/templates/manager/index
 	kubectl delete -f $(TEMP_DIR)/vald/templates/discoverer
+	kubectl delete -f $(TEMP_DIR)/vald/templates/agent/readreplica || true
 	kubectl delete -f $(TEMP_DIR)/vald/templates/agent
 	rm -rf $(TEMP_DIR)
 
@@ -109,6 +131,7 @@ k8s/vald-helm-operator/deploy:
 	helm template \
 	    --output-dir $(TEMP_DIR) \
 	    --set image.tag=$(VERSION) \
+	    $(HELM_EXTRA_OPTIONS) \
 	    --include-crds \
 	    charts/vald-helm-operator
 	kubectl create -f $(TEMP_DIR)/vald-helm-operator/crds/valdrelease.yaml
@@ -353,16 +376,10 @@ k8s/monitoring/delete: \
 telepresence/install: $(BINDIR)/telepresence
 
 $(BINDIR)/telepresence:
-	@if echo $(BINDIR) | grep -v '^/' > /dev/null; then \
-	    printf "\x1b[31m%s\x1b[0m\n" "WARNING!! BINDIR must be absolute path"; \
-	    exit 1; \
-	fi
 	mkdir -p $(BINDIR)
-	curl -L "https://github.com/telepresenceio/telepresence/archive/$(TELEPRESENCE_VERSION).tar.gz" -o telepresence.tar.gz
-	tar xzvf telepresence.tar.gz
-	rm -rf telepresence.tar.gz
-	env PREFIX=$(BINDIR:%/bin=%) telepresence-$(TELEPRESENCE_VERSION)/install.sh
-	rm -rf telepresence-$(TELEPRESENCE_VERSION)
+	cd $(TEMP_DIR) \
+	    && curl -fsSL "https://app.getambassador.io/download/tel2oss/releases/download/v$(TELEPRESENCE_VERSION)/telepresence-$(shell echo $(UNAME) | tr '[:upper:]' '[:lower:]')-$(subst x86_64,amd64,$(shell echo $(ARCH) | tr '[:upper:]' '[:lower:]'))" -o $(BINDIR)/telepresence \
+	    && chmod a+x $(BINDIR)/telepresence
 
 .PHONY: telepresence/swap/agent-ngt
 ## swap agent-ngt deployment using telepresence

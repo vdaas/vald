@@ -2,7 +2,7 @@
 # Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
+# You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
 #    https://www.apache.org/licenses/LICENSE-2.0
@@ -38,7 +38,7 @@ defaults:
   image:
     # @schema {"name": "defaults.image.tag", "type": "string"}
     # defaults.image.tag -- docker image tag
-    tag: v1.7.6
+    tag: v1.7.9
   # @schema {"name": "defaults.server_config", "type": "object", "anchor": "server_config"}
   server_config:
     # @schema {"name": "defaults.server_config.servers", "type": "object"}
@@ -838,12 +838,12 @@ defaults:
     # @schema {"name": "defaults.networkPolicy.custom", "type": "object"}
     # defaults.networkPolicy.custom -- custom network policies that a user can add
     custom:
-      # @schema {"name": "defaults.networkPolicy.custom.ingress", "type": "object"}
+      # @schema {"name": "defaults.networkPolicy.custom.ingress", "type": "array", "items": {"type": "object"}}
       # defaults.networkPolicy.custom.ingress -- custom ingress network policies that a user can add
-      ingress: {}
-      # @schema {"name": "defaults.networkPolicy.custom.egress", "type": "object"}
+      ingress: []
+      # @schema {"name": "defaults.networkPolicy.custom.egress", "type": "array", "items": {"type": "object"}}
       # defaults.networkPolicy.custom.egress -- custom egress network policies that a user can add
-      egress: {}
+      egress: []
 # @schema {"name": "gateway", "type": "object"}
 gateway:
   # @schema {"name": "gateway.lb", "type": "object"}
@@ -1633,6 +1633,36 @@ agent:
     requests:
       cpu: 300m
       memory: 4Gi
+  # @schema {"name": "agent.readreplica", "type": "object"}
+  # agent.readreplica -- readreplica deployment annotations
+  readreplica:
+    # @schema {"name": "agent.readreplica.enabled", "type": "boolean"}
+    # agent.readreplica.enabled -- [This feature is WORK IN PROGRESS]enable agent readreplica
+    enabled: false
+    # @schema {"name": "agent.readreplica.name", "type": "string"}
+    # agent.readreplica.name -- name of agent readreplica
+    name: vald-agent-ngt-readreplica
+    # @schema {"name": "agent.readreplica.component_name", "type": "string"}
+    # agent.readreplica.component_name -- app.kubernetes.io/component name of agent readreplica
+    component_name: agent-readreplica
+    # @schema {"name": "agent.readreplica.label_key", "type": "string"}
+    # agent.readreplica.label_key -- label key to identify read replica resources
+    label_key: vald-readreplica-id
+    # @schema {"name": "agent.readreplica.volume_name", "type": "string"}
+    # agent.readreplica.volume_name -- name of clone volume of agent pvc for read replica
+    volume_name: vald-agent-ngt-readreplica-pvc
+    # @schema {"name": "agent.readreplica.snapshot_classname", "type": "string"}
+    # agent.readreplica.snapshot_classname -- snapshot class name for snapshotter used for read replica
+    snapshot_classname: ""
+    # @schema {"name": "agent.readreplica.replica", "type": "integer"}
+    # agent.readreplica.replica -- replica number of read replica
+    replica: 2
+    # @schema {"name": "agent.readreplica.service", "type": "object"}
+    # agent.readreplica.service -- service settings for read replica service resources
+    service:
+      # @schema {"name": "agent.readreplica.service.annotations", "type": "object"}
+      # agent.readreplica.service.annotations -- readreplica deployment annotations
+      annotations: {}
   # @schema {"name": "agent.ngt", "type": "object"}
   ngt:
     # @schema {"name": "agent.ngt.index_path", "type": "string"}
@@ -1652,7 +1682,7 @@ agent:
     auto_save_index_duration: 35m
     # @schema {"name": "agent.ngt.auto_create_index_pool_size", "type": "integer"}
     # agent.ngt.auto_create_index_pool_size -- batch process pool size of automatic create index operation
-    auto_create_index_pool_size: 10000
+    auto_create_index_pool_size: 16
     # @schema {"name": "agent.ngt.initial_delay_max_duration", "type": "string"}
     # agent.ngt.initial_delay_max_duration -- maximum duration for initial delay
     initial_delay_max_duration: 3m
@@ -1684,7 +1714,7 @@ agent:
     enable_in_memory_mode: true
     # @schema {"name": "agent.ngt.default_pool_size", "type": "integer"}
     # agent.ngt.default_pool_size -- default create index batch pool size
-    default_pool_size: 10000
+    default_pool_size: 16
     # @schema {"name": "agent.ngt.default_radius", "type": "number"}
     # agent.ngt.default_radius -- default radius used for search
     default_radius: -1.0
@@ -1723,6 +1753,9 @@ agent:
     # @schema {"name": "agent.ngt.broken_index_history_limit", "type": "integer", "minimum": 0}
     # agent.ngt.broken_index_history_limit -- maximum number of broken index generations to backup
     broken_index_history_limit: 0
+    # @schema {"name": "agent.ngt.error_buffer_limit", "type": "integer", "minimum": 1}
+    # agent.ngt.error_buffer_limit -- maximum number of core ngt error buffer pool size limit
+    error_buffer_limit: 10
   # @schema {"name": "agent.sidecar", "type": "object"}
   sidecar:
     # @schema {"name": "agent.sidecar.enabled", "type": "boolean"}
@@ -2615,7 +2648,7 @@ manager:
       auto_index_length: 100
       # @schema {"name": "manager.index.indexer.creation_pool_size", "type": "integer"}
       # manager.index.indexer.creation_pool_size -- number of pool size of create index processing
-      creation_pool_size: 10000
+      creation_pool_size: 16
       # @schema {"name": "manager.index.indexer.discoverer", "type": "object"}
       discoverer:
         # @schema {"name": "manager.index.indexer.discoverer.duration", "type": "string"}
@@ -2631,3 +2664,426 @@ manager:
             net:
               dialer:
                 keepalive: 15m #indexer fetches uncommitted index length, which includes huge payload so we need to set keepalive longer than usual
+    # @schema {"name": "manager.index.corrector", "type": "object"}
+    corrector:
+      # @schema {"name": "manager.index.corrector.name", "type": "string"}
+      # manager.index.corrector.name -- name of index correction job
+      name: vald-index-correction
+      # @schema {"name": "manager.index.corrector.image", "alias": "image"}
+      image:
+        # manager.index.corrector.image.repository -- image repository
+        repository: vdaas/vald-index-correction
+        # manager.index.corrector.image.tag -- image tag (overrides defaults.image.tag)
+        tag: ""
+        # manager.index.image.pullPolicy -- image pull policy
+        pullPolicy: Always
+      # @schema {"name": "manager.index.corrector.server_config", "alias": "server_config"}
+      # manager.index.corrector.server_config -- server config (overrides defaults.server_config)
+      server_config:
+        servers:
+          rest: {}
+          grpc: {}
+        healths:
+          liveness: {}
+          readiness: {}
+          startup: {}
+        metrics:
+          pprof: {}
+      # @schema {"name": "manager.index.corrector.initContainers", "alias": "initContainers"}
+      # manager.index.corrector.initContainers -- init containers
+      initContainers:
+        - type: wait-for
+          name: wait-for-agent
+          target: agent
+          image: busybox:stable
+          sleepDuration: 2
+        - type: wait-for
+          name: wait-for-discoverer
+          target: discoverer
+          image: busybox:stable
+          sleepDuration: 2
+      # @schema {"name": "manager.index.corrector.env", "alias": "env"}
+      # manager.index.corrector.env -- environment variables
+      env:
+        - name: MY_NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        - name: MY_POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: MY_POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+      # @schema {"name": "manager.index.corrector.observability", "alias": "observability"}
+      # manager.index.corrector.observability -- observability config (overrides defaults.observability)
+      observability:
+        otlp:
+          attribute:
+            service_name: vald-index-correction
+      # @schema {"name": "manager.index.corrector.enabled", "type": "boolean"}
+      # manager.index.corrector.enabled -- enable index correction CronJob
+      enabled: false
+      # @schema {"name": "manager.index.corrector.schedule", "type": "string"}
+      # manager.index.corrector.schedule -- CronJob schedule setting for index correction
+      schedule: "6 3 * * *"
+      # @schema {"name": "manager.index.corrector.suspend", "type": "boolean"}
+      # manager.index.corrector.suspend -- CronJob suspend setting for index correction
+      suspend: false
+      # @schema {"name": "manager.index.corrector.ttlSecondsAfterFinished", "type": "integer"}
+      # manager.index.corrector.ttlSecondsAfterFinished -- ttl setting for K8s completed jobs
+      ttlSecondsAfterFinished: 86400
+      # @schema {"name": "manager.index.corrector.startingDeadlineSeconds", "type": "integer"}
+      # manager.index.corrector.startingDeadlineSeconds -- startingDeadlineSeconds setting for K8s completed jobs
+      startingDeadlineSeconds: 86400
+      # @schema {"name": "manager.index.corrector.version", "alias": "version"}
+      # manager.index.corrector.version -- version of index manager config
+      version: v0.0.0
+      # @schema {"name": "manager.index.corrector.stream_list_concurrency", "type": "integer", "minimum": 1}
+      # manager.index.corrector.stream_list_concurrency -- concurrency for stream list object rpc
+      stream_list_concurrency: 200
+      # @schema {"name": "manager.index.corrector.kvs_async_write_concurrency", "type": "integer", "minimum": 1}
+      # manager.index.corrector.kvs_async_write_concurrency -- concurrency for kvs async write
+      kvs_async_write_concurrency: 2048
+      # @schema {"name": "manager.index.corrector.agent_namespace", "type": "string"}
+      # manager.index.corrector.agent_namespace -- namespace of agent pods to manage
+      agent_namespace: _MY_POD_NAMESPACE_
+      # @schema {"name": "manager.index.corrector.node_name", "type": "string"}
+      # manager.index.corrector.node_name -- node name
+      node_name: "" # _MY_NODE_NAME_
+      # @schema {"name": "manager.index.corrector.discoverer", "type": "object"}
+      discoverer:
+        # @schema {"name": "manager.index.corrector.discoverer.duration", "type": "string"}
+        # manager.index.corrector.discoverer.duration -- refresh duration to discover
+        duration: 500ms
+        # @schema {"name": "manager.index.corrector.discoverer.client", "alias": "grpc.client"}
+        # manager.index.corrector.discoverer.client -- gRPC client for discoverer (overrides defaults.grpc.client)
+        client: {}
+        # @schema {"name": "manager.index.corrector.discoverer.agent_client_options", "alias": "grpc.client"}
+        # manager.index.corrector.discoverer.agent_client_options -- gRPC client options for agents (overrides defaults.grpc.client)
+        agent_client_options:
+          dial_option:
+            net:
+              dialer:
+                keepalive: 15m #indexer fetches uncommitted index length, which includes huge payload so we need to set keepalive longer than usual
+    # @schema {"name": "manager.index.creator", "type": "object"}
+    creator:
+      # @schema {"name": "manager.index.creator.name", "type": "string"}
+      # manager.index.creator.name -- name of index creation job
+      name: vald-index-creation
+      # @schema {"name": "manager.index.creator.image", "alias": "image"}
+      image:
+        # manager.index.creator.image.repository -- image repository
+        repository: vdaas/vald-index-creation
+        # manager.index.creator.image.tag -- image tag (overrides defaults.image.tag)
+        tag: ""
+        # manager.index.image.pullPolicy -- image pull policy
+        pullPolicy: Always
+      # @schema {"name": "manager.index.creator.server_config", "alias": "server_config"}
+      # manager.index.creator.server_config -- server config (overrides defaults.server_config)
+      server_config:
+        servers:
+          rest: {}
+          grpc: {}
+        healths:
+          liveness: {}
+          readiness: {}
+          startup: {}
+        metrics:
+          pprof: {}
+      # @schema {"name": "manager.index.creator.initContainers", "alias": "initContainers"}
+      # manager.index.creator.initContainers -- init containers
+      initContainers:
+        - type: wait-for
+          name: wait-for-agent
+          target: agent
+          image: busybox:stable
+          sleepDuration: 2
+        - type: wait-for
+          name: wait-for-discoverer
+          target: discoverer
+          image: busybox:stable
+          sleepDuration: 2
+      # @schema {"name": "manager.index.creator.env", "alias": "env"}
+      # manager.index.creator.env -- environment variables
+      env:
+        - name: MY_NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        - name: MY_POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: MY_POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+      # @schema {"name": "manager.index.creator.observability", "alias": "observability"}
+      # manager.index.creator.observability -- observability config (overrides defaults.observability)
+      observability:
+        otlp:
+          attribute:
+            service_name: vald-index-creation
+      # @schema {"name": "manager.index.creator.enabled", "type": "boolean"}
+      # manager.index.creator.enabled -- enable index creation CronJob
+      enabled: false
+      # @schema {"name": "manager.index.creator.schedule", "type": "string"}
+      # manager.index.creator.schedule -- CronJob schedule setting for index creation
+      schedule: "* * * * *"
+      # @schema {"name": "manager.index.creator.suspend", "type": "boolean"}
+      # manager.index.creator.suspend -- CronJob suspend setting for index creation
+      suspend: false
+      # @schema {"name": "manager.index.creator.ttlSecondsAfterFinished", "type": "integer"}
+      # manager.index.creator.ttlSecondsAfterFinished -- ttl setting for K8s completed jobs
+      ttlSecondsAfterFinished: 86400
+      # @schema {"name": "manager.index.creator.startingDeadlineSeconds", "type": "integer"}
+      # manager.index.creator.startingDeadlineSeconds -- startingDeadlineSeconds setting for K8s completed jobs
+      startingDeadlineSeconds: 43200
+      # @schema {"name": "manager.index.creator.version", "alias": "version"}
+      # manager.index.creator.version -- version of index manager config
+      version: v0.0.0
+      # @schema {"name": "manager.index.creator.concurrency", "type": "integer", "minimum": 1}
+      # manager.index.creator.concurrency -- concurrency for indexing
+      concurrency: 1
+      # @schema {"name": "manager.index.creator.creation_pool_size", "type": "integer"}
+      # manager.index.creator.creation_pool_size -- number of pool size of create index processing
+      creation_pool_size: 16
+      # @schema {"name": "manager.index.creator.target_addrs", "type": "array", "items": {"type": "string"}}
+      # manager.index.creator.target_addrs -- indexing target addresses
+      target_addrs: []
+      # @schema {"name": "manager.index.creator.agent_namespace", "type": "string"}
+      # manager.index.creator.agent_namespace -- namespace of agent pods to manage
+      agent_namespace: _MY_POD_NAMESPACE_
+      # @schema {"name": "manager.index.creator.node_name", "type": "string"}
+      # manager.index.creator.node_name -- node name
+      node_name: "" # _MY_NODE_NAME_
+      # @schema {"name": "manager.index.creator.discoverer", "type": "object"}
+      discoverer:
+        # @schema {"name": "manager.index.creator.discoverer.duration", "type": "string"}
+        # manager.index.creator.discoverer.duration -- refresh duration to discover
+        duration: 500ms
+        # @schema {"name": "manager.index.creator.discoverer.client", "alias": "grpc.client"}
+        # manager.index.creator.discoverer.client -- gRPC client for discoverer (overrides defaults.grpc.client)
+        client: {}
+        # @schema {"name": "manager.index.creator.discoverer.agent_client_options", "alias": "grpc.client"}
+        # manager.index.creator.discoverer.agent_client_options -- gRPC client options for agents (overrides defaults.grpc.client)
+        agent_client_options:
+          dial_option:
+            net:
+              dialer:
+                keepalive: 15m #indexer fetches uncommitted index length, which includes huge payload so we need to set keepalive longer than usual
+    # @schema {"name": "manager.index.saver", "type": "object"}
+    saver:
+      # @schema {"name": "manager.index.saver.name", "type": "string"}
+      # manager.index.saver.name -- name of index save job
+      name: vald-index-save
+      # @schema {"name": "manager.index.saver.image", "alias": "image"}
+      image:
+        # manager.index.saver.image.repository -- image repository
+        repository: vdaas/vald-index-save
+        # manager.index.saver.image.tag -- image tag (overrides defaults.image.tag)
+        tag: ""
+        # manager.index.image.pullPolicy -- image pull policy
+        pullPolicy: Always
+      # @schema {"name": "manager.index.saver.server_config", "alias": "server_config"}
+      # manager.index.saver.server_config -- server config (overrides defaults.server_config)
+      server_config:
+        servers:
+          rest: {}
+          grpc: {}
+        healths:
+          liveness: {}
+          readiness: {}
+          startup: {}
+        metrics:
+          pprof: {}
+      # @schema {"name": "manager.index.saver.initContainers", "alias": "initContainers"}
+      # manager.index.saver.initContainers -- init containers
+      initContainers:
+        - type: wait-for
+          name: wait-for-agent
+          target: agent
+          image: busybox:stable
+          sleepDuration: 2
+        - type: wait-for
+          name: wait-for-discoverer
+          target: discoverer
+          image: busybox:stable
+          sleepDuration: 2
+      # @schema {"name": "manager.index.saver.env", "alias": "env"}
+      # manager.index.saver.env -- environment variables
+      env:
+        - name: MY_NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        - name: MY_POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: MY_POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+      # @schema {"name": "manager.index.saver.observability", "alias": "observability"}
+      # manager.index.saver.observability -- observability config (overrides defaults.observability)
+      observability:
+        otlp:
+          attribute:
+            service_name: vald-index-save
+      # @schema {"name": "manager.index.saver.enabled", "type": "boolean"}
+      # manager.index.saver.enabled -- enable index save CronJob
+      enabled: false
+      # @schema {"name": "manager.index.saver.schedule", "type": "string"}
+      # manager.index.saver.schedule -- CronJob schedule setting for index save
+      schedule: "0 */3 * * *"
+      # @schema {"name": "manager.index.saver.suspend", "type": "boolean"}
+      # manager.index.saver.suspend -- CronJob suspend setting for index creation
+      suspend: false
+      # @schema {"name": "manager.index.saver.ttlSecondsAfterFinished", "type": "integer"}
+      # manager.index.saver.ttlSecondsAfterFinished -- ttl setting for K8s completed jobs
+      ttlSecondsAfterFinished: 86400
+      # @schema {"name": "manager.index.saver.startingDeadlineSeconds", "type": "integer"}
+      # manager.index.saver.startingDeadlineSeconds -- startingDeadlineSeconds setting for K8s completed jobs
+      startingDeadlineSeconds: 43200
+      # @schema {"name": "manager.index.saver.version", "alias": "version"}
+      # manager.index.saver.version -- version of index manager config
+      version: v0.0.0
+      # @schema {"name": "manager.index.saver.concurrency", "type": "integer", "minimum": 1}
+      # manager.index.saver.concurrency -- concurrency for index saving
+      concurrency: 1
+      # @schema {"name": "manager.index.saver.target_addrs", "type": "array", "items": {"type": "string"}}
+      # manager.index.saver.target_addrs -- index saving target addresses
+      target_addrs: []
+      # @schema {"name": "manager.index.saver.agent_namespace", "type": "string"}
+      # manager.index.saver.agent_namespace -- namespace of agent pods to manage
+      agent_namespace: _MY_POD_NAMESPACE_
+      # @schema {"name": "manager.index.saver.node_name", "type": "string"}
+      # manager.index.saver.node_name -- node name
+      node_name: "" # _MY_NODE_NAME_
+      # @schema {"name": "manager.index.saver.discoverer", "type": "object"}
+      discoverer:
+        # @schema {"name": "manager.index.saver.discoverer.duration", "type": "string"}
+        # manager.index.saver.discoverer.duration -- refresh duration to discover
+        duration: 500ms
+        # @schema {"name": "manager.index.saver.discoverer.client", "alias": "grpc.client"}
+        # manager.index.saver.discoverer.client -- gRPC client for discoverer (overrides defaults.grpc.client)
+        client: {}
+        # @schema {"name": "manager.index.saver.discoverer.agent_client_options", "alias": "grpc.client"}
+        # manager.index.saver.discoverer.agent_client_options -- gRPC client options for agents (overrides defaults.grpc.client)
+        agent_client_options:
+          dial_option:
+            net:
+              dialer:
+                keepalive: 15m #indexer fetches uncommitted index length, which includes huge payload so we need to set keepalive longer than usual
+    # @schema {"name": "manager.index.readreplica", "type": "object"}
+    readreplica:
+      # @schema {"name": "manager.index.readreplica.rotator", "type": "object"}
+      # manager.index.readreplica.rotator -- [This feature is work in progress] readreplica agents rotation job
+      rotator:
+        # @schema {"name": "manager.index.readreplica.rotator.name", "type": "string"}
+        # manager.index.readreplica.rotator.name -- name of readreplica rotator job
+        name: vald-readreplica-rotate
+        # @schema {"name": "manager.index.readreplica.rotator.image", "alias": "image"}
+        image:
+          # manager.index.readreplica.rotator.image.repository -- image repository
+          repository: vdaas/vald-readreplica-rotate
+          # manager.index.readreplica.rotator.image.tag -- image tag (overrides defaults.image.tag)
+          tag: ""
+          # manager.index.image.pullPolicy -- image pull policy
+          pullPolicy: Always
+        # @schema {"name": "manager.index.readreplica.rotator.server_config", "alias": "server_config"}
+        # manager.index.readreplica.rotator.server_config -- server config (overrides defaults.server_config)
+        server_config:
+          servers:
+            rest: {}
+            grpc: {}
+          healths:
+            liveness: {}
+            readiness: {}
+            startup: {}
+          metrics:
+            pprof: {}
+        # @schema {"name": "manager.index.readreplica.rotator.initContainers", "alias": "initContainers"}
+        # manager.index.readreplica.rotator.initContainers -- init containers
+        initContainers: []
+        # @schema {"name": "manager.index.readreplica.rotator.podSecurityContext", "type": "object"}
+        # manager.index.readreplica.rotator.podSecurityContext -- security context for pod
+        podSecurityContext:
+          runAsUser: 65532
+          runAsNonRoot: true
+          runAsGroup: 65532
+          fsGroup: 65532
+          fsGroupChangePolicy: "OnRootMismatch"
+        # @schema {"name": "manager.index.readreplica.rotator.securityContext", "type": "object"}
+        # manager.index.readreplica.rotator.securityContext -- security context for container
+        securityContext:
+          runAsUser: 65532
+          runAsNonRoot: true
+          runAsGroup: 65532
+          privileged: false
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+              - ALL
+        # @schema {"name": "manager.index.readreplica.rotator.env", "alias": "env"}
+        # manager.index.readreplica.rotator.env -- environment variables
+        env:
+          - name: MY_NODE_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: spec.nodeName
+          - name: MY_POD_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
+          - name: MY_POD_NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+        # @schema {"name": "manager.index.readreplica.rotator.observability", "alias": "observability"}
+        # manager.index.readreplica.rotator.observability -- observability config (overrides defaults.observability)
+        observability:
+          otlp:
+            attribute:
+              service_name: vald-readreplica-rotate
+        # @schema {"name": "manager.index.readreplica.rotator.ttlSecondsAfterFinished", "type": "integer"}
+        # manager.index.readreplica.rotator.ttlSecondsAfterFinished -- ttl setting for K8s completed jobs
+        ttlSecondsAfterFinished: 86400
+        # @schema {"name": "manager.index.readreplica.rotator.version", "alias": "version"}
+        # manager.index.readreplica.rotator.version -- version of readreplica rotator config
+        version: v0.0.0
+        # @schema {"name": "manager.index.readreplica.rotator.agent_namespace", "type": "string"}
+        # manager.index.readreplica.rotator.agent_namespace -- namespace of agent pods to manage
+        agent_namespace: _MY_POD_NAMESPACE_
+        # @schema {"name": "manager.index.readreplica.rotator.read_replica_id", "type": "string"}
+        # manager.index.readreplica.rotator.read_replica_id -- read replica id to perform rotation
+        read_replica_id: _MY_TARGET_REPLICA_ID_
+        # @schema {"name": "manager.index.readreplica.rotator.serviceAccount", "type": "object"}
+        serviceAccount:
+          # @schema {"name": "manager.index.readreplica.rotator.serviceAccount.enabled", "type": "boolean"}
+          # manager.index.readreplica.rotator.serviceAccount.enabled -- creates service account
+          enabled: true
+          # @schema {"name": "manager.index.readreplica.rotator.serviceAccount.name", "type": "string"}
+          # manager.index.readreplica.rotator.serviceAccount.name -- name of service account
+          name: vald-readreplica-rotate
+        # @schema {"name": "manager.index.readreplica.rotator.clusterRole", "type": "object"}
+        clusterRole:
+          # @schema {"name": "manager.index.readreplica.rotator.clusterRole.enabled", "type": "boolean"}
+          # manager.index.readreplica.rotator.clusterRole.enabled -- creates clusterRole resource
+          enabled: true
+          # @schema {"name": "manager.index.readreplica.rotator.clusterRole.name", "type": "string"}
+          # manager.index.readreplica.rotator.clusterRole.name -- name of clusterRole
+          name: vald-readreplica-rotate
+        # @schema {"name": "manager.index.readreplica.rotator.clusterRoleBinding", "type": "object"}
+        clusterRoleBinding:
+          # @schema {"name": "manager.index.readreplica.rotator.clusterRoleBinding.enabled", "type": "boolean"}
+          # manager.index.readreplica.rotator.clusterRoleBinding.enabled -- creates clusterRoleBinding resource
+          enabled: true
+          # @schema {"name": "manager.index.readreplica.rotator.clusterRoleBinding.name", "type": "string"}
+          # manager.index.readreplica.rotator.clusterRoleBinding.name -- name of clusterRoleBinding
+          name: vald-readreplica-rotate

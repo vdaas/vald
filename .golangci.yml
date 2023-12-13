@@ -2,7 +2,7 @@
 # Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
+# You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
 #    https://www.apache.org/licenses/LICENSE-2.0
@@ -42,7 +42,6 @@ linters:
     - errorlint
     - execinquery
     - exhaustive
-    - exhaustruct
     - exportloopref
     - forcetypeassert
     - ginkgolinter
@@ -51,7 +50,6 @@ linters:
     - gochecknoinits
     - goconst
     - godot
-    - godox
     - gofumpt
     - goimports
     - gomnd
@@ -93,12 +91,14 @@ linters:
     # Disabled by your configuration linters
     # - cyclop
     # - errcheck
+    # - exhaustruct
     # - forbidigo
     # - funlen
     # - gci
     # - gocognit
     # - gocritic
     # - gocyclo
+    # - godox
     # - goerr113
     # - gofmt
     # - goheader
@@ -149,6 +149,15 @@ linters:
     - path: internal/errors/errors_benchmark_test\.go
       linters:
         - depguard
+    - path: internal/test/comparator/standard\.go
+      linters:
+        - depguard
+    - path: internal/sync/alias\.go
+      linters:
+        - depguard
+    - path: hack/benchmark/src/singleflight/singleflight_bench_test\.go
+      linters:
+        - depguard
 linters-settings:
   gocritic:
     enabled-checks:
@@ -166,6 +175,14 @@ linters-settings:
     rules:
       main:
         deny:
+          - pkg: "sync"
+            desc: "sync is allowed only by internal/sync"
+          - pkg: "golang.org/x/sync"
+            desc: "golang.org/x/sync is allowed only by internal/sync"
+          - pkg: "golang.org/x/sync/singleflight"
+            desc: "golang.org/x/sync/singleflight is allowed only by internal/sync/singleflight"
+          - pkg: "golang.org/x/sync/semaphore"
+            desc: "golang.org/x/sync/semaphore is allowed only by internal/sync/semaphore"
           - pkg: "errors"
             desc: "errors is allowed only by internal/errors"
           - pkg: "k8s.io/apimachinery/pkg/api/errors"
@@ -176,6 +193,10 @@ linters-settings:
             desc: "errors is allowed only by internal/errors"
           - pkg: github.com/go-errors/errors
             desc: "errors is allowed only by internal/errors"
+          - pkg: github.com/google/go-cmp/cmp
+            desc: "cmp is allowed only by internal/test/comparator"
+          - pkg: github.com/google/go-cmp/cmp/cmpopts
+            desc: "cmpopts is allowed only by internal/test/comparator"
   govet:
     check-shadowing: true
     enable-all: true

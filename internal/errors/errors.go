@@ -2,7 +2,7 @@
 // Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -18,12 +18,15 @@
 package errors
 
 import (
+	"cmp"
 	"errors"
 	"fmt"
 	"reflect"
 	"runtime"
-	"strings"
-	"sync"
+	"slices"
+
+	"github.com/vdaas/vald/internal/strings"
+	"github.com/vdaas/vald/internal/sync"
 )
 
 var (
@@ -229,6 +232,9 @@ func Join(errs ...error) error {
 	case 2:
 		switch {
 		case errs[0] != nil && errs[1] != nil:
+			if errs[0] == errs[1] || errors.Is(errs[0], errs[1]) {
+				return errs[0]
+			}
 			var es []error
 			switch x := errs[1].(type) {
 			case *joinError:
@@ -273,6 +279,16 @@ func Join(errs ...error) error {
 		}
 	}
 	return e
+}
+
+func RemoveDuplicates(errs []error) []error {
+	if len(errs) < 2 {
+		return errs
+	}
+	slices.SortStableFunc(errs, func(l error, r error) int {
+		return cmp.Compare(l.Error(), r.Error())
+	})
+	return slices.CompactFunc(errs, Is)
 }
 
 type joinError struct {

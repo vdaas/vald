@@ -2,7 +2,7 @@
 // Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -77,6 +77,12 @@ func TestParse(t *testing.T) {
 		{
 			name:    "returns 0 and incorrect string error when t is invalid",
 			t:       "dummystring",
+			want:    0,
+			wantErr: true,
+		},
+		{
+			name:    "returns 0 and incorrect string error when t is minus value",
+			t:       "-1",
 			want:    0,
 			wantErr: true,
 		},

@@ -2,7 +2,7 @@
 // Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -21,11 +21,11 @@ import (
 	"testing"
 
 	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/google/go-cmp/cmp"
 	"github.com/vdaas/vald/internal/backoff"
 	"github.com/vdaas/vald/internal/db/storage/blob/s3/sdk/s3/s3iface"
-	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/sync/errgroup"
+	"github.com/vdaas/vald/internal/test/comparator"
 	"github.com/vdaas/vald/internal/test/goleak"
 )
 
@@ -402,17 +402,17 @@ func TestWithBackoffOpts(t *testing.T) {
 		afterFunc  func(args, *T)
 	}
 	defaultCheckFunc := func(w want, got *T) error {
-		opts := []cmp.Option{
-			cmp.AllowUnexported(*got),
-			cmp.AllowUnexported(*w.obj),
-			cmp.Comparer(func(want, got []backoff.Option) bool {
+		opts := []comparator.Option{
+			comparator.AllowUnexported(*got),
+			comparator.AllowUnexported(*w.obj),
+			comparator.Comparer(func(want, got []backoff.Option) bool {
 				return len(got) == len(want)
 			}),
-			cmp.Comparer(func(want, got backoff.Option) bool {
+			comparator.Comparer(func(want, got backoff.Option) bool {
 				return reflect.ValueOf(got).Pointer() == reflect.ValueOf(want).Pointer()
 			}),
 		}
-		if diff := cmp.Diff(w.obj, got, opts...); diff != "" {
+		if diff := comparator.Diff(w.obj, got, opts...); diff != "" {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.obj)
 		}
 		return nil
@@ -435,7 +435,7 @@ func TestWithBackoffOpts(t *testing.T) {
 			}
 		}(),
 		func() test {
-			defaultOptions := []backoff.Option{}
+			var defaultOptions []backoff.Option
 			opts := []backoff.Option{
 				backoff.WithRetryCount(1),
 			}

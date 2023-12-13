@@ -2,7 +2,7 @@
 // Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -28,10 +28,10 @@ import (
 	"github.com/leanovate/gopter"
 	"github.com/leanovate/gopter/commands"
 	"github.com/leanovate/gopter/gen"
+	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
-	"github.com/vdaas/vald/pkg/agent/core/ngt/model"
 )
 
 type ngtSystem struct {
@@ -41,10 +41,11 @@ type ngtSystem struct {
 }
 
 type resultContainer struct {
-	err     error
-	results []model.Distance
-	vector  []float32
-	exists  bool
+	err       error
+	results   *payload.Search_Response
+	vector    []float32
+	timestamp int64
+	exists    bool
 }
 
 type ngtState struct {
@@ -1108,10 +1109,11 @@ var (
 		) commands.Result {
 			ngt := systemUnderTest.(*ngtSystem).ngt
 
-			vec, err := ngt.GetObject(idA)
+			vec, ts, err := ngt.GetObject(idA)
 			return &resultContainer{
-				vector: vec,
-				err:    err,
+				vector:    vec,
+				timestamp: ts,
+				err:       err,
 			}
 		},
 		NextStateFunc: func(state commands.State) commands.State {
@@ -1166,10 +1168,11 @@ var (
 		) commands.Result {
 			ngt := systemUnderTest.(*ngtSystem).ngt
 
-			vec, err := ngt.GetObject(idB)
+			vec, ts, err := ngt.GetObject(idB)
 			return &resultContainer{
-				vector: vec,
-				err:    err,
+				vector:    vec,
+				timestamp: ts,
+				err:       err,
 			}
 		},
 		NextStateFunc: func(state commands.State) commands.State {
@@ -1224,10 +1227,11 @@ var (
 		) commands.Result {
 			ngt := systemUnderTest.(*ngtSystem).ngt
 
-			vec, err := ngt.GetObject(idC)
+			vec, ts, err := ngt.GetObject(idC)
 			return &resultContainer{
-				vector: vec,
-				err:    err,
+				vector:    vec,
+				timestamp: ts,
+				err:       err,
 			}
 		},
 		NextStateFunc: func(state commands.State) commands.State {

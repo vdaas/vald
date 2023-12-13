@@ -2,7 +2,7 @@
 # Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
+# You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
 #    https://www.apache.org/licenses/LICENSE-2.0
@@ -23,56 +23,36 @@ on:
       - "v*.*.*-*"
 
 jobs:
-  dump_contexts_to_log:
+  dump-contexts-to-log:
     runs-on: ubuntu-latest
     steps:
-      - name: Dump GitHub context
-        id: github_context_step
-        run: echo $JSON
-        env:
-          JSON: ${{ toJSON(github) }}
-      - name: Dump job context
-        run: echo $JSON
-        env:
-          JSON: ${{ toJSON(job) }}
-      - name: Dump steps context
-        run: echo $JSON
-        env:
-          JSON: ${{ toJSON(steps) }}
-      - name: Dump runner context
-        run: echo $JSON
-        env:
-          JSON: ${{ toJSON(runner) }}
-      - name: Dump strategy context
-        run: echo $JSON
-        env:
-          JSON: ${{ toJSON(strategy) }}
-      - name: Dump matrix context
-        run: echo $JSON
-        env:
-          JSON: ${{ toJSON(matrix) }}
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/dump-context
+
   update-k8s-manifest:
     name: Update k8s manifest
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/vdaas/vald/vald-ci-container:nightly
     steps:
-      - name: Check out code.
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: set git config
+
+      - name: Set Git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
+
       - uses: crazy-max/ghaction-import-gpg@v4
         with:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           git_user_signingkey: true
           git_commit_gpgsign: true
-      - name: Helm version
-        run: |
-          helm version
-      - name: switch new branch
+
+      - name: Setup Helm environment
+        uses: ./.github/actions/setup-helm
+
+      - name: Switch new branch
         id: switch_to_new_branch
         run: |
           TIMESTAMP=$(date +%Y%m%d_%H%M%S_%3N)
@@ -80,14 +60,17 @@ jobs:
           git checkout main
           git checkout -b ${BRANCH_NAME}
           echo "BRANCH_NAME=${BRANCH_NAME}" >> $GITHUB_OUTPUT
+
       - name: Update k8s-dir
         run: |
           make k8s/manifest/update
           make k8s/manifest/helm-operator/update
+
       - name: Run formatter and license.go
         run: |
           make format/yaml
           make license
+
       - name: Push to main
         continue-on-error: true
         run: |
@@ -109,32 +92,36 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
           API_URL: https://api.github.com/repos/vdaas/vald/pulls
           BRANCH_NAME: ${{ steps.switch_to_new_branch.outputs.BRANCH_NAME }}
+
   update-helm-chart:
     name: Update Helm chart
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/vdaas/vald/vald-ci-container:nightly
     steps:
-      - name: Check out code.
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
           token: ${{ secrets.DISPATCH_TOKEN }}
-      - name: set git config
+
+      - name: Set Git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
+
       - uses: crazy-max/ghaction-import-gpg@v4
         with:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           git_user_signingkey: true
           git_commit_gpgsign: true
-      - name: Helm version
-        run: |
-          helm version
+
+      - name: Setup Helm environment
+        uses: ./.github/actions/setup-helm
+
       - name: Packaging
         run: |
           make helm/package/vald
           make helm/package/vald-helm-operator
+
       - name: Push to gh-pages
         run: |
           git checkout .
@@ -150,63 +137,34 @@ jobs:
         env:
           GITHUB_USER: ${{ secrets.DISPATCH_USER }}
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
+
   crud-on-remote-helm-chart:
     name: CRUD test on remote Helm chart
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
-      - uses: actions/checkout@v3
-      - name: set git config
+      - uses: actions/checkout@v4
+
+      - name: Set Git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
-      - name: Wait for Docker images
-        id: wait_for_docker_images
-        uses: ./.github/actions/wait-for-docker-image
-      - name: Specify container versions
-        id: specify_container_versions
-        uses: ./.github/actions/detect-docker-image-tags
-        with:
-          tag_name: ${{ github.ref_name }}
-      - name: Fetch Helm version
-        run: |
-          HELM_VERSION=`make version/helm`
-          echo "helm=${HELM_VERSION}" >> $GITHUB_OUTPUT
-        id: version
-      - uses: rinx/setup-k3d@v0.0.4
-        with:
-          version: latest
-          name: vald
-          agents: 3
-      - name: check k3d
-        run: |
-          kubectl cluster-info
-      - uses: azure/setup-helm@v3
-        with:
-          version: ${{ steps.version.outputs.helm }}
-      - name: Helm version
-        run: |
-          helm version
-      - name: deploy Vald
+
+      - name: Setup E2E environment
+        id: setup_e2e
+        uses: ./.github/actions/setup-e2e
+
+      - name: Deploy Vald
         id: deploy_vald
         uses: ./.github/actions/e2e-deploy-vald
         with:
-          require_libhdf5: "true"
-          helm_extra_options: ${{ steps.specify_container_versions.outputs.HELM_EXTRA_OPTIONS }}
+          helm_extra_options: ${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }}
           values: .github/helm/values/values-lb.yaml
           wait_for_selector: app=vald-lb-gateway
           use_local_charts: false
-      - name: Fetch golang version
-        run: |
-          GO_VERSION=`make version/go`
-          echo "version=${GO_VERSION}" >> $GITHUB_OUTPUT
-        id: golang_version
-      - uses: actions/setup-go@v3
-        with:
-          go-version: ${{ steps.golang_version.outputs.version }}
-      - name: run E2E CRUD
+
+      - name: Run E2E CRUD
         run: |
           make hack/benchmark/assets/dataset/${DATASET}
-          go version
           make E2E_BIND_PORT=8081 \
             E2E_DATASET_NAME=${DATASET} \
             E2E_INSERT_COUNT=60000 \

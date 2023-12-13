@@ -1,8 +1,9 @@
+# syntax = docker/dockerfile:latest
 #
 # Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
+# You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
 #    https://www.apache.org/licenses/LICENSE-2.0
@@ -17,7 +18,7 @@
 ARG MAINTAINER="vdaas.org vald team <vald@vdaas.org>"
 
 # skipcq: DOK-DL3026
-FROM mcr.microsoft.com/vscode/devcontainers/go:1 AS base
+FROM --platform=${BUILDPLATFORM} mcr.microsoft.com/vscode/devcontainers/go:1 AS base
 LABEL maintainer="${MAINTAINER}"
 
 # skipcq: DOK-DL3008
@@ -58,10 +59,10 @@ RUN make deps \
     && make yq/install \
     && make golangci-lint/install \
     && make reviewdog/install \
-    && make protobuf/install \
     && make kubectl/install
 
 # additional deps
 RUN make k3d/install \
     && make buf/install \
-    && make k9s/install
+    && make k9s/install \
+    && make minikube/install

@@ -2,7 +2,7 @@
 // Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -115,6 +115,7 @@ package ingress
 // 	}
 // 	type fields struct {
 // 		addrs []string
+// 		cl    sync.Map[string, any]
 // 		c     grpc.Client
 // 	}
 // 	type want struct {
@@ -149,6 +150,7 @@ package ingress
 // 		       },
 // 		       fields: fields {
 // 		           addrs:nil,
+// 		           cl:nil,
 // 		           c:nil,
 // 		       },
 // 		       want: want{},
@@ -172,6 +174,7 @@ package ingress
 // 		           },
 // 		           fields: fields {
 // 		           addrs:nil,
+// 		           cl:nil,
 // 		           c:nil,
 // 		           },
 // 		           want: want{},
@@ -204,6 +207,7 @@ package ingress
 // 			}
 // 			c := &client{
 // 				addrs: test.fields.addrs,
+// 				cl:    test.fields.cl,
 // 				c:     test.fields.c,
 // 			}
 //
@@ -222,6 +226,7 @@ package ingress
 // 	}
 // 	type fields struct {
 // 		addrs []string
+// 		cl    sync.Map[string, any]
 // 		c     grpc.Client
 // 	}
 // 	type want struct {
@@ -252,6 +257,7 @@ package ingress
 // 		       },
 // 		       fields: fields {
 // 		           addrs:nil,
+// 		           cl:nil,
 // 		           c:nil,
 // 		       },
 // 		       want: want{},
@@ -275,6 +281,7 @@ package ingress
 // 		           },
 // 		           fields: fields {
 // 		           addrs:nil,
+// 		           cl:nil,
 // 		           c:nil,
 // 		           },
 // 		           want: want{},
@@ -307,6 +314,7 @@ package ingress
 // 			}
 // 			c := &client{
 // 				addrs: test.fields.addrs,
+// 				cl:    test.fields.cl,
 // 				c:     test.fields.c,
 // 			}
 //
@@ -322,6 +330,7 @@ package ingress
 // func Test_client_GRPCClient(t *testing.T) {
 // 	type fields struct {
 // 		addrs []string
+// 		cl    sync.Map[string, any]
 // 		c     grpc.Client
 // 	}
 // 	type want struct {
@@ -348,6 +357,7 @@ package ingress
 // 		       name: "test_case_1",
 // 		       fields: fields {
 // 		           addrs:nil,
+// 		           cl:nil,
 // 		           c:nil,
 // 		       },
 // 		       want: want{},
@@ -368,6 +378,7 @@ package ingress
 // 		           name: "test_case_2",
 // 		           fields: fields {
 // 		           addrs:nil,
+// 		           cl:nil,
 // 		           c:nil,
 // 		           },
 // 		           want: want{},
@@ -400,6 +411,7 @@ package ingress
 // 			}
 // 			c := &client{
 // 				addrs: test.fields.addrs,
+// 				cl:    test.fields.cl,
 // 				c:     test.fields.c,
 // 			}
 //
@@ -419,6 +431,7 @@ package ingress
 // 	}
 // 	type fields struct {
 // 		addrs []string
+// 		cl    sync.Map[string, any]
 // 		c     grpc.Client
 // 	}
 // 	type want struct {
@@ -454,6 +467,7 @@ package ingress
 // 		       },
 // 		       fields: fields {
 // 		           addrs:nil,
+// 		           cl:nil,
 // 		           c:nil,
 // 		       },
 // 		       want: want{},
@@ -478,6 +492,7 @@ package ingress
 // 		           },
 // 		           fields: fields {
 // 		           addrs:nil,
+// 		           cl:nil,
 // 		           c:nil,
 // 		           },
 // 		           want: want{},
@@ -510,6 +525,7 @@ package ingress
 // 			}
 // 			c := &client{
 // 				addrs: test.fields.addrs,
+// 				cl:    test.fields.cl,
 // 				c:     test.fields.c,
 // 			}
 //
@@ -530,6 +546,7 @@ package ingress
 // 	}
 // 	type fields struct {
 // 		addrs []string
+// 		cl    sync.Map[string, any]
 // 		c     grpc.Client
 // 	}
 // 	type want struct {
@@ -566,6 +583,7 @@ package ingress
 // 		       },
 // 		       fields: fields {
 // 		           addrs:nil,
+// 		           cl:nil,
 // 		           c:nil,
 // 		       },
 // 		       want: want{},
@@ -591,6 +609,7 @@ package ingress
 // 		           },
 // 		           fields: fields {
 // 		           addrs:nil,
+// 		           cl:nil,
 // 		           c:nil,
 // 		           },
 // 		           want: want{},
@@ -623,6 +642,7 @@ package ingress
 // 			}
 // 			c := &client{
 // 				addrs: test.fields.addrs,
+// 				cl:    test.fields.cl,
 // 				c:     test.fields.c,
 // 			}
 //
@@ -643,6 +663,7 @@ package ingress
 // 	}
 // 	type fields struct {
 // 		addrs []string
+// 		cl    sync.Map[string, any]
 // 		c     grpc.Client
 // 	}
 // 	type want struct {
@@ -679,6 +700,7 @@ package ingress
 // 		       },
 // 		       fields: fields {
 // 		           addrs:nil,
+// 		           cl:nil,
 // 		           c:nil,
 // 		       },
 // 		       want: want{},
@@ -704,6 +726,7 @@ package ingress
 // 		           },
 // 		           fields: fields {
 // 		           addrs:nil,
+// 		           cl:nil,
 // 		           c:nil,
 // 		           },
 // 		           want: want{},
@@ -736,6 +759,7 @@ package ingress
 // 			}
 // 			c := &client{
 // 				addrs: test.fields.addrs,
+// 				cl:    test.fields.cl,
 // 				c:     test.fields.c,
 // 			}
 //

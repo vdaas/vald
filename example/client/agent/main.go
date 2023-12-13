@@ -1,7 +1,7 @@
 // Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //	https://www.apache.org/licenses/LICENSE-2.0
@@ -27,6 +27,7 @@ import (
 	"github.com/vdaas/vald-client-go/v1/vald"
 	"gonum.org/v1/hdf5"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 const (
@@ -66,7 +67,7 @@ func main() {
 	ctx := context.Background()
 
 	// Create a Vald Agent client for connecting to the Vald cluster.
-	conn, err := grpc.DialContext(ctx, grpcServerAddr, grpc.WithInsecure())
+	conn, err := grpc.DialContext(ctx, grpcServerAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		glg.Fatal(err)
 	}

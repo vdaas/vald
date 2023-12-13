@@ -2,7 +2,7 @@
 # Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
+# You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
 #    https://www.apache.org/licenses/LICENSE-2.0
@@ -34,8 +34,6 @@ k3d/start:
 	# $(K3D_COMMAND) cluster create $(K3D_CLUSTER_NAME) --agents $(K3D_NODES) -v "/lib/modules:/lib/modules" --host-pid-mode=true
 	# $(K3D_COMMAND) cluster create $(K3D_CLUSTER_NAME) -p "8081:80@loadbalancer" --agents $(K3D_NODES) --k3s-arg '--disable=traefik@all'
 	export KUBECONFIG="$(shell sudo $(K3D_COMMAND) kubeconfig merge -o $(TEMP_DIR)/k3d_$(K3D_CLUSTER_NAME)_kubeconfig.yaml $(K3D_CLUSTER_NAME))"
-	kubectl apply -f https://projectcontour.io/quickstart/operator.yaml
-	kubectl apply -f https://projectcontour.io/quickstart/contour-custom-resource.yaml
 
 .PHONY: k3d/restart
 ## restart k3d (kubernetes in docker) cluster

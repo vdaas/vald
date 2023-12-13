@@ -1,7 +1,7 @@
 // Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //	https://www.apache.org/licenses/LICENSE-2.0
@@ -112,6 +112,7 @@ package circuitbreaker
 // 		fn  func(ctx context.Context) (interface{}, error)
 // 	}
 // 	type fields struct {
+// 		m    sync.Map[string, *breaker]
 // 		opts []BreakerOption
 // 	}
 // 	type want struct {
@@ -147,6 +148,7 @@ package circuitbreaker
 // 		           fn:nil,
 // 		       },
 // 		       fields: fields {
+// 		           m:nil,
 // 		           opts:nil,
 // 		       },
 // 		       want: want{},
@@ -171,6 +173,7 @@ package circuitbreaker
 // 		           fn:nil,
 // 		           },
 // 		           fields: fields {
+// 		           m:nil,
 // 		           opts:nil,
 // 		           },
 // 		           want: want{},
@@ -202,6 +205,7 @@ package circuitbreaker
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			bm := &breakerManager{
+// 				m:    test.fields.m,
 // 				opts: test.fields.opts,
 // 			}
 //

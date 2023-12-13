@@ -2,7 +2,7 @@
 // Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -601,6 +601,26 @@ func (c *client) Flush(ctx context.Context, in *payload.Flush_Request, opts ...g
 	return res, nil
 }
 
+func (c *client) RemoveByTimestamp(ctx context.Context, in *payload.Remove_TimestampRequest, opts ...grpc.CallOption) (res *payload.Object_Locations, err error) {
+	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+vald.RemoveByTimestampRPCName), apiName+"/"+vald.RemoveByTimestampRPCName)
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	_, err = c.c.RoundRobin(ctx, func(ctx context.Context,
+		conn *grpc.ClientConn,
+		copts ...grpc.CallOption,
+	) (interface{}, error) {
+		res, err = vald.NewValdClient(conn).RemoveByTimestamp(ctx, in, append(copts, opts...)...)
+		return nil, err
+	})
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
+}
+
 func (c *client) GetObject(ctx context.Context, in *payload.Object_VectorRequest, opts ...grpc.CallOption) (res *payload.Object_Vector, err error) {
 	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+vald.GetObjectRPCName), apiName+"/"+vald.GetObjectRPCName)
 	defer func() {
@@ -634,6 +654,25 @@ func (c *client) StreamGetObject(ctx context.Context, opts ...grpc.CallOption) (
 	) (interface{}, error) {
 		res, err = vald.NewValdClient(conn).StreamGetObject(ctx, append(copts, opts...)...)
 		return nil, err
+	})
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
+}
+
+func (c *client) StreamListObject(ctx context.Context, in *payload.Object_List_Request, opts ...grpc.CallOption) (res vald.Object_StreamListObjectClient, err error) {
+	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+vald.StreamListObjectRPCName), apiName+"/"+vald.StreamListObjectRPCName)
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	_, err = c.c.RoundRobin(ctx, func(ctx context.Context,
+		conn *grpc.ClientConn,
+		copts ...grpc.CallOption,
+	) (interface{}, error) {
+		return vald.NewValdClient(conn).StreamListObject(ctx, in, append(copts, opts...)...)
 	})
 	if err != nil {
 		return nil, err
@@ -913,6 +952,16 @@ func (c *singleClient) Flush(ctx context.Context, in *payload.Flush_Request, opt
 	return c.vc.Flush(ctx, in, opts...)
 }
 
+func (c *singleClient) RemoveByTimestamp(ctx context.Context, in *payload.Remove_TimestampRequest, opts ...grpc.CallOption) (res *payload.Object_Locations, err error) {
+	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/singleClient/"+vald.RemoveByTimestampRPCName), apiName+"/"+vald.RemoveByTimestampRPCName)
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	return c.vc.RemoveByTimestamp(ctx, in, opts...)
+}
+
 func (c *singleClient) GetObject(ctx context.Context, in *payload.Object_VectorRequest, opts ...grpc.CallOption) (res *payload.Object_Vector, err error) {
 	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/singleClient/"+vald.GetObjectRPCName), apiName+"/"+vald.GetObjectRPCName)
 	defer func() {
@@ -931,4 +980,14 @@ func (c *singleClient) StreamGetObject(ctx context.Context, opts ...grpc.CallOpt
 		}
 	}()
 	return c.vc.StreamGetObject(ctx, opts...)
+}
+
+func (c *singleClient) StreamListObject(ctx context.Context, in *payload.Object_List_Request, opts ...grpc.CallOption) (res vald.Object_StreamListObjectClient, err error) {
+	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/singleClient/"+vald.StreamListObjectRPCName), apiName+"/"+vald.StreamListObjectRPCName)
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	return c.vc.StreamListObject(ctx, in, opts...)
 }

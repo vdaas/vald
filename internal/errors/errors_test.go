@@ -1,7 +1,7 @@
 // Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //	https://www.apache.org/licenses/LICENSE-2.0
@@ -1576,6 +1576,74 @@ func TestAs(t *testing.T) {
 			got := As(test.args.err, &test.args.target)
 			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+func TestRemoveDuplicates(t *testing.T) {
+	type args struct {
+		errs []error
+	}
+	tests := []struct {
+		name string
+		args args
+		want []error
+	}{
+		{
+			name: "succeeds to remove duplicated errors",
+			args: args{
+				errs: []error{
+					New("same error1"),
+					New("same error1"),
+					New("same error2"),
+					New("same error2"),
+					New("same error2"),
+					New("same error3"),
+				},
+			},
+			want: []error{
+				New("same error1"),
+				New("same error2"),
+				New("same error3"),
+			},
+		},
+		{
+			name: "single error remains the same",
+			args: args{
+				errs: []error{
+					New("same error"),
+				},
+			},
+			want: []error{
+				New("same error"),
+			},
+		},
+		{
+			name: "empty errs remains the same",
+			args: args{
+				errs: []error{},
+			},
+			want: []error{},
+		},
+	}
+
+	equalErrs := func(errs1, errs2 []error) bool {
+		if len(errs1) != len(errs2) {
+			return false
+		}
+		for i := range errs1 {
+			if !Is(errs1[i], errs2[i]) {
+				return false
+			}
+		}
+		return true
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := RemoveDuplicates(tt.args.errs); !equalErrs(got, tt.want) {
+				t.Errorf("removeDuplicatedErrs() = %v, want %v", got, tt.want)
 			}
 		})
 	}

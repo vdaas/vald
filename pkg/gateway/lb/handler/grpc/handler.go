@@ -2,7 +2,7 @@
 // Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -20,8 +20,9 @@ package grpc
 import (
 	"context"
 	"fmt"
+	"io"
+	"slices"
 	"strconv"
-	"sync"
 	"sync/atomic"
 	"time"
 
@@ -29,7 +30,6 @@ import (
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
 	"github.com/vdaas/vald/internal/conv"
 	"github.com/vdaas/vald/internal/core/algorithm"
-	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/info"
 	"github.com/vdaas/vald/internal/log"
@@ -40,8 +40,9 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
-	"github.com/vdaas/vald/internal/slices"
 	"github.com/vdaas/vald/internal/strings"
+	"github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/pkg/gateway/lb/service"
 )
 
@@ -1484,7 +1485,7 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 		lmu sync.Mutex
 	)
 	eg, ectx := errgroup.New(ctx)
-	eg.Limitation(s.multiConcurrency)
+	eg.SetLimit(s.multiConcurrency)
 	locs = &payload.Object_Locations{
 		Locations: make([]*payload.Object_Location, len(reqs.GetRequests())),
 	}
@@ -2021,7 +2022,7 @@ func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequ
 		lmu sync.Mutex
 	)
 	eg, ectx := errgroup.New(ctx)
-	eg.Limitation(s.multiConcurrency)
+	eg.SetLimit(s.multiConcurrency)
 	locs = &payload.Object_Locations{
 		Locations: make([]*payload.Object_Location, len(reqs.GetRequests())),
 	}
@@ -2370,7 +2371,7 @@ func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequ
 		lmu sync.Mutex
 	)
 	eg, ectx := errgroup.New(ctx)
-	eg.Limitation(s.multiConcurrency)
+	eg.SetLimit(s.multiConcurrency)
 	locs = &payload.Object_Locations{
 		Locations: make([]*payload.Object_Location, len(reqs.GetRequests())),
 	}
@@ -2674,7 +2675,7 @@ func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequ
 		lmu sync.Mutex
 	)
 	eg, ectx := errgroup.New(ctx)
-	eg.Limitation(s.multiConcurrency)
+	eg.SetLimit(s.multiConcurrency)
 	locs = &payload.Object_Locations{
 		Locations: make([]*payload.Object_Location, len(reqs.GetRequests())),
 	}
@@ -2764,6 +2765,131 @@ func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequ
 	return locs, errs
 }
 
+func (s *server) RemoveByTimestamp(ctx context.Context, req *payload.Remove_TimestampRequest) (locs *payload.Object_Locations, errs error) {
+	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.RemoveRPCServiceName+"/"+vald.RemoveByTimestampRPCName), apiName+"/"+vald.RemoveByTimestampRPCName)
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+
+	var mu sync.Mutex
+	var emu sync.Mutex
+	visited := make(map[string]int) // map[uuid: position of locs]
+	locs = new(payload.Object_Locations)
+
+	err := s.gateway.BroadCast(ctx, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) (err error) {
+		sctx, sspan := trace.StartSpan(grpc.WithGRPCMethod(ctx, "BroadCast/"+target), apiName+"/removeByTimestamp/BroadCast/"+target)
+		defer func() {
+			if sspan != nil {
+				sspan.End()
+			}
+		}()
+
+		res, err := vc.RemoveByTimestamp(sctx, req, copts...)
+		if err != nil {
+			if errors.Is(err, errors.ErrGRPCClientConnNotFound("*")) {
+				err = status.WrapWithInternal(
+					vald.RemoveByTimestampRPCName+" API connection not found", err,
+				)
+				if sspan != nil {
+					sspan.RecordError(err)
+					sspan.SetAttributes(trace.StatusCodeInternal(err.Error())...)
+					sspan.SetStatus(trace.StatusError, err.Error())
+				}
+				log.Error(err)
+				emu.Lock()
+				errs = errors.Join(errs, err)
+				emu.Unlock()
+				return nil
+			}
+			var (
+				st  *status.Status
+				msg string
+			)
+			st, msg, err = status.ParseError(err, codes.Internal,
+				vald.RemoveByTimestampRPCName+" gRPC error response",
+			)
+			if sspan != nil {
+				sspan.RecordError(err)
+				sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+				sspan.SetStatus(trace.StatusError, err.Error())
+			}
+			if err != nil && st.Code() != codes.NotFound {
+				log.Error(err)
+				emu.Lock()
+				errs = errors.Join(errs, err)
+				emu.Unlock()
+				return nil
+			}
+		}
+
+		if res != nil && len(res.GetLocations()) > 0 {
+			for _, loc := range res.GetLocations() {
+				mu.Lock()
+				if pos, ok := visited[loc.GetUuid()]; !ok {
+					locs.Locations = append(locs.GetLocations(), loc)
+					visited[loc.GetUuid()] = len(locs.Locations) - 1
+				} else {
+					if pos < len(locs.GetLocations()) {
+						locs.GetLocations()[pos].Ips = append(locs.GetLocations()[pos].Ips, loc.GetIps()...)
+						if s := locs.GetLocations()[pos].Name; len(s) == 0 {
+							locs.GetLocations()[pos].Name = loc.GetName()
+						} else {
+							// strings.Join is used because '+=' causes performance degradation when the number of characters is large.
+							locs.GetLocations()[pos].Name = strings.Join([]string{
+								s, loc.GetName(),
+							}, ",")
+						}
+					}
+				}
+				mu.Unlock()
+			}
+		}
+		return nil
+	})
+	if errs != nil {
+		err = errors.Join(err, errs)
+	}
+	if err != nil {
+		st, msg, err := status.ParseError(err, codes.Internal,
+			"failed to parse "+vald.RemoveByTimestampRPCName+" gRPC error response",
+			&errdetails.RequestInfo{
+				ServingData: errdetails.Serialize(req),
+			},
+			&errdetails.ResourceInfo{
+				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+			},
+		)
+		log.Error(err)
+		if span != nil {
+			span.RecordError(err)
+			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+			span.SetStatus(trace.StatusError, err.Error())
+		}
+		return nil, err
+	}
+	if locs == nil || len(locs.GetLocations()) == 0 {
+		err = status.WrapWithNotFound(
+			vald.RemoveByTimestampRPCName+" API remove target not found", errors.ErrIndexNotFound,
+			&errdetails.RequestInfo{
+				ServingData: errdetails.Serialize(req),
+			},
+			&errdetails.ResourceInfo{
+				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+			},
+		)
+		log.Error(err)
+		if span != nil {
+			span.RecordError(err)
+			span.SetAttributes(trace.StatusCodeNotFound(err.Error())...)
+			span.SetStatus(trace.StatusError, err.Error())
+		}
+		return nil, err
+	}
+	return locs, nil
+}
+
 func (s *server) getObject(ctx context.Context, uuid string) (vec *payload.Object_Vector, err error) {
 	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "getObject"), apiName+"/"+vald.GetObjectRPCName+"/getObject")
 	defer func() {
@@ -2782,7 +2908,7 @@ func (s *server) getObject(ctx context.Context, uuid string) (vec *payload.Objec
 		ech <- s.gateway.BroadCast(ctx, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error {
 			sctx, sspan := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "BroadCast/"+target), apiName+"/getObject/BroadCast/"+target)
 			defer func() {
-				if span != nil {
+				if sspan != nil {
 					sspan.End()
 				}
 			}()
@@ -3109,4 +3235,91 @@ func (s *server) StreamGetObject(stream vald.Object_StreamGetObjectServer) (err 
 		return err
 	}
 	return nil
+}
+
+func (s *server) StreamListObject(req *payload.Object_List_Request, stream vald.Object_StreamListObjectServer) error {
+	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(stream.Context(), vald.PackageName+"."+vald.ObjectRPCServiceName+"/"+vald.StreamListObjectRPCName), apiName+"/"+vald.StreamListObjectRPCName)
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
+	var rmu, smu sync.Mutex
+	err := s.gateway.BroadCast(ctx, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error {
+		ctx, sspan := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "BroadCast/"+target), apiName+"/"+vald.StreamListObjectRPCName+"/"+target)
+		defer func() {
+			if sspan != nil {
+				sspan.End()
+			}
+		}()
+
+		client, err := vc.StreamListObject(ctx, req, copts...)
+		if err != nil {
+			log.Errorf("failed to get StreamListObject client for agent(%s): %v", target, err)
+			return err
+		}
+
+		eg, ctx := errgroup.WithContext(ctx)
+		ectx, ecancel := context.WithCancel(ctx)
+		defer ecancel()
+		eg.SetLimit(s.streamConcurrency)
+
+		for {
+			select {
+			case <-ectx.Done():
+				var err error
+				if !errors.Is(ctx.Err(), context.Canceled) {
+					err = errors.Join(err, ctx.Err())
+				}
+				if egerr := eg.Wait(); err != nil {
+					err = errors.Join(err, egerr)
+				}
+				return err
+			default:
+				eg.Go(safety.RecoverFunc(func() error {
+					rmu.Lock()
+					res, err := client.Recv()
+					rmu.Unlock()
+					if err != nil {
+						if errors.Is(err, io.EOF) {
+							ecancel()
+							return nil
+						}
+						return errors.ErrServerStreamClientRecv(err)
+					}
+
+					vec := res.GetVector()
+					if vec == nil {
+						st := res.GetStatus()
+						log.Warnf("received empty vector: code %v: details %v: message %v",
+							st.GetCode(),
+							st.GetDetails(),
+							st.GetMessage(),
+						)
+						return nil
+					}
+
+					smu.Lock()
+					err = stream.Send(res)
+					smu.Unlock()
+					if err != nil {
+						if sspan != nil {
+							st, msg, err := status.ParseError(err, codes.Internal, "failed to parse StreamListObject send gRPC error response")
+							sspan.RecordError(err)
+							sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+							sspan.SetStatus(trace.StatusError, err.Error())
+						}
+						return errors.ErrServerStreamServerSend(err)
+					}
+
+					return nil
+				}))
+			}
+		}
+	})
+	return err
 }

@@ -2,7 +2,7 @@
 // Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -113,7 +113,7 @@ package grpc
 // 		addrs               map[string]struct{}
 // 		poolSize            uint64
 // 		clientCount         uint64
-// 		conns               grpcConns
+// 		conns               sync.Map[string, pool.Conn]
 // 		hcDur               time.Duration
 // 		prDur               time.Duration
 // 		dialer              net.Dialer
@@ -128,6 +128,7 @@ package grpc
 // 		gbo                 gbackoff.Config
 // 		mcd                 time.Duration
 // 		group               singleflight.Group[pool.Conn]
+// 		crl                 sync.Map[string, bool]
 // 		ech                 <-chan error
 // 		monitorRunning      atomic.Bool
 // 		stopMonitor         context.CancelFunc
@@ -166,7 +167,7 @@ package grpc
 // 		           addrs:nil,
 // 		           poolSize:0,
 // 		           clientCount:0,
-// 		           conns:grpcConns{},
+// 		           conns:nil,
 // 		           hcDur:nil,
 // 		           prDur:nil,
 // 		           dialer:nil,
@@ -181,6 +182,7 @@ package grpc
 // 		           gbo:nil,
 // 		           mcd:nil,
 // 		           group:nil,
+// 		           crl:nil,
 // 		           ech:nil,
 // 		           monitorRunning:nil,
 // 		           stopMonitor:nil,
@@ -208,7 +210,7 @@ package grpc
 // 		           addrs:nil,
 // 		           poolSize:0,
 // 		           clientCount:0,
-// 		           conns:grpcConns{},
+// 		           conns:nil,
 // 		           hcDur:nil,
 // 		           prDur:nil,
 // 		           dialer:nil,
@@ -223,6 +225,7 @@ package grpc
 // 		           gbo:nil,
 // 		           mcd:nil,
 // 		           group:nil,
+// 		           crl:nil,
 // 		           ech:nil,
 // 		           monitorRunning:nil,
 // 		           stopMonitor:nil,
@@ -274,6 +277,7 @@ package grpc
 // 				gbo:                 test.fields.gbo,
 // 				mcd:                 test.fields.mcd,
 // 				group:               test.fields.group,
+// 				crl:                 test.fields.crl,
 // 				ech:                 test.fields.ech,
 // 				monitorRunning:      test.fields.monitorRunning,
 // 				stopMonitor:         test.fields.stopMonitor,
@@ -297,7 +301,7 @@ package grpc
 // 		addrs               map[string]struct{}
 // 		poolSize            uint64
 // 		clientCount         uint64
-// 		conns               grpcConns
+// 		conns               sync.Map[string, pool.Conn]
 // 		hcDur               time.Duration
 // 		prDur               time.Duration
 // 		dialer              net.Dialer
@@ -312,6 +316,7 @@ package grpc
 // 		gbo                 gbackoff.Config
 // 		mcd                 time.Duration
 // 		group               singleflight.Group[pool.Conn]
+// 		crl                 sync.Map[string, bool]
 // 		ech                 <-chan error
 // 		monitorRunning      atomic.Bool
 // 		stopMonitor         context.CancelFunc
@@ -347,7 +352,7 @@ package grpc
 // 		           addrs:nil,
 // 		           poolSize:0,
 // 		           clientCount:0,
-// 		           conns:grpcConns{},
+// 		           conns:nil,
 // 		           hcDur:nil,
 // 		           prDur:nil,
 // 		           dialer:nil,
@@ -362,6 +367,7 @@ package grpc
 // 		           gbo:nil,
 // 		           mcd:nil,
 // 		           group:nil,
+// 		           crl:nil,
 // 		           ech:nil,
 // 		           monitorRunning:nil,
 // 		           stopMonitor:nil,
@@ -390,7 +396,7 @@ package grpc
 // 		           addrs:nil,
 // 		           poolSize:0,
 // 		           clientCount:0,
-// 		           conns:grpcConns{},
+// 		           conns:nil,
 // 		           hcDur:nil,
 // 		           prDur:nil,
 // 		           dialer:nil,
@@ -405,6 +411,7 @@ package grpc
 // 		           gbo:nil,
 // 		           mcd:nil,
 // 		           group:nil,
+// 		           crl:nil,
 // 		           ech:nil,
 // 		           monitorRunning:nil,
 // 		           stopMonitor:nil,
@@ -456,6 +463,7 @@ package grpc
 // 				gbo:                 test.fields.gbo,
 // 				mcd:                 test.fields.mcd,
 // 				group:               test.fields.group,
+// 				crl:                 test.fields.crl,
 // 				ech:                 test.fields.ech,
 // 				monitorRunning:      test.fields.monitorRunning,
 // 				stopMonitor:         test.fields.stopMonitor,
@@ -480,7 +488,7 @@ package grpc
 // 		addrs               map[string]struct{}
 // 		poolSize            uint64
 // 		clientCount         uint64
-// 		conns               grpcConns
+// 		conns               sync.Map[string, pool.Conn]
 // 		hcDur               time.Duration
 // 		prDur               time.Duration
 // 		dialer              net.Dialer
@@ -495,6 +503,7 @@ package grpc
 // 		gbo                 gbackoff.Config
 // 		mcd                 time.Duration
 // 		group               singleflight.Group[pool.Conn]
+// 		crl                 sync.Map[string, bool]
 // 		ech                 <-chan error
 // 		monitorRunning      atomic.Bool
 // 		stopMonitor         context.CancelFunc
@@ -531,7 +540,7 @@ package grpc
 // 		           addrs:nil,
 // 		           poolSize:0,
 // 		           clientCount:0,
-// 		           conns:grpcConns{},
+// 		           conns:nil,
 // 		           hcDur:nil,
 // 		           prDur:nil,
 // 		           dialer:nil,
@@ -546,6 +555,7 @@ package grpc
 // 		           gbo:nil,
 // 		           mcd:nil,
 // 		           group:nil,
+// 		           crl:nil,
 // 		           ech:nil,
 // 		           monitorRunning:nil,
 // 		           stopMonitor:nil,
@@ -575,7 +585,7 @@ package grpc
 // 		           addrs:nil,
 // 		           poolSize:0,
 // 		           clientCount:0,
-// 		           conns:grpcConns{},
+// 		           conns:nil,
 // 		           hcDur:nil,
 // 		           prDur:nil,
 // 		           dialer:nil,
@@ -590,6 +600,7 @@ package grpc
 // 		           gbo:nil,
 // 		           mcd:nil,
 // 		           group:nil,
+// 		           crl:nil,
 // 		           ech:nil,
 // 		           monitorRunning:nil,
 // 		           stopMonitor:nil,
@@ -641,6 +652,7 @@ package grpc
 // 				gbo:                 test.fields.gbo,
 // 				mcd:                 test.fields.mcd,
 // 				group:               test.fields.group,
+// 				crl:                 test.fields.crl,
 // 				ech:                 test.fields.ech,
 // 				monitorRunning:      test.fields.monitorRunning,
 // 				stopMonitor:         test.fields.stopMonitor,
@@ -665,7 +677,7 @@ package grpc
 // 		addrs               map[string]struct{}
 // 		poolSize            uint64
 // 		clientCount         uint64
-// 		conns               grpcConns
+// 		conns               sync.Map[string, pool.Conn]
 // 		hcDur               time.Duration
 // 		prDur               time.Duration
 // 		dialer              net.Dialer
@@ -680,6 +692,7 @@ package grpc
 // 		gbo                 gbackoff.Config
 // 		mcd                 time.Duration
 // 		group               singleflight.Group[pool.Conn]
+// 		crl                 sync.Map[string, bool]
 // 		ech                 <-chan error
 // 		monitorRunning      atomic.Bool
 // 		stopMonitor         context.CancelFunc
@@ -716,7 +729,7 @@ package grpc
 // 		           addrs:nil,
 // 		           poolSize:0,
 // 		           clientCount:0,
-// 		           conns:grpcConns{},
+// 		           conns:nil,
 // 		           hcDur:nil,
 // 		           prDur:nil,
 // 		           dialer:nil,
@@ -731,6 +744,7 @@ package grpc
 // 		           gbo:nil,
 // 		           mcd:nil,
 // 		           group:nil,
+// 		           crl:nil,
 // 		           ech:nil,
 // 		           monitorRunning:nil,
 // 		           stopMonitor:nil,
@@ -760,7 +774,7 @@ package grpc
 // 		           addrs:nil,
 // 		           poolSize:0,
 // 		           clientCount:0,
-// 		           conns:grpcConns{},
+// 		           conns:nil,
 // 		           hcDur:nil,
 // 		           prDur:nil,
 // 		           dialer:nil,
@@ -775,6 +789,7 @@ package grpc
 // 		           gbo:nil,
 // 		           mcd:nil,
 // 		           group:nil,
+// 		           crl:nil,
 // 		           ech:nil,
 // 		           monitorRunning:nil,
 // 		           stopMonitor:nil,
@@ -826,6 +841,7 @@ package grpc
 // 				gbo:                 test.fields.gbo,
 // 				mcd:                 test.fields.mcd,
 // 				group:               test.fields.group,
+// 				crl:                 test.fields.crl,
 // 				ech:                 test.fields.ech,
 // 				monitorRunning:      test.fields.monitorRunning,
 // 				stopMonitor:         test.fields.stopMonitor,
@@ -851,7 +867,7 @@ package grpc
 // 		addrs               map[string]struct{}
 // 		poolSize            uint64
 // 		clientCount         uint64
-// 		conns               grpcConns
+// 		conns               sync.Map[string, pool.Conn]
 // 		hcDur               time.Duration
 // 		prDur               time.Duration
 // 		dialer              net.Dialer
@@ -866,6 +882,7 @@ package grpc
 // 		gbo                 gbackoff.Config
 // 		mcd                 time.Duration
 // 		group               singleflight.Group[pool.Conn]
+// 		crl                 sync.Map[string, bool]
 // 		ech                 <-chan error
 // 		monitorRunning      atomic.Bool
 // 		stopMonitor         context.CancelFunc
@@ -903,7 +920,7 @@ package grpc
 // 		           addrs:nil,
 // 		           poolSize:0,
 // 		           clientCount:0,
-// 		           conns:grpcConns{},
+// 		           conns:nil,
 // 		           hcDur:nil,
 // 		           prDur:nil,
 // 		           dialer:nil,
@@ -918,6 +935,7 @@ package grpc
 // 		           gbo:nil,
 // 		           mcd:nil,
 // 		           group:nil,
+// 		           crl:nil,
 // 		           ech:nil,
 // 		           monitorRunning:nil,
 // 		           stopMonitor:nil,
@@ -948,7 +966,7 @@ package grpc
 // 		           addrs:nil,
 // 		           poolSize:0,
 // 		           clientCount:0,
-// 		           conns:grpcConns{},
+// 		           conns:nil,
 // 		           hcDur:nil,
 // 		           prDur:nil,
 // 		           dialer:nil,
@@ -963,6 +981,7 @@ package grpc
 // 		           gbo:nil,
 // 		           mcd:nil,
 // 		           group:nil,
+// 		           crl:nil,
 // 		           ech:nil,
 // 		           monitorRunning:nil,
 // 		           stopMonitor:nil,
@@ -1014,6 +1033,7 @@ package grpc
 // 				gbo:                 test.fields.gbo,
 // 				mcd:                 test.fields.mcd,
 // 				group:               test.fields.group,
+// 				crl:                 test.fields.crl,
 // 				ech:                 test.fields.ech,
 // 				monitorRunning:      test.fields.monitorRunning,
 // 				stopMonitor:         test.fields.stopMonitor,
@@ -1037,7 +1057,7 @@ package grpc
 // 		addrs               map[string]struct{}
 // 		poolSize            uint64
 // 		clientCount         uint64
-// 		conns               grpcConns
+// 		conns               sync.Map[string, pool.Conn]
 // 		hcDur               time.Duration
 // 		prDur               time.Duration
 // 		dialer              net.Dialer
@@ -1052,6 +1072,7 @@ package grpc
 // 		gbo                 gbackoff.Config
 // 		mcd                 time.Duration
 // 		group               singleflight.Group[pool.Conn]
+// 		crl                 sync.Map[string, bool]
 // 		ech                 <-chan error
 // 		monitorRunning      atomic.Bool
 // 		stopMonitor         context.CancelFunc
@@ -1091,7 +1112,7 @@ package grpc
 // 		           addrs:nil,
 // 		           poolSize:0,
 // 		           clientCount:0,
-// 		           conns:grpcConns{},
+// 		           conns:nil,
 // 		           hcDur:nil,
 // 		           prDur:nil,
 // 		           dialer:nil,
@@ -1106,6 +1127,7 @@ package grpc
 // 		           gbo:nil,
 // 		           mcd:nil,
 // 		           group:nil,
+// 		           crl:nil,
 // 		           ech:nil,
 // 		           monitorRunning:nil,
 // 		           stopMonitor:nil,
@@ -1134,7 +1156,7 @@ package grpc
 // 		           addrs:nil,
 // 		           poolSize:0,
 // 		           clientCount:0,
-// 		           conns:grpcConns{},
+// 		           conns:nil,
 // 		           hcDur:nil,
 // 		           prDur:nil,
 // 		           dialer:nil,
@@ -1149,6 +1171,7 @@ package grpc
 // 		           gbo:nil,
 // 		           mcd:nil,
 // 		           group:nil,
+// 		           crl:nil,
 // 		           ech:nil,
 // 		           monitorRunning:nil,
 // 		           stopMonitor:nil,
@@ -1200,6 +1223,7 @@ package grpc
 // 				gbo:                 test.fields.gbo,
 // 				mcd:                 test.fields.mcd,
 // 				group:               test.fields.group,
+// 				crl:                 test.fields.crl,
 // 				ech:                 test.fields.ech,
 // 				monitorRunning:      test.fields.monitorRunning,
 // 				stopMonitor:         test.fields.stopMonitor,
@@ -1224,7 +1248,7 @@ package grpc
 // 		addrs               map[string]struct{}
 // 		poolSize            uint64
 // 		clientCount         uint64
-// 		conns               grpcConns
+// 		conns               sync.Map[string, pool.Conn]
 // 		hcDur               time.Duration
 // 		prDur               time.Duration
 // 		dialer              net.Dialer
@@ -1239,6 +1263,7 @@ package grpc
 // 		gbo                 gbackoff.Config
 // 		mcd                 time.Duration
 // 		group               singleflight.Group[pool.Conn]
+// 		crl                 sync.Map[string, bool]
 // 		ech                 <-chan error
 // 		monitorRunning      atomic.Bool
 // 		stopMonitor         context.CancelFunc
@@ -1279,7 +1304,7 @@ package grpc
 // 		           addrs:nil,
 // 		           poolSize:0,
 // 		           clientCount:0,
-// 		           conns:grpcConns{},
+// 		           conns:nil,
 // 		           hcDur:nil,
 // 		           prDur:nil,
 // 		           dialer:nil,
@@ -1294,6 +1319,7 @@ package grpc
 // 		           gbo:nil,
 // 		           mcd:nil,
 // 		           group:nil,
+// 		           crl:nil,
 // 		           ech:nil,
 // 		           monitorRunning:nil,
 // 		           stopMonitor:nil,
@@ -1323,7 +1349,7 @@ package grpc
 // 		           addrs:nil,
 // 		           poolSize:0,
 // 		           clientCount:0,
-// 		           conns:grpcConns{},
+// 		           conns:nil,
 // 		           hcDur:nil,
 // 		           prDur:nil,
 // 		           dialer:nil,
@@ -1338,6 +1364,7 @@ package grpc
 // 		           gbo:nil,
 // 		           mcd:nil,
 // 		           group:nil,
+// 		           crl:nil,
 // 		           ech:nil,
 // 		           monitorRunning:nil,
 // 		           stopMonitor:nil,
@@ -1389,6 +1416,7 @@ package grpc
 // 				gbo:                 test.fields.gbo,
 // 				mcd:                 test.fields.mcd,
 // 				group:               test.fields.group,
+// 				crl:                 test.fields.crl,
 // 				ech:                 test.fields.ech,
 // 				monitorRunning:      test.fields.monitorRunning,
 // 				stopMonitor:         test.fields.stopMonitor,
@@ -1415,7 +1443,7 @@ package grpc
 // 		addrs               map[string]struct{}
 // 		poolSize            uint64
 // 		clientCount         uint64
-// 		conns               grpcConns
+// 		conns               sync.Map[string, pool.Conn]
 // 		hcDur               time.Duration
 // 		prDur               time.Duration
 // 		dialer              net.Dialer
@@ -1430,6 +1458,7 @@ package grpc
 // 		gbo                 gbackoff.Config
 // 		mcd                 time.Duration
 // 		group               singleflight.Group[pool.Conn]
+// 		crl                 sync.Map[string, bool]
 // 		ech                 <-chan error
 // 		monitorRunning      atomic.Bool
 // 		stopMonitor         context.CancelFunc
@@ -1472,7 +1501,7 @@ package grpc
 // 		           addrs:nil,
 // 		           poolSize:0,
 // 		           clientCount:0,
-// 		           conns:grpcConns{},
+// 		           conns:nil,
 // 		           hcDur:nil,
 // 		           prDur:nil,
 // 		           dialer:nil,
@@ -1487,6 +1516,7 @@ package grpc
 // 		           gbo:nil,
 // 		           mcd:nil,
 // 		           group:nil,
+// 		           crl:nil,
 // 		           ech:nil,
 // 		           monitorRunning:nil,
 // 		           stopMonitor:nil,
@@ -1518,7 +1548,7 @@ package grpc
 // 		           addrs:nil,
 // 		           poolSize:0,
 // 		           clientCount:0,
-// 		           conns:grpcConns{},
+// 		           conns:nil,
 // 		           hcDur:nil,
 // 		           prDur:nil,
 // 		           dialer:nil,
@@ -1533,6 +1563,7 @@ package grpc
 // 		           gbo:nil,
 // 		           mcd:nil,
 // 		           group:nil,
+// 		           crl:nil,
 // 		           ech:nil,
 // 		           monitorRunning:nil,
 // 		           stopMonitor:nil,
@@ -1584,6 +1615,7 @@ package grpc
 // 				gbo:                 test.fields.gbo,
 // 				mcd:                 test.fields.mcd,
 // 				group:               test.fields.group,
+// 				crl:                 test.fields.crl,
 // 				ech:                 test.fields.ech,
 // 				monitorRunning:      test.fields.monitorRunning,
 // 				stopMonitor:         test.fields.stopMonitor,
@@ -1603,7 +1635,7 @@ package grpc
 // 		addrs               map[string]struct{}
 // 		poolSize            uint64
 // 		clientCount         uint64
-// 		conns               grpcConns
+// 		conns               sync.Map[string, pool.Conn]
 // 		hcDur               time.Duration
 // 		prDur               time.Duration
 // 		dialer              net.Dialer
@@ -1618,6 +1650,7 @@ package grpc
 // 		gbo                 gbackoff.Config
 // 		mcd                 time.Duration
 // 		group               singleflight.Group[pool.Conn]
+// 		crl                 sync.Map[string, bool]
 // 		ech                 <-chan error
 // 		monitorRunning      atomic.Bool
 // 		stopMonitor         context.CancelFunc
@@ -1648,7 +1681,7 @@ package grpc
 // 		           addrs:nil,
 // 		           poolSize:0,
 // 		           clientCount:0,
-// 		           conns:grpcConns{},
+// 		           conns:nil,
 // 		           hcDur:nil,
 // 		           prDur:nil,
 // 		           dialer:nil,
@@ -1663,6 +1696,7 @@ package grpc
 // 		           gbo:nil,
 // 		           mcd:nil,
 // 		           group:nil,
+// 		           crl:nil,
 // 		           ech:nil,
 // 		           monitorRunning:nil,
 // 		           stopMonitor:nil,
@@ -1687,7 +1721,7 @@ package grpc
 // 		           addrs:nil,
 // 		           poolSize:0,
 // 		           clientCount:0,
-// 		           conns:grpcConns{},
+// 		           conns:nil,
 // 		           hcDur:nil,
 // 		           prDur:nil,
 // 		           dialer:nil,
@@ -1702,6 +1736,7 @@ package grpc
 // 		           gbo:nil,
 // 		           mcd:nil,
 // 		           group:nil,
+// 		           crl:nil,
 // 		           ech:nil,
 // 		           monitorRunning:nil,
 // 		           stopMonitor:nil,
@@ -1753,6 +1788,7 @@ package grpc
 // 				gbo:                 test.fields.gbo,
 // 				mcd:                 test.fields.mcd,
 // 				group:               test.fields.group,
+// 				crl:                 test.fields.crl,
 // 				ech:                 test.fields.ech,
 // 				monitorRunning:      test.fields.monitorRunning,
 // 				stopMonitor:         test.fields.stopMonitor,
@@ -1772,7 +1808,7 @@ package grpc
 // 		addrs               map[string]struct{}
 // 		poolSize            uint64
 // 		clientCount         uint64
-// 		conns               grpcConns
+// 		conns               sync.Map[string, pool.Conn]
 // 		hcDur               time.Duration
 // 		prDur               time.Duration
 // 		dialer              net.Dialer
@@ -1787,6 +1823,7 @@ package grpc
 // 		gbo                 gbackoff.Config
 // 		mcd                 time.Duration
 // 		group               singleflight.Group[pool.Conn]
+// 		crl                 sync.Map[string, bool]
 // 		ech                 <-chan error
 // 		monitorRunning      atomic.Bool
 // 		stopMonitor         context.CancelFunc
@@ -1817,7 +1854,7 @@ package grpc
 // 		           addrs:nil,
 // 		           poolSize:0,
 // 		           clientCount:0,
-// 		           conns:grpcConns{},
+// 		           conns:nil,
 // 		           hcDur:nil,
 // 		           prDur:nil,
 // 		           dialer:nil,
@@ -1832,6 +1869,7 @@ package grpc
 // 		           gbo:nil,
 // 		           mcd:nil,
 // 		           group:nil,
+// 		           crl:nil,
 // 		           ech:nil,
 // 		           monitorRunning:nil,
 // 		           stopMonitor:nil,
@@ -1856,7 +1894,7 @@ package grpc
 // 		           addrs:nil,
 // 		           poolSize:0,
 // 		           clientCount:0,
-// 		           conns:grpcConns{},
+// 		           conns:nil,
 // 		           hcDur:nil,
 // 		           prDur:nil,
 // 		           dialer:nil,
@@ -1871,6 +1909,7 @@ package grpc
 // 		           gbo:nil,
 // 		           mcd:nil,
 // 		           group:nil,
+// 		           crl:nil,
 // 		           ech:nil,
 // 		           monitorRunning:nil,
 // 		           stopMonitor:nil,
@@ -1922,6 +1961,7 @@ package grpc
 // 				gbo:                 test.fields.gbo,
 // 				mcd:                 test.fields.mcd,
 // 				group:               test.fields.group,
+// 				crl:                 test.fields.crl,
 // 				ech:                 test.fields.ech,
 // 				monitorRunning:      test.fields.monitorRunning,
 // 				stopMonitor:         test.fields.stopMonitor,
@@ -1941,7 +1981,7 @@ package grpc
 // 		addrs               map[string]struct{}
 // 		poolSize            uint64
 // 		clientCount         uint64
-// 		conns               grpcConns
+// 		conns               sync.Map[string, pool.Conn]
 // 		hcDur               time.Duration
 // 		prDur               time.Duration
 // 		dialer              net.Dialer
@@ -1956,6 +1996,7 @@ package grpc
 // 		gbo                 gbackoff.Config
 // 		mcd                 time.Duration
 // 		group               singleflight.Group[pool.Conn]
+// 		crl                 sync.Map[string, bool]
 // 		ech                 <-chan error
 // 		monitorRunning      atomic.Bool
 // 		stopMonitor         context.CancelFunc
@@ -1986,7 +2027,7 @@ package grpc
 // 		           addrs:nil,
 // 		           poolSize:0,
 // 		           clientCount:0,
-// 		           conns:grpcConns{},
+// 		           conns:nil,
 // 		           hcDur:nil,
 // 		           prDur:nil,
 // 		           dialer:nil,
@@ -2001,6 +2042,7 @@ package grpc
 // 		           gbo:nil,
 // 		           mcd:nil,
 // 		           group:nil,
+// 		           crl:nil,
 // 		           ech:nil,
 // 		           monitorRunning:nil,
 // 		           stopMonitor:nil,
@@ -2025,7 +2067,7 @@ package grpc
 // 		           addrs:nil,
 // 		           poolSize:0,
 // 		           clientCount:0,
-// 		           conns:grpcConns{},
+// 		           conns:nil,
 // 		           hcDur:nil,
 // 		           prDur:nil,
 // 		           dialer:nil,
@@ -2040,6 +2082,7 @@ package grpc
 // 		           gbo:nil,
 // 		           mcd:nil,
 // 		           group:nil,
+// 		           crl:nil,
 // 		           ech:nil,
 // 		           monitorRunning:nil,
 // 		           stopMonitor:nil,
@@ -2091,6 +2134,7 @@ package grpc
 // 				gbo:                 test.fields.gbo,
 // 				mcd:                 test.fields.mcd,
 // 				group:               test.fields.group,
+// 				crl:                 test.fields.crl,
 // 				ech:                 test.fields.ech,
 // 				monitorRunning:      test.fields.monitorRunning,
 // 				stopMonitor:         test.fields.stopMonitor,
@@ -2115,7 +2159,7 @@ package grpc
 // 		addrs               map[string]struct{}
 // 		poolSize            uint64
 // 		clientCount         uint64
-// 		conns               grpcConns
+// 		conns               sync.Map[string, pool.Conn]
 // 		hcDur               time.Duration
 // 		prDur               time.Duration
 // 		dialer              net.Dialer
@@ -2130,6 +2174,7 @@ package grpc
 // 		gbo                 gbackoff.Config
 // 		mcd                 time.Duration
 // 		group               singleflight.Group[pool.Conn]
+// 		crl                 sync.Map[string, bool]
 // 		ech                 <-chan error
 // 		monitorRunning      atomic.Bool
 // 		stopMonitor         context.CancelFunc
@@ -2170,7 +2215,7 @@ package grpc
 // 		           addrs:nil,
 // 		           poolSize:0,
 // 		           clientCount:0,
-// 		           conns:grpcConns{},
+// 		           conns:nil,
 // 		           hcDur:nil,
 // 		           prDur:nil,
 // 		           dialer:nil,
@@ -2185,6 +2230,7 @@ package grpc
 // 		           gbo:nil,
 // 		           mcd:nil,
 // 		           group:nil,
+// 		           crl:nil,
 // 		           ech:nil,
 // 		           monitorRunning:nil,
 // 		           stopMonitor:nil,
@@ -2214,7 +2260,7 @@ package grpc
 // 		           addrs:nil,
 // 		           poolSize:0,
 // 		           clientCount:0,
-// 		           conns:grpcConns{},
+// 		           conns:nil,
 // 		           hcDur:nil,
 // 		           prDur:nil,
 // 		           dialer:nil,
@@ -2229,6 +2275,7 @@ package grpc
 // 		           gbo:nil,
 // 		           mcd:nil,
 // 		           group:nil,
+// 		           crl:nil,
 // 		           ech:nil,
 // 		           monitorRunning:nil,
 // 		           stopMonitor:nil,
@@ -2280,6 +2327,7 @@ package grpc
 // 				gbo:                 test.fields.gbo,
 // 				mcd:                 test.fields.mcd,
 // 				group:               test.fields.group,
+// 				crl:                 test.fields.crl,
 // 				ech:                 test.fields.ech,
 // 				monitorRunning:      test.fields.monitorRunning,
 // 				stopMonitor:         test.fields.stopMonitor,
@@ -2303,7 +2351,7 @@ package grpc
 // 		addrs               map[string]struct{}
 // 		poolSize            uint64
 // 		clientCount         uint64
-// 		conns               grpcConns
+// 		conns               sync.Map[string, pool.Conn]
 // 		hcDur               time.Duration
 // 		prDur               time.Duration
 // 		dialer              net.Dialer
@@ -2318,6 +2366,7 @@ package grpc
 // 		gbo                 gbackoff.Config
 // 		mcd                 time.Duration
 // 		group               singleflight.Group[pool.Conn]
+// 		crl                 sync.Map[string, bool]
 // 		ech                 <-chan error
 // 		monitorRunning      atomic.Bool
 // 		stopMonitor         context.CancelFunc
@@ -2353,7 +2402,7 @@ package grpc
 // 		           addrs:nil,
 // 		           poolSize:0,
 // 		           clientCount:0,
-// 		           conns:grpcConns{},
+// 		           conns:nil,
 // 		           hcDur:nil,
 // 		           prDur:nil,
 // 		           dialer:nil,
@@ -2368,6 +2417,7 @@ package grpc
 // 		           gbo:nil,
 // 		           mcd:nil,
 // 		           group:nil,
+// 		           crl:nil,
 // 		           ech:nil,
 // 		           monitorRunning:nil,
 // 		           stopMonitor:nil,
@@ -2396,7 +2446,7 @@ package grpc
 // 		           addrs:nil,
 // 		           poolSize:0,
 // 		           clientCount:0,
-// 		           conns:grpcConns{},
+// 		           conns:nil,
 // 		           hcDur:nil,
 // 		           prDur:nil,
 // 		           dialer:nil,
@@ -2411,6 +2461,7 @@ package grpc
 // 		           gbo:nil,
 // 		           mcd:nil,
 // 		           group:nil,
+// 		           crl:nil,
 // 		           ech:nil,
 // 		           monitorRunning:nil,
 // 		           stopMonitor:nil,
@@ -2462,6 +2513,7 @@ package grpc
 // 				gbo:                 test.fields.gbo,
 // 				mcd:                 test.fields.mcd,
 // 				group:               test.fields.group,
+// 				crl:                 test.fields.crl,
 // 				ech:                 test.fields.ech,
 // 				monitorRunning:      test.fields.monitorRunning,
 // 				stopMonitor:         test.fields.stopMonitor,
@@ -2485,7 +2537,7 @@ package grpc
 // 		addrs               map[string]struct{}
 // 		poolSize            uint64
 // 		clientCount         uint64
-// 		conns               grpcConns
+// 		conns               sync.Map[string, pool.Conn]
 // 		hcDur               time.Duration
 // 		prDur               time.Duration
 // 		dialer              net.Dialer
@@ -2500,6 +2552,7 @@ package grpc
 // 		gbo                 gbackoff.Config
 // 		mcd                 time.Duration
 // 		group               singleflight.Group[pool.Conn]
+// 		crl                 sync.Map[string, bool]
 // 		ech                 <-chan error
 // 		monitorRunning      atomic.Bool
 // 		stopMonitor         context.CancelFunc
@@ -2535,7 +2588,7 @@ package grpc
 // 		           addrs:nil,
 // 		           poolSize:0,
 // 		           clientCount:0,
-// 		           conns:grpcConns{},
+// 		           conns:nil,
 // 		           hcDur:nil,
 // 		           prDur:nil,
 // 		           dialer:nil,
@@ -2550,6 +2603,7 @@ package grpc
 // 		           gbo:nil,
 // 		           mcd:nil,
 // 		           group:nil,
+// 		           crl:nil,
 // 		           ech:nil,
 // 		           monitorRunning:nil,
 // 		           stopMonitor:nil,
@@ -2578,7 +2632,7 @@ package grpc
 // 		           addrs:nil,
 // 		           poolSize:0,
 // 		           clientCount:0,
-// 		           conns:grpcConns{},
+// 		           conns:nil,
 // 		           hcDur:nil,
 // 		           prDur:nil,
 // 		           dialer:nil,
@@ -2593,6 +2647,7 @@ package grpc
 // 		           gbo:nil,
 // 		           mcd:nil,
 // 		           group:nil,
+// 		           crl:nil,
 // 		           ech:nil,
 // 		           monitorRunning:nil,
 // 		           stopMonitor:nil,
@@ -2644,6 +2699,7 @@ package grpc
 // 				gbo:                 test.fields.gbo,
 // 				mcd:                 test.fields.mcd,
 // 				group:               test.fields.group,
+// 				crl:                 test.fields.crl,
 // 				ech:                 test.fields.ech,
 // 				monitorRunning:      test.fields.monitorRunning,
 // 				stopMonitor:         test.fields.stopMonitor,
@@ -2663,7 +2719,7 @@ package grpc
 // 		addrs               map[string]struct{}
 // 		poolSize            uint64
 // 		clientCount         uint64
-// 		conns               grpcConns
+// 		conns               sync.Map[string, pool.Conn]
 // 		hcDur               time.Duration
 // 		prDur               time.Duration
 // 		dialer              net.Dialer
@@ -2678,6 +2734,7 @@ package grpc
 // 		gbo                 gbackoff.Config
 // 		mcd                 time.Duration
 // 		group               singleflight.Group[pool.Conn]
+// 		crl                 sync.Map[string, bool]
 // 		ech                 <-chan error
 // 		monitorRunning      atomic.Bool
 // 		stopMonitor         context.CancelFunc
@@ -2708,7 +2765,7 @@ package grpc
 // 		           addrs:nil,
 // 		           poolSize:0,
 // 		           clientCount:0,
-// 		           conns:grpcConns{},
+// 		           conns:nil,
 // 		           hcDur:nil,
 // 		           prDur:nil,
 // 		           dialer:nil,
@@ -2723,6 +2780,7 @@ package grpc
 // 		           gbo:nil,
 // 		           mcd:nil,
 // 		           group:nil,
+// 		           crl:nil,
 // 		           ech:nil,
 // 		           monitorRunning:nil,
 // 		           stopMonitor:nil,
@@ -2747,7 +2805,7 @@ package grpc
 // 		           addrs:nil,
 // 		           poolSize:0,
 // 		           clientCount:0,
-// 		           conns:grpcConns{},
+// 		           conns:nil,
 // 		           hcDur:nil,
 // 		           prDur:nil,
 // 		           dialer:nil,
@@ -2762,6 +2820,7 @@ package grpc
 // 		           gbo:nil,
 // 		           mcd:nil,
 // 		           group:nil,
+// 		           crl:nil,
 // 		           ech:nil,
 // 		           monitorRunning:nil,
 // 		           stopMonitor:nil,
@@ -2813,6 +2872,7 @@ package grpc
 // 				gbo:                 test.fields.gbo,
 // 				mcd:                 test.fields.mcd,
 // 				group:               test.fields.group,
+// 				crl:                 test.fields.crl,
 // 				ech:                 test.fields.ech,
 // 				monitorRunning:      test.fields.monitorRunning,
 // 				stopMonitor:         test.fields.stopMonitor,
@@ -2835,7 +2895,7 @@ package grpc
 // 		addrs               map[string]struct{}
 // 		poolSize            uint64
 // 		clientCount         uint64
-// 		conns               grpcConns
+// 		conns               sync.Map[string, pool.Conn]
 // 		hcDur               time.Duration
 // 		prDur               time.Duration
 // 		dialer              net.Dialer
@@ -2850,6 +2910,7 @@ package grpc
 // 		gbo                 gbackoff.Config
 // 		mcd                 time.Duration
 // 		group               singleflight.Group[pool.Conn]
+// 		crl                 sync.Map[string, bool]
 // 		ech                 <-chan error
 // 		monitorRunning      atomic.Bool
 // 		stopMonitor         context.CancelFunc
@@ -2884,7 +2945,7 @@ package grpc
 // 		           addrs:nil,
 // 		           poolSize:0,
 // 		           clientCount:0,
-// 		           conns:grpcConns{},
+// 		           conns:nil,
 // 		           hcDur:nil,
 // 		           prDur:nil,
 // 		           dialer:nil,
@@ -2899,6 +2960,7 @@ package grpc
 // 		           gbo:nil,
 // 		           mcd:nil,
 // 		           group:nil,
+// 		           crl:nil,
 // 		           ech:nil,
 // 		           monitorRunning:nil,
 // 		           stopMonitor:nil,
@@ -2926,7 +2988,7 @@ package grpc
 // 		           addrs:nil,
 // 		           poolSize:0,
 // 		           clientCount:0,
-// 		           conns:grpcConns{},
+// 		           conns:nil,
 // 		           hcDur:nil,
 // 		           prDur:nil,
 // 		           dialer:nil,
@@ -2941,6 +3003,7 @@ package grpc
 // 		           gbo:nil,
 // 		           mcd:nil,
 // 		           group:nil,
+// 		           crl:nil,
 // 		           ech:nil,
 // 		           monitorRunning:nil,
 // 		           stopMonitor:nil,
@@ -2992,12 +3055,196 @@ package grpc
 // 				gbo:                 test.fields.gbo,
 // 				mcd:                 test.fields.mcd,
 // 				group:               test.fields.group,
+// 				crl:                 test.fields.crl,
 // 				ech:                 test.fields.ech,
 // 				monitorRunning:      test.fields.monitorRunning,
 // 				stopMonitor:         test.fields.stopMonitor,
 // 			}
 //
 // 			err := g.Close(test.args.ctx)
+// 			if err := checkFunc(test.want, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+//
+// 		})
+// 	}
+// }
+//
+// func Test_gRPCClient_rangeConns(t *testing.T) {
+// 	type args struct {
+// 		fn func(addr string, p pool.Conn) bool
+// 	}
+// 	type fields struct {
+// 		addrs               map[string]struct{}
+// 		poolSize            uint64
+// 		clientCount         uint64
+// 		conns               sync.Map[string, pool.Conn]
+// 		hcDur               time.Duration
+// 		prDur               time.Duration
+// 		dialer              net.Dialer
+// 		enablePoolRebalance bool
+// 		resolveDNS          bool
+// 		dopts               []DialOption
+// 		copts               []CallOption
+// 		roccd               string
+// 		eg                  errgroup.Group
+// 		bo                  backoff.Backoff
+// 		cb                  circuitbreaker.CircuitBreaker
+// 		gbo                 gbackoff.Config
+// 		mcd                 time.Duration
+// 		group               singleflight.Group[pool.Conn]
+// 		crl                 sync.Map[string, bool]
+// 		ech                 <-chan error
+// 		monitorRunning      atomic.Bool
+// 		stopMonitor         context.CancelFunc
+// 	}
+// 	type want struct {
+// 		err error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           fn:nil,
+// 		       },
+// 		       fields: fields {
+// 		           addrs:nil,
+// 		           poolSize:0,
+// 		           clientCount:0,
+// 		           conns:nil,
+// 		           hcDur:nil,
+// 		           prDur:nil,
+// 		           dialer:nil,
+// 		           enablePoolRebalance:false,
+// 		           resolveDNS:false,
+// 		           dopts:nil,
+// 		           copts:nil,
+// 		           roccd:"",
+// 		           eg:nil,
+// 		           bo:nil,
+// 		           cb:nil,
+// 		           gbo:nil,
+// 		           mcd:nil,
+// 		           group:nil,
+// 		           crl:nil,
+// 		           ech:nil,
+// 		           monitorRunning:nil,
+// 		           stopMonitor:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           fn:nil,
+// 		           },
+// 		           fields: fields {
+// 		           addrs:nil,
+// 		           poolSize:0,
+// 		           clientCount:0,
+// 		           conns:nil,
+// 		           hcDur:nil,
+// 		           prDur:nil,
+// 		           dialer:nil,
+// 		           enablePoolRebalance:false,
+// 		           resolveDNS:false,
+// 		           dopts:nil,
+// 		           copts:nil,
+// 		           roccd:"",
+// 		           eg:nil,
+// 		           bo:nil,
+// 		           cb:nil,
+// 		           gbo:nil,
+// 		           mcd:nil,
+// 		           group:nil,
+// 		           crl:nil,
+// 		           ech:nil,
+// 		           monitorRunning:nil,
+// 		           stopMonitor:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			g := &gRPCClient{
+// 				addrs:               test.fields.addrs,
+// 				poolSize:            test.fields.poolSize,
+// 				clientCount:         test.fields.clientCount,
+// 				conns:               test.fields.conns,
+// 				hcDur:               test.fields.hcDur,
+// 				prDur:               test.fields.prDur,
+// 				dialer:              test.fields.dialer,
+// 				enablePoolRebalance: test.fields.enablePoolRebalance,
+// 				resolveDNS:          test.fields.resolveDNS,
+// 				dopts:               test.fields.dopts,
+// 				copts:               test.fields.copts,
+// 				roccd:               test.fields.roccd,
+// 				eg:                  test.fields.eg,
+// 				bo:                  test.fields.bo,
+// 				cb:                  test.fields.cb,
+// 				gbo:                 test.fields.gbo,
+// 				mcd:                 test.fields.mcd,
+// 				group:               test.fields.group,
+// 				crl:                 test.fields.crl,
+// 				ech:                 test.fields.ech,
+// 				monitorRunning:      test.fields.monitorRunning,
+// 				stopMonitor:         test.fields.stopMonitor,
+// 			}
+//
+// 			err := g.rangeConns(test.args.fn)
 // 			if err := checkFunc(test.want, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}

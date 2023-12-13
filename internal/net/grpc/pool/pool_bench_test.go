@@ -2,7 +2,7 @@
 // Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -19,7 +19,6 @@ package pool
 
 import (
 	"context"
-	"sync"
 	"testing"
 
 	"github.com/vdaas/vald/apis/grpc/v1/discoverer"
@@ -27,14 +26,14 @@ import (
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/log/level"
 	"github.com/vdaas/vald/internal/net"
-	valdsync "github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/internal/sync"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
 
 const (
 	DefaultServerAddr = "localhost:5001"
-	DefaultPoolSize   = 10
+	DefaultPoolSize   = 4
 )
 
 type server struct {
@@ -62,6 +61,7 @@ func (*server) Nodes(context.Context, *payload.Discoverer_Request) (*payload.Inf
 }
 
 func ListenAndServe(b *testing.B, addr string) func() {
+	b.Helper()
 	lis, err := net.Listen("tcp", addr)
 	if err != nil {
 		b.Error(err)
@@ -134,7 +134,7 @@ func Benchmark_StaticDial(b *testing.B) {
 		b.Error(err)
 	}
 
-	conns := new(valdsync.Map[string, *grpc.ClientConn])
+	conns := new(sync.Map[string, *grpc.ClientConn])
 	conns.Store(DefaultServerAddr, conn)
 
 	b.StopTimer()
@@ -191,7 +191,7 @@ func BenchmarkParallel_StaticDial(b *testing.B) {
 		b.Error(err)
 	}
 
-	conns := new(valdsync.Map[string, *grpc.ClientConn])
+	conns := new(sync.Map[string, *grpc.ClientConn])
 	conns.Store(DefaultServerAddr, conn)
 
 	b.StopTimer()

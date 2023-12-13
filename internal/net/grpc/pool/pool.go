@@ -2,7 +2,7 @@
 // Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -21,22 +21,21 @@ import (
 	"context"
 	"fmt"
 	"math"
+	"slices"
 	"strconv"
-	"sync"
 	"sync/atomic"
 	"time"
 
 	"github.com/vdaas/vald/internal/backoff"
-	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/safety"
-	"github.com/vdaas/vald/internal/slices"
 	"github.com/vdaas/vald/internal/strings"
+	"github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/internal/sync/errgroup"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/connectivity"
-	"google.golang.org/grpc/credentials/insecure"
 )
 
 type (
@@ -95,31 +94,35 @@ func New(ctx context.Context, opts ...Option) (c Conn, err error) {
 	p.init(true)
 	p.closing.Store(false)
 
-	var isIPv4, isIPv6 bool
+	var (
+		isIPv4, isIPv6 bool
+		port           uint16
+	)
 	p.host, p.port, _, isIPv4, isIPv6, err = net.Parse(p.addr)
 	p.isIP = isIPv4 || isIPv6
 	if err != nil {
 		log.Warnf("failed to parse addr %s: %s", p.addr, err)
 		if p.host == "" {
 			var (
-				ok   bool
-				port string
+				ok      bool
+				portStr string
 			)
-			p.host, port, ok = strings.Cut(p.addr, ":")
+			p.host, portStr, ok = strings.Cut(p.addr, ":")
 			if !ok {
 				p.host = p.addr
 			} else {
-				portNum, err := strconv.ParseUint(port, 10, 16)
+				portNum, err := strconv.ParseUint(portStr, 10, 16)
 				if err != nil {
 					p.port = uint16(portNum)
 				}
 			}
 		}
 		if p.port == 0 {
-			err = p.scanGRPCPort(ctx)
+			port, err = p.scanGRPCPort(ctx)
 			if err != nil {
 				return nil, err
 			}
+			p.port = port
 		}
 		p.addr = net.JoinHostPort(p.host, p.port)
 	}
@@ -133,10 +136,12 @@ func New(ctx context.Context, opts ...Option) (c Conn, err error) {
 				log.Warn("failed to close connection:", err)
 			}
 		}
-		err = p.scanGRPCPort(ctx)
+
+		port, err := p.scanGRPCPort(ctx)
 		if err != nil {
 			return nil, err
 		}
+		p.port = port
 		p.addr = net.JoinHostPort(p.host, p.port)
 		conn, err = grpc.DialContext(ctx, p.addr, p.dopts...)
 		if err != nil {
@@ -642,23 +647,33 @@ func (p *pool) lookupIPAddr(ctx context.Context) (ips []string, err error) {
 	return ips, nil
 }
 
-func (p *pool) scanGRPCPort(ctx context.Context) (err error) {
+func (p *pool) scanGRPCPort(ctx context.Context) (port uint16, err error) {
 	ports, err := net.ScanPorts(ctx, p.startPort, p.endPort, p.host)
 	if err != nil {
-		return err
+		return 0, err
 	}
+	var conn *ClientConn
 	for _, port := range ports {
 		select {
 		case <-ctx.Done():
-			return ctx.Err()
+			return 0, ctx.Err()
 		default:
-			if isGRPCPort(ctx, p.host, port) {
-				p.port = port
-				return nil
+			// try gRPC dialing to target port
+			conn, err = grpc.DialContext(ctx,
+				net.JoinHostPort(p.host, port),
+				append(p.dopts, grpc.WithBlock())...)
+
+			if err == nil && isHealthy(conn) && conn.Close() == nil {
+				// if no error and healthy the port is ready for gRPC
+				return port, nil
+			}
+
+			if conn != nil {
+				_ = conn.Close()
 			}
 		}
 	}
-	return errors.ErrInvalidGRPCPort(p.addr, p.host, p.port)
+	return 0, errors.ErrInvalidGRPCPort(p.addr, p.host, p.port)
 }
 
 func (p *pool) IsIPConn() (isIP bool) {
@@ -733,22 +748,6 @@ func (pc *poolConn) Close(ctx context.Context, delay time.Duration) error {
 	}
 }
 
-func isGRPCPort(ctx context.Context, host string, port uint16) bool {
-	ctx, cancel := context.WithTimeout(ctx, time.Millisecond*5)
-	defer cancel()
-	conn, err := grpc.DialContext(ctx,
-		net.JoinHostPort(host, port),
-		grpc.WithTransportCredentials(insecure.NewCredentials()),
-		grpc.WithBlock())
-	if err != nil {
-		if conn != nil {
-			_ = conn.Close()
-		}
-		return false
-	}
-	return conn.Close() == nil
-}
-
 func isHealthy(conn *ClientConn) bool {
 	if conn == nil {
 		log.Warn("gRPC target connection is nil")
@@ -762,7 +761,7 @@ func isHealthy(conn *ClientConn) bool {
 		log.Debugf("gRPC target %s's connection status will be Ready soon\tstatus: %s", conn.Target(), state.String())
 		return true
 	case connectivity.Idle:
-		log.Debugf("gRPC target %s's connection status is waiting for target\tstatus: %s", conn.Target(), state.String())
+		log.Warnf("gRPC target %s's connection status is waiting for target\tstatus: %s", conn.Target(), state.String())
 		return false
 	case connectivity.Shutdown, connectivity.TransientFailure:
 		log.Errorf("gRPC target %s's connection status is unhealthy\tstatus: %s", conn.Target(), state.String())

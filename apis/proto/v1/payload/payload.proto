@@ -2,7 +2,7 @@
 // Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -18,20 +18,21 @@ syntax = "proto3";
 
 package payload.v1;
 
-import "github.com/envoyproxy/protoc-gen-validate/validate/validate.proto";
-import "github.com/googleapis/googleapis/google/rpc/status.proto";
+import "buf/validate/validate.proto";
+import "google/rpc/status.proto";
 
 option go_package = "github.com/vdaas/vald/apis/grpc/v1/payload";
 option java_multiple_files = true;
 option java_outer_classname = "ValdPayload";
 option java_package = "org.vdaas.vald.api.v1.payload";
+option objc_class_prefix = "Payload";
 
 // Search related messages.
 message Search {
   // Represent a search request.
   message Request {
     // The vector to be searched.
-    repeated float vector = 1 [(validate.rules).repeated.min_items = 2];
+    repeated float vector = 1 [(buf.validate.field).repeated.min_items = 2];
     // The configuration of the search request.
     Config config = 2;
   }
@@ -77,7 +78,7 @@ message Search {
     // Unique request ID.
     string request_id = 1;
     // Maximum number of result to be returned.
-    uint32 num = 2 [(validate.rules).uint32.gte = 1];
+    uint32 num = 2 [(buf.validate.field).uint32.gte = 1];
     // Search radius.
     float radius = 3;
     // Search coefficient.
@@ -89,7 +90,7 @@ message Search {
     // Egress filter configurations.
     Filter.Config egress_filters = 7;
     // Minimum number of result to be returned.
-    uint32 min_num = 8 [(validate.rules).uint32.gte = 0];
+    uint32 min_num = 8 [(buf.validate.field).uint32.gte = 0];
     // Aggregation Algorithm
     AggregationAlgorithm aggregation_algorithm = 9;
   }
@@ -150,7 +151,7 @@ message Insert {
   // Represent the insert request.
   message Request {
     // The vector to be inserted.
-    Object.Vector vector = 1 [(validate.rules).repeated.min_items = 2];
+    Object.Vector vector = 1 [(buf.validate.field).repeated.min_items = 2];
     // The configuration of the insert request.
     Config config = 2;
   }
@@ -193,7 +194,7 @@ message Update {
   // Represent the update request.
   message Request {
     // The vector to be updated.
-    Object.Vector vector = 1 [(validate.rules).repeated.min_items = 2];
+    Object.Vector vector = 1 [(buf.validate.field).repeated.min_items = 2];
     // The configuration of the update request.
     Config config = 2;
   }
@@ -239,7 +240,7 @@ message Upsert {
   // Represent the upsert request.
   message Request {
     // The vector to be upserted.
-    Object.Vector vector = 1 [(validate.rules).repeated.min_items = 2];
+    Object.Vector vector = 1 [(buf.validate.field).repeated.min_items = 2];
     // The configuration of the upsert request.
     Config config = 2;
   }
@@ -296,6 +297,35 @@ message Remove {
     repeated Request requests = 1;
   }
 
+  // Represent the remove request based on timestamp.
+  message TimestampRequest {
+    // The timestamp comparison list. If more than one is specified, the `AND` search is applied.
+    repeated Timestamp timestamps = 1;
+  }
+
+  // Represent the timestamp comparison.
+  message Timestamp {
+    // Operator is enum of each conditional operator.
+    enum Operator {
+      // The timestamp is equal to the specified value in the request.
+      Eq = 0;
+      // The timestamp is not equal to the specified value in the request.
+      Ne = 1;
+      // The timestamp is greater than or equal to the specified value in the request.
+      Ge = 2;
+      // The timestamp is greater than the specified value in the request.
+      Gt = 3;
+      // The timestamp is less than or equal to the specified value in the request.
+      Le = 4;
+      // The timestamp is less than the specified value in the request.
+      Lt = 5;
+    }
+    // The timestamp.
+    int64 timestamp = 1;
+    // The conditional operator.
+    Operator operator = 2;
+  }
+
   // Represent the remove configuration.
   message Config {
     // A flag to skip exist check during upsert operation.
@@ -317,7 +347,7 @@ message Object {
   // Represent a request to fetch raw vector.
   message VectorRequest {
     // The vector ID to be fetched.
-    ID id = 1 [(validate.rules).repeated.min_items = 2];
+    ID id = 1 [(buf.validate.field).repeated.min_items = 2];
     // Filter configurations.
     Filter.Config filters = 2;
   }
@@ -342,7 +372,7 @@ message Object {
 
   // Represent the vector ID.
   message ID {
-    string id = 1 [(validate.rules).string.min_len = 1];
+    string id = 1 [(buf.validate.field).string.min_len = 1];
   }
 
   // Represent multiple vector IDs.
@@ -353,9 +383,25 @@ message Object {
   // Represent a vector.
   message Vector {
     // The vector ID.
-    string id = 1 [(validate.rules).string.min_len = 1];
+    string id = 1 [(buf.validate.field).string.min_len = 1];
     // The vector.
-    repeated float vector = 2 [(validate.rules).repeated.min_items = 2];
+    repeated float vector = 2 [(buf.validate.field).repeated.min_items = 2];
+    // timestamp represents when this vector inserted.
+    int64 timestamp = 3;
+  }
+
+  // Represent a request to fetch vector meta data.
+  message GetTimestampRequest {
+    // The vector ID to be fetched.
+    ID id = 1 [(buf.validate.field).repeated.min_items = 2];
+  }
+
+  // Represent a vector meta data.
+  message Timestamp {
+    // The vector ID.
+    string id = 1 [(buf.validate.field).string.min_len = 1];
+    // timestamp represents when this vector inserted.
+    int64 timestamp = 2;
   }
 
   // Represent multiple vectors.
@@ -384,7 +430,7 @@ message Object {
   // Represent the binary object.
   message Blob {
     // The object ID.
-    string id = 1 [(validate.rules).string.min_len = 1];
+    string id = 1 [(buf.validate.field).string.min_len = 1];
     // The binary object.
     bytes object = 2;
   }
@@ -423,6 +469,20 @@ message Object {
   message Locations {
     repeated Location locations = 1;
   }
+
+  // Represent the list object vector stream request and response.
+  message List {
+    message Request {}
+
+    message Response {
+      oneof payload {
+        // The vector
+        Vector vector = 1;
+        // The RPC error status.
+        google.rpc.Status status = 2;
+      }
+    }
+  }
 }
 
 // Control related messages.
@@ -430,7 +490,7 @@ message Control {
   // Represent the create index request.
   message CreateIndexRequest {
     // The pool size of the create index operation.
-    uint32 pool_size = 1 [(validate.rules).uint32.gte = 0];
+    uint32 pool_size = 1 [(buf.validate.field).uint32.gte = 0];
   }
 }
 
@@ -439,7 +499,7 @@ message Discoverer {
   // Represent the dicoverer request.
   message Request {
     // The agent name to be discovered.
-    string name = 1 [(validate.rules).string.min_len = 1];
+    string name = 1 [(buf.validate.field).string.min_len = 1];
     // The namespace to be discovered.
     string namespace = 2;
     // The node to be discovered.
@@ -485,7 +545,7 @@ message Info {
     // The namespace of the pod.
     string namespace = 3;
     // The IP of the pod.
-    string ip = 4 [(validate.rules).string.ipv4 = true];
+    string ip = 4 [(buf.validate.field).string.ipv4 = true];
     // The CPU information of the pod.
     CPU cpu = 5;
     // The memory information of the pod.
@@ -533,13 +593,13 @@ message Info {
   // Represent the multiple pod information message.
   message Pods {
     // The multiple pod information.
-    repeated Pod pods = 1 [(validate.rules).repeated.min_items = 1];
+    repeated Pod pods = 1 [(buf.validate.field).repeated.min_items = 1];
   }
 
   // Represent the multiple node information message.
   message Nodes {
     // The multiple node information.
-    repeated Node nodes = 1 [(validate.rules).repeated.min_items = 1];
+    repeated Node nodes = 1 [(buf.validate.field).repeated.min_items = 1];
   }
 
   // Represent the multiple IP message.

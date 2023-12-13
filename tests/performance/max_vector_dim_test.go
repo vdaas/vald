@@ -1,7 +1,7 @@
 // Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //	https://www.apache.org/licenses/LICENSE-2.0
@@ -16,9 +16,9 @@ package performance
 import (
 	"bufio"
 	"context"
+	"flag"
 	"os"
 	"strconv"
-	"sync"
 	"testing"
 	"time"
 
@@ -26,10 +26,12 @@ import (
 	"github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/core/algorithm"
 	"github.com/vdaas/vald/internal/core/algorithm/ngt"
-	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/strings"
+	"github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/internal/test/data/vector"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/handler/grpc"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/service"
@@ -77,6 +79,15 @@ func parse(raw string) (key string, value int) {
 		return keyValue[0], val
 	}
 	return keyValue[0], val
+}
+
+func TestMain(m *testing.M) {
+	flag.Parse()
+	if testing.Short() {
+		log.Info("skipping this pkg test when -short because it takes a long time")
+		os.Exit(0)
+	}
+	os.Exit(m.Run())
 }
 
 // Test for investigation of max dimension size for agent handler

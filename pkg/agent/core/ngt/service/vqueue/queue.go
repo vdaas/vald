@@ -2,7 +2,7 @@
 // Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -18,22 +18,24 @@
 package vqueue
 
 import (
+	"cmp"
 	"context"
 	"reflect"
+	"slices"
 	"sync/atomic"
 	"time"
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
-	"github.com/vdaas/vald/internal/slices"
-	valdsync "github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/internal/sync"
 )
 
 // Queue represents vector queue cache interface
 type Queue interface {
 	PushInsert(uuid string, vector []float32, date int64) error
 	PushDelete(uuid string, date int64) error
-	GetVector(uuid string) ([]float32, bool)
+	GetVector(uuid string) (vec []float32, timestamp int64, exists bool)
+	Range(ctx context.Context, f func(uuid string, vector []float32, ts int64) bool)
 	RangePopInsert(ctx context.Context, now int64, f func(uuid string, vector []float32, date int64) bool)
 	RangePopDelete(ctx context.Context, now int64, f func(uuid string) bool)
 	IVExists(uuid string) bool
@@ -43,7 +45,7 @@ type Queue interface {
 }
 
 type vqueue struct {
-	il, dl valdsync.Map[string, *index]
+	il, dl sync.Map[string, *index]
 	ic, dc uint64
 }
 
@@ -116,22 +118,22 @@ func (v *vqueue) PushDelete(uuid string, date int64) error {
 // GetVector returns the vector stored in the queue.
 // If the same UUID exists in the insert queue and the delete queue, the timestamp is compared.
 // And the vector is returned if the timestamp in the insert queue is newer than the delete queue.
-func (v *vqueue) GetVector(uuid string) ([]float32, bool) {
+func (v *vqueue) GetVector(uuid string) (vec []float32, timestamp int64, exists bool) {
 	idx, ok := v.il.Load(uuid)
 	if !ok {
 		// data not in the insert queue then return not exists(false)
-		return nil, false
+		return nil, 0, false
 	}
 	didx, ok := v.dl.Load(uuid)
 	if !ok {
 		// data not in the delete queue but exists in insert queue then return exists(true)
-		return idx.vector, true
+		return idx.vector, idx.date, true
 	}
 	// data exists both queue, compare data timestamp if insert queue timestamp is newer than delete one, this function returns exists(true)
 	if didx.date <= idx.date {
-		return idx.vector, true
+		return idx.vector, idx.date, true
 	}
-	return nil, false
+	return nil, 0, false
 }
 
 // IVExists returns true if there is the UUID in the insert queue.
@@ -173,6 +175,9 @@ func (v *vqueue) DVExists(uuid string) bool {
 
 func (v *vqueue) RangePopInsert(ctx context.Context, now int64, f func(uuid string, vector []float32, date int64) bool) {
 	uii := make([]index, 0, atomic.LoadUint64(&v.ic))
+	defer func() {
+		uii = nil
+	}()
 	v.il.Range(func(uuid string, idx *index) bool {
 		if idx.date > now {
 			return true
@@ -193,9 +198,8 @@ func (v *vqueue) RangePopInsert(ctx context.Context, now int64, f func(uuid stri
 		}
 		return true
 	})
-	slices.SortFunc(uii, func(left, right index) bool {
-		// sort by latest unix time order
-		return left.date > right.date
+	slices.SortFunc(uii, func(left, right index) int {
+		return cmp.Compare(right.date, left.date)
 	})
 	for _, idx := range uii {
 		if !f(idx.uuid, idx.vector, idx.date) {
@@ -213,6 +217,9 @@ func (v *vqueue) RangePopInsert(ctx context.Context, now int64, f func(uuid stri
 
 func (v *vqueue) RangePopDelete(ctx context.Context, now int64, f func(uuid string) bool) {
 	udi := make([]index, 0, atomic.LoadUint64(&v.dc))
+	defer func() {
+		udi = nil
+	}()
 	v.dl.Range(func(_ string, idx *index) bool {
 		if idx.date > now {
 			return true
@@ -225,9 +232,8 @@ func (v *vqueue) RangePopDelete(ctx context.Context, now int64, f func(uuid stri
 		}
 		return true
 	})
-	slices.SortFunc(udi, func(left, right index) bool {
-		// sort by latest unix time order
-		return left.date > right.date
+	slices.SortFunc(udi, func(left, right index) int {
+		return cmp.Compare(right.date, left.date)
 	})
 	for _, idx := range udi {
 		if !f(idx.uuid) {
@@ -247,6 +253,20 @@ func (v *vqueue) RangePopDelete(ctx context.Context, now int64, f func(uuid stri
 		}
 
 	}
+}
+
+// Range calls f sequentially for each key and value present in the vqueue.
+func (v *vqueue) Range(ctx context.Context, f func(uuid string, vector []float32, ts int64) bool) {
+	v.il.Range(func(uuid string, idx *index) bool {
+		if idx == nil {
+			return true
+		}
+		didx, ok := v.dl.Load(uuid)
+		if !ok || (didx != nil && idx.date > didx.date) {
+			return f(uuid, idx.vector, idx.date)
+		}
+		return true
+	})
 }
 
 // IVQLen returns the number of uninserted indexes stored in the insert queue.

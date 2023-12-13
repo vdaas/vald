@@ -2,7 +2,7 @@
 // Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -29,8 +29,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/google/go-cmp/cmp"
-	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/vdaas/vald/internal/cache"
 	"github.com/vdaas/vald/internal/cache/cacher"
 	"github.com/vdaas/vald/internal/cache/gache"
@@ -38,6 +36,7 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/io"
 	"github.com/vdaas/vald/internal/strings"
+	"github.com/vdaas/vald/internal/test/comparator"
 	"github.com/vdaas/vald/internal/tls"
 )
 
@@ -266,18 +265,21 @@ func TestNewDialer(t *testing.T) {
 			return errors.Errorf("got: \"%+v\" is not a dialer", gotDer)
 		}
 		// skipcq: VET-V0008
-		if diff := cmp.Diff(*want, *got,
+		//nolint: govet,copylocks
+		if diff := comparator.Diff(*want, *got,
 			// skipcq: VET-V0008
-			cmpopts.IgnoreFields(*want, "dialer", "der", "addrs", "dnsCachedOnce", "dnsCache", "ctrl", "tmu"),
+			//nolint: govet,copylocks
+			comparator.IgnoreFields(*want, "dialer", "der", "addrs", "dnsCachedOnce", "dnsCache", "ctrl", "tmu"),
 			// skipcq: VET-V0008
-			cmp.AllowUnexported(*want),
-			cmp.Comparer(func(x, y cacher.Cache[*dialerCache]) bool {
+			//nolint: govet,copylocks
+			comparator.AllowUnexported(*want),
+			comparator.Comparer(func(x, y cacher.Cache[*dialerCache]) bool {
 				if x == nil && y == nil {
 					return true
 				}
 				return reflect.DeepEqual(x, y)
 			}),
-			cmp.Comparer(func(x, y *tls.Config) bool {
+			comparator.Comparer(func(x, y *tls.Config) bool {
 				return reflect.DeepEqual(x, y)
 			}),
 		); diff != "" {
@@ -1828,7 +1830,7 @@ func Test_dialer_tlsHandshake(t *testing.T) {
 // 		host string
 // 	}
 // 	type fields struct {
-// 		dnsCache              cacher.Cache
+// 		dnsCache              cacher.Cache[*dialerCache]
 // 		enableDNSCache        bool
 // 		tlsConfig             *tls.Config
 // 		dnsRefreshDurationStr string
@@ -1841,6 +1843,7 @@ func Test_dialer_tlsHandshake(t *testing.T) {
 // 		ctrl                  control.SocketController
 // 		sockFlg               control.SocketFlag
 // 		dialerDualStack       bool
+// 		addrs                 sync.Map[string, *addrInfo]
 // 		der                   *net.Dialer
 // 		dialer                func(ctx context.Context, network, addr string) (Conn, error)
 // 	}
@@ -1889,6 +1892,7 @@ func Test_dialer_tlsHandshake(t *testing.T) {
 // 		           ctrl:nil,
 // 		           sockFlg:nil,
 // 		           dialerDualStack:false,
+// 		           addrs:nil,
 // 		           der:net.Dialer{},
 // 		           dialer:nil,
 // 		       },
@@ -1926,6 +1930,7 @@ func Test_dialer_tlsHandshake(t *testing.T) {
 // 		           ctrl:nil,
 // 		           sockFlg:nil,
 // 		           dialerDualStack:false,
+// 		           addrs:nil,
 // 		           der:net.Dialer{},
 // 		           dialer:nil,
 // 		           },
@@ -1971,6 +1976,7 @@ func Test_dialer_tlsHandshake(t *testing.T) {
 // 				ctrl:                  test.fields.ctrl,
 // 				sockFlg:               test.fields.sockFlg,
 // 				dialerDualStack:       test.fields.dialerDualStack,
+// 				addrs:                 test.fields.addrs,
 // 				der:                   test.fields.der,
 // 				dialer:                test.fields.dialer,
 // 			}
