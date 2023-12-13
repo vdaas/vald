@@ -54,7 +54,7 @@ type discoverer struct {
 	nodeMetrics     sync.Map[string, mnode.Node]
 	pods            sync.Map[string, *[]pod.Pod]
 	podMetrics      sync.Map[string, mpod.Pod]
-	rrsvcs          sync.Map[string, *service.Service]
+	services          sync.Map[string, *service.Service]
 	podsByNode      atomic.Value
 	podsByNamespace atomic.Value
 	podsByName      atomic.Value
@@ -193,12 +193,12 @@ func New(selector *config.Selectors, opts ...Option) (dsc Discoverer, err error)
 				for i := range svcs {
 					svc := &svcs[i]
 					svcsmap[svc.Name] = struct{}{}
-					d.rrsvcs.Store(svc.Name, svc)
+					d.services.Store(svc.Name, svc)
 				}
-				d.rrsvcs.Range(func(name string, _ *service.Service) bool {
+				d.services.Range(func(name string, _ *service.Service) bool {
 					_, ok := svcsmap[name]
 					if !ok {
-						d.rrsvcs.Delete(name)
+						d.services.Delete(name)
 					}
 					return true
 				})
@@ -337,7 +337,7 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 						return true
 					}
 				})
-				d.rrsvcs.Range(func(key string, rrsvc *service.Service) bool {
+				d.services.Range(func(key string, rrsvc *service.Service) bool {
 					select {
 					case <-ctx.Done():
 						return false
