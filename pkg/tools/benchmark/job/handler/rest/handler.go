@@ -19,7 +19,7 @@ package rest
 
 type Handler interface{}
 
-type handler struct {}
+type handler struct{}
 
 func New(opts ...Option) Handler {
 	h := new(handler)
