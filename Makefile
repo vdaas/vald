@@ -260,8 +260,9 @@ GO_OPTION_TEST_SOURCES = $(GO_OPTION_SOURCES:%.go=%_test.go)
 
 GO_ALL_TEST_SOURCES = $(GO_TEST_SOURCES) $(GO_OPTION_TEST_SOURCES)
 
-DOCKER           ?= docker
-DOCKER_OPTS      ?=
+DOCKER                ?= docker
+DOCKER_OPTS           ?=
+BUILDKIT_INLINE_CACHE ?= 1
 
 DISTROLESS_IMAGE      ?= gcr.io/distroless/static
 DISTROLESS_IMAGE_TAG  ?= nonroot

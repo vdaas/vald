@@ -35,6 +35,7 @@ jobs:
           make \
             REMOTE="false" \
             DOCKER="docker" \
+            BUILDKIT_INLINE_CACHE=0 \
             DOCKER_OPTS="${LABEL_OPTS}  --label org.opencontainers.image.version=${PRIMARY_TAG} --label org.opencontainers.image.title=${TARGET}" \
             TAG="${PRIMARY_TAG}" \
             docker/build/${TARGET}
