@@ -22,7 +22,6 @@ import (
 	"context"
 	"reflect"
 	"slices"
-	"strconv"
 	"sync/atomic"
 	"time"
 
@@ -34,7 +33,7 @@ import (
 	mpod "github.com/vdaas/vald/internal/k8s/metrics/pod"
 	"github.com/vdaas/vald/internal/k8s/node"
 	"github.com/vdaas/vald/internal/k8s/pod"
-	"github.com/vdaas/vald/internal/k8s/svc"
+	"github.com/vdaas/vald/internal/k8s/service"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/safety"
@@ -46,35 +45,27 @@ type Discoverer interface {
 	Start(context.Context) (<-chan error, error)
 	GetPods(*payload.Discoverer_Request) (*payload.Info_Pods, error)
 	GetNodes(*payload.Discoverer_Request) (*payload.Info_Nodes, error)
-	GetReadReplicaSvcs(*payload.Discoverer_ReadReplicaSvcsRequest) (*payload.Info_ReadReplicaSvcs, error)
-}
-
-type readReplicaSvc struct {
-	Name      string
-	Addr      string
-	ReplicaID uint64
+	GetServices(*payload.Discoverer_Request) (*payload.Info_Services, error)
 }
 
 type discoverer struct {
-	maxPods            int
-	nodes              sync.Map[string, *node.Node]
-	nodeMetrics        sync.Map[string, mnode.Node]
-	pods               sync.Map[string, *[]pod.Pod]
-	podMetrics         sync.Map[string, mpod.Pod]
-	rrsvcs             sync.Map[string, readReplicaSvc]
-	podsByNode         atomic.Value
-	podsByNamespace    atomic.Value
-	podsByName         atomic.Value
-	nodeByName         atomic.Value
-	svcsByName         atomic.Value
-	ctrl               k8s.Controller
-	namespace          string
-	name               string
-	csd                time.Duration
-	der                net.Dialer
-	eg                 errgroup.Group
-	readReplicaEnabled bool
-	replicaIDKey       string
+	maxPods         int
+	nodes           sync.Map[string, *node.Node]
+	nodeMetrics     sync.Map[string, mnode.Node]
+	pods            sync.Map[string, *[]pod.Pod]
+	podMetrics      sync.Map[string, mpod.Pod]
+	rrsvcs          sync.Map[string, *service.Service]
+	podsByNode      atomic.Value
+	podsByNamespace atomic.Value
+	podsByName      atomic.Value
+	nodeByName      atomic.Value
+	svcsByName      atomic.Value
+	ctrl            k8s.Controller
+	namespace       string
+	name            string
+	csd             time.Duration
+	der             net.Dialer
+	eg              errgroup.Group
 }
 
 // New returns Discoverer implementation.
@@ -190,55 +181,33 @@ func New(selector *config.Selectors, opts ...Option) (dsc Discoverer, err error)
 			node.WithFields(selector.GetNodeFields()),
 			node.WithLabels(selector.GetNodeLabels()),
 		)),
-	)
-
-	if d.readReplicaEnabled {
-		k8sOpts = append(k8sOpts,
-			k8s.WithResourceController(svc.New(
-				svc.WithControllerName("readreplica svc discoverer"),
-				svc.WithOnErrorFunc(func(err error) {
-					log.Error("failed to reconcile:", err)
-				}),
-				svc.WithOnReconcileFunc(func(svcs []svc.Svc) {
-					log.Debugf("svc resource reconciled\t%#v", svcs)
-					svcsmap := make(map[string]struct{}, len(svcs))
-					for i := range svcs {
-						svc := &svcs[i]
-						svcsmap[svc.Name] = struct{}{}
-
-						labels := svc.GetLabels()
-						v, ok := labels[d.replicaIDKey]
-						if !ok {
-							log.Errorf("this svc(%s) does not have readreplica id label(%s)", svc.GetName(), d.replicaIDKey)
-							continue
-						}
-						id, err := strconv.ParseUint(v, 10, 32)
-						if err != nil {
-							log.Errorf("failed to parse readreplica id string to uint: %w", err)
-							continue
-						}
-
-						rrsvc := readReplicaSvc{
-							Name:      svc.GetName(),
-							Addr:      svc.Spec.ClusterIP,
-							ReplicaID: id,
-						}
-						d.rrsvcs.Store(svc.Name, rrsvc)
+		// Only required when service reconciation is required like read replica.
+		k8s.WithResourceController(service.New(
+			service.WithControllerName("service discoverer"),
+			service.WithOnErrorFunc(func(err error) {
+				log.Error("failed to reconcile:", err)
+			}),
+			service.WithOnReconcileFunc(func(svcs []service.Service) {
+				log.Debugf("svc resource reconciled\t%#v", svcs)
+				svcsmap := make(map[string]struct{}, len(svcs))
+				for i := range svcs {
+					svc := &svcs[i]
+					svcsmap[svc.Name] = struct{}{}
+					d.rrsvcs.Store(svc.Name, svc)
+				}
+				d.rrsvcs.Range(func(name string, _ *service.Service) bool {
+					_, ok := svcsmap[name]
+					if !ok {
+						d.rrsvcs.Delete(name)
 					}
-					d.rrsvcs.Range(func(name string, _ readReplicaSvc) bool {
-						_, ok := svcsmap[name]
-						if !ok {
-							d.rrsvcs.Delete(name)
-						}
-						return true
-					})
-				}),
-				svc.WithNamespace(d.namespace),
-				svc.WithFields(selector.GetReadReplicaSvcFields()),
-				svc.WithLabels(selector.GetReadReplicaSvcLabels()),
-			)),
-		)
-	}
+					return true
+				})
+			}),
+			service.WithNamespace(d.namespace),
+			service.WithFields(selector.GetServiceFields()),
+			service.WithLabels(selector.GetServiceLabels()),
+		)),
+	)
 
 	d.ctrl, err = k8s.New(k8sOpts...)
 	if err != nil {
@@ -270,7 +239,7 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 					podsByNamespace = make(map[string]map[string][]*payload.Info_Pod)            // map[namespace][name][]pod
 					podsByName      = make(map[string][]*payload.Info_Pod)                       // map[name][]pod
 					nodeByName      = make(map[string]*payload.Info_Node)                        // map[name]node
-					svcsByName      = make(map[string]*payload.Info_ReadReplicaSvc)              // map[name]svc
+					svcsByName      = make(map[string]*payload.Info_Service)                     // map[name]svc
 				)
 
 				d.nodes.Range(func(nodeName string, n *node.Node) bool {
@@ -368,15 +337,23 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 						return true
 					}
 				})
-				d.rrsvcs.Range(func(key string, rrsvc readReplicaSvc) bool {
+				d.rrsvcs.Range(func(key string, rrsvc *service.Service) bool {
 					select {
 					case <-ctx.Done():
 						return false
 					default:
-						ni := &payload.Info_ReadReplicaSvc{
-							Name:      rrsvc.Name,
-							Addr:      rrsvc.Addr,
-							Replicaid: rrsvc.ReplicaID,
+						var ports []*payload.Info_ServicePort
+						for _, p := range rrsvc.Ports {
+							ports = append(ports, &payload.Info_ServicePort{
+								Name: p.Name,
+								Port: p.Port,
+							})
+						}
+						ni := &payload.Info_Service{
+							Name:       rrsvc.Name,
+							ClusterIp:  rrsvc.ClusterIP,
+							ClusterIps: rrsvc.ClusterIPs,
+							Ports:      ports,
 						}
 						svcsByName[rrsvc.Name] = ni
 						return true
@@ -571,12 +548,9 @@ func (d *discoverer) GetNodes(req *payload.Discoverer_Request) (nodes *payload.I
 	return nodes, nil
 }
 
-func (d *discoverer) GetReadReplicaSvcs(req *payload.Discoverer_ReadReplicaSvcsRequest) (svcs *payload.Info_ReadReplicaSvcs, err error) {
-	if !d.readReplicaEnabled {
-		return nil, errors.ErrReadReplicaDisabled
-	}
-	svcs = new(payload.Info_ReadReplicaSvcs)
-	sbn, ok := d.svcsByName.Load().(map[string]*payload.Info_ReadReplicaSvc)
+func (d *discoverer) GetServices(req *payload.Discoverer_Request) (svcs *payload.Info_Services, err error) {
+	svcs = new(payload.Info_Services)
+	sbn, ok := d.svcsByName.Load().(map[string]*payload.Info_Service)
 	if !ok {
 		return nil, errors.ErrInvalidDiscoveryCache
 	}
@@ -586,10 +560,10 @@ func (d *discoverer) GetReadReplicaSvcs(req *payload.Discoverer_ReadReplicaSvcsR
 		if !ok {
 			return nil, errors.ErrSvcNameNotFound(req.GetName())
 		}
-		svcs.Svcs = append(svcs.Svcs, v)
+		svcs.Services = append(svcs.Services, v)
 	} else {
 		for _, svc := range sbn {
-			svcs.Svcs = append(svcs.Svcs, svc)
+			svcs.Services = append(svcs.Services, svc)
 		}
 	}
 

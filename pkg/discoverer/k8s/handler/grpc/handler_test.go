@@ -117,7 +117,7 @@ package grpc
 // 		dsc                           service.Discoverer
 // 		pgroup                        singleflight.Group[*payload.Info_Pods]
 // 		ngroup                        singleflight.Group[*payload.Info_Nodes]
-// 		sgroup                        singleflight.Group[*payload.Info_ReadReplicaSvcs]
+// 		sgroup                        singleflight.Group[*payload.Info_Services]
 // 		ip                            string
 // 		name                          string
 // 		UnimplementedDiscovererServer discoverer.UnimplementedDiscovererServer
@@ -236,7 +236,7 @@ package grpc
 // 		dsc                           service.Discoverer
 // 		pgroup                        singleflight.Group[*payload.Info_Pods]
 // 		ngroup                        singleflight.Group[*payload.Info_Nodes]
-// 		sgroup                        singleflight.Group[*payload.Info_ReadReplicaSvcs]
+// 		sgroup                        singleflight.Group[*payload.Info_Services]
 // 		ip                            string
 // 		name                          string
 // 		UnimplementedDiscovererServer discoverer.UnimplementedDiscovererServer
@@ -366,7 +366,7 @@ package grpc
 // 		dsc                           service.Discoverer
 // 		pgroup                        singleflight.Group[*payload.Info_Pods]
 // 		ngroup                        singleflight.Group[*payload.Info_Nodes]
-// 		sgroup                        singleflight.Group[*payload.Info_ReadReplicaSvcs]
+// 		sgroup                        singleflight.Group[*payload.Info_Services]
 // 		ip                            string
 // 		name                          string
 // 		UnimplementedDiscovererServer discoverer.UnimplementedDiscovererServer
@@ -487,22 +487,22 @@ package grpc
 // 	}
 // }
 //
-// func Test_server_ReadReplicaSvcs(t *testing.T) {
+// func Test_server_Services(t *testing.T) {
 // 	type args struct {
 // 		ctx context.Context
-// 		req *payload.Discoverer_ReadReplicaSvcsRequest
+// 		req *payload.Discoverer_Request
 // 	}
 // 	type fields struct {
 // 		dsc                           service.Discoverer
 // 		pgroup                        singleflight.Group[*payload.Info_Pods]
 // 		ngroup                        singleflight.Group[*payload.Info_Nodes]
-// 		sgroup                        singleflight.Group[*payload.Info_ReadReplicaSvcs]
+// 		sgroup                        singleflight.Group[*payload.Info_Services]
 // 		ip                            string
 // 		name                          string
 // 		UnimplementedDiscovererServer discoverer.UnimplementedDiscovererServer
 // 	}
 // 	type want struct {
-// 		want *payload.Info_ReadReplicaSvcs
+// 		want *payload.Info_Services
 // 		err  error
 // 	}
 // 	type test struct {
@@ -510,11 +510,11 @@ package grpc
 // 		args       args
 // 		fields     fields
 // 		want       want
-// 		checkFunc  func(want, *payload.Info_ReadReplicaSvcs, error) error
+// 		checkFunc  func(want, *payload.Info_Services, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
 // 	}
-// 	defaultCheckFunc := func(w want, got *payload.Info_ReadReplicaSvcs, err error) error {
+// 	defaultCheckFunc := func(w want, got *payload.Info_Services, err error) error {
 // 		if !errors.Is(err, w.err) {
 // 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 // 		}
@@ -608,7 +608,7 @@ package grpc
 // 				UnimplementedDiscovererServer: test.fields.UnimplementedDiscovererServer,
 // 			}
 //
-// 			got, err := s.ReadReplicaSvcs(test.args.ctx, test.args.req)
+// 			got, err := s.Services(test.args.ctx, test.args.req)
 // 			if err := checkFunc(test.want, got, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}

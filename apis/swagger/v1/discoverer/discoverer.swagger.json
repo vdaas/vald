@@ -76,15 +76,15 @@
         "tags": ["Discoverer"]
       }
     },
-    "/discover/svcs": {
+    "/discover/services": {
       "post": {
         "summary": "Represent the RPC to get the readreplica svc information.",
-        "operationId": "Discoverer_ReadReplicaSvcs",
+        "operationId": "Discoverer_Services",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/InfoReadReplicaSvcs"
+              "$ref": "#/definitions/InfoServices"
             }
           },
           "default": {
@@ -97,11 +97,11 @@
         "parameters": [
           {
             "name": "body",
-            "description": "Represent the dicoverer svc request.",
+            "description": "Represent the dicoverer request.",
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/DiscovererReadReplicaSvcsRequest"
+              "$ref": "#/definitions/v1DiscovererRequest"
             }
           }
         ],
@@ -110,20 +110,6 @@
     }
   },
   "definitions": {
-    "DiscovererReadReplicaSvcsRequest": {
-      "type": "object",
-      "properties": {
-        "name": {
-          "type": "string",
-          "description": "The svc name to be discovered."
-        },
-        "namespace": {
-          "type": "string",
-          "description": "The namespace to be discovered."
-        }
-      },
-      "description": "Represent the dicoverer svc request."
-    },
     "InfoCPU": {
       "type": "object",
       "properties": {
@@ -258,38 +244,63 @@
       },
       "description": "Represent the multiple pod information message."
     },
-    "InfoReadReplicaSvc": {
+    "InfoService": {
       "type": "object",
       "properties": {
         "name": {
           "type": "string",
           "description": "The name of the svc."
         },
-        "addr": {
+        "clusterIp": {
           "type": "string",
-          "description": "The IP address of the svc."
+          "description": "The cluster ip of the svc."
         },
-        "replicaid": {
-          "type": "string",
-          "format": "uint64",
-          "description": "The replicaid of the readreplica svc."
-        }
-      },
-      "description": "Represent the svc information message."
-    },
-    "InfoReadReplicaSvcs": {
-      "type": "object",
-      "properties": {
-        "svcs": {
+        "clusterIps": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "The cluster ips of the svc."
+        },
+        "ports": {
           "type": "array",
           "items": {
             "type": "object",
-            "$ref": "#/definitions/InfoReadReplicaSvc"
+            "$ref": "#/definitions/InfoServicePort"
           },
-          "description": "The multiple node information."
+          "description": "The port of the svc."
         }
       },
-      "description": "Represent the multiple svc information message."
+      "description": "Represent the service information message."
+    },
+    "InfoServicePort": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The name of the port."
+        },
+        "port": {
+          "type": "integer",
+          "format": "int32",
+          "title": "The port number"
+        }
+      },
+      "description": "Represets the service port information message."
+    },
+    "InfoServices": {
+      "type": "object",
+      "properties": {
+        "services": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/InfoService"
+          },
+          "description": "The multiple service information."
+        }
+      },
+      "description": "Represent the multiple service information message."
     },
     "protobufAny": {
       "type": "object",

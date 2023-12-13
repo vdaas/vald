@@ -2363,6 +2363,15 @@ discoverer:
         # @schema {"name": "discoverer.discoverer.selectors.node_metrics.fields", "type": "object"}
         # discoverer.discoverer.selectors.node_metrics.fields -- k8s field selectors for node_metrics discovery
         fields: {}
+      # @schema {"name": "discoverer.discoverer.selectors.service", "type": "object"}
+      # discoverer.discoverer.selectors.service -- k8s resource selectors for service discovery
+      service:
+        # @schema {"name": "discoverer.discoverer.selectors.service.labels", "type": "object"}
+        # discoverer.discoverer.selectors.service.labels -- k8s label selectors for service discovery
+        labels: {}
+        # @schema {"name": "discoverer.discoverer.selectors.service.fields", "type": "object"}
+        # discoverer.discoverer.selectors.service.fields -- k8s field selectors for service discovery
+        fields: {}
     # @schema {"name": "discoverer.discoverer.net", "alias": "net"}
     net:
       dns:

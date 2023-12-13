@@ -40,9 +40,9 @@ type DiscovererServer interface {
 
 type server struct {
 	dsc    service.Discoverer
-	pgroup singleflight.Group[*payload.Info_Pods]            // pod singleflight group
-	ngroup singleflight.Group[*payload.Info_Nodes]           // node singleflight group
-	sgroup singleflight.Group[*payload.Info_ReadReplicaSvcs] // svc singleflight group
+	pgroup singleflight.Group[*payload.Info_Pods]     // pod singleflight group
+	ngroup singleflight.Group[*payload.Info_Nodes]    // node singleflight group
+	sgroup singleflight.Group[*payload.Info_Services] // services singleflight group
 	ip     string
 	name   string
 	discoverer.UnimplementedDiscovererServer
@@ -68,7 +68,7 @@ func New(opts ...Option) (ds DiscovererServer, err error) {
 
 	s.pgroup = singleflight.New[*payload.Info_Pods]()
 	s.ngroup = singleflight.New[*payload.Info_Nodes]()
-	s.sgroup = singleflight.New[*payload.Info_ReadReplicaSvcs]()
+	s.sgroup = singleflight.New[*payload.Info_Services]()
 
 	return s, nil
 }
@@ -224,8 +224,8 @@ func (s *server) Nodes(ctx context.Context, req *payload.Discoverer_Request) (*p
 	return cn, nil
 }
 
-func (s *server) ReadReplicaSvcs(ctx context.Context, req *payload.Discoverer_ReadReplicaSvcsRequest) (*payload.Info_ReadReplicaSvcs, error) {
-	ctx, span := trace.StartSpan(ctx, apiName+".Svcs")
+func (s *server) Services(ctx context.Context, req *payload.Discoverer_Request) (*payload.Info_Services, error) {
+	ctx, span := trace.StartSpan(ctx, apiName+".Services")
 	defer func() {
 		if span != nil {
 			span.End()
@@ -233,8 +233,8 @@ func (s *server) ReadReplicaSvcs(ctx context.Context, req *payload.Discoverer_Re
 	}()
 
 	key := singleflightKeyForSvcs(svcPrefix, req)
-	res, _, err := s.sgroup.Do(ctx, key, func(context.Context) (*payload.Info_ReadReplicaSvcs, error) {
-		return s.dsc.GetReadReplicaSvcs(req)
+	res, _, err := s.sgroup.Do(ctx, key, func(context.Context) (*payload.Info_Services, error) {
+		return s.dsc.GetServices(req)
 	})
 	if err != nil {
 		err = status.WrapWithInternal(fmt.Sprintf("Svcs API request (name: %s, namespace: %s) failed", req.GetName(), req.GetNamespace()), err,
@@ -309,7 +309,7 @@ func singleflightKey(pref string, req *payload.Discoverer_Request) string {
 	}, keyDelim)
 }
 
-func singleflightKeyForSvcs(pref string, req *payload.Discoverer_ReadReplicaSvcsRequest) string {
+func singleflightKeyForSvcs(pref string, req *payload.Discoverer_Request) string {
 	return strings.Join([]string{
 		pref,
 		req.GetNamespace(),

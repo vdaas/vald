@@ -20,7 +20,6 @@ package service
 import (
 	"time"
 
-	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/internal/timeutil"
@@ -79,23 +78,6 @@ func WithErrGroup(eg errgroup.Group) Option {
 		if eg != nil {
 			d.eg = eg
 		}
-		return nil
-	}
-}
-
-func WithReadReplicaEnabled(enabled bool) Option {
-	return func(d *discoverer) error {
-		d.readReplicaEnabled = enabled
-		return nil
-	}
-}
-
-func WithReadReplicaIDKey(key string) Option {
-	return func(d *discoverer) error {
-		if key == "" {
-			return errors.NewErrInvalidOption("readReplicaIDKey", key)
-		}
-		d.replicaIDKey = key
 		return nil
 	}
 }

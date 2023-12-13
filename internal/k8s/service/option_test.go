@@ -11,7 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-package svc
+package service
 
 // NOT IMPLEMENTED BELOW
 //
@@ -275,7 +275,7 @@ package svc
 //
 // func TestWithOnReconcileFunc(t *testing.T) {
 // 	type args struct {
-// 		f func(svcs []Svc)
+// 		f func(svcs []Service)
 // 	}
 // 	type want struct {
 // 		want Option

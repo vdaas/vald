@@ -122,7 +122,7 @@ package service
 // 		nodeMetrics     sync.Map[string, mnode.Node]
 // 		pods            sync.Map[string, *[]pod.Pod]
 // 		podMetrics      sync.Map[string, mpod.Pod]
-// 		svcs            sync.Map[string, ReadReplicaSvc]
+// 		rrsvcs          sync.Map[string, *service.Service]
 // 		podsByNode      atomic.Value
 // 		podsByNamespace atomic.Value
 // 		podsByName      atomic.Value
@@ -134,7 +134,6 @@ package service
 // 		csd             time.Duration
 // 		der             net.Dialer
 // 		eg              errgroup.Group
-// 		replicaIDKey    string
 // 	}
 // 	type want struct {
 // 		want <-chan error
@@ -172,7 +171,7 @@ package service
 // 		           nodeMetrics:nil,
 // 		           pods:nil,
 // 		           podMetrics:nil,
-// 		           svcs:nil,
+// 		           rrsvcs:nil,
 // 		           podsByNode:nil,
 // 		           podsByNamespace:nil,
 // 		           podsByName:nil,
@@ -184,7 +183,6 @@ package service
 // 		           csd:nil,
 // 		           der:nil,
 // 		           eg:nil,
-// 		           replicaIDKey:"",
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -211,7 +209,7 @@ package service
 // 		           nodeMetrics:nil,
 // 		           pods:nil,
 // 		           podMetrics:nil,
-// 		           svcs:nil,
+// 		           rrsvcs:nil,
 // 		           podsByNode:nil,
 // 		           podsByNamespace:nil,
 // 		           podsByName:nil,
@@ -223,7 +221,6 @@ package service
 // 		           csd:nil,
 // 		           der:nil,
 // 		           eg:nil,
-// 		           replicaIDKey:"",
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -259,7 +256,7 @@ package service
 // 				nodeMetrics:     test.fields.nodeMetrics,
 // 				pods:            test.fields.pods,
 // 				podMetrics:      test.fields.podMetrics,
-// 				svcs:            test.fields.svcs,
+// 				rrsvcs:          test.fields.rrsvcs,
 // 				podsByNode:      test.fields.podsByNode,
 // 				podsByNamespace: test.fields.podsByNamespace,
 // 				podsByName:      test.fields.podsByName,
@@ -271,7 +268,6 @@ package service
 // 				csd:             test.fields.csd,
 // 				der:             test.fields.der,
 // 				eg:              test.fields.eg,
-// 				replicaIDKey:    test.fields.replicaIDKey,
 // 			}
 //
 // 			got, err := d.Start(test.args.ctx)
@@ -293,7 +289,7 @@ package service
 // 		nodeMetrics     sync.Map[string, mnode.Node]
 // 		pods            sync.Map[string, *[]pod.Pod]
 // 		podMetrics      sync.Map[string, mpod.Pod]
-// 		svcs            sync.Map[string, ReadReplicaSvc]
+// 		rrsvcs          sync.Map[string, *service.Service]
 // 		podsByNode      atomic.Value
 // 		podsByNamespace atomic.Value
 // 		podsByName      atomic.Value
@@ -305,7 +301,6 @@ package service
 // 		csd             time.Duration
 // 		der             net.Dialer
 // 		eg              errgroup.Group
-// 		replicaIDKey    string
 // 	}
 // 	type want struct {
 // 		wantPods *payload.Info_Pods
@@ -343,7 +338,7 @@ package service
 // 		           nodeMetrics:nil,
 // 		           pods:nil,
 // 		           podMetrics:nil,
-// 		           svcs:nil,
+// 		           rrsvcs:nil,
 // 		           podsByNode:nil,
 // 		           podsByNamespace:nil,
 // 		           podsByName:nil,
@@ -355,7 +350,6 @@ package service
 // 		           csd:nil,
 // 		           der:nil,
 // 		           eg:nil,
-// 		           replicaIDKey:"",
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -382,7 +376,7 @@ package service
 // 		           nodeMetrics:nil,
 // 		           pods:nil,
 // 		           podMetrics:nil,
-// 		           svcs:nil,
+// 		           rrsvcs:nil,
 // 		           podsByNode:nil,
 // 		           podsByNamespace:nil,
 // 		           podsByName:nil,
@@ -394,7 +388,6 @@ package service
 // 		           csd:nil,
 // 		           der:nil,
 // 		           eg:nil,
-// 		           replicaIDKey:"",
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -430,7 +423,7 @@ package service
 // 				nodeMetrics:     test.fields.nodeMetrics,
 // 				pods:            test.fields.pods,
 // 				podMetrics:      test.fields.podMetrics,
-// 				svcs:            test.fields.svcs,
+// 				rrsvcs:          test.fields.rrsvcs,
 // 				podsByNode:      test.fields.podsByNode,
 // 				podsByNamespace: test.fields.podsByNamespace,
 // 				podsByName:      test.fields.podsByName,
@@ -442,7 +435,6 @@ package service
 // 				csd:             test.fields.csd,
 // 				der:             test.fields.der,
 // 				eg:              test.fields.eg,
-// 				replicaIDKey:    test.fields.replicaIDKey,
 // 			}
 //
 // 			gotPods, err := d.GetPods(test.args.req)
@@ -464,7 +456,7 @@ package service
 // 		nodeMetrics     sync.Map[string, mnode.Node]
 // 		pods            sync.Map[string, *[]pod.Pod]
 // 		podMetrics      sync.Map[string, mpod.Pod]
-// 		svcs            sync.Map[string, ReadReplicaSvc]
+// 		rrsvcs          sync.Map[string, *service.Service]
 // 		podsByNode      atomic.Value
 // 		podsByNamespace atomic.Value
 // 		podsByName      atomic.Value
@@ -476,7 +468,6 @@ package service
 // 		csd             time.Duration
 // 		der             net.Dialer
 // 		eg              errgroup.Group
-// 		replicaIDKey    string
 // 	}
 // 	type want struct {
 // 		wantNodes *payload.Info_Nodes
@@ -514,7 +505,7 @@ package service
 // 		           nodeMetrics:nil,
 // 		           pods:nil,
 // 		           podMetrics:nil,
-// 		           svcs:nil,
+// 		           rrsvcs:nil,
 // 		           podsByNode:nil,
 // 		           podsByNamespace:nil,
 // 		           podsByName:nil,
@@ -526,7 +517,6 @@ package service
 // 		           csd:nil,
 // 		           der:nil,
 // 		           eg:nil,
-// 		           replicaIDKey:"",
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -553,7 +543,7 @@ package service
 // 		           nodeMetrics:nil,
 // 		           pods:nil,
 // 		           podMetrics:nil,
-// 		           svcs:nil,
+// 		           rrsvcs:nil,
 // 		           podsByNode:nil,
 // 		           podsByNamespace:nil,
 // 		           podsByName:nil,
@@ -565,7 +555,6 @@ package service
 // 		           csd:nil,
 // 		           der:nil,
 // 		           eg:nil,
-// 		           replicaIDKey:"",
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -601,7 +590,7 @@ package service
 // 				nodeMetrics:     test.fields.nodeMetrics,
 // 				pods:            test.fields.pods,
 // 				podMetrics:      test.fields.podMetrics,
-// 				svcs:            test.fields.svcs,
+// 				rrsvcs:          test.fields.rrsvcs,
 // 				podsByNode:      test.fields.podsByNode,
 // 				podsByNamespace: test.fields.podsByNamespace,
 // 				podsByName:      test.fields.podsByName,
@@ -613,7 +602,6 @@ package service
 // 				csd:             test.fields.csd,
 // 				der:             test.fields.der,
 // 				eg:              test.fields.eg,
-// 				replicaIDKey:    test.fields.replicaIDKey,
 // 			}
 //
 // 			gotNodes, err := d.GetNodes(test.args.req)
@@ -625,9 +613,9 @@ package service
 // 	}
 // }
 //
-// func Test_discoverer_GetReadReplicaSvcs(t *testing.T) {
+// func Test_discoverer_GetServices(t *testing.T) {
 // 	type args struct {
-// 		req *payload.Discoverer_ReadReplicaSvcsRequest
+// 		req *payload.Discoverer_Request
 // 	}
 // 	type fields struct {
 // 		maxPods         int
@@ -635,7 +623,7 @@ package service
 // 		nodeMetrics     sync.Map[string, mnode.Node]
 // 		pods            sync.Map[string, *[]pod.Pod]
 // 		podMetrics      sync.Map[string, mpod.Pod]
-// 		svcs            sync.Map[string, ReadReplicaSvc]
+// 		rrsvcs          sync.Map[string, *service.Service]
 // 		podsByNode      atomic.Value
 // 		podsByNamespace atomic.Value
 // 		podsByName      atomic.Value
@@ -647,10 +635,9 @@ package service
 // 		csd             time.Duration
 // 		der             net.Dialer
 // 		eg              errgroup.Group
-// 		replicaIDKey    string
 // 	}
 // 	type want struct {
-// 		wantSvcs *payload.Info_ReadReplicaSvcs
+// 		wantSvcs *payload.Info_Services
 // 		err      error
 // 	}
 // 	type test struct {
@@ -658,11 +645,11 @@ package service
 // 		args       args
 // 		fields     fields
 // 		want       want
-// 		checkFunc  func(want, *payload.Info_ReadReplicaSvcs, error) error
+// 		checkFunc  func(want, *payload.Info_Services, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
 // 	}
-// 	defaultCheckFunc := func(w want, gotSvcs *payload.Info_ReadReplicaSvcs, err error) error {
+// 	defaultCheckFunc := func(w want, gotSvcs *payload.Info_Services, err error) error {
 // 		if !errors.Is(err, w.err) {
 // 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 // 		}
@@ -685,7 +672,7 @@ package service
 // 		           nodeMetrics:nil,
 // 		           pods:nil,
 // 		           podMetrics:nil,
-// 		           svcs:nil,
+// 		           rrsvcs:nil,
 // 		           podsByNode:nil,
 // 		           podsByNamespace:nil,
 // 		           podsByName:nil,
@@ -697,7 +684,6 @@ package service
 // 		           csd:nil,
 // 		           der:nil,
 // 		           eg:nil,
-// 		           replicaIDKey:"",
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -724,7 +710,7 @@ package service
 // 		           nodeMetrics:nil,
 // 		           pods:nil,
 // 		           podMetrics:nil,
-// 		           svcs:nil,
+// 		           rrsvcs:nil,
 // 		           podsByNode:nil,
 // 		           podsByNamespace:nil,
 // 		           podsByName:nil,
@@ -736,7 +722,6 @@ package service
 // 		           csd:nil,
 // 		           der:nil,
 // 		           eg:nil,
-// 		           replicaIDKey:"",
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -772,7 +757,7 @@ package service
 // 				nodeMetrics:     test.fields.nodeMetrics,
 // 				pods:            test.fields.pods,
 // 				podMetrics:      test.fields.podMetrics,
-// 				svcs:            test.fields.svcs,
+// 				rrsvcs:          test.fields.rrsvcs,
 // 				podsByNode:      test.fields.podsByNode,
 // 				podsByNamespace: test.fields.podsByNamespace,
 // 				podsByName:      test.fields.podsByName,
@@ -784,10 +769,9 @@ package service
 // 				csd:             test.fields.csd,
 // 				der:             test.fields.der,
 // 				eg:              test.fields.eg,
-// 				replicaIDKey:    test.fields.replicaIDKey,
 // 			}
 //
-// 			gotSvcs, err := d.GetReadReplicaSvcs(test.args.req)
+// 			gotSvcs, err := d.GetServices(test.args.req)
 // 			if err := checkFunc(test.want, gotSvcs, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}

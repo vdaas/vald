@@ -9,7 +9,6 @@
   - [Control](#payload-v1-Control)
   - [Control.CreateIndexRequest](#payload-v1-Control-CreateIndexRequest)
   - [Discoverer](#payload-v1-Discoverer)
-  - [Discoverer.ReadReplicaSvcsRequest](#payload-v1-Discoverer-ReadReplicaSvcsRequest)
   - [Discoverer.Request](#payload-v1-Discoverer-Request)
   - [Empty](#payload-v1-Empty)
   - [Filter](#payload-v1-Filter)
@@ -28,8 +27,9 @@
   - [Info.Nodes](#payload-v1-Info-Nodes)
   - [Info.Pod](#payload-v1-Info-Pod)
   - [Info.Pods](#payload-v1-Info-Pods)
-  - [Info.ReadReplicaSvc](#payload-v1-Info-ReadReplicaSvc)
-  - [Info.ReadReplicaSvcs](#payload-v1-Info-ReadReplicaSvcs)
+  - [Info.Service](#payload-v1-Info-Service)
+  - [Info.ServicePort](#payload-v1-Info-ServicePort)
+  - [Info.Services](#payload-v1-Info-Services)
   - [Insert](#payload-v1-Insert)
   - [Insert.Config](#payload-v1-Insert-Config)
   - [Insert.MultiObjectRequest](#payload-v1-Insert-MultiObjectRequest)
@@ -159,17 +159,6 @@ Represent the create index request.
 ### Discoverer
 
 Discoverer related messages.
-
-<a name="payload-v1-Discoverer-ReadReplicaSvcsRequest"></a>
-
-### Discoverer.ReadReplicaSvcsRequest
-
-Represent the dicoverer svc request.
-
-| Field     | Type              | Label | Description                     |
-| --------- | ----------------- | ----- | ------------------------------- |
-| name      | [string](#string) |       | The svc name to be discovered.  |
-| namespace | [string](#string) |       | The namespace to be discovered. |
 
 <a name="payload-v1-Discoverer-Request"></a>
 
@@ -352,27 +341,39 @@ Represent the multiple pod information message.
 | ----- | -------------------------------- | -------- | ----------------------------- |
 | pods  | [Info.Pod](#payload-v1-Info-Pod) | repeated | The multiple pod information. |
 
-<a name="payload-v1-Info-ReadReplicaSvc"></a>
+<a name="payload-v1-Info-Service"></a>
 
-### Info.ReadReplicaSvc
+### Info.Service
 
-Represent the svc information message.
+Represent the service information message.
 
-| Field     | Type              | Label | Description                           |
-| --------- | ----------------- | ----- | ------------------------------------- |
-| name      | [string](#string) |       | The name of the svc.                  |
-| addr      | [string](#string) |       | The IP address of the svc.            |
-| replicaid | [uint64](#uint64) |       | The replicaid of the readreplica svc. |
+| Field       | Type                                             | Label    | Description                 |
+| ----------- | ------------------------------------------------ | -------- | --------------------------- |
+| name        | [string](#string)                                |          | The name of the svc.        |
+| cluster_ip  | [string](#string)                                |          | The cluster ip of the svc.  |
+| cluster_ips | [string](#string)                                | repeated | The cluster ips of the svc. |
+| ports       | [Info.ServicePort](#payload-v1-Info-ServicePort) | repeated | The port of the svc.        |
 
-<a name="payload-v1-Info-ReadReplicaSvcs"></a>
+<a name="payload-v1-Info-ServicePort"></a>
 
-### Info.ReadReplicaSvcs
+### Info.ServicePort
 
-Represent the multiple svc information message.
+Represets the service port information message.
 
-| Field | Type                                                   | Label    | Description                    |
-| ----- | ------------------------------------------------------ | -------- | ------------------------------ |
-| svcs  | [Info.ReadReplicaSvc](#payload-v1-Info-ReadReplicaSvc) | repeated | The multiple node information. |
+| Field | Type              | Label | Description           |
+| ----- | ----------------- | ----- | --------------------- |
+| name  | [string](#string) |       | The name of the port. |
+| port  | [int32](#int32)   |       | The port number       |
+
+<a name="payload-v1-Info-Services"></a>
+
+### Info.Services
+
+Represent the multiple service information message.
+
+| Field    | Type                                     | Label    | Description                       |
+| -------- | ---------------------------------------- | -------- | --------------------------------- |
+| services | [Info.Service](#payload-v1-Info-Service) | repeated | The multiple service information. |
 
 <a name="payload-v1-Insert"></a>
 
@@ -1012,11 +1013,11 @@ Represent the agent sidecar service.
 
 Represent the discoverer service.
 
-| Method Name     | Request Type                                                                                   | Response Type                                                        | Description                                               |
-| --------------- | ---------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- | --------------------------------------------------------- |
-| Pods            | [.payload.v1.Discoverer.Request](#payload-v1-Discoverer-Request)                               | [.payload.v1.Info.Pods](#payload-v1-Info-Pods)                       | Represent the RPC to get the agent pods information.      |
-| Nodes           | [.payload.v1.Discoverer.Request](#payload-v1-Discoverer-Request)                               | [.payload.v1.Info.Nodes](#payload-v1-Info-Nodes)                     | Represent the RPC to get the node information.            |
-| ReadReplicaSvcs | [.payload.v1.Discoverer.ReadReplicaSvcsRequest](#payload-v1-Discoverer-ReadReplicaSvcsRequest) | [.payload.v1.Info.ReadReplicaSvcs](#payload-v1-Info-ReadReplicaSvcs) | Represent the RPC to get the readreplica svc information. |
+| Method Name | Request Type                                                     | Response Type                                          | Description                                               |
+| ----------- | ---------------------------------------------------------------- | ------------------------------------------------------ | --------------------------------------------------------- |
+| Pods        | [.payload.v1.Discoverer.Request](#payload-v1-Discoverer-Request) | [.payload.v1.Info.Pods](#payload-v1-Info-Pods)         | Represent the RPC to get the agent pods information.      |
+| Nodes       | [.payload.v1.Discoverer.Request](#payload-v1-Discoverer-Request) | [.payload.v1.Info.Nodes](#payload-v1-Info-Nodes)       | Represent the RPC to get the node information.            |
+| Services    | [.payload.v1.Discoverer.Request](#payload-v1-Discoverer-Request) | [.payload.v1.Info.Services](#payload-v1-Info-Services) | Represent the RPC to get the readreplica svc information. |
 
 <a name="v1_filter_egress_egress_filter-proto"></a>
 

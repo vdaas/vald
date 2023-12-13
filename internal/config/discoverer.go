@@ -19,20 +19,19 @@ package config
 
 // Discoverer represents the Discoverer configurations.
 type Discoverer struct {
-	Name              string       `json:"name,omitempty"               yaml:"name"`
-	Namespace         string       `json:"namespace,omitempty"          yaml:"namespace"`
-	DiscoveryDuration string       `json:"discovery_duration,omitempty" yaml:"discovery_duration"`
-	Net               *Net         `json:"net,omitempty"                yaml:"net"`
-	Selectors         *Selectors   `json:"selectors,omitempty"          yaml:"selectors"`
-	ReadReplica       *ReadReplica `json:"read_replica,omitempty"       yaml:"read_replica"`
+	Name              string     `json:"name,omitempty"               yaml:"name"`
+	Namespace         string     `json:"namespace,omitempty"          yaml:"namespace"`
+	DiscoveryDuration string     `json:"discovery_duration,omitempty" yaml:"discovery_duration"`
+	Net               *Net       `json:"net,omitempty"                yaml:"net"`
+	Selectors         *Selectors `json:"selectors,omitempty"          yaml:"selectors"`
 }
 
 type Selectors struct {
-	Pod            *Selector `json:"pod,omitempty"             yaml:"pod"`
-	Node           *Selector `json:"node,omitempty"            yaml:"node"`
-	NodeMetrics    *Selector `json:"node_metrics,omitempty"    yaml:"node_metrics"`
-	PodMetrics     *Selector `json:"pod_metrics,omitempty"     yaml:"pod_metrics"`
-	ReadReplicaSvc *Selector `json:"readreplica_svc,omitempty" yaml:"readreplica_svc"`
+	Pod         *Selector `json:"pod,omitempty"          yaml:"pod"`
+	Node        *Selector `json:"node,omitempty"         yaml:"node"`
+	NodeMetrics *Selector `json:"node_metrics,omitempty" yaml:"node_metrics"`
+	PodMetrics  *Selector `json:"pod_metrics,omitempty"  yaml:"pod_metrics"`
+	Service     *Selector `json:"service,omitempty"      yaml:"service"`
 }
 
 func (s *Selectors) GetPodFields() map[string]string {
@@ -91,18 +90,18 @@ func (s *Selectors) GetNodeMetricsLabels() map[string]string {
 	return s.NodeMetrics.GetLabels()
 }
 
-func (s *Selectors) GetReadReplicaSvcFields() map[string]string {
+func (s *Selectors) GetServiceFields() map[string]string {
 	if s == nil {
 		return nil
 	}
-	return s.ReadReplicaSvc.GetFields()
+	return s.Service.GetFields()
 }
 
-func (s *Selectors) GetReadReplicaSvcLabels() map[string]string {
+func (s *Selectors) GetServiceLabels() map[string]string {
 	if s == nil {
 		return nil
 	}
-	return s.ReadReplicaSvc.GetLabels()
+	return s.Service.GetLabels()
 }
 
 type Selector struct {
@@ -160,12 +159,6 @@ func (d *Discoverer) Bind() *Discoverer {
 		d.Selectors = new(Selectors)
 	}
 
-	if d.ReadReplica != nil {
-		d.ReadReplica.Bind()
-	} else {
-		d.ReadReplica = new(ReadReplica)
-	}
-
 	return d
 }
 
@@ -178,7 +171,7 @@ func (s *Selectors) Bind() *Selectors {
 	s.Node = s.Node.Bind()
 	s.PodMetrics = s.PodMetrics.Bind()
 	s.NodeMetrics = s.NodeMetrics.Bind()
-	s.ReadReplicaSvc = s.ReadReplicaSvc.Bind()
+	s.Service = s.Service.Bind()
 	return s
 }
 

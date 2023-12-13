@@ -15,7 +15,7 @@
 //
 
 // Package svc provides kubernetes svc information and preriodically update
-package svc
+package service
 
 import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -47,7 +47,7 @@ func WithOnErrorFunc(f func(err error)) Option {
 	}
 }
 
-func WithOnReconcileFunc(f func(svcs []Svc)) Option {
+func WithOnReconcileFunc(f func(svcs []Service)) Option {
 	return func(r *reconciler) error {
 		r.onReconcile = f
 		return nil

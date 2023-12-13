@@ -15,7 +15,7 @@
 //
 
 // Package svc provides kubernetes svc information and preriodically update
-package svc
+package service
 
 import (
 	"context"
@@ -33,17 +33,28 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
 
-type (
-	SvcWatcher k8s.ResourceController
-	Svc        = corev1.Service
-)
+type SvcWatcher k8s.ResourceController
+
+type Service struct {
+	Name        string
+	ClusterIP   string
+	ClusterIPs  []string
+	Ports       []servicePort
+	Labels      map[string]string
+	Annotations map[string]string
+}
+
+type servicePort struct {
+	Name string
+	Port int32
+}
 
 type reconciler struct {
 	mgr         manager.Manager
 	name        string
 	namespace   string
 	onError     func(err error)
-	onReconcile func(svcs []Svc)
+	onReconcile func(svcs []Service)
 	lopts       []client.ListOption
 }
 
@@ -92,7 +103,7 @@ func (r *reconciler) Reconcile(ctx context.Context, _ reconcile.Request) (res re
 		return res, err
 	}
 
-	svcs := make([]Svc, 0, len(svcList.Items))
+	svcs := make([]Service, 0, len(svcList.Items))
 	for i := range svcList.Items {
 		svc := &svcList.Items[i]
 		if svc.GetDeletionTimestamp() != nil {
@@ -102,13 +113,35 @@ func (r *reconciler) Reconcile(ctx context.Context, _ reconcile.Request) (res re
 				svc.GetDeletionTimestamp())
 			continue
 		}
-		svcs = append(svcs, *svc)
+
+		ports := extractApiPorts(svc.Spec.Ports)
+		svcs = append(svcs, Service{
+			Name:        svc.GetName(),
+			ClusterIP:   svc.Spec.ClusterIP,
+			ClusterIPs:  svc.Spec.ClusterIPs,
+			Ports:       ports,
+			Labels:      svc.GetLabels(),
+			Annotations: svc.GetAnnotations(),
+		})
 	}
 	if r.onReconcile != nil {
 		r.onReconcile(svcs)
 	}
 
 	return res, nil
+}
+
+func extractApiPorts(ports []corev1.ServicePort) []servicePort {
+	var apiPorts []servicePort
+	for _, port := range ports {
+		if port.Name == "grpc" || port.Name == "rest" {
+			apiPorts = append(apiPorts, servicePort{
+				Name: port.Name,
+				Port: port.Port,
+			})
+		}
+	}
+	return apiPorts
 }
 
 func (r *reconciler) GetName() string {

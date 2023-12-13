@@ -67,8 +67,6 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		service.WithName(cfg.Discoverer.Name),
 		service.WithNamespace(cfg.Discoverer.Namespace),
 		service.WithDialer(der),
-		service.WithReadReplicaEnabled(cfg.Discoverer.ReadReplica.GetEnabled()),
-		service.WithReadReplicaIDKey(cfg.Discoverer.ReadReplica.GetIDKey()),
 	)
 	if err != nil {
 		return nil, err

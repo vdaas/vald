@@ -498,14 +498,6 @@ message Discoverer {
     // The node to be discovered.
     string node = 3;
   }
-
-  // Represent the dicoverer svc request.
-  message ReadReplicaSvcsRequest {
-    // The svc name to be discovered.
-    string name = 1 [(buf.validate.field).string.min_len = 1];
-    // The namespace to be discovered.
-    string namespace = 2;
-  }
 }
 
 // Info related messages.
@@ -571,14 +563,24 @@ message Info {
     Pods Pods = 6;
   }
 
-  // Represent the svc information message.
-  message ReadReplicaSvc {
+  // Represent the service information message.
+  message Service {
     // The name of the svc.
     string name = 1;
-    // The IP address of the svc.
-    string addr = 2;
-    // The replicaid of the readreplica svc.
-    uint64 replicaid = 3;
+    // The cluster ip of the svc.
+    string cluster_ip = 2;
+    // The cluster ips of the svc.
+    repeated string cluster_ips = 3;
+    // The port of the svc.
+    repeated ServicePort ports = 4;
+  }
+
+  // Represets the service port information message.
+  message ServicePort {
+    // The name of the port.
+    string name = 1;
+    // The port number
+    int32 port = 2;
   }
 
   // Represent the CPU information message.
@@ -613,10 +615,10 @@ message Info {
     repeated Node nodes = 1 [(buf.validate.field).repeated.min_items = 1];
   }
 
-  // Represent the multiple svc information message.
-  message ReadReplicaSvcs {
-    // The multiple node information.
-    repeated ReadReplicaSvc svcs = 1 [(buf.validate.field).repeated.min_items = 1];
+  // Represent the multiple service information message.
+  message Services {
+    // The multiple service information.
+    repeated Service services = 1 [(buf.validate.field).repeated.min_items = 1];
   }
 
   // Represent the multiple IP message.

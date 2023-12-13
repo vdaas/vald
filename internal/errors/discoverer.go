@@ -45,7 +45,4 @@ var (
 
 	// ErrInvalidDiscoveryCache represents an error that type conversion of discovery cache failed.
 	ErrInvalidDiscoveryCache = New("cache type cast failed")
-
-	// ErrReadReplicaDisabled represents an error that read replica is disabled.
-	ErrReadReplicaDisabled = New("read replica is disabled by config")
 )

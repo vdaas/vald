@@ -45,9 +45,9 @@ service Discoverer {
   }
 
   // Represent the RPC to get the readreplica svc information.
-  rpc ReadReplicaSvcs(payload.v1.Discoverer.ReadReplicaSvcsRequest) returns (payload.v1.Info.ReadReplicaSvcs) {
+  rpc Services(payload.v1.Discoverer.Request) returns (payload.v1.Info.Services) {
     option (google.api.http) = {
-      post: "/discover/svcs"
+      post: "/discover/services"
       body: "*"
     };
   }
