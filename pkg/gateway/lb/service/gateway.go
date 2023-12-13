@@ -37,9 +37,15 @@ type Gateway interface {
 	Addrs(ctx context.Context) []string
 	DoMulti(ctx context.Context, num int,
 		f func(ctx context.Context, target string, ac vald.Client, copts ...grpc.CallOption) error) error
-	BroadCast(ctx context.Context,
+	BroadCast(ctx context.Context, kind BroadCastKind,
 		f func(ctx context.Context, target string, ac vald.Client, copts ...grpc.CallOption) error) error
 }
+
+type BroadCastKind int
+const (
+	READ BroadCastKind = iota
+	WRITE
+)
 
 type gateway struct {
 	client discoverer.Client
@@ -60,7 +66,9 @@ func (g *gateway) Start(ctx context.Context) (<-chan error, error) {
 	return g.client.Start(ctx)
 }
 
-func (g *gateway) BroadCast(ctx context.Context,
+// FIXME: そもそも呼ばれているメソッドがread系かwrite系かをどこかで判断する必要があるが、
+// 今後もメソッドは増えていくのだからBroadCastとBroadCastReadみたいに分けて、呼び出し側で判断するべき
+func (g *gateway) BroadCast(ctx context.Context, kind BroadCastKind,
 	f func(ctx context.Context, target string, ac vald.Client, copts ...grpc.CallOption) error,
 ) (err error) {
 	fctx, span := trace.StartSpan(ctx, "vald/gateway-lb/service/Gateway.BroadCast")
@@ -69,7 +77,20 @@ func (g *gateway) BroadCast(ctx context.Context,
 			span.End()
 		}
 	}()
-	return g.client.GetClient().RangeConcurrent(fctx, -1, func(ictx context.Context,
+
+	// select read or write clinet which is connected to primary agent or read replica agent
+	// GetReadClient includes the client to the primary agent so
+	// it works even when there is no read replica
+	var client grpc.Client
+	switch kind {
+	case READ:
+		client = g.client.GetReadClient()
+	case WRITE:
+		client = g.client.GetClient()
+	}
+
+	// FIXME: broadcastはsvc経由でロードバランスされてるっぽい
+	return client.RangeConcurrent(fctx, -1, func(ictx context.Context,
 		addr string, conn *grpc.ClientConn, copts ...grpc.CallOption,
 	) (err error) {
 		select {
@@ -85,6 +106,7 @@ func (g *gateway) BroadCast(ctx context.Context,
 	})
 }
 
+// DoMultiはWrite系しか使用しないので、普通にGetClientしていれば良い。現状Update or Insertのみ
 func (g *gateway) DoMulti(ctx context.Context, num int,
 	f func(ctx context.Context, target string, ac vald.Client, copts ...grpc.CallOption) error,
 ) (err error) {

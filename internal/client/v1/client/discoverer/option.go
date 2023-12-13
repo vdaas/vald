@@ -68,6 +68,13 @@ func WithDiscovererClient(gc grpc.Client) Option {
 	}
 }
 
+func WithReadReplicaClient(gc grpc.Client) Option {
+	return func(c *client) error {
+		c.readClient = gc
+		return nil
+	}
+}
+
 func WithDiscoverDuration(dur string) Option {
 	return func(c *client) error {
 		d, err := timeutil.Parse(dur)
@@ -139,6 +146,13 @@ func WithErrGroup(eg errgroup.Group) Option {
 		if eg != nil {
 			c.eg = eg
 		}
+		return nil
+	}
+}
+
+func WithReadReplicaReplicas(num uint64) Option {
+	return func(c *client) error {
+		c.readReplicaReplicas = num
 		return nil
 	}
 }

@@ -55,6 +55,16 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	if err != nil {
 		return nil, err
 	}
+
+	rrOpts, err := cfg.Gateway.ReadReplicaClient.Client.Opts()
+	if err != nil {
+		return nil, err
+	}
+	rrOpts = append(rrOpts,
+		grpc.WithErrGroup(eg),
+		grpc.WithConnectionPoolSize(int(cfg.Gateway.ReadReplicaReplicas)),
+	)
+
 	// skipcq: CRT-D0001
 	dopts := append(
 		cOpts,
@@ -75,9 +85,11 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		discoverer.WithPort(cfg.Gateway.AgentPort),
 		discoverer.WithServiceDNSARecord(cfg.Gateway.AgentDNS),
 		discoverer.WithDiscovererClient(grpc.New(dopts...)),
+		discoverer.WithReadReplicaClient(grpc.New(rrOpts...)),
 		discoverer.WithDiscoverDuration(cfg.Gateway.Discoverer.Duration),
 		discoverer.WithOptions(aopts...),
 		discoverer.WithNodeName(cfg.Gateway.NodeName),
+		discoverer.WithReadReplicaReplicas(cfg.Gateway.ReadReplicaReplicas),
 	)
 	if err != nil {
 		return nil, err
