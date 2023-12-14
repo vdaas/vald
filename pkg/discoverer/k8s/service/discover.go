@@ -554,6 +554,7 @@ func (d *discoverer) GetNodes(req *payload.Discoverer_Request) (nodes *payload.I
 	return nodes, nil
 }
 
+// Get Services returns the services that matches the request.
 func (d *discoverer) GetServices(req *payload.Discoverer_Request) (svcs *payload.Info_Services, err error) {
 	svcs = new(payload.Info_Services)
 	sbn, ok := d.svcsByName.Load().(map[string]*payload.Info_Service)

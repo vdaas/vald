@@ -33,8 +33,10 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
 
+// SvcWatcher is a type alias of k8s.ResourceController for service resources
 type SvcWatcher k8s.ResourceController
 
+// Service represents a kubernetes service information
 type Service struct {
 	Name        string
 	ClusterIP   string
@@ -58,6 +60,7 @@ type reconciler struct {
 	lopts       []client.ListOption
 }
 
+// New returns a new SvcWatcher instance.
 func New(opts ...Option) SvcWatcher {
 	r := new(reconciler)
 	for _, opt := range append(defaultOptions, opts...) {
@@ -90,6 +93,7 @@ func extractAPIPorts(ports []corev1.ServicePort) []servicePort {
 	return apiPorts
 }
 
+// Reconcile reconciles the service resources and put the information into the Service struct.
 func (r *reconciler) Reconcile(ctx context.Context, _ reconcile.Request) (res reconcile.Result, err error) {
 	svcList := &corev1.ServiceList{}
 
@@ -144,10 +148,12 @@ func (r *reconciler) Reconcile(ctx context.Context, _ reconcile.Request) (res re
 	return res, nil
 }
 
+// GetName returns the reconciler name.
 func (r *reconciler) GetName() string {
 	return r.name
 }
 
+// NewReconciler returns a new reconciler instance with corev1 scheme added.
 func (r *reconciler) NewReconciler(_ context.Context, mgr manager.Manager) reconcile.Reconciler {
 	if r.mgr == nil && mgr != nil {
 		r.mgr = mgr

@@ -224,6 +224,7 @@ func (s *server) Nodes(ctx context.Context, req *payload.Discoverer_Request) (*p
 	return cn, nil
 }
 
+// Services returns the services infomation that match the request.
 func (s *server) Services(ctx context.Context, req *payload.Discoverer_Request) (*payload.Info_Services, error) {
 	ctx, span := trace.StartSpan(ctx, apiName+".Services")
 	defer func() {
