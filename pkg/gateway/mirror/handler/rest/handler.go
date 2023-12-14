@@ -41,6 +41,7 @@ type Handler interface {
 	Upsert(w http.ResponseWriter, r *http.Request) (int, error)
 	MultiUpsert(w http.ResponseWriter, r *http.Request) (int, error)
 	Remove(w http.ResponseWriter, r *http.Request) (int, error)
+	RemoveByTimestamp(w http.ResponseWriter, r *http.Request) (int, error)
 	MultiRemove(w http.ResponseWriter, r *http.Request) (int, error)
 	GetObject(w http.ResponseWriter, r *http.Request) (int, error)
 }
@@ -65,7 +66,7 @@ func (h *handler) Register(w http.ResponseWriter, r *http.Request) (code int, er
 	})
 }
 
-func (h *handler) Index(w http.ResponseWriter, r *http.Request) (int, error) {
+func (_ *handler) Index(w http.ResponseWriter, r *http.Request) (int, error) {
 	data := make(map[string]interface{})
 	return json.Handler(w, r, &data, func() (interface{}, error) {
 		return dump.Request(nil, data, r)
@@ -174,6 +175,13 @@ func (h *handler) Remove(w http.ResponseWriter, r *http.Request) (code int, err 
 	var req *payload.Remove_Request
 	return json.Handler(w, r, &req, func() (interface{}, error) {
 		return h.vald.Remove(r.Context(), req)
+	})
+}
+
+func (h *handler) RemoveByTimestamp(w http.ResponseWriter, r *http.Request) (int, error) {
+	var req *payload.Remove_TimestampRequest
+	return json.Handler(w, r, &req, func() (interface{}, error) {
+		return h.vald.RemoveByTimestamp(r.Context(), req)
 	})
 }
 

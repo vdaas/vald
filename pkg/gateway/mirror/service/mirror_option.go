@@ -63,7 +63,7 @@ func WithSelfMirrorAddrs(addrs ...string) MirrorOption {
 	}
 }
 
-// WithGatewayAddrs returns the option to set the Gateway service.
+// WithGateway returns the option to set the Gateway service.
 func WithGateway(g Gateway) MirrorOption {
 	return func(m *mirr) error {
 		if g != nil {

@@ -191,7 +191,7 @@ func (r *run) PreStart(ctx context.Context) error {
 
 // Start is a method used to initiate an operation in the run, and it returns a channel for receiving errors
 // during the operation and an error representing any initialization errors.
-func (r *run) Start(ctx context.Context) (_ <-chan error, err error) {
+func (r *run) Start(ctx context.Context) (_ <-chan error, err error) { // skipcq: GO-R1005
 	ech := make(chan error, 6)
 	var mech, dech, cech, sech, oech <-chan error
 

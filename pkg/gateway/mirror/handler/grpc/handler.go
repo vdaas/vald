@@ -981,7 +981,7 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (loc *
 	return s.handleInsert(ctx, req)
 }
 
-func (s *server) handleInsert(ctx context.Context, req *payload.Insert_Request) (loc *payload.Object_Location, err error) {
+func (s *server) handleInsert(ctx context.Context, req *payload.Insert_Request) (loc *payload.Object_Location, err error) { // skipcq: GO-R1005
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, "handleInsert"), apiName+"/handleInsert")
 	defer func() {
 		if span != nil {
@@ -1140,7 +1140,7 @@ func (s *server) handleInsert(ctx context.Context, req *payload.Insert_Request) 
 	return loc, nil
 }
 
-func (s *server) handleInsertResult(ctx context.Context, alreadyExistsTgts []string, req *payload.Update_Request, result *sync.Map[string, *errorState]) (loc *payload.Object_Location, err error) {
+func (s *server) handleInsertResult(ctx context.Context, alreadyExistsTgts []string, req *payload.Update_Request, result *sync.Map[string, *errorState]) (loc *payload.Object_Location, err error) { // skipcq: GO-R1005
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, "handleInsertResult"), apiName+"/handleInsertResult")
 	defer func() {
 		if span != nil {
@@ -1509,7 +1509,7 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (loc *
 	return s.handleUpdate(ctx, req)
 }
 
-func (s *server) handleUpdate(ctx context.Context, req *payload.Update_Request) (loc *payload.Object_Location, err error) {
+func (s *server) handleUpdate(ctx context.Context, req *payload.Update_Request) (loc *payload.Object_Location, err error) { // skipcq: GO-R1005
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, "handleUpdate"), apiName+"/handleUpdate")
 	defer func() {
 		if span != nil {
@@ -1683,7 +1683,7 @@ func (s *server) handleUpdate(ctx context.Context, req *payload.Update_Request) 
 	return loc, nil
 }
 
-func (s *server) handleUpdateResult(ctx context.Context, notFoundTgts []string, req *payload.Insert_Request, result *sync.Map[string, *errorState]) (loc *payload.Object_Location, err error) {
+func (s *server) handleUpdateResult(ctx context.Context, notFoundTgts []string, req *payload.Insert_Request, result *sync.Map[string, *errorState]) (loc *payload.Object_Location, err error) { // skipcq: GO-R1005
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, "handleUpdateResult"), apiName+"/handleUpdateResult")
 	defer func() {
 		if span != nil {
@@ -2068,7 +2068,7 @@ func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *
 	return s.handleUpsert(ctx, req)
 }
 
-func (s *server) handleUpsert(ctx context.Context, req *payload.Upsert_Request) (loc *payload.Object_Location, err error) {
+func (s *server) handleUpsert(ctx context.Context, req *payload.Upsert_Request) (loc *payload.Object_Location, err error) { // skipcq: GO-R1005
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, "handleUpsert"), apiName+"/handleUpsert")
 	defer func() {
 		if span != nil {
@@ -2436,7 +2436,7 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (loc *
 	return s.handleRemove(ctx, req)
 }
 
-func (s *server) handleRemove(ctx context.Context, req *payload.Remove_Request) (loc *payload.Object_Location, err error) {
+func (s *server) handleRemove(ctx context.Context, req *payload.Remove_Request) (loc *payload.Object_Location, err error) { // skipcq: GO-R1005
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, "handleRemove"), apiName+"/handleRemove")
 	defer func() {
 		if span != nil {
@@ -2800,7 +2800,7 @@ func (s *server) RemoveByTimestamp(ctx context.Context, req *payload.Remove_Time
 	return s.handleRemoveByTimestamp(ctx, req)
 }
 
-func (s *server) handleRemoveByTimestamp(ctx context.Context, req *payload.Remove_TimestampRequest) (locs *payload.Object_Locations, err error) {
+func (s *server) handleRemoveByTimestamp(ctx context.Context, req *payload.Remove_TimestampRequest) (locs *payload.Object_Locations, err error) { // skipcq: GO-R1005
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, "handleRemoveByTimestamp"), apiName+"/handleRemoveByTimestamp")
 	defer func() {
 		if span != nil {
@@ -3147,7 +3147,7 @@ func (s *server) StreamListObject(req *payload.Object_List_Request, stream vald.
 	return nil
 }
 
-func (s *server) doStreamListObject(ctx context.Context, client vald.Object_StreamListObjectClient, server vald.Object_StreamListObjectServer) (err error) {
+func (s *server) doStreamListObject(ctx context.Context, client vald.Object_StreamListObjectClient, server vald.Object_StreamListObjectServer) (err error) { // skipcq: GO-R1005
 	cctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 	eg, egctx := errgroup.WithContext(cctx)

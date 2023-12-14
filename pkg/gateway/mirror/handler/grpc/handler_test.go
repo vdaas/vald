@@ -31,7 +31,8 @@ import (
 	"github.com/vdaas/vald/pkg/gateway/mirror/service"
 )
 
-func Test_server_Insert(t *testing.T) {
+func Test_server_Insert(t *testing.T) { // skipcq: GO-R1005
+	t.Parallel()
 	const dimension = 128
 	defaultInsertConfig := &payload.Insert_Config{
 		SkipStrictExistCheck: true,
@@ -570,7 +571,8 @@ func Test_server_Insert(t *testing.T) {
 	}
 }
 
-func Test_server_Update(t *testing.T) {
+func Test_server_Update(t *testing.T) { // skipcq: GO-R1005
+	t.Parallel()
 	const dimension = 128
 	defaultUpdateConfig := &payload.Update_Config{
 		SkipStrictExistCheck: true,
@@ -1263,6 +1265,7 @@ func Test_server_Update(t *testing.T) {
 }
 
 func Test_server_Upsert(t *testing.T) {
+	t.Parallel()
 	const dimension = 128
 	defaultUpsertConfig := &payload.Upsert_Config{
 		SkipStrictExistCheck: true,
@@ -1638,6 +1641,7 @@ func Test_server_Upsert(t *testing.T) {
 }
 
 func Test_server_Remove(t *testing.T) {
+	t.Parallel()
 	const dimension = 128
 	defaultRemoveConfig := &payload.Remove_Config{
 		SkipStrictExistCheck: true,
@@ -2008,6 +2012,7 @@ func Test_server_Remove(t *testing.T) {
 }
 
 func Test_server_RemoveByTimestamp(t *testing.T) {
+	t.Parallel()
 	defaultRemoveByTimestampReq := &payload.Remove_TimestampRequest{
 		Timestamps: []*payload.Remove_Timestamp{},
 	}
@@ -2326,6 +2331,7 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 // NOT IMPLEMENTED BELOW
 
 func TestNew(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		opts []Option
 	}
@@ -2415,6 +2421,7 @@ func TestNew(t *testing.T) {
 }
 
 func Test_server_Register(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 		req *payload.Mirror_Targets
@@ -2548,6 +2555,7 @@ func Test_server_Register(t *testing.T) {
 }
 
 func Test_server_Exists(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx  context.Context
 		meta *payload.Object_ID
@@ -2681,6 +2689,7 @@ func Test_server_Exists(t *testing.T) {
 }
 
 func Test_server_Search(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 		req *payload.Search_Request
@@ -2814,6 +2823,7 @@ func Test_server_Search(t *testing.T) {
 }
 
 func Test_server_SearchByID(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 		req *payload.Search_IDRequest
@@ -2947,6 +2957,7 @@ func Test_server_SearchByID(t *testing.T) {
 }
 
 func Test_server_StreamSearch(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		stream vald.Search_StreamSearchServer
 	}
@@ -3073,6 +3084,7 @@ func Test_server_StreamSearch(t *testing.T) {
 }
 
 func Test_server_StreamSearchByID(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		stream vald.Search_StreamSearchByIDServer
 	}
@@ -3199,6 +3211,7 @@ func Test_server_StreamSearchByID(t *testing.T) {
 }
 
 func Test_server_MultiSearch(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 		req *payload.Search_MultiRequest
@@ -3332,6 +3345,7 @@ func Test_server_MultiSearch(t *testing.T) {
 }
 
 func Test_server_MultiSearchByID(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 		req *payload.Search_MultiIDRequest
@@ -3465,6 +3479,7 @@ func Test_server_MultiSearchByID(t *testing.T) {
 }
 
 func Test_server_LinearSearch(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 		req *payload.Search_Request
@@ -3598,6 +3613,7 @@ func Test_server_LinearSearch(t *testing.T) {
 }
 
 func Test_server_LinearSearchByID(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 		req *payload.Search_IDRequest
@@ -3731,6 +3747,7 @@ func Test_server_LinearSearchByID(t *testing.T) {
 }
 
 func Test_server_StreamLinearSearch(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		stream vald.Search_StreamLinearSearchServer
 	}
@@ -3857,6 +3874,7 @@ func Test_server_StreamLinearSearch(t *testing.T) {
 }
 
 func Test_server_StreamLinearSearchByID(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		stream vald.Search_StreamLinearSearchByIDServer
 	}
@@ -3983,6 +4001,7 @@ func Test_server_StreamLinearSearchByID(t *testing.T) {
 }
 
 func Test_server_MultiLinearSearch(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 		req *payload.Search_MultiRequest
@@ -4116,6 +4135,7 @@ func Test_server_MultiLinearSearch(t *testing.T) {
 }
 
 func Test_server_MultiLinearSearchByID(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 		req *payload.Search_MultiIDRequest
@@ -4249,6 +4269,7 @@ func Test_server_MultiLinearSearchByID(t *testing.T) {
 }
 
 func Test_server_StreamInsert(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		stream vald.Insert_StreamInsertServer
 	}
@@ -4375,6 +4396,7 @@ func Test_server_StreamInsert(t *testing.T) {
 }
 
 func Test_server_MultiInsert(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx  context.Context
 		reqs *payload.Insert_MultiRequest
@@ -4508,6 +4530,7 @@ func Test_server_MultiInsert(t *testing.T) {
 }
 
 func Test_server_StreamUpdate(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		stream vald.Update_StreamUpdateServer
 	}
@@ -4634,6 +4657,7 @@ func Test_server_StreamUpdate(t *testing.T) {
 }
 
 func Test_server_MultiUpdate(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx  context.Context
 		reqs *payload.Update_MultiRequest
@@ -4767,6 +4791,7 @@ func Test_server_MultiUpdate(t *testing.T) {
 }
 
 func Test_server_StreamUpsert(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		stream vald.Upsert_StreamUpsertServer
 	}
@@ -4893,6 +4918,7 @@ func Test_server_StreamUpsert(t *testing.T) {
 }
 
 func Test_server_MultiUpsert(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx  context.Context
 		reqs *payload.Upsert_MultiRequest
@@ -5026,6 +5052,7 @@ func Test_server_MultiUpsert(t *testing.T) {
 }
 
 func Test_server_StreamRemove(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		stream vald.Remove_StreamRemoveServer
 	}
@@ -5152,6 +5179,7 @@ func Test_server_StreamRemove(t *testing.T) {
 }
 
 func Test_server_MultiRemove(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx  context.Context
 		reqs *payload.Remove_MultiRequest
@@ -5285,6 +5313,7 @@ func Test_server_MultiRemove(t *testing.T) {
 }
 
 func Test_server_GetObject(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 		req *payload.Object_VectorRequest
@@ -5418,6 +5447,7 @@ func Test_server_GetObject(t *testing.T) {
 }
 
 func Test_server_StreamGetObject(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		stream vald.Object_StreamGetObjectServer
 	}

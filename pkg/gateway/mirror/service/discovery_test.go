@@ -27,6 +27,7 @@ import (
 )
 
 func Test_discovery_startSync(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx  context.Context
 		prev map[string]target.Target
@@ -313,6 +314,7 @@ func Test_discovery_startSync(t *testing.T) {
 }
 
 func Test_discovery_syncWithAddr(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx      context.Context
 		current  map[string]target.Target

@@ -28,6 +28,7 @@ import (
 )
 
 func Test_mirr_Connect(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx     context.Context
 		targets []*payload.Mirror_Target
@@ -161,6 +162,7 @@ func Test_mirr_Connect(t *testing.T) {
 }
 
 func Test_mirr_Disconnect(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx     context.Context
 		targets []*payload.Mirror_Target
@@ -294,6 +296,7 @@ func Test_mirr_Disconnect(t *testing.T) {
 }
 
 func Test_mirr_MirrorTargets(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 	}
@@ -435,6 +438,7 @@ func Test_mirr_MirrorTargets(t *testing.T) {
 }
 
 func Test_mirr_connectedOtherMirrorAddrs(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 	}

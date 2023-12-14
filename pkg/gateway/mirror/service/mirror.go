@@ -92,7 +92,7 @@ func NewMirror(opts ...MirrorOption) (_ Mirror, err error) {
 
 // Start starts the mirroring service.
 // It returns a channel for receiving errors during the mirroring process.
-func (m *mirr) Start(ctx context.Context) <-chan error {
+func (m *mirr) Start(ctx context.Context) <-chan error { // skipcq: GO-R1005
 	ctx, span := trace.StartSpan(ctx, "vald/gateway/mirror/service/Mirror.Start")
 	defer func() {
 		if span != nil {
@@ -150,7 +150,7 @@ func (m *mirr) Start(ctx context.Context) <-chan error {
 	return ech
 }
 
-func (m *mirr) registers(ctx context.Context, tgts *payload.Mirror_Targets) ([]*payload.Mirror_Target, error) {
+func (m *mirr) registers(ctx context.Context, tgts *payload.Mirror_Targets) ([]*payload.Mirror_Target, error) { // skipcq: GO-R1005
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.MirrorRPCServiceName+"/"+vald.RegisterRPCName), "vald/gateway/mirror/service/Mirror.registers")
 	defer func() {
 		if span != nil {

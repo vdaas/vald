@@ -29,10 +29,6 @@ import (
 const (
 	// forwardedContextKey is the key used to store forwarding-related information in a context.
 	forwardedContextKey = "forwarded-for"
-
-	// forwardedContextValue is the value associated with the forwardedContextKey
-	// to indicate that the context is related to forwarding through the mirror gateway.
-	forwardedContextValue = "gateway mirror"
 )
 
 // Gateway represents an interface for interacting with gRPC clients.
@@ -80,7 +76,7 @@ func (g *gateway) GRPCClient() grpc.Client {
 
 // ForwardedContext takes a context and a podName, returning a new context
 // with additional information related to forwarding.
-func (g *gateway) ForwardedContext(ctx context.Context, podName string) context.Context {
+func (_ *gateway) ForwardedContext(ctx context.Context, podName string) context.Context {
 	return grpc.NewOutgoingContext(ctx, grpc.MD{
 		forwardedContextKey: []string{
 			podName,
@@ -90,7 +86,7 @@ func (g *gateway) ForwardedContext(ctx context.Context, podName string) context.
 
 // FromForwardedContext extracts information from the forwarded context
 // and returns the podName associated with it.
-func (g *gateway) FromForwardedContext(ctx context.Context) string {
+func (_ *gateway) FromForwardedContext(ctx context.Context) string {
 	md, ok := grpc.FromIncomingContext(ctx)
 	if !ok {
 		return ""
