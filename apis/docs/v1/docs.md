@@ -15,6 +15,7 @@
   - [Filter.Config](#payload-v1-Filter-Config)
   - [Filter.Target](#payload-v1-Filter-Target)
   - [Info](#payload-v1-Info)
+  - [Info.Annotation](#payload-v1-Info-Annotation)
   - [Info.CPU](#payload-v1-Info-CPU)
   - [Info.IPs](#payload-v1-Info-IPs)
   - [Info.Index](#payload-v1-Info-Index)
@@ -22,6 +23,7 @@
   - [Info.Index.UUID](#payload-v1-Info-Index-UUID)
   - [Info.Index.UUID.Committed](#payload-v1-Info-Index-UUID-Committed)
   - [Info.Index.UUID.Uncommitted](#payload-v1-Info-Index-UUID-Uncommitted)
+  - [Info.Label](#payload-v1-Info-Label)
   - [Info.Memory](#payload-v1-Info-Memory)
   - [Info.Node](#payload-v1-Info-Node)
   - [Info.Nodes](#payload-v1-Info-Nodes)
@@ -211,6 +213,17 @@ Represent the target filter server.
 
 Info related messages.
 
+<a name="payload-v1-Info-Annotation"></a>
+
+### Info.Annotation
+
+Represent the kubernetes annotation.
+
+| Field | Type              | Label | Description |
+| ----- | ----------------- | ----- | ----------- |
+| key   | [string](#string) |       |             |
+| value | [string](#string) |       |             |
+
 <a name="payload-v1-Info-CPU"></a>
 
 ### Info.CPU
@@ -277,6 +290,17 @@ The uncommitted UUID.
 | Field | Type              | Label | Description |
 | ----- | ----------------- | ----- | ----------- |
 | uuid  | [string](#string) |       |             |
+
+<a name="payload-v1-Info-Label"></a>
+
+### Info.Label
+
+Represent the kubernetes label.
+
+| Field | Type              | Label | Description |
+| ----- | ----------------- | ----- | ----------- |
+| key   | [string](#string) |       |             |
+| value | [string](#string) |       |             |
 
 <a name="payload-v1-Info-Memory"></a>
 
@@ -347,12 +371,14 @@ Represent the multiple pod information message.
 
 Represent the service information message.
 
-| Field       | Type                                             | Label    | Description                 |
-| ----------- | ------------------------------------------------ | -------- | --------------------------- |
-| name        | [string](#string)                                |          | The name of the svc.        |
-| cluster_ip  | [string](#string)                                |          | The cluster ip of the svc.  |
-| cluster_ips | [string](#string)                                | repeated | The cluster ips of the svc. |
-| ports       | [Info.ServicePort](#payload-v1-Info-ServicePort) | repeated | The port of the svc.        |
+| Field       | Type                                             | Label    | Description                     |
+| ----------- | ------------------------------------------------ | -------- | ------------------------------- |
+| name        | [string](#string)                                |          | The name of the svc.            |
+| cluster_ip  | [string](#string)                                |          | The cluster ip of the svc.      |
+| cluster_ips | [string](#string)                                | repeated | The cluster ips of the svc.     |
+| ports       | [Info.ServicePort](#payload-v1-Info-ServicePort) | repeated | The port of the svc.            |
+| labels      | [Info.Label](#payload-v1-Info-Label)             | repeated | The labels of the service.      |
+| annotations | [Info.Annotation](#payload-v1-Info-Annotation)   | repeated | The annotations of the service. |
 
 <a name="payload-v1-Info-ServicePort"></a>
 

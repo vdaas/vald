@@ -337,25 +337,41 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 						return true
 					}
 				})
-				d.services.Range(func(key string, rrsvc *service.Service) bool {
+				d.services.Range(func(key string, svc *service.Service) bool {
 					select {
 					case <-ctx.Done():
 						return false
 					default:
 						var ports []*payload.Info_ServicePort
-						for _, p := range rrsvc.Ports {
+						for _, p := range svc.Ports {
 							ports = append(ports, &payload.Info_ServicePort{
 								Name: p.Name,
 								Port: p.Port,
 							})
 						}
-						ni := &payload.Info_Service{
-							Name:       rrsvc.Name,
-							ClusterIp:  rrsvc.ClusterIP,
-							ClusterIps: rrsvc.ClusterIPs,
-							Ports:      ports,
+						var labels []*payload.Info_Label
+						for k, v := range svc.Labels {
+							labels = append(labels, &payload.Info_Label{
+								Key:   k,
+								Value: v,
+							})
 						}
-						svcsByName[rrsvc.Name] = ni
+						var annotations []*payload.Info_Annotation
+						for k, v := range svc.Annotations {
+							annotations = append(annotations, &payload.Info_Annotation{
+								Key:   k,
+								Value: v,
+							})
+						}
+						ni := &payload.Info_Service{
+							Name:        svc.Name,
+							ClusterIp:   svc.ClusterIP,
+							ClusterIps:  svc.ClusterIPs,
+							Ports:       ports,
+							Labels:      labels,
+							Annotations: annotations,
+						}
+						svcsByName[svc.Name] = ni
 						return true
 					}
 				})

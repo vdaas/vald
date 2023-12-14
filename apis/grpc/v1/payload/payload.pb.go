@@ -4027,6 +4027,10 @@ type Info_Service struct {
 	ClusterIps []string `protobuf:"bytes,3,rep,name=cluster_ips,json=clusterIps,proto3" json:"cluster_ips,omitempty"`
 	// The port of the svc.
 	Ports []*Info_ServicePort `protobuf:"bytes,4,rep,name=ports,proto3" json:"ports,omitempty"`
+	// The labels of the service.
+	Labels []*Info_Label `protobuf:"bytes,5,rep,name=labels,proto3" json:"labels,omitempty"`
+	// The annotations of the service.
+	Annotations []*Info_Annotation `protobuf:"bytes,6,rep,name=annotations,proto3" json:"annotations,omitempty"`
 }
 
 func (x *Info_Service) Reset() {
@@ -4089,6 +4093,20 @@ func (x *Info_Service) GetPorts() []*Info_ServicePort {
 	return nil
 }
 
+func (x *Info_Service) GetLabels() []*Info_Label {
+	if x != nil {
+		return x.Labels
+	}
+	return nil
+}
+
+func (x *Info_Service) GetAnnotations() []*Info_Annotation {
+	if x != nil {
+		return x.Annotations
+	}
+	return nil
+}
+
 // Represets the service port information message.
 type Info_ServicePort struct {
 	state         protoimpl.MessageState
@@ -4147,6 +4165,118 @@ func (x *Info_ServicePort) GetPort() int32 {
 	return 0
 }
 
+// Represent the kubernetes label.
+type Info_Label struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Key   string `protobuf:"bytes,1,opt,name=key,proto3" json:"key,omitempty"`
+	Value string `protobuf:"bytes,2,opt,name=value,proto3" json:"value,omitempty"`
+}
+
+func (x *Info_Label) Reset() {
+	*x = Info_Label{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_v1_payload_payload_proto_msgTypes[69]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *Info_Label) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Info_Label) ProtoMessage() {}
+
+func (x *Info_Label) ProtoReflect() protoreflect.Message {
+	mi := &file_v1_payload_payload_proto_msgTypes[69]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Info_Label.ProtoReflect.Descriptor instead.
+func (*Info_Label) Descriptor() ([]byte, []int) {
+	return file_v1_payload_payload_proto_rawDescGZIP(), []int{9, 5}
+}
+
+func (x *Info_Label) GetKey() string {
+	if x != nil {
+		return x.Key
+	}
+	return ""
+}
+
+func (x *Info_Label) GetValue() string {
+	if x != nil {
+		return x.Value
+	}
+	return ""
+}
+
+// Represent the kubernetes annotation.
+type Info_Annotation struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Key   string `protobuf:"bytes,1,opt,name=key,proto3" json:"key,omitempty"`
+	Value string `protobuf:"bytes,2,opt,name=value,proto3" json:"value,omitempty"`
+}
+
+func (x *Info_Annotation) Reset() {
+	*x = Info_Annotation{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_v1_payload_payload_proto_msgTypes[70]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *Info_Annotation) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Info_Annotation) ProtoMessage() {}
+
+func (x *Info_Annotation) ProtoReflect() protoreflect.Message {
+	mi := &file_v1_payload_payload_proto_msgTypes[70]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Info_Annotation.ProtoReflect.Descriptor instead.
+func (*Info_Annotation) Descriptor() ([]byte, []int) {
+	return file_v1_payload_payload_proto_rawDescGZIP(), []int{9, 6}
+}
+
+func (x *Info_Annotation) GetKey() string {
+	if x != nil {
+		return x.Key
+	}
+	return ""
+}
+
+func (x *Info_Annotation) GetValue() string {
+	if x != nil {
+		return x.Value
+	}
+	return ""
+}
+
 // Represent the CPU information message.
 type Info_CPU struct {
 	state         protoimpl.MessageState
@@ -4164,7 +4294,7 @@ type Info_CPU struct {
 func (x *Info_CPU) Reset() {
 	*x = Info_CPU{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_v1_payload_payload_proto_msgTypes[69]
+		mi := &file_v1_payload_payload_proto_msgTypes[71]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -4177,7 +4307,7 @@ func (x *Info_CPU) String() string {
 func (*Info_CPU) ProtoMessage() {}
 
 func (x *Info_CPU) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[69]
+	mi := &file_v1_payload_payload_proto_msgTypes[71]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4190,7 +4320,7 @@ func (x *Info_CPU) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Info_CPU.ProtoReflect.Descriptor instead.
 func (*Info_CPU) Descriptor() ([]byte, []int) {
-	return file_v1_payload_payload_proto_rawDescGZIP(), []int{9, 5}
+	return file_v1_payload_payload_proto_rawDescGZIP(), []int{9, 7}
 }
 
 func (x *Info_CPU) GetLimit() float64 {
@@ -4231,7 +4361,7 @@ type Info_Memory struct {
 func (x *Info_Memory) Reset() {
 	*x = Info_Memory{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_v1_payload_payload_proto_msgTypes[70]
+		mi := &file_v1_payload_payload_proto_msgTypes[72]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -4244,7 +4374,7 @@ func (x *Info_Memory) String() string {
 func (*Info_Memory) ProtoMessage() {}
 
 func (x *Info_Memory) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[70]
+	mi := &file_v1_payload_payload_proto_msgTypes[72]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4257,7 +4387,7 @@ func (x *Info_Memory) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Info_Memory.ProtoReflect.Descriptor instead.
 func (*Info_Memory) Descriptor() ([]byte, []int) {
-	return file_v1_payload_payload_proto_rawDescGZIP(), []int{9, 6}
+	return file_v1_payload_payload_proto_rawDescGZIP(), []int{9, 8}
 }
 
 func (x *Info_Memory) GetLimit() float64 {
@@ -4294,7 +4424,7 @@ type Info_Pods struct {
 func (x *Info_Pods) Reset() {
 	*x = Info_Pods{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_v1_payload_payload_proto_msgTypes[71]
+		mi := &file_v1_payload_payload_proto_msgTypes[73]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -4307,7 +4437,7 @@ func (x *Info_Pods) String() string {
 func (*Info_Pods) ProtoMessage() {}
 
 func (x *Info_Pods) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[71]
+	mi := &file_v1_payload_payload_proto_msgTypes[73]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4320,7 +4450,7 @@ func (x *Info_Pods) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Info_Pods.ProtoReflect.Descriptor instead.
 func (*Info_Pods) Descriptor() ([]byte, []int) {
-	return file_v1_payload_payload_proto_rawDescGZIP(), []int{9, 7}
+	return file_v1_payload_payload_proto_rawDescGZIP(), []int{9, 9}
 }
 
 func (x *Info_Pods) GetPods() []*Info_Pod {
@@ -4343,7 +4473,7 @@ type Info_Nodes struct {
 func (x *Info_Nodes) Reset() {
 	*x = Info_Nodes{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_v1_payload_payload_proto_msgTypes[72]
+		mi := &file_v1_payload_payload_proto_msgTypes[74]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -4356,7 +4486,7 @@ func (x *Info_Nodes) String() string {
 func (*Info_Nodes) ProtoMessage() {}
 
 func (x *Info_Nodes) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[72]
+	mi := &file_v1_payload_payload_proto_msgTypes[74]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4369,7 +4499,7 @@ func (x *Info_Nodes) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Info_Nodes.ProtoReflect.Descriptor instead.
 func (*Info_Nodes) Descriptor() ([]byte, []int) {
-	return file_v1_payload_payload_proto_rawDescGZIP(), []int{9, 8}
+	return file_v1_payload_payload_proto_rawDescGZIP(), []int{9, 10}
 }
 
 func (x *Info_Nodes) GetNodes() []*Info_Node {
@@ -4392,7 +4522,7 @@ type Info_Services struct {
 func (x *Info_Services) Reset() {
 	*x = Info_Services{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_v1_payload_payload_proto_msgTypes[73]
+		mi := &file_v1_payload_payload_proto_msgTypes[75]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -4405,7 +4535,7 @@ func (x *Info_Services) String() string {
 func (*Info_Services) ProtoMessage() {}
 
 func (x *Info_Services) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[73]
+	mi := &file_v1_payload_payload_proto_msgTypes[75]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4418,7 +4548,7 @@ func (x *Info_Services) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Info_Services.ProtoReflect.Descriptor instead.
 func (*Info_Services) Descriptor() ([]byte, []int) {
-	return file_v1_payload_payload_proto_rawDescGZIP(), []int{9, 9}
+	return file_v1_payload_payload_proto_rawDescGZIP(), []int{9, 11}
 }
 
 func (x *Info_Services) GetServices() []*Info_Service {
@@ -4440,7 +4570,7 @@ type Info_IPs struct {
 func (x *Info_IPs) Reset() {
 	*x = Info_IPs{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_v1_payload_payload_proto_msgTypes[74]
+		mi := &file_v1_payload_payload_proto_msgTypes[76]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -4453,7 +4583,7 @@ func (x *Info_IPs) String() string {
 func (*Info_IPs) ProtoMessage() {}
 
 func (x *Info_IPs) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[74]
+	mi := &file_v1_payload_payload_proto_msgTypes[76]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4466,7 +4596,7 @@ func (x *Info_IPs) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Info_IPs.ProtoReflect.Descriptor instead.
 func (*Info_IPs) Descriptor() ([]byte, []int) {
-	return file_v1_payload_payload_proto_rawDescGZIP(), []int{9, 10}
+	return file_v1_payload_payload_proto_rawDescGZIP(), []int{9, 12}
 }
 
 func (x *Info_IPs) GetIp() []string {
@@ -4495,7 +4625,7 @@ type Info_Index_Count struct {
 func (x *Info_Index_Count) Reset() {
 	*x = Info_Index_Count{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_v1_payload_payload_proto_msgTypes[75]
+		mi := &file_v1_payload_payload_proto_msgTypes[77]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -4508,7 +4638,7 @@ func (x *Info_Index_Count) String() string {
 func (*Info_Index_Count) ProtoMessage() {}
 
 func (x *Info_Index_Count) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[75]
+	mi := &file_v1_payload_payload_proto_msgTypes[77]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4562,7 +4692,7 @@ type Info_Index_UUID struct {
 func (x *Info_Index_UUID) Reset() {
 	*x = Info_Index_UUID{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_v1_payload_payload_proto_msgTypes[76]
+		mi := &file_v1_payload_payload_proto_msgTypes[78]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -4575,7 +4705,7 @@ func (x *Info_Index_UUID) String() string {
 func (*Info_Index_UUID) ProtoMessage() {}
 
 func (x *Info_Index_UUID) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[76]
+	mi := &file_v1_payload_payload_proto_msgTypes[78]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4603,7 +4733,7 @@ type Info_Index_UUID_Committed struct {
 func (x *Info_Index_UUID_Committed) Reset() {
 	*x = Info_Index_UUID_Committed{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_v1_payload_payload_proto_msgTypes[77]
+		mi := &file_v1_payload_payload_proto_msgTypes[79]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -4616,7 +4746,7 @@ func (x *Info_Index_UUID_Committed) String() string {
 func (*Info_Index_UUID_Committed) ProtoMessage() {}
 
 func (x *Info_Index_UUID_Committed) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[77]
+	mi := &file_v1_payload_payload_proto_msgTypes[79]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4651,7 +4781,7 @@ type Info_Index_UUID_Uncommitted struct {
 func (x *Info_Index_UUID_Uncommitted) Reset() {
 	*x = Info_Index_UUID_Uncommitted{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_v1_payload_payload_proto_msgTypes[78]
+		mi := &file_v1_payload_payload_proto_msgTypes[80]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -4664,7 +4794,7 @@ func (x *Info_Index_UUID_Uncommitted) String() string {
 func (*Info_Index_UUID_Uncommitted) ProtoMessage() {}
 
 func (x *Info_Index_UUID_Uncommitted) ProtoReflect() protoreflect.Message {
-	mi := &file_v1_payload_payload_proto_msgTypes[78]
+	mi := &file_v1_payload_payload_proto_msgTypes[80]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5048,7 +5178,7 @@ var file_v1_payload_payload_proto_rawDesc = []byte{
 	0x01, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x1c, 0x0a, 0x09, 0x6e, 0x61, 0x6d, 0x65, 0x73,
 	0x70, 0x61, 0x63, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x6e, 0x61, 0x6d, 0x65,
 	0x73, 0x70, 0x61, 0x63, 0x65, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x6f, 0x64, 0x65, 0x18, 0x03, 0x20,
-	0x01, 0x28, 0x09, 0x52, 0x04, 0x6e, 0x6f, 0x64, 0x65, 0x22, 0xf7, 0x09, 0x0a, 0x04, 0x49, 0x6e,
+	0x01, 0x28, 0x09, 0x52, 0x04, 0x6e, 0x6f, 0x64, 0x65, 0x22, 0xcd, 0x0b, 0x0a, 0x04, 0x49, 0x6e,
 	0x66, 0x6f, 0x1a, 0xca, 0x01, 0x0a, 0x05, 0x49, 0x6e, 0x64, 0x65, 0x78, 0x1a, 0x75, 0x0a, 0x05,
 	0x43, 0x6f, 0x75, 0x6e, 0x74, 0x12, 0x16, 0x0a, 0x06, 0x73, 0x74, 0x6f, 0x72, 0x65, 0x64, 0x18,
 	0x01, 0x20, 0x01, 0x28, 0x0d, 0x52, 0x06, 0x73, 0x74, 0x6f, 0x72, 0x65, 0x64, 0x12, 0x20, 0x0a,
@@ -5091,7 +5221,7 @@ var file_v1_payload_payload_proto_rawDesc = []byte{
 	0x66, 0x6f, 0x2e, 0x4d, 0x65, 0x6d, 0x6f, 0x72, 0x79, 0x52, 0x06, 0x6d, 0x65, 0x6d, 0x6f, 0x72,
 	0x79, 0x12, 0x29, 0x0a, 0x04, 0x50, 0x6f, 0x64, 0x73, 0x18, 0x06, 0x20, 0x01, 0x28, 0x0b, 0x32,
 	0x15, 0x2e, 0x70, 0x61, 0x79, 0x6c, 0x6f, 0x61, 0x64, 0x2e, 0x76, 0x31, 0x2e, 0x49, 0x6e, 0x66,
-	0x6f, 0x2e, 0x50, 0x6f, 0x64, 0x73, 0x52, 0x04, 0x50, 0x6f, 0x64, 0x73, 0x1a, 0x91, 0x01, 0x0a,
+	0x6f, 0x2e, 0x50, 0x6f, 0x64, 0x73, 0x52, 0x04, 0x50, 0x6f, 0x64, 0x73, 0x1a, 0x80, 0x02, 0x0a,
 	0x07, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65,
 	0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x1d, 0x0a, 0x0a,
 	0x63, 0x6c, 0x75, 0x73, 0x74, 0x65, 0x72, 0x5f, 0x69, 0x70, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09,
@@ -5101,41 +5231,54 @@ var file_v1_payload_payload_proto_rawDesc = []byte{
 	0x70, 0x6f, 0x72, 0x74, 0x73, 0x18, 0x04, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x1c, 0x2e, 0x70, 0x61,
 	0x79, 0x6c, 0x6f, 0x61, 0x64, 0x2e, 0x76, 0x31, 0x2e, 0x49, 0x6e, 0x66, 0x6f, 0x2e, 0x53, 0x65,
 	0x72, 0x76, 0x69, 0x63, 0x65, 0x50, 0x6f, 0x72, 0x74, 0x52, 0x05, 0x70, 0x6f, 0x72, 0x74, 0x73,
-	0x1a, 0x35, 0x0a, 0x0b, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x50, 0x6f, 0x72, 0x74, 0x12,
-	0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x6e,
-	0x61, 0x6d, 0x65, 0x12, 0x12, 0x0a, 0x04, 0x70, 0x6f, 0x72, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28,
-	0x05, 0x52, 0x04, 0x70, 0x6f, 0x72, 0x74, 0x1a, 0x4b, 0x0a, 0x03, 0x43, 0x50, 0x55, 0x12, 0x14,
-	0x0a, 0x05, 0x6c, 0x69, 0x6d, 0x69, 0x74, 0x18, 0x01, 0x20, 0x01, 0x28, 0x01, 0x52, 0x05, 0x6c,
-	0x69, 0x6d, 0x69, 0x74, 0x12, 0x18, 0x0a, 0x07, 0x72, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x18,
-	0x02, 0x20, 0x01, 0x28, 0x01, 0x52, 0x07, 0x72, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x14,
-	0x0a, 0x05, 0x75, 0x73, 0x61, 0x67, 0x65, 0x18, 0x03, 0x20, 0x01, 0x28, 0x01, 0x52, 0x05, 0x75,
-	0x73, 0x61, 0x67, 0x65, 0x1a, 0x4e, 0x0a, 0x06, 0x4d, 0x65, 0x6d, 0x6f, 0x72, 0x79, 0x12, 0x14,
-	0x0a, 0x05, 0x6c, 0x69, 0x6d, 0x69, 0x74, 0x18, 0x01, 0x20, 0x01, 0x28, 0x01, 0x52, 0x05, 0x6c,
-	0x69, 0x6d, 0x69, 0x74, 0x12, 0x18, 0x0a, 0x07, 0x72, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x18,
-	0x02, 0x20, 0x01, 0x28, 0x01, 0x52, 0x07, 0x72, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x14,
-	0x0a, 0x05, 0x75, 0x73, 0x61, 0x67, 0x65, 0x18, 0x03, 0x20, 0x01, 0x28, 0x01, 0x52, 0x05, 0x75,
-	0x73, 0x61, 0x67, 0x65, 0x1a, 0x3a, 0x0a, 0x04, 0x50, 0x6f, 0x64, 0x73, 0x12, 0x32, 0x0a, 0x04,
-	0x70, 0x6f, 0x64, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x14, 0x2e, 0x70, 0x61, 0x79,
-	0x6c, 0x6f, 0x61, 0x64, 0x2e, 0x76, 0x31, 0x2e, 0x49, 0x6e, 0x66, 0x6f, 0x2e, 0x50, 0x6f, 0x64,
-	0x42, 0x08, 0xba, 0x48, 0x05, 0x92, 0x01, 0x02, 0x08, 0x01, 0x52, 0x04, 0x70, 0x6f, 0x64, 0x73,
-	0x1a, 0x3e, 0x0a, 0x05, 0x4e, 0x6f, 0x64, 0x65, 0x73, 0x12, 0x35, 0x0a, 0x05, 0x6e, 0x6f, 0x64,
-	0x65, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x15, 0x2e, 0x70, 0x61, 0x79, 0x6c, 0x6f,
-	0x61, 0x64, 0x2e, 0x76, 0x31, 0x2e, 0x49, 0x6e, 0x66, 0x6f, 0x2e, 0x4e, 0x6f, 0x64, 0x65, 0x42,
-	0x08, 0xba, 0x48, 0x05, 0x92, 0x01, 0x02, 0x08, 0x01, 0x52, 0x05, 0x6e, 0x6f, 0x64, 0x65, 0x73,
-	0x1a, 0x4a, 0x0a, 0x08, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x73, 0x12, 0x3e, 0x0a, 0x08,
-	0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x18,
+	0x12, 0x2e, 0x0a, 0x06, 0x6c, 0x61, 0x62, 0x65, 0x6c, 0x73, 0x18, 0x05, 0x20, 0x03, 0x28, 0x0b,
+	0x32, 0x16, 0x2e, 0x70, 0x61, 0x79, 0x6c, 0x6f, 0x61, 0x64, 0x2e, 0x76, 0x31, 0x2e, 0x49, 0x6e,
+	0x66, 0x6f, 0x2e, 0x4c, 0x61, 0x62, 0x65, 0x6c, 0x52, 0x06, 0x6c, 0x61, 0x62, 0x65, 0x6c, 0x73,
+	0x12, 0x3d, 0x0a, 0x0b, 0x61, 0x6e, 0x6e, 0x6f, 0x74, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x18,
+	0x06, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x1b, 0x2e, 0x70, 0x61, 0x79, 0x6c, 0x6f, 0x61, 0x64, 0x2e,
+	0x76, 0x31, 0x2e, 0x49, 0x6e, 0x66, 0x6f, 0x2e, 0x41, 0x6e, 0x6e, 0x6f, 0x74, 0x61, 0x74, 0x69,
+	0x6f, 0x6e, 0x52, 0x0b, 0x61, 0x6e, 0x6e, 0x6f, 0x74, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x1a,
+	0x35, 0x0a, 0x0b, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x50, 0x6f, 0x72, 0x74, 0x12, 0x12,
+	0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x6e, 0x61,
+	0x6d, 0x65, 0x12, 0x12, 0x0a, 0x04, 0x70, 0x6f, 0x72, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x05,
+	0x52, 0x04, 0x70, 0x6f, 0x72, 0x74, 0x1a, 0x2f, 0x0a, 0x05, 0x4c, 0x61, 0x62, 0x65, 0x6c, 0x12,
+	0x10, 0x0a, 0x03, 0x6b, 0x65, 0x79, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x6b, 0x65,
+	0x79, 0x12, 0x14, 0x0a, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09,
+	0x52, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x1a, 0x34, 0x0a, 0x0a, 0x41, 0x6e, 0x6e, 0x6f, 0x74,
+	0x61, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x10, 0x0a, 0x03, 0x6b, 0x65, 0x79, 0x18, 0x01, 0x20, 0x01,
+	0x28, 0x09, 0x52, 0x03, 0x6b, 0x65, 0x79, 0x12, 0x14, 0x0a, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65,
+	0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x1a, 0x4b, 0x0a,
+	0x03, 0x43, 0x50, 0x55, 0x12, 0x14, 0x0a, 0x05, 0x6c, 0x69, 0x6d, 0x69, 0x74, 0x18, 0x01, 0x20,
+	0x01, 0x28, 0x01, 0x52, 0x05, 0x6c, 0x69, 0x6d, 0x69, 0x74, 0x12, 0x18, 0x0a, 0x07, 0x72, 0x65,
+	0x71, 0x75, 0x65, 0x73, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x01, 0x52, 0x07, 0x72, 0x65, 0x71,
+	0x75, 0x65, 0x73, 0x74, 0x12, 0x14, 0x0a, 0x05, 0x75, 0x73, 0x61, 0x67, 0x65, 0x18, 0x03, 0x20,
+	0x01, 0x28, 0x01, 0x52, 0x05, 0x75, 0x73, 0x61, 0x67, 0x65, 0x1a, 0x4e, 0x0a, 0x06, 0x4d, 0x65,
+	0x6d, 0x6f, 0x72, 0x79, 0x12, 0x14, 0x0a, 0x05, 0x6c, 0x69, 0x6d, 0x69, 0x74, 0x18, 0x01, 0x20,
+	0x01, 0x28, 0x01, 0x52, 0x05, 0x6c, 0x69, 0x6d, 0x69, 0x74, 0x12, 0x18, 0x0a, 0x07, 0x72, 0x65,
+	0x71, 0x75, 0x65, 0x73, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x01, 0x52, 0x07, 0x72, 0x65, 0x71,
+	0x75, 0x65, 0x73, 0x74, 0x12, 0x14, 0x0a, 0x05, 0x75, 0x73, 0x61, 0x67, 0x65, 0x18, 0x03, 0x20,
+	0x01, 0x28, 0x01, 0x52, 0x05, 0x75, 0x73, 0x61, 0x67, 0x65, 0x1a, 0x3a, 0x0a, 0x04, 0x50, 0x6f,
+	0x64, 0x73, 0x12, 0x32, 0x0a, 0x04, 0x70, 0x6f, 0x64, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b,
+	0x32, 0x14, 0x2e, 0x70, 0x61, 0x79, 0x6c, 0x6f, 0x61, 0x64, 0x2e, 0x76, 0x31, 0x2e, 0x49, 0x6e,
+	0x66, 0x6f, 0x2e, 0x50, 0x6f, 0x64, 0x42, 0x08, 0xba, 0x48, 0x05, 0x92, 0x01, 0x02, 0x08, 0x01,
+	0x52, 0x04, 0x70, 0x6f, 0x64, 0x73, 0x1a, 0x3e, 0x0a, 0x05, 0x4e, 0x6f, 0x64, 0x65, 0x73, 0x12,
+	0x35, 0x0a, 0x05, 0x6e, 0x6f, 0x64, 0x65, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x15,
 	0x2e, 0x70, 0x61, 0x79, 0x6c, 0x6f, 0x61, 0x64, 0x2e, 0x76, 0x31, 0x2e, 0x49, 0x6e, 0x66, 0x6f,
-	0x2e, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x42, 0x08, 0xba, 0x48, 0x05, 0x92, 0x01, 0x02,
-	0x08, 0x01, 0x52, 0x08, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x73, 0x1a, 0x15, 0x0a, 0x03,
-	0x49, 0x50, 0x73, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x70, 0x18, 0x01, 0x20, 0x03, 0x28, 0x09, 0x52,
-	0x02, 0x69, 0x70, 0x22, 0x07, 0x0a, 0x05, 0x45, 0x6d, 0x70, 0x74, 0x79, 0x42, 0x64, 0x0a, 0x1d,
-	0x6f, 0x72, 0x67, 0x2e, 0x76, 0x64, 0x61, 0x61, 0x73, 0x2e, 0x76, 0x61, 0x6c, 0x64, 0x2e, 0x61,
-	0x70, 0x69, 0x2e, 0x76, 0x31, 0x2e, 0x70, 0x61, 0x79, 0x6c, 0x6f, 0x61, 0x64, 0x42, 0x0b, 0x56,
-	0x61, 0x6c, 0x64, 0x50, 0x61, 0x79, 0x6c, 0x6f, 0x61, 0x64, 0x50, 0x01, 0x5a, 0x2a, 0x67, 0x69,
-	0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x76, 0x64, 0x61, 0x61, 0x73, 0x2f, 0x76,
-	0x61, 0x6c, 0x64, 0x2f, 0x61, 0x70, 0x69, 0x73, 0x2f, 0x67, 0x72, 0x70, 0x63, 0x2f, 0x76, 0x31,
-	0x2f, 0x70, 0x61, 0x79, 0x6c, 0x6f, 0x61, 0x64, 0xa2, 0x02, 0x07, 0x50, 0x61, 0x79, 0x6c, 0x6f,
-	0x61, 0x64, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x2e, 0x4e, 0x6f, 0x64, 0x65, 0x42, 0x08, 0xba, 0x48, 0x05, 0x92, 0x01, 0x02, 0x08, 0x01, 0x52,
+	0x05, 0x6e, 0x6f, 0x64, 0x65, 0x73, 0x1a, 0x4a, 0x0a, 0x08, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63,
+	0x65, 0x73, 0x12, 0x3e, 0x0a, 0x08, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x73, 0x18, 0x01,
+	0x20, 0x03, 0x28, 0x0b, 0x32, 0x18, 0x2e, 0x70, 0x61, 0x79, 0x6c, 0x6f, 0x61, 0x64, 0x2e, 0x76,
+	0x31, 0x2e, 0x49, 0x6e, 0x66, 0x6f, 0x2e, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x42, 0x08,
+	0xba, 0x48, 0x05, 0x92, 0x01, 0x02, 0x08, 0x01, 0x52, 0x08, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63,
+	0x65, 0x73, 0x1a, 0x15, 0x0a, 0x03, 0x49, 0x50, 0x73, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x70, 0x18,
+	0x01, 0x20, 0x03, 0x28, 0x09, 0x52, 0x02, 0x69, 0x70, 0x22, 0x07, 0x0a, 0x05, 0x45, 0x6d, 0x70,
+	0x74, 0x79, 0x42, 0x64, 0x0a, 0x1d, 0x6f, 0x72, 0x67, 0x2e, 0x76, 0x64, 0x61, 0x61, 0x73, 0x2e,
+	0x76, 0x61, 0x6c, 0x64, 0x2e, 0x61, 0x70, 0x69, 0x2e, 0x76, 0x31, 0x2e, 0x70, 0x61, 0x79, 0x6c,
+	0x6f, 0x61, 0x64, 0x42, 0x0b, 0x56, 0x61, 0x6c, 0x64, 0x50, 0x61, 0x79, 0x6c, 0x6f, 0x61, 0x64,
+	0x50, 0x01, 0x5a, 0x2a, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x76,
+	0x64, 0x61, 0x61, 0x73, 0x2f, 0x76, 0x61, 0x6c, 0x64, 0x2f, 0x61, 0x70, 0x69, 0x73, 0x2f, 0x67,
+	0x72, 0x70, 0x63, 0x2f, 0x76, 0x31, 0x2f, 0x70, 0x61, 0x79, 0x6c, 0x6f, 0x61, 0x64, 0xa2, 0x02,
+	0x07, 0x50, 0x61, 0x79, 0x6c, 0x6f, 0x61, 0x64, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -5151,7 +5294,7 @@ func file_v1_payload_payload_proto_rawDescGZIP() []byte {
 }
 
 var file_v1_payload_payload_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
-var file_v1_payload_payload_proto_msgTypes = make([]protoimpl.MessageInfo, 79)
+var file_v1_payload_payload_proto_msgTypes = make([]protoimpl.MessageInfo, 81)
 var file_v1_payload_payload_proto_goTypes = []interface{}{
 	(Search_AggregationAlgorithm)(0),    // 0: payload.v1.Search.AggregationAlgorithm
 	(Remove_Timestamp_Operator)(0),      // 1: payload.v1.Remove.Timestamp.Operator
@@ -5224,17 +5367,19 @@ var file_v1_payload_payload_proto_goTypes = []interface{}{
 	(*Info_Node)(nil),                   // 68: payload.v1.Info.Node
 	(*Info_Service)(nil),                // 69: payload.v1.Info.Service
 	(*Info_ServicePort)(nil),            // 70: payload.v1.Info.ServicePort
-	(*Info_CPU)(nil),                    // 71: payload.v1.Info.CPU
-	(*Info_Memory)(nil),                 // 72: payload.v1.Info.Memory
-	(*Info_Pods)(nil),                   // 73: payload.v1.Info.Pods
-	(*Info_Nodes)(nil),                  // 74: payload.v1.Info.Nodes
-	(*Info_Services)(nil),               // 75: payload.v1.Info.Services
-	(*Info_IPs)(nil),                    // 76: payload.v1.Info.IPs
-	(*Info_Index_Count)(nil),            // 77: payload.v1.Info.Index.Count
-	(*Info_Index_UUID)(nil),             // 78: payload.v1.Info.Index.UUID
-	(*Info_Index_UUID_Committed)(nil),   // 79: payload.v1.Info.Index.UUID.Committed
-	(*Info_Index_UUID_Uncommitted)(nil), // 80: payload.v1.Info.Index.UUID.Uncommitted
-	(*status.Status)(nil),               // 81: google.rpc.Status
+	(*Info_Label)(nil),                  // 71: payload.v1.Info.Label
+	(*Info_Annotation)(nil),             // 72: payload.v1.Info.Annotation
+	(*Info_CPU)(nil),                    // 73: payload.v1.Info.CPU
+	(*Info_Memory)(nil),                 // 74: payload.v1.Info.Memory
+	(*Info_Pods)(nil),                   // 75: payload.v1.Info.Pods
+	(*Info_Nodes)(nil),                  // 76: payload.v1.Info.Nodes
+	(*Info_Services)(nil),               // 77: payload.v1.Info.Services
+	(*Info_IPs)(nil),                    // 78: payload.v1.Info.IPs
+	(*Info_Index_Count)(nil),            // 79: payload.v1.Info.Index.Count
+	(*Info_Index_UUID)(nil),             // 80: payload.v1.Info.Index.UUID
+	(*Info_Index_UUID_Committed)(nil),   // 81: payload.v1.Info.Index.UUID.Committed
+	(*Info_Index_UUID_Uncommitted)(nil), // 82: payload.v1.Info.Index.UUID.Uncommitted
+	(*status.Status)(nil),               // 83: google.rpc.Status
 }
 var file_v1_payload_payload_proto_depIdxs = []int32{
 	19, // 0: payload.v1.Search.Request.config:type_name -> payload.v1.Search.Config
@@ -5250,7 +5395,7 @@ var file_v1_payload_payload_proto_depIdxs = []int32{
 	46, // 10: payload.v1.Search.Response.results:type_name -> payload.v1.Object.Distance
 	20, // 11: payload.v1.Search.Responses.responses:type_name -> payload.v1.Search.Response
 	20, // 12: payload.v1.Search.StreamResponse.response:type_name -> payload.v1.Search.Response
-	81, // 13: payload.v1.Search.StreamResponse.status:type_name -> google.rpc.Status
+	83, // 13: payload.v1.Search.StreamResponse.status:type_name -> google.rpc.Status
 	23, // 14: payload.v1.Filter.Config.targets:type_name -> payload.v1.Filter.Target
 	50, // 15: payload.v1.Insert.Request.vector:type_name -> payload.v1.Object.Vector
 	29, // 16: payload.v1.Insert.Request.config:type_name -> payload.v1.Insert.Config
@@ -5284,33 +5429,35 @@ var file_v1_payload_payload_proto_depIdxs = []int32{
 	48, // 44: payload.v1.Object.VectorRequest.id:type_name -> payload.v1.Object.ID
 	24, // 45: payload.v1.Object.VectorRequest.filters:type_name -> payload.v1.Filter.Config
 	46, // 46: payload.v1.Object.StreamDistance.distance:type_name -> payload.v1.Object.Distance
-	81, // 47: payload.v1.Object.StreamDistance.status:type_name -> google.rpc.Status
+	83, // 47: payload.v1.Object.StreamDistance.status:type_name -> google.rpc.Status
 	48, // 48: payload.v1.Object.GetTimestampRequest.id:type_name -> payload.v1.Object.ID
 	50, // 49: payload.v1.Object.Vectors.vectors:type_name -> payload.v1.Object.Vector
 	50, // 50: payload.v1.Object.StreamVector.vector:type_name -> payload.v1.Object.Vector
-	81, // 51: payload.v1.Object.StreamVector.status:type_name -> google.rpc.Status
+	83, // 51: payload.v1.Object.StreamVector.status:type_name -> google.rpc.Status
 	56, // 52: payload.v1.Object.StreamBlob.blob:type_name -> payload.v1.Object.Blob
-	81, // 53: payload.v1.Object.StreamBlob.status:type_name -> google.rpc.Status
+	83, // 53: payload.v1.Object.StreamBlob.status:type_name -> google.rpc.Status
 	58, // 54: payload.v1.Object.StreamLocation.location:type_name -> payload.v1.Object.Location
-	81, // 55: payload.v1.Object.StreamLocation.status:type_name -> google.rpc.Status
+	83, // 55: payload.v1.Object.StreamLocation.status:type_name -> google.rpc.Status
 	58, // 56: payload.v1.Object.Locations.locations:type_name -> payload.v1.Object.Location
 	50, // 57: payload.v1.Object.List.Response.vector:type_name -> payload.v1.Object.Vector
-	81, // 58: payload.v1.Object.List.Response.status:type_name -> google.rpc.Status
-	71, // 59: payload.v1.Info.Pod.cpu:type_name -> payload.v1.Info.CPU
-	72, // 60: payload.v1.Info.Pod.memory:type_name -> payload.v1.Info.Memory
+	83, // 58: payload.v1.Object.List.Response.status:type_name -> google.rpc.Status
+	73, // 59: payload.v1.Info.Pod.cpu:type_name -> payload.v1.Info.CPU
+	74, // 60: payload.v1.Info.Pod.memory:type_name -> payload.v1.Info.Memory
 	68, // 61: payload.v1.Info.Pod.node:type_name -> payload.v1.Info.Node
-	71, // 62: payload.v1.Info.Node.cpu:type_name -> payload.v1.Info.CPU
-	72, // 63: payload.v1.Info.Node.memory:type_name -> payload.v1.Info.Memory
-	73, // 64: payload.v1.Info.Node.Pods:type_name -> payload.v1.Info.Pods
+	73, // 62: payload.v1.Info.Node.cpu:type_name -> payload.v1.Info.CPU
+	74, // 63: payload.v1.Info.Node.memory:type_name -> payload.v1.Info.Memory
+	75, // 64: payload.v1.Info.Node.Pods:type_name -> payload.v1.Info.Pods
 	70, // 65: payload.v1.Info.Service.ports:type_name -> payload.v1.Info.ServicePort
-	67, // 66: payload.v1.Info.Pods.pods:type_name -> payload.v1.Info.Pod
-	68, // 67: payload.v1.Info.Nodes.nodes:type_name -> payload.v1.Info.Node
-	69, // 68: payload.v1.Info.Services.services:type_name -> payload.v1.Info.Service
-	69, // [69:69] is the sub-list for method output_type
-	69, // [69:69] is the sub-list for method input_type
-	69, // [69:69] is the sub-list for extension type_name
-	69, // [69:69] is the sub-list for extension extendee
-	0,  // [0:69] is the sub-list for field type_name
+	71, // 66: payload.v1.Info.Service.labels:type_name -> payload.v1.Info.Label
+	72, // 67: payload.v1.Info.Service.annotations:type_name -> payload.v1.Info.Annotation
+	67, // 68: payload.v1.Info.Pods.pods:type_name -> payload.v1.Info.Pod
+	68, // 69: payload.v1.Info.Nodes.nodes:type_name -> payload.v1.Info.Node
+	69, // 70: payload.v1.Info.Services.services:type_name -> payload.v1.Info.Service
+	71, // [71:71] is the sub-list for method output_type
+	71, // [71:71] is the sub-list for method input_type
+	71, // [71:71] is the sub-list for extension type_name
+	71, // [71:71] is the sub-list for extension extendee
+	0,  // [0:71] is the sub-list for field type_name
 }
 
 func init() { file_v1_payload_payload_proto_init() }
@@ -6148,7 +6295,7 @@ func file_v1_payload_payload_proto_init() {
 			}
 		}
 		file_v1_payload_payload_proto_msgTypes[69].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Info_CPU); i {
+			switch v := v.(*Info_Label); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -6160,7 +6307,7 @@ func file_v1_payload_payload_proto_init() {
 			}
 		}
 		file_v1_payload_payload_proto_msgTypes[70].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Info_Memory); i {
+			switch v := v.(*Info_Annotation); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -6172,7 +6319,7 @@ func file_v1_payload_payload_proto_init() {
 			}
 		}
 		file_v1_payload_payload_proto_msgTypes[71].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Info_Pods); i {
+			switch v := v.(*Info_CPU); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -6184,7 +6331,7 @@ func file_v1_payload_payload_proto_init() {
 			}
 		}
 		file_v1_payload_payload_proto_msgTypes[72].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Info_Nodes); i {
+			switch v := v.(*Info_Memory); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -6196,7 +6343,7 @@ func file_v1_payload_payload_proto_init() {
 			}
 		}
 		file_v1_payload_payload_proto_msgTypes[73].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Info_Services); i {
+			switch v := v.(*Info_Pods); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -6208,7 +6355,7 @@ func file_v1_payload_payload_proto_init() {
 			}
 		}
 		file_v1_payload_payload_proto_msgTypes[74].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Info_IPs); i {
+			switch v := v.(*Info_Nodes); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -6220,7 +6367,7 @@ func file_v1_payload_payload_proto_init() {
 			}
 		}
 		file_v1_payload_payload_proto_msgTypes[75].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Info_Index_Count); i {
+			switch v := v.(*Info_Services); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -6232,7 +6379,7 @@ func file_v1_payload_payload_proto_init() {
 			}
 		}
 		file_v1_payload_payload_proto_msgTypes[76].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Info_Index_UUID); i {
+			switch v := v.(*Info_IPs); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -6244,7 +6391,7 @@ func file_v1_payload_payload_proto_init() {
 			}
 		}
 		file_v1_payload_payload_proto_msgTypes[77].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Info_Index_UUID_Committed); i {
+			switch v := v.(*Info_Index_Count); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -6256,6 +6403,30 @@ func file_v1_payload_payload_proto_init() {
 			}
 		}
 		file_v1_payload_payload_proto_msgTypes[78].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*Info_Index_UUID); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_v1_payload_payload_proto_msgTypes[79].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*Info_Index_UUID_Committed); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_v1_payload_payload_proto_msgTypes[80].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Info_Index_UUID_Uncommitted); i {
 			case 0:
 				return &v.state
@@ -6298,7 +6469,7 @@ func file_v1_payload_payload_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_v1_payload_payload_proto_rawDesc,
 			NumEnums:      2,
-			NumMessages:   79,
+			NumMessages:   81,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

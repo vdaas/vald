@@ -573,6 +573,10 @@ message Info {
     repeated string cluster_ips = 3;
     // The port of the svc.
     repeated ServicePort ports = 4;
+    // The labels of the service.
+    repeated Label labels = 5;
+    // The annotations of the service.
+    repeated Annotation annotations = 6;
   }
 
   // Represets the service port information message.
@@ -581,6 +585,18 @@ message Info {
     string name = 1;
     // The port number
     int32 port = 2;
+  }
+
+  // Represent the kubernetes label.
+  message Label {
+    string key = 1;
+    string value = 2;
+  }
+
+  // Represent the kubernetes annotation.
+  message Annotation {
+    string key = 1;
+    string value = 2;
   }
 
   // Represent the CPU information message.
