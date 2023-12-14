@@ -2,7 +2,7 @@
 // Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -18,102 +18,89 @@ syntax = "proto3";
 
 package vald.v1;
 
-import "apis/proto/v1/payload/payload.proto";
-import "github.com/googleapis/googleapis/google/api/annotations.proto";
+import "google/api/annotations.proto";
+import "v1/payload/payload.proto";
 
 option go_package = "github.com/vdaas/vald/apis/grpc/v1/vald";
 option java_multiple_files = true;
-option java_package = "org.vdaas.vald.api.v1.vald";
 option java_outer_classname = "ValdFilter";
+option java_package = "org.vdaas.vald.api.v1.vald";
 
 // Filter service provides ways to connect to Vald through filter.
 service Filter {
-
   // A method to search object.
-  rpc SearchObject(payload.v1.Search.ObjectRequest)
-      returns (payload.v1.Search.Response) {
+  rpc SearchObject(payload.v1.Search.ObjectRequest) returns (payload.v1.Search.Response) {
     option (google.api.http) = {
-      post : "/search/object"
-      body : "*"
+      post: "/search/object"
+      body: "*"
     };
   }
 
   // A method to search multiple objects.
-  rpc MultiSearchObject(payload.v1.Search.MultiObjectRequest)
-      returns (payload.v1.Search.Responses) {
+  rpc MultiSearchObject(payload.v1.Search.MultiObjectRequest) returns (payload.v1.Search.Responses) {
     option (google.api.http) = {
-      post : "/search/object/multiple"
-      body : "*"
+      post: "/search/object/multiple"
+      body: "*"
     };
   }
 
   // A method to search object by bidirectional streaming.
-  rpc StreamSearchObject(stream payload.v1.Search.ObjectRequest)
-      returns (stream payload.v1.Search.StreamResponse) {}
+  rpc StreamSearchObject(stream payload.v1.Search.ObjectRequest) returns (stream payload.v1.Search.StreamResponse) {}
 
   // A method insert object.
-  rpc InsertObject(payload.v1.Insert.ObjectRequest)
-      returns (payload.v1.Object.Location) {
+  rpc InsertObject(payload.v1.Insert.ObjectRequest) returns (payload.v1.Object.Location) {
     option (google.api.http) = {
-      post : "/insert/object"
-      body : "*"
+      post: "/insert/object"
+      body: "*"
     };
   }
 
   // Represent the streaming RPC to insert object by bidirectional streaming.
-  rpc StreamInsertObject(stream payload.v1.Insert.ObjectRequest)
-      returns (stream payload.v1.Object.StreamLocation) {}
+  rpc StreamInsertObject(stream payload.v1.Insert.ObjectRequest) returns (stream payload.v1.Object.StreamLocation) {}
 
   // A method to insert multiple objects.
-  rpc MultiInsertObject(payload.v1.Insert.MultiObjectRequest)
-      returns (payload.v1.Object.Locations) {
+  rpc MultiInsertObject(payload.v1.Insert.MultiObjectRequest) returns (payload.v1.Object.Locations) {
     option (google.api.http) = {
-      post : "/insert/object/multiple"
-      body : "*"
+      post: "/insert/object/multiple"
+      body: "*"
     };
   }
 
   // A method to update object.
-  rpc UpdateObject(payload.v1.Update.ObjectRequest)
-      returns (payload.v1.Object.Location) {
+  rpc UpdateObject(payload.v1.Update.ObjectRequest) returns (payload.v1.Object.Location) {
     option (google.api.http) = {
-      post : "/update/object"
-      body : "*"
+      post: "/update/object"
+      body: "*"
     };
   }
 
   // A method to update object by bidirectional streaming.
-  rpc StreamUpdateObject(stream payload.v1.Update.ObjectRequest)
-      returns (stream payload.v1.Object.StreamLocation) {}
+  rpc StreamUpdateObject(stream payload.v1.Update.ObjectRequest) returns (stream payload.v1.Object.StreamLocation) {}
 
   // A method to update multiple objects.
-  rpc MultiUpdateObject(payload.v1.Update.MultiObjectRequest)
-      returns (payload.v1.Object.Locations) {
+  rpc MultiUpdateObject(payload.v1.Update.MultiObjectRequest) returns (payload.v1.Object.Locations) {
     option (google.api.http) = {
-      post : "/update/object/multiple"
-      body : "*"
+      post: "/update/object/multiple"
+      body: "*"
     };
   }
 
   // A method to upsert object.
-  rpc UpsertObject(payload.v1.Upsert.ObjectRequest)
-      returns (payload.v1.Object.Location) {
+  rpc UpsertObject(payload.v1.Upsert.ObjectRequest) returns (payload.v1.Object.Location) {
     option (google.api.http) = {
-      post : "/upsert/object"
-      body : "*"
+      post: "/upsert/object"
+      body: "*"
     };
   }
 
   // A method to upsert object by bidirectional streaming.
-  rpc StreamUpsertObject(stream payload.v1.Upsert.ObjectRequest)
-      returns (stream payload.v1.Object.StreamLocation) {}
+  rpc StreamUpsertObject(stream payload.v1.Upsert.ObjectRequest) returns (stream payload.v1.Object.StreamLocation) {}
 
   // A method to upsert multiple objects.
-  rpc MultiUpsertObject(payload.v1.Upsert.MultiObjectRequest)
-      returns (payload.v1.Object.Locations) {
+  rpc MultiUpsertObject(payload.v1.Upsert.MultiObjectRequest) returns (payload.v1.Object.Locations) {
     option (google.api.http) = {
-      post : "/upsert/object/multiple"
-      body : "*"
+      post: "/upsert/object/multiple"
+      body: "*"
     };
   }
 }

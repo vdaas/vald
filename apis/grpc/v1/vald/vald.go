@@ -2,7 +2,7 @@
 // Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -27,6 +27,7 @@ type Server interface {
 	UpsertServer
 	SearchServer
 	RemoveServer
+	FlushServer
 	ObjectServer
 }
 
@@ -41,6 +42,7 @@ type UnimplementedValdServer struct {
 	UnimplementedUpsertServer
 	UnimplementedSearchServer
 	UnimplementedRemoveServer
+	UnimplementedFlushServer
 	UnimplementedObjectServer
 }
 
@@ -55,6 +57,7 @@ type Client interface {
 	UpsertClient
 	SearchClient
 	RemoveClient
+	FlushClient
 	ObjectClient
 }
 
@@ -71,6 +74,7 @@ const (
 	UpsertRPCServiceName = "Upsert"
 	SearchRPCServiceName = "Search"
 	RemoveRPCServiceName = "Remove"
+	FlushRPCServiceName  = "Flush"
 	ObjectRPCServiceName = "Object"
 	FilterRPCServiceName = "Filter"
 )
@@ -116,13 +120,18 @@ const (
 	StreamLinearSearchObjectRPCName = "StreamLinearSearchObject"
 	StreamSearchObjectRPCName       = "StreamSearchObject"
 
-	RemoveRPCName       = "Remove"
-	StreamRemoveRPCName = "StreamRemove"
-	MultiRemoveRPCName  = "MultiRemove"
+	RemoveRPCName            = "Remove"
+	StreamRemoveRPCName      = "StreamRemove"
+	MultiRemoveRPCName       = "MultiRemove"
+	RemoveByTimestampRPCName = "RemoveByTimestamp"
 
-	ExistsRPCName          = "Exists"
-	GetObjectRPCName       = "GetObject"
-	StreamGetObjectRPCName = "StreamGetObject"
+	FlushRPCName = "Flush"
+
+	ExistsRPCName           = "Exists"
+	GetObjectRPCName        = "GetObject"
+	GetTimestampRPCName     = "GetTimestamp"
+	StreamGetObjectRPCName  = "StreamGetObject"
+	StreamListObjectRPCName = "StreamListObject"
 )
 
 type client struct {
@@ -131,6 +140,7 @@ type client struct {
 	UpsertClient
 	SearchClient
 	RemoveClient
+	FlushClient
 	ObjectClient
 }
 
@@ -140,6 +150,7 @@ func RegisterValdServer(s *grpc.Server, srv Server) {
 	RegisterUpsertServer(s, srv)
 	RegisterSearchServer(s, srv)
 	RegisterRemoveServer(s, srv)
+	RegisterFlushServer(s, srv)
 	RegisterObjectServer(s, srv)
 }
 
@@ -155,6 +166,7 @@ func NewValdClient(conn *grpc.ClientConn) Client {
 		NewUpsertClient(conn),
 		NewSearchClient(conn),
 		NewRemoveClient(conn),
+		NewFlushClient(conn),
 		NewObjectClient(conn),
 	}
 }

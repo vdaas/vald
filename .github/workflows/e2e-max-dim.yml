@@ -2,7 +2,7 @@
 # Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
+# You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
 #    https://www.apache.org/licenses/LICENSE-2.0
@@ -26,97 +26,32 @@ on:
       - "labeled"
 
 jobs:
-  dump_contexts_to_log:
+  dump-contexts-to-log:
+    if: startsWith( github.ref, 'refs/tags/') || github.event.action == 'labeled' && github.event.label.name == 'actions/e2e-max-dim'
     runs-on: ubuntu-latest
     steps:
-      - name: Dump GitHub context
-        id: github_context_step
-        run: echo $JSON
-        env:
-          JSON: ${{ toJSON(github) }}
-      - name: Dump job context
-        run: echo $JSON
-        env:
-          JSON: ${{ toJSON(job) }}
-      - name: Dump steps context
-        run: echo $JSON
-        env:
-          JSON: ${{ toJSON(steps) }}
-      - name: Dump runner context
-        run: echo $JSON
-        env:
-          JSON: ${{ toJSON(runner) }}
-      - name: Dump strategy context
-        run: echo $JSON
-        env:
-          JSON: ${{ toJSON(strategy) }}
-      - name: Dump matrix context
-        run: echo $JSON
-        env:
-          JSON: ${{ toJSON(matrix) }}
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/dump-context
+
   e2e-max-dimension-insert:
     name: "E2E test (Max Dimension Insert: skip strict exist check)"
+    needs: [dump-contexts-to-log]
     runs-on: ubuntu-latest
     timeout-minutes: 60
-    if: startsWith( github.ref, 'refs/tags/') || github.event.action == 'labeled' && github.event.label.name == 'actions/e2e-max-dim'
+
     steps:
-      - uses: actions/checkout@v3
-      - name: set git config
+      - uses: actions/checkout@v4
+
+      - name: Set Git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
-      - name: Wait for Docker images
-        if: startsWith( github.ref, 'refs/tags/')
-        id: wait_for_docker_images
-        uses: ./.github/actions/wait-for-docker-image
-      - name: Get PR number
-        id: get_pr_number
-        if: github.event.action == 'labeled' && github.event.label.name == 'actions/e2e-deploy'
+
+      - name: Setup E2E environment
+        id: setup_e2e
+        uses: ./.github/actions/setup-e2e
+
+      - name: Run E2E MaxDimension
         run: |
-          pr_num=`cat $GITHUB_EVENT_PATH | jq -r ".number"`
-          echo "PR_NUM=${pr_num}" >> $GITHUB_OUTPUT
-      - name: Specify container versions
-        if: github.event.action == 'labeled' && github.event.label.name == 'actions/e2e-deploy'
-        id: specify_container_versions
-        uses: ./.github/actions/detect-docker-image-tags
-        with:
-          tag_name: pr-${{ steps.get_pr_number.outputs.PR_NUM }}
-      - name: Fetch Helm version
-        run: |
-          HELM_VERSION=`make version/helm`
-          echo "helm=${HELM_VERSION}" >> $GITHUB_OUTPUT
-        id: version
-      - uses: rinx/setup-k3d@v0.0.4
-        with:
-          version: latest
-          name: vald
-          agents: 1
-      - name: check k3d
-        run: |
-          kubectl cluster-info
-      - uses: azure/setup-helm@v3
-        with:
-          version: ${{ steps.version.outputs.helm }}
-      - name: Helm version
-        run: |
-          helm version
-      - name: deploy Vald
-        id: deploy_vald
-        uses: ./.github/actions/e2e-deploy-vald
-        with:
-          helm_extra_options: ${{ steps.specify_container_versions.outputs.HELM_EXTRA_OPTIONS }}
-          values: .github/helm/values/values-max-dim.yaml
-          wait_for_selector: app=vald-lb-gateway
-      - name: Fetch golang version
-        run: |
-          GO_VERSION=`make version/go`
-          echo "version=${GO_VERSION}" >> $GITHUB_OUTPUT
-        id: golang_version
-      - uses: actions/setup-go@v3
-        with:
-          go-version: ${{ steps.golang_version.outputs.version }}
-      - name: run E2E MaxDimension
-        run: |
-          go version
           go get github.com/vdaas/vald-client-go/v1/payload
           go get github.com/vdaas/vald-client-go/v1/vald
           BIT=18
@@ -130,28 +65,24 @@ jobs:
             if [ $BIT = "32" ]; then
               DIM=$(($DIM-1))
             fi
-            helm upgrade ${RELEASE} charts/vald \
-              --values ${VALUES} \
-              --set defaults.image.tag=nightly \
-              --set agent.ngt.dimension=${DIM}
+
+            export HELM_EXTRA_OPTIOINS="--set agent.ngt.dimension=${DIM}"
+            make k8s/vald/deploy VERSION="nightly" HELM_VALUES=${VALUES} HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIOINS}"
+
             sleep 3
+
             kubectl rollout restart statefulset vald-agent-ngt
+
             sleep 30
+
             kubectl wait --for=condition=Ready pod -l ${WAIT_FOR_SELECTOR} --timeout=${WAIT_FOR_TIMEOUT}
             POD_NAME=`kubectl get pods | grep vald-lb-gateway | awk '{print $1}'`
-            go test \
-              -race \
-              -v tests/e2e/performance/max_vector_dim_test.go \
-              -tags "e2e" \
-              -file ${FILEPATH} \
-              -timeout 30m \
-              -bit=${BIT} \
-              -host=localhost \
-              -port=8081 \
-              -portforward \
-              -portforward-pod-name=${POD_NAME} \
-              -kubeconfig=${KUBECONFIG} \
-              -namespace=default
+            make E2E_BIND_PORT=8081 \
+              E2E_MAX_DIM_RESULT_FILEPATH=${FILEPATH} \
+              E2E_MAX_DIM_BIT=${BIT} \
+              E2E_TARGET_POD_NAME=${POD_NAME} \
+              E2E_TARGET_NAMESPACE=default \
+              e2e/maxdim
             CODE=`sed -n 1P ${FILEPATH}`
             if [ ${CODE} = "ResourceExhausted" ]; then
               echo "Finish: Bit=${BIT} with ${CODE}"
@@ -167,6 +98,9 @@ jobs:
             echo "Finish: Bit=${BIT}"
             BIT=$(($BIT+1))
             rm ${FILEPATH}
+
+            echo "removing cluster"
+            make k8s/vald/delete VERSION="nightly" HELM_VALUES=${VALUES} HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIOINS}"
           done
           echo "MAX_BIT=${BIT}" >> $GITHUB_OUTPUT
           echo "MAX_BIT=${BIT}"
@@ -175,21 +109,16 @@ jobs:
           WAIT_FOR_TIMEOUT: 29m
           VALUES: .github/helm/values/values-max-dim.yaml
         timeout-minutes: 60
+
   slack-notification:
     name: "Slack notification"
-    needs:
-      - e2e-max-dimension-insert
+    needs: [e2e-max-dimension-insert]
     runs-on: ubuntu-latest
     if: startsWith( github.ref, 'refs/tags/')
     steps:
-      - uses: technote-space/workflow-conclusion-action@v2
-        with:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - uses: 8398a7/action-slack@v3
+      - uses: actions/checkout@v4
+
+      - uses: ./.github/actions/notify-slack
         with:
           author_name: "E2E max dim test"
-          status: ${{ env.WORKFLOW_CONCLUSION }}
-          only_mention_fail: channel
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_NOTIFY_WEBHOOK_URL }}
+          slack_notify_webhook_url: ${{ secrets.SLACK_NOTIFY_WEBHOOK_URL }}

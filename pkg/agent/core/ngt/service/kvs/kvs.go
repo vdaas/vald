@@ -2,7 +2,7 @@
 // Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -18,31 +18,41 @@ package kvs
 
 import (
 	"context"
-	"sync"
 	"sync/atomic"
 
-	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/safety"
+	"github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/zeebo/xxh3"
 )
 
 // BidiMap represents an interface for operating kvs.
 type BidiMap interface {
-	Get(string) (uint32, bool)
-	GetInverse(uint32) (string, bool)
-	Set(string, uint32)
+	Get(string) (uint32, int64, bool)
+	GetInverse(uint32) (string, int64, bool)
+	Set(string, uint32, int64)
 	Delete(string) (uint32, bool)
 	DeleteInverse(uint32) (string, bool)
-	Range(ctx context.Context, f func(string, uint32) bool)
+	Range(ctx context.Context, f func(string, uint32, int64) bool)
 	Len() uint64
 	Close() error
+}
+
+type valueStructOu struct {
+	value     string
+	timestamp int64
+}
+
+type ValueStructUo struct {
+	value     uint32
+	timestamp int64
 }
 
 type bidi struct {
 	concurrency int
 	l           uint64
-	ou          [slen]*ou
-	uo          [slen]*uo
+	ou          [slen]*sync.Map[uint32, valueStructOu]
+	uo          [slen]*sync.Map[string, ValueStructUo]
 	eg          errgroup.Group
 }
 
@@ -65,8 +75,8 @@ func New(opts ...Option) BidiMap {
 		opt(b)
 	}
 	for i := range b.ou {
-		b.ou[i] = new(ou)
-		b.uo[i] = new(uo)
+		b.ou[i] = new(sync.Map[uint32, valueStructOu])
+		b.uo[i] = new(sync.Map[string, ValueStructUo])
 	}
 
 	if b.eg == nil {
@@ -74,7 +84,7 @@ func New(opts ...Option) BidiMap {
 	}
 
 	if b.concurrency > 0 {
-		b.eg.Limitation(b.concurrency)
+		b.eg.SetLimit(b.concurrency)
 	}
 
 	return b
@@ -82,33 +92,44 @@ func New(opts ...Option) BidiMap {
 
 // Get returns the value and boolean from the given key.
 // If the value does not exist, it returns nil and false.
-func (b *bidi) Get(key string) (uint32, bool) {
-	return b.uo[xxh3.HashString(key)&mask].Load(key)
+func (b *bidi) Get(key string) (oid uint32, timestamp int64, exists bool) {
+	vs, ok := b.uo[getShardID(key)].Load(key)
+	if !ok {
+		return 0, 0, false
+	}
+	return vs.value, vs.timestamp, true
 }
 
 // GetInverse returns the key and the boolean from the given val.
 // If the key does not exist, it returns nil and false.
-func (b *bidi) GetInverse(val uint32) (string, bool) {
-	return b.ou[val&mask].Load(val)
+func (b *bidi) GetInverse(val uint32) (string, int64, bool) {
+	vs, ok := b.ou[val&mask].Load(val)
+	if !ok {
+		return "", 0, false
+	}
+
+	return vs.value, vs.timestamp, true
 }
 
 // Set sets the key and val to the bidi.
-func (b *bidi) Set(key string, val uint32) {
-	id := xxh3.HashString(key) & mask
-	old, loaded := b.uo[id].LoadOrStore(key, val)
+func (b *bidi) Set(key string, val uint32, ts int64) {
+	id := getShardID(key)
+	vs, loaded := b.uo[id].LoadOrStore(key, ValueStructUo{value: val, timestamp: ts})
+	old := vs.value
 	if !loaded { // increase the count only if the key is not exists before
 		atomic.AddUint64(&b.l, 1)
 	} else {
-		b.ou[val&mask].Delete(old) // delete paired map value using old value_key
-		b.uo[id].Store(key, val)   // store if loaded for overwrite new value
+		b.ou[val&mask].Delete(old)                                    // delete paired map value using old value_key
+		b.uo[id].Store(key, ValueStructUo{value: val, timestamp: ts}) // store if loaded for overwrite new value
 	}
-	b.ou[val&mask].Store(val, key) // store anytime
+	b.ou[val&mask].Store(val, valueStructOu{value: key, timestamp: ts}) // store anytime
 }
 
 // Delete deletes the key and the value from the bidi by the given key and returns val and true.
 // If the value for the key does not exist, it returns nil and false.
 func (b *bidi) Delete(key string) (val uint32, ok bool) {
-	val, ok = b.uo[xxh3.HashString(key)&mask].LoadAndDelete(key)
+	vs, ok := b.uo[getShardID(key)].LoadAndDelete(key)
+	val = vs.value
 	if ok {
 		b.ou[val&mask].Delete(val)
 		atomic.AddUint64(&b.l, ^uint64(0))
@@ -119,28 +140,28 @@ func (b *bidi) Delete(key string) (val uint32, ok bool) {
 // DeleteInverse deletes the key and the value from the bidi by the given val and returns the key and true.
 // If the key for the val does not exist, it returns nil and false.
 func (b *bidi) DeleteInverse(val uint32) (key string, ok bool) {
-	key, ok = b.ou[val&mask].LoadAndDelete(val)
+	vs, ok := b.ou[val&mask].LoadAndDelete(val)
+	key = vs.value
 	if ok {
-		b.uo[xxh3.HashString(key)&mask].Delete(key)
+		b.uo[getShardID(key)].LoadAndDelete(key)
 		atomic.AddUint64(&b.l, ^uint64(0))
 	}
 	return key, ok
 }
 
 // Range retrieves all set keys and values and calls the callback function f.
-func (b *bidi) Range(ctx context.Context, f func(string, uint32) bool) {
+func (b *bidi) Range(ctx context.Context, f func(string, uint32, int64) bool) {
 	var wg sync.WaitGroup
 	for i := range b.uo {
 		idx := i
 		wg.Add(1)
 		b.eg.Go(safety.RecoverFunc(func() (err error) {
-			b.uo[idx].Range(func(uuid string, oid uint32) bool {
-				f(uuid, oid)
+			b.uo[idx].Range(func(uuid string, val ValueStructUo) bool {
 				select {
 				case <-ctx.Done():
 					return false
 				default:
-					return true
+					return f(uuid, val.value, val.timestamp)
 				}
 			})
 			wg.Done()
@@ -163,4 +184,11 @@ func (b *bidi) Close() error {
 		return nil
 	}
 	return b.eg.Wait()
+}
+
+func getShardID(key string) (id uint64) {
+	if len(key) > 128 {
+		return xxh3.HashString(key[:128]) & mask
+	}
+	return xxh3.HashString(key) & mask
 }

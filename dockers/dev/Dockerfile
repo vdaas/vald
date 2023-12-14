@@ -1,8 +1,9 @@
+# syntax = docker/dockerfile:latest
 #
 # Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
+# You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
 #    https://www.apache.org/licenses/LICENSE-2.0
@@ -16,21 +17,9 @@
 
 ARG MAINTAINER="vdaas.org vald team <vald@vdaas.org>"
 
-FROM ubuntu:devel AS builder
-
-# skipcq: DOK-DL3008
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    ca-certificates \
-    curl \
-    unzip \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
-
-WORKDIR /tmp
-
 # skipcq: DOK-DL3026
-FROM mcr.microsoft.com/vscode/devcontainers/go:1 AS base
-LABEL maintainer "${MAINTAINER}"
+FROM --platform=${BUILDPLATFORM} mcr.microsoft.com/vscode/devcontainers/go:1 AS base
+LABEL maintainer="${MAINTAINER}"
 
 # skipcq: DOK-DL3008
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -56,20 +45,24 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR ${GOPATH}/src/github.com/vdaas/vald
-
 COPY Makefile .
 COPY Makefile.d Makefile.d
 COPY versions versions
+COPY hack/go.mod.default hack/go.mod.default
 
-RUN make ngt/install \
+# basic deps
+RUN make deps \
+    && make ngt/install \
     && make helm/install \
     && make helm-docs/install \
-    && make kind/install \
     && make valdcli/install \
     && make yq/install \
     && make golangci-lint/install \
     && make reviewdog/install \
-    && make kubectl/install \
-    && make protobuf/install
+    && make kubectl/install
 
-WORKDIR ${GOPATH}
+# additional deps
+RUN make k3d/install \
+    && make buf/install \
+    && make k9s/install \
+    && make minikube/install

@@ -2,7 +2,7 @@
 // Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -110,6 +110,10 @@ func WrapWithUnauthenticated(msg string, err error, details ...interface{}) erro
 	return newStatus(codes.Unauthenticated, msg, err, details...).Err()
 }
 
+func CreateWithNotFound(msg string, err error, details ...interface{}) *Status {
+	return newStatus(codes.NotFound, msg, err, details...)
+}
+
 func Error(code codes.Code, msg string) error {
 	return status.Error(code, msg)
 }
@@ -134,17 +138,26 @@ func ParseError(err error, defaultCode codes.Code, defaultMsg string, details ..
 			defaultMsg = "failed to parse gRPC status from error"
 		}
 		st = newStatus(defaultCode, defaultMsg, err, details...)
-		if st == nil || st.Message() == "" {
-			msg = st.Err().Error()
+		if st != nil {
+			if st.Message() != "" {
+				msg = st.Message()
+			} else if e := st.Err(); e != nil {
+				msg = e.Error()
+			} else {
+				msg = defaultMsg
+			}
+			err = st.Err()
 		} else {
-			msg = st.Message()
+			msg = defaultMsg
 		}
-		return st, msg, st.Err()
+		return st, msg, err
 	}
 
-	st = withDetails(st, err, details...)
-	msg = st.Message()
-	return st, msg, err
+	sst := withDetails(st, err, details...)
+	if sst != nil {
+		return sst, sst.Message(), sst.Err()
+	}
+	return st, st.Message(), st.Err()
 }
 
 func FromError(err error) (st *Status, ok bool) {
@@ -152,30 +165,77 @@ func FromError(err error) (st *Status, ok bool) {
 		return nil, false
 	}
 	root := err
-	for {
-		if st, ok = status.FromError(err); ok && st != nil {
+	possibleStatus := func() (st *Status, ok bool) {
+		switch {
+		case errors.Is(root, context.DeadlineExceeded):
+			st = newStatus(codes.DeadlineExceeded, root.Error(), errors.Unwrap(root))
+			return st, true
+		case errors.Is(root, context.Canceled):
+			st = newStatus(codes.Canceled, root.Error(), errors.Unwrap(root))
 			return st, true
 		}
-		if uerr := errors.Unwrap(err); uerr != nil {
-			err = uerr
-		} else {
-			switch {
-			case errors.Is(root, context.DeadlineExceeded):
-				st = newStatus(codes.DeadlineExceeded, root.Error(), errors.Unwrap(root))
-				return st, true
-			case errors.Is(root, context.Canceled):
-				st = newStatus(codes.Canceled, root.Error(), errors.Unwrap(root))
-				return st, true
-			default:
-				st = newStatus(codes.Unknown, root.Error(), errors.Unwrap(root))
-				return st, false
+		st = newStatus(codes.Unknown, root.Error(), errors.Unwrap(root))
+		return st, false
+	}
+	for {
+		if st, ok = status.FromError(err); ok && st != nil {
+			if st.Code() == codes.Unknown {
+				switch x := err.(type) {
+				case interface{ Unwrap() error }:
+					err = x.Unwrap()
+					if err == nil {
+						return st, true
+					}
+					sst, ok := FromError(err)
+					if ok && sst != nil {
+						return sst, true
+					}
+				case interface{ Unwrap() []error }:
+					for _, err = range x.Unwrap() {
+						if sst, ok := FromError(err); ok && sst != nil {
+							if sst.Code() != codes.Unknown {
+								return sst, true
+							}
+						}
+					}
+				}
 			}
+			return st, true
+		}
+
+		switch x := err.(type) {
+		case interface{ Unwrap() error }:
+			err = x.Unwrap()
+			if err == nil {
+				return possibleStatus()
+			}
+		case interface{ Unwrap() []error }:
+			errs := x.Unwrap()
+			if errs == nil {
+				return possibleStatus()
+			}
+			var prev *Status
+			for _, err = range errs {
+				if st, ok = FromError(err); ok && st != nil {
+					if st.Code() != codes.Unknown {
+						return st, true
+					}
+					prev = st
+				}
+			}
+			if prev != nil {
+				return prev, true
+			}
+			return possibleStatus()
+		default:
+			return possibleStatus()
+
 		}
 	}
 }
 
 func withDetails(st *Status, err error, details ...interface{}) *Status {
-	msgs := make([]proto.MessageV1, 0, len(details)*2)
+	msgs := make([]proto.MessageV1, 0, 1+len(details)*2)
 	if err != nil {
 		msgs = append(msgs, &errdetails.ErrorInfo{
 			Reason: err.Error(),
@@ -190,11 +250,26 @@ func withDetails(st *Status, err error, details ...interface{}) *Status {
 		})
 	}
 	for _, detail := range details {
+		if detail == nil {
+			continue
+		}
 		switch v := detail.(type) {
+		case *spb.Status:
+			if v != nil {
+				msgs = append(msgs, proto.ToMessageV1(v))
+			}
 		case spb.Status:
 			msgs = append(msgs, proto.ToMessageV1(&v))
-		case *spb.Status:
-			msgs = append(msgs, proto.ToMessageV1(v))
+		case *status.Status:
+			if v != nil {
+				msgs = append(msgs, proto.ToMessageV1(&spb.Status{
+					Code:    v.Proto().GetCode(),
+					Message: v.Message(),
+				}))
+				for _, d := range v.Proto().Details {
+					msgs = append(msgs, proto.ToMessageV1(errdetails.AnyToErrorDetail(d)))
+				}
+			}
 		case status.Status:
 			msgs = append(msgs, proto.ToMessageV1(&spb.Status{
 				Code:    v.Proto().GetCode(),
@@ -203,28 +278,38 @@ func withDetails(st *Status, err error, details ...interface{}) *Status {
 			for _, d := range v.Proto().Details {
 				msgs = append(msgs, proto.ToMessageV1(errdetails.AnyToErrorDetail(d)))
 			}
-		case *status.Status:
-			msgs = append(msgs, proto.ToMessageV1(&spb.Status{
-				Code:    v.Proto().GetCode(),
-				Message: v.Message(),
-			}))
-			for _, d := range v.Proto().Details {
-				msgs = append(msgs, proto.ToMessageV1(errdetails.AnyToErrorDetail(d)))
+		case *info.Detail:
+			if v != nil {
+				msgs = append(msgs, errdetails.DebugInfoFromInfoDetail(v))
 			}
 		case info.Detail:
 			msgs = append(msgs, errdetails.DebugInfoFromInfoDetail(&v))
-		case *info.Detail:
-			msgs = append(msgs, errdetails.DebugInfoFromInfoDetail(v))
-		case proto.Message:
-			msgs = append(msgs, proto.ToMessageV1(v))
-		case *proto.Message:
-			msgs = append(msgs, proto.ToMessageV1(*v))
-		case proto.MessageV1:
-			msgs = append(msgs, v)
-		case *proto.MessageV1:
-			msgs = append(msgs, *v)
+		case *types.Any:
+			if v != nil {
+				msgs = append(msgs, proto.ToMessageV1(errdetails.AnyToErrorDetail(v)))
+			}
 		case types.Any:
 			msgs = append(msgs, proto.ToMessageV1(errdetails.AnyToErrorDetail(&v)))
+		case *proto.Message:
+			if v != nil {
+				msgs = append(msgs, proto.ToMessageV1(*v))
+			}
+		case proto.Message:
+			msgs = append(msgs, proto.ToMessageV1(v))
+		case *proto.MessageV1:
+			if v != nil {
+				msgs = append(msgs, *v)
+			}
+		case proto.MessageV1:
+			msgs = append(msgs, v)
+		}
+	}
+
+	if st == nil {
+		if err != nil {
+			st = New(codes.Unknown, err.Error())
+		} else {
+			st = New(codes.Unknown, "")
 		}
 	}
 

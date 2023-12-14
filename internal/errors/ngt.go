@@ -2,7 +2,7 @@
 // Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -18,6 +18,10 @@
 package errors
 
 var (
+
+	// ErrFlushingIsInProgress represents an error that the flushing is in progress, but any request has been received.
+	ErrFlushingIsInProgress = New("flush is in progress")
+
 	// ErrUUIDAlreadyExists represents a function to generate an error that the uuid already exists.
 	ErrUUIDAlreadyExists = func(uuid string) error {
 		return Errorf("ngt uuid %s index already exists", uuid)
@@ -40,6 +44,8 @@ var (
 	ErrRemoveRequestedBeforeIndexing = func(oid uint) error {
 		return Errorf("object id %d is not indexed we cannot remove it", oid)
 	}
+
+	ErrSearchResultEmptyButNoDataStored = New("empty search result from cgo but no index data stored in ngt, this error can be ignored.")
 )
 
 type NGTError struct {

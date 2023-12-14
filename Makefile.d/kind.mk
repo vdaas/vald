@@ -2,7 +2,7 @@
 # Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
+# You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
 #    https://www.apache.org/licenses/LICENSE-2.0
@@ -17,17 +17,10 @@
 ## install KinD
 kind/install: $(BINDIR)/kind
 
-ifeq ($(UNAME),Darwin)
 $(BINDIR)/kind:
 	mkdir -p $(BINDIR)
-	curl -L https://github.com/kubernetes-sigs/kind/releases/download/$(KIND_VERSION)/kind-darwin-amd64 -o $(BINDIR)/kind
+	curl -L https://github.com/kubernetes-sigs/kind/releases/download/$(KIND_VERSION)/kind-$(shell echo $(UNAME) | tr '[:upper:]' '[:lower:]')-$(subst x86_64,amd64,$(shell echo $(ARCH) | tr '[:upper:]' '[:lower:]')) -o $(BINDIR)/kind
 	chmod a+x $(BINDIR)/kind
-else
-$(BINDIR)/kind:
-	mkdir -p $(BINDIR)
-	curl -L https://github.com/kubernetes-sigs/kind/releases/download/$(KIND_VERSION)/kind-linux-amd64 -o $(BINDIR)/kind
-	chmod a+x $(BINDIR)/kind
-endif
 
 .PHONY: kind/start
 ## start kind (kubernetes in docker) cluster

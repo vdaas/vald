@@ -1,7 +1,7 @@
 // Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //	https://www.apache.org/licenses/LICENSE-2.0
@@ -14,11 +14,13 @@
 package rand
 
 import (
-	"sync"
+	"fmt"
 	"sync/atomic"
 	"testing"
 
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/internal/test/goleak"
 )
 
 func clearPool() {
@@ -159,3 +161,61 @@ func Test_rand_init(t *testing.T) {
 		})
 	}
 }
+
+func TestFloat32(t *testing.T) {
+	type want struct {
+		min float32
+		max float32
+	}
+	type test struct {
+		name       string
+		want       want
+		checkFunc  func(want, float32) error
+		beforeFunc func(*testing.T)
+		afterFunc  func(*testing.T)
+	}
+	defaultCheckFunc := func(w want, got float32) error {
+		if w.min > got || w.max < got {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w)
+		}
+		return nil
+	}
+	count := 1000
+	tests := func() []test {
+		tests := make([]test, count)
+		for idx := range tests {
+			tests[idx] = test{
+				name: fmt.Sprint(idx),
+				want: want{
+					min: 0.0,
+					max: 1.0,
+				},
+			}
+		}
+		return tests
+	}()
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(tt)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(tt)
+			}
+			checkFunc := test.checkFunc
+			if test.checkFunc == nil {
+				checkFunc = defaultCheckFunc
+			}
+
+			got := Float32()
+			if err := checkFunc(test.want, got); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+// NOT IMPLEMENTED BELOW

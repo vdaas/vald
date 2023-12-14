@@ -129,7 +129,7 @@ This chapter uses [NGT](https://github.com/yahoojapan/ngt) as Vald Agent to perf
 
     ```bash
     # download Fashion-MNIST testing dataset
-    wget http://ann-benchmarks.com/fashion-mnist-784-euclidean.hdf5
+    wget https://ann-benchmarks.com/fashion-mnist-784-euclidean.hdf5
     ```
 
 1.  Run Example
@@ -165,11 +165,11 @@ This chapter uses [NGT](https://github.com/yahoojapan/ngt) as Vald Agent to perf
               "github.com/kpango/fuid"
               "github.com/kpango/glg"
               agent "github.com/vdaas/vald-client-go/v1/agent/core"
-              "github.com/vdaas/vald-client-go/v1/vald"
               "github.com/vdaas/vald-client-go/v1/payload"
-
+              "github.com/vdaas/vald-client-go/v1/vald"
               "gonum.org/v1/hdf5"
               "google.golang.org/grpc"
+              "google.golang.org/grpc/credentials/insecure"
           )
           ```
 
@@ -236,7 +236,7 @@ This chapter uses [NGT](https://github.com/yahoojapan/ngt) as Vald Agent to perf
         ```go
         ctx := context.Background()
 
-        conn, err := grpc.DialContext(ctx, grpcServerAddr, grpc.WithInsecure())
+        conn, err := grpc.DialContext(ctx, grpcServerAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
         if err != nil {
             glg.Fatal(err)
         }
@@ -284,21 +284,23 @@ This chapter uses [NGT](https://github.com/yahoojapan/ngt) as Vald Agent to perf
 
             </details>
 
-        - [Optional] Indexing manually instead of waiting for auto indexing
+        - [Optional] Indexing manually instead of waiting for auto indexing.
+
           You can set Agent NGT configuration `auto_index_duration_limit` and `auto_index_check_duration` for auto indexing.
           In this example, you can create index manually using `CreateAndSaveIndex()` method in the client library
-          <details><summary>example code</summary><br>
 
-              ```go
-              _, err = client.CreateAndSaveIndex(ctx, &payload.Control_CreateIndexRequest{
-                  PoolSize: uint32(insertCount),
-              })
-              if err != nil {
-                  glg.Fatal(err)
-              }
-              ```
+            <details><summary>example code</summary><br>
 
-              </details>
+          ```go
+          _, err = client.CreateAndSaveIndex(ctx, &payload.Control_CreateIndexRequest{
+              PoolSize: uint32(insertCount),
+          })
+          if err != nil {
+              glg.Fatal(err)
+          }
+          ```
+
+            </details>
 
     1.  Search
 
@@ -333,49 +335,48 @@ This chapter uses [NGT](https://github.com/yahoojapan/ngt) as Vald Agent to perf
 
     1.  Remove
 
-            - Remove indexed 400 training datasets from the Vald agent.
-                <details><summary>example code</summary><br>
+        - Remove indexed 400 training datasets from the Vald agent.
+            <details><summary>example code</summary><br>
 
-                ```go
-                for i := range ids [:insertCount] {
-                    _, err := client.Remove(ctx, &payload.Remove_Request{
-                        Id: &payload.Object_ID{
-                            Id: ids[i],
-                        },
-                    })
-                    if err != nil {
-                        glg.Fatal(err)
-                    }
-                    if i%10 == 0 {
-                        glg.Infof("Removed %d", i)
-                    }
-                }
-                ```
+          ```go
+          for i := range ids [:insertCount] {
+              _, err := client.Remove(ctx, &payload.Remove_Request{
+                  Id: &payload.Object_ID{
+                      Id: ids[i],
+                  },
+              })
+              if err != nil {
+                  glg.Fatal(err)
+              }
+              if i%10 == 0 {
+                  glg.Infof("Removed %d", i)
+              }
+          }
+          ```
 
-                </details>
+            </details>
 
+        - Remove from the index manually instead of waiting for auto indexing.
 
-            - Remove from the index manually instead of waiting for auto indexing.
-            The removed vectors still exist in the NGT graph index before the SaveIndex (or CreateAndSaveIndex) API is called.
-            If you run the below code, the indexes will be removed completely from the Vald Agent NGT graph and the Backup file.
-                <details><summary>example code</summary><br>
+          The removed vectors still exist in the NGT graph index before the SaveIndex (or CreateAndSaveIndex) API is called.
+          If you run the below code, the indexes will be removed completely from the Vald Agent NGT graph and the Backup file.
 
-                ```go
-                _, err = client.SaveIndex(ctx, &payload.Empty{})
-                if err != nil {
-                    glg.Fatal(err)
-                }
-                ```
+            <details><summary>example code</summary><br>
 
-                </details>
+          ```go
+          _, err = client.SaveIndex(ctx, &payload.Empty{})
+          if err != nil {
+              glg.Fatal(err)
+          }
+          ```
 
-        </details>
+            </details>
 
     <div class="caution">
     It would be best to run CreateIndex() after Insert() without waiting for auto-indexing in your client code, even you can wait for the finishing auto createIndex function, which sometimes takes a long time.
     The backup files (e.g., ngt-meta.kvsdb) will be in your mount directory when vald-agent-ngt finishes indexing.
     </div>
-      
+
     <div class="warning">
     If you use Go(v1.16~) and catch the error like `missing go.sum entry to add it` when running `go run main.go`, please run `go mod tidy` and retry.
     This error comes from Go Command Changes of Go 1.16 Release Notes.(Please refer to https://golang.org/doc/go1.16#go-command for more details).

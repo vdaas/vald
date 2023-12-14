@@ -2,7 +2,7 @@
 # Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
+# You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
 #    https://www.apache.org/licenses/LICENSE-2.0
@@ -15,7 +15,7 @@
 #
 $(BENCH_DATASETS): $(BENCH_DATASET_MD5S) $(BENCH_DATASET_HDF5_DIR)
 	@$(call green, "downloading datasets for benchmark...")
-	curl -fsSL -o $@ http://ann-benchmarks.com/$(patsubst $(BENCH_DATASET_HDF5_DIR)/%.hdf5,%.hdf5,$@)
+	curl -fsSL -o $@ https://ann-benchmarks.com/$(patsubst $(BENCH_DATASET_HDF5_DIR)/%.hdf5,%.hdf5,$@)
 	(cd $(BENCH_DATASET_BASE_DIR); \
 	    md5sum -c $(patsubst $(BENCH_DATASET_HDF5_DIR)/%.hdf5,$(BENCH_DATASET_MD5_DIR_NAME)/%.md5,$@) || \
 	    (rm -f $(patsubst $(BENCH_DATASET_HDF5_DIR)/%.hdf5,$(BENCH_DATASET_HDF5_DIR_NAME)/%.hdf5,$@) && exit 1))
@@ -127,6 +127,7 @@ bench/core/ngt/sequential: \
 pprof/core/ngt/sequential.bin: \
 	hack/benchmark/core/ngt/ngt_bench_test.go
 	mkdir -p $(dir $@)
+	GOPRIVATE=$(GOPRIVATE) \
 	go test \
 	    -mod=readonly \
 	    -count=1 \
@@ -148,6 +149,7 @@ bench/core/ngt/parallel: \
 pprof/core/ngt/parallel.bin: \
 	hack/benchmark/core/ngt/ngt_bench_test.go
 	mkdir -p $(dir $@)
+	GOPRIVATE=$(GOPRIVATE) \
 	go test \
 	    -mod=readonly \
 	    -count=1 \
@@ -176,6 +178,7 @@ pprof/agent/stream.bin: \
 	hack/benchmark/e2e/agent/core/ngt/ngt_bench_test.go \
 	ngt/install
 	mkdir -p $(dir $@)
+	GOPRIVATE=$(GOPRIVATE) \
 	go test \
 	    -mod=readonly \
 	    -count=1 \
@@ -198,6 +201,7 @@ pprof/agent/sequential/grpc.bin: \
 	hack/benchmark/e2e/agent/core/ngt/ngt_bench_test.go \
 	ngt/install
 	mkdir -p $(dir $@)
+	GOPRIVATE=$(GOPRIVATE) \
 	go test \
 	    -mod=readonly \
 	    -count=1 \
@@ -225,6 +229,7 @@ pprof/gateway/sequential.bin: \
 	hack/benchmark/e2e/gateway/vald/vald_bench_test.go \
 	ngt/install
 	mkdir -p $(dir $@)
+	GOPRIVATE=$(GOPRIVATE) \
 	go test \
 	    -mod=readonly \
 	    -count=1 \
@@ -270,6 +275,7 @@ metrics/agent: \
 metrics/agent/core/ngt: $(ROOTDIR)/metrics.gob
 
 $(ROOTDIR)/metrics.gob:
+	GOPRIVATE=$(GOPRIVATE) \
 	go test -mod=readonly -v --timeout=1h $(ROOTDIR)/hack/benchmark/e2e/agent/core/ngt/... -output=$(ROOTDIR)/metrics.gob
 
 .PHONY: metrics/chart

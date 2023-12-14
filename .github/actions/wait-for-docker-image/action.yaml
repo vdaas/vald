@@ -2,7 +2,7 @@
 # Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
+# You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
 #    https://www.apache.org/licenses/LICENSE-2.0
@@ -14,7 +14,8 @@
 # limitations under the License.
 #
 name: "Wait for Docker Images"
-description: "Wait for Docker images to be published"
+description: "A action to wait for Docker images to be published"
+
 inputs:
   images:
     description: "image names"
@@ -24,6 +25,7 @@ inputs:
       vdaas/vald-lb-gateway \
       vdaas/vald-manager-index"
 outputs: {}
+
 runs:
   using: "composite"
   steps:

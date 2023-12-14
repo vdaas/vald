@@ -2,7 +2,7 @@
 // Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -24,10 +24,10 @@ import (
 	"time"
 
 	"github.com/kpango/fastime"
-	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/http/rest"
 	"github.com/vdaas/vald/internal/safety"
+	"github.com/vdaas/vald/internal/sync/errgroup"
 )
 
 type timeout struct {
@@ -82,7 +82,7 @@ func (t *timeout) Wrap(h rest.Func) rest.Func {
 			if err != nil {
 				select {
 				case <-ctx.Done():
-					return http.StatusRequestTimeout, errors.ErrHandlerTimeout(errors.Wrap(ctx.Err(), err.Error()), time.Duration(fastime.UnixNanoNow()-start))
+					return http.StatusRequestTimeout, errors.ErrHandlerTimeout(errors.Join(ctx.Err(), err), time.Duration(fastime.UnixNanoNow()-start))
 				case code = <-sch:
 				}
 				err = errors.ErrHandler(err)

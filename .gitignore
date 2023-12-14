@@ -48,4 +48,10 @@ hack/go.mod.default3
 # for mac
 .DS_Store
 
+# for nvim
+.nvimlog
+
+# for vscode
+.vscode/
+
 telepresence.log

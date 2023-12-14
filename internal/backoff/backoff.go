@@ -2,7 +2,7 @@
 // Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -21,7 +21,6 @@ import (
 	"context"
 	"math"
 	"strconv"
-	"sync"
 	"time"
 
 	"github.com/vdaas/vald/internal/errors"
@@ -30,6 +29,7 @@ import (
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/rand"
 	"github.com/vdaas/vald/internal/strings"
+	"github.com/vdaas/vald/internal/sync"
 )
 
 // NOTE: This variable is for observability package.
@@ -130,7 +130,7 @@ func (b *backoff) Do(ctx context.Context, f func(ctx context.Context) (val inter
 				log.Debugf("[backoff]\tfor: "+name+",\tCanceled\terror: %v", err.Error())
 				return nil, err
 			default:
-				return nil, errors.Wrap(err, dctx.Err().Error())
+				return nil, errors.Join(err, dctx.Err())
 			}
 		default:
 			res, ret, err = func() (val interface{}, retryable bool, err error) {
@@ -174,7 +174,7 @@ func (b *backoff) Do(ctx context.Context, f func(ctx context.Context) (val inter
 					log.Debugf("[backoff]\tfor: "+name+",\tCanceled\terror: %v", err.Error())
 					return nil, err
 				default:
-					return nil, errors.Wrap(dctx.Err(), err.Error())
+					return nil, errors.Join(dctx.Err(), err)
 				}
 			case <-timer.C:
 				if dur >= b.durationLimit {

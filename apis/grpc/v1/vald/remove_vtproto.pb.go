@@ -2,7 +2,7 @@
 // Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -44,6 +44,8 @@ const _ = grpc.SupportPackageIsVersion7
 type RemoveClient interface {
 	// A method to remove an indexed vector.
 	Remove(ctx context.Context, in *payload.Remove_Request, opts ...grpc.CallOption) (*payload.Object_Location, error)
+	// A method to remove an indexed vector based on timestamp.
+	RemoveByTimestamp(ctx context.Context, in *payload.Remove_TimestampRequest, opts ...grpc.CallOption) (*payload.Object_Locations, error)
 	// A method to remove multiple indexed vectors by bidirectional streaming.
 	StreamRemove(ctx context.Context, opts ...grpc.CallOption) (Remove_StreamRemoveClient, error)
 	// A method to remove multiple indexed vectors in a single request.
@@ -61,6 +63,15 @@ func NewRemoveClient(cc grpc.ClientConnInterface) RemoveClient {
 func (c *removeClient) Remove(ctx context.Context, in *payload.Remove_Request, opts ...grpc.CallOption) (*payload.Object_Location, error) {
 	out := new(payload.Object_Location)
 	err := c.cc.Invoke(ctx, "/vald.v1.Remove/Remove", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *removeClient) RemoveByTimestamp(ctx context.Context, in *payload.Remove_TimestampRequest, opts ...grpc.CallOption) (*payload.Object_Locations, error) {
+	out := new(payload.Object_Locations)
+	err := c.cc.Invoke(ctx, "/vald.v1.Remove/RemoveByTimestamp", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -113,6 +124,8 @@ func (c *removeClient) MultiRemove(ctx context.Context, in *payload.Remove_Multi
 type RemoveServer interface {
 	// A method to remove an indexed vector.
 	Remove(context.Context, *payload.Remove_Request) (*payload.Object_Location, error)
+	// A method to remove an indexed vector based on timestamp.
+	RemoveByTimestamp(context.Context, *payload.Remove_TimestampRequest) (*payload.Object_Locations, error)
 	// A method to remove multiple indexed vectors by bidirectional streaming.
 	StreamRemove(Remove_StreamRemoveServer) error
 	// A method to remove multiple indexed vectors in a single request.
@@ -126,6 +139,9 @@ type UnimplementedRemoveServer struct {
 
 func (UnimplementedRemoveServer) Remove(context.Context, *payload.Remove_Request) (*payload.Object_Location, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Remove not implemented")
+}
+func (UnimplementedRemoveServer) RemoveByTimestamp(context.Context, *payload.Remove_TimestampRequest) (*payload.Object_Locations, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RemoveByTimestamp not implemented")
 }
 func (UnimplementedRemoveServer) StreamRemove(Remove_StreamRemoveServer) error {
 	return status.Errorf(codes.Unimplemented, "method StreamRemove not implemented")
@@ -160,6 +176,24 @@ func _Remove_Remove_Handler(srv interface{}, ctx context.Context, dec func(inter
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(RemoveServer).Remove(ctx, req.(*payload.Remove_Request))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Remove_RemoveByTimestamp_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(payload.Remove_TimestampRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RemoveServer).RemoveByTimestamp(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/vald.v1.Remove/RemoveByTimestamp",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RemoveServer).RemoveByTimestamp(ctx, req.(*payload.Remove_TimestampRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -220,6 +254,10 @@ var Remove_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Remove_Remove_Handler,
 		},
 		{
+			MethodName: "RemoveByTimestamp",
+			Handler:    _Remove_RemoveByTimestamp_Handler,
+		},
+		{
 			MethodName: "MultiRemove",
 			Handler:    _Remove_MultiRemove_Handler,
 		},
@@ -232,5 +270,5 @@ var Remove_ServiceDesc = grpc.ServiceDesc{
 			ClientStreams: true,
 		},
 	},
-	Metadata: "apis/proto/v1/vald/remove.proto",
+	Metadata: "v1/vald/remove.proto",
 }

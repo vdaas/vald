@@ -3,7 +3,7 @@
 # Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
+# You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
 #    https://www.apache.org/licenses/LICENSE-2.0
@@ -50,6 +50,8 @@ spec:
               mountPath: /var/lib/grafana/dashboards-vald/07
             - name: grafana-dashboards-vald-lb-gateway
               mountPath: /var/lib/grafana/dashboards-vald/08
+            - name: grafana-dashboards-vald-index-correction
+              mountPath: /var/lib/grafana/dashboards-vald/09
       volumes:
         - name: grafana-datasource-provider
           configMap:
@@ -83,3 +85,7 @@ spec:
           configMap:
             defaultMode: 420
             name: grafana-dashboards-vald-lb-gateway
+        - name: grafana-dashboards-vald-index-correction
+          configMap:
+            defaultMode: 420
+            name: grafana-dashboards-vald-index-correction

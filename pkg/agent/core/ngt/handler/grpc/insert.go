@@ -1,7 +1,7 @@
 // Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //	https://www.apache.org/licenses/LICENSE-2.0
@@ -72,8 +72,19 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (res *
 	err = s.ngt.InsertWithTime(vec.GetId(), vec.GetVector(), req.GetConfig().GetTimestamp())
 	if err != nil {
 		var attrs []attribute.KeyValue
-
-		if errors.Is(err, errors.ErrUUIDAlreadyExists(vec.GetId())) {
+		if errors.Is(err, errors.ErrFlushingIsInProgress) {
+			err = status.WrapWithAborted("Insert API aborted to process insert request due to flushing indices is in progress", err,
+				&errdetails.RequestInfo{
+					RequestId:   req.GetVector().GetId(),
+					ServingData: errdetails.Serialize(req),
+				},
+				&errdetails.ResourceInfo{
+					ResourceType: ngtResourceType + "/ngt.Insert",
+					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+				})
+			log.Warn(err)
+			attrs = trace.StatusCodeAborted(err.Error())
+		} else if errors.Is(err, errors.ErrUUIDAlreadyExists(vec.GetId())) {
 			err = status.WrapWithAlreadyExists(fmt.Sprintf("Insert API uuid %s already exists", vec.GetId()), err,
 				&errdetails.RequestInfo{
 					RequestId:   req.GetVector().GetId(),
@@ -225,7 +236,19 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 	err = s.ngt.InsertMultiple(vmap)
 	if err != nil {
 		var attrs []attribute.KeyValue
-		if alreadyExistsIDs := func() []string {
+		if errors.Is(err, errors.ErrFlushingIsInProgress) {
+			err = status.WrapWithAborted("MultiInsert API aborted to process insert request due to flushing indices is in progress", err,
+				&errdetails.RequestInfo{
+					RequestId:   strings.Join(uuids, ", "),
+					ServingData: errdetails.Serialize(reqs),
+				},
+				&errdetails.ResourceInfo{
+					ResourceType: ngtResourceType + "/ngt.MultiInsert",
+					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+				})
+			log.Warn(err)
+			attrs = trace.StatusCodeAborted(err.Error())
+		} else if alreadyExistsIDs := func() []string {
 			aids := make([]string, 0, len(uuids))
 			for _, id := range uuids {
 				if errors.Is(err, errors.ErrUUIDAlreadyExists(id)) {

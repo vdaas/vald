@@ -2,7 +2,7 @@
 // Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -18,10 +18,10 @@
 package rand
 
 import (
-	"sync"
 	"sync/atomic"
 
 	"github.com/kpango/fastime"
+	"github.com/vdaas/vald/internal/sync"
 )
 
 type rand struct {
@@ -45,6 +45,10 @@ func Uint32() (x uint32) {
 
 func LimitedUint32(max uint64) uint32 {
 	return uint32(uint64(Uint32()) * max >> 32)
+}
+
+func Float32() float32 {
+	return float32(Uint32()) / (1 << 32)
 }
 
 func (r *rand) Uint32() (x uint32) {

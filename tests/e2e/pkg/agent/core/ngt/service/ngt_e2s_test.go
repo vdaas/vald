@@ -1,8 +1,10 @@
+//go:build e2e
+
 //
 // Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -20,12 +22,12 @@ package service
 import (
 	"context"
 	"strconv"
-	"sync"
 	"testing"
 	"time"
 
 	"github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/sync"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/service"
 )
 
@@ -66,9 +68,9 @@ func registerVector(ctx context.Context, n service.NGT) error {
 	for i := int64(0); i < maxIDNum; i++ {
 		uuid := strconv.FormatInt(i, 10)
 
-		_, err := n.GetObject(uuid)
-		if err != nil {
-			return err
+		vec, _, err := n.GetObject(uuid)
+		if err != nil || len(vec) == 0 {
+			return errors.ErrObjectNotFound(err, uuid)
 		}
 	}
 	return nil
@@ -150,9 +152,9 @@ func Test_ngt_parallel_delete_and_insert(t *testing.T) {
 
 	for i := int64(0); i < maxIDNum; i++ {
 		uuid := strconv.FormatInt(i, 10)
-		_, err := n.GetObject(uuid)
-		if err != nil {
-			t.Error(err)
+		vec, _, err := n.GetObject(uuid)
+		if err != nil || len(vec) == 0 {
+			t.Error(errors.ErrObjectNotFound(err, uuid))
 		}
 		err = n.Insert(uuid, []float32{1, 2})
 		if err == nil {

@@ -1,7 +1,7 @@
 // Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //	https://www.apache.org/licenses/LICENSE-2.0
@@ -16,10 +16,10 @@ package circuitbreaker
 import (
 	"context"
 	"reflect"
-	"sync"
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/sync"
 )
 
 // NOTE: This variable is for observability package.
@@ -36,7 +36,7 @@ type CircuitBreaker interface {
 }
 
 type breakerManager struct {
-	m    sync.Map // breaker group. key: string, value: *breaker.
+	m    sync.Map[string, *breaker]
 	opts []BreakerOption
 }
 
@@ -72,24 +72,16 @@ func (bm *breakerManager) Do(ctx context.Context, key string, fn func(ctx contex
 		mu.Unlock()
 	}()
 
-	var br *breaker
 	// Pre-loading to prevent a lot of object generation.
-	obj, ok := bm.m.Load(key)
+	br, ok := bm.m.Load(key)
 	if !ok {
 		br, err = newBreaker(key, bm.opts...)
 		if err != nil {
 			return nil, err
 		}
-		obj, _ = bm.m.LoadOrStore(key, br)
+		br, _ = bm.m.LoadOrStore(key, br)
 	}
-	br, ok = obj.(*breaker)
-	if !ok {
-		br, err = newBreaker(key, bm.opts...)
-		if err != nil {
-			return nil, err
-		}
-		bm.m.Store(key, br)
-	}
+
 	val, st, err = br.do(ctx, fn)
 	if err != nil {
 		switch st {
@@ -97,11 +89,11 @@ func (bm *breakerManager) Do(ctx context.Context, key string, fn func(ctx contex
 			err = errors.Wrapf(err, "circuitbreaker state is %s, this error is not caused by circuitbreaker", st.String())
 		case StateOpen:
 			if !errors.Is(err, errors.ErrCircuitBreakerOpenState) {
-				err = errors.Wrap(err, errors.ErrCircuitBreakerOpenState.Error())
+				err = errors.Join(err, errors.ErrCircuitBreakerOpenState)
 			}
 		case StateHalfOpen:
 			if !errors.Is(err, errors.ErrCircuitBreakerHalfOpenFlowLimitation) {
-				err = errors.Wrap(err, errors.ErrCircuitBreakerHalfOpenFlowLimitation.Error())
+				err = errors.Join(err, errors.ErrCircuitBreakerHalfOpenFlowLimitation)
 			}
 		}
 		return val, err

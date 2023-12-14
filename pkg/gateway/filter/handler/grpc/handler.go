@@ -2,7 +2,7 @@
 // Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -21,7 +21,6 @@ import (
 	"context"
 	"fmt"
 	"strconv"
-	"sync"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
@@ -29,7 +28,6 @@ import (
 	"github.com/vdaas/vald/internal/client/v1/client/filter/ingress"
 	client "github.com/vdaas/vald/internal/client/v1/client/vald"
 	"github.com/vdaas/vald/internal/core/algorithm"
-	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/info"
 	"github.com/vdaas/vald/internal/log"
@@ -39,6 +37,8 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
+	"github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/internal/sync/errgroup"
 )
 
 type server struct {
@@ -261,10 +261,10 @@ func (s *server) MultiSearchObject(ctx context.Context, reqs *payload.Search_Mul
 						fmt.Sprintf(vald.MultiSearchObjectRPCName+" API object %s's search request result not found",
 							string(query.GetObject())), err, info.Get())
 				} else {
-					errs = errors.Wrap(errs,
+					errs = errors.Join(errs,
 						status.WrapWithNotFound(
 							fmt.Sprintf(vald.MultiSearchObjectRPCName+" API object %s's search request result not found",
-								string(query.GetObject())), err, info.Get()).Error())
+								string(query.GetObject())), err, info.Get()))
 				}
 				mu.Unlock()
 				return nil
@@ -504,10 +504,10 @@ func (s *server) MultiLinearSearchObject(ctx context.Context, reqs *payload.Sear
 						fmt.Sprintf(vald.LinearSearchObjectRPCName+" API object %s's search request result not found",
 							string(query.GetObject())), err, info.Get())
 				} else {
-					errs = errors.Wrap(errs,
+					errs = errors.Join(errs,
 						status.WrapWithNotFound(
 							fmt.Sprintf(vald.LinearSearchObjectRPCName+" API object %s's search request result not found",
-								string(query.GetObject())), err, info.Get()).Error())
+								string(query.GetObject())), err, info.Get()))
 				}
 				mu.Unlock()
 				return nil
@@ -817,10 +817,10 @@ func (s *server) MultiInsertObject(ctx context.Context, reqs *payload.Insert_Mul
 						fmt.Sprintf(vald.MultiInsertObjectRPCName+" API object id: %s's insert failed",
 							query.GetObject().GetId()), err, info.Get())
 				} else {
-					errs = errors.Wrap(errs,
+					errs = errors.Join(errs,
 						status.WrapWithNotFound(
 							fmt.Sprintf(vald.MultiInsertObjectRPCName+" API object id: %s's insert failed",
-								query.GetObject().GetId()), err, info.Get()).Error())
+								query.GetObject().GetId()), err, info.Get()))
 				}
 				mu.Unlock()
 				return nil
@@ -1070,10 +1070,10 @@ func (s *server) MultiUpdateObject(ctx context.Context, reqs *payload.Update_Mul
 						fmt.Sprintf("MultiUpdateObject API object id: %s's insert failed",
 							query.GetObject().GetId()), err, info.Get())
 				} else {
-					errs = errors.Wrap(errs,
+					errs = errors.Join(errs,
 						status.WrapWithNotFound(
 							fmt.Sprintf("MultiUpdateObject API object id: %s's insert failed",
-								query.GetObject().GetId()), err, info.Get()).Error())
+								query.GetObject().GetId()), err, info.Get()))
 				}
 				mu.Unlock()
 				return nil
@@ -1330,10 +1330,10 @@ func (s *server) MultiUpsertObject(ctx context.Context, reqs *payload.Upsert_Mul
 						fmt.Sprintf("MultiUpsertObject API object id: %s's insert failed",
 							query.GetObject().GetId()), err, info.Get())
 				} else {
-					errs = errors.Wrap(errs,
+					errs = errors.Join(errs,
 						status.WrapWithNotFound(
 							fmt.Sprintf("MultiUpsertObject API object id: %s's insert failed",
-								query.GetObject().GetId()), err, info.Get()).Error())
+								query.GetObject().GetId()), err, info.Get()))
 				}
 				mu.Unlock()
 				return nil
@@ -1754,10 +1754,10 @@ func (s *server) MultiSearch(ctx context.Context, reqs *payload.Search_MultiRequ
 						fmt.Sprintf("MultiSearch API vector %v's search request result not found",
 							query.GetVector()), err, info.Get())
 				} else {
-					errs = errors.Wrap(errs,
+					errs = errors.Join(errs,
 						status.WrapWithNotFound(
 							fmt.Sprintf("MultiSearch API vector %v's search request result not found",
-								query.GetVector()), err, info.Get()).Error())
+								query.GetVector()), err, info.Get()))
 				}
 				mu.Unlock()
 				return nil
@@ -1824,10 +1824,10 @@ func (s *server) MultiSearchByID(ctx context.Context, reqs *payload.Search_Multi
 						fmt.Sprintf("MultiSearchByID API id %s's search request result not found",
 							query.GetId()), err, info.Get())
 				} else {
-					errs = errors.Wrap(errs,
+					errs = errors.Join(errs,
 						status.WrapWithNotFound(
 							fmt.Sprintf("MultiSearchByID API id %s's search request result not found",
-								query.GetId()), err, info.Get()).Error())
+								query.GetId()), err, info.Get()))
 				}
 				mu.Unlock()
 				return nil
@@ -2223,10 +2223,10 @@ func (s *server) MultiLinearSearch(ctx context.Context, reqs *payload.Search_Mul
 						fmt.Sprintf("MultiLinearSearch API vector %v's search request result not found",
 							query.GetVector()), err, info.Get())
 				} else {
-					errs = errors.Wrap(errs,
+					errs = errors.Join(errs,
 						status.WrapWithNotFound(
 							fmt.Sprintf("MultiLinearSearch API vector %v's search request result not found",
-								query.GetVector()), err, info.Get()).Error())
+								query.GetVector()), err, info.Get()))
 				}
 				mu.Unlock()
 				return nil
@@ -2285,10 +2285,10 @@ func (s *server) MultiLinearSearchByID(ctx context.Context, reqs *payload.Search
 						fmt.Sprintf("MultiLinearSearchByID API id %s's search request result not found",
 							query.GetId()), err, info.Get())
 				} else {
-					errs = errors.Wrap(errs,
+					errs = errors.Join(errs,
 						status.WrapWithNotFound(
 							fmt.Sprintf("MultiLinearSearchByID API id %s's search request result not found",
-								query.GetId()), err, info.Get()).Error())
+								query.GetId()), err, info.Get()))
 				}
 				mu.Unlock()
 				return nil
@@ -2561,10 +2561,10 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 						fmt.Sprintf("MultiInsert API request %#v's Insert request result not found",
 							query), err, info.Get())
 				} else {
-					errs = errors.Wrap(errs,
+					errs = errors.Join(errs,
 						status.WrapWithNotFound(
 							fmt.Sprintf("MultiInsert API request %#v's Insert request result not found",
-								query), err, info.Get()).Error())
+								query), err, info.Get()))
 				}
 				mu.Unlock()
 				return nil
@@ -2816,10 +2816,10 @@ func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequ
 						fmt.Sprintf("MultiUpdate API request %#v's Update request result not found",
 							query), err, info.Get())
 				} else {
-					errs = errors.Wrap(errs,
+					errs = errors.Join(errs,
 						status.WrapWithNotFound(
 							fmt.Sprintf("MultiUpdate API request %#v's Update request result not found",
-								query), err, info.Get()).Error())
+								query), err, info.Get()))
 				}
 				mu.Unlock()
 				return nil
@@ -3072,10 +3072,10 @@ func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequ
 						fmt.Sprintf("MultiUpsert API request %#v's Upsert request result not found",
 							query), err, info.Get())
 				} else {
-					errs = errors.Wrap(errs,
+					errs = errors.Join(errs,
 						status.WrapWithNotFound(
 							fmt.Sprintf("MultiUpsert API request %#v's Upsert request result not found",
-								query), err, info.Get()).Error())
+								query), err, info.Get()))
 				}
 				mu.Unlock()
 				return nil
@@ -3095,7 +3095,40 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (loc *
 			span.End()
 		}
 	}()
-	return s.gateway.Remove(ctx, req, s.copts...)
+	loc, err = s.gateway.Remove(ctx, req, s.copts...)
+	if err != nil {
+		reqInfo := &errdetails.RequestInfo{
+			RequestId: req.GetId().GetId(),
+		}
+		resInfo := &errdetails.ResourceInfo{
+			ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+		}
+		if errors.Is(err, errors.ErrGRPCClientConnNotFound("*")) {
+			err = status.WrapWithInternal(
+				vald.RemoveRPCName+" API connection not found", err,
+				reqInfo,
+				resInfo,
+			)
+			if span != nil {
+				span.RecordError(err)
+				span.SetAttributes(trace.StatusCodeInternal(err.Error())...)
+				span.SetStatus(trace.StatusError, err.Error())
+			}
+			return nil, err
+		}
+		st, msg, err := status.ParseError(err, codes.Internal,
+			vald.RemoveRPCName+" gRPC error response",
+			reqInfo,
+			resInfo,
+		)
+		if span != nil {
+			span.RecordError(err)
+			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+			span.SetStatus(trace.StatusError, err.Error())
+		}
+		return nil, err
+	}
+	return loc, nil
 }
 
 func (s *server) StreamRemove(stream vald.Remove_StreamRemoveServer) (err error) {
@@ -3203,10 +3236,10 @@ func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequ
 						fmt.Sprintf("MultiRemove API id %s's Remove request result not found",
 							query.GetId()), err, info.Get())
 				} else {
-					errs = errors.Wrap(errs,
+					errs = errors.Join(errs,
 						status.WrapWithNotFound(
 							fmt.Sprintf("MultiRemove API id %s's Remove request result not found",
-								query.GetId()), err, info.Get()).Error())
+								query.GetId()), err, info.Get()))
 				}
 				mu.Unlock()
 				return nil
@@ -3217,6 +3250,59 @@ func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequ
 	}
 	wg.Wait()
 	return locs, errs
+}
+
+func (s *server) Flush(ctx context.Context, req *payload.Flush_Request) (loc *payload.Info_Index_Count, err error) {
+	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.FilterRPCServiceName+"/"+vald.FlushRPCName), apiName+"/"+vald.FlushRPCName)
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	return s.gateway.Flush(ctx, req, s.copts...)
+}
+
+func (s *server) RemoveByTimestamp(ctx context.Context, req *payload.Remove_TimestampRequest) (*payload.Object_Locations, error) {
+	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.FilterRPCServiceName+"/"+vald.RemoveByTimestampRPCName), apiName+"/"+vald.RemoveByTimestampRPCName)
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	locs, err := s.gateway.RemoveByTimestamp(ctx, req, s.copts...)
+	if err != nil {
+		reqInfo := &errdetails.RequestInfo{
+			ServingData: errdetails.Serialize(req),
+		}
+		resInfo := &errdetails.ResourceInfo{
+			ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+		}
+		if errors.Is(err, errors.ErrGRPCClientConnNotFound("*")) {
+			err = status.WrapWithInternal(
+				vald.RemoveByTimestampRPCName+" API connection not found", err,
+				reqInfo,
+				resInfo,
+			)
+			if span != nil {
+				span.RecordError(err)
+				span.SetAttributes(trace.StatusCodeInternal(err.Error())...)
+				span.SetStatus(trace.StatusError, err.Error())
+			}
+			return nil, err
+		}
+		st, msg, err := status.ParseError(err, codes.Internal,
+			vald.RemoveByTimestampRPCName+" gRPC error response",
+			reqInfo,
+			resInfo,
+		)
+		if span != nil {
+			span.RecordError(err)
+			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+			span.SetStatus(trace.StatusError, err.Error())
+		}
+		return nil, err
+	}
+	return locs, nil
 }
 
 func (s *server) GetObject(ctx context.Context, req *payload.Object_VectorRequest) (vec *payload.Object_Vector, err error) {

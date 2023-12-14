@@ -2,7 +2,7 @@
 // Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -69,5 +69,15 @@ var (
 	// ErrInvalidProtoMessageType represents an error that the gRPC protocol buffers message type is invalid.
 	ErrInvalidProtoMessageType = func(v interface{}) error {
 		return Errorf("failed to marshal/unmarshal proto message, message type is %T (missing vtprotobuf/protobuf helpers)", v)
+	}
+
+	// ErrServerStreamClientRecv represents a function to generate an error that the gRPC client couldn't receive from stream.
+	ErrServerStreamClientRecv = func(err error) error {
+		return Wrap(err, "gRPC client failed to receive from stream")
+	}
+
+	// ErrServerStreamClientSend represents a function to generate an error that the gRPC server couldn't send to stream.
+	ErrServerStreamServerSend = func(err error) error {
+		return Wrap(err, "gRPC server failed to send to stream")
 	}
 )

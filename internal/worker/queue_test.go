@@ -2,7 +2,7 @@
 // Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -24,9 +24,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/google/go-cmp/cmp"
-	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/sync/errgroup"
+	"github.com/vdaas/vald/internal/test/comparator"
 	"github.com/vdaas/vald/internal/test/goleak"
 )
 
@@ -72,15 +72,15 @@ func TestNewQueue(t *testing.T) {
 		atomicComparator := func(want, got atomic.Value) bool {
 			return reflect.DeepEqual(want.Load(), got.Load())
 		}
-		opts := []cmp.Option{
-			cmp.AllowUnexported(*(w.want).(*queue)),
-			cmp.Comparer(egComparator),
-			cmp.Comparer(atomicComparator),
-			cmp.Comparer(func(want, got chan JobFunc) bool {
+		opts := []comparator.Option{
+			comparator.AllowUnexported(*(w.want).(*queue)),
+			comparator.Comparer(egComparator),
+			comparator.Comparer(atomicComparator),
+			comparator.Comparer(func(want, got chan JobFunc) bool {
 				return len(want) == len(got)
 			}),
 		}
-		if diff := cmp.Diff(w.want, got, opts...); diff != "" {
+		if diff := comparator.Diff(w.want, got, opts...); diff != "" {
 			return errors.Errorf("diff = %s", diff)
 		}
 		return nil
@@ -904,3 +904,5 @@ func Test_queue_Len(t *testing.T) {
 		})
 	}
 }
+
+// NOT IMPLEMENTED BELOW

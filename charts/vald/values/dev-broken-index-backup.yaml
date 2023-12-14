@@ -1,0 +1,98 @@
+#
+# Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# You may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+defaults:
+  image:
+    tag: nightly
+  server_config:
+    metrics:
+      pprof:
+        enabled: true
+    servers:
+      grpc:
+        server:
+          grpc:
+            interceptors:
+              - RecoverInterceptor
+              - TraceInterceptor
+              - MetricInterceptor
+  grpc:
+    client:
+      dial_option:
+        interceptors:
+          - TraceInterceptor
+  observability:
+    enabled: true
+    otlp:
+      collector_endpoint: "opentelemetry-collector-collector.default.svc.cluster.local:4317"
+    trace:
+      enabled: true
+
+gateway:
+  lb:
+    podAnnotations:
+      profefe.com/enable: "true"
+      profefe.com/port: "6060"
+      profefe.com/service: "vald-lb-gateway"
+    resources:
+      requests:
+        cpu: 100m
+        memory: 50Mi
+
+agent:
+  podAnnotations:
+    profefe.com/enable: "true"
+    profefe.com/port: "6060"
+    profefe.com/service: "vald-agent-ngt"
+  minReplicas: 5
+  maxReplicas: 10
+  podManagementPolicy: Parallel
+  resources:
+    requests:
+      cpu: 100m
+      memory: 50Mi
+  ngt:
+    dimension: 784
+    index_path: "/var/ngt/index"
+    enable_in_memory_mode: false
+    broken_index_history_limit: 3
+  persistentVolume:
+    enabled: true
+    # For local-path-provisioner, we cannot use ReadWriteOncePod because it is not supported.
+    accessMode: ReadWriteOnce
+    storageClass: local-path
+    size: 1Gi
+
+discoverer:
+  podAnnotations:
+    profefe.com/enable: "true"
+    profefe.com/port: "6060"
+    profefe.com/service: "vald-discoverer"
+  resources:
+    requests:
+      cpu: 100m
+      memory: 50Mi
+
+manager:
+  index:
+    podAnnotations:
+      profefe.com/enable: "true"
+      profefe.com/port: "6060"
+      profefe.com/service: "vald-manager-index"
+    resources:
+      requests:
+        cpu: 100m
+        memory: 30Mi

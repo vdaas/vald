@@ -20,7 +20,7 @@ service Upsert {
 
 ## Upsert RPC
 
-Upsert RPC is the method to update a single vector and add a new single vector.
+Upsert RPC is the method to update the inserted vector to a new single vector or add a new single vector if not inserted before.
 
 ### Input
 
@@ -50,26 +50,26 @@ Upsert RPC is the method to update a single vector and add a new single vector.
 
   - Upsert.Request
 
-    | field  | type          | label | required | desc.                                   |
-    | :----: | :------------ | :---- | :------: | :-------------------------------------- |
-    | vector | Object.Vector |       |    \*    | the information of vector               |
-    | config | Config        |       |    \*    | the configuration of the upsert request |
+    | field  | type          | label | required | description                              |
+    | :----: | :------------ | :---- | :------: | :--------------------------------------- |
+    | vector | Object.Vector |       |    \*    | The information of vector.               |
+    | config | Config        |       |    \*    | The configuration of the update request. |
 
   - Upsert.Config
 
-    |          field           | type          | label | required | desc.                                                                                                |
-    | :----------------------: | :------------ | :---- | :------: | :--------------------------------------------------------------------------------------------------- |
-    | skip_strict_exist_check  | bool          |       |          | check the same vector is already inserted or not.<br>the ID should be unique if the value is `true`. |
-    |        timestamp         | int64         |       |          | the timestamp of the vector updated/inserted.<br>if it is N/A, the current time will be used.        |
-    |         filters          | Filter.Config |       |          | configuration for filter                                                                             |
-    | disabled_balanced_update | bool          |       |          | A flag to disable balanced update (split remove -&gt; insert operation) during update operation.     |
+    |          field          | type          | label | required | description                                                                                                   |
+    | :---------------------: | :------------ | :---- | :------: | :------------------------------------------------------------------------------------------------------------ |
+    | skip_strict_exist_check | bool          |       |          | Check whether the same vector is already inserted or not.<br> The ID should be unique if the value is `true`. |
+    |        timestamp        | int64         |       |          | The timestamp of the vector inserted.<br>If it is N/A, the current time will be used.                         |
+    |         filters         | Filter.Config |       |          | Configuration for filter.                                                                                     |
+    | disable_balanced_update | bool          |       |          | A flag to disable balanced update (split remove -&gt; insert operation) during update operation.              |
 
   - Object.Vector
 
-    | field  | type   | label                  | required | desc.                                                          |
+    | field  | type   | label                  | required | description                                                    |
     | :----: | :----- | :--------------------- | :------: | :------------------------------------------------------------- |
-    |   id   | string |                        |    \*    | the ID of a vector. ID should consist of 1 or more characters. |
-    | vector | float  | repeated(Array[float]) |    \*    | the vector data. its dimension is between 2 and 65,536.        |
+    |   id   | string |                        |    \*    | The ID of a vector. ID should consist of 1 or more characters. |
+    | vector | float  | repeated(Array[float]) |    \*    | The vector data. Its dimension is between 2 and 65,536.        |
 
 ### Output
 
@@ -87,27 +87,44 @@ Upsert RPC is the method to update a single vector and add a new single vector.
 
   - Object.Location
 
-    | field | type   | label                   | desc.                                                                          |
+    | field | type   | label                   | description                                                                    |
     | :---: | :----- | :---------------------- | :----------------------------------------------------------------------------- |
-    | name  | string |                         | the name of vald agent pod where the request vector is updated/inserted.       |
-    | uuid  | string |                         | the ID of the updated/inserted vector. It is the same as an `Object.Vector`.   |
-    |  ips  | string | repeated(Array[string]) | the IP list of `vald-agent` pods where the request vector is updated/inserted. |
+    | name  | string |                         | The name of vald agent pod where the request vector is updated/inserted.       |
+    | uuid  | string |                         | The ID of the updated/inserted vector. It is the same as an `Object.Vector`.   |
+    |  ips  | string | repeated(Array[string]) | The IP list of `vald-agent` pods where the request vector is updated/inserted. |
 
 ### Status Code
 
-| code | desc.             |
+| code | name              |
 | :--: | :---------------- |
 |  0   | OK                |
 |  1   | CANCELLED         |
 |  3   | INVALID_ARGUMENT  |
 |  4   | DEADLINE_EXCEEDED |
 |  6   | ALREADY_EXISTS    |
+|  10  | ABORTED           |
 |  13  | INTERNAL          |
+
+Please refer to [Response Status Code](./status.md) for more details.
+
+### Troubleshooting
+
+The request process may not be completed when the response code is NOT `0 (OK)`.
+
+Here are some common reasons and how to resolve each error.
+
+| name              | common reason                                                                                                                                       | how to resolve                                                                           |
+| :---------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
+| CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                                                     | Check the code, especially around timeout and connection management, and fix if needed.  |
+| INVALID_ARGUMENT  | The Dimension of the request vector is NOT the same as Vald Agent's config, the requested vector's ID is empty, or some request payload is invalid. | Check Agent config, request payload, and fix request payload or Agent config.            |
+| DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                                                     | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
+| ALREADY_EXISTS    | Requested pair of ID and vector is already inserted                                                                                                 | Change request payload or nothing to do if update is unnecessary.                        |
+| INTERNAL          | Target Vald cluster or network route has some critical error.                                                                                       | Check target Vald cluster first and check network route including ingress as second.     |
 
 ## StreamUpsert RPC
 
 StreamUpsert RPC is the method to update multiple existing vectors or add new multiple vectors using the [bidirectional streaming RPC](https://grpc.io/docs/what-is-grpc/core-concepts/#bidirectional-streaming-rpc).<br>
-By using the bidirectional streaming RPC, the upsert request can be communicated in any order between client and server.
+Using the bidirectional streaming RPC, the upsert request can be communicated in any order between the client and server.
 Each Upsert request and response are independent.
 It’s the recommended method to upsert a large number of vectors.
 
@@ -138,26 +155,26 @@ It’s the recommended method to upsert a large number of vectors.
 
   - Upsert.Request
 
-    | field  | type          | label | required | desc.                                   |
-    | :----: | :------------ | :---- | :------: | :-------------------------------------- |
-    | vector | Object.Vector |       |    \*    | the information of vector               |
-    | config | Config        |       |    \*    | the configuration of the upsert request |
+    | field  | type          | label | required | description                              |
+    | :----: | :------------ | :---- | :------: | :--------------------------------------- |
+    | vector | Object.Vector |       |    \*    | The information of vector.               |
+    | config | Config        |       |    \*    | The configuration of the update request. |
 
   - Upsert.Config
 
-    |          field           | type          | label | required | desc.                                                                                                |
-    | :----------------------: | :------------ | :---- | :------: | :--------------------------------------------------------------------------------------------------- |
-    | skip_strict_exist_check  | bool          |       |          | check the same vector is already inserted or not.<br>the ID should be unique if the value is `true`. |
-    |        timestamp         | int64         |       |          | the timestamp of the vector updated/inserted.<br>if it is N/A, the current time will be used.        |
-    |         filters          | Filter.Config |       |          | configuration for filter                                                                             |
-    | disabled_balanced_update | bool          |       |          | A flag to disable balanced update (split remove -&gt; insert operation) during update operation.     |
+    |          field          | type          | label | required | description                                                                                                   |
+    | :---------------------: | :------------ | :---- | :------: | :------------------------------------------------------------------------------------------------------------ |
+    | skip_strict_exist_check | bool          |       |          | Check whether the same vector is already inserted or not.<br> The ID should be unique if the value is `true`. |
+    |        timestamp        | int64         |       |          | The timestamp of the vector inserted.<br>If it is N/A, the current time will be used.                         |
+    |         filters         | Filter.Config |       |          | Configuration for filter.                                                                                     |
+    | disable_balanced_update | bool          |       |          | A flag to disable balanced update (split remove -&gt; insert operation) during update operation.              |
 
   - Object.Vector
 
-    | field  | type   | label                  | required | desc.                                                            |
-    | :----: | :----- | :--------------------- | :------: | :--------------------------------------------------------------- |
-    |   id   | string |                        |    \*    | the ID of the vector. ID should consist of 1 or more characters. |
-    | vector | float  | repeated(Array[float]) |    \*    | the vector data. its dimension is between 2 and 65,536.          |
+    | field  | type   | label                  | required | description                                                    |
+    | :----: | :----- | :--------------------- | :------: | :------------------------------------------------------------- |
+    |   id   | string |                        |    \*    | The ID of a vector. ID should consist of 1 or more characters. |
+    | vector | float  | repeated(Array[float]) |    \*    | The vector data. Its dimension is between 2 and 65,536.        |
 
 ### Output
 
@@ -182,37 +199,54 @@ It’s the recommended method to upsert a large number of vectors.
 
   - Object.StreamLocation
 
-    |  field   | type              | label | desc.                                    |
+    |  field   | type              | label | description                              |
     | :------: | :---------------- | :---- | :--------------------------------------- |
-    | location | Object.Location   |       | the information of Object.Location data. |
-    |  status  | google.rpc.Status |       | the status of google RPC.                |
+    | location | Object.Location   |       | The information of Object.Location data. |
+    |  status  | google.rpc.Status |       | The status of Google RPC.                |
 
   - Object.Location
 
-    | field | type   | label                   | desc.                                                                          |
+    | field | type   | label                   | description                                                                    |
     | :---: | :----- | :---------------------- | :----------------------------------------------------------------------------- |
-    | name  | string |                         | the name of vald agent pod where the request vector is updated/inserted.       |
-    | uuid  | string |                         | the ID of the updated/inserted vector. It is the same as an `Object.Vector`.   |
-    |  ips  | string | repeated(Array[string]) | the IP list of `vald-agent` pods where the request vector is updated/inserted. |
+    | name  | string |                         | The name of vald agent pod where the request vector is updated/inserted.       |
+    | uuid  | string |                         | The ID of the updated/inserted vector. It is the same as an `Object.Vector`.   |
+    |  ips  | string | repeated(Array[string]) | The IP list of `vald-agent` pods where the request vector is updated/inserted. |
 
   - [google.rpc.Status](https://github.com/googleapis/googleapis/blob/master/google/rpc/status.proto)
 
-    |  field  | type                | label                | desc.                                   |
+    |  field  | type                | label                | description                             |
     | :-----: | :------------------ | :------------------- | :-------------------------------------- |
-    |  code   | int32               |                      | status code (code list is next section) |
-    | message | string              |                      | error message                           |
-    | details | google.protobuf.Any | repeated(Array[any]) | the details error message list          |
+    |  code   | int32               |                      | Status code (code list is next section) |
+    | message | string              |                      | Error message                           |
+    | details | google.protobuf.Any | repeated(Array[any]) | The details error message list          |
 
 ### Status Code
 
-| code | desc.             |
+| code | name              |
 | :--: | :---------------- |
 |  0   | OK                |
 |  1   | CANCELLED         |
 |  3   | INVALID_ARGUMENT  |
 |  4   | DEADLINE_EXCEEDED |
 |  6   | ALREADY_EXISTS    |
+|  10  | ABORTED           |
 |  13  | INTERNAL          |
+
+Please refer to [Response Status Code](./status.md) for more details.
+
+### Troubleshooting
+
+The request process may not be completed when the response code is NOT `0 (OK)`.
+
+Here are some common reasons and how to resolve each error.
+
+| name              | common reason                                                                                                                                       | how to resolve                                                                           |
+| :---------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
+| CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                                                     | Check the code, especially around timeout and connection management, and fix if needed.  |
+| INVALID_ARGUMENT  | The Dimension of the request vector is NOT the same as Vald Agent's config, the requested vector's ID is empty, or some request payload is invalid. | Check Agent config, request payload, and fix request payload or Agent config.            |
+| DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                                                     | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
+| ALREADY_EXISTS    | Requested pair of ID and vector is already inserted                                                                                                 | Change request payload or nothing to do if update is unnecessary.                        |
+| INTERNAL          | Target Vald cluster or network route has some critical error.                                                                                       | Check target Vald cluster first and check network route including ingress as second.     |
 
 ## MultiUpsert RPC
 
@@ -253,32 +287,32 @@ Please be careful that the size of the request exceeds the limit.
 
   - Upsert.MultiRequest
 
-    |  field   | type           | label                           | required | desc.            |
-    | :------: | :------------- | :------------------------------ | :------: | :--------------- |
-    | requests | Upsert.Request | repeated(Array[Insert.Request]) |    \*    | the request list |
+    |  field   | type           | label                           | required | description       |
+    | :------: | :------------- | :------------------------------ | :------: | :---------------- |
+    | requests | Upsert.Request | repeated(Array[Insert.Request]) |    \*    | The request list. |
 
   - Upsert.Request
 
-    | field  | type          | label | required | desc.                                   |
-    | :----: | :------------ | :---- | :------: | :-------------------------------------- |
-    | vector | Object.Vector |       |    \*    | the information of vector               |
-    | config | Config        |       |    \*    | the configuration of the upsert request |
+    | field  | type          | label | required | description                              |
+    | :----: | :------------ | :---- | :------: | :--------------------------------------- |
+    | vector | Object.Vector |       |    \*    | The information of vector.               |
+    | config | Config        |       |    \*    | The configuration of the update request. |
 
   - Upsert.Config
 
-    |          field           | type          | label | required | desc.                                                                                                        |
-    | :----------------------: | :------------ | :---- | :------: | :----------------------------------------------------------------------------------------------------------- |
-    | skip_strict_exist_check  | bool          |       |          | check the same vector is already updated/inserted or not.<br>the ID should be unique if the value is `true`. |
-    |        timestamp         | int64         |       |          | the timestamp of the vector updated/inserted.<br>if it is N/A, the current time will be used.                |
-    |         filters          | Filter.Config |       |          | configuration for filter                                                                                     |
-    | disabled_balanced_update | bool          |       |          | A flag to disable balanced update (split remove -&gt; insert operation) during update operation.             |
+    |          field          | type          | label | required | description                                                                                                   |
+    | :---------------------: | :------------ | :---- | :------: | :------------------------------------------------------------------------------------------------------------ |
+    | skip_strict_exist_check | bool          |       |          | Check whether the same vector is already inserted or not.<br> The ID should be unique if the value is `true`. |
+    |        timestamp        | int64         |       |          | The timestamp of the vector inserted.<br>If it is N/A, the current time will be used.                         |
+    |         filters         | Filter.Config |       |          | Configuration for filter.                                                                                     |
+    | disable_balanced_update | bool          |       |          | A flag to disable balanced update (split remove -&gt; insert operation) during update operation.              |
 
   - Object.Vector
 
-    | field  | type   | label                  | required | desc.                                                          |
+    | field  | type   | label                  | required | description                                                    |
     | :----: | :----- | :--------------------- | :------: | :------------------------------------------------------------- |
-    |   id   | string |                        |    \*    | the ID of a vector. ID should consist of 1 or more characters. |
-    | vector | float  | repeated(Array[float]) |    \*    | the vector data. its dimension is between 2 and 65,536.        |
+    |   id   | string |                        |    \*    | The ID of a vector. ID should consist of 1 or more characters. |
+    | vector | float  | repeated(Array[float]) |    \*    | The vector data. Its dimension is between 2 and 65,536.        |
 
 ### Output
 
@@ -298,25 +332,42 @@ Please be careful that the size of the request exceeds the limit.
 
   - Object.Locations
 
-    |  field   | type            | label                            | desc.                         |
-    | :------: | :-------------- | :------------------------------- | :---------------------------- |
-    | location | Object.Location | repeated(Array[Object.Location]) | the list of `Object.Location` |
+    |  field   | type            | label                            | description                    |
+    | :------: | :-------------- | :------------------------------- | :----------------------------- |
+    | location | Object.Location | repeated(Array[Object.Location]) | The list of `Object.Location`. |
 
   - Object.Location
 
-    | field | type   | label                   | desc.                                                                          |
+    | field | type   | label                   | description                                                                    |
     | :---: | :----- | :---------------------- | :----------------------------------------------------------------------------- |
-    | name  | string |                         | the name of vald agent pod where the request vector is updated/inserted.       |
-    | uuid  | string |                         | the ID of the updated/inserted vector. It is the same as an `Object.Vector`.   |
-    |  ips  | string | repeated(Array[string]) | the IP list of `vald-agent` pods where the request vector is updated/inserted. |
+    | name  | string |                         | The name of vald agent pod where the request vector is updated/inserted.       |
+    | uuid  | string |                         | The ID of the updated/inserted vector. It is the same as an `Object.Vector`.   |
+    |  ips  | string | repeated(Array[string]) | The IP list of `vald-agent` pods where the request vector is updated/inserted. |
 
 ### Status Code
 
-| code | desc.             |
+| code | name              |
 | :--: | :---------------- |
 |  0   | OK                |
 |  1   | CANCELLED         |
 |  3   | INVALID_ARGUMENT  |
 |  4   | DEADLINE_EXCEEDED |
 |  6   | ALREADY_EXISTS    |
+|  10  | ABORTED           |
 |  13  | INTERNAL          |
+
+Please refer to [Response Status Code](./status.md) for more details.
+
+### Troubleshooting
+
+The request process may not be completed when the response code is NOT `0 (OK)`.
+
+Here are some common reasons and how to resolve each error.
+
+| name              | common reason                                                                                                                                       | how to resolve                                                                           |
+| :---------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
+| CANCELLED         | Executed cancel() of rpc from client/server-side or network problems between client and server.                                                     | Check the code, especially around timeout and connection management, and fix if needed.  |
+| INVALID_ARGUMENT  | The Dimension of the request vector is NOT the same as Vald Agent's config, the requested vector's ID is empty, or some request payload is invalid. | Check Agent config, request payload, and fix request payload or Agent config.            |
+| DEADLINE_EXCEEDED | The RPC timeout setting is too short on the client/server side.                                                                                     | Check the gRPC timeout setting on both the client and server sides and fix it if needed. |
+| ALREADY_EXISTS    | Requested pair of ID and vector is already inserted                                                                                                 | Change request payload or nothing to do if update is unnecessary.                        |
+| INTERNAL          | Target Vald cluster or network route has some critical error.                                                                                       | Check target Vald cluster first and check network route including ingress as second.     |

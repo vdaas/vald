@@ -2,7 +2,7 @@
 # Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
+# You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
 #    https://www.apache.org/licenses/LICENSE-2.0
@@ -23,27 +23,27 @@ $(BINDIR)/golangci-lint:
 		| sh -s -- -b $(BINDIR) $(GOLANGCILINT_VERSION)
 
 .PHONY: goimports/install
-goimports/install: $(GOPATH)/bin/goimports
+goimports/install: $(GOBIN)/goimports
 
-$(GOPATH)/bin/goimports:
+$(GOBIN)/goimports:
 	$(call go-install, golang.org/x/tools/cmd/goimports)
 
 .PHONY: strictgoimports/install
-strictgoimports/install: $(GOPATH)/bin/strictgoimports
+strictgoimports/install: $(GOBIN)/strictgoimports
 
-$(GOPATH)/bin/strictgoimports:
+$(GOBIN)/strictgoimports:
 	$(call go-install, github.com/momotaro98/strictgoimports/cmd/strictgoimports)
 
 .PHONY: gofumpt/install
-gofumpt/install: $(GOPATH)/bin/gofumpt
+gofumpt/install: $(GOBIN)/gofumpt
 
-$(GOPATH)/bin/gofumpt:
+$(GOBIN)/gofumpt:
 	$(call go-install, mvdan.cc/gofumpt)
 
 .PHONY: golines/install
-golines/install: $(GOPATH)/bin/golines
+golines/install: $(GOBIN)/golines
 
-$(GOPATH)/bin/golines:
+$(GOBIN)/golines:
 	$(call go-install, github.com/segmentio/golines)
 
 .PHONY: prettier/install
@@ -62,41 +62,9 @@ $(BINDIR)/reviewdog:
 .PHONY: kubectl/install
 kubectl/install: $(BINDIR)/kubectl
 
-## WARNING: choas-mesh install.sh check_kubernetes()
-## This version information is deprecated and will be replaced with the output from kubectl version --short.
-## https://github.com/chaos-mesh/chaos-mesh/blob/master/install.sh#L291
-.PHONY: kubectl/install/linux/v1.23.6
-kubectl/install/linux/v1.23.6:
-	curl -L "https://storage.googleapis.com/kubernetes-release/release/v1.23.6/bin/linux/amd64/kubectl" -o $(ROOTDIR)/kubectl
-	chmod a+x $(ROOTDIR)/kubectl
-	mv $(ROOTDIR)/kubectl $(BINDIR)/kubectl
-
-ifeq ($(UNAME),Darwin)
 $(BINDIR)/kubectl:
-	curl -L "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/darwin/amd64/kubectl" -o $(BINDIR)/kubectl
+	curl -L "https://dl.k8s.io/release/$(KUBECTL_VERSION)/bin/$(shell echo $(UNAME) | tr '[:upper:]' '[:lower:]')/$(subst x86_64,amd64,$(shell echo $(ARCH) | tr '[:upper:]' '[:lower:]'))/kubectl" -o $(BINDIR)/kubectl
 	chmod a+x $(BINDIR)/kubectl
-else
-$(BINDIR)/kubectl:
-	curl -L "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl" -o $(BINDIR)/kubectl
-	chmod a+x $(BINDIR)/kubectl
-endif
-
-.PHONY: protobuf/install
-protobuf/install: $(BINDIR)/protoc
-
-ifeq ($(UNAME),Darwin)
-$(BINDIR)/protoc:
-	curl -L "https://github.com/protocolbuffers/protobuf/releases/download/v$(PROTOBUF_VERSION)/protoc-$(PROTOBUF_VERSION)-osx-x86_64.zip" -o /tmp/protoc.zip
-	sudo unzip -o /tmp/protoc.zip -d /usr/local bin/protoc
-	sudo unzip -o /tmp/protoc.zip -d /usr/local 'include/*'
-	rm -f /tmp/protoc.zip
-else
-$(BINDIR)/protoc:
-	curl -L "https://github.com/protocolbuffers/protobuf/releases/download/v$(PROTOBUF_VERSION)/protoc-$(PROTOBUF_VERSION)-linux-x86_64.zip" -o /tmp/protoc.zip
-	unzip -o /tmp/protoc.zip -d /usr/local bin/protoc
-	unzip -o /tmp/protoc.zip -d /usr/local 'include/*'
-	rm -f /tmp/protoc.zip
-endif
 
 .PHONY: textlint/install
 textlint/install:
@@ -106,3 +74,24 @@ textlint/install:
 textlint/ci/install:
 	npm init -y
 	npm install --save-dev textlint textlint-rule-en-spell textlint-rule-prh textlint-rule-write-good
+
+.PHONY: buf/install
+buf/install: $(BINDIR)/buf
+
+$(BINDIR)/buf:
+	curl -sSL \
+	"https://github.com/bufbuild/buf/releases/download/$(BUF_VERSION)/buf-$(shell uname -s)-$(shell uname -m)" \
+	-o "${BINDIR}/buf" && \
+	chmod +x "${BINDIR}/buf"
+
+.PHONY: k9s/install
+k9s/install: $(GOPATH)/bin/k9s
+
+$(GOPATH)/bin/k9s:
+	$(call go-install, github.com/derailed/k9s)
+
+.PHONY: stern/install
+stern/install: $(GOPATH)/bin/stern
+
+$(GOPATH)/bin/stern:
+	$(call go-install, github.com/stern/stern)

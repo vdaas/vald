@@ -2,7 +2,7 @@
 // Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -21,7 +21,6 @@ import (
 	"context"
 	"net"
 	"strconv"
-	"sync"
 	"sync/atomic"
 	"syscall"
 	"time"
@@ -33,6 +32,7 @@ import (
 	"github.com/vdaas/vald/internal/net/control"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
+	"github.com/vdaas/vald/internal/sync"
 	"github.com/vdaas/vald/internal/tls"
 )
 
@@ -44,7 +44,7 @@ type Dialer interface {
 }
 
 type dialer struct {
-	dnsCache              cacher.Cache
+	dnsCache              cacher.Cache[*dialerCache]
 	enableDNSCache        bool
 	dnsCachedOnce         sync.Once
 	tlsConfig             *tls.Config
@@ -59,7 +59,7 @@ type dialer struct {
 	ctrl                  control.SocketController
 	sockFlg               control.SocketFlag
 	dialerDualStack       bool
-	addrs                 sync.Map
+	addrs                 sync.Map[string, *addrInfo]
 	der                   *net.Dialer
 	dialer                func(ctx context.Context, network, addr string) (Conn, error)
 }
@@ -121,9 +121,9 @@ func NewDialer(opts ...DialerOption) (der Dialer, err error) {
 		}
 		if d.dnsCache == nil {
 			if d.dnsCache, err = cache.New(
-				cache.WithExpireDuration(d.dnsCacheExpirationStr),
-				cache.WithExpireCheckDuration(d.dnsRefreshDurationStr),
-				cache.WithExpiredHook(d.cacheExpireHook),
+				cache.WithExpireDuration[*dialerCache](d.dnsCacheExpirationStr),
+				cache.WithExpireCheckDuration[*dialerCache](d.dnsRefreshDurationStr),
+				cache.WithExpiredHook[*dialerCache](d.cacheExpireHook),
 			); err != nil {
 				return nil, err
 			}
@@ -146,10 +146,8 @@ func (d *dialer) GetDialer() func(ctx context.Context, network, addr string) (Co
 
 func (d *dialer) lookup(ctx context.Context, host string) (dc *dialerCache, err error) {
 	if d.enableDNSCache {
-		dnsCache, ok := d.dnsCache.Get(host)
-		if ok && dnsCache != nil {
-			dc, ok = dnsCache.(*dialerCache)
-			if ok && dc != nil && len(dc.ips) > 0 {
+		if dc, ok := d.dnsCache.Get(host); ok {
+			if dc != nil && len(dc.ips) > 0 {
 				return dc, nil
 			}
 		}
@@ -256,12 +254,9 @@ func (d *dialer) cachedDialer(ctx context.Context, network, addr string) (conn C
 			isIP: isV4 || isV6,
 		})
 	} else {
-		info, ok := ai.(*addrInfo)
-		if ok {
-			host = info.host
-			port = info.port
-			isIP = info.isIP
-		}
+		host = ai.host
+		port = ai.port
+		isIP = ai.isIP
 	}
 
 	if d.enableDNSCache && !isIP {
@@ -316,7 +311,7 @@ func (d *dialer) dial(ctx context.Context, network, addr string) (conn Conn, err
 		defer func(conn Conn) {
 			if conn != nil {
 				if err != nil {
-					err = errors.Wrap(conn.Close(), err.Error())
+					err = errors.Join(conn.Close(), err)
 					return
 				}
 				err = conn.Close()
@@ -414,7 +409,7 @@ func (d *dialer) tlsHandshake(ctx context.Context, conn Conn, network, addr stri
 			defer func(conn Conn) {
 				if conn != nil {
 					if err != nil {
-						err = errors.Wrap(conn.Close(), err.Error())
+						err = errors.Join(conn.Close(), err)
 						return
 					}
 					err = conn.Close()

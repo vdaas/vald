@@ -1,7 +1,7 @@
 // Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //	https://www.apache.org/licenses/LICENSE-2.0
@@ -17,19 +17,19 @@ import (
 	"context"
 	"os"
 	"reflect"
-	"sync"
 	"testing"
 	"time"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/core/algorithm/ngt"
-	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/file"
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/net/grpc/status"
+	"github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/internal/test/comparator"
 	"github.com/vdaas/vald/internal/test/data/request"
 	"github.com/vdaas/vald/internal/test/data/vector"
@@ -627,7 +627,12 @@ func Test_server_SaveIndex(t *testing.T) {
 			if err != nil {
 				return err
 			}
-			if !reflect.DeepEqual(obj, ir.GetVector()) {
+
+			// FIXME: remove these 2 lines after migrating Config.Timestamp to Vector.Timestamp
+			wantVec := ir.GetVector()
+			wantVec.Timestamp = obj.Timestamp
+
+			if !reflect.DeepEqual(obj, wantVec) {
 				return errors.Errorf("vector is not match, got: %v, want: %v", obj, ir)
 			}
 		}
@@ -1156,6 +1161,11 @@ func Test_server_CreateAndSaveIndex(t *testing.T) {
 			if err != nil {
 				return err
 			}
+
+			// FIXME: remove these 2 lines after migrating Config.Timestamp to Vector.Timestamp
+			wantVec := ir.GetVector()
+			wantVec.Timestamp = obj.Timestamp
+
 			if !reflect.DeepEqual(obj, ir.GetVector()) {
 				return errors.Errorf("vector is not match, got: %v, want: %v", obj, ir)
 			}
@@ -2462,3 +2472,5 @@ func Test_server_IndexInfo(t *testing.T) {
 		})
 	}
 }
+
+// NOT IMPLEMENTED BELOW

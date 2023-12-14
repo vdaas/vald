@@ -1,7 +1,7 @@
 // Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //	https://www.apache.org/licenses/LICENSE-2.0
@@ -28,6 +28,7 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/strings"
+	"github.com/vdaas/vald/internal/sync"
 	"go.opentelemetry.io/otel/attribute"
 )
 
@@ -70,7 +71,19 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (res *
 	err = s.ngt.DeleteWithTime(uuid, req.GetConfig().GetTimestamp())
 	if err != nil {
 		var attrs []attribute.KeyValue
-		if errors.Is(err, errors.ErrObjectIDNotFound(uuid)) {
+		if errors.Is(err, errors.ErrFlushingIsInProgress) {
+			err = status.WrapWithAborted("Remove API aborted to process remove request due to flushing indices is in progress", err,
+				&errdetails.RequestInfo{
+					RequestId:   uuid,
+					ServingData: errdetails.Serialize(req),
+				},
+				&errdetails.ResourceInfo{
+					ResourceType: ngtResourceType + "/ngt.Remove",
+					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+				})
+			log.Warn(err)
+			attrs = trace.StatusCodeAborted(err.Error())
+		} else if errors.Is(err, errors.ErrObjectIDNotFound(uuid)) {
 			err = status.WrapWithNotFound(fmt.Sprintf("Remove API uuid %s not found", uuid), err,
 				&errdetails.RequestInfo{
 					RequestId:   uuid,
@@ -187,7 +200,19 @@ func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequ
 	err = s.ngt.DeleteMultiple(uuids...)
 	if err != nil {
 		var attrs []attribute.KeyValue
-		if notFoundIDs := func() []string {
+		if errors.Is(err, errors.ErrFlushingIsInProgress) {
+			err = status.WrapWithAborted("MultiRemove API aborted to process remove request due to flushing indices is in progress", err,
+				&errdetails.RequestInfo{
+					RequestId:   strings.Join(uuids, ", "),
+					ServingData: errdetails.Serialize(reqs),
+				},
+				&errdetails.ResourceInfo{
+					ResourceType: ngtResourceType + "/ngt.MultiRemove",
+					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+				})
+			log.Warn(err)
+			attrs = trace.StatusCodeAborted(err.Error())
+		} else if notFoundIDs := func() []string {
 			aids := make([]string, 0, len(uuids))
 			for _, id := range uuids {
 				if errors.Is(err, errors.ErrObjectIDNotFound(id)) {
@@ -248,4 +273,126 @@ func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequ
 		return nil, err
 	}
 	return s.newLocations(uuids...), nil
+}
+
+func (s *server) RemoveByTimestamp(ctx context.Context, req *payload.Remove_TimestampRequest) (locs *payload.Object_Locations, errs error) {
+	ctx, span := trace.StartSpan(ctx, apiName+"/"+vald.RemoveByTimestampRPCName)
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+
+	var mu, emu sync.Mutex
+	locs = new(payload.Object_Locations)
+
+	timestampOpFn := timestampOpsFunc(req.GetTimestamps())
+	s.ngt.ListObjectFunc(ctx, func(uuid string, oid uint32, timestamp int64) bool {
+		if !timestampOpFn(timestamp) {
+			return true
+		}
+		res, err := s.Remove(ctx, &payload.Remove_Request{
+			Id: &payload.Object_ID{
+				Id: uuid,
+			},
+		})
+		if err != nil {
+			emu.Lock()
+			errs = errors.Join(errs, err)
+			emu.Lock()
+		}
+		if res != nil {
+			mu.Lock()
+			locs.Locations = append(locs.Locations, res)
+			mu.Unlock()
+		}
+		return true
+	})
+	if errs != nil {
+		st, msg, err := status.ParseError(errs, codes.Internal,
+			"failed to parse "+vald.RemoveByTimestampRPCName+" gRPC error response",
+			&errdetails.RequestInfo{
+				ServingData: errdetails.Serialize(req),
+			},
+			&errdetails.ResourceInfo{
+				ResourceType: ngtResourceType + "/ngt.Remove",
+				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+			},
+		)
+		log.Error(err)
+		if span != nil {
+			span.RecordError(err)
+			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+			span.SetStatus(trace.StatusError, err.Error())
+		}
+		return nil, err
+	}
+	if locs == nil || len(locs.GetLocations()) == 0 {
+		err := status.WrapWithNotFound(
+			vald.RemoveByTimestampRPCName+" API remove target not found", errors.ErrIndexNotFound,
+			&errdetails.RequestInfo{
+				ServingData: errdetails.Serialize(req),
+			},
+			&errdetails.ResourceInfo{
+				ResourceType: ngtResourceType + "/ngt.Remove",
+				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+			},
+		)
+		log.Error(err)
+		if span != nil {
+			span.RecordError(err)
+			span.SetAttributes(trace.StatusCodeNotFound(err.Error())...)
+			span.SetStatus(trace.StatusError, err.Error())
+		}
+		return nil, err
+	}
+	return locs, nil
+}
+
+func timestampOpsFunc(ts []*payload.Remove_Timestamp) func(int64) bool {
+	fns := make([]func(int64) bool, 0, len(ts))
+	for _, t := range ts {
+		fns = append(fns, timestampOpFunc(t))
+	}
+	return func(t int64) bool {
+		for _, fn := range fns {
+			if !fn(t) {
+				return false
+			}
+		}
+		return true
+	}
+}
+
+func timestampOpFunc(ts *payload.Remove_Timestamp) func(int64) bool {
+	switch ts.GetOperator() {
+	case payload.Remove_Timestamp_Eq:
+		return func(t int64) bool {
+			return ts.GetTimestamp() == t
+		}
+	case payload.Remove_Timestamp_Ne:
+		return func(t int64) bool {
+			return ts.GetTimestamp() != t
+		}
+	case payload.Remove_Timestamp_Ge:
+		return func(t int64) bool {
+			return ts.GetTimestamp() <= t
+		}
+	case payload.Remove_Timestamp_Gt:
+		return func(t int64) bool {
+			return ts.GetTimestamp() < t
+		}
+	case payload.Remove_Timestamp_Le:
+		return func(t int64) bool {
+			return ts.GetTimestamp() >= t
+		}
+	case payload.Remove_Timestamp_Lt:
+		return func(t int64) bool {
+			return ts.GetTimestamp() > t
+		}
+	default:
+		return func(timestamp int64) bool {
+			return false
+		}
+	}
 }

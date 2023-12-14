@@ -2,7 +2,7 @@
 // Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -60,7 +60,7 @@ func (l *lz4Compressor) CompressVector(vector []float32) (b []byte, err error) {
 		cerr := zw.Close()
 		if cerr != nil {
 			b = nil
-			err = errors.Wrap(err, cerr.Error())
+			err = errors.Join(err, cerr)
 		}
 	}()
 
@@ -142,7 +142,7 @@ func (l *lz4Writer) Write(p []byte) (n int, err error) {
 func (l *lz4Writer) Close() (err error) {
 	err = l.w.Close()
 	if err != nil {
-		return errors.Wrap(l.dst.Close(), err.Error())
+		return errors.Join(l.dst.Close(), err)
 	}
 
 	return l.dst.Close()

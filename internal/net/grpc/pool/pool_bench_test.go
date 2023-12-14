@@ -2,7 +2,7 @@
 // Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -19,7 +19,6 @@ package pool
 
 import (
 	"context"
-	"sync"
 	"testing"
 
 	"github.com/vdaas/vald/apis/grpc/v1/discoverer"
@@ -27,22 +26,24 @@ import (
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/log/level"
 	"github.com/vdaas/vald/internal/net"
+	"github.com/vdaas/vald/internal/sync"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
 
 const (
 	DefaultServerAddr = "localhost:5001"
-	DefaultPoolSize   = 10
+	DefaultPoolSize   = 4
 )
 
 type server struct {
 	discoverer.DiscovererServer
 }
 
-func init() {
+func TestMain(m *testing.M) {
 	testing.Init()
 	log.Init(log.WithLevel(level.ERROR.String()))
+	m.Run()
 }
 
 func (*server) Pods(context.Context, *payload.Discoverer_Request) (*payload.Info_Pods, error) {
@@ -60,6 +61,7 @@ func (*server) Nodes(context.Context, *payload.Discoverer_Request) (*payload.Inf
 }
 
 func ListenAndServe(b *testing.B, addr string) func() {
+	b.Helper()
 	lis, err := net.Listen("tcp", addr)
 	if err != nil {
 		b.Error(err)
@@ -132,7 +134,7 @@ func Benchmark_StaticDial(b *testing.B) {
 		b.Error(err)
 	}
 
-	conns := new(sync.Map)
+	conns := new(sync.Map[string, *grpc.ClientConn])
 	conns.Store(DefaultServerAddr, conn)
 
 	b.StopTimer()
@@ -142,7 +144,7 @@ func Benchmark_StaticDial(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		val, ok := conns.Load(DefaultServerAddr)
 		if ok {
-			do(b, val.(*ClientConn))
+			do(b, val)
 		}
 	}
 	b.StopTimer()
@@ -189,7 +191,7 @@ func BenchmarkParallel_StaticDial(b *testing.B) {
 		b.Error(err)
 	}
 
-	conns := new(sync.Map)
+	conns := new(sync.Map[string, *grpc.ClientConn])
 	conns.Store(DefaultServerAddr, conn)
 
 	b.StopTimer()
@@ -200,7 +202,7 @@ func BenchmarkParallel_StaticDial(b *testing.B) {
 		for pb.Next() {
 			val, ok := conns.Load(DefaultServerAddr)
 			if ok {
-				do(b, val.(*ClientConn))
+				do(b, val)
 			}
 		}
 	})

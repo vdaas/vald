@@ -67,6 +67,12 @@ Please make sure these functions are available.<br>
 The configuration of Kubernetes Ingress is depended on your Kubernetes cluster's provider.
 Please refer to on yourself.
 
+In the following example, we create the Kubernetes cluster using [k3d](https://k3d.io/), that the internal port 80 (where the traefik ingress controller is listening on) is exposed on the host system.
+
+```bash
+k3d cluster create -p 8081:80@loadbalancer
+```
+
 The way to deploy Kubernetes Metrics Service is here:
 
 ```bash
@@ -108,7 +114,7 @@ In this tutorial, you will deploy the basic configuration of Vald that is consis
          enabled: true
          # TODO: Set your ingress host.
          host: localhost
-         # TODO: Set annotations which you have to set for your k8s cluster.
+         # TODO: Set annotations which you have to set for your Ingress resource.
          annotations:
            ...
    ```
@@ -164,8 +170,8 @@ In this tutorial, you will deploy the basic configuration of Vald that is consis
    <details><summary>Example output</summary><br>
 
    ```bash
-   NAME                      CLASS    HOSTS       ADDRESS        PORTS   AGE
-   vald-lb-gateway-ingress   <none>   localhost   192.168.16.2   80      7m43s
+   NAME                      CLASS     HOSTS       ADDRESS        PORTS   AGE
+   vald-lb-gateway-ingress   traefik   localhost   192.168.16.2   80      7m43s
    ```
 
    </details>
@@ -253,9 +259,9 @@ If you are interested, please refer to [SDKs](../user-guides/sdks.md).<br>
               "github.com/kpango/glg"
               "github.com/vdaas/vald-client-go/v1/payload"
               "github.com/vdaas/vald-client-go/v1/vald"
-
               "gonum.org/v1/hdf5"
               "google.golang.org/grpc"
+              "google.golang.org/grpc/credentials/insecure"
           )
           ```
 
@@ -323,7 +329,7 @@ If you are interested, please refer to [SDKs](../user-guides/sdks.md).<br>
         ```go
         ctx := context.Background()
 
-        conn, err := grpc.DialContext(ctx, grpcServerAddr, grpc.WithInsecure())
+        conn, err := grpc.DialContext(ctx, grpcServerAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
         if err != nil {
             glg.Fatal(err)
         }
@@ -404,11 +410,11 @@ If you are interested, please refer to [SDKs](../user-guides/sdks.md).<br>
 
     1.  Remove
 
-        - Remove 400 indexed training datasets from the Vald agent.
+        - Remove 200 indexed training datasets from the Vald agent.
             <details><summary>example code</summary><br>
 
           ```go
-          for i := range ids [:insertCount] {
+          for i := range ids [:removeCount] {
               _, err := client.Remove(ctx, &payload.Remove_Request{
                   Id: &payload.Object_ID{
                       Id: ids[i],
@@ -421,6 +427,20 @@ If you are interested, please refer to [SDKs](../user-guides/sdks.md).<br>
                   glg.Infof("Removed %d", i)
               }
           }
+          ```
+
+            </details>
+
+    1.  Flush
+
+        - Remove all remaining training datasets from the Vald agent.
+            <details><summary>example code</summary><br>
+
+          ```go
+          _, err := client.Flush(ctx, &payload.Flush_Request{})
+          if err != nil {
+		            glg.Fatal(err)
+		        }
           ```
 
             </details>

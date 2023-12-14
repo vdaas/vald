@@ -3,7 +3,7 @@
 // Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //	https://www.apache.org/licenses/LICENSE-2.0
@@ -27,11 +27,6 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/keepalive"
 )
-
-type client struct {
-	host string
-	port int
-}
 
 type Dataset struct {
 	Train     [][]float32
@@ -88,6 +83,8 @@ type Client interface {
 	Update(t *testing.T, ctx context.Context, ds Dataset) error
 	Upsert(t *testing.T, ctx context.Context, ds Dataset) error
 	Remove(t *testing.T, ctx context.Context, ds Dataset) error
+	Flush(t *testing.T, ctx context.Context) error
+	RemoveByTimestamp(t *testing.T, ctx context.Context, timestamp int64) error
 	InsertWithParameters(
 		t *testing.T,
 		ctx context.Context,
@@ -131,15 +128,19 @@ type Client interface {
 	MultiUpsert(t *testing.T, ctx context.Context, ds Dataset) error
 	MultiRemove(t *testing.T, ctx context.Context, ds Dataset) error
 	GetObject(t *testing.T, ctx context.Context, ds Dataset) error
+	StreamListObject(t *testing.T, ctx context.Context, ds Dataset) error
 	Exists(t *testing.T, ctx context.Context, id string) error
 	CreateIndex(t *testing.T, ctx context.Context) error
 	SaveIndex(t *testing.T, ctx context.Context) error
 	IndexInfo(t *testing.T, ctx context.Context) (*payload.Info_Index_Count, error)
 }
 
-const (
-	defaultSearchTimeout = 4 * int64(time.Second)
-)
+type client struct {
+	host string
+	port int
+}
+
+var _ Client = (*client)(nil)
 
 func New(host string, port int) (Client, error) {
 	return &client{
@@ -227,4 +228,20 @@ func (c *client) recall(results []string, neighbors []int) (recall float64) {
 	}
 
 	return recall / float64(len(neighbors))
+}
+
+type JobExecutor interface {
+	CreateAndWait(t *testing.T, ctx context.Context, jobName string) error
+}
+
+type cronJobExecute struct {
+	cronJob string
+}
+
+var _ JobExecutor = (*cronJobExecute)(nil)
+
+func NewCronJobExecutor(cronJob string) JobExecutor {
+	return &cronJobExecute{
+		cronJob: cronJob,
+	}
 }

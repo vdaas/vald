@@ -2,7 +2,7 @@
 # Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
+# You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
 #    https://www.apache.org/licenses/LICENSE-2.0
@@ -13,29 +13,40 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
+JAEGER_OPERATOR_WAIT_DURATION := 0
+
 .PHONY: k8s/manifest/clean
 ## clean k8s manifests
 k8s/manifest/clean:
 	rm -rf \
-	    k8s/agent \
-	    k8s/discoverer \
-	    k8s/gateway \
-	    k8s/manager
+		k8s/agent \
+		k8s/discoverer \
+		k8s/gateway \
+		k8s/manager \
+		k8s/index
 
 .PHONY: k8s/manifest/update
 ## update k8s manifests using helm templates
 k8s/manifest/update: \
 	k8s/manifest/clean
 	helm template \
-	    --values charts/vald/values/dev.yaml \
-	    --output-dir $(TEMP_DIR) \
-	    charts/vald
+		--values $(HELM_VALUES) \
+		$(HELM_EXTRA_OPTIONS) \
+		--output-dir $(TEMP_DIR) \
+		charts/vald
 	mkdir -p k8s/gateway
 	mkdir -p k8s/manager
+	mkdir -p k8s/index/job
+	mkdir -p k8s/index/job/readreplica
 	mv $(TEMP_DIR)/vald/templates/agent k8s/agent
 	mv $(TEMP_DIR)/vald/templates/discoverer k8s/discoverer
 	mv $(TEMP_DIR)/vald/templates/gateway/lb k8s/gateway/lb
 	mv $(TEMP_DIR)/vald/templates/manager/index k8s/manager/index
+	mv $(TEMP_DIR)/vald/templates/index/job/correction k8s/index/job/correction
+	mv $(TEMP_DIR)/vald/templates/index/job/creation k8s/index/job/creation
+	mv $(TEMP_DIR)/vald/templates/index/job/save k8s/index/job/save
+	mv $(TEMP_DIR)/vald/templates/index/job/readreplica/rotate k8s/index/job/readreplica/rotate
 	rm -rf $(TEMP_DIR)
 
 .PHONY: k8s/manifest/helm-operator/clean
@@ -61,7 +72,7 @@ k8s/manifest/helm-operator/update: \
 ## deploy vald sample cluster to k8s
 k8s/vald/deploy:
 	helm template \
-	    --values charts/vald/values/dev.yaml \
+	    --values $(HELM_VALUES) \
 	    --set defaults.image.tag=$(VERSION) \
 	    --set agent.image.repository=$(CRORG)/$(AGENT_IMAGE) \
 	    --set agent.sidecar.image.repository=$(CRORG)/$(AGENT_SIDECAR_IMAGE) \
@@ -69,12 +80,21 @@ k8s/vald/deploy:
 	    --set gateway.filter.image.repository=$(CRORG)/$(FILTER_GATEWAY_IMAGE) \
 	    --set gateway.lb.image.repository=$(CRORG)/$(LB_GATEWAY_IMAGE) \
 	    --set manager.index.image.repository=$(CRORG)/$(MANAGER_INDEX_IMAGE) \
+	    --set manager.index.creator.image.repository=$(CRORG)/$(INDEX_CREATION_IMAGE) \
+	    --set manager.index.saver.image.repository=$(CRORG)/$(INDEX_SAVE_IMAGE) \
+	    $(HELM_EXTRA_OPTIONS) \
 	    --output-dir $(TEMP_DIR) \
 	    charts/vald
-	kubectl apply -f $(TEMP_DIR)/vald/templates/manager/index
-	kubectl apply -f $(TEMP_DIR)/vald/templates/agent
-	kubectl apply -f $(TEMP_DIR)/vald/templates/discoverer
-	kubectl apply -f $(TEMP_DIR)/vald/templates/gateway/lb
+	@echo "Permitting error because there's some cases nothing to apply"
+	kubectl apply -f $(TEMP_DIR)/vald/templates/manager/index || true
+	kubectl apply -f $(TEMP_DIR)/vald/templates/agent || true
+	kubectl apply -f $(TEMP_DIR)/vald/templates/agent/readreplica || true
+	kubectl apply -f $(TEMP_DIR)/vald/templates/discoverer || true
+	kubectl apply -f $(TEMP_DIR)/vald/templates/gateway/lb || true
+	kubectl apply -f $(TEMP_DIR)/vald/templates/index/job/correction || true
+	kubectl apply -f $(TEMP_DIR)/vald/templates/index/job/creation || true
+	kubectl apply -f $(TEMP_DIR)/vald/templates/index/job/save || true
+	kubectl apply -f $(TEMP_DIR)/vald/templates/index/job/readreplica/rotate || true
 	rm -rf $(TEMP_DIR)
 	kubectl get pods -o jsonpath="{.items[*].spec.containers[*].image}" | tr " " "\n"
 
@@ -82,7 +102,7 @@ k8s/vald/deploy:
 ## delete vald sample cluster from k8s
 k8s/vald/delete:
 	helm template \
-	    --values charts/vald/values/dev.yaml \
+	    --values $(HELM_VALUES) \
 	    --set defaults.image.tag=$(VERSION) \
 	    --set agent.image.repository=$(CRORG)/$(AGENT_IMAGE) \
 	    --set agent.sidecar.image.repository=$(CRORG)/$(AGENT_SIDECAR_IMAGE) \
@@ -92,9 +112,16 @@ k8s/vald/delete:
 	    --set manager.index.image.repository=$(CRORG)/$(MANAGER_INDEX_IMAGE) \
 	    --output-dir $(TEMP_DIR) \
 	    charts/vald
+	kubectl delete -f $(TEMP_DIR)/vald/templates/index/job/readreplica/rotate
+	kubectl delete -f $(TEMP_DIR)/vald/templates/index/job/save
+	kubectl delete -f $(TEMP_DIR)/vald/templates/index/job/creation
+	kubectl delete -f $(TEMP_DIR)/vald/templates/index/job/correction
+	kubectl delete -f $(TEMP_DIR)/vald/templates/index/job/creation
+	kubectl delete -f $(TEMP_DIR)/vald/templates/index/job/save
 	kubectl delete -f $(TEMP_DIR)/vald/templates/gateway/lb
 	kubectl delete -f $(TEMP_DIR)/vald/templates/manager/index
 	kubectl delete -f $(TEMP_DIR)/vald/templates/discoverer
+	kubectl delete -f $(TEMP_DIR)/vald/templates/agent/readreplica || true
 	kubectl delete -f $(TEMP_DIR)/vald/templates/agent
 	rm -rf $(TEMP_DIR)
 
@@ -104,6 +131,7 @@ k8s/vald-helm-operator/deploy:
 	helm template \
 	    --output-dir $(TEMP_DIR) \
 	    --set image.tag=$(VERSION) \
+	    $(HELM_EXTRA_OPTIONS) \
 	    --include-crds \
 	    charts/vald-helm-operator
 	kubectl create -f $(TEMP_DIR)/vald-helm-operator/crds/valdrelease.yaml
@@ -132,7 +160,7 @@ k8s/vr/deploy: \
 	k8s/metrics/metrics-server/deploy
 	yq eval \
 	    '{"apiVersion": "vald.vdaas.org/v1", "kind": "ValdRelease", "metadata":{"name":"vald-cluster"}, "spec": .}' \
-	    charts/vald/values/dev.yaml \
+	    $(HELM_VALUES) \
 	    | kubectl apply -f -
 
 .PHONY: k8s/vr/delete
@@ -222,17 +250,18 @@ k8s/metrics/grafana/delete:
 .PHONY: k8s/metrics/jaeger/deploy
 ## deploy jaeger
 k8s/metrics/jaeger/deploy:
-	kubectl apply -f https://raw.githubusercontent.com/jaegertracing/helm-charts/jaeger-operator-$(JAEGER_OPERATOR_VERSION)/charts/jaeger-operator/crds/crd.yaml
-	kubectl apply -f k8s/metrics/jaeger/jaeger-operator
+	helm repo add jaegertracing https://jaegertracing.github.io/helm-charts
+	helm install jaeger jaegertracing/jaeger-operator --version $(JAEGER_OPERATOR_VERSION)
 	kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=jaeger-operator --timeout=60s
-	kubectl apply -f k8s/metrics/jaeger/jaeger
+	kubectl wait --for=condition=available deployment/jaeger-jaeger-operator --timeout=60s
+	sleep $(JAEGER_OPERATOR_WAIT_DURATION)
+	kubectl apply -f k8s/metrics/jaeger/jaeger.yaml
 
 .PHONY: k8s/metrics/jaeger/delete
 ## delete jaeger
 k8s/metrics/jaeger/delete:
-	kubectl delete -f k8s/metrics/jaeger/jaeger
-	kubectl delete -f k8s/metrics/jaeger/jaeger-operator
-	kubectl delete -f https://raw.githubusercontent.com/jaegertracing/helm-charts/jaeger-operator-$(JAEGER_OPERATOR_VERSION)/charts/jaeger-operator/crds/crd.yaml
+	kubectl delete -f k8s/metrics/jaeger
+	helm uninstall jaeger
 
 .PHONY: k8s/metrics/loki/deploy
 ## deploy loki and promtail
@@ -299,45 +328,58 @@ k8s/linkerd/deploy:
 k8s/linkerd/delete:
 	linkerd install --ignore-cluster | kubectl delete -f -
 
-.PHONY: k8s/otel/operator/install
+.PHONY: k8s/otel/operator/deploy
 ## deploy opentelemetry operator
-k8s/otel/operator/install:
+k8s/otel/operator/deploy:
 	helm repo add open-telemetry https://open-telemetry.github.io/opentelemetry-helm-charts
 	helm install ${OTEL_OPERATOR_RELEASE_NAME} open-telemetry/opentelemetry-operator --set installCRDs=true --version ${OTEL_OPERATOR_VERSION}
 	kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=opentelemetry-operator --timeout=60s
+	sleep 10
 
-.PHONY: k8s/otel/operator/uninstall
+.PHONY: k8s/otel/operator/delete
 ## delete opentelemetry operator
-k8s/otel/operator/uninstall:
+k8s/otel/operator/delete:
 	helm uninstall ${OTEL_OPERATOR_RELEASE_NAME}
 
-.PHONY: k8s/otel/collector/install
+.PHONY: k8s/otel/collector/deploy
 ## deploy opentelemetry collector
-k8s/otel/collector/install:
+k8s/otel/collector/deploy:
 	kubectl apply -f $(ROOTDIR)/k8s/metrics/otel/collector.yaml
 	kubectl apply -f $(ROOTDIR)/k8s/metrics/otel/pod-monitor.yaml
 
-.PHONY: k8s/otel/collector/uninstall
+.PHONY: k8s/otel/collector/delete
 ## delete opentelemetry collector
-k8s/otel/collector/uninstall:
+k8s/otel/collector/delete:
 	kubectl delete -f $(ROOTDIR)/k8s/metrics/otel/collector.yaml
 	kubectl delete -f $(ROOTDIR)/k8s/metrics/otel/pod-monitor.yaml
+
+.PHONY: k8s/monitoring/deploy
+## deploy monitoring stack
+k8s/monitoring/deploy: \
+	k8s/metrics/jaeger/deploy \
+	k8s/metrics/prometheus/operator/deploy \
+	k8s/metrics/grafana/deploy \
+	k8s/otel/operator/deploy \
+	k8s/otel/collector/deploy
+
+.PHONY: k8s/monitoring/delete
+## delete monitoring stack
+k8s/monitoring/delete: \
+	k8s/otel/collector/delete \
+	k8s/otel/operator/delete \
+	k8s/metrics/grafana/delete \
+	k8s/metrics/jaeger/delete \
+	k8s/metrics/prometheus/operator/delete \
 
 .PHONY: telepresence/install
 ## install telepresence
 telepresence/install: $(BINDIR)/telepresence
 
 $(BINDIR)/telepresence:
-	@if echo $(BINDIR) | grep -v '^/' > /dev/null; then \
-	    printf "\x1b[31m%s\x1b[0m\n" "WARNING!! BINDIR must be absolute path"; \
-	    exit 1; \
-	fi
 	mkdir -p $(BINDIR)
-	curl -L "https://github.com/telepresenceio/telepresence/archive/$(TELEPRESENCE_VERSION).tar.gz" -o telepresence.tar.gz
-	tar xzvf telepresence.tar.gz
-	rm -rf telepresence.tar.gz
-	env PREFIX=$(BINDIR:%/bin=%) telepresence-$(TELEPRESENCE_VERSION)/install.sh
-	rm -rf telepresence-$(TELEPRESENCE_VERSION)
+	cd $(TEMP_DIR) \
+	    && curl -fsSL "https://app.getambassador.io/download/tel2oss/releases/download/v$(TELEPRESENCE_VERSION)/telepresence-$(shell echo $(UNAME) | tr '[:upper:]' '[:lower:]')-$(subst x86_64,amd64,$(shell echo $(ARCH) | tr '[:upper:]' '[:lower:]'))" -o $(BINDIR)/telepresence \
+	    && chmod a+x $(BINDIR)/telepresence
 
 .PHONY: telepresence/swap/agent-ngt
 ## swap agent-ngt deployment using telepresence
@@ -363,18 +405,8 @@ telepresence/swap/lb-gateway:
 ## install kubelinter
 kubelinter/install: $(BINDIR)/kube-linter
 
-ifeq ($(UNAME),Darwin)
 $(BINDIR)/kube-linter:
 	mkdir -p $(BINDIR)
 	cd $(TEMP_DIR) \
-	    && curl -LO https://github.com/stackrox/kube-linter/releases/download/$(KUBELINTER_VERSION)/kube-linter-darwin \
-	    && mv kube-linter-darwin $(BINDIR)/kube-linter \
+	    && curl -L https://github.com/stackrox/kube-linter/releases/download/$(KUBELINTER_VERSION)/kube-linter-$(shell echo $(UNAME) | tr '[:upper:]' '[:lower:]') -o $(BINDIR)/kube-linter \
 	    && chmod a+x $(BINDIR)/kube-linter
-else
-$(BINDIR)/kube-linter:
-	mkdir -p $(BINDIR)
-	cd $(TEMP_DIR) \
-	    && curl -LO https://github.com/stackrox/kube-linter/releases/download/$(KUBELINTER_VERSION)/kube-linter-linux \
-	    && mv kube-linter-linux $(BINDIR)/kube-linter \
-	    && chmod a+x $(BINDIR)/kube-linter
-endif

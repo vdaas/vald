@@ -2,7 +2,7 @@
 # Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
+# You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
 #    https://www.apache.org/licenses/LICENSE-2.0
@@ -26,21 +26,12 @@ $(BINDIR)/helm:
 ## install helm-docs
 helm-docs/install: $(BINDIR)/helm-docs
 
-ifeq ($(UNAME),Darwin)
 $(BINDIR)/helm-docs:
 	mkdir -p $(BINDIR)
 	cd $(TEMP_DIR) \
-	    && curl -LO https://github.com/norwoodj/helm-docs/releases/download/v$(HELM_DOCS_VERSION)/helm-docs_$(HELM_DOCS_VERSION)_Darwin_x86_64.tar.gz \
-	    && tar xzvf helm-docs_$(HELM_DOCS_VERSION)_Darwin_x86_64.tar.gz \
+	    && curl -LO https://github.com/norwoodj/helm-docs/releases/download/v$(HELM_DOCS_VERSION)/helm-docs_$(HELM_DOCS_VERSION)_$(UNAME)_$(ARCH).tar.gz \
+	    && tar xzvf helm-docs_$(HELM_DOCS_VERSION)_$(UNAME)_$(ARCH).tar.gz \
 	    && mv helm-docs $(BINDIR)/helm-docs
-else
-$(BINDIR)/helm-docs:
-	mkdir -p $(BINDIR)
-	cd $(TEMP_DIR) \
-	    && curl -LO https://github.com/norwoodj/helm-docs/releases/download/v$(HELM_DOCS_VERSION)/helm-docs_$(HELM_DOCS_VERSION)_Linux_x86_64.tar.gz \
-	    && tar xzvf helm-docs_$(HELM_DOCS_VERSION)_Linux_x86_64.tar.gz \
-	    && mv helm-docs $(BINDIR)/helm-docs
-endif
 
 .PHONY: helm/package/vald
 ## packaging Helm chart for Vald
@@ -103,21 +94,11 @@ charts/vald-helm-operator/values.schema.json: \
 ## install yq
 yq/install: $(BINDIR)/yq
 
-ifeq ($(UNAME),Darwin)
 $(BINDIR)/yq:
 	mkdir -p $(BINDIR)
 	cd $(TEMP_DIR) \
-	    && curl -Lo yq https://github.com/mikefarah/yq/releases/download/$(YQ_VERSION)/yq_darwin_amd64 \
-	    && chmod a+x yq \
-	    && mv yq $(BINDIR)/yq
-else
-$(BINDIR)/yq:
-	mkdir -p $(BINDIR)
-	cd $(TEMP_DIR) \
-	    && curl -Lo yq https://github.com/mikefarah/yq/releases/download/$(YQ_VERSION)/yq_linux_amd64 \
-	    && chmod a+x yq \
-	    && mv yq $(BINDIR)/yq
-endif
+	    && curl -L https://github.com/mikefarah/yq/releases/download/$(YQ_VERSION)/yq_$(shell echo $(UNAME) | tr '[:upper:]' '[:lower:]')_$(subst x86_64,amd64,$(shell echo $(ARCH) | tr '[:upper:]' '[:lower:]')) -o $(BINDIR)/yq \
+	    && chmod a+x $(BINDIR)/yq
 
 .PHONY: helm/schema/crd/vald
 ## generate OpenAPI v3 schema for ValdRelease

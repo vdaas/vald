@@ -1,7 +1,7 @@
 // Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //	https://www.apache.org/licenses/LICENSE-2.0
@@ -25,10 +25,12 @@ import (
 	"github.com/vdaas/vald-client-go/v1/vald"
 	"gonum.org/v1/hdf5"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 const (
 	insertCount = 400
+	removeCount = 200
 	testCount   = 20
 )
 
@@ -41,11 +43,11 @@ var (
 func init() {
 	/**
 	Path option specifies hdf file by path. Default value is `fashion-mnist-784-euclidean.hdf5`.
-	Addr option specifies grpc server address. Default value is `127.0.0.1:8080`.
+	Addr option specifies grpc server address. Default value is `127.0.0.1:8081`.
 	Wait option specifies indexing wait time (in seconds). Default value is  `60`.
 	**/
 	flag.StringVar(&datasetPath, "path", "fashion-mnist-784-euclidean.hdf5", "dataset path")
-	flag.StringVar(&grpcServerAddr, "addr", "localhost:8080", "gRPC server address")
+	flag.StringVar(&grpcServerAddr, "addr", "localhost:8081", "gRPC server address")
 	flag.UintVar(&indexingWaitSeconds, "wait", 60, "indexing wait seconds")
 	flag.Parse()
 }
@@ -62,7 +64,7 @@ func main() {
 	ctx := context.Background()
 
 	// Create a Vald client for connecting to the Vald cluster.
-	conn, err := grpc.DialContext(ctx, grpcServerAddr, grpc.WithInsecure())
+	conn, err := grpc.DialContext(ctx, grpcServerAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		glg.Fatal(err)
 	}
@@ -126,8 +128,8 @@ func main() {
 	glg.Infof("Finish searching %d times", testCount)
 
 	glg.Info("Start removing vector")
-	// Remove indexed 400 vectors from vald cluster.
-	for i := range ids[:insertCount] {
+	// Remove indexed 200 vectors from vald cluster.
+	for i := range ids[:removeCount] {
 		// Call `Remove` function of Vald client.
 		// Sends id to server via gRPC.
 		_, err := client.Remove(ctx, &payload.Remove_Request{
@@ -143,6 +145,12 @@ func main() {
 		}
 	}
 	glg.Info("Finish removing vector")
+	glg.Info("Start flushing vector")
+	_, err = client.Flush(ctx, &payload.Flush_Request{})
+	if err != nil {
+		glg.Fatal(err)
+	}
+	glg.Info("Finish flushing vector")
 }
 
 // load function loads training and test vector from hdf file. The size of ids is same to the number of training data.

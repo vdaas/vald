@@ -2,7 +2,7 @@
 // Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -106,7 +106,7 @@ func fitos(path string, fi os.FileInfo) string {
 		var err error
 		fi, err = os.Stat(path)
 		if err != nil || fi == nil {
-			return fmt.Sprintf("unknown file info: %v", fi)
+			return fmt.Sprintf("unknown file info: for %s\t%v", path, fi)
 		}
 	}
 	if fi != nil {

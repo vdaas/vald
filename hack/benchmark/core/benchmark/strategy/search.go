@@ -2,7 +2,7 @@
 // Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -43,7 +43,7 @@ func NewSearch(size int, epsilon, radius float32, opts ...StrategyOption) benchm
 				}
 				b.StartTimer()
 				defer b.StopTimer()
-				return c.Search(v.([]float32), size, epsilon, radius)
+				return c.Search(ctx, v.([]float32), size, epsilon, radius)
 			},
 		),
 		WithPreProp64(
@@ -59,7 +59,7 @@ func NewSearch(size int, epsilon, radius float32, opts ...StrategyOption) benchm
 				}
 				b.StartTimer()
 				defer b.StopTimer()
-				return c.Search(float32To64(v.([]float32)), size, epsilon, radius)
+				return c.Search(ctx, float32To64(v.([]float32)), size, epsilon, radius)
 			},
 		),
 	}, opts...)...)

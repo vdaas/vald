@@ -1,7 +1,7 @@
 // Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //	https://www.apache.org/licenses/LICENSE-2.0
@@ -20,7 +20,8 @@ import (
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/hack/benchmark/internal/assets"
 	"github.com/vdaas/vald/internal/client/v1/client"
-	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/net/grpc/status"
+	"google.golang.org/grpc/codes"
 )
 
 type Operation interface {
@@ -56,8 +57,11 @@ func (o *operation) CreateIndex(ctx context.Context, b *testing.B) {
 	b.Run("CreateIndex", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
 			_, err := o.indexerC.CreateIndex(ctx, req)
-			if err != nil && !errors.Is(err, errors.ErrUncommittedIndexNotFound) {
-				b.Error(err)
+			if err != nil {
+				st, _ := status.FromError(err)
+				if st.Code() != codes.FailedPrecondition {
+					b.Error(err)
+				}
 			}
 		}
 	})

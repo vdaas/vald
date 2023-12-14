@@ -2,7 +2,7 @@
 // Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -18,11 +18,15 @@
 package errors
 
 import (
+	"cmp"
 	"errors"
 	"fmt"
 	"reflect"
 	"runtime"
-	"strings"
+	"slices"
+
+	"github.com/vdaas/vald/internal/strings"
+	"github.com/vdaas/vald/internal/sync"
 )
 
 var (
@@ -118,13 +122,10 @@ var (
 	// When the input is nil, it will return nil.
 	Cause = func(err error) error {
 		if err != nil {
-			return errors.Unwrap(err)
+			return Unwrap(err)
 		}
 		return nil
 	}
-
-	// Unwrap represents errors.Unwrap.
-	Unwrap = errors.Unwrap
 
 	// Errorf represents a function to generate an error based on format and args.
 	// When format and args do not satisfy the condition, it will return nil.
@@ -145,33 +146,6 @@ var (
 		return New(format)
 	}
 
-	// Is represents a function to check whether err and the target is the same or not.
-	Is = func(err, target error) bool {
-		if target == nil || err == nil {
-			return err == target
-		}
-		isComparable := reflect.TypeOf(target).Comparable()
-		for {
-			if isComparable && (err == target ||
-				err.Error() == target.Error() ||
-				strings.EqualFold(err.Error(), target.Error())) {
-				return true
-			}
-			if x, ok := err.(interface {
-				Is(error) bool
-			}); ok && x.Is(target) {
-				return true
-			}
-			if uerr := Unwrap(err); uerr == nil {
-				return (err == target ||
-					err.Error() == target.Error() ||
-					strings.EqualFold(err.Error(), target.Error()))
-			} else {
-				err = uerr
-			}
-		}
-	}
-
 	// As represents errors.As.
 	As = errors.As
 
@@ -180,3 +154,182 @@ var (
 		return Errorf("expected err is nil: %s", n)
 	}
 )
+
+// Is represents a function to check whether err and the target is the same or not.
+func Is(err, target error) bool {
+	if target == nil || err == nil {
+		return err == target
+	}
+	isComparable := reflect.TypeOf(target).Comparable()
+	for {
+		if isComparable && (err == target ||
+			err.Error() == target.Error() ||
+			strings.EqualFold(err.Error(), target.Error())) {
+			return true
+		}
+
+		if x, ok := err.(interface {
+			Is(error) bool
+		}); ok && x.Is(target) {
+			return true
+		}
+		switch x := err.(type) {
+		case interface{ Unwrap() error }:
+			err = x.Unwrap()
+			if err == nil {
+				return isComparable && err == target ||
+					err.Error() == target.Error() ||
+					strings.EqualFold(err.Error(), target.Error())
+			}
+		case interface{ Unwrap() []error }:
+			for _, err = range x.Unwrap() {
+				if Is(err, target) {
+					return true
+				}
+			}
+			return isComparable && err == target ||
+				err.Error() == target.Error() ||
+				strings.EqualFold(err.Error(), target.Error())
+		default:
+			return isComparable && err == target ||
+				err.Error() == target.Error() ||
+				strings.EqualFold(err.Error(), target.Error())
+		}
+	}
+}
+
+// Unwrap represents errors.Unwrap.
+func Unwrap(err error) error {
+	if err == nil {
+		return nil
+	}
+	switch x := err.(type) {
+	case interface{ Unwrap() error }:
+		return x.Unwrap()
+	case interface{ Unwrap() []error }:
+		errs := x.Unwrap()
+		switch l := len(errs); l {
+		case 0:
+			return nil
+		case 1, 2:
+			return errs[0]
+		default:
+			return Join(errs[:l-1]...)
+		}
+	default:
+		return nil
+	}
+}
+
+// Join represents a function to generate multiple error when the input errors is not nil.
+func Join(errs ...error) error {
+	l := len(errs)
+	switch l {
+	case 0:
+		return nil
+	case 1:
+		return errs[0]
+	case 2:
+		switch {
+		case errs[0] != nil && errs[1] != nil:
+			if errs[0] == errs[1] || errors.Is(errs[0], errs[1]) {
+				return errs[0]
+			}
+			var es []error
+			switch x := errs[1].(type) {
+			case *joinError:
+				es = x.errs
+			case interface{ Unwrap() []error }:
+				es = x.Unwrap()
+			default:
+				es = []error{errs[1]}
+			}
+			switch x := errs[0].(type) {
+			case *joinError:
+				x.errs = append(x.errs, es...)
+				return x
+			case interface{ Unwrap() []error }:
+				return &joinError{errs: append(x.Unwrap(), es...)}
+			default:
+				return &joinError{errs: []error{errs[0], errs[1]}}
+			}
+		case errs[0] != nil:
+			return errs[0]
+		case errs[1] != nil:
+			return errs[1]
+		}
+		return nil
+	}
+	var e *joinError
+	switch x := errs[0].(type) {
+	case *joinError:
+		e = x
+		errs = errs[1:]
+	case interface{ Unwrap() []error }:
+		e = &joinError{errs: x.Unwrap()}
+		errs = errs[1:]
+	default:
+		e = &joinError{
+			errs: make([]error, 0, l),
+		}
+	}
+	for _, err := range errs {
+		if err != nil {
+			e.errs = append(e.errs, err)
+		}
+	}
+	return e
+}
+
+func RemoveDuplicates(errs []error) []error {
+	if len(errs) < 2 {
+		return errs
+	}
+	slices.SortStableFunc(errs, func(l error, r error) int {
+		return cmp.Compare(l.Error(), r.Error())
+	})
+	return slices.CompactFunc(errs, Is)
+}
+
+type joinError struct {
+	errs []error
+}
+
+var sbPool = sync.Pool{
+	New: func() interface{} {
+		return new(strings.Builder)
+	},
+}
+
+func (e *joinError) Error() (str string) {
+	switch len(e.errs) {
+	case 0:
+		return ""
+	case 1:
+		return e.errs[0].Error()
+	}
+	sb, ok := sbPool.Get().(*strings.Builder)
+	if !ok {
+		sb = new(strings.Builder)
+	}
+	defer func() {
+		sb.Reset()
+		sbPool.Put(sb)
+	}()
+	sb.Grow(len(e.errs) * 16)
+	for i, err := range e.errs {
+		if i > 0 {
+			sb.WriteByte('\n')
+		}
+		sb.WriteString(err.Error())
+	}
+	if sb.Len() == 0 {
+		return ""
+	}
+	str = sb.String()
+	return str
+}
+
+func (e *joinError) Unwrap() []error {
+	return e.errs
+}

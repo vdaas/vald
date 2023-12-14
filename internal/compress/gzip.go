@@ -2,7 +2,7 @@
 // Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -133,7 +133,7 @@ func (g *gzipReader) Read(p []byte) (n int, err error) {
 func (g *gzipReader) Close() (err error) {
 	err = g.r.Close()
 	if err != nil {
-		return errors.Wrap(g.src.Close(), err.Error())
+		return errors.Join(g.src.Close(), err)
 	}
 
 	return g.src.Close()
@@ -153,7 +153,7 @@ func (g *gzipWriter) Write(p []byte) (n int, err error) {
 func (g *gzipWriter) Close() (err error) {
 	err = g.w.Close()
 	if err != nil {
-		return errors.Wrap(g.dst.Close(), err.Error())
+		return errors.Join(g.dst.Close(), err)
 	}
 
 	return g.dst.Close()

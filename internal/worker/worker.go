@@ -2,7 +2,7 @@
 // Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -22,11 +22,11 @@ import (
 	"reflect"
 	"sync/atomic"
 
-	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
+	"github.com/vdaas/vald/internal/sync/errgroup"
 )
 
 // JobFunc represents the function of a job that works in the worker.
@@ -133,7 +133,7 @@ func (w *worker) startJobLoop(ctx context.Context) <-chan error {
 	w.eg.Go(safety.RecoverFunc(func() (err error) {
 		defer close(ech)
 		eg, ctx := errgroup.New(ctx)
-		eg.Limitation(w.limitation)
+		eg.SetLimit(w.limitation)
 
 		limitation := make(chan struct{}, w.limitation)
 		defer close(limitation)
@@ -142,7 +142,7 @@ func (w *worker) startJobLoop(ctx context.Context) <-chan error {
 			select {
 			case <-ctx.Done():
 				if err = ctx.Err(); err != nil {
-					return errors.Wrap(eg.Wait(), err.Error())
+					return errors.Join(eg.Wait(), err)
 				}
 				return eg.Wait()
 			case limitation <- struct{}{}:

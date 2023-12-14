@@ -2,7 +2,7 @@
 // Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -254,7 +254,11 @@ func TestWithTLSHandshakeTimeout(t *testing.T) {
 				obj: &T{
 					Transport: &http.Transport{},
 				},
-				err: errors.NewErrCriticalOption("TLSHandshakeTimeout", "dummy", errors.New("invalid timeout value: dummy\t:timeout parse error out put failed: time: invalid duration \"dummy\"")),
+				err: errors.NewErrCriticalOption(
+					"TLSHandshakeTimeout",
+					"dummy",
+					errors.Join(errors.New("time: invalid duration \"dummy\""), errors.ErrTimeoutParseFailed("dummy")),
+				),
 			},
 		},
 		{
@@ -759,7 +763,11 @@ func TestWithIdleConnTimeout(t *testing.T) {
 				obj: &T{
 					Transport: &http.Transport{},
 				},
-				err: errors.NewErrCriticalOption("idleConnTimeout", "dummy", errors.New("invalid timeout value: dummy\t:timeout parse error out put failed: time: invalid duration \"dummy\"")),
+				err: errors.NewErrCriticalOption(
+					"idleConnTimeout",
+					"dummy",
+					errors.Join(errors.New("time: invalid duration \"dummy\""), errors.ErrTimeoutParseFailed("dummy")),
+				),
 			},
 		},
 		{
@@ -852,7 +860,11 @@ func TestWithResponseHeaderTimeout(t *testing.T) {
 				obj: &T{
 					Transport: &http.Transport{},
 				},
-				err: errors.NewErrCriticalOption("responseHeaderTimeout", "dummy", errors.New("invalid timeout value: dummy\t:timeout parse error out put failed: time: invalid duration \"dummy\"")),
+				err: errors.NewErrCriticalOption(
+					"responseHeaderTimeout",
+					"dummy",
+					errors.Join(errors.New("time: invalid duration \"dummy\""), errors.ErrTimeoutParseFailed("dummy")),
+				),
 			},
 		},
 		{
@@ -945,7 +957,11 @@ func TestWithExpectContinueTimeout(t *testing.T) {
 				obj: &T{
 					Transport: &http.Transport{},
 				},
-				err: errors.NewErrCriticalOption("expectContinueTimeout", "dummy", errors.New("invalid timeout value: dummy\t:timeout parse error out put failed: time: invalid duration \"dummy\"")),
+				err: errors.NewErrCriticalOption(
+					"expectContinueTimeout",
+					"dummy",
+					errors.Join(errors.New("time: invalid duration \"dummy\""), errors.ErrTimeoutParseFailed("dummy")),
+				),
 			},
 		},
 		{
@@ -1509,3 +1525,5 @@ func TestWithBackoffOpts(t *testing.T) {
 		})
 	}
 }
+
+// NOT IMPLEMENTED BELOW

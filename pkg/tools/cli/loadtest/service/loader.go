@@ -1,7 +1,7 @@
 // Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //	https://www.apache.org/licenses/LICENSE-2.0
@@ -22,11 +22,11 @@ import (
 	"time"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
-	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/safety"
+	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/pkg/tools/cli/loadtest/assets"
 	"github.com/vdaas/vald/pkg/tools/cli/loadtest/config"
 )
@@ -114,7 +114,7 @@ func (l *loader) Do(ctx context.Context) <-chan error {
 	finalize := func(ctx context.Context, err error) {
 		select {
 		case <-ctx.Done():
-			ech <- errors.Wrap(err, ctx.Err().Error())
+			ech <- errors.Join(err, ctx.Err())
 		case ech <- err:
 		}
 	}
@@ -217,7 +217,7 @@ func (l *loader) do(ctx context.Context, f func(interface{}, error), notify func
 		}))
 		err = eg.Wait()
 	case config.Insert, config.Search:
-		eg.Limitation(l.concurrency)
+		eg.SetLimit(l.concurrency)
 
 		for {
 			r := l.dataProvider()

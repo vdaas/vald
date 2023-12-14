@@ -2,7 +2,7 @@
 // Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -275,7 +275,7 @@ func genNode(prefix []string, ls []*VSchema) (*Schema, error) {
 
 func newRoot(schemas map[string]*Schema) *Root {
 	return &Root{
-		SchemaKeyword: "http://json-schema.org/draft-07/schema#",
+		SchemaKeyword: "https://json-schema.org/draft-07/schema#",
 		Title:         "Values",
 		Schema: Schema{
 			Type:       objectType,

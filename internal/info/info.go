@@ -2,7 +2,7 @@
 // Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -21,13 +21,13 @@ import (
 	"fmt"
 	"reflect"
 	"runtime"
+	"slices"
 	"strconv"
-	"sync"
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
-	"github.com/vdaas/vald/internal/slices"
 	"github.com/vdaas/vald/internal/strings"
+	"github.com/vdaas/vald/internal/sync"
 )
 
 // Info represents an interface to get the runtime information.
@@ -111,10 +111,13 @@ var (
 )
 
 const (
-	goSrc    = "go/src/"
-	goSrcLen = len(goSrc)
-	goMod    = "go/pkg/mod/"
-	goModLen = len(goMod)
+	goSrc      = "go/src/"
+	goSrcLen   = len(goSrc)
+	goMod      = "go/pkg/mod/"
+	goModLen   = len(goMod)
+	cgoTrue    = "true"
+	cgoFalse   = "false"
+	cgoUnknown = "unknown"
 )
 
 // Init initializes Detail object only once.
@@ -349,6 +352,14 @@ func (i *info) prepare() {
 		}
 		if len(i.detail.CGOEnabled) == 0 && len(CGOEnabled) != 0 {
 			i.detail.CGOEnabled = CGOEnabled
+		}
+		switch i.detail.CGOEnabled {
+		case "0", cgoFalse:
+			i.detail.CGOEnabled = cgoFalse
+		case "1", cgoTrue:
+			i.detail.CGOEnabled = cgoTrue
+		default:
+			i.detail.CGOEnabled = cgoUnknown
 		}
 		if len(i.detail.NGTVersion) == 0 && len(NGTVersion) != 0 {
 			i.detail.NGTVersion = NGTVersion

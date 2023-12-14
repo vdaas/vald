@@ -2,7 +2,7 @@
 # Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
+# You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
 #    https://www.apache.org/licenses/LICENSE-2.0
@@ -30,58 +30,49 @@ on:
     paths:
       - "go.mod"
       - "go.sum"
-      - ".github/workflows/test.yml"
+      - ".github/workflows/test-hack.yml"
       - "hack/gorules/**"
       - "hack/helm/**"
       - "hack/license/**"
       - "hack/tools/**"
 
+env:
+  # NOTE: This variable is used to make gorules run properly.
+  GOPATH: ${{ github.workspace }}
+  PROJECT_ROOT_DIR: src/github.com/vdaas/vald
+
 jobs:
-  dump_contexts_to_log:
+  dump-contexts-to-log:
     runs-on: ubuntu-latest
     steps:
-      - name: Dump GitHub context
-        id: github_context_step
-        run: echo $JSON
-        env:
-          JSON: ${{ toJSON(github) }}
-      - name: Dump job context
-        run: echo $JSON
-        env:
-          JSON: ${{ toJSON(job) }}
-      - name: Dump steps context
-        run: echo $JSON
-        env:
-          JSON: ${{ toJSON(steps) }}
-      - name: Dump runner context
-        run: echo $JSON
-        env:
-          JSON: ${{ toJSON(runner) }}
-      - name: Dump strategy context
-        run: echo $JSON
-        env:
-          JSON: ${{ toJSON(strategy) }}
-      - name: Dump matrix context
-        run: echo $JSON
-        env:
-          JSON: ${{ toJSON(matrix) }}
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/dump-context
+
   test-hack:
     name: Run tests for hack packages
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/vdaas/vald/vald-ci-container:nightly
+    defaults:
+      run:
+        working-directory: ${{ env.GOPATH }}/${{ env.PROJECT_ROOT_DIR }}
     steps:
-      - name: Check out code.
-        uses: actions/checkout@v3
-      - name: set git config
+      - uses: actions/checkout@v4
+        with:
+          path: ${{ env.PROJECT_ROOT_DIR }}
+
+      - name: Set Git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
-      - name: dependencies
+
+      - name: Install Proto dependencies
         run: |
           make proto/deps
+
       - name: Run tests for hack packages / gotestfmt
         run: |
           TEST_RESULT_DIR=${GITHUB_WORKSPACE} make test/hack/gotestfmt
-      - name: print tparse result
+
+      - name: Print tparse result
         run: |
           tparse -notests -smallscreen -sort cover -format markdown -file ${GITHUB_WORKSPACE}/test-hack-gotestfmt-result.json

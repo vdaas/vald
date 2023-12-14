@@ -2,7 +2,7 @@
 # Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
+# You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
 #    https://www.apache.org/licenses/LICENSE-2.0
@@ -13,79 +13,79 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-name: "Setting E2E test environment"
-description: "A workflow to set E2E test environment"
+name: "Deploy Vald using vald-helm-operator for E2E test"
+description: "A action to deploy vald using vald-helm-operator for E2E test"
+
 inputs:
-  require_libhdf5:
-    description: "If libhdf5 is required, set this to true."
-    required: false
-    default: "false"
   require_minio:
     description: "If Minio is required, set this to true."
     required: false
     default: "false"
+  helm_extra_options:
+    description: "Extra options that passed to Helm command to deploy vald helm operator"
+    required: false
+    default: ""
   valdrelease:
-    description: "path to the valdrelease.yaml that apply to cluster."
+    description: "Path to the valdrelease.yaml that apply to cluster"
     required: true
     default: "true"
   wait_for_selector:
-    description: "label selector used for specifying a pod waited for"
+    description: "Label selector used for specifying a pod waited for"
     required: false
     default: "app=vald-lb-gateway"
   wait_for_timeout:
-    description: "timeout used for waiting for pods"
+    description: "Timeout used for waiting for pods"
     required: false
     default: "600s"
+  use_local_charts:
+    description: "If you want to use local charts, set this to true."
+    required: false
+    default: "true"
 outputs:
   POD_NAME:
-    description: "a pod name that waited for"
+    description: "A pod name that waited for"
     value: ${{ steps.deploy_vald.outputs.POD_NAME }}
+
 runs:
   using: "composite"
   steps:
-    - name: Install libhdf5
-      id: install_libhdf5
-      shell: bash
-      run: |
-        if [[ "${REQUIRE_LIBHDF5}" == "true" ]]; then
-          sudo apt-get update
-          sudo apt-get install -y libhdf5-dev
-        else
-          echo "skipped."
-        fi
-      env:
-        REQUIRE_LIBHDF5: ${{ inputs.require_libhdf5 }}
-    - name: check k3d
-      shell: bash
-      id: check_k3d
-      run: |
-        kubectl cluster-info
-    - name: Helm version
-      shell: bash
-      id: helm_version
-      run: |
-        helm version
-    - name: deploy Minio
+    - name: Deploy Minio
       id: deploy_minio
       shell: bash
+      if: ${{ inputs.require_minio == 'true' }}
       run: |
-        if [[ "${REQUIRE_MINIO}" == "true" ]]; then
-          make K8S_SLEEP_DURATION_FOR_WAIT_COMMAND=10 k8s/external/minio/deploy
-        else
-          echo "skipped."
-        fi
-      env:
-        REQUIRE_MINIO: ${{ inputs.require_minio }}
-    - name: deploy vald helm operator
+        make K8S_SLEEP_DURATION_FOR_WAIT_COMMAND=10 k8s/external/minio/deploy
+
+    - name: Dump valdrelease
       shell: bash
-      id: deploy_vald_helm_operator
+      run: |
+        cat ${{ inputs.valdrelease }}
+
+    - name: Deploy vald helm operator from remote charts
+      shell: bash
+      id: deploy_vald_helm_operator_remote
+      if: ${{ inputs.use_local_charts == 'false' }}
       run: |
         helm install vald-helm-operator \
           --set image.tag=nightly \
+          ${HELM_EXTRA_OPTIONS} \
           charts/vald-helm-operator/.
 
         sleep 3
-    - name: deploy vald
+      env:
+        HELM_EXTRA_OPTIONS: ${{ inputs.helm_extra_options }}
+
+    - name: Deploy vald helm operator from local charts
+      shell: bash
+      id: deploy_vald_helm_operator_local
+      if: ${{ inputs.use_local_charts == 'true' }}
+      run: |
+        make k8s/vald-helm-operator/deploy VERSION=nightly HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIONS}"
+        sleep 3
+      env:
+        HELM_EXTRA_OPTIONS: ${{ inputs.helm_extra_options }}
+
+    - name: Deploy vald
       shell: bash
       id: deploy_vald
       run: |

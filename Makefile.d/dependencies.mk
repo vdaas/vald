@@ -2,7 +2,7 @@
 # Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
+# You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
 #    https://www.apache.org/licenses/LICENSE-2.0
@@ -17,14 +17,17 @@
 .PHONY: update/libs
 ## update vald libraries including tools
 update/libs: \
+	update/chaos-mesh \
 	update/go \
 	update/golangci-lint \
 	update/helm \
 	update/helm-docs \
 	update/helm-operator \
 	update/jaeger-operator \
+	update/k3s \
 	update/kind \
 	update/kube-linter \
+	update/kubectl \
 	update/ngt \
 	update/prometheus-stack \
 	update/protobuf \
@@ -34,6 +37,10 @@ update/libs: \
 	update/valdcli \
 	update/yq
 
+.PHONY: go/download
+## download Go package dependencies
+go/download:
+	GOPRIVATE=$(GOPRIVATE) go mod download
 
 .PHONY: go/deps
 ## install Go package dependencies
@@ -66,10 +73,20 @@ go/example/deps:
 	cp $(ROOTDIR)/example/client/go.mod.default $(ROOTDIR)/example/client/go.mod
 	cd $(ROOTDIR)/example/client && GOPRIVATE=$(GOPRIVATE) go mod tidy && cd -
 
+.PHONY: update/chaos-mesh
+## update chaos-mesh version
+update/chaos-mesh:
+	curl --silent https://api.github.com/repos/chaos-mesh/chaos-mesh/releases/latest | grep -Po '"tag_name": "\K.*?(?=")' | sed 's/v//g' > $(ROOTDIR)/versions/CHAOS_MESH_VERSION
+
+.PHONY: update/k3s
+## update k3s version
+update/k3s:
+	curl --silent https://hub.docker.com/v2/repositories/rancher/k3s/tags | jq -r '.results[].name' | grep -E '.*-k3s.$$' | grep -v rc | sort -V | tail -n 1 > $(ROOTDIR)/versions/K3S_VERSION
+
 .PHONY: update/go
 ## update go version
 update/go:
-	curl --silent https://go.dev/VERSION?m=text | sed -e 's/go//g' > $(ROOTDIR)/versions/GO_VERSION
+	curl --silent https://go.dev/VERSION?m=text | head -n 1 | sed -e 's/go//g' > $(ROOTDIR)/versions/GO_VERSION
 
 .PHONY: update/golangci-lint
 ## update golangci-lint version
@@ -100,6 +117,11 @@ update/protobuf:
 ## update kind (kubernetes in docker) version
 update/kind:
 	curl --silent https://api.github.com/repos/kubernetes-sigs/kind/releases/latest | grep -Po '"tag_name": "\K.*?(?=")' | sed 's/v//g' > $(ROOTDIR)/versions/KIND_VERSION
+
+.PHONY: update/kubectl
+## update kubectl (kubernetes cli) version
+update/kubectl:
+	curl -L -s https://dl.k8s.io/release/stable.txt > $(ROOTDIR)/versions/KUBECTL_VERSION
 
 .PHONY: update/prometheus-stack
 ## update prometheus version
@@ -150,3 +172,21 @@ update/vald:
 ## update vald client library made by clojure self version
 update/valdcli:
 	curl --silent https://api.github.com/repos/vdaas/vald-client-clj/releases/latest | grep -Po '"tag_name": "\K.*?(?=")' > $(ROOTDIR)/versions/VALDCLI_VERSION
+
+.PHONY: update/template
+## update PULL_REQUEST_TEMPLATE and ISSUE_TEMPLATE
+update/template:
+	$(eval GO_VERSION      := $(shell $(MAKE) -s version/go))
+	$(eval NGT_VERSION     := $(shell $(MAKE) -s version/ngt))
+	$(eval KUBECTL_VERSION := $(shell $(MAKE) -s version/k8s))
+	sed -i -e "s/^- Go Version: .*$$/- Go Version: $(GO_VERSION)/" $(ROOTDIR)/.github/ISSUE_TEMPLATE/bug_report.md
+	sed -i -e "s/^- Go Version: .*$$/- Go Version: $(GO_VERSION)/" $(ROOTDIR)/.github/ISSUE_TEMPLATE/security_issue_report.md
+	sed -i -e "s/^- Go Version: .*$$/- Go Version: $(GO_VERSION)/" $(ROOTDIR)/.github/PULL_REQUEST_TEMPLATE.md
+
+	sed -i -e "s/^- NGT Version: .*$$/- NGT Version: $(NGT_VERSION)/" $(ROOTDIR)/.github/ISSUE_TEMPLATE/bug_report.md
+	sed -i -e "s/^- NGT Version: .*$$/- NGT Version: $(NGT_VERSION)/" $(ROOTDIR)/.github/ISSUE_TEMPLATE/security_issue_report.md
+	sed -i -e "s/^- NGT Version: .*$$/- NGT Version: $(NGT_VERSION)/" $(ROOTDIR)/.github/PULL_REQUEST_TEMPLATE.md
+
+	sed -i -e "s/^- Kubernetes Version: .*$$/- Kubernetes Version: $(KUBECTL_VERSION)/" $(ROOTDIR)/.github/ISSUE_TEMPLATE/bug_report.md
+	sed -i -e "s/^- Kubernetes Version: .*$$/- Kubernetes Version: $(KUBECTL_VERSION)/" $(ROOTDIR)/.github/ISSUE_TEMPLATE/security_issue_report.md
+	sed -i -e "s/^- Kubernetes Version: .*$$/- Kubernetes Version: $(KUBECTL_VERSION)/" $(ROOTDIR)/.github/PULL_REQUEST_TEMPLATE.md

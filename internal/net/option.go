@@ -2,7 +2,7 @@
 // Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -38,7 +38,7 @@ var defaultDialerOptions = []DialerOption{
 }
 
 // WithDNSCache returns the functional option to set the cache.
-func WithDNSCache(c cacher.Cache) DialerOption {
+func WithDNSCache(c cacher.Cache[*dialerCache]) DialerOption {
 	return func(d *dialer) {
 		d.dnsCache = c
 		if d.dnsCache != nil {

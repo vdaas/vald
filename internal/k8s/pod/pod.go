@@ -2,7 +2,7 @@
 // Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -31,7 +31,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-	"sigs.k8s.io/controller-runtime/pkg/source"
 )
 
 type PodWatcher k8s.ResourceController
@@ -189,7 +188,7 @@ func (*reconciler) Owns() (client.Object, []builder.OwnsOption) {
 	return nil, nil
 }
 
-func (*reconciler) Watches() (*source.Kind, handler.EventHandler, []builder.WatchesOption) {
-	// return &source.Kind{Type: new(corev1.Pod)}, &handler.EnqueueRequestForObject{}
+func (*reconciler) Watches() (client.Object, handler.EventHandler, []builder.WatchesOption) {
+	// return new(corev1.Pod), &handler.EnqueueRequestForObject{}
 	return nil, nil, nil
 }

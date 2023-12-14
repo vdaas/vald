@@ -1,7 +1,7 @@
 // Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //	https://www.apache.org/licenses/LICENSE-2.0
@@ -19,9 +19,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/servers/server"
+	"github.com/vdaas/vald/internal/sync/errgroup"
 )
 
 func TestNew(t *testing.T) {
@@ -391,3 +391,5 @@ func Test_listener_Shutdown(t *testing.T) {
 		})
 	}
 }
+
+// NOT IMPLEMENTED BELOW

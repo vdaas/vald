@@ -2,7 +2,7 @@
 // Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -30,7 +30,7 @@ func ParseBytes(bs string) (bytes uint64, err error) {
 	bytes, err = bytefmt.ToBytes(bs)
 
 	if err != nil {
-		return 0, errors.Wrap(err, errors.ErrParseUnitFailed(bs).Error())
+		return 0, errors.Join(err, errors.ErrParseUnitFailed(bs))
 	}
 	return bytes, nil
 }

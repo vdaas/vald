@@ -2,7 +2,7 @@
 # Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
+# You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
 #    https://www.apache.org/licenses/LICENSE-2.0
@@ -21,29 +21,13 @@ pink   = printf "\x1b[35m\#\# %s\x1b[0m\n" $1
 cyan   = printf "\x1b[36m\#\# %s\x1b[0m\n" $1
 
 define go-install
-	GO111MODULE=on go install $1@latest
+	GO111MODULE=on go install \
+	    -mod=readonly \
+	    $1@latest
 endef
 
 define mkdir
 	mkdir -p $1
-endef
-
-define proto-code-gen
-	protoc \
-		$(PROTO_PATHS:%=-I %) \
-                --go_out=$(GOPATH)/src --plugin protoc-gen-go="$(GOPATH)/bin/protoc-gen-go" \
-                --go-vtproto_out=$(GOPATH)/src --plugin protoc-gen-go-vtproto="$(GOPATH)/bin/protoc-gen-go-vtproto" \
-                --go-vtproto_opt=features=grpc+marshal+unmarshal+size+pool \
-                --go-vtproto_opt=pool=$(GOPKG)/apis/proto/v1/payload.Search.Request \
-                --go-vtproto_opt=pool=$(GOPKG)/apis/proto/v1/payload.Object.Vector \
-		$1
-endef
-
-define protoc-gen
-	protoc \
-		$(PROTO_PATHS:%=-I %) \
-		$2 \
-		$1
 endef
 
 define profile-web
@@ -81,6 +65,7 @@ define telepresence
 endef
 
 define run-e2e-crud-test
+	GOPRIVATE=$(GOPRIVATE) \
 	go test \
 	    -race \
 	    -mod=readonly \
@@ -90,7 +75,7 @@ define run-e2e-crud-test
 	    -timeout $(E2E_TIMEOUT) \
 	    -host=$(E2E_BIND_HOST) \
 	    -port=$(E2E_BIND_PORT) \
-	    -dataset=$(ROOTDIR)/hack/benchmark/assets/dataset/$(E2E_DATASET_NAME).hdf5 \
+	    -dataset=$(ROOTDIR)/hack/benchmark/assets/dataset/$(E2E_DATASET_NAME) \
 	    -insert-num=$(E2E_INSERT_COUNT) \
 	    -search-num=$(E2E_SEARCH_COUNT) \
 	    -search-by-id-num=$(E2E_SEARCH_BY_ID_COUNT) \
@@ -102,10 +87,12 @@ define run-e2e-crud-test
 	    -portforward=$(E2E_PORTFORWARD_ENABLED) \
 	    -portforward-pod-name=$(E2E_TARGET_POD_NAME) \
 	    -portforward-pod-port=$(E2E_TARGET_PORT) \
-	    -namespace=$(E2E_TARGET_NAMESPACE)
+	    -namespace=$(E2E_TARGET_NAMESPACE) \
+	    -kubeconfig=$(KUBECONFIG)
 endef
 
 define run-e2e-multi-crud-test
+	GOPRIVATE=$(GOPRIVATE) \
 	go test \
 	    -race \
 	    -mod=readonly \
@@ -115,7 +102,7 @@ define run-e2e-multi-crud-test
 	    -timeout $(E2E_TIMEOUT) \
 	    -host=$(E2E_BIND_HOST) \
 	    -port=$(E2E_BIND_PORT) \
-	    -dataset=$(ROOTDIR)/hack/benchmark/assets/dataset/$(E2E_DATASET_NAME).hdf5 \
+	    -dataset=$(ROOTDIR)/hack/benchmark/assets/dataset/$(E2E_DATASET_NAME) \
 	    -insert-num=$(E2E_INSERT_COUNT) \
 	    -search-num=$(E2E_SEARCH_COUNT) \
 	    -search-by-id-num=$(E2E_SEARCH_BY_ID_COUNT) \
@@ -127,5 +114,95 @@ define run-e2e-multi-crud-test
 	    -portforward=$(E2E_PORTFORWARD_ENABLED) \
 	    -portforward-pod-name=$(E2E_TARGET_POD_NAME) \
 	    -portforward-pod-port=$(E2E_TARGET_PORT) \
-	    -namespace=$(E2E_TARGET_NAMESPACE)
+	    -namespace=$(E2E_TARGET_NAMESPACE) \
+	    -kubeconfig=$(KUBECONFIG)
+endef
+
+define run-e2e-max-dim-test
+	GOPRIVATE=$(GOPRIVATE) \
+	go test \
+	    -race \
+	    -mod=readonly \
+            -v $(ROOTDIR)/tests/e2e/performance/max_vector_dim_test.go \
+	    -tags "e2e" \
+	    -timeout $(E2E_TIMEOUT) \
+            -file $(E2E_MAX_DIM_RESULT_FILEPATH) \
+	    -host=$(E2E_BIND_HOST) \
+	    -port=$(E2E_BIND_PORT) \
+	    -bit=${E2E_MAX_DIM_BIT} \
+	    -portforward=$(E2E_PORTFORWARD_ENABLED) \
+	    -portforward-pod-name=$(E2E_TARGET_POD_NAME) \
+	    -portforward-pod-port=$(E2E_TARGET_PORT) \
+	    -namespace=$(E2E_TARGET_NAMESPACE) \
+	    -kubeconfig=$(KUBECONFIG)
+endef
+
+define run-e2e-sidecar-test
+	GOPRIVATE=$(GOPRIVATE) \
+	go test \
+	    -race \
+	    -mod=readonly \
+	    $1 \
+	    -v $(ROOTDIR)/tests/e2e/sidecar/sidecar_test.go \
+	    -tags "e2e" \
+	    -timeout $(E2E_TIMEOUT) \
+	    -host=$(E2E_BIND_HOST) \
+	    -port=$(E2E_BIND_PORT) \
+	    -dataset=$(ROOTDIR)/hack/benchmark/assets/dataset/$(E2E_DATASET_NAME) \
+	    -insert-num=$(E2E_INSERT_COUNT) \
+	    -search-num=$(E2E_SEARCH_COUNT) \
+	    -portforward=$(E2E_PORTFORWARD_ENABLED) \
+	    -portforward-pod-name=$(E2E_TARGET_POD_NAME) \
+	    -portforward-pod-port=$(E2E_TARGET_PORT) \
+	    -namespace=$(E2E_TARGET_NAMESPACE) \
+	    -kubeconfig=$(KUBECONFIG)
+endef
+
+# This function generate only implementation tests, with the following conditions:
+# - Generate all go tests on `./cmd`, `./hack` and `./internal` packages with some exclusion (see $GO_SOURCES)
+# - Skip generating go tests under './pkg/*/router/*' and './pkg/*/handler/test/*' package
+# - Generate only 'New()' test on './pkg/*/usecase'
+# - Generate only exported function tests on `./pkg` package
+define gen-go-test-sources
+	@for f in $(GO_SOURCES); do \
+		GOTESTS_OPTION=" -all "; \
+		if [[ $$f =~ \.\/pkg\/.*\/router\/.* || $$f =~ \.\/pkg\/.*\/handler\/rest\/.* ]]; then \
+			echo "Skip generating go test file: $$f"; \
+			continue; \
+		elif [[ $$f =~ \.\/pkg\/.*\/usecase\/.* ]]; then \
+			GOTESTS_OPTION=" -only New "; \
+		elif [[ $$f =~ \.\/pkg\/.* ]]; then \
+			GOTESTS_OPTION=" -exported "; \
+		fi; \
+		echo "Generating go test file: $$f" with option  $$GOTESTS_OPTION; \
+		gotests -w -template_dir $(ROOTDIR)/assets/test/templates/common $$GOTESTS_OPTION $(patsubst %_test.go,%.go,$$f); \
+		RESULT=$$?; \
+		if [ ! $$RESULT -eq 0 ]; then \
+			echo $$RESULT; \
+			exit 1; \
+		fi; \
+	done
+endef
+
+# This function generate only option tests, with the following conditions:
+# - Generate all go tests on `./cmd`, `./hack` and `./internal` packages with exclusion (see $GO_SOURCES)
+# - Skip generating go tests under './pkg/*/router' and './pkg/*/handler/test' and './pkg/*/usecase' package
+# - Generate only exported function tests on './pkg` package
+define gen-go-option-test-sources
+	@for f in $(GO_OPTION_SOURCES); do \
+		GOTESTS_OPTION=" -all "; \
+		if [[ $$f =~ \.\/pkg\/.*\/router\/.* || $$f =~ \.\/pkg\/.*\/handler\/rest\/.* || $$f =~ \.\/pkg\/.*\/usecase\/.* ]]; then \
+			echo "Skip generating go option test file: $$f"; \
+			continue; \
+		elif [[ $$f =~ \.\/pkg\/.* ]]; then \
+			GOTESTS_OPTION=" -exported "; \
+		fi; \
+		echo "Generating go option test file: $$f"; \
+		gotests -w -template_dir $(ROOTDIR)/assets/test/templates/common -all $(patsubst %_test.go,%.go,$$f); \
+		RESULT=$$?; \
+		if [ ! $$RESULT -eq 0 ]; then \
+			echo $$RESULT; \
+			exit 1; \
+		fi; \
+	done
 endef

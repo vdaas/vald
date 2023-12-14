@@ -2,7 +2,7 @@
 // Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -24,12 +24,12 @@ import (
 )
 
 // Cache represent the cache interface to store cache.
-type Cache interface {
+type Cache[V any] interface {
 	Start(context.Context)
-	Get(string) (interface{}, bool)
-	Set(string, interface{})
+	Get(string) (V, bool)
+	Set(string, V)
 	Delete(string)
-	GetAndDelete(string) (interface{}, bool)
+	GetAndDelete(string) (V, bool)
 }
 
 // Type represents the cacher type. Currently it support GACHE only.

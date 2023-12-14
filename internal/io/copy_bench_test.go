@@ -2,7 +2,7 @@
 // Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -82,6 +82,15 @@ func BenchmarkValdIOCopy(b *testing.B) {
 	}
 }
 
+func BenchmarkValdIOCopyBuffer(b *testing.B) {
+	c := NewCopier(bufferLength)
+	for i := 0; i < b.N; i++ {
+		w := &writer{}
+		r := &reader{len: readerLength}
+		c.CopyBuffer(w, r, nil)
+	}
+}
+
 func BenchmarkStandardIOCopyParallel(b *testing.B) {
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
@@ -110,6 +119,17 @@ func BenchmarkValdIOCopyParallel(b *testing.B) {
 			w := &writer{}
 			r := &reader{len: readerLength}
 			c.Copy(w, r)
+		}
+	})
+}
+
+func BenchmarkValdIOCopyBufferParallel(b *testing.B) {
+	c := NewCopier(bufferLength)
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			w := &writer{}
+			r := &reader{len: readerLength}
+			c.CopyBuffer(w, r, nil)
 		}
 	})
 }

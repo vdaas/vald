@@ -2,7 +2,7 @@
 // Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -18,15 +18,15 @@
 package service
 
 import (
+	"cmp"
 	"context"
 	"reflect"
-	"sync"
+	"slices"
 	"sync/atomic"
 	"time"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/config"
-	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/k8s"
 	mnode "github.com/vdaas/vald/internal/k8s/metrics/node"
@@ -36,7 +36,8 @@ import (
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/safety"
-	"github.com/vdaas/vald/internal/slices"
+	"github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/internal/sync/errgroup"
 )
 
 type Discoverer interface {
@@ -47,10 +48,10 @@ type Discoverer interface {
 
 type discoverer struct {
 	maxPods         int
-	nodes           nodeMap
-	nodeMetrics     nodeMetricsMap
-	pods            podsMap
-	podMetrics      podMetricsMap
+	nodes           sync.Map[string, *node.Node]
+	nodeMetrics     sync.Map[string, mnode.Node]
+	pods            sync.Map[string, *[]pod.Pod]
+	podMetrics      sync.Map[string, mpod.Pod]
 	podsByNode      atomic.Value
 	podsByNamespace atomic.Value
 	podsByName      atomic.Value
@@ -133,9 +134,9 @@ func New(selector *config.Selectors, opts ...Option) (dsc Discoverer, err error)
 					if len(pods) > d.maxPods {
 						d.maxPods = len(pods)
 					}
-					d.pods.Store(name, pods)
+					d.pods.Store(name, &pods)
 				}
-				d.pods.Range(func(name string, _ []pod.Pod) bool {
+				d.pods.Range(func(name string, _ *[]pod.Pod) bool {
 					_, ok := podList[name]
 					if !ok {
 						d.pods.Delete(name)
@@ -231,12 +232,12 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 						return true
 					}
 				})
-				d.pods.Range(func(appName string, pods []pod.Pod) bool {
+				d.pods.Range(func(appName string, pods *[]pod.Pod) bool {
 					select {
 					case <-ctx.Done():
 						return false
 					default:
-						for _, p := range pods {
+						for _, p := range *pods {
 							select {
 							case <-ctx.Done():
 								return false
@@ -270,23 +271,23 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 								}
 								_, ok = podsByNode[p.NodeName][p.Namespace]
 								if !ok {
-									podsByNode[p.NodeName][p.Namespace] = make(map[string][]*payload.Info_Pod, len(pods))
+									podsByNode[p.NodeName][p.Namespace] = make(map[string][]*payload.Info_Pod, len(*pods))
 								}
 								_, ok = podsByNamespace[p.Namespace]
 								if !ok {
-									podsByNamespace[p.Namespace] = make(map[string][]*payload.Info_Pod, len(pods))
+									podsByNamespace[p.Namespace] = make(map[string][]*payload.Info_Pod, len(*pods))
 								}
 								_, ok = podsByNode[p.NodeName][p.Namespace][appName]
 								if !ok {
-									podsByNode[p.NodeName][p.Namespace][appName] = make([]*payload.Info_Pod, 0, len(pods))
+									podsByNode[p.NodeName][p.Namespace][appName] = make([]*payload.Info_Pod, 0, len(*pods))
 								}
 								_, ok = podsByNamespace[p.Namespace][appName]
 								if !ok {
-									podsByNamespace[p.Namespace][appName] = make([]*payload.Info_Pod, 0, len(pods))
+									podsByNamespace[p.Namespace][appName] = make([]*payload.Info_Pod, 0, len(*pods))
 								}
 								_, ok = podsByName[appName]
 								if !ok {
-									podsByName[appName] = make([]*payload.Info_Pod, 0, len(pods))
+									podsByName[appName] = make([]*payload.Info_Pod, 0, len(*pods))
 								}
 								podsByNode[p.NodeName][p.Namespace][appName] = append(podsByNode[p.NodeName][p.Namespace][appName], pi)
 								podsByNamespace[p.Namespace][appName] = append(podsByNamespace[p.Namespace][appName], pi)
@@ -303,8 +304,8 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 					for nodeName := range podsByNode {
 						for namespace := range podsByNode[nodeName] {
 							for appName, p := range podsByNode[nodeName][namespace] {
-								slices.SortFunc(p, func(left, right *payload.Info_Pod) bool {
-									return left.GetMemory().GetUsage() < right.GetMemory().GetUsage()
+								slices.SortFunc(p, func(left, right *payload.Info_Pod) int {
+									return cmp.Compare(left.GetMemory().GetUsage(), right.GetMemory().GetUsage())
 								})
 								podsByNode[nodeName][namespace][appName] = p
 								nn, ok := nodeByName[nodeName]
@@ -330,8 +331,8 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 						nn, ok := nodeByName[nodeName]
 						if ok && nn.GetPods() != nil && nn.GetPods().GetPods() != nil {
 							p := nn.GetPods().Pods
-							slices.SortFunc(p, func(left, right *payload.Info_Pod) bool {
-								return left.GetMemory().GetUsage() < right.GetMemory().GetUsage()
+							slices.SortFunc(p, func(left, right *payload.Info_Pod) int {
+								return cmp.Compare(left.GetMemory().GetUsage(), right.GetMemory().GetUsage())
 							})
 							nodeByName[nodeName].GetPods().Pods = p
 						}
@@ -345,8 +346,8 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 					defer wg.Done()
 					for namespace := range podsByNamespace {
 						for appName, p := range podsByNamespace[namespace] {
-							slices.SortFunc(p, func(left, right *payload.Info_Pod) bool {
-								return left.GetMemory().GetUsage() < right.GetMemory().GetUsage()
+							slices.SortFunc(p, func(left, right *payload.Info_Pod) int {
+								return cmp.Compare(left.GetMemory().GetUsage(), right.GetMemory().GetUsage())
 							})
 							podsByNamespace[namespace][appName] = p
 						}
@@ -358,8 +359,8 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 				d.eg.Go(safety.RecoverFunc(func() error {
 					defer wg.Done()
 					for appName, p := range podsByName {
-						slices.SortFunc(p, func(left, right *payload.Info_Pod) bool {
-							return left.GetMemory().GetUsage() < right.GetMemory().GetUsage()
+						slices.SortFunc(p, func(left, right *payload.Info_Pod) int {
+							return cmp.Compare(left.GetMemory().GetUsage(), right.GetMemory().GetUsage())
 						})
 						podsByName[appName] = p
 					}
@@ -467,16 +468,16 @@ func (d *discoverer) GetNodes(req *payload.Discoverer_Request) (nodes *payload.I
 				for i := range ps.Pods {
 					ps.GetPods()[i].Node = nil
 				}
-				slices.SortFunc(ps.Pods, func(left, right *payload.Info_Pod) bool {
-					return left.GetMemory().GetUsage() < right.GetMemory().GetUsage()
+				slices.SortFunc(ps.Pods, func(left, right *payload.Info_Pod) int {
+					return cmp.Compare(left.GetMemory().GetUsage(), right.GetMemory().GetUsage())
 				})
 				n.Pods = ps
 			}
 		}
 		ns = append(ns, n)
 	}
-	slices.SortFunc(ns, func(left, right *payload.Info_Node) bool {
-		return left.GetMemory().GetUsage() < right.GetMemory().GetUsage()
+	slices.SortFunc(ns, func(left, right *payload.Info_Node) int {
+		return cmp.Compare(left.GetMemory().GetUsage(), right.GetMemory().GetUsage())
 	})
 
 	nodes.Nodes = ns

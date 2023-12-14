@@ -2,7 +2,7 @@
 // Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -20,15 +20,15 @@ package service
 import (
 	"context"
 	"reflect"
-	"sync"
 	"sync/atomic"
 
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
 	"github.com/vdaas/vald/internal/client/v1/client/discoverer"
-	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/observability/trace"
+	"github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/internal/sync/errgroup"
 )
 
 type Gateway interface {
@@ -36,9 +36,9 @@ type Gateway interface {
 	GetAgentCount(ctx context.Context) int
 	Addrs(ctx context.Context) []string
 	DoMulti(ctx context.Context, num int,
-		f func(ctx context.Context, tgt string, ac vald.Client, copts ...grpc.CallOption) error) error
+		f func(ctx context.Context, target string, ac vald.Client, copts ...grpc.CallOption) error) error
 	BroadCast(ctx context.Context,
-		f func(ctx context.Context, tgt string, ac vald.Client, copts ...grpc.CallOption) error) error
+		f func(ctx context.Context, target string, ac vald.Client, copts ...grpc.CallOption) error) error
 }
 
 type gateway struct {
@@ -102,7 +102,7 @@ func (g *gateway) DoMulti(ctx context.Context, num int,
 	} else {
 		limit = uint32(num)
 	}
-	var visited sync.Map
+	var visited sync.Map[string, any]
 	err = g.client.GetClient().OrderedRange(sctx, addrs, func(ictx context.Context,
 		addr string,
 		conn *grpc.ClientConn,

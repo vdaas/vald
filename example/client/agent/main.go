@@ -1,7 +1,7 @@
 // Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //	https://www.apache.org/licenses/LICENSE-2.0
@@ -17,6 +17,7 @@ import (
 	"context"
 	"encoding/json"
 	"flag"
+	"math"
 	"time"
 
 	"github.com/kpango/fuid"
@@ -26,10 +27,12 @@ import (
 	"github.com/vdaas/vald-client-go/v1/vald"
 	"gonum.org/v1/hdf5"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 const (
 	insertCount = 400
+	removeCount = 200
 	testCount   = 20
 )
 
@@ -64,7 +67,7 @@ func main() {
 	ctx := context.Background()
 
 	// Create a Vald Agent client for connecting to the Vald cluster.
-	conn, err := grpc.DialContext(ctx, grpcServerAddr, grpc.WithInsecure())
+	conn, err := grpc.DialContext(ctx, grpcServerAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		glg.Fatal(err)
 	}
@@ -113,6 +116,31 @@ func main() {
 	glg.Infof("Wait %s for indexing to finish", wt)
 	time.Sleep(wt)
 
+	glg.Infof("Start getting object")
+	for i := range ids[:insertCount] {
+		// Call `GetObject` function of Vald client.
+		// Sends id to server via gRPC.
+		res, err := client.GetObject(ctx, &payload.Object_VectorRequest{
+			Id: &payload.Object_ID{
+				Id: ids[i],
+			},
+		})
+		if err != nil {
+			glg.Fatal(err)
+		}
+		glg.Infof("ID: %s, Vector: %v", res.GetId(), res.GetVector())
+
+		// calc Euclidean distance of r and t
+		r := res.GetVector()
+		t := train[i]
+		var sum float64
+		for i := range r {
+			sum += math.Pow(float64(t[i]-r[i]), 2)
+		}
+		glg.Infof("Euclidean distance of r and t: %v", sum)
+	}
+	glg.Info("Finish getting object")
+
 	/**
 	Gets approximate vectors, which is based on the value of `SearchConfig`, from the indexed tree based on the training data.
 	In this example, Vald Agent gets 10 approximate vectors each search vector.
@@ -140,8 +168,8 @@ func main() {
 	}
 
 	glg.Info("Start removing vector")
-	// Remove indexed 400 vectors from vald cluster.
-	for i := range ids[:insertCount] {
+	// Remove indexed 200 vectors from vald cluster.
+	for i := range ids[:removeCount] {
 		// Call `Remove` function of Vald client.
 		// Sends id to server via gRPC.
 		_, err := client.Remove(ctx, &payload.Remove_Request{
@@ -170,6 +198,12 @@ func main() {
 		glg.Fatal(err)
 	}
 	glg.Info("Finish removing indexed vector from backup")
+	glg.Info("Start flushing vector")
+	_, err = client.Flush(ctx, &payload.Flush_Request{})
+	if err != nil {
+		glg.Fatal(err)
+	}
+	glg.Info("Finish flushing vector")
 }
 
 // load function loads training and test vector from hdf file. The size of ids is same to the number of training data.

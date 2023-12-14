@@ -2,7 +2,7 @@
 // Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -18,6 +18,7 @@
 package ngt
 
 import (
+	"context"
 	"os"
 
 	c "github.com/vdaas/vald/hack/benchmark/internal/core/algorithm"
@@ -74,8 +75,8 @@ func New(opts ...Option) (c.Bit32, error) {
 	return c, nil
 }
 
-func (c *core) Search(vec []float32, size int, epsilon, radius float32) (interface{}, error) {
-	return c.NGT.Search(vec, size, epsilon, radius)
+func (c *core) Search(ctx context.Context, vec []float32, size int, epsilon, radius float32) (interface{}, error) {
+	return c.NGT.Search(ctx, vec, size, epsilon, radius)
 }
 
 func (c *core) Close() {

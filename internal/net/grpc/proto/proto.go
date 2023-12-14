@@ -2,7 +2,7 @@
 // Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -53,4 +53,9 @@ func Clone(m Message) Message {
 // ToMessageV1 downcasts Messages to V1 protobuf MessageV1
 func ToMessageV1(m Message) MessageV1 {
 	return protoimpl.X.ProtoMessageV1Of(m)
+}
+
+// ToMessageV2 upcasts V1 Message to V2 protobuf MessageV2
+func ToMessageV2(m MessageV1) Message {
+	return protoimpl.X.ProtoMessageV2Of(m)
 }

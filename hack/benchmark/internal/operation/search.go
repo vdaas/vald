@@ -1,7 +1,7 @@
 // Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //	https://www.apache.org/licenses/LICENSE-2.0
@@ -16,12 +16,13 @@ package operation
 import (
 	"context"
 	"strconv"
-	"sync"
+	"sync/atomic"
 	"testing"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/hack/benchmark/internal/assets"
 	"github.com/vdaas/vald/internal/io"
+	"github.com/vdaas/vald/internal/sync"
 )
 
 func (o *operation) Search(ctx context.Context, b *testing.B, ds assets.Dataset) {
@@ -138,6 +139,10 @@ func (o *operation) StreamSearchByID(ctx context.Context, b *testing.B, maxIdNum
 		if err != nil {
 			b.Fatal(err)
 		}
+		if sc == nil {
+			b.Fatal("stream channel is nil for StreamSearchByID")
+		}
+
 		wg := sync.WaitGroup{}
 		wg.Add(1)
 
@@ -148,12 +153,16 @@ func (o *operation) StreamSearchByID(ctx context.Context, b *testing.B, maxIdNum
 		}
 		b.ResetTimer()
 
+		var finished atomic.Bool
+		finished.Store(false)
+
 		go func() {
 			defer wg.Done()
 
-			for {
+			for sc != nil {
 				res, err := sc.Recv()
 				if err == io.EOF {
+					finished.Store(true)
 					return
 				}
 				if err != nil {
@@ -166,18 +175,20 @@ func (o *operation) StreamSearchByID(ctx context.Context, b *testing.B, maxIdNum
 			}
 		}()
 
-		for i := 0; i < b.N; i++ {
+		for i := 0; i < b.N && !finished.Load() && sc != nil; i++ {
 			err = sc.Send(&payload.Search_IDRequest{
 				Id:     strconv.Itoa(i % maxIdNum),
 				Config: cfg,
 			})
 			if err != nil {
-				b.Fatal(err)
+				b.Error(err)
 			}
 		}
 
-		if err := sc.CloseSend(); err != nil {
-			b.Fatal(err)
+		if sc != nil {
+			if err := sc.CloseSend(); err != nil {
+				b.Fatal(err)
+			}
 		}
 		wg.Wait()
 	})

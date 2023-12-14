@@ -1,7 +1,7 @@
 // Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //	https://www.apache.org/licenses/LICENSE-2.0
@@ -19,13 +19,13 @@ import (
 	"io/fs"
 	"math"
 	"os"
-	"sync"
 	"sync/atomic"
 	"testing"
 	"time"
 
 	"github.com/vdaas/vald/internal/errors"
-	"github.com/vdaas/vald/internal/singleflight"
+	"github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/internal/sync/singleflight"
 	stdsingleflight "golang.org/x/sync/singleflight"
 )
 
@@ -36,7 +36,7 @@ type Result struct {
 }
 
 type helper struct {
-	initDoFn  func() func(ctx context.Context, key string, fn func() (interface{}, error))
+	initDoFn  func() func(ctx context.Context, key string, fn func(context.Context) (string, error))
 	sleepDur  time.Duration
 	calledCnt int64
 	totalCnt  int64
@@ -67,7 +67,7 @@ var durs = []time.Duration{
 func (h *helper) Do(parallel int, b *testing.B) {
 	b.Helper()
 
-	fn := func() (interface{}, error) {
+	fn := func(context.Context) (string, error) {
 		atomic.AddInt64(&h.calledCnt, 1)
 		time.Sleep(h.sleepDur)
 		return "", nil
@@ -115,10 +115,10 @@ func Benchmark_group_Do_with_sync_singleflight(b *testing.B) {
 			results := make([]Result, 0, tryCnt)
 			for j := 0; j < tryCnt; j++ {
 				h := &helper{
-					initDoFn: func() func(ctx context.Context, key string, fn func() (interface{}, error)) {
+					initDoFn: func() func(ctx context.Context, key string, fn func(context.Context) (string, error)) {
 						g := new(stdsingleflight.Group)
-						return func(ctx context.Context, key string, fn func() (interface{}, error)) {
-							g.Do(key, fn)
+						return func(ctx context.Context, key string, fn func(context.Context) (string, error)) {
+							g.Do(key, func() (interface{}, error) { return fn(context.Background()) })
 						}
 					},
 					sleepDur: dur,
@@ -210,9 +210,9 @@ func Benchmark_group_Do_with_vald_internal_singleflight(b *testing.B) {
 			results := make([]Result, 0, tryCnt)
 			for j := 0; j < tryCnt; j++ {
 				h := &helper{
-					initDoFn: func() func(ctx context.Context, key string, fn func() (interface{}, error)) {
-						g := singleflight.New()
-						return func(ctx context.Context, key string, fn func() (interface{}, error)) {
+					initDoFn: func() func(ctx context.Context, key string, fn func(context.Context) (string, error)) {
+						g := singleflight.New[string]()
+						return func(ctx context.Context, key string, fn func(context.Context) (string, error)) {
 							g.Do(ctx, key, fn)
 						}
 					},

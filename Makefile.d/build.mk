@@ -2,7 +2,7 @@
 # Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
+# You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
 #    https://www.apache.org/licenses/LICENSE-2.0
@@ -30,9 +30,10 @@ cmd/agent/core/ngt/ngt: \
 	$(PBGOS) \
 	$(shell find $(ROOTDIR)/cmd/agent/core/ngt -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go') \
 	$(shell find $(ROOTDIR)/pkg/agent/core/ngt $(ROOTDIR)/pkg/agent/internal -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
+	$(eval CGO_ENABLED = 1)
 	CFLAGS="$(CFLAGS)" \
 	CXXFLAGS="$(CXXFLAGS)" \
-	CGO_ENABLED=1 \
+	CGO_ENABLED=$(CGO_ENABLED) \
 	CGO_CXXFLAGS="-g -Ofast -march=native" \
 	CGO_FFLAGS="-g -Ofast -march=native" \
 	CGO_LDFLAGS="-g -Ofast -march=native" \
@@ -47,7 +48,7 @@ cmd/agent/core/ngt/ngt: \
 		-X '$(GOPKG)/internal/info.GoVersion=$(GO_VERSION)' \
 		-X '$(GOPKG)/internal/info.GoOS=$(GOOS)' \
 		-X '$(GOPKG)/internal/info.GoArch=$(GOARCH)' \
-		-X '$(GOPKG)/internal/info.CGOEnabled=$${CGO_ENABLED}' \
+		-X '$(GOPKG)/internal/info.CGOEnabled=$(CGO_ENABLED)' \
 		-X '$(GOPKG)/internal/info.NGTVersion=$(NGT_VERSION)' \
 		-X '$(GOPKG)/internal/info.BuildCPUInfoFlags=$(CPU_INFO_FLAGS)' \
 		-buildid=" \
@@ -65,7 +66,8 @@ cmd/agent/sidecar/sidecar: \
 	$(PBGOS) \
 	$(shell find $(ROOTDIR)/cmd/agent/sidecar -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go') \
 	$(shell find $(ROOTDIR)/pkg/agent/sidecar $(ROOTDIR)/pkg/agent/internal -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
-	CGO_ENABLED=0 \
+	$(eval CGO_ENABLED = 0)
+	CGO_ENABLED=$(CGO_ENABLED) \
 	GO111MODULE=on \
 	GOPRIVATE=$(GOPRIVATE) \
 	go build \
@@ -76,7 +78,7 @@ cmd/agent/sidecar/sidecar: \
 		-X '$(GOPKG)/internal/info.GoVersion=$(GO_VERSION)' \
 		-X '$(GOPKG)/internal/info.GoOS=$(GOOS)' \
 		-X '$(GOPKG)/internal/info.GoArch=$(GOARCH)' \
-		-X '$(GOPKG)/internal/info.CGOEnabled=$${CGO_ENABLED}' \
+		-X '$(GOPKG)/internal/info.CGOEnabled=$(CGO_ENABLED)' \
 		-X '$(GOPKG)/internal/info.BuildCPUInfoFlags=$(CPU_INFO_FLAGS)' \
 		-buildid=" \
 		-mod=readonly \
@@ -93,7 +95,8 @@ cmd/discoverer/k8s/discoverer: \
 	$(PBGOS) \
 	$(shell find $(ROOTDIR)/cmd/discoverer/k8s -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go') \
 	$(shell find $(ROOTDIR)/pkg/discoverer/k8s -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
-	CGO_ENABLED=0 \
+	$(eval CGO_ENABLED = 0)
+	CGO_ENABLED=$(CGO_ENABLED) \
 	GO111MODULE=on \
 	GOPRIVATE=$(GOPRIVATE) \
 	go build \
@@ -104,7 +107,7 @@ cmd/discoverer/k8s/discoverer: \
 		-X '$(GOPKG)/internal/info.GoVersion=$(GO_VERSION)' \
 		-X '$(GOPKG)/internal/info.GoOS=$(GOOS)' \
 		-X '$(GOPKG)/internal/info.GoArch=$(GOARCH)' \
-		-X '$(GOPKG)/internal/info.CGOEnabled=$${CGO_ENABLED}' \
+		-X '$(GOPKG)/internal/info.CGOEnabled=$(CGO_ENABLED)' \
 		-X '$(GOPKG)/internal/info.BuildCPUInfoFlags=$(CPU_INFO_FLAGS)' \
 		-buildid=" \
 		-mod=readonly \
@@ -121,7 +124,8 @@ cmd/gateway/lb/lb: \
 	$(PBGOS) \
 	$(shell find $(ROOTDIR)/cmd/gateway/lb -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go') \
 	$(shell find $(ROOTDIR)/pkg/gateway/lb -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
-	CGO_ENABLED=0 \
+	$(eval CGO_ENABLED = 0)
+	CGO_ENABLED=$(CGO_ENABLED) \
 	GO111MODULE=on \
 	GOPRIVATE=$(GOPRIVATE) \
 	go build \
@@ -132,7 +136,7 @@ cmd/gateway/lb/lb: \
 		-X '$(GOPKG)/internal/info.GoVersion=$(GO_VERSION)' \
 		-X '$(GOPKG)/internal/info.GoOS=$(GOOS)' \
 		-X '$(GOPKG)/internal/info.GoArch=$(GOARCH)' \
-		-X '$(GOPKG)/internal/info.CGOEnabled=$${CGO_ENABLED}' \
+		-X '$(GOPKG)/internal/info.CGOEnabled=$(CGO_ENABLED)' \
 		-X '$(GOPKG)/internal/info.BuildCPUInfoFlags=$(CPU_INFO_FLAGS)' \
 		-buildid=" \
 		-mod=readonly \
@@ -149,7 +153,8 @@ cmd/gateway/filter/filter: \
 	$(PBGOS) \
 	$(shell find $(ROOTDIR)/cmd/gateway/filter -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go') \
 	$(shell find $(ROOTDIR)/pkg/gateway/filter -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
-	CGO_ENABLED=0 \
+	$(eval CGO_ENABLED = 0)
+	CGO_ENABLED=$(CGO_ENABLED) \
 	GO111MODULE=on \
 	GOPRIVATE=$(GOPRIVATE) \
 	go build \
@@ -160,7 +165,7 @@ cmd/gateway/filter/filter: \
 		-X '$(GOPKG)/internal/info.GoVersion=$(GO_VERSION)' \
 		-X '$(GOPKG)/internal/info.GoOS=$(GOOS)' \
 		-X '$(GOPKG)/internal/info.GoArch=$(GOARCH)' \
-		-X '$(GOPKG)/internal/info.CGOEnabled=$${CGO_ENABLED}' \
+		-X '$(GOPKG)/internal/info.CGOEnabled=$(CGO_ENABLED)' \
 		-X '$(GOPKG)/internal/info.BuildCPUInfoFlags=$(CPU_INFO_FLAGS)' \
 		-buildid=" \
 		-mod=readonly \
@@ -177,7 +182,8 @@ cmd/manager/index/index: \
 	$(PBGOS) \
 	$(shell find $(ROOTDIR)/cmd/manager/index -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go') \
 	$(shell find $(ROOTDIR)/pkg/manager/index -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
-	CGO_ENABLED=0 \
+	$(eval CGO_ENABLED = 0)
+	CGO_ENABLED=$(CGO_ENABLED) \
 	GO111MODULE=on \
 	GOPRIVATE=$(GOPRIVATE) \
 	go build \
@@ -188,7 +194,123 @@ cmd/manager/index/index: \
 		-X '$(GOPKG)/internal/info.GoVersion=$(GO_VERSION)' \
 		-X '$(GOPKG)/internal/info.GoOS=$(GOOS)' \
 		-X '$(GOPKG)/internal/info.GoArch=$(GOARCH)' \
-		-X '$(GOPKG)/internal/info.CGOEnabled=$${CGO_ENABLED}' \
+		-X '$(GOPKG)/internal/info.CGOEnabled=$(CGO_ENABLED)' \
+		-X '$(GOPKG)/internal/info.BuildCPUInfoFlags=$(CPU_INFO_FLAGS)' \
+		-buildid=" \
+		-mod=readonly \
+		-modcacherw \
+		-a \
+		-tags "osusergo netgo static_build" \
+		-trimpath \
+		-o $@ \
+		$(dir $@)main.go
+	$@ -version
+
+cmd/index/job/correction/index-correction: \
+	$(GO_SOURCES_INTERNAL) \
+	$(PBGOS) \
+	$(shell find $(ROOTDIR)/cmd/index/job/correction -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go') \
+	$(shell find $(ROOTDIR)/pkg/index/job/correction -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
+	$(eval CGO_ENABLED = 0)
+	CGO_ENABLED=$(CGO_ENABLED) \
+	GO111MODULE=on \
+	GOPRIVATE=$(GOPRIVATE) \
+	go build \
+		--ldflags "-w -extldflags=-static \
+		-X '$(GOPKG)/internal/info.Version=$(VERSION)' \
+		-X '$(GOPKG)/internal/info.GitCommit=$(GIT_COMMIT)' \
+		-X '$(GOPKG)/internal/info.BuildTime=$(DATETIME)' \
+		-X '$(GOPKG)/internal/info.GoVersion=$(GO_VERSION)' \
+		-X '$(GOPKG)/internal/info.GoOS=$(GOOS)' \
+		-X '$(GOPKG)/internal/info.GoArch=$(GOARCH)' \
+		-X '$(GOPKG)/internal/info.CGOEnabled=$(CGO_ENABLED)' \
+		-X '$(GOPKG)/internal/info.BuildCPUInfoFlags=$(CPU_INFO_FLAGS)' \
+		-buildid=" \
+		-mod=readonly \
+		-modcacherw \
+		-a \
+		-tags "osusergo netgo static_build" \
+		-trimpath \
+		-o $@ \
+		$(dir $@)main.go
+	$@ -version
+
+cmd/index/job/creation/index-creation: \
+	$(GO_SOURCES_INTERNAL) \
+	$(PBGOS) \
+	$(shell find $(ROOTDIR)/cmd/index/job/creation -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go') \
+	$(shell find $(ROOTDIR)/pkg/index/job/creation -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
+	$(eval CGO_ENABLED = 0)
+	CGO_ENABLED=$(CGO_ENABLED) \
+	GO111MODULE=on \
+	GOPRIVATE=$(GOPRIVATE) \
+	go build \
+		--ldflags "-w -extldflags=-static \
+		-X '$(GOPKG)/internal/info.Version=$(VERSION)' \
+		-X '$(GOPKG)/internal/info.GitCommit=$(GIT_COMMIT)' \
+		-X '$(GOPKG)/internal/info.BuildTime=$(DATETIME)' \
+		-X '$(GOPKG)/internal/info.GoVersion=$(GO_VERSION)' \
+		-X '$(GOPKG)/internal/info.GoOS=$(GOOS)' \
+		-X '$(GOPKG)/internal/info.GoArch=$(GOARCH)' \
+		-X '$(GOPKG)/internal/info.CGOEnabled=$(CGO_ENABLED)' \
+		-X '$(GOPKG)/internal/info.BuildCPUInfoFlags=$(CPU_INFO_FLAGS)' \
+		-buildid=" \
+		-mod=readonly \
+		-modcacherw \
+		-a \
+		-tags "osusergo netgo static_build" \
+		-trimpath \
+		-o $@ \
+		$(dir $@)main.go
+	$@ -version
+
+cmd/index/job/save/index-save: \
+	$(GO_SOURCES_INTERNAL) \
+	$(PBGOS) \
+	$(shell find $(ROOTDIR)/cmd/index/job/save -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go') \
+	$(shell find $(ROOTDIR)/pkg/index/job/save -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
+	$(eval CGO_ENABLED = 0)
+	CGO_ENABLED=$(CGO_ENABLED) \
+	GO111MODULE=on \
+	GOPRIVATE=$(GOPRIVATE) \
+	go build \
+		--ldflags "-w -extldflags=-static \
+		-X '$(GOPKG)/internal/info.Version=$(VERSION)' \
+		-X '$(GOPKG)/internal/info.GitCommit=$(GIT_COMMIT)' \
+		-X '$(GOPKG)/internal/info.BuildTime=$(DATETIME)' \
+		-X '$(GOPKG)/internal/info.GoVersion=$(GO_VERSION)' \
+		-X '$(GOPKG)/internal/info.GoOS=$(GOOS)' \
+		-X '$(GOPKG)/internal/info.GoArch=$(GOARCH)' \
+		-X '$(GOPKG)/internal/info.CGOEnabled=$(CGO_ENABLED)' \
+		-X '$(GOPKG)/internal/info.BuildCPUInfoFlags=$(CPU_INFO_FLAGS)' \
+		-buildid=" \
+		-mod=readonly \
+		-modcacherw \
+		-a \
+		-tags "osusergo netgo static_build" \
+		-trimpath \
+		-o $@ \
+		$(dir $@)main.go
+	$@ -version
+
+cmd/index/job/readreplica/rotate/readreplica-rotate: \
+	$(GO_SOURCES_INTERNAL) \
+	$(PBGOS) \
+	$(shell find $(ROOTDIR)/cmd/index/job/readreplica/rotate -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go') \
+	$(shell find $(ROOTDIR)/pkg/index/job/readreplica/rotate -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
+	$(eval CGO_ENABLED = 0)
+	CGO_ENABLED=$(CGO_ENABLED) \
+	GO111MODULE=on \
+	GOPRIVATE=$(GOPRIVATE) \
+	go build \
+		--ldflags "-w -extldflags=-static \
+		-X '$(GOPKG)/internal/info.Version=$(VERSION)' \
+		-X '$(GOPKG)/internal/info.GitCommit=$(GIT_COMMIT)' \
+		-X '$(GOPKG)/internal/info.BuildTime=$(DATETIME)' \
+		-X '$(GOPKG)/internal/info.GoVersion=$(GO_VERSION)' \
+		-X '$(GOPKG)/internal/info.GoOS=$(GOOS)' \
+		-X '$(GOPKG)/internal/info.GoArch=$(GOARCH)' \
+		-X '$(GOPKG)/internal/info.CGOEnabled=$(CGO_ENABLED)' \
 		-X '$(GOPKG)/internal/info.BuildCPUInfoFlags=$(CPU_INFO_FLAGS)' \
 		-buildid=" \
 		-mod=readonly \

@@ -1,8 +1,9 @@
+# syntax = docker/dockerfile:latest
 #
 # Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
+# You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
 #    https://www.apache.org/licenses/LICENSE-2.0
@@ -19,31 +20,45 @@ ARG DISTROLESS_IMAGE=gcr.io/distroless/static
 ARG DISTROLESS_IMAGE_TAG=nonroot
 ARG MAINTAINER="vdaas.org vald team <vald@vdaas.org>"
 
-FROM golang:${GO_VERSION} AS builder
+FROM --platform=${BUILDPLATFORM} golang:${GO_VERSION} AS golang
+
+FROM --platform=${BUILDPLATFORM} ubuntu:devel AS builder
 
 ENV GO111MODULE on
+ENV GOPATH /go
+ENV GOROOT /opt/go
+ENV DEBIAN_FRONTEND noninteractive
+ENV INITRD No
 ENV LANG en_US.UTF-8
 ENV ORG vdaas
 ENV REPO vald
+ENV APP_NAME sidecar
 ENV PKG agent/sidecar
 ENV PKG_INTERNAL agent/internal
-ENV APP_NAME sidecar
+ENV PATH ${PATH}:${GOROOT}/bin:${GOPATH}/bin
 
 # skipcq: DOK-DL3008
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates \
+    build-essential \
+    curl \
     upx \
     git \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
+COPY --from=golang /usr/local/go $GOROOT
 RUN mkdir -p "$GOPATH/src"
 
+WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/Makefile.d
+COPY Makefile.d .
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}
-
+COPY Makefile .
+COPY .git .
 COPY go.mod .
 COPY go.sum .
 
-RUN go mod download
+RUN make go/download
 
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/internal
 COPY internal .
@@ -63,18 +78,12 @@ COPY cmd/${PKG} .
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/versions
 COPY versions .
 
-WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/Makefile.d
-COPY Makefile.d .
-
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}
-COPY Makefile .
-COPY .git .
-
 RUN make REPO=${ORG} NAME=${REPO} cmd/${PKG}/${APP_NAME} \
     && mv "cmd/${PKG}/${APP_NAME}" "/usr/bin/${APP_NAME}"
 
-FROM ${DISTROLESS_IMAGE}:${DISTROLESS_IMAGE_TAG}
-LABEL maintainer "${MAINTAINER}"
+FROM --platform=${BUILDPLATFORM} ${DISTROLESS_IMAGE}:${DISTROLESS_IMAGE_TAG}
+LABEL maintainer="${MAINTAINER}"
 
 ENV APP_NAME sidecar
 

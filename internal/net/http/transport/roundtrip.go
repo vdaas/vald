@@ -2,7 +2,7 @@
 // Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -76,7 +76,7 @@ func (e *ert) doRoundTrip(req *http.Request) (res *http.Response, err error) {
 		if res != nil { // just in case we check the response as it depends on RoundTrip impl.
 			closeBody(res.Body)
 			if retryableStatusCode(res.StatusCode) {
-				return nil, errors.Wrap(errors.ErrTransportRetryable, err.Error())
+				return nil, errors.Join(errors.ErrTransportRetryable, err)
 			}
 		}
 		return nil, err
@@ -94,7 +94,6 @@ func retryableStatusCode(status int) bool {
 	case http.StatusTooManyRequests,
 		http.StatusInternalServerError,
 		http.StatusServiceUnavailable,
-		http.StatusMovedPermanently,
 		http.StatusBadGateway,
 		http.StatusGatewayTimeout:
 		return true

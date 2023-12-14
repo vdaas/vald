@@ -2,7 +2,7 @@
 # Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
+# You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
 #    https://www.apache.org/licenses/LICENSE-2.0
@@ -17,11 +17,10 @@
 ORG                             ?= vdaas
 NAME                            = vald
 GOPKG                           = github.com/$(ORG)/$(NAME)
-GOPRIVATE                       = $(GOPKG),$(GOPKG)/apis
 DATETIME                        = $(eval DATETIME := $(shell date -u +%Y/%m/%d_%H:%M:%S%z))$(DATETIME)
 TAG                            ?= latest
 CRORG                          ?= $(ORG)
-# CRORG                           = ghcr.io/vdaas/vald
+GHCRORG                         = ghcr.io/$(ORG)/$(NAME)
 AGENT_IMAGE                     = $(NAME)-agent-ngt
 AGENT_SIDECAR_IMAGE             = $(NAME)-agent-sidecar
 CI_CONTAINER_IMAGE              = $(NAME)-ci-container
@@ -31,6 +30,10 @@ FILTER_GATEWAY_IMAGE            = $(NAME)-filter-gateway
 HELM_OPERATOR_IMAGE             = $(NAME)-helm-operator
 LB_GATEWAY_IMAGE                = $(NAME)-lb-gateway
 LOADTEST_IMAGE                  = $(NAME)-loadtest
+INDEX_CORRECTION_IMAGE          = $(NAME)-index-correction
+INDEX_CREATION_IMAGE            = $(NAME)-index-creation
+INDEX_SAVE_IMAGE                = $(NAME)-index-save
+READREPLICA_ROTATE_IMAGE        = $(NAME)-readreplica-rotate
 MANAGER_INDEX_IMAGE             = $(NAME)-manager-index
 MAINTAINER                      = "$(ORG).org $(NAME) team <$(NAME)@$(ORG).org>"
 
@@ -39,14 +42,16 @@ VERSION ?= $(eval VERSION := $(shell cat versions/VALD_VERSION))$(VERSION)
 NGT_VERSION := $(eval NGT_VERSION := $(shell cat versions/NGT_VERSION))$(NGT_VERSION)
 NGT_REPO = github.com/yahoojapan/NGT
 
-GOPROXY=direct
+GOPRIVATE = $(GOPKG),$(GOPKG)/apis,$(GOPKG)-client-go
+GOPROXY = "https://proxy.golang.org,direct"
+GOPATH := $(eval GOPATH := $(shell go env GOPATH))$(GOPATH)
 GO_VERSION := $(eval GO_VERSION := $(shell cat versions/GO_VERSION))$(GO_VERSION)
 GOARCH := $(eval GOARCH := $(shell go env GOARCH))$(GOARCH)
-GOBIN := $(eval GOBIN := $(shell go env GOBIN))$(GOBIN)
+GOBIN := $(eval GOBIN := $(or $(shell go env GOBIN),$(GOPATH)/bin))$(GOBIN)
 GOCACHE := $(eval GOCACHE := $(shell go env GOCACHE))$(GOCACHE)
 GOOS := $(eval GOOS := $(shell go env GOOS))$(GOOS)
-GOPATH := $(eval GOPATH := $(shell go env GOPATH))$(GOPATH)
 GOTEST_TIMEOUT = 30m
+TEST_NOT_IMPL_PLACEHOLDER = NOT IMPLEMENTED BELOW
 
 TEMP_DIR := $(eval TEMP_DIR := $(shell mktemp -d))$(TEMP_DIR)
 
@@ -57,6 +62,7 @@ HELM_DOCS_VERSION         := $(eval HELM_DOCS_VERSION := $(shell cat versions/HE
 HELM_VERSION              := $(eval HELM_VERSION := $(shell cat versions/HELM_VERSION))$(HELM_VERSION)
 JAEGER_OPERATOR_VERSION   := $(eval JAEGER_OPERATOR_VERSION := $(shell cat versions/JAEGER_OPERATOR_VERSION))$(JAEGER_OPERATOR_VERSION)
 KIND_VERSION              := $(eval KIND_VERSION := $(shell cat versions/KIND_VERSION))$(KIND_VERSION)
+KUBECTL_VERSION           := $(eval KUBECTL_VERSION := $(shell cat versions/KUBECTL_VERSION))$(KUBECTL_VERSION)
 KUBELINTER_VERSION        := $(eval KUBELINTER_VERSION := $(shell cat versions/KUBELINTER_VERSION))$(KUBELINTER_VERSION)
 OTEL_OPERATOR_VERSION     := $(eval OTEL_OPERATOR_VERSION := $(shell cat versions/OTEL_OPERATOR_VERSION))$(OTEL_OPERATOR_VERSION)
 PROMETHEUS_STACK_VERSION  := $(eval PROMETHEUS_STACK_VERSION := $(shell cat versions/PROMETHEUS_STACK_VERSION))$(PROMETHEUS_STACK_VERSION)
@@ -65,6 +71,7 @@ REVIEWDOG_VERSION         := $(eval REVIEWDOG_VERSION := $(shell cat versions/RE
 TELEPRESENCE_VERSION      := $(eval TELEPRESENCE_VERSION := $(shell cat versions/TELEPRESENCE_VERSION))$(TELEPRESENCE_VERSION)
 VALDCLI_VERSION           := $(eval VALDCLI_VERSION := $(shell cat versions/VALDCLI_VERSION))$(VALDCLI_VERSION)
 YQ_VERSION                := $(eval YQ_VERSION := $(shell cat versions/YQ_VERSION))$(YQ_VERSION)
+BUF_VERSION               := $(eval BUF_VERSION := $(shell cat versions/BUF_VERSION))$(BUF_VERSION)
 
 OTEL_OPERATOR_RELEASE_NAME ?= opentelemetry-operator
 PROMETHEUS_RELEASE_NAME    ?= prometheus
@@ -75,7 +82,8 @@ SWAP_TAG             ?= latest
 
 BINDIR ?= /usr/local/bin
 
-UNAME := $(eval UNAME := $(shell uname))$(UNAME)
+UNAME := $(eval UNAME := $(shell uname -s))$(UNAME)
+ARCH := $(eval ARCH := $(shell uname -m))$(ARCH)
 PWD := $(eval PWD := $(shell pwd))$(PWD)
 
 ifeq ($(UNAME),Linux)
@@ -88,7 +96,7 @@ GIT_COMMIT := $(eval GIT_COMMIT := $(shell git rev-list -1 HEAD))$(GIT_COMMIT)
 
 MAKELISTS := Makefile $(shell find Makefile.d -type f -regex ".*\.mk")
 
-ROOTDIR = $(eval ROOTDIR := $(shell git rev-parse --show-toplevel))$(ROOTDIR)
+ROOTDIR = $(eval ROOTDIR := $(or $(shell git rev-parse --show-toplevel), $(PWD)))$(ROOTDIR)
 PROTODIRS := $(eval PROTODIRS := $(shell find apis/proto -type d | sed -e "s%apis/proto/%%g" | grep -v "apis/proto"))$(PROTODIRS)
 BENCH_DATASET_BASE_DIR = hack/benchmark/assets
 BENCH_DATASET_MD5_DIR_NAME = checksum
@@ -160,13 +168,13 @@ BODY = ""
 PROTO_PATHS = \
 	$(PWD) \
 	$(GOPATH)/src \
-	$(GOPATH)/src/$(GOPKG) \
-	$(GOPATH)/src/$(GOPKG)/apis/proto/v1 \
 	$(GOPATH)/src/github.com/envoyproxy/protoc-gen-validate \
 	$(GOPATH)/src/github.com/googleapis/googleapis \
 	$(GOPATH)/src/github.com/planetscale/vtprotobuf \
 	$(GOPATH)/src/github.com/protocolbuffers/protobuf \
-	$(GOPATH)/src/google.golang.org/genproto
+	$(GOPATH)/src/google.golang.org/genproto \
+	$(ROOTDIR) \
+	$(ROOTDIR)/apis/proto/v1
 
 # [Warning]
 # The below packages have no original implementation.
@@ -250,8 +258,11 @@ GO_SOURCES_INTERNAL = $(eval GO_SOURCES_INTERNAL := $(shell find \
 GO_TEST_SOURCES = $(GO_SOURCES:%.go=%_test.go)
 GO_OPTION_TEST_SOURCES = $(GO_OPTION_SOURCES:%.go=%_test.go)
 
-DOCKER           ?= docker
-DOCKER_OPTS      ?=
+GO_ALL_TEST_SOURCES = $(GO_TEST_SOURCES) $(GO_OPTION_TEST_SOURCES)
+
+DOCKER                ?= docker
+DOCKER_OPTS           ?=
+BUILDKIT_INLINE_CACHE ?= 1
 
 DISTROLESS_IMAGE      ?= gcr.io/distroless/static
 DISTROLESS_IMAGE_TAG  ?= nonroot
@@ -260,8 +271,16 @@ GOLINES_MAX_WIDTH     ?= 200
 
 K8S_SLEEP_DURATION_FOR_WAIT_COMMAND ?= 5
 
+ifeq ($(origin KUBECONFIG), undefined)
+KUBECONFIG := $(HOME)/.kube/config
+endif
 K8S_KUBECTL_VERSION ?= $(eval K8S_KUBECTL_VERSION := $(shell kubectl version --short))$(K8S_KUBECTL_VERSION)
 K8S_SERVER_VERSION ?= $(eval K8S_SERVER_VERSION := $(shell echo "$(K8S_KUBECTL_VERSION)" | sed -e "s/.*Server.*\(v[0-9]\.[0-9]*\)\..*/\1/g"))$(K8S_SERVER_VERSION)
+
+# values file to use when deploying sample vald cluster with make k8s/vald/deploy
+HELM_VALUES ?= $(ROOTDIR)/charts/vald/values/dev.yaml
+# extra options to pass to helm when deploying sample vald cluster with make k8s/vald/deploy
+HELM_EXTRA_OPTIONS ?=
 
 COMMA := ,
 SHELL = bash
@@ -269,7 +288,7 @@ SHELL = bash
 E2E_BIND_HOST                      ?= 127.0.0.1
 E2E_BIND_PORT                      ?= 8082
 E2E_TIMEOUT                        ?= 30m
-E2E_DATASET_NAME                   ?= fashion-mnist-784-euclidean
+E2E_DATASET_NAME                   ?= fashion-mnist-784-euclidean.hdf5
 E2E_INSERT_COUNT                   ?= 10000
 E2E_SEARCH_COUNT                   ?= 1000
 E2E_SEARCH_BY_ID_COUNT             ?= 100
@@ -347,7 +366,7 @@ clean:
 license:
 	GOPRIVATE=$(GOPRIVATE) \
 	MAINTAINER=$(MAINTAINER) \
-	go run -mod=readonly hack/license/gen/main.go ./
+	go run -mod=readonly hack/license/gen/main.go $(ROOTDIR)
 
 .PHONY: init
 ## initialize development environment
@@ -363,7 +382,6 @@ tools/install: \
 	helm/install \
 	kind/install \
 	valdcli/install \
-	telepresence/install \
 	textlint/install
 
 .PHONY: update
@@ -373,6 +391,7 @@ update: \
 	update/libs \
 	proto/all \
 	deps \
+	update/template \
 	format \
 	go/deps
 
@@ -383,7 +402,8 @@ format: \
 	format/go \
 	format/json \
 	format/md \
-	format/yaml
+	format/yaml \
+	format/proto
 
 .PHONY: format/go
 ## run golines, gofumpt, goimports for all go files
@@ -392,36 +412,53 @@ format/go: \
 	gofumpt/install \
 	strictgoimports/install \
 	goimports/install
-	find ./ -type d -name .git -prune -o -type f -regex '.*[^\.pb]\.go' -print | xargs $(GOPATH)/bin/golines -w -m $(GOLINES_MAX_WIDTH)
-	find ./ -type d -name .git -prune -o -type f -regex '.*[^\.pb]\.go' -print | xargs $(GOPATH)/bin/gofumpt -w
-	find ./ -type d -name .git -prune -o -type f -regex '.*[^\.pb]\.go' -print | xargs $(GOPATH)/bin/strictgoimports -w
-	find ./ -type d -name .git -prune -o -type f -regex '.*\.go' -print | xargs $(GOPATH)/bin/goimports -w
+	find ./ -type d -name .git -prune -o -type f -regex '.*[^\.pb]\.go' -print | xargs $(GOBIN)/golines -w -m $(GOLINES_MAX_WIDTH)
+	find ./ -type d -name .git -prune -o -type f -regex '.*[^\.pb]\.go' -print | xargs $(GOBIN)/gofumpt -w
+	find ./ -type d -name .git -prune -o -type f -regex '.*[^\.pb]\.go' -print | xargs $(GOBIN)/strictgoimports -w
+	find ./ -type d -name .git -prune -o -type f -regex '.*\.go' -print | xargs $(GOBIN)/goimports -w
+
+.PHONY: format/go/test
+## run golines, gofumpt, goimports for go test files
+format/go/test: \
+	golines/install \
+	gofumpt/install \
+	strictgoimports/install \
+	goimports/install
+	find $(ROOTDIR)/* -name '*_test.go' | xargs $(GOBIN)/golines -w -m $(GOLINES_MAX_WIDTH)
+	find $(ROOTDIR)/* -name '*_test.go' | xargs $(GOBIN)/gofumpt -w
+	find $(ROOTDIR)/* -name '*_test.go' | xargs $(GOBIN)/strictgoimports -w
+	find $(ROOTDIR)/* -name '*_test.go' | xargs $(GOBIN)/goimports -w
 
 .PHONY: format/yaml
 format/yaml: \
 	prettier/install
 	prettier --write \
-	    ".github/**/*.yaml" \
-	    ".github/**/*.yml" \
-	    "cmd/**/*.yaml" \
-	    "k8s/**/*.yaml"
+	    "$(ROOTDIR)/.github/**/*.yaml" \
+	    "$(ROOTDIR)/.github/**/*.yml" \
+	    "$(ROOTDIR)/cmd/**/*.yaml" \
+	    "$(ROOTDIR)/k8s/**/*.yaml"
 
 .PHONY: format/md
 format/md: \
 	prettier/install
 	prettier --write \
-	    "charts/**/*.md" \
-	    "apis/**/*.md" \
-	    "tests/**/*.md" \
-	    "./*.md"
+	    "$(ROOTDIR)/charts/**/*.md" \
+	    "$(ROOTDIR)/apis/**/*.md" \
+	    "$(ROOTDIR)/tests/**/*.md" \
+	    "$(ROOTDIR)/*.md"
 
 .PHONY: format/json
 format/json: \
 	prettier/install
 	prettier --write \
-	    "apis/**/*.json" \
-	    "charts/**/*.json" \
-	    "hack/**/*.json"
+	    "$(ROOTDIR)/apis/**/*.json" \
+	    "$(ROOTDIR)/charts/**/*.json" \
+	    "$(ROOTDIR)/hack/**/*.json"
+
+.PHONY: format/proto
+format/proto: \
+	buf/install
+	buf format -w
 
 .PHONY: deps
 ## resolve dependencies
@@ -459,6 +496,11 @@ version/go:
 version/ngt:
 	@echo $(NGT_VERSION)
 
+.PHONY: version/k8s
+## print Kubernetes version
+version/k8s:
+	@echo $(KUBECTL_VERSION)
+
 .PHONY: version/kind
 version/kind:
 	@echo $(KIND_VERSION)
@@ -466,6 +508,10 @@ version/kind:
 .PHONY: version/helm
 version/helm:
 	@echo $(HELM_VERSION)
+
+.PHONY: version/yq
+version/yq:
+	@echo $(YQ_VERSION)
 
 .PHONY: version/valdcli
 version/valdcli:
@@ -535,3 +581,4 @@ include Makefile.d/kind.mk
 include Makefile.d/proto.mk
 include Makefile.d/test.mk
 include Makefile.d/tools.mk
+include Makefile.d/minikube.mk

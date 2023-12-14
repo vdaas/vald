@@ -1,0 +1,49 @@
+#
+# Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# You may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+name: "Setup yq environment"
+description: "A action to set up yq"
+
+inputs:
+  yq_version:
+    description: "The yq version to use. The default version is `versions/YQ_VERSION`"
+    required: false
+    default: ""
+
+runs:
+  using: "composite"
+  steps:
+    - name: Fetch yq version
+      id: yq_version
+      shell: bash
+      run: |
+        YQ_VERSION=${YQ_VERSION:-`make version/yq`}
+
+        echo "version=${YQ_VERSION}" >> $GITHUB_OUTPUT
+      env:
+        YQ_VERSION: ${{ inputs.yq_version }}
+
+    - name: Install yq
+      shell: bash
+      run: |
+        curl -Lo /usr/local/bin/yq https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64
+        chmod a+x /usr/local/bin/yq
+      env:
+        YQ_VERSION: ${{ steps.yq_version.outputs.version }}
+
+    - name: Check yq version
+      shell: bash
+      run: |
+        yq --version

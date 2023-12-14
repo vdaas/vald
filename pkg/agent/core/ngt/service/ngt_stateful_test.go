@@ -2,7 +2,7 @@
 // Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -28,10 +28,10 @@ import (
 	"github.com/leanovate/gopter"
 	"github.com/leanovate/gopter/commands"
 	"github.com/leanovate/gopter/gen"
+	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
-	"github.com/vdaas/vald/pkg/agent/core/ngt/model"
 )
 
 type ngtSystem struct {
@@ -41,10 +41,11 @@ type ngtSystem struct {
 }
 
 type resultContainer struct {
-	err     error
-	results []model.Distance
-	vector  []float32
-	exists  bool
+	err       error
+	results   *payload.Search_Response
+	vector    []float32
+	timestamp int64
+	exists    bool
 }
 
 type ngtState struct {
@@ -122,13 +123,14 @@ var (
 	}
 )
 
-func init() {
+func TestMain(m *testing.M) {
 	testing.Init()
 
 	flag.Int64Var(&seed, "pbt-seed", 0, "seed number used for PBT")
 	flag.IntVar(&minSuccessfulTests, "pbt-min-successful-tests", 10, "minimum number of successful tests in PBT")
 	flag.Float64Var(&maxDiscardRatio, "pbt-max-discard-ratio", 5.0, "maximum discard ratio of PBT")
 	flag.BoolVar(&applicationLog, "pbt-enable-application-log", false, "enable application log on PBT")
+	m.Run()
 }
 
 var (
@@ -510,9 +512,10 @@ var (
 		RunFunc: func(
 			systemUnderTest commands.SystemUnderTest,
 		) commands.Result {
-			ngt := systemUnderTest.(*ngtSystem).ngt
+			ngtSys := systemUnderTest.(*ngtSystem)
+			ngt := ngtSys.ngt
 
-			res, err := ngt.Search([]float32{0.1, 0.1, 0.1}, 3, 0.1, -1.0)
+			res, err := ngt.Search(ngtSys.ctx, []float32{0.1, 0.1, 0.1}, 3, 0.1, -1.0)
 			return &resultContainer{
 				err:     err,
 				results: res,
@@ -582,9 +585,10 @@ var (
 		RunFunc: func(
 			systemUnderTest commands.SystemUnderTest,
 		) commands.Result {
-			ngt := systemUnderTest.(*ngtSystem).ngt
+			ngtSys := systemUnderTest.(*ngtSystem)
+			ngt := ngtSys.ngt
 
-			_, res, err := ngt.SearchByID(idA, 3, 0.1, -1.0)
+			_, res, err := ngt.SearchByID(ngtSys.ctx, idA, 3, 0.1, -1.0)
 			return &resultContainer{
 				err:     err,
 				results: res,
@@ -661,9 +665,10 @@ var (
 		RunFunc: func(
 			systemUnderTest commands.SystemUnderTest,
 		) commands.Result {
-			ngt := systemUnderTest.(*ngtSystem).ngt
+			ngtSys := systemUnderTest.(*ngtSystem)
+			ngt := ngtSys.ngt
 
-			_, res, err := ngt.SearchByID(idB, 3, 0.1, -1.0)
+			_, res, err := ngt.SearchByID(ngtSys.ctx, idB, 3, 0.1, -1.0)
 			return &resultContainer{
 				err:     err,
 				results: res,
@@ -740,9 +745,10 @@ var (
 		RunFunc: func(
 			systemUnderTest commands.SystemUnderTest,
 		) commands.Result {
-			ngt := systemUnderTest.(*ngtSystem).ngt
+			ngtSys := systemUnderTest.(*ngtSystem)
+			ngt := ngtSys.ngt
 
-			_, res, err := ngt.SearchByID(idC, 3, 0.1, -1.0)
+			_, res, err := ngt.SearchByID(ngtSys.ctx, idC, 3, 0.1, -1.0)
 			return &resultContainer{
 				err:     err,
 				results: res,
@@ -1103,10 +1109,11 @@ var (
 		) commands.Result {
 			ngt := systemUnderTest.(*ngtSystem).ngt
 
-			vec, err := ngt.GetObject(idA)
+			vec, ts, err := ngt.GetObject(idA)
 			return &resultContainer{
-				vector: vec,
-				err:    err,
+				vector:    vec,
+				timestamp: ts,
+				err:       err,
 			}
 		},
 		NextStateFunc: func(state commands.State) commands.State {
@@ -1161,10 +1168,11 @@ var (
 		) commands.Result {
 			ngt := systemUnderTest.(*ngtSystem).ngt
 
-			vec, err := ngt.GetObject(idB)
+			vec, ts, err := ngt.GetObject(idB)
 			return &resultContainer{
-				vector: vec,
-				err:    err,
+				vector:    vec,
+				timestamp: ts,
+				err:       err,
 			}
 		},
 		NextStateFunc: func(state commands.State) commands.State {
@@ -1219,10 +1227,11 @@ var (
 		) commands.Result {
 			ngt := systemUnderTest.(*ngtSystem).ngt
 
-			vec, err := ngt.GetObject(idC)
+			vec, ts, err := ngt.GetObject(idC)
 			return &resultContainer{
-				vector: vec,
-				err:    err,
+				vector:    vec,
+				timestamp: ts,
+				err:       err,
 			}
 		},
 		NextStateFunc: func(state commands.State) commands.State {

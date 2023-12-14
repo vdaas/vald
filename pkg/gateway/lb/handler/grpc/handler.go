@@ -2,7 +2,7 @@
 // Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -20,10 +20,9 @@ package grpc
 import (
 	"context"
 	"fmt"
-	"math"
-	"math/big"
+	"io"
+	"slices"
 	"strconv"
-	"sync"
 	"sync/atomic"
 	"time"
 
@@ -31,18 +30,19 @@ import (
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
 	"github.com/vdaas/vald/internal/conv"
 	"github.com/vdaas/vald/internal/core/algorithm"
-	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/info"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/net/grpc/errdetails"
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
-	"github.com/vdaas/vald/internal/slices"
 	"github.com/vdaas/vald/internal/strings"
+	"github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/pkg/gateway/lb/service"
 )
 
@@ -302,14 +302,15 @@ func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *
 		req.Config.MinNum = 0
 	}
 	res, err = s.doSearch(ctx, &payload.Search_Config{
-		RequestId:      cfg.GetRequestId(),
-		Num:            cfg.GetNum(),
-		MinNum:         mn,
-		Radius:         cfg.GetRadius(),
-		Epsilon:        cfg.GetEpsilon(),
-		Timeout:        cfg.GetTimeout(),
-		IngressFilters: cfg.GetIngressFilters(),
-		EgressFilters:  cfg.GetEgressFilters(),
+		RequestId:            cfg.GetRequestId(),
+		Num:                  cfg.GetNum(),
+		MinNum:               mn,
+		Radius:               cfg.GetRadius(),
+		Epsilon:              cfg.GetEpsilon(),
+		Timeout:              cfg.GetTimeout(),
+		IngressFilters:       cfg.GetIngressFilters(),
+		EgressFilters:        cfg.GetEgressFilters(),
+		AggregationAlgorithm: cfg.GetAggregationAlgorithm(),
 	}, func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error) {
 		return vc.Search(ctx, req, copts...)
 	})
@@ -376,14 +377,15 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 		req.Config.MinNum = 0
 	}
 	scfg := &payload.Search_Config{
-		RequestId:      cfg.GetRequestId(),
-		Num:            cfg.GetNum(),
-		MinNum:         mn,
-		Radius:         cfg.GetRadius(),
-		Epsilon:        cfg.GetEpsilon(),
-		Timeout:        cfg.GetTimeout(),
-		IngressFilters: cfg.GetIngressFilters(),
-		EgressFilters:  cfg.GetEgressFilters(),
+		RequestId:            cfg.GetRequestId(),
+		Num:                  cfg.GetNum(),
+		MinNum:               mn,
+		Radius:               cfg.GetRadius(),
+		Epsilon:              cfg.GetEpsilon(),
+		Timeout:              cfg.GetTimeout(),
+		IngressFilters:       cfg.GetIngressFilters(),
+		EgressFilters:        cfg.GetEgressFilters(),
+		AggregationAlgorithm: cfg.GetAggregationAlgorithm(),
 	}
 	if err != nil {
 		var (
@@ -434,37 +436,13 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 			}
 			return nil, err
 		}
-		var serr error
-		res, serr = s.doSearch(ctx, scfg, func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error) {
+		res, err = s.doSearch(ctx, scfg, func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error) {
 			return vc.SearchByID(ctx, req, copts...)
 		})
-		if serr == nil {
+		if err == nil {
 			return res, nil
 		}
-		err = errors.Wrap(err, serr.Error())
-		st, msg, serr = status.ParseError(err, codes.Internal, vald.SearchByIDRPCName+" API failed to process search request", reqInfo, resInfo)
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
-		return nil, errors.Wrap(err, serr.Error())
-	}
-	res, err = s.Search(ctx, &payload.Search_Request{
-		Vector: vec.GetVector(),
-		Config: scfg,
-	})
-	if err != nil {
-		_, _, err := status.ParseError(err, codes.Internal, vald.SearchByIDRPCName+" API failed to process search request", reqInfo, resInfo, info.Get())
-		var serr error
-		res, serr = s.doSearch(ctx, scfg, func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error) {
-			return vc.SearchByID(ctx, req, copts...)
-		})
-		if serr == nil {
-			return res, nil
-		}
-		st, msg, serr := status.ParseError(serr, codes.Internal, vald.SearchByIDRPCName+" API failed to process search request", reqInfo, resInfo)
-		err = errors.Wrap(err, serr.Error())
+		st, msg, err = status.ParseError(err, codes.Internal, vald.SearchByIDRPCName+" API failed to process search request", reqInfo, resInfo)
 		if span != nil {
 			span.RecordError(err)
 			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
@@ -472,12 +450,25 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 		}
 		return nil, err
 	}
+	res, err = s.Search(ctx, &payload.Search_Request{
+		Vector: vec.GetVector(),
+		Config: scfg,
+	})
+	if err != nil {
+		res, err = s.doSearch(ctx, scfg, func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error) {
+			return vc.SearchByID(ctx, req, copts...)
+		})
+		if err != nil {
+			st, msg, err := status.ParseError(err, codes.Internal, vald.SearchByIDRPCName+" API failed to process search request", reqInfo, resInfo)
+			if span != nil {
+				span.RecordError(err)
+				span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+				span.SetStatus(trace.StatusError, err.Error())
+			}
+			return nil, err
+		}
+	}
 	return res, nil
-}
-
-type DistPayload struct {
-	raw      *payload.Object_Distance
-	distance *big.Float
 }
 
 func (s *server) doSearch(ctx context.Context, cfg *payload.Search_Config,
@@ -491,301 +482,26 @@ func (s *server) doSearch(ctx context.Context, cfg *payload.Search_Config,
 		}
 	}()
 
-	num := int(cfg.GetNum())
-	min := int(cfg.GetMinNum())
-	res = new(payload.Search_Response)
-	res.Results = make([]*payload.Object_Distance, 0, s.gateway.GetAgentCount(ctx)*num)
-	dch := make(chan DistPayload, cap(res.GetResults())/2)
-	eg, ectx := errgroup.New(ctx)
-	var cancel context.CancelFunc
-	var timeout time.Duration
-	if to := cfg.GetTimeout(); to != 0 {
-		timeout = time.Duration(to)
-	} else {
-		timeout = s.timeout
+	var (
+		aggr    Aggregator
+		num     = int(cfg.GetNum())
+		replica = s.gateway.GetAgentCount(ctx)
+	)
+	switch cfg.GetAggregationAlgorithm() {
+	case payload.Search_Unknown:
+		aggr = newStd(num, replica)
+	case payload.Search_ConcurrentQueue:
+		aggr = newStd(num, replica)
+	case payload.Search_SortSlice:
+		aggr = newSlice(num, replica)
+	case payload.Search_SortPoolSlice:
+		aggr = newPoolSlice(num, replica)
+	case payload.Search_PairingHeap:
+		aggr = newPairingHeap(num, replica)
+	default:
+		aggr = newStd(num, replica)
 	}
-
-	var maxDist atomic.Value
-	maxDist.Store(big.NewFloat(math.MaxFloat64))
-	ectx, cancel = context.WithTimeout(ectx, timeout)
-	eg.Go(safety.RecoverFunc(func() error {
-		defer cancel()
-		visited := new(sync.Map)
-		return s.gateway.BroadCast(ectx, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error {
-			sctx, sspan := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "BroadCast/"+target), apiName+"/doSearch/"+target)
-			defer func() {
-				if sspan != nil {
-					sspan.End()
-				}
-			}()
-			r, err := f(sctx, vc, copts...)
-			switch {
-			case errors.Is(err, context.Canceled),
-				errors.Is(err, errors.ErrRPCCallFailed(target, context.Canceled)):
-				if sspan != nil {
-					sspan.RecordError(err)
-					sspan.SetAttributes(trace.StatusCodeCancelled(
-						errdetails.ValdGRPCResourceTypePrefix +
-							"/vald.v1.search.BroadCast/" +
-							target + " canceled: " + err.Error())...)
-					sspan.SetStatus(trace.StatusError, err.Error())
-				}
-			case errors.Is(err, context.DeadlineExceeded),
-				errors.Is(err, errors.ErrRPCCallFailed(target, context.DeadlineExceeded)):
-				if sspan != nil {
-					sspan.RecordError(err)
-					sspan.SetAttributes(trace.StatusCodeDeadlineExceeded(
-						errdetails.ValdGRPCResourceTypePrefix +
-							"/vald.v1.search.BroadCast/" +
-							target + " deadline_exceeded: " + err.Error())...)
-					sspan.SetStatus(trace.StatusError, err.Error())
-				}
-			case err != nil:
-				st, msg, err := status.ParseError(err, codes.Internal, "failed to parse search gRPC error response",
-					&errdetails.ResourceInfo{
-						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.search",
-						ResourceName: fmt.Sprintf("%s: %s(%s) to %s", apiName, s.name, s.ip, target),
-					})
-				if sspan != nil {
-					sspan.RecordError(err)
-					sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
-					sspan.SetStatus(trace.StatusError, err.Error())
-				}
-				switch st.Code() {
-				case codes.Internal,
-					codes.Unavailable,
-					codes.ResourceExhausted:
-					return err
-				}
-			case r == nil || len(r.GetResults()) == 0:
-				err = status.WrapWithNotFound("failed to process search request", errors.ErrEmptySearchResult,
-					&errdetails.ResourceInfo{
-						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.search",
-						ResourceName: fmt.Sprintf("%s: %s(%s) to %s", apiName, s.name, s.ip, target),
-					})
-				if sspan != nil {
-					sspan.RecordError(err)
-					sspan.SetAttributes(trace.StatusCodeNotFound(err.Error())...)
-					sspan.SetStatus(trace.StatusError, err.Error())
-				}
-			}
-			for _, dist := range r.GetResults() {
-				if dist == nil {
-					continue
-				}
-				fdist := big.NewFloat(float64(dist.GetDistance()))
-				bf, ok := maxDist.Load().(*big.Float)
-				if !ok || fdist.Cmp(bf) >= 0 {
-					return nil
-				}
-				if _, already := visited.LoadOrStore(dist.GetId(), struct{}{}); !already {
-					select {
-					case <-ectx.Done():
-						return nil
-					case dch <- DistPayload{raw: dist, distance: fdist}:
-					}
-				}
-			}
-			return nil
-		})
-	}))
-	add := func(distance *big.Float, dist *payload.Object_Distance) {
-		rl := len(res.GetResults()) // result length
-		fmax, ok := maxDist.Load().(*big.Float)
-		if !ok {
-			return
-		}
-		if rl >= num && distance.Cmp(fmax) >= 0 {
-			return
-		}
-		switch rl {
-		case 0:
-			res.Results = append(res.GetResults(), dist)
-		case 1:
-
-			if distance.Cmp(big.NewFloat(float64(res.GetResults()[0].GetDistance()))) >= 0 {
-				res.Results = append(res.GetResults(), dist)
-			} else {
-				res.Results = []*payload.Object_Distance{dist, res.GetResults()[0]}
-			}
-		default:
-			pos := rl
-			for idx := rl; idx >= 1; idx-- {
-				if distance.Cmp(big.NewFloat(float64(res.GetResults()[idx-1].GetDistance()))) >= 0 {
-					pos = idx - 1
-					break
-				}
-			}
-			switch {
-			case pos == rl:
-				res.Results = append([]*payload.Object_Distance{dist}, res.GetResults()...)
-			case pos == rl-1:
-				res.Results = append(res.GetResults(), dist)
-			case pos >= 0:
-				// skipcq: CRT-D0001
-				res.Results = append(res.GetResults()[:pos+1], res.GetResults()[pos:]...)
-				res.Results[pos+1] = dist
-			}
-		}
-		rl = len(res.GetResults())
-		if rl > num && num != 0 {
-			res.Results = res.GetResults()[:num]
-			rl = len(res.GetResults())
-		}
-		if distEnd := big.NewFloat(float64(res.GetResults()[rl-1].GetDistance())); rl >= num &&
-			distEnd.Cmp(fmax) < 0 {
-			maxDist.Store(distEnd)
-		}
-	}
-	for {
-		select {
-		case <-ectx.Done():
-			err = eg.Wait()
-			close(dch)
-			if errors.Is(err, errors.ErrGRPCClientConnNotFound("*")) {
-				err = status.WrapWithInternal("search API connection not found", err,
-					&errdetails.RequestInfo{
-						// RequestId:   cfg.GetRequestId(),
-						ServingData: errdetails.Serialize(cfg),
-					},
-					&errdetails.ResourceInfo{
-						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.search",
-						ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
-					})
-				if span != nil {
-					span.RecordError(err)
-					span.SetAttributes(trace.StatusCodeInternal(err.Error())...)
-					span.SetStatus(trace.StatusError, err.Error())
-				}
-				return nil, err
-			}
-			// range over channel patter to check remaining channel's data for vald's search accuracy
-			for dist := range dch {
-				add(dist.distance, dist.raw)
-			}
-			if num != 0 && len(res.GetResults()) > num {
-				res.Results = res.GetResults()[:num]
-			}
-
-			if errors.Is(ectx.Err(), context.DeadlineExceeded) {
-				if len(res.GetResults()) == 0 {
-					err = status.WrapWithDeadlineExceeded(
-						"error search result length is 0 due to the timeoutage limit",
-						errors.ErrEmptySearchResult,
-						&errdetails.RequestInfo{
-							RequestId:   cfg.GetRequestId(),
-							ServingData: errdetails.Serialize(cfg),
-						},
-						&errdetails.ResourceInfo{
-							ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.search",
-							ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
-						}, info.Get(),
-					)
-					if span != nil {
-						span.RecordError(err)
-						span.SetAttributes(trace.StatusCodeDeadlineExceeded(err.Error())...)
-						span.SetStatus(trace.StatusError, err.Error())
-					}
-					return nil, err
-				}
-				if 0 < min && len(res.GetResults()) < min {
-					err = status.WrapWithDeadlineExceeded(
-						fmt.Sprintf("error search result length is not enough due to the timeoutage limit, required: %d, found: %d", min, len(res.GetResults())),
-						errors.ErrInsuffcientSearchResult,
-						&errdetails.RequestInfo{
-							RequestId:   cfg.GetRequestId(),
-							ServingData: errdetails.Serialize(cfg),
-						},
-						&errdetails.ResourceInfo{
-							ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.search",
-							ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
-						}, info.Get(),
-					)
-					if span != nil {
-						span.RecordError(err)
-						span.SetAttributes(trace.StatusCodeDeadlineExceeded(err.Error())...)
-						span.SetStatus(trace.StatusError, err.Error())
-					}
-					return nil, err
-				}
-			}
-
-			if err != nil {
-				st, msg, err := status.ParseError(err, codes.Internal,
-					"failed to parse search gRPC error response",
-					&errdetails.RequestInfo{
-						RequestId:   cfg.GetRequestId(),
-						ServingData: errdetails.Serialize(cfg),
-					},
-					&errdetails.ResourceInfo{
-						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.search",
-						ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
-					}, info.Get())
-				if span != nil {
-					span.RecordError(err)
-					span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
-					span.SetStatus(trace.StatusError, err.Error())
-				}
-				log.Warn(err)
-				if len(res.GetResults()) == 0 {
-					return nil, err
-				}
-			}
-			if num != 0 && len(res.GetResults()) == 0 {
-				if err == nil {
-					err = errors.ErrEmptySearchResult
-				}
-				err = status.WrapWithNotFound("error search result length is 0", err,
-					&errdetails.RequestInfo{
-						RequestId:   cfg.GetRequestId(),
-						ServingData: errdetails.Serialize(cfg),
-					},
-					&errdetails.ResourceInfo{
-						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.search",
-						ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
-					}, info.Get())
-				if span != nil {
-					span.RecordError(err)
-					span.SetAttributes(trace.StatusCodeNotFound(err.Error())...)
-					span.SetStatus(trace.StatusError, err.Error())
-				}
-				return nil, err
-			}
-
-			if 0 < min && len(res.GetResults()) < min {
-				if err == nil {
-					err = errors.ErrInsuffcientSearchResult
-				}
-				if span != nil {
-					span.RecordError(err)
-					span.SetAttributes(trace.StatusCodeNotFound(err.Error())...)
-					span.SetStatus(trace.StatusError, err.Error())
-				}
-				err = status.WrapWithNotFound(
-					fmt.Sprintf("error search result length is not enough required: %d, found: %d", min, len(res.GetResults())),
-					errors.ErrInsuffcientSearchResult,
-					&errdetails.RequestInfo{
-						RequestId:   cfg.GetRequestId(),
-						ServingData: errdetails.Serialize(cfg),
-					},
-					&errdetails.ResourceInfo{
-						ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.search",
-						ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
-					}, info.Get(),
-				)
-				if span != nil {
-					span.RecordError(err)
-					span.SetAttributes(trace.StatusCodeNotFound(err.Error())...)
-					span.SetStatus(trace.StatusError, err.Error())
-				}
-				return nil, err
-			}
-			res.RequestId = cfg.GetRequestId()
-			return res, nil
-		case dist := <-dch:
-			add(dist.distance, dist.raw)
-		}
-	}
+	return s.aggregationSearch(ctx, aggr, cfg, f)
 }
 
 func (s *server) StreamSearch(stream vald.Search_StreamSearchServer) (err error) {
@@ -925,10 +641,10 @@ func (s *server) MultiSearch(ctx context.Context, reqs *payload.Search_MultiRequ
 					sspan.SetStatus(trace.StatusError, err.Error())
 				}
 				emu.Lock()
-				if errs == nil {
-					errs = err
+				if errs != nil {
+					errs = errors.Join(errs, err)
 				} else {
-					errs = errors.Wrap(errs, err.Error())
+					errs = err
 				}
 				emu.Unlock()
 				return nil
@@ -1000,10 +716,10 @@ func (s *server) MultiSearchByID(ctx context.Context, reqs *payload.Search_Multi
 					sspan.SetStatus(trace.StatusError, err.Error())
 				}
 				emu.Lock()
-				if errs == nil {
-					errs = err
+				if errs != nil {
+					errs = errors.Join(errs, err)
 				} else {
-					errs = errors.Wrap(errs, err.Error())
+					errs = err
 				}
 				emu.Unlock()
 				return nil
@@ -1071,12 +787,13 @@ func (s *server) LinearSearch(ctx context.Context, req *payload.Search_Request) 
 		req.Config.MinNum = 0
 	}
 	res, err = s.doSearch(ctx, &payload.Search_Config{
-		RequestId:      cfg.GetRequestId(),
-		Num:            cfg.GetNum(),
-		MinNum:         mn,
-		Timeout:        cfg.GetTimeout(),
-		IngressFilters: cfg.GetIngressFilters(),
-		EgressFilters:  cfg.GetEgressFilters(),
+		RequestId:            cfg.GetRequestId(),
+		Num:                  cfg.GetNum(),
+		MinNum:               mn,
+		Timeout:              cfg.GetTimeout(),
+		IngressFilters:       cfg.GetIngressFilters(),
+		EgressFilters:        cfg.GetEgressFilters(),
+		AggregationAlgorithm: cfg.GetAggregationAlgorithm(),
 	}, func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error) {
 		return vc.LinearSearch(ctx, req, copts...)
 	})
@@ -1143,12 +860,13 @@ func (s *server) LinearSearchByID(ctx context.Context, req *payload.Search_IDReq
 		req.Config.MinNum = 0
 	}
 	scfg := &payload.Search_Config{
-		RequestId:      cfg.GetRequestId(),
-		Num:            cfg.GetNum(),
-		MinNum:         mn,
-		Timeout:        cfg.GetTimeout(),
-		IngressFilters: cfg.GetIngressFilters(),
-		EgressFilters:  cfg.GetEgressFilters(),
+		RequestId:            cfg.GetRequestId(),
+		Num:                  cfg.GetNum(),
+		MinNum:               mn,
+		Timeout:              cfg.GetTimeout(),
+		IngressFilters:       cfg.GetIngressFilters(),
+		EgressFilters:        cfg.GetEgressFilters(),
+		AggregationAlgorithm: cfg.GetAggregationAlgorithm(),
 	}
 	if err != nil {
 		var (
@@ -1199,21 +917,19 @@ func (s *server) LinearSearchByID(ctx context.Context, req *payload.Search_IDReq
 			}
 			return nil, err
 		}
-		var serr error
-		res, serr = s.doSearch(ctx, scfg, func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error) {
+		res, err = s.doSearch(ctx, scfg, func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error) {
 			return vc.LinearSearchByID(ctx, req, copts...)
 		})
-		if serr == nil {
+		if err == nil {
 			return res, nil
 		}
-		err = errors.Wrap(err, serr.Error())
-		st, msg, serr = status.ParseError(err, codes.Internal, vald.LinearSearchByIDRPCName+" API failed to process search request", reqInfo, resInfo)
+		st, msg, err = status.ParseError(err, codes.Internal, vald.LinearSearchByIDRPCName+" API failed to process search request", reqInfo, resInfo)
 		if span != nil {
 			span.RecordError(err)
 			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
 			span.SetStatus(trace.StatusError, err.Error())
 		}
-		return nil, errors.Wrap(err, serr.Error())
+		return nil, err
 	}
 
 	res, err = s.LinearSearch(ctx, &payload.Search_Request{
@@ -1221,16 +937,13 @@ func (s *server) LinearSearchByID(ctx context.Context, req *payload.Search_IDReq
 		Config: scfg,
 	})
 	if err != nil {
-		_, _, err := status.ParseError(err, codes.Internal, vald.LinearSearchByIDRPCName+" API failed to process search request", reqInfo, resInfo, info.Get())
-		var serr error
-		res, serr = s.doSearch(ctx, scfg, func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error) {
+		res, err = s.doSearch(ctx, scfg, func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error) {
 			return vc.LinearSearchByID(ctx, req, copts...)
 		})
-		if serr == nil {
+		if err == nil {
 			return res, nil
 		}
-		st, msg, serr := status.ParseError(serr, codes.Internal, vald.LinearSearchByIDRPCName+" API failed to process search request", reqInfo, resInfo)
-		err = errors.Wrap(err, serr.Error())
+		st, msg, err := status.ParseError(err, codes.Internal, vald.LinearSearchByIDRPCName+" API failed to process search request", reqInfo, resInfo)
 		if span != nil {
 			span.RecordError(err)
 			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
@@ -1381,10 +1094,10 @@ func (s *server) MultiLinearSearch(ctx context.Context, reqs *payload.Search_Mul
 					sspan.SetStatus(trace.StatusError, err.Error())
 				}
 				emu.Lock()
-				if errs == nil {
-					errs = err
+				if errs != nil {
+					errs = errors.Join(errs, err)
 				} else {
-					errs = errors.Wrap(errs, err.Error())
+					errs = err
 				}
 				emu.Unlock()
 				return nil
@@ -1456,10 +1169,10 @@ func (s *server) MultiLinearSearchByID(ctx context.Context, reqs *payload.Search
 					sspan.SetStatus(trace.StatusError, err.Error())
 				}
 				emu.Lock()
-				if errs == nil {
-					errs = err
+				if errs != nil {
+					errs = errors.Join(errs, err)
 				} else {
-					errs = errors.Wrap(errs, err.Error())
+					errs = err
 				}
 				emu.Unlock()
 				return nil
@@ -1649,10 +1362,10 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 			}
 			if err != nil && st.Code() != codes.AlreadyExists {
 				emu.Lock()
-				if errs == nil {
-					errs = err
+				if errs != nil {
+					errs = errors.Join(errs, err)
 				} else {
-					errs = errors.Wrap(errs, err.Error())
+					errs = err
 				}
 				emu.Unlock()
 				return err
@@ -1686,7 +1399,7 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *p
 		if errs == nil {
 			errs = err
 		} else {
-			errs = errors.Wrap(errs, err.Error())
+			errs = errors.Join(errs, err)
 		}
 	}
 	if errs != nil {
@@ -1772,7 +1485,7 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 		lmu sync.Mutex
 	)
 	eg, ectx := errgroup.New(ctx)
-	eg.Limitation(s.multiConcurrency)
+	eg.SetLimit(s.multiConcurrency)
 	locs = &payload.Object_Locations{
 		Locations: make([]*payload.Object_Location, len(reqs.GetRequests())),
 	}
@@ -1799,7 +1512,7 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 					if errs == nil {
 						errs = err
 					} else {
-						errs = errors.Wrap(errs, err.Error())
+						errs = errors.Join(errs, err)
 					}
 					emu.Unlock()
 				} else if res != nil && res.GetUuid() == req.GetVector().GetId() && res.GetIps() != nil {
@@ -1843,7 +1556,7 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 			if errs == nil {
 				errs = err
 			} else {
-				errs = errors.Wrap(errs, err.Error())
+				errs = errors.Join(errs, err)
 			}
 			emu.Unlock()
 
@@ -1855,7 +1568,7 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 		if errs == nil {
 			errs = err
 		} else {
-			errs = errors.Wrap(errs, err.Error())
+			errs = errors.Join(errs, err)
 		}
 		emu.Unlock()
 	}
@@ -1929,12 +1642,17 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (res *
 	}
 
 	if req.GetConfig().GetDisableBalancedUpdate() {
-		var mu sync.Mutex
-		locs := &payload.Object_Location{
-			Uuid: uuid,
-			Ips:  make([]string, 0, s.replica),
-		}
-		ls := make([]string, 0, s.replica)
+		var (
+			mu      sync.RWMutex
+			aeCount atomic.Uint64
+			updated atomic.Uint64
+			ls      = make([]string, 0, s.replica)
+			visited = make(map[string]bool, s.replica)
+			locs    = &payload.Object_Location{
+				Uuid: uuid,
+				Ips:  make([]string, 0, s.replica),
+			}
+		)
 		err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) (err error) {
 			ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "BroadCast/"+target), apiName+"/"+vald.UpdateRPCName+"/"+target)
 			defer func() {
@@ -1945,32 +1663,49 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (res *
 			loc, err := vc.Update(ctx, req, copts...)
 			if err != nil {
 				st, ok := status.FromError(err)
-				if ok && st != nil &&
-					st.Code() != codes.AlreadyExists &&
-					st.Code() != codes.Canceled &&
-					st.Code() != codes.DeadlineExceeded &&
-					st.Code() != codes.InvalidArgument &&
-					st.Code() != codes.NotFound &&
-					st.Code() != codes.OK &&
-					st.Code() != codes.Unimplemented {
-					if span != nil {
-						span.RecordError(err)
-						span.SetAttributes(trace.FromGRPCStatus(st.Code(), fmt.Sprintf("Update operation for Agent %s failed,\terror: %v", target, err))...)
-						span.SetStatus(trace.StatusError, err.Error())
+				if ok && st != nil {
+					if st.Code() != codes.AlreadyExists &&
+						st.Code() != codes.Canceled &&
+						st.Code() != codes.DeadlineExceeded &&
+						st.Code() != codes.InvalidArgument &&
+						st.Code() != codes.NotFound &&
+						st.Code() != codes.OK &&
+						st.Code() != codes.Unimplemented {
+						if span != nil {
+							span.RecordError(err)
+							span.SetAttributes(trace.FromGRPCStatus(st.Code(), fmt.Sprintf("Update operation for Agent %s failed,\terror: %v", target, err))...)
+							span.SetStatus(trace.StatusError, err.Error())
+						}
+						return err
 					}
-					return err
+					if st.Code() == codes.AlreadyExists {
+						host, _, err := net.SplitHostPort(target)
+						if err != nil {
+							host = target
+						}
+						aeCount.Add(1)
+						mu.Lock()
+						visited[target] = true
+						locs.Ips = append(locs.GetIps(), host)
+						ls = append(ls, host)
+						mu.Unlock()
+
+					}
 				}
 				return nil
 			}
 			if loc != nil {
+				updated.Add(1)
 				mu.Lock()
+				visited[target] = true
 				locs.Ips = append(locs.GetIps(), loc.GetIps()...)
 				ls = append(ls, loc.GetName())
 				mu.Unlock()
 			}
 			return nil
 		})
-		if err != nil {
+		switch {
+		case err != nil:
 			st, msg, err := status.ParseError(err, codes.Internal,
 				"failed to parse "+vald.UpdateRPCName+" gRPC error response", reqInfo, resInfo, info.Get())
 			if span != nil {
@@ -1979,8 +1714,7 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (res *
 				span.SetStatus(trace.StatusError, err.Error())
 			}
 			return nil, err
-		}
-		if len(locs.Ips) <= 0 {
+		case len(locs.Ips) <= 0:
 			err = errors.ErrIndexNotFound
 			err = status.WrapWithNotFound(vald.UpdateRPCName+" API update target not found", err, reqInfo, resInfo)
 			if span != nil {
@@ -1989,6 +1723,57 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (res *
 				span.SetStatus(trace.StatusError, err.Error())
 			}
 			return nil, err
+		case updated.Load()+aeCount.Load() < uint64(s.replica):
+			shortage := s.replica - int(updated.Load()+aeCount.Load())
+			err = s.gateway.DoMulti(ctx, shortage, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) (err error) {
+				mu.RLock()
+				tf, ok := visited[target]
+				mu.RUnlock()
+				if tf && ok {
+					return errors.Errorf("target: %s already inserted will skip", target)
+				}
+				ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "DoMulti/"+target), apiName+"/"+vald.InsertRPCName+"/"+target)
+				defer func() {
+					if span != nil {
+						span.End()
+					}
+				}()
+				loc, err := vc.Insert(ctx, &payload.Insert_Request{
+					Vector: req.GetVector(),
+					Config: &payload.Insert_Config{
+						SkipStrictExistCheck: true,
+						Filters:              req.GetConfig().GetFilters(),
+						Timestamp:            req.GetConfig().GetTimestamp(),
+					},
+				}, copts...)
+				if err != nil {
+					st, ok := status.FromError(err)
+					if ok && st != nil && span != nil {
+						span.RecordError(err)
+						span.SetAttributes(trace.FromGRPCStatus(st.Code(), fmt.Sprintf("Shortage index Insert for Update operation for Agent %s failed,\terror: %v", target, err))...)
+						span.SetStatus(trace.StatusError, err.Error())
+					}
+					return err
+				}
+				if loc != nil {
+					updated.Add(1)
+					mu.Lock()
+					locs.Ips = append(locs.GetIps(), loc.GetIps()...)
+					ls = append(ls, loc.GetName())
+					mu.Unlock()
+				}
+				return nil
+			})
+		case updated.Load() == 0 && aeCount.Load() > 0:
+			err = errors.ErrSameVectorAlreadyExists(uuid, vec, vec)
+			err = status.WrapWithAlreadyExists(vald.UpdateRPCName+" API update target same vector already exists", err, reqInfo, resInfo)
+			if span != nil {
+				span.RecordError(err)
+				span.SetAttributes(trace.StatusCodeAlreadyExists(err.Error())...)
+				span.SetStatus(trace.StatusError, err.Error())
+			}
+			return nil, err
+
 		}
 		slices.Sort(ls)
 		locs.Name = strings.Join(ls, ",")
@@ -2237,7 +2022,7 @@ func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequ
 		lmu sync.Mutex
 	)
 	eg, ectx := errgroup.New(ctx)
-	eg.Limitation(s.multiConcurrency)
+	eg.SetLimit(s.multiConcurrency)
 	locs = &payload.Object_Locations{
 		Locations: make([]*payload.Object_Location, len(reqs.GetRequests())),
 	}
@@ -2264,7 +2049,7 @@ func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequ
 					if errs == nil {
 						errs = err
 					} else {
-						errs = errors.Wrap(errs, err.Error())
+						errs = errors.Join(errs, err)
 					}
 					emu.Unlock()
 				} else if res != nil && res.GetUuid() == req.GetVector().GetId() && res.GetIps() != nil {
@@ -2308,7 +2093,7 @@ func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequ
 			if errs == nil {
 				errs = err
 			} else {
-				errs = errors.Wrap(errs, err.Error())
+				errs = errors.Join(errs, err)
 			}
 			emu.Unlock()
 
@@ -2320,7 +2105,7 @@ func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequ
 		if errs == nil {
 			errs = err
 		} else {
-			errs = errors.Wrap(errs, err.Error())
+			errs = errors.Join(errs, err)
 		}
 		emu.Unlock()
 	}
@@ -2586,7 +2371,7 @@ func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequ
 		lmu sync.Mutex
 	)
 	eg, ectx := errgroup.New(ctx)
-	eg.Limitation(s.multiConcurrency)
+	eg.SetLimit(s.multiConcurrency)
 	locs = &payload.Object_Locations{
 		Locations: make([]*payload.Object_Location, len(reqs.GetRequests())),
 	}
@@ -2613,7 +2398,7 @@ func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequ
 					if errs == nil {
 						errs = err
 					} else {
-						errs = errors.Wrap(errs, err.Error())
+						errs = errors.Join(errs, err)
 					}
 					emu.Unlock()
 				} else if res != nil && res.GetUuid() == req.GetVector().GetId() && res.GetIps() != nil {
@@ -2657,7 +2442,7 @@ func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequ
 			if errs == nil {
 				errs = err
 			} else {
-				errs = errors.Wrap(errs, err.Error())
+				errs = errors.Join(errs, err)
 			}
 			emu.Unlock()
 
@@ -2669,7 +2454,7 @@ func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequ
 		if errs == nil {
 			errs = err
 		} else {
-			errs = errors.Wrap(errs, err.Error())
+			errs = errors.Join(errs, err)
 		}
 		emu.Unlock()
 	}
@@ -2890,7 +2675,7 @@ func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequ
 		lmu sync.Mutex
 	)
 	eg, ectx := errgroup.New(ctx)
-	eg.Limitation(s.multiConcurrency)
+	eg.SetLimit(s.multiConcurrency)
 	locs = &payload.Object_Locations{
 		Locations: make([]*payload.Object_Location, len(reqs.GetRequests())),
 	}
@@ -2917,7 +2702,7 @@ func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequ
 					if errs == nil {
 						errs = err
 					} else {
-						errs = errors.Wrap(errs, err.Error())
+						errs = errors.Join(errs, err)
 					}
 					emu.Unlock()
 				} else if res != nil && res.GetUuid() == req.GetId().GetId() && res.GetIps() != nil {
@@ -2950,7 +2735,7 @@ func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequ
 			if errs == nil {
 				errs = err
 			} else {
-				errs = errors.Wrap(errs, err.Error())
+				errs = errors.Join(errs, err)
 			}
 			emu.Unlock()
 
@@ -2962,7 +2747,7 @@ func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequ
 		if errs == nil {
 			errs = err
 		} else {
-			errs = errors.Wrap(errs, err.Error())
+			errs = errors.Join(errs, err)
 		}
 		emu.Unlock()
 	}
@@ -2978,6 +2763,131 @@ func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequ
 	}
 
 	return locs, errs
+}
+
+func (s *server) RemoveByTimestamp(ctx context.Context, req *payload.Remove_TimestampRequest) (locs *payload.Object_Locations, errs error) {
+	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.RemoveRPCServiceName+"/"+vald.RemoveByTimestampRPCName), apiName+"/"+vald.RemoveByTimestampRPCName)
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+
+	var mu sync.Mutex
+	var emu sync.Mutex
+	visited := make(map[string]int) // map[uuid: position of locs]
+	locs = new(payload.Object_Locations)
+
+	err := s.gateway.BroadCast(ctx, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) (err error) {
+		sctx, sspan := trace.StartSpan(grpc.WithGRPCMethod(ctx, "BroadCast/"+target), apiName+"/removeByTimestamp/BroadCast/"+target)
+		defer func() {
+			if sspan != nil {
+				sspan.End()
+			}
+		}()
+
+		res, err := vc.RemoveByTimestamp(sctx, req, copts...)
+		if err != nil {
+			if errors.Is(err, errors.ErrGRPCClientConnNotFound("*")) {
+				err = status.WrapWithInternal(
+					vald.RemoveByTimestampRPCName+" API connection not found", err,
+				)
+				if sspan != nil {
+					sspan.RecordError(err)
+					sspan.SetAttributes(trace.StatusCodeInternal(err.Error())...)
+					sspan.SetStatus(trace.StatusError, err.Error())
+				}
+				log.Error(err)
+				emu.Lock()
+				errs = errors.Join(errs, err)
+				emu.Unlock()
+				return nil
+			}
+			var (
+				st  *status.Status
+				msg string
+			)
+			st, msg, err = status.ParseError(err, codes.Internal,
+				vald.RemoveByTimestampRPCName+" gRPC error response",
+			)
+			if sspan != nil {
+				sspan.RecordError(err)
+				sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+				sspan.SetStatus(trace.StatusError, err.Error())
+			}
+			if err != nil && st.Code() != codes.NotFound {
+				log.Error(err)
+				emu.Lock()
+				errs = errors.Join(errs, err)
+				emu.Unlock()
+				return nil
+			}
+		}
+
+		if res != nil && len(res.GetLocations()) > 0 {
+			for _, loc := range res.GetLocations() {
+				mu.Lock()
+				if pos, ok := visited[loc.GetUuid()]; !ok {
+					locs.Locations = append(locs.GetLocations(), loc)
+					visited[loc.GetUuid()] = len(locs.Locations) - 1
+				} else {
+					if pos < len(locs.GetLocations()) {
+						locs.GetLocations()[pos].Ips = append(locs.GetLocations()[pos].Ips, loc.GetIps()...)
+						if s := locs.GetLocations()[pos].Name; len(s) == 0 {
+							locs.GetLocations()[pos].Name = loc.GetName()
+						} else {
+							// strings.Join is used because '+=' causes performance degradation when the number of characters is large.
+							locs.GetLocations()[pos].Name = strings.Join([]string{
+								s, loc.GetName(),
+							}, ",")
+						}
+					}
+				}
+				mu.Unlock()
+			}
+		}
+		return nil
+	})
+	if errs != nil {
+		err = errors.Join(err, errs)
+	}
+	if err != nil {
+		st, msg, err := status.ParseError(err, codes.Internal,
+			"failed to parse "+vald.RemoveByTimestampRPCName+" gRPC error response",
+			&errdetails.RequestInfo{
+				ServingData: errdetails.Serialize(req),
+			},
+			&errdetails.ResourceInfo{
+				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+			},
+		)
+		log.Error(err)
+		if span != nil {
+			span.RecordError(err)
+			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+			span.SetStatus(trace.StatusError, err.Error())
+		}
+		return nil, err
+	}
+	if locs == nil || len(locs.GetLocations()) == 0 {
+		err = status.WrapWithNotFound(
+			vald.RemoveByTimestampRPCName+" API remove target not found", errors.ErrIndexNotFound,
+			&errdetails.RequestInfo{
+				ServingData: errdetails.Serialize(req),
+			},
+			&errdetails.ResourceInfo{
+				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+			},
+		)
+		log.Error(err)
+		if span != nil {
+			span.RecordError(err)
+			span.SetAttributes(trace.StatusCodeNotFound(err.Error())...)
+			span.SetStatus(trace.StatusError, err.Error())
+		}
+		return nil, err
+	}
+	return locs, nil
 }
 
 func (s *server) getObject(ctx context.Context, uuid string) (vec *payload.Object_Vector, err error) {
@@ -2998,7 +2908,7 @@ func (s *server) getObject(ctx context.Context, uuid string) (vec *payload.Objec
 		ech <- s.gateway.BroadCast(ctx, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error {
 			sctx, sspan := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "BroadCast/"+target), apiName+"/getObject/BroadCast/"+target)
 			defer func() {
-				if span != nil {
+				if sspan != nil {
 					sspan.End()
 				}
 			}()
@@ -3106,6 +3016,112 @@ func (s *server) getObject(ctx context.Context, uuid string) (vec *payload.Objec
 	}
 
 	return vec, nil
+}
+
+func (s *server) Flush(ctx context.Context, req *payload.Flush_Request) (cnts *payload.Info_Index_Count, err error) {
+	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.FlushRPCServiceName+"/"+vald.FlushRPCName), apiName+"/"+vald.FlushRPCName)
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+
+	var (
+		stored      uint32
+		uncommitted uint32
+		indexing    atomic.Value
+		saving      atomic.Value
+	)
+	indexing.Store(false)
+	saving.Store(false)
+	now := time.Now().UnixNano()
+	err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) (err error) {
+		ctx, span := trace.StartSpan(ctx, apiName+"."+vald.FlushRPCName+"/"+target)
+		defer func() {
+			if span != nil {
+				span.End()
+			}
+		}()
+		cnt, err := vc.Flush(ctx, req, copts...)
+		if err != nil {
+			st, msg, err := status.ParseError(err, codes.Internal,
+				"failed to parse "+vald.FlushRPCName+" gRPC error response",
+				&errdetails.RequestInfo{
+					RequestId:   strconv.FormatInt(now, 10),
+					ServingData: errdetails.Serialize(req),
+				},
+				&errdetails.ResourceInfo{
+					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.FlushRPCName,
+					ResourceName: fmt.Sprintf("%s: %s(%s) to %s", apiName, s.name, s.ip, target),
+				})
+			if span != nil {
+				span.RecordError(err)
+				span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+				span.SetStatus(trace.StatusError, err.Error())
+			}
+			if err != nil && st.Code() != codes.NotFound {
+				log.Error(err)
+				return err
+			}
+			return nil
+		}
+		atomic.AddUint32(&stored, cnt.Stored)
+		atomic.AddUint32(&uncommitted, cnt.Uncommitted)
+		if cnt.Indexing {
+			indexing.Store(cnt.Indexing)
+		}
+		if cnt.Saving {
+			saving.Store(cnt.Saving)
+		}
+		return nil
+	})
+	if err != nil {
+		st, msg, err := status.ParseError(err, codes.Internal,
+			"failed to parse "+vald.FlushRPCName+" gRPC error response",
+			&errdetails.RequestInfo{
+				RequestId:   strconv.FormatInt(now, 10),
+				ServingData: errdetails.Serialize(req),
+			},
+			&errdetails.ResourceInfo{
+				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.FlushRPCName,
+				ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
+			}, info.Get())
+		if span != nil {
+			span.RecordError(err)
+			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+			span.SetStatus(trace.StatusError, err.Error())
+		}
+		return nil, err
+	}
+	cnts = &payload.Info_Index_Count{
+		Stored:      atomic.LoadUint32(&stored),
+		Uncommitted: atomic.LoadUint32(&uncommitted),
+		Indexing:    indexing.Load().(bool),
+		Saving:      saving.Load().(bool),
+	}
+	if cnts.Stored > 0 || cnts.Uncommitted > 0 || cnts.Indexing || cnts.Saving {
+		err = errors.Errorf(
+			"stored index: %d, uncommited: %d, indexing: %t, saving: %t",
+			cnts.Stored, cnts.Uncommitted, cnts.Indexing, cnts.Saving,
+		)
+		err = status.WrapWithInternal(vald.FlushRPCName+" API flush failed", err,
+			&errdetails.RequestInfo{
+				RequestId:   strconv.FormatInt(now, 10),
+				ServingData: errdetails.Serialize(req),
+			},
+			&errdetails.ResourceInfo{
+				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.FlushRPCName,
+				ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
+			})
+		if span != nil {
+			span.RecordError(err)
+			span.SetAttributes(trace.StatusCodeInternal(err.Error())...)
+			span.SetStatus(trace.StatusError, err.Error())
+		}
+		return nil, err
+	}
+
+	return cnts, nil
 }
 
 func (s *server) GetObject(ctx context.Context, req *payload.Object_VectorRequest) (vec *payload.Object_Vector, err error) {
@@ -3219,4 +3235,91 @@ func (s *server) StreamGetObject(stream vald.Object_StreamGetObjectServer) (err 
 		return err
 	}
 	return nil
+}
+
+func (s *server) StreamListObject(req *payload.Object_List_Request, stream vald.Object_StreamListObjectServer) error {
+	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(stream.Context(), vald.PackageName+"."+vald.ObjectRPCServiceName+"/"+vald.StreamListObjectRPCName), apiName+"/"+vald.StreamListObjectRPCName)
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
+	var rmu, smu sync.Mutex
+	err := s.gateway.BroadCast(ctx, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error {
+		ctx, sspan := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "BroadCast/"+target), apiName+"/"+vald.StreamListObjectRPCName+"/"+target)
+		defer func() {
+			if sspan != nil {
+				sspan.End()
+			}
+		}()
+
+		client, err := vc.StreamListObject(ctx, req, copts...)
+		if err != nil {
+			log.Errorf("failed to get StreamListObject client for agent(%s): %v", target, err)
+			return err
+		}
+
+		eg, ctx := errgroup.WithContext(ctx)
+		ectx, ecancel := context.WithCancel(ctx)
+		defer ecancel()
+		eg.SetLimit(s.streamConcurrency)
+
+		for {
+			select {
+			case <-ectx.Done():
+				var err error
+				if !errors.Is(ctx.Err(), context.Canceled) {
+					err = errors.Join(err, ctx.Err())
+				}
+				if egerr := eg.Wait(); err != nil {
+					err = errors.Join(err, egerr)
+				}
+				return err
+			default:
+				eg.Go(safety.RecoverFunc(func() error {
+					rmu.Lock()
+					res, err := client.Recv()
+					rmu.Unlock()
+					if err != nil {
+						if errors.Is(err, io.EOF) {
+							ecancel()
+							return nil
+						}
+						return errors.ErrServerStreamClientRecv(err)
+					}
+
+					vec := res.GetVector()
+					if vec == nil {
+						st := res.GetStatus()
+						log.Warnf("received empty vector: code %v: details %v: message %v",
+							st.GetCode(),
+							st.GetDetails(),
+							st.GetMessage(),
+						)
+						return nil
+					}
+
+					smu.Lock()
+					err = stream.Send(res)
+					smu.Unlock()
+					if err != nil {
+						if sspan != nil {
+							st, msg, err := status.ParseError(err, codes.Internal, "failed to parse StreamListObject send gRPC error response")
+							sspan.RecordError(err)
+							sspan.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+							sspan.SetStatus(trace.StatusError, err.Error())
+						}
+						return errors.ErrServerStreamServerSend(err)
+					}
+
+					return nil
+				}))
+			}
+		}
+	})
+	return err
 }

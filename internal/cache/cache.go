@@ -2,7 +2,7 @@
 // Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -26,7 +26,7 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 )
 
-type cache struct {
+type cache[V any] struct {
 	cacher         cacher.Type
 	expireDur      time.Duration
 	expireCheckDur time.Duration
@@ -34,17 +34,17 @@ type cache struct {
 }
 
 // New returns the Cache instance or error.
-func New(opts ...Option) (cc cacher.Cache, err error) {
-	c := new(cache)
-	for _, opt := range append(defaultOptions, opts...) {
+func New[V any](opts ...Option[V]) (cc cacher.Cache[V], err error) {
+	c := new(cache[V])
+	for _, opt := range append(defaultOptions[V](), opts...) {
 		opt(c)
 	}
 	switch c.cacher {
 	case cacher.GACHE:
-		return gache.New(
-			gache.WithExpireDuration(c.expireDur),
-			gache.WithExpireCheckDuration(c.expireCheckDur),
-			gache.WithExpiredHook(c.expiredHook),
+		return gache.New[V](
+			gache.WithExpireDuration[V](c.expireDur),
+			gache.WithExpireCheckDuration[V](c.expireCheckDur),
+			gache.WithExpiredHook[V](c.expiredHook),
 		), nil
 	default:
 		return nil, errors.ErrInvalidCacherType

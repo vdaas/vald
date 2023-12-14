@@ -2,7 +2,7 @@
 // Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -62,9 +62,11 @@ type SearchClient interface {
 	StreamLinearSearch(ctx context.Context, opts ...grpc.CallOption) (Search_StreamLinearSearchClient, error)
 	// A method to linear search indexed vectors by multiple IDs.
 	StreamLinearSearchByID(ctx context.Context, opts ...grpc.CallOption) (Search_StreamLinearSearchByIDClient, error)
-	// A method to linear search indexed vectors by multiple vectors in a single request.
+	// A method to linear search indexed vectors by multiple vectors in a single
+	// request.
 	MultiLinearSearch(ctx context.Context, in *payload.Search_MultiRequest, opts ...grpc.CallOption) (*payload.Search_Responses, error)
-	// A method to linear search indexed vectors by multiple IDs in a single request.
+	// A method to linear search indexed vectors by multiple IDs in a single
+	// request.
 	MultiLinearSearchByID(ctx context.Context, in *payload.Search_MultiIDRequest, opts ...grpc.CallOption) (*payload.Search_Responses, error)
 }
 
@@ -296,9 +298,11 @@ type SearchServer interface {
 	StreamLinearSearch(Search_StreamLinearSearchServer) error
 	// A method to linear search indexed vectors by multiple IDs.
 	StreamLinearSearchByID(Search_StreamLinearSearchByIDServer) error
-	// A method to linear search indexed vectors by multiple vectors in a single request.
+	// A method to linear search indexed vectors by multiple vectors in a single
+	// request.
 	MultiLinearSearch(context.Context, *payload.Search_MultiRequest) (*payload.Search_Responses, error)
-	// A method to linear search indexed vectors by multiple IDs in a single request.
+	// A method to linear search indexed vectors by multiple IDs in a single
+	// request.
 	MultiLinearSearchByID(context.Context, *payload.Search_MultiIDRequest) (*payload.Search_Responses, error)
 	mustEmbedUnimplementedSearchServer()
 }
@@ -670,5 +674,5 @@ var Search_ServiceDesc = grpc.ServiceDesc{
 			ClientStreams: true,
 		},
 	},
-	Metadata: "apis/proto/v1/vald/search.proto",
+	Metadata: "v1/vald/search.proto",
 }

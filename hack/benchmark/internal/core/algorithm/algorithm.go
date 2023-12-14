@@ -2,7 +2,7 @@
 // Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -17,6 +17,8 @@
 // Package algorithm provides core interface
 package algorithm
 
+import "context"
+
 type Mode uint32
 
 const (
@@ -29,7 +31,7 @@ type Closer interface {
 }
 
 type Bit32 interface {
-	Search(vec []float32, size int, epsilon, radius float32) (interface{}, error)
+	Search(ctx context.Context, vec []float32, size int, epsilon, radius float32) (interface{}, error)
 	Insert(vec []float32) (uint, error)
 	InsertCommit(vec []float32, poolSize uint32) (uint, error)
 	BulkInsert(vecs [][]float32) ([]uint, []error)
@@ -44,7 +46,7 @@ type Bit32 interface {
 }
 
 type Bit64 interface {
-	Search(vec []float64, size int, epsilon, radius float32) (interface{}, error)
+	Search(ctx context.Context, vec []float64, size int, epsilon, radius float32) (interface{}, error)
 	Insert(vec []float64) (uint, error)
 	InsertCommit(vec []float64, poolSize uint32) (uint, error)
 	BulkInsert(vecs [][]float64) ([]uint, []error)
