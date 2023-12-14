@@ -76,7 +76,7 @@ func (g *gateway) GRPCClient() grpc.Client {
 
 // ForwardedContext takes a context and a podName, returning a new context
 // with additional information related to forwarding.
-func (_ *gateway) ForwardedContext(ctx context.Context, podName string) context.Context {
+func (*gateway) ForwardedContext(ctx context.Context, podName string) context.Context {
 	return grpc.NewOutgoingContext(ctx, grpc.MD{
 		forwardedContextKey: []string{
 			podName,

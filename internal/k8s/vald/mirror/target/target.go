@@ -125,14 +125,14 @@ func (r *reconciler) NewReconciler(_ context.Context, mgr manager.Manager) recon
 	return r
 }
 
-func (_ *reconciler) For() (client.Object, []builder.ForOption) {
+func (*reconciler) For() (client.Object, []builder.ForOption) {
 	return new(mirrv1.ValdMirrorTarget), nil
 }
 
-func (_ *reconciler) Owns() (client.Object, []builder.OwnsOption) {
+func (*reconciler) Owns() (client.Object, []builder.OwnsOption) {
 	return nil, nil
 }
 
-func (_ *reconciler) Watches() (client.Object, handler.EventHandler, []builder.WatchesOption) {
+func (*reconciler) Watches() (client.Object, handler.EventHandler, []builder.WatchesOption) {
 	return nil, nil, nil
 }

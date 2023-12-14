@@ -2330,3245 +2330,3245 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 
 // NOT IMPLEMENTED BELOW
 
-func TestNew(t *testing.T) {
-	t.Parallel()
-	type args struct {
-		opts []Option
-	}
-	type want struct {
-		want vald.ServerWithMirror
-		err  error
-	}
-	type test struct {
-		name       string
-		args       args
-		want       want
-		checkFunc  func(want, vald.Server, error) error
-		beforeFunc func(*testing.T, args)
-		afterFunc  func(*testing.T, args)
-	}
-	defaultCheckFunc := func(w want, got vald.Server, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-		}
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           opts:nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		       beforeFunc: func(t *testing.T, args args) {
-		           t.Helper()
-		       },
-		       afterFunc: func(t *testing.T, args args) {
-		           t.Helper()
-		       },
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           opts:nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		           beforeFunc: func(t *testing.T, args args) {
-		               t.Helper()
-		           },
-		           afterFunc: func(t *testing.T, args args) {
-		               t.Helper()
-		           },
-		       }
-		   }(),
-		*/
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-			if test.beforeFunc != nil {
-				test.beforeFunc(tt, test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(tt, test.args)
-			}
-			checkFunc := test.checkFunc
-			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
-			}
-
-			got, err := New(test.args.opts...)
-			if err := checkFunc(test.want, got, err); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
-
-func Test_server_Register(t *testing.T) {
-	t.Parallel()
-	type args struct {
-		ctx context.Context
-		req *payload.Mirror_Targets
-	}
-	type fields struct {
-		eg                                errgroup.Group
-		gateway                           service.Gateway
-		mirror                            service.Mirror
-		vAddr                             string
-		streamConcurrency                 int
-		name                              string
-		ip                                string
-		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
-	}
-	type want struct {
-		want *payload.Mirror_Targets
-		err  error
-	}
-	type test struct {
-		name       string
-		args       args
-		fields     fields
-		want       want
-		checkFunc  func(want, *payload.Mirror_Targets, error) error
-		beforeFunc func(*testing.T, args)
-		afterFunc  func(*testing.T, args)
-	}
-	defaultCheckFunc := func(w want, got *payload.Mirror_Targets, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-		}
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ctx:nil,
-		           req:nil,
-		       },
-		       fields: fields {
-		           eg:nil,
-		           gateway:nil,
-		           mirror:nil,
-		           vAddr:"",
-		           streamConcurrency:0,
-		           name:"",
-		           ip:"",
-		           UnimplementedValdServerWithMirror:nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		       beforeFunc: func(t *testing.T, args args) {
-		           t.Helper()
-		       },
-		       afterFunc: func(t *testing.T, args args) {
-		           t.Helper()
-		       },
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ctx:nil,
-		           req:nil,
-		           },
-		           fields: fields {
-		           eg:nil,
-		           gateway:nil,
-		           mirror:nil,
-		           vAddr:"",
-		           streamConcurrency:0,
-		           name:"",
-		           ip:"",
-		           UnimplementedValdServerWithMirror:nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		           beforeFunc: func(t *testing.T, args args) {
-		               t.Helper()
-		           },
-		           afterFunc: func(t *testing.T, args args) {
-		               t.Helper()
-		           },
-		       }
-		   }(),
-		*/
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-			if test.beforeFunc != nil {
-				test.beforeFunc(tt, test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(tt, test.args)
-			}
-			checkFunc := test.checkFunc
-			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
-			}
-			s := &server{
-				eg:                                test.fields.eg,
-				gateway:                           test.fields.gateway,
-				mirror:                            test.fields.mirror,
-				vAddr:                             test.fields.vAddr,
-				streamConcurrency:                 test.fields.streamConcurrency,
-				name:                              test.fields.name,
-				ip:                                test.fields.ip,
-				UnimplementedValdServerWithMirror: test.fields.UnimplementedValdServerWithMirror,
-			}
-
-			got, err := s.Register(test.args.ctx, test.args.req)
-			if err := checkFunc(test.want, got, err); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
-
-func Test_server_Exists(t *testing.T) {
-	t.Parallel()
-	type args struct {
-		ctx  context.Context
-		meta *payload.Object_ID
-	}
-	type fields struct {
-		eg                                errgroup.Group
-		gateway                           service.Gateway
-		mirror                            service.Mirror
-		vAddr                             string
-		streamConcurrency                 int
-		name                              string
-		ip                                string
-		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
-	}
-	type want struct {
-		wantId *payload.Object_ID
-		err    error
-	}
-	type test struct {
-		name       string
-		args       args
-		fields     fields
-		want       want
-		checkFunc  func(want, *payload.Object_ID, error) error
-		beforeFunc func(*testing.T, args)
-		afterFunc  func(*testing.T, args)
-	}
-	defaultCheckFunc := func(w want, gotID *payload.Object_ID, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-		}
-		if !reflect.DeepEqual(gotID, w.wantId) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotID, w.wantId)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ctx:nil,
-		           meta:nil,
-		       },
-		       fields: fields {
-		           eg:nil,
-		           gateway:nil,
-		           mirror:nil,
-		           vAddr:"",
-		           streamConcurrency:0,
-		           name:"",
-		           ip:"",
-		           UnimplementedValdServerWithMirror:nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		       beforeFunc: func(t *testing.T, args args) {
-		           t.Helper()
-		       },
-		       afterFunc: func(t *testing.T, args args) {
-		           t.Helper()
-		       },
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ctx:nil,
-		           meta:nil,
-		           },
-		           fields: fields {
-		           eg:nil,
-		           gateway:nil,
-		           mirror:nil,
-		           vAddr:"",
-		           streamConcurrency:0,
-		           name:"",
-		           ip:"",
-		           UnimplementedValdServerWithMirror:nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		           beforeFunc: func(t *testing.T, args args) {
-		               t.Helper()
-		           },
-		           afterFunc: func(t *testing.T, args args) {
-		               t.Helper()
-		           },
-		       }
-		   }(),
-		*/
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-			if test.beforeFunc != nil {
-				test.beforeFunc(tt, test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(tt, test.args)
-			}
-			checkFunc := test.checkFunc
-			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
-			}
-			s := &server{
-				eg:                                test.fields.eg,
-				gateway:                           test.fields.gateway,
-				mirror:                            test.fields.mirror,
-				vAddr:                             test.fields.vAddr,
-				streamConcurrency:                 test.fields.streamConcurrency,
-				name:                              test.fields.name,
-				ip:                                test.fields.ip,
-				UnimplementedValdServerWithMirror: test.fields.UnimplementedValdServerWithMirror,
-			}
-
-			gotID, err := s.Exists(test.args.ctx, test.args.meta)
-			if err := checkFunc(test.want, gotID, err); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
-
-func Test_server_Search(t *testing.T) {
-	t.Parallel()
-	type args struct {
-		ctx context.Context
-		req *payload.Search_Request
-	}
-	type fields struct {
-		eg                                errgroup.Group
-		gateway                           service.Gateway
-		mirror                            service.Mirror
-		vAddr                             string
-		streamConcurrency                 int
-		name                              string
-		ip                                string
-		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
-	}
-	type want struct {
-		wantRes *payload.Search_Response
-		err     error
-	}
-	type test struct {
-		name       string
-		args       args
-		fields     fields
-		want       want
-		checkFunc  func(want, *payload.Search_Response, error) error
-		beforeFunc func(*testing.T, args)
-		afterFunc  func(*testing.T, args)
-	}
-	defaultCheckFunc := func(w want, gotRes *payload.Search_Response, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-		}
-		if !reflect.DeepEqual(gotRes, w.wantRes) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ctx:nil,
-		           req:nil,
-		       },
-		       fields: fields {
-		           eg:nil,
-		           gateway:nil,
-		           mirror:nil,
-		           vAddr:"",
-		           streamConcurrency:0,
-		           name:"",
-		           ip:"",
-		           UnimplementedValdServerWithMirror:nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		       beforeFunc: func(t *testing.T, args args) {
-		           t.Helper()
-		       },
-		       afterFunc: func(t *testing.T, args args) {
-		           t.Helper()
-		       },
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ctx:nil,
-		           req:nil,
-		           },
-		           fields: fields {
-		           eg:nil,
-		           gateway:nil,
-		           mirror:nil,
-		           vAddr:"",
-		           streamConcurrency:0,
-		           name:"",
-		           ip:"",
-		           UnimplementedValdServerWithMirror:nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		           beforeFunc: func(t *testing.T, args args) {
-		               t.Helper()
-		           },
-		           afterFunc: func(t *testing.T, args args) {
-		               t.Helper()
-		           },
-		       }
-		   }(),
-		*/
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-			if test.beforeFunc != nil {
-				test.beforeFunc(tt, test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(tt, test.args)
-			}
-			checkFunc := test.checkFunc
-			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
-			}
-			s := &server{
-				eg:                                test.fields.eg,
-				gateway:                           test.fields.gateway,
-				mirror:                            test.fields.mirror,
-				vAddr:                             test.fields.vAddr,
-				streamConcurrency:                 test.fields.streamConcurrency,
-				name:                              test.fields.name,
-				ip:                                test.fields.ip,
-				UnimplementedValdServerWithMirror: test.fields.UnimplementedValdServerWithMirror,
-			}
-
-			gotRes, err := s.Search(test.args.ctx, test.args.req)
-			if err := checkFunc(test.want, gotRes, err); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
-
-func Test_server_SearchByID(t *testing.T) {
-	t.Parallel()
-	type args struct {
-		ctx context.Context
-		req *payload.Search_IDRequest
-	}
-	type fields struct {
-		eg                                errgroup.Group
-		gateway                           service.Gateway
-		mirror                            service.Mirror
-		vAddr                             string
-		streamConcurrency                 int
-		name                              string
-		ip                                string
-		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
-	}
-	type want struct {
-		wantRes *payload.Search_Response
-		err     error
-	}
-	type test struct {
-		name       string
-		args       args
-		fields     fields
-		want       want
-		checkFunc  func(want, *payload.Search_Response, error) error
-		beforeFunc func(*testing.T, args)
-		afterFunc  func(*testing.T, args)
-	}
-	defaultCheckFunc := func(w want, gotRes *payload.Search_Response, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-		}
-		if !reflect.DeepEqual(gotRes, w.wantRes) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ctx:nil,
-		           req:nil,
-		       },
-		       fields: fields {
-		           eg:nil,
-		           gateway:nil,
-		           mirror:nil,
-		           vAddr:"",
-		           streamConcurrency:0,
-		           name:"",
-		           ip:"",
-		           UnimplementedValdServerWithMirror:nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		       beforeFunc: func(t *testing.T, args args) {
-		           t.Helper()
-		       },
-		       afterFunc: func(t *testing.T, args args) {
-		           t.Helper()
-		       },
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ctx:nil,
-		           req:nil,
-		           },
-		           fields: fields {
-		           eg:nil,
-		           gateway:nil,
-		           mirror:nil,
-		           vAddr:"",
-		           streamConcurrency:0,
-		           name:"",
-		           ip:"",
-		           UnimplementedValdServerWithMirror:nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		           beforeFunc: func(t *testing.T, args args) {
-		               t.Helper()
-		           },
-		           afterFunc: func(t *testing.T, args args) {
-		               t.Helper()
-		           },
-		       }
-		   }(),
-		*/
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-			if test.beforeFunc != nil {
-				test.beforeFunc(tt, test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(tt, test.args)
-			}
-			checkFunc := test.checkFunc
-			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
-			}
-			s := &server{
-				eg:                                test.fields.eg,
-				gateway:                           test.fields.gateway,
-				mirror:                            test.fields.mirror,
-				vAddr:                             test.fields.vAddr,
-				streamConcurrency:                 test.fields.streamConcurrency,
-				name:                              test.fields.name,
-				ip:                                test.fields.ip,
-				UnimplementedValdServerWithMirror: test.fields.UnimplementedValdServerWithMirror,
-			}
-
-			gotRes, err := s.SearchByID(test.args.ctx, test.args.req)
-			if err := checkFunc(test.want, gotRes, err); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
-
-func Test_server_StreamSearch(t *testing.T) {
-	t.Parallel()
-	type args struct {
-		stream vald.Search_StreamSearchServer
-	}
-	type fields struct {
-		eg                                errgroup.Group
-		gateway                           service.Gateway
-		mirror                            service.Mirror
-		vAddr                             string
-		streamConcurrency                 int
-		name                              string
-		ip                                string
-		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
-	}
-	type want struct {
-		err error
-	}
-	type test struct {
-		name       string
-		args       args
-		fields     fields
-		want       want
-		checkFunc  func(want, error) error
-		beforeFunc func(*testing.T, args)
-		afterFunc  func(*testing.T, args)
-	}
-	defaultCheckFunc := func(w want, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           stream:nil,
-		       },
-		       fields: fields {
-		           eg:nil,
-		           gateway:nil,
-		           mirror:nil,
-		           vAddr:"",
-		           streamConcurrency:0,
-		           name:"",
-		           ip:"",
-		           UnimplementedValdServerWithMirror:nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		       beforeFunc: func(t *testing.T, args args) {
-		           t.Helper()
-		       },
-		       afterFunc: func(t *testing.T, args args) {
-		           t.Helper()
-		       },
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           stream:nil,
-		           },
-		           fields: fields {
-		           eg:nil,
-		           gateway:nil,
-		           mirror:nil,
-		           vAddr:"",
-		           streamConcurrency:0,
-		           name:"",
-		           ip:"",
-		           UnimplementedValdServerWithMirror:nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		           beforeFunc: func(t *testing.T, args args) {
-		               t.Helper()
-		           },
-		           afterFunc: func(t *testing.T, args args) {
-		               t.Helper()
-		           },
-		       }
-		   }(),
-		*/
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-			if test.beforeFunc != nil {
-				test.beforeFunc(tt, test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(tt, test.args)
-			}
-			checkFunc := test.checkFunc
-			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
-			}
-			s := &server{
-				eg:                                test.fields.eg,
-				gateway:                           test.fields.gateway,
-				mirror:                            test.fields.mirror,
-				vAddr:                             test.fields.vAddr,
-				streamConcurrency:                 test.fields.streamConcurrency,
-				name:                              test.fields.name,
-				ip:                                test.fields.ip,
-				UnimplementedValdServerWithMirror: test.fields.UnimplementedValdServerWithMirror,
-			}
-
-			err := s.StreamSearch(test.args.stream)
-			if err := checkFunc(test.want, err); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
-
-func Test_server_StreamSearchByID(t *testing.T) {
-	t.Parallel()
-	type args struct {
-		stream vald.Search_StreamSearchByIDServer
-	}
-	type fields struct {
-		eg                                errgroup.Group
-		gateway                           service.Gateway
-		mirror                            service.Mirror
-		vAddr                             string
-		streamConcurrency                 int
-		name                              string
-		ip                                string
-		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
-	}
-	type want struct {
-		err error
-	}
-	type test struct {
-		name       string
-		args       args
-		fields     fields
-		want       want
-		checkFunc  func(want, error) error
-		beforeFunc func(*testing.T, args)
-		afterFunc  func(*testing.T, args)
-	}
-	defaultCheckFunc := func(w want, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           stream:nil,
-		       },
-		       fields: fields {
-		           eg:nil,
-		           gateway:nil,
-		           mirror:nil,
-		           vAddr:"",
-		           streamConcurrency:0,
-		           name:"",
-		           ip:"",
-		           UnimplementedValdServerWithMirror:nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		       beforeFunc: func(t *testing.T, args args) {
-		           t.Helper()
-		       },
-		       afterFunc: func(t *testing.T, args args) {
-		           t.Helper()
-		       },
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           stream:nil,
-		           },
-		           fields: fields {
-		           eg:nil,
-		           gateway:nil,
-		           mirror:nil,
-		           vAddr:"",
-		           streamConcurrency:0,
-		           name:"",
-		           ip:"",
-		           UnimplementedValdServerWithMirror:nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		           beforeFunc: func(t *testing.T, args args) {
-		               t.Helper()
-		           },
-		           afterFunc: func(t *testing.T, args args) {
-		               t.Helper()
-		           },
-		       }
-		   }(),
-		*/
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-			if test.beforeFunc != nil {
-				test.beforeFunc(tt, test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(tt, test.args)
-			}
-			checkFunc := test.checkFunc
-			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
-			}
-			s := &server{
-				eg:                                test.fields.eg,
-				gateway:                           test.fields.gateway,
-				mirror:                            test.fields.mirror,
-				vAddr:                             test.fields.vAddr,
-				streamConcurrency:                 test.fields.streamConcurrency,
-				name:                              test.fields.name,
-				ip:                                test.fields.ip,
-				UnimplementedValdServerWithMirror: test.fields.UnimplementedValdServerWithMirror,
-			}
-
-			err := s.StreamSearchByID(test.args.stream)
-			if err := checkFunc(test.want, err); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
-
-func Test_server_MultiSearch(t *testing.T) {
-	t.Parallel()
-	type args struct {
-		ctx context.Context
-		req *payload.Search_MultiRequest
-	}
-	type fields struct {
-		eg                                errgroup.Group
-		gateway                           service.Gateway
-		mirror                            service.Mirror
-		vAddr                             string
-		streamConcurrency                 int
-		name                              string
-		ip                                string
-		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
-	}
-	type want struct {
-		wantRes *payload.Search_Responses
-		err     error
-	}
-	type test struct {
-		name       string
-		args       args
-		fields     fields
-		want       want
-		checkFunc  func(want, *payload.Search_Responses, error) error
-		beforeFunc func(*testing.T, args)
-		afterFunc  func(*testing.T, args)
-	}
-	defaultCheckFunc := func(w want, gotRes *payload.Search_Responses, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-		}
-		if !reflect.DeepEqual(gotRes, w.wantRes) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ctx:nil,
-		           req:nil,
-		       },
-		       fields: fields {
-		           eg:nil,
-		           gateway:nil,
-		           mirror:nil,
-		           vAddr:"",
-		           streamConcurrency:0,
-		           name:"",
-		           ip:"",
-		           UnimplementedValdServerWithMirror:nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		       beforeFunc: func(t *testing.T, args args) {
-		           t.Helper()
-		       },
-		       afterFunc: func(t *testing.T, args args) {
-		           t.Helper()
-		       },
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ctx:nil,
-		           req:nil,
-		           },
-		           fields: fields {
-		           eg:nil,
-		           gateway:nil,
-		           mirror:nil,
-		           vAddr:"",
-		           streamConcurrency:0,
-		           name:"",
-		           ip:"",
-		           UnimplementedValdServerWithMirror:nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		           beforeFunc: func(t *testing.T, args args) {
-		               t.Helper()
-		           },
-		           afterFunc: func(t *testing.T, args args) {
-		               t.Helper()
-		           },
-		       }
-		   }(),
-		*/
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-			if test.beforeFunc != nil {
-				test.beforeFunc(tt, test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(tt, test.args)
-			}
-			checkFunc := test.checkFunc
-			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
-			}
-			s := &server{
-				eg:                                test.fields.eg,
-				gateway:                           test.fields.gateway,
-				mirror:                            test.fields.mirror,
-				vAddr:                             test.fields.vAddr,
-				streamConcurrency:                 test.fields.streamConcurrency,
-				name:                              test.fields.name,
-				ip:                                test.fields.ip,
-				UnimplementedValdServerWithMirror: test.fields.UnimplementedValdServerWithMirror,
-			}
-
-			gotRes, err := s.MultiSearch(test.args.ctx, test.args.req)
-			if err := checkFunc(test.want, gotRes, err); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
-
-func Test_server_MultiSearchByID(t *testing.T) {
-	t.Parallel()
-	type args struct {
-		ctx context.Context
-		req *payload.Search_MultiIDRequest
-	}
-	type fields struct {
-		eg                                errgroup.Group
-		gateway                           service.Gateway
-		mirror                            service.Mirror
-		vAddr                             string
-		streamConcurrency                 int
-		name                              string
-		ip                                string
-		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
-	}
-	type want struct {
-		wantRes *payload.Search_Responses
-		err     error
-	}
-	type test struct {
-		name       string
-		args       args
-		fields     fields
-		want       want
-		checkFunc  func(want, *payload.Search_Responses, error) error
-		beforeFunc func(*testing.T, args)
-		afterFunc  func(*testing.T, args)
-	}
-	defaultCheckFunc := func(w want, gotRes *payload.Search_Responses, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-		}
-		if !reflect.DeepEqual(gotRes, w.wantRes) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ctx:nil,
-		           req:nil,
-		       },
-		       fields: fields {
-		           eg:nil,
-		           gateway:nil,
-		           mirror:nil,
-		           vAddr:"",
-		           streamConcurrency:0,
-		           name:"",
-		           ip:"",
-		           UnimplementedValdServerWithMirror:nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		       beforeFunc: func(t *testing.T, args args) {
-		           t.Helper()
-		       },
-		       afterFunc: func(t *testing.T, args args) {
-		           t.Helper()
-		       },
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ctx:nil,
-		           req:nil,
-		           },
-		           fields: fields {
-		           eg:nil,
-		           gateway:nil,
-		           mirror:nil,
-		           vAddr:"",
-		           streamConcurrency:0,
-		           name:"",
-		           ip:"",
-		           UnimplementedValdServerWithMirror:nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		           beforeFunc: func(t *testing.T, args args) {
-		               t.Helper()
-		           },
-		           afterFunc: func(t *testing.T, args args) {
-		               t.Helper()
-		           },
-		       }
-		   }(),
-		*/
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-			if test.beforeFunc != nil {
-				test.beforeFunc(tt, test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(tt, test.args)
-			}
-			checkFunc := test.checkFunc
-			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
-			}
-			s := &server{
-				eg:                                test.fields.eg,
-				gateway:                           test.fields.gateway,
-				mirror:                            test.fields.mirror,
-				vAddr:                             test.fields.vAddr,
-				streamConcurrency:                 test.fields.streamConcurrency,
-				name:                              test.fields.name,
-				ip:                                test.fields.ip,
-				UnimplementedValdServerWithMirror: test.fields.UnimplementedValdServerWithMirror,
-			}
-
-			gotRes, err := s.MultiSearchByID(test.args.ctx, test.args.req)
-			if err := checkFunc(test.want, gotRes, err); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
-
-func Test_server_LinearSearch(t *testing.T) {
-	t.Parallel()
-	type args struct {
-		ctx context.Context
-		req *payload.Search_Request
-	}
-	type fields struct {
-		eg                                errgroup.Group
-		gateway                           service.Gateway
-		mirror                            service.Mirror
-		vAddr                             string
-		streamConcurrency                 int
-		name                              string
-		ip                                string
-		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
-	}
-	type want struct {
-		wantRes *payload.Search_Response
-		err     error
-	}
-	type test struct {
-		name       string
-		args       args
-		fields     fields
-		want       want
-		checkFunc  func(want, *payload.Search_Response, error) error
-		beforeFunc func(*testing.T, args)
-		afterFunc  func(*testing.T, args)
-	}
-	defaultCheckFunc := func(w want, gotRes *payload.Search_Response, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-		}
-		if !reflect.DeepEqual(gotRes, w.wantRes) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ctx:nil,
-		           req:nil,
-		       },
-		       fields: fields {
-		           eg:nil,
-		           gateway:nil,
-		           mirror:nil,
-		           vAddr:"",
-		           streamConcurrency:0,
-		           name:"",
-		           ip:"",
-		           UnimplementedValdServerWithMirror:nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		       beforeFunc: func(t *testing.T, args args) {
-		           t.Helper()
-		       },
-		       afterFunc: func(t *testing.T, args args) {
-		           t.Helper()
-		       },
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ctx:nil,
-		           req:nil,
-		           },
-		           fields: fields {
-		           eg:nil,
-		           gateway:nil,
-		           mirror:nil,
-		           vAddr:"",
-		           streamConcurrency:0,
-		           name:"",
-		           ip:"",
-		           UnimplementedValdServerWithMirror:nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		           beforeFunc: func(t *testing.T, args args) {
-		               t.Helper()
-		           },
-		           afterFunc: func(t *testing.T, args args) {
-		               t.Helper()
-		           },
-		       }
-		   }(),
-		*/
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-			if test.beforeFunc != nil {
-				test.beforeFunc(tt, test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(tt, test.args)
-			}
-			checkFunc := test.checkFunc
-			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
-			}
-			s := &server{
-				eg:                                test.fields.eg,
-				gateway:                           test.fields.gateway,
-				mirror:                            test.fields.mirror,
-				vAddr:                             test.fields.vAddr,
-				streamConcurrency:                 test.fields.streamConcurrency,
-				name:                              test.fields.name,
-				ip:                                test.fields.ip,
-				UnimplementedValdServerWithMirror: test.fields.UnimplementedValdServerWithMirror,
-			}
-
-			gotRes, err := s.LinearSearch(test.args.ctx, test.args.req)
-			if err := checkFunc(test.want, gotRes, err); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
-
-func Test_server_LinearSearchByID(t *testing.T) {
-	t.Parallel()
-	type args struct {
-		ctx context.Context
-		req *payload.Search_IDRequest
-	}
-	type fields struct {
-		eg                                errgroup.Group
-		gateway                           service.Gateway
-		mirror                            service.Mirror
-		vAddr                             string
-		streamConcurrency                 int
-		name                              string
-		ip                                string
-		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
-	}
-	type want struct {
-		wantRes *payload.Search_Response
-		err     error
-	}
-	type test struct {
-		name       string
-		args       args
-		fields     fields
-		want       want
-		checkFunc  func(want, *payload.Search_Response, error) error
-		beforeFunc func(*testing.T, args)
-		afterFunc  func(*testing.T, args)
-	}
-	defaultCheckFunc := func(w want, gotRes *payload.Search_Response, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-		}
-		if !reflect.DeepEqual(gotRes, w.wantRes) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ctx:nil,
-		           req:nil,
-		       },
-		       fields: fields {
-		           eg:nil,
-		           gateway:nil,
-		           mirror:nil,
-		           vAddr:"",
-		           streamConcurrency:0,
-		           name:"",
-		           ip:"",
-		           UnimplementedValdServerWithMirror:nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		       beforeFunc: func(t *testing.T, args args) {
-		           t.Helper()
-		       },
-		       afterFunc: func(t *testing.T, args args) {
-		           t.Helper()
-		       },
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ctx:nil,
-		           req:nil,
-		           },
-		           fields: fields {
-		           eg:nil,
-		           gateway:nil,
-		           mirror:nil,
-		           vAddr:"",
-		           streamConcurrency:0,
-		           name:"",
-		           ip:"",
-		           UnimplementedValdServerWithMirror:nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		           beforeFunc: func(t *testing.T, args args) {
-		               t.Helper()
-		           },
-		           afterFunc: func(t *testing.T, args args) {
-		               t.Helper()
-		           },
-		       }
-		   }(),
-		*/
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-			if test.beforeFunc != nil {
-				test.beforeFunc(tt, test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(tt, test.args)
-			}
-			checkFunc := test.checkFunc
-			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
-			}
-			s := &server{
-				eg:                                test.fields.eg,
-				gateway:                           test.fields.gateway,
-				mirror:                            test.fields.mirror,
-				vAddr:                             test.fields.vAddr,
-				streamConcurrency:                 test.fields.streamConcurrency,
-				name:                              test.fields.name,
-				ip:                                test.fields.ip,
-				UnimplementedValdServerWithMirror: test.fields.UnimplementedValdServerWithMirror,
-			}
-
-			gotRes, err := s.LinearSearchByID(test.args.ctx, test.args.req)
-			if err := checkFunc(test.want, gotRes, err); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
-
-func Test_server_StreamLinearSearch(t *testing.T) {
-	t.Parallel()
-	type args struct {
-		stream vald.Search_StreamLinearSearchServer
-	}
-	type fields struct {
-		eg                                errgroup.Group
-		gateway                           service.Gateway
-		mirror                            service.Mirror
-		vAddr                             string
-		streamConcurrency                 int
-		name                              string
-		ip                                string
-		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
-	}
-	type want struct {
-		err error
-	}
-	type test struct {
-		name       string
-		args       args
-		fields     fields
-		want       want
-		checkFunc  func(want, error) error
-		beforeFunc func(*testing.T, args)
-		afterFunc  func(*testing.T, args)
-	}
-	defaultCheckFunc := func(w want, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           stream:nil,
-		       },
-		       fields: fields {
-		           eg:nil,
-		           gateway:nil,
-		           mirror:nil,
-		           vAddr:"",
-		           streamConcurrency:0,
-		           name:"",
-		           ip:"",
-		           UnimplementedValdServerWithMirror:nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		       beforeFunc: func(t *testing.T, args args) {
-		           t.Helper()
-		       },
-		       afterFunc: func(t *testing.T, args args) {
-		           t.Helper()
-		       },
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           stream:nil,
-		           },
-		           fields: fields {
-		           eg:nil,
-		           gateway:nil,
-		           mirror:nil,
-		           vAddr:"",
-		           streamConcurrency:0,
-		           name:"",
-		           ip:"",
-		           UnimplementedValdServerWithMirror:nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		           beforeFunc: func(t *testing.T, args args) {
-		               t.Helper()
-		           },
-		           afterFunc: func(t *testing.T, args args) {
-		               t.Helper()
-		           },
-		       }
-		   }(),
-		*/
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-			if test.beforeFunc != nil {
-				test.beforeFunc(tt, test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(tt, test.args)
-			}
-			checkFunc := test.checkFunc
-			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
-			}
-			s := &server{
-				eg:                                test.fields.eg,
-				gateway:                           test.fields.gateway,
-				mirror:                            test.fields.mirror,
-				vAddr:                             test.fields.vAddr,
-				streamConcurrency:                 test.fields.streamConcurrency,
-				name:                              test.fields.name,
-				ip:                                test.fields.ip,
-				UnimplementedValdServerWithMirror: test.fields.UnimplementedValdServerWithMirror,
-			}
-
-			err := s.StreamLinearSearch(test.args.stream)
-			if err := checkFunc(test.want, err); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
-
-func Test_server_StreamLinearSearchByID(t *testing.T) {
-	t.Parallel()
-	type args struct {
-		stream vald.Search_StreamLinearSearchByIDServer
-	}
-	type fields struct {
-		eg                                errgroup.Group
-		gateway                           service.Gateway
-		mirror                            service.Mirror
-		vAddr                             string
-		streamConcurrency                 int
-		name                              string
-		ip                                string
-		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
-	}
-	type want struct {
-		err error
-	}
-	type test struct {
-		name       string
-		args       args
-		fields     fields
-		want       want
-		checkFunc  func(want, error) error
-		beforeFunc func(*testing.T, args)
-		afterFunc  func(*testing.T, args)
-	}
-	defaultCheckFunc := func(w want, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           stream:nil,
-		       },
-		       fields: fields {
-		           eg:nil,
-		           gateway:nil,
-		           mirror:nil,
-		           vAddr:"",
-		           streamConcurrency:0,
-		           name:"",
-		           ip:"",
-		           UnimplementedValdServerWithMirror:nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		       beforeFunc: func(t *testing.T, args args) {
-		           t.Helper()
-		       },
-		       afterFunc: func(t *testing.T, args args) {
-		           t.Helper()
-		       },
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           stream:nil,
-		           },
-		           fields: fields {
-		           eg:nil,
-		           gateway:nil,
-		           mirror:nil,
-		           vAddr:"",
-		           streamConcurrency:0,
-		           name:"",
-		           ip:"",
-		           UnimplementedValdServerWithMirror:nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		           beforeFunc: func(t *testing.T, args args) {
-		               t.Helper()
-		           },
-		           afterFunc: func(t *testing.T, args args) {
-		               t.Helper()
-		           },
-		       }
-		   }(),
-		*/
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-			if test.beforeFunc != nil {
-				test.beforeFunc(tt, test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(tt, test.args)
-			}
-			checkFunc := test.checkFunc
-			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
-			}
-			s := &server{
-				eg:                                test.fields.eg,
-				gateway:                           test.fields.gateway,
-				mirror:                            test.fields.mirror,
-				vAddr:                             test.fields.vAddr,
-				streamConcurrency:                 test.fields.streamConcurrency,
-				name:                              test.fields.name,
-				ip:                                test.fields.ip,
-				UnimplementedValdServerWithMirror: test.fields.UnimplementedValdServerWithMirror,
-			}
-
-			err := s.StreamLinearSearchByID(test.args.stream)
-			if err := checkFunc(test.want, err); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
-
-func Test_server_MultiLinearSearch(t *testing.T) {
-	t.Parallel()
-	type args struct {
-		ctx context.Context
-		req *payload.Search_MultiRequest
-	}
-	type fields struct {
-		eg                                errgroup.Group
-		gateway                           service.Gateway
-		mirror                            service.Mirror
-		vAddr                             string
-		streamConcurrency                 int
-		name                              string
-		ip                                string
-		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
-	}
-	type want struct {
-		wantRes *payload.Search_Responses
-		err     error
-	}
-	type test struct {
-		name       string
-		args       args
-		fields     fields
-		want       want
-		checkFunc  func(want, *payload.Search_Responses, error) error
-		beforeFunc func(*testing.T, args)
-		afterFunc  func(*testing.T, args)
-	}
-	defaultCheckFunc := func(w want, gotRes *payload.Search_Responses, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-		}
-		if !reflect.DeepEqual(gotRes, w.wantRes) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ctx:nil,
-		           req:nil,
-		       },
-		       fields: fields {
-		           eg:nil,
-		           gateway:nil,
-		           mirror:nil,
-		           vAddr:"",
-		           streamConcurrency:0,
-		           name:"",
-		           ip:"",
-		           UnimplementedValdServerWithMirror:nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		       beforeFunc: func(t *testing.T, args args) {
-		           t.Helper()
-		       },
-		       afterFunc: func(t *testing.T, args args) {
-		           t.Helper()
-		       },
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ctx:nil,
-		           req:nil,
-		           },
-		           fields: fields {
-		           eg:nil,
-		           gateway:nil,
-		           mirror:nil,
-		           vAddr:"",
-		           streamConcurrency:0,
-		           name:"",
-		           ip:"",
-		           UnimplementedValdServerWithMirror:nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		           beforeFunc: func(t *testing.T, args args) {
-		               t.Helper()
-		           },
-		           afterFunc: func(t *testing.T, args args) {
-		               t.Helper()
-		           },
-		       }
-		   }(),
-		*/
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-			if test.beforeFunc != nil {
-				test.beforeFunc(tt, test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(tt, test.args)
-			}
-			checkFunc := test.checkFunc
-			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
-			}
-			s := &server{
-				eg:                                test.fields.eg,
-				gateway:                           test.fields.gateway,
-				mirror:                            test.fields.mirror,
-				vAddr:                             test.fields.vAddr,
-				streamConcurrency:                 test.fields.streamConcurrency,
-				name:                              test.fields.name,
-				ip:                                test.fields.ip,
-				UnimplementedValdServerWithMirror: test.fields.UnimplementedValdServerWithMirror,
-			}
-
-			gotRes, err := s.MultiLinearSearch(test.args.ctx, test.args.req)
-			if err := checkFunc(test.want, gotRes, err); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
-
-func Test_server_MultiLinearSearchByID(t *testing.T) {
-	t.Parallel()
-	type args struct {
-		ctx context.Context
-		req *payload.Search_MultiIDRequest
-	}
-	type fields struct {
-		eg                                errgroup.Group
-		gateway                           service.Gateway
-		mirror                            service.Mirror
-		vAddr                             string
-		streamConcurrency                 int
-		name                              string
-		ip                                string
-		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
-	}
-	type want struct {
-		wantRes *payload.Search_Responses
-		err     error
-	}
-	type test struct {
-		name       string
-		args       args
-		fields     fields
-		want       want
-		checkFunc  func(want, *payload.Search_Responses, error) error
-		beforeFunc func(*testing.T, args)
-		afterFunc  func(*testing.T, args)
-	}
-	defaultCheckFunc := func(w want, gotRes *payload.Search_Responses, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-		}
-		if !reflect.DeepEqual(gotRes, w.wantRes) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ctx:nil,
-		           req:nil,
-		       },
-		       fields: fields {
-		           eg:nil,
-		           gateway:nil,
-		           mirror:nil,
-		           vAddr:"",
-		           streamConcurrency:0,
-		           name:"",
-		           ip:"",
-		           UnimplementedValdServerWithMirror:nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		       beforeFunc: func(t *testing.T, args args) {
-		           t.Helper()
-		       },
-		       afterFunc: func(t *testing.T, args args) {
-		           t.Helper()
-		       },
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ctx:nil,
-		           req:nil,
-		           },
-		           fields: fields {
-		           eg:nil,
-		           gateway:nil,
-		           mirror:nil,
-		           vAddr:"",
-		           streamConcurrency:0,
-		           name:"",
-		           ip:"",
-		           UnimplementedValdServerWithMirror:nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		           beforeFunc: func(t *testing.T, args args) {
-		               t.Helper()
-		           },
-		           afterFunc: func(t *testing.T, args args) {
-		               t.Helper()
-		           },
-		       }
-		   }(),
-		*/
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-			if test.beforeFunc != nil {
-				test.beforeFunc(tt, test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(tt, test.args)
-			}
-			checkFunc := test.checkFunc
-			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
-			}
-			s := &server{
-				eg:                                test.fields.eg,
-				gateway:                           test.fields.gateway,
-				mirror:                            test.fields.mirror,
-				vAddr:                             test.fields.vAddr,
-				streamConcurrency:                 test.fields.streamConcurrency,
-				name:                              test.fields.name,
-				ip:                                test.fields.ip,
-				UnimplementedValdServerWithMirror: test.fields.UnimplementedValdServerWithMirror,
-			}
-
-			gotRes, err := s.MultiLinearSearchByID(test.args.ctx, test.args.req)
-			if err := checkFunc(test.want, gotRes, err); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
-
-func Test_server_StreamInsert(t *testing.T) {
-	t.Parallel()
-	type args struct {
-		stream vald.Insert_StreamInsertServer
-	}
-	type fields struct {
-		eg                                errgroup.Group
-		gateway                           service.Gateway
-		mirror                            service.Mirror
-		vAddr                             string
-		streamConcurrency                 int
-		name                              string
-		ip                                string
-		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
-	}
-	type want struct {
-		err error
-	}
-	type test struct {
-		name       string
-		args       args
-		fields     fields
-		want       want
-		checkFunc  func(want, error) error
-		beforeFunc func(*testing.T, args)
-		afterFunc  func(*testing.T, args)
-	}
-	defaultCheckFunc := func(w want, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           stream:nil,
-		       },
-		       fields: fields {
-		           eg:nil,
-		           gateway:nil,
-		           mirror:nil,
-		           vAddr:"",
-		           streamConcurrency:0,
-		           name:"",
-		           ip:"",
-		           UnimplementedValdServerWithMirror:nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		       beforeFunc: func(t *testing.T, args args) {
-		           t.Helper()
-		       },
-		       afterFunc: func(t *testing.T, args args) {
-		           t.Helper()
-		       },
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           stream:nil,
-		           },
-		           fields: fields {
-		           eg:nil,
-		           gateway:nil,
-		           mirror:nil,
-		           vAddr:"",
-		           streamConcurrency:0,
-		           name:"",
-		           ip:"",
-		           UnimplementedValdServerWithMirror:nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		           beforeFunc: func(t *testing.T, args args) {
-		               t.Helper()
-		           },
-		           afterFunc: func(t *testing.T, args args) {
-		               t.Helper()
-		           },
-		       }
-		   }(),
-		*/
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-			if test.beforeFunc != nil {
-				test.beforeFunc(tt, test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(tt, test.args)
-			}
-			checkFunc := test.checkFunc
-			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
-			}
-			s := &server{
-				eg:                                test.fields.eg,
-				gateway:                           test.fields.gateway,
-				mirror:                            test.fields.mirror,
-				vAddr:                             test.fields.vAddr,
-				streamConcurrency:                 test.fields.streamConcurrency,
-				name:                              test.fields.name,
-				ip:                                test.fields.ip,
-				UnimplementedValdServerWithMirror: test.fields.UnimplementedValdServerWithMirror,
-			}
-
-			err := s.StreamInsert(test.args.stream)
-			if err := checkFunc(test.want, err); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
-
-func Test_server_MultiInsert(t *testing.T) {
-	t.Parallel()
-	type args struct {
-		ctx  context.Context
-		reqs *payload.Insert_MultiRequest
-	}
-	type fields struct {
-		eg                                errgroup.Group
-		gateway                           service.Gateway
-		mirror                            service.Mirror
-		vAddr                             string
-		streamConcurrency                 int
-		name                              string
-		ip                                string
-		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
-	}
-	type want struct {
-		wantRes *payload.Object_Locations
-		err     error
-	}
-	type test struct {
-		name       string
-		args       args
-		fields     fields
-		want       want
-		checkFunc  func(want, *payload.Object_Locations, error) error
-		beforeFunc func(*testing.T, args)
-		afterFunc  func(*testing.T, args)
-	}
-	defaultCheckFunc := func(w want, gotRes *payload.Object_Locations, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-		}
-		if !reflect.DeepEqual(gotRes, w.wantRes) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ctx:nil,
-		           reqs:nil,
-		       },
-		       fields: fields {
-		           eg:nil,
-		           gateway:nil,
-		           mirror:nil,
-		           vAddr:"",
-		           streamConcurrency:0,
-		           name:"",
-		           ip:"",
-		           UnimplementedValdServerWithMirror:nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		       beforeFunc: func(t *testing.T, args args) {
-		           t.Helper()
-		       },
-		       afterFunc: func(t *testing.T, args args) {
-		           t.Helper()
-		       },
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ctx:nil,
-		           reqs:nil,
-		           },
-		           fields: fields {
-		           eg:nil,
-		           gateway:nil,
-		           mirror:nil,
-		           vAddr:"",
-		           streamConcurrency:0,
-		           name:"",
-		           ip:"",
-		           UnimplementedValdServerWithMirror:nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		           beforeFunc: func(t *testing.T, args args) {
-		               t.Helper()
-		           },
-		           afterFunc: func(t *testing.T, args args) {
-		               t.Helper()
-		           },
-		       }
-		   }(),
-		*/
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-			if test.beforeFunc != nil {
-				test.beforeFunc(tt, test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(tt, test.args)
-			}
-			checkFunc := test.checkFunc
-			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
-			}
-			s := &server{
-				eg:                                test.fields.eg,
-				gateway:                           test.fields.gateway,
-				mirror:                            test.fields.mirror,
-				vAddr:                             test.fields.vAddr,
-				streamConcurrency:                 test.fields.streamConcurrency,
-				name:                              test.fields.name,
-				ip:                                test.fields.ip,
-				UnimplementedValdServerWithMirror: test.fields.UnimplementedValdServerWithMirror,
-			}
-
-			gotRes, err := s.MultiInsert(test.args.ctx, test.args.reqs)
-			if err := checkFunc(test.want, gotRes, err); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
-
-func Test_server_StreamUpdate(t *testing.T) {
-	t.Parallel()
-	type args struct {
-		stream vald.Update_StreamUpdateServer
-	}
-	type fields struct {
-		eg                                errgroup.Group
-		gateway                           service.Gateway
-		mirror                            service.Mirror
-		vAddr                             string
-		streamConcurrency                 int
-		name                              string
-		ip                                string
-		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
-	}
-	type want struct {
-		err error
-	}
-	type test struct {
-		name       string
-		args       args
-		fields     fields
-		want       want
-		checkFunc  func(want, error) error
-		beforeFunc func(*testing.T, args)
-		afterFunc  func(*testing.T, args)
-	}
-	defaultCheckFunc := func(w want, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           stream:nil,
-		       },
-		       fields: fields {
-		           eg:nil,
-		           gateway:nil,
-		           mirror:nil,
-		           vAddr:"",
-		           streamConcurrency:0,
-		           name:"",
-		           ip:"",
-		           UnimplementedValdServerWithMirror:nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		       beforeFunc: func(t *testing.T, args args) {
-		           t.Helper()
-		       },
-		       afterFunc: func(t *testing.T, args args) {
-		           t.Helper()
-		       },
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           stream:nil,
-		           },
-		           fields: fields {
-		           eg:nil,
-		           gateway:nil,
-		           mirror:nil,
-		           vAddr:"",
-		           streamConcurrency:0,
-		           name:"",
-		           ip:"",
-		           UnimplementedValdServerWithMirror:nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		           beforeFunc: func(t *testing.T, args args) {
-		               t.Helper()
-		           },
-		           afterFunc: func(t *testing.T, args args) {
-		               t.Helper()
-		           },
-		       }
-		   }(),
-		*/
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-			if test.beforeFunc != nil {
-				test.beforeFunc(tt, test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(tt, test.args)
-			}
-			checkFunc := test.checkFunc
-			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
-			}
-			s := &server{
-				eg:                                test.fields.eg,
-				gateway:                           test.fields.gateway,
-				mirror:                            test.fields.mirror,
-				vAddr:                             test.fields.vAddr,
-				streamConcurrency:                 test.fields.streamConcurrency,
-				name:                              test.fields.name,
-				ip:                                test.fields.ip,
-				UnimplementedValdServerWithMirror: test.fields.UnimplementedValdServerWithMirror,
-			}
-
-			err := s.StreamUpdate(test.args.stream)
-			if err := checkFunc(test.want, err); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
-
-func Test_server_MultiUpdate(t *testing.T) {
-	t.Parallel()
-	type args struct {
-		ctx  context.Context
-		reqs *payload.Update_MultiRequest
-	}
-	type fields struct {
-		eg                                errgroup.Group
-		gateway                           service.Gateway
-		mirror                            service.Mirror
-		vAddr                             string
-		streamConcurrency                 int
-		name                              string
-		ip                                string
-		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
-	}
-	type want struct {
-		wantRes *payload.Object_Locations
-		err     error
-	}
-	type test struct {
-		name       string
-		args       args
-		fields     fields
-		want       want
-		checkFunc  func(want, *payload.Object_Locations, error) error
-		beforeFunc func(*testing.T, args)
-		afterFunc  func(*testing.T, args)
-	}
-	defaultCheckFunc := func(w want, gotRes *payload.Object_Locations, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-		}
-		if !reflect.DeepEqual(gotRes, w.wantRes) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ctx:nil,
-		           reqs:nil,
-		       },
-		       fields: fields {
-		           eg:nil,
-		           gateway:nil,
-		           mirror:nil,
-		           vAddr:"",
-		           streamConcurrency:0,
-		           name:"",
-		           ip:"",
-		           UnimplementedValdServerWithMirror:nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		       beforeFunc: func(t *testing.T, args args) {
-		           t.Helper()
-		       },
-		       afterFunc: func(t *testing.T, args args) {
-		           t.Helper()
-		       },
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ctx:nil,
-		           reqs:nil,
-		           },
-		           fields: fields {
-		           eg:nil,
-		           gateway:nil,
-		           mirror:nil,
-		           vAddr:"",
-		           streamConcurrency:0,
-		           name:"",
-		           ip:"",
-		           UnimplementedValdServerWithMirror:nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		           beforeFunc: func(t *testing.T, args args) {
-		               t.Helper()
-		           },
-		           afterFunc: func(t *testing.T, args args) {
-		               t.Helper()
-		           },
-		       }
-		   }(),
-		*/
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-			if test.beforeFunc != nil {
-				test.beforeFunc(tt, test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(tt, test.args)
-			}
-			checkFunc := test.checkFunc
-			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
-			}
-			s := &server{
-				eg:                                test.fields.eg,
-				gateway:                           test.fields.gateway,
-				mirror:                            test.fields.mirror,
-				vAddr:                             test.fields.vAddr,
-				streamConcurrency:                 test.fields.streamConcurrency,
-				name:                              test.fields.name,
-				ip:                                test.fields.ip,
-				UnimplementedValdServerWithMirror: test.fields.UnimplementedValdServerWithMirror,
-			}
-
-			gotRes, err := s.MultiUpdate(test.args.ctx, test.args.reqs)
-			if err := checkFunc(test.want, gotRes, err); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
-
-func Test_server_StreamUpsert(t *testing.T) {
-	t.Parallel()
-	type args struct {
-		stream vald.Upsert_StreamUpsertServer
-	}
-	type fields struct {
-		eg                                errgroup.Group
-		gateway                           service.Gateway
-		mirror                            service.Mirror
-		vAddr                             string
-		streamConcurrency                 int
-		name                              string
-		ip                                string
-		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
-	}
-	type want struct {
-		err error
-	}
-	type test struct {
-		name       string
-		args       args
-		fields     fields
-		want       want
-		checkFunc  func(want, error) error
-		beforeFunc func(*testing.T, args)
-		afterFunc  func(*testing.T, args)
-	}
-	defaultCheckFunc := func(w want, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           stream:nil,
-		       },
-		       fields: fields {
-		           eg:nil,
-		           gateway:nil,
-		           mirror:nil,
-		           vAddr:"",
-		           streamConcurrency:0,
-		           name:"",
-		           ip:"",
-		           UnimplementedValdServerWithMirror:nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		       beforeFunc: func(t *testing.T, args args) {
-		           t.Helper()
-		       },
-		       afterFunc: func(t *testing.T, args args) {
-		           t.Helper()
-		       },
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           stream:nil,
-		           },
-		           fields: fields {
-		           eg:nil,
-		           gateway:nil,
-		           mirror:nil,
-		           vAddr:"",
-		           streamConcurrency:0,
-		           name:"",
-		           ip:"",
-		           UnimplementedValdServerWithMirror:nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		           beforeFunc: func(t *testing.T, args args) {
-		               t.Helper()
-		           },
-		           afterFunc: func(t *testing.T, args args) {
-		               t.Helper()
-		           },
-		       }
-		   }(),
-		*/
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-			if test.beforeFunc != nil {
-				test.beforeFunc(tt, test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(tt, test.args)
-			}
-			checkFunc := test.checkFunc
-			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
-			}
-			s := &server{
-				eg:                                test.fields.eg,
-				gateway:                           test.fields.gateway,
-				mirror:                            test.fields.mirror,
-				vAddr:                             test.fields.vAddr,
-				streamConcurrency:                 test.fields.streamConcurrency,
-				name:                              test.fields.name,
-				ip:                                test.fields.ip,
-				UnimplementedValdServerWithMirror: test.fields.UnimplementedValdServerWithMirror,
-			}
-
-			err := s.StreamUpsert(test.args.stream)
-			if err := checkFunc(test.want, err); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
-
-func Test_server_MultiUpsert(t *testing.T) {
-	t.Parallel()
-	type args struct {
-		ctx  context.Context
-		reqs *payload.Upsert_MultiRequest
-	}
-	type fields struct {
-		eg                                errgroup.Group
-		gateway                           service.Gateway
-		mirror                            service.Mirror
-		vAddr                             string
-		streamConcurrency                 int
-		name                              string
-		ip                                string
-		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
-	}
-	type want struct {
-		wantRes *payload.Object_Locations
-		err     error
-	}
-	type test struct {
-		name       string
-		args       args
-		fields     fields
-		want       want
-		checkFunc  func(want, *payload.Object_Locations, error) error
-		beforeFunc func(*testing.T, args)
-		afterFunc  func(*testing.T, args)
-	}
-	defaultCheckFunc := func(w want, gotRes *payload.Object_Locations, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-		}
-		if !reflect.DeepEqual(gotRes, w.wantRes) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ctx:nil,
-		           reqs:nil,
-		       },
-		       fields: fields {
-		           eg:nil,
-		           gateway:nil,
-		           mirror:nil,
-		           vAddr:"",
-		           streamConcurrency:0,
-		           name:"",
-		           ip:"",
-		           UnimplementedValdServerWithMirror:nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		       beforeFunc: func(t *testing.T, args args) {
-		           t.Helper()
-		       },
-		       afterFunc: func(t *testing.T, args args) {
-		           t.Helper()
-		       },
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ctx:nil,
-		           reqs:nil,
-		           },
-		           fields: fields {
-		           eg:nil,
-		           gateway:nil,
-		           mirror:nil,
-		           vAddr:"",
-		           streamConcurrency:0,
-		           name:"",
-		           ip:"",
-		           UnimplementedValdServerWithMirror:nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		           beforeFunc: func(t *testing.T, args args) {
-		               t.Helper()
-		           },
-		           afterFunc: func(t *testing.T, args args) {
-		               t.Helper()
-		           },
-		       }
-		   }(),
-		*/
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-			if test.beforeFunc != nil {
-				test.beforeFunc(tt, test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(tt, test.args)
-			}
-			checkFunc := test.checkFunc
-			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
-			}
-			s := &server{
-				eg:                                test.fields.eg,
-				gateway:                           test.fields.gateway,
-				mirror:                            test.fields.mirror,
-				vAddr:                             test.fields.vAddr,
-				streamConcurrency:                 test.fields.streamConcurrency,
-				name:                              test.fields.name,
-				ip:                                test.fields.ip,
-				UnimplementedValdServerWithMirror: test.fields.UnimplementedValdServerWithMirror,
-			}
-
-			gotRes, err := s.MultiUpsert(test.args.ctx, test.args.reqs)
-			if err := checkFunc(test.want, gotRes, err); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
-
-func Test_server_StreamRemove(t *testing.T) {
-	t.Parallel()
-	type args struct {
-		stream vald.Remove_StreamRemoveServer
-	}
-	type fields struct {
-		eg                                errgroup.Group
-		gateway                           service.Gateway
-		mirror                            service.Mirror
-		vAddr                             string
-		streamConcurrency                 int
-		name                              string
-		ip                                string
-		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
-	}
-	type want struct {
-		err error
-	}
-	type test struct {
-		name       string
-		args       args
-		fields     fields
-		want       want
-		checkFunc  func(want, error) error
-		beforeFunc func(*testing.T, args)
-		afterFunc  func(*testing.T, args)
-	}
-	defaultCheckFunc := func(w want, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           stream:nil,
-		       },
-		       fields: fields {
-		           eg:nil,
-		           gateway:nil,
-		           mirror:nil,
-		           vAddr:"",
-		           streamConcurrency:0,
-		           name:"",
-		           ip:"",
-		           UnimplementedValdServerWithMirror:nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		       beforeFunc: func(t *testing.T, args args) {
-		           t.Helper()
-		       },
-		       afterFunc: func(t *testing.T, args args) {
-		           t.Helper()
-		       },
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           stream:nil,
-		           },
-		           fields: fields {
-		           eg:nil,
-		           gateway:nil,
-		           mirror:nil,
-		           vAddr:"",
-		           streamConcurrency:0,
-		           name:"",
-		           ip:"",
-		           UnimplementedValdServerWithMirror:nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		           beforeFunc: func(t *testing.T, args args) {
-		               t.Helper()
-		           },
-		           afterFunc: func(t *testing.T, args args) {
-		               t.Helper()
-		           },
-		       }
-		   }(),
-		*/
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-			if test.beforeFunc != nil {
-				test.beforeFunc(tt, test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(tt, test.args)
-			}
-			checkFunc := test.checkFunc
-			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
-			}
-			s := &server{
-				eg:                                test.fields.eg,
-				gateway:                           test.fields.gateway,
-				mirror:                            test.fields.mirror,
-				vAddr:                             test.fields.vAddr,
-				streamConcurrency:                 test.fields.streamConcurrency,
-				name:                              test.fields.name,
-				ip:                                test.fields.ip,
-				UnimplementedValdServerWithMirror: test.fields.UnimplementedValdServerWithMirror,
-			}
-
-			err := s.StreamRemove(test.args.stream)
-			if err := checkFunc(test.want, err); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
-
-func Test_server_MultiRemove(t *testing.T) {
-	t.Parallel()
-	type args struct {
-		ctx  context.Context
-		reqs *payload.Remove_MultiRequest
-	}
-	type fields struct {
-		eg                                errgroup.Group
-		gateway                           service.Gateway
-		mirror                            service.Mirror
-		vAddr                             string
-		streamConcurrency                 int
-		name                              string
-		ip                                string
-		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
-	}
-	type want struct {
-		wantRes *payload.Object_Locations
-		err     error
-	}
-	type test struct {
-		name       string
-		args       args
-		fields     fields
-		want       want
-		checkFunc  func(want, *payload.Object_Locations, error) error
-		beforeFunc func(*testing.T, args)
-		afterFunc  func(*testing.T, args)
-	}
-	defaultCheckFunc := func(w want, gotRes *payload.Object_Locations, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-		}
-		if !reflect.DeepEqual(gotRes, w.wantRes) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ctx:nil,
-		           reqs:nil,
-		       },
-		       fields: fields {
-		           eg:nil,
-		           gateway:nil,
-		           mirror:nil,
-		           vAddr:"",
-		           streamConcurrency:0,
-		           name:"",
-		           ip:"",
-		           UnimplementedValdServerWithMirror:nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		       beforeFunc: func(t *testing.T, args args) {
-		           t.Helper()
-		       },
-		       afterFunc: func(t *testing.T, args args) {
-		           t.Helper()
-		       },
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ctx:nil,
-		           reqs:nil,
-		           },
-		           fields: fields {
-		           eg:nil,
-		           gateway:nil,
-		           mirror:nil,
-		           vAddr:"",
-		           streamConcurrency:0,
-		           name:"",
-		           ip:"",
-		           UnimplementedValdServerWithMirror:nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		           beforeFunc: func(t *testing.T, args args) {
-		               t.Helper()
-		           },
-		           afterFunc: func(t *testing.T, args args) {
-		               t.Helper()
-		           },
-		       }
-		   }(),
-		*/
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-			if test.beforeFunc != nil {
-				test.beforeFunc(tt, test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(tt, test.args)
-			}
-			checkFunc := test.checkFunc
-			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
-			}
-			s := &server{
-				eg:                                test.fields.eg,
-				gateway:                           test.fields.gateway,
-				mirror:                            test.fields.mirror,
-				vAddr:                             test.fields.vAddr,
-				streamConcurrency:                 test.fields.streamConcurrency,
-				name:                              test.fields.name,
-				ip:                                test.fields.ip,
-				UnimplementedValdServerWithMirror: test.fields.UnimplementedValdServerWithMirror,
-			}
-
-			gotRes, err := s.MultiRemove(test.args.ctx, test.args.reqs)
-			if err := checkFunc(test.want, gotRes, err); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
-
-func Test_server_GetObject(t *testing.T) {
-	t.Parallel()
-	type args struct {
-		ctx context.Context
-		req *payload.Object_VectorRequest
-	}
-	type fields struct {
-		eg                                errgroup.Group
-		gateway                           service.Gateway
-		mirror                            service.Mirror
-		vAddr                             string
-		streamConcurrency                 int
-		name                              string
-		ip                                string
-		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
-	}
-	type want struct {
-		wantVec *payload.Object_Vector
-		err     error
-	}
-	type test struct {
-		name       string
-		args       args
-		fields     fields
-		want       want
-		checkFunc  func(want, *payload.Object_Vector, error) error
-		beforeFunc func(*testing.T, args)
-		afterFunc  func(*testing.T, args)
-	}
-	defaultCheckFunc := func(w want, gotVec *payload.Object_Vector, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-		}
-		if !reflect.DeepEqual(gotVec, w.wantVec) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotVec, w.wantVec)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           ctx:nil,
-		           req:nil,
-		       },
-		       fields: fields {
-		           eg:nil,
-		           gateway:nil,
-		           mirror:nil,
-		           vAddr:"",
-		           streamConcurrency:0,
-		           name:"",
-		           ip:"",
-		           UnimplementedValdServerWithMirror:nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		       beforeFunc: func(t *testing.T, args args) {
-		           t.Helper()
-		       },
-		       afterFunc: func(t *testing.T, args args) {
-		           t.Helper()
-		       },
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           ctx:nil,
-		           req:nil,
-		           },
-		           fields: fields {
-		           eg:nil,
-		           gateway:nil,
-		           mirror:nil,
-		           vAddr:"",
-		           streamConcurrency:0,
-		           name:"",
-		           ip:"",
-		           UnimplementedValdServerWithMirror:nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		           beforeFunc: func(t *testing.T, args args) {
-		               t.Helper()
-		           },
-		           afterFunc: func(t *testing.T, args args) {
-		               t.Helper()
-		           },
-		       }
-		   }(),
-		*/
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-			if test.beforeFunc != nil {
-				test.beforeFunc(tt, test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(tt, test.args)
-			}
-			checkFunc := test.checkFunc
-			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
-			}
-			s := &server{
-				eg:                                test.fields.eg,
-				gateway:                           test.fields.gateway,
-				mirror:                            test.fields.mirror,
-				vAddr:                             test.fields.vAddr,
-				streamConcurrency:                 test.fields.streamConcurrency,
-				name:                              test.fields.name,
-				ip:                                test.fields.ip,
-				UnimplementedValdServerWithMirror: test.fields.UnimplementedValdServerWithMirror,
-			}
-
-			gotVec, err := s.GetObject(test.args.ctx, test.args.req)
-			if err := checkFunc(test.want, gotVec, err); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
-
-func Test_server_StreamGetObject(t *testing.T) {
-	t.Parallel()
-	type args struct {
-		stream vald.Object_StreamGetObjectServer
-	}
-	type fields struct {
-		eg                                errgroup.Group
-		gateway                           service.Gateway
-		mirror                            service.Mirror
-		vAddr                             string
-		streamConcurrency                 int
-		name                              string
-		ip                                string
-		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
-	}
-	type want struct {
-		err error
-	}
-	type test struct {
-		name       string
-		args       args
-		fields     fields
-		want       want
-		checkFunc  func(want, error) error
-		beforeFunc func(*testing.T, args)
-		afterFunc  func(*testing.T, args)
-	}
-	defaultCheckFunc := func(w want, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           stream:nil,
-		       },
-		       fields: fields {
-		           eg:nil,
-		           gateway:nil,
-		           mirror:nil,
-		           vAddr:"",
-		           streamConcurrency:0,
-		           name:"",
-		           ip:"",
-		           UnimplementedValdServerWithMirror:nil,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		       beforeFunc: func(t *testing.T, args args) {
-		           t.Helper()
-		       },
-		       afterFunc: func(t *testing.T, args args) {
-		           t.Helper()
-		       },
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           stream:nil,
-		           },
-		           fields: fields {
-		           eg:nil,
-		           gateway:nil,
-		           mirror:nil,
-		           vAddr:"",
-		           streamConcurrency:0,
-		           name:"",
-		           ip:"",
-		           UnimplementedValdServerWithMirror:nil,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		           beforeFunc: func(t *testing.T, args args) {
-		               t.Helper()
-		           },
-		           afterFunc: func(t *testing.T, args args) {
-		               t.Helper()
-		           },
-		       }
-		   }(),
-		*/
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-			if test.beforeFunc != nil {
-				test.beforeFunc(tt, test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(tt, test.args)
-			}
-			checkFunc := test.checkFunc
-			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
-			}
-			s := &server{
-				eg:                                test.fields.eg,
-				gateway:                           test.fields.gateway,
-				mirror:                            test.fields.mirror,
-				vAddr:                             test.fields.vAddr,
-				streamConcurrency:                 test.fields.streamConcurrency,
-				name:                              test.fields.name,
-				ip:                                test.fields.ip,
-				UnimplementedValdServerWithMirror: test.fields.UnimplementedValdServerWithMirror,
-			}
-
-			err := s.StreamGetObject(test.args.stream)
-			if err := checkFunc(test.want, err); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
+// func TestNew(t *testing.T) {
+// 	t.Parallel()
+// 	type args struct {
+// 		opts []Option
+// 	}
+// 	type want struct {
+// 		want vald.ServerWithMirror
+// 		err  error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		want       want
+// 		checkFunc  func(want, vald.Server, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, got vald.Server, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           opts:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           opts:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+//
+// 			got, err := New(test.args.opts...)
+// 			if err := checkFunc(test.want, got, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_server_Register(t *testing.T) {
+// 	t.Parallel()
+// 	type args struct {
+// 		ctx context.Context
+// 		req *payload.Mirror_Targets
+// 	}
+// 	type fields struct {
+// 		eg                                errgroup.Group
+// 		gateway                           service.Gateway
+// 		mirror                            service.Mirror
+// 		vAddr                             string
+// 		streamConcurrency                 int
+// 		name                              string
+// 		ip                                string
+// 		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
+// 	}
+// 	type want struct {
+// 		want *payload.Mirror_Targets
+// 		err  error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, *payload.Mirror_Targets, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, got *payload.Mirror_Targets, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           ctx:nil,
+// 		           req:nil,
+// 		       },
+// 		       fields: fields {
+// 		           eg:nil,
+// 		           gateway:nil,
+// 		           mirror:nil,
+// 		           vAddr:"",
+// 		           streamConcurrency:0,
+// 		           name:"",
+// 		           ip:"",
+// 		           UnimplementedValdServerWithMirror:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           ctx:nil,
+// 		           req:nil,
+// 		           },
+// 		           fields: fields {
+// 		           eg:nil,
+// 		           gateway:nil,
+// 		           mirror:nil,
+// 		           vAddr:"",
+// 		           streamConcurrency:0,
+// 		           name:"",
+// 		           ip:"",
+// 		           UnimplementedValdServerWithMirror:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			s := &server{
+// 				eg:                                test.fields.eg,
+// 				gateway:                           test.fields.gateway,
+// 				mirror:                            test.fields.mirror,
+// 				vAddr:                             test.fields.vAddr,
+// 				streamConcurrency:                 test.fields.streamConcurrency,
+// 				name:                              test.fields.name,
+// 				ip:                                test.fields.ip,
+// 				UnimplementedValdServerWithMirror: test.fields.UnimplementedValdServerWithMirror,
+// 			}
+//
+// 			got, err := s.Register(test.args.ctx, test.args.req)
+// 			if err := checkFunc(test.want, got, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_server_Exists(t *testing.T) {
+// 	t.Parallel()
+// 	type args struct {
+// 		ctx  context.Context
+// 		meta *payload.Object_ID
+// 	}
+// 	type fields struct {
+// 		eg                                errgroup.Group
+// 		gateway                           service.Gateway
+// 		mirror                            service.Mirror
+// 		vAddr                             string
+// 		streamConcurrency                 int
+// 		name                              string
+// 		ip                                string
+// 		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
+// 	}
+// 	type want struct {
+// 		wantId *payload.Object_ID
+// 		err    error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, *payload.Object_ID, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, gotID *payload.Object_ID, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		if !reflect.DeepEqual(gotID, w.wantId) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotID, w.wantId)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           ctx:nil,
+// 		           meta:nil,
+// 		       },
+// 		       fields: fields {
+// 		           eg:nil,
+// 		           gateway:nil,
+// 		           mirror:nil,
+// 		           vAddr:"",
+// 		           streamConcurrency:0,
+// 		           name:"",
+// 		           ip:"",
+// 		           UnimplementedValdServerWithMirror:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           ctx:nil,
+// 		           meta:nil,
+// 		           },
+// 		           fields: fields {
+// 		           eg:nil,
+// 		           gateway:nil,
+// 		           mirror:nil,
+// 		           vAddr:"",
+// 		           streamConcurrency:0,
+// 		           name:"",
+// 		           ip:"",
+// 		           UnimplementedValdServerWithMirror:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			s := &server{
+// 				eg:                                test.fields.eg,
+// 				gateway:                           test.fields.gateway,
+// 				mirror:                            test.fields.mirror,
+// 				vAddr:                             test.fields.vAddr,
+// 				streamConcurrency:                 test.fields.streamConcurrency,
+// 				name:                              test.fields.name,
+// 				ip:                                test.fields.ip,
+// 				UnimplementedValdServerWithMirror: test.fields.UnimplementedValdServerWithMirror,
+// 			}
+//
+// 			gotID, err := s.Exists(test.args.ctx, test.args.meta)
+// 			if err := checkFunc(test.want, gotID, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_server_Search(t *testing.T) {
+// 	t.Parallel()
+// 	type args struct {
+// 		ctx context.Context
+// 		req *payload.Search_Request
+// 	}
+// 	type fields struct {
+// 		eg                                errgroup.Group
+// 		gateway                           service.Gateway
+// 		mirror                            service.Mirror
+// 		vAddr                             string
+// 		streamConcurrency                 int
+// 		name                              string
+// 		ip                                string
+// 		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
+// 	}
+// 	type want struct {
+// 		wantRes *payload.Search_Response
+// 		err     error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, *payload.Search_Response, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, gotRes *payload.Search_Response, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		if !reflect.DeepEqual(gotRes, w.wantRes) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           ctx:nil,
+// 		           req:nil,
+// 		       },
+// 		       fields: fields {
+// 		           eg:nil,
+// 		           gateway:nil,
+// 		           mirror:nil,
+// 		           vAddr:"",
+// 		           streamConcurrency:0,
+// 		           name:"",
+// 		           ip:"",
+// 		           UnimplementedValdServerWithMirror:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           ctx:nil,
+// 		           req:nil,
+// 		           },
+// 		           fields: fields {
+// 		           eg:nil,
+// 		           gateway:nil,
+// 		           mirror:nil,
+// 		           vAddr:"",
+// 		           streamConcurrency:0,
+// 		           name:"",
+// 		           ip:"",
+// 		           UnimplementedValdServerWithMirror:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			s := &server{
+// 				eg:                                test.fields.eg,
+// 				gateway:                           test.fields.gateway,
+// 				mirror:                            test.fields.mirror,
+// 				vAddr:                             test.fields.vAddr,
+// 				streamConcurrency:                 test.fields.streamConcurrency,
+// 				name:                              test.fields.name,
+// 				ip:                                test.fields.ip,
+// 				UnimplementedValdServerWithMirror: test.fields.UnimplementedValdServerWithMirror,
+// 			}
+//
+// 			gotRes, err := s.Search(test.args.ctx, test.args.req)
+// 			if err := checkFunc(test.want, gotRes, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_server_SearchByID(t *testing.T) {
+// 	t.Parallel()
+// 	type args struct {
+// 		ctx context.Context
+// 		req *payload.Search_IDRequest
+// 	}
+// 	type fields struct {
+// 		eg                                errgroup.Group
+// 		gateway                           service.Gateway
+// 		mirror                            service.Mirror
+// 		vAddr                             string
+// 		streamConcurrency                 int
+// 		name                              string
+// 		ip                                string
+// 		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
+// 	}
+// 	type want struct {
+// 		wantRes *payload.Search_Response
+// 		err     error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, *payload.Search_Response, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, gotRes *payload.Search_Response, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		if !reflect.DeepEqual(gotRes, w.wantRes) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           ctx:nil,
+// 		           req:nil,
+// 		       },
+// 		       fields: fields {
+// 		           eg:nil,
+// 		           gateway:nil,
+// 		           mirror:nil,
+// 		           vAddr:"",
+// 		           streamConcurrency:0,
+// 		           name:"",
+// 		           ip:"",
+// 		           UnimplementedValdServerWithMirror:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           ctx:nil,
+// 		           req:nil,
+// 		           },
+// 		           fields: fields {
+// 		           eg:nil,
+// 		           gateway:nil,
+// 		           mirror:nil,
+// 		           vAddr:"",
+// 		           streamConcurrency:0,
+// 		           name:"",
+// 		           ip:"",
+// 		           UnimplementedValdServerWithMirror:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			s := &server{
+// 				eg:                                test.fields.eg,
+// 				gateway:                           test.fields.gateway,
+// 				mirror:                            test.fields.mirror,
+// 				vAddr:                             test.fields.vAddr,
+// 				streamConcurrency:                 test.fields.streamConcurrency,
+// 				name:                              test.fields.name,
+// 				ip:                                test.fields.ip,
+// 				UnimplementedValdServerWithMirror: test.fields.UnimplementedValdServerWithMirror,
+// 			}
+//
+// 			gotRes, err := s.SearchByID(test.args.ctx, test.args.req)
+// 			if err := checkFunc(test.want, gotRes, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_server_StreamSearch(t *testing.T) {
+// 	t.Parallel()
+// 	type args struct {
+// 		stream vald.Search_StreamSearchServer
+// 	}
+// 	type fields struct {
+// 		eg                                errgroup.Group
+// 		gateway                           service.Gateway
+// 		mirror                            service.Mirror
+// 		vAddr                             string
+// 		streamConcurrency                 int
+// 		name                              string
+// 		ip                                string
+// 		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
+// 	}
+// 	type want struct {
+// 		err error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           stream:nil,
+// 		       },
+// 		       fields: fields {
+// 		           eg:nil,
+// 		           gateway:nil,
+// 		           mirror:nil,
+// 		           vAddr:"",
+// 		           streamConcurrency:0,
+// 		           name:"",
+// 		           ip:"",
+// 		           UnimplementedValdServerWithMirror:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           stream:nil,
+// 		           },
+// 		           fields: fields {
+// 		           eg:nil,
+// 		           gateway:nil,
+// 		           mirror:nil,
+// 		           vAddr:"",
+// 		           streamConcurrency:0,
+// 		           name:"",
+// 		           ip:"",
+// 		           UnimplementedValdServerWithMirror:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			s := &server{
+// 				eg:                                test.fields.eg,
+// 				gateway:                           test.fields.gateway,
+// 				mirror:                            test.fields.mirror,
+// 				vAddr:                             test.fields.vAddr,
+// 				streamConcurrency:                 test.fields.streamConcurrency,
+// 				name:                              test.fields.name,
+// 				ip:                                test.fields.ip,
+// 				UnimplementedValdServerWithMirror: test.fields.UnimplementedValdServerWithMirror,
+// 			}
+//
+// 			err := s.StreamSearch(test.args.stream)
+// 			if err := checkFunc(test.want, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_server_StreamSearchByID(t *testing.T) {
+// 	t.Parallel()
+// 	type args struct {
+// 		stream vald.Search_StreamSearchByIDServer
+// 	}
+// 	type fields struct {
+// 		eg                                errgroup.Group
+// 		gateway                           service.Gateway
+// 		mirror                            service.Mirror
+// 		vAddr                             string
+// 		streamConcurrency                 int
+// 		name                              string
+// 		ip                                string
+// 		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
+// 	}
+// 	type want struct {
+// 		err error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           stream:nil,
+// 		       },
+// 		       fields: fields {
+// 		           eg:nil,
+// 		           gateway:nil,
+// 		           mirror:nil,
+// 		           vAddr:"",
+// 		           streamConcurrency:0,
+// 		           name:"",
+// 		           ip:"",
+// 		           UnimplementedValdServerWithMirror:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           stream:nil,
+// 		           },
+// 		           fields: fields {
+// 		           eg:nil,
+// 		           gateway:nil,
+// 		           mirror:nil,
+// 		           vAddr:"",
+// 		           streamConcurrency:0,
+// 		           name:"",
+// 		           ip:"",
+// 		           UnimplementedValdServerWithMirror:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			s := &server{
+// 				eg:                                test.fields.eg,
+// 				gateway:                           test.fields.gateway,
+// 				mirror:                            test.fields.mirror,
+// 				vAddr:                             test.fields.vAddr,
+// 				streamConcurrency:                 test.fields.streamConcurrency,
+// 				name:                              test.fields.name,
+// 				ip:                                test.fields.ip,
+// 				UnimplementedValdServerWithMirror: test.fields.UnimplementedValdServerWithMirror,
+// 			}
+//
+// 			err := s.StreamSearchByID(test.args.stream)
+// 			if err := checkFunc(test.want, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_server_MultiSearch(t *testing.T) {
+// 	t.Parallel()
+// 	type args struct {
+// 		ctx context.Context
+// 		req *payload.Search_MultiRequest
+// 	}
+// 	type fields struct {
+// 		eg                                errgroup.Group
+// 		gateway                           service.Gateway
+// 		mirror                            service.Mirror
+// 		vAddr                             string
+// 		streamConcurrency                 int
+// 		name                              string
+// 		ip                                string
+// 		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
+// 	}
+// 	type want struct {
+// 		wantRes *payload.Search_Responses
+// 		err     error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, *payload.Search_Responses, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, gotRes *payload.Search_Responses, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		if !reflect.DeepEqual(gotRes, w.wantRes) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           ctx:nil,
+// 		           req:nil,
+// 		       },
+// 		       fields: fields {
+// 		           eg:nil,
+// 		           gateway:nil,
+// 		           mirror:nil,
+// 		           vAddr:"",
+// 		           streamConcurrency:0,
+// 		           name:"",
+// 		           ip:"",
+// 		           UnimplementedValdServerWithMirror:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           ctx:nil,
+// 		           req:nil,
+// 		           },
+// 		           fields: fields {
+// 		           eg:nil,
+// 		           gateway:nil,
+// 		           mirror:nil,
+// 		           vAddr:"",
+// 		           streamConcurrency:0,
+// 		           name:"",
+// 		           ip:"",
+// 		           UnimplementedValdServerWithMirror:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			s := &server{
+// 				eg:                                test.fields.eg,
+// 				gateway:                           test.fields.gateway,
+// 				mirror:                            test.fields.mirror,
+// 				vAddr:                             test.fields.vAddr,
+// 				streamConcurrency:                 test.fields.streamConcurrency,
+// 				name:                              test.fields.name,
+// 				ip:                                test.fields.ip,
+// 				UnimplementedValdServerWithMirror: test.fields.UnimplementedValdServerWithMirror,
+// 			}
+//
+// 			gotRes, err := s.MultiSearch(test.args.ctx, test.args.req)
+// 			if err := checkFunc(test.want, gotRes, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_server_MultiSearchByID(t *testing.T) {
+// 	t.Parallel()
+// 	type args struct {
+// 		ctx context.Context
+// 		req *payload.Search_MultiIDRequest
+// 	}
+// 	type fields struct {
+// 		eg                                errgroup.Group
+// 		gateway                           service.Gateway
+// 		mirror                            service.Mirror
+// 		vAddr                             string
+// 		streamConcurrency                 int
+// 		name                              string
+// 		ip                                string
+// 		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
+// 	}
+// 	type want struct {
+// 		wantRes *payload.Search_Responses
+// 		err     error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, *payload.Search_Responses, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, gotRes *payload.Search_Responses, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		if !reflect.DeepEqual(gotRes, w.wantRes) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           ctx:nil,
+// 		           req:nil,
+// 		       },
+// 		       fields: fields {
+// 		           eg:nil,
+// 		           gateway:nil,
+// 		           mirror:nil,
+// 		           vAddr:"",
+// 		           streamConcurrency:0,
+// 		           name:"",
+// 		           ip:"",
+// 		           UnimplementedValdServerWithMirror:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           ctx:nil,
+// 		           req:nil,
+// 		           },
+// 		           fields: fields {
+// 		           eg:nil,
+// 		           gateway:nil,
+// 		           mirror:nil,
+// 		           vAddr:"",
+// 		           streamConcurrency:0,
+// 		           name:"",
+// 		           ip:"",
+// 		           UnimplementedValdServerWithMirror:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			s := &server{
+// 				eg:                                test.fields.eg,
+// 				gateway:                           test.fields.gateway,
+// 				mirror:                            test.fields.mirror,
+// 				vAddr:                             test.fields.vAddr,
+// 				streamConcurrency:                 test.fields.streamConcurrency,
+// 				name:                              test.fields.name,
+// 				ip:                                test.fields.ip,
+// 				UnimplementedValdServerWithMirror: test.fields.UnimplementedValdServerWithMirror,
+// 			}
+//
+// 			gotRes, err := s.MultiSearchByID(test.args.ctx, test.args.req)
+// 			if err := checkFunc(test.want, gotRes, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_server_LinearSearch(t *testing.T) {
+// 	t.Parallel()
+// 	type args struct {
+// 		ctx context.Context
+// 		req *payload.Search_Request
+// 	}
+// 	type fields struct {
+// 		eg                                errgroup.Group
+// 		gateway                           service.Gateway
+// 		mirror                            service.Mirror
+// 		vAddr                             string
+// 		streamConcurrency                 int
+// 		name                              string
+// 		ip                                string
+// 		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
+// 	}
+// 	type want struct {
+// 		wantRes *payload.Search_Response
+// 		err     error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, *payload.Search_Response, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, gotRes *payload.Search_Response, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		if !reflect.DeepEqual(gotRes, w.wantRes) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           ctx:nil,
+// 		           req:nil,
+// 		       },
+// 		       fields: fields {
+// 		           eg:nil,
+// 		           gateway:nil,
+// 		           mirror:nil,
+// 		           vAddr:"",
+// 		           streamConcurrency:0,
+// 		           name:"",
+// 		           ip:"",
+// 		           UnimplementedValdServerWithMirror:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           ctx:nil,
+// 		           req:nil,
+// 		           },
+// 		           fields: fields {
+// 		           eg:nil,
+// 		           gateway:nil,
+// 		           mirror:nil,
+// 		           vAddr:"",
+// 		           streamConcurrency:0,
+// 		           name:"",
+// 		           ip:"",
+// 		           UnimplementedValdServerWithMirror:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			s := &server{
+// 				eg:                                test.fields.eg,
+// 				gateway:                           test.fields.gateway,
+// 				mirror:                            test.fields.mirror,
+// 				vAddr:                             test.fields.vAddr,
+// 				streamConcurrency:                 test.fields.streamConcurrency,
+// 				name:                              test.fields.name,
+// 				ip:                                test.fields.ip,
+// 				UnimplementedValdServerWithMirror: test.fields.UnimplementedValdServerWithMirror,
+// 			}
+//
+// 			gotRes, err := s.LinearSearch(test.args.ctx, test.args.req)
+// 			if err := checkFunc(test.want, gotRes, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_server_LinearSearchByID(t *testing.T) {
+// 	t.Parallel()
+// 	type args struct {
+// 		ctx context.Context
+// 		req *payload.Search_IDRequest
+// 	}
+// 	type fields struct {
+// 		eg                                errgroup.Group
+// 		gateway                           service.Gateway
+// 		mirror                            service.Mirror
+// 		vAddr                             string
+// 		streamConcurrency                 int
+// 		name                              string
+// 		ip                                string
+// 		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
+// 	}
+// 	type want struct {
+// 		wantRes *payload.Search_Response
+// 		err     error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, *payload.Search_Response, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, gotRes *payload.Search_Response, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		if !reflect.DeepEqual(gotRes, w.wantRes) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           ctx:nil,
+// 		           req:nil,
+// 		       },
+// 		       fields: fields {
+// 		           eg:nil,
+// 		           gateway:nil,
+// 		           mirror:nil,
+// 		           vAddr:"",
+// 		           streamConcurrency:0,
+// 		           name:"",
+// 		           ip:"",
+// 		           UnimplementedValdServerWithMirror:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           ctx:nil,
+// 		           req:nil,
+// 		           },
+// 		           fields: fields {
+// 		           eg:nil,
+// 		           gateway:nil,
+// 		           mirror:nil,
+// 		           vAddr:"",
+// 		           streamConcurrency:0,
+// 		           name:"",
+// 		           ip:"",
+// 		           UnimplementedValdServerWithMirror:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			s := &server{
+// 				eg:                                test.fields.eg,
+// 				gateway:                           test.fields.gateway,
+// 				mirror:                            test.fields.mirror,
+// 				vAddr:                             test.fields.vAddr,
+// 				streamConcurrency:                 test.fields.streamConcurrency,
+// 				name:                              test.fields.name,
+// 				ip:                                test.fields.ip,
+// 				UnimplementedValdServerWithMirror: test.fields.UnimplementedValdServerWithMirror,
+// 			}
+//
+// 			gotRes, err := s.LinearSearchByID(test.args.ctx, test.args.req)
+// 			if err := checkFunc(test.want, gotRes, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_server_StreamLinearSearch(t *testing.T) {
+// 	t.Parallel()
+// 	type args struct {
+// 		stream vald.Search_StreamLinearSearchServer
+// 	}
+// 	type fields struct {
+// 		eg                                errgroup.Group
+// 		gateway                           service.Gateway
+// 		mirror                            service.Mirror
+// 		vAddr                             string
+// 		streamConcurrency                 int
+// 		name                              string
+// 		ip                                string
+// 		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
+// 	}
+// 	type want struct {
+// 		err error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           stream:nil,
+// 		       },
+// 		       fields: fields {
+// 		           eg:nil,
+// 		           gateway:nil,
+// 		           mirror:nil,
+// 		           vAddr:"",
+// 		           streamConcurrency:0,
+// 		           name:"",
+// 		           ip:"",
+// 		           UnimplementedValdServerWithMirror:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           stream:nil,
+// 		           },
+// 		           fields: fields {
+// 		           eg:nil,
+// 		           gateway:nil,
+// 		           mirror:nil,
+// 		           vAddr:"",
+// 		           streamConcurrency:0,
+// 		           name:"",
+// 		           ip:"",
+// 		           UnimplementedValdServerWithMirror:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			s := &server{
+// 				eg:                                test.fields.eg,
+// 				gateway:                           test.fields.gateway,
+// 				mirror:                            test.fields.mirror,
+// 				vAddr:                             test.fields.vAddr,
+// 				streamConcurrency:                 test.fields.streamConcurrency,
+// 				name:                              test.fields.name,
+// 				ip:                                test.fields.ip,
+// 				UnimplementedValdServerWithMirror: test.fields.UnimplementedValdServerWithMirror,
+// 			}
+//
+// 			err := s.StreamLinearSearch(test.args.stream)
+// 			if err := checkFunc(test.want, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_server_StreamLinearSearchByID(t *testing.T) {
+// 	t.Parallel()
+// 	type args struct {
+// 		stream vald.Search_StreamLinearSearchByIDServer
+// 	}
+// 	type fields struct {
+// 		eg                                errgroup.Group
+// 		gateway                           service.Gateway
+// 		mirror                            service.Mirror
+// 		vAddr                             string
+// 		streamConcurrency                 int
+// 		name                              string
+// 		ip                                string
+// 		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
+// 	}
+// 	type want struct {
+// 		err error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           stream:nil,
+// 		       },
+// 		       fields: fields {
+// 		           eg:nil,
+// 		           gateway:nil,
+// 		           mirror:nil,
+// 		           vAddr:"",
+// 		           streamConcurrency:0,
+// 		           name:"",
+// 		           ip:"",
+// 		           UnimplementedValdServerWithMirror:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           stream:nil,
+// 		           },
+// 		           fields: fields {
+// 		           eg:nil,
+// 		           gateway:nil,
+// 		           mirror:nil,
+// 		           vAddr:"",
+// 		           streamConcurrency:0,
+// 		           name:"",
+// 		           ip:"",
+// 		           UnimplementedValdServerWithMirror:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			s := &server{
+// 				eg:                                test.fields.eg,
+// 				gateway:                           test.fields.gateway,
+// 				mirror:                            test.fields.mirror,
+// 				vAddr:                             test.fields.vAddr,
+// 				streamConcurrency:                 test.fields.streamConcurrency,
+// 				name:                              test.fields.name,
+// 				ip:                                test.fields.ip,
+// 				UnimplementedValdServerWithMirror: test.fields.UnimplementedValdServerWithMirror,
+// 			}
+//
+// 			err := s.StreamLinearSearchByID(test.args.stream)
+// 			if err := checkFunc(test.want, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_server_MultiLinearSearch(t *testing.T) {
+// 	t.Parallel()
+// 	type args struct {
+// 		ctx context.Context
+// 		req *payload.Search_MultiRequest
+// 	}
+// 	type fields struct {
+// 		eg                                errgroup.Group
+// 		gateway                           service.Gateway
+// 		mirror                            service.Mirror
+// 		vAddr                             string
+// 		streamConcurrency                 int
+// 		name                              string
+// 		ip                                string
+// 		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
+// 	}
+// 	type want struct {
+// 		wantRes *payload.Search_Responses
+// 		err     error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, *payload.Search_Responses, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, gotRes *payload.Search_Responses, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		if !reflect.DeepEqual(gotRes, w.wantRes) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           ctx:nil,
+// 		           req:nil,
+// 		       },
+// 		       fields: fields {
+// 		           eg:nil,
+// 		           gateway:nil,
+// 		           mirror:nil,
+// 		           vAddr:"",
+// 		           streamConcurrency:0,
+// 		           name:"",
+// 		           ip:"",
+// 		           UnimplementedValdServerWithMirror:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           ctx:nil,
+// 		           req:nil,
+// 		           },
+// 		           fields: fields {
+// 		           eg:nil,
+// 		           gateway:nil,
+// 		           mirror:nil,
+// 		           vAddr:"",
+// 		           streamConcurrency:0,
+// 		           name:"",
+// 		           ip:"",
+// 		           UnimplementedValdServerWithMirror:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			s := &server{
+// 				eg:                                test.fields.eg,
+// 				gateway:                           test.fields.gateway,
+// 				mirror:                            test.fields.mirror,
+// 				vAddr:                             test.fields.vAddr,
+// 				streamConcurrency:                 test.fields.streamConcurrency,
+// 				name:                              test.fields.name,
+// 				ip:                                test.fields.ip,
+// 				UnimplementedValdServerWithMirror: test.fields.UnimplementedValdServerWithMirror,
+// 			}
+//
+// 			gotRes, err := s.MultiLinearSearch(test.args.ctx, test.args.req)
+// 			if err := checkFunc(test.want, gotRes, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_server_MultiLinearSearchByID(t *testing.T) {
+// 	t.Parallel()
+// 	type args struct {
+// 		ctx context.Context
+// 		req *payload.Search_MultiIDRequest
+// 	}
+// 	type fields struct {
+// 		eg                                errgroup.Group
+// 		gateway                           service.Gateway
+// 		mirror                            service.Mirror
+// 		vAddr                             string
+// 		streamConcurrency                 int
+// 		name                              string
+// 		ip                                string
+// 		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
+// 	}
+// 	type want struct {
+// 		wantRes *payload.Search_Responses
+// 		err     error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, *payload.Search_Responses, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, gotRes *payload.Search_Responses, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		if !reflect.DeepEqual(gotRes, w.wantRes) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           ctx:nil,
+// 		           req:nil,
+// 		       },
+// 		       fields: fields {
+// 		           eg:nil,
+// 		           gateway:nil,
+// 		           mirror:nil,
+// 		           vAddr:"",
+// 		           streamConcurrency:0,
+// 		           name:"",
+// 		           ip:"",
+// 		           UnimplementedValdServerWithMirror:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           ctx:nil,
+// 		           req:nil,
+// 		           },
+// 		           fields: fields {
+// 		           eg:nil,
+// 		           gateway:nil,
+// 		           mirror:nil,
+// 		           vAddr:"",
+// 		           streamConcurrency:0,
+// 		           name:"",
+// 		           ip:"",
+// 		           UnimplementedValdServerWithMirror:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			s := &server{
+// 				eg:                                test.fields.eg,
+// 				gateway:                           test.fields.gateway,
+// 				mirror:                            test.fields.mirror,
+// 				vAddr:                             test.fields.vAddr,
+// 				streamConcurrency:                 test.fields.streamConcurrency,
+// 				name:                              test.fields.name,
+// 				ip:                                test.fields.ip,
+// 				UnimplementedValdServerWithMirror: test.fields.UnimplementedValdServerWithMirror,
+// 			}
+//
+// 			gotRes, err := s.MultiLinearSearchByID(test.args.ctx, test.args.req)
+// 			if err := checkFunc(test.want, gotRes, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_server_StreamInsert(t *testing.T) {
+// 	t.Parallel()
+// 	type args struct {
+// 		stream vald.Insert_StreamInsertServer
+// 	}
+// 	type fields struct {
+// 		eg                                errgroup.Group
+// 		gateway                           service.Gateway
+// 		mirror                            service.Mirror
+// 		vAddr                             string
+// 		streamConcurrency                 int
+// 		name                              string
+// 		ip                                string
+// 		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
+// 	}
+// 	type want struct {
+// 		err error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           stream:nil,
+// 		       },
+// 		       fields: fields {
+// 		           eg:nil,
+// 		           gateway:nil,
+// 		           mirror:nil,
+// 		           vAddr:"",
+// 		           streamConcurrency:0,
+// 		           name:"",
+// 		           ip:"",
+// 		           UnimplementedValdServerWithMirror:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           stream:nil,
+// 		           },
+// 		           fields: fields {
+// 		           eg:nil,
+// 		           gateway:nil,
+// 		           mirror:nil,
+// 		           vAddr:"",
+// 		           streamConcurrency:0,
+// 		           name:"",
+// 		           ip:"",
+// 		           UnimplementedValdServerWithMirror:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			s := &server{
+// 				eg:                                test.fields.eg,
+// 				gateway:                           test.fields.gateway,
+// 				mirror:                            test.fields.mirror,
+// 				vAddr:                             test.fields.vAddr,
+// 				streamConcurrency:                 test.fields.streamConcurrency,
+// 				name:                              test.fields.name,
+// 				ip:                                test.fields.ip,
+// 				UnimplementedValdServerWithMirror: test.fields.UnimplementedValdServerWithMirror,
+// 			}
+//
+// 			err := s.StreamInsert(test.args.stream)
+// 			if err := checkFunc(test.want, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_server_MultiInsert(t *testing.T) {
+// 	t.Parallel()
+// 	type args struct {
+// 		ctx  context.Context
+// 		reqs *payload.Insert_MultiRequest
+// 	}
+// 	type fields struct {
+// 		eg                                errgroup.Group
+// 		gateway                           service.Gateway
+// 		mirror                            service.Mirror
+// 		vAddr                             string
+// 		streamConcurrency                 int
+// 		name                              string
+// 		ip                                string
+// 		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
+// 	}
+// 	type want struct {
+// 		wantRes *payload.Object_Locations
+// 		err     error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, *payload.Object_Locations, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, gotRes *payload.Object_Locations, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		if !reflect.DeepEqual(gotRes, w.wantRes) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           ctx:nil,
+// 		           reqs:nil,
+// 		       },
+// 		       fields: fields {
+// 		           eg:nil,
+// 		           gateway:nil,
+// 		           mirror:nil,
+// 		           vAddr:"",
+// 		           streamConcurrency:0,
+// 		           name:"",
+// 		           ip:"",
+// 		           UnimplementedValdServerWithMirror:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           ctx:nil,
+// 		           reqs:nil,
+// 		           },
+// 		           fields: fields {
+// 		           eg:nil,
+// 		           gateway:nil,
+// 		           mirror:nil,
+// 		           vAddr:"",
+// 		           streamConcurrency:0,
+// 		           name:"",
+// 		           ip:"",
+// 		           UnimplementedValdServerWithMirror:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			s := &server{
+// 				eg:                                test.fields.eg,
+// 				gateway:                           test.fields.gateway,
+// 				mirror:                            test.fields.mirror,
+// 				vAddr:                             test.fields.vAddr,
+// 				streamConcurrency:                 test.fields.streamConcurrency,
+// 				name:                              test.fields.name,
+// 				ip:                                test.fields.ip,
+// 				UnimplementedValdServerWithMirror: test.fields.UnimplementedValdServerWithMirror,
+// 			}
+//
+// 			gotRes, err := s.MultiInsert(test.args.ctx, test.args.reqs)
+// 			if err := checkFunc(test.want, gotRes, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_server_StreamUpdate(t *testing.T) {
+// 	t.Parallel()
+// 	type args struct {
+// 		stream vald.Update_StreamUpdateServer
+// 	}
+// 	type fields struct {
+// 		eg                                errgroup.Group
+// 		gateway                           service.Gateway
+// 		mirror                            service.Mirror
+// 		vAddr                             string
+// 		streamConcurrency                 int
+// 		name                              string
+// 		ip                                string
+// 		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
+// 	}
+// 	type want struct {
+// 		err error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           stream:nil,
+// 		       },
+// 		       fields: fields {
+// 		           eg:nil,
+// 		           gateway:nil,
+// 		           mirror:nil,
+// 		           vAddr:"",
+// 		           streamConcurrency:0,
+// 		           name:"",
+// 		           ip:"",
+// 		           UnimplementedValdServerWithMirror:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           stream:nil,
+// 		           },
+// 		           fields: fields {
+// 		           eg:nil,
+// 		           gateway:nil,
+// 		           mirror:nil,
+// 		           vAddr:"",
+// 		           streamConcurrency:0,
+// 		           name:"",
+// 		           ip:"",
+// 		           UnimplementedValdServerWithMirror:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			s := &server{
+// 				eg:                                test.fields.eg,
+// 				gateway:                           test.fields.gateway,
+// 				mirror:                            test.fields.mirror,
+// 				vAddr:                             test.fields.vAddr,
+// 				streamConcurrency:                 test.fields.streamConcurrency,
+// 				name:                              test.fields.name,
+// 				ip:                                test.fields.ip,
+// 				UnimplementedValdServerWithMirror: test.fields.UnimplementedValdServerWithMirror,
+// 			}
+//
+// 			err := s.StreamUpdate(test.args.stream)
+// 			if err := checkFunc(test.want, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_server_MultiUpdate(t *testing.T) {
+// 	t.Parallel()
+// 	type args struct {
+// 		ctx  context.Context
+// 		reqs *payload.Update_MultiRequest
+// 	}
+// 	type fields struct {
+// 		eg                                errgroup.Group
+// 		gateway                           service.Gateway
+// 		mirror                            service.Mirror
+// 		vAddr                             string
+// 		streamConcurrency                 int
+// 		name                              string
+// 		ip                                string
+// 		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
+// 	}
+// 	type want struct {
+// 		wantRes *payload.Object_Locations
+// 		err     error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, *payload.Object_Locations, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, gotRes *payload.Object_Locations, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		if !reflect.DeepEqual(gotRes, w.wantRes) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           ctx:nil,
+// 		           reqs:nil,
+// 		       },
+// 		       fields: fields {
+// 		           eg:nil,
+// 		           gateway:nil,
+// 		           mirror:nil,
+// 		           vAddr:"",
+// 		           streamConcurrency:0,
+// 		           name:"",
+// 		           ip:"",
+// 		           UnimplementedValdServerWithMirror:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           ctx:nil,
+// 		           reqs:nil,
+// 		           },
+// 		           fields: fields {
+// 		           eg:nil,
+// 		           gateway:nil,
+// 		           mirror:nil,
+// 		           vAddr:"",
+// 		           streamConcurrency:0,
+// 		           name:"",
+// 		           ip:"",
+// 		           UnimplementedValdServerWithMirror:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			s := &server{
+// 				eg:                                test.fields.eg,
+// 				gateway:                           test.fields.gateway,
+// 				mirror:                            test.fields.mirror,
+// 				vAddr:                             test.fields.vAddr,
+// 				streamConcurrency:                 test.fields.streamConcurrency,
+// 				name:                              test.fields.name,
+// 				ip:                                test.fields.ip,
+// 				UnimplementedValdServerWithMirror: test.fields.UnimplementedValdServerWithMirror,
+// 			}
+//
+// 			gotRes, err := s.MultiUpdate(test.args.ctx, test.args.reqs)
+// 			if err := checkFunc(test.want, gotRes, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_server_StreamUpsert(t *testing.T) {
+// 	t.Parallel()
+// 	type args struct {
+// 		stream vald.Upsert_StreamUpsertServer
+// 	}
+// 	type fields struct {
+// 		eg                                errgroup.Group
+// 		gateway                           service.Gateway
+// 		mirror                            service.Mirror
+// 		vAddr                             string
+// 		streamConcurrency                 int
+// 		name                              string
+// 		ip                                string
+// 		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
+// 	}
+// 	type want struct {
+// 		err error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           stream:nil,
+// 		       },
+// 		       fields: fields {
+// 		           eg:nil,
+// 		           gateway:nil,
+// 		           mirror:nil,
+// 		           vAddr:"",
+// 		           streamConcurrency:0,
+// 		           name:"",
+// 		           ip:"",
+// 		           UnimplementedValdServerWithMirror:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           stream:nil,
+// 		           },
+// 		           fields: fields {
+// 		           eg:nil,
+// 		           gateway:nil,
+// 		           mirror:nil,
+// 		           vAddr:"",
+// 		           streamConcurrency:0,
+// 		           name:"",
+// 		           ip:"",
+// 		           UnimplementedValdServerWithMirror:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			s := &server{
+// 				eg:                                test.fields.eg,
+// 				gateway:                           test.fields.gateway,
+// 				mirror:                            test.fields.mirror,
+// 				vAddr:                             test.fields.vAddr,
+// 				streamConcurrency:                 test.fields.streamConcurrency,
+// 				name:                              test.fields.name,
+// 				ip:                                test.fields.ip,
+// 				UnimplementedValdServerWithMirror: test.fields.UnimplementedValdServerWithMirror,
+// 			}
+//
+// 			err := s.StreamUpsert(test.args.stream)
+// 			if err := checkFunc(test.want, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_server_MultiUpsert(t *testing.T) {
+// 	t.Parallel()
+// 	type args struct {
+// 		ctx  context.Context
+// 		reqs *payload.Upsert_MultiRequest
+// 	}
+// 	type fields struct {
+// 		eg                                errgroup.Group
+// 		gateway                           service.Gateway
+// 		mirror                            service.Mirror
+// 		vAddr                             string
+// 		streamConcurrency                 int
+// 		name                              string
+// 		ip                                string
+// 		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
+// 	}
+// 	type want struct {
+// 		wantRes *payload.Object_Locations
+// 		err     error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, *payload.Object_Locations, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, gotRes *payload.Object_Locations, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		if !reflect.DeepEqual(gotRes, w.wantRes) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           ctx:nil,
+// 		           reqs:nil,
+// 		       },
+// 		       fields: fields {
+// 		           eg:nil,
+// 		           gateway:nil,
+// 		           mirror:nil,
+// 		           vAddr:"",
+// 		           streamConcurrency:0,
+// 		           name:"",
+// 		           ip:"",
+// 		           UnimplementedValdServerWithMirror:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           ctx:nil,
+// 		           reqs:nil,
+// 		           },
+// 		           fields: fields {
+// 		           eg:nil,
+// 		           gateway:nil,
+// 		           mirror:nil,
+// 		           vAddr:"",
+// 		           streamConcurrency:0,
+// 		           name:"",
+// 		           ip:"",
+// 		           UnimplementedValdServerWithMirror:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			s := &server{
+// 				eg:                                test.fields.eg,
+// 				gateway:                           test.fields.gateway,
+// 				mirror:                            test.fields.mirror,
+// 				vAddr:                             test.fields.vAddr,
+// 				streamConcurrency:                 test.fields.streamConcurrency,
+// 				name:                              test.fields.name,
+// 				ip:                                test.fields.ip,
+// 				UnimplementedValdServerWithMirror: test.fields.UnimplementedValdServerWithMirror,
+// 			}
+//
+// 			gotRes, err := s.MultiUpsert(test.args.ctx, test.args.reqs)
+// 			if err := checkFunc(test.want, gotRes, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_server_StreamRemove(t *testing.T) {
+// 	t.Parallel()
+// 	type args struct {
+// 		stream vald.Remove_StreamRemoveServer
+// 	}
+// 	type fields struct {
+// 		eg                                errgroup.Group
+// 		gateway                           service.Gateway
+// 		mirror                            service.Mirror
+// 		vAddr                             string
+// 		streamConcurrency                 int
+// 		name                              string
+// 		ip                                string
+// 		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
+// 	}
+// 	type want struct {
+// 		err error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           stream:nil,
+// 		       },
+// 		       fields: fields {
+// 		           eg:nil,
+// 		           gateway:nil,
+// 		           mirror:nil,
+// 		           vAddr:"",
+// 		           streamConcurrency:0,
+// 		           name:"",
+// 		           ip:"",
+// 		           UnimplementedValdServerWithMirror:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           stream:nil,
+// 		           },
+// 		           fields: fields {
+// 		           eg:nil,
+// 		           gateway:nil,
+// 		           mirror:nil,
+// 		           vAddr:"",
+// 		           streamConcurrency:0,
+// 		           name:"",
+// 		           ip:"",
+// 		           UnimplementedValdServerWithMirror:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			s := &server{
+// 				eg:                                test.fields.eg,
+// 				gateway:                           test.fields.gateway,
+// 				mirror:                            test.fields.mirror,
+// 				vAddr:                             test.fields.vAddr,
+// 				streamConcurrency:                 test.fields.streamConcurrency,
+// 				name:                              test.fields.name,
+// 				ip:                                test.fields.ip,
+// 				UnimplementedValdServerWithMirror: test.fields.UnimplementedValdServerWithMirror,
+// 			}
+//
+// 			err := s.StreamRemove(test.args.stream)
+// 			if err := checkFunc(test.want, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_server_MultiRemove(t *testing.T) {
+// 	t.Parallel()
+// 	type args struct {
+// 		ctx  context.Context
+// 		reqs *payload.Remove_MultiRequest
+// 	}
+// 	type fields struct {
+// 		eg                                errgroup.Group
+// 		gateway                           service.Gateway
+// 		mirror                            service.Mirror
+// 		vAddr                             string
+// 		streamConcurrency                 int
+// 		name                              string
+// 		ip                                string
+// 		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
+// 	}
+// 	type want struct {
+// 		wantRes *payload.Object_Locations
+// 		err     error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, *payload.Object_Locations, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, gotRes *payload.Object_Locations, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		if !reflect.DeepEqual(gotRes, w.wantRes) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           ctx:nil,
+// 		           reqs:nil,
+// 		       },
+// 		       fields: fields {
+// 		           eg:nil,
+// 		           gateway:nil,
+// 		           mirror:nil,
+// 		           vAddr:"",
+// 		           streamConcurrency:0,
+// 		           name:"",
+// 		           ip:"",
+// 		           UnimplementedValdServerWithMirror:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           ctx:nil,
+// 		           reqs:nil,
+// 		           },
+// 		           fields: fields {
+// 		           eg:nil,
+// 		           gateway:nil,
+// 		           mirror:nil,
+// 		           vAddr:"",
+// 		           streamConcurrency:0,
+// 		           name:"",
+// 		           ip:"",
+// 		           UnimplementedValdServerWithMirror:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			s := &server{
+// 				eg:                                test.fields.eg,
+// 				gateway:                           test.fields.gateway,
+// 				mirror:                            test.fields.mirror,
+// 				vAddr:                             test.fields.vAddr,
+// 				streamConcurrency:                 test.fields.streamConcurrency,
+// 				name:                              test.fields.name,
+// 				ip:                                test.fields.ip,
+// 				UnimplementedValdServerWithMirror: test.fields.UnimplementedValdServerWithMirror,
+// 			}
+//
+// 			gotRes, err := s.MultiRemove(test.args.ctx, test.args.reqs)
+// 			if err := checkFunc(test.want, gotRes, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_server_GetObject(t *testing.T) {
+// 	t.Parallel()
+// 	type args struct {
+// 		ctx context.Context
+// 		req *payload.Object_VectorRequest
+// 	}
+// 	type fields struct {
+// 		eg                                errgroup.Group
+// 		gateway                           service.Gateway
+// 		mirror                            service.Mirror
+// 		vAddr                             string
+// 		streamConcurrency                 int
+// 		name                              string
+// 		ip                                string
+// 		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
+// 	}
+// 	type want struct {
+// 		wantVec *payload.Object_Vector
+// 		err     error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, *payload.Object_Vector, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, gotVec *payload.Object_Vector, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		if !reflect.DeepEqual(gotVec, w.wantVec) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotVec, w.wantVec)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           ctx:nil,
+// 		           req:nil,
+// 		       },
+// 		       fields: fields {
+// 		           eg:nil,
+// 		           gateway:nil,
+// 		           mirror:nil,
+// 		           vAddr:"",
+// 		           streamConcurrency:0,
+// 		           name:"",
+// 		           ip:"",
+// 		           UnimplementedValdServerWithMirror:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           ctx:nil,
+// 		           req:nil,
+// 		           },
+// 		           fields: fields {
+// 		           eg:nil,
+// 		           gateway:nil,
+// 		           mirror:nil,
+// 		           vAddr:"",
+// 		           streamConcurrency:0,
+// 		           name:"",
+// 		           ip:"",
+// 		           UnimplementedValdServerWithMirror:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			s := &server{
+// 				eg:                                test.fields.eg,
+// 				gateway:                           test.fields.gateway,
+// 				mirror:                            test.fields.mirror,
+// 				vAddr:                             test.fields.vAddr,
+// 				streamConcurrency:                 test.fields.streamConcurrency,
+// 				name:                              test.fields.name,
+// 				ip:                                test.fields.ip,
+// 				UnimplementedValdServerWithMirror: test.fields.UnimplementedValdServerWithMirror,
+// 			}
+//
+// 			gotVec, err := s.GetObject(test.args.ctx, test.args.req)
+// 			if err := checkFunc(test.want, gotVec, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_server_StreamGetObject(t *testing.T) {
+// 	t.Parallel()
+// 	type args struct {
+// 		stream vald.Object_StreamGetObjectServer
+// 	}
+// 	type fields struct {
+// 		eg                                errgroup.Group
+// 		gateway                           service.Gateway
+// 		mirror                            service.Mirror
+// 		vAddr                             string
+// 		streamConcurrency                 int
+// 		name                              string
+// 		ip                                string
+// 		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
+// 	}
+// 	type want struct {
+// 		err error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           stream:nil,
+// 		       },
+// 		       fields: fields {
+// 		           eg:nil,
+// 		           gateway:nil,
+// 		           mirror:nil,
+// 		           vAddr:"",
+// 		           streamConcurrency:0,
+// 		           name:"",
+// 		           ip:"",
+// 		           UnimplementedValdServerWithMirror:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           stream:nil,
+// 		           },
+// 		           fields: fields {
+// 		           eg:nil,
+// 		           gateway:nil,
+// 		           mirror:nil,
+// 		           vAddr:"",
+// 		           streamConcurrency:0,
+// 		           name:"",
+// 		           ip:"",
+// 		           UnimplementedValdServerWithMirror:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			s := &server{
+// 				eg:                                test.fields.eg,
+// 				gateway:                           test.fields.gateway,
+// 				mirror:                            test.fields.mirror,
+// 				vAddr:                             test.fields.vAddr,
+// 				streamConcurrency:                 test.fields.streamConcurrency,
+// 				name:                              test.fields.name,
+// 				ip:                                test.fields.ip,
+// 				UnimplementedValdServerWithMirror: test.fields.UnimplementedValdServerWithMirror,
+// 			}
+//
+// 			err := s.StreamGetObject(test.args.stream)
+// 			if err := checkFunc(test.want, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
