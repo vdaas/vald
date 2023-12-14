@@ -86,7 +86,7 @@ func (*gateway) ForwardedContext(ctx context.Context, podName string) context.Co
 
 // FromForwardedContext extracts information from the forwarded context
 // and returns the podName associated with it.
-func (_ *gateway) FromForwardedContext(ctx context.Context) string {
+func (*gateway) FromForwardedContext(ctx context.Context) string {
 	md, ok := grpc.FromIncomingContext(ctx)
 	if !ok {
 		return ""
