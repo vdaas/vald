@@ -110,6 +110,18 @@
     }
   },
   "definitions": {
+    "InfoAnnotations": {
+      "type": "object",
+      "properties": {
+        "annotations": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Represent the kubernetes annotations."
+    },
     "InfoCPU": {
       "type": "object",
       "properties": {
@@ -130,6 +142,18 @@
         }
       },
       "description": "Represent the CPU information message."
+    },
+    "InfoLabels": {
+      "type": "object",
+      "properties": {
+        "labels": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Represent the kubernetes labels."
     },
     "InfoMemory": {
       "type": "object",
@@ -271,19 +295,11 @@
           "description": "The port of the svc."
         },
         "labels": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "$ref": "#/definitions/v1InfoLabel"
-          },
+          "$ref": "#/definitions/InfoLabels",
           "description": "The labels of the service."
         },
         "annotations": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "$ref": "#/definitions/v1InfoAnnotation"
-          },
+          "$ref": "#/definitions/InfoAnnotations",
           "description": "The annotations of the service."
         }
       },
@@ -369,30 +385,6 @@
         }
       },
       "description": "Represent the dicoverer request."
-    },
-    "v1InfoAnnotation": {
-      "type": "object",
-      "properties": {
-        "key": {
-          "type": "string"
-        },
-        "value": {
-          "type": "string"
-        }
-      },
-      "description": "Represent the kubernetes annotation."
-    },
-    "v1InfoLabel": {
-      "type": "object",
-      "properties": {
-        "key": {
-          "type": "string"
-        },
-        "value": {
-          "type": "string"
-        }
-      },
-      "description": "Represent the kubernetes label."
     }
   }
 }

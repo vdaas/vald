@@ -15,7 +15,8 @@
   - [Filter.Config](#payload-v1-Filter-Config)
   - [Filter.Target](#payload-v1-Filter-Target)
   - [Info](#payload-v1-Info)
-  - [Info.Annotation](#payload-v1-Info-Annotation)
+  - [Info.Annotations](#payload-v1-Info-Annotations)
+  - [Info.Annotations.AnnotationsEntry](#payload-v1-Info-Annotations-AnnotationsEntry)
   - [Info.CPU](#payload-v1-Info-CPU)
   - [Info.IPs](#payload-v1-Info-IPs)
   - [Info.Index](#payload-v1-Info-Index)
@@ -23,7 +24,8 @@
   - [Info.Index.UUID](#payload-v1-Info-Index-UUID)
   - [Info.Index.UUID.Committed](#payload-v1-Info-Index-UUID-Committed)
   - [Info.Index.UUID.Uncommitted](#payload-v1-Info-Index-UUID-Uncommitted)
-  - [Info.Label](#payload-v1-Info-Label)
+  - [Info.Labels](#payload-v1-Info-Labels)
+  - [Info.Labels.LabelsEntry](#payload-v1-Info-Labels-LabelsEntry)
   - [Info.Memory](#payload-v1-Info-Memory)
   - [Info.Node](#payload-v1-Info-Node)
   - [Info.Nodes](#payload-v1-Info-Nodes)
@@ -213,11 +215,19 @@ Represent the target filter server.
 
 Info related messages.
 
-<a name="payload-v1-Info-Annotation"></a>
+<a name="payload-v1-Info-Annotations"></a>
 
-### Info.Annotation
+### Info.Annotations
 
-Represent the kubernetes annotation.
+Represent the kubernetes annotations.
+
+| Field       | Type                                                                               | Label    | Description |
+| ----------- | ---------------------------------------------------------------------------------- | -------- | ----------- |
+| annotations | [Info.Annotations.AnnotationsEntry](#payload-v1-Info-Annotations-AnnotationsEntry) | repeated |             |
+
+<a name="payload-v1-Info-Annotations-AnnotationsEntry"></a>
+
+### Info.Annotations.AnnotationsEntry
 
 | Field | Type              | Label | Description |
 | ----- | ----------------- | ----- | ----------- |
@@ -291,11 +301,19 @@ The uncommitted UUID.
 | ----- | ----------------- | ----- | ----------- |
 | uuid  | [string](#string) |       |             |
 
-<a name="payload-v1-Info-Label"></a>
+<a name="payload-v1-Info-Labels"></a>
 
-### Info.Label
+### Info.Labels
 
-Represent the kubernetes label.
+Represent the kubernetes labels.
+
+| Field  | Type                                                           | Label    | Description |
+| ------ | -------------------------------------------------------------- | -------- | ----------- |
+| labels | [Info.Labels.LabelsEntry](#payload-v1-Info-Labels-LabelsEntry) | repeated |             |
+
+<a name="payload-v1-Info-Labels-LabelsEntry"></a>
+
+### Info.Labels.LabelsEntry
 
 | Field | Type              | Label | Description |
 | ----- | ----------------- | ----- | ----------- |
@@ -377,8 +395,8 @@ Represent the service information message.
 | cluster_ip  | [string](#string)                                |          | The cluster ip of the svc.      |
 | cluster_ips | [string](#string)                                | repeated | The cluster ips of the svc.     |
 | ports       | [Info.ServicePort](#payload-v1-Info-ServicePort) | repeated | The port of the svc.            |
-| labels      | [Info.Label](#payload-v1-Info-Label)             | repeated | The labels of the service.      |
-| annotations | [Info.Annotation](#payload-v1-Info-Annotation)   | repeated | The annotations of the service. |
+| labels      | [Info.Labels](#payload-v1-Info-Labels)           |          | The labels of the service.      |
+| annotations | [Info.Annotations](#payload-v1-Info-Annotations) |          | The annotations of the service. |
 
 <a name="payload-v1-Info-ServicePort"></a>
 

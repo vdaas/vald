@@ -574,9 +574,9 @@ message Info {
     // The port of the svc.
     repeated ServicePort ports = 4;
     // The labels of the service.
-    repeated Label labels = 5;
+    Labels labels = 5;
     // The annotations of the service.
-    repeated Annotation annotations = 6;
+    Annotations annotations = 6;
   }
 
   // Represets the service port information message.
@@ -587,16 +587,14 @@ message Info {
     int32 port = 2;
   }
 
-  // Represent the kubernetes label.
-  message Label {
-    string key = 1;
-    string value = 2;
+  // Represent the kubernetes labels.
+  message Labels {
+    map<string, string> labels = 1;
   }
 
-  // Represent the kubernetes annotation.
-  message Annotation {
-    string key = 1;
-    string value = 2;
+  // Represent the kubernetes annotations.
+  message Annotations {
+    map<string, string> annotations = 1;
   }
 
   // Represent the CPU information message.

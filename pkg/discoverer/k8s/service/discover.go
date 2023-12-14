@@ -349,27 +349,17 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 								Port: p.Port,
 							})
 						}
-						var labels []*payload.Info_Label
-						for k, v := range svc.Labels {
-							labels = append(labels, &payload.Info_Label{
-								Key:   k,
-								Value: v,
-							})
-						}
-						var annotations []*payload.Info_Annotation
-						for k, v := range svc.Annotations {
-							annotations = append(annotations, &payload.Info_Annotation{
-								Key:   k,
-								Value: v,
-							})
-						}
 						ni := &payload.Info_Service{
-							Name:        svc.Name,
-							ClusterIp:   svc.ClusterIP,
-							ClusterIps:  svc.ClusterIPs,
-							Ports:       ports,
-							Labels:      labels,
-							Annotations: annotations,
+							Name:       svc.Name,
+							ClusterIp:  svc.ClusterIP,
+							ClusterIps: svc.ClusterIPs,
+							Ports:      ports,
+							Labels: &payload.Info_Labels{
+								Labels: svc.Labels,
+							},
+							Annotations: &payload.Info_Annotations{
+								Annotations: svc.Annotations,
+							},
 						}
 						svcsByName[svc.Name] = ni
 						return true
