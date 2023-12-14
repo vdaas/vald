@@ -35,19 +35,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
 
-type (
-	Manager        = manager.Manager
-	OwnerReference = v1.OwnerReference
-)
-
-type (
-	Object             = client.Object
-	ObjectKey          = client.ObjectKey
-	DeleteAllOfOptions = client.DeleteAllOfOptions
-	ListOptions        = client.ListOptions
-	MatchingLabels     = client.MatchingLabels
-	InNamespace        = client.InNamespace
-)
+type Manager = manager.Manager
 
 type Controller interface {
 	Start(ctx context.Context) (<-chan error, error)
