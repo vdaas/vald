@@ -152,31 +152,6 @@ const (
 	vmpteMetricsName        = "vmpte_bytes"
 	vmpteMetricsDescription = "size of page table entries"
 
-	// metrics from malloc_info
-	totalFastCountMetricsName        = "total_fast_count"
-	totalFastCountMetricsDescription = "Total fast count"
-
-	totalFastSizeMetricsName        = "total_fast_size"
-	totalFastSizeMetricsDescription = "Total fast size"
-
-	totalRestCountMetricsName        = "total_rest_count"
-	totalRestCountMetricsDescription = "Total rest count"
-
-	totalRestSizeMetricsName        = "total_rest_size"
-	totalRestSizeMetricsDescription = "Total rest size"
-
-	systemCurrentSizeMetricsName        = "system_current_size"
-	systemCurrentSizeMetricsDescription = "System current size"
-
-	systemMaxSizeMetricsName        = "system_max_size"
-	systemMaxSizeMetricsDescription = "System max size"
-
-	aspaceTotalSizeMetricsName        = "aspace_total_size"
-	aspaceTotalSizeMetricsDescription = "Aspace total size"
-
-	aspaceMprotectSizeMetricsName        = "aspace_mprotect_size"
-	aspaceMprotectSizeMetricsDescription = "Aspace mprotect size"
-
 	k = 1024
 )
 
@@ -414,79 +389,6 @@ func getMemstatsMetrics() []*metricsInfo {
 	}
 }
 
-func getMallocInfoMetrics() ([]*metricsInfo, error) {
-	m, err := GetMallocInfo()
-	if err != nil {
-		return nil, err
-	}
-	return []*metricsInfo{
-		{
-			Name: totalFastCountMetricsName,
-			Desc: totalFastCountMetricsDescription,
-			Unit: unit.Dimensionless,
-			Value: func() int64 {
-				return int64(m.Total[0].Count)
-			},
-		},
-		{
-			Name: totalFastSizeMetricsName,
-			Desc: totalFastSizeMetricsDescription,
-			Unit: unit.Bytes,
-			Value: func() int64 {
-				return int64(m.Total[0].Size)
-			},
-		},
-		{
-			Name: totalRestCountMetricsName,
-			Desc: totalRestCountMetricsDescription,
-			Unit: unit.Dimensionless,
-			Value: func() int64 {
-				return int64(m.Total[1].Count)
-			},
-		},
-		{
-			Name: totalRestSizeMetricsName,
-			Desc: totalRestSizeMetricsDescription,
-			Unit: unit.Bytes,
-			Value: func() int64 {
-				return int64(m.Total[1].Size)
-			},
-		},
-		{
-			Name: systemCurrentSizeMetricsName,
-			Desc: systemCurrentSizeMetricsDescription,
-			Unit: unit.Bytes,
-			Value: func() int64 {
-				return int64(m.System[0].Size)
-			},
-		},
-		{
-			Name: systemMaxSizeMetricsName,
-			Desc: systemMaxSizeMetricsDescription,
-			Unit: unit.Bytes,
-			Value: func() int64 {
-				return int64(m.System[1].Size)
-			},
-		},
-		{
-			Name: aspaceTotalSizeMetricsName,
-			Desc: aspaceTotalSizeMetricsDescription,
-			Unit: unit.Bytes,
-			Value: func() int64 {
-				return int64(m.Aspace[0].Size)
-			},
-		},
-		{
-			Name: aspaceMprotectSizeMetricsName,
-			Desc: aspaceMprotectSizeMetricsDescription,
-			Unit: unit.Bytes,
-			Value: func() int64 {
-				return int64(m.Aspace[1].Size)
-			},
-		},
-	}, nil
-}
-
 func getProcStatusMetrics(pid int) ([]*metricsInfo, error) {
 	buf, err := os.ReadFile(fmt.Sprintf("/proc/%d/status", pid))
 	if err != nil {
@@ -658,9 +560,6 @@ func New() metrics.Metric {
 
 func (mm *memMetrics) View() ([]*metrics.View, error) {
 	mInfo := getMemstatsMetrics()
-	if m, err := getMallocInfoMetrics(); err == nil {
-		mInfo = append(mInfo, m...)
-	}
 	if m, err := getProcStatusMetrics(mm.pid); err == nil {
 		mInfo = append(mInfo, m...)
 	}
@@ -682,9 +581,6 @@ func (mm *memMetrics) View() ([]*metrics.View, error) {
 
 func (mm *memMetrics) Register(m metrics.Meter) error {
 	mInfo := getMemstatsMetrics()
-	if metrics, err := getMallocInfoMetrics(); err == nil {
-		mInfo = append(mInfo, metrics...)
-	}
 	if metrics, err := getProcStatusMetrics(mm.pid); err == nil {
 		mInfo = append(mInfo, metrics...)
 	}
