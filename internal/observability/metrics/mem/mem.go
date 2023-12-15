@@ -23,7 +23,6 @@ import (
 	"time"
 
 	"github.com/vdaas/vald/internal/conv"
-	"github.com/vdaas/vald/internal/core/malloc"
 	"github.com/vdaas/vald/internal/observability/metrics"
 	"go.opentelemetry.io/otel/metric/instrument/asyncint64"
 	"go.opentelemetry.io/otel/metric/unit"
@@ -414,7 +413,7 @@ func getMemstatsMetrics() []*metricsInfo {
 }
 
 func getMallocInfoMetrics() ([]*metricsInfo, error) {
-	m, err := malloc.GetMallocInfo()
+	m, err := GetMallocInfo()
 	if err != nil {
 		return nil, err
 	}

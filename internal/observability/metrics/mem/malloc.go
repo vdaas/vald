@@ -14,8 +14,7 @@
 // limitations under the License.
 //
 
-// Package malloc provides Go wrapper of malloc_info
-package malloc
+package mem
 
 /*
 #include <errno.h>
