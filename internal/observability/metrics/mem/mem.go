@@ -387,6 +387,7 @@ func getMemstatsMetrics() []*metricsInfo {
 	}
 }
 
+// skipcq: GO-R1005
 func getProcStatusMetrics(pid int) ([]*metricsInfo, error) {
 	buf, err := os.ReadFile(fmt.Sprintf("/proc/%d/status", pid))
 	if err != nil {
