@@ -46,6 +46,8 @@ type DiscovererClient interface {
 	Pods(ctx context.Context, in *payload.Discoverer_Request, opts ...grpc.CallOption) (*payload.Info_Pods, error)
 	// Represent the RPC to get the node information.
 	Nodes(ctx context.Context, in *payload.Discoverer_Request, opts ...grpc.CallOption) (*payload.Info_Nodes, error)
+	// Represent the RPC to get the readreplica svc information.
+	Services(ctx context.Context, in *payload.Discoverer_Request, opts ...grpc.CallOption) (*payload.Info_Services, error)
 }
 
 type discovererClient struct {
@@ -74,6 +76,15 @@ func (c *discovererClient) Nodes(ctx context.Context, in *payload.Discoverer_Req
 	return out, nil
 }
 
+func (c *discovererClient) Services(ctx context.Context, in *payload.Discoverer_Request, opts ...grpc.CallOption) (*payload.Info_Services, error) {
+	out := new(payload.Info_Services)
+	err := c.cc.Invoke(ctx, "/discoverer.v1.Discoverer/Services", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // DiscovererServer is the server API for Discoverer service.
 // All implementations must embed UnimplementedDiscovererServer
 // for forward compatibility
@@ -82,6 +93,8 @@ type DiscovererServer interface {
 	Pods(context.Context, *payload.Discoverer_Request) (*payload.Info_Pods, error)
 	// Represent the RPC to get the node information.
 	Nodes(context.Context, *payload.Discoverer_Request) (*payload.Info_Nodes, error)
+	// Represent the RPC to get the readreplica svc information.
+	Services(context.Context, *payload.Discoverer_Request) (*payload.Info_Services, error)
 	mustEmbedUnimplementedDiscovererServer()
 }
 
@@ -94,6 +107,9 @@ func (UnimplementedDiscovererServer) Pods(context.Context, *payload.Discoverer_R
 }
 func (UnimplementedDiscovererServer) Nodes(context.Context, *payload.Discoverer_Request) (*payload.Info_Nodes, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Nodes not implemented")
+}
+func (UnimplementedDiscovererServer) Services(context.Context, *payload.Discoverer_Request) (*payload.Info_Services, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Services not implemented")
 }
 func (UnimplementedDiscovererServer) mustEmbedUnimplementedDiscovererServer() {}
 
@@ -144,6 +160,24 @@ func _Discoverer_Nodes_Handler(srv interface{}, ctx context.Context, dec func(in
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Discoverer_Services_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(payload.Discoverer_Request)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DiscovererServer).Services(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/discoverer.v1.Discoverer/Services",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DiscovererServer).Services(ctx, req.(*payload.Discoverer_Request))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Discoverer_ServiceDesc is the grpc.ServiceDesc for Discoverer service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -158,6 +192,10 @@ var Discoverer_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Nodes",
 			Handler:    _Discoverer_Nodes_Handler,
+		},
+		{
+			MethodName: "Services",
+			Handler:    _Discoverer_Services_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

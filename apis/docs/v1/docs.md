@@ -15,6 +15,8 @@
   - [Filter.Config](#payload-v1-Filter-Config)
   - [Filter.Target](#payload-v1-Filter-Target)
   - [Info](#payload-v1-Info)
+  - [Info.Annotations](#payload-v1-Info-Annotations)
+  - [Info.Annotations.AnnotationsEntry](#payload-v1-Info-Annotations-AnnotationsEntry)
   - [Info.CPU](#payload-v1-Info-CPU)
   - [Info.IPs](#payload-v1-Info-IPs)
   - [Info.Index](#payload-v1-Info-Index)
@@ -22,11 +24,16 @@
   - [Info.Index.UUID](#payload-v1-Info-Index-UUID)
   - [Info.Index.UUID.Committed](#payload-v1-Info-Index-UUID-Committed)
   - [Info.Index.UUID.Uncommitted](#payload-v1-Info-Index-UUID-Uncommitted)
+  - [Info.Labels](#payload-v1-Info-Labels)
+  - [Info.Labels.LabelsEntry](#payload-v1-Info-Labels-LabelsEntry)
   - [Info.Memory](#payload-v1-Info-Memory)
   - [Info.Node](#payload-v1-Info-Node)
   - [Info.Nodes](#payload-v1-Info-Nodes)
   - [Info.Pod](#payload-v1-Info-Pod)
   - [Info.Pods](#payload-v1-Info-Pods)
+  - [Info.Service](#payload-v1-Info-Service)
+  - [Info.ServicePort](#payload-v1-Info-ServicePort)
+  - [Info.Services](#payload-v1-Info-Services)
   - [Insert](#payload-v1-Insert)
   - [Insert.Config](#payload-v1-Insert-Config)
   - [Insert.MultiObjectRequest](#payload-v1-Insert-MultiObjectRequest)
@@ -208,6 +215,25 @@ Represent the target filter server.
 
 Info related messages.
 
+<a name="payload-v1-Info-Annotations"></a>
+
+### Info.Annotations
+
+Represent the kubernetes annotations.
+
+| Field       | Type                                                                               | Label    | Description |
+| ----------- | ---------------------------------------------------------------------------------- | -------- | ----------- |
+| annotations | [Info.Annotations.AnnotationsEntry](#payload-v1-Info-Annotations-AnnotationsEntry) | repeated |             |
+
+<a name="payload-v1-Info-Annotations-AnnotationsEntry"></a>
+
+### Info.Annotations.AnnotationsEntry
+
+| Field | Type              | Label | Description |
+| ----- | ----------------- | ----- | ----------- |
+| key   | [string](#string) |       |             |
+| value | [string](#string) |       |             |
+
 <a name="payload-v1-Info-CPU"></a>
 
 ### Info.CPU
@@ -275,6 +301,25 @@ The uncommitted UUID.
 | ----- | ----------------- | ----- | ----------- |
 | uuid  | [string](#string) |       |             |
 
+<a name="payload-v1-Info-Labels"></a>
+
+### Info.Labels
+
+Represent the kubernetes labels.
+
+| Field  | Type                                                           | Label    | Description |
+| ------ | -------------------------------------------------------------- | -------- | ----------- |
+| labels | [Info.Labels.LabelsEntry](#payload-v1-Info-Labels-LabelsEntry) | repeated |             |
+
+<a name="payload-v1-Info-Labels-LabelsEntry"></a>
+
+### Info.Labels.LabelsEntry
+
+| Field | Type              | Label | Description |
+| ----- | ----------------- | ----- | ----------- |
+| key   | [string](#string) |       |             |
+| value | [string](#string) |       |             |
+
 <a name="payload-v1-Info-Memory"></a>
 
 ### Info.Memory
@@ -337,6 +382,42 @@ Represent the multiple pod information message.
 | Field | Type                             | Label    | Description                   |
 | ----- | -------------------------------- | -------- | ----------------------------- |
 | pods  | [Info.Pod](#payload-v1-Info-Pod) | repeated | The multiple pod information. |
+
+<a name="payload-v1-Info-Service"></a>
+
+### Info.Service
+
+Represent the service information message.
+
+| Field       | Type                                             | Label    | Description                     |
+| ----------- | ------------------------------------------------ | -------- | ------------------------------- |
+| name        | [string](#string)                                |          | The name of the svc.            |
+| cluster_ip  | [string](#string)                                |          | The cluster ip of the svc.      |
+| cluster_ips | [string](#string)                                | repeated | The cluster ips of the svc.     |
+| ports       | [Info.ServicePort](#payload-v1-Info-ServicePort) | repeated | The port of the svc.            |
+| labels      | [Info.Labels](#payload-v1-Info-Labels)           |          | The labels of the service.      |
+| annotations | [Info.Annotations](#payload-v1-Info-Annotations) |          | The annotations of the service. |
+
+<a name="payload-v1-Info-ServicePort"></a>
+
+### Info.ServicePort
+
+Represets the service port information message.
+
+| Field | Type              | Label | Description           |
+| ----- | ----------------- | ----- | --------------------- |
+| name  | [string](#string) |       | The name of the port. |
+| port  | [int32](#int32)   |       | The port number       |
+
+<a name="payload-v1-Info-Services"></a>
+
+### Info.Services
+
+Represent the multiple service information message.
+
+| Field    | Type                                     | Label    | Description                       |
+| -------- | ---------------------------------------- | -------- | --------------------------------- |
+| services | [Info.Service](#payload-v1-Info-Service) | repeated | The multiple service information. |
 
 <a name="payload-v1-Insert"></a>
 
@@ -976,10 +1057,11 @@ Represent the agent sidecar service.
 
 Represent the discoverer service.
 
-| Method Name | Request Type                                                     | Response Type                                    | Description                                          |
-| ----------- | ---------------------------------------------------------------- | ------------------------------------------------ | ---------------------------------------------------- |
-| Pods        | [.payload.v1.Discoverer.Request](#payload-v1-Discoverer-Request) | [.payload.v1.Info.Pods](#payload-v1-Info-Pods)   | Represent the RPC to get the agent pods information. |
-| Nodes       | [.payload.v1.Discoverer.Request](#payload-v1-Discoverer-Request) | [.payload.v1.Info.Nodes](#payload-v1-Info-Nodes) | Represent the RPC to get the node information.       |
+| Method Name | Request Type                                                     | Response Type                                          | Description                                               |
+| ----------- | ---------------------------------------------------------------- | ------------------------------------------------------ | --------------------------------------------------------- |
+| Pods        | [.payload.v1.Discoverer.Request](#payload-v1-Discoverer-Request) | [.payload.v1.Info.Pods](#payload-v1-Info-Pods)         | Represent the RPC to get the agent pods information.      |
+| Nodes       | [.payload.v1.Discoverer.Request](#payload-v1-Discoverer-Request) | [.payload.v1.Info.Nodes](#payload-v1-Info-Nodes)       | Represent the RPC to get the node information.            |
+| Services    | [.payload.v1.Discoverer.Request](#payload-v1-Discoverer-Request) | [.payload.v1.Info.Services](#payload-v1-Info-Services) | Represent the RPC to get the readreplica svc information. |
 
 <a name="v1_filter_egress_egress_filter-proto"></a>
 
