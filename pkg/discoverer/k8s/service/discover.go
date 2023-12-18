@@ -182,31 +182,31 @@ func New(selector *config.Selectors, opts ...Option) (dsc Discoverer, err error)
 			node.WithLabels(selector.GetNodeLabels()),
 		)),
 		// Only required when service reconciation is required like read replica.
-		k8s.WithResourceController(service.New(
-			service.WithControllerName("service discoverer"),
-			service.WithOnErrorFunc(func(err error) {
-				log.Error("failed to reconcile:", err)
-			}),
-			service.WithOnReconcileFunc(func(svcs []service.Service) {
-				log.Debugf("svc resource reconciled\t%#v", svcs)
-				svcsmap := make(map[string]struct{}, len(svcs))
-				for i := range svcs {
-					svc := &svcs[i]
-					svcsmap[svc.Name] = struct{}{}
-					d.services.Store(svc.Name, svc)
-				}
-				d.services.Range(func(name string, _ *service.Service) bool {
-					_, ok := svcsmap[name]
-					if !ok {
-						d.services.Delete(name)
-					}
-					return true
-				})
-			}),
-			service.WithNamespace(d.namespace),
-			service.WithFields(selector.GetServiceFields()),
-			service.WithLabels(selector.GetServiceLabels()),
-		)),
+		// k8s.WithResourceController(service.New(
+		// 	service.WithControllerName("service discoverer"),
+		// 	service.WithOnErrorFunc(func(err error) {
+		// 		log.Error("failed to reconcile:", err)
+		// 	}),
+		// 	service.WithOnReconcileFunc(func(svcs []service.Service) {
+		// 		log.Debugf("svc resource reconciled\t%#v", svcs)
+		// 		svcsmap := make(map[string]struct{}, len(svcs))
+		// 		for i := range svcs {
+		// 			svc := &svcs[i]
+		// 			svcsmap[svc.Name] = struct{}{}
+		// 			d.services.Store(svc.Name, svc)
+		// 		}
+		// 		d.services.Range(func(name string, _ *service.Service) bool {
+		// 			_, ok := svcsmap[name]
+		// 			if !ok {
+		// 				d.services.Delete(name)
+		// 			}
+		// 			return true
+		// 		})
+		// 	}),
+		// 	service.WithNamespace(d.namespace),
+		// 	service.WithFields(selector.GetServiceFields()),
+		// 	service.WithLabels(selector.GetServiceLabels()),
+		// )),
 	)
 
 	d.ctrl, err = k8s.New(k8sOpts...)
