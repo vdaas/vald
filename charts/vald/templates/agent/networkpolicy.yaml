@@ -24,7 +24,7 @@
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: agent-allow
+  name: {{ $agent.name }}-allow
 spec:
   podSelector:
     matchLabels:
