@@ -600,13 +600,15 @@ func (mm *memMetrics) Register(m metrics.Meter) error {
 	return m.RegisterCallback(
 		instruments,
 		func(ctx context.Context) {
-			var mstats runtime.MemStats
-			runtime.ReadMemStats(&mstats)
+			metrics := getMemstatsMetrics()
+			if m, err := getProcStatusMetrics(mm.pid); err == nil {
+				metrics = append(metrics, m...)
+			}
 
 			for i, instrument := range instruments {
 				g, ok := instrument.(asyncint64.Gauge)
 				if ok {
-					g.Observe(ctx, mInfo[i].Value())
+					g.Observe(ctx, metrics[i].Value())
 				}
 			}
 		},
