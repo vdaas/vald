@@ -37,7 +37,6 @@ import (
 type Client interface {
 	Start(ctx context.Context) (<-chan error, error)
 	GetAddrs(ctx context.Context) []string
-	GetReadAddrs(ctx context.Context) []string
 	GetClient() grpc.Client
 	GetReadClient() grpc.Client
 }
@@ -60,7 +59,6 @@ type client struct {
 	nodeName     string
 	// read replica related below
 	readClient          grpc.Client
-	readAddrs           atomic.Pointer[[]string]
 	readReplicaReplicas uint64
 	roundRobin          atomic.Uint64
 }
@@ -182,14 +180,6 @@ func (c *client) GetAddrs(ctx context.Context) (addrs []string) {
 		addrs = *a
 	}
 	return addrs
-}
-
-func (c *client) GetReadAddrs(ctx context.Context) []string {
-	a := c.readAddrs.Load()
-	if a == nil {
-		return nil
-	}
-	return *a
 }
 
 func (c *client) GetClient() grpc.Client {

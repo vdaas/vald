@@ -41,6 +41,10 @@ func (m *mockDiscovererClient) GetClient() grpc.Client {
 	return &m.client
 }
 
+func (m *mockDiscovererClient) GetReadClient() grpc.Client {
+	return &m.client
+}
+
 func Test_correct_correctTimestamp(t *testing.T) {
 	t.Parallel()
 

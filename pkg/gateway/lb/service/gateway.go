@@ -42,6 +42,7 @@ type Gateway interface {
 }
 
 type BroadCastKind int
+
 const (
 	READ BroadCastKind = iota
 	WRITE
@@ -66,8 +67,6 @@ func (g *gateway) Start(ctx context.Context) (<-chan error, error) {
 	return g.client.Start(ctx)
 }
 
-// FIXME: そもそも呼ばれているメソッドがread系かwrite系かをどこかで判断する必要があるが、
-// 今後もメソッドは増えていくのだからBroadCastとBroadCastReadみたいに分けて、呼び出し側で判断するべき
 func (g *gateway) BroadCast(ctx context.Context, kind BroadCastKind,
 	f func(ctx context.Context, target string, ac vald.Client, copts ...grpc.CallOption) error,
 ) (err error) {
@@ -89,7 +88,6 @@ func (g *gateway) BroadCast(ctx context.Context, kind BroadCastKind,
 		client = g.client.GetClient()
 	}
 
-	// FIXME: broadcastはsvc経由でロードバランスされてるっぽい
 	return client.RangeConcurrent(fctx, -1, func(ictx context.Context,
 		addr string, conn *grpc.ClientConn, copts ...grpc.CallOption,
 	) (err error) {
