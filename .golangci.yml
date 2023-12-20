@@ -185,8 +185,6 @@ linters-settings:
             desc: "golang.org/x/sync/semaphore is allowed only by internal/sync/semaphore"
           - pkg: "errors"
             desc: "errors is allowed only by internal/errors"
-          - pkg: "k8s.io/apimachinery/pkg/api/errors"
-            desc: "errors is allowed only by internal/errors"
           - pkg: "github.com/cockroachdb/errors"
             desc: "errors is allowed only by internal/errors"
           - pkg: "github.com/pkg/errors"

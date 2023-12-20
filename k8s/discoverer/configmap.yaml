@@ -219,6 +219,9 @@ data:
           node_metrics:
             labels: {}
             fields: {}
+          service:
+            labels: {}
+            fields: {}
       net:
         dialer:
           dual_stack_enabled: false

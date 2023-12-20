@@ -15,6 +15,7 @@
 #
 {{- $discoverer := .Values.discoverer -}}
 {{- $agent := .Values.agent -}}
+{{- $readreplica := .Values.agent.readreplica -}}
 {{- if $discoverer.enabled }}
 apiVersion: v1
 kind: ConfigMap
