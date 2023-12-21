@@ -259,10 +259,11 @@ func (g *gRPCClient) StartConnectionMonitor(ctx context.Context) (<-chan error, 
 						disconnectTargets = append(disconnectTargets, addr)
 						return true
 					}
-					// for health check we don't need to reconnect when pool is healthy
-					if p.IsHealthy(ctx) {
+					// for health check we don't need to reconnect when ip connection pool is healthy
+					if p.IsHealthy(ctx) && p.IsIPConn() {
 						return true
 					}
+					// if connection is not ip direct or unhealthy let's re-connect
 					var err error
 					// if not healthy we should try reconnect
 					p, err = p.Reconnect(ctx, false)
