@@ -15,7 +15,8 @@
 #
 
 {{- $rotator := .Values.manager.index.readreplica.rotator -}}
-{{- if and .Values.defaults.networkPolicy.enabled $rotator.enabled }}
+{{- $readreplica := .Values.agent.readreplica -}}
+{{- if and .Values.defaults.networkPolicy.enabled $readreplica.enabled }}
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
