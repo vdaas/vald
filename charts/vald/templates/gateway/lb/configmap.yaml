@@ -70,7 +70,7 @@ data:
       {{- if $readreplica.enabled }}
       read_replica_client:
         client:
-          {{- $discovererClient := $gateway.gateway_config.read_replica_client.client }}
+          {{- $discovererClient := $gateway.gateway_config.discoverer.client }}
           {{- $readReplicaPort := $agent.server_config.servers.grpc.port }}
           {{- $defaultReadReplicaPort := default .Values.defaults.server_config.servers.grpc.port $readReplicaPort }}
           {{- $readReplicaAddrs := list }}
