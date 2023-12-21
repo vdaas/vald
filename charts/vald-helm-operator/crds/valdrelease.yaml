@@ -2803,6 +2803,15 @@ spec:
                                 labels:
                                   type: object
                                   x-kubernetes-preserve-unknown-fields: true
+                            service:
+                              type: object
+                              properties:
+                                fields:
+                                  type: object
+                                  x-kubernetes-preserve-unknown-fields: true
+                                labels:
+                                  type: object
+                                  x-kubernetes-preserve-unknown-fields: true
                     enabled:
                       type: boolean
                     env:

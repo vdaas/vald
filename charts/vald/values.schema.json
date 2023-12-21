@@ -4602,6 +4602,20 @@
                       "description": "k8s label selectors for pod_metrics discovery"
                     }
                   }
+                },
+                "service": {
+                  "type": "object",
+                  "description": "k8s resource selectors for service discovery",
+                  "properties": {
+                    "fields": {
+                      "type": "object",
+                      "description": "k8s field selectors for service discovery"
+                    },
+                    "labels": {
+                      "type": "object",
+                      "description": "k8s label selectors for service discovery"
+                    }
+                  }
                 }
               }
             }

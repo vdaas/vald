@@ -75,9 +75,53 @@
         ],
         "tags": ["Discoverer"]
       }
+    },
+    "/discover/services": {
+      "post": {
+        "summary": "Represent the RPC to get the readreplica svc information.",
+        "operationId": "Discoverer_Services",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/InfoServices"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "description": "Represent the dicoverer request.",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1DiscovererRequest"
+            }
+          }
+        ],
+        "tags": ["Discoverer"]
+      }
     }
   },
   "definitions": {
+    "InfoAnnotations": {
+      "type": "object",
+      "properties": {
+        "annotations": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Represent the kubernetes annotations."
+    },
     "InfoCPU": {
       "type": "object",
       "properties": {
@@ -98,6 +142,18 @@
         }
       },
       "description": "Represent the CPU information message."
+    },
+    "InfoLabels": {
+      "type": "object",
+      "properties": {
+        "labels": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Represent the kubernetes labels."
     },
     "InfoMemory": {
       "type": "object",
@@ -211,6 +267,72 @@
         }
       },
       "description": "Represent the multiple pod information message."
+    },
+    "InfoService": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The name of the svc."
+        },
+        "clusterIp": {
+          "type": "string",
+          "description": "The cluster ip of the svc."
+        },
+        "clusterIps": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "The cluster ips of the svc."
+        },
+        "ports": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/InfoServicePort"
+          },
+          "description": "The port of the svc."
+        },
+        "labels": {
+          "$ref": "#/definitions/InfoLabels",
+          "description": "The labels of the service."
+        },
+        "annotations": {
+          "$ref": "#/definitions/InfoAnnotations",
+          "description": "The annotations of the service."
+        }
+      },
+      "description": "Represent the service information message."
+    },
+    "InfoServicePort": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The name of the port."
+        },
+        "port": {
+          "type": "integer",
+          "format": "int32",
+          "title": "The port number"
+        }
+      },
+      "description": "Represets the service port information message."
+    },
+    "InfoServices": {
+      "type": "object",
+      "properties": {
+        "services": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/InfoService"
+          },
+          "description": "The multiple service information."
+        }
+      },
+      "description": "Represent the multiple service information message."
     },
     "protobufAny": {
       "type": "object",
