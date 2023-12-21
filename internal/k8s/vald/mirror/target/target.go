@@ -44,6 +44,11 @@ const (
 	MirrorTargetPhaseUnknown      = mirrv1.MirrorTargetUnknown
 )
 
+const (
+	reconcileRequeueDurationForInvalidError  = 100 * time.Millisecond
+	reconcileRequeueDurationForNotFoundError = time.Second
+)
+
 type reconciler struct {
 	mgr         manager.Manager
 	name        string
@@ -86,17 +91,18 @@ func (r *reconciler) Reconcile(ctx context.Context, _ reconcile.Request) (res re
 	ml := &mirrv1.ValdMirrorTargetList{}
 	err = r.mgr.GetClient().List(ctx, ml, r.lopts...)
 	if err != nil {
-		r.onError(err)
+		if r.onError != nil {
+			r.onError(err)
+		}
 		if apierr.IsNotFound(err) {
-			log.Errorf("not found: %s", err)
 			return reconcile.Result{
 				Requeue:      true,
-				RequeueAfter: time.Second,
+				RequeueAfter: reconcileRequeueDurationForNotFoundError,
 			}, nil
 		}
 		return reconcile.Result{
 			Requeue:      true,
-			RequeueAfter: 100 * time.Millisecond,
+			RequeueAfter: reconcileRequeueDurationForInvalidError,
 		}, err
 	}
 	tm := make(map[string]Target)
