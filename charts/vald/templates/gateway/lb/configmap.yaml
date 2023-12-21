@@ -51,7 +51,7 @@ data:
       agent_namespace: {{ $gateway.gateway_config.agent_namespace | quote }}
       node_name: {{ $gateway.gateway_config.node_name | quote }}
       index_replica: {{ $gateway.gateway_config.index_replica }}
-      readreplica_replicas: {{ $readreplica.replica }}
+      read_replica_replicas: {{ $readreplica.replica }}
       discoverer:
         duration: {{ $gateway.gateway_config.discoverer.duration }}
         client:
