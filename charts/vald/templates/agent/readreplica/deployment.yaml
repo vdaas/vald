@@ -136,6 +136,9 @@ spec:
         - name: {{ $readreplica.volume_name }}
           persistentVolumeClaim:
             claimName: {{ $readreplica.name }}-pvc-{{ $id }}
+        {{- if $agent.volumes }}
+        {{- toYaml $agent.volumes | nindent 8 }}
+        {{- end }}
       {{- if $agent.nodeName }}
       nodeName: {{ $agent.nodeName }}
       {{- end }}
