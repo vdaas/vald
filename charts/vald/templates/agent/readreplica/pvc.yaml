@@ -35,5 +35,6 @@ spec:
     name: {{ $readreplica.name }}-snapshot-{{ $id }}
     kind: VolumeSnapshot
     apiGroup: snapshot.storage.k8s.io
+  storageClassName: {{ $agent.persistentVolume.storageClass }}
 {{- end }}
 {{- end }}
