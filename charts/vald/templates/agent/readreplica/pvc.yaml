@@ -30,7 +30,7 @@ spec:
     - ReadOnlyMany
   resources:
     requests:
-      storage: 1Gi
+      storage: {{ $agent.persistentVolume.size }}
   dataSource:
     name: {{ $readreplica.name }}-snapshot-{{ $id }}
     kind: VolumeSnapshot
