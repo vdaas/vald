@@ -205,14 +205,12 @@ func (c *client) GetReadClient() grpc.Client {
 	}
 	if new == 0 || c.readClient == nil {
 		return c.client
-		// return c.readClient // DEBUG:
 	}
 	return c.readClient
 }
 
 func (c *client) connect(ctx context.Context, addr string) (err error) {
 	if c.autoconn && c.client != nil {
-		// FIXME: この中で重複管理されている
 		_, err = c.client.Connect(ctx, addr)
 		if err != nil {
 			return err
@@ -362,7 +360,6 @@ func (c *client) discoverAddrs(ctx context.Context, nodes *payload.Info_Nodes, e
 					len(node.GetPods().GetPods()) > i &&
 					len(node.GetPods().GetPods()[i].GetIp()) != 0 {
 					addr := net.JoinHostPort(node.GetPods().GetPods()[i].GetIp(), uint16(c.port))
-					// FIXME: ここで実際にgrpcサーバーへ接続する
 					if err = c.connect(ctx, addr); err != nil {
 						select {
 						case <-ctx.Done():

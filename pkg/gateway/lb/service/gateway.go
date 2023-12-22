@@ -104,7 +104,6 @@ func (g *gateway) BroadCast(ctx context.Context, kind BroadCastKind,
 	})
 }
 
-// DoMultiはWrite系しか使用しないので、普通にGetClientしていれば良い。現状Update or Insertのみ
 func (g *gateway) DoMulti(ctx context.Context, num int,
 	f func(ctx context.Context, target string, ac vald.Client, copts ...grpc.CallOption) error,
 ) (err error) {
