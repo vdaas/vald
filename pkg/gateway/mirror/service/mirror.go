@@ -49,7 +49,7 @@ type mirr struct {
 	addrl         sync.Map[string, any]    // List of all connected addresses
 	selfMirrTgts  []*payload.Mirror_Target // Targets of self mirror gateway
 	selfMirrAddrl sync.Map[string, any]    // List of self Mirror gateway addresses
-	gwAddrl       sync.Map[string, any]    // List of Vald Gateway addresses
+	gwAddrl       sync.Map[string, any]    // List of Vald gateway (LB gateway) addresses
 	eg            errgroup.Group
 	registerDur   time.Duration
 	gateway       Gateway
@@ -283,7 +283,7 @@ func (m *mirr) registers(ctx context.Context, tgts *payload.Mirror_Targets) ([]*
 	return resTgts, err
 }
 
-// Connect establishes gRPC connections to the specified Mirror targets, excluding this gateway and the LB Gateway.
+// Connect establishes gRPC connections to the specified Mirror targets, excluding this gateway and the Vald gateway (LB gateway).
 func (m *mirr) Connect(ctx context.Context, targets ...*payload.Mirror_Target) error {
 	ctx, span := trace.StartSpan(ctx, "vald/gateway/mirror/service/Mirror.Connect")
 	defer func() {
@@ -343,7 +343,7 @@ func (m *mirr) IsConnected(ctx context.Context, addr string) bool {
 	return m.gateway.GRPCClient().IsConnected(ctx, addr)
 }
 
-// MirrorTargets returns the Mirror targets, including the address of this gateway and the addresses of other Mirror Gateways
+// MirrorTargets returns the Mirror targets, including the address of this gateway and the addresses of other Mirror gateways
 // to which this gateway is currently connected.
 func (m *mirr) MirrorTargets(ctx context.Context) (tgts []*payload.Mirror_Target, err error) {
 	tgts = make([]*payload.Mirror_Target, 0, m.addrl.Len())
@@ -380,7 +380,7 @@ func (m *mirr) isGatewayAddr(addr string) bool {
 	return ok
 }
 
-// connectedOtherMirrorAddrs returns the addresses of other Mirror Gateways to which this gateway is currently connected.
+// connectedOtherMirrorAddrs returns the addresses of other Mirror gateways to which this gateway is currently connected.
 func (m *mirr) connectedOtherMirrorAddrs(ctx context.Context) (addrs []string) {
 	m.RangeMirrorAddr(func(addr string, _ any) bool {
 		if m.IsConnected(ctx, addr) {

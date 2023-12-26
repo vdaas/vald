@@ -50,7 +50,7 @@ func WithGatewayAddrs(addrs ...string) MirrorOption {
 	}
 }
 
-// WithSelfMirrorAddrs returns the option to set the self Mirror Gateway addresses.
+// WithSelfMirrorAddrs returns the option to set the self Mirror gateway addresses.
 func WithSelfMirrorAddrs(addrs ...string) MirrorOption {
 	return func(m *mirr) error {
 		if len(addrs) == 0 {
