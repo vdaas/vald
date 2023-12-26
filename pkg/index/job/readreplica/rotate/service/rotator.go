@@ -283,7 +283,7 @@ func (r *rotator) deleteSnapshot(ctx context.Context, snapshot *snapshotv1.Volum
 					log.Infof("volume snapshot(%v) deleted", snapshot.GetName())
 					return nil
 				} else {
-					log.Debugf("waching volume snapshot(%s) events. event: ", snapshot.GetName(), event.Type)
+					log.Debugf("watching volume snapshot(%s) events. event: %v", snapshot.GetName(), event.Type)
 				}
 			}
 		}
@@ -320,7 +320,7 @@ func (r *rotator) deletePVC(ctx context.Context, pvc *v1.PersistentVolumeClaim) 
 					log.Infof("PVC(%s) deleted", pvc.GetName())
 					return nil
 				} else {
-					log.Debugf("waching PVC(%s) events. event: %v", pvc.GetName(), event.Type)
+					log.Debugf("watching PVC(%s) events. event: %v", pvc.GetName(), event.Type)
 				}
 			}
 		}
