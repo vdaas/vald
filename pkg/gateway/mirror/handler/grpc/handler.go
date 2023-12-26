@@ -48,7 +48,7 @@ type server struct {
 
 const apiName = "vald/gateway/mirror"
 
-// New returns a Vald server as as gRPC handler with mirror using the provided options.
+// New returns a Vald server as gRPC handler with mirror using the provided options.
 func New(opts ...Option) (vald.ServerWithMirror, error) {
 	s := new(server)
 	for _, opt := range append(defaultOptions, opts...) {
