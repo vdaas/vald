@@ -1,5 +1,97 @@
 # CHANGELOG
 
+## v1.7.10
+
+### Docker images
+
+<table>
+  <tr>
+    <th>component</th>
+    <th>Docker pull</th>
+  </tr>
+  <tr>
+    <td>Agent NGT</td>
+    <td>
+      <code>docker pull vdaas/vald-agent-ngt:v1.7.10</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-agent-ngt:v1.7.10</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Agent sidecar</td>
+    <td>
+      <code>docker pull vdaas/vald-agent-sidecar:v1.7.10</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-agent-sidecar:v1.7.10</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Discoverers</td>
+    <td>
+      <code>docker pull vdaas/vald-discoverer-k8s:v1.7.10</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-discoverer-k8s:v1.7.10</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Gateways</td>
+    <td>
+      <code>docker pull vdaas/vald-lb-gateway:v1.7.10</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-lb-gateway:v1.7.10</code><br/>
+      <code>docker pull vdaas/vald-filter-gateway:v1.7.10</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-filter-gateway:v1.7.10</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Index Manager</td>
+    <td>
+      <code>docker pull vdaas/vald-manager-index:v1.7.10</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-manager-index:v1.7.10</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Helm Operator</td>
+    <td>
+      <code>docker pull vdaas/vald-helm-operator:v1.7.10</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-helm-operator:v1.7.10</code>
+    </td>
+  </tr>
+</table>
+
+### Documents
+
+- [GoDoc](https://pkg.go.dev/github.com/vdaas/vald@v1.7.10)
+- [Helm Chart Reference](https://github.com/vdaas/vald/blob/v1.7.10/charts/vald/README.md)
+- [Helm Operator Chart Reference](https://github.com/vdaas/vald/blob/v1.7.10/charts/vald-helm-operator/README.md)
+
+### Changes
+
+:sparkles: New feature
+
+- Implement malloc metrics [#2161](https://github.com/vdaas/vald/pull/2161)
+- Add svc discoverer for readreplica svc [#2263](https://github.com/vdaas/vald/pull/2263)
+- Add agent readreplica resources [#2258](https://github.com/vdaas/vald/pull/2258)
+- Add cronjob for readreplica rotator [#2242](https://github.com/vdaas/vald/pull/2242)
+
+:recycle: Refactor
+
+- Apply make proto/all [#2266](https://github.com/vdaas/vald/pull/2266)
+- Migratation to buf [#2236](https://github.com/vdaas/vald/pull/2236)
+- Update schema [#2265](https://github.com/vdaas/vald/pull/2265)
+
+:bug: Bugfix
+
+- Resolve duplicated cluster wide resources name problem [#2274](https://github.com/vdaas/vald/pull/2274)
+
+:pencil2: Document
+
+- Add caution sentence for deploy multi-Vald clusters [#2271](https://github.com/vdaas/vald/pull/2271)
+
+:green_heart: CI
+
+- Disable BUILDKIT_INLINE_CACHE on GitHub Actions [#2270](https://github.com/vdaas/vald/pull/2270)
+- Fix docker build for scanning [#2269](https://github.com/vdaas/vald/pull/2269)
+- change login user and token for ghcr.io & small refactor [#2268](https://github.com/vdaas/vald/pull/2268)
+- Add e2e job for index management job [#2239](https://github.com/vdaas/vald/pull/2239)
+- Add docker buildx cache [#2261](https://github.com/vdaas/vald/pull/2261)
+
 ## v1.7.9
 
 ### Docker images
