@@ -22,6 +22,7 @@ import (
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/hash"
 	"github.com/vdaas/vald/internal/k8s"
 	k8sclient "github.com/vdaas/vald/internal/k8s/client"
 	"github.com/vdaas/vald/internal/k8s/vald/mirror/target"
@@ -29,7 +30,6 @@ import (
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/sync/errgroup"
-	"github.com/zeebo/xxh3"
 )
 
 const (
@@ -253,7 +253,7 @@ func (d *discovery) syncWithAddr(ctx context.Context, current map[string]target.
 				log.Error(err)
 				return true
 			}
-			name := resourcePrefix + "-" + strconv.FormatUint(xxh3.HashString(d.selfMirrAddrStr+addr), 10)
+			name := resourcePrefix + "-" + strconv.FormatUint(hash.String(d.selfMirrAddrStr+addr), 10)
 			errs = errors.Join(errs, d.createMirrorTargetResource(ctx, name, host, int(port)))
 		}
 		return true
