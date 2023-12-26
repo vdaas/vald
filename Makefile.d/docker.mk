@@ -180,7 +180,7 @@ docker/name/operator/helm:
 docker/build/operator/helm:
 	@make DOCKERFILE="$(ROOTDIR)/dockers/operator/helm/Dockerfile" \
 		IMAGE=$(HELM_OPERATOR_IMAGE) \
-		EXTRA_ARGS="--build-arg OPERATOR_SDK_VERSION=$(OPERATOR_SDK_VERSION) --build-arg UPX_OPTIONS=$(UPX_OPTIONS)" \
+		EXTRA_ARGS="--build-arg OPERATOR_SDK_VERSION=$(OPERATOR_SDK_VERSION) --build-arg UPX_OPTIONS=$(UPX_OPTIONS) $(EXTRA_ARGS)" \
 		docker/build/image
 
 .PHONY: docker/name/loadtest
