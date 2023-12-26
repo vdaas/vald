@@ -21,7 +21,7 @@
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: index-allow
+  name: {{ $index.name }}-allow
 spec:
   podSelector:
     matchLabels:

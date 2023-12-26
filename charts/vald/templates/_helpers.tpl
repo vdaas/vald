@@ -834,4 +834,17 @@ node_metrics:
   {{- else }}
   fields: {}
   {{- end }}
+service:
+  {{- if .Values.node_metrics.labels }}
+  labels:
+    {{- toYaml .Values.service.labels | nindent 4 }}
+  {{- else }}
+  labels: {}
+  {{- end }}
+  {{- if .Values.service.fields }}
+  fields:
+    {{- toYaml .Values.service.fields | nindent 4 }}
+  {{- else }}
+  fields: {}
+  {{- end }}
 {{- end -}}
