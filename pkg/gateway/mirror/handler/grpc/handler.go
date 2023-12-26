@@ -1140,12 +1140,12 @@ func (s *server) handleInsert(ctx context.Context, req *payload.Insert_Request) 
 	return loc, nil
 }
 
-func (s *server) handleInsertResult(
+func (s *server) handleInsertResult( // skipcq: GO-R1005
 	ctx context.Context,
 	alreadyExistsTgts []string,
 	req *payload.Update_Request,
 	result *sync.Map[string, *errorState],
-) (loc *payload.Object_Location, err error) { // skipcq: GO-R1005
+) (loc *payload.Object_Location, err error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, "handleInsertResult"), apiName+"/handleInsertResult")
 	defer func() {
 		if span != nil {
@@ -1688,12 +1688,12 @@ func (s *server) handleUpdate(ctx context.Context, req *payload.Update_Request) 
 	return loc, nil
 }
 
-func (s *server) handleUpdateResult(
+func (s *server) handleUpdateResult( // skipcq: GO-R1005
 	ctx context.Context,
 	notFoundTgts []string,
 	req *payload.Insert_Request,
 	result *sync.Map[string, *errorState],
-) (loc *payload.Object_Location, err error) { // skipcq: GO-R1005
+) (loc *payload.Object_Location, err error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, "handleUpdateResult"), apiName+"/handleUpdateResult")
 	defer func() {
 		if span != nil {
