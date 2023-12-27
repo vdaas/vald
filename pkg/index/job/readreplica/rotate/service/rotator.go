@@ -114,9 +114,9 @@ func (r *rotator) rotate(ctx context.Context) error {
 		return err
 	}
 
-	newPvc, oldPvc, err := r.createPVC(ctx, newSnap.Name)
+	newPvc, oldPvc, err := r.createPVC(ctx, newSnap.GetName())
 	if err != nil {
-		log.Errorf("failed to create PVC. removing the new snapshot(%v)...", newSnap.Name)
+		log.Errorf("failed to create PVC. removing the new snapshot(%s)...", newSnap.GetName())
 		if dserr := r.deleteSnapshot(ctx, newSnap); dserr != nil {
 			errors.Join(err, dserr)
 		}
@@ -125,7 +125,7 @@ func (r *rotator) rotate(ctx context.Context) error {
 
 	err = r.updateDeployment(ctx, newPvc.GetName())
 	if err != nil {
-		log.Errorf("failed to update Deployment. removing the new snapshot(%v) and pvc(%v)...", newSnap.Name, newPvc.Name)
+		log.Errorf("failed to update Deployment. removing the new snapshot(%s) and pvc(%s)...", newSnap.GetName(), newPvc.GetName())
 		if dperr := r.deletePVC(ctx, newPvc); dperr != nil {
 			errors.Join(err, dperr)
 		}
@@ -280,7 +280,7 @@ func (r *rotator) deleteSnapshot(ctx context.Context, snapshot *snapshotv1.Volum
 				return egctx.Err()
 			case event := <-watcher.ResultChan():
 				if event.Type == client.WatchDeletedEvent {
-					log.Infof("volume snapshot(%v) deleted", snapshot.GetName())
+					log.Infof("volume snapshot(%s) deleted", snapshot.GetName())
 					return nil
 				} else {
 					log.Debugf("watching volume snapshot(%s) events. event: %v", snapshot.GetName(), event.Type)
