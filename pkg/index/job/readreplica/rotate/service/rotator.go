@@ -173,7 +173,7 @@ func (r *rotator) createSnapshot(ctx context.Context) (newSnap, oldSnap *client.
 	}
 
 	log.Infof("creating new snapshot(%s)...", newSnap.GetName())
-	log.Debugf("snapshot detail: %+v", newSnap)
+	log.Debugf("snapshot detail: %#v", newSnap)
 
 	err = r.client.Create(ctx, newSnap)
 	if err != nil {
@@ -218,7 +218,7 @@ func (r *rotator) createPVC(ctx context.Context, newSnapShot string) (newPvc, ol
 	}
 
 	log.Infof("creating new pvc(%s)...", newPvc.GetName())
-	log.Debugf("pvc detail: %+v", newPvc)
+	log.Debugf("pvc detail: %#v", newPvc)
 
 	if err := r.client.Create(ctx, newPvc); err != nil {
 		return nil, nil, fmt.Errorf("failed to create PVC(%s): %w", newPvc.GetName(), err)
@@ -249,7 +249,7 @@ func (r *rotator) updateDeployment(ctx context.Context, newPVC string) error {
 	}
 
 	log.Infof("updating deployment(%s)...", deployment.GetName())
-	log.Debugf("deployment detail: %+v", deployment)
+	log.Debugf("deployment detail: %#v", deployment)
 
 	if err := r.client.Update(ctx, &deployment); err != nil {
 		return fmt.Errorf("failed to update deployment: %w", err)
@@ -273,7 +273,7 @@ func (r *rotator) deleteSnapshot(ctx context.Context, snapshot *snapshotv1.Volum
 	eg, egctx := errgroup.New(ctx)
 	eg.Go(func() error {
 		log.Infof("deleting volume snapshot(%s)...", snapshot.GetName())
-		log.Debugf("volume snapshot detail: %+v", snapshot)
+		log.Debugf("volume snapshot detail: %#v", snapshot)
 		for {
 			select {
 			case <-egctx.Done():
@@ -310,7 +310,7 @@ func (r *rotator) deletePVC(ctx context.Context, pvc *v1.PersistentVolumeClaim) 
 	eg, egctx := errgroup.New(ctx)
 	eg.Go(func() error {
 		log.Infof("deleting PVC(%s)...", pvc.GetName())
-		log.Debugf("PVC detail: %+v", pvc)
+		log.Debugf("PVC detail: %#v", pvc)
 		for {
 			select {
 			case <-egctx.Done():
