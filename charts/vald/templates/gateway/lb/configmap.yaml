@@ -16,8 +16,6 @@
 {{- $gateway := .Values.gateway.lb -}}
 {{- $agent := .Values.agent -}}
 {{- $discoverer := .Values.discoverer -}}
-{{- $readreplica := .Values.agent.readreplica -}}
-{{- $release := .Release -}}
 {{- if $gateway.enabled }}
 apiVersion: v1
 kind: ConfigMap
@@ -51,7 +49,6 @@ data:
       agent_namespace: {{ $gateway.gateway_config.agent_namespace | quote }}
       node_name: {{ $gateway.gateway_config.node_name | quote }}
       index_replica: {{ $gateway.gateway_config.index_replica }}
-      read_replica_replicas: {{ $readreplica.replica }}
       discoverer:
         duration: {{ $gateway.gateway_config.discoverer.duration }}
         client:
@@ -67,20 +64,4 @@ data:
         agent_client_options:
           {{- include "vald.grpc.client.addrs" (dict "Valued" $gateway.gateway_config.discoverer.agent_client_options.addrs) | nindent 10 }}
           {{- include "vald.grpc.client" (dict "Values" $gateway.gateway_config.discoverer.agent_client_options "default" .Values.defaults.grpc.client) | nindent 10 }}
-      {{- if $readreplica.enabled }}
-      read_replica_client:
-        client:
-          {{- $discovererClient := $gateway.gateway_config.discoverer.client }}
-          {{- $readReplicaPort := $agent.server_config.servers.grpc.port }}
-          {{- $defaultReadReplicaPort := default .Values.defaults.server_config.servers.grpc.port $readReplicaPort }}
-          {{- $readReplicaAddrs := list }}
-          {{- range $i := until (int $agent.minReplicas) }}
-            {{- $addr := printf "%s-%d.%s.svc.cluster.local:%d" $readreplica.name $i $release.Namespace (int64 $defaultReadReplicaPort) }}
-            {{- $readReplicaAddrs = append $readReplicaAddrs $addr }}
-          {{- end }}
-          {{- $readReplicaAddrs := dict "Values" $discovererClient.addrs "default" $readReplicaAddrs }}
-          {{- include "vald.grpc.client.addrs" $readReplicaAddrs | nindent 10 }}
-          {{- $readReplicaGRPCclient := dict "Values" $discovererClient "default" .Values.defaults.grpc.client }}
-          {{- include "vald.grpc.client" $readReplicaGRPCclient | nindent 10 }}
-      {{- end }}
 {{- end }}
