@@ -25,7 +25,7 @@ metadata:
     {{ $readreplica.label_key }}: "{{ $id }}"
   name: {{ $readreplica.name }}-snapshot-{{ $id }}
 spec:
-  volumeSnapshotClassName: csi-hostpath-snapclass
+  volumeSnapshotClassName: {{ $readreplica.snapshot_classname }}
   source:
     # Specify the PVCs for which you want to take snapshots
     persistentVolumeClaimName: {{ $agent.name }}-pvc-{{ $agent.name }}-{{ $id }}

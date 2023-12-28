@@ -1656,7 +1656,7 @@ agent:
     snapshot_classname: ""
     # @schema {"name": "agent.readreplica.replica", "type": "integer"}
     # agent.readreplica.replica -- replica number of read replica
-    replica: 2
+    replica: 1
     # @schema {"name": "agent.readreplica.service", "type": "object"}
     # agent.readreplica.service -- service settings for read replica service resources
     service:
