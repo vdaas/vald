@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2009-2023 The Go Authors. All rights resered.
+// Copyright (c) 2009-2024 The Go Authors. All rights resered.
 // Modified by vdaas.org vald team <vald@vdaas.org>
 //
 // Redistribution and use in source and binary forms, with or without
