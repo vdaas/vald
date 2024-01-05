@@ -29,6 +29,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/utils/pointer"
 )
 
 const (
@@ -109,12 +110,20 @@ func (r *rotator) Start(ctx context.Context) error {
 }
 
 func (r *rotator) rotate(ctx context.Context) error {
-	newSnap, oldSnap, err := r.createSnapshot(ctx)
+	// get deployment here to pass to create methods of snapshot and pvc
+	// and put it as owner reference of them so that they will be deleted when the deployment is deleted
+	deployment, err := r.getDeployment(ctx)
+	if err != nil {
+		log.Errorf("failed to get Deployment.")
+		return err
+	}
+
+	newSnap, oldSnap, err := r.createSnapshot(ctx, deployment)
 	if err != nil {
 		return err
 	}
 
-	newPvc, oldPvc, err := r.createPVC(ctx, newSnap.GetName())
+	newPvc, oldPvc, err := r.createPVC(ctx, newSnap.GetName(), deployment)
 	if err != nil {
 		log.Errorf("failed to create PVC. removing the new snapshot(%s)...", newSnap.GetName())
 		if dserr := r.deleteSnapshot(ctx, newSnap); dserr != nil {
@@ -123,7 +132,7 @@ func (r *rotator) rotate(ctx context.Context) error {
 		return err
 	}
 
-	err = r.updateDeployment(ctx, newPvc.GetName())
+	err = r.updateDeployment(ctx, newPvc.GetName(), deployment)
 	if err != nil {
 		log.Errorf("failed to update Deployment. removing the new snapshot(%s) and pvc(%s)...", newSnap.GetName(), newPvc.GetName())
 		if dperr := r.deletePVC(ctx, newPvc); dperr != nil {
@@ -148,7 +157,7 @@ func (r *rotator) rotate(ctx context.Context) error {
 	return nil
 }
 
-func (r *rotator) createSnapshot(ctx context.Context) (newSnap, oldSnap *client.VolumeSnapshot, err error) {
+func (r *rotator) createSnapshot(ctx context.Context, deployment appsv1.Deployment) (newSnap, oldSnap *client.VolumeSnapshot, err error) {
 	list := snapshotv1.VolumeSnapshotList{}
 	if err := r.client.List(ctx, &list, &r.listOpts); err != nil {
 		return nil, nil, fmt.Errorf("failed to get snapshot: %w", err)
@@ -168,6 +177,15 @@ func (r *rotator) createSnapshot(ctx context.Context) (newSnap, oldSnap *client.
 			Name:      fmt.Sprintf("%s%d", newNameBase, time.Now().Unix()),
 			Namespace: cur.GetNamespace(),
 			Labels:    cur.GetObjectMeta().GetLabels(),
+			OwnerReferences: []metav1.OwnerReference{
+				{
+					APIVersion: "apps/v1",
+					Kind:       "Deployment",
+					Name:       deployment.GetName(),
+					UID:        deployment.GetUID(),
+					Controller: pointer.Bool(true),
+				},
+			},
 		},
 		Spec: cur.Spec,
 	}
@@ -183,7 +201,7 @@ func (r *rotator) createSnapshot(ctx context.Context) (newSnap, oldSnap *client.
 	return newSnap, oldSnap, nil
 }
 
-func (r *rotator) createPVC(ctx context.Context, newSnapShot string) (newPvc, oldPvc *v1.PersistentVolumeClaim, err error) {
+func (r *rotator) createPVC(ctx context.Context, newSnapShot string, deployment appsv1.Deployment) (newPvc, oldPvc *v1.PersistentVolumeClaim, err error) {
 	list := v1.PersistentVolumeClaimList{}
 	if err := r.client.List(ctx, &list, &r.listOpts); err != nil {
 		return nil, nil, fmt.Errorf("failed to get PVC: %w", err)
@@ -205,6 +223,15 @@ func (r *rotator) createPVC(ctx context.Context, newSnapShot string) (newPvc, ol
 			Name:      fmt.Sprintf("%s%d", newNameBase, time.Now().Unix()),
 			Namespace: cur.GetNamespace(),
 			Labels:    cur.GetObjectMeta().GetLabels(),
+			OwnerReferences: []metav1.OwnerReference{
+				{
+					APIVersion: "apps/v1",
+					Kind:       "Deployment",
+					Name:       deployment.GetName(),
+					UID:        deployment.GetUID(),
+					Controller: pointer.Bool(true),
+				},
+			},
 		},
 		Spec: v1.PersistentVolumeClaimSpec{
 			AccessModes: cur.Spec.AccessModes,
@@ -227,16 +254,19 @@ func (r *rotator) createPVC(ctx context.Context, newSnapShot string) (newPvc, ol
 	return newPvc, oldPvc, nil
 }
 
-func (r *rotator) updateDeployment(ctx context.Context, newPVC string) error {
+func (r *rotator) getDeployment(ctx context.Context) (appsv1.Deployment, error) {
 	list := appsv1.DeploymentList{}
 	if err := r.client.List(ctx, &list, &r.listOpts); err != nil {
-		return fmt.Errorf("failed to get deployment through client: %w", err)
+		return appsv1.Deployment{}, fmt.Errorf("failed to get deployment through client: %w", err)
 	}
 	if len(list.Items) == 0 {
-		return fmt.Errorf("no deployment found")
+		return appsv1.Deployment{}, fmt.Errorf("no deployment found")
 	}
 
-	deployment := list.Items[0]
+	return list.Items[0], nil
+}
+
+func (r *rotator) updateDeployment(ctx context.Context, newPVC string, deployment appsv1.Deployment) error {
 	if deployment.Spec.Template.ObjectMeta.Annotations == nil {
 		deployment.Spec.Template.ObjectMeta.Annotations = map[string]string{}
 	}
