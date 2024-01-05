@@ -70,6 +70,16 @@ charts/vald-helm-operator/README.md: \
 	charts/vald-helm-operator/values.yaml
 	helm-docs
 
+.PHONY: helm/docs/vald-readreplica
+helm/docs/vald-readreplica: charts/vald-readreplica/README.md
+
+# force to rebuild
+.PHONY: charts/vald-readreplica/README.md
+charts/vald-readreplica/README.md: \
+	charts/vald-readreplica/README.md.gotmpl \
+	charts/vald-readreplica/values.yaml
+	helm-docs
+
 .PHONY: helm/schema/vald
 ## generate json schema for Vald Helm Chart
 helm/schema/vald: charts/vald/values.schema.json

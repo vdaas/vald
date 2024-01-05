@@ -50,6 +50,7 @@ spec:
     app: {{ $readreplica.name }}-{{ $id }}
     app.kubernetes.io/name: {{ $valdname }}
   type: ClusterIP
+  clusterIP: None
   {{- if $agent.externalTrafficPolicy }}
   externalTrafficPolicy: {{ $agent.externalTrafficPolicy }}
   {{- end }}

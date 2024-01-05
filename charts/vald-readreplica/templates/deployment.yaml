@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+{{- $values := .Values -}}
 {{- $agent := .Values.agent -}}
 {{- $readreplica := .Values.agent.readreplica -}}
 {{- $defaults := .Values.defaults -}}
@@ -63,7 +64,7 @@ spec:
       {{- if $agent.initContainers }}
       initContainers:
         {{- if $agent.initContainers }}
-        {{- $initContainers := dict "initContainers" $agent.initContainers "Values" .Values "namespace" .Release.Namespace -}}
+        {{- $initContainers := dict "initContainers" $agent.initContainers "Values" $values "namespace" $release.Namespace -}}
         {{- include "vald.initContainers" $initContainers | trim | nindent 8 }}
         {{- end }}
       {{- end }}
@@ -135,6 +136,9 @@ spec:
         - name: {{ $readreplica.volume_name }}
           persistentVolumeClaim:
             claimName: {{ $readreplica.name }}-pvc-{{ $id }}
+        {{- if $agent.volumes }}
+        {{- toYaml $agent.volumes | nindent 8 }}
+        {{- end }}
       {{- if $agent.nodeName }}
       nodeName: {{ $agent.nodeName }}
       {{- end }}
