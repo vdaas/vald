@@ -157,7 +157,7 @@ func (r *rotator) rotate(ctx context.Context) error {
 	return nil
 }
 
-func (r *rotator) createSnapshot(ctx context.Context, deployment appsv1.Deployment) (newSnap, oldSnap *client.VolumeSnapshot, err error) {
+func (r *rotator) createSnapshot(ctx context.Context, deployment *appsv1.Deployment) (newSnap, oldSnap *client.VolumeSnapshot, err error) {
 	list := snapshotv1.VolumeSnapshotList{}
 	if err := r.client.List(ctx, &list, &r.listOpts); err != nil {
 		return nil, nil, fmt.Errorf("failed to get snapshot: %w", err)
@@ -201,7 +201,7 @@ func (r *rotator) createSnapshot(ctx context.Context, deployment appsv1.Deployme
 	return newSnap, oldSnap, nil
 }
 
-func (r *rotator) createPVC(ctx context.Context, newSnapShot string, deployment appsv1.Deployment) (newPvc, oldPvc *v1.PersistentVolumeClaim, err error) {
+func (r *rotator) createPVC(ctx context.Context, newSnapShot string, deployment *appsv1.Deployment) (newPvc, oldPvc *v1.PersistentVolumeClaim, err error) {
 	list := v1.PersistentVolumeClaimList{}
 	if err := r.client.List(ctx, &list, &r.listOpts); err != nil {
 		return nil, nil, fmt.Errorf("failed to get PVC: %w", err)
@@ -254,19 +254,19 @@ func (r *rotator) createPVC(ctx context.Context, newSnapShot string, deployment 
 	return newPvc, oldPvc, nil
 }
 
-func (r *rotator) getDeployment(ctx context.Context) (appsv1.Deployment, error) {
+func (r *rotator) getDeployment(ctx context.Context) (*appsv1.Deployment, error) {
 	list := appsv1.DeploymentList{}
 	if err := r.client.List(ctx, &list, &r.listOpts); err != nil {
-		return appsv1.Deployment{}, fmt.Errorf("failed to get deployment through client: %w", err)
+		return nil, fmt.Errorf("failed to get deployment through client: %w", err)
 	}
 	if len(list.Items) == 0 {
-		return appsv1.Deployment{}, fmt.Errorf("no deployment found")
+		return nil, fmt.Errorf("no deployment found")
 	}
 
-	return list.Items[0], nil
+	return &list.Items[0], nil
 }
 
-func (r *rotator) updateDeployment(ctx context.Context, newPVC string, deployment appsv1.Deployment) error {
+func (r *rotator) updateDeployment(ctx context.Context, newPVC string, deployment *appsv1.Deployment) error {
 	if deployment.Spec.Template.ObjectMeta.Annotations == nil {
 		deployment.Spec.Template.ObjectMeta.Annotations = map[string]string{}
 	}
@@ -281,7 +281,7 @@ func (r *rotator) updateDeployment(ctx context.Context, newPVC string, deploymen
 	log.Infof("updating deployment(%s)...", deployment.GetName())
 	log.Debugf("deployment detail: %#v", deployment)
 
-	if err := r.client.Update(ctx, &deployment); err != nil {
+	if err := r.client.Update(ctx, deployment); err != nil {
 		return fmt.Errorf("failed to update deployment: %w", err)
 	}
 
