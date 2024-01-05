@@ -24,7 +24,8 @@ Run the following command to install the chart,
 
 ### Overview
 
-[`values.yaml`](https://github.com/vdaas/vald/blob/main/charts/vald-readreplica/values.yaml) of this chart is a symbolic link to the [`values.yaml`](https://github.com/vdaas/vald/blob/main/charts/vald/values.yaml) of the main vald chart
+[`values.yaml`](https://github.com/vdaas/vald/blob/main/charts/vald-readreplica/values.yaml)
+of this chart is a symbolic link to the [`values.yaml`](https://github.com/vdaas/vald/blob/main/charts/vald/values.yaml) of the main vald chart
 because all the configurations must be synced with the main vald cluster.
 So please look at the document of the main vald chart for configurations.
 
