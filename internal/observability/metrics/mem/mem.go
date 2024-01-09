@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -600,13 +600,15 @@ func (mm *memMetrics) Register(m metrics.Meter) error {
 	return m.RegisterCallback(
 		instruments,
 		func(ctx context.Context) {
-			var mstats runtime.MemStats
-			runtime.ReadMemStats(&mstats)
+			metrics := getMemstatsMetrics()
+			if m, err := getProcStatusMetrics(mm.pid); err == nil {
+				metrics = append(metrics, m...)
+			}
 
 			for i, instrument := range instruments {
 				g, ok := instrument.(asyncint64.Gauge)
 				if ok {
-					g.Observe(ctx, mInfo[i].Value())
+					g.Observe(ctx, metrics[i].Value())
 				}
 			}
 		},
