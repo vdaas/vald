@@ -51,13 +51,13 @@ spec:
             {{- include "vald.ingressPort" (dict "Values" $gateway.ingress) | nindent 12 }}
         pathType: {{ $gateway.ingress.pathType }}
       {{- if $lb.enabled }}
-      - path: "/vald.v1.Search/*"
+      - path: "/vald.v1.Search"
         backend:
           service:
             name: {{ $lb.name }}
             {{- include "vald.ingressPort" (dict "Values" $gateway.ingress) | nindent 12 }}
         pathType: {{ $gateway.ingress.pathType }}
-      - path: "/vald.v1.Object/*"
+      - path: "/vald.v1.Object"
         backend:
           service:
             name: {{ $lb.name }}
@@ -65,7 +65,7 @@ spec:
         pathType: {{ $gateway.ingress.pathType }}
       {{- end }}
       {{- if $filter.enabled }}
-      - path: "/vald.v1.Filter/*"
+      - path: "/vald.v1.Filter"
         backend:
           service:
             name: {{ $filter.name }}
