@@ -20,7 +20,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/InfoNodes"
+              "$ref": "#/definitions/v1InfoNodes"
             }
           },
           "default": {
@@ -52,7 +52,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/InfoPods"
+              "$ref": "#/definitions/v1InfoPods"
             }
           },
           "default": {
@@ -84,7 +84,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/InfoServices"
+              "$ref": "#/definitions/v1InfoServices"
             }
           },
           "default": {
@@ -200,25 +200,11 @@
           "description": "The memory information of the node."
         },
         "Pods": {
-          "$ref": "#/definitions/InfoPods",
+          "$ref": "#/definitions/v1InfoPods",
           "description": "The pod information of the node."
         }
       },
       "description": "Represent the node information message."
-    },
-    "InfoNodes": {
-      "type": "object",
-      "properties": {
-        "nodes": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "$ref": "#/definitions/InfoNode"
-          },
-          "description": "The multiple node information."
-        }
-      },
-      "description": "Represent the multiple node information message."
     },
     "InfoPod": {
       "type": "object",
@@ -253,20 +239,6 @@
         }
       },
       "description": "Represent the pod information message."
-    },
-    "InfoPods": {
-      "type": "object",
-      "properties": {
-        "pods": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "$ref": "#/definitions/InfoPod"
-          },
-          "description": "The multiple pod information."
-        }
-      },
-      "description": "Represent the multiple pod information message."
     },
     "InfoService": {
       "type": "object",
@@ -320,20 +292,6 @@
       },
       "description": "Represets the service port information message."
     },
-    "InfoServices": {
-      "type": "object",
-      "properties": {
-        "services": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "$ref": "#/definitions/InfoService"
-          },
-          "description": "The multiple service information."
-        }
-      },
-      "description": "Represent the multiple service information message."
-    },
     "protobufAny": {
       "type": "object",
       "properties": {
@@ -385,6 +343,48 @@
         }
       },
       "description": "Represent the dicoverer request."
+    },
+    "v1InfoNodes": {
+      "type": "object",
+      "properties": {
+        "nodes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/InfoNode"
+          },
+          "description": "The multiple node information."
+        }
+      },
+      "description": "Represent the multiple node information message."
+    },
+    "v1InfoPods": {
+      "type": "object",
+      "properties": {
+        "pods": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/InfoPod"
+          },
+          "description": "The multiple pod information."
+        }
+      },
+      "description": "Represent the multiple pod information message."
+    },
+    "v1InfoServices": {
+      "type": "object",
+      "properties": {
+        "services": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/InfoService"
+          },
+          "description": "The multiple service information."
+        }
+      },
+      "description": "Represent the multiple service information message."
     }
   }
 }
