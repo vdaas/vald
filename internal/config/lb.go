@@ -37,6 +37,12 @@ type LB struct {
 	// IndexReplica represents index replication count
 	IndexReplica int `json:"index_replica" yaml:"index_replica"`
 
+	// ReadReplicaReplicas represents replica count of read replica Deployment
+	ReadReplicaReplicas uint64 `json:"read_replica_replicas" yaml:"read_replica_replicas"`
+
+	// ReadReplicaClient represents read replica client configuration
+	ReadReplicaClient ReadReplicaClient `json:"read_replica_client" yaml:"read_replica_client"`
+
 	// Discoverer represent agent discoverer service configuration
 	Discoverer *DiscovererClient `json:"discoverer" yaml:"discoverer"`
 
@@ -55,4 +61,27 @@ func (g *LB) Bind() *LB {
 		g.Discoverer = g.Discoverer.Bind()
 	}
 	return g
+}
+
+// ReadReplicaClient
+type ReadReplicaClient struct {
+	Duration           string      `json:"duration"             yaml:"duration"`
+	Client             *GRPCClient `json:"client"               yaml:"client"`
+	AgentClientOptions *GRPCClient `json:"agent_client_options" yaml:"agent_client_options"`
+}
+
+// Bind binds the actual data from the ReadReplicaClient receiver field.
+func (d *ReadReplicaClient) Bind() *ReadReplicaClient {
+	d.Duration = GetActualValue(d.Duration)
+	if d.Client != nil {
+		d.Client.Bind()
+	} else {
+		d.Client = newGRPCClientConfig()
+	}
+	if d.AgentClientOptions != nil {
+		d.AgentClientOptions.Bind()
+	} else {
+		d.AgentClientOptions = newGRPCClientConfig()
+	}
+	return d
 }

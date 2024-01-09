@@ -241,6 +241,7 @@ func (r *rotator) createPVC(ctx context.Context, newSnapShot string, deployment 
 				Kind:     cur.Spec.DataSource.Kind,
 				APIGroup: cur.Spec.DataSource.APIGroup,
 			},
+			StorageClassName: cur.Spec.StorageClassName,
 		},
 	}
 

@@ -38,6 +38,7 @@ type Client interface {
 	Start(ctx context.Context) (<-chan error, error)
 	GetAddrs(ctx context.Context) []string
 	GetClient() grpc.Client
+	GetReadClient() grpc.Client
 }
 
 type client struct {
@@ -56,6 +57,10 @@ type client struct {
 	name         string
 	namespace    string
 	nodeName     string
+	// read replica related below
+	readClient          grpc.Client
+	readReplicaReplicas uint64
+	roundRobin          atomic.Uint64
 }
 
 func New(opts ...Option) (d Client, err error) {
@@ -72,6 +77,14 @@ func (c *client) Start(ctx context.Context) (<-chan error, error) {
 	dech, err := c.dscClient.StartConnectionMonitor(ctx)
 	if err != nil {
 		return nil, err
+	}
+
+	var rrech <-chan error
+	if c.readClient != nil {
+		rrech, err = c.readClient.StartConnectionMonitor(ctx)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	ech := make(chan error, 100)
@@ -134,6 +147,7 @@ func (c *client) Start(ctx context.Context) (<-chan error, error) {
 				return finalize()
 			case err = <-dech:
 			case err = <-aech:
+			case err = <-rrech:
 			case <-dt.C:
 				err = c.discover(ctx, ech)
 			}
@@ -170,6 +184,29 @@ func (c *client) GetAddrs(ctx context.Context) (addrs []string) {
 
 func (c *client) GetClient() grpc.Client {
 	return c.client
+}
+
+func (c *client) GetReadClient() grpc.Client {
+	// read replica
+	// 1. primary + svc cluster IP *n でここで比率を見て呼び分ける
+	//    read replicaのreplica数がHPAなどで高速に変動する場合に、実装がシンプルそうなのでこちらが良さそう
+	// 2. primary + ipsで単純にラウンドロビン
+
+	// round robin with c.client and c.readClient everytime it's called
+	// with a ratio of primary + read replica deployment replicas
+	// TODO: is this atomic operation really worth it?
+	var new uint64
+	for {
+		cur := c.roundRobin.Load()
+		new = (cur + 1) % (c.readReplicaReplicas + 1)
+		if c.roundRobin.CompareAndSwap(cur, new) {
+			break
+		}
+	}
+	if new == 0 || c.readClient == nil {
+		return c.client
+	}
+	return c.readClient
 }
 
 func (c *client) connect(ctx context.Context, addr string) (err error) {
