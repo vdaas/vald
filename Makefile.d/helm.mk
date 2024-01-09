@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -68,6 +68,16 @@ helm/docs/vald-helm-operator: charts/vald-helm-operator/README.md
 charts/vald-helm-operator/README.md: \
 	charts/vald-helm-operator/README.md.gotmpl \
 	charts/vald-helm-operator/values.yaml
+	helm-docs
+
+.PHONY: helm/docs/vald-readreplica
+helm/docs/vald-readreplica: charts/vald-readreplica/README.md
+
+# force to rebuild
+.PHONY: charts/vald-readreplica/README.md
+charts/vald-readreplica/README.md: \
+	charts/vald-readreplica/README.md.gotmpl \
+	charts/vald-readreplica/values.yaml
 	helm-docs
 
 .PHONY: helm/schema/vald

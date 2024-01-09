@@ -1,0 +1,3098 @@
+#
+# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# You may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+# @schema {"name": "defaults", "type": "object"}
+# The values in the defaults section will be used for common settings in each component if not specified in its sections.
+defaults:
+  # @schema {"name": "defaults.time_zone", "type": "string"}
+  # defaults.time_zone -- Time zone
+  time_zone: UTC
+  # @schema {"name": "defaults.logging", "type": "object", "anchor": "logging"}
+  logging:
+    # @schema {"name": "defaults.logging.logger", "type": "string", "enum": ["glg", "zap"]}
+    # defaults.logging.logger -- logger name.
+    # currently logger must be `glg` or `zap`.
+    logger: glg
+    # @schema {"name": "defaults.logging.level", "type": "string", "enum": ["debug", "info", "warn", "error", "fatal"]}
+    # defaults.logging.level -- logging level.
+    # logging level must be `debug`, `info`, `warn`, `error` or `fatal`.
+    level: debug
+    # @schema {"name": "defaults.logging.format", "type": "string", "enum": ["raw", "json"]}
+    # defaults.logging.format -- logging format.
+    # logging format must be `raw` or `json`
+    format: raw
+  # @schema {"name": "defaults.image", "type": "object"}
+  image:
+    # @schema {"name": "defaults.image.tag", "type": "string"}
+    # defaults.image.tag -- docker image tag
+    tag: v1.7.10
+  # @schema {"name": "defaults.server_config", "type": "object", "anchor": "server_config"}
+  server_config:
+    # @schema {"name": "defaults.server_config.servers", "type": "object"}
+    servers:
+      # @schema {"name": "defaults.server_config.servers.rest", "type": "object"}
+      rest:
+        # @schema {"name": "defaults.server_config.servers.rest.enabled", "type": "boolean"}
+        # defaults.server_config.servers.rest.enabled -- REST server enabled
+        enabled: false
+        # @schema {"name": "defaults.server_config.servers.rest.host", "type": "string"}
+        # defaults.server_config.servers.rest.host -- REST server host
+        host: 0.0.0.0
+        # @schema {"name": "defaults.server_config.servers.rest.port", "type": "integer", "minimum": 0, "maximum": 65535}
+        # defaults.server_config.servers.rest.port -- REST server port
+        port: 8080
+        # @schema {"name": "defaults.server_config.servers.rest.servicePort", "type": "integer", "minimum": 0, "maximum": 65535}
+        # defaults.server_config.servers.rest.servicePort -- REST server service port
+        servicePort: 8080
+        # @schema {"name": "defaults.server_config.servers.rest.server", "type": "object", "anchor": "rest_server"}
+        server:
+          # @schema {"name": "defaults.server_config.servers.rest.server.mode", "type": "string"}
+          # defaults.server_config.servers.rest.server.mode -- REST server server mode
+          mode: REST
+          # @schema {"name": "defaults.server_config.servers.rest.server.probe_wait_time", "type": "string"}
+          # defaults.server_config.servers.rest.server.probe_wait_time -- REST server probe wait time
+          probe_wait_time: 3s
+          # @schema {"name": "defaults.server_config.servers.rest.server.network", "type": "string", "enum": ["tcp", "tcp4", "tcp6", "udp", "udp4", "udp6", "unix", "unixgram", "unixpacket"]}
+          # defaults.server_config.servers.rest.server.network -- mysql network
+          network: tcp
+          # @schema {"name": "defaults.server_config.servers.rest.server.socket_path", "type": "string"}
+          # defaults.server_config.servers.rest.server.socket_path -- mysql socket_path
+          socket_path: ""
+          # @schema {"name": "defaults.server_config.servers.rest.server.http", "type": "object", "anchor": "http_server_config"}
+          http:
+            # @schema {"name": "defaults.server_config.servers.rest.server.http.shutdown_duration", "type": "string"}
+            # defaults.server_config.servers.rest.server.http.shutdown_duration -- REST server shutdown duration
+            shutdown_duration: 5s
+            # @schema {"name": "defaults.server_config.servers.rest.server.http.handler_timeout", "type": "string"}
+            # defaults.server_config.servers.rest.server.http.handler_timeout -- REST server handler timeout
+            handler_timeout: 5s
+            # @schema {"name": "defaults.server_config.servers.rest.server.http.idle_timeout", "type": "string"}
+            # defaults.server_config.servers.rest.server.http.idle_timeout -- REST server idle timeout
+            idle_timeout: 2s
+            # @schema {"name": "defaults.server_config.servers.rest.server.http.read_header_timeout", "type": "string"}
+            # defaults.server_config.servers.rest.server.http.read_header_timeout -- REST server read header timeout
+            read_header_timeout: 1s
+            # @schema {"name": "defaults.server_config.servers.rest.server.http.read_timeout", "type": "string"}
+            # defaults.server_config.servers.rest.server.http.read_timeout -- REST server read timeout
+            read_timeout: 1s
+            # @schema {"name": "defaults.server_config.servers.rest.server.http.write_timeout", "type": "string"}
+            # defaults.server_config.servers.rest.server.http.write_timeout -- REST server write timeout
+            write_timeout: 1s
+          # @schema {"name": "defaults.server_config.servers.rest.server.socket_option", "type": "object", "anchor": "socket_option"}
+          socket_option:
+            # @schema {"name": "defaults.server_config.servers.rest.server.socket_option.reuse_port", "type": "boolean"}
+            # defaults.server_config.servers.rest.server.socket_option.reuse_port -- server listen socket option for reuse_port functionality
+            reuse_port: true
+            # @schema {"name": "defaults.server_config.servers.rest.server.socket_option.reuse_addr", "type": "boolean"}
+            # defaults.server_config.servers.rest.server.socket_option.reuse_addr -- server listen socket option for reuse_addr functionality
+            reuse_addr: true
+            # @schema {"name": "defaults.server_config.servers.rest.server.socket_option.tcp_fast_open", "type": "boolean"}
+            # defaults.server_config.servers.rest.server.socket_option.tcp_fast_open -- server listen socket option for tcp_fast_open functionality
+            tcp_fast_open: false
+            # @schema {"name": "defaults.server_config.servers.rest.server.socket_option.tcp_no_delay", "type": "boolean"}
+            # defaults.server_config.servers.rest.server.socket_option.tcp_no_delay -- server listen socket option for tcp_no_delay functionality
+            tcp_no_delay: false
+            # @schema {"name": "defaults.server_config.servers.rest.server.socket_option.tcp_cork", "type": "boolean"}
+            # defaults.server_config.servers.rest.server.socket_option.tcp_cork -- server listen socket option for tcp_cork functionality
+            tcp_cork: false
+            # @schema {"name": "defaults.server_config.servers.rest.server.socket_option.tcp_quick_ack", "type": "boolean"}
+            # defaults.server_config.servers.rest.server.socket_option.tcp_quick_ack -- server listen socket option for tcp_quick_ack functionality
+            tcp_quick_ack: false
+            # @schema {"name": "defaults.server_config.servers.rest.server.socket_option.tcp_defer_accept", "type": "boolean"}
+            # defaults.server_config.servers.rest.server.socket_option.tcp_defer_accept -- server listen socket option for tcp_defer_accept functionality
+            tcp_defer_accept: false
+            # @schema {"name": "defaults.server_config.servers.rest.server.socket_option.ip_transparent", "type": "boolean"}
+            # defaults.server_config.servers.rest.server.socket_option.ip_transparent -- server listen socket option for ip_transparent functionality
+            ip_transparent: false
+            # @schema {"name": "defaults.server_config.servers.rest.server.socket_option.ip_recover_destination_addr", "type": "boolean"}
+            # defaults.server_config.servers.rest.server.socket_option.ip_recover_destination_addr -- server listen socket option for ip_recover_destination_addr functionality
+            ip_recover_destination_addr: false
+      # @schema {"name": "defaults.server_config.servers.grpc", "type": "object"}
+      grpc:
+        # @schema {"name": "defaults.server_config.servers.grpc.enabled", "type": "boolean"}
+        # defaults.server_config.servers.grpc.enabled -- gRPC server enabled
+        enabled: true
+        # @schema {"name": "defaults.server_config.servers.grpc.host", "type": "string"}
+        # defaults.server_config.servers.grpc.host -- gRPC server host
+        host: 0.0.0.0
+        # @schema {"name": "defaults.server_config.servers.grpc.port", "type": "integer", "minimum": 0, "maximum": 65535}
+        # defaults.server_config.servers.grpc.port -- gRPC server port
+        port: 8081
+        # @schema {"name": "defaults.server_config.servers.grpc.servicePort", "type": "integer", "minimum": 0, "maximum": 65535}
+        # defaults.server_config.servers.grpc.servicePort -- gRPC server service port
+        servicePort: 8081
+        # @schema {"name": "defaults.server_config.servers.grpc.server", "type": "object", "anchor": "grpc_server"}
+        server:
+          # @schema {"name": "defaults.server_config.servers.grpc.server.mode", "type": "string"}
+          # defaults.server_config.servers.grpc.server.mode -- gRPC server server mode
+          mode: GRPC
+          # @schema {"name": "defaults.server_config.servers.grpc.server.probe_wait_time", "type": "string"}
+          # defaults.server_config.servers.grpc.server.probe_wait_time -- gRPC server probe wait time
+          probe_wait_time: "3s"
+          # @schema {"name": "defaults.server_config.servers.grpc.server.network", "type": "string", "enum": ["tcp", "tcp4", "tcp6", "udp", "udp4", "udp6", "unix", "unixgram", "unixpacket"]}
+          # defaults.server_config.servers.grpc.server.network -- mysql network
+          network: tcp
+          # @schema {"name": "defaults.server_config.servers.grpc.server.socket_path", "type": "string"}
+          # defaults.server_config.servers.grpc.server.socket_path -- mysql socket_path
+          socket_path: ""
+          # @schema {"name": "defaults.server_config.servers.grpc.server.grpc", "type": "object", "anchor": "grpc_server_config"}
+          grpc:
+            # @schema {"name": "defaults.server_config.servers.grpc.server.grpc.bidirectional_stream_concurrency", "type": "integer"}
+            # defaults.server_config.servers.grpc.server.grpc.bidirectional_stream_concurrency -- gRPC server bidirectional stream concurrency
+            bidirectional_stream_concurrency: 20
+            # @schema {"name": "defaults.server_config.servers.grpc.server.grpc.max_receive_message_size", "type": "integer"}
+            # defaults.server_config.servers.grpc.server.grpc.max_receive_message_size -- gRPC server max receive message size
+            max_receive_message_size: 0
+            # @schema {"name": "defaults.server_config.servers.grpc.server.grpc.max_send_message_size", "type": "integer"}
+            # defaults.server_config.servers.grpc.server.grpc.max_send_message_size -- gRPC server max send message size
+            max_send_message_size: 0
+            # @schema {"name": "defaults.server_config.servers.grpc.server.grpc.initial_window_size", "type": "integer"}
+            # defaults.server_config.servers.grpc.server.grpc.initial_window_size -- gRPC server initial window size
+            initial_window_size: 1048576
+            # @schema {"name": "defaults.server_config.servers.grpc.server.grpc.initial_conn_window_size", "type": "integer"}
+            # defaults.server_config.servers.grpc.server.grpc.initial_conn_window_size -- gRPC server initial connection window size
+            initial_conn_window_size: 2097152
+            # @schema {"name": "defaults.server_config.servers.grpc.server.grpc.keepalive", "type": "object"}
+            keepalive:
+              # @schema {"name": "defaults.server_config.servers.grpc.server.grpc.keepalive.max_conn_idle", "type": "string"}
+              # defaults.server_config.servers.grpc.server.grpc.keepalive.max_conn_idle -- gRPC server keep alive max connection idle
+              max_conn_idle: ""
+              # @schema {"name": "defaults.server_config.servers.grpc.server.grpc.keepalive.max_conn_age", "type": "string"}
+              # defaults.server_config.servers.grpc.server.grpc.keepalive.max_conn_age -- gRPC server keep alive max connection age
+              max_conn_age: ""
+              # @schema {"name": "defaults.server_config.servers.grpc.server.grpc.keepalive.max_conn_age_grace", "type": "string"}
+              # defaults.server_config.servers.grpc.server.grpc.keepalive.max_conn_age_grace -- gRPC server keep alive max connection age grace
+              max_conn_age_grace: ""
+              # @schema {"name": "defaults.server_config.servers.grpc.server.grpc.keepalive.time", "type": "string"}
+              # defaults.server_config.servers.grpc.server.grpc.keepalive.time -- gRPC server keep alive time
+              time: "3h"
+              # @schema {"name": "defaults.server_config.servers.grpc.server.grpc.keepalive.timeout", "type": "string"}
+              # defaults.server_config.servers.grpc.server.grpc.keepalive.timeout -- gRPC server keep alive timeout
+              timeout: "60s"
+              # @schema {"name": "defaults.server_config.servers.grpc.server.grpc.keepalive.min_time", "type": "string"}
+              # defaults.server_config.servers.grpc.server.grpc.keepalive.min_time -- gRPC server keep alive min_time
+              min_time: "10m"
+              # @schema {"name": "defaults.server_config.servers.grpc.server.grpc.keepalive.permit_without_stream", "type": "boolean"}
+              # defaults.server_config.servers.grpc.server.grpc.keepalive.permit_without_stream -- gRPC server keep alive permit_without_stream
+              permit_without_stream: false
+            # @schema {"name": "defaults.server_config.servers.grpc.server.grpc.write_buffer_size", "type": "integer"}
+            # defaults.server_config.servers.grpc.server.grpc.write_buffer_size -- gRPC server write buffer size
+            write_buffer_size: 0
+            # @schema {"name": "defaults.server_config.servers.grpc.server.grpc.read_buffer_size", "type": "integer"}
+            # defaults.server_config.servers.grpc.server.grpc.read_buffer_size -- gRPC server read buffer size
+            read_buffer_size: 0
+            # @schema {"name": "defaults.server_config.servers.grpc.server.grpc.connection_timeout", "type": "string"}
+            # defaults.server_config.servers.grpc.server.grpc.connection_timeout -- gRPC server connection timeout
+            connection_timeout: ""
+            # @schema {"name": "defaults.server_config.servers.grpc.server.grpc.max_header_list_size", "type": "integer"}
+            # defaults.server_config.servers.grpc.server.grpc.max_header_list_size -- gRPC server max header list size
+            max_header_list_size: 0
+            # @schema {"name": "defaults.server_config.servers.grpc.server.grpc.header_table_size", "type": "integer"}
+            # defaults.server_config.servers.grpc.server.grpc.header_table_size -- gRPC server header table size
+            header_table_size: 0
+            # @schema {"name": "defaults.server_config.servers.grpc.server.grpc.interceptors", "type": "array", "items": {"type": "string", "enum": ["RecoverInterceptor", "AccessLogInterceptor", "TraceInterceptor", "MetricInterceptor"]}}
+            # defaults.server_config.servers.grpc.server.grpc.interceptors -- gRPC server interceptors
+            interceptors:
+              - "RecoverInterceptor"
+            # @schema {"name": "defaults.server_config.servers.grpc.server.grpc.enable_reflection", "type": "boolean"}
+            # defaults.server_config.servers.grpc.server.grpc.enable_reflection -- gRPC server reflection option
+            enable_reflection: true
+          # @schema {"name": "defaults.server_config.servers.grpc.server.socket_option", "alias": "socket_option"}
+          socket_option:
+            # defaults.server_config.servers.grpc.server.socket_option.reuse_port -- server listen socket option for reuse_port functionality
+            reuse_port: true
+            # defaults.server_config.servers.grpc.server.socket_option.reuse_addr -- server listen socket option for reuse_addr functionality
+            reuse_addr: true
+            # defaults.server_config.servers.grpc.server.socket_option.tcp_fast_open -- server listen socket option for tcp_fast_open functionality
+            tcp_fast_open: false
+            # defaults.server_config.servers.grpc.server.socket_option.tcp_no_delay -- server listen socket option for tcp_no_delay functionality
+            tcp_no_delay: false
+            # defaults.server_config.servers.grpc.server.socket_option.tcp_cork -- server listen socket option for tcp_cork functionality
+            tcp_cork: false
+            # defaults.server_config.servers.grpc.server.socket_option.tcp_quick_ack -- server listen socket option for tcp_quick_ack functionality
+            tcp_quick_ack: false
+            # defaults.server_config.servers.grpc.server.socket_option.tcp_defer_accept -- server listen socket option for tcp_defer_accept functionality
+            tcp_defer_accept: false
+            # defaults.server_config.servers.grpc.server.socket_option.ip_transparent -- server listen socket option for ip_transparent functionality
+            ip_transparent: false
+            # defaults.server_config.servers.grpc.server.socket_option.ip_recover_destination_addr -- server listen socket option for ip_recover_destination_addr functionality
+            ip_recover_destination_addr: false
+          # @schema {"name": "defaults.server_config.servers.grpc.server.restart", "type": "boolean"}
+          # defaults.server_config.servers.grpc.server.restart -- gRPC server restart
+          restart: true
+    # @schema {"name": "defaults.server_config.healths", "type": "object"}
+    healths:
+      # @schema {"name": "defaults.server_config.healths.startup", "type": "object"}
+      startup:
+        # @schema {"name": "defaults.server_config.healths.startup.enabled", "type": "boolean"}
+        # defaults.server_config.healths.startup.enabled -- startup server enabled
+        enabled: true
+        # @schema {"name": "defaults.server_config.healths.startup.port", "type": "integer", "minimum": 0, "maximum": 65535}
+        # defaults.server_config.healths.startup.port -- startup server port
+        port: 3000
+        # @schema {"name": "defaults.server_config.healths.startup.startupProbe", "type": "object"}
+        startupProbe:
+          # @schema {"name": "defaults.server_config.healths.startup.startupProbe.httpGet", "type": "object"}
+          httpGet:
+            # @schema {"name": "defaults.server_config.healths.startup.startupProbe.httpGet.path", "type": "string"}
+            # defaults.server_config.healths.startup.startupProbe.httpGet.path -- startup probe path
+            path: /liveness
+            # @schema {"name": "defaults.server_config.healths.startup.startupProbe.httpGet.port", "type": "string"}
+            # defaults.server_config.healths.startup.startupProbe.httpGet.port -- startup probe port
+            port: liveness
+            # @schema {"name": "defaults.server_config.healths.startup.startupProbe.httpGet.scheme", "type": "string"}
+            # defaults.server_config.healths.startup.startupProbe.httpGet.scheme -- startup probe scheme
+            scheme: HTTP
+          # @schema {"name": "defaults.server_config.healths.startup.startupProbe.initialDelaySeconds", "type": "integer"}
+          # defaults.server_config.healths.startup.startupProbe.initialDelaySeconds -- startup probe initial delay seconds
+          initialDelaySeconds: 5
+          # @schema {"name": "defaults.server_config.healths.startup.startupProbe.timeoutSeconds", "type": "integer"}
+          # defaults.server_config.healths.startup.startupProbe.timeoutSeconds -- startup probe timeout seconds
+          timeoutSeconds: 2
+          # @schema {"name": "defaults.server_config.healths.startup.startupProbe.successThreshold", "type": "integer"}
+          # defaults.server_config.healths.startup.startupProbe.successThreshold -- startup probe success threshold
+          successThreshold: 1
+          # @schema {"name": "defaults.server_config.healths.startup.startupProbe.failureThreshold", "type": "integer"}
+          # defaults.server_config.healths.startup.startupProbe.failureThreshold -- startup probe failure threshold
+          failureThreshold: 30
+          # @schema {"name": "defaults.server_config.healths.startup.startupProbe.periodSeconds", "type": "integer"}
+          # defaults.server_config.healths.startup.startupProbe.periodSeconds -- startup probe period seconds
+          periodSeconds: 5
+      # @schema {"name": "defaults.server_config.healths.liveness", "type": "object"}
+      liveness:
+        # @schema {"name": "defaults.server_config.healths.liveness.enabled", "type": "boolean"}
+        # defaults.server_config.healths.liveness.enabled -- liveness server enabled
+        enabled: true
+        # @schema {"name": "defaults.server_config.healths.liveness.host", "type": "string"}
+        # defaults.server_config.healths.liveness.host -- liveness server host
+        host: 0.0.0.0
+        # @schema {"name": "defaults.server_config.healths.liveness.port", "type": "integer", "minimum": 0, "maximum": 65535}
+        # defaults.server_config.healths.liveness.port -- liveness server port
+        port: 3000
+        # @schema {"name": "defaults.server_config.healths.liveness.servicePort", "type": "integer", "minimum": 0, "maximum": 65535}
+        # defaults.server_config.healths.liveness.servicePort -- liveness server service port
+        servicePort: 3000
+        # @schema {"name": "defaults.server_config.healths.liveness.livenessProbe", "type": "object"}
+        livenessProbe:
+          # @schema {"name": "defaults.server_config.healths.liveness.livenessProbe.httpGet", "type": "object"}
+          httpGet:
+            # @schema {"name": "defaults.server_config.healths.liveness.livenessProbe.httpGet.path", "type": "string"}
+            # defaults.server_config.healths.liveness.livenessProbe.httpGet.path -- liveness probe path
+            path: /liveness
+            # @schema {"name": "defaults.server_config.healths.liveness.livenessProbe.httpGet.port", "type": "string"}
+            # defaults.server_config.healths.liveness.livenessProbe.httpGet.port -- liveness probe port
+            port: liveness
+            # @schema {"name": "defaults.server_config.healths.liveness.livenessProbe.httpGet.scheme", "type": "string"}
+            # defaults.server_config.healths.liveness.livenessProbe.httpGet.scheme -- liveness probe scheme
+            scheme: HTTP
+          # @schema {"name": "defaults.server_config.healths.liveness.livenessProbe.initialDelaySeconds", "type": "integer"}
+          # defaults.server_config.healths.liveness.livenessProbe.initialDelaySeconds -- liveness probe initial delay seconds
+          initialDelaySeconds: 5
+          # @schema {"name": "defaults.server_config.healths.liveness.livenessProbe.timeoutSeconds", "type": "integer"}
+          # defaults.server_config.healths.liveness.livenessProbe.timeoutSeconds -- liveness probe timeout seconds
+          timeoutSeconds: 2
+          # @schema {"name": "defaults.server_config.healths.liveness.livenessProbe.successThreshold", "type": "integer"}
+          # defaults.server_config.healths.liveness.livenessProbe.successThreshold -- liveness probe success threshold
+          successThreshold: 1
+          # @schema {"name": "defaults.server_config.healths.liveness.livenessProbe.failureThreshold", "type": "integer"}
+          # defaults.server_config.healths.liveness.livenessProbe.failureThreshold -- liveness probe failure threshold
+          failureThreshold: 2
+          # @schema {"name": "defaults.server_config.healths.liveness.livenessProbe.periodSeconds", "type": "integer"}
+          # defaults.server_config.healths.liveness.livenessProbe.periodSeconds -- liveness probe period seconds
+          periodSeconds: 3
+        # @schema {"name": "defaults.server_config.healths.liveness.server", "type": "object", "alias": "rest_server"}
+        server:
+          # @schema {"name": "defaults.server_config.healths.liveness.server.mode", "type": "string"}
+          # defaults.server_config.healths.liveness.server.mode -- liveness server mode
+          mode: ""
+          # @schema {"name": "defaults.server_config.healths.liveness.server.probe_wait_time", "type": "string"}
+          # defaults.server_config.healths.liveness.server.probe_wait_time -- liveness server probe wait time
+          probe_wait_time: "3s"
+          # @schema {"name": "defaults.server_config.healths.liveness.server.network", "type": "string", "enum": ["tcp", "tcp4", "tcp6", "udp", "udp4", "udp6", "unix", "unixgram", "unixpacket"]}
+          # defaults.server_config.healths.liveness.server.network -- mysql network
+          network: tcp
+          # @schema {"name": "defaults.server_config.healths.liveness.server.socket_path", "type": "string"}
+          # defaults.server_config.healths.liveness.server.socket_path -- mysql socket_path
+          socket_path: ""
+          # @schema {"name": "defaults.server_config.healths.liveness.server.http", "type": "object", "alias": "http_server_config"}
+          http:
+            # @schema {"name": "defaults.server_config.healths.liveness.server.http.shutdown_duration", "type": "string"}
+            # defaults.server_config.healths.liveness.server.http.shutdown_duration -- liveness server shutdown duration
+            shutdown_duration: "5s"
+            # @schema {"name": "defaults.server_config.healths.liveness.server.http.handler_timeout", "type": "string"}
+            # defaults.server_config.healths.liveness.server.http.handler_timeout -- liveness server handler timeout
+            handler_timeout: ""
+            # @schema {"name": "defaults.server_config.healths.liveness.server.http.idle_timeout", "type": "string"}
+            # defaults.server_config.healths.liveness.server.http.idle_timeout -- liveness server idle timeout
+            idle_timeout: ""
+            # @schema {"name": "defaults.server_config.healths.liveness.server.http.read_header_timeout", "type": "string"}
+            # defaults.server_config.healths.liveness.server.http.read_header_timeout -- liveness server read header timeout
+            read_header_timeout: ""
+            # @schema {"name": "defaults.server_config.healths.liveness.server.http.read_timeout", "type": "string"}
+            # defaults.server_config.healths.liveness.server.http.read_timeout -- liveness server read timeout
+            read_timeout: ""
+            # @schema {"name": "defaults.server_config.healths.liveness.server.http.write_timeout", "type": "string"}
+            # defaults.server_config.healths.liveness.server.http.write_timeout -- liveness server write timeout
+            write_timeout: ""
+          # @schema {"name": "defaults.server_config.healths.liveness.server.socket_option", "alias": "socket_option"}
+          socket_option:
+            # defaults.server_config.healths.liveness.server.socket_option.reuse_port -- server listen socket option for reuse_port functionality
+            reuse_port: true
+            # defaults.server_config.healths.liveness.server.socket_option.reuse_addr -- server listen socket option for reuse_addr functionality
+            reuse_addr: true
+            # defaults.server_config.healths.liveness.server.socket_option.tcp_fast_open -- server listen socket option for tcp_fast_open functionality
+            tcp_fast_open: true
+            # defaults.server_config.healths.liveness.server.socket_option.tcp_no_delay -- server listen socket option for tcp_no_delay functionality
+            tcp_no_delay: true
+            # defaults.server_config.healths.liveness.server.socket_option.tcp_cork -- server listen socket option for tcp_cork functionality
+            tcp_cork: false
+            # defaults.server_config.healths.liveness.server.socket_option.tcp_quick_ack -- server listen socket option for tcp_quick_ack functionality
+            tcp_quick_ack: true
+            # defaults.server_config.healths.liveness.server.socket_option.tcp_defer_accept -- server listen socket option for tcp_defer_accept functionality
+            tcp_defer_accept: false
+            # defaults.server_config.healths.liveness.server.socket_option.ip_transparent -- server listen socket option for ip_transparent functionality
+            ip_transparent: false
+            # defaults.server_config.healths.liveness.server.socket_option.ip_recover_destination_addr -- server listen socket option for ip_recover_destination_addr functionality
+            ip_recover_destination_addr: false
+      # @schema {"name": "defaults.server_config.healths.readiness", "type": "object"}
+      readiness:
+        # @schema {"name": "defaults.server_config.healths.readiness.enabled", "type": "boolean"}
+        # defaults.server_config.healths.readiness.enabled -- readiness server enabled
+        enabled: true
+        # @schema {"name": "defaults.server_config.healths.readiness.host", "type": "string"}
+        # defaults.server_config.healths.readiness.host -- readiness server host
+        host: 0.0.0.0
+        # @schema {"name": "defaults.server_config.healths.readiness.port", "type": "integer", "minimum": 0, "maximum": 65535}
+        # defaults.server_config.healths.readiness.port -- readiness server port
+        port: 3001
+        # @schema {"name": "defaults.server_config.healths.readiness.servicePort", "type": "integer", "minimum": 0, "maximum": 65535}
+        # defaults.server_config.healths.readiness.servicePort -- readiness server service port
+        servicePort: 3001
+        # @schema {"name": "defaults.server_config.healths.readiness.readinessProbe", "type": "object"}
+        readinessProbe:
+          # @schema {"name": "defaults.server_config.healths.readiness.readinessProbe.httpGet", "type": "object"}
+          httpGet:
+            # @schema {"name": "defaults.server_config.healths.readiness.readinessProbe.httpGet.path", "type": "string"}
+            # defaults.server_config.healths.readiness.readinessProbe.httpGet.path -- readiness probe path
+            path: /readiness
+            # @schema {"name": "defaults.server_config.healths.readiness.readinessProbe.httpGet.port", "type": "string"}
+            # defaults.server_config.healths.readiness.readinessProbe.httpGet.port -- readiness probe port
+            port: readiness
+            # @schema {"name": "defaults.server_config.healths.readiness.readinessProbe.httpGet.scheme", "type": "string"}
+            # defaults.server_config.healths.readiness.readinessProbe.httpGet.scheme -- readiness probe scheme
+            scheme: HTTP
+          # @schema {"name": "defaults.server_config.healths.readiness.readinessProbe.initialDelaySeconds", "type": "integer"}
+          # defaults.server_config.healths.readiness.readinessProbe.initialDelaySeconds -- readiness probe initial delay seconds
+          initialDelaySeconds: 10
+          # @schema {"name": "defaults.server_config.healths.readiness.readinessProbe.timeoutSeconds", "type": "integer"}
+          # defaults.server_config.healths.readiness.readinessProbe.timeoutSeconds -- readiness probe timeout seconds
+          timeoutSeconds: 2
+          # @schema {"name": "defaults.server_config.healths.readiness.readinessProbe.successThreshold", "type": "integer"}
+          # defaults.server_config.healths.readiness.readinessProbe.successThreshold -- readiness probe success threshold
+          successThreshold: 1
+          # @schema {"name": "defaults.server_config.healths.readiness.readinessProbe.failureThreshold", "type": "integer"}
+          # defaults.server_config.healths.readiness.readinessProbe.failureThreshold -- readiness probe failure threshold
+          failureThreshold: 2
+          # @schema {"name": "defaults.server_config.healths.readiness.readinessProbe.periodSeconds", "type": "integer"}
+          # defaults.server_config.healths.readiness.readinessProbe.periodSeconds -- readiness probe period seconds
+          periodSeconds: 3
+        # @schema {"name": "defaults.server_config.healths.readiness.server", "type": "object", "alias": "rest_server"}
+        server:
+          # @schema {"name": "defaults.server_config.healths.readiness.server.mode", "type": "string"}
+          # defaults.server_config.healths.readiness.server.mode -- readiness server mode
+          mode: ""
+          # @schema {"name": "defaults.server_config.healths.readiness.server.probe_wait_time", "type": "string"}
+          # defaults.server_config.healths.readiness.server.probe_wait_time -- readiness server probe wait time
+          probe_wait_time: "3s"
+          # @schema {"name": "defaults.server_config.healths.readiness.server.network", "type": "string", "enum": ["tcp", "tcp4", "tcp6", "udp", "udp4", "udp6", "unix", "unixgram", "unixpacket"]}
+          # defaults.server_config.healths.readiness.server.network -- mysql network
+          network: tcp
+          # @schema {"name": "defaults.server_config.healths.readiness.server.socket_path", "type": "string"}
+          # defaults.server_config.healths.readiness.server.socket_path -- mysql socket_path
+          socket_path: ""
+          # @schema {"name": "defaults.server_config.healths.readiness.server.http", "type": "object", "alias": "http_server_config"}
+          http:
+            # @schema {"name": "defaults.server_config.healths.readiness.server.http.shutdown_duration", "type": "string"}
+            # defaults.server_config.healths.readiness.server.http.shutdown_duration -- readiness server shutdown duration
+            shutdown_duration: "0s"
+            # @schema {"name": "defaults.server_config.healths.readiness.server.http.handler_timeout", "type": "string"}
+            # defaults.server_config.healths.readiness.server.http.handler_timeout -- readiness server handler timeout
+            handler_timeout: ""
+            # @schema {"name": "defaults.server_config.healths.readiness.server.http.idle_timeout", "type": "string"}
+            # defaults.server_config.healths.readiness.server.http.idle_timeout -- readiness server idle timeout
+            idle_timeout: ""
+            # @schema {"name": "defaults.server_config.healths.readiness.server.http.read_header_timeout", "type": "string"}
+            # defaults.server_config.healths.readiness.server.http.read_header_timeout -- readiness server read header timeout
+            read_header_timeout: ""
+            # @schema {"name": "defaults.server_config.healths.readiness.server.http.read_timeout", "type": "string"}
+            # defaults.server_config.healths.readiness.server.http.read_timeout -- readiness server read timeout
+            read_timeout: ""
+            # @schema {"name": "defaults.server_config.healths.readiness.server.http.write_timeout", "type": "string"}
+            # defaults.server_config.healths.readiness.server.http.write_timeout -- readiness server write timeout
+            write_timeout: ""
+          # @schema {"name": "defaults.server_config.healths.readiness.server.socket_option", "alias": "socket_option"}
+          socket_option:
+            # defaults.server_config.healths.readiness.server.socket_option.reuse_port -- server listen socket option for reuse_port functionality
+            reuse_port: true
+            # defaults.server_config.healths.readiness.server.socket_option.reuse_addr -- server listen socket option for reuse_addr functionality
+            reuse_addr: true
+            # defaults.server_config.healths.readiness.server.socket_option.tcp_fast_oepn -- server listen socket option for tcp_fast_open functionality
+            tcp_fast_open: true
+            # defaults.server_config.healths.readiness.server.socket_option.tcp_no_delay -- server listen socket option for tcp_no_delay functionality
+            tcp_no_delay: true
+            # defaults.server_config.healths.readiness.server.socket_option.tcp_cork -- server listen socket option for tcp_cork functionality
+            tcp_cork: false
+            # defaults.server_config.healths.readiness.server.socket_option.tcp_quick_ack -- server listen socket option for tcp_quick_ack functionality
+            tcp_quick_ack: true
+            # defaults.server_config.healths.readiness.server.socket_option.tcp_defer_accept -- server listen socket option for tcp_defer_accept functionality
+            tcp_defer_accept: false
+            # defaults.server_config.healths.readiness.server.socket_option.ip_transparent -- server listen socket option for ip_transparent functionality
+            ip_transparent: false
+            # defaults.server_config.healths.readiness.server.socket_option.ip_recover_destination_addr -- server listen socket option for ip_recover_destination_addr functionality
+            ip_recover_destination_addr: false
+    # @schema {"name": "defaults.server_config.metrics", "type": "object"}
+    metrics:
+      # @schema {"name": "defaults.server_config.metrics.pprof", "type": "object"}
+      pprof:
+        # @schema {"name": "defaults.server_config.metrics.pprof.enabled", "type": "boolean"}
+        # defaults.server_config.metrics.pprof.enabled -- pprof server enabled
+        enabled: false
+        # @schema {"name": "defaults.server_config.metrics.pprof.host", "type": "string"}
+        # defaults.server_config.metrics.pprof.host -- pprof server host
+        host: 0.0.0.0
+        # @schema {"name": "defaults.server_config.metrics.pprof.port", "type": "integer", "minimum": 0, "maximum": 65535}
+        # defaults.server_config.metrics.pprof.port -- pprof server port
+        port: 6060
+        # @schema {"name": "defaults.server_config.metrics.pprof.servicePort", "type": "integer", "minimum": 0, "maximum": 65535}
+        # defaults.server_config.metrics.pprof.servicePort -- pprof server service port
+        servicePort: 6060
+        # @schema {"name": "defaults.server_config.metrics.pprof.server", "type": "object", "alias": "rest_server"}
+        server:
+          # @schema {"name": "defaults.server_config.metrics.pprof.server.mode", "type": "string"}
+          # defaults.server_config.metrics.pprof.server.mode -- pprof server mode
+          mode: REST
+          # @schema {"name": "defaults.server_config.metrics.pprof.server.probe_wait_time", "type": "string"}
+          # defaults.server_config.metrics.pprof.server.probe_wait_time -- pprof server probe wait time
+          probe_wait_time: 3s
+          # @schema {"name": "defaults.server_config.metrics.pprof.server.network", "type": "string", "enum": ["tcp", "tcp4", "tcp6", "udp", "udp4", "udp6", "unix", "unixgram", "unixpacket"]}
+          # defaults.server_config.metrics.pprof.server.network -- mysql network
+          network: tcp
+          # @schema {"name": "defaults.server_config.metrics.pprof.server.socket_path", "type": "string"}
+          # defaults.server_config.metrics.pprof.server.socket_path -- mysql socket_path
+          socket_path: ""
+          # @schema {"name": "defaults.server_config.metrics.pprof.server.http", "type": "object", "alias": "http_server_config"}
+          http:
+            # @schema {"name": "defaults.server_config.metrics.pprof.server.http.shutdown_duration", "type": "string"}
+            # defaults.server_config.metrics.pprof.server.http.shutdown_duration -- pprof server shutdown duration
+            shutdown_duration: 5s
+            # @schema {"name": "defaults.server_config.metrics.pprof.server.http.handler_timeout", "type": "string"}
+            # defaults.server_config.metrics.pprof.server.http.handler_timeout -- pprof server handler timeout
+            handler_timeout: 5s
+            # @schema {"name": "defaults.server_config.metrics.pprof.server.http.idle_timeout", "type": "string"}
+            # defaults.server_config.metrics.pprof.server.http.idle_timeout -- pprof server idle timeout
+            idle_timeout: 2s
+            # @schema {"name": "defaults.server_config.metrics.pprof.server.http.read_header_timeout", "type": "string"}
+            # defaults.server_config.metrics.pprof.server.http.read_header_timeout -- pprof server read header timeout
+            read_header_timeout: 1s
+            # @schema {"name": "defaults.server_config.metrics.pprof.server.http.read_timeout", "type": "string"}
+            # defaults.server_config.metrics.pprof.server.http.read_timeout -- pprof server read timeout
+            read_timeout: 1s
+            # @schema {"name": "defaults.server_config.metrics.pprof.server.http.write_timeout", "type": "string"}
+            # defaults.server_config.metrics.pprof.server.http.write_timeout -- pprof server write timeout
+            write_timeout: 1m
+          # @schema {"name": "defaults.server_config.metrics.pprof.server.socket_option", "alias": "socket_option"}
+          socket_option:
+            # defaults.server_config.metrics.pprof.server.socket_option.reuse_port -- server listen socket option for reuse_port functionality
+            reuse_port: true
+            # defaults.server_config.metrics.pprof.server.socket_option.reuse_addr -- server listen socket option for reuse_addr functionality
+            reuse_addr: true
+            # defaults.server_config.metrics.pprof.server.socket_option.tcp_fast_open -- server listen socket option for tcp_fast_open functionality
+            tcp_fast_open: false
+            # defaults.server_config.metrics.pprof.server.socket_option.tcp_no_delay -- server listen socket option for tcp_no_delay functionality
+            tcp_no_delay: false
+            # defaults.server_config.metrics.pprof.server.socket_option.tcp_cork -- server listen socket option for tcp_cork functionality
+            tcp_cork: true
+            # defaults.server_config.metrics.pprof.server.socket_option.tcp_quick_ack -- server listen socket option for tcp_quick_ack functionality
+            tcp_quick_ack: false
+            # defaults.server_config.metrics.pprof.server.socket_option.tcp_defer_accept -- server listen socket option for tcp_defer_accept functionality
+            tcp_defer_accept: false
+            # defaults.server_config.metrics.pprof.server.socket_option.ip_transparent -- server listen socket option for ip_transparent functionality
+            ip_transparent: false
+            # defaults.server_config.metrics.pprof.server.socket_option.ip_recover_destination_addr -- server listen socket option for ip_recover_destination_addr functionality
+            ip_recover_destination_addr: false
+    # @schema {"name": "defaults.server_config.full_shutdown_duration", "type": "string"}
+    # defaults.server_config.full_shutdown_duration -- server full shutdown duration
+    full_shutdown_duration: 600s
+    # @schema {"name": "defaults.server_config.tls", "type": "object", "anchor": "tls"}
+    tls:
+      # @schema {"name": "defaults.server_config.tls.enabled", "type": "boolean"}
+      # defaults.server_config.tls.enabled -- TLS enabled
+      enabled: false
+      # @schema {"name": "defaults.server_config.tls.cert", "type": "string"}
+      # defaults.server_config.tls.cert -- TLS cert path
+      cert: /path/to/cert
+      # @schema {"name": "defaults.server_config.tls.key", "type": "string"}
+      # defaults.server_config.tls.key -- TLS key path
+      key: /path/to/key
+      # @schema {"name": "defaults.server_config.tls.ca", "type": "string"}
+      # defaults.server_config.tls.ca -- TLS ca path
+      ca: /path/to/ca
+      # @schema {"name": "defaults.server_config.tls.insecure_skip_verify", "type": "boolean"}
+      # defaults.server_config.tls.insecure_skip_verify -- enable/disable skip SSL certificate verification
+      insecure_skip_verify: false
+  # @schema {"name": "defaults.grpc", "type": "object"}
+  grpc:
+    # @schema {"name": "defaults.grpc.client", "type": "object", "anchor": "grpc.client"}
+    client:
+      # @schema {"name": "defaults.grpc.client.addrs", "type": "array", "items": {"type": "string"}}
+      # defaults.grpc.client.addrs -- gRPC client addresses
+      addrs: []
+      # @schema {"name": "defaults.grpc.client.health_check_duration", "type": "string"}
+      # defaults.grpc.client.health_check_duration -- gRPC client health check duration
+      health_check_duration: "1s"
+      # @schema {"name": "defaults.grpc.client.connection_pool", "type": "object"}
+      connection_pool:
+        # @schema {"name": "defaults.grpc.client.connection_pool.enable_dns_resolver", "type": "boolean"}
+        # defaults.grpc.client.connection_pool.enable_dns_resolver -- enables gRPC client connection pool dns resolver, when enabled vald uses ip handshake exclude dns discovery which improves network performance
+        enable_dns_resolver: true
+        # @schema {"name": "defaults.grpc.client.connection_pool.enable_rebalance", "type": "boolean"}
+        # defaults.grpc.client.connection_pool.enable_rebalance -- enables gRPC client connection pool rebalance
+        enable_rebalance: true
+        # @schema {"name": "defaults.grpc.client.connection_pool.rebalance_duration", "type": "string"}
+        # defaults.grpc.client.connection_pool.rebalance_duration -- gRPC client connection pool rebalance duration
+        rebalance_duration: 30m
+        # @schema {"name": "defaults.grpc.client.connection_pool.size", "type": "integer"}
+        # defaults.grpc.client.connection_pool.size -- gRPC client connection pool size
+        size: 3
+        # @schema {"name": "defaults.grpc.client.connection_pool.old_conn_close_duration", "type": "string"}
+        # defaults.grpc.client.connection_pool.old_conn_close_duration -- makes delay before gRPC client connection closing during connection pool rebalance
+        old_conn_close_duration: "2m"
+      # @schema {"name": "defaults.grpc.client.backoff", "type": "object", "anchor": "backoff"}
+      backoff:
+        # @schema {"name": "defaults.grpc.client.backoff.initial_duration", "type": "string"}
+        # defaults.grpc.client.backoff.initial_duration -- gRPC client backoff initial duration
+        initial_duration: 5ms
+        # @schema {"name": "defaults.grpc.client.backoff.backoff_time_limit", "type": "string"}
+        # defaults.grpc.client.backoff.backoff_time_limit -- gRPC client backoff time limit
+        backoff_time_limit: 5s
+        # @schema {"name": "defaults.grpc.client.backoff.maximum_duration", "type": "string"}
+        # defaults.grpc.client.backoff.maximum_duration -- gRPC client backoff maximum duration
+        maximum_duration: 5s
+        # @schema {"name": "defaults.grpc.client.backoff.jitter_limit", "type": "string"}
+        # defaults.grpc.client.backoff.jitter_limit -- gRPC client backoff jitter limit
+        jitter_limit: 100ms
+        # @schema {"name": "defaults.grpc.client.backoff.backoff_factor", "type": "number"}
+        # defaults.grpc.client.backoff.backoff_factor -- gRPC client backoff factor
+        backoff_factor: 1.1
+        # @schema {"name": "defaults.grpc.client.backoff.retry_count", "type": "integer"}
+        # defaults.grpc.client.backoff.retry_count -- gRPC client backoff retry count
+        retry_count: 100
+        # @schema {"name": "defaults.grpc.client.backoff.enable_error_log", "type": "boolean"}
+        # defaults.grpc.client.backoff.enable_error_log -- gRPC client backoff log enabled
+        enable_error_log: true
+      # @schema {"name": "defaults.grpc.client.circuit_breaker", "type": "object"}
+      circuit_breaker:
+        # @schema {"name": "defaults.grpc.client.circuit_breaker.closed_error_rate", "type": "number"}
+        # defaults.grpc.client.circuit_breaker.closed_error_rate -- gRPC client circuitbreaker closed error rate
+        closed_error_rate: 0.7
+        # @schema {"name": "defaults.grpc.client.circuit_breaker.half_open_error_rate", "type": "number"}
+        # defaults.grpc.client.circuit_breaker.half_open_error_rate -- gRPC client circuitbreaker half-open error rate
+        half_open_error_rate: 0.5
+        # @schema {"name": "defaults.grpc.client.circuit_breaker.min_samples", "type": "integer"}
+        # defaults.grpc.client.circuit_breaker.min_samples -- gRPC client circuitbreaker minimum sampling count
+        min_samples: 1000
+        # @schema {"name": "defaults.grpc.client.circuit_breaker.open_timeout", "type": "string"}
+        # defaults.grpc.client.circuit_breaker.open_timeout -- gRPC client circuitbreaker open timeout
+        open_timeout: "1s"
+        # @schema {"name": "defaults.grpc.client.circuit_breaker.closed_refresh_timeout", "type": "string"}
+        # defaults.grpc.client.circuit_breaker.closed_refresh_timeout -- gRPC client circuitbreaker closed refresh timeout
+        closed_refresh_timeout: "10s"
+      # @schema {"name": "defaults.grpc.client.call_option", "type": "object"}
+      call_option:
+        # @schema {"name": "defaults.grpc.client.wait_for_ready", "type": "boolean"}
+        # defaults.grpc.client.call_option.wait_for_ready -- gRPC client call option wait for ready
+        wait_for_ready: true
+        # @schema {"name": "defaults.grpc.client.max_retry_rpc_buffer_size", "type": "integer"}
+        # defaults.grpc.client.call_option.max_retry_rpc_buffer_size -- gRPC client call option max retry rpc buffer size
+        max_retry_rpc_buffer_size: 0
+        # @schema {"name": "defaults.grpc.client.max_recv_msg_size", "type": "integer"}
+        # defaults.grpc.client.call_option.max_recv_msg_size -- gRPC client call option max receive message size
+        max_recv_msg_size: 0
+        # @schema {"name": "defaults.grpc.client.max_send_msg_size", "type": "integer"}
+        # defaults.grpc.client.call_option.max_send_msg_size -- gRPC client call option max send message size
+        max_send_msg_size: 0
+      # @schema {"name": "defaults.grpc.client.dial_option", "type": "object"}
+      dial_option:
+        # @schema {"name": "defaults.grpc.client.dial_option.write_buffer_size", "type": "integer"}
+        # defaults.grpc.client.dial_option.write_buffer_size -- gRPC client dial option write buffer size
+        write_buffer_size: 0
+        # @schema {"name": "defaults.grpc.client.dial_option.read_buffer_size", "type": "integer"}
+        # defaults.grpc.client.dial_option.read_buffer_size -- gRPC client dial option read buffer size
+        read_buffer_size: 0
+        # @schema {"name": "defaults.grpc.client.dial_option.initial_window_size", "type": "integer"}
+        # defaults.grpc.client.dial_option.initial_window_size -- gRPC client dial option initial window size
+        initial_window_size: 1048576
+        # @schema {"name": "defaults.grpc.client.dial_option.initial_connection_window_size", "type": "integer"}
+        # defaults.grpc.client.dial_option.initial_connection_window_size -- gRPC client dial option initial connection window size
+        initial_connection_window_size: 2097152
+        # @schema {"name": "defaults.grpc.client.dial_option.max_msg_size", "type": "integer"}
+        # defaults.grpc.client.dial_option.max_msg_size -- gRPC client dial option max message size
+        max_msg_size: 0
+        # @schema {"name": "defaults.grpc.client.dial_option.backoff_max_delay", "type": "string"}
+        # defaults.grpc.client.dial_option.backoff_max_delay -- gRPC client dial option max backoff delay
+        backoff_max_delay: "120s"
+        # @schema {"name": "defaults.grpc.client.dial_option.backoff_base_delay", "type": "string"}
+        # defaults.grpc.client.dial_option.backoff_base_delay -- gRPC client dial option base backoff delay
+        backoff_base_delay: "1s"
+        # @schema {"name": "defaults.grpc.client.dial_option.backoff_multiplier", "type": "number"}
+        # defaults.grpc.client.dial_option.backoff_multiplier -- gRPC client dial option base backoff delay
+        backoff_multiplier: 1.6
+        # @schema {"name": "defaults.grpc.client.dial_option.backoff_jitter", "type": "number"}
+        # defaults.grpc.client.dial_option.backoff_jitter -- gRPC client dial option base backoff delay
+        backoff_jitter: 0.2
+        # @schema {"name": "defaults.grpc.client.dial_option.min_connection_timeout", "type": "string"}
+        # defaults.grpc.client.dial_option.min_connection_timeout -- gRPC client dial option minimum connection timeout
+        min_connection_timeout: "20s"
+        # @schema {"name": "defaults.grpc.client.dial_option.enable_backoff", "type": "boolean"}
+        # defaults.grpc.client.dial_option.enable_backoff -- gRPC client dial option backoff enabled
+        enable_backoff: false
+        # @schema {"name": "defaults.grpc.client.dial_option.insecure", "type": "boolean"}
+        # defaults.grpc.client.dial_option.insecure -- gRPC client dial option insecure enabled
+        insecure: true
+        # @schema {"name": "defaults.grpc.client.dial_option.timeout", "type": "string"}
+        # defaults.grpc.client.dial_option.timeout -- gRPC client dial option timeout
+        timeout: ""
+        # @schema {"name": "defaults.grpc.client.dial_option.interceptors", "type": "array", "items": {"type": "string", "enum": ["TraceInterceptor"]}}
+        # defaults.grpc.client.dial_option.interceptors -- gRPC client interceptors
+        interceptors: []
+        # @schema {"name": "defaults.grpc.client.dial_option.net", "type": "object", "anchor": "net"}
+        net:
+          # @schema {"name": "defaults.grpc.client.dial_option.net.dns", "type": "object"}
+          dns:
+            # @schema {"name": "defaults.grpc.client.dial_option.net.dns.cache_enabled", "type": "boolean"}
+            # defaults.grpc.client.dial_option.net.dns.cache_enabled -- gRPC client TCP DNS cache enabled
+            cache_enabled: true
+            # @schema {"name": "defaults.grpc.client.dial_option.net.dns.refresh_duration", "type": "string"}
+            # defaults.grpc.client.dial_option.net.dns.refresh_duration -- gRPC client TCP DNS cache refresh duration
+            refresh_duration: 30m
+            # @schema {"name": "defaults.grpc.client.dial_option.net.dns.cache_expiration", "type": "string"}
+            # defaults.grpc.client.dial_option.net.dns.cache_expiration -- gRPC client TCP DNS cache expiration
+            cache_expiration: 1h
+          # @schema {"name": "defaults.grpc.client.dial_option.net.dialer", "type": "object"}
+          dialer:
+            # @schema {"name": "defaults.grpc.client.dial_option.net.dialer.timeout", "type": "string"}
+            # defaults.grpc.client.dial_option.net.dialer.timeout -- gRPC client TCP dialer timeout
+            timeout: ""
+            # @schema {"name": "defaults.grpc.client.dial_option.net.dialer.keepalive", "type": "string"}
+            # defaults.grpc.client.dial_option.net.dialer.keepalive -- gRPC client TCP dialer keep alive
+            keepalive: ""
+            # @schema {"name": "defaults.grpc.client.dial_option.net.dialer.dual_stack_enabled", "type": "boolean"}
+            # defaults.grpc.client.dial_option.net.dialer.dual_stack_enabled -- gRPC client TCP dialer dual stack enabled
+            dual_stack_enabled: true
+          # @schema {"name": "defaults.grpc.client.dial_option.net.tls", "alias": "tls"}
+          tls:
+            # defaults.grpc.client.dial_option.net.tls.enabled -- TLS enabled
+            enabled: false
+            # defaults.grpc.client.dial_option.net.tls.cert -- TLS cert path
+            cert: /path/to/cert
+            # defaults.grpc.client.dial_option.net.tls.key -- TLS key path
+            key: /path/to/key
+            # defaults.grpc.client.dial_option.net.tls.ca -- TLS ca path
+            ca: /path/to/ca
+            # defaults.grpc.client.dial_option.net.tls.insecure_skip_verify -- enable/disable skip SSL certificate verification
+            insecure_skip_verify: false
+          # @schema {"name": "defaults.grpc.client.dial_option.net.socket_option", "alias": "socket_option"}
+          socket_option:
+            # defaults.grpc.client.dial_option.net.socket_option.reuse_port -- server listen socket option for reuse_port functionality
+            reuse_port: true
+            # defaults.grpc.client.dial_option.net.socket_option.reuse_addr -- server listen socket option for reuse_addr functionality
+            reuse_addr: true
+            # defaults.grpc.client.dial_option.net.socket_option.tcp_fast_open -- server listen socket option for tcp_fast_open functionality
+            tcp_fast_open: false
+            # defaults.grpc.client.dial_option.net.socket_option.tcp_no_delay -- server listen socket option for tcp_no_delay functionality
+            tcp_no_delay: false
+            # defaults.grpc.client.dial_option.net.socket_option.tcp_cork -- server listen socket option for tcp_cork functionality
+            tcp_cork: false
+            # defaults.grpc.client.dial_option.net.socket_option.tcp_quick_ack -- server listen socket option for tcp_quick_ack functionality
+            tcp_quick_ack: false
+            # defaults.grpc.client.dial_option.net.socket_option.tcp_defer_accept -- server listen socket option for tcp_defer_accept functionality
+            tcp_defer_accept: false
+            # defaults.grpc.client.dial_option.net.socket_option.ip_transparent -- server listen socket option for ip_transparent functionality
+            ip_transparent: false
+            # defaults.grpc.client.dial_option.net.socket_option.ip_recover_destination_addr -- server listen socket option for ip_recover_destination_addr functionality
+            ip_recover_destination_addr: false
+        # @schema {"name": "defaults.grpc.client.dial_option.keepalive", "type": "object"}
+        keepalive:
+          # @schema {"name": "defaults.grpc.client.dial_option.keepalive.time", "type": "string"}
+          # defaults.grpc.client.dial_option.keepalive.time -- gRPC client keep alive time
+          time: ""
+          # @schema {"name": "defaults.grpc.client.dial_option.keepalive.timeout", "type": "string"}
+          # defaults.grpc.client.dial_option.keepalive.timeout -- gRPC client keep alive timeout
+          timeout: "30s"
+          # @schema {"name": "defaults.grpc.client.dial_option.keepalive.permit_without_stream", "type": "boolean"}
+          # defaults.grpc.client.dial_option.keepalive.permit_without_stream -- gRPC client keep alive permit without stream
+          permit_without_stream: false
+      # @schema {"name": "defaults.grpc.client.tls", "alias": "tls"}
+      tls:
+        # defaults.grpc.client.tls.enabled -- TLS enabled
+        enabled: false
+        # defaults.grpc.client.tls.cert -- TLS cert path
+        cert: /path/to/cert
+        # defaults.grpc.client.tls.key -- TLS key path
+        key: /path/to/key
+        # defaults.grpc.client.tls.ca -- TLS ca path
+        ca: /path/to/ca
+        # defaults.grpc.client.tls.insecure_skip_verify -- enable/disable skip SSL certificate verification
+        insecure_skip_verify: false
+  # @schema {"name": "defaults.observability", "type": "object", "anchor": "observability"}
+  observability:
+    # @schema {"name": "defaults.observability.enabled", "type": "boolean"}
+    # defaults.observability.enabled -- observability features enabled
+    enabled: false
+    # @schema {"name": "defaults.observability.otlp", "type": "object"}
+    otlp:
+      # @schema {"name": "defaults.observability.otlp.collector_endpoint", "type": "string"}
+      # defaults.observability.otlp.collector_endpoint -- OpenTelemetry Collector endpoint
+      collector_endpoint: ""
+      # @schema {"name": "defaults.observability.otlp.attribute", "type": "object"}
+      # defaults.observability.otlp.attribute -- default resource attribute
+      attribute:
+        # @schema {"name": "defaults.observability.otlp.attribute.namespace", "type": "string"}
+        # defaults.observability.otlp.attribute.namespace -- namespace
+        namespace: _MY_POD_NAMESPACE_
+        # @schema {"name": "defaults.observability.otlp.attribute.pod_name", "type": "string"}
+        # defaults.observability.otlp.attribute.pod_name -- pod name
+        pod_name: _MY_POD_NAME_
+        # @schema {"name": "defaults.observability.otlp.attribute.node_name", "type": "string"}
+        # defaults.observability.otlp.attribute.node_name -- node name
+        node_name: _MY_NODE_NAME_
+        # @schema {"name": "defaults.observability.otlp.attribute.service_name", "type": "string"}
+        # defaults.observability.otlp.attribute.service_name -- service name
+        service_name: vald
+      # @schema {"name": "defaults.observability.otlp.trace_batch_timeout", "type": "string"}
+      # defaults.observability.otlp.trace_batch_timeout -- trace batch timeout
+      trace_batch_timeout: "1s"
+      # @schema {"name": "defaults.observability.otlp.trace_export_timeout", "type": "string"}
+      # defaults.observability.otlp.trace_export_timeout -- trace export timeout
+      trace_export_timeout: "1m"
+      # @schema {"name": "defaults.observability.otlp.trace_max_export_batch_size", "type": "integer"}
+      # defaults.observability.otlp.trace_max_export_batch_size -- trace maximum export batch size
+      trace_max_export_batch_size: 1024
+      # @schema {"name": "defaults.observability.otlp.trace_max_queue_size", "type": "integer"}
+      # defaults.observability.otlp.trace_max_queue_size -- trace maximum queue size
+      trace_max_queue_size: 256
+      # @schema {"name": "defaults.observability.otlp.metrics_export_interval", "type": "string"}
+      # defaults.observability.otlp.metrics_export_interval -- metrics export interval
+      metrics_export_interval: "1s"
+      # @schema {"name": "defaults.observability.otlp.metrics_export_timeout", "type": "string"}
+      # defaults.observability.otlp.metrics_export_timeout -- metrics export timeout
+      metrics_export_timeout: "1m"
+    # @schema {"name": "defaults.observability.metrics", "type": "object"}
+    metrics:
+      # @schema {"name": "defaults.observability.metrics.enable_version_info", "type": "boolean"}
+      # defaults.observability.metrics.enable_version_info -- version info metrics enabled
+      enable_version_info: true
+      # @schema {"name": "defaults.observability.metrics.version_info_labels", "type": "array", "items": {"type": "string", "enum": ["vald_version", "server_name", "git_commit", "build_time", "go_version", "go_os", "go_arch", "cgo_enabled", "ngt_version", "build_cpu_info_flags"]}}
+      # defaults.observability.metrics.version_info_labels -- enabled label names of version info
+      version_info_labels:
+        - "vald_version"
+        - "server_name"
+        - "git_commit"
+        - "build_time"
+        - "go_version"
+        - "go_os"
+        - "go_arch"
+        - "ngt_version"
+      # @schema {"name": "defaults.observability.metrics.enable_memory", "type": "boolean"}
+      # defaults.observability.metrics.enable_memory -- memory metrics enabled
+      enable_memory: true
+      # @schema {"name": "defaults.observability.metrics.enable_goroutine", "type": "boolean"}
+      # defaults.observability.metrics.enable_goroutine -- goroutine metrics enabled
+      enable_goroutine: true
+      # @schema {"name": "defaults.observability.metrics.enable_cgo", "type": "boolean"}
+      # defaults.observability.metrics.enable_cgo -- CGO metrics enabled
+      enable_cgo: true
+    # @schema {"name": "defaults.observability.trace", "type": "object"}
+    trace:
+      # @schema {"name": "defaults.observability.trace.enabled", "type": "boolean"}
+      # defaults.observability.trace.enabled -- trace enabled
+      enabled: false
+  # @schema {"name": "defaults.networkPolicy", "type": "object", "anchor": "networkPolicy"}
+  networkPolicy:
+    # @schema {"name": "defaults.networkPolicy.enabled", "type": "boolean"}
+    # defaults.networkPolicy.enabled -- if network policy enabled
+    enabled: false
+    # @schema {"name": "defaults.networkPolicy.custom", "type": "object"}
+    # defaults.networkPolicy.custom -- custom network policies that a user can add
+    custom:
+      # @schema {"name": "defaults.networkPolicy.custom.ingress", "type": "array", "items": {"type": "object"}}
+      # defaults.networkPolicy.custom.ingress -- custom ingress network policies that a user can add
+      ingress: []
+      # @schema {"name": "defaults.networkPolicy.custom.egress", "type": "array", "items": {"type": "object"}}
+      # defaults.networkPolicy.custom.egress -- custom egress network policies that a user can add
+      egress: []
+# @schema {"name": "gateway", "type": "object"}
+gateway:
+  # @schema {"name": "gateway.lb", "type": "object"}
+  lb:
+    # @schema {"name": "gateway.lb.enabled", "type": "boolean"}
+    # gateway.lb.enabled -- gateway enabled
+    enabled: true
+    # @schema {"name": "gateway.lb.version", "type": "string", "pattern": "^v[0-9]+\\.[0-9]+\\.[0-9]$", "anchor": "version"}
+    # gateway.lb.version -- version of gateway config
+    version: v0.0.0
+    # @schema {"name": "gateway.lb.time_zone", "type": "string"}
+    # gateway.lb.time_zone -- Time zone
+    time_zone: ""
+    # @schema {"name": "gateway.lb.logging", "alias": "logging"}
+    # gateway.lb.logging -- logging config (overrides defaults.logging)
+    logging: {}
+    # @schema {"name": "gateway.lb.name", "type": "string"}
+    # gateway.lb.name -- name of gateway deployment
+    name: vald-lb-gateway
+    # @schema {"name": "gateway.lb.kind", "type": "string", "enum": ["Deployment", "DaemonSet"]}
+    # gateway.lb.kind -- deployment kind: Deployment or DaemonSet
+    kind: Deployment
+    # @schema {"name": "gateway.lb.serviceType", "type": "string", "enum": ["ClusterIP", "LoadBalancer", "NodePort"]}
+    # gateway.lb.serviceType -- service type: ClusterIP, LoadBalancer or NodePort
+    serviceType: ClusterIP
+    # @schema {"name": "gateway.lb.externalTrafficPolicy", "type": "string"}
+    # gateway.lb.externalTrafficPolicy -- external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local
+    externalTrafficPolicy: ""
+    # @schema {"name": "gateway.lb.internalTrafficPolicy", "type": "string"}
+    # gateway.lb.internalTrafficPolicy -- internal traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local
+    internalTrafficPolicy: ""
+    # @schema {"name": "gateway.lb.progressDeadlineSeconds", "type": "integer"}
+    # gateway.lb.progressDeadlineSeconds -- progress deadline seconds
+    progressDeadlineSeconds: 600
+    # @schema {"name": "gateway.lb.minReplicas", "type": "integer", "minimum": 0}
+    # gateway.lb.minReplicas -- minimum number of replicas.
+    # if HPA is disabled, the replicas will be set to this value
+    minReplicas: 3
+    # @schema {"name": "gateway.lb.maxReplicas", "type": "integer", "minimum": 0}
+    # gateway.lb.maxReplicas -- maximum number of replicas.
+    # if HPA is disabled, this value will be ignored.
+    maxReplicas: 9
+    # @schema {"name": "gateway.lb.maxUnavailable", "type": "string"}
+    # gateway.lb.maxUnavailable -- maximum number of unavailable replicas
+    maxUnavailable: 50%
+    # @schema {"name": "gateway.lb.revisionHistoryLimit", "type": "integer", "minimum": 0}
+    # gateway.lb.revisionHistoryLimit -- number of old history to retain to allow rollback
+    revisionHistoryLimit: 2
+    # @schema {"name": "gateway.lb.terminationGracePeriodSeconds", "type": "integer", "minimum": 0}
+    # gateway.lb.terminationGracePeriodSeconds -- duration in seconds pod needs to terminate gracefully
+    terminationGracePeriodSeconds: 30
+    # @schema {"name": "gateway.lb.podSecurityContext", "type": "object"}
+    # gateway.lb.podSecurityContext -- security context for pod
+    podSecurityContext:
+      runAsUser: 65532
+      runAsNonRoot: true
+      runAsGroup: 65532
+      fsGroup: 65532
+      fsGroupChangePolicy: "OnRootMismatch"
+    # @schema {"name": "gateway.lb.securityContext", "type": "object"}
+    # gateway.lb.securityContext -- security context for container
+    securityContext:
+      runAsUser: 65532
+      runAsNonRoot: true
+      runAsGroup: 65532
+      privileged: false
+      allowPrivilegeEscalation: false
+      readOnlyRootFilesystem: true
+      capabilities:
+        drop:
+          - ALL
+    # @schema {"name": "gateway.lb.podPriority", "type": "object", "anchor": "podPriority"}
+    podPriority:
+      # @schema {"name": "gateway.lb.podPriority.enabled", "type": "boolean"}
+      # gateway.lb.podPriority.enabled -- gateway pod PriorityClass enabled
+      enabled: true
+      # @schema {"name": "gateway.lb.podPriority.value", "type": "integer"}
+      # gateway.lb.podPriority.value -- gateway pod PriorityClass value
+      value: 1000000
+    # @schema {"name": "gateway.lb.annotations", "type": "object"}
+    # gateway.lb.annotations -- deployment annotations
+    annotations: {}
+    # @schema {"name": "gateway.lb.podAnnotations", "type": "object"}
+    # gateway.lb.podAnnotations -- pod annotations
+    podAnnotations: {}
+    # @schema {"name": "gateway.lb.service", "type": "object", "anchor": "service"}
+    service:
+      # @schema {"name": "gateway.lb.service.annotations", "type": "object"}
+      # gateway.lb.service.annotations -- service annotations
+      annotations: {}
+      # @schema {"name": "gateway.lb.service.labels", "type": "object"}
+      # gateway.lb.service.labels -- service labels
+      labels: {}
+    # @schema {"name": "gateway.lb.hpa", "type": "object", "anchor": "hpa"}
+    hpa:
+      # @schema {"name": "gateway.lb.hpa.enabled", "type": "boolean"}
+      # gateway.lb.hpa.enabled -- HPA enabled
+      enabled: true
+      # @schema {"name": "gateway.lb.hpa.targetCPUUtilizationPercentage", "type": "integer"}
+      # gateway.lb.hpa.targetCPUUtilizationPercentage -- HPA CPU utilization percentage
+      targetCPUUtilizationPercentage: 80
+    # @schema {"name": "gateway.lb.image", "type": "object", "anchor": "image"}
+    image:
+      # @schema {"name": "gateway.lb.image.repository", "type": "string"}
+      # gateway.lb.image.repository -- image repository
+      repository: vdaas/vald-lb-gateway
+      # @schema {"name": "gateway.lb.image.tag", "type": "string"}
+      # gateway.lb.image.tag -- image tag (overrides defaults.image.tag)
+      tag: ""
+      # @schema {"name": "gateway.lb.image.pullPolicy", "type": "string", "enum": ["Always", "Never", "IfNotPresent"]}
+      # gateway.lb.image.pullPolicy -- image pull policy
+      pullPolicy: Always
+    # @schema {"name": "gateway.lb.rollingUpdate", "type": "object", "anchor": "rollingUpdate"}
+    rollingUpdate:
+      # @schema {"name": "gateway.lb.rollingUpdate.maxSurge", "type": "string"}
+      # gateway.lb.rollingUpdate.maxSurge -- max surge of rolling update
+      maxSurge: 25%
+      # @schema {"name": "gateway.lb.rollingUpdate.maxUnavailable", "type": "string"}
+      # gateway.lb.rollingUpdate.maxUnavailable -- max unavailable of rolling update
+      maxUnavailable: 25%
+    # @schema {"name": "gateway.lb.initContainers", "type": "array", "items": {"type": "object"}, "anchor": "initContainers"}
+    # gateway.lb.initContainers -- init containers
+    initContainers:
+      - type: wait-for
+        name: wait-for-discoverer
+        target: discoverer
+        image: busybox:stable
+        sleepDuration: 2
+      - type: wait-for
+        name: wait-for-agent
+        target: agent
+        image: busybox:stable
+        sleepDuration: 2
+    # @schema {"name": "gateway.lb.env", "type": "array", "items": {"type": "object"}, "anchor": "env"}
+    # gateway.lb.env -- environment variables
+    env:
+      - name: MY_NODE_NAME
+        valueFrom:
+          fieldRef:
+            fieldPath: spec.nodeName
+      - name: MY_POD_NAME
+        valueFrom:
+          fieldRef:
+            fieldPath: metadata.name
+      - name: MY_POD_NAMESPACE
+        valueFrom:
+          fieldRef:
+            fieldPath: metadata.namespace
+    # @schema {"name": "gateway.lb.volumeMounts", "type": "array", "items": {"type": "object"}, "anchor": "volumeMounts"}
+    # gateway.lb.volumeMounts -- volume mounts
+    volumeMounts: []
+    # @schema {"name": "gateway.lb.volumes", "type": "array", "items": {"type": "object"}, "anchor": "volumes"}
+    # gateway.lb.volumes -- volumes
+    volumes: []
+    # @schema {"name": "gateway.lb.nodeName", "type": "string"}
+    # gateway.lb.nodeName -- node name
+    nodeName: ""
+    # @schema {"name": "gateway.lb.nodeSelector", "type": "object", "anchor": "nodeSelector"}
+    # gateway.lb.nodeSelector -- node selector
+    nodeSelector: {}
+    # @schema {"name": "gateway.lb.tolerations", "type": "array", "items": {"type": "object"}, "anchor": "tolerations"}
+    # gateway.lb.tolerations -- tolerations
+    tolerations: []
+    # @schema {"name": "gateway.lb.affinity", "type": "object", "anchor": "affinity"}
+    affinity:
+      # @schema {"name": "gateway.lb.affinity.nodeAffinity", "type": "object"}
+      nodeAffinity:
+        # @schema {"name": "gateway.lb.affinity.nodeAffinity.preferredDuringSchedulingIgnoredDuringExecution", "type": "array", "items": {"type": "object"}}
+        # gateway.lb.affinity.nodeAffinity.preferredDuringSchedulingIgnoredDuringExecution -- node affinity preferred scheduling terms
+        preferredDuringSchedulingIgnoredDuringExecution: []
+        # @schema {"name": "gateway.lb.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution", "type": "object"}
+        requiredDuringSchedulingIgnoredDuringExecution:
+          # @schema {"name": "gateway.lb.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms", "type": "array", "items": {"type": "object"}}
+          # gateway.lb.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms -- node affinity required node selectors
+          nodeSelectorTerms: []
+      # @schema {"name": "gateway.lb.affinity.podAffinity", "type": "object"}
+      podAffinity:
+        # @schema {"name": "gateway.lb.affinity.podAffinity.preferredDuringSchedulingIgnoredDuringExecution", "type": "array", "items": {"type": "object"}}
+        # gateway.lb.affinity.podAffinity.preferredDuringSchedulingIgnoredDuringExecution -- pod affinity preferred scheduling terms
+        preferredDuringSchedulingIgnoredDuringExecution: []
+        # @schema {"name": "gateway.lb.affinity.podAffinity.requiredDuringSchedulingIgnoredDuringExecution", "type": "array", "items": {"type": "object"}}
+        # gateway.lb.affinity.podAffinity.requiredDuringSchedulingIgnoredDuringExecution -- pod affinity required scheduling terms
+        requiredDuringSchedulingIgnoredDuringExecution: []
+      # @schema {"name": "gateway.lb.affinity.podAntiAffinity", "type": "object"}
+      podAntiAffinity:
+        # @schema {"name": "gateway.lb.affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution", "type": "array", "items": {"type": "object"}}
+        # gateway.lb.affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution -- pod anti-affinity preferred scheduling terms
+        preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              topologyKey: kubernetes.io/hostname
+              labelSelector:
+                matchExpressions:
+                  - key: app
+                    operator: In
+                    values:
+                      - vald-lb-gateway
+        # @schema {"name": "gateway.lb.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution", "type": "array", "items": {"type": "object"}}
+        # gateway.lb.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution -- pod anti-affinity required scheduling terms
+        requiredDuringSchedulingIgnoredDuringExecution: []
+    # @schema {"name": "gateway.lb.topologySpreadConstraints", "type": "array", "items": {"type": "object"}, "anchor": "topologySpreadConstraints"}
+    # gateway.lb.topologySpreadConstraints -- topology spread constraints of gateway pods
+    topologySpreadConstraints: []
+    # @schema {"name": "gateway.lb.server_config", "alias": "server_config"}
+    # gateway.lb.server_config -- server config (overrides defaults.server_config)
+    server_config:
+      servers:
+        rest: {}
+        grpc: {}
+      healths:
+        liveness: {}
+        readiness: {}
+        startup: {}
+      metrics:
+        pprof: {}
+    # @schema {"name": "gateway.lb.observability", "alias": "observability"}
+    # gateway.lb.observability -- observability config (overrides defaults.observability)
+    observability:
+      otlp:
+        attribute:
+          service_name: vald-lb-gateway
+    # @schema {"name": "gateway.lb.ingress", "type": "object"}
+    ingress:
+      # @schema {"name": "gateway.lb.ingress.pathType", "type": "string"}
+      # gateway.lb.ingress.pathType -- gateway ingress pathType
+      pathType: ImplementationSpecific
+      # @schema {"name": "gateway.lb.ingress.enabled", "type": "boolean"}
+      # gateway.lb.ingress.enabled -- gateway ingress enabled
+      enabled: false
+      # @schema {"name": "gateway.lb.ingress.annotations", "type": "object"}
+      # gateway.lb.ingress.annotations -- annotations for ingress
+      annotations:
+        nginx.ingress.kubernetes.io/grpc-backend: "true"
+      # @schema {"name": "gateway.lb.ingress.host", "type": "string"}
+      # gateway.lb.ingress.host -- ingress hostname
+      host: lb.gateway.vald.vdaas.org
+      # @schema {"name": "gateway.lb.ingress.servicePort", "type": "string"}
+      # gateway.lb.ingress.servicePort -- service port to be exposed by ingress
+      servicePort: grpc
+      # @schema {"name": "gateway.lb.ingress.defaultBackend", "type": "object"}
+      # gateway.lb.ingress.defaultBackend -- defaultBackend config
+      defaultBackend:
+        # @schema {"name": "gateway.lb.ingress.defaultBackend.enabled", "type": "boolean"}
+        # gateway.lb.ingress.defaultBackend.enabled -- gateway ingress defaultBackend enabled
+        enabled: true
+    # @schema {"name": "gateway.lb.resources", "type": "object", "anchor": "resources"}
+    # gateway.lb.resources -- compute resources
+    resources:
+      # @schema {"name": "gateway.lb.resources.requests", "type": "object"}
+      requests:
+        cpu: 200m
+        memory: 150Mi
+      # @schema {"name": "gateway.lb.resources.limits", "type": "object"}
+      limits:
+        cpu: 2000m
+        memory: 700Mi
+    # @schema {"name": "gateway.lb.gateway_config", "type": "object"}
+    gateway_config:
+      # @schema {"name": "gateway.lb.gateway_config.agent_namespace", "type": "string"}
+      # gateway.lb.gateway_config.agent_namespace -- agent namespace
+      agent_namespace: _MY_POD_NAMESPACE_
+      # @schema {"name": "gateway.lb.gateway_config.node_name", "type": "string"}
+      # gateway.lb.gateway_config.node_name -- node name
+      node_name: "" # _MY_NODE_NAME_
+      # @schema {"name": "gateway.lb.gateway_config.index_replica", "type": "integer", "minimum": 1}
+      # gateway.lb.gateway_config.index_replica -- number of index replica
+      index_replica: 3
+      # @schema {"name": "gateway.lb.gateway_config.multi_operation_concurrency", "type": "integer", "minimum": 2}
+      # gateway.lb.gateway_config.multi_operation_concurrency -- number of concurrency of multiXXX api's operation
+      multi_operation_concurrency: 20
+      # @schema {"name": "gateway.lb.gateway_config.discoverer", "type": "object"}
+      discoverer:
+        # @schema {"name": "gateway.lb.gateway_config.discoverer.duration", "type": "string"}
+        # gateway.lb.discoverer.duration -- discoverer duration
+        duration: 200ms
+        # @schema {"name": "gateway.lb.gateway_config.discoverer.client", "alias": "grpc.client"}
+        # gateway.lb.gateway_config.discoverer.client -- gRPC client for discoverer (overrides defaults.grpc.client)
+        client: {}
+        # @schema {"name": "gateway.lb.gateway_config.discoverer.agent_client_options", "alias": "grpc.client"}
+        # gateway.lb.gateway_config.discoverer.agent_client_options -- gRPC client options for agents (overrides defaults.grpc.client)
+        agent_client_options: {}
+  # @schema {"name": "gateway.filter", "type": "object"}
+  filter:
+    # @schema {"name": "gateway.filter.enabled", "type": "boolean"}
+    # gateway.filter.enabled -- gateway enabled
+    enabled: false
+    # @schema {"name": "gateway.filter.version", "type": "string", "pattern": "^v[0-9]+\\.[0-9]+\\.[0-9]$", "anchor": "version"}
+    # gateway.filter.version -- version of gateway config
+    version: v0.0.0
+    # @schema {"name": "gateway.filter.time_zone", "type": "string"}
+    # gateway.filter.time_zone -- Time zone
+    time_zone: ""
+    # @schema {"name": "gateway.filter.logging", "alias": "logging"}
+    # gateway.filter.logging -- logging config (overrides defaults.logging)
+    logging: {}
+    # @schema {"name": "gateway.filter.name", "type": "string"}
+    # gateway.filter.name -- name of filter gateway deployment
+    name: vald-filter-gateway
+    # @schema {"name": "gateway.filter.kind", "type": "string", "enum": ["Deployment", "DaemonSet"]}
+    # gateway.filter.kind -- deployment kind: Deployment or DaemonSet
+    kind: Deployment
+    # @schema {"name": "gateway.filter.serviceType", "type": "string", "enum": ["ClusterIP", "LoadBalancer", "NodePort"]}
+    # gateway.filter.serviceType -- service type: ClusterIP, LoadBalancer or NodePort
+    serviceType: ClusterIP
+    # @schema {"name": "gateway.filter.externalTrafficPolicy", "type": "string"}
+    # gateway.filter.externalTrafficPolicy -- external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local
+    externalTrafficPolicy: ""
+    # @schema {"name": "gateway.filter.internalTrafficPolicy", "type": "string"}
+    # gateway.filter.internalTrafficPolicy -- internal traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local
+    internalTrafficPolicy: ""
+    # @schema {"name": "gateway.filter.progressDeadlineSeconds", "type": "integer"}
+    # gateway.filter.progressDeadlineSeconds -- progress deadline seconds
+    progressDeadlineSeconds: 600
+    # @schema {"name": "gateway.filter.minReplicas", "type": "integer", "minimum": 0}
+    # gateway.filter.minReplicas -- minimum number of replicas.
+    # if HPA is disabled, the replicas will be set to this value
+    minReplicas: 3
+    # @schema {"name": "gateway.filter.maxReplicas", "type": "integer", "minimum": 0}
+    # gateway.filter.maxReplicas -- maximum number of replicas.
+    # if HPA is disabled, this value will be ignored.
+    maxReplicas: 9
+    # @schema {"name": "gateway.filter.maxUnavailable", "type": "string"}
+    # gateway.filter.maxUnavailable -- maximum number of unavailable replicas
+    maxUnavailable: 50%
+    # @schema {"name": "gateway.filter.revisionHistoryLimit", "type": "integer", "minimum": 0}
+    # gateway.filter.revisionHistoryLimit -- number of old history to retain to allow rollback
+    revisionHistoryLimit: 2
+    # @schema {"name": "gateway.filter.terminationGracePeriodSeconds", "type": "integer", "minimum": 0}
+    # gateway.filter.terminationGracePeriodSeconds -- duration in seconds pod needs to terminate gracefully
+    terminationGracePeriodSeconds: 30
+    # @schema {"name": "gateway.filter.podSecurityContext", "type": "object"}
+    # gateway.filter.podSecurityContext -- security context for pod
+    podSecurityContext:
+      runAsUser: 65532
+      runAsNonRoot: true
+      runAsGroup: 65532
+      fsGroup: 65532
+      fsGroupChangePolicy: "OnRootMismatch"
+    # @schema {"name": "gateway.filter.securityContext", "type": "object"}
+    # gateway.filter.securityContext -- security context for container
+    securityContext:
+      runAsUser: 65532
+      runAsNonRoot: true
+      runAsGroup: 65532
+      privileged: false
+      allowPrivilegeEscalation: false
+      readOnlyRootFilesystem: true
+      capabilities:
+        drop:
+          - ALL
+    # @schema {"name": "gateway.filter.podPriority", "type": "object", "anchor": "podPriority"}
+    podPriority:
+      # @schema {"name": "gateway.filter.podPriority.enabled", "type": "boolean"}
+      # gateway.filter.podPriority.enabled -- gateway pod PriorityClass enabled
+      enabled: true
+      # @schema {"name": "gateway.filter.podPriority.value", "type": "integer"}
+      # gateway.filter.podPriority.value -- gateway pod PriorityClass value
+      value: 1000000
+    # @schema {"name": "gateway.filter.annotations", "type": "object"}
+    # gateway.filter.annotations -- deployment annotations
+    annotations: {}
+    # @schema {"name": "gateway.filter.podAnnotations", "type": "object"}
+    # gateway.filter.podAnnotations -- pod annotations
+    podAnnotations: {}
+    # @schema {"name": "gateway.filter.service", "type": "object", "anchor": "service"}
+    service:
+      # @schema {"name": "gateway.filter.service.annotations", "type": "object"}
+      # gateway.filter.service.annotations -- service annotations
+      annotations: {}
+      # @schema {"name": "gateway.filter.service.labels", "type": "object"}
+      # gateway.filter.service.labels -- service labels
+      labels: {}
+    # @schema {"name": "gateway.filter.hpa", "type": "object", "anchor": "hpa"}
+    hpa:
+      # @schema {"name": "gateway.filter.hpa.enabled", "type": "boolean"}
+      # gateway.filter.hpa.enabled -- HPA enabled
+      enabled: true
+      # @schema {"name": "gateway.filter.hpa.targetCPUUtilizationPercentage", "type": "integer"}
+      # gateway.filter.hpa.targetCPUUtilizationPercentage -- HPA CPU utilization percentage
+      targetCPUUtilizationPercentage: 80
+    # @schema {"name": "gateway.filter.image", "type": "object", "anchor": "image"}
+    image:
+      # @schema {"name": "gateway.filter.image.repository", "type": "string"}
+      # gateway.filter.image.repository -- image repository
+      repository: vdaas/vald-filter-gateway
+      # @schema {"name": "gateway.filter.image.tag", "type": "string"}
+      # gateway.filter.image.tag -- image tag (overrides defaults.image.tag)
+      tag: ""
+      # @schema {"name": "gateway.filter.image.pullPolicy", "type": "string", "enum": ["Always", "Never", "IfNotPresent"]}
+      # gateway.filter.image.pullPolicy -- image pull policy
+      pullPolicy: Always
+    # @schema {"name": "gateway.filter.rollingUpdate", "type": "object", "anchor": "rollingUpdate"}
+    rollingUpdate:
+      # @schema {"name": "gateway.filter.rollingUpdate.maxSurge", "type": "string"}
+      # gateway.filter.rollingUpdate.maxSurge -- max surge of rolling update
+      maxSurge: 25%
+      # @schema {"name": "gateway.filter.rollingUpdate.maxUnavailable", "type": "string"}
+      # gateway.filter.rollingUpdate.maxUnavailable -- max unavailable of rolling update
+      maxUnavailable: 25%
+    # @schema {"name": "gateway.filter.initContainers", "type": "array", "items": {"type": "object"}, "anchor": "initContainers"}
+    # gateway.filter.initContainers -- init containers
+    initContainers:
+      - type: wait-for
+        name: wait-for-gateway-lb
+        target: gateway-lb
+        image: busybox:stable
+        sleepDuration: 2
+    # @schema {"name": "gateway.filter.env", "type": "array", "items": {"type": "object"}, "anchor": "env"}
+    # gateway.filter.env -- environment variables
+    env:
+      - name: MY_NODE_NAME
+        valueFrom:
+          fieldRef:
+            fieldPath: spec.nodeName
+      - name: MY_POD_NAME
+        valueFrom:
+          fieldRef:
+            fieldPath: metadata.name
+      - name: MY_POD_NAMESPACE
+        valueFrom:
+          fieldRef:
+            fieldPath: metadata.namespace
+    # @schema {"name": "gateway.filter.volumeMounts", "type": "array", "items": {"type": "object"}, "anchor": "volumeMounts"}
+    # gateway.filter.volumeMounts -- volume mounts
+    volumeMounts: []
+    # @schema {"name": "gateway.filter.volumes", "type": "array", "items": {"type": "object"}, "anchor": "volumes"}
+    # gateway.filter.volumes -- volumes
+    volumes: []
+    # @schema {"name": "gateway.filter.nodeName", "type": "string"}
+    # gateway.filter.nodeName -- node name
+    nodeName: ""
+    # @schema {"name": "gateway.filter.nodeSelector", "type": "object", "anchor": "nodeSelector"}
+    # gateway.filter.nodeSelector -- node selector
+    nodeSelector: {}
+    # @schema {"name": "gateway.filter.tolerations", "type": "array", "items": {"type": "object"}, "anchor": "tolerations"}
+    # gateway.filter.tolerations -- tolerations
+    tolerations: []
+    # @schema {"name": "gateway.filter.affinity", "type": "object", "anchor": "affinity"}
+    affinity:
+      # @schema {"name": "gateway.filter.affinity.nodeAffinity", "type": "object"}
+      nodeAffinity:
+        # @schema {"name": "gateway.filter.affinity.nodeAffinity.preferredDuringSchedulingIgnoredDuringExecution", "type": "array", "items": {"type": "object"}}
+        # gateway.filter.affinity.nodeAffinity.preferredDuringSchedulingIgnoredDuringExecution -- node affinity preferred scheduling terms
+        preferredDuringSchedulingIgnoredDuringExecution: []
+        # @schema {"name": "gateway.filter.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution", "type": "object"}
+        requiredDuringSchedulingIgnoredDuringExecution:
+          # @schema {"name": "gateway.filter.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms", "type": "array", "items": {"type": "object"}}
+          # gateway.filter.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms -- node affinity required node selectors
+          nodeSelectorTerms: []
+      # @schema {"name": "gateway.filter.affinity.podAffinity", "type": "object"}
+      podAffinity:
+        # @schema {"name": "gateway.filter.affinity.podAffinity.preferredDuringSchedulingIgnoredDuringExecution", "type": "array", "items": {"type": "object"}}
+        # gateway.filter.affinity.podAffinity.preferredDuringSchedulingIgnoredDuringExecution -- pod affinity preferred scheduling terms
+        preferredDuringSchedulingIgnoredDuringExecution: []
+        # @schema {"name": "gateway.filter.affinity.podAffinity.requiredDuringSchedulingIgnoredDuringExecution", "type": "array", "items": {"type": "object"}}
+        # gateway.filter.affinity.podAffinity.requiredDuringSchedulingIgnoredDuringExecution -- pod affinity required scheduling terms
+        requiredDuringSchedulingIgnoredDuringExecution: []
+      # @schema {"name": "gateway.filter.affinity.podAntiAffinity", "type": "object"}
+      podAntiAffinity:
+        # @schema {"name": "gateway.filter.affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution", "type": "array", "items": {"type": "object"}}
+        # gateway.filter.affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution -- pod anti-affinity preferred scheduling terms
+        preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              topologyKey: kubernetes.io/hostname
+              labelSelector:
+                matchExpressions:
+                  - key: app
+                    operator: In
+                    values:
+                      - vald-filter-gateway
+        # @schema {"name": "gateway.filter.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution", "type": "array", "items": {"type": "object"}}
+        # gateway.filter.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution -- pod anti-affinity required scheduling terms
+        requiredDuringSchedulingIgnoredDuringExecution: []
+    # @schema {"name": "gateway.filter.topologySpreadConstraints", "type": "array", "items": {"type": "object"}, "anchor": "topologySpreadConstraints"}
+    # gateway.filter.topologySpreadConstraints -- topology spread constraints of gateway pods
+    topologySpreadConstraints: []
+    # @schema {"name": "gateway.filter.server_config", "alias": "server_config"}
+    # gateway.filter.server_config -- server config (overrides defaults.server_config)
+    server_config:
+      servers:
+        rest: {}
+        grpc: {}
+      healths:
+        liveness: {}
+        readiness: {}
+        startup: {}
+      metrics:
+        pprof: {}
+    # @schema {"name": "gateway.filter.observability", "alias": "observability"}
+    # gateway.filter.observability -- observability config (overrides defaults.observability)
+    observability:
+      otlp:
+        attribute:
+          service_name: vald-filter-gateway
+    # @schema {"name": "gateway.filter.ingress", "type": "object"}
+    ingress:
+      # @schema {"name": "gateway.filter.ingress.pathType", "type": "string"}
+      # gateway.filter.ingress.pathType -- gateway ingress pathType
+      pathType: ImplementationSpecific
+      # @schema {"name": "gateway.filter.ingress.enabled", "type": "boolean"}
+      # gateway.filter.ingress.enabled -- gateway ingress enabled
+      enabled: false
+      # @schema {"name": "gateway.filter.ingress.annotations", "type": "object"}
+      # gateway.filter.ingress.annotations -- annotations for ingress
+      annotations:
+        nginx.ingress.kubernetes.io/grpc-backend: "true"
+      # @schema {"name": "gateway.filter.ingress.host", "type": "string"}
+      # gateway.filter.ingress.host -- ingress hostname
+      host: filter.gateway.vald.vdaas.org
+      # @schema {"name": "gateway.filter.ingress.servicePort", "type": "string"}
+      # gateway.filter.ingress.servicePort -- service port to be exposed by ingress
+      servicePort: grpc
+      # @schema {"name": "gateway.filter.ingress.defaultBackend", "type": "object"}
+      # gateway.filter.ingress.defaultBackend -- defaultBackend config
+      defaultBackend:
+        # @schema {"name": "gateway.filter.ingress.defaultBackend.enabled", "type": "boolean"}
+        # gateway.filter.ingress.defaultBackend.enabled -- gateway ingress defaultBackend enabled
+        enabled: true
+    # @schema {"name": "gateway.filter.resources", "type": "object", "anchor": "resources"}
+    # gateway.filter.resources -- compute resources
+    resources:
+      # @schema {"name": "gateway.filter.resources.requests", "type": "object"}
+      requests:
+        cpu: 200m
+        memory: 150Mi
+      # @schema {"name": "gateway.filter.resources.limits", "type": "object"}
+      limits:
+        cpu: 2000m
+        memory: 700Mi
+    # @schema {"name": "gateway.filter.gateway_config", "type": "object"}
+    gateway_config:
+      # @schema {"name": "gateway.filter.gateway_config.gateway_client", "alias": "grpc.client"}
+      # gateway.filter.gateway_config.gateway_client -- gRPC client for next gateway (overrides defaults.grpc.client)
+      gateway_client: {}
+      # @schema {"name": "gateway.filter.gateway_config.ingress_filter", "type": "object"}
+      # gateway.filter.gateway_config.ingress_filter -- gRPC client config for ingress filter
+      ingress_filter:
+        # @schema {"name": "gateway.filter.gateway_config.ingress_filter.client", "alias": "grpc.client"}
+        # gateway.filter.gateway_config.ingress_filter.client -- gRPC client for ingress filter (overrides defaults.grpc.client)
+        client: {}
+        # @schema {"name": "gateway.filter.gateway_config.ingress_filter.vectorizer", "type": "string"}
+        # gateway.filter.gateway_config.ingress_filter.vectorizer -- object ingress vectorize filter targets
+        vectorizer: ""
+        # @schema {"name": "gateway.filter.gateway_config.ingress_filter.search_filters", "type": "array", "items": {"type": "string"}}
+        # gateway.filter.gateway_config.ingress_filter.search_filters -- search ingress vector filter targets
+        search_filters: []
+        # @schema {"name": "gateway.filter.gateway_config.ingress_filter.insert_filters", "type": "array", "items": {"type": "string"}}
+        # gateway.filter.gateway_config.ingress_filter.insert_filters -- insert ingress vector filter targets
+        insert_filters: []
+        # @schema {"name": "gateway.filter.gateway_config.ingress_filter.update_filters", "type": "array", "items": {"type": "string"}}
+        # gateway.filter.gateway_config.ingress_filter.update_filters -- update ingress vector filter targets
+        update_filters: []
+        # @schema {"name": "gateway.filter.gateway_config.ingress_filter.upsert_filters", "type": "array", "items": {"type": "string"}}
+        # gateway.filter.gateway_config.ingress_filter.upsert_filters -- upsert ingress vector filter targets
+        upsert_filters: []
+      # @schema {"name": "gateway.filter.gateway_config.egress_filter", "type": "object"}
+      # gateway.filter.gateway_config.egress_filter -- gRPC client config for egress filter
+      egress_filter:
+        # @schema {"name": "gateway.filter.gateway_config.egress_filter.client", "alias": "grpc.client"}
+        # gateway.filter.gateway_config.egress_filter.client -- gRPC client config for egress filter (overrides defaults.grpc.client)
+        client: {}
+        # @schema {"name": "gateway.filter.gateway_config.egress_filter.object_filters", "type": "array", "items": {"type": "string"}}
+        # gateway.filter.gateway_config.egress_filter.object_filters -- object egress vector filter targets
+        object_filters: []
+        # @schema {"name": "gateway.filter.gateway_config.egress_filter.distance_filters", "type": "array", "items": {"type": "string"}}
+        # gateway.filter.gateway_config.egress_filter.distance_filters -- distance egress vector filter targets
+        distance_filters: []
+# @schema {"name": "agent", "type": "object"}
+agent:
+  # @schema {"name": "agent.enabled", "type": "boolean"}
+  # agent.enabled -- agent enabled
+  enabled: true
+  # @schema {"name": "agent.version", "alias": "version"}
+  # agent.version -- version of agent config
+  version: v0.0.0
+  # @schema {"name": "agent.time_zone", "type": "string"}
+  # agent.time_zone -- Time zone
+  time_zone: ""
+  # @schema {"name": "agent.logging", "alias": "logging"}
+  # agent.logging -- logging config (overrides defaults.logging)
+  logging: {}
+  # @schema {"name": "agent.name", "type": "string"}
+  # agent.name -- name of agent deployment
+  name: vald-agent-ngt
+  # @schema {"name": "agent.kind", "type": "string", "enum": ["StatefulSet", "Deployment", "DaemonSet"]}
+  # agent.kind -- deployment kind: Deployment, DaemonSet or StatefulSet
+  kind: StatefulSet
+  # @schema {"name": "agent.serviceType", "type": "string", "enum": ["ClusterIP", "LoadBalancer", "NodePort"]}
+  # agent.serviceType -- service type: ClusterIP, LoadBalancer or NodePort
+  serviceType: ClusterIP
+  # @schema {"name": "agent.externalTrafficPolicy", "type": "string"}
+  # agent.externalTrafficPolicy -- external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local
+  externalTrafficPolicy: ""
+  # @schema {"name": "agent.progressDeadlineSeconds", "type": "integer"}
+  # agent.progressDeadlineSeconds -- progress deadline seconds
+  progressDeadlineSeconds: 600
+  # @schema {"name": "agent.minReplicas", "type": "integer", "minimum": 0}
+  # agent.minReplicas -- minimum number of replicas.
+  # if HPA is disabled, the replicas will be set to this value
+  minReplicas: 20
+  # @schema {"name": "agent.maxReplicas", "type": "integer", "minimum": 0}
+  # agent.maxReplicas -- maximum number of replicas.
+  # if HPA is disabled, this value will be ignored.
+  maxReplicas: 300
+  # @schema {"name": "agent.maxUnavailable", "type": "string"}
+  # agent.maxUnavailable -- maximum number of unavailable replicas
+  maxUnavailable: "1"
+  # @schema {"name": "agent.revisionHistoryLimit", "type": "integer", "minimum": 0}
+  # agent.revisionHistoryLimit -- number of old history to retain to allow rollback
+  revisionHistoryLimit: 2
+  # @schema {"name": "agent.terminationGracePeriodSeconds", "type": "integer", "minimum": 0}
+  # agent.terminationGracePeriodSeconds -- duration in seconds pod needs to terminate gracefully
+  terminationGracePeriodSeconds: 120
+  # @schema {"name": "agent.podSecurityContext", "type": "object"}
+  # agent.podSecurityContext -- security context for pod
+  podSecurityContext:
+    runAsUser: 65532
+    runAsNonRoot: true
+    runAsGroup: 65532
+    fsGroup: 65532
+    fsGroupChangePolicy: "OnRootMismatch"
+  # @schema {"name": "agent.securityContext", "type": "object"}
+  # agent.securityContext -- security context for container
+  securityContext:
+    runAsUser: 65532
+    runAsNonRoot: true
+    runAsGroup: 65532
+    privileged: false
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: false
+    capabilities:
+      drop:
+        - ALL
+  # @schema {"name": "agent.podManagementPolicy", "type": "string", "enum": ["OrderedReady", "Parallel"]}
+  # agent.podManagementPolicy -- pod management policy: OrderedReady or Parallel
+  podManagementPolicy: OrderedReady
+  # @schema {"name": "agent.persistentVolume", "type": "object"}
+  persistentVolume:
+    # @schema {"name": "agent.persistentVolume.enabled", "type": "boolean"}
+    # agent.persistentVolume.enabled -- enables PVC.
+    # It is required to enable if agent pod's file store functionality is enabled with non in-memory mode
+    enabled: false
+    # @schema {"name": "agent.persistentVolume.accessMode", "type": "string"}
+    # agent.persistentVolume.accessMode -- agent pod storage accessMode
+    accessMode: ReadWriteOncePod
+    # @schema {"name": "agent.persistentVolume.mountPropagation", "type": "string"}
+    # agent.persistentVolume.mountPropagation -- agent pod storage mountPropagation
+    mountPropagation: None
+    # @schema {"name": "agent.persistentVolume.storageClass", "type": "string"}
+    # agent.persistentVolume.storageClass -- storageClass name for agent pod volume
+    storageClass: vald-sc
+    # @schema {"name": "agent.persistentVolume.size", "type": "string"}
+    # agent.persistentVolume.size -- size of agent pod volume
+    size: 100Gi
+  # @schema {"name": "agent.podPriority", "alias": "podPriority"}
+  podPriority:
+    # agent.podPriority.enabled -- agent pod PriorityClass enabled
+    enabled: true
+    # agent.podPriority.value -- agent pod PriorityClass value
+    value: 1000000000
+  # @schema {"name": "agent.annotations", "type": "object"}
+  # agent.annotations -- deployment annotations
+  annotations: {}
+  # @schema {"name": "agent.podAnnotations", "type": "object"}
+  # agent.podAnnotations -- pod annotations
+  podAnnotations: {}
+  # @schema {"name": "agent.service", "alias": "service"}
+  service:
+    # agent.service.annotations -- service annotations
+    annotations: {}
+    # agent.service.labels -- service labels
+    labels: {}
+  # @schema {"name": "agent.hpa", "alias": "hpa"}
+  hpa:
+    # agent.hpa.enabled -- HPA enabled
+    enabled: false
+    # agent.hpa.targetCPUUtilizationPercentage -- HPA CPU utilization percentage
+    targetCPUUtilizationPercentage: 80
+  # @schema {"name": "agent.image", "alias": "image"}
+  image:
+    # agent.image.repository -- image repository
+    repository: vdaas/vald-agent-ngt
+    # agent.image.tag -- image tag (overrides defaults.image.tag)
+    tag: ""
+    # agent.image.pullPolicy -- image pull policy
+    pullPolicy: Always
+  # @schema {"name": "agent.rollingUpdate", "type": "object"}
+  rollingUpdate:
+    # @schema {"name": "agent.rollingUpdate.maxSurge", "type": "string"}
+    # agent.rollingUpdate.maxSurge -- max surge of rolling update
+    maxSurge: 25%
+    # @schema {"name": "agent.rollingUpdate.maxUnavailable", "type": "string"}
+    # agent.rollingUpdate.maxUnavailable -- max unavailable of rolling update
+    maxUnavailable: 25%
+    # @schema {"name": "agent.rollingUpdate.partition", "type": "integer"}
+    # agent.rollingUpdate.partition -- StatefulSet partition
+    partition: 0
+  # @schema {"name": "agent.initContainers", "alias": "initContainers"}
+  # agent.initContainers -- init containers
+  initContainers: []
+  # @schema {"name": "agent.env", "alias": "env"}
+  # agent.env -- environment variables
+  env:
+    - name: MY_NODE_NAME
+      valueFrom:
+        fieldRef:
+          fieldPath: spec.nodeName
+    - name: MY_POD_NAME
+      valueFrom:
+        fieldRef:
+          fieldPath: metadata.name
+    - name: MY_POD_NAMESPACE
+      valueFrom:
+        fieldRef:
+          fieldPath: metadata.namespace
+  # @schema {"name": "agent.volumeMounts", "alias": "volumeMounts"}
+  # agent.volumeMounts -- volume mounts
+  volumeMounts: []
+  # @schema {"name": "agent.volumes", "alias": "volumes"}
+  # agent.volumes -- volumes
+  volumes: []
+  # @schema {"name": "agent.nodeName", "type": "string"}
+  # agent.nodeName -- node name
+  nodeName: ""
+  # @schema {"name": "agent.nodeSelector", "alias": "nodeSelector"}
+  # agent.nodeSelector -- node selector
+  nodeSelector: {}
+  # @schema {"name": "agent.tolerations", "alias": "tolerations"}
+  # agent.tolerations -- tolerations
+  tolerations: []
+  # @schema {"name": "agent.affinity", "alias": "affinity"}
+  affinity:
+    nodeAffinity:
+      # agent.affinity.nodeAffinity.preferredDuringSchedulingIgnoredDuringExecution -- node affinity preferred scheduling terms
+      preferredDuringSchedulingIgnoredDuringExecution: []
+      requiredDuringSchedulingIgnoredDuringExecution:
+        # agent.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms -- node affinity required node selectors
+        nodeSelectorTerms: []
+    podAffinity:
+      # agent.affinity.podAffinity.preferredDuringSchedulingIgnoredDuringExecution -- pod affinity preferred scheduling terms
+      preferredDuringSchedulingIgnoredDuringExecution: []
+      # agent.affinity.podAffinity.requiredDuringSchedulingIgnoredDuringExecution -- pod affinity required scheduling terms
+      requiredDuringSchedulingIgnoredDuringExecution: []
+    podAntiAffinity:
+      # agent.affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution -- pod anti-affinity preferred scheduling terms
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          podAffinityTerm:
+            topologyKey: kubernetes.io/hostname
+            labelSelector:
+              matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                    - vald-agent-ngt
+      # agent.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution -- pod anti-affinity required scheduling terms
+      requiredDuringSchedulingIgnoredDuringExecution: []
+  # @schema {"name": "agent.topologySpreadConstraints", "alias": "topologySpreadConstraints"}
+  # agent.topologySpreadConstraints -- topology spread constraints for agent pods
+  topologySpreadConstraints: []
+  # @schema {"name": "agent.server_config", "alias": "server_config"}
+  # agent.server_config -- server config (overrides defaults.server_config)
+  server_config:
+    servers:
+      rest: {}
+      grpc: {}
+    healths:
+      liveness: {}
+      readiness: {}
+      startup:
+        startupProbe:
+          failureThreshold: 200
+          periodSeconds: 5
+    metrics:
+      pprof: {}
+  # @schema {"name": "agent.observability", "alias": "observability"}
+  # agent.observability -- observability config (overrides defaults.observability)
+  observability:
+    otlp:
+      attribute:
+        service_name: vald-agent-ngt
+  # @schema {"name": "agent.resources", "alias": "resources"}
+  # agent.resources -- compute resources.
+  # recommended setting of memory requests = cluster memory * 0.4 / number of agent pods
+  resources:
+    requests:
+      cpu: 300m
+      memory: 4Gi
+  # @schema {"name": "agent.readreplica", "type": "object"}
+  # agent.readreplica -- readreplica deployment annotations
+  readreplica:
+    # @schema {"name": "agent.readreplica.enabled", "type": "boolean"}
+    # agent.readreplica.enabled -- [This feature is WORK IN PROGRESS]enable agent readreplica
+    enabled: false
+    # @schema {"name": "agent.readreplica.name", "type": "string"}
+    # agent.readreplica.name -- name of agent readreplica
+    name: vald-agent-ngt-readreplica
+    # @schema {"name": "agent.readreplica.component_name", "type": "string"}
+    # agent.readreplica.component_name -- app.kubernetes.io/component name of agent readreplica
+    component_name: agent-readreplica
+    # @schema {"name": "agent.readreplica.label_key", "type": "string"}
+    # agent.readreplica.label_key -- label key to identify read replica resources
+    label_key: vald-readreplica-id
+    # @schema {"name": "agent.readreplica.volume_name", "type": "string"}
+    # agent.readreplica.volume_name -- name of clone volume of agent pvc for read replica
+    volume_name: vald-agent-ngt-readreplica-pvc
+    # @schema {"name": "agent.readreplica.snapshot_classname", "type": "string"}
+    # agent.readreplica.snapshot_classname -- snapshot class name for snapshotter used for read replica
+    snapshot_classname: ""
+    # @schema {"name": "agent.readreplica.replica", "type": "integer"}
+    # agent.readreplica.replica -- replica number of read replica
+    replica: 1
+    # @schema {"name": "agent.readreplica.service", "type": "object"}
+    # agent.readreplica.service -- service settings for read replica service resources
+    service:
+      # @schema {"name": "agent.readreplica.service.annotations", "type": "object"}
+      # agent.readreplica.service.annotations -- readreplica deployment annotations
+      annotations: {}
+  # @schema {"name": "agent.ngt", "type": "object"}
+  ngt:
+    # @schema {"name": "agent.ngt.index_path", "type": "string"}
+    # agent.ngt.index_path -- path to index data
+    index_path: ""
+    # @schema {"name": "agent.ngt.auto_index_duration_limit", "type": "string"}
+    # agent.ngt.auto_index_duration_limit -- limit duration of automatic indexing
+    auto_index_duration_limit: 24h
+    # @schema {"name": "agent.ngt.auto_index_check_duration", "type": "string"}
+    # agent.ngt.auto_index_check_duration -- check duration of automatic indexing
+    auto_index_check_duration: 30m
+    # @schema {"name": "agent.ngt.auto_index_length", "type": "integer"}
+    # agent.ngt.auto_index_length -- number of cache to trigger automatic indexing
+    auto_index_length: 100
+    # @schema {"name": "agent.ngt.auto_save_index_duration", "type": "string"}
+    # agent.ngt.auto_save_index_duration -- duration of automatic save index
+    auto_save_index_duration: 35m
+    # @schema {"name": "agent.ngt.auto_create_index_pool_size", "type": "integer"}
+    # agent.ngt.auto_create_index_pool_size -- batch process pool size of automatic create index operation
+    auto_create_index_pool_size: 16
+    # @schema {"name": "agent.ngt.initial_delay_max_duration", "type": "string"}
+    # agent.ngt.initial_delay_max_duration -- maximum duration for initial delay
+    initial_delay_max_duration: 3m
+    # @schema {"name": "agent.ngt.dimension", "type": "integer", "minimum": 1}
+    # agent.ngt.dimension -- vector dimension
+    dimension: 4096
+    # @schema {"name": "agent.ngt.bulk_insert_chunk_size", "type": "integer"}
+    # agent.ngt.bulk_insert_chunk_size -- bulk insert chunk size
+    bulk_insert_chunk_size: 10
+    # @schema {"name": "agent.ngt.distance_type", "type": "string", "enum": ["l1", "l2", "ang", "angle", "ham", "hamming", "cos", "cosine", "poincare", "poinc", "lorentz", "loren", "jac", "jaccard", "spjac", "sparsejaccard", "norml2", "normalizedl2", "normang", "normalizedangle", "normcos", "normalizedcosine"]}
+    # agent.ngt.distance_type -- distance type.
+    # it should be `l1`, `l2`, `angle`, `hamming`, `cosine`,`poincare`, `lorentz`, `jaccard`, `sparsejaccard`, `normalizedangle` or `normalizedcosine`.
+    # for further details about NGT libraries supported distance is https://github.com/yahoojapan/NGT/wiki/Command-Quick-Reference
+    # and vald agent's supported NGT distance type is https://pkg.go.dev/github.com/vdaas/vald/internal/core/algorithm/ngt#pkg-constants
+    distance_type: l2
+    # @schema {"name": "agent.ngt.object_type", "type": "string", "enum": ["float", "float16", "uint8"]}
+    # agent.ngt.object_type -- object type.
+    # it should be `float` or `uint8` or `float16`.
+    # for further details: https://github.com/yahoojapan/NGT/wiki/Command-Quick-Reference
+    object_type: float
+    # @schema {"name": "agent.ngt.creation_edge_size", "type": "integer"}
+    # agent.ngt.creation_edge_size -- creation edge size
+    creation_edge_size: 20
+    # @schema {"name": "agent.ngt.search_edge_size", "type": "integer"}
+    # agent.ngt.search_edge_size -- search edge size
+    search_edge_size: 10
+    # @schema {"name": "agent.ngt.enable_in_memory_mode", "type": "boolean"}
+    # agent.ngt.enable_in_memory_mode -- in-memory mode enabled
+    enable_in_memory_mode: true
+    # @schema {"name": "agent.ngt.default_pool_size", "type": "integer"}
+    # agent.ngt.default_pool_size -- default create index batch pool size
+    default_pool_size: 16
+    # @schema {"name": "agent.ngt.default_radius", "type": "number"}
+    # agent.ngt.default_radius -- default radius used for search
+    default_radius: -1.0
+    # @schema {"name": "agent.ngt.default_epsilon", "type": "number"}
+    # agent.ngt.default_epsilon -- default epsilon used for search
+    default_epsilon: 0.1
+    # @schema {"name": "agent.ngt.min_load_index_timeout", "type": "string"}
+    # agent.ngt.min_load_index_timeout -- minimum duration of load index timeout
+    min_load_index_timeout: 3m
+    # @schema {"name": "agent.ngt.max_load_index_timeout", "type": "string"}
+    # agent.ngt.max_load_index_timeout -- maximum duration of load index timeout
+    max_load_index_timeout: 10m
+    # @schema {"name": "agent.ngt.load_index_timeout_factor", "type": "string"}
+    # agent.ngt.load_index_timeout_factor -- a factor of load index timeout.
+    # timeout duration will be calculated by (index count to be loaded) * (factor).
+    load_index_timeout_factor: 1ms
+    # @schema {"name": "agent.ngt.enable_proactive_gc", "type": "boolean"}
+    # agent.ngt.enable_proactive_gc -- enable proactive GC call for reducing heap memory allocation
+    enable_proactive_gc: false
+    # @schema {"name": "agent.ngt.enable_copy_on_write", "type": "boolean"}
+    # agent.ngt.enable_copy_on_write -- enable copy on write saving for more stable backup
+    enable_copy_on_write: false
+    # @schema {"name": "agent.ngt.vqueue", "type": "object"}
+    vqueue:
+      # @schema {"name": "agent.ngt.vqueue.insert_buffer_pool_size", "type": "integer"}
+      # agent.ngt.vqueue.insert_buffer_pool_size -- insert slice pool buffer size
+      insert_buffer_pool_size: 10000
+      # @schema {"name": "agent.ngt.vqueue.delete_buffer_pool_size", "type": "integer"}
+      # agent.ngt.vqueue.delete_buffer_pool_size -- delete slice pool buffer size
+      delete_buffer_pool_size: 5000
+    # @schema {"name": "agent.ngt.kvsdb", "type": "object"}
+    kvsdb:
+      # @schema {"name": "agent.ngt.kvsdb.concurrency", "type": "integer"}
+      # agent.ngt.kvsdb.concurrency -- kvsdb processing concurrency
+      concurrency: 6
+    # @schema {"name": "agent.ngt.broken_index_history_limit", "type": "integer", "minimum": 0}
+    # agent.ngt.broken_index_history_limit -- maximum number of broken index generations to backup
+    broken_index_history_limit: 0
+    # @schema {"name": "agent.ngt.error_buffer_limit", "type": "integer", "minimum": 1}
+    # agent.ngt.error_buffer_limit -- maximum number of core ngt error buffer pool size limit
+    error_buffer_limit: 10
+  # @schema {"name": "agent.sidecar", "type": "object"}
+  sidecar:
+    # @schema {"name": "agent.sidecar.enabled", "type": "boolean"}
+    # agent.sidecar.enabled -- sidecar enabled
+    enabled: false
+    # @schema {"name": "agent.sidecar.initContainerEnabled", "type": "boolean"}
+    # agent.sidecar.initContainerEnabled -- sidecar on initContainer mode enabled.
+    initContainerEnabled: false
+    # @schema {"name": "agent.sidecar.version", "alias": "version"}
+    # agent.sidecar.version -- version of agent sidecar config
+    version: v0.0.0
+    # @schema {"name": "agent.sidecar.time_zone", "type": "string"}
+    # agent.sidecar.time_zone -- Time zone
+    time_zone: ""
+    # @schema {"name": "agent.sidecar.logging", "alias": "logging"}
+    # agent.sidecar.logging -- logging config (overrides defaults.logging)
+    logging: {}
+    # @schema {"name": "agent.sidecar.name", "type": "string"}
+    # agent.sidecar.name -- name of agent sidecar
+    name: vald-agent-sidecar
+    # @schema {"name": "agent.sidecar.image", "alias": "image"}
+    image:
+      # agent.sidecar.image.repository -- image repository
+      repository: vdaas/vald-agent-sidecar
+      # agent.sidecar.image.tag -- image tag (overrides defaults.image.tag)
+      tag: ""
+      # agent.sidecar.image.pullPolicy -- image pull policy
+      pullPolicy: Always
+    # @schema {"name": "agent.sidecar.service", "type": "object"}
+    service:
+      # @schema {"name": "agent.sidecar.service.enabled", "type": "boolean"}
+      # agent.sidecar.service.enabled -- agent sidecar service enabled
+      enabled: false
+      # @schema {"name": "agent.sidecar.service.annotations", "type": "object"}
+      # agent.sidecar.service.annotations -- agent sidecar service annotations
+      annotations: {}
+      # @schema {"name": "agent.sidecar.service.labels", "type": "object"}
+      # agent.sidecar.service.labels -- agent sidecar service labels
+      labels: {}
+      # @schema {"name": "agent.sidecar.service.type", "type": "string", "enum": ["ClusterIP", "LoadBalancer", "NodePort"]}
+      # agent.sidecar.service.type -- service type: ClusterIP, LoadBalancer or NodePort
+      type: ClusterIP
+      # @schema {"name": "agent.sidecar.service.externalTrafficPolicy", "type": "string"}
+      # agent.sidecar.service.externalTrafficPolicy -- external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local
+      externalTrafficPolicy: ""
+    # @schema {"name": "agent.sidecar.env", "alias": "env"}
+    # agent.sidecar.env -- environment variables
+    env:
+      - name: MY_NODE_NAME
+        valueFrom:
+          fieldRef:
+            fieldPath: spec.nodeName
+      - name: MY_POD_NAME
+        valueFrom:
+          fieldRef:
+            fieldPath: metadata.name
+      - name: MY_POD_NAMESPACE
+        valueFrom:
+          fieldRef:
+            fieldPath: metadata.namespace
+      - name: AWS_ACCESS_KEY
+        valueFrom:
+          secretKeyRef:
+            name: aws-secret
+            key: access-key
+      - name: AWS_SECRET_ACCESS_KEY
+        valueFrom:
+          secretKeyRef:
+            name: aws-secret
+            key: secret-access-key
+    # @schema {"name": "agent.sidecar.server_config", "alias": "server_config"}
+    # agent.sidecar.server_config -- server config (overrides defaults.server_config)
+    server_config:
+      servers:
+        rest:
+          enabled: false
+          port: 18080
+          servicePort: 18080
+        grpc:
+          enabled: false
+          port: 18081
+          servicePort: 18081
+      healths:
+        liveness:
+          enabled: false
+          port: 13000
+          servicePort: 13000
+        readiness:
+          enabled: false
+          port: 13001
+          servicePort: 13001
+        startup:
+          enabled: false
+          port: 13001
+      metrics:
+        pprof:
+          port: 16060
+          servicePort: 16060
+    # @schema {"name": "agent.sidecar.observability", "alias": "observability"}
+    # agent.sidecar.observability -- observability config (overrides defaults.observability)
+    observability:
+      otlp:
+        attribute:
+          service_name: vald-agent-sidecar
+    # @schema {"name": "agent.sidecar.resources", "alias": "resources"}
+    # agent.sidecar.resources -- compute resources.
+    resources:
+      requests:
+        cpu: 100m
+        memory: 100Mi
+    # @schema {"name": "agent.sidecar.config", "type": "object"}
+    config:
+      # @schema {"name": "agent.sidecar.config.watch_enabled", "type": "boolean"}
+      # agent.sidecar.config.watch_enabled -- auto backup triggered by file changes is enabled
+      watch_enabled: true
+      # @schema {"name": "agent.sidecar.config.auto_backup_enabled", "type": "boolean"}
+      # agent.sidecar.config.auto_backup_enabled -- auto backup triggered by timer is enabled
+      auto_backup_enabled: true
+      # @schema {"name": "agent.sidecar.config.auto_backup_duration", "type": "string"}
+      # agent.sidecar.config.auto_backup_duration -- auto backup duration
+      auto_backup_duration: 24h
+      # @schema {"name": "agent.sidecar.config.post_stop_timeout", "type": "string"}
+      # agent.sidecar.config.post_stop_timeout -- timeout for observing file changes during post stop
+      post_stop_timeout: 2m
+      # @schema {"name": "agent.sidecar.config.filename", "type": "string"}
+      # agent.sidecar.config.filename -- backup filename
+      filename: _MY_POD_NAME_
+      # @schema {"name": "agent.sidecar.config.filename_suffix", "type": "string"}
+      # agent.sidecar.config.filename_suffix -- suffix for backup filename
+      filename_suffix: ".tar.gz"
+      # @schema {"name": "agent.sidecar.config.blob_storage", "type": "object"}
+      blob_storage:
+        # @schema {"name": "agent.sidecar.config.blob_storage.storage_type", "type": "string", "enum": ["s3", "cloud_storage"]}
+        # agent.sidecar.config.blob_storage.storage_type -- storage type
+        storage_type: "s3"
+        # @schema {"name": "agent.sidecar.config.blob_storage.bucket", "type": "string"}
+        # agent.sidecar.config.blob_storage.bucket -- bucket name
+        bucket: ""
+        # @schema {"name": "agent.sidecar.config.blob_storage.s3", "type": "object"}
+        s3:
+          # @schema {"name": "agent.sidecar.config.blob_storage.s3.endpoint", "type": "string"}
+          # agent.sidecar.config.blob_storage.s3.endpoint -- s3 endpoint
+          endpoint: ""
+          # @schema {"name": "agent.sidecar.config.blob_storage.s3.region", "type": "string"}
+          # agent.sidecar.config.blob_storage.s3.region -- s3 region
+          region: ""
+          # @schema {"name": "agent.sidecar.config.blob_storage.s3.access_key", "type": "string"}
+          # agent.sidecar.config.blob_storage.s3.access_key -- s3 access key
+          access_key: _AWS_ACCESS_KEY_
+          # @schema {"name": "agent.sidecar.config.blob_storage.s3.secret_access_key", "type": "string"}
+          # agent.sidecar.config.blob_storage.s3.secret_access_key -- s3 secret access key
+          secret_access_key: _AWS_SECRET_ACCESS_KEY_
+          # @schema {"name": "agent.sidecar.config.blob_storage.s3.token", "type": "string"}
+          # agent.sidecar.config.blob_storage.s3.token -- s3 token
+          token: ""
+          # @schema {"name": "agent.sidecar.config.blob_storage.s3.max_retries", "type": "integer"}
+          # agent.sidecar.config.blob_storage.s3.max_retries -- maximum number of retries of s3 client
+          max_retries: 3
+          # @schema {"name": "agent.sidecar.config.blob_storage.s3.force_path_style", "type": "boolean"}
+          # agent.sidecar.config.blob_storage.s3.force_path_style -- use path-style addressing
+          force_path_style: false
+          # @schema {"name": "agent.sidecar.config.blob_storage.s3.use_accelerate", "type": "boolean"}
+          # agent.sidecar.config.blob_storage.s3.use_accelerate -- enable s3 accelerate feature
+          use_accelerate: false
+          # @schema {"name": "agent.sidecar.config.blob_storage.s3.use_arn_region", "type": "boolean"}
+          # agent.sidecar.config.blob_storage.s3.use_arn_region -- s3 service client to use the region specified in the ARN
+          use_arn_region: false
+          # @schema {"name": "agent.sidecar.config.blob_storage.s3.use_dual_stack", "type": "boolean"}
+          # agent.sidecar.config.blob_storage.s3.use_dual_stack -- use dual stack
+          use_dual_stack: false
+          # @schema {"name": "agent.sidecar.config.blob_storage.s3.enable_ssl", "type": "boolean"}
+          # agent.sidecar.config.blob_storage.s3.enable_ssl -- enable ssl for s3 session
+          enable_ssl: true
+          # @schema {"name": "agent.sidecar.config.blob_storage.s3.enable_param_validation", "type": "boolean"}
+          # agent.sidecar.config.blob_storage.s3.enable_param_validation -- enables semantic parameter validation
+          enable_param_validation: true
+          # @schema {"name": "agent.sidecar.config.blob_storage.s3.enable_100_continue", "type": "boolean"}
+          # agent.sidecar.config.blob_storage.s3.enable_100_continue -- enable AWS SDK adding the 'Expect: 100-Continue' header to PUT requests over 2MB of content.
+          enable_100_continue: true
+          # @schema {"name": "agent.sidecar.config.blob_storage.s3.enable_content_md5_validation", "type": "boolean"}
+          # agent.sidecar.config.blob_storage.s3.enable_content_md5_validation -- enable the S3 client to add MD5 checksum to upload API calls.
+          enable_content_md5_validation: true
+          # @schema {"name": "agent.sidecar.config.blob_storage.s3.enable_endpoint_discovery", "type": "boolean"}
+          # agent.sidecar.config.blob_storage.s3.enable_endpoint_discovery -- enable endpoint discovery
+          enable_endpoint_discovery: false
+          # @schema {"name": "agent.sidecar.config.blob_storage.s3.enable_endpoint_host_prefix", "type": "boolean"}
+          # agent.sidecar.config.blob_storage.s3.enable_endpoint_host_prefix -- enable prefixing request endpoint hosts with modeled information
+          enable_endpoint_host_prefix: true
+          # @schema {"name": "agent.sidecar.config.blob_storage.s3.max_part_size", "type": "string", "pattern": "^[0-9]+(kb|mb|gb)$"}
+          # agent.sidecar.config.blob_storage.s3.max_part_size -- s3 multipart upload max part size
+          max_part_size: 64mb
+          # @schema {"name": "agent.sidecar.config.blob_storage.s3.max_chunk_size", "type": "string", "pattern": "^[0-9]+(kb|mb|gb)$"}
+          # agent.sidecar.config.blob_storage.s3.max_chunk_size -- s3 download max chunk size
+          max_chunk_size: 64mb
+        # @schema {"name": "agent.sidecar.config.blob_storage.cloud_storage", "type": "object"}
+        cloud_storage:
+          # @schema {"name": "agent.sidecar.config.blob_storage.cloud_storage.url", "type": "string"}
+          # agent.sidecar.config.blob_storage.cloud_storage.url -- cloud storage url
+          url: ""
+          # @schema {"name": "agent.sidecar.config.blob_storage.cloud_storage.client", "type": "object"}
+          client:
+            # @schema {"name": "agent.sidecar.config.blob_storage.cloud_storage.client.credentials_file_path", "type": "string"}
+            # agent.sidecar.config.blob_storage.cloud_storage.client.credentials_file_path -- credentials file path
+            credentials_file_path: ""
+            # @schema {"name": "agent.sidecar.config.blob_storage.cloud_storage.client.credentials_json", "type": "string"}
+            # agent.sidecar.config.blob_storage.cloud_storage.client.credentials_json -- credentials json
+            credentials_json: ""
+          # @schema {"name": "agent.sidecar.config.blob_storage.cloud_storage.write_buffer_size", "type": "integer"}
+          # agent.sidecar.config.blob_storage.cloud_storage.write_buffer_size -- bytes of the chunks for upload
+          write_buffer_size: 0
+          # @schema {"name": "agent.sidecar.config.blob_storage.cloud_storage.write_cache_control", "type": "string"}
+          # agent.sidecar.config.blob_storage.cloud_storage.write_cache_control -- Cache-Control of HTTP Header
+          write_cache_control: ""
+          # @schema {"name": "agent.sidecar.config.blob_storage.cloud_storage.write_content_disposition", "type": "string"}
+          # agent.sidecar.config.blob_storage.cloud_storage.write_content_disposition -- Content-Disposition of HTTP Header
+          write_content_disposition: ""
+          # @schema {"name": "agent.sidecar.config.blob_storage.cloud_storage.write_content_encoding", "type": "string"}
+          # agent.sidecar.config.blob_storage.cloud_storage.write_content_encoding -- the encoding of the blob's content
+          write_content_encoding: ""
+          # @schema {"name": "agent.sidecar.config.blob_storage.cloud_storage.write_content_language", "type": "string"}
+          # agent.sidecar.config.blob_storage.cloud_storage.write_content_language -- the language of blob's content
+          write_content_language: ""
+          # @schema {"name": "agent.sidecar.config.blob_storage.cloud_storage.write_content_type", "type": "string"}
+          # agent.sidecar.config.blob_storage.cloud_storage.write_content_type -- MIME type of the blob
+          write_content_type: ""
+      # @schema {"name": "agent.sidecar.config.compress", "type": "object"}
+      compress:
+        # @schema {"name": "agent.sidecar.config.compress.compress_algorithm", "type": "string", "enum": ["gob", "gzip", "lz4", "zstd"]}
+        # agent.sidecar.config.compress.compress_algorithm -- compression algorithm.
+        # must be `gob`, `gzip`, `lz4` or `zstd`
+        compress_algorithm: "gzip"
+        # @schema {"name": "agent.sidecar.config.compress.compression_level", "type": "integer"}
+        # agent.sidecar.config.compress.compression_level -- compression level.
+        # value range relies on which algorithm is used.
+        # `gob`: level will be ignored.
+        # `gzip`: -1 (default compression), 0 (no compression), or 1 (best speed) to 9 (best compression).
+        # `lz4`: >= 0, higher is better compression.
+        # `zstd`: 1 (fastest) to 22 (best), however implementation relies on klauspost/compress.
+        compression_level: -1
+      # @schema {"name": "agent.sidecar.config.client", "type": "object"}
+      client:
+        # @schema {"name": "agent.sidecar.config.client.net", "alias": "net"}
+        net:
+          dns:
+            # agent.sidecar.config.client.net.dns.cache_enabled -- HTTP client TCP DNS cache enabled
+            cache_enabled: true
+            # agent.sidecar.config.client.net.dns.refresh_duration -- HTTP client TCP DNS cache refresh duration
+            refresh_duration: 1h
+            # agent.sidecar.config.client.net.dns.refresh_duration -- HTTP client TCP DNS cache expiration
+            cache_expiration: 24h
+          dialer:
+            # agent.sidecar.config.client.net.dialer.timeout -- HTTP client TCP dialer connect timeout
+            timeout: 5s
+            # agent.sidecar.config.client.net.dialer.keepalive -- HTTP client TCP dialer keep alive
+            keepalive: 5m
+            # agent.sidecar.config.client.net.dialer.dual_stack_enabled -- HTTP client TCP dialer dual stack enabled
+            dual_stack_enabled: false
+          tls:
+            # agent.sidecar.config.client.net.tls.enabled -- TLS enabled
+            enabled: false
+            # agent.sidecar.config.client.net.tls.cert -- TLS cert path
+            cert: /path/to/cert
+            # agent.sidecar.config.client.net.tls.key -- TLS key path
+            key: /path/to/key
+            # agent.sidecar.config.client.net.tls.ca -- TLS ca path
+            ca: /path/to/ca
+            # agent.sidecar.config.client.net.tls.insecure_skip_verify -- enable/disable skip SSL certificate verification
+            insecure_skip_verify: false
+          # @schema {"name": "agent.sidecar.config.client.net.socket_option", "alias": "socket_option"}
+          socket_option:
+            # agent.sidecar.config.client.net.socket_option.reuse_port -- server listen socket option for reuse_port functionality
+            reuse_port: true
+            # agent.sidecar.config.client.net.socket_option.reuse_addr -- server listen socket option for reuse_addr functionality
+            reuse_addr: true
+            # agent.sidecar.config.client.net.socket_option.tcp_fast_open -- server listen socket option for tcp_fast_open functionality
+            tcp_fast_open: true
+            # agent.sidecar.config.client.net.socket_option.tcp_no_delay -- server listen socket option for tcp_no_delay functionality
+            tcp_no_delay: false
+            # agent.sidecar.config.client.net.socket_option.tcp_cork -- server listen socket option for tcp_cork functionality
+            tcp_cork: true
+            # agent.sidecar.config.client.net.socket_option.tcp_quick_ack -- server listen socket option for tcp_quick_ack functionality
+            tcp_quick_ack: false
+            # agent.sidecar.config.client.net.socket_option.tcp_defer_accept -- server listen socket option for tcp_defer_accept functionality
+            tcp_defer_accept: false
+            # agent.sidecar.config.client.net.socket_option.ip_transparent -- server listen socket option for ip_transparent functionality
+            ip_transparent: false
+            # agent.sidecar.config.client.net.socket_option.ip_recover_destination_addr -- server listen socket option for ip_recover_destination_addr functionality
+            ip_recover_destination_addr: false
+        # @schema {"name": "agent.sidecar.config.client.transport", "type": "object"}
+        transport:
+          # @schema {"name": "agent.sidecar.config.client.transport.round_tripper", "type": "object"}
+          round_tripper:
+            # @schema {"name": "agent.sidecar.config.client.transport.round_tripper.tls_handshake_timeout", "type": "string"}
+            # agent.sidecar.config.client.transport.round_tripper.tls_handshake_timeout -- TLS handshake timeout
+            tls_handshake_timeout: 5s
+            # @schema {"name": "agent.sidecar.config.client.transport.round_tripper.max_idle_conns", "type": "integer"}
+            # agent.sidecar.config.client.transport.round_tripper.max_idle_conns -- maximum count of idle connections
+            max_idle_conns: 100
+            # @schema {"name": "agent.sidecar.config.client.transport.round_tripper.max_idle_conns_per_host", "type": "integer"}
+            # agent.sidecar.config.client.transport.round_tripper.max_idle_conns_per_host -- maximum count of idle connections per host
+            max_idle_conns_per_host: 10
+            # @schema {"name": "agent.sidecar.config.client.transport.round_tripper.max_conns_per_host", "type": "integer"}
+            # agent.sidecar.config.client.transport.round_tripper.max_conns_per_host -- maximum count of connections per host
+            max_conns_per_host: 10
+            # @schema {"name": "agent.sidecar.config.client.transport.round_tripper.idle_conn_timeout", "type": "string"}
+            # agent.sidecar.config.client.transport.round_tripper.idle_conn_timeout -- timeout for idle connections
+            idle_conn_timeout: 90s
+            # @schema {"name": "agent.sidecar.config.client.transport.round_tripper.response_header_timeout", "type": "string"}
+            # agent.sidecar.config.client.transport.round_tripper.response_header_timeout -- timeout for response header
+            response_header_timeout: 5s
+            # @schema {"name": "agent.sidecar.config.client.transport.round_tripper.expect_continue_timeout", "type": "string"}
+            # agent.sidecar.config.client.transport.round_tripper.expect_continue_timeout -- expect continue timeout
+            expect_continue_timeout: 5s
+            # @schema {"name": "agent.sidecar.config.client.transport.round_tripper.max_response_header_size", "type": "integer"}
+            # agent.sidecar.config.client.transport.round_tripper.max_response_header_size -- maximum response header size
+            max_response_header_size: 0
+            # @schema {"name": "agent.sidecar.config.client.transport.round_tripper.write_buffer_size", "type": "integer"}
+            # agent.sidecar.config.client.transport.round_tripper.write_buffer_size -- write buffer size
+            write_buffer_size: 0
+            # @schema {"name": "agent.sidecar.config.client.transport.round_tripper.read_buffer_size", "type": "integer"}
+            # agent.sidecar.config.client.transport.round_tripper.read_buffer_size -- read buffer size
+            read_buffer_size: 0
+            # @schema {"name": "agent.sidecar.config.client.transport.round_tripper.force_attempt_http_2", "type": "boolean"}
+            # agent.sidecar.config.client.transport.round_tripper.force_attempt_http_2 -- force attempt HTTP2
+            force_attempt_http_2: true
+          # @schema {"name": "agent.sidecar.config.client.transport.backoff", "alias": "backoff"}
+          backoff:
+            # agent.sidecar.config.client.transport.backoff.initial_duration -- backoff initial duration
+            initial_duration: 5ms
+            # agent.sidecar.config.client.transport.backoff.backoff_time_limit -- backoff time limit
+            backoff_time_limit: 5s
+            # agent.sidecar.config.client.transport.backoff.maximum_duration -- backoff maximum duration
+            maximum_duration: 5s
+            # agent.sidecar.config.client.transport.backoff.jitter_limit -- backoff jitter limit
+            jitter_limit: 100ms
+            # agent.sidecar.config.client.transport.backoff.backoff_factor -- backoff backoff factor
+            backoff_factor: 1.1
+            # agent.sidecar.config.client.transport.backoff.retry_count -- backoff retry count
+            retry_count: 100
+            # agent.sidecar.config.client.transport.backoff.enable_error_log -- backoff error log enabled
+            enable_error_log: true
+      # @schema {"name": "agent.sidecar.config.restore_backoff_enabled", "type": "boolean"}
+      # agent.sidecar.config.restore_backoff_enabled -- restore backoff enabled
+      restore_backoff_enabled: false
+      # @schema {"name": "agent.sidecar.config.restore_backoff", "alias": "backoff"}
+      restore_backoff:
+        # agent.sidecar.config.restore_backoff.initial_duration -- restore backoff initial duration
+        initial_duration: 1s
+        # agent.sidecar.config.restore_backoff.backoff_time_limit -- restore backoff time limit
+        backoff_time_limit: 30m
+        # agent.sidecar.config.restore_backoff.maximum_duration -- restore backoff maximum duration
+        maximum_duration: 1m
+        # agent.sidecar.config.restore_backoff.jitter_limit -- restore backoff jitter limit
+        jitter_limit: 10s
+        # agent.sidecar.config.restore_backoff.backoff_factor -- restore backoff factor
+        backoff_factor: 1.2
+        # agent.sidecar.config.restore_backoff.retry_count -- restore backoff retry count
+        retry_count: 100
+        # agent.sidecar.config.restore_backoff.enable_error_log -- restore backoff log enabled
+        enable_error_log: true
+# @schema {"name": "discoverer", "type": "object"}
+discoverer:
+  # @schema {"name": "discoverer.enabled", "type": "boolean"}
+  # discoverer.enabled -- discoverer enabled
+  enabled: true
+  # @schema {"name": "discoverer.version", "alias": "version"}
+  # discoverer.version -- version of discoverer config
+  version: v0.0.0
+  # @schema {"name": "discoverer.time_zone", "type": "string"}
+  # discoverer.time_zone -- Time zone
+  time_zone: ""
+  # @schema {"name": "discoverer.logging", "alias": "logging"}
+  # discoverer.logging -- logging config (overrides defaults.logging)
+  logging: {}
+  # @schema {"name": "discoverer.name", "type": "string"}
+  # discoverer.name -- name of discoverer deployment
+  name: vald-discoverer
+  # @schema {"name": "discoverer.kind", "type": "string", "enum": ["Deployment", "DaemonSet"]}
+  # discoverer.kind -- deployment kind: Deployment or DaemonSet
+  kind: Deployment
+  # @schema {"name": "discoverer.serviceType", "type": "string", "enum": ["ClusterIP", "LoadBalancer", "NodePort"]}
+  # discoverer.serviceType -- service type: ClusterIP, LoadBalancer or NodePort
+  serviceType: ClusterIP
+  # @schema {"name": "discoverer.externalTrafficPolicy", "type": "string"}
+  # discoverer.externalTrafficPolicy -- external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local
+  externalTrafficPolicy: ""
+  # @schema {"name": "discoverer.internalTrafficPolicy", "type": "string"}
+  # discoverer.internalTrafficPolicy -- internal traffic policy : Cluster or Local
+  internalTrafficPolicy: ""
+  # @schema {"name": "discoverer.progressDeadlineSeconds", "type": "integer"}
+  # discoverer.progressDeadlineSeconds -- progress deadline seconds
+  progressDeadlineSeconds: 600
+  # @schema {"name": "discoverer.minReplicas", "type": "integer", "minimum": 0}
+  # discoverer.minReplicas -- minimum number of replicas.
+  # if HPA is disabled, the replicas will be set to this value
+  minReplicas: 1
+  # @schema {"name": "discoverer.maxReplicas", "type": "integer", "minimum": 0}
+  # discoverer.maxReplicas -- maximum number of replicas.
+  # if HPA is disabled, this value will be ignored.
+  maxReplicas: 2
+  # @schema {"name": "discoverer.maxUnavailable", "type": "string"}
+  # discoverer.maxUnavailable -- maximum number of unavailable replicas
+  maxUnavailable: 50%
+  # @schema {"name": "discoverer.revisionHistoryLimit", "type": "integer", "minimum": 0}
+  # discoverer.revisionHistoryLimit -- number of old history to retain to allow rollback
+  revisionHistoryLimit: 2
+  # @schema {"name": "discoverer.terminationGracePeriodSeconds", "type": "integer", "minimum": 0}
+  # discoverer.terminationGracePeriodSeconds -- duration in seconds pod needs to terminate gracefully
+  terminationGracePeriodSeconds: 30
+  # @schema {"name": "discoverer.podSecurityContext", "type": "object"}
+  # discoverer.podSecurityContext -- security context for pod
+  podSecurityContext:
+    runAsUser: 65532
+    runAsNonRoot: true
+    runAsGroup: 65532
+    fsGroup: 65532
+    fsGroupChangePolicy: "OnRootMismatch"
+  # @schema {"name": "discoverer.securityContext", "type": "object"}
+  # discoverer.securityContext -- security context for container
+  securityContext:
+    runAsUser: 65532
+    runAsNonRoot: true
+    runAsGroup: 65532
+    privileged: false
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    capabilities:
+      drop:
+        - ALL
+  # @schema {"name": "discoverer.podPriority", "alias": "podPriority"}
+  podPriority:
+    # discoverer.podPriority.enabled -- discoverer pod PriorityClass enabled
+    enabled: true
+    # discoverer.podPriority.value -- discoverer pod PriorityClass value
+    value: 1000000
+  # @schema {"name": "discoverer.annotations", "type": "object"}
+  # discoverer.annotations -- deployment annotations
+  annotations: {}
+  # @schema {"name": "discoverer.podAnnotations", "type": "object"}
+  # discoverer.podAnnotations -- pod annotations
+  podAnnotations: {}
+  # @schema {"name": "discoverer.hpa", "alias": "hpa"}
+  hpa:
+    # discoverer.hpa.enabled -- HPA enabled
+    enabled: false
+    # discoverer.hpa.targetCPUUtilizationPercentage -- HPA CPU utilization percentage
+    targetCPUUtilizationPercentage: 80
+  # @schema {"name": "discoverer.service", "alias": "service"}
+  service:
+    # discoverer.service.annotations -- service annotations
+    annotations: {}
+    # discoverer.service.labels -- service labels
+    labels: {}
+  # @schema {"name": "discoverer.image", "alias": "image"}
+  image:
+    # discoverer.image.repository -- image repository
+    repository: vdaas/vald-discoverer-k8s
+    # discoverer.image.tag -- image tag (overrides defaults.image.tag)
+    tag: ""
+    # discoverer.image.pullPolicy -- image pull policy
+    pullPolicy: Always
+  # @schema {"name": "discoverer.rollingUpdate", "alias": "rollingUpdate"}
+  rollingUpdate:
+    # discoverer.rollingUpdate.maxSurge -- max surge of rolling update
+    maxSurge: 25%
+    # discoverer.rollingUpdate.maxUnavailable -- max unavailable of rolling update
+    maxUnavailable: 25%
+  # @schema {"name": "discoverer.initContainers", "alias": "initContainers"}
+  # discoverer.initContainers -- init containers
+  initContainers: []
+  # @schema {"name": "discoverer.env", "alias": "env"}
+  # discoverer.env -- environment variables
+  env:
+    - name: MY_NODE_NAME
+      valueFrom:
+        fieldRef:
+          fieldPath: spec.nodeName
+    - name: MY_POD_NAME
+      valueFrom:
+        fieldRef:
+          fieldPath: metadata.name
+    - name: MY_POD_NAMESPACE
+      valueFrom:
+        fieldRef:
+          fieldPath: metadata.namespace
+  # @schema {"name": "discoverer.volumeMounts", "alias": "volumeMounts"}
+  # discoverer.volumeMounts -- volume mounts
+  volumeMounts: []
+  # @schema {"name": "discoverer.volumes", "alias": "volumes"}
+  # discoverer.volumes -- volumes
+  volumes: []
+  # @schema {"name": "discoverer.nodeName", "type": "string"}
+  # discoverer.nodeName -- node name
+  nodeName: ""
+  # @schema {"name": "discoverer.nodeSelector", "alias": "nodeSelector"}
+  # discoverer.nodeSelector -- node selector
+  nodeSelector: {}
+  # @schema {"name": "discoverer.tolerations", "alias": "tolerations"}
+  # discoverer.tolerations -- tolerations
+  tolerations: []
+  # @schema {"name": "discoverer.affinity", "alias": "affinity"}
+  affinity:
+    nodeAffinity:
+      # discoverer.affinity.nodeAffinity.preferredDuringSchedulingIgnoredDuringExecution -- node affinity preferred scheduling terms
+      preferredDuringSchedulingIgnoredDuringExecution: []
+      requiredDuringSchedulingIgnoredDuringExecution:
+        # discoverer.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms -- node affinity required node selectors
+        nodeSelectorTerms: []
+    podAffinity:
+      # discoverer.affinity.podAffinity.preferredDuringSchedulingIgnoredDuringExecution -- pod affinity preferred scheduling terms
+      preferredDuringSchedulingIgnoredDuringExecution: []
+      # discoverer.affinity.podAffinity.requiredDuringSchedulingIgnoredDuringExecution -- pod affinity required scheduling terms
+      requiredDuringSchedulingIgnoredDuringExecution: []
+    podAntiAffinity:
+      # discoverer.affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution -- pod anti-affinity preferred scheduling terms
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          podAffinityTerm:
+            topologyKey: kubernetes.io/hostname
+            labelSelector:
+              matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                    - vald-discoverer
+      # discoverer.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution -- pod anti-affinity required scheduling terms
+      requiredDuringSchedulingIgnoredDuringExecution: []
+  # @schema {"name": "discoverer.topologySpreadConstraints", "alias": "topologySpreadConstraints"}
+  # discoverer.topologySpreadConstraints -- topology spread constraints of discoverer pods
+  topologySpreadConstraints: []
+  # @schema {"name": "discoverer.server_config", "alias": "server_config"}
+  # discoverer.server_config -- server config (overrides defaults.server_config)
+  server_config:
+    servers:
+      rest: {}
+      grpc: {}
+    healths:
+      liveness: {}
+      readiness: {}
+      startup: {}
+    metrics:
+      pprof: {}
+  # @schema {"name": "discoverer.observability", "alias": "observability"}
+  # discoverer.observability -- observability config (overrides defaults.observability)
+  observability:
+    otlp:
+      attribute:
+        service_name: vald-discoverer
+  # @schema {"name": "discoverer.resources", "alias": "resources"}
+  # discoverer.resources -- compute resources
+  resources:
+    requests:
+      cpu: 200m
+      memory: 65Mi
+    limits:
+      cpu: 600m
+      memory: 200Mi
+  # @schema {"name": "discoverer.discoverer", "type": "object"}
+  discoverer:
+    # @schema {"name": "discoverer.discoverer.name", "type": "string"}
+    # discoverer.discoverer.name -- name to discovery
+    name: ""
+    # @schema {"name": "discoverer.discoverer.namespace", "type": "string"}
+    # discoverer.discoverer.namespace -- namespace to discovery
+    namespace: _MY_POD_NAMESPACE_
+    # @schema {"name": "discoverer.discoverer.discovery_duration", "type": "string"}
+    # discoverer.discoverer.discovery_duration -- duration to discovery
+    discovery_duration: 3s
+    # @schema {"name": "discoverer.discoverer.selectors", "type": "object"}
+    # discoverer.discoverer.selectors -- k8s resource selectors
+    selectors:
+      # @schema {"name": "discoverer.discoverer.selectors.pod", "type": "object"}
+      # discoverer.discoverer.selectors.pod -- k8s resource selectors for pod discovery
+      pod:
+        # @schema {"name": "discoverer.discoverer.selectors.pod.labels", "type": "object"}
+        # discoverer.discoverer.selectors.pod.labels -- k8s label selectors for pod discovery
+        labels: {}
+        # @schema {"name": "discoverer.discoverer.selectors.pod.fields", "type": "object"}
+        # discoverer.discoverer.selectors.pod.fields -- k8s field selectors for pod discovery
+        fields: {}
+      # @schema {"name": "discoverer.discoverer.selectors.node", "type": "object"}
+      # discoverer.discoverer.selectors.node -- k8s resource selectors for node discovery
+      node:
+        # @schema {"name": "discoverer.discoverer.selectors.node.labels", "type": "object"}
+        # discoverer.discoverer.selectors.node.labels -- k8s label selectors for node discovery
+        labels: {}
+        # @schema {"name": "discoverer.discoverer.selectors.node.fields", "type": "object"}
+        # discoverer.discoverer.selectors.node.fields -- k8s field selectors for node discovery
+        fields: {}
+      # @schema {"name": "discoverer.discoverer.selectors.pod_metrics", "type": "object"}
+      # discoverer.discoverer.selectors.pod_metrics -- k8s resource selectors for pod_metrics discovery
+      pod_metrics:
+        # @schema {"name": "discoverer.discoverer.selectors.pod_metrics.labels", "type": "object"}
+        # discoverer.discoverer.selectors.pod_metrics.labels -- k8s label selectors for pod_metrics discovery
+        labels: {}
+        # @schema {"name": "discoverer.discoverer.selectors.pod_metrics.fields", "type": "object"}
+        # discoverer.discoverer.selectors.pod_metrics.fields -- k8s field selectors for pod_metrics discovery
+        fields: {}
+      # @schema {"name": "discoverer.discoverer.selectors.node_metrics", "type": "object"}
+      # discoverer.discoverer.selectors.node_metrics -- k8s resource selectors for node_metrics discovery
+      node_metrics:
+        # @schema {"name": "discoverer.discoverer.selectors.node_metrics.labels", "type": "object"}
+        # discoverer.discoverer.selectors.node_metrics.labels -- k8s label selectors for node_metrics discovery
+        labels: {}
+        # @schema {"name": "discoverer.discoverer.selectors.node_metrics.fields", "type": "object"}
+        # discoverer.discoverer.selectors.node_metrics.fields -- k8s field selectors for node_metrics discovery
+        fields: {}
+      # @schema {"name": "discoverer.discoverer.selectors.service", "type": "object"}
+      # discoverer.discoverer.selectors.service -- k8s resource selectors for service discovery
+      service:
+        # @schema {"name": "discoverer.discoverer.selectors.service.labels", "type": "object"}
+        # discoverer.discoverer.selectors.service.labels -- k8s label selectors for service discovery
+        labels: {}
+        # @schema {"name": "discoverer.discoverer.selectors.service.fields", "type": "object"}
+        # discoverer.discoverer.selectors.service.fields -- k8s field selectors for service discovery
+        fields: {}
+    # @schema {"name": "discoverer.discoverer.net", "alias": "net"}
+    net:
+      dns:
+        # discoverer.discoverer.net.dns.cache_enabled -- TCP DNS cache enabled
+        cache_enabled: true
+        # discoverer.discoverer.net.dns.refresh_duration -- TCP DNS cache refresh duration
+        refresh_duration: 5m
+        # discoverer.discoverer.net.dns.cache_expiration -- TCP DNS cache expiration
+        cache_expiration: 24h
+      dialer:
+        # discoverer.discoverer.net.dialer.timeout -- TCP dialer timeout
+        timeout: 30s
+        # discoverer.discoverer.net.dialer.keepalive -- TCP dialer keep alive
+        keepalive: 10m
+        # discoverer.discoverer.net.dialer.dual_stack_enabled -- TCP dialer dual stack enabled
+        dual_stack_enabled: false
+      tls:
+        # discoverer.discoverer.net.tls.enabled -- TLS enabled
+        enabled: false
+        # discoverer.discoverer.net.tls.cert -- TLS cert path
+        cert: /path/to/cert
+        # discoverer.discoverer.net.tls.key -- TLS key path
+        key: /path/to/key
+        # discoverer.discoverer.net.tls.ca -- TLS ca path
+        ca: /path/to/ca
+        # discoverer.discoverer.net.tls.insecure_skip_verify -- enable/disable skip SSL certificate verification
+        insecure_skip_verify: false
+      # @schema {"name": "discoverer.discoverer.net.socket_option", "alias": "socket_option"}
+      socket_option:
+        # discoverer.discoverer.net.socket_option.reuse_port -- server listen socket option for reuse_port functionality
+        reuse_port: true
+        # discoverer.discoverer.net.socket_option.reuse_addr -- server listen socket option for reuse_addr functionality
+        reuse_addr: true
+        # discoverer.discoverer.net.socket_option.tcp_fast_open -- server listen socket option for tcp_fast_open functionality
+        tcp_fast_open: false
+        # discoverer.discoverer.net.socket_option.tcp_no_delay -- server listen socket option for tcp_no_delay functionality
+        tcp_no_delay: false
+        # discoverer.discoverer.net.socket_option.tcp_cork -- server listen socket option for tcp_cork functionality
+        tcp_cork: false
+        # discoverer.discoverer.net.socket_option.tcp_quick_ack -- server listen socket option for tcp_quick_ack functionality
+        tcp_quick_ack: false
+        # discoverer.discoverer.net.socket_option.tcp_defer_accept -- server listen socket option for tcp_defer_accept functionality
+        tcp_defer_accept: false
+        # discoverer.discoverer.net.socket_option.ip_transparent -- server listen socket option for ip_transparent functionality
+        ip_transparent: false
+        # discoverer.discoverer.net.socket_option.ip_recover_destination_addr -- server listen socket option for ip_recover_destination_addr functionality
+        ip_recover_destination_addr: false
+  # @schema {"name": "discoverer.clusterRole", "type": "object"}
+  clusterRole:
+    # @schema {"name": "discoverer.clusterRole.enabled", "type": "boolean"}
+    # discoverer.clusterRole.enabled -- creates clusterRole resource
+    enabled: true
+    # @schema {"name": "discoverer.clusterRole.name", "type": "string"}
+    # discoverer.clusterRole.name -- name of clusterRole
+    name: discoverer
+  # @schema {"name": "discoverer.clusterRoleBinding", "type": "object"}
+  clusterRoleBinding:
+    # @schema {"name": "discoverer.clusterRoleBinding.enabled", "type": "boolean"}
+    # discoverer.clusterRoleBinding.enabled -- creates clusterRoleBinding resource
+    enabled: true
+    # @schema {"name": "discoverer.clusterRoleBinding.name", "type": "string"}
+    # discoverer.clusterRoleBinding.name -- name of clusterRoleBinding
+    name: discoverer
+  # @schema {"name": "discoverer.serviceAccount", "type": "object"}
+  serviceAccount:
+    # @schema {"name": "discoverer.serviceAccount.enabled", "type": "boolean"}
+    # discoverer.serviceAccount.enabled -- creates service account
+    enabled: true
+    # @schema {"name": "discoverer.serviceAccount.name", "type": "string"}
+    # discoverer.serviceAccount.name -- name of service account
+    name: vald
+# @schema {"name": "manager", "type": "object"}
+manager:
+  # @schema {"name": "manager.index", "type": "object"}
+  index:
+    # @schema {"name": "manager.index.enabled", "type": "boolean"}
+    # manager.index.enabled -- index manager enabled
+    enabled: true
+    # @schema {"name": "manager.index.version", "alias": "version"}
+    # manager.index.version -- version of index manager config
+    version: v0.0.0
+    # @schema {"name": "manager.index.time_zone", "type": "string"}
+    # manager.index.time_zone -- Time zone
+    time_zone: ""
+    # @schema {"name": "manager.index.logging", "alias": "logging"}
+    # manager.index.logging -- logging config (overrides defaults.logging)
+    logging: {}
+    # @schema {"name": "manager.index.name", "type": "string"}
+    # manager.index.name -- name of index manager deployment
+    name: vald-manager-index
+    # @schema {"name": "manager.index.kind", "type": "string", "enum": ["Deployment", "DaemonSet"]}
+    # manager.index.kind -- deployment kind: Deployment or DaemonSet
+    kind: Deployment
+    # @schema {"name": "manager.index.serviceType", "type": "string", "enum": ["ClusterIP", "LoadBalancer", "NodePort"]}
+    # manager.index.serviceType -- service type: ClusterIP, LoadBalancer or NodePort
+    serviceType: ClusterIP
+    # @schema {"name": "manager.index.externalTrafficPolicy", "type": "string"}
+    # manager.index.externalTrafficPolicy -- external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local
+    externalTrafficPolicy: ""
+    # @schema {"name": "manager.index.progressDeadlineSeconds", "type": "integer"}
+    # manager.index.progressDeadlineSeconds -- progress deadline seconds
+    progressDeadlineSeconds: 600
+    # @schema {"name": "manager.index.replicas", "type": "integer", "minimum": 0}
+    # manager.index.replicas -- number of replicas
+    replicas: 1
+    # @schema {"name": "manager.index.maxUnavailable", "type": "string"}
+    # manager.index.maxUnavailable -- maximum number of unavailable replicas
+    maxUnavailable: 50%
+    # @schema {"name": "manager.index.revisionHistoryLimit", "type": "integer", "minimum": 0}
+    # manager.index.revisionHistoryLimit -- number of old history to retain to allow rollback
+    revisionHistoryLimit: 2
+    # @schema {"name": "manager.index.terminationGracePeriodSeconds", "type": "integer", "minimum": 0}
+    # manager.index.terminationGracePeriodSeconds -- duration in seconds pod needs to terminate gracefully
+    terminationGracePeriodSeconds: 30
+    # @schema {"name": "manager.index.podSecurityContext", "type": "object"}
+    # manager.index.podSecurityContext -- security context for pod
+    podSecurityContext:
+      runAsUser: 65532
+      runAsNonRoot: true
+      runAsGroup: 65532
+      fsGroup: 65532
+      fsGroupChangePolicy: "OnRootMismatch"
+    # @schema {"name": "manager.index.securityContext", "type": "object"}
+    # manager.index.securityContext -- security context for container
+    securityContext:
+      runAsUser: 65532
+      runAsNonRoot: true
+      runAsGroup: 65532
+      privileged: false
+      allowPrivilegeEscalation: false
+      readOnlyRootFilesystem: true
+      capabilities:
+        drop:
+          - ALL
+    # @schema {"name": "manager.index.podPriority", "alias": "podPriority"}
+    podPriority:
+      # manager.index.podPriority.enabled -- index manager pod PriorityClass enabled
+      enabled: true
+      # manager.index.podPriority.value -- index manager pod PriorityClass value
+      value: 1000000
+    # @schema {"name": "manager.index.annotations", "type": "object"}
+    # manager.index.annotations -- deployment annotations
+    annotations: {}
+    # @schema {"name": "manager.index.podAnnotations", "type": "object"}
+    # manager.index.podAnnotations -- pod annotations
+    podAnnotations: {}
+    # @schema {"name": "manager.index.service", "alias": "service"}
+    service:
+      # manager.index.service.annotations -- service annotations
+      annotations: {}
+      # manager.index.service.labels -- service labels
+      labels: {}
+    # @schema {"name": "manager.index.image", "alias": "image"}
+    image:
+      # manager.index.image.repository -- image repository
+      repository: vdaas/vald-manager-index
+      # manager.index.image.tag -- image tag (overrides defaults.image.tag)
+      tag: ""
+      # manager.index.image.pullPolicy -- image pull policy
+      pullPolicy: Always
+    # @schema {"name": "manager.index.rollingUpdate", "alias": "rollingUpdate"}
+    rollingUpdate:
+      # manager.index.rollingUpdate.maxSurge -- max surge of rolling update
+      maxSurge: 25%
+      # manager.index.rollingUpdate.maxUnavailable -- max unavailable of rolling update
+      maxUnavailable: 25%
+    # @schema {"name": "manager.index.initContainers", "alias": "initContainers"}
+    # manager.index.initContainers -- init containers
+    initContainers:
+      - type: wait-for
+        name: wait-for-agent
+        target: agent
+        image: busybox:stable
+        sleepDuration: 2
+      - type: wait-for
+        name: wait-for-discoverer
+        target: discoverer
+        image: busybox:stable
+        sleepDuration: 2
+    # @schema {"name": "manager.index.env", "alias": "env"}
+    # manager.index.env -- environment variables
+    env:
+      - name: MY_NODE_NAME
+        valueFrom:
+          fieldRef:
+            fieldPath: spec.nodeName
+      - name: MY_POD_NAME
+        valueFrom:
+          fieldRef:
+            fieldPath: metadata.name
+      - name: MY_POD_NAMESPACE
+        valueFrom:
+          fieldRef:
+            fieldPath: metadata.namespace
+    # @schema {"name": "manager.index.volumeMounts", "alias": "volumeMounts"}
+    # manager.index.volumeMounts -- volume mounts
+    volumeMounts: []
+    # @schema {"name": "manager.index.volumes", "alias": "volumes"}
+    # manager.index.volumes -- volumes
+    volumes: []
+    # @schema {"name": "manager.index.nodeName", "type": "string"}
+    # manager.index.nodeName -- node name
+    nodeName: ""
+    # @schema {"name": "manager.index.nodeSelector", "alias": "nodeSelector"}
+    # manager.index.nodeSelector -- node selector
+    nodeSelector: {}
+    # @schema {"name": "manager.index.tolerations", "alias": "tolerations"}
+    # manager.index.tolerations -- tolerations
+    tolerations: []
+    # @schema {"name": "manager.index.affinity", "alias": "affinity"}
+    affinity:
+      nodeAffinity:
+        # manager.index.affinity.nodeAffinity.preferredDuringSchedulingIgnoredDuringExecution -- node affinity preferred scheduling terms
+        preferredDuringSchedulingIgnoredDuringExecution: []
+        requiredDuringSchedulingIgnoredDuringExecution:
+          # manager.index.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms -- node affinity required node selectors
+          nodeSelectorTerms: []
+      podAffinity:
+        # manager.index.affinity.podAffinity.preferredDuringSchedulingIgnoredDuringExecution -- pod affinity preferred scheduling terms
+        preferredDuringSchedulingIgnoredDuringExecution: []
+        # manager.index.affinity.podAffinity.requiredDuringSchedulingIgnoredDuringExecution -- pod affinity required scheduling terms
+        requiredDuringSchedulingIgnoredDuringExecution: []
+      podAntiAffinity:
+        # manager.index.affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution -- pod anti-affinity preferred scheduling terms
+        preferredDuringSchedulingIgnoredDuringExecution: []
+        # manager.index.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution -- pod anti-affinity required scheduling terms
+        requiredDuringSchedulingIgnoredDuringExecution: []
+    # @schema {"name": "manager.index.topologySpreadConstraints", "alias": "topologySpreadConstraints"}
+    # manager.index.topologySpreadConstraints -- topology spread constraints of index manager pods
+    topologySpreadConstraints: []
+    # @schema {"name": "manager.index.server_config", "alias": "server_config"}
+    # manager.index.server_config -- server config (overrides defaults.server_config)
+    server_config:
+      servers:
+        rest: {}
+        grpc: {}
+      healths:
+        liveness: {}
+        readiness: {}
+        startup: {}
+      metrics:
+        pprof: {}
+    # @schema {"name": "manager.index.observability", "alias": "observability"}
+    # manager.index.observability -- observability config (overrides defaults.observability)
+    observability:
+      otlp:
+        attribute:
+          service_name: vald-manager-index
+    # @schema {"name": "manager.index.resources", "alias": "resources"}
+    # manager.index.resources -- compute resources
+    resources:
+      requests:
+        cpu: 200m
+        memory: 80Mi
+      limits:
+        cpu: 1000m
+        memory: 500Mi
+    # @schema {"name": "manager.index.indexer", "type": "object"}
+    indexer:
+      # @schema {"name": "manager.index.indexer.agent_namespace", "type": "string"}
+      # manager.index.indexer.agent_namespace -- namespace of agent pods to manage
+      agent_namespace: _MY_POD_NAMESPACE_
+      # @schema {"name": "manager.index.indexer.node_name", "type": "string"}
+      # manager.index.indexer.node_name -- node name
+      node_name: "" # _MY_NODE_NAME_
+      # @schema {"name": "manager.index.indexer.concurrency", "type": "integer", "minimum": 1}
+      # manager.index.indexer.concurrency -- concurrency
+      concurrency: 1
+      # @schema {"name": "manager.index.indexer.auto_index_duration_limit", "type": "string"}
+      # manager.index.indexer.auto_index_duration_limit -- limit duration of automatic indexing
+      auto_index_duration_limit: 30m
+      # @schema {"name": "manager.index.indexer.auto_index_check_duration", "type": "string"}
+      # manager.index.indexer.auto_index_check_duration -- check duration of automatic indexing
+      auto_index_check_duration: 1m
+      # @schema {"name": "manager.index.indexer.auto_save_index_duration_limit", "type": "string"}
+      # manager.index.indexer.auto_save_index_duration_limit -- limit duration of automatic index saving
+      auto_save_index_duration_limit: 3h
+      # @schema {"name": "manager.index.indexer.auto_save_index_wait_duration", "type": "string"}
+      # manager.index.indexer.auto_save_index_wait_duration -- duration of automatic index saving wait duration for next saving
+      auto_save_index_wait_duration: 10m
+      # @schema {"name": "manager.index.indexer.auto_index_length", "type": "integer"}
+      # manager.index.indexer.auto_index_length -- number of cache to trigger automatic indexing
+      auto_index_length: 100
+      # @schema {"name": "manager.index.indexer.creation_pool_size", "type": "integer"}
+      # manager.index.indexer.creation_pool_size -- number of pool size of create index processing
+      creation_pool_size: 16
+      # @schema {"name": "manager.index.indexer.discoverer", "type": "object"}
+      discoverer:
+        # @schema {"name": "manager.index.indexer.discoverer.duration", "type": "string"}
+        # manager.index.indexer.discoverer.duration -- refresh duration to discover
+        duration: 500ms
+        # @schema {"name": "manager.index.indexer.discoverer.client", "alias": "grpc.client"}
+        # manager.index.indexer.discoverer.client -- gRPC client for discoverer (overrides defaults.grpc.client)
+        client: {}
+        # @schema {"name": "manager.index.indexer.discoverer.agent_client_options", "alias": "grpc.client"}
+        # manager.index.indexer.discoverer.agent_client_options -- gRPC client options for agents (overrides defaults.grpc.client)
+        agent_client_options:
+          dial_option:
+            net:
+              dialer:
+                keepalive: 15m #indexer fetches uncommitted index length, which includes huge payload so we need to set keepalive longer than usual
+    # @schema {"name": "manager.index.corrector", "type": "object"}
+    corrector:
+      # @schema {"name": "manager.index.corrector.name", "type": "string"}
+      # manager.index.corrector.name -- name of index correction job
+      name: vald-index-correction
+      # @schema {"name": "manager.index.corrector.image", "alias": "image"}
+      image:
+        # manager.index.corrector.image.repository -- image repository
+        repository: vdaas/vald-index-correction
+        # manager.index.corrector.image.tag -- image tag (overrides defaults.image.tag)
+        tag: ""
+        # manager.index.image.pullPolicy -- image pull policy
+        pullPolicy: Always
+      # @schema {"name": "manager.index.corrector.server_config", "alias": "server_config"}
+      # manager.index.corrector.server_config -- server config (overrides defaults.server_config)
+      server_config:
+        servers:
+          rest: {}
+          grpc: {}
+        healths:
+          liveness: {}
+          readiness: {}
+          startup: {}
+        metrics:
+          pprof: {}
+      # @schema {"name": "manager.index.corrector.initContainers", "alias": "initContainers"}
+      # manager.index.corrector.initContainers -- init containers
+      initContainers:
+        - type: wait-for
+          name: wait-for-agent
+          target: agent
+          image: busybox:stable
+          sleepDuration: 2
+        - type: wait-for
+          name: wait-for-discoverer
+          target: discoverer
+          image: busybox:stable
+          sleepDuration: 2
+      # @schema {"name": "manager.index.corrector.env", "alias": "env"}
+      # manager.index.corrector.env -- environment variables
+      env:
+        - name: MY_NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        - name: MY_POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: MY_POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+      # @schema {"name": "manager.index.corrector.observability", "alias": "observability"}
+      # manager.index.corrector.observability -- observability config (overrides defaults.observability)
+      observability:
+        otlp:
+          attribute:
+            service_name: vald-index-correction
+      # @schema {"name": "manager.index.corrector.enabled", "type": "boolean"}
+      # manager.index.corrector.enabled -- enable index correction CronJob
+      enabled: false
+      # @schema {"name": "manager.index.corrector.schedule", "type": "string"}
+      # manager.index.corrector.schedule -- CronJob schedule setting for index correction
+      schedule: "6 3 * * *"
+      # @schema {"name": "manager.index.corrector.suspend", "type": "boolean"}
+      # manager.index.corrector.suspend -- CronJob suspend setting for index correction
+      suspend: false
+      # @schema {"name": "manager.index.corrector.ttlSecondsAfterFinished", "type": "integer"}
+      # manager.index.corrector.ttlSecondsAfterFinished -- ttl setting for K8s completed jobs
+      ttlSecondsAfterFinished: 86400
+      # @schema {"name": "manager.index.corrector.startingDeadlineSeconds", "type": "integer"}
+      # manager.index.corrector.startingDeadlineSeconds -- startingDeadlineSeconds setting for K8s completed jobs
+      startingDeadlineSeconds: 86400
+      # @schema {"name": "manager.index.corrector.version", "alias": "version"}
+      # manager.index.corrector.version -- version of index manager config
+      version: v0.0.0
+      # @schema {"name": "manager.index.corrector.stream_list_concurrency", "type": "integer", "minimum": 1}
+      # manager.index.corrector.stream_list_concurrency -- concurrency for stream list object rpc
+      stream_list_concurrency: 200
+      # @schema {"name": "manager.index.corrector.kvs_async_write_concurrency", "type": "integer", "minimum": 1}
+      # manager.index.corrector.kvs_async_write_concurrency -- concurrency for kvs async write
+      kvs_async_write_concurrency: 2048
+      # @schema {"name": "manager.index.corrector.agent_namespace", "type": "string"}
+      # manager.index.corrector.agent_namespace -- namespace of agent pods to manage
+      agent_namespace: _MY_POD_NAMESPACE_
+      # @schema {"name": "manager.index.corrector.node_name", "type": "string"}
+      # manager.index.corrector.node_name -- node name
+      node_name: "" # _MY_NODE_NAME_
+      # @schema {"name": "manager.index.corrector.discoverer", "type": "object"}
+      discoverer:
+        # @schema {"name": "manager.index.corrector.discoverer.duration", "type": "string"}
+        # manager.index.corrector.discoverer.duration -- refresh duration to discover
+        duration: 500ms
+        # @schema {"name": "manager.index.corrector.discoverer.client", "alias": "grpc.client"}
+        # manager.index.corrector.discoverer.client -- gRPC client for discoverer (overrides defaults.grpc.client)
+        client: {}
+        # @schema {"name": "manager.index.corrector.discoverer.agent_client_options", "alias": "grpc.client"}
+        # manager.index.corrector.discoverer.agent_client_options -- gRPC client options for agents (overrides defaults.grpc.client)
+        agent_client_options:
+          dial_option:
+            net:
+              dialer:
+                keepalive: 15m #indexer fetches uncommitted index length, which includes huge payload so we need to set keepalive longer than usual
+    # @schema {"name": "manager.index.creator", "type": "object"}
+    creator:
+      # @schema {"name": "manager.index.creator.name", "type": "string"}
+      # manager.index.creator.name -- name of index creation job
+      name: vald-index-creation
+      # @schema {"name": "manager.index.creator.image", "alias": "image"}
+      image:
+        # manager.index.creator.image.repository -- image repository
+        repository: vdaas/vald-index-creation
+        # manager.index.creator.image.tag -- image tag (overrides defaults.image.tag)
+        tag: ""
+        # manager.index.image.pullPolicy -- image pull policy
+        pullPolicy: Always
+      # @schema {"name": "manager.index.creator.server_config", "alias": "server_config"}
+      # manager.index.creator.server_config -- server config (overrides defaults.server_config)
+      server_config:
+        servers:
+          rest: {}
+          grpc: {}
+        healths:
+          liveness: {}
+          readiness: {}
+          startup: {}
+        metrics:
+          pprof: {}
+      # @schema {"name": "manager.index.creator.initContainers", "alias": "initContainers"}
+      # manager.index.creator.initContainers -- init containers
+      initContainers:
+        - type: wait-for
+          name: wait-for-agent
+          target: agent
+          image: busybox:stable
+          sleepDuration: 2
+        - type: wait-for
+          name: wait-for-discoverer
+          target: discoverer
+          image: busybox:stable
+          sleepDuration: 2
+      # @schema {"name": "manager.index.creator.env", "alias": "env"}
+      # manager.index.creator.env -- environment variables
+      env:
+        - name: MY_NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        - name: MY_POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: MY_POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+      # @schema {"name": "manager.index.creator.observability", "alias": "observability"}
+      # manager.index.creator.observability -- observability config (overrides defaults.observability)
+      observability:
+        otlp:
+          attribute:
+            service_name: vald-index-creation
+      # @schema {"name": "manager.index.creator.enabled", "type": "boolean"}
+      # manager.index.creator.enabled -- enable index creation CronJob
+      enabled: false
+      # @schema {"name": "manager.index.creator.schedule", "type": "string"}
+      # manager.index.creator.schedule -- CronJob schedule setting for index creation
+      schedule: "* * * * *"
+      # @schema {"name": "manager.index.creator.suspend", "type": "boolean"}
+      # manager.index.creator.suspend -- CronJob suspend setting for index creation
+      suspend: false
+      # @schema {"name": "manager.index.creator.ttlSecondsAfterFinished", "type": "integer"}
+      # manager.index.creator.ttlSecondsAfterFinished -- ttl setting for K8s completed jobs
+      ttlSecondsAfterFinished: 86400
+      # @schema {"name": "manager.index.creator.startingDeadlineSeconds", "type": "integer"}
+      # manager.index.creator.startingDeadlineSeconds -- startingDeadlineSeconds setting for K8s completed jobs
+      startingDeadlineSeconds: 43200
+      # @schema {"name": "manager.index.creator.version", "alias": "version"}
+      # manager.index.creator.version -- version of index manager config
+      version: v0.0.0
+      # @schema {"name": "manager.index.creator.concurrency", "type": "integer", "minimum": 1}
+      # manager.index.creator.concurrency -- concurrency for indexing
+      concurrency: 1
+      # @schema {"name": "manager.index.creator.creation_pool_size", "type": "integer"}
+      # manager.index.creator.creation_pool_size -- number of pool size of create index processing
+      creation_pool_size: 16
+      # @schema {"name": "manager.index.creator.target_addrs", "type": "array", "items": {"type": "string"}}
+      # manager.index.creator.target_addrs -- indexing target addresses
+      target_addrs: []
+      # @schema {"name": "manager.index.creator.agent_namespace", "type": "string"}
+      # manager.index.creator.agent_namespace -- namespace of agent pods to manage
+      agent_namespace: _MY_POD_NAMESPACE_
+      # @schema {"name": "manager.index.creator.node_name", "type": "string"}
+      # manager.index.creator.node_name -- node name
+      node_name: "" # _MY_NODE_NAME_
+      # @schema {"name": "manager.index.creator.discoverer", "type": "object"}
+      discoverer:
+        # @schema {"name": "manager.index.creator.discoverer.duration", "type": "string"}
+        # manager.index.creator.discoverer.duration -- refresh duration to discover
+        duration: 500ms
+        # @schema {"name": "manager.index.creator.discoverer.client", "alias": "grpc.client"}
+        # manager.index.creator.discoverer.client -- gRPC client for discoverer (overrides defaults.grpc.client)
+        client: {}
+        # @schema {"name": "manager.index.creator.discoverer.agent_client_options", "alias": "grpc.client"}
+        # manager.index.creator.discoverer.agent_client_options -- gRPC client options for agents (overrides defaults.grpc.client)
+        agent_client_options:
+          dial_option:
+            net:
+              dialer:
+                keepalive: 15m #indexer fetches uncommitted index length, which includes huge payload so we need to set keepalive longer than usual
+    # @schema {"name": "manager.index.saver", "type": "object"}
+    saver:
+      # @schema {"name": "manager.index.saver.name", "type": "string"}
+      # manager.index.saver.name -- name of index save job
+      name: vald-index-save
+      # @schema {"name": "manager.index.saver.image", "alias": "image"}
+      image:
+        # manager.index.saver.image.repository -- image repository
+        repository: vdaas/vald-index-save
+        # manager.index.saver.image.tag -- image tag (overrides defaults.image.tag)
+        tag: ""
+        # manager.index.image.pullPolicy -- image pull policy
+        pullPolicy: Always
+      # @schema {"name": "manager.index.saver.server_config", "alias": "server_config"}
+      # manager.index.saver.server_config -- server config (overrides defaults.server_config)
+      server_config:
+        servers:
+          rest: {}
+          grpc: {}
+        healths:
+          liveness: {}
+          readiness: {}
+          startup: {}
+        metrics:
+          pprof: {}
+      # @schema {"name": "manager.index.saver.initContainers", "alias": "initContainers"}
+      # manager.index.saver.initContainers -- init containers
+      initContainers:
+        - type: wait-for
+          name: wait-for-agent
+          target: agent
+          image: busybox:stable
+          sleepDuration: 2
+        - type: wait-for
+          name: wait-for-discoverer
+          target: discoverer
+          image: busybox:stable
+          sleepDuration: 2
+      # @schema {"name": "manager.index.saver.env", "alias": "env"}
+      # manager.index.saver.env -- environment variables
+      env:
+        - name: MY_NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        - name: MY_POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: MY_POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+      # @schema {"name": "manager.index.saver.observability", "alias": "observability"}
+      # manager.index.saver.observability -- observability config (overrides defaults.observability)
+      observability:
+        otlp:
+          attribute:
+            service_name: vald-index-save
+      # @schema {"name": "manager.index.saver.enabled", "type": "boolean"}
+      # manager.index.saver.enabled -- enable index save CronJob
+      enabled: false
+      # @schema {"name": "manager.index.saver.schedule", "type": "string"}
+      # manager.index.saver.schedule -- CronJob schedule setting for index save
+      schedule: "0 */3 * * *"
+      # @schema {"name": "manager.index.saver.suspend", "type": "boolean"}
+      # manager.index.saver.suspend -- CronJob suspend setting for index creation
+      suspend: false
+      # @schema {"name": "manager.index.saver.ttlSecondsAfterFinished", "type": "integer"}
+      # manager.index.saver.ttlSecondsAfterFinished -- ttl setting for K8s completed jobs
+      ttlSecondsAfterFinished: 86400
+      # @schema {"name": "manager.index.saver.startingDeadlineSeconds", "type": "integer"}
+      # manager.index.saver.startingDeadlineSeconds -- startingDeadlineSeconds setting for K8s completed jobs
+      startingDeadlineSeconds: 43200
+      # @schema {"name": "manager.index.saver.version", "alias": "version"}
+      # manager.index.saver.version -- version of index manager config
+      version: v0.0.0
+      # @schema {"name": "manager.index.saver.concurrency", "type": "integer", "minimum": 1}
+      # manager.index.saver.concurrency -- concurrency for index saving
+      concurrency: 1
+      # @schema {"name": "manager.index.saver.target_addrs", "type": "array", "items": {"type": "string"}}
+      # manager.index.saver.target_addrs -- index saving target addresses
+      target_addrs: []
+      # @schema {"name": "manager.index.saver.agent_namespace", "type": "string"}
+      # manager.index.saver.agent_namespace -- namespace of agent pods to manage
+      agent_namespace: _MY_POD_NAMESPACE_
+      # @schema {"name": "manager.index.saver.node_name", "type": "string"}
+      # manager.index.saver.node_name -- node name
+      node_name: "" # _MY_NODE_NAME_
+      # @schema {"name": "manager.index.saver.discoverer", "type": "object"}
+      discoverer:
+        # @schema {"name": "manager.index.saver.discoverer.duration", "type": "string"}
+        # manager.index.saver.discoverer.duration -- refresh duration to discover
+        duration: 500ms
+        # @schema {"name": "manager.index.saver.discoverer.client", "alias": "grpc.client"}
+        # manager.index.saver.discoverer.client -- gRPC client for discoverer (overrides defaults.grpc.client)
+        client: {}
+        # @schema {"name": "manager.index.saver.discoverer.agent_client_options", "alias": "grpc.client"}
+        # manager.index.saver.discoverer.agent_client_options -- gRPC client options for agents (overrides defaults.grpc.client)
+        agent_client_options:
+          dial_option:
+            net:
+              dialer:
+                keepalive: 15m #indexer fetches uncommitted index length, which includes huge payload so we need to set keepalive longer than usual
+    # @schema {"name": "manager.index.readreplica", "type": "object"}
+    readreplica:
+      # @schema {"name": "manager.index.readreplica.rotator", "type": "object"}
+      # manager.index.readreplica.rotator -- [This feature is work in progress] readreplica agents rotation job
+      rotator:
+        # @schema {"name": "manager.index.readreplica.rotator.name", "type": "string"}
+        # manager.index.readreplica.rotator.name -- name of readreplica rotator job
+        name: vald-readreplica-rotate
+        # @schema {"name": "manager.index.readreplica.rotator.image", "alias": "image"}
+        image:
+          # manager.index.readreplica.rotator.image.repository -- image repository
+          repository: vdaas/vald-readreplica-rotate
+          # manager.index.readreplica.rotator.image.tag -- image tag (overrides defaults.image.tag)
+          tag: ""
+          # manager.index.image.pullPolicy -- image pull policy
+          pullPolicy: Always
+        # @schema {"name": "manager.index.readreplica.rotator.server_config", "alias": "server_config"}
+        # manager.index.readreplica.rotator.server_config -- server config (overrides defaults.server_config)
+        server_config:
+          servers:
+            rest: {}
+            grpc: {}
+          healths:
+            liveness: {}
+            readiness: {}
+            startup: {}
+          metrics:
+            pprof: {}
+        # @schema {"name": "manager.index.readreplica.rotator.initContainers", "alias": "initContainers"}
+        # manager.index.readreplica.rotator.initContainers -- init containers
+        initContainers: []
+        # @schema {"name": "manager.index.readreplica.rotator.podSecurityContext", "type": "object"}
+        # manager.index.readreplica.rotator.podSecurityContext -- security context for pod
+        podSecurityContext:
+          runAsUser: 65532
+          runAsNonRoot: true
+          runAsGroup: 65532
+          fsGroup: 65532
+          fsGroupChangePolicy: "OnRootMismatch"
+        # @schema {"name": "manager.index.readreplica.rotator.securityContext", "type": "object"}
+        # manager.index.readreplica.rotator.securityContext -- security context for container
+        securityContext:
+          runAsUser: 65532
+          runAsNonRoot: true
+          runAsGroup: 65532
+          privileged: false
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+              - ALL
+        # @schema {"name": "manager.index.readreplica.rotator.env", "alias": "env"}
+        # manager.index.readreplica.rotator.env -- environment variables
+        env:
+          - name: MY_NODE_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: spec.nodeName
+          - name: MY_POD_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
+          - name: MY_POD_NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+        # @schema {"name": "manager.index.readreplica.rotator.observability", "alias": "observability"}
+        # manager.index.readreplica.rotator.observability -- observability config (overrides defaults.observability)
+        observability:
+          otlp:
+            attribute:
+              service_name: vald-readreplica-rotate
+        # @schema {"name": "manager.index.readreplica.rotator.ttlSecondsAfterFinished", "type": "integer"}
+        # manager.index.readreplica.rotator.ttlSecondsAfterFinished -- ttl setting for K8s completed jobs
+        ttlSecondsAfterFinished: 86400
+        # @schema {"name": "manager.index.readreplica.rotator.version", "alias": "version"}
+        # manager.index.readreplica.rotator.version -- version of readreplica rotator config
+        version: v0.0.0
+        # @schema {"name": "manager.index.readreplica.rotator.agent_namespace", "type": "string"}
+        # manager.index.readreplica.rotator.agent_namespace -- namespace of agent pods to manage
+        agent_namespace: _MY_POD_NAMESPACE_
+        # @schema {"name": "manager.index.readreplica.rotator.read_replica_id", "type": "string"}
+        # manager.index.readreplica.rotator.read_replica_id -- read replica id to perform rotation
+        read_replica_id: _MY_TARGET_REPLICA_ID_
+        # @schema {"name": "manager.index.readreplica.rotator.serviceAccount", "type": "object"}
+        serviceAccount:
+          # @schema {"name": "manager.index.readreplica.rotator.serviceAccount.enabled", "type": "boolean"}
+          # manager.index.readreplica.rotator.serviceAccount.enabled -- creates service account
+          enabled: true
+          # @schema {"name": "manager.index.readreplica.rotator.serviceAccount.name", "type": "string"}
+          # manager.index.readreplica.rotator.serviceAccount.name -- name of service account
+          name: vald-readreplica-rotate
+        # @schema {"name": "manager.index.readreplica.rotator.clusterRole", "type": "object"}
+        clusterRole:
+          # @schema {"name": "manager.index.readreplica.rotator.clusterRole.enabled", "type": "boolean"}
+          # manager.index.readreplica.rotator.clusterRole.enabled -- creates clusterRole resource
+          enabled: true
+          # @schema {"name": "manager.index.readreplica.rotator.clusterRole.name", "type": "string"}
+          # manager.index.readreplica.rotator.clusterRole.name -- name of clusterRole
+          name: vald-readreplica-rotate
+        # @schema {"name": "manager.index.readreplica.rotator.clusterRoleBinding", "type": "object"}
+        clusterRoleBinding:
+          # @schema {"name": "manager.index.readreplica.rotator.clusterRoleBinding.enabled", "type": "boolean"}
+          # manager.index.readreplica.rotator.clusterRoleBinding.enabled -- creates clusterRoleBinding resource
+          enabled: true
+          # @schema {"name": "manager.index.readreplica.rotator.clusterRoleBinding.name", "type": "string"}
+          # manager.index.readreplica.rotator.clusterRoleBinding.name -- name of clusterRoleBinding
+          name: vald-readreplica-rotate
