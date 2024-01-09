@@ -38,3 +38,17 @@ plugins:
     out: apis/swagger
     opt:
       - json_names_for_fields=true
+  - plugin: buf.build/community/neoeinstein-prost
+    out: vald-client-rs/src
+  - plugin: buf.build/community/neoeinstein-tonic
+    out: vald-client-rs/src
+    opt:
+      - no_include
+      - no_server
+  - plugin: buf.build/community/neoeinstein-prost
+    out: vald-agent-rs/src
+  - plugin: buf.build/community/neoeinstein-tonic
+    out: vald-agent-rs/src
+    opt:
+      - no_include
+      - no_client

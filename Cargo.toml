@@ -1,0 +1,2 @@
+[workspace]
+members = ["vald-client-rs", "vald-agent-rs"]
