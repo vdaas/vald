@@ -14,8 +14,14 @@
 # limitations under the License.
 #
 {{- $gateway := .Values.gateway.mirror -}}
+{{- $lb      := .Values.gateway.lb -}}
+{{- $filter  := .Values.gateway.filter -}}
 {{- if and $gateway.enabled $gateway.ingress.enabled }}
+{{- if (.Capabilities.APIVersions.Has "networking.k8s.io/v1") }}
 apiVersion: networking.k8s.io/v1
+{{- else }}
+apiVersion: networking.k8s.io/v1alpha1
+{{- end }}
 kind: Ingress
 metadata:
   annotations:
@@ -44,4 +50,26 @@ spec:
             name: {{ $gateway.name }}
             {{- include "vald.ingressPort" (dict "Values" $gateway.ingress) | nindent 12 }}
         pathType: {{ $gateway.ingress.pathType }}
+      {{- if $lb.enabled }}
+      - path: "/vald.v1.Search/*"
+        backend:
+          service:
+            name: {{ $lb.name }}
+            {{- include "vald.ingressPort" (dict "Values" $gateway.ingress) | nindent 12 }}
+        pathType: {{ $gateway.ingress.pathType }}
+      - path: "/vald.v1.Object/*"
+        backend:
+          service:
+            name: {{ $lb.name }}
+            {{- include "vald.ingressPort" (dict "Values" $gateway.ingress) | nindent 12 }}
+        pathType: {{ $gateway.ingress.pathType }}
+      {{- end }}
+      {{- if $filter.enabled }}
+      - path: "/vald.v1.Filter/*"
+        backend:
+          service:
+            name: {{ $filter.name }}
+            {{- include "vald.ingressPort" (dict "Values" $gateway.ingress) | nindent 12 }}
+        pathType: {{ $gateway.ingress.pathType }}
+      {{- end }}
 {{- end }}
