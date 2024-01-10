@@ -259,8 +259,8 @@ func (g *gRPCClient) StartConnectionMonitor(ctx context.Context) (<-chan error, 
 						disconnectTargets = append(disconnectTargets, addr)
 						return true
 					}
-					// for health check we don't need to reconnect when ip connection pool is healthy
-					if p.IsHealthy(ctx) && p.IsIPConn() {
+					// for health check we don't need to reconnect when connection is healthy
+					if p.IsHealthy(ctx) {
 						return true
 					}
 					// if connection is not ip direct or unhealthy let's re-connect
@@ -329,9 +329,22 @@ func (g *gRPCClient) StartConnectionMonitor(ctx context.Context) (<-chan error, 
 				}
 			})
 			cancel()
-			disconnected := make(map[string]bool, len(disconnectTargets))
+			var (
+				disconnectFlag bool
+				isIPv4, isIPv6 bool
+				host           string
+				port           uint16
+				disconnected   = make(map[string]bool, len(disconnectTargets))
+			)
 			for _, addr := range disconnectTargets {
-				if !disconnected[addr] {
+				host, port, _, isIPv4, isIPv6, err = net.Parse(addr)
+				disconnectFlag = isIPv4 || isIPv6 // Disconnect only if the connection is a direct IP connection; do not delete connections via DNS due to retry.
+				if err != nil {
+					log.Warnf("failed to parse addr %s for disconnection checking, will disconnect soon: host: %s, port %d, err: %v", addr, host, port, err)
+					disconnectFlag = true // Disconnect if the address connected to is not parseable.
+				}
+				if disconnectFlag &&
+					!disconnected[addr] {
 					err = g.Disconnect(ctx, addr)
 					if err != nil {
 						if !errors.Is(err, context.Canceled) &&
