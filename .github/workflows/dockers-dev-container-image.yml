@@ -17,7 +17,9 @@ name: "Build docker image: dev-container"
 on:
   push:
     branches:
-      - main
+      - "main"
+      - "release/v*.*"
+      - "!release/v*.*.*"
     paths:
       - ".github/actions/docker-build/actions.yaml"
       - ".github/workflows/_docker-image.yaml"
@@ -47,8 +49,6 @@ on:
       - "Makefile.d/**"
       - "versions/GO_VERSION"
       - "versions/NGT_VERSION"
-  schedule:
-    - cron: "0 1 * * *"
 
 jobs:
   build:

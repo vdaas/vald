@@ -17,7 +17,9 @@ name: "Build docker image: agent-sidecar"
 on:
   push:
     branches:
-      - main
+      - "main"
+      - "release/v*.*"
+      - "!release/v*.*.*"
     tags:
       - "*.*.*"
       - "v*.*.*"
