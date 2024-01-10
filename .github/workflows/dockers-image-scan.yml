@@ -26,58 +26,72 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/dump-context
+
   agent-ngt:
     uses: ./.github/workflows/_docker-image-scan.yaml
     with:
       target: agent-ngt
+
   agent-sidecar:
     uses: ./.github/workflows/_docker-image-scan.yaml
     with:
       target: agent-sidecar
+
   ci-container:
     uses: ./.github/workflows/_docker-image-scan.yaml
     with:
       target: ci-container
+
   dev-container:
     uses: ./.github/workflows/_docker-image-scan.yaml
     with:
       target: dev-container
+
   discoverer-k8s:
     uses: ./.github/workflows/_docker-image-scan.yaml
     with:
       target: discoverer-k8s
+
   gateway-lb:
     uses: ./.github/workflows/_docker-image-scan.yaml
     with:
       target: gateway-lb
+
   gateway-filter:
     uses: ./.github/workflows/_docker-image-scan.yaml
     with:
       target: gateway-filter
+
   index-correction:
     uses: ./.github/workflows/_docker-image-scan.yaml
     with:
       target: index-correction
+
   index-creation:
     uses: ./.github/workflows/_docker-image-scan.yaml
     with:
       target: index-creation
+
   index-save:
     uses: ./.github/workflows/_docker-image-scan.yaml
     with:
       target: index-save
+
   loadtest:
     uses: ./.github/workflows/_docker-image-scan.yaml
     with:
       target: loadtest
+
   manager-index:
     uses: ./.github/workflows/_docker-image-scan.yaml
     with:
       target: manager-index
+
   operator-helm:
     uses: ./.github/workflows/_docker-image-scan.yaml
     with:
       target: operator/helm
+
   readreplica-rotate:
     uses: ./.github/workflows/_docker-image-scan.yaml
     with:

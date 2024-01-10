@@ -67,7 +67,7 @@ jobs:
             fi
 
             export HELM_EXTRA_OPTIOINS="--set agent.ngt.dimension=${DIM}"
-            make k8s/vald/deploy VERSION="nightly" HELM_VALUES=${VALUES} HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIOINS}"
+            make k8s/vald/deploy VERSION=${DEFAULT_IMAGE_TAG} HELM_VALUES=${VALUES} HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIOINS}"
 
             sleep 3
 
@@ -105,6 +105,7 @@ jobs:
           echo "MAX_BIT=${BIT}" >> $GITHUB_OUTPUT
           echo "MAX_BIT=${BIT}"
         env:
+          DEFAULT_IMAGE_TAG: ${{ steps.setup_e2e.outputs.DEFAULT_IMAGE_TAG }}
           WAIT_FOR_SELECTOR: app=vald-agent-ngt
           WAIT_FOR_TIMEOUT: 29m
           VALUES: .github/helm/values/values-max-dim.yaml

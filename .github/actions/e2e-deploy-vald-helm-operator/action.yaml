@@ -41,6 +41,10 @@ inputs:
     description: "If you want to use local charts, set this to true."
     required: false
     default: "true"
+  default_image_tag:
+    description: "Default image tag. e.g) nightly, vx.x, vx.x.x, pr-xxx"
+    required: true
+    default: "nightly"
 outputs:
   POD_NAME:
     description: "A pod name that waited for"
@@ -67,12 +71,13 @@ runs:
       if: ${{ inputs.use_local_charts == 'false' }}
       run: |
         helm install vald-helm-operator \
-          --set image.tag=nightly \
+          --set image.tag=${DEFAULT_IMAGE_TAG} \
           ${HELM_EXTRA_OPTIONS} \
           charts/vald-helm-operator/.
 
         sleep 6
       env:
+        DEFAULT_IMAGE_TAG: ${{ inputs.default_image_tag }}
         HELM_EXTRA_OPTIONS: ${{ inputs.helm_extra_options }}
 
     - name: Deploy vald helm operator from local charts
@@ -80,9 +85,10 @@ runs:
       id: deploy_vald_helm_operator_local
       if: ${{ inputs.use_local_charts == 'true' }}
       run: |
-        make k8s/vald-helm-operator/deploy VERSION=nightly HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIONS}"
+        make k8s/vald-helm-operator/deploy VERSION=${DEFAULT_IMAGE_TAG} HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIONS}"
         sleep 3
       env:
+        DEFAULT_IMAGE_TAG: ${{ inputs.default_image_tag }}
         HELM_EXTRA_OPTIONS: ${{ inputs.helm_extra_options }}
 
     - name: Deploy vald

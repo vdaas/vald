@@ -1,0 +1,70 @@
+#
+# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# You may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+name: "Detect CI container image tag"
+on:
+  workflow_call:
+    outputs:
+      TAG_NAME:
+        description: "The docker image tag name"
+        value: ${{ jobs.detect.outputs.TAG_NAME }}
+
+env:
+  TARGET_IMAGE: vdaas/vald-ci-container
+
+jobs:
+  detect:
+    runs-on: ubuntu-latest
+    outputs:
+      TAG_NAME: ${{ steps.merge_detection_results.outputs.TAG_NAME }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Determine Docker image tag
+        id: determine_tag_name
+        uses: ./.github/actions/determine-docker-image-tag
+
+      - name: Detect Docker image tag for primary
+        id: detect_primary_tag_name
+        uses: ./.github/actions/detect-docker-image-tags
+        with:
+          images: ${{ env.TARGET_IMAGE }}
+          tag_name: ${{ steps.determine_tag_name.outputs.PRIMARY_TAG }}
+
+      - name: Detect Docker image tag for default
+        id: detect_default_tag_name
+        uses: ./.github/actions/detect-docker-image-tags
+        with:
+          images: ${{ env.TARGET_IMAGE }}
+          tag_name: ${{ steps.determine_tag_name.outputs.DEFAULT_TAG }}
+
+      - name: Merge Docker image tag detection results
+        id: merge_detection_results
+        run: |
+          TAG_NAME="nightly"
+
+          if [ -n "${DEFAULT_TAG_RESULT}" ]; then
+            TAG_NAME=${{ steps.determine_tag_name.outputs.DEFAULT_TAG }}
+          fi
+
+          if [ -n "${PRIMARY_TAG_RESULT}" ]; then
+            TAG_NAME=${{ steps.determine_tag_name.outputs.PRIMARY_TAG }}
+          fi
+
+          echo "TAG_NAME=${TAG_NAME}"
+          echo "TAG_NAME=${TAG_NAME}" >> $GITHUB_OUTPUT
+        env:
+          PRIMARY_TAG_RESULT: ${{ steps.detect_primary_tag_name.outputs.IMAGE_TAGS }}
+          DEFAULT_TAG_RESULT: ${{ steps.detect_default_tag_name.outputs.IMAGE_TAGS }}
