@@ -68,21 +68,21 @@ spec:
             {{- include "vald.ingressPort" (dict "Values" $filter.ingress) | nindent 12 }}
         pathType: {{ $filter.ingress.pathType }}
       {{- else if and $mirrorIngEnabled $lb.enabled }}
-      - backend:
-          service:
-            name: {{ $mirror.name }}
-            {{- include "vald.ingressPort" (dict "Values" $mirror.ingress) | nindent 12 }}
-        pathType: {{ $mirror.ingress.pathType }}
       - path: "/vald.v1.Search"
         backend:
           service:
             name: {{ $lb.name }}
-            {{- include "vald.ingressPort" (dict "Values" $mirror.ingress) | nindent 12 }}
+            {{- include "vald.ingressPort" (dict "Values" $lb.ingress) | nindent 12 }}
         pathType: {{ $mirror.ingress.pathType }}
       - path: "/vald.v1.Object"
         backend:
           service:
             name: {{ $lb.name }}
+            {{- include "vald.ingressPort" (dict "Values" $lb.ingress) | nindent 12 }}
+        pathType: {{ $mirror.ingress.pathType }}
+      - backend:
+          service:
+            name: {{ $mirror.name }}
             {{- include "vald.ingressPort" (dict "Values" $mirror.ingress) | nindent 12 }}
         pathType: {{ $mirror.ingress.pathType }}
       {{- else if $lbIngEnabled }}
