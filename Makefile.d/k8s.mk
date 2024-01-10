@@ -45,7 +45,7 @@ k8s/manifest/update: \
 	mkdir -p k8s/index/job/readreplica
 	mv $(TEMP_DIR)/vald/templates/agent k8s/agent
 	mv $(TEMP_DIR)/vald/templates/discoverer k8s/discoverer
-	mv $(TEMP_DIR)/vald/templates/gateway/lb k8s/gateway/lb
+	mv $(TEMP_DIR)/vald/templates/gateway k8s/gateway
 	mv $(TEMP_DIR)/vald/templates/manager/index k8s/manager/index
 	mv $(TEMP_DIR)/vald/templates/index/job/correction k8s/index/job/correction
 	mv $(TEMP_DIR)/vald/templates/index/job/creation k8s/index/job/creation
@@ -96,6 +96,7 @@ k8s/vald/deploy:
 	kubectl apply -f $(TEMP_DIR)/vald/templates/agent || true
 	kubectl apply -f $(TEMP_DIR)/vald/templates/agent/readreplica || true
 	kubectl apply -f $(TEMP_DIR)/vald/templates/discoverer || true
+	kubectl apply -f $(TEMP_DIR)/vald/templates/gateway || true
 	kubectl apply -f $(TEMP_DIR)/vald/templates/gateway/lb || true
 	kubectl apply -f $(TEMP_DIR)/vald/crds || true
 	kubectl apply -f $(TEMP_DIR)/vald/templates/gateway/mirror || true
@@ -129,6 +130,7 @@ k8s/vald/delete:
 	kubectl delete -f $(TEMP_DIR)/vald/templates/index/job/correction
 	kubectl delete -f $(TEMP_DIR)/vald/templates/index/job/creation
 	kubectl delete -f $(TEMP_DIR)/vald/templates/index/job/save
+	kubectl delete -f $(TEMP_DIR)/vald/templates/gateway
 	kubectl delete -f $(TEMP_DIR)/vald/templates/gateway/lb
 	kubectl delete -f $(TEMP_DIR)/vald/templates/manager/index
 	kubectl delete -f $(TEMP_DIR)/vald/templates/discoverer
