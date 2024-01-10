@@ -18,6 +18,8 @@ on:
   push:
     branches:
       - main
+      - "release/v*.*"
+      - "!release/v*.*.*"
     paths:
       - "apis/proto/**"
       - "versions/GO_VERSION"

@@ -15,6 +15,7 @@
 #
 name: "Build Docker images"
 description: "A action to build Docker images and publish them"
+
 inputs:
   target:
     description: "Build target"
@@ -44,6 +45,7 @@ outputs:
   EXTRA_TAGS:
     description: "Extra tags"
     value: ${{ steps.add_extra_tags.outputs.EXTRA_TAGS }}
+
 runs:
   using: "composite"
   steps:
@@ -60,9 +62,11 @@ runs:
         echo "ALTER_IMAGE_NAME=${alter_image_name}" >> $GITHUB_OUTPUT
       env:
         TARGET: ${{ inputs.target }}
+
     - name: Determine tag name
       id: determine_tag_name
       uses: ./.github/actions/determine-docker-image-tag
+
     - name: Determine platforms
       shell: bash
       id: determine_platforms
@@ -82,6 +86,7 @@ runs:
         echo "PLATFORMS=${platforms}" >> $GITHUB_OUTPUT
       env:
         TARGET_PLATFORMS: ${{ inputs.platforms }}
+
     - name: Add extra tags
       shell: bash
       id: add_extra_tags
@@ -97,6 +102,7 @@ runs:
         IMAGE_NAME: ${{ steps.image_name.outputs.IMAGE_NAME }}
         ALTER_IMAGE_NAME: ${{ steps.image_name.outputs.ALTER_IMAGE_NAME }}
         PRIMARY_TAG: ${{ steps.determine_tag_name.outputs.PRIMARY_TAG }}
+
     - name: Build and Push
       shell: bash
       id: build_and_push
