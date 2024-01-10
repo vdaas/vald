@@ -10646,6 +10646,16 @@
                   "type": "object",
                   "description": "annotations for ingress"
                 },
+                "defaultBackend": {
+                  "type": "object",
+                  "description": "defaultBackend config",
+                  "properties": {
+                    "enabled": {
+                      "type": "boolean",
+                      "description": "gateway ingress defaultBackend enabled"
+                    }
+                  }
+                },
                 "enabled": {
                   "type": "boolean",
                   "description": "gateway ingress enabled"

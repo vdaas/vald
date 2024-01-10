@@ -1644,6 +1644,12 @@ gateway:
       # @schema {"name": "gateway.mirror.ingress.servicePort", "type": "string"}
       # gateway.mirror.ingress.servicePort -- service port to be exposed by ingress
       servicePort: grpc
+      # @schema {"name": "gateway.mirror.ingress.defaultBackend", "type": "object"}
+      # gateway.mirror.ingress.defaultBackend -- defaultBackend config
+      defaultBackend:
+        # @schema {"name": "gateway.mirror.ingress.defaultBackend.enabled", "type": "boolean"}
+        # gateway.mirror.ingress.defaultBackend.enabled -- gateway ingress defaultBackend enabled
+        enabled: true
     # @schema {"name": "gateway.mirror.resources", "type": "object", "anchor": "resources"}
     # gateway.mirror.resources -- compute resources
     resources:

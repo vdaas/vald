@@ -6402,6 +6402,11 @@ spec:
                             annotations:
                               type: object
                               x-kubernetes-preserve-unknown-fields: true
+                            defaultBackend:
+                              type: object
+                              properties:
+                                enabled:
+                                  type: boolean
                             enabled:
                               type: boolean
                             host:

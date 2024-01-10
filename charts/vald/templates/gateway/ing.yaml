@@ -1,0 +1,95 @@
+#
+# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# You may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+{{- $filter            := .Values.gateway.filter -}}
+{{- $filterIngEnabled  := and $filter.enabled $filter.ingress.enabled -}}
+{{- $mirror            := .Values.gateway.mirror -}}
+{{- $mirrorIngEnabled  := and $mirror.enabled $mirror.ingress.enabled -}}
+{{- $lb                := .Values.gateway.lb -}}
+{{- $lbIngEnabled      := and $lb.enabled $lb.ingress.enabled -}}
+{{- $gateway           := "" -}}
+{{- $gatewayName       := "" -}}
+{{- if or $filterIngEnabled $mirrorIngEnabled $lbIngEnabled }}
+{{- if $filterIngEnabled }}
+{{- $gateway = $filter -}}
+{{- $gatewayName = "gateway-filter" }}
+{{- else if $mirrorIngEnabled }}
+{{- $gateway = $mirror -}}
+{{- $gatewayName = "gateway-mirror" }}
+{{- else }}
+{{- $gateway = $lb -}}
+{{- $gatewayName = "gateway-lb" }}
+{{- end }}
+{{- if (.Capabilities.APIVersions.Has "networking.k8s.io/v1") }}
+apiVersion: networking.k8s.io/v1
+{{- else }}
+apiVersion: networking.k8s.io/v1alpha1
+{{- end }}
+kind: Ingress
+metadata:
+  annotations:
+    {{- toYaml $gateway.ingress.annotations | nindent 4 }}
+  labels:
+    name: {{ .Release.Name }}-ingress
+    app: {{ .Release.Name }}-ingress
+    app.kubernetes.io/name: {{ include "vald.name" . }}
+    helm.sh/chart: {{ include "vald.chart" . }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/version: {{ .Chart.Version }}
+    app.kubernetes.io/component: {{ $gatewayName }}
+spec:
+  {{- if $gateway.ingress.defaultBackend.enabled }}
+  defaultBackend:
+    service:
+      name: {{ $gateway.name }}
+      {{- include "vald.ingressPort" (dict "Values" $gateway.ingress) | nindent 6 }}
+  {{- end }}
+  rules:
+  - host: {{ $gateway.ingress.host }}
+    http:
+      paths:
+      {{- if $filterIngEnabled }}
+      - backend:
+          service:
+            name: {{ $filter.name }}
+            {{- include "vald.ingressPort" (dict "Values" $filter.ingress) | nindent 12 }}
+        pathType: {{ $filter.ingress.pathType }}
+      {{- else if and $mirrorIngEnabled $lb.enabled }}
+      - backend:
+          service:
+            name: {{ $mirror.name }}
+            {{- include "vald.ingressPort" (dict "Values" $mirror.ingress) | nindent 12 }}
+        pathType: {{ $mirror.ingress.pathType }}
+      - path: "/vald.v1.Search"
+        backend:
+          service:
+            name: {{ $lb.name }}
+            {{- include "vald.ingressPort" (dict "Values" $mirror.ingress) | nindent 12 }}
+        pathType: {{ $mirror.ingress.pathType }}
+      - path: "/vald.v1.Object"
+        backend:
+          service:
+            name: {{ $lb.name }}
+            {{- include "vald.ingressPort" (dict "Values" $mirror.ingress) | nindent 12 }}
+        pathType: {{ $mirror.ingress.pathType }}
+      {{- else if $lbIngEnabled }}
+      - backend:
+          service:
+            name: {{ $lb.name }}
+            {{- include "vald.ingressPort" (dict "Values" $lb.ingress) | nindent 12 }}
+        pathType: {{ $lb.ingress.pathType }}
+      {{- end }}
+{{- end }}
