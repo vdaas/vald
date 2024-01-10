@@ -15,6 +15,7 @@
 #
 name: "Setup E2E environment"
 description: "A action to set up the environment for executing E2E test"
+
 inputs:
   require_libhdf5:
     description: "If libhdf5 is not required, set this to false"
@@ -40,6 +41,7 @@ inputs:
     description: "Image names"
     required: false
     default: "vdaas/vald-agent-ngt vdaas/vald-discoverer-k8s vdaas/vald-lb-gateway vdaas/vald-manager-index"
+
 outputs:
   HELM_EXTRA_OPTIONS:
     description: "Helm extra options that specifies E2E target image tags"
@@ -47,6 +49,10 @@ outputs:
   IMAGE_TAGS:
     description: "Specifies E2E target image tags"
     value: ${{ steps.specify_container_versions.outputs.IMAGE_TAGS }}
+  DEFAULT_IMAGE_TAG:
+    description: "Default E2E target image tag"
+    value: ${{ steps.determine_tag_name.outputs.DEFAULT_TAG }}
+
 runs:
   using: "composite"
   steps:
