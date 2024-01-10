@@ -197,6 +197,45 @@ k8s/vald-helm-operator/delete:
 	kubectl delete -f $(TEMP_DIR)/vald-helm-operator/crds
 	rm -rf $(TEMP_DIR)
 
+.PHONY: k8s/vald-readreplica/deploy
+## deploy vald-readreplica to k8s
+k8s/vald-readreplica/deploy:
+	helm template \
+	    --values $(HELM_VALUES) \
+	    --set defaults.image.tag=$(VERSION) \
+	    --set agent.image.repository=$(CRORG)/$(AGENT_IMAGE) \
+	    --set agent.sidecar.image.repository=$(CRORG)/$(AGENT_SIDECAR_IMAGE) \
+	    --set discoverer.image.repository=$(CRORG)/$(DISCOVERER_IMAGE) \
+	    --set gateway.filter.image.repository=$(CRORG)/$(FILTER_GATEWAY_IMAGE) \
+	    --set gateway.lb.image.repository=$(CRORG)/$(LB_GATEWAY_IMAGE) \
+	    --set manager.index.image.repository=$(CRORG)/$(MANAGER_INDEX_IMAGE) \
+	    --set manager.index.creator.image.repository=$(CRORG)/$(INDEX_CREATION_IMAGE) \
+	    --set manager.index.saver.image.repository=$(CRORG)/$(INDEX_SAVE_IMAGE) \
+	    $(HELM_EXTRA_OPTIONS) \
+	    --output-dir $(TEMP_DIR) \
+	    charts/vald-readreplica
+	kubectl apply -f $(TEMP_DIR)/vald-readreplica/templates
+	sleep 2
+	kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=vald-readreplica --timeout=600s
+
+.PHONY: k8s/vald-readreplica/delete
+## delete vald-helm-operator from k8s
+k8s/vald-readreplica/delete:
+	helm template \
+	    --values $(HELM_VALUES) \
+	    --set defaults.image.tag=$(VERSION) \
+	    --set agent.image.repository=$(CRORG)/$(AGENT_IMAGE) \
+	    --set agent.sidecar.image.repository=$(CRORG)/$(AGENT_SIDECAR_IMAGE) \
+	    --set discoverer.image.repository=$(CRORG)/$(DISCOVERER_IMAGE) \
+	    --set gateway.filter.image.repository=$(CRORG)/$(FILTER_GATEWAY_IMAGE) \
+	    --set gateway.lb.image.repository=$(CRORG)/$(LB_GATEWAY_IMAGE) \
+	    --set manager.index.image.repository=$(CRORG)/$(MANAGER_INDEX_IMAGE) \
+	    --output-dir $(TEMP_DIR) \
+	    charts/vald-readreplica
+	kubectl delete -f $(TEMP_DIR)/vald-readreplica/templates
+	kubectl wait --for=delete pod -l app.kubernetes.io/name=vald-readreplica --timeout=600s
+	rm -rf $(TEMP_DIR)
+
 .PHONY: k8s/vr/deploy
 ## deploy ValdRelease resource to k8s
 k8s/vr/deploy: \
