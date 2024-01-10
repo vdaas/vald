@@ -1151,7 +1151,7 @@ Represent the index manager service.
 
 ## v1/mirror/mirror.proto
 
-Copyright (C) 2019-2023 vdaas.org vald team &lt;vald@vdaas.org&gt;
+Copyright (C) 2019-2024 vdaas.org vald team &lt;vald@vdaas.org&gt;
 
 Licensed under the Apache License, Version 2.0 (the &#34;License&#34;);
 You may not use this file except in compliance with the License.
