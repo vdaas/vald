@@ -42,14 +42,15 @@ metadata:
   annotations:
     {{- toYaml $gateway.ingress.annotations | nindent 4 }}
   labels:
-    name: {{ .Release.Name }}-ingress
-    app: {{ .Release.Name }}-ingress
+    name: {{ $gateway.name }}-ingress
+    app: {{ $gateway.name }}-ingress
     app.kubernetes.io/name: {{ include "vald.name" . }}
     helm.sh/chart: {{ include "vald.chart" . }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/version: {{ .Chart.Version }}
     app.kubernetes.io/component: {{ $gatewayName }}
+  name: {{ .Release.Name }}-ingress
 spec:
   {{- if $gateway.ingress.defaultBackend.enabled }}
   defaultBackend:
