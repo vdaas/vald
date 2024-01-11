@@ -231,7 +231,7 @@ func isSymlink(path string) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	return lst.Mode()&os.ModeSymlink != 0, nil
+	return lst.Mode()&os.ModeSymlink == os.ModeSymlink, nil
 }
 
 func readAndRewrite(path string) error {
