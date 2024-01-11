@@ -293,6 +293,8 @@ func readAndRewrite(path string) error {
 				tmpl = googleProtoApache
 			}
 			d.Escape = slushEscape
+		case ".rs":
+			d.Escape = slushEscape
 		default:
 			if fi.Name() == "Dockerfile" {
 				tmpl = docker

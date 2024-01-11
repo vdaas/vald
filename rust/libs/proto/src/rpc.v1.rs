@@ -1,28 +1,18 @@
-// @generated
-/// Describes the cause of the error with structured details.
-///
-/// Example of an error when contacting the "pubsub.googleapis.com" API when it
-/// is not enabled:
-///
-///      { "reason": "API_DISABLED"
-///        "domain": "googleapis.com"
-///        "metadata": {
-///          "resource": "projects/123",
-///          "service": "pubsub.googleapis.com"
-///        }
-///      }
-///
-/// This response indicates that the pubsub.googleapis.com API is not enabled.
-///
-/// Example of an error that is returned when attempting to create a Spanner
-/// instance in a region that is out of stock:
-///
-///      { "reason": "STOCKOUT"
-///        "domain": "spanner.googleapis.com",
-///        "metadata": {
-///          "availableRegions": "us-central1,us-east2"
-///        }
-///      }
+//
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// You may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    https://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct ErrorInfo {
