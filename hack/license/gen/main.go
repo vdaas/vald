@@ -226,7 +226,24 @@ func dirwalk(dir string) []string {
 	return paths
 }
 
+func isSymlink(path string) (bool, error) {
+	lst, err := os.Lstat(path)
+	if err != nil {
+		return false, err
+	}
+	return lst.Mode()&os.ModeSymlink != 0, nil
+}
+
 func readAndRewrite(path string) error {
+	// return if it is a symlink
+	isSym, err := isSymlink(path)
+	if err != nil {
+		return err
+	}
+	if isSym {
+		return nil
+	}
+
 	f, err := os.OpenFile(path, os.O_RDWR|os.O_SYNC, fs.ModePerm)
 	if err != nil {
 		return errors.Errorf("filepath %s, could not open", path)

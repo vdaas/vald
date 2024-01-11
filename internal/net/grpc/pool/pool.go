@@ -359,7 +359,7 @@ func (p *pool) connect(ctx context.Context, ips ...string) (c Conn, err error) {
 				!errors.Is(ierr, context.Canceled) {
 				log.Warnf("An error occurred while dialing pool member connection to %s,\terror: %v", addr, ierr)
 			} else {
-				log.Debug("Connect loop operation canceled while dialing pool member connection to %s,\terror: %v", addr, ierr)
+				log.Debugf("Connect loop operation canceled while dialing pool member connection to %s,\terror: %v", addr, ierr)
 				return false
 			}
 		}
@@ -421,7 +421,7 @@ func (p *pool) singleTargetConnect(ctx context.Context) (c Conn, err error) {
 				}
 				return true
 			} else {
-				log.Debug("Connect loop operation canceled while dialing pool member connection to %s,\terror: %v", p.addr, ierr)
+				log.Debugf("Connect loop operation canceled while dialing pool member connection to %s,\terror: %v", p.addr, ierr)
 				return false
 			}
 		}
@@ -449,7 +449,7 @@ func (p *pool) Disconnect() (err error) {
 					log.Debugf("failed to close connection pool addr = %s\terror = %v", pc.addr, ierr)
 					emap[ierr.Error()] = err
 				} else {
-					log.Debug("Disconnect loop operation canceled while closing pool member connection to %s,\terror: %v", pc.addr, ierr)
+					log.Debugf("Disconnect loop operation canceled while closing pool member connection to %s,\terror: %v", pc.addr, ierr)
 					return false
 				}
 			}
