@@ -1,0 +1,187 @@
+#
+# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# You may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+apiVersion: vald.vdaas.org/v1
+kind: ValdBenchmarkScenario
+metadata:
+  name: sample-scenario
+  namespace: default
+spec:
+  # @schema {"name": "dataset", "type": "object"}
+  # dataset -- dataset information
+  dataset:
+    # @schema {"name": "dataset.name", "type": "string" }
+    # dataset.name -- the name of dataset
+    name: "fashion-mnist"
+    # @schema {"name": "dataset.indexes", "type": "integer"}
+    # dataset.indexes -- the amount of indexes
+    indexes: 1000
+    # @schema {"name": "dataset.group", "type": "string"}
+    # dataset.group -- the hdf5 group name of dataset
+    group: "test"
+    # @schema {"name": "dataset.range", "type": "object"}
+    # dataset.range -- the data range of indexes
+    range:
+      # @schema {"name": "dataset.range.start", "type": "integer"}
+      # dataset.range.start -- start index number
+      start: 1
+      # @schema {"name": "dataset.range.end", "type": "integer"}
+      # dataset.range.end -- end index number
+      end: 1000
+  # @schema {"name": "jobs", "type": "array", "items": {"type": "object"}}
+  # jobs -- benchmark jobs
+  jobs:
+    # @schema {"name": "jobs.items.dataset", "type": "object"}
+    - job_type: "insert"
+      dimension: 784
+      repetition: 1
+      replica: 1
+      rules: []
+      dataset:
+        name: "fashion-mnist"
+        indexes: 10000
+        group: "train"
+        range:
+          start: 1
+          end: 10000
+      insert_config:
+        skip_strict_exist_check: true
+      client_config:
+        health_check_duration: "10s"
+      rps: 500
+    - job_type: "update"
+      dimension: 784
+      repetition: 1
+      replica: 1
+      rules: []
+      dataset:
+        name: "fashion-mnist"
+        indexes: 10000
+        group: "train"
+        range:
+          start: 10001
+          end: 20000
+      update_config:
+        skip_strict_exist_check: true
+      client_config:
+        health_check_duration: "10s"
+      rps: 500
+    - job_type: "search"
+      dimension: 784
+      repetition: 1
+      replica: 1
+      rules: []
+      search_config:
+        epsilon: 0.1
+        radius: -1
+        num: 10
+        min_num: 10
+        timeout: "1m"
+        enable_linear_search: true
+      client_config:
+        health_check_duration: "10s"
+      rps: 2000
+    - job_type: "upsert"
+      dimension: 784
+      repetition: 1
+      replica: 1
+      rules: []
+      dataset:
+        name: "fashion-mnist"
+        indexes: 30000
+        group: "train"
+        range:
+          start: 10001
+          end: 40000
+      upsert_config:
+        skip_strict_exist_check: true
+      client_config:
+        health_check_duration: "10s"
+      rps: 1000
+    - job_type: "search"
+      dimension: 784
+      repetition: 2
+      replica: 1
+      rules: []
+      dataset:
+        name: "fashion-mnist"
+        indexes: 20000
+        group: "test"
+        range:
+          start: 1
+          end: 20000
+      search_config:
+        epsilon: 0.1
+        radius: -1
+        num: 10
+        min_num: 10
+        timeout: "1m"
+        enable_linear_search: false
+      client_config:
+        health_check_duration: "10s"
+      rps: 4000
+    - job_type: "exists"
+      dimension: 784
+      repetition: 1
+      replica: 1
+      rules: []
+      dataset:
+        name: "fashion-mnist"
+        indexes: 20000
+        group: "train"
+        range:
+          start: 1
+          end: 20000
+      client_config:
+        health_check_duration: "10s"
+      rps: 1000
+    - job_type: "getobject"
+      dimension: 784
+      repetition: 1
+      replica: 1
+      rules: []
+      dataset:
+        name: "fashion-mnist"
+        indexes: 20000
+        group: "train"
+        range:
+          start: 1
+          end: 20000
+      client_config:
+        health_check_duration: "10s"
+      rps: 1000
+    - job_type: "remove"
+      dimension: 784
+      repetition: 1
+      replica: 1
+      rules: []
+      dataset:
+        name: "fashion-mnist"
+        indexes: 30000
+        group: "train"
+        range:
+          start: 1
+          end: 30000
+      remove_config:
+        skip_strict_exist_check: true
+      client_config:
+        health_check_duration: "10s"
+      rps: 1000
+
+  # @schema {"name": "target", "type": "array", "items": {"type": "object"}}
+  # target -- target cluster host&port
+  target:
+    host: "vald-lb-gateway.default.svc.cluster.local"
+    port: 8081

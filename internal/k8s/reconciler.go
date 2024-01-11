@@ -25,6 +25,7 @@ import (
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/sync/errgroup"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -34,8 +35,14 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
 
+type (
+	Manager        = manager.Manager
+	OwnerReference = v1.OwnerReference
+)
+
 type Controller interface {
 	Start(ctx context.Context) (<-chan error, error)
+	GetManager() Manager
 }
 
 type ResourceController interface {
@@ -134,4 +141,8 @@ func (c *controller) Start(ctx context.Context) (<-chan error, error) {
 	}))
 
 	return ech, nil
+}
+
+func (c *controller) GetManager() Manager {
+	return c.mgr
 }
