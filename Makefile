@@ -35,6 +35,8 @@ INDEX_CREATION_IMAGE            = $(NAME)-index-creation
 INDEX_SAVE_IMAGE                = $(NAME)-index-save
 READREPLICA_ROTATE_IMAGE        = $(NAME)-readreplica-rotate
 MANAGER_INDEX_IMAGE             = $(NAME)-manager-index
+BENCHMARK_JOB_IMAGE             = $(NAME)-benchmark-job
+BENCHMARK_OPERATOR_IMAGE        = $(NAME)-benchmark-operator
 MAINTAINER                      = "$(ORG).org $(NAME) team <$(NAME)@$(ORG).org>"
 
 VERSION ?= $(eval VERSION := $(shell cat versions/VALD_VERSION))$(VERSION)
@@ -72,6 +74,8 @@ TELEPRESENCE_VERSION      := $(eval TELEPRESENCE_VERSION := $(shell cat versions
 VALDCLI_VERSION           := $(eval VALDCLI_VERSION := $(shell cat versions/VALDCLI_VERSION))$(VALDCLI_VERSION)
 YQ_VERSION                := $(eval YQ_VERSION := $(shell cat versions/YQ_VERSION))$(YQ_VERSION)
 BUF_VERSION               := $(eval BUF_VERSION := $(shell cat versions/BUF_VERSION))$(BUF_VERSION)
+ZLIB_VERSION              := $(eval ZLIB_VERSION := $(shell cat versions/ZLIB_VERSION))$(ZLIB_VERSION)
+HDF5_VERSION              := $(eval HDF5_VERSION := $(shell cat versions/HDF5_VERSION))$(HDF5_VERSION)
 
 OTEL_OPERATOR_RELEASE_NAME ?= opentelemetry-operator
 PROMETHEUS_RELEASE_NAME    ?= prometheus
