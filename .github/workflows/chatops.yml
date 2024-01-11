@@ -358,7 +358,7 @@ jobs:
           git_commit_gpgsign: true
 
       - uses: ./.github/actions/setup-go
-        if: steps.check_comments_gen_test.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
+        if: steps.check_comments_format.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
 
       - name: update and push
         id: format_push
