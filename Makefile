@@ -86,6 +86,9 @@ SWAP_TAG             ?= latest
 
 BINDIR ?= /usr/local/bin
 
+RUST_DIR ?= $(HOME)/.cargo
+RUST_BIN ?= $(RUST_DIR)/bin
+
 UNAME := $(eval UNAME := $(shell uname -s))$(UNAME)
 ARCH := $(eval ARCH := $(shell uname -m))$(ARCH)
 PWD := $(eval PWD := $(shell pwd))$(PWD)

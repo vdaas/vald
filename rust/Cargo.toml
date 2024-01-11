@@ -1,0 +1,2 @@
+[workspace]
+members = ["libs/proto", "libs/ngt", "bin/agent"]

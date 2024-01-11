@@ -38,3 +38,9 @@ plugins:
     out: apis/swagger
     opt:
       - json_names_for_fields=true
+  - plugin: buf.build/community/neoeinstein-prost
+    out: rust/libs/proto/src
+  - plugin: buf.build/community/neoeinstein-tonic
+    out: rust/libs/proto/src
+    opt:
+      - no_include
