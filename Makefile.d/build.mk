@@ -22,7 +22,9 @@ binary/build: \
 	cmd/discoverer/k8s/discoverer \
 	cmd/gateway/lb/lb \
 	cmd/gateway/filter/filter \
-	cmd/manager/index/index
+	cmd/manager/index/index \
+	cmd/tools/benchmark/job/job \
+	cmd/tools/benchmark/operator/operator
 
 cmd/agent/core/ngt/ngt: \
 	ngt/install \
@@ -350,6 +352,64 @@ cmd/index/job/readreplica/rotate/readreplica-rotate: \
 		$(dir $@)main.go
 	$@ -version
 
+cmd/tools/benchmark/job/job: \
+	$(GO_SOURCES_INTERNAL) \
+	$(PBGOS) \
+	$(shell find ./cmd/tools/benchmark/job -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go') \
+	$(shell find ./pkg/tools/benchmark/job -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
+	CGO_ENABLED=$(CGO_ENABLED) \
+	GO111MODULE=on \
+	GOPRIVATE=$(GOPRIVATE) \
+	go build \
+		--ldflags "-w -linkmode 'external' \
+		-extldflags '-static -fPIC -pthread -fopenmp -std=gnu++20 -lhdf5 -lhdf5_hl -lm -ldl' \
+		-X '$(GOPKG)/internal/info.Version=$(VERSION)' \
+		-X '$(GOPKG)/internal/info.GitCommit=$(GIT_COMMIT)' \
+		-X '$(GOPKG)/internal/info.BuildTime=$(DATETIME)' \
+		-X '$(GOPKG)/internal/info.GoVersion=$(GO_VERSION)' \
+		-X '$(GOPKG)/internal/info.GoOS=$(GOOS)' \
+		-X '$(GOPKG)/internal/info.GoArch=$(GOARCH)' \
+		-X '$(GOPKG)/internal/info.CGOEnabled=${CGO_ENABLED}' \
+		-X '$(GOPKG)/internal/info.NGTVersion=$(NGT_VERSION)' \
+		-X '$(GOPKG)/internal/info.BuildCPUInfoFlags=$(CPU_INFO_FLAGS)' \
+		-buildid=" \
+		-mod=readonly \
+		-modcacherw \
+		-a \
+		-tags "cgo osusergo netgo static_build" \
+		-trimpath \
+		-o $@ \
+		$(dir $@)main.go
+	$@ -version
+
+cmd/tools/benchmark/operator/operator: \
+	$(GO_SOURCES_INTERNAL) \
+	$(PBGOS) \
+	$(shell find ./cmd/tools/benchmark/operator -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go') \
+	$(shell find ./pkg/tools/benchmark/operator -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
+	CFLAGS="$(CFLAGS)" \
+	CXXFLAGS="$(CXXFLAGS)" \
+	CGO_ENABLED=1 \
+	CGO_CXXFLAGS="-g -Ofast -march=native" \
+	CGO_FFLAGS="-g -Ofast -march=native" \
+	CGO_LDFLAGS="-g -Ofast -march=native" \
+	GO111MODULE=on \
+	GOPRIVATE=$(GOPRIVATE) \
+	go build \
+		--ldflags "-w -extldflags=-static \
+		-X '$(GOPKG)/internal/info.CGOEnabled=${CGO_ENABLED}' \
+		-X '$(GOPKG)/internal/info.NGTVersion=$(NGT_VERSION)' \
+		-X '$(GOPKG)/internal/info.BuildCPUInfoFlags=$(CPU_INFO_FLAGS)' \
+		-buildid=" \
+		-mod=readonly \
+		-modcacherw \
+		-a \
+		-tags "cgo osusergo netgo static_build" \
+		-trimpath \
+		-o $@ \
+		$(dir $@)main.go
+	$@ -version
+
 .PHONY: binary/build/zip
 ## build all binaries and zip them
 binary/build/zip: \
@@ -384,3 +444,10 @@ artifacts/vald-manager-index-$(GOOS)-$(GOARCH).zip: cmd/manager/index/index
 	$(call mkdir, $(dir $@))
 	zip --junk-paths $@ $<
 
+artifacts/vald-benchmark-job-$(GOOS)-$(GOARCH).zip: cmd/tools/benchmark/job/job
+	$(call mkdir, $(dir $@))
+	zip --junk-paths $@ $<
+
+artifacts/vald-benchmark-operator-$(GOOS)-$(GOARCH).zip: cmd/tools/benchmark/operator/operator
+	$(call mkdir, $(dir $@))
+	zip --junk-paths $@ $<

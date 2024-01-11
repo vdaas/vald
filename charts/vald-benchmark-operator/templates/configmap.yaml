@@ -1,0 +1,43 @@
+#
+# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# You may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.name }}-config
+  labels:
+    app.kubernetes.io/name: {{ include "vald.name" . }}
+    helm.sh/chart: {{ include "vald.chart" . }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/version: {{ .Chart.Version }}
+    app.kubernetes.io/component: benchmark-operator
+data:
+  config.yaml: |
+    ---
+    version: {{ .Values.version }}
+    time_zone: {{ .Values.time_zone | quote }}
+    logging:
+      {{- $logging := dict "Values" .Values.logging }}
+      {{- include "vald.logging" $logging | nindent 6 }}
+    server_config:
+      {{- $servers := dict "Values" .Values.server_config }}
+      {{- include "vald.servers" $servers | nindent 6 }}
+    observability:
+      {{- $observability := dict "Values" .Values.observability}}
+      {{- include "vald.observability" $observability | nindent 6 }}
+    job_image:
+      image: "{{ .Values.job_image.repository }}:{{ .Values.job_image.tag }}"
+      pullPolicy: {{ .Values.job_image.pullPolicy }}

@@ -22,6 +22,8 @@ docker/build: \
 	docker/build/gateway-lb \
 	docker/build/gateway-filter \
 	docker/build/manager-index \
+	docker/build/benchmark-job \
+	docker/build/benchmark-operator \
 	docker/build/operator/helm
 
 .PHONY: docker/name/org
@@ -236,4 +238,27 @@ docker/name/readreplica-rotate:
 docker/build/readreplica-rotate:
 	@make DOCKERFILE="$(ROOTDIR)/dockers/index/job/readreplica/rotate/Dockerfile" \
 		IMAGE=$(READREPLICA_ROTATE_IMAGE) \
+		docker/build/image
+
+.PHONY: docker/name/benchmark-job
+docker/name/benchmark-job:
+	@echo "$(ORG)/$(BENCHMARK_JOB_IMAGE)"
+
+.PHONY: docker/build/benchmark-job
+## build benchmark job
+docker/build/benchmark-job:
+	@make DOCKERFILE="$(ROOTDIR)/dockers/tools/benchmark/job/Dockerfile" \
+		IMAGE=$(BENCHMARK_JOB_IMAGE) \
+		DOCKER_OPTS="--build-arg ZLIB_VERSION=$(ZLIB_VERSION) --build-arg HDF5_VERSION=$(HDF5_VERSION)" \
+		docker/build/image
+
+.PHONY: docker/name/benchmark-operator
+docker/name/benchmark-operator:
+	@echo "$(ORG)/$(BENCHMARK_OPERATOR_IMAGE)"
+
+.PHONY: docker/build/benchmark-operator
+## build benchmark operator
+docker/build/benchmark-operator:
+	@make DOCKERFILE="$(ROOTDIR)/dockers/tools/benchmark/operator/Dockerfile" \
+		IMAGE=$(BENCHMARK_OPERATOR_IMAGE) \
 		docker/build/image

@@ -100,6 +100,37 @@ charts/vald-helm-operator/values.schema.json: \
 	GOPRIVATE=$(GOPRIVATE) \
 	go run -mod=readonly hack/helm/schema/gen/main.go charts/vald-helm-operator/values.yaml > charts/vald-helm-operator/values.schema.json
 
+.PHONY: helm/schema/vald-benchmark-job
+## generate json schema for Vald Benchmark Job Chart
+helm/schema/vald-benchmark-job: charts/vald-benchmark-operator/job-values.schema.json
+
+charts/vald-benchmark-operator/job-values.schema.json: \
+	charts/vald-benchmark-operator/schemas/job-values.yaml \
+	hack/helm/schema/gen/main.go
+	GOPRIVATE=$(GOPRIVATE) \
+	go run -mod=readonly hack/helm/schema/gen/main.go charts/vald-benchmark-operator/schemas/job-values.yaml > charts/vald-benchmark-operator/job-values.schema.json
+
+.PHONY: helm/schema/vald-benchmark-job
+## generate json schema for Vald Benchmark Job Chart
+helm/schema/vald-benchmark-scenario: charts/vald-benchmark-operator/scenario-values.schema.json
+
+charts/vald-benchmark-operator/scenario-values.schema.json: \
+	charts/vald-benchmark-operator/schemas/scenario-values.yaml \
+	hack/helm/schema/gen/main.go
+	GOPRIVATE=$(GOPRIVATE) \
+	go run -mod=readonly hack/helm/schema/gen/main.go charts/vald-benchmark-operator/schemas/scenario-values.yaml > charts/vald-benchmark-operator/scenario-values.schema.json
+
+.PHONY: helm/schema/vald-benchmark-operator
+## generate json schema for Vald Benchmark Operator Chart
+helm/schema/vald-benchmark-operator: charts/vald-benchmark-operator/values.schema.json
+
+charts/vald-benchmark-operator/values.schema.json: \
+	charts/vald-benchmark-operator/values.yaml \
+	hack/helm/schema/gen/main.go
+	GOPRIVATE=$(GOPRIVATE) \
+	go run -mod=readonly hack/helm/schema/gen/main.go charts/vald-benchmark-operator/values.yaml > charts/vald-benchmark-operator/values.schema.json
+
+
 .PHONY: yq/install
 ## install yq
 yq/install: $(BINDIR)/yq
@@ -142,3 +173,21 @@ helm/schema/crd/vald/mirror-target: \
 	charts/vald/schemas/mirror-target-values.yaml > $(TEMP_DIR)/valdmirrortarget-spec.yaml
 	$(BINDIR)/yq eval-all 'select(fileIndex==0).spec.versions[0].schema.openAPIV3Schema.properties.spec = select(fileIndex==1).spec | select(fileIndex==0)' \
 	$(TEMP_DIR)/valdmirrortarget.yaml $(TEMP_DIR)/valdmirrortarget-spec.yaml > charts/vald/crds/valdmirrortarget.yaml
+
+.PHONY: helm/schema/crd/vald-benchmark-job
+## generate OpenAPI v3 schema for ValdBenchmarkJobRelease
+helm/schema/crd/vald-benchmark-job: \
+	yq/install
+	@$(call gen-vald-crd,vald-benchmark-operator,valdbenchmarkjob,schemas/job-values)
+
+.PHONY: helm/schema/crd/vald-benchmark-scenario
+## generate OpenAPI v3 schema for ValdBenchmarkScenarioRelease
+helm/schema/crd/vald-benchmark-scenario: \
+	yq/install
+	@$(call gen-vald-crd,vald-benchmark-operator,valdbenchmarkscenario,schemas/scenario-values)
+
+.PHONY: helm/schema/crd/vald-benchmark-operator
+## generate OpenAPI v3 schema for ValdBenchmarkOperatorRelease
+helm/schema/crd/vald-benchmark-operator: \
+	yq/install
+	@$(call gen-vald-crd,vald-benchmark-operator,valdbenchmarkoperatorrelease,values)
