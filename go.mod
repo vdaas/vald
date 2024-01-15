@@ -387,6 +387,7 @@ require (
 	go.opentelemetry.io/otel/trace v1.19.0
 	go.uber.org/automaxprocs v0.0.0-00010101000000-000000000000
 	go.uber.org/goleak v1.2.1
+	go.uber.org/ratelimit v0.3.0
 	go.uber.org/zap v1.26.0
 	gocloud.dev v0.0.0-00010101000000-000000000000
 	golang.org/x/net v0.19.0
@@ -394,6 +395,7 @@ require (
 	golang.org/x/sync v0.5.0
 	golang.org/x/sys v0.15.0
 	golang.org/x/text v0.14.0
+	golang.org/x/time v0.5.0
 	golang.org/x/tools v0.16.0
 	gonum.org/v1/hdf5 v0.0.0-00010101000000-000000000000
 	gonum.org/v1/plot v0.10.1
@@ -419,6 +421,7 @@ require (
 	github.com/Masterminds/goutils v1.1.1 // indirect
 	github.com/Masterminds/semver v1.5.0 // indirect
 	github.com/ajstarks/svgo v0.0.0-20211024235047-1546f124cd8b // indirect
+	github.com/benbjohnson/clock v1.3.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/campoy/embedmd v1.0.0 // indirect
 	github.com/cenkalti/backoff/v4 v4.1.3 // indirect
@@ -497,7 +500,6 @@ require (
 	golang.org/x/image v0.14.0 // indirect
 	golang.org/x/mod v0.14.0 // indirect
 	golang.org/x/term v0.15.0 // indirect
-	golang.org/x/time v0.5.0 // indirect
 	golang.org/x/xerrors v0.0.0-20231012003039-104605ab7028 // indirect
 	gomodules.xyz/jsonpatch/v2 v2.3.0 // indirect
 	google.golang.org/api v0.152.0 // indirect
