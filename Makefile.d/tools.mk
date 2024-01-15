@@ -95,3 +95,9 @@ stern/install: $(GOPATH)/bin/stern
 
 $(GOPATH)/bin/stern:
 	$(call go-install, github.com/stern/stern)
+
+.PHONY: rust/install
+rust/install: $(RUST_BIN)/cargo
+
+$(RUST_BIN)/cargo:
+	curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
