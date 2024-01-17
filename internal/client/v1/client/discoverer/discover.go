@@ -80,6 +80,8 @@ func New(opts ...Option) (d Client, err error) {
 	return c, nil
 }
 
+// Start starts the discoverer client.
+// skipcq: GO-R1005
 func (c *client) Start(ctx context.Context) (<-chan error, error) {
 	dech, err := c.dscClient.StartConnectionMonitor(ctx)
 	if err != nil {
