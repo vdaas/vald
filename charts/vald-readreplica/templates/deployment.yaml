@@ -78,6 +78,11 @@ spec:
                     operator: In
                     values:
                     - {{ $readreplica.name }}-{{ $id }}
+                    - {{ $agent.name }}
+                  - key: app.kubernetes.io/component
+                    operator: In
+                    values:
+                    - {{ $readreplica.component_name }}
                 topologyKey: kubernetes.io/hostname
               weight: 100
       {{- if $agent.topologySpreadConstraints }}
