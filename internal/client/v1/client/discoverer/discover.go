@@ -37,7 +37,14 @@ import (
 type Client interface {
 	Start(ctx context.Context) (<-chan error, error)
 	GetAddrs(ctx context.Context) []string
+
+	// GetClient returns the grpc.Client for both read and write.
 	GetClient() grpc.Client
+
+	// GetReadClient returns the grpc.Client only for read. If there's no readreplica, this returns the grpc.Client for the primary agent.
+	// Use this API only for getting client for agent. For other use cases, use GetClient() instead.
+	// Internally, this API round robin between c.client and c.readClient with the ratio of
+	// agent replicas and read replica agent replicas.
 	GetReadClient() grpc.Client
 }
 
@@ -57,7 +64,7 @@ type client struct {
 	name         string
 	namespace    string
 	nodeName     string
-	// read replica related below
+	// read replica related members below
 	readClient          grpc.Client
 	readReplicaReplicas uint64
 	roundRobin          atomic.Uint64
@@ -182,15 +189,10 @@ func (c *client) GetAddrs(ctx context.Context) (addrs []string) {
 	return addrs
 }
 
-// GetClient returns the grpc.Client for both read and write.
 func (c *client) GetClient() grpc.Client {
 	return c.client
 }
 
-// GetReadClient returns the grpc.Client only for read if there is a read replica agent deployed.
-// Use this API only for getting client for agent. For other use cases, use GetClient() instead.
-// Internally, this API round robin between c.client and c.readClient with the ratio of
-// agent replicas and read replica agent replicas.
 func (c *client) GetReadClient() grpc.Client {
 	// just return write client when there is no read replica
 	if c.readClient == nil {

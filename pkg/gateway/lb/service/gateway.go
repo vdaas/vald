@@ -77,9 +77,6 @@ func (g *gateway) BroadCast(ctx context.Context, kind BroadCastKind,
 		}
 	}()
 
-	// select read or write clinet which is connected to primary agent or read replica agent
-	// GetReadClient includes the client to the primary agent so
-	// it works even when there is no read replica
 	var client grpc.Client
 	switch kind {
 	case READ:
