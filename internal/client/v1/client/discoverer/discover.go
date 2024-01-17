@@ -182,28 +182,30 @@ func (c *client) GetAddrs(ctx context.Context) (addrs []string) {
 	return addrs
 }
 
+// GetClient returns the grpc.Client for both read and write.
 func (c *client) GetClient() grpc.Client {
 	return c.client
 }
 
+// GetReadClient returns the grpc.Client only for read if there is a read replica agent deployed.
+// Use this API only for getting client for agent. For other use cases, use GetClient() instead.
+// Internally, this API round robin between c.client and c.readClient with the ratio of
+// agent replicas and read replica agent replicas.
 func (c *client) GetReadClient() grpc.Client {
-	// read replica
-	// 1. primary + svc cluster IP *n でここで比率を見て呼び分ける
-	//    read replicaのreplica数がHPAなどで高速に変動する場合に、実装がシンプルそうなのでこちらが良さそう
-	// 2. primary + ipsで単純にラウンドロビン
+	// just return write client when there is no read replica
+	if c.readClient == nil {
+		return c.client
+	}
 
-	// round robin with c.client and c.readClient everytime it's called
-	// with a ratio of primary + read replica deployment replicas
-	// TODO: is this atomic operation really worth it?
-	var new uint64
+	var next uint64
 	for {
 		cur := c.roundRobin.Load()
-		new = (cur + 1) % (c.readReplicaReplicas + 1)
-		if c.roundRobin.CompareAndSwap(cur, new) {
+		next = (cur + 1) % (c.readReplicaReplicas + 1)
+		if c.roundRobin.CompareAndSwap(cur, next) {
 			break
 		}
 	}
-	if new == 0 || c.readClient == nil {
+	if next == 0 {
 		return c.client
 	}
 	return c.readClient
