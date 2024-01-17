@@ -63,7 +63,7 @@ func (g *LB) Bind() *LB {
 	return g
 }
 
-// ReadReplicaClient
+// ReadReplicaClient represents a configuration of grpc client for read replica
 type ReadReplicaClient struct {
 	Duration           string      `json:"duration"             yaml:"duration"`
 	Client             *GRPCClient `json:"client"               yaml:"client"`
