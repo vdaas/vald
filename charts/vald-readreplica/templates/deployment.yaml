@@ -74,11 +74,13 @@ spec:
             - podAffinityTerm:
                 labelSelector:
                   matchExpressions:
+                  # to avoid being deployed to the same node as the agent pods
                   - key: app
                     operator: In
                     values:
-                    - {{ $readreplica.name }}-{{ $id }}
                     - {{ $agent.name }}
+                  # to avoid being deployed to the same node as the other readreplica pods
+                  # and Deployment replicas of myself
                   - key: app.kubernetes.io/component
                     operator: In
                     values:
