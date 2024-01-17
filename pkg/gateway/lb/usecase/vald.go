@@ -69,7 +69,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		acOpts,
 		grpc.WithErrGroup(eg))
 
-	discovererOpts := []discoverer.Option{}
+	var discovererOpts []discoverer.Option
 	discovererOpts = append(discovererOpts,
 		discoverer.WithAutoConnect(true),
 		discoverer.WithName(cfg.Gateway.AgentName),
