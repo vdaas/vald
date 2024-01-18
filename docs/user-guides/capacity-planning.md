@@ -39,7 +39,7 @@ Considering the margin of RAM capacity, the minimum RAM capacity should be less 
 Therefore, the actual minimum RAM capacity will be:
 
 ```bash
-8,7168,000,000 (bit) / 0.6 = 145,280,000,000 (bit) = 36.63 (GB)
+175,824,000,000 (bit) / 0.6 = 293,040,000,000 (bit) = 36.63 (GB)
 ```
 
 <div class="warn">
