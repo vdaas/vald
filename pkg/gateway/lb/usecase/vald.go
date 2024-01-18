@@ -46,29 +46,7 @@ type run struct {
 	gateway       service.Gateway
 }
 
-func New(cfg *config.Data) (r runner.Runner, err error) {
-	eg := errgroup.Get()
-
-	var gateway service.Gateway
-
-	cOpts, err := cfg.Gateway.Discoverer.Client.Opts()
-	if err != nil {
-		return nil, err
-	}
-
-	// skipcq: CRT-D0001
-	dopts := append(
-		cOpts,
-		grpc.WithErrGroup(eg))
-	acOpts, err := cfg.Gateway.Discoverer.AgentClientOptions.Opts()
-	if err != nil {
-		return nil, err
-	}
-	// skipcq: CRT-D0001
-	aopts := append(
-		acOpts,
-		grpc.WithErrGroup(eg))
-
+func discovererOpts(cfg *config.Data, dopts []grpc.Option, aopts []grpc.Option, eg errgroup.Group) ([]discoverer.Option, error) {
 	var discovererOpts []discoverer.Option
 	discovererOpts = append(discovererOpts,
 		discoverer.WithAutoConnect(true),
@@ -94,6 +72,37 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 			grpc.WithConnectionPoolSize(int(cfg.Gateway.ReadReplicaReplicas)),
 		)
 		discovererOpts = append(discovererOpts, discoverer.WithReadReplicaClient(grpc.New(rrOpts...)))
+	}
+
+	return discovererOpts, nil
+}
+
+func New(cfg *config.Data) (r runner.Runner, err error) {
+	eg := errgroup.Get()
+
+	var gateway service.Gateway
+
+	cOpts, err := cfg.Gateway.Discoverer.Client.Opts()
+	if err != nil {
+		return nil, err
+	}
+
+	// skipcq: CRT-D0001
+	dopts := append(
+		cOpts,
+		grpc.WithErrGroup(eg))
+	acOpts, err := cfg.Gateway.Discoverer.AgentClientOptions.Opts()
+	if err != nil {
+		return nil, err
+	}
+	// skipcq: CRT-D0001
+	aopts := append(
+		acOpts,
+		grpc.WithErrGroup(eg))
+
+	discovererOpts, err := discovererOpts(cfg, dopts, aopts, eg)
+	if err != nil {
+		return nil, err
 	}
 
 	client, err := discoverer.New(discovererOpts...)

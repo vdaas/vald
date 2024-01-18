@@ -17,6 +17,100 @@
 // Package usecase represents gateways usecase layer
 package usecase
 
+import (
+	"testing"
+
+	"github.com/stretchr/testify/require"
+	"github.com/vdaas/vald/internal/client/v1/client/discoverer"
+	iconfig "github.com/vdaas/vald/internal/config"
+	"github.com/vdaas/vald/internal/sync/errgroup"
+	"github.com/vdaas/vald/pkg/gateway/lb/config"
+
+	"github.com/vdaas/vald/internal/net/grpc"
+)
+
+func Test_discovererOpts(t *testing.T) {
+	tests := []struct {
+		name   string
+		cfg    *config.Data
+		dopts  []grpc.Option
+		aopts  []grpc.Option
+		assert func(*testing.T, []discoverer.Option, error)
+	}{
+		{
+			name: "Not create read replica client when read replica client option is not set",
+			cfg: &config.Data{
+				Gateway: &iconfig.LB{
+					AgentName:      "agent",
+					AgentNamespace: "agent-ns",
+					AgentPort:      8081,
+					AgentDNS:       "agent-dns",
+					Discoverer: &iconfig.DiscovererClient{
+						Duration: "1m",
+					},
+					NodeName: "node",
+				},
+			},
+			dopts: []grpc.Option{},
+			aopts: []grpc.Option{},
+			assert: func(t *testing.T, opts []discoverer.Option, err error) {
+				require.NoError(t, err)
+
+				client, err := discoverer.New(opts...)
+				require.NoError(t, err)
+
+				// check multiple times to ensure that the client is not a read replica client
+				require.Equal(t, client.GetClient(), client.GetReadClient())
+				require.Equal(t, client.GetClient(), client.GetReadClient())
+				require.Equal(t, client.GetClient(), client.GetReadClient())
+			},
+		},
+		{
+			name: "create read replica client when read replica client option is set",
+			cfg: &config.Data{
+				Gateway: &iconfig.LB{
+					AgentName:      "agent",
+					AgentNamespace: "agent-ns",
+					AgentPort:      8081,
+					AgentDNS:       "agent-dns",
+					Discoverer: &iconfig.DiscovererClient{
+						Duration: "1m",
+					},
+					NodeName: "node",
+					ReadReplicaClient: iconfig.ReadReplicaClient{
+						Client: &iconfig.GRPCClient{},
+					},
+					// set this to big enough value to ensure that the round robin counter won't reset to 0
+					ReadReplicaReplicas: 100,
+				},
+			},
+			dopts: []grpc.Option{},
+			aopts: []grpc.Option{},
+			assert: func(t *testing.T, opts []discoverer.Option, err error) {
+				require.NoError(t, err)
+
+				client, err := discoverer.New(opts...)
+				require.NoError(t, err)
+
+				// ensure that GetReadClient() returns a read replica client by calling it multiple times beforehand
+				// and increments the round robin counter
+				client.GetReadClient()
+				client.GetReadClient()
+				client.GetReadClient()
+
+				require.NotEqual(t, client.GetClient(), client.GetReadClient())
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			opts, err := discovererOpts(tt.cfg, tt.dopts, tt.aopts, errgroup.Get())
+			tt.assert(t, opts, err)
+		})
+	}
+}
+
 // NOT IMPLEMENTED BELOW
 //
 // func TestNew(t *testing.T) {
