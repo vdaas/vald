@@ -18,14 +18,14 @@ The Vald cluster, especially Vald Agent components, requires much RAM capacity b
 The minimum required memory for each vector (bit) is:
 
 ```bash
-// minimum required bit of vector
+// minimum required bits of vector
 { oid (64bit) + timestamp (64bit) + uuid (user defined) } * 2 + { dimension * 64 } + { the creation edge size + the search edge size } * 8
 ```
 
 Considering the `index size` and `index_replica`, it is easy to figure out the minimum required RAM capacity by the following formula.
 
 ```bash
-{ minimum required bit of vector } * { the index size } * { index_replica }
+{ minimum required bits of vector } * { the index size } * { index_replica }
 ```
 
 For example, you want to insert 1 million vectors with 900 dimensions with 32 byte (256 bit) UUID, the index replica is 3, `creation edge size` is 20, and `search edge size` is 10, the minimum required RAM capacity is:
