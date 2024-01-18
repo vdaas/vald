@@ -156,11 +156,15 @@ func (cfg *RemoveConfig) Bind() *RemoveConfig {
 
 // ObjectConfig defines the desired state of object config
 type ObjectConfig struct {
-	FilterConfig FilterConfig `json:"filter_config,omitempty" yaml:"filter_config"`
+	FilterConfigs []*FilterConfig `json:"filter_configs,omitempty" yaml:"filter_configs"`
 }
 
 func (cfg *ObjectConfig) Bind() *ObjectConfig {
-	cfg.FilterConfig = *cfg.FilterConfig.Bind()
+	for i := 0; i < len(cfg.FilterConfigs); i++ {
+		if cfg.FilterConfigs[i] != nil {
+			cfg.FilterConfigs[i] = cfg.FilterConfigs[i].Bind()
+		}
+	}
 	return cfg
 }
 
@@ -175,14 +179,33 @@ func (cfg *FilterTarget) Bind() *FilterTarget {
 	return cfg
 }
 
+// FilterQuery defines the query passed to filter target.
+type FilterQuery struct {
+	Query string `json:"query,omitempty" yaml:"query"`
+}
+
+func (cfg *FilterQuery) Bind() *FilterQuery {
+	cfg.Query = GetActualValue(cfg.Query)
+	return cfg
+}
+
 // FilterConfig defines the desired state of filter config
 type FilterConfig struct {
-	Targets []*FilterTarget `json:"target,omitempty" yaml:"target"`
+	Target *FilterTarget `json:"target,omitempty" yaml:"target"`
+	Query  *FilterQuery  `json:"query,omitempty" yaml:"query"`
 }
 
 func (cfg *FilterConfig) Bind() *FilterConfig {
-	for i := 0; i < len(cfg.Targets); i++ {
-		cfg.Targets[i] = cfg.Targets[i].Bind()
+	if cfg.Target != nil {
+		cfg.Target = cfg.Target.Bind()
+	} else {
+		cfg.Target = (&FilterTarget{}).Bind()
+	}
+
+	if cfg.Query != nil {
+		cfg.Query = cfg.Query.Bind()
+	} else {
+		cfg.Query = (&FilterQuery{}).Bind()
 	}
 	return cfg
 }
