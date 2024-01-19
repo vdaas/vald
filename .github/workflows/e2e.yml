@@ -373,7 +373,7 @@ jobs:
             E2E_TARGET_NAMESPACE=default \
             e2e
         env:
-          POD_NAME: ${{ steps.deploy_vald.outputs.POD_NAME }}
+          POD_NAME: ${{ steps.deploy_vald_readreplica.outputs.POD_NAME }}
 
   e2e-stream-crud-with-mirror:
     name: "E2E test (Stream CRUD) with mirror"
