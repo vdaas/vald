@@ -46,7 +46,7 @@ type run struct {
 	gateway       service.Gateway
 }
 
-func discovererOpts(cfg *config.Data, dopts []grpc.Option, aopts []grpc.Option, eg errgroup.Group) ([]discoverer.Option, error) {
+func discovererClient(cfg *config.Data, dopts []grpc.Option, aopts []grpc.Option, eg errgroup.Group) (discoverer.Client, error) {
 	var discovererOpts []discoverer.Option
 	discovererOpts = append(discovererOpts,
 		discoverer.WithAutoConnect(true),
@@ -74,7 +74,7 @@ func discovererOpts(cfg *config.Data, dopts []grpc.Option, aopts []grpc.Option, 
 		discovererOpts = append(discovererOpts, discoverer.WithReadReplicaClient(grpc.New(rrOpts...)))
 	}
 
-	return discovererOpts, nil
+	return discoverer.New(discovererOpts...)
 }
 
 func New(cfg *config.Data) (r runner.Runner, err error) {
@@ -100,15 +100,11 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		acOpts,
 		grpc.WithErrGroup(eg))
 
-	discovererOpts, err := discovererOpts(cfg, dopts, aopts, eg)
+	client, err := discovererClient(cfg, dopts, aopts, eg)
 	if err != nil {
 		return nil, err
 	}
 
-	client, err := discoverer.New(discovererOpts...)
-	if err != nil {
-		return nil, err
-	}
 	gateway, err = service.NewGateway(
 		service.WithErrGroup(eg),
 		service.WithDiscoverer(client),

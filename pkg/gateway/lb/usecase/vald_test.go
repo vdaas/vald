@@ -29,13 +29,15 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc"
 )
 
-func Test_discovererOpts(t *testing.T) {
+func Test_discovererClient(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name   string
 		cfg    *config.Data
 		dopts  []grpc.Option
 		aopts  []grpc.Option
-		assert func(*testing.T, []discoverer.Option, error)
+		assert func(*testing.T, discoverer.Client, error)
 	}{
 		{
 			name: "Not create read replica client when read replica client option is not set",
@@ -53,10 +55,7 @@ func Test_discovererOpts(t *testing.T) {
 			},
 			dopts: []grpc.Option{},
 			aopts: []grpc.Option{},
-			assert: func(t *testing.T, opts []discoverer.Option, err error) {
-				require.NoError(t, err)
-
-				client, err := discoverer.New(opts...)
+			assert: func(t *testing.T, client discoverer.Client, err error) {
 				require.NoError(t, err)
 
 				// check multiple times to ensure that the client is not a read replica client
@@ -86,10 +85,7 @@ func Test_discovererOpts(t *testing.T) {
 			},
 			dopts: []grpc.Option{},
 			aopts: []grpc.Option{},
-			assert: func(t *testing.T, opts []discoverer.Option, err error) {
-				require.NoError(t, err)
-
-				client, err := discoverer.New(opts...)
+			assert: func(t *testing.T, client discoverer.Client, err error) {
 				require.NoError(t, err)
 
 				// ensure that GetReadClient() returns a read replica client by calling it multiple times beforehand
@@ -105,8 +101,9 @@ func Test_discovererOpts(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			opts, err := discovererOpts(tt.cfg, tt.dopts, tt.aopts, errgroup.Get())
-			tt.assert(t, opts, err)
+			t.Parallel()
+			client, err := discovererClient(tt.cfg, tt.dopts, tt.aopts, errgroup.Get())
+			tt.assert(t, client, err)
 		})
 	}
 }
