@@ -66,7 +66,9 @@ func Test_client_GetReadClient(t *testing.T) {
 					client:              &mockClient,
 					readClient:          &mockReadClient,
 					readReplicaReplicas: 1,
-					roundRobin:          counter, // skipcq: VET-V0008
+					//nolint: govet,copylocks
+					//skipcq: VET-V0008
+					roundRobin: counter,
 				},
 				want: &mockReadClient,
 			}
@@ -80,7 +82,9 @@ func Test_client_GetReadClient(t *testing.T) {
 					client:              &mockClient,
 					readClient:          &mockReadClient,
 					readReplicaReplicas: 1,
-					roundRobin:          counter, // skipcq: VET-V0008
+					//nolint: govet,copylocks
+					//skipcq: VET-V0008
+					roundRobin: counter,
 				},
 				want: &mockClient,
 			}
@@ -94,22 +98,28 @@ func Test_client_GetReadClient(t *testing.T) {
 					client:              &mockClient,
 					readClient:          &mockReadClient,
 					readReplicaReplicas: 3,
-					roundRobin:          counter,
+					//nolint: govet,copylocks
+					//skipcq: VET-V0008
+					roundRobin: counter,
 				},
 				want: &mockClient,
 			}
 		}(),
 	}
-	// skipcq: VET-V0008
+	//nolint: govet,copylocks
+	//skipcq: VET-V0008
 	for _, tc := range tests {
-		// skipcq: VET-V0008
+		//nolint: govet,copylocks
+		//skipcq: VET-V0008
 		test := tc
 		t.Run(test.name, func(t *testing.T) {
 			c := &client{
 				client:              test.fields.client,
 				readClient:          test.fields.readClient,
 				readReplicaReplicas: test.fields.readReplicaReplicas,
-				roundRobin:          test.fields.roundRobin, // skipcq: VET-V0008
+				//nolint: govet,copylocks
+				//skipcq: VET-V0008
+				roundRobin: test.fields.roundRobin,
 			}
 			got := c.GetReadClient()
 			if !reflect.DeepEqual(got, test.want) {
