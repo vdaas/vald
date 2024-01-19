@@ -75,9 +75,7 @@ COPY apis/proto apis/proto
 COPY versions versions
 COPY hack/go.mod.default hack/go.mod.default
 
-RUN --mount=type=cache,target="${GOPATH}/pkg",id="go-build-${ARCH}" \
-    --mount=type=cache,target="${HOME}/.cache/go-build",id="go-build-${ARCH}" \
-    make deps ROOTDIR=$ROOTDIR
+RUN make deps ROOTDIR=$ROOTDIR
 
 RUN --mount=type=cache,target="${GOPATH}/pkg",id="go-build-${ARCH}" \
     --mount=type=cache,target="${HOME}/.cache/go-build",id="go-build-${ARCH}" \

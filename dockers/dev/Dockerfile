@@ -56,9 +56,7 @@ COPY versions versions
 COPY hack/go.mod.default hack/go.mod.default
 
 # basic deps
-RUN --mount=type=cache,target="${GOPATH}/pkg",id="go-build-${ARCH}" \
-    --mount=type=cache,target="${HOME}/.cache/go-build",id="go-build-${ARCH}" \
-    make deps \
+Run make deps \
     && make ngt/install \
     && make helm/install \
     && make helm-docs/install \
