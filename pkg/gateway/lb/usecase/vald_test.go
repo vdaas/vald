@@ -100,10 +100,11 @@ func Test_discovererClient(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+		test := tt
+		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
-			client, err := discovererClient(tt.cfg, tt.dopts, tt.aopts, errgroup.Get())
-			tt.assert(t, client, err)
+			client, err := discovererClient(test.cfg, test.dopts, test.aopts, errgroup.Get())
+			test.assert(t, client, err)
 		})
 	}
 }
