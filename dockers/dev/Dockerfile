@@ -67,7 +67,9 @@ Run make deps \
     && make kubectl/install
 
 # additional deps
-RUN make k3d/install \
+RUN --mount=type=cache,target="${GOPATH}/pkg",id="go-build-${ARCH}" \
+    --mount=type=cache,target="${HOME}/.cache/go-build",id="go-build-${ARCH}" \
+    make k3d/install \
     && make buf/install \
     && make k9s/install \
     && make minikube/install
