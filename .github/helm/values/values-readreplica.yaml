@@ -48,9 +48,10 @@ agent:
     auto_index_check_duration: 30s
     auto_index_length: 1000
     dimension: 784
+    index_path: /var/ngt/index
+    enable_in_memory_mode: false
   persistentVolume:
     enabled: true
-    # For local-path-provisioner, we cannot use ReadWriteOncePod because it is not supported.
     accessMode: ReadWriteOnce
     storageClass: csi-hostpath-sc
     size: 1Gi
@@ -58,7 +59,6 @@ agent:
     enabled: true
     snapshot_classname: "csi-hostpath-snapclass"
     replica: 1
-
 
 discoverer:
   minReplicas: 1
