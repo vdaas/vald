@@ -66,7 +66,7 @@ func Test_client_GetReadClient(t *testing.T) {
 					client:              &mockClient,
 					readClient:          &mockReadClient,
 					readReplicaReplicas: 1,
-					roundRobin:          counter,
+					roundRobin:          counter, // skipcq: VET-V0008
 				},
 				want: &mockReadClient,
 			}
@@ -80,7 +80,7 @@ func Test_client_GetReadClient(t *testing.T) {
 					client:              &mockClient,
 					readClient:          &mockReadClient,
 					readReplicaReplicas: 1,
-					roundRobin:          counter,
+					roundRobin:          counter, // skipcq: VET-V0008
 				},
 				want: &mockClient,
 			}
@@ -100,14 +100,16 @@ func Test_client_GetReadClient(t *testing.T) {
 			}
 		}(),
 	}
+	// skipcq: VET-V0008
 	for _, tc := range tests {
+		// skipcq: VET-V0008
 		test := tc
 		t.Run(test.name, func(t *testing.T) {
 			c := &client{
 				client:              test.fields.client,
 				readClient:          test.fields.readClient,
 				readReplicaReplicas: test.fields.readReplicaReplicas,
-				roundRobin:          test.fields.roundRobin,
+				roundRobin:          test.fields.roundRobin, // skipcq: VET-V0008
 			}
 			got := c.GetReadClient()
 			if !reflect.DeepEqual(got, test.want) {
