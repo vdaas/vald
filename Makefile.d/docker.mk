@@ -129,6 +129,17 @@ docker/build/gateway-filter:
 		IMAGE=$(FILTER_GATEWAY_IMAGE) \
 		docker/build/image
 
+.PHONY: docker/name/gateway-mirror
+docker/name/gateway-mirror:
+	@echo "$(ORG)/$(MIRROR_GATEWAY_IMAGE)"
+
+.PHONY: docker/build/gateway-mirror
+## build gateway-mirror image
+docker/build/gateway-mirror:
+	@make DOCKERFILE="$(ROOTDIR)/dockers/gateway/mirror/Dockerfile" \
+		IMAGE=$(MIRROR_GATEWAY_IMAGE) \
+		docker/build/image
+
 .PHONY: docker/name/manager-index
 docker/name/manager-index:
 	@echo "$(ORG)/$(MANAGER_INDEX_IMAGE)"

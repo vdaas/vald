@@ -133,6 +133,105 @@ If you disable these configurations, the Vald Discoverer will not work, and the 
 
 If you want to modify or disable these configurations, you need to grant the [cluster role configuration](https://github.com/vdaas/vald/blob/main/k8s/discoverer/clusterrole.yaml) and bind it to the Vald Discoverer to retrieve required information to operate the Vald cluster.
 
+## Configuration for Vald Mirror Gateway
+
+The Vald Mirror Gateway requires configuration on cluster role and cluster role binding to create/update/retrive [ValdMirrorTarget](https://vald.vdaas.org/docs/user-guides/mirroring-configuration/) resource from the Kubernetes Cluster.
+
+In this section, we will describe how to configure it and how to customize these configurations.
+
+### Cluster role configuration for Vald Mirror Gateway
+
+By looking at the [cluster role configuration](https://github.com/vdaas/vald/blob/main/k8s/gatewat/mirror/clusterrole.yaml), the access right of the following resources are granted to the cluster role `gateway-mirror`.
+
+```yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: gateway-mirror
+---
+rules:
+  - apiGroups:
+      - vald.vdaas.org
+    resources:
+      - valdmirrortargets
+    verbs:
+      - create
+      - update
+      - delete
+      - get
+      - list
+      - watch
+      - patch
+  - apiGroups:
+      - vald.vdaas.org
+    resources:
+      - valdmirrortargets/status
+    verbs:
+      - create
+      - update
+      - get
+      - list
+      - patch
+  - apiGroups:
+      - vald.vdaas.org
+    resources:
+      - valdmirrortargets/finalizers
+    verbs:
+      - update
+```
+
+### Cluster role binding configuration for Vald Mirror Gateway
+
+The cluster role binding configuration binds the cluster role `gateway-mirror` described in the previous section to the service account `gateway-mirror` according to the [configuration file](https://github.com/vdaas/vald/blob/main/k8s/gateway/mirror/clusterrolebinding.yaml).
+
+```yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: gateway-mirror
+  ...
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: gateway-mirror
+subjects:
+  - kind: ServiceAccount
+    name: gateway-mirror
+    namespace: default
+```
+
+When the role binds to the service account, the access right of the role will be granted to the service account.
+In this case, all the access rights of the role `gateway-mirror` will be granted to the service account `gateway-mirror`.
+
+### Customize cluster role and cluster role binding configuration on Helm chart for Vald Mirror Gateway
+
+To customize the cluster role configuration on the Helm chart for Vald Mirror Gateway, you may need to change the `gateway.mirror.clusterRole` configuration on the Helm chart file. The cluster role configurations are enabled by default.
+
+```yaml
+gateway:
+  mirror:
+    ---
+    clusterRole:
+      # gateway.mirror.clusterRole.enabled -- creates clusterRole resource
+      enabled: true
+      # gateway.mirror.clusterRole.name -- name of clusterRole
+      name: gateway-mirror
+    clusterRoleBinding:
+      # gateway.mirror.clusterRoleBinding.enabled -- creates clusterRoleBinding resource
+      enabled: true
+      # gateway.mirror..clusterRoleBinding.name -- name of clusterRoleBinding
+      name: gateway-mirror
+    serviceAccount:
+      # gateway.mirror.serviceAccount.enabled -- creates service account
+      enabled: true
+      # gateway.mirror.serviceAccount.name -- name of service account
+      name: gateway-mirror
+```
+
+<div class="warning">
+If you disable these configurations, the Vald Mirror Gateway will not work properly.
+</div>
+
 ## Customize cluster role configuration on Cloud Providers
 
 Please refer to the official guidelines to configure cluster role configuration for your cloud provider, and configure the service account name for Vald Discoverer.
