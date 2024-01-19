@@ -328,11 +328,11 @@ spec:
                 object_config:
                   type: object
                   properties:
-                    filter_config:
-                      type: object
-                      properties:
-                        host:
-                          type: string
+                    filter_configs:
+                      type: array
+                      items:
+                        type: object
+                        x-kubernetes-preserve-unknown-fields: true
                 remove_config:
                   type: object
                   properties:

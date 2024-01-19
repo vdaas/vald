@@ -140,15 +140,14 @@ remove_config:
 # @schema {"name": "object_config", "type": "object"}
 # object_config -- object config
 object_config:
-  # @schema {"name": "object_config.filter_config", "type": "object"}
-  # object_config.filter_config -- filter target config
-  filter_config:
-    # @schema {"name": "object_config.filter_config.host", "type": "string"}
-    # object_config.filter_config.host -- filter target host
-    host: 0.0.0.0
-    # @schema {"name": "object_config.filter_config.host", "type": "integer"}
-    # object_config.filter_config.port -- filter target host
-    port: 8081
+  # @schema {"name": "object_config.filter_configs", "type": "array", "items": {"type": "object"}}
+  # object_config.filter_configs -- filter configs
+  filter_configs:
+    - target:
+        host: 0.0.0.0
+        port: 8081
+      query:
+        query: ""
 # @schema {"name": "client_config", "type": "object"}
 # client_config -- gRPC client config for request to the Vald cluster
 client_config:
