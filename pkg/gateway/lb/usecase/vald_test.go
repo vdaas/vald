@@ -23,10 +23,9 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/vdaas/vald/internal/client/v1/client/discoverer"
 	iconfig "github.com/vdaas/vald/internal/config"
+	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/pkg/gateway/lb/config"
-
-	"github.com/vdaas/vald/internal/net/grpc"
 )
 
 func Test_discovererClient(t *testing.T) {
