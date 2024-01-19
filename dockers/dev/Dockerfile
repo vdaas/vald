@@ -21,6 +21,11 @@ ARG MAINTAINER="vdaas.org vald team <vald@vdaas.org>"
 FROM --platform=${BUILDPLATFORM} mcr.microsoft.com/vscode/devcontainers/go:1 AS base
 LABEL maintainer="${MAINTAINER}"
 
+ARG TARGETARCH
+
+ENV ARCH=${TARGETARCH}
+ENV HOME /tmp
+
 # skipcq: DOK-DL3008
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
@@ -51,7 +56,9 @@ COPY versions versions
 COPY hack/go.mod.default hack/go.mod.default
 
 # basic deps
-RUN make deps \
+RUN --mount=type=cache,target="${GOPATH}/pkg",id="go-build-${ARCH}" \
+    --mount=type=cache,target="${HOME}/.cache/go-build",id="go-build-${ARCH}" \
+    make deps \
     && make ngt/install \
     && make helm/install \
     && make helm-docs/install \
