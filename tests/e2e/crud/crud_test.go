@@ -25,6 +25,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"strconv"
 	"testing"
 	"time"
 
@@ -751,7 +752,6 @@ func TestE2ECRUDWithSkipStrictExistCheck(t *testing.T) {
 
 // TestE2EIndexJobCorrection tests the index correction job.
 // It inserts vectors, runs the index correction job, and then removes the vectors.
-// TODO: Add index replica count check after inplementing StreamListObject in LB
 func TestE2EIndexJobCorrection(t *testing.T) {
 	t.Cleanup(teardown)
 	ctx := context.Background()
@@ -821,5 +821,151 @@ func TestE2EIndexJobCorrection(t *testing.T) {
 	})
 	if err != nil {
 		t.Fatalf("an error occurred: %s", err)
+	}
+}
+
+func TestE2EStandardCRUDWithReadReplica(t *testing.T) {
+	t.Cleanup(teardown)
+	ctx := context.Background()
+
+	op, err := operation.New(host, port)
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	err = op.Insert(t, ctx, operation.Dataset{
+		Train: ds.Train[insertFrom : insertFrom+insertNum],
+	})
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	sleep(t, waitAfterInsertDuration)
+
+	t.Log("starting to restart all the agent pods to make it backup index to pvc...")
+	cmd := exec.CommandContext(ctx, "sh", "-c",
+		"kubectl delete pod -l app=vald-agent-ngt && kubectl wait --timeout=120s --for=condition=Ready pod -l app=vald-agent-ngt")
+	out, err := cmd.Output()
+	if err != nil {
+		parseCmdErrorAndFail(t, out, err)
+	}
+	t.Log(string(out))
+
+	t.Log("getting agent statefulset replicas...")
+	cmd = exec.CommandContext(ctx, "sh", "-c", "kubectl get statefulset vald-agent-ngt -o=jsonpath='{.spec.replicas}'")
+	out, err = cmd.Output()
+	if err != nil {
+		parseCmdErrorAndFail(t, out, err)
+	}
+	replicasStr := string(out)
+	replicas, err := strconv.Atoi(replicasStr)
+	if err != nil {
+		t.Fatalf("failed to parse replicas: %s", err)
+	}
+	t.Log("statefulset replicas found as:" + string(out))
+
+	t.Log("starting to create read replica rotators...")
+	for id := 0; id < replicas; id++ {
+		patchCmd := fmt.Sprintf(`kubectl patch cronjob vald-readreplica-rotate --namespace=default --type='json' -p='[{"op": "replace", "path": "/spec/jobTemplate/spec/template/spec/containers/0/env/0/value", "value": "%d"}]'`, id)
+		createCmd := fmt.Sprintf("kubectl create job vald-readreplica-rotate-%d --from=cronjob/vald-readreplica-rotate", id)
+		cmd := exec.CommandContext(ctx, "sh", "-c", patchCmd+" && "+createCmd)
+		out, err := cmd.Output()
+		if err != nil {
+			parseCmdErrorAndFail(t, out, err)
+		}
+		t.Log(string(out))
+	}
+
+	t.Log("waiting for read replica rotator jobs to complete...")
+	cmd = exec.CommandContext(ctx, "sh", "-c", "kubectl wait --timeout=120s --for=condition=complete job -l app=vald-readreplica-rotate")
+	out, err = cmd.Output()
+	if err != nil {
+		parseCmdErrorAndFail(t, out, err)
+	}
+	t.Log(string(out))
+
+	err = op.Search(t, ctx, operation.Dataset{
+		Test:      ds.Test[searchFrom : searchFrom+searchNum],
+		Neighbors: ds.Neighbors[searchFrom : searchFrom+searchNum],
+	})
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	err = op.SearchByID(t, ctx, operation.Dataset{
+		Train: ds.Train[searchByIDFrom : searchByIDFrom+searchByIDNum],
+	})
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	err = op.LinearSearch(t, ctx, operation.Dataset{
+		Test:      ds.Test[searchFrom : searchFrom+searchNum],
+		Neighbors: ds.Neighbors[searchFrom : searchFrom+searchNum],
+	})
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	err = op.LinearSearchByID(t, ctx, operation.Dataset{
+		Train: ds.Train[searchByIDFrom : searchByIDFrom+searchByIDNum],
+	})
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	err = op.Exists(t, ctx, "0")
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	err = op.GetObject(t, ctx, operation.Dataset{
+		Train: ds.Train[getObjectFrom : getObjectFrom+getObjectNum],
+	})
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	err = op.StreamListObject(t, ctx, operation.Dataset{
+		Train: ds.Train[insertFrom : insertFrom+insertNum],
+	})
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	err = op.Update(t, ctx, operation.Dataset{
+		Train: ds.Train[updateFrom : updateFrom+updateNum],
+	})
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	err = op.Upsert(t, ctx, operation.Dataset{
+		Train: ds.Train[upsertFrom : upsertFrom+upsertNum],
+	})
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	err = op.Remove(t, ctx, operation.Dataset{
+		Train: ds.Train[removeFrom : removeFrom+removeNum],
+	})
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	// Remove all vector data after the current - 1 hour.
+	err = op.RemoveByTimestamp(t, ctx, time.Now().Add(-time.Hour).UnixNano())
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+}
+
+func parseCmdErrorAndFail(t *testing.T, out []byte, err error) {
+	t.Helper()
+	if exitErr, ok := err.(*exec.ExitError); ok {
+		t.Fatalf("%s, %s, %v", string(out), string(exitErr.Stderr), err)
+	} else {
+		t.Fatalf("unexpected error: %v", err)
 	}
 }

@@ -80,3 +80,10 @@ manager:
       auto_index_duration_limit: 2m
       auto_index_check_duration: 30s
       auto_index_length: 1000
+    readreplica:
+      rotator:
+        enabled: true
+        initContainers: []
+        env:
+          - name: MY_TARGET_REPLICA_ID
+            value: "0"
