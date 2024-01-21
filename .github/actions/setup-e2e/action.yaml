@@ -98,11 +98,8 @@ runs:
         agents: 3
         ingress_port: ${{ inputs.ingress_port }}
 
-    # TODO: minikubeでもagentsやingress_portのようなオプションは必要なのか
-    # TODO: PVCはオプショナルなのでそれを追加する必要がある
     - name: Setup Minikube environment
       if: ${{ inputs.require_minikube == 'true' }}
-      # uses: medyagh/setup-minikube@master
       shell: bash
       run: |
         make minikube/install
