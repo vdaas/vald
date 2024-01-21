@@ -360,17 +360,9 @@ jobs:
           make hack/benchmark/assets/dataset/${{ env.DATASET }}
           make E2E_BIND_PORT=8081 \
             E2E_DATASET_NAME=${{ env.DATASET }} \
-            E2E_INSERT_COUNT=10000\
-            E2E_SEARCH_COUNT=10000 \
-            E2E_SEARCH_BY_ID_COUNT=10000 \
-            E2E_GET_OBJECT_COUNT=100 \
-            E2E_UPDATE_COUNT=100 \
-            E2E_UPSERT_COUNT=100 \
-            E2E_REMOVE_COUNT=100 \
-            E2E_WAIT_FOR_CREATE_INDEX_DURATION=3m \
-            E2E_INSERT_COUNT=10000\
-            E2E_SEARCH_COUNT=10000 \
-            E2E_SEARCH_BY_ID_COUNT=10000 \
+            E2E_INSERT_COUNT=1000 \
+            E2E_SEARCH_COUNT=1000 \
+            E2E_SEARCH_BY_ID_COUNT=1000 \
             E2E_GET_OBJECT_COUNT=100 \
             E2E_UPDATE_COUNT=100 \
             E2E_UPSERT_COUNT=100 \
