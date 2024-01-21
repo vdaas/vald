@@ -369,6 +369,14 @@ jobs:
             E2E_UPSERT_COUNT=100 \
             E2E_REMOVE_COUNT=100 \
             E2E_WAIT_FOR_CREATE_INDEX_DURATION=3m \
+            E2E_INSERT_COUNT=10000\
+            E2E_SEARCH_COUNT=10000 \
+            E2E_SEARCH_BY_ID_COUNT=10000 \
+            E2E_GET_OBJECT_COUNT=100 \
+            E2E_UPDATE_COUNT=100 \
+            E2E_UPSERT_COUNT=100 \
+            E2E_REMOVE_COUNT=100 \
+            E2E_WAIT_FOR_CREATE_INDEX_DURATION=3m \
             E2E_TARGET_POD_NAME=${POD_NAME} \
             E2E_TARGET_NAMESPACE=default \
             e2e
@@ -446,6 +454,7 @@ jobs:
       - e2e-stream-crud-for-operator
       - e2e-stream-crud-skip-exist-check
       - e2e-stream-crud-under-index-management-jobs
+      - e2e-stream-crud-with-mirror
       - e2e-stream-crud-with-mirror
     runs-on: ubuntu-latest
     steps:

@@ -46,7 +46,7 @@ type run struct {
 	gateway       service.Gateway
 }
 
-func discovererClient(cfg *config.Data, dopts []grpc.Option, aopts []grpc.Option, eg errgroup.Group) (discoverer.Client, error) {
+func discovererClient(cfg *config.Data, dopts, aopts []grpc.Option, eg errgroup.Group) (discoverer.Client, error) {
 	var discovererOpts []discoverer.Option
 	discovererOpts = append(discovererOpts,
 		discoverer.WithAutoConnect(true),
