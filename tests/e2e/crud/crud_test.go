@@ -824,7 +824,7 @@ func TestE2EIndexJobCorrection(t *testing.T) {
 	}
 }
 
-func TestE2EStandardCRUDWithReadReplica(t *testing.T) {
+func TestE2EReadReplica(t *testing.T) {
 	t.Cleanup(teardown)
 	ctx := context.Background()
 

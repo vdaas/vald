@@ -319,7 +319,6 @@ jobs:
         env:
           POD_NAME: ${{ steps.deploy_vald.outputs.POD_NAME }}
 
-  # TODO: readreplicaの再起動ロジック等をどこかに入れる
   e2e-stream-crud-with-readreplica:
     name: "E2E test (Stream CRUD with read replica)"
     needs: [dump-contexts-to-log]
@@ -379,7 +378,7 @@ jobs:
             E2E_WAIT_FOR_CREATE_INDEX_DURATION=3m \
             E2E_TARGET_POD_NAME=${POD_NAME} \
             E2E_TARGET_NAMESPACE=default \
-            e2e
+            e2e/readreplica
         env:
           POD_NAME: ${{ steps.deploy_vald_readreplica.outputs.POD_NAME }}
 
@@ -455,7 +454,7 @@ jobs:
       - e2e-stream-crud-skip-exist-check
       - e2e-stream-crud-under-index-management-jobs
       - e2e-stream-crud-with-mirror
-      - e2e-stream-crud-with-mirror
+      - e2e-stream-crud-with-readreplica
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

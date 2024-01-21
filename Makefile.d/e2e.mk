@@ -77,7 +77,7 @@ e2e/index/job/correction:
 .PHONY: e2e/readreplica
 ## run index correction job e2e
 e2e/readreplica:
-	$(call run-e2e-crud-test,-run TestE2EStandardCRUDWithReadReplica)
+	$(call run-e2e-crud-test,-run TestE2EReadReplica)
 
 .PHONY: e2e/maxdim
 ## run e2e/maxdim
