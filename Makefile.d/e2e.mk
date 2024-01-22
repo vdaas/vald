@@ -75,7 +75,7 @@ e2e/index/job/correction:
 	$(call run-e2e-crud-test,-run TestE2EIndexJobCorrection)
 
 .PHONY: e2e/readreplica
-## run index correction job e2e
+## run readreplica e2e
 e2e/readreplica:
 	$(call run-e2e-crud-test,-run TestE2EReadReplica)
 
