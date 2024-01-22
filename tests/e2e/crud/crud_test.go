@@ -35,6 +35,7 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/tests/e2e/hdf5"
 	"github.com/vdaas/vald/tests/e2e/kubernetes/client"
+	"github.com/vdaas/vald/tests/e2e/kubernetes/kubectl"
 	"github.com/vdaas/vald/tests/e2e/kubernetes/portforward"
 	"github.com/vdaas/vald/tests/e2e/operation"
 )
@@ -841,7 +842,7 @@ func TestE2EReadReplica(t *testing.T) {
 	sleep(t, waitAfterInsertDuration)
 
 	t.Log("starting to restart all the agent pods to make it backup index to pvc...")
-	if err := kubeClient.RolloutResource(ctx, "statefulsets/vald-agent-ngt"); err != nil {
+	if err := kubectl.RolloutResource(t, ctx, "statefulsets/vald-agent-ngt"); err != nil {
 		t.Fatalf("failed to restart all the agent pods: %s", err)
 	}
 
@@ -861,13 +862,7 @@ func TestE2EReadReplica(t *testing.T) {
 	}
 
 	t.Log("waiting for read replica rotator jobs to complete...")
-	// cmd := exec.CommandContext(ctx, "sh", "-c", "kubectl wait --timeout=120s --for=condition=complete job -l app=vald-readreplica-rotate")
-	// out, err := cmd.Output()
-	// if err != nil {
-	// 	parseCmdErrorAndFail(t, out, err)
-	// }
-	// t.Log(string(out))
-	if err := kubeClient.WaitResources(ctx, "job", "app=vald-readreplica-rotate", "complete", "120s"); err != nil {
+	if err := kubectl.WaitResources(t, ctx, "job", "app=vald-readreplica-rotate", "complete", "120s"); err != nil {
 		t.Fatalf("failed to wait for read replica rotator jobs to complete: %s", err)
 	}
 

@@ -21,12 +21,9 @@ package client
 
 import (
 	"context"
-	"fmt"
 	"os"
-	"os/exec"
 	"time"
 
-	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/file"
 	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/tests/e2e/kubernetes/portforward"
@@ -62,29 +59,15 @@ type Client interface {
 		namespace, name string,
 		timeout time.Duration,
 	) (ok bool, err error)
-	WaitForPodsReady(
-		ctx context.Context,
-		namespace, labelSelector, timeout string,
-	) error
 	ListCronJob(
 		ctx context.Context,
 		namespace, labelSelector string,
 	) ([]v1.CronJob, error)
-	CreateJob(
-		ctx context.Context,
-		namespace string,
-		job *v1.Job,
-	) error
 	CreateJobFromCronJob(
 		ctx context.Context,
 		name, namespace string,
 		cronJob *v1.CronJob,
 	) error
-	RolloutResource(
-		ctx context.Context,
-		resource string,
-	) error
-	WaitResources(ctx context.Context, resource, labelSelector, condition, timeout string) error
 }
 
 type client struct {
@@ -201,55 +184,6 @@ func (cli *client) WaitForPodReady(
 	}
 }
 
-func (cli *client) RolloutResource(ctx context.Context, resource string) error {
-	cmd := exec.CommandContext(ctx, "sh", "-c",
-		fmt.Sprintf("kubectl rollout restart %s && kubectl rollout status %s", resource, resource),
-	)
-	out, err := cmd.Output()
-	if err != nil {
-		if exitErr, ok := err.(*exec.ExitError); ok {
-			return errors.New(string(exitErr.Stderr))
-		} else {
-			return fmt.Errorf("unexpected error: %w", err)
-		}
-	}
-	fmt.Println(string(out))
-	return nil
-}
-
-func (cli *client) WaitResources(ctx context.Context, resource, labelSelector, condition, timeout string) error {
-	cmd := exec.CommandContext(ctx, "sh", "-c",
-		fmt.Sprintf("kubectl wait --for=condition=%s %s -l %s --timeout %s", condition, resource, labelSelector, timeout),
-	)
-	out, err := cmd.Output()
-	if err != nil {
-		if exitErr, ok := err.(*exec.ExitError); ok {
-			return errors.New(string(exitErr.Stderr))
-		} else {
-			return fmt.Errorf("unexpected error: %w", err)
-		}
-	}
-	fmt.Println(string(out))
-	return nil
-}
-
-func (cli *client) WaitForPodsReady(ctx context.Context, namespace, labelSelector, timeout string) error {
-	// use kubectl wait because it's complicated to implement this with client-go
-	cmd := exec.CommandContext(ctx, "sh", "-c",
-		fmt.Sprintf("kubectl wait --timeout=%s --for=condition=Ready pod -n %s -l %s", timeout, namespace, labelSelector),
-	)
-	out, err := cmd.Output()
-	if err != nil {
-		if exitErr, ok := err.(*exec.ExitError); ok {
-			return errors.New(string(exitErr.Stderr))
-		} else {
-			return fmt.Errorf("unexpected error: %w", err)
-		}
-	}
-	fmt.Println(string(out))
-	return nil
-}
-
 func (cli *client) ListCronJob(ctx context.Context, namespace, labelSelector string) ([]v1.CronJob, error) {
 	cronJobs, err := cli.clientset.BatchV1().CronJobs(namespace).List(ctx, metav1.ListOptions{
 		LabelSelector: labelSelector,
@@ -259,11 +193,6 @@ func (cli *client) ListCronJob(ctx context.Context, namespace, labelSelector str
 	}
 
 	return cronJobs.Items, nil
-}
-
-func (cli *client) CreateJob(ctx context.Context, namespace string, job *v1.Job) error {
-	_, err := cli.clientset.BatchV1().Jobs(namespace).Create(ctx, job, metav1.CreateOptions{})
-	return err
 }
 
 func (cli *client) CreateJobFromCronJob(ctx context.Context, name, namespace string, cronJob *v1.CronJob) error {
