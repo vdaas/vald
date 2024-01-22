@@ -72,7 +72,7 @@ func (d *db) Get(key string) ([]byte, bool, error) {
 	}
 	// If val is nil, it means that there is no value associated with key, so false is returned.
 	if val == nil {
-		return val, false, nil
+		return nil, false, nil
 	}
 	return val, true, nil
 }
