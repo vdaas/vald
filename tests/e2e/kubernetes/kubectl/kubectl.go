@@ -26,24 +26,23 @@ import (
 )
 
 // RolloutResource rollouts and wait for the resource to be ready.
-// This function does not validate the input string so allways hardcode it to avoid command injection.
-// nolint:gosec
 func RolloutResource(ctx context.Context, t *testing.T, resource string) error {
 	t.Helper()
-	cmd := exec.CommandContext(ctx, "sh", "-c",
-		fmt.Sprintf("kubectl rollout restart %s && kubectl rollout status %s", resource, resource),
-	)
+
+	cmd := exec.CommandContext(ctx, "kubectl", "rollout", "restart", resource)
+	if err := runCmd(t, cmd); err != nil {
+		return err
+	}
+
+	cmd = exec.CommandContext(ctx, "kubectl", "rollout", "status", resource)
 	return runCmd(t, cmd)
 }
 
 // WaitResources waits for multiple resources to be ready.
-// This function does not validate the input string so allways hardcode it to avoid command injection.
-// nolint:gosec
 func WaitResources(ctx context.Context, t *testing.T, resource, labelSelector, condition, timeout string) error {
 	t.Helper()
-	cmd := exec.CommandContext(ctx, "sh", "-c",
-		fmt.Sprintf("kubectl wait --for=condition=%s %s -l %s --timeout %s", condition, resource, labelSelector, timeout),
-	)
+
+	cmd := exec.CommandContext(ctx, "kubectl", "wait", "--for=condition="+condition, "-l", labelSelector, "--timeout", timeout, resource)
 	return runCmd(t, cmd)
 }
 
