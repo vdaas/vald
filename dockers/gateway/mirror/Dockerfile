@@ -23,6 +23,9 @@ FROM golang:${GO_VERSION} AS golang
 
 FROM ubuntu:devel AS builder
 
+ARG TARGETARCH
+
+ENV ARCH=${TARGETARCH}
 ENV GO111MODULE on
 ENV DEBIAN_FRONTEND noninteractive
 ENV INITRD No
@@ -53,7 +56,9 @@ WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}
 COPY go.mod .
 COPY go.sum .
 
-RUN go mod download
+RUN --mount=type=cache,target="${GOPATH}/pkg",id="go-build-${ARCH}" \
+    --mount=type=cache,target="/tmp/.cache/go-build",id="go-build-${ARCH}" \
+    go mod download
 
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/internal
 COPY internal .
@@ -77,7 +82,9 @@ WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}
 COPY Makefile .
 COPY .git .
 
-RUN make REPO=${ORG} NAME=${REPO} cmd/${PKG}/${APP_NAME} \
+RUN --mount=type=cache,target="${GOPATH}/pkg",id="go-build-${ARCH}" \
+    --mount=type=cache,target="/tmp/.cache/go-build",id="go-build-${ARCH}" \
+    make REPO=${ORG} NAME=${REPO} cmd/${PKG}/${APP_NAME} \
     && mv "cmd/${PKG}/${APP_NAME}" "/usr/bin/${APP_NAME}"
 
 FROM ${DISTROLESS_IMAGE}:${DISTROLESS_IMAGE_TAG}
