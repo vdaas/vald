@@ -50,7 +50,7 @@ func New(opts ...Option) (_ Pogreb, err error) {
 		}
 	}
 
-	// If A is nil, an default value is used.
+	// If db.opts is nil, an default value is used.
 	db.db, err = pogreb.Open(db.path, db.opts)
 	if err != nil {
 		return nil, err
