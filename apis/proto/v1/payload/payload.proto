@@ -677,5 +677,22 @@ message Info {
   }
 }
 
+// Mirror related messages.
+message Mirror {
+  // Represent server information.
+  message Target {
+    // The target hostname.
+    string host = 1;
+    // The target port.
+    uint32 port = 2;
+  }
+
+  // Represent the multiple Target message.
+  message Targets {
+    // The multiple target information.
+    repeated Target targets = 1;
+  }
+}
+
 // Represent an empty message.
 message Empty {}

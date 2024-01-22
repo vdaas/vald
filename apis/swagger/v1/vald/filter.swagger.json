@@ -270,31 +270,6 @@
     }
   },
   "definitions": {
-    "FilterQuery": {
-      "type": "object",
-      "properties": {
-        "query": {
-          "type": "string",
-          "description": "The raw query string."
-        }
-      },
-      "description": "Represent the filter query."
-    },
-    "FilterTarget": {
-      "type": "object",
-      "properties": {
-        "host": {
-          "type": "string",
-          "description": "The target hostname."
-        },
-        "port": {
-          "type": "integer",
-          "format": "int64",
-          "description": "The target port."
-        }
-      },
-      "description": "Represent the target filter server."
-    },
     "ObjectBlob": {
       "type": "object",
       "properties": {
@@ -429,16 +404,31 @@
     "v1FilterConfig": {
       "type": "object",
       "properties": {
-        "target": {
-          "$ref": "#/definitions/FilterTarget",
+        "targets": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1FilterTarget"
+          },
           "description": "Represent the filter target configuration."
-        },
-        "query": {
-          "$ref": "#/definitions/FilterQuery",
-          "description": "The target query."
         }
       },
       "description": "Represent filter configuration."
+    },
+    "v1FilterTarget": {
+      "type": "object",
+      "properties": {
+        "host": {
+          "type": "string",
+          "description": "The target hostname."
+        },
+        "port": {
+          "type": "integer",
+          "format": "int64",
+          "description": "The target port."
+        }
+      },
+      "description": "Represent the target filter server."
     },
     "v1InsertConfig": {
       "type": "object",
@@ -448,11 +438,7 @@
           "description": "A flag to skip exist check during insert operation."
         },
         "filters": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "$ref": "#/definitions/v1FilterConfig"
-          },
+          "$ref": "#/definitions/v1FilterConfig",
           "description": "Filter configurations."
         },
         "timestamp": {
@@ -489,7 +475,7 @@
           "description": "The configuration of the insert request."
         },
         "vectorizer": {
-          "$ref": "#/definitions/FilterTarget",
+          "$ref": "#/definitions/v1FilterTarget",
           "description": "Filter configurations."
         }
       },
@@ -544,19 +530,11 @@
           "description": "Search timeout in nanoseconds."
         },
         "ingressFilters": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "$ref": "#/definitions/v1FilterConfig"
-          },
+          "$ref": "#/definitions/v1FilterConfig",
           "description": "Ingress filter configurations."
         },
         "egressFilters": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "$ref": "#/definitions/v1FilterConfig"
-          },
+          "$ref": "#/definitions/v1FilterConfig",
           "description": "Egress filter configurations."
         },
         "minNum": {
@@ -598,7 +576,7 @@
           "description": "The configuration of the search request."
         },
         "vectorizer": {
-          "$ref": "#/definitions/FilterTarget",
+          "$ref": "#/definitions/v1FilterTarget",
           "description": "Filter configuration."
         }
       },
@@ -630,11 +608,7 @@
           "description": "A flag to skip exist check during update operation."
         },
         "filters": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "$ref": "#/definitions/v1FilterConfig"
-          },
+          "$ref": "#/definitions/v1FilterConfig",
           "description": "Filter configuration."
         },
         "timestamp": {
@@ -675,7 +649,7 @@
           "description": "The configuration of the update request."
         },
         "vectorizer": {
-          "$ref": "#/definitions/FilterTarget",
+          "$ref": "#/definitions/v1FilterTarget",
           "description": "Filter target."
         }
       },
@@ -689,11 +663,7 @@
           "description": "A flag to skip exist check during upsert operation."
         },
         "filters": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "$ref": "#/definitions/v1FilterConfig"
-          },
+          "$ref": "#/definitions/v1FilterConfig",
           "description": "Filter configuration."
         },
         "timestamp": {
@@ -734,7 +704,7 @@
           "description": "The configuration of the upsert request."
         },
         "vectorizer": {
-          "$ref": "#/definitions/FilterTarget",
+          "$ref": "#/definitions/v1FilterTarget",
           "description": "Filter target."
         }
       },
