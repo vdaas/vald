@@ -843,7 +843,6 @@ func TestE2EReadReplica(t *testing.T) {
 	t.Log("starting to restart all the agent pods to make it backup index to pvc...")
 	if err := kubeClient.RolloutResource(ctx, "statefulsets/vald-agent-ngt"); err != nil {
 		t.Fatalf("failed to restart all the agent pods: %s", err)
-
 	}
 
 	t.Log("starting to create read replica rotators...")
