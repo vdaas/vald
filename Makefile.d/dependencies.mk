@@ -47,7 +47,7 @@ go/download:
 .PHONY: go/deps
 ## install Go package dependencies
 go/deps:
-	if [ -z $(GO_CLEAN_DEPS) ]; then \
+	if $(GO_CLEAN_DEPS); then \
         	rm -rf $(ROOTDIR)/vendor \
         		/go/pkg \
         		$(GOCACHE) \
