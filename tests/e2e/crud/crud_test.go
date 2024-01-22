@@ -105,14 +105,12 @@ func init() {
 	flag.Parse()
 
 	var err error
+	kubeClient, err = client.New(*kubeConfig)
+	if err != nil {
+		panic(err)
+	}
 	if *pf {
-		kubeClient, err = client.New(*kubeConfig)
-		if err != nil {
-			panic(err)
-		}
-
 		forwarder = kubeClient.Portforward(namespace, *pfPodName, port, *pfPodPort)
-
 		err = forwarder.Start()
 		if err != nil {
 			panic(err)
@@ -843,46 +841,36 @@ func TestE2EReadReplica(t *testing.T) {
 	sleep(t, waitAfterInsertDuration)
 
 	t.Log("starting to restart all the agent pods to make it backup index to pvc...")
-	cmd := exec.CommandContext(ctx, "sh", "-c",
-		"kubectl delete pod -l app=vald-agent-ngt && kubectl wait --timeout=120s --for=condition=Ready pod -l app=vald-agent-ngt")
-	out, err := cmd.Output()
-	if err != nil {
-		parseCmdErrorAndFail(t, out, err)
-	}
-	t.Log(string(out))
+	if err := kubeClient.RolloutResource(ctx, "statefulsets/vald-agent-ngt"); err != nil {
+		t.Fatalf("failed to restart all the agent pods: %s", err)
 
-	t.Log("getting agent statefulset replicas...")
-	cmd = exec.CommandContext(ctx, "sh", "-c", "kubectl get statefulset vald-agent-ngt -o=jsonpath='{.spec.replicas}'")
-	out, err = cmd.Output()
-	if err != nil {
-		parseCmdErrorAndFail(t, out, err)
 	}
-	replicasStr := string(out)
-	replicas, err := strconv.Atoi(replicasStr)
-	if err != nil {
-		t.Fatalf("failed to parse replicas: %s", err)
-	}
-	t.Log("statefulset replicas found as:" + string(out))
 
 	t.Log("starting to create read replica rotators...")
-	for id := 0; id < replicas; id++ {
-		patchCmd := fmt.Sprintf(`kubectl patch cronjob vald-readreplica-rotate --namespace=default --type='json' -p='[{"op": "replace", "path": "/spec/jobTemplate/spec/template/spec/containers/0/env/0/value", "value": "%d"}]'`, id)
-		createCmd := fmt.Sprintf("kubectl create job vald-readreplica-rotate-%d --from=cronjob/vald-readreplica-rotate", id)
-		cmd := exec.CommandContext(ctx, "sh", "-c", patchCmd+" && "+createCmd)
-		out, err := cmd.Output()
-		if err != nil {
-			parseCmdErrorAndFail(t, out, err)
-		}
-		t.Log(string(out))
+	pods, err := kubeClient.GetPods(ctx, namespace, "app=vald-agent-ngt")
+	if err != nil {
+		t.Fatalf("GetPods failed: %s", err)
+	}
+	cronJobs, err := kubeClient.ListCronJob(ctx, namespace, "app=vald-readreplica-rotate")
+	if err != nil {
+		t.Fatalf("ListCronJob failed: %s", err)
+	}
+	cronJob := cronJobs[0]
+	for id := 0; id < len(pods); id++ {
+		cronJob.Spec.JobTemplate.Spec.Template.Spec.Containers[0].Env[0].Value = strconv.Itoa(id)
+		kubeClient.CreateJobFromCronJob(ctx, "vald-readreplica-rotate-"+strconv.Itoa(id), namespace, &cronJob)
 	}
 
 	t.Log("waiting for read replica rotator jobs to complete...")
-	cmd = exec.CommandContext(ctx, "sh", "-c", "kubectl wait --timeout=120s --for=condition=complete job -l app=vald-readreplica-rotate")
-	out, err = cmd.Output()
-	if err != nil {
-		parseCmdErrorAndFail(t, out, err)
+	// cmd := exec.CommandContext(ctx, "sh", "-c", "kubectl wait --timeout=120s --for=condition=complete job -l app=vald-readreplica-rotate")
+	// out, err := cmd.Output()
+	// if err != nil {
+	// 	parseCmdErrorAndFail(t, out, err)
+	// }
+	// t.Log(string(out))
+	if err := kubeClient.WaitResources(ctx, "job", "app=vald-readreplica-rotate", "complete", "120s"); err != nil {
+		t.Fatalf("failed to wait for read replica rotator jobs to complete: %s", err)
 	}
-	t.Log(string(out))
 
 	err = op.Search(t, ctx, operation.Dataset{
 		Test:      ds.Test[searchFrom : searchFrom+searchNum],
