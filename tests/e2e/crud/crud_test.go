@@ -66,6 +66,7 @@ var (
 
 	kubeClient client.Client
 	namespace  string
+	kubeConfig string
 
 	forwarder *portforward.Portforward
 )
@@ -100,17 +101,18 @@ func init() {
 	pfPodName := flag.String("portforward-pod-name", "vald-gateway-0", "pod name (only for port forward)")
 	pfPodPort := flag.Int("portforward-pod-port", port, "pod gRPC port (only for port forward)")
 
-	kubeConfig := flag.String("kubeconfig", file.Join(os.Getenv("HOME"), ".kube", "config"), "kubeconfig path")
+	flag.StringVar(&kubeConfig, "kubeconfig", file.Join(os.Getenv("HOME"), ".kube", "config"), "kubeconfig path")
 	flag.StringVar(&namespace, "namespace", "default", "namespace")
 
 	flag.Parse()
 
 	var err error
-	kubeClient, err = client.New(*kubeConfig)
-	if err != nil {
-		panic(err)
-	}
 	if *pf {
+		kubeClient, err = client.New(kubeConfig)
+		if err != nil {
+			panic(err)
+		}
+
 		forwarder = kubeClient.Portforward(namespace, *pfPodName, port, *pfPodPort)
 		err = forwarder.Start()
 		if err != nil {
@@ -825,6 +827,15 @@ func TestE2EIndexJobCorrection(t *testing.T) {
 
 func TestE2EReadReplica(t *testing.T) {
 	t.Cleanup(teardown)
+	
+	if kubeClient == nil {
+		var err error
+		kubeClient, err = client.New(kubeConfig)
+		if err != nil {
+			t.Skipf("TestE2EReadReplica needs kubernetes client but failed to create one: %s", err)
+		}
+	}
+
 	ctx := context.Background()
 
 	op, err := operation.New(host, port)
