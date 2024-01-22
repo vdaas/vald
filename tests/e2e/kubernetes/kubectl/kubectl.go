@@ -52,7 +52,7 @@ func runCmd(t *testing.T, cmd *exec.Cmd) error {
 	out, err := cmd.Output()
 	if err != nil {
 		var exitErr *exec.ExitError
-		if errors.As(err, exitErr) {
+		if errors.As(err, &exitErr) {
 			return errors.New(string(exitErr.Stderr))
 		} else {
 			return fmt.Errorf("unexpected error: %w", err)
