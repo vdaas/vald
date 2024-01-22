@@ -75,11 +75,11 @@ COPY versions versions
 COPY hack/go.mod.default hack/go.mod.default
 
 RUN --mount=type=cache,target="${GOPATH}/pkg",id="go-build-${ARCH}" \
-    --mount=type=cache,target="/tmp/.cache/go-build",id="go-build-${ARCH}" \
+    --mount=type=cache,target="${HOME}/.cache/go-build",id="go-build-${ARCH}" \
     make deps ROOTDIR=$ROOTDIR GO_CLEAN_DEPS=false
 
 RUN --mount=type=cache,target="${GOPATH}/pkg",id="go-build-${ARCH}" \
-    --mount=type=cache,target="/tmp/.cache/go-build",id="go-build-${ARCH}" \
+    --mount=type=cache,target="${HOME}/.cache/go-build",id="go-build-${ARCH}" \
     make ngt/install \
     && make helm/install \
     && make helm-docs/install \

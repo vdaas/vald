@@ -56,7 +56,7 @@ COPY hack/go.mod.default hack/go.mod.default
 
 # basic deps
 RUN --mount=type=cache,target="${GOPATH}/pkg",id="go-build-${ARCH}" \
-    --mount=type=cache,target="/tmp/.cache/go-build",id="go-build-${ARCH}" \
+    --mount=type=cache,target="${HOME}/.cache/go-build",id="go-build-${ARCH}" \
     make deps GO_CLEAN_DEPS=false \
     && make ngt/install \
     && make helm/install \
@@ -69,7 +69,7 @@ RUN --mount=type=cache,target="${GOPATH}/pkg",id="go-build-${ARCH}" \
 
 # additional deps
 RUN --mount=type=cache,target="${GOPATH}/pkg",id="go-build-${ARCH}" \
-    --mount=type=cache,target="/tmp/.cache/go-build",id="go-build-${ARCH}" \
+    --mount=type=cache,target="${HOME}/.cache/go-build",id="go-build-${ARCH}" \
     make k3d/install \
     && make buf/install \
     && make k9s/install \
