@@ -88,10 +88,10 @@ func (d *db) Range(f func(key string, val []byte) bool) error {
 	it := d.db.Items()
 	for {
 		key, val, err := it.Next()
-		if err == pogreb.ErrIterationDone {
-			break
-		}
 		if err != nil {
+			if errors.Is(err, pogreb.ErrIterationDone) {
+				break
+			}
 			return err
 		}
 		if !f(conv.Btoa(key), val) {
