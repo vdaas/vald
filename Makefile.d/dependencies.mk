@@ -47,20 +47,22 @@ go/download:
 .PHONY: go/deps
 ## install Go package dependencies
 go/deps:
-	rm -rf $(ROOTDIR)/vendor \
-		/go/pkg \
-		$(GOCACHE) \
-		$(ROOTDIR)/go.sum \
-		$(ROOTDIR)/go.mod
-	cp $(ROOTDIR)/hack/go.mod.default $(ROOTDIR)/go.mod
-	GOPRIVATE=$(GOPRIVATE) go mod tidy
-	go clean -cache -modcache -testcache -i -r
-	rm -rf $(ROOTDIR)/vendor \
-		/go/pkg \
-		$(GOCACHE) \
-		$(ROOTDIR)/go.sum \
-		$(ROOTDIR)/go.mod
-	cp $(ROOTDIR)/hack/go.mod.default $(ROOTDIR)/go.mod
+	if [ -z $(GO_CLEAN_DEPS) ]; then \
+        	rm -rf $(ROOTDIR)/vendor \
+        		/go/pkg \
+        		$(GOCACHE) \
+        		$(ROOTDIR)/go.sum \
+        		$(ROOTDIR)/go.mod ; \
+        	cp $(ROOTDIR)/hack/go.mod.default $(ROOTDIR)/go.mod ; \
+        	GOPRIVATE=$(GOPRIVATE) go mod tidy ; \
+        	go clean -cache -modcache -testcache -i -r ; \
+        	rm -rf $(ROOTDIR)/vendor \
+        		/go/pkg \
+        		$(GOCACHE) \
+        		$(ROOTDIR)/go.sum \
+        		$(ROOTDIR)/go.mod ; \
+        	cp $(ROOTDIR)/hack/go.mod.default $(ROOTDIR)/go.mod ; \
+	fi
 	GOPRIVATE=$(GOPRIVATE) go mod tidy
 	go get -u all 2>/dev/null || true
 
