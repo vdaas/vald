@@ -13,7 +13,7 @@ func RolloutResource(t *testing.T, ctx context.Context, resource string) error {
 	cmd := exec.CommandContext(ctx, "sh", "-c",
 		fmt.Sprintf("kubectl rollout restart %s && kubectl rollout status %s", resource, resource),
 	)
-	return runCmd(t, ctx, cmd)
+	return runCmd(t, cmd)
 }
 
 func WaitResources(t *testing.T, ctx context.Context, resource, labelSelector, condition, timeout string) error {
@@ -21,12 +21,11 @@ func WaitResources(t *testing.T, ctx context.Context, resource, labelSelector, c
 	cmd := exec.CommandContext(ctx, "sh", "-c",
 		fmt.Sprintf("kubectl wait --for=condition=%s %s -l %s --timeout %s", condition, resource, labelSelector, timeout),
 	)
-	return runCmd(t, ctx, cmd)
+	return runCmd(t, cmd)
 }
 
-func runCmd(t *testing.T, ctx context.Context, cmd *exec.Cmd) error {
+func runCmd(t *testing.T, cmd *exec.Cmd) error {
 	t.Helper()
-
 	out, err := cmd.Output()
 	if err != nil {
 		if exitErr, ok := err.(*exec.ExitError); ok {
