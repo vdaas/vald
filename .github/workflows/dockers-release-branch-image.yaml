@@ -71,6 +71,13 @@ jobs:
       target: gateway-filter
     secrets: inherit
 
+  gateway-mirror:
+    needs: [dump-contexts-to-log]
+    uses: ./.github/workflows/_docker-image.yaml
+    with:
+      target: gateway-mirror
+    secrets: inherit
+
   index-correction:
     needs: [dump-contexts-to-log]
     uses: ./.github/workflows/_docker-image.yaml
@@ -119,4 +126,18 @@ jobs:
     uses: ./.github/workflows/_docker-image.yaml
     with:
       target: readreplica-rotate
+    secrets: inherit
+
+  benchmark-job:
+    needs: [dump-contexts-to-log]
+    uses: ./.github/workflows/_docker-image.yaml
+    with:
+      target: benchmark-job
+    secrets: inherit
+
+  benchmark-operator:
+    needs: [dump-contexts-to-log]
+    uses: ./.github/workflows/_docker-image.yaml
+    with:
+      target: benchmark-operator
     secrets: inherit
