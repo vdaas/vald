@@ -13,17 +13,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-pub mod filter_client {
+pub mod mirror_client {
     #![allow(unused_variables, dead_code, missing_docs, clippy::let_unit_value)]
     use tonic::codegen::*;
     use tonic::codegen::http::Uri;
-    /** Represent the egress filter service.
-*/
     #[derive(Debug, Clone)]
-    pub struct FilterClient<T> {
+    pub struct MirrorClient<T> {
         inner: tonic::client::Grpc<T>,
     }
-    impl FilterClient<tonic::transport::Channel> {
+    impl MirrorClient<tonic::transport::Channel> {
         /// Attempt to create a new client by connecting to a given endpoint.
         pub async fn connect<D>(dst: D) -> Result<Self, tonic::transport::Error>
         where
@@ -34,7 +32,7 @@ pub mod filter_client {
             Ok(Self::new(conn))
         }
     }
-    impl<T> FilterClient<T>
+    impl<T> MirrorClient<T>
     where
         T: tonic::client::GrpcService<tonic::body::BoxBody>,
         T::Error: Into<StdError>,
@@ -52,7 +50,7 @@ pub mod filter_client {
         pub fn with_interceptor<F>(
             inner: T,
             interceptor: F,
-        ) -> FilterClient<InterceptedService<T, F>>
+        ) -> MirrorClient<InterceptedService<T, F>>
         where
             F: tonic::service::Interceptor,
             T::ResponseBody: Default,
@@ -66,7 +64,7 @@ pub mod filter_client {
                 http::Request<tonic::body::BoxBody>,
             >>::Error: Into<StdError> + Send + Sync,
         {
-            FilterClient::new(InterceptedService::new(inner, interceptor))
+            MirrorClient::new(InterceptedService::new(inner, interceptor))
         }
         /// Compress requests with the given encoding.
         ///
@@ -99,17 +97,13 @@ pub mod filter_client {
             self.inner = self.inner.max_encoding_message_size(limit);
             self
         }
-        /** Represent the RPC to filter the distance.
-*/
-        pub async fn filter_distance(
+        pub async fn register(
             &mut self,
             request: impl tonic::IntoRequest<
-                super::super::super::super::payload::v1::filter::DistanceRequest,
+                super::super::super::payload::v1::mirror::Targets,
             >,
         ) -> std::result::Result<
-            tonic::Response<
-                super::super::super::super::payload::v1::filter::DistanceResponse,
-            >,
+            tonic::Response<super::super::super::payload::v1::mirror::Targets>,
             tonic::Status,
         > {
             self.inner
@@ -123,84 +117,31 @@ pub mod filter_client {
                 })?;
             let codec = tonic::codec::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
-                "/filter.egress.v1.Filter/FilterDistance",
+                "/mirror.v1.Mirror/Register",
             );
             let mut req = request.into_request();
-            req.extensions_mut()
-                .insert(GrpcMethod::new("filter.egress.v1.Filter", "FilterDistance"));
-            self.inner.unary(req, path, codec).await
-        }
-        /** Represent the RPC to filter the vector.
-*/
-        pub async fn filter_vector(
-            &mut self,
-            request: impl tonic::IntoRequest<
-                super::super::super::super::payload::v1::filter::VectorRequest,
-            >,
-        ) -> std::result::Result<
-            tonic::Response<
-                super::super::super::super::payload::v1::filter::VectorResponse,
-            >,
-            tonic::Status,
-        > {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::new(
-                        tonic::Code::Unknown,
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
-            let codec = tonic::codec::ProstCodec::default();
-            let path = http::uri::PathAndQuery::from_static(
-                "/filter.egress.v1.Filter/FilterVector",
-            );
-            let mut req = request.into_request();
-            req.extensions_mut()
-                .insert(GrpcMethod::new("filter.egress.v1.Filter", "FilterVector"));
+            req.extensions_mut().insert(GrpcMethod::new("mirror.v1.Mirror", "Register"));
             self.inner.unary(req, path, codec).await
         }
     }
 }
 /// Generated server implementations.
-pub mod filter_server {
+pub mod mirror_server {
     #![allow(unused_variables, dead_code, missing_docs, clippy::let_unit_value)]
     use tonic::codegen::*;
-    /// Generated trait containing gRPC methods that should be implemented for use with FilterServer.
+    /// Generated trait containing gRPC methods that should be implemented for use with MirrorServer.
     #[async_trait]
-    pub trait Filter: Send + Sync + 'static {
-        /** Represent the RPC to filter the distance.
-*/
-        async fn filter_distance(
+    pub trait Mirror: Send + Sync + 'static {
+        async fn register(
             &self,
-            request: tonic::Request<
-                super::super::super::super::payload::v1::filter::DistanceRequest,
-            >,
+            request: tonic::Request<super::super::super::payload::v1::mirror::Targets>,
         ) -> std::result::Result<
-            tonic::Response<
-                super::super::super::super::payload::v1::filter::DistanceResponse,
-            >,
-            tonic::Status,
-        >;
-        /** Represent the RPC to filter the vector.
-*/
-        async fn filter_vector(
-            &self,
-            request: tonic::Request<
-                super::super::super::super::payload::v1::filter::VectorRequest,
-            >,
-        ) -> std::result::Result<
-            tonic::Response<
-                super::super::super::super::payload::v1::filter::VectorResponse,
-            >,
+            tonic::Response<super::super::super::payload::v1::mirror::Targets>,
             tonic::Status,
         >;
     }
-    /** Represent the egress filter service.
-*/
     #[derive(Debug)]
-    pub struct FilterServer<T: Filter> {
+    pub struct MirrorServer<T: Mirror> {
         inner: _Inner<T>,
         accept_compression_encodings: EnabledCompressionEncodings,
         send_compression_encodings: EnabledCompressionEncodings,
@@ -208,7 +149,7 @@ pub mod filter_server {
         max_encoding_message_size: Option<usize>,
     }
     struct _Inner<T>(Arc<T>);
-    impl<T: Filter> FilterServer<T> {
+    impl<T: Mirror> MirrorServer<T> {
         pub fn new(inner: T) -> Self {
             Self::from_arc(Arc::new(inner))
         }
@@ -260,9 +201,9 @@ pub mod filter_server {
             self
         }
     }
-    impl<T, B> tonic::codegen::Service<http::Request<B>> for FilterServer<T>
+    impl<T, B> tonic::codegen::Service<http::Request<B>> for MirrorServer<T>
     where
-        T: Filter,
+        T: Mirror,
         B: Body + Send + 'static,
         B::Error: Into<StdError> + Send + 'static,
     {
@@ -278,15 +219,15 @@ pub mod filter_server {
         fn call(&mut self, req: http::Request<B>) -> Self::Future {
             let inner = self.inner.clone();
             match req.uri().path() {
-                "/filter.egress.v1.Filter/FilterDistance" => {
+                "/mirror.v1.Mirror/Register" => {
                     #[allow(non_camel_case_types)]
-                    struct FilterDistanceSvc<T: Filter>(pub Arc<T>);
+                    struct RegisterSvc<T: Mirror>(pub Arc<T>);
                     impl<
-                        T: Filter,
+                        T: Mirror,
                     > tonic::server::UnaryService<
-                        super::super::super::super::payload::v1::filter::DistanceRequest,
-                    > for FilterDistanceSvc<T> {
-                        type Response = super::super::super::super::payload::v1::filter::DistanceResponse;
+                        super::super::super::payload::v1::mirror::Targets,
+                    > for RegisterSvc<T> {
+                        type Response = super::super::super::payload::v1::mirror::Targets;
                         type Future = BoxFuture<
                             tonic::Response<Self::Response>,
                             tonic::Status,
@@ -294,13 +235,11 @@ pub mod filter_server {
                         fn call(
                             &mut self,
                             request: tonic::Request<
-                                super::super::super::super::payload::v1::filter::DistanceRequest,
+                                super::super::super::payload::v1::mirror::Targets,
                             >,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
-                            let fut = async move {
-                                (*inner).filter_distance(request).await
-                            };
+                            let fut = async move { (*inner).register(request).await };
                             Box::pin(fut)
                         }
                     }
@@ -311,56 +250,7 @@ pub mod filter_server {
                     let inner = self.inner.clone();
                     let fut = async move {
                         let inner = inner.0;
-                        let method = FilterDistanceSvc(inner);
-                        let codec = tonic::codec::ProstCodec::default();
-                        let mut grpc = tonic::server::Grpc::new(codec)
-                            .apply_compression_config(
-                                accept_compression_encodings,
-                                send_compression_encodings,
-                            )
-                            .apply_max_message_size_config(
-                                max_decoding_message_size,
-                                max_encoding_message_size,
-                            );
-                        let res = grpc.unary(method, req).await;
-                        Ok(res)
-                    };
-                    Box::pin(fut)
-                }
-                "/filter.egress.v1.Filter/FilterVector" => {
-                    #[allow(non_camel_case_types)]
-                    struct FilterVectorSvc<T: Filter>(pub Arc<T>);
-                    impl<
-                        T: Filter,
-                    > tonic::server::UnaryService<
-                        super::super::super::super::payload::v1::filter::VectorRequest,
-                    > for FilterVectorSvc<T> {
-                        type Response = super::super::super::super::payload::v1::filter::VectorResponse;
-                        type Future = BoxFuture<
-                            tonic::Response<Self::Response>,
-                            tonic::Status,
-                        >;
-                        fn call(
-                            &mut self,
-                            request: tonic::Request<
-                                super::super::super::super::payload::v1::filter::VectorRequest,
-                            >,
-                        ) -> Self::Future {
-                            let inner = Arc::clone(&self.0);
-                            let fut = async move {
-                                (*inner).filter_vector(request).await
-                            };
-                            Box::pin(fut)
-                        }
-                    }
-                    let accept_compression_encodings = self.accept_compression_encodings;
-                    let send_compression_encodings = self.send_compression_encodings;
-                    let max_decoding_message_size = self.max_decoding_message_size;
-                    let max_encoding_message_size = self.max_encoding_message_size;
-                    let inner = self.inner.clone();
-                    let fut = async move {
-                        let inner = inner.0;
-                        let method = FilterVectorSvc(inner);
+                        let method = RegisterSvc(inner);
                         let codec = tonic::codec::ProstCodec::default();
                         let mut grpc = tonic::server::Grpc::new(codec)
                             .apply_compression_config(
@@ -391,7 +281,7 @@ pub mod filter_server {
             }
         }
     }
-    impl<T: Filter> Clone for FilterServer<T> {
+    impl<T: Mirror> Clone for MirrorServer<T> {
         fn clone(&self) -> Self {
             let inner = self.inner.clone();
             Self {
@@ -403,7 +293,7 @@ pub mod filter_server {
             }
         }
     }
-    impl<T: Filter> Clone for _Inner<T> {
+    impl<T: Mirror> Clone for _Inner<T> {
         fn clone(&self) -> Self {
             Self(Arc::clone(&self.0))
         }
@@ -413,7 +303,7 @@ pub mod filter_server {
             write!(f, "{:?}", self.0)
         }
     }
-    impl<T: Filter> tonic::server::NamedService for FilterServer<T> {
-        const NAME: &'static str = "filter.egress.v1.Filter";
+    impl<T: Mirror> tonic::server::NamedService for MirrorServer<T> {
+        const NAME: &'static str = "mirror.v1.Mirror";
     }
 }

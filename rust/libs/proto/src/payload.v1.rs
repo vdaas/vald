@@ -99,11 +99,11 @@ pub mod search {
         #[prost(int64, tag="5")]
         pub timeout: i64,
         /// Ingress filter configurations.
-        #[prost(message, optional, tag="6")]
-        pub ingress_filters: ::core::option::Option<super::filter::Config>,
+        #[prost(message, repeated, tag="6")]
+        pub ingress_filters: ::prost::alloc::vec::Vec<super::filter::Config>,
         /// Egress filter configurations.
-        #[prost(message, optional, tag="7")]
-        pub egress_filters: ::core::option::Option<super::filter::Config>,
+        #[prost(message, repeated, tag="7")]
+        pub egress_filters: ::prost::alloc::vec::Vec<super::filter::Config>,
         /// Minimum number of result to be returned.
         #[prost(uint32, tag="8")]
         pub min_num: u32,
@@ -205,13 +205,62 @@ pub mod filter {
         #[prost(uint32, tag="2")]
         pub port: u32,
     }
+    /// Represent the filter query.
+    #[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(Clone, PartialEq, ::prost::Message)]
+    pub struct Query {
+        /// The raw query string.
+        #[prost(string, tag="1")]
+        pub query: ::prost::alloc::string::String,
+    }
     /// Represent filter configuration.
     #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
     pub struct Config {
         /// Represent the filter target configuration.
+        #[prost(message, optional, tag="1")]
+        pub target: ::core::option::Option<Target>,
+        /// The target query.
+        #[prost(message, optional, tag="2")]
+        pub query: ::core::option::Option<Query>,
+    }
+    /// Represent the ID and distance pair.
+    #[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(Clone, PartialEq, ::prost::Message)]
+    pub struct DistanceRequest {
+        /// Distance
         #[prost(message, repeated, tag="1")]
-        pub targets: ::prost::alloc::vec::Vec<Target>,
+        pub distance: ::prost::alloc::vec::Vec<super::object::Distance>,
+        /// Query
+        #[prost(message, optional, tag="2")]
+        pub query: ::core::option::Option<Query>,
+    }
+    /// Represent the ID and distance pair.
+    #[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(Clone, PartialEq, ::prost::Message)]
+    pub struct DistanceResponse {
+        /// Distance
+        #[prost(message, repeated, tag="1")]
+        pub distance: ::prost::alloc::vec::Vec<super::object::Distance>,
+    }
+    /// Represent the ID and vector pair.
+    #[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(Clone, PartialEq, ::prost::Message)]
+    pub struct VectorRequest {
+        /// Vector
+        #[prost(message, optional, tag="1")]
+        pub vector: ::core::option::Option<super::object::Vector>,
+        /// Query
+        #[prost(message, optional, tag="2")]
+        pub query: ::core::option::Option<Query>,
+    }
+    /// Represent the ID and vector pair.
+    #[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(Clone, PartialEq, ::prost::Message)]
+    pub struct VectorResponse {
+        /// Distance
+        #[prost(message, optional, tag="1")]
+        pub vector: ::core::option::Option<super::object::Vector>,
     }
 }
 /// Insert related messages.
@@ -270,8 +319,8 @@ pub mod insert {
         #[prost(bool, tag="1")]
         pub skip_strict_exist_check: bool,
         /// Filter configurations.
-        #[prost(message, optional, tag="2")]
-        pub filters: ::core::option::Option<super::filter::Config>,
+        #[prost(message, repeated, tag="2")]
+        pub filters: ::prost::alloc::vec::Vec<super::filter::Config>,
         /// Insert timestamp.
         #[prost(int64, tag="3")]
         pub timestamp: i64,
@@ -333,8 +382,8 @@ pub mod update {
         #[prost(bool, tag="1")]
         pub skip_strict_exist_check: bool,
         /// Filter configuration.
-        #[prost(message, optional, tag="2")]
-        pub filters: ::core::option::Option<super::filter::Config>,
+        #[prost(message, repeated, tag="2")]
+        pub filters: ::prost::alloc::vec::Vec<super::filter::Config>,
         /// Update timestamp.
         #[prost(int64, tag="3")]
         pub timestamp: i64,
@@ -400,8 +449,8 @@ pub mod upsert {
         #[prost(bool, tag="1")]
         pub skip_strict_exist_check: bool,
         /// Filter configuration.
-        #[prost(message, optional, tag="2")]
-        pub filters: ::core::option::Option<super::filter::Config>,
+        #[prost(message, repeated, tag="2")]
+        pub filters: ::prost::alloc::vec::Vec<super::filter::Config>,
         /// Upsert timestamp.
         #[prost(int64, tag="3")]
         pub timestamp: i64,
@@ -531,8 +580,8 @@ pub mod object {
         #[prost(message, optional, tag="1")]
         pub id: ::core::option::Option<Id>,
         /// Filter configurations.
-        #[prost(message, optional, tag="2")]
-        pub filters: ::core::option::Option<super::filter::Config>,
+        #[prost(message, repeated, tag="2")]
+        pub filters: ::prost::alloc::vec::Vec<super::filter::Config>,
     }
     /// Represent the ID and distance pair.
     #[allow(clippy::derive_partial_eq_without_eq)]
@@ -1001,6 +1050,33 @@ pub mod info {
     pub struct IPs {
         #[prost(string, repeated, tag="1")]
         pub ip: ::prost::alloc::vec::Vec<::prost::alloc::string::String>,
+    }
+}
+/// Mirror related messages.
+#[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct Mirror {
+}
+/// Nested message and enum types in `Mirror`.
+pub mod mirror {
+    /// Represent server information.
+    #[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(Clone, PartialEq, ::prost::Message)]
+    pub struct Target {
+        /// The target hostname.
+        #[prost(string, tag="1")]
+        pub host: ::prost::alloc::string::String,
+        /// The target port.
+        #[prost(uint32, tag="2")]
+        pub port: u32,
+    }
+    /// Represent the multiple Target message.
+    #[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(Clone, PartialEq, ::prost::Message)]
+    pub struct Targets {
+        /// The multiple target information.
+        #[prost(message, repeated, tag="1")]
+        pub targets: ::prost::alloc::vec::Vec<Target>,
     }
 }
 /// Represent an empty message.
