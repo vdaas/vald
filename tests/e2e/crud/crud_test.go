@@ -842,7 +842,7 @@ func TestE2EReadReplica(t *testing.T) {
 	sleep(t, waitAfterInsertDuration)
 
 	t.Log("starting to restart all the agent pods to make it backup index to pvc...")
-	if err := kubectl.RolloutResource(t, ctx, "statefulsets/vald-agent-ngt"); err != nil {
+	if err := kubectl.RolloutResource(ctx, t, "statefulsets/vald-agent-ngt"); err != nil {
 		t.Fatalf("failed to restart all the agent pods: %s", err)
 	}
 
@@ -862,7 +862,7 @@ func TestE2EReadReplica(t *testing.T) {
 	}
 
 	t.Log("waiting for read replica rotator jobs to complete...")
-	if err := kubectl.WaitResources(t, ctx, "job", "app=vald-readreplica-rotate", "complete", "120s"); err != nil {
+	if err := kubectl.WaitResources(ctx, t, "job", "app=vald-readreplica-rotate", "complete", "120s"); err != nil {
 		t.Fatalf("failed to wait for read replica rotator jobs to complete: %s", err)
 	}
 
@@ -940,14 +940,5 @@ func TestE2EReadReplica(t *testing.T) {
 	err = op.RemoveByTimestamp(t, ctx, time.Now().Add(-time.Hour).UnixNano())
 	if err != nil {
 		t.Fatalf("an error occurred: %s", err)
-	}
-}
-
-func parseCmdErrorAndFail(t *testing.T, out []byte, err error) {
-	t.Helper()
-	if exitErr, ok := err.(*exec.ExitError); ok {
-		t.Fatalf("%s, %s, %v", string(out), string(exitErr.Stderr), err)
-	} else {
-		t.Fatalf("unexpected error: %v", err)
 	}
 }

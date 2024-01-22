@@ -8,7 +8,7 @@ import (
 	"testing"
 )
 
-func RolloutResource(t *testing.T, ctx context.Context, resource string) error {
+func RolloutResource(ctx context.Context, t *testing.T, resource string) error {
 	t.Helper()
 	cmd := exec.CommandContext(ctx, "sh", "-c",
 		fmt.Sprintf("kubectl rollout restart %s && kubectl rollout status %s", resource, resource),
@@ -16,7 +16,7 @@ func RolloutResource(t *testing.T, ctx context.Context, resource string) error {
 	return runCmd(t, cmd)
 }
 
-func WaitResources(t *testing.T, ctx context.Context, resource, labelSelector, condition, timeout string) error {
+func WaitResources(ctx context.Context, t *testing.T, resource, labelSelector, condition, timeout string) error {
 	t.Helper()
 	cmd := exec.CommandContext(ctx, "sh", "-c",
 		fmt.Sprintf("kubectl wait --for=condition=%s %s -l %s --timeout %s", condition, resource, labelSelector, timeout),
