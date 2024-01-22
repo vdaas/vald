@@ -827,7 +827,7 @@ func TestE2EIndexJobCorrection(t *testing.T) {
 
 func TestE2EReadReplica(t *testing.T) {
 	t.Cleanup(teardown)
-	
+
 	if kubeClient == nil {
 		var err error
 		kubeClient, err = client.New(kubeConfig)
