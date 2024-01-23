@@ -14,6 +14,7 @@
 package pogreb
 
 import (
+	"context"
 	"os"
 	"reflect"
 
@@ -28,7 +29,7 @@ type Pogreb interface {
 	Set(key string, val []byte) error
 	Get(key string) ([]byte, bool, error)
 	Delete(key string) error
-	Range(f func(key string, val []byte) bool) error
+	Range(ctx context.Context, f func(key string, val []byte) bool) error
 	Len() uint32
 	Close(remove bool) error
 }
@@ -79,12 +80,14 @@ func (d *db) Get(key string) ([]byte, bool, error) {
 
 // Delete deletes the given key from the database.
 func (d *db) Delete(key string) error {
+	// NOTE: Even if the key does not exist in the database, no error occurs.
+	// Depending on the future use case, it may be necessary to check for the existence of the key, in which case the `Has` method can be used.
 	return d.db.Delete(conv.Atob(key))
 }
 
 // Range calls f sequentially for each key and value present in the database.
 // If f returns false, range stops the iteration.
-func (d *db) Range(f func(key string, val []byte) bool) error {
+func (d *db) Range(ctx context.Context, f func(key string, val []byte) bool) error {
 	it := d.db.Items()
 	for {
 		key, val, err := it.Next()
@@ -94,8 +97,13 @@ func (d *db) Range(f func(key string, val []byte) bool) error {
 			}
 			return err
 		}
-		if !f(conv.Btoa(key), val) {
+		select {
+		case <-ctx.Done():
 			return nil
+		default:
+			if !f(conv.Btoa(key), val) {
+				return nil
+			}
 		}
 	}
 	return nil
