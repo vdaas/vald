@@ -90,23 +90,22 @@ func (d *db) Delete(key string) error {
 func (d *db) Range(ctx context.Context, f func(key string, val []byte) bool) error {
 	it := d.db.Items()
 	for {
-		key, val, err := it.Next()
-		if err != nil {
-			if errors.Is(err, pogreb.ErrIterationDone) {
-				break
-			}
-			return err
-		}
 		select {
 		case <-ctx.Done():
 			return nil
 		default:
+			key, val, err := it.Next()
+			if err != nil {
+				if errors.Is(err, pogreb.ErrIterationDone) {
+					return nil
+				}
+				return err
+			}
 			if !f(conv.Btoa(key), val) {
 				return nil
 			}
 		}
 	}
-	return nil
 }
 
 // Len returns the number of keys in the DB.
