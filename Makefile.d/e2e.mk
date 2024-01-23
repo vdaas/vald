@@ -74,6 +74,11 @@ e2e/insert/search:
 e2e/index/job/correction:
 	$(call run-e2e-crud-test,-run TestE2EIndexJobCorrection)
 
+.PHONY: e2e/readreplica
+## run readreplica e2e
+e2e/readreplica:
+	$(call run-e2e-crud-test,-run TestE2EReadReplica)
+
 .PHONY: e2e/maxdim
 ## run e2e/maxdim
 e2e/maxdim:

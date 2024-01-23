@@ -25,6 +25,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"strconv"
 	"testing"
 	"time"
 
@@ -34,6 +35,7 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/tests/e2e/hdf5"
 	"github.com/vdaas/vald/tests/e2e/kubernetes/client"
+	"github.com/vdaas/vald/tests/e2e/kubernetes/kubectl"
 	"github.com/vdaas/vald/tests/e2e/kubernetes/portforward"
 	"github.com/vdaas/vald/tests/e2e/operation"
 )
@@ -64,6 +66,7 @@ var (
 
 	kubeClient client.Client
 	namespace  string
+	kubeConfig string
 
 	forwarder *portforward.Portforward
 )
@@ -98,20 +101,19 @@ func init() {
 	pfPodName := flag.String("portforward-pod-name", "vald-gateway-0", "pod name (only for port forward)")
 	pfPodPort := flag.Int("portforward-pod-port", port, "pod gRPC port (only for port forward)")
 
-	kubeConfig := flag.String("kubeconfig", file.Join(os.Getenv("HOME"), ".kube", "config"), "kubeconfig path")
+	flag.StringVar(&kubeConfig, "kubeconfig", file.Join(os.Getenv("HOME"), ".kube", "config"), "kubeconfig path")
 	flag.StringVar(&namespace, "namespace", "default", "namespace")
 
 	flag.Parse()
 
 	var err error
 	if *pf {
-		kubeClient, err = client.New(*kubeConfig)
+		kubeClient, err = client.New(kubeConfig)
 		if err != nil {
 			panic(err)
 		}
 
 		forwarder = kubeClient.Portforward(namespace, *pfPodName, port, *pfPodPort)
-
 		err = forwarder.Start()
 		if err != nil {
 			panic(err)
@@ -751,7 +753,6 @@ func TestE2ECRUDWithSkipStrictExistCheck(t *testing.T) {
 
 // TestE2EIndexJobCorrection tests the index correction job.
 // It inserts vectors, runs the index correction job, and then removes the vectors.
-// TODO: Add index replica count check after inplementing StreamListObject in LB
 func TestE2EIndexJobCorrection(t *testing.T) {
 	t.Cleanup(teardown)
 	ctx := context.Background()
@@ -819,6 +820,135 @@ func TestE2EIndexJobCorrection(t *testing.T) {
 	err = op.Remove(t, ctx, operation.Dataset{
 		Train: train,
 	})
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+}
+
+func TestE2EReadReplica(t *testing.T) {
+	t.Cleanup(teardown)
+
+	if kubeClient == nil {
+		var err error
+		kubeClient, err = client.New(kubeConfig)
+		if err != nil {
+			t.Skipf("TestE2EReadReplica needs kubernetes client but failed to create one: %s", err)
+		}
+	}
+
+	ctx := context.Background()
+
+	op, err := operation.New(host, port)
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	err = op.Insert(t, ctx, operation.Dataset{
+		Train: ds.Train[insertFrom : insertFrom+insertNum],
+	})
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	sleep(t, waitAfterInsertDuration)
+
+	t.Log("starting to restart all the agent pods to make it backup index to pvc...")
+	if err := kubectl.RolloutResource(ctx, t, "statefulsets/vald-agent-ngt"); err != nil {
+		t.Fatalf("failed to restart all the agent pods: %s", err)
+	}
+
+	t.Log("starting to create read replica rotators...")
+	pods, err := kubeClient.GetPods(ctx, namespace, "app=vald-agent-ngt")
+	if err != nil {
+		t.Fatalf("GetPods failed: %s", err)
+	}
+	cronJobs, err := kubeClient.ListCronJob(ctx, namespace, "app=vald-readreplica-rotate")
+	if err != nil {
+		t.Fatalf("ListCronJob failed: %s", err)
+	}
+	cronJob := cronJobs[0]
+	for id := 0; id < len(pods); id++ {
+		cronJob.Spec.JobTemplate.Spec.Template.Spec.Containers[0].Env[0].Value = strconv.Itoa(id)
+		kubeClient.CreateJobFromCronJob(ctx, "vald-readreplica-rotate-"+strconv.Itoa(id), namespace, &cronJob)
+	}
+
+	t.Log("waiting for read replica rotator jobs to complete...")
+	if err := kubectl.WaitResources(ctx, t, "job", "app=vald-readreplica-rotate", "complete", "120s"); err != nil {
+		t.Fatalf("failed to wait for read replica rotator jobs to complete: %s", err)
+	}
+
+	err = op.Search(t, ctx, operation.Dataset{
+		Test:      ds.Test[searchFrom : searchFrom+searchNum],
+		Neighbors: ds.Neighbors[searchFrom : searchFrom+searchNum],
+	})
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	err = op.SearchByID(t, ctx, operation.Dataset{
+		Train: ds.Train[searchByIDFrom : searchByIDFrom+searchByIDNum],
+	})
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	err = op.LinearSearch(t, ctx, operation.Dataset{
+		Test:      ds.Test[searchFrom : searchFrom+searchNum],
+		Neighbors: ds.Neighbors[searchFrom : searchFrom+searchNum],
+	})
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	err = op.LinearSearchByID(t, ctx, operation.Dataset{
+		Train: ds.Train[searchByIDFrom : searchByIDFrom+searchByIDNum],
+	})
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	err = op.Exists(t, ctx, "0")
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	err = op.GetObject(t, ctx, operation.Dataset{
+		Train: ds.Train[getObjectFrom : getObjectFrom+getObjectNum],
+	})
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	err = op.StreamListObject(t, ctx, operation.Dataset{
+		Train: ds.Train[insertFrom : insertFrom+insertNum],
+	})
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	err = op.Update(t, ctx, operation.Dataset{
+		Train: ds.Train[updateFrom : updateFrom+updateNum],
+	})
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	err = op.Upsert(t, ctx, operation.Dataset{
+		Train: ds.Train[upsertFrom : upsertFrom+upsertNum],
+	})
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	err = op.Remove(t, ctx, operation.Dataset{
+		Train: ds.Train[removeFrom : removeFrom+removeNum],
+	})
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	// Remove all vector data after the current - 1 hour.
+	err = op.RemoveByTimestamp(t, ctx, time.Now().Add(-time.Hour).UnixNano())
 	if err != nil {
 		t.Fatalf("an error occurred: %s", err)
 	}

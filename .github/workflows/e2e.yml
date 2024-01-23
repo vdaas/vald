@@ -319,6 +319,61 @@ jobs:
         env:
           POD_NAME: ${{ steps.deploy_vald.outputs.POD_NAME }}
 
+  e2e-stream-crud-with-readreplica:
+    name: "E2E test (Stream CRUD) with read replica"
+    needs: [dump-contexts-to-log]
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set Git config
+        run: |
+          git config --global --add safe.directory ${GITHUB_WORKSPACE}
+
+      - name: Setup E2E environment
+        id: setup_e2e
+        uses: ./.github/actions/setup-e2e
+        with:
+          require_k3d: "false"
+          require_minikube: "true"
+
+      - name: Deploy Vald
+        id: deploy_vald
+        uses: ./.github/actions/e2e-deploy-vald
+        with:
+          helm_extra_options: ${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }}
+          values: .github/helm/values/values-readreplica.yaml
+          wait_for_selector: app=vald-agent-ngt
+
+      - name: Deploy Vald Read Replica
+        id: deploy_vald_readreplica
+        uses: ./.github/actions/e2e-deploy-vald-readreplica
+        with:
+          default_image_tag: ${{ steps.setup_e2e.outputs.DEFAULT_IMAGE_TAG }}
+          helm_extra_options: ${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }}
+          values: .github/helm/values/values-readreplica.yaml
+          wait_for_selector: app=vald-lb-gateway
+
+      - name: Run E2E CRUD with read replica rotation
+        run: |
+          make hack/benchmark/assets/dataset/${{ env.DATASET }}
+          make E2E_BIND_PORT=8081 \
+            E2E_DATASET_NAME=${{ env.DATASET }} \
+            E2E_INSERT_COUNT=1000 \
+            E2E_SEARCH_COUNT=1000 \
+            E2E_SEARCH_BY_ID_COUNT=1000 \
+            E2E_GET_OBJECT_COUNT=100 \
+            E2E_UPDATE_COUNT=100 \
+            E2E_UPSERT_COUNT=100 \
+            E2E_REMOVE_COUNT=100 \
+            E2E_WAIT_FOR_CREATE_INDEX_DURATION=3m \
+            E2E_TARGET_POD_NAME=${POD_NAME} \
+            E2E_TARGET_NAMESPACE=default \
+            e2e/readreplica
+        env:
+          POD_NAME: ${{ steps.deploy_vald_readreplica.outputs.POD_NAME }}
+
   e2e-stream-crud-with-mirror:
     name: "E2E test (Stream CRUD) with mirror"
     needs: [dump-contexts-to-log]
@@ -391,6 +446,7 @@ jobs:
       - e2e-stream-crud-skip-exist-check
       - e2e-stream-crud-under-index-management-jobs
       - e2e-stream-crud-with-mirror
+      - e2e-stream-crud-with-readreplica
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
