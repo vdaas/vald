@@ -52,6 +52,7 @@ const (
 	DeletePropagationBackground = metav1.DeletePropagationBackground
 	WatchDeletedEvent           = watch.Deleted
 	SelectionOpEquals           = selection.Equals
+	SelectionOpExists           = selection.Exists
 )
 
 type Client interface {

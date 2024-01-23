@@ -25,6 +25,7 @@ import (
 	"github.com/vdaas/vald/internal/k8s/client"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/observability/trace"
+	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
@@ -33,7 +34,8 @@ import (
 )
 
 const (
-	apiName = "vald/index/job/readreplica/rotate"
+	apiName     = "vald/index/job/readreplica/rotate"
+	rotateAllId = "rotate-all"
 )
 
 // Rotator represents an interface for indexing.
@@ -45,9 +47,13 @@ type rotator struct {
 	namespace           string
 	volumeName          string
 	readReplicaLabelKey string
-	readReplicaID       string
-	client              client.Client
-	listOpts            client.ListOptions
+	subProcesses        []subProcess
+}
+
+type subProcess struct {
+	listOpts   client.ListOptions
+	client     client.Client
+	volumeName string
 }
 
 // New returns Indexer object if no error occurs.
@@ -57,7 +63,6 @@ func New(replicaID string, opts ...Option) (Rotator, error) {
 	if replicaID == "" {
 		return nil, fmt.Errorf("readreplica id is empty. it should be set via MY_TARGET_REPLICA_ID env var")
 	}
-	r.readReplicaID = replicaID
 
 	for _, opt := range append(defaultOpts, opts...) {
 		if err := opt(r); err != nil {
@@ -75,17 +80,44 @@ func New(replicaID string, opts ...Option) (Rotator, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to create kubernetes client: %w", err)
 	}
-	r.client = c
 
-	selector, err := c.LabelSelector(r.readReplicaLabelKey, client.SelectionOpEquals, []string{r.readReplicaID})
-	if err != nil {
-		return nil, err
-	}
-	r.listOpts = client.ListOptions{
-		Namespace:     r.namespace,
-		LabelSelector: selector,
-	}
+	if replicaID == rotateAllId {
+		var deploymentList appsv1.DeploymentList
+		selector, err := c.LabelSelector(r.readReplicaLabelKey, client.SelectionOpExists, []string{})
+		if err != nil {
+			return nil, err
+		}
+		c.List(context.Background(), &deploymentList, &client.ListOptions{
+			Namespace:     r.namespace,
+			LabelSelector: selector,
+		})
 
+		deployments := deploymentList.Items
+		if len(deployments) == 0 {
+			return nil, fmt.Errorf("no read replica found to rotate")
+		}
+
+		var ids []string
+		for _, deployment := range deployments {
+			ids = append(ids, deployment.Labels[r.readReplicaLabelKey])
+		}
+
+		for _, id := range ids {
+			sub, err := r.newSubprocess(c, id)
+			if err != nil {
+				return nil, fmt.Errorf("failed to create rotator subprocess: %w", err)
+			}
+
+			r.subProcesses = append(r.subProcesses, sub)
+		}
+	} else {
+		sub, err := r.newSubprocess(c, replicaID)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create rotator subprocess: %w", err)
+		}
+
+		r.subProcesses = append(r.subProcesses, sub)
+	}
 	return r, nil
 }
 
@@ -98,58 +130,81 @@ func (r *rotator) Start(ctx context.Context) error {
 		}
 	}()
 
-	if err := r.rotate(ctx); err != nil {
-		if span != nil {
-			span.RecordError(err)
-			span.SetStatus(trace.StatusError, err.Error())
-		}
-		return err
+	eg, ectx := errgroup.New(ctx)
+	for _, sub := range r.subProcesses {
+		s := sub
+		eg.Go(safety.RecoverFunc(func() (err error) {
+			if err := s.rotate(ectx); err != nil {
+				if span != nil {
+					span.RecordError(err)
+					span.SetStatus(trace.StatusError, err.Error())
+				}
+				return err
+			}
+			return nil
+		}))
 	}
 
-	return nil
+	return eg.Wait()
 }
 
-func (r *rotator) rotate(ctx context.Context) error {
+func (r *rotator) newSubprocess(c client.Client, replicaID string) (subProcess, error) {
+	selector, err := c.LabelSelector(r.readReplicaLabelKey, client.SelectionOpEquals, []string{replicaID})
+	if err != nil {
+		return subProcess{}, err
+	}
+	sub := subProcess{
+		client: c,
+		listOpts: client.ListOptions{
+			Namespace:     r.namespace,
+			LabelSelector: selector,
+		},
+		volumeName: r.volumeName,
+	}
+	return sub, nil
+}
+
+func (s *subProcess) rotate(ctx context.Context) error {
 	// get deployment here to pass to create methods of snapshot and pvc
 	// and put it as owner reference of them so that they will be deleted when the deployment is deleted
-	deployment, err := r.getDeployment(ctx)
+	deployment, err := s.getDeployment(ctx)
 	if err != nil {
 		log.Errorf("failed to get Deployment.")
 		return err
 	}
 
-	newSnap, oldSnap, err := r.createSnapshot(ctx, deployment)
+	newSnap, oldSnap, err := s.createSnapshot(ctx, deployment)
 	if err != nil {
 		return err
 	}
 
-	newPvc, oldPvc, err := r.createPVC(ctx, newSnap.GetName(), deployment)
+	newPvc, oldPvc, err := s.createPVC(ctx, newSnap.GetName(), deployment)
 	if err != nil {
 		log.Errorf("failed to create PVC. removing the new snapshot(%s)...", newSnap.GetName())
-		if dserr := r.deleteSnapshot(ctx, newSnap); dserr != nil {
+		if dserr := s.deleteSnapshot(ctx, newSnap); dserr != nil {
 			errors.Join(err, dserr)
 		}
 		return err
 	}
 
-	err = r.updateDeployment(ctx, newPvc.GetName(), deployment)
+	err = s.updateDeployment(ctx, newPvc.GetName(), deployment)
 	if err != nil {
 		log.Errorf("failed to update Deployment. removing the new snapshot(%s) and pvc(%s)...", newSnap.GetName(), newPvc.GetName())
-		if dperr := r.deletePVC(ctx, newPvc); dperr != nil {
+		if dperr := s.deletePVC(ctx, newPvc); dperr != nil {
 			errors.Join(err, dperr)
 		}
-		if dserr := r.deleteSnapshot(ctx, newSnap); dserr != nil {
+		if dserr := s.deleteSnapshot(ctx, newSnap); dserr != nil {
 			errors.Join(err, dserr)
 		}
 		return err
 	}
 
-	err = r.deleteSnapshot(ctx, oldSnap)
+	err = s.deleteSnapshot(ctx, oldSnap)
 	if err != nil {
 		return err
 	}
 
-	err = r.deletePVC(ctx, oldPvc)
+	err = s.deletePVC(ctx, oldPvc)
 	if err != nil {
 		return err
 	}
@@ -157,9 +212,9 @@ func (r *rotator) rotate(ctx context.Context) error {
 	return nil
 }
 
-func (r *rotator) createSnapshot(ctx context.Context, deployment *appsv1.Deployment) (newSnap, oldSnap *client.VolumeSnapshot, err error) {
+func (s *subProcess) createSnapshot(ctx context.Context, deployment *appsv1.Deployment) (newSnap, oldSnap *client.VolumeSnapshot, err error) {
 	list := snapshotv1.VolumeSnapshotList{}
-	if err := r.client.List(ctx, &list, &r.listOpts); err != nil {
+	if err := s.client.List(ctx, &list, &s.listOpts); err != nil {
 		return nil, nil, fmt.Errorf("failed to get snapshot: %w", err)
 	}
 	if len(list.Items) == 0 {
@@ -193,7 +248,7 @@ func (r *rotator) createSnapshot(ctx context.Context, deployment *appsv1.Deploym
 	log.Infof("creating new snapshot(%s)...", newSnap.GetName())
 	log.Debugf("snapshot detail: %#v", newSnap)
 
-	err = r.client.Create(ctx, newSnap)
+	err = s.client.Create(ctx, newSnap)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to create snapshot: %w", err)
 	}
@@ -201,9 +256,9 @@ func (r *rotator) createSnapshot(ctx context.Context, deployment *appsv1.Deploym
 	return newSnap, oldSnap, nil
 }
 
-func (r *rotator) createPVC(ctx context.Context, newSnapShot string, deployment *appsv1.Deployment) (newPvc, oldPvc *v1.PersistentVolumeClaim, err error) {
+func (s *subProcess) createPVC(ctx context.Context, newSnapShot string, deployment *appsv1.Deployment) (newPvc, oldPvc *v1.PersistentVolumeClaim, err error) {
 	list := v1.PersistentVolumeClaimList{}
-	if err := r.client.List(ctx, &list, &r.listOpts); err != nil {
+	if err := s.client.List(ctx, &list, &s.listOpts); err != nil {
 		return nil, nil, fmt.Errorf("failed to get PVC: %w", err)
 	}
 	if len(list.Items) == 0 {
@@ -248,16 +303,16 @@ func (r *rotator) createPVC(ctx context.Context, newSnapShot string, deployment 
 	log.Infof("creating new pvc(%s)...", newPvc.GetName())
 	log.Debugf("pvc detail: %#v", newPvc)
 
-	if err := r.client.Create(ctx, newPvc); err != nil {
+	if err := s.client.Create(ctx, newPvc); err != nil {
 		return nil, nil, fmt.Errorf("failed to create PVC(%s): %w", newPvc.GetName(), err)
 	}
 
 	return newPvc, oldPvc, nil
 }
 
-func (r *rotator) getDeployment(ctx context.Context) (*appsv1.Deployment, error) {
+func (s *subProcess) getDeployment(ctx context.Context) (*appsv1.Deployment, error) {
 	list := appsv1.DeploymentList{}
-	if err := r.client.List(ctx, &list, &r.listOpts); err != nil {
+	if err := s.client.List(ctx, &list, &s.listOpts); err != nil {
 		return nil, fmt.Errorf("failed to get deployment through client: %w", err)
 	}
 	if len(list.Items) == 0 {
@@ -267,14 +322,14 @@ func (r *rotator) getDeployment(ctx context.Context) (*appsv1.Deployment, error)
 	return &list.Items[0], nil
 }
 
-func (r *rotator) updateDeployment(ctx context.Context, newPVC string, deployment *appsv1.Deployment) error {
+func (s *subProcess) updateDeployment(ctx context.Context, newPVC string, deployment *appsv1.Deployment) error {
 	if deployment.Spec.Template.ObjectMeta.Annotations == nil {
 		deployment.Spec.Template.ObjectMeta.Annotations = map[string]string{}
 	}
 	deployment.Spec.Template.ObjectMeta.Annotations["kubectl.kubernetes.io/restartedAt"] = time.Now().Format(time.RFC3339)
 
 	for _, vol := range deployment.Spec.Template.Spec.Volumes {
-		if vol.Name == r.volumeName {
+		if vol.Name == s.volumeName {
 			vol.PersistentVolumeClaim.ClaimName = newPVC
 		}
 	}
@@ -282,19 +337,19 @@ func (r *rotator) updateDeployment(ctx context.Context, newPVC string, deploymen
 	log.Infof("updating deployment(%s)...", deployment.GetName())
 	log.Debugf("deployment detail: %#v", deployment)
 
-	if err := r.client.Update(ctx, deployment); err != nil {
+	if err := s.client.Update(ctx, deployment); err != nil {
 		return fmt.Errorf("failed to update deployment: %w", err)
 	}
 
 	return nil
 }
 
-func (r *rotator) deleteSnapshot(ctx context.Context, snapshot *snapshotv1.VolumeSnapshot) error {
-	watcher, err := r.client.Watch(ctx,
+func (s *subProcess) deleteSnapshot(ctx context.Context, snapshot *snapshotv1.VolumeSnapshot) error {
+	watcher, err := s.client.Watch(ctx,
 		&snapshotv1.VolumeSnapshotList{
 			Items: []snapshotv1.VolumeSnapshot{*snapshot},
 		},
-		&r.listOpts,
+		&s.listOpts,
 	)
 	if err != nil {
 		return fmt.Errorf("failed to watch snapshot(%s): %w", snapshot.GetName(), err)
@@ -320,18 +375,18 @@ func (r *rotator) deleteSnapshot(ctx context.Context, snapshot *snapshotv1.Volum
 		}
 	})
 
-	if err := r.client.Delete(ctx, snapshot); err != nil {
+	if err := s.client.Delete(ctx, snapshot); err != nil {
 		return fmt.Errorf("failed to delete snapshot: %w", err)
 	}
 	return eg.Wait()
 }
 
-func (r *rotator) deletePVC(ctx context.Context, pvc *v1.PersistentVolumeClaim) error {
-	watcher, err := r.client.Watch(ctx,
+func (s *subProcess) deletePVC(ctx context.Context, pvc *v1.PersistentVolumeClaim) error {
+	watcher, err := s.client.Watch(ctx,
 		&v1.PersistentVolumeClaimList{
 			Items: []v1.PersistentVolumeClaim{*pvc},
 		},
-		&r.listOpts,
+		&s.listOpts,
 	)
 	if err != nil {
 		return fmt.Errorf("failed to watch PVC: %w", err)
@@ -357,7 +412,7 @@ func (r *rotator) deletePVC(ctx context.Context, pvc *v1.PersistentVolumeClaim) 
 		}
 	})
 
-	if err := r.client.Delete(ctx, pvc); err != nil {
+	if err := s.client.Delete(ctx, pvc); err != nil {
 		return fmt.Errorf("failed to delete PVC(%s): %w", pvc.GetName(), err)
 	}
 
