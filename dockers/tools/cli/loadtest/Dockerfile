@@ -22,6 +22,9 @@ FROM --platform=${BUILDPLATFORM} golang:${GO_VERSION} AS golang
 
 FROM --platform=${BUILDPLATFORM} ubuntu:devel AS builder
 
+ARG TARGETARCH
+
+ENV ARCH=${TARGETARCH}
 ENV GO111MODULE on
 ENV DEBIAN_FRONTEND noninteractive
 ENV INITRD No
@@ -57,7 +60,9 @@ COPY .git .
 COPY go.mod .
 COPY go.sum .
 
-RUN make go/download
+RUN --mount=type=cache,target="${GOPATH}/pkg",id="go-build-${ARCH}" \
+    --mount=type=cache,target="${HOME}/.cache/go-build",id="go-build-${ARCH}" \
+    make go/download
 
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/internal
 COPY internal .

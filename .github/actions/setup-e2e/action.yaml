@@ -33,6 +33,10 @@ inputs:
     description: "If k3d is not required, set this to false"
     required: false
     default: "true"
+  require_minikube:
+    description: "If minikube is not required, set this to true and set require_k3d to false"
+    required: false
+    default: "false"
   ingress_port:
     description: 'If it is not "0", ingress will be exposed to the specified port'
     required: false
@@ -93,6 +97,13 @@ runs:
       with:
         agents: 3
         ingress_port: ${{ inputs.ingress_port }}
+
+    - name: Setup Minikube environment
+      if: ${{ inputs.require_minikube == 'true' }}
+      shell: bash
+      run: |
+        make minikube/install
+        make minikube/start
 
     - name: Check Kubernetes cluster
       shell: bash

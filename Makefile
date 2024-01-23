@@ -53,6 +53,7 @@ GOARCH := $(eval GOARCH := $(shell go env GOARCH))$(GOARCH)
 GOBIN := $(eval GOBIN := $(or $(shell go env GOBIN),$(GOPATH)/bin))$(GOBIN)
 GOCACHE := $(eval GOCACHE := $(shell go env GOCACHE))$(GOCACHE)
 GOOS := $(eval GOOS := $(shell go env GOOS))$(GOOS)
+GO_CLEAN_DEPS := true
 GOTEST_TIMEOUT = 30m
 TEST_NOT_IMPL_PLACEHOLDER = NOT IMPLEMENTED BELOW
 
