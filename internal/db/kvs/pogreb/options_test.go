@@ -12,6 +12,7 @@ import (
 )
 
 func TestWithPath(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		path string
 	}
@@ -80,6 +81,7 @@ func TestWithPath(t *testing.T) {
 }
 
 func TestWithBackgroundSyncInterval(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		s string
 	}
@@ -162,6 +164,7 @@ func TestWithBackgroundSyncInterval(t *testing.T) {
 }
 
 func TestWithBackgroundCompactionInterval(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		s string
 	}
