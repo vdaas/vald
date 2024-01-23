@@ -22,7 +22,7 @@ import (
 
 	snapshotv1 "github.com/kubernetes-csi/external-snapshotter/client/v6/apis/volumesnapshot/v1"
 	"github.com/vdaas/vald/internal/errors"
-	client "github.com/vdaas/vald/internal/k8s/client"
+	"github.com/vdaas/vald/internal/k8s/client"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/sync/errgroup"
