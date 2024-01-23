@@ -227,11 +227,11 @@ func Test_db_Delete(t *testing.T) {
 		name       string
 		args       args
 		want       want
-		checkFunc  func(want, error) error
+		checkFunc  func(want, Pogreb, error) error
 		beforeFunc func(*testing.T, Pogreb, args)
 		afterFunc  func(*testing.T, Pogreb, args)
 	}
-	defaultCheckFunc := func(w want, err error) error {
+	defaultCheckFunc := func(w want, _ Pogreb, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
@@ -250,6 +250,19 @@ func Test_db_Delete(t *testing.T) {
 						WithPath(t.TempDir()),
 					},
 					key: key,
+				},
+				checkFunc: func(w want, d Pogreb, err error) error {
+					if err := defaultCheckFunc(w, d, err); err != nil {
+						return err
+					}
+					_, ok, err := d.Get(key)
+					if err != nil {
+						return err
+					}
+					if ok {
+						return errors.New("key exists")
+					}
+					return nil
 				},
 				beforeFunc: func(t *testing.T, d Pogreb, args args) {
 					t.Helper()
@@ -289,7 +302,7 @@ func Test_db_Delete(t *testing.T) {
 			}
 
 			err = d.Delete(test.args.key)
-			if err := checkFunc(test.want, err); err != nil {
+			if err := checkFunc(test.want, d, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})

@@ -43,7 +43,7 @@ func TestWithPath(t *testing.T) {
 		func() test {
 			path := "db-dir"
 			return test{
-				name: "Succeeds to apply WithPath option",
+				name: "Succeeds to apply option",
 				args: args{
 					path: path,
 				},
@@ -111,7 +111,7 @@ func TestWithBackgroundSyncInterval(t *testing.T) {
 		func() test {
 			dur := "100ms"
 			return test{
-				name: "Succeeds to apply WithBackgroundSyncInterval option",
+				name: "Succeeds to apply option",
 				args: args{
 					s: dur,
 				},
@@ -125,7 +125,7 @@ func TestWithBackgroundSyncInterval(t *testing.T) {
 		func() test {
 			dur := "invalid"
 			return test{
-				name: "Fails to apply WithBackgroundSyncInterval option with invalid value",
+				name: "Fails to apply option with invalid value",
 				args: args{
 					s: dur,
 				},
@@ -193,7 +193,7 @@ func TestWithBackgroundCompactionInterval(t *testing.T) {
 		func() test {
 			dur := "100ms"
 			return test{
-				name: "Succeeds to apply WithBackgroundCompactionInterval option",
+				name: "Succeeds to apply option",
 				args: args{
 					s: dur,
 				},
@@ -207,7 +207,7 @@ func TestWithBackgroundCompactionInterval(t *testing.T) {
 		func() test {
 			dur := "invalid"
 			return test{
-				name: "Fails to apply WithBackgroundCompactionInterval option with invalid value",
+				name: "Fails to apply option with invalid value",
 				args: args{
 					s: dur,
 				},
