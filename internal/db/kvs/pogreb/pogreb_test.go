@@ -37,6 +37,7 @@ func TestNew(t *testing.T) {
 				args: args{
 					opts: []Option{
 						WithPath(t.TempDir()),
+						WithBackgroundSyncInterval("0s"),
 					},
 				},
 			}
@@ -44,6 +45,7 @@ func TestNew(t *testing.T) {
 		func() test {
 			opts := []Option{
 				WithPath(t.TempDir()),
+				WithBackgroundSyncInterval("0s"),
 			}
 			return test{
 				name: " Succeeds to restart the pogres instance",
@@ -131,6 +133,7 @@ func Test_db_Get(t *testing.T) {
 				args: args{
 					opts: []Option{
 						WithPath(t.TempDir()),
+						WithBackgroundSyncInterval("0s"),
 					},
 					key: key,
 				},
@@ -162,6 +165,7 @@ func Test_db_Get(t *testing.T) {
 				args: args{
 					opts: []Option{
 						WithPath(t.TempDir()),
+						WithBackgroundSyncInterval("0s"),
 					},
 					key: "not-exist",
 				},
@@ -248,6 +252,7 @@ func Test_db_Delete(t *testing.T) {
 				args: args{
 					opts: []Option{
 						WithPath(t.TempDir()),
+						WithBackgroundSyncInterval("0s"),
 					},
 					key: key,
 				},
@@ -344,6 +349,7 @@ func Test_db_Range(t *testing.T) {
 				args: args{
 					opts: []Option{
 						WithPath(t.TempDir()),
+						WithBackgroundSyncInterval("0s"),
 					},
 					ctx: context.Background(),
 					f: func(key string, val []byte) bool {
@@ -385,6 +391,7 @@ func Test_db_Range(t *testing.T) {
 				args: args{
 					opts: []Option{
 						WithPath(t.TempDir()),
+						WithBackgroundSyncInterval("0s"),
 					},
 					ctx: ctx,
 					f: func(key string, val []byte) bool {
@@ -484,6 +491,7 @@ func Test_db_Len(t *testing.T) {
 				args: args{
 					opts: []Option{
 						WithPath(t.TempDir()),
+						WithBackgroundSyncInterval("0s"),
 					},
 				},
 				want: want{
@@ -511,6 +519,7 @@ func Test_db_Len(t *testing.T) {
 				args: args{
 					opts: []Option{
 						WithPath(t.TempDir()),
+						WithBackgroundSyncInterval("0s"),
 					},
 				},
 				afterFunc: func(t *testing.T, d Pogreb, args args) {
