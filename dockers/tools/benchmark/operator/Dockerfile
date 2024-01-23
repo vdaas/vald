@@ -27,7 +27,6 @@ FROM ubuntu:devel AS builder
 
 ARG TARGETARCH
 
-ENV ARCH=${TARGETARCH}
 ENV GO111MODULE on
 ENV DEBIAN_FRONTEND noninteractive
 ENV INITRD No
@@ -65,8 +64,8 @@ COPY .git .
 COPY go.mod .
 COPY go.sum .
 
-RUN --mount=type=cache,target="${GOPATH}/pkg",id="go-build-${ARCH}" \
-    --mount=type=cache,target="${HOME}/.cache/go-build",id="go-build-${ARCH}" \
+RUN --mount=type=cache,target="${GOPATH}/pkg",id="go-build-${TARGETARCH}" \
+    --mount=type=cache,target="${HOME}/.cache/go-build",id="go-build-${TARGETARCH}" \
     make go/download
 
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/internal
@@ -85,8 +84,8 @@ WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/versions
 COPY versions .
 
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}
-RUN --mount=type=cache,target="${GOPATH}/pkg",id="go-build-${ARCH}" \
-    --mount=type=cache,target="${HOME}/.cache/go-build",id="go-build-${ARCH}" \
+RUN --mount=type=cache,target="${GOPATH}/pkg",id="go-build-${TARGETARCH}" \
+    --mount=type=cache,target="${HOME}/.cache/go-build",id="go-build-${TARGETARCH}" \
     make REPO=${ORG} NAME=${REPO} cmd/${PKG}/${APP_NAME} \
     && mv "cmd/${PKG}/${APP_NAME}" "/usr/bin/${APP_NAME}"
 
