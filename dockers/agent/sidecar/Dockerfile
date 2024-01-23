@@ -24,6 +24,9 @@ FROM --platform=${BUILDPLATFORM} golang:${GO_VERSION} AS golang
 
 FROM --platform=${BUILDPLATFORM} ubuntu:devel AS builder
 
+ARG TARGETARCH
+
+ENV ARCH=${TARGETARCH}
 ENV GO111MODULE on
 ENV GOPATH /go
 ENV GOROOT /opt/go
@@ -58,7 +61,9 @@ COPY .git .
 COPY go.mod .
 COPY go.sum .
 
-RUN make go/download
+RUN --mount=type=cache,target="${GOPATH}/pkg",id="go-build-${ARCH}" \
+    --mount=type=cache,target="${HOME}/.cache/go-build",id="go-build-${ARCH}" \
+    make go/download
 
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/internal
 COPY internal .
@@ -79,7 +84,9 @@ WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/versions
 COPY versions .
 
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}
-RUN make REPO=${ORG} NAME=${REPO} cmd/${PKG}/${APP_NAME} \
+RUN --mount=type=cache,target="${GOPATH}/pkg",id="go-build-${ARCH}" \
+    --mount=type=cache,target="${HOME}/.cache/go-build",id="go-build-${ARCH}" \
+    make REPO=${ORG} NAME=${REPO} cmd/${PKG}/${APP_NAME} \
     && mv "cmd/${PKG}/${APP_NAME}" "/usr/bin/${APP_NAME}"
 
 FROM --platform=${BUILDPLATFORM} ${DISTROLESS_IMAGE}:${DISTROLESS_IMAGE_TAG}

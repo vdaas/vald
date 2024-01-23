@@ -30,7 +30,9 @@ FROM ubuntu:devel AS builder
 ARG UPX_OPTIONS
 ARG ZLIB_VERSION
 ARG HDF5_VERSION
+ARG TARGETARCH
 
+ENV ARCH=${TARGETARCH}
 ENV GO111MODULE on
 ENV DEBIAN_FRONTEND noninteractive
 ENV INITRD No
@@ -88,7 +90,9 @@ COPY .git .
 COPY go.mod .
 COPY go.sum .
 
-RUN make go/download
+RUN --mount=type=cache,target="${GOPATH}/pkg",id="go-build-${ARCH}" \
+    --mount=type=cache,target="${HOME}/.cache/go-build",id="go-build-${ARCH}" \
+    make go/download
 
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/internal
 COPY internal .
@@ -106,7 +110,9 @@ WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/versions
 COPY versions .
 
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}
-RUN make REPO=${ORG} NAME=${REPO} cmd/${PKG}/${APP_NAME} \
+RUN --mount=type=cache,target="${GOPATH}/pkg",id="go-build-${ARCH}" \
+    --mount=type=cache,target="${HOME}/.cache/go-build",id="go-build-${ARCH}" \
+    make REPO=${ORG} NAME=${REPO} cmd/${PKG}/${APP_NAME} \
     && mv "cmd/${PKG}/${APP_NAME}" "/usr/bin/${APP_NAME}"
 
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/cmd/${PKG}
