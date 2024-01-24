@@ -234,6 +234,7 @@ replace (
 	github.com/pkg/errors => github.com/pkg/errors upgrade
 	github.com/pkg/sftp => github.com/pkg/sftp upgrade
 	github.com/pmezard/go-difflib => github.com/pmezard/go-difflib upgrade
+	github.com/akrylysov/pogreb => github.com/akrylysov/pogreb upgrade
 	github.com/prashantv/gostub => github.com/prashantv/gostub upgrade
 	github.com/prometheus/client_golang => github.com/prometheus/client_golang upgrade
 	github.com/prometheus/client_model => github.com/prometheus/client_model upgrade
