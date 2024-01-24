@@ -22,6 +22,7 @@ import (
 
 	"github.com/vdaas/vald/internal/conv"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/log"
 )
 
 // Pogreb represents an interface for operating the pogreb database.
@@ -47,7 +48,13 @@ func New(opts ...Option) (_ Pogreb, err error) {
 	db := new(db)
 	for _, opt := range append(deafultOpts, opts...) {
 		if err := opt(db); err != nil {
-			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
+			oerr := errors.ErrOptionFailed(err, reflect.ValueOf(opt))
+			e := &errors.ErrCriticalOption{}
+			if errors.As(oerr, &e) {
+				log.Error(err)
+				return nil, oerr
+			}
+			log.Warn(oerr)
 		}
 	}
 

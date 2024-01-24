@@ -39,7 +39,7 @@ func WithPath(path string) Option {
 
 // WithBackgroundSyncInterval returns the option to sets the amount of time between background Sync() calls.
 // Setting the value to 0 disables the automatic background synchronization.
-// Setting the value to -1 makes the DB call Sync() after every write operation.
+// Setting the value to -1 or less makes the DB call Sync() after every write operation.
 func WithBackgroundSyncInterval(s string) Option {
 	return func(d *db) error {
 		if s == "" {
@@ -61,6 +61,7 @@ func WithBackgroundSyncInterval(s string) Option {
 }
 
 // WithBackgroundCompactionInterval returns the option to sets the amount of time between background Compact() calls.
+// Setting the value to 0 or less disables the automatic background compaction.
 func WithBackgroundCompactionInterval(s string) Option {
 	return func(d *db) error {
 		if s == "" {
@@ -73,6 +74,7 @@ func WithBackgroundCompactionInterval(s string) Option {
 		if d.opts == nil {
 			d.opts = new(pogreb.Options)
 		}
+
 		if dur < 0 {
 			dur = -1
 		}
