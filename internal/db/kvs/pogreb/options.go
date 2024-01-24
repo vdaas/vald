@@ -52,7 +52,7 @@ func WithBackgroundSyncInterval(s string) Option {
 		if d.opts == nil {
 			d.opts = new(pogreb.Options)
 		}
-		if dur < 0 {
+		if dur < -1 {
 			dur = -1
 		}
 		d.opts.BackgroundSyncInterval = dur
@@ -76,7 +76,7 @@ func WithBackgroundCompactionInterval(s string) Option {
 		}
 
 		if dur < 0 {
-			dur = -1
+			dur = 0
 		}
 		d.opts.BackgroundCompactionInterval = dur
 		return nil
