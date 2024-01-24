@@ -35,7 +35,7 @@ import (
 
 const (
 	apiName     = "vald/index/job/readreplica/rotate"
-	rotateAllId = "rotate-all"
+	rotateAllID = "rotate-all"
 )
 
 // Rotator represents an interface for indexing.
@@ -81,7 +81,7 @@ func New(replicaID string, opts ...Option) (Rotator, error) {
 		return nil, fmt.Errorf("failed to create kubernetes client: %w", err)
 	}
 
-	if replicaID == rotateAllId {
+	if replicaID == rotateAllID {
 		var deploymentList appsv1.DeploymentList
 		selector, err := c.LabelSelector(r.readReplicaLabelKey, client.SelectionOpExists, []string{})
 		if err != nil {
@@ -98,7 +98,8 @@ func New(replicaID string, opts ...Option) (Rotator, error) {
 		}
 
 		var ids []string
-		for _, deployment := range deployments {
+		for i := range deployments {
+			deployment := &deployments[i]
 			ids = append(ids, deployment.Labels[r.readReplicaLabelKey])
 		}
 
