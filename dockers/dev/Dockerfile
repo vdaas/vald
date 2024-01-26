@@ -21,6 +21,8 @@ ARG MAINTAINER="vdaas.org vald team <vald@vdaas.org>"
 FROM --platform=${BUILDPLATFORM} mcr.microsoft.com/vscode/devcontainers/go:1 AS base
 LABEL maintainer="${MAINTAINER}"
 
+ARG TARGETARCH
+
 # skipcq: DOK-DL3008
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
@@ -51,7 +53,9 @@ COPY versions versions
 COPY hack/go.mod.default hack/go.mod.default
 
 # basic deps
-RUN make deps \
+RUN --mount=type=cache,target="${GOPATH}/pkg",id="go-build-${TARGETARCH}" \
+    --mount=type=cache,target="${HOME}/.cache/go-build",id="go-build-${TARGETARCH}" \
+    make deps GO_CLEAN_DEPS=false \
     && make ngt/install \
     && make helm/install \
     && make helm-docs/install \
@@ -62,7 +66,9 @@ RUN make deps \
     && make kubectl/install
 
 # additional deps
-RUN make k3d/install \
+RUN --mount=type=cache,target="${GOPATH}/pkg",id="go-build-${TARGETARCH}" \
+    --mount=type=cache,target="${HOME}/.cache/go-build",id="go-build-${TARGETARCH}" \
+    make k3d/install \
     && make buf/install \
     && make k9s/install \
     && make minikube/install
