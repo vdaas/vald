@@ -20,9 +20,11 @@ ARG DISTROLESS_IMAGE=gcr.io/distroless/static
 ARG DISTROLESS_IMAGE_TAG=nonroot
 ARG MAINTAINER="vdaas.org vald team <vald@vdaas.org>"
 
-FROM golang:${GO_VERSION} AS golang
+FROM --platform=${BUILDPLATFORM} golang:${GO_VERSION} AS golang
 
-FROM ubuntu:devel AS builder
+FROM --platform=${BUILDPLATFORM} ubuntu:devel AS builder
+
+ARG TARGETARCH
 
 ENV GO111MODULE on
 ENV DEBIAN_FRONTEND noninteractive
@@ -57,7 +59,9 @@ COPY .git .
 COPY go.mod .
 COPY go.sum .
 
-RUN make go/download
+RUN --mount=type=cache,target="${GOPATH}/pkg",id="go-build-${TARGETARCH}" \
+    --mount=type=cache,target="${HOME}/.cache/go-build",id="go-build-${TARGETARCH}" \
+    make go/download
 
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/internal
 COPY internal .
@@ -75,13 +79,15 @@ WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/versions
 COPY versions .
 
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}
-RUN make REPO=${ORG} NAME=${REPO} cmd/${PKG}/${APP_NAME} \
+RUN --mount=type=cache,target="${GOPATH}/pkg",id="go-build-${TARGETARCH}" \
+    --mount=type=cache,target="${HOME}/.cache/go-build",id="go-build-${TARGETARCH}" \
+    make REPO=${ORG} NAME=${REPO} cmd/${PKG}/${APP_NAME} \
     && mv "cmd/${PKG}/${APP_NAME}" "/usr/bin/${APP_NAME}"
 
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/cmd/${PKG}
 RUN cp sample.yaml /tmp/config.yaml
 
-FROM ${DISTROLESS_IMAGE}:${DISTROLESS_IMAGE_TAG}
+FROM --platform=${BUILDPLATFORM} ${DISTROLESS_IMAGE}:${DISTROLESS_IMAGE_TAG}
 LABEL maintainer="${MAINTAINER}"
 
 ENV APP_NAME readreplica-rotate

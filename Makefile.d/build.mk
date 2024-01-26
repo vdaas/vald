@@ -179,6 +179,34 @@ cmd/gateway/filter/filter: \
 		$(dir $@)main.go
 	$@ -version
 
+cmd/gateway/mirror/mirror: \
+	$(GO_SOURCES_INTERNAL) \
+	$(PBGOS) \
+	$(shell find ./cmd/gateway/mirror -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go') \
+	$(shell find ./pkg/gateway/mirror -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
+	CGO_ENABLED=0 \
+	GO111MODULE=on \
+	GOPRIVATE=$(GOPRIVATE) \
+	go build \
+		--ldflags "-w -extldflags=-static \
+		-X '$(GOPKG)/internal/info.Version=$(VERSION)' \
+		-X '$(GOPKG)/internal/info.GitCommit=$(GIT_COMMIT)' \
+		-X '$(GOPKG)/internal/info.BuildTime=$(DATETIME)' \
+		-X '$(GOPKG)/internal/info.GoVersion=$(GO_VERSION)' \
+		-X '$(GOPKG)/internal/info.GoOS=$(GOOS)' \
+		-X '$(GOPKG)/internal/info.GoArch=$(GOARCH)' \
+		-X '$(GOPKG)/internal/info.CGOEnabled=$${CGO_ENABLED}' \
+		-X '$(GOPKG)/internal/info.BuildCPUInfoFlags=$(CPU_INFO_FLAGS)' \
+		-buildid=" \
+		-mod=readonly \
+		-modcacherw \
+		-a \
+		-tags "osusergo netgo static_build" \
+		-trimpath \
+		-o $@ \
+		$(dir $@)main.go
+	$@ -version
+
 cmd/manager/index/index: \
 	$(GO_SOURCES_INTERNAL) \
 	$(PBGOS) \

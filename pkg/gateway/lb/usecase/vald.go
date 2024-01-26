@@ -46,6 +46,37 @@ type run struct {
 	gateway       service.Gateway
 }
 
+func discovererClient(cfg *config.Data, dopts, aopts []grpc.Option, eg errgroup.Group) (discoverer.Client, error) {
+	var discovererOpts []discoverer.Option
+	discovererOpts = append(discovererOpts,
+		discoverer.WithAutoConnect(true),
+		discoverer.WithName(cfg.Gateway.AgentName),
+		discoverer.WithNamespace(cfg.Gateway.AgentNamespace),
+		discoverer.WithPort(cfg.Gateway.AgentPort),
+		discoverer.WithServiceDNSARecord(cfg.Gateway.AgentDNS),
+		discoverer.WithDiscovererClient(grpc.New(dopts...)),
+		discoverer.WithDiscoverDuration(cfg.Gateway.Discoverer.Duration),
+		discoverer.WithOptions(aopts...),
+		discoverer.WithNodeName(cfg.Gateway.NodeName),
+		discoverer.WithReadReplicaReplicas(cfg.Gateway.ReadReplicaReplicas),
+	)
+
+	rrOpts, err := cfg.Gateway.ReadReplicaClient.Client.Opts()
+	if err != nil {
+		return nil, err
+	}
+	// only append when read replica is enabled
+	if rrOpts != nil {
+		rrOpts = append(rrOpts,
+			grpc.WithErrGroup(eg),
+			grpc.WithConnectionPoolSize(int(cfg.Gateway.ReadReplicaReplicas)),
+		)
+		discovererOpts = append(discovererOpts, discoverer.WithReadReplicaClient(grpc.New(rrOpts...)))
+	}
+
+	return discoverer.New(discovererOpts...)
+}
+
 func New(cfg *config.Data) (r runner.Runner, err error) {
 	eg := errgroup.Get()
 
@@ -55,6 +86,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	if err != nil {
 		return nil, err
 	}
+
 	// skipcq: CRT-D0001
 	dopts := append(
 		cOpts,
@@ -68,20 +100,11 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		acOpts,
 		grpc.WithErrGroup(eg))
 
-	client, err := discoverer.New(
-		discoverer.WithAutoConnect(true),
-		discoverer.WithName(cfg.Gateway.AgentName),
-		discoverer.WithNamespace(cfg.Gateway.AgentNamespace),
-		discoverer.WithPort(cfg.Gateway.AgentPort),
-		discoverer.WithServiceDNSARecord(cfg.Gateway.AgentDNS),
-		discoverer.WithDiscovererClient(grpc.New(dopts...)),
-		discoverer.WithDiscoverDuration(cfg.Gateway.Discoverer.Duration),
-		discoverer.WithOptions(aopts...),
-		discoverer.WithNodeName(cfg.Gateway.NodeName),
-	)
+	client, err := discovererClient(cfg, dopts, aopts, eg)
 	if err != nil {
 		return nil, err
 	}
+
 	gateway, err = service.NewGateway(
 		service.WithErrGroup(eg),
 		service.WithDiscoverer(client),
