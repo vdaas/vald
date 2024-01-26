@@ -1657,8 +1657,14 @@ func (n *ngt) GetDimensionSize() int {
 }
 
 func (n *ngt) Close(ctx context.Context) (err error) {
+	defer n.core.Close()
+
 	err = n.kvs.Close()
-	if len(n.path) != 0 && !n.isReadReplica {
+	if len(n.path) != 0 {
+		if n.isReadReplica {
+			log.Info("skip create and save index operation on close because this is read replica")
+			return err
+		}
 		cerr := n.CreateIndex(ctx, n.poolSize)
 		if cerr != nil &&
 			!errors.Is(err, errors.ErrUncommittedIndexNotFound) &&
@@ -1682,8 +1688,7 @@ func (n *ngt) Close(ctx context.Context) (err error) {
 			}
 		}
 	}
-	n.core.Close()
-	return
+	return err
 }
 
 func (n *ngt) BrokenIndexCount() uint64 {
