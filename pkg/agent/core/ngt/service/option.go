@@ -299,3 +299,11 @@ func WithCopyOnWrite(enabled bool) Option {
 		return nil
 	}
 }
+
+// WithIsReadReplica returns the functional option to set the read replica flag.
+func WithIsReadReplica(isReadReplica bool) Option {
+	return func(n *ngt) error {
+		n.isReadReplica = isReadReplica
+		return nil
+	}
+}

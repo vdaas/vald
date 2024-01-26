@@ -129,7 +129,6 @@ type ngt struct {
 	basePath   string       // index base directory for CoW
 	brokenPath string       // backup broken index path
 	cowmu      sync.Mutex   // copy on write move lock
-	backupGen  uint64       // number of backup generation
 
 	poolSize uint32  // default pool size
 	radius   float32 // default radius
@@ -140,6 +139,8 @@ type ngt struct {
 
 	kvsdbConcurrency int // kvsdb concurrency
 	historyLimit     int // the maximum generation number of broken index backup
+
+	isReadReplica bool
 }
 
 const (
@@ -1657,7 +1658,7 @@ func (n *ngt) GetDimensionSize() int {
 
 func (n *ngt) Close(ctx context.Context) (err error) {
 	err = n.kvs.Close()
-	if len(n.path) != 0 {
+	if len(n.path) != 0 && !n.isReadReplica {
 		cerr := n.CreateIndex(ctx, n.poolSize)
 		if cerr != nil &&
 			!errors.Is(err, errors.ErrUncommittedIndexNotFound) &&
