@@ -63,6 +63,7 @@ var defaultConfig = config.NGT{
 		Concurrency: 10,
 	},
 	BrokenIndexHistoryLimit: 1,
+	ErrorBufferLimit:        100,
 }
 
 type index struct {
@@ -919,6 +920,74 @@ func testFoundInBothIvqAndDvq(t *testing.T) {
 	_, _, err = ngt.GetObject("test-uuid")
 	want := errors.ErrObjectIDNotFound("test-uuid")
 	require.Equal(t, err.Error(), want.Error())
+}
+
+func Test_ngt_Close(t *testing.T) {
+	t.Parallel()
+
+	type args struct {
+		cfg  *config.NGT
+		opts []Option
+	}
+	type test struct {
+		name string
+		args args
+		want error
+	}
+
+	setup := func(t *testing.T) string {
+		tmpDir := t.TempDir()
+		testIndexDir := testdata.GetTestdataPath(testdata.ValidIndex)
+		err := file.CopyDir(context.Background(), testIndexDir, tmpDir)
+		require.NoError(t, err)
+
+		return tmpDir
+	}
+
+	tests := []test{
+		func() test {
+			tmpDir := setup(t)
+			return test{
+				name: "Close returns ErrUncommittedIndexNotFound when it is not a read replica and try to Create Index because nothing has committed",
+				args: args{
+					cfg: &defaultConfig,
+					opts: []Option{
+						WithIndexPath(tmpDir),
+						WithIsReadReplica(false),
+					},
+				},
+				want: errors.ErrUncommittedIndexNotFound,
+			}
+		}(),
+		func() test {
+			tmpDir := setup(t)
+			return test{
+				name: "Close successes when it is a read replica because it skips all the Close operations",
+				args: args{
+					cfg: &defaultConfig,
+					opts: []Option{
+						WithIndexPath(tmpDir),
+						WithIsReadReplica(true),
+					},
+				},
+				want: nil,
+			}
+		}(),
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+
+			ngt, err := New(test.args.cfg, test.args.opts...)
+			require.NoError(tt, err)
+
+			err = ngt.Close(context.Background())
+			require.Equal(tt, err, test.want)
+		})
+	}
 }
 
 func Test_ngt_InsertUpsert(t *testing.T) {
