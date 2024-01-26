@@ -45,7 +45,7 @@ metadata:
   {{- end }}
 spec:
   {{- if not $agent.hpa.enabled }}
-  replicas: {{ $readreplica.replica }}
+  replicas: {{ $readreplica.minReplicas }}
   {{- end }}
   revisionHistoryLimit: {{ $agent.revisionHistoryLimit }}
   selector:
