@@ -57,12 +57,9 @@ type subProcess struct {
 }
 
 // New returns Indexer object if no error occurs.
+// replicaID must be a comma separated string of replica id or ${rotateAllID} to rotate all read replica at once.
 func New(replicaID string, opts ...Option) (Rotator, error) {
 	r := new(rotator)
-
-	if replicaID == "" {
-		return nil, fmt.Errorf("readreplica id is empty. it should be set via MY_TARGET_REPLICA_ID env var")
-	}
 
 	for _, opt := range append(defaultOpts, opts...) {
 		if err := opt(r); err != nil {
@@ -81,38 +78,13 @@ func New(replicaID string, opts ...Option) (Rotator, error) {
 		return nil, fmt.Errorf("failed to create kubernetes client: %w", err)
 	}
 
-	if replicaID == rotateAllID {
-		var deploymentList appsv1.DeploymentList
-		selector, err := c.LabelSelector(r.readReplicaLabelKey, client.SelectionOpExists, []string{})
-		if err != nil {
-			return nil, err
-		}
-		c.List(context.Background(), &deploymentList, &client.ListOptions{
-			Namespace:     r.namespace,
-			LabelSelector: selector,
-		})
+	ids, err := r.parseReplicaID(replicaID, c)
+	if err != nil {
+		return nil, err
+	}
 
-		deployments := deploymentList.Items
-		if len(deployments) == 0 {
-			return nil, fmt.Errorf("no read replica found to rotate")
-		}
-
-		var ids []string
-		for i := range deployments {
-			deployment := &deployments[i]
-			ids = append(ids, deployment.Labels[r.readReplicaLabelKey])
-		}
-
-		for _, id := range ids {
-			sub, err := r.newSubprocess(c, id)
-			if err != nil {
-				return nil, fmt.Errorf("failed to create rotator subprocess: %w", err)
-			}
-
-			r.subProcesses = append(r.subProcesses, sub)
-		}
-	} else {
-		sub, err := r.newSubprocess(c, replicaID)
+	for _, id := range ids {
+		sub, err := r.newSubprocess(c, id)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create rotator subprocess: %w", err)
 		}
@@ -317,7 +289,7 @@ func (s *subProcess) getDeployment(ctx context.Context) (*appsv1.Deployment, err
 		return nil, fmt.Errorf("failed to get deployment through client: %w", err)
 	}
 	if len(list.Items) == 0 {
-		return nil, fmt.Errorf("no deployment found")
+		return nil, fmt.Errorf("no deployment found with the label(%s)", s.listOpts.LabelSelector)
 	}
 
 	return &list.Items[0], nil
@@ -430,4 +402,36 @@ func getNewBaseName(old string) string {
 		newNameBase = strings.Join(splits[:len(splits)-1], "")
 	}
 	return newNameBase
+}
+
+func (r *rotator) parseReplicaID(replicaID string, c client.Client) ([]string, error) {
+	if replicaID == "" {
+		return nil, fmt.Errorf("readreplica id is empty. it should be set via MY_TARGET_REPLICA_ID env var")
+	}
+
+	if replicaID == rotateAllID {
+		var deploymentList appsv1.DeploymentList
+		selector, err := c.LabelSelector(r.readReplicaLabelKey, client.SelectionOpExists, []string{})
+		if err != nil {
+			return nil, err
+		}
+		c.List(context.Background(), &deploymentList, &client.ListOptions{
+			Namespace:     r.namespace,
+			LabelSelector: selector,
+		})
+
+		deployments := deploymentList.Items
+		if len(deployments) == 0 {
+			return nil, fmt.Errorf("no read replica found to rotate")
+		}
+
+		var ids []string
+		for i := range deployments {
+			deployment := &deployments[i]
+			ids = append(ids, deployment.Labels[r.readReplicaLabelKey])
+		}
+		return ids, nil
+	}
+
+	return strings.Split(replicaID, ","), nil
 }
