@@ -161,7 +161,6 @@ func (s *server) StreamRemove(stream vald.Remove_StreamRemoveServer) (err error)
 				},
 			}, nil
 		})
-
 	if err != nil {
 		st, msg, err := status.ParseError(err, codes.Internal, "failed to parse StreamRemove gRPC error response")
 		if span != nil {
