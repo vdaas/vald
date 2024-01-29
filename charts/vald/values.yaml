@@ -1125,6 +1125,9 @@ gateway:
         # @schema {"name": "gateway.lb.gateway_config.discoverer.agent_client_options", "alias": "grpc.client"}
         # gateway.lb.gateway_config.discoverer.agent_client_options -- gRPC client options for agents (overrides defaults.grpc.client)
         agent_client_options: {}
+        # @schema {"name": "gateway.lb.gateway_config.discoverer.read_client", "alias": "grpc.client"}
+        # gateway.lb.gateway_config.discoverer.read_client -- gRPC client for discoverer (overrides defaults.grpc.client)
+        read_client: {}
   # @schema {"name": "gateway.filter", "type": "object"}
   filter:
     # @schema {"name": "gateway.filter.enabled", "type": "boolean"}
@@ -2003,9 +2006,20 @@ agent:
     # @schema {"name": "agent.readreplica.snapshot_classname", "type": "string"}
     # agent.readreplica.snapshot_classname -- snapshot class name for snapshotter used for read replica
     snapshot_classname: ""
-    # @schema {"name": "agent.readreplica.replica", "type": "integer"}
-    # agent.readreplica.replica -- replica number of read replica
-    replica: 1
+    # @schema {"name": "agent.readreplica.minReplicas", "type": "integer", "minimum": 1}
+    # agent.readreplica.minReplicas -- minimum number of replicas.
+    # if HPA is disabled, the replicas will be set to this value
+    minReplicas: 1
+    # @schema {"name": "agent.readreplica.maxReplicas", "type": "integer", "minimum": 1}
+    # agent.readreplica.maxReplicas -- maximum number of replicas.
+    # if HPA is disabled, this value will be ignored.
+    maxReplicas: 3
+    # @schema {"name": "agent.readreplica.hpa", "alias": "hpa"}
+    hpa:
+      # agent.readreplica.hpa.enabled -- HPA enabled
+      enabled: false
+      # agent.readreplica.hpa.targetCPUUtilizationPercentage -- HPA CPU utilization percentage
+      targetCPUUtilizationPercentage: 80
     # @schema {"name": "agent.readreplica.service", "type": "object"}
     # agent.readreplica.service -- service settings for read replica service resources
     service:

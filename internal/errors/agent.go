@@ -112,4 +112,7 @@ var (
 
 	// ErrAgentIndexDirectoryRecreationFailed represents an error that the index directory recreation failed during the process of broken index backup.
 	ErrIndexDirectoryRecreationFailed = New("failed to recreate the index directory")
+
+	// ErrWriteOperationToReadReplica represents an error that when a write operation is made to read replica.
+	ErrWriteOperationToReadReplica = New("write operation to read replica is not possible")
 )

@@ -58,7 +58,8 @@ agent:
   readreplica:
     enabled: true
     snapshot_classname: "csi-hostpath-snapclass"
-    replica: 1
+    hpa:
+      enabled: true
 
 discoverer:
   minReplicas: 1

@@ -45,7 +45,7 @@ metadata:
   {{- end }}
 spec:
   {{- if not $agent.hpa.enabled }}
-  replicas: {{ $readreplica.replica }}
+  replicas: {{ $readreplica.minReplicas }}
   {{- end }}
   revisionHistoryLimit: {{ $agent.revisionHistoryLimit }}
   selector:
@@ -110,7 +110,7 @@ spec:
             {{- toYaml $agent.env | nindent 12 }}
           {{- end }}
           volumeMounts:
-            - name: {{ $agent.name }}-config
+            - name: {{ $readreplica.name }}-config
               mountPath: /etc/server/
             {{- if not $agent.ngt.enable_in_memory_mode }}
             {{- if $agent.ngt.index_path }}
@@ -136,10 +136,10 @@ spec:
       {{- end }}
       terminationGracePeriodSeconds: {{ $agent.terminationGracePeriodSeconds }}
       volumes:
-        - name: {{ $agent.name }}-config
+        - name: {{ $readreplica.name }}-config
           configMap:
             defaultMode: 420
-            name: {{ $agent.name }}-config
+            name: {{ $readreplica.name }}-config
         - name: {{ $readreplica.volume_name }}
           persistentVolumeClaim:
             claimName: {{ $readreplica.name }}-pvc-{{ $id }}
