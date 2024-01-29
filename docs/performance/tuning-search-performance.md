@@ -9,7 +9,7 @@ When the search results do NOT satisfy the expected result, it can be improved b
 
 First of all, we recommend tuning by following the steps below without doing it blindly.
 
-<div class="mermaid">
+```mermaid
 flowchart TD
     A[Perform Linear Search API]
     B{Is satisfies?}
@@ -24,7 +24,7 @@ flowchart TD
     E--> C
     E--> F
     F--> E
-</div>
+```
 
 The best practice is:
 
