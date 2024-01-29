@@ -922,6 +922,142 @@ func testFoundInBothIvqAndDvq(t *testing.T) {
 	require.Equal(t, err.Error(), want.Error())
 }
 
+func Test_ngt_CreateIndex(t *testing.T) {
+	t.Parallel()
+
+	type args struct {
+		cfg  *config.NGT
+		opts []Option
+	}
+	type test struct {
+		name string
+		args args
+		want error
+	}
+
+	setup := func(t *testing.T) string {
+		tmpDir := t.TempDir()
+		testIndexDir := testdata.GetTestdataPath(testdata.ValidIndex)
+		err := file.CopyDir(context.Background(), testIndexDir, tmpDir)
+		require.NoError(t, err)
+
+		return tmpDir
+	}
+
+	tests := []test{
+		func() test {
+			tmpDir := setup(t)
+			return test{
+				name: "CreateIndex returns ErrUncommittedIndexNotFound when there is nothing uncommitted",
+				args: args{
+					cfg: &defaultConfig,
+					opts: []Option{
+						WithIndexPath(tmpDir),
+						WithIsReadReplica(false),
+					},
+				},
+				want: errors.ErrUncommittedIndexNotFound,
+			}
+		}(),
+		func() test {
+			tmpDir := setup(t)
+			return test{
+				name: "CreateIndex returns ErrWriteOperationToReadReplica when try to create index to read replica",
+				args: args{
+					cfg: &defaultConfig,
+					opts: []Option{
+						WithIndexPath(tmpDir),
+						WithIsReadReplica(true),
+					},
+				},
+				want: errors.ErrWriteOperationToReadReplica,
+			}
+		}(),
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+
+			ngt, err := New(test.args.cfg, test.args.opts...)
+			require.NoError(tt, err)
+
+			err = ngt.CreateIndex(context.Background(), test.args.cfg.DefaultPoolSize)
+			require.Equal(tt, test.want, err)
+		})
+	}
+}
+
+func Test_ngt_SaveIndex(t *testing.T) {
+	t.Parallel()
+
+	type args struct {
+		cfg  *config.NGT
+		opts []Option
+	}
+	type test struct {
+		name string
+		args args
+		want error
+	}
+
+	setup := func(t *testing.T) string {
+		tmpDir := t.TempDir()
+		testIndexDir := testdata.GetTestdataPath(testdata.ValidIndex)
+		err := file.CopyDir(context.Background(), testIndexDir, tmpDir)
+		require.NoError(t, err)
+
+		return tmpDir
+	}
+
+	tests := []test{
+		func() test {
+			tmpDir := setup(t)
+			return test{
+				name: "CreateIndex successes when there is nothing to save",
+				args: args{
+					cfg: &defaultConfig,
+					opts: []Option{
+						WithIndexPath(tmpDir),
+						WithIsReadReplica(false),
+					},
+				},
+				want: nil,
+			}
+		}(),
+		func() test {
+			tmpDir := setup(t)
+			return test{
+				name: "SaveIndex returns ErrWriteOperationToReadReplica when try to save index to read replica",
+				args: args{
+					cfg: &defaultConfig,
+					opts: []Option{
+						WithIndexPath(tmpDir),
+						WithIsReadReplica(true),
+					},
+				},
+				want: errors.ErrWriteOperationToReadReplica,
+			}
+		}(),
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+
+			ngt, err := New(test.args.cfg, test.args.opts...)
+			require.NoError(tt, err)
+
+			err = ngt.SaveIndex(context.Background())
+			require.Equal(tt, test.want, err)
+		})
+	}
+}
+
 func Test_ngt_Close(t *testing.T) {
 	t.Parallel()
 
@@ -985,7 +1121,7 @@ func Test_ngt_Close(t *testing.T) {
 			require.NoError(tt, err)
 
 			err = ngt.Close(context.Background())
-			require.Equal(tt, err, test.want)
+			require.Equal(tt, test.want, err)
 		})
 	}
 }

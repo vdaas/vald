@@ -1102,6 +1102,11 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 			span.End()
 		}
 	}()
+
+	if n.isReadReplica {
+		return errors.ErrWriteOperationToReadReplica
+	}
+
 	ic := n.vq.IVQLen() + n.vq.DVQLen()
 	if ic == 0 {
 		return errors.ErrUncommittedIndexNotFound
@@ -1271,6 +1276,11 @@ func (n *ngt) SaveIndex(ctx context.Context) (err error) {
 }
 
 func (n *ngt) saveIndex(ctx context.Context) (err error) {
+	// Skip it here in case this private function is called directly from someone
+	if n.isReadReplica {
+		return errors.ErrWriteOperationToReadReplica
+	}
+
 	nocie := atomic.LoadUint64(&n.nocie)
 	if atomic.LoadUint64(&n.lastNocie) == nocie {
 		return
