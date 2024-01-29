@@ -91,6 +91,28 @@ define run-e2e-crud-test
 	    -kubeconfig=$(KUBECONFIG)
 endef
 
+define run-e2e-crud-faiss-test
+	go test \
+	    -race \
+	    -mod=readonly \
+	    $1 \
+	    -v $(ROOTDIR)/tests/e2e/crud/crud_faiss_test.go \
+	    -tags "e2e" \
+	    -timeout $(E2E_TIMEOUT) \
+	    -host=$(E2E_BIND_HOST) \
+	    -port=$(E2E_BIND_PORT) \
+	    -dataset=$(ROOTDIR)/hack/benchmark/assets/dataset/$(E2E_DATASET_NAME).hdf5 \
+	    -insert-num=$(E2E_INSERT_COUNT) \
+	    -search-num=$(E2E_SEARCH_COUNT) \
+	    -update-num=$(E2E_UPDATE_COUNT) \
+	    -remove-num=$(E2E_REMOVE_COUNT) \
+	    -wait-after-insert=$(E2E_WAIT_FOR_CREATE_INDEX_DURATION) \
+	    -portforward=$(E2E_PORTFORWARD_ENABLED) \
+	    -portforward-pod-name=$(E2E_TARGET_POD_NAME) \
+	    -portforward-pod-port=$(E2E_TARGET_PORT) \
+	    -namespace=$(E2E_TARGET_NAMESPACE)
+endef
+
 define run-e2e-multi-crud-test
 	GOPRIVATE=$(GOPRIVATE) \
 	go test \
@@ -208,10 +230,11 @@ define gen-go-option-test-sources
 endef
 
 define gen-vald-crd
-	mv charts/$1/crds/$2.yaml $(TEMP_DIR)/$2.yaml
+	@[ -f $(ROOTDIR)/charts/$1/crds/$2.yaml ] \
+		&& mv $(ROOTDIR)/charts/$1/crds/$2.yaml $(TEMP_DIR)/$2.yaml || true
 	GOPRIVATE=$(GOPRIVATE) \
-	go run -mod=readonly hack/helm/schema/crd/main.go \
-	charts/$1/$3.yaml > $(TEMP_DIR)/$2-spec.yaml
+		  go run -mod=readonly $(ROOTDIR)/hack/helm/schema/crd/main.go \
+	$(ROOTDIR)/charts/$3.yaml > $(TEMP_DIR)/$2-spec.yaml
 	$(BINDIR)/yq eval-all 'select(fileIndex==0).spec.versions[0].schema.openAPIV3Schema.properties.spec = select(fileIndex==1).spec | select(fileIndex==0)' \
-	$(TEMP_DIR)/$2.yaml $(TEMP_DIR)/$2-spec.yaml > charts/$1/crds/$2.yaml
+	$(TEMP_DIR)/$2.yaml $(TEMP_DIR)/$2-spec.yaml > $(ROOTDIR)/charts/$1/crds/$2.yaml
 endef
