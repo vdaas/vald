@@ -120,6 +120,8 @@ jobs:
           make deps/install
           make format
           git checkout go.mod go.sum
+          git status
+          git diff
 
       - name: Check format difference
         run: |
