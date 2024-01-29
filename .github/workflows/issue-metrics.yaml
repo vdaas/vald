@@ -1,0 +1,48 @@
+name: Monthly review time metrics
+on:
+  workflow_dispatch:
+    inputs:
+      time_window:
+        required: false
+        description: 'Time window for the issue metrics report. e.g. 2021-01-01..2021-01-31. If not set, the previous month will be calculated.'
+        type: string
+  schedule:
+    - cron: '3 2 1 * *'
+permissions:
+  issues: write
+  pull-requests: read
+jobs:
+  build:
+    name: review time metrics
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get dates for last month
+        shell: bash
+        run: |
+          # If TIME_WINDOW is set, use it as last_month
+          if [ -n "$TIME_WINDOW" ]; then
+          echo "last_month=$TIME_WINDOW" >> "$GITHUB_ENV"
+          else
+          # Calculate the first day of the previous month
+          first_day=$(date -d "last month" +%Y-%m-01)
+
+          # Calculate the last day of the previous month
+          last_day=$(date -d "$first_day +1 month -1 day" +%Y-%m-%d)
+
+          # Set an environment variable with the date range
+          echo "last_month=$first_day..$last_day" >> "$GITHUB_ENV"
+          fi
+        env:
+          TIME_WINDOW: ${{ github.event.inputs.time_window }}
+      - name: Run issue-metrics tool
+        uses: github/issue-metrics@v2
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SEARCH_QUERY: 'repo:vdaas/vald is:pr created:${{ env.last_month }}'
+          HIDE_TIME_TO_ANSWER: true
+      - name: Create issue
+        uses: peter-evans/create-issue-from-file@v4
+        with:
+          title: "Monthly review time metrics report: ${{ env.last_month }}"
+          token: ${{ secrets.GITHUB_TOKEN }}
+          content-filepath: ./issue_metrics.md
