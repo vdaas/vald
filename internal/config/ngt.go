@@ -94,6 +94,9 @@ type NGT struct {
 
 	// ErrorBufferLimit represents the maximum number of core ngt error buffer pool size limit
 	ErrorBufferLimit uint64 `yaml:"error_buffer_limit" json:"error_buffer_limit,omitempty"`
+
+	// IsReadReplica represents whether the ngt is read replica or not
+	IsReadReplica bool `yaml:"is_readreplica" json:"is_readreplica"`
 }
 
 // KVSDB represent the ngt vector bidirectional kv store configuration
