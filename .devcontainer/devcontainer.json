@@ -19,11 +19,11 @@
   // To access grafana
   "appPort": "3000:3000",
 
+  // define named volume to store zsh history file
+  "mounts": ["source=zshhistory-named-volume,target=/commandhistory,type=volume"],
+
   // Persist zsh history settings below
   // overwrite HISTFILE to store history file in the named volume defined below
   // also setting INC_APPEND_HISTORY to immediately flush command history to the file to keep history when rebuilding the devcontainer
-  "postStartCommand": "echo 'export HISTFILE=/commandhistory/.zsh_history' >> /root/.zshrc && echo 'setopt INC_APPEND_HISTORY' >> /root/.zshrc",
-  // define named volume to store zsh history file
-  "mounts": ["source=zshhistory-named-volume,target=/commandhistory,type=volume"],
-  "postAttachCommand": "mkdir -p /etc/server && ln -s $(pwd)/cmd/agent/core/ngt/sample.yaml /etc/server/config.yaml"
+  "postAttachCommand": ["/bin/bash", ".devcontainer/postAttachCommand.sh"]
 }
