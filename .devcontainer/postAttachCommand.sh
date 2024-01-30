@@ -1,6 +1,9 @@
 #!/bin/bash -eu
 #
 # This script is executed as postAttachCommand in devcontainer.json
+# This script does...
+# - create symbolic link of config.yaml for easier development
+# - add command history setting to .zshrc to persist history
 #
 
 echo "creating symbolic link of config ZSHRC..."

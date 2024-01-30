@@ -22,8 +22,5 @@
   // define named volume to store zsh history file
   "mounts": ["source=zshhistory-named-volume,target=/commandhistory,type=volume"],
 
-  // Persist zsh history settings below
-  // overwrite HISTFILE to store history file in the named volume defined below
-  // also setting INC_APPEND_HISTORY to immediately flush command history to the file to keep history when rebuilding the devcontainer
   "postAttachCommand": ["/bin/bash", ".devcontainer/postAttachCommand.sh"]
 }
