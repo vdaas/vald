@@ -24,7 +24,6 @@ on:
   pull_request:
     types:
       - "labeled"
-
 jobs:
   dump-contexts-to-log:
     if: startsWith( github.ref, 'refs/tags/') || github.event.action == 'labeled' && github.event.label.name == 'actions/e2e-max-dim'
@@ -32,24 +31,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/dump-context
-
   e2e-max-dimension-insert:
     name: "E2E test (Max Dimension Insert: skip strict exist check)"
     needs: [dump-contexts-to-log]
     runs-on: ubuntu-latest
     timeout-minutes: 60
-
     steps:
       - uses: actions/checkout@v4
-
       - name: Set Git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
-
       - name: Setup E2E environment
         id: setup_e2e
         uses: ./.github/actions/setup-e2e
-
       - name: Run E2E MaxDimension
         run: |
           go get github.com/vdaas/vald-client-go/v1/payload
@@ -100,7 +94,7 @@ jobs:
             rm ${FILEPATH}
 
             echo "removing cluster"
-            make k8s/vald/delete VERSION="nightly" HELM_VALUES=${VALUES} HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIOINS}"
+            make k8s/vald/delete VERSION=${DEFAULT_IMAGE_TAG} HELM_VALUES=${VALUES} HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIOINS}"
           done
           echo "MAX_BIT=${BIT}" >> $GITHUB_OUTPUT
           echo "MAX_BIT=${BIT}"
@@ -110,7 +104,6 @@ jobs:
           WAIT_FOR_TIMEOUT: 29m
           VALUES: .github/helm/values/values-max-dim.yaml
         timeout-minutes: 60
-
   slack-notification:
     name: "Slack notification"
     needs: [e2e-max-dimension-insert]
@@ -118,7 +111,6 @@ jobs:
     if: startsWith( github.ref, 'refs/tags/')
     steps:
       - uses: actions/checkout@v4
-
       - uses: ./.github/actions/notify-slack
         with:
           author_name: "E2E max dim test"

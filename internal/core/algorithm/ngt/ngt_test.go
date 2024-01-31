@@ -1382,7 +1382,7 @@ func Test_ngt_Search(t *testing.T) {
 		poolSize            uint32
 	}
 	type want struct {
-		want []SearchResult
+		want []algorithm.SearchResult
 		err  error
 	}
 	type test struct {
@@ -1391,7 +1391,7 @@ func Test_ngt_Search(t *testing.T) {
 		fields     fields
 		createFunc func(t *testing.T, fields fields) (NGT, error)
 		want       want
-		checkFunc  func(want, []SearchResult, NGT, error) error
+		checkFunc  func(want, []algorithm.SearchResult, NGT, error) error
 		beforeFunc func(args)
 		afterFunc  func(*testing.T, NGT) error
 	}
@@ -1409,7 +1409,7 @@ func Test_ngt_Search(t *testing.T) {
 			WithDimension(fields.dimension),
 		)
 	}
-	defaultCheckFunc := func(w want, got []SearchResult, n NGT, err error) error {
+	defaultCheckFunc := func(w want, got []algorithm.SearchResult, n NGT, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
@@ -1461,7 +1461,7 @@ func Test_ngt_Search(t *testing.T) {
 				return insertCreateFunc(t, fields, [][]float32{vec}, 1)
 			},
 			want: want{
-				want: []SearchResult{
+				want: []algorithm.SearchResult{
 					{ID: uint32(1), Distance: 0},
 				},
 			},
@@ -1489,7 +1489,7 @@ func Test_ngt_Search(t *testing.T) {
 				return insertCreateFunc(t, fields, [][]float32{iv}, 1)
 			},
 			want: want{
-				want: []SearchResult{
+				want: []algorithm.SearchResult{
 					{ID: uint32(1), Distance: 1},
 				},
 			},
@@ -1521,7 +1521,7 @@ func Test_ngt_Search(t *testing.T) {
 				return insertCreateFunc(t, fields, ivs, 1)
 			},
 			want: want{
-				want: []SearchResult{
+				want: []algorithm.SearchResult{
 					{ID: uint32(1), Distance: 3},
 					{ID: uint32(2), Distance: 3},
 					{ID: uint32(3), Distance: 3},
@@ -1562,7 +1562,7 @@ func Test_ngt_Search(t *testing.T) {
 				return insertCreateFunc(t, fields, ivs, 1)
 			},
 			want: want{
-				want: []SearchResult{
+				want: []algorithm.SearchResult{
 					{ID: uint32(1), Distance: 3},
 					{ID: uint32(2), Distance: 3},
 					{ID: uint32(3), Distance: 3},
@@ -1603,7 +1603,7 @@ func Test_ngt_Search(t *testing.T) {
 				return insertCreateFunc(t, fields, ivs, 1)
 			},
 			want: want{
-				want: []SearchResult{
+				want: []algorithm.SearchResult{
 					{ID: uint32(9), Distance: 0},
 					{ID: uint32(10), Distance: 0},
 					{ID: uint32(7), Distance: 3},
@@ -1638,7 +1638,7 @@ func Test_ngt_Search(t *testing.T) {
 				return insertCreateFunc(t, fields, [][]float32{vec}, 1)
 			},
 			want: want{
-				want: []SearchResult{
+				want: []algorithm.SearchResult{
 					{ID: uint32(1), Distance: 0},
 				},
 			},
@@ -1666,7 +1666,7 @@ func Test_ngt_Search(t *testing.T) {
 				return insertCreateFunc(t, fields, [][]float32{iv}, 1)
 			},
 			want: want{
-				want: []SearchResult{
+				want: []algorithm.SearchResult{
 					{ID: uint32(1), Distance: 1},
 				},
 			},
@@ -1698,7 +1698,7 @@ func Test_ngt_Search(t *testing.T) {
 				return insertCreateFunc(t, fields, ivs, 1)
 			},
 			want: want{
-				want: []SearchResult{
+				want: []algorithm.SearchResult{
 					{ID: uint32(1), Distance: 3},
 					{ID: uint32(2), Distance: 3},
 				},
@@ -1738,7 +1738,7 @@ func Test_ngt_Search(t *testing.T) {
 				return insertCreateFunc(t, fields, ivs, 1)
 			},
 			want: want{
-				want: []SearchResult{
+				want: []algorithm.SearchResult{
 					{ID: uint32(2), Distance: 0},
 					{ID: uint32(1), Distance: 3},
 					{ID: uint32(3), Distance: 3},
@@ -1779,7 +1779,7 @@ func Test_ngt_Search(t *testing.T) {
 				return insertCreateFunc(t, fields, ivs, 1)
 			},
 			want: want{
-				want: []SearchResult{
+				want: []algorithm.SearchResult{
 					{ID: uint32(2), Distance: 0},
 					{ID: uint32(1), Distance: 3},
 					{ID: uint32(3), Distance: 3},

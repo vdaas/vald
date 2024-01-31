@@ -122,7 +122,6 @@ linters:
     # - whitespace
     # - wrapcheck
     # - wslissues:
-    # - zerologlint
   exclude-use-default: false
   exclude-rules:
     - path: _test\.go

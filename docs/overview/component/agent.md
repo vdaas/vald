@@ -78,6 +78,56 @@ This image shows the mechanism to create NGT index.
 
 Please refer to [Go Doc](https://pkg.go.dev/github.com/vdaas/vald@v1.3.1/pkg/agent/core/ngt/service) for other functions.
 
+#### Vald Agent Faiss
+
+Vald Agent Faiss uses [Faiss](https://github.com/facebookresearch/faiss) as an algorithm.
+
+The main functions are the followings:
+
+- Insert
+  - Request to insert new vectors into the Faiss.
+  - Requested vectors are stored in the `vqueue`.
+  - Cache a fixed number of verctors for Faiss training.
+  - Once Faiss trained in CreateIndex, the vector is never cached for Faiss training.
+- Search
+  - Get the nearest neighbor vectors of the request vector from Faiss indexes.
+  - radius/epsilon is search config for NGT and has no meaning in Faiss.
+- Update
+  - Create a request to update the specific vectors to the new vectors.
+  - Requested vectors are stored in the `vqueue`.
+- Remove
+  - Create a request to remove the specific vectors from Faiss indexes.
+  - Requested vectors are stored in the `vqueue`.
+- Exist
+  - Check whether the specific vectors are already inserted or not.
+- CreateIndex
+  - Create a new Faiss index structure in memory using vectors stored in the `vqueue` and the existing Faiss index structure if it exists.
+  - If a certain number of vectors required for Faiss training are not cached, they will not be trained.
+  - If Faiss is not trained, no index is generated.
+- SaveIndex
+  - Save metadata about Faiss index information to the internal storage.
+
+Unimplemented functions are the followings:
+
+- GetObject
+- SearchByID
+- StreamXXX
+- MultiXXX
+
+<div class="notice">
+Same as Agent NGT, You have to control the duration of CreateIndex and SaveIndex by configuration.
+
+These methods don’t always run when getting the request.
+
+</div>
+
+<div class="warning">
+As you see, Vald Agent Faiss can only search the nearest neighbors from the Faiss index.
+
+You have to wait to complete the CreateIndex and SaveIndex functions before searching.
+
+</div>
+
 ### Sidecar
 
 `Sidecar` saves the index metadata file to external storage like Amazon S3 or Google Cloud Storage.
