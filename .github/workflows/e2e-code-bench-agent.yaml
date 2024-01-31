@@ -77,7 +77,7 @@ jobs:
           DATASET_ARGS=${{ env.DATASET_ARGS }} make bench/agent/sequential/grpc
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: agent-sequential-grpc
           path: |
@@ -109,7 +109,7 @@ jobs:
           DATASET_ARGS=${{ env.DATASET_ARGS }} make bench/agent/stream
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: agent-stream
           path: |

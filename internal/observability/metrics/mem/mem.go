@@ -24,10 +24,8 @@ import (
 
 	"github.com/vdaas/vald/internal/conv"
 	"github.com/vdaas/vald/internal/observability/metrics"
-	"go.opentelemetry.io/otel/metric/instrument/asyncint64"
-	"go.opentelemetry.io/otel/metric/unit"
-	"go.opentelemetry.io/otel/sdk/metric/aggregation"
-	"go.opentelemetry.io/otel/sdk/metric/view"
+	api "go.opentelemetry.io/otel/metric"
+	view "go.opentelemetry.io/otel/sdk/metric"
 )
 
 const (
@@ -156,7 +154,7 @@ const (
 type metricsInfo struct {
 	Name  string
 	Desc  string
-	Unit  metrics.Unit
+	Unit  string
 	Value func() int64
 }
 
@@ -404,7 +402,7 @@ func getProcStatusMetrics(pid int) ([]*metricsInfo, error) {
 				m = append(m, &metricsInfo{
 					Name: vmpeakMetricsName,
 					Desc: vmpeakMetricsDescription,
-					Unit: unit.Bytes,
+					Unit: metrics.Bytes,
 					Value: func() int64 {
 						return f * k
 					},
@@ -416,7 +414,7 @@ func getProcStatusMetrics(pid int) ([]*metricsInfo, error) {
 				m = append(m, &metricsInfo{
 					Name: vmsizeMetricsName,
 					Desc: vmsizeMetricsDescription,
-					Unit: unit.Bytes,
+					Unit: metrics.Bytes,
 					Value: func() int64 {
 						return f * k
 					},
@@ -428,7 +426,7 @@ func getProcStatusMetrics(pid int) ([]*metricsInfo, error) {
 				m = append(m, &metricsInfo{
 					Name: vmhwmMetricsName,
 					Desc: vmhwmMetricsDescription,
-					Unit: unit.Bytes,
+					Unit: metrics.Bytes,
 					Value: func() int64 {
 						return f * k
 					},
@@ -440,7 +438,7 @@ func getProcStatusMetrics(pid int) ([]*metricsInfo, error) {
 				m = append(m, &metricsInfo{
 					Name: vmrssMetricsName,
 					Desc: vmrssMetricsDescription,
-					Unit: unit.Bytes,
+					Unit: metrics.Bytes,
 					Value: func() int64 {
 						return f * k
 					},
@@ -452,7 +450,7 @@ func getProcStatusMetrics(pid int) ([]*metricsInfo, error) {
 				m = append(m, &metricsInfo{
 					Name: vmdataMetricsName,
 					Desc: vmdataMetricsDescription,
-					Unit: unit.Bytes,
+					Unit: metrics.Bytes,
 					Value: func() int64 {
 						return f * k
 					},
@@ -464,7 +462,7 @@ func getProcStatusMetrics(pid int) ([]*metricsInfo, error) {
 				m = append(m, &metricsInfo{
 					Name: vmstkMetricsName,
 					Desc: vmstkMetricsDescription,
-					Unit: unit.Bytes,
+					Unit: metrics.Bytes,
 					Value: func() int64 {
 						return f * k
 					},
@@ -476,7 +474,7 @@ func getProcStatusMetrics(pid int) ([]*metricsInfo, error) {
 				m = append(m, &metricsInfo{
 					Name: vmexeMetricsName,
 					Desc: vmexeMetricsDescription,
-					Unit: unit.Bytes,
+					Unit: metrics.Bytes,
 					Value: func() int64 {
 						return f * k
 					},
@@ -488,7 +486,7 @@ func getProcStatusMetrics(pid int) ([]*metricsInfo, error) {
 				m = append(m, &metricsInfo{
 					Name: vmlckMetricsName,
 					Desc: vmlckMetricsDescription,
-					Unit: unit.Bytes,
+					Unit: metrics.Bytes,
 					Value: func() int64 {
 						return f * k
 					},
@@ -500,7 +498,7 @@ func getProcStatusMetrics(pid int) ([]*metricsInfo, error) {
 				m = append(m, &metricsInfo{
 					Name: vmlibMetricsName,
 					Desc: vmlibMetricsDescription,
-					Unit: unit.Bytes,
+					Unit: metrics.Bytes,
 					Value: func() int64 {
 						return f * k
 					},
@@ -512,7 +510,7 @@ func getProcStatusMetrics(pid int) ([]*metricsInfo, error) {
 				m = append(m, &metricsInfo{
 					Name: vmpteMetricsName,
 					Desc: vmpteMetricsDescription,
-					Unit: unit.Bytes,
+					Unit: metrics.Bytes,
 					Value: func() int64 {
 						return f * k
 					},
@@ -524,7 +522,7 @@ func getProcStatusMetrics(pid int) ([]*metricsInfo, error) {
 				m = append(m, &metricsInfo{
 					Name: vmswapMetricsName,
 					Desc: vmswapMetricsDescription,
-					Unit: unit.Bytes,
+					Unit: metrics.Bytes,
 					Value: func() int64 {
 						return f * k
 					},
@@ -536,7 +534,7 @@ func getProcStatusMetrics(pid int) ([]*metricsInfo, error) {
 				m = append(m, &metricsInfo{
 					Name: vmpinMetricsName,
 					Desc: vmpinMetricsDescription,
-					Unit: unit.Bytes,
+					Unit: metrics.Bytes,
 					Value: func() int64 {
 						return f * k
 					},
@@ -557,23 +555,23 @@ func New() metrics.Metric {
 	}
 }
 
-func (mm *memMetrics) View() ([]*metrics.View, error) {
+func (mm *memMetrics) View() ([]metrics.View, error) {
 	mInfo := getMemstatsMetrics()
 	if m, err := getProcStatusMetrics(mm.pid); err == nil {
 		mInfo = append(mInfo, m...)
 	}
 
-	views := make([]*metrics.View, 0, len(mInfo))
+	views := make([]metrics.View, 0, len(mInfo))
 	for _, m := range mInfo {
-		v, err := view.New(
-			view.MatchInstrumentName(m.Name),
-			view.WithSetDescription(m.Desc),
-			view.WithSetAggregation(aggregation.LastValue{}),
-		)
-		if err != nil {
-			return nil, err
-		}
-		views = append(views, &v)
+		views = append(views, view.NewView(
+			view.Instrument{
+				Name:        m.Name,
+				Description: m.Desc,
+			},
+			view.Stream{
+				Aggregation: view.AggregationLastValue{},
+			},
+		))
 	}
 	return views, nil
 }
@@ -584,33 +582,34 @@ func (mm *memMetrics) Register(m metrics.Meter) error {
 		mInfo = append(mInfo, metrics...)
 	}
 
-	instruments := make([]metrics.AsynchronousInstrument, 0, len(mInfo))
+	instruments := make([]api.Int64Observable, 0, len(mInfo))
 	for _, info := range mInfo {
-		instrument, err := m.AsyncInt64().Gauge(
+		instrument, err := m.Int64ObservableGauge(
 			info.Name,
 			metrics.WithDescription(info.Desc),
 			metrics.WithUnit(info.Unit),
 		)
-		if err != nil {
-			return err
+		if err == nil {
+			instruments = append(instruments, instrument)
 		}
-		instruments = append(instruments, instrument)
 	}
-
-	return m.RegisterCallback(
-		instruments,
-		func(ctx context.Context) {
+	oinsts := make([]api.Observable, 0, len(instruments))
+	for _, instrument := range instruments {
+		oinsts = append(oinsts, instrument)
+	}
+	_, err := m.RegisterCallback(
+		func(_ context.Context, o api.Observer) error {
 			metrics := getMemstatsMetrics()
 			if m, err := getProcStatusMetrics(mm.pid); err == nil {
 				metrics = append(metrics, m...)
 			}
 
 			for i, instrument := range instruments {
-				g, ok := instrument.(asyncint64.Gauge)
-				if ok {
-					g.Observe(ctx, metrics[i].Value())
-				}
+				o.ObserveInt64(instrument, metrics[i].Value())
 			}
+			return nil
 		},
+		oinsts...,
 	)
+	return err
 }

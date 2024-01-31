@@ -539,7 +539,6 @@ func (s *server) StreamSearch(stream vald.Search_StreamSearchServer) (err error)
 				},
 			}, nil
 		})
-
 	if err != nil {
 		st, msg, err := status.ParseError(err, codes.Internal,
 			"failed to parse "+vald.StreamSearchRPCName+" gRPC error response")
@@ -588,7 +587,6 @@ func (s *server) StreamSearchByID(stream vald.Search_StreamSearchByIDServer) (er
 				},
 			}, nil
 		})
-
 	if err != nil {
 		st, msg, err := status.ParseError(err, codes.Internal,
 			"failed to parse "+vald.StreamSearchByIDRPCName+" gRPC error response")
@@ -989,7 +987,6 @@ func (s *server) StreamLinearSearch(stream vald.Search_StreamLinearSearchServer)
 				},
 			}, nil
 		})
-
 	if err != nil {
 		st, msg, err := status.ParseError(err, codes.Internal,
 			"failed to parse "+vald.StreamLinearSearchRPCName+" gRPC error response")
@@ -1041,7 +1038,6 @@ func (s *server) StreamLinearSearchByID(stream vald.Search_StreamLinearSearchByI
 				},
 			}, nil
 		})
-
 	if err != nil {
 		st, msg, err := status.ParseError(err, codes.Internal,
 			"failed to parse "+vald.StreamLinearSearchByIDRPCName+" gRPC error response")
@@ -1460,7 +1456,6 @@ func (s *server) StreamInsert(stream vald.Insert_StreamInsertServer) (err error)
 				},
 			}, nil
 		})
-
 	if err != nil {
 		st, msg, err := status.ParseError(err, codes.Internal, "failed to parse "+vald.StreamInsertRPCName+" gRPC error response")
 		if span != nil {
@@ -1997,7 +1992,6 @@ func (s *server) StreamUpdate(stream vald.Update_StreamUpdateServer) (err error)
 				},
 			}, nil
 		})
-
 	if err != nil {
 		st, msg, err := status.ParseError(err, codes.Internal, "failed to parse "+vald.StreamUpdateRPCName+" gRPC error response")
 		if span != nil {
@@ -2346,7 +2340,6 @@ func (s *server) StreamUpsert(stream vald.Upsert_StreamUpsertServer) (err error)
 				},
 			}, nil
 		})
-
 	if err != nil {
 		st, msg, err := status.ParseError(err, codes.Internal, "failed to parse "+vald.StreamUpsertRPCName+" gRPC error response")
 		if span != nil {
@@ -2650,7 +2643,6 @@ func (s *server) StreamRemove(stream vald.Remove_StreamRemoveServer) (err error)
 				},
 			}, nil
 		})
-
 	if err != nil {
 		st, msg, err := status.ParseError(err, codes.Internal, "failed to parse "+vald.StreamRemoveRPCName+" gRPC error response")
 		if span != nil {
@@ -3117,7 +3109,6 @@ func (s *server) StreamGetObject(stream vald.Object_StreamGetObjectServer) (err 
 				},
 			}, nil
 		})
-
 	if err != nil {
 		st, msg, err := status.ParseError(err, codes.Internal, "failed to parse "+vald.StreamGetObjectRPCName+" gRPC error response")
 		if span != nil {

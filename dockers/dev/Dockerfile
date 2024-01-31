@@ -51,12 +51,14 @@ COPY Makefile .
 COPY Makefile.d Makefile.d
 COPY versions versions
 COPY hack/go.mod.default hack/go.mod.default
+COPY example/client/go.mod.default example/client/go.mod.default
 
 # basic deps
 RUN --mount=type=cache,target="${GOPATH}/pkg",id="go-build-${TARGETARCH}" \
     --mount=type=cache,target="${HOME}/.cache/go-build",id="go-build-${TARGETARCH}" \
     make deps GO_CLEAN_DEPS=false \
     && make ngt/install \
+    && make faiss/install \
     && make helm/install \
     && make helm-docs/install \
     && make valdcli/install \
