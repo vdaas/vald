@@ -307,7 +307,8 @@ func readAndRewrite(path string) error {
 		for sc.Scan() {
 			line := sc.Text()
 			if filepath.Ext(path) == ".go" && strings.HasPrefix(line, "//go:") ||
-				filepath.Ext(path) == ".py" && strings.HasPrefix(line, "# -*-") {
+				filepath.Ext(path) == ".py" && strings.HasPrefix(line, "# -*-") ||
+				filepath.Ext(path) == ".sh" && strings.HasPrefix(line, "#!") {
 				bf = true
 				_, err = buf.WriteString(line)
 				if err != nil {

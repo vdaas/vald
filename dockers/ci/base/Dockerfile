@@ -23,6 +23,8 @@ FROM --platform=${BUILDPLATFORM} golang:${GO_VERSION} AS golang
 FROM --platform=${BUILDPLATFORM} ubuntu:devel AS builder
 LABEL maintainer="${MAINTAINER}"
 
+ARG TARGETARCH
+
 ENV GO111MODULE on
 ENV DEBIAN_FRONTEND noninteractive
 ENV INITRD No
@@ -71,9 +73,13 @@ COPY apis/proto apis/proto
 COPY versions versions
 COPY hack/go.mod.default hack/go.mod.default
 
-RUN make deps ROOTDIR=$ROOTDIR
+RUN --mount=type=cache,target="${GOPATH}/pkg",id="go-build-${TARGETARCH}" \
+    --mount=type=cache,target="${HOME}/.cache/go-build",id="go-build-${TARGETARCH}" \
+    make deps ROOTDIR=$ROOTDIR GO_CLEAN_DEPS=false
 
-RUN make ngt/install \
+RUN --mount=type=cache,target="${GOPATH}/pkg",id="go-build-${TARGETARCH}" \
+    --mount=type=cache,target="${HOME}/.cache/go-build",id="go-build-${TARGETARCH}" \
+    make ngt/install \
     && make helm/install \
     && make helm-docs/install \
     && make kind/install \

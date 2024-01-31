@@ -129,7 +129,6 @@ type ngt struct {
 	basePath   string       // index base directory for CoW
 	brokenPath string       // backup broken index path
 	cowmu      sync.Mutex   // copy on write move lock
-	backupGen  uint64       // number of backup generation
 
 	poolSize uint32  // default pool size
 	radius   float32 // default radius
@@ -140,6 +139,8 @@ type ngt struct {
 
 	kvsdbConcurrency int // kvsdb concurrency
 	historyLimit     int // the maximum generation number of broken index backup
+
+	isReadReplica bool
 }
 
 const (
@@ -1101,6 +1102,11 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 			span.End()
 		}
 	}()
+
+	if n.isReadReplica {
+		return errors.ErrWriteOperationToReadReplica
+	}
+
 	ic := n.vq.IVQLen() + n.vq.DVQLen()
 	if ic == 0 {
 		return errors.ErrUncommittedIndexNotFound
@@ -1270,6 +1276,11 @@ func (n *ngt) SaveIndex(ctx context.Context) (err error) {
 }
 
 func (n *ngt) saveIndex(ctx context.Context) (err error) {
+	// Skip it here in case this private function is called directly from someone
+	if n.isReadReplica {
+		return errors.ErrWriteOperationToReadReplica
+	}
+
 	nocie := atomic.LoadUint64(&n.nocie)
 	if atomic.LoadUint64(&n.lastNocie) == nocie {
 		return
@@ -1656,8 +1667,14 @@ func (n *ngt) GetDimensionSize() int {
 }
 
 func (n *ngt) Close(ctx context.Context) (err error) {
+	defer n.core.Close()
+
 	err = n.kvs.Close()
 	if len(n.path) != 0 {
+		if n.isReadReplica {
+			log.Info("skip create and save index operation on close because this is read replica")
+			return err
+		}
 		cerr := n.CreateIndex(ctx, n.poolSize)
 		if cerr != nil &&
 			!errors.Is(err, errors.ErrUncommittedIndexNotFound) &&
@@ -1681,8 +1698,7 @@ func (n *ngt) Close(ctx context.Context) (err error) {
 			}
 		}
 	}
-	n.core.Close()
-	return
+	return err
 }
 
 func (n *ngt) BrokenIndexCount() uint64 {
