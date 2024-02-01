@@ -31,6 +31,7 @@ jobs:
     needs: [detect-ci-container]
     container:
       image: ghcr.io/vdaas/vald/vald-ci-container:pr-2298
+      options: "--network=host"
       # volumes:
       #   - /var/run/docker.sock:/var/run/docker.sock
       # ports:
