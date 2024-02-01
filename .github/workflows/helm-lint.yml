@@ -31,7 +31,7 @@ jobs:
     needs: [detect-ci-container]
     container:
       image: ghcr.io/vdaas/vald/vald-ci-container:pr-2298
-      options: "--net host"
+      # options: "--net host"
       # volumes:
       #   - /var/run/docker.sock:/var/run/docker.sock
       # ports:
@@ -45,11 +45,16 @@ jobs:
       - uses: ./.github/actions/setup-yq
       - uses: ./.github/actions/setup-go
       - uses: ./.github/actions/setup-helm
-      - uses: ./.github/actions/setup-k3d
+      - uses: AbsaOSS/k3d-action@v2
         with:
-          agents: 3
-          # ingress_port: 8081
-          # options: --kubeconfig-update-default --kubeconfig-switch-context
+          cluster-name: vald
+          args: >-
+            --agents 3
+      # - uses: ./.github/actions/setup-k3d
+      #   with:
+      #     agents: 3
+      #     # ingress_port: 8081
+      #     # options: --kubeconfig-update-default --kubeconfig-switch-context
       - name: debug
         run: |
           kubectl cluster-info
