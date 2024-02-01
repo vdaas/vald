@@ -97,5 +97,6 @@ runs:
     - name: Ready k8s cluster
       shell: bash
       run: |
+        sleep 30
         k3d cluster list
         kubectl cluster-info dump
