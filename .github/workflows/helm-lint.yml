@@ -29,8 +29,10 @@ jobs:
     name: lint for values schema
     runs-on: ubuntu-latest
     needs: [detect-ci-container]
-    # container:
-    #   image: ghcr.io/vdaas/vald/vald-ci-container:${{ needs.detect-ci-container.outputs.TAG_NAME }}
+    container:
+      image: ghcr.io/vdaas/vald/vald-ci-container:${{ needs.detect-ci-container.outputs.TAG_NAME }}
+      volumes:
+        - /var/run/docker.sock:/var/run/docker.sock
     steps:
       - name: Check out code.
         uses: actions/checkout@v4
