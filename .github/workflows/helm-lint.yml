@@ -16,8 +16,7 @@
 name: "Run Helm lint"
 on:
   pull_request:
-    paths:
-      - "charts/**"
+
 jobs:
   dump-contexts-to-log:
     runs-on: ubuntu-latest
