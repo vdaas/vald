@@ -93,7 +93,7 @@ runs:
       shell: bash
       id: start_k3d
       run: |
-        k3d cluster create ${{ inputs.name }} ${{ steps.k3d_options.outputs.options }} --network bridge
+        k3d cluster create ${{ inputs.name }} ${{ steps.k3d_options.outputs.options }}
     - name: Ready k8s cluster
       shell: bash
       run: |
