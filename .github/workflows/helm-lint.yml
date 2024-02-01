@@ -104,7 +104,7 @@ jobs:
 
       - uses: ./.github/actions/setup-k3d
         with:
-          options: "--api-port host.docker.internal:40627"
+          options: "--api-port host.docker.internal:6443"
 
       - name: Generate ValdRelease schema
         run: |
