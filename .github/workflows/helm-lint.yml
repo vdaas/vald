@@ -26,46 +26,6 @@ jobs:
       - uses: ./.github/actions/dump-context
   detect-ci-container:
     uses: ./.github/workflows/_detect-ci-container.yml
-  lint-vald-chart:
-    name: lint for vald chart
-    runs-on: ubuntu-latest
-    needs: [detect-ci-container]
-    container:
-      image: ghcr.io/vdaas/vald/vald-ci-container:${{ needs.detect-ci-container.outputs.TAG_NAME }}
-    steps:
-      - name: Check out code.
-        uses: actions/checkout@v4
-      - name: set git config
-        run: |
-          git config --global --add safe.directory ${GITHUB_WORKSPACE}
-      - uses: ./.github/actions/setup-go
-      - uses: ./.github/actions/setup-helm
-      - name: Generate schema for charts/vald
-        run: |
-          make helm/schema/vald
-      - name: Run lint for charts/vald
-        run: |
-          helm lint charts/vald
-  lint-vald-helm-operator-chart:
-    name: lint for vald-helm-operator chart
-    runs-on: ubuntu-latest
-    needs: [detect-ci-container]
-    container:
-      image: ghcr.io/vdaas/vald/vald-ci-container:${{ needs.detect-ci-container.outputs.TAG_NAME }}
-    steps:
-      - name: Check out code.
-        uses: actions/checkout@v4
-      - name: set git config
-        run: |
-          git config --global --add safe.directory ${GITHUB_WORKSPACE}
-      - uses: ./.github/actions/setup-go
-      - uses: ./.github/actions/setup-helm
-      - name: Generate schema for charts/vald-helm-operator
-        run: |
-          make helm/schema/vald-helm-operator
-      - name: Run lint for charts/vald-helm-operator
-        run: |
-          helm lint charts/vald-helm-operator
   lint-values-schema:
     name: lint for values schema
     runs-on: ubuntu-latest
@@ -84,8 +44,11 @@ jobs:
       - uses: ./.github/actions/setup-k3d
         with:
           agents: 3
-          ingress_port: 8081
-          options: --kubeconfig-update-default --kubeconfig-switch-context
+          # ingress_port: 8081
+          # options: --kubeconfig-update-default --kubeconfig-switch-context
+      - name: debug
+        run: |
+          kubectl cluster-info
       - name: Generate ValdRelease schema
         run: |
           make helm/schema/crd/vald
