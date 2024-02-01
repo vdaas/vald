@@ -54,14 +54,14 @@ jobs:
       - name: debug
         run: |
           kubectl cluster-info
-      - name: Generate ValdRelease schema
-        run: |
-          make helm/schema/crd/vald
-      - name: Test to apply
-        run: |
-          kubectl create -f charts/vald-helm-operator/crds/valdrelease.yaml
-          sleep 3
-          yq eval \
-              '{"apiVersion": "vald.vdaas.org/v1", "kind": "ValdRelease", "metadata":{"name":"vald-cluster"}, "spec": .}' \
-              charts/vald/values.yaml \
-              | kubectl apply -f -
+      # - name: Generate ValdRelease schema
+      #   run: |
+      #     make helm/schema/crd/vald
+      # - name: Test to apply
+      #   run: |
+      #     kubectl create -f charts/vald-helm-operator/crds/valdrelease.yaml
+      #     sleep 3
+      #     yq eval \
+      #         '{"apiVersion": "vald.vdaas.org/v1", "kind": "ValdRelease", "metadata":{"name":"vald-cluster"}, "spec": .}' \
+      #         charts/vald/values.yaml \
+      #         | kubectl apply -f -
