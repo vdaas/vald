@@ -44,9 +44,9 @@ import (
 	testdata "github.com/vdaas/vald/internal/test"
 	"github.com/vdaas/vald/internal/test/data/vector"
 	"github.com/vdaas/vald/internal/test/goleak"
-	"github.com/vdaas/vald/pkg/agent/core/ngt/service/kvs"
-	"github.com/vdaas/vald/pkg/agent/core/ngt/service/vqueue"
+	"github.com/vdaas/vald/pkg/agent/internal/kvs"
 	"github.com/vdaas/vald/pkg/agent/internal/metadata"
+	"github.com/vdaas/vald/pkg/agent/internal/vqueue"
 	"google.golang.org/grpc"
 )
 

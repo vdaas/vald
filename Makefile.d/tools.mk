@@ -97,7 +97,14 @@ $(GOPATH)/bin/stern:
 	$(call go-install, github.com/stern/stern)
 
 .PHONY: rust/install
-rust/install: $(RUST_BIN)/cargo
+rust/install: $(CARGO_HOME)/bin/cargo
 
-$(RUST_BIN)/cargo:
-	curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+$(CARGO_HOME)/bin/cargo:
+	curl --proto '=https' --tlsv1.2 -fsSL https://sh.rustup.rs | CARGO_HOME=${CARGO_HOME} RUSTUP_HOME=${RUSTUP_HOME} sh -s -- --default-toolchain nightly -y
+	source "${CARGO_HOME}/env" \
+	CARGO_HOME=${CARGO_HOME} RUSTUP_HOME=${RUSTUP_HOME} ${CARGO_HOME}/bin/rustup install stable \
+	CARGO_HOME=${CARGO_HOME} RUSTUP_HOME=${RUSTUP_HOME} ${CARGO_HOME}/bin/rustup install beta \
+	CARGO_HOME=${CARGO_HOME} RUSTUP_HOME=${RUSTUP_HOME} ${CARGO_HOME}/bin/rustup install nightly \
+	CARGO_HOME=${CARGO_HOME} RUSTUP_HOME=${RUSTUP_HOME} ${CARGO_HOME}/bin/rustup toolchain install nightly \
+	CARGO_HOME=${CARGO_HOME} RUSTUP_HOME=${RUSTUP_HOME} ${CARGO_HOME}/bin/rustup default nightly \
+	CARGO_HOME=${CARGO_HOME} RUSTUP_HOME=${RUSTUP_HOME} ${CARGO_HOME}/bin/rustup update

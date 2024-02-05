@@ -23,6 +23,7 @@ LABEL maintainer="${MAINTAINER}"
 
 ARG TARGETARCH
 
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 # skipcq: DOK-DL3008
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
@@ -50,25 +51,24 @@ WORKDIR ${GOPATH}/src/github.com/vdaas/vald
 COPY Makefile .
 COPY Makefile.d Makefile.d
 COPY versions versions
+COPY rust rust
 COPY hack/go.mod.default hack/go.mod.default
+COPY example/client/go.mod.default example/client/go.mod.default
 
 # basic deps
 RUN --mount=type=cache,target="${GOPATH}/pkg",id="go-build-${TARGETARCH}" \
     --mount=type=cache,target="${HOME}/.cache/go-build",id="go-build-${TARGETARCH}" \
     make deps GO_CLEAN_DEPS=false \
     && make ngt/install \
+    && make faiss/install \
     && make helm/install \
     && make helm-docs/install \
     && make valdcli/install \
     && make yq/install \
     && make golangci-lint/install \
     && make reviewdog/install \
-    && make kubectl/install
-
-# additional deps
-RUN --mount=type=cache,target="${GOPATH}/pkg",id="go-build-${TARGETARCH}" \
-    --mount=type=cache,target="${HOME}/.cache/go-build",id="go-build-${TARGETARCH}" \
-    make k3d/install \
+    && make kubectl/install \
+    && make k3d/install \
     && make buf/install \
     && make k9s/install \
     && make minikube/install \

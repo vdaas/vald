@@ -19,17 +19,14 @@ on:
     branches:
       - main
   pull_request:
-
 jobs:
   dump-contexts-to-log:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/dump-context
-
   detect-ci-container:
     uses: ./.github/workflows/_detect-ci-container.yml
-
   format:
     if: ${{ github.event_name == 'push' }}
     runs-on: ubuntu-latest
@@ -41,17 +38,14 @@ jobs:
         with:
           fetch-depth: 0
           token: ${{ secrets.DISPATCH_TOKEN }}
-
       - name: Set Git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
-
-      - uses: crazy-max/ghaction-import-gpg@v4
+      - uses: crazy-max/ghaction-import-gpg@v6
         with:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           git_user_signingkey: true
           git_commit_gpgsign: true
-
       - name: Switch new branch
         id: switch_to_new_branch
         run: |
@@ -60,16 +54,12 @@ jobs:
           git checkout main
           git checkout -b ${BRANCH_NAME}
           echo "BRANCH_NAME=${BRANCH_NAME}" >> $GITHUB_OUTPUT
-
       - name: Setup Go environment
         uses: ./.github/actions/setup-go
-
       - name: Run formatter and license.go
         run: |
-          make deps/install
           make format
           git checkout go.mod go.sum
-
       - name: Check and Push to main branch
         continue-on-error: true
         run: |
@@ -95,7 +85,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
           API_URL: https://api.github.com/repos/vdaas/vald/pulls
           BRANCH_NAME: ${{ steps.switch_to_new_branch.outputs.BRANCH_NAME }}
-
   check-format-diff:
     if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == false }}
     runs-on: ubuntu-latest
@@ -107,20 +96,16 @@ jobs:
         with:
           fetch-depth: 0
           token: ${{ secrets.DISPATCH_TOKEN }}
-
       - name: Set Git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
-
       - name: Setup Go environment
         uses: ./.github/actions/setup-go
-
       - name: Run formatter and license.go
         run: |
           make deps/install
           make format
           git checkout go.mod go.sum
-
       - name: Check format difference
         run: |
           if git diff --quiet --exit-code; then

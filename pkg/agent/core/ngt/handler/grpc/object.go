@@ -165,7 +165,6 @@ func (s *server) StreamGetObject(stream vald.Object_StreamGetObjectServer) (err 
 				},
 			}, nil
 		})
-
 	if err != nil {
 		st, msg, err := status.ParseError(err, codes.Internal, "failed to parse StreamGetObject gRPC error response")
 		if span != nil {

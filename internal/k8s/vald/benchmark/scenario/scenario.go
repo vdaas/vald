@@ -69,7 +69,6 @@ func (r *reconciler) Reconcile(ctx context.Context, _ reconcile.Request) (res re
 	bs := new(v1.ValdBenchmarkScenarioList)
 
 	err = r.mgr.GetClient().List(ctx, bs, r.lopts...)
-
 	if err != nil {
 		if r.onError != nil {
 			r.onError(err)
