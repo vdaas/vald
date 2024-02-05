@@ -22,7 +22,9 @@ FROM --platform=${BUILDPLATFORM} mcr.microsoft.com/vscode/devcontainers/go:1 AS 
 LABEL maintainer="${MAINTAINER}"
 
 ARG TARGETARCH
+ENV PATH ${PATH}:${HOME}/.cargo/bin
 
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 # skipcq: DOK-DL3008
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
@@ -44,19 +46,31 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     unzip \
     zip \
     && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    && curl --proto '=https' --tlsv1.2 -fsSL https://sh.rustup.rs | sh -s -- -y \
+    && source "${HOME}/.cargo/env" \
+    && rustup install stable \
+    && rustup install beta \
+    && rustup install nightly \
+    && rustup toolchain install nightly \
+    && rustup default nightly \
+    && rustup update
 
 WORKDIR ${GOPATH}/src/github.com/vdaas/vald
 COPY Makefile .
 COPY Makefile.d Makefile.d
 COPY versions versions
+COPY rust rust
 COPY hack/go.mod.default hack/go.mod.default
+COPY example/client/go.mod.default example/client/go.mod.default
 
 # basic deps
 RUN --mount=type=cache,target="${GOPATH}/pkg",id="go-build-${TARGETARCH}" \
     --mount=type=cache,target="${HOME}/.cache/go-build",id="go-build-${TARGETARCH}" \
-    make deps GO_CLEAN_DEPS=false \
+    source "${HOME}/.cargo/env" \
+    && make deps GO_CLEAN_DEPS=false \
     && make ngt/install \
+    && make faiss/install \
     && make helm/install \
     && make helm-docs/install \
     && make valdcli/install \

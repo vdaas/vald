@@ -18,6 +18,7 @@
 ## update vald libraries including tools
 update/libs: \
 	update/chaos-mesh \
+	update/faiss \
 	update/go \
 	update/golangci-lint \
 	update/helm \
@@ -78,6 +79,11 @@ go/example/deps:
 	cp $(ROOTDIR)/example/client/go.mod.default $(ROOTDIR)/example/client/go.mod
 	cd $(ROOTDIR)/example/client && GOPRIVATE=$(GOPRIVATE) go mod tidy && cd -
 
+.PHONY: rust/deps
+## install Rust package dependencies
+rust/deps:
+	cd $(ROOTDIR)/rust && cargo update && cd -
+
 .PHONY: update/chaos-mesh
 ## update chaos-mesh version
 update/chaos-mesh:
@@ -86,7 +92,14 @@ update/chaos-mesh:
 .PHONY: update/k3s
 ## update k3s version
 update/k3s:
-	curl --silent https://hub.docker.com/v2/repositories/rancher/k3s/tags | jq -r '.results[].name' | grep -E '.*-k3s.$$' | grep -v rc | sort -V | tail -n 1 > $(ROOTDIR)/versions/K3S_VERSION
+	@{ \
+		RESULT=$$(curl --silent https://hub.docker.com/v2/repositories/rancher/k3s/tags?page_size=1000 | jq -r '.results[].name' | grep -E '.*-k3s[0-9]+$$' | grep -v rc | sort -Vr | head -n 1); \
+		if [ -n "$$RESULT" ]; then \
+			echo $$RESULT > $(ROOTDIR)/versions/K3S_VERSION; \
+		else \
+			echo "No version found" >&2; \
+		fi \
+	}
 
 .PHONY: update/go
 ## update go version
@@ -106,7 +119,7 @@ update/helm:
 .PHONY: update/helm-operator
 ## update helm-operator version
 update/helm-operator:
-	curl --silent https://quay.io/api/v1/repository/operator-framework/helm-operator | jq -r '.tags'|rg name | grep -v master |grep -v latest | grep -v rc | head -1 | sed -e 's/.*\"name\":\ \"\(.*\)\",/\1/g' > $(ROOTDIR)/versions/OPERATOR_SDK_VERSION
+	curl --silent https://quay.io/api/v1/repository/operator-framework/helm-operator | jq -r '.tags'| grep name | grep -v master |grep -v latest | grep -v rc | head -1 | sed -e 's/.*\"name\":\ \"\(.*\)\",/\1/g' > $(ROOTDIR)/versions/OPERATOR_SDK_VERSION
 
 .PHONY: update/helm-docs
 ## update helm-docs version
@@ -152,6 +165,11 @@ update/kube-linter:
 ## update yahoojapan/NGT version
 update/ngt:
 	curl --silent https://api.github.com/repos/yahoojapan/NGT/releases/latest | grep -Po '"tag_name": "\K.*?(?=")' | sed 's/v//g' > $(ROOTDIR)/versions/NGT_VERSION
+
+.PHONY: update/faiss
+## update facebookresearch/faiss version
+update/faiss:
+	curl --silent https://api.github.com/repos/facebookresearch/faiss/releases/latest | grep -Po '"tag_name": "\K.*?(?=")' | sed 's/v//g' > $(ROOTDIR)/versions/FAISS_VERSION
 
 .PHONY: update/reviewdog
 ## update reviewdog version

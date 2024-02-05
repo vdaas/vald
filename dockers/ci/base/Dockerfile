@@ -31,11 +31,17 @@ ENV INITRD No
 ENV LANG en_US.UTF-8
 ENV GOROOT /opt/go
 ENV GOPATH /go
-ENV PATH ${PATH}:${GOROOT}/bin:${GOPATH}/bin
+ENV PATH ${PATH}:${GOROOT}/bin:${GOPATH}/bin:${HOME}/.cargo/bin:/usr/local/bin
 
 COPY --from=golang /usr/local/go $GOROOT
 RUN mkdir -p $GOPATH/src
 
+
+RUN sysctl -w net.ipv6.conf.all.disable_ipv6=1 \
+    && sysctl -w net.ipv6.conf.default.disable_ipv6=1 \
+    && sysctl -w net.ipv6.conf.lo.disable_ipv6=1
+
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 # skipcq: DOK-DL3008
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
@@ -59,27 +65,40 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     unzip \
     zip \
     && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    && curl --proto '=https' --tlsv1.2 -fsSL https://sh.rustup.rs | sh -s -- -y \
+    && source "${HOME}/.cargo/env" \
+    && rustup install stable \
+    && rustup install beta \
+    && rustup install nightly \
+    && rustup toolchain install nightly \
+    && rustup default nightly \
+    && rustup update
 
 WORKDIR ${GOPATH}/src/github.com/vdaas/vald
 
 ENV ROOTDIR .
 
-COPY go.mod .
-COPY go.sum .
 COPY Makefile .
 COPY Makefile.d Makefile.d
 COPY apis/proto apis/proto
-COPY versions versions
+COPY example/client/go.mod.default example/client/go.mod.default
+COPY go.mod .
+COPY go.sum .
 COPY hack/go.mod.default hack/go.mod.default
+COPY rust rust
+COPY versions versions
 
 RUN --mount=type=cache,target="${GOPATH}/pkg",id="go-build-${TARGETARCH}" \
     --mount=type=cache,target="${HOME}/.cache/go-build",id="go-build-${TARGETARCH}" \
-    make deps ROOTDIR=$ROOTDIR GO_CLEAN_DEPS=false
+    source "${HOME}/.cargo/env" \
+    && export PATH=${PATH}:${HOME}/.cargo/bin \
+    && make deps ROOTDIR=${ROOTDIR} GO_CLEAN_DEPS=false
 
 RUN --mount=type=cache,target="${GOPATH}/pkg",id="go-build-${TARGETARCH}" \
     --mount=type=cache,target="${HOME}/.cache/go-build",id="go-build-${TARGETARCH}" \
     make ngt/install \
+    && make faiss/install \
     && make helm/install \
     && make helm-docs/install \
     && make kind/install \
@@ -92,8 +111,6 @@ RUN --mount=type=cache,target="${GOPATH}/pkg",id="go-build-${TARGETARCH}" \
     && make reviewdog/install \
     && make kubectl/install \
     && make buf/install
-
-ENV PATH=$PATH:$GOPATH/bin
 
 RUN rm -rf "${GOPATH}/src/github.com/vdaas/vald/*"
 
