@@ -28,6 +28,7 @@ import (
 	"reflect"
 	"runtime"
 	"slices"
+	"strconv"
 	"sync/atomic"
 	"time"
 
@@ -38,6 +39,7 @@ import (
 	core "github.com/vdaas/vald/internal/core/algorithm/ngt"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/file"
+	"github.com/vdaas/vald/internal/k8s/client"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
@@ -46,6 +48,12 @@ import (
 	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/pkg/agent/internal/kvs"
 	"github.com/vdaas/vald/pkg/agent/internal/metadata"
+
+	"k8s.io/apimachinery/pkg/api/equality"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/fields"
+	kruntime "k8s.io/apimachinery/pkg/runtime"
+	applycorev1 "k8s.io/client-go/applyconfigurations/core/v1"
 	"github.com/vdaas/vald/pkg/agent/internal/vqueue"
 )
 
@@ -123,13 +131,15 @@ type ngt struct {
 	enableProactiveGC bool // if this value is true, agent component will purge GC memory more proactive
 	enableCopyOnWrite bool // if this value is true, agent component will write backup file using Copy on Write and saves old files to the old directory
 
-	path       string       // index path
-	smu        sync.Mutex   // save index lock
-	tmpPath    atomic.Value // temporary index path for Copy on Write
-	oldPath    string       // old volume path
-	basePath   string       // index base directory for CoW
-	brokenPath string       // backup broken index path
-	cowmu      sync.Mutex   // copy on write move lock
+	podName      string
+	podNamespace string
+	path         string       // index path
+	smu          sync.Mutex   // save index lock
+	tmpPath      atomic.Value // temporary index path for Copy on Write
+	oldPath      string       // old volume path
+	basePath     string       // index base directory for CoW
+	brokenPath   string       // backup broken index path
+	cowmu        sync.Mutex   // copy on write move lock
 
 	poolSize uint32  // default pool size
 	radius   float32 // default radius
@@ -142,6 +152,7 @@ type ngt struct {
 	historyLimit     int // the maximum generation number of broken index backup
 
 	isReadReplica bool
+	client        client.Client
 }
 
 const (
@@ -155,7 +166,12 @@ const (
 )
 
 func New(cfg *config.NGT, opts ...Option) (nn NGT, err error) {
+	if cfg.PodName == "" {
+		return nil, errors.New("pod_name is empty. this must be set either from environment variable or from config file")
+	}
 	n := &ngt{
+		podName:           cfg.PodName,
+		podNamespace:      cfg.PodNamespace,
 		fmap:              make(map[string]int64),
 		dim:               cfg.Dimension,
 		enableProactiveGC: cfg.EnableProactiveGC,
@@ -211,6 +227,13 @@ func New(cfg *config.NGT, opts ...Option) (nn NGT, err error) {
 	}
 	n.indexing.Store(false)
 	n.saving.Store(false)
+
+	c, err := client.New()
+	if err != nil {
+		return nil, fmt.Errorf("failed to create kubernetes client: %w", err)
+	}
+	n.client = c
+
 	return n, nil
 }
 
@@ -831,6 +854,10 @@ func (n *ngt) Start(ctx context.Context) <-chan error {
 			n.lim = math.MaxInt64
 		}
 
+		// FIXME: delete this
+		n.idelay = 0
+
+		// add initial delay before starting auto indexing
 		if n.idelay > 0 {
 			timer := time.NewTimer(n.idelay)
 			select {
@@ -845,9 +872,11 @@ func (n *ngt) Start(ctx context.Context) <-chan error {
 		tick := time.NewTicker(n.dur)
 		sTick := time.NewTicker(n.sdur)
 		limit := time.NewTicker(n.lim)
+		k8sTick := time.NewTicker(10 * time.Second) // FIXME: configからtimer設定
 		defer tick.Stop()
 		defer sTick.Stop()
 		defer limit.Stop()
+		defer k8sTick.Stop()
 		for {
 			err = nil
 			select {
@@ -866,6 +895,9 @@ func (n *ngt) Start(ctx context.Context) <-chan error {
 				err = n.CreateAndSaveIndex(ctx, n.poolSize)
 			case <-sTick.C:
 				err = n.SaveIndex(ctx)
+			case <-k8sTick.C:
+				log.Debug("k8sTick: flush index info to k8s resource")
+				err = n.exportMetricsToK8s(ctx)
 			}
 			if err != nil && err != errors.ErrUncommittedIndexNotFound {
 				ech <- err
@@ -1764,4 +1796,67 @@ func (n *ngt) toSearchResponse(sr []algorithm.SearchResult) (res *payload.Search
 		return nil, errors.ErrEmptySearchResult
 	}
 	return res, nil
+}
+
+func (n *ngt) exportMetricsToK8s(ctx context.Context) error {
+	// FIXME: define as const somewhere
+	fieldManager := "vald-agent-index-controller"
+
+	uncommitted := n.InsertVQueueBufferLen() + n.DeleteVQueueBufferLen()
+	log.Debugf("exporting metrics to k8s resource: uncommitted: %d", uncommitted)
+
+	var podList client.PodList
+	if err := n.client.List(ctx, &podList, &client.ListOptions{
+		Namespace:     n.podNamespace,
+		FieldSelector: fields.OneTermEqualSelector("metadata.name", n.podName),
+	}); err != nil {
+		return err
+	}
+
+	if len(podList.Items) == 0 {
+		return errors.New("agent pod not found on exporting metrics")
+	}
+
+	if len(podList.Items) >= 2 {
+		return errors.New("multiple agent pods found on exporting metrics. pods with same name exist in the same namespace?")
+	}
+
+	// try server side apply
+	expectPod := applycorev1.Pod(n.podName, n.podNamespace).
+		WithAnnotations(n.metricsAnnotations())
+
+	obj, err := kruntime.DefaultUnstructuredConverter.ToUnstructured(expectPod)
+	if err != nil {
+		return err
+	}
+
+	pod := podList.Items[0]
+	log.Debugf("found pod: %s", pod.GetName())
+
+	curApplyConfig, err := applycorev1.ExtractPod(&pod, fieldManager)
+	if err != nil {
+		return err
+	}
+
+	if equality.Semantic.DeepEqual(expectPod, curApplyConfig) {
+		log.Debug("no change in pod spec")
+		return nil
+	}
+
+	patch := &unstructured.Unstructured{Object: obj}
+	if err := n.client.Patch(ctx, patch, client.ServerSideApply, &client.PatchOptions{
+		FieldManager: fieldManager,
+		Force:        client.PointerBool(true),
+	}); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (n *ngt) metricsAnnotations() map[string]string {
+	entries := make(map[string]string, 0)
+	entries["vald.agent.index.uncommitted"] = strconv.FormatUint(n.InsertVQueueBufferLen()+n.DeleteVQueueBufferLen(), 10)
+
+	return entries
 }

@@ -2035,6 +2035,12 @@ agent:
       annotations: {}
   # @schema {"name": "agent.ngt", "type": "object"}
   ngt:
+    # @schema {"name": "agent.ngt.pod_name", "type": "string"}
+    # agent.ngt.pod_name -- pod name of myself
+    pod_name: _MY_POD_NAME_
+    # @schema {"name": "agent.ngt.namespace", "type": "string"}
+    # agent.ngt.namespace -- namespace of myself
+    namespace: _MY_POD_NAMESPACE_
     # @schema {"name": "agent.ngt.index_path", "type": "string"}
     # agent.ngt.index_path -- path to index data
     index_path: ""

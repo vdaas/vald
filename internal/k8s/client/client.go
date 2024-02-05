@@ -22,12 +22,14 @@ import (
 	"fmt"
 
 	snapshotv1 "github.com/kubernetes-csi/external-snapshotter/client/v6/apis/volumesnapshot/v1"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/selection"
 	"k8s.io/apimachinery/pkg/watch"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
+	"k8s.io/utils/pointer"
 	ctrl "sigs.k8s.io/controller-runtime"
 	cli "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
@@ -44,14 +46,23 @@ type (
 	CreateOptions      = cli.CreateOptions
 	UpdateOptions      = cli.UpdateOptions
 	MatchingLabels     = cli.MatchingLabels
+	MatchingFields     = cli.MatchingFields
 	InNamespace        = cli.InNamespace
 	VolumeSnapshot     = snapshotv1.VolumeSnapshot
+	PodList            = corev1.PodList
+	Pod                = corev1.Pod
+	PatchOptions       = cli.PatchOptions
 )
 
 const (
 	DeletePropagationBackground = metav1.DeletePropagationBackground
 	WatchDeletedEvent           = watch.Deleted
 	SelectionOpEquals           = selection.Equals
+)
+
+var (
+	ServerSideApply = cli.Apply
+	PointerBool     = pointer.Bool
 )
 
 type Client interface {
@@ -74,6 +85,10 @@ type Client interface {
 	// Update updates the given obj in the Kubernetes cluster. obj must be a
 	// struct pointer so that obj can be updated with the content returned by the Server.
 	Update(ctx context.Context, obj Object, opts ...cli.UpdateOption) error
+
+	// Patch patches the given obj in the Kubernetes cluster. obj must be a
+	// struct pointer so that obj can be updated with the content returned by the Server.
+	Patch(ctx context.Context, obj Object, patch cli.Patch, opts ...cli.PatchOption) error
 
 	// Watch watches the given obj for changes and takes the appropriate callbacks.
 	Watch(ctx context.Context, obj cli.ObjectList, opts ...ListOption) (watch.Interface, error)
@@ -149,6 +164,10 @@ func (c *client) Delete(ctx context.Context, obj Object, opts ...cli.DeleteOptio
 
 func (c *client) Update(ctx context.Context, obj Object, opts ...cli.UpdateOption) error {
 	return c.withWatch.Update(ctx, obj, opts...)
+}
+
+func (c *client) Patch(ctx context.Context, obj Object, patch cli.Patch, opts ...cli.PatchOption) error {
+	return c.withWatch.Patch(ctx, obj, patch, opts...)
 }
 
 func (c *client) Watch(ctx context.Context, obj cli.ObjectList, opts ...ListOption) (watch.Interface, error) {
