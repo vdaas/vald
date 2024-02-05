@@ -71,4 +71,6 @@ RUN --mount=type=cache,target="${GOPATH}/pkg",id="go-build-${TARGETARCH}" \
     make k3d/install \
     && make buf/install \
     && make k9s/install \
-    && make minikube/install
+    && make minikube/install \
+    && make stern/install \
+    && make telepresence/install
