@@ -19,6 +19,12 @@ package config
 
 // NGT represent the ngt core configuration for server.
 type NGT struct {
+	// PodName represent the ngt pod name
+	PodName string `yaml:"pod_name" json:"pod_name,omitempty"`
+
+	// PodNamespace represent the ngt pod namespace
+	PodNamespace string `yaml:"namespace" json:"namespace,omitempty"`
+
 	// IndexPath represent the ngt index file path
 	IndexPath string `yaml:"index_path" json:"index_path,omitempty"`
 
@@ -116,6 +122,8 @@ type VQueue struct {
 
 // Bind returns NGT object whose some string value is filed value or environment value.
 func (n *NGT) Bind() *NGT {
+	n.PodName = GetActualValue(n.PodName)
+	n.PodNamespace = GetActualValue(n.PodNamespace)
 	n.IndexPath = GetActualValue(n.IndexPath)
 	n.DistanceType = GetActualValue(n.DistanceType)
 	n.ObjectType = GetActualValue(n.ObjectType)
