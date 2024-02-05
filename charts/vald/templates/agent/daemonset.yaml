@@ -167,6 +167,9 @@ spec:
         {{- toYaml $agent.podSecurityContext | nindent 8 }}
       {{- end }}
       terminationGracePeriodSeconds: {{ $agent.terminationGracePeriodSeconds }}
+      {{- if $agent.serviceAccount.enabled }}
+      serviceAccountName: {{ $agent.serviceAccount.name }}
+      {{- end }}
       volumes:
         - name: {{ $agent.name }}-config
           configMap:

@@ -1904,6 +1904,30 @@ agent:
   # @schema {"name": "agent.initContainers", "alias": "initContainers"}
   # agent.initContainers -- init containers
   initContainers: []
+  # @schema {"name": "agent.clusterRole", "type": "object"}
+  clusterRole:
+    # @schema {"name": "agent.clusterRole.enabled", "type": "boolean"}
+    # agent.clusterRole.enabled -- creates clusterRole resource
+    enabled: true
+    # @schema {"name": "agent.clusterRole.name", "type": "string"}
+    # agent.clusterRole.name -- name of clusterRole
+    name: gateway-mirror
+  # @schema {"name": "agent.clusterRoleBinding", "type": "object"}
+  clusterRoleBinding:
+    # @schema {"name": "agent.clusterRoleBinding.enabled", "type": "boolean"}
+    # agent.clusterRoleBinding.enabled -- creates clusterRoleBinding resource
+    enabled: true
+    # @schema {"name": "agent.clusterRoleBinding.name", "type": "string"}
+    # agent.clusterRoleBinding.name -- name of clusterRoleBinding
+    name: gateway-mirror
+  # @schema {"name": "agent.serviceAccount", "type": "object"}
+  serviceAccount:
+    # @schema {"name": "agent.serviceAccount.enabled", "type": "boolean"}
+    # agent.serviceAccount.enabled -- creates service account
+    enabled: true
+    # @schema {"name": "agent.serviceAccount.name", "type": "string"}
+    # agent.serviceAccount.name -- name of service account
+    name: vald-agent-ngt
   # @schema {"name": "agent.env", "alias": "env"}
   # agent.env -- environment variables
   env:
