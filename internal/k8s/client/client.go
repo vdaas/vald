@@ -62,6 +62,7 @@ const (
 
 var (
 	ServerSideApply = cli.Apply
+	MergePatch      = cli.Merge
 	PointerBool     = pointer.Bool
 )
 
