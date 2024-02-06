@@ -325,7 +325,7 @@ func NewConfig(ctx context.Context, path string) (cfg *Config, err error) {
 // 					"build_time",
 // 					"go_version",
 // 					"go_arch",
-// 					"ngt_version",
+// 					"algorithm_info",
 // 				},
 // 			},
 // 			Trace: &config.Trace{

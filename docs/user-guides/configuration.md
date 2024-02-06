@@ -175,6 +175,42 @@ When the setting parameter of Vald Agent NGT is shorter than the setting value o
 If this happens, the Index Manager may not function properly.
 </div>
 
+#### Faiss
+
+Vald Agent Faiss uses [facebookresearch/faiss][faiss] as a core library for searching vectors.
+The behaviors of Faiss can be configured by setting `agent.faiss` field object.
+
+The important parameters are the followings:
+
+- `agent.faiss.dimension`
+- `agent.faiss.distance_type`
+- `agent.faiss.m`
+- `agent.faiss.metric_type`
+- `agent.faiss.nbits_per_idx`
+- `agent.faiss.nlist`
+
+Users should configure these parameters first to fit their use case.
+For further details, please read [the Fiass wiki][faiss-wiki].
+
+Vald Agent Faiss has a feature to start indexing automatically.
+The behavior of this feature can be configured with these parameters:
+
+- `agent.faiss.auto_index_duration_limit`
+- `agent.faiss.auto_index_check_duration`
+- `agent.faiss.auto_index_length`
+
+<div class="notice">
+While the Vald Agent Faiss is in the process of creating indexes, it will ignore all search requests to the target pods.
+</div>
+
+<div class="warning">
+When deploying Vald Index Manager, the above parameters should be set much longer than the Vald Index Manager settings (Please refer to the Vald Index Manager section) or minus value.<BR>
+E.g., set agent.faiss.auto_index_duration_limit to "720h" or "-1h" and agent.faiss.auto_index_check_duration to "24h" or "-1h".<BR>
+This is because the Vald Index Manager accurately grasps the index information of each Vald Agent Faiss and controls the execution timing of indexing.<BR><BR>
+When the setting parameter of Vald Agent Faiss is shorter than the setting value of Vald Index Manager, Vald Agent Faiss may start indexing by itself without the execution command from Vald Index Manager.
+If this happens, the Index Manager may not function properly.
+</div>
+
 #### Resource requests and limits, Pod priorities
 
 Because the Vald Agent pod places indexes on memory, termination of agent pods causes loss of indexes.
@@ -371,3 +407,5 @@ For further details, there are references to the Helm values in the Vald GitHub 
 [kubernetes-topology-spread-constraints]: https://kubernetes.io/docs/concepts/workloads/pods/pod-topology-spread-constraints/
 [yj-ngt]: https://github.com/yahoojapan/NGT
 [yj-ngt-wiki]: https://github.com/yahoojapan/NGT/wiki
+[faiss]: https://github.com/facebookresearch/faiss
+[faiss-wiki]: https://github.com/facebookresearch/faiss/wiki

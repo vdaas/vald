@@ -15,7 +15,6 @@
 #
 name: "Determine Docker image tag"
 description: "A action to determine Docker image tag"
-
 outputs:
   PRIMARY_TAG:
     description: "Primary tag"
@@ -23,7 +22,6 @@ outputs:
   DEFAULT_TAG:
     description: "default tag. Tag to be used if the primary tag does not exist"
     value: ${{ steps.determine_tag_name.outputs.DEFAULT_TAG }}
-
 runs:
   using: "composite"
   steps:
@@ -35,7 +33,6 @@ runs:
         echo "GITHUB_EVENT_PATH $GITHUB_EVENT_PATH"
         echo "GITHUB_EVENT_NAME ${{ github.event_name }}"
         echo "GITHUB_EVENT_NUMBER  ${{ github.event.number }}"
-
     - name: Determine tag name
       shell: bash
       id: determine_tag_name

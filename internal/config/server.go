@@ -20,6 +20,7 @@ package config
 import (
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/net/grpc"
+	"github.com/vdaas/vald/internal/net/grpc/admin"
 	"github.com/vdaas/vald/internal/net/grpc/health"
 	"github.com/vdaas/vald/internal/net/grpc/reflection"
 	"github.com/vdaas/vald/internal/servers/server"
@@ -89,6 +90,7 @@ type GRPC struct {
 	HeaderTableSize                int            `json:"header_table_size,omitempty"                yaml:"header_table_size"`
 	Interceptors                   []string       `json:"interceptors,omitempty"                     yaml:"interceptors"`
 	EnableReflection               bool           `json:"enable_reflection,omitempty"                yaml:"enable_reflection"`
+	EnableAdmin                    bool           `json:"enable_admin,omitempty"                     yaml:"enable_admin"`
 }
 
 // GRPCKeepalive represents the configuration for gRPC keep-alive.
@@ -280,6 +282,12 @@ func (s *Server) Opts() []server.Option {
 				opts = append(opts,
 					server.WithGRPCRegistFunc(func(srv *grpc.Server) {
 						reflection.Register(srv)
+					}))
+			}
+			if s.GRPC.EnableAdmin {
+				opts = append(opts,
+					server.WithGRPCRegistFunc(func(srv *grpc.Server) {
+						admin.Register(srv)
 					}))
 			}
 			if s.GRPC.Keepalive != nil {

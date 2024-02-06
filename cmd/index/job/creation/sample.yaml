@@ -226,6 +226,6 @@ observability:
       - go_version
       - go_os
       - go_arch
-      - ngt_version
+      - algorithm_info
   trace:
     enabled: true
