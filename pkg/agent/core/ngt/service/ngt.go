@@ -110,10 +110,11 @@ type ngt struct {
 	lastNocie uint64     // last number of create index execution this value prevent unnecessary saveindex.
 
 	// counters
-	nocie uint64 // number of create index execution
-	nogce uint64 // number of proactive GC execution
-	wfci  uint64 // wait for create indexing
-	nobic uint64 // number of broken index count
+	nocie uint64        // number of create index execution
+	nogce uint64        // number of proactive GC execution
+	wfci  uint64        // wait for create indexing
+	nobic uint64        // number of broken index count
+	nopvq atomic.Uint64 // number of processed vq number
 
 	// configurations
 	inMem bool // in-memory mode
@@ -897,7 +898,8 @@ func (n *ngt) Start(ctx context.Context) <-chan error {
 				err = n.SaveIndex(ctx)
 			case <-k8sTick.C:
 				log.Debug("k8sTick: flush index info to k8s resource")
-				err = n.exportMetricsToK8s(ctx)
+				k, v := n.uncommittedEntry()
+				err = n.updatePodAnnotations(ctx, map[string]string{k: v})
 			}
 			if err != nil && err != errors.ErrUncommittedIndexNotFound {
 				ech <- err
@@ -1181,6 +1183,9 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 	}
 	log.Infof("create index operation started, uncommitted indexes = %d", ic)
 	log.Debug("create index delete phase started")
+	// vqProcessedCnt is a tempral counter to store the number of processed vqueue items.
+	// This will be added to nopvq after CreateIndex operation succeeds.
+	var vqProcessedCnt uint64
 	n.vq.RangePopDelete(ctx, now, func(uuid string) bool {
 		log.Debugf("start delete operation for kvsdb id: %s", uuid)
 		oid, ok := n.kvs.Delete(uuid)
@@ -1196,6 +1201,8 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 			n.fmu.Unlock()
 		}
 		log.Debugf("removed from ngt index and kvsdb id: %s, oid: %d", uuid, oid)
+
+		vqProcessedCnt++
 		return true
 	})
 	log.Debug("create index delete phase finished")
@@ -1228,6 +1235,8 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 		}
 		n.fmu.Unlock()
 		log.Debugf("finished to insert ngt index and kvsdb id: %s, oid: %d", uuid, oid)
+
+		vqProcessedCnt++
 		return true
 	})
 	if poolSize <= 0 {
@@ -1243,11 +1252,19 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 	err = n.core.CreateIndex(poolSize)
 	if err != nil {
 		log.Error("an error occurred on creating graph and tree phase:", err)
-	} else {
-		atomic.AddUint64(&n.nocie, 1)
+		return err
 	}
+
+	atomic.AddUint64(&n.nocie, 1)
+	n.nopvq.Add(vqProcessedCnt)
 	log.Debug("create graph and tree phase finished")
 	log.Info("create index operation finished")
+
+	log.Info("exporting index info to k8s resource")
+	if err := n.exportMetricsOnCreateIndex(ctx); err != nil {
+		log.Warnf("failed to export index info to k8s resource: %v", err)
+		return err
+	}
 	return err
 }
 
@@ -1303,6 +1320,7 @@ func (n *ngt) SaveIndex(ctx context.Context) (err error) {
 		}
 	}()
 	if !n.inMem {
+		// TODO: 成功したらlatTimeSavedTimestampを更新
 		return n.saveIndex(ctx)
 	}
 	return nil
@@ -1336,8 +1354,14 @@ func (n *ngt) saveIndex(ctx context.Context) (err error) {
 	if err != nil {
 		return err
 	}
+	// TODO: ここをtrueにした後じゃないとcreate index中である可能性がある
+	//       だからこの時点でのnotSavedなindex件数を取得して、save index成功後にその数を引き算するか？
 	n.saving.Store(true)
+
+	beforeNopvq := n.nopvq.Load()
+
 	defer n.gc()
+	// TODO: ここでdeferされるのでこのscope内ではatomicなオペレーションが保証される
 	defer n.saving.Store(false)
 
 	log.Debug("cleanup invalid index started")
@@ -1528,6 +1552,12 @@ func (n *ngt) saveIndex(ctx context.Context) (err error) {
 		return err
 	}
 	log.Info("save index operation finished")
+
+	// TODO: 多分ここでnotSavedから引き算すれば良い
+	n.nopvq.Add(-beforeNopvq)
+	if err := n.exportMetricsOnSaveIndex(ctx); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -1676,6 +1706,10 @@ func (n *ngt) NumberOfProactiveGCExecution() uint64 {
 	return atomic.LoadUint64(&n.nogce)
 }
 
+func (n *ngt) lastNumberOfCreateIndexExecution() uint64 {
+	return atomic.LoadUint64(&n.lastNocie)
+}
+
 func (n *ngt) gc() {
 	if n.enableProactiveGC {
 		runtime.GC()
@@ -1798,12 +1832,13 @@ func (n *ngt) toSearchResponse(sr []algorithm.SearchResult) (res *payload.Search
 	return res, nil
 }
 
-func (n *ngt) exportMetricsToK8s(ctx context.Context) error {
+// TODO: add processed vq num, lastSavedTimestamp etc....
+//
+//	wrap up common logics -> entriesを受け取りそれをただSSAで書き込むだけの部分に分ける
+func (n *ngt) updatePodAnnotations(ctx context.Context, entries map[string]string) error {
 	// FIXME: define as const somewhere
+	// FIXME: 違うフィールドマネージャーを試す？ただuncommittedは共通だから？？？
 	fieldManager := "vald-agent-index-controller"
-
-	uncommitted := n.InsertVQueueBufferLen() + n.DeleteVQueueBufferLen()
-	log.Debugf("exporting metrics to k8s resource: uncommitted: %d", uncommitted)
 
 	var podList client.PodList
 	if err := n.client.List(ctx, &podList, &client.ListOptions{
@@ -1821,19 +1856,27 @@ func (n *ngt) exportMetricsToK8s(ctx context.Context) error {
 		return errors.New("multiple agent pods found on exporting metrics. pods with same name exist in the same namespace?")
 	}
 
-	// try server side apply
-	expectPod := applycorev1.Pod(n.podName, n.podNamespace).
-		WithAnnotations(n.metricsAnnotations())
-
-	obj, err := kruntime.DefaultUnstructuredConverter.ToUnstructured(expectPod)
-	if err != nil {
-		return err
-	}
-
 	pod := podList.Items[0]
 	log.Debugf("found pod: %s", pod.GetName())
 
 	curApplyConfig, err := applycorev1.ExtractPod(&pod, fieldManager)
+	if err != nil {
+		return err
+	}
+
+	// try server side apply
+	// FIXME: move this to internal/k8s
+	annotations := pod.GetObjectMeta().GetAnnotations()
+	if annotations == nil {
+		annotations = make(map[string]string)
+	}
+	for k, v := range entries {
+		annotations[k] = v
+	}
+	expectPod := applycorev1.Pod(n.podName, n.podNamespace).
+		WithAnnotations(annotations)
+
+	obj, err := kruntime.DefaultUnstructuredConverter.ToUnstructured(expectPod)
 	if err != nil {
 		return err
 	}
@@ -1854,9 +1897,49 @@ func (n *ngt) exportMetricsToK8s(ctx context.Context) error {
 	return nil
 }
 
-func (n *ngt) metricsAnnotations() map[string]string {
-	entries := make(map[string]string, 0)
-	entries["vald.agent.index.uncommitted"] = strconv.FormatUint(n.InsertVQueueBufferLen()+n.DeleteVQueueBufferLen(), 10)
+func (n *ngt) uncommittedEntry() (k, v string) {
+	return "vald.agent.index.uncommitted", strconv.FormatUint(n.InsertVQueueBufferLen()+n.DeleteVQueueBufferLen(), 10)
+}
 
-	return entries
+func (n *ngt) processedVqEntries() (k, v string) {
+	return "vald.agent.index.processed-vq", strconv.FormatUint(n.nopvq.Load(), 10)
+}
+
+func (n *ngt) unsavedNumberOfCreateIndexExecutionEntry() (k, v string) {
+	num := n.NumberOfCreateIndexExecution() - n.lastNumberOfCreateIndexExecution()
+	return "vald.agent.index.unsaved-create-index-execution", strconv.FormatUint(num, 10)
+}
+
+func (n *ngt) lastTimeSaveIndexTimestampEntry() (k, v string) {
+	timestamp := time.Now().UTC().Format(time.RFC3339)
+	return "vald.agent.index.last-time-save-index-timestamp", timestamp
+}
+
+func (n *ngt) exportMetricsOnCreateIndex(ctx context.Context) error {
+	entries := make(map[string]string)
+	k, v := n.uncommittedEntry()
+	entries[k] = v
+
+	k, v = n.processedVqEntries()
+	entries[k] = v
+
+	k, v = n.unsavedNumberOfCreateIndexExecutionEntry()
+	entries[k] = v
+
+	return n.updatePodAnnotations(ctx, entries)
+}
+
+func (n *ngt) exportMetricsOnSaveIndex(ctx context.Context) error {
+	entries := make(map[string]string)
+
+	k, v := n.lastTimeSaveIndexTimestampEntry()
+	entries[k] = v
+
+	k, v = n.unsavedNumberOfCreateIndexExecutionEntry()
+	entries[k] = v
+
+	k, v = n.processedVqEntries()
+	entries[k] = v
+
+	return n.updatePodAnnotations(ctx, entries)
 }
