@@ -22,6 +22,10 @@ name = "agent"
 version = "0.1.0"
 
 [[package]]
+name = "algorithm"
+version = "0.1.0"
+
+[[package]]
 name = "anyhow"
 version = "1.0.79"
 source = "registry+https://github.com/rust-lang/crates.io-index"

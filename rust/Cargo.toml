@@ -14,4 +14,4 @@
 # limitations under the License.
 #
 [workspace]
-members = ["libs/proto", "libs/ngt", "bin/agent"]
+members = ["libs/proto", "libs/ngt", "bin/agent", "libs/algorithm"]
