@@ -30,7 +30,7 @@ jobs:
     outputs:
       TAG_NAME: ${{ steps.merge_detection_results.outputs.TAG_NAME }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Determine Docker image tag
         id: determine_tag_name

@@ -50,7 +50,7 @@ jobs:
           make binary/build/zip
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: artifacts-linux
           path: ./artifacts/
@@ -60,7 +60,7 @@ jobs:
     needs:
       - build-linux
     steps:
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v4
         with:
           name: artifacts-linux
           path: tmp/linux

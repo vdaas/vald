@@ -163,21 +163,21 @@ k8s/multi/vald/deploy:
 	-@kubectl create ns $(MIRROR02_NAMESPACE)
 	-@kubectl create ns $(MIRROR03_NAMESPACE)
 	helm install vald-cluster-01 charts/vald \
-		-f ./charts/vald/values/multi-vald/dev-vald-with-mirror.yaml \
-		-f ./charts/vald/values/multi-vald/dev-vald-01.yaml \
+		-f $(ROOTDIR)/charts/vald/values/multi-vald/dev-vald-with-mirror.yaml \
+		-f $(ROOTDIR)/charts/vald/values/multi-vald/dev-vald-01.yaml \
 	    -n $(MIRROR01_NAMESPACE)
 	helm install vald-cluster-02 charts/vald \
-		-f ./charts/vald/values/multi-vald/dev-vald-with-mirror.yaml \
-		-f ./charts/vald/values/multi-vald/dev-vald-02.yaml \
+		-f $(ROOTDIR)/charts/vald/values/multi-vald/dev-vald-with-mirror.yaml \
+		-f $(ROOTDIR)/charts/vald/values/multi-vald/dev-vald-02.yaml \
 	    -n $(MIRROR02_NAMESPACE)
 	helm install vald-cluster-03 charts/vald \
-		-f ./charts/vald/values/multi-vald/dev-vald-with-mirror.yaml \
-		-f ./charts/vald/values/multi-vald/dev-vald-03.yaml \
+		-f $(ROOTDIR)/charts/vald/values/multi-vald/dev-vald-with-mirror.yaml \
+		-f $(ROOTDIR)/charts/vald/values/multi-vald/dev-vald-03.yaml \
 		-n $(MIRROR03_NAMESPACE)
 	kubectl wait --for=condition=ready pod -l app=$(MIRROR_APP_NAME) --timeout=120s -n $(MIRROR01_NAMESPACE)
 	kubectl wait --for=condition=ready pod -l app=$(MIRROR_APP_NAME) --timeout=120s -n $(MIRROR02_NAMESPACE)
 	kubectl wait --for=condition=ready pod -l app=$(MIRROR_APP_NAME) --timeout=120s -n $(MIRROR03_NAMESPACE)
-	kubectl apply -f ./charts/vald/values/multi-vald/mirror-target.yaml \
+	kubectl apply -f $(ROOTDIR)/charts/vald/values/multi-vald/mirror-target.yaml \
 		-n $(MIRROR03_NAMESPACE)
 
 .PHONY: k8s/multi/vald/delete
@@ -515,6 +515,11 @@ $(BINDIR)/telepresence:
 ## swap agent-ngt deployment using telepresence
 telepresence/swap/agent-ngt:
 	@$(call telepresence,vald-agent-ngt,vdaas/vald-agent-ngt)
+
+.PHONY: telepresence/swap/agent-faiss
+## swap agent-faiss deployment using telepresence
+telepresence/swap/agent-faiss:
+	@$(call telepresence,vald-agent-faiss,vdaas/vald-agent-faiss)
 
 .PHONY: telepresence/swap/discoverer
 ## swap discoverer deployment using telepresence

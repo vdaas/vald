@@ -17,6 +17,7 @@
 ## build all docker images
 docker/build: \
 	docker/build/agent-ngt \
+	docker/build/agent-faiss \
 	docker/build/agent-sidecar \
 	docker/build/discoverer-k8s \
 	docker/build/gateway-lb \
@@ -84,6 +85,22 @@ docker/build/agent-ngt:
 	@make DOCKERFILE="$(ROOTDIR)/dockers/agent/core/ngt/Dockerfile" \
 		IMAGE=$(AGENT_IMAGE) \
 		docker/build/image
+
+.PHONY: docker/name/agent-faiss
+docker/name/agent-faiss:
+	@echo "$(ORG)/$(AGENT_IMAGE)"
+
+.PHONY: docker/build/agent-faiss
+## build agent-faiss image
+docker/build/agent-faiss:
+	$(DOCKER) build \
+	    $(DOCKER_OPTS) \
+	    -f dockers/agent/core/faiss/Dockerfile \
+	    -t $(ORG)/vald-agent-faiss:$(TAG) . \
+	    --build-arg GO_VERSION=$(GO_VERSION) \
+	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
+	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
+	    --build-arg MAINTAINER=$(MAINTAINER)
 
 .PHONY: docker/name/agent-sidecar
 docker/name/agent-sidecar:
@@ -160,6 +177,7 @@ docker/name/ci-container:
 docker/build/ci-container:
 	@make DOCKERFILE="$(ROOTDIR)/dockers/ci/base/Dockerfile" \
 		IMAGE=$(CI_CONTAINER_IMAGE) \
+		EXTRA_ARGS="--add-host=registry.npmjs.org:104.16.20.35" \
 		docker/build/image
 
 .PHONY: docker/name/dev-container
