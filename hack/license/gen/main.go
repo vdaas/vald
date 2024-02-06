@@ -209,6 +209,7 @@ func dirwalk(dir string) []string {
 				"CONTRIBUTORS",
 				"GO_VERSION",
 				"NGT_VERSION",
+				"FAISS_VERSION",
 				"Pipefile",
 				"VALD_VERSION",
 				"grp",
@@ -276,7 +277,7 @@ func readAndRewrite(path string) error {
 	} else {
 		tmpl := apache
 		switch filepath.Ext(path) {
-		case ".go":
+		case ".go", ".c", ".h", ".hpp", ".cpp":
 			d.Escape = slushEscape
 			switch fi.Name() {
 			case "errgroup_test.go",

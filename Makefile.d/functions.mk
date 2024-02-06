@@ -49,7 +49,7 @@ define go-vet
 	cat <(GOARCH=amd64 go vet $(ROOTDIR)/...) \
 	  <(GOARCH=386 go vet $(ROOTDIR)/...) \
 	  <(GOARCH=arm go vet $(ROOTDIR)/...) \
-	  | rg -v "Mutex" | sort | uniq
+	  | grep -v "Mutex" | sort | uniq
 endef
 
 
@@ -89,6 +89,28 @@ define run-e2e-crud-test
 	    -portforward-pod-port=$(E2E_TARGET_PORT) \
 	    -namespace=$(E2E_TARGET_NAMESPACE) \
 	    -kubeconfig=$(KUBECONFIG)
+endef
+
+define run-e2e-crud-faiss-test
+	go test \
+	    -race \
+	    -mod=readonly \
+	    $1 \
+	    -v $(ROOTDIR)/tests/e2e/crud/crud_faiss_test.go \
+	    -tags "e2e" \
+	    -timeout $(E2E_TIMEOUT) \
+	    -host=$(E2E_BIND_HOST) \
+	    -port=$(E2E_BIND_PORT) \
+	    -dataset=$(ROOTDIR)/hack/benchmark/assets/dataset/$(E2E_DATASET_NAME).hdf5 \
+	    -insert-num=$(E2E_INSERT_COUNT) \
+	    -search-num=$(E2E_SEARCH_COUNT) \
+	    -update-num=$(E2E_UPDATE_COUNT) \
+	    -remove-num=$(E2E_REMOVE_COUNT) \
+	    -wait-after-insert=$(E2E_WAIT_FOR_CREATE_INDEX_DURATION) \
+	    -portforward=$(E2E_PORTFORWARD_ENABLED) \
+	    -portforward-pod-name=$(E2E_TARGET_POD_NAME) \
+	    -portforward-pod-port=$(E2E_TARGET_PORT) \
+	    -namespace=$(E2E_TARGET_NAMESPACE)
 endef
 
 define run-e2e-multi-crud-test
@@ -208,10 +230,36 @@ define gen-go-option-test-sources
 endef
 
 define gen-vald-crd
-	mv charts/$1/crds/$2.yaml $(TEMP_DIR)/$2.yaml
+	if [[ -f $(ROOTDIR)/charts/$1/crds/$2.yaml ]]; then \
+		mv $(ROOTDIR)/charts/$1/crds/$2.yaml $(TEMP_DIR)/$2.yaml; \
+	fi;
 	GOPRIVATE=$(GOPRIVATE) \
-	go run -mod=readonly hack/helm/schema/crd/main.go \
-	charts/$1/$3.yaml > $(TEMP_DIR)/$2-spec.yaml
+		  go run -mod=readonly $(ROOTDIR)/hack/helm/schema/crd/main.go \
+	$(ROOTDIR)/charts/$3.yaml > $(TEMP_DIR)/$2-spec.yaml
 	$(BINDIR)/yq eval-all 'select(fileIndex==0).spec.versions[0].schema.openAPIV3Schema.properties.spec = select(fileIndex==1).spec | select(fileIndex==0)' \
-	$(TEMP_DIR)/$2.yaml $(TEMP_DIR)/$2-spec.yaml > charts/$1/crds/$2.yaml
+	$(TEMP_DIR)/$2.yaml $(TEMP_DIR)/$2-spec.yaml > $(ROOTDIR)/charts/$1/crds/$2.yaml
+endef
+
+define update-github-actions
+	@for ACTION_NAME in $1; do \
+		if [ -n "$$ACTION_NAME" ]; then \
+			FILE_NAME=`echo $$ACTION_NAME | tr '/' '_' | tr '-' '_' | tr '[:lower:]' '[:upper:]'`; \
+			if [ -n "$$FILE_NAME" ]; then \
+				VERSION=`curl --silent https://api.github.com/repos/$$ACTION_NAME/releases/latest | grep -Po '"tag_name": "\K.*?(?=")' | sed 's/v//g'`;\
+				if [ -n "$$VERSION" ]; then \
+					echo "updating $$ACTION_NAME version file $$FILE_NAME to $$VERSION"; \
+					echo $$VERSION > $(ROOTDIR)/versions/actions/$$FILE_NAME; \
+				else \
+					VERSION=`cat $(ROOTDIR)/versions/actions/$$FILE_NAME`; \
+					echo "No version found for $$ACTION_NAME version file $$FILE_NAME=$$VERSION"; \
+				fi; \
+				VERSION_PREFIX=`echo $$VERSION | cut -c 1`; \
+				find $(ROOTDIR)/.github -type f -exec sed -i "s%$$ACTION_NAME@.*%$$ACTION_NAME@v$$VERSION_PREFIX%g" {} +; \
+			else \
+				echo "No action version file found for $$ACTION_NAME version file $$FILE_NAME" >&2; \
+			fi \
+		else \
+			echo "No action found for $$ACTION_NAME" >&2; \
+		fi \
+	done
 endef

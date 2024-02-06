@@ -17,7 +17,7 @@
 apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
-  name: vald-agent-ngt
+  name: vald-agent
   labels:
     app.kubernetes.io/name: vald
     helm.sh/chart: vald-v1.7.10
@@ -29,4 +29,4 @@ spec:
   maxUnavailable: 1
   selector:
     matchLabels:
-      app: vald-agent-ngt
+      app: vald-agent

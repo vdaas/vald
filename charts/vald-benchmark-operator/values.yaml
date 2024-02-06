@@ -499,7 +499,7 @@ observability:
       - go_version
       - go_os
       - go_arch
-      - ngt_version
+      - algorithm_info
   # @schema {"name": "observability.trace", "type": "object"}
   trace:
     # @schema {"name": "observability.trace.enabled", "type": "boolean"}
