@@ -117,6 +117,7 @@ jobs:
 
       - name: Run formatter and license.go
         run: |
+          env
           make deps/install
           make format
           git checkout go.mod go.sum
