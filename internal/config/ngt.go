@@ -103,6 +103,12 @@ type NGT struct {
 
 	// IsReadReplica represents whether the ngt is read replica or not
 	IsReadReplica bool `json:"is_readreplica" yaml:"is_readreplica"`
+
+	// EnableExportIndexInfoToK8s represents whether the ngt index info is exported to k8s or not
+	EnableExportIndexInfoToK8s bool `yaml:"enable_export_index_info_to_k8s" json:"enable_export_index_info_to_k8s"`
+
+	// ExportIndexInfoDuration represents the duration of exporting index info to k8s
+	ExportIndexInfoDuration string `yaml:"export_index_info_duration" json:"export_index_info_duration,omitempty"`
 }
 
 // KVSDB represent the ngt vector bidirectional kv store configuration.

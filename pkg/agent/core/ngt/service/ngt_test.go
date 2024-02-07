@@ -64,6 +64,7 @@ var defaultConfig = config.NGT{
 	},
 	BrokenIndexHistoryLimit: 1,
 	ErrorBufferLimit:        100,
+	PodName:                 "vald-agent-ngt-test",
 }
 
 type index struct {

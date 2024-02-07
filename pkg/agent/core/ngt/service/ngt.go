@@ -151,8 +151,10 @@ type ngt struct {
 	kvsdbConcurrency int // kvsdb concurrency
 	historyLimit     int // the maximum generation number of broken index backup
 
-	isReadReplica bool
-	client        client.Client
+	isReadReplica           bool
+	enableExportIndexInfo   bool
+	exportIndexInfoDuration time.Duration
+	client                  client.Client
 }
 
 const (
@@ -163,6 +165,11 @@ const (
 	oldIndexDirName    = "backup"
 	originIndexDirName = "origin"
 	brokenIndexDirName = "broken"
+
+	uncommittedAnnotationsKey                    = "vald.vdaas.org/uncommitted"
+	unsavedProcessedVqAnnotationsKey             = "vald.vdaas.org/unsaved-processed-vq"
+	unsavedCreateIndexExecutionNumAnnotationsKey = "vald.vdaas.org/unsaved-create-index-execution-num"
+	lastTimeSaveIndexTimestampAnnotationsKey     = "vald.vdaas.org/last-time-save-index-timestamp"
 )
 
 func New(cfg *config.NGT, opts ...Option) (nn NGT, err error) {
@@ -170,14 +177,15 @@ func New(cfg *config.NGT, opts ...Option) (nn NGT, err error) {
 		return nil, errors.New("pod_name is empty. this must be set either from environment variable or from config file")
 	}
 	n := &ngt{
-		podName:           cfg.PodName,
-		podNamespace:      cfg.PodNamespace,
-		fmap:              make(map[string]int64),
-		dim:               cfg.Dimension,
-		enableProactiveGC: cfg.EnableProactiveGC,
-		enableCopyOnWrite: cfg.EnableCopyOnWrite,
-		kvsdbConcurrency:  cfg.KVSDB.Concurrency,
-		historyLimit:      cfg.BrokenIndexHistoryLimit,
+		podName:               cfg.PodName,
+		podNamespace:          cfg.PodNamespace,
+		fmap:                  make(map[string]int64),
+		dim:                   cfg.Dimension,
+		enableProactiveGC:     cfg.EnableProactiveGC,
+		enableCopyOnWrite:     cfg.EnableCopyOnWrite,
+		kvsdbConcurrency:      cfg.KVSDB.Concurrency,
+		historyLimit:          cfg.BrokenIndexHistoryLimit,
+		enableExportIndexInfo: cfg.EnableExportIndexInfoToK8s,
 	}
 
 	for _, opt := range append(defaultOptions, opts...) {
@@ -228,11 +236,13 @@ func New(cfg *config.NGT, opts ...Option) (nn NGT, err error) {
 	n.indexing.Store(false)
 	n.saving.Store(false)
 
-	c, err := client.New()
-	if err != nil {
-		return nil, fmt.Errorf("failed to create kubernetes client: %w", err)
+	if n.enableExportIndexInfo {
+		c, err := client.New()
+		if err != nil {
+			return nil, fmt.Errorf("failed to create kubernetes client: %w", err)
+		}
+		n.client = c
 	}
-	n.client = c
 
 	return n, nil
 }
@@ -854,9 +864,6 @@ func (n *ngt) Start(ctx context.Context) <-chan error {
 			n.lim = math.MaxInt64
 		}
 
-		// FIXME: delete this
-		n.idelay = 0
-
 		// add initial delay before starting auto indexing
 		if n.idelay > 0 {
 			timer := time.NewTimer(n.idelay)
@@ -872,7 +879,7 @@ func (n *ngt) Start(ctx context.Context) <-chan error {
 		tick := time.NewTicker(n.dur)
 		sTick := time.NewTicker(n.sdur)
 		limit := time.NewTicker(n.lim)
-		k8sTick := time.NewTicker(10 * time.Second) // FIXME: configからtimer設定
+		k8sTick := time.NewTicker(n.exportIndexInfoDuration)
 		defer tick.Stop()
 		defer sTick.Stop()
 		defer limit.Stop()
@@ -896,9 +903,11 @@ func (n *ngt) Start(ctx context.Context) <-chan error {
 			case <-sTick.C:
 				err = n.SaveIndex(ctx)
 			case <-k8sTick.C:
-				log.Debug("k8sTick: flush index info to k8s resource")
-				k, v := n.uncommittedEntry()
-				err = n.updatePodAnnotations(ctx, map[string]string{k: v})
+				if n.enableExportIndexInfo {
+					log.Debug("k8sTick: flush index info to k8s resource")
+					k, v := n.uncommittedEntry()
+					err = n.updatePodAnnotations(ctx, map[string]string{k: v})
+				}
 			}
 			if err != nil && err != errors.ErrUncommittedIndexNotFound {
 				ech <- err
@@ -1259,10 +1268,12 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 	log.Debug("create graph and tree phase finished")
 	log.Info("create index operation finished")
 
-	log.Info("exporting index info to k8s resource")
-	if err := n.exportMetricsOnCreateIndex(ctx); err != nil {
-		log.Warnf("failed to export index info to k8s resource: %v", err)
-		return err
+	if n.enableExportIndexInfo {
+		log.Info("exporting index info to k8s resource")
+		if err := n.exportMetricsOnCreateIndex(ctx); err != nil {
+			log.Errorf("failed to export index info to k8s resource: %v", err)
+			return err
+		}
 	}
 	return err
 }
@@ -1554,8 +1565,10 @@ func (n *ngt) saveIndex(ctx context.Context) (err error) {
 
 	// TODO: 多分ここでnotSavedから引き算すれば良い
 	n.nopvq.Add(-beforeNopvq)
-	if err := n.exportMetricsOnSaveIndex(ctx); err != nil {
-		return err
+	if n.enableExportIndexInfo {
+		if err := n.exportMetricsOnSaveIndex(ctx); err != nil {
+			return err
+		}
 	}
 	return nil
 }
@@ -1836,7 +1849,6 @@ func (n *ngt) toSearchResponse(sr []algorithm.SearchResult) (res *payload.Search
 //	wrap up common logics -> entriesを受け取りそれをただSSAで書き込むだけの部分に分ける
 func (n *ngt) updatePodAnnotations(ctx context.Context, entries map[string]string) error {
 	// FIXME: define as const somewhere
-	// FIXME: 違うフィールドマネージャーを試す？ただuncommittedは共通だから？？？
 	fieldManager := "vald-agent-index-controller"
 
 	var podList client.PodList
@@ -1897,21 +1909,21 @@ func (n *ngt) updatePodAnnotations(ctx context.Context, entries map[string]strin
 }
 
 func (n *ngt) uncommittedEntry() (k, v string) {
-	return "vald.agent.index.uncommitted", strconv.FormatUint(n.InsertVQueueBufferLen()+n.DeleteVQueueBufferLen(), 10)
+	return uncommittedAnnotationsKey, strconv.FormatUint(n.InsertVQueueBufferLen()+n.DeleteVQueueBufferLen(), 10)
 }
 
 func (n *ngt) processedVqEntries() (k, v string) {
-	return "vald.agent.index.processed-vq", strconv.FormatUint(n.nopvq.Load(), 10)
+	return unsavedProcessedVqAnnotationsKey, strconv.FormatUint(n.nopvq.Load(), 10)
 }
 
 func (n *ngt) unsavedNumberOfCreateIndexExecutionEntry() (k, v string) {
 	num := n.NumberOfCreateIndexExecution() - n.lastNumberOfCreateIndexExecution()
-	return "vald.agent.index.unsaved-create-index-execution", strconv.FormatUint(num, 10)
+	return unsavedCreateIndexExecutionNumAnnotationsKey, strconv.FormatUint(num, 10)
 }
 
 func (n *ngt) lastTimeSaveIndexTimestampEntry() (k, v string) {
 	timestamp := time.Now().UTC().Format(time.RFC3339)
-	return "vald.agent.index.last-time-save-index-timestamp", timestamp
+	return lastTimeSaveIndexTimestampAnnotationsKey, timestamp
 }
 
 func (n *ngt) exportMetricsOnCreateIndex(ctx context.Context) error {

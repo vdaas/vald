@@ -1306,4 +1306,89 @@ func TestWithCopyOnWrite(t *testing.T) {
 	}
 }
 
+func TestWithExportIndexInfoDuration(t *testing.T) {
+	type T = ngt
+	type args struct {
+		dur string
+	}
+	type want struct {
+		obj *T
+		err error
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, *T, error) error
+		beforeFunc func(args)
+		afterFunc  func(*testing.T, args)
+	}
+	defaultCheckFunc := func(w want, obj *T, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(obj, w.obj) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
+		}
+		return nil
+	}
+	tests := []test{
+		{
+			name: "set success when duration is empty string",
+			args: args{
+				dur: "",
+			},
+			want: want{
+				obj: &T{
+					exportIndexInfoDuration: 0,
+				},
+			},
+		},
+		{
+			name: "set success when duration is a valid duration string",
+			args: args{
+				dur: "5s",
+			},
+			want: want{
+				obj: &T{
+					exportIndexInfoDuration: 5 * time.Second,
+				},
+			},
+		},
+		{
+			name: "return error when duration is not a valid duration string",
+			args: args{
+				dur: "5ss",
+			},
+			want: want{
+				obj: &T{},
+				err: errors.Join(errors.New("time: unknown unit \"ss\" in duration \"5ss\""), errors.ErrTimeoutParseFailed("5ss")),
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(tt, test.args)
+			}
+			checkFunc := defaultCheckFunc
+			if test.checkFunc != nil {
+				checkFunc = test.checkFunc
+			}
+
+			got := WithExportIndexInfoDuration(test.args.dur)
+			obj := new(T)
+			if err := checkFunc(test.want, obj, got(obj)); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
 // NOT IMPLEMENTED BELOW
