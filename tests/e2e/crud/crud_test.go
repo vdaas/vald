@@ -790,8 +790,8 @@ func TestE2EIndexJobCorrection(t *testing.T) {
 	}
 
 	t.Log("Test case 2: execute index correction after one agent removed")
-	t.Log("removing vald-agent-ngt-0...")
-	cmd := exec.CommandContext(ctx, "sh", "-c", "kubectl delete pod vald-agent-ngt-0 && kubectl wait --for=condition=Ready pod/vald-agent-ngt-0")
+	t.Log("removing vald-agent-0...")
+	cmd := exec.CommandContext(ctx, "sh", "-c", "kubectl delete pod vald-agent-0 && kubectl wait --for=condition=Ready pod/vald-agent-0")
 	out, err := cmd.Output()
 	if err != nil {
 		if exitErr, ok := err.(*exec.ExitError); ok {
