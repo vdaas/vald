@@ -49,12 +49,12 @@ import (
 	"github.com/vdaas/vald/pkg/agent/internal/kvs"
 	"github.com/vdaas/vald/pkg/agent/internal/metadata"
 
+	"github.com/vdaas/vald/pkg/agent/internal/vqueue"
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/fields"
 	kruntime "k8s.io/apimachinery/pkg/runtime"
 	applycorev1 "k8s.io/client-go/applyconfigurations/core/v1"
-	"github.com/vdaas/vald/pkg/agent/internal/vqueue"
 )
 
 type NGT interface {
