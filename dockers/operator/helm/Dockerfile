@@ -56,11 +56,12 @@ RUN apt-get clean \
     && apt-get update -y \
     && apt-get upgrade -y \
     && apt-get install -y --no-install-recommends --fix-missing \
-    ca-certificates \
     build-essential \
+    ca-certificates \
     curl \
-    upx \
+    gcc-multilib \
     git \
+    upx \
     && apt-get clean \
     && rm -rf \
         /var/lib/apt/lists/* \

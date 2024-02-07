@@ -32,6 +32,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     g++ \
     gawk \
     gcc \
+    gcc-multilib \
     git \
     graphviz \
     jq \

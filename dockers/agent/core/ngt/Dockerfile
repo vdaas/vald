@@ -47,6 +47,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     g++ \
     gcc \
+    gcc-multilib \
     git \
     liblapack-dev \
     libomp-dev \

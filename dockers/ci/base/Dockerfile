@@ -51,6 +51,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     g++ \
     gawk \
     gcc \
+    gcc-multilib \
     git \
     gnupg2 \
     graphviz \
@@ -64,7 +65,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     sed \
     unzip \
     zip \
-    gcc-multilib \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 

@@ -49,12 +49,13 @@ ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${LIB_DIR}:/lib
 
 # skipcq: DOK-DL3008, DOK-DL3003
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    ca-certificates \
     build-essential \
+    ca-certificates \
     curl \
-    upx \
     g++ \
+    gcc-multilib \
     git \
+    upx \
     && ldconfig \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* \

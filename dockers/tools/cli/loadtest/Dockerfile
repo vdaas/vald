@@ -38,12 +38,13 @@ ENV PKG tools/cli/${APP_NAME}
 
 # skipcq: DOK-DL3008
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    ca-certificates \
     build-essential \
+    ca-certificates \
     curl \
-    upx \
+    gcc-multilib \
     git \
     libhdf5-dev \
+    upx \
     && ldconfig \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
