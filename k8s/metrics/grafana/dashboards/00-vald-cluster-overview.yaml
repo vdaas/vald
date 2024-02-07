@@ -1,4 +1,3 @@
----
 #
 # Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 #
@@ -689,7 +688,7 @@ data:
               "refId": "A"
             }
           ],
-          "title": "NGT indices",
+          "title": "Indices",
           "type": "stat"
         },
         {
@@ -2201,7 +2200,7 @@ data:
             "hide": 2,
             "includeAll": false,
             "multi": false,
-            "name": "ValdAgentNGT",
+            "name": "ValdAgent",
             "options": [],
             "query": {
               "query": "label_values(app_version_info{server_name=\"agent ngt\", kubernetes_name=~\"$ReplicaSet\"}, kubernetes_name)",
@@ -2313,7 +2312,7 @@ data:
               "type": "prometheus",
               "uid": "prometheus"
             },
-            "definition": "label_values(agent_core_ngt_is_indexing{kubernetes_name =~\"$ValdAgentNGT\"}, target_pod)",
+            "definition": "label_values(agent_core_ngt_is_indexing{kubernetes_name =~\"$ValdAgent\"}, target_pod)",
             "hide": 0,
             "includeAll": true,
             "label": "agent-pod",
@@ -2321,7 +2320,7 @@ data:
             "name": "ValdAgentPodName",
             "options": [],
             "query": {
-              "query": "label_values(agent_core_ngt_is_indexing{kubernetes_name =~\"$ValdAgentNGT\"}, target_pod)",
+              "query": "label_values(agent_core_ngt_is_indexing{kubernetes_name =~\"$ValdAgent\"}, target_pod)",
               "refId": "StandardVariableQuery"
             },
             "refresh": 1,

@@ -18,6 +18,7 @@
 ## build all binaries
 binary/build: \
 	cmd/agent/core/ngt/ngt \
+	cmd/agent/core/faiss/faiss \
 	cmd/agent/sidecar/sidecar \
 	cmd/discoverer/k8s/discoverer \
 	cmd/gateway/lb/lb \
@@ -51,7 +52,43 @@ cmd/agent/core/ngt/ngt: \
 		-X '$(GOPKG)/internal/info.GoOS=$(GOOS)' \
 		-X '$(GOPKG)/internal/info.GoArch=$(GOARCH)' \
 		-X '$(GOPKG)/internal/info.CGOEnabled=$(CGO_ENABLED)' \
-		-X '$(GOPKG)/internal/info.NGTVersion=$(NGT_VERSION)' \
+		-X '$(GOPKG)/internal/info.AlgorithmInfo=NGT-$(NGT_VERSION)' \
+		-X '$(GOPKG)/internal/info.BuildCPUInfoFlags=$(CPU_INFO_FLAGS)' \
+		-buildid=" \
+		-mod=readonly \
+		-modcacherw \
+		-a \
+		-tags "cgo osusergo netgo static_build" \
+		-trimpath \
+		-o $@ \
+		$(dir $@)main.go
+	$@ -version
+
+cmd/agent/core/faiss/faiss: \
+	faiss/install \
+	$(GO_SOURCES_INTERNAL) \
+	$(PBGOS) \
+	$(shell find $(ROOTDIR)/cmd/agent/core/faiss -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go') \
+	$(shell find $(ROOTDIR)/pkg/agent/core/faiss $(ROOTDIR)/pkg/agent/internal -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
+	CFLAGS="$(CFLAGS)" \
+	CXXFLAGS="$(CXXFLAGS)" \
+	CGO_ENABLED=1 \
+	CGO_CXXFLAGS="-g -Ofast -march=native" \
+	CGO_FFLAGS="-g -Ofast -march=native" \
+	CGO_LDFLAGS="-g -Ofast -march=native" \
+	GO111MODULE=on \
+	GOPRIVATE=$(GOPRIVATE) \
+	go build \
+		--ldflags "-w -linkmode 'external' \
+		-extldflags '-fPIC -pthread -fopenmp -std=gnu++20 -lstdc++ -lm -z relro -z now $(EXTLDFLAGS)' \
+		-X '$(GOPKG)/internal/info.Version=$(VERSION)' \
+		-X '$(GOPKG)/internal/info.GitCommit=$(GIT_COMMIT)' \
+		-X '$(GOPKG)/internal/info.BuildTime=$(DATETIME)' \
+		-X '$(GOPKG)/internal/info.GoVersion=$(GO_VERSION)' \
+		-X '$(GOPKG)/internal/info.GoOS=$(GOOS)' \
+		-X '$(GOPKG)/internal/info.GoArch=$(GOARCH)' \
+		-X '$(GOPKG)/internal/info.CGOEnabled=$${CGO_ENABLED}' \
+		-X '$(GOPKG)/internal/info.FaissVersion=$(FAISS_VERSION)' \
 		-X '$(GOPKG)/internal/info.BuildCPUInfoFlags=$(CPU_INFO_FLAGS)' \
 		-buildid=" \
 		-mod=readonly \
@@ -182,8 +219,8 @@ cmd/gateway/filter/filter: \
 cmd/gateway/mirror/mirror: \
 	$(GO_SOURCES_INTERNAL) \
 	$(PBGOS) \
-	$(shell find ./cmd/gateway/mirror -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go') \
-	$(shell find ./pkg/gateway/mirror -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
+	$(shell find $(ROOTDIR)/cmd/gateway/mirror -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go') \
+	$(shell find $(ROOTDIR)/pkg/gateway/mirror -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
 	CGO_ENABLED=0 \
 	GO111MODULE=on \
 	GOPRIVATE=$(GOPRIVATE) \
@@ -355,8 +392,8 @@ cmd/index/job/readreplica/rotate/readreplica-rotate: \
 cmd/tools/benchmark/job/job: \
 	$(GO_SOURCES_INTERNAL) \
 	$(PBGOS) \
-	$(shell find ./cmd/tools/benchmark/job -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go') \
-	$(shell find ./pkg/tools/benchmark/job -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
+	$(shell find $(ROOTDIR)/cmd/tools/benchmark/job -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go') \
+	$(shell find $(ROOTDIR)/pkg/tools/benchmark/job -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
 	CGO_ENABLED=$(CGO_ENABLED) \
 	GO111MODULE=on \
 	GOPRIVATE=$(GOPRIVATE) \
@@ -385,8 +422,8 @@ cmd/tools/benchmark/job/job: \
 cmd/tools/benchmark/operator/operator: \
 	$(GO_SOURCES_INTERNAL) \
 	$(PBGOS) \
-	$(shell find ./cmd/tools/benchmark/operator -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go') \
-	$(shell find ./pkg/tools/benchmark/operator -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
+	$(shell find $(ROOTDIR)/cmd/tools/benchmark/operator -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go') \
+	$(shell find $(ROOTDIR)/pkg/tools/benchmark/operator -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
 	CFLAGS="$(CFLAGS)" \
 	CXXFLAGS="$(CXXFLAGS)" \
 	CGO_ENABLED=1 \
@@ -414,6 +451,7 @@ cmd/tools/benchmark/operator/operator: \
 ## build all binaries and zip them
 binary/build/zip: \
 	artifacts/vald-agent-ngt-$(GOOS)-$(GOARCH).zip \
+	artifacts/vald-agent-faiss-$(GOOS)-$(GOARCH).zip \
 	artifacts/vald-agent-sidecar-$(GOOS)-$(GOARCH).zip \
 	artifacts/vald-discoverer-k8s-$(GOOS)-$(GOARCH).zip \
 	artifacts/vald-lb-gateway-$(GOOS)-$(GOARCH).zip \
@@ -421,6 +459,10 @@ binary/build/zip: \
 	artifacts/vald-manager-index-$(GOOS)-$(GOARCH).zip
 
 artifacts/vald-agent-ngt-$(GOOS)-$(GOARCH).zip: cmd/agent/core/ngt/ngt
+	$(call mkdir, $(dir $@))
+	zip --junk-paths $@ $<
+
+artifacts/vald-agent-faiss-$(GOOS)-$(GOARCH).zip: cmd/agent/core/faiss/faiss
 	$(call mkdir, $(dir $@))
 	zip --junk-paths $@ $<
 

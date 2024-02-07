@@ -26,11 +26,9 @@ on:
         description: "If it is specified, specified platforms will be used."
         required: false
         default: ""
-
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref != 'refs/heads/main' && github.ref || github.sha }}-${{ github.event_name }}-${{ inputs.target }}
   cancel-in-progress: true
-
 jobs:
   dump-contexts-to-log:
     runs-on: ubuntu-latest
@@ -41,6 +39,8 @@ jobs:
     runs-on: ubuntu-latest
     if: >-
       ${{ (github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == false) ||
+
+
           (github.event.pull_request.head.repo.fork == true && github.event_name == 'pull_request_target' && contains(github.event.pull_request.labels.*.name, 'ci/approved')) ||
           (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
           (github.event_name == 'push' && startsWith( github.ref, 'refs/heads/release/v')) ||
@@ -55,21 +55,17 @@ jobs:
           else
             echo ref=${{ github.sha }} >> $GITHUB_OUTPUT
           fi
-
       - uses: actions/checkout@v4
         with:
           ref: ${{ steps.ref.outputs.ref }}
-
       - name: Set Git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
-
       - name: Setup QEMU
         uses: docker/setup-qemu-action@v3
         with:
           image: tonistiigi/binfmt:master
           platforms: linux/amd64,linux/arm64
-
       - name: Setup Docker Buildx
         id: buildx
         uses: docker/setup-buildx-action@v3
@@ -80,13 +76,11 @@ jobs:
             image=moby/buildkit:master
             network=host
           buildkitd-flags: "--debug --oci-worker-gc=false"
-
       - name: Login to DockerHub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USER }}
           password: ${{ secrets.DOCKERHUB_PASS }}
-
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
         with:
@@ -95,7 +89,6 @@ jobs:
           # password: ${{ secrets.GITHUB_TOKEN }}
           username: ${{ secrets.PACKAGE_USER }}
           password: ${{ secrets.PACKAGE_TOKEN }}
-
       - name: Build and Publish
         id: build_and_publish
         uses: ./.github/actions/docker-build
@@ -103,7 +96,6 @@ jobs:
           target: ${{ inputs.target }}
           platforms: ${{ inputs.platforms }}
           builder: ${{ steps.buildx.outputs.name }}
-
       - name: Scan the Docker image
         if: startsWith( github.ref, 'refs/tags/')
         uses: ./.github/actions/scan-docker-image
@@ -115,7 +107,6 @@ jobs:
     if: github.ref == 'refs/heads/main' || startsWith( github.ref, 'refs/tags/')
     steps:
       - uses: actions/checkout@v4
-
       - uses: ./.github/actions/notify-slack
         with:
           author_name: ${{ inputs.target }} image build

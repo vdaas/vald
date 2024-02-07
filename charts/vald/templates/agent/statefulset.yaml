@@ -101,6 +101,7 @@ spec:
           volumeMounts:
             - name: {{ $agent.sidecar.name }}-config
               mountPath: /etc/server/
+            {{- if eq $agent.algorithm "ngt" }}
             {{- if not $agent.ngt.enable_in_memory_mode }}
             {{- if $agent.ngt.index_path }}
             {{- if $agent.persistentVolume.enabled }}
@@ -110,6 +111,7 @@ spec:
             {{- else }}
             - name: {{ $agent.name }}-local
               mountPath: {{ dir $agent.ngt.index_path }}
+            {{- end }}
             {{- end }}
             {{- end }}
             {{- end }}

@@ -15,8 +15,7 @@ package grpc
 
 import (
 	"github.com/vdaas/vald/internal/observability/metrics"
-	"go.opentelemetry.io/otel/sdk/metric/aggregation"
-	"go.opentelemetry.io/otel/sdk/metric/view"
+	view "go.opentelemetry.io/otel/sdk/metric"
 )
 
 const (
@@ -33,29 +32,28 @@ func New() metrics.Metric {
 	return &grpcServerMetrics{}
 }
 
-func (*grpcServerMetrics) View() ([]*metrics.View, error) {
-	latencyHistgram, err := view.New(
-		view.MatchInstrumentName(latencyMetricsName),
-		view.WithSetDescription(latencyMetricsDesctiption),
-		view.WithSetAggregation(aggregation.ExplicitBucketHistogram{
-			Boundaries: metrics.DefaultMillisecondsDistribution,
-		}),
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	completedRPCCnt, err := view.New(
-		view.MatchInstrumentName(completedRPCsMetricsName),
-		view.WithSetDescription(completedRPCsMetricsDescription),
-		view.WithSetAggregation(aggregation.Sum{}),
-	)
-	if err != nil {
-		return nil, err
-	}
-	return []*metrics.View{
-		&latencyHistgram,
-		&completedRPCCnt,
+func (*grpcServerMetrics) View() ([]metrics.View, error) {
+	return []metrics.View{
+		view.NewView(
+			view.Instrument{
+				Name:        latencyMetricsName,
+				Description: latencyMetricsDesctiption,
+			},
+			view.Stream{
+				Aggregation: view.AggregationExplicitBucketHistogram{
+					Boundaries: metrics.DefaultMillisecondsDistribution,
+				},
+			},
+		),
+		view.NewView(
+			view.Instrument{
+				Name:        completedRPCsMetricsName,
+				Description: completedRPCsMetricsDescription,
+			},
+			view.Stream{
+				Aggregation: view.AggregationSum{},
+			},
+		),
 	}, nil
 }
 

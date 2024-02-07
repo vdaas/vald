@@ -24,12 +24,10 @@ on:
   pull_request:
     types:
       - "labeled"
-
 env:
   VALUES: .github/helm/values/values-chaos.yaml
   DATASET: fashion-mnist-784-euclidean.hdf5
   INGRESS_PORT: 8081
-
 jobs:
   dump-contexts-to-log:
     if: startsWith( github.ref, 'refs/tags/') || github.event.action == 'labeled' && github.event.label.name == 'actions/e2e-chaos'
@@ -37,7 +35,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/dump-context
-
   agent-failure:
     name: "E2E chaos test (Agent failure: to test insert/search works even if one of the agents is failing)"
     needs: [dump-contexts-to-log]
@@ -45,17 +42,14 @@ jobs:
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
-
       - name: Set Git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
-
       - name: Setup E2E environment
         id: setup_e2e
         uses: ./.github/actions/setup-e2e
         with:
           ingress_port: ${{ env.INGRESS_PORT }}
-
       - name: Deploy Vald
         id: deploy_vald
         uses: ./.github/actions/e2e-deploy-vald
@@ -64,12 +58,10 @@ jobs:
           helm_extra_options: ${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }}
           values: ${{ env.VALUES }}
           wait_for_selector: app=vald-lb-gateway
-
       - name: Deploy Chaos Mesh
         uses: ./.github/actions/deploy-chaos-mesh
         with:
           helm_extra_options: "--set podChaos.failure.enabled=true"
-
       - name: Run Insert and Search operations
         run: |
           make hack/benchmark/assets/dataset/${{ env.DATASET }}
@@ -82,7 +74,6 @@ jobs:
             E2E_SEARCH_COUNT=5000 \
             E2E_WAIT_FOR_CREATE_INDEX_DURATION=5m \
             e2e/insert/search
-
   random-pod-failure:
     name: "E2E chaos test (random Pod failure: to test redundancy)"
     needs: [dump-contexts-to-log]
@@ -90,17 +81,14 @@ jobs:
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
-
       - name: Set Git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
-
       - name: Setup E2E environment
         id: setup_e2e
         uses: ./.github/actions/setup-e2e
         with:
           ingress_port: ${{ env.INGRESS_PORT }}
-
       - name: Deploy Vald
         id: deploy_vald
         uses: ./.github/actions/e2e-deploy-vald
@@ -109,12 +97,10 @@ jobs:
           helm_extra_options: ${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }}
           values: ${{ env.VALUES }}
           wait_for_selector: app=vald-lb-gateway
-
       - name: Deploy Chaos Mesh
         uses: ./.github/actions/deploy-chaos-mesh
         with:
           helm_extra_options: "--set podChaos.kill.enabled=true"
-
       - name: Run Insert and Search operations
         run: |
           make hack/benchmark/assets/dataset/${{ env.DATASET }}
@@ -127,7 +113,6 @@ jobs:
             E2E_SEARCH_COUNT=5000 \
             E2E_WAIT_FOR_CREATE_INDEX_DURATION=5m \
             e2e/insert/search
-
   agent-network-partition:
     name: "E2E chaos test (agent network partition: to test retries)"
     needs: [dump-contexts-to-log]
@@ -135,17 +120,14 @@ jobs:
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
-
       - name: Set Git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
-
       - name: Setup E2E environment
         id: setup_e2e
         uses: ./.github/actions/setup-e2e
         with:
           ingress_port: ${{ env.INGRESS_PORT }}
-
       - name: Deploy Vald
         id: deploy_vald
         uses: ./.github/actions/e2e-deploy-vald
@@ -154,12 +136,10 @@ jobs:
           helm_extra_options: ${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }}
           values: ${{ env.VALUES }}
           wait_for_selector: app=vald-lb-gateway
-
       - name: Deploy Chaos Mesh
         uses: ./.github/actions/deploy-chaos-mesh
         with:
           helm_extra_options: "--set networkChaos.partition.enabled=true"
-
       - name: Run Insert and Search operations
         run: |
           make hack/benchmark/assets/dataset/${{ env.DATASET }}
@@ -172,7 +152,6 @@ jobs:
             E2E_SEARCH_COUNT=10000 \
             E2E_WAIT_FOR_CREATE_INDEX_DURATION=2m \
             e2e/insert/search
-
   clusterwide-network-bandwidth:
     name: "E2E chaos test (network bandwidth: to test it works properly under bandwidth limitation)"
     needs: [dump-contexts-to-log]
@@ -180,17 +159,14 @@ jobs:
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
-
       - name: Set Git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
-
       - name: Setup E2E environment
         id: setup_e2e
         uses: ./.github/actions/setup-e2e
         with:
           ingress_port: ${{ env.INGRESS_PORT }}
-
       - name: Deploy Vald
         id: deploy_vald
         uses: ./.github/actions/e2e-deploy-vald
@@ -199,12 +175,10 @@ jobs:
           helm_extra_options: ${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }}
           values: ${{ env.VALUES }}
           wait_for_selector: app=vald-lb-gateway
-
       - name: Deploy Chaos Mesh
         uses: ./.github/actions/deploy-chaos-mesh
         with:
           helm_extra_options: "--set networkChaos.bandwidth.enabled=true"
-
       - name: Run Insert and Search operations
         run: |
           make hack/benchmark/assets/dataset/${{ env.DATASET }}
@@ -216,7 +190,6 @@ jobs:
             E2E_INSERT_COUNT=5000 \
             E2E_WAIT_FOR_CREATE_INDEX_DURATION=5m \
             e2e/insert/search
-
   slack-notification:
     name: "Slack notification"
     if: startsWith( github.ref, 'refs/tags/')
@@ -228,7 +201,6 @@ jobs:
       - random-pod-failure
     steps:
       - uses: actions/checkout@v4
-
       - uses: ./.github/actions/notify-slack
         with:
           author_name: E2E Chaos test

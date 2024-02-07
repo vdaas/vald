@@ -25,3 +25,10 @@ const (
 	// MinimumVectorDimensionSize is minimum value of vector dimension.
 	MinimumVectorDimensionSize = 2
 )
+
+// SearchResult is struct for comfortable use in Go.
+type SearchResult struct {
+	ID       uint32
+	Distance float32
+	Error    error
+}

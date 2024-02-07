@@ -55,12 +55,19 @@ GOCACHE := $(eval GOCACHE := $(shell go env GOCACHE))$(GOCACHE)
 GOOS := $(eval GOOS := $(shell go env GOOS))$(GOOS)
 GO_CLEAN_DEPS := true
 GOTEST_TIMEOUT = 30m
+
+RUST_HOME = /usr/local/lib/rust
+RUSTUP_HOME = $(RUST_HOME)/rustup
+CARGO_HOME = $(RUST_HOME)/cargo
+
 TEST_NOT_IMPL_PLACEHOLDER = NOT IMPLEMENTED BELOW
 
 TEMP_DIR := $(eval TEMP_DIR := $(shell mktemp -d))$(TEMP_DIR)
 
-OPERATOR_SDK_VERSION := $(eval OPERATOR_SDK_VERSION := $(shell cat versions/OPERATOR_SDK_VERSION))$(OPERATOR_SDK_VERSION)
+NGT_REPO = github.com/yahoojapan/NGT
 
+BUF_VERSION               := $(eval BUF_VERSION := $(shell cat versions/BUF_VERSION))$(BUF_VERSION)
+FAISS_VERSION             := $(eval FAISS_VERSION := $(shell cat versions/FAISS_VERSION))$(FAISS_VERSION)
 GOLANGCILINT_VERSION      := $(eval GOLANGCILINT_VERSION := $(shell cat versions/GOLANGCILINT_VERSION))$(GOLANGCILINT_VERSION)
 HELM_DOCS_VERSION         := $(eval HELM_DOCS_VERSION := $(shell cat versions/HELM_DOCS_VERSION))$(HELM_DOCS_VERSION)
 HELM_VERSION              := $(eval HELM_VERSION := $(shell cat versions/HELM_VERSION))$(HELM_VERSION)
@@ -68,6 +75,8 @@ JAEGER_OPERATOR_VERSION   := $(eval JAEGER_OPERATOR_VERSION := $(shell cat versi
 KIND_VERSION              := $(eval KIND_VERSION := $(shell cat versions/KIND_VERSION))$(KIND_VERSION)
 KUBECTL_VERSION           := $(eval KUBECTL_VERSION := $(shell cat versions/KUBECTL_VERSION))$(KUBECTL_VERSION)
 KUBELINTER_VERSION        := $(eval KUBELINTER_VERSION := $(shell cat versions/KUBELINTER_VERSION))$(KUBELINTER_VERSION)
+NGT_VERSION               := $(eval NGT_VERSION := $(shell cat versions/NGT_VERSION))$(NGT_VERSION)
+OPERATOR_SDK_VERSION      := $(eval OPERATOR_SDK_VERSION := $(shell cat versions/OPERATOR_SDK_VERSION))$(OPERATOR_SDK_VERSION)
 OTEL_OPERATOR_VERSION     := $(eval OTEL_OPERATOR_VERSION := $(shell cat versions/OTEL_OPERATOR_VERSION))$(OTEL_OPERATOR_VERSION)
 PROMETHEUS_STACK_VERSION  := $(eval PROMETHEUS_STACK_VERSION := $(shell cat versions/PROMETHEUS_STACK_VERSION))$(PROMETHEUS_STACK_VERSION)
 PROTOBUF_VERSION          := $(eval PROTOBUF_VERSION := $(shell cat versions/PROTOBUF_VERSION))$(PROTOBUF_VERSION)
@@ -87,9 +96,6 @@ SWAP_IMAGE           ?= ""
 SWAP_TAG             ?= latest
 
 BINDIR ?= /usr/local/bin
-
-RUST_DIR ?= $(HOME)/.cargo
-RUST_BIN ?= $(RUST_DIR)/bin
 
 UNAME := $(eval UNAME := $(shell uname -s))$(UNAME)
 ARCH := $(eval ARCH := $(shell uname -m))$(ARCH)
@@ -197,29 +203,30 @@ PROTO_PATHS = \
 # - internal/test/comparator
 # - internal/test/mock
 GO_SOURCES = $(eval GO_SOURCES := $(shell find \
-		./cmd \
-		./hack \
-		./internal \
-		./pkg \
-		-not -path './cmd/cli/*' \
-		-not -path './internal/core/algorithm/ngt/*' \
-		-not -path './internal/compress/gob/*' \
-		-not -path './internal/compress/gzip/*' \
-		-not -path './internal/compress/lz4/*' \
-		-not -path './internal/compress/zstd/*' \
-		-not -path './internal/db/storage/blob/s3/sdk/s3/*' \
-		-not -path './internal/db/rdb/mysql/dbr/*' \
-		-not -path './internal/test/comparator/*' \
-		-not -path './internal/test/mock/*' \
-		-not -path './hack/benchmark/internal/client/ngtd/*' \
-		-not -path './hack/benchmark/internal/starter/agent/*' \
-		-not -path './hack/benchmark/internal/starter/external/*' \
-		-not -path './hack/benchmark/internal/starter/gateway/*' \
-		-not -path './hack/gorules/*' \
-		-not -path './hack/license/*' \
-		-not -path './hack/swagger/*' \
-		-not -path './hack/tools/*' \
-		-not -path './tests/*' \
+		$(ROOTDIR)/cmd \
+		$(ROOTDIR)/hack \
+		$(ROOTDIR)/internal \
+		$(ROOTDIR)/pkg \
+		-not -path '$(ROOTDIR)/cmd/cli/*' \
+		-not -path '$(ROOTDIR)/internal/core/algorithm/ngt/*' \
+		-not -path '$(ROOTDIR)/internal/core/algorithm/faiss/*' \
+		-not -path '$(ROOTDIR)/internal/compress/gob/*' \
+		-not -path '$(ROOTDIR)/internal/compress/gzip/*' \
+		-not -path '$(ROOTDIR)/internal/compress/lz4/*' \
+		-not -path '$(ROOTDIR)/internal/compress/zstd/*' \
+		-not -path '$(ROOTDIR)/internal/db/storage/blob/s3/sdk/s3/*' \
+		-not -path '$(ROOTDIR)/internal/db/rdb/mysql/dbr/*' \
+		-not -path '$(ROOTDIR)/internal/test/comparator/*' \
+		-not -path '$(ROOTDIR)/internal/test/mock/*' \
+		-not -path '$(ROOTDIR)/hack/benchmark/internal/client/ngtd/*' \
+		-not -path '$(ROOTDIR)/hack/benchmark/internal/starter/agent/*' \
+		-not -path '$(ROOTDIR)/hack/benchmark/internal/starter/external/*' \
+		-not -path '$(ROOTDIR)/hack/benchmark/internal/starter/gateway/*' \
+		-not -path '$(ROOTDIR)/hack/gorules/*' \
+		-not -path '$(ROOTDIR)/hack/license/*' \
+		-not -path '$(ROOTDIR)/hack/swagger/*' \
+		-not -path '$(ROOTDIR)/hack/tools/*' \
+		-not -path '$(ROOTDIR)/tests/*' \
 		-type f \
 		-name '*.go' \
 		-not -regex '.*options?\.go' \
@@ -227,29 +234,30 @@ GO_SOURCES = $(eval GO_SOURCES := $(shell find \
 		-not -name '*_mock.go' \
 		-not -name 'doc.go'))$(GO_SOURCES)
 GO_OPTION_SOURCES = $(eval GO_OPTION_SOURCES := $(shell find \
-		./cmd \
-		./hack \
-		./internal \
-		./pkg \
-		-not -path './cmd/cli/*' \
-		-not -path './internal/core/algorithm/ngt/*' \
-		-not -path './internal/compress/gob/*' \
-		-not -path './internal/compress/gzip/*' \
-		-not -path './internal/compress/lz4/*' \
-		-not -path './internal/compress/zstd/*' \
-		-not -path './internal/db/storage/blob/s3/sdk/s3/*' \
-		-not -path './internal/db/rdb/mysql/dbr/*' \
-		-not -path './internal/test/comparator/*' \
-		-not -path './internal/test/mock/*' \
-		-not -path './hack/benchmark/internal/client/ngtd/*' \
-		-not -path './hack/benchmark/internal/starter/agent/*' \
-		-not -path './hack/benchmark/internal/starter/external/*' \
-		-not -path './hack/benchmark/internal/starter/gateway/*' \
-		-not -path './hack/gorules/*' \
-		-not -path './hack/license/*' \
-		-not -path './hack/swagger/*' \
-		-not -path './hack/tools/*' \
-		-not -path './tests/*' \
+		$(ROOTDIR)/cmd \
+		$(ROOTDIR)/hack \
+		$(ROOTDIR)/internal \
+		$(ROOTDIR)/pkg \
+		-not -path '$(ROOTDIR)/cmd/cli/*' \
+		-not -path '$(ROOTDIR)/internal/core/algorithm/ngt/*' \
+		-not -path '$(ROOTDIR)/internal/core/algorithm/faiss/*' \
+		-not -path '$(ROOTDIR)/internal/compress/gob/*' \
+		-not -path '$(ROOTDIR)/internal/compress/gzip/*' \
+		-not -path '$(ROOTDIR)/internal/compress/lz4/*' \
+		-not -path '$(ROOTDIR)/internal/compress/zstd/*' \
+		-not -path '$(ROOTDIR)/internal/db/storage/blob/s3/sdk/s3/*' \
+		-not -path '$(ROOTDIR)/internal/db/rdb/mysql/dbr/*' \
+		-not -path '$(ROOTDIR)/internal/test/comparator/*' \
+		-not -path '$(ROOTDIR)/internal/test/mock/*' \
+		-not -path '$(ROOTDIR)/hack/benchmark/internal/client/ngtd/*' \
+		-not -path '$(ROOTDIR)/hack/benchmark/internal/starter/agent/*' \
+		-not -path '$(ROOTDIR)/hack/benchmark/internal/starter/external/*' \
+		-not -path '$(ROOTDIR)/hack/benchmark/internal/starter/gateway/*' \
+		-not -path '$(ROOTDIR)/hack/gorules/*' \
+		-not -path '$(ROOTDIR)/hack/license/*' \
+		-not -path '$(ROOTDIR)/hack/swagger/*' \
+		-not -path '$(ROOTDIR)/hack/tools/*' \
+		-not -path '$(ROOTDIR)/tests/*' \
 		-type f \
 		-regex '.*options?\.go' \
 		-not -name '*_test.go' \
@@ -257,7 +265,7 @@ GO_OPTION_SOURCES = $(eval GO_OPTION_SOURCES := $(shell find \
 		-not -name 'doc.go'))$(GO_OPTION_SOURCES)
 
 GO_SOURCES_INTERNAL = $(eval GO_SOURCES_INTERNAL := $(shell find \
-		./internal \
+		$(ROOTDIR)/internal \
 		-type f \
 		-name '*.go' \
 		-not -name '*_test.go' \
@@ -343,32 +351,33 @@ all: clean deps
 
 .PHONY: clean
 ## clean
-clean:
-	rm -rf vendor
-	go clean -cache -modcache -testcache -i -r
-	mv ./apis/grpc/v1/vald/vald.go $(TEMP_DIR)/vald.go
-	mv ./apis/grpc/v1/agent/core/agent.go $(TEMP_DIR)/agent.go
-	mv ./apis/grpc/v1/payload/interface.go $(TEMP_DIR)/interface.go
+clean: \
+	clean-generated \
+	proto/all \
+	deps \
+	format
+
+.PHONY: clean-generated
+## clean generated files
+clean-generated:
+	mv $(ROOTDIR)/apis/grpc/v1/vald/vald.go $(TEMP_DIR)/vald.go
+	mv $(ROOTDIR)/apis/grpc/v1/agent/core/agent.go $(TEMP_DIR)/agent.go
+	mv $(ROOTDIR)/apis/grpc/v1/payload/interface.go $(TEMP_DIR)/interface.go
 	rm -rf \
-		/go/pkg \
-		./*.log \
-		./*.svg \
-		./apis/docs \
-		./apis/swagger \
-		./apis/grpc \
-		./bench \
-		./pprof \
-		./libs \
-		$(GOCACHE) \
-		./go.sum \
-		./go.mod
-	mkdir -p ./apis/grpc/v1/vald
-	mv $(TEMP_DIR)/vald.go ./apis/grpc/v1/vald/vald.go
-	mkdir -p ./apis/grpc/v1/agent/core
-	mv $(TEMP_DIR)/agent.go ./apis/grpc/v1/agent/core/agent.go
-	mkdir -p ./apis/grpc/v1/payload
-	mv $(TEMP_DIR)/interface.go ./apis/grpc/v1/payload/interface.go
-	cp ./hack/go.mod.default ./go.mod
+		$(ROOTDIR)/*.log \
+		$(ROOTDIR)/*.svg \
+		$(ROOTDIR)/apis/docs \
+		$(ROOTDIR)/apis/swagger \
+		$(ROOTDIR)/apis/grpc \
+		$(ROOTDIR)/bench \
+		$(ROOTDIR)/pprof \
+		$(ROOTDIR)/libs
+	mkdir -p $(ROOTDIR)/apis/grpc/v1/vald
+	mv $(TEMP_DIR)/vald.go $(ROOTDIR)/apis/grpc/v1/vald/vald.go
+	mkdir -p $(ROOTDIR)/apis/grpc/v1/agent/core
+	mv $(TEMP_DIR)/agent.go $(ROOTDIR)/apis/grpc/v1/agent/core/agent.go
+	mkdir -p $(ROOTDIR)/apis/grpc/v1/payload
+	mv $(TEMP_DIR)/interface.go $(ROOTDIR)/apis/grpc/v1/payload/interface.go
 
 .PHONY: license
 ## add license to files
@@ -397,13 +406,15 @@ tools/install: \
 .PHONY: update
 ## update deps, license, and run golines, gofumpt, goimports
 update: \
-	clean \
+	clean-generated \
 	update/libs \
+	update/actions \
 	proto/all \
 	deps \
 	update/template \
 	format \
-	go/deps
+	go/deps \
+	rust/deps
 
 .PHONY: format
 ## format go codes
@@ -422,10 +433,10 @@ format/go: \
 	gofumpt/install \
 	strictgoimports/install \
 	goimports/install
-	find ./ -type d -name .git -prune -o -type f -regex '.*[^\.pb]\.go' -print | xargs $(GOBIN)/golines -w -m $(GOLINES_MAX_WIDTH)
-	find ./ -type d -name .git -prune -o -type f -regex '.*[^\.pb]\.go' -print | xargs $(GOBIN)/gofumpt -w
-	find ./ -type d -name .git -prune -o -type f -regex '.*[^\.pb]\.go' -print | xargs $(GOBIN)/strictgoimports -w
-	find ./ -type d -name .git -prune -o -type f -regex '.*\.go' -print | xargs $(GOBIN)/goimports -w
+	find $(ROOTDIR)/ -type d -name .git -prune -o -type f -regex '.*[^\.pb]\.go' -print | xargs $(GOBIN)/golines -w -m $(GOLINES_MAX_WIDTH)
+	find $(ROOTDIR)/ -type d -name .git -prune -o -type f -regex '.*[^\.pb]\.go' -print | xargs $(GOBIN)/gofumpt -w
+	find $(ROOTDIR)/ -type d -name .git -prune -o -type f -regex '.*[^\.pb]\.go' -print | xargs $(GOBIN)/strictgoimports -w
+	find $(ROOTDIR)/ -type d -name .git -prune -o -type f -regex '.*\.go' -print | xargs $(GOBIN)/goimports -w
 
 .PHONY: format/go/test
 ## run golines, gofumpt, goimports for go test files
@@ -484,7 +495,9 @@ deps/install: \
 	strictgoimports/install \
 	goimports/install \
 	prettier/install \
-	go/deps
+	go/deps \
+	go/example/deps \
+	rust/deps
 
 .PHONY: version
 ## print vald version
@@ -545,6 +558,20 @@ ngt/install: /usr/local/include/NGT/Capi.h
 	rm -rf $(TEMP_DIR)/NGT-$(NGT_VERSION)
 	ldconfig
 
+.PHONY: faiss/install
+## install Faiss
+faiss/install: /usr/local/lib/libfaiss.so
+/usr/local/lib/libfaiss.so:
+	curl -LO https://github.com/facebookresearch/faiss/archive/v$(FAISS_VERSION).tar.gz
+	tar zxf v$(FAISS_VERSION).tar.gz -C $(TEMP_DIR)/
+	cd $(TEMP_DIR)/faiss-$(FAISS_VERSION) && \
+		cmake -DFAISS_ENABLE_GPU=OFF -DFAISS_ENABLE_PYTHON=OFF -DBUILD_TESTING=OFF -DBUILD_SHARED_LIBS=ON -B build . && \
+		make -C build -j faiss && \
+		make -C build install
+	rm -rf v$(FAISS_VERSION).tar.gz
+	rm -rf $(TEMP_DIR)/faiss-$(FAISS_VERSION)
+	ldconfig
+
 .PHONY: lint
 ## run lints
 lint: vet
@@ -577,6 +604,7 @@ changelog/next/print:
 	    sed -e 's/{{ version }}/$(VERSION)/g'
 	@echo "$$BODY"
 
+include Makefile.d/actions.mk
 include Makefile.d/bench.mk
 include Makefile.d/build.mk
 include Makefile.d/client.mk

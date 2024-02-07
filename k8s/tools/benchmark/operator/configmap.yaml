@@ -131,7 +131,7 @@ data:
           - go_version
           - go_os
           - go_arch
-          - ngt_version
+          - algorithm_info
         enable_memory: true
         enable_goroutine: true
         enable_cgo: true
