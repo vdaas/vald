@@ -19,23 +19,23 @@ package config
 
 // TCP represents the TCP configuration for server.
 type Transport struct {
-	RoundTripper *RoundTripper `yaml:"round_tripper" json:"round_tripper"`
-	Backoff      *Backoff      `yaml:"backoff"       json:"backoff"`
+	RoundTripper *RoundTripper `json:"round_tripper" yaml:"round_tripper"`
+	Backoff      *Backoff      `json:"backoff"       yaml:"backoff"`
 }
 
 // RoundTripper represents the round trip configuration for transport.
 type RoundTripper struct {
-	TLSHandshakeTimeout   string `yaml:"tls_handshake_timeout"    json:"tls_handshake_timeout"`
-	MaxIdleConns          int    `yaml:"max_idle_conns"           json:"max_idle_conns"`
-	MaxIdleConnsPerHost   int    `yaml:"max_idle_conns_per_host"  json:"max_idle_conns_per_host"`
-	MaxConnsPerHost       int    `yaml:"max_conns_per_host"       json:"max_conns_per_host"`
-	IdleConnTimeout       string `yaml:"idle_conn_timeout"        json:"idle_conn_timeout"`
-	ResponseHeaderTimeout string `yaml:"response_header_timeout"  json:"response_header_timeout"`
-	ExpectContinueTimeout string `yaml:"expect_continue_timeout"  json:"expect_continue_timeout"`
-	MaxResponseHeaderSize int64  `yaml:"max_response_header_size" json:"max_response_header_size"`
-	WriteBufferSize       int64  `yaml:"write_buffer_size"        json:"write_buffer_size"`
-	ReadBufferSize        int64  `yaml:"read_buffer_size"         json:"read_buffer_size"`
-	ForceAttemptHTTP2     bool   `yaml:"force_attempt_http_2"     json:"force_attempt_http_2"`
+	TLSHandshakeTimeout   string `json:"tls_handshake_timeout"    yaml:"tls_handshake_timeout"`
+	MaxIdleConns          int    `json:"max_idle_conns"           yaml:"max_idle_conns"`
+	MaxIdleConnsPerHost   int    `json:"max_idle_conns_per_host"  yaml:"max_idle_conns_per_host"`
+	MaxConnsPerHost       int    `json:"max_conns_per_host"       yaml:"max_conns_per_host"`
+	IdleConnTimeout       string `json:"idle_conn_timeout"        yaml:"idle_conn_timeout"`
+	ResponseHeaderTimeout string `json:"response_header_timeout"  yaml:"response_header_timeout"`
+	ExpectContinueTimeout string `json:"expect_continue_timeout"  yaml:"expect_continue_timeout"`
+	MaxResponseHeaderSize int64  `json:"max_response_header_size" yaml:"max_response_header_size"`
+	WriteBufferSize       int64  `json:"write_buffer_size"        yaml:"write_buffer_size"`
+	ReadBufferSize        int64  `json:"read_buffer_size"         yaml:"read_buffer_size"`
+	ForceAttemptHTTP2     bool   `json:"force_attempt_http_2"     yaml:"force_attempt_http_2"`
 }
 
 // Bind binds the actual data from the RoundTripper receiver fields.
