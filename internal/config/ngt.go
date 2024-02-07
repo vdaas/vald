@@ -20,74 +20,74 @@ package config
 // NGT represent the ngt core configuration for server.
 type NGT struct {
 	// PodName represent the ngt pod name
-	PodName string `yaml:"pod_name" json:"pod_name,omitempty"`
+	PodName string `json:"pod_name,omitempty" yaml:"pod_name"`
 
 	// PodNamespace represent the ngt pod namespace
-	PodNamespace string `yaml:"namespace" json:"namespace,omitempty"`
+	PodNamespace string `json:"namespace,omitempty" yaml:"namespace"`
 
 	// IndexPath represent the ngt index file path
-	IndexPath string `yaml:"index_path" json:"index_path,omitempty"`
+	IndexPath string `json:"index_path,omitempty" yaml:"index_path"`
 
 	// Dimension represent the ngt index dimension
-	Dimension int `yaml:"dimension" json:"dimension,omitempty" info:"dimension"`
+	Dimension int `info:"dimension" json:"dimension,omitempty" yaml:"dimension"`
 
 	// BulkInsertChunkSize represent the bulk insert chunk size
-	BulkInsertChunkSize int `yaml:"bulk_insert_chunk_size" json:"bulk_insert_chunk_size,omitempty"`
+	BulkInsertChunkSize int `json:"bulk_insert_chunk_size,omitempty" yaml:"bulk_insert_chunk_size"`
 
 	// DistanceType represent the ngt index distance type
 	// it should be `l1`, `l2`, `angle`, `hamming`, `cosine`,`poincare`, `lorentz`, `jaccard`, `sparsejaccard`, `normalizedangle` or `normalizedcosine`. for further details about NGT libraries supported distance is https://github.com/yahoojapan/NGT/wiki/Command-Quick-Reference and vald agent's supported NGT distance type is https://pkg.go.dev/github.com/vdaas/vald/internal/core/algorithm/ngt#pkg-constants
-	DistanceType string `yaml:"distance_type" json:"distance_type,omitempty" info:"distance_type"`
+	DistanceType string `info:"distance_type" json:"distance_type,omitempty" yaml:"distance_type"`
 
 	// ObjectType represent the ngt index object type float or int
-	ObjectType string `yaml:"object_type" json:"object_type,omitempty" info:"object_type"`
+	ObjectType string `info:"object_type" json:"object_type,omitempty" yaml:"object_type"`
 
 	// CreationEdgeSize represent the index edge count
-	CreationEdgeSize int `yaml:"creation_edge_size" json:"creation_edge_size,omitempty"`
+	CreationEdgeSize int `json:"creation_edge_size,omitempty" yaml:"creation_edge_size"`
 
 	// SearchEdgeSize represent the search edge size
-	SearchEdgeSize int `yaml:"search_edge_size" json:"search_edge_size,omitempty"`
+	SearchEdgeSize int `json:"search_edge_size,omitempty" yaml:"search_edge_size"`
 
 	// AutoIndexDurationLimit represents auto indexing duration limit
-	AutoIndexDurationLimit string `yaml:"auto_index_duration_limit" json:"auto_index_duration_limit,omitempty"`
+	AutoIndexDurationLimit string `json:"auto_index_duration_limit,omitempty" yaml:"auto_index_duration_limit"`
 
 	// AutoIndexCheckDuration represent checking loop duration about auto indexing execution
-	AutoIndexCheckDuration string `yaml:"auto_index_check_duration" json:"auto_index_check_duration,omitempty"`
+	AutoIndexCheckDuration string `json:"auto_index_check_duration,omitempty" yaml:"auto_index_check_duration"`
 
 	// AutoSaveIndexDuration represent checking loop duration about auto save index execution
-	AutoSaveIndexDuration string `yaml:"auto_save_index_duration" json:"auto_save_index_duration,omitempty"`
+	AutoSaveIndexDuration string `json:"auto_save_index_duration,omitempty" yaml:"auto_save_index_duration"`
 
 	// AutoIndexLength represent auto index length limit
-	AutoIndexLength int `yaml:"auto_index_length" json:"auto_index_length,omitempty"`
+	AutoIndexLength int `json:"auto_index_length,omitempty" yaml:"auto_index_length"`
 
 	// InitialDelayMaxDuration represent maximum duration for initial delay
-	InitialDelayMaxDuration string `yaml:"initial_delay_max_duration" json:"initial_delay_max_duration,omitempty"`
+	InitialDelayMaxDuration string `json:"initial_delay_max_duration,omitempty" yaml:"initial_delay_max_duration"`
 
 	// EnableInMemoryMode enables on memory ngt indexing mode
-	EnableInMemoryMode bool `yaml:"enable_in_memory_mode" json:"enable_in_memory_mode,omitempty"`
+	EnableInMemoryMode bool `json:"enable_in_memory_mode,omitempty" yaml:"enable_in_memory_mode"`
 
 	// DefaultPoolSize represent default create index batch pool size
-	DefaultPoolSize uint32 `yaml:"default_pool_size" json:"default_pool_size,omitempty"`
+	DefaultPoolSize uint32 `json:"default_pool_size,omitempty" yaml:"default_pool_size"`
 
 	// DefaultRadius represent default radius used for search
-	DefaultRadius float32 `yaml:"default_radius" json:"default_radius,omitempty"`
+	DefaultRadius float32 `json:"default_radius,omitempty" yaml:"default_radius"`
 
 	// DefaultEpsilon represent default epsilon used for search
-	DefaultEpsilon float32 `yaml:"default_epsilon" json:"default_epsilon,omitempty"`
+	DefaultEpsilon float32 `json:"default_epsilon,omitempty" yaml:"default_epsilon"`
 
 	// MinLoadIndexTimeout represents minimum duration of load index timeout
-	MinLoadIndexTimeout string `yaml:"min_load_index_timeout" json:"min_load_index_timeout,omitempty"`
+	MinLoadIndexTimeout string `json:"min_load_index_timeout,omitempty" yaml:"min_load_index_timeout"`
 
 	// MaxLoadIndexTimeout represents maximum duration of load index timeout
-	MaxLoadIndexTimeout string `yaml:"max_load_index_timeout" json:"max_load_index_timeout,omitempty"`
+	MaxLoadIndexTimeout string `json:"max_load_index_timeout,omitempty" yaml:"max_load_index_timeout"`
 
 	// LoadIndexTimeoutFactor represents a factor of load index timeout
-	LoadIndexTimeoutFactor string `yaml:"load_index_timeout_factor" json:"load_index_timeout_factor,omitempty"`
+	LoadIndexTimeoutFactor string `json:"load_index_timeout_factor,omitempty" yaml:"load_index_timeout_factor"`
 
 	// EnableProactiveGC enables more proactive GC call for reducing heap memory allocation
-	EnableProactiveGC bool `yaml:"enable_proactive_gc" json:"enable_proactive_gc,omitempty"`
+	EnableProactiveGC bool `json:"enable_proactive_gc,omitempty" yaml:"enable_proactive_gc"`
 
 	// EnableCopyOnWrite enables copy on write saving
-	EnableCopyOnWrite bool `yaml:"enable_copy_on_write" json:"enable_copy_on_write,omitempty"`
+	EnableCopyOnWrite bool `json:"enable_copy_on_write,omitempty" yaml:"enable_copy_on_write"`
 
 	// VQueue represent the ngt vector queue buffer size
 	VQueue *VQueue `json:"vqueue,omitempty" yaml:"vqueue"`
@@ -96,13 +96,13 @@ type NGT struct {
 	KVSDB *KVSDB `json:"kvsdb,omitempty" yaml:"kvsdb"`
 
 	// BrokenIndexHistoryLimit represents the maximum number of broken index generations that will be backed up
-	BrokenIndexHistoryLimit int `yaml:"broken_index_history_limit" json:"broken_index_history_limit,omitempty"`
+	BrokenIndexHistoryLimit int `json:"broken_index_history_limit,omitempty" yaml:"broken_index_history_limit"`
 
 	// ErrorBufferLimit represents the maximum number of core ngt error buffer pool size limit
-	ErrorBufferLimit uint64 `yaml:"error_buffer_limit" json:"error_buffer_limit,omitempty"`
+	ErrorBufferLimit uint64 `json:"error_buffer_limit,omitempty" yaml:"error_buffer_limit"`
 
 	// IsReadReplica represents whether the ngt is read replica or not
-	IsReadReplica bool `yaml:"is_readreplica" json:"is_readreplica"`
+	IsReadReplica bool `json:"is_readreplica" yaml:"is_readreplica"`
 }
 
 // KVSDB represent the ngt vector bidirectional kv store configuration
