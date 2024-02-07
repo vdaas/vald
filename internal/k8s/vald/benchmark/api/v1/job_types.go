@@ -23,7 +23,7 @@ import (
 )
 
 type BenchmarkJobSpec struct {
-	*config.GlobalConfig    `json:",omitempty" yaml:""`
+	*config.GlobalConfig    `json:",omitempty"                           yaml:""`
 	ServerConfig            *config.Servers            `json:"server_config,omitempty"              yaml:"server_config"`
 	Target                  *BenchmarkTarget           `json:"target,omitempty"                     yaml:"target"`
 	Dataset                 *BenchmarkDataset          `json:"dataset,omitempty"                    yaml:"dataset"`
