@@ -62,10 +62,8 @@ roles:
   contributor:
     policies:
       - label
-
 default-roles:
   - contributor
-
 users:
   kpango:
     role:

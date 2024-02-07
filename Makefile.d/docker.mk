@@ -93,14 +93,9 @@ docker/name/agent-faiss:
 .PHONY: docker/build/agent-faiss
 ## build agent-faiss image
 docker/build/agent-faiss:
-	$(DOCKER) build \
-	    $(DOCKER_OPTS) \
-	    -f dockers/agent/core/faiss/Dockerfile \
-	    -t $(ORG)/vald-agent-faiss:$(TAG) . \
-	    --build-arg GO_VERSION=$(GO_VERSION) \
-	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
-	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
-	    --build-arg MAINTAINER=$(MAINTAINER)
+	@make DOCKERFILE="$(ROOTDIR)/dockers/agent/core/faiss/Dockerfile" \
+		IMAGE=$(AGENT_IMAGE) \
+		docker/build/image
 
 .PHONY: docker/name/agent-sidecar
 docker/name/agent-sidecar:

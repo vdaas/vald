@@ -20,17 +20,14 @@ on:
     paths:
       - "charts/**"
       - "k8s/**"
-
 jobs:
   dump-contexts-to-log:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/dump-context
-
   detect-ci-container:
     uses: ./.github/workflows/_detect-ci-container.yml
-
   kubeval-conflint:
     name: runner / kubeval-conflint
     runs-on: ubuntu-latest
@@ -39,11 +36,9 @@ jobs:
       image: ghcr.io/vdaas/vald/vald-ci-container:${{ needs.detect-ci-container.outputs.TAG_NAME }}
     steps:
       - uses: actions/checkout@v4
-
       - name: Set Git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
-
       - name: Run kubeval-conflint
         run: |
           set -vx
@@ -53,7 +48,6 @@ jobs:
           CONFLINT_LOG: DEBUG
           REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPORTER: github-pr-review
-
   kubelinter-k8s-manifests:
     name: runner / kubelinter
     runs-on: ubuntu-latest
@@ -62,11 +56,9 @@ jobs:
       image: ghcr.io/vdaas/vald/vald-ci-container:${{ needs.detect-ci-container.outputs.TAG_NAME }}
     steps:
       - uses: actions/checkout@v4
-
       - name: Set Git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
-
       - name: Run kubelinter for k8s directory
         run: |
           kube-linter lint \
@@ -75,7 +67,6 @@ jobs:
             k8s/discoverer \
             k8s/gateway \
             k8s/manager
-
   kubelinter-vald-chart:
     name: runner / kubelinter for vald chart
     runs-on: ubuntu-latest
@@ -84,11 +75,9 @@ jobs:
       image: ghcr.io/vdaas/vald/vald-ci-container:${{ needs.detect-ci-container.outputs.TAG_NAME }}
     steps:
       - uses: actions/checkout@v4
-
       - name: Set Git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
-
       - name: Run kubelinter for generated manifests
         run: |
           kube-linter lint \

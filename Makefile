@@ -42,7 +42,6 @@ MAINTAINER                      = "$(ORG).org $(NAME) team <$(NAME)@$(ORG).org>"
 
 VERSION ?= $(eval VERSION := $(shell cat versions/VALD_VERSION))$(VERSION)
 
-NGT_VERSION := $(eval NGT_VERSION := $(shell cat versions/NGT_VERSION))$(NGT_VERSION)
 NGT_REPO = github.com/yahoojapan/NGT
 
 GOPRIVATE = $(GOPKG),$(GOPKG)/apis,$(GOPKG)-client-go
@@ -55,6 +54,7 @@ GOCACHE := $(eval GOCACHE := $(shell go env GOCACHE))$(GOCACHE)
 GOOS := $(eval GOOS := $(shell go env GOOS))$(GOOS)
 GO_CLEAN_DEPS := true
 GOTEST_TIMEOUT = 30m
+CGO_ENABLED = 1
 
 RUST_HOME = /usr/local/lib/rust
 RUSTUP_HOME = $(RUST_HOME)/rustup
@@ -64,9 +64,8 @@ TEST_NOT_IMPL_PLACEHOLDER = NOT IMPLEMENTED BELOW
 
 TEMP_DIR := $(eval TEMP_DIR := $(shell mktemp -d))$(TEMP_DIR)
 
-NGT_REPO = github.com/yahoojapan/NGT
-
 BUF_VERSION               := $(eval BUF_VERSION := $(shell cat versions/BUF_VERSION))$(BUF_VERSION)
+NGT_VERSION 		  := $(eval NGT_VERSION := $(shell cat versions/NGT_VERSION))$(NGT_VERSION)
 FAISS_VERSION             := $(eval FAISS_VERSION := $(shell cat versions/FAISS_VERSION))$(FAISS_VERSION)
 GOLANGCILINT_VERSION      := $(eval GOLANGCILINT_VERSION := $(shell cat versions/GOLANGCILINT_VERSION))$(GOLANGCILINT_VERSION)
 HELM_DOCS_VERSION         := $(eval HELM_DOCS_VERSION := $(shell cat versions/HELM_DOCS_VERSION))$(HELM_DOCS_VERSION)
@@ -103,8 +102,13 @@ PWD := $(eval PWD := $(shell pwd))$(PWD)
 
 ifeq ($(UNAME),Linux)
 CPU_INFO_FLAGS := $(eval CPU_INFO_FLAGS := $(shell cat /proc/cpuinfo | grep flags | cut -d " " -f 2- | head -1))$(CPU_INFO_FLAGS)
+CORES := $(eval CORES := $(shell nproc 2>/dev/null || getconf _NPROCESSORS_ONLN 2>/dev/null))$(CORES)
+else ifeq ($(UNAME),Darwin)
+CPU_INFO_FLAGS := ""
+CORES := $(eval CORES := $(shell sysctl -n hw.ncpu 2>/dev/null || getconf _NPROCESSORS_ONLN 2>/dev/null))$(CORES)
 else
 CPU_INFO_FLAGS := ""
+CORES := 1
 endif
 
 GIT_COMMIT := $(eval GIT_COMMIT := $(shell git rev-list -1 HEAD))$(GIT_COMMIT)
@@ -384,6 +388,8 @@ clean-generated:
 license:
 	GOPRIVATE=$(GOPRIVATE) \
 	MAINTAINER=$(MAINTAINER) \
+	GOARCH=$(GOARCH) \
+	GOOS=$(GOOS) \
 	go run -mod=readonly hack/license/gen/main.go $(ROOTDIR)
 
 .PHONY: init
@@ -412,9 +418,9 @@ update: \
 	proto/all \
 	deps \
 	update/template \
-	format \
 	go/deps \
-	rust/deps
+	rust/deps \
+	format
 
 .PHONY: format
 ## format go codes
@@ -433,10 +439,10 @@ format/go: \
 	gofumpt/install \
 	strictgoimports/install \
 	goimports/install
-	find $(ROOTDIR)/ -type d -name .git -prune -o -type f -regex '.*[^\.pb]\.go' -print | xargs $(GOBIN)/golines -w -m $(GOLINES_MAX_WIDTH)
-	find $(ROOTDIR)/ -type d -name .git -prune -o -type f -regex '.*[^\.pb]\.go' -print | xargs $(GOBIN)/gofumpt -w
-	find $(ROOTDIR)/ -type d -name .git -prune -o -type f -regex '.*[^\.pb]\.go' -print | xargs $(GOBIN)/strictgoimports -w
-	find $(ROOTDIR)/ -type d -name .git -prune -o -type f -regex '.*\.go' -print | xargs $(GOBIN)/goimports -w
+	find $(ROOTDIR)/ -type d -name .git -prune -o -type f -regex '.*[^\.pb]\.go' -print | xargs -P$(CORES) $(GOBIN)/golines -w -m $(GOLINES_MAX_WIDTH)
+	find $(ROOTDIR)/ -type d -name .git -prune -o -type f -regex '.*[^\.pb]\.go' -print | xargs -P$(CORES) $(GOBIN)/gofumpt -w
+	find $(ROOTDIR)/ -type d -name .git -prune -o -type f -regex '.*[^\.pb]\.go' -print | xargs -P$(CORES) $(GOBIN)/strictgoimports -w
+	find $(ROOTDIR)/ -type d -name .git -prune -o -type f -regex '.*\.go' -print | xargs -P$(CORES) $(GOBIN)/goimports -w
 
 .PHONY: format/go/test
 ## run golines, gofumpt, goimports for go test files
@@ -445,19 +451,19 @@ format/go/test: \
 	gofumpt/install \
 	strictgoimports/install \
 	goimports/install
-	find $(ROOTDIR)/* -name '*_test.go' | xargs $(GOBIN)/golines -w -m $(GOLINES_MAX_WIDTH)
-	find $(ROOTDIR)/* -name '*_test.go' | xargs $(GOBIN)/gofumpt -w
-	find $(ROOTDIR)/* -name '*_test.go' | xargs $(GOBIN)/strictgoimports -w
-	find $(ROOTDIR)/* -name '*_test.go' | xargs $(GOBIN)/goimports -w
+	find $(ROOTDIR) -name '*_test.go' | xargs -P$(CORES) $(GOBIN)/golines -w -m $(GOLINES_MAX_WIDTH)
+	find $(ROOTDIR) -name '*_test.go' | xargs -P$(CORES) $(GOBIN)/gofumpt -w
+	find $(ROOTDIR) -name '*_test.go' | xargs -P$(CORES) $(GOBIN)/strictgoimports -w
+	find $(ROOTDIR) -name '*_test.go' | xargs -P$(CORES) $(GOBIN)/goimports -w
 
 .PHONY: format/yaml
 format/yaml: \
-	prettier/install
-	prettier --write \
-	    "$(ROOTDIR)/.github/**/*.yaml" \
-	    "$(ROOTDIR)/.github/**/*.yml" \
-	    "$(ROOTDIR)/cmd/**/*.yaml" \
-	    "$(ROOTDIR)/k8s/**/*.yaml"
+	prettier/install\
+	yamlfmt/install
+	-find $(ROOTDIR) -name "*.yaml" -type f | grep -v templates | grep -v s3 | xargs -P$(CORES) -I {} prettier --write {}
+	-find $(ROOTDIR) -name "*.yml" -type f | grep -v templates | grep -v s3 | xargs -P$(CORES) -I {} prettier --write {}
+	-find $(ROOTDIR) -name "*.yaml" -type f | grep -v templates | grep -v s3 | xargs -P$(CORES) -I {} yamlfmt {}
+	-find $(ROOTDIR) -name "*.yml" -type f | grep -v templates | grep -v s3 | xargs -P$(CORES) -I {} yamlfmt {}
 
 .PHONY: format/md
 format/md: \

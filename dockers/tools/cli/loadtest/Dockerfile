@@ -15,14 +15,13 @@
 # limitations under the License.
 #
 
-ARG GO_VERSION=latest
 ARG MAINTAINER="vdaas.org vald team <vald@vdaas.org>"
-
-FROM --platform=${BUILDPLATFORM} golang:${GO_VERSION} AS golang
 
 FROM --platform=${BUILDPLATFORM} ubuntu:devel AS builder
 
+ARG GO_VERSION
 ARG TARGETARCH
+ARG TARGETOS
 
 ENV GO111MODULE on
 ENV DEBIAN_FRONTEND noninteractive
@@ -48,8 +47,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-COPY --from=golang /usr/local/go $GOROOT
-RUN mkdir -p "$GOPATH/src"
+WORKDIR /tmp
+RUN BIN_NAME="go" \
+    && TAR_NAME="${BIN_NAME}${GO_VERSION}.${TARGETOS}-${TARGETARCH}.tar.gz" \
+    && curl -fsSLO "https://go.dev/dl/${TAR_NAME}" \
+    && tar zxf "${TAR_NAME}" \
+    && rm "${TAR_NAME}" \
+    && mv ${BIN_NAME} ${GOROOT} \
+    && ${BIN_NAME} version \
+    && mkdir -p "${GOPATH}/src"
 
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/Makefile.d
 COPY Makefile.d .
@@ -61,7 +67,7 @@ COPY go.sum .
 
 RUN --mount=type=cache,target="${GOPATH}/pkg",id="go-build-${TARGETARCH}" \
     --mount=type=cache,target="${HOME}/.cache/go-build",id="go-build-${TARGETARCH}" \
-    make go/download
+    make GOARCH=${TARGETARCH} GOOS=${TARGETOS} go/download
 
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/internal
 COPY internal .

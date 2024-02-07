@@ -2411,7 +2411,7 @@ func TestDefaultHealthServerOption(t *testing.T) {
 			args: args{
 				name: "name",
 				host: "host",
-				path: "path",
+				path: "/path",
 				port: 8080,
 			},
 			checkFunc: func(opts []Option) error {

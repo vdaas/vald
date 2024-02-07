@@ -15,18 +15,16 @@
 # limitations under the License.
 #
 
-ARG GO_VERSION=latest
 # ARG DISTROLESS_IMAGE=gcr.io/distroless/static
 # ARG DISTROLESS_IMAGE_TAG=nonroot
 ARG MAINTAINER="vdaas.org vald team <vald@vdaas.org>"
 
-FROM --platform=${BUILDPLATFORM} golang:${GO_VERSION} AS golang
-
 FROM --platform=${BUILDPLATFORM} ubuntu:devel AS builder
 
+ARG GO_VERSION
 ARG TARGETARCH
+ARG TARGETOS
 
-ENV ARCH=${TARGETARCH}
 ENV GO111MODULE on
 ENV DEBIAN_FRONTEND noninteractive
 ENV INITRD No
@@ -55,8 +53,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-COPY --from=golang /usr/local/go $GOROOT
-RUN mkdir -p "$GOPATH/src"
+WORKDIR /tmp
+RUN BIN_NAME="go" \
+    && TAR_NAME="${BIN_NAME}${GO_VERSION}.${TARGETOS}-${TARGETARCH}.tar.gz" \
+    && curl -fsSLO "https://go.dev/dl/${TAR_NAME}" \
+    && tar zxf "${TAR_NAME}" \
+    && rm "${TAR_NAME}" \
+    && mv ${BIN_NAME} ${GOROOT} \
+    && ${BIN_NAME} version \
+    && mkdir -p "${GOPATH}/src"
 
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/Makefile.d
 COPY Makefile.d .
@@ -66,9 +71,9 @@ COPY .git .
 COPY go.mod .
 COPY go.sum .
 
-RUN --mount=type=cache,target="${GOPATH}/pkg",id="go-build-${ARCH}" \
-    --mount=type=cache,target="${HOME}/.cache/go-build",id="go-build-${ARCH}" \
-    make go/download
+RUN --mount=type=cache,target="${GOPATH}/pkg",id="go-build-${TARGETARCH}" \
+    --mount=type=cache,target="${HOME}/.cache/go-build",id="go-build-${TARGETARCH}" \
+    make GOARCH=${TARGETARCH} GOOS=${TARGETOS} go/download
 
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/internal
 COPY internal .
@@ -92,9 +97,9 @@ WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}
 RUN update-alternatives --set libblas.so-x86_64-linux-gnu /usr/lib/x86_64-linux-gnu/libmkl_rt.so \
      && make faiss/install
 
-RUN --mount=type=cache,target="${GOPATH}/pkg",id="go-build-${ARCH}" \
-    --mount=type=cache,target="${HOME}/.cache/go-build",id="go-build-${ARCH}" \
-    make REPO=${ORG} NAME=${REPO} cmd/${PKG}/${APP_NAME} \
+RUN --mount=type=cache,target="${GOPATH}/pkg",id="go-build-${TARGETARCH}" \
+    --mount=type=cache,target="${HOME}/.cache/go-build",id="go-build-${TARGETARCH}" \
+    make GOARCH=${TARGETARCH} GOOS=${TARGETOS} REPO=${ORG} NAME=${REPO} cmd/${PKG}/${APP_NAME} \
     && mv "cmd/${PKG}/${APP_NAME}" "/usr/bin/${APP_NAME}"
 
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/cmd/${PKG}

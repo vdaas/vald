@@ -18,10 +18,16 @@
 ARG MAINTAINER="vdaas.org vald team <vald@vdaas.org>"
 
 # skipcq: DOK-DL3026
-FROM --platform=${BUILDPLATFORM} mcr.microsoft.com/vscode/devcontainers/go:1 AS base
+FROM --platform=${BUILDPLATFORM} ubuntu:devel AS builder
 LABEL maintainer="${MAINTAINER}"
 
+ARG GO_VERSION
 ARG TARGETARCH
+ARG TARGETOS
+
+ENV GOROOT /opt/go
+ENV GOPATH /go
+ENV PATH ${PATH}:${GOROOT}/bin:${GOPATH}/bin:/usr/local/bin
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 # skipcq: DOK-DL3008
@@ -47,6 +53,16 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
+WORKDIR /tmp
+RUN BIN_NAME="go" \
+    && TAR_NAME="${BIN_NAME}${GO_VERSION}.${TARGETOS}-${TARGETARCH}.tar.gz" \
+    && curl -fsSLO "https://go.dev/dl/${TAR_NAME}" \
+    && tar zxf "${TAR_NAME}" \
+    && rm "${TAR_NAME}" \
+    && mv ${BIN_NAME} ${GOROOT} \
+    && ${BIN_NAME} version \
+    && mkdir -p "${GOPATH}/src"
+
 WORKDIR ${GOPATH}/src/github.com/vdaas/vald
 COPY Makefile .
 COPY Makefile.d Makefile.d
@@ -58,14 +74,14 @@ COPY example/client/go.mod.default example/client/go.mod.default
 # basic deps
 RUN --mount=type=cache,target="${GOPATH}/pkg",id="go-build-${TARGETARCH}" \
     --mount=type=cache,target="${HOME}/.cache/go-build",id="go-build-${TARGETARCH}" \
-    make deps GO_CLEAN_DEPS=false \
+    make GOARCH=${TARGETARCH} GOOS=${TARGETOS} deps GO_CLEAN_DEPS=false \
     && make ngt/install \
     && make faiss/install \
     && make helm/install \
     && make helm-docs/install \
     && make valdcli/install \
     && make yq/install \
-    && make golangci-lint/install \
+    && make GOARCH=${TARGETARCH} GOOS=${TARGETOS} golangci-lint/install \
     && make reviewdog/install \
     && make kubectl/install \
     && make k3d/install \

@@ -19,12 +19,10 @@ metadata:
   name: jaeger
 spec:
   strategy: allInOne
-
   allInOne:
     image: jaegertracing/all-in-one:latest
     options:
       log-level: debug
-
   # spec for jaeger-collector components.
   collector:
     replicas: 3
@@ -33,14 +31,12 @@ spec:
       prometheus.io/path: "/metrics"
       prometheus.io/port: "14268"
     serviceType: ClusterIP
-
   # spec for sampling of jaeger-collector.
   sampling:
     options:
       default_strategy:
         type: probabilistic
         param: 0.5
-
   # spec for ui of jaeger-query.
   ui:
     options:
@@ -48,7 +44,6 @@ spec:
         dagMaxNumServices: 500
         menuEnabled: true
       archiveEnabled: true
-
   # spec for in memory storage.
   storage:
     type: memory

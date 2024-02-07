@@ -19,12 +19,10 @@
 target:
   # @schema {"name": "target.host", "type": "string", "minLength": 1}
   # target.host -- target cluster host
-  host:
-    "vald-lb-gateway.default.svc.cluster.local"
-    # @schema {"name": "target.port", "type": "integer", "minimum": 0, "maximum": 65535}
+  host: "vald-lb-gateway.default.svc.cluster.local"
+  # @schema {"name": "target.port", "type": "integer", "minimum": 0, "maximum": 65535}
   # target.port -- target cluster port
   port: 8081
-
 # @schema {"name": "dataset", "type": "object", "required": ["name", "indexes", "group", "range"]}
 # dataset -- dataset information
 dataset:
@@ -49,7 +47,6 @@ dataset:
   # @schema {"name": "dataset.url", "type": "string"}
   # dataset.url -- the dataset url which is used for executing benchmark job with user defined hdf5 file
   url: ""
-
 # @schema {"name": "jobs", "type": "array", "items": {"type": "object"}}
 jobs:
   - target:

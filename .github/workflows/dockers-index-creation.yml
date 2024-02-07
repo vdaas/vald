@@ -69,7 +69,6 @@ on:
       - "cmd/index/job/creation/**"
       - "dockers/index/job/creation/Dockerfile"
       - "versions/GO_VERSION"
-
 jobs:
   build:
     uses: ./.github/workflows/_docker-image.yaml

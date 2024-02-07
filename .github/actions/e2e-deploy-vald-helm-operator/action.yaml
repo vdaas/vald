@@ -15,7 +15,6 @@
 #
 name: "Deploy Vald using vald-helm-operator for E2E test"
 description: "A action to deploy vald using vald-helm-operator for E2E test"
-
 inputs:
   require_minio:
     description: "If Minio is required, set this to true."
@@ -49,7 +48,6 @@ outputs:
   POD_NAME:
     description: "A pod name that waited for"
     value: ${{ steps.deploy_vald.outputs.POD_NAME }}
-
 runs:
   using: "composite"
   steps:
@@ -59,12 +57,10 @@ runs:
       if: ${{ inputs.require_minio == 'true' }}
       run: |
         make K8S_SLEEP_DURATION_FOR_WAIT_COMMAND=10 k8s/external/minio/deploy
-
     - name: Dump valdrelease
       shell: bash
       run: |
         cat ${{ inputs.valdrelease }}
-
     - name: Deploy vald helm operator from remote charts
       shell: bash
       id: deploy_vald_helm_operator_remote
@@ -79,7 +75,6 @@ runs:
       env:
         DEFAULT_IMAGE_TAG: ${{ inputs.default_image_tag }}
         HELM_EXTRA_OPTIONS: ${{ inputs.helm_extra_options }}
-
     - name: Deploy vald helm operator from local charts
       shell: bash
       id: deploy_vald_helm_operator_local
@@ -90,7 +85,6 @@ runs:
       env:
         DEFAULT_IMAGE_TAG: ${{ inputs.default_image_tag }}
         HELM_EXTRA_OPTIONS: ${{ inputs.helm_extra_options }}
-
     - name: Deploy vald
       shell: bash
       id: deploy_vald

@@ -17,7 +17,6 @@
 defaults:
   image:
     tag: latest
-
 agent:
   ngt:
     auto_index_duration_limit: 30m
@@ -28,14 +27,11 @@ agent:
     object_type: float
     creation_edge_size: 20
     search_edge_size: 10
-
 gateway:
   lb:
     enabled: false
-
 discoverer:
   enabled: false
-
 manager:
   index:
     enabled: false

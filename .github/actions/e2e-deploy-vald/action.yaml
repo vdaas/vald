@@ -15,7 +15,6 @@
 #
 name: "Deploy Vald for E2E test"
 description: "A action to deploy vald for E2E test"
-
 inputs:
   require_minio:
     description: "If Minio is required, set this to true."
@@ -52,7 +51,6 @@ outputs:
   POD_NAME:
     description: "A pod name that waited for"
     value: ${{ steps.get_real_pod_name.outputs.POD_NAME }}
-
 runs:
   using: "composite"
   steps:
@@ -62,12 +60,10 @@ runs:
       if: ${{ inputs.require_minio == 'true' }}
       run: |
         make K8S_SLEEP_DURATION_FOR_WAIT_COMMAND=10 k8s/external/minio/deploy
-
     - name: Dump Helm values
       shell: bash
       run: |
         cat ${{ inputs.values }}
-
     - name: Change namespace
       if: ${{ inputs.namespace != '' }}
       shell: bash
@@ -75,7 +71,6 @@ runs:
         kubectl create ns ${NAMESPACE} ; kubectl config set-context --current --namespace=${NAMESPACE}
       env:
         NAMESPACE: ${{ inputs.namespace }}
-
     - name: Deploy vald from remote charts
       shell: bash
       id: deploy_vald_remote
@@ -101,7 +96,6 @@ runs:
         HELM_EXTRA_OPTIONS: ${{ inputs.helm_extra_options }}
         WAIT_FOR_SELECTOR: ${{ inputs.wait_for_selector }}
         WAIT_FOR_TIMEOUT: ${{ inputs.wait_for_timeout }}
-
     - name: Deploy vald from local charts
       shell: bash
       id: deploy_vald_local
@@ -123,7 +117,6 @@ runs:
         HELM_EXTRA_OPTIONS: ${{ inputs.helm_extra_options }}
         WAIT_FOR_SELECTOR: ${{ inputs.wait_for_selector }}
         WAIT_FOR_TIMEOUT: ${{ inputs.wait_for_timeout }}
-
     - name: Get real pod name
       shell: bash
       id: get_real_pod_name

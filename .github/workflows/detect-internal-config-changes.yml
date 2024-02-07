@@ -19,14 +19,12 @@ on:
     paths:
       - "internal/config/**"
       - "!internal/config/**/*_test.go"
-
 jobs:
   dump-contexts-to-log:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/dump-context
-
   warning:
     runs-on: ubuntu-latest
     steps:

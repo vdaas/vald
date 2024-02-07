@@ -72,7 +72,6 @@ on:
       - "cmd/manager/index/**"
       - "dockers/manager/index/Dockerfile"
       - "versions/GO_VERSION"
-
 jobs:
   build:
     uses: ./.github/workflows/_docker-image.yaml
