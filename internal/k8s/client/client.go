@@ -32,7 +32,6 @@ import (
 	"k8s.io/utils/pointer"
 	ctrl "sigs.k8s.io/controller-runtime"
 	cli "sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
 
 type (
@@ -100,11 +99,10 @@ type Client interface {
 
 type client struct {
 	scheme    *runtime.Scheme
-	reader    cli.Reader
 	withWatch cli.WithWatch
 }
 
-func New(opts ...Option) (Client, error) {
+func New(opts ...Option) (_ Client, err error) {
 	c := new(client)
 	if c.scheme == nil {
 		c.scheme = runtime.NewScheme()
@@ -122,13 +120,7 @@ func New(opts ...Option) (Client, error) {
 	if err := snapshotv1.AddToScheme(c.scheme); err != nil {
 		return nil, err
 	}
-	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), manager.Options{
-		Scheme: c.scheme,
-	})
-	if err != nil {
-		return nil, err
-	}
-	c.reader = mgr.GetAPIReader()
+
 	c.withWatch, err = cli.NewWithWatch(ctrl.GetConfigOrDie(), cli.Options{
 		Scheme: c.scheme,
 	})
@@ -140,7 +132,7 @@ func New(opts ...Option) (Client, error) {
 }
 
 func (c *client) Get(ctx context.Context, name, namespace string, obj cli.Object, opts ...cli.GetOption) error {
-	return c.reader.Get(
+	return c.withWatch.Get(
 		ctx,
 		cli.ObjectKey{
 			Name:      name,
@@ -152,7 +144,7 @@ func (c *client) Get(ctx context.Context, name, namespace string, obj cli.Object
 }
 
 func (c *client) List(ctx context.Context, list cli.ObjectList, opts ...cli.ListOption) error {
-	return c.reader.List(ctx, list, opts...)
+	return c.withWatch.List(ctx, list, opts...)
 }
 
 func (c *client) Create(ctx context.Context, obj Object, opts ...CreateOption) error {
