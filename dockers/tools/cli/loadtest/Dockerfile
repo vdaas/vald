@@ -41,6 +41,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     ca-certificates \
     curl \
+    g++-multilib  \
     gcc-multilib \
     git \
     libhdf5-dev \

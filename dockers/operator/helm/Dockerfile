@@ -59,6 +59,7 @@ RUN apt-get clean \
     build-essential \
     ca-certificates \
     curl \
+    g++-multilib  \
     gcc-multilib \
     git \
     upx \

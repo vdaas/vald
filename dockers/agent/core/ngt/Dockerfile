@@ -46,6 +46,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     cmake \
     curl \
     g++ \
+    g++-multilib  \
     gcc \
     gcc-multilib \
     git \

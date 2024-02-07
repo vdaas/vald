@@ -53,6 +53,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
     curl \
     g++ \
+    g++-multilib  \
     gcc-multilib \
     git \
     upx \
