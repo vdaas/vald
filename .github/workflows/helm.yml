@@ -21,17 +21,14 @@ on:
       - "v*.*.*"
       - "*.*.*-*"
       - "v*.*.*-*"
-
 jobs:
   dump-contexts-to-log:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/dump-context
-
   detect-ci-container:
     uses: ./.github/workflows/_detect-ci-container.yml
-
   update-helm-chart:
     name: Update Helm chart
     runs-on: ubuntu-latest
@@ -43,25 +40,20 @@ jobs:
         with:
           fetch-depth: 0
           token: ${{ secrets.DISPATCH_TOKEN }}
-
       - name: Set Git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
-
       - uses: crazy-max/ghaction-import-gpg@v6
         with:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           git_user_signingkey: true
           git_commit_gpgsign: true
-
       - name: Setup Helm environment
         uses: ./.github/actions/setup-helm
-
       - name: Packaging
         run: |
           make helm/package/vald
           make helm/package/vald-helm-operator
-
       - name: Push to gh-pages
         run: |
           git checkout .
@@ -77,22 +69,18 @@ jobs:
         env:
           GITHUB_USER: ${{ secrets.DISPATCH_USER }}
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
-
   crud-on-remote-helm-chart:
     name: CRUD test on remote Helm chart
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
-
       - name: Set Git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
-
       - name: Setup E2E environment
         id: setup_e2e
         uses: ./.github/actions/setup-e2e
-
       - name: Deploy Vald
         id: deploy_vald
         uses: ./.github/actions/e2e-deploy-vald
@@ -101,7 +89,6 @@ jobs:
           values: .github/helm/values/values-lb.yaml
           wait_for_selector: app=vald-lb-gateway
           use_local_charts: false
-
       - name: Run E2E CRUD
         run: |
           make hack/benchmark/assets/dataset/${DATASET}

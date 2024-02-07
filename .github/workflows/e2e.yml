@@ -26,7 +26,6 @@ on:
       - "labeled"
 env:
   DATASET: fashion-mnist-784-euclidean.hdf5
-
 jobs:
   dump-contexts-to-log:
     if: startsWith( github.ref, 'refs/tags/') || github.event.action == 'labeled' && github.event.label.name == 'actions/e2e-deploy'
@@ -34,7 +33,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/dump-context
-
   e2e-stream-crud:
     name: "E2E test (Stream CRUD)"
     needs: [dump-contexts-to-log]
@@ -42,15 +40,12 @@ jobs:
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
-
       - name: Set Git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
-
       - name: Setup E2E environment
         id: setup_e2e
         uses: ./.github/actions/setup-e2e
-
       - name: Deploy Vald
         id: deploy_vald
         uses: ./.github/actions/e2e-deploy-vald
@@ -59,7 +54,6 @@ jobs:
           helm_extra_options: ${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }}
           values: .github/helm/values/values-lb.yaml
           wait_for_selector: app=vald-lb-gateway
-
       - name: Run E2E CRUD
         run: |
           make hack/benchmark/assets/dataset/${{ env.DATASET }}
@@ -78,7 +72,6 @@ jobs:
             e2e
         env:
           POD_NAME: ${{ steps.deploy_vald.outputs.POD_NAME }}
-
   e2e-stream-crud-for-operator:
     name: "E2E test (Stream CRUD) for operator"
     needs: [dump-contexts-to-log]
@@ -86,15 +79,12 @@ jobs:
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
-
       - name: Set Git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
-
       - name: Setup E2E environment
         id: setup_e2e
         uses: ./.github/actions/setup-e2e
-
       - name: Create Helm options for vald-helm-operator
         uses: ./.github/actions/setup-e2e
         id: vald_helm_operator
@@ -104,7 +94,6 @@ jobs:
           require_go: false
           require_helm: false
           require_k3d: false
-
       - name: Merge Docker image tag
         run: |
           yq e ".spec.defaults.image.tag=\"${{ steps.setup_e2e.outputs.DEFAULT_IMAGE_TAG }}\"" -i ./.github/valdrelease/valdrelease.yaml
@@ -119,7 +108,6 @@ jobs:
             TAG="\"${ARR[1]}\""
             yq e ".spec.$FIELD=$TAG" -i ./.github/valdrelease/valdrelease.yaml
           done
-
       - name: Deploy Vald using Vald Helm Operator
         id: deploy_vald
         uses: ./.github/actions/e2e-deploy-vald-helm-operator
@@ -128,7 +116,6 @@ jobs:
           helm_extra_options: ${{ steps.vald_helm_operator.outputs.HELM_EXTRA_OPTIONS }}
           valdrelease: ./.github/valdrelease/valdrelease.yaml
           wait_for_selector: app=vald-lb-gateway
-
       - name: Run E2E CRUD
         run: |
           make hack/benchmark/assets/dataset/${{ env.DATASET }}
@@ -147,7 +134,6 @@ jobs:
             e2e
         env:
           POD_NAME: ${{ steps.deploy_vald.outputs.POD_NAME }}
-
   e2e-stream-crud-under-index-management-jobs:
     name: "E2E test (Stream CRUD) under index management jobs"
     needs: [dump-contexts-to-log]
@@ -155,21 +141,14 @@ jobs:
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
-
       - name: Set Git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
-
       - name: Setup E2E environment
         id: setup_e2e
         uses: ./.github/actions/setup-e2e
         with:
-          target_images: "vdaas/vald-agent-ngt \
-            vdaas/vald-discoverer-k8s \
-            vdaas/vald-lb-gateway \
-            vdaas/vald-index-creation \
-            vdaas/vald-index-save"
-
+          target_images: "vdaas/vald-agent-ngt vdaas/vald-discoverer-k8s vdaas/vald-lb-gateway vdaas/vald-index-creation vdaas/vald-index-save"
       - name: Deploy Vald
         id: deploy_vald
         uses: ./.github/actions/e2e-deploy-vald
@@ -179,7 +158,6 @@ jobs:
           helm_extra_options: ${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }} ${{ env.HELM_EXTRA_OPTIONS }}
           values: .github/helm/values/values-lb.yaml
           wait_for_selector: app=vald-lb-gateway
-
       - name: Run E2E CRUD
         run: |
           make hack/benchmark/assets/dataset/${{ env.DATASET }}
@@ -198,7 +176,6 @@ jobs:
             e2e
         env:
           POD_NAME: ${{ steps.deploy_vald.outputs.POD_NAME }}
-
   e2e-stream-crud-skip-exist-check:
     name: "E2E test (Stream CRUD: skip strict exist check)"
     needs: [dump-contexts-to-log]
@@ -206,15 +183,12 @@ jobs:
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
-
       - name: Set Git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
-
       - name: Setup E2E environment
         id: setup_e2e
         uses: ./.github/actions/setup-e2e
-
       - name: Deploy Vald
         id: deploy_vald
         uses: ./.github/actions/e2e-deploy-vald
@@ -223,7 +197,6 @@ jobs:
           helm_extra_options: ${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }}
           values: .github/helm/values/values-lb.yaml
           wait_for_selector: app=vald-lb-gateway
-
       - name: Run E2E CRUD
         run: |
           make hack/benchmark/assets/dataset/${{ env.DATASET }}
@@ -242,7 +215,6 @@ jobs:
             e2e/skip
         env:
           POD_NAME: ${{ steps.deploy_vald.outputs.POD_NAME }}
-
   e2e-multiapis-crud:
     name: "E2E test (Multi-APIs CRUD)"
     needs: [dump-contexts-to-log]
@@ -250,15 +222,12 @@ jobs:
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
-
       - name: Set Git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
-
       - name: Setup E2E environment
         id: setup_e2e
         uses: ./.github/actions/setup-e2e
-
       - name: Deploy Vald
         id: deploy_vald
         uses: ./.github/actions/e2e-deploy-vald
@@ -267,7 +236,6 @@ jobs:
           helm_extra_options: ${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }}
           values: .github/helm/values/values-lb.yaml
           wait_for_selector: app=vald-lb-gateway
-
       - name: Run E2E CRUD
         run: |
           make hack/benchmark/assets/dataset/${{ env.DATASET }}
@@ -282,7 +250,6 @@ jobs:
             e2e/multi
         env:
           POD_NAME: ${{ steps.deploy_vald.outputs.POD_NAME }}
-
   e2e-jobs:
     name: "E2E test (Jobs)"
     needs: [dump-contexts-to-log]
@@ -290,15 +257,12 @@ jobs:
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
-
       - name: Set Git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
-
       - name: Setup E2E environment
         id: setup_e2e
         uses: ./.github/actions/setup-e2e
-
       - name: Deploy Vald
         id: deploy_vald
         uses: ./.github/actions/e2e-deploy-vald
@@ -306,7 +270,6 @@ jobs:
           helm_extra_options: ${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }}
           values: .github/helm/values/values-lb.yaml
           wait_for_selector: app=vald-lb-gateway
-
       - name: Run E2E Jobs
         run: |
           make hack/benchmark/assets/dataset/${{ env.DATASET }}
@@ -318,7 +281,6 @@ jobs:
             e2e/index/job/correction
         env:
           POD_NAME: ${{ steps.deploy_vald.outputs.POD_NAME }}
-
   e2e-stream-crud-with-readreplica:
     name: "E2E test (Stream CRUD) with read replica"
     needs: [dump-contexts-to-log]
@@ -326,18 +288,15 @@ jobs:
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
-
       - name: Set Git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
-
       - name: Setup E2E environment
         id: setup_e2e
         uses: ./.github/actions/setup-e2e
         with:
           require_k3d: "false"
           require_minikube: "true"
-
       - name: Deploy Vald
         id: deploy_vald
         uses: ./.github/actions/e2e-deploy-vald
@@ -345,7 +304,6 @@ jobs:
           helm_extra_options: ${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }}
           values: .github/helm/values/values-readreplica.yaml
           wait_for_selector: app=vald-agent-ngt
-
       - name: Deploy Vald Read Replica
         id: deploy_vald_readreplica
         uses: ./.github/actions/e2e-deploy-vald-readreplica
@@ -354,7 +312,6 @@ jobs:
           helm_extra_options: ${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }}
           values: .github/helm/values/values-readreplica.yaml
           wait_for_selector: app=vald-lb-gateway
-
       - name: Run E2E CRUD with read replica rotation
         run: |
           make hack/benchmark/assets/dataset/${{ env.DATASET }}
@@ -373,7 +330,6 @@ jobs:
             e2e/readreplica
         env:
           POD_NAME: ${{ steps.deploy_vald_readreplica.outputs.POD_NAME }}
-
   e2e-stream-crud-with-mirror:
     name: "E2E test (Stream CRUD) with mirror"
     needs: [dump-contexts-to-log]
@@ -381,17 +337,14 @@ jobs:
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
-
       - name: Set Git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
-
       - name: Setup E2E environment
         id: setup_e2e
         uses: ./.github/actions/setup-e2e
         with:
           target_images: "vdaas/vald-agent-ngt vdaas/vald-discoverer-k8s vdaas/vald-lb-gateway vdaas/vald-manager-index vdaas/vald-mirror-gateway"
-
       - name: Deploy Vald-01
         id: deploy_vald_01
         uses: ./.github/actions/e2e-deploy-vald
@@ -400,7 +353,6 @@ jobs:
           helm_extra_options: ${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }}
           values: .github/helm/values/values-mirror-01.yaml
           wait_for_selector: app=vald-mirror-gateway
-
       - name: Deploy Vald-02
         id: deploy_vald_02
         uses: ./.github/actions/e2e-deploy-vald
@@ -409,13 +361,11 @@ jobs:
           helm_extra_options: ${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }}
           values: .github/helm/values/values-mirror-02.yaml
           wait_for_selector: app=vald-mirror-gateway
-
       - name: Deploy Mirror Target
         run: |
           kubectl apply -f .github/helm/values/vald-mirror-target.yaml -n vald-01
           sleep 5s
           kubectl get pods -A && kubectl get vmt -o wide -A
-
       - name: Run E2E CRUD
         run: |
           make hack/benchmark/assets/dataset/${{ env.DATASET }}
@@ -434,7 +384,6 @@ jobs:
             e2e
         env:
           POD_NAME: ${{ steps.deploy_vald_01.outputs.POD_NAME }}
-
   slack-notification:
     name: "Slack notification"
     if: startsWith( github.ref, 'refs/tags/')
@@ -450,7 +399,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - uses: ./.github/actions/notify-slack
         with:
           author_name: "E2E deploy test"

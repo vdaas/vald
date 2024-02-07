@@ -20,14 +20,12 @@ on:
       - "main"
 env:
   BACKPORT_LABEL_PREFIX: "actions/backport/"
-
 jobs:
   dump-contexts-to-log:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/dump-context
-
   semver-auto:
     runs-on: ubuntu-latest
     needs: [dump-contexts-to-log]
@@ -40,11 +38,9 @@ jobs:
         with:
           fetch-depth: 0
           token: ${{ secrets.DISPATCH_TOKEN }}
-
       - name: Set Git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
-
       - name: Set context
         id: set_context
         run: |
@@ -59,7 +55,6 @@ jobs:
           echo "LATEST_TAG=${LATEST_TAG}"
           echo "RELEASE_KIND=${RELEASE_KIND}"
           echo "UNSUPPORTED_VERSION=${UNSUPPORTED_VERSION}"
-
       - name: Upgrade semver
         id: upgrade_semver
         if: ${{ steps.set_context.outputs.RELEASE_KIND != '' }}
@@ -80,7 +75,6 @@ jobs:
 
           echo "RELEASE_TAG=${RELEASE_TAG}"
           echo "RELEASE_BRANCH_NAME=${RELEASE_BRANCH_NAME}"
-
       - name: Setup for release
         id: setup_for_release
         if: ${{ steps.upgrade_semver.outputs.RELEASE_TAG != '' }}
@@ -97,7 +91,6 @@ jobs:
           echo "RELEASE_TAG=${RELEASE_TAG}"
           echo "RELEASE_BRANCH_NAME=${RELEASE_BRANCH_NAME}"
           echo "LABEL_NAME=${BACKPORT_LABEL_PREFIX}${RELEASE_BRANCH_NAME}"
-
   release-pr:
     if: ${{ needs.semver-auto.outputs.RELEASE == 'true' }}
     needs:

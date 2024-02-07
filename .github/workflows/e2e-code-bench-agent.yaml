@@ -41,21 +41,17 @@ on:
       - "hack/benchmark/**"
       - "versions/GO_VERSION"
       - "versions/NGT_VERSION"
-
 env:
   DATASET: fashion-mnist-784-euclidean.hdf5
   DATASET_ARGS: fashion-mnist
-
 jobs:
   dump-contexts-to-log:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/dump-context
-
   detect-ci-container:
     uses: ./.github/workflows/_detect-ci-container.yml
-
   grpc-sequential:
     name: grpc-sequential
     runs-on: ubuntu-latest
@@ -64,18 +60,14 @@ jobs:
       image: ghcr.io/vdaas/vald/vald-ci-container:${{ needs.detect-ci-container.outputs.TAG_NAME }}
     steps:
       - uses: actions/checkout@v4
-
       - name: Set Git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
-
       - uses: ./.github/actions/setup-go
-
       - name: Run grpc-sequential
         run: |
           make hack/benchmark/assets/dataset/${{ env.DATASET }}
           DATASET_ARGS=${{ env.DATASET_ARGS }} make bench/agent/sequential/grpc
-
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
@@ -87,7 +79,6 @@ jobs:
             ./pprof/agent/sequential/grpc.trace.out
             ./pprof/agent/sequential/grpc.cpu.svg
             ./pprof/agent/sequential/grpc.mem.svg
-
   grpc-stream:
     name: grpc-stream
     runs-on: ubuntu-latest
@@ -96,18 +87,14 @@ jobs:
       image: ghcr.io/vdaas/vald/vald-ci-container:${{ needs.detect-ci-container.outputs.TAG_NAME }}
     steps:
       - uses: actions/checkout@v4
-
       - name: Set Git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
-
       - uses: ./.github/actions/setup-go
-
       - name: Run grpc-stream
         run: |
           make hack/benchmark/assets/dataset/${{ env.DATASET }}
           DATASET_ARGS=${{ env.DATASET_ARGS }} make bench/agent/stream
-
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:

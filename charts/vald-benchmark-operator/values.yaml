@@ -17,19 +17,15 @@
 # @schema {"name": "name", "type": "string"}
 # name -- name of the deployment
 name: vald-benchmark-operator
-
 # @schema {"name": "replicas", "type": "integer"}
 # replicas -- the number of replica for deployment
 replicas: 1
-
 # @schema {"name": "version", "type": "string"}
 # version -- version of benchmark-operator config
 version: v0.0.0
-
 # @schema {"name": "time_zone", "type": "string"}
 # time_zone -- time_zone
 time_zone: ""
-
 # @schema {"name": "image", "type": "object"}
 image:
   # @schema {"name": "image.repository", "type": "string"}
@@ -41,7 +37,6 @@ image:
   # @schema {"name": "image.pullPolicy", "type": "string", "enum": ["Always", "Never", "IfNotPresent"]}
   # image.pullPolicy -- image pull policy
   pullPolicy: Always
-
 # @schema {"name": "job_image", "type": "object"}
 job_image:
   # @schema {"name": "job_image.repository", "type": "string"}
@@ -53,7 +48,6 @@ job_image:
   # @schema {"name": "job_image.pullPolicy", "type": "string", "enum": ["Always", "Never", "IfNotPresent"]}
   # image.pullPolicy -- image pull policy
   pullPolicy: Always
-
 # @schema {"name": "rbac", "type": "object"}
 rbac:
   # @schema {"name": "rbac.create", "type": "boolean"}
@@ -62,7 +56,6 @@ rbac:
   # @schema {"name": "rbac.name", "type": "string"}
   # rbac.name -- name of roles and rolebindings
   name: vald-benchmark-operator
-
 # @schema {"name": "serviceAccount", "type": "object"}
 serviceAccount:
   # @schema {"name": "serviceAccount.create", "type": "boolean"}
@@ -71,7 +64,6 @@ serviceAccount:
   # @schema {"name": "serviceAccount.name", "type": "string"}
   # serviceAccount.name -- name of service account
   name: vald-benchmark-operator
-
 # @schema {"name": "service", "type": "object"}
 service:
   # @schema {"name": "service.enabled", "type": "boolean"}
@@ -89,15 +81,12 @@ service:
   # @schema {"name": "service.externalTrafficPolicy", "type": "string"}
   # service.externalTrafficPolicy -- external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local
   externalTrafficPolicy: ""
-
 # @schema {"name": "annotations", "type": "object"}
 # annotations -- deployment annotations
 annotations: {}
-
 # @schema {"name": "podAnnotations", "type": "object"}
 # podAnnotations -- pod annotations
 podAnnotations: {}
-
 # @schema {"name": "securityContext", "type": "object"}
 # securityContext -- security context for container
 securityContext:
@@ -110,7 +99,6 @@ securityContext:
   capabilities:
     drop:
       - ALL
-
 # @schema {"name": "podSecurityContext", "type": "object"}
 # podSecurityContext -- security context for pod
 podSecurityContext:
@@ -119,7 +107,6 @@ podSecurityContext:
   runAsGroup: 65532
   fsGroup: 65532
   fsGroupChangePolicy: "OnRootMismatch"
-
 # @schema {"name": "resources", "type": "object"}
 # resources -- kubernetes resources of pod
 resources:
@@ -131,19 +118,15 @@ resources:
   requests:
     cpu: 200m
     memory: 200Mi
-
 # @schema {"name": "nodeSelector", "type": "object"}
 # nodeSelector -- node labels for pod assignment
 nodeSelector: {}
-
 # @schema {"name": "tolerations", "type": "array", "items": {"type": "object"}}
 # tolerations -- tolerations
 tolerations: []
-
 # @schema {"name": "affinity", "type": "object"}
 # affinity -- affinity
 affinity: {}
-
 # @schema {"name": "logging", "type": "object"}
 logging:
   # @schema {"name": "logging.logger", "type": "string", "enum": ["glg", "zap"]}
@@ -158,7 +141,6 @@ logging:
   # logging.format -- logging format.
   # logging format must be `raw` or `json`
   format: raw
-
 # @schema {"name": "server_config", "type": "object"}
 server_config:
   # @schema {"name": "server_config.servers", "type": "object"}
@@ -449,7 +431,6 @@ server_config:
     # @schema {"name": "server_config.tls.insecure_skip_verify", "type": "boolean"}
     # server_config.tls.insecure_skip_verify -- enable/disable skip SSL certificate verification
     insecure_skip_verify: false
-
 # @schema {"name": "observability", "type": "object"}
 observability:
   # @schema {"name": "observability.enabled", "type": "boolean"}

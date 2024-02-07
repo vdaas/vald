@@ -15,7 +15,6 @@
 #
 name: "Scan the Docker image"
 description: "A action to scan the Docker image"
-
 inputs:
   image_ref:
     description: "Docker image reference"
@@ -25,7 +24,6 @@ inputs:
     description: "Severities of vulnerabilities to be displayed"
     required: false
     default: "UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL"
-
 runs:
   using: "composite"
   steps:
@@ -35,7 +33,6 @@ runs:
         image-ref: ${{ inputs.image_ref }}
         format: "table"
         severity: ${{ inputs.severity }}
-
     - name: Run vulnerability scanner (sarif)
       uses: aquasecurity/trivy-action@master
       with:
@@ -43,7 +40,6 @@ runs:
         format: "sarif"
         output: "trivy-results.sarif"
         severity: ${{ inputs.severity }}
-
     - name: Upload Trivy scan results to Security tab
       uses: github/codeql-action/upload-sarif@v2
       with:

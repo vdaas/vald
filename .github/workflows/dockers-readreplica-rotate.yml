@@ -69,7 +69,6 @@ on:
       - "cmd/index/job/readreplica/rotate/**"
       - "dockers/index/job/readreplica/rotate/Dockerfile"
       - "versions/GO_VERSION"
-
 jobs:
   build:
     uses: ./.github/workflows/_docker-image.yaml

@@ -78,7 +78,6 @@ on:
       - "pkg/gateway/internal/**"
       - "dockers/gateway/lb/Dockerfile"
       - "versions/GO_VERSION"
-
 jobs:
   build:
     uses: ./.github/workflows/_docker-image.yaml

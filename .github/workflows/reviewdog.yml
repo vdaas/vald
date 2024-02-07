@@ -19,17 +19,14 @@ on:
   pull_request:
     paths:
       - "**.go"
-
 jobs:
   dump-contexts-to-log:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/dump-context
-
   detect-ci-container:
     uses: ./.github/workflows/_detect-ci-container.yml
-
   golangci-lint:
     name: runner / golangci-lint
     runs-on: ubuntu-latest
@@ -38,15 +35,12 @@ jobs:
       image: ghcr.io/vdaas/vald/vald-ci-container:${{ needs.detect-ci-container.outputs.TAG_NAME }}
     steps:
       - uses: actions/checkout@v4
-
       - name: Set Git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
-
       - name: Go build
         run: |
           go build -mod=readonly ./...
-
       - name: Run golangci-lint
         run: |
           golangci-lint run --config .golangci.yml \

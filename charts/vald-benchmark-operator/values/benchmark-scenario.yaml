@@ -179,7 +179,6 @@ spec:
       client_config:
         health_check_duration: "10s"
       rps: 1000
-
   # @schema {"name": "target", "type": "array", "items": {"type": "object"}}
   # target -- target cluster host&port
   target:

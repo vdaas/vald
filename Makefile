@@ -412,9 +412,9 @@ update: \
 	proto/all \
 	deps \
 	update/template \
-	format \
 	go/deps \
-	rust/deps
+	rust/deps \
+	format
 
 .PHONY: format
 ## format go codes
@@ -445,19 +445,19 @@ format/go/test: \
 	gofumpt/install \
 	strictgoimports/install \
 	goimports/install
-	find $(ROOTDIR)/* -name '*_test.go' | xargs $(GOBIN)/golines -w -m $(GOLINES_MAX_WIDTH)
-	find $(ROOTDIR)/* -name '*_test.go' | xargs $(GOBIN)/gofumpt -w
-	find $(ROOTDIR)/* -name '*_test.go' | xargs $(GOBIN)/strictgoimports -w
-	find $(ROOTDIR)/* -name '*_test.go' | xargs $(GOBIN)/goimports -w
+	find $(ROOTDIR) -name '*_test.go' | xargs $(GOBIN)/golines -w -m $(GOLINES_MAX_WIDTH)
+	find $(ROOTDIR) -name '*_test.go' | xargs $(GOBIN)/gofumpt -w
+	find $(ROOTDIR) -name '*_test.go' | xargs $(GOBIN)/strictgoimports -w
+	find $(ROOTDIR) -name '*_test.go' | xargs $(GOBIN)/goimports -w
 
 .PHONY: format/yaml
 format/yaml: \
-	prettier/install
-	prettier --write \
-	    "$(ROOTDIR)/.github/**/*.yaml" \
-	    "$(ROOTDIR)/.github/**/*.yml" \
-	    "$(ROOTDIR)/cmd/**/*.yaml" \
-	    "$(ROOTDIR)/k8s/**/*.yaml"
+	prettier/install\
+	yamlfmt/install
+	-find $(ROOTDIR) -name "*.yaml" -type f | grep -v templates | grep -v s3 | xargs -I {} prettier --write {}
+	-find $(ROOTDIR) -name "*.yml" -type f | grep -v templates | grep -v s3 | xargs -I {} prettier --write {}
+	-find $(ROOTDIR) -name "*.yaml" -type f | grep -v templates | grep -v s3 | xargs -I {} yamlfmt {}
+	-find $(ROOTDIR) -name "*.yml" -type f | grep -v templates | grep -v s3 | xargs -I {} yamlfmt {}
 
 .PHONY: format/md
 format/md: \
