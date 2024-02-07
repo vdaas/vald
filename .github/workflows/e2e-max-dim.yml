@@ -65,7 +65,7 @@ jobs:
 
             sleep 3
 
-            kubectl rollout restart statefulset vald-agent-ngt
+            kubectl rollout restart statefulset vald-agent
 
             sleep 30
 
@@ -100,7 +100,7 @@ jobs:
           echo "MAX_BIT=${BIT}"
         env:
           DEFAULT_IMAGE_TAG: ${{ steps.setup_e2e.outputs.DEFAULT_IMAGE_TAG }}
-          WAIT_FOR_SELECTOR: app=vald-agent-ngt
+          WAIT_FOR_SELECTOR: app=vald-agent
           WAIT_FOR_TIMEOUT: 29m
           VALUES: .github/helm/values/values-max-dim.yaml
         timeout-minutes: 60
