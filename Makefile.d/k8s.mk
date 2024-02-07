@@ -153,7 +153,7 @@ k8s/vald/delete:
 	kubectl delete -f $(TEMP_DIR)/vald/templates/manager/index
 	kubectl delete -f $(TEMP_DIR)/vald/templates/discoverer
 	kubectl delete -f $(TEMP_DIR)/vald/templates/agent/readreplica || true
-	kubectl apply -f $(TEMP_DIR)/vald/templates/agent/ngt || true
+	kubectl delete -f $(TEMP_DIR)/vald/templates/agent/ngt || true
 	kubectl delete -f $(TEMP_DIR)/vald/templates/agent
 	kubectl delete -f $(TEMP_DIR)/vald/crds
 	rm -rf $(TEMP_DIR)
