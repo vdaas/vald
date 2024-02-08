@@ -37,13 +37,16 @@ jobs:
       - uses: ./.github/actions/dump-context
   build:
     runs-on: ubuntu-latest
-    if: >-
-      ${{ (github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == false) ||
-
-
-          (github.event.pull_request.head.repo.fork == true && github.event_name == 'pull_request_target' && contains(github.event.pull_request.labels.*.name, 'ci/approved')) ||
-          (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
-          (github.event_name == 'push' && startsWith( github.ref, 'refs/heads/release/v')) ||
+    if: |
+      ${{ (github.event_name == 'pull_request' &&
+              github.event.pull_request.head.repo.fork == false) ||
+          (github.event.pull_request.head.repo.fork == true &&
+              github.event_name == 'pull_request_target' &&
+              contains(github.event.pull_request.labels.*.name, 'ci/approved')) ||
+          (github.event_name == 'push' &&
+              github.ref == 'refs/heads/main') ||
+          (github.event_name == 'push' &&
+              startsWith( github.ref, 'refs/heads/release/v')) ||
           startsWith( github.ref, 'refs/tags/')
       }}
     steps:

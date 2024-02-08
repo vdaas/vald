@@ -26,7 +26,6 @@ spec:
       level: info
     networkPolicy:
       enabled: true
-
   gateway:
     lb:
       enabled: true
@@ -39,7 +38,6 @@ spec:
           memory: 50Mi
       gateway_config:
         index_replica: 3
-
   agent:
     minReplicas: 3
     maxReplicas: 10
@@ -55,7 +53,6 @@ spec:
       auto_index_check_duration: 30s
       auto_index_length: 1000
       dimension: 784
-
   discoverer:
     minReplicas: 1
     hpa:
@@ -64,7 +61,6 @@ spec:
       requests:
         cpu: 100m
         memory: 50Mi
-
   manager:
     index:
       replicas: 1

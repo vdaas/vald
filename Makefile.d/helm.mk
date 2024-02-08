@@ -96,6 +96,8 @@ charts/vald/values.schema.json: \
 	charts/vald/values.yaml \
 	hack/helm/schema/gen/main.go
 	GOPRIVATE=$(GOPRIVATE) \
+	GOARCH=$(GOARCH) \
+	GOOS=$(GOOS) \
 	go run -mod=readonly hack/helm/schema/gen/main.go charts/vald/values.yaml > charts/vald/values.schema.json
 
 .PHONY: helm/schema/vald-helm-operator
@@ -106,6 +108,8 @@ charts/vald-helm-operator/values.schema.json: \
 	charts/vald-helm-operator/values.yaml \
 	hack/helm/schema/gen/main.go
 	GOPRIVATE=$(GOPRIVATE) \
+	GOARCH=$(GOARCH) \
+	GOOS=$(GOOS) \
 	go run -mod=readonly hack/helm/schema/gen/main.go charts/vald-helm-operator/values.yaml > charts/vald-helm-operator/values.schema.json
 
 .PHONY: helm/schema/vald-benchmark-job
@@ -116,6 +120,8 @@ charts/vald-benchmark-operator/job-values.schema.json: \
 	charts/vald-benchmark-operator/schemas/job-values.yaml \
 	hack/helm/schema/gen/main.go
 	GOPRIVATE=$(GOPRIVATE) \
+	GOARCH=$(GOARCH) \
+	GOOS=$(GOOS) \
 	go run -mod=readonly hack/helm/schema/gen/main.go charts/vald-benchmark-operator/schemas/job-values.yaml > charts/vald-benchmark-operator/job-values.schema.json
 
 .PHONY: helm/schema/vald-benchmark-scenario
@@ -126,6 +132,8 @@ charts/vald-benchmark-operator/scenario-values.schema.json: \
 	charts/vald-benchmark-operator/schemas/scenario-values.yaml \
 	hack/helm/schema/gen/main.go
 	GOPRIVATE=$(GOPRIVATE) \
+	GOARCH=$(GOARCH) \
+	GOOS=$(GOOS) \
 	go run -mod=readonly hack/helm/schema/gen/main.go charts/vald-benchmark-operator/schemas/scenario-values.yaml > charts/vald-benchmark-operator/scenario-values.schema.json
 
 .PHONY: helm/schema/vald-benchmark-operator
@@ -136,6 +144,8 @@ charts/vald-benchmark-operator/values.schema.json: \
 	charts/vald-benchmark-operator/values.yaml \
 	hack/helm/schema/gen/main.go
 	GOPRIVATE=$(GOPRIVATE) \
+	GOARCH=$(GOARCH) \
+	GOOS=$(GOOS) \
 	go run -mod=readonly hack/helm/schema/gen/main.go charts/vald-benchmark-operator/values.yaml > charts/vald-benchmark-operator/values.schema.json
 
 

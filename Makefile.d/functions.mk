@@ -52,6 +52,44 @@ define go-vet
 	  | grep -v "Mutex" | sort | uniq
 endef
 
+define go-build
+	echo $(GO_SOURCES_INTERNAL)
+	echo $(PBGOS)
+	echo $(shell find $(ROOTDIR)/cmd/$1 -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
+	echo $(shell find $(ROOTDIR)/pkg/$1 -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
+	CFLAGS="$(CFLAGS)" \
+	CXXFLAGS="$(CXXFLAGS)" \
+	CGO_ENABLED=$(CGO_ENABLED) \
+	CGO_CXXFLAGS="-g -Ofast -march=native" \
+	CGO_FFLAGS="-g -Ofast -march=native" \
+	CGO_LDFLAGS="-g -Ofast -march=native" \
+	GO111MODULE=on \
+	GOARCH=$(GOARCH) \
+	GOOS=$(GOOS) \
+	GOPRIVATE=$(GOPRIVATE) \
+	GO_VERSION=$(GO_VERSION) \
+	go build \
+		--ldflags "-w $2 \
+		-extldflags '-static $3' \
+		-X '$(GOPKG)/internal/info.AlgorithmInfo=$5' \
+		-X '$(GOPKG)/internal/info.BuildCPUInfoFlags=$(CPU_INFO_FLAGS)' \
+		-X '$(GOPKG)/internal/info.BuildTime=$(DATETIME)' \
+		-X '$(GOPKG)/internal/info.CGOEnabled=$(CGO_ENABLED)' \
+		-X '$(GOPKG)/internal/info.GitCommit=$(GIT_COMMIT)' \
+		-X '$(GOPKG)/internal/info.GoArch=$(GOARCH)' \
+		-X '$(GOPKG)/internal/info.GoOS=$(GOOS)' \
+		-X '$(GOPKG)/internal/info.GoVersion=$(GO_VERSION)' \
+		-X '$(GOPKG)/internal/info.Version=$(VERSION)' \
+		-buildid=" \
+		-modcacherw \
+		-mod=readonly \
+		-a \
+		-tags "osusergo netgo static_build$4" \
+		-trimpath \
+		-o $6 \
+		$(ROOTDIR)/cmd/$1/main.go
+	$6 -version
+endef
 
 define telepresence
 	[ -z $(SWAP_IMAGE) ] && IMAGE=$2 || IMAGE=$(SWAP_IMAGE) \
@@ -66,6 +104,8 @@ endef
 
 define run-e2e-crud-test
 	GOPRIVATE=$(GOPRIVATE) \
+	GOARCH=$(GOARCH) \
+	GOOS=$(GOOS) \
 	go test \
 	    -race \
 	    -mod=readonly \
@@ -92,6 +132,9 @@ define run-e2e-crud-test
 endef
 
 define run-e2e-crud-faiss-test
+	GOPRIVATE=$(GOPRIVATE) \
+	GOARCH=$(GOARCH) \
+	GOOS=$(GOOS) \
 	go test \
 	    -race \
 	    -mod=readonly \
@@ -115,6 +158,8 @@ endef
 
 define run-e2e-multi-crud-test
 	GOPRIVATE=$(GOPRIVATE) \
+	GOARCH=$(GOARCH) \
+	GOOS=$(GOOS) \
 	go test \
 	    -race \
 	    -mod=readonly \
@@ -142,6 +187,8 @@ endef
 
 define run-e2e-max-dim-test
 	GOPRIVATE=$(GOPRIVATE) \
+	GOARCH=$(GOARCH) \
+	GOOS=$(GOOS) \
 	go test \
 	    -race \
 	    -mod=readonly \
@@ -161,6 +208,8 @@ endef
 
 define run-e2e-sidecar-test
 	GOPRIVATE=$(GOPRIVATE) \
+	GOARCH=$(GOARCH) \
+	GOOS=$(GOOS) \
 	go test \
 	    -race \
 	    -mod=readonly \
@@ -234,7 +283,9 @@ define gen-vald-crd
 		mv $(ROOTDIR)/charts/$1/crds/$2.yaml $(TEMP_DIR)/$2.yaml; \
 	fi;
 	GOPRIVATE=$(GOPRIVATE) \
-		  go run -mod=readonly $(ROOTDIR)/hack/helm/schema/crd/main.go \
+		GOARCH=$(GOARCH) \
+		GOOS=$(GOOS) \
+		go run -mod=readonly $(ROOTDIR)/hack/helm/schema/crd/main.go \
 	$(ROOTDIR)/charts/$3.yaml > $(TEMP_DIR)/$2-spec.yaml
 	$(BINDIR)/yq eval-all 'select(fileIndex==0).spec.versions[0].schema.openAPIV3Schema.properties.spec = select(fileIndex==1).spec | select(fileIndex==0)' \
 	$(TEMP_DIR)/$2.yaml $(TEMP_DIR)/$2-spec.yaml > $(ROOTDIR)/charts/$1/crds/$2.yaml

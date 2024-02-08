@@ -17,11 +17,9 @@
 # @schema {"name": "name", "type": "string"}
 # name -- name of the deployment
 name: vald-helm-operator
-
 # @schema {"name": "replicas", "type": "integer"}
 # replicas -- number of replicas
 replicas: 2
-
 # @schema {"name": "image", "type": "object"}
 image:
   # @schema {"name": "image.repository", "type": "string"}
@@ -33,7 +31,6 @@ image:
   # @schema {"name": "image.pullPolicy", "type": "string", "enum": ["Always", "Never", "IfNotPresent"]}
   # image.pullPolicy -- image pull policy
   pullPolicy: Always
-
 # @schema {"name": "rbac", "type": "object"}
 rbac:
   # @schema {"name": "rbac.create", "type": "boolean"}
@@ -42,7 +39,6 @@ rbac:
   # @schema {"name": "rbac.name", "type": "string"}
   # rbac.name -- name of roles and rolebindings
   name: vald-helm-operator
-
 # @schema {"name": "serviceAccount", "type": "object"}
 serviceAccount:
   # @schema {"name": "serviceAccount.create", "type": "boolean"}
@@ -51,7 +47,6 @@ serviceAccount:
   # @schema {"name": "serviceAccount.name", "type": "string"}
   # serviceAccount.name -- name of service account
   name: vald-helm-operator
-
 # @schema {"name": "service", "type": "object"}
 service:
   # @schema {"name": "service.enabled", "type": "boolean"}
@@ -69,15 +64,12 @@ service:
   # @schema {"name": "service.externalTrafficPolicy", "type": "string"}
   # service.externalTrafficPolicy -- external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local
   externalTrafficPolicy: ""
-
 # @schema {"name": "annotations", "type": "object"}
 # annotations -- deployment annotations
 annotations: {}
-
 # @schema {"name": "podAnnotations", "type": "object"}
 # podAnnotations -- pod annotations
 podAnnotations: {}
-
 # @schema {"name": "securityContext", "type": "object"}
 # securityContext -- security context for container
 securityContext:
@@ -90,7 +82,6 @@ securityContext:
   capabilities:
     drop:
       - ALL
-
 # @schema {"name": "podSecurityContext", "type": "object"}
 # podSecurityContext -- security context for pod
 podSecurityContext:
@@ -99,7 +90,6 @@ podSecurityContext:
   runAsGroup: 65532
   fsGroup: 65532
   fsGroupChangePolicy: "OnRootMismatch"
-
 # @schema {"name": "resources", "type": "object"}
 # resources -- kubernetes resources of pod
 resources:
@@ -109,55 +99,42 @@ resources:
   requests:
     cpu: 200m
     memory: 200Mi
-
 # @schema {"name": "nodeSelector", "type": "object"}
 # nodeSelector -- node labels for pod assignment
 nodeSelector: {}
-
 # @schema {"name": "tolerations", "type": "array", "items": {"type": "object"}}
 # tolerations -- tolerations
 tolerations: []
-
 # @schema {"name": "affinity", "type": "object"}
 # affinity -- affinity
 affinity: {}
-
 # @schema {"name": "enableLeaderElection", "type": "boolean"}
 # enableLeaderElection -- enable leader election for controller manager.
 enableLeaderElection: true
-
 # @schema {"name": "leaderElectionID", "type": "string"}
 # leaderElectionID -- name of the configmap that is used for holding the leader lock.
 leaderElectionID: vald-helm-operator
-
 # @schema {"name": "reconcilePeriod", "type": "string"}
 # reconcilePeriod -- reconcile duration of operator
 reconcilePeriod: 1m
-
 # @schema {"name": "enableMetrics", "type": "boolean"}
 # enableMetrics -- enable metrics endpoint
 enableMetrics: true
-
 # @schema {"name": "healthPort", "type": "integer"}
 # healthPort -- port of health endpoint
 healthPort: 8081
-
 # @schema {"name": "metricsPort", "type": "integer"}
 # metricsPort -- port of metrics endpoint
 metricsPort: 6061
-
 # @schema {"name": "maxConcurrentReconciles", "type": "integer"}
 # maxConcurrentReconciles -- max number of concurrent reconciles
 maxConcurrentReconciles: 1
-
 # @schema {"name": "namespaced", "type": "boolean"}
 # namespaced -- if it is true, operator will behave as a namespace-scoped operator, if it is false, it will behave as a cluster-scoped operator.
 namespaced: true
-
 # @schema {"name": "watchNamespaces", "type": "string"}
 # watchNamespaces -- comma separated names of namespaces to watch, if it is empty, the namespace that the operator exists in is used.
 watchNamespaces: ""
-
 # @schema {"name": "logging", "type": "object"}
 logging:
   # @schema {"name": "logging.level", "type": "string", "enum": ["debug", "info", "error"]}
@@ -169,7 +146,6 @@ logging:
   # @schema {"name": "logging.format", "type": "string", "enum": ["console", "json"]}
   # logging.format -- logging format of operator (console or json)
   format: console
-
 # @schema {"name": "livenessProbe", "type": "object"}
 livenessProbe:
   # @schema {"name": "livenessProbe.enabled", "type": "boolean"}
@@ -201,7 +177,6 @@ livenessProbe:
   # @schema {"name": "livenessProbe.timeoutSeconds", "type": "integer"}
   # livenessProbe.timeoutSeconds -- liveness probe timeout seconds
   timeoutSeconds: 5
-
 # @schema {"name": "readinessProbe", "type": "object"}
 readinessProbe:
   # @schema {"name": "readinessProbe.enabled", "type": "boolean"}

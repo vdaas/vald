@@ -1,6 +1,6 @@
 module github.com/vdaas/vald/example/client
 
-go 1.21
+go 1.22.0
 
 replace (
 	github.com/envoyproxy/protoc-gen-validate => github.com/envoyproxy/protoc-gen-validate v1.0.4
@@ -8,8 +8,8 @@ replace (
 	github.com/golang/protobuf => github.com/golang/protobuf v1.5.3
 	github.com/kpango/glg => github.com/kpango/glg v1.6.15
 	github.com/pkg/sftp => github.com/pkg/sftp v1.13.6
-	golang.org/x/crypto => golang.org/x/crypto v0.18.0
-	golang.org/x/net => golang.org/x/net v0.20.0
+	golang.org/x/crypto => golang.org/x/crypto v0.19.0
+	golang.org/x/net => golang.org/x/net v0.21.0
 	golang.org/x/text => golang.org/x/text v0.14.0
 	google.golang.org/genproto => google.golang.org/genproto v0.0.0-20240205150955-31a09d347014
 	google.golang.org/genproto/googleapis/api => google.golang.org/genproto/googleapis/api v0.0.0-20240205150955-31a09d347014
@@ -34,7 +34,7 @@ require (
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/kpango/fastime v1.1.9 // indirect
 	golang.org/x/net v0.20.0 // indirect
-	golang.org/x/sys v0.16.0 // indirect
+	golang.org/x/sys v0.17.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
 	google.golang.org/genproto v0.0.0-20240125205218-1f4bbc51befe // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20240125205218-1f4bbc51befe // indirect

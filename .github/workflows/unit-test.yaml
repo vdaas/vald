@@ -35,17 +35,14 @@ on:
       - "internal/**"
       - "pkg/**"
       - "cmd/**"
-
 jobs:
   dump-contexts-to-log:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/dump-context
-
   detect-ci-container:
     uses: ./.github/workflows/_detect-ci-container.yml
-
   test-cmd:
     name: Run tests for cmd packages
     runs-on: ubuntu-latest
@@ -54,19 +51,15 @@ jobs:
       image: ghcr.io/vdaas/vald/vald-ci-container:${{ needs.detect-ci-container.outputs.TAG_NAME }}
     steps:
       - uses: actions/checkout@v4
-
       - name: Set Git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
-
       - name: Run tests for cmd packages / gotestfmt
         run: |
           TEST_RESULT_DIR=${GITHUB_WORKSPACE} make test/cmd/gotestfmt
-
       - name: Print tparse result
         run: |
           tparse -notests -smallscreen -sort cover -format markdown -file "${GITHUB_WORKSPACE}/test-cmd-gotestfmt-result.json"
-
   test-internal:
     name: Run tests for internal packages
     runs-on: ubuntu-latest
@@ -75,19 +68,15 @@ jobs:
       image: ghcr.io/vdaas/vald/vald-ci-container:${{ needs.detect-ci-container.outputs.TAG_NAME }}
     steps:
       - uses: actions/checkout@v4
-
       - name: Set Git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
-
       - name: Run tests for internal packages / gotestfmt
         run: |
           TEST_RESULT_DIR=${GITHUB_WORKSPACE} make test/internal/gotestfmt
-
       - name: Print tparse result
         run: |
           tparse -notests -smallscreen -sort cover -format markdown -file "${GITHUB_WORKSPACE}/test-internal-gotestfmt-result.json"
-
   test-pkg:
     name: Run tests for pkg packages
     runs-on: ubuntu-latest
@@ -96,15 +85,12 @@ jobs:
       image: ghcr.io/vdaas/vald/vald-ci-container:${{ needs.detect-ci-container.outputs.TAG_NAME }}
     steps:
       - uses: actions/checkout@v4
-
       - name: Set Git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
-
       - name: Run tests for pkg packages / gotestfmt
         run: |
           TEST_RESULT_DIR=${GITHUB_WORKSPACE} make test/pkg/gotestfmt
-
       - name: Print tparse result
         run: |
           tparse -notests -smallscreen -sort cover -format markdown -file "${GITHUB_WORKSPACE}/test-pkg-gotestfmt-result.json"

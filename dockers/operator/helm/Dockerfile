@@ -14,7 +14,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-ARG GO_VERSION=latest
 ARG DISTROLESS_IMAGE=gcr.io/distroless/static
 ARG DISTROLESS_IMAGE_TAG=nonroot
 ARG OPERATOR_SDK_VERSION
@@ -27,15 +26,17 @@ ARG MAINTAINER="vdaas.org vald team <vald@vdaas.org>"
 
 # skipcq: DOK-DL3026
 FROM --platform=${BUILDPLATFORM} quay.io/operator-framework/helm-operator:${OPERATOR_SDK_VERSION} AS operator
-FROM --platform=${BUILDPLATFORM} golang:${GO_VERSION} AS golang
 FROM --platform=${BUILDPLATFORM} ubuntu:devel AS builder
 
+ARG GO_VERSION
 ARG OPERATOR_SDK_VERSION
 ARG VERSION
 ARG GROUP
 ARG VALD_KIND
 ARG VALD_HELM_OPERATOR_KIND
 ARG UPX_OPTIONS
+ARG TARGETARCH
+ARG TARGETOS
 
 ENV GO111MODULE on
 ENV DEBIAN_FRONTEND noninteractive
@@ -67,8 +68,15 @@ RUN apt-get clean \
         /var/cache/* \
     && apt-get autoremove
 
-COPY --from=golang /usr/local/go $GOROOT
-RUN mkdir -p "$GOPATH/src"
+WORKDIR /tmp
+RUN BIN_NAME="go" \
+    && TAR_NAME="${BIN_NAME}${GO_VERSION}.${TARGETOS}-${TARGETARCH}.tar.gz" \
+    && curl -fsSLO "https://go.dev/dl/${TAR_NAME}" \
+    && tar zxf "${TAR_NAME}" \
+    && rm "${TAR_NAME}" \
+    && mv ${BIN_NAME} ${GOROOT} \
+    && ${BIN_NAME} version \
+    && mkdir -p "${GOPATH}/src"
 
 RUN { \
         echo "---"; \
@@ -90,7 +98,7 @@ COPY .git .
 COPY go.mod .
 COPY go.sum .
 
-RUN make go/download
+RUN make GOARCH=${TARGETARCH} GOOS=${TARGETOS} go/download
 
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/internal/errors
 COPY internal/errors .
@@ -117,7 +125,7 @@ WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/hack/helm/schema/gen
 COPY hack/helm/schema/gen .
 
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}
-RUN make helm/schema/vald helm/schema/vald-helm-operator \
+RUN make GOARCH=${TARGETARCH} GOOS=${TARGETOS} helm/schema/vald helm/schema/vald-helm-operator \
     && cp -r charts /charts
 
 COPY --from=operator /usr/local/bin/${APP_NAME} /usr/bin/${APP_NAME}

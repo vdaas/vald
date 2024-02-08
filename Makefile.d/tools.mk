@@ -96,6 +96,12 @@ stern/install: $(GOPATH)/bin/stern
 $(GOPATH)/bin/stern:
 	$(call go-install, github.com/stern/stern)
 
+.PHONY: yamlfmt/install
+yamlfmt/install: $(GOPATH)/bin/yamlfmt
+
+$(GOPATH)/bin/yamlfmt:
+	$(call go-install, github.com/google/yamlfmt/cmd/yamlfmt)
+
 .PHONY: rust/install
 rust/install: $(CARGO_HOME)/bin/cargo
 

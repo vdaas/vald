@@ -20,10 +20,8 @@ on:
       TAG_NAME:
         description: "The docker image tag name"
         value: ${{ jobs.detect.outputs.TAG_NAME }}
-
 env:
   TARGET_IMAGE: vdaas/vald-ci-container
-
 jobs:
   detect:
     runs-on: ubuntu-latest
@@ -31,25 +29,21 @@ jobs:
       TAG_NAME: ${{ steps.merge_detection_results.outputs.TAG_NAME }}
     steps:
       - uses: actions/checkout@v4
-
       - name: Determine Docker image tag
         id: determine_tag_name
         uses: ./.github/actions/determine-docker-image-tag
-
       - name: Detect Docker image tag for primary
         id: detect_primary_tag_name
         uses: ./.github/actions/detect-docker-image-tags
         with:
           images: ${{ env.TARGET_IMAGE }}
           tag_name: ${{ steps.determine_tag_name.outputs.PRIMARY_TAG }}
-
       - name: Detect Docker image tag for default
         id: detect_default_tag_name
         uses: ./.github/actions/detect-docker-image-tags
         with:
           images: ${{ env.TARGET_IMAGE }}
           tag_name: ${{ steps.determine_tag_name.outputs.DEFAULT_TAG }}
-
       - name: Merge Docker image tag detection results
         id: merge_detection_results
         run: |

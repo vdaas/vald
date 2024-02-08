@@ -17,14 +17,12 @@ name: "ChatOps help"
 on:
   pull_request:
     types: [opened]
-
 jobs:
   dump-contexts-to-log:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/dump-context
-
   print:
     runs-on: ubuntu-latest
     steps:

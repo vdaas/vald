@@ -22,7 +22,7 @@ proto/all: \
 .PHONY: proto/clean
 ## clean proto artifacts
 proto/clean:
-	find apis/grpc -name "*.pb.go" | xargs rm -f
+	find apis/grpc -name "*.pb.go" | xargs -P$(CORES) rm -f
 	rm -rf apis/swagger apis/docs
 
 .PHONY: proto/paths/print
@@ -54,7 +54,7 @@ proto/gen: \
 	proto/deps
 	@$(call green, "generating pb.go and swagger.json files and documents for API v1...")
 	buf generate
-	find $(ROOTDIR)/apis/grpc/* -name '*.go' | xargs sed -i -E "s%google.golang.org/grpc/codes%github.com/vdaas/vald/internal/net/grpc/codes%g"
-	find $(ROOTDIR)/apis/grpc/* -name '*.go' | xargs sed -i -E "s%google.golang.org/grpc/status%github.com/vdaas/vald/internal/net/grpc/status%g"
-	find $(ROOTDIR)/apis/grpc/* -name '*.go' | xargs sed -i -E "s%\"io\"%\"github.com/vdaas/vald/internal/io\"%g"
-	find $(ROOTDIR)/apis/grpc/* -name '*.go' | xargs sed -i -E "s%\"sync\"%\"github.com/vdaas/vald/internal/sync\"%g"
+	find $(ROOTDIR)/apis/grpc/* -name '*.go' | xargs -P$(CORES) sed -i -E "s%google.golang.org/grpc/codes%github.com/vdaas/vald/internal/net/grpc/codes%g"
+	find $(ROOTDIR)/apis/grpc/* -name '*.go' | xargs -P$(CORES) sed -i -E "s%google.golang.org/grpc/status%github.com/vdaas/vald/internal/net/grpc/status%g"
+	find $(ROOTDIR)/apis/grpc/* -name '*.go' | xargs -P$(CORES) sed -i -E "s%\"io\"%\"github.com/vdaas/vald/internal/io\"%g"
+	find $(ROOTDIR)/apis/grpc/* -name '*.go' | xargs -P$(CORES) sed -i -E "s%\"sync\"%\"github.com/vdaas/vald/internal/sync\"%g"

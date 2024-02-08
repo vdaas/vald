@@ -15,15 +15,14 @@
 # limitations under the License.
 #
 
-ARG GO_VERSION=latest
 ARG MAINTAINER="vdaas.org vald team <vald@vdaas.org>"
-
-FROM --platform=${BUILDPLATFORM} golang:${GO_VERSION} AS golang
 
 FROM --platform=${BUILDPLATFORM} ubuntu:devel AS builder
 LABEL maintainer="${MAINTAINER}"
 
+ARG GO_VERSION
 ARG TARGETARCH
+ARG TARGETOS
 
 ENV GO111MODULE on
 ENV DEBIAN_FRONTEND noninteractive
@@ -32,10 +31,6 @@ ENV LANG en_US.UTF-8
 ENV GOROOT /opt/go
 ENV GOPATH /go
 ENV PATH ${PATH}:${GOROOT}/bin:${GOPATH}/bin:/usr/local/bin
-
-COPY --from=golang /usr/local/go $GOROOT
-RUN mkdir -p $GOPATH/src
-
 
 RUN sysctl -w net.ipv6.conf.all.disable_ipv6=1 \
     && sysctl -w net.ipv6.conf.default.disable_ipv6=1 \
@@ -67,6 +62,16 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
+WORKDIR /tmp
+RUN BIN_NAME="go" \
+    && TAR_NAME="${BIN_NAME}${GO_VERSION}.${TARGETOS}-${TARGETARCH}.tar.gz" \
+    && curl -fsSLO "https://go.dev/dl/${TAR_NAME}" \
+    && tar zxf "${TAR_NAME}" \
+    && rm "${TAR_NAME}" \
+    && mv ${BIN_NAME} ${GOROOT} \
+    && ${BIN_NAME} version \
+    && mkdir -p "${GOPATH}/src"
+
 WORKDIR ${GOPATH}/src/github.com/vdaas/vald
 
 ENV ROOTDIR .
@@ -83,7 +88,7 @@ COPY versions versions
 
 RUN --mount=type=cache,target="${GOPATH}/pkg",id="go-build-${TARGETARCH}" \
     --mount=type=cache,target="${HOME}/.cache/go-build",id="go-build-${TARGETARCH}" \
-    make deps ROOTDIR=${ROOTDIR} GO_CLEAN_DEPS=false \
+    make GOARCH=${TARGETARCH} GOOS=${TARGETOS} deps ROOTDIR=${ROOTDIR} GO_CLEAN_DEPS=false \
     && make ngt/install \
     && make faiss/install \
     && make helm/install \
@@ -93,8 +98,8 @@ RUN --mount=type=cache,target="${GOPATH}/pkg",id="go-build-${TARGETARCH}" \
     && make kubelinter/install \
     && make yq/install \
     && make tparse/install \
-    && make gotestfmt/install \
-    && make golangci-lint/install \
+    && make GOARCH=${TARGETARCH} GOOS=${TARGETOS} gotestfmt/install \
+    && make GOARCH=${TARGETARCH} GOOS=${TARGETOS} golangci-lint/install \
     && make reviewdog/install \
     && make kubectl/install \
     && make buf/install \

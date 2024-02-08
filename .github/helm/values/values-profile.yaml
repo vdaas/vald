@@ -29,7 +29,6 @@ defaults:
             read_header_timeout: 2s
             read_timeout: 2s
             write_timeout: 3m
-
 gateway:
   lb:
     enabled: true
@@ -49,7 +48,6 @@ gateway:
     env:
       - name: GOMAXPROCS
         value: "1"
-
 agent:
   minReplicas: 3
   maxReplicas: 10
@@ -72,7 +70,6 @@ agent:
   env:
     - name: GOMAXPROCS
       value: "1"
-
 discoverer:
   minReplicas: 1
   podAnnotations:
@@ -88,7 +85,6 @@ discoverer:
   env:
     - name: GOMAXPROCS
       value: "1"
-
 manager:
   index:
     replicas: 1

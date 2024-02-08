@@ -27,17 +27,14 @@ on:
     paths:
       - "apis/proto/**"
       - "versions/GO_VERSION"
-
 jobs:
   dump-contexts-to-log:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/dump-context
-
   detect-ci-container:
     uses: ./.github/workflows/_detect-ci-container.yml
-
   build:
     runs-on: ubuntu-latest
     needs: [detect-ci-container]
@@ -45,11 +42,9 @@ jobs:
       image: ghcr.io/vdaas/vald/vald-ci-container:${{ needs.detect-ci-container.outputs.TAG_NAME }}
     steps:
       - uses: actions/checkout@v4
-
       - name: Set Git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
-
       - name: Build protobuf
         run: |
           make proto/all

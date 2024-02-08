@@ -48,6 +48,7 @@ go/download:
 .PHONY: go/deps
 ## install Go package dependencies
 go/deps:
+	sed -i "3s/go [0-9]\+\.[0-9]\+\(\.[0-9]\+\)\?/go $(GO_VERSION)/g" $(ROOTDIR)/hack/go.mod.default
 	if $(GO_CLEAN_DEPS); then \
         	rm -rf $(ROOTDIR)/vendor \
         		/go/pkg \
@@ -76,6 +77,7 @@ go/example/deps:
 	        $(ROOTDIR)/example/client/vendor \
 	        $(ROOTDIR)/example/client/go.mod \
 	        $(ROOTDIR)/example/client/go.sum
+	sed -i "3s/go [0-9]\+\.[0-9]\+\(\.[0-9]\+\)\?/go $(GO_VERSION)/g" $(ROOTDIR)/example/client/go.mod.default
 	cp $(ROOTDIR)/example/client/go.mod.default $(ROOTDIR)/example/client/go.mod
 	cd $(ROOTDIR)/example/client && GOPRIVATE=$(GOPRIVATE) go mod tidy && cd -
 

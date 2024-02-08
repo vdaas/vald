@@ -19,7 +19,6 @@ defaults:
     level: info
   networkPolicy:
     enabled: true
-
 gateway:
   lb:
     enabled: true
@@ -32,7 +31,6 @@ gateway:
         memory: 50Mi
     gateway_config:
       index_replica: 3
-
 agent:
   minReplicas: 3
   maxReplicas: 10
@@ -60,7 +58,6 @@ agent:
     snapshot_classname: "csi-hostpath-snapclass"
     hpa:
       enabled: true
-
 discoverer:
   minReplicas: 1
   hpa:
@@ -69,7 +66,6 @@ discoverer:
     requests:
       cpu: 100m
       memory: 50Mi
-
 manager:
   index:
     replicas: 1

@@ -16,7 +16,6 @@
 defaults:
   image:
     tag: latest
-
 gateway:
   lb:
     resources:
@@ -26,7 +25,6 @@ gateway:
     gateway_config:
       # number of index replica.
       index_replica: 2
-
 agent:
   minReplicas: 6
   maxReplicas: 6
@@ -58,13 +56,11 @@ agent:
     auto_save_index_duration: 365h
     # batch process pool size of automatic create index operation.
     auto_create_index_pool_size: 1000
-
 discoverer:
   resources:
     requests:
       cpu: 100m
       memory: 50Mi
-
 manager:
   index:
     resources:
