@@ -38,7 +38,9 @@ ENV PKG agent/core/ngt
 ENV PKG_INTERNAL agent/internal
 ENV APP_NAME ngt
 ENV AARCH aarch_64
+ENV AARCH_GCC aarch64
 ENV XARCH x86_64
+ENV XARCH_GCC x86-64
 
 # skipcq: DOK-DL3008
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -55,11 +57,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     unzip \
     upx \
     && if [ "${TARGETARCH}" = "amd64" ] ; then  \
-         apt-get install -y --no-install-recommends --fix-missing gcc-${XARCH}-${TARGETOS}-gnu; \
+         apt-get install -y --no-install-recommends --fix-missing gcc-${XARCH_GCC}-${TARGETOS}-gnu; \
          export CC=${XARCH}-${TARGETOS}-gnu-gcc; \
          export CC_FOR_TARGET=${CC}; \
        elif [ "${TARGETARCH}" = "arm64" ] ; then  \
-         apt-get install -y --no-install-recommends --fix-missing gcc-${AARCH}-${TARGETOS}-gnu; \
+         apt-get install -y --no-install-recommends --fix-missing gcc-${AARCH_GCC}-${TARGETOS}-gnu; \
          export CC=${AARCH}-${TARGETOS}-gnu-gcc; \
          export CC_FOR_TARGET=${CC}; \
        fi \
