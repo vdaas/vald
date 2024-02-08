@@ -2137,6 +2137,12 @@ agent:
     # @schema {"name": "agent.ngt.enable_copy_on_write", "type": "boolean"}
     # agent.ngt.enable_copy_on_write -- enable copy on write saving for more stable backup
     enable_copy_on_write: false
+    # @schema {"name": "agent.ngt.enable_export_index_info_to_k8s", "type": "boolean"}
+    # agent.ngt.enable_export_index_info_to_k8s -- enable export index info to k8s
+    enable_export_index_info_to_k8s: false
+    # @schema {"name": "agent.ngt.export_index_info_duration", "type": "string"}
+    # agent.ngt.export_index_info_duration -- duration of exporting index info
+    export_index_info_duration: 1m
     # @schema {"name": "agent.ngt.vqueue", "type": "object"}
     vqueue:
       # @schema {"name": "agent.ngt.vqueue.insert_buffer_pool_size", "type": "integer"}
