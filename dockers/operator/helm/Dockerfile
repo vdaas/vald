@@ -48,6 +48,8 @@ ENV PATH ${PATH}:${GOROOT}/bin:${GOPATH}/bin
 ENV ORG vdaas
 ENV REPO vald
 ENV APP_NAME helm-operator
+ENV AARCH aarch_64
+ENV XARCH x86_64
 
 # skipcq: DOK-DL3008
 RUN apt-get clean \
@@ -62,6 +64,16 @@ RUN apt-get clean \
     curl \
     upx \
     git \
+    && if [ "${TARGETARCH}" = "amd64" ] ; then  \
+         apt-get install -y --no-install-recommends --fix-missing gcc-${XARCH}-${TARGETOS}-gnu; \
+         export CC=${XARCH}-${TARGETOS}-gnu-gcc; \
+         export CC_FOR_TARGET=${CC}; \
+       elif [ "${TARGETARCH}" = "arm64" ] ; then  \
+         apt-get install -y --no-install-recommends --fix-missing gcc-${AARCH}-${TARGETOS}-gnu; \
+         export CC=${AARCH}-${TARGETOS}-gnu-gcc; \
+         export CC_FOR_TARGET=${CC}; \
+       fi \
+    && ldconfig \
     && apt-get clean \
     && rm -rf \
         /var/lib/apt/lists/* \
@@ -121,11 +133,12 @@ COPY versions .
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/charts
 COPY charts .
 
-WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/hack/helm/schema/gen
-COPY hack/helm/schema/gen .
+WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/hack
+COPY hack .
 
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}
-RUN make GOARCH=${TARGETARCH} GOOS=${TARGETOS} helm/schema/vald helm/schema/vald-helm-operator \
+RUN make GOARCH=${TARGETARCH} GOOS=${TARGETOS} helm/schema/vald \
+    && make GOARCH=${TARGETARCH} GOOS=${TARGETOS} helm/schema/vald-helm-operator \
     && cp -r charts /charts
 
 COPY --from=operator /usr/local/bin/${APP_NAME} /usr/bin/${APP_NAME}

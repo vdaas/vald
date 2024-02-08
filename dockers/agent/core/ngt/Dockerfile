@@ -37,6 +37,8 @@ ENV REPO vald
 ENV PKG agent/core/ngt
 ENV PKG_INTERNAL agent/internal
 ENV APP_NAME ngt
+ENV AARCH aarch_64
+ENV XARCH x86_64
 
 # skipcq: DOK-DL3008
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -52,6 +54,16 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libopenblas-dev \
     unzip \
     upx \
+    && if [ "${TARGETARCH}" = "amd64" ] ; then  \
+         apt-get install -y --no-install-recommends --fix-missing gcc-${XARCH}-${TARGETOS}-gnu; \
+         export CC=${XARCH}-${TARGETOS}-gnu-gcc; \
+         export CC_FOR_TARGET=${CC}; \
+       elif [ "${TARGETARCH}" = "arm64" ] ; then  \
+         apt-get install -y --no-install-recommends --fix-missing gcc-${AARCH}-${TARGETOS}-gnu; \
+         export CC=${AARCH}-${TARGETOS}-gnu-gcc; \
+         export CC_FOR_TARGET=${CC}; \
+       fi \
+    && ldconfig \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 

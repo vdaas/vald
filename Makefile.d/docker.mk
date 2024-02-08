@@ -77,24 +77,24 @@ endif
 
 .PHONY: docker/name/agent-ngt
 docker/name/agent-ngt:
-	@echo "$(ORG)/$(AGENT_IMAGE)"
+	@echo "$(ORG)/$(AGENT_NGT_IMAGE)"
 
 .PHONY: docker/build/agent-ngt
 ## build agent-ngt image
 docker/build/agent-ngt:
 	@make DOCKERFILE="$(ROOTDIR)/dockers/agent/core/ngt/Dockerfile" \
-		IMAGE=$(AGENT_IMAGE) \
+		IMAGE=$(AGENT_NGT_IMAGE) \
 		docker/build/image
 
 .PHONY: docker/name/agent-faiss
 docker/name/agent-faiss:
-	@echo "$(ORG)/$(AGENT_IMAGE)"
+	@echo "$(ORG)/$(AGENT_FAISS_IMAGE)"
 
 .PHONY: docker/build/agent-faiss
 ## build agent-faiss image
 docker/build/agent-faiss:
 	@make DOCKERFILE="$(ROOTDIR)/dockers/agent/core/faiss/Dockerfile" \
-		IMAGE=$(AGENT_IMAGE) \
+		IMAGE=$(AGENT_FAISS_IMAGE) \
 		docker/build/image
 
 .PHONY: docker/name/agent-sidecar
