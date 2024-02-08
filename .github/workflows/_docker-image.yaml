@@ -1,3 +1,4 @@
+# !yamlfmt!:ignore
 #
 # Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 #
@@ -37,7 +38,7 @@ jobs:
       - uses: ./.github/actions/dump-context
   build:
     runs-on: ubuntu-latest
-    if: |
+    if: >-
       ${{ (github.event_name == 'pull_request' &&
               github.event.pull_request.head.repo.fork == false) ||
           (github.event.pull_request.head.repo.fork == true &&
