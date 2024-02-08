@@ -2075,10 +2075,10 @@ agent:
     object_type: float
     # @schema {"name": "agent.ngt.creation_edge_size", "type": "integer"}
     # agent.ngt.creation_edge_size -- creation edge size
-    creation_edge_size: 20
+    creation_edge_size: 50
     # @schema {"name": "agent.ngt.search_edge_size", "type": "integer"}
     # agent.ngt.search_edge_size -- search edge size
-    search_edge_size: 10
+    search_edge_size: 50
     # @schema {"name": "agent.ngt.enable_in_memory_mode", "type": "boolean"}
     # agent.ngt.enable_in_memory_mode -- in-memory mode enabled
     enable_in_memory_mode: true
@@ -2090,7 +2090,7 @@ agent:
     default_radius: -1.0
     # @schema {"name": "agent.ngt.default_epsilon", "type": "number"}
     # agent.ngt.default_epsilon -- default epsilon used for search
-    default_epsilon: 0.1
+    default_epsilon: 0.05
     # @schema {"name": "agent.ngt.min_load_index_timeout", "type": "string"}
     # agent.ngt.min_load_index_timeout -- minimum duration of load index timeout
     min_load_index_timeout: 3m
