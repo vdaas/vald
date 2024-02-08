@@ -113,7 +113,7 @@ RUN --mount=type=cache,target="${GOPATH}/pkg",id="go-build-${TARGETARCH}" \
     if [ "${TARGETARCH}" = "amd64" ] ; then  \
       export CC=${XARCH}-${TARGETOS}-gnu-gcc; \
     elif [ "${TARGETARCH}" = "arm64" ] ; then  \
-      export CC=${AARCH}-${TARGETOS}-gnu-gcc; \
+      export CC=${AARCH_GCC}-${TARGETOS}-gnu-gcc; \
     fi \
     && make GOARCH=${TARGETARCH} GOOS=${TARGETOS} CC_FOR_TARGET=${CC} REPO=${ORG} NAME=${REPO} cmd/${PKG}/${APP_NAME} \
     && mv "cmd/${PKG}/${APP_NAME}" "/usr/bin/${APP_NAME}"
