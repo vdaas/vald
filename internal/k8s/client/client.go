@@ -19,17 +19,24 @@ package client
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	snapshotv1 "github.com/kubernetes-csi/external-snapshotter/client/v6/apis/volumesnapshot/v1"
+	"github.com/vdaas/vald/internal/log"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/equality"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/selection"
 	"k8s.io/apimachinery/pkg/watch"
+	applycorev1 "k8s.io/client-go/applyconfigurations/core/v1"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/utils/pointer"
+	"k8s.io/utils/ptr"
 	ctrl "sigs.k8s.io/controller-runtime"
 	cli "sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -173,4 +180,81 @@ func (*client) LabelSelector(key string, op selection.Operator, vals []string) (
 		return nil, fmt.Errorf("failed to create requirement on creating label selector: %w", err)
 	}
 	return labels.NewSelector().Add(*requirements), nil
+}
+
+type Ssa struct {
+	client       Client
+	fieldManager string
+}
+
+func NewSsa(fieldManager string) (Ssa, error) {
+	client, err := New()
+	if err != nil {
+		return Ssa{}, err
+	}
+
+	return Ssa{
+		client:       client,
+		fieldManager: fieldManager,
+	}, nil
+}
+
+func (s *Ssa) ApplyPodAnnotations(ctx context.Context, name, namespace string, entries map[string]string) error {
+	var podList corev1.PodList
+	if err := s.client.List(ctx, &podList, &cli.ListOptions{
+		Namespace:     namespace,
+		FieldSelector: fields.OneTermEqualSelector("metadata.name", name),
+	}); err != nil {
+		return err
+	}
+
+	if len(podList.Items) == 0 {
+		return errors.New("agent pod not found on exporting metrics")
+	}
+
+	if len(podList.Items) >= 2 {
+		return errors.New("multiple agent pods found on exporting metrics. pods with same name exist in the same namespace?")
+	}
+
+	pod := podList.Items[0]
+
+	// FIXME: delete this
+	log.Debugf("found pod: %s", pod.GetName())
+
+	curApplyConfig, err := applycorev1.ExtractPod(&pod, s.fieldManager)
+	if err != nil {
+		return err
+	}
+
+	// try server side apply
+	annotations := pod.GetObjectMeta().GetAnnotations()
+	if annotations == nil {
+		annotations = make(map[string]string)
+	}
+	for k, v := range entries {
+		annotations[k] = v
+	}
+	expectPod := applycorev1.Pod(name, namespace).
+		WithAnnotations(annotations)
+
+	obj, err := runtime.DefaultUnstructuredConverter.ToUnstructured(expectPod)
+	if err != nil {
+		return err
+	}
+
+	if equality.Semantic.DeepEqual(expectPod, curApplyConfig) {
+		// FIXME: delete this
+		log.Debug("no change in pod spec")
+		return nil
+	}
+
+	patch := &unstructured.Unstructured{Object: obj}
+	if err := s.client.Patch(ctx, patch, cli.Apply, &cli.PatchOptions{
+		FieldManager: s.fieldManager,
+		Force:        ptr.To(true),
+	}); err != nil {
+		return err
+	}
+
+	return nil
 }
