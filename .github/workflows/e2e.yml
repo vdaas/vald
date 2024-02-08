@@ -344,7 +344,7 @@ jobs:
         with:
           helm_extra_options: ${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }}
           values: .github/helm/values/values-readreplica.yaml
-          wait_for_selector: app=vald-agent-ngt
+          wait_for_selector: app=vald-agent
 
       - name: Deploy Vald Read Replica
         id: deploy_vald_readreplica
