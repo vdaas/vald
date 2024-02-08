@@ -58,12 +58,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     upx \
     && if [ "${TARGETARCH}" = "amd64" ] ; then  \
          apt-get install -y --no-install-recommends --fix-missing gcc-${XARCH_GCC}-${TARGETOS}-gnu; \
-         export CC=${XARCH}-${TARGETOS}-gnu-gcc; \
-         export CC_FOR_TARGET=${CC}; \
        elif [ "${TARGETARCH}" = "arm64" ] ; then  \
          apt-get install -y --no-install-recommends --fix-missing gcc-${AARCH_GCC}-${TARGETOS}-gnu; \
-         export CC=${AARCH}-${TARGETOS}-gnu-gcc; \
-         export CC_FOR_TARGET=${CC}; \
        fi \
     && ldconfig \
     && apt-get clean \
@@ -114,7 +110,12 @@ RUN make ngt/install
 
 RUN --mount=type=cache,target="${GOPATH}/pkg",id="go-build-${TARGETARCH}" \
     --mount=type=cache,target="${HOME}/.cache/go-build",id="go-build-${TARGETARCH}" \
-    make GOARCH=${TARGETARCH} GOOS=${TARGETOS}  REPO=${ORG} NAME=${REPO} cmd/${PKG}/${APP_NAME} \
+    if [ "${TARGETARCH}" = "amd64" ] ; then  \
+      export CC=${XARCH}-${TARGETOS}-gnu-gcc; \
+    elif [ "${TARGETARCH}" = "arm64" ] ; then  \
+      export CC=${AARCH}-${TARGETOS}-gnu-gcc; \
+    fi \
+    && make GOARCH=${TARGETARCH} GOOS=${TARGETOS} CC_FOR_TARGET=${CC} REPO=${ORG} NAME=${REPO} cmd/${PKG}/${APP_NAME} \
     && mv "cmd/${PKG}/${APP_NAME}" "/usr/bin/${APP_NAME}"
 
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/cmd/${PKG}
