@@ -154,6 +154,7 @@ helm/schema/crd/all: \
 	helm/schema/crd/vald \
 	helm/schema/crd/vald-helm-operator \
 	helm/schema/crd/vald-benchmark-job \
+	helm/schema/crd/vald/mirror-target \
 	helm/schema/crd/vald-benchmark-scenario \
 	helm/schema/crd/vald-benchmark-operator
 

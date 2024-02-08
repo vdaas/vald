@@ -81,14 +81,14 @@ jobs:
           sed -i -e "s/^version: .*$/version: ${RELEASE_TAG}/" charts/vald-helm-operator/Chart.yaml
           sed -i -r "s/^(\s*)tag\s*:\s*v[0-9]+\.[0-9]+\.[0-9]+\s*$/\1tag: ${RELEASE_TAG}/" charts/vald-helm-operator/values.yaml
 
-          make helm/schema/vald
-          make helm/schema/vald-helm-operator
-          make helm/schema/crd/vald
-          make helm/schema/crd/vald-helm-operator
+          make helm/schema/all
+          make helm/schema/crd/all
           make k8s/manifest/update
           make k8s/manifest/helm-operator/update
+          make k8s/manifest/benchmark-operator/update
           make helm/docs/vald
           make helm/docs/vald-helm-operator
+          make helm/docs/vald-readreplica
 
           BODY=""
           if [ ! -z "${PR_NUM}" ]; then
@@ -114,6 +114,14 @@ jobs:
             charts/vald/README.md \
             charts/vald/values.schema.json \
             charts/vald/values.yaml \
+            charts/vald-readreplica/Chart.yaml \
+            charts/vald-readreplica/README.md \
+            charts/vald-benchmark-operator/Chart.yaml \
+            charts/vald-benchmark-operator/README.md \
+            charts/vald-benchmark-operator/job-values.schema.json \
+            charts/vald-benchmark-operator/scenario-values.schema.json \
+            charts/vald-benchmark-operator/values.yaml \
+            charts/vald-benchmark-operator/values.schema.json \
             k8s \
             versions/VALD_VERSION
           git commit -S --signoff -m ":bookmark: :robot: Release ${RELEASE_TAG}"
