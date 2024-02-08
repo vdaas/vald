@@ -18,7 +18,10 @@
 ARG MAINTAINER="vdaas.org vald team <vald@vdaas.org>"
 
 # skipcq: DOK-DL3026
-FROM --platform=${BUILDPLATFORM} ubuntu:devel AS builder
+# Ubuntu is not supported by a lot of devcontainer features like `docker-in-docker`, so we should stick to official debian based ones
+# https://github.com/devcontainers/features/blob/08fb370a59cc311d9f81a9e90be33cf2e6648baa/src/docker-in-docker/install.sh#L123
+# FIXME: change the tag to :1 when they support go 1.22
+FROM --platform=${BUILDPLATFORM} mcr.microsoft.com/vscode/devcontainers/go:dev-1.22 AS builder
 LABEL maintainer="${MAINTAINER}"
 
 ARG GO_VERSION
