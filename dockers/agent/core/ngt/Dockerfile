@@ -19,11 +19,13 @@ ARG DISTROLESS_IMAGE=gcr.io/distroless/static
 ARG DISTROLESS_IMAGE_TAG=nonroot
 ARG MAINTAINER="vdaas.org vald team <vald@vdaas.org>"
 
-FROM --platform=${BUILDPLATFORM} ubuntu:devel AS builder
+FROM --platform=${TARGETPLATFORM} ubuntu:devel AS builder
 
 ARG TARGETARCH
 ARG TARGETOS
 ARG GO_VERSION
+ARG TARGETPLATFORM
+ARG BUILDPLATFORM
 
 ENV GO111MODULE on
 ENV DEBIAN_FRONTEND noninteractive
