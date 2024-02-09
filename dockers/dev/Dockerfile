@@ -21,7 +21,7 @@ ARG MAINTAINER="vdaas.org vald team <vald@vdaas.org>"
 # Ubuntu is not supported by a lot of devcontainer features like `docker-in-docker`, so we should stick to official debian based ones
 # https://github.com/devcontainers/features/blob/08fb370a59cc311d9f81a9e90be33cf2e6648baa/src/docker-in-docker/install.sh#L123
 # FIXME: change the tag to :1 when they support go 1.22
-FROM --platform=${BUILDPLATFORM} mcr.microsoft.com/vscode/devcontainers/go:dev-1.22 AS builder
+FROM --platform=${BUILDPLATFORM} mcr.microsoft.com/vscode/devcontainers/base:debian
 LABEL maintainer="${MAINTAINER}"
 
 ARG GO_VERSION
@@ -74,7 +74,6 @@ COPY rust rust
 COPY hack/go.mod.default hack/go.mod.default
 COPY example/client/go.mod.default example/client/go.mod.default
 
-# basic deps
 RUN --mount=type=cache,target="${GOPATH}/pkg",id="go-build-${TARGETARCH}" \
     --mount=type=cache,target="${HOME}/.cache/go-build",id="go-build-${TARGETARCH}" \
     make GOARCH=${TARGETARCH} GOOS=${TARGETOS} deps GO_CLEAN_DEPS=false \
@@ -92,4 +91,11 @@ RUN --mount=type=cache,target="${GOPATH}/pkg",id="go-build-${TARGETARCH}" \
     && make k9s/install \
     && make minikube/install \
     && make stern/install \
-    && make telepresence/install
+    && make telepresence/install \
+    && echo "installing golang vscode extension dependencies" \
+    && make gopls/install \
+    && make gotests/install \
+    && make gomodifytags/install \
+    && make impl/install \
+    && make delve/install \
+    && make staticcheck/install
