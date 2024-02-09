@@ -85,7 +85,14 @@ COPY .git .
 COPY go.mod .
 COPY go.sum .
 
-RUN --mount=type=cache,target="${GOPATH}/pkg",id="go-build-${TARGETARCH}" \
+RUN if [ "${TARGETARCH}" = "amd64" ] ; then  \
+         export CC=${XARCH}-${TARGETOS}-gnu-gcc; \
+         export CC_FOR_TARGET=${CC}; \
+    elif [ "${TARGETARCH}" = "arm64" ] ; then  \
+         export CC=${AARCH}-${TARGETOS}-gnu-gcc; \
+         export CC_FOR_TARGET=${CC}; \
+    fi \
+    && --mount=type=cache,target="${GOPATH}/pkg",id="go-build-${TARGETARCH}" \
     --mount=type=cache,target="${HOME}/.cache/go-build",id="go-build-${TARGETARCH}" \
     make GOARCH=${TARGETARCH} GOOS=${TARGETOS} go/download
 
@@ -110,7 +117,14 @@ COPY versions .
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}
 RUN make ngt/install
 
-RUN --mount=type=cache,target="${GOPATH}/pkg",id="go-build-${TARGETARCH}" \
+RUN if [ "${TARGETARCH}" = "amd64" ] ; then  \
+         export CC=${XARCH}-${TARGETOS}-gnu-gcc; \
+         export CC_FOR_TARGET=${CC}; \
+    elif [ "${TARGETARCH}" = "arm64" ] ; then  \
+         export CC=${AARCH}-${TARGETOS}-gnu-gcc; \
+         export CC_FOR_TARGET=${CC}; \
+    fi \
+    && --mount=type=cache,target="${GOPATH}/pkg",id="go-build-${TARGETARCH}" \
     --mount=type=cache,target="${HOME}/.cache/go-build",id="go-build-${TARGETARCH}" \
     make GOARCH=${TARGETARCH} GOOS=${TARGETOS}  REPO=${ORG} NAME=${REPO} cmd/${PKG}/${APP_NAME} \
     && mv "cmd/${PKG}/${APP_NAME}" "/usr/bin/${APP_NAME}"
