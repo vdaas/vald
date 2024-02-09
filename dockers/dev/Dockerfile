@@ -18,9 +18,7 @@
 ARG MAINTAINER="vdaas.org vald team <vald@vdaas.org>"
 
 # skipcq: DOK-DL3026
-# Ubuntu is not supported by a lot of devcontainer features like `docker-in-docker`, so we should stick to official debian based ones
-# https://github.com/devcontainers/features/blob/08fb370a59cc311d9f81a9e90be33cf2e6648baa/src/docker-in-docker/install.sh#L123
-# FIXME: change the tag to :1 when they support go 1.22
+# we should stick to official devcontainers as a base image because it is well tested to be used with the vscode devcontainer extension.
 FROM --platform=${BUILDPLATFORM} mcr.microsoft.com/vscode/devcontainers/base:debian
 LABEL maintainer="${MAINTAINER}"
 
