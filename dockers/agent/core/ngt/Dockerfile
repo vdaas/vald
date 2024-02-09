@@ -92,11 +92,9 @@ RUN if [ "${TARGETARCH}" = "amd64" ] ; then  \
          export CC=${AARCH}-${TARGETOS}-gnu-gcc; \
          export CC_FOR_TARGET=${CC}; \
     fi \
-    &&  \
+    && --mount=type=cache,target="${GOPATH}/pkg",id="go-build-${TARGETARCH}" \
+    --mount=type=cache,target="${HOME}/.cache/go-build",id="go-build-${TARGETARCH}" \
     make GOARCH=${TARGETARCH} GOOS=${TARGETOS} go/download
-    # && --mount=type=cache,target="${GOPATH}/pkg",id="go-build-${TARGETARCH}" \
-    # --mount=type=cache,target="${HOME}/.cache/go-build",id="go-build-${TARGETARCH}" \
-    # make GOARCH=${TARGETARCH} GOOS=${TARGETOS} go/download
 
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/internal
 COPY internal .
@@ -126,14 +124,10 @@ RUN if [ "${TARGETARCH}" = "amd64" ] ; then  \
          export CC=${AARCH}-${TARGETOS}-gnu-gcc; \
          export CC_FOR_TARGET=${CC}; \
     fi \
-    && \
+    && --mount=type=cache,target="${GOPATH}/pkg",id="go-build-${TARGETARCH}" \
+    --mount=type=cache,target="${HOME}/.cache/go-build",id="go-build-${TARGETARCH}" \
     make GOARCH=${TARGETARCH} GOOS=${TARGETOS}  REPO=${ORG} NAME=${REPO} cmd/${PKG}/${APP_NAME} \
     && mv "cmd/${PKG}/${APP_NAME}" "/usr/bin/${APP_NAME}"
-
-    # && --mount=type=cache,target="${GOPATH}/pkg",id="go-build-${TARGETARCH}" \
-    # --mount=type=cache,target="${HOME}/.cache/go-build",id="go-build-${TARGETARCH}" \
-    # make GOARCH=${TARGETARCH} GOOS=${TARGETOS}  REPO=${ORG} NAME=${REPO} cmd/${PKG}/${APP_NAME} \
-    # && mv "cmd/${PKG}/${APP_NAME}" "/usr/bin/${APP_NAME}"
 
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/cmd/${PKG}
 RUN cp sample.yaml /tmp/config.yaml
