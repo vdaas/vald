@@ -44,7 +44,7 @@ replace (
 	github.com/akrylysov/pogreb => github.com/akrylysov/pogreb v0.10.2
 	github.com/antihax/optional => github.com/antihax/optional v1.0.0
 	github.com/armon/go-socks5 => github.com/armon/go-socks5 v0.0.0-20160902184237-e75332964ef5
-	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.50.13
+	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.50.14
 	github.com/aws/aws-sdk-go-v2 => github.com/aws/aws-sdk-go-v2 v1.24.1
 	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream => github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.5.4
 	github.com/aws/aws-sdk-go-v2/config => github.com/aws/aws-sdk-go-v2/config v1.26.6
@@ -191,7 +191,7 @@ replace (
 	github.com/jstemmer/go-junit-report => github.com/jstemmer/go-junit-report v1.0.0
 	github.com/kisielk/errcheck => github.com/kisielk/errcheck v1.7.0
 	github.com/kisielk/gotool => github.com/kisielk/gotool v1.0.0
-	github.com/klauspost/compress => github.com/klauspost/compress v1.17.7-0.20240205163310-8e5ae404d473
+	github.com/klauspost/compress => github.com/klauspost/compress v1.17.7-0.20240208130440-4c490179eb31
 	github.com/klauspost/cpuid/v2 => github.com/klauspost/cpuid/v2 v2.2.6
 	github.com/kpango/fastime => github.com/kpango/fastime v1.1.9
 	github.com/kpango/fuid => github.com/kpango/fuid v0.0.0-20221203053508-503b5ad89aa1
@@ -301,7 +301,7 @@ replace (
 	golang.org/x/mobile => golang.org/x/mobile v0.0.0-20240112133503-c713f31d574b
 	golang.org/x/mod => golang.org/x/mod v0.15.0
 	golang.org/x/net => golang.org/x/net v0.21.0
-	golang.org/x/oauth2 => golang.org/x/oauth2 v0.16.0
+	golang.org/x/oauth2 => golang.org/x/oauth2 v0.17.0
 	golang.org/x/sync => golang.org/x/sync v0.6.0
 	golang.org/x/sys => golang.org/x/sys v0.17.0
 	golang.org/x/term => golang.org/x/term v0.17.0
@@ -313,7 +313,7 @@ replace (
 	gonum.org/v1/gonum => gonum.org/v1/gonum v0.14.0
 	gonum.org/v1/hdf5 => gonum.org/v1/hdf5 v0.0.0-20210714002203-8c5d23bc6946
 	gonum.org/v1/plot => gonum.org/v1/plot v0.14.0
-	google.golang.org/api => google.golang.org/api v0.162.0
+	google.golang.org/api => google.golang.org/api v0.163.0
 	google.golang.org/appengine => google.golang.org/appengine v1.6.8
 	google.golang.org/genproto => google.golang.org/genproto v0.0.0-20240205150955-31a09d347014
 	google.golang.org/genproto/googleapis/api => google.golang.org/genproto/googleapis/api v0.0.0-20240205150955-31a09d347014
@@ -335,7 +335,7 @@ replace (
 	k8s.io/client-go => k8s.io/client-go v0.29.1
 	k8s.io/component-base => k8s.io/component-base v0.29.1
 	k8s.io/klog/v2 => k8s.io/klog/v2 v2.120.1
-	k8s.io/kube-openapi => k8s.io/kube-openapi v0.0.0-20240126223410-2919ad4fcfec
+	k8s.io/kube-openapi => k8s.io/kube-openapi v0.0.0-20240209001042-7a0d5b415232
 	k8s.io/kubernetes => k8s.io/kubernetes v0.29.1
 	k8s.io/metrics => k8s.io/metrics v0.29.1
 	nhooyr.io/websocket => nhooyr.io/websocket v1.8.10
@@ -393,7 +393,7 @@ require (
 	go.uber.org/ratelimit v0.3.0
 	go.uber.org/zap v1.26.0
 	gocloud.dev v0.0.0-00010101000000-000000000000
-	golang.org/x/net v0.20.0
+	golang.org/x/net v0.21.0
 	golang.org/x/oauth2 v0.16.0
 	golang.org/x/sync v0.6.0
 	golang.org/x/sys v0.17.0
