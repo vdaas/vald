@@ -36,7 +36,7 @@ binary/build: \
 cmd/agent/core/ngt/ngt: \
 	ngt/install
 	$(eval CGO_ENABLED = 1)
-	$(call go-build,agent/core/ngt,-linkmode 'external',-static -fPIC -pthread -fopenmp -std=gnu++20 -lstdc++ -lm -z relro -z now $(EXTLDFLAGS), cgo,NGT-$(NGT_VERSION),$@)
+	$(call go-build,agent/core/ngt,-linkmode 'external',-static -fPIC -pthread -fopenmp -std=gnu++20 -lstdc++ -lm -z relro -z now $(EXTLDFLAGS), cgo,NGT-$(NGT_VERSION),$@,CC_FOR_TARGET=${TARGET} CC=${CC} CGO_CFLAGS="${CGO_CFLAGS}")
 
 cmd/agent/core/faiss/faiss: \
 	faiss/install

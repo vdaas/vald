@@ -68,6 +68,7 @@ define go-build
 	GOOS=$(GOOS) \
 	GOPRIVATE=$(GOPRIVATE) \
 	GO_VERSION=$(GO_VERSION) \
+	$7 \
 	go build \
 		--ldflags "-w $2 \
 		-extldflags '$3' \
