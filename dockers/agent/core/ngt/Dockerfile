@@ -85,14 +85,7 @@ COPY go.sum .
 
 RUN --mount=type=cache,target="${GOPATH}/pkg",id="go-build-${TARGETARCH}" \
     --mount=type=cache,target="${HOME}/.cache/go-build",id="go-build-${TARGETARCH}" \
-    if [ "${TARGETARCH}" = "amd64" ] ; then  \
-      export CC=${XARCH}-${TARGETOS}-gnu-gcc; \
-      export TARGET=gcc-${XARCH_GCC}-${TARGETOS}-gnu ; \
-    elif [ "${TARGETARCH}" = "arm64" ] ; then  \
-      export CC=${AARCH_GCC}-${TARGETOS}-gnu-gcc; \
-      export TARGET=gcc-${AARCH_GCC}-${TARGETOS}-gnu ; \
-    fi \
-    && make GOARCH=${TARGETARCH} GOOS=${TARGETOS} go/download
+    make GOARCH=${TARGETARCH} GOOS=${TARGETOS} go/download
 
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/internal
 COPY internal .
