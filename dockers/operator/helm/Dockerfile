@@ -25,8 +25,8 @@ ARG VALD_HELM_OPERATOR_KIND="ValdHelmOperatorRelease"
 ARG MAINTAINER="vdaas.org vald team <vald@vdaas.org>"
 
 # skipcq: DOK-DL3026
-FROM --platform=${BUILDPLATFORM} quay.io/operator-framework/helm-operator:${OPERATOR_SDK_VERSION} AS operator
-FROM --platform=${BUILDPLATFORM} ubuntu:devel AS builder
+FROM --platform=${TARGETPLATFORM} quay.io/operator-framework/helm-operator:${OPERATOR_SDK_VERSION} AS operator
+FROM --platform=${TARGETPLATFORM} ubuntu:devel AS builder
 
 ARG GO_VERSION
 ARG OPERATOR_SDK_VERSION
@@ -64,15 +64,6 @@ RUN apt-get clean \
     curl \
     upx \
     git \
-    && if [ "${TARGETARCH}" = "amd64" ] ; then  \
-         apt-get install -y --no-install-recommends --fix-missing gcc-${XARCH}-${TARGETOS}-gnu; \
-         export CC=${XARCH}-${TARGETOS}-gnu-gcc; \
-         export CC_FOR_TARGET=${CC}; \
-       elif [ "${TARGETARCH}" = "arm64" ] ; then  \
-         apt-get install -y --no-install-recommends --fix-missing gcc-${AARCH}-${TARGETOS}-gnu; \
-         export CC=${AARCH}-${TARGETOS}-gnu-gcc; \
-         export CC_FOR_TARGET=${CC}; \
-       fi \
     && ldconfig \
     && apt-get clean \
     && rm -rf \
@@ -145,7 +136,7 @@ COPY --from=operator /usr/local/bin/${APP_NAME} /usr/bin/${APP_NAME}
 
 RUN upx ${UPX_OPTIONS} "/usr/bin/${APP_NAME}"
 
-FROM --platform=${BUILDPLATFORM} ${DISTROLESS_IMAGE}:${DISTROLESS_IMAGE_TAG}
+FROM --platform=${TARGETPLATFORM} ${DISTROLESS_IMAGE}:${DISTROLESS_IMAGE_TAG}
 LABEL maintainer="${MAINTAINER}"
 
 ENV APP_NAME helm-operator
