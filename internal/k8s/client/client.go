@@ -35,7 +35,6 @@ import (
 	"k8s.io/apimachinery/pkg/watch"
 	applycorev1 "k8s.io/client-go/applyconfigurations/core/v1"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
-	"k8s.io/utils/pointer"
 	"k8s.io/utils/ptr"
 	ctrl "sigs.k8s.io/controller-runtime"
 	cli "sigs.k8s.io/controller-runtime/pkg/client"
@@ -69,7 +68,6 @@ const (
 var (
 	ServerSideApply = cli.Apply
 	MergePatch      = cli.Merge
-	PointerBool     = pointer.Bool
 )
 
 type Client interface {
