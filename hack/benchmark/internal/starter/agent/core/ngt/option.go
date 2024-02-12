@@ -58,6 +58,8 @@ var defaultOptions = []Option{
 			Enabled: false,
 		},
 		NGT: &iconfig.NGT{
+			PodName:            "vald-agent-ngt-0",
+			PodNamespace:       "default",
 			Dimension:          0,
 			DistanceType:       "unknown",
 			ObjectType:         "unknown",
