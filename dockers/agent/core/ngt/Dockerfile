@@ -20,7 +20,7 @@ ARG DISTROLESS_IMAGE_TAG=nonroot
 ARG MAINTAINER="vdaas.org vald team <vald@vdaas.org>"
 
 # TODO: revert this changes.
-FROM ubuntu:devel AS builder
+FROM --platform=${BUILDPLATFORM} ubuntu:devel AS builder
 
 ARG TARGETARCH
 ARG TARGETOS
