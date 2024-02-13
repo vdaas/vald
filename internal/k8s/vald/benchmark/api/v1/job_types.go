@@ -23,6 +23,7 @@ import (
 )
 
 type BenchmarkJobSpec struct {
+	//nolint: tagalign
 	*config.GlobalConfig    `json:",omitempty" yaml:""`
 	ServerConfig            *config.Servers            `json:"server_config,omitempty"              yaml:"server_config"`
 	Target                  *BenchmarkTarget           `json:"target,omitempty"                     yaml:"target"`
