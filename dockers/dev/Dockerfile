@@ -19,7 +19,7 @@ ARG MAINTAINER="vdaas.org vald team <vald@vdaas.org>"
 
 # skipcq: DOK-DL3026
 # we should stick to official devcontainers as a base image because it is well tested to be used with the vscode devcontainer extension.
-FROM --platform=${BUILDPLATFORM} mcr.microsoft.com/vscode/devcontainers/base:debian
+FROM --platform=${TARGETPLATFORM} mcr.microsoft.com/vscode/devcontainers/base:debian
 LABEL maintainer="${MAINTAINER}"
 
 ARG GO_VERSION
