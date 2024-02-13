@@ -169,7 +169,7 @@ const (
 )
 
 func New(cfg *config.NGT, opts ...Option) (nn NGT, err error) {
-	if cfg.PodName == "" {
+	if cfg.PodName == "" && cfg.EnableExportIndexInfoToK8s {
 		return nil, errors.New("pod_name is empty. this must be set either from environment variable or from config file")
 	}
 	n := &ngt{
