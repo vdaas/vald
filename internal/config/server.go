@@ -39,7 +39,8 @@ type Servers struct {
 	MetricsServers []*Server `json:"metrics_servers" yaml:"metrics_servers"`
 
 	// StartUpStrategy represent starting order of server name
-	StartUpStrategy []string `json:"startup_strategy"  yaml:"startup_strategy"`
+	StartUpStrategy []string `json:"startup_strategy" yaml:"startup_strategy"`
+
 	// ShutdownStrategy represent shutdown order of server name
 	ShutdownStrategy []string `json:"shutdown_strategy" yaml:"shutdown_strategy"`
 

@@ -35,22 +35,22 @@ type Indexer struct {
 	Concurrency int `json:"concurrency" yaml:"concurrency"`
 
 	// AutoIndexDurationLimit represents auto indexing duration limit
-	AutoIndexDurationLimit string `yaml:"auto_index_duration_limit" json:"auto_index_duration_limit"`
+	AutoIndexDurationLimit string `json:"auto_index_duration_limit" yaml:"auto_index_duration_limit"`
 
 	// AutoSaveIndexDurationLimit represents auto save index duration limit
-	AutoSaveIndexDurationLimit string `yaml:"auto_save_index_duration_limit" json:"auto_save_index_duration_limit"`
+	AutoSaveIndexDurationLimit string `json:"auto_save_index_duration_limit" yaml:"auto_save_index_duration_limit"`
 
 	// AutoSaveIndexWaitDuration represents auto save index wait for next duration
-	AutoSaveIndexWaitDuration string `yaml:"auto_save_index_wait_duration" json:"auto_save_index_wait_duration"`
+	AutoSaveIndexWaitDuration string `json:"auto_save_index_wait_duration" yaml:"auto_save_index_wait_duration"`
 
 	// AutoIndexCheckDuration represent checking loop duration about auto indexing execution
-	AutoIndexCheckDuration string `yaml:"auto_index_check_duration" json:"auto_index_check_duration"`
+	AutoIndexCheckDuration string `json:"auto_index_check_duration" yaml:"auto_index_check_duration"`
 
 	// AutoIndexLength represent minimum auto index length
-	AutoIndexLength uint32 `yaml:"auto_index_length" json:"auto_index_length"`
+	AutoIndexLength uint32 `json:"auto_index_length" yaml:"auto_index_length"`
 
 	// CreationPoolSize represent create index batch pool size
-	CreationPoolSize uint32 `yaml:"creation_pool_size" json:"creation_pool_size"`
+	CreationPoolSize uint32 `json:"creation_pool_size" yaml:"creation_pool_size"`
 
 	// NodeName represents node name
 	NodeName string `json:"node_name" yaml:"node_name"`

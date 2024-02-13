@@ -59,7 +59,7 @@ jobs:
       - name: Run formatter and license.go
         run: |
           make format
-          git checkout go.mod go.sum ./rust/Cargo.lock
+          git checkout go.mod go.sum
       - name: Check and Push to main branch
         continue-on-error: true
         run: |
@@ -101,16 +101,17 @@ jobs:
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
       - name: Setup Go environment
         uses: ./.github/actions/setup-go
-      - name: Run formatter and license.go
+      - name: Run `make format` and `make deps/install`
         run: |
           make deps/install
           make format
-          git checkout go.mod go.sum ./rust/Cargo.lock
-      - name: Check format difference
+          git checkout go.mod go.sum
+      - name: Check format and deps difference
         run: |
           if git diff --quiet --exit-code; then
             echo "Nothing updated"
           else
-            echo "Please execute \`make format\` locally."
+            git diff
+            echo "Please execute \`make format\` and \`make deps/install\` locally."
             exit 1
           fi
