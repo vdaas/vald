@@ -1911,7 +1911,7 @@ agent:
     enabled: true
     # @schema {"name": "agent.clusterRole.name", "type": "string"}
     # agent.clusterRole.name -- name of clusterRole
-    name: gateway-mirror
+    name: agent
   # @schema {"name": "agent.clusterRoleBinding", "type": "object"}
   clusterRoleBinding:
     # @schema {"name": "agent.clusterRoleBinding.enabled", "type": "boolean"}
@@ -1919,7 +1919,7 @@ agent:
     enabled: true
     # @schema {"name": "agent.clusterRoleBinding.name", "type": "string"}
     # agent.clusterRoleBinding.name -- name of clusterRoleBinding
-    name: gateway-mirror
+    name: agent
   # @schema {"name": "agent.serviceAccount", "type": "object"}
   serviceAccount:
     # @schema {"name": "agent.serviceAccount.enabled", "type": "boolean"}
@@ -1927,7 +1927,7 @@ agent:
     enabled: true
     # @schema {"name": "agent.serviceAccount.name", "type": "string"}
     # agent.serviceAccount.name -- name of service account
-    name: vald-agent-ngt
+    name: agent-ngt
   # @schema {"name": "agent.env", "alias": "env"}
   # agent.env -- environment variables
   env:
