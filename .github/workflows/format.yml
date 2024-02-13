@@ -59,7 +59,7 @@ jobs:
       - name: Run formatter and license.go
         run: |
           make format
-          git checkout go.mod go.sum
+          git checkout go.mod go.sum ./rust/Cargo.lock
       - name: Check and Push to main branch
         continue-on-error: true
         run: |
@@ -90,7 +90,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: [detect-ci-container]
     container:
-      image: ghcr.io/vdaas/vald/vald-ci-container:${{ needs.detect-ci-container.outputs.TAG_NAME }}
+      # TODO: Revert it later.
+      image: ghcr.io/vdaas/vald/vald-ci-container:pr-2334
     steps:
       - uses: actions/checkout@v4
         with:
@@ -105,7 +106,7 @@ jobs:
         run: |
           make deps/install
           make format
-          git checkout go.mod go.sum
+          git checkout go.mod go.sum ./rust/Cargo.lock
       - name: Check format difference
         run: |
           if git diff --quiet --exit-code; then
