@@ -37,8 +37,6 @@ ENV REPO vald
 ENV PKG agent/core/ngt
 ENV PKG_INTERNAL agent/internal
 ENV APP_NAME ngt
-ENV AARCH aarch_64
-ENV XARCH x86_64
 
 # skipcq: DOK-DL3008
 RUN apt-get update && apt-get install -y --no-install-recommends \

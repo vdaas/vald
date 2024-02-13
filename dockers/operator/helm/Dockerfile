@@ -48,8 +48,6 @@ ENV PATH ${PATH}:${GOROOT}/bin:${GOPATH}/bin
 ENV ORG vdaas
 ENV REPO vald
 ENV APP_NAME helm-operator
-ENV AARCH aarch_64
-ENV XARCH x86_64
 
 # skipcq: DOK-DL3008
 RUN apt-get clean \

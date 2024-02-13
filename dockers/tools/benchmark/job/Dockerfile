@@ -45,8 +45,6 @@ ENV PKG tools/benchmark/${APP_NAME}
 ENV BUILD_DIR=/usr/local
 ENV LIB_DIR=/usr/local/lib
 ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${LIB_DIR}:/lib
-ENV AARCH aarch_64
-ENV XARCH x86_64
 
 # skipcq: DOK-DL3008, DOK-DL3003
 RUN apt-get update && apt-get install -y --no-install-recommends \
