@@ -20,10 +20,10 @@ package config
 // NGT represent the ngt core configuration for server.
 type NGT struct {
 	// PodName represent the ngt pod name
-	PodName string `yaml:"pod_name" json:"pod_name,omitempty"`
+	PodName string `json:"pod_name,omitempty" yaml:"pod_name"`
 
 	// PodNamespace represent the ngt pod namespace
-	PodNamespace string `yaml:"namespace" json:"namespace,omitempty"`
+	PodNamespace string `json:"namespace,omitempty" yaml:"namespace"`
 
 	// IndexPath represent the ngt index file path
 	IndexPath string `json:"index_path,omitempty" yaml:"index_path"`
@@ -105,10 +105,10 @@ type NGT struct {
 	IsReadReplica bool `json:"is_readreplica" yaml:"is_readreplica"`
 
 	// EnableExportIndexInfoToK8s represents whether the ngt index info is exported to k8s or not
-	EnableExportIndexInfoToK8s bool `yaml:"enable_export_index_info_to_k8s" json:"enable_export_index_info_to_k8s"`
+	EnableExportIndexInfoToK8s bool `json:"enable_export_index_info_to_k8s" yaml:"enable_export_index_info_to_k8s"`
 
 	// ExportIndexInfoDuration represents the duration of exporting index info to k8s
-	ExportIndexInfoDuration string `yaml:"export_index_info_duration" json:"export_index_info_duration,omitempty"`
+	ExportIndexInfoDuration string `json:"export_index_info_duration,omitempty" yaml:"export_index_info_duration"`
 }
 
 // KVSDB represent the ngt vector bidirectional kv store configuration.
