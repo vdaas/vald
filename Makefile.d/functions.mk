@@ -283,7 +283,7 @@ define gen-license
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
-	go build -mod=readonly $(ROOTDIR)/hack/license/gen/main.go $1
+	go run -mod=readonly $(ROOTDIR)/hack/license/gen/main.go $1
 endef
 
 define gen-vald-helm-schema
