@@ -19,7 +19,8 @@ ARG DISTROLESS_IMAGE=gcr.io/distroless/static
 ARG DISTROLESS_IMAGE_TAG=nonroot
 ARG MAINTAINER="vdaas.org vald team <vald@vdaas.org>"
 
-FROM --platform=${TARGETPLATFORM} ubuntu:devel AS builder
+# TODO: revert this changes.
+FROM ubuntu:devel AS builder
 
 ARG TARGETARCH
 ARG TARGETOS
