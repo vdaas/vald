@@ -279,15 +279,11 @@ define gen-go-option-test-sources
 endef
 
 define gen-license
-	BIN_PATH="$(TEMP_DIR)/vald-helm-schema-gen"
-	rm -rf $$BIN_PATH
 	MAINTAINER=$2 \
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
-	go build -mod=readonly -a -o $$BIN_PATH $(ROOTDIR)/hack/license/gen/main.go
-	$$BIN_PATH $1
-	rm -rf $$BIN_PATH
+	go build -mod=readonly $(ROOTDIR)/hack/license/gen/main.go $1
 endef
 
 define gen-vald-helm-schema
