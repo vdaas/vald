@@ -111,6 +111,7 @@ jobs:
           if git diff --quiet --exit-code; then
             echo "Nothing updated"
           else
+            git diff
             echo "Please execute \`make format\` locally."
             exit 1
           fi
