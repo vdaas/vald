@@ -112,6 +112,6 @@ jobs:
             echo "Nothing updated"
           else
             git diff
-            echo "Please execute \`make format\` and \`make deps/install\` locally."
+            echo "Please execute \`make format\` locally."
             exit 1
           fi
