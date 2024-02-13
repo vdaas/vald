@@ -1,9 +1,9 @@
 use anyhow::Result;
-use serde::Serialize;
 use serde::Deserialize;
+use serde::Serialize;
 
 pub mod algorithm1 {
-    pub trait Base<T, U, Param:Deserialize, Response:Serialize> {
+    pub trait Base<T, U, Param: Deserialize, Response: Serialize> {
         fn search(&self, v: &Vec<T>, p: Option<&Param>) -> Result<&Response>;
         fn insert(&self, v: &Vec<T>, p: Option<&Param>) -> Result<&Response>;
         fn update(&self, id: &U, v: &Vec<T>, p: Option<&Param>) -> Result<&Response>;
@@ -30,7 +30,7 @@ pub mod algorithm1 {
 }
 
 pub mod algorithm2 {
-    pub trait Base<Query:Deserialize, Response:Serialize> {
+    pub trait Base<Query: Deserialize, Response: Serialize, Param: Deserialize> {
         fn search(&self, q: &Query) -> Result<&Response>;
         fn insert(&self, q: &Query) -> Result<&Response>;
         fn update(&self, q: &Query) -> Result<&Response>;
