@@ -73,7 +73,8 @@ func (o Operation) String() string {
 // Data represent a application setting data content (config.yaml).
 // In K8s environment, this configuration is stored in K8s ConfigMap.
 type Data struct {
-	config.GlobalConfig `json:",inline"           yaml:",inline"`
+	//nolint: tagalign
+	config.GlobalConfig `json:",inline" yaml:",inline"`
 	Addr                string             `json:"addr"              yaml:"addr"`
 	Operation           string             `json:"operation"         yaml:"operation"`
 	Dataset             string             `json:"dataset"           yaml:"dataset"`
