@@ -18,7 +18,8 @@
 ARG MAINTAINER="vdaas.org vald team <vald@vdaas.org>"
 
 # skipcq: DOK-DL3026
-FROM --platform=${TARGETPLATFORM} ubuntu:devel AS builder
+# we should stick to official devcontainers as a base image because it is well tested to be used with the vscode devcontainer extension.
+FROM --platform=${BUILDPLATFORM} mcr.microsoft.com/vscode/devcontainers/base:debian
 LABEL maintainer="${MAINTAINER}"
 
 ARG GO_VERSION
@@ -71,7 +72,6 @@ COPY rust rust
 COPY hack/go.mod.default hack/go.mod.default
 COPY example/client/go.mod.default example/client/go.mod.default
 
-# basic deps
 RUN --mount=type=cache,target="${GOPATH}/pkg",id="go-build-${TARGETARCH}" \
     --mount=type=cache,target="${HOME}/.cache/go-build",id="go-build-${TARGETARCH}" \
     make GOARCH=${TARGETARCH} GOOS=${TARGETOS} deps GO_CLEAN_DEPS=false \
@@ -89,4 +89,11 @@ RUN --mount=type=cache,target="${GOPATH}/pkg",id="go-build-${TARGETARCH}" \
     && make k9s/install \
     && make minikube/install \
     && make stern/install \
-    && make telepresence/install
+    && make telepresence/install \
+    && echo "installing golang vscode extension dependencies" \
+    && make gopls/install \
+    && make gotests/install \
+    && make gomodifytags/install \
+    && make impl/install \
+    && make delve/install \
+    && make staticcheck/install

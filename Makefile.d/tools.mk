@@ -102,6 +102,42 @@ yamlfmt/install: $(GOPATH)/bin/yamlfmt
 $(GOPATH)/bin/yamlfmt:
 	$(call go-install, github.com/google/yamlfmt/cmd/yamlfmt)
 
+.PHONY: gopls/install
+gopls/install: $(GOPATH)/bin/gopls
+
+$(GOPATH)/bin/gopls:
+	$(call go-install, golang.org/x/tools/gopls)
+
+.PHONY: gomodifytags/install
+gomodifytags/install: $(GOPATH)/bin/gomodifytags
+
+$(GOPATH)/bin/gomodifytags:
+	$(call go-install, github.com/fatih/gomodifytags)
+
+.PHONY: impl/install
+impl/install: $(GOPATH)/bin/impl
+
+$(GOPATH)/bin/impl:
+	$(call go-install, github.com/josharian/impl)
+
+.PHONY: goplay/install
+goplay/install: $(GOPATH)/bin/goplay
+
+$(GOPATH)/bin/goplay:
+	$(call go-install, github.com/haya14busa/goplay/cmd/goplay)
+
+.PHONY: delve/install
+delve/install: $(GOPATH)/bin/dlv
+
+$(GOPATH)/bin/dlv:
+	$(call go-install, github.com/go-delve/delve/cmd/dlv)
+
+.PHONY: staticcheck/install
+staticcheck/install: $(GOPATH)/bin/staticcheck
+
+$(GOPATH)/bin/staticcheck:
+	$(call go-install, honnef.co/go/tools/cmd/staticcheck)
+
 .PHONY: rust/install
 rust/install: $(CARGO_HOME)/bin/cargo
 
