@@ -4,16 +4,16 @@ go 1.22.0
 
 replace (
 	cloud.google.com/go => cloud.google.com/go v0.112.0
-	cloud.google.com/go/bigquery => cloud.google.com/go/bigquery v1.59.0
-	cloud.google.com/go/compute => cloud.google.com/go/compute v1.23.4
+	cloud.google.com/go/bigquery => cloud.google.com/go/bigquery v1.59.1
+	cloud.google.com/go/compute => cloud.google.com/go/compute v1.24.0
 	cloud.google.com/go/datastore => cloud.google.com/go/datastore v1.15.0
 	cloud.google.com/go/firestore => cloud.google.com/go/firestore v1.14.0
 	cloud.google.com/go/iam => cloud.google.com/go/iam v1.1.6
 	cloud.google.com/go/kms => cloud.google.com/go/kms v1.15.7
-	cloud.google.com/go/monitoring => cloud.google.com/go/monitoring v1.17.1
+	cloud.google.com/go/monitoring => cloud.google.com/go/monitoring v1.18.0
 	cloud.google.com/go/pubsub => cloud.google.com/go/pubsub v1.36.1
 	cloud.google.com/go/secretmanager => cloud.google.com/go/secretmanager v1.11.5
-	cloud.google.com/go/storage => cloud.google.com/go/storage v1.37.0
+	cloud.google.com/go/storage => cloud.google.com/go/storage v1.38.0
 	cloud.google.com/go/trace => cloud.google.com/go/trace v1.10.5
 	code.cloudfoundry.org/bytefmt => code.cloudfoundry.org/bytefmt v0.0.0-20231017140541-3b893ed0421b
 	contrib.go.opencensus.io/exporter/aws => contrib.go.opencensus.io/exporter/aws v0.0.0-20230502192102-15967c811cec
@@ -44,7 +44,7 @@ replace (
 	github.com/akrylysov/pogreb => github.com/akrylysov/pogreb v0.10.2
 	github.com/antihax/optional => github.com/antihax/optional v1.0.0
 	github.com/armon/go-socks5 => github.com/armon/go-socks5 v0.0.0-20160902184237-e75332964ef5
-	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.50.13
+	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.50.16
 	github.com/aws/aws-sdk-go-v2 => github.com/aws/aws-sdk-go-v2 v1.24.1
 	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream => github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.5.4
 	github.com/aws/aws-sdk-go-v2/config => github.com/aws/aws-sdk-go-v2/config v1.26.6
@@ -121,7 +121,7 @@ replace (
 	github.com/go-playground/assert/v2 => github.com/go-playground/assert/v2 v2.2.0
 	github.com/go-playground/locales => github.com/go-playground/locales v0.14.1
 	github.com/go-playground/universal-translator => github.com/go-playground/universal-translator v0.18.1
-	github.com/go-playground/validator/v10 => github.com/go-playground/validator/v10 v10.17.0
+	github.com/go-playground/validator/v10 => github.com/go-playground/validator/v10 v10.18.0
 	github.com/go-redis/redis/v8 => github.com/go-redis/redis/v8 v8.11.5
 	github.com/go-sql-driver/mysql => github.com/go-sql-driver/mysql v1.7.1
 	github.com/go-task/slim-sprig => github.com/go-task/slim-sprig v2.20.0+incompatible
@@ -191,7 +191,7 @@ replace (
 	github.com/jstemmer/go-junit-report => github.com/jstemmer/go-junit-report v1.0.0
 	github.com/kisielk/errcheck => github.com/kisielk/errcheck v1.7.0
 	github.com/kisielk/gotool => github.com/kisielk/gotool v1.0.0
-	github.com/klauspost/compress => github.com/klauspost/compress v1.17.7-0.20240205163310-8e5ae404d473
+	github.com/klauspost/compress => github.com/klauspost/compress v1.17.7-0.20240212204355-5895eb4259d0
 	github.com/klauspost/cpuid/v2 => github.com/klauspost/cpuid/v2 v2.2.6
 	github.com/kpango/fastime => github.com/kpango/fastime v1.1.9
 	github.com/kpango/fuid => github.com/kpango/fuid v0.0.0-20221203053508-503b5ad89aa1
@@ -301,19 +301,19 @@ replace (
 	golang.org/x/mobile => golang.org/x/mobile v0.0.0-20240112133503-c713f31d574b
 	golang.org/x/mod => golang.org/x/mod v0.15.0
 	golang.org/x/net => golang.org/x/net v0.21.0
-	golang.org/x/oauth2 => golang.org/x/oauth2 v0.16.0
+	golang.org/x/oauth2 => golang.org/x/oauth2 v0.17.0
 	golang.org/x/sync => golang.org/x/sync v0.6.0
 	golang.org/x/sys => golang.org/x/sys v0.17.0
 	golang.org/x/term => golang.org/x/term v0.17.0
 	golang.org/x/text => golang.org/x/text v0.14.0
 	golang.org/x/time => golang.org/x/time v0.5.0
-	golang.org/x/tools => golang.org/x/tools v0.17.0
+	golang.org/x/tools => golang.org/x/tools v0.18.0
 	golang.org/x/xerrors => golang.org/x/xerrors v0.0.0-20231012003039-104605ab7028
 	gomodules.xyz/jsonpatch/v2 => gomodules.xyz/jsonpatch/v2 v2.4.0
 	gonum.org/v1/gonum => gonum.org/v1/gonum v0.14.0
 	gonum.org/v1/hdf5 => gonum.org/v1/hdf5 v0.0.0-20210714002203-8c5d23bc6946
 	gonum.org/v1/plot => gonum.org/v1/plot v0.14.0
-	google.golang.org/api => google.golang.org/api v0.162.0
+	google.golang.org/api => google.golang.org/api v0.164.0
 	google.golang.org/appengine => google.golang.org/appengine v1.6.8
 	google.golang.org/genproto => google.golang.org/genproto v0.0.0-20240205150955-31a09d347014
 	google.golang.org/genproto/googleapis/api => google.golang.org/genproto/googleapis/api v0.0.0-20240205150955-31a09d347014
@@ -335,7 +335,7 @@ replace (
 	k8s.io/client-go => k8s.io/client-go v0.29.1
 	k8s.io/component-base => k8s.io/component-base v0.29.1
 	k8s.io/klog/v2 => k8s.io/klog/v2 v2.120.1
-	k8s.io/kube-openapi => k8s.io/kube-openapi v0.0.0-20240126223410-2919ad4fcfec
+	k8s.io/kube-openapi => k8s.io/kube-openapi v0.0.0-20240209001042-7a0d5b415232
 	k8s.io/kubernetes => k8s.io/kubernetes v0.29.1
 	k8s.io/metrics => k8s.io/metrics v0.29.1
 	nhooyr.io/websocket => nhooyr.io/websocket v1.8.10
@@ -348,7 +348,7 @@ replace (
 )
 
 require (
-	buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.32.0-20231115204500-e097f827e652.1
+	buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.32.0-20240212200630-3014d81c3a48.1
 	cloud.google.com/go/storage v1.37.0
 	code.cloudfoundry.org/bytefmt v0.0.0-20190710193110-1eb035ffe2b6
 	github.com/akrylysov/pogreb v0.0.0-00010101000000-000000000000
@@ -393,8 +393,8 @@ require (
 	go.uber.org/ratelimit v0.3.0
 	go.uber.org/zap v1.26.0
 	gocloud.dev v0.0.0-00010101000000-000000000000
-	golang.org/x/net v0.20.0
-	golang.org/x/oauth2 v0.16.0
+	golang.org/x/net v0.21.0
+	golang.org/x/oauth2 v0.17.0
 	golang.org/x/sync v0.6.0
 	golang.org/x/sys v0.17.0
 	golang.org/x/text v0.14.0
@@ -504,7 +504,7 @@ require (
 	golang.org/x/exp v0.0.0-20231006140011-7918f672742d // indirect
 	golang.org/x/exp/typeparams v0.0.0-20230307190834-24139beb5833 // indirect
 	golang.org/x/image v0.15.0 // indirect
-	golang.org/x/mod v0.14.0 // indirect
+	golang.org/x/mod v0.15.0 // indirect
 	golang.org/x/term v0.17.0 // indirect
 	golang.org/x/xerrors v0.0.0-20231012003039-104605ab7028 // indirect
 	gomodules.xyz/jsonpatch/v2 v2.4.0 // indirect

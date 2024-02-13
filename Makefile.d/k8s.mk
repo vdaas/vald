@@ -95,7 +95,7 @@ k8s/vald/deploy:
 	helm template \
 	    --values $(HELM_VALUES) \
 	    --set defaults.image.tag=$(VERSION) \
-	    --set agent.image.repository=$(CRORG)/$(AGENT_IMAGE) \
+	    --set agent.image.repository=$(CRORG)/$(AGENT_NGT_IMAGE) \
 	    --set agent.sidecar.image.repository=$(CRORG)/$(AGENT_SIDECAR_IMAGE) \
 	    --set discoverer.image.repository=$(CRORG)/$(DISCOVERER_IMAGE) \
 	    --set gateway.filter.image.repository=$(CRORG)/$(FILTER_GATEWAY_IMAGE) \
@@ -131,7 +131,7 @@ k8s/vald/delete:
 	helm template \
 	    --values $(HELM_VALUES) \
 	    --set defaults.image.tag=$(VERSION) \
-	    --set agent.image.repository=$(CRORG)/$(AGENT_IMAGE) \
+	    --set agent.image.repository=$(CRORG)/$(AGENT_NGT_IMAGE) \
 	    --set agent.sidecar.image.repository=$(CRORG)/$(AGENT_SIDECAR_IMAGE) \
 	    --set discoverer.image.repository=$(CRORG)/$(DISCOVERER_IMAGE) \
 	    --set gateway.filter.image.repository=$(CRORG)/$(FILTER_GATEWAY_IMAGE) \
@@ -224,7 +224,7 @@ k8s/vald-readreplica/deploy:
 	helm template \
 	    --values $(HELM_VALUES) \
 	    --set defaults.image.tag=$(VERSION) \
-	    --set agent.image.repository=$(CRORG)/$(AGENT_IMAGE) \
+	    --set agent.image.repository=$(CRORG)/$(AGENT_NGT_IMAGE) \
 	    --set agent.sidecar.image.repository=$(CRORG)/$(AGENT_SIDECAR_IMAGE) \
 	    --set discoverer.image.repository=$(CRORG)/$(DISCOVERER_IMAGE) \
 	    --set gateway.filter.image.repository=$(CRORG)/$(FILTER_GATEWAY_IMAGE) \
@@ -245,7 +245,7 @@ k8s/vald-readreplica/delete:
 	helm template \
 	    --values $(HELM_VALUES) \
 	    --set defaults.image.tag=$(VERSION) \
-	    --set agent.image.repository=$(CRORG)/$(AGENT_IMAGE) \
+	    --set agent.image.repository=$(CRORG)/$(AGENT_NGT_IMAGE) \
 	    --set agent.sidecar.image.repository=$(CRORG)/$(AGENT_SIDECAR_IMAGE) \
 	    --set discoverer.image.repository=$(CRORG)/$(DISCOVERER_IMAGE) \
 	    --set gateway.filter.image.repository=$(CRORG)/$(FILTER_GATEWAY_IMAGE) \
@@ -516,27 +516,27 @@ $(BINDIR)/telepresence:
 .PHONY: telepresence/swap/agent-ngt
 ## swap agent-ngt deployment using telepresence
 telepresence/swap/agent-ngt:
-	@$(call telepresence,vald-agent-ngt,vdaas/vald-agent-ngt)
+	$(call telepresence,vald-agent-ngt,vdaas/vald-agent-ngt)
 
 .PHONY: telepresence/swap/agent-faiss
 ## swap agent-faiss deployment using telepresence
 telepresence/swap/agent-faiss:
-	@$(call telepresence,vald-agent-faiss,vdaas/vald-agent-faiss)
+	$(call telepresence,vald-agent-faiss,vdaas/vald-agent-faiss)
 
 .PHONY: telepresence/swap/discoverer
 ## swap discoverer deployment using telepresence
 telepresence/swap/discoverer:
-	@$(call telepresence,vald-discoverer,vdaas/vald-discoverer-k8s)
+	$(call telepresence,vald-discoverer,vdaas/vald-discoverer-k8s)
 
 .PHONY: telepresence/swap/manager-index
 ## swap manager-index deployment using telepresence
 telepresence/swap/manager-index:
-	@$(call telepresence,vald-manager-index,vdaas/vald-manager-index)
+	$(call telepresence,vald-manager-index,vdaas/vald-manager-index)
 
 .PHONY: telepresence/swap/lb-gateway
 ## swap lb-gateway deployment using telepresence
 telepresence/swap/lb-gateway:
-	@$(call telepresence,vald-lb-gateway,vdaas/vald-lb-gateway)
+	$(call telepresence,vald-lb-gateway,vdaas/vald-lb-gateway)
 
 .PHONY: kubelinter/install
 ## install kubelinter
