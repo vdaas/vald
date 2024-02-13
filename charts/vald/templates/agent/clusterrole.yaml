@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 {{- $agent := .Values.agent -}}
-{{- if and $agent.enabled $agent.clusterRole.enabled }}
+{{- if and $agent.enabled $agent.clusterRole.enabled $agent.ngt.enable_export_index_info_to_k8s }}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
