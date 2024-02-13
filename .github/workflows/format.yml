@@ -59,7 +59,7 @@ jobs:
       - name: Run formatter and license.go
         run: |
           make format
-          git checkout go.mod go.sum
+          git checkout go.mod go.sum ./rust/Cargo.lock
       - name: Check and Push to main branch
         continue-on-error: true
         run: |
@@ -105,7 +105,7 @@ jobs:
         run: |
           make deps/install
           make format
-          git checkout go.mod go.sum
+          git checkout go.mod go.sum ./rust/Cargo.lock
       - name: Check format difference
         run: |
           if git diff --quiet --exit-code; then
