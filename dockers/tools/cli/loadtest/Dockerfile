@@ -17,7 +17,7 @@
 
 ARG MAINTAINER="vdaas.org vald team <vald@vdaas.org>"
 
-FROM --platform=${BUILDPLATFORM} ubuntu:devel AS builder
+FROM --platform=${TARGETPLATFORM} ubuntu:devel AS builder
 
 ARG GO_VERSION
 ARG TARGETARCH
@@ -118,9 +118,7 @@ RUN GO_VERSION="$(< GO_VERSION)" \
     && upx -9 -o "/usr/bin/${APP_NAME}" "${APP_NAME}"
 
 # Start From Scratch For Running Environment
-FROM --platform=${BUILDPLATFORM} ubuntu:devel
-# Start From Alpine For Debug Environment
-# FROM --platform=${BUILDPLATFORM} alpine:latest
+FROM --platform=${TARGETPLATFORM} ubuntu:devel
 LABEL maintainer="${MAINTAINER}"
 
 ENV APP_NAME loadtest

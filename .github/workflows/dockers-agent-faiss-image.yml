@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-name: "Build docker image: agent-ngt"
+name: "Build docker image: agent-faiss"
 on:
   push:
     branches:
@@ -28,7 +28,7 @@ on:
     paths:
       - ".github/actions/docker-build/actions.yaml"
       - ".github/workflows/_docker-image.yaml"
-      - ".github/workflows/dockers-agent-ngt-image.yml"
+      - ".github/workflows/dockers-agent-faiss-image.yml"
       - "go.mod"
       - "go.sum"
       - "internal/**"
@@ -36,16 +36,16 @@ on:
       - "!internal/db/**"
       - "!internal/k8s/**"
       - "apis/grpc/**"
-      - "pkg/agent/core/ngt/**"
-      - "cmd/agent/core/ngt/**"
-      - "dockers/agent/core/ngt/Dockerfile"
+      - "pkg/agent/core/faiss/**"
+      - "cmd/agent/core/faiss/**"
+      - "dockers/agent/core/faiss/Dockerfile"
       - "versions/GO_VERSION"
-      - "versions/NGT_VERSION"
+      - "versions/FAISS_VERSION"
   pull_request:
     paths:
       - ".github/actions/docker-build/actions.yaml"
       - ".github/workflows/_docker-image.yaml"
-      - ".github/workflows/dockers-agent-ngt-image.yml"
+      - ".github/workflows/dockers-agent-faiss-image.yml"
       - "go.mod"
       - "go.sum"
       - "internal/**"
@@ -53,16 +53,16 @@ on:
       - "!internal/db/**"
       - "!internal/k8s/**"
       - "apis/grpc/**"
-      - "pkg/agent/core/ngt/**"
-      - "cmd/agent/core/ngt/**"
-      - "dockers/agent/core/ngt/Dockerfile"
+      - "pkg/agent/core/faiss/**"
+      - "cmd/agent/core/faiss/**"
+      - "dockers/agent/core/faiss/Dockerfile"
       - "versions/GO_VERSION"
-      - "versions/NGT_VERSION"
+      - "versions/FAISS_VERSION"
   pull_request_target:
     paths:
       - ".github/actions/docker-build/actions.yaml"
       - ".github/workflows/_docker-image.yaml"
-      - ".github/workflows/dockers-agent-ngt-image.yml"
+      - ".github/workflows/dockers-agent-faiss-image.yml"
       - "go.mod"
       - "go.sum"
       - "internal/**"
@@ -70,15 +70,15 @@ on:
       - "!internal/db/**"
       - "!internal/k8s/**"
       - "apis/grpc/**"
-      - "pkg/agent/core/ngt/**"
-      - "cmd/agent/core/ngt/**"
-      - "dockers/agent/core/ngt/Dockerfile"
+      - "pkg/agent/core/faiss/**"
+      - "cmd/agent/core/faiss/**"
+      - "dockers/agent/core/faiss/Dockerfile"
       - "versions/GO_VERSION"
-      - "versions/NGT_VERSION"
+      - "versions/FAISS_VERSION"
 jobs:
   build:
     uses: ./.github/workflows/_docker-image.yaml
     with:
-      target: agent-ngt
-      platforms: linux/amd64,linux/arm64
+      target: agent-faiss
+      platforms: linux/amd64
     secrets: inherit

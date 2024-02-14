@@ -17,7 +17,7 @@
 
 ARG MAINTAINER="vdaas.org vald team <vald@vdaas.org>"
 
-FROM --platform=${BUILDPLATFORM} ubuntu:devel AS builder
+FROM --platform=${TARGETPLATFORM} ubuntu:devel AS builder
 LABEL maintainer="${MAINTAINER}"
 
 ARG GO_VERSION
