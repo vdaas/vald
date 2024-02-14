@@ -17,7 +17,7 @@ version: v0.0.0
 time_zone: JST
 logging:
   format: raw
-  level: info
+  level: debug
   logger: glg
 server_config:
   servers:
@@ -70,8 +70,8 @@ server_config:
     key: /path/to/key
 operator:
   agent_port: 8081
-  agent_name: "vald-agent-ngt"
-  agent_dns: vald-agent-ngt.default.svc.cluster.local
+  agent_name: "vald-agent"
+  agent_dns: vald-agent.default.svc.cluster.local
   agent_namespace: "default"
   node_name: ""
   concurrency: 1
