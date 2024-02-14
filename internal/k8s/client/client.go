@@ -209,6 +209,7 @@ func (s *Patcher) ApplyPodAnnotations(ctx context.Context, name, namespace strin
 		return errors.New("agent pod not found on exporting metrics")
 	}
 
+	//nolint: gomnd
 	if len(podList.Items) >= 2 {
 		return errors.New("multiple agent pods found on exporting metrics. pods with same name exist in the same namespace?")
 	}
