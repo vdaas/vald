@@ -63,7 +63,7 @@ $(BINDIR)/reviewdog:
 kubectl/install: $(BINDIR)/kubectl
 
 $(BINDIR)/kubectl:
-	curl -L "https://dl.k8s.io/release/$(KUBECTL_VERSION)/bin/$(shell echo $(UNAME) | tr '[:upper:]' '[:lower:]')/$(subst x86_64,amd64,$(shell echo $(ARCH) | tr '[:upper:]' '[:lower:]'))/kubectl" -o $(BINDIR)/kubectl
+	curl -L "https://dl.k8s.io/release/$(KUBECTL_VERSION)/bin/$(OS)/$(subst x86_64,amd64,$(shell echo $(ARCH) | tr '[:upper:]' '[:lower:]'))/kubectl" -o $(BINDIR)/kubectl
 	chmod a+x $(BINDIR)/kubectl
 
 .PHONY: textlint/install
@@ -137,6 +137,17 @@ staticcheck/install: $(GOPATH)/bin/staticcheck
 
 $(GOPATH)/bin/staticcheck:
 	$(call go-install, honnef.co/go/tools/cmd/staticcheck)
+
+.PHONY: go/install
+go/install: $(GOROOT)/bin/go
+
+$(GOROOT)/bin/go:
+	curl -fsSLO "https://go.dev/dl/go${GO_VERSION}.${OS}-${ARCH}.tar.gz" \
+	&& tar zxf "go${GO_VERSION}.${OS}-${ARCH}.tar.gz" \
+	&& rm -rf "go${GO_VERSION}.${OS}-${ARCH}.tar.gz" \
+	&& mv go "${GOROOT}" \
+	&& ${GOROOT}/bin/go version \
+	&& mkdir -p "${GOPATH}/src"
 
 .PHONY: rust/install
 rust/install: $(CARGO_HOME)/bin/cargo

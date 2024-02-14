@@ -36,7 +36,7 @@ binary/build: \
 cmd/agent/core/ngt/ngt: \
 	ngt/install
 	$(eval CGO_ENABLED = 1)
-	$(call go-build,agent/core/ngt,-linkmode 'external',-fPIC -pthread -fopenmp -std=gnu++20 -lstdc++ -lm -z relro -z now $(EXTLDFLAGS), cgo,NGT-$(NGT_VERSION),$@)
+	$(call go-build,agent/core/ngt,-linkmode 'external',-static -fPIC -pthread -fopenmp -std=gnu++20 -lstdc++ -lm -z relro -z now $(EXTLDFLAGS), cgo,NGT-$(NGT_VERSION),$@)
 
 cmd/agent/core/faiss/faiss: \
 	faiss/install
@@ -45,50 +45,50 @@ cmd/agent/core/faiss/faiss: \
 
 cmd/agent/sidecar/sidecar:
 	$(eval CGO_ENABLED = 0)
-	$(call go-build,agent/sidecar,,,,,$@)
+	$(call go-build,agent/sidecar,,-static,,,$@)
 
 cmd/discoverer/k8s/discoverer:
 	$(eval CGO_ENABLED = 0)
-	$(call go-build,discoverer/k8s,,,,,$@)
+	$(call go-build,discoverer/k8s,,-static,,,$@)
 
 cmd/gateway/lb/lb:
 	$(eval CGO_ENABLED = 0)
-	$(call go-build,gateway/lb,,,,,$@)
+	$(call go-build,gateway/lb,,-static,,,$@)
 
 cmd/gateway/filter/filter:
 	$(eval CGO_ENABLED = 0)
-	$(call go-build,gateway/filter,,,,,$@)
+	$(call go-build,gateway/filter,,-static,,,$@)
 
 cmd/gateway/mirror/mirror:
 	$(eval CGO_ENABLED = 0)
-	$(call go-build,gateway/mirror,,,,,$@)
+	$(call go-build,gateway/mirror,,-static,,,$@)
 
 cmd/manager/index/index:
 	$(eval CGO_ENABLED = 0)
-	$(call go-build,manager/index,,,,,$@)
+	$(call go-build,manager/index,,-static,,,$@)
 
 cmd/index/job/correction/index-correction:
 	$(eval CGO_ENABLED = 0)
-	$(call go-build,index/job/correction,,,,,$@)
+	$(call go-build,index/job/correction,,-static,,,$@)
 
 cmd/index/job/creation/index-creation:
 	$(eval CGO_ENABLED = 0)
-	$(call go-build,index/job/creation,,,,,$@)
+	$(call go-build,index/job/creation,,-static,,,$@)
 
 cmd/index/job/save/index-save:
 	$(eval CGO_ENABLED = 0)
-	$(call go-build,index/job/save,,,,,$@)
+	$(call go-build,index/job/save,,-static,,,$@)
 
 cmd/index/job/readreplica/rotate/readreplica-rotate:
 	$(eval CGO_ENABLED = 0)
-	$(call go-build,index/job/readreplica/rotate,,,,,$@)
+	$(call go-build,index/job/readreplica/rotate,,-static,,,$@)
 
 cmd/tools/benchmark/job/job:
-	$(call go-build,tools/benchmark/job,-linkmode 'external',-fPIC -pthread -fopenmp -std=gnu++20 -lhdf5 -lhdf5_hl -lm -ldl, cgo,$(HDF5_VERSION),$@)
+	$(call go-build,tools/benchmark/job,-linkmode 'external',-static -fPIC -pthread -fopenmp -std=gnu++20 -lhdf5 -lhdf5_hl -lm -ldl, cgo,$(HDF5_VERSION),$@)
 
 cmd/tools/benchmark/operator/operator:
 	$(eval CGO_ENABLED = 0)
-	$(call go-build,tools/benchmark/operator,,,,,$@)
+	$(call go-build,tools/benchmark/operator,,-static,,,$@)
 
 .PHONY: binary/build/zip
 ## build all binaries and zip them
