@@ -166,6 +166,7 @@ const (
 	unsavedProcessedVqAnnotationsKey             = "vald.vdaas.org/unsaved-processed-vq"
 	unsavedCreateIndexExecutionNumAnnotationsKey = "vald.vdaas.org/unsaved-create-index-execution"
 	lastTimeSaveIndexTimestampAnnotationsKey     = "vald.vdaas.org/last-time-save-index-timestamp"
+	indexCountAnnotationsKey                     = "vald.vdaas.org/index-count"
 )
 
 func New(cfg *config.NGT, opts ...Option) (nn NGT, err error) {
@@ -900,8 +901,7 @@ func (n *ngt) Start(ctx context.Context) <-chan error {
 				err = n.SaveIndex(ctx)
 			case <-exportTick.C:
 				if n.enableExportIndexInfo {
-					k, v := n.uncommittedEntry()
-					err = n.patcher.ApplyPodAnnotations(ctx, n.podName, n.podNamespace, map[string]string{k: v})
+					err = n.exportMetricsOnTick(ctx)
 				}
 			}
 			if err != nil && err != errors.ErrUncommittedIndexNotFound {
@@ -1854,6 +1854,21 @@ func (n *ngt) unsavedNumberOfCreateIndexExecutionEntry() (k, v string) {
 func (n *ngt) lastTimeSaveIndexTimestampEntry() (k, v string) {
 	timestamp := time.Now().UTC().Format(time.RFC3339)
 	return lastTimeSaveIndexTimestampAnnotationsKey, timestamp
+}
+
+func (n *ngt) indexCountEntry() (k, v string) {
+	return indexCountAnnotationsKey, strconv.FormatUint(n.Len(), 10)
+}
+
+func (n *ngt) exportMetricsOnTick(ctx context.Context) error {
+	entries := make(map[string]string)
+	k, v := n.uncommittedEntry()
+	entries[k] = v
+
+	k, v = n.indexCountEntry()
+	entries[k] = v
+
+	return n.patcher.ApplyPodAnnotations(ctx, n.podName, n.podNamespace, entries)
 }
 
 func (n *ngt) exportMetricsOnCreateIndex(ctx context.Context) error {
