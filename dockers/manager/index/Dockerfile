@@ -97,7 +97,7 @@ ENV APP_NAME index
 COPY --from=builder /usr/bin/${APP_NAME} /go/bin/${APP_NAME}
 COPY --from=builder /tmp/config.yaml /etc/server/config.yaml
 
-RUN /go/bin/${APP_NAME} -version
+RUN /go/bin/index -version
 
 USER nonroot:nonroot
 
