@@ -42,25 +42,17 @@ pub mod algorithm2 {
         fn save(p: &str) -> Result<&Self>;
     }
 
-    pub trait Query {
-        type V;
-        fn get_query() -> Result<&Self::V>;
-        fn set_query(v: &V) -> Result<()>;
-        type P;
-        fn get_parameter() -> Result<&V>;
-        fn set_parameter(a: &Self::P) -> Result<()>;
+    // example like NGT
+    #[derive(Serialize, Deserialize, Debug)]
+    struct SearchQuery {
+        vector: Vec<f32>,
+        size: u64,
+        epsilon: f32,
+        radius: f32,
     }
 
-    pub trait Param {
-        type A;
-        fn get_parameters() -> Result<&Self::A>;
-        fn set_parameters(a: &Self::A) -> Result<()>;
-    }
-
-    pub trait Response {
-        type Status;
-        type Result;
-        fn get_status() -> Status;
-        fn get_result() -> Result;
+    #[derive(Serialize, Deserialize, Debug)]
+    struct InsertQuery {
+        vector: Vec<f32>,
     }
 }
