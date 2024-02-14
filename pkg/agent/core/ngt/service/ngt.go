@@ -1882,6 +1882,9 @@ func (n *ngt) exportMetricsOnCreateIndex(ctx context.Context) error {
 	k, v = n.unsavedNumberOfCreateIndexExecutionEntry()
 	entries[k] = v
 
+	k, v = n.indexCountEntry()
+	entries[k] = v
+
 	return n.patcher.ApplyPodAnnotations(ctx, n.podName, n.podNamespace, entries)
 }
 
