@@ -18,25 +18,25 @@
 ARG DISTROLESS_IMAGE=gcr.io/distroless/static
 ARG DISTROLESS_IMAGE_TAG=nonroot
 ARG MAINTAINER="vdaas.org vald team <vald@vdaas.org>"
-
-FROM --platform=${TARGETPLATFORM} ubuntu:devel AS builder
-
 ARG GO_VERSION
+ARG BUILDARCH
+ARG BUILDOS
 ARG TARGETARCH
 ARG TARGETOS
 
-ENV GO111MODULE on
+FROM --platform=${BUILDPLATFORM} ubuntu:devel AS builder
+
+ENV APP_NAME discoverer
 ENV DEBIAN_FRONTEND noninteractive
+ENV GO111MODULE on
+ENV GOPATH /go
+ENV GOROOT /opt/go
 ENV INITRD No
 ENV LANG en_US.UTF-8
-ENV GOROOT /opt/go
-ENV GOPATH /go
-ENV PATH ${PATH}:${GOROOT}/bin:${GOPATH}/bin
 ENV ORG vdaas
-ENV REPO vald
+ENV PATH ${PATH}:${GOROOT}/bin:${GOPATH}/bin
 ENV PKG discoverer/k8s
-ENV APP_NAME discoverer
-
+ENV REPO vald
 
 # skipcq: DOK-DL3008
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -56,8 +56,8 @@ COPY .git .
 COPY go.mod .
 COPY go.sum .
 
-RUN --mount=type=cache,target="${GOPATH}/pkg",id="go-build-${TARGETARCH}" \
-    --mount=type=cache,target="${HOME}/.cache/go-build",id="go-build-${TARGETARCH}" \
+RUN --mount=type=cache,target="${GOPATH}/pkg",id="go-build-${BUILDARCH}" \
+    --mount=type=cache,target="${HOME}/.cache/go-build",id="go-build-${BUILDARCH}" \
     make GO_VERSION=${GO_VERSION} go/install \
     && make go/download
 
@@ -92,6 +92,8 @@ ENV APP_NAME discoverer
 
 COPY --from=builder /usr/bin/${APP_NAME} /go/bin/${APP_NAME}
 COPY --from=builder /tmp/config.yaml /etc/server/config.yaml
+
+RUN /go/bin/${APP_NAME} -version
 
 USER nonroot:nonroot
 
