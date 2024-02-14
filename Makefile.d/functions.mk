@@ -279,16 +279,14 @@ define gen-go-option-test-sources
 endef
 
 define gen-license
-	BIN_PATH="$(TEMP_DIR)/vald-license-gen"
-	rm -rf $$BIN_PATH
+	BIN_PATH="$(TEMP_DIR)/vald-license-gen"; \
+	rm -rf $$BIN_PATH; \
 	MAINTAINER=$2 \
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
-	ls $(ROOTDIR)
-	ls $(ROOTDIR)/hack/license/gen/main.go
-	go build -mod=readonly -a -o $$BIN_PATH $(ROOTDIR)/hack/license/gen/main.go
-	$$BIN_PATH $1
+	go build -mod=readonly -a -o $$BIN_PATH $(ROOTDIR)/hack/license/gen/main.go; \
+	$$BIN_PATH $1; \
 	rm -rf $$BIN_PATH
 endef
 
