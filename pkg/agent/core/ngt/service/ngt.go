@@ -164,7 +164,7 @@ const (
 	fieldManager                                 = "vald-agent-index-controller"
 	uncommittedAnnotationsKey                    = "vald.vdaas.org/uncommitted"
 	unsavedProcessedVqAnnotationsKey             = "vald.vdaas.org/unsaved-processed-vq"
-	unsavedCreateIndexExecutionNumAnnotationsKey = "vald.vdaas.org/unsaved-create-index-execution-num"
+	unsavedCreateIndexExecutionNumAnnotationsKey = "vald.vdaas.org/unsaved-create-index-execution"
 	lastTimeSaveIndexTimestampAnnotationsKey     = "vald.vdaas.org/last-time-save-index-timestamp"
 )
 
