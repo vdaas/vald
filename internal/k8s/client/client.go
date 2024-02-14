@@ -23,7 +23,6 @@ import (
 
 	snapshotv1 "github.com/kubernetes-csi/external-snapshotter/client/v6/apis/volumesnapshot/v1"
 	"github.com/vdaas/vald/internal/errors"
-	"github.com/vdaas/vald/internal/log"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -180,24 +179,24 @@ func (*client) LabelSelector(key string, op selection.Operator, vals []string) (
 	return labels.NewSelector().Add(*requirements), nil
 }
 
-type Ssa struct {
+type Patcher struct {
 	client       Client
 	fieldManager string
 }
 
-func NewSsa(fieldManager string) (Ssa, error) {
+func NewPatcher(fieldManager string) (Patcher, error) {
 	client, err := New()
 	if err != nil {
-		return Ssa{}, err
+		return Patcher{}, err
 	}
 
-	return Ssa{
+	return Patcher{
 		client:       client,
 		fieldManager: fieldManager,
 	}, nil
 }
 
-func (s *Ssa) ApplyPodAnnotations(ctx context.Context, name, namespace string, entries map[string]string) error {
+func (s *Patcher) ApplyPodAnnotations(ctx context.Context, name, namespace string, entries map[string]string) error {
 	var podList corev1.PodList
 	if err := s.client.List(ctx, &podList, &cli.ListOptions{
 		Namespace:     namespace,
@@ -213,18 +212,14 @@ func (s *Ssa) ApplyPodAnnotations(ctx context.Context, name, namespace string, e
 	if len(podList.Items) >= 2 {
 		return errors.New("multiple agent pods found on exporting metrics. pods with same name exist in the same namespace?")
 	}
-
 	pod := podList.Items[0]
-
-	// FIXME: delete this
-	log.Debugf("found pod: %s", pod.GetName())
 
 	curApplyConfig, err := applycorev1.ExtractPod(&pod, s.fieldManager)
 	if err != nil {
 		return err
 	}
 
-	// try server side apply
+	// check if there is any diffs in the annotations
 	annotations := pod.GetObjectMeta().GetAnnotations()
 	if annotations == nil {
 		annotations = make(map[string]string)
@@ -235,15 +230,15 @@ func (s *Ssa) ApplyPodAnnotations(ctx context.Context, name, namespace string, e
 	expectPod := applycorev1.Pod(name, namespace).
 		WithAnnotations(annotations)
 
+	if equality.Semantic.DeepEqual(expectPod, curApplyConfig) {
+		// no change found in the pod annotations
+		return nil
+	}
+
+	// now we found the diffs, apply the changes
 	obj, err := runtime.DefaultUnstructuredConverter.ToUnstructured(expectPod)
 	if err != nil {
 		return err
-	}
-
-	if equality.Semantic.DeepEqual(expectPod, curApplyConfig) {
-		// FIXME: delete this
-		log.Debug("no change in pod spec")
-		return nil
 	}
 
 	patch := &unstructured.Unstructured{Object: obj}

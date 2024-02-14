@@ -149,7 +149,7 @@ type ngt struct {
 	isReadReplica           bool
 	enableExportIndexInfo   bool
 	exportIndexInfoDuration time.Duration
-	serverSideApply         client.Ssa
+	patcher                 client.Patcher
 }
 
 const (
@@ -233,11 +233,11 @@ func New(cfg *config.NGT, opts ...Option) (nn NGT, err error) {
 	n.saving.Store(false)
 
 	if n.enableExportIndexInfo {
-		ssa, err := client.NewSsa(fieldManager)
+		patcher, err := client.NewPatcher(fieldManager)
 		if err != nil {
-			return nil, fmt.Errorf("failed to create server side apply client: %w", err)
+			return nil, fmt.Errorf("failed to create pacher: %w", err)
 		}
-		n.serverSideApply = ssa
+		n.patcher = patcher
 	}
 
 	return n, nil
@@ -875,11 +875,11 @@ func (n *ngt) Start(ctx context.Context) <-chan error {
 		tick := time.NewTicker(n.dur)
 		sTick := time.NewTicker(n.sdur)
 		limit := time.NewTicker(n.lim)
-		k8sTick := time.NewTicker(n.exportIndexInfoDuration)
+		exportTick := time.NewTicker(n.exportIndexInfoDuration)
 		defer tick.Stop()
 		defer sTick.Stop()
 		defer limit.Stop()
-		defer k8sTick.Stop()
+		defer exportTick.Stop()
 		for {
 			err = nil
 			select {
@@ -898,11 +898,10 @@ func (n *ngt) Start(ctx context.Context) <-chan error {
 				err = n.CreateAndSaveIndex(ctx, n.poolSize)
 			case <-sTick.C:
 				err = n.SaveIndex(ctx)
-			case <-k8sTick.C:
+			case <-exportTick.C:
 				if n.enableExportIndexInfo {
-					log.Debug("k8sTick: flush index info to k8s resource")
 					k, v := n.uncommittedEntry()
-					err = n.serverSideApply.ApplyPodAnnotations(ctx, n.podName, n.podNamespace, map[string]string{k: v})
+					err = n.patcher.ApplyPodAnnotations(ctx, n.podName, n.podNamespace, map[string]string{k: v})
 				}
 			}
 			if err != nil && err != errors.ErrUncommittedIndexNotFound {
@@ -1326,7 +1325,6 @@ func (n *ngt) SaveIndex(ctx context.Context) (err error) {
 		}
 	}()
 	if !n.inMem {
-		// TODO: 成功したらlatTimeSavedTimestampを更新
 		return n.saveIndex(ctx)
 	}
 	return nil
@@ -1360,14 +1358,14 @@ func (n *ngt) saveIndex(ctx context.Context) (err error) {
 	if err != nil {
 		return err
 	}
-	// TODO: ここをtrueにした後じゃないとcreate index中である可能性がある
-	//       だからこの時点でのnotSavedなindex件数を取得して、save index成功後にその数を引き算するか？
 	n.saving.Store(true)
 
+	// number of processed vq before save operation
+	// this will be subtracted from n.nopvq after save operation succeeds
 	beforeNopvq := n.nopvq.Load()
 
 	defer n.gc()
-	// TODO: ここでdeferされるのでこのscope内ではatomicなオペレーションが保証される
+	// since defering here, atomic operations are guaranteed in this scope
 	defer n.saving.Store(false)
 
 	log.Debug("cleanup invalid index started")
@@ -1559,7 +1557,7 @@ func (n *ngt) saveIndex(ctx context.Context) (err error) {
 	}
 	log.Info("save index operation finished")
 
-	// TODO: 多分ここでnotSavedから引き算すれば良い
+	// now save operation succeeds, subtract it from n.nopvq
 	n.nopvq.Add(-beforeNopvq)
 	if n.enableExportIndexInfo {
 		if err := n.exportMetricsOnSaveIndex(ctx); err != nil {
@@ -1869,7 +1867,7 @@ func (n *ngt) exportMetricsOnCreateIndex(ctx context.Context) error {
 	k, v = n.unsavedNumberOfCreateIndexExecutionEntry()
 	entries[k] = v
 
-	return n.serverSideApply.ApplyPodAnnotations(ctx, n.podName, n.podNamespace, entries)
+	return n.patcher.ApplyPodAnnotations(ctx, n.podName, n.podNamespace, entries)
 }
 
 func (n *ngt) exportMetricsOnSaveIndex(ctx context.Context) error {
@@ -1884,5 +1882,5 @@ func (n *ngt) exportMetricsOnSaveIndex(ctx context.Context) error {
 	k, v = n.processedVqEntries()
 	entries[k] = v
 
-	return n.serverSideApply.ApplyPodAnnotations(ctx, n.podName, n.podNamespace, entries)
+	return n.patcher.ApplyPodAnnotations(ctx, n.podName, n.podNamespace, entries)
 }
