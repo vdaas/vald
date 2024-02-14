@@ -13,45 +13,19 @@
 // limitations under the License.
 package service
 
-import (
-	"github.com/vdaas/vald/internal/errors"
-)
+import "github.com/vdaas/vald/internal/sync/errgroup"
 
 // Option represents the functional option for index.
-type Option func(_ *index) error
+type Option func(_ *operator) error
 
 var defaultOpts = []Option{
-	WithIndexingConcurrency(1),
-	WithCreationPoolSize(1000),
+	WithErrGroup(errgroup.Get()),
 }
 
-// WithIndexingConcurrency returns Option that sets indexing concurrency.
-func WithIndexingConcurrency(num int) Option {
-	return func(idx *index) error {
-		if num <= 0 {
-			return errors.NewErrInvalidOption("indexingConcurrency", num)
-		}
-		idx.concurrency = num
-		return nil
-	}
-}
-
-// WithCreationPoolSize returns Option that sets indexing pool size.
-func WithCreationPoolSize(size uint32) Option {
-	return func(idx *index) error {
-		if size <= 0 {
-			return errors.NewErrInvalidOption("creationPoolSize", size)
-		}
-		idx.creationPoolSize = size
-		return nil
-	}
-}
-
-// WithTargetAddrs returns Option that sets indexing target addresses.
-func WithTargetAddrs(addrs ...string) Option {
-	return func(idx *index) error {
-		if len(addrs) != 0 {
-			idx.targetAddrs = append(idx.targetAddrs, addrs...)
+func WithErrGroup(eg errgroup.Group) Option {
+	return func(o *operator) error {
+		if eg != nil {
+			o.eg = eg
 		}
 		return nil
 	}

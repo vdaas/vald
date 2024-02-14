@@ -15,12 +15,9 @@ package usecase
 
 import (
 	"context"
-	"os"
-	"syscall"
 
 	iconfig "github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errors"
-	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/grpc/interceptor/server/recover"
 	"github.com/vdaas/vald/internal/observability"
@@ -38,18 +35,14 @@ type run struct {
 	cfg           *config.Data
 	observability observability.Observability
 	server        starter.Server
-	indexer       service.Operator
+	operator      service.Operator
 }
 
 // New returns Runner instance.
 func New(cfg *config.Data) (_ runner.Runner, err error) {
 	eg := errgroup.Get()
 
-	indexer, err := service.New(
-		service.WithIndexingConcurrency(cfg.Creation.Concurrency),
-		service.WithCreationPoolSize(cfg.Creation.CreationPoolSize),
-		service.WithTargetAddrs(cfg.Creation.TargetAddrs...),
-	)
+	operator, err := service.New()
 	if err != nil {
 		return nil, err
 	}
@@ -84,7 +77,7 @@ func New(cfg *config.Data) (_ runner.Runner, err error) {
 		cfg:           cfg,
 		observability: obs,
 		server:        srv,
-		indexer:       indexer,
+		operator:      operator,
 	}, nil
 }
 
@@ -99,43 +92,33 @@ func (r *run) PreStart(ctx context.Context) error {
 // Start is a method used to initiate an operation in the run, and it returns a channel for receiving errors
 // during the operation and an error representing any initialization errors.
 func (r *run) Start(ctx context.Context) (<-chan error, error) {
-	ech := make(chan error, 4)
-	var sech, oech <-chan error
-	if r.observability != nil {
-		oech = r.observability.Start(ctx)
-	}
-	sech = r.server.ListenAndServe(ctx)
-
-	r.eg.Go(safety.RecoverFunc(func() (err error) {
-		defer func() {
-			p, err := os.FindProcess(os.Getpid())
-			if err != nil {
-				// using Fatal to avoid this process to be zombie
-				// skipcq: RVV-A0003
-				log.Fatalf("failed to find my pid to kill %v", err)
-				return
-			}
-			log.Info("sending SIGTERM to myself to stop this job")
-			if err := p.Signal(syscall.SIGTERM); err != nil {
-				log.Error(err)
-			}
-		}()
-		return r.indexer.Start(ctx)
-	}))
-
+	ech := make(chan error, 3)
+	var oech, dech, sech <-chan error
 	r.eg.Go(safety.RecoverFunc(func() (err error) {
 		defer close(ech)
+		if r.observability != nil {
+			oech = r.observability.Start(ctx)
+		}
+		dech, err = r.operator.Start(ctx)
+		if err != nil {
+			ech <- err
+			return err
+		}
+
+		sech = r.server.ListenAndServe(ctx)
+
 		for {
 			select {
 			case <-ctx.Done():
 				return ctx.Err()
 			case err = <-oech:
+			case err = <-dech:
 			case err = <-sech:
 			}
 			if err != nil {
 				select {
 				case <-ctx.Done():
-					return errors.Join(ctx.Err(), err)
+					return ctx.Err()
 				case ech <- err:
 				}
 			}

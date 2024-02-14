@@ -19,8 +19,11 @@ import (
 
 	agent "github.com/vdaas/vald/apis/grpc/v1/agent/core"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/k8s"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/observability/trace"
+	"github.com/vdaas/vald/internal/safety"
+	"github.com/vdaas/vald/internal/sync/errgroup"
 )
 
 const (
@@ -30,22 +33,19 @@ const (
 
 // Operator represents an interface for indexing.
 type Operator interface {
-	Start(ctx context.Context) error
+	Start(ctx context.Context) (<-chan error, error)
 }
 
-type index struct {
-	targetAddrs    []string
-	targetAddrList map[string]bool
-
-	creationPoolSize uint32
-	concurrency      int
+type operator struct {
+	ctrl k8s.Controller
+	eg   errgroup.Group
 }
 
 // New returns Indexer object if no error occurs.
-func New(opts ...Option) (Operator, error) {
-	idx := new(index)
+func New(opts ...Option) (o Operator, err error) {
+	operator := new(operator)
 	for _, opt := range append(defaultOpts, opts...) {
-		if err := opt(idx); err != nil {
+		if err := opt(operator); err != nil {
 			oerr := errors.ErrOptionFailed(err, reflect.ValueOf(opt))
 			e := &errors.ErrCriticalOption{}
 			if errors.As(oerr, &e) {
@@ -55,15 +55,16 @@ func New(opts ...Option) (Operator, error) {
 			log.Warn(oerr)
 		}
 	}
-	idx.targetAddrList = make(map[string]bool, len(idx.targetAddrs))
-	for _, addr := range idx.targetAddrs {
-		idx.targetAddrList[addr] = true
+
+	operator.ctrl, err = k8s.New()
+	if err != nil {
+		return nil, err
 	}
-	return idx, nil
+	return operator, nil
 }
 
 // Start starts indexing process.
-func (idx *index) Start(ctx context.Context) error {
+func (o *operator) Start(ctx context.Context) (<-chan error, error) {
 	ctx, span := trace.StartSpan(ctx, apiName+"/service/index.Start")
 	defer func() {
 		if span != nil {
@@ -71,5 +72,24 @@ func (idx *index) Start(ctx context.Context) error {
 		}
 	}()
 
-	return nil
+	dech, err := o.ctrl.Start(ctx)
+	if err != nil {
+		return nil, err
+	}
+	ech := make(chan error, 2)
+	o.eg.Go(safety.RecoverFunc(func() (err error) {
+		defer close(ech)
+		for {
+			select {
+			case <-ctx.Done():
+				return ctx.Err()
+			case err := <-dech:
+				if err != nil {
+					ech <- err
+				}
+			}
+		}
+	}))
+
+	return ech, nil
 }
