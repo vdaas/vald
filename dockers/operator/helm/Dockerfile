@@ -89,8 +89,8 @@ COPY .git .
 COPY go.mod .
 COPY go.sum .
 
-RUN make GO_VERSION=${GO_VERSION} ARCH=${TARGETARCH} OS=${TARGETOS} go/install \
-    && make GOARCH=${TARGETARCH} GOOS=${TARGETOS} go/download
+RUN make GO_VERSION=${GO_VERSION} go/install \
+    && make go/download
 
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/internal/errors
 COPY internal/errors .

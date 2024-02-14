@@ -142,9 +142,10 @@ $(GOPATH)/bin/staticcheck:
 go/install: $(GOROOT)/bin/go
 
 $(GOROOT)/bin/go:
-	curl -fsSLO "https://go.dev/dl/go${GO_VERSION}.${OS}-${ARCH}.tar.gz" \
-	&& tar zxf "go${GO_VERSION}.${OS}-${ARCH}.tar.gz" \
-	&& rm -rf "go${GO_VERSION}.${OS}-${ARCH}.tar.gz" \
+	TAR_NAME=go${GO_VERSION}.${OS}-$(subst aarch_64,arm64,$(subst x86_64,amd64,$(shell echo ${ARCH} | tr '[:upper:]' '[:lower:]'))).tar.gz \
+	&& curl -fsSLO "https://go.dev/dl/$${TAR_NAME}" \
+	&& tar zxf "$${TAR_NAME}" \
+	&& rm -rf "$${TAR_NAME}" \
 	&& mv go "${GOROOT}" \
 	&& ${GOROOT}/bin/go version \
 	&& mkdir -p "${GOPATH}/src"

@@ -67,7 +67,7 @@ COPY example/client/go.mod.default example/client/go.mod.default
 
 RUN --mount=type=cache,target="${GOPATH}/pkg",id="go-build-${TARGETARCH}" \
     --mount=type=cache,target="${HOME}/.cache/go-build",id="go-build-${TARGETARCH}" \
-    make GO_VERSION=${GO_VERSION} ARCH=${TARGETARCH} OS=${TARGETOS} go/install \
+    make GO_VERSION=${GO_VERSION} go/install \
     && make GOARCH=${TARGETARCH} GOOS=${TARGETOS} deps GO_CLEAN_DEPS=false \
     && make ngt/install \
     && make faiss/install \
