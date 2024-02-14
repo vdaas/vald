@@ -285,8 +285,8 @@ define gen-license
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
-	go build -mod=readonly -a -o $$BIN_PATH $(ROOTDIR)/hack/license/gen/main.go
 	ls $(ROOTDIR)
+	go build -mod=readonly -a -o $$BIN_PATH $(ROOTDIR)/hack/license/gen/main.go
 	$$BIN_PATH $1
 	rm -rf $$BIN_PATH
 endef
