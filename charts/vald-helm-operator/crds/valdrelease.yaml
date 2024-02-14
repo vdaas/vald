@@ -124,6 +124,20 @@ spec:
                     annotations:
                       type: object
                       x-kubernetes-preserve-unknown-fields: true
+                    clusterRole:
+                      type: object
+                      properties:
+                        enabled:
+                          type: boolean
+                        name:
+                          type: string
+                    clusterRoleBinding:
+                      type: object
+                      properties:
+                        enabled:
+                          type: boolean
+                        name:
+                          type: string
                     enabled:
                       type: boolean
                     env:
@@ -251,6 +265,8 @@ spec:
                             - normalizedcosine
                         enable_copy_on_write:
                           type: boolean
+                        enable_export_index_info_to_k8s:
+                          type: boolean
                         enable_in_memory_mode:
                           type: boolean
                         enable_proactive_gc:
@@ -258,6 +274,8 @@ spec:
                         error_buffer_limit:
                           type: integer
                           minimum: 1
+                        export_index_info_duration:
+                          type: string
                         index_path:
                           type: string
                         initial_delay_max_duration:
@@ -273,12 +291,16 @@ spec:
                           type: string
                         min_load_index_timeout:
                           type: string
+                        namespace:
+                          type: string
                         object_type:
                           type: string
                           enum:
                             - float
                             - float16
                             - uint8
+                        pod_name:
+                          type: string
                         search_edge_size:
                           type: integer
                         vqueue:
@@ -959,6 +981,13 @@ spec:
                         labels:
                           type: object
                           x-kubernetes-preserve-unknown-fields: true
+                    serviceAccount:
+                      type: object
+                      properties:
+                        enabled:
+                          type: boolean
+                        name:
+                          type: string
                     serviceType:
                       type: string
                       enum:
