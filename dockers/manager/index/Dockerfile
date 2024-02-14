@@ -19,7 +19,7 @@ ARG DISTROLESS_IMAGE=gcr.io/distroless/static
 ARG DISTROLESS_IMAGE_TAG=nonroot
 ARG MAINTAINER="vdaas.org vald team <vald@vdaas.org>"
 
-FROM --platform=${TARGETPLATFORM} ubuntu:devel AS builder
+FROM --platform=${BUILDPLATFORM} ubuntu:devel AS builder
 
 ARG GO_VERSION
 ARG TARGETARCH
@@ -91,6 +91,8 @@ ENV APP_NAME index
 
 COPY --from=builder /usr/bin/${APP_NAME} /go/bin/${APP_NAME}
 COPY --from=builder /tmp/config.yaml /etc/server/config.yaml
+
+RUN /go/bin/${APP_NAME} -version
 
 USER nonroot:nonroot
 
