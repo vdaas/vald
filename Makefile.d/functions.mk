@@ -291,13 +291,13 @@ define gen-license
 endef
 
 define gen-vald-helm-schema
-	BIN_PATH="$(TEMP_DIR)/vald-helm-schema-gen"
-	rm -rf $$BIN_PATH
+	BIN_PATH="$(TEMP_DIR)/vald-helm-schema-gen"; \
+	rm -rf $$BIN_PATH; \
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
-	go build -mod=readonly -a -o $$BIN_PATH $(ROOTDIR)/hack/helm/schema/gen/main.go
-	$$BIN_PATH charts/$1.yaml > charts/$1.schema.json
+	go build -mod=readonly -a -o $$BIN_PATH $(ROOTDIR)/hack/helm/schema/gen/main.go; \
+	$$BIN_PATH charts/$1.yaml > charts/$1.schema.json; \
 	rm -rf $$BIN_PATH
 endef
 
@@ -305,14 +305,14 @@ define gen-vald-crd
 	if [[ -f $(ROOTDIR)/charts/$1/crds/$2.yaml ]]; then \
 		mv $(ROOTDIR)/charts/$1/crds/$2.yaml $(TEMP_DIR)/$2.yaml; \
 	fi;
-	BIN_PATH="$(TEMP_DIR)/vald-helm-crd-schema-gen"
-	rm -rf $$BIN_PATH
+	BIN_PATH="$(TEMP_DIR)/vald-helm-crd-schema-gen"; \
+	rm -rf $$BIN_PATH; \
 	GOPRIVATE=$(GOPRIVATE) \
 		GOARCH=$(GOARCH) \
 		GOOS=$(GOOS) \
-		go build -mod=readonly -a -o $$BIN_PATH $(ROOTDIR)/hack/helm/schema/crd/main.go
-	$$BIN_PATH $(ROOTDIR)/charts/$3.yaml > $(TEMP_DIR)/$2-spec.yaml
-	rm -rf $$BIN_PATH
+		go build -mod=readonly -a -o $$BIN_PATH $(ROOTDIR)/hack/helm/schema/crd/main.go; \
+	$$BIN_PATH $(ROOTDIR)/charts/$3.yaml > $(TEMP_DIR)/$2-spec.yaml; \
+	rm -rf $$BIN_PATH; \
 	$(BINDIR)/yq eval-all 'select(fileIndex==0).spec.versions[0].schema.openAPIV3Schema.properties.spec = select(fileIndex==1).spec | select(fileIndex==0)' \
 	$(TEMP_DIR)/$2.yaml $(TEMP_DIR)/$2-spec.yaml > $(ROOTDIR)/charts/$1/crds/$2.yaml
 endef
