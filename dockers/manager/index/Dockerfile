@@ -57,8 +57,13 @@ COPY go.sum .
 
 RUN --mount=type=cache,target="${GOPATH}/pkg",id="go-build-${BUILDARCH}" \
     --mount=type=cache,target="${HOME}/.cache/go-build",id="go-build-${BUILDARCH}" \
-    make GO_VERSION=${GO_VERSION} go/install \
+    make GO_VERSION=1.22.0 go/install \
     && make go/download
+
+# RUN --mount=type=cache,target="${GOPATH}/pkg",id="go-build-${BUILDARCH}" \
+#     --mount=type=cache,target="${HOME}/.cache/go-build",id="go-build-${BUILDARCH}" \
+#     make GO_VERSION=${GO_VERSION} go/install \
+#     && make go/download
 
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/internal
 COPY internal .
