@@ -66,7 +66,7 @@ type BenchmarkJobOption func(b *jobs.Job) error
 
 // defaultTTLSeconds represents the default TTLSecondsAfterFinished for benchmark job template.
 const (
-	defaultTTLSeconds int32 = 600
+	defaultTTLSeconds  int32 = 600
 	defaultCompletions int32 = 1
 	defaultParallelism int32 = 1
 )
