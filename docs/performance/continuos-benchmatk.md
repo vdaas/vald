@@ -269,4 +269,3 @@ After deploy the benchmark operator, you can execute continuous benchmark by app
 Please configure designed benchmark and apply by `kubectl` command.
 
 The sample manifests are [here](https://github.com/vdaas/vald/tree/main/charts/vald-benchmark-operator/values).
-
