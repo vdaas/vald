@@ -33,6 +33,7 @@ runs:
         image-ref: ${{ inputs.image_ref }}
         format: "table"
         severity: ${{ inputs.severity }}
+        timeout: 30m
     - name: Run vulnerability scanner (sarif)
       uses: aquasecurity/trivy-action@master
       with:
@@ -40,6 +41,7 @@ runs:
         format: "sarif"
         output: "trivy-results.sarif"
         severity: ${{ inputs.severity }}
+        timeout: 30m
     - name: Upload Trivy scan results to Security tab
       uses: github/codeql-action/upload-sarif@v2
       with:
