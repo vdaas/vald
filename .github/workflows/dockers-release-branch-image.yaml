@@ -37,6 +37,7 @@ jobs:
     uses: ./.github/workflows/_docker-image.yaml
     with:
       target: agent-faiss
+      platforms: linux/amd64
     secrets: inherit
   agent-sidecar:
     needs: [dump-contexts-to-log]
