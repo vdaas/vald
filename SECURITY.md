@@ -4,11 +4,11 @@
 
 We currently offer security updates for the following Vald versions:
 
-| Version  | Supported          |
-| -------- | ------------------ |
-| v1.7.x   | :white_check_mark: |
-| v1.6.x   | :white_check_mark: |
-| < v1.6   | :x:                |
+| Version | Supported          |
+| ------- | ------------------ |
+| v1.7.x  | :white_check_mark: |
+| v1.6.x  | :white_check_mark: |
+| < v1.6  | :x:                |
 
 ## Reporting a Vulnerability
 
