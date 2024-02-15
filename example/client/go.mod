@@ -23,16 +23,17 @@ replace (
 require (
 	github.com/kpango/fuid v0.0.0-20221203053508-503b5ad89aa1
 	github.com/kpango/glg v1.6.14
-	github.com/vdaas/vald-client-go v1.7.10
+	github.com/vdaas/vald-client-go v1.7.11
 	gonum.org/v1/hdf5 v0.0.0-20210714002203-8c5d23bc6946
 	google.golang.org/grpc v1.61.0
 )
 
 require (
-	buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.31.0-20231115204500-e097f827e652.2 // indirect
+	buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.32.0-20240212200630-3014d81c3a48.1 // indirect
 	github.com/goccy/go-json v0.10.2 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/kpango/fastime v1.1.9 // indirect
+	github.com/planetscale/vtprotobuf v0.6.0 // indirect
 	golang.org/x/net v0.20.0 // indirect
 	golang.org/x/sys v0.17.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
