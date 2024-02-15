@@ -113,7 +113,7 @@ func Test_group_Do(t *testing.T) {
 
 			// the unparam lint rule is disabled here because we need to match the interface to singleflight implementation.
 			// if this rule is not disabled, if will warns that the error will always return null.
-			//nolint:unparam
+
 			fn1 := func(context.Context) (string, error) {
 				atomic.AddUint32(&cnt1, 1)
 				return "res_1", nil
