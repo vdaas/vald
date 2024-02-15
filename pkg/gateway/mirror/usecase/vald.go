@@ -16,8 +16,9 @@ package usecase
 import (
 	"context"
 
+	"github.com/vdaas/vald/apis/grpc/v1/mirror"
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
-	"github.com/vdaas/vald/internal/client/v1/client/mirror"
+	client "github.com/vdaas/vald/internal/client/v1/client/mirror"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/net/grpc"
@@ -42,7 +43,7 @@ type run struct {
 	dialer        net.Dialer
 	cfg           *config.Data
 	server        starter.Server
-	client        mirror.Client
+	client        client.Client
 	gateway       service.Gateway
 	mirror        service.Mirror
 	discover      service.Discovery
@@ -69,9 +70,9 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	// skipcq: CRT-D0001
 	cOpts = append(cOpts, grpc.WithErrGroup(eg))
 
-	client, err := mirror.New(
-		mirror.WithAddrs(cfg.Mirror.Client.Addrs...),
-		mirror.WithClient(grpc.New(cOpts...)),
+	mirrClient, err := client.New(
+		client.WithAddrs(cfg.Mirror.Client.Addrs...),
+		client.WithClient(grpc.New(cOpts...)),
 	)
 	if err != nil {
 		return nil, err
@@ -79,13 +80,13 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 
 	gateway, err := service.NewGateway(
 		service.WithErrGroup(eg),
-		service.WithMirrorClient(client),
+		service.WithMirrorClient(mirrClient),
 		service.WithPodName(cfg.Mirror.PodName),
 	)
 	if err != nil {
 		return nil, err
 	}
-	mirror, err := service.NewMirror(
+	mirr, err := service.NewMirror(
 		service.WithErrorGroup(eg),
 		service.WithRegisterDuration(cfg.Mirror.RegisterDuration),
 		service.WithGatewayAddrs(cfg.Mirror.GatewayAddr),
@@ -102,7 +103,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		service.WithDiscoverySelfMirrorAddrs(cfg.Mirror.SelfMirrorAddr),
 		service.WithDiscoveryColocation(cfg.Mirror.Colocation),
 		service.WithDiscoveryDialer(dialer),
-		service.WithDiscoveryMirror(mirror),
+		service.WithDiscoveryMirror(mirr),
 		service.WithDiscoveryErrGroup(eg),
 	)
 	if err != nil {
@@ -113,7 +114,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		handler.WithValdAddr(cfg.Mirror.GatewayAddr),
 		handler.WithErrGroup(eg),
 		handler.WithGateway(gateway),
-		handler.WithMirror(mirror),
+		handler.WithMirror(mirr),
 		handler.WithStreamConcurrency(cfg.Server.GetGRPCStreamConcurrency()),
 	)
 	if err != nil {
@@ -122,7 +123,8 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 
 	grpcServerOptions := []server.Option{
 		server.WithGRPCRegistFunc(func(srv *grpc.Server) {
-			vald.RegisterValdServerWithMirror(srv, v)
+			vald.RegisterValdServer(srv, v)
+			mirror.RegisterMirrorServer(srv, v)
 		}),
 		server.WithPreStopFunction(func() error {
 			return nil
@@ -135,7 +137,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 			cfg.Observability,
 			bometrics.New(),
 			cbmetrics.New(),
-			mirrmetrics.New(mirror),
+			mirrmetrics.New(mirr),
 		)
 		if err != nil {
 			return nil, err
@@ -170,9 +172,9 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		dialer:        dialer,
 		cfg:           cfg,
 		server:        srv,
-		client:        client,
+		client:        mirrClient,
 		gateway:       gateway,
-		mirror:        mirror,
+		mirror:        mirr,
 		discover:      discover,
 		observability: obs,
 	}, nil

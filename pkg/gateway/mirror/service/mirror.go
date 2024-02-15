@@ -18,6 +18,7 @@ import (
 	"reflect"
 	"time"
 
+	"github.com/vdaas/vald/apis/grpc/v1/mirror"
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
 	"github.com/vdaas/vald/internal/errors"
@@ -43,6 +44,23 @@ type Mirror interface {
 	IsConnected(ctx context.Context, addr string) bool
 	MirrorTargets(ctx context.Context) ([]*payload.Mirror_Target, error)
 	RangeMirrorAddr(f func(addr string, _ any) bool)
+}
+
+type MirrorClient interface {
+	vald.Client
+	mirror.MirrorClient
+}
+
+type client struct {
+	vald.Client
+	mirror.MirrorClient
+}
+
+func NewMirrorClient(conn *grpc.ClientConn) MirrorClient {
+	return &client{
+		Client:       vald.NewValdClient(conn),
+		MirrorClient: mirror.NewMirrorClient(conn),
+	}
 }
 
 type mirr struct {
@@ -151,7 +169,7 @@ func (m *mirr) Start(ctx context.Context) <-chan error { // skipcq: GO-R1005
 }
 
 func (m *mirr) registers(ctx context.Context, tgts *payload.Mirror_Targets) ([]*payload.Mirror_Target, error) { // skipcq: GO-R1005
-	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.MirrorRPCServiceName+"/"+vald.RegisterRPCName), "vald/gateway/mirror/service/Mirror.registers")
+	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+mirror.RPCServiceName+"/"+mirror.RegisterRPCName), "vald/gateway/mirror/service/Mirror.registers")
 	defer func() {
 		if span != nil {
 			span.End()
@@ -162,14 +180,14 @@ func (m *mirr) registers(ctx context.Context, tgts *payload.Mirror_Targets) ([]*
 		ServingData: errdetails.Serialize(tgts),
 	}
 	resInfo := &errdetails.ResourceInfo{
-		ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.RegisterRPCName,
+		ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + mirror.RegisterRPCName,
 	}
 	resTgts := make([]*payload.Mirror_Target, 0, len(tgts.GetTargets()))
 	exists := make(map[string]bool)
 	var result sync.Map[string, error] // map[target host: error]
 	var mu sync.Mutex
 
-	err := m.gateway.DoMulti(ctx, m.connectedOtherMirrorAddrs(ctx), func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error {
+	err := m.gateway.DoMulti(ctx, m.connectedOtherMirrorAddrs(ctx), func(ctx context.Context, target string, vc MirrorClient, copts ...grpc.CallOption) error {
 		ctx, span := trace.StartSpan(ctx, "vald/gateway/mirror/service/Mirror.registers/"+target)
 		defer func() {
 			if span != nil {
@@ -183,22 +201,22 @@ func (m *mirr) registers(ctx context.Context, tgts *payload.Mirror_Targets) ([]*
 			switch {
 			case errors.Is(err, context.Canceled):
 				err = status.WrapWithCanceled(
-					vald.RegisterRPCName+" API canceld", err, reqInfo, resInfo,
+					mirror.RegisterRPCName+" API canceld", err, reqInfo, resInfo,
 				)
 				attrs = trace.StatusCodeCancelled(err.Error())
 			case errors.Is(err, context.DeadlineExceeded):
 				err = status.WrapWithCanceled(
-					vald.RegisterRPCName+" API deadline exceeded", err, reqInfo, resInfo,
+					mirror.RegisterRPCName+" API deadline exceeded", err, reqInfo, resInfo,
 				)
 				attrs = trace.StatusCodeDeadlineExceeded(err.Error())
 			case errors.Is(err, errors.ErrGRPCClientConnNotFound("*")):
 				err = status.WrapWithInternal(
-					vald.RegisterRPCName+" API connection not found", err, reqInfo, resInfo,
+					mirror.RegisterRPCName+" API connection not found", err, reqInfo, resInfo,
 				)
 				attrs = trace.StatusCodeInternal(err.Error())
 			case errors.Is(err, errors.ErrTargetNotFound):
 				err = status.WrapWithInvalidArgument(
-					vald.RegisterRPCName+" API target not found", err, reqInfo, resInfo,
+					mirror.RegisterRPCName+" API target not found", err, reqInfo, resInfo,
 				)
 				attrs = trace.StatusCodeInvalidArgument(err.Error())
 			default:
@@ -207,7 +225,7 @@ func (m *mirr) registers(ctx context.Context, tgts *payload.Mirror_Targets) ([]*
 					msg string
 				)
 				st, msg, err = status.ParseError(err, codes.Internal,
-					"failed to parse "+vald.RegisterRPCName+" gRPC error response", reqInfo, resInfo,
+					"failed to parse "+mirror.RegisterRPCName+" gRPC error response", reqInfo, resInfo,
 				)
 				attrs = trace.FromGRPCStatus(st.Code(), msg)
 
@@ -251,14 +269,14 @@ func (m *mirr) registers(ctx context.Context, tgts *payload.Mirror_Targets) ([]*
 	})
 	result.Range(func(target string, rerr error) bool {
 		if rerr != nil {
-			err = errors.Join(err, errors.Wrapf(rerr, "failed to "+vald.RegisterRPCName+" API to %s", target))
+			err = errors.Join(err, errors.Wrapf(rerr, "failed to "+mirror.RegisterRPCName+" API to %s", target))
 		}
 		return true
 	})
 	if err != nil {
 		if errors.Is(err, errors.ErrGRPCClientConnNotFound("*")) {
 			err = status.WrapWithInternal(
-				vald.RegisterRPCName+" API connection not found", err, reqInfo, resInfo,
+				mirror.RegisterRPCName+" API connection not found", err, reqInfo, resInfo,
 			)
 			log.Warn(err)
 			if span != nil {
@@ -270,7 +288,7 @@ func (m *mirr) registers(ctx context.Context, tgts *payload.Mirror_Targets) ([]*
 		}
 
 		st, msg, err := status.ParseError(err, codes.Internal,
-			"failed to parse "+vald.RegisterRPCName+" gRPC error response", reqInfo, resInfo,
+			"failed to parse "+mirror.RegisterRPCName+" gRPC error response", reqInfo, resInfo,
 		)
 		log.Warn(err)
 		if span != nil {
