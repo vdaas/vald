@@ -100,22 +100,7 @@ jobs:
 
           git add \
             CHANGELOG.md \
-            charts/vald-helm-operator/Chart.yaml \
-            charts/vald-helm-operator/README.md \
-            charts/vald-helm-operator/values.schema.json \
-            charts/vald-helm-operator/values.yaml \
-            charts/vald/Chart.yaml \
-            charts/vald/README.md \
-            charts/vald/values.schema.json \
-            charts/vald/values.yaml \
-            charts/vald-readreplica/Chart.yaml \
-            charts/vald-readreplica/README.md \
-            charts/vald-benchmark-operator/Chart.yaml \
-            charts/vald-benchmark-operator/README.md \
-            charts/vald-benchmark-operator/job-values.schema.json \
-            charts/vald-benchmark-operator/scenario-values.schema.json \
-            charts/vald-benchmark-operator/values.schema.json \
-            charts/vald-benchmark-operator/values.yaml \
+            charts \
             k8s \
             versions/VALD_VERSION
           git commit -S --signoff -m ":bookmark: :robot: Release ${RELEASE_TAG}"
