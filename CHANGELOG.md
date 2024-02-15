@@ -1,5 +1,129 @@
 # CHANGELOG
 
+## v1.7.11
+
+### Docker images
+
+<table>
+  <tr>
+    <th>component</th>
+    <th>Docker pull</th>
+  </tr>
+  <tr>
+    <td>Agent NGT</td>
+    <td>
+      <code>docker pull vdaas/vald-agent-ngt:v1.7.11</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-agent-ngt:v1.7.11</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Agent sidecar</td>
+    <td>
+      <code>docker pull vdaas/vald-agent-sidecar:v1.7.11</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-agent-sidecar:v1.7.11</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Discoverers</td>
+    <td>
+      <code>docker pull vdaas/vald-discoverer-k8s:v1.7.11</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-discoverer-k8s:v1.7.11</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Gateways</td>
+    <td>
+      <code>docker pull vdaas/vald-lb-gateway:v1.7.11</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-lb-gateway:v1.7.11</code><br/>
+      <code>docker pull vdaas/vald-filter-gateway:v1.7.11</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-filter-gateway:v1.7.11</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Index Manager</td>
+    <td>
+      <code>docker pull vdaas/vald-manager-index:v1.7.11</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-manager-index:v1.7.11</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Helm Operator</td>
+    <td>
+      <code>docker pull vdaas/vald-helm-operator:v1.7.11</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-helm-operator:v1.7.11</code>
+    </td>
+  </tr>
+</table>
+
+### Documents
+
+- [GoDoc](https://pkg.go.dev/github.com/vdaas/vald@v1.7.11)
+- [Helm Chart Reference](https://github.com/vdaas/vald/blob/v1.7.11/charts/vald/README.md)
+- [Helm Operator Chart Reference](https://github.com/vdaas/vald/blob/v1.7.11/charts/vald-helm-operator/README.md)
+
+### Changes
+
+:sparkles: New feature
+
+- Add HPA for read replica [#2307](https://github.com/vdaas/vald/pull/2307)
+- Add internal KVS pogreb package [#2302](https://github.com/vdaas/vald/pull/2302)
+- Two version deploy support [#2171](https://github.com/vdaas/vald/pull/2171)
+- Add mirror gateway definitions and Implementations [#2262](https://github.com/vdaas/vald/pull/2262)
+- Initialize dev env for Rust agent [#2293](https://github.com/vdaas/vald/pull/2293)
+- Add new grafana dashboard for agent memory metrics [#2279](https://github.com/vdaas/vald/pull/2279)
+- Implement continuous benchmark tool [#2216](https://github.com/vdaas/vald/pull/2216)
+
+:recycle: Refactor
+
+- Add newline between params to avoid false formatting [#2347](https://github.com/vdaas/vald/pull/2347)
+- Fix golangci-lint config and apply tagalign [#2326](https://github.com/vdaas/vald/pull/2326)
+- Refactor postAttachCommand [#2312](https://github.com/vdaas/vald/pull/2312)
+- Refactor ignore rule [#2339](https://github.com/vdaas/vald/pull/2339)
+- Fix NGT default params [#2332](https://github.com/vdaas/vald/pull/2332)
+- Format yaml using google/yamlfmt & update go version and dependencies [#2322](https://github.com/vdaas/vald/pull/2322)
+- Refactor update opentelemetry-go & faiss [#2303](https://github.com/vdaas/vald/pull/2303)
+- Change discoverer client to broadcast to read replicas [#2276](https://github.com/vdaas/vald/pull/2276)
+- Add stern and telepresence [#2320](https://github.com/vdaas/vald/pull/2320)
+- Add issue metrics [#2308](https://github.com/vdaas/vald/pull/2308)
+- Add dispatch workflow for update contents of vdaas/web repo [#2294](https://github.com/vdaas/vald/pull/2294)
+- Fix: add release build for bench and mirror [#2300](https://github.com/vdaas/vald/pull/2300)
+- Fix deeepsource errors [#2299](https://github.com/vdaas/vald/pull/2299)
+- Add go cache for improvement docker build performance [#2297](https://github.com/vdaas/vald/pull/2297)
+- Add detailed log for readreplica rotator [#2281](https://github.com/vdaas/vald/pull/2281)
+- Add isSymlink function and test to gen license to avoid for symlink to become normal file. [#2290](https://github.com/vdaas/vald/pull/2290)
+- Add owner reference to the resources made by rotator to delete them when read replica resources are deleted [#2287](https://github.com/vdaas/vald/pull/2287)
+- Make vald-readreplica values.yaml to symbolic link [#2286](https://github.com/vdaas/vald/pull/2286)
+- Separate readreplica chart [#2283](https://github.com/vdaas/vald/pull/2283)
+- Happy New Year 2024 [#2284](https://github.com/vdaas/vald/pull/2284)
+
+:bug: Bugfix
+
+- Fix: disable arm64 [#2354](https://github.com/vdaas/vald/pull/2354)
+- gcc environment for ARM [#2334](https://github.com/vdaas/vald/pull/2334)
+- Revert dev Dockerfile to use official devcontainer image [#2335](https://github.com/vdaas/vald/pull/2335)
+- Revert docker-image.yaml change [#2336](https://github.com/vdaas/vald/pull/2336)
+- Fix release pr workflow [#2333](https://github.com/vdaas/vald/pull/2333)
+- Fix e2e regressions [#2327](https://github.com/vdaas/vald/pull/2327)
+- Bugfix grpc ip direct connection status check [#2316](https://github.com/vdaas/vald/pull/2316)
+- Fix k3d connectivity error [#2317](https://github.com/vdaas/vald/pull/2317)
+- Change lincense/gen/main.go to skip shebang [#2313](https://github.com/vdaas/vald/pull/2313)
+- Stop using ENV ARCH and add --platform in Dockerfile [#2304](https://github.com/vdaas/vald/pull/2304)
+- gRPC pool connection health check for DNS Addr may fail during VIP member disconnection [#2277](https://github.com/vdaas/vald/pull/2277)
+- Fix isSymlink function to correctly check for symbolic links [#2292](https://github.com/vdaas/vald/pull/2292)
+- Disable disconnection during non-IP-direct connection [#2291](https://github.com/vdaas/vald/pull/2291)
+- Fix git add chart directory for release [#2356](https://github.com/vdaas/vald/pull/2356)
+
+:pencil2: Document
+
+- Add search optimization document [#2306](https://github.com/vdaas/vald/pull/2306)
+- Update capacity planning doc [#2295](https://github.com/vdaas/vald/pull/2295)
+
+:green_heart: CI
+
+- Change to dynamically switch CI container image tag [#2310](https://github.com/vdaas/vald/pull/2310)
+- Add E2E tests for read replica feature [#2298](https://github.com/vdaas/vald/pull/2298)
+- CI, Docker EXTRA_ARGS not working problem [#2278](https://github.com/vdaas/vald/pull/2278)
+
 ## v1.7.10
 
 ### Docker images
