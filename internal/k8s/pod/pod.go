@@ -45,14 +45,15 @@ type reconciler struct {
 }
 
 type Pod struct {
-	Name       string
-	NodeName   string
-	Namespace  string
-	IP         string
-	CPULimit   float64
-	CPURequest float64
-	MemLimit   float64
-	MemRequest float64
+	Name        string
+	NodeName    string
+	Namespace   string
+	IP          string
+	CPULimit    float64
+	CPURequest  float64
+	MemLimit    float64
+	MemRequest  float64
+	Annotations map[string]string
 }
 
 func New(opts ...Option) PodWatcher {
@@ -142,14 +143,15 @@ func (r *reconciler) Reconcile(ctx context.Context, _ reconcile.Request) (res re
 		}
 
 		pods[podName] = append(pods[podName], Pod{
-			Name:       pod.GetName(),
-			NodeName:   pod.Spec.NodeName,
-			Namespace:  pod.GetNamespace(),
-			IP:         pod.Status.PodIP,
-			CPULimit:   cpuLimit,
-			CPURequest: cpuRequest,
-			MemLimit:   memLimit,
-			MemRequest: memRequest,
+			Name:        pod.GetName(),
+			NodeName:    pod.Spec.NodeName,
+			Namespace:   pod.GetNamespace(),
+			IP:          pod.Status.PodIP,
+			CPULimit:    cpuLimit,
+			CPURequest:  cpuRequest,
+			MemLimit:    memLimit,
+			MemRequest:  memRequest,
+			Annotations: pod.GetAnnotations(),
 		})
 	}
 
