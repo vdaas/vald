@@ -19,7 +19,7 @@ ARG MAINTAINER="vdaas.org vald team <vald@vdaas.org>"
 
 # skipcq: DOK-DL3026
 # we should stick to official devcontainers as a base image because it is well tested to be used with the vscode devcontainer extension.
-FROM --platform=${BUILDPLATFORM} mcr.microsoft.com/vscode/devcontainers/base:debian
+FROM --platform=${TARGETPLATFORM} mcr.microsoft.com/vscode/devcontainers/base:debian
 LABEL maintainer="${MAINTAINER}"
 
 ARG GO_VERSION
@@ -34,12 +34,14 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 # skipcq: DOK-DL3008
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
+    ca-certificates \
     cmake \
     curl \
     g++ \
     gawk \
     gcc \
     git \
+    gnupg2 \
     graphviz \
     jq \
     libhdf5-dev \
@@ -54,17 +56,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-WORKDIR /tmp
-RUN BIN_NAME="go" \
-    && TAR_NAME="${BIN_NAME}${GO_VERSION}.${TARGETOS}-${TARGETARCH}.tar.gz" \
-    && curl -fsSLO "https://go.dev/dl/${TAR_NAME}" \
-    && tar zxf "${TAR_NAME}" \
-    && rm "${TAR_NAME}" \
-    && mv ${BIN_NAME} ${GOROOT} \
-    && ${BIN_NAME} version \
-    && mkdir -p "${GOPATH}/src"
-
 WORKDIR ${GOPATH}/src/github.com/vdaas/vald
+
 COPY Makefile .
 COPY Makefile.d Makefile.d
 COPY versions versions
@@ -74,7 +67,8 @@ COPY example/client/go.mod.default example/client/go.mod.default
 
 RUN --mount=type=cache,target="${GOPATH}/pkg",id="go-build-${TARGETARCH}" \
     --mount=type=cache,target="${HOME}/.cache/go-build",id="go-build-${TARGETARCH}" \
-    make GOARCH=${TARGETARCH} GOOS=${TARGETOS} deps GO_CLEAN_DEPS=false \
+    make GO_VERSION=${GO_VERSION} go/install \
+    && make GOARCH=${TARGETARCH} GOOS=${TARGETOS} deps GO_CLEAN_DEPS=false \
     && make ngt/install \
     && make faiss/install \
     && make helm/install \

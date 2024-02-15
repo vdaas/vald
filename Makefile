@@ -21,7 +21,8 @@ DATETIME                        = $(eval DATETIME := $(shell date -u +%Y/%m/%d_%
 TAG                            ?= latest
 CRORG                          ?= $(ORG)
 GHCRORG                         = ghcr.io/$(ORG)/$(NAME)
-AGENT_IMAGE                     = $(NAME)-agent-ngt
+AGENT_NGT_IMAGE                 = $(NAME)-agent-ngt
+AGENT_FAISS_IMAGE               = $(NAME)-agent-faiss
 AGENT_SIDECAR_IMAGE             = $(NAME)-agent-sidecar
 CI_CONTAINER_IMAGE              = $(NAME)-ci-container
 DEV_CONTAINER_IMAGE             = $(NAME)-dev-container
@@ -97,6 +98,7 @@ SWAP_TAG             ?= latest
 BINDIR ?= /usr/local/bin
 
 UNAME := $(eval UNAME := $(shell uname -s))$(UNAME)
+OS := $(eval OS := $(shell echo $(UNAME) | tr '[:upper:]' '[:lower:]'))$(OS)
 ARCH := $(eval ARCH := $(shell uname -m))$(ARCH)
 PWD := $(eval PWD := $(shell pwd))$(PWD)
 
@@ -386,11 +388,7 @@ clean-generated:
 .PHONY: license
 ## add license to files
 license:
-	GOPRIVATE=$(GOPRIVATE) \
-	MAINTAINER=$(MAINTAINER) \
-	GOARCH=$(GOARCH) \
-	GOOS=$(GOOS) \
-	go run -mod=readonly hack/license/gen/main.go $(ROOTDIR)
+	$(call gen-license,$(ROOTDIR),$(MAINTAINER))
 
 .PHONY: init
 ## initialize development environment
@@ -571,7 +569,7 @@ faiss/install: /usr/local/lib/libfaiss.so
 	curl -LO https://github.com/facebookresearch/faiss/archive/v$(FAISS_VERSION).tar.gz
 	tar zxf v$(FAISS_VERSION).tar.gz -C $(TEMP_DIR)/
 	cd $(TEMP_DIR)/faiss-$(FAISS_VERSION) && \
-		cmake -DFAISS_ENABLE_GPU=OFF -DFAISS_ENABLE_PYTHON=OFF -DBUILD_TESTING=OFF -DBUILD_SHARED_LIBS=ON -B build . && \
+		cmake -DFAISS_ENABLE_GPU=OFF -DFAISS_ENABLE_PYTHON=OFF -DBUILD_TESTING=OFF -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON -B build . && \
 		make -C build -j faiss && \
 		make -C build install
 	rm -rf v$(FAISS_VERSION).tar.gz
