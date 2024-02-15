@@ -18,7 +18,7 @@
 
 - Go Version: 1.22.0
 - Docker Version: 20.10.8
-- Kubernetes Version: v1.29.1
+- Kubernetes Version: v1.29.2
 - NGT Version: 2.1.6
 
 ### Checklist
