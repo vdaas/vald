@@ -63,8 +63,13 @@
         },
         "algorithm": {
           "type": "string",
+<<<<<<< HEAD
           "description": "agent algorithm type. it should be `ngt` or `faiss`.",
           "enum": ["ngt", "faiss"]
+=======
+          "description": "agent algorithm type. it should be `ngt` or `qbg` or `faiss`.",
+          "enum": ["ngt", "qbg", "faiss"]
+>>>>>>> feature/agent/qbg
         },
         "annotations": {
           "type": "object",

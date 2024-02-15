@@ -18,7 +18,11 @@
 package router
 
 import (
+<<<<<<< HEAD
 	"github.com/vdaas/vald/internal/sync/errgroup"
+=======
+	"github.com/vdaas/vald/internal/errgroup"
+>>>>>>> feature/agent/qbg
 	"github.com/vdaas/vald/pkg/agent/core/faiss/handler/rest"
 )
 

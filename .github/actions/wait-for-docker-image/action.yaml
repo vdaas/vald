@@ -19,7 +19,16 @@ inputs:
   images:
     description: "image names"
     required: false
+<<<<<<< HEAD
     default: "vdaas/vald-agent-ngt vdaas/vald-agent-faiss vdaas/vald-agent-sidecar vdaas/vald-discoverer-k8s vdaas/vald-lb-gateway vdaas/vald-filter-gateway vdaas/vald-mirror-gateway vdaas/vald-manager-index"
+=======
+    default: "vdaas/vald-agent-ngt \
+      vdaas/vald-agent-qbg \
+      vdaas/vald-agent-sidecar \
+      vdaas/vald-discoverer-k8s \
+      vdaas/vald-lb-gateway \
+      vdaas/vald-manager-index"
+>>>>>>> feature/agent/qbg
 outputs: {}
 runs:
   using: "composite"

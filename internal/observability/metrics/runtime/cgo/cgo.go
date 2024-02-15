@@ -41,7 +41,11 @@ func (*cgo) View() ([]metrics.View, error) {
 				Description: metricsDescription,
 			},
 			view.Stream{
+<<<<<<< HEAD
 				Aggregation: view.AggregationLastValue{},
+=======
+				Aggregation: meric.AggregationLastValue{},
+>>>>>>> feature/agent/qbg
 			},
 		),
 	}, nil

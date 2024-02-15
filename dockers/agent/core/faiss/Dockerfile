@@ -15,6 +15,7 @@
 # limitations under the License.
 #
 
+<<<<<<< HEAD
 # ARG DISTROLESS_IMAGE=gcr.io/distroless/static
 # ARG DISTROLESS_IMAGE_TAG=nonroot
 ARG MAINTAINER="vdaas.org vald team <vald@vdaas.org>"
@@ -24,6 +25,14 @@ FROM --platform=${TARGETPLATFORM} ubuntu:devel AS builder
 ARG TARGETARCH
 ARG TARGETOS
 ARG GO_VERSION
+=======
+ARG GO_VERSION=latest
+ARG MAINTAINER="vdaas.org vald team <vald@vdaas.org>"
+
+FROM golang:${GO_VERSION} AS golang
+
+FROM ubuntu:devel AS builder
+>>>>>>> feature/agent/qbg
 
 ENV GO111MODULE on
 ENV DEBIAN_FRONTEND noninteractive
@@ -44,6 +53,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
     cmake \
     curl \
+<<<<<<< HEAD
     g++ \
     gcc \
     git \
@@ -66,6 +76,24 @@ RUN --mount=type=cache,target="${GOPATH}/pkg",id="go-build-${TARGETARCH}" \
     --mount=type=cache,target="${HOME}/.cache/go-build",id="go-build-${TARGETARCH}" \
     make GO_VERSION=${GO_VERSION} go/install \
     && make go/download
+=======
+    gcc \
+    git \
+    g++ \
+    intel-mkl \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY --from=golang /usr/local/go $GOROOT
+RUN mkdir $GOPATH
+
+WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}
+
+COPY go.mod .
+COPY go.sum .
+
+RUN go mod download
+>>>>>>> feature/agent/qbg
 
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/internal
 COPY internal .
@@ -75,6 +103,13 @@ COPY apis/grpc .
 
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/pkg/${PKG}
 COPY pkg/${PKG} .
+<<<<<<< HEAD
+=======
+# copy ngt/service/kvs and ngt/service/vqueue
+WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/pkg/agent/core/ngt/service
+COPY pkg/agent/core/ngt/service/kvs ./kvs
+COPY pkg/agent/core/ngt/service/vqueue ./vqueue
+>>>>>>> feature/agent/qbg
 
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/pkg/${PKG_INTERNAL}
 COPY pkg/${PKG_INTERNAL} .
@@ -85,6 +120,7 @@ COPY cmd/${PKG} .
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/versions
 COPY versions .
 
+<<<<<<< HEAD
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}
 RUN update-alternatives --set libblas.so-x86_64-linux-gnu /usr/lib/x86_64-linux-gnu/libmkl_rt.so \
      && make faiss/install
@@ -92,13 +128,31 @@ RUN update-alternatives --set libblas.so-x86_64-linux-gnu /usr/lib/x86_64-linux-
 RUN --mount=type=cache,target="${GOPATH}/pkg",id="go-build-${TARGETARCH}" \
     --mount=type=cache,target="${HOME}/.cache/go-build",id="go-build-${TARGETARCH}" \
     make GOARCH=${TARGETARCH} GOOS=${TARGETOS} REPO=${ORG} NAME=${REPO} cmd/${PKG}/${APP_NAME} \
+=======
+WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/Makefile.d
+COPY Makefile.d .
+
+WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}
+COPY Makefile .
+RUN update-alternatives --set libblas.so-x86_64-linux-gnu /usr/lib/x86_64-linux-gnu/libmkl_rt.so \
+     && make faiss/install
+
+COPY .git .
+
+RUN make REPO=${ORG} NAME=${REPO} cmd/${PKG}/${APP_NAME} \
+>>>>>>> feature/agent/qbg
     && mv "cmd/${PKG}/${APP_NAME}" "/usr/bin/${APP_NAME}"
 
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/cmd/${PKG}
 RUN cp sample.yaml /tmp/config.yaml
 
+<<<<<<< HEAD
 FROM --platform=${TARGETPLATFORM} ubuntu:devel
 LABEL maintainer="${MAINTAINER}"
+=======
+FROM ubuntu:devel
+LABEL maintainer "${MAINTAINER}"
+>>>>>>> feature/agent/qbg
 
 ENV APP_NAME faiss
 
@@ -119,6 +173,9 @@ COPY --from=builder /lib/x86_64-linux-gnu/libpthread.so.0 /lib/x86_64-linux-gnu/
 COPY --from=builder /lib/x86_64-linux-gnu/libmkl_avx2.so /lib/x86_64-linux-gnu/libmkl_avx2.so
 RUN ldconfig -v
 
+<<<<<<< HEAD
 USER nonroot:nonroot
 
+=======
+>>>>>>> feature/agent/qbg
 ENTRYPOINT ["/go/bin/faiss"]

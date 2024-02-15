@@ -51,7 +51,11 @@ func (*indexerMetrics) View() ([]metrics.View, error) {
 				Description: uuidCountMetricsDescription,
 			},
 			view.Stream{
+<<<<<<< HEAD
 				Aggregation: view.AggregationLastValue{},
+=======
+				Aggregation: meric.AggregationLastValue{},
+>>>>>>> feature/agent/qbg
 			},
 		),
 		view.NewView(
@@ -60,7 +64,11 @@ func (*indexerMetrics) View() ([]metrics.View, error) {
 				Description: uncommittedUUIDCountMetricsDescription,
 			},
 			view.Stream{
+<<<<<<< HEAD
 				Aggregation: view.AggregationLastValue{},
+=======
+				Aggregation: meric.AggregationLastValue{},
+>>>>>>> feature/agent/qbg
 			},
 		),
 		view.NewView(
@@ -69,7 +77,11 @@ func (*indexerMetrics) View() ([]metrics.View, error) {
 				Description: isIndexingMetricsDescription,
 			},
 			view.Stream{
+<<<<<<< HEAD
 				Aggregation: view.AggregationLastValue{},
+=======
+				Aggregation: meric.AggregationLastValue{},
+>>>>>>> feature/agent/qbg
 			},
 		),
 	}, nil
@@ -118,5 +130,9 @@ func (im *indexerMetrics) Register(m metrics.Meter) error {
 		uncommittedUUIDCount,
 		isIndexing,
 	)
+<<<<<<< HEAD
 	return err
+=======
+	return nil
+>>>>>>> feature/agent/qbg
 }

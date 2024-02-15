@@ -569,7 +569,11 @@ func (mm *memMetrics) View() ([]metrics.View, error) {
 				Description: m.Desc,
 			},
 			view.Stream{
+<<<<<<< HEAD
 				Aggregation: view.AggregationLastValue{},
+=======
+				Aggregation: meric.AggregationLastValue{},
+>>>>>>> feature/agent/qbg
 			},
 		))
 	}
@@ -584,7 +588,11 @@ func (mm *memMetrics) Register(m metrics.Meter) error {
 
 	instruments := make([]api.Int64Observable, 0, len(mInfo))
 	for _, info := range mInfo {
+<<<<<<< HEAD
 		instrument, err := m.Int64ObservableGauge(
+=======
+		instrument, err := info.Int64ObservableGauge(
+>>>>>>> feature/agent/qbg
 			info.Name,
 			metrics.WithDescription(info.Desc),
 			metrics.WithUnit(info.Unit),
@@ -593,11 +601,15 @@ func (mm *memMetrics) Register(m metrics.Meter) error {
 			instruments = append(instruments, instrument)
 		}
 	}
+<<<<<<< HEAD
 	oinsts := make([]api.Observable, 0, len(instruments))
 	for _, instrument := range instruments {
 		oinsts = append(oinsts, instrument)
 	}
 	_, err := m.RegisterCallback(
+=======
+	_, err = m.RegisterCallback(
+>>>>>>> feature/agent/qbg
 		func(_ context.Context, o api.Observer) error {
 			metrics := getMemstatsMetrics()
 			if m, err := getProcStatusMetrics(mm.pid); err == nil {
@@ -609,7 +621,11 @@ func (mm *memMetrics) Register(m metrics.Meter) error {
 			}
 			return nil
 		},
+<<<<<<< HEAD
 		oinsts...,
+=======
+		instruments...,
+>>>>>>> feature/agent/qbg
 	)
 	return err
 }

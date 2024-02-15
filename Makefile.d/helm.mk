@@ -143,7 +143,10 @@ helm/schema/crd/all: \
 	helm/schema/crd/vald \
 	helm/schema/crd/vald-helm-operator \
 	helm/schema/crd/vald-benchmark-job \
+<<<<<<< HEAD
 	helm/schema/crd/vald/mirror-target \
+=======
+>>>>>>> feature/agent/qbg
 	helm/schema/crd/vald-benchmark-scenario \
 	helm/schema/crd/vald-benchmark-operator
 
@@ -151,34 +154,58 @@ helm/schema/crd/all: \
 ## generate OpenAPI v3 schema for ValdRelease
 helm/schema/crd/vald: \
 	yq/install
+<<<<<<< HEAD
 	$(call gen-vald-crd,vald-helm-operator,valdrelease,vald/values)
+=======
+	@$(call gen-vald-crd,vald-helm-operator,valdrelease,vald/values)
+>>>>>>> feature/agent/qbg
 
 .PHONY: helm/schema/crd/vald-helm-operator
 ## generate OpenAPI v3 schema for ValdHelmOperatorRelease
 helm/schema/crd/vald-helm-operator: \
 	yq/install
+<<<<<<< HEAD
 	$(call gen-vald-crd,vald-helm-operator,valdhelmoperatorrelease,vald-helm-operator/values)
+=======
+	@$(call gen-vald-crd,vald-helm-operator,valdhelmoperatorrelease,vald-helm-operator/values)
+>>>>>>> feature/agent/qbg
 
 .PHONY: helm/schema/crd/vald/mirror-target
 ## generate OpenAPI v3 schema for ValdMirrorTarget
 helm/schema/crd/vald/mirror-target: \
 	yq/install
+<<<<<<< HEAD
 	$(call gen-vald-crd,vald,valdmirrortarget,vald/schemas/mirror-target-values)
+=======
+	@$(call gen-vald-crd,vald,valdmirrortarget,vald/schemas/mirror-target-values)
+>>>>>>> feature/agent/qbg
 
 .PHONY: helm/schema/crd/vald-benchmark-job
 ## generate OpenAPI v3 schema for ValdBenchmarkJobRelease
 helm/schema/crd/vald-benchmark-job: \
 	yq/install
+<<<<<<< HEAD
 	$(call gen-vald-crd,vald-benchmark-operator,valdbenchmarkjob,vald-benchmark-operator/schemas/job-values)
+=======
+	@$(call gen-vald-crd,vald-benchmark-operator,valdbenchmarkjob,vald-benchmark-operator/schemas/job-values)
+>>>>>>> feature/agent/qbg
 
 .PHONY: helm/schema/crd/vald-benchmark-scenario
 ## generate OpenAPI v3 schema for ValdBenchmarkScenarioRelease
 helm/schema/crd/vald-benchmark-scenario: \
 	yq/install
+<<<<<<< HEAD
 	$(call gen-vald-crd,vald-benchmark-operator,valdbenchmarkscenario,vald-benchmark-operator/schemas/scenario-values)
+=======
+	@$(call gen-vald-crd,vald-benchmark-operator,valdbenchmarkscenario,vald-benchmark-operator/schemas/scenario-values)
+>>>>>>> feature/agent/qbg
 
 .PHONY: helm/schema/crd/vald-benchmark-operator
 ## generate OpenAPI v3 schema for ValdBenchmarkOperatorRelease
 helm/schema/crd/vald-benchmark-operator: \
 	yq/install
+<<<<<<< HEAD
 	$(call gen-vald-crd,vald-benchmark-operator,valdbenchmarkoperatorrelease,vald-benchmark-operator/values)
+=======
+	@$(call gen-vald-crd,vald-benchmark-operator,valdbenchmarkoperatorrelease,vald-benchmark-operator/values)
+>>>>>>> feature/agent/qbg

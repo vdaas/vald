@@ -20,6 +20,14 @@ import (
 )
 
 type (
+<<<<<<< HEAD
+=======
+	// AsynchronousInstrument is type alias of metric.Asynchronous.
+	AsynchronousInstrument = metric.Asynchronous
+	// SynchronousInstrument is type alias of metric.Synchronous.
+	SynchronousInstrument = metric.Synchronous
+
+>>>>>>> feature/agent/qbg
 	View = view.View
 
 	// Meter is type alias of metrics.Meter.
@@ -47,8 +55,11 @@ var (
 	WithUnit = metric.WithUnit
 	// WithDescription returns an metric.WithDescription option.
 	WithDescription = metric.WithDescription
+<<<<<<< HEAD
 	// WithAttributes returns an metric.WithAttributes option.
 	WithAttributes = metric.WithAttributes
+=======
+>>>>>>> feature/agent/qbg
 
 	RoughMillisecondsDistribution = []float64{
 		1,
@@ -139,5 +150,9 @@ var (
 
 // GetMeter returns the Meter object to record metrics.
 func GetMeter() Meter {
+<<<<<<< HEAD
 	return otel.GetMeterProvider().Meter(ValdOrg)
+=======
+	return otel.MeterProvider().Meter(ValdOrg)
+>>>>>>> feature/agent/qbg
 }

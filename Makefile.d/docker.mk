@@ -17,6 +17,10 @@
 ## build all docker images
 docker/build: \
 	docker/build/agent-ngt \
+<<<<<<< HEAD
+=======
+	docker/build/agent-qbg \
+>>>>>>> feature/agent/qbg
 	docker/build/agent-faiss \
 	docker/build/agent-sidecar \
 	docker/build/discoverer-k8s \
@@ -96,6 +100,38 @@ docker/build/agent-faiss:
 	@make DOCKERFILE="$(ROOTDIR)/dockers/agent/core/faiss/Dockerfile" \
 		IMAGE=$(AGENT_FAISS_IMAGE) \
 		docker/build/image
+
+.PHONY: docker/name/agent-qbg
+docker/name/agent-qbg:
+	@echo "$(ORG)/$(AGENT_IMAGE)"
+
+.PHONY: docker/build/agent-qbg
+## build agent-qbg image
+docker/build/agent-qbg:
+	$(DOCKER) build \
+	    $(DOCKER_OPTS) \
+	    -f dockers/agent/core/qbg/Dockerfile \
+	    -t $(ORG)/$(AGENT_IMAGE):$(TAG) . \
+	    --build-arg GO_VERSION=$(GO_VERSION) \
+	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
+	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
+	    --build-arg MAINTAINER=$(MAINTAINER)
+
+.PHONY: docker/name/agent-faiss
+docker/name/agent-faiss:
+	@echo "$(ORG)/$(AGENT_IMAGE)"
+
+.PHONY: docker/build/agent-faiss
+## build agent-faiss image
+docker/build/agent-faiss:
+	$(DOCKER) build \
+	    $(DOCKER_OPTS) \
+	    -f dockers/agent/core/faiss/Dockerfile \
+	    -t $(ORG)/vald-agent-faiss:$(TAG) . \
+	    --build-arg GO_VERSION=$(GO_VERSION) \
+	    --build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
+	    --build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
+	    --build-arg MAINTAINER=$(MAINTAINER)
 
 .PHONY: docker/name/agent-sidecar
 docker/name/agent-sidecar:

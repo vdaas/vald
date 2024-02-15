@@ -21,7 +21,11 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"go.opentelemetry.io/otel/attribute"
 	ocodes "go.opentelemetry.io/otel/codes"
+<<<<<<< HEAD
 	semconv "go.opentelemetry.io/otel/semconv/v1.24.0"
+=======
+	semconv "go.opentelemetry.io/otel/semconv/v1.20.0"
+>>>>>>> feature/agent/qbg
 )
 
 type Attributes = []attribute.KeyValue

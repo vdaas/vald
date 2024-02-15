@@ -22,6 +22,10 @@ import (
 	agent "github.com/vdaas/vald/apis/grpc/v1/agent/core"
 	vald "github.com/vdaas/vald/apis/grpc/v1/vald"
 	iconf "github.com/vdaas/vald/internal/config"
+<<<<<<< HEAD
+=======
+	"github.com/vdaas/vald/internal/errgroup"
+>>>>>>> feature/agent/qbg
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/observability"
 	faissmetrics "github.com/vdaas/vald/internal/observability/metrics/agent/core/faiss"
@@ -30,7 +34,10 @@ import (
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/servers/server"
 	"github.com/vdaas/vald/internal/servers/starter"
+<<<<<<< HEAD
 	"github.com/vdaas/vald/internal/sync/errgroup"
+=======
+>>>>>>> feature/agent/qbg
 	"github.com/vdaas/vald/pkg/agent/core/faiss/config"
 	handler "github.com/vdaas/vald/pkg/agent/core/faiss/handler/grpc"
 	"github.com/vdaas/vald/pkg/agent/core/faiss/handler/rest"

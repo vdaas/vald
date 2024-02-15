@@ -48,7 +48,11 @@ func (*breakerMetrics) View() ([]metrics.View, error) {
 				Description: metricsDescription,
 			},
 			view.Stream{
+<<<<<<< HEAD
 				Aggregation: view.AggregationLastValue{},
+=======
+				Aggregation: meric.AggregationLastValue{},
+>>>>>>> feature/agent/qbg
 			},
 		),
 	}, nil
@@ -72,9 +76,14 @@ func (bm *breakerMetrics) Register(m metrics.Meter) error {
 					if len(sts) != 0 {
 						for st, cnt := range sts {
 							o.ObserveInt64(breakerState, cnt,
+<<<<<<< HEAD
 								api.WithAttributes(
 									attribute.String(bm.breakerNameKey, name),
 									attribute.String(bm.stateKey, st.String())))
+=======
+								attribute.String(bm.breakerNameKey, name),
+								attribute.String(bm.stateKey, st.String()))
+>>>>>>> feature/agent/qbg
 						}
 					}
 				}

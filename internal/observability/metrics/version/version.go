@@ -84,7 +84,11 @@ func (*version) View() ([]metrics.View, error) {
 				Description: description,
 			},
 			view.Stream{
+<<<<<<< HEAD
 				Aggregation: view.AggregationLastValue{},
+=======
+				Aggregation: meric.AggregationLastValue{},
+>>>>>>> feature/agent/qbg
 			},
 		),
 	}, nil
@@ -105,7 +109,11 @@ func (v *version) Register(m metrics.Meter) (err error) {
 			for key, val := range v.kvs {
 				attrs = append(attrs, attribute.String(key, val))
 			}
+<<<<<<< HEAD
 			o.ObserveInt64(info, 1, api.WithAttributes(attrs...))
+=======
+			o.ObserveInt64(info, 1, attrs...)
+>>>>>>> feature/agent/qbg
 			return nil
 		}, info,
 	)

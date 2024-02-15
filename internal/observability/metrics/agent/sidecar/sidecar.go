@@ -66,7 +66,11 @@ func (*sidecarMetrics) View() ([]metrics.View, error) {
 				Description: uploadTotalMetricsDescription,
 			},
 			view.Stream{
+<<<<<<< HEAD
 				Aggregation: view.AggregationSum{},
+=======
+				Aggregation: meric.AggregationSum{},
+>>>>>>> feature/agent/qbg
 			},
 		),
 		view.NewView(
@@ -75,7 +79,11 @@ func (*sidecarMetrics) View() ([]metrics.View, error) {
 				Description: uploadBytesMetricsDescription,
 			},
 			view.Stream{
+<<<<<<< HEAD
 				Aggregation: view.AggregationLastValue{},
+=======
+				Aggregation: meric.AggregationLastValue{},
+>>>>>>> feature/agent/qbg
 			},
 		),
 		view.NewView(
@@ -84,7 +92,11 @@ func (*sidecarMetrics) View() ([]metrics.View, error) {
 				Description: uploadLatencyMetricsDescription,
 			},
 			view.Stream{
+<<<<<<< HEAD
 				Aggregation: view.AggregationExplicitBucketHistogram{
+=======
+				Aggregation: meric.AggregationExplicitBucketHistogram{
+>>>>>>> feature/agent/qbg
 					Boundaries: metrics.RoughMillisecondsDistribution,
 				},
 			},
@@ -133,10 +145,17 @@ func (sm *sidecarMetrics) Register(m metrics.Meter) error {
 				attribute.String(sm.filenameKey, sm.info.Filename),
 			)
 
+<<<<<<< HEAD
 			o.ObserveInt64(uploadTotal, 1, attrs)
 			o.ObserveInt64(uploadBytes, sm.info.Bytes, attrs)
 			latencyMillis := float64(sm.info.EndTime.Sub(sm.info.StartTime)) / float64(time.Millisecond)
 			o.ObserveFloat64(uploadLatency, latencyMillis, attrs)
+=======
+			o.ObserveInt64(uploadTotal, 1, attrs...)
+			o.ObserveInt64(uploadBytes, sm.info.Bytes, attrs...)
+			latencyMillis := float64(sm.info.EndTime.Sub(sm.info.StartTime)) / float64(time.Millisecond)
+			o.ObserveFloat64(uploadLatency, latencyMillis, attrs...)
+>>>>>>> feature/agent/qbg
 			sm.info = nil
 
 			return nil

@@ -28,6 +28,10 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc/errdetails"
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/observability/trace"
+<<<<<<< HEAD
+=======
+	"github.com/vdaas/vald/pkg/agent/core/faiss/model"
+>>>>>>> feature/agent/qbg
 	"go.opentelemetry.io/otel/attribute"
 )
 
@@ -65,6 +69,7 @@ func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *
 		}
 		return nil, err
 	}
+<<<<<<< HEAD
 	res, err = s.faiss.Search(
 		req.GetConfig().GetNum(),
 		1,
@@ -72,6 +77,13 @@ func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *
 	if err == nil && res == nil {
 		return nil, nil
 	}
+=======
+	res, err = toSearchResponse(
+		s.faiss.Search(
+			req.GetConfig().GetNum(),
+			1,
+			req.GetVector()))
+>>>>>>> feature/agent/qbg
 	if err != nil || res == nil {
 		var attrs []attribute.KeyValue
 		switch {
@@ -177,3 +189,24 @@ func (s *server) MultiSearch(ctx context.Context, reqs *payload.Search_MultiRequ
 func (s *server) MultiSearchByID(ctx context.Context, reqs *payload.Search_MultiIDRequest) (res *payload.Search_Responses, errs error) {
 	return s.UnimplementedValdServer.UnimplementedSearchServer.MultiSearchByID(ctx, reqs)
 }
+<<<<<<< HEAD
+=======
+
+func toSearchResponse(dists []model.Distance, err error) (res *payload.Search_Response, rerr error) {
+	if err != nil {
+		return nil, err
+	}
+	if len(dists) == 0 {
+		return nil, errors.ErrEmptySearchResult
+	}
+	res = new(payload.Search_Response)
+	res.Results = make([]*payload.Object_Distance, 0, len(dists))
+	for _, dist := range dists {
+		res.Results = append(res.GetResults(), &payload.Object_Distance{
+			Id:       dist.ID,
+			Distance: dist.Distance,
+		})
+	}
+	return res, nil
+}
+>>>>>>> feature/agent/qbg

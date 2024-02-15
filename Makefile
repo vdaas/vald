@@ -65,8 +65,14 @@ TEST_NOT_IMPL_PLACEHOLDER = NOT IMPLEMENTED BELOW
 
 TEMP_DIR := $(eval TEMP_DIR := $(shell mktemp -d))$(TEMP_DIR)
 
+<<<<<<< HEAD
 BUF_VERSION               := $(eval BUF_VERSION := $(shell cat versions/BUF_VERSION))$(BUF_VERSION)
 NGT_VERSION 		  := $(eval NGT_VERSION := $(shell cat versions/NGT_VERSION))$(NGT_VERSION)
+=======
+NGT_REPO = github.com/yahoojapan/NGT
+
+BUF_VERSION               := $(eval BUF_VERSION := $(shell cat versions/BUF_VERSION))$(BUF_VERSION)
+>>>>>>> feature/agent/qbg
 FAISS_VERSION             := $(eval FAISS_VERSION := $(shell cat versions/FAISS_VERSION))$(FAISS_VERSION)
 GOLANGCILINT_VERSION      := $(eval GOLANGCILINT_VERSION := $(shell cat versions/GOLANGCILINT_VERSION))$(GOLANGCILINT_VERSION)
 HELM_DOCS_VERSION         := $(eval HELM_DOCS_VERSION := $(shell cat versions/HELM_DOCS_VERSION))$(HELM_DOCS_VERSION)
@@ -215,6 +221,10 @@ GO_SOURCES = $(eval GO_SOURCES := $(shell find \
 		$(ROOTDIR)/pkg \
 		-not -path '$(ROOTDIR)/cmd/cli/*' \
 		-not -path '$(ROOTDIR)/internal/core/algorithm/ngt/*' \
+<<<<<<< HEAD
+=======
+		-not -path '$(ROOTDIR)/internal/core/algorithm/qbg/*' \
+>>>>>>> feature/agent/qbg
 		-not -path '$(ROOTDIR)/internal/core/algorithm/faiss/*' \
 		-not -path '$(ROOTDIR)/internal/compress/gob/*' \
 		-not -path '$(ROOTDIR)/internal/compress/gzip/*' \
@@ -246,6 +256,10 @@ GO_OPTION_SOURCES = $(eval GO_OPTION_SOURCES := $(shell find \
 		$(ROOTDIR)/pkg \
 		-not -path '$(ROOTDIR)/cmd/cli/*' \
 		-not -path '$(ROOTDIR)/internal/core/algorithm/ngt/*' \
+<<<<<<< HEAD
+=======
+		-not -path '$(ROOTDIR)/internal/core/algorithm/qbg/*' \
+>>>>>>> feature/agent/qbg
 		-not -path '$(ROOTDIR)/internal/core/algorithm/faiss/*' \
 		-not -path '$(ROOTDIR)/internal/compress/gob/*' \
 		-not -path '$(ROOTDIR)/internal/compress/gzip/*' \
@@ -437,10 +451,17 @@ format/go: \
 	gofumpt/install \
 	strictgoimports/install \
 	goimports/install
+<<<<<<< HEAD
 	find $(ROOTDIR)/ -type d -name .git -prune -o -type f -regex '.*[^\.pb]\.go' -print | xargs -P$(CORES) $(GOBIN)/golines -w -m $(GOLINES_MAX_WIDTH)
 	find $(ROOTDIR)/ -type d -name .git -prune -o -type f -regex '.*[^\.pb]\.go' -print | xargs -P$(CORES) $(GOBIN)/gofumpt -w
 	find $(ROOTDIR)/ -type d -name .git -prune -o -type f -regex '.*[^\.pb]\.go' -print | xargs -P$(CORES) $(GOBIN)/strictgoimports -w
 	find $(ROOTDIR)/ -type d -name .git -prune -o -type f -regex '.*\.go' -print | xargs -P$(CORES) $(GOBIN)/goimports -w
+=======
+	find $(ROOTDIR)/ -type d -name .git -prune -o -type f -regex '.*[^\.pb]\.go' -print | xargs $(GOBIN)/golines -w -m $(GOLINES_MAX_WIDTH)
+	find $(ROOTDIR)/ -type d -name .git -prune -o -type f -regex '.*[^\.pb]\.go' -print | xargs $(GOBIN)/gofumpt -w
+	find $(ROOTDIR)/ -type d -name .git -prune -o -type f -regex '.*[^\.pb]\.go' -print | xargs $(GOBIN)/strictgoimports -w
+	find $(ROOTDIR)/ -type d -name .git -prune -o -type f -regex '.*\.go' -print | xargs $(GOBIN)/goimports -w
+>>>>>>> feature/agent/qbg
 
 .PHONY: format/go/test
 ## run golines, gofumpt, goimports for go test files
@@ -500,8 +521,12 @@ deps/install: \
 	goimports/install \
 	prettier/install \
 	go/deps \
+<<<<<<< HEAD
 	go/example/deps \
 	rust/deps
+=======
+	go/example/deps
+>>>>>>> feature/agent/qbg
 
 .PHONY: version
 ## print vald version
@@ -569,11 +594,17 @@ faiss/install: /usr/local/lib/libfaiss.so
 	curl -LO https://github.com/facebookresearch/faiss/archive/v$(FAISS_VERSION).tar.gz
 	tar zxf v$(FAISS_VERSION).tar.gz -C $(TEMP_DIR)/
 	cd $(TEMP_DIR)/faiss-$(FAISS_VERSION) && \
+<<<<<<< HEAD
 		cmake -DFAISS_ENABLE_GPU=OFF -DFAISS_ENABLE_PYTHON=OFF -DBUILD_TESTING=OFF -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON -B build . && \
 		make -C build -j faiss && \
 		make -C build install
 	rm -rf v$(FAISS_VERSION).tar.gz
 	rm -rf $(TEMP_DIR)/faiss-$(FAISS_VERSION)
+=======
+		cmake -DFAISS_ENABLE_GPU=OFF -DFAISS_ENABLE_PYTHON=OFF -DBUILD_TESTING=OFF -DBUILD_SHARED_LIBS=ON -B build . && \
+		make -C build -j faiss && \
+		make -C build install
+>>>>>>> feature/agent/qbg
 	ldconfig
 
 .PHONY: lint

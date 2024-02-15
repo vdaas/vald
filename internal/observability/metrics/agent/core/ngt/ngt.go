@@ -69,7 +69,11 @@ func (n *ngtMetrics) View() ([]metrics.View, error) {
 				Description: indexCountMetricsDescription,
 			},
 			view.Stream{
+<<<<<<< HEAD
 				Aggregation: view.AggregationLastValue{},
+=======
+				Aggregation: meric.AggregationLastValue{},
+>>>>>>> feature/agent/qbg
 			},
 		),
 		view.NewView(
@@ -78,7 +82,11 @@ func (n *ngtMetrics) View() ([]metrics.View, error) {
 				Description: uncommittedIndexCountMetricsDescription,
 			},
 			view.Stream{
+<<<<<<< HEAD
 				Aggregation: view.AggregationLastValue{},
+=======
+				Aggregation: meric.AggregationLastValue{},
+>>>>>>> feature/agent/qbg
 			},
 		),
 		view.NewView(
@@ -87,7 +95,11 @@ func (n *ngtMetrics) View() ([]metrics.View, error) {
 				Description: insertVQueueCountMetricsDescription,
 			},
 			view.Stream{
+<<<<<<< HEAD
 				Aggregation: view.AggregationLastValue{},
+=======
+				Aggregation: meric.AggregationLastValue{},
+>>>>>>> feature/agent/qbg
 			},
 		),
 		view.NewView(
@@ -96,7 +108,11 @@ func (n *ngtMetrics) View() ([]metrics.View, error) {
 				Description: deleteVQueueCountMetricsDescription,
 			},
 			view.Stream{
+<<<<<<< HEAD
 				Aggregation: view.AggregationLastValue{},
+=======
+				Aggregation: meric.AggregationLastValue{},
+>>>>>>> feature/agent/qbg
 			},
 		),
 		view.NewView(
@@ -105,7 +121,11 @@ func (n *ngtMetrics) View() ([]metrics.View, error) {
 				Description: completedCreateIndexTotalMetricsDescription,
 			},
 			view.Stream{
+<<<<<<< HEAD
 				Aggregation: view.AggregationLastValue{},
+=======
+				Aggregation: meric.AggregationLastValue{},
+>>>>>>> feature/agent/qbg
 			},
 		),
 		view.NewView(
@@ -114,7 +134,11 @@ func (n *ngtMetrics) View() ([]metrics.View, error) {
 				Description: executedProactiveGCTotalMetricsDescription,
 			},
 			view.Stream{
+<<<<<<< HEAD
 				Aggregation: view.AggregationLastValue{},
+=======
+				Aggregation: meric.AggregationLastValue{},
+>>>>>>> feature/agent/qbg
 			},
 		),
 		view.NewView(
@@ -123,7 +147,11 @@ func (n *ngtMetrics) View() ([]metrics.View, error) {
 				Description: isIndexingMetricsDescription,
 			},
 			view.Stream{
+<<<<<<< HEAD
 				Aggregation: view.AggregationLastValue{},
+=======
+				Aggregation: meric.AggregationLastValue{},
+>>>>>>> feature/agent/qbg
 			},
 		),
 		view.NewView(
@@ -132,6 +160,7 @@ func (n *ngtMetrics) View() ([]metrics.View, error) {
 				Description: isSavingMetricsDescription,
 			},
 			view.Stream{
+<<<<<<< HEAD
 				Aggregation: view.AggregationLastValue{},
 			},
 		),
@@ -142,6 +171,9 @@ func (n *ngtMetrics) View() ([]metrics.View, error) {
 			},
 			view.Stream{
 				Aggregation: view.AggregationLastValue{},
+=======
+				Aggregation: meric.AggregationLastValue{},
+>>>>>>> feature/agent/qbg
 			},
 		),
 	}, nil
@@ -220,6 +252,7 @@ func (n *ngtMetrics) Register(m metrics.Meter) error {
 		return err
 	}
 
+<<<<<<< HEAD
 	brokenIndexCount, err := m.Int64ObservableGauge(
 		brokenIndexStoreCountMetricsName,
 		metrics.WithDescription(brokenIndexStoreCountMetricsDescription),
@@ -229,6 +262,8 @@ func (n *ngtMetrics) Register(m metrics.Meter) error {
 		return err
 	}
 
+=======
+>>>>>>> feature/agent/qbg
 	_, err = m.RegisterCallback(
 		func(_ context.Context, o api.Observer) error {
 			var indexing int64
@@ -247,7 +282,10 @@ func (n *ngtMetrics) Register(m metrics.Meter) error {
 			o.ObserveInt64(executedProactiveGCTotal, int64(n.ngt.NumberOfProactiveGCExecution()))
 			o.ObserveInt64(isIndexing, int64(indexing))
 			o.ObserveInt64(isSaving, int64(saving))
+<<<<<<< HEAD
 			o.ObserveInt64(brokenIndexCount, int64(n.ngt.BrokenIndexCount()))
+=======
+>>>>>>> feature/agent/qbg
 			return nil
 		},
 		indexCount,
@@ -258,7 +296,10 @@ func (n *ngtMetrics) Register(m metrics.Meter) error {
 		executedProactiveGCTotal,
 		isIndexing,
 		isSaving,
+<<<<<<< HEAD
 		brokenIndexCount,
+=======
+>>>>>>> feature/agent/qbg
 	)
 	return err
 }

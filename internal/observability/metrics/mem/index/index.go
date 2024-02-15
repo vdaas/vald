@@ -81,7 +81,11 @@ func (*memoryMetrics) View() ([]metrics.View, error) {
 				Description: allocMetricsDescription,
 			},
 			view.Stream{
+<<<<<<< HEAD
 				Aggregation: view.AggregationLastValue{},
+=======
+				Aggregation: meric.AggregationLastValue{},
+>>>>>>> feature/agent/qbg
 			},
 		),
 		view.NewView(
@@ -90,7 +94,11 @@ func (*memoryMetrics) View() ([]metrics.View, error) {
 				Description: totalAllocMetricsDescription,
 			},
 			view.Stream{
+<<<<<<< HEAD
 				Aggregation: view.AggregationLastValue{},
+=======
+				Aggregation: meric.AggregationLastValue{},
+>>>>>>> feature/agent/qbg
 			},
 		),
 		view.NewView(
@@ -99,7 +107,11 @@ func (*memoryMetrics) View() ([]metrics.View, error) {
 				Description: sysMetricsDescription,
 			},
 			view.Stream{
+<<<<<<< HEAD
 				Aggregation: view.AggregationLastValue{},
+=======
+				Aggregation: meric.AggregationLastValue{},
+>>>>>>> feature/agent/qbg
 			},
 		),
 		view.NewView(
@@ -108,7 +120,11 @@ func (*memoryMetrics) View() ([]metrics.View, error) {
 				Description: mallocsMetricsDescription,
 			},
 			view.Stream{
+<<<<<<< HEAD
 				Aggregation: view.AggregationLastValue{},
+=======
+				Aggregation: meric.AggregationLastValue{},
+>>>>>>> feature/agent/qbg
 			},
 		),
 		view.NewView(
@@ -117,7 +133,11 @@ func (*memoryMetrics) View() ([]metrics.View, error) {
 				Description: freesMetricsDescription,
 			},
 			view.Stream{
+<<<<<<< HEAD
 				Aggregation: view.AggregationLastValue{},
+=======
+				Aggregation: meric.AggregationLastValue{},
+>>>>>>> feature/agent/qbg
 			},
 		),
 		view.NewView(
@@ -126,7 +146,11 @@ func (*memoryMetrics) View() ([]metrics.View, error) {
 				Description: heapAllocMetricsDescription,
 			},
 			view.Stream{
+<<<<<<< HEAD
 				Aggregation: view.AggregationLastValue{},
+=======
+				Aggregation: meric.AggregationLastValue{},
+>>>>>>> feature/agent/qbg
 			},
 		),
 		view.NewView(
@@ -135,7 +159,11 @@ func (*memoryMetrics) View() ([]metrics.View, error) {
 				Description: heapSysMetricsDescription,
 			},
 			view.Stream{
+<<<<<<< HEAD
 				Aggregation: view.AggregationLastValue{},
+=======
+				Aggregation: meric.AggregationLastValue{},
+>>>>>>> feature/agent/qbg
 			},
 		),
 		view.NewView(
@@ -144,7 +172,11 @@ func (*memoryMetrics) View() ([]metrics.View, error) {
 				Description: heapIdleMetricsDescription,
 			},
 			view.Stream{
+<<<<<<< HEAD
 				Aggregation: view.AggregationLastValue{},
+=======
+				Aggregation: meric.AggregationLastValue{},
+>>>>>>> feature/agent/qbg
 			},
 		),
 		view.NewView(
@@ -153,7 +185,11 @@ func (*memoryMetrics) View() ([]metrics.View, error) {
 				Description: heapInuseMetricsDescription,
 			},
 			view.Stream{
+<<<<<<< HEAD
 				Aggregation: view.AggregationLastValue{},
+=======
+				Aggregation: meric.AggregationLastValue{},
+>>>>>>> feature/agent/qbg
 			},
 		),
 		view.NewView(
@@ -162,7 +198,11 @@ func (*memoryMetrics) View() ([]metrics.View, error) {
 				Description: heapReleasedMetricsDescription,
 			},
 			view.Stream{
+<<<<<<< HEAD
 				Aggregation: view.AggregationLastValue{},
+=======
+				Aggregation: meric.AggregationLastValue{},
+>>>>>>> feature/agent/qbg
 			},
 		),
 		view.NewView(
@@ -171,7 +211,11 @@ func (*memoryMetrics) View() ([]metrics.View, error) {
 				Description: stackInuseMetricsDescription,
 			},
 			view.Stream{
+<<<<<<< HEAD
 				Aggregation: view.AggregationLastValue{},
+=======
+				Aggregation: meric.AggregationLastValue{},
+>>>>>>> feature/agent/qbg
 			},
 		),
 		view.NewView(
@@ -180,7 +224,11 @@ func (*memoryMetrics) View() ([]metrics.View, error) {
 				Description: stackSysMetricsDescription,
 			},
 			view.Stream{
+<<<<<<< HEAD
 				Aggregation: view.AggregationLastValue{},
+=======
+				Aggregation: meric.AggregationLastValue{},
+>>>>>>> feature/agent/qbg
 			},
 		),
 		view.NewView(
@@ -189,7 +237,11 @@ func (*memoryMetrics) View() ([]metrics.View, error) {
 				Description: pauseTotalMsMetricsDescription,
 			},
 			view.Stream{
+<<<<<<< HEAD
 				Aggregation: view.AggregationLastValue{},
+=======
+				Aggregation: meric.AggregationLastValue{},
+>>>>>>> feature/agent/qbg
 			},
 		),
 		view.NewView(
@@ -198,13 +250,20 @@ func (*memoryMetrics) View() ([]metrics.View, error) {
 				Description: numGCMetricsDescription,
 			},
 			view.Stream{
+<<<<<<< HEAD
 				Aggregation: view.AggregationLastValue{},
+=======
+				Aggregation: meric.AggregationLastValue{},
+>>>>>>> feature/agent/qbg
 			},
 		),
 	}, nil
 }
 
+<<<<<<< HEAD
 // skipcq: GO-R1005
+=======
+>>>>>>> feature/agent/qbg
 func (*memoryMetrics) Register(m metrics.Meter) error {
 	alloc, err := m.Int64ObservableGauge(
 		allocMetricsName,

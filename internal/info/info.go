@@ -361,7 +361,11 @@ func (i *info) prepare() {
 		default:
 			i.detail.CGOEnabled = cgoUnknown
 		}
+<<<<<<< HEAD
 		if i.detail.AlgorithmInfo == "" && AlgorithmInfo != "" {
+=======
+		if len(i.detail.AlgorithmInfo) == 0 && len(AlgorithmInfo) != 0 {
+>>>>>>> feature/agent/qbg
 			i.detail.AlgorithmInfo = AlgorithmInfo
 		}
 		if len(i.detail.BuildCPUInfoFlags) == 0 && BuildCPUInfoFlags != "" {

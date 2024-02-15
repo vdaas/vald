@@ -98,6 +98,7 @@ linters:
     # - gocognit
     # - gocritic
     # - gocyclo
+    # - gocyclo
     # - godox
     # - goerr113
     # - gofmt
@@ -122,7 +123,10 @@ linters:
     # - whitespace
     # - wrapcheck
     # - wslissues:
+<<<<<<< HEAD
 issues:
+=======
+>>>>>>> feature/agent/qbg
   exclude-use-default: false
   exclude-rules:
     - path: _test\.go

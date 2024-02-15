@@ -46,7 +46,11 @@ func (*backoffMetrics) View() ([]metrics.View, error) {
 				Description: metricsDescription,
 			},
 			view.Stream{
+<<<<<<< HEAD
 				Aggregation: view.AggregationLastValue{},
+=======
+				Aggregation: meric.AggregationLastValue{},
+>>>>>>> feature/agent/qbg
 			},
 		),
 	}, nil
@@ -68,7 +72,11 @@ func (bm *backoffMetrics) Register(m metrics.Meter) (err error) {
 				return nil
 			}
 			for name, cnt := range ms {
+<<<<<<< HEAD
 				o.ObserveInt64(retryCount, cnt, api.WithAttributes(attribute.String(bm.backoffNameKey, name)))
+=======
+				o.ObserveInt64(retryCount, cnt, attribute.String(bm.backoffNameKey, name))
+>>>>>>> feature/agent/qbg
 			}
 			return nil
 		}, retryCount,

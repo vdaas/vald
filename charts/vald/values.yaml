@@ -1775,9 +1775,15 @@ agent:
   # @schema {"name": "agent.version", "alias": "version"}
   # agent.version -- version of agent config
   version: v0.0.0
+<<<<<<< HEAD
   # @schema {"name": "agent.algorithm", "type": "string", "enum": ["ngt", "faiss"]}
   # agent.algorithm -- agent algorithm type.
   # it should be `ngt` or `faiss`.
+=======
+  # @schema {"name": "agent.algorithm", "type": "string", "enum": ["ngt", "qbg", "faiss"]}
+  # agent.algorithm -- agent algorithm type.
+  # it should be `ngt` or `qbg` or `faiss`.
+>>>>>>> feature/agent/qbg
   algorithm: ngt
   # @schema {"name": "agent.time_zone", "type": "string"}
   # agent.time_zone -- Time zone

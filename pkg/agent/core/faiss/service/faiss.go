@@ -26,6 +26,7 @@ import (
 	"path/filepath"
 	"reflect"
 	"runtime"
+<<<<<<< HEAD
 	"sync/atomic"
 	"time"
 
@@ -33,17 +34,33 @@ import (
 	"github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/core/algorithm"
 	core "github.com/vdaas/vald/internal/core/algorithm/faiss"
+=======
+	"sync"
+	"sync/atomic"
+	"time"
+
+	"github.com/vdaas/vald/internal/config"
+	core "github.com/vdaas/vald/internal/core/algorithm/faiss"
+	"github.com/vdaas/vald/internal/errgroup"
+>>>>>>> feature/agent/qbg
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/file"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/strings"
+<<<<<<< HEAD
 	"github.com/vdaas/vald/internal/sync"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/pkg/agent/internal/kvs"
 	"github.com/vdaas/vald/pkg/agent/internal/metadata"
 	"github.com/vdaas/vald/pkg/agent/internal/vqueue"
+=======
+	"github.com/vdaas/vald/pkg/agent/core/faiss/model"
+	"github.com/vdaas/vald/pkg/agent/core/ngt/service/kvs"
+	"github.com/vdaas/vald/pkg/agent/core/ngt/service/vqueue"
+	"github.com/vdaas/vald/pkg/agent/internal/metadata"
+>>>>>>> feature/agent/qbg
 )
 
 type (
@@ -57,7 +74,11 @@ type (
 		CreateIndex(ctx context.Context) error
 		SaveIndex(ctx context.Context) error
 		CreateAndSaveIndex(ctx context.Context) error
+<<<<<<< HEAD
 		Search(k, nq uint32, xq []float32) (*payload.Search_Response, error)
+=======
+		Search(k, nq uint32, xq []float32) ([]model.Distance, error)
+>>>>>>> feature/agent/qbg
 		Delete(uuid string) error
 		DeleteWithTime(uuid string, t int64) error
 		Exists(uuid string) (uint32, bool)
@@ -1122,7 +1143,11 @@ func (f *faiss) CreateAndSaveIndex(ctx context.Context) error {
 	return f.SaveIndex(ctx)
 }
 
+<<<<<<< HEAD
 func (f *faiss) Search(k, nq uint32, xq []float32) (res *payload.Search_Response, err error) {
+=======
+func (f *faiss) Search(k, nq uint32, xq []float32) ([]model.Distance, error) {
+>>>>>>> feature/agent/qbg
 	if f.IsIndexing() {
 		return nil, errors.ErrCreateIndexingIsInProgress
 	}
@@ -1132,6 +1157,7 @@ func (f *faiss) Search(k, nq uint32, xq []float32) (res *payload.Search_Response
 		if f.IsIndexing() {
 			return nil, errors.ErrCreateIndexingIsInProgress
 		}
+<<<<<<< HEAD
 		if errors.Is(err, errors.ErrSearchResultEmptyButNoDataStored) && f.Len() == 0 {
 			return nil, nil
 		}
@@ -1140,6 +1166,36 @@ func (f *faiss) Search(k, nq uint32, xq []float32) (res *payload.Search_Response
 	}
 
 	return f.toSearchResponse(sr)
+=======
+
+		log.Errorf("cgo error detected: faiss api returned error %v", err)
+		return nil, err
+	}
+
+	if len(sr) == 0 {
+		return nil, errors.ErrEmptySearchResult
+	}
+
+	ds := make([]model.Distance, 0, len(sr))
+	for _, d := range sr {
+		if err = d.Error; d.ID == 0 && err != nil {
+			log.Warnf("an error occurred while searching: %s", err)
+			continue
+		}
+
+		key, _, ok := f.kvs.GetInverse(d.ID)
+		if ok {
+			ds = append(ds, model.Distance{
+				ID:       key,
+				Distance: d.Distance,
+			})
+		} else {
+			log.Warn("not found", d.ID, d.Distance)
+		}
+	}
+
+	return ds, nil
+>>>>>>> feature/agent/qbg
 }
 
 func (f *faiss) Delete(uuid string) (err error) {
@@ -1269,6 +1325,7 @@ func (f *faiss) Close(ctx context.Context) error {
 
 	return nil
 }
+<<<<<<< HEAD
 
 func (f *faiss) toSearchResponse(sr []algorithm.SearchResult) (res *payload.Search_Response, err error) {
 	if len(sr) == 0 {
@@ -1304,3 +1361,5 @@ func (f *faiss) toSearchResponse(sr []algorithm.SearchResult) (res *payload.Sear
 	}
 	return res, nil
 }
+=======
+>>>>>>> feature/agent/qbg

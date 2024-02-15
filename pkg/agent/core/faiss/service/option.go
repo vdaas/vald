@@ -22,10 +22,17 @@ import (
 	"os"
 	"time"
 
+<<<<<<< HEAD
 	"github.com/vdaas/vald/internal/file"
 	"github.com/vdaas/vald/internal/rand"
 	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/sync/errgroup"
+=======
+	"github.com/vdaas/vald/internal/errgroup"
+	"github.com/vdaas/vald/internal/file"
+	"github.com/vdaas/vald/internal/rand"
+	"github.com/vdaas/vald/internal/strings"
+>>>>>>> feature/agent/qbg
 	"github.com/vdaas/vald/internal/timeutil"
 )
 

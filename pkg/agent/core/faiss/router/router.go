@@ -20,9 +20,15 @@ package router
 import (
 	"net/http"
 
+<<<<<<< HEAD
 	"github.com/vdaas/vald/internal/net/http/middleware"
 	"github.com/vdaas/vald/internal/net/http/routing"
 	"github.com/vdaas/vald/internal/sync/errgroup"
+=======
+	"github.com/vdaas/vald/internal/errgroup"
+	"github.com/vdaas/vald/internal/net/http/middleware"
+	"github.com/vdaas/vald/internal/net/http/routing"
+>>>>>>> feature/agent/qbg
 	"github.com/vdaas/vald/pkg/agent/core/faiss/handler/rest"
 )
 

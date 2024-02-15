@@ -523,6 +523,16 @@ telepresence/swap/agent-ngt:
 telepresence/swap/agent-faiss:
 	$(call telepresence,vald-agent-faiss,vdaas/vald-agent-faiss)
 
+.PHONY: telepresence/swap/agent-qbg
+## swap agent-qbg deployment using telepresence
+telepresence/swap/agent-qbg:
+	@$(call telepresence,vald-agent-qbg,vdaas/vald-agent-qbg)
+
+.PHONY: telepresence/swap/agent-faiss
+## swap agent-faiss deployment using telepresence
+telepresence/swap/agent-faiss:
+	@$(call telepresence,vald-agent-faiss,vdaas/vald-agent-faiss)
+
 .PHONY: telepresence/swap/discoverer
 ## swap discoverer deployment using telepresence
 telepresence/swap/discoverer:

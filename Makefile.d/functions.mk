@@ -132,9 +132,12 @@ define run-e2e-crud-test
 endef
 
 define run-e2e-crud-faiss-test
+<<<<<<< HEAD
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
+=======
+>>>>>>> feature/agent/qbg
 	go test \
 	    -race \
 	    -mod=readonly \
@@ -278,6 +281,7 @@ define gen-go-option-test-sources
 	done
 endef
 
+<<<<<<< HEAD
 define gen-license
 	BIN_PATH="$(TEMP_DIR)/vald-license-gen"; \
 	rm -rf $$BIN_PATH; \
@@ -339,4 +343,14 @@ define update-github-actions
 			echo "No action found for $$ACTION_NAME" >&2; \
 		fi \
 	done
+=======
+define gen-vald-crd
+	@[ -f $(ROOTDIR)/charts/$1/crds/$2.yaml ] \
+		&& mv $(ROOTDIR)/charts/$1/crds/$2.yaml $(TEMP_DIR)/$2.yaml || true
+	GOPRIVATE=$(GOPRIVATE) \
+		  go run -mod=readonly $(ROOTDIR)/hack/helm/schema/crd/main.go \
+	$(ROOTDIR)/charts/$3.yaml > $(TEMP_DIR)/$2-spec.yaml
+	$(BINDIR)/yq eval-all 'select(fileIndex==0).spec.versions[0].schema.openAPIV3Schema.properties.spec = select(fileIndex==1).spec | select(fileIndex==0)' \
+	$(TEMP_DIR)/$2.yaml $(TEMP_DIR)/$2-spec.yaml > $(ROOTDIR)/charts/$1/crds/$2.yaml
+>>>>>>> feature/agent/qbg
 endef

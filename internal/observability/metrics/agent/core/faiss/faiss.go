@@ -69,7 +69,11 @@ func (f *faissMetrics) View() ([]metrics.View, error) {
 				Description: indexCountMetricsDescription,
 			},
 			view.Stream{
+<<<<<<< HEAD
 				Aggregation: view.AggregationLastValue{},
+=======
+				Aggregation: meric.AggregationLastValue{},
+>>>>>>> feature/agent/qbg
 			},
 		),
 		view.NewView(
@@ -78,7 +82,11 @@ func (f *faissMetrics) View() ([]metrics.View, error) {
 				Description: uncommittedIndexCountMetricsDescription,
 			},
 			view.Stream{
+<<<<<<< HEAD
 				Aggregation: view.AggregationLastValue{},
+=======
+				Aggregation: meric.AggregationLastValue{},
+>>>>>>> feature/agent/qbg
 			},
 		),
 		view.NewView(
@@ -87,7 +95,11 @@ func (f *faissMetrics) View() ([]metrics.View, error) {
 				Description: insertVQueueCountMetricsDescription,
 			},
 			view.Stream{
+<<<<<<< HEAD
 				Aggregation: view.AggregationLastValue{},
+=======
+				Aggregation: meric.AggregationLastValue{},
+>>>>>>> feature/agent/qbg
 			},
 		),
 		view.NewView(
@@ -96,7 +108,11 @@ func (f *faissMetrics) View() ([]metrics.View, error) {
 				Description: deleteVQueueCountMetricsDescription,
 			},
 			view.Stream{
+<<<<<<< HEAD
 				Aggregation: view.AggregationLastValue{},
+=======
+				Aggregation: meric.AggregationLastValue{},
+>>>>>>> feature/agent/qbg
 			},
 		),
 		view.NewView(
@@ -105,7 +121,11 @@ func (f *faissMetrics) View() ([]metrics.View, error) {
 				Description: completedCreateIndexTotalMetricsDescription,
 			},
 			view.Stream{
+<<<<<<< HEAD
 				Aggregation: view.AggregationLastValue{},
+=======
+				Aggregation: meric.AggregationLastValue{},
+>>>>>>> feature/agent/qbg
 			},
 		),
 		view.NewView(
@@ -114,7 +134,11 @@ func (f *faissMetrics) View() ([]metrics.View, error) {
 				Description: executedProactiveGCTotalMetricsDescription,
 			},
 			view.Stream{
+<<<<<<< HEAD
 				Aggregation: view.AggregationLastValue{},
+=======
+				Aggregation: meric.AggregationLastValue{},
+>>>>>>> feature/agent/qbg
 			},
 		),
 		view.NewView(
@@ -123,7 +147,11 @@ func (f *faissMetrics) View() ([]metrics.View, error) {
 				Description: isIndexingMetricsDescription,
 			},
 			view.Stream{
+<<<<<<< HEAD
 				Aggregation: view.AggregationLastValue{},
+=======
+				Aggregation: meric.AggregationLastValue{},
+>>>>>>> feature/agent/qbg
 			},
 		),
 		view.NewView(
@@ -132,7 +160,11 @@ func (f *faissMetrics) View() ([]metrics.View, error) {
 				Description: isSavingMetricsDescription,
 			},
 			view.Stream{
+<<<<<<< HEAD
 				Aggregation: view.AggregationLastValue{},
+=======
+				Aggregation: meric.AggregationLastValue{},
+>>>>>>> feature/agent/qbg
 			},
 		),
 		view.NewView(
@@ -141,7 +173,11 @@ func (f *faissMetrics) View() ([]metrics.View, error) {
 				Description: trainCountMetricsDescription,
 			},
 			view.Stream{
+<<<<<<< HEAD
 				Aggregation: view.AggregationLastValue{},
+=======
+				Aggregation: meric.AggregationLastValue{},
+>>>>>>> feature/agent/qbg
 			},
 		),
 	}, nil

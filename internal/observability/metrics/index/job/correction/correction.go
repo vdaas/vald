@@ -51,7 +51,11 @@ func (*correctionMetrics) View() ([]metrics.View, error) {
 				Description: checkedIndexCountDesc,
 			},
 			view.Stream{
+<<<<<<< HEAD
 				Aggregation: view.AggregationLastValue{},
+=======
+				Aggregation: meric.AggregationLastValue{},
+>>>>>>> feature/agent/qbg
 			},
 		),
 		view.NewView(
@@ -60,16 +64,28 @@ func (*correctionMetrics) View() ([]metrics.View, error) {
 				Description: correctedOldIndexCountDesc,
 			},
 			view.Stream{
+<<<<<<< HEAD
 				Aggregation: view.AggregationLastValue{},
+=======
+				Aggregation: meric.AggregationLastValue{},
+>>>>>>> feature/agent/qbg
 			},
 		),
 		view.NewView(
 			view.Instrument{
+<<<<<<< HEAD
 				Name:        correctedReplicationCount,
 				Description: correctedReplicationCountDesc,
 			},
 			view.Stream{
 				Aggregation: view.AggregationLastValue{},
+=======
+				Name:        correctedReplicationIndexCount,
+				Description: correctedReplicationIndexCountDesc,
+			},
+			view.Stream{
+				Aggregation: meric.AggregationLastValue{},
+>>>>>>> feature/agent/qbg
 			},
 		),
 	}, nil
@@ -106,8 +122,13 @@ func (c *correctionMetrics) Register(m metrics.Meter) error {
 	_, err = m.RegisterCallback(
 		func(_ context.Context, o api.Observer) error {
 			o.ObserveInt64(checkedIndexCount, int64(c.correction.NumberOfCheckedIndex()))
+<<<<<<< HEAD
 			o.ObserveInt64(oldIndexCount, int64(c.correction.NumberOfCorrectedOldIndex()))
 			o.ObserveInt64(replicationCount, int64(c.correction.NumberOfCorrectedReplication()))
+=======
+			o.ObserveInt64(oldIndexCount, int64(c.correction.NumberOfOldIndex()))
+			o.ObserveInt64(replicationIndexCount, int64(c.correction.NumberOfReplicationIndex()))
+>>>>>>> feature/agent/qbg
 			return nil
 		},
 		checkedIndexCount,

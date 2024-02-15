@@ -120,6 +120,10 @@ spec:
                       type: string
                       enum:
                         - ngt
+<<<<<<< HEAD
+=======
+                        - qbg
+>>>>>>> feature/agent/qbg
                         - faiss
                     annotations:
                       type: object

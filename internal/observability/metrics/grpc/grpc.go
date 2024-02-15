@@ -40,7 +40,11 @@ func (*grpcServerMetrics) View() ([]metrics.View, error) {
 				Description: latencyMetricsDesctiption,
 			},
 			view.Stream{
+<<<<<<< HEAD
 				Aggregation: view.AggregationExplicitBucketHistogram{
+=======
+				Aggregation: meric.AggregationExplicitBucketHistogram{
+>>>>>>> feature/agent/qbg
 					Boundaries: metrics.DefaultMillisecondsDistribution,
 				},
 			},
@@ -51,7 +55,11 @@ func (*grpcServerMetrics) View() ([]metrics.View, error) {
 				Description: completedRPCsMetricsDescription,
 			},
 			view.Stream{
+<<<<<<< HEAD
 				Aggregation: view.AggregationSum{},
+=======
+				Aggregation: meric.AggregationSum{},
+>>>>>>> feature/agent/qbg
 			},
 		),
 	}, nil

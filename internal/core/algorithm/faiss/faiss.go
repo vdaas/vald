@@ -27,7 +27,10 @@ import (
 	"sync"
 	"unsafe"
 
+<<<<<<< HEAD
 	"github.com/vdaas/vald/internal/core/algorithm"
+=======
+>>>>>>> feature/agent/qbg
 	"github.com/vdaas/vald/internal/errors"
 )
 
@@ -46,8 +49,13 @@ type (
 		// Add returns faiss ntotal.
 		Add(nb int, xb []float32, xids []int64) (int, error)
 
+<<<<<<< HEAD
 		// Search returns search result as []algorithm.SearchResult.
 		Search(k, nq int, xq []float32) ([]algorithm.SearchResult, error)
+=======
+		// Search returns search result as []SearchResult.
+		Search(k, nq int, xq []float32) ([]SearchResult, error)
+>>>>>>> feature/agent/qbg
 
 		// Remove removes from faiss index.
 		Remove(size int, ids []int64) (int, error)
@@ -66,6 +74,15 @@ type (
 		idxPath     string
 		mu          *sync.RWMutex
 	}
+<<<<<<< HEAD
+=======
+
+	SearchResult struct {
+		ID       uint32
+		Distance float32
+		Error    error
+	}
+>>>>>>> feature/agent/qbg
 )
 
 // metricType is alias of metric type in Faiss.
@@ -202,8 +219,13 @@ func (f *faiss) Add(nb int, xb []float32, xids []int64) (int, error) {
 	return ntotal, nil
 }
 
+<<<<<<< HEAD
 // Search returns search result as []algorithm.SearchResult.
 func (f *faiss) Search(k, nq int, xq []float32) ([]algorithm.SearchResult, error) {
+=======
+// Search returns search result as []SearchResult.
+func (f *faiss) Search(k, nq int, xq []float32) ([]SearchResult, error) {
+>>>>>>> feature/agent/qbg
 	if len(xq) != nq*int(f.dimension) {
 		return nil, errors.ErrIncompatibleDimensionSize(len(xq), int(f.dimension))
 	}
@@ -221,9 +243,15 @@ func (f *faiss) Search(k, nq int, xq []float32) ([]algorithm.SearchResult, error
 		return nil, errors.ErrEmptySearchResult
 	}
 
+<<<<<<< HEAD
 	result := make([]algorithm.SearchResult, k)
 	for i := range result {
 		result[i] = algorithm.SearchResult{uint32(I[i]), D[i], nil}
+=======
+	result := make([]SearchResult, k)
+	for i := range result {
+		result[i] = SearchResult{uint32(I[i]), D[i], nil}
+>>>>>>> feature/agent/qbg
 	}
 
 	return result, nil
