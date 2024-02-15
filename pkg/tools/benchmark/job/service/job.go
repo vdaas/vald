@@ -321,7 +321,7 @@ func calcRecall(linearRes, searchRes *payload.Search_Response) (recall float64) 
 	return recall / float64(len(lres))
 }
 
-// TODO: apply many object type
+// TODO: apply many object type.
 func addNoiseToVec(oVec []float32) []float32 {
 	noise := rand.Float32()
 	vec := oVec

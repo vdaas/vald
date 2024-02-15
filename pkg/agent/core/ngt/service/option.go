@@ -30,7 +30,7 @@ import (
 	"github.com/vdaas/vald/internal/timeutil"
 )
 
-// Option represent the functional option for ngt
+// Option represent the functional option for ngt.
 type Option func(n *ngt) error
 
 var defaultOptions = []Option{
