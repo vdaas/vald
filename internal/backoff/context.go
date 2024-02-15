@@ -38,7 +38,7 @@ func FromBackoffName(ctx context.Context) string {
 	return ""
 }
 
-// isRunning returns context and is running or not for preventing duplicated backoff execution
+// isRunning returns context and is running or not for preventing duplicated backoff execution.
 func isRunning(ctx context.Context) (context.Context, bool) {
 	if val := ctx.Value(backoffRunningContextKey); val != nil {
 		if v, ok := val.(string); ok && v == backoffRunningContextValue {

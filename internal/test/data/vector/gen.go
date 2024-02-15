@@ -41,7 +41,7 @@ const (
 // ErrUnknownDistribution represents an error which the distribution is unknown.
 var ErrUnknownDistribution = errors.New("Unknown distribution generator type")
 
-// Float32VectorGenerator returns float32 vector generator function which has selected distribution
+// Float32VectorGenerator returns float32 vector generator function which has selected distribution.
 func Float32VectorGenerator(d Distribution) (Float32VectorGeneratorFunc, error) {
 	switch d {
 	case Gaussian:
@@ -55,7 +55,7 @@ func Float32VectorGenerator(d Distribution) (Float32VectorGeneratorFunc, error) 
 	}
 }
 
-// Uint8VectorGenerator returns uint8 vector generator function which has selected distribution
+// Uint8VectorGenerator returns uint8 vector generator function which has selected distribution.
 func Uint8VectorGenerator(d Distribution) (Uint8VectorGeneratorFunc, error) {
 	switch d {
 	case Gaussian:
@@ -81,12 +81,12 @@ func genF32Slice(n, dim int, gen func() float32) (ret [][]float32) {
 	return
 }
 
-// UniformDistributedFloat32VectorGenerator returns n float32 vectors with dim dimension and their values under Uniform distribution
+// UniformDistributedFloat32VectorGenerator returns n float32 vectors with dim dimension and their values under Uniform distribution.
 func UniformDistributedFloat32VectorGenerator(n, dim int) [][]float32 {
 	return genF32Slice(n, dim, rand.Float32)
 }
 
-// NegativeUniformDistributedFloat32VectorGenerator returns n float32 vectors with dim dimension and their values under Uniform distribution
+// NegativeUniformDistributedFloat32VectorGenerator returns n float32 vectors with dim dimension and their values under Uniform distribution.
 func NegativeUniformDistributedFloat32VectorGenerator(n, dim int) (vecs [][]float32) {
 	left, right := dim/2, dim-dim/2
 	lvs := genF32Slice(n, left, func() float32 {
@@ -105,14 +105,14 @@ func NegativeUniformDistributedFloat32VectorGenerator(n, dim int) (vecs [][]floa
 	return vecs
 }
 
-// GaussianDistributedFloat32VectorGenerator returns n float32 vectors with dim dimension and their values under Gaussian distribution
+// GaussianDistributedFloat32VectorGenerator returns n float32 vectors with dim dimension and their values under Gaussian distribution.
 func GaussianDistributedFloat32VectorGenerator(n, dim int) [][]float32 {
 	return genF32Slice(n, dim, func() float32 {
 		return float32(rand.NormFloat64())
 	})
 }
 
-// genUint8Slice return n uint8 vectors with dim dimension
+// genUint8Slice return n uint8 vectors with dim dimension.
 func genUint8Slice(n, dim int, gen func() uint8) (ret [][]uint8) {
 	ret = make([][]uint8, 0, n)
 
@@ -126,14 +126,14 @@ func genUint8Slice(n, dim int, gen func() uint8) (ret [][]uint8) {
 	return
 }
 
-// UniformDistributedUint8VectorGenerator returns n uint8 vectors with dim dimension and their values under Uniform distribution
+// UniformDistributedUint8VectorGenerator returns n uint8 vectors with dim dimension and their values under Uniform distribution.
 func UniformDistributedUint8VectorGenerator(n, dim int) [][]uint8 {
 	return genUint8Slice(n, dim, func() uint8 {
 		return uint8(irand.LimitedUint32(math.MaxUint8))
 	})
 }
 
-// GaussianDistributedUint8VectorGenerator returns n uint8 vectors with dim dimension and their values under Gaussian distribution
+// GaussianDistributedUint8VectorGenerator returns n uint8 vectors with dim dimension and their values under Gaussian distribution.
 func GaussianDistributedUint8VectorGenerator(n, dim int) [][]uint8 {
 	// NOTE: The boundary test is the main purpose for refactoring. Now, passing this function is dependent on the seed of the random generator. We should fix the randomness of the passing test.
 	return genUint8Slice(n, dim, func() uint8 {
@@ -175,7 +175,7 @@ func GenSameValueVec(size int, val float32) []float32 {
 	return v
 }
 
-// ConvertVectorsUint8ToFloat32 converts uint8 vectors and return float32 vectors
+// ConvertVectorsUint8ToFloat32 converts uint8 vectors and return float32 vectors.
 func ConvertVectorsUint8ToFloat32(vectors [][]uint8) (ret [][]float32) {
 	ret = make([][]float32, 0, len(vectors))
 	for _, vec := range vectors {
