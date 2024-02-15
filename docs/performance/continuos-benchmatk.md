@@ -66,6 +66,7 @@ And, Benchmark Operator also applies it to the Kubernetes cluster based on `Vald
 | server_config              |           | server config for benchmark job pod<BR>Tune if can not getting the expected performance with default config.          | object                                                                   | ref: [defaults.server_config](https://github.com/vdaas/vald/blob/main/charts/vald/README.md) |
 
 <a id="target-prop" />
+
 **target**
 
 - target Vald cluster information
@@ -77,6 +78,7 @@ And, Benchmark Operator also applies it to the Kubernetes cluster based on `Vald
 | port     | \*        | target cluster's port | integer | 8081      |
 
 <a id="dataset-prop" />
+
 **dataset**
 
 - dataset which is used for executing job operation
@@ -93,6 +95,7 @@ And, Benchmark Operator also applies it to the Kubernetes cluster based on `Vald
 | url         |           | the dataset url. It should be set when set `name` as `original`                                      | string                                 |               |
 
 <a id="insert-cfg-props" />
+
 **insert_config**
 
 - rpc config for insert request
@@ -104,6 +107,7 @@ And, Benchmark Operator also applies it to the Kubernetes cluster based on `Vald
 | timestamp               |           | The timestamp of the vector inserted.<br>If it is N/A, the current time will be used.                        | string | 1707272658 |
 
 <a id="update-cfg-props" />
+
 **update_config**
 
 - rpc config for update request
@@ -116,6 +120,7 @@ And, Benchmark Operator also applies it to the Kubernetes cluster based on `Vald
 | disable_balanced_update |           | A flag to disable balanced update (split remove -&gt; insert operation) during update operation.             | bool   | false      |
 
 <a id="upsert-cfg-props" />
+
 **upsert_config**
 
 - rpc config for upsert request
@@ -128,6 +133,7 @@ And, Benchmark Operator also applies it to the Kubernetes cluster based on `Vald
 | disable_balanced_update |           | A flag to disable balanced update (split remove -&gt; insert operation) during update operation.             | bool   | false      |
 
 <a id="search-cfg-props" />
+
 **upsert_config**
 
 - rpc config for search request
@@ -144,6 +150,7 @@ And, Benchmark Operator also applies it to the Kubernetes cluster based on `Vald
 | aggregation_algorithm |           | The search aggregation algorithm option.<BR>default: `Unknown`                                                                                  | string enum: ["Unknown", "ConcurrentQueue", "SortSlice", "SortPoolSlice", "PairingHeap"] |        |
 
 <a id="remove-cfg-props" />
+
 **remove_config**
 
 - rpc config for remove request
@@ -155,6 +162,7 @@ And, Benchmark Operator also applies it to the Kubernetes cluster based on `Vald
 | timestamp               |           | The timestamp of the vector inserted.<br>If it is N/A, the current time will be used.                        | string | 1707272658 |
 
 <a id="object-cfg-props" />
+
 **object_config**
 
 - rpc config for get object request

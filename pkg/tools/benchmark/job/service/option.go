@@ -33,7 +33,7 @@ type Option func(j *job) error
 
 var defaultOpts = []Option{
 	// TODO: set default config for client
-	WithDimension(748),
+	WithDimension(784),
 	WithBeforeJobDuration("30s"),
 	WithRPS(1000),
 	WithConcurencyLimit(200),
