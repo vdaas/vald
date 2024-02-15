@@ -19,10 +19,10 @@ metadata:
   name: vald-lb-gateway-config
   labels:
     app.kubernetes.io/name: vald
-    helm.sh/chart: vald-v1.7.10
+    helm.sh/chart: vald-v1.7.11
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: release-name
-    app.kubernetes.io/version: v1.7.10
+    app.kubernetes.io/version: v1.7.11
     app.kubernetes.io/component: gateway-lb
 data:
   config.yaml: |
