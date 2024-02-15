@@ -29,7 +29,7 @@ import (
 )
 
 const (
-	// metrics from runtime.Memstats
+	// metrics from runtime.Memstats.
 	allocMetricsName        = "alloc_bytes"
 	allocMetricsDescription = "Currently allocated number of bytes on the heap"
 
@@ -111,7 +111,7 @@ const (
 	liveObjectsMetricsName        = "live_objects_count"
 	liveObjectsMetricsDescription = "The cumulative count of living heap objects allocated. It contains the two following parts (liveObjects = mallocs - frees)"
 
-	// metrics from /proc/<pid>/status
+	// metrics from /proc/<pid>/status.
 	vmpeakMetricsName        = "vmpeak_bytes"
 	vmpeakMetricsDescription = "peak virtual memory size"
 

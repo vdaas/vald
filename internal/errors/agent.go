@@ -18,7 +18,7 @@
 package errors
 
 var (
-	// ErrCreateIndexingIsInProgress represents an error that the indexing is in progress but search request received
+	// ErrCreateIndexingIsInProgress represents an error that the indexing is in progress but search request received.
 	ErrCreateIndexingIsInProgress = New("create indexing is in progress")
 
 	// ErrCreateProperty represents a function to generate an error that the property creation failed.

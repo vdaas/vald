@@ -498,7 +498,7 @@ func (o *operator) createJob(ctx context.Context, bjr v1.ValdBenchmarkJob) error
 	return nil
 }
 
-// updateBenchmarkScenarioStatus updates status of ValdBenchmarkScenarioResource
+// updateBenchmarkScenarioStatus updates status of ValdBenchmarkScenarioResource.
 func (o *operator) updateBenchmarkScenarioStatus(ctx context.Context, ss map[string]v1.ValdBenchmarkScenarioStatus) ([]string, error) {
 	var sns []string
 	if cbsl := o.getAtomicScenario(); cbsl != nil {
@@ -521,7 +521,7 @@ func (o *operator) updateBenchmarkScenarioStatus(ctx context.Context, ss map[str
 	return sns, nil
 }
 
-// updateBenchmarkJobStatus updates status of ValdBenchmarkJobResource
+// updateBenchmarkJobStatus updates status of ValdBenchmarkJobResource.
 func (o *operator) updateBenchmarkJobStatus(ctx context.Context, js map[string]v1.BenchmarkJobStatus) ([]string, error) {
 	var jns []string
 	if cbjl := o.getAtomicBenchJob(); cbjl != nil {
