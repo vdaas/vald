@@ -43,7 +43,7 @@ type operator struct {
 }
 
 // New returns Indexer object if no error occurs.
-func New(opts ...Option) (o Operator, err error) {
+func New(agentName string, opts ...Option) (o Operator, err error) {
 	operator := new(operator)
 	for _, opt := range append(defaultOpts, opts...) {
 		if err := opt(operator); err != nil {
@@ -58,6 +58,9 @@ func New(opts ...Option) (o Operator, err error) {
 	}
 
 	var k8sOpts []k8s.Option
+	podLabelSelector := map[string]string{
+		"app": agentName,
+	}
 	podOpts := k8s.WithResourceController(pod.New(
 		pod.WithControllerName("pod reconciler for index operator"),
 		pod.WithOnErrorFunc(func(err error) {
@@ -68,8 +71,7 @@ func New(opts ...Option) (o Operator, err error) {
 		pod.WithOnReconcileFunc(func(podList map[string][]pod.Pod) {
 			log.Debugf("reconciled pod list: %v", podList)
 		}),
-		// pod.WithFields(selector.GetPodFields()),
-		// pod.WithLabels(selector.GetPodLabels()),
+		pod.WithLabels(podLabelSelector),
 	))
 	k8sOpts = append(k8sOpts, podOpts)
 

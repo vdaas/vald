@@ -32,8 +32,8 @@ type Data struct {
 	// Observability represents observability configurations.
 	Observability *config.Observability `json:"observability" yaml:"observability"`
 
-	// Creation represents auto indexing service configurations.
-	Creation *config.IndexOperator `json:"operator" yaml:"operator"`
+	// Operator represents auto indexing service configurations.
+	Operator *config.IndexOperator `json:"operator" yaml:"operator"`
 }
 
 // NewConfig load configurations from file path.
@@ -62,8 +62,8 @@ func NewConfig(path string) (cfg *Data, err error) {
 		cfg.Observability = new(config.Observability).Bind()
 	}
 
-	if cfg.Creation != nil {
-		_ = cfg.Creation.Bind()
+	if cfg.Operator != nil {
+		_ = cfg.Operator.Bind()
 	} else {
 		return nil, errors.ErrInvalidConfig
 	}

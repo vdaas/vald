@@ -41,8 +41,7 @@ type run struct {
 // New returns Runner instance.
 func New(cfg *config.Data) (_ runner.Runner, err error) {
 	eg := errgroup.Get()
-
-	operator, err := service.New()
+	operator, err := service.New(cfg.Operator.AgentName)
 	if err != nil {
 		return nil, err
 	}
