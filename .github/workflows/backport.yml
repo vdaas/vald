@@ -44,16 +44,17 @@ jobs:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           git_user_signingkey: true
           git_commit_gpgsign: true
-      - name: Set context
-        id: set_context
+      - name: Get PR title and body
+        id: pr_info
         run: |
           LABEL_NAMES=`cat ${GITHUB_EVENT_PATH} | jq -r --arg PREFIX $TARGET_LABEL_NAME_PREFIX '[.pull_request.labels[]? | select(.name | startswith($PREFIX)) | .name] | join(" ")'`
           echo "LABEL_NAMES=${LABEL_NAMES}" >> $GITHUB_OUTPUT # e.g.) actions/backport/v1.7 actions/backport/v1.8
           echo "${LABEL_NAMES}"
       - name: Create PR
-        if: ${{ steps.set_context.outputs.LABEL_NAMES != '' }}
+        if: ${{ github.event.pull_request.labels.*.name == '${TARGET_LABEL_NAME_PREFIX}*' }}
         env:
-          LABEL_NAMES: ${{ steps.set_context.outputs.LABEL_NAMES }}
+          PR_TITLE: ${{ steps.pr_info.outputs.PR_TITEL }}
+          PR_BODY: ${{ steps.pr_info.outputs.PR_BODY }}
           GITHUB_USER: ${{ secrets.DISPATCH_USER }}
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
         run: |
