@@ -47,6 +47,7 @@ var defaultOptions = []Option{
 	WithDefaultRadius(core.DefaultRadius),
 	WithDefaultEpsilon(core.DefaultEpsilon),
 	WithProactiveGC(true),
+	WithExportIndexInfoDuration("1m"),
 }
 
 // WithErrGroup returns the functional option to set the error group.
@@ -304,6 +305,24 @@ func WithCopyOnWrite(enabled bool) Option {
 func WithIsReadReplica(isReadReplica bool) Option {
 	return func(n *ngt) error {
 		n.isReadReplica = isReadReplica
+		return nil
+	}
+}
+
+// WithExportIndexInfoDuration returns the functional option to set the duration of exporting index info to k8s.
+func WithExportIndexInfoDuration(dur string) Option {
+	return func(n *ngt) error {
+		if dur == "" {
+			return nil
+		}
+
+		d, err := timeutil.Parse(dur)
+		if err != nil {
+			return err
+		}
+
+		n.exportIndexInfoDuration = d
+
 		return nil
 	}
 }
