@@ -50,12 +50,8 @@ type (
 	CreateOptions      = cli.CreateOptions
 	UpdateOptions      = cli.UpdateOptions
 	MatchingLabels     = cli.MatchingLabels
-	MatchingFields     = cli.MatchingFields
 	InNamespace        = cli.InNamespace
 	VolumeSnapshot     = snapshotv1.VolumeSnapshot
-	PodList            = corev1.PodList
-	Pod                = corev1.Pod
-	PatchOptions       = cli.PatchOptions
 )
 
 const (
