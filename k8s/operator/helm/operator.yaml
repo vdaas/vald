@@ -21,10 +21,10 @@ metadata:
   labels:
     app: vald-helm-operator
     app.kubernetes.io/name: vald-helm-operator
-    helm.sh/chart: vald-helm-operator-v1.7.10
+    helm.sh/chart: vald-helm-operator-v1.7.11
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: release-name
-    app.kubernetes.io/version: v1.7.10
+    app.kubernetes.io/version: v1.7.11
     app.kubernetes.io/component: helm-operator
 spec:
   replicas: 2
@@ -42,7 +42,7 @@ spec:
       serviceAccountName: vald-helm-operator
       containers:
         - name: vald-helm-operator
-          image: "vdaas/vald-helm-operator:v1.7.10"
+          image: "vdaas/vald-helm-operator:v1.7.11"
           imagePullPolicy: Always
           args:
             - "run"

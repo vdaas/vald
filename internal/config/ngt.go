@@ -99,13 +99,13 @@ type NGT struct {
 	IsReadReplica bool `json:"is_readreplica" yaml:"is_readreplica"`
 }
 
-// KVSDB represent the ngt vector bidirectional kv store configuration
+// KVSDB represent the ngt vector bidirectional kv store configuration.
 type KVSDB struct {
 	// Concurrency represents kvsdb range loop processing concurrency
 	Concurrency int `json:"concurrency,omitempty" yaml:"concurrency,omitempty"`
 }
 
-// VQueue represent the ngt vector queue buffer size
+// VQueue represent the ngt vector queue buffer size.
 type VQueue struct {
 	// InsertBufferPoolSize represents insert time ordered slice buffer size
 	InsertBufferPoolSize int `json:"insert_buffer_pool_size,omitempty" yaml:"insert_buffer_pool_size"`

@@ -30,7 +30,7 @@ import (
 	"github.com/vdaas/vald/internal/sync"
 )
 
-// Queue represents vector queue cache interface
+// Queue represents vector queue cache interface.
 type Queue interface {
 	PushInsert(uuid string, vector []float32, date int64) error
 	PushDelete(uuid string, date int64) error
