@@ -98,7 +98,7 @@ type ngt struct {
 
 	// statuses
 	indexing  atomic.Value
-	flushing  atomic.Value
+	flushing  atomic.Bool
 	saving    atomic.Value
 	cimu      sync.Mutex // create index mutex
 	lastNocie uint64     // last number of create index execution this value prevent unnecessary saveindex.
@@ -1754,8 +1754,7 @@ func (n *ngt) IsIndexing() bool {
 }
 
 func (n *ngt) IsFlushing() bool {
-	i, ok := n.flushing.Load().(bool)
-	return i && ok
+	return n.flushing.Load()
 }
 
 func (n *ngt) UUIDs(ctx context.Context) (uuids []string) {
