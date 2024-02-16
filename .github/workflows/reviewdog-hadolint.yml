@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -19,24 +19,20 @@ on:
   pull_request:
     paths:
       - "dockers/**"
-
 jobs:
   dump-contexts-to-log:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/dump-context
-
   hadolint:
     name: runner / hadolint
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - name: Set Git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
-
       - name: Run hadolint
         uses: reviewdog/action-hadolint@v1
         with:

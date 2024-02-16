@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -39,7 +39,7 @@ func WithURL(str string) Option {
 	}
 }
 
-// WithURLOpener returns Option that sets c.urlOpner
+// WithURLOpener returns Option that sets c.urlOpner.
 func WithURLOpener(uo *gcsblob.URLOpener) Option {
 	return func(c *client) error {
 		if uo != nil {

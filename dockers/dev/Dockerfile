@@ -1,6 +1,6 @@
 # syntax = docker/dockerfile:latest
 #
-# Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -18,18 +18,30 @@
 ARG MAINTAINER="vdaas.org vald team <vald@vdaas.org>"
 
 # skipcq: DOK-DL3026
-FROM --platform=${BUILDPLATFORM} mcr.microsoft.com/vscode/devcontainers/go:1 AS base
+# we should stick to official devcontainers as a base image because it is well tested to be used with the vscode devcontainer extension.
+FROM --platform=${TARGETPLATFORM} mcr.microsoft.com/vscode/devcontainers/base:debian
 LABEL maintainer="${MAINTAINER}"
 
+ARG GO_VERSION
+ARG TARGETARCH
+ARG TARGETOS
+
+ENV GOROOT /opt/go
+ENV GOPATH /go
+ENV PATH ${PATH}:${GOROOT}/bin:${GOPATH}/bin:/usr/local/bin
+
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 # skipcq: DOK-DL3008
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
+    ca-certificates \
     cmake \
     curl \
     g++ \
     gawk \
     gcc \
     git \
+    gnupg2 \
     graphviz \
     jq \
     libhdf5-dev \
@@ -45,24 +57,37 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR ${GOPATH}/src/github.com/vdaas/vald
+
 COPY Makefile .
 COPY Makefile.d Makefile.d
 COPY versions versions
+COPY rust rust
 COPY hack/go.mod.default hack/go.mod.default
+COPY example/client/go.mod.default example/client/go.mod.default
 
-# basic deps
-RUN make deps \
+RUN --mount=type=cache,target="${GOPATH}/pkg",id="go-build-${TARGETARCH}" \
+    --mount=type=cache,target="${HOME}/.cache/go-build",id="go-build-${TARGETARCH}" \
+    make GO_VERSION=${GO_VERSION} go/install \
+    && make GOARCH=${TARGETARCH} GOOS=${TARGETOS} deps GO_CLEAN_DEPS=false \
     && make ngt/install \
+    && make faiss/install \
     && make helm/install \
     && make helm-docs/install \
     && make valdcli/install \
     && make yq/install \
-    && make golangci-lint/install \
+    && make GOARCH=${TARGETARCH} GOOS=${TARGETOS} golangci-lint/install \
     && make reviewdog/install \
-    && make kubectl/install
-
-# additional deps
-RUN make k3d/install \
+    && make kubectl/install \
+    && make k3d/install \
     && make buf/install \
     && make k9s/install \
-    && make minikube/install
+    && make minikube/install \
+    && make stern/install \
+    && make telepresence/install \
+    && echo "installing golang vscode extension dependencies" \
+    && make gopls/install \
+    && make gotests/install \
+    && make gomodifytags/install \
+    && make impl/install \
+    && make delve/install \
+    && make staticcheck/install

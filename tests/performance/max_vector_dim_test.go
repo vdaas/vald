@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -90,7 +90,7 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
-// Test for investigation of max dimension size for agent handler
+// Test for investigation of max dimension size for agent handler.
 func TestMaxDimInsert(t *testing.T) {
 	t.Helper()
 	eg, ctx := errgroup.New(context.Background())
@@ -192,7 +192,7 @@ func TestMaxDimInsert(t *testing.T) {
 	t.Logf("Max bit is %d", max_bit)
 }
 
-// Test for investigation of max dimension size for agent handler with gRPC
+// Test for investigation of max dimension size for agent handler with gRPC.
 func TestMaxDimInsertGRPC(t *testing.T) {
 	// MaxUint64 cannot be used due to overflows
 	t.Helper()

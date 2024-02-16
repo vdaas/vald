@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -362,7 +362,6 @@ func (s *server) StreamSearch(stream vald.Search_StreamSearchServer) (err error)
 				},
 			}, nil
 		})
-
 	if err != nil {
 		st, msg, err := status.ParseError(err, codes.Internal,
 			"failed to parse StreamSearch gRPC error response")

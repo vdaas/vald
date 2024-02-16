@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -36,7 +36,7 @@ const (
 func MetricInterceptors() (grpc.UnaryServerInterceptor, grpc.StreamServerInterceptor, error) {
 	meter := metrics.GetMeter()
 
-	latencyHistgram, err := meter.SyncFloat64().Histogram(
+	latencyHistgram, err := meter.Float64Histogram(
 		latencyMetricsName,
 		metrics.WithDescription("Server latency in milliseconds, by method"),
 		metrics.WithUnit(metrics.Milliseconds),
@@ -45,7 +45,7 @@ func MetricInterceptors() (grpc.UnaryServerInterceptor, grpc.StreamServerInterce
 		return nil, nil, errors.Wrap(err, "failed to create latency metric")
 	}
 
-	completedRPCCnt, err := meter.SyncInt64().Counter(
+	completedRPCCnt, err := meter.Int64Counter(
 		completedRPCsMetricsName,
 		metrics.WithDescription("Count of RPCs by method and status"),
 		metrics.WithUnit(metrics.Milliseconds),
@@ -56,8 +56,8 @@ func MetricInterceptors() (grpc.UnaryServerInterceptor, grpc.StreamServerInterce
 
 	record := func(ctx context.Context, method string, err error, latency float64) {
 		attrs := attributesFromError(method, err)
-		latencyHistgram.Record(ctx, latency, attrs...)
-		completedRPCCnt.Add(ctx, 1, attrs...)
+		latencyHistgram.Record(ctx, latency, metrics.WithAttributes(attrs...))
+		completedRPCCnt.Add(ctx, 1, metrics.WithAttributes(attrs...))
 	}
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp interface{}, err error) {
 			now := time.Now()
@@ -65,7 +65,7 @@ func MetricInterceptors() (grpc.UnaryServerInterceptor, grpc.StreamServerInterce
 			elapsedTime := time.Since(now)
 			record(ctx, info.FullMethod, err, float64(elapsedTime)/float64(time.Millisecond))
 			return resp, err
-		}, func(srv interface{}, ss grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
+		}, func(srv interface{}, ss grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) (err error) {
 			now := time.Now()
 			err = handler(srv, ss)
 			elapsedTime := time.Since(now)

@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -18,6 +18,8 @@ on:
   push:
     branches:
       - main
+      - "release/v*.*"
+      - "!release/v*.*.*"
     paths:
       - "go.mod"
       - "go.sum"
@@ -33,70 +35,62 @@ on:
       - "internal/**"
       - "pkg/**"
       - "cmd/**"
-
 jobs:
   dump-contexts-to-log:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/dump-context
-
+  detect-ci-container:
+    uses: ./.github/workflows/_detect-ci-container.yml
   test-cmd:
     name: Run tests for cmd packages
     runs-on: ubuntu-latest
+    needs: [detect-ci-container]
     container:
-      image: ghcr.io/vdaas/vald/vald-ci-container:nightly
+      image: ghcr.io/vdaas/vald/vald-ci-container:${{ needs.detect-ci-container.outputs.TAG_NAME }}
     steps:
       - uses: actions/checkout@v4
-
       - name: Set Git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
-
       - name: Run tests for cmd packages / gotestfmt
         run: |
           TEST_RESULT_DIR=${GITHUB_WORKSPACE} make test/cmd/gotestfmt
-
       - name: Print tparse result
         run: |
           tparse -notests -smallscreen -sort cover -format markdown -file "${GITHUB_WORKSPACE}/test-cmd-gotestfmt-result.json"
-
   test-internal:
     name: Run tests for internal packages
     runs-on: ubuntu-latest
+    needs: [detect-ci-container]
     container:
-      image: ghcr.io/vdaas/vald/vald-ci-container:nightly
+      image: ghcr.io/vdaas/vald/vald-ci-container:${{ needs.detect-ci-container.outputs.TAG_NAME }}
     steps:
       - uses: actions/checkout@v4
-
       - name: Set Git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
-
       - name: Run tests for internal packages / gotestfmt
         run: |
           TEST_RESULT_DIR=${GITHUB_WORKSPACE} make test/internal/gotestfmt
-
       - name: Print tparse result
         run: |
           tparse -notests -smallscreen -sort cover -format markdown -file "${GITHUB_WORKSPACE}/test-internal-gotestfmt-result.json"
-
   test-pkg:
     name: Run tests for pkg packages
     runs-on: ubuntu-latest
+    needs: [detect-ci-container]
     container:
-      image: ghcr.io/vdaas/vald/vald-ci-container:nightly
+      image: ghcr.io/vdaas/vald/vald-ci-container:${{ needs.detect-ci-container.outputs.TAG_NAME }}
     steps:
       - uses: actions/checkout@v4
-
       - name: Set Git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
-
       - name: Run tests for pkg packages / gotestfmt
         run: |
           TEST_RESULT_DIR=${GITHUB_WORKSPACE} make test/pkg/gotestfmt
-
       - name: Print tparse result
         run: |
           tparse -notests -smallscreen -sort cover -format markdown -file "${GITHUB_WORKSPACE}/test-pkg-gotestfmt-result.json"

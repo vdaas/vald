@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@
 ## update vald libraries including tools
 update/libs: \
 	update/chaos-mesh \
+	update/faiss \
 	update/go \
 	update/golangci-lint \
 	update/helm \
@@ -35,7 +36,9 @@ update/libs: \
 	update/telepresence \
 	update/vald \
 	update/valdcli \
-	update/yq
+	update/yq \
+	update/zlib \
+	update/hdf5
 
 .PHONY: go/download
 ## download Go package dependencies
@@ -45,19 +48,23 @@ go/download:
 .PHONY: go/deps
 ## install Go package dependencies
 go/deps:
-	rm -rf $(ROOTDIR)/vendor \
-		/go/pkg \
-		$(GOCACHE) \
-		$(ROOTDIR)/go.sum \
-		$(ROOTDIR)/go.mod
-	cp $(ROOTDIR)/hack/go.mod.default $(ROOTDIR)/go.mod
-	GOPRIVATE=$(GOPRIVATE) go mod tidy
-	go clean -cache -modcache -testcache -i -r
-	rm -rf $(ROOTDIR)/vendor \
-		/go/pkg \
-		$(GOCACHE) \
-		$(ROOTDIR)/go.sum \
-		$(ROOTDIR)/go.mod
+	sed -i "3s/go [0-9]\+\.[0-9]\+\(\.[0-9]\+\)\?/go $(GO_VERSION)/g" $(ROOTDIR)/hack/go.mod.default
+	if $(GO_CLEAN_DEPS); then \
+        	rm -rf $(ROOTDIR)/vendor \
+        		/go/pkg \
+        		$(GOCACHE) \
+        		$(ROOTDIR)/go.sum \
+        		$(ROOTDIR)/go.mod ; \
+        	cp $(ROOTDIR)/hack/go.mod.default $(ROOTDIR)/go.mod ; \
+        	GOPRIVATE=$(GOPRIVATE) go mod tidy ; \
+        	go clean -cache -modcache -testcache -i -r ; \
+        	rm -rf $(ROOTDIR)/vendor \
+        		/go/pkg \
+        		$(GOCACHE) \
+        		$(ROOTDIR)/go.sum \
+        		$(ROOTDIR)/go.mod ; \
+        	cp $(ROOTDIR)/hack/go.mod.default $(ROOTDIR)/go.mod ; \
+	fi
 	cp $(ROOTDIR)/hack/go.mod.default $(ROOTDIR)/go.mod
 	GOPRIVATE=$(GOPRIVATE) go mod tidy
 	go get -u all 2>/dev/null || true
@@ -70,8 +77,23 @@ go/example/deps:
 	        $(ROOTDIR)/example/client/vendor \
 	        $(ROOTDIR)/example/client/go.mod \
 	        $(ROOTDIR)/example/client/go.sum
+	sed -i "3s/go [0-9]\+\.[0-9]\+\(\.[0-9]\+\)\?/go $(GO_VERSION)/g" $(ROOTDIR)/example/client/go.mod.default
 	cp $(ROOTDIR)/example/client/go.mod.default $(ROOTDIR)/example/client/go.mod
 	cd $(ROOTDIR)/example/client && GOPRIVATE=$(GOPRIVATE) go mod tidy && cd -
+
+.PHONY: rust/deps
+## install Rust package dependencies
+rust/deps: \
+	rust/install
+	if [ -x "$(CARGO_HOME)/bin/cargo" ]; then \
+		cd $(ROOTDIR)/rust \
+			&& $(CARGO_HOME)/bin/rustup default stable \
+			&& $(CARGO_HOME)/bin/cargo update \
+			&& cd -;\
+	else \
+		echo "Cargo not found. Please install Cargo or add it to your PATH."; \
+		exit 1; \
+	fi
 
 .PHONY: update/chaos-mesh
 ## update chaos-mesh version
@@ -81,7 +103,14 @@ update/chaos-mesh:
 .PHONY: update/k3s
 ## update k3s version
 update/k3s:
-	curl --silent https://hub.docker.com/v2/repositories/rancher/k3s/tags | jq -r '.results[].name' | grep -E '.*-k3s.$$' | grep -v rc | sort -V | tail -n 1 > $(ROOTDIR)/versions/K3S_VERSION
+	@{ \
+		RESULT=$$(curl --silent https://hub.docker.com/v2/repositories/rancher/k3s/tags?page_size=1000 | jq -r '.results[].name' | grep -E '.*-k3s[0-9]+$$' | grep -v rc | sort -Vr | head -n 1); \
+		if [ -n "$$RESULT" ]; then \
+			echo $$RESULT > $(ROOTDIR)/versions/K3S_VERSION; \
+		else \
+			echo "No version found" >&2; \
+		fi \
+	}
 
 .PHONY: update/go
 ## update go version
@@ -101,7 +130,7 @@ update/helm:
 .PHONY: update/helm-operator
 ## update helm-operator version
 update/helm-operator:
-	curl --silent https://quay.io/api/v1/repository/operator-framework/helm-operator | jq -r '.tags'|rg name | grep -v master |grep -v latest | grep -v rc | head -1 | sed -e 's/.*\"name\":\ \"\(.*\)\",/\1/g' > $(ROOTDIR)/versions/OPERATOR_SDK_VERSION
+	curl --silent https://quay.io/api/v1/repository/operator-framework/helm-operator | jq -r '.tags'| grep name | grep -v master |grep -v latest | grep -v rc | head -1 | sed -e 's/.*\"name\":\ \"\(.*\)\",/\1/g' > $(ROOTDIR)/versions/OPERATOR_SDK_VERSION
 
 .PHONY: update/helm-docs
 ## update helm-docs version
@@ -148,6 +177,11 @@ update/kube-linter:
 update/ngt:
 	curl --silent https://api.github.com/repos/yahoojapan/NGT/releases/latest | grep -Po '"tag_name": "\K.*?(?=")' | sed 's/v//g' > $(ROOTDIR)/versions/NGT_VERSION
 
+.PHONY: update/faiss
+## update facebookresearch/faiss version
+update/faiss:
+	curl --silent https://api.github.com/repos/facebookresearch/faiss/releases/latest | grep -Po '"tag_name": "\K.*?(?=")' | sed 's/v//g' > $(ROOTDIR)/versions/FAISS_VERSION
+
 .PHONY: update/reviewdog
 ## update reviewdog version
 update/reviewdog:
@@ -162,6 +196,16 @@ update/telepresence:
 ## update YQ version
 update/yq:
 	curl --silent https://api.github.com/repos/mikefarah/yq/releases/latest | grep -Po '"tag_name": "\K.*?(?=")' > $(ROOTDIR)/versions/YQ_VERSION
+
+.PHONY: update/zlib
+## update zlib version
+update/zlib:
+	curl --silent https://api.github.com/repos/madler/zlib/releases/latest | grep -Po '"tag_name": "\K.*?(?=")' | sed 's/v//g' > $(ROOTDIR)/versions/ZLIB_VERSION
+
+.PHONY: update/hdf5
+## update hdf5 version
+update/hdf5:
+	curl --silent https://api.github.com/repos/HDFGroup/hdf5/releases/latest | grep -Po '"tag_name": "\K.*?(?=")' | sed 's/v//g' > $(ROOTDIR)/versions/HDF5_VERSION
 
 .PHONY: update/vald
 ## update vald it's self version

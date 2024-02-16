@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@ type Selectors struct {
 	Node        *Selector `json:"node,omitempty"         yaml:"node"`
 	NodeMetrics *Selector `json:"node_metrics,omitempty" yaml:"node_metrics"`
 	PodMetrics  *Selector `json:"pod_metrics,omitempty"  yaml:"pod_metrics"`
+	Service     *Selector `json:"service,omitempty"      yaml:"service"`
 }
 
 func (s *Selectors) GetPodFields() map[string]string {
@@ -89,6 +90,20 @@ func (s *Selectors) GetNodeMetricsLabels() map[string]string {
 	return s.NodeMetrics.GetLabels()
 }
 
+func (s *Selectors) GetServiceFields() map[string]string {
+	if s == nil {
+		return nil
+	}
+	return s.Service.GetFields()
+}
+
+func (s *Selectors) GetServiceLabels() map[string]string {
+	if s == nil {
+		return nil
+	}
+	return s.Service.GetLabels()
+}
+
 type Selector struct {
 	Labels map[string]string `json:"labels,omitempty" yaml:"labels"`
 	Fields map[string]string `json:"fields,omitempty" yaml:"fields"`
@@ -108,6 +123,25 @@ func (s *Selector) GetFields() map[string]string {
 	return s.Fields
 }
 
+type ReadReplica struct {
+	Enabled bool   `json:"enabled,omitempty" yaml:"enabled"`
+	IDKey   string `json:"id_key,omitempty"  yaml:"id_key"`
+}
+
+func (r *ReadReplica) GetEnabled() bool {
+	if r == nil {
+		return false
+	}
+	return r.Enabled
+}
+
+func (r *ReadReplica) GetIDKey() string {
+	if r == nil {
+		return ""
+	}
+	return r.IDKey
+}
+
 // Bind binds the actual data from the Discoverer receiver field.
 func (d *Discoverer) Bind() *Discoverer {
 	d.Name = GetActualValue(d.Name)
@@ -118,6 +152,13 @@ func (d *Discoverer) Bind() *Discoverer {
 	} else {
 		d.Net = new(Net)
 	}
+
+	if d.Selectors != nil {
+		d.Selectors.Bind()
+	} else {
+		d.Selectors = new(Selectors)
+	}
+
 	return d
 }
 
@@ -130,6 +171,7 @@ func (s *Selectors) Bind() *Selectors {
 	s.Node = s.Node.Bind()
 	s.PodMetrics = s.PodMetrics.Bind()
 	s.NodeMetrics = s.NodeMetrics.Bind()
+	s.Service = s.Service.Bind()
 	return s
 }
 
@@ -145,6 +187,14 @@ func (s *Selector) Bind() *Selector {
 		s.Fields[k] = GetActualValue(v)
 	}
 	return s
+}
+
+func (r *ReadReplica) Bind() *ReadReplica {
+	if r == nil {
+		return new(ReadReplica)
+	}
+	r.IDKey = GetActualValue(r.IDKey)
+	return r
 }
 
 // DiscovererClient represents the DiscovererClient configurations.

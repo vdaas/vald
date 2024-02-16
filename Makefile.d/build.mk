@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -17,322 +17,100 @@
 .PHONY: binary/build
 ## build all binaries
 binary/build: \
+	cmd/agent/core/faiss/faiss \
 	cmd/agent/core/ngt/ngt \
 	cmd/agent/sidecar/sidecar \
 	cmd/discoverer/k8s/discoverer \
-	cmd/gateway/lb/lb \
 	cmd/gateway/filter/filter \
-	cmd/manager/index/index
+	cmd/gateway/lb/lb \
+	cmd/gateway/mirror/mirror \
+	cmd/index/job/correction/index-correction \
+	cmd/index/job/creation/index-creation \
+	cmd/index/job/readreplica/rotate/readreplica-rotate \
+	cmd/index/job/save/index-save \
+	cmd/manager/index/index \
+	cmd/tools/benchmark/job/job \
+	cmd/tools/benchmark/operator/operator
+
 
 cmd/agent/core/ngt/ngt: \
-	ngt/install \
-	$(GO_SOURCES_INTERNAL) \
-	$(PBGOS) \
-	$(shell find $(ROOTDIR)/cmd/agent/core/ngt -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go') \
-	$(shell find $(ROOTDIR)/pkg/agent/core/ngt $(ROOTDIR)/pkg/agent/internal -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
+	ngt/install
 	$(eval CGO_ENABLED = 1)
-	CFLAGS="$(CFLAGS)" \
-	CXXFLAGS="$(CXXFLAGS)" \
-	CGO_ENABLED=$(CGO_ENABLED) \
-	CGO_CXXFLAGS="-g -Ofast -march=native" \
-	CGO_FFLAGS="-g -Ofast -march=native" \
-	CGO_LDFLAGS="-g -Ofast -march=native" \
-	GO111MODULE=on \
-	GOPRIVATE=$(GOPRIVATE) \
-	go build \
-		--ldflags "-w -linkmode 'external' \
-		-extldflags '-static -fPIC -pthread -fopenmp -std=gnu++20 -lstdc++ -lm -z relro -z now $(EXTLDFLAGS)' \
-		-X '$(GOPKG)/internal/info.Version=$(VERSION)' \
-		-X '$(GOPKG)/internal/info.GitCommit=$(GIT_COMMIT)' \
-		-X '$(GOPKG)/internal/info.BuildTime=$(DATETIME)' \
-		-X '$(GOPKG)/internal/info.GoVersion=$(GO_VERSION)' \
-		-X '$(GOPKG)/internal/info.GoOS=$(GOOS)' \
-		-X '$(GOPKG)/internal/info.GoArch=$(GOARCH)' \
-		-X '$(GOPKG)/internal/info.CGOEnabled=$(CGO_ENABLED)' \
-		-X '$(GOPKG)/internal/info.NGTVersion=$(NGT_VERSION)' \
-		-X '$(GOPKG)/internal/info.BuildCPUInfoFlags=$(CPU_INFO_FLAGS)' \
-		-buildid=" \
-		-mod=readonly \
-		-modcacherw \
-		-a \
-		-tags "cgo osusergo netgo static_build" \
-		-trimpath \
-		-o $@ \
-		$(dir $@)main.go
-	$@ -version
+	$(call go-build,agent/core/ngt,-linkmode 'external',-static -fPIC -pthread -fopenmp -std=gnu++20 -lstdc++ -lm -z relro -z now $(EXTLDFLAGS), cgo,NGT-$(NGT_VERSION),$@)
 
-cmd/agent/sidecar/sidecar: \
-	$(GO_SOURCES_INTERNAL) \
-	$(PBGOS) \
-	$(shell find $(ROOTDIR)/cmd/agent/sidecar -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go') \
-	$(shell find $(ROOTDIR)/pkg/agent/sidecar $(ROOTDIR)/pkg/agent/internal -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
-	$(eval CGO_ENABLED = 0)
-	CGO_ENABLED=$(CGO_ENABLED) \
-	GO111MODULE=on \
-	GOPRIVATE=$(GOPRIVATE) \
-	go build \
-		--ldflags "-w -extldflags=-static \
-		-X '$(GOPKG)/internal/info.Version=$(VERSION)' \
-		-X '$(GOPKG)/internal/info.GitCommit=$(GIT_COMMIT)' \
-		-X '$(GOPKG)/internal/info.BuildTime=$(DATETIME)' \
-		-X '$(GOPKG)/internal/info.GoVersion=$(GO_VERSION)' \
-		-X '$(GOPKG)/internal/info.GoOS=$(GOOS)' \
-		-X '$(GOPKG)/internal/info.GoArch=$(GOARCH)' \
-		-X '$(GOPKG)/internal/info.CGOEnabled=$(CGO_ENABLED)' \
-		-X '$(GOPKG)/internal/info.BuildCPUInfoFlags=$(CPU_INFO_FLAGS)' \
-		-buildid=" \
-		-mod=readonly \
-		-modcacherw \
-		-a \
-		-tags "osusergo netgo static_build" \
-		-trimpath \
-		-o $@ \
-		$(dir $@)main.go
-	$@ -version
+cmd/agent/core/faiss/faiss: \
+	faiss/install
+	$(eval CGO_ENABLED = 1)
+	$(call go-build,agent/core/faiss,-linkmode 'external',-fPIC -pthread -fopenmp -std=gnu++20 -lstdc++ -lm -z relro -z now, cgo,FAISS-$(FAISS_VERSION),$@)
 
-cmd/discoverer/k8s/discoverer: \
-	$(GO_SOURCES_INTERNAL) \
-	$(PBGOS) \
-	$(shell find $(ROOTDIR)/cmd/discoverer/k8s -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go') \
-	$(shell find $(ROOTDIR)/pkg/discoverer/k8s -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
+cmd/agent/sidecar/sidecar:
 	$(eval CGO_ENABLED = 0)
-	CGO_ENABLED=$(CGO_ENABLED) \
-	GO111MODULE=on \
-	GOPRIVATE=$(GOPRIVATE) \
-	go build \
-		--ldflags "-w -extldflags=-static \
-		-X '$(GOPKG)/internal/info.Version=$(VERSION)' \
-		-X '$(GOPKG)/internal/info.GitCommit=$(GIT_COMMIT)' \
-		-X '$(GOPKG)/internal/info.BuildTime=$(DATETIME)' \
-		-X '$(GOPKG)/internal/info.GoVersion=$(GO_VERSION)' \
-		-X '$(GOPKG)/internal/info.GoOS=$(GOOS)' \
-		-X '$(GOPKG)/internal/info.GoArch=$(GOARCH)' \
-		-X '$(GOPKG)/internal/info.CGOEnabled=$(CGO_ENABLED)' \
-		-X '$(GOPKG)/internal/info.BuildCPUInfoFlags=$(CPU_INFO_FLAGS)' \
-		-buildid=" \
-		-mod=readonly \
-		-modcacherw \
-		-a \
-		-tags "osusergo netgo static_build" \
-		-trimpath \
-		-o $@ \
-		$(dir $@)main.go
-	$@ -version
+	$(call go-build,agent/sidecar,,-static,,,$@)
 
-cmd/gateway/lb/lb: \
-	$(GO_SOURCES_INTERNAL) \
-	$(PBGOS) \
-	$(shell find $(ROOTDIR)/cmd/gateway/lb -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go') \
-	$(shell find $(ROOTDIR)/pkg/gateway/lb -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
+cmd/discoverer/k8s/discoverer:
 	$(eval CGO_ENABLED = 0)
-	CGO_ENABLED=$(CGO_ENABLED) \
-	GO111MODULE=on \
-	GOPRIVATE=$(GOPRIVATE) \
-	go build \
-		--ldflags "-w -extldflags=-static \
-		-X '$(GOPKG)/internal/info.Version=$(VERSION)' \
-		-X '$(GOPKG)/internal/info.GitCommit=$(GIT_COMMIT)' \
-		-X '$(GOPKG)/internal/info.BuildTime=$(DATETIME)' \
-		-X '$(GOPKG)/internal/info.GoVersion=$(GO_VERSION)' \
-		-X '$(GOPKG)/internal/info.GoOS=$(GOOS)' \
-		-X '$(GOPKG)/internal/info.GoArch=$(GOARCH)' \
-		-X '$(GOPKG)/internal/info.CGOEnabled=$(CGO_ENABLED)' \
-		-X '$(GOPKG)/internal/info.BuildCPUInfoFlags=$(CPU_INFO_FLAGS)' \
-		-buildid=" \
-		-mod=readonly \
-		-modcacherw \
-		-a \
-		-tags "osusergo netgo static_build" \
-		-trimpath \
-		-o $@ \
-		$(dir $@)main.go
-	$@ -version
+	$(call go-build,discoverer/k8s,,-static,,,$@)
 
-cmd/gateway/filter/filter: \
-	$(GO_SOURCES_INTERNAL) \
-	$(PBGOS) \
-	$(shell find $(ROOTDIR)/cmd/gateway/filter -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go') \
-	$(shell find $(ROOTDIR)/pkg/gateway/filter -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
+cmd/gateway/lb/lb:
 	$(eval CGO_ENABLED = 0)
-	CGO_ENABLED=$(CGO_ENABLED) \
-	GO111MODULE=on \
-	GOPRIVATE=$(GOPRIVATE) \
-	go build \
-		--ldflags "-w -extldflags=-static \
-		-X '$(GOPKG)/internal/info.Version=$(VERSION)' \
-		-X '$(GOPKG)/internal/info.GitCommit=$(GIT_COMMIT)' \
-		-X '$(GOPKG)/internal/info.BuildTime=$(DATETIME)' \
-		-X '$(GOPKG)/internal/info.GoVersion=$(GO_VERSION)' \
-		-X '$(GOPKG)/internal/info.GoOS=$(GOOS)' \
-		-X '$(GOPKG)/internal/info.GoArch=$(GOARCH)' \
-		-X '$(GOPKG)/internal/info.CGOEnabled=$(CGO_ENABLED)' \
-		-X '$(GOPKG)/internal/info.BuildCPUInfoFlags=$(CPU_INFO_FLAGS)' \
-		-buildid=" \
-		-mod=readonly \
-		-modcacherw \
-		-a \
-		-tags "osusergo netgo static_build" \
-		-trimpath \
-		-o $@ \
-		$(dir $@)main.go
-	$@ -version
+	$(call go-build,gateway/lb,,-static,,,$@)
 
-cmd/manager/index/index: \
-	$(GO_SOURCES_INTERNAL) \
-	$(PBGOS) \
-	$(shell find $(ROOTDIR)/cmd/manager/index -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go') \
-	$(shell find $(ROOTDIR)/pkg/manager/index -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
+cmd/gateway/filter/filter:
 	$(eval CGO_ENABLED = 0)
-	CGO_ENABLED=$(CGO_ENABLED) \
-	GO111MODULE=on \
-	GOPRIVATE=$(GOPRIVATE) \
-	go build \
-		--ldflags "-w -extldflags=-static \
-		-X '$(GOPKG)/internal/info.Version=$(VERSION)' \
-		-X '$(GOPKG)/internal/info.GitCommit=$(GIT_COMMIT)' \
-		-X '$(GOPKG)/internal/info.BuildTime=$(DATETIME)' \
-		-X '$(GOPKG)/internal/info.GoVersion=$(GO_VERSION)' \
-		-X '$(GOPKG)/internal/info.GoOS=$(GOOS)' \
-		-X '$(GOPKG)/internal/info.GoArch=$(GOARCH)' \
-		-X '$(GOPKG)/internal/info.CGOEnabled=$(CGO_ENABLED)' \
-		-X '$(GOPKG)/internal/info.BuildCPUInfoFlags=$(CPU_INFO_FLAGS)' \
-		-buildid=" \
-		-mod=readonly \
-		-modcacherw \
-		-a \
-		-tags "osusergo netgo static_build" \
-		-trimpath \
-		-o $@ \
-		$(dir $@)main.go
-	$@ -version
+	$(call go-build,gateway/filter,,-static,,,$@)
 
-cmd/index/job/correction/index-correction: \
-	$(GO_SOURCES_INTERNAL) \
-	$(PBGOS) \
-	$(shell find $(ROOTDIR)/cmd/index/job/correction -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go') \
-	$(shell find $(ROOTDIR)/pkg/index/job/correction -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
+cmd/gateway/mirror/mirror:
 	$(eval CGO_ENABLED = 0)
-	CGO_ENABLED=$(CGO_ENABLED) \
-	GO111MODULE=on \
-	GOPRIVATE=$(GOPRIVATE) \
-	go build \
-		--ldflags "-w -extldflags=-static \
-		-X '$(GOPKG)/internal/info.Version=$(VERSION)' \
-		-X '$(GOPKG)/internal/info.GitCommit=$(GIT_COMMIT)' \
-		-X '$(GOPKG)/internal/info.BuildTime=$(DATETIME)' \
-		-X '$(GOPKG)/internal/info.GoVersion=$(GO_VERSION)' \
-		-X '$(GOPKG)/internal/info.GoOS=$(GOOS)' \
-		-X '$(GOPKG)/internal/info.GoArch=$(GOARCH)' \
-		-X '$(GOPKG)/internal/info.CGOEnabled=$(CGO_ENABLED)' \
-		-X '$(GOPKG)/internal/info.BuildCPUInfoFlags=$(CPU_INFO_FLAGS)' \
-		-buildid=" \
-		-mod=readonly \
-		-modcacherw \
-		-a \
-		-tags "osusergo netgo static_build" \
-		-trimpath \
-		-o $@ \
-		$(dir $@)main.go
-	$@ -version
+	$(call go-build,gateway/mirror,,-static,,,$@)
 
-cmd/index/job/creation/index-creation: \
-	$(GO_SOURCES_INTERNAL) \
-	$(PBGOS) \
-	$(shell find $(ROOTDIR)/cmd/index/job/creation -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go') \
-	$(shell find $(ROOTDIR)/pkg/index/job/creation -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
+cmd/manager/index/index:
 	$(eval CGO_ENABLED = 0)
-	CGO_ENABLED=$(CGO_ENABLED) \
-	GO111MODULE=on \
-	GOPRIVATE=$(GOPRIVATE) \
-	go build \
-		--ldflags "-w -extldflags=-static \
-		-X '$(GOPKG)/internal/info.Version=$(VERSION)' \
-		-X '$(GOPKG)/internal/info.GitCommit=$(GIT_COMMIT)' \
-		-X '$(GOPKG)/internal/info.BuildTime=$(DATETIME)' \
-		-X '$(GOPKG)/internal/info.GoVersion=$(GO_VERSION)' \
-		-X '$(GOPKG)/internal/info.GoOS=$(GOOS)' \
-		-X '$(GOPKG)/internal/info.GoArch=$(GOARCH)' \
-		-X '$(GOPKG)/internal/info.CGOEnabled=$(CGO_ENABLED)' \
-		-X '$(GOPKG)/internal/info.BuildCPUInfoFlags=$(CPU_INFO_FLAGS)' \
-		-buildid=" \
-		-mod=readonly \
-		-modcacherw \
-		-a \
-		-tags "osusergo netgo static_build" \
-		-trimpath \
-		-o $@ \
-		$(dir $@)main.go
-	$@ -version
+	$(call go-build,manager/index,,-static,,,$@)
 
-cmd/index/job/save/index-save: \
-	$(GO_SOURCES_INTERNAL) \
-	$(PBGOS) \
-	$(shell find $(ROOTDIR)/cmd/index/job/save -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go') \
-	$(shell find $(ROOTDIR)/pkg/index/job/save -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
+cmd/index/job/correction/index-correction:
 	$(eval CGO_ENABLED = 0)
-	CGO_ENABLED=$(CGO_ENABLED) \
-	GO111MODULE=on \
-	GOPRIVATE=$(GOPRIVATE) \
-	go build \
-		--ldflags "-w -extldflags=-static \
-		-X '$(GOPKG)/internal/info.Version=$(VERSION)' \
-		-X '$(GOPKG)/internal/info.GitCommit=$(GIT_COMMIT)' \
-		-X '$(GOPKG)/internal/info.BuildTime=$(DATETIME)' \
-		-X '$(GOPKG)/internal/info.GoVersion=$(GO_VERSION)' \
-		-X '$(GOPKG)/internal/info.GoOS=$(GOOS)' \
-		-X '$(GOPKG)/internal/info.GoArch=$(GOARCH)' \
-		-X '$(GOPKG)/internal/info.CGOEnabled=$(CGO_ENABLED)' \
-		-X '$(GOPKG)/internal/info.BuildCPUInfoFlags=$(CPU_INFO_FLAGS)' \
-		-buildid=" \
-		-mod=readonly \
-		-modcacherw \
-		-a \
-		-tags "osusergo netgo static_build" \
-		-trimpath \
-		-o $@ \
-		$(dir $@)main.go
-	$@ -version
+	$(call go-build,index/job/correction,,-static,,,$@)
 
-cmd/index/job/readreplica/rotate/readreplica-rotate: \
-	$(GO_SOURCES_INTERNAL) \
-	$(PBGOS) \
-	$(shell find $(ROOTDIR)/cmd/index/job/readreplica/rotate -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go') \
-	$(shell find $(ROOTDIR)/pkg/index/job/readreplica/rotate -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
+cmd/index/job/creation/index-creation:
 	$(eval CGO_ENABLED = 0)
-	CGO_ENABLED=$(CGO_ENABLED) \
-	GO111MODULE=on \
-	GOPRIVATE=$(GOPRIVATE) \
-	go build \
-		--ldflags "-w -extldflags=-static \
-		-X '$(GOPKG)/internal/info.Version=$(VERSION)' \
-		-X '$(GOPKG)/internal/info.GitCommit=$(GIT_COMMIT)' \
-		-X '$(GOPKG)/internal/info.BuildTime=$(DATETIME)' \
-		-X '$(GOPKG)/internal/info.GoVersion=$(GO_VERSION)' \
-		-X '$(GOPKG)/internal/info.GoOS=$(GOOS)' \
-		-X '$(GOPKG)/internal/info.GoArch=$(GOARCH)' \
-		-X '$(GOPKG)/internal/info.CGOEnabled=$(CGO_ENABLED)' \
-		-X '$(GOPKG)/internal/info.BuildCPUInfoFlags=$(CPU_INFO_FLAGS)' \
-		-buildid=" \
-		-mod=readonly \
-		-modcacherw \
-		-a \
-		-tags "osusergo netgo static_build" \
-		-trimpath \
-		-o $@ \
-		$(dir $@)main.go
-	$@ -version
+	$(call go-build,index/job/creation,,-static,,,$@)
+
+cmd/index/job/save/index-save:
+	$(eval CGO_ENABLED = 0)
+	$(call go-build,index/job/save,,-static,,,$@)
+
+cmd/index/job/readreplica/rotate/readreplica-rotate:
+	$(eval CGO_ENABLED = 0)
+	$(call go-build,index/job/readreplica/rotate,,-static,,,$@)
+
+cmd/tools/benchmark/job/job:
+	$(call go-build,tools/benchmark/job,-linkmode 'external',-static -fPIC -pthread -fopenmp -std=gnu++20 -lhdf5 -lhdf5_hl -lm -ldl, cgo,$(HDF5_VERSION),$@)
+
+cmd/tools/benchmark/operator/operator:
+	$(eval CGO_ENABLED = 0)
+	$(call go-build,tools/benchmark/operator,,-static,,,$@)
 
 .PHONY: binary/build/zip
 ## build all binaries and zip them
 binary/build/zip: \
+	artifacts/vald-agent-faiss-$(GOOS)-$(GOARCH).zip \
 	artifacts/vald-agent-ngt-$(GOOS)-$(GOARCH).zip \
 	artifacts/vald-agent-sidecar-$(GOOS)-$(GOARCH).zip \
 	artifacts/vald-discoverer-k8s-$(GOOS)-$(GOARCH).zip \
-	artifacts/vald-lb-gateway-$(GOOS)-$(GOARCH).zip \
 	artifacts/vald-filter-gateway-$(GOOS)-$(GOARCH).zip \
-	artifacts/vald-manager-index-$(GOOS)-$(GOARCH).zip
+	artifacts/vald-index-correction-$(GOOS)-$(GOARCH).zip \
+	artifacts/vald-index-creation-$(GOOS)-$(GOARCH).zip \
+	artifacts/vald-index-save-$(GOOS)-$(GOARCH).zip \
+	artifacts/vald-lb-gateway-$(GOOS)-$(GOARCH).zip \
+	artifacts/vald-manager-index-$(GOOS)-$(GOARCH).zip \
+	artifacts/vald-mirror-gateway-$(GOOS)-$(GOARCH).zip \
+	artifacts/vald-readreplica-rotate-$(GOOS)-$(GOARCH).zip
 
 artifacts/vald-agent-ngt-$(GOOS)-$(GOARCH).zip: cmd/agent/core/ngt/ngt
+	$(call mkdir, $(dir $@))
+	zip --junk-paths $@ $<
+
+artifacts/vald-agent-faiss-$(GOOS)-$(GOARCH).zip: cmd/agent/core/faiss/faiss
 	$(call mkdir, $(dir $@))
 	zip --junk-paths $@ $<
 
@@ -356,3 +134,30 @@ artifacts/vald-manager-index-$(GOOS)-$(GOARCH).zip: cmd/manager/index/index
 	$(call mkdir, $(dir $@))
 	zip --junk-paths $@ $<
 
+artifacts/vald-benchmark-job-$(GOOS)-$(GOARCH).zip: cmd/tools/benchmark/job/job
+	$(call mkdir, $(dir $@))
+	zip --junk-paths $@ $<
+
+artifacts/vald-benchmark-operator-$(GOOS)-$(GOARCH).zip: cmd/tools/benchmark/operator/operator
+	$(call mkdir, $(dir $@))
+	zip --junk-paths $@ $<
+
+artifacts/vald-mirror-gateway-$(GOOS)-$(GOARCH).zip: cmd/gateway/mirror/mirror
+	$(call mkdir, $(dir $@))
+	zip --junk-paths $@ $<
+
+artifacts/vald-index-correction-$(GOOS)-$(GOARCH).zip: cmd/index/job/correction/index-correction
+	$(call mkdir, $(dir $@))
+	zip --junk-paths $@ $<
+
+artifacts/vald-index-creation-$(GOOS)-$(GOARCH).zip: cmd/index/job/creation/index-creation
+	$(call mkdir, $(dir $@))
+	zip --junk-paths $@ $<
+
+artifacts/vald-index-save-$(GOOS)-$(GOARCH).zip: cmd/index/job/save/index-save
+	$(call mkdir, $(dir $@))
+	zip --junk-paths $@ $<
+
+artifacts/vald-readreplica-rotate-$(GOOS)-$(GOARCH).zip: cmd/index/job/readreplica/rotate/readreplica-rotate
+	$(call mkdir, $(dir $@))
+	zip --junk-paths $@ $<

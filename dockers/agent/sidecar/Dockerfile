@@ -1,6 +1,6 @@
 # syntax = docker/dockerfile:latest
 #
-# Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -15,14 +15,15 @@
 # limitations under the License.
 #
 
-ARG GO_VERSION=latest
 ARG DISTROLESS_IMAGE=gcr.io/distroless/static
 ARG DISTROLESS_IMAGE_TAG=nonroot
 ARG MAINTAINER="vdaas.org vald team <vald@vdaas.org>"
 
-FROM --platform=${BUILDPLATFORM} golang:${GO_VERSION} AS golang
+FROM --platform=${TARGETPLATFORM} ubuntu:devel AS builder
 
-FROM --platform=${BUILDPLATFORM} ubuntu:devel AS builder
+ARG GO_VERSION
+ARG TARGETARCH
+ARG TARGETOS
 
 ENV GO111MODULE on
 ENV GOPATH /go
@@ -47,9 +48,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-COPY --from=golang /usr/local/go $GOROOT
-RUN mkdir -p "$GOPATH/src"
-
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/Makefile.d
 COPY Makefile.d .
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}
@@ -58,7 +56,10 @@ COPY .git .
 COPY go.mod .
 COPY go.sum .
 
-RUN make go/download
+RUN --mount=type=cache,target="${GOPATH}/pkg",id="go-build-${TARGETARCH}" \
+    --mount=type=cache,target="${HOME}/.cache/go-build",id="go-build-${TARGETARCH}" \
+    make GO_VERSION=${GO_VERSION} go/install \
+    && make go/download
 
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/internal
 COPY internal .
@@ -79,10 +80,12 @@ WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/versions
 COPY versions .
 
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}
-RUN make REPO=${ORG} NAME=${REPO} cmd/${PKG}/${APP_NAME} \
+RUN --mount=type=cache,target="${GOPATH}/pkg",id="go-build-${TARGETARCH}" \
+    --mount=type=cache,target="${HOME}/.cache/go-build",id="go-build-${TARGETARCH}" \
+    make GOARCH=${TARGETARCH} GOOS=${TARGETOS} REPO=${ORG} NAME=${REPO} cmd/${PKG}/${APP_NAME} \
     && mv "cmd/${PKG}/${APP_NAME}" "/usr/bin/${APP_NAME}"
 
-FROM --platform=${BUILDPLATFORM} ${DISTROLESS_IMAGE}:${DISTROLESS_IMAGE_TAG}
+FROM --platform=${TARGETPLATFORM} ${DISTROLESS_IMAGE}:${DISTROLESS_IMAGE_TAG}
 LABEL maintainer="${MAINTAINER}"
 
 ENV APP_NAME sidecar

@@ -1,6 +1,6 @@
 # syntax = docker/dockerfile:latest
 #
-# Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-ARG GO_VERSION=latest
 ARG DISTROLESS_IMAGE=gcr.io/distroless/static
 ARG DISTROLESS_IMAGE_TAG=nonroot
 ARG OPERATOR_SDK_VERSION
@@ -26,16 +25,18 @@ ARG VALD_HELM_OPERATOR_KIND="ValdHelmOperatorRelease"
 ARG MAINTAINER="vdaas.org vald team <vald@vdaas.org>"
 
 # skipcq: DOK-DL3026
-FROM --platform=${BUILDPLATFORM} quay.io/operator-framework/helm-operator:${OPERATOR_SDK_VERSION} AS operator
-FROM --platform=${BUILDPLATFORM} golang:${GO_VERSION} AS golang
-FROM --platform=${BUILDPLATFORM} ubuntu:devel AS builder
+FROM --platform=${TARGETPLATFORM} quay.io/operator-framework/helm-operator:${OPERATOR_SDK_VERSION} AS operator
+FROM --platform=${TARGETPLATFORM} ubuntu:devel AS builder
 
+ARG GO_VERSION
 ARG OPERATOR_SDK_VERSION
 ARG VERSION
 ARG GROUP
 ARG VALD_KIND
 ARG VALD_HELM_OPERATOR_KIND
 ARG UPX_OPTIONS
+ARG TARGETARCH
+ARG TARGETOS
 
 ENV GO111MODULE on
 ENV DEBIAN_FRONTEND noninteractive
@@ -61,14 +62,12 @@ RUN apt-get clean \
     curl \
     upx \
     git \
+    && ldconfig \
     && apt-get clean \
     && rm -rf \
         /var/lib/apt/lists/* \
         /var/cache/* \
     && apt-get autoremove
-
-COPY --from=golang /usr/local/go $GOROOT
-RUN mkdir -p "$GOPATH/src"
 
 RUN { \
         echo "---"; \
@@ -90,7 +89,8 @@ COPY .git .
 COPY go.mod .
 COPY go.sum .
 
-RUN make go/download
+RUN make GO_VERSION=${GO_VERSION} go/install \
+    && make go/download
 
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/internal/errors
 COPY internal/errors .
@@ -113,18 +113,19 @@ COPY versions .
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/charts
 COPY charts .
 
-WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/hack/helm/schema/gen
-COPY hack/helm/schema/gen .
+WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/hack
+COPY hack .
 
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}
-RUN make helm/schema/vald helm/schema/vald-helm-operator \
+RUN make GOARCH=${TARGETARCH} GOOS=${TARGETOS} helm/schema/vald \
+    && make GOARCH=${TARGETARCH} GOOS=${TARGETOS} helm/schema/vald-helm-operator \
     && cp -r charts /charts
 
 COPY --from=operator /usr/local/bin/${APP_NAME} /usr/bin/${APP_NAME}
 
 RUN upx ${UPX_OPTIONS} "/usr/bin/${APP_NAME}"
 
-FROM --platform=${BUILDPLATFORM} ${DISTROLESS_IMAGE}:${DISTROLESS_IMAGE_TAG}
+FROM --platform=${TARGETPLATFORM} ${DISTROLESS_IMAGE}:${DISTROLESS_IMAGE_TAG}
 LABEL maintainer="${MAINTAINER}"
 
 ENV APP_NAME helm-operator

@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -17,11 +17,14 @@
 ## build all docker images
 docker/build: \
 	docker/build/agent-ngt \
+	docker/build/agent-faiss \
 	docker/build/agent-sidecar \
 	docker/build/discoverer-k8s \
 	docker/build/gateway-lb \
 	docker/build/gateway-filter \
 	docker/build/manager-index \
+	docker/build/benchmark-job \
+	docker/build/benchmark-operator \
 	docker/build/operator/helm
 
 .PHONY: docker/name/org
@@ -74,13 +77,24 @@ endif
 
 .PHONY: docker/name/agent-ngt
 docker/name/agent-ngt:
-	@echo "$(ORG)/$(AGENT_IMAGE)"
+	@echo "$(ORG)/$(AGENT_NGT_IMAGE)"
 
 .PHONY: docker/build/agent-ngt
 ## build agent-ngt image
 docker/build/agent-ngt:
 	@make DOCKERFILE="$(ROOTDIR)/dockers/agent/core/ngt/Dockerfile" \
-		IMAGE=$(AGENT_IMAGE) \
+		IMAGE=$(AGENT_NGT_IMAGE) \
+		docker/build/image
+
+.PHONY: docker/name/agent-faiss
+docker/name/agent-faiss:
+	@echo "$(ORG)/$(AGENT_FAISS_IMAGE)"
+
+.PHONY: docker/build/agent-faiss
+## build agent-faiss image
+docker/build/agent-faiss:
+	@make DOCKERFILE="$(ROOTDIR)/dockers/agent/core/faiss/Dockerfile" \
+		IMAGE=$(AGENT_FAISS_IMAGE) \
 		docker/build/image
 
 .PHONY: docker/name/agent-sidecar
@@ -127,6 +141,17 @@ docker/build/gateway-filter:
 		IMAGE=$(FILTER_GATEWAY_IMAGE) \
 		docker/build/image
 
+.PHONY: docker/name/gateway-mirror
+docker/name/gateway-mirror:
+	@echo "$(ORG)/$(MIRROR_GATEWAY_IMAGE)"
+
+.PHONY: docker/build/gateway-mirror
+## build gateway-mirror image
+docker/build/gateway-mirror:
+	@make DOCKERFILE="$(ROOTDIR)/dockers/gateway/mirror/Dockerfile" \
+		IMAGE=$(MIRROR_GATEWAY_IMAGE) \
+		docker/build/image
+
 .PHONY: docker/name/manager-index
 docker/name/manager-index:
 	@echo "$(ORG)/$(MANAGER_INDEX_IMAGE)"
@@ -147,6 +172,7 @@ docker/name/ci-container:
 docker/build/ci-container:
 	@make DOCKERFILE="$(ROOTDIR)/dockers/ci/base/Dockerfile" \
 		IMAGE=$(CI_CONTAINER_IMAGE) \
+		EXTRA_ARGS="--add-host=registry.npmjs.org:104.16.20.35" \
 		docker/build/image
 
 .PHONY: docker/name/dev-container
@@ -169,7 +195,7 @@ docker/name/operator/helm:
 docker/build/operator/helm:
 	@make DOCKERFILE="$(ROOTDIR)/dockers/operator/helm/Dockerfile" \
 		IMAGE=$(HELM_OPERATOR_IMAGE) \
-		EXTRA_ARGS="--build-arg OPERATOR_SDK_VERSION=$(OPERATOR_SDK_VERSION) --build-arg UPX_OPTIONS=$(UPX_OPTIONS)" \
+		EXTRA_ARGS="--build-arg OPERATOR_SDK_VERSION=$(OPERATOR_SDK_VERSION) --build-arg UPX_OPTIONS=$(UPX_OPTIONS) $(EXTRA_ARGS)" \
 		docker/build/image
 
 .PHONY: docker/name/loadtest
@@ -225,4 +251,27 @@ docker/name/readreplica-rotate:
 docker/build/readreplica-rotate:
 	@make DOCKERFILE="$(ROOTDIR)/dockers/index/job/readreplica/rotate/Dockerfile" \
 		IMAGE=$(READREPLICA_ROTATE_IMAGE) \
+		docker/build/image
+
+.PHONY: docker/name/benchmark-job
+docker/name/benchmark-job:
+	@echo "$(ORG)/$(BENCHMARK_JOB_IMAGE)"
+
+.PHONY: docker/build/benchmark-job
+## build benchmark job
+docker/build/benchmark-job:
+	@make DOCKERFILE="$(ROOTDIR)/dockers/tools/benchmark/job/Dockerfile" \
+		IMAGE=$(BENCHMARK_JOB_IMAGE) \
+		DOCKER_OPTS="--build-arg ZLIB_VERSION=$(ZLIB_VERSION) --build-arg HDF5_VERSION=$(HDF5_VERSION)" \
+		docker/build/image
+
+.PHONY: docker/name/benchmark-operator
+docker/name/benchmark-operator:
+	@echo "$(ORG)/$(BENCHMARK_OPERATOR_IMAGE)"
+
+.PHONY: docker/build/benchmark-operator
+## build benchmark operator
+docker/build/benchmark-operator:
+	@make DOCKERFILE="$(ROOTDIR)/dockers/tools/benchmark/operator/Dockerfile" \
+		IMAGE=$(BENCHMARK_OPERATOR_IMAGE) \
 		docker/build/image

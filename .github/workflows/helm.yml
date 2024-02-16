@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -21,107 +21,39 @@ on:
       - "v*.*.*"
       - "*.*.*-*"
       - "v*.*.*-*"
-
 jobs:
   dump-contexts-to-log:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/dump-context
-
-  update-k8s-manifest:
-    name: Update k8s manifest
-    runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/vdaas/vald/vald-ci-container:nightly
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Set Git config
-        run: |
-          git config --global --add safe.directory ${GITHUB_WORKSPACE}
-
-      - uses: crazy-max/ghaction-import-gpg@v4
-        with:
-          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
-          git_user_signingkey: true
-          git_commit_gpgsign: true
-
-      - name: Setup Helm environment
-        uses: ./.github/actions/setup-helm
-
-      - name: Switch new branch
-        id: switch_to_new_branch
-        run: |
-          TIMESTAMP=$(date +%Y%m%d_%H%M%S_%3N)
-          BRANCH_NAME="documentation/k8s-manifests/update_k8s_manifests_${TIMESTAMP}"
-          git checkout main
-          git checkout -b ${BRANCH_NAME}
-          echo "BRANCH_NAME=${BRANCH_NAME}" >> $GITHUB_OUTPUT
-
-      - name: Update k8s-dir
-        run: |
-          make k8s/manifest/update
-          make k8s/manifest/helm-operator/update
-
-      - name: Run formatter and license.go
-        run: |
-          make format/yaml
-          make license
-
-      - name: Push to main
-        continue-on-error: true
-        run: |
-          git add k8s
-          git commit -S --signoff -m ":robot: Automatically update k8s manifests"
-
-          git remote set-url origin "https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
-          git push -u origin ${BRANCH_NAME}
-
-          curl --include --verbose --fail \
-          -H "Accept: application/json" \
-          -H "Content-Type:application/json" \
-          -H "Authorization: token ${GITHUB_TOKEN}" \
-          --request POST \
-          --data "{\"title\": \"Update K8s manifests\", \"head\": \"${BRANCH_NAME}\", \"base\": \"main\", \"body\": \"K8s manifests are updated.\", \"maintainer_can_modify\": true}" \
-          $API_URL
-        env:
-          GITHUB_USER: ${{ secrets.DISPATCH_USER }}
-          GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
-          API_URL: https://api.github.com/repos/vdaas/vald/pulls
-          BRANCH_NAME: ${{ steps.switch_to_new_branch.outputs.BRANCH_NAME }}
-
+  detect-ci-container:
+    uses: ./.github/workflows/_detect-ci-container.yml
   update-helm-chart:
     name: Update Helm chart
     runs-on: ubuntu-latest
+    needs: [detect-ci-container]
     container:
-      image: ghcr.io/vdaas/vald/vald-ci-container:nightly
+      image: ghcr.io/vdaas/vald/vald-ci-container:${{ needs.detect-ci-container.outputs.TAG_NAME }}
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
           token: ${{ secrets.DISPATCH_TOKEN }}
-
       - name: Set Git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
-
-      - uses: crazy-max/ghaction-import-gpg@v4
+      - uses: crazy-max/ghaction-import-gpg@v6
         with:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           git_user_signingkey: true
           git_commit_gpgsign: true
-
       - name: Setup Helm environment
         uses: ./.github/actions/setup-helm
-
       - name: Packaging
         run: |
           make helm/package/vald
           make helm/package/vald-helm-operator
-
       - name: Push to gh-pages
         run: |
           git checkout .
@@ -137,22 +69,18 @@ jobs:
         env:
           GITHUB_USER: ${{ secrets.DISPATCH_USER }}
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
-
   crud-on-remote-helm-chart:
     name: CRUD test on remote Helm chart
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
-
       - name: Set Git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
-
       - name: Setup E2E environment
         id: setup_e2e
         uses: ./.github/actions/setup-e2e
-
       - name: Deploy Vald
         id: deploy_vald
         uses: ./.github/actions/e2e-deploy-vald
@@ -161,7 +89,6 @@ jobs:
           values: .github/helm/values/values-lb.yaml
           wait_for_selector: app=vald-lb-gateway
           use_local_charts: false
-
       - name: Run E2E CRUD
         run: |
           make hack/benchmark/assets/dataset/${DATASET}

@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -113,7 +113,7 @@ func Test_group_Do(t *testing.T) {
 
 			// the unparam lint rule is disabled here because we need to match the interface to singleflight implementation.
 			// if this rule is not disabled, if will warns that the error will always return null.
-			//nolint:unparam
+
 			fn1 := func(context.Context) (string, error) {
 				atomic.AddUint32(&cnt1, 1)
 				return "res_1", nil

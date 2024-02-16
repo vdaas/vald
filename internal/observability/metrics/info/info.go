@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -21,8 +21,8 @@ import (
 
 	"github.com/vdaas/vald/internal/observability/attribute"
 	"github.com/vdaas/vald/internal/observability/metrics"
-	"go.opentelemetry.io/otel/sdk/metric/aggregation"
-	"go.opentelemetry.io/otel/sdk/metric/view"
+	api "go.opentelemetry.io/otel/metric"
+	view "go.opentelemetry.io/otel/sdk/metric"
 )
 
 type info struct {
@@ -83,23 +83,22 @@ func labelKVs(i interface{}) map[string]string {
 	return kvs
 }
 
-func (i *info) View() ([]*metrics.View, error) {
-	info, err := view.New(
-		view.MatchInstrumentName(i.name),
-		view.WithSetDescription(i.description),
-		view.WithSetAggregation(aggregation.LastValue{}),
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	return []*metrics.View{
-		&info,
+func (i *info) View() ([]metrics.View, error) {
+	return []metrics.View{
+		view.NewView(
+			view.Instrument{
+				Name:        i.name,
+				Description: i.description,
+			},
+			view.Stream{
+				Aggregation: view.AggregationLastValue{},
+			},
+		),
 	}, nil
 }
 
 func (i *info) Register(m metrics.Meter) error {
-	info, err := m.AsyncInt64().Gauge(
+	info, err := m.Int64ObservableGauge(
 		i.name,
 		metrics.WithDescription(i.description),
 		metrics.WithUnit(metrics.Dimensionless),
@@ -107,16 +106,15 @@ func (i *info) Register(m metrics.Meter) error {
 	if err != nil {
 		return err
 	}
-	return m.RegisterCallback(
-		[]metrics.AsynchronousInstrument{
-			info,
-		},
-		func(ctx context.Context) {
+	_, err = m.RegisterCallback(
+		func(_ context.Context, o api.Observer) error {
 			attrs := make([]attribute.KeyValue, 0, len(i.kvs))
 			for key, val := range i.kvs {
 				attrs = append(attrs, attribute.String(key, val))
 			}
-			info.Observe(ctx, 1, attrs...)
-		},
+			o.ObserveInt64(info, 1, api.WithAttributes(attrs...))
+			return nil
+		}, info,
 	)
+	return err
 }

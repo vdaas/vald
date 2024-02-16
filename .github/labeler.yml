@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -13,76 +13,169 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-area/agent/core:
-  - apis/proto/v1/agent/core/**/*
-  - apis/grpc/v1/agent/core/**/*
-  - apis/proto/agent/core/**/*
-  - apis/grpc/agent/core/**/*
-  - cmd/agent/core/**/*
-  - pkg/agent/core/**/*
-
+area/agent/core/faiss:
+  - changed-files:
+      - any-glob-to-any-file:
+          - apis/grpc/v1/agent/core/**/*
+          - apis/proto/v1/agent/core/**/*
+          - cmd/agent/core/faiss/*
+          - pkg/agent/core/faiss/**/*
+          - pkg/agent/internal/**/*
+area/agent/core/ngt:
+  - changed-files:
+      - any-glob-to-any-file:
+          - apis/grpc/v1/agent/core/**/*
+          - apis/proto/v1/agent/core/**/*
+          - cmd/agent/core/ngt/*
+          - pkg/agent/core/ngt/**/*
+          - pkg/agent/internal/**/*
 area/agent/sidecar:
-  - apis/proto/v1/agent/sidecar/**/*
-  - apis/grpc/v1/agent/sidecar/**/*
-  - apis/proto/agent/sidecar/**/*
-  - apis/grpc/agent/sidecar/**/*
-  - cmd/agent/sidecar/**/*
-  - pkg/agent/sidecar/**/*
-
+  - changed-files:
+      - any-glob-to-any-file:
+          - apis/grpc/v1/agent/sidecar/**/*
+          - apis/proto/v1/agent/sidecar/**/*
+          - cmd/agent/sidecar/**/*
+          - pkg/agent/sidecar/**/*
 area/discoverer:
-  - apis/proto/v1/discoverer/**/*
-  - apis/grpc/v1/discoverer/**/*
-  - apis/proto/discoverer/**/*
-  - apis/grpc/discoverer/**/*
-  - cmd/discoverer/**/*
-  - pkg/discoverer/**/*
-
+  - changed-files:
+      - any-glob-to-any-file:
+          - apis/grpc/v1/discoverer/**/*
+          - apis/proto/v1/discoverer/**/*
+          - cmd/discoverer/**/*
+          - pkg/discoverer/**/*
 area/gateway/lb:
-  - apis/proto/v1/payload/**/*
-  - apis/proto/v1/vald/**/*
-  - apis/grpc/v1/vald/**/*
-  - cmd/gateway/lb/**/*
-  - pkg/gateway/lb/**/*
-
+  - changed-files:
+      - any-glob-to-any-file:
+          - apis/grpc/v1/discoverer/**/*
+          - apis/grpc/v1/payload/**/*
+          - apis/grpc/v1/vald/**/*
+          - apis/proto/v1/discoverer/**/*
+          - apis/proto/v1/payload/**/*
+          - apis/proto/v1/vald/**/*
+          - cmd/gateway/lb/**/*
+          - pkg/gateway/lb/**/*
 area/gateway/filter:
-  - apis/proto/v1/payload/**/*
-  - apis/proto/v1/vald/**/*
-  - apis/grpc/v1/vald/**/*
-  - cmd/gateway/filter/**/*
-  - pkg/gateway/filter/**/*
-
+  - changed-files:
+      - any-glob-to-any-file:
+          - apis/grpc/v1/filter/egress/*
+          - apis/grpc/v1/filter/ingress/*
+          - apis/grpc/v1/payload/**/*
+          - apis/grpc/v1/vald/**/*
+          - apis/proto/v1/filter/egress/*
+          - apis/proto/v1/filter/ingress/*
+          - apis/proto/v1/payload/**/*
+          - apis/proto/v1/vald/**/*
+          - cmd/gateway/filter/**/*
+          - pkg/gateway/filter/**/*
+area/gateway/mirror:
+  - changed-files:
+      - any-glob-to-any-file:
+          - apis/grpc/v1/payload/**/*
+          - apis/grpc/v1/vald/**/*
+          - apis/proto/v1/payload/**/*
+          - apis/proto/v1/vald/**/*
+          - cmd/gateway/mirror/**/*
+          - pkg/gateway/mirror/**/*
 area/manager/index:
-  - apis/proto/v1/payload/**/*
-  - apis/proto/v1/manager/index/**/*
-  - apis/grpc/v1/manager/index/**/*
-  - cmd/manager/index/**/*
-  - pkg/manager/index/**/*
-
+  - changed-files:
+      - any-glob-to-any-file:
+          - apis/grpc/v1/discoverer/**/*
+          - apis/grpc/v1/manager/index/**/*
+          - apis/grpc/v1/payload/**/*
+          - apis/proto/v1/discoverer/**/*
+          - apis/proto/v1/manager/index/**/*
+          - apis/proto/v1/payload/**/*
+          - cmd/manager/index/**/*
+          - pkg/manager/index/**/*
+area/index/job/correction:
+  - changed-files:
+      - any-glob-to-any-file:
+          - apis/grpc/v1/agent/core/**/*
+          - apis/grpc/v1/discoverer/**/*
+          - apis/grpc/v1/payload/**/*
+          - apis/grpc/v1/vald/**/*
+          - apis/proto/v1/agent/core/**/*
+          - apis/proto/v1/discoverer/**/*
+          - apis/proto/v1/payload/**/*
+          - apis/proto/v1/vald/**/*
+          - cmd/index/job/correction/*
+          - pkg/index/job/correction/**/*
+area/index/job/creation:
+  - changed-files:
+      - any-glob-to-any-file:
+          - apis/grpc/v1/agent/core/**/*
+          - apis/grpc/v1/discoverer/**/*
+          - apis/grpc/v1/payload/**/*
+          - apis/grpc/v1/vald/**/*
+          - apis/proto/v1/agent/core/**/*
+          - apis/proto/v1/discoverer/**/*
+          - apis/proto/v1/payload/**/*
+          - apis/proto/v1/vald/**/*
+          - cmd/index/job/creation/*
+          - pkg/index/job/creation/**/*
+area/index/job/save:
+  - changed-files:
+      - any-glob-to-any-file:
+          - apis/grpc/v1/agent/core/**/*
+          - apis/grpc/v1/discoverer/**/*
+          - apis/grpc/v1/payload/**/*
+          - apis/grpc/v1/vald/**/*
+          - apis/proto/v1/agent/core/**/*
+          - apis/proto/v1/discoverer/**/*
+          - apis/proto/v1/payload/**/*
+          - apis/proto/v1/vald/**/*
+          - cmd/index/job/save/*
+          - pkg/index/job/save/**/*
+area/index/job/readreplica:
+  - changed-files:
+      - any-glob-to-any-file:
+          - apis/grpc/v1/agent/core/**/*
+          - apis/grpc/v1/discoverer/**/*
+          - apis/grpc/v1/payload/**/*
+          - apis/grpc/v1/vald/**/*
+          - apis/proto/v1/agent/core/**/*
+          - apis/proto/v1/discoverer/**/*
+          - apis/proto/v1/payload/**/*
+          - apis/proto/v1/vald/**/*
+          - cmd/index/job/readreplica/**/*
+          - pkg/index/job/readreplica/**/*
+area/filter/egress:
+  - changed-files:
+      - any-glob-to-any-file:
+          - apis/grpc/v1/filter/egress/*
+          - apis/grpc/v1/payload/**/*
+          - apis/proto/v1/filter/egress/*
+          - apis/proto/v1/payload/**/*
+area/filter/ingress:
+  - changed-files:
+      - any-glob-to-any-file:
+          - apis/grpc/v1/filter/ingress/*
+          - apis/grpc/v1/payload/**/*
+          - apis/proto/v1/filter/ingress/*
+          - apis/proto/v1/payload/**/*
 area/tools/cli/loadtest:
-  - apis/proto/agent/core/**/*
-  - apis/grpc/agent/core/**/*
-  - apis/proto/vald/**/*
-  - apis/grpc/vald/**/*
-  - cmd/tools/cli/loadtest/**/*
-  - pkg/tools/cli/loadtest/**/*
-
+  - changed-files:
+      - any-glob-to-any-file:
+          - apis/proto/v1/agent/core/**/*
+          - apis/proto/v1/vald/**/*
+          - apis/grpc/v1/agent/core/**/*
+          - apis/grpc/v1/vald/**/*
+          - cmd/tools/cli/loadtest/**/*
+          - pkg/tools/cli/loadtest/**/*
 area/internal:
-  - internal/**/*
-
+  - changed-files:
+      - any-glob-to-any-file:
+          - internal/**/*
 area/helm:
-  - charts/**/*
-
+  - changed-files:
+      - any-glob-to-any-file:
+          - charts/**/*
 area/makefile:
-  - Makefile
-  - Makefile.d/**/*
-
-team/set:
-  - "**/*_test.go"
-
-team/sre:
-  - Makefile
-  - Makefile.d/**/*
-  - .github/**/*
-
+  - changed-files:
+      - any-glob-to-any-file:
+          - Makefile
+          - Makefile.d/**/*
 type/ci:
-  - .github/**/*
+  - changed-files:
+      - any-glob-to-any-file:
+          - .github/**/*

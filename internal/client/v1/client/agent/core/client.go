@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -86,11 +86,7 @@ func New(opts ...Option) (Client, error) {
 	return c, nil
 }
 
-func NewAgentClient(cc *grpc.ClientConn) interface {
-	vald.Client
-	client.ObjectReader
-	client.Indexer
-} {
+func NewAgentClient(cc *grpc.ClientConn) Client {
 	return &singleAgentClient{
 		Client: vald.NewValdClient(cc),
 		ac:     agent.NewAgentClient(cc),

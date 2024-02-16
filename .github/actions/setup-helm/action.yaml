@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -15,13 +15,11 @@
 #
 name: "Setup Helm environment"
 description: "A action to set up Helm environment"
-
 inputs:
   helm_version:
     description: "The Helm version to use. The default version is `versions/HELM_VERSION`"
     required: false
     default: ""
-
 runs:
   using: "composite"
   steps:
@@ -34,11 +32,11 @@ runs:
         echo "version=${HELM_VERSION}" >> $GITHUB_OUTPUT
       env:
         HELM_VERSION: ${{ inputs.helm_version }}
-
-    - uses: azure/setup-helm@v3
+    # This will change when the v4 version is released.
+    # Ref: https://github.com/Azure/setup-helm/issues/126
+    - uses: azure/setup-helm@v4.0.0
       with:
         version: ${{ steps.helm_version.outputs.version }}
-
     - name: Check Helm version
       shell: bash
       run: |

@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -284,7 +284,7 @@ func (p *pool) flush() {
 }
 
 func (p *pool) refreshConn(ctx context.Context, idx int, pc *poolConn, addr string) (err error) {
-	if pc != nil && pc.addr == addr && isHealthy(pc.conn) {
+	if pc != nil && pc.addr == addr && isHealthy(ctx, pc.conn) {
 		return nil
 	}
 	if pc != nil {
@@ -295,7 +295,7 @@ func (p *pool) refreshConn(ctx context.Context, idx int, pc *poolConn, addr stri
 	conn, err := p.dial(ctx, addr)
 	if err != nil {
 		if pc != nil {
-			if isHealthy(pc.conn) {
+			if isHealthy(ctx, pc.conn) {
 				log.Debugf("dialing new connection to %s failed,\terror: %v,\tbut existing connection to %s is healthy will keep existing connection", addr, err, pc.addr)
 				return nil
 			}
@@ -343,7 +343,10 @@ func (p *pool) Connect(ctx context.Context) (c Conn, err error) {
 	if err != nil {
 		return p.singleTargetConnect(ctx)
 	}
+	return p.connect(ctx, ips...)
+}
 
+func (p *pool) connect(ctx context.Context, ips ...string) (c Conn, err error) {
 	if uint64(len(ips)) > p.Size() {
 		p.grow(uint64(len(ips)))
 	}
@@ -356,7 +359,7 @@ func (p *pool) Connect(ctx context.Context) (c Conn, err error) {
 				!errors.Is(ierr, context.Canceled) {
 				log.Warnf("An error occurred while dialing pool member connection to %s,\terror: %v", addr, ierr)
 			} else {
-				log.Debug("Connect loop operation canceled while dialing pool member connection to %s,\terror: %v", addr, ierr)
+				log.Debugf("Connect loop operation canceled while dialing pool member connection to %s,\terror: %v", addr, ierr)
 				return false
 			}
 		}
@@ -385,6 +388,15 @@ func (p *pool) Reconnect(ctx context.Context, force bool) (c Conn, err error) {
 
 	healthy := p.IsHealthy(ctx)
 	if healthy {
+		if !p.isIP && p.resolveDNS && hash != nil && *hash != "" {
+			ips, err := p.lookupIPAddr(ctx)
+			if err != nil {
+				return p, nil
+			}
+			if *hash != strings.Join(ips, "-") {
+				return p.connect(ctx, ips...)
+			}
+		}
 		return p, nil
 	}
 
@@ -409,7 +421,7 @@ func (p *pool) singleTargetConnect(ctx context.Context) (c Conn, err error) {
 				}
 				return true
 			} else {
-				log.Debug("Connect loop operation canceled while dialing pool member connection to %s,\terror: %v", p.addr, ierr)
+				log.Debugf("Connect loop operation canceled while dialing pool member connection to %s,\terror: %v", p.addr, ierr)
 				return false
 			}
 		}
@@ -437,7 +449,7 @@ func (p *pool) Disconnect() (err error) {
 					log.Debugf("failed to close connection pool addr = %s\terror = %v", pc.addr, ierr)
 					emap[ierr.Error()] = err
 				} else {
-					log.Debug("Disconnect loop operation canceled while closing pool member connection to %s,\terror: %v", pc.addr, ierr)
+					log.Debugf("Disconnect loop operation canceled while closing pool member connection to %s,\terror: %v", pc.addr, ierr)
 					return false
 				}
 			}
@@ -466,7 +478,7 @@ func (p *pool) dial(ctx context.Context, addr string) (conn *ClientConn, err err
 			log.Debugf("failed to dial gRPC connection to %s,\terror: %v", addr, err)
 			return nil, err
 		}
-		if !isHealthy(conn) {
+		if !isHealthy(ctx, conn) {
 			if conn != nil {
 				err = conn.Close()
 				if err != nil && !errors.Is(err, grpc.ErrClientConnClosing) {
@@ -499,24 +511,42 @@ func (p *pool) IsHealthy(ctx context.Context) (healthy bool) {
 	if p == nil || p.closing.Load() {
 		return false
 	}
-	var cnt int
+	var cnt, unhealthy int
 	pl := p.len()
-	unhealthy := pl
 	err := p.loop(ctx, func(ctx context.Context, idx int, pc *poolConn) bool {
-		if pc == nil || !isHealthy(pc.conn) {
+		if pc == nil || !isHealthy(ctx, pc.conn) {
 			if p.isIP {
+				if pc != nil && pc.addr != "" {
+					err := p.refreshConn(ctx, idx, pc, pc.addr)
+					if err != nil {
+						// target addr cannot re-connect so, connection is unhealthy
+						unhealthy++
+						return false
+					}
+					return true
+				}
 				return false
 			}
 			addr := p.addr
 			if pc != nil {
 				addr = pc.addr
 			}
+			// re-connect to last connected addr
 			err := p.refreshConn(ctx, idx, pc, addr)
 			if err != nil {
-				return true
+				if addr == p.addr {
+					unhealthy++
+					return true
+				}
+				// last connect addr is not dns and cannot connect then try dns
+				err = p.refreshConn(ctx, idx, pc, p.addr)
+				// dns addr cannot connect so, connection is unhealthy
+				if err != nil {
+					unhealthy = pl - cnt
+					return false
+				}
 			}
 		}
-		unhealthy--
 		cnt++
 		return true
 	})
@@ -525,9 +555,15 @@ func (p *pool) IsHealthy(ctx context.Context) (healthy bool) {
 	}
 	if cnt == 0 {
 		log.Debugf("no connection pool %d/%d found for %s,\thealthy %d/%d", cnt, pl, p.addr, pl-unhealthy, pl)
-		return cnt != 0 && unhealthy == 0
+		return false
 	}
-	return unhealthy == 0
+	if p.isIP {
+		// if ip pool connection, each connection target should be healthy
+		return unhealthy == 0
+	}
+
+	// some pool target may unhealthy but pool client is healthy when unhealthy is less than pool length
+	return unhealthy < pl
 }
 
 func (p *pool) Do(ctx context.Context, f func(conn *ClientConn) error) error {
@@ -567,11 +603,11 @@ func (p *pool) getHealthyConn(ctx context.Context, cnt, retry uint64) (*ClientCo
 		if pl > 0 {
 			idx = int(p.current.Add(1) % pl)
 		}
-		if pc := p.load(idx); pc != nil && isHealthy(pc.conn) {
+		if pc := p.load(idx); pc != nil && isHealthy(ctx, pc.conn) {
 			return pc.conn, true
 		}
 		conn, err := p.dial(ctx, p.addr)
-		if err == nil && conn != nil && isHealthy(conn) {
+		if err == nil && conn != nil && isHealthy(ctx, conn) {
 			p.store(idx, &poolConn{
 				conn: conn,
 				addr: p.addr,
@@ -583,7 +619,7 @@ func (p *pool) getHealthyConn(ctx context.Context, cnt, retry uint64) (*ClientCo
 	}
 
 	if pl > 0 {
-		if pc := p.load(int(p.current.Add(1) % pl)); pc != nil && isHealthy(pc.conn) {
+		if pc := p.load(int(p.current.Add(1) % pl)); pc != nil && isHealthy(ctx, pc.conn) {
 			return pc.conn, true
 		}
 	}
@@ -663,7 +699,7 @@ func (p *pool) scanGRPCPort(ctx context.Context) (port uint16, err error) {
 				net.JoinHostPort(p.host, port),
 				append(p.dopts, grpc.WithBlock())...)
 
-			if err == nil && isHealthy(conn) && conn.Close() == nil {
+			if err == nil && isHealthy(ctx, conn) && conn.Close() == nil {
 				// if no error and healthy the port is ready for gRPC
 				return port, nil
 			}
@@ -748,7 +784,7 @@ func (pc *poolConn) Close(ctx context.Context, delay time.Duration) error {
 	}
 }
 
-func isHealthy(conn *ClientConn) bool {
+func isHealthy(ctx context.Context, conn *ClientConn) bool {
 	if conn == nil {
 		log.Warn("gRPC target connection is nil")
 		return false
@@ -761,7 +797,15 @@ func isHealthy(conn *ClientConn) bool {
 		log.Debugf("gRPC target %s's connection status will be Ready soon\tstatus: %s", conn.Target(), state.String())
 		return true
 	case connectivity.Idle:
-		log.Warnf("gRPC target %s's connection status is waiting for target\tstatus: %s", conn.Target(), state.String())
+		log.Debugf("gRPC target %s's connection status is waiting for target\tstatus: %s\ttrying to re-connect...", conn.Target(), state.String())
+		conn.Connect()
+		if conn.WaitForStateChange(ctx, state) {
+			state = conn.GetState()
+			if state == connectivity.Ready || state == connectivity.Connecting {
+				log.Debugf("gRPC target %s's connection status enabled for target\tstatus: %s", conn.Target(), state.String())
+				return true
+			}
+		}
 		return false
 	case connectivity.Shutdown, connectivity.TransientFailure:
 		log.Errorf("gRPC target %s's connection status is unhealthy\tstatus: %s", conn.Target(), state.String())

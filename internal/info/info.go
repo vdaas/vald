@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -57,7 +57,7 @@ type Detail struct {
 	GoArch            string       `json:"go_arch,omitempty"              yaml:"go_arch,omitempty"`
 	GoRoot            string       `json:"go_root,omitempty"              yaml:"go_root,omitempty"`
 	CGOEnabled        string       `json:"cgo_enabled,omitempty"          yaml:"cgo_enabled,omitempty"`
-	NGTVersion        string       `json:"ngt_version,omitempty"          yaml:"ngt_version,omitempty"`
+	AlgorithmInfo     string       `json:"algorithm_info,omitempty"       yaml:"algorithm_info,omitempty"`
 	BuildCPUInfoFlags []string     `json:"build_cpu_info_flags,omitempty" yaml:"build_cpu_info_flags,omitempty"`
 	StackTrace        []StackTrace `json:"stack_trace,omitempty"          yaml:"stack_trace,omitempty"`
 }
@@ -71,11 +71,11 @@ type StackTrace struct {
 }
 
 var (
-	// injected from build script
+	// injected from build script.
 
 	// Version represent Vald version.
 	Version = "v0.0.1"
-	// GitCommit represent the Vald GitCommit
+	// GitCommit represent the Vald GitCommit.
 	GitCommit = "main"
 	// BuildTime represent the Vald Build time.
 	BuildTime = ""
@@ -89,8 +89,8 @@ var (
 	GoRoot string
 	// CGOEnabled represent the cgo is enable or not to build Vald.
 	CGOEnabled string
-	// NGTVersion represent the NGT version in Vald.
-	NGTVersion string
+	// AlgorithmInfo represent the NGT version in Vald.
+	AlgorithmInfo string
 	// BuildCPUInfoFlags represent the CPU info flags to build Vald.
 	BuildCPUInfoFlags string
 
@@ -146,7 +146,7 @@ func New(opts ...Option) (Info, error) {
 			GoArch:            GoArch,
 			GoRoot:            GoRoot,
 			CGOEnabled:        CGOEnabled,
-			NGTVersion:        NGTVersion,
+			AlgorithmInfo:     AlgorithmInfo,
 			BuildCPUInfoFlags: strings.Split(strings.TrimSpace(BuildCPUInfoFlags), " "),
 			StackTrace:        nil,
 		},
@@ -329,28 +329,28 @@ func (i info) getDetail() Detail {
 
 func (i *info) prepare() {
 	i.prepOnce.Do(func() {
-		if len(i.detail.GitCommit) == 0 {
+		if i.detail.GitCommit == "" {
 			i.detail.GitCommit = "main"
 		}
-		if len(Version) == 0 && len(i.detail.Version) == 0 {
+		if Version == "" && i.detail.Version == "" {
 			i.detail.Version = GitCommit
 		}
-		if len(i.detail.BuildTime) == 0 {
+		if i.detail.BuildTime == "" {
 			i.detail.BuildTime = BuildTime
 		}
-		if len(i.detail.GoVersion) == 0 {
+		if i.detail.GoVersion == "" {
 			i.detail.GoVersion = runtime.Version()
 		}
-		if len(i.detail.GoOS) == 0 {
+		if i.detail.GoOS == "" {
 			i.detail.GoOS = runtime.GOOS
 		}
-		if len(i.detail.GoArch) == 0 {
+		if i.detail.GoArch == "" {
 			i.detail.GoArch = runtime.GOARCH
 		}
-		if len(i.detail.GoRoot) == 0 {
+		if i.detail.GoRoot == "" {
 			i.detail.GoRoot = runtime.GOROOT()
 		}
-		if len(i.detail.CGOEnabled) == 0 && len(CGOEnabled) != 0 {
+		if i.detail.CGOEnabled == "" && CGOEnabled != "" {
 			i.detail.CGOEnabled = CGOEnabled
 		}
 		switch i.detail.CGOEnabled {
@@ -361,13 +361,13 @@ func (i *info) prepare() {
 		default:
 			i.detail.CGOEnabled = cgoUnknown
 		}
-		if len(i.detail.NGTVersion) == 0 && len(NGTVersion) != 0 {
-			i.detail.NGTVersion = NGTVersion
+		if i.detail.AlgorithmInfo == "" && AlgorithmInfo != "" {
+			i.detail.AlgorithmInfo = AlgorithmInfo
 		}
-		if len(i.detail.BuildCPUInfoFlags) == 0 && len(BuildCPUInfoFlags) != 0 {
+		if len(i.detail.BuildCPUInfoFlags) == 0 && BuildCPUInfoFlags != "" {
 			i.detail.BuildCPUInfoFlags = strings.Split(strings.TrimSpace(BuildCPUInfoFlags), " ")
 		}
-		if len(i.baseURL) == 0 {
+		if i.baseURL == "" {
 			i.baseURL = "https://" + valdRepo + "/tree/" + i.detail.GitCommit
 		}
 	})

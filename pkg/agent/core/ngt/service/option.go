@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@ import (
 	"github.com/vdaas/vald/internal/timeutil"
 )
 
-// Option represent the functional option for ngt
+// Option represent the functional option for ngt.
 type Option func(n *ngt) error
 
 var defaultOptions = []Option{
@@ -296,6 +296,14 @@ func WithProactiveGC(enabled bool) Option {
 func WithCopyOnWrite(enabled bool) Option {
 	return func(n *ngt) error {
 		n.enableCopyOnWrite = enabled
+		return nil
+	}
+}
+
+// WithIsReadReplica returns the functional option to set the read replica flag.
+func WithIsReadReplica(isReadReplica bool) Option {
+	return func(n *ngt) error {
+		n.isReadReplica = isReadReplica
 		return nil
 	}
 }

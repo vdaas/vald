@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -38,7 +38,7 @@ func FromBackoffName(ctx context.Context) string {
 	return ""
 }
 
-// isRunning returns context and is running or not for preventing duplicated backoff execution
+// isRunning returns context and is running or not for preventing duplicated backoff execution.
 func isRunning(ctx context.Context) (context.Context, bool) {
 	if val := ctx.Value(backoffRunningContextKey); val != nil {
 		if v, ok := val.(string); ok && v == backoffRunningContextValue {

@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -18,8 +18,8 @@ import (
 
 	"github.com/vdaas/vald/internal/observability/metrics"
 	"github.com/vdaas/vald/pkg/manager/index/service"
-	"go.opentelemetry.io/otel/sdk/metric/aggregation"
-	"go.opentelemetry.io/otel/sdk/metric/view"
+	api "go.opentelemetry.io/otel/metric"
+	view "go.opentelemetry.io/otel/sdk/metric"
 )
 
 const (
@@ -43,43 +43,40 @@ func New(i service.Indexer) metrics.Metric {
 	}
 }
 
-func (*indexerMetrics) View() ([]*metrics.View, error) {
-	uuidCount, err := view.New(
-		view.MatchInstrumentName(uuidCountMetricsName),
-		view.WithSetDescription(uuidCountMetricsDescription),
-		view.WithSetAggregation(aggregation.LastValue{}),
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	uncommittedUUIDCount, err := view.New(
-		view.MatchInstrumentName(uncommittedUUIDCountMetricsName),
-		view.WithSetDescription(uncommittedUUIDCountMetricsDescription),
-		view.WithSetAggregation(aggregation.LastValue{}),
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	isIndexing, err := view.New(
-		view.MatchInstrumentName(isIndexingMetricsName),
-		view.WithSetDescription(isIndexingMetricsDescription),
-		view.WithSetAggregation(aggregation.LastValue{}),
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	return []*metrics.View{
-		&uuidCount,
-		&uncommittedUUIDCount,
-		&isIndexing,
+func (*indexerMetrics) View() ([]metrics.View, error) {
+	return []metrics.View{
+		view.NewView(
+			view.Instrument{
+				Name:        uuidCountMetricsName,
+				Description: uuidCountMetricsDescription,
+			},
+			view.Stream{
+				Aggregation: view.AggregationLastValue{},
+			},
+		),
+		view.NewView(
+			view.Instrument{
+				Name:        uncommittedUUIDCountMetricsName,
+				Description: uncommittedUUIDCountMetricsDescription,
+			},
+			view.Stream{
+				Aggregation: view.AggregationLastValue{},
+			},
+		),
+		view.NewView(
+			view.Instrument{
+				Name:        isIndexingMetricsName,
+				Description: isIndexingMetricsDescription,
+			},
+			view.Stream{
+				Aggregation: view.AggregationLastValue{},
+			},
+		),
 	}, nil
 }
 
 func (im *indexerMetrics) Register(m metrics.Meter) error {
-	uuidCount, err := m.AsyncInt64().Gauge(
+	uuidCount, err := m.Int64ObservableGauge(
 		uuidCountMetricsName,
 		metrics.WithDescription(uuidCountMetricsDescription),
 		metrics.WithUnit(metrics.Dimensionless),
@@ -88,7 +85,7 @@ func (im *indexerMetrics) Register(m metrics.Meter) error {
 		return err
 	}
 
-	uncommittedUUIDCount, err := m.AsyncInt64().Gauge(
+	uncommittedUUIDCount, err := m.Int64ObservableGauge(
 		uncommittedUUIDCountMetricsName,
 		metrics.WithDescription(uncommittedUUIDCountMetricsDescription),
 		metrics.WithUnit(metrics.Dimensionless),
@@ -97,7 +94,7 @@ func (im *indexerMetrics) Register(m metrics.Meter) error {
 		return err
 	}
 
-	isIndexing, err := m.AsyncInt64().Gauge(
+	isIndexing, err := m.Int64ObservableGauge(
 		isIndexingMetricsName,
 		metrics.WithDescription(isIndexingMetricsDescription),
 		metrics.WithUnit(metrics.Dimensionless),
@@ -106,20 +103,20 @@ func (im *indexerMetrics) Register(m metrics.Meter) error {
 		return err
 	}
 
-	return m.RegisterCallback(
-		[]metrics.AsynchronousInstrument{
-			uuidCount,
-			uncommittedUUIDCount,
-			isIndexing,
-		},
-		func(ctx context.Context) {
+	_, err = m.RegisterCallback(
+		func(_ context.Context, o api.Observer) error {
 			var indexing int64
 			if im.indexer.IsIndexing() {
 				indexing = 1
 			}
-			uuidCount.Observe(ctx, int64(im.indexer.NumberOfUUIDs()))
-			uncommittedUUIDCount.Observe(ctx, int64(im.indexer.NumberOfUncommittedUUIDs()))
-			isIndexing.Observe(ctx, int64(indexing))
+			o.ObserveInt64(uuidCount, int64(im.indexer.NumberOfUUIDs()))
+			o.ObserveInt64(uncommittedUUIDCount, int64(im.indexer.NumberOfUncommittedUUIDs()))
+			o.ObserveInt64(isIndexing, int64(indexing))
+			return nil
 		},
+		uuidCount,
+		uncommittedUUIDCount,
+		isIndexing,
 	)
+	return err
 }

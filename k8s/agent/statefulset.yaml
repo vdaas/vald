@@ -1,6 +1,5 @@
----
 #
-# Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -17,23 +16,23 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: vald-agent-ngt
+  name: vald-agent
   labels:
-    app: vald-agent-ngt
+    app: vald-agent
     app.kubernetes.io/name: vald
-    helm.sh/chart: vald-v1.7.9
+    helm.sh/chart: vald-v1.7.11
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: release-name
-    app.kubernetes.io/version: v1.7.9
+    app.kubernetes.io/version: v1.7.11
     app.kubernetes.io/component: agent
 spec:
-  serviceName: vald-agent-ngt
+  serviceName: vald-agent
   podManagementPolicy: Parallel
   replicas: 5
   revisionHistoryLimit: 2
   selector:
     matchLabels:
-      app: vald-agent-ngt
+      app: vald-agent
   updateStrategy:
     type: RollingUpdate
     rollingUpdate:
@@ -42,7 +41,7 @@ spec:
     metadata:
       creationTimestamp: null
       labels:
-        app: vald-agent-ngt
+        app: vald-agent
         app.kubernetes.io/name: vald
         app.kubernetes.io/instance: release-name
         app.kubernetes.io/component: agent
@@ -51,7 +50,7 @@ spec:
         profefe.com/port: "6060"
         profefe.com/service: vald-agent-ngt
         pyroscope.io/scrape: "true"
-        pyroscope.io/application-name: vald-agent-ngt
+        pyroscope.io/application-name: vald-agent
         pyroscope.io/profile-cpu-enabled: "true"
         pyroscope.io/profile-mem-enabled: "true"
         pyroscope.io/port: "6060"
@@ -70,12 +69,12 @@ spec:
                     - key: app
                       operator: In
                       values:
-                        - vald-agent-ngt
+                        - vald-agent
                 topologyKey: kubernetes.io/hostname
               weight: 100
           requiredDuringSchedulingIgnoredDuringExecution: []
       containers:
-        - name: vald-agent-ngt
+        - name: vald-agent
           image: "vdaas/vald-agent-ngt:nightly"
           imagePullPolicy: Always
           livenessProbe:
@@ -151,7 +150,7 @@ spec:
                 fieldRef:
                   fieldPath: metadata.namespace
           volumeMounts:
-            - name: vald-agent-ngt-config
+            - name: vald-agent-config
               mountPath: /etc/server/
       dnsPolicy: ClusterFirst
       restartPolicy: Always
@@ -164,9 +163,9 @@ spec:
         runAsUser: 65532
       terminationGracePeriodSeconds: 120
       volumes:
-        - name: vald-agent-ngt-config
+        - name: vald-agent-config
           configMap:
             defaultMode: 420
-            name: vald-agent-ngt-config
-      priorityClassName: default-vald-agent-ngt-priority
+            name: vald-agent-config
+      priorityClassName: default-vald-agent-priority
 status:

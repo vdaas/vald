@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -30,8 +30,14 @@ $(BINDIR)/k3d:
 .PHONY: k3d/start
 ## start k3d (kubernetes in docker) cluster
 k3d/start:
-	$(K3D_COMMAND) cluster create $(K3D_CLUSTER_NAME) --agents $(K3D_NODES) --image docker.io/rancher/k3s:latest -v "/lib/modules:/lib/modules"
-	# $(K3D_COMMAND) cluster create $(K3D_CLUSTER_NAME) --agents $(K3D_NODES) -v "/lib/modules:/lib/modules" --host-pid-mode=true
+	$(K3D_COMMAND) cluster create $(K3D_CLUSTER_NAME) \
+	  --agents $(K3D_NODES) \
+	  --image docker.io/rancher/k3s:latest \
+	  --host-pid-mode=true \
+	  --port 8081:80@loadbalancer \
+	  --k3s-arg "--disable=traefik@server:*" \
+	  -v "/lib/modules:/lib/modules"
+	# $(K3D_COMMAND) cluster create $(K3D_CLUSTER_NAME) --agents $(K3D_NODES) -v "/lib/modules:/lib/modules"
 	# $(K3D_COMMAND) cluster create $(K3D_CLUSTER_NAME) -p "8081:80@loadbalancer" --agents $(K3D_NODES) --k3s-arg '--disable=traefik@all'
 	export KUBECONFIG="$(shell sudo $(K3D_COMMAND) kubeconfig merge -o $(TEMP_DIR)/k3d_$(K3D_CLUSTER_NAME)_kubeconfig.yaml $(K3D_CLUSTER_NAME))"
 

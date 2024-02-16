@@ -1,5 +1,7 @@
+# !yamlfmt!:ignore
+
 #
-# Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -37,7 +39,18 @@ jobs:
       - uses: ./.github/actions/dump-context
   build:
     runs-on: ubuntu-latest
-    if: ${{ (github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == false) || (github.event.pull_request.head.repo.fork == true && github.event_name == 'pull_request_target' && contains(github.event.pull_request.labels.*.name, 'ci/approved')) || (github.event_name == 'push' && github.ref == 'refs/heads/main') || startsWith( github.ref, 'refs/tags/') }}
+    if: >-
+      ${{ (github.event_name == 'pull_request' &&
+              github.event.pull_request.head.repo.fork == false) ||
+          (github.event.pull_request.head.repo.fork == true &&
+              github.event_name == 'pull_request_target' &&
+              contains(github.event.pull_request.labels.*.name, 'ci/approved')) ||
+          (github.event_name == 'push' &&
+              github.ref == 'refs/heads/main') ||
+          (github.event_name == 'push' &&
+              startsWith( github.ref, 'refs/heads/release/v')) ||
+          startsWith( github.ref, 'refs/tags/')
+      }}
     steps:
       - name: Get ref
         id: ref

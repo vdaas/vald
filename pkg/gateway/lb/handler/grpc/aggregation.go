@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -33,6 +33,7 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/pkg/gateway/lb/service"
 )
 
 type Aggregator interface {
@@ -68,7 +69,7 @@ func (s *server) aggregationSearch(ctx context.Context, aggr Aggregator, cfg *pa
 
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	aggr.Start(ctx)
-	err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error {
+	err = s.gateway.BroadCast(ctx, service.READ, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error {
 		sctx, sspan := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "BroadCast/"+target), apiName+"/aggregationSearch/"+target)
 		defer func() {
 			if sspan != nil {
@@ -352,7 +353,7 @@ func (s *server) aggregationSearch(ctx context.Context, aggr Aggregator, cfg *pa
 	return res, nil
 }
 
-// vald standard algorithm
+// vald standard algorithm.
 type valdStdAggr struct {
 	num     int
 	wg      sync.WaitGroup
@@ -484,7 +485,7 @@ func (v *valdStdAggr) Result() *payload.Search_Response {
 	}
 }
 
-// pairing heap
+// pairing heap.
 type valdPairingHeapAggr struct {
 	num     int
 	ph      *PairingHeap
@@ -543,7 +544,7 @@ func (v *valdPairingHeapAggr) Result() *payload.Search_Response {
 	}
 }
 
-// plane sort
+// plane sort.
 type valdSliceAggr struct {
 	num    int
 	mu     sync.Mutex
@@ -596,7 +597,7 @@ func (v *valdSliceAggr) Result() (res *payload.Search_Response) {
 	return res
 }
 
-// plane sort
+// plane sort.
 type valdPoolSliceAggr struct {
 	num    int
 	mu     sync.Mutex

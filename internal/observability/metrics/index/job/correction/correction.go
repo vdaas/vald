@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -18,8 +18,8 @@ import (
 
 	"github.com/vdaas/vald/internal/observability/metrics"
 	"github.com/vdaas/vald/pkg/index/job/correction/service"
-	"go.opentelemetry.io/otel/sdk/metric/aggregation"
-	"go.opentelemetry.io/otel/sdk/metric/view"
+	api "go.opentelemetry.io/otel/metric"
+	view "go.opentelemetry.io/otel/sdk/metric"
 )
 
 const (
@@ -43,43 +43,40 @@ func New(c service.Corrector) metrics.Metric {
 	}
 }
 
-func (*correctionMetrics) View() ([]*metrics.View, error) {
-	checkedIndexCount, err := view.New(
-		view.MatchInstrumentName(checkedIndexCount),
-		view.WithSetDescription(checkedIndexCountDesc),
-		view.WithSetAggregation(aggregation.LastValue{}),
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	oldIndexCount, err := view.New(
-		view.MatchInstrumentName(correctedOldIndexCount),
-		view.WithSetDescription(correctedOldIndexCountDesc),
-		view.WithSetAggregation(aggregation.LastValue{}),
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	replicationCount, err := view.New(
-		view.MatchInstrumentName(correctedReplicationCount),
-		view.WithSetDescription(correctedReplicationCountDesc),
-		view.WithSetAggregation(aggregation.LastValue{}),
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	return []*metrics.View{
-		&checkedIndexCount,
-		&oldIndexCount,
-		&replicationCount,
+func (*correctionMetrics) View() ([]metrics.View, error) {
+	return []metrics.View{
+		view.NewView(
+			view.Instrument{
+				Name:        checkedIndexCount,
+				Description: checkedIndexCountDesc,
+			},
+			view.Stream{
+				Aggregation: view.AggregationLastValue{},
+			},
+		),
+		view.NewView(
+			view.Instrument{
+				Name:        correctedOldIndexCount,
+				Description: correctedOldIndexCountDesc,
+			},
+			view.Stream{
+				Aggregation: view.AggregationLastValue{},
+			},
+		),
+		view.NewView(
+			view.Instrument{
+				Name:        correctedReplicationCount,
+				Description: correctedReplicationCountDesc,
+			},
+			view.Stream{
+				Aggregation: view.AggregationLastValue{},
+			},
+		),
 	}, nil
 }
 
 func (c *correctionMetrics) Register(m metrics.Meter) error {
-	checkedIndexCount, err := m.AsyncInt64().Gauge(
+	checkedIndexCount, err := m.Int64ObservableGauge(
 		checkedIndexCount,
 		metrics.WithDescription(checkedIndexCountDesc),
 		metrics.WithUnit(metrics.Dimensionless),
@@ -88,7 +85,7 @@ func (c *correctionMetrics) Register(m metrics.Meter) error {
 		return err
 	}
 
-	oldIndexCount, err := m.AsyncInt64().Gauge(
+	oldIndexCount, err := m.Int64ObservableGauge(
 		correctedOldIndexCount,
 		metrics.WithDescription(correctedOldIndexCountDesc),
 		metrics.WithUnit(metrics.Dimensionless),
@@ -97,7 +94,7 @@ func (c *correctionMetrics) Register(m metrics.Meter) error {
 		return err
 	}
 
-	replicationCount, err := m.AsyncInt64().Gauge(
+	replicationCount, err := m.Int64ObservableGauge(
 		correctedReplicationCount,
 		metrics.WithDescription(correctedReplicationCountDesc),
 		metrics.WithUnit(metrics.Dimensionless),
@@ -106,16 +103,16 @@ func (c *correctionMetrics) Register(m metrics.Meter) error {
 		return err
 	}
 
-	return m.RegisterCallback(
-		[]metrics.AsynchronousInstrument{
-			checkedIndexCount,
-			oldIndexCount,
-			replicationCount,
+	_, err = m.RegisterCallback(
+		func(_ context.Context, o api.Observer) error {
+			o.ObserveInt64(checkedIndexCount, int64(c.correction.NumberOfCheckedIndex()))
+			o.ObserveInt64(oldIndexCount, int64(c.correction.NumberOfCorrectedOldIndex()))
+			o.ObserveInt64(replicationCount, int64(c.correction.NumberOfCorrectedReplication()))
+			return nil
 		},
-		func(ctx context.Context) {
-			checkedIndexCount.Observe(ctx, int64(c.correction.NumberOfCheckedIndex()))
-			oldIndexCount.Observe(ctx, int64(c.correction.NumberOfCorrectedOldIndex()))
-			replicationCount.Observe(ctx, int64(c.correction.NumberOfCorrectedReplication()))
-		},
+		checkedIndexCount,
+		oldIndexCount,
+		replicationCount,
 	)
+	return err
 }

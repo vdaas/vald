@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -18,49 +18,44 @@ on:
   release:
     types:
       - created
-
 jobs:
   dump-contexts-to-log:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/dump-context
-
+  detect-ci-container:
+    uses: ./.github/workflows/_detect-ci-container.yml
   build-linux:
     runs-on: ubuntu-latest
+    needs: [detect-ci-container]
     container:
-      image: ghcr.io/vdaas/vald/vald-ci-container:nightly
+      image: ghcr.io/vdaas/vald/vald-ci-container:${{ needs.detect-ci-container.outputs.TAG_NAME }}
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 10
-
       - name: Set Git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
-
       - uses: ./.github/actions/setup-go
-
       - name: Build and zip
         run: |
           make binary/build/zip
-
       - name: Upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: artifacts-linux
           path: ./artifacts/
-
   publish:
     runs-on: ubuntu-latest
     needs:
       - build-linux
     steps:
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v4
         with:
           name: artifacts-linux
           path: tmp/linux
-
       - uses: shogo82148/actions-upload-release-asset@v1
         with:
           upload_url: ${{ github.event.release.upload_url }}

@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -33,6 +33,7 @@ import (
 	mpod "github.com/vdaas/vald/internal/k8s/metrics/pod"
 	"github.com/vdaas/vald/internal/k8s/node"
 	"github.com/vdaas/vald/internal/k8s/pod"
+	"github.com/vdaas/vald/internal/k8s/service"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/safety"
@@ -44,6 +45,7 @@ type Discoverer interface {
 	Start(context.Context) (<-chan error, error)
 	GetPods(*payload.Discoverer_Request) (*payload.Info_Pods, error)
 	GetNodes(*payload.Discoverer_Request) (*payload.Info_Nodes, error)
+	GetServices(*payload.Discoverer_Request) (*payload.Info_Services, error)
 }
 
 type discoverer struct {
@@ -52,10 +54,12 @@ type discoverer struct {
 	nodeMetrics     sync.Map[string, mnode.Node]
 	pods            sync.Map[string, *[]pod.Pod]
 	podMetrics      sync.Map[string, mpod.Pod]
+	services        sync.Map[string, *service.Service]
 	podsByNode      atomic.Value
 	podsByNamespace atomic.Value
 	podsByName      atomic.Value
 	nodeByName      atomic.Value
+	svcsByName      atomic.Value
 	ctrl            k8s.Controller
 	namespace       string
 	name            string
@@ -64,6 +68,8 @@ type discoverer struct {
 	eg              errgroup.Group
 }
 
+// New returns Discoverer implementation.
+// skipcq: GO-R1005
 func New(selector *config.Selectors, opts ...Option) (dsc Discoverer, err error) {
 	d := new(discoverer)
 	for _, opt := range append(defaultOptions, opts...) {
@@ -71,11 +77,14 @@ func New(selector *config.Selectors, opts ...Option) (dsc Discoverer, err error)
 			return nil, errors.ErrOptionFailed(err, reflect.ValueOf(opt))
 		}
 	}
+
 	d.podsByNode.Store(make(map[string]map[string]map[string][]*payload.Info_Pod))
 	d.podsByNamespace.Store(make(map[string]map[string][]*payload.Info_Pod))
 	d.podsByName.Store(make(map[string][]*payload.Info_Pod))
 	d.nodeByName.Store(make(map[string]*payload.Info_Node))
-	d.ctrl, err = k8s.New(
+
+	var k8sOpts []k8s.Option
+	k8sOpts = append(k8sOpts,
 		k8s.WithDialer(d.der),
 		k8s.WithControllerName("vald k8s agent discoverer"),
 		k8s.WithDisableLeaderElection(),
@@ -172,13 +181,43 @@ func New(selector *config.Selectors, opts ...Option) (dsc Discoverer, err error)
 			node.WithFields(selector.GetNodeFields()),
 			node.WithLabels(selector.GetNodeLabels()),
 		)),
+		// Only required when service reconciation is required like read replica.
+		// k8s.WithResourceController(service.New(
+		// 	service.WithControllerName("service discoverer"),
+		// 	service.WithOnErrorFunc(func(err error) {
+		// 		log.Error("failed to reconcile:", err)
+		// 	}),
+		// 	service.WithOnReconcileFunc(func(svcs []service.Service) {
+		// 		log.Debugf("svc resource reconciled\t%#v", svcs)
+		// 		svcsmap := make(map[string]struct{}, len(svcs))
+		// 		for i := range svcs {
+		// 			svc := &svcs[i]
+		// 			svcsmap[svc.Name] = struct{}{}
+		// 			d.services.Store(svc.Name, svc)
+		// 		}
+		// 		d.services.Range(func(name string, _ *service.Service) bool {
+		// 			_, ok := svcsmap[name]
+		// 			if !ok {
+		// 				d.services.Delete(name)
+		// 			}
+		// 			return true
+		// 		})
+		// 	}),
+		// 	service.WithNamespace(d.namespace),
+		// 	service.WithFields(selector.GetServiceFields()),
+		// 	service.WithLabels(selector.GetServiceLabels()),
+		// )),
 	)
+
+	d.ctrl, err = k8s.New(k8sOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return d, nil
 }
 
+// Start starts the discoverer.
+// skipcq: GO-R1005
 func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 	dech, err := d.ctrl.Start(ctx)
 	if err != nil {
@@ -200,6 +239,7 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 					podsByNamespace = make(map[string]map[string][]*payload.Info_Pod)            // map[namespace][name][]pod
 					podsByName      = make(map[string][]*payload.Info_Pod)                       // map[name][]pod
 					nodeByName      = make(map[string]*payload.Info_Node)                        // map[name]node
+					svcsByName      = make(map[string]*payload.Info_Service)                     // map[name]svc
 				)
 
 				d.nodes.Range(func(nodeName string, n *node.Node) bool {
@@ -297,6 +337,36 @@ func (d *discoverer) Start(ctx context.Context) (<-chan error, error) {
 						return true
 					}
 				})
+				d.services.Range(func(key string, svc *service.Service) bool {
+					select {
+					case <-ctx.Done():
+						return false
+					default:
+						var ports []*payload.Info_ServicePort
+						for _, p := range svc.Ports {
+							ports = append(ports, &payload.Info_ServicePort{
+								Name: p.Name,
+								Port: p.Port,
+							})
+						}
+						ni := &payload.Info_Service{
+							Name:       svc.Name,
+							ClusterIp:  svc.ClusterIP,
+							ClusterIps: svc.ClusterIPs,
+							Ports:      ports,
+							Labels: &payload.Info_Labels{
+								Labels: svc.Labels,
+							},
+							Annotations: &payload.Info_Annotations{
+								Annotations: svc.Annotations,
+							},
+						}
+						svcsByName[svc.Name] = ni
+						return true
+					}
+				})
+				d.svcsByName.Store(svcsByName)
+
 				var wg sync.WaitGroup
 				wg.Add(1)
 				d.eg.Go(safety.RecoverFunc(func() error {
@@ -482,4 +552,27 @@ func (d *discoverer) GetNodes(req *payload.Discoverer_Request) (nodes *payload.I
 
 	nodes.Nodes = ns
 	return nodes, nil
+}
+
+// Get Services returns the services that matches the request.
+func (d *discoverer) GetServices(req *payload.Discoverer_Request) (svcs *payload.Info_Services, err error) {
+	svcs = new(payload.Info_Services)
+	sbn, ok := d.svcsByName.Load().(map[string]*payload.Info_Service)
+	if !ok {
+		return nil, errors.ErrInvalidDiscoveryCache
+	}
+
+	if req.GetName() != "" && req.GetName() != "*" {
+		v, ok := sbn[req.GetName()]
+		if !ok {
+			return nil, errors.ErrSvcNameNotFound(req.GetName())
+		}
+		svcs.Services = append(svcs.Services, v)
+	} else {
+		for _, svc := range sbn {
+			svcs.Services = append(svcs.Services, svc)
+		}
+	}
+
+	return svcs, nil
 }

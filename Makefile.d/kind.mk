@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ kind/install: $(BINDIR)/kind
 
 $(BINDIR)/kind:
 	mkdir -p $(BINDIR)
-	curl -L https://github.com/kubernetes-sigs/kind/releases/download/$(KIND_VERSION)/kind-$(shell echo $(UNAME) | tr '[:upper:]' '[:lower:]')-$(subst x86_64,amd64,$(shell echo $(ARCH) | tr '[:upper:]' '[:lower:]')) -o $(BINDIR)/kind
+	curl -L https://github.com/kubernetes-sigs/kind/releases/download/$(KIND_VERSION)/kind-$(OS)-$(subst x86_64,amd64,$(shell echo $(ARCH) | tr '[:upper:]' '[:lower:]')) -o $(BINDIR)/kind
 	chmod a+x $(BINDIR)/kind
 
 .PHONY: kind/start

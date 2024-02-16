@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -567,6 +567,40 @@ message Info {
     Pods Pods = 6;
   }
 
+  // Represent the service information message.
+  message Service {
+    // The name of the svc.
+    string name = 1;
+    // The cluster ip of the svc.
+    string cluster_ip = 2;
+    // The cluster ips of the svc.
+    repeated string cluster_ips = 3;
+    // The port of the svc.
+    repeated ServicePort ports = 4;
+    // The labels of the service.
+    Labels labels = 5;
+    // The annotations of the service.
+    Annotations annotations = 6;
+  }
+
+  // Represets the service port information message.
+  message ServicePort {
+    // The name of the port.
+    string name = 1;
+    // The port number
+    int32 port = 2;
+  }
+
+  // Represent the kubernetes labels.
+  message Labels {
+    map<string, string> labels = 1;
+  }
+
+  // Represent the kubernetes annotations.
+  message Annotations {
+    map<string, string> annotations = 1;
+  }
+
   // Represent the CPU information message.
   message CPU {
     // The CPU resource limit.
@@ -599,9 +633,32 @@ message Info {
     repeated Node nodes = 1 [(buf.validate.field).repeated.min_items = 1];
   }
 
+  // Represent the multiple service information message.
+  message Services {
+    // The multiple service information.
+    repeated Service services = 1 [(buf.validate.field).repeated.min_items = 1];
+  }
+
   // Represent the multiple IP message.
   message IPs {
     repeated string ip = 1;
+  }
+}
+
+// Mirror related messages.
+message Mirror {
+  // Represent server information.
+  message Target {
+    // The target hostname.
+    string host = 1;
+    // The target port.
+    uint32 port = 2;
+  }
+
+  // Represent the multiple Target message.
+  message Targets {
+    // The multiple target information.
+    repeated Target targets = 1;
   }
 }
 

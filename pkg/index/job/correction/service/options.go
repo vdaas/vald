@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -22,8 +22,10 @@ import (
 type Option func(*correct) error
 
 var defaultOpts = []Option{
-	WithStreamListConcurrency(200),     //nolint:gomnd
-	WithKvsAsyncWriteConcurrency(2048), //nolint:gomnd
+	//nolint:gomnd
+	WithStreamListConcurrency(200),
+	//nolint:gomnd
+	WithKvsAsyncWriteConcurrency(2048),
 }
 
 // WithIndexReplica returns Option that sets index replica.

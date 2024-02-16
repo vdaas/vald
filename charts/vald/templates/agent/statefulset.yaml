@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -101,6 +101,7 @@ spec:
           volumeMounts:
             - name: {{ $agent.sidecar.name }}-config
               mountPath: /etc/server/
+            {{- if eq $agent.algorithm "ngt" }}
             {{- if not $agent.ngt.enable_in_memory_mode }}
             {{- if $agent.ngt.index_path }}
             {{- if $agent.persistentVolume.enabled }}
@@ -110,6 +111,7 @@ spec:
             {{- else }}
             - name: {{ $agent.name }}-local
               mountPath: {{ dir $agent.ngt.index_path }}
+            {{- end }}
             {{- end }}
             {{- end }}
             {{- end }}

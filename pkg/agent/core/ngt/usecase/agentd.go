@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import (
 	"github.com/vdaas/vald/internal/observability"
 	ngtmetrics "github.com/vdaas/vald/internal/observability/metrics/agent/core/ngt"
 	infometrics "github.com/vdaas/vald/internal/observability/metrics/info"
+	memmetrics "github.com/vdaas/vald/internal/observability/metrics/mem"
 	"github.com/vdaas/vald/internal/runner"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/servers/server"
@@ -65,6 +66,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		service.WithDefaultEpsilon(cfg.NGT.DefaultEpsilon),
 		service.WithProactiveGC(cfg.NGT.EnableProactiveGC),
 		service.WithCopyOnWrite(cfg.NGT.EnableCopyOnWrite),
+		service.WithIsReadReplica(cfg.NGT.IsReadReplica),
 	)
 	if err != nil {
 		return nil, err
@@ -97,6 +99,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 			cfg.Observability,
 			ngtmetrics.New(ngt),
 			infometrics.New("agent_core_ngt_info", "Agent NGT info", *cfg.NGT),
+			memmetrics.New(),
 		)
 		if err != nil {
 			return nil, err

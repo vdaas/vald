@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -40,7 +40,6 @@ defaults:
       collector_endpoint: "opentelemetry-collector-collector.default.svc.cluster.local:4317"
     trace:
       enabled: true
-
 gateway:
   lb:
     podAnnotations:
@@ -51,7 +50,6 @@ gateway:
       requests:
         cpu: 100m
         memory: 50Mi
-
 agent:
   podAnnotations:
     profefe.com/enable: "true"
@@ -75,7 +73,6 @@ agent:
     accessMode: ReadWriteOnce
     storageClass: local-path
     size: 1Gi
-
 discoverer:
   podAnnotations:
     profefe.com/enable: "true"
@@ -85,7 +82,6 @@ discoverer:
     requests:
       cpu: 100m
       memory: 50Mi
-
 manager:
   index:
     podAnnotations:

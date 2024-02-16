@@ -6,21 +6,32 @@ Capacity planning is essential before deploying the Vald cluster to the cloud se
 There are three viewpoints: Vald cluster view, Kubernetes view, and Component view.
 Let's see each view.
 
+<div class="notice">
+When introducing production, we recommend that you actually measure how many resources are required for verification.
+</div>
+
 ## Vald cluster view
 
 The essential point at the Vald cluster view is the hardware specification, especially RAM.
 The Vald cluster, especially Vald Agent components, requires much RAM capacity because the vector index is stored in memory.
 
-It is easy to figure out the minimum required RAM capacity by the following formula.
+The minimum required memory for each vector (bit) is:
 
 ```bash
-( { the dimension vector } × { bit number of vector } + { the bit of vectors ID string } ) × { the maximum number of the vector } × { the index replica }
+// minimum required bits of vector
+{ oid (64bit) + timestamp (64bit) + uuid (user defined) } * 2 + { dimension * 64 } + { the creation edge size + the search edge size } * 8
 ```
 
-For example, if you want to insert 1 million vectors with 900 dimensions and the object type is 32-bit with 32 byte (256 bit) ID, and the index replica is 3, the minimum required RAM capacity is:
+Considering the `index size` and `index_replica`, it is easy to figure out the minimum required RAM capacity by the following formula.
 
 ```bash
-(900 × 32 + 256 ) × 1,000,000 × 3 = 8,7168,000,000 (bit) = 10.896 (GB)
+{ minimum required bits of vector } * { the index size } * { index_replica }
+```
+
+For example, you want to insert 1 million vectors with 900 dimensions with 32 byte (256 bit) UUID, the index replica is 3, `creation edge size` is 20, and `search edge size` is 10, the minimum required RAM capacity is:
+
+```bash
+{(64 + 64 + 256) × 2 + (900 × 64) + (20 + 10) × 8 } × 1,000,000 × 3 = 175,824,000,000 (bit) = 21.978 (GB)
 ```
 
 It is just the minimum required RAM for indexing.
@@ -28,12 +39,12 @@ Considering the margin of RAM capacity, the minimum RAM capacity should be less 
 Therefore, the actual minimum RAM capacity will be:
 
 ```bash
-8,7168,000,000 (bit) / 0.6 = 145,280,000,000 (bit) = 18.16 (GB)
+175,824,000,000 (bit) / 0.6 = 293,040,000,000 (bit) = 36.63 (GB)
 ```
 
 <div class="warn">
 In the production usage, memory usage may be not enough in the minimum required RAM.<BR>
-E.g., there are a noisy problem, high memory usage for createIndex (indexing on memory), high traffic needs more memory, etc.
+Because for example, there are a noisy problem, high memory usage for createIndex (indexing on memory), high traffic needs more memory, etc.
 </div>
 
 ## Kubernetes cluster view

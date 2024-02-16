@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -20,24 +20,20 @@ on:
     paths-ignore:
       - "apis/docs/v1/docs.md"
       - "CHANGELOG.md"
-
 jobs:
   dump-contexts-to-log:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/dump-context
-
   languagetool-apis-charts:
     name: runner / LanguageTool / apis & charts
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - name: Set Git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
-
       - name: LanguageTool
         uses: reviewdog/action-languagetool@v1
         with:
@@ -48,17 +44,14 @@ jobs:
           language: en-US
           disabled_rules: "DOUBLE_PUNCTUATION,WORD_CONTAINS_UNDERSCORE,ARROWS,CURRENCY,DASH_RULE,EN_QUOTES"
           disabled_categories: "TYPOS,TYPOGRAPHY,STYLE,CASING"
-
   languagetool-docs:
     name: runner / LanguageTool / Docs
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - name: Set Git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
-
       - name: LanguageTool
         uses: reviewdog/action-languagetool@v1
         with:
@@ -69,26 +62,21 @@ jobs:
           language: en-US
           disabled_rules: "DOUBLE_PUNCTUATION,WORD_CONTAINS_UNDERSCORE,ARROWS,CURRENCY,DASH_RULE,EN_QUOTES"
           disabled_categories: "TYPOS,TYPOGRAPHY,STYLE"
-
   textlint:
     name: runner / textlint
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - name: Set Git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
-
       - name: Setup node/npm
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: "16"
-
       - name: Install textlint
         run: |
           make textlint/ci/install
-
       - name: textlint-github-pr-review
         uses: tsuyoshicho/action-textlint@v3
         with:

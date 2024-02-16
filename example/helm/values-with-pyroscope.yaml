@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -31,20 +31,17 @@ defaults:
       readiness:
         readinessProbe:
           initialDelaySeconds: 60
-
 discoverer:
   resources:
     requests:
       cpu: 150m
       memory: 50Mi
-
 manager:
   index:
     resources:
       requests:
         cpu: 150m
         memory: 30Mi
-
 gateway:
   lb:
     minReplicas: 2
@@ -64,7 +61,6 @@ gateway:
         traefik.ingress.kubernetes.io/service.serversscheme: h2c
     gateway_config:
       index_replica: 2
-
 agent:
   # /* These annotations will be set automatically when successful deployment */
   # podAnnotations:

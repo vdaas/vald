@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -38,6 +38,10 @@ func (*mockDiscovererClient) GetAddrs(context.Context) []string {
 }
 
 func (m *mockDiscovererClient) GetClient() grpc.Client {
+	return &m.client
+}
+
+func (m *mockDiscovererClient) GetReadClient() grpc.Client {
 	return &m.client
 }
 

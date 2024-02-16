@@ -1,0 +1,133 @@
+#
+# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# You may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+name: "Build docker images when the release branch is created"
+on:
+  push:
+    branches:
+      - "release/v*.*"
+      - "!release/v*.*.*"
+jobs:
+  dump-contexts-to-log:
+    if: github.event.created
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/dump-context
+  agent-ngt:
+    needs: [dump-contexts-to-log]
+    uses: ./.github/workflows/_docker-image.yaml
+    with:
+      target: agent-ngt
+    secrets: inherit
+  agent-faiss:
+    needs: [dump-contexts-to-log]
+    uses: ./.github/workflows/_docker-image.yaml
+    with:
+      target: agent-faiss
+      platforms: linux/amd64
+    secrets: inherit
+  agent-sidecar:
+    needs: [dump-contexts-to-log]
+    uses: ./.github/workflows/_docker-image.yaml
+    with:
+      target: agent-sidecar
+    secrets: inherit
+  ci-container:
+    needs: [dump-contexts-to-log]
+    uses: ./.github/workflows/_docker-image.yaml
+    with:
+      target: ci-container
+      platforms: linux/amd64
+    secrets: inherit
+  discoverer-k8s:
+    needs: [dump-contexts-to-log]
+    uses: ./.github/workflows/_docker-image.yaml
+    with:
+      target: discoverer-k8s
+    secrets: inherit
+  gateway-lb:
+    needs: [dump-contexts-to-log]
+    uses: ./.github/workflows/_docker-image.yaml
+    with:
+      target: gateway-lb
+    secrets: inherit
+  gateway-filter:
+    needs: [dump-contexts-to-log]
+    uses: ./.github/workflows/_docker-image.yaml
+    with:
+      target: gateway-filter
+    secrets: inherit
+  gateway-mirror:
+    needs: [dump-contexts-to-log]
+    uses: ./.github/workflows/_docker-image.yaml
+    with:
+      target: gateway-mirror
+    secrets: inherit
+  index-correction:
+    needs: [dump-contexts-to-log]
+    uses: ./.github/workflows/_docker-image.yaml
+    with:
+      target: index-correction
+    secrets: inherit
+  index-creation:
+    needs: [dump-contexts-to-log]
+    uses: ./.github/workflows/_docker-image.yaml
+    with:
+      target: index-creation
+    secrets: inherit
+  index-save:
+    needs: [dump-contexts-to-log]
+    uses: ./.github/workflows/_docker-image.yaml
+    with:
+      target: index-save
+    secrets: inherit
+  loadtest:
+    needs: [dump-contexts-to-log]
+    uses: ./.github/workflows/_docker-image.yaml
+    with:
+      target: loadtest
+      platforms: linux/amd64
+    secrets: inherit
+  manager-index:
+    needs: [dump-contexts-to-log]
+    uses: ./.github/workflows/_docker-image.yaml
+    with:
+      target: manager-index
+    secrets: inherit
+  operator-helm:
+    needs: [dump-contexts-to-log]
+    uses: ./.github/workflows/_docker-image.yaml
+    with:
+      target: operator/helm
+    secrets: inherit
+  readreplica-rotate:
+    needs: [dump-contexts-to-log]
+    uses: ./.github/workflows/_docker-image.yaml
+    with:
+      target: readreplica-rotate
+    secrets: inherit
+  benchmark-job:
+    needs: [dump-contexts-to-log]
+    uses: ./.github/workflows/_docker-image.yaml
+    with:
+      target: benchmark-job
+    secrets: inherit
+  benchmark-operator:
+    needs: [dump-contexts-to-log]
+    uses: ./.github/workflows/_docker-image.yaml
+    with:
+      target: benchmark-operator
+    secrets: inherit

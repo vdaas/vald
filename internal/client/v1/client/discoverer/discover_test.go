@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -16,6 +16,145 @@
 
 // Package discoverer
 package discoverer
+
+import (
+	"context"
+	"reflect"
+	"sync/atomic"
+	"testing"
+
+	"github.com/stretchr/testify/require"
+	"github.com/vdaas/vald/internal/net/grpc"
+	"github.com/vdaas/vald/internal/sync/errgroup"
+	"github.com/vdaas/vald/internal/test/mock"
+)
+
+func Test_client_GetReadClient(t *testing.T) {
+	type fields struct {
+		client              grpc.Client
+		readClient          grpc.Client
+		readReplicaReplicas uint64
+		roundRobin          atomic.Uint64
+	}
+	type test struct {
+		name   string
+		fields fields
+		want   grpc.Client
+	}
+
+	mockClient := mock.ClientInternal{}
+	mockClient.On("GetAddrs").Return([]string{"read write client"})
+	mockReadClient := mock.ClientInternal{}
+	mockReadClient.On("GetAddrs").Return([]string{"read replica client"})
+
+	tests := []test{
+		{
+			name: "returns primary client when there is no read replica",
+			fields: fields{
+				client:              &mockClient,
+				readClient:          nil,
+				readReplicaReplicas: 1,
+			},
+			want: &mockClient,
+		},
+		func() test {
+			var counter atomic.Uint64
+			counter.Store(0)
+			return test{
+				name: "returns read client when there is read replica and the counter increments to anything other than 0",
+				fields: fields{
+					client:              &mockClient,
+					readClient:          &mockReadClient,
+					readReplicaReplicas: 1,
+					//nolint:govet,copylocks
+					//skipcq: VET-V0008
+					roundRobin: counter,
+				},
+				want: &mockReadClient,
+			}
+		}(),
+		func() test {
+			var counter atomic.Uint64
+			counter.Store(1)
+			return test{
+				name: "returns primary client when there is read replica and the counter increments to 0",
+				fields: fields{
+					client:              &mockClient,
+					readClient:          &mockReadClient,
+					readReplicaReplicas: 1,
+					//nolint:govet,copylocks
+					//skipcq: VET-V0008
+					roundRobin: counter,
+				},
+				want: &mockClient,
+			}
+		}(),
+		func() test {
+			var counter atomic.Uint64
+			counter.Store(3)
+			return test{
+				name: "returns primary client when there is read replica and the counter increments to 0(replicas: 3)",
+				fields: fields{
+					client:              &mockClient,
+					readClient:          &mockReadClient,
+					readReplicaReplicas: 3,
+					//nolint:govet,copylocks
+					//skipcq: VET-V0008
+					roundRobin: counter,
+				},
+				want: &mockClient,
+			}
+		}(),
+	}
+	//nolint:govet,copylocks
+	//skipcq: VET-V0008
+	for _, tc := range tests {
+		//nolint:govet,copylocks
+		//skipcq: VET-V0008
+		test := tc
+		t.Run(test.name, func(t *testing.T) {
+			c := &client{
+				client:              test.fields.client,
+				readClient:          test.fields.readClient,
+				readReplicaReplicas: test.fields.readReplicaReplicas,
+				//nolint:govet,copylocks
+				//skipcq: VET-V0008
+				roundRobin: test.fields.roundRobin,
+			}
+			got := c.GetReadClient()
+			if !reflect.DeepEqual(got, test.want) {
+				t.Errorf("GetReadClient() = %v, want %v", got, test.want)
+			}
+		})
+	}
+}
+
+func Test_client_GetReadClient_concurrent(t *testing.T) {
+	mockClient := mock.ClientInternal{}
+	mockClient.On("GetAddrs").Return([]string{"read write client"})
+	mockReadClient := mock.ClientInternal{}
+	mockReadClient.On("GetAddrs").Return([]string{"read replica client"})
+
+	c := &client{
+		client:              &mockClient,
+		readClient:          &mockReadClient,
+		readReplicaReplicas: 100,
+		roundRobin:          atomic.Uint64{},
+	}
+
+	eg, _ := errgroup.New(context.Background())
+	for i := 0; i < 150; i++ {
+		eg.Go(func() error {
+			c.GetReadClient()
+			return nil
+		})
+	}
+
+	err := eg.Wait()
+	require.NoError(t, err)
+
+	require.EqualValues(t, uint64(49), c.roundRobin.Load(), "atomic operation did not happen in the concurrent calls")
+}
 
 // NOT IMPLEMENTED BELOW
 //

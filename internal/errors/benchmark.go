@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -17,4 +17,21 @@
 // Package errors provides benchmark error
 package errors
 
-var ErrInvalidCoreMode = New("invalid core mode")
+var (
+	ErrInvalidCoreMode = New("invalid core mode")
+
+	// ErrFailedToCreateBenchmarkJob represents a function to generate an error that failed to create benchmark job crd.
+	ErrFailedToCreateBenchmarkJob = func(err error, jn string) error {
+		return Wrapf(err, "could not create benchmark job resource: %s ", jn)
+	}
+
+	// ErrFailedToCreateJob represents a function to generate an error that failed to create job resource.
+	ErrFailedToCreateJob = func(err error, jn string) error {
+		return Wrapf(err, "could not create job: %s ", jn)
+	}
+
+	// ErrMismatchBenchmarkAtomics represents a function to generate an error that mismatch each atomic.Pointer stored corresponding to benchmark tasks.
+	ErrMismatchBenchmarkAtomics = func(job, benchjob, benchscenario interface{}) error {
+		return Errorf("mismatch atomics: job=%v\tbenchjob=%v\tbenchscenario=%v", job, benchjob, benchscenario)
+	}
+)

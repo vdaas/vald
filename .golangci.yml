@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 run:
-  deadline: 30m
+  timeout: 30m
   skip-dirs:
     - (^|/)apis($|/)
     - (^|/)hack/benchmark($|/)
@@ -122,7 +122,7 @@ linters:
     # - whitespace
     # - wrapcheck
     # - wslissues:
-    # - zerologlint
+issues:
   exclude-use-default: false
   exclude-rules:
     - path: _test\.go
@@ -184,8 +184,6 @@ linters-settings:
           - pkg: "golang.org/x/sync/semaphore"
             desc: "golang.org/x/sync/semaphore is allowed only by internal/sync/semaphore"
           - pkg: "errors"
-            desc: "errors is allowed only by internal/errors"
-          - pkg: "k8s.io/apimachinery/pkg/api/errors"
             desc: "errors is allowed only by internal/errors"
           - pkg: "github.com/cockroachdb/errors"
             desc: "errors is allowed only by internal/errors"

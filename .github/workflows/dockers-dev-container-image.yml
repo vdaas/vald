@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -17,7 +17,9 @@ name: "Build docker image: dev-container"
 on:
   push:
     branches:
-      - main
+      - "main"
+      - "release/v*.*"
+      - "!release/v*.*.*"
     paths:
       - ".github/actions/docker-build/actions.yaml"
       - ".github/workflows/_docker-image.yaml"
@@ -47,9 +49,6 @@ on:
       - "Makefile.d/**"
       - "versions/GO_VERSION"
       - "versions/NGT_VERSION"
-  schedule:
-    - cron: "0 1 * * *"
-
 jobs:
   build:
     uses: ./.github/workflows/_docker-image.yaml

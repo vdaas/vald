@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@
 package errors
 
 var (
-	// ErrCreateIndexingIsInProgress represents an error that the indexing is in progress but search request received
+	// ErrCreateIndexingIsInProgress represents an error that the indexing is in progress but search request received.
 	ErrCreateIndexingIsInProgress = New("create indexing is in progress")
 
 	// ErrCreateProperty represents a function to generate an error that the property creation failed.
@@ -112,4 +112,7 @@ var (
 
 	// ErrAgentIndexDirectoryRecreationFailed represents an error that the index directory recreation failed during the process of broken index backup.
 	ErrIndexDirectoryRecreationFailed = New("failed to recreate the index directory")
+
+	// ErrWriteOperationToReadReplica represents an error that when a write operation is made to read replica.
+	ErrWriteOperationToReadReplica = New("write operation to read replica is not possible")
 )

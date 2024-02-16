@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -170,7 +170,7 @@ func (d *dialer) lookup(ctx context.Context, host string) (dc *dialerCache, err 
 	dc = &dialerCache{
 		ips: ips,
 	}
-	log.Infof("lookup succeed %v", dc.ips)
+	log.Debugf("lookup succeed for %s, ips: %v", host, dc.ips)
 	if d.enableDNSCache {
 		d.dnsCache.Set(host, dc)
 	}

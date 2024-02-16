@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -19,8 +19,8 @@ import (
 	"github.com/vdaas/vald/internal/backoff"
 	"github.com/vdaas/vald/internal/observability/attribute"
 	"github.com/vdaas/vald/internal/observability/metrics"
-	"go.opentelemetry.io/otel/sdk/metric/aggregation"
-	"go.opentelemetry.io/otel/sdk/metric/view"
+	api "go.opentelemetry.io/otel/metric"
+	view "go.opentelemetry.io/otel/sdk/metric"
 )
 
 const (
@@ -38,22 +38,22 @@ func New() metrics.Metric {
 	}
 }
 
-func (*backoffMetrics) View() ([]*metrics.View, error) {
-	retryCount, err := view.New(
-		view.MatchInstrumentName(metricsName),
-		view.WithSetDescription(metricsDescription),
-		view.WithSetAggregation(aggregation.LastValue{}),
-	)
-	if err != nil {
-		return nil, err
-	}
-	return []*metrics.View{
-		&retryCount,
+func (*backoffMetrics) View() ([]metrics.View, error) {
+	return []metrics.View{
+		view.NewView(
+			view.Instrument{
+				Name:        metricsName,
+				Description: metricsDescription,
+			},
+			view.Stream{
+				Aggregation: view.AggregationLastValue{},
+			},
+		),
 	}, nil
 }
 
-func (bm *backoffMetrics) Register(m metrics.Meter) error {
-	retryCount, err := m.AsyncInt64().Gauge(
+func (bm *backoffMetrics) Register(m metrics.Meter) (err error) {
+	retryCount, err := m.Int64ObservableGauge(
 		metricsName,
 		metrics.WithDescription(metricsDescription),
 		metrics.WithUnit(metrics.Dimensionless),
@@ -61,18 +61,17 @@ func (bm *backoffMetrics) Register(m metrics.Meter) error {
 	if err != nil {
 		return err
 	}
-	return m.RegisterCallback(
-		[]metrics.AsynchronousInstrument{
-			retryCount,
-		},
-		func(ctx context.Context) {
+	_, err = m.RegisterCallback(
+		func(ctx context.Context, o api.Observer) error {
 			ms := backoff.Metrics(ctx)
 			if len(ms) == 0 {
-				return
+				return nil
 			}
 			for name, cnt := range ms {
-				retryCount.Observe(ctx, cnt, attribute.String(bm.backoffNameKey, name))
+				o.ObserveInt64(retryCount, cnt, api.WithAttributes(attribute.String(bm.backoffNameKey, name)))
 			}
-		},
+			return nil
+		}, retryCount,
 	)
+	return err
 }

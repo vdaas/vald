@@ -1,0 +1,119 @@
+#
+# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# You may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+name: "Create release PR"
+on:
+  workflow_call:
+    inputs:
+      release_branch_name:
+        type: string
+        description: "The release branch name. e.g release/v1.7"
+        required: true
+      release_tag:
+        type: string
+        description: "The release tag"
+        required: true
+jobs:
+  dump-contexts-to-log:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/dump-context
+  detect-ci-container:
+    uses: ./.github/workflows/_detect-ci-container.yml
+    secrets: inherit
+  create:
+    needs:
+      - dump-contexts-to-log
+      - detect-ci-container
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/vdaas/vald/vald-ci-container:${{ needs.detect-ci-container.outputs.TAG_NAME }}
+    env:
+      RELEASE_BRANCH_NAME: ${{ inputs.release_branch_name }}
+      PREPARE_RELEASE_BRANCH_NAME: prepare/${{ inputs.release_branch_name }}
+      RELEASE_TAG: ${{ inputs.release_tag }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.DISPATCH_TOKEN }}
+      - name: Set Git config
+        run: |
+          git config --global --add safe.directory ${GITHUB_WORKSPACE}
+      - uses: crazy-max/ghaction-import-gpg@v6
+        with:
+          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
+          git_user_signingkey: true
+          git_commit_gpgsign: true
+      - name: Update for new release
+        id: update_for_new_release
+        run: |
+          git checkout ${RELEASE_BRANCH_NAME}
+          git checkout -b ${PREPARE_RELEASE_BRANCH_NAME} && git push origin ${PREPARE_RELEASE_BRANCH_NAME}
+
+          LAST_COMMIT_MESSAGE=`git log --pretty=format:%s -1`
+          PR_NUM=`echo "${LAST_COMMIT_MESSAGE}" | grep -o "#[[:digit:]]\+" | sed -e 's/#//' | head -1`
+
+          PREVIOUS_VERSION=`cat versions/VALD_VERSION`
+          echo "${RELEASE_TAG}" > versions/VALD_VERSION
+
+          sed -i -e "s/^version: .*$/version: ${RELEASE_TAG}/" charts/vald/Chart.yaml
+          sed -i -r "s/^(\s*)tag\s*:\s*v[0-9]+\.[0-9]+\.[0-9]+\s*$/\1tag: ${RELEASE_TAG}/" charts/vald/values.yaml
+          sed -i -e "s/^version: .*$/version: ${RELEASE_TAG}/" charts/vald-helm-operator/Chart.yaml
+          sed -i -r "s/^(\s*)tag\s*:\s*v[0-9]+\.[0-9]+\.[0-9]+\s*$/\1tag: ${RELEASE_TAG}/" charts/vald-helm-operator/values.yaml
+
+          make helm/schema/all
+          make helm/schema/crd/all
+          make k8s/manifest/update
+          make k8s/manifest/helm-operator/update
+          make k8s/manifest/benchmark-operator/update
+          make helm/docs/vald
+          make helm/docs/vald-helm-operator
+          make helm/docs/vald-readreplica
+
+          BODY=""
+          if [ ! -z "${PR_NUM}" ]; then
+            BODY=`curl -s -H "Authorization: Bearer ${GITHUB_TOKEN}" "https://api.github.com/repos/${GITHUB_REPOSITORY}/pulls/${PR_NUM}" | jq -r '.body'`
+          fi
+
+          if [ -z "$BODY" ]; then
+            BODY=`git log --pretty=format:'- %s' ${PREVIOUS_VERSION}..${RELEASE_BRANCH_NAME} | grep "#[[:digit:]]\+" | sed -e "s/\[\(patch\|minor\|major\)\] *//g" | sed -e "s%#\([[:digit:]]\+\)%[&](https://github.com/vdaas/vald/pull/\1)%"`
+          fi
+
+          CHANGELOG=`make changelog/next/print BODY="$BODY"`
+          make changelog/update BODY="$BODY"
+
+          make format
+
+          git add \
+            CHANGELOG.md \
+            charts \
+            k8s \
+            versions/VALD_VERSION
+          git commit -S --signoff -m ":bookmark: :robot: Release ${RELEASE_TAG}"
+          git push -u origin ${PREPARE_RELEASE_BRANCH_NAME}
+
+          curl --include --verbose --fail \
+            -H "Accept: application/json" \
+            -H "Content-Type:application/json" \
+            -H "Authorization: token ${GITHUB_TOKEN}" \
+            --request POST \
+            --data "{\"title\": \":bookmark: :robot: Release ${RELEASE_TAG}\", \"head\": \"${PREPARE_RELEASE_BRANCH_NAME}\", \"base\": \"${RELEASE_BRANCH_NAME}\", \"body\": \"Release PR for ${RELEASE_TAG}.\", \"maintainer_can_modify\": true}" \
+            $API_URL
+        env:
+          GITHUB_USER: ${{ secrets.DISPATCH_USER }}
+          GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
+          API_URL: https://api.github.com/repos/vdaas/vald/pulls

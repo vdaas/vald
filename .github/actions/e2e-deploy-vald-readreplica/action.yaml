@@ -1,0 +1,122 @@
+#
+# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# You may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+name: "Deploy Vald Read Replica for E2E test"
+description: "A action to deploy vald read replica for E2E test"
+inputs:
+  require_minio:
+    description: "If Minio is required, set this to true."
+    required: false
+    default: "false"
+  helm_extra_options:
+    description: "Extra options that passed to Helm command."
+    required: false
+    default: ""
+  values:
+    description: "Path to the values.yaml that passed to Helm command."
+    required: false
+    default: "false"
+  wait_for_selector:
+    description: "Label selector used for specifying a pod waited for"
+    required: false
+    default: "app=vald-lb-gateway"
+  wait_for_timeout:
+    description: "Timeout used for waiting for pods"
+    required: false
+    default: "600s"
+  use_local_charts:
+    description: "If you want to use local charts, set this to true."
+    required: false
+    default: "true"
+  default_image_tag:
+    description: "Default image tag. e.g) nightly, vx.x, vx.x.x"
+    required: true
+    default: "nightly"
+outputs:
+  POD_NAME:
+    description: "A pod name that waited for"
+    value: ${{ steps.get_real_pod_name.outputs.POD_NAME }}
+runs:
+  using: "composite"
+  steps:
+    - name: Deploy Minio
+      id: deploy_minio
+      shell: bash
+      if: ${{ inputs.require_minio == 'true' }}
+      run: |
+        make K8S_SLEEP_DURATION_FOR_WAIT_COMMAND=10 k8s/external/minio/deploy
+    - name: Dump Helm values
+      shell: bash
+      run: |
+        cat ${{ inputs.values }}
+    - name: Deploy vald read replica from remote charts
+      shell: bash
+      id: deploy_vald_readreplica_remote
+      if: ${{ inputs.use_local_charts == 'false' }}
+      run: |
+        helm install \
+          --values ${VALUES} \
+          --set defaults.image.tag=${DEFAULT_IMAGE_TAG} \
+          ${HELM_EXTRA_OPTIONS} \
+          --generate-name charts/vald-readreplica
+
+        sleep 3
+
+        kubectl wait --for=condition=ready pod -l ${WAIT_FOR_SELECTOR} --timeout=${WAIT_FOR_TIMEOUT}
+
+        kubectl get pods
+
+        podname=`kubectl get pods --selector=${WAIT_FOR_SELECTOR} | tail -1 | awk '{print $1}'`
+        echo "POD_NAME=${podname}" >> $GITHUB_OUTPUT
+      env:
+        DEFAULT_IMAGE_TAG: ${{ inputs.default_image_tag }}
+        VALUES: ${{ inputs.values }}
+        HELM_EXTRA_OPTIONS: ${{ inputs.helm_extra_options }}
+        WAIT_FOR_SELECTOR: ${{ inputs.wait_for_selector }}
+        WAIT_FOR_TIMEOUT: ${{ inputs.wait_for_timeout }}
+    - name: Deploy vald read replica from local charts
+      shell: bash
+      id: deploy_vald_readreplica_local
+      if: ${{ inputs.use_local_charts == 'true' }}
+      run: |
+        make k8s/vald-readreplica/deploy VERSION=${DEFAULT_IMAGE_TAG} HELM_VALUES=${VALUES} HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIONS}"
+
+        sleep 3
+
+        kubectl wait --for=condition=ready pod -l ${WAIT_FOR_SELECTOR} --timeout=${WAIT_FOR_TIMEOUT}
+
+        kubectl get pods
+
+        podname=`kubectl get pods --selector=${WAIT_FOR_SELECTOR} | tail -1 | awk '{print $1}'`
+        echo "POD_NAME=${podname}" >> $GITHUB_OUTPUT
+      env:
+        DEFAULT_IMAGE_TAG: ${{ inputs.default_image_tag }}
+        VALUES: ${{ inputs.values }}
+        HELM_EXTRA_OPTIONS: ${{ inputs.helm_extra_options }}
+        WAIT_FOR_SELECTOR: ${{ inputs.wait_for_selector }}
+        WAIT_FOR_TIMEOUT: ${{ inputs.wait_for_timeout }}
+    - name: Get real pod name
+      shell: bash
+      id: get_real_pod_name
+      env:
+        PODNAME_LOCAL_DEPLOY: ${{ steps.deploy_vald_readreplica_local.outputs.POD_NAME }}
+        PODNAME_REMOTE_DEPLOY: ${{ steps.deploy_vald_readreplica_remote.outputs.POD_NAME }}
+      # Set GITHUB_OUTPUT to the not empty one, PODNAME_LOCAL_DEPLOY or PODNAME_REMOTE_DEPLOY
+      run: |
+        if [[ -n "${PODNAME_LOCAL_DEPLOY}" ]]; then
+          echo "POD_NAME=${PODNAME_LOCAL_DEPLOY}" >> $GITHUB_OUTPUT
+        else
+          echo "POD_NAME=${PODNAME_REMOTE_DEPLOY}" >> $GITHUB_OUTPUT
+        fi

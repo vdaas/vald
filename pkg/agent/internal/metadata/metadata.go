@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -32,11 +32,16 @@ const (
 )
 
 type Metadata struct {
-	IsInvalid bool `json:"is_invalid"    yaml:"is_invalid"`
-	NGT       *NGT `json:"ngt,omitempty" yaml:"ngt"`
+	IsInvalid bool   `json:"is_invalid"      yaml:"is_invalid"`
+	NGT       *NGT   `json:"ngt,omitempty"   yaml:"ngt"`
+	Faiss     *Faiss `json:"faiss,omitempty" yaml:"faiss"`
 }
 
 type NGT struct {
+	IndexCount uint64 `json:"index_count" yaml:"index_count"`
+}
+
+type Faiss struct {
 	IndexCount uint64 `json:"index_count" yaml:"index_count"`
 }
 

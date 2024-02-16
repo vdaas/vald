@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
 #
 name: "Deploy Vald for E2E test"
 description: "A action to deploy vald for E2E test"
-
 inputs:
   require_minio:
     description: "If Minio is required, set this to true."
@@ -29,6 +28,9 @@ inputs:
     description: "Path to the values.yaml that passed to Helm command."
     required: false
     default: "false"
+  namespace:
+    description: "Namespace to deploy."
+    required: false
   wait_for_selector:
     description: "Label selector used for specifying a pod waited for"
     required: false
@@ -41,11 +43,14 @@ inputs:
     description: "If you want to use local charts, set this to true."
     required: false
     default: "true"
+  default_image_tag:
+    description: "Default image tag. e.g) nightly, vx.x, vx.x.x"
+    required: true
+    default: "nightly"
 outputs:
   POD_NAME:
     description: "A pod name that waited for"
     value: ${{ steps.get_real_pod_name.outputs.POD_NAME }}
-
 runs:
   using: "composite"
   steps:
@@ -55,12 +60,17 @@ runs:
       if: ${{ inputs.require_minio == 'true' }}
       run: |
         make K8S_SLEEP_DURATION_FOR_WAIT_COMMAND=10 k8s/external/minio/deploy
-
     - name: Dump Helm values
       shell: bash
       run: |
         cat ${{ inputs.values }}
-
+    - name: Change namespace
+      if: ${{ inputs.namespace != '' }}
+      shell: bash
+      run: |
+        kubectl create ns ${NAMESPACE} ; kubectl config set-context --current --namespace=${NAMESPACE}
+      env:
+        NAMESPACE: ${{ inputs.namespace }}
     - name: Deploy vald from remote charts
       shell: bash
       id: deploy_vald_remote
@@ -68,7 +78,7 @@ runs:
       run: |
         helm install \
           --values ${VALUES} \
-          --set defaults.image.tag=nightly \
+          --set defaults.image.tag=${DEFAULT_IMAGE_TAG} \
           ${HELM_EXTRA_OPTIONS} \
           --generate-name charts/vald
 
@@ -81,17 +91,17 @@ runs:
         podname=`kubectl get pods --selector=${WAIT_FOR_SELECTOR} | tail -1 | awk '{print $1}'`
         echo "POD_NAME=${podname}" >> $GITHUB_OUTPUT
       env:
+        DEFAULT_IMAGE_TAG: ${{ inputs.default_image_tag }}
         VALUES: ${{ inputs.values }}
         HELM_EXTRA_OPTIONS: ${{ inputs.helm_extra_options }}
         WAIT_FOR_SELECTOR: ${{ inputs.wait_for_selector }}
         WAIT_FOR_TIMEOUT: ${{ inputs.wait_for_timeout }}
-
     - name: Deploy vald from local charts
       shell: bash
       id: deploy_vald_local
       if: ${{ inputs.use_local_charts == 'true' }}
       run: |
-        make k8s/vald/deploy VERSION=nightly HELM_VALUES=${VALUES} HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIONS}"
+        make k8s/vald/deploy VERSION=${DEFAULT_IMAGE_TAG} HELM_VALUES=${VALUES} HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIONS}"
 
         sleep 3
 
@@ -102,11 +112,11 @@ runs:
         podname=`kubectl get pods --selector=${WAIT_FOR_SELECTOR} | tail -1 | awk '{print $1}'`
         echo "POD_NAME=${podname}" >> $GITHUB_OUTPUT
       env:
+        DEFAULT_IMAGE_TAG: ${{ inputs.default_image_tag }}
         VALUES: ${{ inputs.values }}
         HELM_EXTRA_OPTIONS: ${{ inputs.helm_extra_options }}
         WAIT_FOR_SELECTOR: ${{ inputs.wait_for_selector }}
         WAIT_FOR_TIMEOUT: ${{ inputs.wait_for_timeout }}
-
     - name: Get real pod name
       shell: bash
       id: get_real_pod_name

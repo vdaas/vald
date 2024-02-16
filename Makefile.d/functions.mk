@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -42,16 +42,54 @@ define profile-web
 endef
 
 define go-lint
-	golangci-lint run --config .golangci.yml
+	golangci-lint run --config .golangci.yml --fix
 endef
 
 define go-vet
 	cat <(GOARCH=amd64 go vet $(ROOTDIR)/...) \
 	  <(GOARCH=386 go vet $(ROOTDIR)/...) \
 	  <(GOARCH=arm go vet $(ROOTDIR)/...) \
-	  | rg -v "Mutex" | sort | uniq
+	  | grep -v "Mutex" | sort | uniq
 endef
 
+define go-build
+	echo $(GO_SOURCES_INTERNAL)
+	echo $(PBGOS)
+	echo $(shell find $(ROOTDIR)/cmd/$1 -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
+	echo $(shell find $(ROOTDIR)/pkg/$1 -type f -name '*.go' -not -name '*_test.go' -not -name 'doc.go')
+	CFLAGS="$(CFLAGS)" \
+	CXXFLAGS="$(CXXFLAGS)" \
+	CGO_ENABLED=$(CGO_ENABLED) \
+	CGO_CXXFLAGS="-g -Ofast -march=native" \
+	CGO_FFLAGS="-g -Ofast -march=native" \
+	CGO_LDFLAGS="-g -Ofast -march=native" \
+	GO111MODULE=on \
+	GOARCH=$(GOARCH) \
+	GOOS=$(GOOS) \
+	GOPRIVATE=$(GOPRIVATE) \
+	GO_VERSION=$(GO_VERSION) \
+	go build \
+		--ldflags "-w $2 \
+		-extldflags '$3' \
+		-X '$(GOPKG)/internal/info.AlgorithmInfo=$5' \
+		-X '$(GOPKG)/internal/info.BuildCPUInfoFlags=$(CPU_INFO_FLAGS)' \
+		-X '$(GOPKG)/internal/info.BuildTime=$(DATETIME)' \
+		-X '$(GOPKG)/internal/info.CGOEnabled=$(CGO_ENABLED)' \
+		-X '$(GOPKG)/internal/info.GitCommit=$(GIT_COMMIT)' \
+		-X '$(GOPKG)/internal/info.GoArch=$(GOARCH)' \
+		-X '$(GOPKG)/internal/info.GoOS=$(GOOS)' \
+		-X '$(GOPKG)/internal/info.GoVersion=$(GO_VERSION)' \
+		-X '$(GOPKG)/internal/info.Version=$(VERSION)' \
+		-buildid=" \
+		-modcacherw \
+		-mod=readonly \
+		-a \
+		-tags "osusergo netgo static_build$4" \
+		-trimpath \
+		-o $6 \
+		$(ROOTDIR)/cmd/$1/main.go
+	$6 -version
+endef
 
 define telepresence
 	[ -z $(SWAP_IMAGE) ] && IMAGE=$2 || IMAGE=$(SWAP_IMAGE) \
@@ -66,6 +104,8 @@ endef
 
 define run-e2e-crud-test
 	GOPRIVATE=$(GOPRIVATE) \
+	GOARCH=$(GOARCH) \
+	GOOS=$(GOOS) \
 	go test \
 	    -race \
 	    -mod=readonly \
@@ -91,8 +131,35 @@ define run-e2e-crud-test
 	    -kubeconfig=$(KUBECONFIG)
 endef
 
+define run-e2e-crud-faiss-test
+	GOPRIVATE=$(GOPRIVATE) \
+	GOARCH=$(GOARCH) \
+	GOOS=$(GOOS) \
+	go test \
+	    -race \
+	    -mod=readonly \
+	    $1 \
+	    -v $(ROOTDIR)/tests/e2e/crud/crud_faiss_test.go \
+	    -tags "e2e" \
+	    -timeout $(E2E_TIMEOUT) \
+	    -host=$(E2E_BIND_HOST) \
+	    -port=$(E2E_BIND_PORT) \
+	    -dataset=$(ROOTDIR)/hack/benchmark/assets/dataset/$(E2E_DATASET_NAME).hdf5 \
+	    -insert-num=$(E2E_INSERT_COUNT) \
+	    -search-num=$(E2E_SEARCH_COUNT) \
+	    -update-num=$(E2E_UPDATE_COUNT) \
+	    -remove-num=$(E2E_REMOVE_COUNT) \
+	    -wait-after-insert=$(E2E_WAIT_FOR_CREATE_INDEX_DURATION) \
+	    -portforward=$(E2E_PORTFORWARD_ENABLED) \
+	    -portforward-pod-name=$(E2E_TARGET_POD_NAME) \
+	    -portforward-pod-port=$(E2E_TARGET_PORT) \
+	    -namespace=$(E2E_TARGET_NAMESPACE)
+endef
+
 define run-e2e-multi-crud-test
 	GOPRIVATE=$(GOPRIVATE) \
+	GOARCH=$(GOARCH) \
+	GOOS=$(GOOS) \
 	go test \
 	    -race \
 	    -mod=readonly \
@@ -120,6 +187,8 @@ endef
 
 define run-e2e-max-dim-test
 	GOPRIVATE=$(GOPRIVATE) \
+	GOARCH=$(GOARCH) \
+	GOOS=$(GOOS) \
 	go test \
 	    -race \
 	    -mod=readonly \
@@ -139,6 +208,8 @@ endef
 
 define run-e2e-sidecar-test
 	GOPRIVATE=$(GOPRIVATE) \
+	GOARCH=$(GOARCH) \
+	GOOS=$(GOOS) \
 	go test \
 	    -race \
 	    -mod=readonly \
@@ -204,5 +275,68 @@ define gen-go-option-test-sources
 			echo $$RESULT; \
 			exit 1; \
 		fi; \
+	done
+endef
+
+define gen-license
+	BIN_PATH="$(TEMP_DIR)/vald-license-gen"; \
+	rm -rf $$BIN_PATH; \
+	MAINTAINER=$2 \
+	GOPRIVATE=$(GOPRIVATE) \
+	GOARCH=$(GOARCH) \
+	GOOS=$(GOOS) \
+	go build -mod=readonly -a -o $$BIN_PATH $(ROOTDIR)/hack/license/gen/main.go; \
+	$$BIN_PATH $1; \
+	rm -rf $$BIN_PATH
+endef
+
+define gen-vald-helm-schema
+	BIN_PATH="$(TEMP_DIR)/vald-helm-schema-gen"; \
+	rm -rf $$BIN_PATH; \
+	GOPRIVATE=$(GOPRIVATE) \
+	GOARCH=$(GOARCH) \
+	GOOS=$(GOOS) \
+	go build -mod=readonly -a -o $$BIN_PATH $(ROOTDIR)/hack/helm/schema/gen/main.go; \
+	$$BIN_PATH charts/$1.yaml > charts/$1.schema.json; \
+	rm -rf $$BIN_PATH
+endef
+
+define gen-vald-crd
+	if [[ -f $(ROOTDIR)/charts/$1/crds/$2.yaml ]]; then \
+		mv $(ROOTDIR)/charts/$1/crds/$2.yaml $(TEMP_DIR)/$2.yaml; \
+	fi;
+	BIN_PATH="$(TEMP_DIR)/vald-helm-crd-schema-gen"; \
+	rm -rf $$BIN_PATH; \
+	GOPRIVATE=$(GOPRIVATE) \
+		GOARCH=$(GOARCH) \
+		GOOS=$(GOOS) \
+		go build -mod=readonly -a -o $$BIN_PATH $(ROOTDIR)/hack/helm/schema/crd/main.go; \
+	$$BIN_PATH $(ROOTDIR)/charts/$3.yaml > $(TEMP_DIR)/$2-spec.yaml; \
+	rm -rf $$BIN_PATH; \
+	$(BINDIR)/yq eval-all 'select(fileIndex==0).spec.versions[0].schema.openAPIV3Schema.properties.spec = select(fileIndex==1).spec | select(fileIndex==0)' \
+	$(TEMP_DIR)/$2.yaml $(TEMP_DIR)/$2-spec.yaml > $(ROOTDIR)/charts/$1/crds/$2.yaml
+endef
+
+define update-github-actions
+	@for ACTION_NAME in $1; do \
+		if [ -n "$$ACTION_NAME" ]; then \
+			FILE_NAME=`echo $$ACTION_NAME | tr '/' '_' | tr '-' '_' | tr '[:lower:]' '[:upper:]'`; \
+			if [ -n "$$FILE_NAME" ]; then \
+				VERSION=`curl --silent https://api.github.com/repos/$$ACTION_NAME/releases/latest | grep -Po '"tag_name": "\K.*?(?=")' | sed 's/v//g'`;\
+				if [ -n "$$VERSION" ]; then \
+					echo "updating $$ACTION_NAME version file $$FILE_NAME to $$VERSION"; \
+					echo $$VERSION > $(ROOTDIR)/versions/actions/$$FILE_NAME; \
+				else \
+					VERSION=`cat $(ROOTDIR)/versions/actions/$$FILE_NAME`; \
+					echo "No version found for $$ACTION_NAME version file $$FILE_NAME=$$VERSION"; \
+				fi; \
+				VERSION_PREFIX=`echo $$VERSION | cut -c 1`; \
+				find $(ROOTDIR)/.github -type f -exec sed -i "s%$$ACTION_NAME@.*%$$ACTION_NAME@v$$VERSION_PREFIX%g" {} +; \
+			else \
+				echo "No action version file found for $$ACTION_NAME version file $$FILE_NAME" >&2; \
+			fi \
+		else \
+			echo "No action found for $$ACTION_NAME" >&2; \
+		fi \
 	done
 endef

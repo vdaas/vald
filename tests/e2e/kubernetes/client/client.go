@@ -1,7 +1,7 @@
 //go:build e2e
 
 //
-// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import (
 	"github.com/vdaas/vald/internal/file"
 	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/tests/e2e/kubernetes/portforward"
+	v1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -58,6 +59,15 @@ type Client interface {
 		namespace, name string,
 		timeout time.Duration,
 	) (ok bool, err error)
+	ListCronJob(
+		ctx context.Context,
+		namespace, labelSelector string,
+	) ([]v1.CronJob, error)
+	CreateJobFromCronJob(
+		ctx context.Context,
+		name, namespace string,
+		cronJob *v1.CronJob,
+	) error
 }
 
 type client struct {
@@ -109,7 +119,6 @@ func (cli *client) GetPod(
 	if err != nil {
 		return nil, err
 	}
-
 	return pod, nil
 }
 
@@ -173,4 +182,28 @@ func (cli *client) WaitForPodReady(
 		case <-tick.C:
 		}
 	}
+}
+
+func (cli *client) ListCronJob(ctx context.Context, namespace, labelSelector string) ([]v1.CronJob, error) {
+	cronJobs, err := cli.clientset.BatchV1().CronJobs(namespace).List(ctx, metav1.ListOptions{
+		LabelSelector: labelSelector,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return cronJobs.Items, nil
+}
+
+func (cli *client) CreateJobFromCronJob(ctx context.Context, name, namespace string, cronJob *v1.CronJob) error {
+	job := &v1.Job{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name,
+			Namespace: namespace,
+		},
+		Spec: cronJob.Spec.JobTemplate.Spec,
+	}
+
+	_, err := cli.clientset.BatchV1().Jobs(namespace).Create(ctx, job, metav1.CreateOptions{})
+	return err
 }

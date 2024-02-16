@@ -1,6 +1,5 @@
----
 #
-# Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -52,6 +51,8 @@ spec:
               mountPath: /var/lib/grafana/dashboards-vald/08
             - name: grafana-dashboards-vald-index-correction
               mountPath: /var/lib/grafana/dashboards-vald/09
+            - name: grafana-dashboards-vald-agent-memory
+              mountPath: /var/lib/grafana/dashboards-vald/99
       volumes:
         - name: grafana-datasource-provider
           configMap:
@@ -89,3 +90,7 @@ spec:
           configMap:
             defaultMode: 420
             name: grafana-dashboards-vald-index-correction
+        - name: grafana-dashboards-vald-agent-memory
+          configMap:
+            defaultMode: 420
+            name: grafana-dashboards-vald-agent-memory

@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
 #
 name: "Scan the Docker image"
 description: "A action to scan the Docker image"
-
 inputs:
   image_ref:
     description: "Docker image reference"
@@ -25,7 +24,6 @@ inputs:
     description: "Severities of vulnerabilities to be displayed"
     required: false
     default: "UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL"
-
 runs:
   using: "composite"
   steps:
@@ -35,7 +33,7 @@ runs:
         image-ref: ${{ inputs.image_ref }}
         format: "table"
         severity: ${{ inputs.severity }}
-
+        timeout: 30m
     - name: Run vulnerability scanner (sarif)
       uses: aquasecurity/trivy-action@master
       with:
@@ -43,7 +41,7 @@ runs:
         format: "sarif"
         output: "trivy-results.sarif"
         severity: ${{ inputs.severity }}
-
+        timeout: 30m
     - name: Upload Trivy scan results to Security tab
       uses: github/codeql-action/upload-sarif@v2
       with:

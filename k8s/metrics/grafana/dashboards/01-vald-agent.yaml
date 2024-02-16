@@ -1,6 +1,5 @@
----
 #
-# Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -684,7 +683,7 @@ data:
               "refId": "A"
             }
           ],
-          "title": "NGT indices",
+          "title": "Indices",
           "type": "stat"
         },
         {
@@ -848,7 +847,7 @@ data:
               "refId": "A"
             }
           ],
-          "title": "NGT uncommitted indices",
+          "title": "Uncommitted indices",
           "type": "stat"
         },
         {
@@ -1066,7 +1065,7 @@ data:
               "calcs": [
                 "lastNotNull"
               ],
-              "fields": "/^ngt_version$/",
+              "fields": "/^algorithm_info$/",
               "values": false
             },
             "text": {},
@@ -1080,7 +1079,7 @@ data:
                 "uid": "prometheus"
               },
               "editorMode": "code",
-              "expr": "label_replace(app_version_info{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\", target_pod=~\"$PodName\"}, \"ngt_version\", \"v$1\", \"ngt_version\", \"([^v].*)\")",
+              "expr": "label_replace(app_version_info{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\", target_pod=~\"$PodName\"}, \"algorithm_info\", \"v$1\", \"algorithm_info\", \"([^v].*)\")",
               "format": "table",
               "instant": true,
               "interval": "",
@@ -1088,7 +1087,7 @@ data:
               "refId": "A"
             }
           ],
-          "title": "NGT Version",
+          "title": "Algorithm Version",
           "type": "stat"
         },
         {
@@ -1696,7 +1695,7 @@ data:
           ],
           "thresholds": [],
           "timeRegions": [],
-          "title": "Total NGT indices",
+          "title": "Total Indices",
           "tooltip": {
             "shared": true,
             "sort": 0,
@@ -1816,7 +1815,7 @@ data:
           ],
           "thresholds": [],
           "timeRegions": [],
-          "title": "NGT uncommitted indices",
+          "title": "Uncommitted indices",
           "tooltip": {
             "shared": true,
             "sort": 0,
@@ -2545,7 +2544,7 @@ data:
           ],
           "thresholds": [],
           "timeRegions": [],
-          "title": "NGT indices",
+          "title": "Indices",
           "tooltip": {
             "shared": true,
             "sort": 0,

@@ -1,6 +1,5 @@
----
 #
-# Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -21,10 +20,10 @@ metadata:
   labels:
     app: vald-manager-index
     app.kubernetes.io/name: vald
-    helm.sh/chart: vald-v1.7.9
+    helm.sh/chart: vald-v1.7.11
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: release-name
-    app.kubernetes.io/version: v1.7.9
+    app.kubernetes.io/version: v1.7.11
     app.kubernetes.io/component: manager-index
 spec:
   progressDeadlineSeconds: 600
@@ -47,7 +46,7 @@ spec:
         app.kubernetes.io/instance: release-name
         app.kubernetes.io/component: manager-index
       annotations:
-        checksum/configmap: bba5e07242ed041636e98ef75845a491ec2cd009e3c350f3d8b6d47bfd234888
+        checksum/configmap: 019e5ed5474f453e81d485e4e13b7bab381ea2dc77b3767c423cb30744b5408e
         profefe.com/enable: "true"
         profefe.com/port: "6060"
         profefe.com/service: vald-manager-index
@@ -65,7 +64,7 @@ spec:
             - -e
             - -c
             - |
-              until [ "$(wget --server-response --spider --quiet http://vald-agent-ngt.default.svc.cluster.local:3001/readiness 2>&1 | awk 'NR==1{print $2}')" == "200" ]; do
+              until [ "$(wget --server-response --spider --quiet http://vald-agent.default.svc.cluster.local:3001/readiness 2>&1 | awk 'NR==1{print $2}')" == "200" ]; do
                 echo "waiting for agent to be ready..."
                 sleep 2;
               done

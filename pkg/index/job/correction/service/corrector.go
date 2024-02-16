@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -305,7 +305,7 @@ type vectorReplica struct {
 	vec  *payload.Object_Vector
 }
 
-// Validate len(addrs) >= 2 before calling this function
+// Validate len(addrs) >= 2 before calling this function.
 func (c *correct) checkConsistency(ctx context.Context, targetReplica *vectorReplica, targetAgentIdx int) error {
 	// leftAgentAddrs is the agents' addr that hasn't been corrected yet.
 	leftAgentAddrs := c.sortedByIndexCntAddrs[targetAgentIdx+1:]

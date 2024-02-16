@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -37,9 +37,16 @@ type Gateway interface {
 	Addrs(ctx context.Context) []string
 	DoMulti(ctx context.Context, num int,
 		f func(ctx context.Context, target string, ac vald.Client, copts ...grpc.CallOption) error) error
-	BroadCast(ctx context.Context,
+	BroadCast(ctx context.Context, kind BroadCastKind,
 		f func(ctx context.Context, target string, ac vald.Client, copts ...grpc.CallOption) error) error
 }
+
+type BroadCastKind int
+
+const (
+	READ BroadCastKind = iota
+	WRITE
+)
 
 type gateway struct {
 	client discoverer.Client
@@ -60,7 +67,7 @@ func (g *gateway) Start(ctx context.Context) (<-chan error, error) {
 	return g.client.Start(ctx)
 }
 
-func (g *gateway) BroadCast(ctx context.Context,
+func (g *gateway) BroadCast(ctx context.Context, kind BroadCastKind,
 	f func(ctx context.Context, target string, ac vald.Client, copts ...grpc.CallOption) error,
 ) (err error) {
 	fctx, span := trace.StartSpan(ctx, "vald/gateway-lb/service/Gateway.BroadCast")
@@ -69,7 +76,16 @@ func (g *gateway) BroadCast(ctx context.Context,
 			span.End()
 		}
 	}()
-	return g.client.GetClient().RangeConcurrent(fctx, -1, func(ictx context.Context,
+
+	var client grpc.Client
+	switch kind {
+	case READ:
+		client = g.client.GetReadClient()
+	case WRITE:
+		client = g.client.GetClient()
+	}
+
+	return client.RangeConcurrent(fctx, -1, func(ictx context.Context,
 		addr string, conn *grpc.ClientConn, copts ...grpc.CallOption,
 	) (err error) {
 		select {

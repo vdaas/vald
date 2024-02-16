@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -73,6 +73,7 @@ func (o Operation) String() string {
 // Data represent a application setting data content (config.yaml).
 // In K8s environment, this configuration is stored in K8s ConfigMap.
 type Data struct {
+	//nolint:tagalign
 	config.GlobalConfig `json:",inline" yaml:",inline"`
 	Addr                string             `json:"addr"              yaml:"addr"`
 	Operation           string             `json:"operation"         yaml:"operation"`
@@ -88,7 +89,6 @@ func NewConfig(path string) (cfg *Data, err error) {
 	cfg = new(Data)
 
 	err = config.Read(path, &cfg)
-
 	if err != nil {
 		return nil, err
 	}

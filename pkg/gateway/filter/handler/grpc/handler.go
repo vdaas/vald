@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -1623,7 +1623,6 @@ func (s *server) StreamSearch(stream vald.Search_StreamSearchServer) (err error)
 				},
 			}, nil
 		})
-
 	if err != nil {
 		if span != nil {
 			span.RecordError(err)
@@ -2103,7 +2102,6 @@ func (s *server) StreamLinearSearch(stream vald.Search_StreamLinearSearchServer)
 				},
 			}, nil
 		})
-
 	if err != nil {
 		if span != nil {
 			span.RecordError(err)
@@ -2494,7 +2492,6 @@ func (s *server) StreamInsert(stream vald.Insert_StreamInsertServer) (err error)
 				},
 			}, nil
 		})
-
 	if err != nil {
 		if span != nil {
 			span.RecordError(err)
@@ -2755,7 +2752,6 @@ func (s *server) StreamUpdate(stream vald.Update_StreamUpdateServer) (err error)
 				},
 			}, nil
 		})
-
 	if err != nil {
 		return err
 	}
@@ -3011,7 +3007,6 @@ func (s *server) StreamUpsert(stream vald.Upsert_StreamUpsertServer) (err error)
 				},
 			}, nil
 		})
-
 	if err != nil {
 		st, msg, err := status.ParseError(err, codes.Internal, "failed to parse "+vald.StreamUpsertRPCName+" gRPC error response")
 		if span != nil {
@@ -3175,7 +3170,6 @@ func (s *server) StreamRemove(stream vald.Remove_StreamRemoveServer) (err error)
 				},
 			}, nil
 		})
-
 	if err != nil {
 		st, msg, err := status.ParseError(err, codes.Internal, "failed to parse "+vald.StreamRemoveRPCName+" gRPC error response")
 		if span != nil {
@@ -3432,7 +3426,6 @@ func (s *server) StreamGetObject(stream vald.Object_StreamGetObjectServer) (err 
 				},
 			}, nil
 		})
-
 	if err != nil {
 		if span != nil {
 			span.RecordError(err)

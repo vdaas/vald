@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -25,18 +25,28 @@ import (
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/sync/errgroup"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
+	mserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
+)
+
+type (
+	Manager        = manager.Manager
+	OwnerReference = metav1.OwnerReference
 )
 
 type Controller interface {
 	Start(ctx context.Context) (<-chan error, error)
+	GetManager() Manager
 }
+
+var Now = metav1.Now
 
 type ResourceController interface {
 	GetName() string
@@ -79,9 +89,9 @@ func New(opts ...Option) (cl Controller, err error) {
 		c.mgr, err = manager.New(
 			cfg,
 			manager.Options{
-				Scheme:             runtime.NewScheme(),
-				LeaderElection:     c.leaderElection,
-				MetricsBindAddress: c.merticsAddr,
+				Scheme:         runtime.NewScheme(),
+				LeaderElection: c.leaderElection,
+				Metrics:        mserver.Options{BindAddress: c.merticsAddr},
 			},
 		)
 		if err != nil {
@@ -134,4 +144,8 @@ func (c *controller) Start(ctx context.Context) (<-chan error, error) {
 	}))
 
 	return ech, nil
+}
+
+func (c *controller) GetManager() Manager {
+	return c.mgr
 }

@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
 #
 name: "Deploy Vald using vald-helm-operator for E2E test"
 description: "A action to deploy vald using vald-helm-operator for E2E test"
-
 inputs:
   require_minio:
     description: "If Minio is required, set this to true."
@@ -41,11 +40,14 @@ inputs:
     description: "If you want to use local charts, set this to true."
     required: false
     default: "true"
+  default_image_tag:
+    description: "Default image tag. e.g) nightly, vx.x, vx.x.x, pr-xxx"
+    required: true
+    default: "nightly"
 outputs:
   POD_NAME:
     description: "A pod name that waited for"
     value: ${{ steps.deploy_vald.outputs.POD_NAME }}
-
 runs:
   using: "composite"
   steps:
@@ -55,43 +57,41 @@ runs:
       if: ${{ inputs.require_minio == 'true' }}
       run: |
         make K8S_SLEEP_DURATION_FOR_WAIT_COMMAND=10 k8s/external/minio/deploy
-
     - name: Dump valdrelease
       shell: bash
       run: |
         cat ${{ inputs.valdrelease }}
-
     - name: Deploy vald helm operator from remote charts
       shell: bash
       id: deploy_vald_helm_operator_remote
       if: ${{ inputs.use_local_charts == 'false' }}
       run: |
         helm install vald-helm-operator \
-          --set image.tag=nightly \
+          --set image.tag=${DEFAULT_IMAGE_TAG} \
           ${HELM_EXTRA_OPTIONS} \
           charts/vald-helm-operator/.
 
-        sleep 3
+        sleep 6
       env:
+        DEFAULT_IMAGE_TAG: ${{ inputs.default_image_tag }}
         HELM_EXTRA_OPTIONS: ${{ inputs.helm_extra_options }}
-
     - name: Deploy vald helm operator from local charts
       shell: bash
       id: deploy_vald_helm_operator_local
       if: ${{ inputs.use_local_charts == 'true' }}
       run: |
-        make k8s/vald-helm-operator/deploy VERSION=nightly HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIONS}"
+        make k8s/vald-helm-operator/deploy VERSION=${DEFAULT_IMAGE_TAG} HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIONS}"
         sleep 3
       env:
+        DEFAULT_IMAGE_TAG: ${{ inputs.default_image_tag }}
         HELM_EXTRA_OPTIONS: ${{ inputs.helm_extra_options }}
-
     - name: Deploy vald
       shell: bash
       id: deploy_vald
       run: |
         kubectl apply -f ${VALDRELEASE}
 
-        sleep 3
+        sleep 6
 
         kubectl wait --for=condition=ready pod -l ${WAIT_FOR_SELECTOR} --timeout=${WAIT_FOR_TIMEOUT}
 

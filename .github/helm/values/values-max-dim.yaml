@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
 defaults:
   logging:
     level: info
-
 gateway:
   lb:
     enabled: true
@@ -31,7 +30,6 @@ gateway:
         memory: 50Mi
     gateway_config:
       index_replica: 1
-
 agent:
   minReplicas: 1
   maxReplicas: 1
@@ -47,7 +45,6 @@ agent:
     auto_index_check_duration: 40s
     auto_index_length: 100
     dimension: 2
-
 discoverer:
   minReplicas: 1
   maxReplicas: 1
@@ -57,7 +54,6 @@ discoverer:
     requests:
       cpu: 100m
       memory: 50Mi
-
 manager:
   index:
     replicas: 1

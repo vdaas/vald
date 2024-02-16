@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -106,7 +106,7 @@ runs:
           DOCKER="docker" \
           BUILDKIT_INLINE_CACHE=0 \
           DOCKER_OPTS="--platform ${PLATFORMS} --builder ${BUILDER} ${LABEL_OPTS}  --label org.opencontainers.image.version=${PRIMARY_TAG} --label org.opencontainers.image.title=${TARGET}" \
-          EXTRA_TAGS="${EXTRA_TAGS}" \
+          EXTRA_ARGS="${EXTRA_TAGS}" \
           TAG="${PRIMARY_TAG}" \
           docker/build/${TARGET}
       env:

@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -29,14 +29,14 @@ import (
 )
 
 const (
-	insertCount = 400
-	removeCount = 200
 	testCount   = 20
+	removeCount = 200
 )
 
 var (
 	datasetPath         string
 	grpcServerAddr      string
+	insertCount         uint
 	indexingWaitSeconds uint
 )
 
@@ -44,10 +44,12 @@ func init() {
 	/**
 	Path option specifies hdf file by path. Default value is `fashion-mnist-784-euclidean.hdf5`.
 	Addr option specifies grpc server address. Default value is `127.0.0.1:8081`.
-	Wait option specifies indexing wait time (in seconds). Default value is  `60`.
+	Insert option specifies insert count. Default value is `400`.
+	Wait option specifies indexing wait time (in seconds). Default value is `60`.
 	**/
 	flag.StringVar(&datasetPath, "path", "fashion-mnist-784-euclidean.hdf5", "dataset path")
 	flag.StringVar(&grpcServerAddr, "addr", "localhost:8081", "gRPC server address")
+	flag.UintVar(&insertCount, "insert", 400, "insert count")
 	flag.UintVar(&indexingWaitSeconds, "wait", 60, "indexing wait seconds")
 	flag.Parse()
 }

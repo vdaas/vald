@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -17,12 +17,13 @@
 {{- $agent := .Values.agent -}}
 {{- $lb := .Values.gateway.lb -}}
 {{- $filter := .Values.gateway.filter -}}
+{{- $mirror := .Values.gateway.mirror -}}
 {{- $discoverer := .Values.discoverer -}}
 {{- if .Values.defaults.networkPolicy.enabled }}
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: lb-allow
+  name: {{ $lb.name }}-allow
 spec:
   podSelector:
     matchLabels:
@@ -41,6 +42,12 @@ spec:
         podSelector:
           matchLabels:
             app: {{ $filter.name }}
+      - namespaceSelector:
+          matchLabels:
+            kubernetes.io/metadata.name: {{ .Release.Namespace }}
+        podSelector:
+          matchLabels:
+            app: {{ $mirror.name }}
     {{- if .Values.defaults.networkPolicy.custom.ingress }}
     {{- toYaml .Values.defaults.networkPolicy.custom.ingress | nindent 4 }}
     {{- end }}

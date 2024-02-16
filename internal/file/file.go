@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -359,13 +359,13 @@ func ReadFile(path string) (n []byte, err error) {
 	return io.ReadAll(f)
 }
 
-// Exists returns file existence
+// Exists returns file existence.
 func Exists(path string) (e bool) {
 	e, _, _ = ExistsWithDetail(path)
 	return e
 }
 
-// ExistsWithDetail returns file existence with detailed information
+// ExistsWithDetail returns file existence with detailed information.
 func ExistsWithDetail(path string) (e bool, fi fs.FileInfo, err error) {
 	if path == "" {
 		return false, nil, fs.ErrInvalid
@@ -383,7 +383,7 @@ func ExistsWithDetail(path string) (e bool, fi fs.FileInfo, err error) {
 	return true, fi, nil
 }
 
-// MkdirAll creates directory like mkdir -p
+// MkdirAll creates directory like mkdir -p.
 func MkdirAll(path string, perm fs.FileMode) (err error) {
 	var (
 		exist      bool
@@ -426,7 +426,7 @@ func MkdirAll(path string, perm fs.FileMode) (err error) {
 }
 
 // MkdirTemp create temporary directory from given base path
-// if base path is nil temporary directory will create from Go's standard library
+// if base path is nil temporary directory will create from Go's standard library.
 func MkdirTemp(baseDir string) (path string, err error) {
 	if len(baseDir) == 0 {
 		baseDir = os.TempDir()
@@ -442,7 +442,7 @@ func MkdirTemp(baseDir string) (path string, err error) {
 }
 
 // CreateTemp create temporary file from given base path
-// if base path is nil temporary directory will create from Go's standard library
+// if base path is nil temporary directory will create from Go's standard library.
 func CreateTemp(baseDir string) (f *os.File, err error) {
 	dir, err := MkdirTemp(baseDir)
 	if err != nil {
@@ -462,7 +462,7 @@ func CreateTemp(baseDir string) (f *os.File, err error) {
 	return nil, errors.ErrFailedToCreateFile(err, path, nil)
 }
 
-// ListInDir returns file list in directory
+// ListInDir returns file list in directory.
 func ListInDir(path string) ([]string, error) {
 	exists, fi, err := ExistsWithDetail(path)
 	if !exists {

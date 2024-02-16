@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -32,6 +32,10 @@ inputs:
     description: "If k3d is not required, set this to false"
     required: false
     default: "true"
+  require_minikube:
+    description: "If minikube is not required, set this to true and set require_k3d to false"
+    required: false
+    default: "false"
   ingress_port:
     description: 'If it is not "0", ingress will be exposed to the specified port'
     required: false
@@ -39,7 +43,7 @@ inputs:
   target_images:
     description: "Image names"
     required: false
-    default: "vdaas/vald-agent-ngt vdaas/vald-discoverer-k8s vdaas/vald-lb-gateway vdaas/vald-manager-index"
+    default: "vdaas/vald-agent-ngt vdaas/vald-agent-faiss vdaas/vald-agent-sidecar vdaas/vald-discoverer-k8s vdaas/vald-lb-gateway vdaas/vald-filter-gateway vdaas/vald-mirror-gateway vdaas/vald-manager-index"
 outputs:
   HELM_EXTRA_OPTIONS:
     description: "Helm extra options that specifies E2E target image tags"
@@ -47,6 +51,9 @@ outputs:
   IMAGE_TAGS:
     description: "Specifies E2E target image tags"
     value: ${{ steps.specify_container_versions.outputs.IMAGE_TAGS }}
+  DEFAULT_IMAGE_TAG:
+    description: "Default E2E target image tag"
+    value: ${{ steps.determine_tag_name.outputs.DEFAULT_TAG }}
 runs:
   using: "composite"
   steps:
@@ -56,38 +63,37 @@ runs:
       run: |
         sudo apt-get update
         sudo apt-get install -y libhdf5-dev
-
     - name: Setup Go environment
       if: ${{ inputs.require_go == 'true' }}
       uses: ./.github/actions/setup-go
-
     - name: Setup Helm environment
       if: ${{ inputs.require_helm == 'true' }}
       uses: ./.github/actions/setup-helm
-
     - name: Wait for target Docker images
       if: startsWith( github.ref, 'refs/tags/')
       uses: ./.github/actions/wait-for-docker-image
       with:
         images: ${{ inputs.target_images }}
-
     - name: Determine Docker image tag
       id: determine_tag_name
       uses: ./.github/actions/determine-docker-image-tag
-
     - name: Specify container versions
       id: specify_container_versions
       uses: ./.github/actions/detect-docker-image-tags
       with:
         tag_name: ${{ steps.determine_tag_name.outputs.PRIMARY_TAG }}
         images: ${{ inputs.target_images }}
-
     - uses: ./.github/actions/setup-k3d
       if: ${{ inputs.require_k3d == 'true' }}
       with:
         agents: 3
         ingress_port: ${{ inputs.ingress_port }}
-
+    - name: Setup Minikube environment
+      if: ${{ inputs.require_minikube == 'true' }}
+      shell: bash
+      run: |
+        make minikube/install
+        make minikube/start
     - name: Check Kubernetes cluster
       shell: bash
       run: |

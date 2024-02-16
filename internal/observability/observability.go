@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ import (
 	"github.com/vdaas/vald/internal/observability/exporter/otlp"
 	"github.com/vdaas/vald/internal/observability/metrics"
 	"github.com/vdaas/vald/internal/observability/metrics/grpc"
-	"github.com/vdaas/vald/internal/observability/metrics/mem/index"
+	"github.com/vdaas/vald/internal/observability/metrics/mem"
 	"github.com/vdaas/vald/internal/observability/metrics/runtime/cgo"
 	"github.com/vdaas/vald/internal/observability/metrics/runtime/goroutine"
 	"github.com/vdaas/vald/internal/observability/metrics/version"
@@ -58,7 +58,7 @@ func NewWithConfig(cfg *config.Observability, ms ...metrics.Metric) (Observabili
 			ms = append(ms, goroutine.New())
 		}
 		if cfg.Metrics.EnableMemory {
-			ms = append(ms, index.New())
+			ms = append(ms, mem.New())
 		}
 		if cfg.Metrics.EnableVersionInfo {
 			ms = append(ms, version.New(cfg.Metrics.VersionInfoLabels...))

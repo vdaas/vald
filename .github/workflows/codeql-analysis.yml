@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -18,6 +18,8 @@ on:
   push:
     branches:
       - main
+      - "release/v*.*"
+      - "!release/v*.*.*"
     tags:
       - "*.*.*"
       - "v*.*.*"
@@ -26,24 +28,27 @@ on:
   pull_request:
     branches:
       - main
+      - "release/v*.*"
+      - "!release/v*.*.*"
     paths:
       - ".github/workflows/codeql-analysis.yml"
       - "**.go"
   schedule:
     - cron: "0 1 * * *"
-
 jobs:
   dump-contexts-to-log:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/dump-context
-
+  detect-ci-container:
+    uses: ./.github/workflows/_detect-ci-container.yml
   codeql-build:
     name: CodeQL
     runs-on: ubuntu-latest
+    needs: [detect-ci-container]
     container:
-      image: ghcr.io/vdaas/vald/vald-ci-container:nightly
+      image: ghcr.io/vdaas/vald/vald-ci-container:${{ needs.detect-ci-container.outputs.TAG_NAME }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -51,19 +56,15 @@ jobs:
           # We must fetch at least the immediate parents so that if this is
           # a pull request then we can checkout the head.
           fetch-depth: 2
-
       - name: Set Git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
-
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v2
         with:
           languages: go
           config-file: ./.github/codeql/codeql-config.yaml
-
       - name: Autobuild
         uses: github/codeql-action/autobuild@v2
-
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v2

@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ const (
 	Unknown Format = iota
 	RAW
 	JSON
-	// LTSV
+	// LTSV.
 )
 
 func (f Format) String() string {

@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -15,6 +15,10 @@
 #
 
 JAEGER_OPERATOR_WAIT_DURATION := 0
+MIRROR01_NAMESPACE = vald-01
+MIRROR02_NAMESPACE = vald-02
+MIRROR03_NAMESPACE = vald-03
+MIRROR_APP_NAME    = vald-mirror-gateway
 
 .PHONY: k8s/manifest/clean
 ## clean k8s manifests
@@ -41,7 +45,7 @@ k8s/manifest/update: \
 	mkdir -p k8s/index/job/readreplica
 	mv $(TEMP_DIR)/vald/templates/agent k8s/agent
 	mv $(TEMP_DIR)/vald/templates/discoverer k8s/discoverer
-	mv $(TEMP_DIR)/vald/templates/gateway/lb k8s/gateway/lb
+	mv $(TEMP_DIR)/vald/templates/gateway k8s/gateway
 	mv $(TEMP_DIR)/vald/templates/manager/index k8s/manager/index
 	mv $(TEMP_DIR)/vald/templates/index/job/correction k8s/index/job/correction
 	mv $(TEMP_DIR)/vald/templates/index/job/creation k8s/index/job/creation
@@ -67,6 +71,23 @@ k8s/manifest/helm-operator/update: \
 	rm -rf $(TEMP_DIR)
 	cp -r charts/vald-helm-operator/crds k8s/operator/helm/crds
 
+.PHONY: k8s/manifest/benchmark-operator/clean
+## clean k8s manifests for benchmark-operator
+k8s/manifest/benchmark-operator/clean:
+	rm -rf \
+	    k8s/tools/benchmark/operator
+
+.PHONY: k8s/manifest/benchmark-operator/update
+## update k8s manifests for benchmark-operator using helm templates
+k8s/manifest/benchmark-operator/update: \
+	k8s/manifest/benchmark-operator/clean
+	helm template \
+	    --output-dir $(TEMP_DIR) \
+	    charts/vald-benchmark-operator
+	mkdir -p k8s/tools/benchmark
+	mv $(TEMP_DIR)/vald-benchmark-operator/templates k8s/tools/benchmark/operator
+	rm -rf $(TEMP_DIR)
+	cp -r charts/vald-benchmark-operator/crds k8s/tools/benchmark/operator/crds
 
 .PHONY: k8s/vald/deploy
 ## deploy vald sample cluster to k8s
@@ -74,23 +95,29 @@ k8s/vald/deploy:
 	helm template \
 	    --values $(HELM_VALUES) \
 	    --set defaults.image.tag=$(VERSION) \
-	    --set agent.image.repository=$(CRORG)/$(AGENT_IMAGE) \
+	    --set agent.image.repository=$(CRORG)/$(AGENT_NGT_IMAGE) \
 	    --set agent.sidecar.image.repository=$(CRORG)/$(AGENT_SIDECAR_IMAGE) \
 	    --set discoverer.image.repository=$(CRORG)/$(DISCOVERER_IMAGE) \
 	    --set gateway.filter.image.repository=$(CRORG)/$(FILTER_GATEWAY_IMAGE) \
 	    --set gateway.lb.image.repository=$(CRORG)/$(LB_GATEWAY_IMAGE) \
+	    --set gateway.mirror.image.repository=$(CRORG)/$(MIRROR_GATEWAY_IMAGE) \
 	    --set manager.index.image.repository=$(CRORG)/$(MANAGER_INDEX_IMAGE) \
 	    --set manager.index.creator.image.repository=$(CRORG)/$(INDEX_CREATION_IMAGE) \
 	    --set manager.index.saver.image.repository=$(CRORG)/$(INDEX_SAVE_IMAGE) \
 	    $(HELM_EXTRA_OPTIONS) \
+        --include-crds \
 	    --output-dir $(TEMP_DIR) \
 	    charts/vald
 	@echo "Permitting error because there's some cases nothing to apply"
 	kubectl apply -f $(TEMP_DIR)/vald/templates/manager/index || true
 	kubectl apply -f $(TEMP_DIR)/vald/templates/agent || true
+	kubectl apply -f $(TEMP_DIR)/vald/templates/agent/ngt || true
 	kubectl apply -f $(TEMP_DIR)/vald/templates/agent/readreplica || true
 	kubectl apply -f $(TEMP_DIR)/vald/templates/discoverer || true
+	kubectl apply -f $(TEMP_DIR)/vald/templates/gateway || true
 	kubectl apply -f $(TEMP_DIR)/vald/templates/gateway/lb || true
+	kubectl apply -f $(TEMP_DIR)/vald/crds || true
+	kubectl apply -f $(TEMP_DIR)/vald/templates/gateway/mirror || true
 	kubectl apply -f $(TEMP_DIR)/vald/templates/index/job/correction || true
 	kubectl apply -f $(TEMP_DIR)/vald/templates/index/job/creation || true
 	kubectl apply -f $(TEMP_DIR)/vald/templates/index/job/save || true
@@ -104,26 +131,64 @@ k8s/vald/delete:
 	helm template \
 	    --values $(HELM_VALUES) \
 	    --set defaults.image.tag=$(VERSION) \
-	    --set agent.image.repository=$(CRORG)/$(AGENT_IMAGE) \
+	    --set agent.image.repository=$(CRORG)/$(AGENT_NGT_IMAGE) \
 	    --set agent.sidecar.image.repository=$(CRORG)/$(AGENT_SIDECAR_IMAGE) \
 	    --set discoverer.image.repository=$(CRORG)/$(DISCOVERER_IMAGE) \
 	    --set gateway.filter.image.repository=$(CRORG)/$(FILTER_GATEWAY_IMAGE) \
 	    --set gateway.lb.image.repository=$(CRORG)/$(LB_GATEWAY_IMAGE) \
+	    --set gateway.mirror.image.repository=$(CRORG)/$(MIRROR_GATEWAY_IMAGE) \
 	    --set manager.index.image.repository=$(CRORG)/$(MANAGER_INDEX_IMAGE) \
+        --include-crds \
 	    --output-dir $(TEMP_DIR) \
 	    charts/vald
+	kubectl delete -f $(TEMP_DIR)/vald/templates/gateway/mirror
 	kubectl delete -f $(TEMP_DIR)/vald/templates/index/job/readreplica/rotate
 	kubectl delete -f $(TEMP_DIR)/vald/templates/index/job/save
 	kubectl delete -f $(TEMP_DIR)/vald/templates/index/job/creation
 	kubectl delete -f $(TEMP_DIR)/vald/templates/index/job/correction
 	kubectl delete -f $(TEMP_DIR)/vald/templates/index/job/creation
 	kubectl delete -f $(TEMP_DIR)/vald/templates/index/job/save
+	kubectl delete -f $(TEMP_DIR)/vald/templates/gateway
 	kubectl delete -f $(TEMP_DIR)/vald/templates/gateway/lb
 	kubectl delete -f $(TEMP_DIR)/vald/templates/manager/index
 	kubectl delete -f $(TEMP_DIR)/vald/templates/discoverer
 	kubectl delete -f $(TEMP_DIR)/vald/templates/agent/readreplica || true
+	kubectl delete -f $(TEMP_DIR)/vald/templates/agent/ngt || true
 	kubectl delete -f $(TEMP_DIR)/vald/templates/agent
+	kubectl delete -f $(TEMP_DIR)/vald/crds
 	rm -rf $(TEMP_DIR)
+
+.PHONY: k8s/multi/vald/deploy
+## deploy multiple vald sample clusters to k8s
+k8s/multi/vald/deploy:
+	-@kubectl create ns $(MIRROR01_NAMESPACE)
+	-@kubectl create ns $(MIRROR02_NAMESPACE)
+	-@kubectl create ns $(MIRROR03_NAMESPACE)
+	helm install vald-cluster-01 charts/vald \
+		-f $(ROOTDIR)/charts/vald/values/multi-vald/dev-vald-with-mirror.yaml \
+		-f $(ROOTDIR)/charts/vald/values/multi-vald/dev-vald-01.yaml \
+	    -n $(MIRROR01_NAMESPACE)
+	helm install vald-cluster-02 charts/vald \
+		-f $(ROOTDIR)/charts/vald/values/multi-vald/dev-vald-with-mirror.yaml \
+		-f $(ROOTDIR)/charts/vald/values/multi-vald/dev-vald-02.yaml \
+	    -n $(MIRROR02_NAMESPACE)
+	helm install vald-cluster-03 charts/vald \
+		-f $(ROOTDIR)/charts/vald/values/multi-vald/dev-vald-with-mirror.yaml \
+		-f $(ROOTDIR)/charts/vald/values/multi-vald/dev-vald-03.yaml \
+		-n $(MIRROR03_NAMESPACE)
+	kubectl wait --for=condition=ready pod -l app=$(MIRROR_APP_NAME) --timeout=120s -n $(MIRROR01_NAMESPACE)
+	kubectl wait --for=condition=ready pod -l app=$(MIRROR_APP_NAME) --timeout=120s -n $(MIRROR02_NAMESPACE)
+	kubectl wait --for=condition=ready pod -l app=$(MIRROR_APP_NAME) --timeout=120s -n $(MIRROR03_NAMESPACE)
+	kubectl apply -f $(ROOTDIR)/charts/vald/values/multi-vald/mirror-target.yaml \
+		-n $(MIRROR03_NAMESPACE)
+
+.PHONY: k8s/multi/vald/delete
+## delete multiple vald sample clusters to k8s
+k8s/multi/vald/delete:
+	helm uninstall vald-cluster-01 -n vald-01
+	helm uninstall vald-cluster-02 -n vald-02
+	helm uninstall vald-cluster-03 -n vald-03
+	-@kubectl delete ns vald-01 vald-02 vald-03
 
 .PHONY: k8s/vald-helm-operator/deploy
 ## deploy vald-helm-operator to k8s
@@ -153,6 +218,45 @@ k8s/vald-helm-operator/delete:
 	kubectl delete -f $(TEMP_DIR)/vald-helm-operator/crds
 	rm -rf $(TEMP_DIR)
 
+.PHONY: k8s/vald-readreplica/deploy
+## deploy vald-readreplica to k8s
+k8s/vald-readreplica/deploy:
+	helm template \
+	    --values $(HELM_VALUES) \
+	    --set defaults.image.tag=$(VERSION) \
+	    --set agent.image.repository=$(CRORG)/$(AGENT_NGT_IMAGE) \
+	    --set agent.sidecar.image.repository=$(CRORG)/$(AGENT_SIDECAR_IMAGE) \
+	    --set discoverer.image.repository=$(CRORG)/$(DISCOVERER_IMAGE) \
+	    --set gateway.filter.image.repository=$(CRORG)/$(FILTER_GATEWAY_IMAGE) \
+	    --set gateway.lb.image.repository=$(CRORG)/$(LB_GATEWAY_IMAGE) \
+	    --set manager.index.image.repository=$(CRORG)/$(MANAGER_INDEX_IMAGE) \
+	    --set manager.index.creator.image.repository=$(CRORG)/$(INDEX_CREATION_IMAGE) \
+	    --set manager.index.saver.image.repository=$(CRORG)/$(INDEX_SAVE_IMAGE) \
+	    $(HELM_EXTRA_OPTIONS) \
+	    --output-dir $(TEMP_DIR) \
+	    charts/vald-readreplica
+	kubectl apply -f $(TEMP_DIR)/vald-readreplica/templates
+	sleep 2
+	kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=vald-readreplica --timeout=600s
+
+.PHONY: k8s/vald-readreplica/delete
+## delete vald-helm-operator from k8s
+k8s/vald-readreplica/delete:
+	helm template \
+	    --values $(HELM_VALUES) \
+	    --set defaults.image.tag=$(VERSION) \
+	    --set agent.image.repository=$(CRORG)/$(AGENT_NGT_IMAGE) \
+	    --set agent.sidecar.image.repository=$(CRORG)/$(AGENT_SIDECAR_IMAGE) \
+	    --set discoverer.image.repository=$(CRORG)/$(DISCOVERER_IMAGE) \
+	    --set gateway.filter.image.repository=$(CRORG)/$(FILTER_GATEWAY_IMAGE) \
+	    --set gateway.lb.image.repository=$(CRORG)/$(LB_GATEWAY_IMAGE) \
+	    --set manager.index.image.repository=$(CRORG)/$(MANAGER_INDEX_IMAGE) \
+	    --output-dir $(TEMP_DIR) \
+	    charts/vald-readreplica
+	kubectl delete -f $(TEMP_DIR)/vald-readreplica/templates
+	kubectl wait --for=delete pod -l app.kubernetes.io/name=vald-readreplica --timeout=600s
+	rm -rf $(TEMP_DIR)
+
 .PHONY: k8s/vr/deploy
 ## deploy ValdRelease resource to k8s
 k8s/vr/deploy: \
@@ -168,6 +272,34 @@ k8s/vr/deploy: \
 k8s/vr/delete: \
 	k8s/metrics/metrics-server/delete
 	kubectl delete vr vald-cluster
+
+.PHONY: k8s/vald-benchmark-operator/deploy
+## deploy vald-benchmark-operator to k8s
+k8s/vald-benchmark-operator/deploy:
+	helm template \
+	    --output-dir $(TEMP_DIR) \
+	    --set image.tag=${VERSION} \
+	    --include-crds \
+	    charts/vald-benchmark-operator
+	kubectl create -f $(TEMP_DIR)/vald-benchmark-operator/crds/valdbenchmarkjob.yaml
+	kubectl create -f $(TEMP_DIR)/vald-benchmark-operator/crds/valdbenchmarkscenario.yaml
+	kubectl create -f $(TEMP_DIR)/vald-benchmark-operator/crds/valdbenchmarkoperatorrelease.yaml
+	kubectl apply -f $(TEMP_DIR)/vald-benchmark-operator/templates
+	sleep 2
+	kubectl wait --for=condition=ready pod -l name=vald-benchmark-operator --timeout=600s
+
+.PHONY: k8s/vald-benchmark-operator/delete
+## delete vald-benchmark-operator from k8s
+k8s/vald-benchmark-operator/delete:
+	helm template \
+	    --output-dir $(TEMP_DIR) \
+	    --set image.tag=${VERSION} \
+	    --include-crds \
+	    charts/vald-benchmark-operator
+	kubectl delete -f $(TEMP_DIR)/vald-benchmark-operator/templates
+	kubectl wait --for=delete pod -l name=vald-benchmark-operator --timeout=600s
+	kubectl delete -f $(TEMP_DIR)/vald-benchmark-operator/crds
+	rm -rf $(TEMP_DIR)
 
 .PHONY: k8s/external/cert-manager/deploy
 ## deploy cert-manager
@@ -378,28 +510,33 @@ telepresence/install: $(BINDIR)/telepresence
 $(BINDIR)/telepresence:
 	mkdir -p $(BINDIR)
 	cd $(TEMP_DIR) \
-	    && curl -fsSL "https://app.getambassador.io/download/tel2oss/releases/download/v$(TELEPRESENCE_VERSION)/telepresence-$(shell echo $(UNAME) | tr '[:upper:]' '[:lower:]')-$(subst x86_64,amd64,$(shell echo $(ARCH) | tr '[:upper:]' '[:lower:]'))" -o $(BINDIR)/telepresence \
+	    && curl -fsSL "https://app.getambassador.io/download/tel2oss/releases/download/v$(TELEPRESENCE_VERSION)/telepresence-$(OS)-$(subst x86_64,amd64,$(shell echo $(ARCH) | tr '[:upper:]' '[:lower:]'))" -o $(BINDIR)/telepresence \
 	    && chmod a+x $(BINDIR)/telepresence
 
 .PHONY: telepresence/swap/agent-ngt
 ## swap agent-ngt deployment using telepresence
 telepresence/swap/agent-ngt:
-	@$(call telepresence,vald-agent-ngt,vdaas/vald-agent-ngt)
+	$(call telepresence,vald-agent-ngt,vdaas/vald-agent-ngt)
+
+.PHONY: telepresence/swap/agent-faiss
+## swap agent-faiss deployment using telepresence
+telepresence/swap/agent-faiss:
+	$(call telepresence,vald-agent-faiss,vdaas/vald-agent-faiss)
 
 .PHONY: telepresence/swap/discoverer
 ## swap discoverer deployment using telepresence
 telepresence/swap/discoverer:
-	@$(call telepresence,vald-discoverer,vdaas/vald-discoverer-k8s)
+	$(call telepresence,vald-discoverer,vdaas/vald-discoverer-k8s)
 
 .PHONY: telepresence/swap/manager-index
 ## swap manager-index deployment using telepresence
 telepresence/swap/manager-index:
-	@$(call telepresence,vald-manager-index,vdaas/vald-manager-index)
+	$(call telepresence,vald-manager-index,vdaas/vald-manager-index)
 
 .PHONY: telepresence/swap/lb-gateway
 ## swap lb-gateway deployment using telepresence
 telepresence/swap/lb-gateway:
-	@$(call telepresence,vald-lb-gateway,vdaas/vald-lb-gateway)
+	$(call telepresence,vald-lb-gateway,vdaas/vald-lb-gateway)
 
 .PHONY: kubelinter/install
 ## install kubelinter
@@ -408,5 +545,5 @@ kubelinter/install: $(BINDIR)/kube-linter
 $(BINDIR)/kube-linter:
 	mkdir -p $(BINDIR)
 	cd $(TEMP_DIR) \
-	    && curl -L https://github.com/stackrox/kube-linter/releases/download/$(KUBELINTER_VERSION)/kube-linter-$(shell echo $(UNAME) | tr '[:upper:]' '[:lower:]') -o $(BINDIR)/kube-linter \
+	    && curl -L https://github.com/stackrox/kube-linter/releases/download/$(KUBELINTER_VERSION)/kube-linter-$(OS) -o $(BINDIR)/kube-linter \
 	    && chmod a+x $(BINDIR)/kube-linter

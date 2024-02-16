@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -43,6 +43,8 @@ $(GOPATH)bin/gotests:
 ## run tests for cmd, internal, pkg
 test:
 	GOPRIVATE=$(GOPRIVATE) \
+	GOARCH=$(GOARCH) \
+	GOOS=$(GOOS) \
 	go test -short -shuffle=on -race -mod=readonly -cover -timeout=$(GOTEST_TIMEOUT) $(ROOTDIR)/cmd/... $(ROOTDIR)/internal/... $(ROOTDIR)/pkg/...
 
 .PHONY: test/tparse
@@ -52,6 +54,8 @@ test/tparse: \
 	set -euo pipefail
 	rm -rf "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json"
 	GOPRIVATE=$(GOPRIVATE) \
+	GOARCH=$(GOARCH) \
+	GOOS=$(GOOS) \
 	go test -short -shuffle=on -race -mod=readonly -json -cover -timeout=$(GOTEST_TIMEOUT) $(ROOTDIR)/cmd/... $(ROOTDIR)/internal/... $(ROOTDIR)/pkg/... \
 	| tee "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json" \
 	| tparse -pass -notests
@@ -63,6 +67,8 @@ test/cmd/tparse: \
 	set -euo pipefail
 	rm -rf "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json"
 	GOPRIVATE=$(GOPRIVATE) \
+	GOARCH=$(GOARCH) \
+	GOOS=$(GOOS) \
 	go test -short -shuffle=on -race -mod=readonly -json -cover -timeout=$(GOTEST_TIMEOUT) $(ROOTDIR)/cmd/... \
 	| tee "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json" \
 	| tparse -pass -notests
@@ -74,6 +80,8 @@ test/internal/tparse: \
 	set -euo pipefail
 	rm -rf "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json"
 	GOPRIVATE=$(GOPRIVATE) \
+	GOARCH=$(GOARCH) \
+	GOOS=$(GOOS) \
 	go test -short -shuffle=on -race -mod=readonly -json -cover -timeout=$(GOTEST_TIMEOUT) $(ROOTDIR)/internal/... \
 	| tee "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json" \
 	| tparse -pass -notests
@@ -85,6 +93,8 @@ test/pkg/tparse: \
 	set -euo pipefail
 	rm -rf "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json"
 	GOPRIVATE=$(GOPRIVATE) \
+	GOARCH=$(GOARCH) \
+	GOOS=$(GOOS) \
 	go test -short -shuffle=on -race -mod=readonly -json -cover -timeout=$(GOTEST_TIMEOUT) $(ROOTDIR)/pkg/... \
 	| tee "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json" \
 	| tparse -pass -notests
@@ -98,6 +108,8 @@ test/hack/tparse: \
 	GOPRIVATE=$(GOPRIVATE) \
 	go mod vendor -o $(ROOTDIR)/vendor
 	GOPRIVATE=$(GOPRIVATE) \
+	GOARCH=$(GOARCH) \
+	GOOS=$(GOOS) \
 	go test -short -shuffle=on -race -mod=vendor -json -cover \
 		$(ROOTDIR)/hack/gorules/... \
 		$(ROOTDIR)/hack/helm/... \
@@ -114,6 +126,8 @@ test/all/tparse: \
 	set -euo pipefail
 	rm -rf "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json"
 	GOPRIVATE=$(GOPRIVATE) \
+	GOARCH=$(GOARCH) \
+	GOOS=$(GOOS) \
 	go test -short -shuffle=on -race -mod=readonly -json -cover -timeout=$(GOTEST_TIMEOUT) $(ROOTDIR)/... \
 	| tee "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json" \
 	| tparse -pass -notests
@@ -125,6 +139,8 @@ test/gotestfmt: \
 	set -euo pipefail
 	rm -rf "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json"
 	GOPRIVATE=$(GOPRIVATE) \
+	GOARCH=$(GOARCH) \
+	GOOS=$(GOOS) \
 	go test -short -shuffle=on -race -mod=readonly -json -cover -timeout=$(GOTEST_TIMEOUT) $(ROOTDIR)/cmd/... $(ROOTDIR)/internal/... $(ROOTDIR)/pkg/... \
 	| tee "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json" \
 	| gotestfmt -showteststatus
@@ -136,6 +152,8 @@ test/cmd/gotestfmt: \
 	set -euo pipefail
 	rm -rf "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json"
 	GOPRIVATE=$(GOPRIVATE) \
+	GOARCH=$(GOARCH) \
+	GOOS=$(GOOS) \
 	go test -short -shuffle=on -race -mod=readonly -json -cover -timeout=$(GOTEST_TIMEOUT) $(ROOTDIR)/cmd/... \
 	| tee "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json" \
 	| gotestfmt -showteststatus
@@ -147,6 +165,8 @@ test/internal/gotestfmt: \
 	set -euo pipefail
 	rm -rf "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json"
 	GOPRIVATE=$(GOPRIVATE) \
+	GOARCH=$(GOARCH) \
+	GOOS=$(GOOS) \
 	go test -short -shuffle=on -race -mod=readonly -json -cover -timeout=$(GOTEST_TIMEOUT) $(ROOTDIR)/internal/... \
 	| tee "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json" \
 	| gotestfmt -showteststatus
@@ -158,6 +178,8 @@ test/pkg/gotestfmt: \
 	set -euo pipefail
 	rm -rf "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json"
 	GOPRIVATE=$(GOPRIVATE) \
+	GOARCH=$(GOARCH) \
+	GOOS=$(GOOS) \
 	go test -short -shuffle=on -race -mod=readonly -json -cover -timeout=$(GOTEST_TIMEOUT) $(ROOTDIR)/pkg/... \
 	| tee "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json" \
 	| gotestfmt -showteststatus
@@ -171,6 +193,8 @@ test/hack/gotestfmt: \
 	GOPRIVATE=$(GOPRIVATE) \
 	go mod vendor -o $(ROOTDIR)/vendor
 	GOPRIVATE=$(GOPRIVATE) \
+	GOARCH=$(GOARCH) \
+	GOOS=$(GOOS) \
 	go test -short -shuffle=on -race -mod=vendor -json -cover \
 		$(ROOTDIR)/hack/gorules/... \
 		$(ROOTDIR)/hack/helm/... \
@@ -187,6 +211,8 @@ test/all/gotestfmt: \
 	set -euo pipefail
 	rm -rf "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json"
 	GOPRIVATE=$(GOPRIVATE) \
+	GOARCH=$(GOARCH) \
+	GOOS=$(GOOS) \
 	go test -short -shuffle=on -race -mod=readonly -json -cover -timeout=$(GOTEST_TIMEOUT) $(ROOTDIR)/... \
 	| tee "$(TEST_RESULT_DIR)/`echo $@ | sed -e 's%/%-%g'`-result.json" \
 	| gotestfmt -showteststatus
@@ -222,18 +248,24 @@ test/remove-empty:
 ## run tests for pkg
 test/pkg:
 	GOPRIVATE=$(GOPRIVATE) \
+	GOARCH=$(GOARCH) \
+	GOOS=$(GOOS) \
 	go test -short -shuffle=on -race -mod=readonly -cover $(ROOTDIR)/pkg/...
 
 .PHONY: test/internal
 ## run tests for internal
 test/internal:
 	GOPRIVATE=$(GOPRIVATE) \
+	GOARCH=$(GOARCH) \
+	GOOS=$(GOOS) \
 	go test -short -shuffle=on -race -mod=readonly -cover $(ROOTDIR)/internal/...
 
 .PHONY: test/cmd
 ## run tests for cmd
 test/cmd:
 	GOPRIVATE=$(GOPRIVATE) \
+	GOARCH=$(GOARCH) \
+	GOOS=$(GOOS) \
 	go test -short -shuffle=on -race -mod=readonly -cover $(ROOTDIR)/cmd/...
 
 .PHONY: test/hack
@@ -242,6 +274,8 @@ test/hack:
 	GOPRIVATE=$(GOPRIVATE) \
 	go mod vendor -o $(ROOTDIR)/vendor
 	GOPRIVATE=$(GOPRIVATE) \
+	GOARCH=$(GOARCH) \
+	GOOS=$(GOOS) \
 	go test -short -shuffle=on -race -mod=vendor -cover \
 		$(ROOTDIR)/hack/gorules... \
 		$(ROOTDIR)/hack/helm/... \
@@ -253,14 +287,20 @@ test/hack:
 ## run tests for all Go codes
 test/all:
 	GOPRIVATE=$(GOPRIVATE) \
+	GOARCH=$(GOARCH) \
+	GOOS=$(GOOS) \
 	go test -short -shuffle=on -race -mod=readonly -cover $(ROOTDIR)/...
 
 .PHONY: coverage
 ## calculate coverages
 coverage:
 	GOPRIVATE=$(GOPRIVATE) \
+	GOARCH=$(GOARCH) \
+	GOOS=$(GOOS) \
 	go test -short -shuffle=on -race -mod=readonly -v -race -covermode=atomic -timeout=$(GOTEST_TIMEOUT) -coverprofile=coverage.out $(ROOTDIR)/...
 	GOPRIVATE=$(GOPRIVATE) \
+	GOARCH=$(GOARCH) \
+	GOOS=$(GOOS) \
 	go tool cover -html=coverage.out -o coverage.html
 
 .PHONY: gotests/gen
@@ -285,16 +325,16 @@ gotests/gen-test:
 ## apply patches to generated go test files
 gotests/patch:
 	@$(call green, "apply patches to go test files...")
-	find $(ROOTDIR)/internal/k8s/* -name '*_test.go' | xargs sed -i -E "s%k8s.io/apimachinery/pkg/api/errors%github.com/vdaas/vald/internal/errors%g"
-	find $(ROOTDIR)/* -name '*_test.go' | xargs sed -i -E "s%cockroachdb/errors%vdaas/vald/internal/errors%g"
-	find $(ROOTDIR)/* -name '*_test.go' | xargs sed -i -E "s%golang.org/x/sync/errgroup%github.com/vdaas/vald/internal/sync/errgroup%g"
-	find $(ROOTDIR)/* -name '*_test.go' | xargs sed -i -E "s%pkg/errors%vdaas/vald/internal/errors%g"
-	find $(ROOTDIR)/* -name '*_test.go' | xargs sed -i -E "s%go-errors/errors%vdaas/vald/internal/errors%g"
-	find $(ROOTDIR)/* -name '*_test.go' | xargs sed -i -E "s%go.uber.org/goleak%github.com/vdaas/vald/internal/test/goleak%g"
-	find $(ROOTDIR)/internal/errors -name '*_test.go' | xargs sed -i -E "s%\"github.com/vdaas/vald/internal/errors\"%%g"
-	find $(ROOTDIR)/internal/errors -name '*_test.go' -not -name '*_benchmark_test.go' | xargs sed -i -E "s/errors\.//g"
-	find $(ROOTDIR)/internal/test/goleak -name '*_test.go' | xargs sed -i -E "s%\"github.com/vdaas/vald/internal/test/goleak\"%%g"
-	find $(ROOTDIR)/internal/test/goleak -name '*_test.go' | xargs sed -i -E "s/goleak\.//g"
+	find $(ROOTDIR)/internal/k8s/* -name '*_test.go' | xargs -P$(CORES) sed -i -E "s%k8s.io/apimachinery/pkg/api/errors%github.com/vdaas/vald/internal/errors%g"
+	find $(ROOTDIR)/* -name '*_test.go' | xargs -P$(CORES) sed -i -E "s%cockroachdb/errors%vdaas/vald/internal/errors%g"
+	find $(ROOTDIR)/* -name '*_test.go' | xargs -P$(CORES) sed -i -E "s%golang.org/x/sync/errgroup%github.com/vdaas/vald/internal/sync/errgroup%g"
+	find $(ROOTDIR)/* -name '*_test.go' | xargs -P$(CORES) sed -i -E "s%pkg/errors%vdaas/vald/internal/errors%g"
+	find $(ROOTDIR)/* -name '*_test.go' | xargs -P$(CORES) sed -i -E "s%go-errors/errors%vdaas/vald/internal/errors%g"
+	find $(ROOTDIR)/* -name '*_test.go' | xargs -P$(CORES) sed -i -E "s%go.uber.org/goleak%github.com/vdaas/vald/internal/test/goleak%g"
+	find $(ROOTDIR)/internal/errors -name '*_test.go' | xargs -P$(CORES) sed -i -E "s%\"github.com/vdaas/vald/internal/errors\"%%g"
+	find $(ROOTDIR)/internal/errors -name '*_test.go' -not -name '*_benchmark_test.go' | xargs -P$(CORES) sed -i -E "s/errors\.//g"
+	find $(ROOTDIR)/internal/test/goleak -name '*_test.go' | xargs -P$(CORES) sed -i -E "s%\"github.com/vdaas/vald/internal/test/goleak\"%%g"
+	find $(ROOTDIR)/internal/test/goleak -name '*_test.go' | xargs -P$(CORES) sed -i -E "s/goleak\.//g"
 
 .PHONY: test/patch-placeholder
 ## apply patches to the placeholder of the generated go test files

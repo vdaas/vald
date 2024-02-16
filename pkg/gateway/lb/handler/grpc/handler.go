@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -95,7 +95,7 @@ func (s *server) exists(ctx context.Context, uuid string) (id *payload.Object_ID
 		defer close(ich)
 		defer close(ech)
 		var once sync.Once
-		ech <- s.gateway.BroadCast(ctx, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error {
+		ech <- s.gateway.BroadCast(ctx, service.READ, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error {
 			sctx, sspan := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "BroadCast/"+target), apiName+"/exists/BroadCast/"+target)
 			defer func() {
 				if sspan != nil {
@@ -539,7 +539,6 @@ func (s *server) StreamSearch(stream vald.Search_StreamSearchServer) (err error)
 				},
 			}, nil
 		})
-
 	if err != nil {
 		st, msg, err := status.ParseError(err, codes.Internal,
 			"failed to parse "+vald.StreamSearchRPCName+" gRPC error response")
@@ -588,7 +587,6 @@ func (s *server) StreamSearchByID(stream vald.Search_StreamSearchByIDServer) (er
 				},
 			}, nil
 		})
-
 	if err != nil {
 		st, msg, err := status.ParseError(err, codes.Internal,
 			"failed to parse "+vald.StreamSearchByIDRPCName+" gRPC error response")
@@ -989,7 +987,6 @@ func (s *server) StreamLinearSearch(stream vald.Search_StreamLinearSearchServer)
 				},
 			}, nil
 		})
-
 	if err != nil {
 		st, msg, err := status.ParseError(err, codes.Internal,
 			"failed to parse "+vald.StreamLinearSearchRPCName+" gRPC error response")
@@ -1041,7 +1038,6 @@ func (s *server) StreamLinearSearchByID(stream vald.Search_StreamLinearSearchByI
 				},
 			}, nil
 		})
-
 	if err != nil {
 		st, msg, err := status.ParseError(err, codes.Internal,
 			"failed to parse "+vald.StreamLinearSearchByIDRPCName+" gRPC error response")
@@ -1460,7 +1456,6 @@ func (s *server) StreamInsert(stream vald.Insert_StreamInsertServer) (err error)
 				},
 			}, nil
 		})
-
 	if err != nil {
 		st, msg, err := status.ParseError(err, codes.Internal, "failed to parse "+vald.StreamInsertRPCName+" gRPC error response")
 		if span != nil {
@@ -1653,7 +1648,7 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (res *
 				Ips:  make([]string, 0, s.replica),
 			}
 		)
-		err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) (err error) {
+		err = s.gateway.BroadCast(ctx, service.WRITE, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) (err error) {
 			ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "BroadCast/"+target), apiName+"/"+vald.UpdateRPCName+"/"+target)
 			defer func() {
 				if span != nil {
@@ -1997,7 +1992,6 @@ func (s *server) StreamUpdate(stream vald.Update_StreamUpdateServer) (err error)
 				},
 			}, nil
 		})
-
 	if err != nil {
 		st, msg, err := status.ParseError(err, codes.Internal, "failed to parse "+vald.StreamUpdateRPCName+" gRPC error response")
 		if span != nil {
@@ -2346,7 +2340,6 @@ func (s *server) StreamUpsert(stream vald.Upsert_StreamUpsertServer) (err error)
 				},
 			}, nil
 		})
-
 	if err != nil {
 		st, msg, err := status.ParseError(err, codes.Internal, "failed to parse "+vald.StreamUpsertRPCName+" gRPC error response")
 		if span != nil {
@@ -2562,7 +2555,7 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (locs 
 		Ips:  make([]string, 0, s.replica),
 	}
 	ls := make([]string, 0, s.replica)
-	err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) (err error) {
+	err = s.gateway.BroadCast(ctx, service.WRITE, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) (err error) {
 		ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "BroadCast/"+target), apiName+"/"+vald.RemoveRPCName+"/"+target)
 		defer func() {
 			if span != nil {
@@ -2650,7 +2643,6 @@ func (s *server) StreamRemove(stream vald.Remove_StreamRemoveServer) (err error)
 				},
 			}, nil
 		})
-
 	if err != nil {
 		st, msg, err := status.ParseError(err, codes.Internal, "failed to parse "+vald.StreamRemoveRPCName+" gRPC error response")
 		if span != nil {
@@ -2778,7 +2770,7 @@ func (s *server) RemoveByTimestamp(ctx context.Context, req *payload.Remove_Time
 	visited := make(map[string]int) // map[uuid: position of locs]
 	locs = new(payload.Object_Locations)
 
-	err := s.gateway.BroadCast(ctx, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) (err error) {
+	err := s.gateway.BroadCast(ctx, service.WRITE, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) (err error) {
 		sctx, sspan := trace.StartSpan(grpc.WithGRPCMethod(ctx, "BroadCast/"+target), apiName+"/removeByTimestamp/BroadCast/"+target)
 		defer func() {
 			if sspan != nil {
@@ -2905,7 +2897,7 @@ func (s *server) getObject(ctx context.Context, uuid string) (vec *payload.Objec
 		defer close(vch)
 		defer close(ech)
 		var once sync.Once
-		ech <- s.gateway.BroadCast(ctx, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error {
+		ech <- s.gateway.BroadCast(ctx, service.READ, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error {
 			sctx, sspan := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "BroadCast/"+target), apiName+"/getObject/BroadCast/"+target)
 			defer func() {
 				if sspan != nil {
@@ -3223,7 +3215,6 @@ func (s *server) StreamGetObject(stream vald.Object_StreamGetObjectServer) (err 
 				},
 			}, nil
 		})
-
 	if err != nil {
 		st, msg, err := status.ParseError(err, codes.Internal, "failed to parse "+vald.StreamGetObjectRPCName+" gRPC error response")
 		if span != nil {
@@ -3249,7 +3240,7 @@ func (s *server) StreamListObject(req *payload.Object_List_Request, stream vald.
 	defer cancel()
 
 	var rmu, smu sync.Mutex
-	err := s.gateway.BroadCast(ctx, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error {
+	err := s.gateway.BroadCast(ctx, service.READ, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error {
 		ctx, sspan := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "BroadCast/"+target), apiName+"/"+vald.StreamListObjectRPCName+"/"+target)
 		defer func() {
 			if sspan != nil {

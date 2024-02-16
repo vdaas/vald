@@ -1,6 +1,5 @@
----
 #
-# Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -22,10 +21,10 @@ metadata:
   labels:
     app: vald-helm-operator
     app.kubernetes.io/name: vald-helm-operator
-    helm.sh/chart: vald-helm-operator-v1.7.9
+    helm.sh/chart: vald-helm-operator-v1.7.11
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: release-name
-    app.kubernetes.io/version: v1.7.9
+    app.kubernetes.io/version: v1.7.11
     app.kubernetes.io/component: helm-operator
 spec:
   replicas: 2
@@ -43,7 +42,7 @@ spec:
       serviceAccountName: vald-helm-operator
       containers:
         - name: vald-helm-operator
-          image: "vdaas/vald-helm-operator:v1.7.9"
+          image: "vdaas/vald-helm-operator:v1.7.11"
           imagePullPolicy: Always
           args:
             - "run"

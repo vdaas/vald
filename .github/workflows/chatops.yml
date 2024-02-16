@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -17,14 +17,12 @@ name: ChatOps
 on:
   issue_comment:
     types: [created]
-
 jobs:
   dump-contexts-to-log:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/dump-context
-
   label:
     name: Add labels
     runs-on: ubuntu-latest
@@ -37,10 +35,8 @@ jobs:
           TRIGGER_PHRASE: "/label"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
       - uses: ./.github/actions/setup-yq
         if: steps.check_comments_label.outputs.BOOL_TRIGGERED == 'true'
-
       - name: Check permissions
         if: steps.check_comments_label.outputs.BOOL_TRIGGERED == 'true'
         id: check_permissions
@@ -61,7 +57,6 @@ jobs:
         env:
           USERNAME: ${{ steps.check_comments_label.outputs.COMMENTER_USERNAME }}
           REQUIRED_POLICY: label
-
       - name: Add label
         if: steps.check_comments_label.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         run: |
@@ -90,10 +85,8 @@ jobs:
           TRIGGER_PHRASE: "/rebase"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
       - uses: ./.github/actions/setup-yq
         if: steps.check_comments_rebase.outputs.BOOL_TRIGGERED == 'true'
-
       - name: Check permissions
         if: steps.check_comments_rebase.outputs.BOOL_TRIGGERED == 'true'
         id: check_permissions
@@ -114,7 +107,6 @@ jobs:
         env:
           USERNAME: ${{ steps.check_comments_rebase.outputs.COMMENTER_USERNAME }}
           REQUIRED_POLICY: rebase
-
       - name: Comment back to PR
         if: steps.check_comments_rebase.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         run: |
@@ -130,23 +122,19 @@ jobs:
           API_URL: ${{ github.event.issue.comments_url }}
           BRANCH: ${{ steps.check_comments_rebase.outputs.BRANCH_NAME }}
           USERNAME: ${{ steps.check_comments_rebase.outputs.COMMENTER_USERNAME }}
-
       - uses: actions/checkout@v4
         if: steps.check_comments_rebase.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         with:
           fetch-depth: 0
           token: ${{ secrets.DISPATCH_TOKEN }}
-
       - name: Set Git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
-
       - name: Automatic Rebase
         if: steps.check_comments_rebase.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         uses: cirrus-actions/rebase@1.5
         env:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
-
       - name: Failure comment
         if: failure()
         run: |
@@ -160,7 +148,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
           API_URL: ${{ github.event.issue.comments_url }}
-
   gentest:
     name: Add tests
     needs:
@@ -175,10 +162,8 @@ jobs:
           TRIGGER_PHRASE: "/gen-test"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
       - uses: ./.github/actions/setup-yq
         if: steps.check_comments_gen_test.outputs.BOOL_TRIGGERED == 'true'
-
       - name: check permissions
         if: steps.check_comments_gen_test.outputs.BOOL_TRIGGERED == 'true'
         id: check_permissions
@@ -199,7 +184,6 @@ jobs:
         env:
           USERNAME: ${{ steps.check_comments_gen_test.outputs.COMMENTER_USERNAME }}
           REQUIRED_POLICY: gen-test
-
       - name: check executable
         if: steps.check_comments_gen_test.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         run: |
@@ -215,26 +199,21 @@ jobs:
           USERNAME: ${{ steps.check_comments_gen_test.outputs.COMMENTER_USERNAME }}
           PR_AUTHOR: ${{ github.event.issue.user.login }}
           API_URL: ${{ github.event.issue.comments_url }}
-
       - uses: actions/checkout@v4
         if: steps.check_comments_gen_test.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         with:
           fetch-depth: 0
-
       - name: set git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
-
-      - uses: crazy-max/ghaction-import-gpg@v4
+      - uses: crazy-max/ghaction-import-gpg@v6
         if: steps.check_comments_gen_test.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         with:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           git_user_signingkey: true
           git_commit_gpgsign: true
-
       - uses: ./.github/actions/setup-go
         if: steps.check_comments_gen_test.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
-
       - name: Generate tests and push
         id: gen_test
         if: steps.check_comments_gen_test.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
@@ -269,7 +248,6 @@ jobs:
           PR_INFO_URL: ${{ github.event.issue.pull_request.url }}
           PR_AUTHOR: ${{ github.event.issue.user.login }}
           PR_NUM: ${{ github.event.issue.number }}
-
       - name: failure comment
         if: failure()
         run: |
@@ -284,7 +262,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
           API_URL: ${{ github.event.issue.comments_url }}
-
   format:
     name: Add license and run golines + gofumpt + goimports
     needs:
@@ -300,10 +277,8 @@ jobs:
           TRIGGER_PHRASE: "/format"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
       - uses: ./.github/actions/setup-yq
         if: steps.check_comments_format.outputs.BOOL_TRIGGERED == 'true'
-
       - name: check permissions
         if: steps.check_comments_format.outputs.BOOL_TRIGGERED == 'true'
         id: check_permissions
@@ -324,7 +299,6 @@ jobs:
         env:
           USERNAME: ${{ steps.check_comments_format.outputs.COMMENTER_USERNAME }}
           REQUIRED_POLICY: format
-
       - name: check executable
         if: steps.check_comments_format.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         run: |
@@ -339,27 +313,22 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
           USERNAME: ${{ steps.check_comments_format.outputs.COMMENTER_USERNAME }}
           API_URL: ${{ github.event.issue.comments_url }}
-
       - uses: actions/checkout@v4
         if: steps.check_comments_format.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         with:
           fetch-depth: 0
           token: ${{ secrets.DISPATCH_TOKEN }}
-
       - name: set git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
-
-      - uses: crazy-max/ghaction-import-gpg@v4
+      - uses: crazy-max/ghaction-import-gpg@v6
         if: steps.check_comments_format.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         with:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           git_user_signingkey: true
           git_commit_gpgsign: true
-
       - uses: ./.github/actions/setup-go
-        if: steps.check_comments_gen_test.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
-
+        if: steps.check_comments_format.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
       - name: update and push
         id: format_push
         if: steps.check_comments_format.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
@@ -401,7 +370,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
           PR_INFO_URL: ${{ github.event.issue.pull_request.url }}
           PR_NUM: ${{ github.event.issue.number }}
-
       - name: no changes
         if: steps.check_comments_format.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true' && steps.format_push.outputs.UPDATED == 'false'
         run: |
@@ -415,7 +383,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
           API_URL: ${{ github.event.issue.comments_url }}
-
       - name: failure comment
         if: failure()
         run: |
@@ -429,7 +396,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
           API_URL: ${{ github.event.issue.comments_url }}
-
   approve:
     name: Approve
     needs:
@@ -445,10 +411,8 @@ jobs:
           TRIGGER_PHRASE: "/approve"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
       - uses: ./.github/actions/setup-yq
         if: steps.check_comments_approve.outputs.BOOL_TRIGGERED == 'true'
-
       - name: check permissions
         if: steps.check_comments_approve.outputs.BOOL_TRIGGERED == 'true'
         id: check_permissions
@@ -469,7 +433,6 @@ jobs:
         env:
           USERNAME: ${{ steps.check_comments_approve.outputs.COMMENTER_USERNAME }}
           REQUIRED_POLICY: approve
-
       - name: approve
         if: steps.check_comments_approve.outputs.BOOL_TRIGGERED == 'true' && steps.check_permissions.outputs.EXECUTABLE == 'true'
         run: |

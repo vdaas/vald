@@ -17,6 +17,8 @@
   - [Flush](#payload-v1-Flush)
   - [Flush.Request](#payload-v1-Flush-Request)
   - [Info](#payload-v1-Info)
+  - [Info.Annotations](#payload-v1-Info-Annotations)
+  - [Info.Annotations.AnnotationsEntry](#payload-v1-Info-Annotations-AnnotationsEntry)
   - [Info.CPU](#payload-v1-Info-CPU)
   - [Info.IPs](#payload-v1-Info-IPs)
   - [Info.Index](#payload-v1-Info-Index)
@@ -24,17 +26,25 @@
   - [Info.Index.UUID](#payload-v1-Info-Index-UUID)
   - [Info.Index.UUID.Committed](#payload-v1-Info-Index-UUID-Committed)
   - [Info.Index.UUID.Uncommitted](#payload-v1-Info-Index-UUID-Uncommitted)
+  - [Info.Labels](#payload-v1-Info-Labels)
+  - [Info.Labels.LabelsEntry](#payload-v1-Info-Labels-LabelsEntry)
   - [Info.Memory](#payload-v1-Info-Memory)
   - [Info.Node](#payload-v1-Info-Node)
   - [Info.Nodes](#payload-v1-Info-Nodes)
   - [Info.Pod](#payload-v1-Info-Pod)
   - [Info.Pods](#payload-v1-Info-Pods)
+  - [Info.Service](#payload-v1-Info-Service)
+  - [Info.ServicePort](#payload-v1-Info-ServicePort)
+  - [Info.Services](#payload-v1-Info-Services)
   - [Insert](#payload-v1-Insert)
   - [Insert.Config](#payload-v1-Insert-Config)
   - [Insert.MultiObjectRequest](#payload-v1-Insert-MultiObjectRequest)
   - [Insert.MultiRequest](#payload-v1-Insert-MultiRequest)
   - [Insert.ObjectRequest](#payload-v1-Insert-ObjectRequest)
   - [Insert.Request](#payload-v1-Insert-Request)
+  - [Mirror](#payload-v1-Mirror)
+  - [Mirror.Target](#payload-v1-Mirror-Target)
+  - [Mirror.Targets](#payload-v1-Mirror-Targets)
   - [Object](#payload-v1-Object)
   - [Object.Blob](#payload-v1-Object-Blob)
   - [Object.Distance](#payload-v1-Object-Distance)
@@ -99,6 +109,8 @@
   - [Filter](#filter-ingress-v1-Filter)
 - [v1/manager/index/index_manager.proto](#v1_manager_index_index_manager-proto)
   - [Index](#manager-index-v1-Index)
+- [v1/mirror/mirror.proto](#v1_mirror_mirror-proto)
+  - [Mirror](#mirror-v1-Mirror)
 - [v1/rpc/errdetails/error_details.proto](#v1_rpc_errdetails_error_details-proto)
   - [BadRequest](#rpc-v1-BadRequest)
   - [BadRequest.FieldViolation](#rpc-v1-BadRequest-FieldViolation)
@@ -220,6 +232,25 @@ Represent the target filter server.
 
 Info related messages.
 
+<a name="payload-v1-Info-Annotations"></a>
+
+### Info.Annotations
+
+Represent the kubernetes annotations.
+
+| Field       | Type                                                                               | Label    | Description |
+| ----------- | ---------------------------------------------------------------------------------- | -------- | ----------- |
+| annotations | [Info.Annotations.AnnotationsEntry](#payload-v1-Info-Annotations-AnnotationsEntry) | repeated |             |
+
+<a name="payload-v1-Info-Annotations-AnnotationsEntry"></a>
+
+### Info.Annotations.AnnotationsEntry
+
+| Field | Type              | Label | Description |
+| ----- | ----------------- | ----- | ----------- |
+| key   | [string](#string) |       |             |
+| value | [string](#string) |       |             |
+
 <a name="payload-v1-Info-CPU"></a>
 
 ### Info.CPU
@@ -287,6 +318,25 @@ The uncommitted UUID.
 | ----- | ----------------- | ----- | ----------- |
 | uuid  | [string](#string) |       |             |
 
+<a name="payload-v1-Info-Labels"></a>
+
+### Info.Labels
+
+Represent the kubernetes labels.
+
+| Field  | Type                                                           | Label    | Description |
+| ------ | -------------------------------------------------------------- | -------- | ----------- |
+| labels | [Info.Labels.LabelsEntry](#payload-v1-Info-Labels-LabelsEntry) | repeated |             |
+
+<a name="payload-v1-Info-Labels-LabelsEntry"></a>
+
+### Info.Labels.LabelsEntry
+
+| Field | Type              | Label | Description |
+| ----- | ----------------- | ----- | ----------- |
+| key   | [string](#string) |       |             |
+| value | [string](#string) |       |             |
+
 <a name="payload-v1-Info-Memory"></a>
 
 ### Info.Memory
@@ -350,6 +400,42 @@ Represent the multiple pod information message.
 | ----- | -------------------------------- | -------- | ----------------------------- |
 | pods  | [Info.Pod](#payload-v1-Info-Pod) | repeated | The multiple pod information. |
 
+<a name="payload-v1-Info-Service"></a>
+
+### Info.Service
+
+Represent the service information message.
+
+| Field       | Type                                             | Label    | Description                     |
+| ----------- | ------------------------------------------------ | -------- | ------------------------------- |
+| name        | [string](#string)                                |          | The name of the svc.            |
+| cluster_ip  | [string](#string)                                |          | The cluster ip of the svc.      |
+| cluster_ips | [string](#string)                                | repeated | The cluster ips of the svc.     |
+| ports       | [Info.ServicePort](#payload-v1-Info-ServicePort) | repeated | The port of the svc.            |
+| labels      | [Info.Labels](#payload-v1-Info-Labels)           |          | The labels of the service.      |
+| annotations | [Info.Annotations](#payload-v1-Info-Annotations) |          | The annotations of the service. |
+
+<a name="payload-v1-Info-ServicePort"></a>
+
+### Info.ServicePort
+
+Represets the service port information message.
+
+| Field | Type              | Label | Description           |
+| ----- | ----------------- | ----- | --------------------- |
+| name  | [string](#string) |       | The name of the port. |
+| port  | [int32](#int32)   |       | The port number       |
+
+<a name="payload-v1-Info-Services"></a>
+
+### Info.Services
+
+Represent the multiple service information message.
+
+| Field    | Type                                     | Label    | Description                       |
+| -------- | ---------------------------------------- | -------- | --------------------------------- |
+| services | [Info.Service](#payload-v1-Info-Service) | repeated | The multiple service information. |
+
 <a name="payload-v1-Insert"></a>
 
 ### Insert
@@ -410,6 +496,33 @@ Represent the insert request.
 | ------ | ------------------------------------------ | ----- | ---------------------------------------- |
 | vector | [Object.Vector](#payload-v1-Object-Vector) |       | The vector to be inserted.               |
 | config | [Insert.Config](#payload-v1-Insert-Config) |       | The configuration of the insert request. |
+
+<a name="payload-v1-Mirror"></a>
+
+### Mirror
+
+Mirror related messages.
+
+<a name="payload-v1-Mirror-Target"></a>
+
+### Mirror.Target
+
+Represent server information.
+
+| Field | Type              | Label | Description          |
+| ----- | ----------------- | ----- | -------------------- |
+| host  | [string](#string) |       | The target hostname. |
+| port  | [uint32](#uint32) |       | The target port.     |
+
+<a name="payload-v1-Mirror-Targets"></a>
+
+### Mirror.Targets
+
+Represent the multiple Target message.
+
+| Field   | Type                                       | Label    | Description                      |
+| ------- | ------------------------------------------ | -------- | -------------------------------- |
+| targets | [Mirror.Target](#payload-v1-Mirror-Target) | repeated | The multiple target information. |
 
 <a name="payload-v1-Object"></a>
 
@@ -988,10 +1101,11 @@ Represent the agent sidecar service.
 
 Represent the discoverer service.
 
-| Method Name | Request Type                                                     | Response Type                                    | Description                                          |
-| ----------- | ---------------------------------------------------------------- | ------------------------------------------------ | ---------------------------------------------------- |
-| Pods        | [.payload.v1.Discoverer.Request](#payload-v1-Discoverer-Request) | [.payload.v1.Info.Pods](#payload-v1-Info-Pods)   | Represent the RPC to get the agent pods information. |
-| Nodes       | [.payload.v1.Discoverer.Request](#payload-v1-Discoverer-Request) | [.payload.v1.Info.Nodes](#payload-v1-Info-Nodes) | Represent the RPC to get the node information.       |
+| Method Name | Request Type                                                     | Response Type                                          | Description                                               |
+| ----------- | ---------------------------------------------------------------- | ------------------------------------------------------ | --------------------------------------------------------- |
+| Pods        | [.payload.v1.Discoverer.Request](#payload-v1-Discoverer-Request) | [.payload.v1.Info.Pods](#payload-v1-Info-Pods)         | Represent the RPC to get the agent pods information.      |
+| Nodes       | [.payload.v1.Discoverer.Request](#payload-v1-Discoverer-Request) | [.payload.v1.Info.Nodes](#payload-v1-Info-Nodes)       | Represent the RPC to get the node information.            |
+| Services    | [.payload.v1.Discoverer.Request](#payload-v1-Discoverer-Request) | [.payload.v1.Info.Services](#payload-v1-Info-Services) | Represent the RPC to get the readreplica svc information. |
 
 <a name="v1_filter_egress_egress_filter-proto"></a>
 
@@ -1042,6 +1156,36 @@ Represent the index manager service.
 | Method Name | Request Type                           | Response Type                                                | Description                                     |
 | ----------- | -------------------------------------- | ------------------------------------------------------------ | ----------------------------------------------- |
 | IndexInfo   | [.payload.v1.Empty](#payload-v1-Empty) | [.payload.v1.Info.Index.Count](#payload-v1-Info-Index-Count) | Represent the RPC to get the index information. |
+
+<a name="v1_mirror_mirror-proto"></a>
+
+<p align="right"><a href="#top">Top</a></p>
+
+## v1/mirror/mirror.proto
+
+Copyright (C) 2019-2024 vdaas.org vald team &lt;vald@vdaas.org&gt;
+
+Licensed under the Apache License, Version 2.0 (the &#34;License&#34;);
+You may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+https://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an &#34;AS IS&#34; BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+<a name="mirror-v1-Mirror"></a>
+
+### Mirror
+
+Represent the mirror service.
+
+| Method Name | Request Type                                             | Response Type                                            | Description                                           |
+| ----------- | -------------------------------------------------------- | -------------------------------------------------------- | ----------------------------------------------------- |
+| Register    | [.payload.v1.Mirror.Targets](#payload-v1-Mirror-Targets) | [.payload.v1.Mirror.Targets](#payload-v1-Mirror-Targets) | Register is the RPC to register other mirror servers. |
 
 <a name="v1_rpc_errdetails_error_details-proto"></a>
 

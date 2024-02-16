@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -88,9 +88,9 @@ func AccessLogInterceptor() grpc.UnaryServerInterceptor {
 
 		if err != nil {
 			entity.Error = err
-			log.Infod(rpcCompletedMessage, entity)
+			log.Warn(rpcCompletedMessage, entity)
 		} else {
-			log.Infod(rpcCompletedMessage, entity)
+			log.Debug(rpcCompletedMessage, entity)
 		}
 
 		return resp, err
@@ -136,9 +136,9 @@ func AccessLogStreamInterceptor() grpc.StreamServerInterceptor {
 
 		if err != nil {
 			entity.Error = err
-			log.Infod(rpcCompletedMessage, entity)
+			log.Warn(rpcCompletedMessage, entity)
 		} else {
-			log.Infod(rpcCompletedMessage, entity)
+			log.Debug(rpcCompletedMessage, entity)
 		}
 
 		return err

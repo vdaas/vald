@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -63,7 +63,7 @@ $(BINDIR)/reviewdog:
 kubectl/install: $(BINDIR)/kubectl
 
 $(BINDIR)/kubectl:
-	curl -L "https://dl.k8s.io/release/$(KUBECTL_VERSION)/bin/$(shell echo $(UNAME) | tr '[:upper:]' '[:lower:]')/$(subst x86_64,amd64,$(shell echo $(ARCH) | tr '[:upper:]' '[:lower:]'))/kubectl" -o $(BINDIR)/kubectl
+	curl -L "https://dl.k8s.io/release/$(KUBECTL_VERSION)/bin/$(OS)/$(subst x86_64,amd64,$(shell echo $(ARCH) | tr '[:upper:]' '[:lower:]'))/kubectl" -o $(BINDIR)/kubectl
 	chmod a+x $(BINDIR)/kubectl
 
 .PHONY: textlint/install
@@ -95,3 +95,70 @@ stern/install: $(GOPATH)/bin/stern
 
 $(GOPATH)/bin/stern:
 	$(call go-install, github.com/stern/stern)
+
+.PHONY: yamlfmt/install
+yamlfmt/install: $(GOPATH)/bin/yamlfmt
+
+$(GOPATH)/bin/yamlfmt:
+	$(call go-install, github.com/google/yamlfmt/cmd/yamlfmt)
+
+.PHONY: gopls/install
+gopls/install: $(GOPATH)/bin/gopls
+
+$(GOPATH)/bin/gopls:
+	$(call go-install, golang.org/x/tools/gopls)
+
+.PHONY: gomodifytags/install
+gomodifytags/install: $(GOPATH)/bin/gomodifytags
+
+$(GOPATH)/bin/gomodifytags:
+	$(call go-install, github.com/fatih/gomodifytags)
+
+.PHONY: impl/install
+impl/install: $(GOPATH)/bin/impl
+
+$(GOPATH)/bin/impl:
+	$(call go-install, github.com/josharian/impl)
+
+.PHONY: goplay/install
+goplay/install: $(GOPATH)/bin/goplay
+
+$(GOPATH)/bin/goplay:
+	$(call go-install, github.com/haya14busa/goplay/cmd/goplay)
+
+.PHONY: delve/install
+delve/install: $(GOPATH)/bin/dlv
+
+$(GOPATH)/bin/dlv:
+	$(call go-install, github.com/go-delve/delve/cmd/dlv)
+
+.PHONY: staticcheck/install
+staticcheck/install: $(GOPATH)/bin/staticcheck
+
+$(GOPATH)/bin/staticcheck:
+	$(call go-install, honnef.co/go/tools/cmd/staticcheck)
+
+.PHONY: go/install
+go/install: $(GOROOT)/bin/go
+
+$(GOROOT)/bin/go:
+	TAR_NAME=go$(GO_VERSION).$(OS)-$(subst x86_64,amd64,$(subst aarch64,arm64,$(ARCH))).tar.gz \
+	&& curl -fsSLO "https://go.dev/dl/$${TAR_NAME}" \
+	&& tar zxf "$${TAR_NAME}" \
+	&& rm -rf "$${TAR_NAME}" \
+	&& mv go $(GOROOT) \
+	&& $(GOROOT)/bin/go version \
+	&& mkdir -p "$(GOPATH)/src" "$(GOPATH)/bin" "$(GOPATH)/pkg"
+
+.PHONY: rust/install
+rust/install: $(CARGO_HOME)/bin/cargo
+
+$(CARGO_HOME)/bin/cargo:
+	curl --proto '=https' --tlsv1.2 -fsSL https://sh.rustup.rs | CARGO_HOME=${CARGO_HOME} RUSTUP_HOME=${RUSTUP_HOME} sh -s -- --default-toolchain nightly -y
+	source "${CARGO_HOME}/env" \
+	CARGO_HOME=${CARGO_HOME} RUSTUP_HOME=${RUSTUP_HOME} ${CARGO_HOME}/bin/rustup install stable \
+	CARGO_HOME=${CARGO_HOME} RUSTUP_HOME=${RUSTUP_HOME} ${CARGO_HOME}/bin/rustup install beta \
+	CARGO_HOME=${CARGO_HOME} RUSTUP_HOME=${RUSTUP_HOME} ${CARGO_HOME}/bin/rustup install nightly \
+	CARGO_HOME=${CARGO_HOME} RUSTUP_HOME=${RUSTUP_HOME} ${CARGO_HOME}/bin/rustup toolchain install nightly \
+	CARGO_HOME=${CARGO_HOME} RUSTUP_HOME=${RUSTUP_HOME} ${CARGO_HOME}/bin/rustup default nightly \
+	CARGO_HOME=${CARGO_HOME} RUSTUP_HOME=${RUSTUP_HOME} ${CARGO_HOME}/bin/rustup update

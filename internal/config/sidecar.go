@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -20,43 +20,43 @@ package config
 // AgentSidecar represents the configuration for the agent sidecar.
 type AgentSidecar struct {
 	// Mode represents sidecar mode
-	Mode string `yaml:"mode" json:"mode"`
+	Mode string `json:"mode" yaml:"mode"`
 
 	// WatchDir represents watch target directory for backup
-	WatchDir string `yaml:"watch_dir" json:"watch_dir"`
+	WatchDir string `json:"watch_dir" yaml:"watch_dir"`
 
 	// WatchEnabled represent auto backup triggered by file changes is enabled or not
-	WatchEnabled bool `yaml:"watch_enabled" json:"watch_enabled"`
+	WatchEnabled bool `json:"watch_enabled" yaml:"watch_enabled"`
 
 	// AutoBackupEnabled represent auto backup triggered by timer is enabled or not
-	AutoBackupEnabled bool `yaml:"auto_backup_enabled" json:"auto_backup_enabled"`
+	AutoBackupEnabled bool `json:"auto_backup_enabled" yaml:"auto_backup_enabled"`
 
 	// AutoBackupDuration represent checking loop duration for auto backup execution
-	AutoBackupDuration string `yaml:"auto_backup_duration" json:"auto_backup_duration"`
+	AutoBackupDuration string `json:"auto_backup_duration" yaml:"auto_backup_duration"`
 
 	// PostStopTimeout represent timeout duration for file changing during post stop
-	PostStopTimeout string `yaml:"post_stop_timeout" json:"post_stop_timeout"`
+	PostStopTimeout string `json:"post_stop_timeout" yaml:"post_stop_timeout"`
 
 	// Filename represent backup filename
-	Filename string `yaml:"filename" json:"filename"`
+	Filename string `json:"filename" yaml:"filename"`
 
 	// FilenameSuffix represent suffix of backup filename
-	FilenameSuffix string `yaml:"filename_suffix" json:"filename_suffix"`
+	FilenameSuffix string `json:"filename_suffix" yaml:"filename_suffix"`
 
 	// BlobStorage represent blob storage configurations
-	BlobStorage *Blob `yaml:"blob_storage" json:"blob_storage"`
+	BlobStorage *Blob `json:"blob_storage" yaml:"blob_storage"`
 
 	// Compress represent compression configurations
-	Compress *CompressCore `yaml:"compress" json:"compress"`
+	Compress *CompressCore `json:"compress" yaml:"compress"`
 
 	// RestoreBackoffEnabled represent backoff enabled or not
-	RestoreBackoffEnabled bool `yaml:"restore_backoff_enabled" json:"restore_backoff_enabled"`
+	RestoreBackoffEnabled bool `json:"restore_backoff_enabled" yaml:"restore_backoff_enabled"`
 
 	// RestoreBackoff represent backoff configurations for restoring process
-	RestoreBackoff *Backoff `yaml:"restore_backoff" json:"restore_backoff"`
+	RestoreBackoff *Backoff `json:"restore_backoff" yaml:"restore_backoff"`
 
 	// Client represent HTTP client configurations
-	Client *Client `yaml:"client" json:"client"`
+	Client *Client `json:"client" yaml:"client"`
 }
 
 // Bind binds the actual data from the AgentSidecar receiver fields.

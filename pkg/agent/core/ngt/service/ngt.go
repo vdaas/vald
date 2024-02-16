@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@ import (
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/conv"
+	"github.com/vdaas/vald/internal/core/algorithm"
 	core "github.com/vdaas/vald/internal/core/algorithm/ngt"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/file"
@@ -43,9 +44,9 @@ import (
 	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/sync"
 	"github.com/vdaas/vald/internal/sync/errgroup"
-	"github.com/vdaas/vald/pkg/agent/core/ngt/service/kvs"
-	"github.com/vdaas/vald/pkg/agent/core/ngt/service/vqueue"
+	"github.com/vdaas/vald/pkg/agent/internal/kvs"
 	"github.com/vdaas/vald/pkg/agent/internal/metadata"
+	"github.com/vdaas/vald/pkg/agent/internal/vqueue"
 )
 
 type NGT interface {
@@ -136,7 +137,6 @@ type ngt struct {
 	basePath   string       // index base directory for CoW
 	brokenPath string       // backup broken index path
 	cowmu      sync.Mutex   // copy on write move lock
-	backupGen  uint64       // number of backup generation
 
 	poolSize uint32  // default pool size
 	radius   float32 // default radius
@@ -147,6 +147,8 @@ type ngt struct {
 
 	kvsdbConcurrency int // kvsdb concurrency
 	historyLimit     int // the maximum generation number of broken index backup
+
+	isReadReplica bool
 }
 
 const (
@@ -1231,6 +1233,11 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 			span.End()
 		}
 	}()
+
+	if n.isReadReplica {
+		return errors.ErrWriteOperationToReadReplica
+	}
+
 	ic := n.vq.IVQLen() + n.vq.DVQLen()
 	if ic == 0 {
 		return errors.ErrUncommittedIndexNotFound
@@ -1400,6 +1407,11 @@ func (n *ngt) SaveIndex(ctx context.Context) (err error) {
 }
 
 func (n *ngt) saveIndex(ctx context.Context) (err error) {
+	// Skip it here in case this private function is called directly from someone
+	if n.isReadReplica {
+		return errors.ErrWriteOperationToReadReplica
+	}
+
 	nocie := atomic.LoadUint64(&n.nocie)
 	if atomic.LoadUint64(&n.lastNocie) == nocie {
 		return
@@ -1798,8 +1810,14 @@ func (n *ngt) GetDimensionSize() int {
 }
 
 func (n *ngt) Close(ctx context.Context) (err error) {
+	defer n.core.Close()
+
 	err = n.kvs.Close()
 	if len(n.path) != 0 {
+		if n.isReadReplica {
+			log.Info("skip create and save index operation on close because this is read replica")
+			return err
+		}
 		cerr := n.CreateIndex(ctx, n.poolSize)
 		if cerr != nil &&
 			!errors.Is(err, errors.ErrUncommittedIndexNotFound) &&
@@ -1823,8 +1841,7 @@ func (n *ngt) Close(ctx context.Context) (err error) {
 			}
 		}
 	}
-	n.core.Close()
-	return
+	return err
 }
 
 func (n *ngt) BrokenIndexCount() uint64 {
@@ -1856,7 +1873,7 @@ func (n *ngt) ListObjectFunc(ctx context.Context, f func(uuid string, oid uint32
 	})
 }
 
-func (n *ngt) toSearchResponse(sr []core.SearchResult) (res *payload.Search_Response, err error) {
+func (n *ngt) toSearchResponse(sr []algorithm.SearchResult) (res *payload.Search_Response, err error) {
 	if len(sr) == 0 {
 		if n.Len() == 0 {
 			return nil, nil

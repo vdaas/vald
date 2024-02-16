@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -30,7 +30,6 @@ defaults:
         readinessProbe:
           timeoutSeconds: 10
           failureThreshold: 5
-
 gateway:
   lb:
     enabled: true
@@ -52,7 +51,6 @@ gateway:
       index_replica: 3
       discoverer:
         duration: 50ms
-
 agent:
   minReplicas: 5
   maxReplicas: 10
@@ -75,7 +73,6 @@ agent:
     auto_index_check_duration: 1m
     auto_index_length: 1000
     dimension: 784
-
 discoverer:
   minReplicas: 2
   hpa:
@@ -86,7 +83,6 @@ discoverer:
       memory: 50Mi
   discoverer:
     discovery_duration: 50ms
-
 manager:
   index:
     replicas: 2

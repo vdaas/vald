@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -21,15 +21,16 @@ on:
         type: string
         description: "Dispatch target repository"
         required: true
-        default: ""
-
 jobs:
   dispatch:
     runs-on: ubuntu-latest
     steps:
       - name: Dispatch
         run: |
-          curl --fail -u "${USER}:${TOKEN}" -X POST https://api.github.com/repos/vdaas/${REPO}/dispatches -H 'Accept: application/vnd.github.everest-preview+json' --data '{"event_type": "update-protobuf"}'
+          curl --fail -u "${USER}:${TOKEN}" \
+                      -X POST https://api.github.com/repos/vdaas/${REPO}/dispatches \
+                      -H 'Accept: application/vnd.github.everest-preview+json' \
+                      --data '{"event_type": "update-protobuf"}'
         env:
           REPO: ${{ inputs.repo }}
           USER: ${{ secrets.DISPATCH_USER }}

@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
 #
 name: "Detect Docker image tags"
 description: "A action to detect Docker image tags"
-
 inputs:
   tag_name:
     description: "Tag name to check whether exists or not"
@@ -24,10 +23,7 @@ inputs:
   images:
     description: "Image names"
     required: false
-    default: "vdaas/vald-agent-ngt \
-      vdaas/vald-discoverer-k8s \
-      vdaas/vald-lb-gateway \
-      vdaas/vald-manager-index"
+    default: "vdaas/vald-agent-ngt vdaas/vald-agent-faiss vdaas/vald-agent-sidecar vdaas/vald-discoverer-k8s vdaas/vald-lb-gateway vdaas/vald-filter-gateway vdaas/vald-mirror-gateway vdaas/vald-manager-index"
 outputs:
   HELM_EXTRA_OPTIONS:
     description: "Helm extra options that specifies image tags"
@@ -35,7 +31,6 @@ outputs:
   IMAGE_TAGS:
     description: "Specifies image tags"
     value: ${{ steps.specify_container_versions.outputs.IMAGE_TAGS }}
-
 runs:
   using: "composite"
   steps:
@@ -45,13 +40,17 @@ runs:
       run: |
         declare -A m=(
           ["vdaas/vald-agent-ngt"]="agent.image.tag"
+          ["vdaas/vald-agent-faiss"]="agent.image.tag"
           ["vdaas/vald-agent-sidecar"]="agent.sidecar.image.tag"
           ["vdaas/vald-discoverer-k8s"]="discoverer.image.tag"
           ["vdaas/vald-lb-gateway"]="gateway.lb.image.tag"
+          ["vdaas/vald-filter-gateway"]="gateway.filter.image.tag"
+          ["vdaas/vald-mirror-gateway"]="gateway.mirror.image.tag"
           ["vdaas/vald-manager-index"]="manager.index.image.tag"
           ["vdaas/vald-index-creation"]="manager.index.creator.image.tag"
           ["vdaas/vald-index-save"]="manager.index.saver.image.tag"
           ["vdaas/vald-helm-operator"]="image.tag"
+          ["vdaas/vald-ci-container"]=""
         )
 
         for image in ${IMAGES}

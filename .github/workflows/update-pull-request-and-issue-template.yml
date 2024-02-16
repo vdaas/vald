@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -22,14 +22,12 @@ on:
       - "versions/GO_VERSION"
       - "versions/NGT_VERSION"
       - "versions/KUBECTL_VERSION"
-
 jobs:
   dump-contexts-to-log:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/dump-context
-
   update-pr-issue-template:
     name: Update PULL_REQUEST_TEMPLATE and ISSUE_TEMPLATE
     runs-on: ubuntu-latest
@@ -37,17 +35,14 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
       - name: Set Git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
-
-      - uses: crazy-max/ghaction-import-gpg@v4
+      - uses: crazy-max/ghaction-import-gpg@v6
         with:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           git_user_signingkey: true
           git_commit_gpgsign: true
-
       - name: Push to main
         run: |
           TIMESTAMP=$(date +%Y%m%d_%H%M%S_%3N)

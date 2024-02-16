@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -262,7 +262,7 @@ func Test_backoff_Do(t *testing.T) {
 				return nil, false, err
 			}
 			return test{
-				name: "return nil response and error when function returns (nil, false, error) and not retriable",
+				name: "return nil response and error when function returns (nil, false, error) and not retryable",
 				args: args{
 					ctx: ctx,
 					f:   f,
@@ -278,7 +278,7 @@ func Test_backoff_Do(t *testing.T) {
 				return nil, true, nil
 			}
 			return test{
-				name: "return nil response and nil error when function returns (nil, true, nil) and not retriable",
+				name: "return nil response and nil error when function returns (nil, true, nil) and not retryable",
 				args: args{
 					ctx: ctx,
 					f:   f,

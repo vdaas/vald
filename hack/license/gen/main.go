@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -209,6 +209,7 @@ func dirwalk(dir string) []string {
 				"CONTRIBUTORS",
 				"GO_VERSION",
 				"NGT_VERSION",
+				"FAISS_VERSION",
 				"Pipefile",
 				"VALD_VERSION",
 				"grp",
@@ -226,7 +227,24 @@ func dirwalk(dir string) []string {
 	return paths
 }
 
+func isSymlink(path string) (bool, error) {
+	lst, err := os.Lstat(path)
+	if err != nil {
+		return false, err
+	}
+	return lst.Mode()&os.ModeSymlink == os.ModeSymlink, nil
+}
+
 func readAndRewrite(path string) error {
+	// return if it is a symlink
+	isSym, err := isSymlink(path)
+	if err != nil {
+		return err
+	}
+	if isSym {
+		return nil
+	}
+
 	f, err := os.OpenFile(path, os.O_RDWR|os.O_SYNC, fs.ModePerm)
 	if err != nil {
 		return errors.Errorf("filepath %s, could not open", path)
@@ -259,7 +277,7 @@ func readAndRewrite(path string) error {
 	} else {
 		tmpl := apache
 		switch filepath.Ext(path) {
-		case ".go":
+		case ".go", ".c", ".h", ".hpp", ".cpp":
 			d.Escape = slushEscape
 			switch fi.Name() {
 			case "errgroup_test.go",
@@ -276,6 +294,8 @@ func readAndRewrite(path string) error {
 				tmpl = googleProtoApache
 			}
 			d.Escape = slushEscape
+		case ".rs":
+			d.Escape = slushEscape
 		default:
 			if fi.Name() == "Dockerfile" {
 				tmpl = docker
@@ -288,7 +308,10 @@ func readAndRewrite(path string) error {
 		for sc.Scan() {
 			line := sc.Text()
 			if filepath.Ext(path) == ".go" && strings.HasPrefix(line, "//go:") ||
-				filepath.Ext(path) == ".py" && strings.HasPrefix(line, "# -*-") {
+				filepath.Ext(path) == ".py" && strings.HasPrefix(line, "# -*-") ||
+				filepath.Ext(path) == ".sh" && strings.HasPrefix(line, "#!") ||
+				filepath.Ext(path) == ".yaml" && strings.HasPrefix(line, "# !") ||
+				filepath.Ext(path) == ".yml" && strings.HasPrefix(line, "# !") {
 				bf = true
 				_, err = buf.WriteString(line)
 				if err != nil {

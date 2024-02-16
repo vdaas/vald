@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019-2023 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // You may not use this file except in compliance with the License.
@@ -37,7 +37,15 @@ import (
 type Client interface {
 	Start(ctx context.Context) (<-chan error, error)
 	GetAddrs(ctx context.Context) []string
+
+	// GetClient returns the grpc.Client for both read and write.
 	GetClient() grpc.Client
+
+	// GetReadClient returns the grpc.Client only for read. If there's no readreplica, this returns the grpc.Client for the primary agent.
+	// Use this API only for getting client for agent. For other use cases, use GetClient() instead.
+	// Internally, this API round robin between c.client and c.readClient with the ratio of
+	// agent replicas and read replica agent replicas.
+	GetReadClient() grpc.Client
 }
 
 type client struct {
@@ -56,6 +64,10 @@ type client struct {
 	name         string
 	namespace    string
 	nodeName     string
+	// read replica related members below
+	readClient          grpc.Client
+	readReplicaReplicas uint64
+	roundRobin          atomic.Uint64
 }
 
 func New(opts ...Option) (d Client, err error) {
@@ -68,10 +80,20 @@ func New(opts ...Option) (d Client, err error) {
 	return c, nil
 }
 
+// Start starts the discoverer client.
+// skipcq: GO-R1005
 func (c *client) Start(ctx context.Context) (<-chan error, error) {
 	dech, err := c.dscClient.StartConnectionMonitor(ctx)
 	if err != nil {
 		return nil, err
+	}
+
+	var rrech <-chan error
+	if c.readClient != nil {
+		rrech, err = c.readClient.StartConnectionMonitor(ctx)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	ech := make(chan error, 100)
@@ -134,6 +156,7 @@ func (c *client) Start(ctx context.Context) (<-chan error, error) {
 				return finalize()
 			case err = <-dech:
 			case err = <-aech:
+			case err = <-rrech:
 			case <-dt.C:
 				err = c.discover(ctx, ech)
 			}
@@ -170,6 +193,26 @@ func (c *client) GetAddrs(ctx context.Context) (addrs []string) {
 
 func (c *client) GetClient() grpc.Client {
 	return c.client
+}
+
+func (c *client) GetReadClient() grpc.Client {
+	// just return write client when there is no read replica
+	if c.readClient == nil {
+		return c.client
+	}
+
+	var next uint64
+	for {
+		cur := c.roundRobin.Load()
+		next = (cur + 1) % (c.readReplicaReplicas + 1)
+		if c.roundRobin.CompareAndSwap(cur, next) {
+			break
+		}
+	}
+	if next == 0 {
+		return c.client
+	}
+	return c.readClient
 }
 
 func (c *client) connect(ctx context.Context, addr string) (err error) {
