@@ -19,6 +19,12 @@ package config
 
 // NGT represent the ngt core configuration for server.
 type NGT struct {
+	// PodName represent the ngt pod name
+	PodName string `json:"pod_name,omitempty" yaml:"pod_name"`
+
+	// PodNamespace represent the ngt pod namespace
+	PodNamespace string `json:"namespace,omitempty" yaml:"namespace"`
+
 	// IndexPath represent the ngt index file path
 	IndexPath string `json:"index_path,omitempty" yaml:"index_path"`
 
@@ -97,6 +103,12 @@ type NGT struct {
 
 	// IsReadReplica represents whether the ngt is read replica or not
 	IsReadReplica bool `json:"is_readreplica" yaml:"is_readreplica"`
+
+	// EnableExportIndexInfoToK8s represents whether the ngt index info is exported to k8s or not
+	EnableExportIndexInfoToK8s bool `json:"enable_export_index_info_to_k8s" yaml:"enable_export_index_info_to_k8s"`
+
+	// ExportIndexInfoDuration represents the duration of exporting index info to k8s
+	ExportIndexInfoDuration string `json:"export_index_info_duration,omitempty" yaml:"export_index_info_duration"`
 }
 
 // KVSDB represent the ngt vector bidirectional kv store configuration.
@@ -116,6 +128,8 @@ type VQueue struct {
 
 // Bind returns NGT object whose some string value is filed value or environment value.
 func (n *NGT) Bind() *NGT {
+	n.PodName = GetActualValue(n.PodName)
+	n.PodNamespace = GetActualValue(n.PodNamespace)
 	n.IndexPath = GetActualValue(n.IndexPath)
 	n.DistanceType = GetActualValue(n.DistanceType)
 	n.ObjectType = GetActualValue(n.ObjectType)
