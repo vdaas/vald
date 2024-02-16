@@ -68,7 +68,9 @@ runs:
       id: determine_platforms
       run: |
         if [ "${TARGET_PLATFORMS}" = "" ]; then
-          if [ "${{ github.event_name }}" = "pull_request" ]; then
+          if [[ "$GITHUB_REF" =~ ^refs/heads/main$ ]] || [[ "$GITHUB_REF" =~ ^refs/heads/master$ ]] || [[ "$GITHUB_REF" =~ ^refs/heads/release.* ]] || [[ "${PRIMARY_TAG}" == "nightly" ]]; then
+            platforms=`make docker/platforms`
+          elif [ "${{ github.event_name }}" = "pull_request" ]; then
             platforms="linux/amd64"
           elif [ "${{ github.event_name }}" = "pull_request_target" ]; then
             platforms="linux/amd64"
