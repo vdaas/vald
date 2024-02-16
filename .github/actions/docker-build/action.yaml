@@ -91,6 +91,11 @@ runs:
           latest_tags="-t ${IMAGE_NAME}:latest -t ${ALTER_IMAGE_NAME}:latest"
           extra_tags="${extra_tags} ${latest_tags}"
         fi
+        if [[ "$GITHUB_REF" =~ ^refs/heads/main$ ]] || [[ "$GITHUB_REF" =~ ^refs/heads/master$ ]] || [[ "$GITHUB_REF" =~ ^refs/heads/release.* ]] || [[ "${PRIMARY_TAG}" == "nightly" ]]; then
+          commit_hash=${GITHUB_SHA::8}
+          hash_tags="-t ${IMAGE_NAME}:${commit_hash} -t ${ALTER_IMAGE_NAME}:${commit_hash}"
+          extra_tags="${extra_tags} ${hash_tags}"
+        fi
         echo "EXTRA_TAGS is determined: ${extra_tags}"
         echo "EXTRA_TAGS=${extra_tags}" >> $GITHUB_OUTPUT
       env:
