@@ -209,6 +209,9 @@ spec:
         {{- toYaml $agent.podSecurityContext | nindent 8 }}
       {{- end }}
       terminationGracePeriodSeconds: {{ $agent.terminationGracePeriodSeconds }}
+      {{- if and $agent.serviceAccount.enabled $agent.ngt.enable_export_index_info_to_k8s }}
+      serviceAccountName: {{ $agent.serviceAccount.name }}
+      {{- end }}
       volumes:
         - name: {{ $agent.name }}-config
           configMap:
