@@ -68,9 +68,7 @@ func New(agentName string, opts ...Option) (o Operator, err error) {
 		}),
 		pod.WithNamespace(operator.namespace),
 		// TODO:
-		pod.WithOnReconcileFunc(func(podList map[string][]pod.Pod) {
-			log.Debugf("reconciled pod list: %v", podList)
-		}),
+		pod.WithOnReconcileFunc(operator.podOnReconcile),
 		pod.WithLabels(podLabelSelector),
 	))
 	k8sOpts = append(k8sOpts, podOpts)
@@ -128,4 +126,14 @@ func (o *operator) Start(ctx context.Context) (<-chan error, error) {
 	}))
 
 	return ech, nil
+}
+
+func (o *operator) podOnReconcile(ctx context.Context, podList map[string][]pod.Pod) {
+	for k, v := range podList {
+		log.Debug("key", k)
+		for _, pod := range v {
+			log.Debug("name", pod.Name)
+			log.Debug("annotations", pod.Annotations)
+		}
+	}
 }

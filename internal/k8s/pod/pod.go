@@ -40,7 +40,7 @@ type reconciler struct {
 	name        string
 	namespace   string
 	onError     func(err error)
-	onReconcile func(podList map[string][]Pod)
+	onReconcile func(ctx context.Context, podList map[string][]Pod)
 	lopts       []client.ListOption
 }
 
@@ -156,7 +156,7 @@ func (r *reconciler) Reconcile(ctx context.Context, _ reconcile.Request) (res re
 	}
 
 	if r.onReconcile != nil {
-		r.onReconcile(pods)
+		r.onReconcile(ctx, pods)
 	}
 	return
 }
