@@ -102,6 +102,8 @@ observability:
     service_name: "vald-agent-ngt"
     buffer_max_count: 10
 ngt:
+  pod_name: "vald-agent-ngt-0" # this might overwrite k8s resource of agent pod 0
+  namespace: "default"
   auto_create_index_pool_size: 10000
   auto_index_check_duration: 30m
   auto_index_duration_limit: 24h
