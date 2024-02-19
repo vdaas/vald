@@ -44,9 +44,16 @@ jobs:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           git_user_signingkey: true
           git_commit_gpgsign: true
+      - name: Set context
+        id: set_context
+        run: |
+          LABEL_NAMES=`cat ${GITHUB_EVENT_PATH} | jq -r --arg PREFIX $TARGET_LABEL_NAME_PREFIX '[.pull_request.labels[]? | select(.name | startswith($PREFIX)) | .name] | join(" ")'`
+          echo "LABEL_NAMES=${LABEL_NAMES}" >> $GITHUB_OUTPUT # e.g.) actions/backport/v1.7 actions/backport/v1.8
+          echo "${LABEL_NAMES}"
       - name: Create PR
-        if: ${{ github.event.pull_request.labels.*.name == '${TARGET_LABEL_NAME_PREFIX}*' }}
+        if: ${{ steps.set_context.outputs.LABEL_NAMES != '' }}
         env:
+          LABEL_NAMES: ${{ steps.set_context.outputs.LABEL_NAMES }}
           GITHUB_USER: ${{ secrets.DISPATCH_USER }}
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
         run: |
@@ -56,7 +63,6 @@ jobs:
 
           echo "${PR_NUM} ${PR_TITLE}: ${PR_BODY}"
 
-          LABEL_NAMES=`echo "${{ github.event.pull_request.labels.*.name }}" | jq -r '[.[] | select(startswith("actions/backport/"))] | join(" ")'`
           for LABEL_NAME in ${LABEL_NAMES}; do
               BRANCH_NAME=`echo "${LABEL_NAME}" | sed -e "s:^${TARGET_LABEL_NAME_PREFIX}::"`           # e.g) release/vx.x, main
               BACKPORT_BRANCH_NAME="${BACKPORT_BRANCH_NAME_PREFIX}/${BRANCH_NAME}/${GITHUB_HEAD_REF}"  # e.g) backport/release/vx.x/{current branch name}
