@@ -45,6 +45,10 @@ helm/package/vald-helm-operator: \
 	helm/schema/crd/vald-helm-operator
 	helm package charts/vald-helm-operator
 
+.PHONY: helm/package/vald-readreplica
+helm/package/vald-readreplica:
+	helm package charts/vald-readreplica
+
 .PHONY: helm/repo/add
 ## add Helm chart repository
 helm/repo/add:
