@@ -2,7 +2,7 @@
 
 This is a Helm chart to install `vald-benchmark-operator`.
 
-Current chart version is `v1.7.5`
+Current chart version is `v1.7.11`
 
 ## Table of Contents
 
