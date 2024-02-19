@@ -67,7 +67,6 @@ func New(agentName string, opts ...Option) (o Operator, err error) {
 			log.Error("failed to reconcile:", err)
 		}),
 		pod.WithNamespace(operator.namespace),
-		// TODO:
 		pod.WithOnReconcileFunc(operator.podOnReconcile),
 		pod.WithLabels(podLabelSelector),
 	))
@@ -79,10 +78,7 @@ func New(agentName string, opts ...Option) (o Operator, err error) {
 		job.WithOnErrorFunc(func(err error) {
 			log.Errorf("failed to reconcile job resource:", err)
 		}),
-		// TODO:
-		job.WithOnReconcileFunc(func(ctx context.Context, jobList map[string][]job.Job) {
-			log.Debugf("reconciled job list: %v", jobList)
-		}),
+		job.WithOnReconcileFunc(operator.jobOnReconcile),
 	)
 	if err != nil {
 		return nil, err
@@ -128,11 +124,20 @@ func (o *operator) Start(ctx context.Context) (<-chan error, error) {
 	return ech, nil
 }
 
+// TODO: implement agent pod reconcile logic to detect conditions to start indexing and saving
 func (o *operator) podOnReconcile(ctx context.Context, podList map[string][]pod.Pod) {
 	for k, v := range podList {
-		log.Debug("key", k)
 		for _, pod := range v {
-			log.Debug("name:", pod.Name, "annotations:", pod.Annotations)
+			log.Debug("key", k, "name:", pod.Name, "annotations:", pod.Annotations)
+		}
+	}
+}
+
+// TODO: implement job reconcile logic to detect save job completion and to start rotation
+func (o *operator) jobOnReconcile(ctx context.Context, jobList map[string][]job.Job) {
+	for k, v := range jobList {
+		for _, job := range v {
+			log.Debug("key", k, "name:", job.Name, "status:", job.Status)
 		}
 	}
 }
