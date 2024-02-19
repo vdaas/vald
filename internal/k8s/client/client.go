@@ -22,15 +22,21 @@ import (
 	"fmt"
 
 	snapshotv1 "github.com/kubernetes-csi/external-snapshotter/client/v6/apis/volumesnapshot/v1"
+	"github.com/vdaas/vald/internal/errors"
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/equality"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/selection"
 	"k8s.io/apimachinery/pkg/watch"
+	applycorev1 "k8s.io/client-go/applyconfigurations/core/v1"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
+	"k8s.io/utils/ptr"
 	ctrl "sigs.k8s.io/controller-runtime"
 	cli "sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
 
 type (
@@ -54,6 +60,11 @@ const (
 	SelectionOpEquals           = selection.Equals
 )
 
+var (
+	ServerSideApply = cli.Apply
+	MergePatch      = cli.Merge
+)
+
 type Client interface {
 	// Get retrieves an obj for the given object key from the Kubernetes Cluster.
 	// obj must be a struct pointer so that obj can be updated with the response
@@ -75,6 +86,10 @@ type Client interface {
 	// struct pointer so that obj can be updated with the content returned by the Server.
 	Update(ctx context.Context, obj Object, opts ...cli.UpdateOption) error
 
+	// Patch patches the given obj in the Kubernetes cluster. obj must be a
+	// struct pointer so that obj can be updated with the content returned by the Server.
+	Patch(ctx context.Context, obj Object, patch cli.Patch, opts ...cli.PatchOption) error
+
 	// Watch watches the given obj for changes and takes the appropriate callbacks.
 	Watch(ctx context.Context, obj cli.ObjectList, opts ...ListOption) (watch.Interface, error)
 
@@ -84,11 +99,10 @@ type Client interface {
 
 type client struct {
 	scheme    *runtime.Scheme
-	reader    cli.Reader
 	withWatch cli.WithWatch
 }
 
-func New(opts ...Option) (Client, error) {
+func New(opts ...Option) (_ Client, err error) {
 	c := new(client)
 	if c.scheme == nil {
 		c.scheme = runtime.NewScheme()
@@ -106,13 +120,7 @@ func New(opts ...Option) (Client, error) {
 	if err := snapshotv1.AddToScheme(c.scheme); err != nil {
 		return nil, err
 	}
-	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), manager.Options{
-		Scheme: c.scheme,
-	})
-	if err != nil {
-		return nil, err
-	}
-	c.reader = mgr.GetAPIReader()
+
 	c.withWatch, err = cli.NewWithWatch(ctrl.GetConfigOrDie(), cli.Options{
 		Scheme: c.scheme,
 	})
@@ -124,7 +132,7 @@ func New(opts ...Option) (Client, error) {
 }
 
 func (c *client) Get(ctx context.Context, name, namespace string, obj cli.Object, opts ...cli.GetOption) error {
-	return c.reader.Get(
+	return c.withWatch.Get(
 		ctx,
 		cli.ObjectKey{
 			Name:      name,
@@ -136,7 +144,7 @@ func (c *client) Get(ctx context.Context, name, namespace string, obj cli.Object
 }
 
 func (c *client) List(ctx context.Context, list cli.ObjectList, opts ...cli.ListOption) error {
-	return c.reader.List(ctx, list, opts...)
+	return c.withWatch.List(ctx, list, opts...)
 }
 
 func (c *client) Create(ctx context.Context, obj Object, opts ...CreateOption) error {
@@ -151,6 +159,10 @@ func (c *client) Update(ctx context.Context, obj Object, opts ...cli.UpdateOptio
 	return c.withWatch.Update(ctx, obj, opts...)
 }
 
+func (c *client) Patch(ctx context.Context, obj Object, patch cli.Patch, opts ...cli.PatchOption) error {
+	return c.withWatch.Patch(ctx, obj, patch, opts...)
+}
+
 func (c *client) Watch(ctx context.Context, obj cli.ObjectList, opts ...ListOption) (watch.Interface, error) {
 	return c.withWatch.Watch(ctx, obj, opts...)
 }
@@ -161,4 +173,78 @@ func (*client) LabelSelector(key string, op selection.Operator, vals []string) (
 		return nil, fmt.Errorf("failed to create requirement on creating label selector: %w", err)
 	}
 	return labels.NewSelector().Add(*requirements), nil
+}
+
+type Patcher struct {
+	client       Client
+	fieldManager string
+}
+
+func NewPatcher(fieldManager string) (Patcher, error) {
+	client, err := New()
+	if err != nil {
+		return Patcher{}, err
+	}
+
+	return Patcher{
+		client:       client,
+		fieldManager: fieldManager,
+	}, nil
+}
+
+func (s *Patcher) ApplyPodAnnotations(ctx context.Context, name, namespace string, entries map[string]string) error {
+	var podList corev1.PodList
+	if err := s.client.List(ctx, &podList, &cli.ListOptions{
+		Namespace:     namespace,
+		FieldSelector: fields.OneTermEqualSelector("metadata.name", name),
+	}); err != nil {
+		return err
+	}
+
+	if len(podList.Items) == 0 {
+		return errors.New("agent pod not found on exporting metrics")
+	}
+
+	//nolint: gomnd
+	if len(podList.Items) >= 2 {
+		return errors.New("multiple agent pods found on exporting metrics. pods with same name exist in the same namespace?")
+	}
+	pod := podList.Items[0]
+
+	curApplyConfig, err := applycorev1.ExtractPod(&pod, s.fieldManager)
+	if err != nil {
+		return err
+	}
+
+	// check if there is any diffs in the annotations
+	annotations := pod.GetObjectMeta().GetAnnotations()
+	if annotations == nil {
+		annotations = make(map[string]string)
+	}
+	for k, v := range entries {
+		annotations[k] = v
+	}
+	expectPod := applycorev1.Pod(name, namespace).
+		WithAnnotations(annotations)
+
+	if equality.Semantic.DeepEqual(expectPod, curApplyConfig) {
+		// no change found in the pod annotations
+		return nil
+	}
+
+	// now we found the diffs, apply the changes
+	obj, err := runtime.DefaultUnstructuredConverter.ToUnstructured(expectPod)
+	if err != nil {
+		return err
+	}
+
+	patch := &unstructured.Unstructured{Object: obj}
+	if err := s.client.Patch(ctx, patch, cli.Apply, &cli.PatchOptions{
+		FieldManager: s.fieldManager,
+		Force:        ptr.To(true),
+	}); err != nil {
+		return err
+	}
+
+	return nil
 }

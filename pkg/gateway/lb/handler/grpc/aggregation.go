@@ -353,7 +353,7 @@ func (s *server) aggregationSearch(ctx context.Context, aggr Aggregator, cfg *pa
 	return res, nil
 }
 
-// vald standard algorithm
+// vald standard algorithm.
 type valdStdAggr struct {
 	num     int
 	wg      sync.WaitGroup
@@ -485,7 +485,7 @@ func (v *valdStdAggr) Result() *payload.Search_Response {
 	}
 }
 
-// pairing heap
+// pairing heap.
 type valdPairingHeapAggr struct {
 	num     int
 	ph      *PairingHeap
@@ -544,7 +544,7 @@ func (v *valdPairingHeapAggr) Result() *payload.Search_Response {
 	}
 }
 
-// plane sort
+// plane sort.
 type valdSliceAggr struct {
 	num    int
 	mu     sync.Mutex
@@ -597,7 +597,7 @@ func (v *valdSliceAggr) Result() (res *payload.Search_Response) {
 	return res
 }
 
-// plane sort
+// plane sort.
 type valdPoolSliceAggr struct {
 	num    int
 	mu     sync.Mutex

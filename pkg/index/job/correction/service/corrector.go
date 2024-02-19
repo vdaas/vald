@@ -305,7 +305,7 @@ type vectorReplica struct {
 	vec  *payload.Object_Vector
 }
 
-// Validate len(addrs) >= 2 before calling this function
+// Validate len(addrs) >= 2 before calling this function.
 func (c *correct) checkConsistency(ctx context.Context, targetReplica *vectorReplica, targetAgentIdx int) error {
 	// leftAgentAddrs is the agents' addr that hasn't been corrected yet.
 	leftAgentAddrs := c.sortedByIndexCntAddrs[targetAgentIdx+1:]

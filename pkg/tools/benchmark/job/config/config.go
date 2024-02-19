@@ -28,7 +28,7 @@ import (
 	"github.com/vdaas/vald/internal/log"
 )
 
-// GlobalConfig is type alias for config.GlobalConfig
+// GlobalConfig is type alias for config.GlobalConfig.
 type GlobalConfig = config.GlobalConfig
 
 // Config represent a application setting data content (config.yaml).

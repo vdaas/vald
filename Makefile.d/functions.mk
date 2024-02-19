@@ -42,7 +42,7 @@ define profile-web
 endef
 
 define go-lint
-	golangci-lint run --config .golangci.yml
+	golangci-lint run --config .golangci.yml --fix
 endef
 
 define go-vet
