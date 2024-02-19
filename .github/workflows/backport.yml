@@ -44,25 +44,18 @@ jobs:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           git_user_signingkey: true
           git_commit_gpgsign: true
-      - name: Get PR title and body
-        id: pr_info
+      - name: Create PR
+        if: ${{ github.event.pull_request.labels.*.name == '${TARGET_LABEL_NAME_PREFIX}*' }}
+        env:
+          GITHUB_USER: ${{ secrets.DISPATCH_USER }}
+          GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
         run: |
           PR_TITLE=`cat $GITHUB_EVENT_PATH | jq -r ".pull_request.title"`
           PR_BODY=`cat $GITHUB_EVENT_PATH | jq -r ".pull_request.body"`
           PR_NUM=`cat $GITHUB_EVENT_PATH | jq -r ".pull_request.number"`
-          echo "${PR_NUM} ${PR_TITLE}:\n${PR_BODY}\n\n"
-          echo "PR_TITLE=${PR_TITLE}" >> $GITHUB_OUTPUT
-          echo "PR_BODY=${PR_BODY}"   >> $GITHUB_OUTPUT
-          echo "PR_NUM=${PR_NUM}"     >> $GITHUB_OUTPUT
-      - name: Create PR
-        if: ${{ github.event.pull_request.labels.*.name == '${TARGET_LABEL_NAME_PREFIX}*' }}
-        env:
-          PR_NUM: ${{ steps.pr_info.outputs.PR_NUM }}
-          PR_TITLE: ${{ steps.pr_info.outputs.PR_TITEL }}
-          PR_BODY: ${{ steps.pr_info.outputs.PR_BODY }}
-          GITHUB_USER: ${{ secrets.DISPATCH_USER }}
-          GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
-        run: |
+
+          echo "${PR_NUM} ${PR_TITLE}: ${PR_BODY}"
+
           LABEL_NAMES=`echo "${{ github.event.pull_request.labels.*.name }}" | jq -r '[.[] | select(startswith("actions/backport/"))] | join(" ")'`
           for LABEL_NAME in ${LABEL_NAMES}; do
               BRANCH_NAME=`echo "${LABEL_NAME}" | sed -e "s:^${TARGET_LABEL_NAME_PREFIX}::"`           # e.g) release/vx.x, main
