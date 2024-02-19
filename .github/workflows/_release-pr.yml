@@ -74,6 +74,8 @@ jobs:
           sed -i -r "s/^(\s*)tag\s*:\s*v[0-9]+\.[0-9]+\.[0-9]+\s*$/\1tag: ${RELEASE_TAG}/" charts/vald/values.yaml
           sed -i -e "s/^version: .*$/version: ${RELEASE_TAG}/" charts/vald-helm-operator/Chart.yaml
           sed -i -r "s/^(\s*)tag\s*:\s*v[0-9]+\.[0-9]+\.[0-9]+\s*$/\1tag: ${RELEASE_TAG}/" charts/vald-helm-operator/values.yaml
+          sed -i -e "s/^version: .*$/version: ${RELEASE_TAG}/" charts/vald-benchmark-operator/Chart.yaml
+          sed -i -r "s/^(\s*)tag\s*:\s*v[0-9]+\.[0-9]+\.[0-9]+\s*$/\1tag: ${RELEASE_TAG}/" charts/vald-benchmark-operator/values.yaml
 
           make helm/schema/all
           make helm/schema/crd/all
