@@ -132,8 +132,7 @@ func (o *operator) podOnReconcile(ctx context.Context, podList map[string][]pod.
 	for k, v := range podList {
 		log.Debug("key", k)
 		for _, pod := range v {
-			log.Debug("name", pod.Name)
-			log.Debug("annotations", pod.Annotations)
+			log.Debug("name:", pod.Name, "annotations:", pod.Annotations)
 		}
 	}
 }
