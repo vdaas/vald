@@ -240,7 +240,9 @@ pub mod index_server {
                             >,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
-                            let fut = async move { (*inner).index_info(request).await };
+                            let fut = async move {
+                                <T as Index>::index_info(&inner, request).await
+                            };
                             Box::pin(fut)
                         }
                     }
