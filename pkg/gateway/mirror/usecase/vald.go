@@ -70,7 +70,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	// skipcq: CRT-D0001
 	cOpts = append(cOpts, grpc.WithErrGroup(eg))
 
-	mirrClient, err := client.New(
+	mClient, err := client.New(
 		client.WithAddrs(cfg.Mirror.Client.Addrs...),
 		client.WithClient(grpc.New(cOpts...)),
 	)
@@ -80,13 +80,13 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 
 	gateway, err := service.NewGateway(
 		service.WithErrGroup(eg),
-		service.WithMirrorClient(mirrClient),
+		service.WithMirrorClient(mClient),
 		service.WithPodName(cfg.Mirror.PodName),
 	)
 	if err != nil {
 		return nil, err
 	}
-	mirr, err := service.NewMirror(
+	m, err := service.NewMirror(
 		service.WithErrorGroup(eg),
 		service.WithRegisterDuration(cfg.Mirror.RegisterDuration),
 		service.WithGatewayAddrs(cfg.Mirror.GatewayAddr),
@@ -103,7 +103,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		service.WithDiscoverySelfMirrorAddrs(cfg.Mirror.SelfMirrorAddr),
 		service.WithDiscoveryColocation(cfg.Mirror.Colocation),
 		service.WithDiscoveryDialer(dialer),
-		service.WithDiscoveryMirror(mirr),
+		service.WithDiscoveryMirror(m),
 		service.WithDiscoveryErrGroup(eg),
 	)
 	if err != nil {
@@ -114,7 +114,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		handler.WithValdAddr(cfg.Mirror.GatewayAddr),
 		handler.WithErrGroup(eg),
 		handler.WithGateway(gateway),
-		handler.WithMirror(mirr),
+		handler.WithMirror(m),
 		handler.WithStreamConcurrency(cfg.Server.GetGRPCStreamConcurrency()),
 	)
 	if err != nil {
@@ -137,7 +137,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 			cfg.Observability,
 			bometrics.New(),
 			cbmetrics.New(),
-			mirrmetrics.New(mirr),
+			mirrmetrics.New(m),
 		)
 		if err != nil {
 			return nil, err
@@ -172,9 +172,9 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		dialer:        dialer,
 		cfg:           cfg,
 		server:        srv,
-		client:        mirrClient,
+		client:        mClient,
 		gateway:       gateway,
-		mirror:        mirr,
+		mirror:        m,
 		discover:      discover,
 		observability: obs,
 	}, nil
