@@ -45,6 +45,14 @@ helm/package/vald-helm-operator: \
 	helm/schema/crd/vald-helm-operator
 	helm package charts/vald-helm-operator
 
+.PHONY: helm/package/vald-benchmark-operator
+## packaging Helm chart for vald-helm-operator
+helm/package/vald-benchmark-operator: \
+	helm/schema/crd/vald-benchmark-job \
+	helm/schema/crd/vald-benchmark-scenario \
+	helm/schema/crd/vald-benchmark-operator
+	helm package charts/vald-benchmark-operator
+
 .PHONY: helm/repo/add
 ## add Helm chart repository
 helm/repo/add:
@@ -78,6 +86,15 @@ helm/docs/vald-readreplica: charts/vald-readreplica/README.md
 charts/vald-readreplica/README.md: \
 	charts/vald-readreplica/README.md.gotmpl \
 	charts/vald-readreplica/values.yaml
+	helm-docs
+
+.PHONY: helm/docs/vald-benchmark-operator
+helm/docs/vald-benchmark-operator: charts/vald-benchmark-operator/README.md
+
+.PHONY: charts/vald-benchmark-operator/README.md
+charts/vald-benchmark-operator/README.md: \
+	charts/vald-benchmark-operator/README.md.gotmpl \
+	charts/vald-benchmark-operator/values.yaml
 	helm-docs
 
 .PHONY: helm/schema/all
@@ -142,8 +159,8 @@ $(BINDIR)/yq:
 helm/schema/crd/all: \
 	helm/schema/crd/vald \
 	helm/schema/crd/vald-helm-operator \
-	helm/schema/crd/vald-benchmark-job \
 	helm/schema/crd/vald/mirror-target \
+	helm/schema/crd/vald-benchmark-job \
 	helm/schema/crd/vald-benchmark-scenario \
 	helm/schema/crd/vald-benchmark-operator
 
