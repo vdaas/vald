@@ -53,6 +53,7 @@ jobs:
       - name: Create PR
         if: ${{ github.event.pull_request.labels.*.name == '${TARGET_LABEL_NAME_PREFIX}*' }}
         env:
+          PR_NUM: ${{ steps.pr_info.outputs.PR_NUM }}
           PR_TITLE: ${{ steps.pr_info.outputs.PR_TITEL }}
           PR_BODY: ${{ steps.pr_info.outputs.PR_BODY }}
           GITHUB_USER: ${{ secrets.DISPATCH_USER }}
