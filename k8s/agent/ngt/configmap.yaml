@@ -213,9 +213,11 @@ data:
       dimension: 784
       distance_type: l2
       enable_copy_on_write: false
+      enable_export_index_info_to_k8s: false
       enable_in_memory_mode: true
       enable_proactive_gc: false
       error_buffer_limit: 10
+      export_index_info_duration: 1m
       index_path: ""
       initial_delay_max_duration: 3m
       kvsdb:
@@ -223,7 +225,9 @@ data:
       load_index_timeout_factor: 1ms
       max_load_index_timeout: 10m
       min_load_index_timeout: 3m
+      namespace: _MY_POD_NAMESPACE_
       object_type: float
+      pod_name: _MY_POD_NAME_
       search_edge_size: 50
       vqueue:
         delete_buffer_pool_size: 5000

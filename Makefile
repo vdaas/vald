@@ -424,11 +424,11 @@ update: \
 ## format go codes
 format: \
 	license \
+	format/proto \
 	format/go \
 	format/json \
 	format/md \
-	format/yaml \
-	format/proto
+	format/yaml
 
 .PHONY: format/go
 ## run golines, gofumpt, goimports for all go files
