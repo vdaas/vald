@@ -239,7 +239,9 @@ pub mod mirror_server {
                             >,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
-                            let fut = async move { (*inner).register(request).await };
+                            let fut = async move {
+                                <T as Mirror>::register(&inner, request).await
+                            };
                             Box::pin(fut)
                         }
                     }

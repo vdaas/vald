@@ -489,7 +489,7 @@ pub mod filter_server {
             tonic::Status,
         >;
         /// Server streaming response type for the StreamSearchObject method.
-        type StreamSearchObjectStream: futures_core::Stream<
+        type StreamSearchObjectStream: tonic::codegen::tokio_stream::Stream<
                 Item = std::result::Result<
                     super::super::super::payload::v1::search::StreamResponse,
                     tonic::Status,
@@ -520,7 +520,7 @@ pub mod filter_server {
             tonic::Status,
         >;
         /// Server streaming response type for the StreamInsertObject method.
-        type StreamInsertObjectStream: futures_core::Stream<
+        type StreamInsertObjectStream: tonic::codegen::tokio_stream::Stream<
                 Item = std::result::Result<
                     super::super::super::payload::v1::object::StreamLocation,
                     tonic::Status,
@@ -562,7 +562,7 @@ pub mod filter_server {
             tonic::Status,
         >;
         /// Server streaming response type for the StreamUpdateObject method.
-        type StreamUpdateObjectStream: futures_core::Stream<
+        type StreamUpdateObjectStream: tonic::codegen::tokio_stream::Stream<
                 Item = std::result::Result<
                     super::super::super::payload::v1::object::StreamLocation,
                     tonic::Status,
@@ -604,7 +604,7 @@ pub mod filter_server {
             tonic::Status,
         >;
         /// Server streaming response type for the StreamUpsertObject method.
-        type StreamUpsertObjectStream: futures_core::Stream<
+        type StreamUpsertObjectStream: tonic::codegen::tokio_stream::Stream<
                 Item = std::result::Result<
                     super::super::super::payload::v1::object::StreamLocation,
                     tonic::Status,
@@ -735,7 +735,7 @@ pub mod filter_server {
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
                             let fut = async move {
-                                (*inner).search_object(request).await
+                                <T as Filter>::search_object(&inner, request).await
                             };
                             Box::pin(fut)
                         }
@@ -784,7 +784,7 @@ pub mod filter_server {
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
                             let fut = async move {
-                                (*inner).multi_search_object(request).await
+                                <T as Filter>::multi_search_object(&inner, request).await
                             };
                             Box::pin(fut)
                         }
@@ -836,7 +836,7 @@ pub mod filter_server {
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
                             let fut = async move {
-                                (*inner).stream_search_object(request).await
+                                <T as Filter>::stream_search_object(&inner, request).await
                             };
                             Box::pin(fut)
                         }
@@ -885,7 +885,7 @@ pub mod filter_server {
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
                             let fut = async move {
-                                (*inner).insert_object(request).await
+                                <T as Filter>::insert_object(&inner, request).await
                             };
                             Box::pin(fut)
                         }
@@ -937,7 +937,7 @@ pub mod filter_server {
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
                             let fut = async move {
-                                (*inner).stream_insert_object(request).await
+                                <T as Filter>::stream_insert_object(&inner, request).await
                             };
                             Box::pin(fut)
                         }
@@ -986,7 +986,7 @@ pub mod filter_server {
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
                             let fut = async move {
-                                (*inner).multi_insert_object(request).await
+                                <T as Filter>::multi_insert_object(&inner, request).await
                             };
                             Box::pin(fut)
                         }
@@ -1035,7 +1035,7 @@ pub mod filter_server {
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
                             let fut = async move {
-                                (*inner).update_object(request).await
+                                <T as Filter>::update_object(&inner, request).await
                             };
                             Box::pin(fut)
                         }
@@ -1087,7 +1087,7 @@ pub mod filter_server {
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
                             let fut = async move {
-                                (*inner).stream_update_object(request).await
+                                <T as Filter>::stream_update_object(&inner, request).await
                             };
                             Box::pin(fut)
                         }
@@ -1136,7 +1136,7 @@ pub mod filter_server {
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
                             let fut = async move {
-                                (*inner).multi_update_object(request).await
+                                <T as Filter>::multi_update_object(&inner, request).await
                             };
                             Box::pin(fut)
                         }
@@ -1185,7 +1185,7 @@ pub mod filter_server {
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
                             let fut = async move {
-                                (*inner).upsert_object(request).await
+                                <T as Filter>::upsert_object(&inner, request).await
                             };
                             Box::pin(fut)
                         }
@@ -1237,7 +1237,7 @@ pub mod filter_server {
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
                             let fut = async move {
-                                (*inner).stream_upsert_object(request).await
+                                <T as Filter>::stream_upsert_object(&inner, request).await
                             };
                             Box::pin(fut)
                         }
@@ -1286,7 +1286,7 @@ pub mod filter_server {
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
                             let fut = async move {
-                                (*inner).multi_upsert_object(request).await
+                                <T as Filter>::multi_upsert_object(&inner, request).await
                             };
                             Box::pin(fut)
                         }
@@ -1543,7 +1543,7 @@ pub mod insert_server {
             tonic::Status,
         >;
         /// Server streaming response type for the StreamInsert method.
-        type StreamInsertStream: futures_core::Stream<
+        type StreamInsertStream: tonic::codegen::tokio_stream::Stream<
                 Item = std::result::Result<
                     super::super::super::payload::v1::object::StreamLocation,
                     tonic::Status,
@@ -1673,7 +1673,9 @@ pub mod insert_server {
                             >,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
-                            let fut = async move { (*inner).insert(request).await };
+                            let fut = async move {
+                                <T as Insert>::insert(&inner, request).await
+                            };
                             Box::pin(fut)
                         }
                     }
@@ -1724,7 +1726,7 @@ pub mod insert_server {
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
                             let fut = async move {
-                                (*inner).stream_insert(request).await
+                                <T as Insert>::stream_insert(&inner, request).await
                             };
                             Box::pin(fut)
                         }
@@ -1773,7 +1775,7 @@ pub mod insert_server {
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
                             let fut = async move {
-                                (*inner).multi_insert(request).await
+                                <T as Insert>::multi_insert(&inner, request).await
                             };
                             Box::pin(fut)
                         }
@@ -2071,7 +2073,7 @@ pub mod object_server {
             tonic::Status,
         >;
         /// Server streaming response type for the StreamGetObject method.
-        type StreamGetObjectStream: futures_core::Stream<
+        type StreamGetObjectStream: tonic::codegen::tokio_stream::Stream<
                 Item = std::result::Result<
                     super::super::super::payload::v1::object::StreamVector,
                     tonic::Status,
@@ -2091,7 +2093,7 @@ pub mod object_server {
             tonic::Status,
         >;
         /// Server streaming response type for the StreamListObject method.
-        type StreamListObjectStream: futures_core::Stream<
+        type StreamListObjectStream: tonic::codegen::tokio_stream::Stream<
                 Item = std::result::Result<
                     super::super::super::payload::v1::object::list::Response,
                     tonic::Status,
@@ -2210,7 +2212,9 @@ pub mod object_server {
                             >,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
-                            let fut = async move { (*inner).exists(request).await };
+                            let fut = async move {
+                                <T as Object>::exists(&inner, request).await
+                            };
                             Box::pin(fut)
                         }
                     }
@@ -2257,7 +2261,9 @@ pub mod object_server {
                             >,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
-                            let fut = async move { (*inner).get_object(request).await };
+                            let fut = async move {
+                                <T as Object>::get_object(&inner, request).await
+                            };
                             Box::pin(fut)
                         }
                     }
@@ -2308,7 +2314,7 @@ pub mod object_server {
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
                             let fut = async move {
-                                (*inner).stream_get_object(request).await
+                                <T as Object>::stream_get_object(&inner, request).await
                             };
                             Box::pin(fut)
                         }
@@ -2358,7 +2364,7 @@ pub mod object_server {
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
                             let fut = async move {
-                                (*inner).stream_list_object(request).await
+                                <T as Object>::stream_list_object(&inner, request).await
                             };
                             Box::pin(fut)
                         }
@@ -2655,7 +2661,7 @@ pub mod remove_server {
             tonic::Status,
         >;
         /// Server streaming response type for the StreamRemove method.
-        type StreamRemoveStream: futures_core::Stream<
+        type StreamRemoveStream: tonic::codegen::tokio_stream::Stream<
                 Item = std::result::Result<
                     super::super::super::payload::v1::object::StreamLocation,
                     tonic::Status,
@@ -2785,7 +2791,9 @@ pub mod remove_server {
                             >,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
-                            let fut = async move { (*inner).remove(request).await };
+                            let fut = async move {
+                                <T as Remove>::remove(&inner, request).await
+                            };
                             Box::pin(fut)
                         }
                     }
@@ -2833,7 +2841,7 @@ pub mod remove_server {
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
                             let fut = async move {
-                                (*inner).remove_by_timestamp(request).await
+                                <T as Remove>::remove_by_timestamp(&inner, request).await
                             };
                             Box::pin(fut)
                         }
@@ -2885,7 +2893,7 @@ pub mod remove_server {
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
                             let fut = async move {
-                                (*inner).stream_remove(request).await
+                                <T as Remove>::stream_remove(&inner, request).await
                             };
                             Box::pin(fut)
                         }
@@ -2934,7 +2942,7 @@ pub mod remove_server {
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
                             let fut = async move {
-                                (*inner).multi_remove(request).await
+                                <T as Remove>::multi_remove(&inner, request).await
                             };
                             Box::pin(fut)
                         }
@@ -3474,7 +3482,7 @@ pub mod search_server {
             tonic::Status,
         >;
         /// Server streaming response type for the StreamSearch method.
-        type StreamSearchStream: futures_core::Stream<
+        type StreamSearchStream: tonic::codegen::tokio_stream::Stream<
                 Item = std::result::Result<
                     super::super::super::payload::v1::search::StreamResponse,
                     tonic::Status,
@@ -3494,7 +3502,7 @@ pub mod search_server {
             tonic::Status,
         >;
         /// Server streaming response type for the StreamSearchByID method.
-        type StreamSearchByIDStream: futures_core::Stream<
+        type StreamSearchByIDStream: tonic::codegen::tokio_stream::Stream<
                 Item = std::result::Result<
                     super::super::super::payload::v1::search::StreamResponse,
                     tonic::Status,
@@ -3554,7 +3562,7 @@ pub mod search_server {
             tonic::Status,
         >;
         /// Server streaming response type for the StreamLinearSearch method.
-        type StreamLinearSearchStream: futures_core::Stream<
+        type StreamLinearSearchStream: tonic::codegen::tokio_stream::Stream<
                 Item = std::result::Result<
                     super::super::super::payload::v1::search::StreamResponse,
                     tonic::Status,
@@ -3574,7 +3582,7 @@ pub mod search_server {
             tonic::Status,
         >;
         /// Server streaming response type for the StreamLinearSearchByID method.
-        type StreamLinearSearchByIDStream: futures_core::Stream<
+        type StreamLinearSearchByIDStream: tonic::codegen::tokio_stream::Stream<
                 Item = std::result::Result<
                     super::super::super::payload::v1::search::StreamResponse,
                     tonic::Status,
@@ -3717,7 +3725,9 @@ pub mod search_server {
                             >,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
-                            let fut = async move { (*inner).search(request).await };
+                            let fut = async move {
+                                <T as Search>::search(&inner, request).await
+                            };
                             Box::pin(fut)
                         }
                     }
@@ -3765,7 +3775,7 @@ pub mod search_server {
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
                             let fut = async move {
-                                (*inner).search_by_id(request).await
+                                <T as Search>::search_by_id(&inner, request).await
                             };
                             Box::pin(fut)
                         }
@@ -3817,7 +3827,7 @@ pub mod search_server {
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
                             let fut = async move {
-                                (*inner).stream_search(request).await
+                                <T as Search>::stream_search(&inner, request).await
                             };
                             Box::pin(fut)
                         }
@@ -3869,7 +3879,7 @@ pub mod search_server {
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
                             let fut = async move {
-                                (*inner).stream_search_by_id(request).await
+                                <T as Search>::stream_search_by_id(&inner, request).await
                             };
                             Box::pin(fut)
                         }
@@ -3918,7 +3928,7 @@ pub mod search_server {
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
                             let fut = async move {
-                                (*inner).multi_search(request).await
+                                <T as Search>::multi_search(&inner, request).await
                             };
                             Box::pin(fut)
                         }
@@ -3967,7 +3977,7 @@ pub mod search_server {
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
                             let fut = async move {
-                                (*inner).multi_search_by_id(request).await
+                                <T as Search>::multi_search_by_id(&inner, request).await
                             };
                             Box::pin(fut)
                         }
@@ -4016,7 +4026,7 @@ pub mod search_server {
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
                             let fut = async move {
-                                (*inner).linear_search(request).await
+                                <T as Search>::linear_search(&inner, request).await
                             };
                             Box::pin(fut)
                         }
@@ -4065,7 +4075,7 @@ pub mod search_server {
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
                             let fut = async move {
-                                (*inner).linear_search_by_id(request).await
+                                <T as Search>::linear_search_by_id(&inner, request).await
                             };
                             Box::pin(fut)
                         }
@@ -4117,7 +4127,7 @@ pub mod search_server {
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
                             let fut = async move {
-                                (*inner).stream_linear_search(request).await
+                                <T as Search>::stream_linear_search(&inner, request).await
                             };
                             Box::pin(fut)
                         }
@@ -4169,7 +4179,8 @@ pub mod search_server {
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
                             let fut = async move {
-                                (*inner).stream_linear_search_by_id(request).await
+                                <T as Search>::stream_linear_search_by_id(&inner, request)
+                                    .await
                             };
                             Box::pin(fut)
                         }
@@ -4218,7 +4229,7 @@ pub mod search_server {
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
                             let fut = async move {
-                                (*inner).multi_linear_search(request).await
+                                <T as Search>::multi_linear_search(&inner, request).await
                             };
                             Box::pin(fut)
                         }
@@ -4267,7 +4278,8 @@ pub mod search_server {
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
                             let fut = async move {
-                                (*inner).multi_linear_search_by_id(request).await
+                                <T as Search>::multi_linear_search_by_id(&inner, request)
+                                    .await
                             };
                             Box::pin(fut)
                         }
@@ -4524,7 +4536,7 @@ pub mod update_server {
             tonic::Status,
         >;
         /// Server streaming response type for the StreamUpdate method.
-        type StreamUpdateStream: futures_core::Stream<
+        type StreamUpdateStream: tonic::codegen::tokio_stream::Stream<
                 Item = std::result::Result<
                     super::super::super::payload::v1::object::StreamLocation,
                     tonic::Status,
@@ -4654,7 +4666,9 @@ pub mod update_server {
                             >,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
-                            let fut = async move { (*inner).update(request).await };
+                            let fut = async move {
+                                <T as Update>::update(&inner, request).await
+                            };
                             Box::pin(fut)
                         }
                     }
@@ -4705,7 +4719,7 @@ pub mod update_server {
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
                             let fut = async move {
-                                (*inner).stream_update(request).await
+                                <T as Update>::stream_update(&inner, request).await
                             };
                             Box::pin(fut)
                         }
@@ -4754,7 +4768,7 @@ pub mod update_server {
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
                             let fut = async move {
-                                (*inner).multi_update(request).await
+                                <T as Update>::multi_update(&inner, request).await
                             };
                             Box::pin(fut)
                         }
@@ -5011,7 +5025,7 @@ pub mod upsert_server {
             tonic::Status,
         >;
         /// Server streaming response type for the StreamUpsert method.
-        type StreamUpsertStream: futures_core::Stream<
+        type StreamUpsertStream: tonic::codegen::tokio_stream::Stream<
                 Item = std::result::Result<
                     super::super::super::payload::v1::object::StreamLocation,
                     tonic::Status,
@@ -5141,7 +5155,9 @@ pub mod upsert_server {
                             >,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
-                            let fut = async move { (*inner).upsert(request).await };
+                            let fut = async move {
+                                <T as Upsert>::upsert(&inner, request).await
+                            };
                             Box::pin(fut)
                         }
                     }
@@ -5192,7 +5208,7 @@ pub mod upsert_server {
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
                             let fut = async move {
-                                (*inner).stream_upsert(request).await
+                                <T as Upsert>::stream_upsert(&inner, request).await
                             };
                             Box::pin(fut)
                         }
@@ -5241,7 +5257,7 @@ pub mod upsert_server {
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
                             let fut = async move {
-                                (*inner).multi_upsert(request).await
+                                <T as Upsert>::multi_upsert(&inner, request).await
                             };
                             Box::pin(fut)
                         }
