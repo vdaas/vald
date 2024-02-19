@@ -47,10 +47,10 @@ jobs:
       - name: Get PR title and body
         id: pr_info
         run: |
-          PR_TITLE=`jq -r .pull_request.title ${GITHUB_EVENT_PATH}`
-          PR_BODY=`jq -r .pull_request.body ${GITHUB_EVENT_PATH}`
-          PR_NUM=`jq -r .pull_request.number ${GITHUB_EVENT_PATH}`
-          echo "${PR_NUM} ${PR_TITLE}: ${PR_BODY}"
+          PR_TITLE=`cat $GITHUB_EVENT_PATH | jq -r ".pull_request.title"`
+          PR_BODY=`cat $GITHUB_EVENT_PATH | jq -r ".pull_request.body"`
+          PR_NUM=`cat $GITHUB_EVENT_PATH | jq -r ".pull_request.number"`
+          echo "${PR_NUM} ${PR_TITLE}:\n${PR_BODY}\n\n"
           echo "PR_TITLE=${PR_TITLE}" >> $GITHUB_OUTPUT
           echo "PR_BODY=${PR_BODY}"   >> $GITHUB_OUTPUT
           echo "PR_NUM=${PR_NUM}"     >> $GITHUB_OUTPUT
