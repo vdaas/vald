@@ -48,7 +48,10 @@ jobs:
         id: set_context
         run: |
           LABEL_NAMES=`cat ${GITHUB_EVENT_PATH} | jq -r --arg PREFIX $TARGET_LABEL_NAME_PREFIX '[.pull_request.labels[]? | select(.name | startswith($PREFIX)) | .name] | join(" ")'`
+<<<<<<< HEAD
 
+=======
+>>>>>>> 846fcd861 ([bugfix] fix backport github value bypass failure (#2384))
           echo "LABEL_NAMES=${LABEL_NAMES}" >> $GITHUB_OUTPUT # e.g.) actions/backport/v1.7 actions/backport/v1.8
           echo "${LABEL_NAMES}"
       - name: Create PR
@@ -58,6 +61,15 @@ jobs:
           GITHUB_USER: ${{ secrets.DISPATCH_USER }}
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
         run: |
+<<<<<<< HEAD
+=======
+          PR_TITLE=`cat $GITHUB_EVENT_PATH | jq -r ".pull_request.title"`
+          PR_BODY=`cat $GITHUB_EVENT_PATH | jq -r ".pull_request.body"`
+          PR_NUM=`cat $GITHUB_EVENT_PATH | jq -r ".pull_request.number"`
+
+          echo "${PR_NUM} ${PR_TITLE}: ${PR_BODY}"
+
+>>>>>>> 846fcd861 ([bugfix] fix backport github value bypass failure (#2384))
           for LABEL_NAME in ${LABEL_NAMES}; do
               BRANCH_NAME=`echo "${LABEL_NAME}" | sed -e "s:^${TARGET_LABEL_NAME_PREFIX}::"`           # e.g) release/vx.x, main
               BACKPORT_BRANCH_NAME="${BACKPORT_BRANCH_NAME_PREFIX}/${BRANCH_NAME}/${GITHUB_HEAD_REF}"  # e.g) backport/release/vx.x/{current branch name}
