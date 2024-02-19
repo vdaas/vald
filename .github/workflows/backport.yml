@@ -47,11 +47,13 @@ jobs:
       - name: Get PR title and body
         id: pr_info
         run: |
-          echo "PR_TITLE=$(jq --raw-output .pull_request.title $GITHUB_EVENT_PATH)" >> $GITHUB_ENV
-          echo "PR_BODY=$(jq --raw-output .pull_request.body $GITHUB_EVENT_PATH)" >> $GITHUB_ENV
+          echo "PR_NUM=$(jq --raw-output .pull_request.number $GITHUB_EVENT_PATH)" >> $GITHUB_OUTPUT
+          echo "PR_TITLE=$(jq --raw-output .pull_request.title $GITHUB_EVENT_PATH)" >> $GITHUB_OUTPUT
+          echo "PR_BODY=$(jq --raw-output .pull_request.body $GITHUB_EVENT_PATH)" >> $GITHUB_OUTPUT
       - name: Create PR
         if: ${{ github.event.pull_request.labels.*.name == '${TARGET_LABEL_NAME_PREFIX}*' }}
         env:
+          PR_NUM: ${{ steps.pr_info.outputs.PR_NUM }}
           PR_TITLE: ${{ steps.pr_info.outputs.PR_TITEL }}
           PR_BODY: ${{ steps.pr_info.outputs.PR_BODY }}
           GITHUB_USER: ${{ secrets.DISPATCH_USER }}
@@ -74,6 +76,6 @@ jobs:
               git push origin ${BACKPORT_BRANCH_NAME}
 
               gh pr create --base ${BRANCH_NAME} \
-                           --title "Backport to ${BRANCH_NAME} for ${PR_TITLE}" \
+                           --title "Backport PR #${PR_NUM} to ${BRANCH_NAME} for ${PR_TITLE}" \
                            --body "${PR_BODY}"
           done
