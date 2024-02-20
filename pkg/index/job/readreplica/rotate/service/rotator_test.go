@@ -16,15 +16,11 @@ package service
 import (
 	"testing"
 
-	tmock "github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/k8s/client"
 	"github.com/vdaas/vald/internal/test/mock/k8s"
-
-	appsv1 "k8s.io/api/apps/v1"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/labels"
+	"github.com/vdaas/vald/internal/test/testify"
 )
 
 func Test_getNewBaseName(t *testing.T) {
@@ -140,19 +136,20 @@ func Test_parseReplicaID(t *testing.T) {
 			wantId1 := "bar"
 			wantId2 := "baz"
 			mock := &k8s.ValdK8sClientMock{}
-			mock.On("LabelSelector", tmock.Anything, tmock.Anything, tmock.Anything).Return(labels.NewSelector(), nil)
-			mock.On("List", tmock.Anything, tmock.Anything, tmock.Anything).Run(func(args tmock.Arguments) {
-				if depList, ok := args.Get(1).(*appsv1.DeploymentList); ok {
-					depList.Items = []appsv1.Deployment{
+
+			mock.On("LabelSelector", testify.Anything, testify.Anything, testify.Anything).Return(client.NewSelector(), nil)
+			mock.On("List", testify.Anything, testify.Anything, testify.Anything).Run(func(args testify.Arguments) {
+				if depList, ok := args.Get(1).(*client.DeploymentList); ok {
+					depList.Items = []client.Deployment{
 						{
-							ObjectMeta: v1.ObjectMeta{
+							ObjectMeta: client.ObjectMeta{
 								Labels: map[string]string{
 									labelKey: wantId1,
 								},
 							},
 						},
 						{
-							ObjectMeta: v1.ObjectMeta{
+							ObjectMeta: client.ObjectMeta{
 								Labels: map[string]string{
 									labelKey: wantId2,
 								},
