@@ -17,7 +17,5 @@
 // Package errors provides error types and function
 package errors
 
-var (
-	// ErrReadReplicaIDEmpty represents error when trying to rotate agents with empty replicaID
-	ErrReadReplicaIDEmpty = New("readreplica id is empty. it should be set via MY_TARGET_REPLICA_ID env var")
-)
+// ErrReadReplicaIDEmpty represents error when trying to rotate agents with empty replicaID
+var ErrReadReplicaIDEmpty = New("readreplica id is empty. it should be set via MY_TARGET_REPLICA_ID env var")
