@@ -29,7 +29,7 @@ import (
 	"github.com/vdaas/vald/internal/timeutil"
 )
 
-// Option represent the functional option for faiss
+// Option represent the functional option for faiss.
 type Option func(f *faiss) error
 
 var defaultOptions = []Option{
