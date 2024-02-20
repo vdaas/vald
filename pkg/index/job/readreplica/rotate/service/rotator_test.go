@@ -15,6 +15,10 @@ package service
 
 import (
 	"testing"
+
+	"github.com/stretchr/testify/require"
+	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/k8s/client"
 )
 
 func Test_getNewBaseName(t *testing.T) {
@@ -73,6 +77,66 @@ func Test_getNewBaseName(t *testing.T) {
 			if got := getNewBaseName(tt.args.old); got != tt.want.want {
 				t.Errorf("getNewBaseName() = %v, want %v", got, tt.want.want)
 			}
+		})
+	}
+}
+
+func Test_parseReplicaID(t *testing.T) {
+	type args struct {
+		replicaID string
+		c         client.Client
+	}
+	type want struct {
+		ids []string
+		err error
+	}
+	tests := []struct {
+		name string
+		args args
+		want want
+	}{
+		{
+			name: "single replicaID",
+			args: args{
+				replicaID: "0",
+				c:         nil,
+			},
+			want: want{
+				ids: []string{"0"},
+				err: nil,
+			},
+		},
+		{
+			name: "multiple replicaIDs",
+			args: args{
+				replicaID: "0,1",
+				c:         nil,
+			},
+			want: want{
+				ids: []string{"0", "1"},
+				err: nil,
+			},
+		},
+		{
+			name: "returns error when replicaID is empty",
+			args: args{
+				replicaID: "",
+				c:         nil,
+			},
+			want: want{
+				ids: nil,
+				err: errors.ErrReadReplicaIDEmpty,
+			},
+		},
+	}
+	for _, test := range tests {
+		tt := test
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			r := &rotator{}
+			ids, err := r.parseReplicaID(tt.args.replicaID, tt.args.c)
+			require.Equal(t, tt.want.ids, ids)
+			require.Equal(t, tt.want.err, err)
 		})
 	}
 }

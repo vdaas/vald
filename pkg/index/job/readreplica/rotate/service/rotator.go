@@ -406,7 +406,7 @@ func getNewBaseName(old string) string {
 
 func (r *rotator) parseReplicaID(replicaID string, c client.Client) ([]string, error) {
 	if replicaID == "" {
-		return nil, fmt.Errorf("readreplica id is empty. it should be set via MY_TARGET_REPLICA_ID env var")
+		return nil, errors.ErrReadReplicaIDEmpty
 	}
 
 	if replicaID == rotateAllID {
@@ -415,10 +415,12 @@ func (r *rotator) parseReplicaID(replicaID string, c client.Client) ([]string, e
 		if err != nil {
 			return nil, err
 		}
-		c.List(context.Background(), &deploymentList, &client.ListOptions{
+		if err := c.List(context.Background(), &deploymentList, &client.ListOptions{
 			Namespace:     r.namespace,
 			LabelSelector: selector,
-		})
+		}); err != nil {
+			return nil, fmt.Errorf("failed to List deployments in parseReplicaID: %w", err)
+		}
 
 		deployments := deploymentList.Items
 		if len(deployments) == 0 {
