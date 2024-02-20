@@ -16,9 +16,15 @@ package service
 import (
 	"testing"
 
+	tmock "github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/k8s/client"
+	"github.com/vdaas/vald/internal/test/mock/k8s"
+
+	appsv1 "k8s.io/api/apps/v1"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 )
 
 func Test_getNewBaseName(t *testing.T) {
@@ -82,6 +88,7 @@ func Test_getNewBaseName(t *testing.T) {
 }
 
 func Test_parseReplicaID(t *testing.T) {
+	labelKey := "foo"
 	type args struct {
 		replicaID string
 		c         client.Client
@@ -90,11 +97,12 @@ func Test_parseReplicaID(t *testing.T) {
 		ids []string
 		err error
 	}
-	tests := []struct {
+	type test struct {
 		name string
 		args args
 		want want
-	}{
+	}
+	tests := []test{
 		{
 			name: "single replicaID",
 			args: args{
@@ -128,12 +136,51 @@ func Test_parseReplicaID(t *testing.T) {
 				err: errors.ErrReadReplicaIDEmpty,
 			},
 		},
+		func() test {
+			wantId1 := "bar"
+			wantId2 := "baz"
+			mock := &k8s.ValdK8sClientMock{}
+			mock.On("LabelSelector", tmock.Anything, tmock.Anything, tmock.Anything).Return(labels.NewSelector(), nil)
+			mock.On("List", tmock.Anything, tmock.Anything, tmock.Anything).Run(func(args tmock.Arguments) {
+				if depList, ok := args.Get(1).(*appsv1.DeploymentList); ok {
+					depList.Items = []appsv1.Deployment{
+						{
+							ObjectMeta: v1.ObjectMeta{
+								Labels: map[string]string{
+									labelKey: wantId1,
+								},
+							},
+						},
+						{
+							ObjectMeta: v1.ObjectMeta{
+								Labels: map[string]string{
+									labelKey: wantId2,
+								},
+							},
+						},
+					}
+				}
+			}).Return(nil)
+			return test{
+				name: "returns all ids when rotate-all option is set",
+				args: args{
+					replicaID: rotateAllID,
+					c:         mock,
+				},
+				want: want{
+					ids: []string{wantId1, wantId2},
+					err: nil,
+				},
+			}
+		}(),
 	}
 	for _, test := range tests {
 		tt := test
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			r := &rotator{}
+			r := &rotator{
+				readReplicaLabelKey: labelKey,
+			}
 			ids, err := r.parseReplicaID(tt.args.replicaID, tt.args.c)
 			require.Equal(t, tt.want.ids, ids)
 			require.Equal(t, tt.want.err, err)
