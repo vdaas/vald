@@ -8,3 +8,4 @@ edition = "2021"
 [dependencies]
 anyhow = "1.0.79"
 serde = { version = "1.0.196", features = ["derive"] }
+ngt-rs = { path = "../ngt-rs" }
