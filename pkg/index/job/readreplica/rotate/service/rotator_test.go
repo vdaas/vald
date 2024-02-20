@@ -133,8 +133,8 @@ func Test_parseReplicaID(t *testing.T) {
 			},
 		},
 		func() test {
-			wantId1 := "bar"
-			wantId2 := "baz"
+			wantID1 := "bar"
+			wantID2 := "baz"
 			mock := &k8s.ValdK8sClientMock{}
 
 			mock.On("LabelSelector", testify.Anything, testify.Anything, testify.Anything).Return(client.NewSelector(), nil)
@@ -144,14 +144,14 @@ func Test_parseReplicaID(t *testing.T) {
 						{
 							ObjectMeta: client.ObjectMeta{
 								Labels: map[string]string{
-									labelKey: wantId1,
+									labelKey: wantID1,
 								},
 							},
 						},
 						{
 							ObjectMeta: client.ObjectMeta{
 								Labels: map[string]string{
-									labelKey: wantId2,
+									labelKey: wantID2,
 								},
 							},
 						},
@@ -165,7 +165,7 @@ func Test_parseReplicaID(t *testing.T) {
 					c:         mock,
 				},
 				want: want{
-					ids: []string{wantId1, wantId2},
+					ids: []string{wantID1, wantID2},
 					err: nil,
 				},
 			}
