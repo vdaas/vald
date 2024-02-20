@@ -32,6 +32,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
+	mserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
 
@@ -88,9 +89,9 @@ func New(opts ...Option) (cl Controller, err error) {
 		c.mgr, err = manager.New(
 			cfg,
 			manager.Options{
-				Scheme:             runtime.NewScheme(),
-				LeaderElection:     c.leaderElection,
-				MetricsBindAddress: c.merticsAddr,
+				Scheme:         runtime.NewScheme(),
+				LeaderElection: c.leaderElection,
+				Metrics:        mserver.Options{BindAddress: c.merticsAddr},
 			},
 		)
 		if err != nil {

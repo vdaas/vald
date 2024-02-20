@@ -58,7 +58,7 @@ func (*ServerStreamTestifyMock) RecvMsg(_ interface{}) error {
 	return nil
 }
 
-// ListObjectStreamMock is a testify mock struct for ListObjectStream based on ServerStreamTestifyMock
+// ListObjectStreamMock is a testify mock struct for ListObjectStream based on ServerStreamTestifyMock.
 type ListObjectStreamMock struct {
 	ServerStreamTestifyMock
 }

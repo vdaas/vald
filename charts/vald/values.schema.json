@@ -61,9 +61,37 @@
             }
           }
         },
+        "algorithm": {
+          "type": "string",
+          "description": "agent algorithm type. it should be `ngt` or `faiss`.",
+          "enum": ["ngt", "faiss"]
+        },
         "annotations": {
           "type": "object",
           "description": "deployment annotations"
+        },
+        "clusterRole": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "creates clusterRole resource"
+            },
+            "name": { "type": "string", "description": "name of clusterRole" }
+          }
+        },
+        "clusterRoleBinding": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "creates clusterRoleBinding resource"
+            },
+            "name": {
+              "type": "string",
+              "description": "name of clusterRoleBinding"
+            }
+          }
         },
         "enabled": { "type": "boolean", "description": "agent enabled" },
         "env": {
@@ -233,6 +261,10 @@
               "type": "boolean",
               "description": "enable copy on write saving for more stable backup"
             },
+            "enable_export_index_info_to_k8s": {
+              "type": "boolean",
+              "description": "enable export index info to k8s"
+            },
             "enable_in_memory_mode": {
               "type": "boolean",
               "description": "in-memory mode enabled"
@@ -245,6 +277,10 @@
               "type": "integer",
               "description": "maximum number of core ngt error buffer pool size limit",
               "minimum": 1
+            },
+            "export_index_info_duration": {
+              "type": "string",
+              "description": "duration of exporting index info"
             },
             "index_path": {
               "type": "string",
@@ -275,10 +311,18 @@
               "type": "string",
               "description": "minimum duration of load index timeout"
             },
+            "namespace": {
+              "type": "string",
+              "description": "namespace of myself"
+            },
             "object_type": {
               "type": "string",
               "description": "object type. it should be `float` or `uint8` or `float16`. for further details: https://github.com/yahoojapan/NGT/wiki/Command-Quick-Reference",
               "enum": ["float", "float16", "uint8"]
+            },
+            "pod_name": {
+              "type": "string",
+              "description": "pod name of myself"
             },
             "search_edge_size": {
               "type": "integer",
@@ -341,7 +385,7 @@
                       "go_os",
                       "go_arch",
                       "cgo_enabled",
-                      "ngt_version",
+                      "algorithm_info",
                       "build_cpu_info_flags"
                     ]
                   }
@@ -475,17 +519,33 @@
               "type": "boolean",
               "description": "[This feature is WORK IN PROGRESS]enable agent readreplica"
             },
+            "hpa": {
+              "type": "object",
+              "properties": {
+                "enabled": { "type": "boolean", "description": "HPA enabled" },
+                "targetCPUUtilizationPercentage": {
+                  "type": "integer",
+                  "description": "HPA CPU utilization percentage"
+                }
+              }
+            },
             "label_key": {
               "type": "string",
               "description": "label key to identify read replica resources"
             },
+            "maxReplicas": {
+              "type": "integer",
+              "description": "maximum number of replicas. if HPA is disabled, this value will be ignored.",
+              "minimum": 1
+            },
+            "minReplicas": {
+              "type": "integer",
+              "description": "minimum number of replicas. if HPA is disabled, the replicas will be set to this value",
+              "minimum": 1
+            },
             "name": {
               "type": "string",
               "description": "name of agent readreplica"
-            },
-            "replica": {
-              "type": "integer",
-              "description": "replica number of read replica"
             },
             "service": {
               "type": "object",
@@ -1114,6 +1174,10 @@
                               "type": "string",
                               "description": "gRPC server connection timeout"
                             },
+                            "enable_admin": {
+                              "type": "boolean",
+                              "description": "gRPC server admin option"
+                            },
                             "enable_reflection": {
                               "type": "boolean",
                               "description": "gRPC server reflection option"
@@ -1432,6 +1496,19 @@
               "description": "service annotations"
             },
             "labels": { "type": "object", "description": "service labels" }
+          }
+        },
+        "serviceAccount": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "creates service account"
+            },
+            "name": {
+              "type": "string",
+              "description": "name of service account"
+            }
           }
         },
         "serviceType": {
@@ -1950,7 +2027,7 @@
                           "go_os",
                           "go_arch",
                           "cgo_enabled",
-                          "ngt_version",
+                          "algorithm_info",
                           "build_cpu_info_flags"
                         ]
                       }
@@ -2603,6 +2680,10 @@
                                 "connection_timeout": {
                                   "type": "string",
                                   "description": "gRPC server connection timeout"
+                                },
+                                "enable_admin": {
+                                  "type": "boolean",
+                                  "description": "gRPC server admin option"
                                 },
                                 "enable_reflection": {
                                   "type": "boolean",
@@ -3394,7 +3475,7 @@
                       "go_os",
                       "go_arch",
                       "cgo_enabled",
-                      "ngt_version",
+                      "algorithm_info",
                       "build_cpu_info_flags"
                     ]
                   }
@@ -4033,6 +4114,10 @@
                             "connection_timeout": {
                               "type": "string",
                               "description": "gRPC server connection timeout"
+                            },
+                            "enable_admin": {
+                              "type": "boolean",
+                              "description": "gRPC server admin option"
                             },
                             "enable_reflection": {
                               "type": "boolean",
@@ -4753,7 +4838,7 @@
                       "go_os",
                       "go_arch",
                       "cgo_enabled",
-                      "ngt_version",
+                      "algorithm_info",
                       "build_cpu_info_flags"
                     ]
                   }
@@ -5447,6 +5532,10 @@
                             "connection_timeout": {
                               "type": "string",
                               "description": "gRPC server connection timeout"
+                            },
+                            "enable_admin": {
+                              "type": "boolean",
+                              "description": "gRPC server admin option"
                             },
                             "enable_reflection": {
                               "type": "boolean",
@@ -7044,7 +7133,7 @@
                           "go_os",
                           "go_arch",
                           "cgo_enabled",
-                          "ngt_version",
+                          "algorithm_info",
                           "build_cpu_info_flags"
                         ]
                       }
@@ -7744,6 +7833,10 @@
                                 "connection_timeout": {
                                   "type": "string",
                                   "description": "gRPC server connection timeout"
+                                },
+                                "enable_admin": {
+                                  "type": "boolean",
+                                  "description": "gRPC server admin option"
                                 },
                                 "enable_reflection": {
                                   "type": "boolean",
@@ -8819,7 +8912,321 @@
                         "wait_for_ready": { "type": "boolean" }
                       }
                     },
-                    "duration": { "type": "string" }
+                    "duration": { "type": "string" },
+                    "read_client": {
+                      "type": "object",
+                      "properties": {
+                        "addrs": {
+                          "type": "array",
+                          "description": "gRPC client addresses",
+                          "items": { "type": "string" }
+                        },
+                        "backoff": {
+                          "type": "object",
+                          "properties": {
+                            "backoff_factor": {
+                              "type": "number",
+                              "description": "gRPC client backoff factor"
+                            },
+                            "backoff_time_limit": {
+                              "type": "string",
+                              "description": "gRPC client backoff time limit"
+                            },
+                            "enable_error_log": {
+                              "type": "boolean",
+                              "description": "gRPC client backoff log enabled"
+                            },
+                            "initial_duration": {
+                              "type": "string",
+                              "description": "gRPC client backoff initial duration"
+                            },
+                            "jitter_limit": {
+                              "type": "string",
+                              "description": "gRPC client backoff jitter limit"
+                            },
+                            "maximum_duration": {
+                              "type": "string",
+                              "description": "gRPC client backoff maximum duration"
+                            },
+                            "retry_count": {
+                              "type": "integer",
+                              "description": "gRPC client backoff retry count"
+                            }
+                          }
+                        },
+                        "call_option": { "type": "object" },
+                        "circuit_breaker": {
+                          "type": "object",
+                          "properties": {
+                            "closed_error_rate": {
+                              "type": "number",
+                              "description": "gRPC client circuitbreaker closed error rate"
+                            },
+                            "closed_refresh_timeout": {
+                              "type": "string",
+                              "description": "gRPC client circuitbreaker closed refresh timeout"
+                            },
+                            "half_open_error_rate": {
+                              "type": "number",
+                              "description": "gRPC client circuitbreaker half-open error rate"
+                            },
+                            "min_samples": {
+                              "type": "integer",
+                              "description": "gRPC client circuitbreaker minimum sampling count"
+                            },
+                            "open_timeout": {
+                              "type": "string",
+                              "description": "gRPC client circuitbreaker open timeout"
+                            }
+                          }
+                        },
+                        "connection_pool": {
+                          "type": "object",
+                          "properties": {
+                            "enable_dns_resolver": {
+                              "type": "boolean",
+                              "description": "enables gRPC client connection pool dns resolver, when enabled vald uses ip handshake exclude dns discovery which improves network performance"
+                            },
+                            "enable_rebalance": {
+                              "type": "boolean",
+                              "description": "enables gRPC client connection pool rebalance"
+                            },
+                            "old_conn_close_duration": {
+                              "type": "string",
+                              "description": "makes delay before gRPC client connection closing during connection pool rebalance"
+                            },
+                            "rebalance_duration": {
+                              "type": "string",
+                              "description": "gRPC client connection pool rebalance duration"
+                            },
+                            "size": {
+                              "type": "integer",
+                              "description": "gRPC client connection pool size"
+                            }
+                          }
+                        },
+                        "dial_option": {
+                          "type": "object",
+                          "properties": {
+                            "backoff_base_delay": {
+                              "type": "string",
+                              "description": "gRPC client dial option base backoff delay"
+                            },
+                            "backoff_jitter": {
+                              "type": "number",
+                              "description": "gRPC client dial option base backoff delay"
+                            },
+                            "backoff_max_delay": {
+                              "type": "string",
+                              "description": "gRPC client dial option max backoff delay"
+                            },
+                            "backoff_multiplier": {
+                              "type": "number",
+                              "description": "gRPC client dial option base backoff delay"
+                            },
+                            "enable_backoff": {
+                              "type": "boolean",
+                              "description": "gRPC client dial option backoff enabled"
+                            },
+                            "initial_connection_window_size": {
+                              "type": "integer",
+                              "description": "gRPC client dial option initial connection window size"
+                            },
+                            "initial_window_size": {
+                              "type": "integer",
+                              "description": "gRPC client dial option initial window size"
+                            },
+                            "insecure": {
+                              "type": "boolean",
+                              "description": "gRPC client dial option insecure enabled"
+                            },
+                            "interceptors": {
+                              "type": "array",
+                              "description": "gRPC client interceptors",
+                              "items": {
+                                "type": "string",
+                                "enum": ["TraceInterceptor"]
+                              }
+                            },
+                            "keepalive": {
+                              "type": "object",
+                              "properties": {
+                                "permit_without_stream": {
+                                  "type": "boolean",
+                                  "description": "gRPC client keep alive permit without stream"
+                                },
+                                "time": {
+                                  "type": "string",
+                                  "description": "gRPC client keep alive time"
+                                },
+                                "timeout": {
+                                  "type": "string",
+                                  "description": "gRPC client keep alive timeout"
+                                }
+                              }
+                            },
+                            "max_msg_size": {
+                              "type": "integer",
+                              "description": "gRPC client dial option max message size"
+                            },
+                            "min_connection_timeout": {
+                              "type": "string",
+                              "description": "gRPC client dial option minimum connection timeout"
+                            },
+                            "net": {
+                              "type": "object",
+                              "properties": {
+                                "dialer": {
+                                  "type": "object",
+                                  "properties": {
+                                    "dual_stack_enabled": {
+                                      "type": "boolean",
+                                      "description": "gRPC client TCP dialer dual stack enabled"
+                                    },
+                                    "keepalive": {
+                                      "type": "string",
+                                      "description": "gRPC client TCP dialer keep alive"
+                                    },
+                                    "timeout": {
+                                      "type": "string",
+                                      "description": "gRPC client TCP dialer timeout"
+                                    }
+                                  }
+                                },
+                                "dns": {
+                                  "type": "object",
+                                  "properties": {
+                                    "cache_enabled": {
+                                      "type": "boolean",
+                                      "description": "gRPC client TCP DNS cache enabled"
+                                    },
+                                    "cache_expiration": {
+                                      "type": "string",
+                                      "description": "gRPC client TCP DNS cache expiration"
+                                    },
+                                    "refresh_duration": {
+                                      "type": "string",
+                                      "description": "gRPC client TCP DNS cache refresh duration"
+                                    }
+                                  }
+                                },
+                                "socket_option": {
+                                  "type": "object",
+                                  "properties": {
+                                    "ip_recover_destination_addr": {
+                                      "type": "boolean",
+                                      "description": "server listen socket option for ip_recover_destination_addr functionality"
+                                    },
+                                    "ip_transparent": {
+                                      "type": "boolean",
+                                      "description": "server listen socket option for ip_transparent functionality"
+                                    },
+                                    "reuse_addr": {
+                                      "type": "boolean",
+                                      "description": "server listen socket option for reuse_addr functionality"
+                                    },
+                                    "reuse_port": {
+                                      "type": "boolean",
+                                      "description": "server listen socket option for reuse_port functionality"
+                                    },
+                                    "tcp_cork": {
+                                      "type": "boolean",
+                                      "description": "server listen socket option for tcp_cork functionality"
+                                    },
+                                    "tcp_defer_accept": {
+                                      "type": "boolean",
+                                      "description": "server listen socket option for tcp_defer_accept functionality"
+                                    },
+                                    "tcp_fast_open": {
+                                      "type": "boolean",
+                                      "description": "server listen socket option for tcp_fast_open functionality"
+                                    },
+                                    "tcp_no_delay": {
+                                      "type": "boolean",
+                                      "description": "server listen socket option for tcp_no_delay functionality"
+                                    },
+                                    "tcp_quick_ack": {
+                                      "type": "boolean",
+                                      "description": "server listen socket option for tcp_quick_ack functionality"
+                                    }
+                                  }
+                                },
+                                "tls": {
+                                  "type": "object",
+                                  "properties": {
+                                    "ca": {
+                                      "type": "string",
+                                      "description": "TLS ca path"
+                                    },
+                                    "cert": {
+                                      "type": "string",
+                                      "description": "TLS cert path"
+                                    },
+                                    "enabled": {
+                                      "type": "boolean",
+                                      "description": "TLS enabled"
+                                    },
+                                    "insecure_skip_verify": {
+                                      "type": "boolean",
+                                      "description": "enable/disable skip SSL certificate verification"
+                                    },
+                                    "key": {
+                                      "type": "string",
+                                      "description": "TLS key path"
+                                    }
+                                  }
+                                }
+                              }
+                            },
+                            "read_buffer_size": {
+                              "type": "integer",
+                              "description": "gRPC client dial option read buffer size"
+                            },
+                            "timeout": {
+                              "type": "string",
+                              "description": "gRPC client dial option timeout"
+                            },
+                            "write_buffer_size": {
+                              "type": "integer",
+                              "description": "gRPC client dial option write buffer size"
+                            }
+                          }
+                        },
+                        "health_check_duration": {
+                          "type": "string",
+                          "description": "gRPC client health check duration"
+                        },
+                        "max_recv_msg_size": { "type": "integer" },
+                        "max_retry_rpc_buffer_size": { "type": "integer" },
+                        "max_send_msg_size": { "type": "integer" },
+                        "tls": {
+                          "type": "object",
+                          "properties": {
+                            "ca": {
+                              "type": "string",
+                              "description": "TLS ca path"
+                            },
+                            "cert": {
+                              "type": "string",
+                              "description": "TLS cert path"
+                            },
+                            "enabled": {
+                              "type": "boolean",
+                              "description": "TLS enabled"
+                            },
+                            "insecure_skip_verify": {
+                              "type": "boolean",
+                              "description": "enable/disable skip SSL certificate verification"
+                            },
+                            "key": {
+                              "type": "string",
+                              "description": "TLS key path"
+                            }
+                          }
+                        },
+                        "wait_for_ready": { "type": "boolean" }
+                      }
+                    }
                   }
                 },
                 "index_replica": {
@@ -8992,7 +9399,7 @@
                           "go_os",
                           "go_arch",
                           "cgo_enabled",
-                          "ngt_version",
+                          "algorithm_info",
                           "build_cpu_info_flags"
                         ]
                       }
@@ -9692,6 +10099,10 @@
                                 "connection_timeout": {
                                   "type": "string",
                                   "description": "gRPC server connection timeout"
+                                },
+                                "enable_admin": {
+                                  "type": "boolean",
+                                  "description": "gRPC server admin option"
                                 },
                                 "enable_reflection": {
                                   "type": "boolean",
@@ -10768,7 +11179,7 @@
                           "go_os",
                           "go_arch",
                           "cgo_enabled",
-                          "ngt_version",
+                          "algorithm_info",
                           "build_cpu_info_flags"
                         ]
                       }
@@ -11468,6 +11879,10 @@
                                 "connection_timeout": {
                                   "type": "string",
                                   "description": "gRPC server connection timeout"
+                                },
+                                "enable_admin": {
+                                  "type": "boolean",
+                                  "description": "gRPC server admin option"
                                 },
                                 "enable_reflection": {
                                   "type": "boolean",
@@ -12639,7 +13054,7 @@
                               "go_os",
                               "go_arch",
                               "cgo_enabled",
-                              "ngt_version",
+                              "algorithm_info",
                               "build_cpu_info_flags"
                             ]
                           }
@@ -13288,6 +13703,10 @@
                                     "connection_timeout": {
                                       "type": "string",
                                       "description": "gRPC server connection timeout"
+                                    },
+                                    "enable_admin": {
+                                      "type": "boolean",
+                                      "description": "gRPC server admin option"
                                     },
                                     "enable_reflection": {
                                       "type": "boolean",
@@ -14365,7 +14784,7 @@
                               "go_os",
                               "go_arch",
                               "cgo_enabled",
-                              "ngt_version",
+                              "algorithm_info",
                               "build_cpu_info_flags"
                             ]
                           }
@@ -15014,6 +15433,10 @@
                                     "connection_timeout": {
                                       "type": "string",
                                       "description": "gRPC server connection timeout"
+                                    },
+                                    "enable_admin": {
+                                      "type": "boolean",
+                                      "description": "gRPC server admin option"
                                     },
                                     "enable_reflection": {
                                       "type": "boolean",
@@ -16151,7 +16574,7 @@
                           "go_os",
                           "go_arch",
                           "cgo_enabled",
-                          "ngt_version",
+                          "algorithm_info",
                           "build_cpu_info_flags"
                         ]
                       }
@@ -16358,7 +16781,7 @@
                                   "go_os",
                                   "go_arch",
                                   "cgo_enabled",
-                                  "ngt_version",
+                                  "algorithm_info",
                                   "build_cpu_info_flags"
                                 ]
                               }
@@ -17015,6 +17438,10 @@
                                         "connection_timeout": {
                                           "type": "string",
                                           "description": "gRPC server connection timeout"
+                                        },
+                                        "enable_admin": {
+                                          "type": "boolean",
+                                          "description": "gRPC server admin option"
                                         },
                                         "enable_reflection": {
                                           "type": "boolean",
@@ -18121,7 +18548,7 @@
                               "go_os",
                               "go_arch",
                               "cgo_enabled",
-                              "ngt_version",
+                              "algorithm_info",
                               "build_cpu_info_flags"
                             ]
                           }
@@ -18770,6 +19197,10 @@
                                     "connection_timeout": {
                                       "type": "string",
                                       "description": "gRPC server connection timeout"
+                                    },
+                                    "enable_admin": {
+                                      "type": "boolean",
+                                      "description": "gRPC server admin option"
                                     },
                                     "enable_reflection": {
                                       "type": "boolean",
@@ -19693,6 +20124,10 @@
                                 "connection_timeout": {
                                   "type": "string",
                                   "description": "gRPC server connection timeout"
+                                },
+                                "enable_admin": {
+                                  "type": "boolean",
+                                  "description": "gRPC server admin option"
                                 },
                                 "enable_reflection": {
                                   "type": "boolean",

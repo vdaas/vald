@@ -21,18 +21,18 @@ defaults:
     metrics:
       pprof:
         enabled: true
-
 gateway:
   lb:
     podAnnotations:
       profefe.com/enable: "true"
       profefe.com/port: "6060"
       profefe.com/service: "vald-lb-gateway"
+    ingress:
+      enabled: true
     resources:
       requests:
         cpu: 100m
         memory: 50Mi
-
 agent:
   podAnnotations:
     profefe.com/enable: "true"
@@ -47,7 +47,6 @@ agent:
       memory: 50Mi
   ngt:
     dimension: 784
-
 discoverer:
   podAnnotations:
     profefe.com/enable: "true"
@@ -57,7 +56,6 @@ discoverer:
     requests:
       cpu: 100m
       memory: 50Mi
-
 manager:
   index:
     podAnnotations:

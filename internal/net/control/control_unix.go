@@ -41,7 +41,7 @@ const (
 	TCP_DEFER_ACCEPT = unix.TCP_DEFER_ACCEPT
 	TCP_KEEPINTVL    = unix.TCP_KEEPINTVL
 	TCP_KEEPIDLE     = unix.TCP_KEEPIDLE
-	// from linux/include/uapi/linux/tcp.h
+	// from linux/include/uapi/linux/tcp.h.
 	TCP_FASTOPEN         = unix.TCP_FASTOPEN
 	TCP_FASTOPEN_CONNECT = unix.TCP_FASTOPEN_CONNECT
 

@@ -21,7 +21,6 @@ on:
         type: string
         description: "Dispatch target repository"
         required: true
-
 jobs:
   dispatch:
     runs-on: ubuntu-latest

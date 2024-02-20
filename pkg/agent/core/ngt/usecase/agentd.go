@@ -66,6 +66,8 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		service.WithDefaultEpsilon(cfg.NGT.DefaultEpsilon),
 		service.WithProactiveGC(cfg.NGT.EnableProactiveGC),
 		service.WithCopyOnWrite(cfg.NGT.EnableCopyOnWrite),
+		service.WithIsReadReplica(cfg.NGT.IsReadReplica),
+		service.WithExportIndexInfoDuration(cfg.NGT.ExportIndexInfoDuration),
 	)
 	if err != nil {
 		return nil, err

@@ -19,7 +19,7 @@ pub struct ErrorInfo {
     /// The reason of the error. This is a constant value that identifies the
     /// proximate cause of the error. Error reasons are unique within a particular
     /// domain of errors. This should be at most 63 characters and match a
-    /// regular expression of `\[A-Z][A-Z0-9_]+[A-Z0-9\]`, which represents
+    /// regular expression of `[A-Z][A-Z0-9_]+\[A-Z0-9\]`, which represents
     /// UPPER_SNAKE_CASE.
     #[prost(string, tag="1")]
     pub reason: ::prost::alloc::string::String,
@@ -192,7 +192,7 @@ pub mod bad_request {
         /// * `full_name` for a violation in the `full_name` value
         /// * `email_addresses\[1\].email` for a violation in the `email` field of the
         ///    first `email_addresses` message
-        /// * `email_addresses\[3].type[2\]` for a violation in the second `type`
+        /// * `email_addresses\[3\].type\[2\]` for a violation in the second `type`
         ///    value in the third `email_addresses` message.
         ///
         /// In JSON, the same values are represented as:
@@ -200,7 +200,7 @@ pub mod bad_request {
         /// * `fullName` for a violation in the `fullName` value
         /// * `emailAddresses\[1\].email` for a violation in the `email` field of the
         ///    first `emailAddresses` message
-        /// * `emailAddresses\[3].type[2\]` for a violation in the second `type`
+        /// * `emailAddresses\[3\].type\[2\]` for a violation in the second `type`
         ///    value in the third `emailAddresses` message.
         #[prost(string, tag="1")]
         pub field: ::prost::alloc::string::String,
@@ -235,7 +235,7 @@ pub struct ResourceInfo {
     /// The name of the resource being accessed.  For example, a shared calendar
     /// name: "example.com_4fghdhgsrgh@group.calendar.google.com", if the current
     /// error is
-    /// \[google.rpc.Code.PERMISSION_DENIED][google.rpc.Code.PERMISSION_DENIED\].
+    /// [google.rpc.Code.PERMISSION_DENIED][google.rpc.Code.PERMISSION_DENIED].
     #[prost(string, tag="2")]
     pub resource_name: ::prost::alloc::string::String,
     /// The owner of the resource (optional).

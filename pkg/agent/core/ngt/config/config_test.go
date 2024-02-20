@@ -85,7 +85,7 @@ func TestNewConfig(t *testing.T) {
 					if err != nil {
 						t.Fatal(err)
 					}
-					if _, err := f.Write([]byte(data)); err != nil {
+					if _, err := f.WriteString(data); err != nil {
 						t.Fatal(err)
 					}
 					if err := f.Close(); err != nil {
@@ -150,7 +150,7 @@ func TestNewConfig(t *testing.T) {
 					if err != nil {
 						t.Fatal(err)
 					}
-					if _, err := f.Write([]byte(data)); err != nil {
+					if _, err := f.WriteString(data); err != nil {
 						t.Fatal(err)
 					}
 					if err := f.Close(); err != nil {
@@ -208,7 +208,7 @@ func TestNewConfig(t *testing.T) {
 					if err != nil {
 						t.Fatal(err)
 					}
-					if _, err := f.Write([]byte(data)); err != nil {
+					if _, err := f.WriteString(data); err != nil {
 						t.Fatal(err)
 					}
 					if err := f.Close(); err != nil {
@@ -271,7 +271,7 @@ func TestNewConfig(t *testing.T) {
 					if err != nil {
 						t.Fatal(err)
 					}
-					if _, err := f.Write([]byte(data)); err != nil {
+					if _, err := f.WriteString(data); err != nil {
 						t.Fatal(err)
 					}
 					if err := f.Close(); err != nil {

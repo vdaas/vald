@@ -15,7 +15,6 @@
 #
 name: "Notify Slack"
 description: "A action to notify Slack"
-
 inputs:
   author_name:
     description: "User name for slack notification"
@@ -30,14 +29,12 @@ inputs:
   status:
     description: "Specify success or failure or cancelled or custom"
     required: false
-
 runs:
   using: "composite"
   steps:
-    - uses: technote-space/workflow-conclusion-action@v2
+    - uses: technote-space/workflow-conclusion-action@v3
       with:
         GITHUB_TOKEN: ${{ inputs.token }}
-
     - uses: 8398a7/action-slack@v3
       with:
         author_name: ${{ inputs.author_name }}

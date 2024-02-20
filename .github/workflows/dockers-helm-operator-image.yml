@@ -63,7 +63,6 @@ on:
       - "charts/vald-helm-operator/values.yaml"
       - "charts/vald-helm-operator/templates/**"
       - "versions/OPERATOR_SDK_VERSION"
-
 jobs:
   build:
     uses: ./.github/workflows/_docker-image.yaml

@@ -22,32 +22,27 @@ on:
       - "v*.*.*"
       - "*.*.*-*"
       - "v*.*.*-*"
-
 jobs:
   dump-contexts-to-log:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/dump-context
-
   client-go:
     uses: ./.github/workflows/_update-protobuf.yaml
     with:
       repo: vald-client-go
     secrets: inherit
-
   client-java:
     uses: ./.github/workflows/_update-protobuf.yaml
     with:
       repo: vald-client-java
     secrets: inherit
-
   client-node:
     uses: ./.github/workflows/_update-protobuf.yaml
     with:
       repo: vald-client-node
     secrets: inherit
-
   client-python:
     uses: ./.github/workflows/_update-protobuf.yaml
     with:

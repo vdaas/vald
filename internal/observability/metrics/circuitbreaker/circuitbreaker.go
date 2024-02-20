@@ -19,8 +19,8 @@ import (
 	"github.com/vdaas/vald/internal/circuitbreaker"
 	"github.com/vdaas/vald/internal/observability/attribute"
 	"github.com/vdaas/vald/internal/observability/metrics"
-	"go.opentelemetry.io/otel/sdk/metric/aggregation"
-	"go.opentelemetry.io/otel/sdk/metric/view"
+	api "go.opentelemetry.io/otel/metric"
+	view "go.opentelemetry.io/otel/sdk/metric"
 )
 
 const (
@@ -40,23 +40,22 @@ func New() metrics.Metric {
 	}
 }
 
-func (*breakerMetrics) View() ([]*metrics.View, error) {
-	breakerState, err := view.New(
-		view.MatchInstrumentName(metricsName),
-		view.WithSetDescription(metricsDescription),
-		view.WithSetAggregation(aggregation.LastValue{}),
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	return []*metrics.View{
-		&breakerState,
+func (*breakerMetrics) View() ([]metrics.View, error) {
+	return []metrics.View{
+		view.NewView(
+			view.Instrument{
+				Name:        metricsName,
+				Description: metricsDescription,
+			},
+			view.Stream{
+				Aggregation: view.AggregationLastValue{},
+			},
+		),
 	}, nil
 }
 
 func (bm *breakerMetrics) Register(m metrics.Meter) error {
-	breakerState, err := m.AsyncInt64().Gauge(
+	breakerState, err := m.Int64ObservableGauge(
 		metricsName,
 		metrics.WithDescription(metricsDescription),
 		metrics.WithUnit(metrics.Dimensionless),
@@ -65,23 +64,23 @@ func (bm *breakerMetrics) Register(m metrics.Meter) error {
 		return err
 	}
 
-	return m.RegisterCallback(
-		[]metrics.AsynchronousInstrument{
-			breakerState,
-		},
-		func(ctx context.Context) {
+	_, err = m.RegisterCallback(
+		func(ctx context.Context, o api.Observer) error {
 			ms := circuitbreaker.Metrics(ctx)
 			if len(ms) != 0 {
 				for name, sts := range ms {
 					if len(sts) != 0 {
 						for st, cnt := range sts {
-							breakerState.Observe(ctx, cnt,
-								attribute.String(bm.breakerNameKey, name),
-								attribute.String(bm.stateKey, st.String()))
+							o.ObserveInt64(breakerState, cnt,
+								api.WithAttributes(
+									attribute.String(bm.breakerNameKey, name),
+									attribute.String(bm.stateKey, st.String())))
 						}
 					}
 				}
 			}
-		},
+			return nil
+		}, breakerState,
 	)
+	return err
 }

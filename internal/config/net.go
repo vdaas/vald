@@ -25,25 +25,25 @@ import (
 
 // Net represents the network configuration tcp, udp, unix domain socket.
 type Net struct {
-	DNS          *DNS          `yaml:"dns"           json:"dns,omitempty"`
-	Dialer       *Dialer       `yaml:"dialer"        json:"dialer,omitempty"`
-	SocketOption *SocketOption `yaml:"socket_option" json:"socket_option,omitempty"`
-	TLS          *TLS          `yaml:"tls"           json:"tls,omitempty"`
+	DNS          *DNS          `json:"dns,omitempty"           yaml:"dns"`
+	Dialer       *Dialer       `json:"dialer,omitempty"        yaml:"dialer"`
+	SocketOption *SocketOption `json:"socket_option,omitempty" yaml:"socket_option"`
+	TLS          *TLS          `json:"tls,omitempty"           yaml:"tls"`
 }
 
 // Dialer represents the configuration for dial.
 type Dialer struct {
-	Timeout          string `yaml:"timeout"            json:"timeout,omitempty"`
-	Keepalive        string `yaml:"keepalive"          json:"keepalive,omitempty"`
-	FallbackDelay    string `yaml:"fallback_delay"     json:"fallback_delay,omitempty"`
-	DualStackEnabled bool   `yaml:"dual_stack_enabled" json:"dual_stack_enabled,omitempty"`
+	Timeout          string `json:"timeout,omitempty"            yaml:"timeout"`
+	Keepalive        string `json:"keepalive,omitempty"          yaml:"keepalive"`
+	FallbackDelay    string `json:"fallback_delay,omitempty"     yaml:"fallback_delay"`
+	DualStackEnabled bool   `json:"dual_stack_enabled,omitempty" yaml:"dual_stack_enabled"`
 }
 
 // DNS represents the configuration for resolving DNS.
 type DNS struct {
-	CacheEnabled    bool   `yaml:"cache_enabled"    json:"cache_enabled,omitempty"`
-	RefreshDuration string `yaml:"refresh_duration" json:"refresh_duration,omitempty"`
-	CacheExpiration string `yaml:"cache_expiration" json:"cache_expiration,omitempty"`
+	CacheEnabled    bool   `json:"cache_enabled,omitempty"    yaml:"cache_enabled"`
+	RefreshDuration string `json:"refresh_duration,omitempty" yaml:"refresh_duration"`
+	CacheExpiration string `json:"cache_expiration,omitempty" yaml:"cache_expiration"`
 }
 
 // SocketOption represents the socket configurations.

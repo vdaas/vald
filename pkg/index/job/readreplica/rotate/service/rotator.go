@@ -299,7 +299,7 @@ func (s *subProcess) updateDeployment(ctx context.Context, newPVC string, deploy
 	if deployment.Spec.Template.ObjectMeta.Annotations == nil {
 		deployment.Spec.Template.ObjectMeta.Annotations = map[string]string{}
 	}
-	deployment.Spec.Template.ObjectMeta.Annotations["kubectl.kubernetes.io/restartedAt"] = time.Now().Format(time.RFC3339)
+	deployment.Spec.Template.ObjectMeta.Annotations["kubectl.kubernetes.io/restartedAt"] = time.Now().UTC().Format(time.RFC3339)
 
 	for _, vol := range deployment.Spec.Template.Spec.Volumes {
 		if vol.Name == s.volumeName {

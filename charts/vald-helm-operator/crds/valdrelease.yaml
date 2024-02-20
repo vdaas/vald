@@ -116,9 +116,28 @@ spec:
                               items:
                                 type: object
                                 x-kubernetes-preserve-unknown-fields: true
+                    algorithm:
+                      type: string
+                      enum:
+                        - ngt
+                        - faiss
                     annotations:
                       type: object
                       x-kubernetes-preserve-unknown-fields: true
+                    clusterRole:
+                      type: object
+                      properties:
+                        enabled:
+                          type: boolean
+                        name:
+                          type: string
+                    clusterRoleBinding:
+                      type: object
+                      properties:
+                        enabled:
+                          type: boolean
+                        name:
+                          type: string
                     enabled:
                       type: boolean
                     env:
@@ -246,6 +265,8 @@ spec:
                             - normalizedcosine
                         enable_copy_on_write:
                           type: boolean
+                        enable_export_index_info_to_k8s:
+                          type: boolean
                         enable_in_memory_mode:
                           type: boolean
                         enable_proactive_gc:
@@ -253,6 +274,8 @@ spec:
                         error_buffer_limit:
                           type: integer
                           minimum: 1
+                        export_index_info_duration:
+                          type: string
                         index_path:
                           type: string
                         initial_delay_max_duration:
@@ -268,12 +291,16 @@ spec:
                           type: string
                         min_load_index_timeout:
                           type: string
+                        namespace:
+                          type: string
                         object_type:
                           type: string
                           enum:
                             - float
                             - float16
                             - uint8
+                        pod_name:
+                          type: string
                         search_edge_size:
                           type: integer
                         vqueue:
@@ -317,7 +344,7 @@ spec:
                                   - go_os
                                   - go_arch
                                   - cgo_enabled
-                                  - ngt_version
+                                  - algorithm_info
                                   - build_cpu_info_flags
                         otlp:
                           type: object
@@ -392,12 +419,23 @@ spec:
                           type: string
                         enabled:
                           type: boolean
+                        hpa:
+                          type: object
+                          properties:
+                            enabled:
+                              type: boolean
+                            targetCPUUtilizationPercentage:
+                              type: integer
                         label_key:
                           type: string
+                        maxReplicas:
+                          type: integer
+                          minimum: 1
+                        minReplicas:
+                          type: integer
+                          minimum: 1
                         name:
                           type: string
-                        replica:
-                          type: integer
                         service:
                           type: object
                           properties:
@@ -758,6 +796,8 @@ spec:
                                           type: integer
                                         connection_timeout:
                                           type: string
+                                        enable_admin:
+                                          type: boolean
                                         enable_reflection:
                                           type: boolean
                                         header_table_size:
@@ -941,6 +981,13 @@ spec:
                         labels:
                           type: object
                           x-kubernetes-preserve-unknown-fields: true
+                    serviceAccount:
+                      type: object
+                      properties:
+                        enabled:
+                          type: boolean
+                        name:
+                          type: string
                     serviceType:
                       type: string
                       enum:
@@ -1248,7 +1295,7 @@ spec:
                                       - go_os
                                       - go_arch
                                       - cgo_enabled
-                                      - ngt_version
+                                      - algorithm_info
                                       - build_cpu_info_flags
                             otlp:
                               type: object
@@ -1618,6 +1665,8 @@ spec:
                                               type: integer
                                             connection_timeout:
                                               type: string
+                                            enable_admin:
+                                              type: boolean
                                             enable_reflection:
                                               type: boolean
                                             header_table_size:
@@ -2098,7 +2147,7 @@ spec:
                                   - go_os
                                   - go_arch
                                   - cgo_enabled
-                                  - ngt_version
+                                  - algorithm_info
                                   - build_cpu_info_flags
                         otlp:
                           type: object
@@ -2459,6 +2508,8 @@ spec:
                                           type: integer
                                         connection_timeout:
                                           type: string
+                                        enable_admin:
+                                          type: boolean
                                         enable_reflection:
                                           type: boolean
                                         header_table_size:
@@ -2918,7 +2969,7 @@ spec:
                                   - go_os
                                   - go_arch
                                   - cgo_enabled
-                                  - ngt_version
+                                  - algorithm_info
                                   - build_cpu_info_flags
                         otlp:
                           type: object
@@ -3316,6 +3367,8 @@ spec:
                                           type: integer
                                         connection_timeout:
                                           type: string
+                                        enable_admin:
+                                          type: boolean
                                         enable_reflection:
                                           type: boolean
                                         header_table_size:
@@ -4279,7 +4332,7 @@ spec:
                                       - go_os
                                       - go_arch
                                       - cgo_enabled
-                                      - ngt_version
+                                      - algorithm_info
                                       - build_cpu_info_flags
                             otlp:
                               type: object
@@ -4677,6 +4730,8 @@ spec:
                                               type: integer
                                             connection_timeout:
                                               type: string
+                                            enable_admin:
+                                              type: boolean
                                             enable_reflection:
                                               type: boolean
                                             header_table_size:
@@ -5314,6 +5369,181 @@ spec:
                                       type: boolean
                                 duration:
                                   type: string
+                                read_client:
+                                  type: object
+                                  properties:
+                                    addrs:
+                                      type: array
+                                      items:
+                                        type: string
+                                    backoff:
+                                      type: object
+                                      properties:
+                                        backoff_factor:
+                                          type: number
+                                        backoff_time_limit:
+                                          type: string
+                                        enable_error_log:
+                                          type: boolean
+                                        initial_duration:
+                                          type: string
+                                        jitter_limit:
+                                          type: string
+                                        maximum_duration:
+                                          type: string
+                                        retry_count:
+                                          type: integer
+                                    call_option:
+                                      type: object
+                                      x-kubernetes-preserve-unknown-fields: true
+                                    circuit_breaker:
+                                      type: object
+                                      properties:
+                                        closed_error_rate:
+                                          type: number
+                                        closed_refresh_timeout:
+                                          type: string
+                                        half_open_error_rate:
+                                          type: number
+                                        min_samples:
+                                          type: integer
+                                        open_timeout:
+                                          type: string
+                                    connection_pool:
+                                      type: object
+                                      properties:
+                                        enable_dns_resolver:
+                                          type: boolean
+                                        enable_rebalance:
+                                          type: boolean
+                                        old_conn_close_duration:
+                                          type: string
+                                        rebalance_duration:
+                                          type: string
+                                        size:
+                                          type: integer
+                                    dial_option:
+                                      type: object
+                                      properties:
+                                        backoff_base_delay:
+                                          type: string
+                                        backoff_jitter:
+                                          type: number
+                                        backoff_max_delay:
+                                          type: string
+                                        backoff_multiplier:
+                                          type: number
+                                        enable_backoff:
+                                          type: boolean
+                                        initial_connection_window_size:
+                                          type: integer
+                                        initial_window_size:
+                                          type: integer
+                                        insecure:
+                                          type: boolean
+                                        interceptors:
+                                          type: array
+                                          items:
+                                            type: string
+                                            enum:
+                                              - TraceInterceptor
+                                        keepalive:
+                                          type: object
+                                          properties:
+                                            permit_without_stream:
+                                              type: boolean
+                                            time:
+                                              type: string
+                                            timeout:
+                                              type: string
+                                        max_msg_size:
+                                          type: integer
+                                        min_connection_timeout:
+                                          type: string
+                                        net:
+                                          type: object
+                                          properties:
+                                            dialer:
+                                              type: object
+                                              properties:
+                                                dual_stack_enabled:
+                                                  type: boolean
+                                                keepalive:
+                                                  type: string
+                                                timeout:
+                                                  type: string
+                                            dns:
+                                              type: object
+                                              properties:
+                                                cache_enabled:
+                                                  type: boolean
+                                                cache_expiration:
+                                                  type: string
+                                                refresh_duration:
+                                                  type: string
+                                            socket_option:
+                                              type: object
+                                              properties:
+                                                ip_recover_destination_addr:
+                                                  type: boolean
+                                                ip_transparent:
+                                                  type: boolean
+                                                reuse_addr:
+                                                  type: boolean
+                                                reuse_port:
+                                                  type: boolean
+                                                tcp_cork:
+                                                  type: boolean
+                                                tcp_defer_accept:
+                                                  type: boolean
+                                                tcp_fast_open:
+                                                  type: boolean
+                                                tcp_no_delay:
+                                                  type: boolean
+                                                tcp_quick_ack:
+                                                  type: boolean
+                                            tls:
+                                              type: object
+                                              properties:
+                                                ca:
+                                                  type: string
+                                                cert:
+                                                  type: string
+                                                enabled:
+                                                  type: boolean
+                                                insecure_skip_verify:
+                                                  type: boolean
+                                                key:
+                                                  type: string
+                                        read_buffer_size:
+                                          type: integer
+                                        timeout:
+                                          type: string
+                                        write_buffer_size:
+                                          type: integer
+                                    health_check_duration:
+                                      type: string
+                                    max_recv_msg_size:
+                                      type: integer
+                                    max_retry_rpc_buffer_size:
+                                      type: integer
+                                    max_send_msg_size:
+                                      type: integer
+                                    tls:
+                                      type: object
+                                      properties:
+                                        ca:
+                                          type: string
+                                        cert:
+                                          type: string
+                                        enabled:
+                                          type: boolean
+                                        insecure_skip_verify:
+                                          type: boolean
+                                        key:
+                                          type: string
+                                    wait_for_ready:
+                                      type: boolean
                             index_replica:
                               type: integer
                               minimum: 1
@@ -5438,7 +5668,7 @@ spec:
                                       - go_os
                                       - go_arch
                                       - cgo_enabled
-                                      - ngt_version
+                                      - algorithm_info
                                       - build_cpu_info_flags
                             otlp:
                               type: object
@@ -5836,6 +6066,8 @@ spec:
                                               type: integer
                                             connection_timeout:
                                               type: string
+                                            enable_admin:
+                                              type: boolean
                                             enable_reflection:
                                               type: boolean
                                             header_table_size:
@@ -6492,7 +6724,7 @@ spec:
                                       - go_os
                                       - go_arch
                                       - cgo_enabled
-                                      - ngt_version
+                                      - algorithm_info
                                       - build_cpu_info_flags
                             otlp:
                               type: object
@@ -6890,6 +7122,8 @@ spec:
                                               type: integer
                                             connection_timeout:
                                               type: string
+                                            enable_admin:
+                                              type: boolean
                                             enable_reflection:
                                               type: boolean
                                             header_table_size:
@@ -7589,7 +7823,7 @@ spec:
                                           - go_os
                                           - go_arch
                                           - cgo_enabled
-                                          - ngt_version
+                                          - algorithm_info
                                           - build_cpu_info_flags
                                 otlp:
                                   type: object
@@ -7952,6 +8186,8 @@ spec:
                                                   type: integer
                                                 connection_timeout:
                                                   type: string
+                                                enable_admin:
+                                                  type: boolean
                                                 enable_reflection:
                                                   type: boolean
                                                 header_table_size:
@@ -8561,7 +8797,7 @@ spec:
                                           - go_os
                                           - go_arch
                                           - cgo_enabled
-                                          - ngt_version
+                                          - algorithm_info
                                           - build_cpu_info_flags
                                 otlp:
                                   type: object
@@ -8924,6 +9160,8 @@ spec:
                                                   type: integer
                                                 connection_timeout:
                                                   type: string
+                                                enable_admin:
+                                                  type: boolean
                                                 enable_reflection:
                                                   type: boolean
                                                 header_table_size:
@@ -9579,7 +9817,7 @@ spec:
                                       - go_os
                                       - go_arch
                                       - cgo_enabled
-                                      - ngt_version
+                                      - algorithm_info
                                       - build_cpu_info_flags
                             otlp:
                               type: object
@@ -9705,7 +9943,7 @@ spec:
                                               - go_os
                                               - go_arch
                                               - cgo_enabled
-                                              - ngt_version
+                                              - algorithm_info
                                               - build_cpu_info_flags
                                     otlp:
                                       type: object
@@ -10074,6 +10312,8 @@ spec:
                                                       type: integer
                                                     connection_timeout:
                                                       type: string
+                                                    enable_admin:
+                                                      type: boolean
                                                     enable_reflection:
                                                       type: boolean
                                                     header_table_size:
@@ -10703,7 +10943,7 @@ spec:
                                           - go_os
                                           - go_arch
                                           - cgo_enabled
-                                          - ngt_version
+                                          - algorithm_info
                                           - build_cpu_info_flags
                                 otlp:
                                   type: object
@@ -11066,6 +11306,8 @@ spec:
                                                   type: integer
                                                 connection_timeout:
                                                   type: string
+                                                enable_admin:
+                                                  type: boolean
                                                 enable_reflection:
                                                   type: boolean
                                                 header_table_size:
@@ -11582,6 +11824,8 @@ spec:
                                               type: integer
                                             connection_timeout:
                                               type: string
+                                            enable_admin:
+                                              type: boolean
                                             enable_reflection:
                                               type: boolean
                                             header_table_size:

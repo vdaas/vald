@@ -42,11 +42,11 @@ type (
 
 	// NGT is core interface.
 	NGT interface {
-		// Search returns search result as []SearchResult
-		Search(ctx context.Context, vec []float32, size int, epsilon, radius float32) ([]SearchResult, error)
+		// Search returns search result as []algorithm.SearchResult
+		Search(ctx context.Context, vec []float32, size int, epsilon, radius float32) ([]algorithm.SearchResult, error)
 
-		// Linear Search returns linear search result as []SearchResult
-		LinearSearch(ctx context.Context, vec []float32, size int) ([]SearchResult, error)
+		// Linear Search returns linear search result as []algorithm.SearchResult
+		LinearSearch(ctx context.Context, vec []float32, size int) ([]algorithm.SearchResult, error)
 
 		// Insert returns NGT object id.
 		// This only stores not indexing, you must call CreateIndex and SaveIndex.
@@ -396,8 +396,8 @@ func (n *ngt) loadObjectSpace() error {
 	return nil
 }
 
-// Search returns search result as []SearchResult.
-func (n *ngt) Search(ctx context.Context, vec []float32, size int, epsilon, radius float32) (result []SearchResult, err error) {
+// Search returns search result as []algorithm.SearchResult.
+func (n *ngt) Search(ctx context.Context, vec []float32, size int, epsilon, radius float32) (result []algorithm.SearchResult, err error) {
 	if len(vec) != int(n.dimension) {
 		return nil, errors.ErrIncompatibleDimensionSize(len(vec), int(n.dimension))
 	}
@@ -446,7 +446,7 @@ func (n *ngt) Search(ctx context.Context, vec []float32, size int, epsilon, radi
 		}
 		return nil, errors.ErrEmptySearchResult
 	}
-	result = make([]SearchResult, rsize)
+	result = make([]algorithm.SearchResult, rsize)
 
 	for i := range result {
 		select {
@@ -457,10 +457,10 @@ func (n *ngt) Search(ctx context.Context, vec []float32, size int, epsilon, radi
 		}
 		d := C.ngt_get_result(results, C.uint32_t(i), ne.err)
 		if d.id == 0 && d.distance == 0 {
-			result[i] = SearchResult{0, 0, n.newGoError(ne)}
+			result[i] = algorithm.SearchResult{0, 0, n.newGoError(ne)}
 			ne = n.GetErrorBuffer()
 		} else {
-			result[i] = SearchResult{uint32(d.id), float32(d.distance), nil}
+			result[i] = algorithm.SearchResult{uint32(d.id), float32(d.distance), nil}
 		}
 	}
 	n.PutErrorBuffer(ne)
@@ -468,8 +468,8 @@ func (n *ngt) Search(ctx context.Context, vec []float32, size int, epsilon, radi
 	return result, nil
 }
 
-// Linear Search returns linear search result as []SearchResult.
-func (n *ngt) LinearSearch(ctx context.Context, vec []float32, size int) (result []SearchResult, err error) {
+// Linear Search returns linear search result as []algorithm.SearchResult.
+func (n *ngt) LinearSearch(ctx context.Context, vec []float32, size int) (result []algorithm.SearchResult, err error) {
 	if len(vec) != int(n.dimension) {
 		return nil, errors.ErrIncompatibleDimensionSize(len(vec), int(n.dimension))
 	}
@@ -510,7 +510,7 @@ func (n *ngt) LinearSearch(ctx context.Context, vec []float32, size int) (result
 		}
 		return nil, errors.ErrEmptySearchResult
 	}
-	result = make([]SearchResult, rsize)
+	result = make([]algorithm.SearchResult, rsize)
 	for i := range result {
 		select {
 		case <-ctx.Done():
@@ -520,10 +520,18 @@ func (n *ngt) LinearSearch(ctx context.Context, vec []float32, size int) (result
 		}
 		d := C.ngt_get_result(results, C.uint32_t(i), ne.err)
 		if d.id == 0 && d.distance == 0 {
-			result[i] = SearchResult{0, 0, n.newGoError(ne)}
+			result[i] = algorithm.SearchResult{
+				ID:       0,
+				Distance: 0,
+				Error:    n.newGoError(ne),
+			}
 			ne = n.GetErrorBuffer()
 		} else {
-			result[i] = SearchResult{uint32(d.id), float32(d.distance), nil}
+			result[i] = algorithm.SearchResult{
+				ID:       uint32(d.id),
+				Distance: float32(d.distance),
+				Error:    nil,
+			}
 		}
 	}
 	n.PutErrorBuffer(ne)

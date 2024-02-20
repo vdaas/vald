@@ -38,9 +38,9 @@ import (
 type BenchmarkJobWatcher k8s.ResourceController
 
 var (
-	// GroupVersion is group version used to register these objects
+	// GroupVersion is group version used to register these objects.
 	GroupVersion = schema.GroupVersion{Group: "vald.vdaas.org", Version: "v1"}
-	// SchemeBuilder is used to add go types to the GroupVersionKind scheme
+	// SchemeBuilder is used to add go types to the GroupVersionKind scheme.
 	SchemeBuilder = &scheme.Builder{GroupVersion: GroupVersion}
 	// AddToScheme adds the types in this group-version to the given scheme.
 	AddToScheme = SchemeBuilder.AddToScheme
@@ -80,7 +80,6 @@ func (r *reconciler) Reconcile(ctx context.Context, _ reconcile.Request) (res re
 	bj := new(v1.ValdBenchmarkJobList)
 
 	err = r.mgr.GetClient().List(ctx, bj, r.lopts...)
-
 	if err != nil {
 		if r.onError != nil {
 			r.onError(err)

@@ -18,47 +18,38 @@ on:
   pull_request:
     types:
       - "closed"
-
 env:
   TARGET_LABEL_NAME_PREFIX: "actions/backport/"
   BACKPORT_BRANCH_NAME_PREFIX: "backport"
-
 jobs:
   dump-contexts-to-log:
     runs-on: ubuntu-latest
     if: ${{ github.event.pull_request.merged == true }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: ./.github/actions/dump-context
-
   create:
     runs-on: ubuntu-latest
     needs: [dump-contexts-to-log]
-
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
           token: ${{ secrets.DISPATCH_TOKEN }}
-
       - name: Set Git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
-
-      - uses: crazy-max/ghaction-import-gpg@v4
+      - uses: crazy-max/ghaction-import-gpg@v6
         with:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           git_user_signingkey: true
           git_commit_gpgsign: true
-
       - name: Set context
         id: set_context
         run: |
           LABEL_NAMES=`cat ${GITHUB_EVENT_PATH} | jq -r --arg PREFIX $TARGET_LABEL_NAME_PREFIX '[.pull_request.labels[]? | select(.name | startswith($PREFIX)) | .name] | join(" ")'`
-
           echo "LABEL_NAMES=${LABEL_NAMES}" >> $GITHUB_OUTPUT # e.g.) actions/backport/v1.7 actions/backport/v1.8
           echo "${LABEL_NAMES}"
-
       - name: Create PR
         if: ${{ steps.set_context.outputs.LABEL_NAMES != '' }}
         env:
@@ -66,6 +57,12 @@ jobs:
           GITHUB_USER: ${{ secrets.DISPATCH_USER }}
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
         run: |
+          PR_TITLE=`cat $GITHUB_EVENT_PATH | jq -r ".pull_request.title"`
+          PR_BODY=`cat $GITHUB_EVENT_PATH | jq -r ".pull_request.body"`
+          PR_NUM=`cat $GITHUB_EVENT_PATH | jq -r ".pull_request.number"`
+
+          echo "${PR_NUM} ${PR_TITLE}: ${PR_BODY}"
+
           for LABEL_NAME in ${LABEL_NAMES}; do
               BRANCH_NAME=`echo "${LABEL_NAME}" | sed -e "s:^${TARGET_LABEL_NAME_PREFIX}::"`           # e.g) release/vx.x, main
               BACKPORT_BRANCH_NAME="${BACKPORT_BRANCH_NAME_PREFIX}/${BRANCH_NAME}/${GITHUB_HEAD_REF}"  # e.g) backport/release/vx.x/{current branch name}
@@ -82,6 +79,6 @@ jobs:
               git push origin ${BACKPORT_BRANCH_NAME}
 
               gh pr create --base ${BRANCH_NAME} \
-                           --title "Backport to ${BRANCH_NAME}" \
-                           --body-file .github/PULL_REQUEST_TEMPLATE.md
+                           --title "Backport PR #${PR_NUM} to ${BRANCH_NAME} for ${PR_TITLE}" \
+                           --body "${PR_BODY}"
           done

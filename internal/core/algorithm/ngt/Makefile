@@ -15,7 +15,11 @@
 #
 
 bench:
+	GOARCH=$(GOARCH) \
+	GOOS=$(GOOS) \
 	go test -count=5 -run=NONE -bench . -benchmem
 
 bench-lite:
+	GOARCH=$(GOARCH) \
+	GOOS=$(GOOS) \
 	go test -count=1 -run=NONE -bench . -benchmem

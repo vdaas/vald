@@ -101,6 +101,7 @@ spec:
           volumeMounts:
             - name: {{ $agent.sidecar.name }}-config
               mountPath: /etc/server/
+            {{- if eq $agent.algorithm "ngt" }}
             {{- if not $agent.ngt.enable_in_memory_mode }}
             {{- if $agent.ngt.index_path }}
             {{- if $agent.persistentVolume.enabled }}
@@ -110,6 +111,7 @@ spec:
             {{- else }}
             - name: {{ $agent.name }}-local
               mountPath: {{ dir $agent.ngt.index_path }}
+            {{- end }}
             {{- end }}
             {{- end }}
             {{- end }}
@@ -207,6 +209,9 @@ spec:
         {{- toYaml $agent.podSecurityContext | nindent 8 }}
       {{- end }}
       terminationGracePeriodSeconds: {{ $agent.terminationGracePeriodSeconds }}
+      {{- if and $agent.serviceAccount.enabled $agent.ngt.enable_export_index_info_to_k8s }}
+      serviceAccountName: {{ $agent.serviceAccount.name }}
+      {{- end }}
       volumes:
         - name: {{ $agent.name }}-config
           configMap:

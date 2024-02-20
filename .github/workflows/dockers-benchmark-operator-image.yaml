@@ -73,7 +73,6 @@ on:
       - "cmd/benchmark/job/**"
       - "dockers/tools/benchmark/operator/Dockerfile"
       - "versions/GO_VERSION"
-
 jobs:
   build:
     uses: ./.github/workflows/_docker-image.yaml

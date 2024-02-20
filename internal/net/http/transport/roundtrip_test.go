@@ -409,7 +409,7 @@ func Test_ert_doRoundTrip(t *testing.T) {
 					RoundTripFunc: func(*http.Request) (*http.Response, error) {
 						return &http.Response{
 							StatusCode: http.StatusBadGateway,
-							Body:       io.NopCloser(bytes.NewBuffer([]byte("abc"))),
+							Body:       io.NopCloser(bytes.NewBufferString("abc")),
 						}, nil
 					},
 				},
@@ -448,7 +448,7 @@ func Test_ert_doRoundTrip(t *testing.T) {
 					RoundTripFunc: func(*http.Request) (*http.Response, error) {
 						return &http.Response{
 							StatusCode: http.StatusBadGateway,
-							Body:       io.NopCloser(bytes.NewBuffer([]byte("abc"))),
+							Body:       io.NopCloser(bytes.NewBufferString("abc")),
 						}, errors.New("dummy")
 					},
 				},

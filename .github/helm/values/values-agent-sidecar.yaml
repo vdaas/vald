@@ -17,7 +17,6 @@
 defaults:
   logging:
     level: debug
-
 agent:
   minReplicas: 1
   podManagementPolicy: Parallel
@@ -56,14 +55,11 @@ agent:
           endpoint: "http://minio.default.svc.cluster.local:9000"
           region: "us-east-1"
           force_path_style: true
-
 gateway:
   lb:
     enabled: false
-
 discoverer:
   enabled: false
-
 manager:
   index:
     enabled: false

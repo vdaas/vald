@@ -15,16 +15,15 @@
 # limitations under the License.
 #
 
-ARG GO_VERSION=latest
 ARG DISTROLESS_IMAGE=gcr.io/distroless/static
 ARG DISTROLESS_IMAGE_TAG=nonroot
 ARG MAINTAINER="vdaas.org vald team <vald@vdaas.org>"
 
-FROM --platform=${BUILDPLATFORM} golang:${GO_VERSION} AS golang
-
-FROM --platform=${BUILDPLATFORM} ubuntu:devel AS builder
+FROM --platform=${TARGETPLATFORM} ubuntu:devel AS builder
 
 ARG TARGETARCH
+ARG TARGETOS
+ARG GO_VERSION
 
 ENV GO111MODULE on
 ENV DEBIAN_FRONTEND noninteractive
@@ -41,8 +40,8 @@ ENV APP_NAME ngt
 
 # skipcq: DOK-DL3008
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    ca-certificates \
     build-essential \
+    ca-certificates \
     cmake \
     curl \
     g++ \
@@ -53,11 +52,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libopenblas-dev \
     unzip \
     upx \
+    && ldconfig \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
-
-COPY --from=golang /usr/local/go $GOROOT
-RUN mkdir -p "$GOPATH/src"
 
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/Makefile.d
 COPY Makefile.d .
@@ -69,7 +66,8 @@ COPY go.sum .
 
 RUN --mount=type=cache,target="${GOPATH}/pkg",id="go-build-${TARGETARCH}" \
     --mount=type=cache,target="${HOME}/.cache/go-build",id="go-build-${TARGETARCH}" \
-    make go/download
+    make GO_VERSION=${GO_VERSION} go/install \
+    && make go/download
 
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/internal
 COPY internal .
@@ -91,15 +89,16 @@ COPY versions .
 
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}
 RUN make ngt/install
+
 RUN --mount=type=cache,target="${GOPATH}/pkg",id="go-build-${TARGETARCH}" \
     --mount=type=cache,target="${HOME}/.cache/go-build",id="go-build-${TARGETARCH}" \
-    make REPO=${ORG} NAME=${REPO} cmd/${PKG}/${APP_NAME} \
+    make GOARCH=${TARGETARCH} GOOS=${TARGETOS}  REPO=${ORG} NAME=${REPO} cmd/${PKG}/${APP_NAME} \
     && mv "cmd/${PKG}/${APP_NAME}" "/usr/bin/${APP_NAME}"
 
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/cmd/${PKG}
 RUN cp sample.yaml /tmp/config.yaml
 
-FROM --platform=${BUILDPLATFORM} ${DISTROLESS_IMAGE}:${DISTROLESS_IMAGE_TAG}
+FROM --platform=${TARGETPLATFORM} ${DISTROLESS_IMAGE}:${DISTROLESS_IMAGE_TAG}
 LABEL maintainer="${MAINTAINER}"
 
 ENV APP_NAME ngt

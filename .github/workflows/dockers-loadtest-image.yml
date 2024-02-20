@@ -72,7 +72,6 @@ on:
       - "cmd/tools/cli/loadtest/**"
       - "dockers/tools/cli/loadtest/Dockerfile"
       - "versions/GO_VERSION"
-
 jobs:
   build:
     uses: ./.github/workflows/_docker-image.yaml

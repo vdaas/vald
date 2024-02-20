@@ -1003,6 +1003,33 @@ pub mod info {
         pub ip: ::prost::alloc::vec::Vec<::prost::alloc::string::String>,
     }
 }
+/// Mirror related messages.
+#[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct Mirror {
+}
+/// Nested message and enum types in `Mirror`.
+pub mod mirror {
+    /// Represent server information.
+    #[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(Clone, PartialEq, ::prost::Message)]
+    pub struct Target {
+        /// The target hostname.
+        #[prost(string, tag="1")]
+        pub host: ::prost::alloc::string::String,
+        /// The target port.
+        #[prost(uint32, tag="2")]
+        pub port: u32,
+    }
+    /// Represent the multiple Target message.
+    #[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(Clone, PartialEq, ::prost::Message)]
+    pub struct Targets {
+        /// The multiple target information.
+        #[prost(message, repeated, tag="1")]
+        pub targets: ::prost::alloc::vec::Vec<Target>,
+    }
+}
 /// Represent an empty message.
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]

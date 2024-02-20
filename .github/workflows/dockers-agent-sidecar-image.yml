@@ -75,7 +75,6 @@ on:
       - "cmd/agent/sidecar/**"
       - "dockers/agent/sidecar/Dockerfile"
       - "versions/GO_VERSION"
-
 jobs:
   build:
     uses: ./.github/workflows/_docker-image.yaml

@@ -28,7 +28,7 @@ import (
 	"github.com/vdaas/vald/internal/log"
 )
 
-// GlobalConfig is type alias for config.GlobalConfig
+// GlobalConfig is type alias for config.GlobalConfig.
 type GlobalConfig = config.GlobalConfig
 
 // Config represent a application setting data content (config.yaml).
@@ -325,7 +325,7 @@ func NewConfig(ctx context.Context, path string) (cfg *Config, err error) {
 // 					"build_time",
 // 					"go_version",
 // 					"go_arch",
-// 					"ngt_version",
+// 					"algorithm_info",
 // 				},
 // 			},
 // 			Trace: &config.Trace{

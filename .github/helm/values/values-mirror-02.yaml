@@ -19,7 +19,6 @@ defaults:
     level: info
   networkPolicy:
     enabled: false
-
 gateway:
   mirror:
     enabled: true
@@ -40,7 +39,6 @@ gateway:
         memory: 50Mi
     gateway_config:
       index_replica: 3
-
 agent:
   minReplicas: 3
   maxReplicas: 10
@@ -56,7 +54,6 @@ agent:
     auto_index_check_duration: 30s
     auto_index_length: 1000
     dimension: 784
-
 discoverer:
   minReplicas: 1
   hpa:
@@ -71,7 +68,6 @@ discoverer:
     name: vald-02
   serviceAccount:
     name: vald-02
-
 manager:
   index:
     replicas: 1

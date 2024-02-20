@@ -188,7 +188,7 @@ func DialContext(ctx context.Context, network, addr string) (conn Conn, err erro
 	return DefaultResolver.Dial(ctx, network, addr)
 }
 
-// JoinHostPort joins the host/IP address and the port number,
+// JoinHostPort joins the host/IP address and the port number,.
 func JoinHostPort(host string, port uint16) string {
 	return net.JoinHostPort(host, strconv.FormatUint(uint64(port), 10))
 }
@@ -275,7 +275,7 @@ func ScanPorts(ctx context.Context, start, end uint16, host string) (ports []uin
 	return ports, nil
 }
 
-// LoadLocalIP returns local ip address
+// LoadLocalIP returns local ip address.
 func LoadLocalIP() string {
 	addrs, err := net.InterfaceAddrs()
 	if err != nil {

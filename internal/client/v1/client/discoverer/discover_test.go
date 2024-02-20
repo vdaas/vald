@@ -66,7 +66,7 @@ func Test_client_GetReadClient(t *testing.T) {
 					client:              &mockClient,
 					readClient:          &mockReadClient,
 					readReplicaReplicas: 1,
-					//nolint: govet,copylocks
+					//nolint:govet,copylocks
 					//skipcq: VET-V0008
 					roundRobin: counter,
 				},
@@ -82,7 +82,7 @@ func Test_client_GetReadClient(t *testing.T) {
 					client:              &mockClient,
 					readClient:          &mockReadClient,
 					readReplicaReplicas: 1,
-					//nolint: govet,copylocks
+					//nolint:govet,copylocks
 					//skipcq: VET-V0008
 					roundRobin: counter,
 				},
@@ -98,7 +98,7 @@ func Test_client_GetReadClient(t *testing.T) {
 					client:              &mockClient,
 					readClient:          &mockReadClient,
 					readReplicaReplicas: 3,
-					//nolint: govet,copylocks
+					//nolint:govet,copylocks
 					//skipcq: VET-V0008
 					roundRobin: counter,
 				},
@@ -106,10 +106,10 @@ func Test_client_GetReadClient(t *testing.T) {
 			}
 		}(),
 	}
-	//nolint: govet,copylocks
+	//nolint:govet,copylocks
 	//skipcq: VET-V0008
 	for _, tc := range tests {
-		//nolint: govet,copylocks
+		//nolint:govet,copylocks
 		//skipcq: VET-V0008
 		test := tc
 		t.Run(test.name, func(t *testing.T) {
@@ -117,7 +117,7 @@ func Test_client_GetReadClient(t *testing.T) {
 				client:              test.fields.client,
 				readClient:          test.fields.readClient,
 				readReplicaReplicas: test.fields.readReplicaReplicas,
-				//nolint: govet,copylocks
+				//nolint:govet,copylocks
 				//skipcq: VET-V0008
 				roundRobin: test.fields.roundRobin,
 			}

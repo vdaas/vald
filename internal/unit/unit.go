@@ -28,7 +28,6 @@ func ParseBytes(bs string) (bytes uint64, err error) {
 	}
 
 	bytes, err = bytefmt.ToBytes(bs)
-
 	if err != nil {
 		return 0, errors.Join(err, errors.ErrParseUnitFailed(bs))
 	}

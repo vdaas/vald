@@ -69,7 +69,6 @@ on:
       - "cmd/discoverer/k8s/**"
       - "dockers/discoverer/k8s/Dockerfile"
       - "versions/GO_VERSION"
-
 jobs:
   build:
     uses: ./.github/workflows/_docker-image.yaml
