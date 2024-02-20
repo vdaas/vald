@@ -59,7 +59,6 @@ jobs:
       range:
         start: 1
         end: 1000
-    dimension: 784
     replica: 1
     repetition: 1
     job_type: "search"

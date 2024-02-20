@@ -21,7 +21,6 @@ package config
 type BenchmarkJob struct {
 	Target             *BenchmarkTarget    `json:"target,omitempty"               yaml:"target"`
 	Dataset            *BenchmarkDataset   `json:"dataset,omitempty"              yaml:"dataset"`
-	Dimension          int                 `json:"dimension,omitempty"            yaml:"dimension"`
 	Replica            int                 `json:"replica,omitempty"              yaml:"replica"`
 	Repetition         int                 `json:"repetition,omitempty"           yaml:"repetition"`
 	JobType            string              `json:"job_type,omitempty"             yaml:"job_type"`
