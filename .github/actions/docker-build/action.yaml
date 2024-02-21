@@ -97,8 +97,10 @@ runs:
         if [[ "${{ github.event_name }}" = "pull_request" || "${{ github.event_name }}" = "pull_request_target" ]]; then
           extra_tags="-t ${IMAGE_NAME}:${PRIMARY_TAG} -t ${ALTER_IMAGE_NAME}:${PRIMARY_TAG}"
         else
-          for tag in ${TAG}; do
-            extra_tags="${extra_tags} -t ${IMAGE_NAME}:${tag} -t ${ALTER_IMAGE_NAME}:${tag}"
+          for tag in ${TAGS}; do
+            if ! [[ "${tag}" = "nightly" ]] || ! [[ "$GITHUB_BASE_REF" =~ ^release/v([0-9]+)\.([0-9]+)$ ]]; then
+              extra_tags="${extra_tags} -t ${IMAGE_NAME}:${tag} -t ${ALTER_IMAGE_NAME}:${tag}"
+          fi
           done
         fi
         echo "EXTRA_TAGS is determined: ${extra_tags}"
