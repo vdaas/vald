@@ -6,7 +6,7 @@ Continuous Benchmark Tool allows you to get benchmark of Vald cluster in 24/7.
 
 Assumed use case is:
 
-- Verification with workload close to production environment
+- Verification with workload close to the production environment
 - Verification before service installation when Vald version up
 
 ## Architecture
