@@ -52,7 +52,7 @@ runs:
         elif [[ "${{ github.event_name }}" = "pull_request" || "${{ github.event_name }}" = "pull_request_target" ]]; then
           # The following is the priority of tags:
           #   PR build tag -> Release branch tag or Nightly
-          pr_num=`cat $GITHUB_EVENT_PATH | jq -r ".number"`
+          pr_num=$(cat $GITHUB_EVENT_PATH | jq -r ".number")
           tags="pr-${pr_num}"
 
           # For pull request to the release branch, use the release branch latest tag as the default tag (release/vx.x).
@@ -72,7 +72,7 @@ runs:
         elif [[ "$GITHUB_REF" =~ ^refs/heads/release/v([0-9]+)\.([0-9]+)$ ]]; then
         # The following is the priority of tags:
         #   Release branch tag -> Commit hash tag -> Nightly
-        release_branch_tag_name=`echo $GITHUB_REF | sed -e 's:^refs/heads/::'`
+        release_branch_tag_name=$(echo $GITHUB_REF | sed -e 's:^refs/heads/::')
         tags="${release_branch_tag_name}"
 
         commit_hash_tag_name=${GITHUB_SHA::8}
