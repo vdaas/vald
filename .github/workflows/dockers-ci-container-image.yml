@@ -26,7 +26,7 @@ on:
       - "*.*.*-*"
       - "v*.*.*-*"
     paths:
-      - ".github/actions/docker-build/actions.yaml"
+      - ".github/actions/docker-build/action.yaml"
       - ".github/workflows/_docker-image.yaml"
       - ".github/workflows/dockers-ci-container-image.yml"
       - "dockers/ci/**"
@@ -36,7 +36,7 @@ on:
       - "versions/NGT_VERSION"
   pull_request:
     paths:
-      - ".github/actions/docker-build/actions.yaml"
+      - ".github/actions/docker-build/action.yaml"
       - ".github/workflows/_docker-image.yaml"
       - ".github/workflows/dockers-ci-container-image.yml"
       - "dockers/ci/**"
@@ -46,7 +46,7 @@ on:
       - "versions/NGT_VERSION"
   pull_request_target:
     paths:
-      - ".github/actions/docker-build/actions.yaml"
+      - ".github/actions/docker-build/action.yaml"
       - ".github/workflows/_docker-image.yaml"
       - ".github/workflows/dockers-ci-container-image.yml"
       - "dockers/ci/**"

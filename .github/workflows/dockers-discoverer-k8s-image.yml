@@ -26,7 +26,7 @@ on:
       - "*.*.*-*"
       - "v*.*.*-*"
     paths:
-      - ".github/actions/docker-build/actions.yaml"
+      - ".github/actions/docker-build/action.yaml"
       - ".github/workflows/_docker-image.yaml"
       - ".github/workflows/dockers-discoverer-k8s-image.yml"
       - "go.mod"
@@ -41,7 +41,7 @@ on:
       - "versions/GO_VERSION"
   pull_request:
     paths:
-      - ".github/actions/docker-build/actions.yaml"
+      - ".github/actions/docker-build/action.yaml"
       - ".github/workflows/_docker-image.yaml"
       - ".github/workflows/dockers-discoverer-k8s-image.yml"
       - "go.mod"
@@ -56,7 +56,7 @@ on:
       - "versions/GO_VERSION"
   pull_request_target:
     paths:
-      - ".github/actions/docker-build/actions.yaml"
+      - ".github/actions/docker-build/action.yaml"
       - ".github/workflows/_docker-image.yaml"
       - ".github/workflows/dockers-discoverer-k8s-image.yml"
       - "go.mod"
