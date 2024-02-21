@@ -15,6 +15,12 @@ package service
 
 import (
 	"testing"
+
+	"github.com/stretchr/testify/require"
+	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/k8s/client"
+	"github.com/vdaas/vald/internal/test/mock/k8s"
+	"github.com/vdaas/vald/internal/test/testify"
 )
 
 func Test_getNewBaseName(t *testing.T) {
@@ -73,6 +79,108 @@ func Test_getNewBaseName(t *testing.T) {
 			if got := getNewBaseName(tt.args.old); got != tt.want.want {
 				t.Errorf("getNewBaseName() = %v, want %v", got, tt.want.want)
 			}
+		})
+	}
+}
+
+func Test_parseReplicaID(t *testing.T) {
+	labelKey := "foo"
+	type args struct {
+		replicaID string
+		c         client.Client
+	}
+	type want struct {
+		ids []string
+		err error
+	}
+	type test struct {
+		name string
+		args args
+		want want
+	}
+	tests := []test{
+		{
+			name: "single replicaID",
+			args: args{
+				replicaID: "0",
+				c:         nil,
+			},
+			want: want{
+				ids: []string{"0"},
+				err: nil,
+			},
+		},
+		{
+			name: "multiple replicaIDs",
+			args: args{
+				replicaID: "0,1",
+				c:         nil,
+			},
+			want: want{
+				ids: []string{"0", "1"},
+				err: nil,
+			},
+		},
+		{
+			name: "returns error when replicaID is empty",
+			args: args{
+				replicaID: "",
+				c:         nil,
+			},
+			want: want{
+				ids: nil,
+				err: errors.ErrReadReplicaIDEmpty,
+			},
+		},
+		func() test {
+			wantID1 := "bar"
+			wantID2 := "baz"
+			mock := &k8s.ValdK8sClientMock{}
+
+			mock.On("LabelSelector", testify.Anything, testify.Anything, testify.Anything).Return(client.NewSelector(), nil)
+			mock.On("List", testify.Anything, testify.Anything, testify.Anything).Run(func(args testify.Arguments) {
+				if depList, ok := args.Get(1).(*client.DeploymentList); ok {
+					depList.Items = []client.Deployment{
+						{
+							ObjectMeta: client.ObjectMeta{
+								Labels: map[string]string{
+									labelKey: wantID1,
+								},
+							},
+						},
+						{
+							ObjectMeta: client.ObjectMeta{
+								Labels: map[string]string{
+									labelKey: wantID2,
+								},
+							},
+						},
+					}
+				}
+			}).Return(nil)
+			return test{
+				name: "returns all ids when rotate-all option is set",
+				args: args{
+					replicaID: rotateAllID,
+					c:         mock,
+				},
+				want: want{
+					ids: []string{wantID1, wantID2},
+					err: nil,
+				},
+			}
+		}(),
+	}
+	for _, test := range tests {
+		tt := test
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			r := &rotator{
+				readReplicaLabelKey: labelKey,
+			}
+			ids, err := r.parseReplicaID(tt.args.replicaID, tt.args.c)
+			require.Equal(t, tt.want.ids, ids)
+			require.Equal(t, tt.want.err, err)
 		})
 	}
 }
