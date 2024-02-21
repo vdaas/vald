@@ -124,7 +124,7 @@ func (o *operator) Start(ctx context.Context) (<-chan error, error) {
 	return ech, nil
 }
 
-// TODO: implement agent pod reconcile logic to detect conditions to start indexing and saving
+// TODO: implement agent pod reconcile logic to detect conditions to start indexing and saving.
 func (o *operator) podOnReconcile(ctx context.Context, podList map[string][]pod.Pod) {
 	for k, v := range podList {
 		for _, pod := range v {
@@ -133,7 +133,7 @@ func (o *operator) podOnReconcile(ctx context.Context, podList map[string][]pod.
 	}
 }
 
-// TODO: implement job reconcile logic to detect save job completion and to start rotation
+// TODO: implement job reconcile logic to detect save job completion and to start rotation.
 func (o *operator) jobOnReconcile(ctx context.Context, jobList map[string][]job.Job) {
 	for k, v := range jobList {
 		for _, job := range v {
