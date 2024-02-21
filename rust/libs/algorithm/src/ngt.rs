@@ -27,9 +27,9 @@ pub mod ngt {
         num: u32,
     }
 
-    #[derive(Debug)]    
+    #[derive(Debug)]
     pub struct InsertParam {}
-    
+
     #[derive(Debug)]
     pub struct UpdateParam {}
 
@@ -37,12 +37,34 @@ pub mod ngt {
     pub struct RemoveParam {}
 
     #[derive(Debug)]
-    pub struct CommitParam{}
+    pub struct CommitParam {}
 
     #[derive(Debug)]
     pub struct NGTParam {}
 
-    impl Base<f32, String, SearchParam, SearchResponse, InsertParam, (), UpdateParam, (), RemoveParam, (), CommitParam, ()> for NGT {
-        fn search()
+    impl
+        Base<
+            f32,
+            String,
+            SearchParam,
+            SearchResponse,
+            InsertParam,
+            (),
+            UpdateParam,
+            (),
+            RemoveParam,
+            (),
+            CommitParam,
+            (),
+            NGTParam,
+        > for NGT
+    {
+        fn search(&self, v: &Vec<T>, p: Option<SearchParam>) -> Result<SearchResponse>;
+        fn insert(&self, v: &Vec<T>, id: &U, p: Option<InsertParam>) -> Result<()>;
+        fn update(&self, v: &Vec<T>, id: &U, p: Option<UpdateParam>) -> Result<()>;
+        fn remove(&self, id: &U, p: Option<RemoveParam>) -> Result<()>;
+        fn commit(&self, p: Option<CommitParam>) -> Result<()>;
+
+        fn new(p: Option<NGTParam>) -> Result<Self>;
     }
 }
