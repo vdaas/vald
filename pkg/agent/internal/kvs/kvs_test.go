@@ -75,7 +75,6 @@ func TestNew(t *testing.T) {
 						l:           0,
 						ou:          wantOu,
 						uo:          wantUo,
-						eg:          errgroup.Get(),
 					},
 				},
 			}
@@ -1685,12 +1684,10 @@ func Test_bidi_Range(t *testing.T) {
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			ctx, cancel := context.WithCancel(context.Background())
 			defer cancel()
-			eg, egctx := errgroup.New(ctx)
 			b := &bidi{
 				ou: test.fields.ou,
 				uo: test.fields.uo,
 				l:  test.fields.l,
-				eg: eg,
 			}
 			if test.beforeFunc != nil {
 				test.beforeFunc(tt, test.args, b)
@@ -1703,7 +1700,7 @@ func Test_bidi_Range(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 
-			b.Range(egctx, test.args.f)
+			b.Range(ctx, test.args.f)
 			if err := checkFunc(test.want, b); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -1800,7 +1797,6 @@ func Test_bidi_Len(t *testing.T) {
 // 		l           uint64
 // 		ou          [slen]*sync.Map[uint32, valueStructOu]
 // 		uo          [slen]*sync.Map[string, ValueStructUo]
-// 		eg          errgroup.Group
 // 	}
 // 	type want struct {
 // 		err error
@@ -1829,7 +1825,6 @@ func Test_bidi_Len(t *testing.T) {
 // 		           l:0,
 // 		           ou:nil,
 // 		           uo:nil,
-// 		           eg:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1852,7 +1847,6 @@ func Test_bidi_Len(t *testing.T) {
 // 		           l:0,
 // 		           ou:nil,
 // 		           uo:nil,
-// 		           eg:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1887,7 +1881,6 @@ func Test_bidi_Len(t *testing.T) {
 // 				l:           test.fields.l,
 // 				ou:          test.fields.ou,
 // 				uo:          test.fields.uo,
-// 				eg:          test.fields.eg,
 // 			}
 //
 // 			err := b.Close()
