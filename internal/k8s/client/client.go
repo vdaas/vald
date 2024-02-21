@@ -23,6 +23,7 @@ import (
 
 	snapshotv1 "github.com/kubernetes-csi/external-snapshotter/client/v6/apis/volumesnapshot/v1"
 	"github.com/vdaas/vald/internal/errors"
+	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -52,17 +53,22 @@ type (
 	MatchingLabels     = cli.MatchingLabels
 	InNamespace        = cli.InNamespace
 	VolumeSnapshot     = snapshotv1.VolumeSnapshot
+	Deployment         = appsv1.Deployment
+	DeploymentList     = appsv1.DeploymentList
+	ObjectMeta         = metav1.ObjectMeta
 )
 
 const (
 	DeletePropagationBackground = metav1.DeletePropagationBackground
 	WatchDeletedEvent           = watch.Deleted
 	SelectionOpEquals           = selection.Equals
+	SelectionOpExists           = selection.Exists
 )
 
 var (
 	ServerSideApply = cli.Apply
 	MergePatch      = cli.Merge
+	NewSelector     = labels.NewSelector
 )
 
 type Client interface {
