@@ -1697,8 +1697,11 @@ func (n *ngt) IsIndexing() bool {
 
 func (n *ngt) UUIDs(ctx context.Context) (uuids []string) {
 	uuids = make([]string, 0, n.kvs.Len())
+	var mu sync.Mutex
 	n.kvs.Range(ctx, func(uuid string, oid uint32, _ int64) bool {
+		mu.Lock()
 		uuids = append(uuids, uuid)
+		mu.Unlock()
 		return true
 	})
 	return uuids
@@ -1741,8 +1744,18 @@ func (n *ngt) GetDimensionSize() int {
 
 func (n *ngt) Close(ctx context.Context) (err error) {
 	defer n.core.Close()
-
-	err = n.kvs.Close()
+	defer func() {
+		kerr := n.kvs.Close()
+		if kerr != nil &&
+			!errors.Is(err, context.Canceled) &&
+			!errors.Is(err, context.DeadlineExceeded) {
+			if err != nil {
+				err = errors.Join(kerr, err)
+			} else {
+				err = kerr
+			}
+		}
+	}()
 	if len(n.path) != 0 {
 		if n.isReadReplica {
 			log.Info("skip create and save index operation on close because this is read replica")
