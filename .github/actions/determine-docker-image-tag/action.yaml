@@ -37,17 +37,17 @@ runs:
         if [[ "$GITHUB_REF" =~ ^refs/tags/.* ]]; then
         # The following is the priority of tags:
         #   Tag -> vx.x tag -> Release branch tag -> Commit hash tag
-        tag_name=$(echo $GITHUB_REF | sed -e 's:^refs/tags/::')
-        tags="${tag_name}"
+        tag=$(echo $GITHUB_REF | sed -e 's:^refs/tags/::') # e.g) v1.7.6
+        tags="${tag}"
 
-        major_minor_tag_name="$(echo "${tag_name}" | sed -E 's/^v?([0-9]+\.[0-9]+).*$/v\1/')"
-        tags="${tag_name} ${major_minor_tag_name}"
+        major_minor_tag"$(echo "${tag}" | sed -E 's/^v?([0-9]+\.[0-9]+).*$/v\1/')" # e.g) v.1.7
+        tags="${tags} ${major_minor_tag}"
 
-        release_branch_tag_name="release/${major_minor_tag_name}"
-        tags="${tag_name} ${release_branch_tag_name}"
+        release_branch_tag="release/${major_minor_tag}" # e.g) release/v1.7
+        tags="${tags} ${release_branch_tag}"
 
-        commit_hash_tag_name=${GITHUB_SHA::8}
-        tags="${tag_name} ${commit_hash_tag_name}"
+        commit_hash_tag=${GITHUB_SHA::8}
+        tags="${tags} ${commit_hash_tag}"
 
         elif [[ "${{ github.event_name }}" = "pull_request" || "${{ github.event_name }}" = "pull_request_target" ]]; then
           # The following is the priority of tags:
@@ -65,18 +65,18 @@ runs:
         elif [ "$GITHUB_REF" = "refs/heads/main" ]; then
           # The following is the priority of tags:
           #   Commit hash tag -> nightly tag
-          commit_hash_tag_name=${GITHUB_SHA::8}
-          tags="${commit_hash_tag_name}"
+          commit_hash_tag=${GITHUB_SHA::8}
+          tags="${commit_hash_tag}"
           tags="${tags} nightly"
 
         elif [[ "$GITHUB_REF" =~ ^refs/heads/release/v([0-9]+)\.([0-9]+)$ ]]; then
         # The following is the priority of tags:
         #   Release branch tag -> Commit hash tag -> Nightly
-        release_branch_tag_name=$(echo $GITHUB_REF | sed -e 's:^refs/heads/::')
-        tags="${release_branch_tag_name}"
+        release_branch_tag=$(echo $GITHUB_REF | sed -e 's:^refs/heads/::') # e.g) release/v1.7
+        tags="${release_branch_tag}"
 
-        commit_hash_tag_name=${GITHUB_SHA::8}
-        tags="${tag_name} ${commit_hash_tag_name}"
+        commit_hash_tag=${GITHUB_SHA::8}
+        tags="${tags} ${commit_hash_tag}"
         else
           tags="unknown"
         fi
