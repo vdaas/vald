@@ -16,7 +16,7 @@
 name: "Detect Docker image tags"
 description: "A action to detect Docker image tags"
 inputs:
-  tag_name:
+  tags:
     description: "Tag name to check whether exists or not"
     required: true
     default: ""
@@ -56,12 +56,15 @@ runs:
         for image in ${IMAGES}
         do
           echo "check for ${image}"
-
-          if curl -s "https://registry.hub.docker.com/v2/repositories/${image}/tags/${TAG_NAME}" | jq '.name' | grep -v "null"; then
-            echo "${image}:${TAG_NAME} exists. adding a helm option '--set ${m[${image}]}=${TAG_NAME}'."
-            export HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIONS} --set ${m[${image}]}=${TAG_NAME}"
-            export IMAGE_TAGS="${IMAGE_TAGS} ${m[${image}]}=\"${TAG_NAME}\""
-          fi
+          for tag in ${TAGS}
+          do
+            if curl -s "https://registry.hub.docker.com/v2/repositories/${image}/tags/${tag}" | jq '.name' | grep -v "null"; then
+              echo "${image}:${tag} exists. adding a helm option '--set ${m[${image}]}=${tag}'."
+              export HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIONS} --set ${m[${image}]}=${tag}"
+              export IMAGE_TAGS="${IMAGE_TAGS} ${m[${image}]}=\"${tag}\""
+              break
+            fi
+          done
         done
 
         echo "HELM_EXTRA_OPTIONS=${HELM_EXTRA_OPTIONS}"
@@ -70,4 +73,4 @@ runs:
         echo "IMAGE_TAGS=${IMAGE_TAGS}" >> $GITHUB_OUTPUT
       env:
         IMAGES: ${{ inputs.images }}
-        TAG_NAME: ${{ inputs.tag_name }}
+        TAGS: ${{ inputs.tags }}

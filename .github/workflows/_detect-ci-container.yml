@@ -41,7 +41,7 @@ jobs:
       - name: Get Docker image tag from detection result
         id: get_tag_name
         run: |
-          TAG=$(echo "$TAGS" | awk '{print $1}')
+          TAG=$(echo "$TAGS" | awk '{print $1}' | awk -F '=' '{print $2}') # e.g) input: "vdaas/test=v1.7.6 vdaas/test=nightly". output: v1.7.6
           echo "TAG=${TAG}"
           echo "TAG=${TAG}" >> $GITHUB_OUTPUT
         env:

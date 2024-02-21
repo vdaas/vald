@@ -81,7 +81,7 @@ runs:
       id: specify_container_versions
       uses: ./.github/actions/detect-docker-image-tags
       with:
-        tag_name: ${{ steps.determine_tag_name.outputs.PRIMARY_TAG }}
+        tags: ${{ steps.determine_tag_name.outputs.TAGS }}
         images: ${{ inputs.target_images }}
     - uses: ./.github/actions/setup-k3d
       if: ${{ inputs.require_k3d == 'true' }}
