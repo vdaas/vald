@@ -2,7 +2,7 @@
 
 ## What is the Continuous Benchmark Tool?
 
-Continuous Benchmark Tool allows you to get benchmark of Vald cluster in 24/365.
+Continuous Benchmark Tool allows you to get benchmark of Vald cluster in 24/7.
 
 Assumed use case is:
 
