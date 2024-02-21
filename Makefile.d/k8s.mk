@@ -47,6 +47,7 @@ k8s/manifest/update: \
 	mv $(TEMP_DIR)/vald/templates/discoverer k8s/discoverer
 	mv $(TEMP_DIR)/vald/templates/gateway k8s/gateway
 	mv $(TEMP_DIR)/vald/templates/manager/index k8s/manager/index
+	mv $(TEMP_DIR)/vald/templates/index/operator k8s/index/operator
 	mv $(TEMP_DIR)/vald/templates/index/job/correction k8s/index/job/correction
 	mv $(TEMP_DIR)/vald/templates/index/job/creation k8s/index/job/creation
 	mv $(TEMP_DIR)/vald/templates/index/job/save k8s/index/job/save
@@ -120,6 +121,7 @@ k8s/vald/deploy:
 	    --set manager.index.image.repository=$(CRORG)/$(MANAGER_INDEX_IMAGE) \
 	    --set manager.index.creator.image.repository=$(CRORG)/$(INDEX_CREATION_IMAGE) \
 	    --set manager.index.saver.image.repository=$(CRORG)/$(INDEX_SAVE_IMAGE) \
+		--set manager.index.operator.image.repository=$(CRORG)/$(INDEX_OPERATOR_IMAGE) \
 	    $(HELM_EXTRA_OPTIONS) \
         --include-crds \
 	    --output-dir $(TEMP_DIR) \
@@ -138,6 +140,7 @@ k8s/vald/deploy:
 	kubectl apply -f $(TEMP_DIR)/vald/templates/index/job/creation || true
 	kubectl apply -f $(TEMP_DIR)/vald/templates/index/job/save || true
 	kubectl apply -f $(TEMP_DIR)/vald/templates/index/job/readreplica/rotate || true
+	kubectl apply -f $(TEMP_DIR)/vald/templates/index/operator || true
 	rm -rf $(TEMP_DIR)
 	kubectl get pods -o jsonpath="{.items[*].spec.containers[*].image}" | tr " " "\n"
 
@@ -154,24 +157,26 @@ k8s/vald/delete:
 	    --set gateway.lb.image.repository=$(CRORG)/$(LB_GATEWAY_IMAGE) \
 	    --set gateway.mirror.image.repository=$(CRORG)/$(MIRROR_GATEWAY_IMAGE) \
 	    --set manager.index.image.repository=$(CRORG)/$(MANAGER_INDEX_IMAGE) \
+		--set manager.index.operator.image.repository=$(CRORG)/$(INDEX_OPERATOR_IMAGE) \
         --include-crds \
 	    --output-dir $(TEMP_DIR) \
 	    charts/vald
-	kubectl delete -f $(TEMP_DIR)/vald/templates/gateway/mirror
-	kubectl delete -f $(TEMP_DIR)/vald/templates/index/job/readreplica/rotate
-	kubectl delete -f $(TEMP_DIR)/vald/templates/index/job/save
-	kubectl delete -f $(TEMP_DIR)/vald/templates/index/job/creation
-	kubectl delete -f $(TEMP_DIR)/vald/templates/index/job/correction
-	kubectl delete -f $(TEMP_DIR)/vald/templates/index/job/creation
-	kubectl delete -f $(TEMP_DIR)/vald/templates/index/job/save
-	kubectl delete -f $(TEMP_DIR)/vald/templates/gateway
-	kubectl delete -f $(TEMP_DIR)/vald/templates/gateway/lb
-	kubectl delete -f $(TEMP_DIR)/vald/templates/manager/index
-	kubectl delete -f $(TEMP_DIR)/vald/templates/discoverer
+	kubectl delete -f $(TEMP_DIR)/vald/templates/gateway/mirror || true
+	kubectl delete -f $(TEMP_DIR)/vald/templates/index/operator || true
+	kubectl delete -f $(TEMP_DIR)/vald/templates/index/job/readreplica/rotate || true
+	kubectl delete -f $(TEMP_DIR)/vald/templates/index/job/save || true
+	kubectl delete -f $(TEMP_DIR)/vald/templates/index/job/creation || true
+	kubectl delete -f $(TEMP_DIR)/vald/templates/index/job/correction || true
+	kubectl delete -f $(TEMP_DIR)/vald/templates/index/job/creation || true
+	kubectl delete -f $(TEMP_DIR)/vald/templates/index/job/save || true
+	kubectl delete -f $(TEMP_DIR)/vald/templates/gateway || true
+	kubectl delete -f $(TEMP_DIR)/vald/templates/gateway/lb || true
+	kubectl delete -f $(TEMP_DIR)/vald/templates/manager/index || true
+	kubectl delete -f $(TEMP_DIR)/vald/templates/discoverer || true
 	kubectl delete -f $(TEMP_DIR)/vald/templates/agent/readreplica || true
 	kubectl delete -f $(TEMP_DIR)/vald/templates/agent/ngt || true
-	kubectl delete -f $(TEMP_DIR)/vald/templates/agent
-	kubectl delete -f $(TEMP_DIR)/vald/crds
+	kubectl delete -f $(TEMP_DIR)/vald/templates/agent || true
+	kubectl delete -f $(TEMP_DIR)/vald/crds || true
 	rm -rf $(TEMP_DIR)
 
 .PHONY: k8s/multi/vald/deploy
