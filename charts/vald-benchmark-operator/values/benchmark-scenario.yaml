@@ -45,7 +45,6 @@ spec:
   jobs:
     # @schema {"name": "jobs.items.dataset", "type": "object"}
     - job_type: "insert"
-      dimension: 784
       repetition: 1
       replica: 1
       rules: []
@@ -62,7 +61,6 @@ spec:
         health_check_duration: "10s"
       rps: 500
     - job_type: "update"
-      dimension: 784
       repetition: 1
       replica: 1
       rules: []
@@ -79,7 +77,6 @@ spec:
         health_check_duration: "10s"
       rps: 500
     - job_type: "search"
-      dimension: 784
       repetition: 1
       replica: 1
       rules: []
@@ -94,7 +91,6 @@ spec:
         health_check_duration: "10s"
       rps: 2000
     - job_type: "upsert"
-      dimension: 784
       repetition: 1
       replica: 1
       rules: []
@@ -111,7 +107,6 @@ spec:
         health_check_duration: "10s"
       rps: 1000
     - job_type: "search"
-      dimension: 784
       repetition: 2
       replica: 1
       rules: []
@@ -133,7 +128,6 @@ spec:
         health_check_duration: "10s"
       rps: 4000
     - job_type: "exists"
-      dimension: 784
       repetition: 1
       replica: 1
       rules: []
@@ -148,7 +142,6 @@ spec:
         health_check_duration: "10s"
       rps: 1000
     - job_type: "getobject"
-      dimension: 784
       repetition: 1
       replica: 1
       rules: []
@@ -163,7 +156,6 @@ spec:
         health_check_duration: "10s"
       rps: 1000
     - job_type: "remove"
-      dimension: 784
       repetition: 1
       replica: 1
       rules: []

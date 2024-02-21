@@ -91,7 +91,6 @@ func New(cfg *config.Config) (r runner.Runner, err error) {
 		service.WithValdClient(vcli),
 		service.WithDataset(cfg.Job.Dataset),
 		service.WithJobTypeByString(cfg.Job.JobType),
-		service.WithDimension(cfg.Job.Dimension),
 		service.WithInsertConfig(cfg.Job.InsertConfig),
 		service.WithUpdateConfig(cfg.Job.UpdateConfig),
 		service.WithUpsertConfig(cfg.Job.UpsertConfig),
