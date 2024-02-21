@@ -83,6 +83,10 @@ cmd/index/job/readreplica/rotate/readreplica-rotate:
 	$(eval CGO_ENABLED = 0)
 	$(call go-build,index/job/readreplica/rotate,,-static,,,$@)
 
+cmd/index/operator/index-operator:
+	$(eval CGO_ENABLED = 0)
+	$(call go-build,index/operator,,-static,,,$@)
+
 cmd/tools/benchmark/job/job:
 	$(call go-build,tools/benchmark/job,-linkmode 'external',-static -fPIC -pthread -fopenmp -std=gnu++20 -lhdf5 -lhdf5_hl -lm -ldl, cgo,$(HDF5_VERSION),$@)
 
