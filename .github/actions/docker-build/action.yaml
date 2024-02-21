@@ -92,6 +92,10 @@ runs:
         if [[ "$GITHUB_REF" =~ ^refs/tags/.* ]]; then
           latest_tags="-t ${IMAGE_NAME}:latest -t ${ALTER_IMAGE_NAME}:latest"
           extra_tags="${extra_tags} ${latest_tags}"
+
+          major_minor_tag=$(echo "$GITHUB_REF" | sed -E 's/^refs\/tags\/v?([0-9]+\.[0-9]+).*$/v\1/')
+          major_minor_tags="-t ${IMAGE_NAME}:${major_minor_tag} -t ${ALTER_IMAGE_NAME}:${major_minor_tag}"
+          extra_tags="${extra_tags} ${major_minor_tags}"
         fi
         if [[ "$GITHUB_REF" =~ ^refs/heads/main$ ]] || [[ "$GITHUB_REF" =~ ^refs/heads/master$ ]] || [[ "$GITHUB_REF" =~ ^refs/heads/release.* ]] || [[ "${PRIMARY_TAG}" == "nightly" ]]; then
           commit_hash=${GITHUB_SHA::8}
