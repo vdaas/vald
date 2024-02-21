@@ -271,8 +271,10 @@ For more details of the configuration of `vald-benchmark-operator-release`, plea
    kubectl apply -f vbor.yaml
    ```
 
+## Running Continuous Benchmarks
+
 After deploy the benchmark operator, you can execute continuous benchmark by applying `ValdBenchmarkScenarioRelease` or `ValdBenchmarkJobRelease`.
 
 Please configure designed benchmark and apply by `kubectl` command.
 
-The sample manifests are [here](https://github.com/vdaas/vald/tree/main/charts/vald-benchmark-operator/values).
+The sample manifests are [here](https://github.com/vdaas/vald/tree/main/example/helm/benchmark).
