@@ -1,0 +1,46 @@
+apiVersion: vald.vdaas.org/v1
+kind: ValdBenchmarkJob
+metadata:
+  name: sample-job
+spec:
+  # @schema {"name": "dataset", "type": "object"}
+  # dataset -- dataset information
+  dataset:
+    # @schema {"name": "dataset.name", "type": "string" }
+    # dataset.name -- the name of dataset
+    name: "fashion-mnist"
+    # @schema {"name": "dataset.indexes", "type": "integer"}
+    # dataset.indexes -- the amount of indexes
+    indexes: 60000
+    # @schema {"name": "dataset.group", "type": "string"}
+    # dataset.group -- the hdf5 group name of dataset
+    group: "train"
+    # @schema {"name": "dataset.range", "type": "object"}
+    # dataset.range -- the data range of indexes
+    range:
+      # @schema {"name": "dataset.range.start", "type": "integer"}
+      # dataset.range.start -- start index number
+      start: 1
+      # @schema {"name": "dataset.range.end", "type": "integer"}
+      # dataset.range.end -- end index number
+      end: 60000
+    url: "http://ann-benchmarks.com/fashion-mnist-784-euclidean.hdf5"
+  job_type: "upsert"
+  repetition: 1
+  replica: 1
+  rules: []
+  client_config:
+    health_check_duration: "10s"
+  rps: 2000
+  insert_config:
+    skip_strict_exist_check: false
+  upsert_config:
+    skip_strict_exist_check: false
+  target:
+    host: "vald-lb-gateway.default.svc.cluster.local"
+    port: 8081
+  global_config:
+    version: v0.0.1
+    time_zone: JST
+    logging:
+      level: debug

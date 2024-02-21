@@ -1,23 +1,7 @@
-#
-# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# You may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#    https://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#
 apiVersion: vald.vdaas.org/v1
 kind: ValdBenchmarkScenario
 metadata:
-  name: sample-scenario
-  namespace: default
+  name: insert-search
 spec:
   # @schema {"name": "dataset", "type": "object"}
   # dataset -- dataset information
@@ -27,10 +11,10 @@ spec:
     name: "fashion-mnist"
     # @schema {"name": "dataset.indexes", "type": "integer"}
     # dataset.indexes -- the amount of indexes
-    indexes: 1000
+    indexes: 100000
     # @schema {"name": "dataset.group", "type": "string"}
     # dataset.group -- the hdf5 group name of dataset
-    group: "test"
+    group: "train"
     # @schema {"name": "dataset.range", "type": "object"}
     # dataset.range -- the data range of indexes
     range:
@@ -39,11 +23,10 @@ spec:
       start: 1
       # @schema {"name": "dataset.range.end", "type": "integer"}
       # dataset.range.end -- end index number
-      end: 1000
+      end: 100000
   # @schema {"name": "jobs", "type": "array", "items": {"type": "object"}}
   # jobs -- benchmark jobs
   jobs:
-    # @schema {"name": "jobs.items.dataset", "type": "object"}
     - job_type: "insert"
       repetition: 1
       replica: 1
@@ -59,23 +42,27 @@ spec:
         skip_strict_exist_check: true
       client_config:
         health_check_duration: "10s"
-      rps: 500
-    - job_type: "update"
+      rps: 2000
+      concurrency_limit: 150
+      ttl_seconds_after_finished: 100
+    - job_type: "upsert"
       repetition: 1
       replica: 1
       rules: []
       dataset:
         name: "fashion-mnist"
-        indexes: 10000
+        indexes: 20000
         group: "train"
         range:
-          start: 10001
+          start: 1
           end: 20000
-      update_config:
+      upsert_config:
         skip_strict_exist_check: true
       client_config:
         health_check_duration: "10s"
-      rps: 500
+      rps: 2000
+      concurrency_limit: 150
+      ttl_seconds_after_finished: 100
     - job_type: "search"
       repetition: 1
       replica: 1
@@ -86,10 +73,12 @@ spec:
         num: 10
         min_num: 10
         timeout: "1m"
-        enable_linear_search: true
+        enable_linear_search: false
       client_config:
         health_check_duration: "10s"
       rps: 2000
+      concurrency_limit: 150
+      ttl_seconds_after_finished: 100
     - job_type: "upsert"
       repetition: 1
       replica: 1
@@ -101,13 +90,21 @@ spec:
         range:
           start: 10001
           end: 40000
+      search_config:
+        epsilon: 0.1
+        radius: -1
+        num: 10
+        min_num: 5
+        timeout: "1m"
       upsert_config:
         skip_strict_exist_check: true
       client_config:
         health_check_duration: "10s"
-      rps: 1000
+      rps: 2000
+      concurrency_limit: 150
+      ttl_seconds_after_finished: 100
     - job_type: "search"
-      repetition: 2
+      repetition: 1
       replica: 1
       rules: []
       dataset:
@@ -127,6 +124,8 @@ spec:
       client_config:
         health_check_duration: "10s"
       rps: 4000
+      concurrency_limit: 150
+      ttl_seconds_after_finished: 100
     - job_type: "exists"
       repetition: 1
       replica: 1
@@ -141,6 +140,8 @@ spec:
       client_config:
         health_check_duration: "10s"
       rps: 1000
+      concurrency_limit: 150
+      ttl_seconds_after_finished: 100
     - job_type: "getobject"
       repetition: 1
       replica: 1
@@ -155,22 +156,26 @@ spec:
       client_config:
         health_check_duration: "10s"
       rps: 1000
+      concurrency_limit: 150
+      ttl_seconds_after_finished: 100
     - job_type: "remove"
       repetition: 1
       replica: 1
       rules: []
       dataset:
         name: "fashion-mnist"
-        indexes: 30000
+        indexes: 40000
         group: "train"
         range:
           start: 1
-          end: 30000
+          end: 40000
       remove_config:
         skip_strict_exist_check: true
       client_config:
         health_check_duration: "10s"
       rps: 1000
+      concurrency_limit: 150
+      ttl_seconds_after_finished: 100
   # @schema {"name": "target", "type": "array", "items": {"type": "object"}}
   # target -- target cluster host&port
   target:
