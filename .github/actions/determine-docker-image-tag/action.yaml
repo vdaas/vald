@@ -19,6 +19,9 @@ outputs:
   TAGS:
     description: "docker image tag list"
     value: ${{ steps.determine_tag_name.outputs.TAGS }}
+  PRIMARY_TAG:
+    description: "highest priority docker image tag in tag list"
+    value: ${{ steps.determine_tag_name.outputs.PRIMARY_TAG }}
 runs:
   using: "composite"
   steps:
@@ -80,6 +83,10 @@ runs:
         else
           tags="unknown"
         fi
+        primary_tag=$(echo ${tags} | awk '{print $1}')
 
         echo "Determined tags: ${tags}"
-        echo "TAGS=${tags}" >> $GITHUB_OUTPUT
+        echo "Primary tag: ${primary_tag}"
+
+        echo "TAGS=${tags}"               >> $GITHUB_OUTPUT
+        echo "PRIMARY_TAG=${primary_tag}" >> $GITHUB_OUTPUT

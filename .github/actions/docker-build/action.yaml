@@ -84,26 +84,25 @@ runs:
         echo "PLATFORMS=${platforms}" >> $GITHUB_OUTPUT
       env:
         TARGET_PLATFORMS: ${{ inputs.platforms }}
+        PRIMARY_TAG: ${{ steps.determine_tag_name.outputs.PRIMARY_TAG }}
     - name: Add extra tags
       shell: bash
       id: add_extra_tags
       run: |
-        extra_tags="-t ${ALTER_IMAGE_NAME}:${PRIMARY_TAG}"
-        if [[ "$GITHUB_REF" =~ ^refs/tags/.* ]]; then
-          latest_tags="-t ${IMAGE_NAME}:latest -t ${ALTER_IMAGE_NAME}:latest"
-          extra_tags="${extra_tags} ${latest_tags}"
-        fi
-        if [[ "$GITHUB_REF" =~ ^refs/heads/main$ ]] || [[ "$GITHUB_REF" =~ ^refs/heads/master$ ]] || [[ "$GITHUB_REF" =~ ^refs/heads/release.* ]] || [[ "${PRIMARY_TAG}" == "nightly" ]]; then
-          commit_hash=${GITHUB_SHA::8}
-          hash_tags="-t ${IMAGE_NAME}:${commit_hash} -t ${ALTER_IMAGE_NAME}:${commit_hash}"
-          extra_tags="${extra_tags} ${hash_tags}"
-        fi
+        first=true
+        for tag in ${TAG}; do
+          if [ $first = true]; then
+            echo "${tag}" > versions/VALD_VERSION
+            first=false
+          fi
+          extra_tags="${extra_tags} -t ${IMAGE_NAME}:${tag} -t ${ALTER_IMAGE_NAME}:${tag}"
+        done
         echo "EXTRA_TAGS is determined: ${extra_tags}"
         echo "EXTRA_TAGS=${extra_tags}" >> $GITHUB_OUTPUT
       env:
         IMAGE_NAME: ${{ steps.image_name.outputs.IMAGE_NAME }}
         ALTER_IMAGE_NAME: ${{ steps.image_name.outputs.ALTER_IMAGE_NAME }}
-        PRIMARY_TAG: ${{ steps.determine_tag_name.outputs.PRIMARY_TAG }}
+        TAGS: ${{ steps.determine_tag_name.outputs.TAGS }}
     - name: Build and Push
       shell: bash
       id: build_and_push
