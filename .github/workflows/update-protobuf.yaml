@@ -16,12 +16,12 @@
 name: "Update protobuf"
 on:
   workflow_dispatch:
-  push:
-    tags:
-      - "*.*.*"
-      - "v*.*.*"
-      - "*.*.*-*"
-      - "v*.*.*-*"
+  # push:
+  #   tags:
+  #     - "*.*.*"
+  #     - "v*.*.*"
+  #     - "*.*.*-*"
+  #     - "v*.*.*-*"
 jobs:
   dump-contexts-to-log:
     runs-on: ubuntu-latest
