@@ -69,11 +69,8 @@ server_config:
     enabled: false
     key: /path/to/key
 operator:
-  agent_port: 8081
   agent_name: "vald-agent"
-  agent_dns: vald-agent.default.svc.cluster.local
   agent_namespace: "default"
-  node_name: ""
   concurrency: 1
 observability:
   enabled: false
