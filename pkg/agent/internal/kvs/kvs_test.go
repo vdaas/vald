@@ -26,7 +26,6 @@ import (
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/sync"
-	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/internal/test/goleak"
 )
 
@@ -35,8 +34,12 @@ func TestNew(t *testing.T) {
 	type want struct {
 		want BidiMap
 	}
+	type args struct {
+		opts []Option
+	}
 	type test struct {
 		name       string
+		args       args
 		want       want
 		checkFunc  func(want, BidiMap) error
 		beforeFunc func()
@@ -58,11 +61,17 @@ func TestNew(t *testing.T) {
 				wantOu[i] = new(sync.Map[uint32, valueStructOu])
 				wantUo[i] = new(sync.Map[string, ValueStructUo])
 			}
+			concurrency := runtime.GOMAXPROCS(-1) * 10
 			return test{
 				name: "return the bidi struct",
+				args: args{
+					opts: []Option{
+						WithConcurrency(concurrency),
+					},
+				},
 				want: want{
 					want: &bidi{
-						concurrency: runtime.GOMAXPROCS(-1) * 10,
+						concurrency: concurrency,
 						l:           0,
 						ou:          wantOu,
 						uo:          wantUo,
@@ -88,7 +97,7 @@ func TestNew(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 
-			got := New(WithErrGroup(errgroup.Get()))
+			got := New(test.args.opts...)
 			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
