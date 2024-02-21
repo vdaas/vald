@@ -32,21 +32,9 @@ import (
 type Option func(j *job) error
 
 var defaultOpts = []Option{
-	// TODO: set default config for client
-	WithDimension(748),
 	WithBeforeJobDuration("30s"),
 	WithRPS(1000),
 	WithConcurencyLimit(200),
-}
-
-// WithDimension sets the vector's dimension for running benchmark job with dataset.
-func WithDimension(dim int) Option {
-	return func(j *job) error {
-		if dim > 0 {
-			j.dimension = dim
-		}
-		return nil
-	}
 }
 
 // WithInsertConfig sets the insert API config for running insert request job.
