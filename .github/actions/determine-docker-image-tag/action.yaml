@@ -39,11 +39,11 @@ runs:
       run: |
         if [[ "$GITHUB_REF" =~ ^refs/tags/.* ]]; then
         # The following is the priority of tags:
-        #   Tag -> vx.x tag -> Release branch tag -> Commit hash tag
+        #   Tag -> vx.x tag -> Release branch tag -> Commit hash tag -> Latest
         tag=$(echo $GITHUB_REF | sed -e 's:^refs/tags/::') # e.g) v1.7.6
         tags="${tag}"
 
-        major_minor_tag"$(echo "${tag}" | sed -E 's/^v?([0-9]+\.[0-9]+).*$/v\1/')" # e.g) v.1.7
+        major_minor_tag="$(echo "${tag}" | sed -E 's/^v?([0-9]+\.[0-9]+).*$/v\1/')" # e.g) v.1.7
         tags="${tags} ${major_minor_tag}"
 
         release_branch_tag="release/${major_minor_tag}" # e.g) release/v1.7
@@ -51,6 +51,7 @@ runs:
 
         commit_hash_tag=${GITHUB_SHA::8}
         tags="${tags} ${commit_hash_tag}"
+        tags="${tags} latest"
 
         elif [[ "${{ github.event_name }}" = "pull_request" || "${{ github.event_name }}" = "pull_request_target" ]]; then
           # The following is the priority of tags:
@@ -80,6 +81,7 @@ runs:
 
         commit_hash_tag=${GITHUB_SHA::8}
         tags="${tags} ${commit_hash_tag}"
+        tags="${tags} nightly"
         else
           tags="unknown"
         fi
