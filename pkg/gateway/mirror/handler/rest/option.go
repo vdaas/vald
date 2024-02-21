@@ -13,15 +13,13 @@
 // limitations under the License.
 package rest
 
-import (
-	"github.com/vdaas/vald/apis/grpc/v1/vald"
-)
+import "github.com/vdaas/vald/pkg/gateway/mirror/handler/grpc"
 
 type Option func(*handler)
 
 var defaultOptions = []Option{}
 
-func WithVald(v vald.ServerWithMirror) Option {
+func WithVald(v grpc.Server) Option {
 	return func(h *handler) {
 		h.vald = v
 	}

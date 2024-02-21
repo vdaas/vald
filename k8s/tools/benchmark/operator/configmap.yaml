@@ -19,10 +19,10 @@ metadata:
   name: vald-benchmark-operator-config
   labels:
     app.kubernetes.io/name: vald-benchmark-operator
-    helm.sh/chart: vald-benchmark-operator-v1.7.5
+    helm.sh/chart: vald-benchmark-operator-v1.7.11
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: release-name
-    app.kubernetes.io/version: v1.7.5
+    app.kubernetes.io/version: v1.7.11
     app.kubernetes.io/component: benchmark-operator
 data:
   config.yaml: |
@@ -138,5 +138,5 @@ data:
         enabled: false
         sampling_rate: 1
     job_image:
-      image: "vdaas/vald-benchmark-job:v1.7.5"
+      image: "vdaas/vald-benchmark-job:v1.7.11"
       pullPolicy: Always

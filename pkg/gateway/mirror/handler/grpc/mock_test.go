@@ -16,7 +16,6 @@ package grpc
 import (
 	"context"
 
-	"github.com/vdaas/vald/apis/grpc/v1/vald"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/pkg/gateway/mirror/service"
 )
@@ -28,9 +27,9 @@ type gatewayMock struct {
 	ForwardedContextFunc     func(ctx context.Context, podName string) context.Context
 	FromForwardedContextFunc func(ctx context.Context) string
 	BroadCastFunc            func(ctx context.Context,
-		f func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error) error
+		f func(ctx context.Context, target string, vc service.MirrorClient, copts ...grpc.CallOption) error) error
 	DoMultiFunc func(ctx context.Context, targets []string,
-		f func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error) error
+		f func(ctx context.Context, target string, vc service.MirrorClient, copts ...grpc.CallOption) error) error
 }
 
 func (gm *gatewayMock) ForwardedContext(ctx context.Context, podName string) context.Context {
@@ -42,13 +41,13 @@ func (gm *gatewayMock) FromForwardedContext(ctx context.Context) string {
 }
 
 func (gm *gatewayMock) BroadCast(ctx context.Context,
-	f func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error,
+	f func(ctx context.Context, target string, vc service.MirrorClient, copts ...grpc.CallOption) error,
 ) error {
 	return gm.BroadCastFunc(ctx, f)
 }
 
 func (gm *gatewayMock) DoMulti(ctx context.Context, targets []string,
-	f func(ctx context.Context, target string, vc vald.ClientWithMirror, copts ...grpc.CallOption) error,
+	f func(ctx context.Context, target string, vc service.MirrorClient, copts ...grpc.CallOption) error,
 ) error {
 	return gm.DoMultiFunc(ctx, targets, f)
 }

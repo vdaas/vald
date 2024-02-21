@@ -384,7 +384,7 @@ pub mod agent_server {
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
                             let fut = async move {
-                                (*inner).create_index(request).await
+                                <T as Agent>::create_index(&inner, request).await
                             };
                             Box::pin(fut)
                         }
@@ -432,7 +432,9 @@ pub mod agent_server {
                             >,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
-                            let fut = async move { (*inner).save_index(request).await };
+                            let fut = async move {
+                                <T as Agent>::save_index(&inner, request).await
+                            };
                             Box::pin(fut)
                         }
                     }
@@ -480,7 +482,7 @@ pub mod agent_server {
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
                             let fut = async move {
-                                (*inner).create_and_save_index(request).await
+                                <T as Agent>::create_and_save_index(&inner, request).await
                             };
                             Box::pin(fut)
                         }
@@ -528,7 +530,9 @@ pub mod agent_server {
                             >,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
-                            let fut = async move { (*inner).index_info(request).await };
+                            let fut = async move {
+                                <T as Agent>::index_info(&inner, request).await
+                            };
                             Box::pin(fut)
                         }
                     }
@@ -576,7 +580,7 @@ pub mod agent_server {
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
                             let fut = async move {
-                                (*inner).get_timestamp(request).await
+                                <T as Agent>::get_timestamp(&inner, request).await
                             };
                             Box::pin(fut)
                         }

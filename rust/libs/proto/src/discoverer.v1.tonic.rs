@@ -322,7 +322,9 @@ pub mod discoverer_server {
                             >,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
-                            let fut = async move { (*inner).pods(request).await };
+                            let fut = async move {
+                                <T as Discoverer>::pods(&inner, request).await
+                            };
                             Box::pin(fut)
                         }
                     }
@@ -369,7 +371,9 @@ pub mod discoverer_server {
                             >,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
-                            let fut = async move { (*inner).nodes(request).await };
+                            let fut = async move {
+                                <T as Discoverer>::nodes(&inner, request).await
+                            };
                             Box::pin(fut)
                         }
                     }
@@ -416,7 +420,9 @@ pub mod discoverer_server {
                             >,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
-                            let fut = async move { (*inner).services(request).await };
+                            let fut = async move {
+                                <T as Discoverer>::services(&inner, request).await
+                            };
                             Box::pin(fut)
                         }
                     }

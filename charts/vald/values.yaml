@@ -1904,6 +1904,30 @@ agent:
   # @schema {"name": "agent.initContainers", "alias": "initContainers"}
   # agent.initContainers -- init containers
   initContainers: []
+  # @schema {"name": "agent.clusterRole", "type": "object"}
+  clusterRole:
+    # @schema {"name": "agent.clusterRole.enabled", "type": "boolean"}
+    # agent.clusterRole.enabled -- creates clusterRole resource
+    enabled: true
+    # @schema {"name": "agent.clusterRole.name", "type": "string"}
+    # agent.clusterRole.name -- name of clusterRole
+    name: agent
+  # @schema {"name": "agent.clusterRoleBinding", "type": "object"}
+  clusterRoleBinding:
+    # @schema {"name": "agent.clusterRoleBinding.enabled", "type": "boolean"}
+    # agent.clusterRoleBinding.enabled -- creates clusterRoleBinding resource
+    enabled: true
+    # @schema {"name": "agent.clusterRoleBinding.name", "type": "string"}
+    # agent.clusterRoleBinding.name -- name of clusterRoleBinding
+    name: agent
+  # @schema {"name": "agent.serviceAccount", "type": "object"}
+  serviceAccount:
+    # @schema {"name": "agent.serviceAccount.enabled", "type": "boolean"}
+    # agent.serviceAccount.enabled -- creates service account
+    enabled: true
+    # @schema {"name": "agent.serviceAccount.name", "type": "string"}
+    # agent.serviceAccount.name -- name of service account
+    name: agent-ngt
   # @schema {"name": "agent.env", "alias": "env"}
   # agent.env -- environment variables
   env:
@@ -2035,6 +2059,12 @@ agent:
       annotations: {}
   # @schema {"name": "agent.ngt", "type": "object"}
   ngt:
+    # @schema {"name": "agent.ngt.pod_name", "type": "string"}
+    # agent.ngt.pod_name -- pod name of myself
+    pod_name: _MY_POD_NAME_
+    # @schema {"name": "agent.ngt.namespace", "type": "string"}
+    # agent.ngt.namespace -- namespace of myself
+    namespace: _MY_POD_NAMESPACE_
     # @schema {"name": "agent.ngt.index_path", "type": "string"}
     # agent.ngt.index_path -- path to index data
     index_path: ""
@@ -2107,6 +2137,12 @@ agent:
     # @schema {"name": "agent.ngt.enable_copy_on_write", "type": "boolean"}
     # agent.ngt.enable_copy_on_write -- enable copy on write saving for more stable backup
     enable_copy_on_write: false
+    # @schema {"name": "agent.ngt.enable_export_index_info_to_k8s", "type": "boolean"}
+    # agent.ngt.enable_export_index_info_to_k8s -- enable export index info to k8s
+    enable_export_index_info_to_k8s: false
+    # @schema {"name": "agent.ngt.export_index_info_duration", "type": "string"}
+    # agent.ngt.export_index_info_duration -- duration of exporting index info
+    export_index_info_duration: 1m
     # @schema {"name": "agent.ngt.vqueue", "type": "object"}
     vqueue:
       # @schema {"name": "agent.ngt.vqueue.insert_buffer_pool_size", "type": "integer"}

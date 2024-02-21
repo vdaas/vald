@@ -89,6 +89,22 @@ k8s/manifest/benchmark-operator/update: \
 	rm -rf $(TEMP_DIR)
 	cp -r charts/vald-benchmark-operator/crds k8s/tools/benchmark/operator/crds
 
+.PHONY: k8s/manifest/readreplica/clean
+## clean k8s manifests for readreplica
+k8s/manifest/readreplica/clean:
+	rm -rf \
+	    k8s/readreplica
+
+.PHONY: k8s/manifest/readreplica/update
+## update k8s manifests for readreplica using helm templates
+k8s/manifest/readreplica/update: \
+	k8s/manifest/readreplica/clean
+	helm template \
+	    --output-dir $(TEMP_DIR) \
+	    charts/vald-readreplica
+	mv $(TEMP_DIR)/vald-readreplica/templates k8s/readreplica
+	rm -rf $(TEMP_DIR)
+
 .PHONY: k8s/vald/deploy
 ## deploy vald sample cluster to k8s
 k8s/vald/deploy:

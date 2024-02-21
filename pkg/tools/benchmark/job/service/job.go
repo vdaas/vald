@@ -82,7 +82,6 @@ func (jt jobType) String() string {
 
 type job struct {
 	eg                 errgroup.Group
-	dimension          int
 	dataset            *config.BenchmarkDataset
 	jobType            jobType
 	jobFunc            func(context.Context, chan error) error

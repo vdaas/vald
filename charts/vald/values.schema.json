@@ -70,6 +70,29 @@
           "type": "object",
           "description": "deployment annotations"
         },
+        "clusterRole": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "creates clusterRole resource"
+            },
+            "name": { "type": "string", "description": "name of clusterRole" }
+          }
+        },
+        "clusterRoleBinding": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "creates clusterRoleBinding resource"
+            },
+            "name": {
+              "type": "string",
+              "description": "name of clusterRoleBinding"
+            }
+          }
+        },
         "enabled": { "type": "boolean", "description": "agent enabled" },
         "env": {
           "type": "array",
@@ -238,6 +261,10 @@
               "type": "boolean",
               "description": "enable copy on write saving for more stable backup"
             },
+            "enable_export_index_info_to_k8s": {
+              "type": "boolean",
+              "description": "enable export index info to k8s"
+            },
             "enable_in_memory_mode": {
               "type": "boolean",
               "description": "in-memory mode enabled"
@@ -250,6 +277,10 @@
               "type": "integer",
               "description": "maximum number of core ngt error buffer pool size limit",
               "minimum": 1
+            },
+            "export_index_info_duration": {
+              "type": "string",
+              "description": "duration of exporting index info"
             },
             "index_path": {
               "type": "string",
@@ -280,10 +311,18 @@
               "type": "string",
               "description": "minimum duration of load index timeout"
             },
+            "namespace": {
+              "type": "string",
+              "description": "namespace of myself"
+            },
             "object_type": {
               "type": "string",
               "description": "object type. it should be `float` or `uint8` or `float16`. for further details: https://github.com/yahoojapan/NGT/wiki/Command-Quick-Reference",
               "enum": ["float", "float16", "uint8"]
+            },
+            "pod_name": {
+              "type": "string",
+              "description": "pod name of myself"
             },
             "search_edge_size": {
               "type": "integer",
@@ -1457,6 +1496,19 @@
               "description": "service annotations"
             },
             "labels": { "type": "object", "description": "service labels" }
+          }
+        },
+        "serviceAccount": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "creates service account"
+            },
+            "name": {
+              "type": "string",
+              "description": "name of service account"
+            }
           }
         },
         "serviceType": {

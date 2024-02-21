@@ -1,0 +1,29 @@
+Vald Benchmark Operator
+===
+
+This is a Helm chart to install `vald-benchmark-operator`.
+
+
+Current chart version is `{{ template "chart.version" . }}`
+
+Table of Contents
+---
+
+- [Install](#install)
+- [Configuration](#configuration)
+
+Install
+---
+
+Add Vald Helm repository
+
+    $ helm repo add vald https://vald.vdaas.org/charts
+
+Run the following command to install the chart,
+
+    $ helm install vald-benchmark-operator vald/vald-benchmark-operator
+
+Configuration
+---
+
+{{ template "chart.valuesTable" . }}

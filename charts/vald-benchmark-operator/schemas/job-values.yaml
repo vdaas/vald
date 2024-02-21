@@ -47,9 +47,6 @@ dataset:
   # @schema {"name": "dataset.url", "type": "string"}
   # dataset.url -- the dataset url which is used for executing benchmark job with user defined hdf5 file
   url: ""
-# @schema {"name": "dimension", "type": "integer", "minimum": 1}
-# dimension -- vector dimension
-dimension: 784
 # @schema {"name": "replica", "type": "integer", "minimum": 1}
 # replica -- the number of running concurrency job
 replica: 1

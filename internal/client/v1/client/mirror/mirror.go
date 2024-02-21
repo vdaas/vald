@@ -18,7 +18,6 @@ import (
 
 	"github.com/vdaas/vald/apis/grpc/v1/mirror"
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
-	"github.com/vdaas/vald/apis/grpc/v1/vald"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/observability/trace"
@@ -69,7 +68,7 @@ func (c *client) GRPCClient() grpc.Client {
 }
 
 func (c *client) Register(ctx context.Context, in *payload.Mirror_Targets, opts ...grpc.CallOption) (res *payload.Mirror_Targets, err error) {
-	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+vald.RegisterRPCName), apiName+"/"+vald.RegisterRPCName)
+	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+mirror.RegisterRPCName), apiName+"/"+mirror.RegisterRPCName)
 	defer func() {
 		if span != nil {
 			span.End()

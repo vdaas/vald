@@ -20,6 +20,8 @@ import (
 	"context"
 	"sync/atomic"
 
+	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/sync"
 	"github.com/vdaas/vald/internal/sync/errgroup"
@@ -53,7 +55,6 @@ type bidi struct {
 	l           uint64
 	ou          [slen]*sync.Map[uint32, valueStructOu]
 	uo          [slen]*sync.Map[string, ValueStructUo]
-	eg          errgroup.Group
 }
 
 const (
@@ -77,14 +78,6 @@ func New(opts ...Option) BidiMap {
 	for i := range b.ou {
 		b.ou[i] = new(sync.Map[uint32, valueStructOu])
 		b.uo[i] = new(sync.Map[string, ValueStructUo])
-	}
-
-	if b.eg == nil {
-		b.eg, _ = errgroup.New(context.Background())
-	}
-
-	if b.concurrency > 0 {
-		b.eg.SetLimit(b.concurrency)
 	}
 
 	return b
@@ -151,24 +144,33 @@ func (b *bidi) DeleteInverse(val uint32) (key string, ok bool) {
 
 // Range retrieves all set keys and values and calls the callback function f.
 func (b *bidi) Range(ctx context.Context, f func(string, uint32, int64) bool) {
-	var wg sync.WaitGroup
+	eg, ctx := errgroup.New(ctx)
+	if b.concurrency > 0 {
+		eg.SetLimit(b.concurrency)
+	}
 	for i := range b.uo {
 		idx := i
-		wg.Add(1)
-		b.eg.Go(safety.RecoverFunc(func() (err error) {
+		eg.Go(safety.RecoverFunc(func() (err error) {
 			b.uo[idx].Range(func(uuid string, val ValueStructUo) bool {
 				select {
 				case <-ctx.Done():
+					err = ctx.Err()
 					return false
 				default:
 					return f(uuid, val.value, val.timestamp)
 				}
 			})
-			wg.Done()
+			if err != nil &&
+				(errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded)) {
+				return err
+			}
 			return nil
 		}))
 	}
-	wg.Wait()
+	err := eg.Wait()
+	if err != nil {
+		log.Error(err)
+	}
 }
 
 // Len returns the length of the cache that is set in the bidi.
@@ -180,10 +182,7 @@ func (b *bidi) Len() uint64 {
 }
 
 func (b *bidi) Close() error {
-	if b == nil {
-		return nil
-	}
-	return b.eg.Wait()
+	return nil
 }
 
 func getShardID(key string) (id uint64) {

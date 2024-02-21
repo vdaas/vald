@@ -54,6 +54,8 @@ jobs:
         run: |
           make helm/package/vald
           make helm/package/vald-helm-operator
+          make helm/package/vald-benchmark-operator
+          make helm/package/vald-readreplica
       - name: Push to gh-pages
         run: |
           git checkout .

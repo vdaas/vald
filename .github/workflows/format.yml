@@ -105,7 +105,7 @@ jobs:
         run: |
           make deps/install
           make format
-          git checkout go.mod go.sum ./rust/Cargo.lock
+          git checkout go.mod go.sum ./example/client/go.mod ./example/client/go.sum ./rust/Cargo.lock
       - name: Check format and deps difference
         run: |
           if git diff --quiet --exit-code; then

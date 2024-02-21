@@ -337,11 +337,6 @@
       },
       "required": ["name", "indexes", "group", "range"]
     },
-    "dimension": {
-      "type": "integer",
-      "description": "vector dimension",
-      "minimum": 1
-    },
     "global_config": {
       "type": "object",
       "properties": {

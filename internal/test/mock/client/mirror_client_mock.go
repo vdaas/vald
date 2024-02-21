@@ -16,13 +16,15 @@ package client
 import (
 	"context"
 
+	"github.com/vdaas/vald/apis/grpc/v1/mirror"
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
 	"github.com/vdaas/vald/internal/net/grpc"
 )
 
 type MirrorClientMock struct {
-	vald.ClientWithMirror
+	vald.Client
+	mirror.MirrorClient
 
 	InsertFunc            func(ctx context.Context, in *payload.Insert_Request, opts ...grpc.CallOption) (*payload.Object_Location, error)
 	UpdateFunc            func(ctx context.Context, in *payload.Update_Request, opts ...grpc.CallOption) (*payload.Object_Location, error)

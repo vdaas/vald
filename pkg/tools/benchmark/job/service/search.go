@@ -66,10 +66,6 @@ func (j *job) search(ctx context.Context, ech chan error) error {
 			}
 			// idx is the modulo, which takes between <0, len(vecs)-1>.
 			idx := (iter - 1) % len(vecs)
-			if len(vecs[idx]) != j.dimension {
-				log.Warn("len(vecs) ", len(vecs[iter]), "is not matched with ", j.dimension)
-				return nil
-			}
 			res, err := j.client.Search(egctx, &payload.Search_Request{
 				Vector: vecs[idx],
 				Config: cfg,
@@ -121,10 +117,6 @@ func (j *job) search(ctx context.Context, ech chan error) error {
 				log.Debugf("[benchmark job] Start linear search: iter = %d", iter)
 				// idx is the modulo, which takes between <0, len(vecs)-1>.
 				idx := (iter - 1) % len(vecs)
-				if len(vecs[idx]) != j.dimension {
-					log.Warn("len(vecs) ", len(vecs[idx]), "is not matched with ", j.dimension)
-					return nil
-				}
 				res, err := j.client.LinearSearch(egctx, &payload.Search_Request{
 					Vector: vecs[idx],
 					Config: cfg,
