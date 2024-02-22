@@ -53,11 +53,9 @@ runs:
           ["vdaas/vald-ci-container"]=""
         )
 
-        for image in ${IMAGES}
-        do
+        for image in ${IMAGES}; do
           echo "check for ${image}"
-          for tag in ${TAGS}
-          do
+          for tag in ${TAGS}; do
             if curl -s "https://registry.hub.docker.com/v2/repositories/${image}/tags/${tag}" | jq '.name' | grep -v "null"; then
               echo "${image}:${tag} exists. adding a helm option '--set ${m[${image}]}=${tag}'."
               export HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIONS} --set ${m[${image}]}=${tag}"
