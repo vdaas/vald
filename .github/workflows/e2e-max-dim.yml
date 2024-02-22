@@ -61,8 +61,8 @@ jobs:
               DIM=$(($DIM-1))
             fi
 
-            export HELM_EXTRA_OPTIOINS="--set agent.ngt.dimension=${DIM}"
-            make k8s/vald/deploy HELM_VALUES=${VALUES} HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIOINS}"
+            export HELM_EXTRA_OPTIONS="--set agent.ngt.dimension=${DIM}"
+            make k8s/vald/deploy HELM_VALUES=${VALUES} HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIONS}"
 
             sleep 3
 
@@ -95,11 +95,12 @@ jobs:
             rm ${FILEPATH}
 
             echo "removing cluster"
-            make k8s/vald/delete HELM_VALUES=${VALUES} HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIOINS}"
+            make k8s/vald/delete HELM_VALUES=${VALUES} HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIONS}"
           done
           echo "MAX_BIT=${BIT}" >> $GITHUB_OUTPUT
           echo "MAX_BIT=${BIT}"
         env:
+          HELM_EXTRA_OPTIONS: ${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }}
           WAIT_FOR_SELECTOR: app=vald-agent
           WAIT_FOR_TIMEOUT: 29m
           VALUES: .github/helm/values/values-max-dim.yaml
