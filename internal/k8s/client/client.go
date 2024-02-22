@@ -181,7 +181,11 @@ func (*client) LabelSelector(key string, op selection.Operator, vals []string) (
 	return labels.NewSelector().Add(*requirements), nil
 }
 
-type Patcher struct {
+type Patcher interface {
+	ApplyPodAnnotations(ctx context.Context, name, namespace string, entries map[string]string) error
+}
+
+type patcher struct {
 	client       Client
 	fieldManager string
 }
@@ -189,16 +193,16 @@ type Patcher struct {
 func NewPatcher(fieldManager string) (Patcher, error) {
 	client, err := New()
 	if err != nil {
-		return Patcher{}, err
+		return nil, err
 	}
 
-	return Patcher{
+	return &patcher{
 		client:       client,
 		fieldManager: fieldManager,
 	}, nil
 }
 
-func (s *Patcher) ApplyPodAnnotations(ctx context.Context, name, namespace string, entries map[string]string) error {
+func (s *patcher) ApplyPodAnnotations(ctx context.Context, name, namespace string, entries map[string]string) error {
 	var podList corev1.PodList
 	if err := s.client.List(ctx, &podList, &cli.ListOptions{
 		Namespace:     namespace,
