@@ -61,8 +61,7 @@ jobs:
               DIM=$(($DIM-1))
             fi
 
-            export HELM_EXTRA_OPTIONS="--set agent.ngt.dimension=${DIM}"
-            make k8s/vald/deploy HELM_VALUES=${VALUES} HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIONS}"
+            make k8s/vald/deploy HELM_VALUES=${VALUES} HELM_EXTRA_OPTIONS="--set agent.ngt.dimension=${DIM} ${HELM_EXTRA_OPTIONS}"
 
             sleep 3
 
