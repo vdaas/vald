@@ -51,6 +51,8 @@ import (
 	"github.com/vdaas/vald/pkg/agent/internal/vqueue"
 )
 
+type contextSaveIndexTimeKey string
+
 type NGT interface {
 	Start(ctx context.Context) <-chan error
 	Search(ctx context.Context, vec []float32, size uint32, epsilon, radius float32) (*payload.Search_Response, error)
@@ -161,12 +163,14 @@ const (
 	originIndexDirName = "origin"
 	brokenIndexDirName = "broken"
 
-	fieldManager                                 = "vald-agent-index-controller"
 	uncommittedAnnotationsKey                    = "vald.vdaas.org/uncommitted"
 	unsavedProcessedVqAnnotationsKey             = "vald.vdaas.org/unsaved-processed-vq"
 	unsavedCreateIndexExecutionNumAnnotationsKey = "vald.vdaas.org/unsaved-create-index-execution"
 	lastTimeSaveIndexTimestampAnnotationsKey     = "vald.vdaas.org/last-time-save-index-timestamp"
 	indexCountAnnotationsKey                     = "vald.vdaas.org/index-count"
+
+	// use this only for tests. usually just leave the ctx value empty and let time.Now() be used
+	saveIndexTimeKey contextSaveIndexTimeKey = "saveIndexTimeKey"
 )
 
 func New(cfg *config.NGT, opts ...Option) (nn NGT, err error) {
@@ -232,14 +236,6 @@ func New(cfg *config.NGT, opts ...Option) (nn NGT, err error) {
 	}
 	n.indexing.Store(false)
 	n.saving.Store(false)
-
-	if n.enableExportIndexInfo {
-		patcher, err := client.NewPatcher(fieldManager)
-		if err != nil {
-			return nil, fmt.Errorf("failed to create pacher: %w", err)
-		}
-		n.patcher = patcher
-	}
 
 	return n, nil
 }
@@ -1864,9 +1860,8 @@ func (n *ngt) unsavedNumberOfCreateIndexExecutionEntry() (k, v string) {
 	return unsavedCreateIndexExecutionNumAnnotationsKey, strconv.FormatUint(num, 10)
 }
 
-func (n *ngt) lastTimeSaveIndexTimestampEntry() (k, v string) {
-	timestamp := time.Now().UTC().Format(time.RFC3339)
-	return lastTimeSaveIndexTimestampAnnotationsKey, timestamp
+func (n *ngt) lastTimeSaveIndexTimestampEntry(timestamp time.Time) (k, v string) {
+	return lastTimeSaveIndexTimestampAnnotationsKey, timestamp.UTC().Format(time.RFC3339)
 }
 
 func (n *ngt) indexCountEntry() (k, v string) {
@@ -1904,7 +1899,13 @@ func (n *ngt) exportMetricsOnCreateIndex(ctx context.Context) error {
 func (n *ngt) exportMetricsOnSaveIndex(ctx context.Context) error {
 	entries := make(map[string]string)
 
-	k, v := n.lastTimeSaveIndexTimestampEntry()
+	val := ctx.Value(saveIndexTimeKey)
+	t, ok := val.(time.Time)
+	if !ok {
+		t = time.Now()
+	}
+
+	k, v := n.lastTimeSaveIndexTimestampEntry(t)
 	entries[k] = v
 
 	k, v = n.unsavedNumberOfCreateIndexExecutionEntry()
