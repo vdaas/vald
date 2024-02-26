@@ -15,6 +15,7 @@
 //
 
 // Package service manages the main logic of server.
+// DELETE
 package service
 
 import (
