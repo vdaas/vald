@@ -23,7 +23,9 @@ import (
 	"time"
 
 	core "github.com/vdaas/vald/internal/core/algorithm/ngt"
+	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/file"
+	"github.com/vdaas/vald/internal/k8s/client"
 	"github.com/vdaas/vald/internal/rand"
 	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/sync/errgroup"
@@ -323,6 +325,17 @@ func WithExportIndexInfoDuration(dur string) Option {
 
 		n.exportIndexInfoDuration = d
 
+		return nil
+	}
+}
+
+// WithPatcher returns the functional option to set the patcher for patching k8s resources.
+func WithPatcher(p client.Patcher) Option {
+	return func(n *ngt) error {
+		if p == nil {
+			return errors.NewErrInvalidOption("patcher", p)
+		}
+		n.patcher = p
 		return nil
 	}
 }
