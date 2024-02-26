@@ -1,5 +1,112 @@
 # CHANGELOG
 
+## v1.7.12
+
+### Docker images
+
+<table>
+  <tr>
+    <th>component</th>
+    <th>Docker pull</th>
+  </tr>
+  <tr>
+    <td>Agent NGT</td>
+    <td>
+      <code>docker pull vdaas/vald-agent-ngt:v1.7.12</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-agent-ngt:v1.7.12</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Agent sidecar</td>
+    <td>
+      <code>docker pull vdaas/vald-agent-sidecar:v1.7.12</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-agent-sidecar:v1.7.12</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Discoverers</td>
+    <td>
+      <code>docker pull vdaas/vald-discoverer-k8s:v1.7.12</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-discoverer-k8s:v1.7.12</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Gateways</td>
+    <td>
+      <code>docker pull vdaas/vald-lb-gateway:v1.7.12</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-lb-gateway:v1.7.12</code><br/>
+      <code>docker pull vdaas/vald-filter-gateway:v1.7.12</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-filter-gateway:v1.7.12</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Index Manager</td>
+    <td>
+      <code>docker pull vdaas/vald-manager-index:v1.7.12</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-manager-index:v1.7.12</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Helm Operator</td>
+    <td>
+      <code>docker pull vdaas/vald-helm-operator:v1.7.12</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-helm-operator:v1.7.12</code>
+    </td>
+  </tr>
+</table>
+
+### Documents
+
+- [GoDoc](https://pkg.go.dev/github.com/vdaas/vald@v1.7.12)
+- [Helm Chart Reference](https://github.com/vdaas/vald/blob/v1.7.12/charts/vald/README.md)
+- [Helm Operator Chart Reference](https://github.com/vdaas/vald/blob/v1.7.12/charts/vald-helm-operator/README.md)
+
+### Changes
+
+:sparkles: New feature
+
+- Add rotate-all option to rotator [#2305](https://github.com/vdaas/vald/pull/2305) [#2393](https://github.com/vdaas/vald/pull/2393)
+- Make agent export index metrics to Pod k8s resource [#2319](https://github.com/vdaas/vald/pull/2319) [#2372](https://github.com/vdaas/vald/pull/2372)
+
+:recycle: Refactor
+
+- Delete unnecessary code for mirror [#2366](https://github.com/vdaas/vald/pull/2366) [#2391](https://github.com/vdaas/vald/pull/2391)
+
+:bug: Bugfix
+
+- Resolve kvs already closed before last saving [#2390](https://github.com/vdaas/vald/pull/2390) [#2394](https://github.com/vdaas/vald/pull/2394)
+
+:pencil2: Document
+
+- Create continous benchmark doc [#2352](https://github.com/vdaas/vald/pull/2352) [#2395](https://github.com/vdaas/vald/pull/2395)
+
+:white_check_mark: Testing
+
+- Fix: build error of internal kvs test [#2396](https://github.com/vdaas/vald/pull/2396) [#2398](https://github.com/vdaas/vald/pull/2398)
+
+:green_heart: CI
+
+- Fix: disable protobuf dispatch for client [#2401](https://github.com/vdaas/vald/pull/2401) [#2403](https://github.com/vdaas/vald/pull/2403)
+- Add Con-Bench helm chart to the Vald charts [#2388](https://github.com/vdaas/vald/pull/2388) [#2389](https://github.com/vdaas/vald/pull/2389)
+- Update workflow to release readreplica chart [#2383](https://github.com/vdaas/vald/pull/2383) [#2387](https://github.com/vdaas/vald/pull/2387)
+- Backport ci deps others [#2386](https://github.com/vdaas/vald/pull/2386)
+- Update docker build target platform selection rules [#2370](https://github.com/vdaas/vald/pull/2370) [#2374](https://github.com/vdaas/vald/pull/2374)
+- Add commit hash build image [#2359](https://github.com/vdaas/vald/pull/2359) [#2371](https://github.com/vdaas/vald/pull/2371)
+- Refactor code using golangci-lint [#2362](https://github.com/vdaas/vald/pull/2362) [#2365](https://github.com/vdaas/vald/pull/2365)
+- Change docker scan timeout longer [#2363](https://github.com/vdaas/vald/pull/2363) [#2364](https://github.com/vdaas/vald/pull/2364)
+
+:arrow_up: Update dependencies
+
+- Update deps [#2404](https://github.com/vdaas/vald/pull/2404) [#2405](https://github.com/vdaas/vald/pull/2405)
+
+:lock: Security
+
+- Create SECURITY.md [#2367](https://github.com/vdaas/vald/pull/2367) [#2368](https://github.com/vdaas/vald/pull/2368)
+
+:art: Design
+
+- Change JP logo to EN logo [#2369](https://github.com/vdaas/vald/pull/2369) [#2392](https://github.com/vdaas/vald/pull/2392)
+
 ## v1.7.11
 
 ### Docker images
