@@ -329,6 +329,7 @@ func WithExportIndexInfoDuration(dur string) Option {
 	}
 }
 
+// WithPatcher returns the functional option to set the patcher for patching k8s resources.
 func WithPatcher(p client.Patcher) Option {
 	return func(n *ngt) error {
 		if p == nil {

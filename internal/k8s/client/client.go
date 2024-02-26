@@ -181,7 +181,9 @@ func (*client) LabelSelector(key string, op selection.Operator, vals []string) (
 	return labels.NewSelector().Add(*requirements), nil
 }
 
+// Patcher is an interface for patching resources with controller-runtime client.
 type Patcher interface {
+	// ApplyPodAnnotations applies the given annotations to the agent pod with server-side apply.
 	ApplyPodAnnotations(ctx context.Context, name, namespace string, entries map[string]string) error
 }
 
