@@ -69,3 +69,14 @@ func (m *ValdK8sClientMock) LabelSelector(key string, op selection.Operator, val
 	args := m.Called(key, op, vals)
 	return args.Get(0).(labels.Selector), args.Error(1)
 }
+
+type PatcherMock struct {
+	mock.Mock
+}
+
+var _ client.Patcher = (*PatcherMock)(nil)
+
+func (m *PatcherMock) ApplyPodAnnotations(ctx context.Context, name, namespace string, entries map[string]string) error {
+	args := m.Called(ctx, name, namespace, entries)
+	return args.Error(0)
+}
