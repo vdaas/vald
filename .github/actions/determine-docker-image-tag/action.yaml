@@ -38,24 +38,24 @@ runs:
       id: determine_tag_name
       run: |
         if [[ "$GITHUB_REF" =~ ^refs/tags/.* ]]; then
-        # The following is the priority of tags:
-        #   tag -> release/vx.x tag (release branch build tag) -> commit hash tag -> vx.x -> latest tag
-        # When a tag is created, the image build for the tag may not be finished.
-        # In that case, the CI container will use the tag for the release branch.
-        # At the timing of the creation of the tag, the vx.x points to the previous version, so the priority is lowered.
-        # (At the timing of the start of the image build for tag, vx.x and tag are equal.)
-        tag=$(echo $GITHUB_REF | sed -e 's:^refs/tags/::') # e.g) v1.7.6
-        tags="${tag}"
+          # The following is the priority of tags:
+          #   tag -> release/vx.x tag (release branch build tag) -> commit hash tag -> vx.x -> latest tag
+          # When a tag is created, the image build for the tag may not be finished.
+          # In that case, the CI container will use the tag for the release branch.
+          # At the timing of the creation of the tag, the vx.x points to the previous version, so the priority is lowered.
+          # (At the timing of the start of the image build for tag, vx.x and tag are equal.)
+          tag=$(echo $GITHUB_REF | sed -e 's:^refs/tags/::') # e.g) v1.7.6
+          tags="${tag}"
 
-        release_branch_tag="release/${major_minor_tag}" # e.g) release/v1.7
-        tags="${tags} ${release_branch_tag}"
+          release_branch_tag="release/${major_minor_tag}" # e.g) release/v1.7
+          tags="${tags} ${release_branch_tag}"
 
-        major_minor_tag="$(echo "${tag}" | sed -E 's/^v?([0-9]+\.[0-9]+).*$/v\1/')" # e.g) v.1.7
-        tags="${tags} ${major_minor_tag}"
+          major_minor_tag="$(echo "${tag}" | sed -E 's/^v?([0-9]+\.[0-9]+).*$/v\1/')" # e.g) v.1.7
+          tags="${tags} ${major_minor_tag}"
 
-        commit_hash_tag=${GITHUB_SHA::8}
-        tags="${tags} ${commit_hash_tag}"
-        tags="${tags} latest"
+          commit_hash_tag=${GITHUB_SHA::8}
+          tags="${tags} ${commit_hash_tag}"
+          tags="${tags} latest"
 
         elif [[ "${{ github.event_name }}" = "pull_request" || "${{ github.event_name }}" = "pull_request_target" ]]; then
           # The following is the priority of tags:
@@ -80,14 +80,13 @@ runs:
           tags="${tags} nightly"
 
         elif [[ "$GITHUB_REF" =~ ^refs/heads/release/v([0-9]+)\.([0-9]+)$ ]]; then
-        # The following is the priority of tags:
-        #   release/vx.x tag (release branch build tag) -> commit hash tag -> nightly tag
-        release_branch_tag=$(echo $GITHUB_REF | sed -e 's:^refs/heads/::') # e.g) release/v1.7
-        tags="${release_branch_tag}"
+          # The following is the priority of tags:
+          #   release/vx.x tag (release branch build tag) -> commit hash tag -> nightly tag
+          release_branch_tag=$(echo $GITHUB_REF | sed -e 's:^refs/heads/::') # e.g) release/v1.7
+          tags="${release_branch_tag}"
 
-        commit_hash_tag=${GITHUB_SHA::8}
-        tags="${tags} ${commit_hash_tag}"
-        tags="${tags} nightly"
+          commit_hash_tag=${GITHUB_SHA::8}
+          tags="${tags} ${commit_hash_tag}"
         else
           tags="unknown"
         fi
