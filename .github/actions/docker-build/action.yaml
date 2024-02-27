@@ -94,10 +94,8 @@ runs:
       shell: bash
       id: add_extra_tags
       run: |
-        if [[ "${{ github.event_name }}" = "pull_request" || "${{ github.event_name }}" = "pull_request_target" ]]; then
-          extra_tags="-t ${IMAGE_NAME}:${PRIMARY_TAG} -t ${ALTER_IMAGE_NAME}:${PRIMARY_TAG}"
-        else
-          for tag in ${TAGS}; do
+        if [[ "${{ github.event_name }}" != "pull_request" && "${{ github.event_name }}" != "pull_request_target" ]]; then
+          for tag in ${SECONDARY_TAGS}; do
             extra_tags="${extra_tags} -t ${IMAGE_NAME}:${tag} -t ${ALTER_IMAGE_NAME}:${tag}"
           done
         fi
@@ -106,7 +104,7 @@ runs:
       env:
         IMAGE_NAME: ${{ steps.image_name.outputs.IMAGE_NAME }}
         ALTER_IMAGE_NAME: ${{ steps.image_name.outputs.ALTER_IMAGE_NAME }}
-        TAGS: ${{ steps.determine_tag_name.outputs.TAGS }}
+        SECONDARY_TAGS: ${{ steps.determine_tag_name.outputs.SECONDARY_TAGS }}
         PRIMARY_TAG: ${{ steps.determine_tag_name.outputs.PRIMARY_TAG }}
     - name: Build and Push
       shell: bash

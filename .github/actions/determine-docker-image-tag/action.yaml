@@ -96,9 +96,12 @@ runs:
           fi
         fi
         primary_tag=$(echo ${tags} | awk '{print $1}')
+        secondary_tags=$(echo ${tags} | awk '{$1=""; print substr($0,2)}')
 
         echo "Determined tags: ${tags}"
         echo "Primary tag: ${primary_tag}"
+        echo "Secondary tags: ${secondary_tags}"
 
-        echo "TAGS=${tags}"               >> $GITHUB_OUTPUT
-        echo "PRIMARY_TAG=${primary_tag}" >> $GITHUB_OUTPUT
+        echo "TAGS=${tags}"                     >> $GITHUB_OUTPUT
+        echo "PRIMARY_TAG=${primary_tag}"       >> $GITHUB_OUTPUT
+        echo "SECONDARY_TAGS=${secondary_tags}" >> $GITHUB_OUTPUT
