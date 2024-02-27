@@ -98,7 +98,7 @@ runs:
           extra_tags="-t ${IMAGE_NAME}:${PRIMARY_TAG} -t ${ALTER_IMAGE_NAME}:${PRIMARY_TAG}"
         else
           for tag in ${TAGS}; do
-            if [[ "${tag}" = "nightly" ]] && (! [[ "$GITHUB_REF" =~ ^refs/heads/main$ ]] || ! [[ "$GITHUB_REF" =~ ^refs/heads/master$ ]]); then
+            if [[ "${tag}" = "nightly" ]] && ! ([[ "$GITHUB_REF" =~ ^refs/heads/main$ ]] || [[ "$GITHUB_REF" =~ ^refs/heads/master$ ]]); then
               continue
             fi
             extra_tags="${extra_tags} -t ${IMAGE_NAME}:${tag} -t ${ALTER_IMAGE_NAME}:${tag}"
