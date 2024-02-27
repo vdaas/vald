@@ -83,8 +83,7 @@ func New(agentName string, opts ...Option) (o Operator, err error) {
 	if err != nil {
 		return nil, err
 	}
-	jobOpts := k8s.WithResourceController(jobController)
-	k8sOpts = append(k8sOpts, jobOpts)
+	k8sOpts = append(k8sOpts, k8s.WithResourceController(jobController))
 
 	operator.ctrl, err = k8s.New(k8sOpts...)
 	if err != nil {
