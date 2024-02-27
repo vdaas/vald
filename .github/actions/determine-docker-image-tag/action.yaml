@@ -88,7 +88,12 @@ runs:
           commit_hash_tag=${GITHUB_SHA::8}
           tags="${tags} ${commit_hash_tag}"
         else
-          tags="unknown"
+          tag_prefix="unknown/${{ github.event_name }}"
+          if [[ "$GITHUB_BASE_REF" != "" ]]; then
+            tags="${tag_prefix}/${GITHUB_BASE_REF}"
+          else
+            tags="${tag_prefix}/${GITHUB_SHA::8}"
+          fi
         fi
         primary_tag=$(echo ${tags} | awk '{print $1}')
 
