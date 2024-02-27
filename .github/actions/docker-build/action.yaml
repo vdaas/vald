@@ -104,7 +104,6 @@ runs:
       env:
         IMAGE_NAME: ${{ steps.image_name.outputs.IMAGE_NAME }}
         ALTER_IMAGE_NAME: ${{ steps.image_name.outputs.ALTER_IMAGE_NAME }}
-        PRIMARY_TAG: ${{ steps.determine_tag_name.outputs.PRIMARY_TAG }}
         SECONDARY_TAGS: ${{ steps.determine_tag_name.outputs.SECONDARY_TAGS }}
     - name: Build and Push
       shell: bash
