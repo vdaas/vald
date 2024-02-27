@@ -50,7 +50,6 @@ jobs:
         id: deploy_vald
         uses: ./.github/actions/e2e-deploy-vald
         with:
-          default_image_tag: ${{ steps.setup_e2e.outputs.DEFAULT_IMAGE_TAG }}
           helm_extra_options: ${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }}
           values: .github/helm/values/values-lb.yaml
           wait_for_selector: app=vald-lb-gateway
@@ -96,7 +95,6 @@ jobs:
           require_k3d: false
       - name: Merge Docker image tag
         run: |
-          yq e ".spec.defaults.image.tag=\"${{ steps.setup_e2e.outputs.DEFAULT_IMAGE_TAG }}\"" -i ./.github/valdrelease/valdrelease.yaml
           IMAGE_TAGS=(${{ steps.setup_e2e.outputs.IMAGE_TAGS }})
 
           for IMAGE_TAG in "${IMAGE_TAGS[@]}"
@@ -112,7 +110,6 @@ jobs:
         id: deploy_vald
         uses: ./.github/actions/e2e-deploy-vald-helm-operator
         with:
-          default_image_tag: ${{ steps.vald_helm_operator.outputs.DEFAULT_IMAGE_TAG }}
           helm_extra_options: ${{ steps.vald_helm_operator.outputs.HELM_EXTRA_OPTIONS }}
           valdrelease: ./.github/valdrelease/valdrelease.yaml
           wait_for_selector: app=vald-lb-gateway
@@ -193,7 +190,6 @@ jobs:
         id: deploy_vald
         uses: ./.github/actions/e2e-deploy-vald
         with:
-          default_image_tag: ${{ steps.setup_e2e.outputs.DEFAULT_IMAGE_TAG }}
           helm_extra_options: ${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }}
           values: .github/helm/values/values-lb.yaml
           wait_for_selector: app=vald-lb-gateway
@@ -232,7 +228,6 @@ jobs:
         id: deploy_vald
         uses: ./.github/actions/e2e-deploy-vald
         with:
-          default_image_tag: ${{ steps.setup_e2e.outputs.DEFAULT_IMAGE_TAG }}
           helm_extra_options: ${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }}
           values: .github/helm/values/values-lb.yaml
           wait_for_selector: app=vald-lb-gateway
@@ -308,7 +303,6 @@ jobs:
         id: deploy_vald_readreplica
         uses: ./.github/actions/e2e-deploy-vald-readreplica
         with:
-          default_image_tag: ${{ steps.setup_e2e.outputs.DEFAULT_IMAGE_TAG }}
           helm_extra_options: ${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }}
           values: .github/helm/values/values-readreplica.yaml
           wait_for_selector: app=vald-lb-gateway

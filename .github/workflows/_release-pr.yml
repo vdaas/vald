@@ -40,7 +40,7 @@ jobs:
       - detect-ci-container
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/vdaas/vald/vald-ci-container:${{ needs.detect-ci-container.outputs.TAG_NAME }}
+      image: ghcr.io/vdaas/vald/vald-ci-container:${{ needs.detect-ci-container.outputs.TAG }}
     env:
       RELEASE_BRANCH_NAME: ${{ inputs.release_branch_name }}
       PREPARE_RELEASE_BRANCH_NAME: prepare/${{ inputs.release_branch_name }}

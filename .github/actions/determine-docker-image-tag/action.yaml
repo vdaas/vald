@@ -16,12 +16,12 @@
 name: "Determine Docker image tag"
 description: "A action to determine Docker image tag"
 outputs:
+  TAGS:
+    description: "docker image tag list"
+    value: ${{ steps.determine_tag_name.outputs.TAGS }}
   PRIMARY_TAG:
-    description: "Primary tag"
+    description: "highest priority docker image tag in tag list"
     value: ${{ steps.determine_tag_name.outputs.PRIMARY_TAG }}
-  DEFAULT_TAG:
-    description: "default tag. Tag to be used if the primary tag does not exist"
-    value: ${{ steps.determine_tag_name.outputs.DEFAULT_TAG }}
 runs:
   using: "composite"
   steps:
@@ -38,41 +38,70 @@ runs:
       id: determine_tag_name
       run: |
         if [[ "$GITHUB_REF" =~ ^refs/tags/.* ]]; then
-          tag_name=`echo $GITHUB_REF | sed -e 's:^refs/tags/::'`
-          echo "${tag_name}" > versions/VALD_VERSION
+          # The following is the priority of tags:
+          #   tag -> release/vx.x tag (release branch build tag) -> commit hash tag -> vx.x -> latest tag
+          # When a tag is created, the image build for the tag may not be finished.
+          # In that case, the CI container will use the tag for the release branch.
+          # At the timing of the creation of the tag, the vx.x points to the previous version, so the priority is lowered.
+          # (At the timing of the start of the image build for tag, vx.x and tag are equal.)
+          tag=$(echo $GITHUB_REF | sed -e 's:^refs/tags/::') # e.g) v1.7.6
+          tags="${tag}"
 
-          primary_tag="${tag_name}"
-          default_tag="nightly"
+          release_branch_tag="release/${major_minor_tag}" # e.g) release/v1.7
+          tags="${tags} ${release_branch_tag}"
+
+          major_minor_tag="$(echo "${tag}" | sed -E 's/^v?([0-9]+\.[0-9]+).*$/v\1/')" # e.g) v.1.7
+          tags="${tags} ${major_minor_tag}"
+
+          commit_hash_tag=${GITHUB_SHA::8}
+          tags="${tags} ${commit_hash_tag}"
+          tags="${tags} latest"
+
         elif [[ "${{ github.event_name }}" = "pull_request" || "${{ github.event_name }}" = "pull_request_target" ]]; then
-          pr_num=`cat $GITHUB_EVENT_PATH | jq -r ".number"`
-          echo "PR-${pr_num}" > versions/VALD_VERSION
+          # The following is the priority of tags:
+          #   pr-xxx tag (PR build tag) -> release/vx.x tag (release branch tag) or nightly tag
+          pr_num=$(cat $GITHUB_EVENT_PATH | jq -r ".number")
+          tags="pr-${pr_num}"
 
-          primary_tag="pr-${pr_num}"
-          default_tag="nightly"
-
-          # For pull request to the release branch, use the release branch latest tag as the default tag (vx.x).
+          # For pull request to the release branch, use the release branch latest tag as the default tag (release/vx.x).
           # This is only set if the event that triggers the workflow execution is pull_request or pull_request_target.
           if [[ "$GITHUB_BASE_REF" =~ ^release/v([0-9]+)\.([0-9]+)$ ]]; then
-            tag_name=`echo $GITHUB_BASE_REF | sed -e 's:^release/::'`
-            default_tag="${tag_name}"
+            tags="${tags} $(echo "$GITHUB_BASE_REF")"
+          else
+            # Currently, it is assumed to be nightly.
+            # However, further conditions will be added in the future if they cause inconvenience.
+            tags="${tags} nightly"
           fi
         elif [ "$GITHUB_REF" = "refs/heads/main" ]; then
-          echo "nightly" > versions/VALD_VERSION
+          # The following is the priority of tags:
+          #   commit hash tag -> nightly tag
+          commit_hash_tag=${GITHUB_SHA::8}
+          tags="${commit_hash_tag}"
+          tags="${tags} nightly"
 
-          primary_tag="nightly"
-          default_tag="nightly"
         elif [[ "$GITHUB_REF" =~ ^refs/heads/release/v([0-9]+)\.([0-9]+)$ ]]; then
-          tag_name=`echo $GITHUB_REF | sed -e 's:^refs/heads/release/::'`
-          echo "${tag_name}" > versions/VALD_VERSION
+          # The following is the priority of tags:
+          #   release/vx.x tag (release branch build tag) -> commit hash tag -> nightly tag
+          release_branch_tag=$(echo $GITHUB_REF | sed -e 's:^refs/heads/::') # e.g) release/v1.7
+          tags="${release_branch_tag}"
 
-          primary_tag="${tag_name}"
-          default_tag="nightly"
+          commit_hash_tag=${GITHUB_SHA::8}
+          tags="${tags} ${commit_hash_tag}"
         else
-          primary_tag="unknown"
-          default_tag="unknown"
+          tag_prefix="unknown/${{ github.event_name }}"
+          if [[ "$GITHUB_BASE_REF" != "" ]]; then
+            tags="${tag_prefix}/${GITHUB_BASE_REF}"
+          else
+            tags="${tag_prefix}/${GITHUB_SHA::8}"
+          fi
         fi
+        primary_tag=$(echo ${tags} | awk '{print $1}')
+        secondary_tags=$(echo ${tags} | awk '{$1=""; print substr($0,2)}')
 
-        echo "PRIMARY_TAG is determined: ${primary_tag}"
-        echo "DEFAULT_TAG is determined: ${default_tag}"
-        echo "PRIMARY_TAG=${primary_tag}" >> $GITHUB_OUTPUT
-        echo "DEFAULT_TAG=${default_tag}" >> $GITHUB_OUTPUT
+        echo "Determined tags: ${tags}"
+        echo "Primary tag: ${primary_tag}"
+        echo "Secondary tags: ${secondary_tags}"
+
+        echo "TAGS=${tags}"                     >> $GITHUB_OUTPUT
+        echo "PRIMARY_TAG=${primary_tag}"       >> $GITHUB_OUTPUT
+        echo "SECONDARY_TAGS=${secondary_tags}" >> $GITHUB_OUTPUT
