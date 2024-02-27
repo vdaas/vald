@@ -22,6 +22,9 @@ outputs:
   PRIMARY_TAG:
     description: "highest priority docker image tag in tag list"
     value: ${{ steps.determine_tag_name.outputs.PRIMARY_TAG }}
+  SECONDARY_TAGS:
+    description: "List of tags excluding the first one"
+    value: ${{ steps.determine_tag_name.outputs.SECONDARY_TAGS }}
 runs:
   using: "composite"
   steps:
