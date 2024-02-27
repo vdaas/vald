@@ -137,7 +137,7 @@ func New(selector *config.Selectors, opts ...Option) (dsc Discoverer, err error)
 			pod.WithOnErrorFunc(func(err error) {
 				log.Error("failed to reconcile:", err)
 			}),
-			pod.WithOnReconcileFunc(func(podList map[string][]pod.Pod) {
+			pod.WithOnReconcileFunc(func(_ context.Context, podList map[string][]pod.Pod) {
 				log.Debugf("pod resource reconciled\t%#v", podList)
 				for name, pods := range podList {
 					if len(pods) > d.maxPods {

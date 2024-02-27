@@ -35,6 +35,7 @@ LOADTEST_IMAGE                  = $(NAME)-loadtest
 INDEX_CORRECTION_IMAGE          = $(NAME)-index-correction
 INDEX_CREATION_IMAGE            = $(NAME)-index-creation
 INDEX_SAVE_IMAGE                = $(NAME)-index-save
+INDEX_OPERATOR_IMAGE            = $(NAME)-index-operator
 READREPLICA_ROTATE_IMAGE        = $(NAME)-readreplica-rotate
 MANAGER_INDEX_IMAGE             = $(NAME)-manager-index
 BENCHMARK_JOB_IMAGE             = $(NAME)-benchmark-job
