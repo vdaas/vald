@@ -57,7 +57,7 @@ func New(agentName string, opts ...Option) (o Operator, err error) {
 		}
 	}
 
-	k8sOpts := k8s.WithResourceController(pod.New(
+	podController := pod.New(
 		pod.WithControllerName("pod reconciler for index operator"),
 		pod.WithOnErrorFunc(func(err error) {
 			log.Error("failed to reconcile:", err)
@@ -67,7 +67,7 @@ func New(agentName string, opts ...Option) (o Operator, err error) {
 		pod.WithLabels(map[string]string{
 			"app": agentName,
 		}),
-	))
+	)
 
 	jobController, err := job.New(
 		job.WithControllerName("job reconciler for index operator"),
@@ -80,7 +80,12 @@ func New(agentName string, opts ...Option) (o Operator, err error) {
 	if err != nil {
 		return nil, err
 	}
-	k8sOpts = append(k8sOpts, k8s.WithResourceController(jobController))
+
+	var k8sOpts []k8s.Option
+	k8sOpts = append(k8sOpts,
+		k8s.WithResourceController(podController),
+		k8s.WithResourceController(jobController),
+	)
 
 	operator.ctrl, err = k8s.New(k8sOpts...)
 	if err != nil {
