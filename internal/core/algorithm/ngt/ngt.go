@@ -713,9 +713,7 @@ func (n *ngt) Remove(id uint) error {
 		return n.newGoError(ne)
 	}
 	n.PutErrorBuffer(ne)
-
 	n.cnt.Add(^uint64(0))
-
 	return nil
 }
 

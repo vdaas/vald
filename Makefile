@@ -369,6 +369,7 @@ clean-generated:
 	mv $(ROOTDIR)/apis/grpc/v1/vald/vald.go $(TEMP_DIR)/vald.go
 	mv $(ROOTDIR)/apis/grpc/v1/agent/core/agent.go $(TEMP_DIR)/agent.go
 	mv $(ROOTDIR)/apis/grpc/v1/payload/interface.go $(TEMP_DIR)/interface.go
+	mv $(ROOTDIR)/apis/grpc/v1/mirror/mirror.go $(TEMP_DIR)/mirror.go
 	rm -rf \
 		$(ROOTDIR)/*.log \
 		$(ROOTDIR)/*.svg \
@@ -384,6 +385,8 @@ clean-generated:
 	mv $(TEMP_DIR)/agent.go $(ROOTDIR)/apis/grpc/v1/agent/core/agent.go
 	mkdir -p $(ROOTDIR)/apis/grpc/v1/payload
 	mv $(TEMP_DIR)/interface.go $(ROOTDIR)/apis/grpc/v1/payload/interface.go
+	mkdir -p $(ROOTDIR)/apis/grpc/v1/mirror
+	mv $(TEMP_DIR)/mirror.go $(ROOTDIR)/apis/grpc/v1/mirror/mirror.go
 
 .PHONY: license
 ## add license to files
@@ -423,11 +426,11 @@ update: \
 ## format go codes
 format: \
 	license \
+	format/proto \
 	format/go \
 	format/json \
 	format/md \
-	format/yaml \
-	format/proto
+	format/yaml
 
 .PHONY: format/go
 ## run golines, gofumpt, goimports for all go files

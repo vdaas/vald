@@ -26,7 +26,6 @@ import (
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/sync"
-	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/internal/test/goleak"
 )
 
@@ -35,8 +34,12 @@ func TestNew(t *testing.T) {
 	type want struct {
 		want BidiMap
 	}
+	type args struct {
+		opts []Option
+	}
 	type test struct {
 		name       string
+		args       args
 		want       want
 		checkFunc  func(want, BidiMap) error
 		beforeFunc func()
@@ -58,15 +61,20 @@ func TestNew(t *testing.T) {
 				wantOu[i] = new(sync.Map[uint32, valueStructOu])
 				wantUo[i] = new(sync.Map[string, ValueStructUo])
 			}
+			concurrency := runtime.GOMAXPROCS(-1) * 10
 			return test{
 				name: "return the bidi struct",
+				args: args{
+					opts: []Option{
+						WithConcurrency(concurrency),
+					},
+				},
 				want: want{
 					want: &bidi{
-						concurrency: runtime.GOMAXPROCS(-1) * 10,
+						concurrency: concurrency,
 						l:           0,
 						ou:          wantOu,
 						uo:          wantUo,
-						eg:          errgroup.Get(),
 					},
 				},
 			}
@@ -89,7 +97,7 @@ func TestNew(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 
-			got := New(WithErrGroup(errgroup.Get()))
+			got := New(test.args.opts...)
 			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -1676,12 +1684,10 @@ func Test_bidi_Range(t *testing.T) {
 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			ctx, cancel := context.WithCancel(context.Background())
 			defer cancel()
-			eg, egctx := errgroup.New(ctx)
 			b := &bidi{
 				ou: test.fields.ou,
 				uo: test.fields.uo,
 				l:  test.fields.l,
-				eg: eg,
 			}
 			if test.beforeFunc != nil {
 				test.beforeFunc(tt, test.args, b)
@@ -1694,7 +1700,7 @@ func Test_bidi_Range(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 
-			b.Range(egctx, test.args.f)
+			b.Range(ctx, test.args.f)
 			if err := checkFunc(test.want, b); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -1791,7 +1797,6 @@ func Test_bidi_Len(t *testing.T) {
 // 		l           uint64
 // 		ou          [slen]*sync.Map[uint32, valueStructOu]
 // 		uo          [slen]*sync.Map[string, ValueStructUo]
-// 		eg          errgroup.Group
 // 	}
 // 	type want struct {
 // 		err error
@@ -1820,7 +1825,6 @@ func Test_bidi_Len(t *testing.T) {
 // 		           l:0,
 // 		           ou:nil,
 // 		           uo:nil,
-// 		           eg:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -1843,7 +1847,6 @@ func Test_bidi_Len(t *testing.T) {
 // 		           l:0,
 // 		           ou:nil,
 // 		           uo:nil,
-// 		           eg:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -1878,7 +1881,6 @@ func Test_bidi_Len(t *testing.T) {
 // 				l:           test.fields.l,
 // 				ou:          test.fields.ou,
 // 				uo:          test.fields.uo,
-// 				eg:          test.fields.eg,
 // 			}
 //
 // 			err := b.Close()

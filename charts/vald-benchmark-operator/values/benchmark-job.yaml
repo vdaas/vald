@@ -27,7 +27,6 @@ spec:
       start: 1
       end: 1000
   job_type: "search"
-  dimension: 784
   repetition: 1
   replica: 1
   rules: []

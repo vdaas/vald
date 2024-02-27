@@ -21,10 +21,10 @@ metadata:
   labels:
     app: vald-benchmark-operator
     app.kubernetes.io/name: vald-benchmark-operator
-    helm.sh/chart: vald-benchmark-operator-v1.7.5
+    helm.sh/chart: vald-benchmark-operator-v1.7.12
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: release-name
-    app.kubernetes.io/version: v1.7.5
+    app.kubernetes.io/version: v1.7.12
     app.kubernetes.io/component: benchmark-operator
 spec:
   replicas: 1
@@ -42,7 +42,7 @@ spec:
       serviceAccountName: vald-benchmark-operator
       containers:
         - name: vald-benchmark-operator
-          image: "vdaas/vald-benchmark-operator:v1.7.5"
+          image: "vdaas/vald-benchmark-operator:v1.7.12"
           imagePullPolicy: Always
           livenessProbe:
             failureThreshold: 2

@@ -22,6 +22,7 @@ import (
 	agent "github.com/vdaas/vald/apis/grpc/v1/agent/core"
 	vald "github.com/vdaas/vald/apis/grpc/v1/vald"
 	iconf "github.com/vdaas/vald/internal/config"
+	"github.com/vdaas/vald/internal/k8s/client"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/observability"
 	ngtmetrics "github.com/vdaas/vald/internal/observability/metrics/agent/core/ngt"
@@ -47,9 +48,12 @@ type run struct {
 	observability observability.Observability
 }
 
+const (
+	fieldManager = "vald-agent-index-controller"
+)
+
 func New(cfg *config.Data) (r runner.Runner, err error) {
-	ngt, err := service.New(
-		cfg.NGT,
+	serviceOpts := []service.Option{
 		service.WithErrGroup(errgroup.Get()),
 		service.WithEnableInMemoryMode(cfg.NGT.EnableInMemoryMode),
 		service.WithIndexPath(cfg.NGT.IndexPath),
@@ -67,10 +71,25 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		service.WithProactiveGC(cfg.NGT.EnableProactiveGC),
 		service.WithCopyOnWrite(cfg.NGT.EnableCopyOnWrite),
 		service.WithIsReadReplica(cfg.NGT.IsReadReplica),
+	}
+	if cfg.NGT.EnableExportIndexInfoToK8s {
+		patcher, err := client.NewPatcher(fieldManager)
+		if err != nil {
+			return nil, err
+		}
+		serviceOpts = append(serviceOpts,
+			service.WithPatcher(patcher),
+			service.WithExportIndexInfoDuration(cfg.NGT.ExportIndexInfoDuration),
+		)
+	}
+	ngt, err := service.New(
+		cfg.NGT,
+		serviceOpts...,
 	)
 	if err != nil {
 		return nil, err
 	}
+
 	g, err := handler.New(
 		handler.WithNGT(ngt),
 		handler.WithStreamConcurrency(cfg.Server.GetGRPCStreamConcurrency()),

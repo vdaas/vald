@@ -53,11 +53,11 @@ ifeq ($(REMOTE),true)
 		--build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
 		--build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
 		--build-arg MAINTAINER=$(MAINTAINER) \
-		$(EXTRA_ARGS) \
 		--sbom=true \
 		--provenance=mode=max \
 		-t $(CRORG)/$(IMAGE):$(TAG) \
 		-t $(GHCRORG)/$(IMAGE):$(TAG) \
+		$(EXTRA_ARGS) \
 		--output type=registry,oci-mediatypes=true,compression=zstd,compression-level=5,force-compression=true,push=true \
 		-f $(DOCKERFILE) .
 else

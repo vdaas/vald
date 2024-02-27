@@ -237,10 +237,16 @@ Docker images tagging policy:
 ## Vald Users
 
 <p align="center">
-    <img src="./assets/image/vald-users/yahoojapan.svg" alt="yahoojapan" width="30%" />
-&nbsp; &nbsp; &nbsp; &nbsp;
-    <img src="./assets/image/vald-users/japansearch_color.png.webp" alt="jpsearch" />
-  </ul>
+  <a href="https://www.lycorp.co.jp/en/" target="_blank">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="./assets/image/vald-users/lycorp_white.png">
+    <source media="(prefers-color-scheme: light)" srcset="./assets/image/vald-users/lycorp_black.png">
+    <img alt="LY" src="./assets/image/vald-users/lycorp.png" width="150" height="120">
+  </picture>
+  </a>
+  <a href="https://jpsearch.go.jp/" target="_blank">
+    <img src="./assets/image/vald-users/japansearch_color.png" alt="jpsearch" width="150" height="120"/>
+  </a>
 </p>
 
 ## Contribution
