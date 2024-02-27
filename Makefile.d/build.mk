@@ -30,7 +30,8 @@ binary/build: \
 	cmd/index/job/save/index-save \
 	cmd/manager/index/index \
 	cmd/tools/benchmark/job/job \
-	cmd/tools/benchmark/operator/operator
+	cmd/tools/benchmark/operator/operator \
+	cmd/index/operator/index-operator
 
 
 cmd/agent/core/ngt/ngt: \
@@ -108,7 +109,8 @@ binary/build/zip: \
 	artifacts/vald-lb-gateway-$(GOOS)-$(GOARCH).zip \
 	artifacts/vald-manager-index-$(GOOS)-$(GOARCH).zip \
 	artifacts/vald-mirror-gateway-$(GOOS)-$(GOARCH).zip \
-	artifacts/vald-readreplica-rotate-$(GOOS)-$(GOARCH).zip
+	artifacts/vald-readreplica-rotate-$(GOOS)-$(GOARCH).zip \
+	artifacts/vald-index-operator-$(GOOS)-$(GOARCH).zip
 
 artifacts/vald-agent-ngt-$(GOOS)-$(GOARCH).zip: cmd/agent/core/ngt/ngt
 	$(call mkdir, $(dir $@))
@@ -163,5 +165,9 @@ artifacts/vald-index-save-$(GOOS)-$(GOARCH).zip: cmd/index/job/save/index-save
 	zip --junk-paths $@ $<
 
 artifacts/vald-readreplica-rotate-$(GOOS)-$(GOARCH).zip: cmd/index/job/readreplica/rotate/readreplica-rotate
+	$(call mkdir, $(dir $@))
+	zip --junk-paths $@ $<
+
+artifacts/vald-index-operator-$(GOOS)-$(GOARCH).zip: cmd/index/operator/index-operator
 	$(call mkdir, $(dir $@))
 	zip --junk-paths $@ $<
