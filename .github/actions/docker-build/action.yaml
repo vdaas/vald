@@ -104,8 +104,8 @@ runs:
       env:
         IMAGE_NAME: ${{ steps.image_name.outputs.IMAGE_NAME }}
         ALTER_IMAGE_NAME: ${{ steps.image_name.outputs.ALTER_IMAGE_NAME }}
-        SECONDARY_TAGS: ${{ steps.determine_tag_name.outputs.SECONDARY_TAGS }}
         PRIMARY_TAG: ${{ steps.determine_tag_name.outputs.PRIMARY_TAG }}
+        SECONDARY_TAGS: ${{ steps.determine_tag_name.outputs.SECONDARY_TAGS }}
     - name: Build and Push
       shell: bash
       id: build_and_push
@@ -124,5 +124,5 @@ runs:
         PLATFORMS: ${{ steps.determine_platforms.outputs.PLATFORMS }}
         BUILDER: ${{ inputs.builder }}
         LABEL_OPTS: "--label org.opencontainers.image.url=${{ github.event.repository.html_url }} --label org.opencontainers.image.source=${{ github.event.repository.html_url }} --label org.opencontainers.image.revision=${{ github.sha }}"
-        EXTRA_TAGS: ${{ steps.add_extra_tags.outputs.EXTRA_TAGS }}
         PRIMARY_TAG: ${{ steps.determine_tag_name.outputs.PRIMARY_TAG }}
+        EXTRA_TAGS: ${{ steps.add_extra_tags.outputs.EXTRA_TAGS }}
