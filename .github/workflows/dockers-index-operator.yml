@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-name: "Build docker image: readreplica-rotate"
+name: "Build docker image: index-operator"
 on:
   push:
     branches:
@@ -24,8 +24,8 @@ on:
       - "*.*.*-*"
       - "v*.*.*-*"
     paths:
-      - ".github/actions/docker-build/action.yaml"
-      - ".github/workflows/dockers-readreplica-rotate.yml"
+      - ".github/actions/docker-build/actions.yaml"
+      - ".github/workflows/dockers-index-operator.yml"
       - "go.mod"
       - "go.sum"
       - "internal/**"
@@ -33,15 +33,15 @@ on:
       - "!internal/db/**"
       - "internal/k8s/**"
       - "apis/grpc/**"
-      - "pkg/index/job/readreplica/rotate/**"
-      - "cmd/index/job/readreplica/rotate/**"
-      - "dockers/index/job/readreplica/rotate/Dockerfile"
+      - "pkg/index/operator/**"
+      - "cmd/index/operator/**"
+      - "dockers/index/operator/Dockerfile"
       - "versions/GO_VERSION"
   pull_request:
     paths:
-      - ".github/actions/docker-build/action.yaml"
+      - ".github/actions/docker-build/actions.yaml"
       - ".github/workflows/_docker-image.yaml"
-      - ".github/workflows/dockers-readreplica-rotate.yml"
+      - ".github/workflows/dockers-index-operator.yml"
       - "go.mod"
       - "go.sum"
       - "internal/**"
@@ -49,15 +49,15 @@ on:
       - "!internal/db/**"
       - "internal/k8s/**"
       - "apis/grpc/**"
-      - "pkg/index/job/readreplica/rotate/**"
-      - "cmd/index/job/readreplica/rotate/**"
-      - "dockers/index/job/readreplica/rotate/Dockerfile"
+      - "pkg/index/operator/**"
+      - "cmd/index/operator/**"
+      - "dockers/index/operator/Dockerfile"
       - "versions/GO_VERSION"
   pull_request_target:
     paths:
-      - ".github/actions/docker-build/action.yaml"
+      - ".github/actions/docker-build/actions.yaml"
       - ".github/workflows/_docker-image.yaml"
-      - ".github/workflows/dockers-readreplica-rotate.yml"
+      - ".github/workflows/dockers-index-operator.yml"
       - "go.mod"
       - "go.sum"
       - "internal/**"
@@ -65,13 +65,13 @@ on:
       - "!internal/db/**"
       - "internal/k8s/**"
       - "apis/grpc/**"
-      - "pkg/index/job/readreplica/rotate/**"
-      - "cmd/index/job/readreplica/rotate/**"
-      - "dockers/index/job/readreplica/rotate/Dockerfile"
+      - "pkg/index/operator/**"
+      - "cmd/index/operator/**"
+      - "dockers/index/operator/Dockerfile"
       - "versions/GO_VERSION"
 jobs:
   build:
     uses: ./.github/workflows/_docker-image.yaml
     with:
-      target: readreplica-rotate
+      target: index-operator
     secrets: inherit

@@ -18,6 +18,8 @@
 package pod
 
 import (
+	"context"
+
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
@@ -47,7 +49,7 @@ func WithOnErrorFunc(f func(err error)) Option {
 	}
 }
 
-func WithOnReconcileFunc(f func(podList map[string][]Pod)) Option {
+func WithOnReconcileFunc(f func(ctx context.Context, podList map[string][]Pod)) Option {
 	return func(r *reconciler) error {
 		r.onReconcile = f
 		return nil
