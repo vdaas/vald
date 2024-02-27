@@ -242,6 +242,17 @@ docker/build/index-save:
 		IMAGE=$(INDEX_SAVE_IMAGE) \
 		docker/build/image
 
+.PHONY: docker/name/index-operator
+docker/name/index-operator:
+	@echo "$(ORG)/$(INDEX_OPERATOR_IMAGE)"
+
+.PHONY: docker/build/index-operator
+## build index-operator image
+docker/build/index-operator:
+	@make DOCKERFILE="$(ROOTDIR)/dockers/index/operator/Dockerfile" \
+		IMAGE=$(INDEX_OPERATOR_IMAGE) \
+		docker/build/image
+
 .PHONY: docker/name/readreplica-rotate
 docker/name/readreplica-rotate:
 	@echo "$(ORG)/$(READREPLICA_ROTATE_IMAGE)"
