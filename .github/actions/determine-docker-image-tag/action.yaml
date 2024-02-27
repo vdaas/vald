@@ -42,7 +42,7 @@ runs:
       run: |
         if [[ "$GITHUB_REF" =~ ^refs/tags/.* ]]; then
           # The following is the priority of tags:
-          #   tag -> release/vx.x tag (release branch build tag) -> commit hash tag -> vx.x -> latest tag
+          #   tag -> release-vx.x tag (release branch build tag) -> commit hash tag -> vx.x -> latest tag
           # When a tag is created, the image build for the tag may not be finished.
           # In that case, the CI container will use the tag for the release branch.
           # At the timing of the creation of the tag, the vx.x points to the previous version, so the priority is lowered.
@@ -50,26 +50,27 @@ runs:
           tag=$(echo $GITHUB_REF | sed -e 's:^refs/tags/::') # e.g) v1.7.6
           tags="${tag}"
 
-          release_branch_tag="release/${major_minor_tag}" # e.g) release/v1.7
-          tags="${tags} ${release_branch_tag}"
-
           major_minor_tag="$(echo "${tag}" | sed -E 's/^v?([0-9]+\.[0-9]+).*$/v\1/')" # e.g) v.1.7
-          tags="${tags} ${major_minor_tag}"
+          release_branch_tag="release-${major_minor_tag}" # e.g) release-v1.7
+
+          tags="${tags} ${release_branch_tag}"
 
           commit_hash_tag=${GITHUB_SHA::8}
           tags="${tags} ${commit_hash_tag}"
+          tags="${tags} ${major_minor_tag}"
           tags="${tags} latest"
 
         elif [[ "${{ github.event_name }}" = "pull_request" || "${{ github.event_name }}" = "pull_request_target" ]]; then
           # The following is the priority of tags:
-          #   pr-xxx tag (PR build tag) -> release/vx.x tag (release branch tag) or nightly tag
+          #   pr-xxx tag (PR build tag) -> release-vx.x tag (release branch tag) or nightly tag
           pr_num=$(cat $GITHUB_EVENT_PATH | jq -r ".number")
           tags="pr-${pr_num}"
 
-          # For pull request to the release branch, use the release branch latest tag as the default tag (release/vx.x).
+          # For pull request to the release branch, use the release branch latest tag as the default tag (release-vx.x).
           # This is only set if the event that triggers the workflow execution is pull_request or pull_request_target.
           if [[ "$GITHUB_BASE_REF" =~ ^release/v([0-9]+)\.([0-9]+)$ ]]; then
-            tags="${tags} $(echo "$GITHUB_BASE_REF")"
+            release_branch_tag="$(echo "$GITHUB_BASE_REF" | sed 's:/:-:g')"
+            tags="${tags} ${release_branch_tag}"
           else
             # Currently, it is assumed to be nightly.
             # However, further conditions will be added in the future if they cause inconvenience.
@@ -84,18 +85,18 @@ runs:
 
         elif [[ "$GITHUB_REF" =~ ^refs/heads/release/v([0-9]+)\.([0-9]+)$ ]]; then
           # The following is the priority of tags:
-          #   release/vx.x tag (release branch build tag) -> commit hash tag -> nightly tag
-          release_branch_tag=$(echo $GITHUB_REF | sed -e 's:^refs/heads/::') # e.g) release/v1.7
+          #   release-vx.x tag (release branch build tag) -> commit hash tag
+          release_branch_tag="release-$(echo $GITHUB_REF | sed -e 's:^refs/heads/release/::')" # e.g) release-v1.7
           tags="${release_branch_tag}"
 
           commit_hash_tag=${GITHUB_SHA::8}
           tags="${tags} ${commit_hash_tag}"
         else
-          tag_prefix="unknown/${{ github.event_name }}"
+          tag_prefix="unknown-${{ github.event_name }}"
           if [[ "$GITHUB_BASE_REF" != "" ]]; then
-            tags="${tag_prefix}/${GITHUB_BASE_REF}"
+            tags="${tag_prefix}-${GITHUB_BASE_REF}"
           else
-            tags="${tag_prefix}/${GITHUB_SHA::8}"
+            tags="${tag_prefix}-${GITHUB_SHA::8}"
           fi
         fi
         primary_tag=$(echo ${tags} | awk '{print $1}')
