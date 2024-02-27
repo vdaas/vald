@@ -81,13 +81,10 @@ func New(agentName string, opts ...Option) (o Operator, err error) {
 		return nil, err
 	}
 
-	var k8sOpts []k8s.Option
-	k8sOpts = append(k8sOpts,
+	operator.ctrl, err = k8s.New(
 		k8s.WithResourceController(podController),
 		k8s.WithResourceController(jobController),
 	)
-
-	operator.ctrl, err = k8s.New(k8sOpts...)
 	if err != nil {
 		return nil, err
 	}
