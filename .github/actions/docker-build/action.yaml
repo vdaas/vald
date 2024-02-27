@@ -84,25 +84,32 @@ runs:
         echo "PLATFORMS=${platforms}" >> $GITHUB_OUTPUT
       env:
         TARGET_PLATFORMS: ${{ inputs.platforms }}
+        PRIMARY_TAG: ${{ steps.determine_tag_name.outputs.PRIMARY_TAG }}
+    - name: Update Vald version
+      shell: bash
+      run: echo "${PRIMARY_TAG}" >> versions/VALD_VERSION
+      env:
+        PRIMARY_TAG: ${{ steps.determine_tag_name.outputs.PRIMARY_TAG }}
     - name: Add extra tags
       shell: bash
       id: add_extra_tags
       run: |
-        extra_tags="-t ${ALTER_IMAGE_NAME}:${PRIMARY_TAG}"
-        if [[ "$GITHUB_REF" =~ ^refs/tags/.* ]]; then
-          latest_tags="-t ${IMAGE_NAME}:latest -t ${ALTER_IMAGE_NAME}:latest"
-          extra_tags="${extra_tags} ${latest_tags}"
-        fi
-        if [[ "$GITHUB_REF" =~ ^refs/heads/main$ ]] || [[ "$GITHUB_REF" =~ ^refs/heads/master$ ]] || [[ "$GITHUB_REF" =~ ^refs/heads/release.* ]] || [[ "${PRIMARY_TAG}" == "nightly" ]]; then
-          commit_hash=${GITHUB_SHA::8}
-          hash_tags="-t ${IMAGE_NAME}:${commit_hash} -t ${ALTER_IMAGE_NAME}:${commit_hash}"
-          extra_tags="${extra_tags} ${hash_tags}"
+        if [[ "${{ github.event_name }}" = "pull_request" || "${{ github.event_name }}" = "pull_request_target" ]]; then
+          extra_tags="-t ${IMAGE_NAME}:${PRIMARY_TAG} -t ${ALTER_IMAGE_NAME}:${PRIMARY_TAG}"
+        else
+          for tag in ${TAGS}; do
+            if [[ "${tag}" = "nightly" ]] && (! [[ "$GITHUB_REF" =~ ^refs/heads/main$ ]] || ! [[ "$GITHUB_REF" =~ ^refs/heads/master$ ]]); then
+              continue
+            fi
+            extra_tags="${extra_tags} -t ${IMAGE_NAME}:${tag} -t ${ALTER_IMAGE_NAME}:${tag}"
+          done
         fi
         echo "EXTRA_TAGS is determined: ${extra_tags}"
         echo "EXTRA_TAGS=${extra_tags}" >> $GITHUB_OUTPUT
       env:
         IMAGE_NAME: ${{ steps.image_name.outputs.IMAGE_NAME }}
         ALTER_IMAGE_NAME: ${{ steps.image_name.outputs.ALTER_IMAGE_NAME }}
+        TAGS: ${{ steps.determine_tag_name.outputs.TAGS }}
         PRIMARY_TAG: ${{ steps.determine_tag_name.outputs.PRIMARY_TAG }}
     - name: Build and Push
       shell: bash

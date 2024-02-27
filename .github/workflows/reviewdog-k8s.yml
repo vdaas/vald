@@ -33,7 +33,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [detect-ci-container]
     container:
-      image: ghcr.io/vdaas/vald/vald-ci-container:${{ needs.detect-ci-container.outputs.TAG_NAME }}
+      image: ghcr.io/vdaas/vald/vald-ci-container:${{ needs.detect-ci-container.outputs.TAG }}
     steps:
       - uses: actions/checkout@v4
       - name: Set Git config
@@ -53,7 +53,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [detect-ci-container]
     container:
-      image: ghcr.io/vdaas/vald/vald-ci-container:${{ needs.detect-ci-container.outputs.TAG_NAME }}
+      image: ghcr.io/vdaas/vald/vald-ci-container:${{ needs.detect-ci-container.outputs.TAG }}
     steps:
       - uses: actions/checkout@v4
       - name: Set Git config
@@ -72,7 +72,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [detect-ci-container]
     container:
-      image: ghcr.io/vdaas/vald/vald-ci-container:${{ needs.detect-ci-container.outputs.TAG_NAME }}
+      image: ghcr.io/vdaas/vald/vald-ci-container:${{ needs.detect-ci-container.outputs.TAG }}
     steps:
       - uses: actions/checkout@v4
       - name: Set Git config
