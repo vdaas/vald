@@ -86,7 +86,7 @@ runs:
         elif [[ "$GITHUB_REF" =~ ^refs/heads/release/v([0-9]+)\.([0-9]+)$ ]]; then
           # The following is the priority of tags:
           #   release-vx.x tag (release branch build tag) -> commit hash tag
-          release_branch_tag="release-$(echo $GITHUB_REF | sed -e 's:^refs/heads/release/::')" # e.g) release-v1.7
+          release_branch_tag="$(echo $GITHUB_REF | sed -e 's:^refs/heads/release/:release-:')" # e.g) release-v1.7
           tags="${release_branch_tag}"
 
           commit_hash_tag=${GITHUB_SHA::8}
