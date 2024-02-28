@@ -30,7 +30,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/utils/pointer"
+	"k8s.io/utils/ptr"
 )
 
 const (
@@ -211,7 +211,7 @@ func (s *subProcess) createSnapshot(ctx context.Context, deployment *appsv1.Depl
 					Kind:       "Deployment",
 					Name:       deployment.GetName(),
 					UID:        deployment.GetUID(),
-					Controller: pointer.Bool(true),
+					Controller: ptr.To(true),
 				},
 			},
 		},
@@ -257,7 +257,7 @@ func (s *subProcess) createPVC(ctx context.Context, newSnapShot string, deployme
 					Kind:       "Deployment",
 					Name:       deployment.GetName(),
 					UID:        deployment.GetUID(),
-					Controller: pointer.Bool(true),
+					Controller: ptr.To(true),
 				},
 			},
 		},
