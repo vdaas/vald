@@ -53,6 +53,7 @@ type Pod struct {
 	CPURequest  float64
 	MemLimit    float64
 	MemRequest  float64
+	Labels      map[string]string
 	Annotations map[string]string
 }
 
@@ -151,6 +152,7 @@ func (r *reconciler) Reconcile(ctx context.Context, _ reconcile.Request) (res re
 			CPURequest:  cpuRequest,
 			MemLimit:    memLimit,
 			MemRequest:  memRequest,
+			Labels:      pod.GetLabels(),
 			Annotations: pod.GetAnnotations(),
 		})
 	}

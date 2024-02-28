@@ -23,10 +23,12 @@ import (
 	snapshotv1 "github.com/kubernetes-csi/external-snapshotter/client/v6/apis/volumesnapshot/v1"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/k8s/client"
+	"github.com/vdaas/vald/internal/k8s/vald"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/sync/errgroup"
+
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -34,9 +36,8 @@ import (
 )
 
 const (
-	apiName                                      = "vald/index/job/readreplica/rotate"
-	rotateAllID                                  = "rotate-all"
-	lastTimeSnaoshotTimestampAnnotationsKey = "vald.vdaas.org/last-time-snapshot-timestamp"
+	apiName     = "vald/index/job/readreplica/rotate"
+	rotateAllID = "rotate-all"
 )
 
 // Rotator represents an interface for indexing.
@@ -307,7 +308,7 @@ func (s *subProcess) updateDeployment(ctx context.Context, newPVC string, deploy
 	if deployment.Annotations == nil {
 		deployment.Annotations = map[string]string{}
 	}
-	deployment.Annotations[lastTimeSnaoshotTimestampAnnotationsKey] = snapshotTime.UTC().Format(time.RFC3339)
+	deployment.Annotations[vald.LastTimeSnapshotTimestampAnnotationsKey] = snapshotTime.UTC().Format(vald.TimestampLayout)
 
 	for _, vol := range deployment.Spec.Template.Spec.Volumes {
 		if vol.Name == s.volumeName {

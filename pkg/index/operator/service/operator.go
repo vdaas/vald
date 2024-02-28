@@ -15,16 +15,23 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"reflect"
+	"time"
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/k8s"
 	"github.com/vdaas/vald/internal/k8s/job"
 	"github.com/vdaas/vald/internal/k8s/pod"
+	"github.com/vdaas/vald/internal/k8s/vald"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/sync/errgroup"
+
+	// FIXME:
+	appsv1 "k8s.io/api/apps/v1"
+	crclient "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 const (
@@ -124,9 +131,15 @@ func (o *operator) Start(ctx context.Context) (<-chan error, error) {
 
 // TODO: implement agent pod reconcile logic to detect conditions to start indexing and saving.
 func (o *operator) podOnReconcile(ctx context.Context, podList map[string][]pod.Pod) {
+	client := o.ctrl.GetManager().GetClient()
 	for k, v := range podList {
 		for _, pod := range v {
 			log.Debug("key", k, "name:", pod.Name, "annotations:", pod.Annotations)
+
+			// rotate read replica if needed
+			if err := o.rotateIfNeeded(ctx, client, pod); err != nil {
+				log.Error(err)
+			}
 		}
 	}
 }
@@ -138,4 +151,50 @@ func (o *operator) jobOnReconcile(ctx context.Context, jobList map[string][]job.
 			log.Debug("key", k, "name:", job.Name, "status:", job.Status)
 		}
 	}
+}
+
+func (o *operator) rotateIfNeeded(ctx context.Context, client crclient.Client, pod pod.Pod) error {
+	t, ok := pod.Annotations[vald.LastTimeSaveIndexTimestampAnnotationsKey]
+	if !ok {
+		log.Info("the agent pod has not saved index yet. skipping...")
+		return nil
+	}
+	lastSavedTime, err := time.Parse(vald.TimestampLayout, t)
+	if err != nil {
+		return fmt.Errorf("parsing last time saved time: %w", err)
+	}
+
+	podIdx, ok := pod.Labels[appsv1.PodIndexLabel]
+	if !ok {
+		log.Info("no index label found. the agent is not StatefulSet? skipping...")
+		return nil
+	}
+	// FIXME: get the key from config
+	label := crclient.MatchingLabels(map[string]string{"vald-readreplica-id": podIdx})
+
+	var depList appsv1.DeploymentList
+	if err := client.List(ctx, &depList, label); err != nil {
+		return err
+	}
+	if len(depList.Items) == 0 {
+		return errors.New("no readreplica deployment found")
+	}
+	dep := depList.Items[0]
+
+	annotations := dep.GetAnnotations()
+	t, ok = annotations[vald.LastTimeSnapshotTimestampAnnotationsKey]
+	if ok {
+		lastSnapshotTime, err := time.Parse(vald.TimestampLayout, t)
+		if err != nil {
+			return fmt.Errorf("parsing last snapshot time: %w", err)
+		}
+
+		if lastSnapshotTime.After(lastSavedTime) {
+			log.Info("snapshot taken after the last save. skipping...")
+			return nil
+		}
+	}
+	log.Info("rotation required. creating rotator job...")
+	// TODO: check if the rotator job already exists or queued
+	return nil
 }
