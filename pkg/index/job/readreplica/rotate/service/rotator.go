@@ -34,8 +34,9 @@ import (
 )
 
 const (
-	apiName     = "vald/index/job/readreplica/rotate"
-	rotateAllID = "rotate-all"
+	apiName                                      = "vald/index/job/readreplica/rotate"
+	rotateAllID                                  = "rotate-all"
+	lastTimeSnaoshotTimestampAnnotationsKey = "vald.vdaas.org/last-time-snapshot-timestamp"
 )
 
 // Rotator represents an interface for indexing.
@@ -146,6 +147,7 @@ func (s *subProcess) rotate(ctx context.Context) error {
 		return err
 	}
 
+	snapshotTime := time.Now()
 	newSnap, oldSnap, err := s.createSnapshot(ctx, deployment)
 	if err != nil {
 		return err
@@ -160,7 +162,7 @@ func (s *subProcess) rotate(ctx context.Context) error {
 		return err
 	}
 
-	err = s.updateDeployment(ctx, newPvc.GetName(), deployment)
+	err = s.updateDeployment(ctx, newPvc.GetName(), deployment, snapshotTime)
 	if err != nil {
 		log.Errorf("failed to update Deployment. removing the new snapshot(%s) and pvc(%s)...", newSnap.GetName(), newPvc.GetName())
 		if dperr := s.deletePVC(ctx, newPvc); dperr != nil {
@@ -295,11 +297,17 @@ func (s *subProcess) getDeployment(ctx context.Context) (*appsv1.Deployment, err
 	return &list.Items[0], nil
 }
 
-func (s *subProcess) updateDeployment(ctx context.Context, newPVC string, deployment *appsv1.Deployment) error {
+func (s *subProcess) updateDeployment(ctx context.Context, newPVC string, deployment *appsv1.Deployment, snapshotTime time.Time) error {
 	if deployment.Spec.Template.ObjectMeta.Annotations == nil {
 		deployment.Spec.Template.ObjectMeta.Annotations = map[string]string{}
 	}
-	deployment.Spec.Template.ObjectMeta.Annotations["kubectl.kubernetes.io/restartedAt"] = time.Now().UTC().Format(time.RFC3339)
+	now := time.Now().UTC().Format(time.RFC3339)
+	deployment.Spec.Template.ObjectMeta.Annotations["kubectl.kubernetes.io/restartedAt"] = now
+
+	if deployment.Annotations == nil {
+		deployment.Annotations = map[string]string{}
+	}
+	deployment.Annotations[lastTimeSnaoshotTimestampAnnotationsKey] = snapshotTime.UTC().Format(time.RFC3339)
 
 	for _, vol := range deployment.Spec.Template.Spec.Volumes {
 		if vol.Name == s.volumeName {
