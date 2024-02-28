@@ -23,6 +23,12 @@ type IndexOperator struct {
 
 	// Concurrency represents indexing concurrency.
 	Concurrency int `json:"concurrency" yaml:"concurrency"`
+
+	// ReadReplicaEnabled represents whether read replica is enabled or not.
+	ReadReplicaEnabled bool `json:"read_replica_enabled" yaml:"read_replica_enabled"`
+
+	// ReadReplicaLabelKey represents the label key for read replica.
+	ReadReplicaLabelKey string `json:"read_replica_label_key" yaml:"read_replica_label_key"`
 }
 
 func (ic *IndexOperator) Bind() *IndexOperator {
