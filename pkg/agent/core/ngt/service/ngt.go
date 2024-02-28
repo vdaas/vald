@@ -174,6 +174,7 @@ const (
 	unsavedProcessedVqAnnotationsKey             = "vald.vdaas.org/unsaved-processed-vq"
 	unsavedCreateIndexExecutionNumAnnotationsKey = "vald.vdaas.org/unsaved-create-index-execution"
 	lastTimeSaveIndexTimestampAnnotationsKey     = "vald.vdaas.org/last-time-save-index-timestamp"
+	lastTimeRotateReplicaTimestampAnnotationsKey = "vald.vdaas.org/last-time-rotate-replica-timestamp"
 	indexCountAnnotationsKey                     = "vald.vdaas.org/index-count"
 
 	// use this only for tests. usually just leave the ctx value empty and let time.Now() be used
