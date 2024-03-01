@@ -3027,7 +3027,7 @@ func (s *server) Flush(ctx context.Context, req *payload.Flush_Request) (cnts *p
 	indexing.Store(false)
 	saving.Store(false)
 	now := time.Now().UnixNano()
-	err = s.gateway.BroadCast(ctx, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) (err error) {
+	err = s.gateway.BroadCast(ctx, service.WRITE, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) (err error) {
 		ctx, span := trace.StartSpan(ctx, apiName+"."+vald.FlushRPCName+"/"+target)
 		defer func() {
 			if span != nil {
