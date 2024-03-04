@@ -188,7 +188,7 @@ func (cfg *FilterQuery) Bind() *FilterQuery {
 	return cfg
 }
 
-// FilterConfig defines the desired state of filter config
+// FilterConfig defines the desired state of filter config.
 type FilterConfig struct {
 	Target *FilterTarget `json:"target,omitempty" yaml:"target"`
 	Query  *FilterQuery  `json:"query,omitempty"  yaml:"query"`

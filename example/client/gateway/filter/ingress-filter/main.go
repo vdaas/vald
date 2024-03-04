@@ -14,23 +14,22 @@
 package main
 
 import (
-	"context"
-	"flag"
-	"net"
-	"strconv"
-
-	"github.com/kpango/glg"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
-
 	// NOTE:
 	// The correct approach is to use "github.com/vdaas/vald-client-go/v1/payload" and "github.com/vdaas/vald-client-go/v1/vald" in the "example/client".
 	// However, the "vald-client-go" module is not available in the filter client example
 	// because the changes to the filter query have not been released. (current version is v1.7.12)
 	// Therefore, the root module is used until it is released.
 	// The import path and go.mod will be changed after release.
+	"context"
+	"flag"
+	"net"
+	"strconv"
+
+	"github.com/kpango/glg"
 	"github.com/vdaas/vald/apis/grpc/v1/filter/ingress"
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 var (
