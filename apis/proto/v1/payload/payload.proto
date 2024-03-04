@@ -335,6 +335,7 @@ message Remove {
   }
 }
 
+// Flush related messages.
 message Flush {
   message Request {}
 }
