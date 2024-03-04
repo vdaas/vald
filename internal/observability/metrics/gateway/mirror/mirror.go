@@ -19,8 +19,8 @@ import (
 	"github.com/vdaas/vald/internal/observability/attribute"
 	"github.com/vdaas/vald/internal/observability/metrics"
 	"github.com/vdaas/vald/pkg/gateway/mirror/service"
-	"go.opentelemetry.io/otel/sdk/metric/aggregation"
-	"go.opentelemetry.io/otel/sdk/metric/view"
+	api "go.opentelemetry.io/otel/metric"
+	view "go.opentelemetry.io/otel/sdk/metric"
 )
 
 const (
@@ -31,31 +31,31 @@ const (
 )
 
 type mirrorMetrics struct {
-	mirr service.Mirror
+	m service.Mirror
 }
 
-func New(mirr service.Mirror) metrics.Metric {
+func New(m service.Mirror) metrics.Metric {
 	return &mirrorMetrics{
-		mirr: mirr,
+		m: m,
 	}
 }
 
-func (*mirrorMetrics) View() ([]*metrics.View, error) {
-	target, err := view.New(
-		view.MatchInstrumentName(metricsName),
-		view.WithSetDescription(metricsDescription),
-		view.WithSetAggregation(aggregation.LastValue{}),
-	)
-	if err != nil {
-		return nil, err
-	}
-	return []*metrics.View{
-		&target,
+func (*mirrorMetrics) View() ([]metrics.View, error) {
+	return []metrics.View{
+		view.NewView(
+			view.Instrument{
+				Name:        metricsName,
+				Description: metricsDescription,
+			},
+			view.Stream{
+				Aggregation: view.AggregationLastValue{},
+			},
+		),
 	}, nil
 }
 
 func (mm *mirrorMetrics) Register(m metrics.Meter) error {
-	targetGauge, err := m.AsyncInt64().Gauge(
+	targetCount, err := m.Int64ObservableGauge(
 		metricsName,
 		metrics.WithDescription(metricsDescription),
 		metrics.WithUnit(metrics.Dimensionless),
@@ -63,15 +63,16 @@ func (mm *mirrorMetrics) Register(m metrics.Meter) error {
 	if err != nil {
 		return err
 	}
-	return m.RegisterCallback(
-		[]metrics.AsynchronousInstrument{
-			targetGauge,
-		},
-		func(ctx context.Context) {
-			mm.mirr.RangeMirrorAddr(func(addr string, _ any) bool {
-				targetGauge.Observe(ctx, 1, attribute.String(targetAddrKey, addr))
+
+	_, err = m.RegisterCallback(
+		func(_ context.Context, o api.Observer) error {
+			mm.m.RangeMirrorAddr(func(addr string, _ any) bool {
+				o.ObserveInt64(targetCount, 1, api.WithAttributes(attribute.String(targetAddrKey, addr)))
 				return true
 			})
+			return nil
 		},
+		targetCount,
 	)
+	return err
 }

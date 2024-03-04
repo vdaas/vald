@@ -277,9 +277,6 @@ spec:
                     - indexes
                     - group
                     - range
-                dimension:
-                  type: integer
-                  minimum: 1
                 global_config:
                   type: object
                   properties:

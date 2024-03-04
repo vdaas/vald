@@ -132,7 +132,7 @@ defaults:
         - "go_version"
         - "go_os"
         - "go_arch"
-        - "ngt_version"
+        - "algorithm_info"
       # enable memory metrics
       enable_memory: true
       # enable goroutine metrics

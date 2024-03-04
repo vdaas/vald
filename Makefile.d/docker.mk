@@ -17,6 +17,7 @@
 ## build all docker images
 docker/build: \
 	docker/build/agent-ngt \
+	docker/build/agent-faiss \
 	docker/build/agent-sidecar \
 	docker/build/discoverer-k8s \
 	docker/build/gateway-lb \
@@ -52,11 +53,11 @@ ifeq ($(REMOTE),true)
 		--build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
 		--build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
 		--build-arg MAINTAINER=$(MAINTAINER) \
-		$(EXTRA_ARGS) \
 		--sbom=true \
 		--provenance=mode=max \
 		-t $(CRORG)/$(IMAGE):$(TAG) \
 		-t $(GHCRORG)/$(IMAGE):$(TAG) \
+		$(EXTRA_ARGS) \
 		--output type=registry,oci-mediatypes=true,compression=zstd,compression-level=5,force-compression=true,push=true \
 		-f $(DOCKERFILE) .
 else
@@ -76,13 +77,24 @@ endif
 
 .PHONY: docker/name/agent-ngt
 docker/name/agent-ngt:
-	@echo "$(ORG)/$(AGENT_IMAGE)"
+	@echo "$(ORG)/$(AGENT_NGT_IMAGE)"
 
 .PHONY: docker/build/agent-ngt
 ## build agent-ngt image
 docker/build/agent-ngt:
 	@make DOCKERFILE="$(ROOTDIR)/dockers/agent/core/ngt/Dockerfile" \
-		IMAGE=$(AGENT_IMAGE) \
+		IMAGE=$(AGENT_NGT_IMAGE) \
+		docker/build/image
+
+.PHONY: docker/name/agent-faiss
+docker/name/agent-faiss:
+	@echo "$(ORG)/$(AGENT_FAISS_IMAGE)"
+
+.PHONY: docker/build/agent-faiss
+## build agent-faiss image
+docker/build/agent-faiss:
+	@make DOCKERFILE="$(ROOTDIR)/dockers/agent/core/faiss/Dockerfile" \
+		IMAGE=$(AGENT_FAISS_IMAGE) \
 		docker/build/image
 
 .PHONY: docker/name/agent-sidecar
@@ -160,6 +172,7 @@ docker/name/ci-container:
 docker/build/ci-container:
 	@make DOCKERFILE="$(ROOTDIR)/dockers/ci/base/Dockerfile" \
 		IMAGE=$(CI_CONTAINER_IMAGE) \
+		EXTRA_ARGS="--add-host=registry.npmjs.org:104.16.20.35" \
 		docker/build/image
 
 .PHONY: docker/name/dev-container
@@ -227,6 +240,17 @@ docker/name/index-save:
 docker/build/index-save:
 	@make DOCKERFILE="$(ROOTDIR)/dockers/index/job/save/Dockerfile" \
 		IMAGE=$(INDEX_SAVE_IMAGE) \
+		docker/build/image
+
+.PHONY: docker/name/index-operator
+docker/name/index-operator:
+	@echo "$(ORG)/$(INDEX_OPERATOR_IMAGE)"
+
+.PHONY: docker/build/index-operator
+## build index-operator image
+docker/build/index-operator:
+	@make DOCKERFILE="$(ROOTDIR)/dockers/index/operator/Dockerfile" \
+		IMAGE=$(INDEX_OPERATOR_IMAGE) \
 		docker/build/image
 
 .PHONY: docker/name/readreplica-rotate

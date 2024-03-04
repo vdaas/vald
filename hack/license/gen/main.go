@@ -209,6 +209,7 @@ func dirwalk(dir string) []string {
 				"CONTRIBUTORS",
 				"GO_VERSION",
 				"NGT_VERSION",
+				"FAISS_VERSION",
 				"Pipefile",
 				"VALD_VERSION",
 				"grp",
@@ -276,7 +277,7 @@ func readAndRewrite(path string) error {
 	} else {
 		tmpl := apache
 		switch filepath.Ext(path) {
-		case ".go":
+		case ".go", ".c", ".h", ".hpp", ".cpp":
 			d.Escape = slushEscape
 			switch fi.Name() {
 			case "errgroup_test.go",
@@ -308,7 +309,9 @@ func readAndRewrite(path string) error {
 			line := sc.Text()
 			if filepath.Ext(path) == ".go" && strings.HasPrefix(line, "//go:") ||
 				filepath.Ext(path) == ".py" && strings.HasPrefix(line, "# -*-") ||
-				filepath.Ext(path) == ".sh" && strings.HasPrefix(line, "#!") {
+				filepath.Ext(path) == ".sh" && strings.HasPrefix(line, "#!") ||
+				filepath.Ext(path) == ".yaml" && strings.HasPrefix(line, "# !") ||
+				filepath.Ext(path) == ".yml" && strings.HasPrefix(line, "# !") {
 				bf = true
 				_, err = buf.WriteString(line)
 				if err != nil {

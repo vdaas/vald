@@ -27,12 +27,11 @@ import (
 	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
-	"go.opentelemetry.io/otel/metric/global"
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/sdk/metric"
 	"go.opentelemetry.io/otel/sdk/resource"
 	"go.opentelemetry.io/otel/sdk/trace"
-	semconv "go.opentelemetry.io/otel/semconv/v1.12.0"
+	semconv "go.opentelemetry.io/otel/semconv/v1.24.0"
 )
 
 // Metrics and Trace attribute keys.
@@ -123,7 +122,8 @@ func (e *exp) initMeter(ctx context.Context) (err error) {
 			e.metricsExporter,
 			metric.WithInterval(e.mExportInterval),
 			metric.WithTimeout(e.mExportTimeout),
-		), e.metricsViews...),
+		)),
+		metric.WithView(e.metricsViews...),
 		metric.WithResource(resource.NewWithAttributes(
 			semconv.SchemaURL,
 			e.attributes...,
@@ -144,7 +144,7 @@ func (e *exp) Start(ctx context.Context) error {
 	otel.SetTextMapPropagator(
 		propagation.NewCompositeTextMapPropagator(propagation.TraceContext{}, propagation.Baggage{}),
 	)
-	global.SetMeterProvider(e.meterProvider)
+	otel.SetMeterProvider(e.meterProvider)
 	return nil
 }
 

@@ -33,10 +33,10 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
 
-// SvcWatcher is a type alias of k8s.ResourceController for service resources
+// SvcWatcher is a type alias of k8s.ResourceController for service resources.
 type SvcWatcher k8s.ResourceController
 
-// Service represents a kubernetes service information
+// Service represents a kubernetes service information.
 type Service struct {
 	Name        string
 	ClusterIP   string

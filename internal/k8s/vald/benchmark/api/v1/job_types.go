@@ -23,11 +23,11 @@ import (
 )
 
 type BenchmarkJobSpec struct {
+	//nolint:tagalign
 	*config.GlobalConfig    `json:",omitempty" yaml:""`
 	ServerConfig            *config.Servers            `json:"server_config,omitempty"              yaml:"server_config"`
 	Target                  *BenchmarkTarget           `json:"target,omitempty"                     yaml:"target"`
 	Dataset                 *BenchmarkDataset          `json:"dataset,omitempty"                    yaml:"dataset"`
-	Dimension               int                        `json:"dimension,omitempty"                  yaml:"dimension"`
 	Replica                 int                        `json:"replica,omitempty"                    yaml:"replica"`
 	Repetition              int                        `json:"repetition,omitempty"                 yaml:"repetition"`
 	JobType                 string                     `json:"job_type,omitempty"                   yaml:"job_type"`
@@ -53,16 +53,16 @@ const (
 	BenchmarkJobHealthy   = BenchmarkJobStatus("Healthy")
 )
 
-// BenchmarkTarget defines the desired state of BenchmarkTarget
+// BenchmarkTarget defines the desired state of BenchmarkTarget.
 type BenchmarkTarget config.BenchmarkTarget
 
-// BenchmarkDataset defines the desired state of BenchmarkDateset
+// BenchmarkDataset defines the desired state of BenchmarkDateset.
 type BenchmarkDataset config.BenchmarkDataset
 
-// BenchmarkDatasetRange defines the desired state of BenchmarkDatesetRange
+// BenchmarkDatasetRange defines the desired state of BenchmarkDatesetRange.
 type BenchmarkDatasetRange config.BenchmarkDatasetRange
 
-// BenchmarkJobRule defines the desired state of BenchmarkJobRule
+// BenchmarkJobRule defines the desired state of BenchmarkJobRule.
 type BenchmarkJobRule config.BenchmarkJobRule
 
 type ValdBenchmarkJob struct {

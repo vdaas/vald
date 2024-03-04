@@ -27,7 +27,7 @@ const (
 	NOP
 	// ZEROLOG
 	// LOGRUS
-	// KLOG
+	// KLOG.
 )
 
 func (m Type) String() string {

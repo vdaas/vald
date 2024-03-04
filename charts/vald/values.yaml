@@ -38,7 +38,7 @@ defaults:
   image:
     # @schema {"name": "defaults.image.tag", "type": "string"}
     # defaults.image.tag -- docker image tag
-    tag: v1.7.10
+    tag: v1.7.12
   # @schema {"name": "defaults.server_config", "type": "object", "anchor": "server_config"}
   server_config:
     # @schema {"name": "defaults.server_config.servers", "type": "object"}
@@ -210,6 +210,9 @@ defaults:
             # @schema {"name": "defaults.server_config.servers.grpc.server.grpc.enable_reflection", "type": "boolean"}
             # defaults.server_config.servers.grpc.server.grpc.enable_reflection -- gRPC server reflection option
             enable_reflection: true
+            # @schema {"name": "defaults.server_config.servers.grpc.server.grpc.enable_admin", "type": "boolean"}
+            # defaults.server_config.servers.grpc.server.grpc.enable_admin -- gRPC server admin option
+            enable_admin: true
           # @schema {"name": "defaults.server_config.servers.grpc.server.socket_option", "alias": "socket_option"}
           socket_option:
             # defaults.server_config.servers.grpc.server.socket_option.reuse_port -- server listen socket option for reuse_port functionality
@@ -805,7 +808,7 @@ defaults:
       # @schema {"name": "defaults.observability.metrics.enable_version_info", "type": "boolean"}
       # defaults.observability.metrics.enable_version_info -- version info metrics enabled
       enable_version_info: true
-      # @schema {"name": "defaults.observability.metrics.version_info_labels", "type": "array", "items": {"type": "string", "enum": ["vald_version", "server_name", "git_commit", "build_time", "go_version", "go_os", "go_arch", "cgo_enabled", "ngt_version", "build_cpu_info_flags"]}}
+      # @schema {"name": "defaults.observability.metrics.version_info_labels", "type": "array", "items": {"type": "string", "enum": ["vald_version", "server_name", "git_commit", "build_time", "go_version", "go_os", "go_arch", "cgo_enabled", "algorithm_info", "build_cpu_info_flags"]}}
       # defaults.observability.metrics.version_info_labels -- enabled label names of version info
       version_info_labels:
         - "vald_version"
@@ -815,7 +818,7 @@ defaults:
         - "go_version"
         - "go_os"
         - "go_arch"
-        - "ngt_version"
+        - "algorithm_info"
       # @schema {"name": "defaults.observability.metrics.enable_memory", "type": "boolean"}
       # defaults.observability.metrics.enable_memory -- memory metrics enabled
       enable_memory: true
@@ -1772,6 +1775,10 @@ agent:
   # @schema {"name": "agent.version", "alias": "version"}
   # agent.version -- version of agent config
   version: v0.0.0
+  # @schema {"name": "agent.algorithm", "type": "string", "enum": ["ngt", "faiss"]}
+  # agent.algorithm -- agent algorithm type.
+  # it should be `ngt` or `faiss`.
+  algorithm: ngt
   # @schema {"name": "agent.time_zone", "type": "string"}
   # agent.time_zone -- Time zone
   time_zone: ""
@@ -1780,7 +1787,7 @@ agent:
   logging: {}
   # @schema {"name": "agent.name", "type": "string"}
   # agent.name -- name of agent deployment
-  name: vald-agent-ngt
+  name: vald-agent
   # @schema {"name": "agent.kind", "type": "string", "enum": ["StatefulSet", "Deployment", "DaemonSet"]}
   # agent.kind -- deployment kind: Deployment, DaemonSet or StatefulSet
   kind: StatefulSet
@@ -1897,6 +1904,30 @@ agent:
   # @schema {"name": "agent.initContainers", "alias": "initContainers"}
   # agent.initContainers -- init containers
   initContainers: []
+  # @schema {"name": "agent.clusterRole", "type": "object"}
+  clusterRole:
+    # @schema {"name": "agent.clusterRole.enabled", "type": "boolean"}
+    # agent.clusterRole.enabled -- creates clusterRole resource
+    enabled: true
+    # @schema {"name": "agent.clusterRole.name", "type": "string"}
+    # agent.clusterRole.name -- name of clusterRole
+    name: agent
+  # @schema {"name": "agent.clusterRoleBinding", "type": "object"}
+  clusterRoleBinding:
+    # @schema {"name": "agent.clusterRoleBinding.enabled", "type": "boolean"}
+    # agent.clusterRoleBinding.enabled -- creates clusterRoleBinding resource
+    enabled: true
+    # @schema {"name": "agent.clusterRoleBinding.name", "type": "string"}
+    # agent.clusterRoleBinding.name -- name of clusterRoleBinding
+    name: agent
+  # @schema {"name": "agent.serviceAccount", "type": "object"}
+  serviceAccount:
+    # @schema {"name": "agent.serviceAccount.enabled", "type": "boolean"}
+    # agent.serviceAccount.enabled -- creates service account
+    enabled: true
+    # @schema {"name": "agent.serviceAccount.name", "type": "string"}
+    # agent.serviceAccount.name -- name of service account
+    name: agent-ngt
   # @schema {"name": "agent.env", "alias": "env"}
   # agent.env -- environment variables
   env:
@@ -1951,7 +1982,7 @@ agent:
                 - key: app
                   operator: In
                   values:
-                    - vald-agent-ngt
+                    - vald-agent
       # agent.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution -- pod anti-affinity required scheduling terms
       requiredDuringSchedulingIgnoredDuringExecution: []
   # @schema {"name": "agent.topologySpreadConstraints", "alias": "topologySpreadConstraints"}
@@ -1977,7 +2008,7 @@ agent:
   observability:
     otlp:
       attribute:
-        service_name: vald-agent-ngt
+        service_name: vald-agent
   # @schema {"name": "agent.resources", "alias": "resources"}
   # agent.resources -- compute resources.
   # recommended setting of memory requests = cluster memory * 0.4 / number of agent pods
@@ -2028,6 +2059,12 @@ agent:
       annotations: {}
   # @schema {"name": "agent.ngt", "type": "object"}
   ngt:
+    # @schema {"name": "agent.ngt.pod_name", "type": "string"}
+    # agent.ngt.pod_name -- pod name of myself
+    pod_name: _MY_POD_NAME_
+    # @schema {"name": "agent.ngt.namespace", "type": "string"}
+    # agent.ngt.namespace -- namespace of myself
+    namespace: _MY_POD_NAMESPACE_
     # @schema {"name": "agent.ngt.index_path", "type": "string"}
     # agent.ngt.index_path -- path to index data
     index_path: ""
@@ -2068,10 +2105,10 @@ agent:
     object_type: float
     # @schema {"name": "agent.ngt.creation_edge_size", "type": "integer"}
     # agent.ngt.creation_edge_size -- creation edge size
-    creation_edge_size: 20
+    creation_edge_size: 50
     # @schema {"name": "agent.ngt.search_edge_size", "type": "integer"}
     # agent.ngt.search_edge_size -- search edge size
-    search_edge_size: 10
+    search_edge_size: 50
     # @schema {"name": "agent.ngt.enable_in_memory_mode", "type": "boolean"}
     # agent.ngt.enable_in_memory_mode -- in-memory mode enabled
     enable_in_memory_mode: true
@@ -2083,7 +2120,7 @@ agent:
     default_radius: -1.0
     # @schema {"name": "agent.ngt.default_epsilon", "type": "number"}
     # agent.ngt.default_epsilon -- default epsilon used for search
-    default_epsilon: 0.1
+    default_epsilon: 0.05
     # @schema {"name": "agent.ngt.min_load_index_timeout", "type": "string"}
     # agent.ngt.min_load_index_timeout -- minimum duration of load index timeout
     min_load_index_timeout: 3m
@@ -2100,6 +2137,12 @@ agent:
     # @schema {"name": "agent.ngt.enable_copy_on_write", "type": "boolean"}
     # agent.ngt.enable_copy_on_write -- enable copy on write saving for more stable backup
     enable_copy_on_write: false
+    # @schema {"name": "agent.ngt.enable_export_index_info_to_k8s", "type": "boolean"}
+    # agent.ngt.enable_export_index_info_to_k8s -- enable export index info to k8s
+    enable_export_index_info_to_k8s: false
+    # @schema {"name": "agent.ngt.export_index_info_duration", "type": "string"}
+    # agent.ngt.export_index_info_duration -- duration of exporting index info
+    export_index_info_duration: 1m
     # @schema {"name": "agent.ngt.vqueue", "type": "object"}
     vqueue:
       # @schema {"name": "agent.ngt.vqueue.insert_buffer_pool_size", "type": "integer"}
@@ -3459,3 +3502,175 @@ manager:
           # @schema {"name": "manager.index.readreplica.rotator.clusterRoleBinding.name", "type": "string"}
           # manager.index.readreplica.rotator.clusterRoleBinding.name -- name of clusterRoleBinding
           name: vald-readreplica-rotate
+    # @schema {"name": "manager.index.operator", "type": "object"}
+    # manager.index.operator -- [THIS FEATURE IS WIP] operator that manages vald index
+    operator:
+      # @schema {"name": "manager.index.operator.enabled", "type": "boolean"}
+      # manager.index.operator.enabled -- index operator enabled
+      enabled: false
+      # @schema {"name": "manager.index.operator.version", "alias": "version"}
+      # manager.index.operator.version -- version of index operator config
+      version: v0.0.0
+      # @schema {"name": "manager.index.operator.time_zone", "type": "string"}
+      # manager.index.operator.time_zone -- Time zone
+      time_zone: ""
+      # @schema {"name": "manager.index.operator.logging", "alias": "logging"}
+      # manager.index.operator.logging -- logging config (overrides defaults.logging)
+      logging: {}
+      # @schema {"name": "manager.index.operator.name", "type": "string"}
+      # manager.index.operator.name -- name of manager.index.operator deployment
+      name: vald-index-operator
+      # @schema {"name": "manager.index.operator.kind", "type": "string", "enum": ["Deployment", "DaemonSet"]}
+      # manager.index.operator.kind -- deployment kind: Deployment or DaemonSet
+      kind: Deployment
+      # @schema {"name": "manager.index.operator.progressDeadlineSeconds", "type": "integer"}
+      # manager.index.operator.progressDeadlineSeconds -- progress deadline seconds
+      progressDeadlineSeconds: 600
+      # @schema {"name": "manager.index.operator.replicas", "type": "integer", "minimum": 0}
+      # manager.index.operator.replicas -- number of replicas.
+      replicas: 1
+      # @schema {"name": "manager.index.operator.revisionHistoryLimit", "type": "integer", "minimum": 0}
+      # manager.index.operator.revisionHistoryLimit -- number of old history to retain to allow rollback
+      revisionHistoryLimit: 2
+      # @schema {"name": "manager.index.operator.terminationGracePeriodSeconds", "type": "integer", "minimum": 0}
+      # manager.index.operator.terminationGracePeriodSeconds -- duration in seconds pod needs to terminate gracefully
+      terminationGracePeriodSeconds: 30
+      # @schema {"name": "manager.index.operator.podSecurityContext", "type": "object"}
+      # manager.index.operator.podSecurityContext -- security context for pod
+      podSecurityContext:
+        runAsUser: 65532
+        runAsNonRoot: true
+        runAsGroup: 65532
+        fsGroup: 65532
+        fsGroupChangePolicy: "OnRootMismatch"
+      # @schema {"name": "manager.index.operator.securityContext", "type": "object"}
+      # manager.index.operator.securityContext -- security context for container
+      securityContext:
+        runAsUser: 65532
+        runAsNonRoot: true
+        runAsGroup: 65532
+        privileged: false
+        allowPrivilegeEscalation: false
+        readOnlyRootFilesystem: true
+        capabilities:
+          drop:
+            - ALL
+      # @schema {"name": "manager.index.operator.podPriority", "alias": "podPriority"}
+      podPriority:
+        # manager.index.operator.podPriority.enabled -- manager.index.operator pod PriorityClass enabled
+        enabled: true
+        # manager.index.operator.podPriority.value -- manager.index.operator pod PriorityClass value
+        value: 1000000
+      # @schema {"name": "manager.index.operator.annotations", "type": "object"}
+      # manager.index.operator.annotations -- deployment annotations
+      annotations: {}
+      # @schema {"name": "manager.index.operator.podAnnotations", "type": "object"}
+      # manager.index.operator.podAnnotations -- pod annotations
+      podAnnotations: {}
+      # @schema {"name": "manager.index.operator.image", "alias": "image"}
+      image:
+        # manager.index.operator.image.repository -- image repository
+        repository: vdaas/vald-index-operator
+        # manager.index.operator.image.tag -- image tag (overrides defaults.image.tag)
+        tag: ""
+        # manager.index.operator.image.pullPolicy -- image pull policy
+        pullPolicy: Always
+      # @schema {"name": "manager.index.operator.rollingUpdate", "alias": "rollingUpdate"}
+      rollingUpdate:
+        # manager.index.operator.rollingUpdate.maxSurge -- max surge of rolling update
+        maxSurge: 25%
+        # manager.index.operator.rollingUpdate.maxUnavailable -- max unavailable of rolling update
+        maxUnavailable: 25%
+      # @schema {"name": "manager.index.operator.initContainers", "alias": "initContainers"}
+      # manager.index.operator.initContainers -- init containers
+      initContainers: []
+      # @schema {"name": "manager.index.operator.env", "alias": "env"}
+      # manager.index.operator.env -- environment variables
+      env:
+        - name: MY_NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        - name: MY_POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: MY_POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+      # @schema {"name": "manager.index.operator.volumeMounts", "alias": "volumeMounts"}
+      # manager.index.operator.volumeMounts -- volume mounts
+      volumeMounts: []
+      # @schema {"name": "manager.index.operator.volumes", "alias": "volumes"}
+      # manager.index.operator.volumes -- volumes
+      volumes: []
+      # @schema {"name": "manager.index.operator.nodeName", "type": "string"}
+      # manager.index.operator.nodeName -- node name
+      nodeName: ""
+      # @schema {"name": "manager.index.operator.nodeSelector", "alias": "nodeSelector"}
+      # manager.index.operator.nodeSelector -- node selector
+      nodeSelector: {}
+      # @schema {"name": "manager.index.operator.tolerations", "alias": "tolerations"}
+      # manager.index.operator.tolerations -- tolerations
+      tolerations: []
+      # @schema {"name": "manager.index.operator.affinity", "alias": "affinity"}
+      affinity:
+        nodeAffinity:
+          # manager.index.operator.affinity.nodeAffinity.preferredDuringSchedulingIgnoredDuringExecution -- node affinity preferred scheduling terms
+          preferredDuringSchedulingIgnoredDuringExecution: []
+          requiredDuringSchedulingIgnoredDuringExecution:
+            # manager.index.operator.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms -- node affinity required node selectors
+            nodeSelectorTerms: []
+        podAffinity:
+          # manager.index.operator.affinity.podAffinity.preferredDuringSchedulingIgnoredDuringExecution -- pod affinity preferred scheduling terms
+          preferredDuringSchedulingIgnoredDuringExecution: []
+          # manager.index.operator.affinity.podAffinity.requiredDuringSchedulingIgnoredDuringExecution -- pod affinity required scheduling terms
+          requiredDuringSchedulingIgnoredDuringExecution: []
+        podAntiAffinity:
+          # manager.index.operator.affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution -- pod anti-affinity preferred scheduling terms
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                topologyKey: kubernetes.io/hostname
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - vald-index-operator
+          # manager.index.operator.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution -- pod anti-affinity required scheduling terms
+          requiredDuringSchedulingIgnoredDuringExecution: []
+      # @schema {"name": "manager.index.operator.topologySpreadConstraints", "alias": "topologySpreadConstraints"}
+      # manager.index.operator.topologySpreadConstraints -- topology spread constraints of manager.index.operator pods
+      topologySpreadConstraints: []
+      # @schema {"name": "manager.index.operator.server_config", "alias": "server_config"}
+      # manager.index.operator.server_config -- server config (overrides defaults.server_config)
+      server_config:
+        servers:
+          rest: {}
+          grpc: {}
+        healths:
+          liveness: {}
+          readiness: {}
+          startup: {}
+        metrics:
+          pprof: {}
+      # @schema {"name": "manager.index.operator.observability", "alias": "observability"}
+      # manager.index.operator.observability -- observability config (overrides defaults.observability)
+      observability:
+        otlp:
+          attribute:
+            service_name: vald-index-operator
+      # @schema {"name": "manager.index.operator.resources", "alias": "resources"}
+      # manager.index.operator.resources -- compute resources
+      resources:
+        requests:
+          cpu: 200m
+          memory: 65Mi
+        limits:
+          cpu: 600m
+          memory: 200Mi
+      # @schema {"name": "manager.index.operator.namespace", "type": "string"}
+      # manager.index.operator.namespace -- namespace to discovery
+      namespace: _MY_POD_NAMESPACE_

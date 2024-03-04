@@ -167,7 +167,6 @@ func (s *server) StreamInsert(stream vald.Insert_StreamInsertServer) (err error)
 				},
 			}, nil
 		})
-
 	if err != nil {
 		st, msg, err := status.ParseError(err, codes.Internal, "failed to parse StreamInsert gRPC error response")
 		if span != nil {

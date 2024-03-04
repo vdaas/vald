@@ -26,7 +26,7 @@ on:
       - "*.*.*-*"
       - "v*.*.*-*"
     paths:
-      - ".github/actions/docker-build/actions.yaml"
+      - ".github/actions/docker-build/action.yaml"
       - ".github/workflows/_docker-image.yaml"
       - ".github/workflows/dockers-agent-ngt-image.yml"
       - "go.mod"
@@ -34,7 +34,7 @@ on:
       - "internal/**"
       - "!internal/**/*_test.go"
       - "!internal/db/**"
-      - "!internal/k8s/**"
+      - "internal/k8s/**"
       - "apis/grpc/**"
       - "pkg/agent/core/ngt/**"
       - "cmd/agent/core/ngt/**"
@@ -43,7 +43,7 @@ on:
       - "versions/NGT_VERSION"
   pull_request:
     paths:
-      - ".github/actions/docker-build/actions.yaml"
+      - ".github/actions/docker-build/action.yaml"
       - ".github/workflows/_docker-image.yaml"
       - ".github/workflows/dockers-agent-ngt-image.yml"
       - "go.mod"
@@ -51,7 +51,7 @@ on:
       - "internal/**"
       - "!internal/**/*_test.go"
       - "!internal/db/**"
-      - "!internal/k8s/**"
+      - "internal/k8s/**"
       - "apis/grpc/**"
       - "pkg/agent/core/ngt/**"
       - "cmd/agent/core/ngt/**"
@@ -60,7 +60,7 @@ on:
       - "versions/NGT_VERSION"
   pull_request_target:
     paths:
-      - ".github/actions/docker-build/actions.yaml"
+      - ".github/actions/docker-build/action.yaml"
       - ".github/workflows/_docker-image.yaml"
       - ".github/workflows/dockers-agent-ngt-image.yml"
       - "go.mod"
@@ -68,14 +68,13 @@ on:
       - "internal/**"
       - "!internal/**/*_test.go"
       - "!internal/db/**"
-      - "!internal/k8s/**"
+      - "internal/k8s/**"
       - "apis/grpc/**"
       - "pkg/agent/core/ngt/**"
       - "cmd/agent/core/ngt/**"
       - "dockers/agent/core/ngt/Dockerfile"
       - "versions/GO_VERSION"
       - "versions/NGT_VERSION"
-
 jobs:
   build:
     uses: ./.github/workflows/_docker-image.yaml

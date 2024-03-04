@@ -338,7 +338,6 @@ func (s *server) StreamSearch(stream vald.Search_StreamSearchServer) (err error)
 				},
 			}, nil
 		})
-
 	if err != nil {
 		st, msg, err := status.ParseError(err, codes.Internal,
 			"failed to parse StreamSearch gRPC error response")

@@ -172,7 +172,7 @@ func (d *data) GetPath() string {
 	return d.path
 }
 
-// TODO: Apply generics
+// TODO: Apply generics.
 func (d *data) GetByGroupName(name string) [][]float32 {
 	switch name {
 	case "train":

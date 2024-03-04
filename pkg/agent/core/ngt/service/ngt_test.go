@@ -44,9 +44,11 @@ import (
 	testdata "github.com/vdaas/vald/internal/test"
 	"github.com/vdaas/vald/internal/test/data/vector"
 	"github.com/vdaas/vald/internal/test/goleak"
-	"github.com/vdaas/vald/pkg/agent/core/ngt/service/kvs"
-	"github.com/vdaas/vald/pkg/agent/core/ngt/service/vqueue"
+	"github.com/vdaas/vald/internal/test/mock/k8s"
+	"github.com/vdaas/vald/internal/test/testify"
+	"github.com/vdaas/vald/pkg/agent/internal/kvs"
 	"github.com/vdaas/vald/pkg/agent/internal/metadata"
+	"github.com/vdaas/vald/pkg/agent/internal/vqueue"
 	"google.golang.org/grpc"
 )
 
@@ -1122,6 +1124,241 @@ func Test_ngt_Close(t *testing.T) {
 
 			err = ngt.Close(context.Background())
 			require.Equal(tt, test.want, err)
+		})
+	}
+}
+
+func TestExportIndexInfo(t *testing.T) {
+	t.Parallel()
+	config := defaultConfig
+	config.Dimension = 3
+	config.EnableExportIndexInfoToK8s = true
+	config.PodName = "test-pod"
+
+	type test struct {
+		name     string
+		testfunc func(t *testing.T)
+	}
+
+	tests := []test{
+		{
+			"export after create index one vector",
+			func(t *testing.T) {
+				mock := &k8s.PatcherMock{}
+				mock.On("ApplyPodAnnotations",
+					testify.Anything,
+					testify.Anything,
+					testify.Anything,
+					testify.Anything,
+				).Return(nil)
+
+				ngt, err := New(&config, WithPatcher(mock))
+				require.NoError(t, err)
+
+				now := time.Now().UnixNano()
+				err = ngt.InsertWithTime("test-uuid", []float32{1.0, 2.0, 3.0}, now)
+				require.NoError(t, err)
+
+				err = ngt.CreateIndex(context.Background(), 10)
+				require.NoError(t, err)
+
+				// expected entries
+				expected := map[string]string{
+					indexCountAnnotationsKey:                     "1",
+					uncommittedAnnotationsKey:                    "0",
+					unsavedCreateIndexExecutionNumAnnotationsKey: "1",
+					unsavedProcessedVqAnnotationsKey:             "1",
+				}
+				// check mock called result
+				mock.AssertExpectations(t)
+				mock.AssertNumberOfCalls(t, "ApplyPodAnnotations", 1)
+				mock.AssertCalled(t, "ApplyPodAnnotations", testify.Anything, config.PodName, config.PodNamespace, expected)
+			},
+		},
+		{
+			"export after create index multiple vectors",
+			func(t *testing.T) {
+				mock := &k8s.PatcherMock{}
+				mock.On("ApplyPodAnnotations",
+					testify.Anything,
+					testify.Anything,
+					testify.Anything,
+					testify.Anything,
+				).Return(nil)
+
+				ngt, err := New(&config, WithPatcher(mock))
+				require.NoError(t, err)
+
+				time1 := time.Now().UnixNano()
+				err = ngt.InsertWithTime("test-uuid", []float32{1.0, 2.0, 3.0}, time1)
+				require.NoError(t, err)
+
+				time2 := time.Now().UnixNano()
+				err = ngt.InsertWithTime("test-uuid2", []float32{1.0, 2.0, 3.0}, time2)
+				require.NoError(t, err)
+
+				err = ngt.CreateIndex(context.Background(), 10)
+				require.NoError(t, err)
+
+				// expected entries
+				expected := map[string]string{
+					indexCountAnnotationsKey:                     "2",
+					uncommittedAnnotationsKey:                    "0",
+					unsavedCreateIndexExecutionNumAnnotationsKey: "1",
+					unsavedProcessedVqAnnotationsKey:             "2",
+				}
+				// check mock called result
+				mock.AssertExpectations(t)
+				mock.AssertNumberOfCalls(t, "ApplyPodAnnotations", 1)
+				mock.AssertCalled(t, "ApplyPodAnnotations", testify.Anything, config.PodName, config.PodNamespace, expected)
+			},
+		},
+		{
+			"export after create index multiple times",
+			func(t *testing.T) {
+				mock := &k8s.PatcherMock{}
+				mock.On("ApplyPodAnnotations",
+					testify.Anything,
+					testify.Anything,
+					testify.Anything,
+					testify.Anything,
+				).Return(nil)
+
+				ngt, err := New(&config, WithPatcher(mock))
+				require.NoError(t, err)
+
+				time1 := time.Now().UnixNano()
+				err = ngt.InsertWithTime("test-uuid", []float32{1.0, 2.0, 3.0}, time1)
+				require.NoError(t, err)
+
+				err = ngt.CreateIndex(context.Background(), 10)
+				require.NoError(t, err)
+
+				time2 := time.Now().UnixNano()
+				err = ngt.InsertWithTime("test-uuid2", []float32{1.0, 2.0, 3.0}, time2)
+				require.NoError(t, err)
+
+				err = ngt.CreateIndex(context.Background(), 10)
+				require.NoError(t, err)
+
+				// expected entries
+				expected := map[string]string{
+					indexCountAnnotationsKey:                     "2",
+					uncommittedAnnotationsKey:                    "0",
+					unsavedCreateIndexExecutionNumAnnotationsKey: "2",
+					unsavedProcessedVqAnnotationsKey:             "2",
+				}
+				// check mock called result
+				mock.AssertExpectations(t)
+				mock.AssertNumberOfCalls(t, "ApplyPodAnnotations", 2)
+				mock.AssertCalled(t, "ApplyPodAnnotations", testify.Anything, config.PodName, config.PodNamespace, expected)
+			},
+		},
+		{
+			"export after create index multiple vectors and save index",
+			func(t *testing.T) {
+				mock := &k8s.PatcherMock{}
+				mock.On("ApplyPodAnnotations",
+					testify.Anything,
+					testify.Anything,
+					testify.Anything,
+					testify.Anything,
+				).Return(nil)
+
+				tmpdir := t.TempDir()
+
+				ngt, err := New(&config,
+					WithIndexPath(tmpdir),
+					WithPatcher(mock),
+				)
+				require.NoError(t, err)
+
+				time1 := time.Now().UnixNano()
+				err = ngt.InsertWithTime("test-uuid", []float32{1.0, 2.0, 3.0}, time1)
+				require.NoError(t, err)
+
+				time2 := time.Now().UnixNano()
+				err = ngt.InsertWithTime("test-uuid2", []float32{1.0, 2.0, 3.0}, time2)
+				require.NoError(t, err)
+
+				ctx := context.Background()
+				err = ngt.CreateIndex(ctx, 10)
+				require.NoError(t, err)
+
+				// set time in context for testing
+				saveIndexTime := time.Now()
+				ctx = context.WithValue(ctx, saveIndexTimeKey, saveIndexTime)
+
+				err = ngt.SaveIndex(ctx)
+				require.NoError(t, err)
+
+				// expected entries
+				expectedAfterCreate := map[string]string{
+					indexCountAnnotationsKey:                     "2",
+					uncommittedAnnotationsKey:                    "0",
+					unsavedCreateIndexExecutionNumAnnotationsKey: "1",
+					unsavedProcessedVqAnnotationsKey:             "2",
+				}
+				expectedAfterSave := map[string]string{
+					lastTimeSaveIndexTimestampAnnotationsKey:     saveIndexTime.UTC().Format(time.RFC3339),
+					unsavedCreateIndexExecutionNumAnnotationsKey: "0",
+					unsavedProcessedVqAnnotationsKey:             "0",
+				}
+				// check mock called result
+				mock.AssertExpectations(t)
+				mock.AssertNumberOfCalls(t, "ApplyPodAnnotations", 2)
+				mock.AssertCalled(t, "ApplyPodAnnotations", testify.Anything, config.PodName, config.PodNamespace, expectedAfterCreate)
+				mock.AssertCalled(t, "ApplyPodAnnotations", testify.Anything, config.PodName, config.PodNamespace, expectedAfterSave)
+			},
+		},
+		{
+			"export after inserting vectors",
+			func(t *testing.T) {
+				mock := &k8s.PatcherMock{}
+				mock.On("ApplyPodAnnotations",
+					testify.Anything,
+					testify.Anything,
+					testify.Anything,
+					testify.Anything,
+				).Return(nil)
+
+				tmpdir := t.TempDir()
+
+				n, err := New(&config,
+					WithIndexPath(tmpdir),
+					WithPatcher(mock),
+				)
+				require.NoError(t, err)
+
+				time1 := time.Now().UnixNano()
+				err = n.InsertWithTime("test-uuid", []float32{1.0, 2.0, 3.0}, time1)
+				require.NoError(t, err)
+
+				time2 := time.Now().UnixNano()
+				err = n.InsertWithTime("test-uuid2", []float32{1.0, 2.0, 3.0}, time2)
+				require.NoError(t, err)
+
+				ctx := context.Background()
+				ExportMetricsOnTick(n.(*ngt), ctx)
+
+				// expected entries
+				expectedAfterInsert := map[string]string{
+					indexCountAnnotationsKey:  "0",
+					uncommittedAnnotationsKey: "2",
+				}
+				// check mock called result
+				mock.AssertExpectations(t)
+				mock.AssertNumberOfCalls(t, "ApplyPodAnnotations", 1)
+				mock.AssertCalled(t, "ApplyPodAnnotations", testify.Anything, config.PodName, config.PodNamespace, expectedAfterInsert)
+			},
+		},
+	}
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			test.testfunc(tt)
 		})
 	}
 }

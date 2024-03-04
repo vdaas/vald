@@ -15,7 +15,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-:
 
 #
 # This script is executed as postAttachCommand in devcontainer.json
@@ -23,7 +22,6 @@
 # - create symbolic link of config.yaml for easier development
 # - add command history setting to .zshrc to persist history
 #
-
 echo "creating symbolic link of config..."
 
 LINK_TARGET="$(pwd)/cmd/agent/core/ngt/sample.yaml"

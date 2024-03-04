@@ -1,24 +1,25 @@
-# vald-benchmark-operator
+# Vald Benchmark Operator
 
-![Version: v1.7.5](https://img.shields.io/badge/Version-v1.7.5-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.16.0](https://img.shields.io/badge/AppVersion-1.16.0-informational?style=flat-square)
+This is a Helm chart to install `vald-benchmark-operator`.
 
-A benchmark operator for benchmarking the Vald cluster.
+Current chart version is `v1.7.12`
 
-**Homepage:** <https://vald.vdaas.org>
+## Table of Contents
 
-## Maintainers
+- [Install](#install)
+- [Configuration](#configuration)
 
-| Name     | Email                | Url |
-| -------- | -------------------- | --- |
-| kpango   | <kpango@vdaas.org>   |     |
-| vankichi | <vankichi@vdaas.org> |     |
-| kmrmt    | <ksk@vdaas.org>      |     |
+## Install
 
-## Source Code
+Add Vald Helm repository
 
-- <https://github.com/vdaas/vald>
+    $ helm repo add vald https://vald.vdaas.org/charts
 
-## Values
+Run the following command to install the chart,
+
+    $ helm install vald-benchmark-operator vald/vald-benchmark-operator
+
+## Configuration
 
 | Key                                                                     | Type   | Default                                                                                                                                                                        | Description                                                                                                 |
 | ----------------------------------------------------------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------- |
@@ -26,10 +27,10 @@ A benchmark operator for benchmarking the Vald cluster.
 | annotations                                                             | object | `{}`                                                                                                                                                                           | deployment annotations                                                                                      |
 | image.pullPolicy                                                        | string | `"Always"`                                                                                                                                                                     | image pull policy                                                                                           |
 | image.repository                                                        | string | `"vdaas/vald-benchmark-operator"`                                                                                                                                              | job image repository                                                                                        |
-| image.tag                                                               | string | `"v1.7.5"`                                                                                                                                                                     | image tag for job docker image                                                                              |
+| image.tag                                                               | string | `"v1.7.12"`                                                                                                                                                                    | image tag for job docker image                                                                              |
 | job_image.pullPolicy                                                    | string | `"Always"`                                                                                                                                                                     |                                                                                                             |
 | job_image.repository                                                    | string | `"vdaas/vald-benchmark-job"`                                                                                                                                                   |                                                                                                             |
-| job_image.tag                                                           | string | `"v1.7.5"`                                                                                                                                                                     |                                                                                                             |
+| job_image.tag                                                           | string | `"v1.7.12"`                                                                                                                                                                    |                                                                                                             |
 | logging.format                                                          | string | `"raw"`                                                                                                                                                                        | logging format. logging format must be `raw` or `json`                                                      |
 | logging.level                                                           | string | `"debug"`                                                                                                                                                                      | logging level. logging level must be `debug`, `info`, `warn`, `error` or `fatal`.                           |
 | logging.logger                                                          | string | `"glg"`                                                                                                                                                                        | logger name. currently logger must be `glg` or `zap`.                                                       |
@@ -47,7 +48,7 @@ A benchmark operator for benchmarking the Vald cluster.
 | observability.metrics.version_info_labels[4]                            | string | `"go_version"`                                                                                                                                                                 |                                                                                                             |
 | observability.metrics.version_info_labels[5]                            | string | `"go_os"`                                                                                                                                                                      |                                                                                                             |
 | observability.metrics.version_info_labels[6]                            | string | `"go_arch"`                                                                                                                                                                    |                                                                                                             |
-| observability.metrics.version_info_labels[7]                            | string | `"ngt_version"`                                                                                                                                                                |                                                                                                             |
+| observability.metrics.version_info_labels[7]                            | string | `"algorithm_info"`                                                                                                                                                             |                                                                                                             |
 | observability.otlp.attribute.namespace                                  | string | `"_MY_POD_NAMESPACE_"`                                                                                                                                                         |                                                                                                             |
 | observability.otlp.attribute.node_name                                  | string | `"_MY_NODE_NAME_"`                                                                                                                                                             |                                                                                                             |
 | observability.otlp.attribute.pod_name                                   | string | `"_MY_POD_NAME_"`                                                                                                                                                              |                                                                                                             |
@@ -180,7 +181,3 @@ A benchmark operator for benchmarking the Vald cluster.
 | time_zone                                                               | string | `""`                                                                                                                                                                           | time_zone                                                                                                   |
 | tolerations                                                             | list   | `[]`                                                                                                                                                                           | tolerations                                                                                                 |
 | version                                                                 | string | `"v0.0.0"`                                                                                                                                                                     | version of benchmark-operator config                                                                        |
-
----
-
-Autogenerated from chart metadata using [helm-docs v1.11.3](https://github.com/norwoodj/helm-docs/releases/v1.11.3)

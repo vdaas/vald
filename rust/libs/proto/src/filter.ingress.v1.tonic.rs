@@ -290,7 +290,9 @@ pub mod filter_server {
                             >,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
-                            let fut = async move { (*inner).gen_vector(request).await };
+                            let fut = async move {
+                                <T as Filter>::gen_vector(&inner, request).await
+                            };
                             Box::pin(fut)
                         }
                     }
@@ -338,7 +340,7 @@ pub mod filter_server {
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
                             let fut = async move {
-                                (*inner).filter_vector(request).await
+                                <T as Filter>::filter_vector(&inner, request).await
                             };
                             Box::pin(fut)
                         }

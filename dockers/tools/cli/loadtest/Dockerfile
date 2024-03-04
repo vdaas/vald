@@ -15,14 +15,13 @@
 # limitations under the License.
 #
 
-ARG GO_VERSION=latest
 ARG MAINTAINER="vdaas.org vald team <vald@vdaas.org>"
 
-FROM --platform=${BUILDPLATFORM} golang:${GO_VERSION} AS golang
+FROM --platform=${TARGETPLATFORM} ubuntu:devel AS builder
 
-FROM --platform=${BUILDPLATFORM} ubuntu:devel AS builder
-
+ARG GO_VERSION
 ARG TARGETARCH
+ARG TARGETOS
 
 ENV GO111MODULE on
 ENV DEBIAN_FRONTEND noninteractive
@@ -48,9 +47,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-COPY --from=golang /usr/local/go $GOROOT
-RUN mkdir -p "$GOPATH/src"
-
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/Makefile.d
 COPY Makefile.d .
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}
@@ -61,7 +57,8 @@ COPY go.sum .
 
 RUN --mount=type=cache,target="${GOPATH}/pkg",id="go-build-${TARGETARCH}" \
     --mount=type=cache,target="${HOME}/.cache/go-build",id="go-build-${TARGETARCH}" \
-    make go/download
+    make GO_VERSION=${GO_VERSION} go/install \
+    && make go/download
 
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/internal
 COPY internal .
@@ -112,9 +109,7 @@ RUN GO_VERSION="$(< GO_VERSION)" \
     && upx -9 -o "/usr/bin/${APP_NAME}" "${APP_NAME}"
 
 # Start From Scratch For Running Environment
-FROM --platform=${BUILDPLATFORM} ubuntu:devel
-# Start From Alpine For Debug Environment
-# FROM --platform=${BUILDPLATFORM} alpine:latest
+FROM --platform=${TARGETPLATFORM} ubuntu:devel
 LABEL maintainer="${MAINTAINER}"
 
 ENV APP_NAME loadtest

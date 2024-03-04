@@ -18,7 +18,6 @@ discoverer:
     name: vald-01
   serviceAccount:
     name: vald-01
-
 gateway:
   mirror:
     enabled: true
@@ -26,7 +25,6 @@ gateway:
       name: vald-mirror-01
     serviceAccount:
       name: vald-mirror-01
-
 agent:
   ngt:
     dimension: 784

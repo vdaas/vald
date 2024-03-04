@@ -29,13 +29,13 @@ import (
 )
 
 const (
-	insertCount = 400
-	testCount   = 20
+	testCount = 20
 )
 
 var (
 	datasetPath         string
 	grpcServerAddr      string
+	insertCount         uint
 	indexingWaitSeconds uint
 )
 
@@ -43,10 +43,12 @@ func init() {
 	/**
 	Path option specifies hdf file by path. Default value is `fashion-mnist-784-euclidean.hdf5`.
 	Addr option specifies grpc server address. Default value is `127.0.0.1:8081`.
-	Wait option specifies indexing wait time (in seconds). Default value is  `60`.
+	Insert option specifies insert count. Default value is `400`.
+	Wait option specifies indexing wait time (in seconds). Default value is `60`.
 	**/
 	flag.StringVar(&datasetPath, "path", "fashion-mnist-784-euclidean.hdf5", "dataset path")
 	flag.StringVar(&grpcServerAddr, "addr", "localhost:8081", "gRPC server address")
+	flag.UintVar(&insertCount, "insert", 400, "insert count")
 	flag.UintVar(&indexingWaitSeconds, "wait", 60, "indexing wait seconds")
 	flag.Parse()
 }

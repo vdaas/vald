@@ -19,7 +19,6 @@ default:
     level: debug
   image:
     tag: latest
-
 agent:
   minReplicas: 4
   maxReplicas: 8
@@ -41,14 +40,11 @@ agent:
     auto_index_duration_limit: 1m
     # Check duration of automatic indexing.
     auto_index_check_duration: 10s
-
 gateway:
   lb:
     enabled: false
-
 discoverer:
   enabled: false
-
 manager:
   index:
     enabled: false

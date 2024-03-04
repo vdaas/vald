@@ -1,4 +1,3 @@
----
 #
 # Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 #
@@ -20,10 +19,10 @@ metadata:
   name: vald-discoverer-config
   labels:
     app.kubernetes.io/name: vald
-    helm.sh/chart: vald-v1.7.10
+    helm.sh/chart: vald-v1.7.12
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: release-name
-    app.kubernetes.io/version: v1.7.10
+    app.kubernetes.io/version: v1.7.12
     app.kubernetes.io/component: discoverer
 data:
   config.yaml: |
@@ -42,6 +41,7 @@ data:
           grpc:
             bidirectional_stream_concurrency: 20
             connection_timeout: ""
+            enable_admin: true
             enable_reflection: true
             header_table_size: 0
             initial_conn_window_size: 2097152
@@ -195,7 +195,7 @@ data:
         - go_version
         - go_os
         - go_arch
-        - ngt_version
+        - algorithm_info
       trace:
         enabled: false
     discoverer:
@@ -215,7 +215,7 @@ data:
           pod_metrics:
             labels: {}
             fields:
-              containers.name: vald-agent-ngt
+              containers.name: vald-agent
           node_metrics:
             labels: {}
             fields: {}

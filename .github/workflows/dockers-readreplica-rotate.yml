@@ -24,14 +24,14 @@ on:
       - "*.*.*-*"
       - "v*.*.*-*"
     paths:
-      - ".github/actions/docker-build/actions.yaml"
+      - ".github/actions/docker-build/action.yaml"
       - ".github/workflows/dockers-readreplica-rotate.yml"
       - "go.mod"
       - "go.sum"
       - "internal/**"
       - "!internal/**/*_test.go"
       - "!internal/db/**"
-      - "!internal/k8s/**"
+      - "internal/k8s/**"
       - "apis/grpc/**"
       - "pkg/index/job/readreplica/rotate/**"
       - "cmd/index/job/readreplica/rotate/**"
@@ -39,7 +39,7 @@ on:
       - "versions/GO_VERSION"
   pull_request:
     paths:
-      - ".github/actions/docker-build/actions.yaml"
+      - ".github/actions/docker-build/action.yaml"
       - ".github/workflows/_docker-image.yaml"
       - ".github/workflows/dockers-readreplica-rotate.yml"
       - "go.mod"
@@ -47,7 +47,7 @@ on:
       - "internal/**"
       - "!internal/**/*_test.go"
       - "!internal/db/**"
-      - "!internal/k8s/**"
+      - "internal/k8s/**"
       - "apis/grpc/**"
       - "pkg/index/job/readreplica/rotate/**"
       - "cmd/index/job/readreplica/rotate/**"
@@ -55,7 +55,7 @@ on:
       - "versions/GO_VERSION"
   pull_request_target:
     paths:
-      - ".github/actions/docker-build/actions.yaml"
+      - ".github/actions/docker-build/action.yaml"
       - ".github/workflows/_docker-image.yaml"
       - ".github/workflows/dockers-readreplica-rotate.yml"
       - "go.mod"
@@ -63,13 +63,12 @@ on:
       - "internal/**"
       - "!internal/**/*_test.go"
       - "!internal/db/**"
-      - "!internal/k8s/**"
+      - "internal/k8s/**"
       - "apis/grpc/**"
       - "pkg/index/job/readreplica/rotate/**"
       - "cmd/index/job/readreplica/rotate/**"
       - "dockers/index/job/readreplica/rotate/Dockerfile"
       - "versions/GO_VERSION"
-
 jobs:
   build:
     uses: ./.github/workflows/_docker-image.yaml

@@ -15,7 +15,6 @@
 #
 name: "Setup k3d environment"
 description: "A action to set up k3d (k3s in Docker)"
-
 inputs:
   version:
     description: "k3d version"
@@ -41,7 +40,6 @@ inputs:
     description: "Options for k3d cluster create command"
     required: false
     default: ""
-
 runs:
   using: "composite"
   steps:
@@ -55,7 +53,6 @@ runs:
         echo "tag=${TAG}" >> $GITHUB_OUTPUT
       env:
         K3D_VERSION: ${{ inputs.version }}
-
     - name: Detect k3s version
       id: k3s_version
       shell: bash
@@ -65,19 +62,16 @@ runs:
         echo "tag=${K3S_VERSION=$}" >> $GITHUB_OUTPUT
       env:
         K3S_VERSION: ${{ inputs.k3s_version }}
-
     - name: Install k3d
       shell: bash
       run: |
         curl -s ${REPO_URL} | ${{ steps.k3d_version.outputs.tag }} bash
       env:
         REPO_URL: "https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh"
-
     - name: Check k3d version
       shell: bash
       run: |
         k3d version
-
     - name: Setup k3d options
       shell: bash
       id: k3d_options
@@ -95,8 +89,13 @@ runs:
         INGRESS_PORT: ${{ inputs.ingress_port }}
         OPTIONS: ${{ inputs.options }}
         K3S_VERSION: ${{ steps.k3s_version.outputs.tag }}
-
     - name: Create k8s cluster
       shell: bash
+      id: start_k3d
       run: |
         k3d cluster create ${{ inputs.name }} ${{ steps.k3d_options.outputs.options }}
+    - name: Ready k8s cluster
+      shell: bash
+      run: |
+        k3d cluster list
+        kubectl cluster-info dump

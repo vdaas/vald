@@ -21,7 +21,7 @@ on:
       - "release/v*.*"
       - "!release/v*.*.*"
     paths:
-      - ".github/actions/docker-build/actions.yaml"
+      - ".github/actions/docker-build/action.yaml"
       - ".github/workflows/_docker-image.yaml"
       - ".github/workflows/dockers-dev-container-image.yml"
       - "dockers/dev/**"
@@ -31,7 +31,7 @@ on:
       - "versions/NGT_VERSION"
   pull_request:
     paths:
-      - ".github/actions/docker-build/actions.yaml"
+      - ".github/actions/docker-build/action.yaml"
       - ".github/workflows/_docker-image.yaml"
       - ".github/workflows/dockers-dev-container-image.yml"
       - "dockers/dev/**"
@@ -41,7 +41,7 @@ on:
       - "versions/NGT_VERSION"
   pull_request_target:
     paths:
-      - ".github/actions/docker-build/actions.yaml"
+      - ".github/actions/docker-build/action.yaml"
       - ".github/workflows/_docker-image.yaml"
       - ".github/workflows/dockers-dev-container-image.yml"
       - "dockers/dev/**"
@@ -49,7 +49,6 @@ on:
       - "Makefile.d/**"
       - "versions/GO_VERSION"
       - "versions/NGT_VERSION"
-
 jobs:
   build:
     uses: ./.github/workflows/_docker-image.yaml

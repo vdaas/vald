@@ -52,7 +52,6 @@ func NewConfig(path string) (cfg *Data, err error) {
 	cfg = new(Data)
 
 	err = config.Read(path, &cfg)
-
 	if err != nil {
 		return nil, err
 	}

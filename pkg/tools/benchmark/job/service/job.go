@@ -82,7 +82,6 @@ func (jt jobType) String() string {
 
 type job struct {
 	eg                 errgroup.Group
-	dimension          int
 	dataset            *config.BenchmarkDataset
 	jobType            jobType
 	jobFunc            func(context.Context, chan error) error
@@ -321,7 +320,7 @@ func calcRecall(linearRes, searchRes *payload.Search_Response) (recall float64) 
 	return recall / float64(len(lres))
 }
 
-// TODO: apply many object type
+// TODO: apply many object type.
 func addNoiseToVec(oVec []float32) []float32 {
 	noise := rand.Float32()
 	vec := oVec

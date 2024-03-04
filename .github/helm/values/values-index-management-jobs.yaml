@@ -19,7 +19,6 @@ agent:
     auto_index_duration_limit: 1000h
     auto_index_check_duration: 1000h
     auto_save_index_duration: 1000h
-
 manager:
   index:
     enabled: false

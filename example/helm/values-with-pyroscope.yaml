@@ -31,20 +31,17 @@ defaults:
       readiness:
         readinessProbe:
           initialDelaySeconds: 60
-
 discoverer:
   resources:
     requests:
       cpu: 150m
       memory: 50Mi
-
 manager:
   index:
     resources:
       requests:
         cpu: 150m
         memory: 30Mi
-
 gateway:
   lb:
     minReplicas: 2
@@ -64,7 +61,6 @@ gateway:
         traefik.ingress.kubernetes.io/service.serversscheme: h2c
     gateway_config:
       index_replica: 2
-
 agent:
   # /* These annotations will be set automatically when successful deployment */
   # podAnnotations:

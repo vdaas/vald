@@ -1,4 +1,3 @@
----
 #
 # Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 #
@@ -21,10 +20,10 @@ metadata:
   labels:
     app: vald-manager-index
     app.kubernetes.io/name: vald
-    helm.sh/chart: vald-v1.7.10
+    helm.sh/chart: vald-v1.7.12
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: release-name
-    app.kubernetes.io/version: v1.7.10
+    app.kubernetes.io/version: v1.7.12
     app.kubernetes.io/component: manager-index
 spec:
   progressDeadlineSeconds: 600
@@ -47,7 +46,7 @@ spec:
         app.kubernetes.io/instance: release-name
         app.kubernetes.io/component: manager-index
       annotations:
-        checksum/configmap: 6b725e1075416568b2458d912fea0c99f71f3fe3c06f6ce3f2cd62e4a6bb1127
+        checksum/configmap: a7f406999d62770af1134699e65d5283c6df909bd3e2b9571b75b66a69cec18d
         profefe.com/enable: "true"
         profefe.com/port: "6060"
         profefe.com/service: vald-manager-index
@@ -65,7 +64,7 @@ spec:
             - -e
             - -c
             - |
-              until [ "$(wget --server-response --spider --quiet http://vald-agent-ngt.default.svc.cluster.local:3001/readiness 2>&1 | awk 'NR==1{print $2}')" == "200" ]; do
+              until [ "$(wget --server-response --spider --quiet http://vald-agent.default.svc.cluster.local:3001/readiness 2>&1 | awk 'NR==1{print $2}')" == "200" ]; do
                 echo "waiting for agent to be ready..."
                 sleep 2;
               done

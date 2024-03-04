@@ -24,7 +24,7 @@ on:
       - "*.*.*-*"
       - "v*.*.*-*"
     paths:
-      - ".github/actions/docker-build/actions.yaml"
+      - ".github/actions/docker-build/action.yaml"
       - ".github/workflows/dockers-gateway-mirror-image.yml"
       - "go.mod"
       - "go.sum"
@@ -41,7 +41,7 @@ on:
       - "versions/GO_VERSION"
   pull_request:
     paths:
-      - ".github/actions/docker-build/actions.yaml"
+      - ".github/actions/docker-build/action.yaml"
       - ".github/workflows/dockers-gateway-mirror-image.yml"
       - "go.mod"
       - "go.sum"
@@ -58,7 +58,7 @@ on:
       - "versions/GO_VERSION"
   pull_request_target:
     paths:
-      - ".github/actions/docker-build/actions.yaml"
+      - ".github/actions/docker-build/action.yaml"
       - ".github/workflows/dockers-gateway-mirror-image.yml"
       - "go.mod"
       - "go.sum"
@@ -73,7 +73,6 @@ on:
       - "pkg/gateway/internal/**"
       - "dockers/gateway/mirror/Dockerfile"
       - "versions/GO_VERSION"
-
 jobs:
   build:
     uses: ./.github/workflows/_docker-image.yaml

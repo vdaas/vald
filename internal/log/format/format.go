@@ -24,7 +24,7 @@ const (
 	Unknown Format = iota
 	RAW
 	JSON
-	// LTSV
+	// LTSV.
 )
 
 func (f Format) String() string {

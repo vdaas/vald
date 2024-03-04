@@ -86,11 +86,7 @@ func New(opts ...Option) (Client, error) {
 	return c, nil
 }
 
-func NewAgentClient(cc *grpc.ClientConn) interface {
-	vald.Client
-	client.ObjectReader
-	client.Indexer
-} {
+func NewAgentClient(cc *grpc.ClientConn) Client {
 	return &singleAgentClient{
 		Client: vald.NewValdClient(cc),
 		ac:     agent.NewAgentClient(cc),

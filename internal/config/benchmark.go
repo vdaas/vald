@@ -21,7 +21,6 @@ package config
 type BenchmarkJob struct {
 	Target             *BenchmarkTarget    `json:"target,omitempty"               yaml:"target"`
 	Dataset            *BenchmarkDataset   `json:"dataset,omitempty"              yaml:"dataset"`
-	Dimension          int                 `json:"dimension,omitempty"            yaml:"dimension"`
 	Replica            int                 `json:"replica,omitempty"              yaml:"replica"`
 	Repetition         int                 `json:"repetition,omitempty"           yaml:"repetition"`
 	JobType            string              `json:"job_type,omitempty"             yaml:"job_type"`
@@ -46,7 +45,7 @@ type BenchmarkScenario struct {
 	Jobs    []*BenchmarkJob   `json:"jobs,omitempty"    yaml:"jobs"`
 }
 
-// BenchmarkTarget defines the desired state of BenchmarkTarget
+// BenchmarkTarget defines the desired state of BenchmarkTarget.
 type BenchmarkTarget struct {
 	Host string `json:"host,omitempty"`
 	Port int    `json:"port,omitempty"`
@@ -57,7 +56,7 @@ func (t *BenchmarkTarget) Bind() *BenchmarkTarget {
 	return t
 }
 
-// BenchmarkDataset defines the desired state of BenchmarkDateset
+// BenchmarkDataset defines the desired state of BenchmarkDateset.
 type BenchmarkDataset struct {
 	Name    string                 `json:"name,omitempty"`
 	Group   string                 `json:"group,omitempty"`
@@ -73,13 +72,13 @@ func (d *BenchmarkDataset) Bind() *BenchmarkDataset {
 	return d
 }
 
-// BenchmarkDatasetRange defines the desired state of BenchmarkDatesetRange
+// BenchmarkDatasetRange defines the desired state of BenchmarkDatesetRange.
 type BenchmarkDatasetRange struct {
 	Start int `json:"start,omitempty"`
 	End   int `json:"end,omitempty"`
 }
 
-// BenchmarkJobRule defines the desired state of BenchmarkJobRule
+// BenchmarkJobRule defines the desired state of BenchmarkJobRule.
 type BenchmarkJobRule struct {
 	Name string `json:"name,omitempty"`
 	Type string `json:"type,omitempty"`
@@ -91,7 +90,7 @@ func (r *BenchmarkJobRule) Bind() *BenchmarkJobRule {
 	return r
 }
 
-// InsertConfig defines the desired state of insert config
+// InsertConfig defines the desired state of insert config.
 type InsertConfig struct {
 	SkipStrictExistCheck bool   `json:"skip_strict_exist_check,omitempty"`
 	Timestamp            string `json:"timestamp,omitempty"`
@@ -102,7 +101,7 @@ func (cfg *InsertConfig) Bind() *InsertConfig {
 	return cfg
 }
 
-// UpdateConfig defines the desired state of update config
+// UpdateConfig defines the desired state of update config.
 type UpdateConfig struct {
 	SkipStrictExistCheck  bool   `json:"skip_strict_exist_check,omitempty"`
 	Timestamp             string `json:"timestamp,omitempty"`
@@ -114,7 +113,7 @@ func (cfg *UpdateConfig) Bind() *UpdateConfig {
 	return cfg
 }
 
-// UpsertConfig defines the desired state of upsert config
+// UpsertConfig defines the desired state of upsert config.
 type UpsertConfig struct {
 	SkipStrictExistCheck  bool   `json:"skip_strict_exist_check,omitempty"`
 	Timestamp             string `json:"timestamp,omitempty"`
@@ -126,7 +125,7 @@ func (cfg *UpsertConfig) Bind() *UpsertConfig {
 	return cfg
 }
 
-// SearchConfig defines the desired state of search config
+// SearchConfig defines the desired state of search config.
 type SearchConfig struct {
 	Epsilon              float32 `json:"epsilon,omitempty"`
 	Radius               float32 `json:"radius,omitempty"`
@@ -143,7 +142,7 @@ func (cfg *SearchConfig) Bind() *SearchConfig {
 	return cfg
 }
 
-// RemoveConfig defines the desired state of remove config
+// RemoveConfig defines the desired state of remove config.
 type RemoveConfig struct {
 	SkipStrictExistCheck bool   `json:"skip_strict_exist_check,omitempty"`
 	Timestamp            string `json:"timestamp,omitempty"`
@@ -154,7 +153,7 @@ func (cfg *RemoveConfig) Bind() *RemoveConfig {
 	return cfg
 }
 
-// ObjectConfig defines the desired state of object config
+// ObjectConfig defines the desired state of object config.
 type ObjectConfig struct {
 	FilterConfigs []*FilterConfig `json:"filter_configs,omitempty" yaml:"filter_configs"`
 }
@@ -168,7 +167,7 @@ func (cfg *ObjectConfig) Bind() *ObjectConfig {
 	return cfg
 }
 
-// FilterTarget defines the desired state of filter target
+// FilterTarget defines the desired state of filter target.
 type FilterTarget struct {
 	Host string `json:"host,omitempty" yaml:"host"`
 	Port int32  `json:"port,omitempty" yaml:"port"`

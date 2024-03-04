@@ -15,11 +15,11 @@ package config
 
 // CircuitBreaker represents the configuration for the internal circuitbreaker package.
 type CircuitBreaker struct {
-	ClosedErrorRate      float32 `yaml:"closed_error_rate"      json:"closed_error_rate,omitempty"`
-	HalfOpenErrorRate    float32 `yaml:"half_open_error_rate"   json:"half_open_error_rate,omitempty"`
-	MinSamples           int64   `yaml:"min_samples"            json:"min_samples,omitempty"`
-	OpenTimeout          string  `yaml:"open_timeout"           json:"open_timeout,omitempty"`
-	ClosedRefreshTimeout string  `yaml:"closed_refresh_timeout" json:"closed_refresh_timeout,omitempty"`
+	ClosedErrorRate      float32 `json:"closed_error_rate,omitempty"      yaml:"closed_error_rate"`
+	HalfOpenErrorRate    float32 `json:"half_open_error_rate,omitempty"   yaml:"half_open_error_rate"`
+	MinSamples           int64   `json:"min_samples,omitempty"            yaml:"min_samples"`
+	OpenTimeout          string  `json:"open_timeout,omitempty"           yaml:"open_timeout"`
+	ClosedRefreshTimeout string  `json:"closed_refresh_timeout,omitempty" yaml:"closed_refresh_timeout"`
 }
 
 func (cb *CircuitBreaker) Bind() *CircuitBreaker {

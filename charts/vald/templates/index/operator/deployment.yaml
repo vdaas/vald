@@ -1,0 +1,138 @@
+#
+# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# You may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+{{- $operator := .Values.manager.index.operator -}}
+{{- $valdServiceAccount := .Values.discoverer.serviceAccount -}}
+{{- if and $operator.enabled (eq $operator.kind "Deployment") }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $operator.name }}
+  labels:
+    app: {{ $operator.name }}
+    app.kubernetes.io/name: {{ include "vald.name" . }}
+    helm.sh/chart: {{ include "vald.chart" . }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/version: {{ .Chart.Version }}
+    app.kubernetes.io/component: index-operator
+  {{- if $operator.annotations }}
+  annotations:
+    {{- toYaml $operator.annotations | nindent 4 }}
+  {{- end }}
+spec:
+  progressDeadlineSeconds: {{ $operator.progressDeadlineSeconds }}
+  replicas: {{ $operator.replicas }}
+  revisionHistoryLimit: {{ $operator.revisionHistoryLimit }}
+  selector:
+    matchLabels:
+      app: {{ $operator.name }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: {{ $operator.rollingUpdate.maxSurge }}
+      maxUnavailable: {{ $operator.rollingUpdate.maxUnavailable }}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: {{ $operator.name }}
+        app.kubernetes.io/name: {{ include "vald.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/component: operator
+      annotations:
+        checksum/configmap: {{ include (print $.Template.BasePath "/index/operator/configmap.yaml") . | sha256sum }}
+        {{- if $operator.podAnnotations }}
+        {{- toYaml $operator.podAnnotations | nindent 8 }}
+        {{- end }}
+        {{- $pprof := default .Values.defaults.server_config.metrics.pprof $operator.server_config.metrics.pprof }}
+        {{- if $pprof.enabled }}
+        pyroscope.io/scrape: "true"
+        pyroscope.io/application-name: {{ $operator.name }}
+        pyroscope.io/profile-cpu-enabled: "true"
+        pyroscope.io/profile-mem-enabled: "true"
+        pyroscope.io/port: "{{ $pprof.port }}"
+        {{- end }}
+    spec:
+      {{- if $operator.initContainers }}
+      initContainers:
+        {{- $initContainers := dict "initContainers" $operator.initContainers "Values" .Values "namespace" .Release.Namespace -}}
+        {{- include "vald.initContainers" $initContainers | trim | nindent 8 }}
+      {{- end }}
+      affinity:
+        {{- include "vald.affinity" $operator.affinity | nindent 8 }}
+      {{- if $operator.topologySpreadConstraints }}
+      topologySpreadConstraints:
+        {{- toYaml $operator.topologySpreadConstraints | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: {{ $operator.name }}
+          image: "{{ $operator.image.repository }}:{{ default .Values.defaults.image.tag $operator.image.tag }}"
+          imagePullPolicy: {{ $operator.image.pullPolicy }}
+          {{- $servers := dict "Values" $operator.server_config "default" .Values.defaults.server_config -}}
+          {{- include "vald.containerPorts" $servers | trim | nindent 10 }}
+          resources:
+            {{- toYaml $operator.resources | nindent 12 }}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          {{- if $operator.securityContext }}
+          securityContext:
+            {{- toYaml $operator.securityContext | nindent 12 }}
+          {{- end }}
+          {{- if $operator.env }}
+          env:
+            {{- toYaml $operator.env | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+            - name: {{ $operator.name }}-config
+              mountPath: /etc/server/
+            {{- if $operator.volumeMounts }}
+            {{- toYaml $operator.volumeMounts | nindent 12 }}
+            {{- end }}
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      serviceAccountName: {{ $valdServiceAccount.name }}
+      {{- if $operator.podSecurityContext }}
+      securityContext:
+        {{- toYaml $operator.podSecurityContext | nindent 8 }}
+      {{- end }}
+      terminationGracePeriodSeconds: {{ $operator.terminationGracePeriodSeconds }}
+      volumes:
+        - name: {{ $operator.name }}-config
+          configMap:
+            defaultMode: 420
+            name: {{ $operator.name }}-config
+        {{- if $operator.volumes }}
+        {{- toYaml $operator.volumes | nindent 8 }}
+        {{- end }}
+      {{- if $operator.nodeName }}
+      nodeName: {{ $operator.nodeName }}
+      {{- end }}
+      {{- if $operator.nodeSelector }}
+      nodeSelector:
+        {{- toYaml $operator.nodeSelector | nindent 8 }}
+      {{- end }}
+      {{- if $operator.tolerations }}
+      tolerations:
+        {{- toYaml $operator.tolerations | nindent 8 }}
+      {{- end }}
+      {{- if $operator.podPriority }}
+      {{- if $operator.podPriority.enabled }}
+      priorityClassName: {{ .Release.Namespace }}-{{ $operator.name }}-priority
+      {{- end }}
+      {{- end }}
+status:
+{{- end }}

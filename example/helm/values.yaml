@@ -27,7 +27,6 @@ defaults:
       readiness:
         readinessProbe:
           initialDelaySeconds: 60
-
 ## vald-lb-gateway settings
 gateway:
   lb:
@@ -48,7 +47,6 @@ gateway:
       # NOTE: https://doc.traefik.io/traefik/routing/providers/kubernetes-ingress/#on-service
       annotations:
         traefik.ingress.kubernetes.io/service.serversscheme: h2c
-
 ## vald-agent settings
 agent:
   minReplicas: 6
@@ -75,14 +73,12 @@ agent:
     auto_create_index_pool_size: 100
     # The default create index batch pool size
     default_pool_size: 100
-
 ## vald-discoverer settings
 discoverer:
   resources:
     requests:
       cpu: 150m
       memory: 50Mi
-
 ## vald-manager settings
 manager:
   index:

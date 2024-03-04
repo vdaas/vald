@@ -797,7 +797,7 @@ func isHealthy(ctx context.Context, conn *ClientConn) bool {
 		log.Debugf("gRPC target %s's connection status will be Ready soon\tstatus: %s", conn.Target(), state.String())
 		return true
 	case connectivity.Idle:
-		log.Debugf("gRPC target %s's connection status is waiting for target\tstatus: %s", conn.Target(), state.String())
+		log.Debugf("gRPC target %s's connection status is waiting for target\tstatus: %s\ttrying to re-connect...", conn.Target(), state.String())
 		conn.Connect()
 		if conn.WaitForStateChange(ctx, state) {
 			state = conn.GetState()

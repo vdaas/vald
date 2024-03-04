@@ -28,25 +28,30 @@ import (
 	"reflect"
 	"runtime"
 	"slices"
+	"strconv"
 	"sync/atomic"
 	"time"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/conv"
+	"github.com/vdaas/vald/internal/core/algorithm"
 	core "github.com/vdaas/vald/internal/core/algorithm/ngt"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/file"
+	"github.com/vdaas/vald/internal/k8s/client"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/sync"
 	"github.com/vdaas/vald/internal/sync/errgroup"
-	"github.com/vdaas/vald/pkg/agent/core/ngt/service/kvs"
-	"github.com/vdaas/vald/pkg/agent/core/ngt/service/vqueue"
+	"github.com/vdaas/vald/pkg/agent/internal/kvs"
 	"github.com/vdaas/vald/pkg/agent/internal/metadata"
+	"github.com/vdaas/vald/pkg/agent/internal/vqueue"
 )
+
+type contextSaveIndexTimeKey string
 
 type NGT interface {
 	Start(ctx context.Context) <-chan error
@@ -101,10 +106,11 @@ type ngt struct {
 	lastNocie uint64     // last number of create index execution this value prevent unnecessary saveindex.
 
 	// counters
-	nocie uint64 // number of create index execution
-	nogce uint64 // number of proactive GC execution
-	wfci  uint64 // wait for create indexing
-	nobic uint64 // number of broken index count
+	nocie uint64        // number of create index execution
+	nogce uint64        // number of proactive GC execution
+	wfci  uint64        // wait for create indexing
+	nobic uint64        // number of broken index count
+	nopvq atomic.Uint64 // number of processed vq number
 
 	// configurations
 	inMem bool // in-memory mode
@@ -122,13 +128,15 @@ type ngt struct {
 	enableProactiveGC bool // if this value is true, agent component will purge GC memory more proactive
 	enableCopyOnWrite bool // if this value is true, agent component will write backup file using Copy on Write and saves old files to the old directory
 
-	path       string       // index path
-	smu        sync.Mutex   // save index lock
-	tmpPath    atomic.Value // temporary index path for Copy on Write
-	oldPath    string       // old volume path
-	basePath   string       // index base directory for CoW
-	brokenPath string       // backup broken index path
-	cowmu      sync.Mutex   // copy on write move lock
+	podName      string
+	podNamespace string
+	path         string       // index path
+	smu          sync.Mutex   // save index lock
+	tmpPath      atomic.Value // temporary index path for Copy on Write
+	oldPath      string       // old volume path
+	basePath     string       // index base directory for CoW
+	brokenPath   string       // backup broken index path
+	cowmu        sync.Mutex   // copy on write move lock
 
 	poolSize uint32  // default pool size
 	radius   float32 // default radius
@@ -140,7 +148,10 @@ type ngt struct {
 	kvsdbConcurrency int // kvsdb concurrency
 	historyLimit     int // the maximum generation number of broken index backup
 
-	isReadReplica bool
+	isReadReplica           bool
+	enableExportIndexInfo   bool
+	exportIndexInfoDuration time.Duration
+	patcher                 client.Patcher
 }
 
 const (
@@ -151,16 +162,31 @@ const (
 	oldIndexDirName    = "backup"
 	originIndexDirName = "origin"
 	brokenIndexDirName = "broken"
+
+	uncommittedAnnotationsKey                    = "vald.vdaas.org/uncommitted"
+	unsavedProcessedVqAnnotationsKey             = "vald.vdaas.org/unsaved-processed-vq"
+	unsavedCreateIndexExecutionNumAnnotationsKey = "vald.vdaas.org/unsaved-create-index-execution"
+	lastTimeSaveIndexTimestampAnnotationsKey     = "vald.vdaas.org/last-time-save-index-timestamp"
+	indexCountAnnotationsKey                     = "vald.vdaas.org/index-count"
+
+	// use this only for tests. usually just leave the ctx value empty and let time.Now() be used
+	saveIndexTimeKey contextSaveIndexTimeKey = "saveIndexTimeKey"
 )
 
 func New(cfg *config.NGT, opts ...Option) (nn NGT, err error) {
+	if cfg.PodName == "" && cfg.EnableExportIndexInfoToK8s {
+		return nil, errors.New("pod_name is empty. this must be set either from environment variable or from config file")
+	}
 	n := &ngt{
-		fmap:              make(map[string]int64),
-		dim:               cfg.Dimension,
-		enableProactiveGC: cfg.EnableProactiveGC,
-		enableCopyOnWrite: cfg.EnableCopyOnWrite,
-		kvsdbConcurrency:  cfg.KVSDB.Concurrency,
-		historyLimit:      cfg.BrokenIndexHistoryLimit,
+		podName:               cfg.PodName,
+		podNamespace:          cfg.PodNamespace,
+		fmap:                  make(map[string]int64),
+		dim:                   cfg.Dimension,
+		enableProactiveGC:     cfg.EnableProactiveGC,
+		enableCopyOnWrite:     cfg.EnableCopyOnWrite,
+		kvsdbConcurrency:      cfg.KVSDB.Concurrency,
+		historyLimit:          cfg.BrokenIndexHistoryLimit,
+		enableExportIndexInfo: cfg.EnableExportIndexInfoToK8s,
 	}
 
 	for _, opt := range append(defaultOptions, opts...) {
@@ -210,6 +236,7 @@ func New(cfg *config.NGT, opts ...Option) (nn NGT, err error) {
 	}
 	n.indexing.Store(false)
 	n.saving.Store(false)
+
 	return n, nil
 }
 
@@ -830,6 +857,7 @@ func (n *ngt) Start(ctx context.Context) <-chan error {
 			n.lim = math.MaxInt64
 		}
 
+		// add initial delay before starting auto indexing
 		if n.idelay > 0 {
 			timer := time.NewTimer(n.idelay)
 			select {
@@ -844,9 +872,11 @@ func (n *ngt) Start(ctx context.Context) <-chan error {
 		tick := time.NewTicker(n.dur)
 		sTick := time.NewTicker(n.sdur)
 		limit := time.NewTicker(n.lim)
+		exportTick := time.NewTicker(n.exportIndexInfoDuration)
 		defer tick.Stop()
 		defer sTick.Stop()
 		defer limit.Stop()
+		defer exportTick.Stop()
 		for {
 			err = nil
 			select {
@@ -865,6 +895,10 @@ func (n *ngt) Start(ctx context.Context) <-chan error {
 				err = n.CreateAndSaveIndex(ctx, n.poolSize)
 			case <-sTick.C:
 				err = n.SaveIndex(ctx)
+			case <-exportTick.C:
+				if n.enableExportIndexInfo {
+					err = n.exportMetricsOnTick(ctx)
+				}
 			}
 			if err != nil && err != errors.ErrUncommittedIndexNotFound {
 				ech <- err
@@ -1148,6 +1182,9 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 	}
 	log.Infof("create index operation started, uncommitted indexes = %d", ic)
 	log.Debug("create index delete phase started")
+	// vqProcessedCnt is a tempral counter to store the number of processed vqueue items.
+	// This will be added to nopvq after CreateIndex operation succeeds.
+	var vqProcessedCnt uint64
 	n.vq.RangePopDelete(ctx, now, func(uuid string) bool {
 		log.Debugf("start delete operation for kvsdb id: %s", uuid)
 		oid, ok := n.kvs.Delete(uuid)
@@ -1163,6 +1200,8 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 			n.fmu.Unlock()
 		}
 		log.Debugf("removed from ngt index and kvsdb id: %s, oid: %d", uuid, oid)
+
+		vqProcessedCnt++
 		return true
 	})
 	log.Debug("create index delete phase finished")
@@ -1195,6 +1234,8 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 		}
 		n.fmu.Unlock()
 		log.Debugf("finished to insert ngt index and kvsdb id: %s, oid: %d", uuid, oid)
+
+		vqProcessedCnt++
 		return true
 	})
 	if poolSize <= 0 {
@@ -1210,11 +1251,21 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 	err = n.core.CreateIndex(poolSize)
 	if err != nil {
 		log.Error("an error occurred on creating graph and tree phase:", err)
-	} else {
-		atomic.AddUint64(&n.nocie, 1)
+		return err
 	}
+
+	atomic.AddUint64(&n.nocie, 1)
+	n.nopvq.Add(vqProcessedCnt)
 	log.Debug("create graph and tree phase finished")
 	log.Info("create index operation finished")
+
+	if n.enableExportIndexInfo {
+		log.Info("exporting index info to k8s resource")
+		if err := n.exportMetricsOnCreateIndex(ctx); err != nil {
+			log.Errorf("failed to export index info to k8s resource: %v", err)
+			return err
+		}
+	}
 	return err
 }
 
@@ -1304,7 +1355,13 @@ func (n *ngt) saveIndex(ctx context.Context) (err error) {
 		return err
 	}
 	n.saving.Store(true)
+
+	// number of processed vq before save operation
+	// this will be subtracted from n.nopvq after save operation succeeds
+	beforeNopvq := n.nopvq.Load()
+
 	defer n.gc()
+	// since defering here, atomic operations are guaranteed in this scope
 	defer n.saving.Store(false)
 
 	log.Debug("cleanup invalid index started")
@@ -1495,6 +1552,14 @@ func (n *ngt) saveIndex(ctx context.Context) (err error) {
 		return err
 	}
 	log.Info("save index operation finished")
+
+	// now save operation succeeds, subtract it from n.nopvq
+	n.nopvq.Add(-beforeNopvq)
+	if n.enableExportIndexInfo {
+		if err := n.exportMetricsOnSaveIndex(ctx); err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
@@ -1628,8 +1693,11 @@ func (n *ngt) IsIndexing() bool {
 
 func (n *ngt) UUIDs(ctx context.Context) (uuids []string) {
 	uuids = make([]string, 0, n.kvs.Len())
+	var mu sync.Mutex
 	n.kvs.Range(ctx, func(uuid string, oid uint32, _ int64) bool {
+		mu.Lock()
 		uuids = append(uuids, uuid)
+		mu.Unlock()
 		return true
 	})
 	return uuids
@@ -1641,6 +1709,10 @@ func (n *ngt) NumberOfCreateIndexExecution() uint64 {
 
 func (n *ngt) NumberOfProactiveGCExecution() uint64 {
 	return atomic.LoadUint64(&n.nogce)
+}
+
+func (n *ngt) lastNumberOfCreateIndexExecution() uint64 {
+	return atomic.LoadUint64(&n.lastNocie)
 }
 
 func (n *ngt) gc() {
@@ -1668,8 +1740,18 @@ func (n *ngt) GetDimensionSize() int {
 
 func (n *ngt) Close(ctx context.Context) (err error) {
 	defer n.core.Close()
-
-	err = n.kvs.Close()
+	defer func() {
+		kerr := n.kvs.Close()
+		if kerr != nil &&
+			!errors.Is(err, context.Canceled) &&
+			!errors.Is(err, context.DeadlineExceeded) {
+			if err != nil {
+				err = errors.Join(kerr, err)
+			} else {
+				err = kerr
+			}
+		}
+	}()
 	if len(n.path) != 0 {
 		if n.isReadReplica {
 			log.Info("skip create and save index operation on close because this is read replica")
@@ -1730,7 +1812,7 @@ func (n *ngt) ListObjectFunc(ctx context.Context, f func(uuid string, oid uint32
 	})
 }
 
-func (n *ngt) toSearchResponse(sr []core.SearchResult) (res *payload.Search_Response, err error) {
+func (n *ngt) toSearchResponse(sr []algorithm.SearchResult) (res *payload.Search_Response, err error) {
 	if len(sr) == 0 {
 		if n.Len() == 0 {
 			return nil, nil
@@ -1763,4 +1845,74 @@ func (n *ngt) toSearchResponse(sr []core.SearchResult) (res *payload.Search_Resp
 		return nil, errors.ErrEmptySearchResult
 	}
 	return res, nil
+}
+
+func (n *ngt) uncommittedEntry() (k, v string) {
+	return uncommittedAnnotationsKey, strconv.FormatUint(n.InsertVQueueBufferLen()+n.DeleteVQueueBufferLen(), 10)
+}
+
+func (n *ngt) processedVqEntries() (k, v string) {
+	return unsavedProcessedVqAnnotationsKey, strconv.FormatUint(n.nopvq.Load(), 10)
+}
+
+func (n *ngt) unsavedNumberOfCreateIndexExecutionEntry() (k, v string) {
+	num := n.NumberOfCreateIndexExecution() - n.lastNumberOfCreateIndexExecution()
+	return unsavedCreateIndexExecutionNumAnnotationsKey, strconv.FormatUint(num, 10)
+}
+
+func (n *ngt) lastTimeSaveIndexTimestampEntry(timestamp time.Time) (k, v string) {
+	return lastTimeSaveIndexTimestampAnnotationsKey, timestamp.UTC().Format(time.RFC3339)
+}
+
+func (n *ngt) indexCountEntry() (k, v string) {
+	return indexCountAnnotationsKey, strconv.FormatUint(n.Len(), 10)
+}
+
+func (n *ngt) exportMetricsOnTick(ctx context.Context) error {
+	entries := make(map[string]string)
+	k, v := n.uncommittedEntry()
+	entries[k] = v
+
+	k, v = n.indexCountEntry()
+	entries[k] = v
+
+	return n.patcher.ApplyPodAnnotations(ctx, n.podName, n.podNamespace, entries)
+}
+
+func (n *ngt) exportMetricsOnCreateIndex(ctx context.Context) error {
+	entries := make(map[string]string)
+	k, v := n.uncommittedEntry()
+	entries[k] = v
+
+	k, v = n.processedVqEntries()
+	entries[k] = v
+
+	k, v = n.unsavedNumberOfCreateIndexExecutionEntry()
+	entries[k] = v
+
+	k, v = n.indexCountEntry()
+	entries[k] = v
+
+	return n.patcher.ApplyPodAnnotations(ctx, n.podName, n.podNamespace, entries)
+}
+
+func (n *ngt) exportMetricsOnSaveIndex(ctx context.Context) error {
+	entries := make(map[string]string)
+
+	val := ctx.Value(saveIndexTimeKey)
+	t, ok := val.(time.Time)
+	if !ok {
+		t = time.Now()
+	}
+
+	k, v := n.lastTimeSaveIndexTimestampEntry(t)
+	entries[k] = v
+
+	k, v = n.unsavedNumberOfCreateIndexExecutionEntry()
+	entries[k] = v
+
+	k, v = n.processedVqEntries()
+	entries[k] = v
+
+	return n.patcher.ApplyPodAnnotations(ctx, n.podName, n.podNamespace, entries)
 }
