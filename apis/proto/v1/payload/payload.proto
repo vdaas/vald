@@ -335,6 +335,11 @@ message Remove {
   }
 }
 
+// Flush related messages.
+message Flush {
+  message Request {}
+}
+
 // Common messages.
 message Object {
   // Represent a request to fetch raw vector.

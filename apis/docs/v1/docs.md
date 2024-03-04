@@ -14,6 +14,8 @@
   - [Filter](#payload-v1-Filter)
   - [Filter.Config](#payload-v1-Filter-Config)
   - [Filter.Target](#payload-v1-Filter-Target)
+  - [Flush](#payload-v1-Flush)
+  - [Flush.Request](#payload-v1-Flush-Request)
   - [Info](#payload-v1-Info)
   - [Info.Annotations](#payload-v1-Info-Annotations)
   - [Info.Annotations.AnnotationsEntry](#payload-v1-Info-Annotations-AnnotationsEntry)
@@ -127,6 +129,8 @@
   - [RetryInfo](#rpc-v1-RetryInfo)
 - [v1/vald/filter.proto](#v1_vald_filter-proto)
   - [Filter](#vald-v1-Filter)
+- [v1/vald/flush.proto](#v1_vald_flush-proto)
+  - [Flush](#vald-v1-Flush)
 - [v1/vald/insert.proto](#v1_vald_insert-proto)
   - [Insert](#vald-v1-Insert)
 - [v1/vald/object.proto](#v1_vald_object-proto)
@@ -213,6 +217,14 @@ Represent the target filter server.
 | ----- | ----------------- | ----- | -------------------- |
 | host  | [string](#string) |       | The target hostname. |
 | port  | [uint32](#uint32) |       | The target port.     |
+
+<a name="payload-v1-Flush"></a>
+
+### Flush
+
+<a name="payload-v1-Flush-Request"></a>
+
+### Flush.Request
 
 <a name="payload-v1-Info"></a>
 
@@ -1448,6 +1460,22 @@ Filter service provides ways to connect to Vald through filter.
 | UpsertObject       | [.payload.v1.Upsert.ObjectRequest](#payload-v1-Upsert-ObjectRequest)           | [.payload.v1.Object.Location](#payload-v1-Object-Location)                    | A method to upsert object.                                               |
 | StreamUpsertObject | [.payload.v1.Upsert.ObjectRequest](#payload-v1-Upsert-ObjectRequest) stream    | [.payload.v1.Object.StreamLocation](#payload-v1-Object-StreamLocation) stream | A method to upsert object by bidirectional streaming.                    |
 | MultiUpsertObject  | [.payload.v1.Upsert.MultiObjectRequest](#payload-v1-Upsert-MultiObjectRequest) | [.payload.v1.Object.Locations](#payload-v1-Object-Locations)                  | A method to upsert multiple objects.                                     |
+
+<a name="v1_vald_flush-proto"></a>
+
+<p align="right"><a href="#top">Top</a></p>
+
+## v1/vald/flush.proto
+
+<a name="vald-v1-Flush"></a>
+
+### Flush
+
+Flush service provides ways to flush all indexed vectors.
+
+| Method Name | Request Type                                           | Response Type                                                | Description                           |
+| ----------- | ------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------- |
+| Flush       | [.payload.v1.Flush.Request](#payload-v1-Flush-Request) | [.payload.v1.Info.Index.Count](#payload-v1-Info-Index-Count) | A method to flush all indexed vector. |
 
 <a name="v1_vald_insert-proto"></a>
 

@@ -479,6 +479,48 @@ func ListInDir(path string) ([]string, error) {
 	return files, nil
 }
 
+// DeleteDir recursively deletes each file or directory based on the path specified as an argument
+func DeleteDir(ctx context.Context, path string) (err error) {
+	exists, _, err := ExistsWithDetail(path)
+	if err != nil {
+		return err
+	}
+	if !exists {
+		log.Debugf("path %s does not exist, so deleting the directory is not executed.", path)
+		return nil
+	}
+	err = os.Remove(path)
+	if err == nil {
+		return nil
+	}
+	eg, _ := errgroup.New(ctx)
+
+	path, err = filepath.Abs(path)
+	if err != nil {
+		return err
+	}
+	err = filepath.WalkDir(path, func(childPath string, info fs.DirEntry, err error) error {
+		if err != nil {
+			fi, ierr := info.Info()
+			if ierr != nil {
+				err = errors.Wrap(err, ierr.Error())
+			}
+			err = errors.ErrFailedToWalkDir(err, path, childPath, nil, fi)
+			log.Warn(err)
+			return err
+		}
+		eg.Go(safety.RecoverFunc(func() (err error) {
+			err = os.Remove(childPath)
+			return err
+		}))
+		return nil
+	})
+	if err != nil {
+		return errors.Wrap(eg.Wait(), err.Error())
+	}
+	return eg.Wait()
+}
+
 func Join(paths ...string) (path string) {
 	if paths == nil {
 		return ""

@@ -3341,6 +3341,11 @@ func (s *server) doStreamListObject(ctx context.Context, client vald.Object_Stre
 	}
 }
 
+// TODO: implement Flush handler
+func (s *server) Flush(ctx context.Context, req *payload.Flush_Request) (*payload.Info_Index_Count, error) {
+	return s.UnimplementedFlushServer.Flush(ctx, req)
+}
+
 func (s *server) isProxied(ctx context.Context) bool {
 	return s.gateway.FromForwardedContext(ctx) != ""
 }
