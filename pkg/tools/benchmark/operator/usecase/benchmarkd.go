@@ -27,6 +27,7 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/grpc/interceptor/server/recover"
 	"github.com/vdaas/vald/internal/observability"
+	backoffmetrics "github.com/vdaas/vald/internal/observability/metrics/backoff"
 	infometrics "github.com/vdaas/vald/internal/observability/metrics/info"
 	"github.com/vdaas/vald/internal/runner"
 	"github.com/vdaas/vald/internal/safety"
@@ -52,11 +53,11 @@ type run struct {
 var JOB_NAMESPACE = os.Getenv("JOB_NAMESPACE")
 
 func New(cfg *config.Config) (r runner.Runner, err error) {
-	log.Info("pkg/tools/benchmark/scenario/cmd start")
+	log.Info("pkg/tools/benchmark/operator/cmd start")
 
 	eg := errgroup.Get()
 
-	log.Info("pkg/tools/benchmark/scenario/cmd success d")
+	log.Info("pkg/tools/benchmark/operator/cmd success d")
 
 	operator, err := service.New(
 		service.WithErrGroup(eg),
@@ -95,7 +96,8 @@ func New(cfg *config.Config) (r runner.Runner, err error) {
 	if cfg.Observability.Enabled {
 		obs, err = observability.NewWithConfig(
 			cfg.Observability,
-			infometrics.New("vald_benchmark_scenario_info", "Benchmark Scenario info", *cfg.Scenario),
+			infometrics.New("benchmark_operator_info", "Benchmark Operator Info", *cfg.JobImage),
+			backoffmetrics.New(),
 		)
 		if err != nil {
 			return nil, err
@@ -125,7 +127,7 @@ func New(cfg *config.Config) (r runner.Runner, err error) {
 	if err != nil {
 		return nil, err
 	}
-	log.Info("pkg/tools/benchmark/scenario/cmd end")
+	log.Info("pkg/tools/benchmark/operator/cmd end")
 
 	return &run{
 		eg:            eg,
