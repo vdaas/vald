@@ -85,6 +85,9 @@ type (
 		// GetVector returns vector stored in NGT index.
 		GetVector(id uint) ([]float32, error)
 
+		// Close Without save index.
+		CloseWithoutSaveIndex()
+
 		// Close NGT index.
 		Close()
 	}
@@ -780,6 +783,13 @@ func (n *ngt) newGoError(ne *ngtError) (err error) {
 	}
 	ne.close()
 	return errors.NewNGTError(msg)
+}
+
+// Close NGT without save index.
+func (n *ngt) CloseWithoutSaveIndex() {
+	n.index = nil
+	n.prop = nil
+	n.ospace = nil
 }
 
 func (n *ngt) GetErrorBuffer() (ne *ngtError) {

@@ -18,6 +18,10 @@
 package errors
 
 var (
+
+	// ErrFlushingIsInProgress represents an error that the flushing is in progress, but any request has been received.
+	ErrFlushingIsInProgress = New("flush is in progress")
+
 	// ErrUUIDAlreadyExists represents a function to generate an error that the uuid already exists.
 	ErrUUIDAlreadyExists = func(uuid string) error {
 		return Errorf("ngt uuid %s index already exists", uuid)

@@ -516,6 +516,17 @@ pub mod remove {
         pub timestamp: i64,
     }
 }
+#[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct Flush {
+}
+/// Nested message and enum types in `Flush`.
+pub mod flush {
+    #[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(Clone, PartialEq, ::prost::Message)]
+    pub struct Request {
+    }
+}
 /// Common messages.
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
