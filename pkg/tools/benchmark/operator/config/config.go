@@ -19,7 +19,6 @@ package config
 
 import (
 	"github.com/vdaas/vald/internal/config"
-	"github.com/vdaas/vald/internal/log"
 )
 
 // GlobalConfig is type alias for config.GlobalConfig.
@@ -64,7 +63,6 @@ func NewConfig(path string) (cfg *Config, err error) {
 	} else {
 		cfg.JobImage = new(config.BenchmarkJobImageInfo)
 	}
-	log.Error(cfg)
 	return cfg, nil
 }
 
