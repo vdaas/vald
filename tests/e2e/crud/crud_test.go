@@ -416,7 +416,11 @@ func TestE2EStandardCRUD(t *testing.T) {
 
 	err = op.Flush(t, ctx)
 	if err != nil {
-		t.Fatalf("an error occurred: %s", err)
+		// TODO: Remove code check afeter Flush API is available for agent-faiss and mirror-gateway
+		st, _, _ := status.ParseError(err, codes.Unknown, "")
+		if st.Code() != codes.Unimplemented {
+			t.Fatalf("an error occurred: %s", err)
+		}
 	}
 }
 
