@@ -27,6 +27,7 @@ import (
 	"github.com/vdaas/vald-client-go/v1/vald"
 	"gonum.org/v1/hdf5"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 const (
@@ -68,7 +69,7 @@ func main() {
 	// Creates Vald clients for connecting to Vald clusters.
 	clients := make([]vald.Client, 0, len(grpcServerAddrs))
 	for _, addr := range grpcServerAddrs {
-		conn, err := grpc.DialContext(ctx, addr, grpc.WithInsecure())
+		conn, err := grpc.Dial(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 		if err != nil {
 			glg.Fatal(err)
 		}

@@ -16,13 +16,21 @@ package main
 import (
 	"context"
 	"flag"
+	"net"
+	"strconv"
 
 	"github.com/kpango/glg"
-	"github.com/vdaas/vald/apis/grpc/v1/filter/egress"
-	"github.com/vdaas/vald/apis/grpc/v1/payload"
-	"github.com/vdaas/vald/internal/net"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+
+	// NOTE:
+	// The correct approach is to use "github.com/vdaas/vald-client-go/v1/payload" and "github.com/vdaas/vald-client-go/v1/vald" in the "example/client".
+	// However, the "vald-client-go" module is not available in the filter client example
+	// because the changes to the filter query have not been released. (current version is v1.7.12)
+	// Therefore, the root module is used until it is released.
+	// The import path and go.mod will be changed after release.
+	"github.com/vdaas/vald/apis/grpc/v1/filter/egress"
+	"github.com/vdaas/vald/apis/grpc/v1/payload"
 )
 
 var (
@@ -47,12 +55,8 @@ func init() {
 func main() {
 	glg.Println("start gRPC Client.")
 
-	addr := net.JoinHostPort(egressServerHost, uint16(egressServerPort))
-	conn, err := grpc.Dial(
-		addr,
-		grpc.WithTransportCredentials(insecure.NewCredentials()),
-		grpc.WithBlock(),
-	)
+	addr := net.JoinHostPort(egressServerHost, strconv.Itoa(int(egressServerPort)))
+	conn, err := grpc.Dial(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		glg.Error("Connection failed.")
 		return
