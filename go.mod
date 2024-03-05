@@ -390,7 +390,7 @@ require (
 	go.opentelemetry.io/otel/trace v1.24.0
 	go.uber.org/automaxprocs v0.0.0-00010101000000-000000000000
 	go.uber.org/goleak v1.3.0
-	go.uber.org/ratelimit v0.3.0
+	go.uber.org/ratelimit v0.3.1
 	go.uber.org/zap v1.26.0
 	gocloud.dev v0.0.0-00010101000000-000000000000
 	golang.org/x/net v0.21.0
