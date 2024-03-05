@@ -42,9 +42,8 @@ type Indexer interface {
 }
 
 type index struct {
-	client         discoverer.Client
-	targetAddrs    []string
-	targetAddrList map[string]bool
+	client      discoverer.Client
+	targetAddrs []string
 
 	creationPoolSize uint32
 	concurrency      int
