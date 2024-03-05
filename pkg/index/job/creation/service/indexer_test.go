@@ -22,6 +22,7 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/grpc/codes"
+	"github.com/vdaas/vald/internal/net/grpc/pool"
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/test/goleak"
 	clientmock "github.com/vdaas/vald/internal/test/mock/client"
@@ -67,7 +68,6 @@ func Test_index_Start(t *testing.T) {
 				args: args{
 					ctx: context.Background(),
 				},
-
 				fields: fields{
 					client: &clientmock.DiscovererClientMock{
 						GetAddrsFunc: func(_ context.Context) []string {
@@ -95,6 +95,8 @@ func Test_index_Start(t *testing.T) {
 				fields: fields{
 					targetAddrs: []string{
 						"127.0.0.1:8080",
+						"127.0.0.1:8081",
+						"127.0.0.1:8083",
 					},
 					client: &clientmock.DiscovererClientMock{
 						GetAddrsFunc: func(_ context.Context) []string {
@@ -106,6 +108,9 @@ func Test_index_Start(t *testing.T) {
 									_ func(_ context.Context, _ string, _ *grpc.ClientConn, _ ...grpc.CallOption) error,
 								) error {
 									return nil
+								},
+								ConnectFunc: func(_ context.Context, _ string, _ ...grpc.DialOption) (pool.Conn, error) {
+									return nil, nil
 								},
 							}
 						},
@@ -156,7 +161,6 @@ func Test_index_Start(t *testing.T) {
 				args: args{
 					ctx: context.Background(),
 				},
-
 				fields: fields{
 					client: &clientmock.DiscovererClientMock{
 						GetAddrsFunc: func(_ context.Context) []string {

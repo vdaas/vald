@@ -142,6 +142,12 @@ func (idx *index) doSaveIndex(ctx context.Context, fn func(_ context.Context, _ 
 
 	targetAddrs := idx.client.GetAddrs(ctx)
 	if len(idx.targetAddrs) != 0 {
+		// If target addresses is specified, that addresses are used in priority.
+		for _, addr := range idx.targetAddrs {
+			if _, err := idx.client.GetClient().Connect(ctx, addr); err != nil {
+				return err
+			}
+		}
 		targetAddrs = idx.targetAddrs
 	}
 	log.Infof("target agent addrs: %v", targetAddrs)
