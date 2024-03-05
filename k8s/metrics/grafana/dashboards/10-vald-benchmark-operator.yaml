@@ -127,7 +127,7 @@ data:
               "refId": "A"
             }
           ],
-          "title": "Vald Version",
+          "title": "Operator Version",
           "type": "stat"
         },
         {
@@ -333,7 +333,7 @@ data:
             "overrides": []
           },
           "gridPos": {
-            "h": 3,
+            "h": 6,
             "w": 4,
             "x": 12,
             "y": 0
@@ -635,46 +635,32 @@ data:
           },
           "fieldConfig": {
             "defaults": {
-              "mappings": [
-                {
-                  "options": {
-                    "match": "null",
-                    "result": {
-                      "text": "N/A"
-                    }
-                  },
-                  "type": "special"
-                }
-              ],
+              "mappings": [],
               "thresholds": {
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "#299c46",
+                    "color": "green",
                     "value": null
                   },
                   {
-                    "color": "rgba(237, 129, 40, 0.89)",
-                    "value": 100
-                  },
-                  {
-                    "color": "#d44a3a",
-                    "value": 300
+                    "color": "red",
+                    "value": 80
                   }
                 ]
               },
-              "unit": "none",
+              "unit": "string",
               "unitScale": true
             },
             "overrides": []
           },
           "gridPos": {
             "h": 3,
-            "w": 4,
-            "x": 12,
-            "y": 3
+            "w": 8,
+            "x": 0,
+            "y": 6
           },
-          "id": 39,
+          "id": 40,
           "links": [],
           "maxDataPoints": 100,
           "options": {
@@ -686,7 +672,7 @@ data:
               "calcs": [
                 "lastNotNull"
               ],
-              "fields": "/.*/",
+              "fields": "/^image$/",
               "values": false
             },
             "showPercentChange": false,
@@ -702,17 +688,30 @@ data:
                 "uid": "prometheus"
               },
               "editorMode": "code",
-              "expr": "vald_benchmark_operator_info{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=\"$ReplicaSet\", target_pod=\"$PodName\"}",
+              "expr": "benchmark_operator_info{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\", target_pod=~\"$PodName\"}",
               "format": "table",
-              "hide": false,
               "instant": true,
               "interval": "",
-              "legendFormat": "",
+              "legendFormat": "__auto",
               "refId": "A"
             }
           ],
-          "title": "Benchmark Job Image",
+          "title": "Job Image",
+          "transformations": [],
           "type": "stat"
+        },
+        {
+          "collapsed": false,
+          "gridPos": {
+            "h": 1,
+            "w": 24,
+            "x": 0,
+            "y": 9
+          },
+          "id": 39,
+          "panels": [],
+          "title": "Operator Metrics",
+          "type": "row"
         },
         {
           "aliasColors": {},
@@ -736,7 +735,7 @@ data:
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 6
+            "y": 10
           },
           "hiddenSeries": false,
           "id": 22,
@@ -862,7 +861,7 @@ data:
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 6
+            "y": 10
           },
           "hiddenSeries": false,
           "id": 27,
@@ -988,7 +987,7 @@ data:
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 14
+            "y": 18
           },
           "hiddenSeries": false,
           "id": 30,
@@ -1098,7 +1097,7 @@ data:
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 14
+            "y": 18
           },
           "hiddenSeries": false,
           "id": 32,
@@ -1221,7 +1220,7 @@ data:
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 22
+            "y": 26
           },
           "hiddenSeries": false,
           "id": 36,
@@ -1317,7 +1316,7 @@ data:
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 22
+            "y": 26
           },
           "hiddenSeries": false,
           "id": 38,
