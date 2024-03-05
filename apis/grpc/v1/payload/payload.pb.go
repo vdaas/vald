@@ -394,6 +394,7 @@ func (*Remove) Descriptor() ([]byte, []int) {
 	return file_v1_payload_payload_proto_rawDescGZIP(), []int{5}
 }
 
+// Flush related messages.
 type Flush struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache

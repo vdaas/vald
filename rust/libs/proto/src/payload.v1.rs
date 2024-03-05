@@ -516,6 +516,7 @@ pub mod remove {
         pub timestamp: i64,
     }
 }
+/// Flush related messages.
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct Flush {

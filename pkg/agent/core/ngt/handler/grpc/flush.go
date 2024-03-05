@@ -41,7 +41,7 @@ func (s *server) Flush(ctx context.Context, req *payload.Flush_Request) (*payloa
 	if err != nil {
 		var attrs []attribute.KeyValue
 		if errors.Is(err, errors.ErrFlushingIsInProgress) {
-			err = status.WrapWithAborted("Flush API aborted to process search request due to flushing indices is in progress", err,
+			err = status.WrapWithAborted("Flush API aborted due to flushing indices is in progress", err,
 				&errdetails.RequestInfo{
 					ServingData: errdetails.Serialize(req),
 				},
@@ -51,6 +51,18 @@ func (s *server) Flush(ctx context.Context, req *payload.Flush_Request) (*payloa
 				})
 			log.Debug(err)
 			attrs = trace.StatusCodeAborted(err.Error())
+		} else if errors.Is(err, errors.ErrWriteOperationToReadReplica) {
+			err = status.WrapWithAborted("Flush API aborted due to agent is read only", err,
+				&errdetails.RequestInfo{
+					ServingData: errdetails.Serialize(req),
+				},
+				&errdetails.ResourceInfo{
+					ResourceType: ngtResourceType + "/ngt.Flush",
+					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
+				})
+			log.Debug(err)
+			attrs = trace.StatusCodeAborted(err.Error())
+
 		} else {
 			err = status.WrapWithInternal("Flush API failed", err,
 				&errdetails.RequestInfo{

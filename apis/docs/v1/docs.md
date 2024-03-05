@@ -222,6 +222,8 @@ Represent the target filter server.
 
 ### Flush
 
+Flush related messages.
+
 <a name="payload-v1-Flush-Request"></a>
 
 ### Flush.Request
