@@ -64,11 +64,21 @@ func New(opts ...Option) (Indexer, error) {
 			log.Warn(oerr)
 		}
 	}
-	idx.targetAddrList = make(map[string]bool, len(idx.targetAddrs))
-	for _, addr := range idx.targetAddrs {
-		idx.targetAddrList[addr] = true
-	}
+	idx.targetAddrs = delDuplicateAddrs(idx.targetAddrs)
 	return idx, nil
+}
+
+func delDuplicateAddrs(targetAddrs []string) []string {
+	addrs := make([]string, 0, len(targetAddrs))
+	exist := make(map[string]bool)
+
+	for _, addr := range targetAddrs {
+		if !exist[addr] {
+			addrs = append(addrs, addr)
+			exist[addr] = true
+		}
+	}
+	return addrs
 }
 
 // StartClient starts the gRPC client.
@@ -136,12 +146,7 @@ func (idx *index) doCreateIndex(ctx context.Context, fn func(_ context.Context, 
 
 	targetAddrs := idx.client.GetAddrs(ctx)
 	if len(idx.targetAddrs) != 0 {
-		targetAddrs = idx.extractTargetAddrs(targetAddrs)
-
-		// If targetAddrs is empty, an invalid target addresses may be registered in targetAddrList.
-		if len(targetAddrs) == 0 {
-			return errors.ErrGRPCTargetAddrNotFound
-		}
+		targetAddrs = idx.targetAddrs
 	}
 	log.Infof("target agent addrs: %v", targetAddrs)
 
@@ -206,17 +211,4 @@ func (idx *index) doCreateIndex(ctx context.Context, fn func(_ context.Context, 
 		},
 	)
 	return errors.Join(err, errs)
-}
-
-// extractTargetAddresses filters and extracts target addresses registered in targetAddrList from the given address list.
-func (idx *index) extractTargetAddrs(addrs []string) []string {
-	res := make([]string, 0, len(addrs))
-	for _, addr := range addrs {
-		if !idx.targetAddrList[addr] {
-			log.Warnf("the gRPC target address not found: %s", addr)
-		} else {
-			res = append(res, addr)
-		}
-	}
-	return res
 }

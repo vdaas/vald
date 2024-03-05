@@ -36,7 +36,6 @@ func Test_index_Start(t *testing.T) {
 	type fields struct {
 		client           discoverer.Client
 		targetAddrs      []string
-		targetAddrList   map[string]bool
 		creationPoolSize uint32
 		concurrency      int
 	}
@@ -73,6 +72,33 @@ func Test_index_Start(t *testing.T) {
 					client: &clientmock.DiscovererClientMock{
 						GetAddrsFunc: func(_ context.Context) []string {
 							return addrs
+						},
+						GetClientFunc: func() grpc.Client {
+							return &grpcmock.GRPCClientMock{
+								OrderedRangeConcurrentFunc: func(_ context.Context, _ []string, _ int,
+									_ func(_ context.Context, _ string, _ *grpc.ClientConn, _ ...grpc.CallOption) error,
+								) error {
+									return nil
+								},
+							}
+						},
+					},
+				},
+			}
+		}(),
+		func() test {
+			return test{
+				name: "Success: when a target addresses (targetAddrs) is given and there are no errors in the indexing request process",
+				args: args{
+					ctx: context.Background(),
+				},
+				fields: fields{
+					targetAddrs: []string{
+						"127.0.0.1:8080",
+					},
+					client: &clientmock.DiscovererClientMock{
+						GetAddrsFunc: func(_ context.Context) []string {
+							return nil
 						},
 						GetClientFunc: func() grpc.Client {
 							return &grpcmock.GRPCClientMock{
@@ -153,33 +179,6 @@ func Test_index_Start(t *testing.T) {
 				},
 			}
 		}(),
-		func() test {
-			targetAddrs := []string{
-				"127.0.0.1:8080",
-			}
-			targetAddrList := map[string]bool{
-				targetAddrs[0]: true,
-			}
-			return test{
-				name: "Fail: when there is no address matching targetAddrList",
-				args: args{
-					ctx: context.Background(),
-				},
-				fields: fields{
-					client: &clientmock.DiscovererClientMock{
-						GetAddrsFunc: func(_ context.Context) []string {
-							return nil
-						},
-					},
-					targetAddrs:    targetAddrs,
-					targetAddrList: targetAddrList,
-				},
-				want: want{
-					err: status.Error(codes.Internal,
-						agent.CreateIndexRPCName+" API connection target address \"127.0.0.1:8080\" not found"),
-				},
-			}
-		}(),
 	}
 
 	for _, tc := range tests {
@@ -200,7 +199,6 @@ func Test_index_Start(t *testing.T) {
 			idx := &index{
 				client:           test.fields.client,
 				targetAddrs:      test.fields.targetAddrs,
-				targetAddrList:   test.fields.targetAddrList,
 				creationPoolSize: test.fields.creationPoolSize,
 				concurrency:      test.fields.concurrency,
 			}
@@ -312,7 +310,6 @@ func Test_index_Start(t *testing.T) {
 // 	type fields struct {
 // 		client           discoverer.Client
 // 		targetAddrs      []string
-// 		targetAddrList   map[string]bool
 // 		creationPoolSize uint32
 // 		concurrency      int
 // 	}
@@ -349,7 +346,6 @@ func Test_index_Start(t *testing.T) {
 // 		       fields: fields {
 // 		           client:nil,
 // 		           targetAddrs:nil,
-// 		           targetAddrList:nil,
 // 		           creationPoolSize:0,
 // 		           concurrency:0,
 // 		       },
@@ -375,7 +371,6 @@ func Test_index_Start(t *testing.T) {
 // 		           fields: fields {
 // 		           client:nil,
 // 		           targetAddrs:nil,
-// 		           targetAddrList:nil,
 // 		           creationPoolSize:0,
 // 		           concurrency:0,
 // 		           },
@@ -410,7 +405,6 @@ func Test_index_Start(t *testing.T) {
 // 			idx := &index{
 // 				client:           test.fields.client,
 // 				targetAddrs:      test.fields.targetAddrs,
-// 				targetAddrList:   test.fields.targetAddrList,
 // 				creationPoolSize: test.fields.creationPoolSize,
 // 				concurrency:      test.fields.concurrency,
 // 			}
