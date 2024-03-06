@@ -148,7 +148,6 @@ func (s *subProcess) rotate(ctx context.Context) error {
 		return err
 	}
 
-	snapshotTime := time.Now()
 	newSnap, oldSnap, err := s.createSnapshot(ctx, deployment)
 	if err != nil {
 		return err
@@ -163,7 +162,7 @@ func (s *subProcess) rotate(ctx context.Context) error {
 		return err
 	}
 
-	err = s.updateDeployment(ctx, newPvc.GetName(), deployment, snapshotTime)
+	err = s.updateDeployment(ctx, newPvc.GetName(), deployment, newSnap.CreationTimestamp.Time)
 	if err != nil {
 		log.Errorf("failed to update Deployment. removing the new snapshot(%s) and pvc(%s)...", newSnap.GetName(), newPvc.GetName())
 		if dperr := s.deletePVC(ctx, newPvc); dperr != nil {
