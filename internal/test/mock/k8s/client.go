@@ -65,6 +65,11 @@ func (m *ValdK8sClientMock) Watch(ctx context.Context, obj crclient.ObjectList, 
 	return args.Get(0).(watch.Interface), args.Error(1)
 }
 
+func (m *ValdK8sClientMock) MatchingLabels(labels map[string]string) client.MatchingLabels {
+	args := m.Called(labels)
+	return args.Get(0).(client.MatchingLabels)
+}
+
 func (m *ValdK8sClientMock) LabelSelector(key string, op selection.Operator, vals []string) (labels.Selector, error) {
 	args := m.Called(key, op, vals)
 	return args.Get(0).(labels.Selector), args.Error(1)
