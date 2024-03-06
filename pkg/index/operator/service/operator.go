@@ -29,10 +29,7 @@ import (
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/sync/errgroup"
-
 	// FIXME:
-	appsv1 "k8s.io/api/apps/v1"
-	crclient "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 const (
@@ -158,13 +155,15 @@ func (o *operator) podOnReconcile(ctx context.Context, podList map[string][]pod.
 
 // TODO: implement job reconcile logic to detect save job completion and to start rotation.
 func (o *operator) jobOnReconcile(ctx context.Context, jobList map[string][]job.Job) {
-	// for k, v := range jobList {
-	// 	for _, job := range v {
-	// 		log.Debug("key", k, "name:", job.Name, "status:", job.Status)
-	// 	}
-	// }
+	for k, v := range jobList {
+		for _, job := range v {
+			log.Debug("key", k, "name:", job.Name, "status:", job.Status)
+		}
+	}
 }
 
+// rotateIfNeeded starts rotation job when the condition meets.
+// This function is work in progress.
 func (o *operator) rotateIfNeeded(ctx context.Context, pod pod.Pod) error {
 	t, ok := pod.Annotations[vald.LastTimeSaveIndexTimestampAnnotationsKey]
 	if !ok {
@@ -176,14 +175,14 @@ func (o *operator) rotateIfNeeded(ctx context.Context, pod pod.Pod) error {
 		return fmt.Errorf("parsing last time saved time: %w", err)
 	}
 
-	podIdx, ok := pod.Labels[appsv1.PodIndexLabel]
+	podIdx, ok := pod.Labels[client.PodIndexLabel]
 	if !ok {
 		log.Info("no index label found. the agent is not StatefulSet? skipping...")
 		return nil
 	}
 
-	var depList appsv1.DeploymentList
-	label := crclient.MatchingLabels(map[string]string{o.readReplicaLabelKey: podIdx})
+	var depList client.DeploymentList
+	label := client.MatchingLabels(map[string]string{o.readReplicaLabelKey: podIdx})
 	if err := o.client.List(ctx, &depList, label); err != nil {
 		return err
 	}
@@ -205,7 +204,9 @@ func (o *operator) rotateIfNeeded(ctx context.Context, pod pod.Pod) error {
 			return nil
 		}
 	}
+
 	log.Infof("rotation required for agent id: %s. creating rotator job...", podIdx)
 	// TODO: check if the rotator job already exists or queued
+	//       then create rotation job
 	return nil
 }
