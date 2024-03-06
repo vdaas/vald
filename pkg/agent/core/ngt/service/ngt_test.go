@@ -46,6 +46,7 @@ import (
 	"github.com/vdaas/vald/internal/test/goleak"
 	"github.com/vdaas/vald/internal/test/mock/k8s"
 	"github.com/vdaas/vald/internal/test/testify"
+	kvald "github.com/vdaas/vald/internal/k8s/vald"
 	"github.com/vdaas/vald/pkg/agent/internal/kvs"
 	"github.com/vdaas/vald/pkg/agent/internal/metadata"
 	"github.com/vdaas/vald/pkg/agent/internal/vqueue"
@@ -1300,7 +1301,7 @@ func TestExportIndexInfo(t *testing.T) {
 					unsavedProcessedVqAnnotationsKey:             "2",
 				}
 				expectedAfterSave := map[string]string{
-					lastTimeSaveIndexTimestampAnnotationsKey:     saveIndexTime.UTC().Format(time.RFC3339),
+					lastTimeSaveIndexTimestampAnnotationsKey:     saveIndexTime.UTC().Format(kvald.TimestampLayout),
 					unsavedCreateIndexExecutionNumAnnotationsKey: "0",
 					unsavedProcessedVqAnnotationsKey:             "0",
 				}
