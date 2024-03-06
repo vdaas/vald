@@ -14,6 +14,7 @@
 package service
 
 import (
+	// FIXME:
 	"context"
 	"fmt"
 	"reflect"
@@ -29,7 +30,6 @@ import (
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/sync/errgroup"
-	// FIXME:
 )
 
 const (
