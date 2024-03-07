@@ -11,3 +11,27 @@ pub mod algorithm {
         fn new(p: Option<P>) -> Result<Self>;
     }
 }
+
+pub mod algorithm2 {
+    use anyhow::Result;
+
+    pub trait Search<T, P, R> {
+        fn search(&self, v: &[T], p: Option<P>) -> Result<R>;
+    }
+
+    pub trait Insert<T, U, P, R> {
+        fn insert(&self, v: &[T], id: &U, p: Option<P>) -> Result<R>;
+    }
+
+    pub trait Update<T, U, P, R> {
+        fn update(&self, v: &[T], id: &U, p: Option<P>) -> Result<R>;
+    }
+
+    pub trait Remove<U, P, R> {
+        fn remove(&self, id: &U, p: Option<P>) -> Result<R>;
+    }
+
+    pub trait Commit<P, R> {
+        fn commit(&self, p: Option<P>) -> Result<R>;
+    }
+}
