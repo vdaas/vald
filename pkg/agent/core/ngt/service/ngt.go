@@ -40,6 +40,7 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/file"
 	"github.com/vdaas/vald/internal/k8s/client"
+	"github.com/vdaas/vald/internal/k8s/vald"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
@@ -2006,7 +2007,7 @@ func (n *ngt) unsavedNumberOfCreateIndexExecutionEntry() (k, v string) {
 }
 
 func (n *ngt) lastTimeSaveIndexTimestampEntry(timestamp time.Time) (k, v string) {
-	return lastTimeSaveIndexTimestampAnnotationsKey, timestamp.UTC().Format(time.RFC3339)
+	return lastTimeSaveIndexTimestampAnnotationsKey, timestamp.UTC().Format(vald.TimeFormat)
 }
 
 func (n *ngt) indexCountEntry() (k, v string) {

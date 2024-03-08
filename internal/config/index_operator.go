@@ -13,7 +13,7 @@
 // limitations under the License.
 package config
 
-// IndexCreation represents the configurations for index creation.
+// IndexOperator represents the configurations for index k8s operator.
 type IndexOperator struct {
 	// AgentName represent agents meta_name for service discovery
 	AgentName string `json:"agent_name" yaml:"agent_name"`
@@ -23,6 +23,12 @@ type IndexOperator struct {
 
 	// Concurrency represents indexing concurrency.
 	Concurrency int `json:"concurrency" yaml:"concurrency"`
+
+	// ReadReplicaEnabled represents whether read replica is enabled or not.
+	ReadReplicaEnabled bool `json:"read_replica_enabled" yaml:"read_replica_enabled"`
+
+	// ReadReplicaLabelKey represents the label key for read replica.
+	ReadReplicaLabelKey string `json:"read_replica_label_key" yaml:"read_replica_label_key"`
 }
 
 func (ic *IndexOperator) Bind() *IndexOperator {

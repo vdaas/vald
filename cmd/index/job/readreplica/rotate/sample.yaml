@@ -17,7 +17,7 @@ version: v0.0.0
 time_zone: JST
 logging:
   format: raw
-  level: info
+  level: debug
   logger: glg
 server_config:
   servers:
