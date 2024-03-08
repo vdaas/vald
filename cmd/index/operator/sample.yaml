@@ -69,6 +69,7 @@ server_config:
     enabled: false
     key: /path/to/key
 operator:
+  namespace: "default"
   agent_name: "vald-agent"
   agent_namespace: "default"
   concurrency: 1

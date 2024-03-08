@@ -49,8 +49,9 @@ type operator struct {
 }
 
 // New returns Indexer object if no error occurs.
-func New(agentName string, opts ...Option) (o Operator, err error) {
+func New(namespace, agentName string, opts ...Option) (o Operator, err error) {
 	operator := new(operator)
+	operator.namespace = namespace
 	for _, opt := range append(defaultOpts, opts...) {
 		if err := opt(operator); err != nil {
 			oerr := errors.ErrOptionFailed(err, reflect.ValueOf(opt))
@@ -77,6 +78,7 @@ func New(agentName string, opts ...Option) (o Operator, err error) {
 
 	operator.ctrl, err = k8s.New(
 		k8s.WithResourceController(podController),
+		k8s.WithLeaderElection(true, "vald-index-operator", operator.namespace),
 	)
 	if err != nil {
 		return nil, err

@@ -15,6 +15,9 @@ package config
 
 // IndexOperator represents the configurations for index k8s operator.
 type IndexOperator struct {
+	// Namespace represent the namespace of this pod
+	Namespace string `json:"namespace" yaml:"namespace"`
+
 	// AgentName represent agents meta_name for service discovery
 	AgentName string `json:"agent_name" yaml:"agent_name"`
 
@@ -32,6 +35,7 @@ type IndexOperator struct {
 }
 
 func (ic *IndexOperator) Bind() *IndexOperator {
+	ic.Namespace = GetActualValue(ic.Namespace)
 	ic.AgentName = GetActualValue(ic.AgentName)
 	ic.AgentNamespace = GetActualValue(ic.AgentNamespace)
 	return ic
