@@ -147,6 +147,7 @@ func (idx *index) doCreateIndex(ctx context.Context, fn func(_ context.Context, 
 	if len(idx.targetAddrs) != 0 {
 		// If target addresses is specified, that addresses are used in priority.
 		for _, addr := range idx.targetAddrs {
+			log.Infof("connect to target agent (%s)", addr)
 			if _, err := idx.client.GetClient().Connect(ctx, addr); err != nil {
 				return err
 			}
