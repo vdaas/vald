@@ -184,6 +184,15 @@
         "code",
         "maintenance"
       ]
+    },
+    {
+      "login": "hrichiksite",
+      "name": "Hrichik Mazumder",
+      "avatar_url": "https://avatars.githubusercontent.com/u/57860916?v=4",
+      "profile": "https://hrichik.xyz",
+      "contributions": [
+        "doc"
+      ]
     }
   ],
   "contributorsPerLine": 7,
