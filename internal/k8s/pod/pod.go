@@ -111,8 +111,8 @@ func (r *reconciler) Reconcile(ctx context.Context, _ reconcile.Request) (res re
 		pods       = make(map[string][]Pod, len(ps.Items))
 	)
 
-	for i := range ps.Items {
-		pod := ps.Items[i]
+	// skipcq: CRT-P0006
+	for _, pod := range ps.Items {
 		if pod.GetObjectMeta().GetDeletionTimestamp() != nil ||
 			(r.namespace != "" && !strings.EqualFold(pod.GetNamespace(), r.namespace)) ||
 			pod.Status.Phase != corev1.PodRunning {
