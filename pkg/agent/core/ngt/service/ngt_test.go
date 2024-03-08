@@ -1301,7 +1301,7 @@ func TestExportIndexInfo(t *testing.T) {
 					unsavedProcessedVqAnnotationsKey:             "2",
 				}
 				expectedAfterSave := map[string]string{
-					lastTimeSaveIndexTimestampAnnotationsKey:     saveIndexTime.UTC().Format(kvald.TimestampLayout),
+					lastTimeSaveIndexTimestampAnnotationsKey:     saveIndexTime.UTC().Format(kvald.TimeFormat),
 					unsavedCreateIndexExecutionNumAnnotationsKey: "0",
 					unsavedProcessedVqAnnotationsKey:             "0",
 				}

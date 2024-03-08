@@ -169,7 +169,7 @@ func (o *operator) rotateIfNeeded(ctx context.Context, pod pod.Pod) error {
 		log.Info("the agent pod has not saved index yet. skipping...")
 		return nil
 	}
-	lastSavedTime, err := time.Parse(vald.TimestampLayout, t)
+	lastSavedTime, err := time.Parse(vald.TimeFormat, t)
 	if err != nil {
 		return fmt.Errorf("parsing last time saved time: %w", err)
 	}
@@ -193,7 +193,7 @@ func (o *operator) rotateIfNeeded(ctx context.Context, pod pod.Pod) error {
 	annotations := dep.GetAnnotations()
 	t, ok = annotations[vald.LastTimeSnapshotTimestampAnnotationsKey]
 	if ok {
-		lastSnapshotTime, err := time.Parse(vald.TimestampLayout, t)
+		lastSnapshotTime, err := time.Parse(vald.TimeFormat, t)
 		if err != nil {
 			return fmt.Errorf("parsing last snapshot time: %w", err)
 		}

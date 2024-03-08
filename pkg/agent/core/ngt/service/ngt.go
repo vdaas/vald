@@ -2007,7 +2007,7 @@ func (n *ngt) unsavedNumberOfCreateIndexExecutionEntry() (k, v string) {
 }
 
 func (n *ngt) lastTimeSaveIndexTimestampEntry(timestamp time.Time) (k, v string) {
-	return lastTimeSaveIndexTimestampAnnotationsKey, timestamp.UTC().Format(vald.TimestampLayout)
+	return lastTimeSaveIndexTimestampAnnotationsKey, timestamp.UTC().Format(vald.TimeFormat)
 }
 
 func (n *ngt) indexCountEntry() (k, v string) {

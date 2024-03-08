@@ -306,7 +306,7 @@ func (s *subProcess) updateDeployment(ctx context.Context, newPVC string, deploy
 	if deployment.Annotations == nil {
 		deployment.Annotations = map[string]string{}
 	}
-	deployment.Annotations[vald.LastTimeSnapshotTimestampAnnotationsKey] = snapshotTime.UTC().Format(vald.TimestampLayout)
+	deployment.Annotations[vald.LastTimeSnapshotTimestampAnnotationsKey] = snapshotTime.UTC().Format(vald.TimeFormat)
 
 	for _, vol := range deployment.Spec.Template.Spec.Volumes {
 		if vol.Name == s.volumeName {
