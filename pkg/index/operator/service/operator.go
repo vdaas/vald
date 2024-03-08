@@ -22,7 +22,6 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/k8s"
 	"github.com/vdaas/vald/internal/k8s/client"
-	"github.com/vdaas/vald/internal/k8s/job"
 	"github.com/vdaas/vald/internal/k8s/pod"
 	"github.com/vdaas/vald/internal/k8s/vald"
 	"github.com/vdaas/vald/internal/log"
@@ -76,21 +75,8 @@ func New(agentName string, opts ...Option) (o Operator, err error) {
 		}),
 	)
 
-	jobController, err := job.New(
-		job.WithControllerName("job reconciler for index operator"),
-		job.WithNamespaces(operator.namespace),
-		job.WithOnErrorFunc(func(err error) {
-			log.Errorf("failed to reconcile job resource:", err)
-		}),
-		job.WithOnReconcileFunc(operator.jobOnReconcile),
-	)
-	if err != nil {
-		return nil, err
-	}
-
 	operator.ctrl, err = k8s.New(
 		k8s.WithResourceController(podController),
-		k8s.WithResourceController(jobController),
 	)
 	if err != nil {
 		return nil, err
@@ -148,16 +134,6 @@ func (o *operator) podOnReconcile(ctx context.Context, podList map[string][]pod.
 					log.Error(err)
 				}
 			}
-		}
-	}
-}
-
-// TODO: implement job reconcile logic to detect save job completion and to start rotation.
-func (*operator) jobOnReconcile(_ context.Context, jobList map[string][]job.Job) {
-	for k, v := range jobList {
-		// skipcq: CRT-P0006
-		for _, job := range v {
-			log.Debug("key", k, "name:", job.Name, "status:", job.Status)
 		}
 	}
 }
