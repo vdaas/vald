@@ -181,8 +181,15 @@ func (o *operator) rotateIfNeeded(ctx context.Context, pod pod.Pod) error {
 	}
 
 	var depList client.DeploymentList
-	label := client.MatchingLabels(map[string]string{o.readReplicaLabelKey: podIdx})
-	if err := o.client.List(ctx, &depList, label); err != nil {
+	selector, err := o.client.LabelSelector(o.readReplicaLabelKey, client.SelectionOpEquals, []string{podIdx})
+	if err != nil {
+		return fmt.Errorf("creating label selector: %w", err)
+	}
+	listOpts := client.ListOptions{
+		Namespace: o.namespace,
+		LabelSelector: selector,
+	}
+	if err := o.client.List(ctx, &depList, &listOpts); err != nil {
 		return err
 	}
 	if len(depList.Items) == 0 {
