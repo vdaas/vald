@@ -47,7 +47,7 @@ Vald can handle any object data, image, audio processing, video, text, binary, o
 - Detecting
 - Grammar checker
 - Real-time translator
-- also you want to do!
+- anything you want to do!
 
 ## Requirements
 
