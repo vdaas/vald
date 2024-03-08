@@ -51,6 +51,12 @@ data:
       agent_namespace: {{ $creator.agent_namespace | quote }}
       node_name: {{ $creator.node_name | quote }}
       concurrency: {{ $creator.concurrency }}
+      {{- if $creator.target_addrs -}}
+      target_addrs:
+        {{ toYaml $creator.target_addrs | indent 8 }}
+      {{- else -}}
+      target_addrs: []
+      {{- end -}}
       target_addrs: {{ $creator.target_addrs }}
       discoverer:
         duration: {{ $creator.discoverer.duration }}
