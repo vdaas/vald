@@ -186,7 +186,7 @@ func (o *operator) rotateIfNeeded(ctx context.Context, pod pod.Pod) error {
 		return fmt.Errorf("creating label selector: %w", err)
 	}
 	listOpts := client.ListOptions{
-		Namespace: o.namespace,
+		Namespace:     o.namespace,
 		LabelSelector: selector,
 	}
 	if err := o.client.List(ctx, &depList, &listOpts); err != nil {
