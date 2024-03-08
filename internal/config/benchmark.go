@@ -234,7 +234,7 @@ func (b *BenchmarkScenario) Bind() *BenchmarkScenario {
 
 // BenchmarkJobImageInfo represents the docker image information for benchmark job.
 type BenchmarkJobImageInfo struct {
-	Image      string `info:"image" json:"image,omitempty" yaml:"image"`
+	Image      string `info:"image"       json:"image,omitempty"       yaml:"image"`
 	PullPolicy string `info:"pull_policy" json:"pull_policy,omitempty" yaml:"pull_policy"`
 }
 

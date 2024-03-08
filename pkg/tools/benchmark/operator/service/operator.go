@@ -38,6 +38,8 @@ import (
 type Operator interface {
 	PreStart(context.Context) error
 	Start(context.Context) (<-chan error, error)
+	LenBenchSC() map[v1.ValdBenchmarkScenarioStatus]int64
+	LenBenchBJ() map[v1.BenchmarkJobStatus]int64
 }
 
 type scenario struct {
@@ -638,6 +640,44 @@ func (o *operator) checkAtomics() error {
 		}
 	}
 	return nil
+}
+
+func (o *operator) LenBenchSC() map[v1.ValdBenchmarkScenarioStatus]int64 {
+	m := map[v1.ValdBenchmarkScenarioStatus]int64{
+		v1.BenchmarkScenarioAvailable: 0,
+		v1.BenchmarkScenarioHealthy:   0,
+		v1.BenchmarkScenarioNotReady:  0,
+		v1.BenchmarkScenarioCompleted: 0,
+	}
+	if sc := o.getAtomicScenario(); sc != nil {
+		for _, s := range sc {
+			if _, ok := m[s.Crd.Status]; ok {
+				m[s.Crd.Status] += 1
+			} else {
+				m[s.Crd.Status] = 1
+			}
+		}
+	}
+	return m
+}
+
+func (o *operator) LenBenchBJ() map[v1.BenchmarkJobStatus]int64 {
+	m := map[v1.BenchmarkJobStatus]int64{
+		v1.BenchmarkJobAvailable: 0,
+		v1.BenchmarkJobHealthy:   0,
+		v1.BenchmarkJobNotReady:  0,
+		v1.BenchmarkJobCompleted: 0,
+	}
+	if bjs := o.getAtomicBenchJob(); bjs != nil {
+		for _, bj := range bjs {
+			if _, ok := m[bj.Status]; ok {
+				m[bj.Status] += 1
+			} else {
+				m[bj.Status] = 1
+			}
+		}
+	}
+	return m
 }
 
 func (*operator) PreStart(context.Context) error {

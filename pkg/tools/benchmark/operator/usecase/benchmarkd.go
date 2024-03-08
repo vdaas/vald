@@ -29,6 +29,7 @@ import (
 	"github.com/vdaas/vald/internal/observability"
 	backoffmetrics "github.com/vdaas/vald/internal/observability/metrics/backoff"
 	infometrics "github.com/vdaas/vald/internal/observability/metrics/info"
+	benchmarkmetrics "github.com/vdaas/vald/internal/observability/metrics/tools/benchmark"
 	"github.com/vdaas/vald/internal/runner"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/servers/server"
@@ -96,6 +97,7 @@ func New(cfg *config.Config) (r runner.Runner, err error) {
 	if cfg.Observability.Enabled {
 		obs, err = observability.NewWithConfig(
 			cfg.Observability,
+			benchmarkmetrics.New(operator),
 			infometrics.New("benchmark_operator_info", "Benchmark Operator info", *cfg.JobImage),
 			backoffmetrics.New(),
 		)
