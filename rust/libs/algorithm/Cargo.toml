@@ -9,3 +9,4 @@ edition = "2021"
 anyhow = "1.0.79"
 serde = { version = "1.0.196", features = ["derive"] }
 ngt-rs = { path = "../ngt-rs" }
+num-traits = "0.2.18"
