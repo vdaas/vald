@@ -53,6 +53,7 @@ type Pod struct {
 	CPURequest  float64
 	MemLimit    float64
 	MemRequest  float64
+	Labels      map[string]string
 	Annotations map[string]string
 }
 
@@ -110,6 +111,7 @@ func (r *reconciler) Reconcile(ctx context.Context, _ reconcile.Request) (res re
 		pods       = make(map[string][]Pod, len(ps.Items))
 	)
 
+	// skipcq: CRT-P0006
 	for _, pod := range ps.Items {
 		if pod.GetObjectMeta().GetDeletionTimestamp() != nil ||
 			(r.namespace != "" && !strings.EqualFold(pod.GetNamespace(), r.namespace)) ||
@@ -151,6 +153,7 @@ func (r *reconciler) Reconcile(ctx context.Context, _ reconcile.Request) (res re
 			CPURequest:  cpuRequest,
 			MemLimit:    memLimit,
 			MemRequest:  memRequest,
+			Labels:      pod.GetLabels(),
 			Annotations: pod.GetAnnotations(),
 		})
 	}
