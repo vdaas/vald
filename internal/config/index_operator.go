@@ -13,7 +13,7 @@
 // limitations under the License.
 package config
 
-// IndexCreation represents the configurations for index creation.
+// IndexOperator represents the configurations for index k8s operator.
 type IndexOperator struct {
 	// AgentName represent agents meta_name for service discovery
 	AgentName string `json:"agent_name" yaml:"agent_name"`

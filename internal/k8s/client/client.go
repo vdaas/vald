@@ -177,7 +177,7 @@ func (c *client) Watch(ctx context.Context, obj cli.ObjectList, opts ...ListOpti
 	return c.withWatch.Watch(ctx, obj, opts...)
 }
 
-func (c *client) MatchingLabels(labels map[string]string) cli.MatchingLabels {
+func (*client) MatchingLabels(labels map[string]string) cli.MatchingLabels {
 	return cli.MatchingLabels(labels)
 }
 
@@ -259,12 +259,8 @@ func (s *patcher) ApplyPodAnnotations(ctx context.Context, name, namespace strin
 	}
 
 	patch := &unstructured.Unstructured{Object: obj}
-	if err := s.client.Patch(ctx, patch, cli.Apply, &cli.PatchOptions{
+	return s.client.Patch(ctx, patch, cli.Apply, &cli.PatchOptions{
 		FieldManager: s.fieldManager,
 		Force:        ptr.To(true),
-	}); err != nil {
-		return err
-	}
-
-	return nil
+	})
 }

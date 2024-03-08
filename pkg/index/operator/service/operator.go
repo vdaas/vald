@@ -153,9 +153,10 @@ func (o *operator) podOnReconcile(ctx context.Context, podList map[string][]pod.
 }
 
 // TODO: implement job reconcile logic to detect save job completion and to start rotation.
-func (o *operator) jobOnReconcile(ctx context.Context, jobList map[string][]job.Job) {
+func (*operator) jobOnReconcile(_ context.Context, jobList map[string][]job.Job) {
 	for k, v := range jobList {
-		for _, job := range v {
+		for i := range v {
+			job := v[i]
 			log.Debug("key", k, "name:", job.Name, "status:", job.Status)
 		}
 	}

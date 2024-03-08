@@ -30,7 +30,7 @@ type ValdK8sClientMock struct {
 
 var _ client.Client = (*ValdK8sClientMock)(nil)
 
-func (m *ValdK8sClientMock) Get(ctx context.Context, name string, namespace string, obj client.Object, opts ...crclient.GetOption) error {
+func (m *ValdK8sClientMock) Get(ctx context.Context, name, namespace string, obj client.Object, opts ...crclient.GetOption) error {
 	args := m.Called(ctx, name, namespace, obj, opts)
 	return args.Error(0)
 }
