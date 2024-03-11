@@ -285,7 +285,7 @@ func (o *operator) createRotationJob(ctx context.Context, podIdx string) error {
 	}
 
 	// now we actually needs to create the rotator job
-	log.Info("no job is running to rotate the agent(id:%s). creating a new job...", podIdx)
+	log.Infof("no job is running to rotate the agent(id:%s). creating a new job...", podIdx)
 	spec := *cronJob.Spec.JobTemplate.Spec.DeepCopy()
 	spec.Template.Spec.Containers[0].Env = append(spec.Template.Spec.Containers[0].Env, corev1.EnvVar{
 		Name:  o.targetReadReplicaIDEnvName,
