@@ -3475,8 +3475,8 @@ manager:
         # @schema {"name": "manager.index.readreplica.rotator.agent_namespace", "type": "string"}
         # manager.index.readreplica.rotator.agent_namespace -- namespace of agent pods to manage
         agent_namespace: _MY_POD_NAMESPACE_
-        # # @schema {"name": "manager.index.readreplica.rotator.target_read_replica_id_envname", "type": "string"}
-        # # manager.index.readreplica.rotator.target_read_replica_id_envname -- read replica id to perform rotation
+        # @schema {"name": "manager.index.readreplica.rotator.target_read_replica_id_envname", "type": "string"}
+        # manager.index.readreplica.rotator.target_read_replica_id_envname -- read replica id to perform rotation
         target_read_replica_id_envname: MY_TARGET_REPLICA_ID
         # @schema {"name": "manager.index.readreplica.rotator.serviceAccount", "type": "object"}
         serviceAccount:
