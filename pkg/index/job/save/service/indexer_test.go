@@ -30,6 +30,7 @@ import (
 )
 
 func Test_index_Start(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 	}

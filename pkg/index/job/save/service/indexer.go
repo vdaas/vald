@@ -132,6 +132,7 @@ func (idx *index) Start(ctx context.Context) error {
 	return nil
 }
 
+// skipcq: GO-R1005
 func (idx *index) doSaveIndex(ctx context.Context, fn func(_ context.Context, _ agent.AgentClient, _ ...grpc.CallOption) (*payload.Empty, error)) (errs error) {
 	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, grpcMethodName), apiName+"/service/index.doSaveIndex")
 	defer func() {
