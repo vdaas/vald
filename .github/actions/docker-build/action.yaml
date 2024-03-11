@@ -87,7 +87,7 @@ runs:
         PRIMARY_TAG: ${{ steps.determine_tag_name.outputs.PRIMARY_TAG }}
     - name: Update Vald version
       shell: bash
-      run: echo "${PRIMARY_TAG}" >> versions/VALD_VERSION
+      run: echo "${PRIMARY_TAG}" > versions/VALD_VERSION
       env:
         PRIMARY_TAG: ${{ steps.determine_tag_name.outputs.PRIMARY_TAG }}
     - name: Add extra tags

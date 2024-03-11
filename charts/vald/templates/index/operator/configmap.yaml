@@ -45,4 +45,6 @@ data:
       agent_name: {{ $agent.name }}
       agent_namespace: {{ $agent.namespace }}
       concurrency: 1
+      read_replica_enabled: {{ $agent.readreplica.enabled }}
+      read_replica_label_key: {{ $agent.readreplica.label_key }}
 {{- end }}

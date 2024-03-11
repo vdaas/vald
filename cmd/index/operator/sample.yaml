@@ -72,6 +72,8 @@ operator:
   agent_name: "vald-agent"
   agent_namespace: "default"
   concurrency: 1
+  read_replica_enabled: true
+  read_replica_label_key: "vald-readreplica-id"
 observability:
   enabled: false
   otlp:

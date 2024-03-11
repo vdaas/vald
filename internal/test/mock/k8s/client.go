@@ -30,7 +30,7 @@ type ValdK8sClientMock struct {
 
 var _ client.Client = (*ValdK8sClientMock)(nil)
 
-func (m *ValdK8sClientMock) Get(ctx context.Context, name string, namespace string, obj client.Object, opts ...crclient.GetOption) error {
+func (m *ValdK8sClientMock) Get(ctx context.Context, name, namespace string, obj client.Object, opts ...crclient.GetOption) error {
 	args := m.Called(ctx, name, namespace, obj, opts)
 	return args.Error(0)
 }
@@ -63,6 +63,11 @@ func (m *ValdK8sClientMock) Patch(ctx context.Context, obj client.Object, patch 
 func (m *ValdK8sClientMock) Watch(ctx context.Context, obj crclient.ObjectList, opts ...client.ListOption) (watch.Interface, error) {
 	args := m.Called(ctx, obj, opts)
 	return args.Get(0).(watch.Interface), args.Error(1)
+}
+
+func (m *ValdK8sClientMock) MatchingLabels(labels map[string]string) client.MatchingLabels {
+	args := m.Called(labels)
+	return args.Get(0).(client.MatchingLabels)
 }
 
 func (m *ValdK8sClientMock) LabelSelector(key string, op selection.Operator, vals []string) (labels.Selector, error) {
