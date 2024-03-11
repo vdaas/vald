@@ -44,6 +44,8 @@ func New(cfg *config.Data) (_ runner.Runner, err error) {
 	operator, err := service.New(
 		cfg.Operator.Namespace,
 		cfg.Operator.AgentName,
+		cfg.Operator.RotatorName,
+		cfg.Operator.TargetReadReplicaIDEnvname,
 		service.WithReadReplicaEnabled(cfg.Operator.ReadReplicaEnabled),
 		service.WithReadReplicaLabelKey(cfg.Operator.ReadReplicaLabelKey),
 	)

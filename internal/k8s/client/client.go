@@ -49,6 +49,8 @@ type (
 	ListOption         = cli.ListOption
 	CreateOption       = cli.CreateOption
 	CreateOptions      = cli.CreateOptions
+	GetOption          = cli.GetOption
+	GetOptions         = cli.GetOptions
 	UpdateOptions      = cli.UpdateOptions
 	MatchingLabels     = cli.MatchingLabels
 	InNamespace        = cli.InNamespace

@@ -15,6 +15,7 @@
 #
 {{- $operator := .Values.manager.index.operator -}}
 {{- $agent := .Values.agent -}}
+{{- $rotator := .Values.manager.index.readreplica.rotator -}}
 {{- if $operator.enabled }}
 apiVersion: v1
 kind: ConfigMap
@@ -45,6 +46,7 @@ data:
       namespace: _MY_POD_NAMESPACE_
       agent_name: {{ $agent.name }}
       agent_namespace: {{ $agent.namespace }}
+      rotator_name: {{ $rotator.name }}
       concurrency: 1
       read_replica_enabled: {{ $agent.readreplica.enabled }}
       read_replica_label_key: {{ $agent.readreplica.label_key }}

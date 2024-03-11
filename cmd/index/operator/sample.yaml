@@ -72,6 +72,8 @@ operator:
   namespace: "default"
   agent_name: "vald-agent"
   agent_namespace: "default"
+  rotator_name: "vald-readreplica-rotate"
+  target_read_replica_id_envname: MY_TARGET_REPLICA_ID
   concurrency: 1
   read_replica_enabled: true
   read_replica_label_key: "vald-readreplica-id"

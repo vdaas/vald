@@ -24,6 +24,12 @@ type IndexOperator struct {
 	// AgentNamespace represent agent namespace location
 	AgentNamespace string `json:"agent_namespace" yaml:"agent_namespace"`
 
+	// RotatorName represent rotator name for service discovery
+	RotatorName string `json:"rotator_name" yaml:"rotator_name"`
+
+	// TargetReadReplicaIDEnvname represents the environment variable name for target read replica id.
+	TargetReadReplicaIDEnvname string `json:"target_read_replica_id_envname" yaml:"target_read_replica_id_envname"`
+
 	// Concurrency represents indexing concurrency.
 	Concurrency int `json:"concurrency" yaml:"concurrency"`
 
