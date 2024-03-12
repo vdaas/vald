@@ -11,36 +11,15 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-package service
+package grpc
 
-import "github.com/vdaas/vald/internal/sync/errgroup"
+import (
+	"context"
 
-// Option represents the functional option for index.
-type Option func(_ *operator) error
+	"github.com/vdaas/vald/apis/grpc/v1/payload"
+)
 
-var defaultOpts = []Option{
-	WithErrGroup(errgroup.Get()),
-}
-
-func WithErrGroup(eg errgroup.Group) Option {
-	return func(o *operator) error {
-		if eg != nil {
-			o.eg = eg
-		}
-		return nil
-	}
-}
-
-func WithReadReplicaEnabled(enabled bool) Option {
-	return func(o *operator) error {
-		o.readReplicaEnabled = enabled
-		return nil
-	}
-}
-
-func WithReadReplicaLabelKey(key string) Option {
-	return func(o *operator) error {
-		o.readReplicaLabelKey = key
-		return nil
-	}
+// TODO: implement Flush Handler
+func (s *server) Flush(ctx context.Context, req *payload.Flush_Request) (*payload.Info_Index_Count, error) {
+	return s.UnimplementedValdServer.UnimplementedFlushServer.Flush(ctx, req)
 }

@@ -63,6 +63,7 @@ const (
 	WatchDeletedEvent           = watch.Deleted
 	SelectionOpEquals           = selection.Equals
 	SelectionOpExists           = selection.Exists
+	PodIndexLabel               = appsv1.PodIndexLabel
 )
 
 var (
@@ -98,6 +99,9 @@ type Client interface {
 
 	// Watch watches the given obj for changes and takes the appropriate callbacks.
 	Watch(ctx context.Context, obj cli.ObjectList, opts ...ListOption) (watch.Interface, error)
+
+	// MatchingLabels filters the list/delete operation on the given set of labels.
+	MatchingLabels(labels map[string]string) cli.MatchingLabels
 
 	// LabelSelector creates labels.Selector for Options like ListOptions.
 	LabelSelector(key string, op selection.Operator, vals []string) (labels.Selector, error)
@@ -171,6 +175,10 @@ func (c *client) Patch(ctx context.Context, obj Object, patch cli.Patch, opts ..
 
 func (c *client) Watch(ctx context.Context, obj cli.ObjectList, opts ...ListOption) (watch.Interface, error) {
 	return c.withWatch.Watch(ctx, obj, opts...)
+}
+
+func (*client) MatchingLabels(labels map[string]string) cli.MatchingLabels {
+	return cli.MatchingLabels(labels)
 }
 
 func (*client) LabelSelector(key string, op selection.Operator, vals []string) (labels.Selector, error) {
@@ -251,12 +259,8 @@ func (s *patcher) ApplyPodAnnotations(ctx context.Context, name, namespace strin
 	}
 
 	patch := &unstructured.Unstructured{Object: obj}
-	if err := s.client.Patch(ctx, patch, cli.Apply, &cli.PatchOptions{
+	return s.client.Patch(ctx, patch, cli.Apply, &cli.PatchOptions{
 		FieldManager: s.fieldManager,
 		Force:        ptr.To(true),
-	}); err != nil {
-		return err
-	}
-
-	return nil
+	})
 }

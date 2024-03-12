@@ -156,6 +156,14 @@ func New(opts ...Option) http.Handler {
 				HandlerFunc: h.MultiRemove,
 			},
 			{
+				Name: "Flush",
+				Methods: []string{
+					http.MethodDelete,
+				},
+				Pattern:     "/flush",
+				HandlerFunc: h.Flush,
+			},
+			{
 				Name: "GetObject",
 				Methods: []string{
 					http.MethodGet,

@@ -15,12 +15,16 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"reflect"
+	"time"
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/k8s"
+	"github.com/vdaas/vald/internal/k8s/client"
 	"github.com/vdaas/vald/internal/k8s/job"
 	"github.com/vdaas/vald/internal/k8s/pod"
+	"github.com/vdaas/vald/internal/k8s/vald"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
@@ -37,9 +41,12 @@ type Operator interface {
 }
 
 type operator struct {
-	ctrl      k8s.Controller
-	eg        errgroup.Group
-	namespace string
+	ctrl                k8s.Controller
+	eg                  errgroup.Group
+	namespace           string
+	client              client.Client
+	readReplicaEnabled  bool
+	readReplicaLabelKey string
 }
 
 // New returns Indexer object if no error occurs.
@@ -88,6 +95,13 @@ func New(agentName string, opts ...Option) (o Operator, err error) {
 	if err != nil {
 		return nil, err
 	}
+
+	client, err := client.New()
+	if err != nil {
+		return nil, err
+	}
+	operator.client = client
+
 	return operator, nil
 }
 
@@ -127,15 +141,79 @@ func (o *operator) podOnReconcile(ctx context.Context, podList map[string][]pod.
 	for k, v := range podList {
 		for _, pod := range v {
 			log.Debug("key", k, "name:", pod.Name, "annotations:", pod.Annotations)
+
+			// rotate read replica if needed
+			if o.readReplicaEnabled {
+				if err := o.rotateIfNeeded(ctx, pod); err != nil {
+					log.Error(err)
+				}
+			}
 		}
 	}
 }
 
 // TODO: implement job reconcile logic to detect save job completion and to start rotation.
-func (o *operator) jobOnReconcile(ctx context.Context, jobList map[string][]job.Job) {
+func (*operator) jobOnReconcile(_ context.Context, jobList map[string][]job.Job) {
 	for k, v := range jobList {
+		// skipcq: CRT-P0006
 		for _, job := range v {
 			log.Debug("key", k, "name:", job.Name, "status:", job.Status)
 		}
 	}
+}
+
+// rotateIfNeeded starts rotation job when the condition meets.
+// This function is work in progress.
+func (o *operator) rotateIfNeeded(ctx context.Context, pod pod.Pod) error {
+	t, ok := pod.Annotations[vald.LastTimeSaveIndexTimestampAnnotationsKey]
+	if !ok {
+		log.Info("the agent pod has not saved index yet. skipping...")
+		return nil
+	}
+	lastSavedTime, err := time.Parse(vald.TimeFormat, t)
+	if err != nil {
+		return fmt.Errorf("parsing last time saved time: %w", err)
+	}
+
+	podIdx, ok := pod.Labels[client.PodIndexLabel]
+	if !ok {
+		log.Info("no index label found. the agent is not StatefulSet? skipping...")
+		return nil
+	}
+
+	var depList client.DeploymentList
+	selector, err := o.client.LabelSelector(o.readReplicaLabelKey, client.SelectionOpEquals, []string{podIdx})
+	if err != nil {
+		return fmt.Errorf("creating label selector: %w", err)
+	}
+	listOpts := client.ListOptions{
+		Namespace:     o.namespace,
+		LabelSelector: selector,
+	}
+	if err := o.client.List(ctx, &depList, &listOpts); err != nil {
+		return err
+	}
+	if len(depList.Items) == 0 {
+		return errors.New("no readreplica deployment found")
+	}
+	dep := depList.Items[0]
+
+	annotations := dep.GetAnnotations()
+	t, ok = annotations[vald.LastTimeSnapshotTimestampAnnotationsKey]
+	if ok {
+		lastSnapshotTime, err := time.Parse(vald.TimeFormat, t)
+		if err != nil {
+			return fmt.Errorf("parsing last snapshot time: %w", err)
+		}
+
+		if lastSnapshotTime.After(lastSavedTime) {
+			log.Info("snapshot taken after the last save. skipping...")
+			return nil
+		}
+	}
+
+	log.Infof("rotation required for agent id: %s. creating rotator job...", podIdx)
+	// TODO: check if the rotator job already exists or queued
+	//       then create rotation job
+	return nil
 }

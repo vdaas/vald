@@ -174,6 +174,25 @@
         "code",
         "test"
       ]
+    },
+    {
+      "login": "aknishid",
+      "name": "aknishid",
+      "avatar_url": "https://avatars.githubusercontent.com/u/38955080?v=4",
+      "profile": "https://github.com/aknishid",
+      "contributions": [
+        "code",
+        "maintenance"
+      ]
+    },
+    {
+      "login": "hrichiksite",
+      "name": "Hrichik Mazumder",
+      "avatar_url": "https://avatars.githubusercontent.com/u/57860916?v=4",
+      "profile": "https://hrichik.xyz",
+      "contributions": [
+        "doc"
+      ]
     }
   ],
   "contributorsPerLine": 7,
@@ -184,5 +203,6 @@
   "repoType": "github",
   "repoHost": "https://github.com",
   "skipCi": true,
-  "commitConvention": "angular"
+  "commitConvention": "angular",
+  "commitType": "docs"
 }

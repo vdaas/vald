@@ -41,7 +41,11 @@ type run struct {
 // New returns Runner instance.
 func New(cfg *config.Data) (_ runner.Runner, err error) {
 	eg := errgroup.Get()
-	operator, err := service.New(cfg.Operator.AgentName)
+	operator, err := service.New(
+		cfg.Operator.AgentName,
+		service.WithReadReplicaEnabled(cfg.Operator.ReadReplicaEnabled),
+		service.WithReadReplicaLabelKey(cfg.Operator.ReadReplicaLabelKey),
+	)
 	if err != nil {
 		return nil, err
 	}

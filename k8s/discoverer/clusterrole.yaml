@@ -57,3 +57,11 @@ rules:
     verbs:
       - get
       - list
+  - apiGroups:
+      - batch
+    resources:
+      - jobs
+    verbs:
+      - get
+      - list
+      - watch
