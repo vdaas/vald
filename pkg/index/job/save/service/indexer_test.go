@@ -22,6 +22,7 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/grpc/codes"
+	"github.com/vdaas/vald/internal/net/grpc/pool"
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/test/goleak"
 	clientmock "github.com/vdaas/vald/internal/test/mock/client"
@@ -29,14 +30,14 @@ import (
 )
 
 func Test_index_Start(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx context.Context
 	}
 	type fields struct {
-		client         discoverer.Client
-		targetAddrs    []string
-		targetAddrList map[string]bool
-		concurrency    int
+		client      discoverer.Client
+		targetAddrs []string
+		concurrency int
 	}
 	type want struct {
 		err error
@@ -66,7 +67,6 @@ func Test_index_Start(t *testing.T) {
 				args: args{
 					ctx: context.Background(),
 				},
-
 				fields: fields{
 					client: &clientmock.DiscovererClientMock{
 						GetAddrsFunc: func(_ context.Context) []string {
@@ -78,6 +78,38 @@ func Test_index_Start(t *testing.T) {
 									_ func(_ context.Context, _ string, _ *grpc.ClientConn, _ ...grpc.CallOption) error,
 								) error {
 									return nil
+								},
+							}
+						},
+					},
+				},
+			}
+		}(),
+		func() test {
+			return test{
+				name: "Success: when a target addresses (targetAddrs) is given and there are no errors in the save indexing request process",
+				args: args{
+					ctx: context.Background(),
+				},
+				fields: fields{
+					targetAddrs: []string{
+						"127.0.0.1:8080",
+						"127.0.0.1:8081",
+						"127.0.0.1:8083",
+					},
+					client: &clientmock.DiscovererClientMock{
+						GetAddrsFunc: func(_ context.Context) []string {
+							return nil
+						},
+						GetClientFunc: func() grpc.Client {
+							return &grpcmock.GRPCClientMock{
+								OrderedRangeConcurrentFunc: func(_ context.Context, _ []string, _ int,
+									_ func(_ context.Context, _ string, _ *grpc.ClientConn, _ ...grpc.CallOption) error,
+								) error {
+									return nil
+								},
+								ConnectFunc: func(_ context.Context, _ string, _ ...grpc.DialOption) (pool.Conn, error) {
+									return nil, nil
 								},
 							}
 						},
@@ -128,7 +160,6 @@ func Test_index_Start(t *testing.T) {
 				args: args{
 					ctx: context.Background(),
 				},
-
 				fields: fields{
 					client: &clientmock.DiscovererClientMock{
 						GetAddrsFunc: func(_ context.Context) []string {
@@ -151,34 +182,6 @@ func Test_index_Start(t *testing.T) {
 				},
 			}
 		}(),
-		func() test {
-			targetAddrs := []string{
-				"127.0.0.1:8080",
-			}
-			targetAddrList := map[string]bool{
-				targetAddrs[0]: true,
-			}
-			return test{
-				name: "Fail: when there is no address matching targetAddrList",
-				args: args{
-					ctx: context.Background(),
-				},
-				fields: fields{
-					client: &clientmock.DiscovererClientMock{
-						GetAddrsFunc: func(_ context.Context) []string {
-							// NOTE: This function returns nil, meaning that the targetAddrs stored in the field are invalid values.
-							return nil
-						},
-					},
-					targetAddrs:    targetAddrs,
-					targetAddrList: targetAddrList,
-				},
-				want: want{
-					err: status.Error(codes.Internal,
-						agent.SaveIndexRPCName+" API connection target address \"127.0.0.1:8080\" not found"),
-				},
-			}
-		}(),
 	}
 
 	for _, tc := range tests {
@@ -197,10 +200,9 @@ func Test_index_Start(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 			idx := &index{
-				client:         test.fields.client,
-				targetAddrs:    test.fields.targetAddrs,
-				targetAddrList: test.fields.targetAddrList,
-				concurrency:    test.fields.concurrency,
+				client:      test.fields.client,
+				targetAddrs: test.fields.targetAddrs,
+				concurrency: test.fields.concurrency,
 			}
 
 			err := idx.Start(test.args.ctx)
@@ -310,7 +312,6 @@ func Test_index_Start(t *testing.T) {
 // 	type fields struct {
 // 		client         discoverer.Client
 // 		targetAddrs    []string
-// 		targetAddrList map[string]bool
 // 		concurrency    int
 // 	}
 // 	type want struct {
@@ -346,7 +347,6 @@ func Test_index_Start(t *testing.T) {
 // 		       fields: fields {
 // 		           client:nil,
 // 		           targetAddrs:nil,
-// 		           targetAddrList:nil,
 // 		           concurrency:0,
 // 		       },
 // 		       want: want{},
@@ -371,7 +371,6 @@ func Test_index_Start(t *testing.T) {
 // 		           fields: fields {
 // 		           client:nil,
 // 		           targetAddrs:nil,
-// 		           targetAddrList:nil,
 // 		           concurrency:0,
 // 		           },
 // 		           want: want{},
@@ -405,7 +404,6 @@ func Test_index_Start(t *testing.T) {
 // 			idx := &index{
 // 				client:         test.fields.client,
 // 				targetAddrs:    test.fields.targetAddrs,
-// 				targetAddrList: test.fields.targetAddrList,
 // 				concurrency:    test.fields.concurrency,
 // 			}
 //
