@@ -67,13 +67,21 @@ $(BINDIR)/kubectl:
 	chmod a+x $(BINDIR)/kubectl
 
 .PHONY: textlint/install
-textlint/install:
+textlint/install: $(NPM_GLOBAL_PREFIX)/bin/textlint
+
+$(NPM_GLOBAL_PREFIX)/bin/textlint:
 	npm install -g textlint textlint-rule-en-spell textlint-rule-prh textlint-rule-write-good
 
 .PHONY: textlint/ci/install
 textlint/ci/install:
 	npm init -y
 	npm install --save-dev textlint textlint-rule-en-spell textlint-rule-prh textlint-rule-write-good
+
+.PHONY: cspell/install
+cspell/install: $(NPM_GLOBAL_PREFIX)/bin/cspell
+
+$(NPM_GLOBAL_PREFIX)/bin/cspell:
+	npm install -g git+https://github.com/streetsidesoftware/cspell-cli
 
 .PHONY: buf/install
 buf/install: $(BINDIR)/buf

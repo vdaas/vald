@@ -1,6 +1,6 @@
 module github.com/vdaas/vald
 
-go 1.22.0
+go 1.22.1
 
 replace (
 	cloud.google.com/go => cloud.google.com/go upgrade
@@ -41,6 +41,7 @@ replace (
 	github.com/ajstarks/deck => github.com/ajstarks/deck upgrade
 	github.com/ajstarks/deck/generate => github.com/ajstarks/deck/generate upgrade
 	github.com/ajstarks/svgo => github.com/ajstarks/svgo upgrade
+	github.com/akrylysov/pogreb => github.com/akrylysov/pogreb upgrade
 	github.com/antihax/optional => github.com/antihax/optional upgrade
 	github.com/armon/go-socks5 => github.com/armon/go-socks5 upgrade
 	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go upgrade
@@ -234,7 +235,6 @@ replace (
 	github.com/pkg/errors => github.com/pkg/errors upgrade
 	github.com/pkg/sftp => github.com/pkg/sftp upgrade
 	github.com/pmezard/go-difflib => github.com/pmezard/go-difflib upgrade
-	github.com/akrylysov/pogreb => github.com/akrylysov/pogreb upgrade
 	github.com/prashantv/gostub => github.com/prashantv/gostub upgrade
 	github.com/prometheus/client_golang => github.com/prometheus/client_golang upgrade
 	github.com/prometheus/client_model => github.com/prometheus/client_model upgrade

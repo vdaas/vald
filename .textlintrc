@@ -16,6 +16,9 @@
 rules:
   en-spell:
     personalDictionary:
+    - aquasecurity
+    - autobuild
+    - buildx
     - changelog
     - clj
     - config
@@ -41,12 +44,14 @@ rules:
     - k3s
     - k8s
     - kubernetes
+    - languagetool
     - mevie
     - ngt
     - ngtd
     - onnx
     - operator
     - rerank
+    - sarif
     - scalable
     - sdk
     - spotify
