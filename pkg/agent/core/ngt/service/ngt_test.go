@@ -36,6 +36,7 @@ import (
 	core "github.com/vdaas/vald/internal/core/algorithm/ngt"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/file"
+	kvald "github.com/vdaas/vald/internal/k8s/vald"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/strings"
@@ -1300,7 +1301,7 @@ func TestExportIndexInfo(t *testing.T) {
 					unsavedProcessedVqAnnotationsKey:             "2",
 				}
 				expectedAfterSave := map[string]string{
-					lastTimeSaveIndexTimestampAnnotationsKey:     saveIndexTime.UTC().Format(time.RFC3339),
+					lastTimeSaveIndexTimestampAnnotationsKey:     saveIndexTime.UTC().Format(kvald.TimeFormat),
 					unsavedCreateIndexExecutionNumAnnotationsKey: "0",
 					unsavedProcessedVqAnnotationsKey:             "0",
 				}

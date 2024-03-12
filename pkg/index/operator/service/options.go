@@ -30,3 +30,17 @@ func WithErrGroup(eg errgroup.Group) Option {
 		return nil
 	}
 }
+
+func WithReadReplicaEnabled(enabled bool) Option {
+	return func(o *operator) error {
+		o.readReplicaEnabled = enabled
+		return nil
+	}
+}
+
+func WithReadReplicaLabelKey(key string) Option {
+	return func(o *operator) error {
+		o.readReplicaLabelKey = key
+		return nil
+	}
+}

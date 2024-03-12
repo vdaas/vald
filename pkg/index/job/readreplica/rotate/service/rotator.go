@@ -23,6 +23,7 @@ import (
 	snapshotv1 "github.com/kubernetes-csi/external-snapshotter/client/v6/apis/volumesnapshot/v1"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/k8s/client"
+	"github.com/vdaas/vald/internal/k8s/vald"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
@@ -30,7 +31,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/utils/pointer"
+	"k8s.io/utils/ptr"
 )
 
 const (
@@ -160,7 +161,7 @@ func (s *subProcess) rotate(ctx context.Context) error {
 		return err
 	}
 
-	err = s.updateDeployment(ctx, newPvc.GetName(), deployment)
+	err = s.updateDeployment(ctx, newPvc.GetName(), deployment, newSnap.CreationTimestamp.Time)
 	if err != nil {
 		log.Errorf("failed to update Deployment. removing the new snapshot(%s) and pvc(%s)...", newSnap.GetName(), newPvc.GetName())
 		if dperr := s.deletePVC(ctx, newPvc); dperr != nil {
@@ -211,7 +212,7 @@ func (s *subProcess) createSnapshot(ctx context.Context, deployment *appsv1.Depl
 					Kind:       "Deployment",
 					Name:       deployment.GetName(),
 					UID:        deployment.GetUID(),
-					Controller: pointer.Bool(true),
+					Controller: ptr.To(true),
 				},
 			},
 		},
@@ -257,7 +258,7 @@ func (s *subProcess) createPVC(ctx context.Context, newSnapShot string, deployme
 					Kind:       "Deployment",
 					Name:       deployment.GetName(),
 					UID:        deployment.GetUID(),
-					Controller: pointer.Bool(true),
+					Controller: ptr.To(true),
 				},
 			},
 		},
@@ -295,11 +296,17 @@ func (s *subProcess) getDeployment(ctx context.Context) (*appsv1.Deployment, err
 	return &list.Items[0], nil
 }
 
-func (s *subProcess) updateDeployment(ctx context.Context, newPVC string, deployment *appsv1.Deployment) error {
+func (s *subProcess) updateDeployment(ctx context.Context, newPVC string, deployment *appsv1.Deployment, snapshotTime time.Time) error {
 	if deployment.Spec.Template.ObjectMeta.Annotations == nil {
 		deployment.Spec.Template.ObjectMeta.Annotations = map[string]string{}
 	}
-	deployment.Spec.Template.ObjectMeta.Annotations["kubectl.kubernetes.io/restartedAt"] = time.Now().UTC().Format(time.RFC3339)
+	now := time.Now().UTC().Format(time.RFC3339)
+	deployment.Spec.Template.ObjectMeta.Annotations["kubectl.kubernetes.io/restartedAt"] = now
+
+	if deployment.Annotations == nil {
+		deployment.Annotations = map[string]string{}
+	}
+	deployment.Annotations[vald.LastTimeSnapshotTimestampAnnotationsKey] = snapshotTime.UTC().Format(vald.TimeFormat)
 
 	for _, vol := range deployment.Spec.Template.Spec.Volumes {
 		if vol.Name == s.volumeName {
