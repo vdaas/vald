@@ -146,7 +146,7 @@ func (o *operator) Start(ctx context.Context) (<-chan error, error) {
 	return ech, nil
 }
 
-func (o *operator) podOnReconcile(ctx context.Context, pod client.Pod) (client.Result, error) {
+func (o *operator) podOnReconcile(ctx context.Context, pod *client.Pod) (client.Result, error) {
 	if o.readReplicaEnabled {
 		rq, err := o.reconcileRotatorJob(ctx, pod)
 		if err != nil {
@@ -163,7 +163,7 @@ func (o *operator) podOnReconcile(ctx context.Context, pod client.Pod) (client.R
 
 // reconcileRotatorJob starts rotation job when the condition meets.
 // This function is work in progress.
-func (o *operator) reconcileRotatorJob(ctx context.Context, pod client.Pod) (requeue bool, err error) {
+func (o *operator) reconcileRotatorJob(ctx context.Context, pod *client.Pod) (requeue bool, err error) {
 	podIdx, ok := pod.Labels[client.PodIndexLabel]
 	if !ok {
 		log.Info("no index label found. the agent is not StatefulSet? skipping...")

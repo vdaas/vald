@@ -52,7 +52,7 @@ func WithOnErrorFunc(f func(err error)) Option {
 	}
 }
 
-func WithOnReconcileFunc(f func(ctx context.Context, pod corev1.Pod) (reconcile.Result, error)) Option {
+func WithOnReconcileFunc(f func(ctx context.Context, pod *corev1.Pod) (reconcile.Result, error)) Option {
 	return func(r *reconciler) error {
 		r.onReconcile = f
 		return nil

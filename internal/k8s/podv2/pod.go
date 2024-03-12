@@ -37,7 +37,7 @@ type reconciler struct {
 	name        string
 	namespace   string
 	onError     func(err error)
-	onReconcile func(ctx context.Context, pod corev1.Pod) (reconcile.Result, error)
+	onReconcile func(ctx context.Context, pod *corev1.Pod) (reconcile.Result, error)
 	lopts       []client.ListOption
 	forOpts     []builder.ForOption
 }
@@ -78,7 +78,7 @@ func (r *reconciler) Reconcile(ctx context.Context, req reconcile.Request) (reco
 	var pod corev1.Pod
 	r.mgr.GetClient().Get(ctx, req.NamespacedName, &pod)
 	if r.onReconcile != nil {
-		return r.onReconcile(ctx, pod)
+		return r.onReconcile(ctx, &pod)
 	}
 	return reconcile.Result{}, nil
 }
@@ -113,6 +113,5 @@ func (*reconciler) Owns() (client.Object, []builder.OwnsOption) {
 }
 
 func (*reconciler) Watches() (client.Object, handler.EventHandler, []builder.WatchesOption) {
-	// return new(corev1.Pod), &handler.EnqueueRequestForObject{}
 	return nil, nil, nil
 }
