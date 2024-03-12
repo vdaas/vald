@@ -30,8 +30,8 @@ type IndexOperator struct {
 	// TargetReadReplicaIDEnvname represents the environment variable name for target read replica id.
 	TargetReadReplicaIDEnvname string `json:"target_read_replica_id_envname" yaml:"target_read_replica_id_envname"`
 
-	// Concurrency represents indexing concurrency.
-	Concurrency int `json:"concurrency" yaml:"concurrency"`
+	// RotationJobConcurrency represents indexing concurrency.
+	RotationJobConcurrency uint `json:"rotation_job_concurrency" yaml:"rotation_job_concurrency"`
 
 	// ReadReplicaEnabled represents whether read replica is enabled or not.
 	ReadReplicaEnabled bool `json:"read_replica_enabled" yaml:"read_replica_enabled"`

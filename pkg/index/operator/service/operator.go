@@ -17,6 +17,7 @@ import (
 	"context"
 	"fmt"
 	"reflect"
+	"slices"
 	"time"
 
 	"github.com/vdaas/vald/internal/errors"
@@ -43,6 +44,14 @@ const (
 	apiName = "vald/index/operator"
 )
 
+type jobReconcileResult int
+
+const (
+	createRequired jobReconcileResult = iota
+	createSkipped
+	requeueRequired
+)
+
 // Operator represents an interface for indexing.
 type Operator interface {
 	Start(ctx context.Context) (<-chan error, error)
@@ -57,6 +66,7 @@ type operator struct {
 	targetReadReplicaIDEnvName string
 	readReplicaEnabled         bool
 	readReplicaLabelKey        string
+	rotationJobConcurrency     uint
 }
 
 // New returns Indexer object if no error occurs.
@@ -175,52 +185,54 @@ func (o *operator) Start(ctx context.Context) (<-chan error, error) {
 }
 
 func (o *operator) podOnReconcile(ctx context.Context, pod corev1.Pod) (reconcile.Result, error) {
-	// rotate read replica if needed
 	if o.readReplicaEnabled {
-		if err := o.rotateIfNeeded(ctx, pod); err != nil {
-			log.Error(err)
-			return reconcile.Result{
-				Requeue: true,
-			}, err
+		rq, err := o.reconcileRotatorJob(ctx, pod)
+		if err != nil {
+			return reconcile.Result{}, fmt.Errorf("rotating or requeueing: %w", err)
 		}
+		// let controller-runtime backoff exponentially by not setting the backoff duration
+		return reconcile.Result{
+			Requeue: rq,
+		}, nil
 	}
 
 	return reconcile.Result{}, nil
 }
 
-// rotateIfNeeded starts rotation job when the condition meets.
+// reconcileRotatorJob starts rotation job when the condition meets.
 // This function is work in progress.
-func (o *operator) rotateIfNeeded(ctx context.Context, pod corev1.Pod) error {
+func (o *operator) reconcileRotatorJob(ctx context.Context, pod corev1.Pod) (rq bool, err error) {
+	// FIXME: make function to check timestamps
 	t, ok := pod.Annotations[vald.LastTimeSaveIndexTimestampAnnotationsKey]
 	if !ok {
 		log.Info("the agent pod has not saved index yet. skipping...")
-		return nil
+		return false, nil
 	}
 	lastSavedTime, err := time.Parse(vald.TimeFormat, t)
 	if err != nil {
-		return fmt.Errorf("parsing last time saved time: %w", err)
+		return false, fmt.Errorf("parsing last time saved time: %w", err)
 	}
 
 	podIdx, ok := pod.Labels[client.PodIndexLabel]
 	if !ok {
 		log.Info("no index label found. the agent is not StatefulSet? skipping...")
-		return nil
+		return false, nil
 	}
 
 	var depList client.DeploymentList
 	selector, err := o.client.LabelSelector(o.readReplicaLabelKey, client.SelectionOpEquals, []string{podIdx})
 	if err != nil {
-		return fmt.Errorf("creating label selector: %w", err)
+		return false, fmt.Errorf("creating label selector: %w", err)
 	}
 	listOpts := client.ListOptions{
 		Namespace:     o.namespace,
 		LabelSelector: selector,
 	}
 	if err := o.client.List(ctx, &depList, &listOpts); err != nil {
-		return err
+		return false, err
 	}
 	if len(depList.Items) == 0 {
-		return errors.New("no readreplica deployment found")
+		return false, errors.New("no readreplica deployment found")
 	}
 	dep := depList.Items[0]
 
@@ -229,36 +241,44 @@ func (o *operator) rotateIfNeeded(ctx context.Context, pod corev1.Pod) error {
 	if ok {
 		lastSnapshotTime, err := time.Parse(vald.TimeFormat, t)
 		if err != nil {
-			return fmt.Errorf("parsing last snapshot time: %w", err)
+			return false, fmt.Errorf("parsing last snapshot time: %w", err)
 		}
 
 		if lastSnapshotTime.After(lastSavedTime) {
 			log.Info("snapshot taken after the last save. skipping...")
-			return nil
+			return false, nil
 		}
 	}
 
 	log.Infof("rotation required for agent(id: %s)", podIdx)
-	if err := o.createRotationJob(ctx, podIdx); err != nil {
-		return fmt.Errorf("creating rotation job: %w", err)
+	rq, err = o.createRotationJobOrRequeue(ctx, podIdx)
+	if err != nil {
+		return false, fmt.Errorf("creating rotation job: %w", err)
 	}
-	return nil
+	return rq, nil
 }
 
-func (o *operator) createRotationJob(ctx context.Context, podIdx string) error {
+func (o *operator) createRotationJobOrRequeue(ctx context.Context, podIdx string) (rq bool, err error) {
 	var cronJob batchv1.CronJob
 	if err := o.client.Get(ctx, o.rotatorName, o.namespace, &cronJob); err != nil {
-		return err
+		return false, err
 	}
 
 	// get all the rotation jobs and make sure the job is not running
-	exists, err := o.sameRotatorJobExists(ctx, podIdx)
+	res, err := o.ensureJobConcurrency(ctx, podIdx)
 	if err != nil {
-		return fmt.Errorf("checking if the same job exists: %w", err)
+		return false, fmt.Errorf("checking if the same job exists: %w", err)
 	}
-	if !exists {
+	switch res {
+	case createSkipped:
 		log.Infof("rotation job for the agent(id: %s) is already running. skipping...", podIdx)
-		return nil
+		return false, nil
+	case requeueRequired:
+		log.Infof("rotation job concurrency limit(%d) reached. rotation job for the agent(id: %s) will be requeued", o.rotationJobConcurrency, podIdx)
+		return true, nil
+	case createRequired:
+		// continue to create a new job
+		break
 	}
 
 	// now we actually need to create the rotator job
@@ -278,38 +298,46 @@ func (o *operator) createRotationJob(ctx context.Context, podIdx string) error {
 	}
 
 	if err := o.client.Create(ctx, &job); err != nil {
-		return fmt.Errorf("creating job resource with k8s API: %w", err)
+		return false, fmt.Errorf("creating job resource with k8s API: %w", err)
 	}
 
-	return nil
+	return false, nil
 }
 
-func (o *operator) sameRotatorJobExists(ctx context.Context, podIdx string) (bool, error) {
+// ensureJobConcurrency controlls the job concurrency. It cannot handle concurrent calls but it is fine because
+// the MaxConcurrentReconciles defaults to 1 and we do not change it.
+func (o *operator) ensureJobConcurrency(ctx context.Context, podIdx string) (jobReconcileResult, error) {
 	// get all the rotation jobs and make sure the job is not running
 	var jobList batchv1.JobList
 	selector, err := o.client.LabelSelector("app", client.SelectionOpEquals, []string{o.rotatorName})
 	if err != nil {
-		return false, fmt.Errorf("creating label selector: %w", err)
+		return createSkipped, fmt.Errorf("creating label selector: %w", err)
 	}
 	if err := o.client.List(ctx, &jobList, &client.ListOptions{
 		Namespace:     o.namespace,
 		LabelSelector: selector,
 	}); err != nil {
-		return false, fmt.Errorf("listing jobs: %w", err)
+		return createSkipped, fmt.Errorf("listing jobs: %w", err)
 	}
-	for _, job := range jobList.Items {
-		// no need to check finished jobs
-		if job.Status.Active == 0 {
-			continue
-		}
 
+	// no need to check finished jobs
+	jobList.Items = slices.DeleteFunc(jobList.Items, func(job batchv1.Job) bool {
+		return job.Status.Active == 0
+	})
+
+	if len(jobList.Items) >= int(o.rotationJobConcurrency) {
+		return requeueRequired, nil
+	}
+
+	for _, job := range jobList.Items {
 		envs := job.Spec.Template.Spec.Containers[0].Env
 		// since latest append wins, checking backbards
 		for i := len(envs) - 1; i >= 0; i-- {
 			env := envs[i]
 			if env.Name == o.targetReadReplicaIDEnvName {
 				if env.Value == podIdx {
-					return false, nil
+					// the same job is already running. no need to requeue
+					return createSkipped, nil
 				} else {
 					// check the next job resource
 					break
@@ -318,5 +346,5 @@ func (o *operator) sameRotatorJobExists(ctx context.Context, podIdx string) (boo
 		}
 	}
 
-	return true, nil
+	return createRequired, nil
 }

@@ -48,6 +48,7 @@ func New(cfg *config.Data) (_ runner.Runner, err error) {
 		cfg.Operator.TargetReadReplicaIDEnvname,
 		service.WithReadReplicaEnabled(cfg.Operator.ReadReplicaEnabled),
 		service.WithReadReplicaLabelKey(cfg.Operator.ReadReplicaLabelKey),
+		service.WithRotationJobConcurrency(cfg.Operator.RotationJobConcurrency),
 	)
 	if err != nil {
 		return nil, err
