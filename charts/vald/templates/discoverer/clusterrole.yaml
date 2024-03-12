@@ -83,4 +83,5 @@ rules:
     verbs:
       - get
       - update
+      - create
 {{- end }}
