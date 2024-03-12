@@ -29,15 +29,6 @@ import (
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/sync/errgroup"
-
-	// FIXME:
-	batchv1 "k8s.io/api/batch/v1"
-	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"sigs.k8s.io/controller-runtime/pkg/builder"
-	"sigs.k8s.io/controller-runtime/pkg/event"
-	"sigs.k8s.io/controller-runtime/pkg/predicate"
-	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
 
 const (
@@ -87,7 +78,7 @@ func New(namespace, agentName, rotatorName, targetReadReplicaIDEnvName string, o
 		}
 	}
 
-	isAgent := func(pod *corev1.Pod) bool {
+	isAgent := func(pod *client.Pod) bool {
 		return pod.Labels["app"] == agentName
 	}
 
@@ -103,36 +94,7 @@ func New(namespace, agentName, rotatorName, targetReadReplicaIDEnvName string, o
 		}),
 		// To only reconcile for agent pods
 		podv2.WithForOpts(
-			builder.WithPredicates(predicate.Funcs{
-				CreateFunc: func(e event.CreateEvent) bool {
-					pod, ok := e.Object.(*corev1.Pod)
-					if !ok {
-						return false
-					}
-					return isAgent(pod)
-				},
-				DeleteFunc: func(e event.DeleteEvent) bool {
-					pod, ok := e.Object.(*corev1.Pod)
-					if !ok {
-						return false
-					}
-					return isAgent(pod)
-				},
-				UpdateFunc: func(e event.UpdateEvent) bool {
-					pod, ok := e.ObjectNew.(*corev1.Pod)
-					if !ok {
-						return false
-					}
-					return isAgent(pod)
-				},
-				GenericFunc: func(e event.GenericEvent) bool {
-					pod, ok := e.Object.(*corev1.Pod)
-					if !ok {
-						return false
-					}
-					return isAgent(pod)
-				},
-			}),
+			client.PodPredicates(isAgent),
 		),
 	)
 
@@ -184,24 +146,24 @@ func (o *operator) Start(ctx context.Context) (<-chan error, error) {
 	return ech, nil
 }
 
-func (o *operator) podOnReconcile(ctx context.Context, pod corev1.Pod) (reconcile.Result, error) {
+func (o *operator) podOnReconcile(ctx context.Context, pod client.Pod) (client.Result, error) {
 	if o.readReplicaEnabled {
 		rq, err := o.reconcileRotatorJob(ctx, pod)
 		if err != nil {
-			return reconcile.Result{}, fmt.Errorf("rotating or requeueing: %w", err)
+			return client.Result{}, fmt.Errorf("rotating or requeueing: %w", err)
 		}
 		// let controller-runtime backoff exponentially by not setting the backoff duration
-		return reconcile.Result{
+		return client.Result{
 			Requeue: rq,
 		}, nil
 	}
 
-	return reconcile.Result{}, nil
+	return client.Result{}, nil
 }
 
 // reconcileRotatorJob starts rotation job when the condition meets.
 // This function is work in progress.
-func (o *operator) reconcileRotatorJob(ctx context.Context, pod corev1.Pod) (requeue bool, err error) {
+func (o *operator) reconcileRotatorJob(ctx context.Context, pod client.Pod) (requeue bool, err error) {
 	podIdx, ok := pod.Labels[client.PodIndexLabel]
 	if !ok {
 		log.Info("no index label found. the agent is not StatefulSet? skipping...")
@@ -270,7 +232,7 @@ func (o *operator) needsRotation(ctx context.Context, podAnnotations map[string]
 }
 
 func (o *operator) createRotationJobOrRequeue(ctx context.Context, podIdx string) (rq bool, err error) {
-	var cronJob batchv1.CronJob
+	var cronJob client.CronJob
 	if err := o.client.Get(ctx, o.rotatorName, o.namespace, &cronJob); err != nil {
 		return false, err
 	}
@@ -295,13 +257,13 @@ func (o *operator) createRotationJobOrRequeue(ctx context.Context, podIdx string
 	// now we actually need to create the rotator job
 	log.Infof("no job is running to rotate the agent(id:%s). creating a new job...", podIdx)
 	spec := *cronJob.Spec.JobTemplate.Spec.DeepCopy()
-	spec.Template.Spec.Containers[0].Env = append(spec.Template.Spec.Containers[0].Env, corev1.EnvVar{
+	spec.Template.Spec.Containers[0].Env = append(spec.Template.Spec.Containers[0].Env, client.EnvVar{
 		Name:  o.targetReadReplicaIDEnvName,
 		Value: podIdx,
 	})
 
-	job := batchv1.Job{
-		ObjectMeta: metav1.ObjectMeta{
+	job := client.Job{
+		ObjectMeta: client.ObjectMeta{
 			GenerateName: cronJob.Name + "-",
 			Namespace:    o.namespace,
 		},
@@ -319,7 +281,7 @@ func (o *operator) createRotationJobOrRequeue(ctx context.Context, podIdx string
 // the MaxConcurrentReconciles defaults to 1 and we do not change it.
 func (o *operator) ensureJobConcurrency(ctx context.Context, podIdx string) (jobReconcileResult, error) {
 	// get all the rotation jobs and make sure the job is not running
-	var jobList batchv1.JobList
+	var jobList client.JobList
 	selector, err := o.client.LabelSelector("app", client.SelectionOpEquals, []string{o.rotatorName})
 	if err != nil {
 		return createSkipped, fmt.Errorf("creating label selector: %w", err)
@@ -332,7 +294,7 @@ func (o *operator) ensureJobConcurrency(ctx context.Context, podIdx string) (job
 	}
 
 	// no need to check finished jobs
-	jobList.Items = slices.DeleteFunc(jobList.Items, func(job batchv1.Job) bool {
+	jobList.Items = slices.DeleteFunc(jobList.Items, func(job client.Job) bool {
 		return job.Status.Active == 0
 	})
 

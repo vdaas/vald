@@ -24,6 +24,7 @@ import (
 	snapshotv1 "github.com/kubernetes-csi/external-snapshotter/client/v6/apis/volumesnapshot/v1"
 	"github.com/vdaas/vald/internal/errors"
 	appsv1 "k8s.io/api/apps/v1"
+	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -37,7 +38,11 @@ import (
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/utils/ptr"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/builder"
 	cli "sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/event"
+	"sigs.k8s.io/controller-runtime/pkg/predicate"
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
 
 type (
@@ -55,9 +60,15 @@ type (
 	MatchingLabels     = cli.MatchingLabels
 	InNamespace        = cli.InNamespace
 	VolumeSnapshot     = snapshotv1.VolumeSnapshot
+	Pod                = corev1.Pod
 	Deployment         = appsv1.Deployment
 	DeploymentList     = appsv1.DeploymentList
 	ObjectMeta         = metav1.ObjectMeta
+	EnvVar             = corev1.EnvVar
+	Job                = batchv1.Job
+	JobList            = batchv1.JobList
+	CronJob            = batchv1.CronJob
+	Result             = reconcile.Result
 )
 
 const (
@@ -189,6 +200,40 @@ func (*client) LabelSelector(key string, op selection.Operator, vals []string) (
 		return nil, fmt.Errorf("failed to create requirement on creating label selector: %w", err)
 	}
 	return labels.NewSelector().Add(*requirements), nil
+}
+
+// PodPredicates returns a builder.Predicates with the given filter function.
+func PodPredicates(filter func(pod *corev1.Pod) bool) builder.Predicates {
+	return builder.WithPredicates(predicate.Funcs{
+		CreateFunc: func(e event.CreateEvent) bool {
+			pod, ok := e.Object.(*corev1.Pod)
+			if !ok {
+				return false
+			}
+			return filter(pod)
+		},
+		DeleteFunc: func(e event.DeleteEvent) bool {
+			pod, ok := e.Object.(*corev1.Pod)
+			if !ok {
+				return false
+			}
+			return filter(pod)
+		},
+		UpdateFunc: func(e event.UpdateEvent) bool {
+			pod, ok := e.ObjectNew.(*corev1.Pod)
+			if !ok {
+				return false
+			}
+			return filter(pod)
+		},
+		GenericFunc: func(e event.GenericEvent) bool {
+			pod, ok := e.Object.(*corev1.Pod)
+			if !ok {
+				return false
+			}
+			return filter(pod)
+		},
+	})
 }
 
 // Patcher is an interface for patching resources with controller-runtime client.
