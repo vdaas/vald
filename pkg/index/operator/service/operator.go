@@ -22,7 +22,7 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/k8s"
 	"github.com/vdaas/vald/internal/k8s/client"
-	"github.com/vdaas/vald/internal/k8s/pod"
+	"github.com/vdaas/vald/internal/k8s/podv2"
 	"github.com/vdaas/vald/internal/k8s/vald"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/observability/trace"
@@ -36,6 +36,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/event"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
 
 const (
@@ -80,18 +81,18 @@ func New(namespace, agentName, rotatorName, targetReadReplicaIDEnvName string, o
 		return pod.Labels["app"] == agentName
 	}
 
-	podController := pod.New(
-		pod.WithControllerName("pod reconciler for index operator"),
-		pod.WithOnErrorFunc(func(err error) {
+	podController := podv2.New(
+		podv2.WithControllerName("pod reconciler for index operator"),
+		podv2.WithOnErrorFunc(func(err error) {
 			log.Error("failed to reconcile:", err)
 		}),
-		pod.WithNamespace(operator.namespace),
-		pod.WithOnReconcileFunc(operator.podOnReconcile),
-		pod.WithLabels(map[string]string{
+		podv2.WithNamespace(operator.namespace),
+		podv2.WithOnReconcileFunc(operator.podOnReconcile),
+		podv2.WithLabels(map[string]string{
 			"app": agentName,
 		}),
 		// To only reconcile for agent pods
-		pod.WithForOpts(
+		podv2.WithForOpts(
 			builder.WithPredicates(predicate.Funcs{
 				CreateFunc: func(e event.CreateEvent) bool {
 					pod, ok := e.Object.(*corev1.Pod)
@@ -173,24 +174,23 @@ func (o *operator) Start(ctx context.Context) (<-chan error, error) {
 	return ech, nil
 }
 
-func (o *operator) podOnReconcile(ctx context.Context, podList map[string][]pod.Pod) {
-	for k, v := range podList {
-		for _, pod := range v {
-			log.Debug("key", k, "name:", pod.Name, "annotations:", pod.Annotations)
-
-			// rotate read replica if needed
-			if o.readReplicaEnabled {
-				if err := o.rotateIfNeeded(ctx, pod); err != nil {
-					log.Error(err)
-				}
-			}
+func (o *operator) podOnReconcile(ctx context.Context, pod corev1.Pod) (reconcile.Result, error) {
+	// rotate read replica if needed
+	if o.readReplicaEnabled {
+		if err := o.rotateIfNeeded(ctx, pod); err != nil {
+			log.Error(err)
+			return reconcile.Result{
+				Requeue: true,
+			}, err
 		}
 	}
+
+	return reconcile.Result{}, nil
 }
 
 // rotateIfNeeded starts rotation job when the condition meets.
 // This function is work in progress.
-func (o *operator) rotateIfNeeded(ctx context.Context, pod pod.Pod) error {
+func (o *operator) rotateIfNeeded(ctx context.Context, pod corev1.Pod) error {
 	t, ok := pod.Annotations[vald.LastTimeSaveIndexTimestampAnnotationsKey]
 	if !ok {
 		log.Info("the agent pod has not saved index yet. skipping...")
