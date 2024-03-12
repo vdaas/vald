@@ -201,9 +201,31 @@ func (o *operator) podOnReconcile(ctx context.Context, pod corev1.Pod) (reconcil
 
 // reconcileRotatorJob starts rotation job when the condition meets.
 // This function is work in progress.
-func (o *operator) reconcileRotatorJob(ctx context.Context, pod corev1.Pod) (rq bool, err error) {
-	// FIXME: make function to check timestamps
-	t, ok := pod.Annotations[vald.LastTimeSaveIndexTimestampAnnotationsKey]
+func (o *operator) reconcileRotatorJob(ctx context.Context, pod corev1.Pod) (requeue bool, err error) {
+	podIdx, ok := pod.Labels[client.PodIndexLabel]
+	if !ok {
+		log.Info("no index label found. the agent is not StatefulSet? skipping...")
+		return false, nil
+	}
+
+	need, err := o.needsRotation(ctx, pod.Annotations, podIdx)
+	if err != nil {
+		return false, fmt.Errorf("checking if rotation is required: %w", err)
+	}
+	if !need {
+		return false, nil
+	}
+
+	log.Infof("rotation required for agent(id: %s)", podIdx)
+	requeue, err = o.createRotationJobOrRequeue(ctx, podIdx)
+	if err != nil {
+		return false, fmt.Errorf("creating rotation job: %w", err)
+	}
+	return requeue, nil
+}
+
+func (o *operator) needsRotation(ctx context.Context, podAnnotations map[string]string, podIdx string) (bool, error) {
+	t, ok := podAnnotations[vald.LastTimeSaveIndexTimestampAnnotationsKey]
 	if !ok {
 		log.Info("the agent pod has not saved index yet. skipping...")
 		return false, nil
@@ -211,12 +233,6 @@ func (o *operator) reconcileRotatorJob(ctx context.Context, pod corev1.Pod) (rq 
 	lastSavedTime, err := time.Parse(vald.TimeFormat, t)
 	if err != nil {
 		return false, fmt.Errorf("parsing last time saved time: %w", err)
-	}
-
-	podIdx, ok := pod.Labels[client.PodIndexLabel]
-	if !ok {
-		log.Info("no index label found. the agent is not StatefulSet? skipping...")
-		return false, nil
 	}
 
 	var depList client.DeploymentList
@@ -250,12 +266,7 @@ func (o *operator) reconcileRotatorJob(ctx context.Context, pod corev1.Pod) (rq 
 		}
 	}
 
-	log.Infof("rotation required for agent(id: %s)", podIdx)
-	rq, err = o.createRotationJobOrRequeue(ctx, podIdx)
-	if err != nil {
-		return false, fmt.Errorf("creating rotation job: %w", err)
-	}
-	return rq, nil
+	return true, nil
 }
 
 func (o *operator) createRotationJobOrRequeue(ctx context.Context, podIdx string) (rq bool, err error) {
@@ -304,7 +315,7 @@ func (o *operator) createRotationJobOrRequeue(ctx context.Context, podIdx string
 	return false, nil
 }
 
-// ensureJobConcurrency controlls the job concurrency. It cannot handle concurrent calls but it is fine because
+// ensureJobConcurrency controls the job concurrency. It cannot handle concurrent calls but it is fine because
 // the MaxConcurrentReconciles defaults to 1 and we do not change it.
 func (o *operator) ensureJobConcurrency(ctx context.Context, podIdx string) (jobReconcileResult, error) {
 	// get all the rotation jobs and make sure the job is not running
