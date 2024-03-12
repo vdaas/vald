@@ -62,6 +62,8 @@ RUST_HOME = /usr/local/lib/rust
 RUSTUP_HOME = $(RUST_HOME)/rustup
 CARGO_HOME = $(RUST_HOME)/cargo
 
+NPM_GLOBAL_PREFIX := $(eval NPM_GLOBAL_PREFIX := $(shell npm prefix --location=global))$(NPM_GLOBAL_PREFIX)
+
 TEST_NOT_IMPL_PLACEHOLDER = NOT IMPLEMENTED BELOW
 
 TEMP_DIR := $(eval TEMP_DIR := $(shell mktemp -d))$(TEMP_DIR)
@@ -306,6 +308,11 @@ HELM_VALUES ?= $(ROOTDIR)/charts/vald/values/dev.yaml
 # extra options to pass to helm when deploying sample vald cluster with make k8s/vald/deploy
 HELM_EXTRA_OPTIONS ?=
 
+# extra options to pass to textlint
+TEXTLINT_EXTRA_OPTIONS ?=
+# extra options to pass to cspell
+CSPELL_EXTRA_OPTIONS ?=
+
 COMMA := ,
 SHELL = bash
 
@@ -388,6 +395,11 @@ clean-generated:
 	mv $(TEMP_DIR)/interface.go $(ROOTDIR)/apis/grpc/v1/payload/interface.go
 	mkdir -p $(ROOTDIR)/apis/grpc/v1/mirror
 	mv $(TEMP_DIR)/mirror.go $(ROOTDIR)/apis/grpc/v1/mirror/mirror.go
+
+.PHONY: files
+## add current repository file list to .gitfiles
+files:
+	git ls-files > $(ROOTDIR)/.gitfiles
 
 .PHONY: license
 ## add license to files
@@ -480,6 +492,7 @@ format/md: \
 format/json: \
 	prettier/install
 	prettier --write \
+	    "$(ROOTDIR)/.cspell.json" \
 	    "$(ROOTDIR)/apis/**/*.json" \
 	    "$(ROOTDIR)/charts/**/*.json" \
 	    "$(ROOTDIR)/hack/**/*.json"
@@ -582,7 +595,10 @@ faiss/install: /usr/local/lib/libfaiss.so
 
 .PHONY: lint
 ## run lints
-lint: vet
+lint: \
+	docs/lint \
+	files/lint \
+	vet
 	$(call go-lint)
 
 .PHONY: vet
@@ -592,8 +608,41 @@ vet:
 
 .PHONY: docs/lint
 ## run lint for document
-docs/lint:
-	textlint docs/**/*.md
+docs/lint:\
+	docs/cspell \
+	docs/textlint
+
+.PHONY: files/lint
+## run lint for document
+files/lint: \
+	files/cspell \
+	files/textlint
+
+.PHONY: docs/textlint
+## run textlint for document
+docs/textlint:\
+	textlint/install
+	textlint $(ROOTDIR)/docs/**/*.md $(TEXTLINT_EXTRA_OPTIONS)
+
+.PHONY: files/textlint
+## run textlint for document
+files/textlint: \
+	files \
+	textlint/install
+	textlint $(ROOTDIR)/.gitfiles $(TEXTLINT_EXTRA_OPTIONS)
+
+.PHONY: docs/cspell
+## run cspell for document
+docs/cspell:\
+	cspell/install
+	cspell-cli $(ROOTDIR)/docs/**/*.md --show-suggestions $(CSPELL_EXTRA_OPTIONS)
+
+.PHONY: files/cspell
+## run cspell for document
+files/cspell: \
+	files \
+	cspell/install
+	cspell-cli $(ROOTDIR)/.gitfiles --show-suggestions $(CSPELL_EXTRA_OPTIONS)
 
 .PHONY: changelog/update
 ## update changelog

@@ -62,14 +62,14 @@ rules:
     expected: BestEffort
     specs:
       - from: besteffort
-        to: besteffort
+        to: BestEffort
       - from: BestEffort
         to: BestEffort
   - pattern: burstable
     expected: Burstable
     specs:
       - from: burstable
-        to: burstable
+        to: Burstable
       - from: Burstable
         to: Burstable
   - pattern: configMap
@@ -90,15 +90,15 @@ rules:
     expected: documentation
     options:
       wordBoundary: true
-  - pattern: fashion-mnist
-    expected: Fashion-MNIST
+  - pattern: fashion\-mnist
+    expected: Fashion\-MNIST
     options:
       wordBoundary: true
     specs:
-      - from: fashion-mnist-784
-        to: fashion-mnist-784
-      - from: fashion-mnist
-        to: Fashion-MNIST
+      - from: fashion\-mnist\-784
+        to: Fashion\-MNIST\-784
+      - from: fashion\-mnist
+        to: Fashion\-MNIST
   - pattern: flamegraph
     expected: Flamegraph
     options:
@@ -133,7 +133,7 @@ rules:
     expected: Guaranteed
     specs:
       - from: guaranteed
-        to: guaranteed
+        to: Guaranteed
       - from: Guaranteed
         to: Guaranteed
   - pattern: helm
@@ -235,6 +235,24 @@ rules:
     options:
       wordBoundary: true
     expected: UUID
+  - pattern: config
+    options:
+      wordBoundary: true
+    expected: config
+    specs:
+      - from: config
+        to: config
+      - from: Config
+        to: Config
+  - pattern: Config
+    options:
+      wordBoundary: true
+    expected: Config
+    specs:
+      - from: config
+        to: config
+      - from: Config
+        to: Config
   - pattern: vald
     expected: Vald
     options:
