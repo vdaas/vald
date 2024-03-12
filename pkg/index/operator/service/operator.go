@@ -252,39 +252,16 @@ func (o *operator) createRotationJob(ctx context.Context, podIdx string) error {
 	}
 
 	// get all the rotation jobs and make sure the job is not running
-	var jobList batchv1.JobList
-	selector, err := o.client.LabelSelector("app", client.SelectionOpEquals, []string{o.rotatorName})
+	exists, err := o.sameRotatorJobExists(ctx, podIdx)
 	if err != nil {
-		return fmt.Errorf("creating label selector: %w", err)
+		return fmt.Errorf("checking if the same job exists: %w", err)
 	}
-	if err := o.client.List(ctx, &jobList, &client.ListOptions{
-		Namespace:     o.namespace,
-		LabelSelector: selector,
-	}); err != nil {
-		return fmt.Errorf("listing jobs: %w", err)
-	}
-	for _, job := range jobList.Items {
-		// no need to check finished jobs
-		if job.Status.Active == 0 {
-			continue
-		}
-
-		envs := job.Spec.Template.Spec.Containers[0].Env
-		// since latest append wins, checking backbards
-		for i := len(envs) - 1; i >= 0; i-- {
-			env := envs[i]
-			if env.Name == o.targetReadReplicaIDEnvName {
-				if env.Value == podIdx {
-					log.Infof("rotation job for the agent(id: %s) is already running. skipping...", podIdx)
-					return nil
-				} else {
-					break
-				}
-			}
-		}
+	if !exists {
+		log.Infof("rotation job for the agent(id: %s) is already running. skipping...", podIdx)
+		return nil
 	}
 
-	// now we actually needs to create the rotator job
+	// now we actually need to create the rotator job
 	log.Infof("no job is running to rotate the agent(id:%s). creating a new job...", podIdx)
 	spec := *cronJob.Spec.JobTemplate.Spec.DeepCopy()
 	spec.Template.Spec.Containers[0].Env = append(spec.Template.Spec.Containers[0].Env, corev1.EnvVar{
@@ -301,8 +278,45 @@ func (o *operator) createRotationJob(ctx context.Context, podIdx string) error {
 	}
 
 	if err := o.client.Create(ctx, &job); err != nil {
-		return err
+		return fmt.Errorf("creating job resource with k8s API: %w", err)
 	}
 
 	return nil
+}
+
+func (o *operator) sameRotatorJobExists(ctx context.Context, podIdx string) (bool, error) {
+	// get all the rotation jobs and make sure the job is not running
+	var jobList batchv1.JobList
+	selector, err := o.client.LabelSelector("app", client.SelectionOpEquals, []string{o.rotatorName})
+	if err != nil {
+		return false, fmt.Errorf("creating label selector: %w", err)
+	}
+	if err := o.client.List(ctx, &jobList, &client.ListOptions{
+		Namespace:     o.namespace,
+		LabelSelector: selector,
+	}); err != nil {
+		return false, fmt.Errorf("listing jobs: %w", err)
+	}
+	for _, job := range jobList.Items {
+		// no need to check finished jobs
+		if job.Status.Active == 0 {
+			continue
+		}
+
+		envs := job.Spec.Template.Spec.Containers[0].Env
+		// since latest append wins, checking backbards
+		for i := len(envs) - 1; i >= 0; i-- {
+			env := envs[i]
+			if env.Name == o.targetReadReplicaIDEnvName {
+				if env.Value == podIdx {
+					return false, nil
+				} else {
+					// check the next job resource
+					break
+				}
+			}
+		}
+	}
+
+	return true, nil
 }
