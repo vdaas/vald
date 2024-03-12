@@ -65,6 +65,8 @@ jobs:
   textlint:
     name: runner / textlint
     runs-on: ubuntu-latest
+    env:
+      REVIEWDOG_GITHUB_API_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
     steps:
       - uses: actions/checkout@v4
       - name: Set Git config
@@ -73,13 +75,40 @@ jobs:
       - name: Setup node/npm
         uses: actions/setup-node@v4
         with:
-          node-version: "16"
+          node-version: "latest"
       - name: Install textlint
         run: |
+          make reviewdog/install
           make textlint/ci/install
-      - name: textlint-github-pr-review
-        uses: tsuyoshicho/action-textlint@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          reporter: github-pr-review
-          textlint_flags: "docs/**"
+      - name: Run lint for files && Report to GitHub
+        run: |
+          make CSPELL_EXTRA_OPTIONS="--no-summary --no-progress" files/cspell | \
+          reviewdog \
+            -efm='%f:%l:%c - %m' \
+            -name="file name cspell" \
+            -diff="git diff ${{ github.event.pull_request.base.ref }}" \
+            -reporter=github-pr-review \
+            -level=error
+          make TEXTLINT_EXTRA_OPTIONS="-f checkstyle" files/textlint | \
+          reviewdog \
+            -f=checkstyle \
+            -name="file name textlint" \
+            -diff="git diff ${{ github.event.pull_request.base.ref }}" \
+            -reporter=github-pr-review \
+            -level=error
+      - name: Run lint for documents && Report to GitHub
+        run: |
+          make CSPELL_EXTRA_OPTIONS="--no-summary --no-progress" docs/cspell | \
+          reviewdog \
+            -efm='%f:%l:%c - %m' \
+            -name="documents cspell" \
+            -diff="git diff ${{ github.event.pull_request.base.ref }}" \
+            -reporter=github-pr-review \
+            -level=error
+          make TEXTLINT_EXTRA_OPTIONS="-f checkstyle" docs/textlint | \
+          reviewdog \
+            -f=checkstyle \
+            -name="documents testlint" \
+            -diff="git diff ${{ github.event.pull_request.base.ref }}" \
+            -reporter=github-pr-review \
+            -level=error
