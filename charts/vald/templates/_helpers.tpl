@@ -31,9 +31,9 @@ If release name contains chart name it will be used as a full name.
 */}}
 {{- define "vald.target_read_replica_envkey" -}}
 {{- if .Values.fullnameOverride -}}
-{{- printf "%s_%s" .Values.fullnameOverride "TARGET_READREPLICA_ID" | upper | replace "-" "_" | trunc 63 -}}
+{{- printf "%s_%s" "TARGET_READREPLICA_ID" .Values.fullnameOverride  | upper | replace "-" "_" | trunc 63 -}}
 {{- else -}}
-{{- printf "%s_%s_%s" .Release.Name .Chart.Name "TARGET_READREPLICA_ID" | upper | replace "-" "_" | trunc 63 -}}
+{{- printf "%s_%s_%s_%s" "TARGET_READREPLICA_ID" .Release.Name .Release.Namespace .Chart.Name | upper | replace "-" "_" | trunc 63 -}}
 {{- end -}}
 {{- end -}}
 
