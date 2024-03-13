@@ -43,7 +43,7 @@ data:
       {{- $observability := dict "Values" $operator.observability "default" .Values.defaults.observability }}
       {{- include "vald.observability" $observability | nindent 6 }}
     operator:
-      namespace: _MY_POD_NAMESPACE_
+      namespace: {{ $operator.namespace }}
       agent_name: {{ $agent.name }}
       agent_namespace: {{ $agent.namespace }}
       rotator_name: {{ $rotator.name }}
