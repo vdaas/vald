@@ -3410,6 +3410,9 @@ manager:
           tag: ""
           # manager.index.image.pullPolicy -- image pull policy
           pullPolicy: Always
+        # @schema {"name": "manager.index.readreplica.rotator.target_read_replica_id_annotations_key", "type": "string"}
+        # manager.index.readreplica.rotator.target_read_replica_id_annotations_key -- name of annotations key for target read replica id
+        target_read_replica_id_annotations_key: vald.vdaas.org/target-read-replica-id
         # @schema {"name": "manager.index.readreplica.rotator.server_config", "alias": "server_config"}
         # manager.index.readreplica.rotator.server_config -- server config (overrides defaults.server_config)
         server_config:

@@ -49,22 +49,22 @@ type Operator interface {
 }
 
 type operator struct {
-	ctrl                      k8s.Controller
-	eg                        errgroup.Group
-	namespace                 string
-	client                    client.Client
-	rotatorName               string
-	targetReadReplicaIDEnvKey string
-	readReplicaEnabled        bool
-	readReplicaLabelKey       string
-	rotationJobConcurrency    uint
+	ctrl                              k8s.Controller
+	eg                                errgroup.Group
+	namespace                         string
+	client                            client.Client
+	rotatorName                       string
+	targetReadReplicaIDAnnotationsKey string
+	readReplicaEnabled                bool
+	readReplicaLabelKey               string
+	rotationJobConcurrency            uint
 }
 
 // New returns Indexer object if no error occurs.
-func New(namespace, agentName, rotatorName, targetReadReplicaIDEnvName string, opts ...Option) (o Operator, err error) {
+func New(namespace, agentName, rotatorName, targetReadReplicaIDKey string, opts ...Option) (o Operator, err error) {
 	operator := new(operator)
 	operator.namespace = namespace
-	operator.targetReadReplicaIDEnvKey = targetReadReplicaIDEnvName
+	operator.targetReadReplicaIDAnnotationsKey = targetReadReplicaIDKey
 	operator.rotatorName = rotatorName
 	for _, opt := range append(defaultOpts, opts...) {
 		if err := opt(operator); err != nil {
@@ -259,10 +259,10 @@ func (o *operator) createRotationJobOrRequeue(ctx context.Context, podIdx string
 	// now we actually need to create the rotator job
 	log.Infof("no job is running to rotate the agent(id:%s). creating a new job...", podIdx)
 	spec := *cronJob.Spec.JobTemplate.Spec.DeepCopy()
-	spec.Template.Spec.Containers[0].Env = append(spec.Template.Spec.Containers[0].Env, client.EnvVar{
-		Name:  o.targetReadReplicaIDEnvKey,
-		Value: podIdx,
-	})
+	if spec.Template.Annotations == nil {
+		spec.Template.Annotations = make(map[string]string)
+	}
+	spec.Template.Annotations[o.targetReadReplicaIDAnnotationsKey] = podIdx
 
 	job := client.Job{
 		ObjectMeta: client.ObjectMeta{
@@ -305,19 +305,17 @@ func (o *operator) ensureJobConcurrency(ctx context.Context, podIdx string) (job
 	}
 
 	for _, job := range jobList.Items {
-		envs := job.Spec.Template.Spec.Containers[0].Env
-		// since latest append wins, checking backbards
-		for i := len(envs) - 1; i >= 0; i-- {
-			env := envs[i]
-			if env.Name == o.targetReadReplicaIDEnvKey {
-				if env.Value == podIdx {
-					// the same job is already running. no need to requeue
-					return createSkipped, nil
-				} else {
-					// check the next job resource
-					break
-				}
-			}
+		annotaions := job.Spec.Template.Annotations
+		if annotaions == nil {
+			continue
+		}
+		id, ok := annotaions[o.targetReadReplicaIDAnnotationsKey]
+		if !ok {
+			continue
+		}
+		if id == podIdx {
+			// the same job is already running. no need to requeue
+			return createSkipped, nil
 		}
 	}
 

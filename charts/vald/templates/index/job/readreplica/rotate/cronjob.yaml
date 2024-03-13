@@ -77,6 +77,10 @@ spec:
               {{- if $rotator.env }}
               env:
                 {{- toYaml $rotator.env | nindent 16 }}
+                - name: {{ include "vald.target_read_replica_envkey" . }}
+                  valueFrom:
+                    fieldRef:
+                      fieldPath: metadata.annotations['{{ $rotator.target_read_replica_id_annotations_key }}']
               {{- end }}
           {{- if $rotator.podSecurityContext }}
           securityContext:

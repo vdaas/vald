@@ -27,8 +27,8 @@ type IndexOperator struct {
 	// RotatorName represent rotator name for service discovery
 	RotatorName string `json:"rotator_name" yaml:"rotator_name"`
 
-	// TargetReadReplicaIDEnvname represents the environment variable name for target read replica id.
-	TargetReadReplicaIDEnvname string `json:"target_read_replica_id_envname" yaml:"target_read_replica_id_envname"`
+	// TargetReadReplicaIDAnnotationsKey represents the environment variable name for target read replica id.
+	TargetReadReplicaIDAnnotationsKey string `json:"target_read_replica_id_annotations_key" yaml:"target_read_replica_id_annotations_key"`
 
 	// RotationJobConcurrency represents indexing concurrency.
 	RotationJobConcurrency uint `json:"rotation_job_concurrency" yaml:"rotation_job_concurrency"`
