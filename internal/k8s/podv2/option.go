@@ -90,7 +90,10 @@ func WithFields(fs map[string]string) Option {
 
 func WithForOpts(fopts ...builder.ForOption) Option {
 	return func(r *reconciler) error {
-		r.forOpts = fopts
+		if len(fopts) == 0 {
+			return nil
+		}
+		r.forOpts = append(r.forOpts, fopts...)
 		return nil
 	}
 }
