@@ -18096,10 +18096,6 @@
                       "type": "object",
                       "description": "security context for pod"
                     },
-                    "read_replica_id": {
-                      "type": "string",
-                      "description": "read replica id to perform rotation"
-                    },
                     "securityContext": {
                       "type": "object",
                       "description": "security context for container"
@@ -19015,6 +19011,10 @@
                           "description": "name of service account"
                         }
                       }
+                    },
+                    "target_read_replica_id_envname": {
+                      "type": "string",
+                      "description": "read replica id to perform rotation"
                     },
                     "ttlSecondsAfterFinished": {
                       "type": "integer",

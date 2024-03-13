@@ -10726,8 +10726,6 @@ spec:
                                 podSecurityContext:
                                   type: object
                                   x-kubernetes-preserve-unknown-fields: true
-                                read_replica_id:
-                                  type: string
                                 securityContext:
                                   type: object
                                   x-kubernetes-preserve-unknown-fields: true
@@ -11240,6 +11238,8 @@ spec:
                                       type: boolean
                                     name:
                                       type: string
+                                target_read_replica_id_envname:
+                                  type: string
                                 ttlSecondsAfterFinished:
                                   type: integer
                                 version:
