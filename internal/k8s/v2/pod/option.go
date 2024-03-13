@@ -15,7 +15,7 @@
 //
 
 // Package podv2 provides kubernetes pod information and preriodically update
-package podv2
+package pod
 
 import (
 	"context"

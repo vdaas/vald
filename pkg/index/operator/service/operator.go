@@ -23,7 +23,7 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/k8s"
 	"github.com/vdaas/vald/internal/k8s/client"
-	"github.com/vdaas/vald/internal/k8s/podv2"
+	"github.com/vdaas/vald/internal/k8s/v2/pod"
 	"github.com/vdaas/vald/internal/k8s/vald"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/observability/trace"
@@ -49,22 +49,22 @@ type Operator interface {
 }
 
 type operator struct {
-	ctrl                       k8s.Controller
-	eg                         errgroup.Group
-	namespace                  string
-	client                     client.Client
-	rotatorName                string
-	targetReadReplicaIDEnvName string
-	readReplicaEnabled         bool
-	readReplicaLabelKey        string
-	rotationJobConcurrency     uint
+	ctrl                      k8s.Controller
+	eg                        errgroup.Group
+	namespace                 string
+	client                    client.Client
+	rotatorName               string
+	targetReadReplicaIDEnvKey string
+	readReplicaEnabled        bool
+	readReplicaLabelKey       string
+	rotationJobConcurrency    uint
 }
 
 // New returns Indexer object if no error occurs.
 func New(namespace, agentName, rotatorName, targetReadReplicaIDEnvName string, opts ...Option) (o Operator, err error) {
 	operator := new(operator)
 	operator.namespace = namespace
-	operator.targetReadReplicaIDEnvName = targetReadReplicaIDEnvName
+	operator.targetReadReplicaIDEnvKey = targetReadReplicaIDEnvName
 	operator.rotatorName = rotatorName
 	for _, opt := range append(defaultOpts, opts...) {
 		if err := opt(operator); err != nil {
@@ -82,18 +82,18 @@ func New(namespace, agentName, rotatorName, targetReadReplicaIDEnvName string, o
 		return pod.Labels["app"] == agentName
 	}
 
-	podController := podv2.New(
-		podv2.WithControllerName("pod reconciler for index operator"),
-		podv2.WithOnErrorFunc(func(err error) {
+	podController := pod.New(
+		pod.WithControllerName("pod reconciler for index operator"),
+		pod.WithOnErrorFunc(func(err error) {
 			log.Error("failed to reconcile:", err)
 		}),
-		podv2.WithNamespace(operator.namespace),
-		podv2.WithOnReconcileFunc(operator.podOnReconcile),
-		podv2.WithLabels(map[string]string{
+		pod.WithNamespace(operator.namespace),
+		pod.WithOnReconcileFunc(operator.podOnReconcile),
+		pod.WithLabels(map[string]string{
 			"app": agentName,
 		}),
 		// To only reconcile for agent pods
-		podv2.WithForOpts(
+		pod.WithForOpts(
 			client.PodPredicates(isAgent),
 		),
 	)
@@ -106,11 +106,13 @@ func New(namespace, agentName, rotatorName, targetReadReplicaIDEnvName string, o
 		return nil, err
 	}
 
-	client, err := client.New()
-	if err != nil {
-		return nil, err
+	if operator.client == nil {
+		client, err := client.New()
+		if err != nil {
+			return nil, err
+		}
+		operator.client = client
 	}
-	operator.client = client
 
 	return operator, nil
 }
@@ -258,7 +260,7 @@ func (o *operator) createRotationJobOrRequeue(ctx context.Context, podIdx string
 	log.Infof("no job is running to rotate the agent(id:%s). creating a new job...", podIdx)
 	spec := *cronJob.Spec.JobTemplate.Spec.DeepCopy()
 	spec.Template.Spec.Containers[0].Env = append(spec.Template.Spec.Containers[0].Env, client.EnvVar{
-		Name:  o.targetReadReplicaIDEnvName,
+		Name:  o.targetReadReplicaIDEnvKey,
 		Value: podIdx,
 	})
 
@@ -307,7 +309,7 @@ func (o *operator) ensureJobConcurrency(ctx context.Context, podIdx string) (job
 		// since latest append wins, checking backbards
 		for i := len(envs) - 1; i >= 0; i-- {
 			env := envs[i]
-			if env.Name == o.targetReadReplicaIDEnvName {
+			if env.Name == o.targetReadReplicaIDEnvKey {
 				if env.Value == podIdx {
 					// the same job is already running. no need to requeue
 					return createSkipped, nil
