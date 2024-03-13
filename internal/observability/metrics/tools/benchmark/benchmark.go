@@ -41,6 +41,15 @@ const (
 
 	completeBenchmarkJobCount            = "benchmark_operator_complete_benchmark_job"
 	completeBenchmarkJobCountDescription = "Benchmark Operator complete benchmark job count"
+
+	appliedJobCount            = "benchmark_operator_applied_job"
+	appliedJobCountDescription = "Benchmark Operator applied job count"
+
+	runningJobCount            = "benchmark_operator_running_job"
+	runningJobCountDescription = "Benchmark Operator running job count"
+
+	completeJobCount            = "benchmark_operator_complete_job"
+	completeJobCountDescription = "Benchmark Operator complete job count"
 )
 
 const (
@@ -89,12 +98,66 @@ func (om *operatorMetrics) View() ([]metrics.View, error) {
 				Aggregation: view.AggregationLastValue{},
 			},
 		),
+		view.NewView(
+			view.Instrument{
+				Name:        appliedBenchmarkJobCount,
+				Description: appliedBenchmarkJobCountDescription,
+			},
+			view.Stream{
+				Aggregation: view.AggregationLastValue{},
+			},
+		),
+		view.NewView(
+			view.Instrument{
+				Name:        runningBenchmarkJobCount,
+				Description: runningBenchmarkJobCountDescription,
+			},
+			view.Stream{
+				Aggregation: view.AggregationLastValue{},
+			},
+		),
+		view.NewView(
+			view.Instrument{
+				Name:        completeBenchmarkJobCount,
+				Description: completeBenchmarkJobCountDescription,
+			},
+			view.Stream{
+				Aggregation: view.AggregationLastValue{},
+			},
+		),
+		view.NewView(
+			view.Instrument{
+				Name:        appliedJobCount,
+				Description: appliedJobCountDescription,
+			},
+			view.Stream{
+				Aggregation: view.AggregationLastValue{},
+			},
+		),
+		view.NewView(
+			view.Instrument{
+				Name:        runningJobCount,
+				Description: runningJobCountDescription,
+			},
+			view.Stream{
+				Aggregation: view.AggregationLastValue{},
+			},
+		),
+		view.NewView(
+			view.Instrument{
+				Name:        completeJobCount,
+				Description: completeJobCountDescription,
+			},
+			view.Stream{
+				Aggregation: view.AggregationLastValue{},
+			},
+		),
 	}, nil
 }
 
 // TODO: implement here
 func (om *operatorMetrics) Register(m metrics.Meter) error {
-	appliedScCount, err := m.Int64ObservableCounter(
+	appliedScenarioCount, err := m.Int64ObservableCounter(
 		appliedScenarioCount,
 		metrics.WithDescription(appliedScenarioCountDescription),
 		metrics.WithUnit(metrics.Dimensionless),
@@ -102,7 +165,7 @@ func (om *operatorMetrics) Register(m metrics.Meter) error {
 	if err != nil {
 		return err
 	}
-	runningScCount, err := m.Int64ObservableCounter(
+	runningScenarioCount, err := m.Int64ObservableCounter(
 		runningScenarioCount,
 		metrics.WithDescription(runningScenarioCountDescription),
 		metrics.WithUnit(metrics.Dimensionless),
@@ -110,7 +173,7 @@ func (om *operatorMetrics) Register(m metrics.Meter) error {
 	if err != nil {
 		return err
 	}
-	completeScCount, err := m.Int64ObservableCounter(
+	completeScenarioCount, err := m.Int64ObservableCounter(
 		completeScenarioCount,
 		metrics.WithDescription(completeScenarioCountDescription),
 		metrics.WithUnit(metrics.Dimensionless),
@@ -119,7 +182,7 @@ func (om *operatorMetrics) Register(m metrics.Meter) error {
 		return err
 	}
 
-	appliedBjCount, err := m.Int64ObservableCounter(
+	appliedBenchJobCount, err := m.Int64ObservableCounter(
 		appliedBenchmarkJobCount,
 		metrics.WithDescription(appliedScenarioCountDescription),
 		metrics.WithUnit(metrics.Dimensionless),
@@ -127,7 +190,7 @@ func (om *operatorMetrics) Register(m metrics.Meter) error {
 	if err != nil {
 		return err
 	}
-	runningBjCount, err := m.Int64ObservableCounter(
+	runningBenchJobCount, err := m.Int64ObservableCounter(
 		runningBenchmarkJobCount,
 		metrics.WithDescription(runningScenarioCountDescription),
 		metrics.WithUnit(metrics.Dimensionless),
@@ -135,7 +198,7 @@ func (om *operatorMetrics) Register(m metrics.Meter) error {
 	if err != nil {
 		return err
 	}
-	completeBjCount, err := m.Int64ObservableCounter(
+	completeBenchJobCount, err := m.Int64ObservableCounter(
 		completeBenchmarkJobCount,
 		metrics.WithDescription(completeScenarioCountDescription),
 		metrics.WithUnit(metrics.Dimensionless),
@@ -143,7 +206,30 @@ func (om *operatorMetrics) Register(m metrics.Meter) error {
 	if err != nil {
 		return err
 	}
-
+	appliedJobCount, err := m.Int64ObservableCounter(
+		appliedJobCount,
+		metrics.WithDescription(appliedJobCountDescription),
+		metrics.WithUnit(metrics.Dimensionless),
+	)
+	if err != nil {
+		return err
+	}
+	runningJobCount, err := m.Int64ObservableCounter(
+		runningJobCount,
+		metrics.WithDescription(runningJobCountDescription),
+		metrics.WithUnit(metrics.Dimensionless),
+	)
+	if err != nil {
+		return err
+	}
+	completeJobCount, err := m.Int64ObservableCounter(
+		completeBenchmarkJobCount,
+		metrics.WithDescription(completeScenarioCountDescription),
+		metrics.WithUnit(metrics.Dimensionless),
+	)
+	if err != nil {
+		return err
+	}
 	_, err = m.RegisterCallback(
 		func(_ context.Context, o api.Observer) error {
 			// scenario status
@@ -152,7 +238,7 @@ func (om *operatorMetrics) Register(m metrics.Meter) error {
 				running:  0,
 				complete: 0,
 			}
-			for k, v := range om.op.LenBenchSC() {
+			for k, v := range om.op.GetScenarioStatus() {
 				sst[applied] += v
 				if k == v1.BenchmarkScenarioCompleted {
 					sst[complete] += v
@@ -160,9 +246,9 @@ func (om *operatorMetrics) Register(m metrics.Meter) error {
 					sst[running] += v
 				}
 			}
-			o.ObserveInt64(appliedScCount, sst[applied])
-			o.ObserveInt64(runningScCount, sst[running])
-			o.ObserveInt64(completeScCount, sst[complete])
+			o.ObserveInt64(appliedScenarioCount, sst[applied])
+			o.ObserveInt64(runningScenarioCount, sst[running])
+			o.ObserveInt64(completeScenarioCount, sst[complete])
 
 			// benchmark job status
 			bst := map[string]int64{
@@ -170,25 +256,28 @@ func (om *operatorMetrics) Register(m metrics.Meter) error {
 				running:  0,
 				complete: 0,
 			}
-			for k, v := range om.op.LenBenchBJ() {
-				sst[applied] += v
+			for k, v := range om.op.GetBenchmarkJobStatus() {
+				bst[applied] += v
 				if k == v1.BenchmarkJobCompleted {
-					sst[complete] += v
+					bst[complete] += v
 				} else {
-					sst[running] += v
+					bst[running] += v
 				}
 			}
-			o.ObserveInt64(appliedBjCount, bst[applied])
-			o.ObserveInt64(runningBjCount, bst[running])
-			o.ObserveInt64(completeBjCount, bst[complete])
+			o.ObserveInt64(appliedBenchJobCount, bst[applied])
+			o.ObserveInt64(runningBenchJobCount, bst[running])
+			o.ObserveInt64(completeBenchJobCount, bst[complete])
 			return nil
 		},
-		appliedScCount,
-		runningScCount,
-		completeScCount,
-		appliedBjCount,
-		runningBjCount,
-		completeBjCount,
+		appliedScenarioCount,
+		runningScenarioCount,
+		completeScenarioCount,
+		appliedBenchJobCount,
+		runningBenchJobCount,
+		completeBenchJobCount,
+		appliedJobCount,
+		runningJobCount,
+		completeJobCount,
 	)
 	return nil
 }

@@ -38,8 +38,9 @@ import (
 type Operator interface {
 	PreStart(context.Context) error
 	Start(context.Context) (<-chan error, error)
-	LenBenchSC() map[v1.ValdBenchmarkScenarioStatus]int64
-	LenBenchBJ() map[v1.BenchmarkJobStatus]int64
+	GetScenarioStatus() map[v1.ValdBenchmarkScenarioStatus]int64
+	GetBenchmarkJobStatus() map[v1.BenchmarkJobStatus]int64
+	// GetJobStatus() map[v1.BenchmarkJobStatus]int64
 }
 
 type scenario struct {
@@ -642,7 +643,7 @@ func (o *operator) checkAtomics() error {
 	return nil
 }
 
-func (o *operator) LenBenchSC() map[v1.ValdBenchmarkScenarioStatus]int64 {
+func (o *operator) GetScenarioStatus() map[v1.ValdBenchmarkScenarioStatus]int64 {
 	m := map[v1.ValdBenchmarkScenarioStatus]int64{
 		v1.BenchmarkScenarioAvailable: 0,
 		v1.BenchmarkScenarioHealthy:   0,
@@ -661,7 +662,7 @@ func (o *operator) LenBenchSC() map[v1.ValdBenchmarkScenarioStatus]int64 {
 	return m
 }
 
-func (o *operator) LenBenchBJ() map[v1.BenchmarkJobStatus]int64 {
+func (o *operator) GetBenchmarkJobStatus() map[v1.BenchmarkJobStatus]int64 {
 	m := map[v1.BenchmarkJobStatus]int64{
 		v1.BenchmarkJobAvailable: 0,
 		v1.BenchmarkJobHealthy:   0,
@@ -679,6 +680,12 @@ func (o *operator) LenBenchBJ() map[v1.BenchmarkJobStatus]int64 {
 	}
 	return m
 }
+
+// func (o *operator) GetJobStatus() map[job.JobStatus]int64 {
+// 	m := map[job.JobStatus]int64{}
+// 	// if js := o.getAtomicJob()
+// 	return m
+// }
 
 func (*operator) PreStart(context.Context) error {
 	log.Infof("[benchmark scenario operator] start vald benchmark scenario operator")

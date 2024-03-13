@@ -79,8 +79,7 @@ data:
                   }
                 ]
               },
-              "unit": "none",
-              "unitScale": true
+              "unit": "none"
             },
             "overrides": []
           },
@@ -91,7 +90,6 @@ data:
             "y": 0
           },
           "id": 14,
-          "links": [],
           "maxDataPoints": 100,
           "options": {
             "colorMode": "value",
@@ -110,7 +108,7 @@ data:
             "textMode": "auto",
             "wideLayout": true
           },
-          "pluginVersion": "10.3.3",
+          "pluginVersion": "10.4.0",
           "targets": [
             {
               "datasource": {
@@ -161,8 +159,7 @@ data:
                   }
                 ]
               },
-              "unit": "none",
-              "unitScale": true
+              "unit": "none"
             },
             "overrides": []
           },
@@ -173,7 +170,6 @@ data:
             "y": 0
           },
           "id": 16,
-          "links": [],
           "maxDataPoints": 100,
           "options": {
             "colorMode": "value",
@@ -192,7 +188,7 @@ data:
             "textMode": "auto",
             "wideLayout": true
           },
-          "pluginVersion": "10.3.3",
+          "pluginVersion": "10.4.0",
           "targets": [
             {
               "datasource": {
@@ -242,8 +238,7 @@ data:
                   }
                 ]
               },
-              "unit": "none",
-              "unitScale": true
+              "unit": "none"
             },
             "overrides": []
           },
@@ -254,7 +249,6 @@ data:
             "y": 0
           },
           "id": 34,
-          "links": [],
           "maxDataPoints": 100,
           "options": {
             "colorMode": "value",
@@ -273,7 +267,7 @@ data:
             "textMode": "auto",
             "wideLayout": true
           },
-          "pluginVersion": "10.3.3",
+          "pluginVersion": "10.4.0",
           "targets": [
             {
               "datasource": {
@@ -327,8 +321,7 @@ data:
                   }
                 ]
               },
-              "unit": "none",
-              "unitScale": true
+              "unit": "none"
             },
             "overrides": []
           },
@@ -339,7 +332,6 @@ data:
             "y": 0
           },
           "id": 19,
-          "links": [],
           "maxDataPoints": 100,
           "options": {
             "colorMode": "value",
@@ -358,7 +350,7 @@ data:
             "textMode": "auto",
             "wideLayout": true
           },
-          "pluginVersion": "10.3.3",
+          "pluginVersion": "10.4.0",
           "targets": [
             {
               "datasource": {
@@ -414,8 +406,7 @@ data:
                   }
                 ]
               },
-              "unit": "decbytes",
-              "unitScale": true
+              "unit": "decbytes"
             },
             "overrides": []
           },
@@ -426,7 +417,6 @@ data:
             "y": 0
           },
           "id": 20,
-          "links": [],
           "maxDataPoints": 100,
           "options": {
             "colorMode": "value",
@@ -445,7 +435,7 @@ data:
             "textMode": "auto",
             "wideLayout": true
           },
-          "pluginVersion": "10.3.3",
+          "pluginVersion": "10.4.0",
           "targets": [
             {
               "datasource": {
@@ -496,8 +486,7 @@ data:
                   }
                 ]
               },
-              "unit": "none",
-              "unitScale": true
+              "unit": "none"
             },
             "overrides": []
           },
@@ -508,7 +497,6 @@ data:
             "y": 3
           },
           "id": 17,
-          "links": [],
           "maxDataPoints": 100,
           "options": {
             "colorMode": "value",
@@ -527,7 +515,7 @@ data:
             "textMode": "auto",
             "wideLayout": true
           },
-          "pluginVersion": "10.3.3",
+          "pluginVersion": "10.4.0",
           "targets": [
             {
               "datasource": {
@@ -577,8 +565,7 @@ data:
                   }
                 ]
               },
-              "unit": "none",
-              "unitScale": true
+              "unit": "none"
             },
             "overrides": []
           },
@@ -589,7 +576,6 @@ data:
             "y": 3
           },
           "id": 18,
-          "links": [],
           "maxDataPoints": 100,
           "options": {
             "colorMode": "value",
@@ -609,7 +595,7 @@ data:
             "wideLayout": true
           },
           "pluginVersin": "8.0.1",
-          "pluginVersion": "10.3.3",
+          "pluginVersion": "10.4.0",
           "targets": [
             {
               "datasource": {
@@ -649,19 +635,225 @@ data:
                   }
                 ]
               },
-              "unit": "string",
-              "unitScale": true
+              "unit": "string"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 3,
+            "w": 4,
+            "x": 0,
+            "y": 6
+          },
+          "id": 42,
+          "maxDataPoints": 100,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "none",
+            "justifyMode": "auto",
+            "orientation": "horizontal",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "/^Value$/",
+              "values": false
+            },
+            "showPercentChange": false,
+            "text": {},
+            "textMode": "auto",
+            "wideLayout": true
+          },
+          "pluginVersion": "10.4.0",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "sum(benchmark_operator_applied_scenario{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\", target_pod=~\"$PodName\"})",
+              "format": "table",
+              "instant": true,
+              "interval": "",
+              "legendFormat": "__auto",
+              "refId": "A"
+            }
+          ],
+          "title": "All Scenario Count",
+          "type": "stat"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "fieldMinMax": false,
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "string"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 3,
+            "w": 4,
+            "x": 4,
+            "y": 6
+          },
+          "id": 43,
+          "maxDataPoints": 100,
+          "options": {
+            "colorMode": "background",
+            "graphMode": "none",
+            "justifyMode": "auto",
+            "orientation": "horizontal",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "/^Value$/",
+              "values": false
+            },
+            "showPercentChange": false,
+            "text": {},
+            "textMode": "auto",
+            "wideLayout": true
+          },
+          "pluginVersion": "10.4.0",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "sum(benchmark_operator_running_scenario{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\", target_pod=~\"$PodName\"})",
+              "format": "table",
+              "instant": true,
+              "interval": "",
+              "legendFormat": "__auto",
+              "refId": "A"
+            }
+          ],
+          "title": "Running Scenario Count",
+          "type": "stat"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "string"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 3,
+            "w": 4,
+            "x": 8,
+            "y": 6
+          },
+          "id": 44,
+          "maxDataPoints": 100,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "none",
+            "justifyMode": "auto",
+            "orientation": "horizontal",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "/^Value$/",
+              "values": false
+            },
+            "showPercentChange": false,
+            "text": {},
+            "textMode": "auto",
+            "wideLayout": true
+          },
+          "pluginVersion": "10.4.0",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "sum(benchmark_operator_complete_scenario{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\", target_pod=~\"$PodName\"})",
+              "format": "table",
+              "instant": true,
+              "interval": "",
+              "legendFormat": "__auto",
+              "refId": "A"
+            }
+          ],
+          "title": "Completed Scenario Count",
+          "type": "stat"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "string"
             },
             "overrides": []
           },
           "gridPos": {
             "h": 3,
             "w": 8,
-            "x": 0,
+            "x": 12,
             "y": 6
           },
-          "id": 40,
-          "links": [],
+          "id": 41,
           "maxDataPoints": 100,
           "options": {
             "colorMode": "value",
@@ -680,7 +872,7 @@ data:
             "textMode": "auto",
             "wideLayout": true
           },
-          "pluginVersion": "10.3.3",
+          "pluginVersion": "10.4.0",
           "targets": [
             {
               "datasource": {
@@ -688,7 +880,7 @@ data:
                 "uid": "prometheus"
               },
               "editorMode": "code",
-              "expr": "benchmark_operator_info{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\", target_pod=~\"$PodName\"}",
+              "expr": "label_replace(benchmark_operator_info{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\", target_pod=~\"$PodName\"}, \"image\", \"$1\", \"image\", \"(.*):.*\")",
               "format": "table",
               "instant": true,
               "interval": "",
@@ -696,8 +888,295 @@ data:
               "refId": "A"
             }
           ],
-          "title": "Job Image",
-          "transformations": [],
+          "title": "Job Image Name",
+          "transformations": [
+            {
+              "id": "partitionByValues",
+              "options": {
+                "keepFields": true,
+                "naming": {
+                  "asLabels": true
+                }
+              }
+            }
+          ],
+          "type": "stat"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "string"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 3,
+            "w": 4,
+            "x": 20,
+            "y": 6
+          },
+          "id": 40,
+          "maxDataPoints": 100,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "none",
+            "justifyMode": "auto",
+            "orientation": "horizontal",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "/^image$/",
+              "values": false
+            },
+            "showPercentChange": false,
+            "text": {},
+            "textMode": "auto",
+            "wideLayout": true
+          },
+          "pluginVersion": "10.4.0",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "label_replace(benchmark_operator_info{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\", target_pod=~\"$PodName\"}, \"image\", \"$1\", \"image\", \".*:(.*)\")",
+              "format": "table",
+              "instant": true,
+              "interval": "",
+              "legendFormat": "__auto",
+              "refId": "A"
+            }
+          ],
+          "title": "Job Image Version",
+          "type": "stat"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "string"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 3,
+            "w": 4,
+            "x": 0,
+            "y": 9
+          },
+          "id": 45,
+          "maxDataPoints": 100,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "none",
+            "justifyMode": "auto",
+            "orientation": "horizontal",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "/^Value$/",
+              "values": false
+            },
+            "showPercentChange": false,
+            "text": {},
+            "textMode": "auto",
+            "wideLayout": true
+          },
+          "pluginVersion": "10.4.0",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "sum(benchmark_operator_applied_benchmark_job{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\", target_pod=~\"$PodName\"})",
+              "format": "table",
+              "instant": true,
+              "interval": "",
+              "legendFormat": "__auto",
+              "refId": "A"
+            }
+          ],
+          "title": "All Benchmark Job Count",
+          "type": "stat"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "fieldMinMax": false,
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "string"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 3,
+            "w": 4,
+            "x": 4,
+            "y": 9
+          },
+          "id": 46,
+          "maxDataPoints": 100,
+          "options": {
+            "colorMode": "background",
+            "graphMode": "none",
+            "justifyMode": "auto",
+            "orientation": "horizontal",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "/^Value$/",
+              "values": false
+            },
+            "showPercentChange": false,
+            "text": {},
+            "textMode": "auto",
+            "wideLayout": true
+          },
+          "pluginVersion": "10.4.0",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "sum(benchmark_operator_running_benchmark_job{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\", target_pod=~\"$PodName\"})",
+              "format": "table",
+              "instant": true,
+              "interval": "",
+              "legendFormat": "__auto",
+              "refId": "A"
+            }
+          ],
+          "title": "Running Benchmark Job Count",
+          "type": "stat"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "string"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 3,
+            "w": 4,
+            "x": 8,
+            "y": 9
+          },
+          "id": 47,
+          "maxDataPoints": 100,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "none",
+            "justifyMode": "auto",
+            "orientation": "horizontal",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "/^Value$/",
+              "values": false
+            },
+            "showPercentChange": false,
+            "text": {},
+            "textMode": "auto",
+            "wideLayout": true
+          },
+          "pluginVersion": "10.4.0",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "sum(benchmark_operator_complete_benchmark_job{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\", target_pod=~\"$PodName\"})",
+              "format": "table",
+              "instant": true,
+              "interval": "",
+              "legendFormat": "__auto",
+              "refId": "A"
+            }
+          ],
+          "title": "Completed Benchmark Job Count",
           "type": "stat"
         },
         {
@@ -706,7 +1185,7 @@ data:
             "h": 1,
             "w": 24,
             "x": 0,
-            "y": 9
+            "y": 12
           },
           "id": 39,
           "panels": [],
@@ -724,8 +1203,7 @@ data:
           },
           "fieldConfig": {
             "defaults": {
-              "links": [],
-              "unitScale": true
+              "links": []
             },
             "overrides": []
           },
@@ -735,7 +1213,7 @@ data:
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 10
+            "y": 13
           },
           "hiddenSeries": false,
           "id": 22,
@@ -755,7 +1233,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "10.3.3",
+          "pluginVersion": "10.4.0",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -850,8 +1328,7 @@ data:
           },
           "fieldConfig": {
             "defaults": {
-              "links": [],
-              "unitScale": true
+              "links": []
             },
             "overrides": []
           },
@@ -861,7 +1338,7 @@ data:
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 10
+            "y": 13
           },
           "hiddenSeries": false,
           "id": 27,
@@ -881,7 +1358,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "10.3.3",
+          "pluginVersion": "10.4.0",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -976,8 +1453,7 @@ data:
           },
           "fieldConfig": {
             "defaults": {
-              "links": [],
-              "unitScale": true
+              "links": []
             },
             "overrides": []
           },
@@ -987,7 +1463,7 @@ data:
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 18
+            "y": 21
           },
           "hiddenSeries": false,
           "id": 30,
@@ -1008,7 +1484,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "10.3.3",
+          "pluginVersion": "10.4.0",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -1086,8 +1562,7 @@ data:
           },
           "fieldConfig": {
             "defaults": {
-              "links": [],
-              "unitScale": true
+              "links": []
             },
             "overrides": []
           },
@@ -1097,7 +1572,7 @@ data:
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 18
+            "y": 21
           },
           "hiddenSeries": false,
           "id": 32,
@@ -1118,7 +1593,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "10.3.3",
+          "pluginVersion": "10.4.0",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -1209,8 +1684,7 @@ data:
           },
           "fieldConfig": {
             "defaults": {
-              "links": [],
-              "unitScale": true
+              "links": []
             },
             "overrides": []
           },
@@ -1220,7 +1694,7 @@ data:
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 26
+            "y": 29
           },
           "hiddenSeries": false,
           "id": 36,
@@ -1240,7 +1714,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "10.3.3",
+          "pluginVersion": "10.4.0",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -1305,8 +1779,7 @@ data:
           },
           "fieldConfig": {
             "defaults": {
-              "links": [],
-              "unitScale": true
+              "links": []
             },
             "overrides": []
           },
@@ -1316,7 +1789,7 @@ data:
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 26
+            "y": 29
           },
           "hiddenSeries": false,
           "id": 38,
@@ -1337,7 +1810,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "10.3.3",
+          "pluginVersion": "10.4.0",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
