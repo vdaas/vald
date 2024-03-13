@@ -170,7 +170,25 @@ func (o *operator) reconcileRotatorJob(ctx context.Context, pod *client.Pod) (re
 		return false, nil
 	}
 
-	need, err := o.needsRotation(ctx, pod.Annotations, podIdx)
+	// retreive the readreplica deployment annotations for podIdx
+	var readReplicaDeployments client.DeploymentList
+	selector, err := o.client.LabelSelector(o.readReplicaLabelKey, client.SelectionOpEquals, []string{podIdx})
+	if err != nil {
+		return false, fmt.Errorf("creating label selector: %w", err)
+	}
+	listOpts := client.ListOptions{
+		Namespace:     o.namespace,
+		LabelSelector: selector,
+	}
+	if err := o.client.List(ctx, &readReplicaDeployments, &listOpts); err != nil {
+		return false, err
+	}
+	if len(readReplicaDeployments.Items) == 0 {
+		return false, errors.New("no readreplica deployment found")
+	}
+	dep := readReplicaDeployments.Items[0]
+
+	need, err := needsRotation(pod.Annotations, dep.Annotations)
 	if err != nil {
 		return false, fmt.Errorf("checking if rotation is required: %w", err)
 	}
@@ -186,8 +204,8 @@ func (o *operator) reconcileRotatorJob(ctx context.Context, pod *client.Pod) (re
 	return requeue, nil
 }
 
-func (o *operator) needsRotation(ctx context.Context, podAnnotations map[string]string, podIdx string) (bool, error) {
-	t, ok := podAnnotations[vald.LastTimeSaveIndexTimestampAnnotationsKey]
+func needsRotation(agentAnnotations, readReplicaAnnotations map[string]string) (bool, error) {
+	t, ok := agentAnnotations[vald.LastTimeSaveIndexTimestampAnnotationsKey]
 	if !ok {
 		log.Info("the agent pod has not saved index yet. skipping...")
 		return false, nil
@@ -197,25 +215,7 @@ func (o *operator) needsRotation(ctx context.Context, podAnnotations map[string]
 		return false, fmt.Errorf("parsing last time saved time: %w", err)
 	}
 
-	var depList client.DeploymentList
-	selector, err := o.client.LabelSelector(o.readReplicaLabelKey, client.SelectionOpEquals, []string{podIdx})
-	if err != nil {
-		return false, fmt.Errorf("creating label selector: %w", err)
-	}
-	listOpts := client.ListOptions{
-		Namespace:     o.namespace,
-		LabelSelector: selector,
-	}
-	if err := o.client.List(ctx, &depList, &listOpts); err != nil {
-		return false, err
-	}
-	if len(depList.Items) == 0 {
-		return false, errors.New("no readreplica deployment found")
-	}
-	dep := depList.Items[0]
-
-	annotations := dep.GetAnnotations()
-	t, ok = annotations[vald.LastTimeSnapshotTimestampAnnotationsKey]
+	t, ok = readReplicaAnnotations[vald.LastTimeSnapshotTimestampAnnotationsKey]
 	if ok {
 		lastSnapshotTime, err := time.Parse(vald.TimeFormat, t)
 		if err != nil {
