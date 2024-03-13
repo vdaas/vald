@@ -25,6 +25,19 @@ If release name contains chart name it will be used as a full name.
 {{- end -}}
 
 {{/*
+Create a envkey for read replica target id.
+We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
+If release name contains chart name it will be used as a full name.
+*/}}
+{{- define "vald.target_read_replica_envkey" -}}
+{{- if .Values.fullnameOverride -}}
+{{- printf "%s_%s" .Values.fullnameOverride "TARGET_READREPLICA_ID" | upper | replace "-" "_" | trunc 63 -}}
+{{- else -}}
+{{- printf "%s_%s_%s" .Release.Name .Chart.Name "TARGET_READREPLICA_ID" | upper | replace "-" "_" | trunc 63 -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
 Create chart name and version as used by the chart label.
 */}}
 {{- define "vald.chart" -}}

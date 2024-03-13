@@ -11238,8 +11238,6 @@ spec:
                                       type: boolean
                                     name:
                                       type: string
-                                target_read_replica_id_envname:
-                                  type: string
                                 ttlSecondsAfterFinished:
                                   type: integer
                                 version:

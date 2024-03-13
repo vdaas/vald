@@ -48,6 +48,6 @@ data:
     rotator:
       agent_namespace: {{ $rotator.agent_namespace | quote }}
       read_replica_label_key: {{ $agent.readreplica.label_key | quote }}
-      read_replica_id: "_{{ $rotator.target_read_replica_id_envname}}_"
+      target_read_replica_id: _{{ include "vald.target_read_replica_envkey" . }}_
       volume_name: {{ $agent.readreplica.volume_name | quote }}
 {{- end }}

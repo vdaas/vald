@@ -19012,10 +19012,6 @@
                         }
                       }
                     },
-                    "target_read_replica_id_envname": {
-                      "type": "string",
-                      "description": "read replica id to perform rotation"
-                    },
                     "ttlSecondsAfterFinished": {
                       "type": "integer",
                       "description": "ttl setting for K8s completed jobs"

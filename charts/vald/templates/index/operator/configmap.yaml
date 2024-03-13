@@ -47,7 +47,7 @@ data:
       agent_name: {{ $agent.name }}
       agent_namespace: {{ $agent.namespace }}
       rotator_name: {{ $rotator.name }}
-      target_read_replica_id_envname: {{ $rotator.target_read_replica_id_envname }}
+      target_read_replica_id_envname: {{ include "vald.target_read_replica_envkey" . }}
       rotation_job_concurrency: 1
       read_replica_enabled: {{ $agent.readreplica.enabled }}
       read_replica_label_key: {{ $agent.readreplica.label_key }}
