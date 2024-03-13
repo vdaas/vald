@@ -19012,6 +19012,10 @@
                         }
                       }
                     },
+                    "target_read_replica_id_annotations_key": {
+                      "type": "string",
+                      "description": "name of annotations key for target read replica id"
+                    },
                     "ttlSecondsAfterFinished": {
                       "type": "integer",
                       "description": "ttl setting for K8s completed jobs"

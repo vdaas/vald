@@ -11238,6 +11238,8 @@ spec:
                                       type: boolean
                                     name:
                                       type: string
+                                target_read_replica_id_annotations_key:
+                                  type: string
                                 ttlSecondsAfterFinished:
                                   type: integer
                                 version:
