@@ -20,7 +20,6 @@ package pod
 import (
 	"context"
 
-	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
@@ -82,13 +81,6 @@ func WithFields(fs map[string]string) Option {
 		if len(fs) > 0 {
 			r.addListOpts(client.MatchingFields(fs))
 		}
-		return nil
-	}
-}
-
-func WithForOpts(fopts ...builder.ForOption) Option {
-	return func(r *reconciler) error {
-		r.forOpts = fopts
 		return nil
 	}
 }

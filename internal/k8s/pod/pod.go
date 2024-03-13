@@ -42,7 +42,6 @@ type reconciler struct {
 	onError     func(err error)
 	onReconcile func(ctx context.Context, podList map[string][]Pod)
 	lopts       []client.ListOption
-	forOpts     []builder.ForOption
 }
 
 type Pod struct {
@@ -186,8 +185,8 @@ func (r *reconciler) NewReconciler(ctx context.Context, mgr manager.Manager) rec
 	return r
 }
 
-func (r *reconciler) For() (client.Object, []builder.ForOption) {
-	return new(corev1.Pod), r.forOpts
+func (*reconciler) For() (client.Object, []builder.ForOption) {
+	return new(corev1.Pod), nil
 }
 
 func (*reconciler) Owns() (client.Object, []builder.OwnsOption) {
