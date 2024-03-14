@@ -42,14 +42,14 @@ const (
 	completeBenchmarkJobCount            = "benchmark_operator_complete_benchmark_job"
 	completeBenchmarkJobCountDescription = "Benchmark Operator complete benchmark job count"
 
-	appliedJobCount            = "benchmark_operator_applied_job"
-	appliedJobCountDescription = "Benchmark Operator applied job count"
+	// appliedJobCount            = "benchmark_operator_applied_job"
+	// appliedJobCountDescription = "Benchmark Operator applied job count"
 
-	runningJobCount            = "benchmark_operator_running_job"
-	runningJobCountDescription = "Benchmark Operator running job count"
+	// runningJobCount            = "benchmark_operator_running_job"
+	// runningJobCountDescription = "Benchmark Operator running job count"
 
-	completeJobCount            = "benchmark_operator_complete_job"
-	completeJobCountDescription = "Benchmark Operator complete job count"
+	// completeJobCount            = "benchmark_operator_complete_job"
+	// completeJobCountDescription = "Benchmark Operator complete job count"
 )
 
 const (
@@ -125,33 +125,33 @@ func (om *operatorMetrics) View() ([]metrics.View, error) {
 				Aggregation: view.AggregationLastValue{},
 			},
 		),
-		view.NewView(
-			view.Instrument{
-				Name:        appliedJobCount,
-				Description: appliedJobCountDescription,
-			},
-			view.Stream{
-				Aggregation: view.AggregationLastValue{},
-			},
-		),
-		view.NewView(
-			view.Instrument{
-				Name:        runningJobCount,
-				Description: runningJobCountDescription,
-			},
-			view.Stream{
-				Aggregation: view.AggregationLastValue{},
-			},
-		),
-		view.NewView(
-			view.Instrument{
-				Name:        completeJobCount,
-				Description: completeJobCountDescription,
-			},
-			view.Stream{
-				Aggregation: view.AggregationLastValue{},
-			},
-		),
+		// view.NewView(
+		// 	view.Instrument{
+		// 		Name:        appliedJobCount,
+		// 		Description: appliedJobCountDescription,
+		// 	},
+		// 	view.Stream{
+		// 		Aggregation: view.AggregationLastValue{},
+		// 	},
+		// ),
+		// view.NewView(
+		// 	view.Instrument{
+		// 		Name:        runningJobCount,
+		// 		Description: runningJobCountDescription,
+		// 	},
+		// 	view.Stream{
+		// 		Aggregation: view.AggregationLastValue{},
+		// 	},
+		// ),
+		// view.NewView(
+		// 	view.Instrument{
+		// 		Name:        completeJobCount,
+		// 		Description: completeJobCountDescription,
+		// 	},
+		// 	view.Stream{
+		// 		Aggregation: view.AggregationLastValue{},
+		// 	},
+		// ),
 	}, nil
 }
 
@@ -206,30 +206,32 @@ func (om *operatorMetrics) Register(m metrics.Meter) error {
 	if err != nil {
 		return err
 	}
-	appliedJobCount, err := m.Int64ObservableCounter(
-		appliedJobCount,
-		metrics.WithDescription(appliedJobCountDescription),
-		metrics.WithUnit(metrics.Dimensionless),
-	)
-	if err != nil {
-		return err
-	}
-	runningJobCount, err := m.Int64ObservableCounter(
-		runningJobCount,
-		metrics.WithDescription(runningJobCountDescription),
-		metrics.WithUnit(metrics.Dimensionless),
-	)
-	if err != nil {
-		return err
-	}
-	completeJobCount, err := m.Int64ObservableCounter(
-		completeBenchmarkJobCount,
-		metrics.WithDescription(completeScenarioCountDescription),
-		metrics.WithUnit(metrics.Dimensionless),
-	)
-	if err != nil {
-		return err
-	}
+
+	// appliedJobCount, err := m.Int64ObservableCounter(
+	// 	appliedJobCount,
+	// 	metrics.WithDescription(appliedJobCountDescription),
+	// 	metrics.WithUnit(metrics.Dimensionless),
+	// )
+	// if err != nil {
+	// 	return err
+	// }
+	// runningJobCount, err := m.Int64ObservableCounter(
+	// 	runningJobCount,
+	// 	metrics.WithDescription(runningJobCountDescription),
+	// 	metrics.WithUnit(metrics.Dimensionless),
+	// )
+	// if err != nil {
+	// 	return err
+	// }
+	// completeJobCount, err := m.Int64ObservableCounter(
+	// 	completeBenchmarkJobCount,
+	// 	metrics.WithDescription(completeScenarioCountDescription),
+	// 	metrics.WithUnit(metrics.Dimensionless),
+	// )
+	// if err != nil {
+	// 	return err
+	// }
+
 	_, err = m.RegisterCallback(
 		func(_ context.Context, o api.Observer) error {
 			// scenario status
@@ -275,9 +277,9 @@ func (om *operatorMetrics) Register(m metrics.Meter) error {
 		appliedBenchJobCount,
 		runningBenchJobCount,
 		completeBenchJobCount,
-		appliedJobCount,
-		runningJobCount,
-		completeJobCount,
+		// appliedJobCount,
+		// runningJobCount,
+		// completeJobCount,
 	)
-	return nil
+	return err
 }

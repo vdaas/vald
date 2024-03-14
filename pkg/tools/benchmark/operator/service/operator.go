@@ -450,6 +450,7 @@ func (o *operator) createBenchmarkJob(ctx context.Context, scenario v1.ValdBench
 		}
 		// set status
 		bj.Status = v1.BenchmarkJobNotReady
+		// TODO: set metrics
 		// create benchmark job resource
 		c := o.ctrl.GetManager().GetClient()
 		if err := c.Create(ctx, bj); err != nil {
@@ -652,11 +653,7 @@ func (o *operator) GetScenarioStatus() map[v1.ValdBenchmarkScenarioStatus]int64 
 	}
 	if sc := o.getAtomicScenario(); sc != nil {
 		for _, s := range sc {
-			if _, ok := m[s.Crd.Status]; ok {
-				m[s.Crd.Status] += 1
-			} else {
-				m[s.Crd.Status] = 1
-			}
+			m[s.Crd.Status] += 1
 		}
 	}
 	return m
@@ -671,11 +668,7 @@ func (o *operator) GetBenchmarkJobStatus() map[v1.BenchmarkJobStatus]int64 {
 	}
 	if bjs := o.getAtomicBenchJob(); bjs != nil {
 		for _, bj := range bjs {
-			if _, ok := m[bj.Status]; ok {
-				m[bj.Status] += 1
-			} else {
-				m[bj.Status] = 1
-			}
+			m[bj.Status] += 1
 		}
 	}
 	return m
