@@ -46,9 +46,9 @@ type IndexOperator struct {
 }
 
 type IndexJobTemplates struct {
-	Rotate     *client.Job `json:"rotate" yaml:"rotate"`
-	Creation   *client.Job `json:"creation" yaml:"creation"`
-	Save       *client.Job `json:"save" yaml:"save"`
+	Rotate     *client.Job `json:"rotate"     yaml:"rotate"`
+	Creation   *client.Job `json:"creation"   yaml:"creation"`
+	Save       *client.Job `json:"save"       yaml:"save"`
 	Correction *client.Job `json:"correction" yaml:"correction"`
 }
 
