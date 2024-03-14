@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-// Package podv2 provides kubernetes pod information and preriodically update
+// Package pod provides kubernetes pod information and preriodically update
 package pod
 
 import (
