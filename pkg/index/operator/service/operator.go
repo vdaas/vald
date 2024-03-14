@@ -58,10 +58,11 @@ type operator struct {
 	readReplicaEnabled                bool
 	readReplicaLabelKey               string
 	rotationJobConcurrency            uint
+	rotatorJob                        *client.Job
 }
 
 // New returns Indexer object if no error occurs.
-func New(namespace, agentName, rotatorName, targetReadReplicaIDKey string, opts ...Option) (o Operator, err error) {
+func New(namespace, agentName, rotatorName, targetReadReplicaIDKey string, rotatorJob *client.Job,opts ...Option) (o Operator, err error) {
 	operator := new(operator)
 	operator.namespace = namespace
 	operator.targetReadReplicaIDAnnotationsKey = targetReadReplicaIDKey

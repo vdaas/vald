@@ -46,6 +46,7 @@ func New(cfg *config.Data) (_ runner.Runner, err error) {
 		cfg.Operator.AgentName,
 		cfg.Operator.RotatorName,
 		cfg.Operator.TargetReadReplicaIDAnnotationsKey,
+		cfg.Operator.JobTemplates.Rotate,
 		service.WithReadReplicaEnabled(cfg.Operator.ReadReplicaEnabled),
 		service.WithReadReplicaLabelKey(cfg.Operator.ReadReplicaLabelKey),
 		service.WithRotationJobConcurrency(cfg.Operator.RotationJobConcurrency),
