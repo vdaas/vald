@@ -172,7 +172,7 @@ func (o *operator) reconcileRotatorJob(ctx context.Context, pod *client.Pod) (re
 		return false, nil
 	}
 
-	// retreive the readreplica deployment annotations for podIdx
+	// retrieve the readreplica deployment annotations for podIdx
 	var readReplicaDeployments client.DeploymentList
 	selector, err := o.client.LabelSelector(o.readReplicaLabelKey, client.SelectionOpEquals, []string{podIdx})
 	if err != nil {
