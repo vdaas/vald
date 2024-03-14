@@ -1395,7 +1395,7 @@ func TestToRawYaml(t *testing.T) {
 				},
 			},
 			want: want{
-				want: "version: v1.0.0\ntime_zone: UTC\nlogging:\n  logger: glg\n  level: warn\n  format: json\n",
+				want: "logging:\n  format: json\n  level: warn\n  logger: glg\ntime_zone: UTC\nversion: v1.0.0\n",
 			},
 		},
 		{
