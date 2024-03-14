@@ -125,33 +125,6 @@ func (om *operatorMetrics) View() ([]metrics.View, error) {
 				Aggregation: view.AggregationLastValue{},
 			},
 		),
-		// view.NewView(
-		// 	view.Instrument{
-		// 		Name:        appliedJobCount,
-		// 		Description: appliedJobCountDescription,
-		// 	},
-		// 	view.Stream{
-		// 		Aggregation: view.AggregationLastValue{},
-		// 	},
-		// ),
-		// view.NewView(
-		// 	view.Instrument{
-		// 		Name:        runningJobCount,
-		// 		Description: runningJobCountDescription,
-		// 	},
-		// 	view.Stream{
-		// 		Aggregation: view.AggregationLastValue{},
-		// 	},
-		// ),
-		// view.NewView(
-		// 	view.Instrument{
-		// 		Name:        completeJobCount,
-		// 		Description: completeJobCountDescription,
-		// 	},
-		// 	view.Stream{
-		// 		Aggregation: view.AggregationLastValue{},
-		// 	},
-		// ),
 	}, nil
 }
 
