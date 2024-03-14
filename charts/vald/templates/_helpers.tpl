@@ -48,13 +48,17 @@ Create chart name and version as used by the chart label.
 Common labels
 */}}
 {{- define "vald.labels" -}}
-app.kubernetes.io/name: {{ include "vald.name" . }}
-helm.sh/chart: {{ include "vald.chart" . }}
-app.kubernetes.io/instance: {{ .Release.Name }}
-{{- if .Chart.AppVersion }}
-app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+app: {{ .Values.name }}
+app.kubernetes.io/name: {{ include "vald.name" .default }}
+helm.sh/chart: {{ include "vald.chart" .default }}
+app.kubernetes.io/managed-by: {{ .default.Release.Service }}
+app.kubernetes.io/instance: {{ .default.Release.Name }}
+app.kubernetes.io/component: {{ .Values.name }}
+{{- if .default.Chart.AppVersion }}
+app.kubernetes.io/version: {{ .default.Chart.AppVersion | quote }}
+{{- else }}
+app.kubernetes.io/version: {{ .default.Chart.Version }}
 {{- end }}
-app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end -}}
 
 {{/*
@@ -860,4 +864,71 @@ service:
   {{- else }}
   fields: {}
   {{- end }}
+{{- end -}}
+
+{{/*
+Vald index job templates
+*/}}
+{{- define "vald.index_job" -}}
+spec:
+  ttlSecondsAfterFinished: {{ .Job.ttlSecondsAfterFinished }}
+  template:
+    metadata:
+      labels:
+        {{- include "vald.labels" (dict "Values" .Job "default" .default) | nindent 8 }}
+      annotations:
+        {{- $pprof := default .default.Values.defaults.server_config.metrics.pprof .Job.server_config.metrics.pprof -}}
+        {{- if $pprof.enabled }}
+        pyroscope.io/scrape: "true"
+        pyroscope.io/application-name: {{ .Job.name }}
+        pyroscope.io/profile-cpu-enabled: "true"
+        pyroscope.io/profile-mem-enabled: "true"
+        pyroscope.io/port: {{ $pprof.port | quote }}
+        {{- end }}
+    spec:
+      {{- if .Job.initContainers }}
+      initContainers:
+        {{- $initContainers := dict "initContainers" .Job.initContainers "Values" .default.Values "namespace" .default.Release.Namespace -}}
+        {{- include "vald.initContainers" $initContainers | trim | nindent 8 }}
+        {{- if .Job.securityContext }}
+        securityContext:
+          {{- toYaml .Job.securityContext | nindent 12 }}
+        {{- end }}
+      {{- end }}
+      containers:
+        - name: {{ .Job.name }}
+          image: "{{ .Job.image.repository }}:{{ default .default.Values.defaults.image.tag .Job.image.tag }}"
+          imagePullPolicy: {{ .Job.image.pullPolicy }}
+          volumeMounts:
+            - name: {{ .Job.name }}-config
+              mountPath: /etc/server/
+          {{- $servers := dict "Values" .Job.server_config "default" .default.Values.defaults.server_config -}}
+          {{- include "vald.containerPorts" $servers | trim | nindent 10 }}
+          {{- if .Job.securityContext }}
+          securityContext:
+            {{- toYaml .Job.securityContext | nindent 12 }}
+          {{- end }}
+          {{- if .Job.env }}
+          env:
+            {{- toYaml .Job.env | nindent 12 }}
+            {{- if eq .type "rotator" }}
+            - name: {{ include "vald.target_read_replica_envkey" .default }}
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.annotations['{{ .Job.target_read_replica_id_annotations_key }}']
+            {{- end }}
+          {{- end }}
+      {{- if .Job.podSecurityContext }}
+      securityContext:
+        {{- toYaml .Job.podSecurityContext | nindent 8 }}
+      {{- end }}
+      restartPolicy: OnFailure
+      volumes:
+        - name: {{ .Job.name }}-config
+          configMap:
+            defaultMode: 420
+            name: {{ .Job.name }}-config
+      {{- if .Job.serviceAccount }}
+      serviceAccountName: {{ .Job.serviceAccount.name }}
+      {{- end }}
 {{- end -}}
