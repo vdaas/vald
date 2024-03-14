@@ -673,7 +673,7 @@ func TestRead(t *testing.T) {
 					want: &map[string]interface{}{
 						"version":   "v1.0.0",
 						"time_zone": "UTC",
-						"logging": map[interface{}]interface{}{
+						"logging": map[string]interface{}{
 							"logger": "glg",
 						},
 					},
@@ -826,7 +826,7 @@ func TestRead(t *testing.T) {
 				},
 				want: want{
 					want: cfg,
-					err:  errors.New("yaml: unmarshal errors:\n  line 1: cannot unmarshal !!str `timezone` into config.GlobalConfig"),
+					err:  errors.New("while decoding JSON: json: cannot unmarshal string into Go value of type config.GlobalConfig"),
 				},
 			}
 		}(),

@@ -379,7 +379,7 @@ func TestNewConfig(t *testing.T) {
 				},
 				want: want{
 					wantCfg: nil,
-					err:     io.EOF,
+					err:     errors.New("component config is invalid"),
 				},
 			}
 		}(),
