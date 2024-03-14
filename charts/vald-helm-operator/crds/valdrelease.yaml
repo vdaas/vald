@@ -10064,6 +10064,9 @@ spec:
                                   type: string
                                 maxUnavailable:
                                   type: string
+                            rotation_job_concurrency:
+                              type: integer
+                              minimum: 1
                             securityContext:
                               type: object
                               x-kubernetes-preserve-unknown-fields: true

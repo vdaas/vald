@@ -16949,6 +16949,11 @@
                     }
                   }
                 },
+                "rotation_job_concurrency": {
+                  "type": "integer",
+                  "description": "maximum concurrent rotator job run.",
+                  "minimum": 1
+                },
                 "securityContext": {
                   "type": "object",
                   "description": "security context for container"
