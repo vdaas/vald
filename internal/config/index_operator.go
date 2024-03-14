@@ -13,6 +13,8 @@
 // limitations under the License.
 package config
 
+import "github.com/vdaas/vald/internal/k8s/client"
+
 // IndexOperator represents the configurations for index k8s operator.
 type IndexOperator struct {
 	// Namespace represent the namespace of this pod
@@ -38,6 +40,16 @@ type IndexOperator struct {
 
 	// ReadReplicaLabelKey represents the label key for read replica.
 	ReadReplicaLabelKey string `json:"read_replica_label_key" yaml:"read_replica_label_key"`
+
+	// JobTemplates represents the job templates for indexing.
+	JobTemplates IndexJobTemplates `json:"job_templates" yaml:"job_templates"`
+}
+
+type IndexJobTemplates struct {
+	Rotate *client.Job `json:"rotate" yaml:"rotate"`
+	Creation *client.Job `json:"creation" yaml:"creation"`
+	Save *client.Job `json:"save" yaml:"save"`
+	Correction *client.Job `json:"correction" yaml:"correction"`
 }
 
 func (ic *IndexOperator) Bind() *IndexOperator {

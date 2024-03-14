@@ -62,11 +62,12 @@ type operator struct {
 }
 
 // New returns Indexer object if no error occurs.
-func New(namespace, agentName, rotatorName, targetReadReplicaIDKey string, rotatorJob *client.Job,opts ...Option) (o Operator, err error) {
+func New(namespace, agentName, rotatorName, targetReadReplicaIDKey string, rotatorJob *client.Job, opts ...Option) (o Operator, err error) {
 	operator := new(operator)
 	operator.namespace = namespace
 	operator.targetReadReplicaIDAnnotationsKey = targetReadReplicaIDKey
 	operator.rotatorName = rotatorName
+	operator.rotatorJob = rotatorJob
 	for _, opt := range append(defaultOpts, opts...) {
 		if err := opt(operator); err != nil {
 			oerr := errors.ErrOptionFailed(err, reflect.ValueOf(opt))
@@ -153,7 +154,8 @@ func (o *operator) podOnReconcile(ctx context.Context, pod *client.Pod) (client.
 	if o.readReplicaEnabled {
 		rq, err := o.reconcileRotatorJob(ctx, pod)
 		if err != nil {
-			return client.Result{}, fmt.Errorf("rotating or requeueing: %w", err)
+			log.Errorf("reconciling rotator job: %s", err)
+			return client.Result{}, fmt.Errorf("reconciling rotator job: %w", err)
 		}
 		// let controller-runtime backoff exponentially by not setting the backoff duration
 		return client.Result{
@@ -235,11 +237,6 @@ func needsRotation(agentAnnotations, readReplicaAnnotations map[string]string) (
 }
 
 func (o *operator) createRotationJobOrRequeue(ctx context.Context, podIdx string) (rq bool, err error) {
-	var cronJob client.CronJob
-	if err := o.client.Get(ctx, o.rotatorName, o.namespace, &cronJob); err != nil {
-		return false, err
-	}
-
 	// get all the rotation jobs and make sure the job is not running
 	res, err := o.ensureJobConcurrency(ctx, podIdx)
 	if err != nil {
@@ -259,21 +256,17 @@ func (o *operator) createRotationJobOrRequeue(ctx context.Context, podIdx string
 
 	// now we actually need to create the rotator job
 	log.Infof("no job is running to rotate the agent(id:%s). creating a new job...", podIdx)
-	spec := *cronJob.Spec.JobTemplate.Spec.DeepCopy()
-	if spec.Template.Annotations == nil {
-		spec.Template.Annotations = make(map[string]string)
+	job := o.rotatorJob.DeepCopy()
+	if job.Spec.Template.Annotations == nil {
+		job.Spec.Template.Annotations = make(map[string]string)
 	}
-	spec.Template.Annotations[o.targetReadReplicaIDAnnotationsKey] = podIdx
-
-	job := client.Job{
-		ObjectMeta: client.ObjectMeta{
-			GenerateName: cronJob.Name + "-",
-			Namespace:    o.namespace,
-		},
-		Spec: spec,
+	job.Spec.Template.Annotations[o.targetReadReplicaIDAnnotationsKey] = podIdx
+	job.ObjectMeta = client.ObjectMeta{
+		GenerateName: fmt.Sprintf("%s-", o.rotatorName),
+		Namespace:    o.namespace,
 	}
 
-	if err := o.client.Create(ctx, &job); err != nil {
+	if err := o.client.Create(ctx, job); err != nil {
 		return false, fmt.Errorf("creating job resource with k8s API: %w", err)
 	}
 

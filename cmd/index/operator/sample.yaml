@@ -163,7 +163,7 @@ observability:
 operator:
   namespace: default
   agent_name: vald-agent
-  agent_namespace:
+  agent_namespace: default
   rotator_name: vald-readreplica-rotate
   target_read_replica_id_annotations_key: vald.vdaas.org/target-read-replica-id
   rotation_job_concurrency: 2
@@ -195,7 +195,6 @@ operator:
               app.kubernetes.io/instance: release-name
               app.kubernetes.io/component: vald-readreplica-rotate
               app.kubernetes.io/version: v1.7.12
-            annotations:
           spec:
             containers:
               - name: vald-readreplica-rotate
@@ -309,7 +308,6 @@ operator:
               app.kubernetes.io/instance: release-name
               app.kubernetes.io/component: vald-index-creation
               app.kubernetes.io/version: v1.7.12
-            annotations:
           spec:
             initContainers:
               - name: wait-for-agent
@@ -425,7 +423,6 @@ operator:
               app.kubernetes.io/instance: release-name
               app.kubernetes.io/component: vald-index-save
               app.kubernetes.io/version: v1.7.12
-            annotations:
           spec:
             initContainers:
               - name: wait-for-agent
@@ -541,7 +538,6 @@ operator:
               app.kubernetes.io/instance: release-name
               app.kubernetes.io/component: vald-index-correction
               app.kubernetes.io/version: v1.7.12
-            annotations:
           spec:
             initContainers:
               - name: wait-for-agent
