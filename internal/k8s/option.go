@@ -18,6 +18,7 @@
 package k8s
 
 import (
+	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
@@ -69,16 +70,14 @@ func WithMetricsAddress(addr string) Option {
 	}
 }
 
-func WithEnableLeaderElection() Option {
+func WithLeaderElection(enabled bool, id, namespace string) Option {
 	return func(c *controller) error {
-		c.leaderElection = true
-		return nil
-	}
-}
-
-func WithDisableLeaderElection() Option {
-	return func(c *controller) error {
-		c.leaderElection = false
+		if enabled && id == "" {
+			return errors.NewErrCriticalOption("leaderElectionID", id)
+		}
+		c.leaderElection = enabled
+		c.leaderElectionID = id
+		c.leaderElectionNamespace = namespace
 		return nil
 	}
 }

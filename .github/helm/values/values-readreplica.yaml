@@ -80,7 +80,3 @@ manager:
     readreplica:
       rotator:
         enabled: true
-        initContainers: []
-        env:
-          - name: MY_TARGET_REPLICA_ID
-            value: "0"

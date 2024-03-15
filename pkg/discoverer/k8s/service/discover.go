@@ -87,7 +87,7 @@ func New(selector *config.Selectors, opts ...Option) (dsc Discoverer, err error)
 	k8sOpts = append(k8sOpts,
 		k8s.WithDialer(d.der),
 		k8s.WithControllerName("vald k8s agent discoverer"),
-		k8s.WithDisableLeaderElection(),
+		k8s.WithLeaderElection(false, "", ""),
 		k8s.WithResourceController(mnode.New(
 			mnode.WithControllerName("node metrics discoverer"),
 			mnode.WithOnErrorFunc(func(err error) {

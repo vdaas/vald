@@ -3410,6 +3410,9 @@ manager:
           tag: ""
           # manager.index.image.pullPolicy -- image pull policy
           pullPolicy: Always
+        # @schema {"name": "manager.index.readreplica.rotator.target_read_replica_id_annotations_key", "type": "string"}
+        # manager.index.readreplica.rotator.target_read_replica_id_annotations_key -- name of annotations key for target read replica id
+        target_read_replica_id_annotations_key: vald.vdaas.org/target-read-replica-id
         # @schema {"name": "manager.index.readreplica.rotator.server_config", "alias": "server_config"}
         # manager.index.readreplica.rotator.server_config -- server config (overrides defaults.server_config)
         server_config:
@@ -3475,9 +3478,6 @@ manager:
         # @schema {"name": "manager.index.readreplica.rotator.agent_namespace", "type": "string"}
         # manager.index.readreplica.rotator.agent_namespace -- namespace of agent pods to manage
         agent_namespace: _MY_POD_NAMESPACE_
-        # @schema {"name": "manager.index.readreplica.rotator.read_replica_id", "type": "string"}
-        # manager.index.readreplica.rotator.read_replica_id -- read replica id to perform rotation
-        read_replica_id: _MY_TARGET_REPLICA_ID_
         # @schema {"name": "manager.index.readreplica.rotator.serviceAccount", "type": "object"}
         serviceAccount:
           # @schema {"name": "manager.index.readreplica.rotator.serviceAccount.enabled", "type": "boolean"}
@@ -3520,6 +3520,9 @@ manager:
       # @schema {"name": "manager.index.operator.name", "type": "string"}
       # manager.index.operator.name -- name of manager.index.operator deployment
       name: vald-index-operator
+      # @schema {"name": "manager.index.operator.namespace", "type": "string"}
+      # manager.index.operator.namespace -- namespace to discovery
+      namespace: _MY_POD_NAMESPACE_
       # @schema {"name": "manager.index.operator.kind", "type": "string", "enum": ["Deployment", "DaemonSet"]}
       # manager.index.operator.kind -- deployment kind: Deployment or DaemonSet
       kind: Deployment
@@ -3671,6 +3674,6 @@ manager:
         limits:
           cpu: 600m
           memory: 200Mi
-      # @schema {"name": "manager.index.operator.namespace", "type": "string"}
-      # manager.index.operator.namespace -- namespace to discovery
-      namespace: _MY_POD_NAMESPACE_
+      # @schema {"name": "manager.index.operator.rotation_job_concurrency", "type": "integer", "minimum": 1}
+      # manager.index.operator.rotation_job_concurrency -- maximum concurrent rotator job run.
+      rotation_job_concurrency: 2
