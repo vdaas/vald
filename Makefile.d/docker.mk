@@ -172,7 +172,7 @@ docker/name/ci-container:
 docker/build/ci-container:
 	@make DOCKERFILE="$(ROOTDIR)/dockers/ci/base/Dockerfile" \
 		IMAGE=$(CI_CONTAINER_IMAGE) \
-		EXTRA_ARGS="--add-host=registry.npmjs.org:104.16.20.35" \
+		EXTRA_ARGS="--add-host=registry.npmjs.org:104.16.20.35 $(EXTRA_ARGS)" \
 		docker/build/image
 
 .PHONY: docker/name/dev-container
