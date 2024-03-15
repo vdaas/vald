@@ -40,7 +40,7 @@ spec:
           type: string
       schema:
         openAPIV3Schema:
-          description: ValdBenchmarkScenario is the Schema for the valdbenchmarkscenarios API
+          description: ValdBenchmarkOperator is the Schema for the valdbenchmarkoperator API
           type: object
           properties:
             apiVersion:
@@ -52,7 +52,7 @@ spec:
             metadata:
               type: object
             status:
-              description: ValdBenchmarkScenarioStatus defines the observed state of ValdBenchmarkScenario
+              description: ValdBenchmarkOperatorStatus defines the observed state of ValdBenchmarkOperator
               enum:
                 - NotReady
                 - Completed
@@ -68,6 +68,11 @@ spec:
                 annotations:
                   type: object
                   x-kubernetes-preserve-unknown-fields: true
+                env:
+                  type: array
+                  items:
+                    type: object
+                    x-kubernetes-preserve-unknown-fields: true
                 image:
                   type: object
                   properties:

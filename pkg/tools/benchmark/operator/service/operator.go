@@ -38,6 +38,9 @@ import (
 type Operator interface {
 	PreStart(context.Context) error
 	Start(context.Context) (<-chan error, error)
+	GetScenarioStatus() map[v1.ValdBenchmarkScenarioStatus]int64
+	GetBenchmarkJobStatus() map[v1.BenchmarkJobStatus]int64
+	// GetJobStatus() map[v1.BenchmarkJobStatus]int64
 }
 
 type scenario struct {
@@ -447,6 +450,7 @@ func (o *operator) createBenchmarkJob(ctx context.Context, scenario v1.ValdBench
 		}
 		// set status
 		bj.Status = v1.BenchmarkJobNotReady
+		// TODO: set metrics
 		// create benchmark job resource
 		c := o.ctrl.GetManager().GetClient()
 		if err := c.Create(ctx, bj); err != nil {
@@ -639,6 +643,42 @@ func (o *operator) checkAtomics() error {
 	}
 	return nil
 }
+
+func (o *operator) GetScenarioStatus() map[v1.ValdBenchmarkScenarioStatus]int64 {
+	m := map[v1.ValdBenchmarkScenarioStatus]int64{
+		v1.BenchmarkScenarioAvailable: 0,
+		v1.BenchmarkScenarioHealthy:   0,
+		v1.BenchmarkScenarioNotReady:  0,
+		v1.BenchmarkScenarioCompleted: 0,
+	}
+	if sc := o.getAtomicScenario(); sc != nil {
+		for _, s := range sc {
+			m[s.Crd.Status] += 1
+		}
+	}
+	return m
+}
+
+func (o *operator) GetBenchmarkJobStatus() map[v1.BenchmarkJobStatus]int64 {
+	m := map[v1.BenchmarkJobStatus]int64{
+		v1.BenchmarkJobAvailable: 0,
+		v1.BenchmarkJobHealthy:   0,
+		v1.BenchmarkJobNotReady:  0,
+		v1.BenchmarkJobCompleted: 0,
+	}
+	if bjs := o.getAtomicBenchJob(); bjs != nil {
+		for _, bj := range bjs {
+			m[bj.Status] += 1
+		}
+	}
+	return m
+}
+
+// func (o *operator) GetJobStatus() map[job.JobStatus]int64 {
+// 	m := map[job.JobStatus]int64{}
+// 	// if js := o.getAtomicJob()
+// 	return m
+// }
 
 func (*operator) PreStart(context.Context) error {
 	log.Infof("[benchmark scenario operator] start vald benchmark scenario operator")

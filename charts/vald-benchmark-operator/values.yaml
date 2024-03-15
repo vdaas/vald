@@ -454,11 +454,11 @@ observability:
     # @schema {"name": "observability.otlp.attribute", "type": "object"}
     attribute:
       # @schema {"name": "observability.otlp.attribute.namespace", "type": "string"}
-      namespace: "_MY_POD_NAMESPACE_"
+      namespace: _MY_POD_NAMESPACE_
       # @schema {"name": "observability.otlp.attribute.pod_name", "type": "string"}
-      pod_name: "_MY_POD_NAME_"
+      pod_name: _MY_POD_NAME_
       # @schema {"name": "observability.otlp.attribute.node_name", "type": "string"}
-      node_name: "_MY_NODE_NAME_"
+      node_name: _MY_NODE_NAME_
       # @schema {"name": "observability.otlp.attribute.service_name", "type": "string"}
       service_name: "vald-benchmark-operator"
   # @schema {"name": "observability.otlp.attribute.metrics", "type": "object"}
@@ -487,3 +487,22 @@ observability:
     enabled: false
     # @schema {"name": "observability.trace.sampling_rate", "type": "integer"}
     sampling_rate: 1
+# @schema {"name": "env", "type": "array", "items": {"type": "object"}, "anchor": "env"}
+# env -- environment variables
+env:
+  - name: MY_NODE_NAME
+    valueFrom:
+      fieldRef:
+        fieldPath: spec.nodeName
+  - name: MY_POD_NAME
+    valueFrom:
+      fieldRef:
+        fieldPath: metadata.name
+  - name: MY_POD_NAMESPACE
+    valueFrom:
+      fieldRef:
+        fieldPath: metadata.namespace
+  - name: JOB_NAMESPACE
+    valueFrom:
+      fieldRef:
+        fieldPath: metadata.namespace
