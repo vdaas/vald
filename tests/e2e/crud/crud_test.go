@@ -25,7 +25,6 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"strconv"
 	"testing"
 	"time"
 
@@ -861,27 +860,7 @@ func TestE2EReadReplica(t *testing.T) {
 
 	sleep(t, waitAfterInsertDuration)
 
-	t.Log("starting to restart all the agent pods to make it backup index to pvc...")
-	if err := kubectl.RolloutResource(ctx, t, "statefulsets/vald-agent"); err != nil {
-		t.Fatalf("failed to restart all the agent pods: %s", err)
-	}
-
-	t.Log("starting to create read replica rotators...")
-	pods, err := kubeClient.GetPods(ctx, namespace, "app=vald-agent")
-	if err != nil {
-		t.Fatalf("GetPods failed: %s", err)
-	}
-	cronJobs, err := kubeClient.ListCronJob(ctx, namespace, "app=vald-readreplica-rotate")
-	if err != nil {
-		t.Fatalf("ListCronJob failed: %s", err)
-	}
-	cronJob := cronJobs[0]
-	for id := 0; id < len(pods); id++ {
-		// the annotation key comes from `manager.index.readreplica.rotator.target_read_replica_id_annotations_key`
-		cronJob.Spec.JobTemplate.Spec.Template.GetObjectMeta().SetAnnotations(map[string]string{"vald.vdaas.org/target-read-replica-id": strconv.Itoa(id)})
-		kubeClient.CreateJobFromCronJob(ctx, "vald-readreplica-rotate-"+strconv.Itoa(id), namespace, &cronJob)
-	}
-
+	t.Log("index operator should be creating read replica rotator jobs")
 	t.Log("waiting for read replica rotator jobs to complete...")
 	if err := kubectl.WaitResources(ctx, t, "job", "app=vald-readreplica-rotate", "complete", "120s"); err != nil {
 		t.Fatalf("failed to wait for read replica rotator jobs to complete: %s", err)
