@@ -35,9 +35,6 @@ type Config struct {
 	// Observability represent observability configurations
 	Observability *config.Observability `json:"observability" yaml:"observability"`
 
-	// Scenario represents benchmark scenario configurations
-	Scenario *config.BenchmarkScenario `json:"scenario" yaml:"scenario"`
-
 	// JobImage represents the location of Docker image for benchmark job and its ImagePullPolicy
 	JobImage *config.BenchmarkJobImageInfo `json:"job_image" yaml:"job_image"`
 }
@@ -66,13 +63,6 @@ func NewConfig(path string) (cfg *Config, err error) {
 	} else {
 		cfg.JobImage = new(config.BenchmarkJobImageInfo)
 	}
-
-	if cfg.Scenario != nil {
-		cfg.Scenario = cfg.Scenario.Bind()
-	} else {
-		cfg.Scenario = new(config.BenchmarkScenario)
-	}
-
 	return cfg, nil
 }
 
