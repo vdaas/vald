@@ -185,6 +185,8 @@ const (
 	NormalizedAngle
 	// NormalizedCosine is cosine distance with normalization.
 	NormalizedCosine
+	// InnerProduct is inner product distance.
+	InnerProduct
 
 	// -------------------------------------------------------------.
 
@@ -233,6 +235,8 @@ func (d distanceType) String() string {
 		return "NormalizedAngle"
 	case NormalizedCosine:
 		return "NormalizedCosine"
+	case InnerProduct:
+		return "InnerProduct"
 	}
 	return "Unknown"
 }

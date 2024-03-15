@@ -786,6 +786,16 @@ func TestWithDistanceType(t *testing.T) {
 			},
 		},
 		{
+			name: "set success when distance type is InnerProduct or DotProduct",
+			args: args{
+				t: InnerProduct,
+			},
+			want: want{
+				obj: &T{},
+			},
+		},
+
+		{
 			name: "set success when distance type is Jaccard",
 			args: args{
 				t: Jaccard,
