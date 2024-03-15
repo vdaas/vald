@@ -123,6 +123,7 @@
 .prh.yaml
 .textlintrc
 .whitesource
+.yamlfmt
 CHANGELOG.md
 CODE_OF_CONDUCT.md
 CONTRIBUTING.md
@@ -417,7 +418,6 @@ charts/vald/templates/index/job/creation/networkpolicy.yaml
 charts/vald/templates/index/job/readreplica/rotate/clusterrole.yaml
 charts/vald/templates/index/job/readreplica/rotate/clusterrolebinding.yaml
 charts/vald/templates/index/job/readreplica/rotate/configmap.yaml
-charts/vald/templates/index/job/readreplica/rotate/cronjob.yaml
 charts/vald/templates/index/job/readreplica/rotate/networkpolicy.yaml
 charts/vald/templates/index/job/readreplica/rotate/serviceaccount.yaml
 charts/vald/templates/index/job/save/configmap.yaml
@@ -1048,6 +1048,9 @@ internal/k8s/service/option.go
 internal/k8s/service/option_test.go
 internal/k8s/service/service.go
 internal/k8s/service/service_test.go
+internal/k8s/v2/pod/option.go
+internal/k8s/v2/pod/pod.go
+internal/k8s/vald/annotations.go
 internal/k8s/vald/benchmark/api/v1/info.go
 internal/k8s/vald/benchmark/api/v1/job_types.go
 internal/k8s/vald/benchmark/api/v1/scenario_types.go
@@ -1214,6 +1217,8 @@ internal/observability/metrics/runtime/cgo/cgo.go
 internal/observability/metrics/runtime/cgo/cgo_test.go
 internal/observability/metrics/runtime/goroutine/goroutine.go
 internal/observability/metrics/runtime/goroutine/goroutine_test.go
+internal/observability/metrics/tools/benchmark/benchmark.go
+internal/observability/metrics/tools/benchmark/benchmark_test.go
 internal/observability/metrics/version/version.go
 internal/observability/metrics/version/version_test.go
 internal/observability/observability.go
@@ -1412,7 +1417,6 @@ k8s/index/job/creation/networkpolicy.yaml
 k8s/index/job/readreplica/rotate/clusterrole.yaml
 k8s/index/job/readreplica/rotate/clusterrolebinding.yaml
 k8s/index/job/readreplica/rotate/configmap.yaml
-k8s/index/job/readreplica/rotate/cronjob.yaml
 k8s/index/job/readreplica/rotate/networkpolicy.yaml
 k8s/index/job/readreplica/rotate/serviceaccount.yaml
 k8s/index/job/save/configmap.yaml
@@ -1436,6 +1440,7 @@ k8s/metrics/grafana/dashboards/05-vald-index-manager.yaml
 k8s/metrics/grafana/dashboards/07-vald-helm-operator.yaml
 k8s/metrics/grafana/dashboards/08-vald-lb-gateway.yaml
 k8s/metrics/grafana/dashboards/09-vald-index-correction.yaml
+k8s/metrics/grafana/dashboards/10-vald-benchmark-operator.yaml
 k8s/metrics/grafana/dashboards/99-vald-agent-memory.yaml
 k8s/metrics/grafana/deployment.yaml
 k8s/metrics/grafana/svc.yaml
