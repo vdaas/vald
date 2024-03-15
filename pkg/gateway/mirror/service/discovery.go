@@ -95,7 +95,7 @@ func NewDiscovery(opts ...DiscoveryOption) (dsc Discovery, err error) {
 		d.ctrl, err = k8s.New(
 			k8s.WithDialer(d.der),
 			k8s.WithControllerName("vald k8s mirror discovery"),
-			k8s.WithDisableLeaderElection(),
+			k8s.WithLeaderElection(false, "", ""),
 			k8s.WithResourceController(watcher),
 		)
 	}

@@ -57,13 +57,15 @@ type ResourceController interface {
 }
 
 type controller struct {
-	eg             errgroup.Group
-	name           string
-	merticsAddr    string
-	leaderElection bool
-	mgr            manager.Manager
-	rcs            []ResourceController
-	der            net.Dialer
+	eg                      errgroup.Group
+	name                    string
+	merticsAddr             string
+	leaderElection          bool
+	leaderElectionID        string
+	leaderElectionNamespace string
+	mgr                     manager.Manager
+	rcs                     []ResourceController
+	der                     net.Dialer
 }
 
 func New(opts ...Option) (cl Controller, err error) {
@@ -89,9 +91,11 @@ func New(opts ...Option) (cl Controller, err error) {
 		c.mgr, err = manager.New(
 			cfg,
 			manager.Options{
-				Scheme:         runtime.NewScheme(),
-				LeaderElection: c.leaderElection,
-				Metrics:        mserver.Options{BindAddress: c.merticsAddr},
+				Scheme:                  runtime.NewScheme(),
+				LeaderElection:          c.leaderElection,
+				LeaderElectionID:        c.leaderElectionID,
+				LeaderElectionNamespace: c.leaderElectionNamespace,
+				Metrics:                 mserver.Options{BindAddress: c.merticsAddr},
 			},
 		)
 		if err != nil {

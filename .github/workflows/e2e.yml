@@ -279,6 +279,9 @@ jobs:
   e2e-stream-crud-with-readreplica:
     name: "E2E test (Stream CRUD) with read replica"
     needs: [dump-contexts-to-log]
+    # FIXME: This job is disabled because it is not working properly for a moment.
+    #        Needs to fix TestE2EReadReplica not to use CronJob since there is no CronJob for read replica anymore.
+    if: false
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
