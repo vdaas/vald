@@ -231,7 +231,7 @@
             },
             "distance_type": {
               "type": "string",
-              "description": "distance type. it should be `l1`, `l2`, `angle`, `hamming`, `cosine`,`poincare`, `lorentz`, `jaccard`, `sparsejaccard`, `normalizedangle` or `normalizedcosine`. for further details about NGT libraries supported distance is https://github.com/yahoojapan/NGT/wiki/Command-Quick-Reference and vald agent's supported NGT distance type is https://pkg.go.dev/github.com/vdaas/vald/internal/core/algorithm/ngt#pkg-constants",
+              "description": "distance type. it should be `l1`, `l2`, `angle`, `hamming`, `cosine`,`poincare`, `lorentz`, `jaccard`, `sparsejaccard`, `normalizedangle` or `normalizedcosine` or `innerproduct`. for further details about NGT libraries supported distance is https://github.com/yahoojapan/NGT/wiki/Command-Quick-Reference and vald agent's supported NGT distance type is https://pkg.go.dev/github.com/vdaas/vald/internal/core/algorithm/ngt#pkg-constants",
               "enum": [
                 "l1",
                 "l2",
@@ -254,7 +254,11 @@
                 "normang",
                 "normalizedangle",
                 "normcos",
-                "normalizedcosine"
+                "normalizedcosine",
+                "dotproduct",
+                "innerproduct",
+                "dp",
+                "ip"
               ]
             },
             "enable_copy_on_write": {

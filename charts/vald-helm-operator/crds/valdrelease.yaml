@@ -263,6 +263,10 @@ spec:
                             - normalizedangle
                             - normcos
                             - normalizedcosine
+                            - dotproduct
+                            - innerproduct
+                            - dp
+                            - ip
                         enable_copy_on_write:
                           type: boolean
                         enable_export_index_info_to_k8s:
