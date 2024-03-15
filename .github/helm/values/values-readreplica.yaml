@@ -76,9 +76,7 @@ manager:
         memory: 30Mi
     indexer:
       auto_index_duration_limit: 2m
-      auto_index_check_duration: 10s
-      auto_save_index_duration_limit: 2m
-      auto_save_index_wait_duration: 10s
+      auto_index_check_duration: 30s
       auto_index_length: 1000
     readreplica:
       rotator:

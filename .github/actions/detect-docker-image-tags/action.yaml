@@ -23,7 +23,7 @@ inputs:
   images:
     description: "Image names"
     required: false
-    default: "vdaas/vald-agent-ngt vdaas/vald-agent-faiss vdaas/vald-agent-sidecar vdaas/vald-discoverer-k8s vdaas/vald-lb-gateway vdaas/vald-filter-gateway vdaas/vald-mirror-gateway vdaas/vald-manager-index"
+    default: "vdaas/vald-agent-ngt vdaas/vald-agent-faiss vdaas/vald-agent-sidecar vdaas/vald-discoverer-k8s vdaas/vald-lb-gateway vdaas/vald-filter-gateway vdaas/vald-mirror-gateway vdaas/vald-manager-index vdaas/vald-index-operator vdaas/vald-readreplica-rotate"
 outputs:
   HELM_EXTRA_OPTIONS:
     description: "Helm extra options that specifies image tags"
@@ -49,8 +49,10 @@ runs:
           ["vdaas/vald-manager-index"]="manager.index.image.tag"
           ["vdaas/vald-index-creation"]="manager.index.creator.image.tag"
           ["vdaas/vald-index-save"]="manager.index.saver.image.tag"
+          ["vdaas/vald-readreplica-rotate"]="manager.index.readreplica.rotator.image.tag"
           ["vdaas/vald-helm-operator"]="image.tag"
           ["vdaas/vald-ci-container"]=""
+          ["vdaas/vald-index-operator"]="manager.index.operator.image.tag"
         )
 
         for image in ${IMAGES}; do

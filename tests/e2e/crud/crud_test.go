@@ -832,7 +832,7 @@ func TestE2EIndexJobCorrection(t *testing.T) {
 		t.Fatalf("an error occurred: %s", err)
 	}
 }
-
+// TestE2EReadReplica tests that search requests succeed with read replica resources.
 func TestE2EReadReplica(t *testing.T) {
 	t.Cleanup(teardown)
 
@@ -862,7 +862,13 @@ func TestE2EReadReplica(t *testing.T) {
 
 	t.Log("index operator should be creating read replica rotator jobs")
 	t.Log("waiting for read replica rotator jobs to complete...")
-	if err := kubectl.WaitResources(ctx, t, "job", "app=vald-readreplica-rotate", "complete", "120s"); err != nil {
+	if err := kubectl.WaitResources(ctx, t, "job", "app=vald-readreplica-rotate", "complete", "60s"); err != nil {
+		t.Log("wait failed. printing yaml of vald-readreplica-rotate")
+		kubectl.KubectlCmd(ctx, t, "get", "pod", "-l", "app=vald-readreplica-rotate", "-oyaml")
+		t.Log("wait failed. printing log of vald-index-operator")
+		kubectl.DebugLog(ctx, t, "app=vald-index-operator")
+		t.Log("wait failed. printing log of vald-readreplica-rotate")
+		kubectl.DebugLog(ctx, t, "app=vald-readreplica-rotate")
 		t.Fatalf("failed to wait for read replica rotator jobs to complete: %s", err)
 	}
 
