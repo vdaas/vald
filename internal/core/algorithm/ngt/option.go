@@ -135,6 +135,8 @@ func WithDistanceTypeByString(dt string) Option {
 		d = NormalizedAngle
 	case "normalizedcosine", "normalizedcos", "normcos", "ncos", "ncosine":
 		d = NormalizedCosine
+	case "dotproduct", "dotp", "dproduct", "dp", "innerproduct", "innerp", "iproduct", "ip":
+		d = InnerProduct
 	}
 	return WithDistanceType(d)
 }
@@ -201,6 +203,11 @@ func WithDistanceType(t distanceType) Option {
 			}
 		case NormalizedCosine:
 			if C.ngt_set_property_distance_type_normalized_cosine(n.prop, ne.err) == ErrorCode {
+				err := errors.ErrFailedToSetDistanceType(n.newGoError(ne), t.String())
+				return errors.NewErrCriticalOption("distanceType", t, err)
+			}
+		case InnerProduct:
+			if C.ngt_set_property_distance_type_inner_product(n.prop, ne.err) == ErrorCode {
 				err := errors.ErrFailedToSetDistanceType(n.newGoError(ne), t.String())
 				return errors.NewErrCriticalOption("distanceType", t, err)
 			}

@@ -8,6 +8,11 @@
       "type": "object",
       "description": "deployment annotations"
     },
+    "env": {
+      "type": "array",
+      "description": "environment variables",
+      "items": { "type": "object" }
+    },
     "image": {
       "type": "object",
       "properties": {
