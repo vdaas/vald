@@ -51,6 +51,8 @@ spec:
               mountPath: /var/lib/grafana/dashboards-vald/08
             - name: grafana-dashboards-vald-index-correction
               mountPath: /var/lib/grafana/dashboards-vald/09
+            - name: grafana-dashboards-vald-benchmark-operator
+              mountPath: /var/lib/grafana/dashboards-vald/10
             - name: grafana-dashboards-vald-agent-memory
               mountPath: /var/lib/grafana/dashboards-vald/99
       volumes:
@@ -94,3 +96,7 @@ spec:
           configMap:
             defaultMode: 420
             name: grafana-dashboards-vald-agent-memory
+        - name: grafana-dashboards-vald-benchmark-operator
+          configMap:
+            defaultMode: 420
+            name: grafana-dashboards-vald-benchmark-operator
