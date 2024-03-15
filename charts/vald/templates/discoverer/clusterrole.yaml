@@ -30,6 +30,7 @@ rules:
   - apiGroups:
       - apps
     resources:
+      - deployments
       - replicasets
     verbs:
       - get
@@ -47,6 +48,12 @@ rules:
       - get
       - list
       - watch
+  - apiGroups:
+      - ""
+    resources:
+      - events
+    verbs:
+      - create
   - nonResourceURLs:
       - /metrics
     verbs:
@@ -63,8 +70,18 @@ rules:
       - batch
     resources:
       - jobs
+      - cronjobs
     verbs:
       - get
       - list
       - watch
+      - create
+  - apiGroups:
+      - "coordination.k8s.io"
+    resources:
+      - leases
+    verbs:
+      - get
+      - update
+      - create
 {{- end }}

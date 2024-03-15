@@ -18,7 +18,6 @@
 package config
 
 import (
-	"bytes"
 	"fmt"
 	"io/fs"
 	"os"
@@ -29,9 +28,10 @@ import (
 	"github.com/vdaas/vald/internal/encoding/json"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/file"
+	"github.com/vdaas/vald/internal/io"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/strings"
-	yaml "gopkg.in/yaml.v2"
+	"sigs.k8s.io/yaml"
 )
 
 // GlobalConfig represent a application setting data content (config.yaml).
@@ -79,7 +79,12 @@ func Read(path string, cfg interface{}) (err error) {
 	}()
 	switch ext := filepath.Ext(path); ext {
 	case ".yaml", ".yml":
-		err = yaml.NewDecoder(f).Decode(cfg)
+		var data []byte
+		data, err = io.ReadAll(f)
+		if err != nil {
+			return err
+		}
+		err = yaml.Unmarshal(data, cfg)
 	case ".json":
 		err = json.Decode(f, cfg)
 	default:
@@ -126,12 +131,11 @@ func checkPrefixAndSuffix(str, pref, suf string) bool {
 
 // ToRawYaml writes the YAML encoding of v to the stream and returns the string written to stream.
 func ToRawYaml(data interface{}) string {
-	buf := bytes.NewBuffer(nil)
-	err := yaml.NewEncoder(buf).Encode(data)
+	b, err := yaml.Marshal(data)
 	if err != nil {
 		log.Error(err)
 	}
-	return buf.String()
+	return conv.Btoa(b)
 }
 
 // Merge merges multiple objects to one object.

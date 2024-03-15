@@ -877,7 +877,8 @@ func TestE2EReadReplica(t *testing.T) {
 	}
 	cronJob := cronJobs[0]
 	for id := 0; id < len(pods); id++ {
-		cronJob.Spec.JobTemplate.Spec.Template.Spec.Containers[0].Env[0].Value = strconv.Itoa(id)
+		// the annotation key comes from `manager.index.readreplica.rotator.target_read_replica_id_annotations_key`
+		cronJob.Spec.JobTemplate.Spec.Template.GetObjectMeta().SetAnnotations(map[string]string{"vald.vdaas.org/target-read-replica-id": strconv.Itoa(id)})
 		kubeClient.CreateJobFromCronJob(ctx, "vald-readreplica-rotate-"+strconv.Itoa(id), namespace, &cronJob)
 	}
 
