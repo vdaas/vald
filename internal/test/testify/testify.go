@@ -25,6 +25,4 @@ const (
 	Anything = mock.Anything
 )
 
-var (
-	AnythingOfType = mock.AnythingOfType
-)
+var AnythingOfType = mock.AnythingOfType
