@@ -832,6 +832,7 @@ func TestE2EIndexJobCorrection(t *testing.T) {
 		t.Fatalf("an error occurred: %s", err)
 	}
 }
+
 // TestE2EReadReplica tests that search requests succeed with read replica resources.
 func TestE2EReadReplica(t *testing.T) {
 	t.Cleanup(teardown)
