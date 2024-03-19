@@ -24,3 +24,5 @@ type (
 const (
 	Anything = mock.Anything
 )
+
+var AnythingOfType = mock.AnythingOfType

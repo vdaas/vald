@@ -67,6 +67,7 @@ type (
 	EnvVar             = corev1.EnvVar
 	Job                = batchv1.Job
 	JobList            = batchv1.JobList
+	JobStatus          = batchv1.JobStatus
 	CronJob            = batchv1.CronJob
 	Result             = reconcile.Result
 )
