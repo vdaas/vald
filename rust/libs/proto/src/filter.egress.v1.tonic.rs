@@ -104,10 +104,12 @@ pub mod filter_client {
         pub async fn filter_distance(
             &mut self,
             request: impl tonic::IntoRequest<
-                super::super::super::super::payload::v1::object::Distance,
+                super::super::super::super::payload::v1::filter::DistanceRequest,
             >,
         ) -> std::result::Result<
-            tonic::Response<super::super::super::super::payload::v1::object::Distance>,
+            tonic::Response<
+                super::super::super::super::payload::v1::filter::DistanceResponse,
+            >,
             tonic::Status,
         > {
             self.inner
@@ -133,10 +135,12 @@ pub mod filter_client {
         pub async fn filter_vector(
             &mut self,
             request: impl tonic::IntoRequest<
-                super::super::super::super::payload::v1::object::Vector,
+                super::super::super::super::payload::v1::filter::VectorRequest,
             >,
         ) -> std::result::Result<
-            tonic::Response<super::super::super::super::payload::v1::object::Vector>,
+            tonic::Response<
+                super::super::super::super::payload::v1::filter::VectorResponse,
+            >,
             tonic::Status,
         > {
             self.inner
@@ -171,10 +175,12 @@ pub mod filter_server {
         async fn filter_distance(
             &self,
             request: tonic::Request<
-                super::super::super::super::payload::v1::object::Distance,
+                super::super::super::super::payload::v1::filter::DistanceRequest,
             >,
         ) -> std::result::Result<
-            tonic::Response<super::super::super::super::payload::v1::object::Distance>,
+            tonic::Response<
+                super::super::super::super::payload::v1::filter::DistanceResponse,
+            >,
             tonic::Status,
         >;
         /** Represent the RPC to filter the vector.
@@ -182,10 +188,12 @@ pub mod filter_server {
         async fn filter_vector(
             &self,
             request: tonic::Request<
-                super::super::super::super::payload::v1::object::Vector,
+                super::super::super::super::payload::v1::filter::VectorRequest,
             >,
         ) -> std::result::Result<
-            tonic::Response<super::super::super::super::payload::v1::object::Vector>,
+            tonic::Response<
+                super::super::super::super::payload::v1::filter::VectorResponse,
+            >,
             tonic::Status,
         >;
     }
@@ -276,9 +284,9 @@ pub mod filter_server {
                     impl<
                         T: Filter,
                     > tonic::server::UnaryService<
-                        super::super::super::super::payload::v1::object::Distance,
+                        super::super::super::super::payload::v1::filter::DistanceRequest,
                     > for FilterDistanceSvc<T> {
-                        type Response = super::super::super::super::payload::v1::object::Distance;
+                        type Response = super::super::super::super::payload::v1::filter::DistanceResponse;
                         type Future = BoxFuture<
                             tonic::Response<Self::Response>,
                             tonic::Status,
@@ -286,7 +294,7 @@ pub mod filter_server {
                         fn call(
                             &mut self,
                             request: tonic::Request<
-                                super::super::super::super::payload::v1::object::Distance,
+                                super::super::super::super::payload::v1::filter::DistanceRequest,
                             >,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
@@ -325,9 +333,9 @@ pub mod filter_server {
                     impl<
                         T: Filter,
                     > tonic::server::UnaryService<
-                        super::super::super::super::payload::v1::object::Vector,
+                        super::super::super::super::payload::v1::filter::VectorRequest,
                     > for FilterVectorSvc<T> {
-                        type Response = super::super::super::super::payload::v1::object::Vector;
+                        type Response = super::super::super::super::payload::v1::filter::VectorResponse;
                         type Future = BoxFuture<
                             tonic::Response<Self::Response>,
                             tonic::Status,
@@ -335,7 +343,7 @@ pub mod filter_server {
                         fn call(
                             &mut self,
                             request: tonic::Request<
-                                super::super::super::super::payload::v1::object::Vector,
+                                super::super::super::super::payload::v1::filter::VectorRequest,
                             >,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
