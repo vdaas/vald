@@ -302,25 +302,15 @@ func Test_operator_podOnReconcile(t *testing.T) {
 			}
 			defer mock.AssertExpectations(tt)
 
-			opts := []Option{
-				WithK8sClient(mock),
-				WithReadReplicaEnabled(test.readReplicaEnabled),
-			}
+			concurrency := uint(1)
 			if test.rotationJobConcurrency != 0 {
-				opts = append(opts, WithRotationJobConcurrency(test.rotationJobConcurrency))
+				concurrency = test.rotationJobConcurrency
 			}
-			o, err := New(
-				"namespace",
-				"agentName",
-				"rotatorName",
-				"targetReadReplicaIDEnvName",
-				nil,
-				opts...,
-			)
-			require.NoError(t, err)
-
-			op, ok := o.(*operator)
-			require.True(t, ok)
+			op := operator{
+				client:                 mock,
+				readReplicaEnabled:     test.readReplicaEnabled,
+				rotationJobConcurrency: concurrency,
+			}
 
 			op.rotatorJob = &client.Job{
 				ObjectMeta: client.ObjectMeta{
