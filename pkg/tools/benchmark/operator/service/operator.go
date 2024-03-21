@@ -174,7 +174,7 @@ func (o *operator) getAtomicJob() map[string]string {
 // jobReconcile gets k8s job list and watches theirs STATUS.
 // Then, it processes according STATUS.
 // skipcq: GO-R1005
-func (o *operator) jobReconcile(ctx context.Context, jobList map[string][]job.Job) {
+func (o *operator) jobReconcile(ctx context.Context, jobList map[string][]k8s.Job) {
 	log.Debug("[reconcile job] start")
 	cjobs := o.getAtomicJob()
 	if cjobs == nil {
@@ -396,7 +396,7 @@ func (o *operator) deleteBenchmarkJob(ctx context.Context, name string, generati
 
 // deleteJob deletes job resource according to given benchmark job name and generation.
 func (o *operator) deleteJob(ctx context.Context, name string) error {
-	cj := new(job.Job)
+	cj := new(k8s.Job)
 	err := o.ctrl.GetManager().GetClient().Get(ctx, k8s.ObjectKey{
 		Namespace: o.jobNamespace,
 		Name:      name,
@@ -553,7 +553,7 @@ func (o *operator) checkJobsStatus(ctx context.Context, jobs map[string]string) 
 		log.Infof("[check job status] no job launched")
 		return nil
 	}
-	job := new(job.Job)
+	job := new(k8s.Job)
 	c := o.ctrl.GetManager().GetClient()
 	jobStatus := map[string]v1.BenchmarkJobStatus{}
 	for name, ns := range jobs {

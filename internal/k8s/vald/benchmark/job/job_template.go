@@ -18,7 +18,7 @@
 package job
 
 import (
-	jobs "github.com/vdaas/vald/internal/k8s/job"
+	"github.com/vdaas/vald/internal/k8s"
 	corev1 "k8s.io/api/core/v1"
 )
 
@@ -42,14 +42,14 @@ const (
 )
 
 type BenchmarkJobTpl interface {
-	CreateJobTpl(opts ...BenchmarkJobOption) (jobs.Job, error)
+	CreateJobTpl(opts ...BenchmarkJobOption) (k8s.Job, error)
 }
 
 type benchmarkJobTpl struct {
 	containerName      string
 	containerImageName string
 	imagePullPolicy    ImagePullPolicy
-	jobTpl             jobs.Job
+	jobTpl             k8s.Job
 }
 
 func NewBenchmarkJob(opts ...BenchmarkJobTplOption) (BenchmarkJobTpl, error) {
@@ -63,7 +63,7 @@ func NewBenchmarkJob(opts ...BenchmarkJobTplOption) (BenchmarkJobTpl, error) {
 	return bjTpl, nil
 }
 
-func (b *benchmarkJobTpl) CreateJobTpl(opts ...BenchmarkJobOption) (jobs.Job, error) {
+func (b *benchmarkJobTpl) CreateJobTpl(opts ...BenchmarkJobOption) (k8s.Job, error) {
 	for _, opt := range append(defaultBenchmarkJobOpts, opts...) {
 		err := opt(&b.jobTpl)
 		if err != nil {
