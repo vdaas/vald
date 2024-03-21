@@ -22,9 +22,10 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/require"
+	"github.com/vdaas/vald/internal/k8s"
 	"github.com/vdaas/vald/internal/k8s/client"
 	"github.com/vdaas/vald/internal/k8s/vald"
-	"github.com/vdaas/vald/internal/test/mock/k8s"
+	mock "github.com/vdaas/vald/internal/test/mock/k8s"
 	"github.com/vdaas/vald/internal/test/testify"
 )
 
@@ -32,16 +33,16 @@ func Test_operator_podOnReconcile(t *testing.T) {
 	t.Parallel()
 
 	type want struct {
-		res          client.Result
+		res          k8s.Result
 		createCalled bool
 		err          error
 	}
 	type test struct {
 		name                   string
-		agentPod               *client.Pod
+		agentPod               *k8s.Pod
 		readReplicaEnabled     bool
-		readReplicaDeployment  *client.Deployment
-		runningJobs            []client.Job
+		readReplicaDeployment  *k8s.Deployment
+		runningJobs            []k8s.Job
 		rotationJobConcurrency uint
 		want                   want
 	}
@@ -51,7 +52,7 @@ func Test_operator_podOnReconcile(t *testing.T) {
 			name:               "returns client.Result{} when read replica is not enabled",
 			readReplicaEnabled: false,
 			want: want{
-				res:          client.Result{},
+				res:          k8s.Result{},
 				createCalled: false,
 				err:          nil,
 			},
@@ -59,9 +60,9 @@ func Test_operator_podOnReconcile(t *testing.T) {
 		{
 			name:               "returns client.Result{} when pod is not a statefulset",
 			readReplicaEnabled: true,
-			agentPod:           &client.Pod{},
+			agentPod:           &k8s.Pod{},
 			want: want{
-				res:          client.Result{},
+				res:          k8s.Result{},
 				createCalled: false,
 				err:          nil,
 			},
@@ -72,18 +73,18 @@ func Test_operator_podOnReconcile(t *testing.T) {
 			return test{
 				name:               "returns requeue: false when last snapshot time is after the last save time",
 				readReplicaEnabled: true,
-				agentPod: &client.Pod{
-					ObjectMeta: client.ObjectMeta{
+				agentPod: &k8s.Pod{
+					ObjectMeta: k8s.ObjectMeta{
 						Labels: map[string]string{
-							client.PodIndexLabel: "0",
+							k8s.PodIndexLabel: "0",
 						},
 						Annotations: map[string]string{
 							vald.LastTimeSaveIndexTimestampAnnotationsKey: saveTime.Format(vald.TimeFormat),
 						},
 					},
 				},
-				readReplicaDeployment: &client.Deployment{
-					ObjectMeta: client.ObjectMeta{
+				readReplicaDeployment: &k8s.Deployment{
+					ObjectMeta: k8s.ObjectMeta{
 						Name: "deploymentName",
 						Annotations: map[string]string{
 							vald.LastTimeSnapshotTimestampAnnotationsKey: rotateTime.Format(vald.TimeFormat),
@@ -91,7 +92,7 @@ func Test_operator_podOnReconcile(t *testing.T) {
 					},
 				},
 				want: want{
-					res: client.Result{
+					res: k8s.Result{
 						Requeue: false,
 					},
 					createCalled: false,
@@ -105,18 +106,18 @@ func Test_operator_podOnReconcile(t *testing.T) {
 			return test{
 				name:               "returns requeue: false and calls client.Create once when last snapshot time is before the last save time",
 				readReplicaEnabled: true,
-				agentPod: &client.Pod{
-					ObjectMeta: client.ObjectMeta{
+				agentPod: &k8s.Pod{
+					ObjectMeta: k8s.ObjectMeta{
 						Labels: map[string]string{
-							client.PodIndexLabel: "0",
+							k8s.PodIndexLabel: "0",
 						},
 						Annotations: map[string]string{
 							vald.LastTimeSaveIndexTimestampAnnotationsKey: saveTime.Format(vald.TimeFormat),
 						},
 					},
 				},
-				readReplicaDeployment: &client.Deployment{
-					ObjectMeta: client.ObjectMeta{
+				readReplicaDeployment: &k8s.Deployment{
+					ObjectMeta: k8s.ObjectMeta{
 						Name: "deploymentName",
 						Annotations: map[string]string{
 							vald.LastTimeSnapshotTimestampAnnotationsKey: rotateTime.Format(vald.TimeFormat),
@@ -124,7 +125,7 @@ func Test_operator_podOnReconcile(t *testing.T) {
 					},
 				},
 				want: want{
-					res: client.Result{
+					res: k8s.Result{
 						Requeue: false,
 					},
 					createCalled: true,
@@ -138,37 +139,37 @@ func Test_operator_podOnReconcile(t *testing.T) {
 			return test{
 				name:               "returns requeue: true when there is already one running job when rotation job concurrency is 1",
 				readReplicaEnabled: true,
-				agentPod: &client.Pod{
-					ObjectMeta: client.ObjectMeta{
+				agentPod: &k8s.Pod{
+					ObjectMeta: k8s.ObjectMeta{
 						Labels: map[string]string{
-							client.PodIndexLabel: "0",
+							k8s.PodIndexLabel: "0",
 						},
 						Annotations: map[string]string{
 							vald.LastTimeSaveIndexTimestampAnnotationsKey: saveTime.Format(vald.TimeFormat),
 						},
 					},
 				},
-				readReplicaDeployment: &client.Deployment{
-					ObjectMeta: client.ObjectMeta{
+				readReplicaDeployment: &k8s.Deployment{
+					ObjectMeta: k8s.ObjectMeta{
 						Name: "deploymentName",
 						Annotations: map[string]string{
 							vald.LastTimeSnapshotTimestampAnnotationsKey: rotateTime.Format(vald.TimeFormat),
 						},
 					},
 				},
-				runningJobs: []client.Job{
+				runningJobs: []k8s.Job{
 					{
-						ObjectMeta: client.ObjectMeta{
+						ObjectMeta: k8s.ObjectMeta{
 							Name: "already running job1",
 						},
-						Status: client.JobStatus{
+						Status: k8s.JobStatus{
 							Active: 1,
 						},
 					},
 				},
 				rotationJobConcurrency: 1,
 				want: want{
-					res: client.Result{
+					res: k8s.Result{
 						Requeue: true,
 					},
 					createCalled: false,
@@ -182,37 +183,37 @@ func Test_operator_podOnReconcile(t *testing.T) {
 			return test{
 				name:               "returns requeue: false and create job when there is one running job when rotation job concurrency is 2",
 				readReplicaEnabled: true,
-				agentPod: &client.Pod{
-					ObjectMeta: client.ObjectMeta{
+				agentPod: &k8s.Pod{
+					ObjectMeta: k8s.ObjectMeta{
 						Labels: map[string]string{
-							client.PodIndexLabel: "0",
+							k8s.PodIndexLabel: "0",
 						},
 						Annotations: map[string]string{
 							vald.LastTimeSaveIndexTimestampAnnotationsKey: saveTime.Format(vald.TimeFormat),
 						},
 					},
 				},
-				readReplicaDeployment: &client.Deployment{
-					ObjectMeta: client.ObjectMeta{
+				readReplicaDeployment: &k8s.Deployment{
+					ObjectMeta: k8s.ObjectMeta{
 						Name: "deploymentName",
 						Annotations: map[string]string{
 							vald.LastTimeSnapshotTimestampAnnotationsKey: rotateTime.Format(vald.TimeFormat),
 						},
 					},
 				},
-				runningJobs: []client.Job{
+				runningJobs: []k8s.Job{
 					{
-						ObjectMeta: client.ObjectMeta{
+						ObjectMeta: k8s.ObjectMeta{
 							Name: "already running job1",
 						},
-						Status: client.JobStatus{
+						Status: k8s.JobStatus{
 							Active: 1,
 						},
 					},
 				},
 				rotationJobConcurrency: 2,
 				want: want{
-					res: client.Result{
+					res: k8s.Result{
 						Requeue: false,
 					},
 					createCalled: true,
@@ -226,45 +227,45 @@ func Test_operator_podOnReconcile(t *testing.T) {
 			return test{
 				name:               "returns requeue: true when there are two running jobs when rotation job concurrency is 2",
 				readReplicaEnabled: true,
-				agentPod: &client.Pod{
-					ObjectMeta: client.ObjectMeta{
+				agentPod: &k8s.Pod{
+					ObjectMeta: k8s.ObjectMeta{
 						Labels: map[string]string{
-							client.PodIndexLabel: "0",
+							k8s.PodIndexLabel: "0",
 						},
 						Annotations: map[string]string{
 							vald.LastTimeSaveIndexTimestampAnnotationsKey: saveTime.Format(vald.TimeFormat),
 						},
 					},
 				},
-				readReplicaDeployment: &client.Deployment{
-					ObjectMeta: client.ObjectMeta{
+				readReplicaDeployment: &k8s.Deployment{
+					ObjectMeta: k8s.ObjectMeta{
 						Name: "deploymentName",
 						Annotations: map[string]string{
 							vald.LastTimeSnapshotTimestampAnnotationsKey: rotateTime.Format(vald.TimeFormat),
 						},
 					},
 				},
-				runningJobs: []client.Job{
+				runningJobs: []k8s.Job{
 					{
-						ObjectMeta: client.ObjectMeta{
+						ObjectMeta: k8s.ObjectMeta{
 							Name: "already running job1",
 						},
-						Status: client.JobStatus{
+						Status: k8s.JobStatus{
 							Active: 1,
 						},
 					},
 					{
-						ObjectMeta: client.ObjectMeta{
+						ObjectMeta: k8s.ObjectMeta{
 							Name: "already running job2",
 						},
-						Status: client.JobStatus{
+						Status: k8s.JobStatus{
 							Active: 1,
 						},
 					},
 				},
 				rotationJobConcurrency: 2,
 				want: want{
-					res: client.Result{
+					res: k8s.Result{
 						Requeue: true,
 					},
 					createCalled: false,
@@ -279,17 +280,17 @@ func Test_operator_podOnReconcile(t *testing.T) {
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
 
-			mock := &k8s.ValdK8sClientMock{}
+			mock := &mock.ValdK8sClientMock{}
 			mock.On("LabelSelector", testify.Anything, testify.Anything, testify.Anything).Return(client.NewSelector(), nil).Maybe()
 			mock.On("List", testify.Anything, testify.AnythingOfType("*v1.DeploymentList"), testify.Anything).Run(func(args testify.Arguments) {
-				arg, ok := args.Get(1).(*client.DeploymentList)
+				arg, ok := args.Get(1).(*k8s.DeploymentList)
 				require.True(t, ok)
 
-				arg.Items = []client.Deployment{*test.readReplicaDeployment}
+				arg.Items = []k8s.Deployment{*test.readReplicaDeployment}
 			}).Return(nil).Maybe()
 
 			mock.On("List", testify.Anything, testify.AnythingOfType("*v1.JobList"), testify.Anything).Run(func(args testify.Arguments) {
-				arg, ok := args.Get(1).(*client.JobList)
+				arg, ok := args.Get(1).(*k8s.JobList)
 				require.True(t, ok)
 
 				arg.Items = test.runningJobs
@@ -312,8 +313,8 @@ func Test_operator_podOnReconcile(t *testing.T) {
 				rotationJobConcurrency: concurrency,
 			}
 
-			op.rotatorJob = &client.Job{
-				ObjectMeta: client.ObjectMeta{
+			op.rotatorJob = &k8s.Job{
+				ObjectMeta: k8s.ObjectMeta{
 					Name: "foo job",
 				},
 			}

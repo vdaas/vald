@@ -26,7 +26,6 @@ import (
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/k8s"
-	"github.com/vdaas/vald/internal/k8s/client"
 	"github.com/vdaas/vald/internal/k8s/job"
 	v1 "github.com/vdaas/vald/internal/k8s/vald/benchmark/api/v1"
 	benchjob "github.com/vdaas/vald/internal/k8s/vald/benchmark/job"
@@ -387,26 +386,26 @@ func (o *operator) benchScenarioReconcile(ctx context.Context, scenarioList map[
 
 // deleteBenchmarkJob deletes benchmark job resource according to given scenario name and generation.
 func (o *operator) deleteBenchmarkJob(ctx context.Context, name string, generation int64) error {
-	opts := new(client.DeleteAllOfOptions)
-	client.MatchingLabels(map[string]string{
+	opts := new(k8s.DeleteAllOfOptions)
+	k8s.MatchingLabels(map[string]string{
 		Scenario: name + strconv.Itoa(int(generation)),
 	}).ApplyToDeleteAllOf(opts)
-	client.InNamespace(o.jobNamespace).ApplyToDeleteAllOf(opts)
+	k8s.InNamespace(o.jobNamespace).ApplyToDeleteAllOf(opts)
 	return o.ctrl.GetManager().GetClient().DeleteAllOf(ctx, &v1.ValdBenchmarkJob{}, opts)
 }
 
 // deleteJob deletes job resource according to given benchmark job name and generation.
 func (o *operator) deleteJob(ctx context.Context, name string) error {
 	cj := new(job.Job)
-	err := o.ctrl.GetManager().GetClient().Get(ctx, client.ObjectKey{
+	err := o.ctrl.GetManager().GetClient().Get(ctx, k8s.ObjectKey{
 		Namespace: o.jobNamespace,
 		Name:      name,
 	}, cj)
 	if err != nil {
 		return err
 	}
-	opts := new(client.DeleteOptions)
-	deleteProgation := client.DeletePropagationBackground
+	opts := new(k8s.DeleteOptions)
+	deleteProgation := k8s.DeletePropagationBackground
 	opts.PropagationPolicy = &deleteProgation
 	return o.ctrl.GetManager().GetClient().Delete(ctx, cj, opts)
 }
@@ -558,7 +557,7 @@ func (o *operator) checkJobsStatus(ctx context.Context, jobs map[string]string) 
 	c := o.ctrl.GetManager().GetClient()
 	jobStatus := map[string]v1.BenchmarkJobStatus{}
 	for name, ns := range jobs {
-		err := c.Get(ctx, client.ObjectKey{
+		err := c.Get(ctx, k8s.ObjectKey{
 			Namespace: ns,
 			Name:      name,
 		}, job)
