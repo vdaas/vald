@@ -252,12 +252,13 @@ func (o *operator) benchJobReconcile(ctx context.Context, benchJobList map[strin
 		// update scenario status
 		if len(job.GetOwnerReferences()) > 0 {
 			if scenarios := o.getAtomicScenario(); scenarios != nil {
-				on := job.GetOwnerReferences()[0].Name
-				if _, ok := scenarios[on]; ok {
-					if scenarios[on].BenchJobStatus == nil {
-						scenarios[on].BenchJobStatus = map[string]v1.BenchmarkJobStatus{}
+				ownerRefs := job.GetOwnerReferences()
+				ownerName := ownerRefs[0].Name
+				if _, ok := scenarios[ownerName]; ok {
+					if scenarios[ownerName].BenchJobStatus == nil {
+						scenarios[ownerName].BenchJobStatus = map[string]v1.BenchmarkJobStatus{}
 					}
-					scenarios[on].BenchJobStatus[job.Name] = job.Status
+					scenarios[ownerName].BenchJobStatus[job.Name] = job.Status
 				}
 				o.scenarios.Store(&scenarios)
 			}
@@ -337,13 +338,13 @@ func (o *operator) benchScenarioReconcile(ctx context.Context, scenarioList map[
 				if err != nil {
 					log.Errorf("[reconcile benchmark scenario resource] failed to create benchmark job resource: %s", err.Error())
 				}
-				cbsl[name].BenchJobStatus = func() map[string]v1.BenchmarkJobStatus {
-					s := map[string]v1.BenchmarkJobStatus{}
-					for _, v := range jobNames {
-						s[v] = v1.BenchmarkJobNotReady
-					}
-					return s
-				}()
+				// benchmark job resource status to store benchmarkScenario Atomic
+				s := map[string]v1.BenchmarkJobStatus{}
+				for _, v := range jobNames {
+					s[v] = v1.BenchmarkJobNotReady
+				}
+				cbsl[name].BenchJobStatus = s
+				// use for updating benchmarkScenario CR status
 				scenarioStatus[sc.GetName()] = v1.BenchmarkScenarioHealthy
 			}
 		} else {
