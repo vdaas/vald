@@ -203,7 +203,7 @@ func (o *operator) jobReconcile(ctx context.Context, jobList map[string][]job.Jo
 			jobNames[job.GetName()] = struct{}{}
 			if _, ok := cjobs[job.Name]; !ok && job.Status.CompletionTime == nil {
 				cjobs[job.GetName()] = job.Namespace
-				benchmarkJobStatus[job.GetName()] = v1.BenchmarkJobAvailable
+				benchmarkJobStatus[job.GetName()] = v1.BenchmarkJobHealthy
 				continue
 			}
 			name = job.GetName()
@@ -248,22 +248,21 @@ func (o *operator) benchJobReconcile(ctx context.Context, benchJobList map[strin
 	// jobStatus is used for update benchmarkJob CR status if updating is needed.
 	jobStatus := make(map[string]v1.BenchmarkJobStatus)
 	for k := range benchJobList {
-		// update scenario status
 		job := benchJobList[k]
-		hasOwner := false
+		// update scenario status
 		if len(job.GetOwnerReferences()) > 0 {
-			hasOwner = true
-		}
-		if scenarios := o.getAtomicScenario(); scenarios != nil && hasOwner {
-			on := job.GetOwnerReferences()[0].Name
-			if _, ok := scenarios[on]; ok {
-				if scenarios[on].BenchJobStatus == nil {
-					scenarios[on].BenchJobStatus = map[string]v1.BenchmarkJobStatus{}
+			if scenarios := o.getAtomicScenario(); scenarios != nil {
+				on := job.GetOwnerReferences()[0].Name
+				if _, ok := scenarios[on]; ok {
+					if scenarios[on].BenchJobStatus == nil {
+						scenarios[on].BenchJobStatus = map[string]v1.BenchmarkJobStatus{}
+					}
+					scenarios[on].BenchJobStatus[job.Name] = job.Status
 				}
-				scenarios[on].BenchJobStatus[job.Name] = job.Status
+				o.scenarios.Store(&scenarios)
 			}
-			o.scenarios.Store(&scenarios)
 		}
+		// update benchmark job
 		if oldJob := cbjl[k]; oldJob != nil {
 			if oldJob.GetGeneration() != job.GetGeneration() {
 				if job.Status != "" && oldJob.Status != v1.BenchmarkJobCompleted {
