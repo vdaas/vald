@@ -1084,7 +1084,7 @@ func Test_operator_benchJobReconcile(t *testing.T) {
 									Timestamp:            "",
 								},
 							},
-							Status: v1.BenchmarkJobAvailable,
+							Status: v1.BenchmarkJobHealthy,
 						},
 					},
 				},
