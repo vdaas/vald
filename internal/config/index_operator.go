@@ -13,7 +13,7 @@
 // limitations under the License.
 package config
 
-import "github.com/vdaas/vald/internal/k8s/client"
+import "github.com/vdaas/vald/internal/k8s"
 
 // IndexOperator represents the configurations for index k8s operator.
 type IndexOperator struct {
@@ -46,10 +46,10 @@ type IndexOperator struct {
 }
 
 type IndexJobTemplates struct {
-	Rotate     *client.Job `json:"rotate"     yaml:"rotate"`
-	Creation   *client.Job `json:"creation"   yaml:"creation"`
-	Save       *client.Job `json:"save"       yaml:"save"`
-	Correction *client.Job `json:"correction" yaml:"correction"`
+	Rotate     *k8s.Job `json:"rotate"     yaml:"rotate"`
+	Creation   *k8s.Job `json:"creation"   yaml:"creation"`
+	Save       *k8s.Job `json:"save"       yaml:"save"`
+	Correction *k8s.Job `json:"correction" yaml:"correction"`
 }
 
 func (ic *IndexOperator) Bind() *IndexOperator {
