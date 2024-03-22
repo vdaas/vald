@@ -18,8 +18,9 @@ import (
 
 	"github.com/stretchr/testify/require"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/k8s"
 	"github.com/vdaas/vald/internal/k8s/client"
-	"github.com/vdaas/vald/internal/test/mock/k8s"
+	mock "github.com/vdaas/vald/internal/test/mock/k8s"
 	"github.com/vdaas/vald/internal/test/testify"
 )
 
@@ -135,21 +136,21 @@ func Test_parseReplicaID(t *testing.T) {
 		func() test {
 			wantID1 := "bar"
 			wantID2 := "baz"
-			mock := &k8s.ValdK8sClientMock{}
+			mock := &mock.ValdK8sClientMock{}
 
 			mock.On("LabelSelector", testify.Anything, testify.Anything, testify.Anything).Return(client.NewSelector(), nil)
 			mock.On("List", testify.Anything, testify.Anything, testify.Anything).Run(func(args testify.Arguments) {
-				if depList, ok := args.Get(1).(*client.DeploymentList); ok {
-					depList.Items = []client.Deployment{
+				if depList, ok := args.Get(1).(*k8s.DeploymentList); ok {
+					depList.Items = []k8s.Deployment{
 						{
-							ObjectMeta: client.ObjectMeta{
+							ObjectMeta: k8s.ObjectMeta{
 								Labels: map[string]string{
 									labelKey: wantID1,
 								},
 							},
 						},
 						{
-							ObjectMeta: client.ObjectMeta{
+							ObjectMeta: k8s.ObjectMeta{
 								Labels: map[string]string{
 									labelKey: wantID2,
 								},

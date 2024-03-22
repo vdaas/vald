@@ -24,7 +24,6 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/hash"
 	"github.com/vdaas/vald/internal/k8s"
-	k8sclient "github.com/vdaas/vald/internal/k8s/client"
 	"github.com/vdaas/vald/internal/k8s/vald/mirror/target"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net"
@@ -314,7 +313,7 @@ func (d *discovery) disconnectTarget(ctx context.Context, req map[string]*delete
 func (d *discovery) updateMirrorTargetPhase(ctx context.Context, name string, phase target.MirrorTargetPhase) error {
 	c := d.ctrl.GetManager().GetClient()
 	mt := &target.MirrorTarget{}
-	err := c.Get(ctx, k8sclient.ObjectKey{
+	err := c.Get(ctx, k8s.ObjectKey{
 		Namespace: d.namespace,
 		Name:      name,
 	}, mt)

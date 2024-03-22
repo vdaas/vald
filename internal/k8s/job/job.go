@@ -40,23 +40,17 @@ type reconciler struct {
 	name              string
 	namespaces        []string
 	onError           func(err error)
-	onReconcile       func(ctx context.Context, jobList map[string][]Job)
+	onReconcile       func(ctx context.Context, jobList map[string][]k8s.Job)
 	listOpts          []client.ListOption
 	jobsByAppNamePool sync.Pool // map[app][]Job
 }
-
-// Job is a type alias for the k8s job definition.
-type Job = batchv1.Job
-
-// JobStatus is a type alias for the k8s job status definition.
-type JobStatus = batchv1.JobStatus
 
 // New returns the JobWatcher that implements reconciliation loop, or any errors occurred.
 func New(opts ...Option) (JobWatcher, error) {
 	r := &reconciler{
 		jobsByAppNamePool: sync.Pool{
 			New: func() interface{} {
-				return make(map[string][]Job)
+				return make(map[string][]k8s.Job)
 			},
 		},
 	}
@@ -100,7 +94,7 @@ func (r *reconciler) Reconcile(ctx context.Context, _ reconcile.Request) (res re
 		return
 	}
 
-	jobs := r.jobsByAppNamePool.Get().(map[string][]Job)
+	jobs := r.jobsByAppNamePool.Get().(map[string][]k8s.Job)
 	for idx := range js.Items {
 		job := js.Items[idx]
 		name, ok := job.GetObjectMeta().GetLabels()["app"]
@@ -110,7 +104,7 @@ func (r *reconciler) Reconcile(ctx context.Context, _ reconcile.Request) (res re
 		}
 
 		if _, ok := jobs[name]; !ok {
-			jobs[name] = make([]Job, 0, len(js.Items))
+			jobs[name] = make([]k8s.Job, 0, len(js.Items))
 		}
 		jobs[name] = append(jobs[name], job)
 	}

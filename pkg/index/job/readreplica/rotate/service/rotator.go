@@ -20,17 +20,14 @@ import (
 	"strings"
 	"time"
 
-	snapshotv1 "github.com/kubernetes-csi/external-snapshotter/client/v6/apis/volumesnapshot/v1"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/k8s"
 	"github.com/vdaas/vald/internal/k8s/client"
 	"github.com/vdaas/vald/internal/k8s/vald"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/sync/errgroup"
-	appsv1 "k8s.io/api/apps/v1"
-	v1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/utils/ptr"
 )
 
@@ -52,7 +49,7 @@ type rotator struct {
 }
 
 type subProcess struct {
-	listOpts   client.ListOptions
+	listOpts   k8s.ListOptions
 	client     client.Client
 	volumeName string
 }
@@ -123,13 +120,13 @@ func (r *rotator) Start(ctx context.Context) error {
 }
 
 func (r *rotator) newSubprocess(c client.Client, replicaID string) (subProcess, error) {
-	selector, err := c.LabelSelector(r.readReplicaLabelKey, client.SelectionOpEquals, []string{replicaID})
+	selector, err := c.LabelSelector(r.readReplicaLabelKey, k8s.SelectionOpEquals, []string{replicaID})
 	if err != nil {
 		return subProcess{}, err
 	}
 	sub := subProcess{
 		client: c,
-		listOpts: client.ListOptions{
+		listOpts: k8s.ListOptions{
 			Namespace:     r.namespace,
 			LabelSelector: selector,
 		},
@@ -186,8 +183,8 @@ func (s *subProcess) rotate(ctx context.Context) error {
 	return nil
 }
 
-func (s *subProcess) createSnapshot(ctx context.Context, deployment *appsv1.Deployment) (newSnap, oldSnap *client.VolumeSnapshot, err error) {
-	list := snapshotv1.VolumeSnapshotList{}
+func (s *subProcess) createSnapshot(ctx context.Context, deployment *k8s.Deployment) (newSnap, oldSnap *k8s.VolumeSnapshot, err error) {
+	list := k8s.VolumeSnapshotList{}
 	if err := s.client.List(ctx, &list, &s.listOpts); err != nil {
 		return nil, nil, fmt.Errorf("failed to get snapshot: %w", err)
 	}
@@ -201,12 +198,12 @@ func (s *subProcess) createSnapshot(ctx context.Context, deployment *appsv1.Depl
 	if newNameBase == "" {
 		return nil, nil, fmt.Errorf("the name(%s) doesn't seem to have replicaid", cur.GetObjectMeta().GetName())
 	}
-	newSnap = &client.VolumeSnapshot{
-		ObjectMeta: metav1.ObjectMeta{
+	newSnap = &k8s.VolumeSnapshot{
+		ObjectMeta: k8s.ObjectMeta{
 			Name:      fmt.Sprintf("%s%d", newNameBase, time.Now().Unix()),
 			Namespace: cur.GetNamespace(),
 			Labels:    cur.GetObjectMeta().GetLabels(),
-			OwnerReferences: []metav1.OwnerReference{
+			OwnerReferences: []k8s.OwnerReference{
 				{
 					APIVersion: "apps/v1",
 					Kind:       "Deployment",
@@ -230,8 +227,8 @@ func (s *subProcess) createSnapshot(ctx context.Context, deployment *appsv1.Depl
 	return newSnap, oldSnap, nil
 }
 
-func (s *subProcess) createPVC(ctx context.Context, newSnapShot string, deployment *appsv1.Deployment) (newPvc, oldPvc *v1.PersistentVolumeClaim, err error) {
-	list := v1.PersistentVolumeClaimList{}
+func (s *subProcess) createPVC(ctx context.Context, newSnapShot string, deployment *k8s.Deployment) (newPvc, oldPvc *k8s.PersistentVolumeClaim, err error) {
+	list := k8s.PersistentVolumeClaimList{}
 	if err := s.client.List(ctx, &list, &s.listOpts); err != nil {
 		return nil, nil, fmt.Errorf("failed to get PVC: %w", err)
 	}
@@ -247,12 +244,12 @@ func (s *subProcess) createPVC(ctx context.Context, newSnapShot string, deployme
 	}
 
 	// remove timestamp from old pvc name
-	newPvc = &v1.PersistentVolumeClaim{
-		ObjectMeta: metav1.ObjectMeta{
+	newPvc = &k8s.PersistentVolumeClaim{
+		ObjectMeta: k8s.ObjectMeta{
 			Name:      fmt.Sprintf("%s%d", newNameBase, time.Now().Unix()),
 			Namespace: cur.GetNamespace(),
 			Labels:    cur.GetObjectMeta().GetLabels(),
-			OwnerReferences: []metav1.OwnerReference{
+			OwnerReferences: []k8s.OwnerReference{
 				{
 					APIVersion: "apps/v1",
 					Kind:       "Deployment",
@@ -262,10 +259,10 @@ func (s *subProcess) createPVC(ctx context.Context, newSnapShot string, deployme
 				},
 			},
 		},
-		Spec: v1.PersistentVolumeClaimSpec{
+		Spec: k8s.PersistentVolumeClaimSpec{
 			AccessModes: cur.Spec.AccessModes,
 			Resources:   cur.Spec.Resources,
-			DataSource: &v1.TypedLocalObjectReference{
+			DataSource: &k8s.TypedLocalObjectReference{
 				Name:     newSnapShot,
 				Kind:     cur.Spec.DataSource.Kind,
 				APIGroup: cur.Spec.DataSource.APIGroup,
@@ -284,8 +281,8 @@ func (s *subProcess) createPVC(ctx context.Context, newSnapShot string, deployme
 	return newPvc, oldPvc, nil
 }
 
-func (s *subProcess) getDeployment(ctx context.Context) (*appsv1.Deployment, error) {
-	list := appsv1.DeploymentList{}
+func (s *subProcess) getDeployment(ctx context.Context) (*k8s.Deployment, error) {
+	list := k8s.DeploymentList{}
 	if err := s.client.List(ctx, &list, &s.listOpts); err != nil {
 		return nil, fmt.Errorf("failed to get deployment through client: %w", err)
 	}
@@ -296,7 +293,7 @@ func (s *subProcess) getDeployment(ctx context.Context) (*appsv1.Deployment, err
 	return &list.Items[0], nil
 }
 
-func (s *subProcess) updateDeployment(ctx context.Context, newPVC string, deployment *appsv1.Deployment, snapshotTime time.Time) error {
+func (s *subProcess) updateDeployment(ctx context.Context, newPVC string, deployment *k8s.Deployment, snapshotTime time.Time) error {
 	if deployment.Spec.Template.ObjectMeta.Annotations == nil {
 		deployment.Spec.Template.ObjectMeta.Annotations = map[string]string{}
 	}
@@ -324,10 +321,10 @@ func (s *subProcess) updateDeployment(ctx context.Context, newPVC string, deploy
 	return nil
 }
 
-func (s *subProcess) deleteSnapshot(ctx context.Context, snapshot *snapshotv1.VolumeSnapshot) error {
+func (s *subProcess) deleteSnapshot(ctx context.Context, snapshot *k8s.VolumeSnapshot) error {
 	watcher, err := s.client.Watch(ctx,
-		&snapshotv1.VolumeSnapshotList{
-			Items: []snapshotv1.VolumeSnapshot{*snapshot},
+		&k8s.VolumeSnapshotList{
+			Items: []k8s.VolumeSnapshot{*snapshot},
 		},
 		&s.listOpts,
 	)
@@ -345,7 +342,7 @@ func (s *subProcess) deleteSnapshot(ctx context.Context, snapshot *snapshotv1.Vo
 			case <-egctx.Done():
 				return egctx.Err()
 			case event := <-watcher.ResultChan():
-				if event.Type == client.WatchDeletedEvent {
+				if event.Type == k8s.WatchDeletedEvent {
 					log.Infof("volume snapshot(%s) deleted", snapshot.GetName())
 					return nil
 				} else {
@@ -361,10 +358,10 @@ func (s *subProcess) deleteSnapshot(ctx context.Context, snapshot *snapshotv1.Vo
 	return eg.Wait()
 }
 
-func (s *subProcess) deletePVC(ctx context.Context, pvc *v1.PersistentVolumeClaim) error {
+func (s *subProcess) deletePVC(ctx context.Context, pvc *k8s.PersistentVolumeClaim) error {
 	watcher, err := s.client.Watch(ctx,
-		&v1.PersistentVolumeClaimList{
-			Items: []v1.PersistentVolumeClaim{*pvc},
+		&k8s.PersistentVolumeClaimList{
+			Items: []k8s.PersistentVolumeClaim{*pvc},
 		},
 		&s.listOpts,
 	)
@@ -382,7 +379,7 @@ func (s *subProcess) deletePVC(ctx context.Context, pvc *v1.PersistentVolumeClai
 			case <-egctx.Done():
 				return egctx.Err()
 			case event := <-watcher.ResultChan():
-				if event.Type == client.WatchDeletedEvent {
+				if event.Type == k8s.WatchDeletedEvent {
 					log.Infof("PVC(%s) deleted", pvc.GetName())
 					return nil
 				} else {
@@ -417,12 +414,12 @@ func (r *rotator) parseReplicaID(replicaID string, c client.Client) ([]string, e
 	}
 
 	if replicaID == rotateAllID {
-		var deploymentList appsv1.DeploymentList
-		selector, err := c.LabelSelector(r.readReplicaLabelKey, client.SelectionOpExists, []string{})
+		var deploymentList k8s.DeploymentList
+		selector, err := c.LabelSelector(r.readReplicaLabelKey, k8s.SelectionOpExists, []string{})
 		if err != nil {
 			return nil, err
 		}
-		if err := c.List(context.Background(), &deploymentList, &client.ListOptions{
+		if err := c.List(context.Background(), &deploymentList, &k8s.ListOptions{
 			Namespace:     r.namespace,
 			LabelSelector: selector,
 		}); err != nil {
