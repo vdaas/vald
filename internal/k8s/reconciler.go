@@ -36,11 +36,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
 
-type (
-	Manager        = manager.Manager
-	OwnerReference = metav1.OwnerReference
-)
-
 type Controller interface {
 	Start(ctx context.Context) (<-chan error, error)
 	GetManager() Manager

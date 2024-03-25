@@ -18,12 +18,11 @@
 package hdf5
 
 import (
-	"log"
-	"os"
 	"reflect"
 	"testing"
 
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/file"
 	"github.com/vdaas/vald/internal/test/goleak"
 	"gonum.org/v1/hdf5"
 )
@@ -1192,20 +1191,8 @@ func Test_downloadFile(t *testing.T) {
 		beforeFunc func(*testing.T, args)
 		afterFunc  func(*testing.T, args)
 	}
-	defaultBeforeFunc := func(t *testing.T, _ args) {
-		t.Helper()
-		err := os.Mkdir("tmp", os.ModePerm)
-		if err != nil {
-			log.Fatal(err)
-		}
-	}
-	defaultAfterFunc := func(t *testing.T, _ args) {
-		t.Helper()
-		err := os.RemoveAll("tmp")
-		if err != nil {
-			log.Fatal(err)
-		}
-	}
+	defaultBeforeFunc := func(t *testing.T, _ args) {}
+	defaultAfterFunc := func(t *testing.T, _ args) {}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
@@ -1213,19 +1200,23 @@ func Test_downloadFile(t *testing.T) {
 		return nil
 	}
 	tests := []test{
-		{
-			name: "success download hdf5 file",
-			args: args{
-				url:  "https://ann-benchmarks.com/fashion-mnist-784-euclidean.hdf5",
-				path: "./tmp/data",
-			},
-			want: want{
-				err: nil,
-			},
-			beforeFunc: defaultBeforeFunc,
-			afterFunc:  defaultAfterFunc,
-			checkFunc:  defaultCheckFunc,
-		},
+		func() test {
+			tmpdir := t.TempDir()
+			path := file.Join(tmpdir, "data")
+			return test{
+				name: "success download hdf5 file",
+				args: args{
+					url:  "https://ann-benchmarks.com/fashion-mnist-784-euclidean.hdf5",
+					path: path,
+				},
+				want: want{
+					err: nil,
+				},
+				beforeFunc: defaultBeforeFunc,
+				afterFunc:  defaultAfterFunc,
+				checkFunc:  defaultCheckFunc,
+			}
+		}(),
 	}
 
 	for _, tc := range tests {

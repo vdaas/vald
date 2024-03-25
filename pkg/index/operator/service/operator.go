@@ -58,11 +58,11 @@ type operator struct {
 	readReplicaEnabled                bool
 	readReplicaLabelKey               string
 	rotationJobConcurrency            uint
-	rotatorJob                        *client.Job
+	rotatorJob                        *k8s.Job
 }
 
 // New returns Indexer object if no error occurs.
-func New(namespace, agentName, rotatorName, targetReadReplicaIDKey string, rotatorJob *client.Job, opts ...Option) (o Operator, err error) {
+func New(namespace, agentName, rotatorName, targetReadReplicaIDKey string, rotatorJob *k8s.Job, opts ...Option) (o Operator, err error) {
 	operator := new(operator)
 	operator.namespace = namespace
 	operator.targetReadReplicaIDAnnotationsKey = targetReadReplicaIDKey
@@ -80,7 +80,7 @@ func New(namespace, agentName, rotatorName, targetReadReplicaIDKey string, rotat
 		}
 	}
 
-	isAgent := func(pod *client.Pod) bool {
+	isAgent := func(pod *k8s.Pod) bool {
 		return pod.Labels["app"] == agentName
 	}
 
@@ -150,38 +150,38 @@ func (o *operator) Start(ctx context.Context) (<-chan error, error) {
 	return ech, nil
 }
 
-func (o *operator) podOnReconcile(ctx context.Context, pod *client.Pod) (client.Result, error) {
+func (o *operator) podOnReconcile(ctx context.Context, pod *k8s.Pod) (k8s.Result, error) {
 	if o.readReplicaEnabled {
 		rq, err := o.reconcileRotatorJob(ctx, pod)
 		if err != nil {
 			log.Errorf("reconciling rotator job: %s", err)
-			return client.Result{}, fmt.Errorf("reconciling rotator job: %w", err)
+			return k8s.Result{}, fmt.Errorf("reconciling rotator job: %w", err)
 		}
 		// let controller-runtime backoff exponentially by not setting the backoff duration
-		return client.Result{
+		return k8s.Result{
 			Requeue: rq,
 		}, nil
 	}
 
-	return client.Result{}, nil
+	return k8s.Result{}, nil
 }
 
 // reconcileRotatorJob starts rotation job when the condition meets.
 // This function is work in progress.
-func (o *operator) reconcileRotatorJob(ctx context.Context, pod *client.Pod) (requeue bool, err error) {
-	podIdx, ok := pod.Labels[client.PodIndexLabel]
+func (o *operator) reconcileRotatorJob(ctx context.Context, pod *k8s.Pod) (requeue bool, err error) {
+	podIdx, ok := pod.Labels[k8s.PodIndexLabel]
 	if !ok {
 		log.Info("no index label found. the agent is not StatefulSet? skipping...")
 		return false, nil
 	}
 
 	// retrieve the readreplica deployment annotations for podIdx
-	var readReplicaDeployments client.DeploymentList
-	selector, err := o.client.LabelSelector(o.readReplicaLabelKey, client.SelectionOpEquals, []string{podIdx})
+	var readReplicaDeployments k8s.DeploymentList
+	selector, err := o.client.LabelSelector(o.readReplicaLabelKey, k8s.SelectionOpEquals, []string{podIdx})
 	if err != nil {
 		return false, fmt.Errorf("creating label selector: %w", err)
 	}
-	listOpts := client.ListOptions{
+	listOpts := k8s.ListOptions{
 		Namespace:     o.namespace,
 		LabelSelector: selector,
 	}
@@ -261,7 +261,7 @@ func (o *operator) createRotationJobOrRequeue(ctx context.Context, podIdx string
 		job.Spec.Template.Annotations = make(map[string]string)
 	}
 	job.Spec.Template.Annotations[o.targetReadReplicaIDAnnotationsKey] = podIdx
-	job.ObjectMeta = client.ObjectMeta{
+	job.ObjectMeta = k8s.ObjectMeta{
 		GenerateName: fmt.Sprintf("%s-", o.rotatorName),
 		Namespace:    o.namespace,
 	}
@@ -277,12 +277,12 @@ func (o *operator) createRotationJobOrRequeue(ctx context.Context, podIdx string
 // the MaxConcurrentReconciles defaults to 1 and we do not change it.
 func (o *operator) ensureJobConcurrency(ctx context.Context, podIdx string) (jobReconcileResult, error) {
 	// get all the rotation jobs and make sure the job is not running
-	var jobList client.JobList
-	selector, err := o.client.LabelSelector("app", client.SelectionOpEquals, []string{o.rotatorName})
+	var jobList k8s.JobList
+	selector, err := o.client.LabelSelector("app", k8s.SelectionOpEquals, []string{o.rotatorName})
 	if err != nil {
 		return createSkipped, fmt.Errorf("creating label selector: %w", err)
 	}
-	if err := o.client.List(ctx, &jobList, &client.ListOptions{
+	if err := o.client.List(ctx, &jobList, &k8s.ListOptions{
 		Namespace:     o.namespace,
 		LabelSelector: selector,
 	}); err != nil {
@@ -290,7 +290,7 @@ func (o *operator) ensureJobConcurrency(ctx context.Context, podIdx string) (job
 	}
 
 	// no need to check finished jobs
-	jobList.Items = slices.DeleteFunc(jobList.Items, func(job client.Job) bool {
+	jobList.Items = slices.DeleteFunc(jobList.Items, func(job k8s.Job) bool {
 		return job.Status.Active == 0
 	})
 
