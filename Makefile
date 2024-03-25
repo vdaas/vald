@@ -138,14 +138,17 @@ ifeq ($(GOARCH),amd64)
 CFLAGS ?= -mno-avx512f -mno-avx512dq -mno-avx512cd -mno-avx512bw -mno-avx512vl
 CXXFLAGS ?= $(CFLAGS)
 EXTLDFLAGS ?= -m64
+NGT_EXTRA_FLAGS ?=
 else ifeq ($(GOARCH),arm64)
 CFLAGS ?=
 CXXFLAGS ?= $(CFLAGS)
 EXTLDFLAGS ?= -march=armv8-a
+NGT_EXTRA_FLAGS ?=
 else
 CFLAGS ?=
 CXXFLAGS ?= $(CFLAGS)
 EXTLDFLAGS ?=
+NGT_EXTRA_FLAGS ?=
 endif
 
 BENCH_DATASET_MD5S := $(eval BENCH_DATASET_MD5S := $(shell find $(BENCH_DATASET_MD5_DIR) -type f -regex ".*\.md5"))$(BENCH_DATASET_MD5S)
@@ -571,7 +574,7 @@ ngt/install: /usr/local/include/NGT/Capi.h
 /usr/local/include/NGT/Capi.h:
 	git clone --depth 1 --branch v$(NGT_VERSION) https://github.com/yahoojapan/NGT $(TEMP_DIR)/NGT-$(NGT_VERSION)
 	cd $(TEMP_DIR)/NGT-$(NGT_VERSION) && \
-		cmake -DCMAKE_C_FLAGS="$(CFLAGS)" -DCMAKE_CXX_FLAGS="$(CXXFLAGS)" .
+		cmake -DCMAKE_C_FLAGS="$(CFLAGS)" -DCMAKE_CXX_FLAGS="$(CXXFLAGS)" "$(NGT_EXTRA_FLAGS)" .
 	make -j -C $(TEMP_DIR)/NGT-$(NGT_VERSION)
 	make install -C $(TEMP_DIR)/NGT-$(NGT_VERSION)
 	cd $(ROOTDIR)
