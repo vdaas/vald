@@ -1048,6 +1048,7 @@ internal/k8s/service/option.go
 internal/k8s/service/option_test.go
 internal/k8s/service/service.go
 internal/k8s/service/service_test.go
+internal/k8s/types.go
 internal/k8s/v2/pod/option.go
 internal/k8s/v2/pod/pod.go
 internal/k8s/vald/annotations.go
@@ -1730,6 +1731,7 @@ pkg/index/job/save/usecase/save.go
 pkg/index/job/save/usecase/save_test.go
 pkg/index/operator/config/config.go
 pkg/index/operator/service/operator.go
+pkg/index/operator/service/operator_test.go
 pkg/index/operator/service/options.go
 pkg/index/operator/usecase/operator.go
 pkg/manager/index/README.md
