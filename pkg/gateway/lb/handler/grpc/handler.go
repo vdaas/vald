@@ -471,6 +471,22 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 	return res, nil
 }
 
+func (s *server) calculateNum(ctx context.Context, num uint32, ratio float32) (n uint32) {
+	min := float64(s.replica) / float64(len(s.gateway.Addrs(ctx)))
+	if ratio < 0.0 {
+		return uint32(math.Ceil(float64(num) * min))
+	}
+	if ratio == 0.0 {
+		return num
+	}
+	n = uint32(math.Ceil(float64(num) * (min + ((1 - min) * float64(ratio)))))
+	sn := uint32(math.Ceil(float64(num) * min))
+	if n-1 < sn {
+		return sn
+	}
+	return n - 1
+}
+
 func (s *server) doSearch(ctx context.Context, cfg *payload.Search_Config,
 	f func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error)) (
 	res *payload.Search_Response, err error,

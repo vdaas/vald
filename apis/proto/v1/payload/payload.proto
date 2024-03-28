@@ -93,6 +93,8 @@ message Search {
     uint32 min_num = 8 [(buf.validate.field).uint32.gte = 0];
     // Aggregation Algorithm
     AggregationAlgorithm aggregation_algorithm = 9;
+    // Search ratio for agent return result number.
+    float ratio = 10;
   }
 
   // AggregationAlgorithm is enum of each aggregation algorithms
