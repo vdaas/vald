@@ -21,8 +21,18 @@ type (
 	Arguments = mock.Arguments
 )
 
+<<<<<<< HEAD:internal/test/testify/testify.go
 const (
 	Anything = mock.Anything
 )
 
 var AnythingOfType = mock.AnythingOfType
+=======
+func SortFunc[E any](x []E, less func(left, right E) bool) {
+	slices.SortFunc(x, less)
+}
+
+func CompactFunc[S ~[]E, E any](s S, eq func(E, E) bool) S {
+	return slices.CompactFunc(s, eq)
+}
+>>>>>>> feature/gateway-lb/add-search-ratio-for-limited-forwarding-to-agent-and-add-new-sort-algos:internal/slices/slices.go

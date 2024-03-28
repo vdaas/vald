@@ -78,6 +78,7 @@ message Search {
     // Unique request ID.
     string request_id = 1;
     // Maximum number of result to be returned.
+<<<<<<< HEAD
     uint32 num = 2 [(buf.validate.field).uint32.gte = 1];
     // Search radius.
     float radius = 3;
@@ -102,6 +103,25 @@ message Search {
     SortSlice = 2;
     SortPoolSlice = 3;
     PairingHeap = 4;
+=======
+    uint32 num = 2 [ (validate.rules).uint32.gte = 1 ];
+    // Minimum number of result to be returned.
+    uint32 min_num = 3 [ (validate.rules).uint32.gte = 0 ];
+    // Search radius.
+    float radius = 4;
+    // Search coefficient.
+    float epsilon = 5;
+    // Search number of	agent ratio.
+    float ratio = 6;
+    // Search timeout in nanoseconds.
+    int64 timeout = 7;
+    // Disables asynchronous reranking
+    bool disable_async_rerank = 8;
+    // Ingress filter configurations.
+    Filter.Config ingress_filters = 11;
+    // Egress filter configurations.
+    Filter.Config egress_filters = 12;
+>>>>>>> feature/gateway-lb/add-search-ratio-for-limited-forwarding-to-agent-and-add-new-sort-algos
   }
 
   // Represent a search response.

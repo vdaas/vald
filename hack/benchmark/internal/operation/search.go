@@ -32,6 +32,7 @@ func (o *operation) Search(ctx context.Context, b *testing.B, ds assets.Dataset)
 			Num:     10,
 			Radius:  -1,
 			Epsilon: 0.1,
+			Ratio:   1,
 		}
 		b.ResetTimer()
 
@@ -67,6 +68,7 @@ func (o *operation) StreamSearch(ctx context.Context, b *testing.B, ds assets.Da
 			Num:     10,
 			Radius:  -1,
 			Epsilon: 0.1,
+			Ratio:   1,
 		}
 		b.ResetTimer()
 
@@ -117,6 +119,7 @@ func (o *operation) SearchByID(ctx context.Context, b *testing.B, maxIdNum int) 
 			Num:     10,
 			Radius:  -1,
 			Epsilon: 0.1,
+			Ratio:   1,
 		}
 		b.ResetTimer()
 
@@ -150,6 +153,7 @@ func (o *operation) StreamSearchByID(ctx context.Context, b *testing.B, maxIdNum
 			Num:     10,
 			Radius:  -1,
 			Epsilon: 0.1,
+			Ratio:   1,
 		}
 		b.ResetTimer()
 

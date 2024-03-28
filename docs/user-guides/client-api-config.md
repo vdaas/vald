@@ -493,6 +493,8 @@ func main() {
 			Radius: -1,
 			// Epsilon determines how much to expand from the search candidate radius.
 			Epsilon: 0.1,
+                        // Ratio is used for reduce search number forwarding 1 means 100% of top-k will be forward to agents from LB gateway
+			Ratio:   1,
 			// Search timeout setting.
 			Timeout: 100000000,
 			IngressFilters: &payload.Filter_Config{

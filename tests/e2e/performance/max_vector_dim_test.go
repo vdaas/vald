@@ -174,7 +174,8 @@ func TestE2EInsertOnlyWithOneVectorAndSearch(t *testing.T) {
 			&payload.Search_IDRequest{
 				Id: id,
 				Config: &payload.Search_Config{
-					Num: 1,
+					Num:   1,
+					Ratio: 1,
 				},
 			},
 		)
