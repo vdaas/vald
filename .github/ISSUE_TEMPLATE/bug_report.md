@@ -24,5 +24,5 @@ assignees: ""
 
 - Go Version: 1.22.1
 - Docker Version: 20.10.8
-- Kubernetes Version: v1.29.2
+- Kubernetes Version: v1.29.3
 - NGT Version: 2.2
