@@ -1,1 +1,5 @@
+<<<<<<< HEAD
 v1.7.12
+=======
+v1.7.4
+>>>>>>> feature/gateway-lb/add-search-ratio-for-limited-forwarding-to-agent-and-add-new-sort-algos

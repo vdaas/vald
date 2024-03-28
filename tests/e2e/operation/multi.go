@@ -33,6 +33,7 @@ func (c *client) MultiSearch(t *testing.T, ctx context.Context, ds Dataset) erro
 		Num:     3,
 		Radius:  -1.0,
 		Epsilon: 0.1,
+		Ratio:   1,
 	}
 
 	reqs := make([]*payload.Search_Request, 0, len(ds.Test))
@@ -69,6 +70,7 @@ func (c *client) MultiSearchByID(t *testing.T, ctx context.Context, ds Dataset) 
 		Num:     3,
 		Radius:  -1.0,
 		Epsilon: 0.1,
+		Ratio:   1,
 	}
 
 	reqs := make([]*payload.Search_IDRequest, 0, len(ds.Test))
@@ -102,7 +104,8 @@ func (c *client) MultiLinearSearch(t *testing.T, ctx context.Context, ds Dataset
 	}
 
 	cfg := &payload.Search_Config{
-		Num: 3,
+		Num:   3,
+		Ratio: 1,
 	}
 
 	reqs := make([]*payload.Search_Request, 0, len(ds.Test))
@@ -136,7 +139,8 @@ func (c *client) MultiLinearSearchByID(t *testing.T, ctx context.Context, ds Dat
 	}
 
 	cfg := &payload.Search_Config{
-		Num: 3,
+		Num:   3,
+		Ratio: 1,
 	}
 
 	reqs := make([]*payload.Search_IDRequest, 0, len(ds.Test))

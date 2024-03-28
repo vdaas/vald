@@ -113,9 +113,10 @@ func main() {
 			Vector: vec,
 			// Conditions for hitting the search.
 			Config: &payload.Search_Config{
-				Num:     10,        // the number of search results
+				Num:     10,        // the number of search results = top-k
 				Radius:  -1,        // Radius is used to determine the space of search candidate radius for neighborhood vectors. -1 means infinite circle.
 				Epsilon: 0.1,       // Epsilon is used to determines how much to expand from search candidate radius.
+				Ratio:   1,         // Ratio is used for reduce search number forwarding 1 means 100% of top-k will be forward to agents from LB gateway
 				Timeout: 100000000, // Timeout is used for search time deadline. The unit is nano-seconds.
 			},
 		})

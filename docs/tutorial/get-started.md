@@ -394,10 +394,11 @@ If you are interested, please refer to [SDKs](../user-guides/sdks.md).<br>
               res, err := client.Search(ctx, &payload.Search_Request){
                   Vector: vec,
                   Config: &payload.Search_Config{
-                      Num: 10,
-                      Radius: -1,
+                      Num:     10,
+                      Radius:  -1,
                       Epsilon: 0.1,
                       Timeout: 100000000,
+                      Ratio:   1,
                   }
               }
               if err != nil {
