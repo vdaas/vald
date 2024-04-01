@@ -15,16 +15,21 @@
 #
 name: "Run backport PR"
 on:
-  pull_request:
-    types:
-      - "closed"
+  push:
+    branches:
+      - main
+      - "release/v*.*"
+      - "!release/v*.*.*"
 env:
+  BASE_BRANCH: "main"
   TARGET_LABEL_NAME_PREFIX: "actions/backport/"
   BACKPORT_BRANCH_NAME_PREFIX: "backport"
+  FETCHED_GITHUB_INFO_PATH: github_info.json
+  GITHUB_USER: ${{ secrets.DISPATCH_USER }}
+  GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
 jobs:
   dump-contexts-to-log:
     runs-on: ubuntu-latest
-    if: ${{ github.event.pull_request.merged == true }}
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/dump-context
@@ -44,28 +49,34 @@ jobs:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           git_user_signingkey: true
           git_commit_gpgsign: true
+      - name: Fetch PR info
+        run: |
+          # gh pr list --limit 10 --json number,title,body,labels,headRefName,headRefOid,mergeCommit --state merged --base ${BASE_BRANCH} | \
+          gh pr list --limit 10 --json number,title,body,labels,headRefName,headRefOid,mergeCommit --state merged | \
+            jq --arg oid "${GITHUB_SHA}" '.[] | select(.mergeCommit.oid == $oid)' > ${FETCHED_GITHUB_INFO_PATH}
+          cat ${FETCHED_GITHUB_INFO_PATH}
+          echo ${GITHUB_SHA}
       - name: Set context
         id: set_context
         run: |
-          LABEL_NAMES=`cat ${GITHUB_EVENT_PATH} | jq -r --arg PREFIX $TARGET_LABEL_NAME_PREFIX '[.pull_request.labels[]? | select(.name | startswith($PREFIX)) | .name] | join(" ")'`
+          LABEL_NAMES=`cat ${FETCHED_GITHUB_INFO_PATH} | jq -r --arg PREFIX $TARGET_LABEL_NAME_PREFIX '[.labels[]? | select(.name | startswith($PREFIX)) | .name] | join(" ")'`
           echo "LABEL_NAMES=${LABEL_NAMES}" >> $GITHUB_OUTPUT # e.g.) actions/backport/v1.7 actions/backport/v1.8
           echo "${LABEL_NAMES}"
       - name: Create PR
         if: ${{ steps.set_context.outputs.LABEL_NAMES != '' }}
         env:
           LABEL_NAMES: ${{ steps.set_context.outputs.LABEL_NAMES }}
-          GITHUB_USER: ${{ secrets.DISPATCH_USER }}
-          GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
         run: |
-          PR_TITLE=`cat $GITHUB_EVENT_PATH | jq -r ".pull_request.title"`
-          PR_BODY=`cat $GITHUB_EVENT_PATH | jq -r ".pull_request.body"`
-          PR_NUM=`cat $GITHUB_EVENT_PATH | jq -r ".pull_request.number"`
+          PR_TITLE=`cat $FETCHED_GITHUB_INFO_PATH | jq -r ".title"`
+          PR_BODY=`cat $FETCHED_GITHUB_INFO_PATH | jq -r ".body"`
+          PR_NUM=`cat $FETCHED_GITHUB_INFO_PATH | jq -r ".number"`
+          PR_BRANCH_NAME=`cat $FETCHED_GITHUB_INFO_PATH | jq -r ".headRefName"`
 
           echo "${PR_NUM} ${PR_TITLE}: ${PR_BODY}"
 
           for LABEL_NAME in ${LABEL_NAMES}; do
               BRANCH_NAME=`echo "${LABEL_NAME}" | sed -e "s:^${TARGET_LABEL_NAME_PREFIX}::"`           # e.g) release/vx.x, main
-              BACKPORT_BRANCH_NAME="${BACKPORT_BRANCH_NAME_PREFIX}/${BRANCH_NAME}/${GITHUB_HEAD_REF}"  # e.g) backport/release/vx.x/{current branch name}
+              BACKPORT_BRANCH_NAME="${BACKPORT_BRANCH_NAME_PREFIX}/${BRANCH_NAME}/${PR_BRANCH_NAME}"   # e.g) backport/release/vx.x/{current branch name}
 
               echo "BRANCH_NAME=${BRANCH_NAME}"
               echo "BACKPORT_BRANCH_NAME=${BACKPORT_BRANCH_NAME}"
@@ -75,7 +86,7 @@ jobs:
               git checkout -b ${BACKPORT_BRANCH_NAME}
 
               # Force cherry-pick. The conflicts will be modified within the backport PR.
-              git cherry-pick $GITHUB_SHA || (git add -A && git cherry-pick --continue --no-edit)
+              git cherry-pick ${GITHUB_SHA} || (git add -A && git cherry-pick --continue --no-edit)
               git push origin ${BACKPORT_BRANCH_NAME}
 
               gh pr create --base ${BRANCH_NAME} \
