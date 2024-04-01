@@ -21,7 +21,6 @@ on:
       - "release/v*.*"
       - "!release/v*.*.*"
 env:
-  BASE_BRANCH: "main"
   TARGET_LABEL_NAME_PREFIX: "actions/backport/"
   BACKPORT_BRANCH_NAME_PREFIX: "backport"
   FETCHED_GITHUB_INFO_PATH: github_info.json
