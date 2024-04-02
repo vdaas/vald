@@ -111,14 +111,24 @@ jobs:
           git commit -S --signoff -m ":bookmark: :robot: Release ${RELEASE_TAG}"
           git push -u origin ${PREPARE_RELEASE_BRANCH_NAME}
 
-          curl --include --verbose --fail \
+          PR_NUM=$(curl --fail \
             -H "Accept: application/json" \
             -H "Content-Type:application/json" \
             -H "Authorization: token ${GITHUB_TOKEN}" \
             --request POST \
             --data "{\"title\": \":bookmark: :robot: Release ${RELEASE_TAG}\", \"head\": \"${PREPARE_RELEASE_BRANCH_NAME}\", \"base\": \"${RELEASE_BRANCH_NAME}\", \"body\": \"Release PR for ${RELEASE_TAG}.\", \"maintainer_can_modify\": true}" \
-            $API_URL
+            ${API_BASE_URL}/pulls | jq '.number' )
+          echo ${PR_NUM}
+
+          curl --fail \
+            -H "Accept: application/json" \
+            -H "Content-Type:application/json" \
+            -H "Authorization: token ${GITHUB_TOKEN}" \
+            --request POST \
+            --data "{\"labels\":[\"${BACKPORT_MAIN_LABEL_NAME}\"]}" \
+            ${API_BASE_URL}/issues/${PR_NUM}/labels
         env:
           GITHUB_USER: ${{ secrets.DISPATCH_USER }}
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
-          API_URL: https://api.github.com/repos/vdaas/vald/pulls
+          BACKPORT_MAIN_LABEL_NAME: actions/backport/main
+          API_BASE_URL: https://api.github.com/repos/vdaas/vald
