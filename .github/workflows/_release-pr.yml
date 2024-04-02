@@ -130,5 +130,5 @@ jobs:
         env:
           GITHUB_USER: ${{ secrets.DISPATCH_USER }}
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
-          BACKPORT_MAIN_LABEL_NAME: "actions/backport/main"
+          BACKPORT_MAIN_LABEL_NAME: actions/backport/main
           API_BASE_URL: https://api.github.com/repos/vdaas/vald
