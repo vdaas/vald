@@ -31,7 +31,7 @@ import (
 
 var serverComparer = []comparator.Option{
 	comparator.AllowUnexported(Server{}),
-	comparator.IgnoreFields(Server{}, "opts", "quit", "done", "channelzRemoveOnce", "czData", "channelzID"),
+	comparator.IgnoreFields(Server{}, "opts", "quit", "done", "channelzRemoveOnce", "channelz"),
 	comparator.MutexComparer,
 	comparator.CondComparer,
 	comparator.WaitGroupComparer,
