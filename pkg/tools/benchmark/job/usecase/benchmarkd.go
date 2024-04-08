@@ -197,6 +197,7 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 		if r.observability != nil {
 			oech = r.observability.Start(ctx)
 		}
+
 		dech, err = r.job.Start(ctx)
 		if err != nil {
 			ech <- err
