@@ -41,9 +41,7 @@ const (
 	svcAccount    = "vald-benchmark-operator"
 )
 
-var (
-	mode = int32(420)
-)
+var mode = int32(420)
 
 type BenchmarkJobTpl interface {
 	CreateJobTpl(opts ...BenchmarkJobOption) (k8s.Job, error)
