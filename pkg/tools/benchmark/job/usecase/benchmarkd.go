@@ -64,12 +64,34 @@ func New(cfg *config.Config) (r runner.Runner, err error) {
 		}
 	}
 
+	// bind metrics interceptor
+	var clientInterceptors []string
+	var obs observability.Observability
+	if cfg.Observability.Enabled {
+		obs, err = observability.NewWithConfig(
+			cfg.Observability,
+			infometrics.New("vald_benchmark_job_info", "Benchmark Job info", *cfg.Job),
+		)
+		if err != nil {
+			return nil, err
+		}
+		var str []string
+		str = append(str, "metric")
+		if cfg.Observability.Trace.Enabled {
+			str = append(str, "trace")
+		}
+		clientInterceptors = str
+	}
+
 	copts, err := cfg.Job.ClientConfig.Opts()
 	if err != nil {
 		return nil, err
 	}
 	if cfg.Job.ClientConfig.DialOption == nil {
-		copts = append(copts, grpc.WithInsecure(true))
+		copts = append(copts,
+			grpc.WithInsecure(true),
+			grpc.WithClientInterceptors(clientInterceptors...),
+		)
 	}
 	gcli := grpc.New(copts...)
 	vcli, err := vald.New(
@@ -129,17 +151,6 @@ func New(cfg *config.Config) (r runner.Runner, err error) {
 			// TODO backup all index data here
 			return nil
 		}),
-	}
-
-	var obs observability.Observability
-	if cfg.Observability.Enabled {
-		obs, err = observability.NewWithConfig(
-			cfg.Observability,
-			infometrics.New("vald_benchmark_job_info", "Benchmark Job info", *cfg.Job),
-		)
-		if err != nil {
-			return nil, err
-		}
 	}
 
 	srv, err := starter.New(

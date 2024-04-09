@@ -35,12 +35,14 @@ const (
 	RestartPolicyAlways    RestartPolicy = "Always"
 	RestartPolicyOnFailure RestartPolicy = "OnFailure"
 	RestartPolicyNever     RestartPolicy = "Never"
-)
 
-const (
 	volumeName    = "vald-benchmark-job-config"
 	configMapName = "vald-benchmark-operator-config"
 	svcAccount    = "vald-benchmark-operator"
+)
+
+var (
+	mode = int32(420)
 )
 
 type BenchmarkJobTpl interface {
@@ -175,7 +177,6 @@ func (b *benchmarkJobTpl) CreateJobTpl(opts ...BenchmarkJobOption) (k8s.Job, err
 	}
 	// mount benchmark operator config map.
 	// It is used for bind only observability config for each benchmark job
-	mode := int32(420)
 	b.jobTpl.Spec.Template.Spec.Volumes = []corev1.Volume{
 		{
 			Name: volumeName,
