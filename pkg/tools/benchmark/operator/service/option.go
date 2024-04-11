@@ -32,6 +32,7 @@ var defaultOpts = []Option{
 	WithJobImagePullPolicy("Always"),
 	WithReconcileCheckDuration("10s"),
 	WithJobNamespace("default"),
+	WithConfigMapName("vald-benchmark-operator-config"),
 }
 
 // WithErrGroup sets the error group to scenario.
@@ -60,9 +61,7 @@ func WithReconcileCheckDuration(ts string) Option {
 // WithJobNamespace sets the namespace for running benchmark job.
 func WithJobNamespace(ns string) Option {
 	return func(o *operator) error {
-		if ns == "" {
-			o.jobNamespace = "default"
-		} else {
+		if ns != "" {
 			o.jobNamespace = ns
 		}
 		return nil
@@ -84,6 +83,15 @@ func WithJobImagePullPolicy(p string) Option {
 	return func(o *operator) error {
 		if p != "" {
 			o.jobImagePullPolicy = p
+		}
+		return nil
+	}
+}
+
+func WithConfigMapName(cm string) Option {
+	return func(o *operator) error {
+		if cm != "" {
+			o.configMapName = cm
 		}
 		return nil
 	}

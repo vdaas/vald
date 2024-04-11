@@ -59,6 +59,7 @@ type operator struct {
 	jobNamespace       string
 	jobImage           string
 	jobImagePullPolicy string
+	configMapName      string
 	scenarios          *atomic.Pointer[map[string]*scenario]
 	benchjobs          *atomic.Pointer[map[string]*v1.ValdBenchmarkJob]
 	jobs               *atomic.Pointer[map[string]string]
@@ -455,7 +456,6 @@ func (o *operator) createBenchmarkJob(ctx context.Context, scenario v1.ValdBench
 		}
 		// set status
 		bj.Status = v1.BenchmarkJobNotReady
-		// TODO: set metrics
 		// create benchmark job resource
 		c := o.ctrl.GetManager().GetClient()
 		if err := c.Create(ctx, bj); err != nil {
@@ -476,6 +476,7 @@ func (o *operator) createJob(ctx context.Context, bjr v1.ValdBenchmarkJob) error
 		benchjob.WithContainerName(bjr.GetName()),
 		benchjob.WithContainerImage(o.jobImage),
 		benchjob.WithImagePullPolicy(benchjob.ImagePullPolicy(o.jobImagePullPolicy)),
+		benchjob.WithOperatorConfigMap(o.configMapName),
 	)
 	if err != nil {
 		return err

@@ -36,9 +36,8 @@ const (
 	RestartPolicyOnFailure RestartPolicy = "OnFailure"
 	RestartPolicyNever     RestartPolicy = "Never"
 
-	volumeName    = "vald-benchmark-job-config"
-	configMapName = "vald-benchmark-operator-config"
-	svcAccount    = "vald-benchmark-operator"
+	volumeName = "vald-benchmark-job-config"
+	svcAccount = "vald-benchmark-operator"
 )
 
 var mode = int32(420)
@@ -50,6 +49,7 @@ type BenchmarkJobTpl interface {
 type benchmarkJobTpl struct {
 	containerName      string
 	containerImageName string
+	configMapName      string
 	imagePullPolicy    ImagePullPolicy
 	jobTpl             k8s.Job
 }
@@ -181,8 +181,7 @@ func (b *benchmarkJobTpl) CreateJobTpl(opts ...BenchmarkJobOption) (k8s.Job, err
 			VolumeSource: corev1.VolumeSource{
 				ConfigMap: &corev1.ConfigMapVolumeSource{
 					LocalObjectReference: corev1.LocalObjectReference{
-						// FIXME: get benchmark operator configmap name
-						Name: configMapName,
+						Name: b.configMapName,
 					},
 					DefaultMode: &mode,
 				},

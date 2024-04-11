@@ -52,10 +52,19 @@ func WithContainerImage(name string) BenchmarkJobTplOption {
 // WithImagePullPolicy sets the docker image pull policy for benchmark job.
 func WithImagePullPolicy(p ImagePullPolicy) BenchmarkJobTplOption {
 	return func(b *benchmarkJobTpl) error {
-		if len(p) == 0 {
-			return nil
+		if len(p) > 0 {
+			b.imagePullPolicy = p
 		}
-		b.imagePullPolicy = p
+		return nil
+	}
+}
+
+// WithOperatorConfigMap sets the configMapName for mounting Job Pod
+func WithOperatorConfigMap(cm string) BenchmarkJobTplOption {
+	return func(b *benchmarkJobTpl) error {
+		if len(cm) > 0 {
+			b.configMapName = cm
+		}
 		return nil
 	}
 }

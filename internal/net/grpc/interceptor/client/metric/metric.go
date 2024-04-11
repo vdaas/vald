@@ -15,9 +15,9 @@ package metric
 
 import (
 	"context"
+	"time"
 
 	"github.com/vdaas/vald/internal/errors"
-	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/observability/attribute"
@@ -59,9 +59,19 @@ func ClientMetricInterceptors() (grpc.UnaryClientInterceptor, grpc.StreamClientI
 		latencyHistgram.Record(ctx, latency, metrics.WithAttributes(attrs...))
 		completedRPCCnt.Add(ctx, 1, metrics.WithAttributes(attrs...))
 	}
-	// FIXME: implement sending metric data
-	log.Debug(record)
-	return nil, nil, nil
+	return func(ctx context.Context, method string, req, reply any, cc *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
+			now := time.Now()
+			err := invoker(ctx, method, req, reply, cc, opts...)
+			elapsedTime := time.Since(now)
+			record(ctx, method, err, float64(elapsedTime)/float64(time.Millisecond))
+			return err
+		}, func(ctx context.Context, desc *grpc.StreamDesc, cc *grpc.ClientConn, method string, streamer grpc.Streamer, opts ...grpc.CallOption) (grpc.ClientStream, error) {
+			now := time.Now()
+			_, err := streamer(ctx, desc, cc, method, opts...)
+			elapsedTime := time.Since(now)
+			record(ctx, method, err, float64(elapsedTime)/float64(time.Millisecond))
+			return nil, nil
+		}, nil
 }
 
 func attributesFromError(method string, err error) []attribute.KeyValue {
