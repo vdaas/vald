@@ -68,7 +68,7 @@ pub mod ffi {
 mod tests {
     use std::vec;
 
-    use self::ffi::new_index_in_memory;
+    use anyhow::Result;
     use rand::distributions::Standard;
     use rand::prelude::*;
 
@@ -91,7 +91,7 @@ mod tests {
         p.pin_mut().set_distance_type(ffi::DistanceType::L2);
         p.pin_mut().set_object_type(ffi::ObjectType::Float);
 
-        let mut index = new_index_in_memory(p.pin_mut())?;
+        let mut index = ffi::new_index_in_memory(p.pin_mut())?;
         let vectors: Vec<Vec<f32>> = (0..COUNT).map(|_| gen_random_vector(DIMENSION)).collect();
         for (i, v) in vectors.iter().enumerate() {
             let id = index.pin_mut().insert(v.as_slice())?;
@@ -99,7 +99,7 @@ mod tests {
         }
         index.pin_mut().create_index(4)?;
 
-        for i in 0..COUNT {
+        for _ in 0..COUNT {
             let mut ids: Vec<i32> = vec![-1; K];
             let mut distances: Vec<f32> = vec![-1.0; K];
             unsafe {
@@ -113,13 +113,13 @@ mod tests {
                     &mut distances[0] as *mut f32,
                 )?
             };
-            for j in 0..K {
+            for i in 0..K {
                 assert!(
-                    1 <= ids[j] && ids[j] <= COUNT as i32,
+                    1 <= ids[i] && ids[i] <= COUNT as i32,
                     "invalid id {}",
-                    ids[j]
+                    ids[i]
                 );
-                assert!(distances[j] >= 0.0, "invalid distance {}", distances[j]);
+                assert!(distances[i] >= 0.0, "invalid distance {}", distances[i]);
             }
         }
 
