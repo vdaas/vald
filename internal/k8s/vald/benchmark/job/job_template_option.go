@@ -59,7 +59,7 @@ func WithImagePullPolicy(p ImagePullPolicy) BenchmarkJobTplOption {
 	}
 }
 
-// WithOperatorConfigMap sets the configMapName for mounting Job Pod
+// WithOperatorConfigMap sets the configMapName for mounting Job Pod.
 func WithOperatorConfigMap(cm string) BenchmarkJobTplOption {
 	return func(b *benchmarkJobTpl) error {
 		if len(cm) > 0 {

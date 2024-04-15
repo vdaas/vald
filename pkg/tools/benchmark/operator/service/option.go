@@ -28,7 +28,8 @@ import (
 type Option func(o *operator) error
 
 var defaultOpts = []Option{
-	WithJobImage("vdaas/vald-benchmark-job"),
+	WithJobImageRepository("vdaas/vald-benchmark-job"),
+	WithJobImageTag("latest"),
 	WithJobImagePullPolicy("Always"),
 	WithReconcileCheckDuration("10s"),
 	WithJobNamespace("default"),
@@ -68,11 +69,21 @@ func WithJobNamespace(ns string) Option {
 	}
 }
 
-// WithJobImage sets the benchmark job docker image info.
-func WithJobImage(image string) Option {
+// WithJobImageRepository sets the benchmark job docker image info.
+func WithJobImageRepository(repo string) Option {
 	return func(o *operator) error {
-		if image != "" {
-			o.jobImage = image
+		if repo != "" {
+			o.jobImageRepository = repo
+		}
+		return nil
+	}
+}
+
+// WithJobImageTag sets the benchmark job docker image tag.
+func WithJobImageTag(tag string) Option {
+	return func(o *operator) error {
+		if tag != "" {
+			o.jobImageTag = tag
 		}
 		return nil
 	}

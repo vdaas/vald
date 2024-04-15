@@ -234,13 +234,21 @@ func (b *BenchmarkScenario) Bind() *BenchmarkScenario {
 
 // BenchmarkJobImageInfo represents the docker image information for benchmark job.
 type BenchmarkJobImageInfo struct {
-	Image      string `info:"image"       json:"image,omitempty"       yaml:"image"`
+	Repository string `info:"repository"  json:"repository,omitempty"  yaml:"repository"`
+	Tag        string `info:"tag"         json:"tag,omitempty"         yaml:"tag"`
 	PullPolicy string `info:"pull_policy" json:"pull_policy,omitempty" yaml:"pull_policy"`
 }
 
 // Bind binds the actual data from the BenchmarkJobImageInfo receiver fields.
 func (b *BenchmarkJobImageInfo) Bind() *BenchmarkJobImageInfo {
-	b.Image = GetActualValue(b.Image)
+	b.Repository = GetActualValue(b.Repository)
+	b.Tag = GetActualValue(b.Tag)
 	b.PullPolicy = GetActualValue(b.PullPolicy)
 	return b
+}
+
+// OperatorJobConfig represents the general job configuration for operator.
+type OperatorJobConfig struct {
+	Image *BenchmarkJobImageInfo `info:"image" json:"image,omitempty" yaml:"image"`
+	*BenchmarkJob
 }

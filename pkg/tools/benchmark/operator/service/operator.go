@@ -31,6 +31,7 @@ import (
 	benchjob "github.com/vdaas/vald/internal/k8s/vald/benchmark/job"
 	benchscenario "github.com/vdaas/vald/internal/k8s/vald/benchmark/scenario"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 )
 
@@ -57,7 +58,8 @@ const (
 
 type operator struct {
 	jobNamespace       string
-	jobImage           string
+	jobImageRepository string
+	jobImageTag        string
 	jobImagePullPolicy string
 	configMapName      string
 	scenarios          *atomic.Pointer[map[string]*scenario]
@@ -474,7 +476,7 @@ func (o *operator) createJob(ctx context.Context, bjr v1.ValdBenchmarkJob) error
 	}
 	job, err := benchjob.NewBenchmarkJob(
 		benchjob.WithContainerName(bjr.GetName()),
-		benchjob.WithContainerImage(o.jobImage),
+		benchjob.WithContainerImage(strings.Join([]string{o.jobImageRepository, o.jobImageTag}, ":")),
 		benchjob.WithImagePullPolicy(benchjob.ImagePullPolicy(o.jobImagePullPolicy)),
 		benchjob.WithOperatorConfigMap(o.configMapName),
 	)
