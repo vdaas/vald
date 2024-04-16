@@ -51,6 +51,8 @@ type scenario struct {
 const (
 	Scenario           = "scenario"
 	ScenarioKind       = "ValdBenchmarkScenario"
+	Name               = "name"
+	ServerName         = "vald-benchmark-job"
 	BenchmarkName      = "benchmark-name"
 	BeforeJobName      = "before-job-name"
 	BeforeJobNamespace = "before-job-namespace"
@@ -472,6 +474,7 @@ func (o *operator) createBenchmarkJob(ctx context.Context, scenario v1.ValdBench
 // createJob creates benchmark job from benchmark job resource.
 func (o *operator) createJob(ctx context.Context, bjr v1.ValdBenchmarkJob) error {
 	label := map[string]string{
+		Name:          ServerName,
 		BenchmarkName: bjr.GetName() + strconv.Itoa(int(bjr.GetGeneration())),
 	}
 	job, err := benchjob.NewBenchmarkJob(

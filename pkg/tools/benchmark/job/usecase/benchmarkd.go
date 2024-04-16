@@ -75,9 +75,11 @@ func New(cfg *config.Config) (r runner.Runner, err error) {
 		if err != nil {
 			return nil, err
 		}
-		clientInterceptors = append(clientInterceptors, "metric"}
+		// Add interceptors regardless of whether it is set in config.
+		// Because it is the benchmark job and requires metrics for measure benchmark result.
+		clientInterceptors = append(clientInterceptors, "metric")
 		if cfg.Observability.Trace.Enabled {
-			clientInterceptors = append(clientInterceptors, "trace"}
+			clientInterceptors = append(clientInterceptors, "trace")
 		}
 	}
 
