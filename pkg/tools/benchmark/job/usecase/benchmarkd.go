@@ -75,12 +75,10 @@ func New(cfg *config.Config) (r runner.Runner, err error) {
 		if err != nil {
 			return nil, err
 		}
-		var str []string
-		str = append(str, "metric")
+		clientInterceptors = append(clientInterceptors, "metric"}
 		if cfg.Observability.Trace.Enabled {
-			str = append(str, "trace")
+			clientInterceptors = append(clientInterceptors, "trace"}
 		}
-		clientInterceptors = str
 	}
 
 	copts, err := cfg.Job.ClientConfig.Opts()
