@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-name: "Build docker image: agent-ngt"
+name: "Build docker image: agent"
 on:
   push:
     branches:
