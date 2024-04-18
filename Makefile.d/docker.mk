@@ -109,11 +109,11 @@ docker/build/agent-sidecar:
 		docker/build/image
 
 .PHONY: docker/name/agent
-docker/name/agent-ngt-rust:
+docker/name/agent:
 	@echo "$(ORG)/$(AGENT_IMAGE)"
 
 .PHONY: docker/build/agent
-docker/name/agent-ngt-rust:
+docker/build/agent:
 	@make DOCKERFILE="$(ROOTDIR)/dockers/agent/core/agent/Dockerfile" \
 		IMAGE=$(AGENT_IMAGE) \
 		docker/build/image
