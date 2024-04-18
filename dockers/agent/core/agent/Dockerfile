@@ -62,6 +62,8 @@ WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}
 COPY Makefile .
 COPY .git .
 
+RUN make RUST_VERSION=${RUST_VERSION} rust/install
+
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/cmd
 COPY cmd .
 
@@ -73,8 +75,6 @@ COPY rust .
 
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}
 RUN make ngt/install
-
-RUN make rust/install
 
 RUN make rust/target/release/agent \
     && mv ./rust/target/release/agent "/usr/bin/${APP_NAME}"
