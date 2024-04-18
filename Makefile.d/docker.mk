@@ -108,6 +108,16 @@ docker/build/agent-sidecar:
 		IMAGE=$(AGENT_SIDECAR_IMAGE) \
 		docker/build/image
 
+.PHONY: docker/name/agent-ngt-rust
+docker/name/agent-ngt-rust:
+	@echo "$(ORG)/$(AGENT_IMAGE)"
+
+.PHONY: docker/build/agent-ngt-rust
+docker/name/agent-ngt-rust:
+	@make DOCKERFILE="$(ROOTDIR)/dockers/agent/core/agent/Dockerfile" \
+		IMAGE=$(AGENT_IMAGE) \
+		docker/build/image
+
 .PHONY: docker/name/discoverer-k8s
 docker/name/discoverer-k8s:
 	@echo "$(ORG)/$(DISCOVERER_IMAGE)"
@@ -286,3 +296,6 @@ docker/build/benchmark-operator:
 	@make DOCKERFILE="$(ROOTDIR)/dockers/tools/benchmark/operator/Dockerfile" \
 		IMAGE=$(BENCHMARK_OPERATOR_IMAGE) \
 		docker/build/image
+
+.PHONY: docker/build/agent-ngt-rust
+	@make DOCKER
