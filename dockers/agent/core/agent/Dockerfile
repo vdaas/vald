@@ -57,6 +57,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/Makefile.d
 COPY Makefile.d .
+
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}
 COPY Makefile .
 COPY .git .
@@ -72,6 +73,7 @@ COPY rust .
 
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}
 RUN make ngt/install
+
 RUN make rust/install
 
 RUN make rust/target/release/agent \
