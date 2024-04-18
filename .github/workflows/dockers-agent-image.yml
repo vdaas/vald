@@ -28,7 +28,7 @@ on:
     paths:
       - ".github/actions/docker-build/action.yaml"
       - ".github/workflows/_docker-image.yaml"
-      - ".github/workflows/dockers-agent-ngt-rust-image.yml"
+      - ".github/workflows/dockers-agent-image.yml"
       - "rust/Cargo.lock"
       - "rust/Cargo.toml"
       - "rust/bin/agent/**"
