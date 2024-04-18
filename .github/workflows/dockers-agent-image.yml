@@ -70,5 +70,5 @@ jobs:
   build:
     uses: ./.github/workflows/_docker-image.yaml
     with:
-      target: agent-ngt-rust
+      target: agent
     secrets: inherit
