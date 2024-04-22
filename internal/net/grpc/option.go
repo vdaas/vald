@@ -24,8 +24,10 @@ import (
 
 	"github.com/vdaas/vald/internal/backoff"
 	"github.com/vdaas/vald/internal/circuitbreaker"
+	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net"
+	"github.com/vdaas/vald/internal/net/grpc/interceptor/client/metric"
 	"github.com/vdaas/vald/internal/net/grpc/interceptor/client/trace"
 	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/sync/errgroup"
@@ -352,6 +354,16 @@ func WithClientInterceptors(names ...string) Option {
 				g.dopts = append(g.dopts,
 					grpc.WithUnaryInterceptor(trace.UnaryClientInterceptor()),
 					grpc.WithStreamInterceptor(trace.StreamClientInterceptor()),
+				)
+			case "metricinterceptor", "metric":
+				uci, sci, err := metric.ClientMetricInterceptors()
+				if err != nil {
+					lerr := errors.NewErrCriticalOption("gRPCInterceptors", "metric", errors.Wrap(err, "failed to create interceptor"))
+					log.Warn(lerr.Error())
+				}
+				g.dopts = append(g.dopts,
+					grpc.WithUnaryInterceptor(uci),
+					grpc.WithStreamInterceptor(sci),
 				)
 			default:
 			}

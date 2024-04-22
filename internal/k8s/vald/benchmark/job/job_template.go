@@ -35,11 +35,12 @@ const (
 	RestartPolicyAlways    RestartPolicy = "Always"
 	RestartPolicyOnFailure RestartPolicy = "OnFailure"
 	RestartPolicyNever     RestartPolicy = "Never"
-)
 
-const (
+	volumeName = "vald-benchmark-job-config"
 	svcAccount = "vald-benchmark-operator"
 )
+
+var mode = int32(420)
 
 type BenchmarkJobTpl interface {
 	CreateJobTpl(opts ...BenchmarkJobOption) (k8s.Job, error)
@@ -48,6 +49,7 @@ type BenchmarkJobTpl interface {
 type benchmarkJobTpl struct {
 	containerName      string
 	containerImageName string
+	configMapName      string
 	imagePullPolicy    ImagePullPolicy
 	jobTpl             k8s.Job
 }
@@ -137,6 +139,51 @@ func (b *benchmarkJobTpl) CreateJobTpl(opts ...BenchmarkJobOption) (k8s.Job, err
 							FieldPath: "metadata.labels['job-name']",
 						},
 					},
+				},
+				{
+					Name: "MY_NODE_NAME",
+					ValueFrom: &corev1.EnvVarSource{
+						FieldRef: &corev1.ObjectFieldSelector{
+							FieldPath: "spec.nodeName",
+						},
+					},
+				},
+				{
+					Name: "MY_POD_NAMESPACE",
+					ValueFrom: &corev1.EnvVarSource{
+						FieldRef: &corev1.ObjectFieldSelector{
+							FieldPath: "metadata.namespace",
+						},
+					},
+				},
+				{
+					Name: "MY_POD_NAME",
+					ValueFrom: &corev1.EnvVarSource{
+						FieldRef: &corev1.ObjectFieldSelector{
+							FieldPath: "metadata.name",
+						},
+					},
+				},
+			},
+			VolumeMounts: []corev1.VolumeMount{
+				{
+					Name:      volumeName,
+					MountPath: "/etc/server",
+				},
+			},
+		},
+	}
+	// mount benchmark operator config map.
+	// It is used for bind only observability config for each benchmark job
+	b.jobTpl.Spec.Template.Spec.Volumes = []corev1.Volume{
+		{
+			Name: volumeName,
+			VolumeSource: corev1.VolumeSource{
+				ConfigMap: &corev1.ConfigMapVolumeSource{
+					LocalObjectReference: corev1.LocalObjectReference{
+						Name: b.configMapName,
+					},
+					DefaultMode: &mode,
 				},
 			},
 		},

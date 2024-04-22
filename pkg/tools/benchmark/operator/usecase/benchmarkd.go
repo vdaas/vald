@@ -63,8 +63,9 @@ func New(cfg *config.Config) (r runner.Runner, err error) {
 	operator, err := service.New(
 		service.WithErrGroup(eg),
 		service.WithJobNamespace(JOB_NAMESPACE),
-		service.WithJobImage(cfg.JobImage.Image),
-		service.WithJobImagePullPolicy(cfg.JobImage.PullPolicy),
+		service.WithJobImageRepository(cfg.Job.Image.Repository),
+		service.WithJobImageTag(cfg.Job.Image.Tag),
+		service.WithJobImagePullPolicy(cfg.Job.Image.PullPolicy),
 	)
 	if err != nil {
 		return nil, err
@@ -98,7 +99,7 @@ func New(cfg *config.Config) (r runner.Runner, err error) {
 		obs, err = observability.NewWithConfig(
 			cfg.Observability,
 			benchmarkmetrics.New(operator),
-			infometrics.New("benchmark_operator_info", "Benchmark Operator info", *cfg.JobImage),
+			infometrics.New("benchmark_operator_info", "Benchmark Operator info", *cfg.Job.Image),
 			backoffmetrics.New(),
 		)
 		if err != nil {
