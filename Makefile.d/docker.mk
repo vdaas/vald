@@ -117,6 +117,7 @@ docker/build/agent:
 	@make DOCKERFILE="$(ROOTDIR)/dockers/agent/core/agent/Dockerfile" \
 		IMAGE=$(AGENT_IMAGE) \
 		DISTROLESS_IMAGE=gcr.io/distroless/cc-debian12 \
+		EXTRA_ARGS="--build-arg RUST_VERSION=$(RUST_VERSION)" \
 		docker/build/image
 
 .PHONY: docker/name/discoverer-k8s
