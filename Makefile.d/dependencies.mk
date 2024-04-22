@@ -122,6 +122,11 @@ update/go:
 update/golangci-lint:
 	curl --silent https://api.github.com/repos/golangci/golangci-lint/releases/latest | grep -Po '"tag_name": "\K.*?(?=")' > $(ROOTDIR)/versions/GOLANGCILINT_VERSION
 
+.PHONY: update/rust
+## update rust version
+update/rust:
+	curl --silent https://releases.rs | grep -Po 'Stable: \K[\d.]+\s' | head -n 1 > $(ROOTDIR)/versions/RUST_VERSION
+
 .PHONY: update/helm
 ## update helm version
 update/helm:
@@ -223,6 +228,7 @@ update/template:
 	$(eval GO_VERSION      := $(shell $(MAKE) -s version/go))
 	$(eval NGT_VERSION     := $(shell $(MAKE) -s version/ngt))
 	$(eval KUBECTL_VERSION := $(shell $(MAKE) -s version/k8s))
+	$(eval RUST_VERSION    := $(shell $(MAKE) -s version/rust))
 	sed -i -e "s/^- Go Version: .*$$/- Go Version: $(GO_VERSION)/" $(ROOTDIR)/.github/ISSUE_TEMPLATE/bug_report.md
 	sed -i -e "s/^- Go Version: .*$$/- Go Version: $(GO_VERSION)/" $(ROOTDIR)/.github/ISSUE_TEMPLATE/security_issue_report.md
 	sed -i -e "s/^- Go Version: .*$$/- Go Version: $(GO_VERSION)/" $(ROOTDIR)/.github/PULL_REQUEST_TEMPLATE.md
@@ -234,3 +240,7 @@ update/template:
 	sed -i -e "s/^- Kubernetes Version: .*$$/- Kubernetes Version: $(KUBECTL_VERSION)/" $(ROOTDIR)/.github/ISSUE_TEMPLATE/bug_report.md
 	sed -i -e "s/^- Kubernetes Version: .*$$/- Kubernetes Version: $(KUBECTL_VERSION)/" $(ROOTDIR)/.github/ISSUE_TEMPLATE/security_issue_report.md
 	sed -i -e "s/^- Kubernetes Version: .*$$/- Kubernetes Version: $(KUBECTL_VERSION)/" $(ROOTDIR)/.github/PULL_REQUEST_TEMPLATE.md
+
+	sed -i -e "s/^- Rust Version: .*$$/- Rust Version: $(RUST_VERSION)/" $(ROOTDIR)/.github/ISSUE_TEMPLATE/bug_report.md
+	sed -i -e "s/^- Rust Version: .*$$/- Rust Version: $(RUST_VERSION)/" $(ROOTDIR)/.github/ISSUE_TEMPLATE/security_issue_report.md
+	sed -i -e "s/^- Rust Version: .*$$/- Rust Version: $(RUST_VERSION)/" $(ROOTDIR)/.github/PULL_REQUEST_TEMPLATE.md

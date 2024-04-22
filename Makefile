@@ -59,9 +59,10 @@ GO_CLEAN_DEPS := true
 GOTEST_TIMEOUT = 30m
 CGO_ENABLED = 1
 
-RUST_HOME = /usr/local/lib/rust
-RUSTUP_HOME = $(RUST_HOME)/rustup
-CARGO_HOME = $(RUST_HOME)/cargo
+RUST_HOME ?= /usr/local/lib/rust
+RUSTUP_HOME ?= $(RUST_HOME)/rustup
+CARGO_HOME ?= $(RUST_HOME)/cargo
+RUST_VERSION := $(eval RUST_VERSION := $(shell cat versions/RUST_VERSION))$(RUST_VERSION)
 
 NPM_GLOBAL_PREFIX := $(eval NPM_GLOBAL_PREFIX := $(shell npm prefix --location=global))$(NPM_GLOBAL_PREFIX)
 
@@ -538,6 +539,11 @@ version/vald:
 ## print go version
 version/go:
 	@echo $(GO_VERSION)
+
+.PHONY: version/rust
+## print rust version
+version/rust:
+	@echo $(RUST_VERSION)
 
 .PHONY: version/ngt
 ## print NGT version
