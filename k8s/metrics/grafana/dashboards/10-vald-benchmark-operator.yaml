@@ -864,7 +864,7 @@ data:
               "calcs": [
                 "lastNotNull"
               ],
-              "fields": "/^image$/",
+              "fields": "repository",
               "values": false
             },
             "showPercentChange": false,
@@ -880,7 +880,7 @@ data:
                 "uid": "prometheus"
               },
               "editorMode": "code",
-              "expr": "label_replace(benchmark_operator_info{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\", target_pod=~\"$PodName\"}, \"image\", \"$1\", \"image\", \"(.*):.*\")",
+              "expr": "benchmark_operator_info{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\", target_pod=~\"$PodName\"}",
               "format": "table",
               "instant": true,
               "interval": "",
@@ -944,7 +944,7 @@ data:
               "calcs": [
                 "lastNotNull"
               ],
-              "fields": "/^image$/",
+              "fields": "tag",
               "values": false
             },
             "showPercentChange": false,
@@ -960,7 +960,7 @@ data:
                 "uid": "prometheus"
               },
               "editorMode": "code",
-              "expr": "label_replace(benchmark_operator_info{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\", target_pod=~\"$PodName\"}, \"image\", \"$1\", \"image\", \".*:(.*)\")",
+              "expr": "benchmark_operator_info{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\", target_pod=~\"$PodName\"}",
               "format": "table",
               "instant": true,
               "interval": "",

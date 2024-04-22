@@ -31,6 +31,7 @@ import (
 	benchjob "github.com/vdaas/vald/internal/k8s/vald/benchmark/job"
 	benchscenario "github.com/vdaas/vald/internal/k8s/vald/benchmark/scenario"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 )
 
@@ -50,6 +51,8 @@ type scenario struct {
 const (
 	Scenario           = "scenario"
 	ScenarioKind       = "ValdBenchmarkScenario"
+	Name               = "name"
+	ServerName         = "vald-benchmark-job"
 	BenchmarkName      = "benchmark-name"
 	BeforeJobName      = "before-job-name"
 	BeforeJobNamespace = "before-job-namespace"
@@ -57,8 +60,10 @@ const (
 
 type operator struct {
 	jobNamespace       string
-	jobImage           string
+	jobImageRepository string
+	jobImageTag        string
 	jobImagePullPolicy string
+	configMapName      string
 	scenarios          *atomic.Pointer[map[string]*scenario]
 	benchjobs          *atomic.Pointer[map[string]*v1.ValdBenchmarkJob]
 	jobs               *atomic.Pointer[map[string]string]
@@ -455,7 +460,6 @@ func (o *operator) createBenchmarkJob(ctx context.Context, scenario v1.ValdBench
 		}
 		// set status
 		bj.Status = v1.BenchmarkJobNotReady
-		// TODO: set metrics
 		// create benchmark job resource
 		c := o.ctrl.GetManager().GetClient()
 		if err := c.Create(ctx, bj); err != nil {
@@ -470,12 +474,14 @@ func (o *operator) createBenchmarkJob(ctx context.Context, scenario v1.ValdBench
 // createJob creates benchmark job from benchmark job resource.
 func (o *operator) createJob(ctx context.Context, bjr v1.ValdBenchmarkJob) error {
 	label := map[string]string{
+		Name:          ServerName,
 		BenchmarkName: bjr.GetName() + strconv.Itoa(int(bjr.GetGeneration())),
 	}
 	job, err := benchjob.NewBenchmarkJob(
 		benchjob.WithContainerName(bjr.GetName()),
-		benchjob.WithContainerImage(o.jobImage),
+		benchjob.WithContainerImage(strings.Join([]string{o.jobImageRepository, o.jobImageTag}, ":")),
 		benchjob.WithImagePullPolicy(benchjob.ImagePullPolicy(o.jobImagePullPolicy)),
+		benchjob.WithOperatorConfigMap(o.configMapName),
 	)
 	if err != nil {
 		return err

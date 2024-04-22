@@ -28,10 +28,12 @@ import (
 type Option func(o *operator) error
 
 var defaultOpts = []Option{
-	WithJobImage("vdaas/vald-benchmark-job"),
+	WithJobImageRepository("vdaas/vald-benchmark-job"),
+	WithJobImageTag("latest"),
 	WithJobImagePullPolicy("Always"),
 	WithReconcileCheckDuration("10s"),
 	WithJobNamespace("default"),
+	WithConfigMapName("vald-benchmark-operator-config"),
 }
 
 // WithErrGroup sets the error group to scenario.
@@ -60,20 +62,28 @@ func WithReconcileCheckDuration(ts string) Option {
 // WithJobNamespace sets the namespace for running benchmark job.
 func WithJobNamespace(ns string) Option {
 	return func(o *operator) error {
-		if ns == "" {
-			o.jobNamespace = "default"
-		} else {
+		if ns != "" {
 			o.jobNamespace = ns
 		}
 		return nil
 	}
 }
 
-// WithJobImage sets the benchmark job docker image info.
-func WithJobImage(image string) Option {
+// WithJobImageRepository sets the benchmark job docker image info.
+func WithJobImageRepository(repo string) Option {
 	return func(o *operator) error {
-		if image != "" {
-			o.jobImage = image
+		if repo != "" {
+			o.jobImageRepository = repo
+		}
+		return nil
+	}
+}
+
+// WithJobImageTag sets the benchmark job docker image tag.
+func WithJobImageTag(tag string) Option {
+	return func(o *operator) error {
+		if tag != "" {
+			o.jobImageTag = tag
 		}
 		return nil
 	}
@@ -84,6 +94,15 @@ func WithJobImagePullPolicy(p string) Option {
 	return func(o *operator) error {
 		if p != "" {
 			o.jobImagePullPolicy = p
+		}
+		return nil
+	}
+}
+
+func WithConfigMapName(cm string) Option {
+	return func(o *operator) error {
+		if cm != "" {
+			o.configMapName = cm
 		}
 		return nil
 	}

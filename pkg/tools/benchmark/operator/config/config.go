@@ -35,8 +35,8 @@ type Config struct {
 	// Observability represent observability configurations
 	Observability *config.Observability `json:"observability" yaml:"observability"`
 
-	// JobImage represents the location of Docker image for benchmark job and its ImagePullPolicy
-	JobImage *config.BenchmarkJobImageInfo `json:"job_image" yaml:"job_image"`
+	// Job represents the default benchmark job configuration and job images
+	Job *config.OperatorJobConfig `json:"job" yaml:"job"`
 }
 
 // NewConfig represents the set config from the given setting file path.
@@ -58,10 +58,10 @@ func NewConfig(path string) (cfg *Config, err error) {
 		cfg.Observability = cfg.Observability.Bind()
 	}
 
-	if cfg.JobImage != nil {
-		cfg.JobImage = cfg.JobImage.Bind()
+	if cfg.Job != nil {
+		cfg.Job.Image = cfg.Job.Image.Bind()
 	} else {
-		cfg.JobImage = new(config.BenchmarkJobImageInfo)
+		cfg.Job = new(config.OperatorJobConfig)
 	}
 	return cfg, nil
 }
