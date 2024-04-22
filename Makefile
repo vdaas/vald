@@ -24,6 +24,7 @@ GHCRORG                         = ghcr.io/$(ORG)/$(NAME)
 AGENT_NGT_IMAGE                 = $(NAME)-agent-ngt
 AGENT_FAISS_IMAGE               = $(NAME)-agent-faiss
 AGENT_SIDECAR_IMAGE             = $(NAME)-agent-sidecar
+AGENT_IMAGE                     = $(NAME)-agent
 CI_CONTAINER_IMAGE              = $(NAME)-ci-container
 DEV_CONTAINER_IMAGE             = $(NAME)-dev-container
 DISCOVERER_IMAGE                = $(NAME)-discoverer-k8s

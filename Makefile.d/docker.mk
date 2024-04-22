@@ -108,6 +108,17 @@ docker/build/agent-sidecar:
 		IMAGE=$(AGENT_SIDECAR_IMAGE) \
 		docker/build/image
 
+.PHONY: docker/name/agent
+docker/name/agent:
+	@echo "$(ORG)/$(AGENT_IMAGE)"
+
+.PHONY: docker/build/agent
+docker/build/agent:
+	@make DOCKERFILE="$(ROOTDIR)/dockers/agent/core/agent/Dockerfile" \
+		IMAGE=$(AGENT_IMAGE) \
+		DISTROLESS_IMAGE=gcr.io/distroless/cc-debian12 \
+		docker/build/image
+
 .PHONY: docker/name/discoverer-k8s
 docker/name/discoverer-k8s:
 	@echo "$(ORG)/$(DISCOVERER_IMAGE)"
