@@ -37,17 +37,241 @@ image:
   # @schema {"name": "image.pullPolicy", "type": "string", "enum": ["Always", "Never", "IfNotPresent"]}
   # image.pullPolicy -- image pull policy
   pullPolicy: Always
-# @schema {"name": "job_image", "type": "object"}
-job_image:
-  # @schema {"name": "job_image.repository", "type": "string"}
-  # image.repository -- job image repository
-  repository: vdaas/vald-benchmark-job
-  # @schema {"name": "job_image.tag", "type": "string"}
-  # image.tag -- image tag for job docker image
-  tag: v1.7.12
-  # @schema {"name": "job_image.pullPolicy", "type": "string", "enum": ["Always", "Never", "IfNotPresent"]}
-  # image.pullPolicy -- image pull policy
-  pullPolicy: Always
+# @schema {"name": "job", "type": "object"}
+job:
+  # @schema {"name": "job.image", "type": "object"}
+  image:
+    # @schema {"name": "job.image.repository", "type": "string"}
+    # image.repository -- job image repository
+    repository: vdaas/vald-benchmark-job
+    # @schema {"name": "job.image.tag", "type": "string"}
+    # image.tag -- image tag for job docker image
+    tag: v1.7.12
+    # @schema {"name": "job.image.pullPolicy", "type": "string", "enum": ["Always", "Never", "IfNotPresent"]}
+    # image.pullPolicy -- image pull policy
+    pullPolicy: Always
+  # @schema {"name": "job.client_config", "type": "object"}
+  # client_config -- gRPC client config for request to the Vald cluster
+  client_config:
+    # @schema {"name": "job.client_config.addrs", "type": "array", "items": {"type": "string"}}
+    # job.client_config.addrs -- gRPC client addresses
+    addrs: []
+    # @schema {"name": "job.client_config.health_check_duration", "type": "string"}
+    # job.client_config.health_check_duration -- gRPC client health check duration
+    health_check_duration: "1s"
+    # @schema {"name": "job.client_config.connection_pool", "type": "object"}
+    connection_pool:
+      # @schema {"name": "job.client_config.connection_pool.enable_dns_resolver", "type": "boolean"}
+      # job.client_config.connection_pool.enable_dns_resolver -- enables gRPC client connection pool dns resolver, when enabled vald uses ip handshake exclude dns discovery which improves network performance
+      enable_dns_resolver: true
+      # @schema {"name": "job.client_config.connection_pool.enable_rebalance", "type": "boolean"}
+      # job.client_config.connection_pool.enable_rebalance -- enables gRPC client connection pool rebalance
+      enable_rebalance: true
+      # @schema {"name": "job.client_config.connection_pool.rebalance_duration", "type": "string"}
+      # job.client_config.connection_pool.rebalance_duration -- gRPC client connection pool rebalance duration
+      rebalance_duration: 30m
+      # @schema {"name": "job.client_config.connection_pool.size", "type": "integer"}
+      # job.client_config.connection_pool.size -- gRPC client connection pool size
+      size: 3
+      # @schema {"name": "job.client_config.connection_pool.old_conn_close_duration", "type": "string"}
+      # job.client_config.connection_pool.old_conn_close_duration -- makes delay before gRPC client connection closing during connection pool rebalance
+      old_conn_close_duration: "2m"
+    # @schema {"name": "job.client_config.backoff", "type": "object", "anchor": "backoff"}
+    backoff:
+      # @schema {"name": "job.client_config.backoff.initial_duration", "type": "string"}
+      # job.client_config.backoff.initial_duration -- gRPC client backoff initial duration
+      initial_duration: 5ms
+      # @schema {"name": "job.client_config.backoff.backoff_time_limit", "type": "string"}
+      # job.client_config.backoff.backoff_time_limit -- gRPC client backoff time limit
+      backoff_time_limit: 5s
+      # @schema {"name": "job.client_config.backoff.maximum_duration", "type": "string"}
+      # job.client_config.backoff.maximum_duration -- gRPC client backoff maximum duration
+      maximum_duration: 5s
+      # @schema {"name": "job.client_config.backoff.jitter_limit", "type": "string"}
+      # job.client_config.backoff.jitter_limit -- gRPC client backoff jitter limit
+      jitter_limit: 100ms
+      # @schema {"name": "job.client_config.backoff.backoff_factor", "type": "number"}
+      # job.client_config.backoff.backoff_factor -- gRPC client backoff factor
+      backoff_factor: 1.1
+      # @schema {"name": "job.client_config.backoff.retry_count", "type": "integer"}
+      # job.client_config.backoff.retry_count -- gRPC client backoff retry count
+      retry_count: 100
+      # @schema {"name": "job.client_config.backoff.enable_error_log", "type": "boolean"}
+      # job.client_config.backoff.enable_error_log -- gRPC client backoff log enabled
+      enable_error_log: true
+    # @schema {"name": "job.client_config.circuit_breaker", "type": "object"}
+    circuit_breaker:
+      # @schema {"name": "job.client_config.circuit_breaker.closed_error_rate", "type": "number"}
+      # job.client_config.circuit_breaker.closed_error_rate -- gRPC client circuitbreaker closed error rate
+      closed_error_rate: 0.7
+      # @schema {"name": "job.client_config.circuit_breaker.half_open_error_rate", "type": "number"}
+      # job.client_config.circuit_breaker.half_open_error_rate -- gRPC client circuitbreaker half-open error rate
+      half_open_error_rate: 0.5
+      # @schema {"name": "job.client_config.circuit_breaker.min_samples", "type": "integer"}
+      # job.client_config.circuit_breaker.min_samples -- gRPC client circuitbreaker minimum sampling count
+      min_samples: 1000
+      # @schema {"name": "job.client_config.circuit_breaker.open_timeout", "type": "string"}
+      # job.client_config.circuit_breaker.open_timeout -- gRPC client circuitbreaker open timeout
+      open_timeout: "1s"
+      # @schema {"name": "job.client_config.circuit_breaker.closed_refresh_timeout", "type": "string"}
+      # job.client_config.circuit_breaker.closed_refresh_timeout -- gRPC client circuitbreaker closed refresh timeout
+      closed_refresh_timeout: "10s"
+    # @schema {"name": "job.client_config.call_option", "type": "object"}
+    call_option:
+      # @schema {"name": "job.client_config.wait_for_ready", "type": "boolean"}
+      # job.client_config.call_option.wait_for_ready -- gRPC client call option wait for ready
+      wait_for_ready: true
+      # @schema {"name": "job.client_config.max_retry_rpc_buffer_size", "type": "integer"}
+      # job.client_config.call_option.max_retry_rpc_buffer_size -- gRPC client call option max retry rpc buffer size
+      max_retry_rpc_buffer_size: 0
+      # @schema {"name": "job.client_config.max_recv_msg_size", "type": "integer"}
+      # job.client_config.call_option.max_recv_msg_size -- gRPC client call option max receive message size
+      max_recv_msg_size: 0
+      # @schema {"name": "job.client_config.max_send_msg_size", "type": "integer"}
+      # job.client_config.call_option.max_send_msg_size -- gRPC client call option max send message size
+      max_send_msg_size: 0
+    # @schema {"name": "job.client_config.dial_option", "type": "object"}
+    dial_option:
+      # @schema {"name": "job.client_config.dial_option.write_buffer_size", "type": "integer"}
+      # job.client_config.dial_option.write_buffer_size -- gRPC client dial option write buffer size
+      write_buffer_size: 0
+      # @schema {"name": "job.client_config.dial_option.read_buffer_size", "type": "integer"}
+      # job.client_config.dial_option.read_buffer_size -- gRPC client dial option read buffer size
+      read_buffer_size: 0
+      # @schema {"name": "job.client_config.dial_option.initial_window_size", "type": "integer"}
+      # job.client_config.dial_option.initial_window_size -- gRPC client dial option initial window size
+      initial_window_size: 0
+      # @schema {"name": "job.client_config.dial_option.initial_connection_window_size", "type": "integer"}
+      # job.client_config.dial_option.initial_connection_window_size -- gRPC client dial option initial connection window size
+      initial_connection_window_size: 0
+      # @schema {"name": "job.client_config.dial_option.max_msg_size", "type": "integer"}
+      # job.client_config.dial_option.max_msg_size -- gRPC client dial option max message size
+      max_msg_size: 0
+      # @schema {"name": "job.client_config.dial_option.backoff_max_delay", "type": "string"}
+      # job.client_config.dial_option.backoff_max_delay -- gRPC client dial option max backoff delay
+      backoff_max_delay: "120s"
+      # @schema {"name": "job.client_config.dial_option.backoff_base_delay", "type": "string"}
+      # job.client_config.dial_option.backoff_base_delay -- gRPC client dial option base backoff delay
+      backoff_base_delay: "1s"
+      # @schema {"name": "job.client_config.dial_option.backoff_multiplier", "type": "number"}
+      # job.client_config.dial_option.backoff_multiplier -- gRPC client dial option base backoff delay
+      backoff_multiplier: 1.6
+      # @schema {"name": "job.client_config.dial_option.backoff_jitter", "type": "number"}
+      # job.client_config.dial_option.backoff_jitter -- gRPC client dial option base backoff delay
+      backoff_jitter: 0.2
+      # @schema {"name": "job.client_config.dial_option.min_connection_timeout", "type": "string"}
+      # job.client_config.dial_option.min_connection_timeout -- gRPC client dial option minimum connection timeout
+      min_connection_timeout: "20s"
+      # @schema {"name": "job.client_config.dial_option.enable_backoff", "type": "boolean"}
+      # job.client_config.dial_option.enable_backoff -- gRPC client dial option backoff enabled
+      enable_backoff: false
+      # @schema {"name": "job.client_config.dial_option.insecure", "type": "boolean"}
+      # job.client_config.dial_option.insecure -- gRPC client dial option insecure enabled
+      insecure: true
+      # @schema {"name": "job.client_config.dial_option.timeout", "type": "string"}
+      # job.client_config.dial_option.timeout -- gRPC client dial option timeout
+      timeout: ""
+      # @schema {"name": "job.client_config.dial_option.interceptors", "type": "array", "items": {"type": "string", "enum": ["TraceInterceptor"]}}
+      # job.client_config.dial_option.interceptors -- gRPC client interceptors
+      interceptors: []
+      # @schema {"name": "job.client_config.dial_option.net", "type": "object", "anchor": "net"}
+      net:
+        # @schema {"name": "job.client_config.dial_option.net.dns", "type": "object"}
+        dns:
+          # @schema {"name": "job.client_config.dial_option.net.dns.cache_enabled", "type": "boolean"}
+          # job.client_config.dial_option.net.dns.cache_enabled -- gRPC client TCP DNS cache enabled
+          cache_enabled: true
+          # @schema {"name": "job.client_config.dial_option.net.dns.refresh_duration", "type": "string"}
+          # job.client_config.dial_option.net.dns.refresh_duration -- gRPC client TCP DNS cache refresh duration
+          refresh_duration: 30m
+          # @schema {"name": "job.client_config.dial_option.net.dns.cache_expiration", "type": "string"}
+          # job.client_config.dial_option.net.dns.cache_expiration -- gRPC client TCP DNS cache expiration
+          cache_expiration: 1h
+        # @schema {"name": "job.client_config.dial_option.net.dialer", "type": "object"}
+        dialer:
+          # @schema {"name": "job.client_config.dial_option.net.dialer.timeout", "type": "string"}
+          # job.client_config.dial_option.net.dialer.timeout -- gRPC client TCP dialer timeout
+          timeout: ""
+          # @schema {"name": "job.client_config.dial_option.net.dialer.keepalive", "type": "string"}
+          # job.client_config.dial_option.net.dialer.keepalive -- gRPC client TCP dialer keep alive
+          keepalive: ""
+          # @schema {"name": "job.client_config.dial_option.net.dialer.dual_stack_enabled", "type": "boolean"}
+          # job.client_config.dial_option.net.dialer.dual_stack_enabled -- gRPC client TCP dialer dual stack enabled
+          dual_stack_enabled: true
+        # @schema {"name": "job.client_config.dial_option.net.tls", "type": "object"}
+        tls:
+          # @schema {"name": "job.client_config.dial_option.net.tls.enabled", "type": "boolean"}
+          # job.client_config.tls.enabled -- TLS enabled
+          enabled: false
+          # @schema {"name": "job.client_config.dial_option.net.tls.cert", "type": "string"}
+          # job.client_config.tls.cert -- TLS cert path
+          cert: /path/to/cert
+          # @schema {"name": "job.client_config.dial_option.net.tls.key", "type": "string"}
+          # job.client_config.tls.key -- TLS key path
+          key: /path/to/key
+          # @schema {"name": "job.client_config.dial_option.net.tls.ca", "type": "string"}
+          # job.client_config.tls.ca -- TLS ca path
+          ca: /path/to/ca
+          # @schema {"name": "job.client_config.dial_option.net.tls.insecure_skip_verify", "type": "boolean"}
+          # job.client_config.tls.insecure_skip_verify -- enable/disable skip SSL certificate verification
+          insecure_skip_verify: false
+        # @schema {"name": "job.client_config.dial_option.net.socket_option", "type": "object"}
+        socket_option:
+          # @schema {"name": "job.client_config.dial_option.net.socket_option.reuse_port", "type": "boolean"}
+          # job.client_config.dial_option.net.socket_option.reuse_port -- server listen socket option for reuse_port functionality
+          reuse_port: true
+          # @schema {"name": "job.client_config.dial_option.net.socket_option.reuse_addr", "type": "boolean"}
+          # job.client_config.dial_option.net.socket_option.reuse_addr -- server listen socket option for reuse_addr functionality
+          reuse_addr: true
+          # @schema {"name": "job.client_config.dial_option.net.socket_option.tcp_fast_open", "type": "boolean"}
+          # job.client_config.dial_option.net.socket_option.tcp_fast_open -- server listen socket option for tcp_fast_open functionality
+          tcp_fast_open: true
+          # @schema {"name": "job.client_config.dial_option.net.socket_option.tcp_no_delay", "type": "boolean"}
+          # job.client_config.dial_option.net.socket_option.tcp_no_delay -- server listen socket option for tcp_no_delay functionality
+          tcp_no_delay: true
+          # @schema {"name": "job.client_config.dial_option.net.socket_option.tcp_cork", "type": "boolean"}
+          # job.client_config.dial_option.net.socket_option.tcp_cork -- server listen socket option for tcp_cork functionality
+          tcp_cork: false
+          # @schema {"name": "job.client_config.dial_option.net.socket_option.tcp_quick_ack", "type": "boolean"}
+          # job.client_config.dial_option.net.socket_option.tcp_quick_ack -- server listen socket option for tcp_quick_ack functionality
+          tcp_quick_ack: true
+          # @schema {"name": "job.client_config.dial_option.net.socket_option.tcp_defer_accept", "type": "boolean"}
+          # job.client_config.dial_option.net.socket_option.tcp_defer_accept -- server listen socket option for tcp_defer_accept functionality
+          tcp_defer_accept: true
+          # @schema {"name": "job.client_config.dial_option.net.socket_option.ip_transparent", "type": "boolean"}
+          # job.client_config.dial_option.net.socket_option.ip_transparent -- server listen socket option for ip_transparent functionality
+          ip_transparent: false
+          # @schema {"name": "job.client_config.dial_option.net.socket_option.ip_recover_destination_addr", "type": "boolean"}
+          # job.client_config.dial_option.net.socket_option.ip_recover_destination_addr -- server listen socket option for ip_recover_destination_addr functionality
+          ip_recover_destination_addr: false
+      # @schema {"name": "job.client_config.dial_option.keepalive", "type": "object"}
+      keepalive:
+        # @schema {"name": "job.client_config.dial_option.keepalive.time", "type": "string"}
+        # job.client_config.dial_option.keepalive.time -- gRPC client keep alive time
+        time: "120s"
+        # @schema {"name": "job.client_config.dial_option.keepalive.timeout", "type": "string"}
+        # job.client_config.dial_option.keepalive.timeout -- gRPC client keep alive timeout
+        timeout: "30s"
+        # @schema {"name": "job.client_config.dial_option.keepalive.permit_without_stream", "type": "boolean"}
+        # job.client_config.dial_option.keepalive.permit_without_stream -- gRPC client keep alive permit without stream
+        permit_without_stream: true
+    # @schema {"name": "job.client_config.tls", "type": "object"}
+    tls:
+      # @schema {"name": "job.client_config.tls.enabled", "type": "boolean"}
+      # job.client_config.tls.enabled -- TLS enabled
+      enabled: false
+      # @schema {"name": "job.client_config.tls.cert", "type": "string"}
+      # job.client_config.tls.cert -- TLS cert path
+      cert: /path/to/cert
+      # @schema {"name": "job.client_config.tls.key", "type": "string"}
+      # job.client_config.tls.key -- TLS key path
+      key: /path/to/key
+      # @schema {"name": "job.client_config.tls.ca", "type": "string"}
+      # job.client_config.tls.ca -- TLS ca path
+      ca: /path/to/ca
+      # @schema {"name": "job.client_config.tls.insecure_skip_verify", "type": "boolean"}
+      # job.client_config.tls.insecure_skip_verify -- enable/disable skip SSL certificate verification
+      insecure_skip_verify: false
 # @schema {"name": "rbac", "type": "object"}
 rbac:
   # @schema {"name": "rbac.create", "type": "boolean"}

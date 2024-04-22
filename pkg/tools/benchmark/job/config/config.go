@@ -54,6 +54,7 @@ var (
 	NAME                    = os.Getenv("CRD_NAME")
 	JOBNAME_ANNOTATION      = "before-job-name"
 	JOBNAMESPACE_ANNOTATION = "before-job-namespace"
+	SERVICE_NAME            = "vald-benchmark-job"
 )
 
 // NewConfig represents the set config from the given setting file path.
@@ -74,6 +75,7 @@ func NewConfig(ctx context.Context, path string) (cfg *Config, err error) {
 
 	if cfg.Observability != nil {
 		cfg.Observability = cfg.Observability.Bind()
+		cfg.Observability.OTLP.Attribute.ServiceName = SERVICE_NAME
 	} else {
 		cfg.Observability = new(config.Observability)
 	}
