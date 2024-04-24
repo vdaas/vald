@@ -163,8 +163,4 @@ rust/install: $(CARGO_HOME)/bin/cargo
 
 $(CARGO_HOME)/bin/cargo:
 	curl --proto '=https' --tlsv1.2 -fsSL https://sh.rustup.rs | CARGO_HOME=${CARGO_HOME} RUSTUP_HOME=${RUSTUP_HOME} sh -s -- --default-toolchain $(RUST_VERSION) -y
-	source "${CARGO_HOME}/env" \
-	CARGO_HOME=${CARGO_HOME} RUSTUP_HOME=${RUSTUP_HOME} ${CARGO_HOME}/bin/rustup install $(RUST_VERSION) \
-	CARGO_HOME=${CARGO_HOME} RUSTUP_HOME=${RUSTUP_HOME} ${CARGO_HOME}/bin/rustup toolchain install $(RUST_VERSION) \
-	CARGO_HOME=${CARGO_HOME} RUSTUP_HOME=${RUSTUP_HOME} ${CARGO_HOME}/bin/rustup default $(RUST_VERSION) \
-	CARGO_HOME=${CARGO_HOME} RUSTUP_HOME=${RUSTUP_HOME} ${CARGO_HOME}/bin/rustup update
+	source "${CARGO_HOME}/env"

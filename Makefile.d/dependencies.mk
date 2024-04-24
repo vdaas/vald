@@ -85,15 +85,8 @@ go/example/deps:
 ## install Rust package dependencies
 rust/deps: \
 	rust/install
-	if [ -x "$(CARGO_HOME)/bin/cargo" ]; then \
-		cd $(ROOTDIR)/rust \
-			&& $(CARGO_HOME)/bin/rustup default stable \
-			&& $(CARGO_HOME)/bin/cargo update \
-			&& cd -;\
-	else \
-		echo "Cargo not found. Please install Cargo or add it to your PATH."; \
-		exit 1; \
-	fi
+	sed -i "2s/channel = \"[0-9]\+\.[0-9]\+\(\.[0-9]\+\)\?\"/channel = \"$(RUST_VERSION)\"/g" $(ROOTDIR)/rust/rust-toolchain.toml
+	cd $(ROOTDIR)/rust && $(CARGO_HOME)/bin/cargo update && cd -
 
 .PHONY: update/chaos-mesh
 ## update chaos-mesh version
