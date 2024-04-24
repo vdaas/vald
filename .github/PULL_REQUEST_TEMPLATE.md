@@ -17,10 +17,10 @@
 <!--- Please change the versions below along with your environment -->
 
 - Go Version: 1.22.2
+- Rust Version: 1.77.2
 - Docker Version: 20.10.8
 - Kubernetes Version: v1.29.3
 - NGT Version: 2.2
-- Rust Version: 1.77.2
 
 ### Checklist
 
