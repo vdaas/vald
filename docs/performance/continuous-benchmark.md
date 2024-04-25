@@ -499,4 +499,4 @@ observability:
 
 After apply it, the metrics can be shown on the Grafana dashboard like as below.
 
-<img src="../../assets/docs/performance/benchmark-grafana.png" />
+<img src="../../assets/docs/performance/benchmark-grafana.png" alt="Grafana dashboard showing benchmark metrics" />
