@@ -2,7 +2,7 @@
 
 ## What is the Continuous Benchmark Tool?
 
-Continuous Benchmark Tool allows you to get benchmark of Vald cluster in 24/7.
+Continuous Benchmark Tool allows you to continuously benchmark the Vald cluster.
 
 Assumed use case is:
 
@@ -14,7 +14,7 @@ Assumed use case is:
 Continuous Benchmark Tool has following 2 components:
 
 - Benchmark Operator: Manages benchmark jobs
-- Benchmark Job: Executes CRUDs request to the target Vald cluster
+- Benchmark Job: Executes CRUD request to the target Vald cluster
 
 ## Benchmark component and its feature
 
@@ -29,7 +29,7 @@ Continuous Benchmark Tool has following 2 components:
 
 - Executes CRUD request to the target Vald cluster based on defined config.
 - Execute steps are:
-  1. Load dataset (valid only for HDF5 format )
+  1. Load dataset (valid only for HDF5 format)
   1. Execute request with load dataset
 
 ## Benchmark CRD
