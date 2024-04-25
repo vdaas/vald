@@ -482,7 +482,7 @@ For information on building a monitoring environment, please refer to [Observabi
 To monitor metrics about continuous benchmarking, please edit `ValdBenchmarkOperatorRelease` as follows:
 
 ```yaml
-...
+---
 # @schema {"name": "observability", "type": "object"}
 observability:
   # @schema {"name": "observability.enabled", "type": "boolean"}
@@ -490,15 +490,13 @@ observability:
   # @schema {"name": "observability.otlp", "type": "object"}
   otlp:
     # @schema {"name": "observability.otlp.collector_endpoint", "type": "string"}
-    # Please confirm correct collector_endpoint 
+    # Please confirm correct collector_endpoint
     collector_endpoint: "opentelemetry-collector-collector.default.svc.cluster.local:4317"
   trace:
     # @schema {"name": "observability.trace.enabled", "type": "boolean"}
     enabled: true
-...
 ```
 
 After apply it, the metrics can be shown on the Grafana dashboard like as below.
 
 <img src="../../assets/docs/performance/benchmark-grafana.png" />
-
