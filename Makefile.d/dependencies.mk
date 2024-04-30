@@ -85,7 +85,7 @@ go/example/deps:
 ## install Rust package dependencies
 rust/deps: \
 	rust/install
-	sed -i "2s/channel = \"[0-9]\+\.[0-9]\+\(\.[0-9]\+\)\?\"/channel = \"$(RUST_VERSION)\"/g" $(ROOTDIR)/rust/rust-toolchain.toml
+	sed -i "17s/channel = \"[0-9]\+\.[0-9]\+\(\.[0-9]\+\)\?\"/channel = \"$(RUST_VERSION)\"/g" $(ROOTDIR)/rust/rust-toolchain.toml
 	cd $(ROOTDIR)/rust && $(CARGO_HOME)/bin/cargo update && cd -
 
 .PHONY: update/chaos-mesh
