@@ -343,10 +343,11 @@ define update-github-actions
 					VERSION="1.0.0"; \
 				else \
 					REPO_NAME=`echo $$ACTION_NAME | cut -d'/' -f1-2`; \
-					VERSION=`curl --silent https://api.github.com/repos/$$REPO_NAME/releases/latest | grep -Po '"tag_name": "\K.*?(?=")' | sed 's/v//g' | sed -E 's/[^0-9.]+//g'`;\
+					VERSION=`curl -fsSL https://api.github.com/repos/$$REPO_NAME/releases/latest | grep -Po '"tag_name": "\K.*?(?=")' | sed 's/v//g' | sed -E 's/[^0-9.]+//g'`;\
 				fi; \
 				if [ -n "$$VERSION" ]; then \
-					echo "updating $$ACTION_NAME version file $$FILE_NAME to $$VERSION"; \
+					OLD_VERSION=`cat $(ROOTDIR)/versions/actions/$$FILE_NAME`; \
+					echo "updating $$ACTION_NAME version file $$FILE_NAME from $$OLD_VERSION to $$VERSION"; \
 					echo $$VERSION > $(ROOTDIR)/versions/actions/$$FILE_NAME; \
 				else \
 					VERSION=`cat $(ROOTDIR)/versions/actions/$$FILE_NAME`; \
