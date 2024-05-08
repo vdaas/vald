@@ -334,7 +334,7 @@ endef
 
 define update-github-actions
 	@for ACTION_NAME in $1; do \
-		if [ -n "$$ACTION_NAME" ]; then \
+		if [ -n "$$ACTION_NAME" ] && [ "$$ACTION_NAME" != "security-and-quality" ]; then \
 			FILE_NAME=`echo $$ACTION_NAME | tr '/' '_' | tr '-' '_' | tr '[:lower:]' '[:upper:]'`; \
 			if [ -n "$$FILE_NAME" ]; then \
 				if [ "$$ACTION_NAME" = "aquasecurity/trivy-action" ] || [ "$$ACTION_NAME" = "machine-learning-apps/actions-chatops" ]; then \

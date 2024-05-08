@@ -19,7 +19,7 @@
 golangci-lint/install: $(BINDIR)/golangci-lint
 
 $(BINDIR)/golangci-lint:
-	curl -fsSL htps://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh \
+	curl -fsSL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh \
 		| sh -s -- -b $(BINDIR) $(GOLANGCILINT_VERSION)
 
 .PHONY: goimports/install
@@ -56,7 +56,7 @@ $(BINDIR)/prettier:
 reviewdog/install: $(BINDIR)/reviewdog
 
 $(BINDIR)/reviewdog:
-	curl -fsSL htps://raw.githubusercontent.com/reviewdog/reviewdog/master/install.sh \
+	curl -fsSL https://raw.githubusercontent.com/reviewdog/reviewdog/master/install.sh \
 		| sh -s -- -b $(BINDIR) $(REVIEWDOG_VERSION)
 
 .PHONY: kubectl/install
