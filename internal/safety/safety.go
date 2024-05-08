@@ -38,12 +38,12 @@ func recoverFn(fn func() error, withPanic bool) func() error {
 		defer func() {
 			if r := recover(); r != nil {
 				infoStr := info.Get().String()
-				log.Warnf("recovered: %#v\nstacktrace:\n%s", r, infoStr)
+				log.Warnf("function %#v panic recovered: %#v\ninfo:\n%s", fn, r, infoStr)
 				switch x := r.(type) {
 				case runtime.Error:
 					err = errors.ErrRuntimeError(err, x)
 					if withPanic {
-						log.Errorf("recovered but this thread is going to panic: the reason is runtimer.Error\nerror: %v\ninfo:\n%s\nstacktrace:\n%s", err, infoStr)
+						log.Errorf("recovered but this thread is going to panic: the reason is runtimer.Error\nerror:\t%v\ninfo:\n%s\nrecovered:\t%#v", err, infoStr, r)
 
 						panic(err)
 					}
@@ -57,7 +57,7 @@ func recoverFn(fn func() error, withPanic bool) func() error {
 					err = errors.ErrPanicRecovered(err, x)
 				}
 				if err != nil {
-					log.Errorf("recovered error: %v\ninfo:\n%s\nstacktrace:\n%s", err, infoStr)
+					log.Errorf("function %#v panic recovered error:\t%v\ninfo:\n%s\nrecovered:\t%#v", fn, err, infoStr, r)
 				}
 			}
 		}()

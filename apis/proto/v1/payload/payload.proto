@@ -19,6 +19,7 @@ syntax = "proto3";
 package payload.v1;
 
 import "buf/validate/validate.proto";
+import "google/protobuf/wrappers.proto";
 import "google/rpc/status.proto";
 
 option go_package = "github.com/vdaas/vald/apis/grpc/v1/payload";
@@ -93,6 +94,8 @@ message Search {
     uint32 min_num = 8 [(buf.validate.field).uint32.gte = 0];
     // Aggregation Algorithm
     AggregationAlgorithm aggregation_algorithm = 9;
+    // Search ratio for agent return result number.
+    google.protobuf.FloatValue ratio = 10;
   }
 
   // AggregationAlgorithm is enum of each aggregation algorithms

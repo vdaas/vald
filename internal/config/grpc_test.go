@@ -1029,10 +1029,10 @@ func TestGRPCClient_Opts(t *testing.T) {
 			},
 		},
 		{
-			name:   "return 1 grpc.Option when all parameters are set",
+			name:   "return empty slice grpc.Option when all parameters are not set",
 			fields: fields{},
 			want: want{
-				want: make([]grpc.Option, 1),
+				want: make([]grpc.Option, 0),
 			},
 		},
 	}

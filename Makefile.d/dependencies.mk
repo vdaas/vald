@@ -98,13 +98,13 @@ rust/deps: \
 .PHONY: update/chaos-mesh
 ## update chaos-mesh version
 update/chaos-mesh:
-	curl --silent https://api.github.com/repos/chaos-mesh/chaos-mesh/releases/latest | grep -Po '"tag_name": "\K.*?(?=")' | sed 's/v//g' > $(ROOTDIR)/versions/CHAOS_MESH_VERSION
+	curl -fsSL https://api.github.com/repos/chaos-mesh/chaos-mesh/releases/latest | grep -Po '"tag_name": "\K.*?(?=")' | sed 's/v//g' > $(ROOTDIR)/versions/CHAOS_MESH_VERSION
 
 .PHONY: update/k3s
 ## update k3s version
 update/k3s:
 	@{ \
-		RESULT=$$(curl --silent https://hub.docker.com/v2/repositories/rancher/k3s/tags?page_size=1000 | jq -r '.results[].name' | grep -E '.*-k3s[0-9]+$$' | grep -v rc | sort -Vr | head -n 1); \
+		RESULT=$$(curl -fsSL https://hub.docker.com/v2/repositories/rancher/k3s/tags?page_size=1000 | jq -r '.results[].name' | grep -E '.*-k3s[0-9]+$$' | grep -v rc | sort -Vr | head -n 1); \
 		if [ -n "$$RESULT" ]; then \
 			echo $$RESULT > $(ROOTDIR)/versions/K3S_VERSION; \
 		else \
@@ -115,107 +115,115 @@ update/k3s:
 .PHONY: update/go
 ## update go version
 update/go:
-	curl --silent https://go.dev/VERSION?m=text | head -n 1 | sed -e 's/go//g' > $(ROOTDIR)/versions/GO_VERSION
+	curl -fsSL https://go.dev/VERSION?m=text | head -n 1 | sed -e 's/go//g' > $(ROOTDIR)/versions/GO_VERSION
 
 .PHONY: update/golangci-lint
 ## update golangci-lint version
 update/golangci-lint:
-	curl --silent https://api.github.com/repos/golangci/golangci-lint/releases/latest | grep -Po '"tag_name": "\K.*?(?=")' > $(ROOTDIR)/versions/GOLANGCILINT_VERSION
+	curl -fsSL https://api.github.com/repos/golangci/golangci-lint/releases/latest | grep -Po '"tag_name": "\K.*?(?=")' > $(ROOTDIR)/versions/GOLANGCILINT_VERSION
 
+<<<<<<< HEAD
+=======
+.PHONY: update/rust
+## update rust version
+update/rust:
+	curl -fsSL https://releases.rs | grep -Po 'Stable: \K[\d.]+\s' | head -n 1 > $(ROOTDIR)/versions/RUST_VERSION
+
+>>>>>>> 6d4b50543 ( Add efficient search logic for large top-k users (#2491))
 .PHONY: update/helm
 ## update helm version
 update/helm:
-	curl --silent https://api.github.com/repos/helm/helm/releases/latest | grep -Po '"tag_name": "\K.*?(?=")' > $(ROOTDIR)/versions/HELM_VERSION
+	curl -fsSL https://api.github.com/repos/helm/helm/releases/latest | grep -Po '"tag_name": "\K.*?(?=")' > $(ROOTDIR)/versions/HELM_VERSION
 
 .PHONY: update/helm-operator
 ## update helm-operator version
 update/helm-operator:
-	curl --silent https://quay.io/api/v1/repository/operator-framework/helm-operator | jq -r '.tags'| grep name | grep -v master |grep -v latest | grep -v rc | head -1 | sed -e 's/.*\"name\":\ \"\(.*\)\",/\1/g' > $(ROOTDIR)/versions/OPERATOR_SDK_VERSION
+	curl -fsSL https://quay.io/api/v1/repository/operator-framework/helm-operator | jq -r '.tags'| grep name | grep -v master |grep -v latest | grep -v rc | head -1 | sed -e 's/.*\"name\":\ \"\(.*\)\",/\1/g' > $(ROOTDIR)/versions/OPERATOR_SDK_VERSION
 
 .PHONY: update/helm-docs
 ## update helm-docs version
 update/helm-docs:
-	curl --silent https://api.github.com/repos/norwoodj/helm-docs/releases/latest | grep -Po '"tag_name": "\K.*?(?=")' | sed 's/v//g' > $(ROOTDIR)/versions/HELM_DOCS_VERSION
+	curl -fsSL https://api.github.com/repos/norwoodj/helm-docs/releases/latest | grep -Po '"tag_name": "\K.*?(?=")' | sed 's/v//g' > $(ROOTDIR)/versions/HELM_DOCS_VERSION
 
 .PHONY: update/protobuf
 ## update protobuf version
 update/protobuf:
-	curl --silent https://api.github.com/repos/protocolbuffers/protobuf/releases/latest | grep -Po '"tag_name": "\K.*?(?=")' | sed 's/v//g' > $(ROOTDIR)/versions/PROTOBUF_VERSION
+	curl -fsSL https://api.github.com/repos/protocolbuffers/protobuf/releases/latest | grep -Po '"tag_name": "\K.*?(?=")' | sed 's/v//g' > $(ROOTDIR)/versions/PROTOBUF_VERSION
 
 .PHONY: update/kind
 ## update kind (kubernetes in docker) version
 update/kind:
-	curl --silent https://api.github.com/repos/kubernetes-sigs/kind/releases/latest | grep -Po '"tag_name": "\K.*?(?=")' | sed 's/v//g' > $(ROOTDIR)/versions/KIND_VERSION
+	curl -fsSL https://api.github.com/repos/kubernetes-sigs/kind/releases/latest | grep -Po '"tag_name": "\K.*?(?=")' | sed 's/v//g' > $(ROOTDIR)/versions/KIND_VERSION
 
 .PHONY: update/kubectl
 ## update kubectl (kubernetes cli) version
 update/kubectl:
-	curl -L -s https://dl.k8s.io/release/stable.txt > $(ROOTDIR)/versions/KUBECTL_VERSION
+	curl -fsSL https://dl.k8s.io/release/stable.txt > $(ROOTDIR)/versions/KUBECTL_VERSION
 
 .PHONY: update/prometheus-stack
 ## update prometheus version
 update/prometheus-stack:
-	curl --silent https://artifacthub.io/api/v1/packages/helm/prometheus-community/kube-prometheus-stack | jq .version | sed 's/"//g' > $(ROOTDIR)/versions/PROMETHEUS_STACK_VERSION
+	curl -fsSL https://artifacthub.io/api/v1/packages/helm/prometheus-community/kube-prometheus-stack | jq .version | sed 's/"//g' > $(ROOTDIR)/versions/PROMETHEUS_STACK_VERSION
 
 .PHONY: update/jaeger-operator
 ## update jaeger-operator version
 update/jaeger-operator:
-	curl --silent https://artifacthub.io/api/v1/packages/helm/jaegertracing/jaeger-operator | jq .version | sed 's/"//g' > $(ROOTDIR)/versions/JAEGER_OPERATOR_VERSION
+	curl -fsSL https://artifacthub.io/api/v1/packages/helm/jaegertracing/jaeger-operator | jq .version | sed 's/"//g' > $(ROOTDIR)/versions/JAEGER_OPERATOR_VERSION
 
 .PHONY: update/kube-linter
 ## update kube-linter version
 update/kube-linter:
-	curl --silent https://api.github.com/repos/stackrox/kube-linter/releases/latest | grep -Po '"tag_name": "\K.*?(?=")' > $(ROOTDIR)/versions/KUBELINTER_VERSION
+	curl -fsSL https://api.github.com/repos/stackrox/kube-linter/releases/latest | grep -Po '"tag_name": "\K.*?(?=")' > $(ROOTDIR)/versions/KUBELINTER_VERSION
 
 # .PHONY: update/otel-operator
 # ## update otel-operator version
 # update/otel-operator:
-# 	curl --silent https://api.github.com/repos/open-telemetry/opentelemetry-operator/releases/latest | grep -Po '"tag_name": "\K.*?(?=")' > $(ROOTDIR)/versions/OTEL_OPERATOR_VERSION
+# 	curl -fsSL https://api.github.com/repos/open-telemetry/opentelemetry-operator/releases/latest | grep -Po '"tag_name": "\K.*?(?=")' > $(ROOTDIR)/versions/OTEL_OPERATOR_VERSION
 
 .PHONY: update/ngt
 ## update yahoojapan/NGT version
 update/ngt:
-	curl --silent https://api.github.com/repos/yahoojapan/NGT/releases/latest | grep -Po '"tag_name": "\K.*?(?=")' | sed 's/v//g' > $(ROOTDIR)/versions/NGT_VERSION
+	curl -fsSL https://api.github.com/repos/yahoojapan/NGT/releases/latest | grep -Po '"tag_name": "\K.*?(?=")' | sed 's/v//g' > $(ROOTDIR)/versions/NGT_VERSION
 
 .PHONY: update/faiss
 ## update facebookresearch/faiss version
 update/faiss:
-	curl --silent https://api.github.com/repos/facebookresearch/faiss/releases/latest | grep -Po '"tag_name": "\K.*?(?=")' | sed 's/v//g' > $(ROOTDIR)/versions/FAISS_VERSION
+	curl -fsSL https://api.github.com/repos/facebookresearch/faiss/releases/latest | grep -Po '"tag_name": "\K.*?(?=")' | sed 's/v//g' > $(ROOTDIR)/versions/FAISS_VERSION
 
 .PHONY: update/reviewdog
 ## update reviewdog version
 update/reviewdog:
-	curl --silent https://api.github.com/repos/reviewdog/reviewdog/releases/latest | grep -Po '"tag_name": "\K.*?(?=")' > $(ROOTDIR)/versions/REVIEWDOG_VERSION
+	curl -fsSL https://api.github.com/repos/reviewdog/reviewdog/releases/latest | grep -Po '"tag_name": "\K.*?(?=")' > $(ROOTDIR)/versions/REVIEWDOG_VERSION
 
 .PHONY: update/telepresence
 ## update telepresence version
 update/telepresence:
-	curl --silent https://api.github.com/repos/telepresenceio/telepresence/releases/latest | grep -Po '"tag_name": "\K.*?(?=")' | sed 's/v//g' > $(ROOTDIR)/versions/TELEPRESENCE_VERSION
+	curl -fsSL https://api.github.com/repos/telepresenceio/telepresence/releases/latest | grep -Po '"tag_name": "\K.*?(?=")' | sed 's/v//g' > $(ROOTDIR)/versions/TELEPRESENCE_VERSION
 
 .PHONY: update/yq
 ## update YQ version
 update/yq:
-	curl --silent https://api.github.com/repos/mikefarah/yq/releases/latest | grep -Po '"tag_name": "\K.*?(?=")' > $(ROOTDIR)/versions/YQ_VERSION
+	curl -fsSL https://api.github.com/repos/mikefarah/yq/releases/latest | grep -Po '"tag_name": "\K.*?(?=")' > $(ROOTDIR)/versions/YQ_VERSION
 
 .PHONY: update/zlib
 ## update zlib version
 update/zlib:
-	curl --silent https://api.github.com/repos/madler/zlib/releases/latest | grep -Po '"tag_name": "\K.*?(?=")' | sed 's/v//g' > $(ROOTDIR)/versions/ZLIB_VERSION
+	curl -fsSL https://api.github.com/repos/madler/zlib/releases/latest | grep -Po '"tag_name": "\K.*?(?=")' | sed 's/v//g' > $(ROOTDIR)/versions/ZLIB_VERSION
 
 .PHONY: update/hdf5
 ## update hdf5 version
 update/hdf5:
-	curl --silent https://api.github.com/repos/HDFGroup/hdf5/releases/latest | grep -Po '"tag_name": "\K.*?(?=")' | sed 's/v//g' > $(ROOTDIR)/versions/HDF5_VERSION
+	curl -fsSL https://api.github.com/repos/HDFGroup/hdf5/releases/latest | grep -Po '"tag_name": "\K.*?(?=")' | sed 's/v//g' > $(ROOTDIR)/versions/HDF5_VERSION
 
 .PHONY: update/vald
 ## update vald it's self version
 update/vald:
-	curl --silent https://api.github.com/repos/vdaas/vald/releases/latest | grep -Po '"tag_name": "\K.*?(?=")' > $(ROOTDIR)/versions/VALD_VERSION
+	curl -fsSL https://api.github.com/repos/vdaas/vald/releases/latest | grep -Po '"tag_name": "\K.*?(?=")' > $(ROOTDIR)/versions/VALD_VERSION
 
 .PHONY: update/valdcli
 ## update vald client library made by clojure self version
 update/valdcli:
-	curl --silent https://api.github.com/repos/vdaas/vald-client-clj/releases/latest | grep -Po '"tag_name": "\K.*?(?=")' > $(ROOTDIR)/versions/VALDCLI_VERSION
+	curl -fsSL https://api.github.com/repos/vdaas/vald-client-clj/releases/latest | grep -Po '"tag_name": "\K.*?(?=")' > $(ROOTDIR)/versions/VALDCLI_VERSION
 
 .PHONY: update/template
 ## update PULL_REQUEST_TEMPLATE and ISSUE_TEMPLATE

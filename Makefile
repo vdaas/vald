@@ -582,7 +582,7 @@ ngt/install: /usr/local/include/NGT/Capi.h
 ## install Faiss
 faiss/install: /usr/local/lib/libfaiss.so
 /usr/local/lib/libfaiss.so:
-	curl -LO https://github.com/facebookresearch/faiss/archive/v$(FAISS_VERSION).tar.gz
+	curl -fsSLO https://github.com/facebookresearch/faiss/archive/v$(FAISS_VERSION).tar.gz
 	tar zxf v$(FAISS_VERSION).tar.gz -C $(TEMP_DIR)/
 	cd $(TEMP_DIR)/faiss-$(FAISS_VERSION) && \
 		cmake -DFAISS_ENABLE_GPU=OFF -DFAISS_ENABLE_PYTHON=OFF -DBUILD_TESTING=OFF -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON -B build . && \

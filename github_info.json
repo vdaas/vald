@@ -1,0 +1,180 @@
+{
+  "body": "<!--- Provide a general summary of your changes in the Title above -->\r\n\r\n### Description\r\n\r\n<!-- Describe your changes in detail -->\r\n<!-- It would be better to describe the details especially What changed and Why you changed -->\r\n\r\n### Related Issue\r\n\r\n<!-- This project mainly accepts pull requests related to open issues -->\r\n<!-- NOTE: If suggesting a new feature or change, please discuss it in an issue first -->\r\n<!-- NOTE: If fixing a bug, there should be an issue describing it with steps to reproduce -->\r\n<!-- Please link to the issue here: -->\r\n\r\n### Versions\r\n\r\n<!--- Please change the versions below along with your environment -->\r\n\r\n- Go Version: 1.22.2\r\n- Rust Version: 1.77.2\r\n- Docker Version: 20.10.8\r\n- Kubernetes Version: v1.29.3\r\n- NGT Version: 2.2.1\r\n\r\n### Checklist\r\n\r\n<!-- For completed items, change [ ] to [x]. -->\r\n<!-- NOTE: these things are not required to open a PR and can be done afterwards / while the PR is open. -->\r\n\r\n- [ ] I have read the [CONTRIBUTING](https://github.com/vdaas/vald/blob/main/CONTRIBUTING.md) document and completed [our CLA agreement](https://cla-assistant.io/vdaas/vald).\r\n- [ ] I have checked open [Pull Requests](https://github.com/vdaas/vald/pulls) for the similar feature or fixes?\r\n\r\n### Special notes for your reviewer\r\n\r\n<!-- Please tell us anything you would like to share to reviewers related this PR -->\r\n\n\n<!-- This is an auto-generated comment: release notes by coderabbit.ai -->\n## Summary by CodeRabbit\n\n- **New Features**\n  - Introduced a new Dockerfile and README for the core agent.\n  - Updated Kubernetes version across various GitHub templates to `v1.30.0`.\n  - Enhanced download commands with `-fsS` and `-fsSL` options across multiple Makefiles for improved security and reliability.\n  - Added new documentation images and updated installation commands in tutorials for Helm using secure `curl` options.\n\n- **Bug Fixes**\n  - Fixed protocol issues in URLs for downloading tools like `golangci-lint`, `reviewdog`, `kubectl`, and `buf`.\n\n- **Documentation**\n  - Updated Go version in example client module from `1.22.2` to `1.22.3`.\n  - Enhanced existing documentation to reflect updated download commands and Kubernetes version changes.\n\n- **Refactor**\n  - Modified internal gRPC configuration to conditionally append health check durations, enhancing efficiency.\n<!-- end of auto-generated comment: release notes by coderabbit.ai -->",
+  "headRefName": "feature/gateway-lb/add-efficient-search-for-large-topk-query",
+  "headRefOid": "6dee89987d994a1e67fbe209194db9ac9233d8c0",
+  "labels": [
+    {
+      "id": "MDU6TGFiZWwxNzI5NDQ5MTc4",
+      "name": "type/feature",
+      "description": "New feature",
+      "color": "1fa874"
+    },
+    {
+      "id": "MDU6TGFiZWwxNzI5NTgxNDgy",
+      "name": "priority/medium",
+      "description": "",
+      "color": "efa7ef"
+    },
+    {
+      "id": "MDU6TGFiZWwxNzI5NTg3OTMy",
+      "name": "area/discoverer",
+      "description": "",
+      "color": "abc3fc"
+    },
+    {
+      "id": "MDU6TGFiZWwxNzI5NTg5OTA5",
+      "name": "area/manager/index",
+      "description": "",
+      "color": "6d7dc6"
+    },
+    {
+      "id": "MDU6TGFiZWwxNzI5NTkwMzYx",
+      "name": "area/filter/ingress",
+      "description": "",
+      "color": "dd6761"
+    },
+    {
+      "id": "MDU6TGFiZWwxNzI5NTkwNTEz",
+      "name": "area/filter/egress",
+      "description": "",
+      "color": "e04c96"
+    },
+    {
+      "id": "MDU6TGFiZWwxNzI5NTkwODA0",
+      "name": "area/internal",
+      "description": "",
+      "color": "d86586"
+    },
+    {
+      "id": "MDU6TGFiZWwxNzI5NTkxODE3",
+      "name": "type/ci",
+      "description": "",
+      "color": "006b75"
+    },
+    {
+      "id": "MDU6TGFiZWwxNzQ5MTMzMTEz",
+      "name": "size/XXL",
+      "description": "",
+      "color": "dd730f"
+    },
+    {
+      "id": "MDU6TGFiZWwxODM3NjQ2MjQw",
+      "name": "area/helm",
+      "description": "",
+      "color": "bfd4f2"
+    },
+    {
+      "id": "MDU6TGFiZWwxOTA2MDk1OTkz",
+      "name": "area/makefile",
+      "description": "",
+      "color": "c379e0"
+    },
+    {
+      "id": "MDU6TGFiZWwyMDg2NDk2MDI5",
+      "name": "area/agent/sidecar",
+      "description": "",
+      "color": "8befc0"
+    },
+    {
+      "id": "MDU6TGFiZWwyMTIyNzQyODI5",
+      "name": "area/tools/cli/loadtest",
+      "description": "",
+      "color": "99b2f7"
+    },
+    {
+      "id": "MDU6TGFiZWwyMjQ5MDg2Mjc2",
+      "name": "area/gateway/lb",
+      "description": "",
+      "color": "ededed"
+    },
+    {
+      "id": "MDU6TGFiZWwyMjQ5MDg2Mjc5",
+      "name": "area/gateway/filter",
+      "description": "",
+      "color": "ededed"
+    },
+    {
+      "id": "MDU6TGFiZWwyNDk0MTI0ODE5",
+      "name": "actions/e2e-deploy",
+      "description": "",
+      "color": "ededed"
+    },
+    {
+      "id": "MDU6TGFiZWwyNTExODU3NzM3",
+      "name": "actions/fossa",
+      "description": "",
+      "color": "ededed"
+    },
+    {
+      "id": "MDU6TGFiZWwyNjAxOTYyNTQ5",
+      "name": "actions/e2e-chaos",
+      "description": "",
+      "color": "ededed"
+    },
+    {
+      "id": "MDU6TGFiZWwzMjAwNTA4ODg5",
+      "name": "actions/e2e-profiling",
+      "description": "",
+      "color": "ededed"
+    },
+    {
+      "id": "LA_kwDOC6jpA872fNxB",
+      "name": "actions/e2e-max-dim",
+      "description": "",
+      "color": "ededed"
+    },
+    {
+      "id": "LA_kwDOC6jpA88AAAABefFjpw",
+      "name": "actions/backport/release/v1.7",
+      "description": "",
+      "color": "fef2c0"
+    },
+    {
+      "id": "LA_kwDOC6jpA88AAAABgwMFlA",
+      "name": "area/agent/core/faiss",
+      "description": "",
+      "color": "ededed"
+    },
+    {
+      "id": "LA_kwDOC6jpA88AAAABgwMFlQ",
+      "name": "area/agent/core/ngt",
+      "description": "",
+      "color": "ededed"
+    },
+    {
+      "id": "LA_kwDOC6jpA88AAAABgwMFlg",
+      "name": "area/gateway/mirror",
+      "description": "",
+      "color": "ededed"
+    },
+    {
+      "id": "LA_kwDOC6jpA88AAAABgwMFmA",
+      "name": "area/index/job/correction",
+      "description": "",
+      "color": "ededed"
+    },
+    {
+      "id": "LA_kwDOC6jpA88AAAABgwMFmg",
+      "name": "area/index/job/creation",
+      "description": "",
+      "color": "ededed"
+    },
+    {
+      "id": "LA_kwDOC6jpA88AAAABgwMFnA",
+      "name": "area/index/job/save",
+      "description": "",
+      "color": "ededed"
+    },
+    {
+      "id": "LA_kwDOC6jpA88AAAABgwMFng",
+      "name": "area/index/job/readreplica",
+      "description": "",
+      "color": "ededed"
+    }
+  ],
+  "mergeCommit": {
+    "oid": "6d4b50543c6a900594aabca3a44b160fd27964d9"
+  },
+  "number": 2491,
+  "title": " Add efficient search logic for large top-k users"
+}

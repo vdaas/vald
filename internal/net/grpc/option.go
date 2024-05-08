@@ -20,7 +20,6 @@ package grpc
 import (
 	"context"
 	"crypto/tls"
-	"time"
 
 	"github.com/vdaas/vald/internal/backoff"
 	"github.com/vdaas/vald/internal/circuitbreaker"
@@ -71,9 +70,17 @@ func WithAddrs(addrs ...string) Option {
 
 func WithHealthCheckDuration(dur string) Option {
 	return func(g *gRPCClient) {
+		if len(dur) == 0 {
+			return
+		}
 		d, err := timeutil.Parse(dur)
 		if err != nil {
-			d = time.Second
+			log.Errorf("failed to parse health check duration: %v", err)
+			return
+		}
+		if d <= 0 {
+			log.Errorf("invalid health check duration: %d", d)
+			return
 		}
 		g.hcDur = d
 	}
@@ -86,7 +93,12 @@ func WithConnectionPoolRebalanceDuration(dur string) Option {
 		}
 		d, err := timeutil.Parse(dur)
 		if err != nil {
-			d = time.Hour
+			log.Errorf("failed to parse connection pool rebalance duration: %v", err)
+			return
+		}
+		if d <= 0 {
+			log.Errorf("invalid connection pool rebalance duration: %d", d)
+			return
 		}
 		g.prDur = d
 	}
@@ -124,9 +136,17 @@ func WithDialOptions(opts ...grpc.DialOption) Option {
 
 func WithBackoffMaxDelay(dur string) Option {
 	return func(g *gRPCClient) {
+		if len(dur) == 0 {
+			return
+		}
 		d, err := timeutil.Parse(dur)
 		if err != nil {
-			d = time.Second
+			log.Errorf("failed to parse backoff max delay: %v", err)
+			return
+		}
+		if d <= 0 {
+			log.Errorf("invalid backoff max delay: %d", d)
+			return
 		}
 		g.gbo.MaxDelay = d
 	}
@@ -134,9 +154,17 @@ func WithBackoffMaxDelay(dur string) Option {
 
 func WithBackoffBaseDelay(dur string) Option {
 	return func(g *gRPCClient) {
+		if len(dur) == 0 {
+			return
+		}
 		d, err := timeutil.Parse(dur)
 		if err != nil {
-			d = time.Second
+			log.Errorf("failed to parse backoff base delay: %v", err)
+			return
+		}
+		if d <= 0 {
+			log.Errorf("invalid backoff base delay: %d", d)
+			return
 		}
 		g.gbo.BaseDelay = d
 	}
@@ -156,9 +184,17 @@ func WithBackoffJitter(j float64) Option {
 
 func WithMinConnectTimeout(dur string) Option {
 	return func(g *gRPCClient) {
+		if len(dur) == 0 {
+			return
+		}
 		d, err := timeutil.Parse(dur)
 		if err != nil {
-			d = time.Second
+			log.Errorf("failed to parse minimum connection timeout: %v", err)
+			return
+		}
+		if d <= 0 {
+			log.Errorf("invalid minimum connection timeout: %d", d)
+			return
 		}
 		g.mcd = d
 	}
@@ -303,10 +339,20 @@ func WithKeepaliveParams(t, to string, permitWithoutStream bool) Option {
 		}
 		td, err := timeutil.Parse(t)
 		if err != nil {
+			log.Errorf("failed to parse grpc keepalive time: %v", err)
+			return
+		}
+		if td <= 0 {
+			log.Errorf("invalid grpc keepalive time: %d", td)
 			return
 		}
 		tod, err := timeutil.Parse(t)
 		if err != nil {
+			log.Errorf("failed to parse grpc keepalive timeout: %v", err)
+			return
+		}
+		if tod <= 0 {
+			log.Errorf("invalid grpc keepalive timeout: %d", tod)
 			return
 		}
 		g.dopts = append(g.dopts,
