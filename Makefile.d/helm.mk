@@ -20,7 +20,7 @@ helm/install: $(BINDIR)/helm
 
 $(BINDIR)/helm:
 	mkdir -p $(BINDIR)
-	curl "https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3" | HELM_INSTALL_DIR=$(BINDIR) bash
+	curl -fsSL "https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3" | HELM_INSTALL_DIR=$(BINDIR) bash
 
 .PHONY: helm-docs/install
 ## install helm-docs
@@ -29,7 +29,7 @@ helm-docs/install: $(BINDIR)/helm-docs
 $(BINDIR)/helm-docs:
 	mkdir -p $(BINDIR)
 	cd $(TEMP_DIR) \
-	    && curl -LO https://github.com/norwoodj/helm-docs/releases/download/v$(HELM_DOCS_VERSION)/helm-docs_$(HELM_DOCS_VERSION)_$(UNAME)_$(ARCH).tar.gz \
+	    && curl -fsSLO https://github.com/norwoodj/helm-docs/releases/download/v$(HELM_DOCS_VERSION)/helm-docs_$(HELM_DOCS_VERSION)_$(UNAME)_$(ARCH).tar.gz \
 	    && tar xzvf helm-docs_$(HELM_DOCS_VERSION)_$(UNAME)_$(ARCH).tar.gz \
 	    && mv helm-docs $(BINDIR)/helm-docs
 
@@ -156,7 +156,7 @@ yq/install: $(BINDIR)/yq
 $(BINDIR)/yq:
 	mkdir -p $(BINDIR)
 	cd $(TEMP_DIR) \
-	    && curl -L https://github.com/mikefarah/yq/releases/download/$(YQ_VERSION)/yq_$(OS)_$(subst x86_64,amd64,$(shell echo $(ARCH) | tr '[:upper:]' '[:lower:]')) -o $(BINDIR)/yq \
+	    && curl -fsSL https://github.com/mikefarah/yq/releases/download/$(YQ_VERSION)/yq_$(OS)_$(subst x86_64,amd64,$(shell echo $(ARCH) | tr '[:upper:]' '[:lower:]')) -o $(BINDIR)/yq \
 	    && chmod a+x $(BINDIR)/yq
 
 .PHONY: helm/schema/crd/all

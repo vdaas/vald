@@ -95,6 +95,12 @@ cmd/tools/benchmark/operator/operator:
 	$(eval CGO_ENABLED = 0)
 	$(call go-build,tools/benchmark/operator,,-static,,,$@)
 
+rust/target/release/agent:
+	pushd rust && cargo build -p agent --release && popd
+
+rust/target/debug/agent:
+	pushd rust && cargo build -p agent && popd
+
 .PHONY: binary/build/zip
 ## build all binaries and zip them
 binary/build/zip: \

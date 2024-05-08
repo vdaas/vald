@@ -117,7 +117,10 @@ type gRPCClient struct {
 	stopMonitor    context.CancelFunc
 }
 
-const apiName = "vald/internal/net/grpc"
+const (
+	apiName                    = "vald/internal/net/grpc"
+	defaultHealthCheckDuration = 10 * time.Second
+)
 
 func New(opts ...Option) (c Client) {
 	g := &gRPCClient{
@@ -188,24 +191,51 @@ func (g *gRPCClient) StartConnectionMonitor(ctx context.Context) (<-chan error, 
 	ctx, g.stopMonitor = context.WithCancel(ctx)
 	g.eg.Go(safety.RecoverFunc(func() (err error) {
 		defer g.monitorRunning.Store(false)
-		prTick := &time.Ticker{ // pool rebalance ticker
-			C: make(chan time.Time),
-		}
+		defer close(ech)
+		defer func() {
+			if err := g.Close(context.Background()); err != nil {
+				log.Error(err)
+			}
+		}()
+
+		var hcTick, prTick *time.Ticker
+
 		// this duration is for timeout to prevent blocking health check loop, which should be minimum duration of hcDur and prDur
 		reconnLimitDuration := time.Second
 
-		hcTick := time.NewTicker(g.hcDur) // health check ticker
+		if g.hcDur.Nanoseconds() <= 0 {
+			g.hcDur = defaultHealthCheckDuration
+		}
+
+		err = safety.RecoverFunc(func() error {
+			hcTick = time.NewTicker(g.hcDur) // health check ticker
+			return nil
+		})()
+		if err != nil || hcTick == nil {
+			ech <- err
+			return err
+		}
+		defer hcTick.Stop()
+
 		if g.enablePoolRebalance && g.prDur.Nanoseconds() > 0 {
-			prTick.Stop()
-			prTick = time.NewTicker(g.prDur)
+			err = safety.RecoverFunc(func() error {
+				prTick = time.NewTicker(g.prDur) // pool rebalance ticker
+				return nil
+			})()
 			reconnLimitDuration = time.Duration(int64(math.Min(float64(g.hcDur.Nanoseconds()), float64(g.prDur.Nanoseconds()))))
 		} else {
+			err = safety.RecoverFunc(func() error {
+				prTick = time.NewTicker(g.hcDur) // pool rebalance ticker
+				return nil
+			})()
 			reconnLimitDuration = g.hcDur
 		}
-		defer close(ech)
-		defer g.Close(context.Background())
-		defer hcTick.Stop()
+		if err != nil || prTick == nil {
+			ech <- err
+			return err
+		}
 		defer prTick.Stop()
+
 		disconnectTargets := make([]string, 0, len(addrs))
 		for {
 			select {

@@ -19,7 +19,7 @@
 golangci-lint/install: $(BINDIR)/golangci-lint
 
 $(BINDIR)/golangci-lint:
-	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh \
+	curl -fsSL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh \
 		| sh -s -- -b $(BINDIR) $(GOLANGCILINT_VERSION)
 
 .PHONY: goimports/install
@@ -56,14 +56,14 @@ $(BINDIR)/prettier:
 reviewdog/install: $(BINDIR)/reviewdog
 
 $(BINDIR)/reviewdog:
-	curl -sSfL https://raw.githubusercontent.com/reviewdog/reviewdog/master/install.sh \
+	curl -fsSL https://raw.githubusercontent.com/reviewdog/reviewdog/master/install.sh \
 		| sh -s -- -b $(BINDIR) $(REVIEWDOG_VERSION)
 
 .PHONY: kubectl/install
 kubectl/install: $(BINDIR)/kubectl
 
 $(BINDIR)/kubectl:
-	curl -L "https://dl.k8s.io/release/$(KUBECTL_VERSION)/bin/$(OS)/$(subst x86_64,amd64,$(shell echo $(ARCH) | tr '[:upper:]' '[:lower:]'))/kubectl" -o $(BINDIR)/kubectl
+	curl -fsSL "https://dl.k8s.io/release/$(KUBECTL_VERSION)/bin/$(OS)/$(subst x86_64,amd64,$(shell echo $(ARCH) | tr '[:upper:]' '[:lower:]'))/kubectl" -o $(BINDIR)/kubectl
 	chmod a+x $(BINDIR)/kubectl
 
 .PHONY: textlint/install
@@ -87,7 +87,7 @@ $(NPM_GLOBAL_PREFIX)/bin/cspell:
 buf/install: $(BINDIR)/buf
 
 $(BINDIR)/buf:
-	curl -sSL \
+	curl -fsSL \
 	"https://github.com/bufbuild/buf/releases/download/$(BUF_VERSION)/buf-$(shell uname -s)-$(shell uname -m)" \
 	-o "${BINDIR}/buf" && \
 	chmod +x "${BINDIR}/buf"
@@ -162,11 +162,5 @@ $(GOROOT)/bin/go:
 rust/install: $(CARGO_HOME)/bin/cargo
 
 $(CARGO_HOME)/bin/cargo:
-	curl --proto '=https' --tlsv1.2 -fsSL https://sh.rustup.rs | CARGO_HOME=${CARGO_HOME} RUSTUP_HOME=${RUSTUP_HOME} sh -s -- --default-toolchain nightly -y
-	source "${CARGO_HOME}/env" \
-	CARGO_HOME=${CARGO_HOME} RUSTUP_HOME=${RUSTUP_HOME} ${CARGO_HOME}/bin/rustup install stable \
-	CARGO_HOME=${CARGO_HOME} RUSTUP_HOME=${RUSTUP_HOME} ${CARGO_HOME}/bin/rustup install beta \
-	CARGO_HOME=${CARGO_HOME} RUSTUP_HOME=${RUSTUP_HOME} ${CARGO_HOME}/bin/rustup install nightly \
-	CARGO_HOME=${CARGO_HOME} RUSTUP_HOME=${RUSTUP_HOME} ${CARGO_HOME}/bin/rustup toolchain install nightly \
-	CARGO_HOME=${CARGO_HOME} RUSTUP_HOME=${RUSTUP_HOME} ${CARGO_HOME}/bin/rustup default nightly \
-	CARGO_HOME=${CARGO_HOME} RUSTUP_HOME=${RUSTUP_HOME} ${CARGO_HOME}/bin/rustup update
+	curl --proto '=https' --tlsv1.2 -fsSL https://sh.rustup.rs | CARGO_HOME=${CARGO_HOME} RUSTUP_HOME=${RUSTUP_HOME} sh -s -- --default-toolchain $(RUST_VERSION) -y
+	source "${CARGO_HOME}/env"

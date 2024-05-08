@@ -66,11 +66,14 @@ defaults:
           # defaults.server_config.servers.rest.server.probe_wait_time -- REST server probe wait time
           probe_wait_time: 3s
           # @schema {"name": "defaults.server_config.servers.rest.server.network", "type": "string", "enum": ["tcp", "tcp4", "tcp6", "udp", "udp4", "udp6", "unix", "unixgram", "unixpacket"]}
-          # defaults.server_config.servers.rest.server.network -- mysql network
+          # defaults.server_config.servers.rest.server.network -- network mode
           network: tcp
           # @schema {"name": "defaults.server_config.servers.rest.server.socket_path", "type": "string"}
-          # defaults.server_config.servers.rest.server.socket_path -- mysql socket_path
+          # defaults.server_config.servers.rest.server.socket_path -- network socket_path
           socket_path: ""
+          # @schema {"name": "defaults.server_config.servers.rest.server.restart", "type": "boolean"}
+          # defaults.server_config.servers.rest.server.restart
+          restart: true
           # @schema {"name": "defaults.server_config.servers.rest.server.http", "type": "object", "anchor": "http_server_config"}
           http:
             # @schema {"name": "defaults.server_config.servers.rest.server.http.shutdown_duration", "type": "string"}
@@ -143,11 +146,14 @@ defaults:
           # defaults.server_config.servers.grpc.server.probe_wait_time -- gRPC server probe wait time
           probe_wait_time: "3s"
           # @schema {"name": "defaults.server_config.servers.grpc.server.network", "type": "string", "enum": ["tcp", "tcp4", "tcp6", "udp", "udp4", "udp6", "unix", "unixgram", "unixpacket"]}
-          # defaults.server_config.servers.grpc.server.network -- mysql network
+          # defaults.server_config.servers.grpc.server.network -- network mode
           network: tcp
           # @schema {"name": "defaults.server_config.servers.grpc.server.socket_path", "type": "string"}
-          # defaults.server_config.servers.grpc.server.socket_path -- mysql socket_path
+          # defaults.server_config.servers.grpc.server.socket_path -- server socket_path
           socket_path: ""
+          # @schema {"name": "defaults.server_config.servers.grpc.server.restart", "type": "boolean"}
+          # defaults.server_config.servers.grpc.server.restart -- This configuration enables automatic restart of the same configured server when it becomes unhealthy.
+          restart: true
           # @schema {"name": "defaults.server_config.servers.grpc.server.grpc", "type": "object", "anchor": "grpc_server_config"}
           grpc:
             # @schema {"name": "defaults.server_config.servers.grpc.server.grpc.bidirectional_stream_concurrency", "type": "integer"}
@@ -233,9 +239,6 @@ defaults:
             ip_transparent: false
             # defaults.server_config.servers.grpc.server.socket_option.ip_recover_destination_addr -- server listen socket option for ip_recover_destination_addr functionality
             ip_recover_destination_addr: false
-          # @schema {"name": "defaults.server_config.servers.grpc.server.restart", "type": "boolean"}
-          # defaults.server_config.servers.grpc.server.restart -- gRPC server restart
-          restart: true
     # @schema {"name": "defaults.server_config.healths", "type": "object"}
     healths:
       # @schema {"name": "defaults.server_config.healths.startup", "type": "object"}
@@ -320,16 +323,19 @@ defaults:
         server:
           # @schema {"name": "defaults.server_config.healths.liveness.server.mode", "type": "string"}
           # defaults.server_config.healths.liveness.server.mode -- liveness server mode
-          mode: ""
+          mode: REST
           # @schema {"name": "defaults.server_config.healths.liveness.server.probe_wait_time", "type": "string"}
           # defaults.server_config.healths.liveness.server.probe_wait_time -- liveness server probe wait time
           probe_wait_time: "3s"
           # @schema {"name": "defaults.server_config.healths.liveness.server.network", "type": "string", "enum": ["tcp", "tcp4", "tcp6", "udp", "udp4", "udp6", "unix", "unixgram", "unixpacket"]}
-          # defaults.server_config.healths.liveness.server.network -- mysql network
+          # defaults.server_config.healths.liveness.server.network -- network mode
           network: tcp
           # @schema {"name": "defaults.server_config.healths.liveness.server.socket_path", "type": "string"}
-          # defaults.server_config.healths.liveness.server.socket_path -- mysql socket_path
+          # defaults.server_config.healths.liveness.server.socket_path -- server socket_path
           socket_path: ""
+          # @schema {"name": "defaults.server_config.healths.liveness.server.restart", "type": "boolean"}
+          # defaults.server_config.healths.liveness.server.restart -- This configuration enables automatic restart of the same configured server when it becomes unhealthy.
+          restart: true
           # @schema {"name": "defaults.server_config.healths.liveness.server.http", "type": "object", "alias": "http_server_config"}
           http:
             # @schema {"name": "defaults.server_config.healths.liveness.server.http.shutdown_duration", "type": "string"}
@@ -416,16 +422,19 @@ defaults:
         server:
           # @schema {"name": "defaults.server_config.healths.readiness.server.mode", "type": "string"}
           # defaults.server_config.healths.readiness.server.mode -- readiness server mode
-          mode: ""
+          mode: REST
           # @schema {"name": "defaults.server_config.healths.readiness.server.probe_wait_time", "type": "string"}
           # defaults.server_config.healths.readiness.server.probe_wait_time -- readiness server probe wait time
           probe_wait_time: "3s"
           # @schema {"name": "defaults.server_config.healths.readiness.server.network", "type": "string", "enum": ["tcp", "tcp4", "tcp6", "udp", "udp4", "udp6", "unix", "unixgram", "unixpacket"]}
-          # defaults.server_config.healths.readiness.server.network -- mysql network
+          # defaults.server_config.healths.readiness.server.network -- network mode
           network: tcp
           # @schema {"name": "defaults.server_config.healths.readiness.server.socket_path", "type": "string"}
-          # defaults.server_config.healths.readiness.server.socket_path -- mysql socket_path
+          # defaults.server_config.healths.readiness.server.socket_path -- server socket_path
           socket_path: ""
+          # @schema {"name": "defaults.server_config.healths.readiness.server.restart", "type": "boolean"}
+          # defaults.server_config.healths.readiness.server.restart -- This configuration enables automatic restart of the same configured server when it becomes unhealthy.
+          restart: true
           # @schema {"name": "defaults.server_config.healths.readiness.server.http", "type": "object", "alias": "http_server_config"}
           http:
             # @schema {"name": "defaults.server_config.healths.readiness.server.http.shutdown_duration", "type": "string"}
@@ -491,11 +500,14 @@ defaults:
           # defaults.server_config.metrics.pprof.server.probe_wait_time -- pprof server probe wait time
           probe_wait_time: 3s
           # @schema {"name": "defaults.server_config.metrics.pprof.server.network", "type": "string", "enum": ["tcp", "tcp4", "tcp6", "udp", "udp4", "udp6", "unix", "unixgram", "unixpacket"]}
-          # defaults.server_config.metrics.pprof.server.network -- mysql network
+          # defaults.server_config.metrics.pprof.server.network -- network mode
           network: tcp
           # @schema {"name": "defaults.server_config.metrics.pprof.server.socket_path", "type": "string"}
-          # defaults.server_config.metrics.pprof.server.socket_path -- mysql socket_path
+          # defaults.server_config.metrics.pprof.server.socket_path -- server socket_path
           socket_path: ""
+          # @schema {"name": "defaults.server_config.metrics.pprof.server.restart", "type": "boolean"}
+          # defaults.server_config.metrics.pprof.server.restart -- This configuration enables automatic restart of the same configured server when it becomes unhealthy.
+          restart: true
           # @schema {"name": "defaults.server_config.metrics.pprof.server.http", "type": "object", "alias": "http_server_config"}
           http:
             # @schema {"name": "defaults.server_config.metrics.pprof.server.http.shutdown_duration", "type": "string"}

@@ -334,7 +334,7 @@ endef
 
 define update-github-actions
 	@for ACTION_NAME in $1; do \
-		if [ -n "$$ACTION_NAME" ]; then \
+		if [ -n "$$ACTION_NAME" ] && [ "$$ACTION_NAME" != "security-and-quality" ]; then \
 			FILE_NAME=`echo $$ACTION_NAME | tr '/' '_' | tr '-' '_' | tr '[:lower:]' '[:upper:]'`; \
 			if [ -n "$$FILE_NAME" ]; then \
 				if [ "$$ACTION_NAME" = "aquasecurity/trivy-action" ] || [ "$$ACTION_NAME" = "machine-learning-apps/actions-chatops" ]; then \
@@ -343,10 +343,11 @@ define update-github-actions
 					VERSION="1.0.0"; \
 				else \
 					REPO_NAME=`echo $$ACTION_NAME | cut -d'/' -f1-2`; \
-					VERSION=`curl --silent https://api.github.com/repos/$$REPO_NAME/releases/latest | grep -Po '"tag_name": "\K.*?(?=")' | sed 's/v//g' | sed -E 's/[^0-9.]+//g'`;\
+					VERSION=`curl -fsSL https://api.github.com/repos/$$REPO_NAME/releases/latest | grep -Po '"tag_name": "\K.*?(?=")' | sed 's/v//g' | sed -E 's/[^0-9.]+//g'`;\
 				fi; \
 				if [ -n "$$VERSION" ]; then \
-					echo "updating $$ACTION_NAME version file $$FILE_NAME to $$VERSION"; \
+					OLD_VERSION=`cat $(ROOTDIR)/versions/actions/$$FILE_NAME`; \
+					echo "updating $$ACTION_NAME version file $$FILE_NAME from $$OLD_VERSION to $$VERSION"; \
 					echo $$VERSION > $(ROOTDIR)/versions/actions/$$FILE_NAME; \
 				else \
 					VERSION=`cat $(ROOTDIR)/versions/actions/$$FILE_NAME`; \
