@@ -566,5 +566,5 @@ kubelinter/install: $(BINDIR)/kube-linter
 $(BINDIR)/kube-linter:
 	mkdir -p $(BINDIR)
 	cd $(TEMP_DIR) \
-	    && curl -L https://github.com/stackrox/kube-linter/releases/download/$(KUBELINTER_VERSION)/kube-linter-$(OS) -o $(BINDIR)/kube-linter \
+	    && curl -fsSL https://github.com/stackrox/kube-linter/releases/download/$(KUBELINTER_VERSION)/kube-linter-$(OS) -o $(BINDIR)/kube-linter \
 	    && chmod a+x $(BINDIR)/kube-linter

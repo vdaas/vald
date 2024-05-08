@@ -21,14 +21,14 @@ valdcli/install: $(BINDIR)/valdcli
 ifeq ($(UNAME),Darwin)
 $(BINDIR)/valdcli:
 	mkdir -p $(BINDIR)
-	curl -LO https://github.com/rinx/vald-client-clj/releases/download/$(VALDCLI_VERSION)/valdcli-macos.zip
+	curl -fsSLO https://github.com/rinx/vald-client-clj/releases/download/$(VALDCLI_VERSION)/valdcli-macos.zip
 	unzip valdcli-macos.zip
 	rm -f valdcli-macos.zip
 	mv valdcli $(BINDIR)/valdcli
 else
 $(BINDIR)/valdcli:
 	mkdir -p $(BINDIR)
-	curl -LO https://github.com/rinx/vald-client-clj/releases/download/$(VALDCLI_VERSION)/valdcli-linux-static.zip
+	curl -fsSLO https://github.com/rinx/vald-client-clj/releases/download/$(VALDCLI_VERSION)/valdcli-linux-static.zip
 	unzip valdcli-linux-static.zip
 	rm -f valdcli-linux-static.zip
 	mv valdcli $(BINDIR)/valdcli

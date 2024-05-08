@@ -22,6 +22,7 @@ on:
       - "versions/GO_VERSION"
       - "versions/NGT_VERSION"
       - "versions/KUBECTL_VERSION"
+      - "versions/RUST_VERSION"
 jobs:
   dump-contexts-to-log:
     runs-on: ubuntu-latest

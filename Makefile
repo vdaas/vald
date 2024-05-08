@@ -24,6 +24,7 @@ GHCRORG                         = ghcr.io/$(ORG)/$(NAME)
 AGENT_NGT_IMAGE                 = $(NAME)-agent-ngt
 AGENT_FAISS_IMAGE               = $(NAME)-agent-faiss
 AGENT_SIDECAR_IMAGE             = $(NAME)-agent-sidecar
+AGENT_IMAGE                     = $(NAME)-agent
 CI_CONTAINER_IMAGE              = $(NAME)-ci-container
 DEV_CONTAINER_IMAGE             = $(NAME)-dev-container
 DISCOVERER_IMAGE                = $(NAME)-discoverer-k8s
@@ -58,9 +59,12 @@ GO_CLEAN_DEPS := true
 GOTEST_TIMEOUT = 30m
 CGO_ENABLED = 1
 
-RUST_HOME = /usr/local/lib/rust
-RUSTUP_HOME = $(RUST_HOME)/rustup
-CARGO_HOME = $(RUST_HOME)/cargo
+RUST_HOME ?= /usr/local/lib/rust
+RUSTUP_HOME ?= $(RUST_HOME)/rustup
+CARGO_HOME ?= $(RUST_HOME)/cargo
+RUST_VERSION := $(eval RUST_VERSION := $(shell cat versions/RUST_VERSION))$(RUST_VERSION)
+
+NPM_GLOBAL_PREFIX := $(eval NPM_GLOBAL_PREFIX := $(shell npm prefix --location=global))$(NPM_GLOBAL_PREFIX)
 
 NPM_GLOBAL_PREFIX := $(eval NPM_GLOBAL_PREFIX := $(shell npm prefix --location=global))$(NPM_GLOBAL_PREFIX)
 
@@ -138,14 +142,17 @@ ifeq ($(GOARCH),amd64)
 CFLAGS ?= -mno-avx512f -mno-avx512dq -mno-avx512cd -mno-avx512bw -mno-avx512vl
 CXXFLAGS ?= $(CFLAGS)
 EXTLDFLAGS ?= -m64
+NGT_EXTRA_FLAGS ?=
 else ifeq ($(GOARCH),arm64)
 CFLAGS ?=
 CXXFLAGS ?= $(CFLAGS)
 EXTLDFLAGS ?= -march=armv8-a
+NGT_EXTRA_FLAGS ?=
 else
 CFLAGS ?=
 CXXFLAGS ?= $(CFLAGS)
 EXTLDFLAGS ?=
+NGT_EXTRA_FLAGS ?=
 endif
 
 BENCH_DATASET_MD5S := $(eval BENCH_DATASET_MD5S := $(shell find $(BENCH_DATASET_MD5_DIR) -type f -regex ".*\.md5"))$(BENCH_DATASET_MD5S)
@@ -535,6 +542,11 @@ version/vald:
 version/go:
 	@echo $(GO_VERSION)
 
+.PHONY: version/rust
+## print rust version
+version/rust:
+	@echo $(RUST_VERSION)
+
 .PHONY: version/ngt
 ## print NGT version
 version/ngt:
@@ -571,7 +583,7 @@ ngt/install: /usr/local/include/NGT/Capi.h
 /usr/local/include/NGT/Capi.h:
 	git clone --depth 1 --branch v$(NGT_VERSION) https://github.com/yahoojapan/NGT $(TEMP_DIR)/NGT-$(NGT_VERSION)
 	cd $(TEMP_DIR)/NGT-$(NGT_VERSION) && \
-		cmake -DCMAKE_C_FLAGS="$(CFLAGS)" -DCMAKE_CXX_FLAGS="$(CXXFLAGS)" .
+		cmake -DCMAKE_C_FLAGS="$(CFLAGS)" -DCMAKE_CXX_FLAGS="$(CXXFLAGS)" "$(NGT_EXTRA_FLAGS)" .
 	make -j -C $(TEMP_DIR)/NGT-$(NGT_VERSION)
 	make install -C $(TEMP_DIR)/NGT-$(NGT_VERSION)
 	cd $(ROOTDIR)
@@ -582,7 +594,7 @@ ngt/install: /usr/local/include/NGT/Capi.h
 ## install Faiss
 faiss/install: /usr/local/lib/libfaiss.so
 /usr/local/lib/libfaiss.so:
-	curl -LO https://github.com/facebookresearch/faiss/archive/v$(FAISS_VERSION).tar.gz
+	curl -fsSLO https://github.com/facebookresearch/faiss/archive/v$(FAISS_VERSION).tar.gz
 	tar zxf v$(FAISS_VERSION).tar.gz -C $(TEMP_DIR)/
 	cd $(TEMP_DIR)/faiss-$(FAISS_VERSION) && \
 		cmake -DFAISS_ENABLE_GPU=OFF -DFAISS_ENABLE_PYTHON=OFF -DBUILD_TESTING=OFF -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON -B build . && \

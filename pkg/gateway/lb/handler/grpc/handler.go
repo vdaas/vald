@@ -21,6 +21,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"math"
 	"slices"
 	"strconv"
 	"sync/atomic"
@@ -296,22 +297,8 @@ func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *
 		}
 		return nil, err
 	}
-	cfg := req.GetConfig()
-	mn := cfg.GetMinNum()
-	if req.Config != nil {
-		req.Config.MinNum = 0
-	}
-	res, err = s.doSearch(ctx, &payload.Search_Config{
-		RequestId:            cfg.GetRequestId(),
-		Num:                  cfg.GetNum(),
-		MinNum:               mn,
-		Radius:               cfg.GetRadius(),
-		Epsilon:              cfg.GetEpsilon(),
-		Timeout:              cfg.GetTimeout(),
-		IngressFilters:       cfg.GetIngressFilters(),
-		EgressFilters:        cfg.GetEgressFilters(),
-		AggregationAlgorithm: cfg.GetAggregationAlgorithm(),
-	}, func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error) {
+	res, err = s.doSearch(ctx, req.GetConfig(), func(ctx context.Context, fcfg *payload.Search_Config, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error) {
+		req.Config = fcfg
 		return vc.Search(ctx, req, copts...)
 	})
 	if err != nil {
@@ -337,7 +324,7 @@ func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *
 func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) (
 	res *payload.Search_Response, err error,
 ) {
-	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.SearchRPCServiceName+"/"+vald.SearchByIDRPCName), apiName+"/"+vald.SearchRPCName)
+	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.SearchRPCServiceName+"/"+vald.SearchByIDRPCName), apiName+"/"+vald.SearchByIDRPCName)
 	defer func() {
 		if span != nil {
 			span.End()
@@ -371,22 +358,6 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 		return nil, err
 	}
 	vec, err := s.getObject(ctx, uuid)
-	cfg := req.GetConfig()
-	mn := cfg.GetMinNum()
-	if req.Config != nil {
-		req.Config.MinNum = 0
-	}
-	scfg := &payload.Search_Config{
-		RequestId:            cfg.GetRequestId(),
-		Num:                  cfg.GetNum(),
-		MinNum:               mn,
-		Radius:               cfg.GetRadius(),
-		Epsilon:              cfg.GetEpsilon(),
-		Timeout:              cfg.GetTimeout(),
-		IngressFilters:       cfg.GetIngressFilters(),
-		EgressFilters:        cfg.GetEgressFilters(),
-		AggregationAlgorithm: cfg.GetAggregationAlgorithm(),
-	}
 	if err != nil {
 		var (
 			attrs trace.Attributes
@@ -436,7 +407,9 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 			}
 			return nil, err
 		}
-		res, err = s.doSearch(ctx, scfg, func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error) {
+		// try search by using agent's SearchByID method this operation is emergency fallback, the search quality is not same as usual SearchByID operation.
+		res, err = s.doSearch(ctx, req.GetConfig(), func(ctx context.Context, fcfg *payload.Search_Config, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error) {
+			req.Config = fcfg
 			return vc.SearchByID(ctx, req, copts...)
 		})
 		if err == nil {
@@ -452,12 +425,16 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 	}
 	res, err = s.Search(ctx, &payload.Search_Request{
 		Vector: vec.GetVector(),
-		Config: scfg,
+		Config: req.GetConfig(),
 	})
 	if err != nil {
-		res, err = s.doSearch(ctx, scfg, func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error) {
+		res, err = s.doSearch(ctx, req.GetConfig(), func(ctx context.Context, fcfg *payload.Search_Config, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error) {
+			req.Config = fcfg
 			return vc.SearchByID(ctx, req, copts...)
 		})
+		if err == nil {
+			return res, nil
+		}
 		if err != nil {
 			st, msg, err := status.ParseError(err, codes.Internal, vald.SearchByIDRPCName+" API failed to process search request", reqInfo, resInfo)
 			if span != nil {
@@ -471,8 +448,26 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 	return res, nil
 }
 
+// calculateNum adjusts the number of search results based on the ratio and the number of replicas.
+// It ensures that the number of results is not less than the minimum required and adjusts based on the provided ratio.
+func (s *server) calculateNum(ctx context.Context, num uint32, ratio float32) (n uint32) {
+	min := float64(s.replica) / float64(len(s.gateway.Addrs(ctx)))
+	if ratio < 0.0 {
+		return uint32(math.Ceil(float64(num) * min))
+	}
+	if ratio == 0.0 {
+		return num
+	}
+	n = uint32(math.Ceil(float64(num) * (min + ((1 - min) * float64(ratio)))))
+	sn := uint32(math.Ceil(float64(num) * min))
+	if n-1 < sn {
+		return sn
+	}
+	return n - 1
+}
+
 func (s *server) doSearch(ctx context.Context, cfg *payload.Search_Config,
-	f func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error)) (
+	f func(ctx context.Context, cfg *payload.Search_Config, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error)) (
 	res *payload.Search_Response, err error,
 ) {
 	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "doSearch"), apiName+"/doSearch")
@@ -483,25 +478,34 @@ func (s *server) doSearch(ctx context.Context, cfg *payload.Search_Config,
 	}()
 
 	var (
-		aggr    Aggregator
 		num     = int(cfg.GetNum())
+		fnum    int
 		replica = s.gateway.GetAgentCount(ctx)
 	)
-	switch cfg.GetAggregationAlgorithm() {
-	case payload.Search_Unknown:
-		aggr = newStd(num, replica)
-	case payload.Search_ConcurrentQueue:
-		aggr = newStd(num, replica)
-	case payload.Search_SortSlice:
-		aggr = newSlice(num, replica)
-	case payload.Search_SortPoolSlice:
-		aggr = newPoolSlice(num, replica)
-	case payload.Search_PairingHeap:
-		aggr = newPairingHeap(num, replica)
-	default:
-		aggr = newStd(num, replica)
+
+	if cfg.GetRatio() != nil {
+		fnum = int(s.calculateNum(ctx, cfg.GetNum(), cfg.GetRatio().GetValue()))
 	}
-	return s.aggregationSearch(ctx, aggr, cfg, f)
+	if fnum <= 0 {
+		fnum = num
+	}
+
+	return s.aggregationSearch(ctx, selectAggregator(cfg.GetAggregationAlgorithm(), num, fnum, replica), cfg, f)
+}
+
+func selectAggregator(algo payload.Search_AggregationAlgorithm, num, fnum, replica int) Aggregator {
+	switch algo {
+	case payload.Search_Unknown, payload.Search_ConcurrentQueue:
+		return newStd(num, fnum, replica)
+	case payload.Search_SortSlice:
+		return newSlice(num, fnum, replica)
+	case payload.Search_SortPoolSlice:
+		return newPoolSlice(num, fnum, replica)
+	case payload.Search_PairingHeap:
+		return newPairingHeap(num, fnum, replica)
+	default:
+		return newStd(num, fnum, replica)
+	}
 }
 
 func (s *server) StreamSearch(stream vald.Search_StreamSearchServer) (err error) {
@@ -779,20 +783,8 @@ func (s *server) LinearSearch(ctx context.Context, req *payload.Search_Request) 
 		}
 		return nil, err
 	}
-	cfg := req.GetConfig()
-	mn := cfg.GetMinNum()
-	if req.Config != nil {
-		req.Config.MinNum = 0
-	}
-	res, err = s.doSearch(ctx, &payload.Search_Config{
-		RequestId:            cfg.GetRequestId(),
-		Num:                  cfg.GetNum(),
-		MinNum:               mn,
-		Timeout:              cfg.GetTimeout(),
-		IngressFilters:       cfg.GetIngressFilters(),
-		EgressFilters:        cfg.GetEgressFilters(),
-		AggregationAlgorithm: cfg.GetAggregationAlgorithm(),
-	}, func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error) {
+	res, err = s.doSearch(ctx, req.GetConfig(), func(ctx context.Context, fcfg *payload.Search_Config, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error) {
+		req.Config = fcfg
 		return vc.LinearSearch(ctx, req, copts...)
 	})
 	if err != nil {
@@ -824,16 +816,16 @@ func (s *server) LinearSearchByID(ctx context.Context, req *payload.Search_IDReq
 			span.End()
 		}
 	}()
-
 	uuid := req.GetId()
 	reqInfo := &errdetails.RequestInfo{
-		RequestId: uuid,
+		RequestId:   uuid,
+		ServingData: errdetails.Serialize(req),
 	}
 	resInfo := &errdetails.ResourceInfo{
 		ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.LinearSearchByIDRPCName,
 		ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
 	}
-	if len(req.GetId()) == 0 {
+	if len(uuid) == 0 {
 		err = errors.ErrInvalidMetaDataConfig
 		err = status.WrapWithInvalidArgument(vald.LinearSearchByIDRPCName+" API invalid uuid", err, reqInfo, resInfo,
 			&errdetails.BadRequest{
@@ -852,20 +844,6 @@ func (s *server) LinearSearchByID(ctx context.Context, req *payload.Search_IDReq
 		return nil, err
 	}
 	vec, err := s.getObject(ctx, uuid)
-	cfg := req.GetConfig()
-	mn := cfg.GetMinNum()
-	if req.Config != nil {
-		req.Config.MinNum = 0
-	}
-	scfg := &payload.Search_Config{
-		RequestId:            cfg.GetRequestId(),
-		Num:                  cfg.GetNum(),
-		MinNum:               mn,
-		Timeout:              cfg.GetTimeout(),
-		IngressFilters:       cfg.GetIngressFilters(),
-		EgressFilters:        cfg.GetEgressFilters(),
-		AggregationAlgorithm: cfg.GetAggregationAlgorithm(),
-	}
 	if err != nil {
 		var (
 			attrs trace.Attributes
@@ -875,7 +853,7 @@ func (s *server) LinearSearchByID(ctx context.Context, req *payload.Search_IDReq
 		switch {
 		case errors.Is(err, errors.ErrInvalidUUID(uuid)):
 			err = status.WrapWithInvalidArgument(
-				vald.GetObjectRPCName+" API for "+vald.SearchByIDRPCName+" API invalid argument for uuid \""+uuid+"\" detected",
+				vald.GetObjectRPCName+" API for "+vald.LinearSearchByIDRPCName+" API invalid argument for uuid \""+uuid+"\" detected",
 				err,
 				reqInfo,
 				resInfo,
@@ -890,18 +868,18 @@ func (s *server) LinearSearchByID(ctx context.Context, req *payload.Search_IDReq
 			)
 			attrs = trace.StatusCodeInvalidArgument(err.Error())
 		case errors.Is(err, errors.ErrGRPCClientConnNotFound("*")):
-			err = status.WrapWithInternal(vald.GetObjectRPCName+" API for "+vald.SearchByIDRPCName+" API connection not found", err, reqInfo, resInfo)
+			err = status.WrapWithInternal(vald.GetObjectRPCName+" API for "+vald.LinearSearchByIDRPCName+" API connection not found", err, reqInfo, resInfo)
 			attrs = trace.StatusCodeInternal(err.Error())
 		case errors.Is(err, context.Canceled):
-			err = status.WrapWithCanceled(vald.GetObjectRPCName+" API for "+vald.SearchByIDRPCName+" API canceled", err, reqInfo, resInfo)
+			err = status.WrapWithCanceled(vald.GetObjectRPCName+" API for "+vald.LinearSearchByIDRPCName+" API canceled", err, reqInfo, resInfo)
 			attrs = trace.StatusCodeCancelled(err.Error())
 		case errors.Is(err, context.DeadlineExceeded):
-			err = status.WrapWithDeadlineExceeded(vald.GetObjectRPCName+" API for "+vald.SearchByIDRPCName+" API deadline exceeded", err, reqInfo, resInfo)
+			err = status.WrapWithDeadlineExceeded(vald.GetObjectRPCName+" API for "+vald.LinearSearchByIDRPCName+" API deadline exceeded", err, reqInfo, resInfo)
 			attrs = trace.StatusCodeDeadlineExceeded(err.Error())
 		case errors.Is(err, errors.ErrObjectIDNotFound(uuid)), errors.Is(err, errors.ErrObjectNotFound(nil, uuid)):
 			err = nil
 		default:
-			st, msg, err = status.ParseError(err, codes.Unknown, vald.GetObjectRPCName+" API for "+vald.SearchByIDRPCName+" API uuid "+uuid+"'s request returned error", reqInfo, resInfo)
+			st, msg, err = status.ParseError(err, codes.Unknown, vald.GetObjectRPCName+" API for "+vald.LinearSearchByIDRPCName+" API uuid "+uuid+"'s request returned error", reqInfo, resInfo)
 			attrs = trace.FromGRPCStatus(st.Code(), msg)
 			if st == nil || st.Code() == codes.NotFound {
 				err = nil
@@ -915,7 +893,9 @@ func (s *server) LinearSearchByID(ctx context.Context, req *payload.Search_IDReq
 			}
 			return nil, err
 		}
-		res, err = s.doSearch(ctx, scfg, func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error) {
+		// try search by using agent's LinearSearchByID method this operation is emergency fallback, the search quality is not same as usual LinearSearchByID operation.
+		res, err = s.doSearch(ctx, req.GetConfig(), func(ctx context.Context, fcfg *payload.Search_Config, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error) {
+			req.Config = fcfg
 			return vc.LinearSearchByID(ctx, req, copts...)
 		})
 		if err == nil {
@@ -929,25 +909,27 @@ func (s *server) LinearSearchByID(ctx context.Context, req *payload.Search_IDReq
 		}
 		return nil, err
 	}
-
 	res, err = s.LinearSearch(ctx, &payload.Search_Request{
 		Vector: vec.GetVector(),
-		Config: scfg,
+		Config: req.GetConfig(),
 	})
 	if err != nil {
-		res, err = s.doSearch(ctx, scfg, func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error) {
+		res, err = s.doSearch(ctx, req.GetConfig(), func(ctx context.Context, fcfg *payload.Search_Config, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error) {
+			req.Config = fcfg
 			return vc.LinearSearchByID(ctx, req, copts...)
 		})
 		if err == nil {
 			return res, nil
 		}
-		st, msg, err := status.ParseError(err, codes.Internal, vald.LinearSearchByIDRPCName+" API failed to process search request", reqInfo, resInfo)
-		if span != nil {
-			span.RecordError(err)
-			span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
-			span.SetStatus(trace.StatusError, err.Error())
+		if err != nil {
+			st, msg, err := status.ParseError(err, codes.Internal, vald.LinearSearchByIDRPCName+" API failed to process search request", reqInfo, resInfo)
+			if span != nil {
+				span.RecordError(err)
+				span.SetAttributes(trace.FromGRPCStatus(st.Code(), msg)...)
+				span.SetStatus(trace.StatusError, err.Error())
+			}
+			return nil, err
 		}
-		return nil, err
 	}
 	return res, nil
 }
