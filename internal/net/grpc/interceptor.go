@@ -1,8 +1,8 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -24,6 +24,9 @@ import (
 type (
 	UnaryServerInterceptor  = grpc.UnaryServerInterceptor
 	StreamServerInterceptor = grpc.StreamServerInterceptor
+
+	UnaryClientInterceptor  = grpc.UnaryClientInterceptor
+	StreamClientInterceptor = grpc.StreamClientInterceptor
 
 	UnaryServerInfo = grpc.UnaryServerInfo
 	UnaryHandler    = grpc.UnaryHandler

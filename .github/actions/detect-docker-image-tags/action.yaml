@@ -1,8 +1,8 @@
 #
-# Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
+# You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
 #    https://www.apache.org/licenses/LICENSE-2.0
@@ -14,25 +14,22 @@
 # limitations under the License.
 #
 name: "Detect Docker image tags"
-description: "Detect Docker image tags"
+description: "A action to detect Docker image tags"
 inputs:
-  tag_name:
-    description: "tag name to check whether exists or not"
+  tags:
+    description: "Tag name to check whether exists or not"
     required: true
     default: ""
   images:
-    description: "image names"
+    description: "Image names"
     required: false
-    default: "vdaas/vald-agent-ngt \
-      vdaas/vald-discoverer-k8s \
-      vdaas/vald-lb-gateway \
-      vdaas/vald-manager-index"
+    default: "vdaas/vald-agent-ngt vdaas/vald-agent-faiss vdaas/vald-agent-sidecar vdaas/vald-discoverer-k8s vdaas/vald-lb-gateway vdaas/vald-filter-gateway vdaas/vald-mirror-gateway vdaas/vald-manager-index vdaas/vald-index-operator vdaas/vald-readreplica-rotate"
 outputs:
   HELM_EXTRA_OPTIONS:
-    description: "helm extra options that specifies image tags"
+    description: "Helm extra options that specifies image tags"
     value: ${{ steps.specify_container_versions.outputs.HELM_EXTRA_OPTIONS }}
   IMAGE_TAGS:
-    description: "specifies image tags"
+    description: "Specifies image tags"
     value: ${{ steps.specify_container_versions.outputs.IMAGE_TAGS }}
 runs:
   using: "composite"
@@ -43,27 +40,37 @@ runs:
       run: |
         declare -A m=(
           ["vdaas/vald-agent-ngt"]="agent.image.tag"
+          ["vdaas/vald-agent-faiss"]="agent.image.tag"
           ["vdaas/vald-agent-sidecar"]="agent.sidecar.image.tag"
           ["vdaas/vald-discoverer-k8s"]="discoverer.image.tag"
           ["vdaas/vald-lb-gateway"]="gateway.lb.image.tag"
+          ["vdaas/vald-filter-gateway"]="gateway.filter.image.tag"
+          ["vdaas/vald-mirror-gateway"]="gateway.mirror.image.tag"
           ["vdaas/vald-manager-index"]="manager.index.image.tag"
+          ["vdaas/vald-index-creation"]="manager.index.creator.image.tag"
+          ["vdaas/vald-index-save"]="manager.index.saver.image.tag"
+          ["vdaas/vald-readreplica-rotate"]="manager.index.readreplica.rotator.image.tag"
+          ["vdaas/vald-helm-operator"]="image.tag"
+          ["vdaas/vald-ci-container"]=""
+          ["vdaas/vald-index-operator"]="manager.index.operator.image.tag"
         )
 
-        for image in ${IMAGES}
-        do
+        for image in ${IMAGES}; do
           echo "check for ${image}"
-
-          if curl -s "https://registry.hub.docker.com/v2/repositories/${image}/tags/${TAG_NAME}" | jq '.name' | grep -v "null"; then
-            echo "${image}:${TAG_NAME} exists. adding a helm option '--set ${m[${image}]}=${TAG_NAME}'."
-            export HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIONS} --set ${m[${image}]}=${TAG_NAME}"
-            export IMAGE_TAGS="${IMAGE_TAGS} ${m[${image}]}=\"${TAG_NAME}\""
-          fi
+          for tag in ${TAGS}; do
+            if curl -s "https://registry.hub.docker.com/v2/repositories/${image}/tags/${tag}" | jq '.name' | grep -v "null"; then
+              echo "${image}:${tag} exists. adding a helm option '--set ${m[${image}]}=${tag}'."
+              export HELM_EXTRA_OPTIONS="${HELM_EXTRA_OPTIONS} --set ${m[${image}]}=${tag}"
+              export IMAGE_TAGS="${IMAGE_TAGS} ${m[${image}]}=\"${tag}\""
+              break
+            fi
+          done
         done
 
         echo "HELM_EXTRA_OPTIONS=${HELM_EXTRA_OPTIONS}"
-        echo "::set-output name=HELM_EXTRA_OPTIONS::${HELM_EXTRA_OPTIONS}"
+        echo "HELM_EXTRA_OPTIONS=${HELM_EXTRA_OPTIONS}" >> $GITHUB_OUTPUT
         echo "IMAGE_TAGS=${IMAGE_TAGS}"
-        echo "::set-output name=IMAGE_TAGS::${IMAGE_TAGS}"
+        echo "IMAGE_TAGS=${IMAGE_TAGS}" >> $GITHUB_OUTPUT
       env:
         IMAGES: ${{ inputs.images }}
-        TAG_NAME: ${{ inputs.tag_name }}
+        TAGS: ${{ inputs.tags }}

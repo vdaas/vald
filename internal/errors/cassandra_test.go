@@ -1,8 +1,8 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -66,7 +66,8 @@ func TestErrCassandraInvalidConsistencyType(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -87,7 +88,7 @@ func TestErrCassandraInvalidConsistencyType(t *testing.T) {
 	}
 }
 
-func TestNewErrCassandraNotFoundIdentity(t *testing.T) {
+func TestErrCassandraNotFoundIdentity(t *testing.T) {
 	type want struct {
 		want error
 	}
@@ -108,14 +109,15 @@ func TestNewErrCassandraNotFoundIdentity(t *testing.T) {
 		{
 			name: "returns cassandra not found identity error",
 			want: want{
-				want: &ErrCassandraNotFoundIdentity{
+				want: &CassandraNotFoundIdentityError{
 					err: New("cassandra entry not found"),
 				},
 			},
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			if test.beforeFunc != nil {
 				test.beforeFunc()
@@ -128,7 +130,7 @@ func TestNewErrCassandraNotFoundIdentity(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 
-			got := NewErrCassandraNotFoundIdentity()
+			got := ErrCassandraNotFoundIdentity
 			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -136,7 +138,7 @@ func TestNewErrCassandraNotFoundIdentity(t *testing.T) {
 	}
 }
 
-func TestNewErrCassandraUnavailableIdentity(t *testing.T) {
+func TestErrCassandraUnavailableIdentity(t *testing.T) {
 	type want struct {
 		want error
 	}
@@ -157,14 +159,15 @@ func TestNewErrCassandraUnavailableIdentity(t *testing.T) {
 		{
 			name: "returns cassandra unavailable identity error",
 			want: want{
-				want: &ErrCassandraUnavailableIdentity{
+				want: &CassandraUnavailableIdentityError{
 					err: New("cassandra unavailable"),
 				},
 			},
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			if test.beforeFunc != nil {
 				test.beforeFunc()
@@ -177,7 +180,7 @@ func TestNewErrCassandraUnavailableIdentity(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 
-			got := NewErrCassandraUnavailableIdentity()
+			got := ErrCassandraUnavailableIdentity
 			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -206,14 +209,15 @@ func TestErrCassandraUnavailable(t *testing.T) {
 		{
 			name: "returns cassandra unavailable identity error",
 			want: want{
-				want: &ErrCassandraUnavailableIdentity{
+				want: &CassandraUnavailableIdentityError{
 					err: New("cassandra unavailable"),
 				},
 			},
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			if test.beforeFunc != nil {
 				test.beforeFunc()
@@ -226,7 +230,7 @@ func TestErrCassandraUnavailable(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 
-			got := ErrCassandraUnavailable()
+			got := ErrCassandraUnavailable
 			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -299,7 +303,8 @@ func TestErrCassandraNotFound(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -385,7 +390,8 @@ func TestErrCassandraGetOperationFailed(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -471,7 +477,8 @@ func TestErrCassandraSetOperationFailed(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -557,7 +564,8 @@ func TestErrCassandraDeleteOperationFailed(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -643,7 +651,8 @@ func TestErrCassandraHostDownDetected(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -766,7 +775,8 @@ func TestErrCassandraFailedToCreateSession(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -787,7 +797,7 @@ func TestErrCassandraFailedToCreateSession(t *testing.T) {
 	}
 }
 
-func TestErrCassandraNotFoundIdentity_Error(t *testing.T) {
+func TestCassandraNotFoundIdentityError_Error(t *testing.T) {
 	type fields struct {
 		err error
 	}
@@ -820,7 +830,8 @@ func TestErrCassandraNotFoundIdentity_Error(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			if test.beforeFunc != nil {
 				test.beforeFunc()
@@ -832,7 +843,7 @@ func TestErrCassandraNotFoundIdentity_Error(t *testing.T) {
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
-			e := &ErrCassandraNotFoundIdentity{
+			e := &CassandraNotFoundIdentityError{
 				err: test.fields.err,
 			}
 
@@ -844,7 +855,7 @@ func TestErrCassandraNotFoundIdentity_Error(t *testing.T) {
 	}
 }
 
-func TestErrCassandraNotFoundIdentity_Unwrap(t *testing.T) {
+func TestCassandraNotFoundIdentityError_Unwrap(t *testing.T) {
 	type fields struct {
 		err error
 	}
@@ -897,7 +908,8 @@ func TestErrCassandraNotFoundIdentity_Unwrap(t *testing.T) {
 		}(),
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
@@ -910,7 +922,7 @@ func TestErrCassandraNotFoundIdentity_Unwrap(t *testing.T) {
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
-			e := &ErrCassandraNotFoundIdentity{
+			e := &CassandraNotFoundIdentityError{
 				err: test.fields.err,
 			}
 
@@ -922,7 +934,7 @@ func TestErrCassandraNotFoundIdentity_Unwrap(t *testing.T) {
 	}
 }
 
-func TestIsErrCassandraNotFound(t *testing.T) {
+func TestIsCassandraNotFoundError(t *testing.T) {
 	type args struct {
 		err error
 	}
@@ -956,7 +968,7 @@ func TestIsErrCassandraNotFound(t *testing.T) {
 		{
 			name: "returns true when error is cassandra not found identity",
 			args: args{
-				err: new(ErrCassandraNotFoundIdentity),
+				err: new(CassandraNotFoundIdentityError),
 			},
 			want: want{
 				want: true,
@@ -964,7 +976,8 @@ func TestIsErrCassandraNotFound(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -977,7 +990,7 @@ func TestIsErrCassandraNotFound(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 
-			got := IsErrCassandraNotFound(test.args.err)
+			got := IsCassandraNotFoundError(test.args.err)
 			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -985,7 +998,7 @@ func TestIsErrCassandraNotFound(t *testing.T) {
 	}
 }
 
-func TestErrCassandraUnavailableIdentity_Error(t *testing.T) {
+func TestCassandraUnavailableIdentityError_Error(t *testing.T) {
 	type fields struct {
 		err error
 	}
@@ -1018,7 +1031,8 @@ func TestErrCassandraUnavailableIdentity_Error(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			if test.beforeFunc != nil {
 				test.beforeFunc()
@@ -1030,7 +1044,7 @@ func TestErrCassandraUnavailableIdentity_Error(t *testing.T) {
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
-			e := &ErrCassandraUnavailableIdentity{
+			e := &CassandraUnavailableIdentityError{
 				err: test.fields.err,
 			}
 
@@ -1042,7 +1056,7 @@ func TestErrCassandraUnavailableIdentity_Error(t *testing.T) {
 	}
 }
 
-func TestErrCassandraUnavailableIdentity_Unwrap(t *testing.T) {
+func TestCassandraUnavailableIdentityError_Unwrap(t *testing.T) {
 	type fields struct {
 		err error
 	}
@@ -1095,7 +1109,8 @@ func TestErrCassandraUnavailableIdentity_Unwrap(t *testing.T) {
 		}(),
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
@@ -1108,7 +1123,7 @@ func TestErrCassandraUnavailableIdentity_Unwrap(t *testing.T) {
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
-			e := &ErrCassandraUnavailableIdentity{
+			e := &CassandraUnavailableIdentityError{
 				err: test.fields.err,
 			}
 
@@ -1120,7 +1135,7 @@ func TestErrCassandraUnavailableIdentity_Unwrap(t *testing.T) {
 	}
 }
 
-func TestIsErrCassandraUnavailable(t *testing.T) {
+func TestIsCassandraUnavailableError(t *testing.T) {
 	type args struct {
 		err error
 	}
@@ -1154,7 +1169,7 @@ func TestIsErrCassandraUnavailable(t *testing.T) {
 		{
 			name: "returns true when error is cassandra unavailable identity",
 			args: args{
-				err: new(ErrCassandraUnavailableIdentity),
+				err: new(CassandraUnavailableIdentityError),
 			},
 			want: want{
 				want: true,
@@ -1162,7 +1177,8 @@ func TestIsErrCassandraUnavailable(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -1175,10 +1191,12 @@ func TestIsErrCassandraUnavailable(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 
-			got := IsErrCassandraUnavailable(test.args.err)
+			got := IsCassandraUnavailableError(test.args.err)
 			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
 	}
 }
+
+// NOT IMPLEMENTED BELOW

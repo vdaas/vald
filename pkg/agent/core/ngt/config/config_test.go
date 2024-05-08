@@ -1,8 +1,8 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -85,7 +85,7 @@ func TestNewConfig(t *testing.T) {
 					if err != nil {
 						t.Fatal(err)
 					}
-					if _, err := f.Write([]byte(data)); err != nil {
+					if _, err := f.WriteString(data); err != nil {
 						t.Fatal(err)
 					}
 					if err := f.Close(); err != nil {
@@ -113,12 +113,11 @@ func TestNewConfig(t *testing.T) {
 						},
 						Observability: &config.Observability{
 							Enabled: true,
-							Collector: &config.Collector{
-								Metrics: new(config.Metrics),
+							OTLP: &config.OTLP{
+								Attribute: new(config.OTLPAttribute),
 							},
-							Trace:      new(config.Trace),
-							Prometheus: new(config.Prometheus),
-							Jaeger:     new(config.Jaeger),
+							Metrics: new(config.Metrics),
+							Trace:   new(config.Trace),
 						},
 						NGT: &config.NGT{
 							IndexPath: "/var/index",
@@ -151,7 +150,7 @@ func TestNewConfig(t *testing.T) {
 					if err != nil {
 						t.Fatal(err)
 					}
-					if _, err := f.Write([]byte(data)); err != nil {
+					if _, err := f.WriteString(data); err != nil {
 						t.Fatal(err)
 					}
 					if err := f.Close(); err != nil {
@@ -209,7 +208,7 @@ func TestNewConfig(t *testing.T) {
 					if err != nil {
 						t.Fatal(err)
 					}
-					if _, err := f.Write([]byte(data)); err != nil {
+					if _, err := f.WriteString(data); err != nil {
 						t.Fatal(err)
 					}
 					if err := f.Close(); err != nil {
@@ -237,12 +236,11 @@ func TestNewConfig(t *testing.T) {
 						},
 						Observability: &config.Observability{
 							Enabled: true,
-							Collector: &config.Collector{
-								Metrics: new(config.Metrics),
+							OTLP: &config.OTLP{
+								Attribute: new(config.OTLPAttribute),
 							},
-							Trace:      new(config.Trace),
-							Prometheus: new(config.Prometheus),
-							Jaeger:     new(config.Jaeger),
+							Metrics: new(config.Metrics),
+							Trace:   new(config.Trace),
 						},
 						NGT: &config.NGT{
 							IndexPath: "/var/index",
@@ -273,7 +271,7 @@ func TestNewConfig(t *testing.T) {
 					if err != nil {
 						t.Fatal(err)
 					}
-					if _, err := f.Write([]byte(data)); err != nil {
+					if _, err := f.WriteString(data); err != nil {
 						t.Fatal(err)
 					}
 					if err := f.Close(); err != nil {
@@ -381,7 +379,7 @@ func TestNewConfig(t *testing.T) {
 				},
 				want: want{
 					wantCfg: nil,
-					err:     io.EOF,
+					err:     errors.New("component config is invalid"),
 				},
 			}
 		}(),
@@ -456,3 +454,5 @@ func TestNewConfig(t *testing.T) {
 		})
 	}
 }
+
+// NOT IMPLEMENTED BELOW

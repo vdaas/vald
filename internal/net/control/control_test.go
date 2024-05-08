@@ -1,8 +1,8 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -28,6 +28,10 @@ import (
 	"github.com/vdaas/vald/internal/test/goleak"
 )
 
+func TestMain(m *testing.M) {
+	goleak.VerifyTestMain(m)
+}
+
 func TestNew(t *testing.T) {
 	t.Parallel()
 	type args struct {
@@ -43,7 +47,7 @@ func TestNew(t *testing.T) {
 		want       want
 		checkFunc  func(want, SocketController) error
 		beforeFunc func(args)
-		afterFunc  func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, got SocketController) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -83,12 +87,11 @@ func TestNew(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -117,7 +120,7 @@ func Test_boolint(t *testing.T) {
 		want       want
 		checkFunc  func(want, int) error
 		beforeFunc func(args)
-		afterFunc  func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, got int) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -150,12 +153,11 @@ func Test_boolint(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -184,7 +186,7 @@ func Test_isTCP(t *testing.T) {
 		want       want
 		checkFunc  func(want, bool) error
 		beforeFunc func(args)
-		afterFunc  func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, got bool) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -235,12 +237,11 @@ func Test_isTCP(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -300,7 +301,6 @@ func Test_control_GetControl(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -333,6 +333,7 @@ func Test_control_GetControl(t *testing.T) {
 }
 
 func Test_control_controlFunc(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		network string
 		address string
@@ -360,7 +361,7 @@ func Test_control_controlFunc(t *testing.T) {
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(args)
-		afterFunc  func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -399,7 +400,8 @@ func Test_control_controlFunc(t *testing.T) {
 					keepAlive:                10,
 				},
 				want: want{},
-				afterFunc: func(a args) {
+				afterFunc: func(t *testing.T, a args) {
+					t.Helper()
 					f.Close()
 				},
 			}
@@ -434,7 +436,8 @@ func Test_control_controlFunc(t *testing.T) {
 					keepAlive:                10,
 				},
 				want: want{},
-				afterFunc: func(a args) {
+				afterFunc: func(t *testing.T, a args) {
+					t.Helper()
 					f.Close()
 				},
 			}
@@ -469,7 +472,8 @@ func Test_control_controlFunc(t *testing.T) {
 					keepAlive:                10,
 				},
 				want: want{},
-				afterFunc: func(a args) {
+				afterFunc: func(t *testing.T, a args) {
+					t.Helper()
 					f.Close()
 				},
 			}
@@ -480,12 +484,11 @@ func Test_control_controlFunc(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -510,3 +513,5 @@ func Test_control_controlFunc(t *testing.T) {
 		})
 	}
 }
+
+// NOT IMPLEMENTED BELOW

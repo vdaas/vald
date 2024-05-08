@@ -1,8 +1,8 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -21,40 +21,46 @@ import (
 	"context"
 	"reflect"
 
-	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/safety"
+	"github.com/vdaas/vald/internal/sync/errgroup"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
+	mserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-	"sigs.k8s.io/controller-runtime/pkg/source"
 )
 
 type Controller interface {
 	Start(ctx context.Context) (<-chan error, error)
+	GetManager() Manager
 }
+
+var Now = metav1.Now
 
 type ResourceController interface {
 	GetName() string
 	NewReconciler(ctx context.Context, mgr manager.Manager) reconcile.Reconciler
 	For() (client.Object, []builder.ForOption)
 	Owns() (client.Object, []builder.OwnsOption)
-	Watches() (*source.Kind, handler.EventHandler, []builder.WatchesOption)
+	Watches() (client.Object, handler.EventHandler, []builder.WatchesOption)
 }
 
 type controller struct {
-	eg             errgroup.Group
-	name           string
-	merticsAddr    string
-	leaderElection bool
-	mgr            manager.Manager
-	rcs            []ResourceController
-	der            net.Dialer
+	eg                      errgroup.Group
+	name                    string
+	merticsAddr             string
+	leaderElection          bool
+	leaderElectionID        string
+	leaderElectionNamespace string
+	mgr                     manager.Manager
+	rcs                     []ResourceController
+	der                     net.Dialer
 }
 
 func New(opts ...Option) (cl Controller, err error) {
@@ -80,9 +86,11 @@ func New(opts ...Option) (cl Controller, err error) {
 		c.mgr, err = manager.New(
 			cfg,
 			manager.Options{
-				Scheme:             runtime.NewScheme(),
-				LeaderElection:     c.leaderElection,
-				MetricsBindAddress: c.merticsAddr,
+				Scheme:                  runtime.NewScheme(),
+				LeaderElection:          c.leaderElection,
+				LeaderElectionID:        c.leaderElectionID,
+				LeaderElectionNamespace: c.leaderElectionNamespace,
+				Metrics:                 mserver.Options{BindAddress: c.merticsAddr},
 			},
 		)
 		if err != nil {
@@ -135,4 +143,8 @@ func (c *controller) Start(ctx context.Context) (<-chan error, error) {
 	}))
 
 	return ech, nil
+}
+
+func (c *controller) GetManager() Manager {
+	return c.mgr
 }

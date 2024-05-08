@@ -1,8 +1,8 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -56,7 +56,7 @@ func TestMySQL_Bind(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, *MySQL) error
-		beforeFunc func()
+		beforeFunc func(*testing.T)
 		afterFunc  func()
 	}
 	defaultCheckFunc := func(w want, got *MySQL) error {
@@ -190,7 +190,8 @@ func TestMySQL_Bind(t *testing.T) {
 					Net:                  new(Net),
 				},
 			},
-			beforeFunc: func() {
+			beforeFunc: func(t *testing.T) {
+				t.Helper()
 				t.Setenv("MYSQL_BIND_DB", "db")
 				t.Setenv("MYSQL_BIND_HOST", "host")
 				t.Setenv("MYSQL_BIND_USER", "user")
@@ -205,10 +206,11 @@ func TestMySQL_Bind(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
 				defer test.afterFunc()
@@ -519,3 +521,5 @@ func TestMySQL_Opts(t *testing.T) {
 		})
 	}
 }
+
+// NOT IMPLEMENTED BELOW

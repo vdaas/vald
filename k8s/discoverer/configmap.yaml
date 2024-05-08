@@ -1,9 +1,8 @@
----
 #
-# Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
+# You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
 #    https://www.apache.org/licenses/LICENSE-2.0
@@ -20,10 +19,10 @@ metadata:
   name: vald-discoverer-config
   labels:
     app.kubernetes.io/name: vald
-    helm.sh/chart: vald-v1.5.6
+    helm.sh/chart: vald-v1.7.12
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: release-name
-    app.kubernetes.io/version: v1.5.6
+    app.kubernetes.io/version: v1.7.12
     app.kubernetes.io/component: discoverer
 data:
   config.yaml: |
@@ -42,20 +41,21 @@ data:
           grpc:
             bidirectional_stream_concurrency: 20
             connection_timeout: ""
+            enable_admin: true
             enable_reflection: true
             header_table_size: 0
-            initial_conn_window_size: 0
-            initial_window_size: 0
+            initial_conn_window_size: 2097152
+            initial_window_size: 1048576
             interceptors:
             - RecoverInterceptor
             keepalive:
               max_conn_age: ""
               max_conn_age_grace: ""
               max_conn_idle: ""
-              min_time: 60s
-              permit_without_stream: true
-              time: 120s
-              timeout: 30s
+              min_time: 10m
+              permit_without_stream: false
+              time: 3h
+              timeout: 60s
             max_header_list_size: 0
             max_receive_message_size: 0
             max_send_message_size: 0
@@ -71,10 +71,10 @@ data:
             reuse_addr: true
             reuse_port: true
             tcp_cork: false
-            tcp_defer_accept: true
-            tcp_fast_open: true
-            tcp_no_delay: true
-            tcp_quick_ack: true
+            tcp_defer_accept: false
+            tcp_fast_open: false
+            tcp_no_delay: false
+            tcp_quick_ack: false
           socket_path: ""
       health_check_servers:
         - name: liveness
@@ -87,16 +87,17 @@ data:
             read_timeout: ""
             shutdown_duration: 5s
             write_timeout: ""
-          mode: ""
+          mode: REST
           network: tcp
           probe_wait_time: 3s
+          restart: true
           socket_option:
             ip_recover_destination_addr: false
             ip_transparent: false
             reuse_addr: true
             reuse_port: true
             tcp_cork: false
-            tcp_defer_accept: true
+            tcp_defer_accept: false
             tcp_fast_open: true
             tcp_no_delay: true
             tcp_quick_ack: true
@@ -111,16 +112,17 @@ data:
             read_timeout: ""
             shutdown_duration: 0s
             write_timeout: ""
-          mode: ""
+          mode: REST
           network: tcp
           probe_wait_time: 3s
+          restart: true
           socket_option:
             ip_recover_destination_addr: false
             ip_transparent: false
             reuse_addr: true
             reuse_port: true
             tcp_cork: false
-            tcp_defer_accept: true
+            tcp_defer_accept: false
             tcp_fast_open: true
             tcp_no_delay: true
             tcp_quick_ack: true
@@ -135,26 +137,32 @@ data:
             read_header_timeout: 1s
             read_timeout: 1s
             shutdown_duration: 5s
-            write_timeout: 1s
+            write_timeout: 1m
           mode: REST
           network: tcp
           probe_wait_time: 3s
+          restart: true
           socket_option:
             ip_recover_destination_addr: false
             ip_transparent: false
             reuse_addr: true
             reuse_port: true
-            tcp_cork: false
-            tcp_defer_accept: true
-            tcp_fast_open: true
-            tcp_no_delay: true
-            tcp_quick_ack: true
+            tcp_cork: true
+            tcp_defer_accept: false
+            tcp_fast_open: false
+            tcp_no_delay: false
+            tcp_quick_ack: false
           socket_path: ""
       startup_strategy:
         - liveness
         - pprof
         - grpc
         - readiness
+      shutdown_strategy:
+        - readiness
+        - grpc
+        - pprof
+        - liveness
       full_shutdown_duration: 600s
       tls:
         ca: /path/to/ca
@@ -164,77 +172,35 @@ data:
         key: /path/to/key
     observability:
       enabled: false
-      collector:
-        duration: 5s
-        metrics:
-          enable_cgo: true
-          enable_goroutine: true
-          enable_memory: true
-          enable_version_info: true
-          version_info_labels:
-          - vald_version
-          - server_name
-          - git_commit
-          - build_time
-          - go_version
-          - go_os
-          - go_arch
-          - ngt_version
+      otlp:
+        collector_endpoint: ""
+        trace_batch_timeout: "1s"
+        trace_export_timeout: "1m"
+        trace_max_export_batch_size: 1024
+        trace_max_queue_size: 256
+        metrics_export_interval: "1s"
+        metrics_export_timeout: "1m"
+        attribute:
+          namespace: "_MY_POD_NAMESPACE_"
+          pod_name: "_MY_POD_NAME_"
+          node_name: "_MY_NODE_NAME_"
+          service_name: "vald-discoverer"
+      metrics:
+        enable_cgo: true
+        enable_goroutine: true
+        enable_memory: true
+        enable_version_info: true
+        version_info_labels:
+        - vald_version
+        - server_name
+        - git_commit
+        - build_time
+        - go_version
+        - go_os
+        - go_arch
+        - algorithm_info
       trace:
         enabled: false
-        sampling_rate: 1
-      prometheus:
-        enabled: false
-        endpoint: /metrics
-        namespace: vald
-      jaeger:
-        enabled: false
-        collector_endpoint: ""
-        agent_endpoint: "jaeger-agent.default.svc.cluster.local:6831"
-        username: ""
-        password: ""
-        service_name: "vald-discoverer"
-        buffer_max_count: 10
-      stackdriver:
-        project_id: ""
-        client:
-          api_key: ""
-          audiences: []
-          authentication_enabled: true
-          credentials_file: ""
-          credentials_json: ""
-          endpoint: ""
-          quota_project: ""
-          request_reason: ""
-          scopes: []
-          telemetry_enabled: true
-          user_agent: ""
-        exporter:
-          bundle_count_threshold: 0
-          bundle_delay_threshold: "0"
-          location: ""
-          metric_prefix: vald.vdaas.org
-          monitoring_enabled: false
-          number_of_workers: 1
-          reporting_interval: 1m
-          skip_cmd: false
-          timeout: 5s
-          trace_spans_buffer_max_bytes: 0
-          tracing_enabled: false
-        profiler:
-          enabled: false
-          service: "vald-discoverer"
-          service_version: ""
-          debug_logging: false
-          mutex_profiling: true
-          cpu_profiling: true
-          alloc_profiling: true
-          heap_profiling: true
-          goroutine_profiling: true
-          alloc_force_gc: false
-          api_addr: ""
-          instance: ""
-          zone: ""
     discoverer:
       name: ""
       namespace: "_MY_POD_NAMESPACE_"
@@ -252,8 +218,11 @@ data:
           pod_metrics:
             labels: {}
             fields:
-              containers.name: vald-agent-ngt
+              containers.name: vald-agent
           node_metrics:
+            labels: {}
+            fields: {}
+          service:
             labels: {}
             fields: {}
       net:
@@ -271,10 +240,10 @@ data:
           reuse_addr: true
           reuse_port: true
           tcp_cork: false
-          tcp_defer_accept: true
-          tcp_fast_open: true
-          tcp_no_delay: true
-          tcp_quick_ack: true
+          tcp_defer_accept: false
+          tcp_fast_open: false
+          tcp_no_delay: false
+          tcp_quick_ack: false
         tls:
           ca: /path/to/ca
           cert: /path/to/cert

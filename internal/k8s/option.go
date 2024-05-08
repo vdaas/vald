@@ -1,8 +1,8 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -18,8 +18,9 @@
 package k8s
 
 import (
-	"github.com/vdaas/vald/internal/errgroup"
+	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net"
+	"github.com/vdaas/vald/internal/sync/errgroup"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
 
@@ -69,16 +70,14 @@ func WithMetricsAddress(addr string) Option {
 	}
 }
 
-func WithEnableLeaderElection() Option {
+func WithLeaderElection(enabled bool, id, namespace string) Option {
 	return func(c *controller) error {
-		c.leaderElection = true
-		return nil
-	}
-}
-
-func WithDisableLeaderElection() Option {
-	return func(c *controller) error {
-		c.leaderElection = false
+		if enabled && id == "" {
+			return errors.NewErrCriticalOption("leaderElectionID", id)
+		}
+		c.leaderElection = enabled
+		c.leaderElectionID = id
+		c.leaderElectionNamespace = namespace
 		return nil
 	}
 }

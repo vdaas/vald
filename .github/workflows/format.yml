@@ -1,8 +1,8 @@
 #
-# Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
+# You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
 #    https://www.apache.org/licenses/LICENSE-2.0
@@ -18,47 +18,48 @@ on:
   push:
     branches:
       - main
+  pull_request:
 jobs:
-  format:
-    name: Run formatter
+  dump-contexts-to-log:
     runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/vdaas/vald/vald-ci-container:nightly
     steps:
-      - name: Check out code.
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/dump-context
+  detect-ci-container:
+    uses: ./.github/workflows/_detect-ci-container.yml
+  format:
+    if: ${{ github.event_name == 'push' }}
+    runs-on: ubuntu-latest
+    needs: [detect-ci-container]
+    container:
+      image: ghcr.io/vdaas/vald/vald-ci-container:${{ needs.detect-ci-container.outputs.TAG }}
+    steps:
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
           token: ${{ secrets.DISPATCH_TOKEN }}
-      - name: set git config
+      - name: Set Git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
-      - uses: crazy-max/ghaction-import-gpg@v4
+      - uses: crazy-max/ghaction-import-gpg@v6
         with:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           git_user_signingkey: true
           git_commit_gpgsign: true
-      - name: switch new branch
+      - name: Switch new branch
         id: switch_to_new_branch
         run: |
           TIMESTAMP=$(date +%Y%m%d_%H%M%S_%3N)
           BRANCH_NAME="formatter/go_and_yaml/format_at_${TIMESTAMP}"
           git checkout main
           git checkout -b ${BRANCH_NAME}
-          echo "::set-output name=BRANCH_NAME::${BRANCH_NAME}"
-      - name: Fetch golang version
-        run: |
-          GO_VERSION=`make version/go`
-          echo "::set-output name=version::${GO_VERSION}"
-        id: golang_version
-      - uses: actions/setup-go@v3
-        with:
-          go-version: ${{ steps.golang_version.outputs.version }}
+          echo "BRANCH_NAME=${BRANCH_NAME}" >> $GITHUB_OUTPUT
+      - name: Setup Go environment
+        uses: ./.github/actions/setup-go
       - name: Run formatter and license.go
         run: |
-          make deps/install
           make format
-          git checkout go.mod go.sum
+          git checkout go.mod go.sum ./rust/Cargo.lock
       - name: Check and Push to main branch
         continue-on-error: true
         run: |
@@ -84,3 +85,33 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
           API_URL: https://api.github.com/repos/vdaas/vald/pulls
           BRANCH_NAME: ${{ steps.switch_to_new_branch.outputs.BRANCH_NAME }}
+  check-format-diff:
+    if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == false }}
+    runs-on: ubuntu-latest
+    needs: [detect-ci-container]
+    container:
+      image: ghcr.io/vdaas/vald/vald-ci-container:${{ needs.detect-ci-container.outputs.TAG }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.DISPATCH_TOKEN }}
+      - name: Set Git config
+        run: |
+          git config --global --add safe.directory ${GITHUB_WORKSPACE}
+      - name: Setup Go environment
+        uses: ./.github/actions/setup-go
+      - name: Run `make format` and `make deps/install`
+        run: |
+          make deps/install
+          make format
+          git checkout go.mod go.sum ./example/client/go.mod ./example/client/go.sum ./rust/Cargo.lock
+      - name: Check format and deps difference
+        run: |
+          if git diff --quiet --exit-code; then
+            echo "Nothing updated"
+          else
+            git diff
+            echo "Please execute \`make format\` locally."
+            exit 1
+          fi

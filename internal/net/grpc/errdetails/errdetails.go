@@ -1,8 +1,8 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-// Package errdetails provides error detail for grpc status
+// Package errdetails provides error detail for gRPC status
 package errdetails
 
 import (
@@ -22,13 +22,13 @@ import (
 	"reflect"
 	"strconv"
 
+	"github.com/vdaas/vald/apis/grpc/v1/rpc/errdetails"
 	"github.com/vdaas/vald/internal/encoding/json"
 	"github.com/vdaas/vald/internal/info"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc/proto"
 	"github.com/vdaas/vald/internal/net/grpc/types"
 	"github.com/vdaas/vald/internal/strings"
-	"google.golang.org/genproto/googleapis/rpc/errdetails"
 	spb "google.golang.org/genproto/googleapis/rpc/status"
 	"google.golang.org/grpc/status"
 )
@@ -85,6 +85,9 @@ func decodeDetails(objs ...interface{}) (details []Detail) {
 	}
 	details = make([]Detail, 0, len(objs))
 	for _, obj := range objs {
+		if obj == nil {
+			continue
+		}
 		v := reflect.ValueOf(obj)
 		if v.Kind() == reflect.Ptr {
 			v = v.Elem()
@@ -109,16 +112,30 @@ func decodeDetails(objs ...interface{}) (details []Detail) {
 			continue
 		}
 		switch v := obj.(type) {
+		case *spb.Status:
+			if v != nil {
+				details = append(details, Detail{
+					TypeURL: string((*v).ProtoReflect().Descriptor().FullName()),
+					Message: v,
+				})
+			}
+		case spb.Status:
+			details = append(details, Detail{
+				TypeURL: string(v.ProtoReflect().Descriptor().FullName()),
+				Message: &v,
+			})
 		case *status.Status:
-			details = append(details, append([]Detail{
-				{
-					TypeURL: string(v.Proto().ProtoReflect().Descriptor().FullName()),
-					Message: &spb.Status{
-						Code:    v.Proto().GetCode(),
-						Message: v.Message(),
+			if v != nil {
+				details = append(details, append([]Detail{
+					{
+						TypeURL: string(v.Proto().ProtoReflect().Descriptor().FullName()),
+						Message: &spb.Status{
+							Code:    v.Proto().GetCode(),
+							Message: v.Message(),
+						},
 					},
-				},
-			}, decodeDetails(v.Proto().Details)...)...)
+				}, decodeDetails(v.Proto().Details)...)...)
+			}
 		case status.Status:
 			details = append(details, append([]Detail{
 				{
@@ -129,30 +146,64 @@ func decodeDetails(objs ...interface{}) (details []Detail) {
 					},
 				},
 			}, decodeDetails(v.Proto().Details)...)...)
-		case *types.Any:
+		case *Detail:
+			if v != nil {
+				details = append(details, *v)
+			}
+		case Detail:
+			details = append(details, v)
+		case *info.Detail:
+			if v != nil {
+				di := DebugInfoFromInfoDetail(v)
+				details = append(details, Detail{
+					TypeURL: string(di.ProtoReflect().Descriptor().FullName()),
+					Message: di,
+				})
+			}
+		case info.Detail:
+			di := DebugInfoFromInfoDetail(&v)
 			details = append(details, Detail{
-				TypeURL: v.GetTypeUrl(),
-				Message: AnyToErrorDetail(v),
+				TypeURL: string(di.ProtoReflect().Descriptor().FullName()),
+				Message: di,
 			})
+		case *types.Any:
+			if v != nil {
+				details = append(details, Detail{
+					TypeURL: v.GetTypeUrl(),
+					Message: AnyToErrorDetail(v),
+				})
+			}
 		case types.Any:
 			details = append(details, Detail{
 				TypeURL: v.GetTypeUrl(),
 				Message: AnyToErrorDetail(&v),
 			})
 		case *proto.Message:
-			details = append(details, Detail{
-				TypeURL: string((*v).ProtoReflect().Descriptor().FullName()),
-				Message: *v,
-			})
+			if v != nil {
+				details = append(details, Detail{
+					TypeURL: string((*v).ProtoReflect().Descriptor().FullName()),
+					Message: *v,
+				})
+			}
 		case proto.Message:
 			details = append(details, Detail{
 				TypeURL: string(v.ProtoReflect().Descriptor().FullName()),
 				Message: v,
 			})
-		case *Detail:
-			details = append(details, *v)
-		case Detail:
-			details = append(details, v)
+		case *proto.MessageV1:
+			if v != nil {
+				v2 := proto.ToMessageV2(*v)
+				details = append(details, Detail{
+					TypeURL: string(v2.ProtoReflect().Descriptor().FullName()),
+					Message: v2,
+				})
+			}
+		case proto.MessageV1:
+			v2 := proto.ToMessageV2(v)
+			details = append(details, Detail{
+				TypeURL: string(v2.ProtoReflect().Descriptor().FullName()),
+				Message: v2,
+			})
 		}
 	}
 	return details
@@ -277,22 +328,29 @@ func AnyToErrorDetail(a *types.Any) proto.Message {
 
 func DebugInfoFromInfoDetail(v *info.Detail) *DebugInfo {
 	debug := &DebugInfo{
-		Detail: "Version: " + v.Version + ", " +
-			"Name: " + v.ServerName + ", " +
-			"GitCommit: " + v.GitCommit + ", " +
-			"BuildTime: " + v.BuildTime + ", " +
-			"NGT_Version: " + v.NGTVersion + ", " +
-			"Go_Version: " + v.GoVersion + ", " +
-			"GOARCH: " + v.GoArch + ", " +
-			"GOOS: " + v.GoOS + ", " +
-			"CGO_Enabled: " + v.CGOEnabled + ", " +
-			"BuildCPUInfo: [" + strings.Join(v.BuildCPUInfoFlags, ", ") + "]",
+		Detail: strings.Join(append(append([]string{
+			"Version:", v.Version, ",",
+			"Name:", v.ServerName, ",",
+			"GitCommit:", v.GitCommit, ",",
+			"BuildTime:", v.BuildTime, ",",
+			"Algorithm_Info:", v.AlgorithmInfo, ",",
+			"Go_Version:", v.GoVersion, ",",
+			"GOARCH:", v.GoArch, ",",
+			"GOOS:", v.GoOS, ",",
+			"CGO_Enabled:", v.CGOEnabled, ",",
+			"BuildCPUInfo: [",
+		}, v.BuildCPUInfoFlags...), "]"), " "),
 	}
 	if debug.GetStackEntries() == nil {
 		debug.StackEntries = make([]string, 0, len(v.StackTrace))
 	}
 	for i, stack := range v.StackTrace {
-		debug.StackEntries = append(debug.GetStackEntries(), "id: "+strconv.Itoa(i)+" stack_trace: "+stack.String())
+		debug.StackEntries = append(debug.GetStackEntries(), strings.Join([]string{
+			"id:",
+			strconv.Itoa(i),
+			"stack_trace:",
+			stack.String(),
+		}, " "))
 	}
 	return debug
 }

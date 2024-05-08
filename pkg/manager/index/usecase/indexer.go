@@ -1,8 +1,8 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -22,9 +22,7 @@ import (
 	"github.com/vdaas/vald/apis/grpc/v1/manager/index"
 	"github.com/vdaas/vald/internal/client/v1/client/discoverer"
 	iconf "github.com/vdaas/vald/internal/config"
-	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/net/grpc"
-	"github.com/vdaas/vald/internal/net/grpc/metric"
 	"github.com/vdaas/vald/internal/observability"
 	backoffmetrics "github.com/vdaas/vald/internal/observability/metrics/backoff"
 	cbmetrics "github.com/vdaas/vald/internal/observability/metrics/circuitbreaker"
@@ -33,6 +31,7 @@ import (
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/servers/server"
 	"github.com/vdaas/vald/internal/servers/starter"
+	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/pkg/manager/index/config"
 	handler "github.com/vdaas/vald/pkg/manager/index/handler/grpc"
 	"github.com/vdaas/vald/pkg/manager/index/handler/rest"
@@ -57,6 +56,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	if err != nil {
 		return nil, err
 	}
+	// skipcq: CRT-D0001
 	dopts := append(
 		cOpts,
 		grpc.WithErrGroup(eg))
@@ -65,37 +65,10 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	if err != nil {
 		return nil, err
 	}
+	// skipcq: CRT-D0001
 	aopts := append(
 		acOpts,
 		grpc.WithErrGroup(eg))
-
-	var obs observability.Observability
-	if cfg.Observability.Enabled {
-		bom, err := backoffmetrics.New()
-		if err != nil {
-			return nil, err
-		}
-		cbm, err := cbmetrics.New()
-		if err != nil {
-			return nil, err
-		}
-		obs, err = observability.NewWithConfig(cfg.Observability, bom, cbm)
-		if err != nil {
-			return nil, err
-		}
-		aopts = append(
-			aopts,
-			grpc.WithDialOptions(
-				grpc.WithStatsHandler(metric.NewClientHandler()),
-			),
-		)
-		dopts = append(
-			dopts,
-			grpc.WithDialOptions(
-				grpc.WithStatsHandler(metric.NewClientHandler()),
-			),
-		)
-	}
 
 	client, err := discoverer.New(
 		discoverer.WithAutoConnect(true),
@@ -133,16 +106,6 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		return nil, err
 	}
 
-	if cfg.Observability.Enabled {
-		obs, err = observability.NewWithConfig(
-			cfg.Observability,
-			indexmetrics.New(indexer),
-		)
-		if err != nil {
-			return nil, err
-		}
-	}
-
 	idx := handler.New(handler.WithIndexer(indexer))
 
 	grpcServerOptions := []server.Option{
@@ -155,13 +118,17 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		}),
 	}
 
+	var obs observability.Observability
 	if cfg.Observability.Enabled {
-		grpcServerOptions = append(
-			grpcServerOptions,
-			server.WithGRPCOption(
-				grpc.StatsHandler(metric.NewServerHandler()),
-			),
+		obs, err = observability.NewWithConfig(
+			cfg.Observability,
+			indexmetrics.New(indexer),
+			backoffmetrics.New(),
+			cbmetrics.New(),
 		)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	srv, err := starter.New(
@@ -241,7 +208,7 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 	return ech, nil
 }
 
-func (r *run) PreStop(ctx context.Context) error {
+func (*run) PreStop(context.Context) error {
 	return nil
 }
 
@@ -252,6 +219,6 @@ func (r *run) Stop(ctx context.Context) error {
 	return r.server.Shutdown(ctx)
 }
 
-func (r *run) PostStop(ctx context.Context) error {
+func (*run) PostStop(context.Context) error {
 	return nil
 }

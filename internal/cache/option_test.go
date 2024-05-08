@@ -1,8 +1,8 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -33,17 +33,17 @@ func TestWithExpiredHook(t *testing.T) {
 		f func(context.Context, string)
 	}
 	type want struct {
-		want *cache
+		want *cache[any]
 	}
 	type test struct {
 		name       string
 		args       args
 		want       want
-		checkFunc  func(want, *cache) error
+		checkFunc  func(want, *cache[any]) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, got *cache) error {
+	defaultCheckFunc := func(w want, got *cache[any]) error {
 		if reflect.ValueOf(w.want.expiredHook).Pointer() != reflect.ValueOf(got.expiredHook).Pointer() {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
@@ -58,7 +58,7 @@ func TestWithExpiredHook(t *testing.T) {
 					f: fn,
 				},
 				want: want{
-					want: &cache{
+					want: &cache[any]{
 						expiredHook: fn,
 					},
 				},
@@ -71,13 +71,14 @@ func TestWithExpiredHook(t *testing.T) {
 					f: nil,
 				},
 				want: want{
-					want: &cache{},
+					want: &cache[any]{},
 				},
 			}
 		}(),
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
@@ -91,8 +92,8 @@ func TestWithExpiredHook(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 
-			got := new(cache)
-			opts := WithExpiredHook(test.args.f)
+			got := new(cache[any])
+			opts := WithExpiredHook[any](test.args.f)
 			opts(got)
 			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
@@ -106,17 +107,17 @@ func TestWithType(t *testing.T) {
 		mo string
 	}
 	type want struct {
-		want *cache
+		want *cache[any]
 	}
 	type test struct {
 		name       string
 		args       args
 		want       want
-		checkFunc  func(want, *cache) error
+		checkFunc  func(want, *cache[any]) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, got *cache) error {
+	defaultCheckFunc := func(w want, got *cache[any]) error {
 		if !reflect.DeepEqual(got, w.want) {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
@@ -131,7 +132,7 @@ func TestWithType(t *testing.T) {
 					mo: val,
 				},
 				want: want{
-					want: &cache{
+					want: &cache[any]{
 						cacher: cacher.ToType(val),
 					},
 				},
@@ -141,13 +142,14 @@ func TestWithType(t *testing.T) {
 			return test{
 				name: "set success when len(mo) is 0",
 				want: want{
-					want: &cache{},
+					want: &cache[any]{},
 				},
 			}
 		}(),
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
@@ -161,8 +163,8 @@ func TestWithType(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 
-			got := new(cache)
-			opts := WithType(test.args.mo)
+			got := new(cache[any])
+			opts := WithType[any](test.args.mo)
 			opts(got)
 			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
@@ -176,17 +178,17 @@ func TestWithExpireDuration(t *testing.T) {
 		dur string
 	}
 	type want struct {
-		want *cache
+		want *cache[any]
 	}
 	type test struct {
 		name       string
 		args       args
 		want       want
-		checkFunc  func(want, *cache) error
+		checkFunc  func(want, *cache[any]) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, got *cache) error {
+	defaultCheckFunc := func(w want, got *cache[any]) error {
 		if !reflect.DeepEqual(got, w.want) {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
@@ -202,7 +204,7 @@ func TestWithExpireDuration(t *testing.T) {
 					dur: val,
 				},
 				want: want{
-					want: &cache{
+					want: &cache[any]{
 						expireDur: dur,
 					},
 				},
@@ -212,7 +214,7 @@ func TestWithExpireDuration(t *testing.T) {
 			return test{
 				name: "set success when dur is empty",
 				want: want{
-					want: &cache{},
+					want: &cache[any]{},
 				},
 			}
 		}(),
@@ -224,13 +226,14 @@ func TestWithExpireDuration(t *testing.T) {
 					dur: val,
 				},
 				want: want{
-					want: &cache{},
+					want: &cache[any]{},
 				},
 			}
 		}(),
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
@@ -244,8 +247,8 @@ func TestWithExpireDuration(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 
-			got := new(cache)
-			opts := WithExpireDuration(test.args.dur)
+			got := new(cache[any])
+			opts := WithExpireDuration[any](test.args.dur)
 			opts(got)
 			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
@@ -259,17 +262,17 @@ func TestWithExpireCheckDuration(t *testing.T) {
 		dur string
 	}
 	type want struct {
-		want *cache
+		want *cache[any]
 	}
 	type test struct {
 		name       string
 		args       args
 		want       want
-		checkFunc  func(want, *cache) error
+		checkFunc  func(want, *cache[any]) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, got *cache) error {
+	defaultCheckFunc := func(w want, got *cache[any]) error {
 		if !reflect.DeepEqual(got, w.want) {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
@@ -285,7 +288,7 @@ func TestWithExpireCheckDuration(t *testing.T) {
 					dur: val,
 				},
 				want: want{
-					want: &cache{
+					want: &cache[any]{
 						expireCheckDur: dur,
 					},
 				},
@@ -295,7 +298,7 @@ func TestWithExpireCheckDuration(t *testing.T) {
 			return test{
 				name: "set success when dur is empty",
 				want: want{
-					want: &cache{},
+					want: &cache[any]{},
 				},
 			}
 		}(),
@@ -307,13 +310,14 @@ func TestWithExpireCheckDuration(t *testing.T) {
 					dur: val,
 				},
 				want: want{
-					want: &cache{},
+					want: &cache[any]{},
 				},
 			}
 		}(),
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
@@ -327,8 +331,8 @@ func TestWithExpireCheckDuration(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 
-			got := new(cache)
-			opts := WithExpireCheckDuration(test.args.dur)
+			got := new(cache[any])
+			opts := WithExpireCheckDuration[any](test.args.dur)
 			opts(got)
 			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
@@ -336,3 +340,81 @@ func TestWithExpireCheckDuration(t *testing.T) {
 		})
 	}
 }
+
+// NOT IMPLEMENTED BELOW
+//
+// func Test_defaultOptions(t *testing.T) {
+// 	type want struct {
+// 		want []Option[V]
+// 	}
+// 	type test struct {
+// 		name       string
+// 		want       want
+// 		checkFunc  func(want, []Option[V]) error
+// 		beforeFunc func(*testing.T)
+// 		afterFunc  func(*testing.T)
+// 	}
+// 	defaultCheckFunc := func(w want, got []Option[V]) error {
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+//
+// 			got := defaultOptions()
+// 			if err := checkFunc(test.want, got); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+//
+// 		})
+// 	}
+// }

@@ -1,8 +1,8 @@
 #
-# Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
+# You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
 #    https://www.apache.org/licenses/LICENSE-2.0
@@ -13,11 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
 defaults:
   logging:
     level: debug
   image:
-    tag: "nightly"
+    tag: latest
   server_config:
     healths:
       liveness:
@@ -26,7 +27,6 @@ defaults:
       readiness:
         readinessProbe:
           initialDelaySeconds: 60
-
 ## vald-lb-gateway settings
 gateway:
   lb:
@@ -43,13 +43,10 @@ gateway:
       enabled: true
       # TODO: Set your ingress host.
       host: localhost
+    service:
+      # NOTE: https://doc.traefik.io/traefik/routing/providers/kubernetes-ingress/#on-service
       annotations:
-        # TODO: Set annotations which you have to set for your k8s cluster.
-        ingress.kubernetes.io/protocol: "h2c"
-        ingress.kubernetes.io/ssl-passthrough: "true"
-        kubernetes.io/ingress.class: "traefik"
-        traefik.protocol: "h2c"
-
+        traefik.ingress.kubernetes.io/service.serversscheme: h2c
 ## vald-agent settings
 agent:
   minReplicas: 6
@@ -65,25 +62,23 @@ agent:
     # The number of dimensions for feature vector of fashion-mnist dataset.
     dimension: 784
     # We use L2-Norm for distance_type.
-    distance_type: l2
+    distance_type: cos
     # The type of fashion-mnist's feature vectors.
     object_type: float
     # Check duration of automatic indexing.
-    auto_index_check_duration_limit: 1m
+    auto_index_check_duration_limit: "-1m"
     # The limit duration of automatic indexing.
-    auto_index_duration_limit: 20s
+    auto_index_duration_limit: "-20s"
     # The batch process pool size of automatic create index operation
     auto_create_index_pool_size: 100
     # The default create index batch pool size
     default_pool_size: 100
-
 ## vald-discoverer settings
 discoverer:
   resources:
     requests:
       cpu: 150m
       memory: 50Mi
-
 ## vald-manager settings
 manager:
   index:

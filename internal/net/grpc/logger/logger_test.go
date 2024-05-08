@@ -1,38 +1,40 @@
-//
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//    https://www.apache.org/licenses/LICENSE-2.0
+//	https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 package logger
 
 import (
 	"os"
 	"os/exec"
 	"reflect"
-	"sync"
 	"testing"
 
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/sync"
 	"github.com/vdaas/vald/internal/test/goleak"
 	"google.golang.org/grpc/grpclog"
 )
+
+func TestMain(m *testing.M) {
+	goleak.VerifyTestMain(m)
+}
 
 func TestInit(t *testing.T) {
 	type test struct {
 		name       string
 		checkFunc  func() error
 		beforeFunc func(*testing.T)
-		afterFunc  func()
+		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func() error {
 		return nil
@@ -46,13 +48,15 @@ func TestInit(t *testing.T) {
 				}
 				return nil
 			},
-			afterFunc: func() {
+			afterFunc: func(t *testing.T) {
+				t.Helper()
 				once = sync.Once{}
 			},
 		},
 		{
 			name: "set logger success with verbosity level is set",
 			beforeFunc: func(t *testing.T) {
+				t.Helper()
 				t.Setenv("GRPC_GO_LOG_VERBOSITY_LEVEL", "2")
 			},
 			checkFunc: func() error {
@@ -67,7 +71,8 @@ func TestInit(t *testing.T) {
 				}
 				return nil
 			},
-			afterFunc: func() {
+			afterFunc: func(t *testing.T) {
+				t.Helper()
 				once = sync.Once{}
 			},
 		},
@@ -76,12 +81,11 @@ func TestInit(t *testing.T) {
 	for _, tc := range tests {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -96,6 +100,7 @@ func TestInit(t *testing.T) {
 }
 
 func Test_logger_Info(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		args []interface{}
 	}
@@ -108,7 +113,7 @@ func Test_logger_Info(t *testing.T) {
 		fields     fields
 		checkFunc  func() error
 		beforeFunc func(args)
-		afterFunc  func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func() error {
 		return nil
@@ -129,12 +134,11 @@ func Test_logger_Info(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -152,6 +156,7 @@ func Test_logger_Info(t *testing.T) {
 }
 
 func Test_logger_Infoln(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		args []interface{}
 	}
@@ -164,7 +169,7 @@ func Test_logger_Infoln(t *testing.T) {
 		fields     fields
 		checkFunc  func() error
 		beforeFunc func(args)
-		afterFunc  func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func() error {
 		return nil
@@ -185,12 +190,11 @@ func Test_logger_Infoln(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -208,6 +212,7 @@ func Test_logger_Infoln(t *testing.T) {
 }
 
 func Test_logger_Infof(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		format string
 		args   []interface{}
@@ -221,7 +226,7 @@ func Test_logger_Infof(t *testing.T) {
 		fields     fields
 		checkFunc  func() error
 		beforeFunc func(args)
-		afterFunc  func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func() error {
 		return nil
@@ -242,12 +247,11 @@ func Test_logger_Infof(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -265,6 +269,7 @@ func Test_logger_Infof(t *testing.T) {
 }
 
 func Test_logger_Warning(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		args []interface{}
 	}
@@ -277,7 +282,7 @@ func Test_logger_Warning(t *testing.T) {
 		fields     fields
 		checkFunc  func() error
 		beforeFunc func(args)
-		afterFunc  func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func() error {
 		return nil
@@ -298,12 +303,11 @@ func Test_logger_Warning(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -321,6 +325,7 @@ func Test_logger_Warning(t *testing.T) {
 }
 
 func Test_logger_Warningln(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		args []interface{}
 	}
@@ -333,7 +338,7 @@ func Test_logger_Warningln(t *testing.T) {
 		fields     fields
 		checkFunc  func() error
 		beforeFunc func(args)
-		afterFunc  func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func() error {
 		return nil
@@ -354,12 +359,11 @@ func Test_logger_Warningln(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -377,6 +381,7 @@ func Test_logger_Warningln(t *testing.T) {
 }
 
 func Test_logger_Warningf(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		format string
 		args   []interface{}
@@ -390,7 +395,7 @@ func Test_logger_Warningf(t *testing.T) {
 		fields     fields
 		checkFunc  func() error
 		beforeFunc func(args)
-		afterFunc  func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func() error {
 		return nil
@@ -411,12 +416,11 @@ func Test_logger_Warningf(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -434,6 +438,7 @@ func Test_logger_Warningf(t *testing.T) {
 }
 
 func Test_logger_Error(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		args []interface{}
 	}
@@ -446,7 +451,7 @@ func Test_logger_Error(t *testing.T) {
 		fields     fields
 		checkFunc  func() error
 		beforeFunc func(args)
-		afterFunc  func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func() error {
 		return nil
@@ -467,12 +472,11 @@ func Test_logger_Error(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -490,6 +494,7 @@ func Test_logger_Error(t *testing.T) {
 }
 
 func Test_logger_Errorln(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		args []interface{}
 	}
@@ -502,7 +507,7 @@ func Test_logger_Errorln(t *testing.T) {
 		fields     fields
 		checkFunc  func() error
 		beforeFunc func(args)
-		afterFunc  func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func() error {
 		return nil
@@ -523,12 +528,11 @@ func Test_logger_Errorln(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -546,6 +550,7 @@ func Test_logger_Errorln(t *testing.T) {
 }
 
 func Test_logger_Errorf(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		format string
 		args   []interface{}
@@ -559,7 +564,7 @@ func Test_logger_Errorf(t *testing.T) {
 		fields     fields
 		checkFunc  func() error
 		beforeFunc func(args)
-		afterFunc  func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func() error {
 		return nil
@@ -580,12 +585,11 @@ func Test_logger_Errorf(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -625,7 +629,7 @@ func Test_logger_Fatal(t *testing.T) {
 		fields     fields
 		checkFunc  func() error
 		beforeFunc func(args)
-		afterFunc  func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func() error {
 		return nil
@@ -639,7 +643,8 @@ func Test_logger_Fatal(t *testing.T) {
 			fields: fields{
 				v: 0,
 			},
-			afterFunc: func(a args) {
+			afterFunc: func(t *testing.T, _ args) {
+				t.Helper()
 				_ = recover()
 			},
 		},
@@ -649,12 +654,11 @@ func Test_logger_Fatal(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -694,7 +698,7 @@ func Test_logger_Fatalln(t *testing.T) {
 		fields     fields
 		checkFunc  func() error
 		beforeFunc func(args)
-		afterFunc  func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func() error {
 		return nil
@@ -715,12 +719,11 @@ func Test_logger_Fatalln(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -761,7 +764,7 @@ func Test_logger_Fatalf(t *testing.T) {
 		fields     fields
 		checkFunc  func() error
 		beforeFunc func(args)
-		afterFunc  func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func() error {
 		return nil
@@ -775,7 +778,8 @@ func Test_logger_Fatalf(t *testing.T) {
 			fields: fields{
 				v: 0,
 			},
-			afterFunc: func(a args) {
+			afterFunc: func(t *testing.T, _ args) {
+				t.Helper()
 				_ = recover()
 			},
 		},
@@ -785,12 +789,11 @@ func Test_logger_Fatalf(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -808,6 +811,7 @@ func Test_logger_Fatalf(t *testing.T) {
 }
 
 func Test_logger_V(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		v int
 	}
@@ -824,7 +828,7 @@ func Test_logger_V(t *testing.T) {
 		want       want
 		checkFunc  func(want, bool) error
 		beforeFunc func(args)
-		afterFunc  func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, got bool) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -875,12 +879,11 @@ func Test_logger_V(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			if test.checkFunc == nil {
 				test.checkFunc = defaultCheckFunc
@@ -896,3 +899,5 @@ func Test_logger_V(t *testing.T) {
 		})
 	}
 }
+
+// NOT IMPLEMENTED BELOW

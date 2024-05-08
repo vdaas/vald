@@ -1,18 +1,16 @@
-//
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//    https://www.apache.org/licenses/LICENSE-2.0
+//	https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 package grpc
 
 import (
@@ -20,30 +18,27 @@ import (
 	"reflect"
 	"testing"
 
+	tmock "github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
-	"github.com/vdaas/vald/apis/grpc/v1/vald"
 	"github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/conv"
 	"github.com/vdaas/vald/internal/core/algorithm/ngt"
-	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/net/grpc/status"
+	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/internal/test/data/request"
 	"github.com/vdaas/vald/internal/test/data/vector"
-	"github.com/vdaas/vald/internal/test/goleak"
+	"github.com/vdaas/vald/internal/test/mock"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/service"
 )
 
 func Test_server_Exists(t *testing.T) {
 	t.Parallel()
 
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
 	type args struct {
-		ctx      context.Context
 		indexID  string
 		searchID string
 	}
@@ -55,7 +50,7 @@ func Test_server_Exists(t *testing.T) {
 		args       args
 		want       want
 		checkFunc  func(want, *payload.Object_ID, error) error
-		beforeFunc func(args) (Server, error)
+		beforeFunc func(*testing.T, context.Context, args) (Server, error)
 		afterFunc  func(args)
 	}
 	defaultCheckFunc := func(w want, gotRes *payload.Object_ID, err error) error {
@@ -103,8 +98,18 @@ func Test_server_Exists(t *testing.T) {
 	defaultInsertConfig := &payload.Insert_Config{
 		SkipStrictExistCheck: true,
 	}
-	defaultBeforeFunc := func(a args) (Server, error) {
-		return buildIndex(a.ctx, request.Float, vector.Gaussian, insertNum, defaultInsertConfig, defaultNgtConfig, nil, []string{a.indexID}, nil)
+	defaultBeforeFunc := func(t *testing.T, ctx context.Context, a args) (Server, error) {
+		t.Helper()
+		eg, ctx := errgroup.New(ctx)
+		ngt, err := newIndexedNGTService(ctx, eg, request.Float, vector.Gaussian, insertNum, defaultInsertConfig, defaultNgtConfig, nil, []string{a.indexID}, nil)
+		if err != nil {
+			return nil, err
+		}
+		s, err := New(WithErrGroup(eg), WithNGT(ngt))
+		if err != nil {
+			return nil, err
+		}
+		return s, nil
 	}
 
 	/*
@@ -131,13 +136,12 @@ func Test_server_Exists(t *testing.T) {
 			- case 3.6: success exists with euc-jp ID from euc-jp index
 			- case 4.1: success exists with 😀
 		- Decision Table Testing
-		    - NONE
+			- NONE
 	*/
 	tests := []test{
 		{
 			name: "Equivalence Class Testing case 1.1: success exists vector",
 			args: args{
-				ctx:      ctx,
 				indexID:  "test",
 				searchID: "test",
 			},
@@ -146,7 +150,6 @@ func Test_server_Exists(t *testing.T) {
 		{
 			name: "Equivalence Class Testing case 2.1: fail exists with non-existent ID",
 			args: args{
-				ctx:      ctx,
 				indexID:  "test",
 				searchID: "non-existent",
 			},
@@ -157,7 +160,6 @@ func Test_server_Exists(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 1.1: fail exists with \"\"",
 			args: args{
-				ctx:      ctx,
 				indexID:  "test",
 				searchID: "",
 			},
@@ -168,7 +170,6 @@ func Test_server_Exists(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 2.1: success exists with ^@",
 			args: args{
-				ctx:      ctx,
 				indexID:  string([]byte{0}),
 				searchID: string([]byte{0}),
 			},
@@ -177,7 +178,6 @@ func Test_server_Exists(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 2.2: success exists with ^I",
 			args: args{
-				ctx:      ctx,
 				indexID:  "\t",
 				searchID: "\t",
 			},
@@ -186,7 +186,6 @@ func Test_server_Exists(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 2.3: success exists with ^J",
 			args: args{
-				ctx:      ctx,
 				indexID:  "\n",
 				searchID: "\n",
 			},
@@ -195,7 +194,6 @@ func Test_server_Exists(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 2.4: success exists with ^M",
 			args: args{
-				ctx:      ctx,
 				indexID:  "\r",
 				searchID: "\r",
 			},
@@ -204,7 +202,6 @@ func Test_server_Exists(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 2.5: success exists with ^[",
 			args: args{
-				ctx:      ctx,
 				indexID:  string([]byte{27}),
 				searchID: string([]byte{27}),
 			},
@@ -213,7 +210,6 @@ func Test_server_Exists(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 2.6: success exists with ^?",
 			args: args{
-				ctx:      ctx,
 				indexID:  string([]byte{127}),
 				searchID: string([]byte{127}),
 			},
@@ -222,7 +218,6 @@ func Test_server_Exists(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 3.1: success exists with utf-8 ID from utf-8 index",
 			args: args{
-				ctx:      ctx,
 				indexID:  utf8Str,
 				searchID: utf8Str,
 			},
@@ -231,7 +226,6 @@ func Test_server_Exists(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 3.2: fail exists with utf-8 ID from s-jis index",
 			args: args{
-				ctx:      ctx,
 				indexID:  sjisStr,
 				searchID: utf8Str,
 			},
@@ -242,7 +236,6 @@ func Test_server_Exists(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 3.3: fail exists with utf-8 ID from euc-jp index",
 			args: args{
-				ctx:      ctx,
 				indexID:  eucjpStr,
 				searchID: utf8Str,
 			},
@@ -253,7 +246,6 @@ func Test_server_Exists(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 3.4: fail exists with s-jis ID from utf-8 index",
 			args: args{
-				ctx:      ctx,
 				indexID:  utf8Str,
 				searchID: sjisStr,
 			},
@@ -264,7 +256,6 @@ func Test_server_Exists(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 3.5: success exists with s-jis ID from s-jis index",
 			args: args{
-				ctx:      ctx,
 				indexID:  sjisStr,
 				searchID: sjisStr,
 			},
@@ -273,7 +264,6 @@ func Test_server_Exists(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 3.6: fail exists with s-jis ID from euc-jp index",
 			args: args{
-				ctx:      ctx,
 				indexID:  eucjpStr,
 				searchID: sjisStr,
 			},
@@ -284,7 +274,6 @@ func Test_server_Exists(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 3.7: fail exists with euc-jp ID from utf-8 index",
 			args: args{
-				ctx:      ctx,
 				indexID:  utf8Str,
 				searchID: eucjpStr,
 			},
@@ -295,7 +284,6 @@ func Test_server_Exists(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 3.8: fail exists with euc-jp ID from s-jis index",
 			args: args{
-				ctx:      ctx,
 				indexID:  sjisStr,
 				searchID: eucjpStr,
 			},
@@ -306,7 +294,6 @@ func Test_server_Exists(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 3.9: success exists with euc-jp ID from euc-jp index",
 			args: args{
-				ctx:      ctx,
 				indexID:  eucjpStr,
 				searchID: eucjpStr,
 			},
@@ -315,7 +302,6 @@ func Test_server_Exists(t *testing.T) {
 		{
 			name: "Boundary Value Testing case 4.1: success exists with 😀",
 			args: args{
-				ctx:      ctx,
 				indexID:  "😀",
 				searchID: "😀",
 			},
@@ -327,11 +313,14 @@ func Test_server_Exists(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+
+			ctx, cancel := context.WithCancel(context.Background())
+			defer cancel()
+
 			if test.beforeFunc == nil {
 				test.beforeFunc = defaultBeforeFunc
 			}
-			s, err := test.beforeFunc(test.args)
+			s, err := test.beforeFunc(tt, ctx, test.args)
 			if err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -346,7 +335,7 @@ func Test_server_Exists(t *testing.T) {
 			req := &payload.Object_ID{
 				Id: test.args.searchID,
 			}
-			gotRes, err := s.Exists(test.args.ctx, req)
+			gotRes, err := s.Exists(ctx, req)
 			if err := checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -360,11 +349,9 @@ func Test_server_GetObject(t *testing.T) {
 		id *payload.Object_VectorRequest
 	}
 	type fields struct {
-		name              string
-		ip                string
-		streamConcurrency int
-		svcCfg            *config.NGT
-		svcOpts           []service.Option
+		srvOpts []Option
+		svcCfg  *config.NGT
+		svcOpts []service.Option
 	}
 	type want struct {
 		wantRes *payload.Object_Vector
@@ -376,7 +363,7 @@ func Test_server_GetObject(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, *payload.Object_Vector, error) error
-		beforeFunc func(*testing.T, args, *server)
+		beforeFunc func(*testing.T, context.Context, args, Server)
 		afterFunc  func(args)
 	}
 
@@ -418,9 +405,7 @@ func Test_server_GetObject(t *testing.T) {
 		t.Error(err)
 	}
 
-	insertAndCreateIndex := func(t *testing.T, s *server, req *payload.Insert_MultiRequest) {
-		ctx := context.Background()
-
+	insertAndCreateIndex := func(t *testing.T, ctx context.Context, s Server, req *payload.Insert_MultiRequest) {
 		if _, err := s.MultiInsert(ctx, req); err != nil {
 			t.Fatal(err)
 		}
@@ -441,6 +426,12 @@ func Test_server_GetObject(t *testing.T) {
 				return errors.Errorf("got code: \"%#v\",\n\t\t\t\twant code: \"%#v\"", st.Code(), w.errCode)
 			}
 		}
+
+		// FIXME: remove these lines after migrating Config.Timestamp to Vector.Timestamp
+		if gotRes != nil {
+			w.wantRes.Timestamp = gotRes.Timestamp
+		}
+
 		if !reflect.DeepEqual(gotRes, w.wantRes) {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRes, w.wantRes)
 		}
@@ -489,8 +480,10 @@ func Test_server_GetObject(t *testing.T) {
 					},
 				},
 				fields: fields{
-					name: name,
-					ip:   ip,
+					srvOpts: []Option{
+						WithName(name),
+						WithIP(ip),
+					},
 					svcCfg: &config.NGT{
 						Dimension:    dim,
 						DistanceType: ngt.Angle.String(),
@@ -500,8 +493,9 @@ func Test_server_GetObject(t *testing.T) {
 					},
 					svcOpts: defaultSvcOpts,
 				},
-				beforeFunc: func(t *testing.T, a args, s *server) {
-					insertAndCreateIndex(t, s, ir)
+				beforeFunc: func(t *testing.T, ctx context.Context, a args, s Server) {
+					t.Helper()
+					insertAndCreateIndex(t, ctx, s, ir)
 				},
 				want: want{
 					wantRes: &payload.Object_Vector{
@@ -528,13 +522,16 @@ func Test_server_GetObject(t *testing.T) {
 					},
 				},
 				fields: fields{
-					name:    name,
-					ip:      ip,
+					srvOpts: []Option{
+						WithName(name),
+						WithIP(ip),
+					},
 					svcCfg:  defaultSvcCfg,
 					svcOpts: defaultSvcOpts,
 				},
-				beforeFunc: func(t *testing.T, a args, s *server) {
-					insertAndCreateIndex(t, s, ir)
+				beforeFunc: func(t *testing.T, ctx context.Context, a args, s Server) {
+					t.Helper()
+					insertAndCreateIndex(t, ctx, s, ir)
 				},
 				want: want{
 					wantRes: &payload.Object_Vector{
@@ -560,13 +557,16 @@ func Test_server_GetObject(t *testing.T) {
 					},
 				},
 				fields: fields{
-					name:    name,
-					ip:      ip,
+					srvOpts: []Option{
+						WithName(name),
+						WithIP(ip),
+					},
 					svcCfg:  defaultSvcCfg,
 					svcOpts: defaultSvcOpts,
 				},
-				beforeFunc: func(t *testing.T, a args, s *server) {
-					insertAndCreateIndex(t, s, ir)
+				beforeFunc: func(t *testing.T, ctx context.Context, a args, s Server) {
+					t.Helper()
+					insertAndCreateIndex(t, ctx, s, ir)
 				},
 				want: want{
 					errCode: codes.InvalidArgument,
@@ -591,13 +591,16 @@ func Test_server_GetObject(t *testing.T) {
 					},
 				},
 				fields: fields{
-					name:    name,
-					ip:      ip,
+					srvOpts: []Option{
+						WithName(name),
+						WithIP(ip),
+					},
 					svcCfg:  defaultSvcCfg,
 					svcOpts: defaultSvcOpts,
 				},
-				beforeFunc: func(t *testing.T, a args, s *server) {
-					insertAndCreateIndex(t, s, ir)
+				beforeFunc: func(t *testing.T, ctx context.Context, a args, s Server) {
+					t.Helper()
+					insertAndCreateIndex(t, ctx, s, ir)
 				},
 				want: want{
 					wantRes: &payload.Object_Vector{
@@ -625,13 +628,16 @@ func Test_server_GetObject(t *testing.T) {
 					},
 				},
 				fields: fields{
-					name:    name,
-					ip:      ip,
+					srvOpts: []Option{
+						WithName(name),
+						WithIP(ip),
+					},
 					svcCfg:  defaultSvcCfg,
 					svcOpts: defaultSvcOpts,
 				},
-				beforeFunc: func(t *testing.T, a args, s *server) {
-					insertAndCreateIndex(t, s, ir)
+				beforeFunc: func(t *testing.T, ctx context.Context, a args, s Server) {
+					t.Helper()
+					insertAndCreateIndex(t, ctx, s, ir)
 				},
 				want: want{
 					wantRes: &payload.Object_Vector{
@@ -659,13 +665,16 @@ func Test_server_GetObject(t *testing.T) {
 					},
 				},
 				fields: fields{
-					name:    name,
-					ip:      ip,
+					srvOpts: []Option{
+						WithName(name),
+						WithIP(ip),
+					},
 					svcCfg:  defaultSvcCfg,
 					svcOpts: defaultSvcOpts,
 				},
-				beforeFunc: func(t *testing.T, a args, s *server) {
-					insertAndCreateIndex(t, s, ir)
+				beforeFunc: func(t *testing.T, ctx context.Context, a args, s Server) {
+					t.Helper()
+					insertAndCreateIndex(t, ctx, s, ir)
 				},
 				want: want{
 					wantRes: &payload.Object_Vector{
@@ -693,13 +702,16 @@ func Test_server_GetObject(t *testing.T) {
 					},
 				},
 				fields: fields{
-					name:    name,
-					ip:      ip,
+					srvOpts: []Option{
+						WithName(name),
+						WithIP(ip),
+					},
 					svcCfg:  defaultSvcCfg,
 					svcOpts: defaultSvcOpts,
 				},
-				beforeFunc: func(t *testing.T, a args, s *server) {
-					insertAndCreateIndex(t, s, ir)
+				beforeFunc: func(t *testing.T, ctx context.Context, a args, s Server) {
+					t.Helper()
+					insertAndCreateIndex(t, ctx, s, ir)
 				},
 				want: want{
 					wantRes: &payload.Object_Vector{
@@ -727,13 +739,16 @@ func Test_server_GetObject(t *testing.T) {
 					},
 				},
 				fields: fields{
-					name:    name,
-					ip:      ip,
+					srvOpts: []Option{
+						WithName(name),
+						WithIP(ip),
+					},
 					svcCfg:  defaultSvcCfg,
 					svcOpts: defaultSvcOpts,
 				},
-				beforeFunc: func(t *testing.T, a args, s *server) {
-					insertAndCreateIndex(t, s, ir)
+				beforeFunc: func(t *testing.T, ctx context.Context, a args, s Server) {
+					t.Helper()
+					insertAndCreateIndex(t, ctx, s, ir)
 				},
 				want: want{
 					wantRes: &payload.Object_Vector{
@@ -761,13 +776,16 @@ func Test_server_GetObject(t *testing.T) {
 					},
 				},
 				fields: fields{
-					name:    name,
-					ip:      ip,
+					srvOpts: []Option{
+						WithName(name),
+						WithIP(ip),
+					},
 					svcCfg:  defaultSvcCfg,
 					svcOpts: defaultSvcOpts,
 				},
-				beforeFunc: func(t *testing.T, a args, s *server) {
-					insertAndCreateIndex(t, s, ir)
+				beforeFunc: func(t *testing.T, ctx context.Context, a args, s Server) {
+					t.Helper()
+					insertAndCreateIndex(t, ctx, s, ir)
 				},
 				want: want{
 					wantRes: &payload.Object_Vector{
@@ -795,13 +813,16 @@ func Test_server_GetObject(t *testing.T) {
 					},
 				},
 				fields: fields{
-					name:    name,
-					ip:      ip,
+					srvOpts: []Option{
+						WithName(name),
+						WithIP(ip),
+					},
 					svcCfg:  defaultSvcCfg,
 					svcOpts: defaultSvcOpts,
 				},
-				beforeFunc: func(t *testing.T, a args, s *server) {
-					insertAndCreateIndex(t, s, ir)
+				beforeFunc: func(t *testing.T, ctx context.Context, a args, s Server) {
+					t.Helper()
+					insertAndCreateIndex(t, ctx, s, ir)
 				},
 				want: want{
 					wantRes: &payload.Object_Vector{
@@ -829,13 +850,16 @@ func Test_server_GetObject(t *testing.T) {
 					},
 				},
 				fields: fields{
-					name:    name,
-					ip:      ip,
+					srvOpts: []Option{
+						WithName(name),
+						WithIP(ip),
+					},
 					svcCfg:  defaultSvcCfg,
 					svcOpts: defaultSvcOpts,
 				},
-				beforeFunc: func(t *testing.T, a args, s *server) {
-					insertAndCreateIndex(t, s, ir)
+				beforeFunc: func(t *testing.T, ctx context.Context, a args, s Server) {
+					t.Helper()
+					insertAndCreateIndex(t, ctx, s, ir)
 				},
 				want: want{
 					errCode: codes.NotFound,
@@ -860,13 +884,16 @@ func Test_server_GetObject(t *testing.T) {
 					},
 				},
 				fields: fields{
-					name:    name,
-					ip:      ip,
+					srvOpts: []Option{
+						WithName(name),
+						WithIP(ip),
+					},
 					svcCfg:  defaultSvcCfg,
 					svcOpts: defaultSvcOpts,
 				},
-				beforeFunc: func(t *testing.T, a args, s *server) {
-					insertAndCreateIndex(t, s, ir)
+				beforeFunc: func(t *testing.T, ctx context.Context, a args, s Server) {
+					t.Helper()
+					insertAndCreateIndex(t, ctx, s, ir)
 				},
 				want: want{
 					errCode: codes.NotFound,
@@ -891,13 +918,16 @@ func Test_server_GetObject(t *testing.T) {
 					},
 				},
 				fields: fields{
-					name:    name,
-					ip:      ip,
+					srvOpts: []Option{
+						WithName(name),
+						WithIP(ip),
+					},
 					svcCfg:  defaultSvcCfg,
 					svcOpts: defaultSvcOpts,
 				},
-				beforeFunc: func(t *testing.T, a args, s *server) {
-					insertAndCreateIndex(t, s, ir)
+				beforeFunc: func(t *testing.T, ctx context.Context, a args, s Server) {
+					t.Helper()
+					insertAndCreateIndex(t, ctx, s, ir)
 				},
 				want: want{
 					errCode: codes.NotFound,
@@ -922,13 +952,16 @@ func Test_server_GetObject(t *testing.T) {
 					},
 				},
 				fields: fields{
-					name:    name,
-					ip:      ip,
+					srvOpts: []Option{
+						WithName(name),
+						WithIP(ip),
+					},
 					svcCfg:  defaultSvcCfg,
 					svcOpts: defaultSvcOpts,
 				},
-				beforeFunc: func(t *testing.T, a args, s *server) {
-					insertAndCreateIndex(t, s, ir)
+				beforeFunc: func(t *testing.T, ctx context.Context, a args, s Server) {
+					t.Helper()
+					insertAndCreateIndex(t, ctx, s, ir)
 				},
 				want: want{
 					wantRes: &payload.Object_Vector{
@@ -956,13 +989,16 @@ func Test_server_GetObject(t *testing.T) {
 					},
 				},
 				fields: fields{
-					name:    name,
-					ip:      ip,
+					srvOpts: []Option{
+						WithName(name),
+						WithIP(ip),
+					},
 					svcCfg:  defaultSvcCfg,
 					svcOpts: defaultSvcOpts,
 				},
-				beforeFunc: func(t *testing.T, a args, s *server) {
-					insertAndCreateIndex(t, s, ir)
+				beforeFunc: func(t *testing.T, ctx context.Context, a args, s Server) {
+					t.Helper()
+					insertAndCreateIndex(t, ctx, s, ir)
 				},
 				want: want{
 					errCode: codes.NotFound,
@@ -987,13 +1023,16 @@ func Test_server_GetObject(t *testing.T) {
 					},
 				},
 				fields: fields{
-					name:    name,
-					ip:      ip,
+					srvOpts: []Option{
+						WithName(name),
+						WithIP(ip),
+					},
 					svcCfg:  defaultSvcCfg,
 					svcOpts: defaultSvcOpts,
 				},
-				beforeFunc: func(t *testing.T, a args, s *server) {
-					insertAndCreateIndex(t, s, ir)
+				beforeFunc: func(t *testing.T, ctx context.Context, a args, s Server) {
+					t.Helper()
+					insertAndCreateIndex(t, ctx, s, ir)
 				},
 				want: want{
 					errCode: codes.NotFound,
@@ -1018,13 +1057,16 @@ func Test_server_GetObject(t *testing.T) {
 					},
 				},
 				fields: fields{
-					name:    name,
-					ip:      ip,
+					srvOpts: []Option{
+						WithName(name),
+						WithIP(ip),
+					},
 					svcCfg:  defaultSvcCfg,
 					svcOpts: defaultSvcOpts,
 				},
-				beforeFunc: func(t *testing.T, a args, s *server) {
-					insertAndCreateIndex(t, s, ir)
+				beforeFunc: func(t *testing.T, ctx context.Context, a args, s Server) {
+					t.Helper()
+					insertAndCreateIndex(t, ctx, s, ir)
 				},
 				want: want{
 					errCode: codes.NotFound,
@@ -1049,13 +1091,16 @@ func Test_server_GetObject(t *testing.T) {
 					},
 				},
 				fields: fields{
-					name:    name,
-					ip:      ip,
+					srvOpts: []Option{
+						WithName(name),
+						WithIP(ip),
+					},
 					svcCfg:  defaultSvcCfg,
 					svcOpts: defaultSvcOpts,
 				},
-				beforeFunc: func(t *testing.T, a args, s *server) {
-					insertAndCreateIndex(t, s, ir)
+				beforeFunc: func(t *testing.T, ctx context.Context, a args, s Server) {
+					t.Helper()
+					insertAndCreateIndex(t, ctx, s, ir)
 				},
 				want: want{
 					wantRes: &payload.Object_Vector{
@@ -1083,13 +1128,16 @@ func Test_server_GetObject(t *testing.T) {
 					},
 				},
 				fields: fields{
-					name:    name,
-					ip:      ip,
+					srvOpts: []Option{
+						WithName(name),
+						WithIP(ip),
+					},
 					svcCfg:  defaultSvcCfg,
 					svcOpts: defaultSvcOpts,
 				},
-				beforeFunc: func(t *testing.T, a args, s *server) {
-					insertAndCreateIndex(t, s, ir)
+				beforeFunc: func(t *testing.T, ctx context.Context, a args, s Server) {
+					t.Helper()
+					insertAndCreateIndex(t, ctx, s, ir)
 				},
 				want: want{
 					wantRes: &payload.Object_Vector{
@@ -1105,7 +1153,6 @@ func Test_server_GetObject(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 
 			ctx, cancel := context.WithCancel(context.Background())
 			defer cancel()
@@ -1124,15 +1171,13 @@ func Test_server_GetObject(t *testing.T) {
 				tt.Errorf("failed to init ngt service, error = %v", err)
 			}
 
-			s := &server{
-				name:              test.fields.name,
-				ip:                test.fields.ip,
-				ngt:               ngt,
-				eg:                eg,
-				streamConcurrency: test.fields.streamConcurrency,
+			s, err := New(append(test.fields.srvOpts, WithNGT(ngt), WithErrGroup(eg))...)
+			if err != nil {
+				t.Errorf("failed to init service, err: %v", err)
 			}
+
 			if test.beforeFunc != nil {
-				test.beforeFunc(tt, test.args, s)
+				test.beforeFunc(tt, ctx, test.args, s)
 			}
 
 			gotRes, err := s.GetObject(ctx, test.args.id)
@@ -1143,105 +1188,392 @@ func Test_server_GetObject(t *testing.T) {
 	}
 }
 
-func Test_server_StreamGetObject(t *testing.T) {
+func Test_server_StreamListObject(t *testing.T) {
 	t.Parallel()
-	type args struct {
-		stream vald.Object_StreamGetObjectServer
-	}
-	type fields struct {
-		name              string
-		ip                string
-		ngt               service.NGT
-		eg                errgroup.Group
-		streamConcurrency int
-	}
-	type want struct {
-		err error
-	}
-	type test struct {
-		name       string
-		args       args
-		fields     fields
-		want       want
-		checkFunc  func(want, error) error
-		beforeFunc func(args)
-		afterFunc  func(args)
-	}
-	defaultCheckFunc := func(w want, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-		}
-		return nil
-	}
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       args: args {
-		           stream: nil,
-		       },
-		       fields: fields {
-		           name: "",
-		           ip: "",
-		           ngt: nil,
-		           eg: nil,
-		           streamConcurrency: 0,
-		       },
-		       want: want{},
-		       checkFunc: defaultCheckFunc,
-		   },
-		*/
 
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           args: args {
-		           stream: nil,
-		           },
-		           fields: fields {
-		           name: "",
-		           ip: "",
-		           ngt: nil,
-		           eg: nil,
-		           streamConcurrency: 0,
-		           },
-		           want: want{},
-		           checkFunc: defaultCheckFunc,
-		       }
-		   }(),
-		*/
+	defaultConfig := config.NGT{
+		Dimension:           100,
+		DistanceType:        "l2",
+		ObjectType:          "float",
+		BulkInsertChunkSize: 10,
+		CreationEdgeSize:    20,
+		SearchEdgeSize:      10,
+		EnableProactiveGC:   false,
+		EnableCopyOnWrite:   false,
+		KVSDB: &config.KVSDB{
+			Concurrency: 10,
+		},
+		BrokenIndexHistoryLimit: 1,
+	}
+
+	setup := func(t *testing.T) (context.Context, Server) {
+		t.Helper()
+		ngt, err := service.New(&defaultConfig)
+		require.NoError(t, err)
+
+		ctx := context.Background()
+		eg, ectx := errgroup.New(ctx)
+		opts := []Option{
+			WithIP(net.LoadLocalIP()),
+			WithNGT(ngt),
+			WithErrGroup(eg),
+		}
+		s, err := New(opts...)
+		require.NoError(t, err)
+
+		return ectx, s
+	}
+
+	type test struct {
+		name     string
+		testfunc func(t *testing.T)
+	}
+
+	tests := []test{
+		{
+			name: "returns multiple objects",
+			testfunc: func(t *testing.T) {
+				ectx, s := setup(t)
+
+				// insert and create `num` index
+				num := 42
+				req, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, num, 100, &payload.Insert_Config{})
+				require.NoError(t, err)
+
+				_, err = s.MultiInsert(ectx, req)
+				require.NoError(t, err)
+
+				_, err = s.CreateIndex(ectx, &payload.Control_CreateIndexRequest{
+					PoolSize: uint32(len(req.Requests)),
+				})
+				require.NoError(t, err)
+
+				// Set mock and expectations
+				stream := mock.ListObjectStreamMock{}
+				stream.On("Send", tmock.Anything).Return(nil)
+
+				// Call the method under test
+				err = s.StreamListObject(&payload.Object_List_Request{}, &stream)
+				require.NoError(t, err)
+
+				// Check results
+				stream.AssertExpectations(t)
+				stream.AssertNumberOfCalls(t, "Send", num)
+				for _, req := range req.Requests {
+					stream.AssertCalled(t, "Send", tmock.MatchedBy(func(r *payload.Object_List_Response) bool {
+						vec := *r.GetVector()
+						wantVec := req.GetVector()
+						// Check every fields but timestamp
+						if vec.GetId() != wantVec.GetId() {
+							return false
+						}
+						if !reflect.DeepEqual(vec.GetVector(), wantVec.GetVector()) {
+							return false
+						}
+						return true
+					}))
+				}
+			},
+		},
+		{
+			name: "returns joined error when Send fails in the stream",
+			testfunc: func(t *testing.T) {
+				ectx, s := setup(t)
+
+				// insert and create some index
+				req, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, 2, 100, &payload.Insert_Config{})
+				require.NoError(t, err)
+
+				_, err = s.MultiInsert(ectx, req)
+				require.NoError(t, err)
+
+				_, err = s.CreateIndex(ectx, &payload.Control_CreateIndexRequest{
+					PoolSize: uint32(len(req.Requests)),
+				})
+				require.NoError(t, err)
+
+				// Set mock and expectations
+				stream := mock.ListObjectStreamMock{}
+				stream.On("Send", tmock.Anything).Return(status.New(codes.Unknown, "foo").Err()).Once()
+				stream.On("Send", tmock.Anything).Return(status.New(codes.Aborted, "bar").Err())
+
+				// Call the method under test
+				err = s.StreamListObject(&payload.Object_List_Request{}, &stream)
+
+				// Check the errros are joined and its a gRPC error
+				require.ErrorContains(t, err, "foo")
+				require.ErrorContains(t, err, "bar")
+				_, ok := status.FromError(err)
+				require.True(t, ok, "err should be a gRPC error")
+
+				stream.AssertExpectations(t)
+			},
+		},
+		{
+			name: "Send must not be called when there is no index",
+			testfunc: func(t *testing.T) {
+				_, s := setup(t)
+
+				// Set mock and expectations
+				stream := mock.ListObjectStreamMock{}
+				stream.On("Send", tmock.Anything).Return(nil)
+
+				// Call the method under test
+				err := s.StreamListObject(&payload.Object_List_Request{}, &stream)
+				require.NoError(t, err)
+
+				// Check results
+				stream.AssertNotCalled(t, "Send", tmock.Anything)
+			},
+		},
 	}
 
 	for _, tc := range tests {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
-			}
-			checkFunc := test.checkFunc
-			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
-			}
-			s := &server{
-				name:              test.fields.name,
-				ip:                test.fields.ip,
-				ngt:               test.fields.ngt,
-				eg:                test.fields.eg,
-				streamConcurrency: test.fields.streamConcurrency,
-			}
-
-			err := s.StreamGetObject(test.args.stream)
-			if err := checkFunc(test.want, err); err != nil {
-				tt.Errorf("error = %v", err)
-			}
+			test.testfunc(tt)
 		})
 	}
 }
+
+func Test_server_GetTimestamp(t *testing.T) {
+	t.Parallel()
+
+	defaultConfig := config.NGT{
+		Dimension:           100,
+		DistanceType:        "l2",
+		ObjectType:          "float",
+		BulkInsertChunkSize: 10,
+		CreationEdgeSize:    20,
+		SearchEdgeSize:      10,
+		EnableProactiveGC:   false,
+		EnableCopyOnWrite:   false,
+		KVSDB: &config.KVSDB{
+			Concurrency: 10,
+		},
+		BrokenIndexHistoryLimit: 1,
+	}
+
+	setup := func(t *testing.T) (errgroup.Group, context.Context, Server) {
+		t.Helper()
+		ngt, err := service.New(&defaultConfig)
+		require.NoError(t, err)
+
+		ctx := context.Background()
+		eg, ectx := errgroup.New(ctx)
+		opts := []Option{
+			WithIP(net.LoadLocalIP()),
+			WithNGT(ngt),
+			WithErrGroup(eg),
+		}
+		s, err := New(opts...)
+		require.NoError(t, err)
+
+		return eg, ectx, s
+	}
+
+	type test struct {
+		name     string
+		testfunc func(t *testing.T)
+	}
+
+	tests := []test{
+		{
+			name: "succeeds to get object meta",
+			testfunc: func(t *testing.T) {
+				eg, ectx, s := setup(t)
+				defer eg.Wait()
+
+				// insert and create `num` index
+				num := 42
+				req, err := request.GenMultiInsertReq(request.Float, vector.Gaussian, num, 100, &payload.Insert_Config{})
+				require.NoError(t, err)
+
+				_, err = s.MultiInsert(ectx, req)
+				require.NoError(t, err)
+
+				_, err = s.CreateIndex(ectx, &payload.Control_CreateIndexRequest{
+					PoolSize: uint32(len(req.Requests)),
+				})
+				require.NoError(t, err)
+
+				// now test if the timestamp can be returned correctly
+				for i := 0; i < num; i++ {
+					testvec := req.GetRequests()[i].GetVector()
+					res, err := s.GetTimestamp(ectx, &payload.Object_GetTimestampRequest{
+						Id: &payload.Object_ID{
+							Id: testvec.GetId(),
+						},
+					})
+					require.NoError(t, err)
+					require.Equal(t, testvec.GetId(), res.GetId())
+				}
+			},
+		},
+		{
+			name: "returns error when the given ID is invalid",
+			testfunc: func(t *testing.T) {
+				eg, ectx, s := setup(t)
+				defer eg.Wait()
+
+				_, err := s.GetTimestamp(ectx, &payload.Object_GetTimestampRequest{
+					Id: &payload.Object_ID{
+						Id: "",
+					},
+				})
+				require.Error(t, err)
+			},
+		},
+		{
+			name: "returns error when the given ID is not found",
+			testfunc: func(t *testing.T) {
+				eg, ectx, s := setup(t)
+				defer eg.Wait()
+
+				_, err := s.GetTimestamp(ectx, &payload.Object_GetTimestampRequest{
+					Id: &payload.Object_ID{
+						Id: "not exist ID",
+					},
+				})
+				require.Error(t, err)
+
+				st, _ := status.FromError(err)
+				require.Equal(t, codes.NotFound, st.Code())
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			test.testfunc(tt)
+		})
+	}
+}
+
+// NOT IMPLEMENTED BELOW
+//
+// func Test_server_StreamGetObject(t *testing.T) {
+// 	type args struct {
+// 		stream vald.Object_StreamGetObjectServer
+// 	}
+// 	type fields struct {
+// 		name                     string
+// 		ip                       string
+// 		ngt                      service.NGT
+// 		eg                       errgroup.Group
+// 		streamConcurrency        int
+// 		UnimplementedAgentServer agent.UnimplementedAgentServer
+// 		UnimplementedValdServer  vald.UnimplementedValdServer
+// 	}
+// 	type want struct {
+// 		err error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           stream:nil,
+// 		       },
+// 		       fields: fields {
+// 		           name:"",
+// 		           ip:"",
+// 		           ngt:nil,
+// 		           eg:nil,
+// 		           streamConcurrency:0,
+// 		           UnimplementedAgentServer:nil,
+// 		           UnimplementedValdServer:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           stream:nil,
+// 		           },
+// 		           fields: fields {
+// 		           name:"",
+// 		           ip:"",
+// 		           ngt:nil,
+// 		           eg:nil,
+// 		           streamConcurrency:0,
+// 		           UnimplementedAgentServer:nil,
+// 		           UnimplementedValdServer:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			s := &server{
+// 				name:                     test.fields.name,
+// 				ip:                       test.fields.ip,
+// 				ngt:                      test.fields.ngt,
+// 				eg:                       test.fields.eg,
+// 				streamConcurrency:        test.fields.streamConcurrency,
+// 				UnimplementedAgentServer: test.fields.UnimplementedAgentServer,
+// 				UnimplementedValdServer:  test.fields.UnimplementedValdServer,
+// 			}
+//
+// 			err := s.StreamGetObject(test.args.stream)
+// 			if err := checkFunc(test.want, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+//
+// 		})
+// 	}
+// }

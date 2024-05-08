@@ -1,8 +1,8 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -17,7 +17,6 @@
 package unit
 
 import (
-	stderrs "errors"
 	"reflect"
 	"testing"
 
@@ -88,15 +87,15 @@ func TestParseBytes(t *testing.T) {
 			want: want{
 				wantBytes: 0,
 				err: func() (err error) {
-					err = stderrs.New("byte quantity must be a positive integer with a unit of measurement like M, MB, MiB, G, GiB, or GB")
-					err = errors.Wrap(err, errors.ErrParseUnitFailed("a").Error())
+					err = errors.Join(errors.New("byte quantity must be a positive integer with a unit of measurement like M, MB, MiB, G, GiB, or GB"), errors.ErrParseUnitFailed("a"))
 					return
 				}(),
 			},
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
@@ -117,3 +116,5 @@ func TestParseBytes(t *testing.T) {
 		})
 	}
 }
+
+// NOT IMPLEMENTED BELOW

@@ -1,8 +1,8 @@
 #
-# Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
+# You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
 #    https://www.apache.org/licenses/LICENSE-2.0
@@ -17,7 +17,6 @@
 defaults:
   logging:
     level: debug
-
 agent:
   minReplicas: 1
   podManagementPolicy: Parallel
@@ -56,14 +55,11 @@ agent:
           endpoint: "http://minio.default.svc.cluster.local:9000"
           region: "us-east-1"
           force_path_style: true
-
 gateway:
   lb:
     enabled: false
-
 discoverer:
   enabled: false
-
 manager:
   index:
     enabled: false

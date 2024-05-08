@@ -1,24 +1,21 @@
-//
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//    https://www.apache.org/licenses/LICENSE-2.0
+//	https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 package request
 
 import (
 	"testing"
 
-	"github.com/google/go-cmp/cmp"
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/test/comparator"
@@ -26,7 +23,7 @@ import (
 	"github.com/vdaas/vald/internal/test/goleak"
 )
 
-var defaultMultiInsertReqComparators = []cmp.Option{
+var defaultMultiInsertReqComparators = []comparator.Option{
 	comparator.IgnoreUnexported(payload.Insert_Request{}),
 	comparator.IgnoreUnexported(payload.Insert_MultiRequest{}),
 	comparator.IgnoreUnexported(payload.Object_Vector{}),
@@ -34,6 +31,7 @@ var defaultMultiInsertReqComparators = []cmp.Option{
 }
 
 func TestGenMultiInsertReq(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		t    ObjectType
 		dist vector.Distribution
@@ -54,6 +52,7 @@ func TestGenMultiInsertReq(t *testing.T) {
 		afterFunc  func(args)
 	}
 	dim := 10
+	// skipcq: CRT-D0001
 	comparators := append(defaultMultiInsertReqComparators, comparator.IgnoreFields(payload.Object_Vector{}, "Vector"))
 
 	defaultCheckFunc := func(w want, got *payload.Insert_MultiRequest, err error) error {
@@ -245,6 +244,7 @@ func TestGenMultiInsertReq(t *testing.T) {
 }
 
 func TestGenSameVecMultiInsertReq(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		num int
 		vec []float32
@@ -490,3 +490,5 @@ func TestGenSameVecMultiInsertReq(t *testing.T) {
 		})
 	}
 }
+
+// NOT IMPLEMENTED BELOW

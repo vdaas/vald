@@ -1,8 +1,8 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -22,9 +22,9 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net"
+	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/internal/timeutil"
 	"github.com/vdaas/vald/pkg/gateway/lb/service"
 )
@@ -35,6 +35,7 @@ var defaultOptions = []Option{
 	WithErrGroup(errgroup.Get()),
 	WithReplicationCount(3),
 	WithStreamConcurrency(runtime.GOMAXPROCS(-1) * 10),
+	WithMultiConcurrency(runtime.GOMAXPROCS(-1) * 10),
 	WithTimeout("5s"),
 	WithName(func() string {
 		name, err := os.Hostname()
@@ -100,8 +101,16 @@ func WithReplicationCount(rep int) Option {
 
 func WithStreamConcurrency(c int) Option {
 	return func(s *server) {
-		if c != 0 {
+		if c > 1 {
 			s.streamConcurrency = c
+		}
+	}
+}
+
+func WithMultiConcurrency(c int) Option {
+	return func(s *server) {
+		if c > 1 {
+			s.multiConcurrency = c
 		}
 	}
 }

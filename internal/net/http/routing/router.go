@@ -1,8 +1,8 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -60,8 +60,8 @@ func New(opts ...Option) http.Handler {
 // routing wraps the handler.Func and returns a new http.Handler.
 // routing helps to handle unsupported HTTP method, timeout,
 // and the error returned from the handler.Func.
-func (rt *router) routing(
-	name, path string, m []string, h rest.Func,
+func (*router) routing(
+	name, _ string, m []string, h rest.Func,
 ) http.Handler {
 	return http.HandlerFunc(
 		func(w http.ResponseWriter, r *http.Request) {

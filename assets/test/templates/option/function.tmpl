@@ -44,8 +44,8 @@ func {{ .TestName }}(t *testing.T) {
         // Use the first line if the option returns an error. otherwise use the second line
         // checkFunc  func(want, *T, error) error
         // checkFunc  func(want, *T) error
-        beforeFunc func({{- if .TestParameters }} args {{- end}})
-        afterFunc func({{- if .TestParameters }} args {{- end}})
+        beforeFunc func(*testing.T, {{- if .TestParameters }} args {{- end}})
+        afterFunc func(*testing.T, {{- if .TestParameters }} args {{- end}})
     }
 
     // Uncomment this block if the option returns an error, otherwise delete it
@@ -89,6 +89,12 @@ func {{ .TestName }}(t *testing.T) {
             want: want {
                 obj: new(T),
             },
+            beforeFunc: func(t *testing.T, {{- if .TestParameters }} args args {{- end }}) {
+                t.Helper()
+            },
+            afterFunc: func(t *testing.T, {{- if .TestParameters }} args args {{- end }}) {
+                t.Helper()
+            },
         },
         */
 
@@ -110,6 +116,12 @@ func {{ .TestName }}(t *testing.T) {
                 want: want {
                     obj: new(T),
                 },
+                beforeFunc: func(t *testing.T, {{- if .TestParameters }} args args {{- end }}) {
+                    t.Helper()
+                },
+                afterFunc: func(t *testing.T, {{- if .TestParameters }} args args {{- end }}) {
+                    t.Helper()
+                },
             }
         }(),
         */
@@ -122,10 +134,10 @@ func {{ .TestName }}(t *testing.T) {
                 tt.Parallel()
                 defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
                 if test.beforeFunc != nil {
-                    test.beforeFunc({{- if .TestParameters }} test.args {{- end }})
+                    test.beforeFunc(tt, {{- if .TestParameters }} test.args {{- end }})
                 }
                 if test.afterFunc != nil {
-                    defer test.afterFunc({{- if .TestParameters }} test.args {{- end }})
+                    defer test.afterFunc(tt, {{- if .TestParameters }} test.args {{- end }})
                 }
 
                 // Uncomment this block if the option returns an error, otherwise delete it

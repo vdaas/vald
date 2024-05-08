@@ -44,6 +44,7 @@ This component can reorder the searching result from multiple Vald Agents based 
 ### Vald Filter Gateway
 
 Vald Filter Gateway forwards the request to Vald Ingress Filter before processing it and forwards the response to the Vald Egress Filter before returning the searching result to the user.
+
 ## Vald Load Balancing
 
 Load balancing is one of the important concepts in distributed computing, which means it distributes a set of tasks over a set of resources aiming for making the overall processing more efficient.
@@ -66,6 +67,7 @@ In this section, we will describe what is Vald Agent and the corresponding compo
 
 Vald Agent provides functionalities to perform approximate nearest neighbor search.
 Agent-NGT uses [yahoojapan/NGT](https://github.com/yahoojapan/NGT) as a core library.
+And Agent-Faiss uses [facebookresearch/faiss](https://github.com/facebookresearch/faiss) as a core library.
 
 Each Vald Agent pod has its own vector data space because only several Vald Agents are selected to be inserted/updated in a single insert/update request.
 

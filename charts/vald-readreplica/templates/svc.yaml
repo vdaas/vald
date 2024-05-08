@@ -1,0 +1,59 @@
+#
+# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# You may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+{{- $agent := .Values.agent -}}
+{{- $readreplica := .Values.agent.readreplica -}}
+{{- $defaults := .Values.defaults -}}
+{{- $release := .Release -}}
+{{- $chart := .Chart -}}
+{{- $valdname := include "vald.name" . -}}
+{{- $valdchart := include "vald.chart" . -}}
+{{- if $agent.enabled }}
+{{- if $readreplica.enabled }}
+{{ range $id := until (int $agent.minReplicas) }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $readreplica.name }}-{{ $id }}
+  {{- if $readreplica.service.annotations }}
+  annotations:
+    {{- toYaml $readreplica.service.annotations | nindent 4 }}
+  {{- end }}
+  labels:
+    app.kubernetes.io/name: {{ $valdname }}
+    helm.sh/chart: {{ $valdchart }}
+    app.kubernetes.io/managed-by: {{ $release.Service }}
+    app.kubernetes.io/instance: {{ $release.Name }}
+    app.kubernetes.io/version: {{ $chart.Version }}
+    app.kubernetes.io/component: {{ $readreplica.component_name }}
+    {{ $readreplica.label_key }}: "{{ $id }}"
+    {{- if $agent.service.labels }}
+    {{- toYaml $agent.service.labels | nindent 4 }}
+    {{- end }}
+spec:
+  {{- $servers := dict "Values" $agent.server_config "default" $defaults.server_config }}
+  {{- include "vald.servicePorts" $servers | nindent 2 }}
+  selector:
+    app: {{ $readreplica.name }}-{{ $id }}
+    app.kubernetes.io/name: {{ $valdname }}
+  type: ClusterIP
+  clusterIP: None
+  {{- if $agent.externalTrafficPolicy }}
+  externalTrafficPolicy: {{ $agent.externalTrafficPolicy }}
+  {{- end }}
+{{- end }}
+{{- end }}
+{{- end }}

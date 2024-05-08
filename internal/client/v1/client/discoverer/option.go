@@ -1,8 +1,8 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -21,8 +21,8 @@ import (
 	"context"
 	"time"
 
-	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/net/grpc"
+	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/internal/timeutil"
 )
 
@@ -64,6 +64,13 @@ func WithOnDisconnectFunc(f func(ctx context.Context, c Client, addr string) err
 func WithDiscovererClient(gc grpc.Client) Option {
 	return func(c *client) error {
 		c.dscClient = gc
+		return nil
+	}
+}
+
+func WithReadReplicaClient(gc grpc.Client) Option {
+	return func(c *client) error {
+		c.readClient = gc
 		return nil
 	}
 }
@@ -139,6 +146,13 @@ func WithErrGroup(eg errgroup.Group) Option {
 		if eg != nil {
 			c.eg = eg
 		}
+		return nil
+	}
+}
+
+func WithReadReplicaReplicas(num uint64) Option {
+	return func(c *client) error {
+		c.readReplicaReplicas = num
 		return nil
 	}
 }

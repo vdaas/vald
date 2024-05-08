@@ -1,8 +1,8 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -45,6 +45,7 @@ type Handler interface {
 	MultiUpsert(w http.ResponseWriter, r *http.Request) (int, error)
 	Remove(w http.ResponseWriter, r *http.Request) (int, error)
 	MultiRemove(w http.ResponseWriter, r *http.Request) (int, error)
+	Flush(w http.ResponseWriter, r *http.Request) (int, error)
 	GetObject(w http.ResponseWriter, r *http.Request) (int, error)
 }
 
@@ -61,7 +62,7 @@ func New(opts ...Option) Handler {
 	return h
 }
 
-func (h *handler) Index(w http.ResponseWriter, r *http.Request) (int, error) {
+func (*handler) Index(w http.ResponseWriter, r *http.Request) (int, error) {
 	data := make(map[string]interface{})
 	return json.Handler(w, r, &data, func() (interface{}, error) {
 		return dump.Request(nil, data, r)
@@ -177,6 +178,13 @@ func (h *handler) MultiRemove(w http.ResponseWriter, r *http.Request) (code int,
 	var req *payload.Remove_MultiRequest
 	return json.Handler(w, r, &req, func() (interface{}, error) {
 		return h.vald.MultiRemove(r.Context(), req)
+	})
+}
+
+func (h *handler) Flush(w http.ResponseWriter, r *http.Request) (code int, err error) {
+	var req *payload.Flush_Request
+	return json.Handler(w, r, &req, func() (interface{}, error) {
+		return h.vald.Flush(r.Context(), req)
 	})
 }
 

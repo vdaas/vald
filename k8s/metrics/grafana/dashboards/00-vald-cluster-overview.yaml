@@ -1,9 +1,8 @@
----
 #
-# Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
+# You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
 #    https://www.apache.org/licenses/LICENSE-2.0
@@ -46,14 +45,13 @@ data:
       "editable": true,
       "fiscalYearStartMonth": 0,
       "graphTooltip": 0,
-      "iteration": 1654571608909,
       "links": [],
       "liveNow": false,
       "panels": [
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "vald_prometheus"
+            "uid": "prometheus"
           },
           "fieldConfig": {
             "defaults": {
@@ -109,10 +107,15 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "9.0.0-beta2",
+          "pluginVersion": "10.0.1",
           "targets": [
             {
-              "expr": "vald_app_version_info{namespace=\"$Namespace\", app=~\"$ReplicaSet\"}",
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "app_version_info{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\"}",
               "format": "table",
               "instant": true,
               "interval": "",
@@ -126,7 +129,7 @@ data:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "vald_prometheus"
+            "uid": "prometheus"
           },
           "fieldConfig": {
             "defaults": {
@@ -182,10 +185,15 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "9.0.0-beta2",
+          "pluginVersion": "10.0.1",
           "targets": [
             {
-              "expr": "label_replace(vald_app_version_info{namespace=\"$Namespace\", app=~\"$ReplicaSet\"}, \"go_version\", \"v$1\", \"go_version\", \"([^v].*)\")",
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "label_replace(app_version_info{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\"}, \"go_version\", \"v$1\", \"go_version\", \"([^v].*)\")",
               "format": "table",
               "instant": true,
               "interval": "",
@@ -199,7 +207,7 @@ data:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "vald_prometheus"
+            "uid": "prometheus"
           },
           "fieldConfig": {
             "defaults": {
@@ -255,10 +263,15 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "9.0.0-beta2",
+          "pluginVersion": "10.0.1",
           "targets": [
             {
-              "expr": "vald_app_version_info{namespace=\"$Namespace\", app=~\"$ReplicaSet\"}",
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "app_version_info{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\"}",
               "format": "table",
               "instant": true,
               "interval": "",
@@ -276,7 +289,7 @@ data:
           "dashes": false,
           "datasource": {
             "type": "prometheus",
-            "uid": "vald_prometheus"
+            "uid": "prometheus"
           },
           "fieldConfig": {
             "defaults": {
@@ -310,7 +323,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "9.0.0-beta2",
+          "pluginVersion": "10.0.1",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -359,7 +372,7 @@ data:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "vald_prometheus"
+            "uid": "prometheus"
           },
           "fieldConfig": {
             "defaults": {
@@ -415,10 +428,15 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "9.0.0-beta2",
+          "pluginVersion": "10.0.1",
           "targets": [
             {
-              "expr": "vald_app_version_info{namespace=\"$Namespace\", app=~\"$ReplicaSet\"}",
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "app_version_info{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\"}",
               "format": "table",
               "instant": true,
               "interval": "",
@@ -432,7 +450,7 @@ data:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "vald_prometheus"
+            "uid": "prometheus"
           },
           "fieldConfig": {
             "defaults": {
@@ -488,10 +506,15 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "9.0.0-beta2",
+          "pluginVersion": "10.0.1",
           "targets": [
             {
-              "expr": "vald_app_version_info{namespace=\"$Namespace\", app=~\"$ReplicaSet\"}",
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "app_version_info{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\"}",
               "format": "table",
               "instant": true,
               "interval": "",
@@ -505,7 +528,7 @@ data:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "vald_prometheus"
+            "uid": "prometheus"
           },
           "fieldConfig": {
             "defaults": {
@@ -566,15 +589,21 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "9.0.0-beta2",
+          "pluginVersion": "10.0.1",
           "targets": [
             {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
               "exemplar": true,
-              "expr": "sum(container_memory_working_set_bytes{namespace=\"$Namespace\", pod=~\"$ReplicaSet.*\"})",
+              "expr": "sum(container_memory_working_set_bytes{namespace=\"$Namespace\", container=~\"$ReplicaSet\", image!=\"\"})",
               "format": "time_series",
               "interval": "",
               "intervalFactor": 1,
               "legendFormat": "",
+              "range": true,
               "refId": "A"
             }
           ],
@@ -584,7 +613,7 @@ data:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "vald_prometheus"
+            "uid": "prometheus"
           },
           "fieldConfig": {
             "defaults": {
@@ -644,21 +673,22 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "9.0.0-beta2",
+          "pluginVersion": "10.0.1",
           "targets": [
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "vald_prometheus"
+                "uid": "prometheus"
               },
-              "expr": "sum(vald_agent_core_ngt_index_count{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$ValdAgentPodName\"})",
+              "editorMode": "code",
+              "expr": "sum(agent_core_ngt_index_count{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\", target_pod=~\"$ValdAgentPodName\"})",
               "instant": true,
               "interval": "",
               "legendFormat": "",
               "refId": "A"
             }
           ],
-          "title": "NGT indices",
+          "title": "Indices",
           "type": "stat"
         },
         {
@@ -668,7 +698,7 @@ data:
           "dashes": false,
           "datasource": {
             "type": "prometheus",
-            "uid": "vald_prometheus"
+            "uid": "prometheus"
           },
           "fieldConfig": {
             "defaults": {
@@ -702,7 +732,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "9.0.0-beta2",
+          "pluginVersion": "10.0.1",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -757,7 +787,7 @@ data:
           "dashes": false,
           "datasource": {
             "type": "prometheus",
-            "uid": "vald_prometheus"
+            "uid": "prometheus"
           },
           "fieldConfig": {
             "defaults": {
@@ -792,7 +822,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "9.0.0-beta2",
+          "pluginVersion": "10.0.1",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -804,23 +834,27 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "vald_prometheus"
+                "uid": "prometheus"
               },
-              "expr": "sum(irate(vald_grpc_io_server_completed_rpcs{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$ValdGatewayPodName\"}[$interval])) by (grpc_server_method, grpc_server_status)",
+              "editorMode": "code",
+              "expr": "sum(irate(server_completed_rpcs{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\", target_pod=~\"$ValdGatewayPodName\"}[$interval])) by (grpc_server_method, grpc_server_status)",
               "interval": "",
               "intervalFactor": 1,
               "legendFormat": "{{grpc_server_method}} ({{grpc_server_status}})",
+              "range": true,
               "refId": "A"
             },
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "vald_prometheus"
+                "uid": "prometheus"
               },
-              "expr": "sum(irate(vald_grpc_io_server_completed_rpcs{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$ValdGatewayPodName\"}[$interval])) by (grpc_server_status)",
+              "editorMode": "code",
+              "expr": "sum(irate(server_completed_rpcs{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\", target_pod=~\"$ValdGatewayPodName\"}[$interval])) by (grpc_server_status)",
               "interval": "",
               "intervalFactor": 1,
               "legendFormat": "Total ({{grpc_server_status}})",
+              "range": true,
               "refId": "B"
             }
           ],
@@ -862,7 +896,7 @@ data:
           "dashes": false,
           "datasource": {
             "type": "prometheus",
-            "uid": "vald_prometheus"
+            "uid": "prometheus"
           },
           "fieldConfig": {
             "defaults": {
@@ -897,7 +931,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "9.0.0-beta2",
+          "pluginVersion": "10.0.1",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -909,34 +943,40 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "vald_prometheus"
+                "uid": "prometheus"
               },
-              "expr": "histogram_quantile(0.5, sum(rate(vald_grpc_io_server_server_latency_bucket{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$ValdGatewayPodName\"}[$interval])) by (le, grpc_server_method))",
+              "editorMode": "code",
+              "expr": "histogram_quantile(0.5, sum(rate(server_latency_bucket{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\", target_pod=~\"$ValdGatewayPodName\"}[$interval])) by (le, grpc_server_method))",
               "interval": "",
               "intervalFactor": 1,
               "legendFormat": "{{grpc_server_method}} p50",
+              "range": true,
               "refId": "A"
             },
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "vald_prometheus"
+                "uid": "prometheus"
               },
-              "expr": "histogram_quantile(0.95, sum(rate(vald_grpc_io_server_server_latency_bucket{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$ValdGatewayPodName\"}[$interval])) by (le, grpc_server_method))",
+              "editorMode": "code",
+              "expr": "histogram_quantile(0.95, sum(rate(server_latency_bucket{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\", target_pod=~\"$ValdGatewayPodName\"}[$interval])) by (le, grpc_server_method))",
               "interval": "",
               "intervalFactor": 1,
               "legendFormat": "{{grpc_server_method}} p95",
+              "range": true,
               "refId": "B"
             },
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "vald_prometheus"
+                "uid": "prometheus"
               },
-              "expr": "histogram_quantile(0.99, sum(rate(vald_grpc_io_server_server_latency_bucket{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$ValdGatewayPodName\"}[$interval])) by (le, grpc_server_method))",
+              "editorMode": "code",
+              "expr": "histogram_quantile(0.99, sum(rate(server_latency_bucket{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\", target_pod=~\"$ValdGatewayPodName\"}[$interval])) by (le, grpc_server_method))",
               "interval": "",
               "intervalFactor": 1,
               "legendFormat": "{{grpc_server_method}} p99",
+              "range": true,
               "refId": "C"
             }
           ],
@@ -978,7 +1018,7 @@ data:
           "dashes": false,
           "datasource": {
             "type": "prometheus",
-            "uid": "vald_prometheus"
+            "uid": "prometheus"
           },
           "fieldConfig": {
             "defaults": {
@@ -1013,7 +1053,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "9.0.0-beta2",
+          "pluginVersion": "10.0.1",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -1025,23 +1065,27 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "vald_prometheus"
+                "uid": "prometheus"
               },
-              "expr": "sum(irate(vald_grpc_io_server_completed_rpcs{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$ValdAgentPodName\"}[$interval])) by (grpc_server_method, grpc_server_status)",
+              "editorMode": "code",
+              "expr": "sum(irate(server_completed_rpcs{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\", target_pod=~\"$ValdAgentPodName\"}[$interval])) by (grpc_server_method, grpc_server_status)",
               "interval": "",
               "intervalFactor": 1,
               "legendFormat": "{{grpc_server_method}} ({{grpc_server_status}})",
+              "range": true,
               "refId": "A"
             },
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "vald_prometheus"
+                "uid": "prometheus"
               },
-              "expr": "sum(irate(vald_grpc_io_server_completed_rpcs{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$ValdAgentPodName\"}[$interval])) by (grpc_server_status)",
+              "editorMode": "code",
+              "expr": "sum(irate(server_completed_rpcs{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\", target_pod=~\"$ValdAgentPodName\"}[$interval])) by (grpc_server_status)",
               "interval": "",
               "intervalFactor": 1,
               "legendFormat": "Total ({{grpc_server_status}})",
+              "range": true,
               "refId": "B"
             }
           ],
@@ -1083,7 +1127,7 @@ data:
           "dashes": false,
           "datasource": {
             "type": "prometheus",
-            "uid": "vald_prometheus"
+            "uid": "prometheus"
           },
           "fieldConfig": {
             "defaults": {
@@ -1118,7 +1162,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "9.0.0-beta2",
+          "pluginVersion": "10.0.1",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -1130,32 +1174,38 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "vald_prometheus"
+                "uid": "prometheus"
               },
-              "expr": "histogram_quantile(0.5, sum(rate(vald_grpc_io_server_server_latency_bucket{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$ValdAgentPodName\"}[$interval])) by (le, grpc_server_method))",
+              "editorMode": "code",
+              "expr": "histogram_quantile(0.5, sum(rate(server_latency_bucket{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\", target_pod=~\"$ValdAgentPodName\", grpc_server_method!~\".*Index$\"}[$interval])) by (le, grpc_server_method))",
               "interval": "",
               "intervalFactor": 1,
               "legendFormat": "{{grpc_server_method}} p50",
+              "range": true,
               "refId": "A"
             },
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "vald_prometheus"
+                "uid": "prometheus"
               },
-              "expr": "histogram_quantile(0.95, sum(rate(vald_grpc_io_server_server_latency_bucket{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$ValdAgentPodName\"}[$interval])) by (le, grpc_server_method))",
+              "editorMode": "code",
+              "expr": "histogram_quantile(0.95, sum(rate(server_latency_bucket{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\", target_pod=~\"$ValdAgentPodName\", grpc_server_method!~\".*Index$\"}[$interval])) by (le, grpc_server_method))",
               "interval": "",
               "legendFormat": "{{grpc_server_method}} p95",
+              "range": true,
               "refId": "B"
             },
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "vald_prometheus"
+                "uid": "prometheus"
               },
-              "expr": "histogram_quantile(0.99, sum(rate(vald_grpc_io_server_server_latency_bucket{namespace=\"$Namespace\", app=\"$ReplicaSet\", instance=~\"$ValdAgentPodName\"}[$interval])) by (le, grpc_server_method))",
+              "editorMode": "code",
+              "expr": "histogram_quantile(0.99, sum(rate(server_latency_bucket{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\", target_pod=~\"$ValdAgentPodName\", grpc_server_method!~\".*Index$\"}[$interval])) by (le, grpc_server_method))",
               "interval": "",
               "legendFormat": "{{grpc_server_method}} p99",
+              "range": true,
               "refId": "C"
             }
           ],
@@ -1197,7 +1247,7 @@ data:
           "dashes": false,
           "datasource": {
             "type": "prometheus",
-            "uid": "vald_prometheus"
+            "uid": "prometheus"
           },
           "fieldConfig": {
             "defaults": {
@@ -1232,7 +1282,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "9.0.0-beta2",
+          "pluginVersion": "10.0.1",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -1244,10 +1294,10 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "vald_prometheus"
+                "uid": "prometheus"
               },
               "editorMode": "code",
-              "expr": "increase(sum(label_replace(vald_backoff_retry_count{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$ValdGatewayPodName\"}, \"rpc\", \"$1\",  \"backoff_name\", \"(.*/.*)/.*\")) by (rpc) [$interval:])",
+              "expr": "increase(sum(label_replace(backoff_retry_count{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\", target_pod=~\"$ValdGatewayPodName\", backoff_name!~\"github.com/.*\"}, \"rpc\", \"$1\",  \"backoff_name\", \"(.*/.*)/.*\")) by (rpc) [$interval:])",
               "interval": "",
               "intervalFactor": 1,
               "legendFormat": "{{rpc}}",
@@ -1293,7 +1343,7 @@ data:
           "dashes": false,
           "datasource": {
             "type": "prometheus",
-            "uid": "vald_prometheus"
+            "uid": "prometheus"
           },
           "fieldConfig": {
             "defaults": {
@@ -1328,7 +1378,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "9.0.0-beta2",
+          "pluginVersion": "10.0.1",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -1340,12 +1390,14 @@ data:
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "vald_prometheus"
+                "uid": "prometheus"
               },
-              "expr": "increase(sum(label_replace(vald_backoff_retry_count{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$ValdGatewayPodName\"}, \"grpc_server_method\", \"$1\",  \"backoff_name\", \"(.*/.*)/.*\")) by (grpc_server_method)[$interval:]) / sum(irate(vald_grpc_io_server_completed_rpcs{namespace=\"$Namespace\", app=~\"$ReplicaSet\", instance=~\"$ValdAgentPodName\"}[$interval])) by (grpc_server_method)",
+              "editorMode": "code",
+              "expr": "increase(sum(label_replace(backoff_retry_count{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\", target_pod=~\"$ValdGatewayPodName\", backoff_name!~\"github.com/.*\"}, \"grpc_server_method\", \"$1\",  \"backoff_name\", \"(.*/.*)/.*\")) by (grpc_server_method)[$interval:]) / sum(irate(server_completed_rpcs{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\", target_pod=~\"$ValdAgentPodName\"}[$interval])) by (grpc_server_method)",
               "interval": "",
               "intervalFactor": 1,
               "legendFormat": "{{grpc_server_method}} ({{grpc_server_status}})",
+              "range": true,
               "refId": "A"
             }
           ],
@@ -1381,16 +1433,246 @@ data:
           }
         },
         {
+          "aliasColors": {},
+          "bars": false,
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "links": []
+            },
+            "overrides": []
+          },
+          "fill": 0,
+          "fillGradient": 0,
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 36
+          },
+          "hiddenSeries": false,
+          "id": 167,
+          "interval": "",
+          "legend": {
+            "avg": false,
+            "current": false,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "nullPointMode": "null",
+          "options": {
+            "alertThreshold": true
+          },
+          "percentage": false,
+          "pluginVersion": "10.0.1",
+          "pointradius": 2,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "spaceLength": 10,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "increase(sum(label_replace(circuit_breaker_state{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\", target_pod=~\"$ValdGatewayPodName\", state=\"open\"}, \"rpc\", \"$1\",  \"name\", \"(.*/.*)/.*\")) by (rpc, state) [$interval:])",
+              "interval": "",
+              "intervalFactor": 1,
+              "legendFormat": "{{rpc}} ({{state}})",
+              "range": true,
+              "refId": "A"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "increase(sum(label_replace(circuit_breaker_state{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\", target_pod=~\"$ValdGatewayPodName\", state=\"half-open\"}, \"rpc\", \"$1\",  \"name\", \"(.*/.*)/.*\")) by (rpc, state) [$interval:])",
+              "hide": false,
+              "interval": "",
+              "intervalFactor": 1,
+              "legendFormat": "{{rpc}} ({{state}})",
+              "range": true,
+              "refId": "B"
+            }
+          ],
+          "thresholds": [],
+          "timeRegions": [],
+          "title": "Circuit Breaker State (Vald LB Gateway)",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "mode": "time",
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "short",
+              "logBase": 1,
+              "min": "0",
+              "show": true
+            },
+            {
+              "format": "short",
+              "logBase": 1,
+              "show": true
+            }
+          ],
+          "yaxis": {
+            "align": false
+          }
+        },
+        {
+          "aliasColors": {},
+          "bars": false,
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "links": []
+            },
+            "overrides": []
+          },
+          "fill": 0,
+          "fillGradient": 0,
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 36
+          },
+          "hiddenSeries": false,
+          "id": 183,
+          "interval": "",
+          "legend": {
+            "avg": false,
+            "current": false,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "nullPointMode": "null",
+          "options": {
+            "alertThreshold": true
+          },
+          "percentage": false,
+          "pluginVersion": "10.0.1",
+          "pointradius": 2,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "spaceLength": 10,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "histogram_quantile(0.5, sum(rate(server_latency_bucket{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\", target_pod=~\"$ValdAgentPodName\", grpc_server_method=~\".*Index$\"}[$interval])) by (le, grpc_server_method))",
+              "interval": "",
+              "intervalFactor": 1,
+              "legendFormat": "{{grpc_server_method}} p50",
+              "range": true,
+              "refId": "A"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "histogram_quantile(0.95, sum(rate(server_latency_bucket{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\", target_pod=~\"$ValdAgentPodName\", grpc_server_method=~\".*Index$\"}[$interval])) by (le, grpc_server_method))",
+              "interval": "",
+              "legendFormat": "{{grpc_server_method}} p95",
+              "range": true,
+              "refId": "B"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "histogram_quantile(0.99, sum(rate(server_latency_bucket{exported_kubernetes_namespace=\"$Namespace\", kubernetes_name=~\"$ReplicaSet\", target_pod=~\"$ValdAgentPodName\", grpc_server_method=~\".*Index$\"}[$interval])) by (le, grpc_server_method))",
+              "interval": "",
+              "legendFormat": "{{grpc_server_method}} p99",
+              "range": true,
+              "refId": "C"
+            }
+          ],
+          "thresholds": [],
+          "timeRegions": [],
+          "title": "Latency (Vald Agent Index)",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "mode": "time",
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "ms",
+              "logBase": 1,
+              "min": "0",
+              "show": true
+            },
+            {
+              "format": "short",
+              "logBase": 1,
+              "show": true
+            }
+          ],
+          "yaxis": {
+            "align": false
+          }
+        },
+        {
           "collapsed": false,
           "datasource": {
             "type": "prometheus",
-            "uid": "vald_prometheus"
+            "uid": "prometheus"
           },
           "gridPos": {
             "h": 1,
             "w": 24,
             "x": 0,
-            "y": 36
+            "y": 44
           },
           "id": 57,
           "panels": [],
@@ -1401,7 +1683,7 @@ data:
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "vald_prometheus"
+            "uid": "prometheus"
           },
           "fieldConfig": {
             "defaults": {
@@ -1437,7 +1719,7 @@ data:
             "h": 8,
             "w": 3,
             "x": 0,
-            "y": 37
+            "y": 45
           },
           "id": 14,
           "links": [],
@@ -1457,11 +1739,16 @@ data:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "9.0.0-beta2",
+          "pluginVersion": "10.0.1",
           "repeatDirection": "v",
           "targets": [
             {
-              "expr": "count(up{namespace=\"$Namespace\", app=~\"$ReplicaSet\", app!=\"\"})",
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "count(kube_pod_info{namespace=\"$Namespace\", pod=~\"$ReplicaSet.*\"})",
               "format": "time_series",
               "hide": false,
               "instant": false,
@@ -1480,7 +1767,7 @@ data:
           "dashes": false,
           "datasource": {
             "type": "prometheus",
-            "uid": "vald_prometheus"
+            "uid": "prometheus"
           },
           "fieldConfig": {
             "defaults": {
@@ -1494,7 +1781,7 @@ data:
             "h": 8,
             "w": 5,
             "x": 3,
-            "y": 37
+            "y": 45
           },
           "hiddenSeries": false,
           "id": 31,
@@ -1514,7 +1801,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "9.0.0-beta2",
+          "pluginVersion": "10.0.1",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -1649,7 +1936,7 @@ data:
           "dashes": false,
           "datasource": {
             "type": "prometheus",
-            "uid": "vald_prometheus"
+            "uid": "prometheus"
           },
           "fieldConfig": {
             "defaults": {
@@ -1663,7 +1950,7 @@ data:
             "h": 8,
             "w": 8,
             "x": 8,
-            "y": 37
+            "y": 45
           },
           "hiddenSeries": false,
           "id": 24,
@@ -1683,7 +1970,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "9.0.0-beta2",
+          "pluginVersion": "10.0.1",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -1695,7 +1982,7 @@ data:
           "targets": [
             {
               "exemplar": true,
-              "expr": "sum(irate(container_cpu_usage_seconds_total{namespace=\"$Namespace\", pod=~\"$ReplicaSet.*\"}[$interval])) by (pod)",
+              "expr": "sum(irate(container_cpu_usage_seconds_total{namespace=\"$Namespace\", pod=~\"$ReplicaSet.*\", image!=\"\"}[$interval])) by (pod)",
               "interval": "",
               "legendFormat": "{{pod}}",
               "refId": "A"
@@ -1741,7 +2028,7 @@ data:
           "dashes": false,
           "datasource": {
             "type": "prometheus",
-            "uid": "vald_prometheus"
+            "uid": "prometheus"
           },
           "fieldConfig": {
             "defaults": {
@@ -1755,7 +2042,7 @@ data:
             "h": 8,
             "w": 8,
             "x": 16,
-            "y": 37
+            "y": 45
           },
           "hiddenSeries": false,
           "id": 28,
@@ -1775,7 +2062,7 @@ data:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "9.0.0-beta2",
+          "pluginVersion": "10.0.1",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -1787,7 +2074,7 @@ data:
           "targets": [
             {
               "exemplar": true,
-              "expr": "sum(container_memory_working_set_bytes{namespace=\"$Namespace\", pod=~\"$ReplicaSet.*\"}) by (pod)",
+              "expr": "sum(container_memory_working_set_bytes{namespace=\"$Namespace\", pod=~\"$ReplicaSet.*\", image!=\"\"}) by (pod)",
               "interval": "",
               "legendFormat": "{{pod}}",
               "refId": "A"
@@ -1827,8 +2114,9 @@ data:
           }
         }
       ],
-      "refresh": false,
-      "schemaVersion": 36,
+      "refresh": "",
+      "revision": 1,
+      "schemaVersion": 38,
       "style": "dark",
       "tags": [],
       "templating": {
@@ -1841,9 +2129,9 @@ data:
             },
             "datasource": {
               "type": "prometheus",
-              "uid": "vald_prometheus"
+              "uid": "prometheus"
             },
-            "definition": "label_values(up, namespace)",
+            "definition": "label_values(kube_pod_info, namespace)",
             "hide": 0,
             "includeAll": false,
             "label": "namespace",
@@ -1851,7 +2139,7 @@ data:
             "name": "Namespace",
             "options": [],
             "query": {
-              "query": "label_values(up, namespace)",
+              "query": "label_values(kube_pod_info, namespace)",
               "refId": "StandardVariableQuery"
             },
             "refresh": 1,
@@ -1876,9 +2164,9 @@ data:
             },
             "datasource": {
               "type": "prometheus",
-              "uid": "vald_prometheus"
+              "uid": "prometheus"
             },
-            "definition": "label_values(vald_app_version_info, app)",
+            "definition": "label_values(app_version_info, kubernetes_name)",
             "hide": 0,
             "includeAll": true,
             "label": "name",
@@ -1886,7 +2174,7 @@ data:
             "name": "ReplicaSet",
             "options": [],
             "query": {
-              "query": "label_values(vald_app_version_info, app)",
+              "query": "label_values(app_version_info, kubernetes_name)",
               "refId": "StandardVariableQuery"
             },
             "refresh": 1,
@@ -1906,16 +2194,16 @@ data:
             },
             "datasource": {
               "type": "prometheus",
-              "uid": "vald_prometheus"
+              "uid": "prometheus"
             },
-            "definition": "label_values(vald_app_version_info{server_name=\"agent ngt\", container_name=~\"$ReplicaSet\"}, app)",
+            "definition": "label_values(app_version_info{server_name=\"agent ngt\", kubernetes_name=~\"$ReplicaSet\"}, kubernetes_name)",
             "hide": 2,
             "includeAll": false,
             "multi": false,
-            "name": "ValdAgentNGT",
+            "name": "ValdAgent",
             "options": [],
             "query": {
-              "query": "label_values(vald_app_version_info{server_name=\"agent ngt\", container_name=~\"$ReplicaSet\"}, app)",
+              "query": "label_values(app_version_info{server_name=\"agent ngt\", kubernetes_name=~\"$ReplicaSet\"}, kubernetes_name)",
               "refId": "StandardVariableQuery"
             },
             "refresh": 1,
@@ -1935,16 +2223,16 @@ data:
             },
             "datasource": {
               "type": "prometheus",
-              "uid": "vald_prometheus"
+              "uid": "prometheus"
             },
-            "definition": "label_values(vald_app_version_info{server_name=~\"discoverer.*\", container_name=~\"$ReplicaSet\"}, app)",
+            "definition": "label_values(app_version_info{server_name=~\"discoverer.*\", kubernetes_name=~\"$ReplicaSet\"}, kubernetes_name)",
             "hide": 2,
             "includeAll": false,
             "multi": false,
             "name": "ValdDiscovererK8s",
             "options": [],
             "query": {
-              "query": "label_values(vald_app_version_info{server_name=~\"discoverer.*\", container_name=~\"$ReplicaSet\"}, app)",
+              "query": "label_values(app_version_info{server_name=~\"discoverer.*\", kubernetes_name=~\"$ReplicaSet\"}, kubernetes_name)",
               "refId": "StandardVariableQuery"
             },
             "refresh": 1,
@@ -1964,16 +2252,16 @@ data:
             },
             "datasource": {
               "type": "prometheus",
-              "uid": "vald_prometheus"
+              "uid": "prometheus"
             },
-            "definition": "label_values(vald_app_version_info{server_name=\"gateway lb\", container_name=~\"$ReplicaSet\"}, app)",
+            "definition": "label_values(app_version_info{server_name=\"gateway lb\", kubernetes_name=~\"$ReplicaSet\"}, kubernetes_name)",
             "hide": 2,
             "includeAll": false,
             "multi": false,
             "name": "ValdGateway",
             "options": [],
             "query": {
-              "query": "label_values(vald_app_version_info{server_name=\"gateway lb\", container_name=~\"$ReplicaSet\"}, app)",
+              "query": "label_values(app_version_info{server_name=\"gateway lb\", kubernetes_name=~\"$ReplicaSet\"}, kubernetes_name)",
               "refId": "StandardVariableQuery"
             },
             "refresh": 1,
@@ -1993,16 +2281,16 @@ data:
             },
             "datasource": {
               "type": "prometheus",
-              "uid": "vald_prometheus"
+              "uid": "prometheus"
             },
-            "definition": "label_values(vald_app_version_info{server_name=\"index manager\", container_name=~\"$ReplicaSet\"}, app)",
+            "definition": "label_values(app_version_info{server_name=\"index manager\", kubernetes_name=~\"$ReplicaSet\"}, kubernetes_name)",
             "hide": 2,
             "includeAll": false,
             "multi": false,
             "name": "ValdManagerIndex",
             "options": [],
             "query": {
-              "query": "label_values(vald_app_version_info{server_name=\"index manager\", container_name=~\"$ReplicaSet\"}, app)",
+              "query": "label_values(app_version_info{server_name=\"index manager\", kubernetes_name=~\"$ReplicaSet\"}, kubernetes_name)",
               "refId": "StandardVariableQuery"
             },
             "refresh": 1,
@@ -2013,6 +2301,64 @@ data:
             "tagsQuery": "",
             "type": "query",
             "useTags": false
+          },
+          {
+            "current": {
+              "selected": false,
+              "text": "All",
+              "value": "$__all"
+            },
+            "datasource": {
+              "type": "prometheus",
+              "uid": "prometheus"
+            },
+            "definition": "label_values(agent_core_ngt_is_indexing{kubernetes_name =~\"$ValdAgent\"}, target_pod)",
+            "hide": 0,
+            "includeAll": true,
+            "label": "agent-pod",
+            "multi": true,
+            "name": "ValdAgentPodName",
+            "options": [],
+            "query": {
+              "query": "label_values(agent_core_ngt_is_indexing{kubernetes_name =~\"$ValdAgent\"}, target_pod)",
+              "refId": "StandardVariableQuery"
+            },
+            "refresh": 1,
+            "regex": "",
+            "skipUrlSync": false,
+            "sort": 0,
+            "type": "query"
+          },
+          {
+            "current": {
+              "selected": true,
+              "text": [
+                "All"
+              ],
+              "value": [
+                "$__all"
+              ]
+            },
+            "datasource": {
+              "type": "prometheus",
+              "uid": "prometheus"
+            },
+            "definition": "label_values(app_version_info{kubernetes_name=~\"$ValdGateway\"}, target_pod)",
+            "hide": 0,
+            "includeAll": true,
+            "label": "gateway-pod",
+            "multi": true,
+            "name": "ValdGatewayPodName",
+            "options": [],
+            "query": {
+              "query": "label_values(app_version_info{kubernetes_name=~\"$ValdGateway\"}, target_pod)",
+              "refId": "StandardVariableQuery"
+            },
+            "refresh": 1,
+            "regex": "",
+            "skipUrlSync": false,
+            "sort": 0,
+            "type": "query"
           },
           {
             "auto": false,
@@ -2080,54 +2426,23 @@ data:
           },
           {
             "current": {
+              "isNone": true,
               "selected": false,
-              "text": "All",
-              "value": "$__all"
+              "text": "None",
+              "value": ""
             },
             "datasource": {
               "type": "prometheus",
-              "uid": "vald_prometheus"
+              "uid": "prometheus"
             },
-            "definition": "label_values(vald_agent_core_ngt_is_indexing{container_name =~\"$ValdAgentNGT\"}, instance)",
+            "definition": "label_values(app_version_info{server_name=\"agent sidecar\", kubernetes_name=~\"$ReplicaSet\"}, kubernetes_name)",
             "hide": 0,
-            "includeAll": true,
-            "label": "agent-pod",
-            "multi": true,
-            "name": "ValdAgentPodName",
+            "includeAll": false,
+            "multi": false,
+            "name": "ValdAgentSidecar",
             "options": [],
             "query": {
-              "query": "label_values(vald_agent_core_ngt_is_indexing{container_name =~\"$ValdAgentNGT\"}, instance)",
-              "refId": "StandardVariableQuery"
-            },
-            "refresh": 1,
-            "regex": "",
-            "skipUrlSync": false,
-            "sort": 0,
-            "type": "query"
-          },
-          {
-            "current": {
-              "selected": true,
-              "text": [
-                "All"
-              ],
-              "value": [
-                "$__all"
-              ]
-            },
-            "datasource": {
-              "type": "prometheus",
-              "uid": "vald_prometheus"
-            },
-            "definition": "label_values(vald_app_version_info{container_name=~\"$ValdGateway\"}, instance)",
-            "hide": 0,
-            "includeAll": true,
-            "label": "gateway-pod",
-            "multi": true,
-            "name": "ValdGatewayPodName",
-            "options": [],
-            "query": {
-              "query": "label_values(vald_app_version_info{container_name=~\"$ValdGateway\"}, instance)",
+              "query": "label_values(app_version_info{server_name=\"agent sidecar\", kubernetes_name=~\"$ReplicaSet\"}, kubernetes_name)",
               "refId": "StandardVariableQuery"
             },
             "refresh": 1,

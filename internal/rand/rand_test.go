@@ -1,25 +1,26 @@
-//
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//    https://www.apache.org/licenses/LICENSE-2.0
+//	https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 package rand
 
 import (
-	"errors"
-	"sync"
+	"fmt"
 	"sync/atomic"
 	"testing"
+
+	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/internal/test/goleak"
 )
 
 func clearPool() {
@@ -33,22 +34,24 @@ func clearPool() {
 func TestUint32(t *testing.T) {
 	type test struct {
 		name       string
-		beforeFunc func()
+		beforeFunc func(*testing.T)
 	}
 
 	tests := []test{
 		{
 			name: "returns random number when pooled rand instance is nil",
-			beforeFunc: func() {
+			beforeFunc: func(t *testing.T) {
+				t.Helper()
 				clearPool()
 			},
 		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if tt.beforeFunc != nil {
-				tt.beforeFunc()
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			if test.beforeFunc != nil {
+				test.beforeFunc(tt)
 			}
 
 			_ = Uint32()
@@ -62,29 +65,31 @@ func TestUint32(t *testing.T) {
 func TestLimitedUint32(t *testing.T) {
 	type test struct {
 		name       string
-		beforeFunc func()
+		beforeFunc func(*testing.T)
 		max        uint64
 	}
 
 	tests := []test{
 		{
 			name: "returns random number less than max",
-			beforeFunc: func() {
+			beforeFunc: func(t *testing.T) {
+				t.Helper()
 				clearPool()
 			},
 			max: 100,
 		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if tt.beforeFunc != nil {
-				tt.beforeFunc()
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			if test.beforeFunc != nil {
+				test.beforeFunc(tt)
 			}
 
-			got := LimitedUint32(tt.max)
-			if got > uint32(tt.max) {
-				t.Errorf("more than %v. got: %v", tt.max, got)
+			got := LimitedUint32(test.max)
+			if got > uint32(test.max) {
+				t.Errorf("more than %v. got: %v", test.max, got)
 			}
 		})
 	}
@@ -156,3 +161,61 @@ func Test_rand_init(t *testing.T) {
 		})
 	}
 }
+
+func TestFloat32(t *testing.T) {
+	type want struct {
+		min float32
+		max float32
+	}
+	type test struct {
+		name       string
+		want       want
+		checkFunc  func(want, float32) error
+		beforeFunc func(*testing.T)
+		afterFunc  func(*testing.T)
+	}
+	defaultCheckFunc := func(w want, got float32) error {
+		if w.min > got || w.max < got {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w)
+		}
+		return nil
+	}
+	count := 1000
+	tests := func() []test {
+		tests := make([]test, count)
+		for idx := range tests {
+			tests[idx] = test{
+				name: fmt.Sprint(idx),
+				want: want{
+					min: 0.0,
+					max: 1.0,
+				},
+			}
+		}
+		return tests
+	}()
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(tt)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(tt)
+			}
+			checkFunc := test.checkFunc
+			if test.checkFunc == nil {
+				checkFunc = defaultCheckFunc
+			}
+
+			got := Float32()
+			if err := checkFunc(test.want, got); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+// NOT IMPLEMENTED BELOW

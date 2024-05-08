@@ -25,6 +25,19 @@ If release name contains chart name it will be used as a full name.
 {{- end -}}
 
 {{/*
+Create a envkey for read replica target id.
+We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
+If release name contains chart name it will be used as a full name.
+*/}}
+{{- define "vald.target_read_replica_envkey" -}}
+{{- if .Values.fullnameOverride -}}
+{{- printf "%s_%s" "TARGET_READREPLICA_ID" .Values.fullnameOverride  | upper | replace "-" "_" | trunc 63 -}}
+{{- else -}}
+{{- printf "%s_%s_%s_%s" "TARGET_READREPLICA_ID" .Release.Name .Release.Namespace .Chart.Name | upper | replace "-" "_" | trunc 63 -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
 Create chart name and version as used by the chart label.
 */}}
 {{- define "vald.chart" -}}
@@ -35,13 +48,17 @@ Create chart name and version as used by the chart label.
 Common labels
 */}}
 {{- define "vald.labels" -}}
-app.kubernetes.io/name: {{ include "vald.name" . }}
-helm.sh/chart: {{ include "vald.chart" . }}
-app.kubernetes.io/instance: {{ .Release.Name }}
-{{- if .Chart.AppVersion }}
-app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+app: {{ .Values.name }}
+app.kubernetes.io/name: {{ include "vald.name" .default }}
+helm.sh/chart: {{ include "vald.chart" .default }}
+app.kubernetes.io/managed-by: {{ .default.Release.Service }}
+app.kubernetes.io/instance: {{ .default.Release.Name }}
+app.kubernetes.io/component: {{ .Values.name }}
+{{- if .default.Chart.AppVersion }}
+app.kubernetes.io/version: {{ .default.Chart.AppVersion | quote }}
+{{- else }}
+app.kubernetes.io/version: {{ .default.Chart.Version }}
 {{- end }}
-app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end -}}
 
 {{/*
@@ -189,15 +206,6 @@ ports:
     protocol: TCP
     containerPort: {{ default .default.metrics.pprof.port .Values.metrics.pprof.port }}
   {{- end }}
-  {{- $prometheusEnabled := .default.metrics.prometheus.enabled }}
-  {{- if hasKey .Values.metrics.prometheus "enabled" }}
-  {{- $prometheusEnabled = .Values.metrics.prometheus.enabled }}
-  {{- end }}
-  {{- if $prometheusEnabled }}
-  - name: prometheus
-    protocol: TCP
-    containerPort: {{ default .default.metrics.prometheus.port .Values.metrics.prometheus.port }}
-  {{- end }}
 {{- end -}}
 
 {/*
@@ -256,16 +264,6 @@ ports:
   - name: pprof
     port: {{ default .default.metrics.pprof.servicePort .Values.metrics.pprof.servicePort }}
     targetPort: {{ default .default.metrics.pprof.port .Values.metrics.pprof.port }}
-    protocol: TCP
-  {{- end }}
-  {{- $prometheusEnabled := .default.metrics.prometheus.enabled }}
-  {{- if hasKey .Values.metrics.prometheus "enabled" }}
-  {{- $prometheusEnabled = .Values.metrics.prometheus.enabled }}
-  {{- end }}
-  {{- if $prometheusEnabled }}
-  - name: prometheus
-    port: {{ default .default.metrics.prometheus.servicePort .Values.metrics.prometheus.servicePort }}
-    targetPort: {{ default .default.metrics.prometheus.port .Values.metrics.prometheus.port }}
     protocol: TCP
   {{- end }}
 {{- end -}}
@@ -443,43 +441,12 @@ metrics_servers:
     {{- toYaml .default.metrics.pprof.server | nindent 4 }}
     {{- end }}
   {{- end }}
-  {{- $prometheusEnabled := .default.metrics.prometheus.enabled }}
-  {{- if hasKey .Values.metrics.prometheus "enabled" }}
-  {{- $prometheusEnabled = .Values.metrics.prometheus.enabled }}
-  {{- end }}
-  {{- if $prometheusEnabled }}
-  - name: prometheus
-    host: {{ default .default.metrics.prometheus.host .Values.metrics.prometheus.host }}
-    port: {{ default .default.metrics.prometheus.port .Values.metrics.prometheus.port }}
-    {{- if .Values.metrics.prometheus.server }}
-    mode: {{ default .default.metrics.prometheus.server.mode .Values.metrics.prometheus.server.mode }}
-    probe_wait_time: {{ default .default.metrics.prometheus.server.probe_wait_time .Values.metrics.prometheus.server.probe_wait_time }}
-    network: {{ default .default.metrics.prometheus.server.network .Values.metrics.prometheus.server.network | quote }}
-    socket_path: {{ default .default.metrics.prometheus.server.socket_path .Values.metrics.prometheus.server.socket_path | quote }}
-    http:
-      {{- if .Values.metrics.prometheus.server.http }}
-      shutdown_duration: {{ default .default.metrics.prometheus.server.http.shutdown_duration .Values.metrics.prometheus.server.http.shutdown_duration }}
-      handler_timeout: {{ default .default.metrics.prometheus.server.http.handler_timeout .Values.metrics.prometheus.server.http.handler_timeout }}
-      idle_timeout: {{ default .default.metrics.prometheus.server.http.idle_timeout .Values.metrics.prometheus.server.http.idle_timeout }}
-      read_header_timeout: {{ default .default.metrics.prometheus.server.http.read_header_timeout .Values.metrics.prometheus.server.http.read_header_timeout }}
-      read_timeout: {{ default .default.metrics.prometheus.server.http.read_timeout .Values.metrics.prometheus.server.http.read_timeout }}
-      write_timeout: {{ default .default.metrics.prometheus.server.http.write_timeout .Values.metrics.prometheus.server.http.write_timeout }}
-      {{- else }}
-      {{- toYaml .default.metrics.prometheus.server.http | nindent 6 }}
-      {{- end }}
-    {{- else }}
-    {{- toYaml .default.metrics.prometheus.server | nindent 4 }}
-    {{- end }}
-  {{- end }}
 startup_strategy:
   {{- if $livenessEnabled }}
   - liveness
   {{- end }}
   {{- if $pprofEnabled }}
   - pprof
-  {{- end }}
-  {{- if $prometheusEnabled }}
-  - prometheus
   {{- end }}
   {{- if $grpcEnabled }}
   - grpc
@@ -489,6 +456,22 @@ startup_strategy:
   {{- end }}
   {{- if $readinessEnabled }}
   - readiness
+  {{- end }}
+shutdown_strategy:
+  {{- if $readinessEnabled }}
+  - readiness
+  {{- end }}
+  {{- if $restEnabled }}
+  - rest
+  {{- end }}
+  {{- if $grpcEnabled }}
+  - grpc
+  {{- end }}
+  {{- if $pprofEnabled }}
+  - pprof
+  {{- end }}
+  {{- if $livenessEnabled }}
+  - liveness
   {{- end }}
 full_shutdown_duration: {{ default .default.full_shutdown_duration .Values.full_shutdown_duration }}
 tls:
@@ -579,6 +562,15 @@ dial_option:
   enable_backoff: {{ default .default.dial_option.enable_backoff .Values.dial_option.enable_backoff }}
   insecure: {{ default .default.dial_option.insecure .Values.dial_option.insecure }}
   timeout: {{ default .default.dial_option.timeout .Values.dial_option.timeout | quote }}
+  {{- if .Values.dial_option.interceptors }}
+  interceptors:
+    {{- toYaml .Values.dial_option.interceptors | nindent 4 }}
+  {{- else if .default.dial_option.interceptors }}
+  interceptors:
+    {{- toYaml .default.dial_option.interceptors | nindent 4 }}
+  {{- else }}
+  interceptors: []
+  {{- end }}
   net:
     {{- if .Values.dial_option.net }}
     dns:
@@ -652,54 +644,50 @@ observability
 */}}
 {{- define "vald.observability" -}}
 enabled: {{ default .default.enabled .Values.enabled }}
-collector:
-  {{- if .Values.collector }}
-  duration: {{ default .default.collector.duration .Values.collector.duration }}
-  metrics:
-    {{- if .Values.collector.metrics }}
-    enable_version_info: {{ default .default.collector.metrics.enable_version_info .Values.collector.metrics.enable_version_info }}
-    {{- if .Values.collector.metrics.version_info_labels }}
-    version_info_labels:
-      {{- toYaml .Values.collector.metrics.version_info_labels | nindent 6 }}
-    {{- else if .default.collector.metrics.version_info_labels }}
-    version_info_labels:
-      {{- toYaml .default.collector.metrics.version_info_labels | nindent 6 }}
+otlp:
+  {{- if .Values.otlp }}
+  collector_endpoint: {{ default .default.otlp.collector_endpoint .Values.otlp.collector_endpoint | quote }}
+  trace_batch_timeout: {{ default .default.otlp.trace_batch_timeout .Values.otlp.trace_batch_timeout | quote }}
+  trace_export_timeout: {{ default .default.otlp.trace_export_timeout .Values.otlp.trace_export_timeout | quote }}
+  trace_max_export_batch_size: {{ default .default.otlp.trace_max_export_batch_size .Values.otlp.trace_max_export_batch_size }}
+  trace_max_queue_size: {{ default .default.otlp.trace_max_queue_size .Values.otlp.trace_max_queue_size }}
+  metrics_export_interval: {{ default .default.otlp.metrics_export_interval .Values.otlp.metrics_export_interval | quote }}
+  metrics_export_timeout: {{ default .default.otlp.metrics_export_timeout .Values.otlp.metrics_export_timeout | quote }}
+  attribute:
+    {{- if .Values.otlp.attribute }}
+    namespace: {{ default .default.otlp.attribute.namespace .Values.otlp.attribute.namespace | quote }}
+    pod_name: {{ default .default.otlp.attribute.pod_name .Values.otlp.attribute.pod_name | quote }}
+    node_name: {{ default .default.otlp.attribute.node_name .Values.otlp.attribute.node_name | quote }}
+    service_name: {{ default .default.otlp.attribute.service_name .Values.otlp.attribute.service_name | quote }}
     {{- else }}
-    version_info_labels: []
-    {{- end }}
-    enable_memory: {{ default .default.collector.metrics.enable_memory .Values.collector.metrics.enable_memory }}
-    enable_goroutine: {{ default .default.collector.metrics.enable_goroutine .Values.collector.metrics.enable_goroutine }}
-    enable_cgo: {{ default .default.collector.metrics.enable_cgo .Values.collector.metrics.enable_cgo }}
-    {{- else }}
-    {{- toYaml .default.collector.metrics | nindent 4 }}
+    {{- toYaml .default.otlp.attribute | nindent 4 }}
     {{- end }}
   {{- else }}
-  {{- toYaml .default.collector | nindent 2 }}
+  {{- toYaml .default.otlp | nindent 2 }}
+  {{- end }}
+metrics:
+  {{- if .Values.metrics }}
+  enable_version_info: {{ default .default.metrics.enable_version_info .Values.metrics.enable_version_info }}
+  {{- if .Values.metrics.version_info_labels }}
+  version_info_labels:
+    {{- toYaml .Values.metrics.version_info_labels | nindent 4 }}
+  {{- else if .default.metrics.version_info_labels }}
+  version_info_labels:
+    {{- toYaml .default.metrics.version_info_labels | nindent 4 }}
+  {{- else }}
+  version_info_labels: []
+  {{- end }}
+  enable_memory: {{ default .default.metrics.enable_memory .Values.metrics.enable_memory }}
+  enable_goroutine: {{ default .default.metrics.enable_goroutine .Values.metrics.enable_goroutine }}
+  enable_cgo: {{ default .default.metrics.enable_cgo .Values.metrics.enable_cgo }}
+  {{- else }}
+  {{- toYaml .default.metrics | nindent 2 }}
   {{- end }}
 trace:
   {{- if .Values.trace }}
   enabled: {{ default .default.trace.enabled .Values.trace.enabled }}
-  sampling_rate: {{ default .default.trace.sampling_rate .Values.trace.sampling_rate }}
   {{- else }}
   {{- toYaml .default.trace | nindent 2 }}
-  {{- end }}
-prometheus:
-  {{- if .Values.prometheus }}
-  enabled: {{ default .default.prometheus.enabled .Values.prometheus.enabled }}
-  {{- else }}
-  {{- toYaml .default.prometheus | nindent 2 }}
-  {{- end }}
-jaeger:
-  {{- if .Values.jaeger }}
-  enabled: {{ default .default.jaeger.enabled .Values.jaeger.enabled }}
-  collector_endpoint: {{ default .default.jaeger.collector_endpoint .Values.jaeger.collector_endpoint | quote }}
-  agent_endpoint: {{ default .default.jaeger.agent_endpoint .Values.jaeger.agent_endpoint | quote }}
-  username: {{ default .default.jaeger.username .Values.jaeger.username | quote }}
-  password: {{ default .default.jaeger.password .Values.jaeger.password | quote }}
-  service_name: {{ default .default.jaeger.service_name .Values.jaeger.service_name | quote }}
-  buffer_max_count: {{ default .default.jaeger.buffer_max_count .Values.jaeger.buffer_max_count }}
-  {{- else }}
-  {{- toYaml .default.jaeger | nindent 2 }}
   {{- end }}
 {{- end -}}
 
@@ -863,4 +851,84 @@ node_metrics:
   {{- else }}
   fields: {}
   {{- end }}
+service:
+  {{- if .Values.node_metrics.labels }}
+  labels:
+    {{- toYaml .Values.service.labels | nindent 4 }}
+  {{- else }}
+  labels: {}
+  {{- end }}
+  {{- if .Values.service.fields }}
+  fields:
+    {{- toYaml .Values.service.fields | nindent 4 }}
+  {{- else }}
+  fields: {}
+  {{- end }}
+{{- end -}}
+
+{{/*
+Vald index job templates
+*/}}
+{{- define "vald.index_job" -}}
+spec:
+  ttlSecondsAfterFinished: {{ .Job.ttlSecondsAfterFinished }}
+  template:
+    metadata:
+      labels:
+        {{- include "vald.labels" (dict "Values" .Job "default" .default) | nindent 8 }}
+      annotations:
+        {{- $pprof := default .default.Values.defaults.server_config.metrics.pprof .Job.server_config.metrics.pprof -}}
+        {{- if $pprof.enabled }}
+        pyroscope.io/scrape: "true"
+        pyroscope.io/application-name: {{ .Job.name }}
+        pyroscope.io/profile-cpu-enabled: "true"
+        pyroscope.io/profile-mem-enabled: "true"
+        pyroscope.io/port: {{ $pprof.port | quote }}
+        {{- end }}
+    spec:
+      {{- if .Job.initContainers }}
+      initContainers:
+        {{- $initContainers := dict "initContainers" .Job.initContainers "Values" .default.Values "namespace" .default.Release.Namespace -}}
+        {{- include "vald.initContainers" $initContainers | trim | nindent 8 }}
+        {{- if .Job.securityContext }}
+        securityContext:
+          {{- toYaml .Job.securityContext | nindent 12 }}
+        {{- end }}
+      {{- end }}
+      containers:
+        - name: {{ .Job.name }}
+          image: "{{ .Job.image.repository }}:{{ default .default.Values.defaults.image.tag .Job.image.tag }}"
+          imagePullPolicy: {{ .Job.image.pullPolicy }}
+          volumeMounts:
+            - name: {{ .Job.name }}-config
+              mountPath: /etc/server/
+          {{- $servers := dict "Values" .Job.server_config "default" .default.Values.defaults.server_config -}}
+          {{- include "vald.containerPorts" $servers | trim | nindent 10 }}
+          {{- if .Job.securityContext }}
+          securityContext:
+            {{- toYaml .Job.securityContext | nindent 12 }}
+          {{- end }}
+          {{- if .Job.env }}
+          env:
+            {{- toYaml .Job.env | nindent 12 }}
+            {{- if eq .type "rotator" }}
+            - name: {{ include "vald.target_read_replica_envkey" .default }}
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.annotations['{{ .Job.target_read_replica_id_annotations_key }}']
+            {{- end }}
+          {{- end }}
+      {{- if .Job.podSecurityContext }}
+      securityContext:
+        {{- toYaml .Job.podSecurityContext | nindent 8 }}
+      {{- end }}
+      restartPolicy: OnFailure
+      volumes:
+        - name: {{ .Job.name }}-config
+          configMap:
+            defaultMode: 420
+            name: {{ .Job.name }}-config
+      {{- if .Job.serviceAccount }}
+      serviceAccountName: {{ .Job.serviceAccount.name }}
+      {{- end }}
 {{- end -}}

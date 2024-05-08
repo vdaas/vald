@@ -1,8 +1,8 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -24,6 +24,7 @@ import (
 	"os"
 	"regexp"
 
+	"github.com/vdaas/vald/internal/conv"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/strings"
@@ -116,6 +117,7 @@ func genJSONSchema(path string) error {
 	defer func() {
 		err := f.Close()
 		if err != nil {
+			// skipcq: RVV-A0003
 			log.Fatal(err)
 		}
 	}()
@@ -178,7 +180,7 @@ func genJSONSchema(path string) error {
 		return errors.Errorf("error: %s", err)
 	}
 
-	fmt.Println(string(json))
+	fmt.Println(conv.Btoa(json))
 
 	return nil
 }
@@ -273,7 +275,7 @@ func genNode(prefix []string, ls []*VSchema) (*Schema, error) {
 
 func newRoot(schemas map[string]*Schema) *Root {
 	return &Root{
-		SchemaKeyword: "http://json-schema.org/draft-07/schema#",
+		SchemaKeyword: "https://json-schema.org/draft-07/schema#",
 		Title:         "Values",
 		Schema: Schema{
 			Type:       objectType,

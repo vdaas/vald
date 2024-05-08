@@ -1,18 +1,16 @@
-//
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//    https://www.apache.org/licenses/LICENSE-2.0
+//	https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 package grpc
 
 import (
@@ -23,6 +21,7 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/info"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/net/grpc/errdetails"
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/observability/trace"
@@ -38,8 +37,9 @@ func (s *server) CreateIndex(ctx context.Context, c *payload.Control_CreateIndex
 	res = new(payload.Empty)
 	err = s.ngt.CreateIndex(ctx, c.GetPoolSize())
 	if err != nil {
-		if errors.Is(err, errors.ErrUncommittedIndexNotFound) {
-			err = status.WrapWithFailedPrecondition(fmt.Sprintf("CreateIndex API failed to create indexes pool_size = %d", c.GetPoolSize()), err,
+		var (
+			code    codes.Code
+			details = []interface{}{
 				&errdetails.RequestInfo{
 					ServingData: errdetails.Serialize(c),
 				},
@@ -47,31 +47,36 @@ func (s *server) CreateIndex(ctx context.Context, c *payload.Control_CreateIndex
 					ResourceType: ngtResourceType + "/ngt.CreateIndex",
 					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
 				},
-				&errdetails.PreconditionFailure{
+			}
+		)
+
+		switch {
+		case errors.Is(err, errors.ErrUncommittedIndexNotFound):
+			err = status.WrapWithFailedPrecondition(fmt.Sprintf("CreateIndex API failed to create indexes pool_size = %d due to the precondition failure, error: %v", c.GetPoolSize(), err), err,
+				append(details, &errdetails.PreconditionFailure{
 					Violations: []*errdetails.PreconditionFailureViolation{
 						{
 							Type:    "uncommitted index is empty",
 							Subject: "failed to CreateIndex operation caused by empty uncommitted indices",
 						},
 					},
-				}, info.Get())
-			if span != nil {
-				span.SetStatus(trace.StatusCodeFailedPrecondition(err.Error()))
-			}
-			return nil, err
+				}, info.Get())...)
+			code = codes.FailedPrecondition
+		case errors.Is(err, context.Canceled):
+			err = status.WrapWithCanceled(fmt.Sprintf("CreateIndex API canceled to create indexes pool_size = %d, error: %v", c.GetPoolSize(), err), err, details...)
+			code = codes.Canceled
+		case errors.Is(err, context.DeadlineExceeded):
+			err = status.WrapWithDeadlineExceeded(fmt.Sprintf("CreateIndex API deadline exceeded to create indexes pool_size = %d, error: %v", c.GetPoolSize(), err), err, details...)
+			code = codes.DeadlineExceeded
+		default:
+			err = status.WrapWithInternal(fmt.Sprintf("CreateIndex API failed to create indexes pool_size = %d, error: %v", c.GetPoolSize(), err), err, append(details, info.Get())...)
+			code = codes.Internal
+			log.Error(err)
 		}
-		log.Error(err)
-		err = status.WrapWithInternal(fmt.Sprintf("CreateIndex API failed to create indexes pool_size = %d", c.GetPoolSize()), err,
-			&errdetails.RequestInfo{
-				ServingData: errdetails.Serialize(c),
-			},
-			&errdetails.ResourceInfo{
-				ResourceType: ngtResourceType + "/ngt.CreateIndex",
-				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-			}, info.Get())
-		log.Error(err)
 		if span != nil {
-			span.SetStatus(trace.StatusCodeInternal(err.Error()))
+			span.RecordError(err)
+			span.SetAttributes(trace.FromGRPCStatus(code, err.Error())...)
+			span.SetStatus(trace.StatusError, err.Error())
 		}
 		return nil, err
 	}
@@ -96,7 +101,9 @@ func (s *server) SaveIndex(ctx context.Context, _ *payload.Empty) (res *payload.
 			}, info.Get())
 		log.Error(err)
 		if span != nil {
-			span.SetStatus(trace.StatusCodeInternal(err.Error()))
+			span.RecordError(err)
+			span.SetAttributes(trace.StatusCodeInternal(err.Error())...)
+			span.SetStatus(trace.StatusError, err.Error())
 		}
 		return nil, err
 	}
@@ -113,8 +120,9 @@ func (s *server) CreateAndSaveIndex(ctx context.Context, c *payload.Control_Crea
 	res = new(payload.Empty)
 	err = s.ngt.CreateAndSaveIndex(ctx, c.GetPoolSize())
 	if err != nil {
-		if errors.Is(err, errors.ErrUncommittedIndexNotFound) {
-			err = status.WrapWithFailedPrecondition(fmt.Sprintf("CreateAndSaveIndex API failed to create indexes pool_size = %d", c.GetPoolSize()), err,
+		var (
+			code    codes.Code
+			details = []interface{}{
 				&errdetails.RequestInfo{
 					ServingData: errdetails.Serialize(c),
 				},
@@ -122,32 +130,37 @@ func (s *server) CreateAndSaveIndex(ctx context.Context, c *payload.Control_Crea
 					ResourceType: ngtResourceType + "/ngt.CreateAndSaveIndex",
 					ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
 				},
-				&errdetails.PreconditionFailure{
+			}
+		)
+
+		switch {
+		case errors.Is(err, errors.ErrUncommittedIndexNotFound):
+			err = status.WrapWithFailedPrecondition(fmt.Sprintf("CreateAndSaveIndex API failed to create indexes pool_size = %d due to the precondition failure, error: %v", c.GetPoolSize(), err), err,
+				append(details, &errdetails.PreconditionFailure{
 					Violations: []*errdetails.PreconditionFailureViolation{
 						{
 							Type:    "uncommitted index is empty",
 							Subject: "failed to CreateAndSaveIndex operation caused by empty uncommitted indices",
 						},
 					},
-				}, info.Get())
-			if span != nil {
-				span.SetStatus(trace.StatusCodeFailedPrecondition(err.Error()))
-			}
-			return nil, err
+				}, info.Get())...)
+			code = codes.FailedPrecondition
+		case errors.Is(err, context.Canceled):
+			err = status.WrapWithCanceled(fmt.Sprintf("CreateAndSaveIndex API canceled to create indexes pool_size = %d, error: %v", c.GetPoolSize(), err), err, details...)
+			code = codes.Canceled
+		case errors.Is(err, context.DeadlineExceeded):
+			err = status.WrapWithDeadlineExceeded(fmt.Sprintf("CreateAndSaveIndex API deadline exceeded to create indexes pool_size = %d, error: %v", c.GetPoolSize(), err), err, details...)
+			code = codes.DeadlineExceeded
+		default:
+			err = status.WrapWithInternal(fmt.Sprintf("CreateAndSaveIndex API failed to create indexes pool_size = %d, error: %v", c.GetPoolSize(), err), err, append(details, info.Get())...)
+			code = codes.Internal
 		}
-		err = status.WrapWithInternal(fmt.Sprintf("CreateAndSaveIndex API failed to create indexes pool_size = %d", c.GetPoolSize()), err,
-			&errdetails.RequestInfo{
-				ServingData: errdetails.Serialize(c),
-			},
-			&errdetails.ResourceInfo{
-				ResourceType: ngtResourceType + "/ngt.CreateAndSaveIndex",
-				ResourceName: fmt.Sprintf("%s: %s(%s)", apiName, s.name, s.ip),
-			}, info.Get())
 		log.Error(err)
 		if span != nil {
-			span.SetStatus(trace.StatusCodeInternal(err.Error()))
+			span.RecordError(err)
+			span.SetAttributes(trace.FromGRPCStatus(code, err.Error())...)
+			span.SetStatus(trace.StatusError, err.Error())
 		}
-		return nil, err
 	}
 	return res, nil
 }

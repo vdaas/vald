@@ -1,8 +1,8 @@
 #
-# Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
+# You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
 #    https://www.apache.org/licenses/LICENSE-2.0
@@ -18,9 +18,13 @@ version: 1
 # index: besteffort
 # index: burstable
 # index: clojure
+# index: configmap
 # index: docker
+# index: documentation
+# index: fashion-mnist
 # index: flamegraph
 # index: go
+# index: godoc
 # index: grafana
 # index: guaranteed
 # index: helm
@@ -34,10 +38,13 @@ version: 1
 # index: ngtd
 # index: node.js
 # index: onnx
+# index: opentelemetry
+# index: otlp
 # index: pyroscope
 # index: python
 # index: qbg
 # index: QoS
+# index: RPC
 # index: sdk
 # index: uuid
 # index: vald
@@ -55,16 +62,20 @@ rules:
     expected: BestEffort
     specs:
       - from: besteffort
-        to: besteffort
+        to: BestEffort
       - from: BestEffort
         to: BestEffort
   - pattern: burstable
     expected: Burstable
     specs:
       - from: burstable
-        to: burstable
+        to: Burstable
       - from: Burstable
         to: Burstable
+  - pattern: configMap
+    expected: ConfigMap
+    options:
+      wordBoundary: true
   - pattern: clojure
     expected: Clojure
     options:
@@ -73,6 +84,21 @@ rules:
     expected: Docker
     options:
       wordBoundary: true
+  - pattern:
+      - documentation
+      - documentaion
+    expected: documentation
+    options:
+      wordBoundary: true
+  - pattern: fashion\-mnist
+    expected: Fashion\-MNIST
+    options:
+      wordBoundary: true
+    specs:
+      - from: fashion\-mnist\-784
+        to: Fashion\-MNIST\-784
+      - from: fashion\-mnist
+        to: Fashion\-MNIST
   - pattern: flamegraph
     expected: Flamegraph
     options:
@@ -95,6 +121,10 @@ rules:
         to: Go
       - from: algorithm
         to: algorithm
+  - pattern: godoc
+    expected: Godoc
+    options:
+      wordBoundary: true
   - pattern: grafana
     expected: Grafana
     options:
@@ -103,7 +133,7 @@ rules:
     expected: Guaranteed
     specs:
       - from: guaranteed
-        to: guaranteed
+        to: Guaranteed
       - from: Guaranteed
         to: Guaranteed
   - pattern: helm
@@ -165,6 +195,18 @@ rules:
     expected: ONNX
     options:
       wordBoundary: true
+  - pattern:
+      - opentelemetry
+      - OpenTelemetry
+    expected: OpenTelemetry
+    options:
+      wordBoundary: true
+  - pattern:
+      - OTLP
+      - otlp
+    expected: OTLP
+    options:
+      wordBoundary: true
   - pattern: pyroscope
     expected: Pyroscope
     options:
@@ -181,6 +223,10 @@ rules:
     expected: QoS
     options:
       wordBoundary: true
+  - pattern: rpc
+    expected: RPC
+    options:
+      wordBoundary: true
   - pattern: sdk
     expected: SDK
     options:
@@ -189,6 +235,24 @@ rules:
     options:
       wordBoundary: true
     expected: UUID
+  - pattern: config
+    options:
+      wordBoundary: true
+    expected: config
+    specs:
+      - from: config
+        to: config
+      - from: Config
+        to: Config
+  - pattern: Config
+    options:
+      wordBoundary: true
+    expected: Config
+    specs:
+      - from: config
+        to: config
+      - from: Config
+        to: Config
   - pattern: vald
     expected: Vald
     options:

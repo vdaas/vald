@@ -1,165 +1,160 @@
-//
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//    https://www.apache.org/licenses/LICENSE-2.0
+//	https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
-
-// Package sidecar provides functions for sidecar stats
 package sidecar
 
 import (
 	"context"
-	"sync"
 	"time"
 
+	"github.com/vdaas/vald/internal/observability/attribute"
 	"github.com/vdaas/vald/internal/observability/metrics"
+	"github.com/vdaas/vald/internal/sync"
 	"github.com/vdaas/vald/pkg/agent/sidecar/service/observer"
+	api "go.opentelemetry.io/otel/metric"
+	view "go.opentelemetry.io/otel/sdk/metric"
 )
 
-type sidecarMetrics struct {
-	uploadTotal   metrics.Int64Measure
-	uploadBytes   metrics.Int64Measure
-	uploadLatency metrics.Float64Measure
+const (
+	uploadTotalMetricsName        = "agent_sidecar_completed_upload_total"
+	uploadTotalMetricsDescription = "Cumulative count of completed upload execution"
 
-	storageTypeKey metrics.Key
-	bucketNameKey  metrics.Key
-	filenameKey    metrics.Key
+	uploadBytesMetricsName        = "agent_sidecar_upload_bytes"
+	uploadBytesMetricsDescription = "Uploaded bytes at the last backup execution"
 
-	mu sync.Mutex
-	ms []metrics.MeasurementWithTags
-}
+	uploadLatencyMetricsName        = "agent_sidecar_upload_latency"
+	uploadLatencyMetricsDescription = "Upload latency"
+)
 
 type MetricsHook interface {
 	metrics.Metric
 	observer.Hook
 }
 
-func New() (MetricsHook, error) {
-	var err error
-	sm := new(sidecarMetrics)
+type sidecarMetrics struct {
+	storageTypeKey string
+	bucketNameKey  string
+	filenameKey    string
 
-	sm.uploadTotal = *metrics.Int64(
-		metrics.ValdOrg+"/agent/sidecar/completed_upload_total",
-		"cumulative count of completed upload execution",
-		metrics.UnitDimensionless)
+	mu   sync.Mutex
+	info *observer.BackupInfo
+}
 
-	sm.uploadBytes = *metrics.Int64(
-		metrics.ValdOrg+"/agent/sidecar/upload_bytes",
-		"uploaded bytes at the last backup execution",
-		metrics.UnitBytes)
+func New() MetricsHook {
+	return &sidecarMetrics{
+		storageTypeKey: "agent_sidecar_storage_type",
+		bucketNameKey:  "agent_sidecar_bucket_name",
+		filenameKey:    "agent_sidecar_filename",
+	}
+}
 
-	sm.uploadLatency = *metrics.Float64(
-		metrics.ValdOrg+"/agent/sidecar/upload_latency",
-		"upload latency",
-		metrics.UnitMilliseconds)
+func (*sidecarMetrics) View() ([]metrics.View, error) {
+	return []metrics.View{
+		view.NewView(
+			view.Instrument{
+				Name:        uploadTotalMetricsName,
+				Description: uploadTotalMetricsDescription,
+			},
+			view.Stream{
+				Aggregation: view.AggregationSum{},
+			},
+		),
+		view.NewView(
+			view.Instrument{
+				Name:        uploadBytesMetricsName,
+				Description: uploadBytesMetricsDescription,
+			},
+			view.Stream{
+				Aggregation: view.AggregationLastValue{},
+			},
+		),
+		view.NewView(
+			view.Instrument{
+				Name:        uploadLatencyMetricsName,
+				Description: uploadLatencyMetricsDescription,
+			},
+			view.Stream{
+				Aggregation: view.AggregationExplicitBucketHistogram{
+					Boundaries: metrics.RoughMillisecondsDistribution,
+				},
+			},
+		),
+	}, nil
+}
 
-	sm.storageTypeKey, err = metrics.NewKey("agent_sidecar_storage_type")
+func (sm *sidecarMetrics) Register(m metrics.Meter) error {
+	uploadTotal, err := m.Int64ObservableCounter(
+		uploadTotalMetricsName,
+		metrics.WithDescription(uploadTotalMetricsDescription),
+		metrics.WithUnit(metrics.Dimensionless),
+	)
 	if err != nil {
-		return nil, err
+		return err
 	}
-
-	sm.bucketNameKey, err = metrics.NewKey("agent_sidecar_bucket_name")
+	uploadBytes, err := m.Int64ObservableGauge(
+		uploadBytesMetricsName,
+		metrics.WithDescription(uploadBytesMetricsDescription),
+		metrics.WithUnit(metrics.Bytes),
+	)
 	if err != nil {
-		return nil, err
+		return err
 	}
-
-	sm.filenameKey, err = metrics.NewKey("agent_sidecar_filename")
+	uploadLatency, err := m.Float64ObservableGauge(
+		uploadLatencyMetricsName,
+		metrics.WithDescription(uploadLatencyMetricsDescription),
+		metrics.WithUnit(metrics.Milliseconds),
+	)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	sm.ms = make([]metrics.MeasurementWithTags, 0)
+	_, err = m.RegisterCallback(
+		func(_ context.Context, o api.Observer) error {
+			sm.mu.Lock()
+			defer sm.mu.Unlock()
 
-	return sm, nil
-}
+			if sm.info == nil {
+				return nil
+			}
 
-func (sm *sidecarMetrics) Measurement(ctx context.Context) ([]metrics.Measurement, error) {
-	return []metrics.Measurement{}, nil
-}
+			attrs := api.WithAttributes(
+				attribute.String(sm.storageTypeKey, sm.info.StorageInfo.Type),
+				attribute.String(sm.bucketNameKey, sm.info.BucketName),
+				attribute.String(sm.filenameKey, sm.info.Filename),
+			)
 
-func (sm *sidecarMetrics) MeasurementWithTags(ctx context.Context) ([]metrics.MeasurementWithTags, error) {
-	sm.mu.Lock()
-	defer func() {
-		sm.ms = make([]metrics.MeasurementWithTags, 0)
-		sm.mu.Unlock()
-	}()
+			o.ObserveInt64(uploadTotal, 1, attrs)
+			o.ObserveInt64(uploadBytes, sm.info.Bytes, attrs)
+			latencyMillis := float64(sm.info.EndTime.Sub(sm.info.StartTime)) / float64(time.Millisecond)
+			o.ObserveFloat64(uploadLatency, latencyMillis, attrs)
+			sm.info = nil
 
-	return sm.ms, nil
-}
-
-func (sm *sidecarMetrics) View() []*metrics.View {
-	uploadKeys := []metrics.Key{
-		sm.storageTypeKey,
-		sm.bucketNameKey,
-		sm.filenameKey,
-	}
-
-	return []*metrics.View{
-		{
-			Name:        "agent_sidecar_completed_upload_total",
-			Description: sm.uploadTotal.Description(),
-			TagKeys:     uploadKeys,
-			Measure:     &sm.uploadTotal,
-			Aggregation: metrics.Count(),
+			return nil
 		},
-		{
-			Name:        "agent_sidecar_upload_bytes",
-			Description: sm.uploadBytes.Description(),
-			TagKeys:     uploadKeys,
-			Measure:     &sm.uploadBytes,
-			Aggregation: metrics.LastValue(),
-		},
-		{
-			Name:        "agent_sidecar_upload_latency",
-			Description: sm.uploadLatency.Description(),
-			TagKeys:     uploadKeys,
-			Measure:     &sm.uploadLatency,
-			Aggregation: metrics.RoughMillisecondsDistribution,
-		},
-	}
+		uploadTotal,
+		uploadBytes,
+		uploadLatency,
+	)
+	return err
 }
 
-func (sm *sidecarMetrics) BeforeProcess(ctx context.Context, info *observer.BackupInfo) (context.Context, error) {
+func (*sidecarMetrics) BeforeProcess(ctx context.Context, _ *observer.BackupInfo) (context.Context, error) {
 	return ctx, nil
 }
 
-func (sm *sidecarMetrics) AfterProcess(ctx context.Context, info *observer.BackupInfo) error {
-	tags := map[metrics.Key]string{
-		sm.storageTypeKey: info.StorageInfo.Type,
-		sm.bucketNameKey:  info.BucketName,
-		sm.filenameKey:    info.Filename,
-	}
-
-	latencyMillis := float64(info.EndTime.Sub(info.StartTime)) / float64(time.Millisecond)
-
+func (sm *sidecarMetrics) AfterProcess(_ context.Context, info *observer.BackupInfo) error {
 	sm.mu.Lock()
 	defer sm.mu.Unlock()
-
-	sm.ms = append(
-		sm.ms,
-		metrics.MeasurementWithTags{
-			Measurement: sm.uploadTotal.M(1),
-			Tags:        tags,
-		},
-		metrics.MeasurementWithTags{
-			Measurement: sm.uploadBytes.M(info.Bytes),
-			Tags:        tags,
-		},
-		metrics.MeasurementWithTags{
-			Measurement: sm.uploadLatency.M(latencyMillis),
-			Tags:        tags,
-		},
-	)
-
+	sm.info = info
 	return nil
 }

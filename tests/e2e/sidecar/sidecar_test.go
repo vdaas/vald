@@ -1,11 +1,10 @@
 //go:build e2e
-// +build e2e
 
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -132,6 +131,15 @@ func TestE2EForSidecar(t *testing.T) {
 		t.Fatalf("an error occurred: %s", err)
 	}
 
+	res, err := op.IndexInfo(t, ctx)
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	if insertNum != int(res.GetStored()) {
+		t.Errorf("Stored index count is invalid, expected: %d, stored: %d", insertNum, res.GetStored())
+	}
+
 	err = op.Search(t, ctx, operation.Dataset{
 		Test:      ds.Test[searchFrom : searchFrom+searchNum],
 		Neighbors: ds.Neighbors[searchFrom : searchFrom+searchNum],
@@ -202,7 +210,7 @@ func TestE2EForSidecar(t *testing.T) {
 		defer pf.Close()
 	}
 
-	res, err := op.IndexInfo(t, ctx)
+	res, err = op.IndexInfo(t, ctx)
 	if err != nil {
 		t.Fatalf("an error occurred: %s", err)
 	}

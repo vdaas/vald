@@ -1,8 +1,8 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -23,8 +23,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/google/go-cmp/cmp"
-	"github.com/kpango/gache"
+	gache "github.com/kpango/gache/v2"
+	"github.com/vdaas/vald/internal/cache/cacher"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/test/goleak"
 )
@@ -36,39 +36,35 @@ var goleakIgnoreOptions = []goleak.Option{
 
 func TestNew(t *testing.T) {
 	type args struct {
-		opts []Option
+		opts []Option[any]
 	}
 	type want struct {
-		wantC *cache
+		wantC cacher.Cache[any]
 	}
 	type test struct {
 		name       string
 		args       args
 		want       want
-		checkFunc  func(want, *cache) error
+		checkFunc  func(want, cacher.Cache[any]) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, gotC *cache) error {
-		opts := []cmp.Option{
-			cmp.AllowUnexported(*w.wantC),
-			cmp.AllowUnexported(*gotC),
-			cmp.Comparer(func(want, got gache.Gache) bool {
-				return want != nil && got != nil
-			}),
-			cmp.Comparer(func(want, got func(context.Context, string)) bool {
-				return reflect.ValueOf(want).Pointer() == reflect.ValueOf(got).Pointer()
-			}),
+	defaultCheckFunc := func(w want, got cacher.Cache[any]) error {
+		wc := reflect.ValueOf(w.wantC.(*cache[any]))
+		gc := reflect.ValueOf(got.(*cache[any]))
+		flag := false
+		for i := 0; i < reflect.Indirect(gc).NumField(); i++ {
+			flag = reflect.DeepEqual(reflect.Indirect(gc).Field(i), reflect.Indirect(wc).Field(i))
 		}
-		if diff := cmp.Diff(w.wantC, gotC, opts...); diff != "" {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotC, w.wantC)
+		if flag {
+			return errors.Errorf("got: \"%#v\",\n\t\t\twant: \"%#v\"", got, w.wantC)
 		}
 		return nil
 	}
 	tests := []test{
 		func() test {
-			c := new(cache)
-			for _, opt := range defaultOptions() {
+			c := new(cache[any])
+			for _, opt := range defaultOptions[any]() {
 				opt(c)
 			}
 			c.gache.SetDefaultExpire(c.expireDur)
@@ -81,8 +77,8 @@ func TestNew(t *testing.T) {
 		}(),
 		func() test {
 			expiredHook := func(context.Context, string) {}
-			c := new(cache)
-			for _, opt := range append(defaultOptions(), WithExpiredHook(expiredHook)) {
+			c := new(cache[any])
+			for _, opt := range append(defaultOptions[any](), WithExpiredHook[any](expiredHook)) {
 				opt(c)
 			}
 			c.gache.SetDefaultExpire(c.expireDur)
@@ -92,8 +88,8 @@ func TestNew(t *testing.T) {
 			return test{
 				name: "set success when opts is not nil",
 				args: args{
-					opts: []Option{
-						WithExpiredHook(expiredHook),
+					opts: []Option[any]{
+						WithExpiredHook[any](expiredHook),
 					},
 				},
 				want: want{
@@ -103,7 +99,8 @@ func TestNew(t *testing.T) {
 		}(),
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
@@ -129,7 +126,7 @@ func Test_cache_Start(t *testing.T) {
 		ctx context.Context
 	}
 	type fields struct {
-		gache          gache.Gache
+		gache          gache.Gache[any]
 		expireDur      time.Duration
 		expireCheckDur time.Duration
 		expiredHook    func(context.Context, string)
@@ -158,7 +155,7 @@ func Test_cache_Start(t *testing.T) {
 				}(),
 			},
 			fields: fields{
-				gache:          gache.New(),
+				gache:          gache.New[any](),
 				expireDur:      1 * time.Second,
 				expireCheckDur: 1 * time.Second,
 				expiredHook:    nil,
@@ -166,7 +163,8 @@ func Test_cache_Start(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
@@ -179,7 +177,7 @@ func Test_cache_Start(t *testing.T) {
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
-			c := &cache{
+			c := &cache[any]{
 				gache:          test.fields.gache,
 				expireDur:      test.fields.expireDur,
 				expireCheckDur: test.fields.expireCheckDur,
@@ -198,7 +196,7 @@ func Test_cache_Get(t *testing.T) {
 		key string
 	}
 	type fields struct {
-		gache          gache.Gache
+		gache          gache.Gache[any]
 		expireDur      time.Duration
 		expireCheckDur time.Duration
 		expiredHook    func(context.Context, string)
@@ -213,7 +211,7 @@ func Test_cache_Get(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, interface{}, bool) error
-		beforeFunc func(args, *cache)
+		beforeFunc func(*testing.T, args, *cache[any])
 		afterFunc  func(args)
 	}
 	defaultCheckFunc := func(w want, got interface{}, got1 bool) error {
@@ -232,7 +230,7 @@ func Test_cache_Get(t *testing.T) {
 				key: "vdaas",
 			},
 			fields: fields{
-				gache:          gache.New(),
+				gache:          gache.New[any](),
 				expireDur:      1 * time.Second,
 				expireCheckDur: 1 * time.Second,
 				expiredHook:    nil,
@@ -248,7 +246,7 @@ func Test_cache_Get(t *testing.T) {
 				key: "vdaas",
 			},
 			fields: fields{
-				gache:          gache.New(),
+				gache:          gache.New[any](),
 				expireDur:      1 * time.Second,
 				expireCheckDur: 1 * time.Second,
 				expiredHook:    nil,
@@ -257,23 +255,25 @@ func Test_cache_Get(t *testing.T) {
 				want:  "vald",
 				want1: true,
 			},
-			beforeFunc: func(args args, c *cache) {
+			beforeFunc: func(t *testing.T, args args, c *cache[any]) {
+				t.Helper()
 				c.Set(args.key, "vald")
 			},
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
-			c := &cache{
+			c := &cache[any]{
 				gache:          test.fields.gache,
 				expireDur:      test.fields.expireDur,
 				expireCheckDur: test.fields.expireCheckDur,
 				expiredHook:    test.fields.expiredHook,
 			}
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args, c)
+				test.beforeFunc(tt, test.args, c)
 			}
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
@@ -296,7 +296,7 @@ func Test_cache_Set(t *testing.T) {
 		val interface{}
 	}
 	type fields struct {
-		gache          gache.Gache
+		gache          gache.Gache[any]
 		expireDur      time.Duration
 		expireCheckDur time.Duration
 		expiredHook    func(context.Context, string)
@@ -311,11 +311,11 @@ func Test_cache_Set(t *testing.T) {
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, *cache) error
+		checkFunc  func(want, *cache[any]) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, c *cache) error {
+	defaultCheckFunc := func(w want, c *cache[any]) error {
 		got, got1 := c.Get(w.key)
 		if !reflect.DeepEqual(got, w.want) {
 			return errors.Errorf("got = %v, want = %v", got, w.want)
@@ -333,7 +333,7 @@ func Test_cache_Set(t *testing.T) {
 				val: "vald",
 			},
 			fields: fields{
-				gache:          gache.New(),
+				gache:          gache.New[any](),
 				expireDur:      1 * time.Second,
 				expireCheckDur: 1 * time.Second,
 				expiredHook:    nil,
@@ -346,7 +346,8 @@ func Test_cache_Set(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
@@ -359,7 +360,7 @@ func Test_cache_Set(t *testing.T) {
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
-			c := &cache{
+			c := &cache[any]{
 				gache:          test.fields.gache,
 				expireDur:      test.fields.expireDur,
 				expireCheckDur: test.fields.expireCheckDur,
@@ -379,7 +380,7 @@ func Test_cache_Delete(t *testing.T) {
 		key string
 	}
 	type fields struct {
-		gache          gache.Gache
+		gache          gache.Gache[any]
 		expireDur      time.Duration
 		expireCheckDur time.Duration
 		expiredHook    func(context.Context, string)
@@ -394,11 +395,11 @@ func Test_cache_Delete(t *testing.T) {
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, *cache) error
-		beforeFunc func(args, *cache)
+		checkFunc  func(want, *cache[any]) error
+		beforeFunc func(*testing.T, args, *cache[any])
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, c *cache) error {
+	defaultCheckFunc := func(w want, c *cache[any]) error {
 		got, got1 := c.Get(w.key)
 		if !reflect.DeepEqual(got, w.want) {
 			return errors.Errorf("got = %v, want = %v", got, w.want)
@@ -415,7 +416,7 @@ func Test_cache_Delete(t *testing.T) {
 				key: "vdaas",
 			},
 			fields: fields{
-				gache:          gache.New(),
+				gache:          gache.New[any](),
 				expireDur:      1 * time.Second,
 				expireCheckDur: 1 * time.Second,
 				expiredHook:    nil,
@@ -432,7 +433,7 @@ func Test_cache_Delete(t *testing.T) {
 				key: "vdaas",
 			},
 			fields: fields{
-				gache:          gache.New(),
+				gache:          gache.New[any](),
 				expireDur:      1 * time.Second,
 				expireCheckDur: 1 * time.Second,
 				expiredHook:    nil,
@@ -442,23 +443,25 @@ func Test_cache_Delete(t *testing.T) {
 				want:  nil,
 				want1: false,
 			},
-			beforeFunc: func(args args, c *cache) {
+			beforeFunc: func(t *testing.T, args args, c *cache[any]) {
+				t.Helper()
 				c.Set(args.key, "vald")
 			},
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
-			c := &cache{
+			c := &cache[any]{
 				gache:          test.fields.gache,
 				expireDur:      test.fields.expireDur,
 				expireCheckDur: test.fields.expireCheckDur,
 				expiredHook:    test.fields.expiredHook,
 			}
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args, c)
+				test.beforeFunc(tt, test.args, c)
 			}
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
@@ -481,7 +484,7 @@ func Test_cache_GetAndDelete(t *testing.T) {
 		key string
 	}
 	type fields struct {
-		gache          gache.Gache
+		gache          gache.Gache[any]
 		expireDur      time.Duration
 		expireCheckDur time.Duration
 		expiredHook    func(context.Context, string)
@@ -496,7 +499,7 @@ func Test_cache_GetAndDelete(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, interface{}, bool) error
-		beforeFunc func(args, *cache)
+		beforeFunc func(*testing.T, args, *cache[any])
 		afterFunc  func(args)
 	}
 	defaultCheckFunc := func(w want, got interface{}, got1 bool) error {
@@ -515,7 +518,7 @@ func Test_cache_GetAndDelete(t *testing.T) {
 				key: "vdaas",
 			},
 			fields: fields{
-				gache:          gache.New(),
+				gache:          gache.New[any](),
 				expireDur:      1 * time.Second,
 				expireCheckDur: 1 * time.Second,
 				expiredHook:    nil,
@@ -531,7 +534,7 @@ func Test_cache_GetAndDelete(t *testing.T) {
 				key: "vdaas",
 			},
 			fields: fields{
-				gache:          gache.New(),
+				gache:          gache.New[any](),
 				expireDur:      1 * time.Second,
 				expireCheckDur: 1 * time.Second,
 				expiredHook:    nil,
@@ -540,23 +543,25 @@ func Test_cache_GetAndDelete(t *testing.T) {
 				want:  "vald",
 				want1: true,
 			},
-			beforeFunc: func(args args, c *cache) {
+			beforeFunc: func(t *testing.T, args args, c *cache[any]) {
+				t.Helper()
 				c.Set(args.key, "vald")
 			},
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
-			c := &cache{
+			c := &cache[any]{
 				gache:          test.fields.gache,
 				expireDur:      test.fields.expireDur,
 				expireCheckDur: test.fields.expireCheckDur,
 				expiredHook:    test.fields.expiredHook,
 			}
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args, c)
+				test.beforeFunc(tt, test.args, c)
 			}
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args)
@@ -573,3 +578,5 @@ func Test_cache_GetAndDelete(t *testing.T) {
 		})
 	}
 }
+
+// NOT IMPLEMENTED BELOW

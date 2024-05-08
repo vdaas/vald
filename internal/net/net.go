@@ -1,8 +1,8 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -21,16 +21,16 @@ import (
 	"context"
 	"math"
 	"net"
+	"net/netip"
 	"strconv"
-	"sync"
 	"syscall"
 
-	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/strings"
-	"inet.af/netaddr"
+	"github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/internal/sync/errgroup"
 )
 
 type (
@@ -161,7 +161,7 @@ func Parse(addr string) (host string, port uint16, isLocal, isIPv4, isIPv6 bool,
 		host = addr
 	}
 
-	ip, nerr := netaddr.ParseIP(host)
+	ip, nerr := netip.ParseAddr(host)
 	if nerr != nil {
 		log.Debugf("host: %s,\tport: %d,\tip: %#v,\terror: %v", host, port, ip, nerr)
 	}
@@ -169,13 +169,13 @@ func Parse(addr string) (host string, port uint16, isLocal, isIPv4, isIPv6 bool,
 	// return host and port and flags
 	return host, port,
 		// check is local ip or not
-		IsLocal(host) || ip.IsLoopback(),
+		IsLocal(host) || nerr == nil && ip.IsLoopback(),
 		// check is IPv4 or not
 		// ic < 2,
 		nerr == nil && ip.Is4(),
 		// check is IPv6 or not
 		// ic >= 2,
-		nerr == nil && (ip.Is6() || ip.Is4in6()),
+		nerr == nil && (ip.Is6() || ip.Is4In6()),
 		// Split error
 		err
 }
@@ -188,7 +188,7 @@ func DialContext(ctx context.Context, network, addr string) (conn Conn, err erro
 	return DefaultResolver.Dial(ctx, network, addr)
 }
 
-// JoinHostPort joins the host/IP address and the port number,
+// JoinHostPort joins the host/IP address and the port number,.
 func JoinHostPort(host string, port uint16) string {
 	return net.JoinHostPort(host, strconv.FormatUint(uint64(port), 10))
 }
@@ -207,11 +207,17 @@ func SplitHostPort(hostport string) (host string, port uint16, err error) {
 		host = hostport
 		port = defaultPort
 	}
-	p, err := strconv.ParseUint(portStr, 10, 16)
-	if err != nil || p > math.MaxUint16 {
-		port = defaultPort
-	} else {
-		port = uint16(p)
+	if len(portStr) > 0 {
+		var p uint64
+		p, err = strconv.ParseUint(portStr, 10, 16)
+		if err != nil || p > math.MaxUint16 {
+			port = defaultPort
+		} else {
+			port = uint16(p)
+		}
+	}
+	if len(host) == 0 {
+		host = "localhost"
 	}
 	return host, port, err
 }
@@ -228,7 +234,7 @@ func ScanPorts(ctx context.Context, start, end uint16, host string) (ports []uin
 		return nil, err
 	}
 	eg, egctx := errgroup.New(ctx)
-	eg.Limitation(int(rl.Max) / 2)
+	eg.SetLimit(int(rl.Max) / 2)
 
 	var mu sync.Mutex
 
@@ -269,7 +275,7 @@ func ScanPorts(ctx context.Context, start, end uint16, host string) (ports []uin
 	return ports, nil
 }
 
-// LoadLocalIP returns local ip address
+// LoadLocalIP returns local ip address.
 func LoadLocalIP() string {
 	addrs, err := net.InterfaceAddrs()
 	if err != nil {
@@ -278,9 +284,9 @@ func LoadLocalIP() string {
 	}
 	for _, address := range addrs {
 		if ipn, ok := address.(*net.IPNet); ok {
-			if ip, ok := netaddr.FromStdIPNet(ipn); ok && ip.Valid() && ip.IP().IsLoopback() &&
-				(ip.IP().Is4() || ip.IP().Is6() || ip.IP().Is4in6()) {
-				return ip.IP().String()
+			if ip, err := netip.ParsePrefix(ipn.String()); err == nil && ip.IsValid() && ip.Addr().IsLoopback() &&
+				(ip.Addr().Is4() || ip.Addr().Is6() || ip.Addr().Is4In6()) {
+				return ip.Addr().String()
 			}
 		}
 	}

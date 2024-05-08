@@ -1,8 +1,8 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -20,24 +20,32 @@ package discoverer
 import (
 	"context"
 	"reflect"
-	"sync"
 	"sync/atomic"
 	"time"
 
 	"github.com/vdaas/vald/apis/grpc/v1/discoverer"
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
-	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/safety"
+	"github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/internal/sync/errgroup"
 )
 
 type Client interface {
 	Start(ctx context.Context) (<-chan error, error)
 	GetAddrs(ctx context.Context) []string
+
+	// GetClient returns the grpc.Client for both read and write.
 	GetClient() grpc.Client
+
+	// GetReadClient returns the grpc.Client only for read. If there's no readreplica, this returns the grpc.Client for the primary agent.
+	// Use this API only for getting client for agent. For other use cases, use GetClient() instead.
+	// Internally, this API round robin between c.client and c.readClient with the ratio of
+	// agent replicas and read replica agent replicas.
+	GetReadClient() grpc.Client
 }
 
 type client struct {
@@ -49,13 +57,17 @@ type client struct {
 	dns          string
 	opts         []grpc.Option
 	port         int
-	addrs        atomic.Value
+	addrs        atomic.Pointer[[]string]
 	dscClient    grpc.Client
 	dscDur       time.Duration
 	eg           errgroup.Group
 	name         string
 	namespace    string
 	nodeName     string
+	// read replica related members below
+	readClient          grpc.Client
+	readReplicaReplicas uint64
+	roundRobin          atomic.Uint64
 }
 
 func New(opts ...Option) (d Client, err error) {
@@ -68,10 +80,20 @@ func New(opts ...Option) (d Client, err error) {
 	return c, nil
 }
 
+// Start starts the discoverer client.
+// skipcq: GO-R1005
 func (c *client) Start(ctx context.Context) (<-chan error, error) {
 	dech, err := c.dscClient.StartConnectionMonitor(ctx)
 	if err != nil {
 		return nil, err
+	}
+
+	var rrech <-chan error
+	if c.readClient != nil {
+		rrech, err = c.readClient.StartConnectionMonitor(ctx)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	ech := make(chan error, 100)
@@ -80,7 +102,7 @@ func (c *client) Start(ctx context.Context) (<-chan error, error) {
 		close(ech)
 		return nil, err
 	}
-	c.addrs.Store(addrs)
+	c.addrs.Store(&addrs)
 
 	var aech <-chan error
 	if c.autoconn {
@@ -103,7 +125,7 @@ func (c *client) Start(ctx context.Context) (<-chan error, error) {
 	err = c.discover(ctx, ech)
 	if err != nil {
 		close(ech)
-		return nil, errors.Wrap(c.dscClient.Close(ctx), err.Error())
+		return nil, errors.Join(c.dscClient.Close(ctx), err)
 	}
 
 	c.eg.Go(safety.RecoverFunc(func() (err error) {
@@ -114,17 +136,17 @@ func (c *client) Start(ctx context.Context) (<-chan error, error) {
 			var errs error
 			err = c.dscClient.Close(ctx)
 			if err != nil {
-				errs = errors.Wrap(errs, err.Error())
+				errs = errors.Join(errs, err)
 			}
 			if c.autoconn && c.client != nil {
 				err = c.client.Close(ctx)
 				if err != nil {
-					errs = errors.Wrap(errs, err.Error())
+					errs = errors.Join(errs, err)
 				}
 			}
 			err = ctx.Err()
 			if err != nil && err != context.Canceled {
-				errs = errors.Wrap(errs, err.Error())
+				errs = errors.Join(errs, err)
 			}
 			return errs
 		}
@@ -134,6 +156,7 @@ func (c *client) Start(ctx context.Context) (<-chan error, error) {
 				return finalize()
 			case err = <-dech:
 			case err = <-aech:
+			case err = <-rrech:
 			case <-dt.C:
 				err = c.discover(ctx, ech)
 			}
@@ -152,9 +175,8 @@ func (c *client) Start(ctx context.Context) (<-chan error, error) {
 }
 
 func (c *client) GetAddrs(ctx context.Context) (addrs []string) {
-	var ok bool
-	addrs, ok = c.addrs.Load().([]string)
-	if !ok {
+	a := c.addrs.Load()
+	if a == nil {
 		ips, err := net.DefaultResolver.LookupIPAddr(ctx, c.dns)
 		if err != nil {
 			return nil
@@ -163,12 +185,34 @@ func (c *client) GetAddrs(ctx context.Context) (addrs []string) {
 		for _, ip := range ips {
 			addrs = append(addrs, ip.String())
 		}
+	} else {
+		addrs = *a
 	}
 	return addrs
 }
 
 func (c *client) GetClient() grpc.Client {
 	return c.client
+}
+
+func (c *client) GetReadClient() grpc.Client {
+	// just return write client when there is no read replica
+	if c.readClient == nil {
+		return c.client
+	}
+
+	var next uint64
+	for {
+		cur := c.roundRobin.Load()
+		next = (cur + 1) % (c.readReplicaReplicas + 1)
+		if c.roundRobin.CompareAndSwap(cur, next) {
+			break
+		}
+	}
+	if next == 0 {
+		return c.client
+	}
+	return c.readClient
 }
 
 func (c *client) connect(ctx context.Context, addr string) (err error) {
@@ -199,12 +243,15 @@ func (c *client) dnsDiscovery(ctx context.Context, ech chan<- error) (addrs []st
 	if err != nil || len(ips) == 0 {
 		return nil, errors.ErrAddrCouldNotDiscover(err, c.dns)
 	}
+	log.Debugf("dns discovery succeeded for dns = %s", c.dns)
 	addrs = make([]string, 0, len(ips))
 	for _, ip := range ips {
 		addr := net.JoinHostPort(ip.String(), uint16(c.port))
 		if err = c.connect(ctx, addr); err != nil {
+			log.Debugf("dns discovery connect for addr = %s from dns = %s failed %v", addr, c.dns, err)
 			ech <- err
 		} else {
+			log.Debugf("dns discovery connect for addr = %s from dns = %s succeeded", addr, c.dns)
 			addrs = append(addrs, addr)
 		}
 	}
@@ -227,7 +274,11 @@ func (c *client) discover(ctx context.Context, ech chan<- error) (err error) {
 		_, err = bo.Do(ctx, func(ctx context.Context) (interface{}, bool, error) {
 			connected, err = c.updateDiscoveryInfo(ctx, ech)
 			if err != nil {
-				return nil, true, err
+				if !errors.Is(err, errors.ErrGRPCClientNotFound) &&
+					!errors.Is(err, errors.ErrGRPCClientConnNotFound("*")) {
+					return nil, true, err
+				}
+				return nil, false, err
 			}
 			return nil, false, nil
 		})
@@ -235,7 +286,7 @@ func (c *client) discover(ctx context.Context, ech chan<- error) (err error) {
 		connected, err = c.updateDiscoveryInfo(ctx, ech)
 	}
 	if err != nil {
-		log.Warn("failed to discover addrs from discoverer API, trying to discover from dns...\t" + err.Error())
+		log.Warnf("failed to discover addrs from discoverer API, error: %v,\ttrying to dns discovery from %s...", err, c.dns)
 		connected, err = c.dnsDiscovery(ctx, ech)
 		if err != nil {
 			return err
@@ -243,26 +294,32 @@ func (c *client) discover(ctx context.Context, ech chan<- error) (err error) {
 	}
 
 	oldAddrs := c.GetAddrs(ctx)
-	c.addrs.Store(connected)
+	c.addrs.Store(&connected)
 	return c.disconnectOldAddrs(ctx, oldAddrs, connected, ech)
 }
 
 func (c *client) updateDiscoveryInfo(ctx context.Context, ech chan<- error) (connected []string, err error) {
 	nodes, err := c.discoverNodes(ctx)
 	if err != nil {
+		log.Warnf("error detected when discovering nodes,\terrors: %v", err)
 		return nil, err
+	}
+	if nodes == nil {
+		log.Warn("no nodes found")
+		return nil, errors.ErrNodeNotFound("all")
 	}
 	connected, err = c.discoverAddrs(ctx, nodes, ech)
 	if err != nil {
 		return nil, err
 	}
 	if len(connected) == 0 {
-		log.Warn("connected addr is zero")
+		log.Warnf("connected addr is zero,\tnodes: %s", nodes.String())
 		return nil, errors.ErrAddrCouldNotDiscover(err, c.dns)
 	}
 	if c.onDiscover != nil {
 		err = c.onDiscover(ctx, c, connected)
 		if err != nil {
+			log.Warnf("error detected when onDiscover execution,\tnodes: %s,\tconnected: %v,\terrors: %v", nodes.String(), connected, err)
 			return nil, err
 		}
 	}
@@ -304,20 +361,21 @@ func (c *client) discoverAddrs(ctx context.Context, nodes *payload.Info_Nodes, e
 			case <-ctx.Done():
 				return nil, ctx.Err()
 			default:
-				if node != nil && node.GetPods() != nil && len(node.GetPods().GetPods()) > i {
+				if node != nil &&
+					node.GetPods() != nil &&
+					len(node.GetPods().GetPods()) > i &&
+					len(node.GetPods().GetPods()[i].GetIp()) != 0 {
 					addr := net.JoinHostPort(node.GetPods().GetPods()[i].GetIp(), uint16(c.port))
 					if err = c.connect(ctx, addr); err != nil {
-						err = errors.ErrAddrCouldNotDiscover(err, addr)
 						select {
 						case <-ctx.Done():
 							return nil, ctx.Err()
-						case ech <- err:
+						case ech <- errors.ErrAddrCouldNotDiscover(err, addr):
 						}
 						err = nil
 					} else {
 						addrs = append(addrs, addr)
 					}
-					break
 				}
 			}
 		}
@@ -329,7 +387,7 @@ func (c *client) disconnectOldAddrs(ctx context.Context, oldAddrs, connectedAddr
 	if !c.autoconn {
 		return nil
 	}
-	var cur sync.Map
+	var cur sync.Map[string, any]
 	for _, addr := range connectedAddrs {
 		cur.Store(addr, struct{}{})
 	}
@@ -358,7 +416,7 @@ func (c *client) disconnectOldAddrs(ctx context.Context, oldAddrs, connectedAddr
 				if err != nil {
 					select {
 					case <-ctx.Done():
-						return errors.Wrap(ctx.Err(), err.Error())
+						return errors.Join(ctx.Err(), err)
 					case ech <- err:
 						return err
 					}
@@ -368,7 +426,7 @@ func (c *client) disconnectOldAddrs(ctx context.Context, oldAddrs, connectedAddr
 		}); err != nil {
 			select {
 			case <-ctx.Done():
-				return errors.Wrap(ctx.Err(), err.Error())
+				return errors.Join(ctx.Err(), err)
 			case ech <- err:
 				return err
 			}

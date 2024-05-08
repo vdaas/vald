@@ -1,24 +1,23 @@
-//
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//    https://www.apache.org/licenses/LICENSE-2.0
+//	https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 package zap
 
 import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log/format"
 	"github.com/vdaas/vald/internal/log/level"
+	log "github.com/vdaas/vald/internal/log/logger"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
@@ -45,7 +44,7 @@ type logger struct {
 }
 
 // New returns a new logger instance.
-func New(opts ...Option) (*logger, error) {
+func New(opts ...Option) (log.Logger, error) {
 	l := new(logger)
 	for _, opt := range append(defaultOpts, opts...) {
 		opt(l)
@@ -95,7 +94,7 @@ func (l *logger) initialize(sinkPath, errSinkPath string) (err error) {
 func (l *logger) Close() error {
 	err := l.logger.Sync()
 	if err != nil {
-		return errors.Wrap(l.sugar.Sync(), err.Error())
+		return errors.Join(l.sugar.Sync(), err)
 	}
 
 	return l.sugar.Sync()

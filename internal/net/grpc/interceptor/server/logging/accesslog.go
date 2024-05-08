@@ -1,8 +1,8 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -60,7 +60,7 @@ func AccessLogInterceptor() grpc.UnaryServerInterceptor {
 
 		span := trace.FromContext(ctx)
 		if span != nil {
-			traceID = span.SpanContext().TraceID.String()
+			traceID = span.SpanContext().TraceID().String()
 		}
 
 		start := time.Now()
@@ -88,9 +88,9 @@ func AccessLogInterceptor() grpc.UnaryServerInterceptor {
 
 		if err != nil {
 			entity.Error = err
-			log.Infod(rpcCompletedMessage, entity)
+			log.Warn(rpcCompletedMessage, entity)
 		} else {
-			log.Infod(rpcCompletedMessage, entity)
+			log.Debug(rpcCompletedMessage, entity)
 		}
 
 		return resp, err
@@ -108,7 +108,7 @@ func AccessLogStreamInterceptor() grpc.StreamServerInterceptor {
 
 		span := trace.FromContext(ss.Context())
 		if span != nil {
-			traceID = span.SpanContext().TraceID.String()
+			traceID = span.SpanContext().TraceID().String()
 		}
 
 		start := time.Now()
@@ -136,9 +136,9 @@ func AccessLogStreamInterceptor() grpc.StreamServerInterceptor {
 
 		if err != nil {
 			entity.Error = err
-			log.Infod(rpcCompletedMessage, entity)
+			log.Warn(rpcCompletedMessage, entity)
 		} else {
-			log.Infod(rpcCompletedMessage, entity)
+			log.Debug(rpcCompletedMessage, entity)
 		}
 
 		return err

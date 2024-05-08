@@ -1,8 +1,8 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -22,8 +22,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/internal/test/goleak"
 )
 
@@ -42,7 +42,7 @@ func TestWithErrGroup(t *testing.T) {
 		want       want
 		checkFunc  func(want, *T, error) error
 		beforeFunc func(args)
-		afterFunc  func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, obj *T, err error) error {
 		if !errors.Is(err, w.err) {
@@ -55,7 +55,9 @@ func TestWithErrGroup(t *testing.T) {
 	}
 	tests := []test{
 		func() test {
-			eg, _ := errgroup.New(context.Background())
+			ctx, cancel := context.WithCancel(context.Background())
+			eg, _ := errgroup.New(ctx)
+
 			return test{
 				name: "set success when eg is not nil",
 				args: args{
@@ -65,6 +67,10 @@ func TestWithErrGroup(t *testing.T) {
 					obj: &T{
 						eg: eg,
 					},
+				},
+				afterFunc: func(t *testing.T, _ args) {
+					t.Helper()
+					cancel()
 				},
 			}
 		}(),
@@ -87,7 +93,7 @@ func TestWithErrGroup(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := defaultCheckFunc
 			if test.checkFunc != nil {
@@ -118,7 +124,7 @@ func TestWithEnableInMemoryMode(t *testing.T) {
 		want       want
 		checkFunc  func(want, *T, error) error
 		beforeFunc func(args)
-		afterFunc  func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, obj *T, err error) error {
 		if !errors.Is(err, w.err) {
@@ -162,7 +168,7 @@ func TestWithEnableInMemoryMode(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := defaultCheckFunc
 			if test.checkFunc != nil {
@@ -193,7 +199,7 @@ func TestWithIndexPath(t *testing.T) {
 		want       want
 		checkFunc  func(want, *T, error) error
 		beforeFunc func(args)
-		afterFunc  func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, obj *T, err error) error {
 		if !errors.Is(err, w.err) {
@@ -238,7 +244,7 @@ func TestWithIndexPath(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := defaultCheckFunc
 			if test.checkFunc != nil {
@@ -269,7 +275,7 @@ func TestWithAutoIndexCheckDuration(t *testing.T) {
 		want       want
 		checkFunc  func(want, *T, error) error
 		beforeFunc func(args)
-		afterFunc  func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, obj *T, err error) error {
 		if !errors.Is(err, w.err) {
@@ -310,7 +316,7 @@ func TestWithAutoIndexCheckDuration(t *testing.T) {
 			},
 			want: want{
 				obj: &T{},
-				err: errors.New("invalid timeout value: 5ss\t:timeout parse error out put failed: time: unknown unit \"ss\" in duration \"5ss\""),
+				err: errors.Join(errors.New("time: unknown unit \"ss\" in duration \"5ss\""), errors.ErrTimeoutParseFailed("5ss")),
 			},
 		},
 	}
@@ -323,7 +329,7 @@ func TestWithAutoIndexCheckDuration(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := defaultCheckFunc
 			if test.checkFunc != nil {
@@ -354,7 +360,7 @@ func TestWithAutoIndexDurationLimit(t *testing.T) {
 		want       want
 		checkFunc  func(want, *T, error) error
 		beforeFunc func(args)
-		afterFunc  func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, obj *T, err error) error {
 		if !errors.Is(err, w.err) {
@@ -395,7 +401,7 @@ func TestWithAutoIndexDurationLimit(t *testing.T) {
 			},
 			want: want{
 				obj: &T{},
-				err: errors.New("invalid timeout value: 5ss\t:timeout parse error out put failed: time: unknown unit \"ss\" in duration \"5ss\""),
+				err: errors.Join(errors.New("time: unknown unit \"ss\" in duration \"5ss\""), errors.ErrTimeoutParseFailed("5ss")),
 			},
 		},
 	}
@@ -408,7 +414,7 @@ func TestWithAutoIndexDurationLimit(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := defaultCheckFunc
 			if test.checkFunc != nil {
@@ -439,7 +445,7 @@ func TestWithAutoSaveIndexDuration(t *testing.T) {
 		want       want
 		checkFunc  func(want, *T, error) error
 		beforeFunc func(args)
-		afterFunc  func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, obj *T, err error) error {
 		if !errors.Is(err, w.err) {
@@ -480,7 +486,7 @@ func TestWithAutoSaveIndexDuration(t *testing.T) {
 			},
 			want: want{
 				obj: &T{},
-				err: errors.New("invalid timeout value: 5ss\t:timeout parse error out put failed: time: unknown unit \"ss\" in duration \"5ss\""),
+				err: errors.Join(errors.New("time: unknown unit \"ss\" in duration \"5ss\""), errors.ErrTimeoutParseFailed("5ss")),
 			},
 		},
 	}
@@ -493,7 +499,7 @@ func TestWithAutoSaveIndexDuration(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := defaultCheckFunc
 			if test.checkFunc != nil {
@@ -524,7 +530,7 @@ func TestWithAutoIndexLength(t *testing.T) {
 		want       want
 		checkFunc  func(want, *T, error) error
 		beforeFunc func(args)
-		afterFunc  func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, obj *T, err error) error {
 		if !errors.Is(err, w.err) {
@@ -568,7 +574,7 @@ func TestWithAutoIndexLength(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := defaultCheckFunc
 			if test.checkFunc != nil {
@@ -599,7 +605,7 @@ func TestWithInitialDelayMaxDuration(t *testing.T) {
 		want       want
 		checkFunc  func(want, *T, error) error
 		beforeFunc func(args)
-		afterFunc  func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, obj *T, err error) error {
 		if !errors.Is(err, w.err) {
@@ -641,7 +647,7 @@ func TestWithInitialDelayMaxDuration(t *testing.T) {
 			},
 			want: want{
 				obj: &T{},
-				err: errors.New("invalid timeout value: 5ss\t:timeout parse error out put failed: time: unknown unit \"ss\" in duration \"5ss\""),
+				err: errors.Join(errors.New("time: unknown unit \"ss\" in duration \"5ss\""), errors.ErrTimeoutParseFailed("5ss")),
 			},
 		},
 	}
@@ -654,7 +660,7 @@ func TestWithInitialDelayMaxDuration(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := defaultCheckFunc
 			if test.checkFunc != nil {
@@ -685,7 +691,7 @@ func TestWithMinLoadIndexTimeout(t *testing.T) {
 		want       want
 		checkFunc  func(want, *T, error) error
 		beforeFunc func(args)
-		afterFunc  func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, obj *T, err error) error {
 		if !errors.Is(err, w.err) {
@@ -726,7 +732,7 @@ func TestWithMinLoadIndexTimeout(t *testing.T) {
 			},
 			want: want{
 				obj: &T{},
-				err: errors.New("invalid timeout value: 5ss\t:timeout parse error out put failed: time: unknown unit \"ss\" in duration \"5ss\""),
+				err: errors.Join(errors.New("time: unknown unit \"ss\" in duration \"5ss\""), errors.ErrTimeoutParseFailed("5ss")),
 			},
 		},
 	}
@@ -739,7 +745,7 @@ func TestWithMinLoadIndexTimeout(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := defaultCheckFunc
 			if test.checkFunc != nil {
@@ -770,7 +776,7 @@ func TestWithMaxLoadIndexTimeout(t *testing.T) {
 		want       want
 		checkFunc  func(want, *T, error) error
 		beforeFunc func(args)
-		afterFunc  func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, obj *T, err error) error {
 		if !errors.Is(err, w.err) {
@@ -811,7 +817,7 @@ func TestWithMaxLoadIndexTimeout(t *testing.T) {
 			},
 			want: want{
 				obj: &T{},
-				err: errors.New("invalid timeout value: 5ss\t:timeout parse error out put failed: time: unknown unit \"ss\" in duration \"5ss\""),
+				err: errors.Join(errors.New("time: unknown unit \"ss\" in duration \"5ss\""), errors.ErrTimeoutParseFailed("5ss")),
 			},
 		},
 	}
@@ -824,7 +830,7 @@ func TestWithMaxLoadIndexTimeout(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := defaultCheckFunc
 			if test.checkFunc != nil {
@@ -855,7 +861,7 @@ func TestWithLoadIndexTimeoutFactor(t *testing.T) {
 		want       want
 		checkFunc  func(want, *T, error) error
 		beforeFunc func(args)
-		afterFunc  func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, obj *T, err error) error {
 		if !errors.Is(err, w.err) {
@@ -896,7 +902,7 @@ func TestWithLoadIndexTimeoutFactor(t *testing.T) {
 			},
 			want: want{
 				obj: &T{},
-				err: errors.New("invalid timeout value: 5ss\t:timeout parse error out put failed: time: unknown unit \"ss\" in duration \"5ss\""),
+				err: errors.Join(errors.New("time: unknown unit \"ss\" in duration \"5ss\""), errors.ErrTimeoutParseFailed("5ss")),
 			},
 		},
 	}
@@ -909,7 +915,7 @@ func TestWithLoadIndexTimeoutFactor(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := defaultCheckFunc
 			if test.checkFunc != nil {
@@ -940,7 +946,7 @@ func TestWithDefaultPoolSize(t *testing.T) {
 		want       want
 		checkFunc  func(want, *T, error) error
 		beforeFunc func(args)
-		afterFunc  func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, obj *T, err error) error {
 		if !errors.Is(err, w.err) {
@@ -984,7 +990,7 @@ func TestWithDefaultPoolSize(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := defaultCheckFunc
 			if test.checkFunc != nil {
@@ -1015,7 +1021,7 @@ func TestWithDefaultRadius(t *testing.T) {
 		want       want
 		checkFunc  func(want, *T, error) error
 		beforeFunc func(args)
-		afterFunc  func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, obj *T, err error) error {
 		if !errors.Is(err, w.err) {
@@ -1059,7 +1065,7 @@ func TestWithDefaultRadius(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := defaultCheckFunc
 			if test.checkFunc != nil {
@@ -1090,7 +1096,7 @@ func TestWithDefaultEpsilon(t *testing.T) {
 		want       want
 		checkFunc  func(want, *T, error) error
 		beforeFunc func(args)
-		afterFunc  func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, obj *T, err error) error {
 		if !errors.Is(err, w.err) {
@@ -1134,7 +1140,7 @@ func TestWithDefaultEpsilon(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := defaultCheckFunc
 			if test.checkFunc != nil {
@@ -1165,7 +1171,7 @@ func TestWithProactiveGC(t *testing.T) {
 		want       want
 		checkFunc  func(want, *T, error) error
 		beforeFunc func(args)
-		afterFunc  func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, obj *T, err error) error {
 		if !errors.Is(err, w.err) {
@@ -1209,7 +1215,7 @@ func TestWithProactiveGC(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := defaultCheckFunc
 			if test.checkFunc != nil {
@@ -1240,7 +1246,7 @@ func TestWithCopyOnWrite(t *testing.T) {
 		want       want
 		checkFunc  func(want, *T, error) error
 		beforeFunc func(args)
-		afterFunc  func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, obj *T, err error) error {
 		if !errors.Is(err, w.err) {
@@ -1284,7 +1290,7 @@ func TestWithCopyOnWrite(t *testing.T) {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := defaultCheckFunc
 			if test.checkFunc != nil {
@@ -1299,3 +1305,90 @@ func TestWithCopyOnWrite(t *testing.T) {
 		})
 	}
 }
+
+func TestWithExportIndexInfoDuration(t *testing.T) {
+	type T = ngt
+	type args struct {
+		dur string
+	}
+	type want struct {
+		obj *T
+		err error
+	}
+	type test struct {
+		name       string
+		args       args
+		want       want
+		checkFunc  func(want, *T, error) error
+		beforeFunc func(args)
+		afterFunc  func(*testing.T, args)
+	}
+	defaultCheckFunc := func(w want, obj *T, err error) error {
+		if !errors.Is(err, w.err) {
+			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+		}
+		if !reflect.DeepEqual(obj, w.obj) {
+			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
+		}
+		return nil
+	}
+	tests := []test{
+		{
+			name: "set success when duration is empty string",
+			args: args{
+				dur: "",
+			},
+			want: want{
+				obj: &T{
+					exportIndexInfoDuration: 0,
+				},
+			},
+		},
+		{
+			name: "set success when duration is a valid duration string",
+			args: args{
+				dur: "5s",
+			},
+			want: want{
+				obj: &T{
+					exportIndexInfoDuration: 5 * time.Second,
+				},
+			},
+		},
+		{
+			name: "return error when duration is not a valid duration string",
+			args: args{
+				dur: "5ss",
+			},
+			want: want{
+				obj: &T{},
+				err: errors.Join(errors.New("time: unknown unit \"ss\" in duration \"5ss\""), errors.ErrTimeoutParseFailed("5ss")),
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+			if test.beforeFunc != nil {
+				test.beforeFunc(test.args)
+			}
+			if test.afterFunc != nil {
+				defer test.afterFunc(tt, test.args)
+			}
+			checkFunc := defaultCheckFunc
+			if test.checkFunc != nil {
+				checkFunc = test.checkFunc
+			}
+
+			got := WithExportIndexInfoDuration(test.args.dur)
+			obj := new(T)
+			if err := checkFunc(test.want, obj, got(obj)); err != nil {
+				tt.Errorf("error = %v", err)
+			}
+		})
+	}
+}
+
+// NOT IMPLEMENTED BELOW

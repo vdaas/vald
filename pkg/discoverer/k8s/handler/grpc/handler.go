@@ -1,8 +1,8 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -26,11 +26,10 @@ import (
 	"github.com/vdaas/vald/internal/info"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc/errdetails"
-	"github.com/vdaas/vald/internal/net/grpc/proto"
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/observability/trace"
-	"github.com/vdaas/vald/internal/singleflight"
 	"github.com/vdaas/vald/internal/strings"
+	"github.com/vdaas/vald/internal/sync/singleflight"
 	"github.com/vdaas/vald/pkg/discoverer/k8s/service"
 )
 
@@ -40,10 +39,12 @@ type DiscovererServer interface {
 }
 
 type server struct {
-	dsc   service.Discoverer
-	group singleflight.Group
-	ip    string
-	name  string
+	dsc    service.Discoverer
+	pgroup singleflight.Group[*payload.Info_Pods]     // pod singleflight group
+	ngroup singleflight.Group[*payload.Info_Nodes]    // node singleflight group
+	sgroup singleflight.Group[*payload.Info_Services] // services singleflight group
+	ip     string
+	name   string
 	discoverer.UnimplementedDiscovererServer
 }
 
@@ -51,6 +52,7 @@ const (
 	apiName    = "vald/discoverer/k8s"
 	podPrefix  = "pods"
 	nodePrefix = "nodes"
+	svcPrefix  = "svcs"
 	keyDelim   = "-"
 )
 
@@ -64,12 +66,14 @@ func New(opts ...Option) (ds DiscovererServer, err error) {
 		}
 	}
 
-	s.group = singleflight.New()
+	s.pgroup = singleflight.New[*payload.Info_Pods]()
+	s.ngroup = singleflight.New[*payload.Info_Nodes]()
+	s.sgroup = singleflight.New[*payload.Info_Services]()
 
 	return s, nil
 }
 
-func (s *server) Start(ctx context.Context) {
+func (*server) Start(context.Context) {
 }
 
 func (s *server) Pods(ctx context.Context, req *payload.Discoverer_Request) (*payload.Info_Pods, error) {
@@ -80,7 +84,7 @@ func (s *server) Pods(ctx context.Context, req *payload.Discoverer_Request) (*pa
 		}
 	}()
 	key := singleflightKey(podPrefix, req)
-	res, _, err := s.group.Do(ctx, key, func() (interface{}, error) {
+	res, _, err := s.pgroup.Do(ctx, key, func(context.Context) (*payload.Info_Pods, error) {
 		return s.dsc.GetPods(req)
 	})
 	if err != nil {
@@ -95,7 +99,9 @@ func (s *server) Pods(ctx context.Context, req *payload.Discoverer_Request) (*pa
 			},
 			info.Get())
 		if span != nil {
-			span.SetStatus(trace.StatusCodeInternal(err.Error()))
+			span.RecordError(err)
+			span.SetAttributes(trace.StatusCodeInternal(err.Error())...)
+			span.SetStatus(trace.StatusError, err.Error())
 		}
 		log.Warnf("GetPods returned error: %v", err)
 		return nil, err
@@ -112,12 +118,14 @@ func (s *server) Pods(ctx context.Context, req *payload.Discoverer_Request) (*pa
 			},
 			info.Get())
 		if span != nil {
-			span.SetStatus(trace.StatusCodeNotFound(err.Error()))
+			span.RecordError(err)
+			span.SetAttributes(trace.StatusCodeNotFound(err.Error())...)
+			span.SetStatus(trace.StatusError, err.Error())
 		}
 		log.Warnf("Pods not found: %#v, error: %v", res, err)
 		return nil, err
 	}
-	cp := proto.Clone(res.(*payload.Info_Pods))
+	cp := res.CloneVT()
 	if cp == nil {
 		err = status.WrapWithNotFound(fmt.Sprintf("Pods API request (name: %s, namespace: %s, node: %s) pods not found, cloned response is nil", req.GetName(), req.GetNamespace(), req.GetNode()), err,
 			&errdetails.RequestInfo{
@@ -130,30 +138,14 @@ func (s *server) Pods(ctx context.Context, req *payload.Discoverer_Request) (*pa
 			},
 			info.Get())
 		if span != nil {
-			span.SetStatus(trace.StatusCodeNotFound(err.Error()))
+			span.RecordError(err)
+			span.SetAttributes(trace.StatusCodeNotFound(err.Error())...)
+			span.SetStatus(trace.StatusError, err.Error())
 		}
 		log.Warnf("Pods not found: %#v, error: %v", res, err)
 		return nil, err
 	}
-	in, ok := cp.(*payload.Info_Pods)
-	if in == nil || !ok {
-		err = status.WrapWithNotFound(fmt.Sprintf("Pods API request (name: %s, namespace: %s, node: %s) pods not found, cloned response is nil", req.GetName(), req.GetNamespace(), req.GetNode()), err,
-			&errdetails.RequestInfo{
-				RequestId:   key,
-				ServingData: errdetails.Serialize(req),
-			},
-			&errdetails.ResourceInfo{
-				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/discoverer.v1.Pods",
-				ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
-			},
-			info.Get())
-		if span != nil {
-			span.SetStatus(trace.StatusCodeNotFound(err.Error()))
-		}
-		log.Warnf("Pods not found: %#v, error: %v", res, err)
-		return nil, err
-	}
-	return in, nil
+	return cp, nil
 }
 
 func (s *server) Nodes(ctx context.Context, req *payload.Discoverer_Request) (*payload.Info_Nodes, error) {
@@ -165,7 +157,7 @@ func (s *server) Nodes(ctx context.Context, req *payload.Discoverer_Request) (*p
 	}()
 
 	key := singleflightKey(nodePrefix, req)
-	res, _, err := s.group.Do(ctx, key, func() (interface{}, error) {
+	res, _, err := s.ngroup.Do(ctx, key, func(context.Context) (*payload.Info_Nodes, error) {
 		return s.dsc.GetNodes(req)
 	})
 	if err != nil {
@@ -180,7 +172,9 @@ func (s *server) Nodes(ctx context.Context, req *payload.Discoverer_Request) (*p
 			},
 			info.Get())
 		if span != nil {
-			span.SetStatus(trace.StatusCodeInternal(err.Error()))
+			span.RecordError(err)
+			span.SetAttributes(trace.StatusCodeInternal(err.Error())...)
+			span.SetStatus(trace.StatusError, err.Error())
 		}
 		log.Warnf("GetNodes returned error: %v", err)
 		return nil, err
@@ -197,13 +191,15 @@ func (s *server) Nodes(ctx context.Context, req *payload.Discoverer_Request) (*p
 			},
 			info.Get())
 		if span != nil {
-			span.SetStatus(trace.StatusCodeNotFound(err.Error()))
+			span.RecordError(err)
+			span.SetAttributes(trace.StatusCodeNotFound(err.Error())...)
+			span.SetStatus(trace.StatusError, err.Error())
 		}
 		log.Warnf("Nodes not found: %#v, error: %v", res, err)
 		return nil, err
 	}
-	cp := proto.Clone(res.(*payload.Info_Nodes))
-	if cp == nil {
+	cn := res.CloneVT()
+	if cn == nil {
 		err = status.WrapWithNotFound(
 			fmt.Sprintf("Nodes API request (name: %s, namespace: %s, node: %s) nodes not found, cloned response is nil", req.GetName(), req.GetNamespace(), req.GetNode()),
 			err,
@@ -218,39 +214,105 @@ func (s *server) Nodes(ctx context.Context, req *payload.Discoverer_Request) (*p
 			info.Get(),
 		)
 		if span != nil {
-			span.SetStatus(trace.StatusCodeNotFound(err.Error()))
+			span.RecordError(err)
+			span.SetAttributes(trace.StatusCodeNotFound(err.Error())...)
+			span.SetStatus(trace.StatusError, err.Error())
 		}
 		log.Warnf("Nodes not found: %#v, error: %v", res, err)
 		return nil, err
 	}
-	in, ok := cp.(*payload.Info_Nodes)
-	if in == nil || !ok {
+	return cn, nil
+}
+
+// Services returns the services information that match the request.
+func (s *server) Services(ctx context.Context, req *payload.Discoverer_Request) (*payload.Info_Services, error) {
+	ctx, span := trace.StartSpan(ctx, apiName+".Services")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+
+	key := singleflightKeyForSvcs(svcPrefix, req)
+	res, _, err := s.sgroup.Do(ctx, key, func(context.Context) (*payload.Info_Services, error) {
+		return s.dsc.GetServices(req)
+	})
+	if err != nil {
+		err = status.WrapWithInternal(fmt.Sprintf("Svcs API request (name: %s, namespace: %s) failed", req.GetName(), req.GetNamespace()), err,
+			&errdetails.RequestInfo{
+				RequestId:   key,
+				ServingData: errdetails.Serialize(req),
+			},
+			&errdetails.ResourceInfo{
+				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/discoverer.v1.Svcs",
+				ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
+			},
+			info.Get())
+		if span != nil {
+			span.RecordError(err)
+			span.SetAttributes(trace.StatusCodeInternal(err.Error())...)
+			span.SetStatus(trace.StatusError, err.Error())
+		}
+		log.Warnf("GetSvcs returned error: %v", err)
+		return nil, err
+	}
+	if res == nil {
+		err = status.WrapWithNotFound(fmt.Sprintf("Svcs API request (name: %s, namespace: %s) svcs not found", req.GetName(), req.GetNamespace()), err,
+			&errdetails.RequestInfo{
+				RequestId:   key,
+				ServingData: errdetails.Serialize(req),
+			},
+			&errdetails.ResourceInfo{
+				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/discoverer.v1.Svcs",
+				ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
+			},
+			info.Get())
+		if span != nil {
+			span.RecordError(err)
+			span.SetAttributes(trace.StatusCodeNotFound(err.Error())...)
+			span.SetStatus(trace.StatusError, err.Error())
+		}
+		log.Warnf("Nodes not found: %#v, error: %v", res, err)
+		return nil, err
+	}
+	cn := res.CloneVT()
+	if cn == nil {
 		err = status.WrapWithNotFound(
-			fmt.Sprintf("Nodes API request (name: %s, namespace: %s, node: %s) nodes not found, cloned response is nil", req.GetName(), req.GetNamespace(), req.GetNode()),
+			fmt.Sprintf("Svcs API request (name: %s, namespace: %s) svcs not found, cloned response is nil", req.GetName(), req.GetNamespace()),
 			err,
 			&errdetails.RequestInfo{
 				RequestId:   key,
 				ServingData: errdetails.Serialize(req),
 			},
 			&errdetails.ResourceInfo{
-				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/discoverer.v1.Nodes",
+				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/discoverer.v1.Svcs",
 				ResourceName: fmt.Sprintf("%s(%s)", s.name, s.ip),
 			},
 			info.Get(),
 		)
 		if span != nil {
-			span.SetStatus(trace.StatusCodeNotFound(err.Error()))
+			span.RecordError(err)
+			span.SetAttributes(trace.StatusCodeNotFound(err.Error())...)
+			span.SetStatus(trace.StatusError, err.Error())
 		}
-		log.Warnf("Nodes not found: %#v, error: %v", res, err)
+		log.Warnf("Svcs not found: %#v, error: %v", res, err)
 		return nil, err
 	}
-	return in, nil
+	return cn, nil
 }
 
 func singleflightKey(pref string, req *payload.Discoverer_Request) string {
 	return strings.Join([]string{
 		pref,
 		req.GetNode(),
+		req.GetNamespace(),
+		req.GetName(),
+	}, keyDelim)
+}
+
+func singleflightKeyForSvcs(pref string, req *payload.Discoverer_Request) string {
+	return strings.Join([]string{
+		pref,
 		req.GetNamespace(),
 		req.GetName(),
 	}, keyDelim)

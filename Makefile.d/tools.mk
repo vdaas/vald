@@ -1,8 +1,8 @@
 #
-# Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
+# You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
 #    https://www.apache.org/licenses/LICENSE-2.0
@@ -19,31 +19,31 @@
 golangci-lint/install: $(BINDIR)/golangci-lint
 
 $(BINDIR)/golangci-lint:
-	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh \
+	curl -fsSL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh \
 		| sh -s -- -b $(BINDIR) $(GOLANGCILINT_VERSION)
 
 .PHONY: goimports/install
-goimports/install: $(GOPATH)/bin/goimports
+goimports/install: $(GOBIN)/goimports
 
-$(GOPATH)/bin/goimports:
+$(GOBIN)/goimports:
 	$(call go-install, golang.org/x/tools/cmd/goimports)
 
 .PHONY: strictgoimports/install
-strictgoimports/install: $(GOPATH)/bin/strictgoimports
+strictgoimports/install: $(GOBIN)/strictgoimports
 
-$(GOPATH)/bin/strictgoimports:
+$(GOBIN)/strictgoimports:
 	$(call go-install, github.com/momotaro98/strictgoimports/cmd/strictgoimports)
 
 .PHONY: gofumpt/install
-gofumpt/install: $(GOPATH)/bin/gofumpt
+gofumpt/install: $(GOBIN)/gofumpt
 
-$(GOPATH)/bin/gofumpt:
+$(GOBIN)/gofumpt:
 	$(call go-install, mvdan.cc/gofumpt)
 
 .PHONY: golines/install
-golines/install: $(GOPATH)/bin/golines
+golines/install: $(GOBIN)/golines
 
-$(GOPATH)/bin/golines:
+$(GOBIN)/golines:
 	$(call go-install, github.com/segmentio/golines)
 
 .PHONY: prettier/install
@@ -56,44 +56,111 @@ $(BINDIR)/prettier:
 reviewdog/install: $(BINDIR)/reviewdog
 
 $(BINDIR)/reviewdog:
-	curl -sSfL https://raw.githubusercontent.com/reviewdog/reviewdog/master/install.sh \
+	curl -fsSL https://raw.githubusercontent.com/reviewdog/reviewdog/master/install.sh \
 		| sh -s -- -b $(BINDIR) $(REVIEWDOG_VERSION)
 
 .PHONY: kubectl/install
 kubectl/install: $(BINDIR)/kubectl
 
-ifeq ($(UNAME),Darwin)
 $(BINDIR)/kubectl:
-	curl -L "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/darwin/amd64/kubectl" -o $(BINDIR)/kubectl
+	curl -fsSL "https://dl.k8s.io/release/$(KUBECTL_VERSION)/bin/$(OS)/$(subst x86_64,amd64,$(shell echo $(ARCH) | tr '[:upper:]' '[:lower:]'))/kubectl" -o $(BINDIR)/kubectl
 	chmod a+x $(BINDIR)/kubectl
-else
-$(BINDIR)/kubectl:
-	curl -L "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl" -o $(BINDIR)/kubectl
-	chmod a+x $(BINDIR)/kubectl
-endif
-
-.PHONY: protobuf/install
-protobuf/install: $(BINDIR)/protoc
-
-ifeq ($(UNAME),Darwin)
-$(BINDIR)/protoc:
-	curl -L "https://github.com/protocolbuffers/protobuf/releases/download/v$(PROTOBUF_VERSION)/protoc-$(PROTOBUF_VERSION)-osx-x86_64.zip" -o /tmp/protoc.zip
-	sudo unzip -o /tmp/protoc.zip -d /usr/local bin/protoc
-	sudo unzip -o /tmp/protoc.zip -d /usr/local 'include/*'
-	rm -f /tmp/protoc.zip
-else
-$(BINDIR)/protoc:
-	curl -L "https://github.com/protocolbuffers/protobuf/releases/download/v$(PROTOBUF_VERSION)/protoc-$(PROTOBUF_VERSION)-linux-x86_64.zip" -o /tmp/protoc.zip
-	unzip -o /tmp/protoc.zip -d /usr/local bin/protoc
-	unzip -o /tmp/protoc.zip -d /usr/local 'include/*'
-	rm -f /tmp/protoc.zip
-endif
 
 .PHONY: textlint/install
-textlint/install:
+textlint/install: $(NPM_GLOBAL_PREFIX)/bin/textlint
+
+$(NPM_GLOBAL_PREFIX)/bin/textlint:
 	npm install -g textlint textlint-rule-en-spell textlint-rule-prh textlint-rule-write-good
 
 .PHONY: textlint/ci/install
 textlint/ci/install:
 	npm init -y
 	npm install --save-dev textlint textlint-rule-en-spell textlint-rule-prh textlint-rule-write-good
+
+.PHONY: cspell/install
+cspell/install: $(NPM_GLOBAL_PREFIX)/bin/cspell
+
+$(NPM_GLOBAL_PREFIX)/bin/cspell:
+	npm install -g git+https://github.com/streetsidesoftware/cspell-cli
+
+.PHONY: buf/install
+buf/install: $(BINDIR)/buf
+
+$(BINDIR)/buf:
+	curl -fsSL \
+	"https://github.com/bufbuild/buf/releases/download/$(BUF_VERSION)/buf-$(shell uname -s)-$(shell uname -m)" \
+	-o "${BINDIR}/buf" && \
+	chmod +x "${BINDIR}/buf"
+
+.PHONY: k9s/install
+k9s/install: $(GOPATH)/bin/k9s
+
+$(GOPATH)/bin/k9s:
+	$(call go-install, github.com/derailed/k9s)
+
+.PHONY: stern/install
+stern/install: $(GOPATH)/bin/stern
+
+$(GOPATH)/bin/stern:
+	$(call go-install, github.com/stern/stern)
+
+.PHONY: yamlfmt/install
+yamlfmt/install: $(GOPATH)/bin/yamlfmt
+
+$(GOPATH)/bin/yamlfmt:
+	$(call go-install, github.com/google/yamlfmt/cmd/yamlfmt)
+
+.PHONY: gopls/install
+gopls/install: $(GOPATH)/bin/gopls
+
+$(GOPATH)/bin/gopls:
+	$(call go-install, golang.org/x/tools/gopls)
+
+.PHONY: gomodifytags/install
+gomodifytags/install: $(GOPATH)/bin/gomodifytags
+
+$(GOPATH)/bin/gomodifytags:
+	$(call go-install, github.com/fatih/gomodifytags)
+
+.PHONY: impl/install
+impl/install: $(GOPATH)/bin/impl
+
+$(GOPATH)/bin/impl:
+	$(call go-install, github.com/josharian/impl)
+
+.PHONY: goplay/install
+goplay/install: $(GOPATH)/bin/goplay
+
+$(GOPATH)/bin/goplay:
+	$(call go-install, github.com/haya14busa/goplay/cmd/goplay)
+
+.PHONY: delve/install
+delve/install: $(GOPATH)/bin/dlv
+
+$(GOPATH)/bin/dlv:
+	$(call go-install, github.com/go-delve/delve/cmd/dlv)
+
+.PHONY: staticcheck/install
+staticcheck/install: $(GOPATH)/bin/staticcheck
+
+$(GOPATH)/bin/staticcheck:
+	$(call go-install, honnef.co/go/tools/cmd/staticcheck)
+
+.PHONY: go/install
+go/install: $(GOROOT)/bin/go
+
+$(GOROOT)/bin/go:
+	TAR_NAME=go$(GO_VERSION).$(OS)-$(subst x86_64,amd64,$(subst aarch64,arm64,$(ARCH))).tar.gz \
+	&& curl -fsSLO "https://go.dev/dl/$${TAR_NAME}" \
+	&& tar zxf "$${TAR_NAME}" \
+	&& rm -rf "$${TAR_NAME}" \
+	&& mv go $(GOROOT) \
+	&& $(GOROOT)/bin/go version \
+	&& mkdir -p "$(GOPATH)/src" "$(GOPATH)/bin" "$(GOPATH)/pkg"
+
+.PHONY: rust/install
+rust/install: $(CARGO_HOME)/bin/cargo
+
+$(CARGO_HOME)/bin/cargo:
+	curl --proto '=https' --tlsv1.2 -fsSL https://sh.rustup.rs | CARGO_HOME=${CARGO_HOME} RUSTUP_HOME=${RUSTUP_HOME} sh -s -- --default-toolchain $(RUST_VERSION) -y
+	source "${CARGO_HOME}/env"

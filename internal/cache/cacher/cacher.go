@@ -1,8 +1,8 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -17,7 +17,20 @@
 // Package cacher provides implementation of cache type definition
 package cacher
 
-import "github.com/vdaas/vald/internal/strings"
+import (
+	"context"
+
+	"github.com/vdaas/vald/internal/strings"
+)
+
+// Cache represent the cache interface to store cache.
+type Cache[V any] interface {
+	Start(context.Context)
+	Get(string) (V, bool)
+	Set(string, V)
+	Delete(string)
+	GetAndDelete(string) (V, bool)
+}
 
 // Type represents the cacher type. Currently it support GACHE only.
 type Type uint8
@@ -32,8 +45,9 @@ func (m Type) String() string {
 	switch m {
 	case GACHE:
 		return "gache"
+	default:
+		return "unknown"
 	}
-	return "unknown"
 }
 
 // ToType returns the type based on the string.
@@ -41,6 +55,7 @@ func ToType(str string) Type {
 	switch strings.ToLower(str) {
 	case "gache":
 		return GACHE
+	default:
+		return Unknown
 	}
-	return Unknown
 }

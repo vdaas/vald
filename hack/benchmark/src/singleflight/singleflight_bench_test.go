@@ -1,18 +1,16 @@
-//
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//    https://www.apache.org/licenses/LICENSE-2.0
+//	https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 package singleflight
 
 import (
@@ -21,12 +19,13 @@ import (
 	"io/fs"
 	"math"
 	"os"
-	"sync"
 	"sync/atomic"
 	"testing"
 	"time"
 
-	"github.com/vdaas/vald/internal/singleflight"
+	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/internal/sync/singleflight"
 	stdsingleflight "golang.org/x/sync/singleflight"
 )
 
@@ -37,7 +36,7 @@ type Result struct {
 }
 
 type helper struct {
-	initDoFn  func() func(ctx context.Context, key string, fn func() (interface{}, error))
+	initDoFn  func() func(ctx context.Context, key string, fn func(context.Context) (string, error))
 	sleepDur  time.Duration
 	calledCnt int64
 	totalCnt  int64
@@ -68,7 +67,7 @@ var durs = []time.Duration{
 func (h *helper) Do(parallel int, b *testing.B) {
 	b.Helper()
 
-	fn := func() (interface{}, error) {
+	fn := func(context.Context) (string, error) {
 		atomic.AddInt64(&h.calledCnt, 1)
 		time.Sleep(h.sleepDur)
 		return "", nil
@@ -116,10 +115,10 @@ func Benchmark_group_Do_with_sync_singleflight(b *testing.B) {
 			results := make([]Result, 0, tryCnt)
 			for j := 0; j < tryCnt; j++ {
 				h := &helper{
-					initDoFn: func() func(ctx context.Context, key string, fn func() (interface{}, error)) {
+					initDoFn: func() func(ctx context.Context, key string, fn func(context.Context) (string, error)) {
 						g := new(stdsingleflight.Group)
-						return func(ctx context.Context, key string, fn func() (interface{}, error)) {
-							g.Do(key, fn)
+						return func(ctx context.Context, key string, fn func(context.Context) (string, error)) {
+							g.Do(key, func() (interface{}, error) { return fn(context.Background()) })
 						}
 					},
 					sleepDur: dur,
@@ -211,9 +210,9 @@ func Benchmark_group_Do_with_vald_internal_singleflight(b *testing.B) {
 			results := make([]Result, 0, tryCnt)
 			for j := 0; j < tryCnt; j++ {
 				h := &helper{
-					initDoFn: func() func(ctx context.Context, key string, fn func() (interface{}, error)) {
-						g := singleflight.New()
-						return func(ctx context.Context, key string, fn func() (interface{}, error)) {
+					initDoFn: func() func(ctx context.Context, key string, fn func(context.Context) (string, error)) {
+						g := singleflight.New[string]()
+						return func(ctx context.Context, key string, fn func(context.Context) (string, error)) {
 							g.Do(ctx, key, fn)
 						}
 					},
@@ -263,12 +262,18 @@ func Benchmark_group_Do_with_vald_internal_singleflight(b *testing.B) {
 	}
 }
 
-func toCSV(name string, r []Result) error {
-	f, err := os.OpenFile(name, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, fs.ModePerm)
+func toCSV(name string, r []Result) (err error) {
+	var f *os.File
+	f, err = os.OpenFile(name, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, fs.ModePerm)
 	if err != nil {
 		return err
 	}
-	defer f.Close()
+	defer func() {
+		e := f.Close()
+		if e != nil {
+			err = errors.Wrap(err, e.Error())
+		}
+	}()
 	_, err = fmt.Fprintln(f, "goroutine,duration,hit_rate")
 	if err != nil {
 		return err

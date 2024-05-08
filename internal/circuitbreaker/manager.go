@@ -1,31 +1,30 @@
-//
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//    https://www.apache.org/licenses/LICENSE-2.0
+//	https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 package circuitbreaker
 
 import (
 	"context"
 	"reflect"
-	"sync"
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/sync"
 )
 
 // NOTE: This variable is for observability package.
-//       This will be fixed when refactoring the observability package.
+//
+//	This will be fixed when refactoring the observability package.
 var (
 	mu      sync.RWMutex
 	metrics = make(map[string]map[State]int64) // map[breaker_name]map[state]count
@@ -37,7 +36,7 @@ type CircuitBreaker interface {
 }
 
 type breakerManager struct {
-	m    sync.Map // breaker group. key: string, value: *breaker.
+	m    sync.Map[string, *breaker]
 	opts []BreakerOption
 }
 
@@ -74,31 +73,48 @@ func (bm *breakerManager) Do(ctx context.Context, key string, fn func(ctx contex
 	}()
 
 	// Pre-loading to prevent a lot of object generation.
-	obj, ok := bm.m.Load(key)
-	if ok {
-		val, st, err = obj.(*breaker).do(ctx, fn)
+	br, ok := bm.m.Load(key)
+	if !ok {
+		br, err = newBreaker(key, bm.opts...)
+		if err != nil {
+			return nil, err
+		}
+		br, _ = bm.m.LoadOrStore(key, br)
+	}
+
+	val, st, err = br.do(ctx, fn)
+	if err != nil {
+		switch st {
+		case StateClosed:
+			err = errors.Wrapf(err, "circuitbreaker state is %s, this error is not caused by circuitbreaker", st.String())
+		case StateOpen:
+			if !errors.Is(err, errors.ErrCircuitBreakerOpenState) {
+				err = errors.Join(err, errors.ErrCircuitBreakerOpenState)
+			}
+		case StateHalfOpen:
+			if !errors.Is(err, errors.ErrCircuitBreakerHalfOpenFlowLimitation) {
+				err = errors.Join(err, errors.ErrCircuitBreakerHalfOpenFlowLimitation)
+			}
+		}
 		return val, err
 	}
-
-	b, err := newBreaker(key, bm.opts...)
-	if err != nil {
-		return nil, err
-	}
-	obj, _ = bm.m.LoadOrStore(key, b)
-	val, st, err = obj.(*breaker).do(ctx, fn)
-	return val, err
+	return val, nil
 }
 
-func Metrics(_ context.Context) map[string]map[State]int64 {
+func Metrics(context.Context) (ms map[string]map[State]int64) {
 	mu.RLock()
 	defer mu.RUnlock()
 
 	if len(metrics) == 0 {
 		return nil
 	}
-	m := make(map[string]map[State]int64, len(metrics))
-	for name, sts := range metrics {
-		m[name] = sts
+	ms = make(map[string]map[State]int64, len(metrics))
+	for name, state := range metrics {
+		sts := make(map[State]int64, len(state))
+		for st, cnt := range state {
+			sts[st] = cnt
+		}
+		ms[name] = sts
 	}
-	return m
+	return ms
 }

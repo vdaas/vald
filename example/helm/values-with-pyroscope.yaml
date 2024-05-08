@@ -1,8 +1,8 @@
 #
-# Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
+# You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
 #    https://www.apache.org/licenses/LICENSE-2.0
@@ -13,12 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
 defaults:
-  image:
-    tag: v1.4
-  time_zone: Asia/Tokyo
   logging:
     level: debug
+  image:
+    tag: latest
+  time_zone: Asia/Tokyo
   server_config:
     metrics:
       pprof:
@@ -30,20 +31,17 @@ defaults:
       readiness:
         readinessProbe:
           initialDelaySeconds: 60
-
 discoverer:
   resources:
     requests:
       cpu: 150m
       memory: 50Mi
-
 manager:
   index:
     resources:
       requests:
         cpu: 150m
         memory: 30Mi
-
 gateway:
   lb:
     minReplicas: 2
@@ -53,17 +51,16 @@ gateway:
         cpu: 150m
         memory: 150Mi
     ingress:
+      # if enabled is true, vald-lb-gateway can be connected through Kubernetes ingress from the external network.
       enabled: true
-      annotations:
-        ingress.kubernetes.io/protocol: h2c
-        ingress.kubernetes.io/ssl-passthrough: "true"
-        traefik.protocol: h2c
-        kubernetes.io/ingress.class: traefik
       host: localhost
       servicePort: grpc
+    service:
+      # NOTE: https://doc.traefik.io/traefik/routing/providers/kubernetes-ingress/#on-service
+      annotations:
+        traefik.ingress.kubernetes.io/service.serversscheme: h2c
     gateway_config:
       index_replica: 2
-
 agent:
   # /* These annotations will be set automatically when successful deployment */
   # podAnnotations:

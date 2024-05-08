@@ -1,8 +1,8 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -23,7 +23,6 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
-	"sync"
 	"text/template"
 	"time"
 
@@ -31,6 +30,7 @@ import (
 	"github.com/vdaas/vald/internal/file"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/strings"
+	"github.com/vdaas/vald/internal/sync"
 )
 
 var (
@@ -38,7 +38,7 @@ var (
 {{.Escape}} Copyright (C) 2019-{{.Year}} {{.Maintainer}}
 {{.Escape}}
 {{.Escape}} Licensed under the Apache License, Version 2.0 (the "License");
-{{.Escape}} you may not use this file except in compliance with the License.
+{{.Escape}} You may not use this file except in compliance with the License.
 {{.Escape}} You may obtain a copy of the License at
 {{.Escape}}
 {{.Escape}}    https://www.apache.org/licenses/LICENSE-2.0
@@ -50,6 +50,74 @@ var (
 {{.Escape}} limitations under the License.
 {{.Escape}}
 `))
+	docker = template.Must(template.New("Apache License").Parse(`{{.Escape}} syntax = docker/dockerfile:latest
+{{.Escape}}
+{{.Escape}} Copyright (C) 2019-{{.Year}} {{.Maintainer}}
+{{.Escape}}
+{{.Escape}} Licensed under the Apache License, Version 2.0 (the "License");
+{{.Escape}} You may not use this file except in compliance with the License.
+{{.Escape}} You may obtain a copy of the License at
+{{.Escape}}
+{{.Escape}}    https://www.apache.org/licenses/LICENSE-2.0
+{{.Escape}}
+{{.Escape}} Unless required by applicable law or agreed to in writing, software
+{{.Escape}} distributed under the License is distributed on an "AS IS" BASIS,
+{{.Escape}} WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+{{.Escape}} See the License for the specific language governing permissions and
+{{.Escape}} limitations under the License.
+{{.Escape}}
+`))
+
+	googleProtoApache = template.Must(template.New("Google Proto Apache License").Parse(`{{.Escape}}
+{{.Escape}} Copyright (C) {{.Year}} Google LLC
+{{.Escape}} Modified by {{.Maintainer}}
+{{.Escape}}
+{{.Escape}} Licensed under the Apache License, Version 2.0 (the "License");
+{{.Escape}} You may not use this file except in compliance with the License.
+{{.Escape}} You may obtain a copy of the License at
+{{.Escape}}
+{{.Escape}}    https://www.apache.org/licenses/LICENSE-2.0
+{{.Escape}}
+{{.Escape}} Unless required by applicable law or agreed to in writing, software
+{{.Escape}} distributed under the License is distributed on an "AS IS" BASIS,
+{{.Escape}} WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+{{.Escape}} See the License for the specific language governing permissions and
+{{.Escape}} limitations under the License.
+{{.Escape}}
+`))
+
+	goStandard = template.Must(template.New("Go License").Parse(`{{.Escape}}
+{{.Escape}} Copyright (c) 2009-{{.Year}} The Go Authors. All rights resered.
+{{.Escape}} Modified by {{.Maintainer}}
+{{.Escape}}
+{{.Escape}} Redistribution and use in source and binary forms, with or without
+{{.Escape}} modification, are permitted provided that the following conditions are
+{{.Escape}} met:
+{{.Escape}}
+{{.Escape}}    * Redistributions of source code must retain the above copyright
+{{.Escape}} notice, this list of conditions and the following disclaimer.
+{{.Escape}}    * Redistributions in binary form must reproduce the above
+{{.Escape}} copyright notice, this list of conditions and the following disclaimer
+{{.Escape}} in the documentation and/or other materials provided with the
+{{.Escape}} distribution.
+{{.Escape}}    * Neither the name of Google Inc. nor the names of its
+{{.Escape}} contributors may be used to endorse or promote products derived from
+{{.Escape}} this software without specific prior written permission.
+{{.Escape}}
+{{.Escape}} THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+{{.Escape}} "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+{{.Escape}} LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+{{.Escape}} A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+{{.Escape}} OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+{{.Escape}} SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+{{.Escape}} LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+{{.Escape}} DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+{{.Escape}} THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+{{.Escape}} (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+{{.Escape}} OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+{{.Escape}}
+`))
+
 	slushEscape = "//"
 	sharpEscape = "#"
 )
@@ -69,12 +137,14 @@ const (
 func main() {
 	log.Init()
 	if len(os.Args) < minimumArgumentLength {
+		// skipcq: RVV-A0003
 		log.Fatal(errors.New("invalid argument"))
 	}
 	for _, path := range dirwalk(os.Args[1]) {
 		fmt.Println(path)
 		err := readAndRewrite(path)
 		if err != nil {
+			// skipcq: RVV-A0003
 			log.Fatal(err)
 		}
 	}
@@ -114,6 +184,7 @@ func dirwalk(dir string) []string {
 			".html",
 			".json",
 			".key",
+			".kvsdb",
 			".lock",
 			".md",
 			".md5",
@@ -138,6 +209,7 @@ func dirwalk(dir string) []string {
 				"CONTRIBUTORS",
 				"GO_VERSION",
 				"NGT_VERSION",
+				"FAISS_VERSION",
 				"Pipefile",
 				"VALD_VERSION",
 				"grp",
@@ -155,7 +227,24 @@ func dirwalk(dir string) []string {
 	return paths
 }
 
+func isSymlink(path string) (bool, error) {
+	lst, err := os.Lstat(path)
+	if err != nil {
+		return false, err
+	}
+	return lst.Mode()&os.ModeSymlink == os.ModeSymlink, nil
+}
+
 func readAndRewrite(path string) error {
+	// return if it is a symlink
+	isSym, err := isSymlink(path)
+	if err != nil {
+		return err
+	}
+	if isSym {
+		return nil
+	}
+
 	f, err := os.OpenFile(path, os.O_RDWR|os.O_SYNC, fs.ModePerm)
 	if err != nil {
 		return errors.Errorf("filepath %s, could not open", path)
@@ -164,6 +253,7 @@ func readAndRewrite(path string) error {
 	if err != nil {
 		err = f.Close()
 		if err != nil {
+			// skipcq: RVV-A0003
 			log.Fatal(err)
 		}
 		return errors.Errorf("filepath %s, could not open", path)
@@ -181,12 +271,35 @@ func readAndRewrite(path string) error {
 	if fi.Name() == "LICENSE" {
 		err = license.Execute(buf, d)
 		if err != nil {
+			// skipcq: RVV-A0003
 			log.Fatal(err)
 		}
 	} else {
+		tmpl := apache
 		switch filepath.Ext(path) {
-		case ".go", ".proto":
+		case ".go", ".c", ".h", ".hpp", ".cpp":
 			d.Escape = slushEscape
+			switch fi.Name() {
+			case "errgroup_test.go",
+				"singleflight.go",
+				"semaphore.go",
+				"semaphore_bench_test.go",
+				"semaphore_example_test.go",
+				"semaphore_test.go":
+				tmpl = goStandard
+			default:
+			}
+		case ".proto":
+			if fi.Name() == "error_details.proto" {
+				tmpl = googleProtoApache
+			}
+			d.Escape = slushEscape
+		case ".rs":
+			d.Escape = slushEscape
+		default:
+			if fi.Name() == "Dockerfile" {
+				tmpl = docker
+			}
 		}
 		lf := true
 		bf := false
@@ -194,19 +307,25 @@ func readAndRewrite(path string) error {
 		once := sync.Once{}
 		for sc.Scan() {
 			line := sc.Text()
-			if filepath.Ext(path) == ".go" && strings.HasPrefix(line, "// +build") ||
-				filepath.Ext(path) == ".py" && strings.HasPrefix(line, "# -*-") {
+			if filepath.Ext(path) == ".go" && strings.HasPrefix(line, "//go:") ||
+				filepath.Ext(path) == ".py" && strings.HasPrefix(line, "# -*-") ||
+				filepath.Ext(path) == ".sh" && strings.HasPrefix(line, "#!") ||
+				filepath.Ext(path) == ".yaml" && strings.HasPrefix(line, "# !") ||
+				filepath.Ext(path) == ".yml" && strings.HasPrefix(line, "# !") {
 				bf = true
 				_, err = buf.WriteString(line)
 				if err != nil {
+					// skipcq: RVV-A0003
 					log.Fatal(err)
 				}
 				_, err = buf.WriteString("\n")
 				if err != nil {
+					// skipcq: RVV-A0003
 					log.Fatal(err)
 				}
 				_, err = buf.WriteString("\n")
 				if err != nil {
+					// skipcq: RVV-A0003
 					log.Fatal(err)
 				}
 				continue
@@ -214,10 +333,12 @@ func readAndRewrite(path string) error {
 			if (filepath.Ext(path) == ".yaml" || filepath.Ext(path) == ".yml") && strings.HasPrefix(line, "---") {
 				_, err = buf.WriteString(line)
 				if err != nil {
+					// skipcq: RVV-A0003
 					log.Fatal(err)
 				}
 				_, err = buf.WriteString("\n")
 				if err != nil {
+					// skipcq: RVV-A0003
 					log.Fatal(err)
 				}
 				continue
@@ -226,8 +347,9 @@ func readAndRewrite(path string) error {
 				continue
 			} else if !bf {
 				once.Do(func() {
-					err = apache.Execute(buf, d)
+					err = tmpl.Execute(buf, d)
 					if err != nil {
+						// skipcq: RVV-A0003
 						log.Fatal(err)
 					}
 				})
@@ -236,10 +358,12 @@ func readAndRewrite(path string) error {
 			if !lf {
 				_, err = buf.WriteString(line)
 				if err != nil {
+					// skipcq: RVV-A0003
 					log.Fatal(err)
 				}
 				_, err = buf.WriteString("\n")
 				if err != nil {
+					// skipcq: RVV-A0003
 					log.Fatal(err)
 				}
 			}
@@ -258,16 +382,19 @@ func readAndRewrite(path string) error {
 	if err != nil {
 		err = f.Close()
 		if err != nil {
+			// skipcq: RVV-A0003
 			log.Fatal(err)
 		}
 		return errors.Errorf("filepath %s, could not open", path)
 	}
 	_, err = f.WriteString(strings.ReplaceAll(buf.String(), d.Escape+"\n\n\n", d.Escape+"\n\n"))
 	if err != nil {
+		// skipcq: RVV-A0003
 		log.Fatal(err)
 	}
 	err = f.Close()
 	if err != nil {
+		// skipcq: RVV-A0003
 		log.Fatal(err)
 	}
 	return nil
@@ -465,7 +592,7 @@ var license = template.Must(template.New("LICENSE").Parse(
    Copyright (C) 2019-{{.Year}} {{.Maintainer}}
 
    Licensed under the Apache License, Version 2.0 (the "License");
-   you may not use this file except in compliance with the License.
+   You may not use this file except in compliance with the License.
    You may obtain a copy of the License at
 
        https://www.apache.org/licenses/LICENSE-2.0

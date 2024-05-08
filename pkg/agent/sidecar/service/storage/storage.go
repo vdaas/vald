@@ -1,8 +1,8 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -26,10 +26,11 @@ import (
 	"github.com/vdaas/vald/internal/db/storage/blob"
 	"github.com/vdaas/vald/internal/db/storage/blob/cloudstorage"
 	"github.com/vdaas/vald/internal/db/storage/blob/cloudstorage/urlopener"
-	"github.com/vdaas/vald/internal/db/storage/blob/v3/s3"
-	"github.com/vdaas/vald/internal/errgroup"
+	"github.com/vdaas/vald/internal/db/storage/blob/s3"
+	"github.com/vdaas/vald/internal/db/storage/blob/s3/session"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/io"
+	"github.com/vdaas/vald/internal/sync/errgroup"
 )
 
 type Storage interface {
@@ -47,7 +48,8 @@ type bs struct {
 	filename    string
 	suffix      string
 
-	s3Opts []s3.Option
+	s3Opts        []s3.Option
+	s3SessionOpts []session.Option
 
 	cloudStorageOpts          []cloudstorage.Option
 	cloudStorageURLOpenerOpts []urlopener.Option
@@ -81,7 +83,7 @@ func (b *bs) initCompressor() (err error) {
 		return nil
 	}
 
-	switch config.CompressAlgorithm(b.compressAlgorithm) {
+	switch config.AToCompressAlgorithm(b.compressAlgorithm) {
 	case config.GOB:
 		b.compressor, err = compress.NewGob()
 	case config.GZIP:
@@ -106,11 +108,17 @@ func (b *bs) initCompressor() (err error) {
 func (b *bs) initBucket(ctx context.Context) (err error) {
 	switch config.AtoBST(b.storageType) {
 	case config.S3:
+		s, err := session.New(b.s3SessionOpts...).Session()
+		if err != nil {
+			return err
+		}
+
 		b.bucket, err = s3.New(
 			append(
 				b.s3Opts,
-				s3.WithBucket(b.bucketName),
 				s3.WithErrGroup(b.eg),
+				s3.WithSession(s),
+				s3.WithBucket(b.bucketName),
 			)...,
 		)
 		if err != nil {
@@ -159,7 +167,7 @@ func (b *bs) Start(ctx context.Context) (<-chan error, error) {
 	return ech, nil
 }
 
-func (b *bs) Stop(ctx context.Context) error {
+func (b *bs) Stop(context.Context) error {
 	if b.bucket != nil {
 		return b.bucket.Close()
 	}

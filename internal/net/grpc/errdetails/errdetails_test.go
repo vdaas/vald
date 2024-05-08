@@ -1,8 +1,8 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-// Package errdetails provides error detail for grpc status
+// Package errdetails provides error detail for gRPC status
 package errdetails
 
 import (
@@ -27,6 +27,7 @@ import (
 )
 
 func Test_decodeDetails(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		objs []interface{}
 	}
@@ -47,6 +48,7 @@ func Test_decodeDetails(t *testing.T) {
 }
 
 func TestSerialize(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		objs []interface{}
 	}
@@ -67,6 +69,7 @@ func TestSerialize(t *testing.T) {
 }
 
 func TestAnyToErrorDetail(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		a *types.Any
 	}
@@ -87,6 +90,7 @@ func TestAnyToErrorDetail(t *testing.T) {
 }
 
 func TestDebugInfoFromInfoDetail(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		v *info.Detail
 	}
@@ -105,3 +109,5 @@ func TestDebugInfoFromInfoDetail(t *testing.T) {
 		})
 	}
 }
+
+// NOT IMPLEMENTED BELOW

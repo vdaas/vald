@@ -1,8 +1,8 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -20,6 +20,7 @@ package config
 import (
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/net/grpc"
+	"github.com/vdaas/vald/internal/net/grpc/admin"
 	"github.com/vdaas/vald/internal/net/grpc/health"
 	"github.com/vdaas/vald/internal/net/grpc/reflection"
 	"github.com/vdaas/vald/internal/servers/server"
@@ -34,12 +35,13 @@ type Servers struct {
 	// HealthCheckServers represent health check server configuration
 	HealthCheckServers []*Server `json:"health_check_servers" yaml:"health_check_servers"`
 
-	// MetricsServers represent metrics exporter server such as prometheus or opentelemetly or golang's pprof server
+	// MetricsServers represent metrics exporter server such as golang's pprof server
 	MetricsServers []*Server `json:"metrics_servers" yaml:"metrics_servers"`
 
 	// StartUpStrategy represent starting order of server name
-	StartUpStrategy []string `json:"startup_strategy"  yaml:"startup_strategy"`
-	// ShutdownStrategy represent shutdonw order of server name
+	StartUpStrategy []string `json:"startup_strategy" yaml:"startup_strategy"`
+
+	// ShutdownStrategy represent shutdown order of server name
 	ShutdownStrategy []string `json:"shutdown_strategy" yaml:"shutdown_strategy"`
 
 	// FullShutdownDuration represent summary duration of shutdown time
@@ -89,6 +91,7 @@ type GRPC struct {
 	HeaderTableSize                int            `json:"header_table_size,omitempty"                yaml:"header_table_size"`
 	Interceptors                   []string       `json:"interceptors,omitempty"                     yaml:"interceptors"`
 	EnableReflection               bool           `json:"enable_reflection,omitempty"                yaml:"enable_reflection"`
+	EnableAdmin                    bool           `json:"enable_admin,omitempty"                     yaml:"enable_admin"`
 }
 
 // GRPCKeepalive represents the configuration for gRPC keep-alive.
@@ -280,6 +283,12 @@ func (s *Server) Opts() []server.Option {
 				opts = append(opts,
 					server.WithGRPCRegistFunc(func(srv *grpc.Server) {
 						reflection.Register(srv)
+					}))
+			}
+			if s.GRPC.EnableAdmin {
+				opts = append(opts,
+					server.WithGRPCRegistFunc(func(srv *grpc.Server) {
+						admin.Register(srv)
 					}))
 			}
 			if s.GRPC.Keepalive != nil {

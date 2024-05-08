@@ -1,11 +1,10 @@
 //go:build e2e
-// +build e2e
 
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -25,6 +24,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"os/exec"
 	"testing"
 	"time"
 
@@ -34,6 +34,7 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/tests/e2e/hdf5"
 	"github.com/vdaas/vald/tests/e2e/kubernetes/client"
+	"github.com/vdaas/vald/tests/e2e/kubernetes/kubectl"
 	"github.com/vdaas/vald/tests/e2e/kubernetes/portforward"
 	"github.com/vdaas/vald/tests/e2e/operation"
 )
@@ -43,13 +44,14 @@ var (
 	port int
 	ds   *hdf5.Dataset
 
-	insertNum     int
-	searchNum     int
-	searchByIDNum int
-	getObjectNum  int
-	updateNum     int
-	upsertNum     int
-	removeNum     int
+	insertNum           int
+	correctionInsertNum int
+	searchNum           int
+	searchByIDNum       int
+	getObjectNum        int
+	updateNum           int
+	upsertNum           int
+	removeNum           int
 
 	insertFrom     int
 	searchFrom     int
@@ -63,6 +65,7 @@ var (
 
 	kubeClient client.Client
 	namespace  string
+	kubeConfig string
 
 	forwarder *portforward.Portforward
 )
@@ -74,6 +77,7 @@ func init() {
 	flag.IntVar(&port, "port", 8081, "gRPC port")
 
 	flag.IntVar(&insertNum, "insert-num", 10000, "number of id-vector pairs used for insert")
+	flag.IntVar(&correctionInsertNum, "correction-insert-num", 3000, "number of id-vector pairs used for insert")
 	flag.IntVar(&searchNum, "search-num", 10000, "number of id-vector pairs used for search")
 	flag.IntVar(&searchByIDNum, "search-by-id-num", 100, "number of id-vector pairs used for search-by-id")
 	flag.IntVar(&getObjectNum, "get-object-num", 100, "number of id-vector pairs used for get-object")
@@ -96,20 +100,19 @@ func init() {
 	pfPodName := flag.String("portforward-pod-name", "vald-gateway-0", "pod name (only for port forward)")
 	pfPodPort := flag.Int("portforward-pod-port", port, "pod gRPC port (only for port forward)")
 
-	kubeConfig := flag.String("kubeconfig", file.Join(os.Getenv("HOME"), ".kube", "config"), "kubeconfig path")
+	flag.StringVar(&kubeConfig, "kubeconfig", file.Join(os.Getenv("HOME"), ".kube", "config"), "kubeconfig path")
 	flag.StringVar(&namespace, "namespace", "default", "namespace")
 
 	flag.Parse()
 
 	var err error
 	if *pf {
-		kubeClient, err = client.New(*kubeConfig)
+		kubeClient, err = client.New(kubeConfig)
 		if err != nil {
 			panic(err)
 		}
 
 		forwarder = kubeClient.Portforward(namespace, *pfPodName, port, *pfPodPort)
-
 		err = forwarder.Start()
 		if err != nil {
 			panic(err)
@@ -246,6 +249,22 @@ func TestE2ERemoveOnly(t *testing.T) {
 	}
 }
 
+func TestE2ERemoveByTimestampOnly(t *testing.T) {
+	t.Cleanup(teardown)
+	ctx := context.Background()
+
+	op, err := operation.New(host, port)
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	// Remove all vector data after the current - 1 hour.
+	err = op.RemoveByTimestamp(t, ctx, time.Now().Add(-time.Hour).UnixNano())
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+}
+
 func TestE2EInsertAndSearch(t *testing.T) {
 	t.Cleanup(teardown)
 	ctx := context.Background()
@@ -360,6 +379,13 @@ func TestE2EStandardCRUD(t *testing.T) {
 		t.Fatalf("an error occurred: %s", err)
 	}
 
+	err = op.StreamListObject(t, ctx, operation.Dataset{
+		Train: ds.Train[insertFrom : insertFrom+insertNum],
+	})
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
 	err = op.Update(t, ctx, operation.Dataset{
 		Train: ds.Train[updateFrom : updateFrom+updateNum],
 	})
@@ -379,6 +405,21 @@ func TestE2EStandardCRUD(t *testing.T) {
 	})
 	if err != nil {
 		t.Fatalf("an error occurred: %s", err)
+	}
+
+	// Remove all vector data after the current - 1 hour.
+	err = op.RemoveByTimestamp(t, ctx, time.Now().Add(-time.Hour).UnixNano())
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	err = op.Flush(t, ctx)
+	if err != nil {
+		// TODO: Remove code check afeter Flush API is available for agent-faiss and mirror-gateway
+		st, _, _ := status.ParseError(err, codes.Unknown, "")
+		if st.Code() != codes.Unimplemented {
+			t.Fatalf("an error occurred: %s", err)
+		}
 	}
 }
 
@@ -715,5 +756,196 @@ func TestE2ECRUDWithSkipStrictExistCheck(t *testing.T) {
 	)
 	if err != nil {
 		t.Fatalf("an error occurred on #13: %s", err)
+	}
+}
+
+// TestE2EIndexJobCorrection tests the index correction job.
+// It inserts vectors, runs the index correction job, and then removes the vectors.
+func TestE2EIndexJobCorrection(t *testing.T) {
+	t.Cleanup(teardown)
+	ctx := context.Background()
+
+	op, err := operation.New(host, port)
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	// prepare train data
+	train := ds.Train[insertFrom : insertFrom+correctionInsertNum]
+
+	err = op.Insert(t, ctx, operation.Dataset{
+		Train: train,
+	})
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	sleep(t, waitAfterInsertDuration)
+
+	t.Log("Test case 1: just execute index correction and check if replica number is correct after correction")
+	exe := operation.NewCronJobExecutor("vald-index-correction")
+	err = exe.CreateAndWait(t, ctx, "correction-test")
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	// check if replica number is correct
+	err = op.StreamListObject(t, ctx, operation.Dataset{
+		Train: train,
+	})
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	t.Log("Test case 2: execute index correction after one agent removed")
+	t.Log("removing vald-agent-0...")
+	cmd := exec.CommandContext(ctx, "sh", "-c", "kubectl delete pod vald-agent-0 && kubectl wait --for=condition=Ready pod/vald-agent-0")
+	out, err := cmd.Output()
+	if err != nil {
+		if exitErr, ok := err.(*exec.ExitError); ok {
+			t.Fatalf("%s, %s, %v", string(out), string(exitErr.Stderr), err)
+		} else {
+			t.Fatalf("unexpected error on creating job: %v", err)
+		}
+	}
+	t.Log(string(out))
+
+	// correct the deleted index
+	err = exe.CreateAndWait(t, ctx, "correction-test")
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	// check if replica number is correct
+	err = op.StreamListObject(t, ctx, operation.Dataset{
+		Train: train,
+	})
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	t.Log("Tear down. Removing all vectors...")
+	err = op.Remove(t, ctx, operation.Dataset{
+		Train: train,
+	})
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+}
+
+// TestE2EReadReplica tests that search requests succeed with read replica resources.
+func TestE2EReadReplica(t *testing.T) {
+	t.Cleanup(teardown)
+
+	if kubeClient == nil {
+		var err error
+		kubeClient, err = client.New(kubeConfig)
+		if err != nil {
+			t.Skipf("TestE2EReadReplica needs kubernetes client but failed to create one: %s", err)
+		}
+	}
+
+	ctx := context.Background()
+
+	op, err := operation.New(host, port)
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	err = op.Insert(t, ctx, operation.Dataset{
+		Train: ds.Train[insertFrom : insertFrom+insertNum],
+	})
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	sleep(t, waitAfterInsertDuration)
+
+	t.Log("index operator should be creating read replica rotator jobs")
+	t.Log("waiting for read replica rotator jobs to complete...")
+	if err := kubectl.WaitResources(ctx, t, "job", "app=vald-readreplica-rotate", "complete", "60s"); err != nil {
+		t.Log("wait failed. printing yaml of vald-readreplica-rotate")
+		kubectl.KubectlCmd(ctx, t, "get", "pod", "-l", "app=vald-readreplica-rotate", "-oyaml")
+		t.Log("wait failed. printing log of vald-index-operator")
+		kubectl.DebugLog(ctx, t, "app=vald-index-operator")
+		t.Log("wait failed. printing log of vald-readreplica-rotate")
+		kubectl.DebugLog(ctx, t, "app=vald-readreplica-rotate")
+		t.Fatalf("failed to wait for read replica rotator jobs to complete: %s", err)
+	}
+
+	err = op.Search(t, ctx, operation.Dataset{
+		Test:      ds.Test[searchFrom : searchFrom+searchNum],
+		Neighbors: ds.Neighbors[searchFrom : searchFrom+searchNum],
+	})
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	err = op.SearchByID(t, ctx, operation.Dataset{
+		Train: ds.Train[searchByIDFrom : searchByIDFrom+searchByIDNum],
+	})
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	err = op.LinearSearch(t, ctx, operation.Dataset{
+		Test:      ds.Test[searchFrom : searchFrom+searchNum],
+		Neighbors: ds.Neighbors[searchFrom : searchFrom+searchNum],
+	})
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	err = op.LinearSearchByID(t, ctx, operation.Dataset{
+		Train: ds.Train[searchByIDFrom : searchByIDFrom+searchByIDNum],
+	})
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	err = op.Exists(t, ctx, "0")
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	err = op.GetObject(t, ctx, operation.Dataset{
+		Train: ds.Train[getObjectFrom : getObjectFrom+getObjectNum],
+	})
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	err = op.StreamListObject(t, ctx, operation.Dataset{
+		Train: ds.Train[insertFrom : insertFrom+insertNum],
+	})
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	err = op.Update(t, ctx, operation.Dataset{
+		Train: ds.Train[updateFrom : updateFrom+updateNum],
+	})
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	err = op.Upsert(t, ctx, operation.Dataset{
+		Train: ds.Train[upsertFrom : upsertFrom+upsertNum],
+	})
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	err = op.Remove(t, ctx, operation.Dataset{
+		Train: ds.Train[removeFrom : removeFrom+removeNum],
+	})
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
+	}
+
+	// Remove all vector data after the current - 1 hour.
+	err = op.RemoveByTimestamp(t, ctx, time.Now().Add(-time.Hour).UnixNano())
+	if err != nil {
+		t.Fatalf("an error occurred: %s", err)
 	}
 }

@@ -1,8 +1,8 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -23,14 +23,16 @@ import (
 	"time"
 
 	core "github.com/vdaas/vald/internal/core/algorithm/ngt"
-	"github.com/vdaas/vald/internal/errgroup"
+	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/file"
+	"github.com/vdaas/vald/internal/k8s/client"
 	"github.com/vdaas/vald/internal/rand"
 	"github.com/vdaas/vald/internal/strings"
+	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/internal/timeutil"
 )
 
-// Option represent the functional option for ngt
+// Option represent the functional option for ngt.
 type Option func(n *ngt) error
 
 var defaultOptions = []Option{
@@ -47,6 +49,7 @@ var defaultOptions = []Option{
 	WithDefaultRadius(core.DefaultRadius),
 	WithDefaultEpsilon(core.DefaultEpsilon),
 	WithProactiveGC(true),
+	WithExportIndexInfoDuration("1m"),
 }
 
 // WithErrGroup returns the functional option to set the error group.
@@ -296,6 +299,43 @@ func WithProactiveGC(enabled bool) Option {
 func WithCopyOnWrite(enabled bool) Option {
 	return func(n *ngt) error {
 		n.enableCopyOnWrite = enabled
+		return nil
+	}
+}
+
+// WithIsReadReplica returns the functional option to set the read replica flag.
+func WithIsReadReplica(isReadReplica bool) Option {
+	return func(n *ngt) error {
+		n.isReadReplica = isReadReplica
+		return nil
+	}
+}
+
+// WithExportIndexInfoDuration returns the functional option to set the duration of exporting index info to k8s.
+func WithExportIndexInfoDuration(dur string) Option {
+	return func(n *ngt) error {
+		if dur == "" {
+			return nil
+		}
+
+		d, err := timeutil.Parse(dur)
+		if err != nil {
+			return err
+		}
+
+		n.exportIndexInfoDuration = d
+
+		return nil
+	}
+}
+
+// WithPatcher returns the functional option to set the patcher for patching k8s resources.
+func WithPatcher(p client.Patcher) Option {
+	return func(n *ngt) error {
+		if p == nil {
+			return errors.NewErrInvalidOption("patcher", p)
+		}
+		n.patcher = p
 		return nil
 	}
 }

@@ -1,0 +1,1 @@
+Release {{ .Release.Name }} is created.

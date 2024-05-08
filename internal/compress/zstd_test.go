@@ -1,8 +1,8 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -33,11 +33,8 @@ var zstdCompressorComparatorOptions = []comparator.Option{
 	comparator.Comparer(func(x, y gobCompressor) bool {
 		return reflect.DeepEqual(x, y)
 	}),
-	comparator.Comparer(func(x, y zstd.EOption) bool {
-		if (x == nil && y != nil) || (x != nil && y == nil) {
-			return false
-		}
-		return reflect.ValueOf(x).Pointer() == reflect.ValueOf(y).Pointer()
+	comparator.Comparer(func(x, y []zstd.EOption) bool {
+		return len(x) == len(y)
 	}),
 }
 
@@ -121,7 +118,8 @@ func TestNewZstd(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
@@ -304,7 +302,8 @@ func Test_zstdCompressor_CompressVector(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
@@ -373,7 +372,8 @@ func Test_E2E_zstdCompressor_CompressVector(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
@@ -545,7 +545,8 @@ func Test_zstdCompressor_DecompressVector(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
@@ -653,7 +654,8 @@ func Test_zstdCompressor_Reader(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
@@ -762,7 +764,8 @@ func Test_zstdCompressor_Writer(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
@@ -855,7 +858,8 @@ func Test_zstdReader_Read(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
@@ -932,7 +936,8 @@ func Test_zstdReader_Close(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
@@ -1024,7 +1029,8 @@ func Test_zstdWriter_Write(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
@@ -1142,12 +1148,13 @@ func Test_zstdWriter_Close(t *testing.T) {
 				},
 			},
 			want: want{
-				err: errors.Wrap(errors.New("dst close err"), "w close err"),
+				err: errors.Join(errors.New("dst close err"), errors.New("w close err")),
 			},
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt)
 			if test.beforeFunc != nil {
@@ -1172,3 +1179,5 @@ func Test_zstdWriter_Close(t *testing.T) {
 		})
 	}
 }
+
+// NOT IMPLEMENTED BELOW

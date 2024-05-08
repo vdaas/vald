@@ -1,8 +1,8 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -27,10 +27,10 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/test/comparator"
-	"github.com/vdaas/vald/internal/test/goleak"
 )
 
 func TestWithProxy(t *testing.T) {
+	t.Parallel()
 	type T = transport
 	type args struct {
 		px func(*http.Request) (*url.URL, error)
@@ -91,9 +91,10 @@ func TestWithProxy(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			tt.Parallel()
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -117,6 +118,7 @@ func TestWithProxy(t *testing.T) {
 }
 
 func TestWithDialContext(t *testing.T) {
+	t.Parallel()
 	type T = transport
 	type args struct {
 		dx func(ctx context.Context, network, addr string) (net.Conn, error)
@@ -175,9 +177,10 @@ func TestWithDialContext(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			tt.Parallel()
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -201,6 +204,7 @@ func TestWithDialContext(t *testing.T) {
 }
 
 func TestWithTLSHandshakeTimeout(t *testing.T) {
+	t.Parallel()
 	type T = transport
 	type args struct {
 		dur string
@@ -250,7 +254,11 @@ func TestWithTLSHandshakeTimeout(t *testing.T) {
 				obj: &T{
 					Transport: &http.Transport{},
 				},
-				err: errors.NewErrCriticalOption("TLSHandshakeTimeout", "dummy", errors.New("invalid timeout value: dummy\t:timeout parse error out put failed: time: invalid duration \"dummy\"")),
+				err: errors.NewErrCriticalOption(
+					"TLSHandshakeTimeout",
+					"dummy",
+					errors.Join(errors.New("time: invalid duration \"dummy\""), errors.ErrTimeoutParseFailed("dummy")),
+				),
 			},
 		},
 		{
@@ -265,9 +273,10 @@ func TestWithTLSHandshakeTimeout(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			tt.Parallel()
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -291,6 +300,7 @@ func TestWithTLSHandshakeTimeout(t *testing.T) {
 }
 
 func TestWithEnableKeepalives(t *testing.T) {
+	t.Parallel()
 	type T = transport
 	type args struct {
 		enable bool
@@ -347,9 +357,10 @@ func TestWithEnableKeepalives(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			tt.Parallel()
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -373,6 +384,7 @@ func TestWithEnableKeepalives(t *testing.T) {
 }
 
 func TestWithEnableCompression(t *testing.T) {
+	t.Parallel()
 	type T = transport
 	type args struct {
 		enable bool
@@ -429,9 +441,10 @@ func TestWithEnableCompression(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			tt.Parallel()
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -455,6 +468,7 @@ func TestWithEnableCompression(t *testing.T) {
 }
 
 func TestWithMaxIdleConns(t *testing.T) {
+	t.Parallel()
 	type T = transport
 	type args struct {
 		cn int
@@ -508,9 +522,10 @@ func TestWithMaxIdleConns(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			tt.Parallel()
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -534,6 +549,7 @@ func TestWithMaxIdleConns(t *testing.T) {
 }
 
 func TestWithMaxIdleConnsPerHost(t *testing.T) {
+	t.Parallel()
 	type T = transport
 	type args struct {
 		cn int
@@ -588,9 +604,10 @@ func TestWithMaxIdleConnsPerHost(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			tt.Parallel()
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -614,6 +631,7 @@ func TestWithMaxIdleConnsPerHost(t *testing.T) {
 }
 
 func TestWithMaxConnsPerHost(t *testing.T) {
+	t.Parallel()
 	type T = transport
 	type args struct {
 		cn int
@@ -667,9 +685,10 @@ func TestWithMaxConnsPerHost(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			tt.Parallel()
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -693,6 +712,7 @@ func TestWithMaxConnsPerHost(t *testing.T) {
 }
 
 func TestWithIdleConnTimeout(t *testing.T) {
+	t.Parallel()
 	type T = transport
 	type args struct {
 		dur string
@@ -743,7 +763,11 @@ func TestWithIdleConnTimeout(t *testing.T) {
 				obj: &T{
 					Transport: &http.Transport{},
 				},
-				err: errors.NewErrCriticalOption("idleConnTimeout", "dummy", errors.New("invalid timeout value: dummy\t:timeout parse error out put failed: time: invalid duration \"dummy\"")),
+				err: errors.NewErrCriticalOption(
+					"idleConnTimeout",
+					"dummy",
+					errors.Join(errors.New("time: invalid duration \"dummy\""), errors.ErrTimeoutParseFailed("dummy")),
+				),
 			},
 		},
 		{
@@ -758,9 +782,10 @@ func TestWithIdleConnTimeout(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			tt.Parallel()
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -784,6 +809,7 @@ func TestWithIdleConnTimeout(t *testing.T) {
 }
 
 func TestWithResponseHeaderTimeout(t *testing.T) {
+	t.Parallel()
 	type T = transport
 	type args struct {
 		dur string
@@ -834,7 +860,11 @@ func TestWithResponseHeaderTimeout(t *testing.T) {
 				obj: &T{
 					Transport: &http.Transport{},
 				},
-				err: errors.NewErrCriticalOption("responseHeaderTimeout", "dummy", errors.New("invalid timeout value: dummy\t:timeout parse error out put failed: time: invalid duration \"dummy\"")),
+				err: errors.NewErrCriticalOption(
+					"responseHeaderTimeout",
+					"dummy",
+					errors.Join(errors.New("time: invalid duration \"dummy\""), errors.ErrTimeoutParseFailed("dummy")),
+				),
 			},
 		},
 		{
@@ -849,9 +879,10 @@ func TestWithResponseHeaderTimeout(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			tt.Parallel()
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -875,6 +906,7 @@ func TestWithResponseHeaderTimeout(t *testing.T) {
 }
 
 func TestWithExpectContinueTimeout(t *testing.T) {
+	t.Parallel()
 	type T = transport
 	type args struct {
 		dur string
@@ -925,7 +957,11 @@ func TestWithExpectContinueTimeout(t *testing.T) {
 				obj: &T{
 					Transport: &http.Transport{},
 				},
-				err: errors.NewErrCriticalOption("expectContinueTimeout", "dummy", errors.New("invalid timeout value: dummy\t:timeout parse error out put failed: time: invalid duration \"dummy\"")),
+				err: errors.NewErrCriticalOption(
+					"expectContinueTimeout",
+					"dummy",
+					errors.Join(errors.New("time: invalid duration \"dummy\""), errors.ErrTimeoutParseFailed("dummy")),
+				),
 			},
 		},
 		{
@@ -940,9 +976,10 @@ func TestWithExpectContinueTimeout(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			tt.Parallel()
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -966,6 +1003,7 @@ func TestWithExpectContinueTimeout(t *testing.T) {
 }
 
 func TestWithProxyConnectHeader(t *testing.T) {
+	t.Parallel()
 	type T = transport
 	type args struct {
 		header http.Header
@@ -1023,9 +1061,10 @@ func TestWithProxyConnectHeader(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			tt.Parallel()
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1049,6 +1088,7 @@ func TestWithProxyConnectHeader(t *testing.T) {
 }
 
 func TestWithMaxResponseHeaderBytes(t *testing.T) {
+	t.Parallel()
 	type T = transport
 	type args struct {
 		bs int64
@@ -1103,9 +1143,10 @@ func TestWithMaxResponseHeaderBytes(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			tt.Parallel()
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1129,6 +1170,7 @@ func TestWithMaxResponseHeaderBytes(t *testing.T) {
 }
 
 func TestWithWriteBufferSize(t *testing.T) {
+	t.Parallel()
 	type T = transport
 	type args struct {
 		bs int64
@@ -1183,9 +1225,10 @@ func TestWithWriteBufferSize(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			tt.Parallel()
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1209,6 +1252,7 @@ func TestWithWriteBufferSize(t *testing.T) {
 }
 
 func TestWithReadBufferSize(t *testing.T) {
+	t.Parallel()
 	type T = transport
 	type args struct {
 		bs int64
@@ -1263,9 +1307,10 @@ func TestWithReadBufferSize(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			tt.Parallel()
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1289,6 +1334,7 @@ func TestWithReadBufferSize(t *testing.T) {
 }
 
 func TestWithForceAttemptHTTP2(t *testing.T) {
+	t.Parallel()
 	type T = transport
 	type args struct {
 		force bool
@@ -1332,9 +1378,10 @@ func TestWithForceAttemptHTTP2(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			tt.Parallel()
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1358,6 +1405,7 @@ func TestWithForceAttemptHTTP2(t *testing.T) {
 }
 
 func TestWithBackoffOpts(t *testing.T) {
+	t.Parallel()
 	type T = transport
 	type args struct {
 		opts []backoff.Option
@@ -1451,9 +1499,10 @@ func TestWithBackoffOpts(t *testing.T) {
 		}(),
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			tt.Parallel()
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -1476,3 +1525,5 @@ func TestWithBackoffOpts(t *testing.T) {
 		})
 	}
 }
+
+// NOT IMPLEMENTED BELOW

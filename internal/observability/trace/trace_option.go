@@ -1,8 +1,8 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -17,16 +17,6 @@
 // Package trace provides trace function.
 package trace
 
-type TraceOption func(*tracer)
+type TraceOption func(*tracer) error
 
-var traceDefaultOpts = []TraceOption{
-	WithSamplingRate(1.0),
-}
-
-func WithSamplingRate(rate float64) TraceOption {
-	return func(t *tracer) {
-		if rate >= 0.0 && rate <= 1.0 {
-			t.samplingRate = rate
-		}
-	}
-}
+var traceDefaultOpts = []TraceOption{}

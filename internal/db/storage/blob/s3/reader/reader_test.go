@@ -1,8 +1,8 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -21,7 +21,6 @@ import (
 	"context"
 	"os"
 	"reflect"
-	"sync"
 	"sync/atomic"
 	"testing"
 
@@ -32,11 +31,12 @@ import (
 	ctxio "github.com/vdaas/vald/internal/db/storage/blob/s3/reader/io"
 	"github.com/vdaas/vald/internal/db/storage/blob/s3/sdk/s3"
 	"github.com/vdaas/vald/internal/db/storage/blob/s3/sdk/s3/s3iface"
-	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/io"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/log/logger"
+	"github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/internal/test/goleak"
 )
 
@@ -104,7 +104,8 @@ func TestNew(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
@@ -151,8 +152,8 @@ func Test_reader_Open(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, error) error
-		beforeFunc func(args)
-		afterFunc  func(args, *testing.T)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 		hookFunc   func(*reader)
 	}
 	defaultCheckFunc := func(w want, err error) error {
@@ -179,10 +180,11 @@ func Test_reader_Open(t *testing.T) {
 				want: want{
 					err: nil,
 				},
-				beforeFunc: func(args) {
+				beforeFunc: func(t *testing.T, _ args) {
+					t.Helper()
 					cancel()
 				},
-				afterFunc: func(_ args, t *testing.T) {
+				afterFunc: func(t *testing.T, _ args) {
 					t.Helper()
 					if err := eg.Wait(); err != nil {
 						t.Errorf("want: %v, but got: %v", nil, err)
@@ -218,7 +220,7 @@ func Test_reader_Open(t *testing.T) {
 				want: want{
 					err: nil,
 				},
-				afterFunc: func(_ args, t *testing.T) {
+				afterFunc: func(t *testing.T, _ args) {
 					t.Helper()
 
 					if err := eg.Wait(); !errors.Is(err, wantErr) {
@@ -252,7 +254,7 @@ func Test_reader_Open(t *testing.T) {
 				want: want{
 					err: nil,
 				},
-				afterFunc: func(_ args, t *testing.T) {
+				afterFunc: func(t *testing.T, _ args) {
 					t.Helper()
 
 					if err := eg.Wait(); !errors.Is(err, wantErr) {
@@ -301,7 +303,7 @@ func Test_reader_Open(t *testing.T) {
 				want: want{
 					err: nil,
 				},
-				afterFunc: func(_ args, t *testing.T) {
+				afterFunc: func(t *testing.T, _ args) {
 					t.Helper()
 
 					if err := eg.Wait(); !errors.Is(err, wantErr) {
@@ -354,7 +356,7 @@ func Test_reader_Open(t *testing.T) {
 				want: want{
 					err: nil,
 				},
-				afterFunc: func(_ args, t *testing.T) {
+				afterFunc: func(t *testing.T, _ args) {
 					t.Helper()
 
 					if err := eg.Wait(); !errors.Is(err, wantErr) {
@@ -436,7 +438,7 @@ func Test_reader_Open(t *testing.T) {
 						}
 					}()
 				},
-				afterFunc: func(_ args, t *testing.T) {
+				afterFunc: func(t *testing.T, _ args) {
 					t.Helper()
 
 					if err := eg.Wait(); err != nil {
@@ -449,14 +451,15 @@ func Test_reader_Open(t *testing.T) {
 		}(),
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args, t)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -551,7 +554,8 @@ func Test_reader_Close(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
@@ -662,7 +666,8 @@ func Test_reader_Read(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
@@ -795,7 +800,8 @@ func Test_reader_getObjectWithBackoff(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
@@ -1090,7 +1096,8 @@ func Test_reader_getObject(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
@@ -1122,3 +1129,5 @@ func Test_reader_getObject(t *testing.T) {
 		})
 	}
 }
+
+// NOT IMPLEMENTED BELOW

@@ -1,8 +1,8 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -19,7 +19,6 @@ package safety
 
 import (
 	"runtime"
-	"runtime/debug"
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/info"
@@ -27,36 +26,38 @@ import (
 )
 
 func RecoverFunc(fn func() error) func() error {
-	return recoverFunc(fn, true)
+	return recoverFn(fn, true)
 }
 
 func RecoverWithoutPanicFunc(fn func() error) func() error {
-	return recoverFunc(fn, false)
+	return recoverFn(fn, false)
 }
 
-func recoverFunc(fn func() error, withPanic bool) func() error {
+func recoverFn(fn func() error, withPanic bool) func() error {
 	return func() (err error) {
 		defer func() {
 			if r := recover(); r != nil {
-				stack := string(debug.Stack())
-				log.Warnf("recovered: %#v\nstacktrace:\n%s", r, stack)
+				infoStr := info.Get().String()
+				log.Warnf("function %#v panic recovered: %#v\ninfo:\n%s", fn, r, infoStr)
 				switch x := r.(type) {
 				case runtime.Error:
 					err = errors.ErrRuntimeError(err, x)
 					if withPanic {
-						log.Errorf("recovered but this thread is going to panic: the reason is runtimer.Error\nerror: %v\ninfo:\n%s\nstacktrace:\n%s", err, info.Get().String(), stack)
+						log.Errorf("recovered but this thread is going to panic: the reason is runtimer.Error\nerror:\t%v\ninfo:\n%s\nrecovered:\t%#v", err, infoStr, r)
 
 						panic(err)
 					}
+				case *string:
+					err = errors.ErrPanicString(err, *x)
 				case string:
 					err = errors.ErrPanicString(err, x)
 				case error:
-					err = errors.Wrap(err, x.Error())
+					err = errors.Join(err, x)
 				default:
 					err = errors.ErrPanicRecovered(err, x)
 				}
 				if err != nil {
-					log.Errorf("recovered error: %v\ninfo:\n%s\nstacktrace:\n%s", err, info.Get().String(), stack)
+					log.Errorf("function %#v panic recovered error:\t%v\ninfo:\n%s\nrecovered:\t%#v", fn, err, infoStr, r)
 				}
 			}
 		}()

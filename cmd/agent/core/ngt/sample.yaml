@@ -1,8 +1,8 @@
 #
-# Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
+# You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
 #    https://www.apache.org/licenses/LICENSE-2.0
@@ -13,8 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
----
 version: v0.0.0
 time_zone: JST
 logging:
@@ -87,7 +85,7 @@ observability:
         - go_version
         - go_os
         - go_arch
-        - ngt_version
+        - algorithm_info
   trace:
     enabled: false
     sampling_rate: 1
@@ -104,6 +102,8 @@ observability:
     service_name: "vald-agent-ngt"
     buffer_max_count: 10
 ngt:
+  pod_name: "vald-agent-ngt-0" # this might overwrite k8s resource of agent pod 0
+  namespace: "default"
   auto_create_index_pool_size: 10000
   auto_index_check_duration: 30m
   auto_index_duration_limit: 24h
@@ -126,3 +126,4 @@ ngt:
   object_type: float
   search_edge_size: 10
   enable_copy_on_write: false
+  broken_index_history_limit: 0

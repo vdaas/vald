@@ -4,26 +4,26 @@ about: Create a report to help us improve
 title: ""
 labels: "type/bug, priority/medium, team/core"
 assignees: ""
-
 ---
 
-### Describe the bug:
+### Describe the bug
 
 <!-- A clear and concise description of what the bug is. -->
 
-### To Reproduce:
+### To Reproduce
 
 <!-- Please describe the steps to reproduce the behavior: -->
 
-### Expected behavior:
+### Expected behavior
 
 <!-- A clear and concise description of what you expected to happen. -->
 
-### Environment:
+### Environment
 
 <!--- Please change the versions below along with your environment -->
 
-- Go Version: 1.18.3
+- Go Version: 1.22.3
+- Rust Version: 1.77.2
 - Docker Version: 20.10.8
-- Kubernetes Version: 1.22.0
-- NGT Version: 1.14.7
+- Kubernetes Version: v1.30.0
+- NGT Version: 2.2.1

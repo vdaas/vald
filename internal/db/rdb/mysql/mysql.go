@@ -1,8 +1,8 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -159,13 +159,13 @@ func (m *mySQLClient) Ping(ctx context.Context) (err error) {
 		select {
 		case <-pctx.Done():
 			if err != nil {
-				err = errors.Wrap(errors.ErrMySQLConnectionPingFailed, err.Error())
+				err = errors.Join(errors.ErrMySQLConnectionPingFailed, err)
 			} else {
 				err = errors.ErrMySQLConnectionPingFailed
 			}
 			cerr := pctx.Err()
 			if cerr != nil {
-				err = errors.Wrap(err, cerr.Error())
+				err = errors.Join(err, cerr)
 			}
 			return err
 		case <-tick.C:
@@ -180,7 +180,7 @@ func (m *mySQLClient) Ping(ctx context.Context) (err error) {
 
 // Close closes the connection of MySQL database.
 // If the connection is already closed or closing connection is failed, it returns error.
-func (m *mySQLClient) Close(ctx context.Context) (err error) {
+func (m *mySQLClient) Close(context.Context) (err error) {
 	if m.session == nil {
 		err = errors.ErrMySQLSessionNil
 		m.errorLog(err)
@@ -391,7 +391,8 @@ func (m *mySQLClient) SetVectors(ctx context.Context, vecs ...Vector) error {
 	return tx.Commit()
 }
 
-func (m *mySQLClient) deleteVector(ctx context.Context, val string) error {
+// DeleteVector deletes vector data from backup_vector table and podIPs from pod_ip table using vector's uuid.
+func (m *mySQLClient) DeleteVector(ctx context.Context, val string) error {
 	if !m.connected.Load().(bool) {
 		return errors.ErrMySQLConnectionClosed
 	}
@@ -432,15 +433,10 @@ func (m *mySQLClient) deleteVector(ctx context.Context, val string) error {
 	return tx.Commit()
 }
 
-// DeleteVector deletes vector data from backup_vector table and podIPs from pod_ip table using vector's uuid.
-func (m *mySQLClient) DeleteVector(ctx context.Context, uuid string) error {
-	return m.deleteVector(ctx, uuid)
-}
-
 // DeleteVectors is the same as DeleteVector() but it deletes multiple records.
 func (m *mySQLClient) DeleteVectors(ctx context.Context, uuids ...string) (err error) {
 	for _, uuid := range uuids {
-		err = m.deleteVector(ctx, uuid)
+		err = m.DeleteVector(ctx, uuid)
 		if err != nil {
 			return err
 		}

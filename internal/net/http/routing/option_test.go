@@ -1,18 +1,16 @@
-//
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//    https://www.apache.org/licenses/LICENSE-2.0
+//	https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 package routing
 
 import (
@@ -24,6 +22,7 @@ import (
 )
 
 func TestWithMiddleware(t *testing.T) {
+	t.Parallel()
 	type test struct {
 		name      string
 		mw        middleware.Wrapper
@@ -55,10 +54,12 @@ func TestWithMiddleware(t *testing.T) {
 		}(),
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			opt := WithMiddleware(tt.mw)
-			if err := tt.checkFunc(opt); err != nil {
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			opt := WithMiddleware(test.mw)
+			if err := test.checkFunc(opt); err != nil {
 				t.Error(err)
 			}
 		})
@@ -66,6 +67,7 @@ func TestWithMiddleware(t *testing.T) {
 }
 
 func TestWithMiddlewares(t *testing.T) {
+	t.Parallel()
 	type test struct {
 		name      string
 		mws       []middleware.Wrapper
@@ -124,7 +126,7 @@ func TestWithMiddlewares(t *testing.T) {
 						return errors.New("invalid params count was set")
 					}
 
-					mws = append([]middleware.Wrapper{mw}, mws...)
+					mws := append([]middleware.Wrapper{mw}, mws...)
 					for i := range got.middlewares {
 						if got, want := got.middlewares[i], mws[i]; !reflect.DeepEqual(got, want) {
 							return errors.New("invalid params was set")
@@ -137,10 +139,12 @@ func TestWithMiddlewares(t *testing.T) {
 		}(),
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			opt := WithMiddlewares(tt.mws...)
-			if err := tt.checkFunc(opt); err != nil {
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			opt := WithMiddlewares(test.mws...)
+			if err := test.checkFunc(opt); err != nil {
 				t.Error(err)
 			}
 		})
@@ -148,6 +152,7 @@ func TestWithMiddlewares(t *testing.T) {
 }
 
 func TestWithRoute(t *testing.T) {
+	t.Parallel()
 	type test struct {
 		name      string
 		route     Route
@@ -179,10 +184,12 @@ func TestWithRoute(t *testing.T) {
 		}(),
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			opt := WithRoute(tt.route)
-			if err := tt.checkFunc(opt); err != nil {
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			opt := WithRoute(test.route)
+			if err := test.checkFunc(opt); err != nil {
 				t.Error(err)
 			}
 		})
@@ -190,6 +197,7 @@ func TestWithRoute(t *testing.T) {
 }
 
 func TestWithRoutes(t *testing.T) {
+	t.Parallel()
 	type test struct {
 		name      string
 		routes    []Route
@@ -248,7 +256,7 @@ func TestWithRoutes(t *testing.T) {
 						return errors.New("invalid params count was set")
 					}
 
-					rs = append([]Route{r}, rs...)
+					rs := append([]Route{r}, rs...)
 					for i := range got.routes {
 						if got, want := got.routes[i], rs[i]; !reflect.DeepEqual(got, want) {
 							return errors.New("invalid params was set")
@@ -261,12 +269,16 @@ func TestWithRoutes(t *testing.T) {
 		}(),
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			opt := WithRoutes(tt.routes...)
-			if err := tt.checkFunc(opt); err != nil {
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			opt := WithRoutes(test.routes...)
+			if err := test.checkFunc(opt); err != nil {
 				t.Error(err)
 			}
 		})
 	}
 }
+
+// NOT IMPLEMENTED BELOW

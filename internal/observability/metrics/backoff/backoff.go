@@ -1,79 +1,77 @@
-//
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//    https://www.apache.org/licenses/LICENSE-2.0
+//	https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 package backoff
 
 import (
 	"context"
 
 	"github.com/vdaas/vald/internal/backoff"
+	"github.com/vdaas/vald/internal/observability/attribute"
 	"github.com/vdaas/vald/internal/observability/metrics"
+	api "go.opentelemetry.io/otel/metric"
+	view "go.opentelemetry.io/otel/sdk/metric"
+)
+
+const (
+	metricsName        = "backoff_retry_count"
+	metricsDescription = "Backoff retry count"
 )
 
 type backoffMetrics struct {
-	nameKey    metrics.Key
-	retryCount metrics.Int64Measure
+	backoffNameKey string
 }
 
-func New() (metrics.Metric, error) {
-	key, err := metrics.NewKey("backoff_name")
-	if err != nil {
-		return nil, err
-	}
-
+func New() metrics.Metric {
 	return &backoffMetrics{
-		nameKey: key,
-		retryCount: *metrics.Int64(
-			metrics.ValdOrg+"/backoff/retry_count",
-			"Backoff retry count",
-			metrics.UnitDimensionless),
+		backoffNameKey: "backoff_name",
+	}
+}
+
+func (*backoffMetrics) View() ([]metrics.View, error) {
+	return []metrics.View{
+		view.NewView(
+			view.Instrument{
+				Name:        metricsName,
+				Description: metricsDescription,
+			},
+			view.Stream{
+				Aggregation: view.AggregationLastValue{},
+			},
+		),
 	}, nil
 }
 
-func (*backoffMetrics) Measurement(_ context.Context) ([]metrics.Measurement, error) {
-	return []metrics.Measurement{}, nil
-}
-
-func (bm *backoffMetrics) MeasurementWithTags(ctx context.Context) ([]metrics.MeasurementWithTags, error) {
-	ms := backoff.Metrics(ctx)
-	if len(ms) == 0 {
-		return []metrics.MeasurementWithTags{}, nil
+func (bm *backoffMetrics) Register(m metrics.Meter) (err error) {
+	retryCount, err := m.Int64ObservableGauge(
+		metricsName,
+		metrics.WithDescription(metricsDescription),
+		metrics.WithUnit(metrics.Dimensionless),
+	)
+	if err != nil {
+		return err
 	}
-
-	mts := make([]metrics.MeasurementWithTags, 0, len(ms))
-	for name, cnt := range ms {
-		mts = append(mts, metrics.MeasurementWithTags{
-			Measurement: bm.retryCount.M(cnt),
-			Tags: map[metrics.Key]string{
-				bm.nameKey: name,
-			},
-		})
-	}
-	return mts, nil
-}
-
-func (bm *backoffMetrics) View() []*metrics.View {
-	return []*metrics.View{
-		{
-			Name:        "backoff_retry_count",
-			Description: bm.retryCount.Description(),
-			Measure:     &bm.retryCount,
-			TagKeys: []metrics.Key{
-				bm.nameKey,
-			},
-			Aggregation: metrics.LastValue(),
-		},
-	}
+	_, err = m.RegisterCallback(
+		func(ctx context.Context, o api.Observer) error {
+			ms := backoff.Metrics(ctx)
+			if len(ms) == 0 {
+				return nil
+			}
+			for name, cnt := range ms {
+				o.ObserveInt64(retryCount, cnt, api.WithAttributes(attribute.String(bm.backoffNameKey, name)))
+			}
+			return nil
+		}, retryCount,
+	)
+	return err
 }

@@ -1,8 +1,8 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -21,16 +21,17 @@ import (
 
 	"github.com/vdaas/vald/apis/grpc/v1/discoverer"
 	iconf "github.com/vdaas/vald/internal/config"
-	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/net/grpc"
-	"github.com/vdaas/vald/internal/net/grpc/metric"
 	"github.com/vdaas/vald/internal/observability"
+	backoffmetrics "github.com/vdaas/vald/internal/observability/metrics/backoff"
+	cbmetrics "github.com/vdaas/vald/internal/observability/metrics/circuitbreaker"
 	"github.com/vdaas/vald/internal/runner"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/servers/server"
 	"github.com/vdaas/vald/internal/servers/starter"
+	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/pkg/discoverer/k8s/config"
 	handler "github.com/vdaas/vald/pkg/discoverer/k8s/handler/grpc"
 	"github.com/vdaas/vald/pkg/discoverer/k8s/handler/rest"
@@ -93,16 +94,14 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 
 	var obs observability.Observability
 	if cfg.Observability.Enabled {
-		obs, err = observability.NewWithConfig(cfg.Observability)
+		obs, err = observability.NewWithConfig(
+			cfg.Observability,
+			backoffmetrics.New(),
+			cbmetrics.New(),
+		)
 		if err != nil {
 			return nil, err
 		}
-		grpcServerOptions = append(
-			grpcServerOptions,
-			server.WithGRPCOption(
-				grpc.StatsHandler(metric.NewServerHandler()),
-			),
-		)
 	}
 
 	srv, err := starter.New(
@@ -189,7 +188,7 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 	return ech, nil
 }
 
-func (r *run) PreStop(ctx context.Context) error {
+func (*run) PreStop(context.Context) error {
 	return nil
 }
 
@@ -200,6 +199,6 @@ func (r *run) Stop(ctx context.Context) error {
 	return r.server.Shutdown(ctx)
 }
 
-func (r *run) PostStop(ctx context.Context) error {
+func (*run) PostStop(context.Context) error {
 	return nil
 }

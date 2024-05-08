@@ -1,8 +1,8 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -21,102 +21,114 @@ import (
 	"net/http"
 	"net/http/pprof"
 
+	"github.com/felixge/fgprof"
 	"github.com/vdaas/vald/internal/net/http/rest"
 	"github.com/vdaas/vald/internal/net/http/routing"
 )
 
+func GetProfileRoutes() (r []routing.Route) {
+	return []routing.Route{
+		{
+			Name: "Debug pprof",
+			Methods: []string{
+				http.MethodGet,
+			},
+			Pattern:     "/debug/pprof/",
+			HandlerFunc: rest.HandlerToRestFunc(pprof.Index),
+		},
+		{
+			Name: "Debug cmdline",
+			Methods: []string{
+				http.MethodGet,
+			},
+			Pattern:     "/debug/pprof/cmdline",
+			HandlerFunc: rest.HandlerToRestFunc(pprof.Cmdline),
+		},
+		{
+			Name: "Debug profile",
+			Methods: []string{
+				http.MethodGet,
+			},
+			Pattern:     "/debug/pprof/profile",
+			HandlerFunc: rest.HandlerToRestFunc(pprof.Profile),
+		},
+		{
+			Name: "Debug symbol profile",
+			Methods: []string{
+				http.MethodGet,
+			},
+			Pattern:     "/debug/pprof/symbol",
+			HandlerFunc: rest.HandlerToRestFunc(pprof.Symbol),
+		},
+		{
+			Name: "Debug trace profile",
+			Methods: []string{
+				http.MethodGet,
+			},
+			Pattern:     "/debug/pprof/trace",
+			HandlerFunc: rest.HandlerToRestFunc(pprof.Trace),
+		},
+		{
+			Name: "Debug allocs profile",
+			Methods: []string{
+				http.MethodGet,
+			},
+			Pattern:     "/debug/pprof/allocs",
+			HandlerFunc: rest.HandlerToRestFunc(pprof.Handler("allocs").ServeHTTP),
+		},
+		{
+			Name: "Debug heap profile",
+			Methods: []string{
+				http.MethodGet,
+			},
+			Pattern:     "/debug/pprof/heap",
+			HandlerFunc: rest.HandlerToRestFunc(pprof.Handler("heap").ServeHTTP),
+		},
+		{
+			Name: "Debug goroutine profile",
+			Methods: []string{
+				http.MethodGet,
+			},
+			Pattern:     "/debug/pprof/goroutine",
+			HandlerFunc: rest.HandlerToRestFunc(pprof.Handler("goroutine").ServeHTTP),
+		},
+		{
+			Name: "Debug thread profile",
+			Methods: []string{
+				http.MethodGet,
+			},
+			Pattern:     "/debug/pprof/threadcreate",
+			HandlerFunc: rest.HandlerToRestFunc(pprof.Handler("threadcreate").ServeHTTP),
+		},
+		{
+			Name: "Debug block profile",
+			Methods: []string{
+				http.MethodGet,
+			},
+			Pattern:     "/debug/pprof/block",
+			HandlerFunc: rest.HandlerToRestFunc(pprof.Handler("block").ServeHTTP),
+		},
+		{
+			Name: "Debug mutex profile",
+			Methods: []string{
+				http.MethodGet,
+			},
+			Pattern:     "/debug/pprof/mutex",
+			HandlerFunc: rest.HandlerToRestFunc(pprof.Handler("mutex").ServeHTTP),
+		},
+		{
+			Name: "Debug fgprof profile",
+			Methods: []string{
+				http.MethodGet,
+			},
+			Pattern:     "/debug/fgprof",
+			HandlerFunc: rest.HandlerToRestFunc(fgprof.Handler().ServeHTTP),
+		},
+	}
+}
+
 // NewPProfRoutes returns PProf server route&method information from debug flag.
 func NewPProfHandler() http.Handler {
 	return routing.New(
-		routing.WithRoutes([]routing.Route{
-			{
-				"Debug pprof",
-				[]string{
-					http.MethodGet,
-				},
-				"/debug/pprof/",
-				rest.HandlerToRestFunc(pprof.Index),
-			},
-			{
-				"Debug cmdline",
-				[]string{
-					http.MethodGet,
-				},
-				"/debug/pprof/cmdline",
-				rest.HandlerToRestFunc(pprof.Cmdline),
-			},
-			{
-				"Debug profile",
-				[]string{
-					http.MethodGet,
-				},
-				"/debug/pprof/profile",
-				rest.HandlerToRestFunc(pprof.Profile),
-			},
-			{
-				"Debug symbol profile",
-				[]string{
-					http.MethodGet,
-				},
-				"/debug/pprof/symbol",
-				rest.HandlerToRestFunc(pprof.Symbol),
-			},
-			{
-				"Debug trace profile",
-				[]string{
-					http.MethodGet,
-				},
-				"/debug/pprof/trace",
-				rest.HandlerToRestFunc(pprof.Trace),
-			},
-			{
-				"Debug allocs profile",
-				[]string{
-					http.MethodGet,
-				},
-				"/debug/pprof/allocs",
-				rest.HandlerToRestFunc(pprof.Handler("allocs").ServeHTTP),
-			},
-			{
-				"Debug heap profile",
-				[]string{
-					http.MethodGet,
-				},
-				"/debug/pprof/heap",
-				rest.HandlerToRestFunc(pprof.Handler("heap").ServeHTTP),
-			},
-			{
-				"Debug goroutine profile",
-				[]string{
-					http.MethodGet,
-				},
-				"/debug/pprof/goroutine",
-				rest.HandlerToRestFunc(pprof.Handler("goroutine").ServeHTTP),
-			},
-			{
-				"Debug thread profile",
-				[]string{
-					http.MethodGet,
-				},
-				"/debug/pprof/threadcreate",
-				rest.HandlerToRestFunc(pprof.Handler("threadcreate").ServeHTTP),
-			},
-			{
-				"Debug block profile",
-				[]string{
-					http.MethodGet,
-				},
-				"/debug/pprof/block",
-				rest.HandlerToRestFunc(pprof.Handler("block").ServeHTTP),
-			},
-
-			{
-				"Debug mutex profile",
-				[]string{
-					http.MethodGet,
-				},
-				"/debug/pprof/mutex",
-				rest.HandlerToRestFunc(pprof.Handler("mutex").ServeHTTP),
-			},
-		}...))
+		routing.WithRoutes(GetProfileRoutes()...))
 }

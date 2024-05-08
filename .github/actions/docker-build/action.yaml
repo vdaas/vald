@@ -1,8 +1,8 @@
 #
-# Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
+# You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
 #    https://www.apache.org/licenses/LICENSE-2.0
@@ -14,35 +14,35 @@
 # limitations under the License.
 #
 name: "Build Docker images"
-description: "Build Docker images and publish them"
+description: "A action to build Docker images and publish them"
 inputs:
   target:
-    description: "build target"
+    description: "Build target"
     required: true
     default: "base"
   builder:
-    description: "buildx builder name"
+    description: "Buildx builder name"
     required: true
     default: ""
   platforms:
-    description: "if it is specified, specified platforms will be used."
+    description: "If it is specified, specified platforms will be used."
     required: false
     default: ""
 outputs:
   IMAGE_NAME:
-    description: "image name"
+    description: "Image name"
     value: ${{ steps.image_name.outputs.IMAGE_NAME }}
   ALTER_IMAGE_NAME:
-    description: "alter image name"
+    description: "Alter image name"
     value: ${{ steps.image_name.outputs.ALTER_IMAGE_NAME }}
   PRIMARY_TAG:
-    description: "primary tag"
+    description: "Primary tag"
     value: ${{ steps.determine_tag_name.outputs.PRIMARY_TAG }}
   PLATFORMS:
-    description: "target platforms"
+    description: "Target platforms"
     value: ${{ steps.determine_platforms.outputs.PLATFORMS }}
   EXTRA_TAGS:
-    description: "extra tags"
+    description: "Extra tags"
     value: ${{ steps.add_extra_tags.outputs.EXTRA_TAGS }}
 runs:
   using: "composite"
@@ -56,35 +56,23 @@ runs:
         alter_image_name=`make ORG="${alter_org}" docker/name/${TARGET}`
         echo "IMAGE_NAME is: ${image_name}"
         echo "ALTER_IMAGE_NAME is: ${alter_image_name}"
-        echo "::set-output name=IMAGE_NAME::${image_name}"
-        echo "::set-output name=ALTER_IMAGE_NAME::${alter_image_name}"
+        echo "IMAGE_NAME=${image_name}" >> $GITHUB_OUTPUT
+        echo "ALTER_IMAGE_NAME=${alter_image_name}" >> $GITHUB_OUTPUT
       env:
         TARGET: ${{ inputs.target }}
     - name: Determine tag name
-      shell: bash
       id: determine_tag_name
-      run: |
-        if [[ "$GITHUB_REF" =~ ^refs/tags/.* ]]; then
-          tag_name=`echo $GITHUB_REF | sed -e 's:^refs/tags/::'`
-          primary_tag="${tag_name}"
-        elif [ "$GITHUB_REF" = "refs/heads/main" ]; then
-          echo "nightly" > versions/VALD_VERSION
-          primary_tag="nightly"
-        elif [ "${{ github.event_name }}" = "pull_request" ]; then
-          pr_num=`cat $GITHUB_EVENT_PATH | jq -r ".number"`
-          echo "PR-${pr_num}" > versions/VALD_VERSION
-          primary_tag="pr-${pr_num}"
-        else
-          primary_tag="unknown"
-        fi
-        echo "PRIMARY_TAG is determined: ${primary_tag}"
-        echo "::set-output name=PRIMARY_TAG::${primary_tag}"
+      uses: ./.github/actions/determine-docker-image-tag
     - name: Determine platforms
       shell: bash
       id: determine_platforms
       run: |
         if [ "${TARGET_PLATFORMS}" = "" ]; then
-          if [ "${{ github.event_name }}" = "pull_request" ]; then
+          if [[ "$GITHUB_REF" =~ ^refs/heads/main$ ]] || [[ "$GITHUB_REF" =~ ^refs/heads/master$ ]] || [[ "$GITHUB_REF" =~ ^refs/heads/release.* ]] || [[ "${PRIMARY_TAG}" == "nightly" ]]; then
+            platforms=`make docker/platforms`
+          elif [ "${{ github.event_name }}" = "pull_request" ]; then
+            platforms="linux/amd64"
+          elif [ "${{ github.event_name }}" = "pull_request_target" ]; then
             platforms="linux/amd64"
           else
             platforms=`make docker/platforms`
@@ -93,31 +81,40 @@ runs:
           platforms="${TARGET_PLATFORMS}"
         fi
         echo "PLATFORMS is determined: ${platforms}"
-        echo "::set-output name=PLATFORMS::${platforms}"
+        echo "PLATFORMS=${platforms}" >> $GITHUB_OUTPUT
       env:
         TARGET_PLATFORMS: ${{ inputs.platforms }}
+        PRIMARY_TAG: ${{ steps.determine_tag_name.outputs.PRIMARY_TAG }}
+    - name: Update Vald version
+      shell: bash
+      run: echo "${PRIMARY_TAG}" > versions/VALD_VERSION
+      env:
+        PRIMARY_TAG: ${{ steps.determine_tag_name.outputs.PRIMARY_TAG }}
     - name: Add extra tags
       shell: bash
       id: add_extra_tags
       run: |
-        extra_tags="-t ${ALTER_IMAGE_NAME}:${PRIMARY_TAG}"
-        if [[ "$GITHUB_REF" =~ ^refs/tags/.* ]]; then
-          latest_tags="-t ${IMAGE_NAME}:latest -t ${ALTER_IMAGE_NAME}:latest"
-          extra_tags="${extra_tags} ${latest_tags}"
+        if [[ "${{ github.event_name }}" != "pull_request" && "${{ github.event_name }}" != "pull_request_target" ]]; then
+          for tag in ${SECONDARY_TAGS}; do
+            extra_tags="${extra_tags} -t ${IMAGE_NAME}:${tag} -t ${ALTER_IMAGE_NAME}:${tag}"
+          done
         fi
         echo "EXTRA_TAGS is determined: ${extra_tags}"
-        echo "::set-output name=EXTRA_TAGS::${extra_tags}"
+        echo "EXTRA_TAGS=${extra_tags}" >> $GITHUB_OUTPUT
       env:
         IMAGE_NAME: ${{ steps.image_name.outputs.IMAGE_NAME }}
         ALTER_IMAGE_NAME: ${{ steps.image_name.outputs.ALTER_IMAGE_NAME }}
-        PRIMARY_TAG: ${{ steps.determine_tag_name.outputs.PRIMARY_TAG }}
+        SECONDARY_TAGS: ${{ steps.determine_tag_name.outputs.SECONDARY_TAGS }}
     - name: Build and Push
       shell: bash
       id: build_and_push
       run: |
         make \
-          DOCKER="docker buildx" \
-          DOCKER_OPTS="--platform ${PLATFORMS} --builder ${BUILDER} ${LABEL_OPTS} ${EXTRA_TAGS} --push" \
+          REMOTE="true" \
+          DOCKER="docker" \
+          BUILDKIT_INLINE_CACHE=0 \
+          DOCKER_OPTS="--platform ${PLATFORMS} --builder ${BUILDER} ${LABEL_OPTS}  --label org.opencontainers.image.version=${PRIMARY_TAG} --label org.opencontainers.image.title=${TARGET}" \
+          EXTRA_ARGS="${EXTRA_TAGS}" \
           TAG="${PRIMARY_TAG}" \
           docker/build/${TARGET}
       env:
@@ -126,5 +123,5 @@ runs:
         PLATFORMS: ${{ steps.determine_platforms.outputs.PLATFORMS }}
         BUILDER: ${{ inputs.builder }}
         LABEL_OPTS: "--label org.opencontainers.image.url=${{ github.event.repository.html_url }} --label org.opencontainers.image.source=${{ github.event.repository.html_url }} --label org.opencontainers.image.revision=${{ github.sha }}"
-        EXTRA_TAGS: ${{ steps.add_extra_tags.outputs.EXTRA_TAGS }}
         PRIMARY_TAG: ${{ steps.determine_tag_name.outputs.PRIMARY_TAG }}
+        EXTRA_TAGS: ${{ steps.add_extra_tags.outputs.EXTRA_TAGS }}

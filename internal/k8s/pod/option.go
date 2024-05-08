@@ -1,8 +1,8 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -18,6 +18,8 @@
 package pod
 
 import (
+	"context"
+
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
@@ -47,7 +49,7 @@ func WithOnErrorFunc(f func(err error)) Option {
 	}
 }
 
-func WithOnReconcileFunc(f func(podList map[string][]Pod)) Option {
+func WithOnReconcileFunc(f func(ctx context.Context, podList map[string][]Pod)) Option {
 	return func(r *reconciler) error {
 		r.onReconcile = f
 		return nil

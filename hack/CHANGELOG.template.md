@@ -54,6 +54,7 @@
 </table>
 
 ### Documents
+
 - [GoDoc](https://pkg.go.dev/github.com/vdaas/vald@{{ version }})
 - [Helm Chart Reference](https://github.com/vdaas/vald/blob/{{ version }}/charts/vald/README.md)
 - [Helm Operator Chart Reference](https://github.com/vdaas/vald/blob/{{ version }}/charts/vald-helm-operator/README.md)

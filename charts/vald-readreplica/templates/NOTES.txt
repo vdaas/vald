@@ -1,0 +1,4 @@
+Release {{ .Release.Name }} is created.
+
+Readreplica feature is intended to be used with the main vald chart.
+Please look at the document of the main chart for more details.

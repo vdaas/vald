@@ -1,8 +1,8 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -21,11 +21,11 @@ import (
 	"testing"
 
 	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/google/go-cmp/cmp"
 	"github.com/vdaas/vald/internal/backoff"
 	"github.com/vdaas/vald/internal/db/storage/blob/s3/sdk/s3/s3iface"
-	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/sync/errgroup"
+	"github.com/vdaas/vald/internal/test/comparator"
 	"github.com/vdaas/vald/internal/test/goleak"
 )
 
@@ -78,7 +78,8 @@ func TestWithErrGroup(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
@@ -145,7 +146,8 @@ func TestWithService(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
@@ -213,7 +215,8 @@ func TestWithBucket(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
@@ -289,7 +292,8 @@ func TestWithMaxChunkSize(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
@@ -355,7 +359,8 @@ func TestWithBackoff(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
@@ -393,21 +398,21 @@ func TestWithBackoffOpts(t *testing.T) {
 		args       args
 		want       want
 		checkFunc  func(want, *T) error
-		beforeFunc func(args, *T)
+		beforeFunc func(*testing.T, args, *T)
 		afterFunc  func(args, *T)
 	}
 	defaultCheckFunc := func(w want, got *T) error {
-		opts := []cmp.Option{
-			cmp.AllowUnexported(*got),
-			cmp.AllowUnexported(*w.obj),
-			cmp.Comparer(func(want, got []backoff.Option) bool {
+		opts := []comparator.Option{
+			comparator.AllowUnexported(*got),
+			comparator.AllowUnexported(*w.obj),
+			comparator.Comparer(func(want, got []backoff.Option) bool {
 				return len(got) == len(want)
 			}),
-			cmp.Comparer(func(want, got backoff.Option) bool {
+			comparator.Comparer(func(want, got backoff.Option) bool {
 				return reflect.ValueOf(got).Pointer() == reflect.ValueOf(want).Pointer()
 			}),
 		}
-		if diff := cmp.Diff(w.obj, got, opts...); diff != "" {
+		if diff := comparator.Diff(w.obj, got, opts...); diff != "" {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.obj)
 		}
 		return nil
@@ -430,7 +435,7 @@ func TestWithBackoffOpts(t *testing.T) {
 			}
 		}(),
 		func() test {
-			defaultOptions := []backoff.Option{}
+			var defaultOptions []backoff.Option
 			opts := []backoff.Option{
 				backoff.WithRetryCount(1),
 			}
@@ -445,7 +450,8 @@ func TestWithBackoffOpts(t *testing.T) {
 						backoffOpts: append(defaultOptions, opts...),
 					},
 				},
-				beforeFunc: func(args args, r *T) {
+				beforeFunc: func(t *testing.T, args args, r *T) {
+					t.Helper()
 					r.backoffOpts = args.defaultOptions
 				},
 			}
@@ -460,12 +466,13 @@ func TestWithBackoffOpts(t *testing.T) {
 		}(),
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			obj := new(T)
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args, obj)
+				test.beforeFunc(tt, test.args, obj)
 			}
 			if test.afterFunc != nil {
 				defer test.afterFunc(test.args, obj)
@@ -483,3 +490,5 @@ func TestWithBackoffOpts(t *testing.T) {
 		})
 	}
 }
+
+// NOT IMPLEMENTED BELOW

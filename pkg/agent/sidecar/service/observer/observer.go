@@ -1,8 +1,8 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -24,18 +24,19 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
-	"sync"
 	"syscall"
 	"time"
 
-	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/file"
 	"github.com/vdaas/vald/internal/file/watch"
 	"github.com/vdaas/vald/internal/io"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/observability/attribute"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
+	"github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/pkg/agent/internal/metadata"
 	"github.com/vdaas/vald/pkg/agent/sidecar/service/storage"
 )
@@ -376,7 +377,7 @@ func (o *observer) isValidMetadata() (bool, error) {
 	return !metadata.IsInvalid, nil
 }
 
-func (o *observer) terminate() error {
+func (*observer) terminate() error {
 	log.Error("the process will be terminated because the files are invalid")
 
 	p, err := os.FindProcess(os.Getpid())
@@ -387,7 +388,7 @@ func (o *observer) terminate() error {
 	return p.Signal(syscall.SIGTERM)
 }
 
-func (o *observer) requestBackup(ctx context.Context) error {
+func (o *observer) requestBackup(context.Context) error {
 	select {
 	case o.ch <- struct{}{}:
 	default:
@@ -412,10 +413,10 @@ func (o *observer) backup(ctx context.Context) (err error) {
 
 	ctx, span := trace.StartSpan(ctx, "vald/agent-sidecar/service/observer/StorageObserver.backup")
 	if span != nil {
-		span.AddAttributes(
-			trace.StringAttribute("storage_type", bi.StorageInfo.Type),
-			trace.StringAttribute("bucket_name", bi.BucketName),
-			trace.StringAttribute("filename", bi.Filename),
+		span.SetAttributes(
+			attribute.String("storage_type", bi.StorageInfo.Type),
+			attribute.String("bucket_name", bi.BucketName),
+			attribute.String("filename", bi.Filename),
 		)
 	}
 	defer func() {

@@ -10,17 +10,25 @@ The sections below describe the meaning of each code and why API returns.
 | code | name                                      |
 | :--: | :---------------------------------------- |
 |  0   | [OK](#OK)                                 |
+|  1   | [CANCELLED](#CANCELLED)                   |
 |  3   | [INVALID_ARGUMENT](#INVALID_ARGUMENT)     |
 |  4   | [DEADLINE_EXCEEDED](#DEADLINE_EXCEEDED)   |
 |  5   | [NOT_FOUND](#NOT_FOUND)                   |
 |  6   | [ALREADY_EXISTS](#ALREADY_EXISTS)         |
 |  8   | [RESOURCE_EXHAUSTED](#RESOURCE_EXHAUSTED) |
+|  10  | [ABORTED](#ABORTED)                       |
 |  13  | [INTERNAL](#INTERNAL)                     |
 |  14  | [UNAVAILABLE](#UNAVAILABLE)               |
 
 ## OK
 
 `OK` means complete process with success.
+
+Services that return this code are all services.
+
+## CANCELLED
+
+`CANCELLED` means the operation was cancelled.
 
 Services that return this code are all services.
 
@@ -82,11 +90,11 @@ You have to change the query vector with `skip_strict_exist_check` as `true` or 
 
 ## RESOURCE_EXHAUSTED
 
-`RESOURCE_EXHAUSTED` means the some resources has been exhausted.
+`RESOURCE_EXHAUSTED` means that some resources have been exhausted.
 
 It appears when:
 
-- There is out-of-memory in gRPC payload, or networks, or etc.
+- There is out-of-memory in gRPC payload, in networks, etc.
 - There are some server overload situations.
 - The sent or received message is larger than the configured limit (default is 4 MB).
 
@@ -94,16 +102,35 @@ Services that return status are all services.
 The most case in the Vald is that the query vector is too large.
 In other words, the vector dimension size in configuration is too large.
 
+## ABORTED
+
+`ABORTED` means that the operation was aborted, usually due to a concurrency issue.
+
+It appears when:
+
+- A request is made during the process of creating indices.
+- A request is made during the flushing process.
+
+Services that return status are:
+
+- [Insert Service](../api/insert.md)
+- [Update Service](../api/update.md)
+- [Upsert Service](../api/upsert.md)
+- [Remove Service](../api/remove.md)
+- [Search Service](../api/search.md)
+
+You have to wait for the completion of creating indices or flushing process before making the request again.
+
 ## INTERNAL
 
 `INTERNAL` appears when some wrong happens in the Vald cluster.
-It is there is the serious problems about the Vald cluster.
+It is there are the serious problems with the Vald cluster.
 
 Services that return status are all services.
 If you get it, please verify the state of the Vald cluster.
 
 <div class="warning">
-If the internal server error appears, it should be care and research about logs metrics.
+If an internal server error appears, it should have cared and researched logs metrics.
 </div>
 
 ## UNAVAILABLE

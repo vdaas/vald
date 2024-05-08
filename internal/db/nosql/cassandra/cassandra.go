@@ -1,8 +1,8 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -110,6 +110,7 @@ type (
 		dcHost    string
 		whiteList []string
 	}
+	// skipcq: SCC-U1000
 	events struct {
 		DisableNodeStatusEvents bool
 		DisableTopologyEvents   bool
@@ -314,7 +315,7 @@ func (c *client) Open(ctx context.Context) (err error) {
 }
 
 // Close closes the session to cassandra.
-func (c *client) Close(ctx context.Context) error {
+func (c *client) Close(context.Context) error {
 	c.session.Close()
 	return nil
 }
@@ -378,7 +379,7 @@ func WrapErrorWithKeys(err error, keys ...string) error {
 	case ErrNotFound:
 		return errors.ErrCassandraNotFound(keys...)
 	case ErrUnavailable:
-		return errors.ErrCassandraUnavailable()
+		return errors.ErrCassandraUnavailable
 	case ErrUnsupported:
 		return err
 	case ErrTooManyStmts:

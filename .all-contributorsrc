@@ -9,7 +9,7 @@
       "login": "kpango",
       "name": "Yusuke Kato",
       "avatar_url": "https://avatars1.githubusercontent.com/u/9798091?v=4",
-      "profile": "http://kpango.com",
+      "profile": "https://kpango.com",
       "contributions": [
         "code",
         "design",
@@ -111,7 +111,7 @@
       "login": "thedrow",
       "name": "Omer Katz",
       "avatar_url": "https://avatars.githubusercontent.com/u/48936?v=4",
-      "profile": "http://omerkatz.com",
+      "profile": "https://omerkatz.com",
       "contributions": [
         "doc",
         "tutorial"
@@ -144,6 +144,55 @@
       "contributions": [
         "doc"
       ]
+    },
+    {
+      "login": "takuyaymd",
+      "name": "takuyaymd",
+      "avatar_url": "https://avatars.githubusercontent.com/u/49614391?v=4",
+      "profile": "https://github.com/takuyaymd",
+      "contributions": [
+        "bug",
+        "code",
+        "maintenance"
+      ]
+    },
+    {
+      "login": "junsei-ando",
+      "name": "junsei-ando",
+      "avatar_url": "https://avatars.githubusercontent.com/u/1892077?v=4",
+      "profile": "https://github.com/junsei-ando",
+      "contributions": [
+        "doc"
+      ]
+    },
+    {
+      "login": "ykadowak",
+      "name": "Yusuke Kadowaki",
+      "avatar_url": "https://avatars.githubusercontent.com/u/60080334?v=4",
+      "profile": "https://github.com/ykadowak",
+      "contributions": [
+        "code",
+        "test"
+      ]
+    },
+    {
+      "login": "aknishid",
+      "name": "aknishid",
+      "avatar_url": "https://avatars.githubusercontent.com/u/38955080?v=4",
+      "profile": "https://github.com/aknishid",
+      "contributions": [
+        "code",
+        "maintenance"
+      ]
+    },
+    {
+      "login": "hrichiksite",
+      "name": "Hrichik Mazumder",
+      "avatar_url": "https://avatars.githubusercontent.com/u/57860916?v=4",
+      "profile": "https://hrichik.xyz",
+      "contributions": [
+        "doc"
+      ]
     }
   ],
   "contributorsPerLine": 7,
@@ -153,5 +202,7 @@
   "projectOwner": "vdaas",
   "repoType": "github",
   "repoHost": "https://github.com",
-  "skipCi": true
+  "skipCi": true,
+  "commitConvention": "angular",
+  "commitType": "docs"
 }

@@ -1,18 +1,16 @@
-//
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//    https://www.apache.org/licenses/LICENSE-2.0
+//	https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 package json
 
 import (
@@ -34,30 +32,27 @@ import (
 	"github.com/vdaas/vald/internal/test/goleak"
 )
 
-// Goroutine leak is detected by `fastime`, but it should be ignored in the test because it is an external package.
-var goleakIgnoreOptions = []goleak.Option{
-	goleak.IgnoreTopFunction("github.com/kpango/fastime.(*fastime).StartTimerD.func1"),
-	goleak.IgnoreTopFunction("internal/poll.runtime_pollWait"),
+func TestMain(m *testing.M) {
+	log.Init(log.WithLoggerType(logger.NOP.String()))
+	goleak.VerifyTestMain(m)
 }
 
 func TestEncodeResponse(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		w            http.ResponseWriter
 		data         interface{}
 		status       int
 		contentTypes []string
 	}
-
 	type test struct {
 		name      string
 		args      args
 		checkFunc func(err error) error
 	}
-
 	tests := []test{
 		func() test {
 			w := new(httptest.ResponseRecorder)
-
 			return test{
 				name: "returns nil",
 				args: args{
@@ -72,48 +67,41 @@ func TestEncodeResponse(t *testing.T) {
 					if err != nil {
 						return errors.Errorf("err not equals. want: %v, got: %v", nil, err)
 					}
-
 					if got, want := w.Header().Get(rest.ContentType), "application/json"; got != want {
 						return errors.Errorf("content-type not equals. want: %v, got: %v", want, got)
 					}
-
 					if got, want := w.Code, 200; got != want {
 						return errors.Errorf("code not equals. want: %v, got: %v", want, got)
 					}
-
 					return nil
 				},
 			}
 		}(),
-
-		func() test {
-			w := new(httptest.ResponseRecorder)
-
-			return test{
-				name: "returns error when type is invalid",
-				args: args{
-					w:      w,
-					data:   make(chan struct{}),
-					status: http.StatusOK,
-					contentTypes: []string{
-						"application/json",
-					},
+		{
+			name: "returns error when type is invalid",
+			args: args{
+				w:      new(httptest.ResponseRecorder),
+				data:   make(chan struct{}),
+				status: http.StatusOK,
+				contentTypes: []string{
+					"application/json",
 				},
-				checkFunc: func(err error) error {
-					if err == nil {
-						return errors.New("err is nil")
-					}
-					return nil
-				},
-			}
-		}(),
+			},
+			checkFunc: func(err error) error {
+				if err == nil {
+					return errors.New("err is nil")
+				}
+				return nil
+			},
+		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			defer goleak.VerifyNone(t, goleakIgnoreOptions...)
-			err := EncodeResponse(tt.args.w, tt.args.data, tt.args.status, tt.args.contentTypes...)
-			if err := tt.checkFunc(err); err != nil {
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			err := EncodeResponse(test.args.w, test.args.data, test.args.status, test.args.contentTypes...)
+			if err := test.checkFunc(err); err != nil {
 				t.Error(err)
 			}
 		})
@@ -121,17 +109,16 @@ func TestEncodeResponse(t *testing.T) {
 }
 
 func TestDecodeRequest(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		r    *http.Request
 		data map[string]string
 	}
-
 	type test struct {
 		name      string
 		args      args
 		checkFunc func(err error, data map[string]string) error
 	}
-
 	tests := []test{
 		func() test {
 			buf := new(bytes.Buffer)
@@ -159,7 +146,6 @@ func TestDecodeRequest(t *testing.T) {
 				},
 			}
 		}(),
-
 		func() test {
 			buf := new(bytes.Buffer)
 			buf.WriteString(`10`)
@@ -180,11 +166,12 @@ func TestDecodeRequest(t *testing.T) {
 		}(),
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			defer goleak.VerifyNone(t, goleakIgnoreOptions...)
-			err := DecodeRequest(tt.args.r, &tt.args.data)
-			if err := tt.checkFunc(err, tt.args.data); err != nil {
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			err := DecodeRequest(test.args.r, &test.args.data)
+			if err := test.checkFunc(err, test.args.data); err != nil {
 				t.Error(err)
 			}
 		})
@@ -192,19 +179,18 @@ func TestDecodeRequest(t *testing.T) {
 }
 
 func TestHandler(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		w     http.ResponseWriter
 		r     *http.Request
 		data  map[string]string
 		logic func() (interface{}, error)
 	}
-
 	type test struct {
 		name      string
 		args      args
 		checkFunc func(code int, err error, data map[string]string) error
 	}
-
 	tests := []test{
 		func() test {
 			buf := new(bytes.Buffer)
@@ -246,7 +232,6 @@ func TestHandler(t *testing.T) {
 				},
 			}
 		}(),
-
 		func() test {
 			buf := new(bytes.Buffer)
 			buf.WriteString(`2`)
@@ -270,7 +255,6 @@ func TestHandler(t *testing.T) {
 				},
 			}
 		}(),
-
 		func() test {
 			wantErr := errors.New("logic error")
 
@@ -306,44 +290,42 @@ func TestHandler(t *testing.T) {
 				},
 			}
 		}(),
-
-		func() test {
-			return test{
-				name: "returns error because of faild to encode",
-				args: args{
-					r: func() *http.Request {
-						buf := new(bytes.Buffer)
-						buf.WriteString(`{"name":"vald"}`)
-						return httptest.NewRequest(http.MethodPost, "/", buf)
-					}(),
-					w:    new(httptest.ResponseRecorder),
-					data: make(map[string]string),
-					logic: func() (interface{}, error) {
-						return func() {}, nil
-					},
+		{
+			name: "returns error because of faild to encode",
+			args: args{
+				r: func() *http.Request {
+					buf := new(bytes.Buffer)
+					buf.WriteString(`{"name":"vald"}`)
+					return httptest.NewRequest(http.MethodPost, "/", buf)
+				}(),
+				w:    new(httptest.ResponseRecorder),
+				data: make(map[string]string),
+				logic: func() (interface{}, error) {
+					return func() {}, nil
 				},
-				checkFunc: func(code int, err error, data map[string]string) error {
-					if code != http.StatusServiceUnavailable {
-						return errors.Errorf("code not equals. want: %v, got: %v", http.StatusServiceUnavailable, code)
-					}
+			},
+			checkFunc: func(code int, err error, data map[string]string) error {
+				if code != http.StatusServiceUnavailable {
+					return errors.Errorf("code not equals. want: %v, got: %v", http.StatusServiceUnavailable, code)
+				}
 
-					if got, want := data, map[string]string{
-						"name": "vald",
-					}; !reflect.DeepEqual(got, want) {
-						return errors.Errorf("data not equals. want: %v, got: %v", want, got)
-					}
+				if got, want := data, map[string]string{
+					"name": "vald",
+				}; !reflect.DeepEqual(got, want) {
+					return errors.Errorf("data not equals. want: %v, got: %v", want, got)
+				}
 
-					return nil
-				},
-			}
-		}(),
+				return nil
+			},
+		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			defer goleak.VerifyNone(t, goleakIgnoreOptions...)
-			code, err := Handler(tt.args.w, tt.args.r, &tt.args.data, tt.args.logic)
-			if err := tt.checkFunc(code, err, tt.args.data); err != nil {
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			code, err := Handler(test.args.w, test.args.r, &test.args.data, test.args.logic)
+			if err := test.checkFunc(code, err, test.args.data); err != nil {
 				t.Error(err)
 			}
 		})
@@ -351,6 +333,7 @@ func TestHandler(t *testing.T) {
 }
 
 func TestErrorHandler(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		w    http.ResponseWriter
 		r    *http.Request
@@ -358,13 +341,11 @@ func TestErrorHandler(t *testing.T) {
 		code int
 		err  error
 	}
-
 	type test struct {
 		name      string
 		args      args
 		checkFunc func(err error) error
 	}
-
 	tests := []test{
 		func() test {
 			rbuf := new(bytes.Buffer)
@@ -404,12 +385,12 @@ func TestErrorHandler(t *testing.T) {
 		}(),
 	}
 
-	log.Init(log.WithLoggerType(logger.NOP.String()))
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			defer goleak.VerifyNone(t, goleakIgnoreOptions...)
-			got := ErrorHandler(tt.args.w, tt.args.r, tt.args.msg, tt.args.code, tt.args.err)
-			if err := tt.checkFunc(got); err != nil {
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			tt.Parallel()
+			got := ErrorHandler(test.args.w, test.args.r, test.args.msg, test.args.code, test.args.err)
+			if err := test.checkFunc(got); err != nil {
 				t.Error(err)
 			}
 		})
@@ -417,6 +398,7 @@ func TestErrorHandler(t *testing.T) {
 }
 
 func TestDecodeResponse(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		res  *http.Response
 		data interface{}
@@ -430,7 +412,7 @@ func TestDecodeResponse(t *testing.T) {
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(args)
-		afterFunc  func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -542,14 +524,15 @@ func TestDecodeResponse(t *testing.T) {
 		}(),
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			tt.Parallel()
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -565,6 +548,7 @@ func TestDecodeResponse(t *testing.T) {
 }
 
 func TestEncodeRequest(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		req          *http.Request
 		data         interface{}
@@ -579,7 +563,7 @@ func TestEncodeRequest(t *testing.T) {
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(args)
-		afterFunc  func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if w.err != nil && err != nil && !strings.HasPrefix(err.Error(), w.err.Error()) {
@@ -653,14 +637,15 @@ func TestEncodeRequest(t *testing.T) {
 		}(),
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			tt.Parallel()
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -676,6 +661,7 @@ func TestEncodeRequest(t *testing.T) {
 }
 
 func TestRequest(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		ctx     context.Context
 		method  string
@@ -692,7 +678,7 @@ func TestRequest(t *testing.T) {
 		want       want
 		checkFunc  func(want, error) error
 		beforeFunc func(args)
-		afterFunc  func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -782,21 +768,23 @@ func TestRequest(t *testing.T) {
 					}
 					return nil
 				},
-				afterFunc: func(args) {
+				afterFunc: func(t *testing.T, _ args) {
+					t.Helper()
 					srv.Close()
 				},
 			}
 		}(),
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			tt.Parallel()
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -810,3 +798,5 @@ func TestRequest(t *testing.T) {
 		})
 	}
 }
+
+// NOT IMPLEMENTED BELOW

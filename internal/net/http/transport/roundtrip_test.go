@@ -1,8 +1,8 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -22,8 +22,8 @@ import (
 	"context"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"reflect"
+	"strconv"
 	"testing"
 
 	"github.com/vdaas/vald/internal/backoff"
@@ -36,10 +36,11 @@ import (
 
 func TestMain(m *testing.M) {
 	log.Init(log.WithLoggerType(logger.NOP.String()))
-	os.Exit(m.Run())
+	goleak.VerifyTestMain(m)
 }
 
 func TestNewExpBackoff(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		opts []Option
 	}
@@ -88,9 +89,10 @@ func TestNewExpBackoff(t *testing.T) {
 		}(),
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			tt.Parallel()
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -111,6 +113,7 @@ func TestNewExpBackoff(t *testing.T) {
 }
 
 func Test_ert_RoundTrip(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		req *http.Request
 	}
@@ -301,9 +304,10 @@ func Test_ert_RoundTrip(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			tt.Parallel()
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -327,7 +331,8 @@ func Test_ert_RoundTrip(t *testing.T) {
 	}
 }
 
-func Test_ert_roundTrip(t *testing.T) {
+func Test_ert_doRoundTrip(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		req *http.Request
 	}
@@ -367,14 +372,14 @@ func Test_ert_roundTrip(t *testing.T) {
 				transport: &roundTripMock{
 					RoundTripFunc: func(*http.Request) (*http.Response, error) {
 						return &http.Response{
-							Status: "200",
+							Status: strconv.Itoa(http.StatusOK),
 						}, nil
 					},
 				},
 			},
 			want: want{
 				wantRes: &http.Response{
-					Status: "200",
+					Status: strconv.Itoa(http.StatusOK),
 				},
 			},
 		},
@@ -395,7 +400,7 @@ func Test_ert_roundTrip(t *testing.T) {
 			},
 		},
 		{
-			name: "roundtrip return retryable error",
+			name: "roundtrip return retryable error when status code is 502",
 			args: args{
 				req: &http.Request{},
 			},
@@ -404,13 +409,33 @@ func Test_ert_roundTrip(t *testing.T) {
 					RoundTripFunc: func(*http.Request) (*http.Response, error) {
 						return &http.Response{
 							StatusCode: http.StatusBadGateway,
-							Body:       io.NopCloser(bytes.NewBuffer([]byte("abc"))),
+							Body:       io.NopCloser(bytes.NewBufferString("abc")),
 						}, nil
 					},
 				},
 			},
 			want: want{
 				err: errors.ErrTransportRetryable,
+			},
+		},
+		{
+			name: "roundtrip return success when status code is 301",
+			args: args{
+				req: &http.Request{},
+			},
+			fields: fields{
+				transport: &roundTripMock{
+					RoundTripFunc: func(*http.Request) (*http.Response, error) {
+						return &http.Response{
+							Status: strconv.Itoa(http.StatusMovedPermanently),
+						}, nil
+					},
+				},
+			},
+			want: want{
+				wantRes: &http.Response{
+					Status: strconv.Itoa(http.StatusMovedPermanently),
+				},
 			},
 		},
 		{
@@ -423,7 +448,7 @@ func Test_ert_roundTrip(t *testing.T) {
 					RoundTripFunc: func(*http.Request) (*http.Response, error) {
 						return &http.Response{
 							StatusCode: http.StatusBadGateway,
-							Body:       io.NopCloser(bytes.NewBuffer([]byte("abc"))),
+							Body:       io.NopCloser(bytes.NewBufferString("abc")),
 						}, errors.New("dummy")
 					},
 				},
@@ -434,9 +459,10 @@ func Test_ert_roundTrip(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			tt.Parallel()
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -452,15 +478,23 @@ func Test_ert_roundTrip(t *testing.T) {
 				bo:        test.fields.bo,
 			}
 
-			gotRes, err := e.roundTrip(test.args.req)
+			gotRes, err := e.doRoundTrip(test.args.req)
 			if err := checkFunc(test.want, gotRes, err); err != nil {
 				tt.Errorf("error = %v", err)
+			}
+
+			if gotRes != nil {
+				defer closeBody(gotRes.Body)
+			}
+			if test.args.req != nil {
+				defer closeBody(test.args.req.Body)
 			}
 		})
 	}
 }
 
 func Test_retryableStatusCode(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		status int
 	}
@@ -483,7 +517,7 @@ func Test_retryableStatusCode(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "return true when response status is retryable",
+			name: "return true when response status is 429(TooManyRequest)",
 			args: args{
 				status: http.StatusTooManyRequests,
 			},
@@ -492,7 +526,16 @@ func Test_retryableStatusCode(t *testing.T) {
 			},
 		},
 		{
-			name: "return false when response status is not retryable",
+			name: "return false when response status is 301(MovedPermanently)",
+			args: args{
+				status: http.StatusMovedPermanently,
+			},
+			want: want{
+				want: false,
+			},
+		},
+		{
+			name: "return false when response status is 200(OK)",
 			args: args{
 				status: http.StatusOK,
 			},
@@ -502,9 +545,10 @@ func Test_retryableStatusCode(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			tt.Parallel()
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -525,6 +569,7 @@ func Test_retryableStatusCode(t *testing.T) {
 }
 
 func Test_closeBody(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		rc io.ReadCloser
 	}
@@ -558,9 +603,10 @@ func Test_closeBody(t *testing.T) {
 		}(),
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			tt.Parallel()
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -579,3 +625,5 @@ func Test_closeBody(t *testing.T) {
 		})
 	}
 }
+
+// NOT IMPLEMENTED BELOW

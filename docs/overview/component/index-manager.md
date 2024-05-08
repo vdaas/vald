@@ -40,4 +40,5 @@ Vald Index Manager runs this process periodically by set time intervals.
 Concurrency means the number of Vald Agent pods for simultaneously sending requests for the indexing operation.<BR>
 
 When the Vald Agent pod has no uncommitted index or is running the indexing function already, it does not send the request.
+
 </div>

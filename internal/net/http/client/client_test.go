@@ -1,8 +1,8 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -21,9 +21,7 @@ import (
 	"crypto/tls"
 	"net/http"
 	"net/url"
-	"os"
 	"reflect"
-	"sync"
 	"sync/atomic"
 	"testing"
 
@@ -33,6 +31,7 @@ import (
 	"github.com/vdaas/vald/internal/log/logger"
 	"github.com/vdaas/vald/internal/net"
 	htr "github.com/vdaas/vald/internal/net/http/transport"
+	"github.com/vdaas/vald/internal/sync"
 	"github.com/vdaas/vald/internal/test/comparator"
 	"github.com/vdaas/vald/internal/test/goleak"
 	"golang.org/x/net/http2"
@@ -64,19 +63,25 @@ var (
 		comparator.Comparer(func(x, y func(ctx context.Context, network, addr string) (net.Conn, error)) bool {
 			return reflect.ValueOf(x).Pointer() == reflect.ValueOf(y).Pointer()
 		}),
+		// skipcq: VET-V0008
 		comparator.Comparer(func(x, y sync.Mutex) bool {
+			// skipcq: VET-V0008
 			return reflect.DeepEqual(x, y)
 		}),
 		comparator.Comparer(func(x, y atomic.Value) bool {
 			return reflect.DeepEqual(x.Load(), y.Load())
 		}),
+		// skipcq: VET-V0008
 		comparator.Comparer(func(x, y sync.Once) bool {
+			// skipcq: VET-V0008
 			return reflect.DeepEqual(x, y)
 		}),
 		comparator.Comparer(func(x, y *tls.Config) bool {
 			return reflect.DeepEqual(x, y)
 		}),
+		// skipcq: VET-V0008
 		comparator.Comparer(func(x, y sync.WaitGroup) bool {
+			// skipcq: VET-V0008
 			return reflect.DeepEqual(x, y)
 		}),
 	}
@@ -91,10 +96,11 @@ var (
 
 func TestMain(m *testing.M) {
 	log.Init(log.WithLoggerType(logger.NOP.String()))
-	os.Exit(m.Run())
+	goleak.VerifyTestMain(m)
 }
 
 func TestNew(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		opts []Option
 	}
@@ -183,9 +189,10 @@ func TestNew(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
+			tt.Parallel()
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -204,3 +211,5 @@ func TestNew(t *testing.T) {
 		})
 	}
 }
+
+// NOT IMPLEMENTED BELOW

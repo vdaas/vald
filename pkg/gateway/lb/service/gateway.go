@@ -1,8 +1,8 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -20,15 +20,15 @@ package service
 import (
 	"context"
 	"reflect"
-	"sync"
 	"sync/atomic"
 
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
 	"github.com/vdaas/vald/internal/client/v1/client/discoverer"
-	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/observability/trace"
+	"github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/internal/sync/errgroup"
 )
 
 type Gateway interface {
@@ -36,10 +36,17 @@ type Gateway interface {
 	GetAgentCount(ctx context.Context) int
 	Addrs(ctx context.Context) []string
 	DoMulti(ctx context.Context, num int,
-		f func(ctx context.Context, tgt string, ac vald.Client, copts ...grpc.CallOption) error) error
-	BroadCast(ctx context.Context,
-		f func(ctx context.Context, tgt string, ac vald.Client, copts ...grpc.CallOption) error) error
+		f func(ctx context.Context, target string, ac vald.Client, copts ...grpc.CallOption) error) error
+	BroadCast(ctx context.Context, kind BroadCastKind,
+		f func(ctx context.Context, target string, ac vald.Client, copts ...grpc.CallOption) error) error
 }
+
+type BroadCastKind int
+
+const (
+	READ BroadCastKind = iota
+	WRITE
+)
 
 type gateway struct {
 	client discoverer.Client
@@ -60,7 +67,7 @@ func (g *gateway) Start(ctx context.Context) (<-chan error, error) {
 	return g.client.Start(ctx)
 }
 
-func (g *gateway) BroadCast(ctx context.Context,
+func (g *gateway) BroadCast(ctx context.Context, kind BroadCastKind,
 	f func(ctx context.Context, target string, ac vald.Client, copts ...grpc.CallOption) error,
 ) (err error) {
 	fctx, span := trace.StartSpan(ctx, "vald/gateway-lb/service/Gateway.BroadCast")
@@ -69,7 +76,16 @@ func (g *gateway) BroadCast(ctx context.Context,
 			span.End()
 		}
 	}()
-	return g.client.GetClient().RangeConcurrent(fctx, -1, func(ictx context.Context,
+
+	var client grpc.Client
+	switch kind {
+	case READ:
+		client = g.client.GetReadClient()
+	case WRITE:
+		client = g.client.GetClient()
+	}
+
+	return client.RangeConcurrent(fctx, -1, func(ictx context.Context,
 		addr string, conn *grpc.ClientConn, copts ...grpc.CallOption,
 	) (err error) {
 		select {
@@ -102,7 +118,7 @@ func (g *gateway) DoMulti(ctx context.Context, num int,
 	} else {
 		limit = uint32(num)
 	}
-	var visited sync.Map
+	var visited sync.Map[string, any]
 	err = g.client.GetClient().OrderedRange(sctx, addrs, func(ictx context.Context,
 		addr string,
 		conn *grpc.ClientConn,

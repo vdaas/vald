@@ -1,8 +1,8 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -22,16 +22,17 @@ import (
 	agent "github.com/vdaas/vald/apis/grpc/v1/agent/core"
 	vald "github.com/vdaas/vald/apis/grpc/v1/vald"
 	iconf "github.com/vdaas/vald/internal/config"
-	"github.com/vdaas/vald/internal/errgroup"
+	"github.com/vdaas/vald/internal/k8s/client"
 	"github.com/vdaas/vald/internal/net/grpc"
-	"github.com/vdaas/vald/internal/net/grpc/metric"
 	"github.com/vdaas/vald/internal/observability"
 	ngtmetrics "github.com/vdaas/vald/internal/observability/metrics/agent/core/ngt"
 	infometrics "github.com/vdaas/vald/internal/observability/metrics/info"
+	memmetrics "github.com/vdaas/vald/internal/observability/metrics/mem"
 	"github.com/vdaas/vald/internal/runner"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/servers/server"
 	"github.com/vdaas/vald/internal/servers/starter"
+	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/config"
 	handler "github.com/vdaas/vald/pkg/agent/core/ngt/handler/grpc"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/handler/rest"
@@ -47,9 +48,12 @@ type run struct {
 	observability observability.Observability
 }
 
+const (
+	fieldManager = "vald-agent-index-controller"
+)
+
 func New(cfg *config.Data) (r runner.Runner, err error) {
-	ngt, err := service.New(
-		cfg.NGT,
+	serviceOpts := []service.Option{
 		service.WithErrGroup(errgroup.Get()),
 		service.WithEnableInMemoryMode(cfg.NGT.EnableInMemoryMode),
 		service.WithIndexPath(cfg.NGT.IndexPath),
@@ -66,10 +70,26 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		service.WithDefaultEpsilon(cfg.NGT.DefaultEpsilon),
 		service.WithProactiveGC(cfg.NGT.EnableProactiveGC),
 		service.WithCopyOnWrite(cfg.NGT.EnableCopyOnWrite),
+		service.WithIsReadReplica(cfg.NGT.IsReadReplica),
+	}
+	if cfg.NGT.EnableExportIndexInfoToK8s {
+		patcher, err := client.NewPatcher(fieldManager)
+		if err != nil {
+			return nil, err
+		}
+		serviceOpts = append(serviceOpts,
+			service.WithPatcher(patcher),
+			service.WithExportIndexInfoDuration(cfg.NGT.ExportIndexInfoDuration),
+		)
+	}
+	ngt, err := service.New(
+		cfg.NGT,
+		serviceOpts...,
 	)
 	if err != nil {
 		return nil, err
 	}
+
 	g, err := handler.New(
 		handler.WithNGT(ngt),
 		handler.WithStreamConcurrency(cfg.Server.GetGRPCStreamConcurrency()),
@@ -94,25 +114,15 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 
 	var obs observability.Observability
 	if cfg.Observability != nil && cfg.Observability.Enabled {
-		info, err := infometrics.New("agent/core/ngt/info", "agent_core_ngt_info", "Agent NGT info", *cfg.NGT)
-		if err != nil {
-			return nil, err
-		}
-
 		obs, err = observability.NewWithConfig(
 			cfg.Observability,
 			ngtmetrics.New(ngt),
-			info,
+			infometrics.New("agent_core_ngt_info", "Agent NGT info", *cfg.NGT),
+			memmetrics.New(),
 		)
 		if err != nil {
 			return nil, err
 		}
-		grpcServerOptions = append(
-			grpcServerOptions,
-			server.WithGRPCOption(
-				grpc.StatsHandler(metric.NewServerHandler()),
-			),
-		)
 	}
 
 	srv, err := starter.New(
@@ -187,7 +197,7 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 	return ech, nil
 }
 
-func (r *run) PreStop(ctx context.Context) error {
+func (*run) PreStop(ctx context.Context) error {
 	return nil
 }
 

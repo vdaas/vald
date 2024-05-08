@@ -1,8 +1,8 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -21,7 +21,6 @@ import (
 	"syscall"
 
 	"github.com/vdaas/vald/internal/errors"
-	"github.com/vdaas/vald/internal/log"
 )
 
 // SocketController represents the socket listener controller.
@@ -99,56 +98,55 @@ func (ctrl *control) GetControl() func(network, addr string, c syscall.RawConn) 
 
 func (ctrl *control) controlFunc(network, address string, c syscall.RawConn) (err error) {
 	return c.Control(func(fd uintptr) {
-		log.Debugf("controlling socket for %s://%s, config %#v", network, address, ctrl)
 		f := int(fd)
 		var ierr error
 		if SO_REUSEPORT != 0 {
 			ierr = SetsockoptInt(f, SOL_SOCKET, SO_REUSEPORT, boolint(ctrl.reusePort))
 			if ierr != nil {
-				err = errors.Wrap(err, ierr.Error())
+				err = errors.Join(err, ierr)
 			}
 		}
 		if SO_REUSEADDR != 0 {
 			ierr = SetsockoptInt(f, SOL_SOCKET, SO_REUSEADDR, boolint(ctrl.reuseAddr))
 			if ierr != nil {
-				err = errors.Wrap(err, ierr.Error())
+				err = errors.Join(err, ierr)
 			}
 		}
 		if isTCP(network) {
 			if TCP_FASTOPEN != 0 {
 				ierr = SetsockoptInt(f, IPPROTO_TCP, TCP_FASTOPEN, boolint(ctrl.tcpFastOpen))
 				if ierr != nil {
-					err = errors.Wrap(err, ierr.Error())
+					err = errors.Join(err, ierr)
 				}
 			}
 			if TCP_FASTOPEN_CONNECT != 0 {
 				ierr = SetsockoptInt(f, IPPROTO_TCP, TCP_FASTOPEN_CONNECT, boolint(ctrl.tcpFastOpen))
 				if ierr != nil {
-					err = errors.Wrap(err, ierr.Error())
+					err = errors.Join(err, ierr)
 				}
 			}
 			if TCP_NODELAY != 0 {
 				ierr = SetsockoptInt(f, IPPROTO_TCP, TCP_NODELAY, boolint(ctrl.tcpNoDelay))
 				if ierr != nil {
-					err = errors.Wrap(err, ierr.Error())
+					err = errors.Join(err, ierr)
 				}
 			}
 			if TCP_CORK != 0 {
 				ierr = SetsockoptInt(f, IPPROTO_TCP, TCP_CORK, boolint(ctrl.tcpCork))
 				if ierr != nil {
-					err = errors.Wrap(err, ierr.Error())
+					err = errors.Join(err, ierr)
 				}
 			}
 			if TCP_QUICKACK != 0 {
 				ierr = SetsockoptInt(f, IPPROTO_TCP, TCP_QUICKACK, boolint(ctrl.tcpQuickAck))
 				if ierr != nil {
-					err = errors.Wrap(err, ierr.Error())
+					err = errors.Join(err, ierr)
 				}
 			}
 			if TCP_DEFER_ACCEPT != 0 {
 				ierr = SetsockoptInt(f, IPPROTO_TCP, TCP_DEFER_ACCEPT, boolint(ctrl.tcpDeferAccept))
 				if ierr != nil {
-					err = errors.Wrap(err, ierr.Error())
+					err = errors.Join(err, ierr)
 				}
 			}
 		}
@@ -162,33 +160,33 @@ func (ctrl *control) controlFunc(network, address string, c syscall.RawConn) (er
 		if sol != 0 && trans != 0 {
 			ierr = SetsockoptInt(f, sol, trans, boolint(ctrl.ipTransparent))
 			if ierr != nil {
-				err = errors.Wrap(err, ierr.Error())
+				err = errors.Join(err, ierr)
 			}
 		}
 		if sol != 0 && rda != 0 {
 			ierr = SetsockoptInt(f, sol, rda, boolint(ctrl.ipRecoverDestinationAddr))
 			if ierr != nil {
-				err = errors.Wrap(err, ierr.Error())
+				err = errors.Join(err, ierr)
 			}
 		}
 
 		if SO_KEEPALIVE != 0 {
 			ierr = SetsockoptInt(f, SOL_SOCKET, SO_KEEPALIVE, boolint(ctrl.keepAlive > 0))
 			if ierr != nil {
-				err = errors.Wrap(err, ierr.Error())
+				err = errors.Join(err, ierr)
 			}
 		}
 		if ctrl.keepAlive > 0 && isTCP(network) {
 			if TCP_KEEPINTVL != 0 {
 				ierr = SetsockoptInt(f, IPPROTO_TCP, TCP_KEEPINTVL, ctrl.keepAlive)
 				if ierr != nil {
-					err = errors.Wrap(err, ierr.Error())
+					err = errors.Join(err, ierr)
 				}
 			}
 			if TCP_KEEPIDLE != 0 {
 				ierr = SetsockoptInt(f, IPPROTO_TCP, TCP_KEEPIDLE, ctrl.keepAlive)
 				if ierr != nil {
-					err = errors.Wrap(err, ierr.Error())
+					err = errors.Join(err, ierr)
 				}
 			}
 		}

@@ -1,8 +1,8 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-// Package vald provides vald grpc client library
+// Package vald provides vald gRPC client library
 package vald
 
 import "github.com/vdaas/vald/internal/net/grpc"

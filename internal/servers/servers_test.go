@@ -1,18 +1,16 @@
-//
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//    https://www.apache.org/licenses/LICENSE-2.0
+//	https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 package servers
 
 import (
@@ -21,9 +19,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/servers/server"
+	"github.com/vdaas/vald/internal/sync/errgroup"
 )
 
 func TestNew(t *testing.T) {
@@ -79,10 +77,11 @@ func TestNew(t *testing.T) {
 		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got := New(tt.opts...)
-			if err := tt.checkFunc(got.(*listener), tt.want); err != nil {
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(t *testing.T) {
+			got := New(test.opts...)
+			if err := test.checkFunc(got.(*listener), test.want); err != nil {
 				t.Error(err)
 			}
 		})
@@ -105,7 +104,7 @@ func Test_listener_ListenAndServe(t *testing.T) {
 		args      args
 		field     field
 		checkFunc func(got, want <-chan error) error
-		afterFunc func()
+		afterFunc func(*testing.T)
 		want      <-chan error
 	}
 
@@ -187,7 +186,8 @@ func Test_listener_ListenAndServe(t *testing.T) {
 					}
 					return nil
 				},
-				afterFunc: func() {
+				afterFunc: func(t *testing.T) {
+					t.Helper()
 					cancel()
 					eg.Wait()
 				},
@@ -195,22 +195,23 @@ func Test_listener_ListenAndServe(t *testing.T) {
 		}(),
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			ctx, cancel := context.WithCancel(tt.args.ctx)
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			ctx, cancel := context.WithCancel(test.args.ctx)
 			defer cancel()
-			if tt.afterFunc != nil {
-				defer tt.afterFunc()
+			if test.afterFunc != nil {
+				defer test.afterFunc(tt)
 			}
 
 			l := &listener{
-				eg:      tt.field.eg,
-				servers: tt.field.servers,
-				sus:     tt.field.sus,
+				eg:      test.field.eg,
+				servers: test.field.servers,
+				sus:     test.field.sus,
 			}
 
 			errCh := l.ListenAndServe(ctx)
-			if err := tt.checkFunc(errCh, tt.want); err != nil {
+			if err := test.checkFunc(errCh, test.want); err != nil {
 				t.Error(err)
 			}
 		})
@@ -234,7 +235,7 @@ func Test_listener_Shutdown(t *testing.T) {
 		args      args
 		field     field
 		checkFunc func(got, want error) error
-		afterFunc func()
+		afterFunc func(*testing.T)
 		want      error
 	}
 
@@ -288,7 +289,8 @@ func Test_listener_Shutdown(t *testing.T) {
 					servers: servers,
 					sds:     sds,
 				},
-				afterFunc: func() {
+				afterFunc: func(t *testing.T) {
+					t.Helper()
 					cancel()
 					eg.Wait()
 				},
@@ -311,7 +313,8 @@ func Test_listener_Shutdown(t *testing.T) {
 						"srv1",
 					},
 				},
-				afterFunc: func() {
+				afterFunc: func(t *testing.T) {
+					t.Helper()
 					cancel()
 					eg.Wait()
 				},
@@ -351,7 +354,8 @@ func Test_listener_Shutdown(t *testing.T) {
 					servers: servers,
 					sds:     sds,
 				},
-				afterFunc: func() {
+				afterFunc: func(t *testing.T) {
+					t.Helper()
 					cancel()
 					eg.Wait()
 				},
@@ -360,29 +364,32 @@ func Test_listener_Shutdown(t *testing.T) {
 		}(),
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			ctx, cancel := context.WithCancel(tt.args.ctx)
+	for _, tc := range tests {
+		test := tc
+		t.Run(test.name, func(tt *testing.T) {
+			ctx, cancel := context.WithCancel(test.args.ctx)
 			defer cancel()
-			if tt.afterFunc != nil {
-				defer tt.afterFunc()
+			if test.afterFunc != nil {
+				defer test.afterFunc(tt)
 			}
 
-			if tt.checkFunc == nil {
-				tt.checkFunc = defaultCheckFunc
+			if test.checkFunc == nil {
+				test.checkFunc = defaultCheckFunc
 			}
 
 			l := &listener{
-				eg:      tt.field.eg,
-				servers: tt.field.servers,
-				sds:     tt.field.sds,
-				sddur:   tt.field.sddur,
+				eg:      test.field.eg,
+				servers: test.field.servers,
+				sds:     test.field.sds,
+				sddur:   test.field.sddur,
 			}
 
 			err := l.Shutdown(ctx)
-			if err := tt.checkFunc(err, tt.want); err != nil {
+			if err := test.checkFunc(err, test.want); err != nil {
 				t.Error(err)
 			}
 		})
 	}
 }
+
+// NOT IMPLEMENTED BELOW

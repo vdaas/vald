@@ -1,8 +1,8 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -18,20 +18,22 @@ package usecase
 
 import (
 	"context"
+	"slices"
 
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
 	"github.com/vdaas/vald/internal/client/v1/client/filter/egress"
 	"github.com/vdaas/vald/internal/client/v1/client/filter/ingress"
 	client "github.com/vdaas/vald/internal/client/v1/client/vald"
-	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/net/grpc"
-	"github.com/vdaas/vald/internal/net/grpc/metric"
 	"github.com/vdaas/vald/internal/observability"
+	backoffmetrics "github.com/vdaas/vald/internal/observability/metrics/backoff"
+	cbmetrics "github.com/vdaas/vald/internal/observability/metrics/circuitbreaker"
 	"github.com/vdaas/vald/internal/runner"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/servers/server"
 	"github.com/vdaas/vald/internal/servers/starter"
+	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/pkg/gateway/filter/config"
 	handler "github.com/vdaas/vald/pkg/gateway/filter/handler/grpc"
 	"github.com/vdaas/vald/pkg/gateway/filter/handler/rest"
@@ -53,7 +55,6 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		return nil, errors.ErrGRPCTargetAddrNotFound
 	}
 	eg := errgroup.Get()
-	var obs observability.Observability
 	copts, err := cfg.Client.Opts()
 	if err != nil {
 		return nil, err
@@ -66,30 +67,6 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	if err != nil {
 		return nil, err
 	}
-	if cfg.Observability.Enabled {
-		obs, err = observability.NewWithConfig(cfg.Observability)
-		if err != nil {
-			return nil, err
-		}
-		copts = append(
-			copts,
-			grpc.WithDialOptions(
-				grpc.WithStatsHandler(metric.NewClientHandler()),
-			),
-		)
-		icopts = append(
-			icopts,
-			grpc.WithDialOptions(
-				grpc.WithStatsHandler(metric.NewClientHandler()),
-			),
-		)
-		ecopts = append(
-			ecopts,
-			grpc.WithDialOptions(
-				grpc.WithStatsHandler(metric.NewClientHandler()),
-			),
-		)
-	}
 
 	c, err := client.New(
 		client.WithAddrs(cfg.Client.Addrs...),
@@ -98,24 +75,72 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 	if err != nil {
 		return nil, err
 	}
+	var iaddrs []string
+	if cfg.IngressFilters != nil {
+		as := make([]string, 0, 10)
+		if cfg.IngressFilters.Client != nil && cfg.IngressFilters.Client.Addrs != nil {
+			as = append(as, cfg.IngressFilters.Client.Addrs...)
+		}
+		if cfg.IngressFilters.Vectorizer != "" {
+			as = append(as, cfg.IngressFilters.Vectorizer)
+		}
+		if cfg.IngressFilters.SearchFilters != nil {
+			as = append(as, cfg.IngressFilters.SearchFilters...)
+		}
+		if cfg.IngressFilters.InsertFilters != nil {
+			as = append(as, cfg.IngressFilters.InsertFilters...)
+		}
+		if cfg.IngressFilters.UpdateFilters != nil {
+			as = append(as, cfg.IngressFilters.UpdateFilters...)
+		}
+		if cfg.IngressFilters.UpsertFilters != nil {
+			as = append(as, cfg.IngressFilters.UpsertFilters...)
+		}
+		if len(as) != 0 {
+			slices.Sort(as)
+			dup := make(map[string]bool, len(as))
+			iaddrs = make([]string, 0, len(as))
+			for _, addr := range as {
+				if !dup[addr] {
+					dup[addr] = true
+					iaddrs = append(iaddrs, addr)
+				}
+			}
+		}
+	}
 	ic, err := ingress.New(
-		ingress.WithAddrs(append(append(append(append(append(
-			cfg.IngressFilters.Client.Addrs,
-			cfg.IngressFilters.Vectorizer),
-			cfg.IngressFilters.SearchFilters...),
-			cfg.IngressFilters.InsertFilters...),
-			cfg.IngressFilters.UpdateFilters...),
-			cfg.IngressFilters.UpsertFilters...)...),
+		ingress.WithAddrs(iaddrs...),
 		ingress.WithClient(grpc.New(icopts...)),
 	)
 	if err != nil {
 		return nil, err
 	}
+	var eaddrs []string
+	if cfg.EgressFilters != nil {
+		as := make([]string, 0, 10)
+		if cfg.EgressFilters.Client != nil && cfg.EgressFilters.Client.Addrs != nil {
+			as = append(as, cfg.EgressFilters.Client.Addrs...)
+		}
+		if cfg.EgressFilters.DistanceFilters != nil {
+			as = append(as, cfg.EgressFilters.DistanceFilters...)
+		}
+		if cfg.EgressFilters.ObjectFilters != nil {
+			as = append(as, cfg.EgressFilters.ObjectFilters...)
+		}
+		if len(as) != 0 {
+			slices.Sort(as)
+			dup := make(map[string]bool, len(as))
+			eaddrs = make([]string, 0, len(as))
+			for _, addr := range as {
+				if !dup[addr] {
+					dup[addr] = true
+					eaddrs = append(eaddrs, addr)
+				}
+			}
+		}
+	}
 	ec, err := egress.New(
-		egress.WithAddrs(append(append(
-			cfg.EgressFilters.Client.Addrs,
-			cfg.EgressFilters.DistanceFilters...),
-			cfg.EgressFilters.ObjectFilters...)...),
+		egress.WithAddrs(eaddrs...),
 		egress.WithClient(grpc.New(ecopts...)),
 	)
 	if err != nil {
@@ -146,13 +171,16 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		}),
 	}
 
+	var obs observability.Observability
 	if cfg.Observability.Enabled {
-		grpcServerOptions = append(
-			grpcServerOptions,
-			server.WithGRPCOption(
-				grpc.StatsHandler(metric.NewServerHandler()),
-			),
+		obs, err = observability.NewWithConfig(
+			cfg.Observability,
+			backoffmetrics.New(),
+			cbmetrics.New(),
 		)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	srv, err := starter.New(
@@ -250,7 +278,7 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 	return ech, nil
 }
 
-func (r *run) PreStop(ctx context.Context) error {
+func (*run) PreStop(context.Context) error {
 	return nil
 }
 
@@ -264,12 +292,12 @@ func (r *run) Stop(ctx context.Context) error {
 func (r *run) PostStop(ctx context.Context) (err error) {
 	defer func() {
 		if err != nil {
-			err = errors.Wrap(r.ingress.Stop(ctx), errors.Wrap(r.egress.Stop(ctx), err.Error()).Error())
+			err = errors.Join(r.ingress.Stop(ctx), errors.Join(r.egress.Stop(ctx), err))
 			return
 		}
 		err = r.ingress.Stop(ctx)
 		if err != nil {
-			err = errors.Wrap(r.egress.Stop(ctx), err.Error())
+			err = errors.Join(r.egress.Stop(ctx), err)
 			return
 		}
 		err = r.egress.Stop(ctx)

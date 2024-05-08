@@ -1,8 +1,8 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -18,12 +18,15 @@
 package grpc
 
 import (
+	"os"
 	"runtime"
 
 	"github.com/vdaas/vald/internal/client/v1/client/filter/egress"
 	"github.com/vdaas/vald/internal/client/v1/client/filter/ingress"
 	"github.com/vdaas/vald/internal/client/v1/client/vald"
-	"github.com/vdaas/vald/internal/errgroup"
+	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/net"
+	"github.com/vdaas/vald/internal/sync/errgroup"
 )
 
 type Option func(*server)
@@ -31,6 +34,32 @@ type Option func(*server)
 var defaultOptions = []Option{
 	WithErrGroup(errgroup.Get()),
 	WithStreamConcurrency(runtime.GOMAXPROCS(-1) * 10),
+	WithName(func() string {
+		name, err := os.Hostname()
+		if err != nil {
+			log.Warn(err)
+		}
+		return name
+	}()),
+	WithIP(net.LoadLocalIP()),
+}
+
+// WithIP returns the option to set the IP for server.
+func WithIP(ip string) Option {
+	return func(s *server) {
+		if len(ip) != 0 {
+			s.ip = ip
+		}
+	}
+}
+
+// WithName returns the option to set the name for server.
+func WithName(name string) Option {
+	return func(s *server) {
+		if len(name) != 0 {
+			s.name = name
+		}
+	}
 }
 
 func WithIngressFilterClient(c ingress.Client) Option {
@@ -67,7 +96,7 @@ func WithErrGroup(eg errgroup.Group) Option {
 
 func WithStreamConcurrency(c int) Option {
 	return func(s *server) {
-		if c != 0 {
+		if c > 1 {
 			s.streamConcurrency = c
 		}
 	}

@@ -1,8 +1,8 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -53,4 +53,9 @@ var (
 
 	// ErrTransportRetryable represents an error that the transport is retryable.
 	ErrTransportRetryable = New("transport is retryable")
+
+	// ErrInvalidStatusCode represents a function to generate an error that the http status code is invalid.
+	ErrInvalidStatusCode = func(code int) error {
+		return Errorf("invalid status code: %d", code)
+	}
 )

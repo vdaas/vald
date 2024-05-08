@@ -1,8 +1,8 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -23,10 +23,10 @@ import (
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/errors"
-	"github.com/vdaas/vald/internal/test/goleak"
 )
 
 func TestCodec_Marshal(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		v interface{}
 	}
@@ -97,7 +97,6 @@ func TestCodec_Marshal(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -119,6 +118,7 @@ func TestCodec_Marshal(t *testing.T) {
 }
 
 func TestCodec_Unmarshal(t *testing.T) {
+	t.Parallel()
 	type args struct {
 		data []byte
 		v    interface{}
@@ -190,7 +190,6 @@ func TestCodec_Unmarshal(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
@@ -212,6 +211,7 @@ func TestCodec_Unmarshal(t *testing.T) {
 }
 
 func TestCodec_Name(t *testing.T) {
+	t.Parallel()
 	type want struct {
 		want string
 	}
@@ -242,7 +242,6 @@ func TestCodec_Name(t *testing.T) {
 		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
@@ -262,3 +261,5 @@ func TestCodec_Name(t *testing.T) {
 		})
 	}
 }
+
+// NOT IMPLEMENTED BELOW

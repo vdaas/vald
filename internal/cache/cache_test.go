@@ -1,8 +1,8 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -21,6 +21,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/vdaas/vald/internal/cache/cacher"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/test/goleak"
 )
@@ -32,21 +33,21 @@ var goleakIgnoreOptions = []goleak.Option{
 
 func TestNew(t *testing.T) {
 	type args struct {
-		opts []Option
+		opts []Option[any]
 	}
 	type want struct {
-		wantCc Cache
+		wantCc cacher.Cache[any]
 		err    error
 	}
 	type test struct {
 		name       string
 		args       args
 		want       want
-		checkFunc  func(want, Cache, error) error
+		checkFunc  func(want, cacher.Cache[any], error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, gotCc Cache, err error) error {
+	defaultCheckFunc := func(w want, gotCc cacher.Cache[any], err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
@@ -59,9 +60,9 @@ func TestNew(t *testing.T) {
 		{
 			name: "return gache cacher",
 			args: args{
-				opts: []Option{WithType("gache")},
+				opts: []Option[any]{WithType[any]("gache")},
 			},
-			checkFunc: func(w want, got Cache, err error) error {
+			checkFunc: func(w want, got cacher.Cache[any], err error) error {
 				if err != nil {
 					return err
 				}
@@ -75,7 +76,7 @@ func TestNew(t *testing.T) {
 		{
 			name: "return unknown error when type is unknown",
 			args: args{
-				opts: []Option{WithType("unknown")},
+				opts: []Option[any]{WithType[any]("unknown")},
 			},
 			want: want{
 				err: errors.ErrInvalidCacherType,
@@ -84,9 +85,9 @@ func TestNew(t *testing.T) {
 		{
 			name: "return cache when type is empty",
 			args: args{
-				opts: []Option{WithType("")},
+				opts: []Option[any]{WithType[any]("")},
 			},
-			checkFunc: func(w want, got Cache, err error) error {
+			checkFunc: func(w want, got cacher.Cache[any], err error) error {
 				if err != nil {
 					return err
 				}
@@ -100,7 +101,7 @@ func TestNew(t *testing.T) {
 		{
 			name: "return unknown error when type is dummy string",
 			args: args{
-				opts: []Option{WithType("dummy")},
+				opts: []Option[any]{WithType[any]("dummy")},
 			},
 			want: want{
 				err: errors.ErrInvalidCacherType,
@@ -108,7 +109,8 @@ func TestNew(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
@@ -122,10 +124,12 @@ func TestNew(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 
-			gotCc, err := New(test.args.opts...)
+			gotCc, err := New[any](test.args.opts...)
 			if err := checkFunc(test.want, gotCc, err); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
 	}
 }
+
+// NOT IMPLEMENTED BELOW

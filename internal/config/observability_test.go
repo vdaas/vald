@@ -1,8 +1,8 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -27,11 +27,10 @@ import (
 
 func TestObservability_Bind(t *testing.T) {
 	type fields struct {
-		Enabled    bool
-		Collector  *Collector
-		Trace      *Trace
-		Prometheus *Prometheus
-		Jaeger     *Jaeger
+		Enabled bool
+		OTLP    *OTLP
+		Metrics *Metrics
+		Trace   *Trace
 	}
 	type want struct {
 		want *Observability
@@ -60,106 +59,85 @@ func TestObservability_Bind(t *testing.T) {
 				want: want{
 					want: &Observability{
 						Enabled: true,
-						Collector: &Collector{
-							Metrics: new(Metrics),
+						OTLP: &OTLP{
+							Attribute: new(OTLPAttribute),
 						},
-						Trace:      new(Trace),
-						Prometheus: new(Prometheus),
-						Jaeger:     new(Jaeger),
+						Metrics: new(Metrics),
+						Trace:   new(Trace),
 					},
 				},
 			}
 		}(),
 		func() test {
-			collectorDur := "5ms"
-			prometheusEndpoint := "http://prometheus.kube-system.svc.cluster.local.:9090"
-			prometheusNamespace := "monitoring"
-			jaegerCollectorEndpoint := "http://jaeger-collector.monitoring.svc.cluster.local:14268/api/traces"
-			jaegerAgentEndpoint := "jaeger-agent.monitoring.svc.cluster.local:6831"
-			jaegerUsername := "username"
-			jaegerPassword := "pass"
-			jaegerServiceName := "jaeger"
+			collectorEndpoint := "collector.monitoring.svc.cluster.local:6831"
+			traceMaxExportBatchSize := 256
+			traceMaxQueueSize := 100
+			traceBatchTimeout := "1m"
+			traceExportTimeout := "1s"
+			metricsExportInterval := "10ms"
+			metricsExportTimeout := "30s"
 			return test{
 				name: "return Observability when all object parameters are not nil",
 				fields: fields{
 					Enabled: false,
-					Collector: &Collector{
-						Duration: collectorDur,
-					},
-					Trace: new(Trace),
-					Prometheus: &Prometheus{
-						Endpoint:  prometheusEndpoint,
-						Namespace: prometheusNamespace,
-					},
-					Jaeger: &Jaeger{
-						CollectorEndpoint: jaegerCollectorEndpoint,
-						AgentEndpoint:     jaegerAgentEndpoint,
-						Username:          jaegerUsername,
-						Password:          jaegerPassword,
-						ServiceName:       jaegerServiceName,
+					Metrics: new(Metrics),
+					Trace:   new(Trace),
+					OTLP: &OTLP{
+						CollectorEndpoint:       collectorEndpoint,
+						TraceBatchTimeout:       traceBatchTimeout,
+						TraceExportTimeout:      traceExportTimeout,
+						TraceMaxExportBatchSize: traceMaxExportBatchSize,
+						TraceMaxQueueSize:       traceMaxQueueSize,
+						MetricsExportInterval:   metricsExportInterval,
+						MetricsExportTimeout:    metricsExportTimeout,
 					},
 				},
 				want: want{
 					want: &Observability{
 						Enabled: false,
-						Collector: &Collector{
-							Duration: collectorDur,
-							Metrics:  new(Metrics),
-						},
-						Trace: new(Trace),
-						Prometheus: &Prometheus{
-							Endpoint:  prometheusEndpoint,
-							Namespace: prometheusNamespace,
-						},
-						Jaeger: &Jaeger{
-							CollectorEndpoint: jaegerCollectorEndpoint,
-							AgentEndpoint:     jaegerAgentEndpoint,
-							Username:          jaegerUsername,
-							Password:          jaegerPassword,
-							ServiceName:       jaegerServiceName,
+						Metrics: new(Metrics),
+						Trace:   new(Trace),
+						OTLP: &OTLP{
+							CollectorEndpoint:       collectorEndpoint,
+							TraceBatchTimeout:       traceBatchTimeout,
+							TraceExportTimeout:      traceExportTimeout,
+							TraceMaxExportBatchSize: traceMaxExportBatchSize,
+							TraceMaxQueueSize:       traceMaxQueueSize,
+							MetricsExportInterval:   metricsExportInterval,
+							MetricsExportTimeout:    metricsExportTimeout,
+							Attribute:               new(OTLPAttribute),
 						},
 					},
 				},
 			}
 		}(),
 		func() test {
-			collectorDur := "5ms"
-			prometheusEndpoint := "http://prometheus.kube-system.svc.cluster.local.:9090"
-			prometheusNamespace := "monitoring"
-			jaegerCollectorEndpoint := "http://jaeger-collector.monitoring.svc.cluster.local:14268/api/traces"
-			jaegerAgentEndpoint := "jaeger-agent.monitoring.svc.cluster.local:6831"
-			jaegerUsername := "username"
-			jaegerPassword := "pass"
-			jaegerServiceName := "jaeger"
+			collectorEndpoint := "collector.monitoring.svc.cluster.local:6831"
+			traceBatchTimeout := "1m"
+			traceExportTimeout := "1s"
+			metricsExportInterval := "10ms"
+			metricsExportTimeout := "30s"
 
 			envPrefix := "OBSERVABILITY_BIND_"
 			m := map[string]string{
-				envPrefix + "PROMETHEUS_ENDPOINT":       prometheusEndpoint,
-				envPrefix + "PROMETHUS_NAMESPACE":       prometheusNamespace,
-				envPrefix + "JAEGER_COLLECTOR_ENDPOINT": jaegerCollectorEndpoint,
-				envPrefix + "JAEGER_AGENT_ENDPOINT":     jaegerAgentEndpoint,
-				envPrefix + "JAEGER_USERNAME":           jaegerUsername,
-				envPrefix + "JAEGER_PASSWORD":           jaegerPassword,
-				envPrefix + "JAEGER_SERVICE_NAME":       jaegerServiceName,
+				envPrefix + "COLLECTOR_ENDPOINT":      collectorEndpoint,
+				envPrefix + "TRACE_BATCH_TIMEOUT":     traceBatchTimeout,
+				envPrefix + "TRACE_EXPORT_TIMEOUT":    traceExportTimeout,
+				envPrefix + "METRICS_EXPORT_INTERVAL": metricsExportInterval,
+				envPrefix + "METRICS_EXPORT_TIMEOUT":  metricsExportTimeout,
 			}
 			return test{
 				name: "return Observability when the data is loaded environment variable",
 				fields: fields{
 					Enabled: false,
-					Collector: &Collector{
-						Duration: collectorDur,
-					},
-					Trace: new(Trace),
-					Prometheus: &Prometheus{
-						Endpoint:  "_" + envPrefix + "PROMETHEUS_ENDPOINT_",
-						Namespace: "_" + envPrefix + "PROMETHUS_NAMESPACE_",
-					},
-					Jaeger: &Jaeger{
-						CollectorEndpoint: "_" + envPrefix + "JAEGER_COLLECTOR_ENDPOINT_",
-						AgentEndpoint:     "_" + envPrefix + "JAEGER_AGENT_ENDPOINT_",
-						Username:          "_" + envPrefix + "JAEGER_USERNAME_",
-						Password:          "_" + envPrefix + "JAEGER_PASSWORD_",
-						ServiceName:       "_" + envPrefix + "JAEGER_SERVICE_NAME_",
+					Metrics: new(Metrics),
+					Trace:   new(Trace),
+					OTLP: &OTLP{
+						CollectorEndpoint:     "_" + envPrefix + "COLLECTOR_ENDPOINT_",
+						TraceBatchTimeout:     "_" + envPrefix + "TRACE_BATCH_TIMEOUT_",
+						TraceExportTimeout:    "_" + envPrefix + "TRACE_EXPORT_TIMEOUT_",
+						MetricsExportInterval: "_" + envPrefix + "METRICS_EXPORT_INTERVAL_",
+						MetricsExportTimeout:  "_" + envPrefix + "METRICS_EXPORT_TIMEOUT_",
 					},
 				},
 				beforeFunc: func(t *testing.T) {
@@ -171,21 +149,15 @@ func TestObservability_Bind(t *testing.T) {
 				want: want{
 					want: &Observability{
 						Enabled: false,
-						Collector: &Collector{
-							Duration: collectorDur,
-							Metrics:  new(Metrics),
-						},
-						Trace: new(Trace),
-						Prometheus: &Prometheus{
-							Endpoint:  prometheusEndpoint,
-							Namespace: prometheusNamespace,
-						},
-						Jaeger: &Jaeger{
-							CollectorEndpoint: jaegerCollectorEndpoint,
-							AgentEndpoint:     jaegerAgentEndpoint,
-							Username:          jaegerUsername,
-							Password:          jaegerPassword,
-							ServiceName:       jaegerServiceName,
+						Metrics: new(Metrics),
+						Trace:   new(Trace),
+						OTLP: &OTLP{
+							CollectorEndpoint:     collectorEndpoint,
+							TraceBatchTimeout:     traceBatchTimeout,
+							TraceExportTimeout:    traceExportTimeout,
+							MetricsExportInterval: metricsExportInterval,
+							MetricsExportTimeout:  metricsExportTimeout,
+							Attribute:             new(OTLPAttribute),
 						},
 					},
 				},
@@ -208,11 +180,9 @@ func TestObservability_Bind(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 			o := &Observability{
-				Enabled:    test.fields.Enabled,
-				Collector:  test.fields.Collector,
-				Trace:      test.fields.Trace,
-				Prometheus: test.fields.Prometheus,
-				Jaeger:     test.fields.Jaeger,
+				Enabled: test.fields.Enabled,
+				Trace:   test.fields.Trace,
+				OTLP:    test.fields.OTLP,
 			}
 
 			got := o.Bind()
@@ -223,23 +193,25 @@ func TestObservability_Bind(t *testing.T) {
 	}
 }
 
-func TestCollector_Bind(t *testing.T) {
+func TestOTLPAttribute_Bind(t *testing.T) {
 	type fields struct {
-		Duration string
-		Metrics  *Metrics
+		Namespace   string
+		PodName     string
+		NodeName    string
+		ServiceName string
 	}
 	type want struct {
-		want *Collector
+		want *OTLPAttribute
 	}
 	type test struct {
 		name       string
 		fields     fields
 		want       want
-		checkFunc  func(want, *Collector) error
+		checkFunc  func(want, *OTLPAttribute) error
 		beforeFunc func(*testing.T)
 		afterFunc  func(*testing.T)
 	}
-	defaultCheckFunc := func(w want, got *Collector) error {
+	defaultCheckFunc := func(w want, got *OTLPAttribute) error {
 		if !reflect.DeepEqual(got, w.want) {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
@@ -248,51 +220,57 @@ func TestCollector_Bind(t *testing.T) {
 	tests := []test{
 		func() test {
 			return test{
-				name: "return Collector when the Metrics is nil",
-				fields: fields{
-					Duration: "5ms",
-				},
+				name:   "return OTLPAttribute when all object parameters are nil",
+				fields: fields{},
 				want: want{
-					want: &Collector{
-						Duration: "5ms",
-						Metrics:  new(Metrics),
-					},
+					want: new(OTLPAttribute),
 				},
 			}
 		}(),
 		func() test {
+			namespace := "monitoring"
+			podName := "vald-agent-ngt-0"
+			nodeName := "k3d-vald-cluster-agent-0"
+			servicename := "vald-agent-ngt"
 			return test{
-				name: "return Collector when the Metrics is not nil",
+				name: "return OTLPAttribute when all object parameters are not nil",
 				fields: fields{
-					Duration: "5ms",
-					Metrics:  new(Metrics),
+					Namespace:   namespace,
+					PodName:     podName,
+					NodeName:    nodeName,
+					ServiceName: servicename,
 				},
 				want: want{
-					want: &Collector{
-						Duration: "5ms",
-						Metrics:  new(Metrics),
+					want: &OTLPAttribute{
+						Namespace:   namespace,
+						PodName:     podName,
+						NodeName:    nodeName,
+						ServiceName: servicename,
 					},
 				},
 			}
 		}(),
 		func() test {
-			duration := "5ms"
-			versionInfoLabels := "vald_version"
+			namespace := "monitoring"
+			podName := "vald-agent-ngt-0"
+			nodeName := "k3d-vald-cluster-agent-0"
+			servicename := "vald-agent-ngt"
 
-			envPrefix := "COLLECTOR_BIND_"
+			envPrefix := "OTLPAttribute_BIND_"
 			m := map[string]string{
-				envPrefix + "DURATION":                    duration,
-				envPrefix + "METRICS_VERSION_INFO_LABELS": versionInfoLabels,
+				envPrefix + "NAMESPACE":    namespace,
+				envPrefix + "POD_NAME":     podName,
+				envPrefix + "NODE_NAME":    nodeName,
+				envPrefix + "SERVICE_NAME": servicename,
 			}
+
 			return test{
-				name: "return Collector when the data is loaded from the environment variable",
+				name: "return OTLPAttribute when the data is loaded environment variable",
 				fields: fields{
-					Duration: "_" + envPrefix + "DURATION_",
-					Metrics: &Metrics{
-						VersionInfoLabels: []string{
-							"_" + envPrefix + "METRICS_VERSION_INFO_LABELS_",
-						},
-					},
+					Namespace:   "_" + envPrefix + "NAMESPACE_",
+					PodName:     "_" + envPrefix + "POD_NAME_",
+					NodeName:    "_" + envPrefix + "NODE_NAME_",
+					ServiceName: "_" + envPrefix + "SERVICE_NAME_",
 				},
 				beforeFunc: func(t *testing.T) {
 					t.Helper()
@@ -301,13 +279,11 @@ func TestCollector_Bind(t *testing.T) {
 					}
 				},
 				want: want{
-					want: &Collector{
-						Duration: duration,
-						Metrics: &Metrics{
-							VersionInfoLabels: []string{
-								versionInfoLabels,
-							},
-						},
+					want: &OTLPAttribute{
+						Namespace:   namespace,
+						PodName:     podName,
+						NodeName:    nodeName,
+						ServiceName: servicename,
 					},
 				},
 			}
@@ -328,15 +304,19 @@ func TestCollector_Bind(t *testing.T) {
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
-			c := &Collector{
-				Duration: test.fields.Duration,
-				Metrics:  test.fields.Metrics,
+			o := &OTLPAttribute{
+				Namespace:   test.fields.Namespace,
+				PodName:     test.fields.PodName,
+				NodeName:    test.fields.NodeName,
+				ServiceName: test.fields.ServiceName,
 			}
 
-			got := c.Bind()
+			got := o.Bind()
 			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
 	}
 }
+
+// NOT IMPLEMENTED BELOW

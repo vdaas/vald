@@ -1,8 +1,8 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -17,17 +17,16 @@
 package s3
 
 import (
-	stderrs "errors"
 	"reflect"
 	"testing"
 
 	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/google/go-cmp/cmp"
 	"github.com/vdaas/vald/internal/backoff"
 	"github.com/vdaas/vald/internal/db/storage/blob/s3/reader"
 	"github.com/vdaas/vald/internal/db/storage/blob/s3/writer"
-	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/sync/errgroup"
+	"github.com/vdaas/vald/internal/test/comparator"
 	"github.com/vdaas/vald/internal/test/goleak"
 )
 
@@ -90,7 +89,8 @@ func TestWithErrGroup(t *testing.T) {
 		}(),
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
@@ -173,7 +173,8 @@ func TestWithSession(t *testing.T) {
 		}(),
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
@@ -249,7 +250,8 @@ func TestWithBucket(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
@@ -336,15 +338,15 @@ func TestWithMaxPartSize(t *testing.T) {
 					maxPartSize: 0,
 				},
 				err: func() (err error) {
-					err = stderrs.New("byte quantity must be a positive integer with a unit of measurement like M, MB, MiB, G, GiB, or GB")
-					err = errors.Wrap(err, errors.ErrParseUnitFailed("a").Error())
+					err = errors.Join(errors.New("byte quantity must be a positive integer with a unit of measurement like M, MB, MiB, G, GiB, or GB"), errors.ErrParseUnitFailed("a"))
 					return
 				}(),
 			},
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
@@ -433,15 +435,15 @@ func TestWithMaxChunkSize(t *testing.T) {
 					maxChunkSize: 0,
 				},
 				err: func() (err error) {
-					err = stderrs.New("byte quantity must be a positive integer with a unit of measurement like M, MB, MiB, G, GiB, or GB")
-					err = errors.Wrap(err, errors.ErrParseUnitFailed("a").Error())
+					err = errors.Join(errors.New("byte quantity must be a positive integer with a unit of measurement like M, MB, MiB, G, GiB, or GB"), errors.ErrParseUnitFailed("a"))
 					return
 				}(),
 			},
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
@@ -507,7 +509,8 @@ func TestWithReaderBackoff(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
@@ -558,17 +561,17 @@ func TestWithReaderBackoffOpts(t *testing.T) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
 
-		opts := []cmp.Option{
-			cmp.AllowUnexported(*obj),
-			cmp.AllowUnexported(*w.obj),
-			cmp.Comparer(func(want, got []backoff.Option) bool {
+		opts := []comparator.Option{
+			comparator.AllowUnexported(*obj),
+			comparator.AllowUnexported(*w.obj),
+			comparator.Comparer(func(want, got []backoff.Option) bool {
 				return len(got) == len(want)
 			}),
-			cmp.Comparer(func(want, got backoff.Option) bool {
+			comparator.Comparer(func(want, got backoff.Option) bool {
 				return reflect.ValueOf(got).Pointer() == reflect.ValueOf(want).Pointer()
 			}),
 		}
-		if diff := cmp.Diff(w.obj, obj, opts...); diff != "" {
+		if diff := comparator.Diff(w.obj, obj, opts...); diff != "" {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", obj, w.obj)
 		}
 
@@ -628,7 +631,8 @@ func TestWithReaderBackoffOpts(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
@@ -711,7 +715,8 @@ func TestWithReader(t *testing.T) {
 		}(),
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
@@ -792,7 +797,8 @@ func TestWithWriter(t *testing.T) {
 		}(),
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
@@ -815,3 +821,5 @@ func TestWithWriter(t *testing.T) {
 		})
 	}
 }
+
+// NOT IMPLEMENTED BELOW

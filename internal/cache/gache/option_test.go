@@ -1,8 +1,8 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -15,6 +15,7 @@
 //
 
 // Package gache provides implementation of cache using gache
+
 package gache
 
 import (
@@ -23,35 +24,35 @@ import (
 	"testing"
 	"time"
 
-	"github.com/google/go-cmp/cmp"
-	"github.com/kpango/gache"
+	gache "github.com/kpango/gache/v2"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/test/comparator"
 	"github.com/vdaas/vald/internal/test/goleak"
 )
 
 func TestDefaultOptions(t *testing.T) {
 	type args struct{}
 	type want struct {
-		want *cache
+		want *cache[any]
 	}
 	type test struct {
 		name       string
 		args       args
 		want       want
-		checkFunc  func(want, *cache) error
+		checkFunc  func(want, *cache[any]) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
 
-	defaultCheckFunc := func(w want, got *cache) error {
-		opts := []cmp.Option{
-			cmp.AllowUnexported(*w.want),
-			cmp.AllowUnexported(*got),
-			cmp.Comparer(func(want, got *cache) bool {
+	defaultCheckFunc := func(w want, got *cache[any]) error {
+		opts := []comparator.Option{
+			comparator.AllowUnexported(*w.want),
+			comparator.AllowUnexported(*got),
+			comparator.Comparer(func(want, got *cache[any]) bool {
 				return want.gache != nil && got.gache != nil
 			}),
 		}
-		if diff := cmp.Diff(w.want, got, opts...); diff != "" {
+		if diff := comparator.Diff(w.want, got, opts...); diff != "" {
 			return errors.Errorf("got = %v, want = %v", got, w.want)
 		}
 		return nil
@@ -61,14 +62,15 @@ func TestDefaultOptions(t *testing.T) {
 		{
 			name: "set succuess",
 			want: want{
-				want: &cache{
-					gache: gache.New(),
+				want: &cache[any]{
+					gache: gache.New[any](),
 				},
 			},
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
@@ -81,8 +83,8 @@ func TestDefaultOptions(t *testing.T) {
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
-			g := new(cache)
-			for _, opt := range defaultOptions() {
+			g := new(cache[any])
+			for _, opt := range defaultOptions[any]() {
 				opt(g)
 			}
 			if err := checkFunc(test.want, g); err != nil {
@@ -93,9 +95,9 @@ func TestDefaultOptions(t *testing.T) {
 }
 
 func TestWithGache(t *testing.T) {
-	type T = cache
+	type T = cache[any]
 	type args struct {
-		g gache.Gache
+		g gache.Gache[any]
 	}
 	type want struct {
 		want *T
@@ -118,7 +120,7 @@ func TestWithGache(t *testing.T) {
 
 	tests := []test{
 		func() test {
-			ga := gache.New()
+			ga := gache.New[any]()
 			return test{
 				name: "set succuess when g is not nil",
 				args: args{
@@ -141,7 +143,8 @@ func TestWithGache(t *testing.T) {
 		}(),
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
@@ -165,7 +168,7 @@ func TestWithGache(t *testing.T) {
 }
 
 func TestWithExpiredHook(t *testing.T) {
-	type T = cache
+	type T = cache[any]
 	type args struct {
 		f func(context.Context, string)
 	}
@@ -219,7 +222,8 @@ func TestWithExpiredHook(t *testing.T) {
 		}(),
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
@@ -232,7 +236,7 @@ func TestWithExpiredHook(t *testing.T) {
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
-			got := WithExpiredHook(test.args.f)
+			got := WithExpiredHook[any](test.args.f)
 			want := new(T)
 			got(want)
 			if err := checkFunc(test.want, want); err != nil {
@@ -243,7 +247,7 @@ func TestWithExpiredHook(t *testing.T) {
 }
 
 func TestWithExpireDuration(t *testing.T) {
-	type T = cache
+	type T = cache[any]
 	type args struct {
 		dur time.Duration
 	}
@@ -289,7 +293,8 @@ func TestWithExpireDuration(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
@@ -303,7 +308,7 @@ func TestWithExpireDuration(t *testing.T) {
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
-			got := WithExpireDuration(test.args.dur)
+			got := WithExpireDuration[any](test.args.dur)
 			want := new(T)
 			got(want)
 			if err := checkFunc(test.want, want); err != nil {
@@ -314,7 +319,7 @@ func TestWithExpireDuration(t *testing.T) {
 }
 
 func TestWithExpireCheckDuration(t *testing.T) {
-	type T = cache
+	type T = cache[any]
 	type args struct {
 		dur time.Duration
 	}
@@ -359,7 +364,8 @@ func TestWithExpireCheckDuration(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
@@ -373,7 +379,7 @@ func TestWithExpireCheckDuration(t *testing.T) {
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
-			got := WithExpireCheckDuration(test.args.dur)
+			got := WithExpireCheckDuration[any](test.args.dur)
 			want := new(T)
 			got(want)
 			if err := checkFunc(test.want, want); err != nil {
@@ -383,106 +389,80 @@ func TestWithExpireCheckDuration(t *testing.T) {
 	}
 }
 
-func Test_defaultOptions(t *testing.T) {
-	// Change interface type to the type of object you are testing
-	type T = interface{}
-	type want struct {
-		obj *T
-		// Uncomment this line if the option returns an error, otherwise delete it
-		// err error
-	}
-	type test struct {
-		name string
-		want want
-		// Use the first line if the option returns an error. otherwise use the second line
-		// checkFunc  func(want, *T, error) error
-		// checkFunc  func(want, *T) error
-		beforeFunc func()
-		afterFunc  func()
-	}
-
-	// Uncomment this block if the option returns an error, otherwise delete it
-	/*
-	   defaultCheckFunc := func(w want, obj *T, err error) error {
-	       if !errors.Is(err, w.err) {
-	           return errors.Errorf("got error = %v, want %v", err, w.err)
-	       }
-	       if !reflect.DeepEqual(obj, w.obj) {
-	           return errors.Errorf("got = %v, want %v", obj, w.obj)
-	       }
-	       return nil
-	   }
-	*/
-
-	// Uncomment this block if the option do not returns an error, otherwise delete it
-	/*
-	   defaultCheckFunc := func(w want, obj *T) error {
-	       if !reflect.DeepEqual(obj, w.obj) {
-	           return errors.Errorf("got = %v, want %v", obj, w.obj)
-	       }
-	       return nil
-	   }
-	*/
-
-	tests := []test{
-		// TODO test cases
-		/*
-		   {
-		       name: "test_case_1",
-		       want: want {
-		           obj: new(T),
-		       },
-		   },
-		*/
-
-		// TODO test cases
-		/*
-		   func() test {
-		       return test {
-		           name: "test_case_2",
-		           want: want {
-		               obj: new(T),
-		           },
-		       }
-		   }(),
-		*/
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(tt *testing.T) {
-			defer goleak.VerifyNone(tt)
-			if test.beforeFunc != nil {
-				test.beforeFunc()
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc()
-			}
-
-			// Uncomment this block if the option returns an error, otherwise delete it
-			/*
-			   if test.checkFunc == nil {
-			       test.checkFunc = defaultCheckFunc
-			   }
-
-			   got := defaultOptions()
-			   obj := new(T)
-			   if err := checkFunc(test.want, obj, got(obj)); err != nil {
-			       tt.Errorf("error = %v", err)
-			   }
-			*/
-
-			// Uncomment this block if the option do not return an error, otherwise delete it
-			/*
-			   if test.checkFunc == nil {
-			       test.checkFunc = defaultCheckFunc
-			   }
-			   got := defaultOptions()
-			   obj := new(T)
-			   got(obj)
-			   if err := checkFunc(test.want, obj); err != nil {
-			       tt.Errorf("error = %v", err)
-			   }
-			*/
-		})
-	}
-}
+// NOT IMPLEMENTED BELOW
+//
+// func Test_defaultOptions(t *testing.T) {
+// 	type want struct {
+// 		want []Option[V]
+// 	}
+// 	type test struct {
+// 		name       string
+// 		want       want
+// 		checkFunc  func(want, []Option[V]) error
+// 		beforeFunc func(*testing.T)
+// 		afterFunc  func(*testing.T)
+// 	}
+// 	defaultCheckFunc := func(w want, got []Option[V]) error {
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+//
+// 			got := defaultOptions()
+// 			if err := checkFunc(test.want, got); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+//
+// 		})
+// 	}
+// }

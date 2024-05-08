@@ -1,8 +1,8 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -20,9 +20,9 @@ package router
 import (
 	"net/http"
 
-	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/net/http/middleware"
 	"github.com/vdaas/vald/internal/net/http/routing"
+	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/pkg/discoverer/k8s/handler/rest"
 )
 
@@ -50,28 +50,28 @@ func New(opts ...Option) http.Handler {
 			)),
 		routing.WithRoutes([]routing.Route{
 			{
-				"Index",
-				[]string{
+				Name: "Index",
+				Methods: []string{
 					http.MethodGet,
 				},
-				"/",
-				h.Index,
+				Pattern:     "/",
+				HandlerFunc: h.Index,
 			},
 			{
-				"Pods",
-				[]string{
+				Name: "Pods",
+				Methods: []string{
 					http.MethodPost,
 				},
-				"/pods",
-				h.Pods,
+				Pattern:     "/pods",
+				HandlerFunc: h.Pods,
 			},
 			{
-				"Nodes",
-				[]string{
+				Name: "Nodes",
+				Methods: []string{
 					http.MethodPost,
 				},
-				"/nodes",
-				h.Nodes,
+				Pattern:     "/nodes",
+				HandlerFunc: h.Nodes,
 			},
 		}...))
 }

@@ -1,8 +1,8 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -56,11 +56,11 @@ func TestUnmarshalAny(t *testing.T) {
 			name: "return nil when success to unmarshal insert",
 			args: args{
 				any: func() *Any {
-					any, err := anypb.New(new(payload.Insert_Request))
+					anyVal, err := anypb.New(new(payload.Insert_Request))
 					if err != nil {
 						t.Error(err)
 					}
-					return any
+					return anyVal
 				}(),
 				pb: &payload.Insert_Request{
 					Vector: &payload.Object_Vector{
@@ -77,11 +77,11 @@ func TestUnmarshalAny(t *testing.T) {
 			name: "return error when unmarshal type mismatch",
 			args: args{
 				any: func() *Any {
-					any, err := anypb.New(new(payload.Insert_Request))
+					anyVal, err := anypb.New(new(payload.Insert_Request))
 					if err != nil {
 						t.Error(err)
 					}
-					return any
+					return anyVal
 				}(),
 				pb: &payload.Object_Vector{
 					Id:     "1",
@@ -117,3 +117,5 @@ func TestUnmarshalAny(t *testing.T) {
 		})
 	}
 }
+
+// NOT IMPLEMENTED BELOW

@@ -1,8 +1,8 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -21,13 +21,13 @@ import (
 	"os"
 	"reflect"
 	"runtime"
-	"sync"
 	"testing"
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/log/logger"
 	"github.com/vdaas/vald/internal/strings"
+	"github.com/vdaas/vald/internal/sync"
 	"github.com/vdaas/vald/internal/test/comparator"
 	"github.com/vdaas/vald/internal/test/goleak"
 )
@@ -44,65 +44,106 @@ func TestMain(m *testing.M) {
 
 func TestString(t *testing.T) {
 	type want struct {
-		want string
+		want *Detail
 	}
 	type test struct {
 		name       string
 		want       want
 		checkFunc  func(want, string) error
-		beforeFunc func()
-		afterFunc  func()
+		beforeFunc func(*testing.T)
+		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want, got string) error {
-		if got != w.want {
-			return errors.Errorf("\tgot: \"%v\",\n\t\t\t\twant: \"%v\"", got, w.want)
+		if got == w.want.String() {
+			// check the position of "->"
+			var oldIdx int
+			for i, str := range strings.Split(strings.TrimPrefix(got, "\n"), "\n") {
+				idx := strings.Index(str, "->")
+				if i != 0 {
+					if oldIdx != idx {
+						return errors.Errorf("\tgot: \"%v\",\n\t\t\t\twant: \"%v\"", got, w.want)
+					}
+				}
+				oldIdx = idx
+			}
+			return nil
 		}
-		return nil
+		return errors.Errorf("\tgot: \"%v\",\n\t\t\t\twant: \"%v\"", got, w.want)
 	}
 	tests := []test{
 		{
 			name: "return correct string with no stack trace initialized",
-			beforeFunc: func() {
+			beforeFunc: func(t *testing.T) {
+				t.Helper()
 				infoProvider, _ = New(WithServerName(""),
 					WithRuntimeCaller(func(skip int) (pc uintptr, file string, line int, ok bool) {
 						return uintptr(0), "", 0, false
 					}))
 			},
-			afterFunc: func() {
+			afterFunc: func(t *testing.T) {
+				t.Helper()
 				once = sync.Once{}
 				infoProvider = nil
 			},
 			want: want{
-				want: "\nbuild cpu info flags ->\t[]\ngit commit           ->\tmain\ngo arch              ->\t" + runtime.GOARCH + "\ngo os                ->\t" + runtime.GOOS + "\ngo root              ->\t" + runtime.GOROOT() + "\ngo version           ->\t" + runtime.Version() + "\nvald version         ->\t\x1b[1mv0.0.1\x1b[22m",
+				want: &Detail{
+					Version:           "v0.0.1",
+					ServerName:        "",
+					GitCommit:         GitCommit,
+					BuildTime:         "",
+					GoVersion:         runtime.Version(),
+					GoOS:              runtime.GOOS,
+					GoArch:            runtime.GOARCH,
+					GoRoot:            runtime.GOROOT(),
+					CGOEnabled:        cgoUnknown,
+					AlgorithmInfo:     "",
+					BuildCPUInfoFlags: nil,
+					StackTrace:        nil,
+				},
 			},
 		},
-
 		{
 			name: "return correct string with no information initialized",
-			beforeFunc: func() {
+			beforeFunc: func(t *testing.T) {
+				t.Helper()
 				infoProvider = &info{
 					rtCaller: func(skip int) (pc uintptr, file string, line int, ok bool) {
 						return uintptr(0), "", 0, false
 					},
 				}
 			},
-			afterFunc: func() {
+			afterFunc: func(t *testing.T) {
+				t.Helper()
 				once = sync.Once{}
 				infoProvider = nil
 			},
 			want: want{
-				want: "\nbuild cpu info flags ->\t[]\ngit commit           ->\tmain\ngo arch              ->\t" + runtime.GOARCH + "\ngo os                ->\t" + runtime.GOOS + "\ngo root              ->\t" + runtime.GOROOT() + "\ngo version           ->\t" + runtime.Version() + "\nvald version         ->\t\x1b[1m\x1b[22m",
+				want: &Detail{
+					Version:           "",
+					ServerName:        "",
+					GitCommit:         GitCommit,
+					BuildTime:         "",
+					GoVersion:         runtime.Version(),
+					GoOS:              runtime.GOOS,
+					GoArch:            runtime.GOARCH,
+					GoRoot:            runtime.GOROOT(),
+					CGOEnabled:        cgoUnknown,
+					AlgorithmInfo:     "",
+					BuildCPUInfoFlags: nil,
+					StackTrace:        nil,
+				},
 			},
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(tt)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -125,8 +166,8 @@ func TestGet(t *testing.T) {
 		name       string
 		want       want
 		checkFunc  func(want, Detail) error
-		beforeFunc func()
-		afterFunc  func()
+		beforeFunc func(*testing.T)
+		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want, got Detail) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -137,27 +178,29 @@ func TestGet(t *testing.T) {
 	tests := []test{
 		{
 			name: "return detail with initialized runtime information",
-			beforeFunc: func() {
+			beforeFunc: func(t *testing.T) {
+				t.Helper()
 				infoProvider, _ = New(WithServerName(""), WithRuntimeCaller(func(skip int) (pc uintptr, file string, line int, ok bool) {
 					return uintptr(0), "", 0, false
 				}))
 			},
-			afterFunc: func() {
+			afterFunc: func(t *testing.T) {
+				t.Helper()
 				once = sync.Once{}
 				infoProvider = nil
 			},
 			want: want{
 				want: Detail{
 					ServerName:        "",
-					Version:           "v0.0.1",
+					Version:           Version,
 					BuildTime:         "",
-					GitCommit:         "main",
+					GitCommit:         GitCommit,
 					GoVersion:         runtime.Version(),
 					GoOS:              runtime.GOOS,
 					GoArch:            runtime.GOARCH,
 					GoRoot:            runtime.GOROOT(),
-					CGOEnabled:        "",
-					NGTVersion:        "",
+					CGOEnabled:        cgoUnknown,
+					AlgorithmInfo:     "",
 					BuildCPUInfoFlags: []string{""},
 					StackTrace:        make([]StackTrace, 0, 10),
 				},
@@ -165,13 +208,14 @@ func TestGet(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -198,13 +242,15 @@ func TestInit(t *testing.T) {
 		args       args
 		want       want
 		checkFunc  func(want, Info) error
-		beforeFunc func(args)
-		afterFunc  func(args)
+		beforeFunc func(*testing.T, args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, got Info) error {
 		opts := []comparator.Option{
 			comparator.AllowUnexported(info{}),
+			// skipcq: VET-V0008
 			comparator.Comparer(func(x, y sync.Once) bool {
+				// skipcq: VET-V0008
 				return reflect.DeepEqual(x, y)
 			}),
 			comparator.Comparer(func(x, y func(skip int) (pc uintptr, file string, line int, ok bool)) bool {
@@ -224,7 +270,7 @@ func TestInit(t *testing.T) {
 	version := Version
 	buildTime := BuildTime
 	cgoEnabled := CGOEnabled
-	ngtVersion := NGTVersion
+	ngtVersion := AlgorithmInfo
 	buildCPUInfoFlags := BuildCPUInfoFlags
 	tests := []test{
 		{
@@ -236,16 +282,16 @@ func TestInit(t *testing.T) {
 				want: &info{
 					baseURL: "https://github.com/vdaas/vald/tree/gitcommit",
 					detail: Detail{
-						GitCommit:  "gitcommit",
-						ServerName: "gateway",
-						Version:    "gitcommit",
-						BuildTime:  "1s",
-						GoVersion:  runtime.Version(),
-						GoOS:       runtime.GOOS,
-						GoArch:     runtime.GOARCH,
-						GoRoot:     runtime.GOROOT(),
-						CGOEnabled: "true",
-						NGTVersion: "v1.11.6",
+						GitCommit:     "gitcommit",
+						ServerName:    "gateway",
+						Version:       "gitcommit",
+						BuildTime:     "1s",
+						GoVersion:     runtime.Version(),
+						GoOS:          runtime.GOOS,
+						GoArch:        runtime.GOARCH,
+						GoRoot:        runtime.GOROOT(),
+						CGOEnabled:    cgoTrue,
+						AlgorithmInfo: "v1.11.6",
 						BuildCPUInfoFlags: []string{
 							"avx512f", "avx512dq",
 						},
@@ -259,15 +305,17 @@ func TestInit(t *testing.T) {
 					}(),
 				},
 			},
-			beforeFunc: func(args) {
+			beforeFunc: func(t *testing.T, _ args) {
+				t.Helper()
 				GitCommit = "gitcommit"
 				Version = ""
 				BuildTime = "1s"
-				CGOEnabled = "true"
-				NGTVersion = "v1.11.6"
+				CGOEnabled = cgoTrue
+				AlgorithmInfo = "v1.11.6"
 				BuildCPUInfoFlags = "\t\tavx512f avx512dq\t"
 			},
-			afterFunc: func(args) {
+			afterFunc: func(t *testing.T, _ args) {
+				t.Helper()
 				once = sync.Once{}
 				infoProvider = nil
 
@@ -275,7 +323,7 @@ func TestInit(t *testing.T) {
 				Version = version
 				BuildTime = buildTime
 				CGOEnabled = cgoEnabled
-				NGTVersion = ngtVersion
+				AlgorithmInfo = ngtVersion
 				BuildCPUInfoFlags = buildCPUInfoFlags
 			},
 		},
@@ -288,16 +336,16 @@ func TestInit(t *testing.T) {
 				want: &info{
 					baseURL: "https://github.com/vdaas/vald/tree/gitcommit",
 					detail: Detail{
-						GitCommit:  "gitcommit",
-						ServerName: "",
-						Version:    "gitcommit",
-						BuildTime:  "1s",
-						GoVersion:  runtime.Version(),
-						GoOS:       runtime.GOOS,
-						GoArch:     runtime.GOARCH,
-						GoRoot:     runtime.GOROOT(),
-						CGOEnabled: "true",
-						NGTVersion: "v1.11.6",
+						GitCommit:     "gitcommit",
+						ServerName:    "",
+						Version:       "gitcommit",
+						BuildTime:     "1s",
+						GoVersion:     runtime.Version(),
+						GoOS:          runtime.GOOS,
+						GoArch:        runtime.GOARCH,
+						GoRoot:        runtime.GOROOT(),
+						CGOEnabled:    cgoTrue,
+						AlgorithmInfo: "v1.11.6",
 						BuildCPUInfoFlags: []string{
 							"avx512f", "avx512dq",
 						},
@@ -311,15 +359,17 @@ func TestInit(t *testing.T) {
 					}(),
 				},
 			},
-			beforeFunc: func(args) {
+			beforeFunc: func(t *testing.T, _ args) {
+				t.Helper()
 				GitCommit = "gitcommit"
 				Version = ""
 				BuildTime = "1s"
-				CGOEnabled = "true"
-				NGTVersion = "v1.11.6"
+				CGOEnabled = cgoTrue
+				AlgorithmInfo = "v1.11.6"
 				BuildCPUInfoFlags = "\t\tavx512f avx512dq\t"
 			},
-			afterFunc: func(args) {
+			afterFunc: func(t *testing.T, _ args) {
+				t.Helper()
 				once = sync.Once{}
 				infoProvider = nil
 
@@ -327,19 +377,20 @@ func TestInit(t *testing.T) {
 				Version = version
 				BuildTime = buildTime
 				CGOEnabled = cgoEnabled
-				NGTVersion = ngtVersion
+				AlgorithmInfo = ngtVersion
 				BuildCPUInfoFlags = buildCPUInfoFlags
 			},
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			if test.beforeFunc != nil {
-				test.beforeFunc(test.args)
+				test.beforeFunc(tt, test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -368,7 +419,7 @@ func TestNew(t *testing.T) {
 		want       want
 		checkFunc  func(want, Info, error) error
 		beforeFunc func(args)
-		afterFunc  func(args)
+		afterFunc  func(*testing.T, args)
 	}
 	defaultCheckFunc := func(w want, got Info, err error) error {
 		if !errors.Is(err, w.err) {
@@ -376,7 +427,9 @@ func TestNew(t *testing.T) {
 		}
 		opts := []comparator.Option{
 			comparator.AllowUnexported(info{}),
+			// skipcq: VET-V0008
 			comparator.Comparer(func(x, y sync.Once) bool {
+				// skipcq: VET-V0008
 				return reflect.DeepEqual(x, y)
 			}),
 			comparator.Comparer(func(x, y func(skip int) (pc uintptr, file string, line int, ok bool)) bool {
@@ -409,8 +462,8 @@ func TestNew(t *testing.T) {
 						GoOS:              runtime.GOOS,
 						GoArch:            runtime.GOARCH,
 						GoRoot:            runtime.GOROOT(),
-						CGOEnabled:        CGOEnabled,
-						NGTVersion:        NGTVersion,
+						CGOEnabled:        cgoUnknown,
+						AlgorithmInfo:     AlgorithmInfo,
 						BuildCPUInfoFlags: strings.Split(strings.TrimSpace(BuildCPUInfoFlags), " "),
 						StackTrace:        nil,
 					},
@@ -442,8 +495,8 @@ func TestNew(t *testing.T) {
 						GoOS:              runtime.GOOS,
 						GoArch:            runtime.GOARCH,
 						GoRoot:            runtime.GOROOT(),
-						CGOEnabled:        CGOEnabled,
-						NGTVersion:        NGTVersion,
+						CGOEnabled:        cgoUnknown,
+						AlgorithmInfo:     AlgorithmInfo,
 						BuildCPUInfoFlags: strings.Split(strings.TrimSpace(BuildCPUInfoFlags), " "),
 					},
 					prepOnce: func() (o sync.Once) {
@@ -478,8 +531,8 @@ func TestNew(t *testing.T) {
 						GoOS:              runtime.GOOS,
 						GoArch:            runtime.GOARCH,
 						GoRoot:            runtime.GOROOT(),
-						CGOEnabled:        CGOEnabled,
-						NGTVersion:        NGTVersion,
+						CGOEnabled:        cgoUnknown,
+						AlgorithmInfo:     AlgorithmInfo,
 						BuildCPUInfoFlags: strings.Split(strings.TrimSpace(BuildCPUInfoFlags), " "),
 						StackTrace:        nil,
 					},
@@ -513,8 +566,8 @@ func TestNew(t *testing.T) {
 						GoOS:              runtime.GOOS,
 						GoArch:            runtime.GOARCH,
 						GoRoot:            runtime.GOROOT(),
-						CGOEnabled:        CGOEnabled,
-						NGTVersion:        NGTVersion,
+						CGOEnabled:        cgoUnknown,
+						AlgorithmInfo:     AlgorithmInfo,
 						BuildCPUInfoFlags: strings.Split(strings.TrimSpace(BuildCPUInfoFlags), " "),
 						StackTrace:        nil,
 					},
@@ -542,14 +595,15 @@ func TestNew(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc(test.args)
+				defer test.afterFunc(tt, test.args)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -567,12 +621,11 @@ func TestNew(t *testing.T) {
 func Test_info_String(t *testing.T) {
 	type fields struct {
 		detail      Detail
-		prepOnce    sync.Once
 		rtCaller    func(skip int) (pc uintptr, file string, line int, ok bool)
 		rtFuncForPC func(pc uintptr) *runtime.Func
 	}
 	type want struct {
-		want string
+		want *Detail
 	}
 	type test struct {
 		name       string
@@ -580,13 +633,24 @@ func Test_info_String(t *testing.T) {
 		want       want
 		checkFunc  func(want, string) error
 		beforeFunc func()
-		afterFunc  func()
+		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want, got string) error {
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got: \"%v\",\n\t\t\t\twant: \"%v\"", got, w.want)
+		if got == w.want.String() {
+			// check the position of "->"
+			var oldIdx int
+			for i, str := range strings.Split(strings.TrimPrefix(got, "\n"), "\n") {
+				idx := strings.Index(str, "->")
+				if i != 0 {
+					if oldIdx != idx {
+						return errors.Errorf("\tgot: \"%v\",\n\t\t\t\twant: \"%v\"", got, w.want)
+					}
+				}
+				oldIdx = idx
+			}
+			return nil
 		}
-		return nil
+		return errors.Errorf("\tgot: \"%v\",\n\t\t\t\twant: \"%v\"", got, w.want)
 	}
 	tests := []test{
 		{
@@ -601,8 +665,8 @@ func Test_info_String(t *testing.T) {
 					GoOS:              "goos",
 					GoArch:            "goarch",
 					GoRoot:            "/usr/local/go",
-					CGOEnabled:        "true",
-					NGTVersion:        "1.2",
+					CGOEnabled:        cgoTrue,
+					AlgorithmInfo:     "1.2",
 					BuildCPUInfoFlags: nil,
 					StackTrace: []StackTrace{
 						{
@@ -615,7 +679,27 @@ func Test_info_String(t *testing.T) {
 				},
 			},
 			want: want{
-				want: "\nbuild cpu info flags ->\t[]\nbuild time           ->\tbt\ncgo enabled          ->\ttrue\ngit commit           ->\tcommit\ngo arch              ->\tgoarch\ngo os                ->\tgoos\ngo root              ->\t/usr/local/go\ngo version           ->\t1.1\nngt version          ->\t1.2\nserver name          ->\tsrv\nstack trace-000      ->\turl\tfile#L10\tfunc\nvald version         ->\t\x1b[1m1.0\x1b[22m",
+				want: &Detail{
+					Version:           "1.0",
+					ServerName:        "srv",
+					GitCommit:         "commit",
+					BuildTime:         "bt",
+					GoVersion:         "1.1",
+					GoOS:              "goos",
+					GoArch:            "goarch",
+					GoRoot:            "/usr/local/go",
+					CGOEnabled:        cgoTrue,
+					AlgorithmInfo:     "1.2",
+					BuildCPUInfoFlags: nil,
+					StackTrace: []StackTrace{
+						{
+							URL:      "url",
+							FuncName: "func",
+							File:     "file",
+							Line:     10,
+						},
+					},
+				},
 			},
 		},
 		{
@@ -630,8 +714,8 @@ func Test_info_String(t *testing.T) {
 					GoOS:              "goos",
 					GoArch:            "goarch",
 					GoRoot:            "/usr/local/go",
-					CGOEnabled:        "true",
-					NGTVersion:        "1.2",
+					CGOEnabled:        cgoTrue,
+					AlgorithmInfo:     "1.2",
 					BuildCPUInfoFlags: nil,
 					StackTrace:        []StackTrace{},
 				},
@@ -640,19 +724,33 @@ func Test_info_String(t *testing.T) {
 				},
 			},
 			want: want{
-				want: "\nbuild cpu info flags ->\t[]\nbuild time           ->\tbt\ncgo enabled          ->\ttrue\ngit commit           ->\tcommit\ngo arch              ->\tgoarch\ngo os                ->\tgoos\ngo root              ->\t/usr/local/go\ngo version           ->\t1.1\nngt version          ->\t1.2\nserver name          ->\tsrv\nvald version         ->\t\x1b[1m1.0\x1b[22m",
+				want: &Detail{
+					Version:           "1.0",
+					ServerName:        "srv",
+					GitCommit:         "commit",
+					BuildTime:         "bt",
+					GoVersion:         "1.1",
+					GoOS:              "goos",
+					GoArch:            "goarch",
+					GoRoot:            "/usr/local/go",
+					CGOEnabled:        cgoTrue,
+					AlgorithmInfo:     "1.2",
+					BuildCPUInfoFlags: nil,
+					StackTrace:        nil,
+				},
 			},
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -660,7 +758,6 @@ func Test_info_String(t *testing.T) {
 			}
 			i := info{
 				detail:      test.fields.detail,
-				prepOnce:    test.fields.prepOnce,
 				rtCaller:    test.fields.rtCaller,
 				rtFuncForPC: test.fields.rtFuncForPC,
 			}
@@ -683,12 +780,12 @@ func TestDetail_String(t *testing.T) {
 		GoOS              string
 		GoArch            string
 		CGOEnabled        string
-		NGTVersion        string
+		AlgorithmInfo     string
 		BuildCPUInfoFlags []string
 		StackTrace        []StackTrace
 	}
 	type want struct {
-		want string
+		want *Detail
 	}
 	type test struct {
 		name       string
@@ -696,13 +793,24 @@ func TestDetail_String(t *testing.T) {
 		want       want
 		checkFunc  func(want, string) error
 		beforeFunc func()
-		afterFunc  func()
+		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want, got string) error {
-		if !reflect.DeepEqual(got, w.want) {
-			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+		if got == w.want.String() {
+			// check the position of "->"
+			var oldIdx int
+			for i, str := range strings.Split(strings.TrimPrefix(got, "\n"), "\n") {
+				idx := strings.Index(str, "->")
+				if i != 0 {
+					if oldIdx != idx {
+						return errors.Errorf("\tgot: \"%v\",\n\t\t\t\twant: \"%v\"", got, w.want)
+					}
+				}
+				oldIdx = idx
+			}
+			return nil
 		}
-		return nil
+		return errors.Errorf("\tgot: \"%v\",\n\t\t\t\twant: \"%v\"", got, w.want)
 	}
 	tests := []test{
 		{
@@ -715,8 +823,8 @@ func TestDetail_String(t *testing.T) {
 				GoVersion:         "1.1",
 				GoOS:              "goos",
 				GoArch:            "goarch",
-				CGOEnabled:        "true",
-				NGTVersion:        "1.2",
+				CGOEnabled:        cgoTrue,
+				AlgorithmInfo:     "1.2",
 				BuildCPUInfoFlags: nil,
 				StackTrace: []StackTrace{
 					{
@@ -728,7 +836,26 @@ func TestDetail_String(t *testing.T) {
 				},
 			},
 			want: want{
-				want: "\nbuild cpu info flags ->\t[]\nbuild time           ->\tbt\ncgo enabled          ->\ttrue\ngit commit           ->\tcommit\ngo arch              ->\tgoarch\ngo os                ->\tgoos\ngo version           ->\t1.1\nngt version          ->\t1.2\nserver name          ->\tsrv\nstack trace-000      ->\turl\tfile#L10\tfunc\nvald version         ->\t\x1b[1m1.0\x1b[22m",
+				want: &Detail{
+					Version:           "1.0",
+					ServerName:        "srv",
+					GitCommit:         "commit",
+					BuildTime:         "bt",
+					GoVersion:         "1.1",
+					GoOS:              "goos",
+					GoArch:            "goarch",
+					CGOEnabled:        cgoTrue,
+					AlgorithmInfo:     "1.2",
+					BuildCPUInfoFlags: nil,
+					StackTrace: []StackTrace{
+						{
+							URL:      "url",
+							FuncName: "func",
+							File:     "file",
+							Line:     10,
+						},
+					},
+				},
 			},
 		},
 		{
@@ -741,25 +868,38 @@ func TestDetail_String(t *testing.T) {
 				GoVersion:         "1.1",
 				GoOS:              "goos",
 				GoArch:            "goarch",
-				CGOEnabled:        "true",
-				NGTVersion:        "1.2",
+				CGOEnabled:        cgoTrue,
+				AlgorithmInfo:     "1.2",
 				BuildCPUInfoFlags: nil,
 				StackTrace:        []StackTrace{},
 			},
 			want: want{
-				want: "\nbuild cpu info flags ->\t[]\nbuild time           ->\tbt\ncgo enabled          ->\ttrue\ngit commit           ->\tcommit\ngo arch              ->\tgoarch\ngo os                ->\tgoos\ngo version           ->\t1.1\nngt version          ->\t1.2\nserver name          ->\tsrv\nvald version         ->\t\x1b[1m1.0\x1b[22m",
+				want: &Detail{
+					Version:           "1.0",
+					ServerName:        "srv",
+					GitCommit:         "commit",
+					BuildTime:         "bt",
+					GoVersion:         "1.1",
+					GoOS:              "goos",
+					GoArch:            "goarch",
+					CGOEnabled:        cgoTrue,
+					AlgorithmInfo:     "1.2",
+					BuildCPUInfoFlags: nil,
+					StackTrace:        nil,
+				},
 			},
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -774,7 +914,7 @@ func TestDetail_String(t *testing.T) {
 				GoOS:              test.fields.GoOS,
 				GoArch:            test.fields.GoArch,
 				CGOEnabled:        test.fields.CGOEnabled,
-				NGTVersion:        test.fields.NGTVersion,
+				AlgorithmInfo:     test.fields.AlgorithmInfo,
 				BuildCPUInfoFlags: test.fields.BuildCPUInfoFlags,
 				StackTrace:        test.fields.StackTrace,
 			}
@@ -790,7 +930,6 @@ func TestDetail_String(t *testing.T) {
 func Test_info_Get(t *testing.T) {
 	type fields struct {
 		detail      Detail
-		prepOnce    sync.Once
 		rtCaller    func(skip int) (pc uintptr, file string, line int, ok bool)
 		rtFuncForPC func(pc uintptr) *runtime.Func
 	}
@@ -803,7 +942,7 @@ func Test_info_Get(t *testing.T) {
 		want       want
 		checkFunc  func(want, Detail) error
 		beforeFunc func()
-		afterFunc  func()
+		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want, got Detail) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -821,17 +960,17 @@ func Test_info_Get(t *testing.T) {
 			},
 			want: want{
 				want: Detail{
-					ServerName: "",
-					Version:    "",
-					GitCommit:  "main",
-					GoVersion:  runtime.Version(),
-					GoOS:       runtime.GOOS,
-					GoArch:     runtime.GOARCH,
-					GoRoot:     runtime.GOROOT(),
-					CGOEnabled: CGOEnabled,
-					StackTrace: []StackTrace{},
-					NGTVersion: NGTVersion,
-					BuildTime:  BuildTime,
+					ServerName:    "",
+					Version:       "",
+					GitCommit:     GitCommit,
+					GoVersion:     runtime.Version(),
+					GoOS:          runtime.GOOS,
+					GoArch:        runtime.GOARCH,
+					GoRoot:        runtime.GOROOT(),
+					CGOEnabled:    cgoUnknown,
+					StackTrace:    []StackTrace{},
+					AlgorithmInfo: AlgorithmInfo,
+					BuildTime:     BuildTime,
 					BuildCPUInfoFlags: func() []string {
 						if len(BuildCPUInfoFlags) == 0 {
 							return nil
@@ -862,12 +1001,12 @@ func Test_info_Get(t *testing.T) {
 				want: Detail{
 					ServerName: "",
 					Version:    "",
-					GitCommit:  "main",
+					GitCommit:  GitCommit,
 					GoVersion:  runtime.Version(),
 					GoOS:       runtime.GOOS,
 					GoArch:     runtime.GOARCH,
 					GoRoot:     runtime.GOROOT(),
-					CGOEnabled: CGOEnabled,
+					CGOEnabled: cgoUnknown,
 					StackTrace: []StackTrace{
 						{
 							URL:      "https://github.com/vdaas/vald/tree/main",
@@ -876,8 +1015,8 @@ func Test_info_Get(t *testing.T) {
 							Line:     100,
 						},
 					},
-					NGTVersion: NGTVersion,
-					BuildTime:  BuildTime,
+					AlgorithmInfo: AlgorithmInfo,
+					BuildTime:     BuildTime,
 					BuildCPUInfoFlags: func() []string {
 						if len(BuildCPUInfoFlags) == 0 {
 							return nil
@@ -908,12 +1047,12 @@ func Test_info_Get(t *testing.T) {
 				want: Detail{
 					ServerName: "",
 					Version:    "",
-					GitCommit:  "main",
+					GitCommit:  GitCommit,
 					GoVersion:  runtime.Version(),
 					GoOS:       runtime.GOOS,
 					GoArch:     runtime.GOARCH,
 					GoRoot:     runtime.GOROOT(),
-					CGOEnabled: CGOEnabled,
+					CGOEnabled: cgoUnknown,
 					StackTrace: []StackTrace{
 						{
 							URL:      "https://github.com/golang/go/blob/" + runtime.Version() + "/src/info_test.go#L100",
@@ -922,8 +1061,8 @@ func Test_info_Get(t *testing.T) {
 							Line:     100,
 						},
 					},
-					NGTVersion: NGTVersion,
-					BuildTime:  BuildTime,
+					AlgorithmInfo: AlgorithmInfo,
+					BuildTime:     BuildTime,
 					BuildCPUInfoFlags: func() []string {
 						if len(BuildCPUInfoFlags) == 0 {
 							return nil
@@ -953,12 +1092,12 @@ func Test_info_Get(t *testing.T) {
 			want: want{
 				want: Detail{
 					Version:    "",
-					GitCommit:  "main",
+					GitCommit:  GitCommit,
 					GoVersion:  runtime.Version(),
 					GoOS:       runtime.GOOS,
 					GoArch:     runtime.GOARCH,
 					GoRoot:     runtime.GOROOT(),
-					CGOEnabled: CGOEnabled,
+					CGOEnabled: cgoUnknown,
 					StackTrace: []StackTrace{
 						{
 							URL:      "https://github.com/vdaas/vald/internal/info_test.go#L100",
@@ -967,8 +1106,8 @@ func Test_info_Get(t *testing.T) {
 							Line:     100,
 						},
 					},
-					NGTVersion: NGTVersion,
-					BuildTime:  BuildTime,
+					AlgorithmInfo: AlgorithmInfo,
+					BuildTime:     BuildTime,
 					BuildCPUInfoFlags: func() []string {
 						if len(BuildCPUInfoFlags) == 0 {
 							return nil
@@ -998,12 +1137,12 @@ func Test_info_Get(t *testing.T) {
 			want: want{
 				want: Detail{
 					Version:    "",
-					GitCommit:  "main",
+					GitCommit:  GitCommit,
 					GoVersion:  runtime.Version(),
 					GoOS:       runtime.GOOS,
 					GoArch:     runtime.GOARCH,
 					GoRoot:     runtime.GOROOT(),
-					CGOEnabled: CGOEnabled,
+					CGOEnabled: cgoUnknown,
 					StackTrace: []StackTrace{
 						{
 							URL:      "https://github.com/vdaas/blob/v0.0.0-20171023180738-a3a6125de932/vald/internal/info_test.go#L100",
@@ -1012,8 +1151,8 @@ func Test_info_Get(t *testing.T) {
 							Line:     100,
 						},
 					},
-					NGTVersion: NGTVersion,
-					BuildTime:  BuildTime,
+					AlgorithmInfo: AlgorithmInfo,
+					BuildTime:     BuildTime,
 					BuildCPUInfoFlags: func() []string {
 						if len(BuildCPUInfoFlags) == 0 {
 							return nil
@@ -1043,12 +1182,12 @@ func Test_info_Get(t *testing.T) {
 			want: want{
 				want: Detail{
 					Version:    "",
-					GitCommit:  "main",
+					GitCommit:  GitCommit,
 					GoVersion:  runtime.Version(),
 					GoOS:       runtime.GOOS,
 					GoArch:     runtime.GOARCH,
 					GoRoot:     runtime.GOROOT(),
-					CGOEnabled: CGOEnabled,
+					CGOEnabled: cgoUnknown,
 					StackTrace: []StackTrace{
 						{
 							URL:      "https://github.com/vdaas/blob/main/vald/internal/info_test.go#L100",
@@ -1057,8 +1196,8 @@ func Test_info_Get(t *testing.T) {
 							Line:     100,
 						},
 					},
-					NGTVersion: NGTVersion,
-					BuildTime:  BuildTime,
+					AlgorithmInfo: AlgorithmInfo,
+					BuildTime:     BuildTime,
 					BuildCPUInfoFlags: func() []string {
 						if len(BuildCPUInfoFlags) == 0 {
 							return nil
@@ -1088,12 +1227,12 @@ func Test_info_Get(t *testing.T) {
 			want: want{
 				want: Detail{
 					Version:    "",
-					GitCommit:  "main",
+					GitCommit:  GitCommit,
 					GoVersion:  runtime.Version(),
 					GoOS:       runtime.GOOS,
 					GoArch:     runtime.GOARCH,
 					GoRoot:     runtime.GOROOT(),
-					CGOEnabled: CGOEnabled,
+					CGOEnabled: cgoUnknown,
 					StackTrace: []StackTrace{
 						{
 							URL:      "https://github.com/vdaas/vald/blob/main/internal/info_test.go#L100",
@@ -1102,8 +1241,8 @@ func Test_info_Get(t *testing.T) {
 							Line:     100,
 						},
 					},
-					NGTVersion: NGTVersion,
-					BuildTime:  BuildTime,
+					AlgorithmInfo: AlgorithmInfo,
+					BuildTime:     BuildTime,
 					BuildCPUInfoFlags: func() []string {
 						if len(BuildCPUInfoFlags) == 0 {
 							return nil
@@ -1115,14 +1254,15 @@ func Test_info_Get(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -1130,7 +1270,6 @@ func Test_info_Get(t *testing.T) {
 			}
 			i := info{
 				detail:      test.fields.detail,
-				prepOnce:    test.fields.prepOnce,
 				rtCaller:    test.fields.rtCaller,
 				rtFuncForPC: test.fields.rtFuncForPC,
 			}
@@ -1146,7 +1285,6 @@ func Test_info_Get(t *testing.T) {
 func Test_info_prepare(t *testing.T) {
 	type fields struct {
 		detail      Detail
-		prepOnce    sync.Once
 		rtCaller    func(skip int) (pc uintptr, file string, line int, ok bool)
 		rtFuncForPC func(pc uintptr) *runtime.Func
 	}
@@ -1159,34 +1297,36 @@ func Test_info_prepare(t *testing.T) {
 		want       want
 		checkFunc  func(info, want) error
 		beforeFunc func()
-		afterFunc  func()
+		afterFunc  func(*testing.T)
 	}
+	// skipcq: VET-V0008
 	defaultCheckFunc := func(got info, w want) error {
 		opts := []comparator.Option{
 			comparator.AllowUnexported(info{}),
 			comparator.IgnoreFields(info{}, "prepOnce"),
 		}
+		// skipcq: VET-V0008
 		if diff := comparator.Diff(w.want, got, opts...); len(diff) != 0 {
 			return errors.Errorf("err: %s", diff)
 		}
 		return nil
 	}
-	tests := []test{
+	tests := []*test{
 		{
 			name: "set success with all fields are empty",
 			want: want{
 				want: info{
 					baseURL: "https://github.com/vdaas/vald/tree/main",
 					detail: Detail{
-						GitCommit:  "main",
-						Version:    "",
-						BuildTime:  BuildTime,
-						GoVersion:  runtime.Version(),
-						GoOS:       runtime.GOOS,
-						GoArch:     runtime.GOARCH,
-						GoRoot:     runtime.GOROOT(),
-						CGOEnabled: CGOEnabled,
-						NGTVersion: NGTVersion,
+						GitCommit:     GitCommit,
+						Version:       "",
+						BuildTime:     BuildTime,
+						GoVersion:     runtime.Version(),
+						GoOS:          runtime.GOOS,
+						GoArch:        runtime.GOARCH,
+						GoRoot:        runtime.GOROOT(),
+						CGOEnabled:    cgoUnknown,
+						AlgorithmInfo: AlgorithmInfo,
 						BuildCPUInfoFlags: func() []string {
 							if len(BuildCPUInfoFlags) == 0 {
 								return nil
@@ -1208,15 +1348,15 @@ func Test_info_prepare(t *testing.T) {
 				want: info{
 					baseURL: "https://github.com/vdaas/vald/tree/internal",
 					detail: Detail{
-						GitCommit:  "internal",
-						Version:    "",
-						BuildTime:  BuildTime,
-						GoVersion:  runtime.Version(),
-						GoOS:       runtime.GOOS,
-						GoArch:     runtime.GOARCH,
-						GoRoot:     runtime.GOROOT(),
-						CGOEnabled: CGOEnabled,
-						NGTVersion: NGTVersion,
+						GitCommit:     "internal",
+						Version:       "",
+						BuildTime:     BuildTime,
+						GoVersion:     runtime.Version(),
+						GoOS:          runtime.GOOS,
+						GoArch:        runtime.GOARCH,
+						GoRoot:        runtime.GOROOT(),
+						CGOEnabled:    cgoUnknown,
+						AlgorithmInfo: AlgorithmInfo,
 						BuildCPUInfoFlags: func() []string {
 							if len(BuildCPUInfoFlags) == 0 {
 								return nil
@@ -1238,15 +1378,15 @@ func Test_info_prepare(t *testing.T) {
 				want: info{
 					baseURL: "https://github.com/vdaas/vald/tree/main",
 					detail: Detail{
-						GitCommit:  "main",
-						Version:    "v1.0.0",
-						BuildTime:  BuildTime,
-						GoVersion:  runtime.Version(),
-						GoOS:       runtime.GOOS,
-						GoArch:     runtime.GOARCH,
-						GoRoot:     runtime.GOROOT(),
-						CGOEnabled: CGOEnabled,
-						NGTVersion: NGTVersion,
+						GitCommit:     GitCommit,
+						Version:       "v1.0.0",
+						BuildTime:     BuildTime,
+						GoVersion:     runtime.Version(),
+						GoOS:          runtime.GOOS,
+						GoArch:        runtime.GOARCH,
+						GoRoot:        runtime.GOROOT(),
+						CGOEnabled:    cgoUnknown,
+						AlgorithmInfo: AlgorithmInfo,
 						BuildCPUInfoFlags: func() []string {
 							if len(BuildCPUInfoFlags) == 0 {
 								return nil
@@ -1268,15 +1408,15 @@ func Test_info_prepare(t *testing.T) {
 				want: info{
 					baseURL: "https://github.com/vdaas/vald/tree/main",
 					detail: Detail{
-						GitCommit:  "main",
-						Version:    "",
-						BuildTime:  "10s",
-						GoVersion:  runtime.Version(),
-						GoOS:       runtime.GOOS,
-						GoArch:     runtime.GOARCH,
-						GoRoot:     runtime.GOROOT(),
-						CGOEnabled: CGOEnabled,
-						NGTVersion: NGTVersion,
+						GitCommit:     GitCommit,
+						Version:       "",
+						BuildTime:     "10s",
+						GoVersion:     runtime.Version(),
+						GoOS:          runtime.GOOS,
+						GoArch:        runtime.GOARCH,
+						GoRoot:        runtime.GOROOT(),
+						CGOEnabled:    cgoUnknown,
+						AlgorithmInfo: AlgorithmInfo,
 						BuildCPUInfoFlags: func() []string {
 							if len(BuildCPUInfoFlags) == 0 {
 								return nil
@@ -1298,15 +1438,15 @@ func Test_info_prepare(t *testing.T) {
 				want: info{
 					baseURL: "https://github.com/vdaas/vald/tree/main",
 					detail: Detail{
-						GitCommit:  "main",
-						Version:    "",
-						BuildTime:  BuildTime,
-						GoVersion:  "1.14",
-						GoOS:       runtime.GOOS,
-						GoArch:     runtime.GOARCH,
-						GoRoot:     runtime.GOROOT(),
-						CGOEnabled: CGOEnabled,
-						NGTVersion: NGTVersion,
+						GitCommit:     GitCommit,
+						Version:       "",
+						BuildTime:     BuildTime,
+						GoVersion:     "1.14",
+						GoOS:          runtime.GOOS,
+						GoArch:        runtime.GOARCH,
+						GoRoot:        runtime.GOROOT(),
+						CGOEnabled:    cgoUnknown,
+						AlgorithmInfo: AlgorithmInfo,
 						BuildCPUInfoFlags: func() []string {
 							if len(BuildCPUInfoFlags) == 0 {
 								return nil
@@ -1328,15 +1468,15 @@ func Test_info_prepare(t *testing.T) {
 				want: info{
 					baseURL: "https://github.com/vdaas/vald/tree/main",
 					detail: Detail{
-						GitCommit:  "main",
-						Version:    "",
-						BuildTime:  BuildTime,
-						GoVersion:  runtime.Version(),
-						GoOS:       "linux",
-						GoArch:     runtime.GOARCH,
-						GoRoot:     runtime.GOROOT(),
-						CGOEnabled: CGOEnabled,
-						NGTVersion: NGTVersion,
+						GitCommit:     GitCommit,
+						Version:       "",
+						BuildTime:     BuildTime,
+						GoVersion:     runtime.Version(),
+						GoOS:          "linux",
+						GoArch:        runtime.GOARCH,
+						GoRoot:        runtime.GOROOT(),
+						CGOEnabled:    cgoUnknown,
+						AlgorithmInfo: AlgorithmInfo,
 						BuildCPUInfoFlags: func() []string {
 							if len(BuildCPUInfoFlags) == 0 {
 								return nil
@@ -1358,15 +1498,15 @@ func Test_info_prepare(t *testing.T) {
 				want: info{
 					baseURL: "https://github.com/vdaas/vald/tree/main",
 					detail: Detail{
-						GitCommit:  "main",
-						Version:    "",
-						BuildTime:  BuildTime,
-						GoVersion:  runtime.Version(),
-						GoOS:       runtime.GOOS,
-						GoArch:     "amd",
-						GoRoot:     runtime.GOROOT(),
-						CGOEnabled: CGOEnabled,
-						NGTVersion: NGTVersion,
+						GitCommit:     GitCommit,
+						Version:       "",
+						BuildTime:     BuildTime,
+						GoVersion:     runtime.Version(),
+						GoOS:          runtime.GOOS,
+						GoArch:        "amd",
+						GoRoot:        runtime.GOROOT(),
+						CGOEnabled:    cgoUnknown,
+						AlgorithmInfo: AlgorithmInfo,
 						BuildCPUInfoFlags: func() []string {
 							if len(BuildCPUInfoFlags) == 0 {
 								return nil
@@ -1378,7 +1518,7 @@ func Test_info_prepare(t *testing.T) {
 			},
 		},
 		{
-			name: "set success with CGOEnabled set",
+			name: "set success with CGOEnabled set as true",
 			fields: fields{
 				detail: Detail{
 					CGOEnabled: "1",
@@ -1388,15 +1528,15 @@ func Test_info_prepare(t *testing.T) {
 				want: info{
 					baseURL: "https://github.com/vdaas/vald/tree/main",
 					detail: Detail{
-						GitCommit:  "main",
-						Version:    "",
-						BuildTime:  BuildTime,
-						GoVersion:  runtime.Version(),
-						GoOS:       runtime.GOOS,
-						GoArch:     runtime.GOARCH,
-						GoRoot:     runtime.GOROOT(),
-						CGOEnabled: "1",
-						NGTVersion: NGTVersion,
+						GitCommit:     GitCommit,
+						Version:       "",
+						BuildTime:     BuildTime,
+						GoVersion:     runtime.Version(),
+						GoOS:          runtime.GOOS,
+						GoArch:        runtime.GOARCH,
+						GoRoot:        runtime.GOROOT(),
+						CGOEnabled:    cgoTrue,
+						AlgorithmInfo: AlgorithmInfo,
 						BuildCPUInfoFlags: func() []string {
 							if len(BuildCPUInfoFlags) == 0 {
 								return nil
@@ -1408,25 +1548,55 @@ func Test_info_prepare(t *testing.T) {
 			},
 		},
 		{
-			name: "set success with NGTVersion set",
+			name: "set success with CGOEnabled set as false",
 			fields: fields{
 				detail: Detail{
-					NGTVersion: "v1.11.5",
+					CGOEnabled: "0",
 				},
 			},
 			want: want{
 				want: info{
 					baseURL: "https://github.com/vdaas/vald/tree/main",
 					detail: Detail{
-						GitCommit:  "main",
-						Version:    "",
-						BuildTime:  BuildTime,
-						GoVersion:  runtime.Version(),
-						GoOS:       runtime.GOOS,
-						GoArch:     runtime.GOARCH,
-						GoRoot:     runtime.GOROOT(),
-						CGOEnabled: CGOEnabled,
-						NGTVersion: "v1.11.5",
+						GitCommit:     GitCommit,
+						Version:       "",
+						BuildTime:     BuildTime,
+						GoVersion:     runtime.Version(),
+						GoOS:          runtime.GOOS,
+						GoArch:        runtime.GOARCH,
+						GoRoot:        runtime.GOROOT(),
+						CGOEnabled:    cgoFalse,
+						AlgorithmInfo: AlgorithmInfo,
+						BuildCPUInfoFlags: func() []string {
+							if len(BuildCPUInfoFlags) == 0 {
+								return nil
+							}
+							return strings.Split(strings.TrimSpace(BuildCPUInfoFlags), " ")
+						}(),
+					},
+				},
+			},
+		},
+		{
+			name: "set success with AlgorithmInfo set",
+			fields: fields{
+				detail: Detail{
+					AlgorithmInfo: "v1.11.5",
+				},
+			},
+			want: want{
+				want: info{
+					baseURL: "https://github.com/vdaas/vald/tree/main",
+					detail: Detail{
+						GitCommit:     GitCommit,
+						Version:       "",
+						BuildTime:     BuildTime,
+						GoVersion:     runtime.Version(),
+						GoOS:          runtime.GOOS,
+						GoArch:        runtime.GOARCH,
+						GoRoot:        runtime.GOROOT(),
+						CGOEnabled:    cgoUnknown,
+						AlgorithmInfo: "v1.11.5",
 						BuildCPUInfoFlags: func() []string {
 							if len(BuildCPUInfoFlags) == 0 {
 								return nil
@@ -1448,15 +1618,15 @@ func Test_info_prepare(t *testing.T) {
 				want: info{
 					baseURL: "https://github.com/vdaas/vald/tree/main",
 					detail: Detail{
-						GitCommit:         "main",
+						GitCommit:         GitCommit,
 						Version:           "",
 						BuildTime:         BuildTime,
 						GoVersion:         runtime.Version(),
 						GoOS:              runtime.GOOS,
 						GoArch:            runtime.GOARCH,
 						GoRoot:            runtime.GOROOT(),
-						CGOEnabled:        CGOEnabled,
-						NGTVersion:        NGTVersion,
+						CGOEnabled:        cgoUnknown,
+						AlgorithmInfo:     AlgorithmInfo,
 						BuildCPUInfoFlags: []string{"avx512f"},
 					},
 				},
@@ -1464,14 +1634,15 @@ func Test_info_prepare(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for i := range tests {
+		test := tests[i]
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -1479,11 +1650,9 @@ func Test_info_prepare(t *testing.T) {
 			}
 			i := &info{
 				detail:      test.fields.detail,
-				prepOnce:    test.fields.prepOnce,
 				rtCaller:    test.fields.rtCaller,
 				rtFuncForPC: test.fields.rtFuncForPC,
 			}
-
 			i.prepare()
 			if err := checkFunc(*i, test.want); err != nil {
 				tt.Errorf("error = %v", err)
@@ -1508,7 +1677,7 @@ func TestStackTrace_String(t *testing.T) {
 		want       want
 		checkFunc  func(want, string) error
 		beforeFunc func()
-		afterFunc  func()
+		afterFunc  func(*testing.T)
 	}
 	defaultCheckFunc := func(w want, got string) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -1531,14 +1700,15 @@ func TestStackTrace_String(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
 				test.beforeFunc()
 			}
 			if test.afterFunc != nil {
-				defer test.afterFunc()
+				defer test.afterFunc(tt)
 			}
 			checkFunc := test.checkFunc
 			if test.checkFunc == nil {
@@ -1558,3 +1728,106 @@ func TestStackTrace_String(t *testing.T) {
 		})
 	}
 }
+
+// NOT IMPLEMENTED BELOW
+//
+// func Test_info_getDetail(t *testing.T) {
+// 	type fields struct {
+// 		baseURL     string
+// 		detail      Detail
+// 		rtCaller    func(skip int) (pc uintptr, file string, line int, ok bool)
+// 		rtFuncForPC func(pc uintptr) *runtime.Func
+// 	}
+// 	type want struct {
+// 		want Detail
+// 	}
+// 	type test struct {
+// 		name       string
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, Detail) error
+// 		beforeFunc func(*testing.T)
+// 		afterFunc  func(*testing.T)
+// 	}
+// 	defaultCheckFunc := func(w want, got Detail) error {
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       fields: fields {
+// 		           baseURL:"",
+// 		           detail:Detail{},
+// 		           rtCaller:nil,
+// 		           rtFuncForPC:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           fields: fields {
+// 		           baseURL:"",
+// 		           detail:Detail{},
+// 		           rtCaller:nil,
+// 		           rtFuncForPC:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			i := info{
+// 				baseURL:     test.fields.baseURL,
+// 				detail:      test.fields.detail,
+// 				rtCaller:    test.fields.rtCaller,
+// 				rtFuncForPC: test.fields.rtFuncForPC,
+// 			}
+//
+// 			got := i.getDetail()
+// 			if err := checkFunc(test.want, got); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+//
+// 		})
+// 	}
+// }

@@ -1,8 +1,8 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -60,6 +60,7 @@ type DialOption struct {
 	EnableBackoff               bool                 `json:"enable_backoff"                 yaml:"enable_backoff"`
 	Insecure                    bool                 `json:"insecure"                       yaml:"insecure"`
 	Timeout                     string               `json:"timeout"                        yaml:"timeout"`
+	Interceptors                []string             `json:"interceptors,omitempty"         yaml:"interceptors"`
 	Net                         *Net                 `json:"net"                            yaml:"net"`
 	Keepalive                   *GRPCClientKeepalive `json:"keepalive"                      yaml:"keepalive"`
 }
@@ -150,15 +151,20 @@ func (c *CallOption) Bind() *CallOption {
 func (d *DialOption) Bind() *DialOption {
 	d.BackoffMaxDelay = GetActualValue(d.BackoffMaxDelay)
 	d.Timeout = GetActualValue(d.Timeout)
+	d.Interceptors = GetActualValues(d.Interceptors)
 	return d
 }
 
 // Opts creates the slice with the functional options for the gRPC options.
 func (g *GRPCClient) Opts() ([]grpc.Option, error) {
+	if g == nil {
+		return nil, nil
+	}
 	opts := make([]grpc.Option, 0, 18)
-	opts = append(opts,
-		grpc.WithHealthCheckDuration(g.HealthCheckDuration),
-	)
+
+	if len(g.HealthCheckDuration) != 0 {
+		opts = append(opts, grpc.WithHealthCheckDuration(g.HealthCheckDuration))
+	}
 
 	if g.ConnectionPool != nil {
 		opts = append(opts,
@@ -227,7 +233,7 @@ func (g *GRPCClient) Opts() ([]grpc.Option, error) {
 			grpc.WithInsecure(g.DialOption.Insecure),
 			grpc.WithBackoffMaxDelay(g.DialOption.BackoffMaxDelay),
 			grpc.WithBackoffMaxDelay(g.DialOption.BackoffMaxDelay),
-			grpc.WithDialTimeout(g.DialOption.Timeout),
+			grpc.WithClientInterceptors(g.DialOption.Interceptors...),
 		)
 
 		if g.DialOption.Net != nil &&

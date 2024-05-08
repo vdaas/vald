@@ -1,8 +1,8 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -22,9 +22,7 @@ import (
 
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
 	"github.com/vdaas/vald/internal/client/v1/client/discoverer"
-	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/net/grpc"
-	"github.com/vdaas/vald/internal/net/grpc/metric"
 	"github.com/vdaas/vald/internal/observability"
 	backoffmetrics "github.com/vdaas/vald/internal/observability/metrics/backoff"
 	cbmetrics "github.com/vdaas/vald/internal/observability/metrics/circuitbreaker"
@@ -32,6 +30,7 @@ import (
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/servers/server"
 	"github.com/vdaas/vald/internal/servers/starter"
+	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/pkg/gateway/lb/config"
 	handler "github.com/vdaas/vald/pkg/gateway/lb/handler/grpc"
 	"github.com/vdaas/vald/pkg/gateway/lb/handler/rest"
@@ -47,55 +46,9 @@ type run struct {
 	gateway       service.Gateway
 }
 
-func New(cfg *config.Data) (r runner.Runner, err error) {
-	eg := errgroup.Get()
-
-	var gateway service.Gateway
-
-	cOpts, err := cfg.Gateway.Discoverer.Client.Opts()
-	if err != nil {
-		return nil, err
-	}
-	dopts := append(
-		cOpts,
-		grpc.WithErrGroup(eg))
-	acOpts, err := cfg.Gateway.Discoverer.AgentClientOptions.Opts()
-	if err != nil {
-		return nil, err
-	}
-	aopts := append(
-		acOpts,
-		grpc.WithErrGroup(eg))
-
-	var obs observability.Observability
-	if cfg.Observability.Enabled {
-		bom, err := backoffmetrics.New()
-		if err != nil {
-			return nil, err
-		}
-		cbm, err := cbmetrics.New()
-		if err != nil {
-			return nil, err
-		}
-		obs, err = observability.NewWithConfig(cfg.Observability, bom, cbm)
-		if err != nil {
-			return nil, err
-		}
-		aopts = append(
-			aopts,
-			grpc.WithDialOptions(
-				grpc.WithStatsHandler(metric.NewClientHandler()),
-			),
-		)
-		dopts = append(
-			dopts,
-			grpc.WithDialOptions(
-				grpc.WithStatsHandler(metric.NewClientHandler()),
-			),
-		)
-	}
-
-	client, err := discoverer.New(
+func discovererClient(cfg *config.Data, dopts, aopts []grpc.Option, eg errgroup.Group) (discoverer.Client, error) {
+	var discovererOpts []discoverer.Option
+	discovererOpts = append(discovererOpts,
 		discoverer.WithAutoConnect(true),
 		discoverer.WithName(cfg.Gateway.AgentName),
 		discoverer.WithNamespace(cfg.Gateway.AgentNamespace),
@@ -105,10 +58,53 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		discoverer.WithDiscoverDuration(cfg.Gateway.Discoverer.Duration),
 		discoverer.WithOptions(aopts...),
 		discoverer.WithNodeName(cfg.Gateway.NodeName),
+		discoverer.WithReadReplicaReplicas(cfg.Gateway.ReadReplicaReplicas),
 	)
+
+	rrOpts, err := cfg.Gateway.ReadReplicaClient.Client.Opts()
 	if err != nil {
 		return nil, err
 	}
+	// only append when read replica is enabled
+	if rrOpts != nil {
+		rrOpts = append(rrOpts,
+			grpc.WithErrGroup(eg),
+			grpc.WithConnectionPoolSize(int(cfg.Gateway.ReadReplicaReplicas)),
+		)
+		discovererOpts = append(discovererOpts, discoverer.WithReadReplicaClient(grpc.New(rrOpts...)))
+	}
+
+	return discoverer.New(discovererOpts...)
+}
+
+func New(cfg *config.Data) (r runner.Runner, err error) {
+	eg := errgroup.Get()
+
+	var gateway service.Gateway
+
+	cOpts, err := cfg.Gateway.Discoverer.Client.Opts()
+	if err != nil {
+		return nil, err
+	}
+
+	// skipcq: CRT-D0001
+	dopts := append(
+		cOpts,
+		grpc.WithErrGroup(eg))
+	acOpts, err := cfg.Gateway.Discoverer.AgentClientOptions.Opts()
+	if err != nil {
+		return nil, err
+	}
+	// skipcq: CRT-D0001
+	aopts := append(
+		acOpts,
+		grpc.WithErrGroup(eg))
+
+	client, err := discovererClient(cfg, dopts, aopts, eg)
+	if err != nil {
+		return nil, err
+	}
+
 	gateway, err = service.NewGateway(
 		service.WithErrGroup(eg),
 		service.WithDiscoverer(client),
@@ -122,6 +118,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		handler.WithErrGroup(eg),
 		handler.WithReplicationCount(cfg.Gateway.IndexReplica),
 		handler.WithStreamConcurrency(cfg.Server.GetGRPCStreamConcurrency()),
+		handler.WithMultiConcurrency(cfg.Gateway.MultiOperationConcurrency),
 	)
 
 	grpcServerOptions := []server.Option{
@@ -134,13 +131,16 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		}),
 	}
 
+	var obs observability.Observability
 	if cfg.Observability.Enabled {
-		grpcServerOptions = append(
-			grpcServerOptions,
-			server.WithGRPCOption(
-				grpc.StatsHandler(metric.NewServerHandler()),
-			),
+		obs, err = observability.NewWithConfig(
+			cfg.Observability,
+			backoffmetrics.New(),
+			cbmetrics.New(),
 		)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	srv, err := starter.New(
@@ -219,7 +219,7 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 	return ech, nil
 }
 
-func (r *run) PreStop(ctx context.Context) error {
+func (*run) PreStop(context.Context) error {
 	return nil
 }
 
@@ -230,6 +230,6 @@ func (r *run) Stop(ctx context.Context) error {
 	return r.server.Shutdown(ctx)
 }
 
-func (r *run) PostStop(ctx context.Context) error {
+func (*run) PostStop(context.Context) error {
 	return nil
 }

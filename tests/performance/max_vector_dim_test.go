@@ -1,35 +1,37 @@
-//
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//    https://www.apache.org/licenses/LICENSE-2.0
+//	https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 package performance
 
 import (
 	"bufio"
 	"context"
+	"flag"
 	"os"
 	"strconv"
-	"strings"
-	"sync"
 	"testing"
 	"time"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/config"
+	"github.com/vdaas/vald/internal/core/algorithm"
 	"github.com/vdaas/vald/internal/core/algorithm/ngt"
-	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
+	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/safety"
+	"github.com/vdaas/vald/internal/strings"
+	"github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/internal/test/data/vector"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/handler/grpc"
 	"github.com/vdaas/vald/pkg/agent/core/ngt/service"
@@ -79,7 +81,16 @@ func parse(raw string) (key string, value int) {
 	return keyValue[0], val
 }
 
-// Test for investigation of max dimension size for agent handler
+func TestMain(m *testing.M) {
+	flag.Parse()
+	if testing.Short() {
+		log.Info("skipping this pkg test when -short because it takes a long time")
+		os.Exit(0)
+	}
+	os.Exit(m.Run())
+}
+
+// Test for investigation of max dimension size for agent handler.
 func TestMaxDimInsert(t *testing.T) {
 	t.Helper()
 	eg, ctx := errgroup.New(context.Background())
@@ -87,7 +98,7 @@ func TestMaxDimInsert(t *testing.T) {
 	// Get the above the limit of bit (2~32)
 	bits := make([]int, 0, maxBit-1)
 	ticker := time.NewTicker(5 * time.Second)
-	eg.Go(func() error {
+	eg.Go(safety.RecoverFunc(func() error {
 		for {
 			select {
 			case <-ctx.Done():
@@ -120,8 +131,8 @@ func TestMaxDimInsert(t *testing.T) {
 				}
 			}
 		}
-	})
-	eg.Go(func() error {
+	}))
+	eg.Go(safety.RecoverFunc(func() error {
 		for bit := 2; bit <= maxBit; bit++ {
 			select {
 			case <-ctx.Done():
@@ -132,8 +143,8 @@ func TestMaxDimInsert(t *testing.T) {
 				if bit == maxBit {
 					dim--
 				}
-				if dim > ngt.VectorDimensionSizeLimit {
-					t.Fatal(errors.ErrInvalidDimensionSize(dim, ngt.VectorDimensionSizeLimit))
+				if dim > algorithm.MaximumVectorDimensionSize {
+					t.Fatal(errors.ErrInvalidDimensionSize(dim, algorithm.MaximumVectorDimensionSize))
 				}
 				t.Logf("Start test: dimension = %d (bit = %d)", dim, bit)
 				ngt, err := init_ngt_service(dim)
@@ -169,7 +180,7 @@ func TestMaxDimInsert(t *testing.T) {
 			time.Sleep(30 * time.Second)
 		}
 		return nil
-	})
+	}))
 	eg.Wait()
 	// Get the max bit, which the environment finish process, from bits
 	var max_bit int
@@ -181,7 +192,7 @@ func TestMaxDimInsert(t *testing.T) {
 	t.Logf("Max bit is %d", max_bit)
 }
 
-// Test for investigation of max dimension size for agent handler with gRPC
+// Test for investigation of max dimension size for agent handler with gRPC.
 func TestMaxDimInsertGRPC(t *testing.T) {
 	// MaxUint64 cannot be used due to overflows
 	t.Helper()
@@ -190,7 +201,7 @@ func TestMaxDimInsertGRPC(t *testing.T) {
 	// Get the above the limit of bit (2~32)
 	bits := make([]int, 0, maxBit-1)
 	ticker := time.NewTicker(5 * time.Second)
-	eg.Go(func() error {
+	eg.Go(safety.RecoverFunc(func() error {
 		for {
 			select {
 			case <-ctx.Done():
@@ -223,8 +234,8 @@ func TestMaxDimInsertGRPC(t *testing.T) {
 				}
 			}
 		}
-	})
-	eg.Go(func() error {
+	}))
+	eg.Go(safety.RecoverFunc(func() error {
 		for bit := 2; bit <= maxBit; bit++ {
 			select {
 			case <-ctx.Done():
@@ -235,8 +246,8 @@ func TestMaxDimInsertGRPC(t *testing.T) {
 				if bit == maxBit {
 					dim--
 				}
-				if dim > ngt.VectorDimensionSizeLimit {
-					t.Fatal(errors.ErrInvalidDimensionSize(dim, ngt.VectorDimensionSizeLimit))
+				if dim > algorithm.MaximumVectorDimensionSize {
+					t.Fatal(errors.ErrInvalidDimensionSize(dim, algorithm.MaximumVectorDimensionSize))
 				}
 				t.Logf("Start test: dimension = %d (bit = %d)", dim, bit)
 				ngt, err := init_ngt_service(dim)
@@ -287,7 +298,7 @@ func TestMaxDimInsertGRPC(t *testing.T) {
 			time.Sleep(30 * time.Second)
 		}
 		return nil
-	})
+	}))
 	eg.Wait()
 	// Get the max bit, which the environment finish process, from bits
 	var max_bit int

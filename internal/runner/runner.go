@@ -1,8 +1,8 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -24,8 +24,8 @@ import (
 	"syscall"
 
 	"github.com/vdaas/vald/internal/config"
+	"github.com/vdaas/vald/internal/conv"
 	"github.com/vdaas/vald/internal/encoding/json"
-	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/info"
 	"github.com/vdaas/vald/internal/log"
@@ -33,6 +33,7 @@ import (
 	"github.com/vdaas/vald/internal/params"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/strings"
+	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/internal/timeutil/location"
 	ver "github.com/vdaas/vald/internal/version"
 	"go.uber.org/automaxprocs/maxprocs"
@@ -75,7 +76,7 @@ func Do(ctx context.Context, opts ...Option) error {
 	if p.ShowVersion() {
 		log.Init(log.WithLevel(level.INFO.String()))
 		defer log.Close()
-		log.Info(info.String())
+		log.Info(info.Get())
 		return nil
 	}
 
@@ -102,13 +103,13 @@ func Do(ctx context.Context, opts ...Option) error {
 			if err != nil {
 				return "failed to serialize build information"
 			}
-			return string(b)
+			return conv.Btoa(b)
 		}(), func() string {
 			b, err := json.Marshal(cfg)
 			if err != nil {
 				return "failed to serialize configuration"
 			}
-			return string(b)
+			return conv.Btoa(b)
 		}())
 
 	// set location temporary for initialization logging

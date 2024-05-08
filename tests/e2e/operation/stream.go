@@ -1,28 +1,25 @@
 //go:build e2e
-// +build e2e
 
-//
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//    https://www.apache.org/licenses/LICENSE-2.0
+//	https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 package operation
 
 import (
 	"context"
+	"fmt"
 	"reflect"
 	"strconv"
-	"sync"
 	"testing"
 
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
@@ -31,6 +28,8 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/net/grpc/errdetails"
 	"github.com/vdaas/vald/internal/net/grpc/status"
+	"github.com/vdaas/vald/internal/strings"
+	"github.com/vdaas/vald/internal/sync"
 )
 
 type (
@@ -106,6 +105,7 @@ func (c *client) SearchWithParameters(
 
 	wg := sync.WaitGroup{}
 	wg.Add(1)
+	var mu sync.Mutex
 	go func() {
 		defer wg.Done()
 
@@ -117,13 +117,15 @@ func (c *client) SearchWithParameters(
 
 			if err != nil {
 				if err := evalidator(t, err); err != nil {
-					rerr = errors.Wrap(
+					mu.Lock()
+					rerr = errors.Join(
 						rerr,
 						errors.Errorf(
 							"stream finished by an error: %s",
 							err.Error(),
-						).Error(),
+						),
 					)
+					mu.Unlock()
 				}
 				return
 			}
@@ -137,7 +139,9 @@ func (c *client) SearchWithParameters(
 							status.GetCode(),
 							status.GetMessage(),
 							errdetails.Serialize(status.GetDetails()))
-						rerr = errors.Wrap(rerr, e.Error())
+						mu.Lock()
+						rerr = errors.Join(rerr, e)
+						mu.Unlock()
 					}
 					continue
 				}
@@ -155,14 +159,19 @@ func (c *client) SearchWithParameters(
 				t.Errorf("empty result is returned for test ID %s: %#v", resp.GetRequestId(), topKIDs)
 				continue
 			}
+			left, right, ok := strings.Cut(resp.GetRequestId(), "-")
+			if !ok {
+				sid := strings.SplitN(resp.GetRequestId(), "-", 2)
+				left, right = sid[0], sid[1]
+			}
 
-			idx, err := strconv.Atoi(resp.GetRequestId())
+			idx, err := strconv.Atoi(left)
 			if err != nil {
 				t.Errorf("an error occurred while converting RequestId into int: %s", err)
 				continue
 			}
 
-			t.Logf("results: %d, recall: %f", len(topKIDs), c.recall(topKIDs, ds.Neighbors[idx][:len(topKIDs)]))
+			t.Logf("algo: %s, id: %d, results: %d, recall: %f", right, idx, len(topKIDs), c.recall(topKIDs, ds.Neighbors[idx][:len(topKIDs)]))
 		}
 	}()
 
@@ -171,7 +180,7 @@ func (c *client) SearchWithParameters(
 		err := sc.Send(&payload.Search_Request{
 			Vector: ds.Test[i],
 			Config: &payload.Search_Config{
-				RequestId: id,
+				RequestId: id + "-Unknown",
 				Num:       num,
 				Radius:    radius,
 				Epsilon:   epsilon,
@@ -179,6 +188,72 @@ func (c *client) SearchWithParameters(
 			},
 		})
 		if err != nil {
+			mu.Lock()
+			defer mu.Unlock()
+			return err
+		}
+		err = sc.Send(&payload.Search_Request{
+			Vector: ds.Test[i],
+			Config: &payload.Search_Config{
+				RequestId:            id + "-ConcurrentQueue",
+				Num:                  num,
+				Radius:               radius,
+				Epsilon:              epsilon,
+				Timeout:              timeout,
+				AggregationAlgorithm: payload.Search_ConcurrentQueue,
+			},
+		})
+		if err != nil {
+			mu.Lock()
+			defer mu.Unlock()
+			return err
+		}
+		err = sc.Send(&payload.Search_Request{
+			Vector: ds.Test[i],
+			Config: &payload.Search_Config{
+				RequestId:            id + "-SortSlice",
+				Num:                  num,
+				Radius:               radius,
+				Epsilon:              epsilon,
+				Timeout:              timeout,
+				AggregationAlgorithm: payload.Search_SortSlice,
+			},
+		})
+		if err != nil {
+			mu.Lock()
+			defer mu.Unlock()
+			return err
+		}
+		err = sc.Send(&payload.Search_Request{
+			Vector: ds.Test[i],
+			Config: &payload.Search_Config{
+				RequestId:            id + "-SortPoolSlice",
+				Num:                  num,
+				Radius:               radius,
+				Epsilon:              epsilon,
+				Timeout:              timeout,
+				AggregationAlgorithm: payload.Search_SortPoolSlice,
+			},
+		})
+		if err != nil {
+			mu.Lock()
+			defer mu.Unlock()
+			return err
+		}
+		err = sc.Send(&payload.Search_Request{
+			Vector: ds.Test[i],
+			Config: &payload.Search_Config{
+				RequestId:            id + "-PairingHeap",
+				Num:                  num,
+				Radius:               radius,
+				Epsilon:              epsilon,
+				Timeout:              timeout,
+				AggregationAlgorithm: payload.Search_PairingHeap,
+			},
+		})
+		if err != nil {
+			mu.Lock()
+			defer mu.Unlock()
 			return err
 		}
 	}
@@ -230,6 +305,7 @@ func (c *client) SearchByIDWithParameters(
 
 	wg := sync.WaitGroup{}
 	wg.Add(1)
+	var mu sync.Mutex
 	go func() {
 		defer wg.Done()
 
@@ -241,13 +317,15 @@ func (c *client) SearchByIDWithParameters(
 
 			if err != nil {
 				if err := evalidator(t, err); err != nil {
-					rerr = errors.Wrap(
+					mu.Lock()
+					rerr = errors.Join(
 						rerr,
 						errors.Errorf(
 							"stream finished by an error: %s",
 							err.Error(),
-						).Error(),
+						),
 					)
+					mu.Unlock()
 				}
 				return
 			}
@@ -261,7 +339,9 @@ func (c *client) SearchByIDWithParameters(
 							status.GetCode(),
 							status.GetMessage(),
 							errdetails.Serialize(status.GetDetails()))
-						rerr = errors.Wrap(rerr, e.Error())
+						mu.Lock()
+						rerr = errors.Join(rerr, e)
+						mu.Unlock()
 					}
 					continue
 				}
@@ -293,6 +373,8 @@ func (c *client) SearchByIDWithParameters(
 			},
 		})
 		if err != nil {
+			mu.Lock()
+			defer mu.Unlock()
 			return err
 		}
 	}
@@ -303,6 +385,8 @@ func (c *client) SearchByIDWithParameters(
 
 	t.Log("searchByID operation finished")
 
+	mu.Lock()
+	defer mu.Unlock()
 	return rerr
 }
 
@@ -352,12 +436,12 @@ func (c *client) LinearSearchWithParameters(
 
 			if err != nil {
 				if err := evalidator(t, err); err != nil {
-					rerr = errors.Wrap(
+					rerr = errors.Join(
 						rerr,
 						errors.Errorf(
 							"stream finished by an error: %s",
 							err.Error(),
-						).Error(),
+						),
 					)
 				}
 				return
@@ -372,7 +456,7 @@ func (c *client) LinearSearchWithParameters(
 							status.GetCode(),
 							status.GetMessage(),
 							errdetails.Serialize(status.GetDetails()))
-						rerr = errors.Wrap(rerr, e.Error())
+						rerr = errors.Join(rerr, e)
 					}
 					continue
 				}
@@ -470,12 +554,12 @@ func (c *client) LinearSearchByIDWithParameters(
 
 			if err != nil {
 				if err := evalidator(t, err); err != nil {
-					rerr = errors.Wrap(
+					rerr = errors.Join(
 						rerr,
 						errors.Errorf(
 							"stream finished by an error: %s",
 							err.Error(),
-						).Error(),
+						),
 					)
 				}
 				return
@@ -490,7 +574,7 @@ func (c *client) LinearSearchByIDWithParameters(
 							status.GetCode(),
 							status.GetMessage(),
 							errdetails.Serialize(status.GetDetails()))
-						rerr = errors.Wrap(rerr, e.Error())
+						rerr = errors.Join(rerr, e)
 					}
 					continue
 				}
@@ -576,12 +660,12 @@ func (c *client) InsertWithParameters(
 
 			if err != nil {
 				if err := evalidator(t, err); err != nil {
-					rerr = errors.Wrap(
+					rerr = errors.Join(
 						rerr,
 						errors.Errorf(
 							"stream finished by an error: %s",
 							err.Error(),
-						).Error(),
+						),
 					)
 				}
 				return
@@ -596,7 +680,7 @@ func (c *client) InsertWithParameters(
 							status.GetCode(),
 							status.GetMessage(),
 							errdetails.Serialize(status.GetDetails()))
-						rerr = errors.Wrap(rerr, e.Error())
+						rerr = errors.Join(rerr, e)
 					}
 					continue
 				}
@@ -679,12 +763,12 @@ func (c *client) UpdateWithParameters(
 
 			if err != nil {
 				if err := evalidator(t, err); err != nil {
-					rerr = errors.Wrap(
+					rerr = errors.Join(
 						rerr,
 						errors.Errorf(
 							"stream finished by an error: %s",
 							err.Error(),
-						).Error(),
+						),
 					)
 				}
 				return
@@ -699,7 +783,7 @@ func (c *client) UpdateWithParameters(
 							status.GetCode(),
 							status.GetMessage(),
 							errdetails.Serialize(status.GetDetails()))
-						rerr = errors.Wrap(rerr, e.Error())
+						rerr = errors.Join(rerr, e)
 					}
 					continue
 				}
@@ -783,12 +867,12 @@ func (c *client) UpsertWithParameters(
 
 			if err != nil {
 				if err := evalidator(t, err); err != nil {
-					rerr = errors.Wrap(
+					rerr = errors.Join(
 						rerr,
 						errors.Errorf(
 							"stream finished by an error: %s",
 							err.Error(),
-						).Error(),
+						),
 					)
 				}
 				return
@@ -803,7 +887,7 @@ func (c *client) UpsertWithParameters(
 							status.GetCode(),
 							status.GetMessage(),
 							errdetails.Serialize(status.GetDetails()))
-						rerr = errors.Wrap(rerr, e.Error())
+						rerr = errors.Join(rerr, e)
 					}
 					continue
 				}
@@ -885,12 +969,12 @@ func (c *client) RemoveWithParameters(
 
 			if err != nil {
 				if err := evalidator(t, err); err != nil {
-					rerr = errors.Wrap(
+					rerr = errors.Join(
 						rerr,
 						errors.Errorf(
 							"stream finished by an error: %s",
 							err.Error(),
-						).Error(),
+						),
 					)
 				}
 				return
@@ -905,7 +989,7 @@ func (c *client) RemoveWithParameters(
 							status.GetCode(),
 							status.GetMessage(),
 							errdetails.Serialize(status.GetDetails()))
-						rerr = errors.Wrap(rerr, e.Error())
+						rerr = errors.Join(rerr, e)
 					}
 					continue
 				}
@@ -940,6 +1024,51 @@ func (c *client) RemoveWithParameters(
 	t.Log("remove operation finished")
 
 	return rerr
+}
+
+func (c *client) Flush(t *testing.T, ctx context.Context) error {
+	t.Log("flush operation started")
+
+	client, err := c.getClient(ctx)
+	if err != nil {
+		return err
+	}
+
+	_, err = client.Flush(ctx, &payload.Flush_Request{})
+	if err != nil {
+		return err
+	}
+
+	t.Log("flush operation finished")
+
+	return nil
+}
+
+func (c *client) RemoveByTimestamp(t *testing.T, ctx context.Context, timestamp int64) error {
+	t.Log("removeByTimestamp operation started")
+
+	client, err := c.getClient(ctx)
+	if err != nil {
+		return err
+	}
+
+	req := &payload.Remove_TimestampRequest{
+		Timestamps: []*payload.Remove_Timestamp{
+			{
+				Timestamp: timestamp,
+				Operator:  payload.Remove_Timestamp_Gt,
+			},
+		},
+	}
+
+	_, err = client.RemoveByTimestamp(ctx, req)
+	if err != nil {
+		return err
+	}
+
+	t.Log("removeByTimestamp operation finished")
+
+	return nil
 }
 
 func (c *client) Exists(t *testing.T, ctx context.Context, id string) error {
@@ -994,12 +1123,12 @@ func (c *client) GetObject(
 
 			if err != nil {
 				err = ParseAndLogError(t, err)
-				rerr = errors.Wrap(
+				rerr = errors.Join(
 					rerr,
 					errors.Errorf(
 						"stream finished by an error: %s",
 						err.Error(),
-					).Error(),
+					),
 				)
 				return
 			}
@@ -1030,6 +1159,10 @@ func (c *client) GetObject(
 					ds.Train[idx],
 				)
 			}
+
+			if ts := resp.GetTimestamp(); ts <= 0 {
+				t.Error("timestamp is not set properly")
+			}
 		}
 	}()
 
@@ -1052,4 +1185,67 @@ func (c *client) GetObject(
 	t.Log("getObject operation finished")
 
 	return rerr
+}
+
+func (c *client) StreamListObject(
+	t *testing.T,
+	ctx context.Context,
+	ds Dataset,
+) error {
+	t.Log("StreamListObject operation started")
+
+	client, err := c.getClient(ctx)
+	if err != nil {
+		return err
+	}
+
+	sc, err := client.StreamListObject(ctx, &payload.Object_List_Request{})
+	if err != nil {
+		return err
+	}
+
+	// kv : [indexId]count
+	indexCnt := make(map[string]int)
+exit_loop:
+	for {
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		default:
+			res, err := sc.Recv()
+			if err != nil {
+				if errors.Is(err, io.EOF) {
+					break exit_loop
+				}
+				return err
+			}
+			vec := res.GetVector()
+			if vec == nil {
+				st := res.GetStatus()
+				return fmt.Errorf("returned vector is empty: code: %v, msg: %v, details: %v", st.GetCode(), st.GetMessage(), st.GetDetails())
+			}
+			if len(vec.GetVector()) == 0 {
+				return fmt.Errorf("returned vector is empty: id: %v", vec.GetId())
+			}
+			indexCnt[vec.GetId()]++
+		}
+	}
+
+	if len(indexCnt) != len(ds.Train) {
+		return fmt.Errorf("the number of vectors returned is different: got %v, want %v", len(indexCnt), len(ds.Train))
+	}
+
+	replica := -1
+	for k, v := range indexCnt {
+		if replica == -1 {
+			replica = v
+			continue
+		}
+		if v != replica {
+			return fmt.Errorf("the number of vectors returned is different at index id %v: got %v, want %v", k, v, replica)
+		}
+	}
+
+	t.Log("StreamListObject operation finished successfully and all vectors are returned with correct replica number")
+	return nil
 }

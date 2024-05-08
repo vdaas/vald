@@ -1,8 +1,8 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -40,7 +40,7 @@ func TestTLS_Bind(t *testing.T) {
 		fields     fields
 		want       want
 		checkFunc  func(want, *TLS) error
-		beforeFunc func()
+		beforeFunc func(*testing.T)
 		afterFunc  func()
 	}
 	defaultCheckFunc := func(w want, got *TLS) error {
@@ -75,7 +75,8 @@ func TestTLS_Bind(t *testing.T) {
 				Key:     "_TLS_BIND_KEY_",
 				CA:      "_TLS_BIND_CA_",
 			},
-			beforeFunc: func() {
+			beforeFunc: func(t *testing.T) {
+				t.Helper()
 				t.Setenv("TLS_BIND_CERT", "tls_cert")
 				t.Setenv("TLS_BIND_KEY", "tls_key")
 				t.Setenv("TLS_BIND_CA", "tls_ca")
@@ -97,10 +98,11 @@ func TestTLS_Bind(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			if test.beforeFunc != nil {
-				test.beforeFunc()
+				test.beforeFunc(tt)
 			}
 			if test.afterFunc != nil {
 				defer test.afterFunc()
@@ -179,7 +181,8 @@ func TestTLS_Opts(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			if test.beforeFunc != nil {
 				test.beforeFunc()
@@ -205,3 +208,5 @@ func TestTLS_Opts(t *testing.T) {
 		})
 	}
 }
+
+// NOT IMPLEMENTED BELOW

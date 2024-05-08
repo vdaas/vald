@@ -1,8 +1,8 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -93,7 +93,8 @@ func TestErrRedisInvalidKVVKPrefic(t *testing.T) {
 		}(),
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			if test.beforeFunc != nil {
 				test.beforeFunc()
@@ -114,7 +115,7 @@ func TestErrRedisInvalidKVVKPrefic(t *testing.T) {
 	}
 }
 
-func TestNewErrRedisNotFoundIdentity(t *testing.T) {
+func TestErrRedisNotFoundIdentity(t *testing.T) {
 	type want struct {
 		want error
 	}
@@ -136,7 +137,7 @@ func TestNewErrRedisNotFoundIdentity(t *testing.T) {
 			return test{
 				name: "return an NewErrRedisNotFoundIdentity error",
 				want: want{
-					want: &ErrRedisNotFoundIdentity{
+					want: &RedisNotFoundIdentityError{
 						err: New("error redis entry not found"),
 					},
 				},
@@ -144,7 +145,8 @@ func TestNewErrRedisNotFoundIdentity(t *testing.T) {
 		}(),
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			if test.beforeFunc != nil {
 				test.beforeFunc()
@@ -157,7 +159,7 @@ func TestNewErrRedisNotFoundIdentity(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 
-			got := NewErrRedisNotFoundIdentity()
+			got := ErrRedisNotFoundIdentity
 			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
@@ -193,19 +195,20 @@ func TestErrRdisNotFound(t *testing.T) {
 				key: "vdaas",
 			},
 			want: want{
-				want: Wrap(NewErrRedisNotFoundIdentity(), "error redis key 'vdaas' not found"),
+				want: Wrap(ErrRedisNotFoundIdentity, "error redis key 'vdaas' not found"),
 			},
 		},
 		{
 			name:   "return an ErrRedisNotFound error when key is empty",
 			fields: fields{},
 			want: want{
-				want: Wrap(NewErrRedisNotFoundIdentity(), "error redis key '' not found"),
+				want: Wrap(ErrRedisNotFoundIdentity, "error redis key '' not found"),
 			},
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			if test.beforeFunc != nil {
 				test.beforeFunc()
@@ -252,7 +255,8 @@ func TestErrRedisInvalidOption(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			if test.beforeFunc != nil {
 				test.beforeFunc()
@@ -343,7 +347,8 @@ func TestErrRedisGetOperationFailed(t *testing.T) {
 		}(),
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			if test.beforeFunc != nil {
 				test.beforeFunc()
@@ -434,7 +439,8 @@ func TestErrRedisSetOperationFailed(t *testing.T) {
 		}(),
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			if test.beforeFunc != nil {
 				test.beforeFunc()
@@ -525,7 +531,8 @@ func TestErrRedisDeleteOperationFailed(t *testing.T) {
 		}(),
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			if test.beforeFunc != nil {
 				test.beforeFunc()
@@ -616,7 +623,8 @@ func TestErrInvalidConfigVersion(t *testing.T) {
 		}(),
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			if test.beforeFunc != nil {
 				test.beforeFunc()
@@ -663,7 +671,8 @@ func TestErrRedisAddrsNotFound(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			if test.beforeFunc != nil {
 				test.beforeFunc()
@@ -710,7 +719,8 @@ func TestErrRedisConnectionPingFailed(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			if test.beforeFunc != nil {
 				test.beforeFunc()
@@ -731,7 +741,7 @@ func TestErrRedisConnectionPingFailed(t *testing.T) {
 	}
 }
 
-func TestErrRedisNotFoundIdentity_Error(t *testing.T) {
+func TestRedisNotFoundIdentityError_Error(t *testing.T) {
 	type fields struct {
 		err error
 	}
@@ -771,7 +781,8 @@ func TestErrRedisNotFoundIdentity_Error(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			if test.beforeFunc != nil {
 				test.beforeFunc()
@@ -783,7 +794,7 @@ func TestErrRedisNotFoundIdentity_Error(t *testing.T) {
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
-			e := &ErrRedisNotFoundIdentity{
+			e := &RedisNotFoundIdentityError{
 				err: test.fields.err,
 			}
 
@@ -795,7 +806,7 @@ func TestErrRedisNotFoundIdentity_Error(t *testing.T) {
 	}
 }
 
-func TestErrRedisNotFoundIdentity_Unwrap(t *testing.T) {
+func TestErrRedisNotFoundIdentityError_Unwrap(t *testing.T) {
 	type fields struct {
 		err error
 	}
@@ -848,7 +859,7 @@ func TestErrRedisNotFoundIdentity_Unwrap(t *testing.T) {
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
-			e := &ErrRedisNotFoundIdentity{
+			e := &RedisNotFoundIdentityError{
 				err: test.fields.err,
 			}
 
@@ -860,7 +871,7 @@ func TestErrRedisNotFoundIdentity_Unwrap(t *testing.T) {
 	}
 }
 
-func TestIsErrRedisNotFound(t *testing.T) {
+func TestIsRedisNotFoundError(t *testing.T) {
 	type args struct {
 		err error
 	}
@@ -892,7 +903,7 @@ func TestIsErrRedisNotFound(t *testing.T) {
 		{
 			name: "return false when err does not match ErrRedisNotFoundIdentity",
 			args: args{
-				err: &ErrRedisNotFoundIdentity{
+				err: &RedisNotFoundIdentityError{
 					err: New("err: Redis not found identity"),
 				},
 			},
@@ -907,7 +918,8 @@ func TestIsErrRedisNotFound(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			if test.beforeFunc != nil {
 				test.beforeFunc(test.args)
@@ -920,10 +932,101 @@ func TestIsErrRedisNotFound(t *testing.T) {
 				checkFunc = defaultCheckFunc
 			}
 
-			got := IsErrRedisNotFound(test.args.err)
+			got := IsRedisNotFoundError(test.args.err)
 			if err := checkFunc(test.want, got); err != nil {
 				tt.Errorf("error = %v", err)
 			}
 		})
 	}
 }
+
+// NOT IMPLEMENTED BELOW
+//
+// func TestRedisNotFoundIdentityError_Unwrap(t *testing.T) {
+// 	type fields struct {
+// 		err error
+// 	}
+// 	type want struct {
+// 		err error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, error) error
+// 		beforeFunc func(*testing.T)
+// 		afterFunc  func(*testing.T)
+// 	}
+// 	defaultCheckFunc := func(w want, err error) error {
+// 		if !Is(err, w.err) {
+// 			return Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       fields: fields {
+// 		           err:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           fields: fields {
+// 		           err:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			e := &RedisNotFoundIdentityError{
+// 				err: test.fields.err,
+// 			}
+//
+// 			err := e.Unwrap()
+// 			if err := checkFunc(test.want, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+//
+// 		})
+// 	}
+// }

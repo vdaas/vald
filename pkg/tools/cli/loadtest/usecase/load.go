@@ -1,8 +1,8 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -19,12 +19,12 @@ package usecase
 import (
 	"context"
 
-	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/runner"
 	"github.com/vdaas/vald/internal/safety"
+	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/pkg/tools/cli/loadtest/config"
 	"github.com/vdaas/vald/pkg/tools/cli/loadtest/service"
 )
@@ -90,12 +90,12 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 			if r.client != nil {
 				err = r.client.Close(ctx)
 				if err != nil {
-					errs = errors.Wrap(errs, err.Error())
+					errs = errors.Join(errs, err)
 				}
 			}
 			err = ctx.Err()
 			if err != nil && !errors.Is(err, context.Canceled) {
-				errs = errors.Wrap(errs, err.Error())
+				errs = errors.Join(errs, err)
 			}
 			return errs
 		}
@@ -120,7 +120,7 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 }
 
 // PreStop does nothing.
-func (r *run) PreStop(ctx context.Context) error {
+func (*run) PreStop(ctx context.Context) error {
 	return nil
 }
 
@@ -130,6 +130,6 @@ func (r *run) Stop(ctx context.Context) error {
 }
 
 // PostStop does nothing.
-func (r *run) PostStop(ctx context.Context) error {
+func (*run) PostStop(ctx context.Context) error {
 	return nil
 }

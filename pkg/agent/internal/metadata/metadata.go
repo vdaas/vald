@@ -1,8 +1,8 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -32,11 +32,16 @@ const (
 )
 
 type Metadata struct {
-	IsInvalid bool `json:"is_invalid"    yaml:"is_invalid"`
-	NGT       *NGT `json:"ngt,omitempty" yaml:"ngt"`
+	IsInvalid bool   `json:"is_invalid"      yaml:"is_invalid"`
+	NGT       *NGT   `json:"ngt,omitempty"   yaml:"ngt"`
+	Faiss     *Faiss `json:"faiss,omitempty" yaml:"faiss"`
 }
 
 type NGT struct {
+	IndexCount uint64 `json:"index_count" yaml:"index_count"`
+}
+
+type Faiss struct {
 	IndexCount uint64 `json:"index_count" yaml:"index_count"`
 }
 
@@ -59,7 +64,7 @@ func Load(path string) (meta *Metadata, err error) {
 		if f != nil {
 			derr := f.Close()
 			if derr != nil {
-				err = errors.Wrap(err, derr.Error())
+				err = errors.Join(err, derr)
 			}
 		}
 	}()
@@ -81,7 +86,7 @@ func Store(path string, meta *Metadata) (err error) {
 		if f != nil {
 			derr := f.Close()
 			if derr != nil {
-				err = errors.Wrap(err, derr.Error())
+				err = errors.Join(err, derr)
 			}
 		}
 	}()

@@ -1,8 +1,8 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -21,14 +21,12 @@ import (
 	"context"
 	"math"
 	"reflect"
-	"sync"
 	"sync/atomic"
 	"time"
 
 	agent "github.com/vdaas/vald/apis/grpc/v1/agent/core"
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/internal/client/v1/client/discoverer"
-	"github.com/vdaas/vald/internal/errgroup"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc"
@@ -36,6 +34,8 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc/status"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
+	"github.com/vdaas/vald/internal/sync"
+	"github.com/vdaas/vald/internal/sync/errgroup"
 )
 
 type Indexer interface {
@@ -54,9 +54,9 @@ type index struct {
 	saveIndexDurationLimit time.Duration
 	saveIndexWaitDuration  time.Duration
 	saveIndexTargetAddrCh  chan string
-	schMap                 sync.Map
+	schMap                 sync.Map[string, any]
 	concurrency            int
-	indexInfos             indexInfos
+	indexInfos             sync.Map[string, *payload.Info_Index_Count]
 	indexing               atomic.Value // bool
 	minUncommitted         uint32
 	uuidsCount             uint32
@@ -87,6 +87,7 @@ func (idx *index) Start(ctx context.Context) (<-chan error, error) {
 		return nil, err
 	}
 	ech := make(chan error, 100)
+	sech := make(chan error, 10)
 	idx.saveIndexTargetAddrCh = make(chan string, len(idx.client.GetAddrs(ctx))*2)
 	idx.eg.Go(safety.RecoverFunc(func() (err error) {
 		defer close(ech)
@@ -117,6 +118,9 @@ func (idx *index) Start(ctx context.Context) (<-chan error, error) {
 			case <-ctx.Done():
 				return finalize()
 			case err = <-dech:
+				ech <- err
+			case err = <-sech:
+				ech <- err
 			case <-it.C:
 				err = idx.execute(grpc.WithGRPCMethod(ctx, "core.v1.Agent/CreateIndex"), true, false)
 				if err != nil {
@@ -153,14 +157,15 @@ func (idx *index) Start(ctx context.Context) (<-chan error, error) {
 		}
 	}))
 	idx.eg.Go(safety.RecoverFunc(func() (err error) {
+		defer close(sech)
 		for {
 			select {
 			case <-ctx.Done():
 				return
 			case addr := <-idx.saveIndexTargetAddrCh:
 				idx.schMap.Delete(addr)
-				_, err = idx.client.GetClient().
-					Do(grpc.WithGRPCMethod(ctx, "core.v1.Agent/SaveIndex"), addr, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (_ interface{}, err error) {
+				_, err := idx.client.GetClient().
+					Do(grpc.WithGRPCMethod(ctx, "core.v1.Agent/SaveIndex"), addr, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
 						return agent.NewAgentClient(conn).SaveIndex(ctx, &payload.Empty{}, copts...)
 					})
 				if err != nil {
@@ -168,7 +173,7 @@ func (idx *index) Start(ctx context.Context) (<-chan error, error) {
 					select {
 					case <-ctx.Done():
 						return nil
-					case ech <- err:
+					case sech <- err:
 					}
 				}
 			}
@@ -216,7 +221,7 @@ func (idx *index) execute(ctx context.Context, enableLowIndexSkip, immediateSavi
 				if err != nil {
 					st, ok := status.FromError(err)
 					if ok && st != nil && st.Code() == codes.FailedPrecondition {
-						log.Debugf("CreateIndex of %s skipped, message: %s, err: %v", addr, st.Message(), errors.Wrap(st.Err(), err.Error()))
+						log.Debugf("CreateIndex of %s skipped, message: %s, err: %v", addr, st.Message(), errors.Join(st.Err(), err))
 						return nil
 					}
 					log.Warnf("an error occurred while calling CreateIndex of %s: %s", addr, err)
@@ -236,7 +241,7 @@ func (idx *index) execute(ctx context.Context, enableLowIndexSkip, immediateSavi
 			if err != nil {
 				st, ok := status.FromError(err)
 				if ok && st != nil && st.Code() == codes.FailedPrecondition {
-					log.Debugf("CreateIndex of %s skipped, message: %s, err: %v", addr, st.Message(), errors.Wrap(st.Err(), err.Error()))
+					log.Debugf("CreateIndex of %s skipped, message: %s, err: %v", addr, st.Message(), errors.Join(st.Err(), err))
 					return nil
 				}
 				log.Warnf("an error occurred while calling CreateAndSaveIndex of %s: %s", addr, err)
@@ -271,7 +276,7 @@ func (idx *index) loadInfos(ctx context.Context) (err error) {
 	}()
 
 	var u, ucu uint32
-	var infoMap indexInfos
+	var infoMap sync.Map[string, *payload.Info_Index_Count]
 	err = idx.client.GetClient().RangeConcurrent(ctx, len(idx.client.GetAddrs(ctx)),
 		func(ctx context.Context,
 			addr string, conn *grpc.ClientConn, copts ...grpc.CallOption,

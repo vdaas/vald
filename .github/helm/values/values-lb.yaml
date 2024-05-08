@@ -1,8 +1,8 @@
 #
-# Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+# Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
+# You may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
 #    https://www.apache.org/licenses/LICENSE-2.0
@@ -17,7 +17,8 @@
 defaults:
   logging:
     level: info
-
+  networkPolicy:
+    enabled: true
 gateway:
   lb:
     enabled: true
@@ -30,7 +31,6 @@ gateway:
         memory: 50Mi
     gateway_config:
       index_replica: 3
-
 agent:
   minReplicas: 3
   maxReplicas: 10
@@ -46,7 +46,6 @@ agent:
     auto_index_check_duration: 30s
     auto_index_length: 1000
     dimension: 784
-
 discoverer:
   minReplicas: 1
   hpa:
@@ -55,7 +54,6 @@ discoverer:
     requests:
       cpu: 100m
       memory: 50Mi
-
 manager:
   index:
     replicas: 1
@@ -67,3 +65,9 @@ manager:
       auto_index_duration_limit: 2m
       auto_index_check_duration: 30s
       auto_index_length: 1000
+    corrector:
+      enabled: true
+      # suspend because you do not want corrector to start automatically in CI
+      # instead run it manually
+      suspend: true
+      schedule: "1 2 3 4 5"

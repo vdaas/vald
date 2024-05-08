@@ -1,8 +1,8 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -14,19 +14,19 @@
 // limitations under the License.
 //
 
-// Package pool provides grpc connection pool client
+// Package pool provides gRPC connection pool client
 package pool
 
 import (
 	"github.com/vdaas/vald/internal/backoff"
-	"github.com/vdaas/vald/internal/errgroup"
+	"github.com/vdaas/vald/internal/sync/errgroup"
 	"github.com/vdaas/vald/internal/timeutil"
 )
 
 type Option func(*pool)
 
 var defaultOptions = []Option{
-	WithSize(3),
+	WithSize(defaultPoolSize),
 	WithStartPort(80),
 	WithEndPort(65535),
 	WithErrGroup(errgroup.Get()),
@@ -100,7 +100,7 @@ func WithSize(size uint64) Option {
 		if size < 1 {
 			return
 		}
-		p.size = size
+		p.size.Store(size)
 	}
 }
 

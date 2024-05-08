@@ -1,8 +1,8 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -750,6 +750,9 @@ func TestGRPCClient_Opts(t *testing.T) {
 					EnableBackoff:               true,
 					Insecure:                    false,
 					Timeout:                     "5m",
+					Interceptors: []string{
+						"TraceInterceptor",
+					},
 					Net: &Net{
 						Dialer: &Dialer{
 							Timeout: "10m",
@@ -823,6 +826,9 @@ func TestGRPCClient_Opts(t *testing.T) {
 					EnableBackoff:               true,
 					Insecure:                    false,
 					Timeout:                     "5m",
+					Interceptors: []string{
+						"TraceInterceptor",
+					},
 					Net: &Net{
 						Dialer: &Dialer{
 							Timeout: "10m",
@@ -902,6 +908,9 @@ func TestGRPCClient_Opts(t *testing.T) {
 					EnableBackoff:               true,
 					Insecure:                    false,
 					Timeout:                     "5m",
+					Interceptors: []string{
+						"TraceInterceptor",
+					},
 					Net: &Net{
 						Dialer: &Dialer{
 							Timeout: "10m",
@@ -985,6 +994,9 @@ func TestGRPCClient_Opts(t *testing.T) {
 					EnableBackoff:               true,
 					Insecure:                    false,
 					Timeout:                     "5m",
+					Interceptors: []string{
+						"TraceInterceptor",
+					},
 					Net: &Net{
 						Dialer: &Dialer{
 							Timeout: "10m",
@@ -1017,10 +1029,10 @@ func TestGRPCClient_Opts(t *testing.T) {
 			},
 		},
 		{
-			name:   "return 1 grpc.Option when all parameters are set",
+			name:   "return empty slice grpc.Option when all parameters are not set",
 			fields: fields{},
 			want: want{
-				want: make([]grpc.Option, 1),
+				want: make([]grpc.Option, 0),
 			},
 		},
 	}
@@ -1056,3 +1068,5 @@ func TestGRPCClient_Opts(t *testing.T) {
 		})
 	}
 }
+
+// NOT IMPLEMENTED BELOW

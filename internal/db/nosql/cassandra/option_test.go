@@ -1,8 +1,8 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -66,7 +66,7 @@ func TestWithHosts(t *testing.T) {
 		args       args
 		want       want
 		checkFunc  func(want, *T, error) error
-		beforeFunc func(*T)
+		beforeFunc func(*testing.T, *T)
 		afterFunc  func(args)
 	}
 	defaultCheckFunc := func(w want, obj *T, err error) error {
@@ -112,7 +112,8 @@ func TestWithHosts(t *testing.T) {
 			args: args{
 				hosts: []string{"hosts1"},
 			},
-			beforeFunc: func(obj *T) {
+			beforeFunc: func(t *testing.T, obj *T) {
+				t.Helper()
 				_ = WithHosts("vald.vdaas.org")(obj)
 			},
 			want: want{
@@ -123,7 +124,8 @@ func TestWithHosts(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.afterFunc != nil {
@@ -137,7 +139,7 @@ func TestWithHosts(t *testing.T) {
 			got := WithHosts(test.args.hosts...)
 			obj := new(T)
 			if test.beforeFunc != nil {
-				test.beforeFunc(obj)
+				test.beforeFunc(tt, obj)
 			}
 			if err := checkFunc(test.want, obj, got(obj)); err != nil {
 				tt.Errorf("error = %v", err)
@@ -201,7 +203,8 @@ func TestWithDialer(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
@@ -285,7 +288,8 @@ func TestWithCQLVersion(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
@@ -371,7 +375,8 @@ func TestWithProtoVersion(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
@@ -459,7 +464,8 @@ func TestWithTimeout(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
@@ -529,7 +535,7 @@ func TestWithConnectTimeout(t *testing.T) {
 				dur: "dummy",
 			},
 			want: want{
-				err: errors.NewErrCriticalOption("connectTimeout", "dummy", errors.New("invalid timeout value: dummy	:timeout parse error out put failed: time: invalid duration \"dummy\"")),
+				err: errors.NewErrCriticalOption("connectTimeout", "dummy", errors.Join(errors.New("time: invalid duration \"dummy\""), errors.ErrTimeoutParseFailed("dummy"))),
 				obj: &T{},
 			},
 		},
@@ -545,7 +551,8 @@ func TestWithConnectTimeout(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
@@ -670,7 +677,8 @@ func TestWithPort(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
@@ -756,7 +764,8 @@ func TestWithKeyspace(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
@@ -856,7 +865,8 @@ func TestWithNumConns(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
@@ -954,7 +964,8 @@ func TestWithConsistency(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
@@ -1051,7 +1062,8 @@ func TestWithSerialConsistency(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
@@ -1124,7 +1136,8 @@ func TestWithCompressor(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
@@ -1199,7 +1212,8 @@ func TestWithUsername(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
@@ -1274,7 +1288,8 @@ func TestWithPassword(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
@@ -1352,7 +1367,8 @@ func TestWithAuthProvider(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
@@ -1429,7 +1445,8 @@ func TestWithRetryPolicyNumRetries(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
@@ -1504,7 +1521,7 @@ func TestWithRetryPolicyMinDuration(t *testing.T) {
 				err: errors.NewErrCriticalOption(
 					"retryPolicyMinDuration",
 					"dummy",
-					errors.New("invalid timeout value: dummy	:timeout parse error out put failed: time: invalid duration \"dummy\""),
+					errors.Join(errors.New("time: invalid duration \"dummy\""), errors.ErrTimeoutParseFailed("dummy")),
 				),
 				obj: &T{},
 			},
@@ -1521,7 +1538,8 @@ func TestWithRetryPolicyMinDuration(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
@@ -1595,7 +1613,7 @@ func TestWithRetryPolicyMaxDuration(t *testing.T) {
 				err: errors.NewErrCriticalOption(
 					"retryPolicyMaxDuration",
 					"dummy",
-					errors.New("invalid timeout value: dummy	:timeout parse error out put failed: time: invalid duration \"dummy\""),
+					errors.Join(errors.New("time: invalid duration \"dummy\""), errors.ErrTimeoutParseFailed("dummy")),
 				),
 				obj: &T{},
 			},
@@ -1612,7 +1630,8 @@ func TestWithRetryPolicyMaxDuration(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
@@ -1686,7 +1705,7 @@ func TestWithReconnectionPolicyInitialInterval(t *testing.T) {
 				err: errors.NewErrCriticalOption(
 					"reconnectionPolicyInitialInterval",
 					"dummy",
-					errors.New("invalid timeout value: dummy	:timeout parse error out put failed: time: invalid duration \"dummy\""),
+					errors.Join(errors.New("time: invalid duration \"dummy\""), errors.ErrTimeoutParseFailed("dummy")),
 				),
 				obj: &T{},
 			},
@@ -1703,7 +1722,8 @@ func TestWithReconnectionPolicyInitialInterval(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
@@ -1780,7 +1800,8 @@ func TestWithReconnectionPolicyMaxRetries(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
@@ -1848,7 +1869,11 @@ func TestWithSocketKeepalive(t *testing.T) {
 				socketKeepalive: "dummy",
 			},
 			want: want{
-				err: errors.NewErrCriticalOption("socketKeepalive", "dummy", errors.New("invalid timeout value: dummy	:timeout parse error out put failed: time: invalid duration \"dummy\"")),
+				err: errors.NewErrCriticalOption(
+					"socketKeepalive",
+					"dummy",
+					errors.Join(errors.New("time: invalid duration \"dummy\""), errors.ErrTimeoutParseFailed("dummy")),
+				),
 				obj: &T{},
 			},
 		},
@@ -1864,7 +1889,8 @@ func TestWithSocketKeepalive(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
@@ -1939,7 +1965,8 @@ func TestWithMaxPreparedStmts(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
@@ -2014,7 +2041,8 @@ func TestWithMaxRoutingKeyInfo(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
@@ -2089,7 +2117,8 @@ func TestWithPageSize(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
@@ -2166,7 +2195,8 @@ func TestWithTLS(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
@@ -2241,7 +2271,8 @@ func TestWithTLSCertPath(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
@@ -2316,7 +2347,8 @@ func TestWithTLSKeyPath(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
@@ -2391,7 +2423,8 @@ func TestWithTLSCAPath(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
@@ -2456,7 +2489,8 @@ func TestWithEnableHostVerification(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
@@ -2520,7 +2554,8 @@ func TestWithDefaultTimestamp(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
@@ -2597,7 +2632,8 @@ func TestWithDC(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
@@ -2664,7 +2700,8 @@ func TestWithDCAwareRouting(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
@@ -2731,7 +2768,8 @@ func TestWithNonLocalReplicasFallback(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
@@ -2798,7 +2836,8 @@ func TestWithShuffleReplicas(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
@@ -2865,7 +2904,8 @@ func TestWithTokenAwareHostPolicy(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
@@ -2937,7 +2977,7 @@ func TestWithMaxWaitSchemaAgreement(t *testing.T) {
 				err: errors.NewErrCriticalOption(
 					"maxWaitSchemaAgreement",
 					"dummy",
-					errors.New("invalid timeout value: dummy	:timeout parse error out put failed: time: invalid duration \"dummy\""),
+					errors.Join(errors.New("time: invalid duration \"dummy\""), errors.ErrTimeoutParseFailed("dummy")),
 				),
 				obj: &T{},
 			},
@@ -2954,7 +2994,8 @@ func TestWithMaxWaitSchemaAgreement(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
@@ -3023,7 +3064,11 @@ func TestWithReconnectInterval(t *testing.T) {
 				reconnectInterval: "dummy",
 			},
 			want: want{
-				err: errors.NewErrCriticalOption("reconnectInterval", "dummy", errors.New("invalid timeout value: dummy	:timeout parse error out put failed: time: invalid duration \"dummy\"")),
+				err: errors.NewErrCriticalOption(
+					"reconnectInterval",
+					"dummy",
+					errors.Join(errors.New("time: invalid duration \"dummy\""), errors.ErrTimeoutParseFailed("dummy")),
+				),
 				obj: &T{},
 			},
 		},
@@ -3039,7 +3084,8 @@ func TestWithReconnectInterval(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
@@ -3104,7 +3150,8 @@ func TestWithIgnorePeerAddr(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
@@ -3169,7 +3216,8 @@ func TestWithDisableInitialHostLookup(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
@@ -3234,7 +3282,8 @@ func TestWithDisableNodeStatusEvents(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
@@ -3299,7 +3348,8 @@ func TestWithDisableTopologyEvents(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
@@ -3364,7 +3414,8 @@ func TestWithDisableSchemaEvents(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
@@ -3429,7 +3480,8 @@ func TestWithDisableSkipMetadata(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
@@ -3504,7 +3556,8 @@ func TestWithQueryObserver(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
@@ -3579,7 +3632,8 @@ func TestWithBatchObserver(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
@@ -3654,7 +3708,8 @@ func TestWithConnectObserver(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
@@ -3728,7 +3783,8 @@ func TestWithFrameHeaderObserver(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
@@ -3793,7 +3849,8 @@ func TestWithDefaultIdempotence(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
@@ -3862,7 +3919,11 @@ func TestWithWriteCoalesceWaitTime(t *testing.T) {
 				writeCoalesceWaitTime: "dummy",
 			},
 			want: want{
-				err: errors.NewErrCriticalOption("writeCoalesceWaitTime", "dummy", errors.New("invalid timeout value: dummy	:timeout parse error out put failed: time: invalid duration \"dummy\"")),
+				err: errors.NewErrCriticalOption(
+					"writeCoalesceWaitTime",
+					"dummy",
+					errors.Join(errors.New("time: invalid duration \"dummy\""), errors.ErrTimeoutParseFailed("dummy")),
+				),
 				obj: &T{},
 			},
 		},
@@ -3878,7 +3939,8 @@ func TestWithWriteCoalesceWaitTime(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
@@ -3945,7 +4007,8 @@ func TestWithHostFilter(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
@@ -4023,7 +4086,8 @@ func TestWithDCHostFilter(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
@@ -4101,7 +4165,8 @@ func TestWithWhiteListHostFilter(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for _, tc := range tests {
+		test := tc
 		t.Run(test.name, func(tt *testing.T) {
 			defer goleak.VerifyNone(tt, goleakIgnoreOptions...)
 			if test.beforeFunc != nil {
@@ -4123,3 +4188,5 @@ func TestWithWhiteListHostFilter(t *testing.T) {
 		})
 	}
 }
+
+// NOT IMPLEMENTED BELOW

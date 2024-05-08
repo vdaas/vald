@@ -1,8 +1,8 @@
 //
-// Copyright (C) 2019-2022 vdaas.org vald team <vald@vdaas.org>
+// Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    https://www.apache.org/licenses/LICENSE-2.0
@@ -785,6 +785,16 @@ func TestWithDistanceType(t *testing.T) {
 				obj: &T{},
 			},
 		},
+		{
+			name: "set success when distance type is InnerProduct or DotProduct",
+			args: args{
+				t: InnerProduct,
+			},
+			want: want{
+				obj: &T{},
+			},
+		},
+
 		{
 			name: "set success when distance type is Jaccard",
 			args: args{
