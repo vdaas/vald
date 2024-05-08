@@ -23,6 +23,7 @@ proto/all: \
 ## clean proto artifacts
 proto/clean:
 	find apis/grpc -name "*.pb.go" | xargs -P$(CORES) rm -f
+	find apis/grpc -name "*.pb.json.go" | xargs -P$(CORES) rm -f
 	rm -rf apis/swagger apis/docs
 
 .PHONY: proto/paths/print

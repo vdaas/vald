@@ -87,9 +87,10 @@ data:
             read_timeout: ""
             shutdown_duration: 5s
             write_timeout: ""
-          mode: ""
+          mode: REST
           network: tcp
           probe_wait_time: 3s
+          restart: true
           socket_option:
             ip_recover_destination_addr: false
             ip_transparent: false
@@ -111,9 +112,10 @@ data:
             read_timeout: ""
             shutdown_duration: 0s
             write_timeout: ""
-          mode: ""
+          mode: REST
           network: tcp
           probe_wait_time: 3s
+          restart: true
           socket_option:
             ip_recover_destination_addr: false
             ip_transparent: false
@@ -139,6 +141,7 @@ data:
           mode: REST
           network: tcp
           probe_wait_time: 3s
+          restart: true
           socket_option:
             ip_recover_destination_addr: false
             ip_transparent: false

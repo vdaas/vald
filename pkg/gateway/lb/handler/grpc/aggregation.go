@@ -39,6 +39,8 @@ import (
 type Aggregator interface {
 	Start(ctx context.Context)
 	Send(ctx context.Context, data *payload.Search_Response)
+	GetNum() int  // get top-k number
+	GetFnum() int // get forwarding top-k number calculated by search ratio
 	Result() *payload.Search_Response
 }
 
@@ -47,8 +49,11 @@ type DistPayload struct {
 	distance *big.Float
 }
 
-func (s *server) aggregationSearch(ctx context.Context, aggr Aggregator, cfg *payload.Search_Config,
-	f func(ctx context.Context, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error)) (
+func (s *server) aggregationSearch(ctx context.Context, aggr Aggregator,
+	bcfg *payload.Search_Config, // Base Config of Request
+	f func(ctx context.Context,
+		fcfg *payload.Search_Config, // Forwarding Config to Agent
+		vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error)) (
 	res *payload.Search_Response, err error,
 ) {
 	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "aggregationSearch"), apiName+"/aggregationSearch")
@@ -58,14 +63,19 @@ func (s *server) aggregationSearch(ctx context.Context, aggr Aggregator, cfg *pa
 		}
 	}()
 
-	num := int(cfg.GetNum())
-	min := int(cfg.GetMinNum())
+	num := aggr.GetNum()
+	min := int(bcfg.GetMinNum())
+
 	var timeout time.Duration
-	if to := cfg.GetTimeout(); to != 0 {
+	if to := bcfg.GetTimeout(); to != 0 {
 		timeout = time.Duration(to)
 	} else {
 		timeout = s.timeout
 	}
+
+	fcfg := bcfg.CloneVT() // Forwarding Config to Agent, this config need to modify like below so it should be cloned
+	fcfg.Num = uint32(aggr.GetFnum())
+	fcfg.MinNum = 0
 
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	aggr.Start(ctx)
@@ -76,7 +86,7 @@ func (s *server) aggregationSearch(ctx context.Context, aggr Aggregator, cfg *pa
 				sspan.End()
 			}
 		}()
-		r, err := f(sctx, vc, copts...)
+		r, err := f(sctx, fcfg, vc, copts...)
 		if err != nil {
 			switch {
 			case errors.Is(err, context.Canceled),
@@ -143,7 +153,7 @@ func (s *server) aggregationSearch(ctx context.Context, aggr Aggregator, cfg *pa
 				log.Debug(err)
 				return nil
 			default:
-				r, err = f(sctx, vc, copts...)
+				r, err = f(sctx, fcfg, vc, copts...)
 				if err != nil {
 					switch {
 					case errors.Is(err, context.Canceled),
@@ -217,8 +227,8 @@ func (s *server) aggregationSearch(ctx context.Context, aggr Aggregator, cfg *pa
 	if errors.Is(err, errors.ErrGRPCClientConnNotFound("*")) {
 		err = status.WrapWithInternal("search API connection not found", err,
 			&errdetails.RequestInfo{
-				RequestId:   cfg.GetRequestId(),
-				ServingData: errdetails.Serialize(cfg),
+				RequestId:   bcfg.GetRequestId(),
+				ServingData: errdetails.Serialize(bcfg),
 			},
 			&errdetails.ResourceInfo{
 				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.search",
@@ -242,8 +252,8 @@ func (s *server) aggregationSearch(ctx context.Context, aggr Aggregator, cfg *pa
 				"error search result length is 0 due to the timeoutage limit",
 				errors.ErrEmptySearchResult,
 				&errdetails.RequestInfo{
-					RequestId:   cfg.GetRequestId(),
-					ServingData: errdetails.Serialize(cfg),
+					RequestId:   bcfg.GetRequestId(),
+					ServingData: errdetails.Serialize(bcfg),
 				},
 				&errdetails.ResourceInfo{
 					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.search",
@@ -262,8 +272,8 @@ func (s *server) aggregationSearch(ctx context.Context, aggr Aggregator, cfg *pa
 				fmt.Sprintf("error search result length is not enough due to the timeoutage limit, required: %d, found: %d", min, len(res.GetResults())),
 				errors.ErrInsuffcientSearchResult,
 				&errdetails.RequestInfo{
-					RequestId:   cfg.GetRequestId(),
-					ServingData: errdetails.Serialize(cfg),
+					RequestId:   bcfg.GetRequestId(),
+					ServingData: errdetails.Serialize(bcfg),
 				},
 				&errdetails.ResourceInfo{
 					ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.search",
@@ -283,8 +293,8 @@ func (s *server) aggregationSearch(ctx context.Context, aggr Aggregator, cfg *pa
 		st, msg, err := status.ParseError(err, codes.Internal,
 			"failed to parse search gRPC error response",
 			&errdetails.RequestInfo{
-				RequestId:   cfg.GetRequestId(),
-				ServingData: errdetails.Serialize(cfg),
+				RequestId:   bcfg.GetRequestId(),
+				ServingData: errdetails.Serialize(bcfg),
 			},
 			&errdetails.ResourceInfo{
 				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.search",
@@ -306,8 +316,8 @@ func (s *server) aggregationSearch(ctx context.Context, aggr Aggregator, cfg *pa
 		}
 		err = status.WrapWithNotFound("error search result length is 0", err,
 			&errdetails.RequestInfo{
-				RequestId:   cfg.GetRequestId(),
-				ServingData: errdetails.Serialize(cfg),
+				RequestId:   bcfg.GetRequestId(),
+				ServingData: errdetails.Serialize(bcfg),
 			},
 			&errdetails.ResourceInfo{
 				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.search",
@@ -334,8 +344,8 @@ func (s *server) aggregationSearch(ctx context.Context, aggr Aggregator, cfg *pa
 			fmt.Sprintf("error search result length is not enough required: %d, found: %d", min, len(res.GetResults())),
 			errors.ErrInsuffcientSearchResult,
 			&errdetails.RequestInfo{
-				RequestId:   cfg.GetRequestId(),
-				ServingData: errdetails.Serialize(cfg),
+				RequestId:   bcfg.GetRequestId(),
+				ServingData: errdetails.Serialize(bcfg),
 			},
 			&errdetails.ResourceInfo{
 				ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1.search",
@@ -349,13 +359,14 @@ func (s *server) aggregationSearch(ctx context.Context, aggr Aggregator, cfg *pa
 		}
 		return nil, err
 	}
-	res.RequestId = cfg.GetRequestId()
+	res.RequestId = bcfg.GetRequestId()
 	return res, nil
 }
 
 // vald standard algorithm.
 type valdStdAggr struct {
-	num     int
+	num     int // top-k number
+	fnum    int // forward top-k number
 	wg      sync.WaitGroup
 	dch     chan DistPayload
 	closed  atomic.Bool
@@ -365,10 +376,11 @@ type valdStdAggr struct {
 	cancel  context.CancelFunc
 }
 
-func newStd(num, replica int) Aggregator {
+func newStd(num, fnum, replica int) Aggregator {
 	vsa := &valdStdAggr{
-		num: num,
-		dch: make(chan DistPayload, num*replica),
+		num:  num,
+		fnum: fnum,
+		dch:  make(chan DistPayload, num*replica),
 		maxDist: func() (av atomic.Value) {
 			av.Store(big.NewFloat(math.MaxFloat64))
 			return av
@@ -450,8 +462,8 @@ func (v *valdStdAggr) Start(ctx context.Context) {
 
 func (v *valdStdAggr) Send(ctx context.Context, data *payload.Search_Response) {
 	result := data.GetResults()
-	if len(result) > v.num {
-		result = result[:v.num]
+	if len(result) > v.fnum {
+		result = result[:v.fnum]
 	}
 	for _, dist := range result {
 		if dist != nil {
@@ -485,18 +497,34 @@ func (v *valdStdAggr) Result() *payload.Search_Response {
 	}
 }
 
+func (v *valdStdAggr) GetNum() int {
+	if v != nil {
+		return v.num
+	}
+	return 0
+}
+
+func (v *valdStdAggr) GetFnum() int {
+	if v != nil {
+		return v.fnum
+	}
+	return 0
+}
+
 // pairing heap.
 type valdPairingHeapAggr struct {
-	num     int
+	num     int // top-k number
+	fnum    int // forward top-k number
 	ph      *PairingHeap
 	mu      sync.Mutex
 	visited sync.Map[string, any]
 	result  []*payload.Object_Distance
 }
 
-func newPairingHeap(num, replica int) Aggregator {
+func newPairingHeap(num, fnum, replica int) Aggregator {
 	return &valdPairingHeapAggr{
 		num:    num,
+		fnum:   fnum,
 		ph:     new(PairingHeap),
 		result: make([]*payload.Object_Distance, 0, num),
 	}
@@ -506,8 +534,8 @@ func (v *valdPairingHeapAggr) Start(_ context.Context) {}
 
 func (v *valdPairingHeapAggr) Send(ctx context.Context, data *payload.Search_Response) {
 	result := data.GetResults()
-	if len(result) > v.num {
-		result = result[:v.num]
+	if len(result) > v.fnum {
+		result = result[:v.fnum]
 	}
 	for _, dist := range result {
 		if dist != nil {
@@ -544,16 +572,32 @@ func (v *valdPairingHeapAggr) Result() *payload.Search_Response {
 	}
 }
 
+func (v *valdPairingHeapAggr) GetNum() int {
+	if v != nil {
+		return v.num
+	}
+	return 0
+}
+
+func (v *valdPairingHeapAggr) GetFnum() int {
+	if v != nil {
+		return v.fnum
+	}
+	return 0
+}
+
 // plane sort.
 type valdSliceAggr struct {
-	num    int
+	num    int // top-k number
+	fnum   int // forward top-k number
 	mu     sync.Mutex
 	result []*DistPayload
 }
 
-func newSlice(num, replica int) Aggregator {
+func newSlice(num, fnum, replica int) Aggregator {
 	return &valdSliceAggr{
 		num:    num,
+		fnum:   fnum,
 		result: make([]*DistPayload, 0, num*replica),
 	}
 }
@@ -562,8 +606,8 @@ func (*valdSliceAggr) Start(_ context.Context) {}
 
 func (v *valdSliceAggr) Send(ctx context.Context, data *payload.Search_Response) {
 	result := data.GetResults()
-	if len(result) > v.num {
-		result = result[:v.num]
+	if len(result) > v.fnum {
+		result = result[:v.fnum]
 	}
 	for _, dist := range result {
 		if dist != nil {
@@ -597,9 +641,24 @@ func (v *valdSliceAggr) Result() (res *payload.Search_Response) {
 	return res
 }
 
+func (v *valdSliceAggr) GetNum() int {
+	if v != nil {
+		return v.num
+	}
+	return 0
+}
+
+func (v *valdSliceAggr) GetFnum() int {
+	if v != nil {
+		return v.fnum
+	}
+	return 0
+}
+
 // plane sort.
 type valdPoolSliceAggr struct {
-	num    int
+	num    int // top-k number
+	fnum   int // forward top-k number
 	mu     sync.Mutex
 	result []*DistPayload
 }
@@ -613,13 +672,14 @@ var (
 	poolLen atomic.Uint64
 )
 
-func newPoolSlice(num, replica int) Aggregator {
+func newPoolSlice(num, fnum, replica int) Aggregator {
 	l := uint64(num * replica)
 	if poolLen.Load() < l {
 		poolLen.Store(l)
 	}
 	return &valdPoolSliceAggr{
 		num:    num,
+		fnum:   fnum,
 		result: poolDist.Get().([]*DistPayload),
 	}
 }
@@ -628,8 +688,8 @@ func (_ *valdPoolSliceAggr) Start(_ context.Context) {}
 
 func (v *valdPoolSliceAggr) Send(ctx context.Context, data *payload.Search_Response) {
 	result := data.GetResults()
-	if len(result) > v.num {
-		result = result[:v.num]
+	if len(result) > v.fnum {
+		result = result[:v.fnum]
 	}
 	for _, dist := range result {
 		if dist != nil {
@@ -662,6 +722,20 @@ func (v *valdPoolSliceAggr) Result() (res *payload.Search_Response) {
 	}
 	poolDist.Put(v.result[:0])
 	return res
+}
+
+func (v *valdPoolSliceAggr) GetNum() int {
+	if v != nil {
+		return v.num
+	}
+	return 0
+}
+
+func (v *valdPoolSliceAggr) GetFnum() int {
+	if v != nil {
+		return v.fnum
+	}
+	return 0
 }
 
 func removeDuplicates[S ~[]E, E comparable](x S, less func(left, right E) int) S {

@@ -75,6 +75,7 @@
 .github/workflows/coverage.yml
 .github/workflows/detect-internal-config-changes.yml
 .github/workflows/dockers-agent-faiss-image.yml
+.github/workflows/dockers-agent-image.yml
 .github/workflows/dockers-agent-ngt-image.yml
 .github/workflows/dockers-agent-sidecar-image.yml
 .github/workflows/dockers-benchmark-job-image.yml
@@ -167,8 +168,10 @@ apis/grpc/v1/mirror/mirror.pb.go
 apis/grpc/v1/mirror/mirror_vtproto.pb.go
 apis/grpc/v1/payload/interface.go
 apis/grpc/v1/payload/payload.pb.go
+apis/grpc/v1/payload/payload.pb.json.go
 apis/grpc/v1/payload/payload_vtproto.pb.go
 apis/grpc/v1/rpc/errdetails/error_details.pb.go
+apis/grpc/v1/rpc/errdetails/error_details.pb.json.go
 apis/grpc/v1/rpc/errdetails/error_details_vtproto.pb.go
 apis/grpc/v1/vald/filter.pb.go
 apis/grpc/v1/vald/filter_vtproto.pb.go
@@ -243,6 +246,7 @@ assets/docs/overview/search_flow.svg
 assets/docs/overview/update_flow.svg
 assets/docs/overview/upsert_flow.svg
 assets/docs/overview/vald_basic_architecture.svg
+assets/docs/performance/benchmark-grafana.png
 assets/docs/troubleshooting/provisioning_flow_chart.drawio
 assets/docs/troubleshooting/provisioning_flow_chart.svg
 assets/docs/tutorial/getstarted.svg
@@ -505,6 +509,8 @@ design/Vald Architecture Assets.drawio
 design/Vald Architecture Dataflow.drawio
 design/Vald Architecture Overview.drawio
 design/vald_architecture_overview.png
+dockers/agent/core/agent/Dockerfile
+dockers/agent/core/agent/README.md
 dockers/agent/core/faiss/Dockerfile
 dockers/agent/core/ngt/Dockerfile
 dockers/agent/core/ngt/README.md
@@ -1121,6 +1127,7 @@ internal/net/grpc/handler.go
 internal/net/grpc/health/health.go
 internal/net/grpc/health/health_test.go
 internal/net/grpc/interceptor.go
+internal/net/grpc/interceptor/client/metric/metric.go
 internal/net/grpc/interceptor/client/trace/trace.go
 internal/net/grpc/interceptor/server/logging/accesslog.go
 internal/net/grpc/interceptor/server/logging/accesslog_test.go
@@ -1814,6 +1821,11 @@ rust/Cargo.lock
 rust/Cargo.toml
 rust/bin/agent/Cargo.toml
 rust/bin/agent/src/main.rs
+rust/libs/ngt-rs/Cargo.toml
+rust/libs/ngt-rs/build.rs
+rust/libs/ngt-rs/src/input.cpp
+rust/libs/ngt-rs/src/input.h
+rust/libs/ngt-rs/src/lib.rs
 rust/libs/ngt/Cargo.toml
 rust/libs/ngt/src/lib.rs
 rust/libs/proto/Cargo.toml
@@ -1836,6 +1848,7 @@ rust/libs/proto/src/sidecar.v1.rs
 rust/libs/proto/src/sidecar.v1.tonic.rs
 rust/libs/proto/src/vald.v1.rs
 rust/libs/proto/src/vald.v1.tonic.rs
+rust/rust-toolchain.toml
 tests/chaos/chart/.helmignore
 tests/chaos/chart/Chart.yaml
 tests/chaos/chart/README.md
@@ -1881,6 +1894,7 @@ versions/OTEL_OPERATOR_VERSION
 versions/PROMETHEUS_STACK_VERSION
 versions/PROTOBUF_VERSION
 versions/REVIEWDOG_VERSION
+versions/RUST_VERSION
 versions/TELEPRESENCE_VERSION
 versions/VALDCLI_VERSION
 versions/VALD_VERSION

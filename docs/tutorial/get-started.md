@@ -35,7 +35,7 @@ If Helm or HDF5 is not installed, please install [Helm](https://helm.sh/docs/int
 <details><summary>Installation command for Helm</summary><br>
 
 ```bash
-curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 ```
 
 </details>
@@ -443,8 +443,8 @@ If you are interested, please refer to [SDKs](../user-guides/sdks.md).<br>
           ```go
           _, err := client.Flush(ctx, &payload.Flush_Request{})
           if err != nil {
-		            glg.Fatal(err)
-		        }
+             glg.Fatal(err)
+          }
           ```
 
             </details>

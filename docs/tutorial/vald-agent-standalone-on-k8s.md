@@ -36,7 +36,7 @@ If Helm or HDF5 is not installed, please install [Helm](https://helm.sh/docs/int
 <details><summary>Installation command for Helm</summary><br>
 
 ```bash
-curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 ```
 
 </details>

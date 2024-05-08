@@ -13,24 +13,27 @@
 // limitations under the License.
 package metrics
 
-import "testing"
+import (
+	"net/http"
+	"net/http/httptest"
+	"testing"
+)
 
 func TestNewPProfHandler(t *testing.T) {
-	tests := []struct {
-		name        string
-		initialized bool
-	}{
-		{
-			name:        "initialize success",
-			initialized: true,
-		},
-	}
+	handler := NewPProfHandler()
+	server := httptest.NewServer(handler)
+	defer server.Close()
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got := NewPProfHandler()
-			if (got != nil) != tt.initialized {
-				t.Error("NewPProfHandler() is wrong.")
+	for _, route := range GetProfileRoutes() {
+		t.Run(route.Name, func(t *testing.T) {
+			resp, err := http.Get(server.URL + route.Pattern)
+			if err != nil {
+				t.Errorf("Failed to make GET request for %s: %v", route.Name, err)
+			}
+			defer resp.Body.Close()
+
+			if resp.StatusCode != http.StatusOK {
+				t.Errorf("Expected status code 200 for %s, got %d", route.Name, resp.StatusCode)
 			}
 		})
 	}
