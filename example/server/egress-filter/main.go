@@ -59,7 +59,6 @@ type myEgressServer struct {
 }
 
 func (s *myEgressServer) FilterDistance(ctx context.Context, in *payload.Filter_DistanceRequest) (*payload.Filter_DistanceResponse, error) {
-	// Write your own logic
 	glg.Log("filtering vector %#v", in)
 	qCategory, ok := getSplitValue(in.GetQuery().GetQuery(), "=", 1)
 	if !ok {
@@ -69,14 +68,12 @@ func (s *myEgressServer) FilterDistance(ctx context.Context, in *payload.Filter_
 	}
 
 	filteredDis := []*payload.Object_Distance{}
-	for _, d := range in.GetDistance() {
+	distances := in.GetDistance() // Avoid multiple calls to GetDistance
+	for _, d := range distances {
 		iCategory, ok := getSplitValue(d.GetId(), "_", 1)
 		if !ok {
-			return &payload.Filter_DistanceResponse{
-				Distance: in.GetDistance(),
-			}, nil
+			continue // Use continue to reduce nesting
 		}
-
 		glg.Infof("qCategory: %v, iCategory: %v", qCategory, iCategory)
 		if qCategory == iCategory {
 			filteredDis = append(filteredDis, d)
