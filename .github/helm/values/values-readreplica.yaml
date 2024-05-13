@@ -48,6 +48,7 @@ agent:
     dimension: 784
     index_path: /var/ngt/index
     enable_in_memory_mode: false
+    enable_export_index_info_to_k8s: true
   persistentVolume:
     enabled: true
     accessMode: ReadWriteOnce
@@ -80,7 +81,6 @@ manager:
     readreplica:
       rotator:
         enabled: true
-        initContainers: []
-        env:
-          - name: MY_TARGET_REPLICA_ID
-            value: "0"
+    operator:
+      enabled: true
+      rotation_job_concurrency: 10

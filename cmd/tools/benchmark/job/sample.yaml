@@ -48,6 +48,8 @@ server_config:
         header_table_size: 0
         interceptors:
           - "RecoverInterceptor"
+          - "TraceInterceptor"
+          - "MetricInterceptor"
         enable_reflection: true
       socket_option:
         reuse_port: true
@@ -136,8 +138,8 @@ server_config:
         ip_recover_destination_addr: false
   startup_strategy:
     - liveness
-    - readiness
     - grpc
+    - readiness
   full_shutdown_duration: 30s
   tls:
     ca: /path/to/ca
@@ -147,7 +149,7 @@ server_config:
 observability:
   enabled: false
   otlp:
-    collector_endpoint: ""
+    collector_endpoint: "opentelemetry-collector-collector.default.svc.cluster.local:4317"
     attribute:
       namespace: _MY_POD_NAMESPACE_
       pod_name: _MY_POD_NAME_
@@ -157,6 +159,8 @@ observability:
     trace_export_timeout: "1m"
     trace_max_export_batch_size: 1024
     trace_max_queue_size: 256
+    metrics_export_interval: "1s"
+    metrics_export_timeout: "1m"
   metrics:
     enable_cgo: true
     enable_goroutine: true
@@ -172,7 +176,7 @@ observability:
       - go_arch
       - algorithm_info
   trace:
-    enabled: false
+    enabled: true
 job:
   replica: 1
   repetition: 1
@@ -181,7 +185,7 @@ job:
   rps: 200
   concurrency_limit: 200
   client_config:
-    health_check_duration: "1s"
+    health_check_duration: ""
     connection_pool:
       enable_dns_resolver: true
       enable_rebalance: true
@@ -221,7 +225,9 @@ job:
       enable_backoff: false
       insecure: true
       timeout: ""
-      interceptors: []
+      interceptors:
+        - MetricInterceptor
+        - TraceInterceptor
       net:
         dns:
           cache_enabled: true

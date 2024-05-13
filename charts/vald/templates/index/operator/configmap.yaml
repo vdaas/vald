@@ -15,6 +15,10 @@
 #
 {{- $operator := .Values.manager.index.operator -}}
 {{- $agent := .Values.agent -}}
+{{- $rotator := .Values.manager.index.readreplica.rotator -}}
+{{- $creator := .Values.manager.index.creator -}}
+{{- $saver := .Values.manager.index.saver -}}
+{{- $corrector := .Values.manager.index.corrector -}}
 {{- if $operator.enabled }}
 apiVersion: v1
 kind: ConfigMap
@@ -42,9 +46,45 @@ data:
       {{- $observability := dict "Values" $operator.observability "default" .Values.defaults.observability }}
       {{- include "vald.observability" $observability | nindent 6 }}
     operator:
+      namespace: {{ $operator.namespace }}
       agent_name: {{ $agent.name }}
       agent_namespace: {{ $agent.namespace }}
-      concurrency: 1
+      rotator_name: {{ $rotator.name }}
+      target_read_replica_id_annotations_key: {{ $rotator.target_read_replica_id_annotations_key }}
+      rotation_job_concurrency: {{ $operator.rotation_job_concurrency }}
       read_replica_enabled: {{ $agent.readreplica.enabled }}
       read_replica_label_key: {{ $agent.readreplica.label_key }}
+      job_templates:
+        rotate:
+          apiVersion: batch/v1
+          kind: Job
+          metadata:
+            name: {{ $rotator.name }}
+            labels:
+              {{- include "vald.labels" (dict "Values" $rotator "default" .) | nindent 14 }}
+          {{- include "vald.index_job" (dict "Job" $rotator "default" . "type" "rotator") | nindent 10 }}
+        creation:
+          apiVersion: batch/v1
+          kind: Job
+          metadata:
+            name: {{ $creator.name }}
+            labels:
+              {{- include "vald.labels" (dict "Values" $creator "default" .) | nindent 14 }}
+          {{- include "vald.index_job" (dict "Job" $creator "default" . "type" "creator") | nindent 10 }}
+        save:
+          apiVersion: batch/v1
+          kind: Job
+          metadata:
+            name: {{ $saver.name }}
+            labels:
+              {{- include "vald.labels" (dict "Values" $saver "default" .) | nindent 14 }}
+          {{- include "vald.index_job" (dict "Job" $saver "default" . "type" "saver") | nindent 10 }}
+        correction:
+          apiVersion: batch/v1
+          kind: Job
+          metadata:
+            name: {{ $corrector.name }}
+            labels:
+              {{- include "vald.labels" (dict "Values" $corrector "default" .) | nindent 14 }}
+          {{- include "vald.index_job" (dict "Job" $corrector "default" . "type" "corrector") | nindent 10 }}
 {{- end }}

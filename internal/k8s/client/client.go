@@ -23,10 +23,9 @@ import (
 
 	snapshotv1 "github.com/kubernetes-csi/external-snapshotter/client/v6/apis/volumesnapshot/v1"
 	"github.com/vdaas/vald/internal/errors"
-	appsv1 "k8s.io/api/apps/v1"
+	"github.com/vdaas/vald/internal/k8s"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/labels"
@@ -37,33 +36,10 @@ import (
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/utils/ptr"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/builder"
 	cli "sigs.k8s.io/controller-runtime/pkg/client"
-)
-
-type (
-	Object             = cli.Object
-	ObjectKey          = cli.ObjectKey
-	DeleteAllOfOptions = cli.DeleteAllOfOptions
-	DeleteOptions      = cli.DeleteOptions
-	ListOptions        = cli.ListOptions
-	ListOption         = cli.ListOption
-	CreateOption       = cli.CreateOption
-	CreateOptions      = cli.CreateOptions
-	UpdateOptions      = cli.UpdateOptions
-	MatchingLabels     = cli.MatchingLabels
-	InNamespace        = cli.InNamespace
-	VolumeSnapshot     = snapshotv1.VolumeSnapshot
-	Deployment         = appsv1.Deployment
-	DeploymentList     = appsv1.DeploymentList
-	ObjectMeta         = metav1.ObjectMeta
-)
-
-const (
-	DeletePropagationBackground = metav1.DeletePropagationBackground
-	WatchDeletedEvent           = watch.Deleted
-	SelectionOpEquals           = selection.Equals
-	SelectionOpExists           = selection.Exists
-	PodIndexLabel               = appsv1.PodIndexLabel
+	"sigs.k8s.io/controller-runtime/pkg/event"
+	"sigs.k8s.io/controller-runtime/pkg/predicate"
 )
 
 var (
@@ -76,29 +52,29 @@ type Client interface {
 	// Get retrieves an obj for the given object key from the Kubernetes Cluster.
 	// obj must be a struct pointer so that obj can be updated with the response
 	// returned by the Server.
-	Get(ctx context.Context, name string, namespace string, obj Object, opts ...cli.GetOption) error
+	Get(ctx context.Context, name string, namespace string, obj k8s.Object, opts ...cli.GetOption) error
 	// List retrieves list of objects for a given namespace and list options. On a
 	// successful call, Items field in the list will be populated with the
 	// result returned from the server.
-	List(ctx context.Context, list cli.ObjectList, opts ...ListOption) error
+	List(ctx context.Context, list cli.ObjectList, opts ...k8s.ListOption) error
 
 	// Create saves the object obj in the Kubernetes cluster. obj must be a
 	// struct pointer so that obj can be updated with the content returned by the Server.
-	Create(ctx context.Context, obj Object, opts ...CreateOption) error
+	Create(ctx context.Context, obj k8s.Object, opts ...k8s.CreateOption) error
 
 	// Delete deletes the given obj from Kubernetes cluster.
-	Delete(ctx context.Context, obj Object, opts ...cli.DeleteOption) error
+	Delete(ctx context.Context, obj k8s.Object, opts ...cli.DeleteOption) error
 
 	// Update updates the given obj in the Kubernetes cluster. obj must be a
 	// struct pointer so that obj can be updated with the content returned by the Server.
-	Update(ctx context.Context, obj Object, opts ...cli.UpdateOption) error
+	Update(ctx context.Context, obj k8s.Object, opts ...cli.UpdateOption) error
 
 	// Patch patches the given obj in the Kubernetes cluster. obj must be a
 	// struct pointer so that obj can be updated with the content returned by the Server.
-	Patch(ctx context.Context, obj Object, patch cli.Patch, opts ...cli.PatchOption) error
+	Patch(ctx context.Context, obj k8s.Object, patch cli.Patch, opts ...cli.PatchOption) error
 
 	// Watch watches the given obj for changes and takes the appropriate callbacks.
-	Watch(ctx context.Context, obj cli.ObjectList, opts ...ListOption) (watch.Interface, error)
+	Watch(ctx context.Context, obj cli.ObjectList, opts ...k8s.ListOption) (watch.Interface, error)
 
 	// MatchingLabels filters the list/delete operation on the given set of labels.
 	MatchingLabels(labels map[string]string) cli.MatchingLabels
@@ -157,23 +133,23 @@ func (c *client) List(ctx context.Context, list cli.ObjectList, opts ...cli.List
 	return c.withWatch.List(ctx, list, opts...)
 }
 
-func (c *client) Create(ctx context.Context, obj Object, opts ...CreateOption) error {
+func (c *client) Create(ctx context.Context, obj k8s.Object, opts ...k8s.CreateOption) error {
 	return c.withWatch.Create(ctx, obj, opts...)
 }
 
-func (c *client) Delete(ctx context.Context, obj Object, opts ...cli.DeleteOption) error {
+func (c *client) Delete(ctx context.Context, obj k8s.Object, opts ...cli.DeleteOption) error {
 	return c.withWatch.Delete(ctx, obj, opts...)
 }
 
-func (c *client) Update(ctx context.Context, obj Object, opts ...cli.UpdateOption) error {
+func (c *client) Update(ctx context.Context, obj k8s.Object, opts ...cli.UpdateOption) error {
 	return c.withWatch.Update(ctx, obj, opts...)
 }
 
-func (c *client) Patch(ctx context.Context, obj Object, patch cli.Patch, opts ...cli.PatchOption) error {
+func (c *client) Patch(ctx context.Context, obj k8s.Object, patch cli.Patch, opts ...cli.PatchOption) error {
 	return c.withWatch.Patch(ctx, obj, patch, opts...)
 }
 
-func (c *client) Watch(ctx context.Context, obj cli.ObjectList, opts ...ListOption) (watch.Interface, error) {
+func (c *client) Watch(ctx context.Context, obj cli.ObjectList, opts ...k8s.ListOption) (watch.Interface, error) {
 	return c.withWatch.Watch(ctx, obj, opts...)
 }
 
@@ -187,6 +163,40 @@ func (*client) LabelSelector(key string, op selection.Operator, vals []string) (
 		return nil, fmt.Errorf("failed to create requirement on creating label selector: %w", err)
 	}
 	return labels.NewSelector().Add(*requirements), nil
+}
+
+// PodPredicates returns a builder.Predicates with the given filter function.
+func PodPredicates(filter func(pod *corev1.Pod) bool) builder.Predicates {
+	return builder.WithPredicates(predicate.Funcs{
+		CreateFunc: func(e event.CreateEvent) bool {
+			pod, ok := e.Object.(*corev1.Pod)
+			if !ok {
+				return false
+			}
+			return filter(pod)
+		},
+		DeleteFunc: func(e event.DeleteEvent) bool {
+			pod, ok := e.Object.(*corev1.Pod)
+			if !ok {
+				return false
+			}
+			return filter(pod)
+		},
+		UpdateFunc: func(e event.UpdateEvent) bool {
+			pod, ok := e.ObjectNew.(*corev1.Pod)
+			if !ok {
+				return false
+			}
+			return filter(pod)
+		},
+		GenericFunc: func(e event.GenericEvent) bool {
+			pod, ok := e.Object.(*corev1.Pod)
+			if !ok {
+				return false
+			}
+			return filter(pod)
+		},
+	})
 }
 
 // Patcher is an interface for patching resources with controller-runtime client.

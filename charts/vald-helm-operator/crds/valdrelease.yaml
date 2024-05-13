@@ -263,6 +263,10 @@ spec:
                             - normalizedangle
                             - normcos
                             - normalizedcosine
+                            - dotproduct
+                            - innerproduct
+                            - dp
+                            - ip
                         enable_copy_on_write:
                           type: boolean
                         enable_export_index_info_to_k8s:
@@ -545,6 +549,8 @@ spec:
                                         - unixpacket
                                     probe_wait_time:
                                       type: string
+                                    restart:
+                                      type: boolean
                                     socket_option:
                                       type: object
                                       properties:
@@ -639,6 +645,8 @@ spec:
                                         - unixpacket
                                     probe_wait_time:
                                       type: string
+                                    restart:
+                                      type: boolean
                                     socket_option:
                                       type: object
                                       properties:
@@ -745,6 +753,8 @@ spec:
                                         - unixpacket
                                     probe_wait_time:
                                       type: string
+                                    restart:
+                                      type: boolean
                                     socket_option:
                                       type: object
                                       properties:
@@ -932,6 +942,8 @@ spec:
                                         - unixpacket
                                     probe_wait_time:
                                       type: string
+                                    restart:
+                                      type: boolean
                                     socket_option:
                                       type: object
                                       properties:
@@ -1414,6 +1426,8 @@ spec:
                                             - unixpacket
                                         probe_wait_time:
                                           type: string
+                                        restart:
+                                          type: boolean
                                         socket_option:
                                           type: object
                                           properties:
@@ -1508,6 +1522,8 @@ spec:
                                             - unixpacket
                                         probe_wait_time:
                                           type: string
+                                        restart:
+                                          type: boolean
                                         socket_option:
                                           type: object
                                           properties:
@@ -1614,6 +1630,8 @@ spec:
                                             - unixpacket
                                         probe_wait_time:
                                           type: string
+                                        restart:
+                                          type: boolean
                                         socket_option:
                                           type: object
                                           properties:
@@ -1801,6 +1819,8 @@ spec:
                                             - unixpacket
                                         probe_wait_time:
                                           type: string
+                                        restart:
+                                          type: boolean
                                         socket_option:
                                           type: object
                                           properties:
@@ -2257,6 +2277,8 @@ spec:
                                         - unixpacket
                                     probe_wait_time:
                                       type: string
+                                    restart:
+                                      type: boolean
                                     socket_option:
                                       type: object
                                       properties:
@@ -2351,6 +2373,8 @@ spec:
                                         - unixpacket
                                     probe_wait_time:
                                       type: string
+                                    restart:
+                                      type: boolean
                                     socket_option:
                                       type: object
                                       properties:
@@ -2457,6 +2481,8 @@ spec:
                                         - unixpacket
                                     probe_wait_time:
                                       type: string
+                                    restart:
+                                      type: boolean
                                     socket_option:
                                       type: object
                                       properties:
@@ -2644,6 +2670,8 @@ spec:
                                         - unixpacket
                                     probe_wait_time:
                                       type: string
+                                    restart:
+                                      type: boolean
                                     socket_option:
                                       type: object
                                       properties:
@@ -3116,6 +3144,8 @@ spec:
                                         - unixpacket
                                     probe_wait_time:
                                       type: string
+                                    restart:
+                                      type: boolean
                                     socket_option:
                                       type: object
                                       properties:
@@ -3210,6 +3240,8 @@ spec:
                                         - unixpacket
                                     probe_wait_time:
                                       type: string
+                                    restart:
+                                      type: boolean
                                     socket_option:
                                       type: object
                                       properties:
@@ -3316,6 +3348,8 @@ spec:
                                         - unixpacket
                                     probe_wait_time:
                                       type: string
+                                    restart:
+                                      type: boolean
                                     socket_option:
                                       type: object
                                       properties:
@@ -3503,6 +3537,8 @@ spec:
                                         - unixpacket
                                     probe_wait_time:
                                       type: string
+                                    restart:
+                                      type: boolean
                                     socket_option:
                                       type: object
                                       properties:
@@ -4481,6 +4517,8 @@ spec:
                                             - unixpacket
                                         probe_wait_time:
                                           type: string
+                                        restart:
+                                          type: boolean
                                         socket_option:
                                           type: object
                                           properties:
@@ -4575,6 +4613,8 @@ spec:
                                             - unixpacket
                                         probe_wait_time:
                                           type: string
+                                        restart:
+                                          type: boolean
                                         socket_option:
                                           type: object
                                           properties:
@@ -4681,6 +4721,8 @@ spec:
                                             - unixpacket
                                         probe_wait_time:
                                           type: string
+                                        restart:
+                                          type: boolean
                                         socket_option:
                                           type: object
                                           properties:
@@ -4868,6 +4910,8 @@ spec:
                                             - unixpacket
                                         probe_wait_time:
                                           type: string
+                                        restart:
+                                          type: boolean
                                         socket_option:
                                           type: object
                                           properties:
@@ -5817,6 +5861,8 @@ spec:
                                             - unixpacket
                                         probe_wait_time:
                                           type: string
+                                        restart:
+                                          type: boolean
                                         socket_option:
                                           type: object
                                           properties:
@@ -5911,6 +5957,8 @@ spec:
                                             - unixpacket
                                         probe_wait_time:
                                           type: string
+                                        restart:
+                                          type: boolean
                                         socket_option:
                                           type: object
                                           properties:
@@ -6017,6 +6065,8 @@ spec:
                                             - unixpacket
                                         probe_wait_time:
                                           type: string
+                                        restart:
+                                          type: boolean
                                         socket_option:
                                           type: object
                                           properties:
@@ -6204,6 +6254,8 @@ spec:
                                             - unixpacket
                                         probe_wait_time:
                                           type: string
+                                        restart:
+                                          type: boolean
                                         socket_option:
                                           type: object
                                           properties:
@@ -6873,6 +6925,8 @@ spec:
                                             - unixpacket
                                         probe_wait_time:
                                           type: string
+                                        restart:
+                                          type: boolean
                                         socket_option:
                                           type: object
                                           properties:
@@ -6967,6 +7021,8 @@ spec:
                                             - unixpacket
                                         probe_wait_time:
                                           type: string
+                                        restart:
+                                          type: boolean
                                         socket_option:
                                           type: object
                                           properties:
@@ -7073,6 +7129,8 @@ spec:
                                             - unixpacket
                                         probe_wait_time:
                                           type: string
+                                        restart:
+                                          type: boolean
                                         socket_option:
                                           type: object
                                           properties:
@@ -7260,6 +7318,8 @@ spec:
                                             - unixpacket
                                         probe_wait_time:
                                           type: string
+                                        restart:
+                                          type: boolean
                                         socket_option:
                                           type: object
                                           properties:
@@ -7937,6 +7997,8 @@ spec:
                                                 - unixpacket
                                             probe_wait_time:
                                               type: string
+                                            restart:
+                                              type: boolean
                                             socket_option:
                                               type: object
                                               properties:
@@ -8031,6 +8093,8 @@ spec:
                                                 - unixpacket
                                             probe_wait_time:
                                               type: string
+                                            restart:
+                                              type: boolean
                                             socket_option:
                                               type: object
                                               properties:
@@ -8137,6 +8201,8 @@ spec:
                                                 - unixpacket
                                             probe_wait_time:
                                               type: string
+                                            restart:
+                                              type: boolean
                                             socket_option:
                                               type: object
                                               properties:
@@ -8324,6 +8390,8 @@ spec:
                                                 - unixpacket
                                             probe_wait_time:
                                               type: string
+                                            restart:
+                                              type: boolean
                                             socket_option:
                                               type: object
                                               properties:
@@ -8911,6 +8979,8 @@ spec:
                                                 - unixpacket
                                             probe_wait_time:
                                               type: string
+                                            restart:
+                                              type: boolean
                                             socket_option:
                                               type: object
                                               properties:
@@ -9005,6 +9075,8 @@ spec:
                                                 - unixpacket
                                             probe_wait_time:
                                               type: string
+                                            restart:
+                                              type: boolean
                                             socket_option:
                                               type: object
                                               properties:
@@ -9111,6 +9183,8 @@ spec:
                                                 - unixpacket
                                             probe_wait_time:
                                               type: string
+                                            restart:
+                                              type: boolean
                                             socket_option:
                                               type: object
                                               properties:
@@ -9298,6 +9372,8 @@ spec:
                                                 - unixpacket
                                             probe_wait_time:
                                               type: string
+                                            restart:
+                                              type: boolean
                                             socket_option:
                                               type: object
                                               properties:
@@ -10066,6 +10142,9 @@ spec:
                                   type: string
                                 maxUnavailable:
                                   type: string
+                            rotation_job_concurrency:
+                              type: integer
+                              minimum: 1
                             securityContext:
                               type: object
                               x-kubernetes-preserve-unknown-fields: true
@@ -10144,6 +10223,8 @@ spec:
                                                 - unixpacket
                                             probe_wait_time:
                                               type: string
+                                            restart:
+                                              type: boolean
                                             socket_option:
                                               type: object
                                               properties:
@@ -10238,6 +10319,8 @@ spec:
                                                 - unixpacket
                                             probe_wait_time:
                                               type: string
+                                            restart:
+                                              type: boolean
                                             socket_option:
                                               type: object
                                               properties:
@@ -10344,6 +10427,8 @@ spec:
                                                 - unixpacket
                                             probe_wait_time:
                                               type: string
+                                            restart:
+                                              type: boolean
                                             socket_option:
                                               type: object
                                               properties:
@@ -10531,6 +10616,8 @@ spec:
                                                 - unixpacket
                                             probe_wait_time:
                                               type: string
+                                            restart:
+                                              type: boolean
                                             socket_option:
                                               type: object
                                               properties:
@@ -10728,8 +10815,6 @@ spec:
                                 podSecurityContext:
                                   type: object
                                   x-kubernetes-preserve-unknown-fields: true
-                                read_replica_id:
-                                  type: string
                                 securityContext:
                                   type: object
                                   x-kubernetes-preserve-unknown-fields: true
@@ -10808,6 +10893,8 @@ spec:
                                                     - unixpacket
                                                 probe_wait_time:
                                                   type: string
+                                                restart:
+                                                  type: boolean
                                                 socket_option:
                                                   type: object
                                                   properties:
@@ -10902,6 +10989,8 @@ spec:
                                                     - unixpacket
                                                 probe_wait_time:
                                                   type: string
+                                                restart:
+                                                  type: boolean
                                                 socket_option:
                                                   type: object
                                                   properties:
@@ -11008,6 +11097,8 @@ spec:
                                                     - unixpacket
                                                 probe_wait_time:
                                                   type: string
+                                                restart:
+                                                  type: boolean
                                                 socket_option:
                                                   type: object
                                                   properties:
@@ -11195,6 +11286,8 @@ spec:
                                                     - unixpacket
                                                 probe_wait_time:
                                                   type: string
+                                                restart:
+                                                  type: boolean
                                                 socket_option:
                                                   type: object
                                                   properties:
@@ -11242,6 +11335,8 @@ spec:
                                       type: boolean
                                     name:
                                       type: string
+                                target_read_replica_id_annotations_key:
+                                  type: string
                                 ttlSecondsAfterFinished:
                                   type: integer
                                 version:
@@ -11802,6 +11897,8 @@ spec:
                                                 - unixpacket
                                             probe_wait_time:
                                               type: string
+                                            restart:
+                                              type: boolean
                                             socket_option:
                                               type: object
                                               properties:
@@ -11896,6 +11993,8 @@ spec:
                                                 - unixpacket
                                             probe_wait_time:
                                               type: string
+                                            restart:
+                                              type: boolean
                                             socket_option:
                                               type: object
                                               properties:
@@ -12002,6 +12101,8 @@ spec:
                                                 - unixpacket
                                             probe_wait_time:
                                               type: string
+                                            restart:
+                                              type: boolean
                                             socket_option:
                                               type: object
                                               properties:
@@ -12189,6 +12290,8 @@ spec:
                                                 - unixpacket
                                             probe_wait_time:
                                               type: string
+                                            restart:
+                                              type: boolean
                                             socket_option:
                                               type: object
                                               properties:
@@ -12320,6 +12423,8 @@ spec:
                                             - unixpacket
                                         probe_wait_time:
                                           type: string
+                                        restart:
+                                          type: boolean
                                         socket_option:
                                           type: object
                                           properties:
@@ -12414,6 +12519,8 @@ spec:
                                             - unixpacket
                                         probe_wait_time:
                                           type: string
+                                        restart:
+                                          type: boolean
                                         socket_option:
                                           type: object
                                           properties:
@@ -12520,6 +12627,8 @@ spec:
                                             - unixpacket
                                         probe_wait_time:
                                           type: string
+                                        restart:
+                                          type: boolean
                                         socket_option:
                                           type: object
                                           properties:
@@ -12707,6 +12816,8 @@ spec:
                                             - unixpacket
                                         probe_wait_time:
                                           type: string
+                                        restart:
+                                          type: boolean
                                         socket_option:
                                           type: object
                                           properties:

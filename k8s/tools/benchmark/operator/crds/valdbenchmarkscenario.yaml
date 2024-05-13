@@ -58,6 +58,7 @@ spec:
                 - Completed
                 - Available
                 - Healthy
+              default: Available
               type: string
             spec:
               type: object

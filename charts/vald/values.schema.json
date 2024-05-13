@@ -231,7 +231,7 @@
             },
             "distance_type": {
               "type": "string",
-              "description": "distance type. it should be `l1`, `l2`, `angle`, `hamming`, `cosine`,`poincare`, `lorentz`, `jaccard`, `sparsejaccard`, `normalizedangle` or `normalizedcosine`. for further details about NGT libraries supported distance is https://github.com/yahoojapan/NGT/wiki/Command-Quick-Reference and vald agent's supported NGT distance type is https://pkg.go.dev/github.com/vdaas/vald/internal/core/algorithm/ngt#pkg-constants",
+              "description": "distance type. it should be `l1`, `l2`, `angle`, `hamming`, `cosine`,`poincare`, `lorentz`, `jaccard`, `sparsejaccard`, `normalizedangle` or `normalizedcosine` or `innerproduct`. for further details about NGT libraries supported distance is https://github.com/yahoojapan/NGT/wiki/Command-Quick-Reference and vald agent's supported NGT distance type is https://pkg.go.dev/github.com/vdaas/vald/internal/core/algorithm/ngt#pkg-constants",
               "enum": [
                 "l1",
                 "l2",
@@ -254,7 +254,11 @@
                 "normang",
                 "normalizedangle",
                 "normcos",
-                "normalizedcosine"
+                "normalizedcosine",
+                "dotproduct",
+                "innerproduct",
+                "dp",
+                "ip"
               ]
             },
             "enable_copy_on_write": {
@@ -708,7 +712,7 @@
                         },
                         "network": {
                           "type": "string",
-                          "description": "mysql network",
+                          "description": "network mode",
                           "enum": [
                             "tcp",
                             "tcp4",
@@ -725,6 +729,7 @@
                           "type": "string",
                           "description": "REST server probe wait time"
                         },
+                        "restart": { "type": "boolean" },
                         "socket_option": {
                           "type": "object",
                           "properties": {
@@ -768,7 +773,7 @@
                         },
                         "socket_path": {
                           "type": "string",
-                          "description": "mysql socket_path"
+                          "description": "network socket_path"
                         }
                       }
                     },
@@ -877,7 +882,7 @@
                         },
                         "network": {
                           "type": "string",
-                          "description": "mysql network",
+                          "description": "network mode",
                           "enum": [
                             "tcp",
                             "tcp4",
@@ -894,6 +899,7 @@
                           "type": "string",
                           "description": "REST server probe wait time"
                         },
+                        "restart": { "type": "boolean" },
                         "socket_option": {
                           "type": "object",
                           "properties": {
@@ -937,7 +943,7 @@
                         },
                         "socket_path": {
                           "type": "string",
-                          "description": "mysql socket_path"
+                          "description": "network socket_path"
                         }
                       }
                     },
@@ -1066,7 +1072,7 @@
                         },
                         "network": {
                           "type": "string",
-                          "description": "mysql network",
+                          "description": "network mode",
                           "enum": [
                             "tcp",
                             "tcp4",
@@ -1083,6 +1089,7 @@
                           "type": "string",
                           "description": "REST server probe wait time"
                         },
+                        "restart": { "type": "boolean" },
                         "socket_option": {
                           "type": "object",
                           "properties": {
@@ -1126,7 +1133,7 @@
                         },
                         "socket_path": {
                           "type": "string",
-                          "description": "mysql socket_path"
+                          "description": "network socket_path"
                         }
                       }
                     },
@@ -1268,7 +1275,7 @@
                         },
                         "network": {
                           "type": "string",
-                          "description": "mysql network",
+                          "description": "network mode",
                           "enum": [
                             "tcp",
                             "tcp4",
@@ -1287,7 +1294,7 @@
                         },
                         "restart": {
                           "type": "boolean",
-                          "description": "gRPC server restart"
+                          "description": "This configuration enables automatic restart of the same configured server when it becomes unhealthy."
                         },
                         "socket_option": {
                           "type": "object",
@@ -1332,7 +1339,7 @@
                         },
                         "socket_path": {
                           "type": "string",
-                          "description": "mysql socket_path"
+                          "description": "server socket_path"
                         }
                       }
                     },
@@ -1399,7 +1406,7 @@
                         },
                         "network": {
                           "type": "string",
-                          "description": "mysql network",
+                          "description": "network mode",
                           "enum": [
                             "tcp",
                             "tcp4",
@@ -1416,6 +1423,7 @@
                           "type": "string",
                           "description": "REST server probe wait time"
                         },
+                        "restart": { "type": "boolean" },
                         "socket_option": {
                           "type": "object",
                           "properties": {
@@ -1459,7 +1467,7 @@
                         },
                         "socket_path": {
                           "type": "string",
-                          "description": "mysql socket_path"
+                          "description": "network socket_path"
                         }
                       }
                     },
@@ -2215,7 +2223,7 @@
                             },
                             "network": {
                               "type": "string",
-                              "description": "mysql network",
+                              "description": "network mode",
                               "enum": [
                                 "tcp",
                                 "tcp4",
@@ -2232,6 +2240,7 @@
                               "type": "string",
                               "description": "REST server probe wait time"
                             },
+                            "restart": { "type": "boolean" },
                             "socket_option": {
                               "type": "object",
                               "properties": {
@@ -2275,7 +2284,7 @@
                             },
                             "socket_path": {
                               "type": "string",
-                              "description": "mysql socket_path"
+                              "description": "network socket_path"
                             }
                           }
                         },
@@ -2384,7 +2393,7 @@
                             },
                             "network": {
                               "type": "string",
-                              "description": "mysql network",
+                              "description": "network mode",
                               "enum": [
                                 "tcp",
                                 "tcp4",
@@ -2401,6 +2410,7 @@
                               "type": "string",
                               "description": "REST server probe wait time"
                             },
+                            "restart": { "type": "boolean" },
                             "socket_option": {
                               "type": "object",
                               "properties": {
@@ -2444,7 +2454,7 @@
                             },
                             "socket_path": {
                               "type": "string",
-                              "description": "mysql socket_path"
+                              "description": "network socket_path"
                             }
                           }
                         },
@@ -2573,7 +2583,7 @@
                             },
                             "network": {
                               "type": "string",
-                              "description": "mysql network",
+                              "description": "network mode",
                               "enum": [
                                 "tcp",
                                 "tcp4",
@@ -2590,6 +2600,7 @@
                               "type": "string",
                               "description": "REST server probe wait time"
                             },
+                            "restart": { "type": "boolean" },
                             "socket_option": {
                               "type": "object",
                               "properties": {
@@ -2633,7 +2644,7 @@
                             },
                             "socket_path": {
                               "type": "string",
-                              "description": "mysql socket_path"
+                              "description": "network socket_path"
                             }
                           }
                         },
@@ -2775,7 +2786,7 @@
                             },
                             "network": {
                               "type": "string",
-                              "description": "mysql network",
+                              "description": "network mode",
                               "enum": [
                                 "tcp",
                                 "tcp4",
@@ -2794,7 +2805,7 @@
                             },
                             "restart": {
                               "type": "boolean",
-                              "description": "gRPC server restart"
+                              "description": "This configuration enables automatic restart of the same configured server when it becomes unhealthy."
                             },
                             "socket_option": {
                               "type": "object",
@@ -2839,7 +2850,7 @@
                             },
                             "socket_path": {
                               "type": "string",
-                              "description": "mysql socket_path"
+                              "description": "server socket_path"
                             }
                           }
                         },
@@ -2906,7 +2917,7 @@
                             },
                             "network": {
                               "type": "string",
-                              "description": "mysql network",
+                              "description": "network mode",
                               "enum": [
                                 "tcp",
                                 "tcp4",
@@ -2923,6 +2934,7 @@
                               "type": "string",
                               "description": "REST server probe wait time"
                             },
+                            "restart": { "type": "boolean" },
                             "socket_option": {
                               "type": "object",
                               "properties": {
@@ -2966,7 +2978,7 @@
                             },
                             "socket_path": {
                               "type": "string",
-                              "description": "mysql socket_path"
+                              "description": "network socket_path"
                             }
                           }
                         },
@@ -3649,7 +3661,7 @@
                         },
                         "network": {
                           "type": "string",
-                          "description": "mysql network",
+                          "description": "network mode",
                           "enum": [
                             "tcp",
                             "tcp4",
@@ -3666,6 +3678,7 @@
                           "type": "string",
                           "description": "REST server probe wait time"
                         },
+                        "restart": { "type": "boolean" },
                         "socket_option": {
                           "type": "object",
                           "properties": {
@@ -3709,7 +3722,7 @@
                         },
                         "socket_path": {
                           "type": "string",
-                          "description": "mysql socket_path"
+                          "description": "network socket_path"
                         }
                       }
                     },
@@ -3818,7 +3831,7 @@
                         },
                         "network": {
                           "type": "string",
-                          "description": "mysql network",
+                          "description": "network mode",
                           "enum": [
                             "tcp",
                             "tcp4",
@@ -3835,6 +3848,7 @@
                           "type": "string",
                           "description": "REST server probe wait time"
                         },
+                        "restart": { "type": "boolean" },
                         "socket_option": {
                           "type": "object",
                           "properties": {
@@ -3878,7 +3892,7 @@
                         },
                         "socket_path": {
                           "type": "string",
-                          "description": "mysql socket_path"
+                          "description": "network socket_path"
                         }
                       }
                     },
@@ -4007,7 +4021,7 @@
                         },
                         "network": {
                           "type": "string",
-                          "description": "mysql network",
+                          "description": "network mode",
                           "enum": [
                             "tcp",
                             "tcp4",
@@ -4024,6 +4038,7 @@
                           "type": "string",
                           "description": "REST server probe wait time"
                         },
+                        "restart": { "type": "boolean" },
                         "socket_option": {
                           "type": "object",
                           "properties": {
@@ -4067,7 +4082,7 @@
                         },
                         "socket_path": {
                           "type": "string",
-                          "description": "mysql socket_path"
+                          "description": "network socket_path"
                         }
                       }
                     },
@@ -4209,7 +4224,7 @@
                         },
                         "network": {
                           "type": "string",
-                          "description": "mysql network",
+                          "description": "network mode",
                           "enum": [
                             "tcp",
                             "tcp4",
@@ -4228,7 +4243,7 @@
                         },
                         "restart": {
                           "type": "boolean",
-                          "description": "gRPC server restart"
+                          "description": "This configuration enables automatic restart of the same configured server when it becomes unhealthy."
                         },
                         "socket_option": {
                           "type": "object",
@@ -4273,7 +4288,7 @@
                         },
                         "socket_path": {
                           "type": "string",
-                          "description": "mysql socket_path"
+                          "description": "server socket_path"
                         }
                       }
                     },
@@ -4340,7 +4355,7 @@
                         },
                         "network": {
                           "type": "string",
-                          "description": "mysql network",
+                          "description": "network mode",
                           "enum": [
                             "tcp",
                             "tcp4",
@@ -4357,6 +4372,7 @@
                           "type": "string",
                           "description": "REST server probe wait time"
                         },
+                        "restart": { "type": "boolean" },
                         "socket_option": {
                           "type": "object",
                           "properties": {
@@ -4400,7 +4416,7 @@
                         },
                         "socket_path": {
                           "type": "string",
-                          "description": "mysql socket_path"
+                          "description": "network socket_path"
                         }
                       }
                     },
@@ -5067,7 +5083,7 @@
                         },
                         "network": {
                           "type": "string",
-                          "description": "mysql network",
+                          "description": "network mode",
                           "enum": [
                             "tcp",
                             "tcp4",
@@ -5084,6 +5100,7 @@
                           "type": "string",
                           "description": "REST server probe wait time"
                         },
+                        "restart": { "type": "boolean" },
                         "socket_option": {
                           "type": "object",
                           "properties": {
@@ -5127,7 +5144,7 @@
                         },
                         "socket_path": {
                           "type": "string",
-                          "description": "mysql socket_path"
+                          "description": "network socket_path"
                         }
                       }
                     },
@@ -5236,7 +5253,7 @@
                         },
                         "network": {
                           "type": "string",
-                          "description": "mysql network",
+                          "description": "network mode",
                           "enum": [
                             "tcp",
                             "tcp4",
@@ -5253,6 +5270,7 @@
                           "type": "string",
                           "description": "REST server probe wait time"
                         },
+                        "restart": { "type": "boolean" },
                         "socket_option": {
                           "type": "object",
                           "properties": {
@@ -5296,7 +5314,7 @@
                         },
                         "socket_path": {
                           "type": "string",
-                          "description": "mysql socket_path"
+                          "description": "network socket_path"
                         }
                       }
                     },
@@ -5425,7 +5443,7 @@
                         },
                         "network": {
                           "type": "string",
-                          "description": "mysql network",
+                          "description": "network mode",
                           "enum": [
                             "tcp",
                             "tcp4",
@@ -5442,6 +5460,7 @@
                           "type": "string",
                           "description": "REST server probe wait time"
                         },
+                        "restart": { "type": "boolean" },
                         "socket_option": {
                           "type": "object",
                           "properties": {
@@ -5485,7 +5504,7 @@
                         },
                         "socket_path": {
                           "type": "string",
-                          "description": "mysql socket_path"
+                          "description": "network socket_path"
                         }
                       }
                     },
@@ -5627,7 +5646,7 @@
                         },
                         "network": {
                           "type": "string",
-                          "description": "mysql network",
+                          "description": "network mode",
                           "enum": [
                             "tcp",
                             "tcp4",
@@ -5646,7 +5665,7 @@
                         },
                         "restart": {
                           "type": "boolean",
-                          "description": "gRPC server restart"
+                          "description": "This configuration enables automatic restart of the same configured server when it becomes unhealthy."
                         },
                         "socket_option": {
                           "type": "object",
@@ -5691,7 +5710,7 @@
                         },
                         "socket_path": {
                           "type": "string",
-                          "description": "mysql socket_path"
+                          "description": "server socket_path"
                         }
                       }
                     },
@@ -5758,7 +5777,7 @@
                         },
                         "network": {
                           "type": "string",
-                          "description": "mysql network",
+                          "description": "network mode",
                           "enum": [
                             "tcp",
                             "tcp4",
@@ -5775,6 +5794,7 @@
                           "type": "string",
                           "description": "REST server probe wait time"
                         },
+                        "restart": { "type": "boolean" },
                         "socket_option": {
                           "type": "object",
                           "properties": {
@@ -5818,7 +5838,7 @@
                         },
                         "socket_path": {
                           "type": "string",
-                          "description": "mysql socket_path"
+                          "description": "network socket_path"
                         }
                       }
                     },
@@ -7368,7 +7388,7 @@
                             },
                             "network": {
                               "type": "string",
-                              "description": "mysql network",
+                              "description": "network mode",
                               "enum": [
                                 "tcp",
                                 "tcp4",
@@ -7385,6 +7405,7 @@
                               "type": "string",
                               "description": "REST server probe wait time"
                             },
+                            "restart": { "type": "boolean" },
                             "socket_option": {
                               "type": "object",
                               "properties": {
@@ -7428,7 +7449,7 @@
                             },
                             "socket_path": {
                               "type": "string",
-                              "description": "mysql socket_path"
+                              "description": "network socket_path"
                             }
                           }
                         },
@@ -7537,7 +7558,7 @@
                             },
                             "network": {
                               "type": "string",
-                              "description": "mysql network",
+                              "description": "network mode",
                               "enum": [
                                 "tcp",
                                 "tcp4",
@@ -7554,6 +7575,7 @@
                               "type": "string",
                               "description": "REST server probe wait time"
                             },
+                            "restart": { "type": "boolean" },
                             "socket_option": {
                               "type": "object",
                               "properties": {
@@ -7597,7 +7619,7 @@
                             },
                             "socket_path": {
                               "type": "string",
-                              "description": "mysql socket_path"
+                              "description": "network socket_path"
                             }
                           }
                         },
@@ -7726,7 +7748,7 @@
                             },
                             "network": {
                               "type": "string",
-                              "description": "mysql network",
+                              "description": "network mode",
                               "enum": [
                                 "tcp",
                                 "tcp4",
@@ -7743,6 +7765,7 @@
                               "type": "string",
                               "description": "REST server probe wait time"
                             },
+                            "restart": { "type": "boolean" },
                             "socket_option": {
                               "type": "object",
                               "properties": {
@@ -7786,7 +7809,7 @@
                             },
                             "socket_path": {
                               "type": "string",
-                              "description": "mysql socket_path"
+                              "description": "network socket_path"
                             }
                           }
                         },
@@ -7928,7 +7951,7 @@
                             },
                             "network": {
                               "type": "string",
-                              "description": "mysql network",
+                              "description": "network mode",
                               "enum": [
                                 "tcp",
                                 "tcp4",
@@ -7947,7 +7970,7 @@
                             },
                             "restart": {
                               "type": "boolean",
-                              "description": "gRPC server restart"
+                              "description": "This configuration enables automatic restart of the same configured server when it becomes unhealthy."
                             },
                             "socket_option": {
                               "type": "object",
@@ -7992,7 +8015,7 @@
                             },
                             "socket_path": {
                               "type": "string",
-                              "description": "mysql socket_path"
+                              "description": "server socket_path"
                             }
                           }
                         },
@@ -8059,7 +8082,7 @@
                             },
                             "network": {
                               "type": "string",
-                              "description": "mysql network",
+                              "description": "network mode",
                               "enum": [
                                 "tcp",
                                 "tcp4",
@@ -8076,6 +8099,7 @@
                               "type": "string",
                               "description": "REST server probe wait time"
                             },
+                            "restart": { "type": "boolean" },
                             "socket_option": {
                               "type": "object",
                               "properties": {
@@ -8119,7 +8143,7 @@
                             },
                             "socket_path": {
                               "type": "string",
-                              "description": "mysql socket_path"
+                              "description": "network socket_path"
                             }
                           }
                         },
@@ -9634,7 +9658,7 @@
                             },
                             "network": {
                               "type": "string",
-                              "description": "mysql network",
+                              "description": "network mode",
                               "enum": [
                                 "tcp",
                                 "tcp4",
@@ -9651,6 +9675,7 @@
                               "type": "string",
                               "description": "REST server probe wait time"
                             },
+                            "restart": { "type": "boolean" },
                             "socket_option": {
                               "type": "object",
                               "properties": {
@@ -9694,7 +9719,7 @@
                             },
                             "socket_path": {
                               "type": "string",
-                              "description": "mysql socket_path"
+                              "description": "network socket_path"
                             }
                           }
                         },
@@ -9803,7 +9828,7 @@
                             },
                             "network": {
                               "type": "string",
-                              "description": "mysql network",
+                              "description": "network mode",
                               "enum": [
                                 "tcp",
                                 "tcp4",
@@ -9820,6 +9845,7 @@
                               "type": "string",
                               "description": "REST server probe wait time"
                             },
+                            "restart": { "type": "boolean" },
                             "socket_option": {
                               "type": "object",
                               "properties": {
@@ -9863,7 +9889,7 @@
                             },
                             "socket_path": {
                               "type": "string",
-                              "description": "mysql socket_path"
+                              "description": "network socket_path"
                             }
                           }
                         },
@@ -9992,7 +10018,7 @@
                             },
                             "network": {
                               "type": "string",
-                              "description": "mysql network",
+                              "description": "network mode",
                               "enum": [
                                 "tcp",
                                 "tcp4",
@@ -10009,6 +10035,7 @@
                               "type": "string",
                               "description": "REST server probe wait time"
                             },
+                            "restart": { "type": "boolean" },
                             "socket_option": {
                               "type": "object",
                               "properties": {
@@ -10052,7 +10079,7 @@
                             },
                             "socket_path": {
                               "type": "string",
-                              "description": "mysql socket_path"
+                              "description": "network socket_path"
                             }
                           }
                         },
@@ -10194,7 +10221,7 @@
                             },
                             "network": {
                               "type": "string",
-                              "description": "mysql network",
+                              "description": "network mode",
                               "enum": [
                                 "tcp",
                                 "tcp4",
@@ -10213,7 +10240,7 @@
                             },
                             "restart": {
                               "type": "boolean",
-                              "description": "gRPC server restart"
+                              "description": "This configuration enables automatic restart of the same configured server when it becomes unhealthy."
                             },
                             "socket_option": {
                               "type": "object",
@@ -10258,7 +10285,7 @@
                             },
                             "socket_path": {
                               "type": "string",
-                              "description": "mysql socket_path"
+                              "description": "server socket_path"
                             }
                           }
                         },
@@ -10325,7 +10352,7 @@
                             },
                             "network": {
                               "type": "string",
-                              "description": "mysql network",
+                              "description": "network mode",
                               "enum": [
                                 "tcp",
                                 "tcp4",
@@ -10342,6 +10369,7 @@
                               "type": "string",
                               "description": "REST server probe wait time"
                             },
+                            "restart": { "type": "boolean" },
                             "socket_option": {
                               "type": "object",
                               "properties": {
@@ -10385,7 +10413,7 @@
                             },
                             "socket_path": {
                               "type": "string",
-                              "description": "mysql socket_path"
+                              "description": "network socket_path"
                             }
                           }
                         },
@@ -11414,7 +11442,7 @@
                             },
                             "network": {
                               "type": "string",
-                              "description": "mysql network",
+                              "description": "network mode",
                               "enum": [
                                 "tcp",
                                 "tcp4",
@@ -11431,6 +11459,7 @@
                               "type": "string",
                               "description": "REST server probe wait time"
                             },
+                            "restart": { "type": "boolean" },
                             "socket_option": {
                               "type": "object",
                               "properties": {
@@ -11474,7 +11503,7 @@
                             },
                             "socket_path": {
                               "type": "string",
-                              "description": "mysql socket_path"
+                              "description": "network socket_path"
                             }
                           }
                         },
@@ -11583,7 +11612,7 @@
                             },
                             "network": {
                               "type": "string",
-                              "description": "mysql network",
+                              "description": "network mode",
                               "enum": [
                                 "tcp",
                                 "tcp4",
@@ -11600,6 +11629,7 @@
                               "type": "string",
                               "description": "REST server probe wait time"
                             },
+                            "restart": { "type": "boolean" },
                             "socket_option": {
                               "type": "object",
                               "properties": {
@@ -11643,7 +11673,7 @@
                             },
                             "socket_path": {
                               "type": "string",
-                              "description": "mysql socket_path"
+                              "description": "network socket_path"
                             }
                           }
                         },
@@ -11772,7 +11802,7 @@
                             },
                             "network": {
                               "type": "string",
-                              "description": "mysql network",
+                              "description": "network mode",
                               "enum": [
                                 "tcp",
                                 "tcp4",
@@ -11789,6 +11819,7 @@
                               "type": "string",
                               "description": "REST server probe wait time"
                             },
+                            "restart": { "type": "boolean" },
                             "socket_option": {
                               "type": "object",
                               "properties": {
@@ -11832,7 +11863,7 @@
                             },
                             "socket_path": {
                               "type": "string",
-                              "description": "mysql socket_path"
+                              "description": "network socket_path"
                             }
                           }
                         },
@@ -11974,7 +12005,7 @@
                             },
                             "network": {
                               "type": "string",
-                              "description": "mysql network",
+                              "description": "network mode",
                               "enum": [
                                 "tcp",
                                 "tcp4",
@@ -11993,7 +12024,7 @@
                             },
                             "restart": {
                               "type": "boolean",
-                              "description": "gRPC server restart"
+                              "description": "This configuration enables automatic restart of the same configured server when it becomes unhealthy."
                             },
                             "socket_option": {
                               "type": "object",
@@ -12038,7 +12069,7 @@
                             },
                             "socket_path": {
                               "type": "string",
-                              "description": "mysql socket_path"
+                              "description": "server socket_path"
                             }
                           }
                         },
@@ -12105,7 +12136,7 @@
                             },
                             "network": {
                               "type": "string",
-                              "description": "mysql network",
+                              "description": "network mode",
                               "enum": [
                                 "tcp",
                                 "tcp4",
@@ -12122,6 +12153,7 @@
                               "type": "string",
                               "description": "REST server probe wait time"
                             },
+                            "restart": { "type": "boolean" },
                             "socket_option": {
                               "type": "object",
                               "properties": {
@@ -12165,7 +12197,7 @@
                             },
                             "socket_path": {
                               "type": "string",
-                              "description": "mysql socket_path"
+                              "description": "network socket_path"
                             }
                           }
                         },
@@ -13238,7 +13270,7 @@
                                 },
                                 "network": {
                                   "type": "string",
-                                  "description": "mysql network",
+                                  "description": "network mode",
                                   "enum": [
                                     "tcp",
                                     "tcp4",
@@ -13255,6 +13287,7 @@
                                   "type": "string",
                                   "description": "REST server probe wait time"
                                 },
+                                "restart": { "type": "boolean" },
                                 "socket_option": {
                                   "type": "object",
                                   "properties": {
@@ -13298,7 +13331,7 @@
                                 },
                                 "socket_path": {
                                   "type": "string",
-                                  "description": "mysql socket_path"
+                                  "description": "network socket_path"
                                 }
                               }
                             },
@@ -13407,7 +13440,7 @@
                                 },
                                 "network": {
                                   "type": "string",
-                                  "description": "mysql network",
+                                  "description": "network mode",
                                   "enum": [
                                     "tcp",
                                     "tcp4",
@@ -13424,6 +13457,7 @@
                                   "type": "string",
                                   "description": "REST server probe wait time"
                                 },
+                                "restart": { "type": "boolean" },
                                 "socket_option": {
                                   "type": "object",
                                   "properties": {
@@ -13467,7 +13501,7 @@
                                 },
                                 "socket_path": {
                                   "type": "string",
-                                  "description": "mysql socket_path"
+                                  "description": "network socket_path"
                                 }
                               }
                             },
@@ -13596,7 +13630,7 @@
                                 },
                                 "network": {
                                   "type": "string",
-                                  "description": "mysql network",
+                                  "description": "network mode",
                                   "enum": [
                                     "tcp",
                                     "tcp4",
@@ -13613,6 +13647,7 @@
                                   "type": "string",
                                   "description": "REST server probe wait time"
                                 },
+                                "restart": { "type": "boolean" },
                                 "socket_option": {
                                   "type": "object",
                                   "properties": {
@@ -13656,7 +13691,7 @@
                                 },
                                 "socket_path": {
                                   "type": "string",
-                                  "description": "mysql socket_path"
+                                  "description": "network socket_path"
                                 }
                               }
                             },
@@ -13798,7 +13833,7 @@
                                 },
                                 "network": {
                                   "type": "string",
-                                  "description": "mysql network",
+                                  "description": "network mode",
                                   "enum": [
                                     "tcp",
                                     "tcp4",
@@ -13817,7 +13852,7 @@
                                 },
                                 "restart": {
                                   "type": "boolean",
-                                  "description": "gRPC server restart"
+                                  "description": "This configuration enables automatic restart of the same configured server when it becomes unhealthy."
                                 },
                                 "socket_option": {
                                   "type": "object",
@@ -13862,7 +13897,7 @@
                                 },
                                 "socket_path": {
                                   "type": "string",
-                                  "description": "mysql socket_path"
+                                  "description": "server socket_path"
                                 }
                               }
                             },
@@ -13929,7 +13964,7 @@
                                 },
                                 "network": {
                                   "type": "string",
-                                  "description": "mysql network",
+                                  "description": "network mode",
                                   "enum": [
                                     "tcp",
                                     "tcp4",
@@ -13946,6 +13981,7 @@
                                   "type": "string",
                                   "description": "REST server probe wait time"
                                 },
+                                "restart": { "type": "boolean" },
                                 "socket_option": {
                                   "type": "object",
                                   "properties": {
@@ -13989,7 +14025,7 @@
                                 },
                                 "socket_path": {
                                   "type": "string",
-                                  "description": "mysql socket_path"
+                                  "description": "network socket_path"
                                 }
                               }
                             },
@@ -14968,7 +15004,7 @@
                                 },
                                 "network": {
                                   "type": "string",
-                                  "description": "mysql network",
+                                  "description": "network mode",
                                   "enum": [
                                     "tcp",
                                     "tcp4",
@@ -14985,6 +15021,7 @@
                                   "type": "string",
                                   "description": "REST server probe wait time"
                                 },
+                                "restart": { "type": "boolean" },
                                 "socket_option": {
                                   "type": "object",
                                   "properties": {
@@ -15028,7 +15065,7 @@
                                 },
                                 "socket_path": {
                                   "type": "string",
-                                  "description": "mysql socket_path"
+                                  "description": "network socket_path"
                                 }
                               }
                             },
@@ -15137,7 +15174,7 @@
                                 },
                                 "network": {
                                   "type": "string",
-                                  "description": "mysql network",
+                                  "description": "network mode",
                                   "enum": [
                                     "tcp",
                                     "tcp4",
@@ -15154,6 +15191,7 @@
                                   "type": "string",
                                   "description": "REST server probe wait time"
                                 },
+                                "restart": { "type": "boolean" },
                                 "socket_option": {
                                   "type": "object",
                                   "properties": {
@@ -15197,7 +15235,7 @@
                                 },
                                 "socket_path": {
                                   "type": "string",
-                                  "description": "mysql socket_path"
+                                  "description": "network socket_path"
                                 }
                               }
                             },
@@ -15326,7 +15364,7 @@
                                 },
                                 "network": {
                                   "type": "string",
-                                  "description": "mysql network",
+                                  "description": "network mode",
                                   "enum": [
                                     "tcp",
                                     "tcp4",
@@ -15343,6 +15381,7 @@
                                   "type": "string",
                                   "description": "REST server probe wait time"
                                 },
+                                "restart": { "type": "boolean" },
                                 "socket_option": {
                                   "type": "object",
                                   "properties": {
@@ -15386,7 +15425,7 @@
                                 },
                                 "socket_path": {
                                   "type": "string",
-                                  "description": "mysql socket_path"
+                                  "description": "network socket_path"
                                 }
                               }
                             },
@@ -15528,7 +15567,7 @@
                                 },
                                 "network": {
                                   "type": "string",
-                                  "description": "mysql network",
+                                  "description": "network mode",
                                   "enum": [
                                     "tcp",
                                     "tcp4",
@@ -15547,7 +15586,7 @@
                                 },
                                 "restart": {
                                   "type": "boolean",
-                                  "description": "gRPC server restart"
+                                  "description": "This configuration enables automatic restart of the same configured server when it becomes unhealthy."
                                 },
                                 "socket_option": {
                                   "type": "object",
@@ -15592,7 +15631,7 @@
                                 },
                                 "socket_path": {
                                   "type": "string",
-                                  "description": "mysql socket_path"
+                                  "description": "server socket_path"
                                 }
                               }
                             },
@@ -15659,7 +15698,7 @@
                                 },
                                 "network": {
                                   "type": "string",
-                                  "description": "mysql network",
+                                  "description": "network mode",
                                   "enum": [
                                     "tcp",
                                     "tcp4",
@@ -15676,6 +15715,7 @@
                                   "type": "string",
                                   "description": "REST server probe wait time"
                                 },
+                                "restart": { "type": "boolean" },
                                 "socket_option": {
                                   "type": "object",
                                   "properties": {
@@ -15719,7 +15759,7 @@
                                 },
                                 "socket_path": {
                                   "type": "string",
-                                  "description": "mysql socket_path"
+                                  "description": "network socket_path"
                                 }
                               }
                             },
@@ -16949,6 +16989,11 @@
                     }
                   }
                 },
+                "rotation_job_concurrency": {
+                  "type": "integer",
+                  "description": "maximum concurrent rotator job run.",
+                  "minimum": 1
+                },
                 "securityContext": {
                   "type": "object",
                   "description": "security context for container"
@@ -17060,7 +17105,7 @@
                                 },
                                 "network": {
                                   "type": "string",
-                                  "description": "mysql network",
+                                  "description": "network mode",
                                   "enum": [
                                     "tcp",
                                     "tcp4",
@@ -17077,6 +17122,7 @@
                                   "type": "string",
                                   "description": "REST server probe wait time"
                                 },
+                                "restart": { "type": "boolean" },
                                 "socket_option": {
                                   "type": "object",
                                   "properties": {
@@ -17120,7 +17166,7 @@
                                 },
                                 "socket_path": {
                                   "type": "string",
-                                  "description": "mysql socket_path"
+                                  "description": "network socket_path"
                                 }
                               }
                             },
@@ -17229,7 +17275,7 @@
                                 },
                                 "network": {
                                   "type": "string",
-                                  "description": "mysql network",
+                                  "description": "network mode",
                                   "enum": [
                                     "tcp",
                                     "tcp4",
@@ -17246,6 +17292,7 @@
                                   "type": "string",
                                   "description": "REST server probe wait time"
                                 },
+                                "restart": { "type": "boolean" },
                                 "socket_option": {
                                   "type": "object",
                                   "properties": {
@@ -17289,7 +17336,7 @@
                                 },
                                 "socket_path": {
                                   "type": "string",
-                                  "description": "mysql socket_path"
+                                  "description": "network socket_path"
                                 }
                               }
                             },
@@ -17418,7 +17465,7 @@
                                 },
                                 "network": {
                                   "type": "string",
-                                  "description": "mysql network",
+                                  "description": "network mode",
                                   "enum": [
                                     "tcp",
                                     "tcp4",
@@ -17435,6 +17482,7 @@
                                   "type": "string",
                                   "description": "REST server probe wait time"
                                 },
+                                "restart": { "type": "boolean" },
                                 "socket_option": {
                                   "type": "object",
                                   "properties": {
@@ -17478,7 +17526,7 @@
                                 },
                                 "socket_path": {
                                   "type": "string",
-                                  "description": "mysql socket_path"
+                                  "description": "network socket_path"
                                 }
                               }
                             },
@@ -17620,7 +17668,7 @@
                                 },
                                 "network": {
                                   "type": "string",
-                                  "description": "mysql network",
+                                  "description": "network mode",
                                   "enum": [
                                     "tcp",
                                     "tcp4",
@@ -17639,7 +17687,7 @@
                                 },
                                 "restart": {
                                   "type": "boolean",
-                                  "description": "gRPC server restart"
+                                  "description": "This configuration enables automatic restart of the same configured server when it becomes unhealthy."
                                 },
                                 "socket_option": {
                                   "type": "object",
@@ -17684,7 +17732,7 @@
                                 },
                                 "socket_path": {
                                   "type": "string",
-                                  "description": "mysql socket_path"
+                                  "description": "server socket_path"
                                 }
                               }
                             },
@@ -17751,7 +17799,7 @@
                                 },
                                 "network": {
                                   "type": "string",
-                                  "description": "mysql network",
+                                  "description": "network mode",
                                   "enum": [
                                     "tcp",
                                     "tcp4",
@@ -17768,6 +17816,7 @@
                                   "type": "string",
                                   "description": "REST server probe wait time"
                                 },
+                                "restart": { "type": "boolean" },
                                 "socket_option": {
                                   "type": "object",
                                   "properties": {
@@ -17811,7 +17860,7 @@
                                 },
                                 "socket_path": {
                                   "type": "string",
-                                  "description": "mysql socket_path"
+                                  "description": "network socket_path"
                                 }
                               }
                             },
@@ -18096,10 +18145,6 @@
                       "type": "object",
                       "description": "security context for pod"
                     },
-                    "read_replica_id": {
-                      "type": "string",
-                      "description": "read replica id to perform rotation"
-                    },
                     "securityContext": {
                       "type": "object",
                       "description": "security context for container"
@@ -18211,7 +18256,7 @@
                                     },
                                     "network": {
                                       "type": "string",
-                                      "description": "mysql network",
+                                      "description": "network mode",
                                       "enum": [
                                         "tcp",
                                         "tcp4",
@@ -18228,6 +18273,7 @@
                                       "type": "string",
                                       "description": "REST server probe wait time"
                                     },
+                                    "restart": { "type": "boolean" },
                                     "socket_option": {
                                       "type": "object",
                                       "properties": {
@@ -18271,7 +18317,7 @@
                                     },
                                     "socket_path": {
                                       "type": "string",
-                                      "description": "mysql socket_path"
+                                      "description": "network socket_path"
                                     }
                                   }
                                 },
@@ -18380,7 +18426,7 @@
                                     },
                                     "network": {
                                       "type": "string",
-                                      "description": "mysql network",
+                                      "description": "network mode",
                                       "enum": [
                                         "tcp",
                                         "tcp4",
@@ -18397,6 +18443,7 @@
                                       "type": "string",
                                       "description": "REST server probe wait time"
                                     },
+                                    "restart": { "type": "boolean" },
                                     "socket_option": {
                                       "type": "object",
                                       "properties": {
@@ -18440,7 +18487,7 @@
                                     },
                                     "socket_path": {
                                       "type": "string",
-                                      "description": "mysql socket_path"
+                                      "description": "network socket_path"
                                     }
                                   }
                                 },
@@ -18569,7 +18616,7 @@
                                     },
                                     "network": {
                                       "type": "string",
-                                      "description": "mysql network",
+                                      "description": "network mode",
                                       "enum": [
                                         "tcp",
                                         "tcp4",
@@ -18586,6 +18633,7 @@
                                       "type": "string",
                                       "description": "REST server probe wait time"
                                     },
+                                    "restart": { "type": "boolean" },
                                     "socket_option": {
                                       "type": "object",
                                       "properties": {
@@ -18629,7 +18677,7 @@
                                     },
                                     "socket_path": {
                                       "type": "string",
-                                      "description": "mysql socket_path"
+                                      "description": "network socket_path"
                                     }
                                   }
                                 },
@@ -18771,7 +18819,7 @@
                                     },
                                     "network": {
                                       "type": "string",
-                                      "description": "mysql network",
+                                      "description": "network mode",
                                       "enum": [
                                         "tcp",
                                         "tcp4",
@@ -18790,7 +18838,7 @@
                                     },
                                     "restart": {
                                       "type": "boolean",
-                                      "description": "gRPC server restart"
+                                      "description": "This configuration enables automatic restart of the same configured server when it becomes unhealthy."
                                     },
                                     "socket_option": {
                                       "type": "object",
@@ -18835,7 +18883,7 @@
                                     },
                                     "socket_path": {
                                       "type": "string",
-                                      "description": "mysql socket_path"
+                                      "description": "server socket_path"
                                     }
                                   }
                                 },
@@ -18902,7 +18950,7 @@
                                     },
                                     "network": {
                                       "type": "string",
-                                      "description": "mysql network",
+                                      "description": "network mode",
                                       "enum": [
                                         "tcp",
                                         "tcp4",
@@ -18919,6 +18967,7 @@
                                       "type": "string",
                                       "description": "REST server probe wait time"
                                     },
+                                    "restart": { "type": "boolean" },
                                     "socket_option": {
                                       "type": "object",
                                       "properties": {
@@ -18962,7 +19011,7 @@
                                     },
                                     "socket_path": {
                                       "type": "string",
-                                      "description": "mysql socket_path"
+                                      "description": "network socket_path"
                                     }
                                   }
                                 },
@@ -19015,6 +19064,10 @@
                           "description": "name of service account"
                         }
                       }
+                    },
+                    "target_read_replica_id_annotations_key": {
+                      "type": "string",
+                      "description": "name of annotations key for target read replica id"
                     },
                     "ttlSecondsAfterFinished": {
                       "type": "integer",
@@ -19970,7 +20023,7 @@
                                 },
                                 "network": {
                                   "type": "string",
-                                  "description": "mysql network",
+                                  "description": "network mode",
                                   "enum": [
                                     "tcp",
                                     "tcp4",
@@ -19987,6 +20040,7 @@
                                   "type": "string",
                                   "description": "REST server probe wait time"
                                 },
+                                "restart": { "type": "boolean" },
                                 "socket_option": {
                                   "type": "object",
                                   "properties": {
@@ -20030,7 +20084,7 @@
                                 },
                                 "socket_path": {
                                   "type": "string",
-                                  "description": "mysql socket_path"
+                                  "description": "network socket_path"
                                 }
                               }
                             },
@@ -20139,7 +20193,7 @@
                                 },
                                 "network": {
                                   "type": "string",
-                                  "description": "mysql network",
+                                  "description": "network mode",
                                   "enum": [
                                     "tcp",
                                     "tcp4",
@@ -20156,6 +20210,7 @@
                                   "type": "string",
                                   "description": "REST server probe wait time"
                                 },
+                                "restart": { "type": "boolean" },
                                 "socket_option": {
                                   "type": "object",
                                   "properties": {
@@ -20199,7 +20254,7 @@
                                 },
                                 "socket_path": {
                                   "type": "string",
-                                  "description": "mysql socket_path"
+                                  "description": "network socket_path"
                                 }
                               }
                             },
@@ -20328,7 +20383,7 @@
                                 },
                                 "network": {
                                   "type": "string",
-                                  "description": "mysql network",
+                                  "description": "network mode",
                                   "enum": [
                                     "tcp",
                                     "tcp4",
@@ -20345,6 +20400,7 @@
                                   "type": "string",
                                   "description": "REST server probe wait time"
                                 },
+                                "restart": { "type": "boolean" },
                                 "socket_option": {
                                   "type": "object",
                                   "properties": {
@@ -20388,7 +20444,7 @@
                                 },
                                 "socket_path": {
                                   "type": "string",
-                                  "description": "mysql socket_path"
+                                  "description": "network socket_path"
                                 }
                               }
                             },
@@ -20530,7 +20586,7 @@
                                 },
                                 "network": {
                                   "type": "string",
-                                  "description": "mysql network",
+                                  "description": "network mode",
                                   "enum": [
                                     "tcp",
                                     "tcp4",
@@ -20549,7 +20605,7 @@
                                 },
                                 "restart": {
                                   "type": "boolean",
-                                  "description": "gRPC server restart"
+                                  "description": "This configuration enables automatic restart of the same configured server when it becomes unhealthy."
                                 },
                                 "socket_option": {
                                   "type": "object",
@@ -20594,7 +20650,7 @@
                                 },
                                 "socket_path": {
                                   "type": "string",
-                                  "description": "mysql socket_path"
+                                  "description": "server socket_path"
                                 }
                               }
                             },
@@ -20661,7 +20717,7 @@
                                 },
                                 "network": {
                                   "type": "string",
-                                  "description": "mysql network",
+                                  "description": "network mode",
                                   "enum": [
                                     "tcp",
                                     "tcp4",
@@ -20678,6 +20734,7 @@
                                   "type": "string",
                                   "description": "REST server probe wait time"
                                 },
+                                "restart": { "type": "boolean" },
                                 "socket_option": {
                                   "type": "object",
                                   "properties": {
@@ -20721,7 +20778,7 @@
                                 },
                                 "socket_path": {
                                   "type": "string",
-                                  "description": "mysql socket_path"
+                                  "description": "network socket_path"
                                 }
                               }
                             },
@@ -20897,7 +20954,7 @@
                             },
                             "network": {
                               "type": "string",
-                              "description": "mysql network",
+                              "description": "network mode",
                               "enum": [
                                 "tcp",
                                 "tcp4",
@@ -20914,6 +20971,7 @@
                               "type": "string",
                               "description": "REST server probe wait time"
                             },
+                            "restart": { "type": "boolean" },
                             "socket_option": {
                               "type": "object",
                               "properties": {
@@ -20957,7 +21015,7 @@
                             },
                             "socket_path": {
                               "type": "string",
-                              "description": "mysql socket_path"
+                              "description": "network socket_path"
                             }
                           }
                         },
@@ -21066,7 +21124,7 @@
                             },
                             "network": {
                               "type": "string",
-                              "description": "mysql network",
+                              "description": "network mode",
                               "enum": [
                                 "tcp",
                                 "tcp4",
@@ -21083,6 +21141,7 @@
                               "type": "string",
                               "description": "REST server probe wait time"
                             },
+                            "restart": { "type": "boolean" },
                             "socket_option": {
                               "type": "object",
                               "properties": {
@@ -21126,7 +21185,7 @@
                             },
                             "socket_path": {
                               "type": "string",
-                              "description": "mysql socket_path"
+                              "description": "network socket_path"
                             }
                           }
                         },
@@ -21255,7 +21314,7 @@
                             },
                             "network": {
                               "type": "string",
-                              "description": "mysql network",
+                              "description": "network mode",
                               "enum": [
                                 "tcp",
                                 "tcp4",
@@ -21272,6 +21331,7 @@
                               "type": "string",
                               "description": "REST server probe wait time"
                             },
+                            "restart": { "type": "boolean" },
                             "socket_option": {
                               "type": "object",
                               "properties": {
@@ -21315,7 +21375,7 @@
                             },
                             "socket_path": {
                               "type": "string",
-                              "description": "mysql socket_path"
+                              "description": "network socket_path"
                             }
                           }
                         },
@@ -21457,7 +21517,7 @@
                             },
                             "network": {
                               "type": "string",
-                              "description": "mysql network",
+                              "description": "network mode",
                               "enum": [
                                 "tcp",
                                 "tcp4",
@@ -21476,7 +21536,7 @@
                             },
                             "restart": {
                               "type": "boolean",
-                              "description": "gRPC server restart"
+                              "description": "This configuration enables automatic restart of the same configured server when it becomes unhealthy."
                             },
                             "socket_option": {
                               "type": "object",
@@ -21521,7 +21581,7 @@
                             },
                             "socket_path": {
                               "type": "string",
-                              "description": "mysql socket_path"
+                              "description": "server socket_path"
                             }
                           }
                         },
@@ -21588,7 +21648,7 @@
                             },
                             "network": {
                               "type": "string",
-                              "description": "mysql network",
+                              "description": "network mode",
                               "enum": [
                                 "tcp",
                                 "tcp4",
@@ -21605,6 +21665,7 @@
                               "type": "string",
                               "description": "REST server probe wait time"
                             },
+                            "restart": { "type": "boolean" },
                             "socket_option": {
                               "type": "object",
                               "properties": {
@@ -21648,7 +21709,7 @@
                             },
                             "socket_path": {
                               "type": "string",
-                              "description": "mysql socket_path"
+                              "description": "network socket_path"
                             }
                           }
                         },

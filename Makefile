@@ -24,6 +24,7 @@ GHCRORG                         = ghcr.io/$(ORG)/$(NAME)
 AGENT_NGT_IMAGE                 = $(NAME)-agent-ngt
 AGENT_FAISS_IMAGE               = $(NAME)-agent-faiss
 AGENT_SIDECAR_IMAGE             = $(NAME)-agent-sidecar
+AGENT_IMAGE                     = $(NAME)-agent
 CI_CONTAINER_IMAGE              = $(NAME)-ci-container
 DEV_CONTAINER_IMAGE             = $(NAME)-dev-container
 DISCOVERER_IMAGE                = $(NAME)-discoverer-k8s
@@ -58,9 +59,12 @@ GO_CLEAN_DEPS := true
 GOTEST_TIMEOUT = 30m
 CGO_ENABLED = 1
 
-RUST_HOME = /usr/local/lib/rust
-RUSTUP_HOME = $(RUST_HOME)/rustup
-CARGO_HOME = $(RUST_HOME)/cargo
+RUST_HOME ?= /usr/local/lib/rust
+RUSTUP_HOME ?= $(RUST_HOME)/rustup
+CARGO_HOME ?= $(RUST_HOME)/cargo
+RUST_VERSION := $(eval RUST_VERSION := $(shell cat versions/RUST_VERSION))$(RUST_VERSION)
+
+NPM_GLOBAL_PREFIX := $(eval NPM_GLOBAL_PREFIX := $(shell npm prefix --location=global))$(NPM_GLOBAL_PREFIX)
 
 TEST_NOT_IMPL_PLACEHOLDER = NOT IMPLEMENTED BELOW
 
@@ -136,14 +140,17 @@ ifeq ($(GOARCH),amd64)
 CFLAGS ?= -mno-avx512f -mno-avx512dq -mno-avx512cd -mno-avx512bw -mno-avx512vl
 CXXFLAGS ?= $(CFLAGS)
 EXTLDFLAGS ?= -m64
+NGT_EXTRA_FLAGS ?=
 else ifeq ($(GOARCH),arm64)
 CFLAGS ?=
 CXXFLAGS ?= $(CFLAGS)
 EXTLDFLAGS ?= -march=armv8-a
+NGT_EXTRA_FLAGS ?=
 else
 CFLAGS ?=
 CXXFLAGS ?= $(CFLAGS)
 EXTLDFLAGS ?=
+NGT_EXTRA_FLAGS ?=
 endif
 
 BENCH_DATASET_MD5S := $(eval BENCH_DATASET_MD5S := $(shell find $(BENCH_DATASET_MD5_DIR) -type f -regex ".*\.md5"))$(BENCH_DATASET_MD5S)
@@ -306,6 +313,11 @@ HELM_VALUES ?= $(ROOTDIR)/charts/vald/values/dev.yaml
 # extra options to pass to helm when deploying sample vald cluster with make k8s/vald/deploy
 HELM_EXTRA_OPTIONS ?=
 
+# extra options to pass to textlint
+TEXTLINT_EXTRA_OPTIONS ?=
+# extra options to pass to cspell
+CSPELL_EXTRA_OPTIONS ?=
+
 COMMA := ,
 SHELL = bash
 
@@ -388,6 +400,11 @@ clean-generated:
 	mv $(TEMP_DIR)/interface.go $(ROOTDIR)/apis/grpc/v1/payload/interface.go
 	mkdir -p $(ROOTDIR)/apis/grpc/v1/mirror
 	mv $(TEMP_DIR)/mirror.go $(ROOTDIR)/apis/grpc/v1/mirror/mirror.go
+
+.PHONY: files
+## add current repository file list to .gitfiles
+files:
+	git ls-files > $(ROOTDIR)/.gitfiles
 
 .PHONY: license
 ## add license to files
@@ -480,6 +497,7 @@ format/md: \
 format/json: \
 	prettier/install
 	prettier --write \
+	    "$(ROOTDIR)/.cspell.json" \
 	    "$(ROOTDIR)/apis/**/*.json" \
 	    "$(ROOTDIR)/charts/**/*.json" \
 	    "$(ROOTDIR)/hack/**/*.json"
@@ -522,6 +540,11 @@ version/vald:
 version/go:
 	@echo $(GO_VERSION)
 
+.PHONY: version/rust
+## print rust version
+version/rust:
+	@echo $(RUST_VERSION)
+
 .PHONY: version/ngt
 ## print NGT version
 version/ngt:
@@ -556,13 +579,12 @@ version/telepresence:
 ## install NGT
 ngt/install: /usr/local/include/NGT/Capi.h
 /usr/local/include/NGT/Capi.h:
-	curl -LO https://github.com/yahoojapan/NGT/archive/v$(NGT_VERSION).tar.gz
-	tar zxf v$(NGT_VERSION).tar.gz -C $(TEMP_DIR)/
+	git clone --depth 1 --branch v$(NGT_VERSION) https://github.com/yahoojapan/NGT $(TEMP_DIR)/NGT-$(NGT_VERSION)
 	cd $(TEMP_DIR)/NGT-$(NGT_VERSION) && \
-		cmake -DCMAKE_C_FLAGS="$(CFLAGS)" -DCMAKE_CXX_FLAGS="$(CXXFLAGS)" .
+		cmake -DCMAKE_C_FLAGS="$(CFLAGS)" -DCMAKE_CXX_FLAGS="$(CXXFLAGS)" "$(NGT_EXTRA_FLAGS)" .
 	make -j -C $(TEMP_DIR)/NGT-$(NGT_VERSION)
 	make install -C $(TEMP_DIR)/NGT-$(NGT_VERSION)
-	rm -rf v$(NGT_VERSION).tar.gz
+	cd $(ROOTDIR)
 	rm -rf $(TEMP_DIR)/NGT-$(NGT_VERSION)
 	ldconfig
 
@@ -570,7 +592,7 @@ ngt/install: /usr/local/include/NGT/Capi.h
 ## install Faiss
 faiss/install: /usr/local/lib/libfaiss.so
 /usr/local/lib/libfaiss.so:
-	curl -LO https://github.com/facebookresearch/faiss/archive/v$(FAISS_VERSION).tar.gz
+	curl -fsSLO https://github.com/facebookresearch/faiss/archive/v$(FAISS_VERSION).tar.gz
 	tar zxf v$(FAISS_VERSION).tar.gz -C $(TEMP_DIR)/
 	cd $(TEMP_DIR)/faiss-$(FAISS_VERSION) && \
 		cmake -DFAISS_ENABLE_GPU=OFF -DFAISS_ENABLE_PYTHON=OFF -DBUILD_TESTING=OFF -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON -B build . && \
@@ -582,7 +604,10 @@ faiss/install: /usr/local/lib/libfaiss.so
 
 .PHONY: lint
 ## run lints
-lint: vet
+lint: \
+	docs/lint \
+	files/lint \
+	vet
 	$(call go-lint)
 
 .PHONY: vet
@@ -592,8 +617,41 @@ vet:
 
 .PHONY: docs/lint
 ## run lint for document
-docs/lint:
-	textlint docs/**/*.md
+docs/lint:\
+	docs/cspell \
+	docs/textlint
+
+.PHONY: files/lint
+## run lint for document
+files/lint: \
+	files/cspell \
+	files/textlint
+
+.PHONY: docs/textlint
+## run textlint for document
+docs/textlint:\
+	textlint/install
+	textlint $(ROOTDIR)/docs/**/*.md $(TEXTLINT_EXTRA_OPTIONS)
+
+.PHONY: files/textlint
+## run textlint for document
+files/textlint: \
+	files \
+	textlint/install
+	textlint $(ROOTDIR)/.gitfiles $(TEXTLINT_EXTRA_OPTIONS)
+
+.PHONY: docs/cspell
+## run cspell for document
+docs/cspell:\
+	cspell/install
+	cspell-cli $(ROOTDIR)/docs/**/*.md --show-suggestions $(CSPELL_EXTRA_OPTIONS)
+
+.PHONY: files/cspell
+## run cspell for document
+files/cspell: \
+	files \
+	cspell/install
+	cspell-cli $(ROOTDIR)/.gitfiles --show-suggestions $(CSPELL_EXTRA_OPTIONS)
 
 .PHONY: changelog/update
 ## update changelog

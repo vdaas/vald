@@ -26,18 +26,21 @@ import (
 
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/k8s"
-	"github.com/vdaas/vald/internal/k8s/client"
 	"github.com/vdaas/vald/internal/k8s/job"
 	v1 "github.com/vdaas/vald/internal/k8s/vald/benchmark/api/v1"
 	benchjob "github.com/vdaas/vald/internal/k8s/vald/benchmark/job"
 	benchscenario "github.com/vdaas/vald/internal/k8s/vald/benchmark/scenario"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/sync/errgroup"
 )
 
 type Operator interface {
 	PreStart(context.Context) error
 	Start(context.Context) (<-chan error, error)
+	GetScenarioStatus() map[v1.ValdBenchmarkScenarioStatus]int64
+	GetBenchmarkJobStatus() map[v1.BenchmarkJobStatus]int64
+	// GetJobStatus() map[v1.BenchmarkJobStatus]int64
 }
 
 type scenario struct {
@@ -48,6 +51,8 @@ type scenario struct {
 const (
 	Scenario           = "scenario"
 	ScenarioKind       = "ValdBenchmarkScenario"
+	Name               = "name"
+	ServerName         = "vald-benchmark-job"
 	BenchmarkName      = "benchmark-name"
 	BeforeJobName      = "before-job-name"
 	BeforeJobNamespace = "before-job-namespace"
@@ -55,8 +60,10 @@ const (
 
 type operator struct {
 	jobNamespace       string
-	jobImage           string
+	jobImageRepository string
+	jobImageTag        string
 	jobImagePullPolicy string
+	configMapName      string
 	scenarios          *atomic.Pointer[map[string]*scenario]
 	benchjobs          *atomic.Pointer[map[string]*v1.ValdBenchmarkJob]
 	jobs               *atomic.Pointer[map[string]string]
@@ -172,7 +179,7 @@ func (o *operator) getAtomicJob() map[string]string {
 // jobReconcile gets k8s job list and watches theirs STATUS.
 // Then, it processes according STATUS.
 // skipcq: GO-R1005
-func (o *operator) jobReconcile(ctx context.Context, jobList map[string][]job.Job) {
+func (o *operator) jobReconcile(ctx context.Context, jobList map[string][]k8s.Job) {
 	log.Debug("[reconcile job] start")
 	cjobs := o.getAtomicJob()
 	if cjobs == nil {
@@ -200,7 +207,7 @@ func (o *operator) jobReconcile(ctx context.Context, jobList map[string][]job.Jo
 			jobNames[job.GetName()] = struct{}{}
 			if _, ok := cjobs[job.Name]; !ok && job.Status.CompletionTime == nil {
 				cjobs[job.GetName()] = job.Namespace
-				benchmarkJobStatus[job.GetName()] = v1.BenchmarkJobAvailable
+				benchmarkJobStatus[job.GetName()] = v1.BenchmarkJobHealthy
 				continue
 			}
 			name = job.GetName()
@@ -245,22 +252,22 @@ func (o *operator) benchJobReconcile(ctx context.Context, benchJobList map[strin
 	// jobStatus is used for update benchmarkJob CR status if updating is needed.
 	jobStatus := make(map[string]v1.BenchmarkJobStatus)
 	for k := range benchJobList {
-		// update scenario status
 		job := benchJobList[k]
-		hasOwner := false
+		// update scenario status
 		if len(job.GetOwnerReferences()) > 0 {
-			hasOwner = true
-		}
-		if scenarios := o.getAtomicScenario(); scenarios != nil && hasOwner {
-			on := job.GetOwnerReferences()[0].Name
-			if _, ok := scenarios[on]; ok {
-				if scenarios[on].BenchJobStatus == nil {
-					scenarios[on].BenchJobStatus = map[string]v1.BenchmarkJobStatus{}
+			if scenarios := o.getAtomicScenario(); scenarios != nil {
+				ownerRefs := job.GetOwnerReferences()
+				ownerName := ownerRefs[0].Name
+				if _, ok := scenarios[ownerName]; ok {
+					if scenarios[ownerName].BenchJobStatus == nil {
+						scenarios[ownerName].BenchJobStatus = map[string]v1.BenchmarkJobStatus{}
+					}
+					scenarios[ownerName].BenchJobStatus[job.Name] = job.Status
 				}
-				scenarios[on].BenchJobStatus[job.Name] = job.Status
+				o.scenarios.Store(&scenarios)
 			}
-			o.scenarios.Store(&scenarios)
 		}
+		// update benchmark job
 		if oldJob := cbjl[k]; oldJob != nil {
 			if oldJob.GetGeneration() != job.GetGeneration() {
 				if job.Status != "" && oldJob.Status != v1.BenchmarkJobCompleted {
@@ -279,13 +286,15 @@ func (o *operator) benchJobReconcile(ctx context.Context, benchJobList map[strin
 			} else if oldJob.Status == "" {
 				jobStatus[oldJob.GetName()] = v1.BenchmarkJobAvailable
 			}
-		} else if len(job.Status) == 0 || job.Status == v1.BenchmarkJobNotReady {
-			log.Info("[reconcile benchmark job resource] create job: ", k)
-			err := o.createJob(ctx, job)
-			if err != nil {
-				log.Errorf("[reconcile benchmark job resource] failed to create job: %s", err.Error())
+		} else {
+			if job.Status == "" || job.Status == v1.BenchmarkJobAvailable {
+				log.Info("[reconcile benchmark job resource] create job: ", k)
+				err := o.createJob(ctx, job)
+				if err != nil {
+					log.Errorf("[reconcile benchmark job resource] failed to create job: %s", err.Error())
+				}
+				jobStatus[job.Name] = v1.BenchmarkJobHealthy
 			}
-			jobStatus[job.Name] = v1.BenchmarkJobAvailable
 			cbjl[k] = &job
 		}
 	}
@@ -322,22 +331,26 @@ func (o *operator) benchScenarioReconcile(ctx context.Context, scenarioList map[
 	for name := range scenarioList {
 		sc := scenarioList[name]
 		if oldScenario := cbsl[name]; oldScenario == nil {
-			// apply new crd which is not set yet.
-			jobNames, err := o.createBenchmarkJob(ctx, sc)
-			if err != nil {
-				log.Errorf("[reconcile benchmark scenario resource] failed to create benchmark job resource: %s", err.Error())
-			}
+			// init atomic values for current scenario
 			cbsl[name] = &scenario{
 				Crd: &sc,
-				BenchJobStatus: func() map[string]v1.BenchmarkJobStatus {
-					s := map[string]v1.BenchmarkJobStatus{}
-					for _, v := range jobNames {
-						s[v] = v1.BenchmarkJobNotReady
-					}
-					return s
-				}(),
 			}
-			scenarioStatus[sc.GetName()] = v1.BenchmarkScenarioHealthy
+			scenarioStatus[sc.GetName()] = sc.Status
+			// apply new crd which is not set yet.
+			if sc.Status == "" || sc.Status == v1.BenchmarkScenarioAvailable {
+				jobNames, err := o.createBenchmarkJob(ctx, sc)
+				if err != nil {
+					log.Errorf("[reconcile benchmark scenario resource] failed to create benchmark job resource: %s", err.Error())
+				}
+				// benchmark job resource status to store benchmarkScenario Atomic
+				s := map[string]v1.BenchmarkJobStatus{}
+				for _, v := range jobNames {
+					s[v] = v1.BenchmarkJobNotReady
+				}
+				cbsl[name].BenchJobStatus = s
+				// use for updating benchmarkScenario CR status
+				scenarioStatus[sc.GetName()] = v1.BenchmarkScenarioHealthy
+			}
 		} else {
 			// apply updated crd which is already applied.
 			if oldScenario.Crd.GetGeneration() < sc.GetGeneration() {
@@ -384,26 +397,26 @@ func (o *operator) benchScenarioReconcile(ctx context.Context, scenarioList map[
 
 // deleteBenchmarkJob deletes benchmark job resource according to given scenario name and generation.
 func (o *operator) deleteBenchmarkJob(ctx context.Context, name string, generation int64) error {
-	opts := new(client.DeleteAllOfOptions)
-	client.MatchingLabels(map[string]string{
+	opts := new(k8s.DeleteAllOfOptions)
+	k8s.MatchingLabels(map[string]string{
 		Scenario: name + strconv.Itoa(int(generation)),
 	}).ApplyToDeleteAllOf(opts)
-	client.InNamespace(o.jobNamespace).ApplyToDeleteAllOf(opts)
+	k8s.InNamespace(o.jobNamespace).ApplyToDeleteAllOf(opts)
 	return o.ctrl.GetManager().GetClient().DeleteAllOf(ctx, &v1.ValdBenchmarkJob{}, opts)
 }
 
 // deleteJob deletes job resource according to given benchmark job name and generation.
 func (o *operator) deleteJob(ctx context.Context, name string) error {
-	cj := new(job.Job)
-	err := o.ctrl.GetManager().GetClient().Get(ctx, client.ObjectKey{
+	cj := new(k8s.Job)
+	err := o.ctrl.GetManager().GetClient().Get(ctx, k8s.ObjectKey{
 		Namespace: o.jobNamespace,
 		Name:      name,
 	}, cj)
 	if err != nil {
 		return err
 	}
-	opts := new(client.DeleteOptions)
-	deleteProgation := client.DeletePropagationBackground
+	opts := new(k8s.DeleteOptions)
+	deleteProgation := k8s.DeletePropagationBackground
 	opts.PropagationPolicy = &deleteProgation
 	return o.ctrl.GetManager().GetClient().Delete(ctx, cj, opts)
 }
@@ -461,12 +474,14 @@ func (o *operator) createBenchmarkJob(ctx context.Context, scenario v1.ValdBench
 // createJob creates benchmark job from benchmark job resource.
 func (o *operator) createJob(ctx context.Context, bjr v1.ValdBenchmarkJob) error {
 	label := map[string]string{
+		Name:          ServerName,
 		BenchmarkName: bjr.GetName() + strconv.Itoa(int(bjr.GetGeneration())),
 	}
 	job, err := benchjob.NewBenchmarkJob(
 		benchjob.WithContainerName(bjr.GetName()),
-		benchjob.WithContainerImage(o.jobImage),
+		benchjob.WithContainerImage(strings.Join([]string{o.jobImageRepository, o.jobImageTag}, ":")),
 		benchjob.WithImagePullPolicy(benchjob.ImagePullPolicy(o.jobImagePullPolicy)),
+		benchjob.WithOperatorConfigMap(o.configMapName),
 	)
 	if err != nil {
 		return err
@@ -550,11 +565,11 @@ func (o *operator) checkJobsStatus(ctx context.Context, jobs map[string]string) 
 		log.Infof("[check job status] no job launched")
 		return nil
 	}
-	job := new(job.Job)
+	job := new(k8s.Job)
 	c := o.ctrl.GetManager().GetClient()
 	jobStatus := map[string]v1.BenchmarkJobStatus{}
 	for name, ns := range jobs {
-		err := c.Get(ctx, client.ObjectKey{
+		err := c.Get(ctx, k8s.ObjectKey{
 			Namespace: ns,
 			Name:      name,
 		}, job)
@@ -602,7 +617,7 @@ func (o *operator) checkAtomics() error {
 				return errors.ErrMismatchBenchmarkAtomics(cjl, cbjl, cbsl)
 			}
 		}
-		// check scenario and bench
+		// check scenario resource and bench resource
 		if owners := bj.GetOwnerReferences(); len(owners) > 0 {
 			var scenarioName string
 			for _, o := range owners {
@@ -639,6 +654,42 @@ func (o *operator) checkAtomics() error {
 	}
 	return nil
 }
+
+func (o *operator) GetScenarioStatus() map[v1.ValdBenchmarkScenarioStatus]int64 {
+	m := map[v1.ValdBenchmarkScenarioStatus]int64{
+		v1.BenchmarkScenarioAvailable: 0,
+		v1.BenchmarkScenarioHealthy:   0,
+		v1.BenchmarkScenarioNotReady:  0,
+		v1.BenchmarkScenarioCompleted: 0,
+	}
+	if sc := o.getAtomicScenario(); sc != nil {
+		for _, s := range sc {
+			m[s.Crd.Status] += 1
+		}
+	}
+	return m
+}
+
+func (o *operator) GetBenchmarkJobStatus() map[v1.BenchmarkJobStatus]int64 {
+	m := map[v1.BenchmarkJobStatus]int64{
+		v1.BenchmarkJobAvailable: 0,
+		v1.BenchmarkJobHealthy:   0,
+		v1.BenchmarkJobNotReady:  0,
+		v1.BenchmarkJobCompleted: 0,
+	}
+	if bjs := o.getAtomicBenchJob(); bjs != nil {
+		for _, bj := range bjs {
+			m[bj.Status] += 1
+		}
+	}
+	return m
+}
+
+// func (o *operator) GetJobStatus() map[job.JobStatus]int64 {
+// 	m := map[job.JobStatus]int64{}
+// 	// if js := o.getAtomicJob()
+// 	return m
+// }
 
 func (*operator) PreStart(context.Context) error {
 	log.Infof("[benchmark scenario operator] start vald benchmark scenario operator")

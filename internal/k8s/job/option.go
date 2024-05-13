@@ -16,6 +16,7 @@ package job
 import (
 	"context"
 
+	"github.com/vdaas/vald/internal/k8s"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
 
@@ -57,7 +58,7 @@ func WithOnErrorFunc(f func(err error)) Option {
 }
 
 // WithOnReconcileFunc returns Option that sets r.onReconcile.
-func WithOnReconcileFunc(f func(ctx context.Context, jobList map[string][]Job)) Option {
+func WithOnReconcileFunc(f func(ctx context.Context, jobList map[string][]k8s.Job)) Option {
 	return func(r *reconciler) error {
 		r.onReconcile = f
 		return nil

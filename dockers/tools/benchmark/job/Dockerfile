@@ -58,7 +58,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* \
     && mkdir -p ${LIB_DIR} \
-    && curl -sOL https://github.com/madler/zlib/releases/download/v${ZLIB_VERSION}/zlib-${ZLIB_VERSION}.tar.gz \
+    && curl -fsSLO https://github.com/madler/zlib/releases/download/v${ZLIB_VERSION}/zlib-${ZLIB_VERSION}.tar.gz \
     && mkdir -p zlib \
     && tar -xzvf zlib-${ZLIB_VERSION}.tar.gz -C zlib --strip-components 1 \
     && cd zlib \
@@ -68,7 +68,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && make install \
     && cd / \
     && mkdir -p hdf5 \
-    && curl -sOL https://github.com/HDFGroup/hdf5/releases/download/${HDF5_VERSION}/${HDF5_VERSION}.tar.gz \
+    && curl -fsSLO https://github.com/HDFGroup/hdf5/releases/download/${HDF5_VERSION}/${HDF5_VERSION}.tar.gz \
     && tar -xzvf ${HDF5_VERSION}.tar.gz -C hdf5 --strip-components 2 \
     && cd hdf5 \
     && ./configure --enable-build-mode=production --enable-static-exec --disable-shared --prefix=${BUILD_DIR} --with-zlib=${BUILD_DIR}/include,${LIB_DIR} LDFLAGS="-Wl,-rpath,${LIB_DIR}" \

@@ -477,6 +477,11 @@
         "aggregationAlgorithm": {
           "$ref": "#/definitions/SearchAggregationAlgorithm",
           "title": "Aggregation Algorithm"
+        },
+        "ratio": {
+          "type": "number",
+          "format": "float",
+          "description": "Search ratio for agent return result number."
         }
       },
       "description": "Represent search configuration."

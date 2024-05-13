@@ -24,7 +24,6 @@ import (
 	"github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/k8s"
-	"github.com/vdaas/vald/internal/k8s/job"
 	v1 "github.com/vdaas/vald/internal/k8s/vald/benchmark/api/v1"
 	"github.com/vdaas/vald/internal/test/goleak"
 	"github.com/vdaas/vald/internal/test/mock"
@@ -517,11 +516,12 @@ func Test_operator_jobReconcile(t *testing.T) {
 	t.Parallel()
 	type args struct {
 		ctx     context.Context
-		jobList map[string][]job.Job
+		jobList map[string][]k8s.Job
 	}
 	type fields struct {
 		jobNamespace       string
-		jobImage           string
+		jobImageRepository string
+		jobImageTag        string
 		jobImagePullPolicy string
 		scenarios          *atomic.Pointer[map[string]*scenario]
 		benchjobs          *atomic.Pointer[map[string]*v1.ValdBenchmarkJob]
@@ -553,11 +553,11 @@ func Test_operator_jobReconcile(t *testing.T) {
 				name: "success when the length of jobList is 0.",
 				args: args{
 					ctx:     ctx,
-					jobList: map[string][]job.Job{},
+					jobList: map[string][]k8s.Job{},
 				},
 				fields: fields{
 					jobNamespace:       "default",
-					jobImage:           "vdaas/vald-benchmark-job",
+					jobImageRepository: "vdaas/vald-benchmark-job",
 					jobImagePullPolicy: "Always",
 					scenarios:          &atomic.Pointer[map[string]*scenario]{},
 					benchjobs:          &atomic.Pointer[map[string]*v1.ValdBenchmarkJob]{},
@@ -582,14 +582,14 @@ func Test_operator_jobReconcile(t *testing.T) {
 				name: "success with new job whose namespace is same as jobNamespace and deleted job by etcd",
 				args: args{
 					ctx: ctx,
-					jobList: map[string][]job.Job{
+					jobList: map[string][]k8s.Job{
 						"scenario-insert": {
 							{
 								ObjectMeta: metav1.ObjectMeta{
 									Name:      "scenario-insert",
 									Namespace: "default",
 								},
-								Status: job.JobStatus{
+								Status: k8s.JobStatus{
 									Active: 1,
 								},
 							},
@@ -598,7 +598,7 @@ func Test_operator_jobReconcile(t *testing.T) {
 				},
 				fields: fields{
 					jobNamespace:       "default",
-					jobImage:           "vdaas/vald-benchmark-job",
+					jobImageRepository: "vdaas/vald-benchmark-job",
 					jobImagePullPolicy: "Always",
 					scenarios:          &atomic.Pointer[map[string]*scenario]{},
 					jobs: func() *atomic.Pointer[map[string]string] {
@@ -672,14 +672,14 @@ func Test_operator_jobReconcile(t *testing.T) {
 				name: "success with completed job whose namespace is same as jobNamespace",
 				args: args{
 					ctx: ctx,
-					jobList: map[string][]job.Job{
+					jobList: map[string][]k8s.Job{
 						"scenario-insert": {
 							{
 								ObjectMeta: metav1.ObjectMeta{
 									Name:      "scenario-completed-insert",
 									Namespace: "default",
 								},
-								Status: job.JobStatus{
+								Status: k8s.JobStatus{
 									Active:    0,
 									Succeeded: 1,
 									CompletionTime: func() *metav1.Time {
@@ -695,7 +695,7 @@ func Test_operator_jobReconcile(t *testing.T) {
 				},
 				fields: fields{
 					jobNamespace:       "default",
-					jobImage:           "vdaas/vald-benchmark-job",
+					jobImageRepository: "vdaas/vald-benchmark-job",
 					jobImagePullPolicy: "Always",
 					scenarios:          &atomic.Pointer[map[string]*scenario]{},
 					jobs: func() *atomic.Pointer[map[string]string] {
@@ -769,14 +769,14 @@ func Test_operator_jobReconcile(t *testing.T) {
 				name: "success with job whose namespace is not same as jobNamespace",
 				args: args{
 					ctx: ctx,
-					jobList: map[string][]job.Job{
+					jobList: map[string][]k8s.Job{
 						"scenario-insert": {
 							{
 								ObjectMeta: metav1.ObjectMeta{
 									Name:      "scenario-insert",
 									Namespace: "benchmark",
 								},
-								Status: job.JobStatus{
+								Status: k8s.JobStatus{
 									Active: 1,
 								},
 							},
@@ -785,7 +785,7 @@ func Test_operator_jobReconcile(t *testing.T) {
 				},
 				fields: fields{
 					jobNamespace:       "default",
-					jobImage:           "vdaas/vald-benchmark-job",
+					jobImageRepository: "vdaas/vald-benchmark-job",
 					jobImagePullPolicy: "Always",
 					scenarios:          &atomic.Pointer[map[string]*scenario]{},
 					benchjobs:          &atomic.Pointer[map[string]*v1.ValdBenchmarkJob]{},
@@ -824,7 +824,8 @@ func Test_operator_jobReconcile(t *testing.T) {
 			}
 			o := &operator{
 				jobNamespace:       test.fields.jobNamespace,
-				jobImage:           test.fields.jobImage,
+				jobImageRepository: test.fields.jobImageRepository,
+				jobImageTag:        test.fields.jobImageTag,
 				jobImagePullPolicy: test.fields.jobImagePullPolicy,
 				benchjobs:          test.fields.benchjobs,
 				jobs:               test.fields.jobs,
@@ -848,7 +849,8 @@ func Test_operator_benchJobReconcile(t *testing.T) {
 	}
 	type fields struct {
 		jobNamespace       string
-		jobImage           string
+		jobImageRepository string
+		jobImageTag        string
 		jobImagePullPolicy string
 		scenarios          *atomic.Pointer[map[string]*scenario]
 		benchjobs          *atomic.Pointer[map[string]*v1.ValdBenchmarkJob]
@@ -888,7 +890,7 @@ func Test_operator_benchJobReconcile(t *testing.T) {
 				},
 				fields: fields{
 					jobNamespace:       "default",
-					jobImage:           "vdaas/vald-benchmark-job",
+					jobImageRepository: "vdaas/vald-benchmark-job",
 					jobImagePullPolicy: "Always",
 					scenarios:          &atomic.Pointer[map[string]*scenario]{},
 					benchjobs:          &atomic.Pointer[map[string]*v1.ValdBenchmarkJob]{},
@@ -952,7 +954,7 @@ func Test_operator_benchJobReconcile(t *testing.T) {
 				},
 				fields: fields{
 					jobNamespace:       "default",
-					jobImage:           "vdaas/vald-benchmark-job",
+					jobImageRepository: "vdaas/vald-benchmark-job",
 					jobImagePullPolicy: "Always",
 					scenarios: func() *atomic.Pointer[map[string]*scenario] {
 						ap := atomic.Pointer[map[string]*scenario]{}
@@ -1084,7 +1086,7 @@ func Test_operator_benchJobReconcile(t *testing.T) {
 									Timestamp:            "",
 								},
 							},
-							Status: v1.BenchmarkJobAvailable,
+							Status: v1.BenchmarkJobHealthy,
 						},
 					},
 				},
@@ -1143,7 +1145,7 @@ func Test_operator_benchJobReconcile(t *testing.T) {
 				},
 				fields: fields{
 					jobNamespace:       "default",
-					jobImage:           "vdaas/vald-benchmark-job",
+					jobImageRepository: "vdaas/vald-benchmark-job",
 					jobImagePullPolicy: "Always",
 					scenarios: func() *atomic.Pointer[map[string]*scenario] {
 						ap := atomic.Pointer[map[string]*scenario]{}
@@ -1377,7 +1379,7 @@ func Test_operator_benchJobReconcile(t *testing.T) {
 				},
 				fields: fields{
 					jobNamespace:       "default",
-					jobImage:           "vdaas/vald-benchmark-job",
+					jobImageRepository: "vdaas/vald-benchmark-job",
 					jobImagePullPolicy: "Always",
 					scenarios: func() *atomic.Pointer[map[string]*scenario] {
 						ap := atomic.Pointer[map[string]*scenario]{}
@@ -1611,7 +1613,7 @@ func Test_operator_benchJobReconcile(t *testing.T) {
 				},
 				fields: fields{
 					jobNamespace:       "default",
-					jobImage:           "vdaas/vald-benchmark-job",
+					jobImageRepository: "vdaas/vald-benchmark-job",
 					jobImagePullPolicy: "Always",
 					scenarios: func() *atomic.Pointer[map[string]*scenario] {
 						ap := atomic.Pointer[map[string]*scenario]{}
@@ -1853,7 +1855,8 @@ func Test_operator_benchJobReconcile(t *testing.T) {
 			}
 			o := &operator{
 				jobNamespace:       test.fields.jobNamespace,
-				jobImage:           test.fields.jobImage,
+				jobImageRepository: test.fields.jobImageRepository,
+				jobImageTag:        test.fields.jobImageTag,
 				jobImagePullPolicy: test.fields.jobImagePullPolicy,
 				scenarios:          test.fields.scenarios,
 				benchjobs:          test.fields.benchjobs,
@@ -1879,7 +1882,8 @@ func Test_operator_benchScenarioReconcile(t *testing.T) {
 	}
 	type fields struct {
 		jobNamespace       string
-		jobImage           string
+		jobImageRepository string
+		jobImageTag        string
 		jobImagePullPolicy string
 		scenarios          *atomic.Pointer[map[string]*scenario]
 		benchjobs          *atomic.Pointer[map[string]*v1.ValdBenchmarkJob]
@@ -1936,7 +1940,7 @@ func Test_operator_benchScenarioReconcile(t *testing.T) {
 				},
 				fields: fields{
 					jobNamespace:       "default",
-					jobImage:           "vdaas/vald-benchmark-job",
+					jobImageRepository: "vdaas/vald-benchmark-job",
 					jobImagePullPolicy: "Always",
 					scenarios:          &atomic.Pointer[map[string]*scenario]{},
 					benchjobs:          &atomic.Pointer[map[string]*v1.ValdBenchmarkJob]{},
@@ -2011,7 +2015,7 @@ func Test_operator_benchScenarioReconcile(t *testing.T) {
 				},
 				fields: fields{
 					jobNamespace:       "default",
-					jobImage:           "vdaas/vald-benchmark-job",
+					jobImageRepository: "vdaas/vald-benchmark-job",
 					jobImagePullPolicy: "Always",
 					scenarios:          &atomic.Pointer[map[string]*scenario]{},
 					benchjobs:          &atomic.Pointer[map[string]*v1.ValdBenchmarkJob]{},
@@ -2147,7 +2151,7 @@ func Test_operator_benchScenarioReconcile(t *testing.T) {
 				},
 				fields: fields{
 					jobNamespace:       "default",
-					jobImage:           "vdaas/vald-benchmark-job",
+					jobImageRepository: "vdaas/vald-benchmark-job",
 					jobImagePullPolicy: "Always",
 					scenarios: func() *atomic.Pointer[map[string]*scenario] {
 						ap := atomic.Pointer[map[string]*scenario]{}
@@ -2339,7 +2343,7 @@ func Test_operator_benchScenarioReconcile(t *testing.T) {
 				},
 				fields: fields{
 					jobNamespace:       "default",
-					jobImage:           "vdaas/vald-benchmark-job",
+					jobImageRepository: "vdaas/vald-benchmark-job",
 					jobImagePullPolicy: "Always",
 					scenarios: func() *atomic.Pointer[map[string]*scenario] {
 						ap := atomic.Pointer[map[string]*scenario]{}
@@ -2531,7 +2535,7 @@ func Test_operator_benchScenarioReconcile(t *testing.T) {
 				},
 				fields: fields{
 					jobNamespace:       "default",
-					jobImage:           "vdaas/vald-benchmark-job",
+					jobImageRepository: "vdaas/vald-benchmark-job",
 					jobImagePullPolicy: "Always",
 					scenarios: func() *atomic.Pointer[map[string]*scenario] {
 						ap := atomic.Pointer[map[string]*scenario]{}
@@ -2687,7 +2691,8 @@ func Test_operator_benchScenarioReconcile(t *testing.T) {
 			}
 			o := &operator{
 				jobNamespace:       test.fields.jobNamespace,
-				jobImage:           test.fields.jobImage,
+				jobImageRepository: test.fields.jobImageRepository,
+				jobImageTag:        test.fields.jobImageTag,
 				jobImagePullPolicy: test.fields.jobImagePullPolicy,
 				scenarios:          test.fields.scenarios,
 				benchjobs:          test.fields.benchjobs,
@@ -3151,7 +3156,7 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 		// 		want: func() Operator {
 // 		// 			o := &operator{
 // 		// 				jobNamespace:       "default",
-// 		// 				jobImage:           "vdaas/vald-benchmark-job",
+// 		// 				jobImageRepository:           "vdaas/vald-benchmark-job",
 // 		// 				jobImagePullPolicy: "Always",
 // 		// 				rcd:                10 * time.Second,
 // 		// 			}
@@ -3256,7 +3261,7 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 		       },
 // 		       fields: fields {
 // 		           jobNamespace:"",
-// 		           jobImage:"",
+// 		           jobImageRepository:"",
 // 		           jobImagePullPolicy:"",
 // 		           scenarios:nil,
 // 		           benchjobs:nil,
@@ -3286,7 +3291,7 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 		           },
 // 		           fields: fields {
 // 		           jobNamespace:"",
-// 		           jobImage:"",
+// 		           jobImageRepository:"",
 // 		           jobImagePullPolicy:"",
 // 		           scenarios:nil,
 // 		           benchjobs:nil,
@@ -3325,7 +3330,7 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 			}
 // 			o := &operator{
 // 				jobNamespace:       test.fields.jobNamespace,
-// 				jobImage:           test.fields.jobImage,
+// 				jobImageRepository:           test.fields.jobImage,
 // 				jobImagePullPolicy: test.fields.jobImagePullPolicy,
 // 				scenarios:          test.fields.scenarios,
 // 				benchjobs:          test.fields.benchjobs,
@@ -3391,7 +3396,7 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 		       },
 // 		       fields: fields {
 // 		           jobNamespace:"",
-// 		           jobImage:"",
+// 		           jobImageRepository:"",
 // 		           jobImagePullPolicy:"",
 // 		           scenarios:nil,
 // 		           benchjobs:nil,
@@ -3421,7 +3426,7 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 		           },
 // 		           fields: fields {
 // 		           jobNamespace:"",
-// 		           jobImage:"",
+// 		           jobImageRepository:"",
 // 		           jobImagePullPolicy:"",
 // 		           scenarios:nil,
 // 		           benchjobs:nil,
@@ -3460,7 +3465,7 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 			}
 // 			o := &operator{
 // 				jobNamespace:       test.fields.jobNamespace,
-// 				jobImage:           test.fields.jobImage,
+// 				jobImageRepository:           test.fields.jobImage,
 // 				jobImagePullPolicy: test.fields.jobImagePullPolicy,
 // 				scenarios:          test.fields.scenarios,
 // 				benchjobs:          test.fields.benchjobs,
@@ -3514,7 +3519,7 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 		// 	name: "test_case_1",
 // 		// 	fields: fields{
 // 		// 		jobNamespace:       "default",
-// 		// 		jobImage:           "vdaas/vald-benchmark-job",
+// 		// 		jobImageRepository:           "vdaas/vald-benchmark-job",
 // 		// 		jobImagePullPolicy: "Always",
 // 		// 		// scenarios:nil,
 // 		// 		// benchjobs:nil,
@@ -3542,7 +3547,7 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 		           name: "test_case_2",
 // 		           fields: fields {
 // 		           jobNamespace:"",
-// 		           jobImage:"",
+// 		           jobImageRepository:"",
 // 		           jobImagePullPolicy:"",
 // 		           scenarios:nil,
 // 		           benchjobs:nil,
@@ -3581,7 +3586,7 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 			}
 // 			o := &operator{
 // 				jobNamespace:       test.fields.jobNamespace,
-// 				jobImage:           test.fields.jobImage,
+// 				jobImageRepository:           test.fields.jobImage,
 // 				jobImagePullPolicy: test.fields.jobImagePullPolicy,
 // 				scenarios:          test.fields.scenarios,
 // 				benchjobs:          test.fields.benchjobs,
@@ -3646,7 +3651,7 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 		       },
 // 		       fields: fields {
 // 		           jobNamespace:"",
-// 		           jobImage:"",
+// 		           jobImageRepository:"",
 // 		           jobImagePullPolicy:"",
 // 		           scenarios:nil,
 // 		           benchjobs:nil,
@@ -3678,7 +3683,7 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 		           },
 // 		           fields: fields {
 // 		           jobNamespace:"",
-// 		           jobImage:"",
+// 		           jobImageRepository:"",
 // 		           jobImagePullPolicy:"",
 // 		           scenarios:nil,
 // 		           benchjobs:nil,
@@ -3717,7 +3722,7 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 			}
 // 			o := &operator{
 // 				jobNamespace:       test.fields.jobNamespace,
-// 				jobImage:           test.fields.jobImage,
+// 				jobImageRepository:           test.fields.jobImage,
 // 				jobImagePullPolicy: test.fields.jobImagePullPolicy,
 // 				scenarios:          test.fields.scenarios,
 // 				benchjobs:          test.fields.benchjobs,
@@ -3782,7 +3787,7 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 		       },
 // 		       fields: fields {
 // 		           jobNamespace:"",
-// 		           jobImage:"",
+// 		           jobImageRepository:"",
 // 		           jobImagePullPolicy:"",
 // 		           scenarios:nil,
 // 		           benchjobs:nil,
@@ -3814,7 +3819,7 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 		           },
 // 		           fields: fields {
 // 		           jobNamespace:"",
-// 		           jobImage:"",
+// 		           jobImageRepository:"",
 // 		           jobImagePullPolicy:"",
 // 		           scenarios:nil,
 // 		           benchjobs:nil,
@@ -3853,7 +3858,7 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 			}
 // 			o := &operator{
 // 				jobNamespace:       test.fields.jobNamespace,
-// 				jobImage:           test.fields.jobImage,
+// 				jobImageRepository:           test.fields.jobImage,
 // 				jobImagePullPolicy: test.fields.jobImagePullPolicy,
 // 				scenarios:          test.fields.scenarios,
 // 				benchjobs:          test.fields.benchjobs,
@@ -3920,7 +3925,7 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 		       },
 // 		       fields: fields {
 // 		           jobNamespace:"",
-// 		           jobImage:"",
+// 		           jobImageRepository:"",
 // 		           jobImagePullPolicy:"",
 // 		           scenarios:nil,
 // 		           benchjobs:nil,
@@ -3951,7 +3956,7 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 		           },
 // 		           fields: fields {
 // 		           jobNamespace:"",
-// 		           jobImage:"",
+// 		           jobImageRepository:"",
 // 		           jobImagePullPolicy:"",
 // 		           scenarios:nil,
 // 		           benchjobs:nil,
@@ -3990,7 +3995,7 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 			}
 // 			o := &operator{
 // 				jobNamespace:       test.fields.jobNamespace,
-// 				jobImage:           test.fields.jobImage,
+// 				jobImageRepository:           test.fields.jobImage,
 // 				jobImagePullPolicy: test.fields.jobImagePullPolicy,
 // 				scenarios:          test.fields.scenarios,
 // 				benchjobs:          test.fields.benchjobs,
@@ -4053,7 +4058,7 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 		       },
 // 		       fields: fields {
 // 		           jobNamespace:"",
-// 		           jobImage:"",
+// 		           jobImageRepository:"",
 // 		           jobImagePullPolicy:"",
 // 		           scenarios:nil,
 // 		           benchjobs:nil,
@@ -4084,7 +4089,7 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 		           },
 // 		           fields: fields {
 // 		           jobNamespace:"",
-// 		           jobImage:"",
+// 		           jobImageRepository:"",
 // 		           jobImagePullPolicy:"",
 // 		           scenarios:nil,
 // 		           benchjobs:nil,
@@ -4123,7 +4128,7 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 			}
 // 			o := &operator{
 // 				jobNamespace:       test.fields.jobNamespace,
-// 				jobImage:           test.fields.jobImage,
+// 				jobImageRepository:           test.fields.jobImage,
 // 				jobImagePullPolicy: test.fields.jobImagePullPolicy,
 // 				scenarios:          test.fields.scenarios,
 // 				benchjobs:          test.fields.benchjobs,
@@ -4190,7 +4195,7 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 		       },
 // 		       fields: fields {
 // 		           jobNamespace:"",
-// 		           jobImage:"",
+// 		           jobImageRepository:"",
 // 		           jobImagePullPolicy:"",
 // 		           scenarios:nil,
 // 		           benchjobs:nil,
@@ -4221,7 +4226,7 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 		           },
 // 		           fields: fields {
 // 		           jobNamespace:"",
-// 		           jobImage:"",
+// 		           jobImageRepository:"",
 // 		           jobImagePullPolicy:"",
 // 		           scenarios:nil,
 // 		           benchjobs:nil,
@@ -4260,7 +4265,7 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 			}
 // 			o := &operator{
 // 				jobNamespace:       test.fields.jobNamespace,
-// 				jobImage:           test.fields.jobImage,
+// 				jobImageRepository:           test.fields.jobImage,
 // 				jobImagePullPolicy: test.fields.jobImagePullPolicy,
 // 				scenarios:          test.fields.scenarios,
 // 				benchjobs:          test.fields.benchjobs,
@@ -4327,7 +4332,7 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 		       },
 // 		       fields: fields {
 // 		           jobNamespace:"",
-// 		           jobImage:"",
+// 		           jobImageRepository:"",
 // 		           jobImagePullPolicy:"",
 // 		           scenarios:nil,
 // 		           benchjobs:nil,
@@ -4358,7 +4363,7 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 		           },
 // 		           fields: fields {
 // 		           jobNamespace:"",
-// 		           jobImage:"",
+// 		           jobImageRepository:"",
 // 		           jobImagePullPolicy:"",
 // 		           scenarios:nil,
 // 		           benchjobs:nil,
@@ -4397,7 +4402,7 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 			}
 // 			o := &operator{
 // 				jobNamespace:       test.fields.jobNamespace,
-// 				jobImage:           test.fields.jobImage,
+// 				jobImageRepository:           test.fields.jobImage,
 // 				jobImagePullPolicy: test.fields.jobImagePullPolicy,
 // 				scenarios:          test.fields.scenarios,
 // 				benchjobs:          test.fields.benchjobs,
@@ -4459,7 +4464,7 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 		// 		},
 // 		// 		fields: fields{
 // 		// 			jobNamespace:       "",
-// 		// 			jobImage:           "",
+// 		// 			jobImageRepository:           "",
 // 		// 			jobImagePullPolicy: "",
 // 		// 			scenarios:          nil,
 // 		// 			benchjobs:          nil,
@@ -4497,7 +4502,7 @@ func Test_operator_checkAtomics(t *testing.T) {
 // 			}
 // 			o := &operator{
 // 				jobNamespace:       test.fields.jobNamespace,
-// 				jobImage:           test.fields.jobImage,
+// 				jobImageRepository:           test.fields.jobImage,
 // 				jobImagePullPolicy: test.fields.jobImagePullPolicy,
 // 				scenarios:          test.fields.scenarios,
 // 				benchjobs:          test.fields.benchjobs,

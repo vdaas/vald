@@ -161,9 +161,10 @@ func (g *GRPCClient) Opts() ([]grpc.Option, error) {
 		return nil, nil
 	}
 	opts := make([]grpc.Option, 0, 18)
-	opts = append(opts,
-		grpc.WithHealthCheckDuration(g.HealthCheckDuration),
-	)
+
+	if len(g.HealthCheckDuration) != 0 {
+		opts = append(opts, grpc.WithHealthCheckDuration(g.HealthCheckDuration))
+	}
 
 	if g.ConnectionPool != nil {
 		opts = append(opts,

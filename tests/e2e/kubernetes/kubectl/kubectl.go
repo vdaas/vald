@@ -48,6 +48,18 @@ func WaitResources(ctx context.Context, t *testing.T, resource, labelSelector, c
 	return runCmd(t, cmd)
 }
 
+func DebugLog(ctx context.Context, t *testing.T, label string) error {
+	t.Helper()
+	cmd := exec.CommandContext(ctx, "kubectl", "logs", "-l", label, "--tail=-1")
+	return runCmd(t, cmd)
+}
+
+func KubectlCmd(ctx context.Context, t *testing.T, subcmds ...string) error {
+	t.Helper()
+	cmd := exec.CommandContext(ctx, "kubectl", subcmds...)
+	return runCmd(t, cmd)
+}
+
 func runCmd(t *testing.T, cmd *exec.Cmd) error {
 	t.Helper()
 	out, err := cmd.Output()

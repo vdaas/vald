@@ -64,12 +64,34 @@ func New(cfg *config.Config) (r runner.Runner, err error) {
 		}
 	}
 
+	// bind metrics interceptor
+	var clientInterceptors []string
+	var obs observability.Observability
+	if cfg.Observability.Enabled {
+		obs, err = observability.NewWithConfig(
+			cfg.Observability,
+			infometrics.New("vald_benchmark_job_info", "Benchmark Job info", *cfg.Job),
+		)
+		if err != nil {
+			return nil, err
+		}
+		// Add interceptors regardless of whether it is set in config.
+		// Because it is the benchmark job and requires metrics for measure benchmark result.
+		clientInterceptors = append(clientInterceptors, "metric")
+		if cfg.Observability.Trace.Enabled {
+			clientInterceptors = append(clientInterceptors, "trace")
+		}
+	}
+
 	copts, err := cfg.Job.ClientConfig.Opts()
 	if err != nil {
 		return nil, err
 	}
 	if cfg.Job.ClientConfig.DialOption == nil {
-		copts = append(copts, grpc.WithInsecure(true))
+		copts = append(copts,
+			grpc.WithInsecure(true),
+			grpc.WithClientInterceptors(clientInterceptors...),
+		)
 	}
 	gcli := grpc.New(copts...)
 	vcli, err := vald.New(
@@ -131,17 +153,6 @@ func New(cfg *config.Config) (r runner.Runner, err error) {
 		}),
 	}
 
-	var obs observability.Observability
-	if cfg.Observability.Enabled {
-		obs, err = observability.NewWithConfig(
-			cfg.Observability,
-			infometrics.New("vald_benchmark_job_info", "Benchmark Job info", *cfg.Job),
-		)
-		if err != nil {
-			return nil, err
-		}
-	}
-
 	srv, err := starter.New(
 		starter.WithConfig(cfg.Server),
 		starter.WithREST(func(sc *iconf.Server) []server.Option {
@@ -197,6 +208,7 @@ func (r *run) Start(ctx context.Context) (<-chan error, error) {
 		if r.observability != nil {
 			oech = r.observability.Start(ctx)
 		}
+
 		dech, err = r.job.Start(ctx)
 		if err != nil {
 			ech <- err

@@ -27,7 +27,9 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/net/grpc/interceptor/server/recover"
 	"github.com/vdaas/vald/internal/observability"
+	backoffmetrics "github.com/vdaas/vald/internal/observability/metrics/backoff"
 	infometrics "github.com/vdaas/vald/internal/observability/metrics/info"
+	benchmarkmetrics "github.com/vdaas/vald/internal/observability/metrics/tools/benchmark"
 	"github.com/vdaas/vald/internal/runner"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/servers/server"
@@ -52,17 +54,18 @@ type run struct {
 var JOB_NAMESPACE = os.Getenv("JOB_NAMESPACE")
 
 func New(cfg *config.Config) (r runner.Runner, err error) {
-	log.Info("pkg/tools/benchmark/scenario/cmd start")
+	log.Info("pkg/tools/benchmark/operator/cmd start")
 
 	eg := errgroup.Get()
 
-	log.Info("pkg/tools/benchmark/scenario/cmd success d")
+	log.Info("pkg/tools/benchmark/operator/cmd success d")
 
 	operator, err := service.New(
 		service.WithErrGroup(eg),
 		service.WithJobNamespace(JOB_NAMESPACE),
-		service.WithJobImage(cfg.JobImage.Image),
-		service.WithJobImagePullPolicy(cfg.JobImage.PullPolicy),
+		service.WithJobImageRepository(cfg.Job.Image.Repository),
+		service.WithJobImageTag(cfg.Job.Image.Tag),
+		service.WithJobImagePullPolicy(cfg.Job.Image.PullPolicy),
 	)
 	if err != nil {
 		return nil, err
@@ -95,7 +98,9 @@ func New(cfg *config.Config) (r runner.Runner, err error) {
 	if cfg.Observability.Enabled {
 		obs, err = observability.NewWithConfig(
 			cfg.Observability,
-			infometrics.New("vald_benchmark_scenario_info", "Benchmark Scenario info", *cfg.Scenario),
+			benchmarkmetrics.New(operator),
+			infometrics.New("benchmark_operator_info", "Benchmark Operator info", *cfg.Job.Image),
+			backoffmetrics.New(),
 		)
 		if err != nil {
 			return nil, err
@@ -125,7 +130,7 @@ func New(cfg *config.Config) (r runner.Runner, err error) {
 	if err != nil {
 		return nil, err
 	}
-	log.Info("pkg/tools/benchmark/scenario/cmd end")
+	log.Info("pkg/tools/benchmark/operator/cmd end")
 
 	return &run{
 		eg:            eg,
