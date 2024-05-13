@@ -68,11 +68,10 @@ func (s *myEgressServer) FilterDistance(ctx context.Context, in *payload.Filter_
 	}
 
 	filteredDis := []*payload.Object_Distance{}
-	distances := in.GetDistance() // Avoid multiple calls to GetDistance
-	for _, d := range distances {
+	for _, d := range in.GetDistance() {
 		iCategory, ok := getSplitValue(d.GetId(), "_", 1)
 		if !ok {
-			continue // Use continue to reduce nesting
+			continue
 		}
 		glg.Infof("qCategory: %v, iCategory: %v", qCategory, iCategory)
 		if qCategory == iCategory {
