@@ -112,6 +112,12 @@ message Filter {
     uint32 port = 2;
   }
 
+  // Represent the filter query.
+  message Query {
+    // The raw query string.
+    string query = 1;
+  }
+
   // Represent filter configuration.
   message Config {
     // Represent the filter target configuration.
@@ -241,6 +247,12 @@ message Filter {
     uint32 port = 2;
   }
 
+  // Represent the filter query.
+  message Query {
+    // The raw query string.
+    string query = 1;
+  }
+
   // Represent filter configuration.
   message Config {
     // Represent the filter target configuration.
@@ -367,6 +379,12 @@ message Filter {
     string host = 1;
     // The target filter component port.
     uint32 port = 2;
+  }
+
+  // Represent the filter query.
+  message Query {
+    // The raw query string.
+    string query = 1;
   }
 
   // Represent filter configuration.
@@ -591,6 +609,12 @@ message Filter {
     uint32 port = 2;
   }
 
+  // Represent the filter query.
+  message Query {
+    // The raw query string.
+    string query = 1;
+  }
+
   // Represent filter configuration.
   message Config {
     // Represent the filter target configuration.
@@ -616,6 +640,12 @@ message Filter {
     string host = 1;
     // The target filter component port.
     uint32 port = 2;
+  }
+
+  // Represent the filter query.
+  message Query {
+    // The raw query string.
+    string query = 1;
   }
 
   // Represent filter configuration.
