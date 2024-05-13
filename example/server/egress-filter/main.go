@@ -36,6 +36,7 @@ var (
 )
 
 func init() {
+	// init initializes the command-line flags with default values for the filter setup.
 	/**
 	Port option specifies grpc server port of your egress filter. Default value is `8083`.
 	Dimension option specifies dimension size of vectors. Default value is  `784`.
