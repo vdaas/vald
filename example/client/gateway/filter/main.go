@@ -48,6 +48,7 @@ var (
 )
 
 func init() {
+	// init initializes the command-line flags with default values for the filter client setup.
 	/**
 	Addr option specifies grpc server address of filter gateway. Default value is `127.0.0.1:8081`.
 	Ingresshost option specifies grpc server host of your ingress filter. Default value is `127.0.0.1`.
