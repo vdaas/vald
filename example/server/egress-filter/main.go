@@ -103,7 +103,7 @@ func (s *myEgressServer) FilterVector(ctx context.Context, in *payload.Filter_Ve
 func main() {
 	listener, err := net.Listen("tcp", fmt.Sprintf(":%d", egressServerPort))
 	if err != nil {
-		panic(err)
+		glg.Fatal(err)
 	}
 
 	s := grpc.NewServer()
