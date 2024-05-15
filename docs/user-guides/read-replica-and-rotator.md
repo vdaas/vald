@@ -8,13 +8,14 @@ The increase in QPS is possible with sufficient infrastructure (see [Important n
 
 ## How to deploy read replica
 
-The read replica is managed with a separate chart from the Vald cluster and is deployed as an addon to the Vald cluster. Therefore, in any of the following steps, the Vald cluster should be deployed first, followed by the deployment of the read replica.
+The read replica is managed with a separate chart from the Vald cluster and is deployed as an addon to the Vald cluster. The Vald cluster should be deployed first, followed by the deployment of the read replica.
 
 > The reason Vald and Vald-readreplica are in separate charts is to avoid conflicts between the read replica's restart and the Helm operator's processes when Vald is managed by a helm operator. Therefore, the read replica will always be deployed using Helm commands.
 
 ### When you deploy vald with helm command
 
 1. Edit `values.yaml` like below（Please refer to [deployment](deployment) for other fields.）
+
 
    ```yaml
    agent:
@@ -34,13 +35,17 @@ The read replica is managed with a separate chart from the Vald cluster and is d
        rotation_job_concurrency: 2
    ```
 
+
 1. Deploy vald cluster
+
 
    ```bash
    helm install vald vald/vald --values values.yaml
    ```
 
+
 1. Deploy `vald-readreplica` with the same `values.yaml`
+
 
    ```bash
    helm install vald-readreplica vald/vald-readreplica --values values.yaml
@@ -50,7 +55,9 @@ The read replica is managed with a separate chart from the Vald cluster and is d
 
 1. Edit `valdrelease.yaml` with the same fields as above
 
+
 1. Deploy vald cluster
+
 
    ```bash
    helm install vald-helm-operator-release vald/vald-helm-operator
@@ -74,11 +81,11 @@ The deployment that generates Pods where the actual processing of read replica t
 
 ### Read replica PVC
 
-The PVC for read replica Pods is to read the index. It is generated based on the latest snapshot from the PVC of the regular agent. Unlike the agent PVC, it is generated as ROX, allowing it to be read from multiple Pods.
+The PVC for read replica Pods is used to read the index. It is generated based on the latest snapshot from the PVC of the regular agent. Unlike the agent PVC, it is generated as ROX, allowing it to be read from multiple Pods.
 
 ### Index operator
 
-The operator handles the following processes.
+The operator handles the following processes:
 
 1. Monitoring the time when the agent saved the index to the PVC and when the read replica performed index rotation
 1. Generating [Read replica rotator](#read-replica-rotator) job when an index save occurs after the most recent rotation
@@ -95,7 +102,7 @@ The Kubernetes job to be responsible for the following processes
 
 ## Important notes
 
-- Only result consistency is guaranteed
+Result consistency is guaranteed
 
   There is a time lag between index insertion, agent save, and the completion of read replica rotation. During this time, there may be inconsistencies between the index in the agent itself and the index in the read replica.
 
