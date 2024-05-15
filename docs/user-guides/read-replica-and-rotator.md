@@ -16,7 +16,6 @@ The read replica is managed with a separate chart from the Vald cluster and is d
 
 1. Edit `values.yaml` like below（Please refer to [deployment](deployment) for other fields.）
 
-
    ```yaml
    agent:
    ngt:
@@ -37,11 +36,9 @@ The read replica is managed with a separate chart from the Vald cluster and is d
 
 1. Deploy vald cluster
 
-
    ```bash
    helm install vald vald/vald --values values.yaml
    ```
-
 
 1. Deploy `vald-readreplica` with the same `values.yaml`
 
@@ -51,12 +48,9 @@ The read replica is managed with a separate chart from the Vald cluster and is d
 
 ### When you deploy vald with `vald-helm-operator`
 
-
 1. Edit `valdrelease.yaml` with the same fields as above
 
-
 1. Deploy vald cluster
-
 
    ```bash
    helm install vald-helm-operator-release vald/vald-helm-operator
