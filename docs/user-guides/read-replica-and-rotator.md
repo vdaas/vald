@@ -77,7 +77,7 @@ The PVC for read replica Pods is to read the index. It is generated based on the
 
 ### Index operator
 
-The operator is responsible for the following processes.
+The operator handles the following processes.
 
 1. Monitoring the time when the agent saved the index to the PVC and when the read replica performed index rotation
 1. Generating [Read replica rotator](#read-replica-rotator) job when an index save occurs after the most recent rotation
