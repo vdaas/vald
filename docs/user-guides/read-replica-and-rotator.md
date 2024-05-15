@@ -3,7 +3,7 @@
 Read replica enhances the search QPS (Queries Per Second) of the Vald cluster by deploying read-only agents in addition to the regular agents and distributing the requests among them. Read replica is deployed as Kubernetes deployments, and depending on the number of replicas (N), it is faster QPS by approximately 1.7 to 1.8 times \* N.
 
 <div class="notice">
-The increase in QPS is possible only if sufficient infrastructure is available (see [Important notes](#important-notes) ).
+The increase in QPS is possible with sufficient infrastructure (see [Important notes](#important-notes)).
 </div>
 
 ## How to deploy read replica
