@@ -1,6 +1,6 @@
 # Read Replica and Rotator
 
-Read replica enhances the search QPS (Queries Per Second) of the Vald cluster by deploying read-only agents in addition to the regular agents and distributing the requests among them. Read replica is deployed as Kubernetes deployments, and depending on the number of replicas (N), QPS increases by approximately 1.7 to 1.8 times * N.
+Read replica enhances the search QPS (Queries Per Second) of the Vald cluster by deploying read-only agents in addition to the regular agents and distributing the requests among them. Read replica is deployed as Kubernetes deployments, and depending on the number of replicas (N), QPS increases by approximately 1.7 to 1.8 times \* N.
 
 <div class="notice">
 The increase in QPS is possible with sufficient infrastructure (see [Important notes](#important-notes)).
