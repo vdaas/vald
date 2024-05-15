@@ -15,7 +15,6 @@ The read replica is managed with a separate chart from the Vald cluster and is d
 ### When you deploy vald with helm command
 
 1. Edit `values.yaml` like below（Please refer to [deployment](deployment) for other fields.）
-
    ```yaml
    agent:
    ngt:
@@ -34,9 +33,7 @@ The read replica is managed with a separate chart from the Vald cluster and is d
        rotation_job_concurrency: 2
    ```
 
-
 1. Deploy vald cluster
-
 
    ```bash
    helm install vald vald/vald --values values.yaml
