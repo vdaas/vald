@@ -1,6 +1,6 @@
 # Read Replica and Rotator
 
-Read replica enhances the search QPS (Queries Per Second) of the Vald cluster by deploying read-only agents in addition to the regular agents and distributing the requests among them. Read replica is deployed as Kubernetes deployments, and depending on the number of replicas (N), it is faster QPS by approximately 1.7 to 1.8 times * N.
+Read replica enhances the search QPS (Queries Per Second) of the Vald cluster by deploying read-only agents in addition to the regular agents and distributing the requests among them. Read replica is deployed as Kubernetes deployments, and depending on the number of replicas (N), it is faster QPS by approximately 1.7 to 1.8 times \* N.
 
 <div class="notice">
 The increase in QPS is possible only if sufficient infrastructure is available (see [Important notes](#important-notes) ).
@@ -15,48 +15,52 @@ The read replica is managed with a separate chart from the Vald cluster and is d
 ### When you deploy vald with helm command
 
 1. Edit `values.yaml` like below（Please refer to [deployment](deployment) for other fields.）
-    ```yaml
-    agent:
-    ngt:
-        export_index_info_to_k8s: true
-    readreplica:
-        enabled: true
-        minReplicas: 1 # if you don't use hpa, this will be the replicas of the Deployment
-        maxReplicas: 3
-        hpa:
-        enabled: true # if you prefer to use hpa
-        targetCPUUtilizationPercentage: 80
-    manager:
-    index:
-        operator:
-        enabled: true
-        rotation_job_concurrency: 2
-    ```
+
+   ```yaml
+   agent:
+   ngt:
+       export_index_info_to_k8s: true
+   readreplica:
+       enabled: true
+       minReplicas: 1 # if you don't use hpa, this will be the replicas of the Deployment
+       maxReplicas: 3
+       hpa:
+       enabled: true # if you prefer to use hpa
+       targetCPUUtilizationPercentage: 80
+   manager:
+   index:
+       operator:
+       enabled: true
+       rotation_job_concurrency: 2
+   ```
 
 1. Deploy vald cluster
-    ```bash
-    helm install vald vald/vald --values values.yaml
-    ```
 
-1. Deploy `vald-readreplica` with the same `values.yaml` 
-    ```bash
-    helm install vald-readreplica vald/vald-readreplica --values values.yaml
-    ```
+   ```bash
+   helm install vald vald/vald --values values.yaml
+   ```
+
+1. Deploy `vald-readreplica` with the same `values.yaml`
+   ```bash
+   helm install vald-readreplica vald/vald-readreplica --values values.yaml
+   ```
 
 ### When you deploy vald with `vald-helm-operator`
 
 1. Edit `valdrelease.yaml` with the same fields as above
 
 1. Deploy vald cluster
-    ```bash
-    helm install vald-helm-operator-release vald/vald-helm-operator
-    kubectl apply -f valdrelease.yaml
-    ```
+
+   ```bash
+   helm install vald-helm-operator-release vald/vald-helm-operator
+   kubectl apply -f valdrelease.yaml
+   ```
 
 1. Deploy `vald-readreplica`
-    ```bash
-    helm install vald-readreplica vald/vald-readreplica --values <YOUR VALUES YAML FILE PATH>
-    ```
+   ```bash
+   helm install vald-readreplica vald/vald-readreplica --values <YOUR VALUES YAML FILE PATH>
+   ```
+
 ## Architecture
 
 Read replica mainly consists of the following four parts.
@@ -92,8 +96,8 @@ The Kubernetes job to be responsible for the following processes
 
 - Only result consistency is guaranteed
 
-    There is a time lag between index insertion, agent save, and the completion of read replica rotation. During this time, there may be inconsistencies between the index in the agent itself and the index in the read replica.
+  There is a time lag between index insertion, agent save, and the completion of read replica rotation. During this time, there may be inconsistencies between the index in the agent itself and the index in the read replica.
 
 - Sufficient infrastructure is required for QPS scaling
 
-    Even if read replicas are deployed, QPS will not scale if sufficient resources are not available in the Kubernetes cluster. Specifically, agent resources and read replica resources should be deployed on separate nodes. Vald sets `podAntiAffinity` to ensure that agent resources and read replica resources are deployed on separate nodes as much as possible.
+  Even if read replicas are deployed, QPS will not scale if sufficient resources are not available in the Kubernetes cluster. Specifically, agent resources and read replica resources should be deployed on separate nodes. Vald sets `podAntiAffinity` to ensure that agent resources and read replica resources are deployed on separate nodes as much as possible.
