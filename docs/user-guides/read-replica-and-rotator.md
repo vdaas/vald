@@ -64,7 +64,7 @@ The read replica is managed with a separate chart from the Vald cluster and is d
 
 Read replica mainly consists of the following four parts.
 
-<img src="../../assets/docs/guides/read-replica-and-rotator/architecture.png" />
+<img src="../../assets/docs/guides/read-replica-and-rotator/architecture.png" alt="Read Replica Architecture" />
 
 ### Read replica deployment
 
