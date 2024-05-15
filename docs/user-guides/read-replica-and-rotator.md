@@ -16,7 +16,6 @@ The read replica is managed with a separate chart from the Vald cluster and is d
 
 1. Edit `values.yaml` like below（Please refer to [deployment](deployment) for other fields.）
 
-
    ```yaml
    agent:
    ngt:
@@ -35,17 +34,13 @@ The read replica is managed with a separate chart from the Vald cluster and is d
        rotation_job_concurrency: 2
    ```
 
-
 1. Deploy vald cluster
-
 
    ```bash
    helm install vald vald/vald --values values.yaml
    ```
 
-
 1. Deploy `vald-readreplica` with the same `values.yaml`
-
 
    ```bash
    helm install vald-readreplica vald/vald-readreplica --values values.yaml
@@ -55,9 +50,7 @@ The read replica is managed with a separate chart from the Vald cluster and is d
 
 1. Edit `valdrelease.yaml` with the same fields as above
 
-
 1. Deploy vald cluster
-
 
    ```bash
    helm install vald-helm-operator-release vald/vald-helm-operator
@@ -104,7 +97,7 @@ The Kubernetes job to be responsible for the following processes
 
 Result consistency is guaranteed
 
-  There is a time lag between index insertion, agent save, and the completion of read replica rotation. During this time, there may be inconsistencies between the index in the agent itself and the index in the read replica.
+There is a time lag between index insertion, agent save, and the completion of read replica rotation. During this time, there may be inconsistencies between the index in the agent itself and the index in the read replica.
 
 - Sufficient infrastructure is required for QPS scaling
 
