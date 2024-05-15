@@ -69,7 +69,7 @@ Read replica mainly consists of the following four parts.
 
 ### Read replica deployment
 
-The deployment that generates Pods where the actual processing of read replica takes place. Essentially, it is similar to a regular agent, but it differs in that it only accepts read requests (search requests) and reads the index from the read replica PVC.
+The deployment that generates Pods where the actual processing of read replica takes place. It is similar to a regular agent but only accepts read requests (search requests) and reads the index from the read replica PVC.
 
 ### Read replica PVC
 
