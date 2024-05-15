@@ -1,6 +1,6 @@
 # Read Replica and Rotator
 
-Read replica enhances the search QPS (Queries Per Second) of the Vald cluster by deploying read-only agents in addition to the regular agents and distributing the requests among them. Read replica is deployed as Kubernetes deployments, and depending on the number of replicas (N), it is faster QPS by approximately 1.7 to 1.8 times \* N.
+Read replica enhances the search QPS (Queries Per Second) of the Vald cluster by deploying read-only agents in addition to the regular agents and distributing the requests among them. Read replica is deployed as Kubernetes deployments, and depending on the number of replicas (N), QPS increases by approximately 1.7 to 1.8 times * N.
 
 <div class="notice">
 The increase in QPS is possible with sufficient infrastructure (see [Important notes](#important-notes)).
@@ -12,9 +12,9 @@ The read replica is managed with a separate chart from the Vald cluster and is d
 
 > The reason Vald and Vald-readreplica are in separate charts is to avoid conflicts between the read replica's restart and the Helm operator's processes when Vald is managed by a helm operator. Therefore, the read replica will always be deployed using Helm commands.
 
-### When you deploy vald with helm command
+### When you deploy Vald with Helm command
 
-1. Edit `values.yaml` like below（Please refer to [deployment](deployment) for other fields.）
+1. Edit `values.yaml` like below (Please refer to [deployment](deployment) for other fields.)
 
    ```yaml
    agent:
@@ -34,7 +34,7 @@ The read replica is managed with a separate chart from the Vald cluster and is d
        rotation_job_concurrency: 2
    ```
 
-1. Deploy vald cluster
+1. Deploy Vald cluster
 
    ```bash
    helm install vald vald/vald --values values.yaml
@@ -46,11 +46,11 @@ The read replica is managed with a separate chart from the Vald cluster and is d
    helm install vald-readreplica vald/vald-readreplica --values values.yaml
    ```
 
-### When you deploy vald with `vald-helm-operator`
+### When you deploy Vald cluster with `vald-helm-operator`
 
 1. Edit `valdrelease.yaml` with the same fields as above
 
-1. Deploy vald cluster
+1. Deploy Vald cluster
 
    ```bash
    helm install vald-helm-operator-release vald/vald-helm-operator
@@ -58,6 +58,7 @@ The read replica is managed with a separate chart from the Vald cluster and is d
    ```
 
 1. Deploy `vald-readreplica`
+
    ```bash
    helm install vald-readreplica vald/vald-readreplica --values <YOUR VALUES YAML FILE PATH>
    ```
@@ -70,7 +71,7 @@ Read replica mainly consists of the following four parts.
 
 ### Read replica deployment
 
-The deployment that generates Pods where the actual processing of read replica takes place. It is similar to a regular agent, but only accepts read requests (search requests) and reads the index from the read replica PVC.
+The deployment that generates Pods where the actual processing of read replica takes place. Read replica accepts read requests (search) and reads the index from the read replica PVC.
 
 ### Read replica PVC
 
@@ -87,7 +88,7 @@ The operator handles the following processes:
 
 ### Read replica rotator
 
-The Kubernetes job to be responsible for the following processes
+The Kubernetes job handles the following processes:
 
 1. Creating a snapshot from the agent's PVC
 1. Generating a PVC for read replica from the snapshot
