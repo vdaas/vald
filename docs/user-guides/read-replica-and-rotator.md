@@ -10,11 +10,12 @@ The increase in QPS is possible with sufficient infrastructure (see [Important n
 
 The read replica is managed with a separate chart from the Vald cluster and is deployed as an addon to the Vald cluster. Therefore, in any of the following steps, the Vald cluster should be deployed first, followed by the deployment of the read replica.
 
-> The reason Vald and Vald-readreplica are in separate charts is to avoid conflicts between the read replica's restart and the Helm operator's processes when Vald is managed by a helm operator. Therefore, the read replica will be deployed using helm commands in any case.
+> The reason Vald and Vald-readreplica are in separate charts is to avoid conflicts between the read replica's restart and the Helm operator's processes when Vald is managed by a helm operator. Therefore, the read replica will always be deployed using Helm commands.
 
 ### When you deploy vald with helm command
 
 1. Edit `values.yaml` like below（Please refer to [deployment](deployment) for other fields.）
+
 
    ```yaml
    agent:
@@ -36,20 +37,26 @@ The read replica is managed with a separate chart from the Vald cluster and is d
 
 1. Deploy vald cluster
 
+
    ```bash
    helm install vald vald/vald --values values.yaml
    ```
 
+
 1. Deploy `vald-readreplica` with the same `values.yaml`
+
    ```bash
    helm install vald-readreplica vald/vald-readreplica --values values.yaml
    ```
 
 ### When you deploy vald with `vald-helm-operator`
 
+
 1. Edit `valdrelease.yaml` with the same fields as above
 
+
 1. Deploy vald cluster
+
 
    ```bash
    helm install vald-helm-operator-release vald/vald-helm-operator
@@ -69,7 +76,7 @@ Read replica mainly consists of the following four parts.
 
 ### Read replica deployment
 
-The deployment that generates Pods where the actual processing of read replica takes place. It is similar to a regular agent but only accepts read requests (search requests) and reads the index from the read replica PVC.
+The deployment that generates Pods where the actual processing of read replica takes place. It is similar to a regular agent, but only accepts read requests (search requests) and reads the index from the read replica PVC.
 
 ### Read replica PVC
 
