@@ -6,7 +6,7 @@ Read replica enhances the search QPS (Queries Per Second) of the Vald cluster by
 The increase in QPS is possible only if sufficient infrastructure is available (see [Important notes](#important-notes) ).
 </div>
 
-## How to deploy read reaplica
+## How to deploy read replica
 
 The read replica is managed with a separate chart from the Vald cluster and is deployed as an addon to the Vald cluster. Therefore, in any of the following steps, the Vald cluster should be deployed first, followed by the deployment of the read replica.
 
