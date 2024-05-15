@@ -16,6 +16,7 @@ The read replica is managed with a separate chart from the Vald cluster and is d
 
 1. Edit `values.yaml` like below（Please refer to [deployment](deployment) for other fields.）
 
+
    ```yaml
    agent:
    ngt:
