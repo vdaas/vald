@@ -1,0 +1,50 @@
+name: Update Actions version
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * *'
+jobs:
+  dump-contexts-to-log:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: vdaas/vald/.github/actions/dump-context@main
+
+  update-version:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.DISPATCH_TOKEN }}
+      - name: Set Git config
+        run: |
+          git config --global --add safe.directory ${GITHUB_WORKSPACE}
+      - uses: crazy-max/ghaction-import-gpg@v6
+        with:
+          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
+          git_user_signingkey: true
+          git_commit_gpgsign: true
+      - name: Run update command
+        run: |
+          make update/actions
+      - name: Check difference
+        id: check_diff
+        run: |
+          if git diff --quiet --exit-code; then
+            echo "Nothing updated"
+          else
+            git diff && git status
+            echo "HAS_GIT_DIFF=true" >> $GITHUB_OUTPUT
+          fi
+      - name: Create PR
+        if: ${{ steps.check_diff.outputs.HAS_GIT_DIFF == 'true' }}
+        uses: peter-evans/create-pull-request@v6
+        with:
+          author: "${{ secrets.DISPATCH_USER }} <vald@vdaas.org>"
+          token: ${{ secrets.DISPATCH_TOKEN }}
+          committer: "${{ secrets.DISPATCH_USER }} <vald@vdaas.org>"
+          signoff: true
+          delete-branch: true
+          base: main
+          title: "Update Actions dependency"
+          body: "Automated pull request to update Actions."
