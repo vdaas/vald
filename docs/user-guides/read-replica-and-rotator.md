@@ -14,7 +14,7 @@ The read replica is managed with a separate chart from the Vald cluster and is d
 
 ### When you deploy Vald with Helm command
 
-1. Edit `values.yaml` like below (Please refer to [deployment](deployment) for other fields.)
+1. Edit `values.yaml` like below (Please refer to [deployment](../user-guides/deployment.md) for other fields.)
 
    ```yaml
    agent:
