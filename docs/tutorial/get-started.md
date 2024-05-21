@@ -443,7 +443,7 @@ If you are interested, please refer to [SDKs](../user-guides/sdks.md).<br>
           ```go
           _, err := client.Flush(ctx, &payload.Flush_Request{})
           if err != nil {
-             glg.Fatal(err)
+              glg.Fatal(err)
           }
           ```
 
