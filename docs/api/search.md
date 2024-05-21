@@ -700,7 +700,7 @@ Here are some common reasons and how to resolve each error.
 | NOT_FOUND         | Search result is empty or insufficient to request result length.                                                | Send a request with another vector or set min_num to a smaller value.                    |
 | INTERNAL          | Target Vald cluster or network route has some critical error.                                                   | Check target Vald cluster first and check network route including ingress as second.     |
 
-### MultiSearchByID RPC
+## MultiSearchByID RPC
 
 MultiSearchByID RPC is the method to search vectors with multiple IDs in **1** request.
 
@@ -1485,7 +1485,7 @@ Here are some common reasons and how to resolve each error.
 | NOT_FOUND         | Search result is empty or insufficient to request result length.                                                | Send a request with another vector or set min_num to a smaller value.                    |
 | INTERNAL          | Target Vald cluster or network route has some critical error.                                                   | Check target Vald cluster first and check network route including ingress as second.     |
 
-### MultiLinearSearchByID RPC
+## MultiLinearSearchByID RPC
 
 MultiLinearSearchByID RPC is the method to linear search vectors with multiple IDs in **1** request.
 
