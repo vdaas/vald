@@ -369,7 +369,7 @@ gRPC has a message size limitation.<br>
 Please be careful that the size of the request exceeds the limit.
 </div>
 
-## Input
+### Input
 
 - the scheme of `payload.v1.Remove.MultiRequest`
 
