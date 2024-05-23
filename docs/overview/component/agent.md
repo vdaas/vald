@@ -74,7 +74,7 @@ You have to wait to complete the CreateIndex and SaveIndex functions before sear
 
 This image shows the mechanism to create NGT index.
 
-<img src="../../../assets/docs/overview/component/agent/ngt.png" />
+<img src="../../../assets/docs/overview/component/agent/ngt.png" alt="NGT Index Creation Mechanism" />
 
 Please refer to [Go Doc](https://pkg.go.dev/github.com/vdaas/vald@VERSION@/pkg/agent/core/ngt/service) for other functions.
 
