@@ -76,7 +76,7 @@ This image shows the mechanism to create NGT index.
 
 <img src="../../../assets/docs/overview/component/agent/ngt.png" />
 
-Please refer to [Go Doc](https://pkg.go.dev/github.com/vdaas/vald@v1.3.1/pkg/agent/core/ngt/service) for other functions.
+Please refer to [Go Doc](https://pkg.go.dev/github.com/vdaas/vald@VERSION@/pkg/agent/core/ngt/service) for other functions.
 
 #### Vald Agent Faiss
 
