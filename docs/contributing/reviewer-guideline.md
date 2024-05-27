@@ -8,7 +8,7 @@ It is intended for internal developers. A separate guideline for external contri
 
 The purpose of this guideline is to clarify what reviewers should be aware of and to optimize communication, thereby facilitating efficient development of Vald.
 
-## Preperation
+## Preparation
 
 This guideline assumes that the content of the Pull Request is appropriate.
 
@@ -47,7 +47,7 @@ Unless there are high-priority issues, you are in a meeting, or deeply focused o
 
 Regarding quality, while there is always room for improvement, if the quality is sufficient for release, it is acceptable to approve. If there is potential for improvement, suggest it in the comments, and let the implementer decide whether to address it in the same Pull Request or a separate one.
 
-#### What Reviewers Should Do
+### What Reviewers Should Do
 
 - If the title or description is unclear, ask questions before reviewing the code.
 - If any part of the code is not understood after a brief review, ask for clarification or additional comments instead of trying to understand it yourself.
@@ -56,7 +56,7 @@ Regarding quality, while there is always room for improvement, if the quality is
 - If interrupted, respond even if the review is incomplete.
 - Ignore other reviewers' comments.
 
-#### What Reviewers Should Not Do
+### What Reviewers Should Not Do
 
 - Try to decipher something that is not immediately understandable.
 - Close the browser or tab or start something else if it is not understood.
