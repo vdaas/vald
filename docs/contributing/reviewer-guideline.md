@@ -2,7 +2,7 @@
 
 This document serves as a guideline for those reviewing Pull Requests.
 
-This guidline is intended for internal developers. A separate guideline for external contributors is planned.
+This guideline is intended for internal developers. A separate guideline for external contributors is planned.
 
 ## Purpose
 
