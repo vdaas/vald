@@ -31,8 +31,8 @@ pub mod vald {
     }
 }
 
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn it_works() {}
+pub mod core {
+    pub mod v1 {
+        include!("core.v1.tonic.rs");
+    }
 }
