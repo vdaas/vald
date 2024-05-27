@@ -69,13 +69,13 @@ All communications do not need to be completed on GitHub. Using Slack or Zoom ca
 The following criteria often determine the choice of communication tool:
 
 - On GitHub Mainly used for specific questions or comments about the code. If the exchange is unsuitable for comments, use Slack or Zoom.
-- On Slack Used for brief exchanges. If the discussion is likely to be lengthy or complex, switch to Zoom.
+- On Slack, used for brief exchanges. If the discussion is likely to be lengthy or complex, switch to Zoom.
 - On Zoom Used when more complex communication is necessary.
 
 Regardless of where communication takes place, ensure that the results are documented on GitHub or in the code as a record of the communication.
 
 ## Effect measurement
 
-Once a month, a report is created at https://github.com/vdaas/vald/issues.
+Once a month, a report is created at [Vald Issues](https://github.com/vdaas/vald/issues).
 
 This report includes the time taken from when a Pull Request is opened to when it is merged and a summary of this data. Regularly reflect on this information.
