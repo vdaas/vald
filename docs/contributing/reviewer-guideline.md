@@ -12,7 +12,7 @@ The purpose of this guideline is to clarify what reviewers should be aware of an
 
 This guideline assumes that the content of the Pull Request is appropriate.
 
-If the changes are extensive, contain multiple intentions, or the tests are insufficient, consider splitting the Pull Request to make it easier to review.
+Consider splitting the Pull Request if the changes are extensive, have multiple intentions, or if the tests are insufficient. This makes it easier to review.
 
 Regarding the amount of change, opinions may vary, but in this project, we aim to keep the implementation of logic under 1000 lines, excluding automatically generated code such as Protocol Buffers.
 
@@ -24,7 +24,7 @@ In this project, merging a Pull Request requires approval from two people. If yo
 
 People may notice requests through different means, but in this project, we prioritize the following methods of communication:
 
-1. Speak on Zoom If it is during business hours and the reviewer is available on Zoom, we often talk directly.
+1. Speak on Zoom if it is during business hours and the reviewer is available on Zoom; we often talk directly.
 1. Send a mention on Slack If the reviewer is not on Zoom, we send a mention on Slack.
 1. Email from GitHub An email is automatically sent when someone is assigned.
 
