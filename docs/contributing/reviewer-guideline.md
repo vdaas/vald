@@ -18,15 +18,15 @@ Regarding the amount of change, opinions may vary, but in this project, we aim t
 
 ## Review request
 
-In this project, merging a Pull Request requires approval from two people. If you want a specific person to review, assign them explicitly; otherwise, assign vdaas/maintainer for a random assignment.
+In this project, merging a Pull Request requires approval from two people. If you want a specific person to review, assign them explicitly; otherwise, assign random people.
 
 ### Request notification
 
 People may notice requests through different means, but in this project, we prioritize the following methods of communication:
 
-1. Speak on Zoom if it is during business hours and the reviewer is available on Zoom; we often talk directly.
-1. Send a mention on Slack If the reviewer is not on Zoom, we send a mention on Slack.
-1. Email from GitHub An email is automatically sent when someone is assigned.
+1. If you are available to communicate with us via online meeting systems like Zoom, please feel free to notify us directly.
+1. Send a mention in some way. For example, we use [Slack](https://join.slack.com/t/vald-community/shared_invite/zt-db2ky9o4-R_9p2sVp8xRwztVa8gfnPA) and we have [X account](https://twitter.com/vdaas_vald).
+1. Email from GitHub is automatically sent when someone is assigned.
 
 If the reviewer does not notice the request, we follow the same priority for re-notifying.
 
