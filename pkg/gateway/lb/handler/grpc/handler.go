@@ -452,11 +452,8 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 // It ensures that the number of results is not less than the minimum required and adjusts based on the provided ratio.
 func (s *server) calculateNum(ctx context.Context, num uint32, ratio float32) (n uint32) {
 	min := float64(s.replica) / float64(len(s.gateway.Addrs(ctx)))
-	if ratio < 0.0 {
+	if ratio <= 0.0 {
 		return uint32(math.Ceil(float64(num) * min))
-	}
-	if ratio == 0.0 {
-		return num
 	}
 	n = uint32(math.Ceil(float64(num) * (min + ((1 - min) * float64(ratio)))))
 	sn := uint32(math.Ceil(float64(num) * min))
