@@ -90,10 +90,10 @@ service Filter {
 
   - Filter.Config
 
-    |  field  | type          | label | required | desc.                           |
-    | :-----: | :------------ | :---- | :------: | :------------------------------ |
-    | target  | Filter.Target |       |    \*    | the filter target configuration |
-    | query   | Filter.Query  |       |          | the filter target configuration |
+    | field  | type          | label | required | desc.                           |
+    | :----: | :------------ | :---- | :------: | :------------------------------ |
+    | target | Filter.Target |       |    \*    | the filter target configuration |
+    | query  | Filter.Query  |       |          | the filter target configuration |
 
   - Filter.Target
 
@@ -224,10 +224,10 @@ service Filter {
 
   - Filter.Config
 
-    |  field  | type          | label | required | desc.                           |
-    | :-----: | :------------ | :---- | :------: | :------------------------------ |
-    | target  | Filter.Target |       |    \*    | the filter target configuration |
-    | query   | Filter.Query  |       |          | the filter target configuration |
+    | field  | type          | label | required | desc.                           |
+    | :----: | :------------ | :---- | :------: | :------------------------------ |
+    | target | Filter.Target |       |    \*    | the filter target configuration |
+    | query  | Filter.Query  |       |          | the filter target configuration |
 
   - Filter.Target
 
@@ -391,10 +391,10 @@ service Filter {
 
   - Filter.Config
 
-    |  field  | type          | label | required | desc.                           |
-    | :-----: | :------------ | :---- | :------: | :------------------------------ |
-    | target  | Filter.Target |       |    \*    | the filter target configuration |
-    | query   | Filter.Query  |       |          | the filter target configuration |
+    | field  | type          | label | required | desc.                           |
+    | :----: | :------------ | :---- | :------: | :------------------------------ |
+    | target | Filter.Target |       |    \*    | the filter target configuration |
+    | query  | Filter.Query  |       |          | the filter target configuration |
 
   - Filter.Target
 
@@ -530,15 +530,15 @@ service Filter {
     | :---------------------: | :----------------------------- | :---- | :------: | :-------------------------------------------------------------------------------------------------- |
     | skip_strict_exist_check | bool                           |       |          | check the same vector is already updated or not.<br>the ID should be unique if the value is `true`. |
     |        timestamp        | int64                          |       |          | the timestamp of the vector updated.<br>if it is N/A, the current time will be used.                |
-    |         filters         | repeated(Array[Filter.Config]) |       |          | configuration for filter                                                                             |
+    |         filters         | repeated(Array[Filter.Config]) |       |          | configuration for filter                                                                            |
     | disable_balanced_update | bool                           |       |          | A flag to disable balanced update (split remove -&gt; insert operation) during update operation.    |
 
   - Filter.Config
 
-    |  field  | type          | label | required | desc.                           |
-    | :-----: | :------------ | :---- | :------: | :------------------------------ |
-    | target  | Filter.Target |       |    \*    | the filter target configuration |
-    | query   | Filter.Query  |       |          | the filter target configuration |
+    | field  | type          | label | required | desc.                           |
+    | :----: | :------------ | :---- | :------: | :------------------------------ |
+    | target | Filter.Target |       |    \*    | the filter target configuration |
+    | query  | Filter.Query  |       |          | the filter target configuration |
 
   - Filter.Target
 
@@ -664,15 +664,15 @@ service Filter {
     | :---------------------: | :----------------------------- | :---- | :------: | :-------------------------------------------------------------------------------------------------- |
     | skip_strict_exist_check | bool                           |       |          | check the same vector is already updated or not.<br>the ID should be unique if the value is `true`. |
     |        timestamp        | int64                          |       |          | the timestamp of the vector updated.<br>if it is N/A, the current time will be used.                |
-    |         filters         | repeated(Array[Filter.Config]) |       |          | configuration for filter                                                                             |
+    |         filters         | repeated(Array[Filter.Config]) |       |          | configuration for filter                                                                            |
     | disable_balanced_update | bool                           |       |          | A flag to disable balanced update (split remove -&gt; insert operation) during update operation.    |
 
   - Filter.Config
 
-    |  field  | type          | label | required | desc.                           |
-    | :-----: | :------------ | :---- | :------: | :------------------------------ |
-    | target  | Filter.Target |       |    \*    | the filter target configuration |
-    | query   | Filter.Query  |       |          | the filter target configuration |
+    | field  | type          | label | required | desc.                           |
+    | :----: | :------------ | :---- | :------: | :------------------------------ |
+    | target | Filter.Target |       |    \*    | the filter target configuration |
+    | query  | Filter.Query  |       |          | the filter target configuration |
 
   - Filter.Target
 
@@ -837,15 +837,15 @@ service Filter {
     | :---------------------: | :----------------------------- | :---- | :------: | :-------------------------------------------------------------------------------------------------- |
     | skip_strict_exist_check | bool                           |       |          | check the same vector is already updated or not.<br>the ID should be unique if the value is `true`. |
     |        timestamp        | int64                          |       |          | the timestamp of the vector updated.<br>if it is N/A, the current time will be used.                |
-    |         filters         | repeated(Array[Filter.Config]) |       |          | configuration for filter                                                                             |
+    |         filters         | repeated(Array[Filter.Config]) |       |          | configuration for filter                                                                            |
     | disable_balanced_update | bool                           |       |          | A flag to disable balanced update (split remove -&gt; insert operation) during update operation.    |
 
   - Filter.Config
 
-    |  field  | type          | label | required | desc.                           |
-    | :-----: | :------------ | :---- | :------: | :------------------------------ |
-    | target  | Filter.Target |       |    \*    | the filter target configuration |
-    | query   | Filter.Query  |       |          | the filter target configuration |
+    | field  | type          | label | required | desc.                           |
+    | :----: | :------------ | :---- | :------: | :------------------------------ |
+    | target | Filter.Target |       |    \*    | the filter target configuration |
+    | query  | Filter.Query  |       |          | the filter target configuration |
 
   - Filter.Target
 
@@ -986,10 +986,10 @@ service Filter {
 
   - Filter.Config
 
-    |  field  | type          | label | required | desc.                           |
-    | :-----: | :------------ | :---- | :------: | :------------------------------ |
-    | target  | Filter.Target |       |    \*    | the filter target configuration |
-    | query   | Filter.Query  |       |          | the filter target configuration |
+    | field  | type          | label | required | desc.                           |
+    | :----: | :------------ | :---- | :------: | :------------------------------ |
+    | target | Filter.Target |       |    \*    | the filter target configuration |
+    | query  | Filter.Query  |       |          | the filter target configuration |
 
   - Filter.Target
 
@@ -1117,10 +1117,10 @@ service Filter {
 
   - Filter.Config
 
-    |  field  | type          | label | required | desc.                           |
-    | :-----: | :------------ | :---- | :------: | :------------------------------ |
-    | target  | Filter.Target |       |    \*    | the filter target configuration |
-    | query   | Filter.Query  |       |          | the filter target configuration |
+    | field  | type          | label | required | desc.                           |
+    | :----: | :------------ | :---- | :------: | :------------------------------ |
+    | target | Filter.Target |       |    \*    | the filter target configuration |
+    | query  | Filter.Query  |       |          | the filter target configuration |
 
   - Filter.Target
 
@@ -1290,10 +1290,10 @@ service Filter {
 
   - Filter.Config
 
-    |  field  | type          | label | required | desc.                           |
-    | :-----: | :------------ | :---- | :------: | :------------------------------ |
-    | target  | Filter.Target |       |    \*    | the filter target configuration |
-    | query   | Filter.Query  |       |          | the filter target configuration |
+    | field  | type          | label | required | desc.                           |
+    | :----: | :------------ | :---- | :------: | :------------------------------ |
+    | target | Filter.Target |       |    \*    | the filter target configuration |
+    | query  | Filter.Query  |       |          | the filter target configuration |
 
   - Filter.Target
 
@@ -1429,10 +1429,10 @@ service Filter {
 
   - Filter.Config
 
-    |  field  | type          | label | required | desc.                           |
-    | :-----: | :------------ | :---- | :------: | :------------------------------ |
-    | target  | Filter.Target |       |    \*    | the filter target configuration |
-    | query   | Filter.Query  |       |          | the filter target configuration |
+    | field  | type          | label | required | desc.                           |
+    | :----: | :------------ | :---- | :------: | :------------------------------ |
+    | target | Filter.Target |       |    \*    | the filter target configuration |
+    | query  | Filter.Query  |       |          | the filter target configuration |
 
   - Filter.Target
 
@@ -1569,10 +1569,10 @@ service Filter {
 
   - Filter.Config
 
-    |  field  | type          | label | required | desc.                           |
-    | :-----: | :------------ | :---- | :------: | :------------------------------ |
-    | target  | Filter.Target |       |    \*    | the filter target configuration |
-    | query   | Filter.Query  |       |          | the filter target configuration |
+    | field  | type          | label | required | desc.                           |
+    | :----: | :------------ | :---- | :------: | :------------------------------ |
+    | target | Filter.Target |       |    \*    | the filter target configuration |
+    | query  | Filter.Query  |       |          | the filter target configuration |
 
   - Filter.Target
 
@@ -1741,10 +1741,10 @@ service Filter {
 
   - Filter.Config
 
-    |  field  | type          | label | required | desc.                           |
-    | :-----: | :------------ | :---- | :------: | :------------------------------ |
-    | target  | Filter.Target |       |    \*    | the filter target configuration |
-    | query   | Filter.Query  |       |          | the filter target configuration |
+    | field  | type          | label | required | desc.                           |
+    | :----: | :------------ | :---- | :------: | :------------------------------ |
+    | target | Filter.Target |       |    \*    | the filter target configuration |
+    | query  | Filter.Query  |       |          | the filter target configuration |
 
   - Filter.Target
 
