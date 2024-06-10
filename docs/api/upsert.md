@@ -300,7 +300,7 @@ Please be careful that the size of the request exceeds the limit.
 
   - Upsert.Config
 
-    |          field          | type          | label | required | description                                                                                                   |
+    |          field          | type                           | label | required | description                                                                                                   |
     | :---------------------: | :----------------------------- | :---- | :------: | :------------------------------------------------------------------------------------------------------------ |
     | skip_strict_exist_check | bool                           |       |          | Check whether the same vector is already inserted or not.<br> The ID should be unique if the value is `true`. |
     |        timestamp        | int64                          |       |          | The timestamp of the vector inserted.<br>If it is N/A, the current time will be used.                         |
