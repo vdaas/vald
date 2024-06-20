@@ -16,7 +16,7 @@
 
 defaults:
   image:
-    tag: latest
+    tag: nightly
 agent:
   ngt:
     auto_index_duration_limit: 30m
