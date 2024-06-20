@@ -263,10 +263,22 @@ func Join(errs ...error) error {
 	var e *joinError
 	switch x := errs[0].(type) {
 	case *joinError:
-		e = x
+		if x != nil {
+			e = x
+		} else {
+			e = &joinError{
+				errs: make([]error, 0, l),
+			}
+		}
 		errs = errs[1:]
 	case interface{ Unwrap() []error }:
-		e = &joinError{errs: x.Unwrap()}
+		if x != nil && len(x.Unwrap()) != 0 {
+			e = &joinError{errs: x.Unwrap()}
+		} else {
+			e = &joinError{
+				errs: make([]error, 0, l),
+			}
+		}
 		errs = errs[1:]
 	default:
 		e = &joinError{
@@ -277,6 +289,9 @@ func Join(errs ...error) error {
 		if err != nil {
 			e.errs = append(e.errs, err)
 		}
+	}
+	if len(e.errs) == 0 {
+		return nil
 	}
 	return e
 }
