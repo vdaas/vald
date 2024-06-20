@@ -18,7 +18,7 @@ default:
   logging:
     level: debug
   image:
-    tag: latest
+    tag: nightly
 agent:
   minReplicas: 4
   maxReplicas: 8
