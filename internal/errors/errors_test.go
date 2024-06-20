@@ -1674,11 +1674,37 @@ func TestJoin(t *testing.T) {
 	}
 	tests := []test{
 		{
-			name: "succeeds to return nil",
+			name: "return nil when all errors are nil",
 			args: args{
 				errs: []error{
 					nil, nil, nil,
 				},
+			},
+		},
+		{
+			name: "returns an aggregated error when all errors are non-nil and different",
+			args: args{
+				errs: []error{
+					New("error1"), New("error2"), New("error3"),
+				},
+			},
+			want: want{
+				err: &joinError{
+					errs: []error{
+						New("error1"), New("error2"), New("error3"),
+					},
+				},
+			},
+		},
+		{
+			name: "returns an error when errors are mixed nil and non-nil",
+			args: args{
+				errs: []error{
+					nil, New("error1"), nil,
+				},
+			},
+			want: want{
+				err: New("error1"),
 			},
 		},
 	}
