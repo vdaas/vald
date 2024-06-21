@@ -263,7 +263,7 @@ func Join(errs ...error) error {
 	var e *joinError
 	switch x := errs[0].(type) {
 	case *joinError:
-		if x != nil {
+		if x != nil && len(x.errs) != 0 {
 			e = x
 		} else {
 			e = &joinError{
