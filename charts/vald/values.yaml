@@ -2174,6 +2174,80 @@ agent:
     # @schema {"name": "agent.ngt.error_buffer_limit", "type": "integer", "minimum": 1}
     # agent.ngt.error_buffer_limit -- maximum number of core ngt error buffer pool size limit
     error_buffer_limit: 10
+  # @schema {"name": "agent.faiss", "type": "object"}
+  faiss:
+    # @schema {"name": "agent.faiss.pod_name", "type": "string"}
+    # agent.faiss.pod_name -- pod name of myself
+    pod_name: _MY_POD_NAME_
+    # @schema {"name": "agent.faiss.namespace", "type": "string"}
+    # agent.faiss.namespace -- namespace of myself
+    namespace: _MY_POD_NAMESPACE_
+    # @schema {"name": "agent.faiss.index_path", "type": "string"}
+    # agent.faiss.index_path -- path to index data
+    index_path: ""
+    # @schema {"name": "agent.faiss.auto_index_duration_limit", "type": "string"}
+    # agent.faiss.auto_index_duration_limit -- limit duration of automatic indexing
+    auto_index_duration_limit: 24h
+    # @schema {"name": "agent.faiss.auto_index_check_duration", "type": "string"}
+    # agent.faiss.auto_index_check_duration -- check duration of automatic indexing
+    auto_index_check_duration: 30m
+    # @schema {"name": "agent.faiss.auto_index_length", "type": "integer"}
+    # agent.faiss.auto_index_length -- number of cache to trigger automatic indexing
+    auto_index_length: 100
+    # @schema {"name": "agent.faiss.auto_save_index_duration", "type": "string"}
+    # agent.faiss.auto_save_index_duration -- duration of automatic save index
+    auto_save_index_duration: 35m
+    # @schema {"name": "agent.faiss.initial_delay_max_duration", "type": "string"}
+    # agent.faiss.initial_delay_max_duration -- maximum duration for initial delay
+    initial_delay_max_duration: 3m
+    # @schema {"name": "agent.faiss.dimension", "type": "integer", "minimum": 1}
+    # agent.faiss.dimension -- vector dimension
+    dimension: 4096
+    # @schema {"name": "agent.faiss.metric_type", "type": "string", "enum": ["innerproduct", "l2"]}
+    # agent.faiss.metric_type-- metric type
+    # it should be `innerproduct` or `l2`
+    metric_type: l2
+    # @schema {"name": "agent.faiss.nlist", "type": "integer"}
+    # agent.faiss.nlist-- nlist
+    nlist: 100
+    # @schema {"name": "agent.faiss.m", "type": "integer"}
+    # agent.faiss.m-- m
+    m: 8
+    # @schema {"name": "agent.faiss.nbits_per_idx", "type": "integer"}
+    # agent.faiss.nbits_per_idx-- nbits_per_idx
+    nbits_per_idx: 8
+    # @schema {"name": "agent.faiss.enable_in_memory_mode", "type": "boolean"}
+    # agent.faiss.enable_in_memory_mode -- in-memory mode enabled
+    enable_in_memory_mode: true
+    # @schema {"name": "agent.faiss.min_load_index_timeout", "type": "string"}
+    # agent.faiss.min_load_index_timeout -- minimum duration of load index timeout
+    min_load_index_timeout: 3m
+    # @schema {"name": "agent.faiss.max_load_index_timeout", "type": "string"}
+    # agent.faiss.max_load_index_timeout -- maximum duration of load index timeout
+    max_load_index_timeout: 10m
+    # @schema {"name": "agent.faiss.load_index_timeout_factor", "type": "string"}
+    # agent.faiss.load_index_timeout_factor -- a factor of load index timeout.
+    # timeout duration will be calculated by (index count to be loaded) * (factor).
+    load_index_timeout_factor: 1ms
+    # @schema {"name": "agent.faiss.enable_proactive_gc", "type": "boolean"}
+    # agent.faiss.enable_proactive_gc -- enable proactive GC call for reducing heap memory allocation
+    enable_proactive_gc: false
+    # @schema {"name": "agent.faiss.enable_copy_on_write", "type": "boolean"}
+    # agent.faiss.enable_copy_on_write -- enable copy on write saving for more stable backup
+    enable_copy_on_write: false
+    # @schema {"name": "agent.faiss.vqueue", "type": "object"}
+    vqueue:
+      # @schema {"name": "agent.faiss.vqueue.insert_buffer_pool_size", "type": "integer"}
+      # agent.faiss.vqueue.insert_buffer_pool_size -- insert slice pool buffer size
+      insert_buffer_pool_size: 10000
+      # @schema {"name": "agent.faiss.vqueue.delete_buffer_pool_size", "type": "integer"}
+      # agent.faiss.vqueue.delete_buffer_pool_size -- delete slice pool buffer size
+      delete_buffer_pool_size: 5000
+    # @schema {"name": "agent.faiss.kvsdb", "type": "object"}
+    kvsdb:
+      # @schema {"name": "agent.faiss.kvsdb.concurrency", "type": "integer"}
+      # agent.faiss.kvsdb.concurrency -- kvsdb processing concurrency
+      concurrency: 6
   # @schema {"name": "agent.sidecar", "type": "object"}
   sidecar:
     # @schema {"name": "agent.sidecar.enabled", "type": "boolean"}

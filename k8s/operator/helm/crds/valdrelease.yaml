@@ -147,6 +147,63 @@ spec:
                         x-kubernetes-preserve-unknown-fields: true
                     externalTrafficPolicy:
                       type: string
+                    faiss:
+                      type: object
+                      properties:
+                        auto_index_check_duration:
+                          type: string
+                        auto_index_duration_limit:
+                          type: string
+                        auto_index_length:
+                          type: integer
+                        auto_save_index_duration:
+                          type: string
+                        dimension:
+                          type: integer
+                          minimum: 1
+                        enable_copy_on_write:
+                          type: boolean
+                        enable_in_memory_mode:
+                          type: boolean
+                        enable_proactive_gc:
+                          type: boolean
+                        index_path:
+                          type: string
+                        initial_delay_max_duration:
+                          type: string
+                        kvsdb:
+                          type: object
+                          properties:
+                            concurrency:
+                              type: integer
+                        load_index_timeout_factor:
+                          type: string
+                        m:
+                          type: integer
+                        max_load_index_timeout:
+                          type: string
+                        metric_type:
+                          type: string
+                          enum:
+                            - innerproduct
+                            - l2
+                        min_load_index_timeout:
+                          type: string
+                        namespace:
+                          type: string
+                        nbits_per_idx:
+                          type: integer
+                        nlist:
+                          type: integer
+                        pod_name:
+                          type: string
+                        vqueue:
+                          type: object
+                          properties:
+                            delete_buffer_pool_size:
+                              type: integer
+                            insert_buffer_pool_size:
+                              type: integer
                     hpa:
                       type: object
                       properties:
