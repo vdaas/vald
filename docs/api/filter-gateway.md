@@ -1477,6 +1477,17 @@ service Filter {
     |    id    | string |       | the vector ID                                         |
     | distance | float  |       | the distance between result vector and request vector |
 
+### Status Code
+
+| code | desc.             |
+| :--: | :---------------- |
+|  0   | OK                |
+|  1   | CANCELLED         |
+|  3   | INVALID_ARGUMENT  |
+|  4   | DEADLINE_EXCEEDED |
+|  5   | NOT_FOUND         |
+|  13  | INTERNAL          |
+
 ## MultiSearch RPC
 
 MultiSearch RPC is the method to search objects with multiple objects in **1** request.
