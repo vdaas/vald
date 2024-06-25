@@ -55,4 +55,4 @@ Please check your CPU information.
 
 - [Provisioning Troubleshooting](../troubleshooting/provisioning.md)
 - [API Status](../api/status.md)
-- [FAQ](../support/faq.md)
+- [FAQ](../support/FAQ.md)
