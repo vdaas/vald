@@ -709,7 +709,7 @@ package grpc
 //
 // func TestWithDistanceFilterTargets(t *testing.T) {
 // 	type args struct {
-// 		addrs []string
+// 		cs []*config.DistanceFilterConfig
 // 	}
 // 	type want struct {
 // 		want Option
@@ -734,7 +734,7 @@ package grpc
 // 		   {
 // 		       name: "test_case_1",
 // 		       args: args {
-// 		           addrs:nil,
+// 		           cs:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -753,7 +753,7 @@ package grpc
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           args: args {
-// 		           addrs:nil,
+// 		           cs:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -784,7 +784,7 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 //
-// 			got := WithDistanceFilterTargets(test.args.addrs...)
+// 			got := WithDistanceFilterTargets(test.args.cs...)
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
@@ -795,7 +795,7 @@ package grpc
 //
 // func TestWithObjectFilterTargets(t *testing.T) {
 // 	type args struct {
-// 		addrs []string
+// 		cs []*config.ObjectFilterConfig
 // 	}
 // 	type want struct {
 // 		want Option
@@ -820,7 +820,7 @@ package grpc
 // 		   {
 // 		       name: "test_case_1",
 // 		       args: args {
-// 		           addrs:nil,
+// 		           cs:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -839,7 +839,7 @@ package grpc
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           args: args {
-// 		           addrs:nil,
+// 		           cs:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -870,7 +870,7 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 //
-// 			got := WithObjectFilterTargets(test.args.addrs...)
+// 			got := WithObjectFilterTargets(test.args.cs...)
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}

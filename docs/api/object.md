@@ -95,7 +95,7 @@ GetObject RPC is the method to get the metadata of a vector inserted into the `v
   message Object {
       message VectorRequest {
         ID id = 1 [ (validate.rules).repeated .min_items = 2 ];
-        Filter.Config filters = 2;
+        repeated Filter.Config filters = 2;
       }
 
       message ID {
@@ -106,10 +106,10 @@ GetObject RPC is the method to get the metadata of a vector inserted into the `v
 
   - Object.VectorRequest
 
-    |  field  | type          | label | required | description                                                    |
-    | :-----: | :------------ | :---- | :------: | :------------------------------------------------------------- |
-    |   id    | Object.ID     |       |    \*    | The ID of a vector. ID should consist of 1 or more characters. |
-    | filters | Filter.Config |       |          | Configuration for filter.                                      |
+    |  field  | type                          | label | required | description                                                    |
+    | :-----: | :---------------------------- | :---- | :------: | :------------------------------------------------------------- |
+    |   id    | Object.ID                     |       |    \*    | The ID of a vector. ID should consist of 1 or more characters. |
+    | filters | repeated(Array[Filter.Config] |       |          | Configuration for filter.                                      |
 
   - Object.ID
 
@@ -176,7 +176,7 @@ Each Upsert request and response are independent.
   message Object {
       message VectorRequest {
         ID id = 1 [ (validate.rules).repeated .min_items = 2 ];
-        Filter.Config filters = 2;
+        repeated Filter.Config filters = 2;
       }
 
       message ID {
@@ -187,10 +187,10 @@ Each Upsert request and response are independent.
 
   - Object.VectorRequest
 
-    |  field  | type          | label | required | description                                                    |
-    | :-----: | :------------ | :---- | :------: | :------------------------------------------------------------- |
-    |   id    | Object.ID     |       |    \*    | The ID of a vector. ID should consist of 1 or more characters. |
-    | filters | Filter.Config |       |          | Configuration for the filter targets.                          |
+    |  field  | type                           | label | required | description                                                    |
+    | :-----: | :----------------------------- | :---- | :------: | :------------------------------------------------------------- |
+    |   id    | Object.ID                      |       |    \*    | The ID of a vector. ID should consist of 1 or more characters. |
+    | filters | repeated(Array[Filter.Config]) |       |          | Configuration for the filter targets.                          |
 
   - Object.ID
 

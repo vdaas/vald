@@ -36,7 +36,7 @@ service Filter {
 
       message Config {
         bool skip_strict_exist_check = 1;
-        Filter.Config filters = 2;
+        repeated Filter.Config filters = 2;
         int64 timestamp = 3;
       }
   }
@@ -54,8 +54,13 @@ service Filter {
         uint32 port = 2;
       }
 
+      message Query {
+        string query = 1;
+      }
+
       message Config {
-        repeated Target targets = 1;
+        Target target = 1;
+        Query query = 2;
       }
   }
   ```
@@ -77,11 +82,18 @@ service Filter {
 
   - Insert.Config
 
-    |          field          | type          | label | required | desc.                                                                                                |
-    | :---------------------: | :------------ | :---- | :------: | :--------------------------------------------------------------------------------------------------- |
-    | skip_strict_exist_check | bool          |       |          | check the same vector is already inserted or not.<br>the ID should be unique if the value is `true`. |
-    |        timestamp        | int64         |       |          | the timestamp of the vector inserted.<br>if it is N/A, the current time will be used.                |
-    |         filters         | Filter.Config |       |          | configuration for filter                                                                             |
+    |          field          | type                           | label | required | desc.                                                                                                |
+    | :---------------------: | :----------------------------- | :---- | :------: | :--------------------------------------------------------------------------------------------------- |
+    | skip_strict_exist_check | bool                           |       |          | check the same vector is already inserted or not.<br>the ID should be unique if the value is `true`. |
+    |        timestamp        | int64                          |       |          | the timestamp of the vector inserted.<br>if it is N/A, the current time will be used.                |
+    |         filters         | repeated(Array[Filter.Config]) |       |          | configuration for filter                                                                             |
+
+  - Filter.Config
+
+    | field  | type          | label | required | desc.                           |
+    | :----: | :------------ | :---- | :------: | :------------------------------ |
+    | target | Filter.Target |       |    \*    | the filter target configuration |
+    | query  | Filter.Query  |       |          | the filter target configuration |
 
   - Filter.Target
 
@@ -90,11 +102,11 @@ service Filter {
     | host  | string |       |    \*    | the target hostname |
     | port  | port   |       |    \*    | the target port     |
 
-  - Filter.Config
+  - Filter.Query
 
-    |  field  | type          | label                          | required | desc.                           |
-    | :-----: | :------------ | :----------------------------- | :------: | :------------------------------ |
-    | targets | Filter.Target | repeated(Array[Filter.Target]) |    \*    | the filter target configuration |
+    | field | type   | label | required | desc.            |
+    | :---: | :----- | :---- | :------: | :--------------- |
+    | query | string |       |          | the filter query |
 
 ### Output
 
@@ -158,7 +170,7 @@ service Filter {
 
       message Config {
         bool skip_strict_exist_check = 1;
-        Filter.Config filters = 2;
+        repeated Filter.Config filters = 2;
         int64 timestamp = 3;
       }
   }
@@ -176,8 +188,13 @@ service Filter {
         uint32 port = 2;
       }
 
+      message Query {
+        string query = 1;
+      }
+
       message Config {
-        repeated Target targets = 1;
+        Target target = 1;
+        Query query = 2;
       }
   }
   ```
@@ -199,11 +216,18 @@ service Filter {
 
   - Insert.Config
 
-    |          field          | type          | label | required | desc.                                                                                                |
-    | :---------------------: | :------------ | :---- | :------: | :--------------------------------------------------------------------------------------------------- |
-    | skip_strict_exist_check | bool          |       |          | check the same vector is already inserted or not.<br>the ID should be unique if the value is `true`. |
-    |        timestamp        | int64         |       |          | the timestamp of the vector inserted.<br>if it is N/A, the current time will be used.                |
-    |         filters         | Filter.Config |       |          | configuration for filter                                                                             |
+    |          field          | type                           | label | required | desc.                                                                                                |
+    | :---------------------: | :----------------------------- | :---- | :------: | :--------------------------------------------------------------------------------------------------- |
+    | skip_strict_exist_check | bool                           |       |          | check the same vector is already inserted or not.<br>the ID should be unique if the value is `true`. |
+    |        timestamp        | int64                          |       |          | the timestamp of the vector inserted.<br>if it is N/A, the current time will be used.                |
+    |         filters         | repeated(Array[Filter.Config]) |       |          | configuration for filter                                                                             |
+
+  - Filter.Config
+
+    | field  | type          | label | required | desc.                           |
+    | :----: | :------------ | :---- | :------: | :------------------------------ |
+    | target | Filter.Target |       |    \*    | the filter target configuration |
+    | query  | Filter.Query  |       |          | the filter target configuration |
 
   - Filter.Target
 
@@ -212,11 +236,11 @@ service Filter {
     | host  | string |       |    \*    | the target hostname |
     | port  | port   |       |    \*    | the target port     |
 
-  - Filter.Config
+  - Filter.Query
 
-    |  field  | type          | label                          | required | desc.                           |
-    | :-----: | :------------ | :----------------------------- | :------: | :------------------------------ |
-    | targets | Filter.Target | repeated(Array[Filter.Target]) |    \*    | the filter target configuration |
+    | field | type   | label | required | desc.            |
+    | :---: | :----- | :---- | :------: | :--------------- |
+    | query | string |       |          | the filter query |
 
 ### Output
 
@@ -307,7 +331,7 @@ service Filter {
 
       message Config {
         bool skip_strict_exist_check = 1;
-        Filter.Config filters = 2;
+        repeated Filter.Config filters = 2;
         int64 timestamp = 3;
       }
   }
@@ -325,8 +349,13 @@ service Filter {
         uint32 port = 2;
       }
 
+      message Query {
+        string query = 1;
+      }
+
       message Config {
-        repeated Target targets = 1;
+        Target target = 1;
+        Query query = 2;
       }
   }
   ```
@@ -354,11 +383,18 @@ service Filter {
 
   - Insert.Config
 
-    |          field          | type          | label | required | desc.                                                                                                |
-    | :---------------------: | :------------ | :---- | :------: | :--------------------------------------------------------------------------------------------------- |
-    | skip_strict_exist_check | bool          |       |          | check the same vector is already inserted or not.<br>the ID should be unique if the value is `true`. |
-    |        timestamp        | int64         |       |          | the timestamp of the vector inserted.<br>if it is N/A, the current time will be used.                |
-    |         filters         | Filter.Config |       |          | configuration for filter                                                                             |
+    |          field          | type                           | label | required | desc.                                                                                                |
+    | :---------------------: | :----------------------------- | :---- | :------: | :--------------------------------------------------------------------------------------------------- |
+    | skip_strict_exist_check | bool                           |       |          | check the same vector is already inserted or not.<br>the ID should be unique if the value is `true`. |
+    |        timestamp        | int64                          |       |          | the timestamp of the vector inserted.<br>if it is N/A, the current time will be used.                |
+    |         filters         | repeated(Array[Filter.Config]) |       |          | configuration for filter                                                                             |
+
+  - Filter.Config
+
+    | field  | type          | label | required | desc.                           |
+    | :----: | :------------ | :---- | :------: | :------------------------------ |
+    | target | Filter.Target |       |    \*    | the filter target configuration |
+    | query  | Filter.Query  |       |          | the filter target configuration |
 
   - Filter.Target
 
@@ -367,11 +403,11 @@ service Filter {
     | host  | string |       |    \*    | the target hostname |
     | port  | port   |       |    \*    | the target port     |
 
-  - Filter.Config
+  - Filter.Query
 
-    |  field  | type          | label                          | required | desc.                           |
-    | :-----: | :------------ | :----------------------------- | :------: | :------------------------------ |
-    | targets | Filter.Target | repeated(Array[Filter.Target]) |    \*    | the filter target configuration |
+    | field | type   | label | required | desc.            |
+    | :---: | :----- | :---- | :------: | :--------------- |
+    | query | string |       |          | the filter query |
 
 ### Output
 
@@ -444,7 +480,7 @@ service Filter {
 
       message Config {
         bool skip_strict_exist_check = 1;
-        Filter.Config filters = 2;
+        repeated Filter.Config filters = 2;
         int64 timestamp = 3;
       }
   }
@@ -462,8 +498,13 @@ service Filter {
         uint32 port = 2;
       }
 
+      message Query {
+        string query = 1;
+      }
+
       message Config {
-        repeated Target targets = 1;
+        Target target = 1;
+        Query query = 2;
       }
   }
   ```
@@ -485,12 +526,19 @@ service Filter {
 
   - Update.Config
 
-    |          field          | type          | label | required | desc.                                                                                               |
-    | :---------------------: | :------------ | :---- | :------: | :-------------------------------------------------------------------------------------------------- |
-    | skip_strict_exist_check | bool          |       |          | check the same vector is already updated or not.<br>the ID should be unique if the value is `true`. |
-    |        timestamp        | int64         |       |          | the timestamp of the vector updated.<br>if it is N/A, the current time will be used.                |
-    |         filters         | Filter.Config |       |          | configuration for filter                                                                            |
-    | disable_balanced_update | bool          |       |          | A flag to disable balanced update (split remove -&gt; insert operation) during update operation.    |
+    |          field          | type                           | label | required | desc.                                                                                               |
+    | :---------------------: | :----------------------------- | :---- | :------: | :-------------------------------------------------------------------------------------------------- |
+    | skip_strict_exist_check | bool                           |       |          | check the same vector is already updated or not.<br>the ID should be unique if the value is `true`. |
+    |        timestamp        | int64                          |       |          | the timestamp of the vector updated.<br>if it is N/A, the current time will be used.                |
+    |         filters         | repeated(Array[Filter.Config]) |       |          | configuration for filter                                                                            |
+    | disable_balanced_update | bool                           |       |          | A flag to disable balanced update (split remove -&gt; insert operation) during update operation.    |
+
+  - Filter.Config
+
+    | field  | type          | label | required | desc.                           |
+    | :----: | :------------ | :---- | :------: | :------------------------------ |
+    | target | Filter.Target |       |    \*    | the filter target configuration |
+    | query  | Filter.Query  |       |          | the filter target configuration |
 
   - Filter.Target
 
@@ -499,11 +547,11 @@ service Filter {
     | host  | string |       |    \*    | the target hostname |
     | port  | port   |       |    \*    | the target port     |
 
-  - Filter.Config
+  - Filter.Query
 
-    |  field  | type          | label                          | required | desc.                           |
-    | :-----: | :------------ | :----------------------------- | :------: | :------------------------------ |
-    | targets | Filter.Target | repeated(Array[Filter.Target]) |    \*    | the filter target configuration |
+    | field | type   | label | required | desc.            |
+    | :---: | :----- | :---- | :------: | :--------------- |
+    | query | string |       |          | the filter query |
 
 ### Output
 
@@ -566,7 +614,7 @@ service Filter {
 
       message Config {
         bool skip_strict_exist_check = 1;
-        Filter.Config filters = 2;
+        repeated Filter.Config filters = 2;
         int64 timestamp = 3;
       }
   }
@@ -584,8 +632,13 @@ service Filter {
         uint32 port = 2;
       }
 
+      message Query {
+        string query = 1;
+      }
+
       message Config {
-        repeated Target targets = 1;
+        Target target = 1;
+        Query query = 2;
       }
   }
   ```
@@ -607,12 +660,19 @@ service Filter {
 
   - Update.Config
 
-    |          field          | type          | label | required | desc.                                                                                               |
-    | :---------------------: | :------------ | :---- | :------: | :-------------------------------------------------------------------------------------------------- |
-    | skip_strict_exist_check | bool          |       |          | check the same vector is already updated or not.<br>the ID should be unique if the value is `true`. |
-    |        timestamp        | int64         |       |          | the timestamp of the vector updated.<br>if it is N/A, the current time will be used.                |
-    |         filters         | Filter.Config |       |          | configuration for filter                                                                            |
-    | disable_balanced_update | bool          |       |          | A flag to disable balanced update (split remove -&gt; insert operation) during update operation.    |
+    |          field          | type                           | label | required | desc.                                                                                               |
+    | :---------------------: | :----------------------------- | :---- | :------: | :-------------------------------------------------------------------------------------------------- |
+    | skip_strict_exist_check | bool                           |       |          | check the same vector is already updated or not.<br>the ID should be unique if the value is `true`. |
+    |        timestamp        | int64                          |       |          | the timestamp of the vector updated.<br>if it is N/A, the current time will be used.                |
+    |         filters         | repeated(Array[Filter.Config]) |       |          | configuration for filter                                                                            |
+    | disable_balanced_update | bool                           |       |          | A flag to disable balanced update (split remove -&gt; insert operation) during update operation.    |
+
+  - Filter.Config
+
+    | field  | type          | label | required | desc.                           |
+    | :----: | :------------ | :---- | :------: | :------------------------------ |
+    | target | Filter.Target |       |    \*    | the filter target configuration |
+    | query  | Filter.Query  |       |          | the filter target configuration |
 
   - Filter.Target
 
@@ -621,11 +681,11 @@ service Filter {
     | host  | string |       |    \*    | the target hostname |
     | port  | port   |       |    \*    | the target port     |
 
-  - Filter.Config
+  - Filter.Query
 
-    |  field  | type          | label                          | required | desc.                           |
-    | :-----: | :------------ | :----------------------------- | :------: | :------------------------------ |
-    | targets | Filter.Target | repeated(Array[Filter.Target]) |    \*    | the filter target configuration |
+    | field | type   | label | required | desc.            |
+    | :---: | :----- | :---- | :------: | :--------------- |
+    | query | string |       |          | the filter query |
 
 ### Output
 
@@ -721,7 +781,7 @@ service Filter {
 
       message Config {
         bool skip_strict_exist_check = 1;
-        Filter.Config filters = 2;
+        repeated Filter.Config filters = 2;
         int64 timestamp = 3;
       }
   }
@@ -739,8 +799,13 @@ service Filter {
         uint32 port = 2;
       }
 
+      message Query {
+        string query = 1;
+      }
+
       message Config {
-        repeated Target targets = 1;
+        Target target = 1;
+        Query query = 2;
       }
   }
   ```
@@ -768,12 +833,19 @@ service Filter {
 
   - Update.Config
 
-    |          field          | type          | label | required | desc.                                                                                               |
-    | :---------------------: | :------------ | :---- | :------: | :-------------------------------------------------------------------------------------------------- |
-    | skip_strict_exist_check | bool          |       |          | check the same vector is already updated or not.<br>the ID should be unique if the value is `true`. |
-    |        timestamp        | int64         |       |          | the timestamp of the vector updated.<br>if it is N/A, the current time will be used.                |
-    |         filters         | Filter.Config |       |          | configuration for filter                                                                            |
-    | disable_balanced_update | bool          |       |          | A flag to disable balanced update (split remove -&gt; insert operation) during update operation.    |
+    |          field          | type                           | label | required | desc.                                                                                               |
+    | :---------------------: | :----------------------------- | :---- | :------: | :-------------------------------------------------------------------------------------------------- |
+    | skip_strict_exist_check | bool                           |       |          | check the same vector is already updated or not.<br>the ID should be unique if the value is `true`. |
+    |        timestamp        | int64                          |       |          | the timestamp of the vector updated.<br>if it is N/A, the current time will be used.                |
+    |         filters         | repeated(Array[Filter.Config]) |       |          | configuration for filter                                                                            |
+    | disable_balanced_update | bool                           |       |          | A flag to disable balanced update (split remove -&gt; insert operation) during update operation.    |
+
+  - Filter.Config
+
+    | field  | type          | label | required | desc.                           |
+    | :----: | :------------ | :---- | :------: | :------------------------------ |
+    | target | Filter.Target |       |    \*    | the filter target configuration |
+    | query  | Filter.Query  |       |          | the filter target configuration |
 
   - Filter.Target
 
@@ -782,11 +854,11 @@ service Filter {
     | host  | string |       |    \*    | the target hostname |
     | port  | port   |       |    \*    | the target port     |
 
-  - Filter.Config
+  - Filter.Query
 
-    |  field  | type          | label                          | required | desc.                           |
-    | :-----: | :------------ | :----------------------------- | :------: | :------------------------------ |
-    | targets | Filter.Target | repeated(Array[Filter.Target]) |    \*    | the filter target configuration |
+    | field | type   | label | required | desc.            |
+    | :---: | :----- | :---- | :------: | :--------------- |
+    | query | string |       |          | the filter query |
 
 ### Output
 
@@ -859,7 +931,7 @@ service Filter {
 
       message Config {
         bool skip_strict_exist_check = 1;
-        Filter.Config filters = 2;
+        repeated Filter.Config filters = 2;
         int64 timestamp = 3;
       }
   }
@@ -877,8 +949,13 @@ service Filter {
         uint32 port = 2;
       }
 
+      message Query {
+        string query = 1;
+      }
+
       message Config {
-        repeated Target targets = 1;
+        Target target = 1;
+        Query query = 2;
       }
   }
   ```
@@ -900,12 +977,19 @@ service Filter {
 
   - Update.Config
 
-    |          field          | type          | label | required | desc.                                                                                                |
-    | :---------------------: | :------------ | :---- | :------: | :--------------------------------------------------------------------------------------------------- |
-    | skip_strict_exist_check | bool          |       |          | check the same vector is already upserted or not.<br>the ID should be unique if the value is `true`. |
-    |        timestamp        | int64         |       |          | the timestamp of the vector upserted.<br>if it is N/A, the current time will be used.                |
-    |         filters         | Filter.Config |       |          | configuration for filter                                                                             |
-    | disable_balanced_update | bool          |       |          | A flag to disable balanced update (split remove -&gt; insert operation) during update operation.     |
+    |          field          | type                           | label | required | desc.                                                                                                |
+    | :---------------------: | :----------------------------- | :---- | :------: | :--------------------------------------------------------------------------------------------------- |
+    | skip_strict_exist_check | bool                           |       |          | check the same vector is already upserted or not.<br>the ID should be unique if the value is `true`. |
+    |        timestamp        | int64                          |       |          | the timestamp of the vector upserted.<br>if it is N/A, the current time will be used.                |
+    |         filters         | repeated(Array[Filter.Config]) |       |          | configuration for filter                                                                             |
+    | disable_balanced_update | bool                           |       |          | A flag to disable balanced update (split remove -&gt; insert operation) during update operation.     |
+
+  - Filter.Config
+
+    | field  | type          | label | required | desc.                           |
+    | :----: | :------------ | :---- | :------: | :------------------------------ |
+    | target | Filter.Target |       |    \*    | the filter target configuration |
+    | query  | Filter.Query  |       |          | the filter target configuration |
 
   - Filter.Target
 
@@ -914,11 +998,11 @@ service Filter {
     | host  | string |       |    \*    | the target hostname |
     | port  | port   |       |    \*    | the target port     |
 
-  - Filter.Config
+  - Filter.Query
 
-    |  field  | type          | label                          | required | desc.                           |
-    | :-----: | :------------ | :----------------------------- | :------: | :------------------------------ |
-    | targets | Filter.Target | repeated(Array[Filter.Target]) |    \*    | the filter target configuration |
+    | field | type   | label | required | desc.            |
+    | :---: | :----- | :---- | :------: | :--------------- |
+    | query | string |       |          | the filter query |
 
 ### Output
 
@@ -978,7 +1062,7 @@ service Filter {
 
       message Config {
         bool skip_strict_exist_check = 1;
-        Filter.Config filters = 2;
+        repeated Filter.Config filters = 2;
         int64 timestamp = 3;
       }
   }
@@ -996,8 +1080,13 @@ service Filter {
         uint32 port = 2;
       }
 
+      message Query {
+        string query = 1;
+      }
+
       message Config {
-        repeated Target targets = 1;
+        Target target = 1;
+        Query query = 2;
       }
   }
   ```
@@ -1019,12 +1108,19 @@ service Filter {
 
   - Update.Config
 
-    |          field          | type          | label | required | desc.                                                                                                |
-    | :---------------------: | :------------ | :---- | :------: | :--------------------------------------------------------------------------------------------------- |
-    | skip_strict_exist_check | bool          |       |          | check the same vector is already upserted or not.<br>the ID should be unique if the value is `true`. |
-    |        timestamp        | int64         |       |          | the timestamp of the vector upserted.<br>if it is N/A, the current time will be used.                |
-    |         filters         | Filter.Config |       |          | configuration for filter                                                                             |
-    | disable_balanced_update | bool          |       |          | A flag to disable balanced update (split remove -&gt; insert operation) during update operation.     |
+    |          field          | type                           | label | required | desc.                                                                                                |
+    | :---------------------: | :----------------------------- | :---- | :------: | :--------------------------------------------------------------------------------------------------- |
+    | skip_strict_exist_check | bool                           |       |          | check the same vector is already upserted or not.<br>the ID should be unique if the value is `true`. |
+    |        timestamp        | int64                          |       |          | the timestamp of the vector upserted.<br>if it is N/A, the current time will be used.                |
+    |         filters         | repeated(Array[Filter.Config]) |       |          | configuration for filter                                                                             |
+    | disable_balanced_update | bool                           |       |          | A flag to disable balanced update (split remove -&gt; insert operation) during update operation.     |
+
+  - Filter.Config
+
+    | field  | type          | label | required | desc.                           |
+    | :----: | :------------ | :---- | :------: | :------------------------------ |
+    | target | Filter.Target |       |    \*    | the filter target configuration |
+    | query  | Filter.Query  |       |          | the filter target configuration |
 
   - Filter.Target
 
@@ -1033,11 +1129,11 @@ service Filter {
     | host  | string |       |    \*    | the target hostname |
     | port  | port   |       |    \*    | the target port     |
 
-  - Filter.Config
+  - Filter.Query
 
-    |  field  | type          | label                          | required | desc.                           |
-    | :-----: | :------------ | :----------------------------- | :------: | :------------------------------ |
-    | targets | Filter.Target | repeated(Array[Filter.Target]) |    \*    | the filter target configuration |
+    | field | type   | label | required | desc.            |
+    | :---: | :----- | :---- | :------: | :--------------- |
+    | query | string |       |          | the filter query |
 
 ### Output
 
@@ -1133,7 +1229,7 @@ service Filter {
 
       message Config {
         bool skip_strict_exist_check = 1;
-        Filter.Config filters = 2;
+        repeated Filter.Config filters = 2;
         int64 timestamp = 3;
       }
   }
@@ -1151,8 +1247,13 @@ service Filter {
         uint32 port = 2;
       }
 
+      message Query {
+        string query = 1;
+      }
+
       message Config {
-        repeated Target targets = 1;
+        Target target = 1;
+        Query query = 2;
       }
   }
   ```
@@ -1180,12 +1281,19 @@ service Filter {
 
   - Update.Config
 
-    |          field          | type          | label | required | desc.                                                                                                |
-    | :---------------------: | :------------ | :---- | :------: | :--------------------------------------------------------------------------------------------------- |
-    | skip_strict_exist_check | bool          |       |          | check the same vector is already upserted or not.<br>the ID should be unique if the value is `true`. |
-    |        timestamp        | int64         |       |          | the timestamp of the vector upserted.<br>if it is N/A, the current time will be used.                |
-    |         filters         | Filter.Config |       |          | configuration for filter                                                                             |
-    | disable_balanced_update | bool          |       |          | A flag to disable balanced update (split remove -&gt; insert operation) during update operation.     |
+    |          field          | type                           | label | required | desc.                                                                                                |
+    | :---------------------: | :----------------------------- | :---- | :------: | :--------------------------------------------------------------------------------------------------- |
+    | skip_strict_exist_check | bool                           |       |          | check the same vector is already upserted or not.<br>the ID should be unique if the value is `true`. |
+    |        timestamp        | int64                          |       |          | the timestamp of the vector upserted.<br>if it is N/A, the current time will be used.                |
+    |         filters         | repeated(Array[Filter.Config]) |       |          | configuration for filter                                                                             |
+    | disable_balanced_update | bool                           |       |          | A flag to disable balanced update (split remove -&gt; insert operation) during update operation.     |
+
+  - Filter.Config
+
+    | field  | type          | label | required | desc.                           |
+    | :----: | :------------ | :---- | :------: | :------------------------------ |
+    | target | Filter.Target |       |    \*    | the filter target configuration |
+    | query  | Filter.Query  |       |          | the filter target configuration |
 
   - Filter.Target
 
@@ -1194,11 +1302,11 @@ service Filter {
     | host  | string |       |    \*    | the target hostname |
     | port  | port   |       |    \*    | the target port     |
 
-  - Filter.Config
+  - Filter.Query
 
-    |  field  | type          | label                          | required | desc.                           |
-    | :-----: | :------------ | :----------------------------- | :------: | :------------------------------ |
-    | targets | Filter.Target | repeated(Array[Filter.Target]) |    \*    | the filter target configuration |
+    | field | type   | label | required | desc.            |
+    | :---: | :----- | :---- | :------: | :--------------- |
+    | query | string |       |          | the filter query |
 
 ### Output
 
@@ -1275,8 +1383,8 @@ service Filter {
         float radius = 3;
         float epsilon = 4;
         int64 timeout = 5;
-        Filter.Config ingress_filters = 6;
-        Filter.Config egress_filters = 7;
+        repeated Filter.Config ingress_filters = 6;
+        repeated Filter.Config egress_filters = 7;
         uint32 min_num = 8 [ (validate.rules).uint32.gte = 0 ];
       }
   }
@@ -1287,8 +1395,13 @@ service Filter {
         uint32 port = 2;
       }
 
+      message Query {
+        string query = 1;
+      }
+
       message Config {
-        repeated Target targets = 1;
+        Target target = 1;
+        Query query = 2;
       }
   }
   ```
@@ -1303,16 +1416,36 @@ service Filter {
 
   - Search.Config
 
-    |      field      | type          | label | required | desc.                                                 |
-    | :-------------: | :------------ | :---- | :------: | :---------------------------------------------------- |
-    |   request_id    | string        |       |          | unique request ID                                     |
-    |       num       | uint32        |       |    \*    | the maximum number of result to be returned           |
-    |     radius      | float         |       |    \*    | the search radius                                     |
-    |     epsilon     | float         |       |    \*    | the search coefficient (default value is `0.1`)       |
-    |     timeout     | int64         |       |          | Search timeout in nanoseconds (default value is `5s`) |
-    | ingress_filters | Filter.Config |       |          | Ingress Filter configuration                          |
-    | egress_filters  | Filter.Config |       |          | Egress Filter configuration                           |
-    |     min_num     | uint32        |       |          | the minimum number of result to be returned           |
+    |      field      | type                           | label | required | desc.                                                 |
+    | :-------------: | :----------------------------- | :---- | :------: | :---------------------------------------------------- |
+    |   request_id    | string                         |       |          | unique request ID                                     |
+    |       num       | uint32                         |       |    \*    | the maximum number of result to be returned           |
+    |     radius      | float                          |       |    \*    | the search radius                                     |
+    |     epsilon     | float                          |       |    \*    | the search coefficient (default value is `0.1`)       |
+    |     timeout     | int64                          |       |          | Search timeout in nanoseconds (default value is `5s`) |
+    | ingress_filters | repeated(Array[Filter.Config]) |       |          | Ingress Filter configuration                          |
+    | egress_filters  | repeated(Array[Filter.Config]) |       |          | Egress Filter configuration                           |
+    |     min_num     | uint32                         |       |          | the minimum number of result to be returned           |
+
+  - Filter.Config
+
+    | field  | type          | label | required | desc.                           |
+    | :----: | :------------ | :---- | :------: | :------------------------------ |
+    | target | Filter.Target |       |    \*    | the filter target configuration |
+    | query  | Filter.Query  |       |          | the filter target configuration |
+
+  - Filter.Target
+
+    | field | type   | label | required | desc.               |
+    | :---: | :----- | :---- | :------: | :------------------ |
+    | host  | string |       |    \*    | the target hostname |
+    | port  | port   |       |    \*    | the target port     |
+
+  - Filter.Query
+
+    | field | type   | label | required | desc.            |
+    | :---: | :----- | :---- | :------: | :--------------- |
+    | query | string |       |          | the filter query |
 
 ### Output
 
@@ -1390,8 +1523,8 @@ service Filter {
         float radius = 3;
         float epsilon = 4;
         int64 timeout = 5;
-        Filter.Config ingress_filters = 6;
-        Filter.Config egress_filters = 7;
+        repeated Filter.Config ingress_filters = 6;
+        repeated Filter.Config egress_filters = 7;
         uint32 min_num = 8 [ (validate.rules).uint32.gte = 0 ];
       }
   }
@@ -1402,8 +1535,13 @@ service Filter {
         uint32 port = 2;
       }
 
+      message Query {
+        string query = 1;
+      }
+
       message Config {
-        repeated Target targets = 1;
+        Target target = 1;
+        Query query = 2;
       }
   }
   ```
@@ -1418,16 +1556,36 @@ service Filter {
 
   - Search.Config
 
-    |      field      | type          | label | required | desc.                                                 |
-    | :-------------: | :------------ | :---- | :------: | :---------------------------------------------------- |
-    |   request_id    | string        |       |          | unique request ID                                     |
-    |       num       | uint32        |       |    \*    | the maximum number of result to be returned           |
-    |     radius      | float         |       |    \*    | the search radius                                     |
-    |     epsilon     | float         |       |    \*    | the search coefficient (default value is `0.1`)       |
-    |     timeout     | int64         |       |          | Search timeout in nanoseconds (default value is `5s`) |
-    | ingress_filters | Filter.Config |       |          | Ingress Filter configuration                          |
-    | egress_filters  | Filter.Config |       |          | Egress Filter configuration                           |
-    |     min_num     | uint32        |       |          | the minimum number of result to be returned           |
+    |      field      | type                           | label | required | desc.                                                 |
+    | :-------------: | :----------------------------- | :---- | :------: | :---------------------------------------------------- |
+    |   request_id    | string                         |       |          | unique request ID                                     |
+    |       num       | uint32                         |       |    \*    | the maximum number of result to be returned           |
+    |     radius      | float                          |       |    \*    | the search radius                                     |
+    |     epsilon     | float                          |       |    \*    | the search coefficient (default value is `0.1`)       |
+    |     timeout     | int64                          |       |          | Search timeout in nanoseconds (default value is `5s`) |
+    | ingress_filters | repeated(Array[Filter.Config]) |       |          | Ingress Filter configuration                          |
+    | egress_filters  | repeated(Array[Filter.Config]) |       |          | Egress Filter configuration                           |
+    |     min_num     | uint32                         |       |          | the minimum number of result to be returned           |
+
+  - Filter.Config
+
+    | field  | type          | label | required | desc.                           |
+    | :----: | :------------ | :---- | :------: | :------------------------------ |
+    | target | Filter.Target |       |    \*    | the filter target configuration |
+    | query  | Filter.Query  |       |          | the filter target configuration |
+
+  - Filter.Target
+
+    | field | type   | label | required | desc.               |
+    | :---: | :----- | :---- | :------: | :------------------ |
+    | host  | string |       |    \*    | the target hostname |
+    | port  | port   |       |    \*    | the target port     |
+
+  - Filter.Query
+
+    | field | type   | label | required | desc.            |
+    | :---: | :----- | :---- | :------: | :--------------- |
+    | query | string |       |          | the filter query |
 
 ### Output
 
@@ -1531,8 +1689,8 @@ service Filter {
         float radius = 3;
         float epsilon = 4;
         int64 timeout = 5;
-        Filter.Config ingress_filters = 6;
-        Filter.Config egress_filters = 7;
+        repeated Filter.Config ingress_filters = 6;
+        repeated Filter.Config egress_filters = 7;
         uint32 min_num = 8 [ (validate.rules).uint32.gte = 0 ];
       }
   }
@@ -1543,8 +1701,13 @@ service Filter {
         uint32 port = 2;
       }
 
+      message Query {
+        string query = 1;
+      }
+
       message Config {
-        repeated Target targets = 1;
+        Target target = 1;
+        Query query = 2;
       }
   }
   ```
@@ -1565,16 +1728,36 @@ service Filter {
 
   - Search.Config
 
-    |      field      | type          | label | required | desc.                                                 |
-    | :-------------: | :------------ | :---- | :------: | :---------------------------------------------------- |
-    |   request_id    | string        |       |          | unique request ID                                     |
-    |       num       | uint32        |       |    \*    | the maximum number of result to be returned           |
-    |     radius      | float         |       |    \*    | the search radius                                     |
-    |     epsilon     | float         |       |    \*    | the search coefficient (default value is `0.1`)       |
-    |     timeout     | int64         |       |          | Search timeout in nanoseconds (default value is `5s`) |
-    | ingress_filters | Filter.Config |       |          | Ingress Filter configuration                          |
-    | egress_filters  | Filter.Config |       |          | Egress Filter configuration                           |
-    |     min_num     | uint32        |       |          | the minimum number of result to be returned           |
+    |      field      | type                           | label | required | desc.                                                 |
+    | :-------------: | :----------------------------- | :---- | :------: | :---------------------------------------------------- |
+    |   request_id    | string                         |       |          | unique request ID                                     |
+    |       num       | uint32                         |       |    \*    | the maximum number of result to be returned           |
+    |     radius      | float                          |       |    \*    | the search radius                                     |
+    |     epsilon     | float                          |       |    \*    | the search coefficient (default value is `0.1`)       |
+    |     timeout     | int64                          |       |          | Search timeout in nanoseconds (default value is `5s`) |
+    | ingress_filters | repeated(Array[Filter.Config]) |       |          | Ingress Filter configuration                          |
+    | egress_filters  | repeated(Array[Filter.Config]) |       |          | Egress Filter configuration                           |
+    |     min_num     | uint32                         |       |          | the minimum number of result to be returned           |
+
+  - Filter.Config
+
+    | field  | type          | label | required | desc.                           |
+    | :----: | :------------ | :---- | :------: | :------------------------------ |
+    | target | Filter.Target |       |    \*    | the filter target configuration |
+    | query  | Filter.Query  |       |          | the filter target configuration |
+
+  - Filter.Target
+
+    | field | type   | label | required | desc.               |
+    | :---: | :----- | :---- | :------: | :------------------ |
+    | host  | string |       |    \*    | the target hostname |
+    | port  | port   |       |    \*    | the target port     |
+
+  - Filter.Query
+
+    | field | type   | label | required | desc.            |
+    | :---: | :----- | :---- | :------: | :--------------- |
+    | query | string |       |          | the filter query |
 
 ### Output
 

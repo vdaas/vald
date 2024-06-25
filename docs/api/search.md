@@ -63,8 +63,8 @@ Search RPC is the method to search vector(s) similar to the request vector.
       float radius = 3;
       float epsilon = 4;
       int64 timeout = 5;
-      Filter.Config ingress_filters = 6;
-      Filter.Config egress_filters = 7;
+      repeated Filter.Config ingress_filters = 6;
+      repeated Filter.Config egress_filters = 7;
       uint32 min_num = 8;
       AggregationAlgorithm aggregation_algorithm = 9;
     }
@@ -88,17 +88,17 @@ Search RPC is the method to search vector(s) similar to the request vector.
 
   - Search.Config
 
-    |         field         | type                 | label | required | description                                                                   |
-    | :-------------------: | :------------------- | :---- | :------: | :---------------------------------------------------------------------------- |
-    |      request_id       | string               |       |          | Unique request ID.                                                            |
-    |          num          | uint32               |       |    \*    | The maximum number of results to be returned.                                 |
-    |        radius         | float                |       |    \*    | The search radius.                                                            |
-    |        epsilon        | float                |       |    \*    | The search coefficient (default value is `0.1`).                              |
-    |        timeout        | int64                |       |          | Search timeout in nanoseconds (default value is `5s`).                        |
-    |    ingress_filters    | Filter.Config        |       |          | Ingress Filter configuration.                                                 |
-    |    egress_filters     | Filter.Config        |       |          | Egress Filter configuration.                                                  |
-    |        min_num        | uint32               |       |          | The minimum number of results to be returned.                                 |
-    | aggregation_algorithm | AggregationAlgorithm |       |          | The search aggregation algorithm option (default value is `ConcurrentQueue`). |
+    |         field         | type                           | label | required | description                                                                   |
+    | :-------------------: | :----------------------------- | :---- | :------: | :---------------------------------------------------------------------------- |
+    |      request_id       | string                         |       |          | Unique request ID.                                                            |
+    |          num          | uint32                         |       |    \*    | The maximum number of results to be returned.                                 |
+    |        radius         | float                          |       |    \*    | The search radius.                                                            |
+    |        epsilon        | float                          |       |    \*    | The search coefficient (default value is `0.1`).                              |
+    |        timeout        | int64                          |       |          | Search timeout in nanoseconds (default value is `5s`).                        |
+    |    ingress_filters    | repeated(Array[Filter.Config]) |       |          | Ingress Filter configuration.                                                 |
+    |    egress_filters     | repeated(Array[Filter.Config]) |       |          | Egress Filter configuration.                                                  |
+    |        min_num        | uint32                         |       |          | The minimum number of results to be returned.                                 |
+    | aggregation_algorithm | AggregationAlgorithm           |       |          | The search aggregation algorithm option (default value is `ConcurrentQueue`). |
 
 ### Output
 
@@ -184,8 +184,8 @@ The vector with the same requested ID should be indexed into the `vald-agent` be
       float radius = 3;
       float epsilon = 4;
       int64 timeout = 5;
-      Filter.Config ingress_filters = 6;
-      Filter.Config egress_filters = 7;
+      repeated Filter.Config ingress_filters = 6;
+      repeated Filter.Config egress_filters = 7;
       uint32 min_num = 8;
       AggregationAlgorithm aggregation_algorithm = 9;
     }
@@ -209,17 +209,17 @@ The vector with the same requested ID should be indexed into the `vald-agent` be
 
   - Search.Config
 
-    |         field         | type                 | label | required | description                                                                   |
-    | :-------------------: | :------------------- | :---- | :------: | :---------------------------------------------------------------------------- |
-    |      request_id       | string               |       |          | Unique request ID.                                                            |
-    |          num          | uint32               |       |    \*    | The maximum number of results to be returned.                                 |
-    |        radius         | float                |       |    \*    | The search radius.                                                            |
-    |        epsilon        | float                |       |    \*    | The search coefficient (default value is `0.1`).                              |
-    |        timeout        | int64                |       |          | Search timeout in nanoseconds (default value is `5s`).                        |
-    |    ingress_filters    | Filter.Config        |       |          | Ingress Filter configuration.                                                 |
-    |    egress_filters     | Filter.Config        |       |          | Egress Filter configuration.                                                  |
-    |        min_num        | uint32               |       |          | The minimum number of results to be returned.                                 |
-    | aggregation_algorithm | AggregationAlgorithm |       |          | The search aggregation algorithm option (default value is `ConcurrentQueue`). |
+    |         field         | type                           | label | required | description                                                                   |
+    | :-------------------: | :----------------------------- | :---- | :------: | :---------------------------------------------------------------------------- |
+    |      request_id       | string                         |       |          | Unique request ID.                                                            |
+    |          num          | uint32                         |       |    \*    | The maximum number of results to be returned.                                 |
+    |        radius         | float                          |       |    \*    | The search radius.                                                            |
+    |        epsilon        | float                          |       |    \*    | The search coefficient (default value is `0.1`).                              |
+    |        timeout        | int64                          |       |          | Search timeout in nanoseconds (default value is `5s`).                        |
+    |    ingress_filters    | repeated(Array[Filter.Config]) |       |          | Ingress Filter configuration.                                                 |
+    |    egress_filters     | repeated(Array[Filter.Config]) |       |          | Egress Filter configuration.                                                  |
+    |        min_num        | uint32                         |       |          | The minimum number of results to be returned.                                 |
+    | aggregation_algorithm | AggregationAlgorithm           |       |          | The search aggregation algorithm option (default value is `ConcurrentQueue`). |
 
 ### Output
 
@@ -306,8 +306,8 @@ Each Search request and response are independent.
       float radius = 3;
       float epsilon = 4;
       int64 timeout = 5;
-      Filter.Config ingress_filters = 6;
-      Filter.Config egress_filters = 7;
+      repeated Filter.Config ingress_filters = 6;
+      repeated Filter.Config egress_filters = 7;
       uint32 min_num = 8;
       AggregationAlgorithm aggregation_algorithm = 9;
     }
@@ -331,17 +331,17 @@ Each Search request and response are independent.
 
   - Search.Config
 
-    |         field         | type                 | label | required | description                                                                   |
-    | :-------------------: | :------------------- | :---- | :------: | :---------------------------------------------------------------------------- |
-    |      request_id       | string               |       |          | Unique request ID.                                                            |
-    |          num          | uint32               |       |    \*    | The maximum number of results to be returned.                                 |
-    |        radius         | float                |       |    \*    | The search radius.                                                            |
-    |        epsilon        | float                |       |    \*    | The search coefficient (default value is `0.1`).                              |
-    |        timeout        | int64                |       |          | Search timeout in nanoseconds (default value is `5s`).                        |
-    |    ingress_filters    | Filter.Config        |       |          | Ingress Filter configuration.                                                 |
-    |    egress_filters     | Filter.Config        |       |          | Egress Filter configuration.                                                  |
-    |        min_num        | uint32               |       |          | The minimum number of results to be returned.                                 |
-    | aggregation_algorithm | AggregationAlgorithm |       |          | The search aggregation algorithm option (default value is `ConcurrentQueue`). |
+    |         field         | type                           | label | required | description                                                                   |
+    | :-------------------: | :----------------------------- | :---- | :------: | :---------------------------------------------------------------------------- |
+    |      request_id       | string                         |       |          | Unique request ID.                                                            |
+    |          num          | uint32                         |       |    \*    | The maximum number of results to be returned.                                 |
+    |        radius         | float                          |       |    \*    | The search radius.                                                            |
+    |        epsilon        | float                          |       |    \*    | The search coefficient (default value is `0.1`).                              |
+    |        timeout        | int64                          |       |          | Search timeout in nanoseconds (default value is `5s`).                        |
+    |    ingress_filters    | repeated(Array[Filter.Config]) |       |          | Ingress Filter configuration.                                                 |
+    |    egress_filters     | repeated(Array[Filter.Config]) |       |          | Egress Filter configuration.                                                  |
+    |        min_num        | uint32                         |       |          | The minimum number of results to be returned.                                 |
+    | aggregation_algorithm | AggregationAlgorithm           |       |          | The search aggregation algorithm option (default value is `ConcurrentQueue`). |
 
 ### Output
 
@@ -442,8 +442,8 @@ Each SearchByID request and response are independent.
       float radius = 3;
       float epsilon = 4;
       int64 timeout = 5;
-      Filter.Config ingress_filters = 6;
-      Filter.Config egress_filters = 7;
+      repeated Filter.Config ingress_filters = 6;
+      repeated Filter.Config egress_filters = 7;
       uint32 min_num = 8;
       AggregationAlgorithm aggregation_algorithm = 9;
     }
@@ -467,17 +467,17 @@ Each SearchByID request and response are independent.
 
   - Search.Config
 
-    |         field         | type                 | label | required | description                                                                   |
-    | :-------------------: | :------------------- | :---- | :------: | :---------------------------------------------------------------------------- |
-    |      request_id       | string               |       |          | Unique request ID.                                                            |
-    |          num          | uint32               |       |    \*    | The maximum number of results to be returned.                                 |
-    |        radius         | float                |       |    \*    | The search radius.                                                            |
-    |        epsilon        | float                |       |    \*    | The search coefficient (default value is `0.1`).                              |
-    |        timeout        | int64                |       |          | Search timeout in nanoseconds (default value is `5s`).                        |
-    |    ingress_filters    | Filter.Config        |       |          | Ingress Filter configuration.                                                 |
-    |    egress_filters     | Filter.Config        |       |          | Egress Filter configuration.                                                  |
-    |        min_num        | uint32               |       |          | The minimum number of results to be returned.                                 |
-    | aggregation_algorithm | AggregationAlgorithm |       |          | The search aggregation algorithm option (default value is `ConcurrentQueue`). |
+    |         field         | type                           | label | required | description                                                                   |
+    | :-------------------: | :----------------------------- | :---- | :------: | :---------------------------------------------------------------------------- |
+    |      request_id       | string                         |       |          | Unique request ID.                                                            |
+    |          num          | uint32                         |       |    \*    | The maximum number of results to be returned.                                 |
+    |        radius         | float                          |       |    \*    | The search radius.                                                            |
+    |        epsilon        | float                          |       |    \*    | The search coefficient (default value is `0.1`).                              |
+    |        timeout        | int64                          |       |          | Search timeout in nanoseconds (default value is `5s`).                        |
+    |    ingress_filters    | repeated(Array[Filter.Config]) |       |          | Ingress Filter configuration.                                                 |
+    |    egress_filters     | repeated(Array[Filter.Config]) |       |          | Egress Filter configuration.                                                  |
+    |        min_num        | uint32                         |       |          | The minimum number of results to be returned.                                 |
+    | aggregation_algorithm | AggregationAlgorithm           |       |          | The search aggregation algorithm option (default value is `ConcurrentQueue`). |
 
 ### Output
 
@@ -585,8 +585,8 @@ Please be careful that the size of the request exceeds the limit.
       float radius = 3;
       float epsilon = 4;
       int64 timeout = 5;
-      Filter.Config ingress_filters = 6;
-      Filter.Config egress_filters = 7;
+      repeated Filter.Config ingress_filters = 6;
+      repeated Filter.Config egress_filters = 7;
       uint32 min_num = 8;
       AggregationAlgorithm aggregation_algorithm = 9;
     }
@@ -616,17 +616,17 @@ Please be careful that the size of the request exceeds the limit.
 
   - Search.Config
 
-    |         field         | type                 | label | required | description                                                                   |
-    | :-------------------: | :------------------- | :---- | :------: | :---------------------------------------------------------------------------- |
-    |      request_id       | string               |       |          | Unique request ID.                                                            |
-    |          num          | uint32               |       |    \*    | The maximum number of results to be returned.                                 |
-    |        radius         | float                |       |    \*    | The search radius.                                                            |
-    |        epsilon        | float                |       |    \*    | The search coefficient (default value is `0.1`).                              |
-    |        timeout        | int64                |       |          | Search timeout in nanoseconds (default value is `5s`).                        |
-    |    ingress_filters    | Filter.Config        |       |          | Ingress Filter configuration.                                                 |
-    |    egress_filters     | Filter.Config        |       |          | Egress Filter configuration.                                                  |
-    |        min_num        | uint32               |       |          | The minimum number of results to be returned.                                 |
-    | aggregation_algorithm | AggregationAlgorithm |       |          | The search aggregation algorithm option (default value is `ConcurrentQueue`). |
+    |         field         | type                           | label | required | description                                                                   |
+    | :-------------------: | :----------------------------- | :---- | :------: | :---------------------------------------------------------------------------- |
+    |      request_id       | string                         |       |          | Unique request ID.                                                            |
+    |          num          | uint32                         |       |    \*    | The maximum number of results to be returned.                                 |
+    |        radius         | float                          |       |    \*    | The search radius.                                                            |
+    |        epsilon        | float                          |       |    \*    | The search coefficient (default value is `0.1`).                              |
+    |        timeout        | int64                          |       |          | Search timeout in nanoseconds (default value is `5s`).                        |
+    |    ingress_filters    | repeated(Array[Filter.Config]) |       |          | Ingress Filter configuration.                                                 |
+    |    egress_filters     | repeated(Array[Filter.Config]) |       |          | Egress Filter configuration.                                                  |
+    |        min_num        | uint32                         |       |          | The minimum number of results to be returned.                                 |
+    | aggregation_algorithm | AggregationAlgorithm           |       |          | The search aggregation algorithm option (default value is `ConcurrentQueue`). |
 
 ### Output
 
@@ -731,8 +731,8 @@ Please be careful that the size of the request exceeds the limit.
       float radius = 3;
       float epsilon = 4;
       int64 timeout = 5;
-      Filter.Config ingress_filters = 6;
-      Filter.Config egress_filters = 7;
+      repeated Filter.Config ingress_filters = 6;
+      repeated Filter.Config egress_filters = 7;
       uint32 min_num = 8;
       AggregationAlgorithm aggregation_algorithm = 9;
     }
@@ -762,17 +762,17 @@ Please be careful that the size of the request exceeds the limit.
 
   - Search.Config
 
-    |         field         | type                 | label | required | description                                                                   |
-    | :-------------------: | :------------------- | :---- | :------: | :---------------------------------------------------------------------------- |
-    |      request_id       | string               |       |          | Unique request ID.                                                            |
-    |          num          | uint32               |       |    \*    | The maximum number of results to be returned.                                 |
-    |        radius         | float                |       |    \*    | The search radius.                                                            |
-    |        epsilon        | float                |       |    \*    | The search coefficient (default value is `0.1`).                              |
-    |        timeout        | int64                |       |          | Search timeout in nanoseconds (default value is `5s`).                        |
-    |    ingress_filters    | Filter.Config        |       |          | Ingress Filter configuration.                                                 |
-    |    egress_filters     | Filter.Config        |       |          | Egress Filter configuration.                                                  |
-    |        min_num        | uint32               |       |          | The minimum number of results to be returned.                                 |
-    | aggregation_algorithm | AggregationAlgorithm |       |          | The search aggregation algorithm option (default value is `ConcurrentQueue`). |
+    |         field         | type                           | label | required | description                                                                   |
+    | :-------------------: | :----------------------------- | :---- | :------: | :---------------------------------------------------------------------------- |
+    |      request_id       | string                         |       |          | Unique request ID.                                                            |
+    |          num          | uint32                         |       |    \*    | The maximum number of results to be returned.                                 |
+    |        radius         | float                          |       |    \*    | The search radius.                                                            |
+    |        epsilon        | float                          |       |    \*    | The search coefficient (default value is `0.1`).                              |
+    |        timeout        | int64                          |       |          | Search timeout in nanoseconds (default value is `5s`).                        |
+    |    ingress_filters    | repeated(Array[Filter.Config]) |       |          | Ingress Filter configuration.                                                 |
+    |    egress_filters     | repeated(Array[Filter.Config]) |       |          | Egress Filter configuration.                                                  |
+    |        min_num        | uint32                         |       |          | The minimum number of results to be returned.                                 |
+    | aggregation_algorithm | AggregationAlgorithm           |       |          | The search aggregation algorithm option (default value is `ConcurrentQueue`). |
 
 ### Output
 
@@ -865,8 +865,8 @@ LinearSearch RPC is the method to linear search vector(s) similar to the request
       string request_id = 1;
       uint32 num = 2 [ (validate.rules).uint32.gte = 1 ];
       int64 timeout = 5;
-      Filter.Config ingress_filters = 6;
-      Filter.Config egress_filters = 7;
+      repeated Filter.Config ingress_filters = 6;
+      repeated Filter.Config egress_filters = 7;
       uint32 min_num = 8;
       AggregationAlgorithm aggregation_algorithm = 9;
     }
@@ -890,15 +890,15 @@ LinearSearch RPC is the method to linear search vector(s) similar to the request
 
   - Search.Config
 
-    |         field         | type                 | label | required | description                                                                   |
-    | :-------------------: | :------------------- | :---- | :------: | :---------------------------------------------------------------------------- |
-    |      request_id       | string               |       |          | Unique request ID.                                                            |
-    |          num          | uint32               |       |    \*    | The maximum number of results to be returned.                                 |
-    |        timeout        | int64                |       |          | Search timeout in nanoseconds (default value is `5s`).                        |
-    |    ingress_filters    | Filter.Config        |       |          | Ingress Filter configuration.                                                 |
-    |    egress_filters     | Filter.Config        |       |          | Egress Filter configuration.                                                  |
-    |        min_num        | uint32               |       |          | The minimum number of results to be returned.                                 |
-    | aggregation_algorithm | AggregationAlgorithm |       |          | The search aggregation algorithm option (default value is `ConcurrentQueue`). |
+    |         field         | type                           | label | required | description                                                                   |
+    | :-------------------: | :----------------------------- | :---- | :------: | :---------------------------------------------------------------------------- |
+    |      request_id       | string                         |       |          | Unique request ID.                                                            |
+    |          num          | uint32                         |       |    \*    | The maximum number of results to be returned.                                 |
+    |        timeout        | int64                          |       |          | Search timeout in nanoseconds (default value is `5s`).                        |
+    |    ingress_filters    | repeated(Array[Filter.Config]) |       |          | Ingress Filter configuration.                                                 |
+    |    egress_filters     | repeated(Array[Filter.Config]) |       |          | Egress Filter configuration.                                                  |
+    |        min_num        | uint32                         |       |          | The minimum number of results to be returned.                                 |
+    | aggregation_algorithm | AggregationAlgorithm           |       |          | The search aggregation algorithm option (default value is `ConcurrentQueue`). |
 
 ### Output
 
@@ -983,8 +983,8 @@ You will get a `NOT_FOUND` error if the vector isn't stored.
       string request_id = 1;
       uint32 num = 2 [ (validate.rules).uint32.gte = 1 ];
       int64 timeout = 5;
-      Filter.Config ingress_filters = 6;
-      Filter.Config egress_filters = 7;
+      repeated Filter.Config ingress_filters = 6;
+      repeated Filter.Config egress_filters = 7;
       uint32 min_num = 8;
       AggregationAlgorithm aggregation_algorithm = 9;
     }
@@ -1008,15 +1008,15 @@ You will get a `NOT_FOUND` error if the vector isn't stored.
 
   - Search.Config
 
-    |         field         | type                 | label | required | description                                                                   |
-    | :-------------------: | :------------------- | :---- | :------: | :---------------------------------------------------------------------------- |
-    |      request_id       | string               |       |          | Unique request ID.                                                            |
-    |          num          | uint32               |       |    \*    | The maximum number of results to be returned.                                 |
-    |        timeout        | int64                |       |          | Search timeout in nanoseconds (default value is `5s`).                        |
-    |    ingress_filters    | Filter.Config        |       |          | Ingress Filter configuration.                                                 |
-    |    egress_filters     | Filter.Config        |       |          | Egress Filter configuration.                                                  |
-    |        min_num        | uint32               |       |          | The minimum number of results to be returned.                                 |
-    | aggregation_algorithm | AggregationAlgorithm |       |          | The search aggregation algorithm option (default value is `ConcurrentQueue`). |
+    |         field         | type                           | label | required | description                                                                   |
+    | :-------------------: | :----------------------------- | :---- | :------: | :---------------------------------------------------------------------------- |
+    |      request_id       | string                         |       |          | Unique request ID.                                                            |
+    |          num          | uint32                         |       |    \*    | The maximum number of results to be returned.                                 |
+    |        timeout        | int64                          |       |          | Search timeout in nanoseconds (default value is `5s`).                        |
+    |    ingress_filters    | repeated(Array[Filter.Config]) |       |          | Ingress Filter configuration.                                                 |
+    |    egress_filters     | repeated(Array[Filter.Config]) |       |          | Egress Filter configuration.                                                  |
+    |        min_num        | uint32                         |       |          | The minimum number of results to be returned.                                 |
+    | aggregation_algorithm | AggregationAlgorithm           |       |          | The search aggregation algorithm option (default value is `ConcurrentQueue`). |
 
 ### Output
 
@@ -1101,8 +1101,8 @@ Each LinearSearch request and response are independent.
       string request_id = 1;
       uint32 num = 2 [ (validate.rules).uint32.gte = 1 ];
       int64 timeout = 5;
-      Filter.Config ingress_filters = 6;
-      Filter.Config egress_filters = 7;
+      repeated Filter.Config ingress_filters = 6;
+      repeated Filter.Config egress_filters = 7;
       uint32 min_num = 8;
       AggregationAlgorithm aggregation_algorithm = 9;
     }
@@ -1126,15 +1126,15 @@ Each LinearSearch request and response are independent.
 
   - Search.Config
 
-    |         field         | type                 | label | required | description                                                                   |
-    | :-------------------: | :------------------- | :---- | :------: | :---------------------------------------------------------------------------- |
-    |      request_id       | string               |       |          | Unique request ID.                                                            |
-    |          num          | uint32               |       |    \*    | The maximum number of results to be returned.                                 |
-    |        timeout        | int64                |       |          | Search timeout in nanoseconds (default value is `5s`).                        |
-    |    ingress_filters    | Filter.Config        |       |          | Ingress Filter configuration.                                                 |
-    |    egress_filters     | Filter.Config        |       |          | Egress Filter configuration.                                                  |
-    |        min_num        | uint32               |       |          | The minimum number of results to be returned.                                 |
-    | aggregation_algorithm | AggregationAlgorithm |       |          | The search aggregation algorithm option (default value is `ConcurrentQueue`). |
+    |         field         | type                           | label | required | description                                                                   |
+    | :-------------------: | :----------------------------- | :---- | :------: | :---------------------------------------------------------------------------- |
+    |      request_id       | string                         |       |          | Unique request ID.                                                            |
+    |          num          | uint32                         |       |    \*    | The maximum number of results to be returned.                                 |
+    |        timeout        | int64                          |       |          | Search timeout in nanoseconds (default value is `5s`).                        |
+    |    ingress_filters    | repeated(Array[Filter.Config]) |       |          | Ingress Filter configuration.                                                 |
+    |    egress_filters     | repeated(Array[Filter.Config]) |       |          | Egress Filter configuration.                                                  |
+    |        min_num        | uint32                         |       |          | The minimum number of results to be returned.                                 |
+    | aggregation_algorithm | AggregationAlgorithm           |       |          | The search aggregation algorithm option (default value is `ConcurrentQueue`). |
 
 ### Output
 
@@ -1233,8 +1233,8 @@ Each LinearSearchByID request and response are independent.
       string request_id = 1;
       uint32 num = 2 [ (validate.rules).uint32.gte = 1 ];
       int64 timeout = 5;
-      Filter.Config ingress_filters = 6;
-      Filter.Config egress_filters = 7;
+      repeated Filter.Config ingress_filters = 6;
+      repeated Filter.Config egress_filters = 7;
       uint32 min_num = 8;
       AggregationAlgorithm aggregation_algorithm = 9;
     }
@@ -1258,15 +1258,15 @@ Each LinearSearchByID request and response are independent.
 
   - Search.Config
 
-    |         field         | type                 | label | required | description                                                                   |
-    | :-------------------: | :------------------- | :---- | :------: | :---------------------------------------------------------------------------- |
-    |      request_id       | string               |       |          | Unique request ID.                                                            |
-    |          num          | uint32               |       |    \*    | The maximum number of results to be returned.                                 |
-    |        timeout        | int64                |       |          | Search timeout in nanoseconds (default value is `5s`).                        |
-    |    ingress_filters    | Filter.Config        |       |          | Ingress Filter configuration.                                                 |
-    |    egress_filters     | Filter.Config        |       |          | Egress Filter configuration.                                                  |
-    |        min_num        | uint32               |       |          | The minimum number of results to be returned.                                 |
-    | aggregation_algorithm | AggregationAlgorithm |       |          | The search aggregation algorithm option (default value is `ConcurrentQueue`). |
+    |         field         | type                           | label | required | description                                                                   |
+    | :-------------------: | :----------------------------- | :---- | :------: | :---------------------------------------------------------------------------- |
+    |      request_id       | string                         |       |          | Unique request ID.                                                            |
+    |          num          | uint32                         |       |    \*    | The maximum number of results to be returned.                                 |
+    |        timeout        | int64                          |       |          | Search timeout in nanoseconds (default value is `5s`).                        |
+    |    ingress_filters    | repeated(Array[Filter.Config]) |       |          | Ingress Filter configuration.                                                 |
+    |    egress_filters     | repeated(Array[Filter.Config]) |       |          | Egress Filter configuration.                                                  |
+    |        min_num        | uint32                         |       |          | The minimum number of results to be returned.                                 |
+    | aggregation_algorithm | AggregationAlgorithm           |       |          | The search aggregation algorithm option (default value is `ConcurrentQueue`). |
 
 ### Output
 
@@ -1372,8 +1372,8 @@ Please be careful that the size of the request exceeds the limit.
       string request_id = 1;
       uint32 num = 2 [ (validate.rules).uint32.gte = 1 ];
       int64 timeout = 5;
-      Filter.Config ingress_filters = 6;
-      Filter.Config egress_filters = 7;
+      repeated Filter.Config ingress_filters = 6;
+      repeated Filter.Config egress_filters = 7;
       uint32 min_num = 8;
       AggregationAlgorithm aggregation_algorithm = 9;
     }
@@ -1403,15 +1403,15 @@ Please be careful that the size of the request exceeds the limit.
 
   - Search.Config
 
-    |         field         | type                 | label | required | description                                                                   |
-    | :-------------------: | :------------------- | :---- | :------: | :---------------------------------------------------------------------------- |
-    |      request_id       | string               |       |          | Unique request ID.                                                            |
-    |          num          | uint32               |       |    \*    | The maximum number of results to be returned.                                 |
-    |        timeout        | int64                |       |          | Search timeout in nanoseconds (default value is `5s`).                        |
-    |    ingress_filters    | Filter.Config        |       |          | Ingress Filter configuration.                                                 |
-    |    egress_filters     | Filter.Config        |       |          | Egress Filter configuration.                                                  |
-    |        min_num        | uint32               |       |          | The minimum number of results to be returned.                                 |
-    | aggregation_algorithm | AggregationAlgorithm |       |          | The search aggregation algorithm option (default value is `ConcurrentQueue`). |
+    |         field         | type                           | label | required | description                                                                   |
+    | :-------------------: | :----------------------------- | :---- | :------: | :---------------------------------------------------------------------------- |
+    |      request_id       | string                         |       |          | Unique request ID.                                                            |
+    |          num          | uint32                         |       |    \*    | The maximum number of results to be returned.                                 |
+    |        timeout        | int64                          |       |          | Search timeout in nanoseconds (default value is `5s`).                        |
+    |    ingress_filters    | repeated(Array[Filter.Config]) |       |          | Ingress Filter configuration.                                                 |
+    |    egress_filters     | repeated(Array[Filter.Config]) |       |          | Egress Filter configuration.                                                  |
+    |        min_num        | uint32                         |       |          | The minimum number of results to be returned.                                 |
+    | aggregation_algorithm | AggregationAlgorithm           |       |          | The search aggregation algorithm option (default value is `ConcurrentQueue`). |
 
 ### Output
 
@@ -1514,8 +1514,8 @@ Please be careful that the size of the request exceeds the limit.
       string request_id = 1;
       uint32 num = 2 [ (validate.rules).uint32.gte = 1 ];
       int64 timeout = 5;
-      Filter.Config ingress_filters = 6;
-      Filter.Config egress_filters = 7;
+      repeated Filter.Config ingress_filters = 6;
+      repeated Filter.Config egress_filters = 7;
       uint32 min_num = 8;
       AggregationAlgorithm aggregation_algorithm = 9;
     }
@@ -1545,15 +1545,15 @@ Please be careful that the size of the request exceeds the limit.
 
   - Search.Config
 
-    |         field         | type                 | label | required | description                                                                   |
-    | :-------------------: | :------------------- | :---- | :------: | :---------------------------------------------------------------------------- |
-    |      request_id       | string               |       |          | Unique request ID.                                                            |
-    |          num          | uint32               |       |    \*    | The maximum number of results to be returned.                                 |
-    |        timeout        | int64                |       |          | Search timeout in nanoseconds (default value is `5s`).                        |
-    |    ingress_filters    | Filter.Config        |       |          | Ingress Filter configuration.                                                 |
-    |    egress_filters     | Filter.Config        |       |          | Egress Filter configuration.                                                  |
-    |        min_num        | uint32               |       |          | The minimum number of results to be returned.                                 |
-    | aggregation_algorithm | AggregationAlgorithm |       |          | The search aggregation algorithm option (default value is `ConcurrentQueue`). |
+    |         field         | type                           | label | required | description                                                                   |
+    | :-------------------: | :----------------------------- | :---- | :------: | :---------------------------------------------------------------------------- |
+    |      request_id       | string                         |       |          | Unique request ID.                                                            |
+    |          num          | uint32                         |       |    \*    | The maximum number of results to be returned.                                 |
+    |        timeout        | int64                          |       |          | Search timeout in nanoseconds (default value is `5s`).                        |
+    |    ingress_filters    | repeated(Array[Filter.Config]) |       |          | Ingress Filter configuration.                                                 |
+    |    egress_filters     | repeated(Array[Filter.Config]) |       |          | Egress Filter configuration.                                                  |
+    |        min_num        | uint32                         |       |          | The minimum number of results to be returned.                                 |
+    | aggregation_algorithm | AggregationAlgorithm           |       |          | The search aggregation algorithm option (default value is `ConcurrentQueue`). |
 
 ### Output
 

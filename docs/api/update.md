@@ -31,7 +31,7 @@ Update RPC is the method to update a single vector.
 
     message Config {
         bool skip_strict_exist_check = 1;
-        Filter.Config filters = 2;
+        repeated Filter.Config filters = 2;
         int64 timestamp = 3;
     }
   }
@@ -53,12 +53,12 @@ Update RPC is the method to update a single vector.
 
   - Update.Config
 
-    |          field          | type          | label | required | description                                                                                                   |
-    | :---------------------: | :------------ | :---- | :------: | :------------------------------------------------------------------------------------------------------------ |
-    | skip_strict_exist_check | bool          |       |          | Check whether the same vector is already inserted or not.<br> The ID should be unique if the value is `true`. |
-    |        timestamp        | int64         |       |          | The timestamp of the vector inserted.<br>If it is N/A, the current time will be used.                         |
-    |         filters         | Filter.Config |       |          | Configuration for filter.                                                                                     |
-    | disable_balanced_update | bool          |       |          | A flag to disable balanced update (split remove -&gt; insert operation) during update operation.              |
+    |          field          | type                           | label | required | description                                                                                                   |
+    | :---------------------: | :----------------------------- | :---- | :------: | :------------------------------------------------------------------------------------------------------------ |
+    | skip_strict_exist_check | bool                           |       |          | Check whether the same vector is already inserted or not.<br> The ID should be unique if the value is `true`. |
+    |        timestamp        | int64                          |       |          | The timestamp of the vector inserted.<br>If it is N/A, the current time will be used.                         |
+    |         filters         | repeated(Array[Filter.Config]) |       |          | Configuration for filter.                                                                                     |
+    | disable_balanced_update | bool                           |       |          | A flag to disable balanced update (split remove -&gt; insert operation) during update operation.              |
 
   - Object.Vector
 
@@ -138,7 +138,7 @@ It's the recommended method to update the large amount of vectors.
       }
       message Config {
           bool skip_strict_exist_check = 1;
-          Filter.Config filters = 2;
+          repeated Filter.Config filters = 2;
           int64 timestamp = 3;
       }
   }
@@ -160,12 +160,12 @@ It's the recommended method to update the large amount of vectors.
 
   - Update.Config
 
-    |          field          | type          | label | required | description                                                                                                   |
-    | :---------------------: | :------------ | :---- | :------: | :------------------------------------------------------------------------------------------------------------ |
-    | skip_strict_exist_check | bool          |       |          | Check whether the same vector is already inserted or not.<br> The ID should be unique if the value is `true`. |
-    |        timestamp        | int64         |       |          | The timestamp of the vector inserted.<br>If it is N/A, the current time will be used.                         |
-    |         filters         | Filter.Config |       |          | Configuration for filter.                                                                                     |
-    | disable_balanced_update | bool          |       |          | A flag to disable balanced update (split remove -&gt; insert operation) during update operation.              |
+    |          field          | type                           | label | required | description                                                                                                   |
+    | :---------------------: | :----------------------------- | :---- | :------: | :------------------------------------------------------------------------------------------------------------ |
+    | skip_strict_exist_check | bool                           |       |          | Check whether the same vector is already inserted or not.<br> The ID should be unique if the value is `true`. |
+    |        timestamp        | int64                          |       |          | The timestamp of the vector inserted.<br>If it is N/A, the current time will be used.                         |
+    |         filters         | repeated(Array[Filter.Config]) |       |          | Configuration for filter.                                                                                     |
+    | disable_balanced_update | bool                           |       |          | A flag to disable balanced update (split remove -&gt; insert operation) during update operation.              |
 
   - Object.Vector
 
@@ -272,7 +272,7 @@ Please be careful that the size of the request exceeds the limit.
 
       message Config {
           bool skip_strict_exist_check = 1;
-          Filter.Config filters = 2;
+          repeated Filter.Config filters = 2;
           int64 timestamp = 3;
       }
   }
@@ -300,12 +300,12 @@ Please be careful that the size of the request exceeds the limit.
 
   - Update.Config
 
-    |          field          | type          | label | required | description                                                                                                   |
-    | :---------------------: | :------------ | :---- | :------: | :------------------------------------------------------------------------------------------------------------ |
-    | skip_strict_exist_check | bool          |       |          | Check whether the same vector is already inserted or not.<br> The ID should be unique if the value is `true`. |
-    |        timestamp        | int64         |       |          | The timestamp of the vector inserted.<br>If it is N/A, the current time will be used.                         |
-    |         filters         | Filter.Config |       |          | Configuration for filter.                                                                                     |
-    | disable_balanced_update | bool          |       |          | A flag to disable balanced update (split remove -&gt; insert operation) during update operation.              |
+    |          field          | type                           | label | required | description                                                                                                   |
+    | :---------------------: | :----------------------------- | :---- | :------: | :------------------------------------------------------------------------------------------------------------ |
+    | skip_strict_exist_check | bool                           |       |          | Check whether the same vector is already inserted or not.<br> The ID should be unique if the value is `true`. |
+    |        timestamp        | int64                          |       |          | The timestamp of the vector inserted.<br>If it is N/A, the current time will be used.                         |
+    |         filters         | repeated(Array[Filter.Config]) |       |          | Configuration for filter.                                                                                     |
+    | disable_balanced_update | bool                           |       |          | A flag to disable balanced update (split remove -&gt; insert operation) during update operation.              |
 
   - Object.Vector
 

@@ -130,7 +130,7 @@ func (c *client) Target(ctx context.Context, targets ...string) (egress.FilterCl
 	}, nil
 }
 
-func (c *client) FilterDistance(ctx context.Context, in *payload.Object_Distance, opts ...grpc.CallOption) (res *payload.Object_Distance, err error) {
+func (c *client) FilterDistance(ctx context.Context, in *payload.Filter_DistanceRequest, opts ...grpc.CallOption) (res *payload.Filter_DistanceResponse, err error) {
 	ctx, span := trace.StartSpan(ctx, apiName+"/Client.FilterDistance")
 	defer func() {
 		if span != nil {
@@ -150,7 +150,7 @@ func (c *client) FilterDistance(ctx context.Context, in *payload.Object_Distance
 	return res, nil
 }
 
-func (s *specificAddrClient) FilterDistance(ctx context.Context, in *payload.Object_Distance, opts ...grpc.CallOption) (res *payload.Object_Distance, err error) {
+func (s *specificAddrClient) FilterDistance(ctx context.Context, in *payload.Filter_DistanceRequest, opts ...grpc.CallOption) (res *payload.Filter_DistanceResponse, err error) {
 	ctx, span := trace.StartSpan(ctx, apiName+"/Client.FilterDistance/"+s.addr)
 	defer func() {
 		if span != nil {
@@ -165,7 +165,7 @@ func (s *specificAddrClient) FilterDistance(ctx context.Context, in *payload.Obj
 		if err != nil {
 			return nil, err
 		}
-		in = res
+		in.Distance = res.GetDistance()
 		return in, nil
 	})
 	if err != nil {
@@ -174,7 +174,7 @@ func (s *specificAddrClient) FilterDistance(ctx context.Context, in *payload.Obj
 	return res, nil
 }
 
-func (m *multipleAddrsClient) FilterDistance(ctx context.Context, in *payload.Object_Distance, opts ...grpc.CallOption) (res *payload.Object_Distance, err error) {
+func (m *multipleAddrsClient) FilterDistance(ctx context.Context, in *payload.Filter_DistanceRequest, opts ...grpc.CallOption) (res *payload.Filter_DistanceResponse, err error) {
 	ctx, span := trace.StartSpan(ctx, apiName+"/Client.FilterDistance/["+strings.Join(m.addrs, ",")+"]")
 	defer func() {
 		if span != nil {
@@ -189,7 +189,7 @@ func (m *multipleAddrsClient) FilterDistance(ctx context.Context, in *payload.Ob
 		if err != nil {
 			return err
 		}
-		in = res
+		in.Distance = res.GetDistance()
 		return nil
 	})
 	if err != nil {
@@ -198,7 +198,7 @@ func (m *multipleAddrsClient) FilterDistance(ctx context.Context, in *payload.Ob
 	return res, nil
 }
 
-func (c *client) FilterVector(ctx context.Context, in *payload.Object_Vector, opts ...grpc.CallOption) (res *payload.Object_Vector, err error) {
+func (c *client) FilterVector(ctx context.Context, in *payload.Filter_VectorRequest, opts ...grpc.CallOption) (res *payload.Filter_VectorResponse, err error) {
 	ctx, span := trace.StartSpan(ctx, apiName+"/Client.FilterVector")
 	defer func() {
 		if span != nil {
@@ -218,7 +218,7 @@ func (c *client) FilterVector(ctx context.Context, in *payload.Object_Vector, op
 	return res, nil
 }
 
-func (s *specificAddrClient) FilterVector(ctx context.Context, in *payload.Object_Vector, opts ...grpc.CallOption) (res *payload.Object_Vector, err error) {
+func (s *specificAddrClient) FilterVector(ctx context.Context, in *payload.Filter_VectorRequest, opts ...grpc.CallOption) (res *payload.Filter_VectorResponse, err error) {
 	ctx, span := trace.StartSpan(ctx, apiName+"/Client.FilterVector/"+s.addr)
 	defer func() {
 		if span != nil {
@@ -233,7 +233,7 @@ func (s *specificAddrClient) FilterVector(ctx context.Context, in *payload.Objec
 		if err != nil {
 			return nil, err
 		}
-		in = res
+		in.Vector = res.GetVector()
 		return in, nil
 	})
 	if err != nil {
@@ -242,7 +242,7 @@ func (s *specificAddrClient) FilterVector(ctx context.Context, in *payload.Objec
 	return res, nil
 }
 
-func (m *multipleAddrsClient) FilterVector(ctx context.Context, in *payload.Object_Vector, opts ...grpc.CallOption) (res *payload.Object_Vector, err error) {
+func (m *multipleAddrsClient) FilterVector(ctx context.Context, in *payload.Filter_VectorRequest, opts ...grpc.CallOption) (res *payload.Filter_VectorResponse, err error) {
 	ctx, span := trace.StartSpan(ctx, apiName+"/Client.FilterVector/["+strings.Join(m.addrs, ",")+"]")
 	defer func() {
 		if span != nil {
@@ -257,7 +257,7 @@ func (m *multipleAddrsClient) FilterVector(ctx context.Context, in *payload.Obje
 		if err != nil {
 			return err
 		}
-		in = res
+		in.Vector = res.GetVector()
 		return nil
 	})
 	if err != nil {
