@@ -1,0 +1,23 @@
+[package]
+name = "kvs"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+
+[dev-dependencies]
+criterion = { version = "0.5.1", features = ["html_reports"] }
+kv = "0.24.0"
+persy = "1.5.0"
+pickledb = "0.5.1"
+rand = "0.8.5"
+redb = "2.1.1"
+rkv = "0.19.0"
+rocksdb = "0.22.0"
+sled = "0.34.7"
+
+[[bench]]
+name = "kvs_benchmark"
+harness = false
