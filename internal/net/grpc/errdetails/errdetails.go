@@ -79,7 +79,7 @@ type Detail struct {
 	Message proto.Message `json:"message,omitempty"  yaml:"message"`
 }
 
-func decodeDetails(objs ...interface{}) (details []Detail) {
+func decodeDetails(objs ...any) (details []Detail) {
 	if objs == nil {
 		return nil
 	}
@@ -93,9 +93,9 @@ func decodeDetails(objs ...interface{}) (details []Detail) {
 			v = v.Elem()
 		}
 		if v.Kind() == reflect.Slice || v.Kind() == reflect.Array {
-			iobjs := make([]interface{}, 0, v.Len())
+			iobjs := make([]any, 0, v.Len())
 			for i := 0; i < v.Len(); i++ {
-				var val interface{}
+				var val any
 				if v.Index(i).Kind() == reflect.Ptr {
 					val = v.Index(i).Elem().Interface()
 				} else {
@@ -209,7 +209,7 @@ func decodeDetails(objs ...interface{}) (details []Detail) {
 	return details
 }
 
-func Serialize(objs ...interface{}) string {
+func Serialize(objs ...any) string {
 	var (
 		b   []byte
 		err error

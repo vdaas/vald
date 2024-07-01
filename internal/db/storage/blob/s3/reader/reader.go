@@ -144,7 +144,7 @@ func (r *reader) getObjectWithBackoff(ctx context.Context, key string, offset, l
 	if !r.backoffEnabled || r.bo == nil {
 		return r.getObject(ctx, key, offset, length)
 	}
-	_, err = r.bo.Do(ctx, func(ctx context.Context) (interface{}, bool, error) {
+	_, err = r.bo.Do(ctx, func(ctx context.Context) (any, bool, error) {
 		res, err = r.getObject(ctx, key, offset, length)
 		if err != nil {
 			if errors.As(err, &errBlobNoSuchBucket) ||

@@ -21,7 +21,7 @@ import "runtime"
 
 var (
 	// ErrPanicRecovered represents a function to generate an error that the panic recovered.
-	ErrPanicRecovered = func(err error, rec interface{}) error {
+	ErrPanicRecovered = func(err error, rec any) error {
 		return Wrap(err, Errorf("panic recovered: %v", rec).Error())
 	}
 

@@ -61,7 +61,7 @@ func TestNew(t *testing.T) {
 		},
 
 		func() test {
-			fn := func(...interface{}) {}
+			fn := func(...any) {}
 			return test{
 				name: "returns l when opts is not nil",
 				args: args{
@@ -104,12 +104,12 @@ func TestNew(t *testing.T) {
 
 func Test_retry_Out(t *testing.T) {
 	type args struct {
-		fn   func(vals ...interface{}) error
-		vals []interface{}
+		fn   func(vals ...any) error
+		vals []any
 	}
 	type fields struct {
-		warnFn  func(vals ...interface{})
-		errorFn func(vals ...interface{})
+		warnFn  func(vals ...any)
+		errorFn func(vals ...any)
 	}
 	type test struct {
 		name       string
@@ -129,7 +129,7 @@ func Test_retry_Out(t *testing.T) {
 				gotCnt  = 0
 			)
 
-			fn := func(vals ...interface{}) error {
+			fn := func(vals ...any) error {
 				gotCnt++
 				return nil
 			}
@@ -150,7 +150,7 @@ func Test_retry_Out(t *testing.T) {
 
 		func() test {
 			err := errors.New("error")
-			fn := func(vals ...interface{}) error {
+			fn := func(vals ...any) error {
 				return err
 			}
 
@@ -159,13 +159,13 @@ func Test_retry_Out(t *testing.T) {
 				gotErrorFnErr error
 			)
 
-			warnFn := func(vals ...interface{}) {
+			warnFn := func(vals ...any) {
 				if len(vals) == 1 {
 					gotWarnFnErr = vals[0].(error)
 				}
 			}
 
-			errorFn := func(vals ...interface{}) {
+			errorFn := func(vals ...any) {
 				if len(vals) == 1 {
 					gotErrorFnErr = vals[0].(error)
 				}
@@ -230,13 +230,13 @@ func Test_retry_Out(t *testing.T) {
 
 func Test_retry_Outf(t *testing.T) {
 	type args struct {
-		fn     func(format string, vals ...interface{}) error
+		fn     func(format string, vals ...any) error
 		format string
-		vals   []interface{}
+		vals   []any
 	}
 	type fields struct {
-		warnFn  func(vals ...interface{})
-		errorFn func(vals ...interface{})
+		warnFn  func(vals ...any)
+		errorFn func(vals ...any)
 	}
 	type test struct {
 		name       string
@@ -254,7 +254,7 @@ func Test_retry_Outf(t *testing.T) {
 			var (
 				wantCnt    = 1
 				wantFormat = "foramt"
-				wantVals   = []interface{}{
+				wantVals   = []any{
 					"vald",
 				}
 			)
@@ -262,10 +262,10 @@ func Test_retry_Outf(t *testing.T) {
 			var (
 				gotCnt    int
 				gotFormat string
-				gotVals   []interface{}
+				gotVals   []any
 			)
 
-			fn := func(format string, vals ...interface{}) error {
+			fn := func(format string, vals ...any) error {
 				gotCnt++
 				gotFormat = format
 				gotVals = vals
@@ -299,7 +299,7 @@ func Test_retry_Outf(t *testing.T) {
 
 		func() test {
 			err := errors.New("error")
-			fn := func(format string, vals ...interface{}) error {
+			fn := func(format string, vals ...any) error {
 				return err
 			}
 
@@ -308,13 +308,13 @@ func Test_retry_Outf(t *testing.T) {
 				gotErrorFnErr error
 			)
 
-			warnFn := func(vals ...interface{}) {
+			warnFn := func(vals ...any) {
 				if len(vals) == 1 {
 					gotWarnFnErr = vals[0].(error)
 				}
 			}
 
-			errorFn := func(vals ...interface{}) {
+			errorFn := func(vals ...any) {
 				if len(vals) == 1 {
 					gotErrorFnErr = vals[0].(error)
 				}

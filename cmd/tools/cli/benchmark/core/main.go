@@ -163,7 +163,7 @@ func main() {
 
 		var m runtime.MemStats
 		runtime.ReadMemStats(&m)
-		metrics := []interface{}{
+		metrics := []any{
 			header,
 			vmpeak,
 			vmsize,

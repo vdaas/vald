@@ -178,7 +178,7 @@ func Test_ert_RoundTrip(t *testing.T) {
 					},
 				},
 				bo: &backoffMock{
-					DoFunc: func(ctx context.Context, fn func(context.Context) (interface{}, bool, error)) (interface{}, error) {
+					DoFunc: func(ctx context.Context, fn func(context.Context) (any, bool, error)) (any, error) {
 						val, _, err := fn(ctx)
 						return val, err
 					},
@@ -204,7 +204,7 @@ func Test_ert_RoundTrip(t *testing.T) {
 					},
 				},
 				bo: &backoffMock{
-					DoFunc: func(ctx context.Context, fn func(context.Context) (interface{}, bool, error)) (interface{}, error) {
+					DoFunc: func(ctx context.Context, fn func(context.Context) (any, bool, error)) (any, error) {
 						val, _, err := fn(ctx)
 						return val, err
 					},
@@ -230,7 +230,7 @@ func Test_ert_RoundTrip(t *testing.T) {
 					},
 				},
 				bo: &backoffMock{
-					DoFunc: func(ctx context.Context, fn func(context.Context) (interface{}, bool, error)) (interface{}, error) {
+					DoFunc: func(ctx context.Context, fn func(context.Context) (any, bool, error)) (any, error) {
 						val, _, err := fn(ctx)
 						return val, err
 					},
@@ -249,7 +249,7 @@ func Test_ert_RoundTrip(t *testing.T) {
 			},
 			fields: fields{
 				bo: &backoffMock{
-					DoFunc: func(ctx context.Context, fn func(context.Context) (interface{}, bool, error)) (interface{}, error) {
+					DoFunc: func(ctx context.Context, fn func(context.Context) (any, bool, error)) (any, error) {
 						return nil, errors.New("error")
 					},
 				},
@@ -270,7 +270,7 @@ func Test_ert_RoundTrip(t *testing.T) {
 					},
 				},
 				bo: &backoffMock{
-					DoFunc: func(ctx context.Context, fn func(context.Context) (interface{}, bool, error)) (interface{}, error) {
+					DoFunc: func(ctx context.Context, fn func(context.Context) (any, bool, error)) (any, error) {
 						val, _, err := fn(ctx)
 						return val, err
 					},
@@ -292,7 +292,7 @@ func Test_ert_RoundTrip(t *testing.T) {
 					},
 				},
 				bo: &backoffMock{
-					DoFunc: func(ctx context.Context, fn func(context.Context) (interface{}, bool, error)) (interface{}, error) {
+					DoFunc: func(ctx context.Context, fn func(context.Context) (any, bool, error)) (any, error) {
 						val, _, err := fn(ctx)
 						return val, err
 					},

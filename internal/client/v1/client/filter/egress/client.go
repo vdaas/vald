@@ -140,7 +140,7 @@ func (c *client) FilterDistance(ctx context.Context, in *payload.Object_Distance
 	_, err = c.c.RoundRobin(ctx, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
-	) (interface{}, error) {
+	) (any, error) {
 		res, err = egress.NewFilterClient(conn).FilterDistance(ctx, in, append(copts, opts...)...)
 		return nil, err
 	})
@@ -160,7 +160,7 @@ func (s *specificAddrClient) FilterDistance(ctx context.Context, in *payload.Obj
 	_, err = s.c.Do(ctx, s.addr, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
-	) (interface{}, error) {
+	) (any, error) {
 		res, err = egress.NewFilterClient(conn).FilterDistance(ctx, in, append(copts, opts...)...)
 		if err != nil {
 			return nil, err
@@ -208,7 +208,7 @@ func (c *client) FilterVector(ctx context.Context, in *payload.Object_Vector, op
 	_, err = c.c.RoundRobin(ctx, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
-	) (interface{}, error) {
+	) (any, error) {
 		res, err = egress.NewFilterClient(conn).FilterVector(ctx, in, append(copts, opts...)...)
 		return nil, err
 	})
@@ -228,7 +228,7 @@ func (s *specificAddrClient) FilterVector(ctx context.Context, in *payload.Objec
 	_, err = s.c.Do(ctx, s.addr, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
-	) (interface{}, error) {
+	) (any, error) {
 		res, err = egress.NewFilterClient(conn).FilterVector(ctx, in, append(copts, opts...)...)
 		if err != nil {
 			return nil, err

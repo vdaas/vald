@@ -665,7 +665,7 @@ type valdPoolSliceAggr struct {
 
 var (
 	poolDist = sync.Pool{
-		New: func() interface{} {
+		New: func() any {
 			return make([]*DistPayload, 0, poolLen.Load())
 		},
 	}

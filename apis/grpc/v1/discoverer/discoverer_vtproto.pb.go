@@ -124,7 +124,7 @@ func RegisterDiscovererServer(s grpc.ServiceRegistrar, srv DiscovererServer) {
 	s.RegisterService(&Discoverer_ServiceDesc, srv)
 }
 
-func _Discoverer_Pods_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Discoverer_Pods_Handler(srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor) (any, error) {
 	in := new(payload.Discoverer_Request)
 	if err := dec(in); err != nil {
 		return nil, err
@@ -136,13 +136,13 @@ func _Discoverer_Pods_Handler(srv interface{}, ctx context.Context, dec func(int
 		Server:     srv,
 		FullMethod: "/discoverer.v1.Discoverer/Pods",
 	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+	handler := func(ctx context.Context, req any) (any, error) {
 		return srv.(DiscovererServer).Pods(ctx, req.(*payload.Discoverer_Request))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Discoverer_Nodes_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Discoverer_Nodes_Handler(srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor) (any, error) {
 	in := new(payload.Discoverer_Request)
 	if err := dec(in); err != nil {
 		return nil, err
@@ -154,13 +154,13 @@ func _Discoverer_Nodes_Handler(srv interface{}, ctx context.Context, dec func(in
 		Server:     srv,
 		FullMethod: "/discoverer.v1.Discoverer/Nodes",
 	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+	handler := func(ctx context.Context, req any) (any, error) {
 		return srv.(DiscovererServer).Nodes(ctx, req.(*payload.Discoverer_Request))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Discoverer_Services_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Discoverer_Services_Handler(srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor) (any, error) {
 	in := new(payload.Discoverer_Request)
 	if err := dec(in); err != nil {
 		return nil, err
@@ -172,7 +172,7 @@ func _Discoverer_Services_Handler(srv interface{}, ctx context.Context, dec func
 		Server:     srv,
 		FullMethod: "/discoverer.v1.Discoverer/Services",
 	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+	handler := func(ctx context.Context, req any) (any, error) {
 		return srv.(DiscovererServer).Services(ctx, req.(*payload.Discoverer_Request))
 	}
 	return interceptor(ctx, in, info, handler)

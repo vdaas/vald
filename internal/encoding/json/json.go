@@ -21,22 +21,22 @@ import (
 	"github.com/vdaas/vald/internal/io"
 )
 
-func Encode(w io.Writer, data interface{}) (err error) {
+func Encode(w io.Writer, data any) (err error) {
 	return json.NewEncoder(w).Encode(data)
 }
 
-func Decode(r io.Reader, data interface{}) (err error) {
+func Decode(r io.Reader, data any) (err error) {
 	return json.NewDecoder(r).Decode(data)
 }
 
-func Unmarshal(data []byte, i interface{}) error {
+func Unmarshal(data []byte, i any) error {
 	return json.Unmarshal(data, i)
 }
 
-func Marshal(data interface{}) ([]byte, error) {
+func Marshal(data any) ([]byte, error) {
 	return json.Marshal(data)
 }
 
-func MarshalIndent(data interface{}, pref, ind string) ([]byte, error) {
+func MarshalIndent(data any, pref, ind string) ([]byte, error) {
 	return json.MarshalIndent(data, pref, ind)
 }

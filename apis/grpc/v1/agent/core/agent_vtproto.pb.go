@@ -124,7 +124,7 @@ func RegisterAgentServer(s grpc.ServiceRegistrar, srv AgentServer) {
 	s.RegisterService(&Agent_ServiceDesc, srv)
 }
 
-func _Agent_CreateIndex_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Agent_CreateIndex_Handler(srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor) (any, error) {
 	in := new(payload.Control_CreateIndexRequest)
 	if err := dec(in); err != nil {
 		return nil, err
@@ -136,13 +136,13 @@ func _Agent_CreateIndex_Handler(srv interface{}, ctx context.Context, dec func(i
 		Server:     srv,
 		FullMethod: "/core.v1.Agent/CreateIndex",
 	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+	handler := func(ctx context.Context, req any) (any, error) {
 		return srv.(AgentServer).CreateIndex(ctx, req.(*payload.Control_CreateIndexRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Agent_SaveIndex_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Agent_SaveIndex_Handler(srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor) (any, error) {
 	in := new(payload.Empty)
 	if err := dec(in); err != nil {
 		return nil, err
@@ -154,13 +154,13 @@ func _Agent_SaveIndex_Handler(srv interface{}, ctx context.Context, dec func(int
 		Server:     srv,
 		FullMethod: "/core.v1.Agent/SaveIndex",
 	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+	handler := func(ctx context.Context, req any) (any, error) {
 		return srv.(AgentServer).SaveIndex(ctx, req.(*payload.Empty))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Agent_CreateAndSaveIndex_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Agent_CreateAndSaveIndex_Handler(srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor) (any, error) {
 	in := new(payload.Control_CreateIndexRequest)
 	if err := dec(in); err != nil {
 		return nil, err
@@ -172,7 +172,7 @@ func _Agent_CreateAndSaveIndex_Handler(srv interface{}, ctx context.Context, dec
 		Server:     srv,
 		FullMethod: "/core.v1.Agent/CreateAndSaveIndex",
 	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+	handler := func(ctx context.Context, req any) (any, error) {
 		return srv.(AgentServer).CreateAndSaveIndex(ctx, req.(*payload.Control_CreateIndexRequest))
 	}
 	return interceptor(ctx, in, info, handler)

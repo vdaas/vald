@@ -155,7 +155,7 @@ func initTable(b *testing.B, metas []MetaVector) {
 
 	ib := cassandra.Insert(metaTable).Columns(metaColumnSlice...)
 	bt := cassandra.Batch()
-	entities := make(map[string]interface{}, len(metas)*4)
+	entities := make(map[string]any, len(metas)*4)
 	for i, m := range metas {
 		prefix := "p" + strconv.Itoa(i)
 		bt = bt.AddWithPrefix(prefix, ib)
@@ -175,9 +175,9 @@ func BenchmarkGocqlxSelectBindMap(b *testing.B) {
 	metas := loadData()
 	initTable(b, metas)
 
-	keys := make([]map[string]interface{}, 0, len(metas))
+	keys := make([]map[string]any, 0, len(metas))
 	for _, m := range metas {
-		keys = append(keys, map[string]interface{}{
+		keys = append(keys, map[string]any{
 			uuidColumn: m.UUID,
 		})
 	}

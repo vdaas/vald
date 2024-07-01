@@ -21,18 +21,18 @@ import (
 
 type Retry interface {
 	Out(
-		fn func(vals ...interface{}) error,
-		vals ...interface{},
+		fn func(vals ...any) error,
+		vals ...any,
 	)
 	Outf(
-		fn func(format string, vals ...interface{}) error,
-		format string, vals ...interface{},
+		fn func(format string, vals ...any) error,
+		format string, vals ...any,
 	)
 }
 
 type retry struct {
-	warnFn  func(vals ...interface{})
-	errorFn func(vals ...interface{})
+	warnFn  func(vals ...any)
+	errorFn func(vals ...any)
 }
 
 func New(opts ...Option) Retry {
@@ -44,8 +44,8 @@ func New(opts ...Option) Retry {
 }
 
 func (r *retry) Out(
-	fn func(vals ...interface{}) error,
-	vals ...interface{},
+	fn func(vals ...any) error,
+	vals ...any,
 ) {
 	if fn != nil {
 		if err := fn(vals...); err != nil {
@@ -64,8 +64,8 @@ func (r *retry) Out(
 }
 
 func (r *retry) Outf(
-	fn func(format string, vals ...interface{}) error,
-	format string, vals ...interface{},
+	fn func(format string, vals ...any) error,
+	format string, vals ...any,
 ) {
 	if fn != nil {
 		if err := fn(format, vals...); err != nil {

@@ -1322,7 +1322,7 @@ func rootCommands(t *testing.T) commands.Commands {
 		GenCommandFunc: func(state commands.State) gopter.Gen {
 			st := state.(*ngtState)
 
-			cs := make([]interface{}, 0)
+			cs := make([]any, 0)
 			cs = append(
 				cs,
 				existsACommand,

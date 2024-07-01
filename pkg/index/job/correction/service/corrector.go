@@ -514,7 +514,7 @@ func (c *correct) updateObject(ctx context.Context, dest, src *vectorReplica) er
 	}
 
 	res, err := c.discoverer.GetClient().
-		Do(grpc.WithGRPCMethod(ctx, updateMethod), dest.addr, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
+		Do(grpc.WithGRPCMethod(ctx, updateMethod), dest.addr, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (any, error) {
 			// TODO: use UpdateTimestamp when it's implemented because here we just want to update only the timestamp but not the vector
 			return vald.NewUpdateClient(conn).Update(ctx, &payload.Update_Request{
 				Vector: src.vec,
@@ -540,7 +540,7 @@ func (c *correct) updateObject(ctx context.Context, dest, src *vectorReplica) er
 
 func (c *correct) fillVectorField(ctx context.Context, replica *vectorReplica) error {
 	res, err := c.discoverer.GetClient().
-		Do(grpc.WithGRPCMethod(ctx, "core.v1.Vald/GetObject"), replica.addr, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
+		Do(grpc.WithGRPCMethod(ctx, "core.v1.Vald/GetObject"), replica.addr, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (any, error) {
 			return vald.NewValdClient(conn).GetObject(ctx, &payload.Object_VectorRequest{
 				Id: &payload.Object_ID{
 					Id: replica.vec.GetId(),
@@ -564,7 +564,7 @@ func (c *correct) fillVectorField(ctx context.Context, replica *vectorReplica) e
 
 func (c *correct) insertObject(ctx context.Context, addr string, vector *payload.Object_Vector) error {
 	res, err := c.discoverer.GetClient().
-		Do(grpc.WithGRPCMethod(ctx, insertMethod), addr, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
+		Do(grpc.WithGRPCMethod(ctx, insertMethod), addr, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (any, error) {
 			return vald.NewInsertClient(conn).Insert(ctx, &payload.Insert_Request{
 				Vector: vector,
 				// TODO: this should be deleted after Config.Timestamp deprecation
@@ -586,7 +586,7 @@ func (c *correct) insertObject(ctx context.Context, addr string, vector *payload
 
 func (c *correct) deleteObject(ctx context.Context, addr string, vector *payload.Object_Vector) error {
 	res, err := c.discoverer.GetClient().
-		Do(grpc.WithGRPCMethod(ctx, deleteMethod), addr, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
+		Do(grpc.WithGRPCMethod(ctx, deleteMethod), addr, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (any, error) {
 			return vald.NewRemoveClient(conn).Remove(ctx, &payload.Remove_Request{
 				Id: &payload.Object_ID{
 					Id: vector.GetId(),

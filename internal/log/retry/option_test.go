@@ -24,7 +24,7 @@ import (
 func TestWithError(t *testing.T) {
 	type T = retry
 	type args struct {
-		fn func(vals ...interface{})
+		fn func(vals ...any)
 	}
 	type want struct {
 		obj *T
@@ -47,7 +47,7 @@ func TestWithError(t *testing.T) {
 
 	tests := []test{
 		func() test {
-			fn := func(vals ...interface{}) {}
+			fn := func(vals ...any) {}
 			return test{
 				name: "set success when fn is not nil",
 				args: args{
@@ -98,7 +98,7 @@ func TestWithError(t *testing.T) {
 func TestWithWarn(t *testing.T) {
 	type T = retry
 	type args struct {
-		fn func(vals ...interface{})
+		fn func(vals ...any)
 	}
 	type want struct {
 		obj *T
@@ -121,7 +121,7 @@ func TestWithWarn(t *testing.T) {
 
 	tests := []test{
 		func() test {
-			fn := func(vals ...interface{}) {}
+			fn := func(vals ...any) {}
 			return test{
 				name: "set success when fn is not nil",
 				args: args{

@@ -59,13 +59,13 @@ func MetricInterceptors() (grpc.UnaryServerInterceptor, grpc.StreamServerInterce
 		latencyHistgram.Record(ctx, latency, metrics.WithAttributes(attrs...))
 		completedRPCCnt.Add(ctx, 1, metrics.WithAttributes(attrs...))
 	}
-	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp interface{}, err error) {
+	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp any, err error) {
 			now := time.Now()
 			resp, err = handler(ctx, req)
 			elapsedTime := time.Since(now)
 			record(ctx, info.FullMethod, err, float64(elapsedTime)/float64(time.Millisecond))
 			return resp, err
-		}, func(srv interface{}, ss grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) (err error) {
+		}, func(srv any, ss grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) (err error) {
 			now := time.Now()
 			err = handler(srv, ss)
 			elapsedTime := time.Since(now)

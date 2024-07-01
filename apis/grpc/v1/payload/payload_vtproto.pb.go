@@ -278,7 +278,7 @@ func (m *Search_StreamResponse_Status) CloneVT() isSearch_StreamResponse_Payload
 	}
 	r := new(Search_StreamResponse_Status)
 	if rhs := m.Status; rhs != nil {
-		if vtpb, ok := interface{}(rhs).(interface{ CloneVT() *status.Status }); ok {
+		if vtpb, ok := any(rhs).(interface{ CloneVT() *status.Status }); ok {
 			r.Status = vtpb.CloneVT()
 		} else {
 			r.Status = proto.Clone(rhs).(*status.Status)
@@ -936,7 +936,7 @@ func (m *Object_StreamDistance_Status) CloneVT() isObject_StreamDistance_Payload
 	}
 	r := new(Object_StreamDistance_Status)
 	if rhs := m.Status; rhs != nil {
-		if vtpb, ok := interface{}(rhs).(interface{ CloneVT() *status.Status }); ok {
+		if vtpb, ok := any(rhs).(interface{ CloneVT() *status.Status }); ok {
 			r.Status = vtpb.CloneVT()
 		} else {
 			r.Status = proto.Clone(rhs).(*status.Status)
@@ -1100,7 +1100,7 @@ func (m *Object_StreamVector_Status) CloneVT() isObject_StreamVector_Payload {
 	}
 	r := new(Object_StreamVector_Status)
 	if rhs := m.Status; rhs != nil {
-		if vtpb, ok := interface{}(rhs).(interface{ CloneVT() *status.Status }); ok {
+		if vtpb, ok := any(rhs).(interface{ CloneVT() *status.Status }); ok {
 			r.Status = vtpb.CloneVT()
 		} else {
 			r.Status = proto.Clone(rhs).(*status.Status)
@@ -1193,7 +1193,7 @@ func (m *Object_StreamBlob_Status) CloneVT() isObject_StreamBlob_Payload {
 	}
 	r := new(Object_StreamBlob_Status)
 	if rhs := m.Status; rhs != nil {
-		if vtpb, ok := interface{}(rhs).(interface{ CloneVT() *status.Status }); ok {
+		if vtpb, ok := any(rhs).(interface{ CloneVT() *status.Status }); ok {
 			r.Status = vtpb.CloneVT()
 		} else {
 			r.Status = proto.Clone(rhs).(*status.Status)
@@ -1261,7 +1261,7 @@ func (m *Object_StreamLocation_Status) CloneVT() isObject_StreamLocation_Payload
 	}
 	r := new(Object_StreamLocation_Status)
 	if rhs := m.Status; rhs != nil {
-		if vtpb, ok := interface{}(rhs).(interface{ CloneVT() *status.Status }); ok {
+		if vtpb, ok := any(rhs).(interface{ CloneVT() *status.Status }); ok {
 			r.Status = vtpb.CloneVT()
 		} else {
 			r.Status = proto.Clone(rhs).(*status.Status)
@@ -1345,7 +1345,7 @@ func (m *Object_List_Response_Status) CloneVT() isObject_List_Response_Payload {
 	}
 	r := new(Object_List_Response_Status)
 	if rhs := m.Status; rhs != nil {
-		if vtpb, ok := interface{}(rhs).(interface{ CloneVT() *status.Status }); ok {
+		if vtpb, ok := any(rhs).(interface{ CloneVT() *status.Status }); ok {
 			r.Status = vtpb.CloneVT()
 		} else {
 			r.Status = proto.Clone(rhs).(*status.Status)
@@ -2283,7 +2283,7 @@ func (this *Search_StreamResponse_Status) EqualVT(thatIface isSearch_StreamRespo
 		if q == nil {
 			q = &status.Status{}
 		}
-		if equal, ok := interface{}(p).(interface{ EqualVT(*status.Status) bool }); ok {
+		if equal, ok := any(p).(interface{ EqualVT(*status.Status) bool }); ok {
 			if !equal.EqualVT(q) {
 				return false
 			}
@@ -3144,7 +3144,7 @@ func (this *Object_StreamDistance_Status) EqualVT(thatIface isObject_StreamDista
 		if q == nil {
 			q = &status.Status{}
 		}
-		if equal, ok := interface{}(p).(interface{ EqualVT(*status.Status) bool }); ok {
+		if equal, ok := any(p).(interface{ EqualVT(*status.Status) bool }); ok {
 			if !equal.EqualVT(q) {
 				return false
 			}
@@ -3375,7 +3375,7 @@ func (this *Object_StreamVector_Status) EqualVT(thatIface isObject_StreamVector_
 		if q == nil {
 			q = &status.Status{}
 		}
-		if equal, ok := interface{}(p).(interface{ EqualVT(*status.Status) bool }); ok {
+		if equal, ok := any(p).(interface{ EqualVT(*status.Status) bool }); ok {
 			if !equal.EqualVT(q) {
 				return false
 			}
@@ -3507,7 +3507,7 @@ func (this *Object_StreamBlob_Status) EqualVT(thatIface isObject_StreamBlob_Payl
 		if q == nil {
 			q = &status.Status{}
 		}
-		if equal, ok := interface{}(p).(interface{ EqualVT(*status.Status) bool }); ok {
+		if equal, ok := any(p).(interface{ EqualVT(*status.Status) bool }); ok {
 			if !equal.EqualVT(q) {
 				return false
 			}
@@ -3620,7 +3620,7 @@ func (this *Object_StreamLocation_Status) EqualVT(thatIface isObject_StreamLocat
 		if q == nil {
 			q = &status.Status{}
 		}
-		if equal, ok := interface{}(p).(interface{ EqualVT(*status.Status) bool }); ok {
+		if equal, ok := any(p).(interface{ EqualVT(*status.Status) bool }); ok {
 			if !equal.EqualVT(q) {
 				return false
 			}
@@ -3751,7 +3751,7 @@ func (this *Object_List_Response_Status) EqualVT(thatIface isObject_List_Respons
 		if q == nil {
 			q = &status.Status{}
 		}
-		if equal, ok := interface{}(p).(interface{ EqualVT(*status.Status) bool }); ok {
+		if equal, ok := any(p).(interface{ EqualVT(*status.Status) bool }); ok {
 			if !equal.EqualVT(q) {
 				return false
 			}
@@ -5056,7 +5056,7 @@ func (m *Search_StreamResponse_Status) MarshalToVT(dAtA []byte) (int, error) {
 func (m *Search_StreamResponse_Status) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	if m.Status != nil {
-		if vtmsg, ok := interface{}(m.Status).(interface {
+		if vtmsg, ok := any(m.Status).(interface {
 			MarshalToSizedBufferVT([]byte) (int, error)
 		}); ok {
 			size, err := vtmsg.MarshalToSizedBufferVT(dAtA[:i])
@@ -6647,7 +6647,7 @@ func (m *Object_StreamDistance_Status) MarshalToVT(dAtA []byte) (int, error) {
 func (m *Object_StreamDistance_Status) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	if m.Status != nil {
-		if vtmsg, ok := interface{}(m.Status).(interface {
+		if vtmsg, ok := any(m.Status).(interface {
 			MarshalToSizedBufferVT([]byte) (int, error)
 		}); ok {
 			size, err := vtmsg.MarshalToSizedBufferVT(dAtA[:i])
@@ -7009,7 +7009,7 @@ func (m *Object_StreamVector_Status) MarshalToVT(dAtA []byte) (int, error) {
 func (m *Object_StreamVector_Status) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	if m.Status != nil {
-		if vtmsg, ok := interface{}(m.Status).(interface {
+		if vtmsg, ok := any(m.Status).(interface {
 			MarshalToSizedBufferVT([]byte) (int, error)
 		}); ok {
 			size, err := vtmsg.MarshalToSizedBufferVT(dAtA[:i])
@@ -7209,7 +7209,7 @@ func (m *Object_StreamBlob_Status) MarshalToVT(dAtA []byte) (int, error) {
 func (m *Object_StreamBlob_Status) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	if m.Status != nil {
-		if vtmsg, ok := interface{}(m.Status).(interface {
+		if vtmsg, ok := any(m.Status).(interface {
 			MarshalToSizedBufferVT([]byte) (int, error)
 		}); ok {
 			size, err := vtmsg.MarshalToSizedBufferVT(dAtA[:i])
@@ -7357,7 +7357,7 @@ func (m *Object_StreamLocation_Status) MarshalToVT(dAtA []byte) (int, error) {
 func (m *Object_StreamLocation_Status) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	if m.Status != nil {
-		if vtmsg, ok := interface{}(m.Status).(interface {
+		if vtmsg, ok := any(m.Status).(interface {
 			MarshalToSizedBufferVT([]byte) (int, error)
 		}); ok {
 			size, err := vtmsg.MarshalToSizedBufferVT(dAtA[:i])
@@ -7527,7 +7527,7 @@ func (m *Object_List_Response_Status) MarshalToVT(dAtA []byte) (int, error) {
 func (m *Object_List_Response_Status) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	if m.Status != nil {
-		if vtmsg, ok := interface{}(m.Status).(interface {
+		if vtmsg, ok := any(m.Status).(interface {
 			MarshalToSizedBufferVT([]byte) (int, error)
 		}); ok {
 			size, err := vtmsg.MarshalToSizedBufferVT(dAtA[:i])
@@ -9145,7 +9145,7 @@ func (m *Search_StreamResponse_Status) SizeVT() (n int) {
 	var l int
 	_ = l
 	if m.Status != nil {
-		if size, ok := interface{}(m.Status).(interface {
+		if size, ok := any(m.Status).(interface {
 			SizeVT() int
 		}); ok {
 			l = size.SizeVT()
@@ -9700,7 +9700,7 @@ func (m *Object_StreamDistance_Status) SizeVT() (n int) {
 	var l int
 	_ = l
 	if m.Status != nil {
-		if size, ok := interface{}(m.Status).(interface {
+		if size, ok := any(m.Status).(interface {
 			SizeVT() int
 		}); ok {
 			l = size.SizeVT()
@@ -9840,7 +9840,7 @@ func (m *Object_StreamVector_Status) SizeVT() (n int) {
 	var l int
 	_ = l
 	if m.Status != nil {
-		if size, ok := interface{}(m.Status).(interface {
+		if size, ok := any(m.Status).(interface {
 			SizeVT() int
 		}); ok {
 			l = size.SizeVT()
@@ -9922,7 +9922,7 @@ func (m *Object_StreamBlob_Status) SizeVT() (n int) {
 	var l int
 	_ = l
 	if m.Status != nil {
-		if size, ok := interface{}(m.Status).(interface {
+		if size, ok := any(m.Status).(interface {
 			SizeVT() int
 		}); ok {
 			l = size.SizeVT()
@@ -9989,7 +9989,7 @@ func (m *Object_StreamLocation_Status) SizeVT() (n int) {
 	var l int
 	_ = l
 	if m.Status != nil {
-		if size, ok := interface{}(m.Status).(interface {
+		if size, ok := any(m.Status).(interface {
 			SizeVT() int
 		}); ok {
 			l = size.SizeVT()
@@ -10058,7 +10058,7 @@ func (m *Object_List_Response_Status) SizeVT() (n int) {
 	var l int
 	_ = l
 	if m.Status != nil {
-		if size, ok := interface{}(m.Status).(interface {
+		if size, ok := any(m.Status).(interface {
 			SizeVT() int
 		}); ok {
 			l = size.SizeVT()
@@ -11834,7 +11834,7 @@ func (m *Search_StreamResponse) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if oneof, ok := m.Payload.(*Search_StreamResponse_Status); ok {
-				if unmarshal, ok := interface{}(oneof.Status).(interface {
+				if unmarshal, ok := any(oneof.Status).(interface {
 					UnmarshalVT([]byte) error
 				}); ok {
 					if err := unmarshal.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
@@ -11847,7 +11847,7 @@ func (m *Search_StreamResponse) UnmarshalVT(dAtA []byte) error {
 				}
 			} else {
 				v := &status.Status{}
-				if unmarshal, ok := interface{}(v).(interface {
+				if unmarshal, ok := any(v).(interface {
 					UnmarshalVT([]byte) error
 				}); ok {
 					if err := unmarshal.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
@@ -15041,7 +15041,7 @@ func (m *Object_StreamDistance) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if oneof, ok := m.Payload.(*Object_StreamDistance_Status); ok {
-				if unmarshal, ok := interface{}(oneof.Status).(interface {
+				if unmarshal, ok := any(oneof.Status).(interface {
 					UnmarshalVT([]byte) error
 				}); ok {
 					if err := unmarshal.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
@@ -15054,7 +15054,7 @@ func (m *Object_StreamDistance) UnmarshalVT(dAtA []byte) error {
 				}
 			} else {
 				v := &status.Status{}
-				if unmarshal, ok := interface{}(v).(interface {
+				if unmarshal, ok := any(v).(interface {
 					UnmarshalVT([]byte) error
 				}); ok {
 					if err := unmarshal.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
@@ -15786,7 +15786,7 @@ func (m *Object_StreamVector) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if oneof, ok := m.Payload.(*Object_StreamVector_Status); ok {
-				if unmarshal, ok := interface{}(oneof.Status).(interface {
+				if unmarshal, ok := any(oneof.Status).(interface {
 					UnmarshalVT([]byte) error
 				}); ok {
 					if err := unmarshal.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
@@ -15799,7 +15799,7 @@ func (m *Object_StreamVector) UnmarshalVT(dAtA []byte) error {
 				}
 			} else {
 				v := &status.Status{}
-				if unmarshal, ok := interface{}(v).(interface {
+				if unmarshal, ok := any(v).(interface {
 					UnmarshalVT([]byte) error
 				}); ok {
 					if err := unmarshal.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
@@ -16213,7 +16213,7 @@ func (m *Object_StreamBlob) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if oneof, ok := m.Payload.(*Object_StreamBlob_Status); ok {
-				if unmarshal, ok := interface{}(oneof.Status).(interface {
+				if unmarshal, ok := any(oneof.Status).(interface {
 					UnmarshalVT([]byte) error
 				}); ok {
 					if err := unmarshal.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
@@ -16226,7 +16226,7 @@ func (m *Object_StreamBlob) UnmarshalVT(dAtA []byte) error {
 				}
 			} else {
 				v := &status.Status{}
-				if unmarshal, ok := interface{}(v).(interface {
+				if unmarshal, ok := any(v).(interface {
 					UnmarshalVT([]byte) error
 				}); ok {
 					if err := unmarshal.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
@@ -16509,7 +16509,7 @@ func (m *Object_StreamLocation) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if oneof, ok := m.Payload.(*Object_StreamLocation_Status); ok {
-				if unmarshal, ok := interface{}(oneof.Status).(interface {
+				if unmarshal, ok := any(oneof.Status).(interface {
 					UnmarshalVT([]byte) error
 				}); ok {
 					if err := unmarshal.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
@@ -16522,7 +16522,7 @@ func (m *Object_StreamLocation) UnmarshalVT(dAtA []byte) error {
 				}
 			} else {
 				v := &status.Status{}
-				if unmarshal, ok := interface{}(v).(interface {
+				if unmarshal, ok := any(v).(interface {
 					UnmarshalVT([]byte) error
 				}); ok {
 					if err := unmarshal.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
@@ -16794,7 +16794,7 @@ func (m *Object_List_Response) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if oneof, ok := m.Payload.(*Object_List_Response_Status); ok {
-				if unmarshal, ok := interface{}(oneof.Status).(interface {
+				if unmarshal, ok := any(oneof.Status).(interface {
 					UnmarshalVT([]byte) error
 				}); ok {
 					if err := unmarshal.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
@@ -16807,7 +16807,7 @@ func (m *Object_List_Response) UnmarshalVT(dAtA []byte) error {
 				}
 			} else {
 				v := &status.Status{}
-				if unmarshal, ok := interface{}(v).(interface {
+				if unmarshal, ok := any(v).(interface {
 					UnmarshalVT([]byte) error
 				}); ok {
 					if err := unmarshal.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {

@@ -45,15 +45,15 @@ func New(opts ...Option) Handler {
 }
 
 func (*handler) Index(w http.ResponseWriter, r *http.Request) (int, error) {
-	data := make(map[string]interface{})
-	return json.Handler(w, r, &data, func() (interface{}, error) {
+	data := make(map[string]any)
+	return json.Handler(w, r, &data, func() (any, error) {
 		return dump.Request(nil, data, r)
 	})
 }
 
 func (h *handler) IndexInfo(w http.ResponseWriter, r *http.Request) (code int, err error) {
 	var req *payload.Empty
-	return json.Handler(w, r, &req, func() (interface{}, error) {
+	return json.Handler(w, r, &req, func() (any, error) {
 		return h.indexer.IndexInfo(r.Context(), req)
 	})
 }

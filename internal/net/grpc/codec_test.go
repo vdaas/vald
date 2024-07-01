@@ -28,7 +28,7 @@ import (
 func TestCodec_Marshal(t *testing.T) {
 	t.Parallel()
 	type args struct {
-		v interface{}
+		v any
 	}
 	type want struct {
 		want []byte
@@ -121,7 +121,7 @@ func TestCodec_Unmarshal(t *testing.T) {
 	t.Parallel()
 	type args struct {
 		data []byte
-		v    interface{}
+		v    any
 	}
 	type want struct {
 		err error

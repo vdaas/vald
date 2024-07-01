@@ -52,7 +52,7 @@ func (c *cache[V]) Start(ctx context.Context) {
 	c.gache.StartExpired(ctx, c.expireCheckDur)
 }
 
-// Get calls StartExpired func of c.gache and returns (interface{}, bool) according to key.
+// Get calls StartExpired func of c.gache and returns (any, bool) according to key.
 func (c *cache[V]) Get(key string) (V, bool) {
 	return c.gache.Get(key)
 }
@@ -67,7 +67,7 @@ func (c *cache[V]) Delete(key string) {
 	c.gache.Delete(key)
 }
 
-// GetAndDelete returns (interface{}, bool) and delete value according to key when value of key is set.
+// GetAndDelete returns (any, bool) and delete value according to key when value of key is set.
 // When value of key is not set, returns (nil, false).
 func (c *cache[V]) GetAndDelete(key string) (V, bool) {
 	v, ok := c.gache.Get(key)

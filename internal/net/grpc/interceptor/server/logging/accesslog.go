@@ -52,10 +52,10 @@ type AccessLogGRPCEntity struct {
 func AccessLogInterceptor() grpc.UnaryServerInterceptor {
 	return func(
 		ctx context.Context,
-		req interface{},
+		req any,
 		info *grpc.UnaryServerInfo,
 		handler grpc.UnaryHandler,
-	) (resp interface{}, err error) {
+	) (resp any, err error) {
 		var traceID string
 
 		span := trace.FromContext(ctx)
@@ -99,7 +99,7 @@ func AccessLogInterceptor() grpc.UnaryServerInterceptor {
 
 func AccessLogStreamInterceptor() grpc.StreamServerInterceptor {
 	return func(
-		srv interface{},
+		srv any,
 		ss grpc.ServerStream,
 		info *grpc.StreamServerInfo,
 		handler grpc.StreamHandler,

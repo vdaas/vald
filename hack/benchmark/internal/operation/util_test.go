@@ -104,7 +104,7 @@ package operation
 // 		tb      testing.TB
 // 		code    int32
 // 		message string
-// 		details []interface{}
+// 		details []any
 // 	}
 // 	type want struct {
 // 	}

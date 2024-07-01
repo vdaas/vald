@@ -23,10 +23,10 @@ import (
 	"github.com/vdaas/vald/pkg/tools/cli/loadtest/assets"
 )
 
-func searchRequestProvider(dataset assets.Dataset) (func() interface{}, int, error) {
+func searchRequestProvider(dataset assets.Dataset) (func() any, int, error) {
 	size := dataset.QuerySize()
 	idx := int32(-1)
-	return func() (ret interface{}) {
+	return func() (ret any) {
 		if i := int(atomic.AddInt32(&idx, 1)); i < size {
 			v, err := dataset.Query(i)
 			if err != nil {
@@ -41,13 +41,13 @@ func searchRequestProvider(dataset assets.Dataset) (func() interface{}, int, err
 }
 
 func (l *loader) newSearch() (loadFunc, error) {
-	return func(ctx context.Context, conn *grpc.ClientConn, i interface{}, copts ...grpc.CallOption) (interface{}, error) {
+	return func(ctx context.Context, conn *grpc.ClientConn, i any, copts ...grpc.CallOption) (any, error) {
 		return vald.NewSearchClient(conn).Search(ctx, i.(*payload.Search_Request), copts...)
 	}, nil
 }
 
 func (l *loader) newStreamSearch() (loadFunc, error) {
-	return func(ctx context.Context, conn *grpc.ClientConn, i interface{}, copts ...grpc.CallOption) (interface{}, error) {
+	return func(ctx context.Context, conn *grpc.ClientConn, i any, copts ...grpc.CallOption) (any, error) {
 		return vald.NewSearchClient(conn).StreamSearch(ctx, copts...)
 	}, nil
 }

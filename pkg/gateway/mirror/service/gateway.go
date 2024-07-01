@@ -37,7 +37,7 @@ type Gateway interface {
 	BroadCast(ctx context.Context,
 		f func(ctx context.Context, target string, vc MirrorClient, copts ...grpc.CallOption) error) error
 	Do(ctx context.Context, target string,
-		f func(ctx context.Context, target string, vc MirrorClient, copts ...grpc.CallOption) (interface{}, error)) (interface{}, error)
+		f func(ctx context.Context, target string, vc MirrorClient, copts ...grpc.CallOption) (any, error)) (any, error)
 	DoMulti(ctx context.Context, targets []string,
 		f func(ctx context.Context, target string, vc MirrorClient, copts ...grpc.CallOption) error) error
 	GRPCClient() grpc.Client
@@ -128,8 +128,8 @@ func (g *gateway) BroadCast(ctx context.Context,
 // It returns the result of the operation and any associated error.
 // The provided function should handle the communication logic for a target.
 func (g *gateway) Do(ctx context.Context, target string,
-	f func(ctx context.Context, addr string, vc MirrorClient, copts ...grpc.CallOption) (interface{}, error),
-) (res interface{}, err error) {
+	f func(ctx context.Context, addr string, vc MirrorClient, copts ...grpc.CallOption) (any, error),
+) (res any, err error) {
 	ctx, span := trace.StartSpan(ctx, "vald/gateway/mirror/service/Gateway.Do")
 	defer func() {
 		if span != nil {
@@ -141,7 +141,7 @@ func (g *gateway) Do(ctx context.Context, target string,
 		return nil, errors.ErrTargetNotFound
 	}
 	return g.client.GRPCClient().Do(g.ForwardedContext(ctx, g.podName), target,
-		func(ictx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
+		func(ictx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (any, error) {
 			return f(ictx, target, NewMirrorClient(conn), copts...)
 		},
 	)

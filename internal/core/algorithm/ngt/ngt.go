@@ -304,7 +304,7 @@ func gen(isLoad bool, opts ...Option) (NGT, error) {
 
 func (n *ngt) setup() error {
 	n.epool = sync.Pool{
-		New: func() interface{} {
+		New: func() any {
 			return newNGTError()
 		},
 	}

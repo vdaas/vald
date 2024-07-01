@@ -172,7 +172,7 @@ func (s *server) Exists(ctx context.Context, meta *payload.Object_ID) (id *paylo
 		}
 	}()
 
-	_, err = s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, _ string, vc service.MirrorClient, copts ...grpc.CallOption) (interface{}, error) {
+	_, err = s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, _ string, vc service.MirrorClient, copts ...grpc.CallOption) (any, error) {
 		id, err = vc.Exists(ctx, meta, copts...)
 		return id, err
 	})
@@ -237,7 +237,7 @@ func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *
 		}
 	}()
 
-	_, err = s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, _ string, vc service.MirrorClient, copts ...grpc.CallOption) (interface{}, error) {
+	_, err = s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, _ string, vc service.MirrorClient, copts ...grpc.CallOption) (any, error) {
 		res, err = vc.Search(ctx, req, copts...)
 		return res, err
 	})
@@ -305,7 +305,7 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 		}
 	}()
 
-	_, err = s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, _ string, vc service.MirrorClient, copts ...grpc.CallOption) (interface{}, error) {
+	_, err = s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, _ string, vc service.MirrorClient, copts ...grpc.CallOption) (any, error) {
 		res, err = vc.SearchByID(ctx, req, copts...)
 		return res, err
 	})
@@ -471,7 +471,7 @@ func (s *server) MultiSearch(ctx context.Context, req *payload.Search_MultiReque
 		}
 	}()
 
-	_, err = s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, _ string, vc service.MirrorClient, copts ...grpc.CallOption) (interface{}, error) {
+	_, err = s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, _ string, vc service.MirrorClient, copts ...grpc.CallOption) (any, error) {
 		res, err = vc.MultiSearch(ctx, req, copts...)
 		return res, err
 	})
@@ -536,7 +536,7 @@ func (s *server) MultiSearchByID(ctx context.Context, req *payload.Search_MultiI
 		}
 	}()
 
-	_, err = s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, _ string, vc service.MirrorClient, copts ...grpc.CallOption) (interface{}, error) {
+	_, err = s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, _ string, vc service.MirrorClient, copts ...grpc.CallOption) (any, error) {
 		res, err = vc.MultiSearchByID(ctx, req, copts...)
 		return res, err
 	})
@@ -601,7 +601,7 @@ func (s *server) LinearSearch(ctx context.Context, req *payload.Search_Request) 
 		}
 	}()
 
-	_, err = s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, _ string, vc service.MirrorClient, copts ...grpc.CallOption) (interface{}, error) {
+	_, err = s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, _ string, vc service.MirrorClient, copts ...grpc.CallOption) (any, error) {
 		res, err = vc.LinearSearch(ctx, req, copts...)
 		return res, err
 	})
@@ -669,7 +669,7 @@ func (s *server) LinearSearchByID(ctx context.Context, req *payload.Search_IDReq
 		}
 	}()
 
-	_, err = s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, _ string, vc service.MirrorClient, copts ...grpc.CallOption) (interface{}, error) {
+	_, err = s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, _ string, vc service.MirrorClient, copts ...grpc.CallOption) (any, error) {
 		res, err = vc.LinearSearchByID(ctx, req, copts...)
 		return res, err
 	})
@@ -838,7 +838,7 @@ func (s *server) MultiLinearSearch(ctx context.Context, req *payload.Search_Mult
 		}
 	}()
 
-	_, err = s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, _ string, vc service.MirrorClient, copts ...grpc.CallOption) (interface{}, error) {
+	_, err = s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, _ string, vc service.MirrorClient, copts ...grpc.CallOption) (any, error) {
 		res, err = vc.MultiLinearSearch(ctx, req, copts...)
 		return res, err
 	})
@@ -903,7 +903,7 @@ func (s *server) MultiLinearSearchByID(ctx context.Context, req *payload.Search_
 		}
 	}()
 
-	_, err = s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, _ string, vc service.MirrorClient, copts ...grpc.CallOption) (interface{}, error) {
+	_, err = s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, _ string, vc service.MirrorClient, copts ...grpc.CallOption) (any, error) {
 		res, err = vc.MultiLinearSearchByID(ctx, req, copts...)
 		return res, err
 	})
@@ -975,7 +975,7 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (loc *
 	// So this component sends requests only to the Vald gateway (LB gateway) of its own cluster.
 	if s.isProxied(ctx) {
 		loc, err = s.doInsert(ctx, req, func(ctx context.Context) (*payload.Object_Location, error) {
-			_, derr := s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, _ string, vc service.MirrorClient, copts ...grpc.CallOption) (interface{}, error) {
+			_, derr := s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, _ string, vc service.MirrorClient, copts ...grpc.CallOption) (any, error) {
 				loc, err = vc.Insert(ctx, req, copts...)
 				return loc, err
 			})
@@ -1519,7 +1519,7 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (loc *
 	// So this component sends requests only to the Vald gateway (LB gateway) of its own cluster.
 	if s.isProxied(ctx) {
 		loc, err = s.doUpdate(ctx, req, func(ctx context.Context) (*payload.Object_Location, error) {
-			_, derr := s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, _ string, vc service.MirrorClient, copts ...grpc.CallOption) (interface{}, error) {
+			_, derr := s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, _ string, vc service.MirrorClient, copts ...grpc.CallOption) (any, error) {
 				loc, err = vc.Update(ctx, req, copts...)
 				return loc, err
 			})
@@ -2093,7 +2093,7 @@ func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *
 	// So this component sends requests only to the Vald gateway (LB gateway) of its own cluster.
 	if s.isProxied(ctx) {
 		loc, err = s.doUpsert(ctx, req, func(ctx context.Context) (*payload.Object_Location, error) {
-			s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, _ string, vc service.MirrorClient, copts ...grpc.CallOption) (interface{}, error) {
+			s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, _ string, vc service.MirrorClient, copts ...grpc.CallOption) (any, error) {
 				loc, err = vc.Upsert(ctx, req, copts...)
 				return loc, err
 			})
@@ -2473,7 +2473,7 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (loc *
 	// So this component sends requests only to the Vald gateway (LB gateway) of its own cluster.
 	if s.isProxied(ctx) {
 		loc, err = s.doRemove(ctx, req, func(ctx context.Context) (*payload.Object_Location, error) {
-			s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, _ string, vc service.MirrorClient, copts ...grpc.CallOption) (interface{}, error) {
+			s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, _ string, vc service.MirrorClient, copts ...grpc.CallOption) (any, error) {
 				loc, err = vc.Remove(ctx, req, copts...)
 				return loc, err
 			})
@@ -2848,7 +2848,7 @@ func (s *server) RemoveByTimestamp(ctx context.Context, req *payload.Remove_Time
 	// So this component sends requests only to the Vald gateway (LB gateway) of its own cluster.
 	if s.isProxied(ctx) {
 		locs, err = s.doRemoveByTimestamp(ctx, req, func(ctx context.Context) (*payload.Object_Locations, error) {
-			_, derr := s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, _ string, vc service.MirrorClient, copts ...grpc.CallOption) (interface{}, error) {
+			_, derr := s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, _ string, vc service.MirrorClient, copts ...grpc.CallOption) (any, error) {
 				locs, err = vc.RemoveByTimestamp(ctx, req, copts...)
 				return locs, err
 			})
@@ -3092,7 +3092,7 @@ func (s *server) GetObject(ctx context.Context, req *payload.Object_VectorReques
 		}
 	}()
 
-	_, err = s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, _ string, vc service.MirrorClient, copts ...grpc.CallOption) (interface{}, error) {
+	_, err = s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, _ string, vc service.MirrorClient, copts ...grpc.CallOption) (any, error) {
 		vec, err = vc.GetObject(ctx, req, copts...)
 		return vec, err
 	})
@@ -3207,7 +3207,7 @@ func (s *server) StreamListObject(req *payload.Object_List_Request, stream vald.
 		}
 	}()
 
-	_, err := s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, target string, vc service.MirrorClient, copts ...grpc.CallOption) (obj interface{}, err error) {
+	_, err := s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, target string, vc service.MirrorClient, copts ...grpc.CallOption) (obj any, err error) {
 		ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "Do/"+target), apiName+"/"+vald.StreamListObjectRPCName+"/"+target)
 		defer func() {
 			if span != nil {

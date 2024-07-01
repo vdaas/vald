@@ -118,7 +118,7 @@ func Benchmark_group_Do_with_sync_singleflight(b *testing.B) {
 					initDoFn: func() func(ctx context.Context, key string, fn func(context.Context) (string, error)) {
 						g := new(stdsingleflight.Group)
 						return func(ctx context.Context, key string, fn func(context.Context) (string, error)) {
-							g.Do(key, func() (interface{}, error) { return fn(context.Background()) })
+							g.Do(key, func() (any, error) { return fn(context.Background()) })
 						}
 					},
 					sleepDur: dur,

@@ -552,7 +552,7 @@ func Test_breaker_fail(t *testing.T) {
 // func Test_breaker_do(t *testing.T) {
 // 	type args struct {
 // 		ctx context.Context
-// 		fn  func(ctx context.Context) (val interface{}, err error)
+// 		fn  func(ctx context.Context) (val any, err error)
 // 	}
 // 	type fields struct {
 // 		key                   string
@@ -569,7 +569,7 @@ func Test_breaker_fail(t *testing.T) {
 // 		closedRefreshExp      int64
 // 	}
 // 	type want struct {
-// 		wantVal interface{}
+// 		wantVal any
 // 		wantSt  State
 // 		err     error
 // 	}
@@ -578,11 +578,11 @@ func Test_breaker_fail(t *testing.T) {
 // 		args       args
 // 		fields     fields
 // 		want       want
-// 		checkFunc  func(want, interface{}, State, error) error
+// 		checkFunc  func(want, any, State, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
 // 	}
-// 	defaultCheckFunc := func(w want, gotVal interface{}, gotSt State, err error) error {
+// 	defaultCheckFunc := func(w want, gotVal any, gotSt State, err error) error {
 // 		if !errors.Is(err, w.err) {
 // 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 // 		}

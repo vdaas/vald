@@ -31,7 +31,7 @@ func NewInsertCommit(poolSize uint32, opts ...StrategyOption) benchmark.Strategy
 	return newStrategy(append([]StrategyOption{
 		WithPropName("InsertCommit"),
 		WithProp32(
-			func(ctx context.Context, b *testing.B, c algorithm.Bit32, dataset assets.Dataset, ids []uint, cnt *uint64) (interface{}, error) {
+			func(ctx context.Context, b *testing.B, c algorithm.Bit32, dataset assets.Dataset, ids []uint, cnt *uint64) (any, error) {
 				v, err := dataset.Train(int(atomic.LoadUint64(cnt)) % dataset.TrainSize())
 				if err != nil {
 					return nil, err
@@ -42,7 +42,7 @@ func NewInsertCommit(poolSize uint32, opts ...StrategyOption) benchmark.Strategy
 			},
 		),
 		WithProp64(
-			func(ctx context.Context, b *testing.B, c algorithm.Bit64, dataset assets.Dataset, ids []uint, cnt *uint64) (interface{}, error) {
+			func(ctx context.Context, b *testing.B, c algorithm.Bit64, dataset assets.Dataset, ids []uint, cnt *uint64) (any, error) {
 				v, err := dataset.Train(int(atomic.LoadUint64(cnt)) % dataset.TrainSize())
 				if err != nil {
 					return nil, err

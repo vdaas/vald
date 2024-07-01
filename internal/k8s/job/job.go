@@ -49,7 +49,7 @@ type reconciler struct {
 func New(opts ...Option) (JobWatcher, error) {
 	r := &reconciler{
 		jobsByAppNamePool: sync.Pool{
-			New: func() interface{} {
+			New: func() any {
 				return make(map[string][]k8s.Job)
 			},
 		},

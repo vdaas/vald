@@ -32,17 +32,17 @@ import (
 
 // RFC7807Error represents RFC 7807 error.
 type RFC7807Error struct {
-	Type     string      `json:"type"`
-	Title    string      `json:"title"`
-	Detail   interface{} `json:"detail"`
-	Instance string      `json:"instance"`
-	Status   int         `json:"status"`
-	Error    string      `json:"error"`
+	Type     string `json:"type"`
+	Title    string `json:"title"`
+	Detail   any    `json:"detail"`
+	Instance string `json:"instance"`
+	Status   int    `json:"status"`
+	Error    string `json:"error"`
 }
 
 // EncodeResponse encodes http response body.
 func EncodeResponse(w http.ResponseWriter,
-	data interface{}, status int, contentTypes ...string,
+	data any, status int, contentTypes ...string,
 ) error {
 	for _, ct := range contentTypes {
 		w.Header().Add(rest.ContentType, ct)
@@ -52,7 +52,7 @@ func EncodeResponse(w http.ResponseWriter,
 }
 
 // DecodeResponse decodes http response body.
-func DecodeResponse(res *http.Response, data interface{}) (err error) {
+func DecodeResponse(res *http.Response, data any) (err error) {
 	if res != nil && res.Body != nil && data != nil && res.ContentLength != 0 {
 		err = json.Decode(res.Body, data)
 		if err != nil {
@@ -74,7 +74,7 @@ func DecodeResponse(res *http.Response, data interface{}) (err error) {
 
 // EncodeRequest encodes http request.
 func EncodeRequest(req *http.Request,
-	data interface{}, contentTypes ...string,
+	data any, contentTypes ...string,
 ) error {
 	for _, ct := range contentTypes {
 		req.Header.Add(rest.ContentType, ct)
@@ -92,7 +92,7 @@ func EncodeRequest(req *http.Request,
 }
 
 // DecodeRequest decodes http request body.
-func DecodeRequest(r *http.Request, data interface{}) (err error) {
+func DecodeRequest(r *http.Request, data any) (err error) {
 	if r != nil && r.Body != nil && r.ContentLength != 0 {
 		err = json.Decode(r.Body, data)
 		if err != nil {
@@ -113,7 +113,7 @@ func DecodeRequest(r *http.Request, data interface{}) (err error) {
 
 // Handler responds to an HTTP request to perform a logic function.
 func Handler(w http.ResponseWriter, r *http.Request,
-	data interface{}, logic func() (interface{},
+	data any, logic func() (any,
 		error),
 ) (code int, err error) {
 	err = DecodeRequest(r, &data)
@@ -146,7 +146,7 @@ func ErrorHandler(w http.ResponseWriter, r *http.Request,
 	if err != nil {
 		log.Error(err)
 	}
-	body := make(map[string]interface{})
+	body := make(map[string]any)
 	err = json.Decode(r.Body, &body)
 	if err != nil {
 		log.Error(err)
@@ -168,7 +168,7 @@ func ErrorHandler(w http.ResponseWriter, r *http.Request,
 }
 
 // Request sends http json request.
-func Request(ctx context.Context, method, url string, payload, data interface{}) error {
+func Request(ctx context.Context, method, url string, payload, data any) error {
 	req, err := http.NewRequestWithContext(ctx, method, url, nil)
 	if err != nil {
 		return err
