@@ -110,14 +110,14 @@ func NewX509CertPool(path string) (pool *x509.CertPool, err error) {
 	if err != nil || c == nil {
 		return nil, err
 	}
-	if err == nil && c != nil {
-		pool, err = x509.SystemCertPool()
-		if err != nil || pool == nil {
-			pool = x509.NewCertPool()
-		}
-		if !pool.AppendCertsFromPEM(c) {
-			err = errors.ErrCertificationFailed
-		}
+
+	pool, err = x509.SystemCertPool()
+	if err != nil || pool == nil {
+		pool = x509.NewCertPool()
+	}
+
+	if !pool.AppendCertsFromPEM(c) {
+		err = errors.ErrCertificationFailed
 	}
 	return pool, err
 }

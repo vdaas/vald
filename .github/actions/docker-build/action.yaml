@@ -113,7 +113,11 @@ runs:
           REMOTE="true" \
           DOCKER="docker" \
           BUILDKIT_INLINE_CACHE=0 \
-          DOCKER_OPTS="--platform ${PLATFORMS} --builder ${BUILDER} ${LABEL_OPTS}  --label org.opencontainers.image.version=${PRIMARY_TAG} --label org.opencontainers.image.title=${TARGET}" \
+          DOCKER_OPTS="--platform ${PLATFORMS} --builder ${BUILDER} ${LABEL_OPTS} \
+          --label org.opencontainers.image.version=${PRIMARY_TAG} \
+          --label org.opencontainers.image.title=${TARGET} \
+          --label org.opencontainers.image.created=\"$(date --rfc-3339=ns)\" \
+          --label org.opencontainers.image.licenses=\"Apache 2.0\"" \
           EXTRA_ARGS="${EXTRA_TAGS}" \
           TAG="${PRIMARY_TAG}" \
           docker/build/${TARGET}

@@ -523,6 +523,15 @@ message Info {
       // The saving index count.
       bool saving = 4;
     }
+    // Represent the index count for each Agents message.
+    message Detail {
+      // count infos for each agents
+      map<string, Count> counts = 1;
+      // index replica of vald cluster
+      uint32 replica = 2;
+      // live agent replica of vald cluster
+      uint32 live_agents = 3;
+    }
 
     // Represent the UUID message.
     message UUID {

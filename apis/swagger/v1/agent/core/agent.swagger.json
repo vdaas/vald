@@ -12,7 +12,7 @@
   "consumes": ["application/json"],
   "produces": ["application/json"],
   "paths": {
-    "/index/create": {
+    "/index/create/{poolSize}": {
       "get": {
         "summary": "Represent the creating index RPC.",
         "operationId": "Agent_CreateIndex",
@@ -34,8 +34,8 @@
           {
             "name": "poolSize",
             "description": "The pool size of the create index operation.",
-            "in": "query",
-            "required": false,
+            "in": "path",
+            "required": true,
             "type": "integer",
             "format": "int64"
           }
@@ -43,7 +43,7 @@
         "tags": ["Agent"]
       }
     },
-    "/index/createandsave": {
+    "/index/createandsave/{poolSize}": {
       "get": {
         "summary": "Represent the creating and saving index RPC.",
         "operationId": "Agent_CreateAndSaveIndex",
@@ -65,33 +65,12 @@
           {
             "name": "poolSize",
             "description": "The pool size of the create index operation.",
-            "in": "query",
-            "required": false,
+            "in": "path",
+            "required": true,
             "type": "integer",
             "format": "int64"
           }
         ],
-        "tags": ["Agent"]
-      }
-    },
-    "/index/info": {
-      "get": {
-        "summary": "Represent the RPC to get the agent index information.",
-        "operationId": "Agent_IndexInfo",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/IndexCount"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
         "tags": ["Agent"]
       }
     },
@@ -115,71 +94,9 @@
         },
         "tags": ["Agent"]
       }
-    },
-    "/object/meta": {
-      "get": {
-        "summary": "Represent the RPC to get the vector metadata. This RPC is mainly used for index correction process",
-        "operationId": "Agent_GetTimestamp",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/v1ObjectTimestamp"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "id.id",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          }
-        ],
-        "tags": ["Agent"]
-      }
     }
   },
   "definitions": {
-    "IndexCount": {
-      "type": "object",
-      "properties": {
-        "stored": {
-          "type": "integer",
-          "format": "int64",
-          "description": "The stored index count."
-        },
-        "uncommitted": {
-          "type": "integer",
-          "format": "int64",
-          "description": "The uncommitted index count."
-        },
-        "indexing": {
-          "type": "boolean",
-          "description": "The indexing index count."
-        },
-        "saving": {
-          "type": "boolean",
-          "description": "The saving index count."
-        }
-      },
-      "description": "Represent the index count message."
-    },
-    "ObjectID": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string"
-        }
-      },
-      "description": "Represent the vector ID."
-    },
     "protobufAny": {
       "type": "object",
       "properties": {
@@ -217,21 +134,6 @@
     "v1Empty": {
       "type": "object",
       "description": "Represent an empty message."
-    },
-    "v1ObjectTimestamp": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "The vector ID."
-        },
-        "timestamp": {
-          "type": "string",
-          "format": "int64",
-          "description": "timestamp represents when this vector inserted."
-        }
-      },
-      "description": "Represent a vector meta data."
     }
   }
 }

@@ -19,7 +19,7 @@ package usecase
 import (
 	"context"
 
-	"github.com/vdaas/vald/apis/grpc/v1/manager/index"
+	index "github.com/vdaas/vald/apis/grpc/v1/vald"
 	"github.com/vdaas/vald/internal/client/v1/client/discoverer"
 	iconf "github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/net/grpc"
@@ -98,7 +98,6 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		service.WithIndexingDuration(cfg.Indexer.AutoIndexCheckDuration),
 		service.WithIndexingDurationLimit(cfg.Indexer.AutoIndexDurationLimit),
 		service.WithSaveIndexDurationLimit(cfg.Indexer.AutoSaveIndexDurationLimit),
-		service.WithSaveIndexWaitDuration(cfg.Indexer.AutoSaveIndexWaitDuration),
 		service.WithCreationPoolSize(cfg.Indexer.CreationPoolSize),
 		service.WithMinUncommitted(cfg.Indexer.AutoIndexLength),
 	)

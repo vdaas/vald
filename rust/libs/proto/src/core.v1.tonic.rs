@@ -123,6 +123,8 @@ pub mod agent_client {
             req.extensions_mut().insert(GrpcMethod::new("core.v1.Agent", "CreateIndex"));
             self.inner.unary(req, path, codec).await
         }
+        /** Represent the saving index RPC.
+*/
         pub async fn save_index(
             &mut self,
             request: impl tonic::IntoRequest<super::super::super::payload::v1::Empty>,
@@ -174,59 +176,6 @@ pub mod agent_client {
                 .insert(GrpcMethod::new("core.v1.Agent", "CreateAndSaveIndex"));
             self.inner.unary(req, path, codec).await
         }
-        /** Represent the RPC to get the agent index information.
-*/
-        pub async fn index_info(
-            &mut self,
-            request: impl tonic::IntoRequest<super::super::super::payload::v1::Empty>,
-        ) -> std::result::Result<
-            tonic::Response<super::super::super::payload::v1::info::index::Count>,
-            tonic::Status,
-        > {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::new(
-                        tonic::Code::Unknown,
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
-            let codec = tonic::codec::ProstCodec::default();
-            let path = http::uri::PathAndQuery::from_static("/core.v1.Agent/IndexInfo");
-            let mut req = request.into_request();
-            req.extensions_mut().insert(GrpcMethod::new("core.v1.Agent", "IndexInfo"));
-            self.inner.unary(req, path, codec).await
-        }
-        /** Represent the RPC to get the vector metadata. This RPC is mainly used for index correction process
-*/
-        pub async fn get_timestamp(
-            &mut self,
-            request: impl tonic::IntoRequest<
-                super::super::super::payload::v1::object::GetTimestampRequest,
-            >,
-        ) -> std::result::Result<
-            tonic::Response<super::super::super::payload::v1::object::Timestamp>,
-            tonic::Status,
-        > {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::new(
-                        tonic::Code::Unknown,
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
-            let codec = tonic::codec::ProstCodec::default();
-            let path = http::uri::PathAndQuery::from_static(
-                "/core.v1.Agent/GetTimestamp",
-            );
-            let mut req = request.into_request();
-            req.extensions_mut()
-                .insert(GrpcMethod::new("core.v1.Agent", "GetTimestamp"));
-            self.inner.unary(req, path, codec).await
-        }
     }
 }
 /// Generated server implementations.
@@ -245,6 +194,8 @@ pub mod agent_server {
             tonic::Response<super::super::super::payload::v1::Empty>,
             tonic::Status,
         >;
+        /** Represent the saving index RPC.
+*/
         async fn save_index(
             &self,
             request: tonic::Request<super::super::super::payload::v1::Empty>,
@@ -261,26 +212,6 @@ pub mod agent_server {
             >,
         ) -> std::result::Result<
             tonic::Response<super::super::super::payload::v1::Empty>,
-            tonic::Status,
-        >;
-        /** Represent the RPC to get the agent index information.
-*/
-        async fn index_info(
-            &self,
-            request: tonic::Request<super::super::super::payload::v1::Empty>,
-        ) -> std::result::Result<
-            tonic::Response<super::super::super::payload::v1::info::index::Count>,
-            tonic::Status,
-        >;
-        /** Represent the RPC to get the vector metadata. This RPC is mainly used for index correction process
-*/
-        async fn get_timestamp(
-            &self,
-            request: tonic::Request<
-                super::super::super::payload::v1::object::GetTimestampRequest,
-            >,
-        ) -> std::result::Result<
-            tonic::Response<super::super::super::payload::v1::object::Timestamp>,
             tonic::Status,
         >;
     }
@@ -495,104 +426,6 @@ pub mod agent_server {
                     let fut = async move {
                         let inner = inner.0;
                         let method = CreateAndSaveIndexSvc(inner);
-                        let codec = tonic::codec::ProstCodec::default();
-                        let mut grpc = tonic::server::Grpc::new(codec)
-                            .apply_compression_config(
-                                accept_compression_encodings,
-                                send_compression_encodings,
-                            )
-                            .apply_max_message_size_config(
-                                max_decoding_message_size,
-                                max_encoding_message_size,
-                            );
-                        let res = grpc.unary(method, req).await;
-                        Ok(res)
-                    };
-                    Box::pin(fut)
-                }
-                "/core.v1.Agent/IndexInfo" => {
-                    #[allow(non_camel_case_types)]
-                    struct IndexInfoSvc<T: Agent>(pub Arc<T>);
-                    impl<
-                        T: Agent,
-                    > tonic::server::UnaryService<
-                        super::super::super::payload::v1::Empty,
-                    > for IndexInfoSvc<T> {
-                        type Response = super::super::super::payload::v1::info::index::Count;
-                        type Future = BoxFuture<
-                            tonic::Response<Self::Response>,
-                            tonic::Status,
-                        >;
-                        fn call(
-                            &mut self,
-                            request: tonic::Request<
-                                super::super::super::payload::v1::Empty,
-                            >,
-                        ) -> Self::Future {
-                            let inner = Arc::clone(&self.0);
-                            let fut = async move {
-                                <T as Agent>::index_info(&inner, request).await
-                            };
-                            Box::pin(fut)
-                        }
-                    }
-                    let accept_compression_encodings = self.accept_compression_encodings;
-                    let send_compression_encodings = self.send_compression_encodings;
-                    let max_decoding_message_size = self.max_decoding_message_size;
-                    let max_encoding_message_size = self.max_encoding_message_size;
-                    let inner = self.inner.clone();
-                    let fut = async move {
-                        let inner = inner.0;
-                        let method = IndexInfoSvc(inner);
-                        let codec = tonic::codec::ProstCodec::default();
-                        let mut grpc = tonic::server::Grpc::new(codec)
-                            .apply_compression_config(
-                                accept_compression_encodings,
-                                send_compression_encodings,
-                            )
-                            .apply_max_message_size_config(
-                                max_decoding_message_size,
-                                max_encoding_message_size,
-                            );
-                        let res = grpc.unary(method, req).await;
-                        Ok(res)
-                    };
-                    Box::pin(fut)
-                }
-                "/core.v1.Agent/GetTimestamp" => {
-                    #[allow(non_camel_case_types)]
-                    struct GetTimestampSvc<T: Agent>(pub Arc<T>);
-                    impl<
-                        T: Agent,
-                    > tonic::server::UnaryService<
-                        super::super::super::payload::v1::object::GetTimestampRequest,
-                    > for GetTimestampSvc<T> {
-                        type Response = super::super::super::payload::v1::object::Timestamp;
-                        type Future = BoxFuture<
-                            tonic::Response<Self::Response>,
-                            tonic::Status,
-                        >;
-                        fn call(
-                            &mut self,
-                            request: tonic::Request<
-                                super::super::super::payload::v1::object::GetTimestampRequest,
-                            >,
-                        ) -> Self::Future {
-                            let inner = Arc::clone(&self.0);
-                            let fut = async move {
-                                <T as Agent>::get_timestamp(&inner, request).await
-                            };
-                            Box::pin(fut)
-                        }
-                    }
-                    let accept_compression_encodings = self.accept_compression_encodings;
-                    let send_compression_encodings = self.send_compression_encodings;
-                    let max_decoding_message_size = self.max_decoding_message_size;
-                    let max_encoding_message_size = self.max_encoding_message_size;
-                    let inner = self.inner.clone();
-                    let fut = async move {
-                        let inner = inner.0;
-                        let method = GetTimestampSvc(inner);
                         let codec = tonic::codec::ProstCodec::default();
                         let mut grpc = tonic::server::Grpc::new(codec)
                             .apply_compression_config(

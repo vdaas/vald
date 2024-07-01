@@ -30,7 +30,7 @@ option java_package = "org.vdaas.vald.api.v1.agent.core";
 service Agent {
   // Represent the creating index RPC.
   rpc CreateIndex(payload.v1.Control.CreateIndexRequest) returns (payload.v1.Empty) {
-    option (google.api.http).get = "/index/create";
+    option (google.api.http).get = "/index/create/{pool_size}";
   }
 
   // Represent the saving index RPC.
@@ -40,16 +40,6 @@ service Agent {
 
   // Represent the creating and saving index RPC.
   rpc CreateAndSaveIndex(payload.v1.Control.CreateIndexRequest) returns (payload.v1.Empty) {
-    option (google.api.http).get = "/index/createandsave";
-  }
-
-  // Represent the RPC to get the agent index information.
-  rpc IndexInfo(payload.v1.Empty) returns (payload.v1.Info.Index.Count) {
-    option (google.api.http).get = "/index/info";
-  }
-
-  // Represent the RPC to get the vector metadata. This RPC is mainly used for index correction process
-  rpc GetTimestamp(payload.v1.Object.GetTimestampRequest) returns (payload.v1.Object.Timestamp) {
-    option (google.api.http).get = "/object/meta";
+    option (google.api.http).get = "/index/createandsave/{pool_size}";
   }
 }

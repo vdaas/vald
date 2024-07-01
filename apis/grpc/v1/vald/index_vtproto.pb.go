@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-package index
+package vald
 
 import (
 	context "context"
@@ -44,6 +44,8 @@ const _ = grpc.SupportPackageIsVersion7
 type IndexClient interface {
 	// Represent the RPC to get the index information.
 	IndexInfo(ctx context.Context, in *payload.Empty, opts ...grpc.CallOption) (*payload.Info_Index_Count, error)
+	// Represent the RPC to get the index information for each agents.
+	IndexDetail(ctx context.Context, in *payload.Empty, opts ...grpc.CallOption) (*payload.Info_Index_Detail, error)
 }
 
 type indexClient struct {
@@ -56,7 +58,16 @@ func NewIndexClient(cc grpc.ClientConnInterface) IndexClient {
 
 func (c *indexClient) IndexInfo(ctx context.Context, in *payload.Empty, opts ...grpc.CallOption) (*payload.Info_Index_Count, error) {
 	out := new(payload.Info_Index_Count)
-	err := c.cc.Invoke(ctx, "/manager.index.v1.Index/IndexInfo", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/vald.v1.Index/IndexInfo", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *indexClient) IndexDetail(ctx context.Context, in *payload.Empty, opts ...grpc.CallOption) (*payload.Info_Index_Detail, error) {
+	out := new(payload.Info_Index_Detail)
+	err := c.cc.Invoke(ctx, "/vald.v1.Index/IndexDetail", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -69,6 +80,8 @@ func (c *indexClient) IndexInfo(ctx context.Context, in *payload.Empty, opts ...
 type IndexServer interface {
 	// Represent the RPC to get the index information.
 	IndexInfo(context.Context, *payload.Empty) (*payload.Info_Index_Count, error)
+	// Represent the RPC to get the index information for each agents.
+	IndexDetail(context.Context, *payload.Empty) (*payload.Info_Index_Detail, error)
 	mustEmbedUnimplementedIndexServer()
 }
 
@@ -78,6 +91,9 @@ type UnimplementedIndexServer struct {
 
 func (UnimplementedIndexServer) IndexInfo(context.Context, *payload.Empty) (*payload.Info_Index_Count, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method IndexInfo not implemented")
+}
+func (UnimplementedIndexServer) IndexDetail(context.Context, *payload.Empty) (*payload.Info_Index_Detail, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method IndexDetail not implemented")
 }
 func (UnimplementedIndexServer) mustEmbedUnimplementedIndexServer() {}
 
@@ -102,10 +118,28 @@ func _Index_IndexInfo_Handler(srv interface{}, ctx context.Context, dec func(int
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/manager.index.v1.Index/IndexInfo",
+		FullMethod: "/vald.v1.Index/IndexInfo",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(IndexServer).IndexInfo(ctx, req.(*payload.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Index_IndexDetail_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(payload.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(IndexServer).IndexDetail(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/vald.v1.Index/IndexDetail",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(IndexServer).IndexDetail(ctx, req.(*payload.Empty))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -114,14 +148,18 @@ func _Index_IndexInfo_Handler(srv interface{}, ctx context.Context, dec func(int
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var Index_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "manager.index.v1.Index",
+	ServiceName: "vald.v1.Index",
 	HandlerType: (*IndexServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
 			MethodName: "IndexInfo",
 			Handler:    _Index_IndexInfo_Handler,
 		},
+		{
+			MethodName: "IndexDetail",
+			Handler:    _Index_IndexDetail_Handler,
+		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "v1/manager/index/index_manager.proto",
+	Metadata: "v1/vald/index.proto",
 }

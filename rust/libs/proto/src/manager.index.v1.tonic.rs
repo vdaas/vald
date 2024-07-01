@@ -17,6 +17,8 @@ pub mod index_client {
     #![allow(unused_variables, dead_code, missing_docs, clippy::let_unit_value)]
     use tonic::codegen::*;
     use tonic::codegen::http::Uri;
+    /** Represent the index manager service.
+*/
     #[derive(Debug, Clone)]
     pub struct IndexClient<T> {
         inner: tonic::client::Grpc<T>,
@@ -97,6 +99,8 @@ pub mod index_client {
             self.inner = self.inner.max_encoding_message_size(limit);
             self
         }
+        /** Represent the RPC to get the index information.
+*/
         pub async fn index_info(
             &mut self,
             request: impl tonic::IntoRequest<
@@ -124,6 +128,37 @@ pub mod index_client {
                 .insert(GrpcMethod::new("manager.index.v1.Index", "IndexInfo"));
             self.inner.unary(req, path, codec).await
         }
+        /** Represent the RPC to get the index information for each agents.
+*/
+        pub async fn index_detail(
+            &mut self,
+            request: impl tonic::IntoRequest<
+                super::super::super::super::payload::v1::Empty,
+            >,
+        ) -> std::result::Result<
+            tonic::Response<
+                super::super::super::super::payload::v1::info::index::Detail,
+            >,
+            tonic::Status,
+        > {
+            self.inner
+                .ready()
+                .await
+                .map_err(|e| {
+                    tonic::Status::new(
+                        tonic::Code::Unknown,
+                        format!("Service was not ready: {}", e.into()),
+                    )
+                })?;
+            let codec = tonic::codec::ProstCodec::default();
+            let path = http::uri::PathAndQuery::from_static(
+                "/manager.index.v1.Index/IndexDetail",
+            );
+            let mut req = request.into_request();
+            req.extensions_mut()
+                .insert(GrpcMethod::new("manager.index.v1.Index", "IndexDetail"));
+            self.inner.unary(req, path, codec).await
+        }
     }
 }
 /// Generated server implementations.
@@ -133,6 +168,8 @@ pub mod index_server {
     /// Generated trait containing gRPC methods that should be implemented for use with IndexServer.
     #[async_trait]
     pub trait Index: Send + Sync + 'static {
+        /** Represent the RPC to get the index information.
+*/
         async fn index_info(
             &self,
             request: tonic::Request<super::super::super::super::payload::v1::Empty>,
@@ -140,7 +177,20 @@ pub mod index_server {
             tonic::Response<super::super::super::super::payload::v1::info::index::Count>,
             tonic::Status,
         >;
+        /** Represent the RPC to get the index information for each agents.
+*/
+        async fn index_detail(
+            &self,
+            request: tonic::Request<super::super::super::super::payload::v1::Empty>,
+        ) -> std::result::Result<
+            tonic::Response<
+                super::super::super::super::payload::v1::info::index::Detail,
+            >,
+            tonic::Status,
+        >;
     }
+    /** Represent the index manager service.
+*/
     #[derive(Debug)]
     pub struct IndexServer<T: Index> {
         inner: _Inner<T>,
@@ -254,6 +304,55 @@ pub mod index_server {
                     let fut = async move {
                         let inner = inner.0;
                         let method = IndexInfoSvc(inner);
+                        let codec = tonic::codec::ProstCodec::default();
+                        let mut grpc = tonic::server::Grpc::new(codec)
+                            .apply_compression_config(
+                                accept_compression_encodings,
+                                send_compression_encodings,
+                            )
+                            .apply_max_message_size_config(
+                                max_decoding_message_size,
+                                max_encoding_message_size,
+                            );
+                        let res = grpc.unary(method, req).await;
+                        Ok(res)
+                    };
+                    Box::pin(fut)
+                }
+                "/manager.index.v1.Index/IndexDetail" => {
+                    #[allow(non_camel_case_types)]
+                    struct IndexDetailSvc<T: Index>(pub Arc<T>);
+                    impl<
+                        T: Index,
+                    > tonic::server::UnaryService<
+                        super::super::super::super::payload::v1::Empty,
+                    > for IndexDetailSvc<T> {
+                        type Response = super::super::super::super::payload::v1::info::index::Detail;
+                        type Future = BoxFuture<
+                            tonic::Response<Self::Response>,
+                            tonic::Status,
+                        >;
+                        fn call(
+                            &mut self,
+                            request: tonic::Request<
+                                super::super::super::super::payload::v1::Empty,
+                            >,
+                        ) -> Self::Future {
+                            let inner = Arc::clone(&self.0);
+                            let fut = async move {
+                                <T as Index>::index_detail(&inner, request).await
+                            };
+                            Box::pin(fut)
+                        }
+                    }
+                    let accept_compression_encodings = self.accept_compression_encodings;
+                    let send_compression_encodings = self.send_compression_encodings;
+                    let max_decoding_message_size = self.max_decoding_message_size;
+                    let max_encoding_message_size = self.max_encoding_message_size;
+                    let inner = self.inner.clone();
+                    let fut = async move {
+                        let inner = inner.0;
+                        let method = IndexDetailSvc(inner);
                         let codec = tonic::codec::ProstCodec::default();
                         let mut grpc = tonic::server::Grpc::new(codec)
                             .apply_compression_config(

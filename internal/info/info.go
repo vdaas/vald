@@ -48,16 +48,20 @@ type info struct {
 
 // Detail represents environment information of system and stacktrace information.
 type Detail struct {
-	Version           string       `json:"vald_version,omitempty"         yaml:"vald_version,omitempty"`
-	ServerName        string       `json:"server_name,omitempty"          yaml:"server_name,omitempty"`
-	GitCommit         string       `json:"git_commit,omitempty"           yaml:"git_commit,omitempty"`
-	BuildTime         string       `json:"build_time,omitempty"           yaml:"build_time,omitempty"`
-	GoVersion         string       `json:"go_version,omitempty"           yaml:"go_version,omitempty"`
-	GoOS              string       `json:"go_os,omitempty"                yaml:"go_os,omitempty"`
-	GoArch            string       `json:"go_arch,omitempty"              yaml:"go_arch,omitempty"`
-	GoRoot            string       `json:"go_root,omitempty"              yaml:"go_root,omitempty"`
-	CGOEnabled        string       `json:"cgo_enabled,omitempty"          yaml:"cgo_enabled,omitempty"`
 	AlgorithmInfo     string       `json:"algorithm_info,omitempty"       yaml:"algorithm_info,omitempty"`
+	BuildTime         string       `json:"build_time,omitempty"           yaml:"build_time,omitempty"`
+	CGOCall           string       `json:"cgo_call,omitempty"             yaml:"cgo_call"`
+	CGOEnabled        string       `json:"cgo_enabled,omitempty"          yaml:"cgo_enabled,omitempty"`
+	GitCommit         string       `json:"git_commit,omitempty"           yaml:"git_commit,omitempty"`
+	GoArch            string       `json:"go_arch,omitempty"              yaml:"go_arch,omitempty"`
+	GoMaxProcs        string       `json:"go_max_procs,omitempty"         yaml:"go_max_procs,omitempty"`
+	GoOS              string       `json:"go_os,omitempty"                yaml:"go_os,omitempty"`
+	GoRoot            string       `json:"go_root,omitempty"              yaml:"go_root,omitempty"`
+	GoVersion         string       `json:"go_version,omitempty"           yaml:"go_version,omitempty"`
+	GoroutineCount    string       `json:"goroutine_count,omitempty"      yaml:"goroutine_count"`
+	RuntimeCPUCores   string       `json:"runtime_cpu_cores,omitempty"    yaml:"runtime_cpu_cores,omitempty"`
+	ServerName        string       `json:"server_name,omitempty"          yaml:"server_name,omitempty"`
+	Version           string       `json:"vald_version,omitempty"         yaml:"vald_version,omitempty"`
 	BuildCPUInfoFlags []string     `json:"build_cpu_info_flags,omitempty" yaml:"build_cpu_info_flags,omitempty"`
 	StackTrace        []StackTrace `json:"stack_trace,omitempty"          yaml:"stack_trace,omitempty"`
 }
@@ -137,18 +141,19 @@ func Init(name string) {
 func New(opts ...Option) (Info, error) {
 	i := &info{
 		detail: Detail{
-			ServerName:        "",
-			Version:           Version,
-			GitCommit:         GitCommit,
-			BuildTime:         BuildTime,
-			GoVersion:         GoVersion,
-			GoOS:              GoOS,
-			GoArch:            GoArch,
-			GoRoot:            GoRoot,
-			CGOEnabled:        CGOEnabled,
 			AlgorithmInfo:     AlgorithmInfo,
 			BuildCPUInfoFlags: strings.Split(strings.TrimSpace(BuildCPUInfoFlags), " "),
+			BuildTime:         BuildTime,
+			CGOEnabled:        CGOEnabled,
+			GitCommit:         GitCommit,
+			GoArch:            GoArch,
+			GoOS:              GoOS,
+			GoRoot:            GoRoot,
+			GoVersion:         GoVersion,
+			RuntimeCPUCores:   strconv.Itoa(runtime.NumCPU()),
+			ServerName:        "",
 			StackTrace:        nil,
+			Version:           Version,
 		},
 	}
 
@@ -177,7 +182,7 @@ func New(opts ...Option) (Info, error) {
 // String calls String method of global detail object.
 func String() string {
 	if infoProvider == nil {
-		return ""
+		Init(log.Bold("WARNING: uninitialized info provider"))
 	}
 	return infoProvider.String()
 }
@@ -185,7 +190,7 @@ func String() string {
 // Get calls Get method of global detail object.
 func Get() Detail {
 	if infoProvider == nil {
-		return Detail{}
+		Init(log.Bold("WARNING: uninitialized info provider"))
 	}
 	return infoProvider.Get()
 }
@@ -254,6 +259,12 @@ func (d Detail) String() string {
 		l = len(tag)
 		if maxlen < l {
 			maxlen = l
+		}
+		switch tag {
+		case "cgo_call":
+			value = strconv.FormatInt(runtime.NumCgoCall(), 10)
+		case "goroutine_count":
+			value = strconv.Itoa(runtime.NumGoroutine())
 		}
 		info[tag] = value
 	}
@@ -369,6 +380,15 @@ func (i *info) prepare() {
 		}
 		if i.baseURL == "" {
 			i.baseURL = "https://" + valdRepo + "/tree/" + i.detail.GitCommit
+		}
+		if len(i.detail.GoMaxProcs) == 0 {
+			i.detail.GoMaxProcs = strconv.Itoa(runtime.GOMAXPROCS(-1))
+		}
+		if len(i.detail.CGOCall) == 0 {
+			i.detail.CGOCall = strconv.FormatInt(runtime.NumCgoCall(), 10)
+		}
+		if len(i.detail.GoroutineCount) == 0 {
+			i.detail.GoroutineCount = strconv.Itoa(runtime.NumGoroutine())
 		}
 	})
 }
