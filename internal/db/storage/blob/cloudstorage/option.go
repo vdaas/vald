@@ -50,7 +50,7 @@ func WithURLOpener(uo *gcsblob.URLOpener) Option {
 }
 
 // WithBeforeRead returns Option that sets c.readerOpts.BeforeRead.
-func WithBeforeRead(fn func(asFunc func(interface{}) bool) error) Option {
+func WithBeforeRead(fn func(asFunc func(any) bool) error) Option {
 	return func(c *client) error {
 		if fn != nil {
 			if c.readerOpts == nil {
@@ -167,7 +167,7 @@ func WithWriteMetadata(meta map[string]string) Option {
 }
 
 // WithBeforeWrite returns Option that sets c.writeOpts.BeforeWrite.
-func WithBeforeWrite(f func(asFunc func(interface{}) bool) error) Option {
+func WithBeforeWrite(f func(asFunc func(any) bool) error) Option {
 	return func(c *client) error {
 		if f != nil {
 			if c.writerOpts == nil {

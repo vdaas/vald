@@ -1318,7 +1318,7 @@ For example, we decided to mock the following implementation `Encoder`.
 package json
 
 type Encoder interface {
-    Encode(interface{}) ([]byte, error)
+    Encode(any) ([]byte, error)
 }
 ```
 
@@ -1327,7 +1327,7 @@ type encoder struct {
     encoder json.Encoder
 }
 
-func (e *encoder) Encode(obj interface{}) ([]byte, error) {
+func (e *encoder) Encode(obj any) ([]byte, error) {
     return e.encoder.Encode(obj)
 }
 ```
@@ -1338,10 +1338,10 @@ The following is an example of mock implementation:
 package json
 
 type MockEncoder struct {
-    EncoderFunc func(interface{}) ([]byte, error)
+    EncoderFunc func(any) ([]byte, error)
 }
 
-func (m *MockEncoder) Encode(obj interface{}) ([]byte, error) {
+func (m *MockEncoder) Encode(obj any) ([]byte, error) {
     return m.EncodeFunc(obj)
 }
 ```
@@ -1354,7 +1354,7 @@ tests := []test {
         name: "returns (byte{}, nil) when encode success"
         fields: fields {
             encoding: &json.MockEncoder {
-                EncoderFunc: func(interface{}) ([]byte, error) {
+                EncoderFunc: func(any) ([]byte, error) {
                     return []byte{}, nil
                 },
             },

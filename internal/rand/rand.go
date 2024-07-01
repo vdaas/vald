@@ -29,7 +29,7 @@ type rand struct {
 }
 
 var pool = sync.Pool{
-	New: func() interface{} {
+	New: func() any {
 		return (&rand{
 			x: new(uint32),
 		}).init()

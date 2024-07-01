@@ -29,7 +29,7 @@ import (
 func Test_decodeDetails(t *testing.T) {
 	t.Parallel()
 	type args struct {
-		objs []interface{}
+		objs []any
 	}
 	tests := []struct {
 		name        string
@@ -50,7 +50,7 @@ func Test_decodeDetails(t *testing.T) {
 func TestSerialize(t *testing.T) {
 	t.Parallel()
 	type args struct {
-		objs []interface{}
+		objs []any
 	}
 	tests := []struct {
 		name string

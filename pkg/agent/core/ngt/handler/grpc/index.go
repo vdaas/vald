@@ -39,7 +39,7 @@ func (s *server) CreateIndex(ctx context.Context, c *payload.Control_CreateIndex
 	if err != nil {
 		var (
 			code    codes.Code
-			details = []interface{}{
+			details = []any{
 				&errdetails.RequestInfo{
 					ServingData: errdetails.Serialize(c),
 				},
@@ -122,7 +122,7 @@ func (s *server) CreateAndSaveIndex(ctx context.Context, c *payload.Control_Crea
 	if err != nil {
 		var (
 			code    codes.Code
-			details = []interface{}{
+			details = []any{
 				&errdetails.RequestInfo{
 					ServingData: errdetails.Serialize(c),
 				},

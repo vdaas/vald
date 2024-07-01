@@ -32,7 +32,7 @@ type info struct {
 }
 
 // New creates new general info metric according to the provided struct.
-func New(name, description string, i interface{}) metrics.Metric {
+func New(name, description string, i any) metrics.Metric {
 	return &info{
 		name:        name,
 		description: description,
@@ -40,7 +40,7 @@ func New(name, description string, i interface{}) metrics.Metric {
 	}
 }
 
-func labelKVs(i interface{}) map[string]string {
+func labelKVs(i any) map[string]string {
 	rt, rv := reflect.TypeOf(i), reflect.ValueOf(i)
 	kvs := make(map[string]string, rt.NumField())
 	for k := 0; k < rt.NumField(); k++ {

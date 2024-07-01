@@ -128,7 +128,7 @@ func TestWithNameByString(t *testing.T) {
 
 func TestWithName(t *testing.T) {
 	// Change interface type to the type of object you are testing
-	type T = interface{}
+	type T = any
 	type args struct {
 		dn DatasetName
 	}
@@ -258,7 +258,7 @@ func TestWithName(t *testing.T) {
 
 func TestWithFilePath(t *testing.T) {
 	// Change interface type to the type of object you are testing
-	type T = interface{}
+	type T = any
 	type args struct {
 		f string
 	}

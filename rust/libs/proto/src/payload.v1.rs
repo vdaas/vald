@@ -838,6 +838,20 @@ pub mod info {
             #[prost(bool, tag="4")]
             pub saving: bool,
         }
+        /// Represent the index count for each Agents message.
+        #[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(Clone, PartialEq, ::prost::Message)]
+        pub struct Detail {
+            /// count infos for each agents
+            #[prost(map="string, message", tag="1")]
+            pub counts: ::std::collections::HashMap<::prost::alloc::string::String, Count>,
+            /// index replica of vald cluster
+            #[prost(uint32, tag="2")]
+            pub replica: u32,
+            /// live agent replica of vald cluster
+            #[prost(uint32, tag="3")]
+            pub live_agents: u32,
+        }
         /// Represent the UUID message.
         #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]

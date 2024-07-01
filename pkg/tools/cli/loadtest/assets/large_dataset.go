@@ -86,7 +86,7 @@ func loadLargeData(trainFileName, queryFileName, groundTruthFileName, distanceFi
 	}
 }
 
-func (d *largeDataset) Train(i int) (interface{}, error) {
+func (d *largeDataset) Train(i int) (any, error) {
 	return d.train.Load(i)
 }
 
@@ -94,7 +94,7 @@ func (d *largeDataset) TrainSize() int {
 	return d.train.Size()
 }
 
-func (d *largeDataset) Query(i int) (interface{}, error) {
+func (d *largeDataset) Query(i int) (any, error) {
 	return d.query.Load(i)
 }
 

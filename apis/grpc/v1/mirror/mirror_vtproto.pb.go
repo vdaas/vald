@@ -92,7 +92,7 @@ func RegisterMirrorServer(s grpc.ServiceRegistrar, srv MirrorServer) {
 	s.RegisterService(&Mirror_ServiceDesc, srv)
 }
 
-func _Mirror_Register_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Mirror_Register_Handler(srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor) (any, error) {
 	in := new(payload.Mirror_Targets)
 	if err := dec(in); err != nil {
 		return nil, err
@@ -104,7 +104,7 @@ func _Mirror_Register_Handler(srv interface{}, ctx context.Context, dec func(int
 		Server:     srv,
 		FullMethod: "/mirror.v1.Mirror/Register",
 	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+	handler := func(ctx context.Context, req any) (any, error) {
 		return srv.(MirrorServer).Register(ctx, req.(*payload.Mirror_Targets))
 	}
 	return interceptor(ctx, in, info, handler)

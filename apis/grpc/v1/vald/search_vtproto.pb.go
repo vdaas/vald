@@ -360,7 +360,7 @@ func RegisterSearchServer(s grpc.ServiceRegistrar, srv SearchServer) {
 	s.RegisterService(&Search_ServiceDesc, srv)
 }
 
-func _Search_Search_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Search_Search_Handler(srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor) (any, error) {
 	in := new(payload.Search_Request)
 	if err := dec(in); err != nil {
 		return nil, err
@@ -372,13 +372,13 @@ func _Search_Search_Handler(srv interface{}, ctx context.Context, dec func(inter
 		Server:     srv,
 		FullMethod: "/vald.v1.Search/Search",
 	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+	handler := func(ctx context.Context, req any) (any, error) {
 		return srv.(SearchServer).Search(ctx, req.(*payload.Search_Request))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Search_SearchByID_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Search_SearchByID_Handler(srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor) (any, error) {
 	in := new(payload.Search_IDRequest)
 	if err := dec(in); err != nil {
 		return nil, err
@@ -390,13 +390,13 @@ func _Search_SearchByID_Handler(srv interface{}, ctx context.Context, dec func(i
 		Server:     srv,
 		FullMethod: "/vald.v1.Search/SearchByID",
 	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+	handler := func(ctx context.Context, req any) (any, error) {
 		return srv.(SearchServer).SearchByID(ctx, req.(*payload.Search_IDRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Search_StreamSearch_Handler(srv interface{}, stream grpc.ServerStream) error {
+func _Search_StreamSearch_Handler(srv any, stream grpc.ServerStream) error {
 	return srv.(SearchServer).StreamSearch(&searchStreamSearchServer{stream})
 }
 
@@ -422,7 +422,7 @@ func (x *searchStreamSearchServer) Recv() (*payload.Search_Request, error) {
 	return m, nil
 }
 
-func _Search_StreamSearchByID_Handler(srv interface{}, stream grpc.ServerStream) error {
+func _Search_StreamSearchByID_Handler(srv any, stream grpc.ServerStream) error {
 	return srv.(SearchServer).StreamSearchByID(&searchStreamSearchByIDServer{stream})
 }
 
@@ -448,7 +448,7 @@ func (x *searchStreamSearchByIDServer) Recv() (*payload.Search_IDRequest, error)
 	return m, nil
 }
 
-func _Search_MultiSearch_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Search_MultiSearch_Handler(srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor) (any, error) {
 	in := new(payload.Search_MultiRequest)
 	if err := dec(in); err != nil {
 		return nil, err
@@ -460,13 +460,13 @@ func _Search_MultiSearch_Handler(srv interface{}, ctx context.Context, dec func(
 		Server:     srv,
 		FullMethod: "/vald.v1.Search/MultiSearch",
 	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+	handler := func(ctx context.Context, req any) (any, error) {
 		return srv.(SearchServer).MultiSearch(ctx, req.(*payload.Search_MultiRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Search_MultiSearchByID_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Search_MultiSearchByID_Handler(srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor) (any, error) {
 	in := new(payload.Search_MultiIDRequest)
 	if err := dec(in); err != nil {
 		return nil, err
@@ -478,13 +478,13 @@ func _Search_MultiSearchByID_Handler(srv interface{}, ctx context.Context, dec f
 		Server:     srv,
 		FullMethod: "/vald.v1.Search/MultiSearchByID",
 	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+	handler := func(ctx context.Context, req any) (any, error) {
 		return srv.(SearchServer).MultiSearchByID(ctx, req.(*payload.Search_MultiIDRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Search_LinearSearch_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Search_LinearSearch_Handler(srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor) (any, error) {
 	in := new(payload.Search_Request)
 	if err := dec(in); err != nil {
 		return nil, err
@@ -496,13 +496,13 @@ func _Search_LinearSearch_Handler(srv interface{}, ctx context.Context, dec func
 		Server:     srv,
 		FullMethod: "/vald.v1.Search/LinearSearch",
 	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+	handler := func(ctx context.Context, req any) (any, error) {
 		return srv.(SearchServer).LinearSearch(ctx, req.(*payload.Search_Request))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Search_LinearSearchByID_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Search_LinearSearchByID_Handler(srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor) (any, error) {
 	in := new(payload.Search_IDRequest)
 	if err := dec(in); err != nil {
 		return nil, err
@@ -514,13 +514,13 @@ func _Search_LinearSearchByID_Handler(srv interface{}, ctx context.Context, dec 
 		Server:     srv,
 		FullMethod: "/vald.v1.Search/LinearSearchByID",
 	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+	handler := func(ctx context.Context, req any) (any, error) {
 		return srv.(SearchServer).LinearSearchByID(ctx, req.(*payload.Search_IDRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Search_StreamLinearSearch_Handler(srv interface{}, stream grpc.ServerStream) error {
+func _Search_StreamLinearSearch_Handler(srv any, stream grpc.ServerStream) error {
 	return srv.(SearchServer).StreamLinearSearch(&searchStreamLinearSearchServer{stream})
 }
 
@@ -546,7 +546,7 @@ func (x *searchStreamLinearSearchServer) Recv() (*payload.Search_Request, error)
 	return m, nil
 }
 
-func _Search_StreamLinearSearchByID_Handler(srv interface{}, stream grpc.ServerStream) error {
+func _Search_StreamLinearSearchByID_Handler(srv any, stream grpc.ServerStream) error {
 	return srv.(SearchServer).StreamLinearSearchByID(&searchStreamLinearSearchByIDServer{stream})
 }
 
@@ -572,7 +572,7 @@ func (x *searchStreamLinearSearchByIDServer) Recv() (*payload.Search_IDRequest, 
 	return m, nil
 }
 
-func _Search_MultiLinearSearch_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Search_MultiLinearSearch_Handler(srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor) (any, error) {
 	in := new(payload.Search_MultiRequest)
 	if err := dec(in); err != nil {
 		return nil, err
@@ -584,13 +584,13 @@ func _Search_MultiLinearSearch_Handler(srv interface{}, ctx context.Context, dec
 		Server:     srv,
 		FullMethod: "/vald.v1.Search/MultiLinearSearch",
 	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+	handler := func(ctx context.Context, req any) (any, error) {
 		return srv.(SearchServer).MultiLinearSearch(ctx, req.(*payload.Search_MultiRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Search_MultiLinearSearchByID_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Search_MultiLinearSearchByID_Handler(srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor) (any, error) {
 	in := new(payload.Search_MultiIDRequest)
 	if err := dec(in); err != nil {
 		return nil, err
@@ -602,7 +602,7 @@ func _Search_MultiLinearSearchByID_Handler(srv interface{}, ctx context.Context,
 		Server:     srv,
 		FullMethod: "/vald.v1.Search/MultiLinearSearchByID",
 	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+	handler := func(ctx context.Context, req any) (any, error) {
 		return srv.(SearchServer).MultiLinearSearchByID(ctx, req.(*payload.Search_MultiIDRequest))
 	}
 	return interceptor(ctx, in, info, handler)

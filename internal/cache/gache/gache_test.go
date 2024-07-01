@@ -202,7 +202,7 @@ func Test_cache_Get(t *testing.T) {
 		expiredHook    func(context.Context, string)
 	}
 	type want struct {
-		want  interface{}
+		want  any
 		want1 bool
 	}
 	type test struct {
@@ -210,11 +210,11 @@ func Test_cache_Get(t *testing.T) {
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, interface{}, bool) error
+		checkFunc  func(want, any, bool) error
 		beforeFunc func(*testing.T, args, *cache[any])
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, got interface{}, got1 bool) error {
+	defaultCheckFunc := func(w want, got any, got1 bool) error {
 		if !reflect.DeepEqual(got, w.want) {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}
@@ -293,7 +293,7 @@ func Test_cache_Get(t *testing.T) {
 func Test_cache_Set(t *testing.T) {
 	type args struct {
 		key string
-		val interface{}
+		val any
 	}
 	type fields struct {
 		gache          gache.Gache[any]
@@ -303,7 +303,7 @@ func Test_cache_Set(t *testing.T) {
 	}
 	type want struct {
 		key   string
-		want  interface{}
+		want  any
 		want1 bool
 	}
 	type test struct {
@@ -387,7 +387,7 @@ func Test_cache_Delete(t *testing.T) {
 	}
 	type want struct {
 		key   string
-		want  interface{}
+		want  any
 		want1 bool
 	}
 	type test struct {
@@ -490,7 +490,7 @@ func Test_cache_GetAndDelete(t *testing.T) {
 		expiredHook    func(context.Context, string)
 	}
 	type want struct {
-		want  interface{}
+		want  any
 		want1 bool
 	}
 	type test struct {
@@ -498,11 +498,11 @@ func Test_cache_GetAndDelete(t *testing.T) {
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, interface{}, bool) error
+		checkFunc  func(want, any, bool) error
 		beforeFunc func(*testing.T, args, *cache[any])
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, got interface{}, got1 bool) error {
+	defaultCheckFunc := func(w want, got any, got1 bool) error {
 		if !reflect.DeepEqual(got, w.want) {
 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 		}

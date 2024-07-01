@@ -32,7 +32,7 @@ var (
 )
 
 type BillionScaleVectors interface {
-	Load(i int) (interface{}, error)
+	Load(i int) (any, error)
 	Dimension() int
 	Size() int
 	Close() error
@@ -133,7 +133,7 @@ func (bv *bvecs) LoadUint8(i int) ([]uint8, error) {
 	return ((*[1 << 26]uint8)(unsafe.Pointer(&buf[0])))[:bv.dim:bv.dim], nil
 }
 
-func (bv *bvecs) Load(i int) (interface{}, error) {
+func (bv *bvecs) Load(i int) (any, error) {
 	return bv.LoadUint8(i)
 }
 
@@ -146,7 +146,7 @@ func (fv *fvecs) LoadFloat32(i int) ([]float32, error) {
 	return ((*[1 << 26]float32)(unsafe.Pointer(&buf[0])))[:fv.dim:fv.dim], nil
 }
 
-func (fv *fvecs) Load(i int) (interface{}, error) {
+func (fv *fvecs) Load(i int) (any, error) {
 	return fv.LoadFloat32(i)
 }
 
@@ -159,7 +159,7 @@ func (iv *ivecs) LoadInt32(i int) ([]int32, error) {
 	return ((*[1 << 26]int32)(unsafe.Pointer(&buf[0])))[:iv.dim:iv.dim], nil
 }
 
-func (iv *ivecs) Load(i int) (interface{}, error) {
+func (iv *ivecs) Load(i int) (any, error) {
 	return iv.LoadInt32(i)
 }
 

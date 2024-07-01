@@ -23,7 +23,7 @@ import (
 func TestNewErrInvalidOption(t *testing.T) {
 	type args struct {
 		name string
-		val  interface{}
+		val  any
 		errs []error
 	}
 	type want struct {
@@ -318,7 +318,7 @@ func TestNewErrCriticalOption(t *testing.T) {
 	type T = error
 	type args struct {
 		name string
-		val  interface{}
+		val  any
 		errs []error
 	}
 	type want struct {

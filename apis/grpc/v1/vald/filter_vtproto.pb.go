@@ -356,7 +356,7 @@ func RegisterFilterServer(s grpc.ServiceRegistrar, srv FilterServer) {
 	s.RegisterService(&Filter_ServiceDesc, srv)
 }
 
-func _Filter_SearchObject_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Filter_SearchObject_Handler(srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor) (any, error) {
 	in := new(payload.Search_ObjectRequest)
 	if err := dec(in); err != nil {
 		return nil, err
@@ -368,13 +368,13 @@ func _Filter_SearchObject_Handler(srv interface{}, ctx context.Context, dec func
 		Server:     srv,
 		FullMethod: "/vald.v1.Filter/SearchObject",
 	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+	handler := func(ctx context.Context, req any) (any, error) {
 		return srv.(FilterServer).SearchObject(ctx, req.(*payload.Search_ObjectRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Filter_MultiSearchObject_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Filter_MultiSearchObject_Handler(srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor) (any, error) {
 	in := new(payload.Search_MultiObjectRequest)
 	if err := dec(in); err != nil {
 		return nil, err
@@ -386,13 +386,13 @@ func _Filter_MultiSearchObject_Handler(srv interface{}, ctx context.Context, dec
 		Server:     srv,
 		FullMethod: "/vald.v1.Filter/MultiSearchObject",
 	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+	handler := func(ctx context.Context, req any) (any, error) {
 		return srv.(FilterServer).MultiSearchObject(ctx, req.(*payload.Search_MultiObjectRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Filter_StreamSearchObject_Handler(srv interface{}, stream grpc.ServerStream) error {
+func _Filter_StreamSearchObject_Handler(srv any, stream grpc.ServerStream) error {
 	return srv.(FilterServer).StreamSearchObject(&filterStreamSearchObjectServer{stream})
 }
 
@@ -418,7 +418,7 @@ func (x *filterStreamSearchObjectServer) Recv() (*payload.Search_ObjectRequest, 
 	return m, nil
 }
 
-func _Filter_InsertObject_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Filter_InsertObject_Handler(srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor) (any, error) {
 	in := new(payload.Insert_ObjectRequest)
 	if err := dec(in); err != nil {
 		return nil, err
@@ -430,13 +430,13 @@ func _Filter_InsertObject_Handler(srv interface{}, ctx context.Context, dec func
 		Server:     srv,
 		FullMethod: "/vald.v1.Filter/InsertObject",
 	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+	handler := func(ctx context.Context, req any) (any, error) {
 		return srv.(FilterServer).InsertObject(ctx, req.(*payload.Insert_ObjectRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Filter_StreamInsertObject_Handler(srv interface{}, stream grpc.ServerStream) error {
+func _Filter_StreamInsertObject_Handler(srv any, stream grpc.ServerStream) error {
 	return srv.(FilterServer).StreamInsertObject(&filterStreamInsertObjectServer{stream})
 }
 
@@ -462,7 +462,7 @@ func (x *filterStreamInsertObjectServer) Recv() (*payload.Insert_ObjectRequest, 
 	return m, nil
 }
 
-func _Filter_MultiInsertObject_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Filter_MultiInsertObject_Handler(srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor) (any, error) {
 	in := new(payload.Insert_MultiObjectRequest)
 	if err := dec(in); err != nil {
 		return nil, err
@@ -474,13 +474,13 @@ func _Filter_MultiInsertObject_Handler(srv interface{}, ctx context.Context, dec
 		Server:     srv,
 		FullMethod: "/vald.v1.Filter/MultiInsertObject",
 	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+	handler := func(ctx context.Context, req any) (any, error) {
 		return srv.(FilterServer).MultiInsertObject(ctx, req.(*payload.Insert_MultiObjectRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Filter_UpdateObject_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Filter_UpdateObject_Handler(srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor) (any, error) {
 	in := new(payload.Update_ObjectRequest)
 	if err := dec(in); err != nil {
 		return nil, err
@@ -492,13 +492,13 @@ func _Filter_UpdateObject_Handler(srv interface{}, ctx context.Context, dec func
 		Server:     srv,
 		FullMethod: "/vald.v1.Filter/UpdateObject",
 	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+	handler := func(ctx context.Context, req any) (any, error) {
 		return srv.(FilterServer).UpdateObject(ctx, req.(*payload.Update_ObjectRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Filter_StreamUpdateObject_Handler(srv interface{}, stream grpc.ServerStream) error {
+func _Filter_StreamUpdateObject_Handler(srv any, stream grpc.ServerStream) error {
 	return srv.(FilterServer).StreamUpdateObject(&filterStreamUpdateObjectServer{stream})
 }
 
@@ -524,7 +524,7 @@ func (x *filterStreamUpdateObjectServer) Recv() (*payload.Update_ObjectRequest, 
 	return m, nil
 }
 
-func _Filter_MultiUpdateObject_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Filter_MultiUpdateObject_Handler(srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor) (any, error) {
 	in := new(payload.Update_MultiObjectRequest)
 	if err := dec(in); err != nil {
 		return nil, err
@@ -536,13 +536,13 @@ func _Filter_MultiUpdateObject_Handler(srv interface{}, ctx context.Context, dec
 		Server:     srv,
 		FullMethod: "/vald.v1.Filter/MultiUpdateObject",
 	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+	handler := func(ctx context.Context, req any) (any, error) {
 		return srv.(FilterServer).MultiUpdateObject(ctx, req.(*payload.Update_MultiObjectRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Filter_UpsertObject_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Filter_UpsertObject_Handler(srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor) (any, error) {
 	in := new(payload.Upsert_ObjectRequest)
 	if err := dec(in); err != nil {
 		return nil, err
@@ -554,13 +554,13 @@ func _Filter_UpsertObject_Handler(srv interface{}, ctx context.Context, dec func
 		Server:     srv,
 		FullMethod: "/vald.v1.Filter/UpsertObject",
 	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+	handler := func(ctx context.Context, req any) (any, error) {
 		return srv.(FilterServer).UpsertObject(ctx, req.(*payload.Upsert_ObjectRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Filter_StreamUpsertObject_Handler(srv interface{}, stream grpc.ServerStream) error {
+func _Filter_StreamUpsertObject_Handler(srv any, stream grpc.ServerStream) error {
 	return srv.(FilterServer).StreamUpsertObject(&filterStreamUpsertObjectServer{stream})
 }
 
@@ -586,7 +586,7 @@ func (x *filterStreamUpsertObjectServer) Recv() (*payload.Upsert_ObjectRequest, 
 	return m, nil
 }
 
-func _Filter_MultiUpsertObject_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Filter_MultiUpsertObject_Handler(srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor) (any, error) {
 	in := new(payload.Upsert_MultiObjectRequest)
 	if err := dec(in); err != nil {
 		return nil, err
@@ -598,7 +598,7 @@ func _Filter_MultiUpsertObject_Handler(srv interface{}, ctx context.Context, dec
 		Server:     srv,
 		FullMethod: "/vald.v1.Filter/MultiUpsertObject",
 	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+	handler := func(ctx context.Context, req any) (any, error) {
 		return srv.(FilterServer).MultiUpsertObject(ctx, req.(*payload.Upsert_MultiObjectRequest))
 	}
 	return interceptor(ctx, in, info, handler)

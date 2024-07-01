@@ -30,7 +30,7 @@ func NewBulkInsertCommit(poolSize uint32, opts ...StrategyOption) benchmark.Stra
 	return newStrategy(append([]StrategyOption{
 		WithPropName("BulkInsertCommit"),
 		WithProp32(
-			func(ctx context.Context, b *testing.B, c algorithm.Bit32, dataset assets.Dataset, ids []uint, cnt *uint64) (interface{}, error) {
+			func(ctx context.Context, b *testing.B, c algorithm.Bit32, dataset assets.Dataset, ids []uint, cnt *uint64) (any, error) {
 				size := func() int {
 					if maxBulkSize < dataset.TrainSize() {
 						return maxBulkSize
@@ -56,7 +56,7 @@ func NewBulkInsertCommit(poolSize uint32, opts ...StrategyOption) benchmark.Stra
 			},
 		),
 		WithProp64(
-			func(ctx context.Context, b *testing.B, c algorithm.Bit64, dataset assets.Dataset, ids []uint, cnt *uint64) (interface{}, error) {
+			func(ctx context.Context, b *testing.B, c algorithm.Bit64, dataset assets.Dataset, ids []uint, cnt *uint64) (any, error) {
 				size := func() int {
 					if maxBulkSize < dataset.TrainSize() {
 						return maxBulkSize

@@ -38,7 +38,7 @@ func grpcError(tb testing.TB, err error) {
 	)
 }
 
-func statusError(tb testing.TB, code int32, message string, details ...interface{}) {
+func statusError(tb testing.TB, code int32, message string, details ...any) {
 	tb.Helper()
 	tb.Errorf("code: %d\tmessage: %s\tdetails: %s",
 		code,

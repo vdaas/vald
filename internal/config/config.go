@@ -63,7 +63,7 @@ func (c *GlobalConfig) Bind() *GlobalConfig {
 }
 
 // Read returns config struct or error when decoding the configuration file to actually *Config struct.
-func Read(path string, cfg interface{}) (err error) {
+func Read(path string, cfg any) (err error) {
 	f, err := file.Open(path, os.O_RDONLY, fs.ModePerm)
 	if err != nil {
 		return err
@@ -130,7 +130,7 @@ func checkPrefixAndSuffix(str, pref, suf string) bool {
 }
 
 // ToRawYaml writes the YAML encoding of v to the stream and returns the string written to stream.
-func ToRawYaml(data interface{}) string {
+func ToRawYaml(data any) string {
 	b, err := yaml.Marshal(data)
 	if err != nil {
 		log.Error(err)

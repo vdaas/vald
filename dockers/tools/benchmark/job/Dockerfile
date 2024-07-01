@@ -68,8 +68,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && make install \
     && cd / \
     && mkdir -p hdf5 \
-    && curl -fsSLO https://github.com/HDFGroup/hdf5/releases/download/${HDF5_VERSION}/${HDF5_VERSION}.tar.gz \
-    && tar -xzvf ${HDF5_VERSION}.tar.gz -C hdf5 --strip-components 2 \
+    && curl -fsSLO https://github.com/HDFGroup/hdf5/releases/download/${HDF5_VERSION}/hdf5.tar.gz \
+    && tar -xzvf hdf5.tar.gz -C hdf5 --strip-components 2 \
     && cd hdf5 \
     && ./configure --enable-build-mode=production --enable-static-exec --disable-shared --prefix=${BUILD_DIR} --with-zlib=${BUILD_DIR}/include,${LIB_DIR} LDFLAGS="-Wl,-rpath,${LIB_DIR}" \
     && make check \

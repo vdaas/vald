@@ -31,7 +31,6 @@ var defaultOptions = []Option{
 	WithIndexingDuration("1m"),
 	WithIndexingDurationLimit("30m"),
 	WithSaveIndexDurationLimit("3h"),
-	WithSaveIndexWaitDuration("10m"),
 	WithMinUncommitted(100),
 	WithCreationPoolSize(10000),
 }
@@ -39,7 +38,16 @@ var defaultOptions = []Option{
 func WithIndexingConcurrency(c int) Option {
 	return func(idx *index) error {
 		if c != 0 {
-			idx.concurrency = c
+			idx.createIndexConcurrency = c
+		}
+		return nil
+	}
+}
+
+func WithSaveConcurrency(c int) Option {
+	return func(idx *index) error {
+		if c != 0 {
+			idx.saveIndexConcurrency = c
 		}
 		return nil
 	}
@@ -83,20 +91,6 @@ func WithSaveIndexDurationLimit(dur string) Option {
 			return err
 		}
 		idx.saveIndexDurationLimit = d
-		return nil
-	}
-}
-
-func WithSaveIndexWaitDuration(dur string) Option {
-	return func(idx *index) error {
-		if dur == "" {
-			return nil
-		}
-		d, err := timeutil.Parse(dur)
-		if err != nil {
-			return err
-		}
-		idx.saveIndexWaitDuration = d
 		return nil
 	}
 }

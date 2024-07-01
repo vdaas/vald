@@ -108,7 +108,7 @@ func RegisterFilterServer(s grpc.ServiceRegistrar, srv FilterServer) {
 	s.RegisterService(&Filter_ServiceDesc, srv)
 }
 
-func _Filter_FilterDistance_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Filter_FilterDistance_Handler(srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor) (any, error) {
 	in := new(payload.Object_Distance)
 	if err := dec(in); err != nil {
 		return nil, err
@@ -120,13 +120,13 @@ func _Filter_FilterDistance_Handler(srv interface{}, ctx context.Context, dec fu
 		Server:     srv,
 		FullMethod: "/filter.egress.v1.Filter/FilterDistance",
 	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+	handler := func(ctx context.Context, req any) (any, error) {
 		return srv.(FilterServer).FilterDistance(ctx, req.(*payload.Object_Distance))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Filter_FilterVector_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Filter_FilterVector_Handler(srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor) (any, error) {
 	in := new(payload.Object_Vector)
 	if err := dec(in); err != nil {
 		return nil, err
@@ -138,7 +138,7 @@ func _Filter_FilterVector_Handler(srv interface{}, ctx context.Context, dec func
 		Server:     srv,
 		FullMethod: "/filter.egress.v1.Filter/FilterVector",
 	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+	handler := func(ctx context.Context, req any) (any, error) {
 		return srv.(FilterServer).FilterVector(ctx, req.(*payload.Object_Vector))
 	}
 	return interceptor(ctx, in, info, handler)

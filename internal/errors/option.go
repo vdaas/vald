@@ -20,7 +20,7 @@ type ErrInvalidOption struct {
 }
 
 // NewErrInvalidOption represents a function to generate a new error of ErrInvalidOption that invalid option.
-func NewErrInvalidOption(name string, val interface{}, errs ...error) error {
+func NewErrInvalidOption(name string, val any, errs ...error) error {
 	if len(errs) == 0 {
 		return &ErrInvalidOption{
 			err: Errorf("invalid option, name: %s, val: %v", name, val),
@@ -65,7 +65,7 @@ type ErrCriticalOption struct {
 }
 
 // NewErrCriticalOption represents a function to generate a new error of ErrCriticalOption that invalid option.
-func NewErrCriticalOption(name string, val interface{}, errs ...error) error {
+func NewErrCriticalOption(name string, val any, errs ...error) error {
 	if len(errs) == 0 {
 		return &ErrCriticalOption{
 			err: Errorf("invalid critical option, name: %s, val: %v", name, val),

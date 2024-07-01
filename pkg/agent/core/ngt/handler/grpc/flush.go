@@ -25,8 +25,8 @@ import (
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc/errdetails"
 	"github.com/vdaas/vald/internal/net/grpc/status"
+	"github.com/vdaas/vald/internal/observability/attribute"
 	"github.com/vdaas/vald/internal/observability/trace"
-	"go.opentelemetry.io/otel/attribute"
 )
 
 // Flush removes all vectors that are indexed and uncommitted in the `vald-agent`.

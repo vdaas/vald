@@ -23,10 +23,10 @@ import (
 
 func TestLogger_Debug(t *testing.T) {
 	type args struct {
-		vals []interface{}
+		vals []any
 	}
 	type fields struct {
-		DebugFunc func(vals ...interface{})
+		DebugFunc func(vals ...any)
 	}
 	type want struct{}
 	type test struct {
@@ -43,7 +43,7 @@ func TestLogger_Debug(t *testing.T) {
 	}
 	tests := []test{
 		func() test {
-			wantVals := []interface{}{
+			wantVals := []any{
 				"Vald",
 			}
 			var cnt int
@@ -55,7 +55,7 @@ func TestLogger_Debug(t *testing.T) {
 				fieldsFunc: func(t *testing.T) fields {
 					t.Helper()
 					return fields{
-						DebugFunc: func(vals ...interface{}) {
+						DebugFunc: func(vals ...any) {
 							if !reflect.DeepEqual(vals, wantVals) {
 								t.Errorf("got = %v, want = %v", vals, wantVals)
 							}
@@ -103,10 +103,10 @@ func TestLogger_Debug(t *testing.T) {
 func TestLogger_Debugf(t *testing.T) {
 	type args struct {
 		format string
-		vals   []interface{}
+		vals   []any
 	}
 	type fields struct {
-		DebugfFunc func(format string, vals ...interface{})
+		DebugfFunc func(format string, vals ...any)
 	}
 	type want struct{}
 	type test struct {
@@ -123,7 +123,7 @@ func TestLogger_Debugf(t *testing.T) {
 	}
 	tests := []test{
 		func() test {
-			wantVals := []interface{}{
+			wantVals := []any{
 				"Vald",
 			}
 			wantFormat := "json"
@@ -137,7 +137,7 @@ func TestLogger_Debugf(t *testing.T) {
 				fieldsFunc: func(t *testing.T) fields {
 					t.Helper()
 					return fields{
-						DebugfFunc: func(format string, vals ...interface{}) {
+						DebugfFunc: func(format string, vals ...any) {
 							if !reflect.DeepEqual(vals, wantVals) || !reflect.DeepEqual(format, wantFormat) {
 								t.Errorf("got = %v, want = %v", vals, wantVals)
 							}
@@ -184,10 +184,10 @@ func TestLogger_Debugf(t *testing.T) {
 
 func TestLogger_Info(t *testing.T) {
 	type args struct {
-		vals []interface{}
+		vals []any
 	}
 	type fields struct {
-		InfoFunc func(vals ...interface{})
+		InfoFunc func(vals ...any)
 	}
 	type want struct{}
 	type test struct {
@@ -204,7 +204,7 @@ func TestLogger_Info(t *testing.T) {
 	}
 	tests := []test{
 		func() test {
-			wantVals := []interface{}{
+			wantVals := []any{
 				"Vald",
 			}
 			var cnt int
@@ -216,7 +216,7 @@ func TestLogger_Info(t *testing.T) {
 				fieldsFunc: func(t *testing.T) fields {
 					t.Helper()
 					return fields{
-						InfoFunc: func(vals ...interface{}) {
+						InfoFunc: func(vals ...any) {
 							if !reflect.DeepEqual(vals, wantVals) {
 								t.Errorf("got = %v, want = %v", vals, wantVals)
 							}
@@ -264,10 +264,10 @@ func TestLogger_Info(t *testing.T) {
 func TestLogger_Infof(t *testing.T) {
 	type args struct {
 		format string
-		vals   []interface{}
+		vals   []any
 	}
 	type fields struct {
-		InfofFunc func(format string, vals ...interface{})
+		InfofFunc func(format string, vals ...any)
 	}
 	type want struct{}
 	type test struct {
@@ -284,7 +284,7 @@ func TestLogger_Infof(t *testing.T) {
 	}
 	tests := []test{
 		func() test {
-			wantVals := []interface{}{
+			wantVals := []any{
 				"Vald",
 			}
 			wantFormat := "json"
@@ -298,7 +298,7 @@ func TestLogger_Infof(t *testing.T) {
 				fieldsFunc: func(t *testing.T) fields {
 					t.Helper()
 					return fields{
-						InfofFunc: func(format string, vals ...interface{}) {
+						InfofFunc: func(format string, vals ...any) {
 							if !reflect.DeepEqual(vals, wantVals) || !reflect.DeepEqual(format, wantFormat) {
 								t.Errorf("got = %v, want = %v", vals, wantVals)
 							}
@@ -345,10 +345,10 @@ func TestLogger_Infof(t *testing.T) {
 
 func TestLogger_Warn(t *testing.T) {
 	type args struct {
-		vals []interface{}
+		vals []any
 	}
 	type fields struct {
-		WarnFunc func(vals ...interface{})
+		WarnFunc func(vals ...any)
 	}
 	type want struct{}
 	type test struct {
@@ -365,7 +365,7 @@ func TestLogger_Warn(t *testing.T) {
 	}
 	tests := []test{
 		func() test {
-			wantVals := []interface{}{
+			wantVals := []any{
 				"Vald",
 			}
 			var cnt int
@@ -377,7 +377,7 @@ func TestLogger_Warn(t *testing.T) {
 				fieldsFunc: func(t *testing.T) fields {
 					t.Helper()
 					return fields{
-						WarnFunc: func(vals ...interface{}) {
+						WarnFunc: func(vals ...any) {
 							if !reflect.DeepEqual(vals, wantVals) {
 								t.Errorf("got = %v, want = %v", vals, wantVals)
 							}
@@ -425,10 +425,10 @@ func TestLogger_Warn(t *testing.T) {
 func TestLogger_Warnf(t *testing.T) {
 	type args struct {
 		format string
-		vals   []interface{}
+		vals   []any
 	}
 	type fields struct {
-		WarnfFunc func(format string, vals ...interface{})
+		WarnfFunc func(format string, vals ...any)
 	}
 	type want struct{}
 	type test struct {
@@ -445,7 +445,7 @@ func TestLogger_Warnf(t *testing.T) {
 	}
 	tests := []test{
 		func() test {
-			wantVals := []interface{}{
+			wantVals := []any{
 				"Vald",
 			}
 			wantFormat := "json"
@@ -459,7 +459,7 @@ func TestLogger_Warnf(t *testing.T) {
 				fieldsFunc: func(t *testing.T) fields {
 					t.Helper()
 					return fields{
-						WarnfFunc: func(format string, vals ...interface{}) {
+						WarnfFunc: func(format string, vals ...any) {
 							if !reflect.DeepEqual(vals, wantVals) || !reflect.DeepEqual(format, wantFormat) {
 								t.Errorf("got = %v, want = %v", vals, wantVals)
 							}
@@ -506,10 +506,10 @@ func TestLogger_Warnf(t *testing.T) {
 
 func TestLogger_Error(t *testing.T) {
 	type args struct {
-		vals []interface{}
+		vals []any
 	}
 	type fields struct {
-		ErrorFunc func(vals ...interface{})
+		ErrorFunc func(vals ...any)
 	}
 	type want struct{}
 	type test struct {
@@ -526,7 +526,7 @@ func TestLogger_Error(t *testing.T) {
 	}
 	tests := []test{
 		func() test {
-			wantVals := []interface{}{
+			wantVals := []any{
 				"Vald",
 			}
 			var cnt int
@@ -538,7 +538,7 @@ func TestLogger_Error(t *testing.T) {
 				fieldsFunc: func(t *testing.T) fields {
 					t.Helper()
 					return fields{
-						ErrorFunc: func(vals ...interface{}) {
+						ErrorFunc: func(vals ...any) {
 							if !reflect.DeepEqual(vals, wantVals) {
 								t.Errorf("got = %v, want = %v", vals, wantVals)
 							}
@@ -586,10 +586,10 @@ func TestLogger_Error(t *testing.T) {
 func TestLogger_Errorf(t *testing.T) {
 	type args struct {
 		format string
-		vals   []interface{}
+		vals   []any
 	}
 	type fields struct {
-		ErrorfFunc func(format string, vals ...interface{})
+		ErrorfFunc func(format string, vals ...any)
 	}
 	type want struct{}
 	type test struct {
@@ -606,7 +606,7 @@ func TestLogger_Errorf(t *testing.T) {
 	}
 	tests := []test{
 		func() test {
-			wantVals := []interface{}{
+			wantVals := []any{
 				"Vald",
 			}
 			wantFormat := "json"
@@ -620,7 +620,7 @@ func TestLogger_Errorf(t *testing.T) {
 				fieldsFunc: func(t *testing.T) fields {
 					t.Helper()
 					return fields{
-						ErrorfFunc: func(format string, vals ...interface{}) {
+						ErrorfFunc: func(format string, vals ...any) {
 							if !reflect.DeepEqual(vals, wantVals) || !reflect.DeepEqual(format, wantFormat) {
 								t.Errorf("got = %v, want = %v", vals, wantVals)
 							}
@@ -667,10 +667,10 @@ func TestLogger_Errorf(t *testing.T) {
 
 func TestLogger_Fatal(t *testing.T) {
 	type args struct {
-		vals []interface{}
+		vals []any
 	}
 	type fields struct {
-		FatalFunc func(vals ...interface{})
+		FatalFunc func(vals ...any)
 	}
 	type want struct{}
 	type test struct {
@@ -687,7 +687,7 @@ func TestLogger_Fatal(t *testing.T) {
 	}
 	tests := []test{
 		func() test {
-			wantVals := []interface{}{
+			wantVals := []any{
 				"Vald",
 			}
 			var cnt int
@@ -699,7 +699,7 @@ func TestLogger_Fatal(t *testing.T) {
 				fieldsFunc: func(t *testing.T) fields {
 					t.Helper()
 					return fields{
-						FatalFunc: func(vals ...interface{}) {
+						FatalFunc: func(vals ...any) {
 							if !reflect.DeepEqual(vals, wantVals) {
 								t.Errorf("got = %v, want = %v", vals, wantVals)
 							}
@@ -747,10 +747,10 @@ func TestLogger_Fatal(t *testing.T) {
 func TestLogger_Fatalf(t *testing.T) {
 	type args struct {
 		format string
-		vals   []interface{}
+		vals   []any
 	}
 	type fields struct {
-		FatalfFunc func(format string, vals ...interface{})
+		FatalfFunc func(format string, vals ...any)
 	}
 	type want struct{}
 	type test struct {
@@ -767,7 +767,7 @@ func TestLogger_Fatalf(t *testing.T) {
 	}
 	tests := []test{
 		func() test {
-			wantVals := []interface{}{
+			wantVals := []any{
 				"Vald",
 			}
 			wantFormat := "json"
@@ -781,7 +781,7 @@ func TestLogger_Fatalf(t *testing.T) {
 				fieldsFunc: func(t *testing.T) fields {
 					t.Helper()
 					return fields{
-						FatalfFunc: func(format string, vals ...interface{}) {
+						FatalfFunc: func(format string, vals ...any) {
 							if !reflect.DeepEqual(vals, wantVals) || !reflect.DeepEqual(format, wantFormat) {
 								t.Errorf("got = %v, want = %v", vals, wantVals)
 							}
@@ -831,19 +831,19 @@ func TestLogger_Fatalf(t *testing.T) {
 // func TestLogger_Debugd(t *testing.T) {
 // 	type args struct {
 // 		msg     string
-// 		details []interface{}
+// 		details []any
 // 	}
 // 	type fields struct {
-// 		DebugFunc  func(vals ...interface{})
-// 		DebugfFunc func(format string, vals ...interface{})
-// 		InfoFunc   func(vals ...interface{})
-// 		InfofFunc  func(format string, vals ...interface{})
-// 		WarnFunc   func(vals ...interface{})
-// 		WarnfFunc  func(format string, vals ...interface{})
-// 		ErrorFunc  func(vals ...interface{})
-// 		ErrorfFunc func(format string, vals ...interface{})
-// 		FatalFunc  func(vals ...interface{})
-// 		FatalfFunc func(format string, vals ...interface{})
+// 		DebugFunc  func(vals ...any)
+// 		DebugfFunc func(format string, vals ...any)
+// 		InfoFunc   func(vals ...any)
+// 		InfofFunc  func(format string, vals ...any)
+// 		WarnFunc   func(vals ...any)
+// 		WarnfFunc  func(format string, vals ...any)
+// 		ErrorFunc  func(vals ...any)
+// 		ErrorfFunc func(format string, vals ...any)
+// 		FatalFunc  func(vals ...any)
+// 		FatalfFunc func(format string, vals ...any)
 // 	}
 // 	type want struct {
 // 	}
@@ -964,19 +964,19 @@ func TestLogger_Fatalf(t *testing.T) {
 // func TestLogger_Infod(t *testing.T) {
 // 	type args struct {
 // 		msg     string
-// 		details []interface{}
+// 		details []any
 // 	}
 // 	type fields struct {
-// 		DebugFunc  func(vals ...interface{})
-// 		DebugfFunc func(format string, vals ...interface{})
-// 		InfoFunc   func(vals ...interface{})
-// 		InfofFunc  func(format string, vals ...interface{})
-// 		WarnFunc   func(vals ...interface{})
-// 		WarnfFunc  func(format string, vals ...interface{})
-// 		ErrorFunc  func(vals ...interface{})
-// 		ErrorfFunc func(format string, vals ...interface{})
-// 		FatalFunc  func(vals ...interface{})
-// 		FatalfFunc func(format string, vals ...interface{})
+// 		DebugFunc  func(vals ...any)
+// 		DebugfFunc func(format string, vals ...any)
+// 		InfoFunc   func(vals ...any)
+// 		InfofFunc  func(format string, vals ...any)
+// 		WarnFunc   func(vals ...any)
+// 		WarnfFunc  func(format string, vals ...any)
+// 		ErrorFunc  func(vals ...any)
+// 		ErrorfFunc func(format string, vals ...any)
+// 		FatalFunc  func(vals ...any)
+// 		FatalfFunc func(format string, vals ...any)
 // 	}
 // 	type want struct {
 // 	}
@@ -1097,19 +1097,19 @@ func TestLogger_Fatalf(t *testing.T) {
 // func TestLogger_Warnd(t *testing.T) {
 // 	type args struct {
 // 		msg     string
-// 		details []interface{}
+// 		details []any
 // 	}
 // 	type fields struct {
-// 		DebugFunc  func(vals ...interface{})
-// 		DebugfFunc func(format string, vals ...interface{})
-// 		InfoFunc   func(vals ...interface{})
-// 		InfofFunc  func(format string, vals ...interface{})
-// 		WarnFunc   func(vals ...interface{})
-// 		WarnfFunc  func(format string, vals ...interface{})
-// 		ErrorFunc  func(vals ...interface{})
-// 		ErrorfFunc func(format string, vals ...interface{})
-// 		FatalFunc  func(vals ...interface{})
-// 		FatalfFunc func(format string, vals ...interface{})
+// 		DebugFunc  func(vals ...any)
+// 		DebugfFunc func(format string, vals ...any)
+// 		InfoFunc   func(vals ...any)
+// 		InfofFunc  func(format string, vals ...any)
+// 		WarnFunc   func(vals ...any)
+// 		WarnfFunc  func(format string, vals ...any)
+// 		ErrorFunc  func(vals ...any)
+// 		ErrorfFunc func(format string, vals ...any)
+// 		FatalFunc  func(vals ...any)
+// 		FatalfFunc func(format string, vals ...any)
 // 	}
 // 	type want struct {
 // 	}
@@ -1230,19 +1230,19 @@ func TestLogger_Fatalf(t *testing.T) {
 // func TestLogger_Errord(t *testing.T) {
 // 	type args struct {
 // 		msg     string
-// 		details []interface{}
+// 		details []any
 // 	}
 // 	type fields struct {
-// 		DebugFunc  func(vals ...interface{})
-// 		DebugfFunc func(format string, vals ...interface{})
-// 		InfoFunc   func(vals ...interface{})
-// 		InfofFunc  func(format string, vals ...interface{})
-// 		WarnFunc   func(vals ...interface{})
-// 		WarnfFunc  func(format string, vals ...interface{})
-// 		ErrorFunc  func(vals ...interface{})
-// 		ErrorfFunc func(format string, vals ...interface{})
-// 		FatalFunc  func(vals ...interface{})
-// 		FatalfFunc func(format string, vals ...interface{})
+// 		DebugFunc  func(vals ...any)
+// 		DebugfFunc func(format string, vals ...any)
+// 		InfoFunc   func(vals ...any)
+// 		InfofFunc  func(format string, vals ...any)
+// 		WarnFunc   func(vals ...any)
+// 		WarnfFunc  func(format string, vals ...any)
+// 		ErrorFunc  func(vals ...any)
+// 		ErrorfFunc func(format string, vals ...any)
+// 		FatalFunc  func(vals ...any)
+// 		FatalfFunc func(format string, vals ...any)
 // 	}
 // 	type want struct {
 // 	}
@@ -1363,19 +1363,19 @@ func TestLogger_Fatalf(t *testing.T) {
 // func TestLogger_Fatald(t *testing.T) {
 // 	type args struct {
 // 		msg     string
-// 		details []interface{}
+// 		details []any
 // 	}
 // 	type fields struct {
-// 		DebugFunc  func(vals ...interface{})
-// 		DebugfFunc func(format string, vals ...interface{})
-// 		InfoFunc   func(vals ...interface{})
-// 		InfofFunc  func(format string, vals ...interface{})
-// 		WarnFunc   func(vals ...interface{})
-// 		WarnfFunc  func(format string, vals ...interface{})
-// 		ErrorFunc  func(vals ...interface{})
-// 		ErrorfFunc func(format string, vals ...interface{})
-// 		FatalFunc  func(vals ...interface{})
-// 		FatalfFunc func(format string, vals ...interface{})
+// 		DebugFunc  func(vals ...any)
+// 		DebugfFunc func(format string, vals ...any)
+// 		InfoFunc   func(vals ...any)
+// 		InfofFunc  func(format string, vals ...any)
+// 		WarnFunc   func(vals ...any)
+// 		WarnfFunc  func(format string, vals ...any)
+// 		ErrorFunc  func(vals ...any)
+// 		ErrorfFunc func(format string, vals ...any)
+// 		FatalFunc  func(vals ...any)
+// 		FatalfFunc func(format string, vals ...any)
 // 	}
 // 	type want struct {
 // 	}
@@ -1495,16 +1495,16 @@ func TestLogger_Fatalf(t *testing.T) {
 //
 // func TestLogger_Close(t *testing.T) {
 // 	type fields struct {
-// 		DebugFunc  func(vals ...interface{})
-// 		DebugfFunc func(format string, vals ...interface{})
-// 		InfoFunc   func(vals ...interface{})
-// 		InfofFunc  func(format string, vals ...interface{})
-// 		WarnFunc   func(vals ...interface{})
-// 		WarnfFunc  func(format string, vals ...interface{})
-// 		ErrorFunc  func(vals ...interface{})
-// 		ErrorfFunc func(format string, vals ...interface{})
-// 		FatalFunc  func(vals ...interface{})
-// 		FatalfFunc func(format string, vals ...interface{})
+// 		DebugFunc  func(vals ...any)
+// 		DebugfFunc func(format string, vals ...any)
+// 		InfoFunc   func(vals ...any)
+// 		InfofFunc  func(format string, vals ...any)
+// 		WarnFunc   func(vals ...any)
+// 		WarnfFunc  func(format string, vals ...any)
+// 		ErrorFunc  func(vals ...any)
+// 		ErrorfFunc func(format string, vals ...any)
+// 		FatalFunc  func(vals ...any)
+// 		FatalfFunc func(format string, vals ...any)
 // 	}
 // 	type want struct {
 // 		err error

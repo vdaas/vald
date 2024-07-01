@@ -16,4 +16,4 @@
 
 package redis
 
-type Lister interface{}
+type Lister any

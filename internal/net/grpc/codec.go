@@ -34,7 +34,7 @@ type vtprotoMessage interface {
 }
 
 // Marshal returns byte slice representing the proto message marshalling result.
-func (Codec) Marshal(obj interface{}) (data []byte, err error) {
+func (Codec) Marshal(obj any) (data []byte, err error) {
 	switch v := obj.(type) {
 	case vtprotoMessage:
 		data, err = v.MarshalVT()
@@ -50,7 +50,7 @@ func (Codec) Marshal(obj interface{}) (data []byte, err error) {
 }
 
 // Unmarshal parses the byte stream data into v.
-func (Codec) Unmarshal(data []byte, obj interface{}) (err error) {
+func (Codec) Unmarshal(data []byte, obj any) (err error) {
 	switch v := obj.(type) {
 	case vtprotoMessage:
 		err = v.UnmarshalVT(data)

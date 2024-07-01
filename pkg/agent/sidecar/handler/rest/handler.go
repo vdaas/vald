@@ -43,8 +43,8 @@ func New(opts ...Option) Handler {
 }
 
 func (*handler) Index(w http.ResponseWriter, r *http.Request) (int, error) {
-	data := make(map[string]interface{})
-	return json.Handler(w, r, &data, func() (interface{}, error) {
+	data := make(map[string]any)
+	return json.Handler(w, r, &data, func() (any, error) {
 		return dump.Request(nil, data, r)
 	})
 }

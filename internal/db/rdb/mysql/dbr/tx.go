@@ -25,7 +25,7 @@ type Tx interface {
 	Commit() error
 	Rollback() error
 	RollbackUnlessCommitted()
-	InsertBySql(query string, value ...interface{}) InsertStmt
+	InsertBySql(query string, value ...any) InsertStmt
 	InsertInto(table string) InsertStmt
 	Select(column ...string) SelectStmt
 	DeleteFrom(table string) DeleteStmt
@@ -51,7 +51,7 @@ func (t *tx) RollbackUnlessCommitted() {
 }
 
 // InsertBySql creates an InsertStmt from raw query.
-func (t *tx) InsertBySql(query string, value ...interface{}) InsertStmt {
+func (t *tx) InsertBySql(query string, value ...any) InsertStmt {
 	return &insertStmt{
 		t.Tx.InsertBySql(query, value...),
 	}

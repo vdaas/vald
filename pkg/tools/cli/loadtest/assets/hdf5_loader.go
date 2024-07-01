@@ -18,9 +18,9 @@ import (
 	"gonum.org/v1/hdf5"
 )
 
-type loaderFunc func(*hdf5.Dataset, int, int, int) (interface{}, error)
+type loaderFunc func(*hdf5.Dataset, int, int, int) (any, error)
 
-func loadFloat32(dset *hdf5.Dataset, npoints, row, dim int) (interface{}, error) {
+func loadFloat32(dset *hdf5.Dataset, npoints, row, dim int) (any, error) {
 	v := make([]float32, npoints)
 	if err := dset.Read(&v); err != nil {
 		return nil, err
@@ -36,7 +36,7 @@ func loadFloat32(dset *hdf5.Dataset, npoints, row, dim int) (interface{}, error)
 	return vec, nil
 }
 
-func loadInt(dset *hdf5.Dataset, npoints, row, dim int) (interface{}, error) {
+func loadInt(dset *hdf5.Dataset, npoints, row, dim int) (any, error) {
 	v := make([]int32, npoints)
 	if err := dset.Read(&v); err != nil {
 		return nil, err
@@ -52,7 +52,7 @@ func loadInt(dset *hdf5.Dataset, npoints, row, dim int) (interface{}, error) {
 	return vec, nil
 }
 
-func loadDataset(file *hdf5.File, name string, f loaderFunc) (dim int, vec interface{}, err error) {
+func loadDataset(file *hdf5.File, name string, f loaderFunc) (dim int, vec any, err error) {
 	dset, err := file.OpenDataset(name)
 	if err != nil {
 		return 0, nil, err

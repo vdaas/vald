@@ -494,7 +494,7 @@ func (p *pool) dial(ctx context.Context, addr string) (conn *ClientConn, err err
 	}
 	if p.bo != nil {
 		retry := 0
-		_, err = p.bo.Do(ctx, func(ctx context.Context) (r interface{}, ret bool, err error) {
+		_, err = p.bo.Do(ctx, func(ctx context.Context) (r any, ret bool, err error) {
 			log.Debugf("dialing to %s with backoff, retry: %d", addr, retry)
 			conn, err = do()
 			retry++

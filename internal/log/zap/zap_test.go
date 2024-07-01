@@ -469,7 +469,7 @@ func Test_toZapEncoder(t *testing.T) {
 
 func Test_logger_Debug(t *testing.T) {
 	type args struct {
-		vals []interface{}
+		vals []any
 	}
 	type fields struct {
 		format       format.Format
@@ -495,7 +495,7 @@ func Test_logger_Debug(t *testing.T) {
 		{
 			name: "just call Debug",
 			args: args{
-				vals: []interface{}{"value"},
+				vals: []any{"value"},
 			},
 			fields: fields{
 				format:       format.RAW,
@@ -542,7 +542,7 @@ func Test_logger_Debug(t *testing.T) {
 func Test_logger_Debugf(t *testing.T) {
 	type args struct {
 		format string
-		vals   []interface{}
+		vals   []any
 	}
 	type fields struct {
 		format       format.Format
@@ -569,7 +569,7 @@ func Test_logger_Debugf(t *testing.T) {
 			name: "just call Debugf",
 			args: args{
 				format: "%s",
-				vals:   []interface{}{"value"},
+				vals:   []any{"value"},
 			},
 			fields: fields{
 				format:       format.RAW,
@@ -615,7 +615,7 @@ func Test_logger_Debugf(t *testing.T) {
 
 func Test_logger_Info(t *testing.T) {
 	type args struct {
-		vals []interface{}
+		vals []any
 	}
 	type fields struct {
 		format       format.Format
@@ -641,7 +641,7 @@ func Test_logger_Info(t *testing.T) {
 		{
 			name: "just call Info",
 			args: args{
-				vals: []interface{}{"value"},
+				vals: []any{"value"},
 			},
 			fields: fields{
 				format:       format.RAW,
@@ -688,7 +688,7 @@ func Test_logger_Info(t *testing.T) {
 func Test_logger_Infof(t *testing.T) {
 	type args struct {
 		format string
-		vals   []interface{}
+		vals   []any
 	}
 	type fields struct {
 		format       format.Format
@@ -715,7 +715,7 @@ func Test_logger_Infof(t *testing.T) {
 			name: "just call Infof",
 			args: args{
 				format: "%s",
-				vals:   []interface{}{"value"},
+				vals:   []any{"value"},
 			},
 			fields: fields{
 				format:       format.RAW,
@@ -761,7 +761,7 @@ func Test_logger_Infof(t *testing.T) {
 
 func Test_logger_Warn(t *testing.T) {
 	type args struct {
-		vals []interface{}
+		vals []any
 	}
 	type fields struct {
 		format       format.Format
@@ -787,7 +787,7 @@ func Test_logger_Warn(t *testing.T) {
 		{
 			name: "just call Warn",
 			args: args{
-				vals: []interface{}{"value"},
+				vals: []any{"value"},
 			},
 			fields: fields{
 				format:       format.RAW,
@@ -834,7 +834,7 @@ func Test_logger_Warn(t *testing.T) {
 func Test_logger_Warnf(t *testing.T) {
 	type args struct {
 		format string
-		vals   []interface{}
+		vals   []any
 	}
 	type fields struct {
 		format       format.Format
@@ -861,7 +861,7 @@ func Test_logger_Warnf(t *testing.T) {
 			name: "just call Warnf",
 			args: args{
 				format: "%s",
-				vals:   []interface{}{"value"},
+				vals:   []any{"value"},
 			},
 			fields: fields{
 				format:       format.RAW,
@@ -907,7 +907,7 @@ func Test_logger_Warnf(t *testing.T) {
 
 func Test_logger_Error(t *testing.T) {
 	type args struct {
-		vals []interface{}
+		vals []any
 	}
 	type fields struct {
 		format       format.Format
@@ -933,7 +933,7 @@ func Test_logger_Error(t *testing.T) {
 		{
 			name: "just call Error",
 			args: args{
-				vals: []interface{}{"value"},
+				vals: []any{"value"},
 			},
 			fields: fields{
 				format:       format.RAW,
@@ -980,7 +980,7 @@ func Test_logger_Error(t *testing.T) {
 func Test_logger_Errorf(t *testing.T) {
 	type args struct {
 		format string
-		vals   []interface{}
+		vals   []any
 	}
 	type fields struct {
 		format       format.Format
@@ -1007,7 +1007,7 @@ func Test_logger_Errorf(t *testing.T) {
 			name: "just call Errorf",
 			args: args{
 				format: "%s",
-				vals:   []interface{}{"value"},
+				vals:   []any{"value"},
 			},
 			fields: fields{
 				format:       format.RAW,
@@ -1053,7 +1053,7 @@ func Test_logger_Errorf(t *testing.T) {
 
 func Test_logger_Fatal(t *testing.T) {
 	type args struct {
-		vals []interface{}
+		vals []any
 	}
 	type fields struct {
 		format       format.Format
@@ -1079,7 +1079,7 @@ func Test_logger_Fatal(t *testing.T) {
 		// {
 		// 	name: "just call Fatal",
 		// 	args: args{
-		// 		vals: []interface{}{"value"},
+		// 		vals: []any{"value"},
 		// 	},
 		// 	fields: fields{
 		// 		format:       format.RAW,
@@ -1128,7 +1128,7 @@ func Test_logger_Fatal(t *testing.T) {
 func Test_logger_Fatalf(t *testing.T) {
 	type args struct {
 		format string
-		vals   []interface{}
+		vals   []any
 	}
 	type fields struct {
 		format       format.Format
@@ -1155,7 +1155,7 @@ func Test_logger_Fatalf(t *testing.T) {
 		// 	name: "just call Fatalf",
 		// 	args: args{
 		// 		format: "%s",
-		// 		vals:   []interface{}{"value"},
+		// 		vals:   []any{"value"},
 		// 	},
 		// 	fields: fields{
 		// 		format:       format.RAW,
@@ -1205,7 +1205,7 @@ func Test_logger_Debugd(t *testing.T) {
 	t.Parallel()
 	type args struct {
 		msg     string
-		details []interface{}
+		details []any
 	}
 	type fields struct {
 		format       format.Format
@@ -1232,7 +1232,7 @@ func Test_logger_Debugd(t *testing.T) {
 			name: "just call Debugd",
 			args: args{
 				msg:     "message",
-				details: []interface{}{"detail"},
+				details: []any{"detail"},
 			},
 			fields: fields{
 				format:       format.RAW,
@@ -1248,7 +1248,7 @@ func Test_logger_Debugd(t *testing.T) {
 			name: "call Debugd with two details",
 			args: args{
 				msg: "message",
-				details: []interface{}{
+				details: []any{
 					"detail1",
 					"detail2",
 				},
@@ -1300,7 +1300,7 @@ func Test_logger_Infod(t *testing.T) {
 	t.Parallel()
 	type args struct {
 		msg     string
-		details []interface{}
+		details []any
 	}
 	type fields struct {
 		format       format.Format
@@ -1327,7 +1327,7 @@ func Test_logger_Infod(t *testing.T) {
 			name: "just call Infod",
 			args: args{
 				msg:     "message",
-				details: []interface{}{"detail"},
+				details: []any{"detail"},
 			},
 			fields: fields{
 				format:       format.RAW,
@@ -1343,7 +1343,7 @@ func Test_logger_Infod(t *testing.T) {
 			name: "call Infod with two details",
 			args: args{
 				msg: "message",
-				details: []interface{}{
+				details: []any{
 					"detail1",
 					"detail2",
 				},
@@ -1395,7 +1395,7 @@ func Test_logger_Warnd(t *testing.T) {
 	t.Parallel()
 	type args struct {
 		msg     string
-		details []interface{}
+		details []any
 	}
 	type fields struct {
 		format       format.Format
@@ -1422,7 +1422,7 @@ func Test_logger_Warnd(t *testing.T) {
 			name: "just call Warnd",
 			args: args{
 				msg:     "message",
-				details: []interface{}{"detail"},
+				details: []any{"detail"},
 			},
 			fields: fields{
 				format:       format.RAW,
@@ -1438,7 +1438,7 @@ func Test_logger_Warnd(t *testing.T) {
 			name: "call Warnd with two details",
 			args: args{
 				msg: "message",
-				details: []interface{}{
+				details: []any{
 					"detail1",
 					"detail2",
 				},
@@ -1490,7 +1490,7 @@ func Test_logger_Errord(t *testing.T) {
 	t.Parallel()
 	type args struct {
 		msg     string
-		details []interface{}
+		details []any
 	}
 	type fields struct {
 		format       format.Format
@@ -1517,7 +1517,7 @@ func Test_logger_Errord(t *testing.T) {
 			name: "just call Errord",
 			args: args{
 				msg:     "message",
-				details: []interface{}{"detail"},
+				details: []any{"detail"},
 			},
 			fields: fields{
 				format:       format.RAW,
@@ -1533,7 +1533,7 @@ func Test_logger_Errord(t *testing.T) {
 			name: "call Errord with two details",
 			args: args{
 				msg: "message",
-				details: []interface{}{
+				details: []any{
 					"detail1",
 					"detail2",
 				},
@@ -1585,7 +1585,7 @@ func Test_logger_Fatald(t *testing.T) {
 	t.Parallel()
 	type args struct {
 		msg     string
-		details []interface{}
+		details []any
 	}
 	type fields struct {
 		format       format.Format
@@ -1612,7 +1612,7 @@ func Test_logger_Fatald(t *testing.T) {
 		// 	name: "just call Fatald",
 		// 	args: args{
 		// 		msg:     "message",
-		// 		details: []interface{}{"detail"},
+		// 		details: []any{"detail"},
 		// 	},
 		// 	fields: fields{
 		// 		format:       format.RAW,
@@ -1628,7 +1628,7 @@ func Test_logger_Fatald(t *testing.T) {
 		// 	name: "call Fatald with two details",
 		// 	args: args{
 		// 		msg: "message",
-		// 		details: []interface{}{
+		// 		details: []any{
 		// 			"detail1",
 		// 			"detail2",
 		// 		},

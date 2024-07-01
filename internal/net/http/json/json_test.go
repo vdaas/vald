@@ -41,7 +41,7 @@ func TestEncodeResponse(t *testing.T) {
 	t.Parallel()
 	type args struct {
 		w            http.ResponseWriter
-		data         interface{}
+		data         any
 		status       int
 		contentTypes []string
 	}
@@ -184,7 +184,7 @@ func TestHandler(t *testing.T) {
 		w     http.ResponseWriter
 		r     *http.Request
 		data  map[string]string
-		logic func() (interface{}, error)
+		logic func() (any, error)
 	}
 	type test struct {
 		name      string
@@ -209,7 +209,7 @@ func TestHandler(t *testing.T) {
 					r:    r,
 					w:    w,
 					data: data,
-					logic: func() (interface{}, error) {
+					logic: func() (any, error) {
 						return "hello", nil
 					},
 				},
@@ -267,7 +267,7 @@ func TestHandler(t *testing.T) {
 				args: args{
 					r:    r,
 					data: make(map[string]string),
-					logic: func() (interface{}, error) {
+					logic: func() (any, error) {
 						return nil, wantErr
 					},
 				},
@@ -300,7 +300,7 @@ func TestHandler(t *testing.T) {
 				}(),
 				w:    new(httptest.ResponseRecorder),
 				data: make(map[string]string),
-				logic: func() (interface{}, error) {
+				logic: func() (any, error) {
 					return func() {}, nil
 				},
 			},
@@ -401,7 +401,7 @@ func TestDecodeResponse(t *testing.T) {
 	t.Parallel()
 	type args struct {
 		res  *http.Response
-		data interface{}
+		data any
 	}
 	type want struct {
 		err error
@@ -426,7 +426,7 @@ func TestDecodeResponse(t *testing.T) {
 				name: "returns nil when response is nil",
 				args: args{
 					res:  nil,
-					data: new(interface{}),
+					data: new(any),
 				},
 				want: want{
 					err: nil,
@@ -440,7 +440,7 @@ func TestDecodeResponse(t *testing.T) {
 					res: &http.Response{
 						Body: nil,
 					},
-					data: new(interface{}),
+					data: new(any),
 				},
 				want: want{
 					err: nil,
@@ -469,7 +469,7 @@ func TestDecodeResponse(t *testing.T) {
 						Body:          io.NopCloser(new(bytes.Buffer)),
 						ContentLength: 0,
 					},
-					data: new(interface{}),
+					data: new(any),
 				},
 				want: want{
 					err: nil,
@@ -484,7 +484,7 @@ func TestDecodeResponse(t *testing.T) {
 						Body:          io.NopCloser(strings.NewReader("1+3i")),
 						ContentLength: 2,
 					},
-					data: new(interface{}),
+					data: new(any),
 				},
 				want: want{
 					err: &strconv.NumError{
@@ -551,7 +551,7 @@ func TestEncodeRequest(t *testing.T) {
 	t.Parallel()
 	type args struct {
 		req          *http.Request
-		data         interface{}
+		data         any
 		contentTypes []string
 	}
 	type want struct {
@@ -666,8 +666,8 @@ func TestRequest(t *testing.T) {
 		ctx     context.Context
 		method  string
 		url     string
-		payloyd interface{}
-		data    interface{}
+		payloyd any
+		data    any
 	}
 	type want struct {
 		err error
@@ -710,7 +710,7 @@ func TestRequest(t *testing.T) {
 					method:  "POST",
 					url:     "/",
 					payloyd: 1 + 3i,
-					data:    new(interface{}),
+					data:    new(any),
 				},
 				checkFunc: func(w want, err error) error {
 					if w.err != nil && err != nil && !strings.HasPrefix(err.Error(), w.err.Error()) {
@@ -731,7 +731,7 @@ func TestRequest(t *testing.T) {
 					method:  "POST",
 					url:     "/",
 					payloyd: "1",
-					data:    new(interface{}),
+					data:    new(any),
 				},
 				want: want{
 					err: &url.Error{

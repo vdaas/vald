@@ -22,6 +22,7 @@ import (
 	"net/http/pprof"
 
 	"github.com/felixge/fgprof"
+	pyprof "github.com/grafana/pyroscope-go/godeltaprof/http/pprof"
 	"github.com/vdaas/vald/internal/net/http/rest"
 	"github.com/vdaas/vald/internal/net/http/routing"
 )
@@ -115,6 +116,30 @@ func GetProfileRoutes() (r []routing.Route) {
 			},
 			Pattern:     "/debug/pprof/mutex",
 			HandlerFunc: rest.HandlerToRestFunc(pprof.Handler("mutex").ServeHTTP),
+		},
+		{
+			Name: "Debug Heap delta profile",
+			Methods: []string{
+				http.MethodGet,
+			},
+			Pattern:     "/debug/pprof/delta_heap",
+			HandlerFunc: rest.HandlerToRestFunc(pyprof.Heap),
+		},
+		{
+			Name: "Debug mutex delta profile",
+			Methods: []string{
+				http.MethodGet,
+			},
+			Pattern:     "/debug/pprof/delta_mutex",
+			HandlerFunc: rest.HandlerToRestFunc(pyprof.Mutex),
+		},
+		{
+			Name: "Debug mutex profile",
+			Methods: []string{
+				http.MethodGet,
+			},
+			Pattern:     "/debug/pprof/delta_block",
+			HandlerFunc: rest.HandlerToRestFunc(pyprof.Block),
 		},
 		{
 			Name: "Debug fgprof profile",

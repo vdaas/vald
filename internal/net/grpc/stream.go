@@ -166,8 +166,8 @@ func BidirectionalStream[Q any, R any](ctx context.Context, stream ServerStream,
 
 // BidirectionalStreamClient is gRPC client stream.
 func BidirectionalStreamClient(stream ClientStream,
-	dataProvider, newData func() interface{},
-	f func(interface{}, error),
+	dataProvider, newData func() any,
+	f func(any, error),
 ) (err error) {
 	if stream == nil {
 		return errors.ErrGRPCClientStreamNotFound

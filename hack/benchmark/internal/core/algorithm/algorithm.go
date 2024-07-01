@@ -31,7 +31,7 @@ type Closer interface {
 }
 
 type Bit32 interface {
-	Search(ctx context.Context, vec []float32, size int, epsilon, radius float32) (interface{}, error)
+	Search(ctx context.Context, vec []float32, size int, epsilon, radius float32) (any, error)
 	Insert(vec []float32) (uint, error)
 	InsertCommit(vec []float32, poolSize uint32) (uint, error)
 	BulkInsert(vecs [][]float32) ([]uint, []error)
@@ -46,7 +46,7 @@ type Bit32 interface {
 }
 
 type Bit64 interface {
-	Search(ctx context.Context, vec []float64, size int, epsilon, radius float32) (interface{}, error)
+	Search(ctx context.Context, vec []float64, size int, epsilon, radius float32) (any, error)
 	Insert(vec []float64) (uint, error)
 	InsertCommit(vec []float64, poolSize uint32) (uint, error)
 	BulkInsert(vecs [][]float64) ([]uint, []error)

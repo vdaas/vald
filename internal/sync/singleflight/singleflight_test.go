@@ -472,7 +472,7 @@ func TestPanicDo(t *testing.T) {
 
 func TestGoexitDo(t *testing.T) {
 	g := New[any]()
-	fn := func(context.Context) (interface{}, error) {
+	fn := func(context.Context) (any, error) {
 		runtime.Goexit()
 		return nil, nil
 	}
@@ -527,7 +527,7 @@ func TestPanicDoChan(t *testing.T) {
 		}()
 
 		g := New[any]()
-		ch := g.DoChan(context.Background(), "", func(context.Context) (interface{}, error) {
+		ch := g.DoChan(context.Background(), "", func(context.Context) (any, error) {
 			panic("Panicking in DoChan")
 		})
 		<-ch
@@ -568,7 +568,7 @@ func TestPanicDoSharedByDoChan(t *testing.T) {
 			defer func() {
 				recover()
 			}()
-			g.Do(context.Background(), "", func(context.Context) (interface{}, error) {
+			g.Do(context.Background(), "", func(context.Context) (any, error) {
 				close(blocked)
 				<-unblock
 				panic("Panicking in Do")
@@ -576,7 +576,7 @@ func TestPanicDoSharedByDoChan(t *testing.T) {
 		}()
 
 		<-blocked
-		ch := g.DoChan(context.Background(), "", func(context.Context) (interface{}, error) {
+		ch := g.DoChan(context.Background(), "", func(context.Context) (any, error) {
 			panic("DoChan unexpectedly executed callback")
 		})
 		close(unblock)

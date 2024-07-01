@@ -50,6 +50,8 @@ type ObjectClient interface {
 	StreamGetObject(ctx context.Context, opts ...grpc.CallOption) (Object_StreamGetObjectClient, error)
 	// A method to get all the vectors with server streaming
 	StreamListObject(ctx context.Context, in *payload.Object_List_Request, opts ...grpc.CallOption) (Object_StreamListObjectClient, error)
+	// Represent the RPC to get the vector metadata. This RPC is mainly used for index correction process
+	GetTimestamp(ctx context.Context, in *payload.Object_GetTimestampRequest, opts ...grpc.CallOption) (*payload.Object_Timestamp, error)
 }
 
 type objectClient struct {
@@ -141,6 +143,15 @@ func (x *objectStreamListObjectClient) Recv() (*payload.Object_List_Response, er
 	return m, nil
 }
 
+func (c *objectClient) GetTimestamp(ctx context.Context, in *payload.Object_GetTimestampRequest, opts ...grpc.CallOption) (*payload.Object_Timestamp, error) {
+	out := new(payload.Object_Timestamp)
+	err := c.cc.Invoke(ctx, "/vald.v1.Object/GetTimestamp", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ObjectServer is the server API for Object service.
 // All implementations must embed UnimplementedObjectServer
 // for forward compatibility
@@ -153,6 +164,8 @@ type ObjectServer interface {
 	StreamGetObject(Object_StreamGetObjectServer) error
 	// A method to get all the vectors with server streaming
 	StreamListObject(*payload.Object_List_Request, Object_StreamListObjectServer) error
+	// Represent the RPC to get the vector metadata. This RPC is mainly used for index correction process
+	GetTimestamp(context.Context, *payload.Object_GetTimestampRequest) (*payload.Object_Timestamp, error)
 	mustEmbedUnimplementedObjectServer()
 }
 
@@ -172,6 +185,9 @@ func (UnimplementedObjectServer) StreamGetObject(Object_StreamGetObjectServer) e
 func (UnimplementedObjectServer) StreamListObject(*payload.Object_List_Request, Object_StreamListObjectServer) error {
 	return status.Errorf(codes.Unimplemented, "method StreamListObject not implemented")
 }
+func (UnimplementedObjectServer) GetTimestamp(context.Context, *payload.Object_GetTimestampRequest) (*payload.Object_Timestamp, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetTimestamp not implemented")
+}
 func (UnimplementedObjectServer) mustEmbedUnimplementedObjectServer() {}
 
 // UnsafeObjectServer may be embedded to opt out of forward compatibility for this service.
@@ -185,7 +201,7 @@ func RegisterObjectServer(s grpc.ServiceRegistrar, srv ObjectServer) {
 	s.RegisterService(&Object_ServiceDesc, srv)
 }
 
-func _Object_Exists_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Object_Exists_Handler(srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor) (any, error) {
 	in := new(payload.Object_ID)
 	if err := dec(in); err != nil {
 		return nil, err
@@ -197,13 +213,13 @@ func _Object_Exists_Handler(srv interface{}, ctx context.Context, dec func(inter
 		Server:     srv,
 		FullMethod: "/vald.v1.Object/Exists",
 	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+	handler := func(ctx context.Context, req any) (any, error) {
 		return srv.(ObjectServer).Exists(ctx, req.(*payload.Object_ID))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Object_GetObject_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Object_GetObject_Handler(srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor) (any, error) {
 	in := new(payload.Object_VectorRequest)
 	if err := dec(in); err != nil {
 		return nil, err
@@ -215,13 +231,13 @@ func _Object_GetObject_Handler(srv interface{}, ctx context.Context, dec func(in
 		Server:     srv,
 		FullMethod: "/vald.v1.Object/GetObject",
 	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+	handler := func(ctx context.Context, req any) (any, error) {
 		return srv.(ObjectServer).GetObject(ctx, req.(*payload.Object_VectorRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Object_StreamGetObject_Handler(srv interface{}, stream grpc.ServerStream) error {
+func _Object_StreamGetObject_Handler(srv any, stream grpc.ServerStream) error {
 	return srv.(ObjectServer).StreamGetObject(&objectStreamGetObjectServer{stream})
 }
 
@@ -247,7 +263,7 @@ func (x *objectStreamGetObjectServer) Recv() (*payload.Object_VectorRequest, err
 	return m, nil
 }
 
-func _Object_StreamListObject_Handler(srv interface{}, stream grpc.ServerStream) error {
+func _Object_StreamListObject_Handler(srv any, stream grpc.ServerStream) error {
 	m := new(payload.Object_List_Request)
 	if err := stream.RecvMsg(m); err != nil {
 		return err
@@ -268,6 +284,24 @@ func (x *objectStreamListObjectServer) Send(m *payload.Object_List_Response) err
 	return x.ServerStream.SendMsg(m)
 }
 
+func _Object_GetTimestamp_Handler(srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor) (any, error) {
+	in := new(payload.Object_GetTimestampRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ObjectServer).GetTimestamp(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/vald.v1.Object/GetTimestamp",
+	}
+	handler := func(ctx context.Context, req any) (any, error) {
+		return srv.(ObjectServer).GetTimestamp(ctx, req.(*payload.Object_GetTimestampRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Object_ServiceDesc is the grpc.ServiceDesc for Object service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -282,6 +316,10 @@ var Object_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetObject",
 			Handler:    _Object_GetObject_Handler,
+		},
+		{
+			MethodName: "GetTimestamp",
+			Handler:    _Object_GetTimestamp_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

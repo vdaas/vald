@@ -89,15 +89,15 @@ func (*logger) Close() error {
 	return nil
 }
 
-func (l *logger) Info(vals ...interface{}) {
+func (l *logger) Info(vals ...any) {
 	l.retry.Out(l.glg.Info, vals...)
 }
 
-func (l *logger) Infof(format string, vals ...interface{}) {
+func (l *logger) Infof(format string, vals ...any) {
 	l.retry.Outf(l.glg.Infof, format, vals...)
 }
 
-func (l *logger) Infod(msg string, details ...interface{}) {
+func (l *logger) Infod(msg string, details ...any) {
 	lf := l.glg.Infof
 	var dstr string
 	switch len(details) {
@@ -122,15 +122,15 @@ func (l *logger) Infod(msg string, details ...interface{}) {
 	l.retry.Outf(lf, detailsFormat, msg, dstr)
 }
 
-func (l *logger) Debug(vals ...interface{}) {
+func (l *logger) Debug(vals ...any) {
 	l.retry.Out(l.glg.Debug, vals...)
 }
 
-func (l *logger) Debugf(format string, vals ...interface{}) {
+func (l *logger) Debugf(format string, vals ...any) {
 	l.retry.Outf(l.glg.Debugf, format, vals...)
 }
 
-func (l *logger) Debugd(msg string, details ...interface{}) {
+func (l *logger) Debugd(msg string, details ...any) {
 	lf := l.glg.Debugf
 	var dstr string
 	switch len(details) {
@@ -155,15 +155,15 @@ func (l *logger) Debugd(msg string, details ...interface{}) {
 	l.retry.Outf(lf, detailsFormat, msg, dstr)
 }
 
-func (l *logger) Warn(vals ...interface{}) {
+func (l *logger) Warn(vals ...any) {
 	l.retry.Out(l.glg.Warn, vals...)
 }
 
-func (l *logger) Warnf(format string, vals ...interface{}) {
+func (l *logger) Warnf(format string, vals ...any) {
 	l.retry.Outf(l.glg.Warnf, format, vals...)
 }
 
-func (l *logger) Warnd(msg string, details ...interface{}) {
+func (l *logger) Warnd(msg string, details ...any) {
 	lf := l.glg.Warnf
 	var dstr string
 	switch len(details) {
@@ -188,15 +188,15 @@ func (l *logger) Warnd(msg string, details ...interface{}) {
 	l.retry.Outf(lf, detailsFormat, msg, dstr)
 }
 
-func (l *logger) Error(vals ...interface{}) {
+func (l *logger) Error(vals ...any) {
 	l.retry.Out(l.glg.Error, vals...)
 }
 
-func (l *logger) Errorf(format string, vals ...interface{}) {
+func (l *logger) Errorf(format string, vals ...any) {
 	l.retry.Outf(l.glg.Errorf, format, vals...)
 }
 
-func (l *logger) Errord(msg string, details ...interface{}) {
+func (l *logger) Errord(msg string, details ...any) {
 	lf := l.glg.Errorf
 	var dstr string
 	switch len(details) {
@@ -221,15 +221,15 @@ func (l *logger) Errord(msg string, details ...interface{}) {
 	l.retry.Outf(lf, detailsFormat, msg, dstr)
 }
 
-func (l *logger) Fatal(vals ...interface{}) {
+func (l *logger) Fatal(vals ...any) {
 	l.glg.SetCallerDepth(4).Fatal(vals...)
 }
 
-func (l *logger) Fatalf(format string, vals ...interface{}) {
+func (l *logger) Fatalf(format string, vals ...any) {
 	l.glg.SetCallerDepth(4).Fatalf(format, vals...)
 }
 
-func (l *logger) Fatald(msg string, details ...interface{}) {
+func (l *logger) Fatald(msg string, details ...any) {
 	var dstr string
 	switch len(details) {
 	case 0:

@@ -31,7 +31,7 @@ type ServerStreamTestifyMock struct {
 	mock.Mock
 }
 
-func (*ServerStreamTestifyMock) SendMsg(_ interface{}) error {
+func (*ServerStreamTestifyMock) SendMsg(_ any) error {
 	return nil
 }
 
@@ -50,11 +50,11 @@ func (*ServerStreamTestifyMock) Context() context.Context {
 	return context.Background()
 }
 
-func (*ServerStreamTestifyMock) SendMsgWithContext(_ context.Context, _ interface{}) error {
+func (*ServerStreamTestifyMock) SendMsgWithContext(_ context.Context, _ any) error {
 	return nil
 }
 
-func (*ServerStreamTestifyMock) RecvMsg(_ interface{}) error {
+func (*ServerStreamTestifyMock) RecvMsg(_ any) error {
 	return nil
 }
 
@@ -145,16 +145,16 @@ func (c *ClientInternal) OrderedRangeConcurrent(ctx context.Context,
 func (c *ClientInternal) Do(ctx context.Context, addr string,
 	f func(ctx context.Context,
 		conn *ClientConn,
-		copts ...CallOption) (interface{}, error),
-) (interface{}, error) {
+		copts ...CallOption) (any, error),
+) (any, error) {
 	args := c.Called(ctx, addr, f)
 	return args.Get(0), args.Error(1)
 }
 
 func (c *ClientInternal) RoundRobin(ctx context.Context, f func(ctx context.Context,
 	conn *ClientConn,
-	copts ...CallOption) (interface{}, error),
-) (interface{}, error) {
+	copts ...CallOption) (any, error),
+) (any, error) {
 	args := c.Called(ctx, f)
 	return args.Get(0), args.Error(1)
 }

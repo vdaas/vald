@@ -48,10 +48,6 @@ type AgentClient interface {
 	SaveIndex(ctx context.Context, in *payload.Empty, opts ...grpc.CallOption) (*payload.Empty, error)
 	// Represent the creating and saving index RPC.
 	CreateAndSaveIndex(ctx context.Context, in *payload.Control_CreateIndexRequest, opts ...grpc.CallOption) (*payload.Empty, error)
-	// Represent the RPC to get the agent index information.
-	IndexInfo(ctx context.Context, in *payload.Empty, opts ...grpc.CallOption) (*payload.Info_Index_Count, error)
-	// Represent the RPC to get the vector metadata. This RPC is mainly used for index correction process
-	GetTimestamp(ctx context.Context, in *payload.Object_GetTimestampRequest, opts ...grpc.CallOption) (*payload.Object_Timestamp, error)
 }
 
 type agentClient struct {
@@ -89,24 +85,6 @@ func (c *agentClient) CreateAndSaveIndex(ctx context.Context, in *payload.Contro
 	return out, nil
 }
 
-func (c *agentClient) IndexInfo(ctx context.Context, in *payload.Empty, opts ...grpc.CallOption) (*payload.Info_Index_Count, error) {
-	out := new(payload.Info_Index_Count)
-	err := c.cc.Invoke(ctx, "/core.v1.Agent/IndexInfo", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *agentClient) GetTimestamp(ctx context.Context, in *payload.Object_GetTimestampRequest, opts ...grpc.CallOption) (*payload.Object_Timestamp, error) {
-	out := new(payload.Object_Timestamp)
-	err := c.cc.Invoke(ctx, "/core.v1.Agent/GetTimestamp", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 // AgentServer is the server API for Agent service.
 // All implementations must embed UnimplementedAgentServer
 // for forward compatibility
@@ -117,10 +95,6 @@ type AgentServer interface {
 	SaveIndex(context.Context, *payload.Empty) (*payload.Empty, error)
 	// Represent the creating and saving index RPC.
 	CreateAndSaveIndex(context.Context, *payload.Control_CreateIndexRequest) (*payload.Empty, error)
-	// Represent the RPC to get the agent index information.
-	IndexInfo(context.Context, *payload.Empty) (*payload.Info_Index_Count, error)
-	// Represent the RPC to get the vector metadata. This RPC is mainly used for index correction process
-	GetTimestamp(context.Context, *payload.Object_GetTimestampRequest) (*payload.Object_Timestamp, error)
 	mustEmbedUnimplementedAgentServer()
 }
 
@@ -137,12 +111,6 @@ func (UnimplementedAgentServer) SaveIndex(context.Context, *payload.Empty) (*pay
 func (UnimplementedAgentServer) CreateAndSaveIndex(context.Context, *payload.Control_CreateIndexRequest) (*payload.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateAndSaveIndex not implemented")
 }
-func (UnimplementedAgentServer) IndexInfo(context.Context, *payload.Empty) (*payload.Info_Index_Count, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method IndexInfo not implemented")
-}
-func (UnimplementedAgentServer) GetTimestamp(context.Context, *payload.Object_GetTimestampRequest) (*payload.Object_Timestamp, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetTimestamp not implemented")
-}
 func (UnimplementedAgentServer) mustEmbedUnimplementedAgentServer() {}
 
 // UnsafeAgentServer may be embedded to opt out of forward compatibility for this service.
@@ -156,7 +124,7 @@ func RegisterAgentServer(s grpc.ServiceRegistrar, srv AgentServer) {
 	s.RegisterService(&Agent_ServiceDesc, srv)
 }
 
-func _Agent_CreateIndex_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Agent_CreateIndex_Handler(srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor) (any, error) {
 	in := new(payload.Control_CreateIndexRequest)
 	if err := dec(in); err != nil {
 		return nil, err
@@ -168,13 +136,13 @@ func _Agent_CreateIndex_Handler(srv interface{}, ctx context.Context, dec func(i
 		Server:     srv,
 		FullMethod: "/core.v1.Agent/CreateIndex",
 	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+	handler := func(ctx context.Context, req any) (any, error) {
 		return srv.(AgentServer).CreateIndex(ctx, req.(*payload.Control_CreateIndexRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Agent_SaveIndex_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Agent_SaveIndex_Handler(srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor) (any, error) {
 	in := new(payload.Empty)
 	if err := dec(in); err != nil {
 		return nil, err
@@ -186,13 +154,13 @@ func _Agent_SaveIndex_Handler(srv interface{}, ctx context.Context, dec func(int
 		Server:     srv,
 		FullMethod: "/core.v1.Agent/SaveIndex",
 	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+	handler := func(ctx context.Context, req any) (any, error) {
 		return srv.(AgentServer).SaveIndex(ctx, req.(*payload.Empty))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Agent_CreateAndSaveIndex_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Agent_CreateAndSaveIndex_Handler(srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor) (any, error) {
 	in := new(payload.Control_CreateIndexRequest)
 	if err := dec(in); err != nil {
 		return nil, err
@@ -204,44 +172,8 @@ func _Agent_CreateAndSaveIndex_Handler(srv interface{}, ctx context.Context, dec
 		Server:     srv,
 		FullMethod: "/core.v1.Agent/CreateAndSaveIndex",
 	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+	handler := func(ctx context.Context, req any) (any, error) {
 		return srv.(AgentServer).CreateAndSaveIndex(ctx, req.(*payload.Control_CreateIndexRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Agent_IndexInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(payload.Empty)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(AgentServer).IndexInfo(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/core.v1.Agent/IndexInfo",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AgentServer).IndexInfo(ctx, req.(*payload.Empty))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Agent_GetTimestamp_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(payload.Object_GetTimestampRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(AgentServer).GetTimestamp(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/core.v1.Agent/GetTimestamp",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AgentServer).GetTimestamp(ctx, req.(*payload.Object_GetTimestampRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -264,14 +196,6 @@ var Agent_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CreateAndSaveIndex",
 			Handler:    _Agent_CreateAndSaveIndex_Handler,
-		},
-		{
-			MethodName: "IndexInfo",
-			Handler:    _Agent_IndexInfo_Handler,
-		},
-		{
-			MethodName: "GetTimestamp",
-			Handler:    _Agent_GetTimestamp_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
