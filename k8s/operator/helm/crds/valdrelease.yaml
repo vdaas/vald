@@ -182,6 +182,11 @@ spec:
                           type: integer
                         max_load_index_timeout:
                           type: string
+                        method_type:
+                          type: string
+                          enum:
+                            - ivfpq
+                            - binaryindex
                         metric_type:
                           type: string
                           enum:

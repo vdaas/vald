@@ -62,14 +62,26 @@ type (
 		nlist       C.int
 		m           C.int
 		nbitsPerIdx C.int
+		methodType  methodType
 		metricType  metricType
 		idxPath     string
 		mu          *sync.RWMutex
 	}
 )
 
+// methodType is alias of method type in Faiss(e.g. IVFPQ, BinaryIndex, ...).
+type methodType int
+
 // metricType is alias of metric type in Faiss.
 type metricType int
+
+const (
+	// -------------------------------------------------------------
+	// Method Type Definition
+	// -------------------------------------------------------------
+	IVFPQ       = iota
+	BinaryIndex
+)
 
 const (
 	// -------------------------------------------------------------
@@ -82,13 +94,13 @@ const (
 	InnerProduct
 	// L2 is l2 norm.
 	L2
-	// -------------------------------------------------------------.
+	// -------------------------------------------------------------
 
 	// -------------------------------------------------------------
 	// ErrorCode is false
-	// -------------------------------------------------------------.
+	// -------------------------------------------------------------
 	ErrorCode = C._Bool(false)
-	// -------------------------------------------------------------.
+	// -------------------------------------------------------------
 )
 
 // New returns Faiss instance with recreating empty index file.
@@ -122,16 +134,16 @@ func gen(isLoad bool, opts ...Option) (Faiss, error) {
 	if isLoad {
 		path := C.CString(f.idxPath)
 		defer C.free(unsafe.Pointer(path))
-		f.st = C.faiss_read_index(path)
+		f.st = C.faiss_read_index(path, C.int(f.methodType))
 		if f.st == nil {
 			return nil, errors.NewFaissError("faiss load index error")
 		}
 	} else {
 		switch f.metricType {
 		case InnerProduct:
-			f.st = C.faiss_create_index(f.dimension, f.nlist, f.m, f.nbitsPerIdx, C.int(InnerProduct))
+			f.st = C.faiss_create_index(f.dimension, f.nlist, f.m, f.nbitsPerIdx, C.int(f.methodType), C.int(InnerProduct))
 		case L2:
-			f.st = C.faiss_create_index(f.dimension, f.nlist, f.m, f.nbitsPerIdx, C.int(L2))
+			f.st = C.faiss_create_index(f.dimension, f.nlist, f.m, f.nbitsPerIdx, C.int(f.methodType), C.int(L2))
 		default:
 			return nil, errors.NewFaissError("faiss create index error: no metric type")
 		}
@@ -149,7 +161,7 @@ func (f *faiss) SaveIndex() error {
 	defer C.free(unsafe.Pointer(path))
 
 	f.mu.Lock()
-	ret := C.faiss_write_index(f.st, path)
+	ret := C.faiss_write_index(f.st, path, C.int(f.methodType))
 	f.mu.Unlock()
 	if ret == ErrorCode {
 		return errors.NewFaissError("failed to faiss_write_index")
@@ -164,7 +176,7 @@ func (f *faiss) SaveIndexWithPath(idxPath string) error {
 	defer C.free(unsafe.Pointer(path))
 
 	f.mu.Lock()
-	ret := C.faiss_write_index(f.st, path)
+	ret := C.faiss_write_index(f.st, path, C.int(f.methodType))
 	f.mu.Unlock()
 	if ret == ErrorCode {
 		return errors.NewFaissError("failed to faiss_write_index")
@@ -176,7 +188,7 @@ func (f *faiss) SaveIndexWithPath(idxPath string) error {
 // Train trains faiss index.
 func (f *faiss) Train(nb int, xb []float32) error {
 	f.mu.Lock()
-	ret := C.faiss_train(f.st, (C.int)(nb), (*C.float)(&xb[0]))
+	ret := C.faiss_train(f.st, (C.int)(nb), (*C.float)(&xb[0]), C.int(f.methodType))
 	f.mu.Unlock()
 	if ret == ErrorCode {
 		return errors.NewFaissError("failed to faiss_train")
@@ -193,7 +205,7 @@ func (f *faiss) Add(nb int, xb []float32, xids []int64) (int, error) {
 	}
 
 	f.mu.Lock()
-	ntotal := int(C.faiss_add(f.st, (C.int)(nb), (*C.float)(&xb[0]), (*C.long)(&xids[0])))
+	ntotal := int(C.faiss_add(f.st, (C.int)(nb), (*C.float)(&xb[0]), (*C.long)(&xids[0]), C.int(f.methodType)))
 	f.mu.Unlock()
 	if ntotal < 0 {
 		return ntotal, errors.NewFaissError("failed to faiss_add")
@@ -211,7 +223,7 @@ func (f *faiss) Search(k, nq int, xq []float32) ([]algorithm.SearchResult, error
 	I := make([]int64, k*nq)
 	D := make([]float32, k*nq)
 	f.mu.RLock()
-	ret := C.faiss_search(f.st, (C.int)(k), (C.int)(nq), (*C.float)(&xq[0]), (*C.long)(&I[0]), (*C.float)(&D[0]))
+	ret := C.faiss_search(f.st, (C.int)(k), (C.int)(nq), (*C.float)(&xq[0]), (*C.long)(&I[0]), (*C.float)(&D[0]), C.int(f.methodType))
 	f.mu.RUnlock()
 	if ret == ErrorCode {
 		return nil, errors.NewFaissError("failed to faiss_search")
@@ -232,7 +244,7 @@ func (f *faiss) Search(k, nq int, xq []float32) ([]algorithm.SearchResult, error
 // Remove removes from faiss index.
 func (f *faiss) Remove(size int, ids []int64) (int, error) {
 	f.mu.Lock()
-	ntotal := int(C.faiss_remove(f.st, (C.int)(size), (*C.long)(&ids[0])))
+	ntotal := int(C.faiss_remove(f.st, (C.int)(size), (*C.long)(&ids[0]), C.int(f.methodType)))
 	f.mu.Unlock()
 	if ntotal < 0 {
 		return ntotal, errors.NewFaissError("failed to faiss_remove")
