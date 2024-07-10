@@ -189,6 +189,7 @@ func New(cfg *config.Faiss, opts ...Option) (Faiss, error) {
 		core.WithNlist(cfg.Nlist),
 		core.WithM(cfg.M),
 		core.WithNbitsPerIdx(cfg.NbitsPerIdx),
+		core.WithMethodType(cfg.MethodType),
 		core.WithMetricType(cfg.MetricType),
 	)
 	if err != nil {
