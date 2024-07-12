@@ -1,21 +1,5 @@
-use std::{any::type_name, error::Error, fs, path::Path};
+use std::{error::Error, fs, path::Path};
 use kvs::KVS;
-use rand::{thread_rng, Rng};
-
-pub fn random_bytes(dim: usize) -> Vec<u8> {
-    let mut buf = vec![0u8; dim];
-    thread_rng().fill(&mut buf[..]);
-    buf
-}
-
-pub fn sequential_keys(size: usize, begin: usize) -> Vec<Vec<u8>> {
-    (begin..begin+size).map(|i:usize| -> Vec<u8> {i.to_ne_bytes().to_vec()}).collect()
-}
-
-pub fn setup_kvs<T: KVS + Send + Sync + 'static>() -> T {
-    let name = type_name::<T>().split("::").last().unwrap();
-    T::new(Path::new("/tmp/kvs_bench").join(name).to_str().unwrap()).unwrap()
-}
 
 // Implement KVS for sled
 pub struct Sled(sled::Db);
@@ -88,9 +72,7 @@ impl KVS for Redb {
     fn new(path: &str) -> Result<Self, Box<dyn Error>> {
         fs::create_dir_all(path)?;
         let db = redb::Database::create(Path::new(path).join("db"))?;
-        let def = redb::TableDefinition::new("my_table");
-        let txn = db.begin_write()?;
-        txn.open_table(def)?;
+        let def = redb::TableDefinition::new("x");
         Ok(Redb(db, def))
     }
     fn get(&self, key: &[u8]) -> Result<Option<Vec<u8>>, Box<dyn Error>> {

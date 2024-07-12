@@ -4,8 +4,14 @@ use kvs::KVS;
 mod kvs_impl;
 use kvs_impl::*;
 
+mod util;
+use util::*;
+
+const SIZE: usize = 1 << 10;
+const DIM: usize = 1 << 7;
+
 fn bench_get<T: KVS + Send + Sync + 'static>(group: &mut BenchmarkGroup<WallTime>, name: &str, keys: &Vec<Vec<u8>>) {
-    let db = setup_kvs::<T>();
+    let db = setup_kvs::<T>(SIZE, DIM);
 
     group.bench_function(&format!("{}", name), |b| {
         b.iter(|| {
@@ -17,7 +23,7 @@ fn bench_get<T: KVS + Send + Sync + 'static>(group: &mut BenchmarkGroup<WallTime
 }
 
 fn bench_set<T: KVS + Send + Sync + 'static>(group: &mut BenchmarkGroup<WallTime>, name: &str, keys: &Vec<Vec<u8>>, value: &[u8]) {
-    let db = setup_kvs::<T>();
+    let db = setup_kvs::<T>(SIZE, DIM);
 
     group.bench_function(&format!("{}", name), |b| {
         b.iter(|| {
@@ -29,8 +35,6 @@ fn bench_set<T: KVS + Send + Sync + 'static>(group: &mut BenchmarkGroup<WallTime
 }
 
 fn criterion_benchmark(c: &mut Criterion) {
-    const SIZE: usize = 1 << 10;
-    const DIM: usize = 1 << 7;
     let keys = sequential_keys(SIZE, 0);
     let value = random_bytes(DIM);
     {
