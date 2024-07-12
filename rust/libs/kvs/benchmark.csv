@@ -1,4 +1,4 @@
-name,operation,key size(B),value size(B),insert size,time(ns),vmrss(KB),file size(B)
+name,operation,key size(B),value size(B),insert size,time(ns),vmrss(KB),file size(KB)
 Kv,set,8,256,16384,52317067,40956,8704
 Kv,set,8,256,32768,108854857,48348,16384
 Kv,set,8,256,65536,212059960,63332,30208

@@ -15,6 +15,10 @@ impl KVS for Sled {
         self.0.flush()?;
         Ok(())
     }
+
+    fn del(&self, _key: &[u8]) -> Result<(), Box<dyn Error + '_>> {
+        todo!()
+    }
 }
 
 // Implement KVS for kv
@@ -36,6 +40,10 @@ impl KVS for Kv {
         bucket.set(&kv::Raw::from(key), &kv::Raw::from(value))?;
         Ok(())
     }
+
+    fn del(&self, _key: &[u8]) -> Result<(), Box<dyn Error + '_>> {
+        todo!()
+    }
 }
 
 // Implement KVS for rkv
@@ -55,7 +63,6 @@ impl KVS for Rkv {
         } else {
             Ok(None)
         }
-        
     }
 
     fn set(&self, key: &[u8], value: &[u8]) -> Result<(), Box<dyn Error + '_>> {
@@ -63,6 +70,10 @@ impl KVS for Rkv {
         self.1.put(&mut writer, key, &rkv::Value::Blob(value))?;
         writer.commit()?;
         Ok(())
+    }
+
+    fn del(&self, _key: &[u8]) -> Result<(), Box<dyn Error + '_>> {
+        todo!()
     }
 }
 
@@ -75,6 +86,7 @@ impl KVS for Redb {
         let def = redb::TableDefinition::new("x");
         Ok(Redb(db, def))
     }
+
     fn get(&self, key: &[u8]) -> Result<Option<Vec<u8>>, Box<dyn Error>> {
         let txn = self.0.begin_read()?;
         let table = txn.open_table(self.1)?;
@@ -84,6 +96,7 @@ impl KVS for Redb {
             Ok(None)
         }
     }
+
     fn set(&self, key: &[u8], value: &[u8]) -> Result<(), Box<dyn Error>> {
         let txn = self.0.begin_write()?;
         {
@@ -92,6 +105,10 @@ impl KVS for Redb {
         }
         txn.commit()?;
         Ok(())
+    }
+
+    fn del(&self, _key: &[u8]) -> Result<(), Box<dyn Error + '_>> {
+        todo!()
     }
 }
 
@@ -110,6 +127,10 @@ impl KVS for Rocksdb {
     fn set(&self, key: &[u8], value: &[u8]) -> Result<(), Box<dyn Error>> {
         self.0.put(key, value)?;
         Ok(())
+    }
+
+    fn del(&self, _key: &[u8]) -> Result<(), Box<dyn Error + '_>> {
+        todo!()
     }
 }
 
@@ -139,5 +160,9 @@ impl KVS for Persy {
         tx.put::<persy::ByteVec, persy::ByteVec>("index", persy::ByteVec::new(key.to_vec()), persy::ByteVec::new(value.to_vec()))?;
         tx.prepare()?.commit()?;
         Ok(())
+    }
+
+    fn del(&self, _key: &[u8]) -> Result<(), Box<dyn Error + '_>> {
+        todo!()
     }
 }
