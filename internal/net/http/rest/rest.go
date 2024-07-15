@@ -17,9 +17,7 @@
 // Package rest provides REST API common logic & variable
 package rest
 
-import (
-	"net/http"
-)
+import "net/http"
 
 type Func func(http.ResponseWriter, *http.Request) (code int, err error)
 

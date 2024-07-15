@@ -75,7 +75,9 @@ func New(opts ...Option) (Server, error) {
 // Register handles the registration of mirror targets.
 // The function connects to the mirror using the provided targets, and if successful,
 // returns the addresses of connected Mirror gateways.
-func (s *server) Register(ctx context.Context, req *payload.Mirror_Targets) (*payload.Mirror_Targets, error) {
+func (s *server) Register(
+	ctx context.Context, req *payload.Mirror_Targets,
+) (*payload.Mirror_Targets, error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+mirror.RPCServiceName+"/"+mirror.RegisterRPCName), apiName+"/"+mirror.RegisterRPCName)
 	defer func() {
 		if span != nil {
@@ -164,7 +166,9 @@ func (s *server) Register(ctx context.Context, req *payload.Mirror_Targets) (*pa
 }
 
 // Exists bypasses the incoming Exist request to Vald gateway (LB gateway) in its own cluster.
-func (s *server) Exists(ctx context.Context, meta *payload.Object_ID) (id *payload.Object_ID, err error) {
+func (s *server) Exists(
+	ctx context.Context, meta *payload.Object_ID,
+) (id *payload.Object_ID, err error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.ObjectRPCServiceName+"/"+vald.ExistsRPCName), apiName+"/"+vald.ExistsRPCName)
 	defer func() {
 		if span != nil {
@@ -172,7 +176,7 @@ func (s *server) Exists(ctx context.Context, meta *payload.Object_ID) (id *paylo
 		}
 	}()
 
-	_, err = s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, _ string, vc service.MirrorClient, copts ...grpc.CallOption) (interface{}, error) {
+	_, err = s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, _ string, vc service.MirrorClient, copts ...grpc.CallOption) (any, error) {
 		id, err = vc.Exists(ctx, meta, copts...)
 		return id, err
 	})
@@ -229,7 +233,9 @@ func (s *server) Exists(ctx context.Context, meta *payload.Object_ID) (id *paylo
 }
 
 // Search bypasses the incoming Search request to Vald gateway (LB gateway) in its own cluster.
-func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *payload.Search_Response, err error) {
+func (s *server) Search(
+	ctx context.Context, req *payload.Search_Request,
+) (res *payload.Search_Response, err error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.SearchRPCServiceName+"/"+vald.SearchRPCName), apiName+"/"+vald.SearchRPCName)
 	defer func() {
 		if span != nil {
@@ -237,7 +243,7 @@ func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *
 		}
 	}()
 
-	_, err = s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, _ string, vc service.MirrorClient, copts ...grpc.CallOption) (interface{}, error) {
+	_, err = s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, _ string, vc service.MirrorClient, copts ...grpc.CallOption) (any, error) {
 		res, err = vc.Search(ctx, req, copts...)
 		return res, err
 	})
@@ -295,9 +301,9 @@ func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *
 }
 
 // SearchByID bypasses the incoming SearchByID request to Vald gateway (LB gateway) in its own cluster.
-func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) (
-	res *payload.Search_Response, err error,
-) {
+func (s *server) SearchByID(
+	ctx context.Context, req *payload.Search_IDRequest,
+) (res *payload.Search_Response, err error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.SearchRPCServiceName+"/"+vald.SearchByIDRPCName), apiName+"/"+vald.SearchByIDRPCName)
 	defer func() {
 		if span != nil {
@@ -305,7 +311,7 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 		}
 	}()
 
-	_, err = s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, _ string, vc service.MirrorClient, copts ...grpc.CallOption) (interface{}, error) {
+	_, err = s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, _ string, vc service.MirrorClient, copts ...grpc.CallOption) (any, error) {
 		res, err = vc.SearchByID(ctx, req, copts...)
 		return res, err
 	})
@@ -463,7 +469,9 @@ func (s *server) StreamSearchByID(stream vald.Search_StreamSearchByIDServer) (er
 }
 
 // MultiSearch bypasses the incoming MultiSearch request to Vald gateway (LB gateway) in its own cluster.
-func (s *server) MultiSearch(ctx context.Context, req *payload.Search_MultiRequest) (res *payload.Search_Responses, err error) {
+func (s *server) MultiSearch(
+	ctx context.Context, req *payload.Search_MultiRequest,
+) (res *payload.Search_Responses, err error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.SearchRPCServiceName+"/"+vald.MultiSearchRPCName), apiName+"/"+vald.MultiSearchRPCName)
 	defer func() {
 		if span != nil {
@@ -471,7 +479,7 @@ func (s *server) MultiSearch(ctx context.Context, req *payload.Search_MultiReque
 		}
 	}()
 
-	_, err = s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, _ string, vc service.MirrorClient, copts ...grpc.CallOption) (interface{}, error) {
+	_, err = s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, _ string, vc service.MirrorClient, copts ...grpc.CallOption) (any, error) {
 		res, err = vc.MultiSearch(ctx, req, copts...)
 		return res, err
 	})
@@ -528,7 +536,9 @@ func (s *server) MultiSearch(ctx context.Context, req *payload.Search_MultiReque
 }
 
 // MultiSearchByID bypasses the incoming MultiSearchByID request to Vald gateway (LB gateway) in its own cluster.
-func (s *server) MultiSearchByID(ctx context.Context, req *payload.Search_MultiIDRequest) (res *payload.Search_Responses, err error) {
+func (s *server) MultiSearchByID(
+	ctx context.Context, req *payload.Search_MultiIDRequest,
+) (res *payload.Search_Responses, err error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.SearchRPCServiceName+"/"+vald.MultiSearchByIDRPCName), apiName+"/"+vald.MultiSearchByIDRPCName)
 	defer func() {
 		if span != nil {
@@ -536,7 +546,7 @@ func (s *server) MultiSearchByID(ctx context.Context, req *payload.Search_MultiI
 		}
 	}()
 
-	_, err = s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, _ string, vc service.MirrorClient, copts ...grpc.CallOption) (interface{}, error) {
+	_, err = s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, _ string, vc service.MirrorClient, copts ...grpc.CallOption) (any, error) {
 		res, err = vc.MultiSearchByID(ctx, req, copts...)
 		return res, err
 	})
@@ -593,7 +603,9 @@ func (s *server) MultiSearchByID(ctx context.Context, req *payload.Search_MultiI
 }
 
 // LinearSearch bypasses the incoming LinearSearch request to Vald gateway (LB gateway) in its own cluster.
-func (s *server) LinearSearch(ctx context.Context, req *payload.Search_Request) (res *payload.Search_Response, err error) {
+func (s *server) LinearSearch(
+	ctx context.Context, req *payload.Search_Request,
+) (res *payload.Search_Response, err error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.SearchRPCServiceName+"/"+vald.LinearSearchRPCName), apiName+"/"+vald.LinearSearchRPCName)
 	defer func() {
 		if span != nil {
@@ -601,7 +613,7 @@ func (s *server) LinearSearch(ctx context.Context, req *payload.Search_Request) 
 		}
 	}()
 
-	_, err = s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, _ string, vc service.MirrorClient, copts ...grpc.CallOption) (interface{}, error) {
+	_, err = s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, _ string, vc service.MirrorClient, copts ...grpc.CallOption) (any, error) {
 		res, err = vc.LinearSearch(ctx, req, copts...)
 		return res, err
 	})
@@ -659,9 +671,9 @@ func (s *server) LinearSearch(ctx context.Context, req *payload.Search_Request) 
 }
 
 // LinearSearchByID bypasses the incoming LinearSearchByID request to Vald gateway (LB gateway) in its own cluster.
-func (s *server) LinearSearchByID(ctx context.Context, req *payload.Search_IDRequest) (
-	res *payload.Search_Response, err error,
-) {
+func (s *server) LinearSearchByID(
+	ctx context.Context, req *payload.Search_IDRequest,
+) (res *payload.Search_Response, err error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.SearchRPCServiceName+"/"+vald.LinearSearchByIDRPCName), apiName+"/"+vald.LinearSearchByIDRPCName)
 	defer func() {
 		if span != nil {
@@ -669,7 +681,7 @@ func (s *server) LinearSearchByID(ctx context.Context, req *payload.Search_IDReq
 		}
 	}()
 
-	_, err = s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, _ string, vc service.MirrorClient, copts ...grpc.CallOption) (interface{}, error) {
+	_, err = s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, _ string, vc service.MirrorClient, copts ...grpc.CallOption) (any, error) {
 		res, err = vc.LinearSearchByID(ctx, req, copts...)
 		return res, err
 	})
@@ -777,7 +789,9 @@ func (s *server) StreamLinearSearch(stream vald.Search_StreamLinearSearchServer)
 }
 
 // StreamLinearSearchByID bypasses it as a LinearSearchByID request to Vald gateway (LB gateway) in its own cluster.
-func (s *server) StreamLinearSearchByID(stream vald.Search_StreamLinearSearchByIDServer) (err error) {
+func (s *server) StreamLinearSearchByID(
+	stream vald.Search_StreamLinearSearchByIDServer,
+) (err error) {
 	ctx, span := trace.StartSpan(
 		grpc.WithGRPCMethod(stream.Context(), vald.PackageName+"."+vald.SearchRPCServiceName+"/"+vald.StreamLinearSearchByIDRPCName),
 		apiName+"/"+vald.StreamLinearSearchByIDRPCName,
@@ -830,7 +844,9 @@ func (s *server) StreamLinearSearchByID(stream vald.Search_StreamLinearSearchByI
 }
 
 // MultiLinearSearch bypasses the incoming MultiLinearSearch request to Vald gateway (LB gateway) in its own cluster.
-func (s *server) MultiLinearSearch(ctx context.Context, req *payload.Search_MultiRequest) (res *payload.Search_Responses, err error) {
+func (s *server) MultiLinearSearch(
+	ctx context.Context, req *payload.Search_MultiRequest,
+) (res *payload.Search_Responses, err error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.SearchRPCServiceName+"/"+vald.MultiLinearSearchRPCName), apiName+"/"+vald.MultiLinearSearchRPCName)
 	defer func() {
 		if span != nil {
@@ -838,7 +854,7 @@ func (s *server) MultiLinearSearch(ctx context.Context, req *payload.Search_Mult
 		}
 	}()
 
-	_, err = s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, _ string, vc service.MirrorClient, copts ...grpc.CallOption) (interface{}, error) {
+	_, err = s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, _ string, vc service.MirrorClient, copts ...grpc.CallOption) (any, error) {
 		res, err = vc.MultiLinearSearch(ctx, req, copts...)
 		return res, err
 	})
@@ -895,7 +911,9 @@ func (s *server) MultiLinearSearch(ctx context.Context, req *payload.Search_Mult
 }
 
 // MultiLinearSearchByID bypasses the incoming MultiLinearSearchByID request to Vald gateway (LB gateway) in its own cluster.
-func (s *server) MultiLinearSearchByID(ctx context.Context, req *payload.Search_MultiIDRequest) (res *payload.Search_Responses, err error) {
+func (s *server) MultiLinearSearchByID(
+	ctx context.Context, req *payload.Search_MultiIDRequest,
+) (res *payload.Search_Responses, err error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.SearchRPCServiceName+"/"+vald.MultiLinearSearchByIDRPCName), apiName+"/"+vald.MultiLinearSearchByIDRPCName)
 	defer func() {
 		if span != nil {
@@ -903,7 +921,7 @@ func (s *server) MultiLinearSearchByID(ctx context.Context, req *payload.Search_
 		}
 	}()
 
-	_, err = s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, _ string, vc service.MirrorClient, copts ...grpc.CallOption) (interface{}, error) {
+	_, err = s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, _ string, vc service.MirrorClient, copts ...grpc.CallOption) (any, error) {
 		res, err = vc.MultiLinearSearchByID(ctx, req, copts...)
 		return res, err
 	})
@@ -963,7 +981,9 @@ func (s *server) MultiLinearSearchByID(ctx context.Context, req *payload.Search_
 // If the request is proxied from another Mirror gateway, the request is forwarded to the Vald gateway (LB gateway) of its own cluster.
 // If the request is from a user, it is sent to other Mirror gateways and the Vald gateway (LB gateway) of its own cluster.
 // The result is a location of the inserted object.
-func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (loc *payload.Object_Location, err error) {
+func (s *server) Insert(
+	ctx context.Context, req *payload.Insert_Request,
+) (loc *payload.Object_Location, err error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.InsertRPCServiceName+"/"+vald.InsertRPCName), apiName+"/"+vald.InsertRPCName)
 	defer func() {
 		if span != nil {
@@ -975,7 +995,7 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (loc *
 	// So this component sends requests only to the Vald gateway (LB gateway) of its own cluster.
 	if s.isProxied(ctx) {
 		loc, err = s.doInsert(ctx, req, func(ctx context.Context) (*payload.Object_Location, error) {
-			_, derr := s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, _ string, vc service.MirrorClient, copts ...grpc.CallOption) (interface{}, error) {
+			_, derr := s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, _ string, vc service.MirrorClient, copts ...grpc.CallOption) (any, error) {
 				loc, err = vc.Insert(ctx, req, copts...)
 				return loc, err
 			})
@@ -1009,7 +1029,9 @@ func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (loc *
 	return s.handleInsert(ctx, req)
 }
 
-func (s *server) handleInsert(ctx context.Context, req *payload.Insert_Request) (loc *payload.Object_Location, err error) { // skipcq: GO-R1005
+func (s *server) handleInsert(
+	ctx context.Context, req *payload.Insert_Request,
+) (loc *payload.Object_Location, err error) { // skipcq: GO-R1005
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, "handleInsert"), apiName+"/handleInsert")
 	defer func() {
 		if span != nil {
@@ -1168,7 +1190,8 @@ func (s *server) handleInsert(ctx context.Context, req *payload.Insert_Request) 
 	return loc, nil
 }
 
-func (s *server) handleInsertResult( // skipcq: GO-R1005
+func (s *server) handleInsertResult(
+	// skipcq: GO-R1005
 	ctx context.Context,
 	alreadyExistsTgts []string,
 	req *payload.Update_Request,
@@ -1318,7 +1341,11 @@ func (s *server) handleInsertResult( // skipcq: GO-R1005
 	return loc, nil
 }
 
-func (s *server) doInsert(ctx context.Context, req *payload.Insert_Request, f func(ctx context.Context) (*payload.Object_Location, error)) (loc *payload.Object_Location, err error) {
+func (s *server) doInsert(
+	ctx context.Context,
+	req *payload.Insert_Request,
+	f func(ctx context.Context) (*payload.Object_Location, error),
+) (loc *payload.Object_Location, err error) {
 	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "doInsert"), apiName+"/doInsert")
 	defer func() {
 		if span != nil {
@@ -1435,7 +1462,9 @@ func (s *server) StreamInsert(stream vald.Insert_StreamInsertServer) (err error)
 // MultiInsert handles the insertion of multiple objects with the given requests.
 // For each request in parallel, it calls the Insert function to insert an object.
 // If an error occurs during any of the insertions, it accumulates the errors and returns them along with the successfully inserted locations.
-func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequest) (res *payload.Object_Locations, errs error) {
+func (s *server) MultiInsert(
+	ctx context.Context, reqs *payload.Insert_MultiRequest,
+) (res *payload.Object_Locations, errs error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.InsertRPCServiceName+"/"+vald.MultiInsertRPCName), apiName+"/"+vald.MultiInsertRPCName)
 	defer func() {
 		if span != nil {
@@ -1507,7 +1536,9 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 // If the request is proxied from another Mirror gateway, it sends the request only to the Vald gateway (LB gateway) of its own cluster.
 // If the request is from a user, it sends requests to other Mirror gateways and the Vald gateway (LB gateway) of its own cluster.
 // The result is a location of the updated object.
-func (s *server) Update(ctx context.Context, req *payload.Update_Request) (loc *payload.Object_Location, err error) {
+func (s *server) Update(
+	ctx context.Context, req *payload.Update_Request,
+) (loc *payload.Object_Location, err error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.UpdateRPCServiceName+"/"+vald.UpdateRPCName), apiName+"/"+vald.UpdateRPCName)
 	defer func() {
 		if span != nil {
@@ -1519,7 +1550,7 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (loc *
 	// So this component sends requests only to the Vald gateway (LB gateway) of its own cluster.
 	if s.isProxied(ctx) {
 		loc, err = s.doUpdate(ctx, req, func(ctx context.Context) (*payload.Object_Location, error) {
-			_, derr := s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, _ string, vc service.MirrorClient, copts ...grpc.CallOption) (interface{}, error) {
+			_, derr := s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, _ string, vc service.MirrorClient, copts ...grpc.CallOption) (any, error) {
 				loc, err = vc.Update(ctx, req, copts...)
 				return loc, err
 			})
@@ -1553,7 +1584,9 @@ func (s *server) Update(ctx context.Context, req *payload.Update_Request) (loc *
 	return s.handleUpdate(ctx, req)
 }
 
-func (s *server) handleUpdate(ctx context.Context, req *payload.Update_Request) (loc *payload.Object_Location, err error) { // skipcq: GO-R1005
+func (s *server) handleUpdate(
+	ctx context.Context, req *payload.Update_Request,
+) (loc *payload.Object_Location, err error) { // skipcq: GO-R1005
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, "handleUpdate"), apiName+"/handleUpdate")
 	defer func() {
 		if span != nil {
@@ -1727,7 +1760,8 @@ func (s *server) handleUpdate(ctx context.Context, req *payload.Update_Request) 
 	return loc, nil
 }
 
-func (s *server) handleUpdateResult( // skipcq: GO-R1005
+func (s *server) handleUpdateResult(
+	// skipcq: GO-R1005
 	ctx context.Context,
 	notFoundTgts []string,
 	req *payload.Insert_Request,
@@ -1892,7 +1926,11 @@ func (s *server) handleUpdateResult( // skipcq: GO-R1005
 	return loc, nil
 }
 
-func (s *server) doUpdate(ctx context.Context, req *payload.Update_Request, f func(ctx context.Context) (*payload.Object_Location, error)) (loc *payload.Object_Location, err error) {
+func (s *server) doUpdate(
+	ctx context.Context,
+	req *payload.Update_Request,
+	f func(ctx context.Context) (*payload.Object_Location, error),
+) (loc *payload.Object_Location, err error) {
 	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "doUpdate"), apiName+"/doUpdate")
 	defer func() {
 		if span != nil {
@@ -2009,7 +2047,9 @@ func (s *server) StreamUpdate(stream vald.Update_StreamUpdateServer) (err error)
 // MultiUpdate handles the update of multiple objects with the given requests.
 // For each request in parallel, it calls the Update function to update an object.
 // If an error occurs during any of the insertions, it accumulates the errors and returns them along with the successfully updated locations.
-func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequest) (res *payload.Object_Locations, errs error) {
+func (s *server) MultiUpdate(
+	ctx context.Context, reqs *payload.Update_MultiRequest,
+) (res *payload.Object_Locations, errs error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.UpdateRPCServiceName+"/"+vald.MultiUpdateRPCName), apiName+"/"+vald.MultiUpdateRPCName)
 	defer func() {
 		if span != nil {
@@ -2081,7 +2121,9 @@ func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequ
 // If the request is proxied from another Mirror gateway, the request is forwarded to the Vald gateway (LB gateway) of its own cluster.
 // If the request is from a user, it is sent to other Mirror gateways and the Vald gateway (LB gateway) of its own cluster.
 // The result is a location of the upserted object.
-func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *payload.Object_Location, err error) {
+func (s *server) Upsert(
+	ctx context.Context, req *payload.Upsert_Request,
+) (loc *payload.Object_Location, err error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.UpsertRPCServiceName+"/"+vald.UpsertRPCName), apiName+"/"+vald.UpsertRPCName)
 	defer func() {
 		if span != nil {
@@ -2093,7 +2135,7 @@ func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *
 	// So this component sends requests only to the Vald gateway (LB gateway) of its own cluster.
 	if s.isProxied(ctx) {
 		loc, err = s.doUpsert(ctx, req, func(ctx context.Context) (*payload.Object_Location, error) {
-			s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, _ string, vc service.MirrorClient, copts ...grpc.CallOption) (interface{}, error) {
+			s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, _ string, vc service.MirrorClient, copts ...grpc.CallOption) (any, error) {
 				loc, err = vc.Upsert(ctx, req, copts...)
 				return loc, err
 			})
@@ -2128,7 +2170,9 @@ func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *
 	return s.handleUpsert(ctx, req)
 }
 
-func (s *server) handleUpsert(ctx context.Context, req *payload.Upsert_Request) (loc *payload.Object_Location, err error) { // skipcq: GO-R1005
+func (s *server) handleUpsert(
+	ctx context.Context, req *payload.Upsert_Request,
+) (loc *payload.Object_Location, err error) { // skipcq: GO-R1005
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, "handleUpsert"), apiName+"/handleUpsert")
 	defer func() {
 		if span != nil {
@@ -2272,7 +2316,11 @@ func (s *server) handleUpsert(ctx context.Context, req *payload.Upsert_Request) 
 	}
 }
 
-func (s *server) doUpsert(ctx context.Context, req *payload.Upsert_Request, f func(ctx context.Context) (*payload.Object_Location, error)) (loc *payload.Object_Location, err error) {
+func (s *server) doUpsert(
+	ctx context.Context,
+	req *payload.Upsert_Request,
+	f func(ctx context.Context) (*payload.Object_Location, error),
+) (loc *payload.Object_Location, err error) {
 	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "doUpsert"), apiName+"/doUpsert")
 	defer func() {
 		if span != nil {
@@ -2389,7 +2437,9 @@ func (s *server) StreamUpsert(stream vald.Upsert_StreamUpsertServer) (err error)
 // MultiUpsert handles the upsert of multiple objects with the given requests.
 // For each request in parallel, it calls the Upsert function to upsert an object.
 // If an error occurs during any of the insertions, it accumulates the errors and returns them along with the successfully upserted locations.
-func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequest) (res *payload.Object_Locations, errs error) {
+func (s *server) MultiUpsert(
+	ctx context.Context, reqs *payload.Upsert_MultiRequest,
+) (res *payload.Object_Locations, errs error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.UpsertRPCServiceName+"/"+vald.MultiUpsertRPCName), apiName+"/"+vald.MultiUpsertRPCName)
 	defer func() {
 		if span != nil {
@@ -2461,7 +2511,9 @@ func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequ
 // If the request is proxied from another Mirror gateway, the request is forwarded to the Vald gateway (LB gateway) of its own cluster.
 // If the request is from a user, it is sent to other Mirror gateways and the Vald gateway (LB gateway) of its own cluster.
 // The result is a location of the removed object.
-func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (loc *payload.Object_Location, err error) {
+func (s *server) Remove(
+	ctx context.Context, req *payload.Remove_Request,
+) (loc *payload.Object_Location, err error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.RemoveRPCServiceName+"/"+vald.RemoveRPCName), apiName+"/"+vald.RemoveRPCName)
 	defer func() {
 		if span != nil {
@@ -2473,7 +2525,7 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (loc *
 	// So this component sends requests only to the Vald gateway (LB gateway) of its own cluster.
 	if s.isProxied(ctx) {
 		loc, err = s.doRemove(ctx, req, func(ctx context.Context) (*payload.Object_Location, error) {
-			s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, _ string, vc service.MirrorClient, copts ...grpc.CallOption) (interface{}, error) {
+			s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, _ string, vc service.MirrorClient, copts ...grpc.CallOption) (any, error) {
 				loc, err = vc.Remove(ctx, req, copts...)
 				return loc, err
 			})
@@ -2507,7 +2559,9 @@ func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (loc *
 	return s.handleRemove(ctx, req)
 }
 
-func (s *server) handleRemove(ctx context.Context, req *payload.Remove_Request) (loc *payload.Object_Location, err error) { // skipcq: GO-R1005
+func (s *server) handleRemove(
+	ctx context.Context, req *payload.Remove_Request,
+) (loc *payload.Object_Location, err error) { // skipcq: GO-R1005
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, "handleRemove"), apiName+"/handleRemove")
 	defer func() {
 		if span != nil {
@@ -2648,7 +2702,11 @@ func (s *server) handleRemove(ctx context.Context, req *payload.Remove_Request) 
 	}
 }
 
-func (s *server) doRemove(ctx context.Context, req *payload.Remove_Request, f func(ctx context.Context) (*payload.Object_Location, error)) (loc *payload.Object_Location, err error) {
+func (s *server) doRemove(
+	ctx context.Context,
+	req *payload.Remove_Request,
+	f func(ctx context.Context) (*payload.Object_Location, error),
+) (loc *payload.Object_Location, err error) {
 	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "doRemove"), apiName+"/doRemove")
 	defer func() {
 		if span != nil {
@@ -2764,7 +2822,9 @@ func (s *server) StreamRemove(stream vald.Remove_StreamRemoveServer) (err error)
 // MultiRemove handles the remove of multiple objects with the given requests.
 // For each request in parallel, it calls the Remove function to insert an object.
 // If an error occurs during any of the insertions, it accumulates the errors and returns them along with the successfully removed locations.
-func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequest) (res *payload.Object_Locations, errs error) {
+func (s *server) MultiRemove(
+	ctx context.Context, reqs *payload.Remove_MultiRequest,
+) (res *payload.Object_Locations, errs error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.RemoveRPCServiceName+"/"+vald.MultiRemoveRPCName), apiName+"/"+vald.MultiRemoveRPCName)
 	defer func() {
 		if span != nil {
@@ -2836,7 +2896,9 @@ func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequ
 // If the request is proxied from another Mirror gateway, the request is forwarded to the Vald gateway (LB gateway) of its own cluster.
 // If the request is from a user, it is sent to other Mirror gateways and the Vald gateway (LB gateway) of its own cluster.
 // The result is a location of the removed object.
-func (s *server) RemoveByTimestamp(ctx context.Context, req *payload.Remove_TimestampRequest) (locs *payload.Object_Locations, err error) {
+func (s *server) RemoveByTimestamp(
+	ctx context.Context, req *payload.Remove_TimestampRequest,
+) (locs *payload.Object_Locations, err error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.RemoveRPCServiceName+"/"+vald.RemoveByTimestampRPCName), apiName+"/"+vald.RemoveByTimestampRPCName)
 	defer func() {
 		if span != nil {
@@ -2848,7 +2910,7 @@ func (s *server) RemoveByTimestamp(ctx context.Context, req *payload.Remove_Time
 	// So this component sends requests only to the Vald gateway (LB gateway) of its own cluster.
 	if s.isProxied(ctx) {
 		locs, err = s.doRemoveByTimestamp(ctx, req, func(ctx context.Context) (*payload.Object_Locations, error) {
-			_, derr := s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, _ string, vc service.MirrorClient, copts ...grpc.CallOption) (interface{}, error) {
+			_, derr := s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, _ string, vc service.MirrorClient, copts ...grpc.CallOption) (any, error) {
 				locs, err = vc.RemoveByTimestamp(ctx, req, copts...)
 				return locs, err
 			})
@@ -2882,7 +2944,9 @@ func (s *server) RemoveByTimestamp(ctx context.Context, req *payload.Remove_Time
 	return s.handleRemoveByTimestamp(ctx, req)
 }
 
-func (s *server) handleRemoveByTimestamp(ctx context.Context, req *payload.Remove_TimestampRequest) (locs *payload.Object_Locations, err error) { // skipcq: GO-R1005
+func (s *server) handleRemoveByTimestamp(
+	ctx context.Context, req *payload.Remove_TimestampRequest,
+) (locs *payload.Object_Locations, err error) { // skipcq: GO-R1005
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, "handleRemoveByTimestamp"), apiName+"/handleRemoveByTimestamp")
 	defer func() {
 		if span != nil {
@@ -3084,7 +3148,9 @@ func (s *server) doRemoveByTimestamp(
 }
 
 // GetObject bypasses the incoming GetObject request to Vald LB gateway in its own cluster.
-func (s *server) GetObject(ctx context.Context, req *payload.Object_VectorRequest) (vec *payload.Object_Vector, err error) {
+func (s *server) GetObject(
+	ctx context.Context, req *payload.Object_VectorRequest,
+) (vec *payload.Object_Vector, err error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.ObjectRPCServiceName+"/"+vald.GetObjectRPCName), apiName+"/"+vald.GetObjectRPCName)
 	defer func() {
 		if span != nil {
@@ -3092,7 +3158,7 @@ func (s *server) GetObject(ctx context.Context, req *payload.Object_VectorReques
 		}
 	}()
 
-	_, err = s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, _ string, vc service.MirrorClient, copts ...grpc.CallOption) (interface{}, error) {
+	_, err = s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, _ string, vc service.MirrorClient, copts ...grpc.CallOption) (any, error) {
 		vec, err = vc.GetObject(ctx, req, copts...)
 		return vec, err
 	})
@@ -3199,7 +3265,9 @@ func (s *server) StreamGetObject(stream vald.Object_StreamGetObjectServer) (err 
 }
 
 // StreamListObject bypasses it as a StreamListObject request to the Vald gateway (LB gateway) in its own cluster.
-func (s *server) StreamListObject(req *payload.Object_List_Request, stream vald.Object_StreamListObjectServer) error {
+func (s *server) StreamListObject(
+	req *payload.Object_List_Request, stream vald.Object_StreamListObjectServer,
+) error {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(stream.Context(), vald.PackageName+"."+vald.ObjectRPCServiceName+"/"+vald.StreamListObjectRPCName), apiName+"/"+vald.StreamListObjectRPCName)
 	defer func() {
 		if span != nil {
@@ -3207,7 +3275,7 @@ func (s *server) StreamListObject(req *payload.Object_List_Request, stream vald.
 		}
 	}()
 
-	_, err := s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, target string, vc service.MirrorClient, copts ...grpc.CallOption) (obj interface{}, err error) {
+	_, err := s.gateway.Do(ctx, s.vAddr, func(ctx context.Context, target string, vc service.MirrorClient, copts ...grpc.CallOption) (obj any, err error) {
 		ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "Do/"+target), apiName+"/"+vald.StreamListObjectRPCName+"/"+target)
 		defer func() {
 			if span != nil {
@@ -3232,7 +3300,11 @@ func (s *server) StreamListObject(req *payload.Object_List_Request, stream vald.
 	return nil
 }
 
-func (s *server) doStreamListObject(ctx context.Context, client vald.Object_StreamListObjectClient, server vald.Object_StreamListObjectServer) (err error) { // skipcq: GO-R1005
+func (s *server) doStreamListObject(
+	ctx context.Context,
+	client vald.Object_StreamListObjectClient,
+	server vald.Object_StreamListObjectServer,
+) (err error) { // skipcq: GO-R1005
 	cctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 	eg, egctx := errgroup.WithContext(cctx)
@@ -3342,7 +3414,9 @@ func (s *server) doStreamListObject(ctx context.Context, client vald.Object_Stre
 }
 
 // TODO: implement Flush handler
-func (s *server) Flush(ctx context.Context, req *payload.Flush_Request) (*payload.Info_Index_Count, error) {
+func (s *server) Flush(
+	ctx context.Context, req *payload.Flush_Request,
+) (*payload.Info_Index_Count, error) {
 	return s.UnimplementedFlushServer.Flush(ctx, req)
 }
 

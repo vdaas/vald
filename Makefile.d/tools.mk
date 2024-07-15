@@ -46,6 +46,12 @@ golines/install: $(GOBIN)/golines
 $(GOBIN)/golines:
 	$(call go-install, github.com/segmentio/golines)
 
+.PHONY: crlfmt/install
+crlfmt/install: $(GOBIN)/crlfmt
+
+$(GOBIN)/crlfmt:
+	$(call go-install, github.com/cockroachdb/crlfmt)
+
 .PHONY: prettier/install
 prettier/install: $(BINDIR)/prettier
 $(BINDIR)/prettier:

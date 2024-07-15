@@ -510,7 +510,9 @@ func (d *discoverer) GetPods(req *payload.Discoverer_Request) (pods *payload.Inf
 	return pods, nil
 }
 
-func (d *discoverer) GetNodes(req *payload.Discoverer_Request) (nodes *payload.Info_Nodes, err error) {
+func (d *discoverer) GetNodes(
+	req *payload.Discoverer_Request,
+) (nodes *payload.Info_Nodes, err error) {
 	nodes = new(payload.Info_Nodes)
 	nbn, ok := d.nodeByName.Load().(map[string]*payload.Info_Node)
 	if !ok {
@@ -555,7 +557,9 @@ func (d *discoverer) GetNodes(req *payload.Discoverer_Request) (nodes *payload.I
 }
 
 // Get Services returns the services that matches the request.
-func (d *discoverer) GetServices(req *payload.Discoverer_Request) (svcs *payload.Info_Services, err error) {
+func (d *discoverer) GetServices(
+	req *payload.Discoverer_Request,
+) (svcs *payload.Info_Services, err error) {
 	svcs = new(payload.Info_Services)
 	sbn, ok := d.svcsByName.Load().(map[string]*payload.Info_Service)
 	if !ok {

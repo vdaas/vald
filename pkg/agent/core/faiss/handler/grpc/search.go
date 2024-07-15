@@ -27,11 +27,13 @@ import (
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc/errdetails"
 	"github.com/vdaas/vald/internal/net/grpc/status"
+	"github.com/vdaas/vald/internal/observability/attribute"
 	"github.com/vdaas/vald/internal/observability/trace"
-	"go.opentelemetry.io/otel/attribute"
 )
 
-func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *payload.Search_Response, err error) {
+func (s *server) Search(
+	ctx context.Context, req *payload.Search_Request,
+) (res *payload.Search_Response, err error) {
 	_, span := trace.StartSpan(ctx, apiName+"/"+vald.SearchRPCName)
 	defer func() {
 		if span != nil {
@@ -158,7 +160,9 @@ func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *
 	return res, nil
 }
 
-func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) (res *payload.Search_Response, err error) {
+func (s *server) SearchByID(
+	ctx context.Context, req *payload.Search_IDRequest,
+) (res *payload.Search_Response, err error) {
 	return s.UnimplementedValdServer.UnimplementedSearchServer.SearchByID(ctx, req)
 }
 
@@ -170,10 +174,14 @@ func (s *server) StreamSearchByID(stream vald.Search_StreamSearchByIDServer) (er
 	return s.UnimplementedValdServer.UnimplementedSearchServer.StreamSearchByID(stream)
 }
 
-func (s *server) MultiSearch(ctx context.Context, reqs *payload.Search_MultiRequest) (res *payload.Search_Responses, errs error) {
+func (s *server) MultiSearch(
+	ctx context.Context, reqs *payload.Search_MultiRequest,
+) (res *payload.Search_Responses, errs error) {
 	return s.UnimplementedValdServer.UnimplementedSearchServer.MultiSearch(ctx, reqs)
 }
 
-func (s *server) MultiSearchByID(ctx context.Context, reqs *payload.Search_MultiIDRequest) (res *payload.Search_Responses, errs error) {
+func (s *server) MultiSearchByID(
+	ctx context.Context, reqs *payload.Search_MultiIDRequest,
+) (res *payload.Search_Responses, errs error) {
 	return s.UnimplementedValdServer.UnimplementedSearchServer.MultiSearchByID(ctx, reqs)
 }

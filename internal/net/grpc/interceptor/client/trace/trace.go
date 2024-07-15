@@ -13,9 +13,7 @@
 // limitations under the License.
 package trace
 
-import (
-	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
-)
+import "go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 
 var (
 	UnaryClientInterceptor  = otelgrpc.UnaryClientInterceptor

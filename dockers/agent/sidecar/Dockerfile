@@ -25,18 +25,18 @@ ARG GO_VERSION
 ARG TARGETARCH
 ARG TARGETOS
 
-ENV GO111MODULE on
-ENV GOPATH /go
-ENV GOROOT /opt/go
-ENV DEBIAN_FRONTEND noninteractive
-ENV INITRD No
-ENV LANG en_US.UTF-8
-ENV ORG vdaas
-ENV REPO vald
-ENV APP_NAME sidecar
-ENV PKG agent/sidecar
-ENV PKG_INTERNAL agent/internal
-ENV PATH ${PATH}:${GOROOT}/bin:${GOPATH}/bin
+ENV GO111MODULE=on
+ENV GOPATH=/go
+ENV GOROOT=/opt/go
+ENV DEBIAN_FRONTEND=noninteractive
+ENV INITRD=No
+ENV LANG=en_US.UTF-8
+ENV ORG=vdaas
+ENV REPO=vald
+ENV APP_NAME=sidecar
+ENV PKG=agent/sidecar
+ENV PKG_INTERNAL=agent/internal
+ENV PATH=${PATH}:${GOROOT}/bin:${GOPATH}/bin
 
 # skipcq: DOK-DL3008
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -88,7 +88,7 @@ RUN --mount=type=cache,target="${GOPATH}/pkg",id="go-build-${TARGETARCH}" \
 FROM --platform=${TARGETPLATFORM} ${DISTROLESS_IMAGE}:${DISTROLESS_IMAGE_TAG}
 LABEL maintainer="${MAINTAINER}"
 
-ENV APP_NAME sidecar
+ENV APP_NAME=sidecar
 
 COPY --from=builder /usr/bin/${APP_NAME} /go/bin/${APP_NAME}
 

@@ -38,16 +38,16 @@ ARG UPX_OPTIONS
 ARG TARGETARCH
 ARG TARGETOS
 
-ENV GO111MODULE on
-ENV DEBIAN_FRONTEND noninteractive
-ENV INITRD No
-ENV LANG en_US.UTF-8
-ENV GOROOT /opt/go
-ENV GOPATH /go
-ENV PATH ${PATH}:${GOROOT}/bin:${GOPATH}/bin
-ENV ORG vdaas
-ENV REPO vald
-ENV APP_NAME helm-operator
+ENV GO111MODULE=on
+ENV DEBIAN_FRONTEND=noninteractive
+ENV INITRD=No
+ENV LANG=en_US.UTF-8
+ENV GOROOT=/opt/go
+ENV GOPATH=/go
+ENV PATH=${PATH}:${GOROOT}/bin:${GOPATH}/bin
+ENV ORG=vdaas
+ENV REPO=vald
+ENV APP_NAME=helm-operator
 
 # skipcq: DOK-DL3008
 RUN apt-get clean \
@@ -128,7 +128,7 @@ RUN upx ${UPX_OPTIONS} "/usr/bin/${APP_NAME}"
 FROM --platform=${TARGETPLATFORM} ${DISTROLESS_IMAGE}:${DISTROLESS_IMAGE_TAG}
 LABEL maintainer="${MAINTAINER}"
 
-ENV APP_NAME helm-operator
+ENV APP_NAME=helm-operator
 
 ENV HOME=/opt/helm
 WORKDIR ${HOME}

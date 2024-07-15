@@ -24,17 +24,17 @@ ARG GO_VERSION
 ARG TARGETARCH
 ARG TARGETOS
 
-ENV GO111MODULE on
-ENV DEBIAN_FRONTEND noninteractive
-ENV INITRD No
-ENV LANG en_US.UTF-8
-ENV GOROOT /opt/go
-ENV GOPATH /go
-ENV PATH ${PATH}:${GOROOT}/bin:${GOPATH}/bin
-ENV ORG vdaas
-ENV REPO vald
-ENV PKG gateway/mirror
-ENV APP_NAME mirror
+ENV GO111MODULE=on
+ENV DEBIAN_FRONTEND=noninteractive
+ENV INITRD=No
+ENV LANG=en_US.UTF-8
+ENV GOROOT=/opt/go
+ENV GOPATH=/go
+ENV PATH=${PATH}:${GOROOT}/bin:${GOPATH}/bin
+ENV ORG=vdaas
+ENV REPO=vald
+ENV PKG=gateway/mirror
+ENV APP_NAME=mirror
 
 # skipcq: DOK-DL3008
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -83,7 +83,7 @@ RUN --mount=type=cache,target="${GOPATH}/pkg",id="go-build-${TARGETARCH}" \
 FROM --platform=${TARGETPLATFORM} ${DISTROLESS_IMAGE}:${DISTROLESS_IMAGE_TAG}
 LABEL maintainer "${MAINTAINER}"
 
-ENV APP_NAME mirror
+ENV APP_NAME=mirror
 
 COPY --from=builder /usr/bin/${APP_NAME} /go/bin/${APP_NAME}
 

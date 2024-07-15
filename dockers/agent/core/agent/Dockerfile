@@ -25,17 +25,17 @@ ARG TARGETARCH
 ARG TARGETOS
 ARG RUST_VERSION
 
-ENV RUST_HOME /usr/local/lib/rust
-ENV RUSTUP_HOME ${RUST_HOME}/rustup
-ENV CARGO_HOME ${RUST_HOME}/cargo
-ENV DEBIAN_FRONTEND noninteractive
-ENV INITRD No
-ENV LANG en_US.UTF-8
-ENV PATH ${PATH}:${RUSTUP_HOME}/bin:${CARGO_HOME}/bin
-ENV ORG vdaas
-ENV REPO vald
-ENV PKG agent/core/ngt
-ENV APP_NAME ngt
+ENV RUST_HOME=/usr/local/lib/rust
+ENV RUSTUP_HOME=${RUST_HOME}/rustup
+ENV CARGO_HOME=${RUST_HOME}/cargo
+ENV DEBIAN_FRONTEND=noninteractive
+ENV INITRD=No
+ENV LANG=en_US.UTF-8
+ENV PATH=${PATH}:${RUSTUP_HOME}/bin:${CARGO_HOME}/bin
+ENV ORG=vdaas
+ENV REPO=vald
+ENV PKG=agent/core/ngt
+ENV APP_NAME=ngt
 
 # skipcq: DOK-DL3008
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -85,7 +85,7 @@ RUN cp sample.yaml /tmp/config.yaml
 FROM --platform=${TARGETPLATFORM} ${DISTROLESS_IMAGE}:${DISTROLESS_IMAGE_TAG}
 LABEL maintainer="${MAINTAINER}"
 
-ENV APP_NAME ngt
+ENV APP_NAME=ngt
 
 COPY --from=builder /usr/bin/${APP_NAME} /usr/bin/${APP_NAME}
 COPY --from=builder /tmp/config.yaml /etc/server/config.yaml

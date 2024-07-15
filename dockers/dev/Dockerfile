@@ -26,9 +26,9 @@ ARG GO_VERSION
 ARG TARGETARCH
 ARG TARGETOS
 
-ENV GOROOT /opt/go
-ENV GOPATH /go
-ENV PATH ${PATH}:${GOROOT}/bin:${GOPATH}/bin:/usr/local/bin
+ENV GOROOT=/opt/go
+ENV GOPATH=/go
+ENV PATH=${PATH}:${GOROOT}/bin:${GOPATH}/bin:/usr/local/bin
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 # skipcq: DOK-DL3008

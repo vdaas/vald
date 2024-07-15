@@ -69,7 +69,9 @@ func (r *reconciler) addListOpts(opt client.ListOption) {
 	r.lopts = append(r.lopts, opt)
 }
 
-func (r *reconciler) Reconcile(ctx context.Context, _ reconcile.Request) (res reconcile.Result, err error) {
+func (r *reconciler) Reconcile(
+	ctx context.Context, _ reconcile.Request,
+) (res reconcile.Result, err error) {
 	m := &metrics.PodMetricsList{}
 
 	if r.lopts != nil {

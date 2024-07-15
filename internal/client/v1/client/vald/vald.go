@@ -81,7 +81,9 @@ func (c *client) GRPCClient() grpc.Client {
 	return c.c
 }
 
-func (c *client) Exists(ctx context.Context, in *payload.Object_ID, opts ...grpc.CallOption) (oid *payload.Object_ID, err error) {
+func (c *client) Exists(
+	ctx context.Context, in *payload.Object_ID, opts ...grpc.CallOption,
+) (oid *payload.Object_ID, err error) {
 	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+vald.ExistsRPCName), apiName+"/"+vald.ExistsRPCName)
 	defer func() {
 		if span != nil {
@@ -91,7 +93,7 @@ func (c *client) Exists(ctx context.Context, in *payload.Object_ID, opts ...grpc
 	_, err = c.c.RoundRobin(ctx, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
-	) (interface{}, error) {
+	) (any, error) {
 		oid, err = vald.NewValdClient(conn).Exists(ctx, in, append(copts, opts...)...)
 		return nil, err
 	})
@@ -101,7 +103,9 @@ func (c *client) Exists(ctx context.Context, in *payload.Object_ID, opts ...grpc
 	return oid, nil
 }
 
-func (c *client) Search(ctx context.Context, in *payload.Search_Request, opts ...grpc.CallOption) (res *payload.Search_Response, err error) {
+func (c *client) Search(
+	ctx context.Context, in *payload.Search_Request, opts ...grpc.CallOption,
+) (res *payload.Search_Response, err error) {
 	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+vald.SearchRPCName), apiName+"/"+vald.SearchRPCName)
 	defer func() {
 		if span != nil {
@@ -111,7 +115,7 @@ func (c *client) Search(ctx context.Context, in *payload.Search_Request, opts ..
 	_, err = c.c.RoundRobin(ctx, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
-	) (interface{}, error) {
+	) (any, error) {
 		res, err = vald.NewValdClient(conn).Search(ctx, in, append(copts, opts...)...)
 		return nil, err
 	})
@@ -121,7 +125,9 @@ func (c *client) Search(ctx context.Context, in *payload.Search_Request, opts ..
 	return res, nil
 }
 
-func (c *client) SearchByID(ctx context.Context, in *payload.Search_IDRequest, opts ...grpc.CallOption) (res *payload.Search_Response, err error) {
+func (c *client) SearchByID(
+	ctx context.Context, in *payload.Search_IDRequest, opts ...grpc.CallOption,
+) (res *payload.Search_Response, err error) {
 	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+vald.SearchByIDRPCName), apiName+"/"+vald.SearchByIDRPCName)
 	defer func() {
 		if span != nil {
@@ -131,7 +137,7 @@ func (c *client) SearchByID(ctx context.Context, in *payload.Search_IDRequest, o
 	_, err = c.c.RoundRobin(ctx, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
-	) (interface{}, error) {
+	) (any, error) {
 		res, err = vald.NewValdClient(conn).SearchByID(ctx, in, append(copts, opts...)...)
 		return nil, err
 	})
@@ -141,7 +147,9 @@ func (c *client) SearchByID(ctx context.Context, in *payload.Search_IDRequest, o
 	return res, nil
 }
 
-func (c *client) StreamSearch(ctx context.Context, opts ...grpc.CallOption) (res vald.Search_StreamSearchClient, err error) {
+func (c *client) StreamSearch(
+	ctx context.Context, opts ...grpc.CallOption,
+) (res vald.Search_StreamSearchClient, err error) {
 	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+vald.StreamSearchRPCName), apiName+"/"+vald.StreamSearchRPCName)
 	defer func() {
 		if span != nil {
@@ -151,7 +159,7 @@ func (c *client) StreamSearch(ctx context.Context, opts ...grpc.CallOption) (res
 	_, err = c.c.RoundRobin(ctx, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
-	) (interface{}, error) {
+	) (any, error) {
 		res, err = vald.NewValdClient(conn).StreamSearch(ctx, append(copts, opts...)...)
 		return nil, err
 	})
@@ -161,7 +169,9 @@ func (c *client) StreamSearch(ctx context.Context, opts ...grpc.CallOption) (res
 	return res, nil
 }
 
-func (c *client) StreamSearchByID(ctx context.Context, opts ...grpc.CallOption) (res vald.Search_StreamSearchByIDClient, err error) {
+func (c *client) StreamSearchByID(
+	ctx context.Context, opts ...grpc.CallOption,
+) (res vald.Search_StreamSearchByIDClient, err error) {
 	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+vald.StreamSearchByIDRPCName), apiName+"/"+vald.StreamSearchByIDRPCName)
 	defer func() {
 		if span != nil {
@@ -171,7 +181,7 @@ func (c *client) StreamSearchByID(ctx context.Context, opts ...grpc.CallOption) 
 	_, err = c.c.RoundRobin(ctx, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
-	) (interface{}, error) {
+	) (any, error) {
 		res, err = vald.NewValdClient(conn).StreamSearchByID(ctx, append(copts, opts...)...)
 		return nil, err
 	})
@@ -181,7 +191,9 @@ func (c *client) StreamSearchByID(ctx context.Context, opts ...grpc.CallOption) 
 	return res, nil
 }
 
-func (c *client) MultiSearch(ctx context.Context, in *payload.Search_MultiRequest, opts ...grpc.CallOption) (res *payload.Search_Responses, err error) {
+func (c *client) MultiSearch(
+	ctx context.Context, in *payload.Search_MultiRequest, opts ...grpc.CallOption,
+) (res *payload.Search_Responses, err error) {
 	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+vald.MultiSearchRPCName), apiName+"/"+vald.MultiSearchRPCName)
 	defer func() {
 		if span != nil {
@@ -191,7 +203,7 @@ func (c *client) MultiSearch(ctx context.Context, in *payload.Search_MultiReques
 	_, err = c.c.RoundRobin(ctx, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
-	) (interface{}, error) {
+	) (any, error) {
 		res, err = vald.NewValdClient(conn).MultiSearch(ctx, in, append(copts, opts...)...)
 		return nil, err
 	})
@@ -201,7 +213,9 @@ func (c *client) MultiSearch(ctx context.Context, in *payload.Search_MultiReques
 	return res, nil
 }
 
-func (c *client) MultiSearchByID(ctx context.Context, in *payload.Search_MultiIDRequest, opts ...grpc.CallOption) (res *payload.Search_Responses, err error) {
+func (c *client) MultiSearchByID(
+	ctx context.Context, in *payload.Search_MultiIDRequest, opts ...grpc.CallOption,
+) (res *payload.Search_Responses, err error) {
 	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+vald.MultiSearchByIDRPCName), apiName+"/"+vald.MultiSearchByIDRPCName)
 	defer func() {
 		if span != nil {
@@ -211,7 +225,7 @@ func (c *client) MultiSearchByID(ctx context.Context, in *payload.Search_MultiID
 	_, err = c.c.RoundRobin(ctx, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
-	) (interface{}, error) {
+	) (any, error) {
 		res, err = vald.NewValdClient(conn).MultiSearchByID(ctx, in, append(copts, opts...)...)
 		return nil, err
 	})
@@ -221,7 +235,9 @@ func (c *client) MultiSearchByID(ctx context.Context, in *payload.Search_MultiID
 	return res, nil
 }
 
-func (c *client) LinearSearch(ctx context.Context, in *payload.Search_Request, opts ...grpc.CallOption) (res *payload.Search_Response, err error) {
+func (c *client) LinearSearch(
+	ctx context.Context, in *payload.Search_Request, opts ...grpc.CallOption,
+) (res *payload.Search_Response, err error) {
 	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+vald.LinearSearchRPCName), apiName+"/"+vald.LinearSearchRPCName)
 	defer func() {
 		if span != nil {
@@ -231,7 +247,7 @@ func (c *client) LinearSearch(ctx context.Context, in *payload.Search_Request, o
 	_, err = c.c.RoundRobin(ctx, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
-	) (interface{}, error) {
+	) (any, error) {
 		res, err = vald.NewValdClient(conn).LinearSearch(ctx, in, append(copts, opts...)...)
 		return nil, err
 	})
@@ -241,7 +257,9 @@ func (c *client) LinearSearch(ctx context.Context, in *payload.Search_Request, o
 	return res, nil
 }
 
-func (c *client) LinearSearchByID(ctx context.Context, in *payload.Search_IDRequest, opts ...grpc.CallOption) (res *payload.Search_Response, err error) {
+func (c *client) LinearSearchByID(
+	ctx context.Context, in *payload.Search_IDRequest, opts ...grpc.CallOption,
+) (res *payload.Search_Response, err error) {
 	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+vald.LinearSearchByIDRPCName), apiName+"/"+vald.LinearSearchByIDRPCName)
 	defer func() {
 		if span != nil {
@@ -251,7 +269,7 @@ func (c *client) LinearSearchByID(ctx context.Context, in *payload.Search_IDRequ
 	_, err = c.c.RoundRobin(ctx, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
-	) (interface{}, error) {
+	) (any, error) {
 		res, err = vald.NewValdClient(conn).LinearSearchByID(ctx, in, append(copts, opts...)...)
 		return nil, err
 	})
@@ -261,7 +279,9 @@ func (c *client) LinearSearchByID(ctx context.Context, in *payload.Search_IDRequ
 	return res, nil
 }
 
-func (c *client) StreamLinearSearch(ctx context.Context, opts ...grpc.CallOption) (res vald.Search_StreamLinearSearchClient, err error) {
+func (c *client) StreamLinearSearch(
+	ctx context.Context, opts ...grpc.CallOption,
+) (res vald.Search_StreamLinearSearchClient, err error) {
 	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+vald.StreamSearchRPCName), apiName+"/"+vald.StreamSearchRPCName)
 	defer func() {
 		if span != nil {
@@ -271,7 +291,7 @@ func (c *client) StreamLinearSearch(ctx context.Context, opts ...grpc.CallOption
 	_, err = c.c.RoundRobin(ctx, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
-	) (interface{}, error) {
+	) (any, error) {
 		res, err = vald.NewValdClient(conn).StreamLinearSearch(ctx, append(copts, opts...)...)
 		return nil, err
 	})
@@ -281,7 +301,9 @@ func (c *client) StreamLinearSearch(ctx context.Context, opts ...grpc.CallOption
 	return res, nil
 }
 
-func (c *client) StreamLinearSearchByID(ctx context.Context, opts ...grpc.CallOption) (res vald.Search_StreamLinearSearchByIDClient, err error) {
+func (c *client) StreamLinearSearchByID(
+	ctx context.Context, opts ...grpc.CallOption,
+) (res vald.Search_StreamLinearSearchByIDClient, err error) {
 	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+vald.StreamSearchByIDRPCName), apiName+"/"+vald.StreamSearchByIDRPCName)
 	defer func() {
 		if span != nil {
@@ -291,7 +313,7 @@ func (c *client) StreamLinearSearchByID(ctx context.Context, opts ...grpc.CallOp
 	_, err = c.c.RoundRobin(ctx, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
-	) (interface{}, error) {
+	) (any, error) {
 		res, err = vald.NewValdClient(conn).StreamLinearSearchByID(ctx, append(copts, opts...)...)
 		return nil, err
 	})
@@ -301,7 +323,9 @@ func (c *client) StreamLinearSearchByID(ctx context.Context, opts ...grpc.CallOp
 	return res, nil
 }
 
-func (c *client) MultiLinearSearch(ctx context.Context, in *payload.Search_MultiRequest, opts ...grpc.CallOption) (res *payload.Search_Responses, err error) {
+func (c *client) MultiLinearSearch(
+	ctx context.Context, in *payload.Search_MultiRequest, opts ...grpc.CallOption,
+) (res *payload.Search_Responses, err error) {
 	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+vald.MultiLinearSearchRPCName), apiName+"/"+vald.MultiLinearSearchRPCName)
 	defer func() {
 		if span != nil {
@@ -311,7 +335,7 @@ func (c *client) MultiLinearSearch(ctx context.Context, in *payload.Search_Multi
 	_, err = c.c.RoundRobin(ctx, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
-	) (interface{}, error) {
+	) (any, error) {
 		res, err = vald.NewValdClient(conn).MultiLinearSearch(ctx, in, append(copts, opts...)...)
 		return nil, err
 	})
@@ -321,7 +345,9 @@ func (c *client) MultiLinearSearch(ctx context.Context, in *payload.Search_Multi
 	return res, nil
 }
 
-func (c *client) MultiLinearSearchByID(ctx context.Context, in *payload.Search_MultiIDRequest, opts ...grpc.CallOption) (res *payload.Search_Responses, err error) {
+func (c *client) MultiLinearSearchByID(
+	ctx context.Context, in *payload.Search_MultiIDRequest, opts ...grpc.CallOption,
+) (res *payload.Search_Responses, err error) {
 	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+vald.MultiLinearSearchByIDRPCName), apiName+"/"+vald.MultiLinearSearchByIDRPCName)
 	defer func() {
 		if span != nil {
@@ -331,7 +357,7 @@ func (c *client) MultiLinearSearchByID(ctx context.Context, in *payload.Search_M
 	_, err = c.c.RoundRobin(ctx, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
-	) (interface{}, error) {
+	) (any, error) {
 		res, err = vald.NewValdClient(conn).MultiLinearSearchByID(ctx, in, append(copts, opts...)...)
 		return nil, err
 	})
@@ -341,7 +367,9 @@ func (c *client) MultiLinearSearchByID(ctx context.Context, in *payload.Search_M
 	return res, nil
 }
 
-func (c *client) Insert(ctx context.Context, in *payload.Insert_Request, opts ...grpc.CallOption) (res *payload.Object_Location, err error) {
+func (c *client) Insert(
+	ctx context.Context, in *payload.Insert_Request, opts ...grpc.CallOption,
+) (res *payload.Object_Location, err error) {
 	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+vald.InsertRPCName), apiName+"/"+vald.InsertRPCName)
 	defer func() {
 		if span != nil {
@@ -351,7 +379,7 @@ func (c *client) Insert(ctx context.Context, in *payload.Insert_Request, opts ..
 	_, err = c.c.RoundRobin(ctx, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
-	) (interface{}, error) {
+	) (any, error) {
 		res, err = vald.NewValdClient(conn).Insert(ctx, in, append(copts, opts...)...)
 		return nil, err
 	})
@@ -361,7 +389,9 @@ func (c *client) Insert(ctx context.Context, in *payload.Insert_Request, opts ..
 	return res, nil
 }
 
-func (c *client) StreamInsert(ctx context.Context, opts ...grpc.CallOption) (res vald.Insert_StreamInsertClient, err error) {
+func (c *client) StreamInsert(
+	ctx context.Context, opts ...grpc.CallOption,
+) (res vald.Insert_StreamInsertClient, err error) {
 	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+vald.StreamInsertRPCName), apiName+"/"+vald.StreamInsertRPCName)
 	defer func() {
 		if span != nil {
@@ -371,7 +401,7 @@ func (c *client) StreamInsert(ctx context.Context, opts ...grpc.CallOption) (res
 	_, err = c.c.RoundRobin(ctx, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
-	) (interface{}, error) {
+	) (any, error) {
 		res, err = vald.NewValdClient(conn).StreamInsert(ctx, append(copts, opts...)...)
 		return nil, err
 	})
@@ -381,7 +411,9 @@ func (c *client) StreamInsert(ctx context.Context, opts ...grpc.CallOption) (res
 	return res, nil
 }
 
-func (c *client) MultiInsert(ctx context.Context, in *payload.Insert_MultiRequest, opts ...grpc.CallOption) (res *payload.Object_Locations, err error) {
+func (c *client) MultiInsert(
+	ctx context.Context, in *payload.Insert_MultiRequest, opts ...grpc.CallOption,
+) (res *payload.Object_Locations, err error) {
 	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+vald.MultiInsertRPCName), apiName+"/"+vald.MultiInsertRPCName)
 	defer func() {
 		if span != nil {
@@ -391,7 +423,7 @@ func (c *client) MultiInsert(ctx context.Context, in *payload.Insert_MultiReques
 	_, err = c.c.RoundRobin(ctx, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
-	) (interface{}, error) {
+	) (any, error) {
 		res, err = vald.NewValdClient(conn).MultiInsert(ctx, in, append(copts, opts...)...)
 		return nil, err
 	})
@@ -401,7 +433,9 @@ func (c *client) MultiInsert(ctx context.Context, in *payload.Insert_MultiReques
 	return res, nil
 }
 
-func (c *client) Update(ctx context.Context, in *payload.Update_Request, opts ...grpc.CallOption) (res *payload.Object_Location, err error) {
+func (c *client) Update(
+	ctx context.Context, in *payload.Update_Request, opts ...grpc.CallOption,
+) (res *payload.Object_Location, err error) {
 	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+vald.UpdateRPCName), apiName+"/"+vald.UpdateRPCName)
 	defer func() {
 		if span != nil {
@@ -411,7 +445,7 @@ func (c *client) Update(ctx context.Context, in *payload.Update_Request, opts ..
 	_, err = c.c.RoundRobin(ctx, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
-	) (interface{}, error) {
+	) (any, error) {
 		res, err = vald.NewValdClient(conn).Update(ctx, in, append(copts, opts...)...)
 		return nil, err
 	})
@@ -421,7 +455,9 @@ func (c *client) Update(ctx context.Context, in *payload.Update_Request, opts ..
 	return res, nil
 }
 
-func (c *client) StreamUpdate(ctx context.Context, opts ...grpc.CallOption) (res vald.Update_StreamUpdateClient, err error) {
+func (c *client) StreamUpdate(
+	ctx context.Context, opts ...grpc.CallOption,
+) (res vald.Update_StreamUpdateClient, err error) {
 	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+vald.StreamUpdateRPCName), apiName+"/"+vald.StreamUpdateRPCName)
 	defer func() {
 		if span != nil {
@@ -431,7 +467,7 @@ func (c *client) StreamUpdate(ctx context.Context, opts ...grpc.CallOption) (res
 	_, err = c.c.RoundRobin(ctx, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
-	) (interface{}, error) {
+	) (any, error) {
 		res, err = vald.NewValdClient(conn).StreamUpdate(ctx, append(copts, opts...)...)
 		return nil, err
 	})
@@ -441,7 +477,9 @@ func (c *client) StreamUpdate(ctx context.Context, opts ...grpc.CallOption) (res
 	return res, nil
 }
 
-func (c *client) MultiUpdate(ctx context.Context, in *payload.Update_MultiRequest, opts ...grpc.CallOption) (res *payload.Object_Locations, err error) {
+func (c *client) MultiUpdate(
+	ctx context.Context, in *payload.Update_MultiRequest, opts ...grpc.CallOption,
+) (res *payload.Object_Locations, err error) {
 	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+vald.MultiUpdateRPCName), apiName+"/"+vald.MultiUpdateRPCName)
 	defer func() {
 		if span != nil {
@@ -451,7 +489,7 @@ func (c *client) MultiUpdate(ctx context.Context, in *payload.Update_MultiReques
 	_, err = c.c.RoundRobin(ctx, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
-	) (interface{}, error) {
+	) (any, error) {
 		res, err = vald.NewValdClient(conn).MultiUpdate(ctx, in, append(copts, opts...)...)
 		return nil, err
 	})
@@ -461,7 +499,9 @@ func (c *client) MultiUpdate(ctx context.Context, in *payload.Update_MultiReques
 	return res, nil
 }
 
-func (c *client) Upsert(ctx context.Context, in *payload.Upsert_Request, opts ...grpc.CallOption) (res *payload.Object_Location, err error) {
+func (c *client) Upsert(
+	ctx context.Context, in *payload.Upsert_Request, opts ...grpc.CallOption,
+) (res *payload.Object_Location, err error) {
 	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+vald.UpsertRPCName), apiName+"/"+vald.UpsertRPCName)
 	defer func() {
 		if span != nil {
@@ -471,7 +511,7 @@ func (c *client) Upsert(ctx context.Context, in *payload.Upsert_Request, opts ..
 	_, err = c.c.RoundRobin(ctx, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
-	) (interface{}, error) {
+	) (any, error) {
 		res, err = vald.NewValdClient(conn).Upsert(ctx, in, append(copts, opts...)...)
 		return nil, err
 	})
@@ -481,7 +521,9 @@ func (c *client) Upsert(ctx context.Context, in *payload.Upsert_Request, opts ..
 	return res, nil
 }
 
-func (c *client) StreamUpsert(ctx context.Context, opts ...grpc.CallOption) (res vald.Upsert_StreamUpsertClient, err error) {
+func (c *client) StreamUpsert(
+	ctx context.Context, opts ...grpc.CallOption,
+) (res vald.Upsert_StreamUpsertClient, err error) {
 	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+vald.StreamUpsertRPCName), apiName+"/"+vald.StreamUpsertRPCName)
 	defer func() {
 		if span != nil {
@@ -491,7 +533,7 @@ func (c *client) StreamUpsert(ctx context.Context, opts ...grpc.CallOption) (res
 	_, err = c.c.RoundRobin(ctx, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
-	) (interface{}, error) {
+	) (any, error) {
 		res, err = vald.NewValdClient(conn).StreamUpsert(ctx, append(copts, opts...)...)
 		return nil, err
 	})
@@ -501,7 +543,9 @@ func (c *client) StreamUpsert(ctx context.Context, opts ...grpc.CallOption) (res
 	return res, nil
 }
 
-func (c *client) MultiUpsert(ctx context.Context, in *payload.Upsert_MultiRequest, opts ...grpc.CallOption) (res *payload.Object_Locations, err error) {
+func (c *client) MultiUpsert(
+	ctx context.Context, in *payload.Upsert_MultiRequest, opts ...grpc.CallOption,
+) (res *payload.Object_Locations, err error) {
 	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+vald.MultiUpsertRPCName), apiName+"/"+vald.MultiUpsertRPCName)
 	defer func() {
 		if span != nil {
@@ -511,7 +555,7 @@ func (c *client) MultiUpsert(ctx context.Context, in *payload.Upsert_MultiReques
 	_, err = c.c.RoundRobin(ctx, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
-	) (interface{}, error) {
+	) (any, error) {
 		res, err = vald.NewValdClient(conn).MultiUpsert(ctx, in, append(copts, opts...)...)
 		return nil, err
 	})
@@ -521,7 +565,9 @@ func (c *client) MultiUpsert(ctx context.Context, in *payload.Upsert_MultiReques
 	return res, nil
 }
 
-func (c *client) Remove(ctx context.Context, in *payload.Remove_Request, opts ...grpc.CallOption) (res *payload.Object_Location, err error) {
+func (c *client) Remove(
+	ctx context.Context, in *payload.Remove_Request, opts ...grpc.CallOption,
+) (res *payload.Object_Location, err error) {
 	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+vald.RemoveRPCName), apiName+"/"+vald.RemoveRPCName)
 	defer func() {
 		if span != nil {
@@ -531,7 +577,7 @@ func (c *client) Remove(ctx context.Context, in *payload.Remove_Request, opts ..
 	_, err = c.c.RoundRobin(ctx, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
-	) (interface{}, error) {
+	) (any, error) {
 		res, err = vald.NewValdClient(conn).Remove(ctx, in, append(copts, opts...)...)
 		return nil, err
 	})
@@ -541,7 +587,9 @@ func (c *client) Remove(ctx context.Context, in *payload.Remove_Request, opts ..
 	return res, nil
 }
 
-func (c *client) StreamRemove(ctx context.Context, opts ...grpc.CallOption) (res vald.Remove_StreamRemoveClient, err error) {
+func (c *client) StreamRemove(
+	ctx context.Context, opts ...grpc.CallOption,
+) (res vald.Remove_StreamRemoveClient, err error) {
 	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+vald.StreamRemoveRPCName), apiName+"/"+vald.StreamRemoveRPCName)
 	defer func() {
 		if span != nil {
@@ -551,7 +599,7 @@ func (c *client) StreamRemove(ctx context.Context, opts ...grpc.CallOption) (res
 	_, err = c.c.RoundRobin(ctx, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
-	) (interface{}, error) {
+	) (any, error) {
 		res, err = vald.NewValdClient(conn).StreamRemove(ctx, append(copts, opts...)...)
 		return nil, err
 	})
@@ -561,7 +609,9 @@ func (c *client) StreamRemove(ctx context.Context, opts ...grpc.CallOption) (res
 	return res, nil
 }
 
-func (c *client) MultiRemove(ctx context.Context, in *payload.Remove_MultiRequest, opts ...grpc.CallOption) (res *payload.Object_Locations, err error) {
+func (c *client) MultiRemove(
+	ctx context.Context, in *payload.Remove_MultiRequest, opts ...grpc.CallOption,
+) (res *payload.Object_Locations, err error) {
 	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+vald.MultiRemoveRPCName), apiName+"/"+vald.MultiRemoveRPCName)
 	defer func() {
 		if span != nil {
@@ -571,7 +621,7 @@ func (c *client) MultiRemove(ctx context.Context, in *payload.Remove_MultiReques
 	_, err = c.c.RoundRobin(ctx, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
-	) (interface{}, error) {
+	) (any, error) {
 		res, err = vald.NewValdClient(conn).MultiRemove(ctx, in, append(copts, opts...)...)
 		return nil, err
 	})
@@ -581,7 +631,9 @@ func (c *client) MultiRemove(ctx context.Context, in *payload.Remove_MultiReques
 	return res, nil
 }
 
-func (c *client) Flush(ctx context.Context, in *payload.Flush_Request, opts ...grpc.CallOption) (res *payload.Info_Index_Count, err error) {
+func (c *client) Flush(
+	ctx context.Context, in *payload.Flush_Request, opts ...grpc.CallOption,
+) (res *payload.Info_Index_Count, err error) {
 	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+vald.FlushRPCName), apiName+"/"+vald.FlushRPCName)
 	defer func() {
 		if span != nil {
@@ -591,7 +643,7 @@ func (c *client) Flush(ctx context.Context, in *payload.Flush_Request, opts ...g
 	_, err = c.c.RoundRobin(ctx, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
-	) (interface{}, error) {
+	) (any, error) {
 		res, err = vald.NewValdClient(conn).Flush(ctx, in, append(copts, opts...)...)
 		return nil, err
 	})
@@ -601,7 +653,9 @@ func (c *client) Flush(ctx context.Context, in *payload.Flush_Request, opts ...g
 	return res, nil
 }
 
-func (c *client) RemoveByTimestamp(ctx context.Context, in *payload.Remove_TimestampRequest, opts ...grpc.CallOption) (res *payload.Object_Locations, err error) {
+func (c *client) RemoveByTimestamp(
+	ctx context.Context, in *payload.Remove_TimestampRequest, opts ...grpc.CallOption,
+) (res *payload.Object_Locations, err error) {
 	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+vald.RemoveByTimestampRPCName), apiName+"/"+vald.RemoveByTimestampRPCName)
 	defer func() {
 		if span != nil {
@@ -611,7 +665,7 @@ func (c *client) RemoveByTimestamp(ctx context.Context, in *payload.Remove_Times
 	_, err = c.c.RoundRobin(ctx, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
-	) (interface{}, error) {
+	) (any, error) {
 		res, err = vald.NewValdClient(conn).RemoveByTimestamp(ctx, in, append(copts, opts...)...)
 		return nil, err
 	})
@@ -621,7 +675,9 @@ func (c *client) RemoveByTimestamp(ctx context.Context, in *payload.Remove_Times
 	return res, nil
 }
 
-func (c *client) GetObject(ctx context.Context, in *payload.Object_VectorRequest, opts ...grpc.CallOption) (res *payload.Object_Vector, err error) {
+func (c *client) GetObject(
+	ctx context.Context, in *payload.Object_VectorRequest, opts ...grpc.CallOption,
+) (res *payload.Object_Vector, err error) {
 	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+vald.GetObjectRPCName), apiName+"/"+vald.GetObjectRPCName)
 	defer func() {
 		if span != nil {
@@ -631,7 +687,7 @@ func (c *client) GetObject(ctx context.Context, in *payload.Object_VectorRequest
 	_, err = c.c.RoundRobin(ctx, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
-	) (interface{}, error) {
+	) (any, error) {
 		res, err = vald.NewValdClient(conn).GetObject(ctx, in, append(copts, opts...)...)
 		return nil, err
 	})
@@ -641,7 +697,9 @@ func (c *client) GetObject(ctx context.Context, in *payload.Object_VectorRequest
 	return res, nil
 }
 
-func (c *client) StreamGetObject(ctx context.Context, opts ...grpc.CallOption) (res vald.Object_StreamGetObjectClient, err error) {
+func (c *client) StreamGetObject(
+	ctx context.Context, opts ...grpc.CallOption,
+) (res vald.Object_StreamGetObjectClient, err error) {
 	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+vald.StreamGetObjectRPCName), apiName+"/"+vald.StreamGetObjectRPCName)
 	defer func() {
 		if span != nil {
@@ -651,7 +709,7 @@ func (c *client) StreamGetObject(ctx context.Context, opts ...grpc.CallOption) (
 	_, err = c.c.RoundRobin(ctx, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
-	) (interface{}, error) {
+	) (any, error) {
 		res, err = vald.NewValdClient(conn).StreamGetObject(ctx, append(copts, opts...)...)
 		return nil, err
 	})
@@ -661,7 +719,9 @@ func (c *client) StreamGetObject(ctx context.Context, opts ...grpc.CallOption) (
 	return res, nil
 }
 
-func (c *client) StreamListObject(ctx context.Context, in *payload.Object_List_Request, opts ...grpc.CallOption) (res vald.Object_StreamListObjectClient, err error) {
+func (c *client) StreamListObject(
+	ctx context.Context, in *payload.Object_List_Request, opts ...grpc.CallOption,
+) (res vald.Object_StreamListObjectClient, err error) {
 	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+vald.StreamListObjectRPCName), apiName+"/"+vald.StreamListObjectRPCName)
 	defer func() {
 		if span != nil {
@@ -671,8 +731,74 @@ func (c *client) StreamListObject(ctx context.Context, in *payload.Object_List_R
 	_, err = c.c.RoundRobin(ctx, func(ctx context.Context,
 		conn *grpc.ClientConn,
 		copts ...grpc.CallOption,
-	) (interface{}, error) {
+	) (any, error) {
 		return vald.NewValdClient(conn).StreamListObject(ctx, in, append(copts, opts...)...)
+	})
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
+}
+
+func (c *client) IndexInfo(
+	ctx context.Context, in *payload.Empty, opts ...grpc.CallOption,
+) (res *payload.Info_Index_Count, err error) {
+	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+vald.IndexInfoRPCName), apiName+"/"+vald.IndexInfoRPCName)
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	_, err = c.c.RoundRobin(ctx, func(ctx context.Context,
+		conn *grpc.ClientConn,
+		copts ...grpc.CallOption,
+	) (any, error) {
+		res, err = vald.NewValdClient(conn).IndexInfo(ctx, in, append(copts, opts...)...)
+		return nil, err
+	})
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
+}
+
+func (c *client) IndexDetail(
+	ctx context.Context, in *payload.Empty, opts ...grpc.CallOption,
+) (res *payload.Info_Index_Detail, err error) {
+	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+vald.IndexDetailRPCName), apiName+"/"+vald.IndexDetailRPCName)
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	_, err = c.c.RoundRobin(ctx, func(ctx context.Context,
+		conn *grpc.ClientConn,
+		copts ...grpc.CallOption,
+	) (any, error) {
+		res, err = vald.NewValdClient(conn).IndexDetail(ctx, in, append(copts, opts...)...)
+		return nil, err
+	})
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
+}
+
+func (c *client) GetTimestamp(
+	ctx context.Context, in *payload.Object_GetTimestampRequest, opts ...grpc.CallOption,
+) (res *payload.Object_Timestamp, err error) {
+	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+vald.GetTimestampRPCName), apiName+"/"+vald.GetTimestampRPCName)
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	_, err = c.c.RoundRobin(ctx, func(ctx context.Context,
+		conn *grpc.ClientConn,
+		copts ...grpc.CallOption,
+	) (any, error) {
+		res, err = vald.NewValdClient(conn).GetTimestamp(ctx, in, append(copts, opts...)...)
+		return nil, err
 	})
 	if err != nil {
 		return nil, err
@@ -692,7 +818,9 @@ func (*singleClient) GRPCClient() grpc.Client {
 	return nil
 }
 
-func (c *singleClient) Exists(ctx context.Context, in *payload.Object_ID, opts ...grpc.CallOption) (oid *payload.Object_ID, err error) {
+func (c *singleClient) Exists(
+	ctx context.Context, in *payload.Object_ID, opts ...grpc.CallOption,
+) (oid *payload.Object_ID, err error) {
 	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/singleClient/"+vald.ExistsRPCName), apiName+"/"+vald.ExistsRPCName)
 	defer func() {
 		if span != nil {
@@ -702,7 +830,9 @@ func (c *singleClient) Exists(ctx context.Context, in *payload.Object_ID, opts .
 	return c.vc.Exists(ctx, in, opts...)
 }
 
-func (c *singleClient) Search(ctx context.Context, in *payload.Search_Request, opts ...grpc.CallOption) (res *payload.Search_Response, err error) {
+func (c *singleClient) Search(
+	ctx context.Context, in *payload.Search_Request, opts ...grpc.CallOption,
+) (res *payload.Search_Response, err error) {
 	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/singleClient/"+vald.SearchRPCName), apiName+"/"+vald.SearchRPCName)
 	defer func() {
 		if span != nil {
@@ -712,7 +842,9 @@ func (c *singleClient) Search(ctx context.Context, in *payload.Search_Request, o
 	return c.vc.Search(ctx, in, opts...)
 }
 
-func (c *singleClient) SearchByID(ctx context.Context, in *payload.Search_IDRequest, opts ...grpc.CallOption) (res *payload.Search_Response, err error) {
+func (c *singleClient) SearchByID(
+	ctx context.Context, in *payload.Search_IDRequest, opts ...grpc.CallOption,
+) (res *payload.Search_Response, err error) {
 	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/singleClient/"+vald.SearchByIDRPCName), apiName+"/"+vald.SearchByIDRPCName)
 	defer func() {
 		if span != nil {
@@ -722,7 +854,9 @@ func (c *singleClient) SearchByID(ctx context.Context, in *payload.Search_IDRequ
 	return c.vc.SearchByID(ctx, in, opts...)
 }
 
-func (c *singleClient) StreamSearch(ctx context.Context, opts ...grpc.CallOption) (res vald.Search_StreamSearchClient, err error) {
+func (c *singleClient) StreamSearch(
+	ctx context.Context, opts ...grpc.CallOption,
+) (res vald.Search_StreamSearchClient, err error) {
 	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/singleClient/"+vald.StreamSearchRPCName), apiName+"/"+vald.StreamSearchRPCName)
 	defer func() {
 		if span != nil {
@@ -732,7 +866,9 @@ func (c *singleClient) StreamSearch(ctx context.Context, opts ...grpc.CallOption
 	return c.vc.StreamSearch(ctx, opts...)
 }
 
-func (c *singleClient) StreamSearchByID(ctx context.Context, opts ...grpc.CallOption) (res vald.Search_StreamSearchByIDClient, err error) {
+func (c *singleClient) StreamSearchByID(
+	ctx context.Context, opts ...grpc.CallOption,
+) (res vald.Search_StreamSearchByIDClient, err error) {
 	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/singleClient/"+vald.StreamSearchByIDRPCName), apiName+"/"+vald.StreamSearchByIDRPCName)
 	defer func() {
 		if span != nil {
@@ -742,7 +878,9 @@ func (c *singleClient) StreamSearchByID(ctx context.Context, opts ...grpc.CallOp
 	return c.vc.StreamSearchByID(ctx, opts...)
 }
 
-func (c *singleClient) MultiSearch(ctx context.Context, in *payload.Search_MultiRequest, opts ...grpc.CallOption) (res *payload.Search_Responses, err error) {
+func (c *singleClient) MultiSearch(
+	ctx context.Context, in *payload.Search_MultiRequest, opts ...grpc.CallOption,
+) (res *payload.Search_Responses, err error) {
 	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/singleClient/"+vald.MultiSearchRPCName), apiName+"/"+vald.MultiSearchRPCName)
 	defer func() {
 		if span != nil {
@@ -752,7 +890,9 @@ func (c *singleClient) MultiSearch(ctx context.Context, in *payload.Search_Multi
 	return c.vc.MultiSearch(ctx, in, opts...)
 }
 
-func (c *singleClient) MultiSearchByID(ctx context.Context, in *payload.Search_MultiIDRequest, opts ...grpc.CallOption) (res *payload.Search_Responses, err error) {
+func (c *singleClient) MultiSearchByID(
+	ctx context.Context, in *payload.Search_MultiIDRequest, opts ...grpc.CallOption,
+) (res *payload.Search_Responses, err error) {
 	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/singleClient/"+vald.MultiSearchByIDRPCName), apiName+"/"+vald.MultiSearchByIDRPCName)
 	defer func() {
 		if span != nil {
@@ -762,7 +902,9 @@ func (c *singleClient) MultiSearchByID(ctx context.Context, in *payload.Search_M
 	return c.vc.MultiSearchByID(ctx, in, opts...)
 }
 
-func (c *singleClient) LinearSearch(ctx context.Context, in *payload.Search_Request, opts ...grpc.CallOption) (res *payload.Search_Response, err error) {
+func (c *singleClient) LinearSearch(
+	ctx context.Context, in *payload.Search_Request, opts ...grpc.CallOption,
+) (res *payload.Search_Response, err error) {
 	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/singleClient/"+vald.LinearSearchRPCName), apiName+"/"+vald.LinearSearchRPCName)
 	defer func() {
 		if span != nil {
@@ -772,7 +914,9 @@ func (c *singleClient) LinearSearch(ctx context.Context, in *payload.Search_Requ
 	return c.vc.LinearSearch(ctx, in, opts...)
 }
 
-func (c *singleClient) LinearSearchByID(ctx context.Context, in *payload.Search_IDRequest, opts ...grpc.CallOption) (res *payload.Search_Response, err error) {
+func (c *singleClient) LinearSearchByID(
+	ctx context.Context, in *payload.Search_IDRequest, opts ...grpc.CallOption,
+) (res *payload.Search_Response, err error) {
 	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/singleClient/"+vald.LinearSearchByIDRPCName), apiName+"/"+vald.LinearSearchByIDRPCName)
 	defer func() {
 		if span != nil {
@@ -782,7 +926,9 @@ func (c *singleClient) LinearSearchByID(ctx context.Context, in *payload.Search_
 	return c.vc.LinearSearchByID(ctx, in, opts...)
 }
 
-func (c *singleClient) StreamLinearSearch(ctx context.Context, opts ...grpc.CallOption) (res vald.Search_StreamLinearSearchClient, err error) {
+func (c *singleClient) StreamLinearSearch(
+	ctx context.Context, opts ...grpc.CallOption,
+) (res vald.Search_StreamLinearSearchClient, err error) {
 	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/singleClient/"+vald.StreamLinearSearchRPCName), apiName+"/"+vald.StreamLinearSearchRPCName)
 	defer func() {
 		if span != nil {
@@ -792,7 +938,9 @@ func (c *singleClient) StreamLinearSearch(ctx context.Context, opts ...grpc.Call
 	return c.vc.StreamLinearSearch(ctx, opts...)
 }
 
-func (c *singleClient) StreamLinearSearchByID(ctx context.Context, opts ...grpc.CallOption) (res vald.Search_StreamLinearSearchByIDClient, err error) {
+func (c *singleClient) StreamLinearSearchByID(
+	ctx context.Context, opts ...grpc.CallOption,
+) (res vald.Search_StreamLinearSearchByIDClient, err error) {
 	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/singleClient/"+vald.StreamLinearSearchByIDRPCName), apiName+"/"+vald.StreamLinearSearchByIDRPCName)
 	defer func() {
 		if span != nil {
@@ -802,7 +950,9 @@ func (c *singleClient) StreamLinearSearchByID(ctx context.Context, opts ...grpc.
 	return c.vc.StreamLinearSearchByID(ctx, opts...)
 }
 
-func (c *singleClient) MultiLinearSearch(ctx context.Context, in *payload.Search_MultiRequest, opts ...grpc.CallOption) (res *payload.Search_Responses, err error) {
+func (c *singleClient) MultiLinearSearch(
+	ctx context.Context, in *payload.Search_MultiRequest, opts ...grpc.CallOption,
+) (res *payload.Search_Responses, err error) {
 	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/singleClient/"+vald.MultiLinearSearchRPCName), apiName+"/"+vald.MultiLinearSearchRPCName)
 	defer func() {
 		if span != nil {
@@ -812,7 +962,9 @@ func (c *singleClient) MultiLinearSearch(ctx context.Context, in *payload.Search
 	return c.vc.MultiLinearSearch(ctx, in, opts...)
 }
 
-func (c *singleClient) MultiLinearSearchByID(ctx context.Context, in *payload.Search_MultiIDRequest, opts ...grpc.CallOption) (res *payload.Search_Responses, err error) {
+func (c *singleClient) MultiLinearSearchByID(
+	ctx context.Context, in *payload.Search_MultiIDRequest, opts ...grpc.CallOption,
+) (res *payload.Search_Responses, err error) {
 	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/singleClient/"+vald.MultiLinearSearchByIDRPCName), apiName+"/"+vald.MultiLinearSearchByIDRPCName)
 	defer func() {
 		if span != nil {
@@ -822,7 +974,9 @@ func (c *singleClient) MultiLinearSearchByID(ctx context.Context, in *payload.Se
 	return c.vc.MultiLinearSearchByID(ctx, in, opts...)
 }
 
-func (c *singleClient) Insert(ctx context.Context, in *payload.Insert_Request, opts ...grpc.CallOption) (res *payload.Object_Location, err error) {
+func (c *singleClient) Insert(
+	ctx context.Context, in *payload.Insert_Request, opts ...grpc.CallOption,
+) (res *payload.Object_Location, err error) {
 	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/singleClient/"+vald.InsertRPCName), apiName+"/"+vald.InsertRPCName)
 	defer func() {
 		if span != nil {
@@ -832,7 +986,9 @@ func (c *singleClient) Insert(ctx context.Context, in *payload.Insert_Request, o
 	return c.vc.Insert(ctx, in, opts...)
 }
 
-func (c *singleClient) StreamInsert(ctx context.Context, opts ...grpc.CallOption) (res vald.Insert_StreamInsertClient, err error) {
+func (c *singleClient) StreamInsert(
+	ctx context.Context, opts ...grpc.CallOption,
+) (res vald.Insert_StreamInsertClient, err error) {
 	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/singleClient/"+vald.StreamInsertRPCName), apiName+"/"+vald.StreamInsertRPCName)
 	defer func() {
 		if span != nil {
@@ -842,7 +998,9 @@ func (c *singleClient) StreamInsert(ctx context.Context, opts ...grpc.CallOption
 	return c.vc.StreamInsert(ctx, opts...)
 }
 
-func (c *singleClient) MultiInsert(ctx context.Context, in *payload.Insert_MultiRequest, opts ...grpc.CallOption) (res *payload.Object_Locations, err error) {
+func (c *singleClient) MultiInsert(
+	ctx context.Context, in *payload.Insert_MultiRequest, opts ...grpc.CallOption,
+) (res *payload.Object_Locations, err error) {
 	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/singleClient/"+vald.MultiInsertRPCName), apiName+"/"+vald.MultiInsertRPCName)
 	defer func() {
 		if span != nil {
@@ -852,7 +1010,9 @@ func (c *singleClient) MultiInsert(ctx context.Context, in *payload.Insert_Multi
 	return c.vc.MultiInsert(ctx, in, opts...)
 }
 
-func (c *singleClient) Update(ctx context.Context, in *payload.Update_Request, opts ...grpc.CallOption) (res *payload.Object_Location, err error) {
+func (c *singleClient) Update(
+	ctx context.Context, in *payload.Update_Request, opts ...grpc.CallOption,
+) (res *payload.Object_Location, err error) {
 	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/singleClient/"+vald.UpdateRPCName), apiName+"/"+vald.UpdateRPCName)
 	defer func() {
 		if span != nil {
@@ -862,7 +1022,9 @@ func (c *singleClient) Update(ctx context.Context, in *payload.Update_Request, o
 	return c.vc.Update(ctx, in, opts...)
 }
 
-func (c *singleClient) StreamUpdate(ctx context.Context, opts ...grpc.CallOption) (res vald.Update_StreamUpdateClient, err error) {
+func (c *singleClient) StreamUpdate(
+	ctx context.Context, opts ...grpc.CallOption,
+) (res vald.Update_StreamUpdateClient, err error) {
 	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/singleClient/"+vald.StreamUpdateRPCName), apiName+"/"+vald.StreamUpdateRPCName)
 	defer func() {
 		if span != nil {
@@ -872,7 +1034,9 @@ func (c *singleClient) StreamUpdate(ctx context.Context, opts ...grpc.CallOption
 	return c.vc.StreamUpdate(ctx, opts...)
 }
 
-func (c *singleClient) MultiUpdate(ctx context.Context, in *payload.Update_MultiRequest, opts ...grpc.CallOption) (res *payload.Object_Locations, err error) {
+func (c *singleClient) MultiUpdate(
+	ctx context.Context, in *payload.Update_MultiRequest, opts ...grpc.CallOption,
+) (res *payload.Object_Locations, err error) {
 	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/singleClient/"+vald.MultiUpdateRPCName), apiName+"/"+vald.MultiUpdateRPCName)
 	defer func() {
 		if span != nil {
@@ -882,7 +1046,9 @@ func (c *singleClient) MultiUpdate(ctx context.Context, in *payload.Update_Multi
 	return c.vc.MultiUpdate(ctx, in, opts...)
 }
 
-func (c *singleClient) Upsert(ctx context.Context, in *payload.Upsert_Request, opts ...grpc.CallOption) (res *payload.Object_Location, err error) {
+func (c *singleClient) Upsert(
+	ctx context.Context, in *payload.Upsert_Request, opts ...grpc.CallOption,
+) (res *payload.Object_Location, err error) {
 	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/singleClient/"+vald.UpsertRPCName), apiName+"/"+vald.UpsertRPCName)
 	defer func() {
 		if span != nil {
@@ -892,7 +1058,9 @@ func (c *singleClient) Upsert(ctx context.Context, in *payload.Upsert_Request, o
 	return c.vc.Upsert(ctx, in, opts...)
 }
 
-func (c *singleClient) StreamUpsert(ctx context.Context, opts ...grpc.CallOption) (res vald.Upsert_StreamUpsertClient, err error) {
+func (c *singleClient) StreamUpsert(
+	ctx context.Context, opts ...grpc.CallOption,
+) (res vald.Upsert_StreamUpsertClient, err error) {
 	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/singleClient/"+vald.StreamUpsertRPCName), apiName+"/"+vald.StreamUpsertRPCName)
 	defer func() {
 		if span != nil {
@@ -902,7 +1070,9 @@ func (c *singleClient) StreamUpsert(ctx context.Context, opts ...grpc.CallOption
 	return c.vc.StreamUpsert(ctx, opts...)
 }
 
-func (c *singleClient) MultiUpsert(ctx context.Context, in *payload.Upsert_MultiRequest, opts ...grpc.CallOption) (res *payload.Object_Locations, err error) {
+func (c *singleClient) MultiUpsert(
+	ctx context.Context, in *payload.Upsert_MultiRequest, opts ...grpc.CallOption,
+) (res *payload.Object_Locations, err error) {
 	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/singleClient/"+vald.MultiUpsertRPCName), apiName+"/"+vald.MultiUpsertRPCName)
 	defer func() {
 		if span != nil {
@@ -912,7 +1082,9 @@ func (c *singleClient) MultiUpsert(ctx context.Context, in *payload.Upsert_Multi
 	return c.vc.MultiUpsert(ctx, in, opts...)
 }
 
-func (c *singleClient) Remove(ctx context.Context, in *payload.Remove_Request, opts ...grpc.CallOption) (res *payload.Object_Location, err error) {
+func (c *singleClient) Remove(
+	ctx context.Context, in *payload.Remove_Request, opts ...grpc.CallOption,
+) (res *payload.Object_Location, err error) {
 	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/singleClient/"+vald.RemoveRPCName), apiName+"/"+vald.RemoveRPCName)
 	defer func() {
 		if span != nil {
@@ -922,7 +1094,9 @@ func (c *singleClient) Remove(ctx context.Context, in *payload.Remove_Request, o
 	return c.vc.Remove(ctx, in, opts...)
 }
 
-func (c *singleClient) StreamRemove(ctx context.Context, opts ...grpc.CallOption) (res vald.Remove_StreamRemoveClient, err error) {
+func (c *singleClient) StreamRemove(
+	ctx context.Context, opts ...grpc.CallOption,
+) (res vald.Remove_StreamRemoveClient, err error) {
 	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/singleClient/"+vald.StreamRemoveRPCName), apiName+"/"+vald.StreamRemoveRPCName)
 	defer func() {
 		if span != nil {
@@ -932,7 +1106,9 @@ func (c *singleClient) StreamRemove(ctx context.Context, opts ...grpc.CallOption
 	return c.vc.StreamRemove(ctx, opts...)
 }
 
-func (c *singleClient) MultiRemove(ctx context.Context, in *payload.Remove_MultiRequest, opts ...grpc.CallOption) (res *payload.Object_Locations, err error) {
+func (c *singleClient) MultiRemove(
+	ctx context.Context, in *payload.Remove_MultiRequest, opts ...grpc.CallOption,
+) (res *payload.Object_Locations, err error) {
 	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/singleClient/"+vald.MultiRemoveRPCName), apiName+"/"+vald.MultiRemoveRPCName)
 	defer func() {
 		if span != nil {
@@ -942,7 +1118,9 @@ func (c *singleClient) MultiRemove(ctx context.Context, in *payload.Remove_Multi
 	return c.vc.MultiRemove(ctx, in, opts...)
 }
 
-func (c *singleClient) Flush(ctx context.Context, in *payload.Flush_Request, opts ...grpc.CallOption) (res *payload.Info_Index_Count, err error) {
+func (c *singleClient) Flush(
+	ctx context.Context, in *payload.Flush_Request, opts ...grpc.CallOption,
+) (res *payload.Info_Index_Count, err error) {
 	ctx, span := trace.StartSpan(ctx, apiName+"/singleClient.Flush")
 	defer func() {
 		if span != nil {
@@ -952,7 +1130,9 @@ func (c *singleClient) Flush(ctx context.Context, in *payload.Flush_Request, opt
 	return c.vc.Flush(ctx, in, opts...)
 }
 
-func (c *singleClient) RemoveByTimestamp(ctx context.Context, in *payload.Remove_TimestampRequest, opts ...grpc.CallOption) (res *payload.Object_Locations, err error) {
+func (c *singleClient) RemoveByTimestamp(
+	ctx context.Context, in *payload.Remove_TimestampRequest, opts ...grpc.CallOption,
+) (res *payload.Object_Locations, err error) {
 	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/singleClient/"+vald.RemoveByTimestampRPCName), apiName+"/"+vald.RemoveByTimestampRPCName)
 	defer func() {
 		if span != nil {
@@ -962,7 +1142,9 @@ func (c *singleClient) RemoveByTimestamp(ctx context.Context, in *payload.Remove
 	return c.vc.RemoveByTimestamp(ctx, in, opts...)
 }
 
-func (c *singleClient) GetObject(ctx context.Context, in *payload.Object_VectorRequest, opts ...grpc.CallOption) (res *payload.Object_Vector, err error) {
+func (c *singleClient) GetObject(
+	ctx context.Context, in *payload.Object_VectorRequest, opts ...grpc.CallOption,
+) (res *payload.Object_Vector, err error) {
 	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/singleClient/"+vald.GetObjectRPCName), apiName+"/"+vald.GetObjectRPCName)
 	defer func() {
 		if span != nil {
@@ -972,7 +1154,9 @@ func (c *singleClient) GetObject(ctx context.Context, in *payload.Object_VectorR
 	return c.vc.GetObject(ctx, in, opts...)
 }
 
-func (c *singleClient) StreamGetObject(ctx context.Context, opts ...grpc.CallOption) (res vald.Object_StreamGetObjectClient, err error) {
+func (c *singleClient) StreamGetObject(
+	ctx context.Context, opts ...grpc.CallOption,
+) (res vald.Object_StreamGetObjectClient, err error) {
 	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/singleClient/"+vald.StreamGetObjectRPCName), apiName+"/"+vald.StreamGetObjectRPCName)
 	defer func() {
 		if span != nil {
@@ -982,7 +1166,9 @@ func (c *singleClient) StreamGetObject(ctx context.Context, opts ...grpc.CallOpt
 	return c.vc.StreamGetObject(ctx, opts...)
 }
 
-func (c *singleClient) StreamListObject(ctx context.Context, in *payload.Object_List_Request, opts ...grpc.CallOption) (res vald.Object_StreamListObjectClient, err error) {
+func (c *singleClient) StreamListObject(
+	ctx context.Context, in *payload.Object_List_Request, opts ...grpc.CallOption,
+) (res vald.Object_StreamListObjectClient, err error) {
 	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/singleClient/"+vald.StreamListObjectRPCName), apiName+"/"+vald.StreamListObjectRPCName)
 	defer func() {
 		if span != nil {
@@ -990,4 +1176,40 @@ func (c *singleClient) StreamListObject(ctx context.Context, in *payload.Object_
 		}
 	}()
 	return c.vc.StreamListObject(ctx, in, opts...)
+}
+
+func (c *singleClient) IndexInfo(
+	ctx context.Context, in *payload.Empty, opts ...grpc.CallOption,
+) (res *payload.Info_Index_Count, err error) {
+	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/singleClient/"+vald.IndexInfoRPCName), apiName+"/"+vald.IndexInfoRPCName)
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	return c.vc.IndexInfo(ctx, in, opts...)
+}
+
+func (c *singleClient) IndexDetail(
+	ctx context.Context, in *payload.Empty, opts ...grpc.CallOption,
+) (res *payload.Info_Index_Detail, err error) {
+	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+vald.IndexDetailRPCName), apiName+"/"+vald.IndexDetailRPCName)
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	return c.vc.IndexDetail(ctx, in, opts...)
+}
+
+func (c *singleClient) GetTimestamp(
+	ctx context.Context, in *payload.Object_GetTimestampRequest, opts ...grpc.CallOption,
+) (res *payload.Object_Timestamp, err error) {
+	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+vald.GetTimestampRPCName), apiName+"/"+vald.GetTimestampRPCName)
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	return c.vc.GetTimestamp(ctx, in, opts...)
 }

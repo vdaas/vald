@@ -25,18 +25,18 @@ ARG TARGETARCH
 ARG TARGETOS
 ARG GO_VERSION
 
-ENV GO111MODULE on
-ENV DEBIAN_FRONTEND noninteractive
-ENV INITRD No
-ENV LANG en_US.UTF-8
-ENV GOROOT /opt/go
-ENV GOPATH /go
-ENV PATH ${PATH}:${GOROOT}/bin:${GOPATH}/bin
-ENV ORG vdaas
-ENV REPO vald
-ENV PKG agent/core/ngt
-ENV PKG_INTERNAL agent/internal
-ENV APP_NAME ngt
+ENV GO111MODULE=on
+ENV DEBIAN_FRONTEND=noninteractive
+ENV INITRD=No
+ENV LANG=en_US.UTF-8
+ENV GOROOT=/opt/go
+ENV GOPATH=/go
+ENV PATH=${PATH}:${GOROOT}/bin:${GOPATH}/bin
+ENV ORG=vdaas
+ENV REPO=vald
+ENV PKG=agent/core/ngt
+ENV PKG_INTERNAL=agent/internal
+ENV APP_NAME=ngt
 
 # skipcq: DOK-DL3008
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -99,9 +99,10 @@ WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}/cmd/${PKG}
 RUN cp sample.yaml /tmp/config.yaml
 
 FROM --platform=${TARGETPLATFORM} ${DISTROLESS_IMAGE}:${DISTROLESS_IMAGE_TAG}
+ARG MAINTAINER="vdaas.org vald team <vald@vdaas.org>"
 LABEL maintainer="${MAINTAINER}"
 
-ENV APP_NAME ngt
+ENV APP_NAME=ngt
 
 COPY --from=builder /usr/bin/${APP_NAME} /go/bin/${APP_NAME}
 COPY --from=builder /tmp/config.yaml /etc/server/config.yaml

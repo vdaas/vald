@@ -14,7 +14,7 @@ Please also read the [Contribution guideline](../contributing/contributing-guide
 Code formatting and naming conventions affect coding readability and maintainability.
 Every developer has a different coding style.
 Luckily Go provides tools to format source code and check for potential issues in the source code.
-We recommend using [golines](https://github.com/segmentio/golines), [gofumpt](https://github.com/mvdan/gofumpt), and [goimports](https://github.com/golang/tools/tree/master/cmd/goimports) to format the source code in Vald and [golangci-lint](https://github.com/golangci/golangci-lint) with the `--enable-all` option.
+We recommend using [golines](https://github.com/segmentio/golines), [gofumpt](https://github.com/mvdan/gofumpt), and [goimports](https://github.com/golang/tools/tree/master/cmd/goimports) and [crlfmt](https://github.com/cockroachdb/crlfmt) to format the source code in Vald and [golangci-lint](https://github.com/golangci/golangci-lint) with the `--enable-all` option.
 We suggest everyone install the plugin for your editor to format the code once you edit the code automatically and use `make format/go` command if you want to format the source code manually.
 
 But having tools to format source code does not mean you do not need to care about the formatting of the code, for example:
@@ -1318,7 +1318,7 @@ For example, we decided to mock the following implementation `Encoder`.
 package json
 
 type Encoder interface {
-    Encode(interface{}) ([]byte, error)
+    Encode(any) ([]byte, error)
 }
 ```
 
@@ -1327,7 +1327,7 @@ type encoder struct {
     encoder json.Encoder
 }
 
-func (e *encoder) Encode(obj interface{}) ([]byte, error) {
+func (e *encoder) Encode(obj any) ([]byte, error) {
     return e.encoder.Encode(obj)
 }
 ```
@@ -1338,10 +1338,10 @@ The following is an example of mock implementation:
 package json
 
 type MockEncoder struct {
-    EncoderFunc func(interface{}) ([]byte, error)
+    EncoderFunc func(any) ([]byte, error)
 }
 
-func (m *MockEncoder) Encode(obj interface{}) ([]byte, error) {
+func (m *MockEncoder) Encode(obj any) ([]byte, error) {
     return m.EncodeFunc(obj)
 }
 ```
@@ -1354,7 +1354,7 @@ tests := []test {
         name: "returns (byte{}, nil) when encode success"
         fields: fields {
             encoding: &json.MockEncoder {
-                EncoderFunc: func(interface{}) ([]byte, error) {
+                EncoderFunc: func(any) ([]byte, error) {
                     return []byte{}, nil
                 },
             },

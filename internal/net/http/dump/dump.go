@@ -23,22 +23,22 @@ import (
 	"github.com/vdaas/vald/internal/errors"
 )
 
-func Request(values, body map[string]interface{}, r *http.Request) (res interface{}, err error) {
+func Request(values, body map[string]any, r *http.Request) (res any, err error) {
 	if r == nil {
 		return nil, errors.ErrInvalidRequest
 	}
 	return struct {
-		Host             string                 `json:"host"`
-		URI              string                 `json:"uri"`
-		URL              string                 `json:"url"`
-		Method           string                 `json:"method"`
-		Proto            string                 `json:"proto"`
-		Header           http.Header            `json:"header"`
-		TransferEncoding []string               `json:"transfer_encoding"`
-		RemoteAddr       string                 `json:"remote_addr"`
-		ContentLength    int64                  `json:"content_length"`
-		Body             map[string]interface{} `json:"body"`
-		Values           map[string]interface{} `json:"values"`
+		Host             string         `json:"host"`
+		URI              string         `json:"uri"`
+		URL              string         `json:"url"`
+		Method           string         `json:"method"`
+		Proto            string         `json:"proto"`
+		Header           http.Header    `json:"header"`
+		TransferEncoding []string       `json:"transfer_encoding"`
+		RemoteAddr       string         `json:"remote_addr"`
+		ContentLength    int64          `json:"content_length"`
+		Body             map[string]any `json:"body"`
+		Values           map[string]any `json:"values"`
 	}{
 		Host:             r.Host,
 		URI:              r.RequestURI,

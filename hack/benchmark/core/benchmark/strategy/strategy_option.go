@@ -48,7 +48,7 @@ func WithPreProp32(
 }
 
 func WithProp32(
-	fn func(context.Context, *testing.B, algorithm.Bit32, assets.Dataset, []uint, *uint64) (interface{}, error),
+	fn func(context.Context, *testing.B, algorithm.Bit32, assets.Dataset, []uint, *uint64) (any, error),
 ) StrategyOption {
 	return func(s *strategy) error {
 		if fn != nil {
@@ -70,7 +70,7 @@ func WithPreProp64(
 }
 
 func WithProp64(
-	fn func(context.Context, *testing.B, algorithm.Bit64, assets.Dataset, []uint, *uint64) (interface{}, error),
+	fn func(context.Context, *testing.B, algorithm.Bit64, assets.Dataset, []uint, *uint64) (any, error),
 ) StrategyOption {
 	return func(s *strategy) error {
 		if fn != nil {

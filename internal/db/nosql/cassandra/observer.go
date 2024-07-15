@@ -16,9 +16,7 @@
 
 package cassandra
 
-import (
-	"github.com/gocql/gocql"
-)
+import "github.com/gocql/gocql"
 
 type (
 	QueryObserver = gocql.QueryObserver

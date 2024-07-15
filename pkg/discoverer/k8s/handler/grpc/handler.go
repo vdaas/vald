@@ -76,7 +76,9 @@ func New(opts ...Option) (ds DiscovererServer, err error) {
 func (*server) Start(context.Context) {
 }
 
-func (s *server) Pods(ctx context.Context, req *payload.Discoverer_Request) (*payload.Info_Pods, error) {
+func (s *server) Pods(
+	ctx context.Context, req *payload.Discoverer_Request,
+) (*payload.Info_Pods, error) {
 	ctx, span := trace.StartSpan(ctx, apiName+".Pods")
 	defer func() {
 		if span != nil {
@@ -148,7 +150,9 @@ func (s *server) Pods(ctx context.Context, req *payload.Discoverer_Request) (*pa
 	return cp, nil
 }
 
-func (s *server) Nodes(ctx context.Context, req *payload.Discoverer_Request) (*payload.Info_Nodes, error) {
+func (s *server) Nodes(
+	ctx context.Context, req *payload.Discoverer_Request,
+) (*payload.Info_Nodes, error) {
 	ctx, span := trace.StartSpan(ctx, apiName+".Nodes")
 	defer func() {
 		if span != nil {
@@ -225,7 +229,9 @@ func (s *server) Nodes(ctx context.Context, req *payload.Discoverer_Request) (*p
 }
 
 // Services returns the services information that match the request.
-func (s *server) Services(ctx context.Context, req *payload.Discoverer_Request) (*payload.Info_Services, error) {
+func (s *server) Services(
+	ctx context.Context, req *payload.Discoverer_Request,
+) (*payload.Info_Services, error) {
 	ctx, span := trace.StartSpan(ctx, apiName+".Services")
 	defer func() {
 		if span != nil {

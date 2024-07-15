@@ -25,17 +25,17 @@ ARG GO_VERSION
 ARG TARGETARCH
 ARG TARGETOS
 
-ENV GO111MODULE on
-ENV DEBIAN_FRONTEND noninteractive
-ENV INITRD No
-ENV LANG en_US.UTF-8
-ENV GOROOT /opt/go
-ENV GOPATH /go
-ENV PATH ${PATH}:${GOROOT}/bin:${GOPATH}/bin
-ENV ORG vdaas
-ENV REPO vald
-ENV PKG index/operator
-ENV APP_NAME index-operator
+ENV GO111MODULE=on
+ENV DEBIAN_FRONTEND=noninteractive
+ENV INITRD=No
+ENV LANG=en_US.UTF-8
+ENV GOROOT=/opt/go
+ENV GOPATH=/go
+ENV PATH=${PATH}:${GOROOT}/bin:${GOPATH}/bin
+ENV ORG=vdaas
+ENV REPO=vald
+ENV PKG=index/operator
+ENV APP_NAME=index-operator
 
 
 # skipcq: DOK-DL3008
@@ -88,7 +88,7 @@ RUN cp sample.yaml /tmp/config.yaml
 FROM --platform=${TARGETPLATFORM} ${DISTROLESS_IMAGE}:${DISTROLESS_IMAGE_TAG}
 LABEL maintainer="${MAINTAINER}"
 
-ENV APP_NAME index-operator
+ENV APP_NAME=index-operator
 
 COPY --from=builder /usr/bin/${APP_NAME} /go/bin/${APP_NAME}
 COPY --from=builder /tmp/config.yaml /etc/server/config.yaml

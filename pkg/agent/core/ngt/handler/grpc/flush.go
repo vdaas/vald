@@ -25,12 +25,14 @@ import (
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc/errdetails"
 	"github.com/vdaas/vald/internal/net/grpc/status"
+	"github.com/vdaas/vald/internal/observability/attribute"
 	"github.com/vdaas/vald/internal/observability/trace"
-	"go.opentelemetry.io/otel/attribute"
 )
 
 // Flush removes all vectors that are indexed and uncommitted in the `vald-agent`.
-func (s *server) Flush(ctx context.Context, req *payload.Flush_Request) (*payload.Info_Index_Count, error) {
+func (s *server) Flush(
+	ctx context.Context, req *payload.Flush_Request,
+) (*payload.Info_Index_Count, error) {
 	_, span := trace.StartSpan(ctx, apiName+"/"+vald.FlushRPCName)
 	defer func() {
 		if span != nil {

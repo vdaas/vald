@@ -31,17 +31,17 @@ ARG HDF5_VERSION
 ARG TARGETARCH
 ARG TARGETOS
 
-ENV GO111MODULE on
-ENV DEBIAN_FRONTEND noninteractive
-ENV INITRD No
-ENV LANG en_US.UTF-8
-ENV GOROOT /opt/go
-ENV GOPATH /go
-ENV PATH ${PATH}:${GOROOT}/bin:${GOPATH}/bin
-ENV ORG vdaas
-ENV REPO vald
-ENV APP_NAME job
-ENV PKG tools/benchmark/${APP_NAME}
+ENV GO111MODULE=on
+ENV DEBIAN_FRONTEND=noninteractive
+ENV INITRD=No
+ENV LANG=en_US.UTF-8
+ENV GOROOT=/opt/go
+ENV GOPATH=/go
+ENV PATH=${PATH}:${GOROOT}/bin:${GOPATH}/bin
+ENV ORG=vdaas
+ENV REPO=vald
+ENV APP_NAME=job
+ENV PKG=tools/benchmark/${APP_NAME}
 ENV BUILD_DIR=/usr/local
 ENV LIB_DIR=/usr/local/lib
 ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${LIB_DIR}:/lib
@@ -68,8 +68,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && make install \
     && cd / \
     && mkdir -p hdf5 \
-    && curl -fsSLO https://github.com/HDFGroup/hdf5/releases/download/${HDF5_VERSION}/${HDF5_VERSION}.tar.gz \
-    && tar -xzvf ${HDF5_VERSION}.tar.gz -C hdf5 --strip-components 2 \
+    && curl -fsSLO https://github.com/HDFGroup/hdf5/releases/download/${HDF5_VERSION}/hdf5.tar.gz \
+    && tar -xzvf hdf5.tar.gz -C hdf5 --strip-components 2 \
     && cd hdf5 \
     && ./configure --enable-build-mode=production --enable-static-exec --disable-shared --prefix=${BUILD_DIR} --with-zlib=${BUILD_DIR}/include,${LIB_DIR} LDFLAGS="-Wl,-rpath,${LIB_DIR}" \
     && make check \
@@ -117,7 +117,7 @@ RUN cp sample.yaml /tmp/config.yaml
 FROM --platform=${TARGETPLATFORM} ${DISTROLESS_IMAGE}:${DISTROLESS_IMAGE_TAG}
 LABEL maintainer="${MAINTAINER}"
 
-ENV APP_NAME job
+ENV APP_NAME=job
 
 COPY --from=builder /usr/bin/${APP_NAME} /go/bin/${APP_NAME}
 COPY --from=builder /tmp/config.yaml /etc/server/config.yaml

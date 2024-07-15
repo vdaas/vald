@@ -924,7 +924,9 @@ func (n *ngt) Start(ctx context.Context) <-chan error {
 	return ech
 }
 
-func (n *ngt) Search(ctx context.Context, vec []float32, size uint32, epsilon, radius float32) (res *payload.Search_Response, err error) {
+func (n *ngt) Search(
+	ctx context.Context, vec []float32, size uint32, epsilon, radius float32,
+) (res *payload.Search_Response, err error) {
 	if n.IsFlushing() {
 		return nil, errors.ErrFlushingIsInProgress
 	}
@@ -946,7 +948,9 @@ func (n *ngt) Search(ctx context.Context, vec []float32, size uint32, epsilon, r
 	return n.toSearchResponse(sr)
 }
 
-func (n *ngt) SearchByID(ctx context.Context, uuid string, size uint32, epsilon, radius float32) (vec []float32, dst *payload.Search_Response, err error) {
+func (n *ngt) SearchByID(
+	ctx context.Context, uuid string, size uint32, epsilon, radius float32,
+) (vec []float32, dst *payload.Search_Response, err error) {
 	if n.IsFlushing() {
 		return nil, nil, errors.ErrFlushingIsInProgress
 	}
@@ -964,7 +968,9 @@ func (n *ngt) SearchByID(ctx context.Context, uuid string, size uint32, epsilon,
 	return vec, dst, nil
 }
 
-func (n *ngt) LinearSearch(ctx context.Context, vec []float32, size uint32) (res *payload.Search_Response, err error) {
+func (n *ngt) LinearSearch(
+	ctx context.Context, vec []float32, size uint32,
+) (res *payload.Search_Response, err error) {
 	if n.IsFlushing() {
 		return nil, errors.ErrFlushingIsInProgress
 	}
@@ -986,7 +992,9 @@ func (n *ngt) LinearSearch(ctx context.Context, vec []float32, size uint32) (res
 	return n.toSearchResponse(sr)
 }
 
-func (n *ngt) LinearSearchByID(ctx context.Context, uuid string, size uint32) (vec []float32, dst *payload.Search_Response, err error) {
+func (n *ngt) LinearSearchByID(
+	ctx context.Context, uuid string, size uint32,
+) (vec []float32, dst *payload.Search_Response, err error) {
 	if n.IsFlushing() {
 		return nil, nil, errors.ErrFlushingIsInProgress
 	}
@@ -1958,7 +1966,9 @@ func (n *ngt) ListObjectFunc(ctx context.Context, f func(uuid string, oid uint32
 	})
 }
 
-func (n *ngt) toSearchResponse(sr []algorithm.SearchResult) (res *payload.Search_Response, err error) {
+func (n *ngt) toSearchResponse(
+	sr []algorithm.SearchResult,
+) (res *payload.Search_Response, err error) {
 	if len(sr) == 0 {
 		if n.Len() == 0 {
 			return nil, nil

@@ -73,7 +73,9 @@ func (r *reconciler) addListOpts(opt client.ListOption) {
 	r.lopts = append(r.lopts, opt)
 }
 
-func (r *reconciler) Reconcile(ctx context.Context, _ reconcile.Request) (res reconcile.Result, err error) {
+func (r *reconciler) Reconcile(
+	ctx context.Context, _ reconcile.Request,
+) (res reconcile.Result, err error) {
 	ns := &corev1.NodeList{}
 
 	if r.lopts != nil {

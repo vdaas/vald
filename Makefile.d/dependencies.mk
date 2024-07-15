@@ -47,7 +47,8 @@ go/download:
 
 .PHONY: go/deps
 ## install Go package dependencies
-go/deps:
+go/deps: \
+	update/go
 	sed -i "3s/go [0-9]\+\.[0-9]\+\(\.[0-9]\+\)\?/go $(GO_VERSION)/g" $(ROOTDIR)/hack/go.mod.default
 	if $(GO_CLEAN_DEPS); then \
         	rm -rf $(ROOTDIR)/vendor \

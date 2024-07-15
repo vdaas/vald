@@ -24,10 +24,10 @@ import (
 
 // SelectStmt represents the interface to get data from database.
 type SelectStmt interface {
-	From(table interface{}) SelectStmt
-	Where(query interface{}, value ...interface{}) SelectStmt
+	From(table any) SelectStmt
+	Where(query any, value ...any) SelectStmt
 	Limit(n uint64) SelectStmt
-	LoadContext(ctx context.Context, value interface{}) (int, error)
+	LoadContext(ctx context.Context, value any) (int, error)
 }
 
 type selectStmt struct {
@@ -35,13 +35,13 @@ type selectStmt struct {
 }
 
 // From specifies table to select from.
-func (stmt *selectStmt) From(table interface{}) SelectStmt {
+func (stmt *selectStmt) From(table any) SelectStmt {
 	stmt.SelectStmt = stmt.SelectStmt.From(table)
 	return stmt
 }
 
 // Where adds a where condition.
-func (stmt *selectStmt) Where(query interface{}, value ...interface{}) SelectStmt {
+func (stmt *selectStmt) Where(query any, value ...any) SelectStmt {
 	stmt.SelectStmt = stmt.SelectStmt.Where(query, value...)
 	return stmt
 }
@@ -53,6 +53,6 @@ func (stmt *selectStmt) Limit(n uint64) SelectStmt {
 }
 
 // LoadContext gets the result of select.
-func (stmt *selectStmt) LoadContext(ctx context.Context, value interface{}) (int, error) {
+func (stmt *selectStmt) LoadContext(ctx context.Context, value any) (int, error) {
 	return stmt.SelectStmt.LoadContext(ctx, value)
 }

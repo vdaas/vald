@@ -333,14 +333,12 @@ define gen-vald-crd
 endef
 
 define update-github-actions
-	@for ACTION_NAME in $1; do \
+	@set -e; for ACTION_NAME in $1; do \
 		if [ -n "$$ACTION_NAME" ] && [ "$$ACTION_NAME" != "security-and-quality" ]; then \
 			FILE_NAME=`echo $$ACTION_NAME | tr '/' '_' | tr '-' '_' | tr '[:lower:]' '[:upper:]'`; \
 			if [ -n "$$FILE_NAME" ]; then \
 				if [ "$$ACTION_NAME" = "aquasecurity/trivy-action" ] || [ "$$ACTION_NAME" = "machine-learning-apps/actions-chatops" ]; then \
 					VERSION="master"; \
-				elif [ "$$ACTION_NAME" = "softprops/action-gh-release" ]; then \
-					VERSION="1.0.0"; \
 				else \
 					REPO_NAME=`echo $$ACTION_NAME | cut -d'/' -f1-2`; \
 					VERSION=`curl -fsSL https://api.github.com/repos/$$REPO_NAME/releases/latest | grep -Po '"tag_name": "\K.*?(?=")' | sed 's/v//g' | sed -E 's/[^0-9.]+//g'`;\

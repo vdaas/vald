@@ -27,7 +27,9 @@ import (
 	"github.com/vdaas/vald/internal/observability/trace"
 )
 
-func (s *server) CreateIndex(ctx context.Context, c *payload.Control_CreateIndexRequest) (res *payload.Empty, err error) {
+func (s *server) CreateIndex(
+	ctx context.Context, c *payload.Control_CreateIndexRequest,
+) (res *payload.Empty, err error) {
 	ctx, span := trace.StartSpan(ctx, apiName+".CreateIndex")
 	defer func() {
 		if span != nil {
@@ -39,7 +41,7 @@ func (s *server) CreateIndex(ctx context.Context, c *payload.Control_CreateIndex
 	if err != nil {
 		var (
 			code    codes.Code
-			details = []interface{}{
+			details = []any{
 				&errdetails.RequestInfo{
 					ServingData: errdetails.Serialize(c),
 				},
@@ -110,7 +112,9 @@ func (s *server) SaveIndex(ctx context.Context, _ *payload.Empty) (res *payload.
 	return res, nil
 }
 
-func (s *server) CreateAndSaveIndex(ctx context.Context, c *payload.Control_CreateIndexRequest) (res *payload.Empty, err error) {
+func (s *server) CreateAndSaveIndex(
+	ctx context.Context, c *payload.Control_CreateIndexRequest,
+) (res *payload.Empty, err error) {
 	ctx, span := trace.StartSpan(ctx, apiName+".CreateAndSaveIndex")
 	defer func() {
 		if span != nil {
@@ -122,7 +126,7 @@ func (s *server) CreateAndSaveIndex(ctx context.Context, c *payload.Control_Crea
 	if err != nil {
 		var (
 			code    codes.Code
-			details = []interface{}{
+			details = []any{
 				&errdetails.RequestInfo{
 					ServingData: errdetails.Serialize(c),
 				},
@@ -165,7 +169,9 @@ func (s *server) CreateAndSaveIndex(ctx context.Context, c *payload.Control_Crea
 	return res, nil
 }
 
-func (s *server) IndexInfo(ctx context.Context, _ *payload.Empty) (res *payload.Info_Index_Count, err error) {
+func (s *server) IndexInfo(
+	ctx context.Context, _ *payload.Empty,
+) (res *payload.Info_Index_Count, err error) {
 	_, span := trace.StartSpan(ctx, apiName+".IndexInfo")
 	defer func() {
 		if span != nil {

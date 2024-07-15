@@ -20,25 +20,9 @@ if git diff HEAD^ --name-only | grep ".go$" > /dev/null; then
     cp go.mod ${TMPDIR}
     cp go.sum ${TMPDIR}
 
-    # golines
-    echo "Run golines..."
-    find ./ -type d -name .git -prune -o -type f -regex '.*[^\.pb]\.go' -print | xargs golines -w -m 200
-    echo "golines finished."
-
-    # gofumpt
-    echo "Run gofumpt..."
-    find ./ -type d -name .git -prune -o -type f -regex '.*[^\.pb]\.go' -print | xargs gofumpt -w
-    echo "gofumpt finished."
-
-    # goimports
-    echo "Run strictgoimports..."
-    find ./ -type d -name .git -prune -o -type f -regex '.*\.go' -print | xargs strictgoimports -w
-    echo "strictgoimports finished."
-
-    # goimports
-    echo "Run goimports..."
-    find ./ -type d -name .git -prune -o -type f -regex '.*\.go' -print | xargs goimports -w
-    echo "goimports finished."
+    # format go code
+    make format/go
+    make format/go/test
 
     # go build
     echo "Run go build..."
@@ -48,7 +32,7 @@ if git diff HEAD^ --name-only | grep ".go$" > /dev/null; then
     if [ `git rev-parse --abbrev-ref HEAD` = "main" ]; then
         # golangci-lint
         echo "Run golangci-lint..."
-        golangci-lint run --fast --disable=gochecknoglobals --fix --color always -j 16 --skip-dirs apis/grpc --exclude-use-default=false ./...
+	make go/lint
         echo "golangci-lint finished."
     fi
     mv -f ${TMPDIR}/go.mod .

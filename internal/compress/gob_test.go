@@ -145,7 +145,7 @@ func Test_gobCompressor_CompressVector(t *testing.T) {
 				transcoder: &gob.MockTranscoder{
 					NewEncoderFunc: func(w io.Writer) gob.Encoder {
 						return &gob.MockEncoder{
-							EncodeFunc: func(e interface{}) error {
+							EncodeFunc: func(e any) error {
 								_, _ = w.Write([]byte("vald"))
 								return nil
 							},
@@ -170,7 +170,7 @@ func Test_gobCompressor_CompressVector(t *testing.T) {
 				transcoder: &gob.MockTranscoder{
 					NewEncoderFunc: func(w io.Writer) gob.Encoder {
 						return &gob.MockEncoder{
-							EncodeFunc: func(e interface{}) error {
+							EncodeFunc: func(e any) error {
 								return errors.New("err")
 							},
 						}
@@ -319,7 +319,7 @@ func Test_gobCompressor_DecompressVector(t *testing.T) {
 				transcoder: &gob.MockTranscoder{
 					NewDecoderFunc: func(io.Reader) gob.Decoder {
 						return &gob.MockDecoder{
-							DecodeFunc: func(e interface{}) error {
+							DecodeFunc: func(e any) error {
 								reflect.ValueOf(e).Elem().Set(reflect.ValueOf(&[]float32{
 									1, 2, 3,
 								}).Elem())
@@ -346,7 +346,7 @@ func Test_gobCompressor_DecompressVector(t *testing.T) {
 				transcoder: &gob.MockTranscoder{
 					NewDecoderFunc: func(io.Reader) gob.Decoder {
 						return &gob.MockDecoder{
-							DecodeFunc: func(interface{}) error {
+							DecodeFunc: func(any) error {
 								return errors.New("err")
 							},
 						}
@@ -588,7 +588,7 @@ func Test_gobReader_Read(t *testing.T) {
 			},
 			fields: fields{
 				decoder: &gob.MockDecoder{
-					DecodeFunc: func(e interface{}) error {
+					DecodeFunc: func(e any) error {
 						reflect.ValueOf(e).Elem().Set(reflect.ValueOf([]byte("vald")))
 						return nil
 					},
@@ -607,7 +607,7 @@ func Test_gobReader_Read(t *testing.T) {
 			},
 			fields: fields{
 				decoder: &gob.MockDecoder{
-					DecodeFunc: func(e interface{}) error {
+					DecodeFunc: func(e any) error {
 						return errors.New("err")
 					},
 				},
@@ -747,7 +747,7 @@ func Test_gobWriter_Write(t *testing.T) {
 			},
 			fields: fields{
 				encoder: &gob.MockEncoder{
-					EncodeFunc: func(e interface{}) error {
+					EncodeFunc: func(e any) error {
 						reflect.ValueOf(e).Elem().Set(reflect.ValueOf([]byte("vald")))
 						return nil
 					},
@@ -766,7 +766,7 @@ func Test_gobWriter_Write(t *testing.T) {
 			},
 			fields: fields{
 				encoder: &gob.MockEncoder{
-					EncodeFunc: func(e interface{}) error {
+					EncodeFunc: func(e any) error {
 						return errors.New("err")
 					},
 				},

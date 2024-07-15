@@ -67,7 +67,7 @@ func New(opts ...Option) Handler {
 // The response is written to the http.ResponseWriter.
 func (h *handler) Register(w http.ResponseWriter, r *http.Request) (code int, err error) {
 	var req *payload.Mirror_Targets
-	return json.Handler(w, r, &req, func() (interface{}, error) {
+	return json.Handler(w, r, &req, func() (any, error) {
 		return h.vald.Register(r.Context(), req)
 	})
 }
@@ -76,8 +76,8 @@ func (h *handler) Register(w http.ResponseWriter, r *http.Request) (code int, er
 // It returns an HTTP status code and an error. It creates a map to store data,
 // then uses json.Handler to process the request, extract data, and log the request using dump.Request.
 func (*handler) Index(w http.ResponseWriter, r *http.Request) (int, error) {
-	data := make(map[string]interface{})
-	return json.Handler(w, r, &data, func() (interface{}, error) {
+	data := make(map[string]any)
+	return json.Handler(w, r, &data, func() (any, error) {
 		return dump.Request(nil, data, r)
 	})
 }
@@ -87,7 +87,7 @@ func (*handler) Index(w http.ResponseWriter, r *http.Request) (int, error) {
 // then invokes the vald.Search method to handle the search logic.
 func (h *handler) Search(w http.ResponseWriter, r *http.Request) (code int, err error) {
 	var req *payload.Search_Request
-	return json.Handler(w, r, &req, func() (interface{}, error) {
+	return json.Handler(w, r, &req, func() (any, error) {
 		return h.vald.Search(r.Context(), req)
 	})
 }
@@ -97,7 +97,7 @@ func (h *handler) Search(w http.ResponseWriter, r *http.Request) (code int, err 
 // then invokes the vald.SearchByID method to handle the search by ID logic.
 func (h *handler) SearchByID(w http.ResponseWriter, r *http.Request) (code int, err error) {
 	var req *payload.Search_IDRequest
-	return json.Handler(w, r, &req, func() (interface{}, error) {
+	return json.Handler(w, r, &req, func() (any, error) {
 		return h.vald.SearchByID(r.Context(), req)
 	})
 }
@@ -107,7 +107,7 @@ func (h *handler) SearchByID(w http.ResponseWriter, r *http.Request) (code int, 
 // then invokes the vald.MultiSearch method to handle the multi-search logic.
 func (h *handler) MultiSearch(w http.ResponseWriter, r *http.Request) (code int, err error) {
 	var req *payload.Search_MultiRequest
-	return json.Handler(w, r, &req, func() (interface{}, error) {
+	return json.Handler(w, r, &req, func() (any, error) {
 		return h.vald.MultiSearch(r.Context(), req)
 	})
 }
@@ -117,7 +117,7 @@ func (h *handler) MultiSearch(w http.ResponseWriter, r *http.Request) (code int,
 // then invokes the vald.MultiSearchByID method to handle the multi-search by ID logic.
 func (h *handler) MultiSearchByID(w http.ResponseWriter, r *http.Request) (code int, err error) {
 	var req *payload.Search_MultiIDRequest
-	return json.Handler(w, r, &req, func() (interface{}, error) {
+	return json.Handler(w, r, &req, func() (any, error) {
 		return h.vald.MultiSearchByID(r.Context(), req)
 	})
 }
@@ -127,7 +127,7 @@ func (h *handler) MultiSearchByID(w http.ResponseWriter, r *http.Request) (code 
 // then invokes the vald.LinearSearch method to handle the linear search logic.
 func (h *handler) LinearSearch(w http.ResponseWriter, r *http.Request) (code int, err error) {
 	var req *payload.Search_Request
-	return json.Handler(w, r, &req, func() (interface{}, error) {
+	return json.Handler(w, r, &req, func() (any, error) {
 		return h.vald.LinearSearch(r.Context(), req)
 	})
 }
@@ -137,7 +137,7 @@ func (h *handler) LinearSearch(w http.ResponseWriter, r *http.Request) (code int
 // then invokes the vald.LinearSearchByID method to handle the linear search by ID logic.
 func (h *handler) LinearSearchByID(w http.ResponseWriter, r *http.Request) (code int, err error) {
 	var req *payload.Search_IDRequest
-	return json.Handler(w, r, &req, func() (interface{}, error) {
+	return json.Handler(w, r, &req, func() (any, error) {
 		return h.vald.LinearSearchByID(r.Context(), req)
 	})
 }
@@ -147,7 +147,7 @@ func (h *handler) LinearSearchByID(w http.ResponseWriter, r *http.Request) (code
 // then invokes the vald.MultiLinearSearch method to handle the multi-linear search logic.
 func (h *handler) MultiLinearSearch(w http.ResponseWriter, r *http.Request) (code int, err error) {
 	var req *payload.Search_MultiRequest
-	return json.Handler(w, r, &req, func() (interface{}, error) {
+	return json.Handler(w, r, &req, func() (any, error) {
 		return h.vald.MultiLinearSearch(r.Context(), req)
 	})
 }
@@ -155,9 +155,11 @@ func (h *handler) MultiLinearSearch(w http.ResponseWriter, r *http.Request) (cod
 // MultiLinearSearchByID is an HTTP handler function that processes multi-linear search by ID requests.
 // It decodes the incoming JSON payload into a payload.Search_MultiIDRequest struct,
 // then invokes the vald.MultiLinearSearchByID method to handle the multi-linear search by ID logic.
-func (h *handler) MultiLinearSearchByID(w http.ResponseWriter, r *http.Request) (code int, err error) {
+func (h *handler) MultiLinearSearchByID(
+	w http.ResponseWriter, r *http.Request,
+) (code int, err error) {
 	var req *payload.Search_MultiIDRequest
-	return json.Handler(w, r, &req, func() (interface{}, error) {
+	return json.Handler(w, r, &req, func() (any, error) {
 		return h.vald.MultiLinearSearchByID(r.Context(), req)
 	})
 }
@@ -167,7 +169,7 @@ func (h *handler) MultiLinearSearchByID(w http.ResponseWriter, r *http.Request) 
 // then invokes the vald.Insert method to handle the insert logic.
 func (h *handler) Insert(w http.ResponseWriter, r *http.Request) (code int, err error) {
 	var req *payload.Insert_Request
-	return json.Handler(w, r, &req, func() (interface{}, error) {
+	return json.Handler(w, r, &req, func() (any, error) {
 		return h.vald.Insert(r.Context(), req)
 	})
 }
@@ -177,7 +179,7 @@ func (h *handler) Insert(w http.ResponseWriter, r *http.Request) (code int, err 
 // then invokes the vald.MultiInsert method to handle the multi-insert logic.
 func (h *handler) MultiInsert(w http.ResponseWriter, r *http.Request) (code int, err error) {
 	var req *payload.Insert_MultiRequest
-	return json.Handler(w, r, &req, func() (interface{}, error) {
+	return json.Handler(w, r, &req, func() (any, error) {
 		return h.vald.MultiInsert(r.Context(), req)
 	})
 }
@@ -187,7 +189,7 @@ func (h *handler) MultiInsert(w http.ResponseWriter, r *http.Request) (code int,
 // then invokes the vald.Update method to handle the update logic.
 func (h *handler) Update(w http.ResponseWriter, r *http.Request) (code int, err error) {
 	var req *payload.Update_Request
-	return json.Handler(w, r, &req, func() (interface{}, error) {
+	return json.Handler(w, r, &req, func() (any, error) {
 		return h.vald.Update(r.Context(), req)
 	})
 }
@@ -197,7 +199,7 @@ func (h *handler) Update(w http.ResponseWriter, r *http.Request) (code int, err 
 // then invokes the vald.MultiUpdate method to handle the multi-update logic.
 func (h *handler) MultiUpdate(w http.ResponseWriter, r *http.Request) (code int, err error) {
 	var req *payload.Update_MultiRequest
-	return json.Handler(w, r, &req, func() (interface{}, error) {
+	return json.Handler(w, r, &req, func() (any, error) {
 		return h.vald.MultiUpdate(r.Context(), req)
 	})
 }
@@ -207,7 +209,7 @@ func (h *handler) MultiUpdate(w http.ResponseWriter, r *http.Request) (code int,
 // then invokes the vald.Upsert method to handle the upsert logic.
 func (h *handler) Upsert(w http.ResponseWriter, r *http.Request) (code int, err error) {
 	var req *payload.Upsert_Request
-	return json.Handler(w, r, &req, func() (interface{}, error) {
+	return json.Handler(w, r, &req, func() (any, error) {
 		return h.vald.Upsert(r.Context(), req)
 	})
 }
@@ -217,7 +219,7 @@ func (h *handler) Upsert(w http.ResponseWriter, r *http.Request) (code int, err 
 // then invokes the vald.MultiUpsert method to handle the multi-upsert logic.
 func (h *handler) MultiUpsert(w http.ResponseWriter, r *http.Request) (code int, err error) {
 	var req *payload.Upsert_MultiRequest
-	return json.Handler(w, r, &req, func() (interface{}, error) {
+	return json.Handler(w, r, &req, func() (any, error) {
 		return h.vald.MultiUpsert(r.Context(), req)
 	})
 }
@@ -227,7 +229,7 @@ func (h *handler) MultiUpsert(w http.ResponseWriter, r *http.Request) (code int,
 // then invokes the vald.Remove method to handle the remove logic.
 func (h *handler) Remove(w http.ResponseWriter, r *http.Request) (code int, err error) {
 	var req *payload.Remove_Request
-	return json.Handler(w, r, &req, func() (interface{}, error) {
+	return json.Handler(w, r, &req, func() (any, error) {
 		return h.vald.Remove(r.Context(), req)
 	})
 }
@@ -237,7 +239,7 @@ func (h *handler) Remove(w http.ResponseWriter, r *http.Request) (code int, err 
 // then invokes the vald.RemoveByTimestamp method to handle the remove-by-timestamp logic.
 func (h *handler) RemoveByTimestamp(w http.ResponseWriter, r *http.Request) (int, error) {
 	var req *payload.Remove_TimestampRequest
-	return json.Handler(w, r, &req, func() (interface{}, error) {
+	return json.Handler(w, r, &req, func() (any, error) {
 		return h.vald.RemoveByTimestamp(r.Context(), req)
 	})
 }
@@ -247,7 +249,7 @@ func (h *handler) RemoveByTimestamp(w http.ResponseWriter, r *http.Request) (int
 // then invokes the vald.MultiRemove method to handle the multi-remove logic.
 func (h *handler) MultiRemove(w http.ResponseWriter, r *http.Request) (code int, err error) {
 	var req *payload.Remove_MultiRequest
-	return json.Handler(w, r, &req, func() (interface{}, error) {
+	return json.Handler(w, r, &req, func() (any, error) {
 		return h.vald.MultiRemove(r.Context(), req)
 	})
 }
@@ -257,7 +259,7 @@ func (h *handler) MultiRemove(w http.ResponseWriter, r *http.Request) (code int,
 // then invokes the vald.GetObject method to handle the get-object logic.
 func (h *handler) GetObject(w http.ResponseWriter, r *http.Request) (code int, err error) {
 	var req *payload.Object_VectorRequest
-	return json.Handler(w, r, &req, func() (interface{}, error) {
+	return json.Handler(w, r, &req, func() (any, error) {
 		return h.vald.GetObject(r.Context(), req)
 	})
 }
@@ -267,7 +269,7 @@ func (h *handler) GetObject(w http.ResponseWriter, r *http.Request) (code int, e
 // then invokes the vald.Exists method to handle the exists logic.
 func (h *handler) Exists(w http.ResponseWriter, r *http.Request) (code int, err error) {
 	var req *payload.Object_ID
-	return json.Handler(w, r, &req, func() (interface{}, error) {
+	return json.Handler(w, r, &req, func() (any, error) {
 		return h.vald.Exists(r.Context(), req)
 	})
 }

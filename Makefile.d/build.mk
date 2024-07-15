@@ -17,8 +17,6 @@
 .PHONY: binary/build
 ## build all binaries
 binary/build: \
-	cmd/agent/core/faiss/faiss \
-	cmd/agent/core/ngt/ngt \
 	cmd/agent/sidecar/sidecar \
 	cmd/discoverer/k8s/discoverer \
 	cmd/gateway/filter/filter \
@@ -32,12 +30,14 @@ binary/build: \
 	cmd/tools/benchmark/job/job \
 	cmd/tools/benchmark/operator/operator \
 	cmd/index/operator/index-operator
+	# cmd/agent/core/ngt/ngt \
+	# cmd/agent/core/faiss/faiss \
 
 
 cmd/agent/core/ngt/ngt: \
 	ngt/install
 	$(eval CGO_ENABLED = 1)
-	$(call go-build,agent/core/ngt,-linkmode 'external',-static -fPIC -pthread -fopenmp -std=gnu++20 -lstdc++ -lm -z relro -z now $(EXTLDFLAGS), cgo,NGT-$(NGT_VERSION),$@)
+	$(call go-build,agent/core/ngt,-linkmode 'external',-static -fPIC -pthread -fopenmp -std=gnu++20 -lstdc++ -lm -z relro -z now -flto -march=native -fno-plt -Ofast -fvisibility=hidden -ffp-contract=fast $(EXTLDFLAGS), cgo,NGT-$(NGT_VERSION),$@)
 
 cmd/agent/core/faiss/faiss: \
 	faiss/install
@@ -89,6 +89,7 @@ cmd/index/operator/index-operator:
 	$(call go-build,index/operator,,-static,,,$@)
 
 cmd/tools/benchmark/job/job:
+	$(eval CGO_ENABLED = 1)
 	$(call go-build,tools/benchmark/job,-linkmode 'external',-static -fPIC -pthread -fopenmp -std=gnu++20 -lhdf5 -lhdf5_hl -lm -ldl, cgo,$(HDF5_VERSION),$@)
 
 cmd/tools/benchmark/operator/operator:

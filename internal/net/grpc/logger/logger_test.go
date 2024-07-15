@@ -102,7 +102,7 @@ func TestInit(t *testing.T) {
 func Test_logger_Info(t *testing.T) {
 	t.Parallel()
 	type args struct {
-		args []interface{}
+		args []any
 	}
 	type fields struct {
 		v int
@@ -122,7 +122,7 @@ func Test_logger_Info(t *testing.T) {
 		{
 			name: "Info success to log the message",
 			args: args{
-				args: []interface{}{"log message"},
+				args: []any{"log message"},
 			},
 			fields: fields{
 				v: 0,
@@ -158,7 +158,7 @@ func Test_logger_Info(t *testing.T) {
 func Test_logger_Infoln(t *testing.T) {
 	t.Parallel()
 	type args struct {
-		args []interface{}
+		args []any
 	}
 	type fields struct {
 		v int
@@ -178,7 +178,7 @@ func Test_logger_Infoln(t *testing.T) {
 		{
 			name: "Infoln success to log the message",
 			args: args{
-				args: []interface{}{"log message"},
+				args: []any{"log message"},
 			},
 			fields: fields{
 				v: 0,
@@ -215,7 +215,7 @@ func Test_logger_Infof(t *testing.T) {
 	t.Parallel()
 	type args struct {
 		format string
-		args   []interface{}
+		args   []any
 	}
 	type fields struct {
 		v int
@@ -235,7 +235,7 @@ func Test_logger_Infof(t *testing.T) {
 		{
 			name: "Infof success to log the message",
 			args: args{
-				args: []interface{}{"log message"},
+				args: []any{"log message"},
 			},
 			fields: fields{
 				v: 0,
@@ -271,7 +271,7 @@ func Test_logger_Infof(t *testing.T) {
 func Test_logger_Warning(t *testing.T) {
 	t.Parallel()
 	type args struct {
-		args []interface{}
+		args []any
 	}
 	type fields struct {
 		v int
@@ -291,7 +291,7 @@ func Test_logger_Warning(t *testing.T) {
 		{
 			name: "Warning success to log the message",
 			args: args{
-				args: []interface{}{"log message"},
+				args: []any{"log message"},
 			},
 			fields: fields{
 				v: 0,
@@ -327,7 +327,7 @@ func Test_logger_Warning(t *testing.T) {
 func Test_logger_Warningln(t *testing.T) {
 	t.Parallel()
 	type args struct {
-		args []interface{}
+		args []any
 	}
 	type fields struct {
 		v int
@@ -347,7 +347,7 @@ func Test_logger_Warningln(t *testing.T) {
 		{
 			name: "Warningln success to log the message",
 			args: args{
-				args: []interface{}{"log message"},
+				args: []any{"log message"},
 			},
 			fields: fields{
 				v: 0,
@@ -384,7 +384,7 @@ func Test_logger_Warningf(t *testing.T) {
 	t.Parallel()
 	type args struct {
 		format string
-		args   []interface{}
+		args   []any
 	}
 	type fields struct {
 		v int
@@ -404,7 +404,7 @@ func Test_logger_Warningf(t *testing.T) {
 		{
 			name: "Warningf success to log the message",
 			args: args{
-				args: []interface{}{"log message"},
+				args: []any{"log message"},
 			},
 			fields: fields{
 				v: 0,
@@ -440,7 +440,7 @@ func Test_logger_Warningf(t *testing.T) {
 func Test_logger_Error(t *testing.T) {
 	t.Parallel()
 	type args struct {
-		args []interface{}
+		args []any
 	}
 	type fields struct {
 		v int
@@ -460,7 +460,7 @@ func Test_logger_Error(t *testing.T) {
 		{
 			name: "Error success to log the message",
 			args: args{
-				args: []interface{}{"log message"},
+				args: []any{"log message"},
 			},
 			fields: fields{
 				v: 0,
@@ -496,7 +496,7 @@ func Test_logger_Error(t *testing.T) {
 func Test_logger_Errorln(t *testing.T) {
 	t.Parallel()
 	type args struct {
-		args []interface{}
+		args []any
 	}
 	type fields struct {
 		v int
@@ -516,7 +516,7 @@ func Test_logger_Errorln(t *testing.T) {
 		{
 			name: "Errorln success to log the message",
 			args: args{
-				args: []interface{}{"log message"},
+				args: []any{"log message"},
 			},
 			fields: fields{
 				v: 0,
@@ -553,7 +553,7 @@ func Test_logger_Errorf(t *testing.T) {
 	t.Parallel()
 	type args struct {
 		format string
-		args   []interface{}
+		args   []any
 	}
 	type fields struct {
 		v int
@@ -573,7 +573,7 @@ func Test_logger_Errorf(t *testing.T) {
 		{
 			name: "Errorf success to log the message",
 			args: args{
-				args: []interface{}{"log message"},
+				args: []any{"log message"},
 			},
 			fields: fields{
 				v: 0,
@@ -618,7 +618,7 @@ func Test_logger_Fatal(t *testing.T) {
 	}
 
 	type args struct {
-		args []interface{}
+		args []any
 	}
 	type fields struct {
 		v int
@@ -638,7 +638,7 @@ func Test_logger_Fatal(t *testing.T) {
 		{
 			name: "Fatal log the message",
 			args: args{
-				args: []interface{}{"log message"},
+				args: []any{"log message"},
 			},
 			fields: fields{
 				v: 0,
@@ -687,7 +687,7 @@ func Test_logger_Fatalln(t *testing.T) {
 	}
 
 	type args struct {
-		args []interface{}
+		args []any
 	}
 	type fields struct {
 		v int
@@ -707,7 +707,7 @@ func Test_logger_Fatalln(t *testing.T) {
 		{
 			name: "Fatalln log the message",
 			args: args{
-				args: []interface{}{"log message"},
+				args: []any{"log message"},
 			},
 			fields: fields{
 				v: 0,
@@ -753,7 +753,7 @@ func Test_logger_Fatalf(t *testing.T) {
 
 	type args struct {
 		format string
-		args   []interface{}
+		args   []any
 	}
 	type fields struct {
 		v int
@@ -773,7 +773,7 @@ func Test_logger_Fatalf(t *testing.T) {
 		{
 			name: "Fatalf log the message",
 			args: args{
-				args: []interface{}{"log message"},
+				args: []any{"log message"},
 			},
 			fields: fields{
 				v: 0,

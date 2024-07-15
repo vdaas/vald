@@ -702,3 +702,148 @@ package service
 // 		})
 // 	}
 // }
+//
+// func Test_index_LoadIndexDetail(t *testing.T) {
+// 	type fields struct {
+// 		client                 discoverer.Client
+// 		eg                     errgroup.Group
+// 		creationPoolSize       uint32
+// 		indexDuration          time.Duration
+// 		indexDurationLimit     time.Duration
+// 		saveIndexDurationLimit time.Duration
+// 		saveIndexWaitDuration  time.Duration
+// 		saveIndexTargetAddrCh  chan string
+// 		schMap                 sync.Map[string, any]
+// 		concurrency            int
+// 		indexInfos             sync.Map[string, *payload.Info_Index_Count]
+// 		indexing               atomic.Value
+// 		minUncommitted         uint32
+// 		uuidsCount             uint32
+// 		uncommittedUUIDsCount  uint32
+// 	}
+// 	type want struct {
+// 		wantDetail *payload.Info_Index_Detail
+// 	}
+// 	type test struct {
+// 		name       string
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, *payload.Info_Index_Detail) error
+// 		beforeFunc func(*testing.T)
+// 		afterFunc  func(*testing.T)
+// 	}
+// 	defaultCheckFunc := func(w want, gotDetail *payload.Info_Index_Detail) error {
+// 		if !reflect.DeepEqual(gotDetail, w.wantDetail) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotDetail, w.wantDetail)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       fields: fields {
+// 		           client:nil,
+// 		           eg:nil,
+// 		           creationPoolSize:0,
+// 		           indexDuration:nil,
+// 		           indexDurationLimit:nil,
+// 		           saveIndexDurationLimit:nil,
+// 		           saveIndexWaitDuration:nil,
+// 		           saveIndexTargetAddrCh:nil,
+// 		           schMap:nil,
+// 		           concurrency:0,
+// 		           indexInfos:nil,
+// 		           indexing:nil,
+// 		           minUncommitted:0,
+// 		           uuidsCount:0,
+// 		           uncommittedUUIDsCount:0,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           fields: fields {
+// 		           client:nil,
+// 		           eg:nil,
+// 		           creationPoolSize:0,
+// 		           indexDuration:nil,
+// 		           indexDurationLimit:nil,
+// 		           saveIndexDurationLimit:nil,
+// 		           saveIndexWaitDuration:nil,
+// 		           saveIndexTargetAddrCh:nil,
+// 		           schMap:nil,
+// 		           concurrency:0,
+// 		           indexInfos:nil,
+// 		           indexing:nil,
+// 		           minUncommitted:0,
+// 		           uuidsCount:0,
+// 		           uncommittedUUIDsCount:0,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			idx := &index{
+// 				client:                 test.fields.client,
+// 				eg:                     test.fields.eg,
+// 				creationPoolSize:       test.fields.creationPoolSize,
+// 				indexDuration:          test.fields.indexDuration,
+// 				indexDurationLimit:     test.fields.indexDurationLimit,
+// 				saveIndexDurationLimit: test.fields.saveIndexDurationLimit,
+// 				saveIndexWaitDuration:  test.fields.saveIndexWaitDuration,
+// 				saveIndexTargetAddrCh:  test.fields.saveIndexTargetAddrCh,
+// 				schMap:                 test.fields.schMap,
+// 				concurrency:            test.fields.concurrency,
+// 				indexInfos:             test.fields.indexInfos,
+// 				indexing:               test.fields.indexing,
+// 				minUncommitted:         test.fields.minUncommitted,
+// 				uuidsCount:             test.fields.uuidsCount,
+// 				uncommittedUUIDsCount:  test.fields.uncommittedUUIDsCount,
+// 			}
+//
+// 			gotDetail := idx.LoadIndexDetail()
+// 			if err := checkFunc(test.want, gotDetail); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+//
+// 		})
+// 	}
+// }

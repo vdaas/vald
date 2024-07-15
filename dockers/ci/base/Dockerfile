@@ -24,13 +24,13 @@ ARG GO_VERSION
 ARG TARGETARCH
 ARG TARGETOS
 
-ENV GO111MODULE on
-ENV DEBIAN_FRONTEND noninteractive
-ENV INITRD No
-ENV LANG en_US.UTF-8
-ENV GOROOT /opt/go
-ENV GOPATH /go
-ENV PATH ${PATH}:${GOROOT}/bin:${GOPATH}/bin:/usr/local/bin
+ENV GO111MODULE=on
+ENV DEBIAN_FRONTEND=noninteractive
+ENV INITRD=No
+ENV LANG=en_US.UTF-8
+ENV GOROOT=/opt/go
+ENV GOPATH=/go
+ENV PATH=${PATH}:${GOROOT}/bin:${GOPATH}/bin:/usr/local/bin
 
 RUN sysctl -w net.ipv6.conf.all.disable_ipv6=1 \
     && sysctl -w net.ipv6.conf.default.disable_ipv6=1 \
@@ -64,7 +64,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 WORKDIR ${GOPATH}/src/github.com/vdaas/vald
 
-ENV ROOTDIR .
+ENV ROOTDIR=.
 
 COPY Makefile .
 COPY Makefile.d Makefile.d

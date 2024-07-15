@@ -38,6 +38,7 @@ import (
 	"github.com/vdaas/vald/internal/file"
 	kvald "github.com/vdaas/vald/internal/k8s/vald"
 	"github.com/vdaas/vald/internal/log"
+	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/sync"
@@ -50,7 +51,6 @@ import (
 	"github.com/vdaas/vald/pkg/agent/internal/kvs"
 	"github.com/vdaas/vald/pkg/agent/internal/metadata"
 	"github.com/vdaas/vald/pkg/agent/internal/vqueue"
-	"google.golang.org/grpc"
 )
 
 var defaultConfig = config.NGT{
@@ -1556,8 +1556,8 @@ func Test_ngt_E2E(t *testing.T) {
 	type args struct {
 		requests []*payload.Upsert_MultiRequest
 
-		addr     string
-		dialOpts []grpc.DialOption
+		addr   string
+		client grpc.Client
 	}
 	type want struct {
 		err error
@@ -1612,10 +1612,8 @@ func Test_ngt_E2E(t *testing.T) {
 					createRandomData(500000, new(createRandomDataConfig)),
 					50,
 				),
-				addr: "127.0.0.1:8080",
-				dialOpts: []grpc.DialOption{
-					grpc.WithInsecure(),
-				},
+				addr:   "127.0.0.1:8080",
+				client: grpc.New(grpc.WithInsecure(true)),
 			},
 		},
 	}
@@ -1637,20 +1635,15 @@ func Test_ngt_E2E(t *testing.T) {
 			if test.checkFunc == nil {
 				checkFunc = defaultCheckFunc
 			}
-			conn, err := grpc.DialContext(ctx, test.args.addr, test.args.dialOpts...)
-			if err := checkFunc(test.want, err); err != nil {
-				t.Fatal(err)
-			}
-			defer func() {
-				if err := conn.Close(); err != nil {
-					t.Error(err)
-				}
-			}()
-			client := vald.NewValdClient(conn)
+
+			defer test.args.client.Close(ctx)
 
 			for i := 0; i < 2; i++ {
 				for _, req := range test.args.requests {
-					_, err := client.MultiUpsert(ctx, req)
+					_, err := test.args.client.Do(ctx, test.args.addr,
+						func(ctx context.Context, conn *grpc.ClientConn, opts ...grpc.CallOption) (any, error) {
+							return vald.NewValdClient(conn).MultiInsert(ctx, req)
+						})
 					if err != nil {
 						t.Error(err)
 					}

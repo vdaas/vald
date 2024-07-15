@@ -163,7 +163,7 @@ func main() {
 
 		var m runtime.MemStats
 		runtime.ReadMemStats(&m)
-		metrics := []interface{}{
+		metrics := []any{
 			header,
 			vmpeak,
 			vmsize,
@@ -346,7 +346,16 @@ func main() {
 	})
 }
 
-func run(ctx context.Context, load bool, path string, dim int, vectors [][]float32, ids []uint, dur time.Duration, output func(header string)) {
+func run(
+	ctx context.Context,
+	load bool,
+	path string,
+	dim int,
+	vectors [][]float32,
+	ids []uint,
+	dur time.Duration,
+	output func(header string),
+) {
 	const poolSize = 8
 	var n ngt.NGT
 	if load {

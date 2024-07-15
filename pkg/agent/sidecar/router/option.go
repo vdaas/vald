@@ -17,9 +17,7 @@
 // Package router provides implementation of Go API for routing http Handler wrapped by rest.Func
 package router
 
-import (
-	"github.com/vdaas/vald/pkg/agent/sidecar/handler/rest"
-)
+import "github.com/vdaas/vald/pkg/agent/sidecar/handler/rest"
 
 type Option func(*router)
 
