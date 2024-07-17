@@ -39,7 +39,7 @@ jobs:
       matrix:
         target_images: ["ubuntu:devel"]
         # platforms: [linux/amd64, linux/arm/v7, linux/arm64/v8]
-        platforms: [linux/amd64, linux/arm/v7]
+        platforms: [linux/amd64 linux/arm/v7]
     steps:
       - uses: actions/checkout@v4
       - name: Set Git config
@@ -70,8 +70,13 @@ jobs:
           password: ${{ secrets.PACKAGE_TOKEN }}
       - name: Pull Docker image from Docker Hub
         run: |
-          docker pull --platform ${{ matrix.platforms }} ${{ matrix.target_images }}
+          docker pull --platform linux/amd64 \
+                      --platform linux/arm/v7 \
+                      --platform linux/arm/v8 ${{ matrix.target_images }}
       - name: Tag Docker image for GHCR
         run: |
-          docker tag ${{ matrix.target_images }} ghcr.io/${ORG}/${REPO}/${{ matrix.target_images }}
-          docker images
+           docker tag ubuntu:devel ghcr.io/vdaas/vald/buildbase:devel-amd64    --platform linux/amd64
+           docker tag ubuntu:devel ghcr.io/vdaas/vald/buildbase:devel-arm64-v7 --platform linux/arm64/v7
+           docker tag ubuntu:devel ghcr.io/vdaas/vald/buildbase:devel-arm64-v8 --platform linux/arm64/v8
+          # docker tag ${{ matrix.target_images }} ghcr.io/${ORG}/${REPO}/build-base
+          # docker images
