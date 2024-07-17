@@ -15,7 +15,9 @@
 #
 name: "Sync Docker image"
 on:
+  # TODO: The following events are for debugging purposes so I will remove them before merging.
   pull_request:
+
   schedule:
     - cron: "0 1 * * *"
 concurrency:
