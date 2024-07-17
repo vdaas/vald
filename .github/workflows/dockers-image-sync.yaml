@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-name: "Sync Docker image from Docker Hub to GHCR"
+name: "Sync Docker image from Docker Hub to GitHub Container Registry"
 on:
   # TODO: The following events are for debugging purposes so I will remove them before merging.
   pull_request:
@@ -29,8 +29,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/dump-context
-
-
 
   ubuntu-devel:
     runs-on: ubuntu-latest
@@ -70,6 +68,6 @@ jobs:
           password: ${{ secrets.PACKAGE_TOKEN }}
       - name: Pull Docker image from Docker Hub
         run: |
-          docker pull ubuntu:devel-${TARGET_PLATFORM}
+          docker pull --platform ${TARGET_PLATFORM} ubuntu:devel
         env:
           TARGET_PLATFORM: ${{ matrix.platforms }}
