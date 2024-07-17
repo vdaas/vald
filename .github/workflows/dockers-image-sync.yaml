@@ -41,7 +41,7 @@ jobs:
       matrix:
         target_images: ["ubuntu:devel"]
         # platforms: [linux/amd64, linux/arm/v7, linux/arm64/v8]
-        platforms: [linux/amd64 linux/arm/v7]
+        platforms: [linux/amd64, linux/arm/v7]
     steps:
       - uses: actions/checkout@v4
       - name: Set Git config
