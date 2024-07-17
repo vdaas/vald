@@ -37,7 +37,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        target_images: [ubuntu:devel]
+        target_images: ["ubuntu:devel"]
         # platforms: [linux/amd64, linux/arm/v7, linux/arm64/v8]
         platforms: [linux/amd64]
     steps:
