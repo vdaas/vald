@@ -69,22 +69,32 @@ jobs:
           # password: ${{ secrets.GITHUB_TOKEN }}
           username: ${{ secrets.PACKAGE_USER }}
           password: ${{ secrets.PACKAGE_TOKEN }}
-      - name: Pull Docker image from Docker Hub
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          platforms: linux/amd64,linux/arm64
+          context: "./dockers/ubuntu"
+          push: false
+          tags: ghcr.io/vdaas/vald/buildbase:devel
+      - name: Docker image check
         run: |
-          docker pull --platform linux/amd64 ${{ matrix.target_images }}
-          docker tag ${{ matrix.target_images }} ${CREATED_IMAGE_NAME}-amd64
-
-          docker pull --platform linux/arm64/v8 ${{ matrix.target_images }}
-          docker tag ${{ matrix.target_images }} ${CREATED_IMAGE_NAME}-arm-v8
-
-          docker pull --platform linux/arm64/v7 ${{ matrix.target_images }}
-          docker tag ${{ matrix.target_images }} ${CREATED_IMAGE_NAME}-arm-v7
-
           docker images
-      - name: Push Docker image to GHCR
-        run: |
-          docker buildx imagetools create \
-              -t ghcr.io/${ORG}/${REPO}/${CREATED_IMAGE_NAME} \
-              ${CREATED_IMAGE_NAME}-amd64 \
-              ${CREATED_IMAGE_NAME}-arm-v8 \
-              ${CREATED_IMAGE_NAME}-arm-v7
+      # - name: Pull Docker image from Docker Hub
+      #   run: |
+      #     docker pull --platform linux/amd64 ${{ matrix.target_images }}
+      #     docker tag ${{ matrix.target_images }} ${CREATED_IMAGE_NAME}-amd64
+      #
+      #     docker pull --platform linux/arm64/v8 ${{ matrix.target_images }}
+      #     docker tag ${{ matrix.target_images }} ${CREATED_IMAGE_NAME}-arm-v8
+      #
+      #     docker pull --platform linux/arm64/v7 ${{ matrix.target_images }}
+      #     docker tag ${{ matrix.target_images }} ${CREATED_IMAGE_NAME}-arm-v7
+      #
+      #     docker images
+      # - name: Push Docker image to GHCR
+      #   run: |
+      #     docker buildx imagetools create \
+      #         -t ghcr.io/${ORG}/${REPO}/${CREATED_IMAGE_NAME} \
+      #         ${CREATED_IMAGE_NAME}-amd64 \
+      #         ${CREATED_IMAGE_NAME}-arm-v8 \
+      #         ${CREATED_IMAGE_NAME}-arm-v7
