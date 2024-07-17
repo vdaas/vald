@@ -41,8 +41,6 @@ jobs:
       matrix:
         target_images: ["ubuntu:devel"]
     #     # platforms: [linux/amd64, linux/arm/v7, linux/arm64/v8]
-    #     # platforms: [linux/amd64, linux/arm/v7]
-    #     # platforms: [linux/amd64]
     steps:
       - uses: actions/checkout@v4
       - name: Set Git config
@@ -83,10 +81,10 @@ jobs:
           docker tag ${{ matrix.target_images }} ghcr.io/${ORG}/${REPO}/${CREATED_IMAGE_NAME}-arm-v7
 
           docker images
-      # - name: Push Docker image to GHCR
-      #   run: |
-      #     docker buildx imagetools create \
-      #         -t ghcr.io/${ORG}/${REPO}/${CREATED_IMAGE_NAME} \
-      #         ghcr.io/${ORG}/${REPO}/${CREATED_IMAGE_NAME}-amd64 \
-      #         ghcr.io/${ORG}/${REPO}/${CREATED_IMAGE_NAME}-arm-v8 \
-      #         ghcr.io/${ORG}/${REPO}/${CREATED_IMAGE_NAME}-arm-v7
+      - name: Push Docker image to GHCR
+        run: |
+          docker buildx imagetools create \
+              -t ghcr.io/${ORG}/${REPO}/${CREATED_IMAGE_NAME} \
+              ghcr.io/${ORG}/${REPO}/${CREATED_IMAGE_NAME}-amd64 \
+              ghcr.io/${ORG}/${REPO}/${CREATED_IMAGE_NAME}-arm-v8 \
+              ghcr.io/${ORG}/${REPO}/${CREATED_IMAGE_NAME}-arm-v7
