@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-name: "Sync Docker image from Docker Hub to GitHub Container Registry"
+name: "Sync Docker image from Docker Hub to GHCR"
 on:
   # TODO: The following events are for debugging purposes so I will remove them before merging.
   pull_request:
@@ -23,6 +23,9 @@ on:
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref != 'refs/heads/main' && github.ref || github.sha }}-${{ github.event_name }}
   cancel-in-progress: true
+env:
+  ORG: vdaas
+  REPO: vald
 jobs:
   dump-contexts-to-log:
     runs-on: ubuntu-latest
@@ -30,14 +33,13 @@ jobs:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/dump-context
 
-  ubuntu-devel:
+  ubuntu:
     runs-on: ubuntu-latest
-
     strategy:
       matrix:
+        target_images: [ubuntu:devel]
         # platforms: [linux/amd64, linux/arm/v7, linux/arm64/v8]
         platforms: [linux/amd64]
-
     steps:
       - uses: actions/checkout@v4
       - name: Set Git config
@@ -53,12 +55,12 @@ jobs:
             image=moby/buildkit:master
             network=host
           buildkitd-flags: "--debug --oci-worker-gc=false"
-      - name: Login to DockerHub
+      - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USER }}
           password: ${{ secrets.DOCKERHUB_PASS }}
-      - name: Login to GitHub Container Registry
+      - name: Login to GHCR
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
@@ -68,6 +70,8 @@ jobs:
           password: ${{ secrets.PACKAGE_TOKEN }}
       - name: Pull Docker image from Docker Hub
         run: |
-          docker pull --platform ${TARGET_PLATFORM} ubuntu:devel
-        env:
-          TARGET_PLATFORM: ${{ matrix.platforms }}
+          docker pull --platform ${{ matrix.platforms }} ${{ matrix.target_images }}
+      - name: Tag Docker image for GHCR
+        run: |
+          docker tag ${{ matrix.target_images }} ghcr.io/${ORG}/${REPO}/${{ matrix.target_images }}
+          docker images
