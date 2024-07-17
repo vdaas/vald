@@ -15,6 +15,8 @@
 #
 name: "Build docker image: buildbase"
 on:
+  schedule:
+    - cron: "0 1 * * *"
   push:
     branches:
       - "main"
@@ -25,11 +27,6 @@ on:
       - "v*.*.*"
       - "*.*.*-*"
       - "v*.*.*-*"
-    paths:
-      - ".github/actions/docker-build/action.yaml"
-      - ".github/workflows/_docker-image.yaml"
-      - ".github/workflows/dockers-buildbase-image.yml"
-      - "dockers/buildbase/Dockerfile"
   pull_request:
     paths:
       - ".github/actions/docker-build/action.yaml"
