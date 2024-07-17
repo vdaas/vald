@@ -35,6 +35,8 @@ jobs:
 
   ubuntu:
     runs-on: ubuntu-latest
+    env:
+      CREATED_IMAGE_NAME: buildbase
     strategy:
       matrix:
         target_images: ["ubuntu:devel"]
@@ -75,8 +77,18 @@ jobs:
                       --platform linux/arm/v8 ${{ matrix.target_images }}
       - name: Tag Docker image for GHCR
         run: |
-           docker tag ubuntu:devel ghcr.io/vdaas/vald/buildbase:devel-amd64    --platform linux/amd64
-           docker tag ubuntu:devel ghcr.io/vdaas/vald/buildbase:devel-arm64-v7 --platform linux/arm64/v7
-           docker tag ubuntu:devel ghcr.io/vdaas/vald/buildbase:devel-arm64-v8 --platform linux/arm64/v8
-          # docker tag ${{ matrix.target_images }} ghcr.io/${ORG}/${REPO}/build-base
-          # docker images
+          docker tag ${{ matrix.target_images }} ghcr.io/${ORG}/${REPO}/${CREATED_IMAGE_NAME} --platform linux/amd64
+          docker images
+
+      # - name: Pull Docker image from Docker Hub
+      #   run: |
+      #     docker pull --platform linux/amd64 \
+      #                 --platform linux/arm/v7 \
+      #                 --platform linux/arm/v8 ${{ matrix.target_images }}
+      # - name: Tag Docker image for GHCR
+      #   run: |
+      #      docker tag ubuntu:devel ghcr.io/vdaas/vald/buildbase:devel-amd64    --platform linux/amd64
+      #      docker tag ubuntu:devel ghcr.io/vdaas/vald/buildbase:devel-arm64-v7 --platform linux/arm64/v7
+      #      docker tag ubuntu:devel ghcr.io/vdaas/vald/buildbase:devel-arm64-v8 --platform linux/arm64/v8
+      #     # docker tag ${{ matrix.target_images }} ghcr.io/${ORG}/${REPO}/build-base
+      #     # docker images
