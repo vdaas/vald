@@ -15,4 +15,4 @@
 # limitations under the License.
 #
 
-FROM --platform=${TARGETPLATFORM} ubuntu:devel AS builder
+FROM ubuntu:devel AS builder
