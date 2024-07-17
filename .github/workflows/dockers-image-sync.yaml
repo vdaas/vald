@@ -40,8 +40,9 @@ jobs:
     strategy:
       matrix:
         target_images: ["ubuntu:devel"]
-        # platforms: [linux/amd64, linux/arm/v7, linux/arm64/v8]
-        platforms: [linux/amd64, linux/arm/v7]
+    #     # platforms: [linux/amd64, linux/arm/v7, linux/arm64/v8]
+    #     # platforms: [linux/amd64, linux/arm/v7]
+    #     # platforms: [linux/amd64]
     steps:
       - uses: actions/checkout@v4
       - name: Set Git config
@@ -75,19 +76,14 @@ jobs:
           # docker pull --platform linux/amd64 \
           #             --platform linux/arm/v7 \
           #             --platform linux/arm/v8 ${{ matrix.target_images }}
-          docker pull --platform ${{ matrix.platforms }} ${{ matrix.target_images }}
-      - name: Tag Docker image for GHCR
-        run: |
-          docker tag ${{ matrix.target_images }} ghcr.io/${ORG}/${REPO}/${CREATED_IMAGE_NAME}-${{ matrix.platforms }}
-          docker images
+          docker pull --platform linux/amd64 ${{ matrix.target_images }}
+          docker tag linux/amd64 ghcr.io/${ORG}/${REPO}/${CREATED_IMAGE_NAME}-amd64
 
-  test:
-    needs:
-      - ubuntu
-    runs-on: ubuntu-latest
-    env:
-      CREATED_IMAGE_NAME: buildbase
-    steps:
-      - name: Debug
+          docker pull --platform linux/arm64/v8 ${{ matrix.target_images }}
+          docker tag linux/amd64 ghcr.io/${ORG}/${REPO}/${CREATED_IMAGE_NAME}-arm-v8
+
+          docker pull --platform linux/arm64/v7 ${{ matrix.target_images }}
+          docker tag linux/amd64 ghcr.io/${ORG}/${REPO}/${CREATED_IMAGE_NAME}-arm-v7
+      - name: Tag Docker image for GHCR
         run: |
           docker images
