@@ -77,13 +77,13 @@ jobs:
           #             --platform linux/arm/v7 \
           #             --platform linux/arm/v8 ${{ matrix.target_images }}
           docker pull --platform linux/amd64 ${{ matrix.target_images }}
-          docker tag linux/amd64 ghcr.io/${ORG}/${REPO}/${CREATED_IMAGE_NAME}-amd64
+          docker tag ${{ matrix.target_images }} ghcr.io/${ORG}/${REPO}/${CREATED_IMAGE_NAME}-amd64
 
           docker pull --platform linux/arm64/v8 ${{ matrix.target_images }}
-          docker tag linux/amd64 ghcr.io/${ORG}/${REPO}/${CREATED_IMAGE_NAME}-arm-v8
+          docker tag ${{ matrix.target_images }} ghcr.io/${ORG}/${REPO}/${CREATED_IMAGE_NAME}-arm-v8
 
           docker pull --platform linux/arm64/v7 ${{ matrix.target_images }}
-          docker tag linux/amd64 ghcr.io/${ORG}/${REPO}/${CREATED_IMAGE_NAME}-arm-v7
+          docker tag ${{ matrix.target_images }} ghcr.io/${ORG}/${REPO}/${CREATED_IMAGE_NAME}-arm-v7
       - name: Tag Docker image for GHCR
         run: |
           docker images
