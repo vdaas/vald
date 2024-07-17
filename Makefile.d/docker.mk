@@ -175,6 +175,17 @@ docker/build/manager-index:
 		IMAGE=$(MANAGER_INDEX_IMAGE) \
 		docker/build/image
 
+.PHONY: docker/name/buildbase
+docker/name/buildbase:
+	@echo "$(ORG)/$(BUILDBASE_IMAGE)"
+
+.PHONY: docker/build/buildbase
+## build buildbase image
+docker/build/buildbase:
+	@make DOCKERFILE="$(ROOTDIR)/dockers/buildbase/Dockerfile" \
+		IMAGE=$(BUILDBASE_IMAGE) \
+		docker/build/image
+
 .PHONY: docker/name/ci-container
 docker/name/ci-container:
 	@echo "$(ORG)/$(CI_CONTAINER_IMAGE)"
