@@ -29,16 +29,19 @@ on:
       - ".github/actions/docker-build/action.yaml"
       - ".github/workflows/_docker-image.yaml"
       - ".github/workflows/dockers-buildbase-image.yml"
+      - "dockers/buildbase/Dockerfile"
   pull_request:
     paths:
       - ".github/actions/docker-build/action.yaml"
       - ".github/workflows/_docker-image.yaml"
       - ".github/workflows/dockers-buildbase-image.yml"
+      - "dockers/buildbase/Dockerfile"
   pull_request_target:
     paths:
       - ".github/actions/docker-build/action.yaml"
       - ".github/workflows/_docker-image.yaml"
       - ".github/workflows/dockers-buildbase-image.yml"
+      - "dockers/buildbase/Dockerfile"
 jobs:
   build:
     uses: ./.github/workflows/_docker-image.yaml
