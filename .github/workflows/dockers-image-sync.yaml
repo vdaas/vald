@@ -36,7 +36,7 @@ jobs:
   ubuntu:
     runs-on: ubuntu-latest
     env:
-      CREATED_IMAGE_NAME: buildbase
+      CREATED_IMAGE_NAME: "buildbase:devel"
     strategy:
       matrix:
         target_images: ["ubuntu:devel"]
@@ -73,9 +73,6 @@ jobs:
           password: ${{ secrets.PACKAGE_TOKEN }}
       - name: Pull Docker image from Docker Hub
         run: |
-          # docker pull --platform linux/amd64 \
-          #             --platform linux/arm/v7 \
-          #             --platform linux/arm/v8 ${{ matrix.target_images }}
           docker pull --platform linux/amd64 ${{ matrix.target_images }}
           docker tag ${{ matrix.target_images }} ghcr.io/${ORG}/${REPO}/${CREATED_IMAGE_NAME}-amd64
 
@@ -84,6 +81,12 @@ jobs:
 
           docker pull --platform linux/arm64/v7 ${{ matrix.target_images }}
           docker tag ${{ matrix.target_images }} ghcr.io/${ORG}/${REPO}/${CREATED_IMAGE_NAME}-arm-v7
-      - name: Tag Docker image for GHCR
-        run: |
+
           docker images
+      # - name: Push Docker image to GHCR
+      #   run: |
+      #     docker buildx imagetools create \
+      #         -t ghcr.io/${ORG}/${REPO}/${CREATED_IMAGE_NAME} \
+      #         ghcr.io/${ORG}/${REPO}/${CREATED_IMAGE_NAME}-amd64 \
+      #         ghcr.io/${ORG}/${REPO}/${CREATED_IMAGE_NAME}-arm-v8 \
+      #         ghcr.io/${ORG}/${REPO}/${CREATED_IMAGE_NAME}-arm-v7
