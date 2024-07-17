@@ -43,6 +43,6 @@ jobs:
   build:
     uses: ./.github/workflows/_docker-image.yaml
     with:
-      target: buildbase-container
+      target: buildbase
       platforms: linux/amd64,linux/arm64
     secrets: inherit
