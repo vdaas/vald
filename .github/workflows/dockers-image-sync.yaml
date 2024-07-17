@@ -37,10 +37,6 @@ jobs:
     runs-on: ubuntu-latest
     env:
       CREATED_IMAGE_NAME: "ghcr.io/vdaas/vald/buildbase:devel"
-    # strategy:
-    #   matrix:
-    #     target_images: ["ubuntu:devel"]
-    # #     # platforms: [linux/amd64, linux/arm/v7, linux/arm64/v8]
     steps:
       - uses: actions/checkout@v4
       - name: Set Git config
@@ -84,7 +80,7 @@ jobs:
           platforms: linux/amd64,linux/arm64
           context: ./dockers/ubuntu
           push: false
-          tags: ${{ steps.docker_meta.outputs.tags }}
+          tags: ${{ env.CREATED_IMAGE_NAME }}
           labels: ${{ steps.docker_meta.outputs.labels }}
       - name: Docker image check
         run: |
