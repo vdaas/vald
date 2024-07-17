@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-name: "Sync Docker image"
+name: "Sync Docker image from Docker Hub to GHCR"
 on:
   # TODO: The following events are for debugging purposes so I will remove them before merging.
   pull_request:
@@ -29,8 +29,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/dump-context
+
+
+
   ubuntu-devel:
     runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        # platforms: [linux/amd64, linux/arm/v7, linux/arm64/v8]
+        platforms: [linux/amd64]
+
     steps:
       - uses: actions/checkout@v4
       - name: Set Git config
@@ -59,3 +68,8 @@ jobs:
           # password: ${{ secrets.GITHUB_TOKEN }}
           username: ${{ secrets.PACKAGE_USER }}
           password: ${{ secrets.PACKAGE_TOKEN }}
+      - name: Pull Docker image from Docker Hub
+        run: |
+          docker pull ubuntu:devel-${TARGET_PLATFORM}
+        env:
+          TARGET_PLATFORM: ${{ matrix.platforms }}
