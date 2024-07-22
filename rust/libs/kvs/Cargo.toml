@@ -40,9 +40,5 @@ name = "hand_written"
 harness = false
 
 [[bench]]
-name = "stress"
-harness = false
-
-[[bench]]
 name = "visualize"
 harness = false

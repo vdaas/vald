@@ -5,9 +5,9 @@ use rand::{thread_rng, Rng};
 
 static TIMESTAMP: OnceLock<i64> = OnceLock::new();
 
-pub fn setup_kvs<T: KVS + Send + Sync + 'static>(kdim: usize, vdim: usize) -> (PathBuf, T) {
+pub fn setup_kvs<T: KVS + Send + Sync + 'static>(param: &str) -> (PathBuf, T) {
     let name = type_name::<T>().split("::").last().unwrap();
-    let path = Path::new(&format!("/tmp/kvs_bench/{}", TIMESTAMP.get_or_init(|| chrono::Local::now().timestamp()))).join(format!("{}-{}-{}", name, kdim, vdim));
+    let path = Path::new(&format!("/tmp/kvs_bench/{}", TIMESTAMP.get_or_init(|| chrono::Local::now().timestamp()))).join(format!("{}-{}", name, param));
     (path.clone(), T::new(path.to_str().unwrap()).unwrap())
 }
 
