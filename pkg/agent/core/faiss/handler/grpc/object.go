@@ -29,7 +29,9 @@ import (
 	"github.com/vdaas/vald/internal/observability/trace"
 )
 
-func (s *server) Exists(ctx context.Context, uid *payload.Object_ID) (res *payload.Object_ID, err error) {
+func (s *server) Exists(
+	ctx context.Context, uid *payload.Object_ID,
+) (res *payload.Object_ID, err error) {
 	_, span := trace.StartSpan(ctx, apiName+"/"+vald.ExistsRPCName)
 	defer func() {
 		if span != nil {
@@ -87,7 +89,9 @@ func (s *server) Exists(ctx context.Context, uid *payload.Object_ID) (res *paylo
 	return uid, nil
 }
 
-func (s *server) GetObject(ctx context.Context, id *payload.Object_VectorRequest) (res *payload.Object_Vector, err error) {
+func (s *server) GetObject(
+	ctx context.Context, id *payload.Object_VectorRequest,
+) (res *payload.Object_Vector, err error) {
 	return s.UnimplementedValdServer.UnimplementedObjectServer.GetObject(ctx, id)
 }
 

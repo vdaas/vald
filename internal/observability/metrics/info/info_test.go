@@ -19,7 +19,7 @@ package info
 // 	type args struct {
 // 		name        string
 // 		description string
-// 		i           interface{}
+// 		i           any
 // 	}
 // 	type want struct {
 // 		want metrics.Metric
@@ -109,7 +109,7 @@ package info
 //
 // func Test_labelKVs(t *testing.T) {
 // 	type args struct {
-// 		i interface{}
+// 		i any
 // 	}
 // 	type want struct {
 // 		want map[string]string

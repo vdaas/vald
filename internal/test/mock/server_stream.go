@@ -41,8 +41,8 @@ type ServerStreamMock struct {
 	SendHeaderFunc func(metadata.MD) error
 	SetTrailerFunc func(metadata.MD)
 	ContextFunc    func() context.Context
-	SendMsgFunc    func(interface{}) error
-	RecvMsgFunc    func(interface{}) error
+	SendMsgFunc    func(any) error
+	RecvMsgFunc    func(any) error
 }
 
 func (m *ServerStreamMock) SetHeader(md metadata.MD) error {
@@ -61,10 +61,10 @@ func (m *ServerStreamMock) Context() context.Context {
 	return m.ContextFunc()
 }
 
-func (m *ServerStreamMock) SendMsg(msg interface{}) error {
+func (m *ServerStreamMock) SendMsg(msg any) error {
 	return m.SendMsgFunc(msg)
 }
 
-func (m *ServerStreamMock) RecvMsg(msg interface{}) error {
+func (m *ServerStreamMock) RecvMsg(msg any) error {
 	return m.RecvMsgFunc(msg)
 }

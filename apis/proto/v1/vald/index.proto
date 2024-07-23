@@ -16,20 +16,24 @@
 
 syntax = "proto3";
 
-package manager.index.v1;
+package vald.v1;
 
 import "google/api/annotations.proto";
 import "v1/payload/payload.proto";
 
-option go_package = "github.com/vdaas/vald/apis/grpc/v1/manager/index";
+option go_package = "github.com/vdaas/vald/apis/grpc/v1/vald";
 option java_multiple_files = true;
-option java_outer_classname = "ValdIndexManager";
-option java_package = "org.vdaas.vald.api.v1.manager.index";
+option java_outer_classname = "ValdIndex";
+option java_package = "org.vdaas.vald.api.v1.vald";
 
 // Represent the index manager service.
 service Index {
   // Represent the RPC to get the index information.
   rpc IndexInfo(payload.v1.Empty) returns (payload.v1.Info.Index.Count) {
     option (google.api.http).get = "/index/info";
+  }
+  // Represent the RPC to get the index information for each agents.
+  rpc IndexDetail(payload.v1.Empty) returns (payload.v1.Info.Index.Detail) {
+    option (google.api.http).get = "/index/detail";
   }
 }

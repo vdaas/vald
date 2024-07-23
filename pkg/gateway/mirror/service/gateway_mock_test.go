@@ -27,7 +27,7 @@ type GatewayMock struct {
 	BroadCastFunc            func(ctx context.Context,
 		f func(ctx context.Context, target string, vc MirrorClient, copts ...grpc.CallOption) error) error
 	DoFunc func(ctx context.Context, target string,
-		f func(ctx context.Context, target string, vc MirrorClient, copts ...grpc.CallOption) (interface{}, error)) (interface{}, error)
+		f func(ctx context.Context, target string, vc MirrorClient, copts ...grpc.CallOption) (any, error)) (any, error)
 	DoMultiFunc func(ctx context.Context, targets []string,
 		f func(ctx context.Context, target string, vc MirrorClient, copts ...grpc.CallOption) error) error
 	GRPCClientFunc func() grpc.Client
@@ -44,21 +44,26 @@ func (gm *GatewayMock) FromForwardedContext(ctx context.Context) string {
 }
 
 // BroadCast calls BroadCastFunc object.
-func (gm *GatewayMock) BroadCast(ctx context.Context,
+func (gm *GatewayMock) BroadCast(
+	ctx context.Context,
 	f func(_ context.Context, _ string, _ MirrorClient, _ ...grpc.CallOption) error,
 ) error {
 	return gm.BroadCastFunc(ctx, f)
 }
 
 // Do calls DoFunc object.
-func (gm *GatewayMock) Do(ctx context.Context, target string,
-	f func(_ context.Context, _ string, _ MirrorClient, _ ...grpc.CallOption) (interface{}, error),
-) (interface{}, error) {
+func (gm *GatewayMock) Do(
+	ctx context.Context,
+	target string,
+	f func(_ context.Context, _ string, _ MirrorClient, _ ...grpc.CallOption) (any, error),
+) (any, error) {
 	return gm.DoFunc(ctx, target, f)
 }
 
 // DoMulti calls DoMultiFunc object.
-func (gm *GatewayMock) DoMulti(ctx context.Context, targets []string,
+func (gm *GatewayMock) DoMulti(
+	ctx context.Context,
+	targets []string,
 	f func(_ context.Context, _ string, _ MirrorClient, _ ...grpc.CallOption) error,
 ) error {
 	return gm.DoMultiFunc(ctx, targets, f)

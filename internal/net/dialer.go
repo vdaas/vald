@@ -336,7 +336,9 @@ func (d *dialer) dial(ctx context.Context, network, addr string) (conn Conn, err
 	return conn, nil
 }
 
-func (d *dialer) tlsHandshake(ctx context.Context, conn Conn, network, addr string) (tconn *tls.Conn, err error) {
+func (d *dialer) tlsHandshake(
+	ctx context.Context, conn Conn, network, addr string,
+) (tconn *tls.Conn, err error) {
 	ctx, span := trace.StartSpan(ctx, apiName+"/Dialer.tlsHandshake")
 	defer func() {
 		if span != nil {

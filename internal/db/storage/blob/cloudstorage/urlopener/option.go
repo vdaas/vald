@@ -13,9 +13,7 @@
 // limitations under the License.
 package urlopener
 
-import (
-	"net/http"
-)
+import "net/http"
 
 type Option func(*urlOpener) error
 

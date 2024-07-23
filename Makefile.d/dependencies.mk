@@ -47,14 +47,15 @@ go/download:
 
 .PHONY: go/deps
 ## install Go package dependencies
-go/deps:
+go/deps: \
+	update/go
 	sed -i "3s/go [0-9]\+\.[0-9]\+\(\.[0-9]\+\)\?/go $(GO_VERSION)/g" $(ROOTDIR)/hack/go.mod.default
 	if $(GO_CLEAN_DEPS); then \
         	rm -rf $(ROOTDIR)/vendor \
         		/go/pkg \
         		$(GOCACHE) \
         		$(ROOTDIR)/go.sum \
-        		$(ROOTDIR)/go.mod ; \
+        		$(ROOTDIR)/go.mod 2>/dev/null; \
         	cp $(ROOTDIR)/hack/go.mod.default $(ROOTDIR)/go.mod ; \
         	GOPRIVATE=$(GOPRIVATE) go mod tidy ; \
         	go clean -cache -modcache -testcache -i -r ; \
@@ -62,7 +63,7 @@ go/deps:
         		/go/pkg \
         		$(GOCACHE) \
         		$(ROOTDIR)/go.sum \
-        		$(ROOTDIR)/go.mod ; \
+        		$(ROOTDIR)/go.mod 2>/dev/null; \
         	cp $(ROOTDIR)/hack/go.mod.default $(ROOTDIR)/go.mod ; \
 	fi
 	cp $(ROOTDIR)/hack/go.mod.default $(ROOTDIR)/go.mod
@@ -76,7 +77,7 @@ go/example/deps:
 		$(GOCACHE) \
 	        $(ROOTDIR)/example/client/vendor \
 	        $(ROOTDIR)/example/client/go.mod \
-	        $(ROOTDIR)/example/client/go.sum
+        	$(ROOTDIR)/example/client/go.sum 2>/dev/null; \
 	sed -i "3s/go [0-9]\+\.[0-9]\+\(\.[0-9]\+\)\?/go $(GO_VERSION)/g" $(ROOTDIR)/example/client/go.mod.default
 	cp $(ROOTDIR)/example/client/go.mod.default $(ROOTDIR)/example/client/go.mod
 	cd $(ROOTDIR)/example/client && GOPRIVATE=$(GOPRIVATE) go mod tidy && cd -

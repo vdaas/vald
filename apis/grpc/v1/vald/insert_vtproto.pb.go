@@ -58,7 +58,9 @@ func NewInsertClient(cc grpc.ClientConnInterface) InsertClient {
 	return &insertClient{cc}
 }
 
-func (c *insertClient) Insert(ctx context.Context, in *payload.Insert_Request, opts ...grpc.CallOption) (*payload.Object_Location, error) {
+func (c *insertClient) Insert(
+	ctx context.Context, in *payload.Insert_Request, opts ...grpc.CallOption,
+) (*payload.Object_Location, error) {
 	out := new(payload.Object_Location)
 	err := c.cc.Invoke(ctx, "/vald.v1.Insert/Insert", in, out, opts...)
 	if err != nil {
@@ -67,7 +69,9 @@ func (c *insertClient) Insert(ctx context.Context, in *payload.Insert_Request, o
 	return out, nil
 }
 
-func (c *insertClient) StreamInsert(ctx context.Context, opts ...grpc.CallOption) (Insert_StreamInsertClient, error) {
+func (c *insertClient) StreamInsert(
+	ctx context.Context, opts ...grpc.CallOption,
+) (Insert_StreamInsertClient, error) {
 	stream, err := c.cc.NewStream(ctx, &Insert_ServiceDesc.Streams[0], "/vald.v1.Insert/StreamInsert", opts...)
 	if err != nil {
 		return nil, err
@@ -98,7 +102,9 @@ func (x *insertStreamInsertClient) Recv() (*payload.Object_StreamLocation, error
 	return m, nil
 }
 
-func (c *insertClient) MultiInsert(ctx context.Context, in *payload.Insert_MultiRequest, opts ...grpc.CallOption) (*payload.Object_Locations, error) {
+func (c *insertClient) MultiInsert(
+	ctx context.Context, in *payload.Insert_MultiRequest, opts ...grpc.CallOption,
+) (*payload.Object_Locations, error) {
 	out := new(payload.Object_Locations)
 	err := c.cc.Invoke(ctx, "/vald.v1.Insert/MultiInsert", in, out, opts...)
 	if err != nil {
@@ -124,13 +130,17 @@ type InsertServer interface {
 type UnimplementedInsertServer struct {
 }
 
-func (UnimplementedInsertServer) Insert(context.Context, *payload.Insert_Request) (*payload.Object_Location, error) {
+func (UnimplementedInsertServer) Insert(
+	context.Context, *payload.Insert_Request,
+) (*payload.Object_Location, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Insert not implemented")
 }
 func (UnimplementedInsertServer) StreamInsert(Insert_StreamInsertServer) error {
 	return status.Errorf(codes.Unimplemented, "method StreamInsert not implemented")
 }
-func (UnimplementedInsertServer) MultiInsert(context.Context, *payload.Insert_MultiRequest) (*payload.Object_Locations, error) {
+func (UnimplementedInsertServer) MultiInsert(
+	context.Context, *payload.Insert_MultiRequest,
+) (*payload.Object_Locations, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method MultiInsert not implemented")
 }
 func (UnimplementedInsertServer) mustEmbedUnimplementedInsertServer() {}
@@ -146,7 +156,12 @@ func RegisterInsertServer(s grpc.ServiceRegistrar, srv InsertServer) {
 	s.RegisterService(&Insert_ServiceDesc, srv)
 }
 
-func _Insert_Insert_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Insert_Insert_Handler(
+	srv any,
+	ctx context.Context,
+	dec func(any) error,
+	interceptor grpc.UnaryServerInterceptor,
+) (any, error) {
 	in := new(payload.Insert_Request)
 	if err := dec(in); err != nil {
 		return nil, err
@@ -158,13 +173,13 @@ func _Insert_Insert_Handler(srv interface{}, ctx context.Context, dec func(inter
 		Server:     srv,
 		FullMethod: "/vald.v1.Insert/Insert",
 	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+	handler := func(ctx context.Context, req any) (any, error) {
 		return srv.(InsertServer).Insert(ctx, req.(*payload.Insert_Request))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Insert_StreamInsert_Handler(srv interface{}, stream grpc.ServerStream) error {
+func _Insert_StreamInsert_Handler(srv any, stream grpc.ServerStream) error {
 	return srv.(InsertServer).StreamInsert(&insertStreamInsertServer{stream})
 }
 
@@ -190,7 +205,12 @@ func (x *insertStreamInsertServer) Recv() (*payload.Insert_Request, error) {
 	return m, nil
 }
 
-func _Insert_MultiInsert_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Insert_MultiInsert_Handler(
+	srv any,
+	ctx context.Context,
+	dec func(any) error,
+	interceptor grpc.UnaryServerInterceptor,
+) (any, error) {
 	in := new(payload.Insert_MultiRequest)
 	if err := dec(in); err != nil {
 		return nil, err
@@ -202,7 +222,7 @@ func _Insert_MultiInsert_Handler(srv interface{}, ctx context.Context, dec func(
 		Server:     srv,
 		FullMethod: "/vald.v1.Insert/MultiInsert",
 	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+	handler := func(ctx context.Context, req any) (any, error) {
 		return srv.(InsertServer).MultiInsert(ctx, req.(*payload.Insert_MultiRequest))
 	}
 	return interceptor(ctx, in, info, handler)

@@ -26,7 +26,9 @@ type SubResourceWriterMock struct {
 	UpdateFunc func(context.Context, client.Object, ...client.SubResourceUpdateOption) error
 }
 
-func (sm *SubResourceWriterMock) Update(ctx context.Context, obj client.Object, opts ...client.SubResourceUpdateOption) error {
+func (sm *SubResourceWriterMock) Update(
+	ctx context.Context, obj client.Object, opts ...client.SubResourceUpdateOption,
+) error {
 	return sm.UpdateFunc(ctx, obj, opts...)
 }
 
@@ -44,19 +46,27 @@ func (cm *ClientMock) Status() client.SubResourceWriter {
 	return cm.StatusFunc()
 }
 
-func (cm *ClientMock) Get(ctx context.Context, objKey client.ObjectKey, obj client.Object, opts ...client.GetOption) error {
+func (cm *ClientMock) Get(
+	ctx context.Context, objKey client.ObjectKey, obj client.Object, opts ...client.GetOption,
+) error {
 	return cm.GetFunc(ctx, objKey, obj, opts...)
 }
 
-func (cm *ClientMock) Create(ctx context.Context, obj client.Object, opts ...client.CreateOption) error {
+func (cm *ClientMock) Create(
+	ctx context.Context, obj client.Object, opts ...client.CreateOption,
+) error {
 	return cm.CreateFunc(ctx, obj, opts...)
 }
 
-func (cm *ClientMock) Delete(ctx context.Context, obj client.Object, opts ...client.DeleteOption) error {
+func (cm *ClientMock) Delete(
+	ctx context.Context, obj client.Object, opts ...client.DeleteOption,
+) error {
 	return cm.DeleteFunc(ctx, obj, opts...)
 }
 
-func (cm *ClientMock) DeleteAllOf(ctx context.Context, obj client.Object, opts ...client.DeleteAllOfOption) error {
+func (cm *ClientMock) DeleteAllOf(
+	ctx context.Context, obj client.Object, opts ...client.DeleteAllOfOption,
+) error {
 	return cm.DeleteAllOfFunc(ctx, obj, opts...)
 }
 

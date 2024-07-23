@@ -26,7 +26,7 @@ import (
 // DeleteStmt represents the interface to execute delete data.
 type DeleteStmt interface {
 	ExecContext(ctx context.Context) (sql.Result, error)
-	Where(query interface{}, value ...interface{}) DeleteStmt
+	Where(query any, value ...any) DeleteStmt
 }
 
 type deleteStmt struct {
@@ -39,7 +39,7 @@ func (stmt *deleteStmt) ExecContext(ctx context.Context) (sql.Result, error) {
 }
 
 // Where adds a where condition.
-func (stmt *deleteStmt) Where(query interface{}, value ...interface{}) DeleteStmt {
+func (stmt *deleteStmt) Where(query any, value ...any) DeleteStmt {
 	stmt.DeleteStmt = stmt.DeleteStmt.Where(query, value...)
 	return stmt
 }

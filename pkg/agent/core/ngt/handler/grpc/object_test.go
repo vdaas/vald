@@ -1401,7 +1401,7 @@ func Test_server_GetTimestamp(t *testing.T) {
 				// now test if the timestamp can be returned correctly
 				for i := 0; i < num; i++ {
 					testvec := req.GetRequests()[i].GetVector()
-					res, err := s.GetTimestamp(ectx, &payload.Object_GetTimestampRequest{
+					res, err := s.GetTimestamp(ectx, &payload.Object_TimestampRequest{
 						Id: &payload.Object_ID{
 							Id: testvec.GetId(),
 						},
@@ -1417,7 +1417,7 @@ func Test_server_GetTimestamp(t *testing.T) {
 				eg, ectx, s := setup(t)
 				defer eg.Wait()
 
-				_, err := s.GetTimestamp(ectx, &payload.Object_GetTimestampRequest{
+				_, err := s.GetTimestamp(ectx, &payload.Object_TimestampRequest{
 					Id: &payload.Object_ID{
 						Id: "",
 					},
@@ -1431,7 +1431,7 @@ func Test_server_GetTimestamp(t *testing.T) {
 				eg, ectx, s := setup(t)
 				defer eg.Wait()
 
-				_, err := s.GetTimestamp(ectx, &payload.Object_GetTimestampRequest{
+				_, err := s.GetTimestamp(ectx, &payload.Object_TimestampRequest{
 					Id: &payload.Object_ID{
 						Id: "not exist ID",
 					},

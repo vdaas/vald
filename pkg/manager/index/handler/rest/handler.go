@@ -20,8 +20,8 @@ package rest
 import (
 	"net/http"
 
-	"github.com/vdaas/vald/apis/grpc/v1/manager/index"
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
+	index "github.com/vdaas/vald/apis/grpc/v1/vald"
 	"github.com/vdaas/vald/internal/net/http/dump"
 	"github.com/vdaas/vald/internal/net/http/json"
 )
@@ -45,15 +45,15 @@ func New(opts ...Option) Handler {
 }
 
 func (*handler) Index(w http.ResponseWriter, r *http.Request) (int, error) {
-	data := make(map[string]interface{})
-	return json.Handler(w, r, &data, func() (interface{}, error) {
+	data := make(map[string]any)
+	return json.Handler(w, r, &data, func() (any, error) {
 		return dump.Request(nil, data, r)
 	})
 }
 
 func (h *handler) IndexInfo(w http.ResponseWriter, r *http.Request) (code int, err error) {
 	var req *payload.Empty
-	return json.Handler(w, r, &req, func() (interface{}, error) {
+	return json.Handler(w, r, &req, func() (any, error) {
 		return h.indexer.IndexInfo(r.Context(), req)
 	})
 }

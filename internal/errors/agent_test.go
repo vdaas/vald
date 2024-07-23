@@ -17,9 +17,7 @@
 // Package errors
 package errors
 
-import (
-	"testing"
-)
+import "testing"
 
 func TestErrObjectNotFound(t *testing.T) {
 	type args struct {

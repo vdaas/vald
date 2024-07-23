@@ -17,9 +17,7 @@
 // Package node provides kubernetes node information and preriodically update
 package node
 
-import (
-	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
-)
+import _ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 
 // NOT IMPLEMENTED BELOW
 //

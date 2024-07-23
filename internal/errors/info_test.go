@@ -17,9 +17,7 @@
 // Package errors provides error types and function
 package errors
 
-import (
-	"testing"
-)
+import "testing"
 
 func TestErrFailedToInitInfo(t *testing.T) {
 	type args struct {

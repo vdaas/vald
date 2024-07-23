@@ -134,15 +134,15 @@ func toZapEncoder(fmt format.Format) zapcore.Encoder {
 	}
 }
 
-func (l *logger) Debug(vals ...interface{}) {
+func (l *logger) Debug(vals ...any) {
 	l.sugar.Debug(vals...)
 }
 
-func (l *logger) Debugf(format string, vals ...interface{}) {
+func (l *logger) Debugf(format string, vals ...any) {
 	l.sugar.Debugf(format, vals...)
 }
 
-func (l *logger) Debugd(msg string, details ...interface{}) {
+func (l *logger) Debugd(msg string, details ...any) {
 	if len(details) == 1 {
 		l.logger.Debug(msg, zap.Any(detailsKey, details[0]))
 		return
@@ -151,15 +151,15 @@ func (l *logger) Debugd(msg string, details ...interface{}) {
 	l.logger.Debug(msg, zap.Any(detailsKey, details))
 }
 
-func (l *logger) Info(vals ...interface{}) {
+func (l *logger) Info(vals ...any) {
 	l.sugar.Info(vals...)
 }
 
-func (l *logger) Infof(format string, vals ...interface{}) {
+func (l *logger) Infof(format string, vals ...any) {
 	l.sugar.Infof(format, vals...)
 }
 
-func (l *logger) Infod(msg string, details ...interface{}) {
+func (l *logger) Infod(msg string, details ...any) {
 	if len(details) == 1 {
 		l.logger.Info(msg, zap.Any(detailsKey, details[0]))
 		return
@@ -168,15 +168,15 @@ func (l *logger) Infod(msg string, details ...interface{}) {
 	l.logger.Info(msg, zap.Any(detailsKey, details))
 }
 
-func (l *logger) Warn(vals ...interface{}) {
+func (l *logger) Warn(vals ...any) {
 	l.sugar.Warn(vals...)
 }
 
-func (l *logger) Warnf(format string, vals ...interface{}) {
+func (l *logger) Warnf(format string, vals ...any) {
 	l.sugar.Warnf(format, vals...)
 }
 
-func (l *logger) Warnd(msg string, details ...interface{}) {
+func (l *logger) Warnd(msg string, details ...any) {
 	if len(details) == 1 {
 		l.logger.Warn(msg, zap.Any(detailsKey, details[0]))
 		return
@@ -185,15 +185,15 @@ func (l *logger) Warnd(msg string, details ...interface{}) {
 	l.logger.Warn(msg, zap.Any(detailsKey, details))
 }
 
-func (l *logger) Error(vals ...interface{}) {
+func (l *logger) Error(vals ...any) {
 	l.sugar.Error(vals...)
 }
 
-func (l *logger) Errorf(format string, vals ...interface{}) {
+func (l *logger) Errorf(format string, vals ...any) {
 	l.sugar.Errorf(format, vals...)
 }
 
-func (l *logger) Errord(msg string, details ...interface{}) {
+func (l *logger) Errord(msg string, details ...any) {
 	if len(details) == 1 {
 		l.logger.Error(msg, zap.Any(detailsKey, details[0]))
 		return
@@ -202,15 +202,15 @@ func (l *logger) Errord(msg string, details ...interface{}) {
 	l.logger.Error(msg, zap.Any(detailsKey, details))
 }
 
-func (l *logger) Fatal(vals ...interface{}) {
+func (l *logger) Fatal(vals ...any) {
 	l.sugar.Fatal(vals...)
 }
 
-func (l *logger) Fatalf(format string, vals ...interface{}) {
+func (l *logger) Fatalf(format string, vals ...any) {
 	l.sugar.Fatalf(format, vals...)
 }
 
-func (l *logger) Fatald(msg string, details ...interface{}) {
+func (l *logger) Fatald(msg string, details ...any) {
 	if len(details) == 1 {
 		l.logger.Fatal(msg, zap.Any(detailsKey, details[0]))
 		return

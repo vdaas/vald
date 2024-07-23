@@ -32,7 +32,7 @@ var (
 
 // CircuitBreaker is a state machine to prevent doing processes that are likely to fail.
 type CircuitBreaker interface {
-	Do(ctx context.Context, key string, fn func(ctx context.Context) (interface{}, error)) (val interface{}, err error)
+	Do(ctx context.Context, key string, fn func(ctx context.Context) (any, error)) (val any, err error)
 }
 
 type breakerManager struct {
@@ -58,7 +58,9 @@ func NewCircuitBreaker(opts ...Option) (CircuitBreaker, error) {
 }
 
 // Do invokes the breaker matching the given key.
-func (bm *breakerManager) Do(ctx context.Context, key string, fn func(ctx context.Context) (interface{}, error)) (val interface{}, err error) {
+func (bm *breakerManager) Do(
+	ctx context.Context, key string, fn func(ctx context.Context) (any, error),
+) (val any, err error) {
 	var st State
 	defer func() {
 		mu.Lock()

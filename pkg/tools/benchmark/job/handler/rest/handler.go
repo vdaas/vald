@@ -17,7 +17,7 @@
 // Package rest provides rest api logic
 package rest
 
-type Handler interface{}
+type Handler any
 
 type handler struct{}
 

@@ -102,15 +102,12 @@ func New(kubeConfig string) (Client, error) {
 }
 
 func (cli *client) Portforward(
-	namespace, podName string,
-	localPort, podPort int,
+	namespace, podName string, localPort, podPort int,
 ) *portforward.Portforward {
 	return portforward.New(cli.rest, namespace, podName, localPort, podPort)
 }
 
-func (cli *client) GetPod(
-	ctx context.Context,
-	namespace,
+func (cli *client) GetPod(ctx context.Context, namespace,
 	name string,
 ) (*corev1.Pod, error) {
 	pod, err := cli.clientset.CoreV1().Pods(
@@ -123,9 +120,7 @@ func (cli *client) GetPod(
 }
 
 func (cli *client) GetPods(
-	ctx context.Context,
-	namespace string,
-	labelSelector string,
+	ctx context.Context, namespace string, labelSelector string,
 ) ([]corev1.Pod, error) {
 	pods, err := cli.clientset.CoreV1().Pods(
 		namespace,
@@ -139,10 +134,7 @@ func (cli *client) GetPods(
 	return pods.Items, nil
 }
 
-func (cli *client) DeletePod(
-	ctx context.Context,
-	namespace, name string,
-) error {
+func (cli *client) DeletePod(ctx context.Context, namespace, name string) error {
 	cli.clientset.CoreV1().Pods(
 		namespace,
 	).Delete(ctx, name, metav1.DeleteOptions{})
@@ -151,9 +143,7 @@ func (cli *client) DeletePod(
 }
 
 func (cli *client) WaitForPodReady(
-	ctx context.Context,
-	namespace, name string,
-	timeout time.Duration,
+	ctx context.Context, namespace, name string, timeout time.Duration,
 ) (ok bool, err error) {
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
@@ -184,7 +174,9 @@ func (cli *client) WaitForPodReady(
 	}
 }
 
-func (cli *client) ListCronJob(ctx context.Context, namespace, labelSelector string) ([]v1.CronJob, error) {
+func (cli *client) ListCronJob(
+	ctx context.Context, namespace, labelSelector string,
+) ([]v1.CronJob, error) {
 	cronJobs, err := cli.clientset.BatchV1().CronJobs(namespace).List(ctx, metav1.ListOptions{
 		LabelSelector: labelSelector,
 	})
@@ -195,7 +187,9 @@ func (cli *client) ListCronJob(ctx context.Context, namespace, labelSelector str
 	return cronJobs.Items, nil
 }
 
-func (cli *client) CreateJobFromCronJob(ctx context.Context, name, namespace string, cronJob *v1.CronJob) error {
+func (cli *client) CreateJobFromCronJob(
+	ctx context.Context, name, namespace string, cronJob *v1.CronJob,
+) error {
 	job := &v1.Job{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      name,

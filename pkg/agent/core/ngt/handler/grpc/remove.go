@@ -26,13 +26,15 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/net/grpc/errdetails"
 	"github.com/vdaas/vald/internal/net/grpc/status"
+	"github.com/vdaas/vald/internal/observability/attribute"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/sync"
-	"go.opentelemetry.io/otel/attribute"
 )
 
-func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (res *payload.Object_Location, err error) {
+func (s *server) Remove(
+	ctx context.Context, req *payload.Remove_Request,
+) (res *payload.Object_Location, err error) {
 	_, span := trace.StartSpan(ctx, apiName+"/"+vald.RemoveRPCName)
 	defer func() {
 		if span != nil {
@@ -185,7 +187,9 @@ func (s *server) StreamRemove(stream vald.Remove_StreamRemoveServer) (err error)
 	return nil
 }
 
-func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequest) (res *payload.Object_Locations, err error) {
+func (s *server) MultiRemove(
+	ctx context.Context, reqs *payload.Remove_MultiRequest,
+) (res *payload.Object_Locations, err error) {
 	_, span := trace.StartSpan(ctx, apiName+"/"+vald.MultiRemoveRPCName)
 	defer func() {
 		if span != nil {
@@ -274,7 +278,9 @@ func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequ
 	return s.newLocations(uuids...), nil
 }
 
-func (s *server) RemoveByTimestamp(ctx context.Context, req *payload.Remove_TimestampRequest) (locs *payload.Object_Locations, errs error) {
+func (s *server) RemoveByTimestamp(
+	ctx context.Context, req *payload.Remove_TimestampRequest,
+) (locs *payload.Object_Locations, errs error) {
 	ctx, span := trace.StartSpan(ctx, apiName+"/"+vald.RemoveByTimestampRPCName)
 	defer func() {
 		if span != nil {

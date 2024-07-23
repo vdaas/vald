@@ -74,7 +74,9 @@ func (r *reconciler) addListOpts(opt client.ListOption) {
 	r.lopts = append(r.lopts, opt)
 }
 
-func (r *reconciler) Reconcile(ctx context.Context, req reconcile.Request) (reconcile.Result, error) {
+func (r *reconciler) Reconcile(
+	ctx context.Context, req reconcile.Request,
+) (reconcile.Result, error) {
 	var pod corev1.Pod
 	r.mgr.GetClient().Get(ctx, req.NamespacedName, &pod)
 	if r.onReconcile != nil {

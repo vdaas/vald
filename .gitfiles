@@ -80,6 +80,7 @@
 .github/workflows/dockers-agent-sidecar-image.yml
 .github/workflows/dockers-benchmark-job-image.yml
 .github/workflows/dockers-benchmark-operator-image.yaml
+.github/workflows/dockers-buildbase-image.yml
 .github/workflows/dockers-ci-container-image.yml
 .github/workflows/dockers-dev-container-image.yml
 .github/workflows/dockers-discoverer-k8s-image.yml
@@ -161,8 +162,6 @@ apis/grpc/v1/filter/egress/egress_filter.pb.go
 apis/grpc/v1/filter/egress/egress_filter_vtproto.pb.go
 apis/grpc/v1/filter/ingress/ingress_filter.pb.go
 apis/grpc/v1/filter/ingress/ingress_filter_vtproto.pb.go
-apis/grpc/v1/manager/index/index_manager.pb.go
-apis/grpc/v1/manager/index/index_manager_vtproto.pb.go
 apis/grpc/v1/mirror/mirror.go
 apis/grpc/v1/mirror/mirror.pb.go
 apis/grpc/v1/mirror/mirror_vtproto.pb.go
@@ -177,6 +176,8 @@ apis/grpc/v1/vald/filter.pb.go
 apis/grpc/v1/vald/filter_vtproto.pb.go
 apis/grpc/v1/vald/flush.pb.go
 apis/grpc/v1/vald/flush_vtproto.pb.go
+apis/grpc/v1/vald/index.pb.go
+apis/grpc/v1/vald/index_vtproto.pb.go
 apis/grpc/v1/vald/insert.pb.go
 apis/grpc/v1/vald/insert_vtproto.pb.go
 apis/grpc/v1/vald/object.pb.go
@@ -197,12 +198,12 @@ apis/proto/v1/agent/sidecar/sidecar.proto
 apis/proto/v1/discoverer/discoverer.proto
 apis/proto/v1/filter/egress/egress_filter.proto
 apis/proto/v1/filter/ingress/ingress_filter.proto
-apis/proto/v1/manager/index/index_manager.proto
 apis/proto/v1/mirror/mirror.proto
 apis/proto/v1/payload/payload.proto
 apis/proto/v1/rpc/errdetails/error_details.proto
 apis/proto/v1/vald/filter.proto
 apis/proto/v1/vald/flush.proto
+apis/proto/v1/vald/index.proto
 apis/proto/v1/vald/insert.proto
 apis/proto/v1/vald/object.proto
 apis/proto/v1/vald/remove.proto
@@ -214,12 +215,12 @@ apis/swagger/v1/agent/sidecar/sidecar.swagger.json
 apis/swagger/v1/discoverer/discoverer.swagger.json
 apis/swagger/v1/filter/egress/egress_filter.swagger.json
 apis/swagger/v1/filter/ingress/ingress_filter.swagger.json
-apis/swagger/v1/manager/index/index_manager.swagger.json
 apis/swagger/v1/mirror/mirror.swagger.json
 apis/swagger/v1/payload/payload.swagger.json
 apis/swagger/v1/rpc/errdetails/error_details.swagger.json
 apis/swagger/v1/vald/filter.swagger.json
 apis/swagger/v1/vald/flush.swagger.json
+apis/swagger/v1/vald/index.swagger.json
 apis/swagger/v1/vald/insert.swagger.json
 apis/swagger/v1/vald/object.swagger.json
 apis/swagger/v1/vald/remove.swagger.json
@@ -228,6 +229,7 @@ apis/swagger/v1/vald/update.swagger.json
 apis/swagger/v1/vald/upsert.swagger.json
 assets/docs/guides/observability-configuration/architecture.png
 assets/docs/guides/operations/grafana-example.png
+assets/docs/guides/read-replica-and-rotator/architecture.png
 assets/docs/overview/component/agent/agent.drawio
 assets/docs/overview/component/agent/ngt.png
 assets/docs/overview/component/agent/sidecar_backup.png
@@ -516,6 +518,7 @@ dockers/agent/core/ngt/Dockerfile
 dockers/agent/core/ngt/README.md
 dockers/agent/sidecar/Dockerfile
 dockers/agent/sidecar/README.md
+dockers/buildbase/Dockerfile
 dockers/ci/base/Dockerfile
 dockers/ci/base/README.md
 dockers/dev/Dockerfile
@@ -536,6 +539,7 @@ dockers/manager/index/Dockerfile
 dockers/manager/index/README.md
 dockers/operator/helm/Dockerfile
 dockers/operator/helm/README.md
+dockers/readreplica/job/readreplica/rotate/Dockerfile
 dockers/template.md
 dockers/tools/benchmark/job/Dockerfile
 dockers/tools/benchmark/operator/Dockerfile
@@ -556,6 +560,7 @@ docs/api/upsert.md
 docs/contributing/coding-style.md
 docs/contributing/contributing-guide.md
 docs/contributing/development.md
+docs/contributing/reviewer-guideline.md
 docs/contributing/unit-test-guideline.md
 docs/overview/about-vald.md
 docs/overview/architecture.md
@@ -571,8 +576,8 @@ docs/performance/benchmark.md
 docs/performance/continuous-benchmark.md
 docs/performance/loadtest.md
 docs/performance/tuning-search-performance.md
+docs/support/FAQ.md
 docs/support/contacts.md
-docs/support/faq.md
 docs/troubleshooting/README.md
 docs/troubleshooting/client-side.md
 docs/troubleshooting/mirror-gateway.md
@@ -595,6 +600,7 @@ docs/user-guides/mirroring-configuration.md
 docs/user-guides/network-policy.md
 docs/user-guides/observability-configuration.md
 docs/user-guides/operations.md
+docs/user-guides/read-replica-and-rotator.md
 docs/user-guides/sdks.md
 docs/user-guides/upgrade-cluster.md
 example/client/agent/main.go
@@ -686,6 +692,7 @@ hack/benchmark/internal/starter/gateway/vald/vald_test.go
 hack/benchmark/internal/starter/starter.go
 hack/benchmark/metrics/metrics.go
 hack/benchmark/src/singleflight/singleflight_bench_test.go
+hack/docker/gen/main.go
 hack/git/hooks/pre-commit
 hack/go.mod.default
 hack/gorules/rules.go
@@ -1016,7 +1023,6 @@ internal/hash/hash.go
 internal/hash/hash_test.go
 internal/info/info.go
 internal/info/info_bench_test.go
-internal/info/info_test.go
 internal/info/option.go
 internal/info/option_test.go
 internal/io/copy.go
@@ -1820,6 +1826,14 @@ renovate.json
 rust/Cargo.lock
 rust/Cargo.toml
 rust/bin/agent/Cargo.toml
+rust/bin/agent/src/handler.rs
+rust/bin/agent/src/handler/common.rs
+rust/bin/agent/src/handler/index.rs
+rust/bin/agent/src/handler/insert.rs
+rust/bin/agent/src/handler/remove.rs
+rust/bin/agent/src/handler/search.rs
+rust/bin/agent/src/handler/update.rs
+rust/bin/agent/src/handler/upsert.rs
 rust/bin/agent/src/main.rs
 rust/libs/ngt-rs/Cargo.toml
 rust/libs/ngt-rs/build.rs
@@ -1838,8 +1852,6 @@ rust/libs/proto/src/filter.egress.v1.tonic.rs
 rust/libs/proto/src/filter.ingress.v1.rs
 rust/libs/proto/src/filter.ingress.v1.tonic.rs
 rust/libs/proto/src/lib.rs
-rust/libs/proto/src/manager.index.v1.rs
-rust/libs/proto/src/manager.index.v1.tonic.rs
 rust/libs/proto/src/mirror.v1.rs
 rust/libs/proto/src/mirror.v1.tonic.rs
 rust/libs/proto/src/payload.v1.rs

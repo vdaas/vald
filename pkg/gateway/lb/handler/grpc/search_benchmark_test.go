@@ -86,7 +86,9 @@ func newRandomResponse() (res *payload.Search_Response) {
 	return res
 }
 
-func benchmark(b *testing.B, results []*payload.Search_Response, anew func(n, f, r int) Aggregator) {
+func benchmark(
+	b *testing.B, results []*payload.Search_Response, anew func(n, f, r int) Aggregator,
+) {
 	ctx := context.Background()
 	l := len(results)
 	for k := 10; k < dataLength; k *= 10 {
@@ -113,7 +115,10 @@ func benchmark(b *testing.B, results []*payload.Search_Response, anew func(n, f,
 	}
 }
 
-func doSearchWithAggregator(ctx context.Context, k, concurrency int, anew func(n, f, r int) Aggregator,
+func doSearchWithAggregator(
+	ctx context.Context,
+	k, concurrency int,
+	anew func(n, f, r int) Aggregator,
 	f func(ctx context.Context) *payload.Search_Response,
 ) (res *payload.Search_Response, err error) {
 	eg, ectx := errgroup.New(ctx)

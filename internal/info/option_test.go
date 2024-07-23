@@ -24,6 +24,11 @@ import (
 	"github.com/vdaas/vald/internal/test/goleak"
 )
 
+// Goroutine leak is detected by `fastime`, but it should be ignored in the test because it is an external package.
+var goleakIgnoreOptions = []goleak.Option{
+	goleak.IgnoreTopFunction("github.com/kpango/fastime.(*fastime).StartTimerD.func1"),
+}
+
 func TestWithServerName(t *testing.T) {
 	type T = info
 	type args struct {

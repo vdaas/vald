@@ -38,7 +38,7 @@ type Loader interface {
 }
 
 type (
-	loadFunc func(context.Context, *grpc.ClientConn, interface{}, ...grpc.CallOption) (interface{}, error)
+	loadFunc func(context.Context, *grpc.ClientConn, any, ...grpc.CallOption) (any, error)
 )
 
 type loader struct {
@@ -50,7 +50,7 @@ type loader struct {
 	dataset          string
 	progressDuration time.Duration
 	loaderFunc       loadFunc
-	dataProvider     func() interface{}
+	dataProvider     func() any
 	dataSize         int
 	operation        config.Operation
 }
@@ -135,7 +135,7 @@ func (l *loader) Do(ctx context.Context) <-chan error {
 		log.Infof("progress %d requests, %f[vps], error: %d", pgCnt, vps(int(pgCnt)*l.batchSize, start, time.Now()), errCnt)
 	}
 
-	f := func(i interface{}, err error) {
+	f := func(i any, err error) {
 		atomic.AddInt32(&pgCnt, 1)
 		if err != nil {
 			atomic.AddInt32(&errCnt, 1)
@@ -183,19 +183,21 @@ func (l *loader) Do(ctx context.Context) <-chan error {
 	return ech
 }
 
-func (l *loader) do(ctx context.Context, f func(interface{}, error), notify func(context.Context, error)) (err error) {
+func (l *loader) do(
+	ctx context.Context, f func(any, error), notify func(context.Context, error),
+) (err error) {
 	eg, egctx := errgroup.New(ctx)
 
 	switch l.operation {
 	case config.StreamInsert, config.StreamSearch:
-		var newData func() interface{}
+		var newData func() any
 		switch l.operation {
 		case config.StreamInsert:
-			newData = func() interface{} {
+			newData = func() any {
 				return new(payload.Empty)
 			}
 		case config.StreamSearch:
-			newData = func() interface{} {
+			newData = func() any {
 				return new(payload.Search_Response)
 			}
 		}
@@ -206,7 +208,7 @@ func (l *loader) do(ctx context.Context, f func(interface{}, error), notify func
 					err = nil
 				}
 			}()
-			_, err = l.client.Do(egctx, l.addr, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
+			_, err = l.client.Do(egctx, l.addr, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (any, error) {
 				st, err := l.loaderFunc(ctx, conn, nil, copts...)
 				if err != nil {
 					return nil, err
@@ -230,7 +232,7 @@ func (l *loader) do(ctx context.Context, f func(interface{}, error), notify func
 					notify(egctx, err)
 					err = nil
 				}()
-				_, err = l.client.Do(egctx, l.addr, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
+				_, err = l.client.Do(egctx, l.addr, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (any, error) {
 					res, err := l.loaderFunc(egctx, conn, r)
 					f(res, err)
 					return res, err
