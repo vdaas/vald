@@ -17,9 +17,7 @@
 // Package config stores all server application settings
 package config
 
-import (
-	"github.com/vdaas/vald/internal/config"
-)
+import "github.com/vdaas/vald/internal/config"
 
 // GlobalConfig is type alias for config.GlobalConfig.
 type GlobalConfig = config.GlobalConfig

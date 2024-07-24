@@ -118,7 +118,7 @@ package service
 // 		dataset          string
 // 		progressDuration time.Duration
 // 		loaderFunc       loadFunc
-// 		dataProvider     func() interface{}
+// 		dataProvider     func() any
 // 		dataSize         int
 // 		operation        config.Operation
 // 	}
@@ -257,7 +257,7 @@ package service
 // 		dataset          string
 // 		progressDuration time.Duration
 // 		loaderFunc       loadFunc
-// 		dataProvider     func() interface{}
+// 		dataProvider     func() any
 // 		dataSize         int
 // 		operation        config.Operation
 // 	}

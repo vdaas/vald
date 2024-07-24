@@ -222,7 +222,7 @@ func TestWithVersion(t *testing.T) {
 func TestWithConfigLoader(t *testing.T) {
 	type T = runner
 	type args struct {
-		f func(string) (interface{}, *config.GlobalConfig, error)
+		f func(string) (any, *config.GlobalConfig, error)
 	}
 	type want struct {
 		obj *T
@@ -245,7 +245,7 @@ func TestWithConfigLoader(t *testing.T) {
 
 	tests := []test{
 		func() test {
-			f := func(string) (interface{}, *config.GlobalConfig, error) {
+			f := func(string) (any, *config.GlobalConfig, error) {
 				return nil, nil, nil
 			}
 			return test{
@@ -297,7 +297,7 @@ func TestWithConfigLoader(t *testing.T) {
 func TestWithDaemonInitializer(t *testing.T) {
 	type T = runner
 	type args struct {
-		f func(interface{}) (Runner, error)
+		f func(any) (Runner, error)
 	}
 	type want struct {
 		obj *T
@@ -320,7 +320,7 @@ func TestWithDaemonInitializer(t *testing.T) {
 
 	tests := []test{
 		func() test {
-			f := func(interface{}) (Runner, error) {
+			f := func(any) (Runner, error) {
 				return nil, nil
 			}
 			return test{

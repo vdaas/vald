@@ -17,9 +17,7 @@
 // Package compress provides compress functions
 package compress
 
-import (
-	"github.com/vdaas/vald/internal/compress/zstd"
-)
+import "github.com/vdaas/vald/internal/compress/zstd"
 
 // ZstdOption represents the functional option for zstdCompressor.
 type ZstdOption func(c *zstdCompressor) error

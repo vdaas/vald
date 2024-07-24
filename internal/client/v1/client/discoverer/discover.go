@@ -271,7 +271,7 @@ func (c *client) discover(ctx context.Context, ech chan<- error) (err error) {
 
 	var connected []string
 	if bo := c.client.GetBackoff(); bo != nil {
-		_, err = bo.Do(ctx, func(ctx context.Context) (interface{}, bool, error) {
+		_, err = bo.Do(ctx, func(ctx context.Context) (any, bool, error) {
 			connected, err = c.updateDiscoveryInfo(ctx, ech)
 			if err != nil {
 				if !errors.Is(err, errors.ErrGRPCClientNotFound) &&
@@ -298,7 +298,9 @@ func (c *client) discover(ctx context.Context, ech chan<- error) (err error) {
 	return c.disconnectOldAddrs(ctx, oldAddrs, connected, ech)
 }
 
-func (c *client) updateDiscoveryInfo(ctx context.Context, ech chan<- error) (connected []string, err error) {
+func (c *client) updateDiscoveryInfo(
+	ctx context.Context, ech chan<- error,
+) (connected []string, err error) {
 	nodes, err := c.discoverNodes(ctx)
 	if err != nil {
 		log.Warnf("error detected when discovering nodes,\terrors: %v", err)
@@ -329,7 +331,7 @@ func (c *client) updateDiscoveryInfo(ctx context.Context, ech chan<- error) (con
 func (c *client) discoverNodes(ctx context.Context) (nodes *payload.Info_Nodes, err error) {
 	_, err = c.dscClient.RoundRobin(grpc.WithGRPCMethod(ctx, "discoverer.v1.Discoverer/Nodes"), func(ctx context.Context,
 		conn *grpc.ClientConn, copts ...grpc.CallOption,
-	) (interface{}, error) {
+	) (any, error) {
 		nodes, err = discoverer.NewDiscovererClient(conn).
 			Nodes(ctx, &payload.Discoverer_Request{
 				Namespace: c.namespace,
@@ -344,7 +346,9 @@ func (c *client) discoverNodes(ctx context.Context) (nodes *payload.Info_Nodes, 
 	return nodes, err
 }
 
-func (c *client) discoverAddrs(ctx context.Context, nodes *payload.Info_Nodes, ech chan<- error) (addrs []string, err error) {
+func (c *client) discoverAddrs(
+	ctx context.Context, nodes *payload.Info_Nodes, ech chan<- error,
+) (addrs []string, err error) {
 	maxPodLen := 0
 	podLength := 0
 	for _, node := range nodes.GetNodes() {
@@ -383,7 +387,9 @@ func (c *client) discoverAddrs(ctx context.Context, nodes *payload.Info_Nodes, e
 	return addrs, nil
 }
 
-func (c *client) disconnectOldAddrs(ctx context.Context, oldAddrs, connectedAddrs []string, ech chan<- error) (err error) {
+func (c *client) disconnectOldAddrs(
+	ctx context.Context, oldAddrs, connectedAddrs []string, ech chan<- error,
+) (err error) {
 	if !c.autoconn {
 		return nil
 	}

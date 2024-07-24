@@ -58,7 +58,9 @@ func NewDiscovererClient(cc grpc.ClientConnInterface) DiscovererClient {
 	return &discovererClient{cc}
 }
 
-func (c *discovererClient) Pods(ctx context.Context, in *payload.Discoverer_Request, opts ...grpc.CallOption) (*payload.Info_Pods, error) {
+func (c *discovererClient) Pods(
+	ctx context.Context, in *payload.Discoverer_Request, opts ...grpc.CallOption,
+) (*payload.Info_Pods, error) {
 	out := new(payload.Info_Pods)
 	err := c.cc.Invoke(ctx, "/discoverer.v1.Discoverer/Pods", in, out, opts...)
 	if err != nil {
@@ -67,7 +69,9 @@ func (c *discovererClient) Pods(ctx context.Context, in *payload.Discoverer_Requ
 	return out, nil
 }
 
-func (c *discovererClient) Nodes(ctx context.Context, in *payload.Discoverer_Request, opts ...grpc.CallOption) (*payload.Info_Nodes, error) {
+func (c *discovererClient) Nodes(
+	ctx context.Context, in *payload.Discoverer_Request, opts ...grpc.CallOption,
+) (*payload.Info_Nodes, error) {
 	out := new(payload.Info_Nodes)
 	err := c.cc.Invoke(ctx, "/discoverer.v1.Discoverer/Nodes", in, out, opts...)
 	if err != nil {
@@ -76,7 +80,9 @@ func (c *discovererClient) Nodes(ctx context.Context, in *payload.Discoverer_Req
 	return out, nil
 }
 
-func (c *discovererClient) Services(ctx context.Context, in *payload.Discoverer_Request, opts ...grpc.CallOption) (*payload.Info_Services, error) {
+func (c *discovererClient) Services(
+	ctx context.Context, in *payload.Discoverer_Request, opts ...grpc.CallOption,
+) (*payload.Info_Services, error) {
 	out := new(payload.Info_Services)
 	err := c.cc.Invoke(ctx, "/discoverer.v1.Discoverer/Services", in, out, opts...)
 	if err != nil {
@@ -102,13 +108,19 @@ type DiscovererServer interface {
 type UnimplementedDiscovererServer struct {
 }
 
-func (UnimplementedDiscovererServer) Pods(context.Context, *payload.Discoverer_Request) (*payload.Info_Pods, error) {
+func (UnimplementedDiscovererServer) Pods(
+	context.Context, *payload.Discoverer_Request,
+) (*payload.Info_Pods, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Pods not implemented")
 }
-func (UnimplementedDiscovererServer) Nodes(context.Context, *payload.Discoverer_Request) (*payload.Info_Nodes, error) {
+func (UnimplementedDiscovererServer) Nodes(
+	context.Context, *payload.Discoverer_Request,
+) (*payload.Info_Nodes, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Nodes not implemented")
 }
-func (UnimplementedDiscovererServer) Services(context.Context, *payload.Discoverer_Request) (*payload.Info_Services, error) {
+func (UnimplementedDiscovererServer) Services(
+	context.Context, *payload.Discoverer_Request,
+) (*payload.Info_Services, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Services not implemented")
 }
 func (UnimplementedDiscovererServer) mustEmbedUnimplementedDiscovererServer() {}
@@ -124,7 +136,12 @@ func RegisterDiscovererServer(s grpc.ServiceRegistrar, srv DiscovererServer) {
 	s.RegisterService(&Discoverer_ServiceDesc, srv)
 }
 
-func _Discoverer_Pods_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Discoverer_Pods_Handler(
+	srv any,
+	ctx context.Context,
+	dec func(any) error,
+	interceptor grpc.UnaryServerInterceptor,
+) (any, error) {
 	in := new(payload.Discoverer_Request)
 	if err := dec(in); err != nil {
 		return nil, err
@@ -136,13 +153,18 @@ func _Discoverer_Pods_Handler(srv interface{}, ctx context.Context, dec func(int
 		Server:     srv,
 		FullMethod: "/discoverer.v1.Discoverer/Pods",
 	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+	handler := func(ctx context.Context, req any) (any, error) {
 		return srv.(DiscovererServer).Pods(ctx, req.(*payload.Discoverer_Request))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Discoverer_Nodes_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Discoverer_Nodes_Handler(
+	srv any,
+	ctx context.Context,
+	dec func(any) error,
+	interceptor grpc.UnaryServerInterceptor,
+) (any, error) {
 	in := new(payload.Discoverer_Request)
 	if err := dec(in); err != nil {
 		return nil, err
@@ -154,13 +176,18 @@ func _Discoverer_Nodes_Handler(srv interface{}, ctx context.Context, dec func(in
 		Server:     srv,
 		FullMethod: "/discoverer.v1.Discoverer/Nodes",
 	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+	handler := func(ctx context.Context, req any) (any, error) {
 		return srv.(DiscovererServer).Nodes(ctx, req.(*payload.Discoverer_Request))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Discoverer_Services_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Discoverer_Services_Handler(
+	srv any,
+	ctx context.Context,
+	dec func(any) error,
+	interceptor grpc.UnaryServerInterceptor,
+) (any, error) {
 	in := new(payload.Discoverer_Request)
 	if err := dec(in); err != nil {
 		return nil, err
@@ -172,7 +199,7 @@ func _Discoverer_Services_Handler(srv interface{}, ctx context.Context, dec func
 		Server:     srv,
 		FullMethod: "/discoverer.v1.Discoverer/Services",
 	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+	handler := func(ctx context.Context, req any) (any, error) {
 		return srv.(DiscovererServer).Services(ctx, req.(*payload.Discoverer_Request))
 	}
 	return interceptor(ctx, in, info, handler)

@@ -93,7 +93,7 @@ func TestDo_for_race(t *testing.T) {
 			args: args{
 				ctx: context.Background(),
 				opts: []Option{
-					WithConfigLoader(func(string) (interface{}, *config.GlobalConfig, error) {
+					WithConfigLoader(func(string) (any, *config.GlobalConfig, error) {
 						return nil, nil, errors.New("err")
 					}),
 				},
@@ -115,7 +115,7 @@ func TestDo_for_race(t *testing.T) {
 				ctx: context.Background(),
 				opts: []Option{
 					WithVersion("v1.1.7", "v1.1.5", "v1.1.0"),
-					WithConfigLoader(func(string) (interface{}, *config.GlobalConfig, error) {
+					WithConfigLoader(func(string) (any, *config.GlobalConfig, error) {
 						return nil, &config.GlobalConfig{
 							Logging: &config.Logging{
 								Logger: "glg",
@@ -144,7 +144,7 @@ func TestDo_for_race(t *testing.T) {
 				ctx: context.Background(),
 				opts: []Option{
 					WithVersion("v1.1.2", "v1.1.5", "v1.1.0"),
-					WithConfigLoader(func(string) (interface{}, *config.GlobalConfig, error) {
+					WithConfigLoader(func(string) (any, *config.GlobalConfig, error) {
 						return nil, &config.GlobalConfig{
 							Logging: &config.Logging{
 								Logger: "glg",
@@ -154,7 +154,7 @@ func TestDo_for_race(t *testing.T) {
 							Version: "v1.1.2",
 						}, nil
 					}),
-					WithDaemonInitializer(func(interface{}) (Runner, error) {
+					WithDaemonInitializer(func(any) (Runner, error) {
 						return nil, errors.New("err")
 					}),
 				},
@@ -176,7 +176,7 @@ func TestDo_for_race(t *testing.T) {
 				ctx: context.Background(),
 				opts: []Option{
 					WithVersion("v1.1.2", "v1.1.5", "v1.1.0"),
-					WithConfigLoader(func(string) (interface{}, *config.GlobalConfig, error) {
+					WithConfigLoader(func(string) (any, *config.GlobalConfig, error) {
 						return nil, &config.GlobalConfig{
 							Logging: &config.Logging{
 								Logger: "glg",
@@ -186,7 +186,7 @@ func TestDo_for_race(t *testing.T) {
 							Version: "v1.1.2",
 						}, nil
 					}),
-					WithDaemonInitializer(func(interface{}) (Runner, error) {
+					WithDaemonInitializer(func(any) (Runner, error) {
 						return &runnerMock{
 							PreStartFunc: func(ctx context.Context) error {
 								return nil

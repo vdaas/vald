@@ -334,7 +334,7 @@ func TestSetLogFormat(t *testing.T) {
 				got.glg.SetLevelWriter(glg.INFO, buf)
 				got.glg.Info("vald")
 
-				var obj map[string]interface{}
+				var obj map[string]any
 				if err := json.NewDecoder(buf).Decode(&obj); err != nil {
 					return errors.New("not in JSON output logger")
 				}
@@ -355,7 +355,7 @@ func TestSetLogFormat(t *testing.T) {
 				got.glg.AddLevelWriter(glg.INFO, buf)
 				got.glg.Info("vald")
 
-				var obj map[string]interface{}
+				var obj map[string]any
 				if err := json.NewDecoder(buf).Decode(&obj); err == nil {
 					return errors.New("not in RAW output logger")
 				}
@@ -379,7 +379,7 @@ func TestSetLogFormat(t *testing.T) {
 
 func TestInfo(t *testing.T) {
 	type args struct {
-		vals interface{}
+		vals any
 	}
 
 	type field struct {
@@ -398,7 +398,7 @@ func TestInfo(t *testing.T) {
 		func() test {
 			var gotVals string
 			retry := &mock.Retry{
-				OutFunc: func(fn func(vals ...interface{}) error, vals ...interface{}) {
+				OutFunc: func(fn func(vals ...any) error, vals ...any) {
 					gotVals = vals[0].(string)
 				},
 			}
@@ -440,7 +440,7 @@ func TestInfo(t *testing.T) {
 
 func TestInfof(t *testing.T) {
 	type args struct {
-		vals   interface{}
+		vals   any
 		format string
 	}
 
@@ -463,7 +463,7 @@ func TestInfof(t *testing.T) {
 				gotFormat string
 			)
 			retry := &mock.Retry{
-				OutfFunc: func(fn func(format string, vals ...interface{}) error, format string, vals ...interface{}) {
+				OutfFunc: func(fn func(format string, vals ...any) error, format string, vals ...any) {
 					gotFormat = format
 					gotVals = vals[0].(string)
 				},
@@ -512,7 +512,7 @@ func TestInfof(t *testing.T) {
 
 func TestDebug(t *testing.T) {
 	type args struct {
-		vals interface{}
+		vals any
 	}
 
 	type field struct {
@@ -531,7 +531,7 @@ func TestDebug(t *testing.T) {
 		func() test {
 			var gotVals string
 			retry := &mock.Retry{
-				OutFunc: func(fn func(vals ...interface{}) error, vals ...interface{}) {
+				OutFunc: func(fn func(vals ...any) error, vals ...any) {
 					gotVals = vals[0].(string)
 				},
 			}
@@ -573,7 +573,7 @@ func TestDebug(t *testing.T) {
 
 func TestDebugf(t *testing.T) {
 	type args struct {
-		vals   interface{}
+		vals   any
 		format string
 	}
 
@@ -596,7 +596,7 @@ func TestDebugf(t *testing.T) {
 				gotFormat string
 			)
 			retry := &mock.Retry{
-				OutfFunc: func(fn func(format string, vals ...interface{}) error, format string, vals ...interface{}) {
+				OutfFunc: func(fn func(format string, vals ...any) error, format string, vals ...any) {
 					gotFormat = format
 					gotVals = vals[0].(string)
 				},
@@ -645,7 +645,7 @@ func TestDebugf(t *testing.T) {
 
 func TestWarn(t *testing.T) {
 	type args struct {
-		vals interface{}
+		vals any
 	}
 
 	type field struct {
@@ -664,7 +664,7 @@ func TestWarn(t *testing.T) {
 		func() test {
 			var gotVals string
 			retry := &mock.Retry{
-				OutFunc: func(fn func(vals ...interface{}) error, vals ...interface{}) {
+				OutFunc: func(fn func(vals ...any) error, vals ...any) {
 					gotVals = vals[0].(string)
 				},
 			}
@@ -706,7 +706,7 @@ func TestWarn(t *testing.T) {
 
 func TestWarnf(t *testing.T) {
 	type args struct {
-		vals   interface{}
+		vals   any
 		format string
 	}
 
@@ -729,7 +729,7 @@ func TestWarnf(t *testing.T) {
 				gotFormat string
 			)
 			retry := &mock.Retry{
-				OutfFunc: func(fn func(format string, vals ...interface{}) error, format string, vals ...interface{}) {
+				OutfFunc: func(fn func(format string, vals ...any) error, format string, vals ...any) {
 					gotFormat = format
 					gotVals = vals[0].(string)
 				},
@@ -778,7 +778,7 @@ func TestWarnf(t *testing.T) {
 
 func TestError(t *testing.T) {
 	type args struct {
-		vals interface{}
+		vals any
 	}
 
 	type field struct {
@@ -797,7 +797,7 @@ func TestError(t *testing.T) {
 		func() test {
 			var gotVals string
 			retry := &mock.Retry{
-				OutFunc: func(fn func(vals ...interface{}) error, vals ...interface{}) {
+				OutFunc: func(fn func(vals ...any) error, vals ...any) {
 					gotVals = vals[0].(string)
 				},
 			}
@@ -839,7 +839,7 @@ func TestError(t *testing.T) {
 
 func TestErrorf(t *testing.T) {
 	type args struct {
-		vals   interface{}
+		vals   any
 		format string
 	}
 
@@ -862,7 +862,7 @@ func TestErrorf(t *testing.T) {
 				gotFormat string
 			)
 			retry := &mock.Retry{
-				OutfFunc: func(fn func(format string, vals ...interface{}) error, format string, vals ...interface{}) {
+				OutfFunc: func(fn func(format string, vals ...any) error, format string, vals ...any) {
 					gotFormat = format
 					gotVals = vals[0].(string)
 				},
@@ -1236,7 +1236,7 @@ func TestErrorf(t *testing.T) {
 //
 // func Test_logger_Info(t *testing.T) {
 // 	type args struct {
-// 		vals []interface{}
+// 		vals []any
 // 	}
 // 	type fields struct {
 // 		format format.Format
@@ -1343,7 +1343,7 @@ func TestErrorf(t *testing.T) {
 // func Test_logger_Infof(t *testing.T) {
 // 	type args struct {
 // 		format string
-// 		vals   []interface{}
+// 		vals   []any
 // 	}
 // 	type fields struct {
 // 		format format.Format
@@ -1452,7 +1452,7 @@ func TestErrorf(t *testing.T) {
 // func Test_logger_Infod(t *testing.T) {
 // 	type args struct {
 // 		msg     string
-// 		details []interface{}
+// 		details []any
 // 	}
 // 	type fields struct {
 // 		format format.Format
@@ -1560,7 +1560,7 @@ func TestErrorf(t *testing.T) {
 //
 // func Test_logger_Debug(t *testing.T) {
 // 	type args struct {
-// 		vals []interface{}
+// 		vals []any
 // 	}
 // 	type fields struct {
 // 		format format.Format
@@ -1667,7 +1667,7 @@ func TestErrorf(t *testing.T) {
 // func Test_logger_Debugf(t *testing.T) {
 // 	type args struct {
 // 		format string
-// 		vals   []interface{}
+// 		vals   []any
 // 	}
 // 	type fields struct {
 // 		format format.Format
@@ -1776,7 +1776,7 @@ func TestErrorf(t *testing.T) {
 // func Test_logger_Debugd(t *testing.T) {
 // 	type args struct {
 // 		msg     string
-// 		details []interface{}
+// 		details []any
 // 	}
 // 	type fields struct {
 // 		format format.Format
@@ -1884,7 +1884,7 @@ func TestErrorf(t *testing.T) {
 //
 // func Test_logger_Warn(t *testing.T) {
 // 	type args struct {
-// 		vals []interface{}
+// 		vals []any
 // 	}
 // 	type fields struct {
 // 		format format.Format
@@ -1991,7 +1991,7 @@ func TestErrorf(t *testing.T) {
 // func Test_logger_Warnf(t *testing.T) {
 // 	type args struct {
 // 		format string
-// 		vals   []interface{}
+// 		vals   []any
 // 	}
 // 	type fields struct {
 // 		format format.Format
@@ -2100,7 +2100,7 @@ func TestErrorf(t *testing.T) {
 // func Test_logger_Warnd(t *testing.T) {
 // 	type args struct {
 // 		msg     string
-// 		details []interface{}
+// 		details []any
 // 	}
 // 	type fields struct {
 // 		format format.Format
@@ -2208,7 +2208,7 @@ func TestErrorf(t *testing.T) {
 //
 // func Test_logger_Error(t *testing.T) {
 // 	type args struct {
-// 		vals []interface{}
+// 		vals []any
 // 	}
 // 	type fields struct {
 // 		format format.Format
@@ -2315,7 +2315,7 @@ func TestErrorf(t *testing.T) {
 // func Test_logger_Errorf(t *testing.T) {
 // 	type args struct {
 // 		format string
-// 		vals   []interface{}
+// 		vals   []any
 // 	}
 // 	type fields struct {
 // 		format format.Format
@@ -2424,7 +2424,7 @@ func TestErrorf(t *testing.T) {
 // func Test_logger_Errord(t *testing.T) {
 // 	type args struct {
 // 		msg     string
-// 		details []interface{}
+// 		details []any
 // 	}
 // 	type fields struct {
 // 		format format.Format
@@ -2532,7 +2532,7 @@ func TestErrorf(t *testing.T) {
 //
 // func Test_logger_Fatal(t *testing.T) {
 // 	type args struct {
-// 		vals []interface{}
+// 		vals []any
 // 	}
 // 	type fields struct {
 // 		format format.Format
@@ -2639,7 +2639,7 @@ func TestErrorf(t *testing.T) {
 // func Test_logger_Fatalf(t *testing.T) {
 // 	type args struct {
 // 		format string
-// 		vals   []interface{}
+// 		vals   []any
 // 	}
 // 	type fields struct {
 // 		format format.Format
@@ -2748,7 +2748,7 @@ func TestErrorf(t *testing.T) {
 // func Test_logger_Fatald(t *testing.T) {
 // 	type args struct {
 // 		msg     string
-// 		details []interface{}
+// 		details []any
 // 	}
 // 	type fields struct {
 // 		format format.Format

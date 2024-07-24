@@ -21,10 +21,10 @@ var (
 		WithWarn(nopFunc),
 	}
 
-	nopFunc = func(vals ...interface{}) {}
+	nopFunc = func(vals ...any) {}
 )
 
-func WithError(fn func(vals ...interface{})) Option {
+func WithError(fn func(vals ...any)) Option {
 	return func(r *retry) {
 		if fn == nil {
 			return
@@ -33,7 +33,7 @@ func WithError(fn func(vals ...interface{})) Option {
 	}
 }
 
-func WithWarn(fn func(vals ...interface{})) Option {
+func WithWarn(fn func(vals ...any)) Option {
 	return func(r *retry) {
 		if fn == nil {
 			return

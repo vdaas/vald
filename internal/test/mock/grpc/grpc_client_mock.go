@@ -37,7 +37,8 @@ type GRPCClientMock struct {
 }
 
 // OrderedRangeConcurrent calls the OrderedRangeConcurrentFunc object.
-func (gc *GRPCClientMock) OrderedRangeConcurrent(ctx context.Context,
+func (gc *GRPCClientMock) OrderedRangeConcurrent(
+	ctx context.Context,
 	order []string,
 	concurrency int,
 	f func(ctx context.Context,
@@ -54,7 +55,9 @@ func (gc *GRPCClientMock) ConnectedAddrs() []string {
 }
 
 // Connect calls the ConnectFunc object.
-func (gc *GRPCClientMock) Connect(ctx context.Context, addr string, dopts ...grpc.DialOption) (pool.Conn, error) {
+func (gc *GRPCClientMock) Connect(
+	ctx context.Context, addr string, dopts ...grpc.DialOption,
+) (pool.Conn, error) {
 	return gc.ConnectFunc(ctx, addr, dopts...)
 }
 

@@ -56,7 +56,9 @@ func NewFilterClient(cc grpc.ClientConnInterface) FilterClient {
 	return &filterClient{cc}
 }
 
-func (c *filterClient) GenVector(ctx context.Context, in *payload.Object_Blob, opts ...grpc.CallOption) (*payload.Object_Vector, error) {
+func (c *filterClient) GenVector(
+	ctx context.Context, in *payload.Object_Blob, opts ...grpc.CallOption,
+) (*payload.Object_Vector, error) {
 	out := new(payload.Object_Vector)
 	err := c.cc.Invoke(ctx, "/filter.ingress.v1.Filter/GenVector", in, out, opts...)
 	if err != nil {
@@ -65,7 +67,9 @@ func (c *filterClient) GenVector(ctx context.Context, in *payload.Object_Blob, o
 	return out, nil
 }
 
-func (c *filterClient) FilterVector(ctx context.Context, in *payload.Object_Vector, opts ...grpc.CallOption) (*payload.Object_Vector, error) {
+func (c *filterClient) FilterVector(
+	ctx context.Context, in *payload.Object_Vector, opts ...grpc.CallOption,
+) (*payload.Object_Vector, error) {
 	out := new(payload.Object_Vector)
 	err := c.cc.Invoke(ctx, "/filter.ingress.v1.Filter/FilterVector", in, out, opts...)
 	if err != nil {
@@ -89,10 +93,14 @@ type FilterServer interface {
 type UnimplementedFilterServer struct {
 }
 
-func (UnimplementedFilterServer) GenVector(context.Context, *payload.Object_Blob) (*payload.Object_Vector, error) {
+func (UnimplementedFilterServer) GenVector(
+	context.Context, *payload.Object_Blob,
+) (*payload.Object_Vector, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GenVector not implemented")
 }
-func (UnimplementedFilterServer) FilterVector(context.Context, *payload.Object_Vector) (*payload.Object_Vector, error) {
+func (UnimplementedFilterServer) FilterVector(
+	context.Context, *payload.Object_Vector,
+) (*payload.Object_Vector, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method FilterVector not implemented")
 }
 func (UnimplementedFilterServer) mustEmbedUnimplementedFilterServer() {}
@@ -108,7 +116,12 @@ func RegisterFilterServer(s grpc.ServiceRegistrar, srv FilterServer) {
 	s.RegisterService(&Filter_ServiceDesc, srv)
 }
 
-func _Filter_GenVector_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Filter_GenVector_Handler(
+	srv any,
+	ctx context.Context,
+	dec func(any) error,
+	interceptor grpc.UnaryServerInterceptor,
+) (any, error) {
 	in := new(payload.Object_Blob)
 	if err := dec(in); err != nil {
 		return nil, err
@@ -120,13 +133,18 @@ func _Filter_GenVector_Handler(srv interface{}, ctx context.Context, dec func(in
 		Server:     srv,
 		FullMethod: "/filter.ingress.v1.Filter/GenVector",
 	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+	handler := func(ctx context.Context, req any) (any, error) {
 		return srv.(FilterServer).GenVector(ctx, req.(*payload.Object_Blob))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Filter_FilterVector_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Filter_FilterVector_Handler(
+	srv any,
+	ctx context.Context,
+	dec func(any) error,
+	interceptor grpc.UnaryServerInterceptor,
+) (any, error) {
 	in := new(payload.Object_Vector)
 	if err := dec(in); err != nil {
 		return nil, err
@@ -138,7 +156,7 @@ func _Filter_FilterVector_Handler(srv interface{}, ctx context.Context, dec func
 		Server:     srv,
 		FullMethod: "/filter.ingress.v1.Filter/FilterVector",
 	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+	handler := func(ctx context.Context, req any) (any, error) {
 		return srv.(FilterServer).FilterVector(ctx, req.(*payload.Object_Vector))
 	}
 	return interceptor(ctx, in, info, handler)

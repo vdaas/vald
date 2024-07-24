@@ -13,9 +13,7 @@
 // limitations under the License.
 package servers
 
-import (
-	"context"
-)
+import "context"
 
 type mockServer struct {
 	NameFunc           func() string

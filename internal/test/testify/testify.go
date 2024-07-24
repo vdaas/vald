@@ -13,9 +13,7 @@
 // limitations under the License.
 package testify
 
-import (
-	"github.com/stretchr/testify/mock"
-)
+import "github.com/stretchr/testify/mock"
 
 type (
 	Arguments = mock.Arguments

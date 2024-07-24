@@ -13,9 +13,7 @@
 // limitations under the License.
 package gorules
 
-import (
-	"github.com/quasilyte/go-ruleguard/dsl"
-)
+import "github.com/quasilyte/go-ruleguard/dsl"
 
 func CheckPayloadObjectAccess(m dsl.Matcher) {
 	m.Import("github.com/vdaas/vald/apis/grpc/v1/payload")

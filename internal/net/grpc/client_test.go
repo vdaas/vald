@@ -1051,7 +1051,7 @@ package grpc
 // func Test_gRPCClient_RoundRobin(t *testing.T) {
 // 	type args struct {
 // 		ctx context.Context
-// 		f   func(ctx context.Context, conn *ClientConn, copts ...CallOption) (interface{}, error)
+// 		f   func(ctx context.Context, conn *ClientConn, copts ...CallOption) (any, error)
 // 	}
 // 	type fields struct {
 // 		addrs               map[string]struct{}
@@ -1078,7 +1078,7 @@ package grpc
 // 		stopMonitor         context.CancelFunc
 // 	}
 // 	type want struct {
-// 		wantData interface{}
+// 		wantData any
 // 		err      error
 // 	}
 // 	type test struct {
@@ -1086,11 +1086,11 @@ package grpc
 // 		args       args
 // 		fields     fields
 // 		want       want
-// 		checkFunc  func(want, interface{}, error) error
+// 		checkFunc  func(want, any, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
 // 	}
-// 	defaultCheckFunc := func(w want, gotData interface{}, err error) error {
+// 	defaultCheckFunc := func(w want, gotData any, err error) error {
 // 		if !errors.Is(err, w.err) {
 // 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 // 		}
@@ -1242,7 +1242,7 @@ package grpc
 // 	type args struct {
 // 		ctx  context.Context
 // 		addr string
-// 		f    func(ctx context.Context, conn *ClientConn, copts ...CallOption) (interface{}, error)
+// 		f    func(ctx context.Context, conn *ClientConn, copts ...CallOption) (any, error)
 // 	}
 // 	type fields struct {
 // 		addrs               map[string]struct{}
@@ -1269,7 +1269,7 @@ package grpc
 // 		stopMonitor         context.CancelFunc
 // 	}
 // 	type want struct {
-// 		wantData interface{}
+// 		wantData any
 // 		err      error
 // 	}
 // 	type test struct {
@@ -1277,11 +1277,11 @@ package grpc
 // 		args       args
 // 		fields     fields
 // 		want       want
-// 		checkFunc  func(want, interface{}, error) error
+// 		checkFunc  func(want, any, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
 // 	}
-// 	defaultCheckFunc := func(w want, gotData interface{}, err error) error {
+// 	defaultCheckFunc := func(w want, gotData any, err error) error {
 // 		if !errors.Is(err, w.err) {
 // 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 // 		}
@@ -1437,7 +1437,7 @@ package grpc
 // 		p             pool.Conn
 // 		addr          string
 // 		enableBackoff bool
-// 		f             func(ctx context.Context, conn *ClientConn, copts ...CallOption) (interface{}, error)
+// 		f             func(ctx context.Context, conn *ClientConn, copts ...CallOption) (any, error)
 // 	}
 // 	type fields struct {
 // 		addrs               map[string]struct{}
@@ -1464,7 +1464,7 @@ package grpc
 // 		stopMonitor         context.CancelFunc
 // 	}
 // 	type want struct {
-// 		wantData interface{}
+// 		wantData any
 // 		err      error
 // 	}
 // 	type test struct {
@@ -1472,11 +1472,11 @@ package grpc
 // 		args       args
 // 		fields     fields
 // 		want       want
-// 		checkFunc  func(want, interface{}, error) error
+// 		checkFunc  func(want, any, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
 // 	}
-// 	defaultCheckFunc := func(w want, gotData interface{}, err error) error {
+// 	defaultCheckFunc := func(w want, gotData any, err error) error {
 // 		if !errors.Is(err, w.err) {
 // 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 // 		}

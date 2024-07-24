@@ -42,11 +42,11 @@ var (
 
 func init() {
 	/**
-	Path option specifies hdf file by path. Default value is `fashion-mnist-784-euclidean.hdf5`.
-	Addr option specifies grpc server address. Default value is `127.0.0.1:8081`.
-	Insert option specifies insert count. Default value is `400`.
-	Wait option specifies indexing wait time (in seconds). Default value is `60`.
-	**/
+	  Path option specifies hdf file by path. Default value is `fashion-mnist-784-euclidean.hdf5`.
+	  Addr option specifies grpc server address. Default value is `127.0.0.1:8081`.
+	  Insert option specifies insert count. Default value is `400`.
+	  Wait option specifies indexing wait time (in seconds). Default value is `60`.
+	  **/
 	flag.StringVar(&datasetPath, "path", "fashion-mnist-784-euclidean.hdf5", "dataset path")
 	flag.StringVar(&grpcServerAddr, "addr", "localhost:8081", "gRPC server address")
 	flag.UintVar(&insertCount, "insert", 400, "insert count")
@@ -56,9 +56,9 @@ func init() {
 
 func main() {
 	/**
-	Gets training data, test data and ids based on the dataset path.
-	the number of ids is equal to that of training dataset.
-	**/
+	  Gets training data, test data and ids based on the dataset path.
+	  the number of ids is equal to that of training dataset.
+	  **/
 	ids, train, test, err := load(datasetPath)
 	if err != nil {
 		glg.Fatal(err)
@@ -103,9 +103,9 @@ func main() {
 	time.Sleep(wt)
 
 	/**
-	Gets approximate vectors, which is based on the value of `SearchConfig`, from the indexed tree based on the training data.
-	In this example, Vald gets 10 approximate vectors each search vector.
-	**/
+	  Gets approximate vectors, which is based on the value of `SearchConfig`, from the indexed tree based on the training data.
+	  In this example, Vald gets 10 approximate vectors each search vector.
+	  **/
 	glg.Infof("Start searching %d times", testCount)
 	for i, vec := range test[:testCount] {
 		// Send searching vector and configuration object to the Vald server via gRPC.

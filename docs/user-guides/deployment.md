@@ -138,7 +138,7 @@ After create `values.yaml`, you can deploy by the following steps.
 When you need to update the configuration, you can update by following command with your new `values.yaml`.
 
 ```bash
-helm upgrate vald vald/vald --values <YOUR NEW VALUES FILE PATH>
+helm upgrade vald vald/vald --values <YOUR NEW VALUES FILE PATH>
 ```
 
 ### Cleanup

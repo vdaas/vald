@@ -17,9 +17,7 @@
 // Package grpc provides generic functionality for grpc
 package grpc
 
-import (
-	"google.golang.org/grpc"
-)
+import "google.golang.org/grpc"
 
 var (
 	StatsHandler     = grpc.StatsHandler

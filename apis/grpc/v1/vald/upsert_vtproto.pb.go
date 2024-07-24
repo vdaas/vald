@@ -58,7 +58,9 @@ func NewUpsertClient(cc grpc.ClientConnInterface) UpsertClient {
 	return &upsertClient{cc}
 }
 
-func (c *upsertClient) Upsert(ctx context.Context, in *payload.Upsert_Request, opts ...grpc.CallOption) (*payload.Object_Location, error) {
+func (c *upsertClient) Upsert(
+	ctx context.Context, in *payload.Upsert_Request, opts ...grpc.CallOption,
+) (*payload.Object_Location, error) {
 	out := new(payload.Object_Location)
 	err := c.cc.Invoke(ctx, "/vald.v1.Upsert/Upsert", in, out, opts...)
 	if err != nil {
@@ -67,7 +69,9 @@ func (c *upsertClient) Upsert(ctx context.Context, in *payload.Upsert_Request, o
 	return out, nil
 }
 
-func (c *upsertClient) StreamUpsert(ctx context.Context, opts ...grpc.CallOption) (Upsert_StreamUpsertClient, error) {
+func (c *upsertClient) StreamUpsert(
+	ctx context.Context, opts ...grpc.CallOption,
+) (Upsert_StreamUpsertClient, error) {
 	stream, err := c.cc.NewStream(ctx, &Upsert_ServiceDesc.Streams[0], "/vald.v1.Upsert/StreamUpsert", opts...)
 	if err != nil {
 		return nil, err
@@ -98,7 +102,9 @@ func (x *upsertStreamUpsertClient) Recv() (*payload.Object_StreamLocation, error
 	return m, nil
 }
 
-func (c *upsertClient) MultiUpsert(ctx context.Context, in *payload.Upsert_MultiRequest, opts ...grpc.CallOption) (*payload.Object_Locations, error) {
+func (c *upsertClient) MultiUpsert(
+	ctx context.Context, in *payload.Upsert_MultiRequest, opts ...grpc.CallOption,
+) (*payload.Object_Locations, error) {
 	out := new(payload.Object_Locations)
 	err := c.cc.Invoke(ctx, "/vald.v1.Upsert/MultiUpsert", in, out, opts...)
 	if err != nil {
@@ -124,13 +130,17 @@ type UpsertServer interface {
 type UnimplementedUpsertServer struct {
 }
 
-func (UnimplementedUpsertServer) Upsert(context.Context, *payload.Upsert_Request) (*payload.Object_Location, error) {
+func (UnimplementedUpsertServer) Upsert(
+	context.Context, *payload.Upsert_Request,
+) (*payload.Object_Location, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Upsert not implemented")
 }
 func (UnimplementedUpsertServer) StreamUpsert(Upsert_StreamUpsertServer) error {
 	return status.Errorf(codes.Unimplemented, "method StreamUpsert not implemented")
 }
-func (UnimplementedUpsertServer) MultiUpsert(context.Context, *payload.Upsert_MultiRequest) (*payload.Object_Locations, error) {
+func (UnimplementedUpsertServer) MultiUpsert(
+	context.Context, *payload.Upsert_MultiRequest,
+) (*payload.Object_Locations, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method MultiUpsert not implemented")
 }
 func (UnimplementedUpsertServer) mustEmbedUnimplementedUpsertServer() {}
@@ -146,7 +156,12 @@ func RegisterUpsertServer(s grpc.ServiceRegistrar, srv UpsertServer) {
 	s.RegisterService(&Upsert_ServiceDesc, srv)
 }
 
-func _Upsert_Upsert_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Upsert_Upsert_Handler(
+	srv any,
+	ctx context.Context,
+	dec func(any) error,
+	interceptor grpc.UnaryServerInterceptor,
+) (any, error) {
 	in := new(payload.Upsert_Request)
 	if err := dec(in); err != nil {
 		return nil, err
@@ -158,13 +173,13 @@ func _Upsert_Upsert_Handler(srv interface{}, ctx context.Context, dec func(inter
 		Server:     srv,
 		FullMethod: "/vald.v1.Upsert/Upsert",
 	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+	handler := func(ctx context.Context, req any) (any, error) {
 		return srv.(UpsertServer).Upsert(ctx, req.(*payload.Upsert_Request))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Upsert_StreamUpsert_Handler(srv interface{}, stream grpc.ServerStream) error {
+func _Upsert_StreamUpsert_Handler(srv any, stream grpc.ServerStream) error {
 	return srv.(UpsertServer).StreamUpsert(&upsertStreamUpsertServer{stream})
 }
 
@@ -190,7 +205,12 @@ func (x *upsertStreamUpsertServer) Recv() (*payload.Upsert_Request, error) {
 	return m, nil
 }
 
-func _Upsert_MultiUpsert_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Upsert_MultiUpsert_Handler(
+	srv any,
+	ctx context.Context,
+	dec func(any) error,
+	interceptor grpc.UnaryServerInterceptor,
+) (any, error) {
 	in := new(payload.Upsert_MultiRequest)
 	if err := dec(in); err != nil {
 		return nil, err
@@ -202,7 +222,7 @@ func _Upsert_MultiUpsert_Handler(srv interface{}, ctx context.Context, dec func(
 		Server:     srv,
 		FullMethod: "/vald.v1.Upsert/MultiUpsert",
 	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+	handler := func(ctx context.Context, req any) (any, error) {
 		return srv.(UpsertServer).MultiUpsert(ctx, req.(*payload.Upsert_MultiRequest))
 	}
 	return interceptor(ctx, in, info, handler)

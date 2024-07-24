@@ -26,14 +26,16 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/net/grpc/errdetails"
 	"github.com/vdaas/vald/internal/net/grpc/status"
+	"github.com/vdaas/vald/internal/observability/attribute"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/safety"
 	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/sync"
-	"go.opentelemetry.io/otel/attribute"
 )
 
-func (s *server) LinearSearch(ctx context.Context, req *payload.Search_Request) (res *payload.Search_Response, err error) {
+func (s *server) LinearSearch(
+	ctx context.Context, req *payload.Search_Request,
+) (res *payload.Search_Response, err error) {
 	ctx, span := trace.StartSpan(ctx, apiName+"/"+vald.LinearSearchRPCName)
 	defer func() {
 		if span != nil {
@@ -171,7 +173,9 @@ func (s *server) LinearSearch(ctx context.Context, req *payload.Search_Request) 
 	return res, nil
 }
 
-func (s *server) LinearSearchByID(ctx context.Context, req *payload.Search_IDRequest) (res *payload.Search_Response, err error) {
+func (s *server) LinearSearchByID(
+	ctx context.Context, req *payload.Search_IDRequest,
+) (res *payload.Search_Response, err error) {
 	ctx, span := trace.StartSpan(ctx, apiName+"/"+vald.LinearSearchByIDRPCName)
 	defer func() {
 		if span != nil {
@@ -371,7 +375,9 @@ func (s *server) StreamLinearSearch(stream vald.Search_StreamLinearSearchServer)
 	return nil
 }
 
-func (s *server) StreamLinearSearchByID(stream vald.Search_StreamLinearSearchByIDServer) (err error) {
+func (s *server) StreamLinearSearchByID(
+	stream vald.Search_StreamLinearSearchByIDServer,
+) (err error) {
 	ctx, span := trace.StartSpan(stream.Context(), apiName+"/"+vald.StreamLinearSearchByIDRPCName)
 	defer func() {
 		if span != nil {
@@ -418,7 +424,9 @@ func (s *server) StreamLinearSearchByID(stream vald.Search_StreamLinearSearchByI
 	return nil
 }
 
-func (s *server) MultiLinearSearch(ctx context.Context, reqs *payload.Search_MultiRequest) (res *payload.Search_Responses, errs error) {
+func (s *server) MultiLinearSearch(
+	ctx context.Context, reqs *payload.Search_MultiRequest,
+) (res *payload.Search_Responses, errs error) {
 	ctx, span := trace.StartSpan(ctx, apiName+"/"+vald.MultiLinearSearchRPCName)
 	defer func() {
 		if span != nil {
@@ -492,7 +500,9 @@ func (s *server) MultiLinearSearch(ctx context.Context, reqs *payload.Search_Mul
 	return res, nil
 }
 
-func (s *server) MultiLinearSearchByID(ctx context.Context, reqs *payload.Search_MultiIDRequest) (res *payload.Search_Responses, errs error) {
+func (s *server) MultiLinearSearchByID(
+	ctx context.Context, reqs *payload.Search_MultiIDRequest,
+) (res *payload.Search_Responses, errs error) {
 	ctx, span := trace.StartSpan(ctx, apiName+"/"+vald.MultiLinearSearchByIDRPCName)
 	defer func() {
 		if span != nil {

@@ -13,9 +13,7 @@
 // limitations under the License.
 package location
 
-import (
-	"testing"
-)
+import "testing"
 
 func BenchmarkGMT(b *testing.B) {
 	b.ReportAllocs()

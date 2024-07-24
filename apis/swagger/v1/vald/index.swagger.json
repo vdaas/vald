@@ -1,7 +1,7 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "v1/manager/index/index_manager.proto",
+    "title": "v1/vald/index.proto",
     "version": "version not set"
   },
   "tags": [
@@ -12,6 +12,27 @@
   "consumes": ["application/json"],
   "produces": ["application/json"],
   "paths": {
+    "/index/detail": {
+      "get": {
+        "summary": "Represent the RPC to get the index information for each agents.",
+        "operationId": "Index_IndexDetail",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/IndexDetail"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": ["Index"]
+      }
+    },
     "/index/info": {
       "get": {
         "summary": "Represent the RPC to get the index information.",
@@ -58,6 +79,29 @@
         }
       },
       "description": "Represent the index count message."
+    },
+    "IndexDetail": {
+      "type": "object",
+      "properties": {
+        "counts": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/IndexCount"
+          },
+          "title": "count infos for each agents"
+        },
+        "replica": {
+          "type": "integer",
+          "format": "int64",
+          "title": "index replica of vald cluster"
+        },
+        "liveAgents": {
+          "type": "integer",
+          "format": "int64",
+          "title": "live agent replica of vald cluster"
+        }
+      },
+      "description": "Represent the index count for each Agents message."
     },
     "protobufAny": {
       "type": "object",

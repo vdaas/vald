@@ -17,18 +17,17 @@
 // Package vald provides vald server interface
 package vald
 
-import (
-	grpc "google.golang.org/grpc"
-)
+import grpc "google.golang.org/grpc"
 
 type Server interface {
+	FlushServer
+	IndexServer
 	InsertServer
+	ObjectServer
+	RemoveServer
+	SearchServer
 	UpdateServer
 	UpsertServer
-	SearchServer
-	RemoveServer
-	FlushServer
-	ObjectServer
 }
 
 type ServerWithFilter interface {
@@ -37,13 +36,14 @@ type ServerWithFilter interface {
 }
 
 type UnimplementedValdServer struct {
+	UnimplementedFlushServer
+	UnimplementedIndexServer
 	UnimplementedInsertServer
+	UnimplementedObjectServer
+	UnimplementedRemoveServer
+	UnimplementedSearchServer
 	UnimplementedUpdateServer
 	UnimplementedUpsertServer
-	UnimplementedSearchServer
-	UnimplementedRemoveServer
-	UnimplementedFlushServer
-	UnimplementedObjectServer
 }
 
 type UnimplementedValdServerWithFilter struct {
@@ -52,13 +52,14 @@ type UnimplementedValdServerWithFilter struct {
 }
 
 type Client interface {
+	FlushClient
+	IndexClient
 	InsertClient
+	ObjectClient
+	RemoveClient
+	SearchClient
 	UpdateClient
 	UpsertClient
-	SearchClient
-	RemoveClient
-	FlushClient
-	ObjectClient
 }
 
 type ClientWithFilter interface {
@@ -69,14 +70,15 @@ type ClientWithFilter interface {
 const PackageName = "vald.v1"
 
 const (
+	FilterRPCServiceName = "Filter"
+	FlushRPCServiceName  = "Flush"
+	IndexRPCServiceName  = "Index"
 	InsertRPCServiceName = "Insert"
+	ObjectRPCServiceName = "Object"
+	RemoveRPCServiceName = "Remove"
+	SearchRPCServiceName = "Search"
 	UpdateRPCServiceName = "Update"
 	UpsertRPCServiceName = "Upsert"
-	SearchRPCServiceName = "Search"
-	RemoveRPCServiceName = "Remove"
-	FlushRPCServiceName  = "Flush"
-	ObjectRPCServiceName = "Object"
-	FilterRPCServiceName = "Filter"
 )
 
 const (
@@ -132,26 +134,31 @@ const (
 	GetTimestampRPCName     = "GetTimestamp"
 	StreamGetObjectRPCName  = "StreamGetObject"
 	StreamListObjectRPCName = "StreamListObject"
+
+	IndexInfoRPCName   = "IndexInfo"
+	IndexDetailRPCName = "IndexDetail"
 )
 
 type client struct {
+	FlushClient
+	IndexClient
 	InsertClient
+	ObjectClient
+	RemoveClient
+	SearchClient
 	UpdateClient
 	UpsertClient
-	SearchClient
-	RemoveClient
-	FlushClient
-	ObjectClient
 }
 
 func RegisterValdServer(s *grpc.Server, srv Server) {
+	RegisterFlushServer(s, srv)
+	RegisterIndexServer(s, srv)
 	RegisterInsertServer(s, srv)
+	RegisterObjectServer(s, srv)
+	RegisterRemoveServer(s, srv)
+	RegisterSearchServer(s, srv)
 	RegisterUpdateServer(s, srv)
 	RegisterUpsertServer(s, srv)
-	RegisterSearchServer(s, srv)
-	RegisterRemoveServer(s, srv)
-	RegisterFlushServer(s, srv)
-	RegisterObjectServer(s, srv)
 }
 
 func RegisterValdServerWithFilter(s *grpc.Server, srv ServerWithFilter) {
@@ -161,12 +168,13 @@ func RegisterValdServerWithFilter(s *grpc.Server, srv ServerWithFilter) {
 
 func NewValdClient(conn *grpc.ClientConn) Client {
 	return &client{
-		NewInsertClient(conn),
-		NewUpdateClient(conn),
-		NewUpsertClient(conn),
-		NewSearchClient(conn),
-		NewRemoveClient(conn),
-		NewFlushClient(conn),
-		NewObjectClient(conn),
+		FlushClient:  NewFlushClient(conn),
+		IndexClient:  NewIndexClient(conn),
+		InsertClient: NewInsertClient(conn),
+		ObjectClient: NewObjectClient(conn),
+		RemoveClient: NewRemoveClient(conn),
+		SearchClient: NewSearchClient(conn),
+		UpdateClient: NewUpdateClient(conn),
+		UpsertClient: NewUpsertClient(conn),
 	}
 }

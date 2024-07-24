@@ -19,9 +19,7 @@
 // Package control provides network socket option
 package control
 
-import (
-	"golang.org/x/sys/unix"
-)
+import "golang.org/x/sys/unix"
 
 var SetsockoptInt = unix.SetsockoptInt
 

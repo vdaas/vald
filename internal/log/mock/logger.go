@@ -15,90 +15,90 @@ package mock
 
 // Logger represents struct of each log level function.
 type Logger struct {
-	DebugFunc  func(vals ...interface{})
-	DebugfFunc func(format string, vals ...interface{})
-	InfoFunc   func(vals ...interface{})
-	InfofFunc  func(format string, vals ...interface{})
-	WarnFunc   func(vals ...interface{})
-	WarnfFunc  func(format string, vals ...interface{})
-	ErrorFunc  func(vals ...interface{})
-	ErrorfFunc func(format string, vals ...interface{})
-	FatalFunc  func(vals ...interface{})
-	FatalfFunc func(format string, vals ...interface{})
+	DebugFunc  func(vals ...any)
+	DebugfFunc func(format string, vals ...any)
+	InfoFunc   func(vals ...any)
+	InfofFunc  func(format string, vals ...any)
+	WarnFunc   func(vals ...any)
+	WarnfFunc  func(format string, vals ...any)
+	ErrorFunc  func(vals ...any)
+	ErrorfFunc func(format string, vals ...any)
+	FatalFunc  func(vals ...any)
+	FatalfFunc func(format string, vals ...any)
 }
 
 // Debug calls DebugFunc of Logger.
-func (l *Logger) Debug(vals ...interface{}) {
+func (l *Logger) Debug(vals ...any) {
 	l.DebugFunc(vals...)
 }
 
 // Debugf calls DebugfFunc of Logger.
-func (l *Logger) Debugf(format string, vals ...interface{}) {
+func (l *Logger) Debugf(format string, vals ...any) {
 	l.DebugfFunc(format, vals...)
 }
 
 // Debugd calls DebugfFunc of Logger.
-func (l *Logger) Debugd(msg string, details ...interface{}) {
+func (l *Logger) Debugd(msg string, details ...any) {
 	l.DebugfFunc(msg, details...)
 }
 
 // Info calls InfoFunc of Logger.
-func (l *Logger) Info(vals ...interface{}) {
+func (l *Logger) Info(vals ...any) {
 	l.InfoFunc(vals...)
 }
 
 // Infof calls InfofFunc of Logger.
-func (l *Logger) Infof(format string, vals ...interface{}) {
+func (l *Logger) Infof(format string, vals ...any) {
 	l.InfofFunc(format, vals...)
 }
 
 // Infod calls InfofFunc of Logger.
-func (l *Logger) Infod(msg string, details ...interface{}) {
+func (l *Logger) Infod(msg string, details ...any) {
 	l.InfofFunc(msg, details...)
 }
 
 // Warn calls WarnFunc of Logger.
-func (l *Logger) Warn(vals ...interface{}) {
+func (l *Logger) Warn(vals ...any) {
 	l.WarnFunc(vals...)
 }
 
 // Warnf calls WarnfFunc of Logger.
-func (l *Logger) Warnf(format string, vals ...interface{}) {
+func (l *Logger) Warnf(format string, vals ...any) {
 	l.WarnfFunc(format, vals...)
 }
 
 // Warnd calls WarnfFunc of Logger.
-func (l *Logger) Warnd(msg string, details ...interface{}) {
+func (l *Logger) Warnd(msg string, details ...any) {
 	l.WarnfFunc(msg, details...)
 }
 
 // Error calls ErrorFunc of Logger.
-func (l *Logger) Error(vals ...interface{}) {
+func (l *Logger) Error(vals ...any) {
 	l.ErrorFunc(vals...)
 }
 
 // Errorf calls ErrorfFunc of Logger.
-func (l *Logger) Errorf(format string, vals ...interface{}) {
+func (l *Logger) Errorf(format string, vals ...any) {
 	l.ErrorfFunc(format, vals...)
 }
 
 // Errord calls ErrorfFunc of Logger.
-func (l *Logger) Errord(msg string, details ...interface{}) {
+func (l *Logger) Errord(msg string, details ...any) {
 	l.ErrorfFunc(msg, details...)
 }
 
 // Fatal calls FatalFunc of Logger.
-func (l *Logger) Fatal(vals ...interface{}) {
+func (l *Logger) Fatal(vals ...any) {
 	l.FatalFunc(vals...)
 }
 
 // Fatalf calls FatalfFunc of Logger.
-func (l *Logger) Fatalf(format string, vals ...interface{}) {
+func (l *Logger) Fatalf(format string, vals ...any) {
 	l.FatalfFunc(format, vals...)
 }
 
 // Fatald calls FatalfFunc of Logger.
-func (l *Logger) Fatald(msg string, details ...interface{}) {
+func (l *Logger) Fatald(msg string, details ...any) {
 	l.FatalfFunc(msg, details...)
 }
 
