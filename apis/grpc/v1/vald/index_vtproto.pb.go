@@ -117,10 +117,7 @@ func RegisterIndexServer(s grpc.ServiceRegistrar, srv IndexServer) {
 }
 
 func _Index_IndexInfo_Handler(
-	srv any,
-	ctx context.Context,
-	dec func(any) error,
-	interceptor grpc.UnaryServerInterceptor,
+	srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor,
 ) (any, error) {
 	in := new(payload.Empty)
 	if err := dec(in); err != nil {
@@ -140,10 +137,7 @@ func _Index_IndexInfo_Handler(
 }
 
 func _Index_IndexDetail_Handler(
-	srv any,
-	ctx context.Context,
-	dec func(any) error,
-	interceptor grpc.UnaryServerInterceptor,
+	srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor,
 ) (any, error) {
 	in := new(payload.Empty)
 	if err := dec(in); err != nil {

@@ -39,8 +39,8 @@ ENV ORG=vdaas
 ENV PKG=ci/base
 ENV REPO=vald
 ENV RUST_HOME=/usr/loacl/lib/rust
-ENV CARGO_HOME=${RUST_HOME}/cargo
 ENV RUSTUP_HOME=${RUST_HOME}/rustup
+ENV CARGO_HOME=${RUST_HOME}/cargo
 ENV PATH=${CARGO_HOME}/bin:${GOPATH}/bin:${GOROOT}/bin:${RUSTUP_HOME}/bin:/usr/local/bin:${PATH}
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
