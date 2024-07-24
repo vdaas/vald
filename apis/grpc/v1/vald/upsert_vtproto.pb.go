@@ -157,10 +157,7 @@ func RegisterUpsertServer(s grpc.ServiceRegistrar, srv UpsertServer) {
 }
 
 func _Upsert_Upsert_Handler(
-	srv any,
-	ctx context.Context,
-	dec func(any) error,
-	interceptor grpc.UnaryServerInterceptor,
+	srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor,
 ) (any, error) {
 	in := new(payload.Upsert_Request)
 	if err := dec(in); err != nil {
@@ -206,10 +203,7 @@ func (x *upsertStreamUpsertServer) Recv() (*payload.Upsert_Request, error) {
 }
 
 func _Upsert_MultiUpsert_Handler(
-	srv any,
-	ctx context.Context,
-	dec func(any) error,
-	interceptor grpc.UnaryServerInterceptor,
+	srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor,
 ) (any, error) {
 	in := new(payload.Upsert_MultiRequest)
 	if err := dec(in); err != nil {
