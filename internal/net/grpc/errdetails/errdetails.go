@@ -79,7 +79,7 @@ type Detail struct {
 	Message proto.Message `json:"message,omitempty"  yaml:"message"`
 }
 
-func decodeDetails(objs ...interface{}) (details []Detail) {
+func decodeDetails(objs ...any) (details []Detail) {
 	if objs == nil {
 		return nil
 	}
@@ -93,9 +93,9 @@ func decodeDetails(objs ...interface{}) (details []Detail) {
 			v = v.Elem()
 		}
 		if v.Kind() == reflect.Slice || v.Kind() == reflect.Array {
-			iobjs := make([]interface{}, 0, v.Len())
+			iobjs := make([]any, 0, v.Len())
 			for i := 0; i < v.Len(); i++ {
-				var val interface{}
+				var val any
 				if v.Index(i).Kind() == reflect.Ptr {
 					val = v.Index(i).Elem().Interface()
 				} else {
@@ -209,7 +209,7 @@ func decodeDetails(objs ...interface{}) (details []Detail) {
 	return details
 }
 
-func Serialize(objs ...interface{}) string {
+func Serialize(objs ...any) string {
 	var (
 		b   []byte
 		err error
@@ -326,9 +326,24 @@ func AnyToErrorDetail(a *types.Any) proto.Message {
 	return a.ProtoReflect().Interface()
 }
 
-func DebugInfoFromInfoDetail(v *info.Detail) *DebugInfo {
-	debug := &DebugInfo{
-		Detail: strings.Join(append(append([]string{
+func DebugInfoFromInfoDetail(v *info.Detail) (debug *DebugInfo) {
+	debug = new(DebugInfo)
+	if v.StackTrace != nil {
+		debug.StackEntries = make([]string, 0, len(v.StackTrace))
+		for i, stack := range v.StackTrace {
+			debug.StackEntries = append(debug.GetStackEntries(), strings.Join([]string{
+				"id:",
+				strconv.Itoa(i),
+				"stack_trace:",
+				stack.String(),
+			}, " "))
+		}
+		v.StackTrace = nil
+	}
+	detail, err := json.Marshal(v)
+	if err != nil {
+		log.Warnf("failed to Marshal object %#v to JSON error: %v", v, err)
+		debug.Detail = strings.Join(append(append([]string{
 			"Version:", v.Version, ",",
 			"Name:", v.ServerName, ",",
 			"GitCommit:", v.GitCommit, ",",
@@ -339,18 +354,9 @@ func DebugInfoFromInfoDetail(v *info.Detail) *DebugInfo {
 			"GOOS:", v.GoOS, ",",
 			"CGO_Enabled:", v.CGOEnabled, ",",
 			"BuildCPUInfo: [",
-		}, v.BuildCPUInfoFlags...), "]"), " "),
-	}
-	if debug.GetStackEntries() == nil {
-		debug.StackEntries = make([]string, 0, len(v.StackTrace))
-	}
-	for i, stack := range v.StackTrace {
-		debug.StackEntries = append(debug.GetStackEntries(), strings.Join([]string{
-			"id:",
-			strconv.Itoa(i),
-			"stack_trace:",
-			stack.String(),
-		}, " "))
+		}, v.BuildCPUInfoFlags...), "]"), " ")
+	} else {
+		debug.Detail = string(detail)
 	}
 	return debug
 }

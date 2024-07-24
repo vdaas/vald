@@ -26,12 +26,14 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/net/grpc/errdetails"
 	"github.com/vdaas/vald/internal/net/grpc/status"
+	"github.com/vdaas/vald/internal/observability/attribute"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/internal/strings"
-	"go.opentelemetry.io/otel/attribute"
 )
 
-func (s *server) Update(ctx context.Context, req *payload.Update_Request) (res *payload.Object_Location, err error) {
+func (s *server) Update(
+	ctx context.Context, req *payload.Update_Request,
+) (res *payload.Object_Location, err error) {
 	_, span := trace.StartSpan(ctx, apiName+"/"+vald.UpdateRPCName)
 	defer func() {
 		if span != nil {
@@ -219,7 +221,9 @@ func (s *server) StreamUpdate(stream vald.Update_StreamUpdateServer) (err error)
 	return nil
 }
 
-func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequest) (res *payload.Object_Locations, err error) {
+func (s *server) MultiUpdate(
+	ctx context.Context, reqs *payload.Update_MultiRequest,
+) (res *payload.Object_Locations, err error) {
 	_, span := trace.StartSpan(ctx, apiName+"/"+vald.MultiUpdateRPCName)
 	defer func() {
 		if span != nil {

@@ -75,7 +75,9 @@ func New(opts ...Option) (c.Bit32, error) {
 	return c, nil
 }
 
-func (c *core) Search(ctx context.Context, vec []float32, size int, epsilon, radius float32) (interface{}, error) {
+func (c *core) Search(
+	ctx context.Context, vec []float32, size int, epsilon, radius float32,
+) (any, error) {
 	return c.NGT.Search(ctx, vec, size, epsilon, radius)
 }
 

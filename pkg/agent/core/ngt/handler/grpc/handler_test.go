@@ -39,8 +39,17 @@ func TestMain(m *testing.M) {
 	goleak.VerifyTestMain(m)
 }
 
-func newIndexedNGTService(ctx context.Context, eg errgroup.Group, t request.ObjectType, dist vector.Distribution, num int, insertCfg *payload.Insert_Config,
-	ngtCfg *config.NGT, ngtOpts []service.Option, overwriteIDs []string, overwriteVectors [][]float32,
+func newIndexedNGTService(
+	ctx context.Context,
+	eg errgroup.Group,
+	t request.ObjectType,
+	dist vector.Distribution,
+	num int,
+	insertCfg *payload.Insert_Config,
+	ngtCfg *config.NGT,
+	ngtOpts []service.Option,
+	overwriteIDs []string,
+	overwriteVectors [][]float32,
 ) (service.NGT, error) {
 	ngt, err := service.New(ngtCfg, append(ngtOpts, service.WithErrGroup(eg), service.WithEnableInMemoryMode(true))...)
 	if err != nil {

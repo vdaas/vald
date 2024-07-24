@@ -53,8 +53,6 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           args:
-            - "run"
-            - "--watches-file=./watches.yaml"
             {{- if .Values.enableLeaderElection }}
             - "--leader-elect"
             - "--leader-election-id={{ default .Values.name .Values.leaderElectionID }}"

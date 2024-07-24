@@ -392,7 +392,7 @@ message Object {
   }
 
   // Represent a request to fetch vector meta data.
-  message GetTimestampRequest {
+  message TimestampRequest {
     // The vector ID to be fetched.
     ID id = 1 [(buf.validate.field).repeated.min_items = 2];
   }
@@ -522,6 +522,15 @@ message Info {
       bool indexing = 3;
       // The saving index count.
       bool saving = 4;
+    }
+    // Represent the index count for each Agents message.
+    message Detail {
+      // count infos for each agents
+      map<string, Count> counts = 1;
+      // index replica of vald cluster
+      uint32 replica = 2;
+      // live agent replica of vald cluster
+      uint32 live_agents = 3;
     }
 
     // Represent the UUID message.

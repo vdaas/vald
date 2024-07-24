@@ -31,7 +31,7 @@ type ServerStreamTestifyMock struct {
 	mock.Mock
 }
 
-func (*ServerStreamTestifyMock) SendMsg(_ interface{}) error {
+func (*ServerStreamTestifyMock) SendMsg(_ any) error {
 	return nil
 }
 
@@ -50,11 +50,11 @@ func (*ServerStreamTestifyMock) Context() context.Context {
 	return context.Background()
 }
 
-func (*ServerStreamTestifyMock) SendMsgWithContext(_ context.Context, _ interface{}) error {
+func (*ServerStreamTestifyMock) SendMsgWithContext(_ context.Context, _ any) error {
 	return nil
 }
 
-func (*ServerStreamTestifyMock) RecvMsg(_ interface{}) error {
+func (*ServerStreamTestifyMock) RecvMsg(_ any) error {
 	return nil
 }
 
@@ -83,7 +83,9 @@ func (c *ClientInternal) StartConnectionMonitor(ctx context.Context) (<-chan err
 	return args.Get(0).(<-chan error), args.Error(1)
 }
 
-func (c *ClientInternal) Connect(ctx context.Context, addr string, dopts ...DialOption) (pool.Conn, error) {
+func (c *ClientInternal) Connect(
+	ctx context.Context, addr string, dopts ...DialOption,
+) (pool.Conn, error) {
 	args := c.Called(ctx, addr, dopts)
 	return args.Get(0).(pool.Conn), args.Error(1)
 }
@@ -98,7 +100,8 @@ func (c *ClientInternal) Disconnect(ctx context.Context, addr string) error {
 	return args.Error(0)
 }
 
-func (c *ClientInternal) Range(ctx context.Context,
+func (c *ClientInternal) Range(
+	ctx context.Context,
 	f func(ctx context.Context,
 		addr string,
 		conn *ClientConn,
@@ -108,7 +111,8 @@ func (c *ClientInternal) Range(ctx context.Context,
 	return args.Error(0)
 }
 
-func (c *ClientInternal) RangeConcurrent(ctx context.Context,
+func (c *ClientInternal) RangeConcurrent(
+	ctx context.Context,
 	concurrency int,
 	f func(ctx context.Context,
 		addr string,
@@ -119,7 +123,8 @@ func (c *ClientInternal) RangeConcurrent(ctx context.Context,
 	return args.Error(0)
 }
 
-func (c *ClientInternal) OrderedRange(ctx context.Context,
+func (c *ClientInternal) OrderedRange(
+	ctx context.Context,
 	order []string,
 	f func(ctx context.Context,
 		addr string,
@@ -130,7 +135,8 @@ func (c *ClientInternal) OrderedRange(ctx context.Context,
 	return args.Error(0)
 }
 
-func (c *ClientInternal) OrderedRangeConcurrent(ctx context.Context,
+func (c *ClientInternal) OrderedRangeConcurrent(
+	ctx context.Context,
 	order []string,
 	concurrency int,
 	f func(ctx context.Context,
@@ -142,19 +148,23 @@ func (c *ClientInternal) OrderedRangeConcurrent(ctx context.Context,
 	return args.Error(0)
 }
 
-func (c *ClientInternal) Do(ctx context.Context, addr string,
+func (c *ClientInternal) Do(
+	ctx context.Context,
+	addr string,
 	f func(ctx context.Context,
 		conn *ClientConn,
-		copts ...CallOption) (interface{}, error),
-) (interface{}, error) {
+		copts ...CallOption) (any, error),
+) (any, error) {
 	args := c.Called(ctx, addr, f)
 	return args.Get(0), args.Error(1)
 }
 
-func (c *ClientInternal) RoundRobin(ctx context.Context, f func(ctx context.Context,
-	conn *ClientConn,
-	copts ...CallOption) (interface{}, error),
-) (interface{}, error) {
+func (c *ClientInternal) RoundRobin(
+	ctx context.Context,
+	f func(ctx context.Context,
+		conn *ClientConn,
+		copts ...CallOption) (any, error),
+) (any, error) {
 	args := c.Called(ctx, f)
 	return args.Get(0), args.Error(1)
 }

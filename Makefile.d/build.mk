@@ -17,8 +17,6 @@
 .PHONY: binary/build
 ## build all binaries
 binary/build: \
-	cmd/agent/core/faiss/faiss \
-	cmd/agent/core/ngt/ngt \
 	cmd/agent/sidecar/sidecar \
 	cmd/discoverer/k8s/discoverer \
 	cmd/gateway/filter/filter \
@@ -28,21 +26,26 @@ binary/build: \
 	cmd/index/job/creation/index-creation \
 	cmd/index/job/readreplica/rotate/readreplica-rotate \
 	cmd/index/job/save/index-save \
+	cmd/index/operator/index-operator \
 	cmd/manager/index/index \
 	cmd/tools/benchmark/job/job \
 	cmd/tools/benchmark/operator/operator \
-	cmd/index/operator/index-operator
+	cmd/tools/cli/loadtest/loadtest \
+	cmd/agent/core/ngt/ngt \
+	cmd/agent/core/faiss/faiss \
+	rust/target/debug/agent \
+	rust/target/release/agent \
 
 
 cmd/agent/core/ngt/ngt: \
 	ngt/install
 	$(eval CGO_ENABLED = 1)
-	$(call go-build,agent/core/ngt,-linkmode 'external',-static -fPIC -pthread -fopenmp -std=gnu++20 -lstdc++ -lm -z relro -z now $(EXTLDFLAGS), cgo,NGT-$(NGT_VERSION),$@)
+	$(call go-build,agent/core/ngt,-linkmode 'external',-static -fPIC -pthread -fopenmp -std=gnu++20 -lstdc++ -lm -z relro -z now -flto -march=native -fno-plt -Ofast -fvisibility=hidden -ffp-contract=fast $(EXTLDFLAGS), cgo,NGT-$(NGT_VERSION),$@)
 
 cmd/agent/core/faiss/faiss: \
 	faiss/install
 	$(eval CGO_ENABLED = 1)
-	$(call go-build,agent/core/faiss,-linkmode 'external',-fPIC -pthread -fopenmp -std=gnu++20 -lstdc++ -lm -z relro -z now, cgo,FAISS-$(FAISS_VERSION),$@)
+	$(call go-build,agent/core/faiss,-linkmode 'external',-static -fPIC -pthread -fopenmp -std=gnu++20 -lstdc++ -lopenblas -llapack -lgfortran -lm -z relro -z now -flto -march=native -fno-plt -Ofast -fvisibility=hidden -ffp-contract=fast, cgo,FAISS-$(FAISS_VERSION),$@)
 
 cmd/agent/sidecar/sidecar:
 	$(eval CGO_ENABLED = 0)
@@ -89,11 +92,16 @@ cmd/index/operator/index-operator:
 	$(call go-build,index/operator,,-static,,,$@)
 
 cmd/tools/benchmark/job/job:
-	$(call go-build,tools/benchmark/job,-linkmode 'external',-static -fPIC -pthread -fopenmp -std=gnu++20 -lhdf5 -lhdf5_hl -lm -ldl, cgo,$(HDF5_VERSION),$@)
+	$(eval CGO_ENABLED = 1)
+	$(call go-build,tools/benchmark/job,-linkmode 'external',-static -fPIC -pthread -fopenmp -std=gnu++20 -lhdf5 -lhdf5_hl -lsz -laec -lz -lm -ldl, cgo,$(HDF5_VERSION),$@)
 
 cmd/tools/benchmark/operator/operator:
 	$(eval CGO_ENABLED = 0)
 	$(call go-build,tools/benchmark/operator,,-static,,,$@)
+
+cmd/tools/cli/loadtest/loadtest:
+	$(eval CGO_ENABLED = 1)
+	$(call go-build,tools/cli/loadtest,-linkmode 'external',-static -fPIC -pthread -fopenmp -std=gnu++20 -lhdf5 -lhdf5_hl -lsz -laec -lz -lm -ldl, cgo,$(HDF5_VERSION),$@)
 
 rust/target/release/agent:
 	pushd rust && cargo build -p agent --release && popd
@@ -107,16 +115,19 @@ binary/build/zip: \
 	artifacts/vald-agent-faiss-$(GOOS)-$(GOARCH).zip \
 	artifacts/vald-agent-ngt-$(GOOS)-$(GOARCH).zip \
 	artifacts/vald-agent-sidecar-$(GOOS)-$(GOARCH).zip \
+	artifacts/vald-benchmark-job-$(GOOS)-$(GOARCH).zip \
+	artifacts/vald-benchmark-operator-$(GOOS)-$(GOARCH).zip \
+	artifacts/vald-cli-loadtest-$(GOOS)-$(GOARCH).zip \
 	artifacts/vald-discoverer-k8s-$(GOOS)-$(GOARCH).zip \
 	artifacts/vald-filter-gateway-$(GOOS)-$(GOARCH).zip \
 	artifacts/vald-index-correction-$(GOOS)-$(GOARCH).zip \
 	artifacts/vald-index-creation-$(GOOS)-$(GOARCH).zip \
+	artifacts/vald-index-operator-$(GOOS)-$(GOARCH).zip \
 	artifacts/vald-index-save-$(GOOS)-$(GOARCH).zip \
 	artifacts/vald-lb-gateway-$(GOOS)-$(GOARCH).zip \
 	artifacts/vald-manager-index-$(GOOS)-$(GOARCH).zip \
 	artifacts/vald-mirror-gateway-$(GOOS)-$(GOARCH).zip \
-	artifacts/vald-readreplica-rotate-$(GOOS)-$(GOARCH).zip \
-	artifacts/vald-index-operator-$(GOOS)-$(GOARCH).zip
+	artifacts/vald-readreplica-rotate-$(GOOS)-$(GOARCH).zip
 
 artifacts/vald-agent-ngt-$(GOOS)-$(GOARCH).zip: cmd/agent/core/ngt/ngt
 	$(call mkdir, $(dir $@))
@@ -151,6 +162,10 @@ artifacts/vald-benchmark-job-$(GOOS)-$(GOARCH).zip: cmd/tools/benchmark/job/job
 	zip --junk-paths $@ $<
 
 artifacts/vald-benchmark-operator-$(GOOS)-$(GOARCH).zip: cmd/tools/benchmark/operator/operator
+	$(call mkdir, $(dir $@))
+	zip --junk-paths $@ $<
+
+artifacts/vald-cli-loadtest-$(GOOS)-$(GOARCH).zip: cmd/tools/cli/loadtest/loadtest
 	$(call mkdir, $(dir $@))
 	zip --junk-paths $@ $<
 

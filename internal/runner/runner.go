@@ -52,8 +52,8 @@ type runner struct {
 	maxVersion       string
 	minVersion       string
 	name             string
-	loadConfig       func(string) (interface{}, *config.GlobalConfig, error)
-	initializeDaemon func(interface{}) (Runner, error)
+	loadConfig       func(string) (any, *config.GlobalConfig, error)
+	initializeDaemon func(any) (Runner, error)
 }
 
 func Do(ctx context.Context, opts ...Option) error {

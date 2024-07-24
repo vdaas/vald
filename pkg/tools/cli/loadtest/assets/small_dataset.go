@@ -129,7 +129,7 @@ func gaussian(dim, size int, mean, stdDev float64) func() (Dataset, error) {
 }
 
 // Train returns vectors for train.
-func (s *smallDataset) Train(i int) (interface{}, error) {
+func (s *smallDataset) Train(i int) (any, error) {
 	if i >= len(s.train) {
 		return nil, ErrOutOfBounds
 	}
@@ -142,7 +142,7 @@ func (s *smallDataset) TrainSize() int {
 }
 
 // Query returns vectors for test.
-func (s *smallDataset) Query(i int) (interface{}, error) {
+func (s *smallDataset) Query(i int) (any, error) {
 	if i >= len(s.query) {
 		return nil, ErrOutOfBounds
 	}

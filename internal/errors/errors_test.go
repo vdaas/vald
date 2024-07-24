@@ -192,7 +192,7 @@ func TestErrOptionFailed(t *testing.T) {
 				args: args{
 					err: New("option failed error"),
 					ref: func() reflect.Value {
-						var i interface{} = fmt.Println
+						var i any = fmt.Println
 						return reflect.ValueOf(i)
 					}(),
 				},
@@ -402,8 +402,8 @@ func TestErrBackoffTimeout(t *testing.T) {
 
 func TestErrInvalidTypeConversion(t *testing.T) {
 	type args struct {
-		i   interface{}
-		tgt interface{}
+		i   any
+		tgt any
 	}
 	type want struct {
 		want error
@@ -532,7 +532,7 @@ func TestErrLoggingRetry(t *testing.T) {
 				args: args{
 					err: New("logging retry"),
 					ref: func() reflect.Value {
-						var i interface{} = fmt.Println
+						var i any = fmt.Println
 						return reflect.ValueOf(i)
 					}(),
 				},
@@ -634,7 +634,7 @@ func TestErrLoggingFailed(t *testing.T) {
 				args: args{
 					err: New("logging retry"),
 					ref: func() reflect.Value {
-						var i interface{} = fmt.Println
+						var i any = fmt.Println
 						return reflect.ValueOf(i)
 					}(),
 				},
@@ -866,7 +866,7 @@ func TestWrapf(t *testing.T) {
 	type args struct {
 		err    error
 		format string
-		args   []interface{}
+		args   []any
 	}
 	type want struct {
 		want error
@@ -889,7 +889,7 @@ func TestWrapf(t *testing.T) {
 		func() test {
 			err := New("err: ")
 			format := "error is occurred: %v"
-			val := []interface{}{
+			val := []any{
 				"timeout error",
 			}
 			wantErr := fmt.Errorf("%s: %w", fmt.Sprintf(format, val...), err)
@@ -908,7 +908,7 @@ func TestWrapf(t *testing.T) {
 		func() test {
 			err := New("err: ")
 			format := "error is occurred: %v : %v"
-			val := []interface{}{
+			val := []any{
 				"invalid time_duration",
 				10,
 			}
@@ -927,7 +927,7 @@ func TestWrapf(t *testing.T) {
 		}(),
 		func() test {
 			err := New("err: ")
-			val := []interface{}{
+			val := []any{
 				"invalid time_duration",
 				10,
 			}
@@ -973,7 +973,7 @@ func TestWrapf(t *testing.T) {
 		}(),
 		func() test {
 			format := "error is occurred: %v : %v"
-			val := []interface{}{
+			val := []any{
 				"invalid time_duration",
 				10,
 			}
@@ -1010,7 +1010,7 @@ func TestWrapf(t *testing.T) {
 			}
 		}(),
 		func() test {
-			val := []interface{}{
+			val := []any{
 				"invalid time_duration",
 				10,
 			}
@@ -1026,7 +1026,7 @@ func TestWrapf(t *testing.T) {
 			}
 		}(),
 		func() test {
-			val := []interface{}{
+			val := []any{
 				map[string]int{"invalid time_duration": 10},
 			}
 			wantErr := fmt.Errorf("%v", val[0])
@@ -1198,7 +1198,7 @@ func TestUnwarp(t *testing.T) {
 func TestErrorf(t *testing.T) {
 	type args struct {
 		format string
-		args   []interface{}
+		args   []any
 	}
 	type want struct {
 		want error
@@ -1220,7 +1220,7 @@ func TestErrorf(t *testing.T) {
 	tests := []test{
 		func() test {
 			format := "error is occurred: %v"
-			val := []interface{}{
+			val := []any{
 				"timeout error",
 			}
 			wantErr := fmt.Errorf(format, val...)
@@ -1237,7 +1237,7 @@ func TestErrorf(t *testing.T) {
 		}(),
 		func() test {
 			format := "error is occurred: %v : %v"
-			val := []interface{}{
+			val := []any{
 				"invalid time_duration",
 				10,
 			}
@@ -1254,7 +1254,7 @@ func TestErrorf(t *testing.T) {
 			}
 		}(),
 		func() test {
-			val := []interface{}{
+			val := []any{
 				"invalid time_duration",
 				10,
 			}
@@ -1270,7 +1270,7 @@ func TestErrorf(t *testing.T) {
 			}
 		}(),
 		func() test {
-			val := []interface{}{
+			val := []any{
 				map[string]int{"invalid time_duration": 10},
 			}
 			wantErr := fmt.Errorf("%v", val[0])
@@ -1529,7 +1529,7 @@ func TestIs(t *testing.T) {
 func TestAs(t *testing.T) {
 	type args struct {
 		err    error
-		target interface{}
+		target any
 	}
 	type want struct {
 		want bool

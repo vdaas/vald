@@ -47,7 +47,7 @@ Here are the concepts of Vald.
 
 - Distributed vector spaces
 
-  All the vector data and indexes are distributed to Vald Agents in the Vald cluster. Whenever you search a vector in Vald cluster, all Vald agents can process parallelly and merge the result by Vald LB Gateway.
+  All the vector data and indexes are distributed to Vald Agents in the Vald cluster. Whenever you search a vector in Vald cluster, all Vald agents can process parallel and merge the result by Vald LB Gateway.
 
 - Kubernetes based
 

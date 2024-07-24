@@ -177,7 +177,7 @@ const (
 	lastTimeSaveIndexTimestampAnnotationsKey     = "vald.vdaas.org/last-time-save-index-timestamp"
 	indexCountAnnotationsKey                     = "vald.vdaas.org/index-count"
 
-	// use this only for tests. usually just leave the ctx value empty and let time.Now() be used
+	// use this only for tests. usually just leave the ctx value empty and let time.Now() be used.
 	saveIndexTimeKey contextSaveIndexTimeKey = "saveIndexTimeKey"
 )
 
@@ -924,7 +924,9 @@ func (n *ngt) Start(ctx context.Context) <-chan error {
 	return ech
 }
 
-func (n *ngt) Search(ctx context.Context, vec []float32, size uint32, epsilon, radius float32) (res *payload.Search_Response, err error) {
+func (n *ngt) Search(
+	ctx context.Context, vec []float32, size uint32, epsilon, radius float32,
+) (res *payload.Search_Response, err error) {
 	if n.IsFlushing() {
 		return nil, errors.ErrFlushingIsInProgress
 	}
@@ -946,7 +948,9 @@ func (n *ngt) Search(ctx context.Context, vec []float32, size uint32, epsilon, r
 	return n.toSearchResponse(sr)
 }
 
-func (n *ngt) SearchByID(ctx context.Context, uuid string, size uint32, epsilon, radius float32) (vec []float32, dst *payload.Search_Response, err error) {
+func (n *ngt) SearchByID(
+	ctx context.Context, uuid string, size uint32, epsilon, radius float32,
+) (vec []float32, dst *payload.Search_Response, err error) {
 	if n.IsFlushing() {
 		return nil, nil, errors.ErrFlushingIsInProgress
 	}
@@ -964,7 +968,9 @@ func (n *ngt) SearchByID(ctx context.Context, uuid string, size uint32, epsilon,
 	return vec, dst, nil
 }
 
-func (n *ngt) LinearSearch(ctx context.Context, vec []float32, size uint32) (res *payload.Search_Response, err error) {
+func (n *ngt) LinearSearch(
+	ctx context.Context, vec []float32, size uint32,
+) (res *payload.Search_Response, err error) {
 	if n.IsFlushing() {
 		return nil, errors.ErrFlushingIsInProgress
 	}
@@ -986,7 +992,9 @@ func (n *ngt) LinearSearch(ctx context.Context, vec []float32, size uint32) (res
 	return n.toSearchResponse(sr)
 }
 
-func (n *ngt) LinearSearchByID(ctx context.Context, uuid string, size uint32) (vec []float32, dst *payload.Search_Response, err error) {
+func (n *ngt) LinearSearchByID(
+	ctx context.Context, uuid string, size uint32,
+) (vec []float32, dst *payload.Search_Response, err error) {
 	if n.IsFlushing() {
 		return nil, nil, errors.ErrFlushingIsInProgress
 	}
@@ -1228,26 +1236,34 @@ func (n *ngt) RegenerateIndexes(ctx context.Context) (err error) {
 	if err != nil {
 		log.Errorf("failed to flushing vector to ngt index in delete kvs. error: %v", err)
 	}
-	n.kvs = kvs.New(kvs.WithConcurrency(n.kvsdbConcurrency))
-
-	n.vq, err = vqueue.New()
+	n.kvs = nil
+	n.vq = nil
 
 	// gc
 	runtime.GC()
 	atomic.AddUint64(&n.nogce, 1)
 
-	// delete file
-	err = file.DeleteDir(ctx, n.path)
-	if err != nil {
-		log.Errorf("failed to flushing vector to ngt index in delete file. error: %v", err)
+	if n.inMem {
+		// delete file
+		err = file.DeleteDir(ctx, n.path)
+		if err != nil {
+			log.Errorf("failed to flushing vector to ngt index in delete file.\tpath: '%s', error: %v", n.path, err)
+		}
+
+		// delete cow
+		if n.enableCopyOnWrite {
+			err := file.DeleteDir(ctx, n.oldPath)
+			if err != nil {
+				log.Errorf("failed to flushing vector to ngt index in delete file.\tpath: '%s', error: %v", n.oldPath, err)
+			}
+		}
 	}
 
-	// delete cow
-	if n.enableCopyOnWrite {
-		err := file.DeleteDir(ctx, n.oldPath)
-		if err != nil {
-			log.Errorf("failed to flushing vector to ngt index in delete file. error: %v", err)
-		}
+	nkvs := kvs.New(kvs.WithConcurrency(n.kvsdbConcurrency))
+
+	nvq, err := vqueue.New()
+	if err != nil {
+		log.Errorf("failed to create new vector vector queue. error: %v", err)
 	}
 
 	// renew instance
@@ -1255,9 +1271,15 @@ func (n *ngt) RegenerateIndexes(ctx context.Context) (err error) {
 	if err != nil {
 		return err
 	}
+	nn.kvs = nkvs
+	nn.vq = nvq
+
 	// Regenerate with flags set
 	nn.flushing.Store(true)
 	nn.indexing.Store(true)
+	defer nn.flushing.Store(false)
+	defer nn.indexing.Store(false)
+
 	n = nn
 
 	return nil
@@ -1958,7 +1980,9 @@ func (n *ngt) ListObjectFunc(ctx context.Context, f func(uuid string, oid uint32
 	})
 }
 
-func (n *ngt) toSearchResponse(sr []algorithm.SearchResult) (res *payload.Search_Response, err error) {
+func (n *ngt) toSearchResponse(
+	sr []algorithm.SearchResult,
+) (res *payload.Search_Response, err error) {
 	if len(sr) == 0 {
 		if n.Len() == 0 {
 			return nil, nil

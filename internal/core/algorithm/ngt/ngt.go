@@ -304,7 +304,7 @@ func gen(isLoad bool, opts ...Option) (NGT, error) {
 
 func (n *ngt) setup() error {
 	n.epool = sync.Pool{
-		New: func() interface{} {
+		New: func() any {
 			return newNGTError()
 		},
 	}
@@ -404,7 +404,9 @@ func (n *ngt) loadObjectSpace() error {
 }
 
 // Search returns search result as []algorithm.SearchResult.
-func (n *ngt) Search(ctx context.Context, vec []float32, size int, epsilon, radius float32) (result []algorithm.SearchResult, err error) {
+func (n *ngt) Search(
+	ctx context.Context, vec []float32, size int, epsilon, radius float32,
+) (result []algorithm.SearchResult, err error) {
 	if len(vec) != int(n.dimension) {
 		return nil, errors.ErrIncompatibleDimensionSize(len(vec), int(n.dimension))
 	}
@@ -476,7 +478,9 @@ func (n *ngt) Search(ctx context.Context, vec []float32, size int, epsilon, radi
 }
 
 // Linear Search returns linear search result as []algorithm.SearchResult.
-func (n *ngt) LinearSearch(ctx context.Context, vec []float32, size int) (result []algorithm.SearchResult, err error) {
+func (n *ngt) LinearSearch(
+	ctx context.Context, vec []float32, size int,
+) (result []algorithm.SearchResult, err error) {
 	if len(vec) != int(n.dimension) {
 		return nil, errors.ErrIncompatibleDimensionSize(len(vec), int(n.dimension))
 	}

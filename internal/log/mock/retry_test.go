@@ -23,11 +23,11 @@ import (
 
 func TestRetry_Out(t *testing.T) {
 	type args struct {
-		fn   func(vals ...interface{}) error
-		vals []interface{}
+		fn   func(vals ...any) error
+		vals []any
 	}
 	type fields struct {
-		OutFunc func(fn func(vals ...interface{}) error, vals ...interface{})
+		OutFunc func(fn func(vals ...any) error, vals ...any)
 	}
 	type want struct{}
 	type test struct {
@@ -45,10 +45,10 @@ func TestRetry_Out(t *testing.T) {
 	tests := []test{
 		func() test {
 			var (
-				wantFn = func(vals ...interface{}) error {
+				wantFn = func(vals ...any) error {
 					return nil
 				}
-				wantVals = []interface{}{
+				wantVals = []any{
 					"Vald",
 				}
 				cnt int
@@ -62,7 +62,7 @@ func TestRetry_Out(t *testing.T) {
 				fieldsFunc: func(t *testing.T) fields {
 					t.Helper()
 					return fields{
-						OutFunc: func(fn func(vals ...interface{}) error, vals ...interface{}) {
+						OutFunc: func(fn func(vals ...any) error, vals ...any) {
 							if !reflect.DeepEqual(vals, wantVals) {
 								t.Errorf("vals got = %v, want = %v", vals, wantVals)
 							}
@@ -112,12 +112,12 @@ func TestRetry_Out(t *testing.T) {
 
 func TestRetry_Outf(t *testing.T) {
 	type args struct {
-		fn     func(format string, vals ...interface{}) error
+		fn     func(format string, vals ...any) error
 		format string
-		vals   []interface{}
+		vals   []any
 	}
 	type fields struct {
-		OutfFunc func(fn func(format string, vals ...interface{}) error, format string, vals ...interface{})
+		OutfFunc func(fn func(format string, vals ...any) error, format string, vals ...any)
 	}
 	type want struct{}
 	type test struct {
@@ -135,10 +135,10 @@ func TestRetry_Outf(t *testing.T) {
 	tests := []test{
 		func() test {
 			var (
-				wantFn = func(format string, vals ...interface{}) error {
+				wantFn = func(format string, vals ...any) error {
 					return nil
 				}
-				wantVals = []interface{}{
+				wantVals = []any{
 					"Vald",
 				}
 				wantFormat = "json"
@@ -154,7 +154,7 @@ func TestRetry_Outf(t *testing.T) {
 				fieldsFunc: func(t *testing.T) fields {
 					t.Helper()
 					return fields{
-						OutfFunc: func(fn func(format string, vals ...interface{}) error, format string, vals ...interface{}) {
+						OutfFunc: func(fn func(format string, vals ...any) error, format string, vals ...any) {
 							if !reflect.DeepEqual(vals, wantVals) {
 								t.Errorf("vals got = %v, want = %v", vals, wantVals)
 							}

@@ -273,21 +273,21 @@ func TestGlobalConfig_Bind(t *testing.T) {
 func TestRead(t *testing.T) {
 	type args struct {
 		path string
-		cfg  interface{}
+		cfg  any
 	}
 	type want struct {
-		want interface{}
+		want any
 		err  error
 	}
 	type test struct {
 		name       string
 		args       args
 		want       want
-		checkFunc  func(want, interface{}, error) error
+		checkFunc  func(want, any, error) error
 		beforeFunc func(*testing.T, args)
 		afterFunc  func(*testing.T, args)
 	}
-	defaultCheckFunc := func(w want, got interface{}, err error) error {
+	defaultCheckFunc := func(w want, got any, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
@@ -405,7 +405,7 @@ func TestRead(t *testing.T) {
 					"logger": "glg"
 				}
 			}`
-			cfg := make(map[string]interface{})
+			cfg := make(map[string]any)
 
 			return test{
 				name: "return nil when read json file successes and input data type is nested map",
@@ -436,10 +436,10 @@ func TestRead(t *testing.T) {
 					}
 				},
 				want: want{
-					want: &map[string]interface{}{
+					want: &map[string]any{
 						"version":   "v1.0.0",
 						"time_zone": "UTC",
-						"logging": map[string]interface{}{
+						"logging": map[string]any{
 							"logger": "glg",
 						},
 					},
@@ -459,7 +459,7 @@ func TestRead(t *testing.T) {
 					"port": "3001"
 				}
 			]`
-			cfg := make([]map[string]interface{}, 0)
+			cfg := make([]map[string]any, 0)
 
 			return test{
 				name: "return nil when read json file successes and input data type is map slice",
@@ -490,7 +490,7 @@ func TestRead(t *testing.T) {
 					}
 				},
 				want: want{
-					want: &[]map[string]interface{}{
+					want: &[]map[string]any{
 						{
 							"addr": "0.0.0.0",
 							"port": "8080",
@@ -639,7 +639,7 @@ func TestRead(t *testing.T) {
 		func() test {
 			path := "read_config_test.yaml"
 			data := "version: v1.0.0\ntime_zone: UTC\nlogging:\n  logger: glg"
-			cfg := make(map[string]interface{})
+			cfg := make(map[string]any)
 
 			return test{
 				name: "return nil when read yaml file successes and input data type is nested map",
@@ -670,10 +670,10 @@ func TestRead(t *testing.T) {
 					}
 				},
 				want: want{
-					want: &map[string]interface{}{
+					want: &map[string]any{
 						"version":   "v1.0.0",
 						"time_zone": "UTC",
-						"logging": map[string]interface{}{
+						"logging": map[string]any{
 							"logger": "glg",
 						},
 					},
@@ -684,7 +684,7 @@ func TestRead(t *testing.T) {
 		func() test {
 			path := "read_config_test.yaml"
 			data := "- \n  addr: 0.0.0.0\n  port: \"8080\"\n- \n  addr: 0.0.0.0\n  port: \"3001\""
-			cfg := make([]map[string]interface{}, 0)
+			cfg := make([]map[string]any, 0)
 
 			return test{
 				name: "return nil when read yaml file successes and input data type is map slice",
@@ -715,7 +715,7 @@ func TestRead(t *testing.T) {
 					}
 				},
 				want: want{
-					want: &[]map[string]interface{}{
+					want: &[]map[string]any{
 						{
 							"addr": "0.0.0.0",
 							"port": "8080",
@@ -1310,7 +1310,7 @@ func Test_checkPrefixAndSuffix(t *testing.T) {
 
 func TestToRawYaml(t *testing.T) {
 	type args struct {
-		data interface{}
+		data any
 	}
 	type want struct {
 		want string
@@ -1362,8 +1362,8 @@ func TestToRawYaml(t *testing.T) {
 		{
 			name: "return row string when data is a nested map type",
 			args: args{
-				data: map[string]interface{}{
-					"logging": map[string]interface{}{
+				data: map[string]any{
+					"logging": map[string]any{
 						"logger": "glg",
 					},
 				},

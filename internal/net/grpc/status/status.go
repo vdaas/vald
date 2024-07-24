@@ -41,76 +41,76 @@ func New(c codes.Code, msg string) *Status {
 	return status.New(c, msg)
 }
 
-func newStatus(code codes.Code, msg string, err error, details ...interface{}) (st *Status) {
+func newStatus(code codes.Code, msg string, err error, details ...any) (st *Status) {
 	st = New(code, msg)
 	return withDetails(st, err, details...)
 }
 
-func WrapWithCanceled(msg string, err error, details ...interface{}) error {
+func WrapWithCanceled(msg string, err error, details ...any) error {
 	return newStatus(codes.Canceled, msg, err, details...).Err()
 }
 
-func WrapWithUnknown(msg string, err error, details ...interface{}) error {
+func WrapWithUnknown(msg string, err error, details ...any) error {
 	return newStatus(codes.Unknown, msg, err, details...).Err()
 }
 
-func WrapWithInvalidArgument(msg string, err error, details ...interface{}) error {
+func WrapWithInvalidArgument(msg string, err error, details ...any) error {
 	return newStatus(codes.InvalidArgument, msg, err, details...).Err()
 }
 
-func WrapWithDeadlineExceeded(msg string, err error, details ...interface{}) error {
+func WrapWithDeadlineExceeded(msg string, err error, details ...any) error {
 	return newStatus(codes.DeadlineExceeded, msg, err, details...).Err()
 }
 
-func WrapWithNotFound(msg string, err error, details ...interface{}) error {
+func WrapWithNotFound(msg string, err error, details ...any) error {
 	return newStatus(codes.NotFound, msg, err, details...).Err()
 }
 
-func WrapWithAlreadyExists(msg string, err error, details ...interface{}) error {
+func WrapWithAlreadyExists(msg string, err error, details ...any) error {
 	return newStatus(codes.AlreadyExists, msg, err, details...).Err()
 }
 
-func WrapWithPermissionDenied(msg string, err error, details ...interface{}) error {
+func WrapWithPermissionDenied(msg string, err error, details ...any) error {
 	return newStatus(codes.PermissionDenied, msg, err, details...).Err()
 }
 
-func WrapWithResourceExhausted(msg string, err error, details ...interface{}) error {
+func WrapWithResourceExhausted(msg string, err error, details ...any) error {
 	return newStatus(codes.ResourceExhausted, msg, err, details...).Err()
 }
 
-func WrapWithFailedPrecondition(msg string, err error, details ...interface{}) error {
+func WrapWithFailedPrecondition(msg string, err error, details ...any) error {
 	return newStatus(codes.FailedPrecondition, msg, err, details...).Err()
 }
 
-func WrapWithAborted(msg string, err error, details ...interface{}) error {
+func WrapWithAborted(msg string, err error, details ...any) error {
 	return newStatus(codes.Aborted, msg, err, details...).Err()
 }
 
-func WrapWithOutOfRange(msg string, err error, details ...interface{}) error {
+func WrapWithOutOfRange(msg string, err error, details ...any) error {
 	return newStatus(codes.OutOfRange, msg, err, details...).Err()
 }
 
-func WrapWithUnimplemented(msg string, err error, details ...interface{}) error {
+func WrapWithUnimplemented(msg string, err error, details ...any) error {
 	return newStatus(codes.Unimplemented, msg, err, details...).Err()
 }
 
-func WrapWithInternal(msg string, err error, details ...interface{}) error {
+func WrapWithInternal(msg string, err error, details ...any) error {
 	return newStatus(codes.Internal, msg, err, details...).Err()
 }
 
-func WrapWithUnavailable(msg string, err error, details ...interface{}) error {
+func WrapWithUnavailable(msg string, err error, details ...any) error {
 	return newStatus(codes.Unavailable, msg, err, details...).Err()
 }
 
-func WrapWithDataLoss(msg string, err error, details ...interface{}) error {
+func WrapWithDataLoss(msg string, err error, details ...any) error {
 	return newStatus(codes.DataLoss, msg, err, details...).Err()
 }
 
-func WrapWithUnauthenticated(msg string, err error, details ...interface{}) error {
+func WrapWithUnauthenticated(msg string, err error, details ...any) error {
 	return newStatus(codes.Unauthenticated, msg, err, details...).Err()
 }
 
-func CreateWithNotFound(msg string, err error, details ...interface{}) *Status {
+func CreateWithNotFound(msg string, err error, details ...any) *Status {
 	return newStatus(codes.NotFound, msg, err, details...)
 }
 
@@ -118,11 +118,13 @@ func Error(code codes.Code, msg string) error {
 	return status.Error(code, msg)
 }
 
-func Errorf(code codes.Code, format string, args ...interface{}) error {
+func Errorf(code codes.Code, format string, args ...any) error {
 	return status.Errorf(code, format, args...)
 }
 
-func ParseError(err error, defaultCode codes.Code, defaultMsg string, details ...interface{}) (st *Status, msg string, rerr error) {
+func ParseError(
+	err error, defaultCode codes.Code, defaultMsg string, details ...any,
+) (st *Status, msg string, rerr error) {
 	if err == nil {
 		st = newStatus(codes.OK, "", nil, details...)
 		msg = st.Message()
@@ -234,7 +236,7 @@ func FromError(err error) (st *Status, ok bool) {
 	}
 }
 
-func withDetails(st *Status, err error, details ...interface{}) *Status {
+func withDetails(st *Status, err error, details ...any) *Status {
 	msgs := make([]proto.MessageV1, 0, 1+len(details)*2)
 	if err != nil {
 		msgs = append(msgs, &errdetails.ErrorInfo{

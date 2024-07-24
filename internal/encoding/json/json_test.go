@@ -26,7 +26,7 @@ import (
 func TestEncode(t *testing.T) {
 	type args struct {
 		w    io.Writer
-		data interface{}
+		data any
 	}
 
 	type test struct {
@@ -165,7 +165,7 @@ func TestDecode(t *testing.T) {
 
 func TestMarshalIndent(t *testing.T) {
 	type args struct {
-		data interface{}
+		data any
 		pref string
 		ind  string
 	}
@@ -234,7 +234,7 @@ func TestMarshalIndent(t *testing.T) {
 // func TestUnmarshal(t *testing.T) {
 // 	type args struct {
 // 		data []byte
-// 		i    interface{}
+// 		i    any
 // 	}
 // 	type want struct {
 // 		err error
@@ -322,7 +322,7 @@ func TestMarshalIndent(t *testing.T) {
 //
 // func TestMarshal(t *testing.T) {
 // 	type args struct {
-// 		data interface{}
+// 		data any
 // 	}
 // 	type want struct {
 // 		want []byte

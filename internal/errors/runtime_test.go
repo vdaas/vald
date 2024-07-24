@@ -28,7 +28,7 @@ import (
 func TestErrPanicRecovered(t *testing.T) {
 	type args struct {
 		err error
-		rec interface{}
+		rec any
 	}
 	type want struct {
 		want error

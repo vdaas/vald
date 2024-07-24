@@ -31,15 +31,15 @@ func TestMain(m *testing.M) {
 func TestRequest(t *testing.T) {
 	t.Parallel()
 	type args struct {
-		values map[string]interface{}
-		body   map[string]interface{}
+		values map[string]any
+		body   map[string]any
 		r      *http.Request
 	}
 
 	type test struct {
 		name      string
 		args      args
-		checkFunc func(res interface{}, err error) error
+		checkFunc func(res any, err error) error
 	}
 
 	tests := []test{
@@ -61,14 +61,14 @@ func TestRequest(t *testing.T) {
 					RemoteAddr:    "0.0.0.0",
 					ContentLength: 1234,
 				},
-				body: map[string]interface{}{
+				body: map[string]any{
 					"name": "vald",
 				},
-				values: map[string]interface{}{
+				values: map[string]any{
 					"version": "1.0.0",
 				},
 			},
-			checkFunc: func(res interface{}, err error) error {
+			checkFunc: func(res any, err error) error {
 				if err != nil {
 					return errors.Errorf("err is not nil. err: %v", err)
 				}
@@ -88,7 +88,7 @@ func TestRequest(t *testing.T) {
 		},
 		{
 			name: "returns nil and error",
-			checkFunc: func(res interface{}, err error) error {
+			checkFunc: func(res any, err error) error {
 				if got, want := err, errors.ErrInvalidRequest; !errors.Is(got, want) {
 					return errors.Errorf("err not equals. want: %v, got: %v", want, got)
 				}

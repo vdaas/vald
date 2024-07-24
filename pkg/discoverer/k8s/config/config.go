@@ -17,9 +17,7 @@
 // Package setting stores all server application settings
 package config
 
-import (
-	"github.com/vdaas/vald/internal/config"
-)
+import "github.com/vdaas/vald/internal/config"
 
 type GlobalConfig = config.GlobalConfig
 

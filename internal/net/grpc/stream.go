@@ -45,7 +45,9 @@ type (
 // It receives messages from the stream, calls the function with the received message, and sends the returned message to the stream.
 // It limits the number of concurrent calls to the function with the concurrency integer.
 // It records errors and returns them as a single error.
-func BidirectionalStream[Q any, R any](ctx context.Context, stream ServerStream,
+func BidirectionalStream[Q any, R any](
+	ctx context.Context,
+	stream ServerStream,
 	concurrency int,
 	f func(context.Context, *Q) (*R, error),
 ) (err error) {
@@ -165,9 +167,8 @@ func BidirectionalStream[Q any, R any](ctx context.Context, stream ServerStream,
 }
 
 // BidirectionalStreamClient is gRPC client stream.
-func BidirectionalStreamClient(stream ClientStream,
-	dataProvider, newData func() interface{},
-	f func(interface{}, error),
+func BidirectionalStreamClient(
+	stream ClientStream, dataProvider, newData func() any, f func(any, error),
 ) (err error) {
 	if stream == nil {
 		return errors.ErrGRPCClientStreamNotFound

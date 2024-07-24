@@ -67,7 +67,9 @@ func (c *client) GRPCClient() grpc.Client {
 	return c.c
 }
 
-func (c *client) Register(ctx context.Context, in *payload.Mirror_Targets, opts ...grpc.CallOption) (res *payload.Mirror_Targets, err error) {
+func (c *client) Register(
+	ctx context.Context, in *payload.Mirror_Targets, opts ...grpc.CallOption,
+) (res *payload.Mirror_Targets, err error) {
 	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+mirror.RegisterRPCName), apiName+"/"+mirror.RegisterRPCName)
 	defer func() {
 		if span != nil {
@@ -75,7 +77,7 @@ func (c *client) Register(ctx context.Context, in *payload.Mirror_Targets, opts 
 		}
 	}()
 
-	_, err = c.c.RoundRobin(ctx, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
+	_, err = c.c.RoundRobin(ctx, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (any, error) {
 		res, err = mirror.NewMirrorClient(conn).Register(ctx, in, append(copts, opts...)...)
 		if err != nil {
 			return nil, err
