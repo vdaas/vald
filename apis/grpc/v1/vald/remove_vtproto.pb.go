@@ -177,10 +177,7 @@ func RegisterRemoveServer(s grpc.ServiceRegistrar, srv RemoveServer) {
 }
 
 func _Remove_Remove_Handler(
-	srv any,
-	ctx context.Context,
-	dec func(any) error,
-	interceptor grpc.UnaryServerInterceptor,
+	srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor,
 ) (any, error) {
 	in := new(payload.Remove_Request)
 	if err := dec(in); err != nil {
@@ -200,10 +197,7 @@ func _Remove_Remove_Handler(
 }
 
 func _Remove_RemoveByTimestamp_Handler(
-	srv any,
-	ctx context.Context,
-	dec func(any) error,
-	interceptor grpc.UnaryServerInterceptor,
+	srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor,
 ) (any, error) {
 	in := new(payload.Remove_TimestampRequest)
 	if err := dec(in); err != nil {
@@ -249,10 +243,7 @@ func (x *removeStreamRemoveServer) Recv() (*payload.Remove_Request, error) {
 }
 
 func _Remove_MultiRemove_Handler(
-	srv any,
-	ctx context.Context,
-	dec func(any) error,
-	interceptor grpc.UnaryServerInterceptor,
+	srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor,
 ) (any, error) {
 	in := new(payload.Remove_MultiRequest)
 	if err := dec(in); err != nil {

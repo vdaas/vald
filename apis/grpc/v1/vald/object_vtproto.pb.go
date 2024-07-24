@@ -220,10 +220,7 @@ func RegisterObjectServer(s grpc.ServiceRegistrar, srv ObjectServer) {
 }
 
 func _Object_Exists_Handler(
-	srv any,
-	ctx context.Context,
-	dec func(any) error,
-	interceptor grpc.UnaryServerInterceptor,
+	srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor,
 ) (any, error) {
 	in := new(payload.Object_ID)
 	if err := dec(in); err != nil {
@@ -243,10 +240,7 @@ func _Object_Exists_Handler(
 }
 
 func _Object_GetObject_Handler(
-	srv any,
-	ctx context.Context,
-	dec func(any) error,
-	interceptor grpc.UnaryServerInterceptor,
+	srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor,
 ) (any, error) {
 	in := new(payload.Object_VectorRequest)
 	if err := dec(in); err != nil {
@@ -313,10 +307,7 @@ func (x *objectStreamListObjectServer) Send(m *payload.Object_List_Response) err
 }
 
 func _Object_GetTimestamp_Handler(
-	srv any,
-	ctx context.Context,
-	dec func(any) error,
-	interceptor grpc.UnaryServerInterceptor,
+	srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor,
 ) (any, error) {
 	in := new(payload.Object_TimestampRequest)
 	if err := dec(in); err != nil {

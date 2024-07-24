@@ -157,10 +157,7 @@ func RegisterUpdateServer(s grpc.ServiceRegistrar, srv UpdateServer) {
 }
 
 func _Update_Update_Handler(
-	srv any,
-	ctx context.Context,
-	dec func(any) error,
-	interceptor grpc.UnaryServerInterceptor,
+	srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor,
 ) (any, error) {
 	in := new(payload.Update_Request)
 	if err := dec(in); err != nil {
@@ -206,10 +203,7 @@ func (x *updateStreamUpdateServer) Recv() (*payload.Update_Request, error) {
 }
 
 func _Update_MultiUpdate_Handler(
-	srv any,
-	ctx context.Context,
-	dec func(any) error,
-	interceptor grpc.UnaryServerInterceptor,
+	srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor,
 ) (any, error) {
 	in := new(payload.Update_MultiRequest)
 	if err := dec(in); err != nil {

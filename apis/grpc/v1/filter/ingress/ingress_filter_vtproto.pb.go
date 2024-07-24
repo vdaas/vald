@@ -117,10 +117,7 @@ func RegisterFilterServer(s grpc.ServiceRegistrar, srv FilterServer) {
 }
 
 func _Filter_GenVector_Handler(
-	srv any,
-	ctx context.Context,
-	dec func(any) error,
-	interceptor grpc.UnaryServerInterceptor,
+	srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor,
 ) (any, error) {
 	in := new(payload.Object_Blob)
 	if err := dec(in); err != nil {
@@ -140,10 +137,7 @@ func _Filter_GenVector_Handler(
 }
 
 func _Filter_FilterVector_Handler(
-	srv any,
-	ctx context.Context,
-	dec func(any) error,
-	interceptor grpc.UnaryServerInterceptor,
+	srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor,
 ) (any, error) {
 	in := new(payload.Object_Vector)
 	if err := dec(in); err != nil {
