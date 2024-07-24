@@ -16,6 +16,8 @@
 use std::collections::HashMap;
 use std::time::Duration;
 
+use opentelemetry_sdk;
+
 #[derive(Clone, Debug)]
 pub struct Config {
     enabled: bool,
@@ -70,6 +72,17 @@ impl Config {
     pub fn meter(mut self, cfg: Meter) -> Self {
         self.meter = cfg;
         self
+    }
+}
+
+impl From<&Config> for opentelemetry_sdk::Resource {
+    fn from(value: &Config) -> Self {
+        let key_values: Vec<opentelemetry::KeyValue> = value
+            .attributes
+            .iter()
+            .map(|(key, val)| opentelemetry::KeyValue::new(key.clone(), val.clone()))
+            .collect();
+        opentelemetry_sdk::Resource::new(key_values)
     }
 }
 
