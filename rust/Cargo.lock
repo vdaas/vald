@@ -719,7 +719,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "observability-rs"
+name = "observability"
 version = "0.1.0"
 dependencies = [
  "anyhow",

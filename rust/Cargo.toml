@@ -17,7 +17,7 @@
 members = [
 	"libs/ngt",
 	"libs/ngt-rs",
-	"libs/observability-rs",
+	"libs/observability",
 	"libs/proto",
 	"bin/agent",
 ]
