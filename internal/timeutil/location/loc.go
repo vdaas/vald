@@ -13,9 +13,7 @@
 // limitations under the License.
 package location
 
-import (
-	"time"
-)
+import "time"
 
 const (
 	locationTokyo = "Asia/Tokyo"

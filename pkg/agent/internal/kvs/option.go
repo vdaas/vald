@@ -16,9 +16,7 @@
 
 package kvs
 
-import (
-	"runtime"
-)
+import "runtime"
 
 // Option represents the functional option for bidi.
 type Option func(n *bidi)

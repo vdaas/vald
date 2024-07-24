@@ -47,22 +47,35 @@ enabled = true
 
   [analyzers.meta]
   dockerfile_paths = [
-    "dockers/agent/ngt/Dockerfile",
-    "dockers/discoverer/k8s/Dockerfile",
+    "dockers/agent/core/agent/Dockerfile",
+    "dockers/agent/core/faiss/Dockerfile",
+    "dockers/agent/core/ngt/Dockerfile",
     "dockers/agent/sidecar/Dockerfile",
-    "dockers/gateway/lb/Dockerfile",
-    "dockers/gateway/filter/Dockerfile",
-    "dockers/manager/index/Dockerfile",
-    "dockers/operator/helm/Dockerfile",
+    "dockers/buildbase/Dockerfile",
     "dockers/ci/base/Dockerfile",
     "dockers/dev/Dockerfile",
+    "dockers/discoverer/k8s/Dockerfile",
+    "dockers/gateway/filter/Dockerfile",
+    "dockers/gateway/lb/Dockerfile",
+    "dockers/gateway/mirror/Dockerfile",
+    "dockers/index/job/correction/Dockerfile",
+    "dockers/index/job/creation/Dockerfile",
+    "dockers/index/job/readreplica/rotate/Dockerfile",
+    "dockers/index/job/save/Dockerfile",
+    "dockers/index/operator/Dockerfile",
+    "dockers/manager/index/Dockerfile",
+    "dockers/operator/helm/Dockerfile",
+    "dockers/readreplica/job/readreplica/rotate/Dockerfile",
+    "dockers/tools/benchmark/job/Dockerfile",
+    "dockers/tools/benchmark/operator/Dockerfile",
     "dockers/tools/cli/loadtest/Dockerfile"
   ]
 
   trusted_registries = [
     "docker.io",
-    "hub.docker.com",
-    "ghcr.io/vdaas/vald"
+    "gcr.io/distroless",
+    "ghcr.io/vdaas/vald",
+    "hub.docker.com"
   ]
 
 [[analyzers]]

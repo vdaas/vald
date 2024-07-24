@@ -1270,7 +1270,9 @@ func (f *faiss) Close(ctx context.Context) error {
 	return nil
 }
 
-func (f *faiss) toSearchResponse(sr []algorithm.SearchResult) (res *payload.Search_Response, err error) {
+func (f *faiss) toSearchResponse(
+	sr []algorithm.SearchResult,
+) (res *payload.Search_Response, err error) {
 	if len(sr) == 0 {
 		if f.Len() == 0 {
 			return nil, nil

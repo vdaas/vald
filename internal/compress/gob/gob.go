@@ -21,12 +21,12 @@ import (
 
 // Encoder represents an interface for Encoder of gob.
 type Encoder interface {
-	Encode(e interface{}) error
+	Encode(e any) error
 }
 
 // Decoder represents an interface for Decoder of gob.
 type Decoder interface {
-	Decode(e interface{}) error
+	Decode(e any) error
 }
 
 // Transcoder is an interface to create Encoder and Decoder implementation.

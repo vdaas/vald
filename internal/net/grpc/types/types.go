@@ -26,6 +26,6 @@ import (
 type Any = anypb.Any
 
 // UnmarshalAny unmarshal protocol buffer message to any.
-func UnmarshalAny(any *Any, m proto.Message) error {
-	return any.UnmarshalTo(m)
+func UnmarshalAny(a *Any, m proto.Message) error {
+	return a.UnmarshalTo(m)
 }

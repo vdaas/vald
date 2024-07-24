@@ -22,8 +22,8 @@ assignees: ""
 
 <!--- Please change the versions below along with your environment -->
 
-- Go Version: 1.22.3
+- Go Version: 1.22.5
 - Rust Version: 1.77.2
 - Docker Version: 20.10.8
-- Kubernetes Version: v1.30.0
-- NGT Version: 2.2.1
+- Kubernetes Version: v1.30.3
+- NGT Version: 2.2.3

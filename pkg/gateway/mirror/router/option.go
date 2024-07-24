@@ -13,9 +13,7 @@
 // limitations under the License.
 package router
 
-import (
-	"github.com/vdaas/vald/pkg/gateway/mirror/handler/rest"
-)
+import "github.com/vdaas/vald/pkg/gateway/mirror/handler/rest"
 
 type Option func(*router)
 

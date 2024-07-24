@@ -25,12 +25,14 @@ import (
 	"github.com/vdaas/vald/internal/log"
 	"github.com/vdaas/vald/internal/net/grpc/errdetails"
 	"github.com/vdaas/vald/internal/net/grpc/status"
+	"github.com/vdaas/vald/internal/observability/attribute"
 	"github.com/vdaas/vald/internal/observability/trace"
-	"go.opentelemetry.io/otel/attribute"
 )
 
 // Flush removes all vectors that are indexed and uncommitted in the `vald-agent`.
-func (s *server) Flush(ctx context.Context, req *payload.Flush_Request) (*payload.Info_Index_Count, error) {
+func (s *server) Flush(
+	ctx context.Context, req *payload.Flush_Request,
+) (*payload.Info_Index_Count, error) {
 	_, span := trace.StartSpan(ctx, apiName+"/"+vald.FlushRPCName)
 	defer func() {
 		if span != nil {
@@ -84,19 +86,19 @@ func (s *server) Flush(ctx context.Context, req *payload.Flush_Request) (*payloa
 	}
 
 	var (
-		stored     uint32
-		uncommited uint32
-		indexing   atomic.Value
-		saving     atomic.Value
+		stored      uint32
+		uncommitted uint32
+		indexing    atomic.Value
+		saving      atomic.Value
 	)
 	stored = 0
-	uncommited = 0
+	uncommitted = 0
 	indexing.Store(false)
 	saving.Store(false)
 
 	cnts := &payload.Info_Index_Count{
 		Stored:      atomic.LoadUint32(&stored),
-		Uncommitted: atomic.LoadUint32(&uncommited),
+		Uncommitted: atomic.LoadUint32(&uncommitted),
 		Indexing:    indexing.Load().(bool),
 		Saving:      saving.Load().(bool),
 	}

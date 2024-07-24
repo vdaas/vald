@@ -43,13 +43,13 @@ const (
 	completeBenchmarkJobCountDescription = "Benchmark Operator complete benchmark job count"
 
 	// appliedJobCount            = "benchmark_operator_applied_job"
-	// appliedJobCountDescription = "Benchmark Operator applied job count"
+	// appliedJobCountDescription = "Benchmark Operator applied job count".
 
 	// runningJobCount            = "benchmark_operator_running_job"
-	// runningJobCountDescription = "Benchmark Operator running job count"
+	// runningJobCountDescription = "Benchmark Operator running job count".
 
 	// completeJobCount            = "benchmark_operator_complete_job"
-	// completeJobCountDescription = "Benchmark Operator complete job count"
+	// completeJobCountDescription = "Benchmark Operator complete job count".
 )
 
 const (
@@ -68,7 +68,7 @@ func New(om service.Operator) metrics.Metric {
 	}
 }
 
-// TODO: implement here
+// TODO: implement here.
 func (om *operatorMetrics) View() ([]metrics.View, error) {
 	return []metrics.View{
 		view.NewView(
@@ -128,7 +128,7 @@ func (om *operatorMetrics) View() ([]metrics.View, error) {
 	}, nil
 }
 
-// TODO: implement here
+// TODO: implement here.
 func (om *operatorMetrics) Register(m metrics.Meter) error {
 	appliedScenarioCount, err := m.Int64ObservableCounter(
 		appliedScenarioCount,

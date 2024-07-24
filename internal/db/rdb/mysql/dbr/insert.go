@@ -27,7 +27,7 @@ import (
 type InsertStmt interface {
 	Columns(column ...string) InsertStmt
 	ExecContext(ctx context.Context) (sql.Result, error)
-	Record(structValue interface{}) InsertStmt
+	Record(structValue any) InsertStmt
 }
 
 type insertStmt struct {
@@ -46,7 +46,7 @@ func (stmt *insertStmt) ExecContext(ctx context.Context) (sql.Result, error) {
 }
 
 // Record adds a tuple for columns from a struct.
-func (stmt *insertStmt) Record(structValue interface{}) InsertStmt {
+func (stmt *insertStmt) Record(structValue any) InsertStmt {
 	stmt.InsertStmt = stmt.InsertStmt.Record(structValue)
 	return stmt
 }

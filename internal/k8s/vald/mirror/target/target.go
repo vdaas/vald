@@ -87,7 +87,9 @@ func (r *reconciler) addListOpts(opt client.ListOption) {
 	r.lopts = append(r.lopts, opt)
 }
 
-func (r *reconciler) Reconcile(ctx context.Context, _ reconcile.Request) (res reconcile.Result, err error) {
+func (r *reconciler) Reconcile(
+	ctx context.Context, _ reconcile.Request,
+) (res reconcile.Result, err error) {
 	ml := &mirrv1.ValdMirrorTargetList{}
 	err = r.mgr.GetClient().List(ctx, ml, r.lopts...)
 	if err != nil {

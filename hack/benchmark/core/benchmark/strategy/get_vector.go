@@ -36,7 +36,7 @@ func NewGetVector(opts ...StrategyOption) benchmark.Strategy {
 			},
 		),
 		WithProp32(
-			func(ctx context.Context, b *testing.B, c algorithm.Bit32, dataset assets.Dataset, ids []uint, cnt *uint64) (interface{}, error) {
+			func(ctx context.Context, b *testing.B, c algorithm.Bit32, dataset assets.Dataset, ids []uint, cnt *uint64) (any, error) {
 				return c.GetVector(ids[int(atomic.LoadUint64(cnt))%len(ids)])
 			},
 		),
@@ -46,7 +46,7 @@ func NewGetVector(opts ...StrategyOption) benchmark.Strategy {
 			},
 		),
 		WithProp64(
-			func(ctx context.Context, b *testing.B, c algorithm.Bit64, dataset assets.Dataset, ids []uint, cnt *uint64) (interface{}, error) {
+			func(ctx context.Context, b *testing.B, c algorithm.Bit64, dataset assets.Dataset, ids []uint, cnt *uint64) (any, error) {
 				return c.GetVector(ids[int(atomic.LoadUint64(cnt))%len(ids)])
 			},
 		),

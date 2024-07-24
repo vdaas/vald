@@ -19,7 +19,9 @@ import (
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 )
 
-// TODO: implement Flush Handler
-func (s *server) Flush(ctx context.Context, req *payload.Flush_Request) (*payload.Info_Index_Count, error) {
+// TODO: implement Flush Handler.
+func (s *server) Flush(
+	ctx context.Context, req *payload.Flush_Request,
+) (*payload.Info_Index_Count, error) {
 	return s.UnimplementedValdServer.UnimplementedFlushServer.Flush(ctx, req)
 }

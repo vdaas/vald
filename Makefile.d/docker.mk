@@ -46,10 +46,13 @@ ifeq ($(REMOTE),true)
 	@echo "starting remote build for $(IMAGE):$(TAG)"
 	DOCKER_BUILDKIT=1 $(DOCKER) buildx build \
 		$(DOCKER_OPTS) \
+		--cache-to type=gha,scope=$(TAG)-buildcache,mode=max \
 		--cache-to type=registry,ref=$(GHCRORG)/$(IMAGE):$(TAG)-buildcache,mode=max \
+		--cache-from type=gha,scope=$(TAG)-buildcache \
 		--cache-from type=registry,ref=$(GHCRORG)/$(IMAGE):$(TAG)-buildcache \
 		--build-arg BUILDKIT_INLINE_CACHE=$(BUILDKIT_INLINE_CACHE) \
 		--build-arg GO_VERSION=$(GO_VERSION) \
+		--build-arg RUST_VERSION=$(RUST_VERSION) \
 		--build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
 		--build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
 		--build-arg MAINTAINER=$(MAINTAINER) \
@@ -66,6 +69,7 @@ else
 		$(DOCKER_OPTS) \
 		--build-arg BUILDKIT_INLINE_CACHE=$(BUILDKIT_INLINE_CACHE) \
 		--build-arg GO_VERSION=$(GO_VERSION) \
+		--build-arg RUST_VERSION=$(RUST_VERSION) \
 		--build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
 		--build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
 		--build-arg MAINTAINER=$(MAINTAINER) \
@@ -229,6 +233,7 @@ docker/name/loadtest:
 ## build loadtest image
 docker/build/loadtest:
 	@make DOCKERFILE="$(ROOTDIR)/dockers/tools/cli/loadtest/Dockerfile" \
+		DOCKER_OPTS="--build-arg ZLIB_VERSION=$(ZLIB_VERSION) --build-arg HDF5_VERSION=$(HDF5_VERSION)" \
 		IMAGE=$(LOADTEST_IMAGE) \
 		docker/build/image
 

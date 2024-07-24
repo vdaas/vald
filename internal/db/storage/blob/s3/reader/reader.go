@@ -140,11 +140,13 @@ func (r *reader) Open(ctx context.Context, key string) (err error) {
 	return nil
 }
 
-func (r *reader) getObjectWithBackoff(ctx context.Context, key string, offset, length int64) (res io.Reader, err error) {
+func (r *reader) getObjectWithBackoff(
+	ctx context.Context, key string, offset, length int64,
+) (res io.Reader, err error) {
 	if !r.backoffEnabled || r.bo == nil {
 		return r.getObject(ctx, key, offset, length)
 	}
-	_, err = r.bo.Do(ctx, func(ctx context.Context) (interface{}, bool, error) {
+	_, err = r.bo.Do(ctx, func(ctx context.Context) (any, bool, error) {
 		res, err = r.getObject(ctx, key, offset, length)
 		if err != nil {
 			if errors.As(err, &errBlobNoSuchBucket) ||
@@ -162,7 +164,9 @@ func (r *reader) getObjectWithBackoff(ctx context.Context, key string, offset, l
 	return res, nil
 }
 
-func (r *reader) getObject(ctx context.Context, key string, offset, length int64) (io.Reader, error) {
+func (r *reader) getObject(
+	ctx context.Context, key string, offset, length int64,
+) (io.Reader, error) {
 	rng := aws.String("bytes=" + strconv.FormatInt(offset, 10) + "-" + strconv.FormatInt(offset+length-1, 10))
 	log.Debugf("reading %s", *rng)
 	resp, err := r.service.GetObjectWithContext(

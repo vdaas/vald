@@ -24,7 +24,9 @@ type MockSubResourceWriter struct {
 	client.SubResourceWriter
 }
 
-func (*MockSubResourceWriter) Update(context.Context, client.Object, ...client.SubResourceUpdateOption) error {
+func (*MockSubResourceWriter) Update(
+	context.Context, client.Object, ...client.SubResourceUpdateOption,
+) error {
 	return nil
 }
 
@@ -39,7 +41,9 @@ func (*MockClient) Status() client.SubResourceWriter {
 	return s.SubResourceWriter
 }
 
-func (*MockClient) Get(context.Context, client.ObjectKey, client.Object, ...client.GetOption) error {
+func (*MockClient) Get(
+	context.Context, client.ObjectKey, client.Object, ...client.GetOption,
+) error {
 	return nil
 }
 

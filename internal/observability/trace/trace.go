@@ -46,7 +46,9 @@ type Tracer interface {
 
 type tracer struct{}
 
-func StartSpan(ctx context.Context, name string, opts ...trace.SpanStartOption) (context.Context, Span) {
+func StartSpan(
+	ctx context.Context, name string, opts ...trace.SpanStartOption,
+) (context.Context, Span) {
 	if !enabled {
 		return ctx, nil
 	}

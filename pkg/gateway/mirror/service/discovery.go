@@ -171,7 +171,9 @@ type deletedTarget struct {
 	port uint32
 }
 
-func (d *discovery) startSync(ctx context.Context, prev map[string]target.Target) (current map[string]target.Target, errs error) {
+func (d *discovery) startSync(
+	ctx context.Context, prev map[string]target.Target,
+) (current map[string]target.Target, errs error) {
 	current = d.loadTargets()
 	curAddrs := map[string]string{} // map[addr: metadata.name]
 
@@ -222,7 +224,9 @@ func (d *discovery) startSync(ctx context.Context, prev map[string]target.Target
 	return current, d.syncWithAddr(ctx, current, curAddrs)
 }
 
-func (d *discovery) syncWithAddr(ctx context.Context, current map[string]target.Target, curAddrs map[string]string) (errs error) {
+func (d *discovery) syncWithAddr(
+	ctx context.Context, current map[string]target.Target, curAddrs map[string]string,
+) (errs error) {
 	for addr, name := range curAddrs {
 		// When the status code of a regularly running Register RPC is Unimplemented, the connection to the target will be disconnected
 		// so the status of the resource (CR) may be misaligned. To prevent this, change the status of the resource to Disconnected.
@@ -276,7 +280,9 @@ func (d *discovery) connectTarget(ctx context.Context, req map[string]*createdTa
 	return errs
 }
 
-func (d *discovery) createMirrorTargetResource(ctx context.Context, name, host string, port int) error {
+func (d *discovery) createMirrorTargetResource(
+	ctx context.Context, name, host string, port int,
+) error {
 	mt, err := target.NewMirrorTargetTemplate(
 		target.WithMirrorTargetName(name),
 		target.WithMirrorTargetNamespace(d.namespace),
@@ -294,7 +300,9 @@ func (d *discovery) createMirrorTargetResource(ctx context.Context, name, host s
 	return d.ctrl.GetManager().GetClient().Create(ctx, mt)
 }
 
-func (d *discovery) disconnectTarget(ctx context.Context, req map[string]*deletedTarget) (errs error) {
+func (d *discovery) disconnectTarget(
+	ctx context.Context, req map[string]*deletedTarget,
+) (errs error) {
 	for _, deleted := range req {
 		phase := target.MirrorTargetPhaseDisconnected
 		err := d.mirr.Disconnect(ctx, &payload.Mirror_Target{
@@ -310,7 +318,9 @@ func (d *discovery) disconnectTarget(ctx context.Context, req map[string]*delete
 	return errs
 }
 
-func (d *discovery) updateMirrorTargetPhase(ctx context.Context, name string, phase target.MirrorTargetPhase) error {
+func (d *discovery) updateMirrorTargetPhase(
+	ctx context.Context, name string, phase target.MirrorTargetPhase,
+) error {
 	c := d.ctrl.GetManager().GetClient()
 	mt := &target.MirrorTarget{}
 	err := c.Get(ctx, k8s.ObjectKey{

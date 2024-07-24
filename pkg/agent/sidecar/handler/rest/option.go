@@ -17,9 +17,7 @@
 // Package rest provides rest api logic
 package rest
 
-import (
-	"github.com/vdaas/vald/apis/grpc/v1/agent/sidecar"
-)
+import "github.com/vdaas/vald/apis/grpc/v1/agent/sidecar"
 
 type Option func(*handler)
 

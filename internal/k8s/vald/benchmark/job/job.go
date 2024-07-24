@@ -76,7 +76,9 @@ func (r *reconciler) AddListOpts(opt client.ListOption) {
 	r.lopts = append(r.lopts, opt)
 }
 
-func (r *reconciler) Reconcile(ctx context.Context, _ reconcile.Request) (res reconcile.Result, err error) {
+func (r *reconciler) Reconcile(
+	ctx context.Context, _ reconcile.Request,
+) (res reconcile.Result, err error) {
 	bj := new(v1.ValdBenchmarkJobList)
 
 	err = r.mgr.GetClient().List(ctx, bj, r.lopts...)

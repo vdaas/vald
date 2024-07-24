@@ -678,7 +678,7 @@ package core
 // func Test_agentClient_GetTimestamp(t *testing.T) {
 // 	type args struct {
 // 		ctx context.Context
-// 		req *client.ObjectGetTimestampRequest
+// 		req *client.ObjectTimestampRequest
 // 		in2 []grpc.CallOption
 // 	}
 // 	type fields struct {
@@ -1247,7 +1247,7 @@ package core
 // func Test_singleAgentClient_GetTimestamp(t *testing.T) {
 // 	type args struct {
 // 		ctx  context.Context
-// 		req  *client.ObjectGetTimestampRequest
+// 		req  *client.ObjectTimestampRequest
 // 		opts []grpc.CallOption
 // 	}
 // 	type fields struct {

@@ -28,11 +28,13 @@ import (
 	"github.com/vdaas/vald/internal/net/grpc/codes"
 	"github.com/vdaas/vald/internal/net/grpc/errdetails"
 	"github.com/vdaas/vald/internal/net/grpc/status"
+	"github.com/vdaas/vald/internal/observability/attribute"
 	"github.com/vdaas/vald/internal/observability/trace"
-	"go.opentelemetry.io/otel/attribute"
 )
 
-func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (res *payload.Object_Location, err error) {
+func (s *server) Insert(
+	ctx context.Context, req *payload.Insert_Request,
+) (res *payload.Object_Location, err error) {
 	_, span := trace.StartSpan(ctx, apiName+"/"+vald.InsertRPCName)
 	defer func() {
 		if span != nil {
@@ -136,6 +138,8 @@ func (s *server) StreamInsert(stream vald.Insert_StreamInsertServer) (err error)
 	return s.UnimplementedValdServer.UnimplementedInsertServer.StreamInsert(stream)
 }
 
-func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequest) (res *payload.Object_Locations, err error) {
+func (s *server) MultiInsert(
+	ctx context.Context, reqs *payload.Insert_MultiRequest,
+) (res *payload.Object_Locations, err error) {
 	return s.UnimplementedValdServer.UnimplementedInsertServer.MultiInsert(ctx, reqs)
 }

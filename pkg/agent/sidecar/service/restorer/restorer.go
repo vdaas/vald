@@ -127,7 +127,7 @@ func (r *restorer) startRestore(ctx context.Context) (<-chan error, error) {
 		return ech, err
 	}
 
-	restore := func(ctx context.Context) (interface{}, bool, error) {
+	restore := func(ctx context.Context) (any, bool, error) {
 		err := r.restore(ctx)
 		if err != nil {
 			log.Errorf("restoring failed: %s", err)

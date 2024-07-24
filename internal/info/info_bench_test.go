@@ -13,9 +13,7 @@
 // limitations under the License.
 package info
 
-import (
-	"testing"
-)
+import "testing"
 
 func BenchmarkString(b *testing.B) {
 	Init("benchmark")

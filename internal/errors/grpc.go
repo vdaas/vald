@@ -67,7 +67,7 @@ var (
 	}
 
 	// ErrInvalidProtoMessageType represents an error that the gRPC protocol buffers message type is invalid.
-	ErrInvalidProtoMessageType = func(v interface{}) error {
+	ErrInvalidProtoMessageType = func(v any) error {
 		return Errorf("failed to marshal/unmarshal proto message, message type is %T (missing vtprotobuf/protobuf helpers)", v)
 	}
 

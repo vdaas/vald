@@ -1093,11 +1093,7 @@ func (c *client) Exists(t *testing.T, ctx context.Context, id string) error {
 	return nil
 }
 
-func (c *client) GetObject(
-	t *testing.T,
-	ctx context.Context,
-	ds Dataset,
-) (rerr error) {
+func (c *client) GetObject(t *testing.T, ctx context.Context, ds Dataset) (rerr error) {
 	t.Log("getObject operation started")
 
 	client, err := c.getClient(ctx)
@@ -1187,11 +1183,7 @@ func (c *client) GetObject(
 	return rerr
 }
 
-func (c *client) StreamListObject(
-	t *testing.T,
-	ctx context.Context,
-	ds Dataset,
-) error {
+func (c *client) StreamListObject(t *testing.T, ctx context.Context, ds Dataset) error {
 	t.Log("StreamListObject operation started")
 
 	client, err := c.getClient(ctx)

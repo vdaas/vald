@@ -278,7 +278,7 @@ func (m *Search_StreamResponse_Status) CloneVT() isSearch_StreamResponse_Payload
 	}
 	r := new(Search_StreamResponse_Status)
 	if rhs := m.Status; rhs != nil {
-		if vtpb, ok := interface{}(rhs).(interface{ CloneVT() *status.Status }); ok {
+		if vtpb, ok := any(rhs).(interface{ CloneVT() *status.Status }); ok {
 			r.Status = vtpb.CloneVT()
 		} else {
 			r.Status = proto.Clone(rhs).(*status.Status)
@@ -936,7 +936,7 @@ func (m *Object_StreamDistance_Status) CloneVT() isObject_StreamDistance_Payload
 	}
 	r := new(Object_StreamDistance_Status)
 	if rhs := m.Status; rhs != nil {
-		if vtpb, ok := interface{}(rhs).(interface{ CloneVT() *status.Status }); ok {
+		if vtpb, ok := any(rhs).(interface{ CloneVT() *status.Status }); ok {
 			r.Status = vtpb.CloneVT()
 		} else {
 			r.Status = proto.Clone(rhs).(*status.Status)
@@ -1006,11 +1006,11 @@ func (m *Object_Vector) CloneMessageVT() proto.Message {
 	return m.CloneVT()
 }
 
-func (m *Object_GetTimestampRequest) CloneVT() *Object_GetTimestampRequest {
+func (m *Object_TimestampRequest) CloneVT() *Object_TimestampRequest {
 	if m == nil {
-		return (*Object_GetTimestampRequest)(nil)
+		return (*Object_TimestampRequest)(nil)
 	}
-	r := new(Object_GetTimestampRequest)
+	r := new(Object_TimestampRequest)
 	r.Id = m.Id.CloneVT()
 	if len(m.unknownFields) > 0 {
 		r.unknownFields = make([]byte, len(m.unknownFields))
@@ -1019,7 +1019,7 @@ func (m *Object_GetTimestampRequest) CloneVT() *Object_GetTimestampRequest {
 	return r
 }
 
-func (m *Object_GetTimestampRequest) CloneMessageVT() proto.Message {
+func (m *Object_TimestampRequest) CloneMessageVT() proto.Message {
 	return m.CloneVT()
 }
 
@@ -1100,7 +1100,7 @@ func (m *Object_StreamVector_Status) CloneVT() isObject_StreamVector_Payload {
 	}
 	r := new(Object_StreamVector_Status)
 	if rhs := m.Status; rhs != nil {
-		if vtpb, ok := interface{}(rhs).(interface{ CloneVT() *status.Status }); ok {
+		if vtpb, ok := any(rhs).(interface{ CloneVT() *status.Status }); ok {
 			r.Status = vtpb.CloneVT()
 		} else {
 			r.Status = proto.Clone(rhs).(*status.Status)
@@ -1193,7 +1193,7 @@ func (m *Object_StreamBlob_Status) CloneVT() isObject_StreamBlob_Payload {
 	}
 	r := new(Object_StreamBlob_Status)
 	if rhs := m.Status; rhs != nil {
-		if vtpb, ok := interface{}(rhs).(interface{ CloneVT() *status.Status }); ok {
+		if vtpb, ok := any(rhs).(interface{ CloneVT() *status.Status }); ok {
 			r.Status = vtpb.CloneVT()
 		} else {
 			r.Status = proto.Clone(rhs).(*status.Status)
@@ -1261,7 +1261,7 @@ func (m *Object_StreamLocation_Status) CloneVT() isObject_StreamLocation_Payload
 	}
 	r := new(Object_StreamLocation_Status)
 	if rhs := m.Status; rhs != nil {
-		if vtpb, ok := interface{}(rhs).(interface{ CloneVT() *status.Status }); ok {
+		if vtpb, ok := any(rhs).(interface{ CloneVT() *status.Status }); ok {
 			r.Status = vtpb.CloneVT()
 		} else {
 			r.Status = proto.Clone(rhs).(*status.Status)
@@ -1345,7 +1345,7 @@ func (m *Object_List_Response_Status) CloneVT() isObject_List_Response_Payload {
 	}
 	r := new(Object_List_Response_Status)
 	if rhs := m.Status; rhs != nil {
-		if vtpb, ok := interface{}(rhs).(interface{ CloneVT() *status.Status }); ok {
+		if vtpb, ok := any(rhs).(interface{ CloneVT() *status.Status }); ok {
 			r.Status = vtpb.CloneVT()
 		} else {
 			r.Status = proto.Clone(rhs).(*status.Status)
@@ -1471,6 +1471,31 @@ func (m *Info_Index_Count) CloneVT() *Info_Index_Count {
 }
 
 func (m *Info_Index_Count) CloneMessageVT() proto.Message {
+	return m.CloneVT()
+}
+
+func (m *Info_Index_Detail) CloneVT() *Info_Index_Detail {
+	if m == nil {
+		return (*Info_Index_Detail)(nil)
+	}
+	r := new(Info_Index_Detail)
+	r.Replica = m.Replica
+	r.LiveAgents = m.LiveAgents
+	if rhs := m.Counts; rhs != nil {
+		tmpContainer := make(map[string]*Info_Index_Count, len(rhs))
+		for k, v := range rhs {
+			tmpContainer[k] = v.CloneVT()
+		}
+		r.Counts = tmpContainer
+	}
+	if len(m.unknownFields) > 0 {
+		r.unknownFields = make([]byte, len(m.unknownFields))
+		copy(r.unknownFields, m.unknownFields)
+	}
+	return r
+}
+
+func (m *Info_Index_Detail) CloneMessageVT() proto.Message {
 	return m.CloneVT()
 }
 
@@ -2215,7 +2240,9 @@ func (this *Search_StreamResponse) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
-func (this *Search_StreamResponse_Response) EqualVT(thatIface isSearch_StreamResponse_Payload) bool {
+func (this *Search_StreamResponse_Response) EqualVT(
+	thatIface isSearch_StreamResponse_Payload,
+) bool {
 	that, ok := thatIface.(*Search_StreamResponse_Response)
 	if !ok {
 		return false
@@ -2258,7 +2285,7 @@ func (this *Search_StreamResponse_Status) EqualVT(thatIface isSearch_StreamRespo
 		if q == nil {
 			q = &status.Status{}
 		}
-		if equal, ok := interface{}(p).(interface{ EqualVT(*status.Status) bool }); ok {
+		if equal, ok := any(p).(interface{ EqualVT(*status.Status) bool }); ok {
 			if !equal.EqualVT(q) {
 				return false
 			}
@@ -3076,7 +3103,9 @@ func (this *Object_StreamDistance) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
-func (this *Object_StreamDistance_Distance) EqualVT(thatIface isObject_StreamDistance_Payload) bool {
+func (this *Object_StreamDistance_Distance) EqualVT(
+	thatIface isObject_StreamDistance_Payload,
+) bool {
 	that, ok := thatIface.(*Object_StreamDistance_Distance)
 	if !ok {
 		return false
@@ -3119,7 +3148,7 @@ func (this *Object_StreamDistance_Status) EqualVT(thatIface isObject_StreamDista
 		if q == nil {
 			q = &status.Status{}
 		}
-		if equal, ok := interface{}(p).(interface{ EqualVT(*status.Status) bool }); ok {
+		if equal, ok := any(p).(interface{ EqualVT(*status.Status) bool }); ok {
 			if !equal.EqualVT(q) {
 				return false
 			}
@@ -3205,7 +3234,7 @@ func (this *Object_Vector) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
-func (this *Object_GetTimestampRequest) EqualVT(that *Object_GetTimestampRequest) bool {
+func (this *Object_TimestampRequest) EqualVT(that *Object_TimestampRequest) bool {
 	if this == that {
 		return true
 	} else if this == nil || that == nil {
@@ -3217,8 +3246,8 @@ func (this *Object_GetTimestampRequest) EqualVT(that *Object_GetTimestampRequest
 	return string(this.unknownFields) == string(that.unknownFields)
 }
 
-func (this *Object_GetTimestampRequest) EqualMessageVT(thatMsg proto.Message) bool {
-	that, ok := thatMsg.(*Object_GetTimestampRequest)
+func (this *Object_TimestampRequest) EqualMessageVT(thatMsg proto.Message) bool {
+	that, ok := thatMsg.(*Object_TimestampRequest)
 	if !ok {
 		return false
 	}
@@ -3350,7 +3379,7 @@ func (this *Object_StreamVector_Status) EqualVT(thatIface isObject_StreamVector_
 		if q == nil {
 			q = &status.Status{}
 		}
-		if equal, ok := interface{}(p).(interface{ EqualVT(*status.Status) bool }); ok {
+		if equal, ok := any(p).(interface{ EqualVT(*status.Status) bool }); ok {
 			if !equal.EqualVT(q) {
 				return false
 			}
@@ -3482,7 +3511,7 @@ func (this *Object_StreamBlob_Status) EqualVT(thatIface isObject_StreamBlob_Payl
 		if q == nil {
 			q = &status.Status{}
 		}
-		if equal, ok := interface{}(p).(interface{ EqualVT(*status.Status) bool }); ok {
+		if equal, ok := any(p).(interface{ EqualVT(*status.Status) bool }); ok {
 			if !equal.EqualVT(q) {
 				return false
 			}
@@ -3552,7 +3581,9 @@ func (this *Object_StreamLocation) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
-func (this *Object_StreamLocation_Location) EqualVT(thatIface isObject_StreamLocation_Payload) bool {
+func (this *Object_StreamLocation_Location) EqualVT(
+	thatIface isObject_StreamLocation_Payload,
+) bool {
 	that, ok := thatIface.(*Object_StreamLocation_Location)
 	if !ok {
 		return false
@@ -3595,7 +3626,7 @@ func (this *Object_StreamLocation_Status) EqualVT(thatIface isObject_StreamLocat
 		if q == nil {
 			q = &status.Status{}
 		}
-		if equal, ok := interface{}(p).(interface{ EqualVT(*status.Status) bool }); ok {
+		if equal, ok := any(p).(interface{ EqualVT(*status.Status) bool }); ok {
 			if !equal.EqualVT(q) {
 				return false
 			}
@@ -3726,7 +3757,7 @@ func (this *Object_List_Response_Status) EqualVT(thatIface isObject_List_Respons
 		if q == nil {
 			q = &status.Status{}
 		}
-		if equal, ok := interface{}(p).(interface{ EqualVT(*status.Status) bool }); ok {
+		if equal, ok := any(p).(interface{ EqualVT(*status.Status) bool }); ok {
 			if !equal.EqualVT(q) {
 				return false
 			}
@@ -3868,6 +3899,48 @@ func (this *Info_Index_Count) EqualVT(that *Info_Index_Count) bool {
 
 func (this *Info_Index_Count) EqualMessageVT(thatMsg proto.Message) bool {
 	that, ok := thatMsg.(*Info_Index_Count)
+	if !ok {
+		return false
+	}
+	return this.EqualVT(that)
+}
+func (this *Info_Index_Detail) EqualVT(that *Info_Index_Detail) bool {
+	if this == that {
+		return true
+	} else if this == nil || that == nil {
+		return false
+	}
+	if len(this.Counts) != len(that.Counts) {
+		return false
+	}
+	for i, vx := range this.Counts {
+		vy, ok := that.Counts[i]
+		if !ok {
+			return false
+		}
+		if p, q := vx, vy; p != q {
+			if p == nil {
+				p = &Info_Index_Count{}
+			}
+			if q == nil {
+				q = &Info_Index_Count{}
+			}
+			if !p.EqualVT(q) {
+				return false
+			}
+		}
+	}
+	if this.Replica != that.Replica {
+		return false
+	}
+	if this.LiveAgents != that.LiveAgents {
+		return false
+	}
+	return string(this.unknownFields) == string(that.unknownFields)
+}
+
+func (this *Info_Index_Detail) EqualMessageVT(thatMsg proto.Message) bool {
+	that, ok := thatMsg.(*Info_Index_Detail)
 	if !ok {
 		return false
 	}
@@ -4989,7 +5062,7 @@ func (m *Search_StreamResponse_Status) MarshalToVT(dAtA []byte) (int, error) {
 func (m *Search_StreamResponse_Status) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	if m.Status != nil {
-		if vtmsg, ok := interface{}(m.Status).(interface {
+		if vtmsg, ok := any(m.Status).(interface {
 			MarshalToSizedBufferVT([]byte) (int, error)
 		}); ok {
 			size, err := vtmsg.MarshalToSizedBufferVT(dAtA[:i])
@@ -6580,7 +6653,7 @@ func (m *Object_StreamDistance_Status) MarshalToVT(dAtA []byte) (int, error) {
 func (m *Object_StreamDistance_Status) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	if m.Status != nil {
-		if vtmsg, ok := interface{}(m.Status).(interface {
+		if vtmsg, ok := any(m.Status).(interface {
 			MarshalToSizedBufferVT([]byte) (int, error)
 		}); ok {
 			size, err := vtmsg.MarshalToSizedBufferVT(dAtA[:i])
@@ -6740,7 +6813,7 @@ func (m *Object_Vector) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *Object_GetTimestampRequest) MarshalVT() (dAtA []byte, err error) {
+func (m *Object_TimestampRequest) MarshalVT() (dAtA []byte, err error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -6753,12 +6826,12 @@ func (m *Object_GetTimestampRequest) MarshalVT() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *Object_GetTimestampRequest) MarshalToVT(dAtA []byte) (int, error) {
+func (m *Object_TimestampRequest) MarshalToVT(dAtA []byte) (int, error) {
 	size := m.SizeVT()
 	return m.MarshalToSizedBufferVT(dAtA[:size])
 }
 
-func (m *Object_GetTimestampRequest) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
+func (m *Object_TimestampRequest) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 	if m == nil {
 		return 0, nil
 	}
@@ -6942,7 +7015,7 @@ func (m *Object_StreamVector_Status) MarshalToVT(dAtA []byte) (int, error) {
 func (m *Object_StreamVector_Status) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	if m.Status != nil {
-		if vtmsg, ok := interface{}(m.Status).(interface {
+		if vtmsg, ok := any(m.Status).(interface {
 			MarshalToSizedBufferVT([]byte) (int, error)
 		}); ok {
 			size, err := vtmsg.MarshalToSizedBufferVT(dAtA[:i])
@@ -7142,7 +7215,7 @@ func (m *Object_StreamBlob_Status) MarshalToVT(dAtA []byte) (int, error) {
 func (m *Object_StreamBlob_Status) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	if m.Status != nil {
-		if vtmsg, ok := interface{}(m.Status).(interface {
+		if vtmsg, ok := any(m.Status).(interface {
 			MarshalToSizedBufferVT([]byte) (int, error)
 		}); ok {
 			size, err := vtmsg.MarshalToSizedBufferVT(dAtA[:i])
@@ -7290,7 +7363,7 @@ func (m *Object_StreamLocation_Status) MarshalToVT(dAtA []byte) (int, error) {
 func (m *Object_StreamLocation_Status) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	if m.Status != nil {
-		if vtmsg, ok := interface{}(m.Status).(interface {
+		if vtmsg, ok := any(m.Status).(interface {
 			MarshalToSizedBufferVT([]byte) (int, error)
 		}); ok {
 			size, err := vtmsg.MarshalToSizedBufferVT(dAtA[:i])
@@ -7460,7 +7533,7 @@ func (m *Object_List_Response_Status) MarshalToVT(dAtA []byte) (int, error) {
 func (m *Object_List_Response_Status) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	if m.Status != nil {
-		if vtmsg, ok := interface{}(m.Status).(interface {
+		if vtmsg, ok := any(m.Status).(interface {
 			MarshalToSizedBufferVT([]byte) (int, error)
 		}); ok {
 			size, err := vtmsg.MarshalToSizedBufferVT(dAtA[:i])
@@ -7766,6 +7839,71 @@ func (m *Info_Index_Count) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.Stored))
 		i--
 		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *Info_Index_Detail) MarshalVT() (dAtA []byte, err error) {
+	if m == nil {
+		return nil, nil
+	}
+	size := m.SizeVT()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBufferVT(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *Info_Index_Detail) MarshalToVT(dAtA []byte) (int, error) {
+	size := m.SizeVT()
+	return m.MarshalToSizedBufferVT(dAtA[:size])
+}
+
+func (m *Info_Index_Detail) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.unknownFields != nil {
+		i -= len(m.unknownFields)
+		copy(dAtA[i:], m.unknownFields)
+	}
+	if m.LiveAgents != 0 {
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.LiveAgents))
+		i--
+		dAtA[i] = 0x18
+	}
+	if m.Replica != 0 {
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.Replica))
+		i--
+		dAtA[i] = 0x10
+	}
+	if len(m.Counts) > 0 {
+		for k := range m.Counts {
+			v := m.Counts[k]
+			baseI := i
+			size, err := v.MarshalToSizedBufferVT(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+			i--
+			dAtA[i] = 0x12
+			i -= len(k)
+			copy(dAtA[i:], k)
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(k)))
+			i--
+			dAtA[i] = 0xa
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(baseI-i))
+			i--
+			dAtA[i] = 0xa
+		}
 	}
 	return len(dAtA) - i, nil
 }
@@ -9013,7 +9151,7 @@ func (m *Search_StreamResponse_Status) SizeVT() (n int) {
 	var l int
 	_ = l
 	if m.Status != nil {
-		if size, ok := interface{}(m.Status).(interface {
+		if size, ok := any(m.Status).(interface {
 			SizeVT() int
 		}); ok {
 			l = size.SizeVT()
@@ -9568,7 +9706,7 @@ func (m *Object_StreamDistance_Status) SizeVT() (n int) {
 	var l int
 	_ = l
 	if m.Status != nil {
-		if size, ok := interface{}(m.Status).(interface {
+		if size, ok := any(m.Status).(interface {
 			SizeVT() int
 		}); ok {
 			l = size.SizeVT()
@@ -9629,7 +9767,7 @@ func (m *Object_Vector) SizeVT() (n int) {
 	return n
 }
 
-func (m *Object_GetTimestampRequest) SizeVT() (n int) {
+func (m *Object_TimestampRequest) SizeVT() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -9708,7 +9846,7 @@ func (m *Object_StreamVector_Status) SizeVT() (n int) {
 	var l int
 	_ = l
 	if m.Status != nil {
-		if size, ok := interface{}(m.Status).(interface {
+		if size, ok := any(m.Status).(interface {
 			SizeVT() int
 		}); ok {
 			l = size.SizeVT()
@@ -9790,7 +9928,7 @@ func (m *Object_StreamBlob_Status) SizeVT() (n int) {
 	var l int
 	_ = l
 	if m.Status != nil {
-		if size, ok := interface{}(m.Status).(interface {
+		if size, ok := any(m.Status).(interface {
 			SizeVT() int
 		}); ok {
 			l = size.SizeVT()
@@ -9857,7 +9995,7 @@ func (m *Object_StreamLocation_Status) SizeVT() (n int) {
 	var l int
 	_ = l
 	if m.Status != nil {
-		if size, ok := interface{}(m.Status).(interface {
+		if size, ok := any(m.Status).(interface {
 			SizeVT() int
 		}); ok {
 			l = size.SizeVT()
@@ -9926,7 +10064,7 @@ func (m *Object_List_Response_Status) SizeVT() (n int) {
 	var l int
 	_ = l
 	if m.Status != nil {
-		if size, ok := interface{}(m.Status).(interface {
+		if size, ok := any(m.Status).(interface {
 			SizeVT() int
 		}); ok {
 			l = size.SizeVT()
@@ -10029,6 +10167,35 @@ func (m *Info_Index_Count) SizeVT() (n int) {
 	}
 	if m.Saving {
 		n += 2
+	}
+	n += len(m.unknownFields)
+	return n
+}
+
+func (m *Info_Index_Detail) SizeVT() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if len(m.Counts) > 0 {
+		for k, v := range m.Counts {
+			_ = k
+			_ = v
+			l = 0
+			if v != nil {
+				l = v.SizeVT()
+			}
+			l += 1 + protohelpers.SizeOfVarint(uint64(l))
+			mapEntrySize := 1 + len(k) + protohelpers.SizeOfVarint(uint64(len(k))) + l
+			n += mapEntrySize + 1 + protohelpers.SizeOfVarint(uint64(mapEntrySize))
+		}
+	}
+	if m.Replica != 0 {
+		n += 1 + protohelpers.SizeOfVarint(uint64(m.Replica))
+	}
+	if m.LiveAgents != 0 {
+		n += 1 + protohelpers.SizeOfVarint(uint64(m.LiveAgents))
 	}
 	n += len(m.unknownFields)
 	return n
@@ -11673,7 +11840,7 @@ func (m *Search_StreamResponse) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if oneof, ok := m.Payload.(*Search_StreamResponse_Status); ok {
-				if unmarshal, ok := interface{}(oneof.Status).(interface {
+				if unmarshal, ok := any(oneof.Status).(interface {
 					UnmarshalVT([]byte) error
 				}); ok {
 					if err := unmarshal.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
@@ -11686,7 +11853,7 @@ func (m *Search_StreamResponse) UnmarshalVT(dAtA []byte) error {
 				}
 			} else {
 				v := &status.Status{}
-				if unmarshal, ok := interface{}(v).(interface {
+				if unmarshal, ok := any(v).(interface {
 					UnmarshalVT([]byte) error
 				}); ok {
 					if err := unmarshal.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
@@ -14880,7 +15047,7 @@ func (m *Object_StreamDistance) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if oneof, ok := m.Payload.(*Object_StreamDistance_Status); ok {
-				if unmarshal, ok := interface{}(oneof.Status).(interface {
+				if unmarshal, ok := any(oneof.Status).(interface {
 					UnmarshalVT([]byte) error
 				}); ok {
 					if err := unmarshal.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
@@ -14893,7 +15060,7 @@ func (m *Object_StreamDistance) UnmarshalVT(dAtA []byte) error {
 				}
 			} else {
 				v := &status.Status{}
-				if unmarshal, ok := interface{}(v).(interface {
+				if unmarshal, ok := any(v).(interface {
 					UnmarshalVT([]byte) error
 				}); ok {
 					if err := unmarshal.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
@@ -15251,7 +15418,7 @@ func (m *Object_Vector) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *Object_GetTimestampRequest) UnmarshalVT(dAtA []byte) error {
+func (m *Object_TimestampRequest) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -15274,10 +15441,10 @@ func (m *Object_GetTimestampRequest) UnmarshalVT(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: Object_GetTimestampRequest: wiretype end group for non-group")
+			return fmt.Errorf("proto: Object_TimestampRequest: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: Object_GetTimestampRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: Object_TimestampRequest: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -15625,7 +15792,7 @@ func (m *Object_StreamVector) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if oneof, ok := m.Payload.(*Object_StreamVector_Status); ok {
-				if unmarshal, ok := interface{}(oneof.Status).(interface {
+				if unmarshal, ok := any(oneof.Status).(interface {
 					UnmarshalVT([]byte) error
 				}); ok {
 					if err := unmarshal.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
@@ -15638,7 +15805,7 @@ func (m *Object_StreamVector) UnmarshalVT(dAtA []byte) error {
 				}
 			} else {
 				v := &status.Status{}
-				if unmarshal, ok := interface{}(v).(interface {
+				if unmarshal, ok := any(v).(interface {
 					UnmarshalVT([]byte) error
 				}); ok {
 					if err := unmarshal.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
@@ -16052,7 +16219,7 @@ func (m *Object_StreamBlob) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if oneof, ok := m.Payload.(*Object_StreamBlob_Status); ok {
-				if unmarshal, ok := interface{}(oneof.Status).(interface {
+				if unmarshal, ok := any(oneof.Status).(interface {
 					UnmarshalVT([]byte) error
 				}); ok {
 					if err := unmarshal.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
@@ -16065,7 +16232,7 @@ func (m *Object_StreamBlob) UnmarshalVT(dAtA []byte) error {
 				}
 			} else {
 				v := &status.Status{}
-				if unmarshal, ok := interface{}(v).(interface {
+				if unmarshal, ok := any(v).(interface {
 					UnmarshalVT([]byte) error
 				}); ok {
 					if err := unmarshal.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
@@ -16348,7 +16515,7 @@ func (m *Object_StreamLocation) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if oneof, ok := m.Payload.(*Object_StreamLocation_Status); ok {
-				if unmarshal, ok := interface{}(oneof.Status).(interface {
+				if unmarshal, ok := any(oneof.Status).(interface {
 					UnmarshalVT([]byte) error
 				}); ok {
 					if err := unmarshal.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
@@ -16361,7 +16528,7 @@ func (m *Object_StreamLocation) UnmarshalVT(dAtA []byte) error {
 				}
 			} else {
 				v := &status.Status{}
-				if unmarshal, ok := interface{}(v).(interface {
+				if unmarshal, ok := any(v).(interface {
 					UnmarshalVT([]byte) error
 				}); ok {
 					if err := unmarshal.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
@@ -16633,7 +16800,7 @@ func (m *Object_List_Response) UnmarshalVT(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if oneof, ok := m.Payload.(*Object_List_Response_Status); ok {
-				if unmarshal, ok := interface{}(oneof.Status).(interface {
+				if unmarshal, ok := any(oneof.Status).(interface {
 					UnmarshalVT([]byte) error
 				}); ok {
 					if err := unmarshal.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
@@ -16646,7 +16813,7 @@ func (m *Object_List_Response) UnmarshalVT(dAtA []byte) error {
 				}
 			} else {
 				v := &status.Status{}
-				if unmarshal, ok := interface{}(v).(interface {
+				if unmarshal, ok := any(v).(interface {
 					UnmarshalVT([]byte) error
 				}); ok {
 					if err := unmarshal.UnmarshalVT(dAtA[iNdEx:postIndex]); err != nil {
@@ -17210,6 +17377,224 @@ func (m *Info_Index_Count) UnmarshalVT(dAtA []byte) error {
 				}
 			}
 			m.Saving = bool(v != 0)
+		default:
+			iNdEx = preIndex
+			skippy, err := protohelpers.Skip(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.unknownFields = append(m.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *Info_Index_Detail) UnmarshalVT(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return protohelpers.ErrIntOverflow
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: Info_Index_Detail: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: Info_Index_Detail: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Counts", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.Counts == nil {
+				m.Counts = make(map[string]*Info_Index_Count)
+			}
+			var mapkey string
+			var mapvalue *Info_Index_Count
+			for iNdEx < postIndex {
+				entryPreIndex := iNdEx
+				var wire uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protohelpers.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					wire |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				fieldNum := int32(wire >> 3)
+				if fieldNum == 1 {
+					var stringLenmapkey uint64
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return protohelpers.ErrIntOverflow
+						}
+						if iNdEx >= l {
+							return io.ErrUnexpectedEOF
+						}
+						b := dAtA[iNdEx]
+						iNdEx++
+						stringLenmapkey |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							break
+						}
+					}
+					intStringLenmapkey := int(stringLenmapkey)
+					if intStringLenmapkey < 0 {
+						return protohelpers.ErrInvalidLength
+					}
+					postStringIndexmapkey := iNdEx + intStringLenmapkey
+					if postStringIndexmapkey < 0 {
+						return protohelpers.ErrInvalidLength
+					}
+					if postStringIndexmapkey > l {
+						return io.ErrUnexpectedEOF
+					}
+					mapkey = string(dAtA[iNdEx:postStringIndexmapkey])
+					iNdEx = postStringIndexmapkey
+				} else if fieldNum == 2 {
+					var mapmsglen int
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return protohelpers.ErrIntOverflow
+						}
+						if iNdEx >= l {
+							return io.ErrUnexpectedEOF
+						}
+						b := dAtA[iNdEx]
+						iNdEx++
+						mapmsglen |= int(b&0x7F) << shift
+						if b < 0x80 {
+							break
+						}
+					}
+					if mapmsglen < 0 {
+						return protohelpers.ErrInvalidLength
+					}
+					postmsgIndex := iNdEx + mapmsglen
+					if postmsgIndex < 0 {
+						return protohelpers.ErrInvalidLength
+					}
+					if postmsgIndex > l {
+						return io.ErrUnexpectedEOF
+					}
+					mapvalue = &Info_Index_Count{}
+					if err := mapvalue.UnmarshalVT(dAtA[iNdEx:postmsgIndex]); err != nil {
+						return err
+					}
+					iNdEx = postmsgIndex
+				} else {
+					iNdEx = entryPreIndex
+					skippy, err := protohelpers.Skip(dAtA[iNdEx:])
+					if err != nil {
+						return err
+					}
+					if (skippy < 0) || (iNdEx+skippy) < 0 {
+						return protohelpers.ErrInvalidLength
+					}
+					if (iNdEx + skippy) > postIndex {
+						return io.ErrUnexpectedEOF
+					}
+					iNdEx += skippy
+				}
+			}
+			m.Counts[mapkey] = mapvalue
+			iNdEx = postIndex
+		case 2:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Replica", wireType)
+			}
+			m.Replica = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.Replica |= uint32(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 3:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field LiveAgents", wireType)
+			}
+			m.LiveAgents = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.LiveAgents |= uint32(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
 		default:
 			iNdEx = preIndex
 			skippy, err := protohelpers.Skip(dAtA[iNdEx:])

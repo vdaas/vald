@@ -17,9 +17,7 @@
 // Package client is Kubernetes client for getting resource from Kubernetes cluster.
 package client
 
-import (
-	"sigs.k8s.io/controller-runtime/pkg/scheme"
-)
+import "sigs.k8s.io/controller-runtime/pkg/scheme"
 
 type Option func(*client) error
 

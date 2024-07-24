@@ -23,11 +23,15 @@ import (
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
 )
 
-func (s *server) LinearSearch(ctx context.Context, req *payload.Search_Request) (res *payload.Search_Response, err error) {
+func (s *server) LinearSearch(
+	ctx context.Context, req *payload.Search_Request,
+) (res *payload.Search_Response, err error) {
 	return s.UnimplementedValdServer.UnimplementedSearchServer.LinearSearch(ctx, req)
 }
 
-func (s *server) LinearSearchByID(ctx context.Context, req *payload.Search_IDRequest) (res *payload.Search_Response, err error) {
+func (s *server) LinearSearchByID(
+	ctx context.Context, req *payload.Search_IDRequest,
+) (res *payload.Search_Response, err error) {
 	return s.UnimplementedValdServer.UnimplementedSearchServer.LinearSearchByID(ctx, req)
 }
 
@@ -35,14 +39,20 @@ func (s *server) StreamLinearSearch(stream vald.Search_StreamLinearSearchServer)
 	return s.UnimplementedValdServer.UnimplementedSearchServer.StreamLinearSearch(stream)
 }
 
-func (s *server) StreamLinearSearchByID(stream vald.Search_StreamLinearSearchByIDServer) (err error) {
+func (s *server) StreamLinearSearchByID(
+	stream vald.Search_StreamLinearSearchByIDServer,
+) (err error) {
 	return s.UnimplementedValdServer.UnimplementedSearchServer.StreamLinearSearchByID(stream)
 }
 
-func (s *server) MultiLinearSearch(ctx context.Context, reqs *payload.Search_MultiRequest) (res *payload.Search_Responses, errs error) {
+func (s *server) MultiLinearSearch(
+	ctx context.Context, reqs *payload.Search_MultiRequest,
+) (res *payload.Search_Responses, errs error) {
 	return s.UnimplementedValdServer.UnimplementedSearchServer.MultiLinearSearch(ctx, reqs)
 }
 
-func (s *server) MultiLinearSearchByID(ctx context.Context, reqs *payload.Search_MultiIDRequest) (res *payload.Search_Responses, errs error) {
+func (s *server) MultiLinearSearchByID(
+	ctx context.Context, reqs *payload.Search_MultiIDRequest,
+) (res *payload.Search_Responses, errs error) {
 	return s.UnimplementedValdServer.UnimplementedSearchServer.MultiLinearSearchByID(ctx, reqs)
 }
