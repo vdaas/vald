@@ -397,10 +397,7 @@ func RegisterFilterServer(s grpc.ServiceRegistrar, srv FilterServer) {
 }
 
 func _Filter_SearchObject_Handler(
-	srv any,
-	ctx context.Context,
-	dec func(any) error,
-	interceptor grpc.UnaryServerInterceptor,
+	srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor,
 ) (any, error) {
 	in := new(payload.Search_ObjectRequest)
 	if err := dec(in); err != nil {
@@ -420,10 +417,7 @@ func _Filter_SearchObject_Handler(
 }
 
 func _Filter_MultiSearchObject_Handler(
-	srv any,
-	ctx context.Context,
-	dec func(any) error,
-	interceptor grpc.UnaryServerInterceptor,
+	srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor,
 ) (any, error) {
 	in := new(payload.Search_MultiObjectRequest)
 	if err := dec(in); err != nil {
@@ -469,10 +463,7 @@ func (x *filterStreamSearchObjectServer) Recv() (*payload.Search_ObjectRequest, 
 }
 
 func _Filter_InsertObject_Handler(
-	srv any,
-	ctx context.Context,
-	dec func(any) error,
-	interceptor grpc.UnaryServerInterceptor,
+	srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor,
 ) (any, error) {
 	in := new(payload.Insert_ObjectRequest)
 	if err := dec(in); err != nil {
@@ -518,10 +509,7 @@ func (x *filterStreamInsertObjectServer) Recv() (*payload.Insert_ObjectRequest, 
 }
 
 func _Filter_MultiInsertObject_Handler(
-	srv any,
-	ctx context.Context,
-	dec func(any) error,
-	interceptor grpc.UnaryServerInterceptor,
+	srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor,
 ) (any, error) {
 	in := new(payload.Insert_MultiObjectRequest)
 	if err := dec(in); err != nil {
@@ -541,10 +529,7 @@ func _Filter_MultiInsertObject_Handler(
 }
 
 func _Filter_UpdateObject_Handler(
-	srv any,
-	ctx context.Context,
-	dec func(any) error,
-	interceptor grpc.UnaryServerInterceptor,
+	srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor,
 ) (any, error) {
 	in := new(payload.Update_ObjectRequest)
 	if err := dec(in); err != nil {
@@ -590,10 +575,7 @@ func (x *filterStreamUpdateObjectServer) Recv() (*payload.Update_ObjectRequest, 
 }
 
 func _Filter_MultiUpdateObject_Handler(
-	srv any,
-	ctx context.Context,
-	dec func(any) error,
-	interceptor grpc.UnaryServerInterceptor,
+	srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor,
 ) (any, error) {
 	in := new(payload.Update_MultiObjectRequest)
 	if err := dec(in); err != nil {
@@ -613,10 +595,7 @@ func _Filter_MultiUpdateObject_Handler(
 }
 
 func _Filter_UpsertObject_Handler(
-	srv any,
-	ctx context.Context,
-	dec func(any) error,
-	interceptor grpc.UnaryServerInterceptor,
+	srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor,
 ) (any, error) {
 	in := new(payload.Upsert_ObjectRequest)
 	if err := dec(in); err != nil {
@@ -662,10 +641,7 @@ func (x *filterStreamUpsertObjectServer) Recv() (*payload.Upsert_ObjectRequest, 
 }
 
 func _Filter_MultiUpsertObject_Handler(
-	srv any,
-	ctx context.Context,
-	dec func(any) error,
-	interceptor grpc.UnaryServerInterceptor,
+	srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor,
 ) (any, error) {
 	in := new(payload.Upsert_MultiObjectRequest)
 	if err := dec(in); err != nil {

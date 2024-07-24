@@ -157,10 +157,7 @@ func RegisterInsertServer(s grpc.ServiceRegistrar, srv InsertServer) {
 }
 
 func _Insert_Insert_Handler(
-	srv any,
-	ctx context.Context,
-	dec func(any) error,
-	interceptor grpc.UnaryServerInterceptor,
+	srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor,
 ) (any, error) {
 	in := new(payload.Insert_Request)
 	if err := dec(in); err != nil {
@@ -206,10 +203,7 @@ func (x *insertStreamInsertServer) Recv() (*payload.Insert_Request, error) {
 }
 
 func _Insert_MultiInsert_Handler(
-	srv any,
-	ctx context.Context,
-	dec func(any) error,
-	interceptor grpc.UnaryServerInterceptor,
+	srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor,
 ) (any, error) {
 	in := new(payload.Insert_MultiRequest)
 	if err := dec(in); err != nil {

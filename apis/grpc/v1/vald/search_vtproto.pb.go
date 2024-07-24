@@ -401,10 +401,7 @@ func RegisterSearchServer(s grpc.ServiceRegistrar, srv SearchServer) {
 }
 
 func _Search_Search_Handler(
-	srv any,
-	ctx context.Context,
-	dec func(any) error,
-	interceptor grpc.UnaryServerInterceptor,
+	srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor,
 ) (any, error) {
 	in := new(payload.Search_Request)
 	if err := dec(in); err != nil {
@@ -424,10 +421,7 @@ func _Search_Search_Handler(
 }
 
 func _Search_SearchByID_Handler(
-	srv any,
-	ctx context.Context,
-	dec func(any) error,
-	interceptor grpc.UnaryServerInterceptor,
+	srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor,
 ) (any, error) {
 	in := new(payload.Search_IDRequest)
 	if err := dec(in); err != nil {
@@ -499,10 +493,7 @@ func (x *searchStreamSearchByIDServer) Recv() (*payload.Search_IDRequest, error)
 }
 
 func _Search_MultiSearch_Handler(
-	srv any,
-	ctx context.Context,
-	dec func(any) error,
-	interceptor grpc.UnaryServerInterceptor,
+	srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor,
 ) (any, error) {
 	in := new(payload.Search_MultiRequest)
 	if err := dec(in); err != nil {
@@ -522,10 +513,7 @@ func _Search_MultiSearch_Handler(
 }
 
 func _Search_MultiSearchByID_Handler(
-	srv any,
-	ctx context.Context,
-	dec func(any) error,
-	interceptor grpc.UnaryServerInterceptor,
+	srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor,
 ) (any, error) {
 	in := new(payload.Search_MultiIDRequest)
 	if err := dec(in); err != nil {
@@ -545,10 +533,7 @@ func _Search_MultiSearchByID_Handler(
 }
 
 func _Search_LinearSearch_Handler(
-	srv any,
-	ctx context.Context,
-	dec func(any) error,
-	interceptor grpc.UnaryServerInterceptor,
+	srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor,
 ) (any, error) {
 	in := new(payload.Search_Request)
 	if err := dec(in); err != nil {
@@ -568,10 +553,7 @@ func _Search_LinearSearch_Handler(
 }
 
 func _Search_LinearSearchByID_Handler(
-	srv any,
-	ctx context.Context,
-	dec func(any) error,
-	interceptor grpc.UnaryServerInterceptor,
+	srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor,
 ) (any, error) {
 	in := new(payload.Search_IDRequest)
 	if err := dec(in); err != nil {
@@ -643,10 +625,7 @@ func (x *searchStreamLinearSearchByIDServer) Recv() (*payload.Search_IDRequest, 
 }
 
 func _Search_MultiLinearSearch_Handler(
-	srv any,
-	ctx context.Context,
-	dec func(any) error,
-	interceptor grpc.UnaryServerInterceptor,
+	srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor,
 ) (any, error) {
 	in := new(payload.Search_MultiRequest)
 	if err := dec(in); err != nil {
@@ -666,10 +645,7 @@ func _Search_MultiLinearSearch_Handler(
 }
 
 func _Search_MultiLinearSearchByID_Handler(
-	srv any,
-	ctx context.Context,
-	dec func(any) error,
-	interceptor grpc.UnaryServerInterceptor,
+	srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor,
 ) (any, error) {
 	in := new(payload.Search_MultiIDRequest)
 	if err := dec(in); err != nil {
