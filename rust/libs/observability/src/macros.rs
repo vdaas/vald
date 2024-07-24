@@ -20,7 +20,7 @@ macro_rules! tracer {
     }};
 
     ($name:expr) => {{
-        global::tracer($name)
+        opentelemetry::global::tracer($name)
     }};
 }
 
@@ -48,7 +48,7 @@ macro_rules! meter {
     }};
 
     ($name:expr) => {{
-        global::meter($name)
+        opentelemetry::global::meter($name)
     }};
 }
 
