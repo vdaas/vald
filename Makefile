@@ -76,17 +76,6 @@ RUSTUP_HOME ?= $(RUST_HOME)/rustup
 CARGO_HOME ?= $(RUST_HOME)/cargo
 RUST_VERSION := $(eval RUST_VERSION := $(shell cat versions/RUST_VERSION))$(RUST_VERSION)
 
-<<<<<<< HEAD
-NPM_GLOBAL_PREFIX := $(eval NPM_GLOBAL_PREFIX := $(shell npm prefix --location=global))$(NPM_GLOBAL_PREFIX)
-
-NPM_GLOBAL_PREFIX := $(eval NPM_GLOBAL_PREFIX := $(shell npm prefix --location=global))$(NPM_GLOBAL_PREFIX)
-
-TEST_NOT_IMPL_PLACEHOLDER = NOT IMPLEMENTED BELOW
-
-TEMP_DIR := $(eval TEMP_DIR := $(shell mktemp -d))$(TEMP_DIR)
-
-=======
->>>>>>> 76eb8d7b5 (refactor index manager service add index service API to expose index informations (#2525))
 BUF_VERSION               := $(eval BUF_VERSION := $(shell cat versions/BUF_VERSION))$(BUF_VERSION)
 NGT_VERSION 		  := $(eval NGT_VERSION := $(shell cat versions/NGT_VERSION))$(NGT_VERSION)
 FAISS_VERSION             := $(eval FAISS_VERSION := $(shell cat versions/FAISS_VERSION))$(FAISS_VERSION)
