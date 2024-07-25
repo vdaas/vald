@@ -25,22 +25,6 @@ on:
       - "v*.*.*"
       - "*.*.*-*"
       - "v*.*.*-*"
-    paths:
-      - ".github/actions/docker-build/action.yaml"
-      - ".github/workflows/_docker-image.yaml"
-      - ".github/workflows/dockers-agent-faiss-image.yml"
-      - "go.mod"
-      - "go.sum"
-      - "internal/**"
-      - "!internal/**/*_test.go"
-      - "!internal/db/**"
-      - "!internal/k8s/**"
-      - "apis/grpc/**"
-      - "pkg/agent/core/faiss/**"
-      - "cmd/agent/core/faiss/**"
-      - "dockers/agent/core/faiss/Dockerfile"
-      - "versions/GO_VERSION"
-      - "versions/FAISS_VERSION"
   pull_request:
     paths:
       - ".github/actions/docker-build/action.yaml"

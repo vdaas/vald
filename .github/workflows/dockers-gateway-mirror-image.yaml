@@ -23,22 +23,6 @@ on:
       - "v*.*.*"
       - "*.*.*-*"
       - "v*.*.*-*"
-    paths:
-      - ".github/actions/docker-build/action.yaml"
-      - ".github/workflows/dockers-gateway-mirror-image.yml"
-      - "go.mod"
-      - "go.sum"
-      - "internal/**"
-      - "!internal/**/*_test.go"
-      - "!internal/**/*_mock.go"
-      - "!internal/db/**"
-      - "!internal/k8s/**"
-      - "apis/grpc/**"
-      - "pkg/gateway/mirror/**"
-      - "cmd/gateway/mirror/**"
-      - "pkg/gateway/internal/**"
-      - "dockers/gateway/mirror/Dockerfile"
-      - "versions/GO_VERSION"
   pull_request:
     paths:
       - ".github/actions/docker-build/action.yaml"

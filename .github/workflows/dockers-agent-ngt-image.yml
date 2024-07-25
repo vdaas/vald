@@ -25,22 +25,6 @@ on:
       - "v*.*.*"
       - "*.*.*-*"
       - "v*.*.*-*"
-    paths:
-      - ".github/actions/docker-build/action.yaml"
-      - ".github/workflows/_docker-image.yaml"
-      - ".github/workflows/dockers-agent-ngt-image.yml"
-      - "go.mod"
-      - "go.sum"
-      - "internal/**"
-      - "!internal/**/*_test.go"
-      - "!internal/db/**"
-      - "internal/k8s/**"
-      - "apis/grpc/**"
-      - "pkg/agent/core/ngt/**"
-      - "cmd/agent/core/ngt/**"
-      - "dockers/agent/core/ngt/Dockerfile"
-      - "versions/GO_VERSION"
-      - "versions/NGT_VERSION"
   pull_request:
     paths:
       - ".github/actions/docker-build/action.yaml"
