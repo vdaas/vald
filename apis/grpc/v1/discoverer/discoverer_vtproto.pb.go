@@ -137,10 +137,7 @@ func RegisterDiscovererServer(s grpc.ServiceRegistrar, srv DiscovererServer) {
 }
 
 func _Discoverer_Pods_Handler(
-	srv any,
-	ctx context.Context,
-	dec func(any) error,
-	interceptor grpc.UnaryServerInterceptor,
+	srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor,
 ) (any, error) {
 	in := new(payload.Discoverer_Request)
 	if err := dec(in); err != nil {
@@ -160,10 +157,7 @@ func _Discoverer_Pods_Handler(
 }
 
 func _Discoverer_Nodes_Handler(
-	srv any,
-	ctx context.Context,
-	dec func(any) error,
-	interceptor grpc.UnaryServerInterceptor,
+	srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor,
 ) (any, error) {
 	in := new(payload.Discoverer_Request)
 	if err := dec(in); err != nil {
@@ -183,10 +177,7 @@ func _Discoverer_Nodes_Handler(
 }
 
 func _Discoverer_Services_Handler(
-	srv any,
-	ctx context.Context,
-	dec func(any) error,
-	interceptor grpc.UnaryServerInterceptor,
+	srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor,
 ) (any, error) {
 	in := new(payload.Discoverer_Request)
 	if err := dec(in); err != nil {

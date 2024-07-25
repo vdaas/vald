@@ -97,10 +97,7 @@ func RegisterFlushServer(s grpc.ServiceRegistrar, srv FlushServer) {
 }
 
 func _Flush_Flush_Handler(
-	srv any,
-	ctx context.Context,
-	dec func(any) error,
-	interceptor grpc.UnaryServerInterceptor,
+	srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor,
 ) (any, error) {
 	in := new(payload.Flush_Request)
 	if err := dec(in); err != nil {

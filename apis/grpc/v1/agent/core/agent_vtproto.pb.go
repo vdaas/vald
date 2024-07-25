@@ -135,10 +135,7 @@ func RegisterAgentServer(s grpc.ServiceRegistrar, srv AgentServer) {
 }
 
 func _Agent_CreateIndex_Handler(
-	srv any,
-	ctx context.Context,
-	dec func(any) error,
-	interceptor grpc.UnaryServerInterceptor,
+	srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor,
 ) (any, error) {
 	in := new(payload.Control_CreateIndexRequest)
 	if err := dec(in); err != nil {
@@ -158,10 +155,7 @@ func _Agent_CreateIndex_Handler(
 }
 
 func _Agent_SaveIndex_Handler(
-	srv any,
-	ctx context.Context,
-	dec func(any) error,
-	interceptor grpc.UnaryServerInterceptor,
+	srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor,
 ) (any, error) {
 	in := new(payload.Empty)
 	if err := dec(in); err != nil {
@@ -181,10 +175,7 @@ func _Agent_SaveIndex_Handler(
 }
 
 func _Agent_CreateAndSaveIndex_Handler(
-	srv any,
-	ctx context.Context,
-	dec func(any) error,
-	interceptor grpc.UnaryServerInterceptor,
+	srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor,
 ) (any, error) {
 	in := new(payload.Control_CreateIndexRequest)
 	if err := dec(in); err != nil {
