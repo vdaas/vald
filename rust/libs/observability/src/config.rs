@@ -16,27 +16,28 @@
 use std::collections::HashMap;
 use std::time::Duration;
 
-use opentelemetry_sdk;
+use opentelemetry::KeyValue;
+use opentelemetry_sdk::{self, Resource};
 
 #[derive(Clone, Debug)]
 pub struct Config {
-    enabled: bool,
-    attributes: HashMap<String, String>,
-    tracer: Tracer,
-    meter: Meter,
+    pub enabled: bool,
+    pub attributes: HashMap<String, String>,
+    pub tracer: Tracer,
+    pub meter: Meter,
 }
 
 #[derive(Clone, Debug)]
 pub struct Tracer {
-    enabled: bool,
-    endpoint: String,
+    pub enabled: bool,
+    pub endpoint: String,
 }
 
 #[derive(Clone, Debug)]
 pub struct Meter {
-    enabled: bool,
-    endpoint: String,
-    export_duration: Duration,
+    pub enabled: bool,
+    pub endpoint: String,
+    pub export_duration: Duration,
 }
 
 impl Config {
@@ -75,14 +76,20 @@ impl Config {
     }
 }
 
-impl From<&Config> for opentelemetry_sdk::Resource {
+impl Default for Config {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl From<&Config> for Resource {
     fn from(value: &Config) -> Self {
-        let key_values: Vec<opentelemetry::KeyValue> = value
+        let key_values: Vec<KeyValue> = value
             .attributes
             .iter()
-            .map(|(key, val)| opentelemetry::KeyValue::new(key.clone(), val.clone()))
+            .map(|(key, val)| KeyValue::new(key.clone(), val.clone()))
             .collect();
-        opentelemetry_sdk::Resource::new(key_values)
+        Resource::new(key_values)
     }
 }
 
