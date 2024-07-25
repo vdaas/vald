@@ -76,6 +76,7 @@ var file_v1_filter_egress_egress_filter_proto_goTypes = []any{
 	(*payload.Object_Distance)(nil), // 0: payload.v1.Object.Distance
 	(*payload.Object_Vector)(nil),   // 1: payload.v1.Object.Vector
 }
+
 var file_v1_filter_egress_egress_filter_proto_depIdxs = []int32{
 	0, // 0: filter.egress.v1.Filter.FilterDistance:input_type -> payload.v1.Object.Distance
 	1, // 1: filter.egress.v1.Filter.FilterVector:input_type -> payload.v1.Object.Vector

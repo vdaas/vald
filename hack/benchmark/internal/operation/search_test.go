@@ -25,8 +25,7 @@ package operation
 // 		client   client.Client
 // 		indexerC client.Indexer
 // 	}
-// 	type want struct {
-// 	}
+// 	type want struct{}
 // 	type test struct {
 // 		name       string
 // 		args       args
@@ -129,8 +128,7 @@ package operation
 // 		client   client.Client
 // 		indexerC client.Indexer
 // 	}
-// 	type want struct {
-// 	}
+// 	type want struct{}
 // 	type test struct {
 // 		name       string
 // 		args       args
@@ -233,8 +231,7 @@ package operation
 // 		client   client.Client
 // 		indexerC client.Indexer
 // 	}
-// 	type want struct {
-// 	}
+// 	type want struct{}
 // 	type test struct {
 // 		name       string
 // 		args       args
@@ -337,8 +334,7 @@ package operation
 // 		client   client.Client
 // 		indexerC client.Indexer
 // 	}
-// 	type want struct {
-// 	}
+// 	type want struct{}
 // 	type test struct {
 // 		name       string
 // 		args       args

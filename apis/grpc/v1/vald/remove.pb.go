@@ -88,6 +88,7 @@ var file_v1_vald_remove_proto_goTypes = []any{
 	(*payload.Object_Locations)(nil),        // 4: payload.v1.Object.Locations
 	(*payload.Object_StreamLocation)(nil),   // 5: payload.v1.Object.StreamLocation
 }
+
 var file_v1_vald_remove_proto_depIdxs = []int32{
 	0, // 0: vald.v1.Remove.Remove:input_type -> payload.v1.Remove.Request
 	1, // 1: vald.v1.Remove.RemoveByTimestamp:input_type -> payload.v1.Remove.TimestampRequest

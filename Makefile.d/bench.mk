@@ -130,6 +130,7 @@ pprof/core/ngt/sequential.bin: \
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
+	CGO_LDFLAGS="$(CGO_LDFLAGS)" \
 	go test \
 	    -mod=readonly \
 	    -count=1 \
@@ -154,6 +155,7 @@ pprof/core/ngt/parallel.bin: \
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
+	CGO_LDFLAGS="$(CGO_LDFLAGS)" \
 	go test \
 	    -mod=readonly \
 	    -count=1 \
@@ -185,6 +187,7 @@ pprof/agent/stream.bin: \
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
+	CGO_LDFLAGS="$(CGO_LDFLAGS)" \
 	go test \
 	    -mod=readonly \
 	    -count=1 \
@@ -210,6 +213,7 @@ pprof/agent/sequential/grpc.bin: \
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
+	CGO_LDFLAGS="$(CGO_LDFLAGS)" \
 	go test \
 	    -mod=readonly \
 	    -count=1 \
@@ -240,6 +244,7 @@ pprof/gateway/sequential.bin: \
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
+	CGO_LDFLAGS="$(CGO_LDFLAGS)" \
 	go test \
 	    -mod=readonly \
 	    -count=1 \
@@ -288,6 +293,7 @@ $(ROOTDIR)/metrics.gob:
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
+	CGO_LDFLAGS="$(CGO_LDFLAGS)" \
 	go test -mod=readonly -v --timeout=1h $(ROOTDIR)/hack/benchmark/e2e/agent/core/ngt/... -output=$(ROOTDIR)/metrics.gob
 
 .PHONY: metrics/chart

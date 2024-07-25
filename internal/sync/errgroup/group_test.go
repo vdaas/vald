@@ -854,7 +854,6 @@ func Test_group_Wait(t *testing.T) {
 // 			if err := checkFunc(test.want, got, got1); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -940,7 +939,6 @@ func Test_group_Wait(t *testing.T) {
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -1055,7 +1053,6 @@ func Test_group_Wait(t *testing.T) {
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -1071,8 +1068,7 @@ func Test_group_Wait(t *testing.T) {
 // 		emap   map[string]struct{}
 // 		errs   []error
 // 	}
-// 	type want struct {
-// 	}
+// 	type want struct{}
 // 	type test struct {
 // 		name       string
 // 		args       args
@@ -1181,8 +1177,7 @@ func Test_group_Wait(t *testing.T) {
 // 		emap   map[string]struct{}
 // 		errs   []error
 // 	}
-// 	type want struct {
-// 	}
+// 	type want struct{}
 // 	type test struct {
 // 		name       string
 // 		args       args
@@ -1288,8 +1283,7 @@ func Test_group_Wait(t *testing.T) {
 // 		emap   map[string]struct{}
 // 		errs   []error
 // 	}
-// 	type want struct {
-// 	}
+// 	type want struct{}
 // 	type test struct {
 // 		name       string
 // 		fields     fields

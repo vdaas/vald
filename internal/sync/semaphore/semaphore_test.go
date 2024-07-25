@@ -309,7 +309,6 @@ func TestAllocCancelDoesntStarve(t *testing.T) {
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -419,7 +418,6 @@ func TestAllocCancelDoesntStarve(t *testing.T) {
 // 			if err := checkFunc(test.want, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -526,7 +524,6 @@ func TestAllocCancelDoesntStarve(t *testing.T) {
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -540,8 +537,7 @@ func TestAllocCancelDoesntStarve(t *testing.T) {
 // 		size    int64
 // 		cur     int64
 // 	}
-// 	type want struct {
-// 	}
+// 	type want struct{}
 // 	type test struct {
 // 		name       string
 // 		args       args
@@ -642,8 +638,7 @@ func TestAllocCancelDoesntStarve(t *testing.T) {
 // 		size    int64
 // 		cur     int64
 // 	}
-// 	type want struct {
-// 	}
+// 	type want struct{}
 // 	type test struct {
 // 		name       string
 // 		args       args
@@ -741,8 +736,7 @@ func TestAllocCancelDoesntStarve(t *testing.T) {
 // 		size    int64
 // 		cur     int64
 // 	}
-// 	type want struct {
-// 	}
+// 	type want struct{}
 // 	type test struct {
 // 		name       string
 // 		fields     fields

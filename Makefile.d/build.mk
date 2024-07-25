@@ -40,12 +40,12 @@ binary/build: \
 cmd/agent/core/ngt/ngt: \
 	ngt/install
 	$(eval CGO_ENABLED = 1)
-	$(call go-build,agent/core/ngt,-linkmode 'external',-static -fPIC -pthread -fopenmp -std=gnu++20 -lstdc++ -lm -z relro -z now -flto -march=native -fno-plt -Ofast -fvisibility=hidden -ffp-contract=fast $(EXTLDFLAGS), cgo,NGT-$(NGT_VERSION),$@)
+	$(call go-build,agent/core/ngt,-linkmode 'external',$(LDFLAGS) $(NGT_LDFLAGS) $(EXTLDFLAGS), cgo,NGT-$(NGT_VERSION),$@)
 
 cmd/agent/core/faiss/faiss: \
 	faiss/install
 	$(eval CGO_ENABLED = 1)
-	$(call go-build,agent/core/faiss,-linkmode 'external',-static -fPIC -pthread -fopenmp -std=gnu++20 -lstdc++ -lopenblas -llapack -lgfortran -lm -z relro -z now -flto -march=native -fno-plt -Ofast -fvisibility=hidden -ffp-contract=fast, cgo,FAISS-$(FAISS_VERSION),$@)
+	$(call go-build,agent/core/faiss,-linkmode 'external',$(LDFLAGS) $(FAISS_LDFLAGS), cgo,FAISS-$(FAISS_VERSION),$@)
 
 cmd/agent/sidecar/sidecar:
 	$(eval CGO_ENABLED = 0)
@@ -93,7 +93,7 @@ cmd/index/operator/index-operator:
 
 cmd/tools/benchmark/job/job:
 	$(eval CGO_ENABLED = 1)
-	$(call go-build,tools/benchmark/job,-linkmode 'external',-static -fPIC -pthread -fopenmp -std=gnu++20 -lhdf5 -lhdf5_hl -lsz -laec -lz -lm -ldl, cgo,$(HDF5_VERSION),$@)
+	$(call go-build,tools/benchmark/job,-linkmode 'external',$(LDFLAGS) $(HDF5_LDFLAGS), cgo,$(HDF5_VERSION),$@)
 
 cmd/tools/benchmark/operator/operator:
 	$(eval CGO_ENABLED = 0)
@@ -101,7 +101,7 @@ cmd/tools/benchmark/operator/operator:
 
 cmd/tools/cli/loadtest/loadtest:
 	$(eval CGO_ENABLED = 1)
-	$(call go-build,tools/cli/loadtest,-linkmode 'external',-static -fPIC -pthread -fopenmp -std=gnu++20 -lhdf5 -lhdf5_hl -lsz -laec -lz -lm -ldl, cgo,$(HDF5_VERSION),$@)
+	$(call go-build,tools/cli/loadtest,-linkmode 'external',$(LDFLAGS) $(HDF5_LDFLAGS), cgo,$(HDF5_VERSION),$@)
 
 rust/target/release/agent:
 	pushd rust && cargo build -p agent --release && popd

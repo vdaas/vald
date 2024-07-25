@@ -36,8 +36,7 @@ const _ = grpc.SupportPackageIsVersion7
 // SidecarClient is the client API for Sidecar service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type SidecarClient interface {
-}
+type SidecarClient any
 
 type sidecarClient struct {
 	cc grpc.ClientConnInterface
@@ -55,8 +54,7 @@ type SidecarServer interface {
 }
 
 // UnimplementedSidecarServer must be embedded to have forward compatible implementations.
-type UnimplementedSidecarServer struct {
-}
+type UnimplementedSidecarServer struct{}
 
 func (UnimplementedSidecarServer) mustEmbedUnimplementedSidecarServer() {}
 

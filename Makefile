@@ -140,6 +140,12 @@ PBGOS = $(PROTOS:apis/proto/%.proto=apis/grpc/%.pb.go)
 SWAGGERS = $(PROTOS:apis/proto/%.proto=apis/swagger/%.swagger.json)
 PBDOCS = apis/docs/v1/docs.md
 
+LDFLAGS = -static -fPIC -pthread -std=gnu++20 -lstdc++ -lm -z relro -z now -flto -march=native -fno-plt -Ofast -fvisibility=hidden -ffp-contract=fast
+NGT_LDFLAGS = -fopenmp -lopenblas -llapack
+FAISS_LDFLAGS = $(NGT_LDFLAGS) -lgfortran
+HDF5_LDFLAGS = -lhdf5 -lhdf5_hl -lsz -laec -lz -ldl
+CGO_LDFLAGS = $(FAISS_LDFLAGS) $(HDF5_LDFLAGS)
+
 ifeq ($(GOARCH),amd64)
 CFLAGS ?= -mno-avx512f -mno-avx512dq -mno-avx512cd -mno-avx512bw -mno-avx512vl
 CXXFLAGS ?= $(CFLAGS)
@@ -472,11 +478,11 @@ format/go: \
 	gofumpt/install \
 	strictgoimports/install \
 	goimports/install
-	find $(ROOTDIR)/ -type d -name .git -prune -o -type f -regex '.*[^\.pb]\.go' -print | xargs -P$(CORES) $(GOBIN)/golines -w -m $(GOLINES_MAX_WIDTH)
-	find $(ROOTDIR)/ -type d -name .git -prune -o -type f -regex '.*[^\.pb]\.go' -print | xargs -P$(CORES) $(GOBIN)/strictgoimports -w
+	find $(ROOTDIR)/ -type d -name .git -prune -o -type f -regex '.*\.go' -print | xargs -P$(CORES) $(GOBIN)/golines -w -m $(GOLINES_MAX_WIDTH)
+	find $(ROOTDIR)/ -type d -name .git -prune -o -type f -regex '.*\.go' -print | xargs -P$(CORES) $(GOBIN)/strictgoimports -w
 	find $(ROOTDIR)/ -type d -name .git -prune -o -type f -regex '.*\.go' -print | xargs -P$(CORES) $(GOBIN)/goimports -w
-	find $(ROOTDIR)/ -type d -name .git -prune -o -type f -regex '.*\.go' -print | xargs -P$(CORES) $(GOBIN)/crlfmt -w
-	find $(ROOTDIR)/ -type d -name .git -prune -o -type f -regex '.*[^\.pb]\.go' -print | xargs -P$(CORES) $(GOBIN)/gofumpt -w
+	find $(ROOTDIR)/ -type d -name .git -prune -o -type f -regex '.*\.go' -print | xargs -P$(CORES) $(GOBIN)/crlfmt -w -diff=false
+	find $(ROOTDIR)/ -type d -name .git -prune -o -type f -regex '.*\.go' -print | xargs -P$(CORES) $(GOBIN)/gofumpt -w
 
 .PHONY: format/go/test
 ## run golines, gofumpt, goimports for go test files
@@ -489,7 +495,7 @@ format/go/test: \
 	find $(ROOTDIR) -name '*_test.go' | xargs -P$(CORES) $(GOBIN)/golines -w -m $(GOLINES_MAX_WIDTH)
 	find $(ROOTDIR) -name '*_test.go' | xargs -P$(CORES) $(GOBIN)/strictgoimports -w
 	find $(ROOTDIR) -name '*_test.go' | xargs -P$(CORES) $(GOBIN)/goimports -w
-	find $(ROOTDIR) -name '*_test.go' | xargs -P$(CORES) $(GOBIN)/crlfmt -w
+	find $(ROOTDIR) -name '*_test.go' | xargs -P$(CORES) $(GOBIN)/crlfmt -w -diff=false
 	find $(ROOTDIR) -name '*_test.go' | xargs -P$(CORES) $(GOBIN)/gofumpt -w
 
 .PHONY: format/yaml
@@ -599,7 +605,14 @@ ngt/install: $(USR_LOCAL)/include/NGT/Capi.h
 $(USR_LOCAL)/include/NGT/Capi.h:
 	git clone --depth 1 --branch v$(NGT_VERSION) https://github.com/yahoojapan/NGT $(TEMP_DIR)/NGT-$(NGT_VERSION)
 	cd $(TEMP_DIR)/NGT-$(NGT_VERSION) && \
-		cmake -DCMAKE_C_FLAGS="$(CFLAGS)" -DCMAKE_CXX_FLAGS="$(CXXFLAGS)" "$(NGT_EXTRA_FLAGS)" .
+	cmake -DCMAKE_BUILD_TYPE=Release \
+		-DBUILD_SHARED_LIBS=OFF \
+		-DBUILD_STATIC_EXECS=ON \
+		-DBUILD_TESTING=OFF \
+		-DCMAKE_C_FLAGS="$(CFLAGS)" \
+		-DCMAKE_CXX_FLAGS="$(CXXFLAGS)" \
+		-DCMAKE_INSTALL_PREFIX=$(USR_LOCAL) \
+		"$(NGT_EXTRA_FLAGS)" .
 	make -j$(CORES) -C $(TEMP_DIR)/NGT-$(NGT_VERSION)
 	make install -C $(TEMP_DIR)/NGT-$(NGT_VERSION)
 	cd $(ROOTDIR)
@@ -613,18 +626,18 @@ $(LIB_PATH)/libfaiss.a:
 	curl -fsSL https://github.com/facebookresearch/faiss/archive/v$(FAISS_VERSION).tar.gz -o $(TEMP_DIR)/v$(FAISS_VERSION).tar.gz
 	tar zxf $(TEMP_DIR)/v$(FAISS_VERSION).tar.gz -C $(TEMP_DIR)/
 	cd $(TEMP_DIR)/faiss-$(FAISS_VERSION) && \
-		cmake -DCMAKE_BUILD_TYPE=Release \
+	cmake -DCMAKE_BUILD_TYPE=Release \
 		-DBUILD_SHARED_LIBS=OFF \
 		-DBUILD_STATIC_EXECS=ON \
 		-DBUILD_TESTING=OFF \
-		-DCMAKE_C_FLAGS="-fPIC" \
+		-DCMAKE_C_FLAGS="$(LDFLAGS)" \
 		-DCMAKE_INSTALL_PREFIX=$(USR_LOCAL) \
 		-DFAISS_ENABLE_PYTHON=OFF \
 	        -DFAISS_ENABLE_GPU=OFF \
 		-DBLA_VENDOR=OpenBLAS \
-		-DCMAKE_EXE_LINKER_FLAGS="-lopenblas -llapack -lgfortran -lm" \
+		-DCMAKE_EXE_LINKER_FLAGS="$(FAISS_LDFLAGS)" \
 		-B build . && \
-		make -C build -j faiss && \
+		make -C build -j$(CORES) faiss && \
 		make -C build install
 	rm -rf v$(FAISS_VERSION).tar.gz
 	rm -rf $(TEMP_DIR)/faiss-$(FAISS_VERSION)

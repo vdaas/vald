@@ -2174,6 +2174,9 @@ agent:
     # @schema {"name": "agent.ngt.error_buffer_limit", "type": "integer", "minimum": 1}
     # agent.ngt.error_buffer_limit -- maximum number of core ngt error buffer pool size limit
     error_buffer_limit: 10
+    # @schema {"name": "agent.ngt.enable_statistics", "type": "boolean"}
+    # agent.ngt.enable_statistics -- enable index statistics loading
+    enable_statistics: false
   # @schema {"name": "agent.faiss", "type": "object"}
   faiss:
     # @schema {"name": "agent.faiss.pod_name", "type": "string"}

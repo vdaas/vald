@@ -332,6 +332,8 @@ spec:
                           type: boolean
                         enable_proactive_gc:
                           type: boolean
+                        enable_statistics:
+                          type: boolean
                         error_buffer_limit:
                           type: integer
                           minimum: 1
