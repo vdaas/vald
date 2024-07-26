@@ -59,7 +59,7 @@ jobs:
       - name: Run formatter and license.go
         run: |
           make format
-          git checkout go.mod go.sum ./rust/Cargo.lock
+          git checkout go.mod go.sum ./example/client/go.mod ./example/client/go.sum ./rust/Cargo.lock ./dockers
       - name: Check and Push to main branch
         continue-on-error: true
         run: |
