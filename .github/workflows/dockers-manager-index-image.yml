@@ -25,21 +25,6 @@ on:
       - "v*.*.*"
       - "*.*.*-*"
       - "v*.*.*-*"
-    paths:
-      - ".github/actions/docker-build/action.yaml"
-      - ".github/workflows/_docker-image.yaml"
-      - ".github/workflows/dockers-manager-index-image.yml"
-      - "go.mod"
-      - "go.sum"
-      - "internal/**"
-      - "!internal/**/*_test.go"
-      - "!internal/db/**"
-      - "!internal/k8s/**"
-      - "apis/grpc/**"
-      - "pkg/manager/index/**"
-      - "cmd/manager/index/**"
-      - "dockers/manager/index/Dockerfile"
-      - "versions/GO_VERSION"
   pull_request:
     paths:
       - ".github/actions/docker-build/action.yaml"

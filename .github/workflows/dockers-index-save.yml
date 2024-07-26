@@ -23,20 +23,6 @@ on:
       - "v*.*.*"
       - "*.*.*-*"
       - "v*.*.*-*"
-    paths:
-      - ".github/actions/docker-build/action.yaml"
-      - ".github/workflows/dockers-index-save.yml"
-      - "go.mod"
-      - "go.sum"
-      - "internal/**"
-      - "!internal/**/*_test.go"
-      - "!internal/db/**"
-      - "!internal/k8s/**"
-      - "apis/grpc/**"
-      - "pkg/index/job/save/**"
-      - "cmd/index/job/save/**"
-      - "dockers/index/job/save/Dockerfile"
-      - "versions/GO_VERSION"
   pull_request:
     paths:
       - ".github/actions/docker-build/action.yaml"

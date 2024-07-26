@@ -25,22 +25,6 @@ on:
       - "v*.*.*"
       - "*.*.*-*"
       - "v*.*.*-*"
-    paths:
-      - ".github/actions/docker-build/action.yaml"
-      - ".github/workflows/_docker-image.yaml"
-      - ".github/workflows/dockers-agent-sidecar-image.yml"
-      - "go.mod"
-      - "go.sum"
-      - "internal/**"
-      - "!internal/**/*_test.go"
-      - "!internal/db/**"
-      - "internal/db/storage/blob/**"
-      - "!internal/k8s/**"
-      - "apis/grpc/**"
-      - "pkg/agent/sidecar/**"
-      - "cmd/agent/sidecar/**"
-      - "dockers/agent/sidecar/Dockerfile"
-      - "versions/GO_VERSION"
   pull_request:
     paths:
       - ".github/actions/docker-build/action.yaml"
