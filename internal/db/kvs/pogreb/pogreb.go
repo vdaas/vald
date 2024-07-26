@@ -19,7 +19,6 @@ import (
 	"reflect"
 
 	"github.com/akrylysov/pogreb"
-
 	"github.com/vdaas/vald/internal/conv"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"

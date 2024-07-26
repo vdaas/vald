@@ -25,15 +25,6 @@ on:
       - "v*.*.*"
       - "*.*.*-*"
       - "v*.*.*-*"
-    paths:
-      - ".github/actions/docker-build/action.yaml"
-      - ".github/workflows/_docker-image.yaml"
-      - ".github/workflows/dockers-ci-container-image.yml"
-      - "dockers/ci/**"
-      - "Makefile"
-      - "Makefile.d/**"
-      - "versions/GO_VERSION"
-      - "versions/NGT_VERSION"
   pull_request:
     paths:
       - ".github/actions/docker-build/action.yaml"

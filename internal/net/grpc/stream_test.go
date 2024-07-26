@@ -170,7 +170,7 @@ func TestBidirectionalStream(t *testing.T) {
 					ContextFunc: func() context.Context {
 						return ctx
 					},
-					RecvMsgFunc: func(i interface{}) error {
+					RecvMsgFunc: func(i any) error {
 						if recvIdx >= len(insertReqs) {
 							return io.EOF
 						}
@@ -184,7 +184,7 @@ func TestBidirectionalStream(t *testing.T) {
 
 						return nil
 					},
-					SendMsgFunc: func(i interface{}) error {
+					SendMsgFunc: func(i any) error {
 						rpcResp = append(rpcResp, i.(*payload.Object_StreamLocation))
 						return nil
 					},
@@ -204,9 +204,9 @@ func TestBidirectionalStream(t *testing.T) {
 // func TestBidirectionalStreamClient(t *testing.T) {
 // 	type args struct {
 // 		stream       ClientStream
-// 		dataProvider func() interface{}
-// 		newData      func() interface{}
-// 		f            func(interface{}, error)
+// 		dataProvider func() any
+// 		newData      func() any
+// 		f            func(any, error)
 // 	}
 // 	type want struct {
 // 		err error
@@ -291,7 +291,6 @@ func TestBidirectionalStream(t *testing.T) {
 // 			if err := checkFunc(test.want, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }

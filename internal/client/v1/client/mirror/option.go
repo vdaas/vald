@@ -13,9 +13,7 @@
 // limitations under the License.
 package mirror
 
-import (
-	"github.com/vdaas/vald/internal/net/grpc"
-)
+import "github.com/vdaas/vald/internal/net/grpc"
 
 type Option func(c *client) error
 

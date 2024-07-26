@@ -91,7 +91,7 @@ func New(selector *config.Selectors, opts ...Option) (dsc Discoverer, err error)
 		k8s.WithResourceController(mnode.New(
 			mnode.WithControllerName("node metrics discoverer"),
 			mnode.WithOnErrorFunc(func(err error) {
-				log.Error("failed to reconcile:", err)
+				log.Error("failed to reconcile node metrics:", err)
 			}),
 			mnode.WithOnReconcileFunc(func(nodes map[string]mnode.Node) {
 				log.Debugf("node metrics reconciled\t%#v", nodes)
@@ -113,7 +113,7 @@ func New(selector *config.Selectors, opts ...Option) (dsc Discoverer, err error)
 		k8s.WithResourceController(mpod.New(
 			mpod.WithControllerName("pod metrics discoverer"),
 			mpod.WithOnErrorFunc(func(err error) {
-				log.Error("failed to reconcile:", err)
+				log.Error("failed to reconcile pod metrics:", err)
 			}),
 			mpod.WithOnReconcileFunc(func(podList map[string]mpod.Pod) {
 				log.Debugf("pod metrics reconciled\t%#v", podList)
@@ -135,7 +135,7 @@ func New(selector *config.Selectors, opts ...Option) (dsc Discoverer, err error)
 		k8s.WithResourceController(pod.New(
 			pod.WithControllerName("pod discoverer"),
 			pod.WithOnErrorFunc(func(err error) {
-				log.Error("failed to reconcile:", err)
+				log.Error("failed to reconcile pod resource:", err)
 			}),
 			pod.WithOnReconcileFunc(func(_ context.Context, podList map[string][]pod.Pod) {
 				log.Debugf("pod resource reconciled\t%#v", podList)
@@ -160,7 +160,7 @@ func New(selector *config.Selectors, opts ...Option) (dsc Discoverer, err error)
 		k8s.WithResourceController(node.New(
 			node.WithControllerName("node discoverer"),
 			node.WithOnErrorFunc(func(err error) {
-				log.Error("failed to reconcile:", err)
+				log.Error("failed to reconcile node resource:", err)
 			}),
 			node.WithOnReconcileFunc(func(nodes []node.Node) {
 				log.Debugf("node resource reconciled\t%#v", nodes)
@@ -510,7 +510,9 @@ func (d *discoverer) GetPods(req *payload.Discoverer_Request) (pods *payload.Inf
 	return pods, nil
 }
 
-func (d *discoverer) GetNodes(req *payload.Discoverer_Request) (nodes *payload.Info_Nodes, err error) {
+func (d *discoverer) GetNodes(
+	req *payload.Discoverer_Request,
+) (nodes *payload.Info_Nodes, err error) {
 	nodes = new(payload.Info_Nodes)
 	nbn, ok := d.nodeByName.Load().(map[string]*payload.Info_Node)
 	if !ok {
@@ -555,7 +557,9 @@ func (d *discoverer) GetNodes(req *payload.Discoverer_Request) (nodes *payload.I
 }
 
 // Get Services returns the services that matches the request.
-func (d *discoverer) GetServices(req *payload.Discoverer_Request) (svcs *payload.Info_Services, err error) {
+func (d *discoverer) GetServices(
+	req *payload.Discoverer_Request,
+) (svcs *payload.Info_Services, err error) {
 	svcs = new(payload.Info_Services)
 	sbn, ok := d.svcsByName.Load().(map[string]*payload.Info_Service)
 	if !ok {

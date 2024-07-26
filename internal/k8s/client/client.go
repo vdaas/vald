@@ -117,7 +117,9 @@ func New(opts ...Option) (_ Client, err error) {
 	return c, nil
 }
 
-func (c *client) Get(ctx context.Context, name, namespace string, obj cli.Object, opts ...cli.GetOption) error {
+func (c *client) Get(
+	ctx context.Context, name, namespace string, obj cli.Object, opts ...cli.GetOption,
+) error {
 	return c.withWatch.Get(
 		ctx,
 		cli.ObjectKey{
@@ -145,11 +147,15 @@ func (c *client) Update(ctx context.Context, obj k8s.Object, opts ...cli.UpdateO
 	return c.withWatch.Update(ctx, obj, opts...)
 }
 
-func (c *client) Patch(ctx context.Context, obj k8s.Object, patch cli.Patch, opts ...cli.PatchOption) error {
+func (c *client) Patch(
+	ctx context.Context, obj k8s.Object, patch cli.Patch, opts ...cli.PatchOption,
+) error {
 	return c.withWatch.Patch(ctx, obj, patch, opts...)
 }
 
-func (c *client) Watch(ctx context.Context, obj cli.ObjectList, opts ...k8s.ListOption) (watch.Interface, error) {
+func (c *client) Watch(
+	ctx context.Context, obj cli.ObjectList, opts ...k8s.ListOption,
+) (watch.Interface, error) {
 	return c.withWatch.Watch(ctx, obj, opts...)
 }
 
@@ -157,7 +163,9 @@ func (*client) MatchingLabels(labels map[string]string) cli.MatchingLabels {
 	return cli.MatchingLabels(labels)
 }
 
-func (*client) LabelSelector(key string, op selection.Operator, vals []string) (labels.Selector, error) {
+func (*client) LabelSelector(
+	key string, op selection.Operator, vals []string,
+) (labels.Selector, error) {
 	requirements, err := labels.NewRequirement(key, op, vals)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create requirement on creating label selector: %w", err)
@@ -222,7 +230,9 @@ func NewPatcher(fieldManager string) (Patcher, error) {
 	}, nil
 }
 
-func (s *patcher) ApplyPodAnnotations(ctx context.Context, name, namespace string, entries map[string]string) error {
+func (s *patcher) ApplyPodAnnotations(
+	ctx context.Context, name, namespace string, entries map[string]string,
+) error {
 	var podList corev1.PodList
 	if err := s.client.List(ctx, &podList, &cli.ListOptions{
 		Namespace:     namespace,
@@ -235,7 +245,7 @@ func (s *patcher) ApplyPodAnnotations(ctx context.Context, name, namespace strin
 		return errors.New("agent pod not found on exporting metrics")
 	}
 
-	//nolint: gomnd
+	//nolint:gomnd
 	if len(podList.Items) >= 2 {
 		return errors.New("multiple agent pods found on exporting metrics. pods with same name exist in the same namespace?")
 	}

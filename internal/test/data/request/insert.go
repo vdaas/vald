@@ -27,7 +27,9 @@ const (
 	Float
 )
 
-func GenMultiInsertReq(t ObjectType, dist vector.Distribution, num int, dim int, cfg *payload.Insert_Config) (*payload.Insert_MultiRequest, error) {
+func GenMultiInsertReq(
+	t ObjectType, dist vector.Distribution, num int, dim int, cfg *payload.Insert_Config,
+) (*payload.Insert_MultiRequest, error) {
 	var vecs [][]float32
 	var err error
 	switch t {
@@ -57,7 +59,9 @@ func GenMultiInsertReq(t ObjectType, dist vector.Distribution, num int, dim int,
 }
 
 // GenSameVecMultiInsertReq generates Insert_MultiRequest with the same vector.
-func GenSameVecMultiInsertReq(num int, vec []float32, cfg *payload.Insert_Config) *payload.Insert_MultiRequest {
+func GenSameVecMultiInsertReq(
+	num int, vec []float32, cfg *payload.Insert_Config,
+) *payload.Insert_MultiRequest {
 	req := &payload.Insert_MultiRequest{
 		Requests: make([]*payload.Insert_Request, num),
 	}

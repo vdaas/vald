@@ -17,9 +17,7 @@
 // Package config providers configuration type and load configuration logic
 package config
 
-import (
-	"github.com/vdaas/vald/internal/net"
-)
+import "github.com/vdaas/vald/internal/net"
 
 // Meta represents the configurations for vald meta.
 type Meta struct {

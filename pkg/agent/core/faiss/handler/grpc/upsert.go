@@ -23,7 +23,9 @@ import (
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
 )
 
-func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *payload.Object_Location, err error) {
+func (s *server) Upsert(
+	ctx context.Context, req *payload.Upsert_Request,
+) (loc *payload.Object_Location, err error) {
 	return s.UnimplementedValdServer.UnimplementedUpsertServer.Upsert(ctx, req)
 }
 
@@ -31,6 +33,8 @@ func (s *server) StreamUpsert(stream vald.Upsert_StreamUpsertServer) (err error)
 	return s.UnimplementedValdServer.UnimplementedUpsertServer.StreamUpsert(stream)
 }
 
-func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequest) (res *payload.Object_Locations, err error) {
+func (s *server) MultiUpsert(
+	ctx context.Context, reqs *payload.Upsert_MultiRequest,
+) (res *payload.Object_Locations, err error) {
 	return s.UnimplementedValdServer.UnimplementedUpsertServer.MultiUpsert(ctx, reqs)
 }

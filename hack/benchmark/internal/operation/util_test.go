@@ -20,8 +20,7 @@ package operation
 // 		tb  testing.TB
 // 		err error
 // 	}
-// 	type want struct {
-// 	}
+// 	type want struct{}
 // 	type test struct {
 // 		name       string
 // 		args       args
@@ -104,10 +103,9 @@ package operation
 // 		tb      testing.TB
 // 		code    int32
 // 		message string
-// 		details []interface{}
+// 		details []any
 // 	}
-// 	type want struct {
-// 	}
+// 	type want struct{}
 // 	type test struct {
 // 		name       string
 // 		args       args

@@ -2654,7 +2654,7 @@ func Test_server_StreamInsert(t *testing.T) {
 					ContextFunc: func() context.Context {
 						return ctx
 					},
-					RecvMsgFunc: func(i interface{}) error {
+					RecvMsgFunc: func(i any) error {
 						if recvIdx >= len(insertReqs) {
 							return io.EOF
 						}
@@ -2668,7 +2668,7 @@ func Test_server_StreamInsert(t *testing.T) {
 
 						return nil
 					},
-					SendMsgFunc: func(i interface{}) error {
+					SendMsgFunc: func(i any) error {
 						rpcResp = append(rpcResp, i.(*payload.Object_StreamLocation))
 						return nil
 					},

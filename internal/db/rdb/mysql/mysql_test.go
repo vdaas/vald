@@ -799,16 +799,16 @@ func Test_mySQLClient_GetVector(t *testing.T) {
 					session: &dbr.MockSession{
 						SelectFunc: func(column ...string) dbr.SelectStmt {
 							m := new(dbr.MockSelect)
-							m.FromFunc = func(table interface{}) dbr.SelectStmt {
+							m.FromFunc = func(table any) dbr.SelectStmt {
 								return m
 							}
-							m.WhereFunc = func(query interface{}, value ...interface{}) dbr.SelectStmt {
+							m.WhereFunc = func(query any, value ...any) dbr.SelectStmt {
 								return m
 							}
 							m.LimitFunc = func(n uint64) dbr.SelectStmt {
 								return m
 							}
-							m.LoadContextFunc = func(ctx context.Context, value interface{}) (int, error) {
+							m.LoadContextFunc = func(ctx context.Context, value any) (int, error) {
 								return 0, err
 							}
 							return m
@@ -819,7 +819,7 @@ func Test_mySQLClient_GetVector(t *testing.T) {
 						return
 					}(),
 					dbr: &dbr.MockDBR{
-						EqFunc: func(col string, val interface{}) dbr.Builder {
+						EqFunc: func(col string, val any) dbr.Builder {
 							return dbr.New().Eq(col, val)
 						},
 					},
@@ -841,16 +841,16 @@ func Test_mySQLClient_GetVector(t *testing.T) {
 					session: &dbr.MockSession{
 						SelectFunc: func(column ...string) dbr.SelectStmt {
 							s := new(dbr.MockSelect)
-							s.FromFunc = func(table interface{}) dbr.SelectStmt {
+							s.FromFunc = func(table any) dbr.SelectStmt {
 								return s
 							}
-							s.WhereFunc = func(query interface{}, value ...interface{}) dbr.SelectStmt {
+							s.WhereFunc = func(query any, value ...any) dbr.SelectStmt {
 								return s
 							}
 							s.LimitFunc = func(n uint64) dbr.SelectStmt {
 								return s
 							}
-							s.LoadContextFunc = func(ctx context.Context, value interface{}) (int, error) {
+							s.LoadContextFunc = func(ctx context.Context, value any) (int, error) {
 								var d *data
 								if reflect.TypeOf(value) == reflect.TypeOf(&d) {
 									return 1, nil
@@ -865,7 +865,7 @@ func Test_mySQLClient_GetVector(t *testing.T) {
 						return
 					}(),
 					dbr: &dbr.MockDBR{
-						EqFunc: func(col string, val interface{}) dbr.Builder {
+						EqFunc: func(col string, val any) dbr.Builder {
 							return dbr.New().Eq(col, val)
 						},
 					},
@@ -892,16 +892,16 @@ func Test_mySQLClient_GetVector(t *testing.T) {
 					session: &dbr.MockSession{
 						SelectFunc: func(column ...string) dbr.SelectStmt {
 							s := new(dbr.MockSelect)
-							s.FromFunc = func(table interface{}) dbr.SelectStmt {
+							s.FromFunc = func(table any) dbr.SelectStmt {
 								return s
 							}
-							s.WhereFunc = func(query interface{}, value ...interface{}) dbr.SelectStmt {
+							s.WhereFunc = func(query any, value ...any) dbr.SelectStmt {
 								return s
 							}
 							s.LimitFunc = func(n uint64) dbr.SelectStmt {
 								return s
 							}
-							s.LoadContextFunc = func(ctx context.Context, value interface{}) (int, error) {
+							s.LoadContextFunc = func(ctx context.Context, value any) (int, error) {
 								var mv *data
 								var pp []podIP
 								if reflect.TypeOf(value) == reflect.TypeOf(&mv) {
@@ -921,7 +921,7 @@ func Test_mySQLClient_GetVector(t *testing.T) {
 						return
 					}(),
 					dbr: &dbr.MockDBR{
-						EqFunc: func(col string, val interface{}) dbr.Builder {
+						EqFunc: func(col string, val any) dbr.Builder {
 							return dbr.New().Eq(col, val)
 						},
 					},
@@ -954,16 +954,16 @@ func Test_mySQLClient_GetVector(t *testing.T) {
 					session: &dbr.MockSession{
 						SelectFunc: func(column ...string) dbr.SelectStmt {
 							s := new(dbr.MockSelect)
-							s.FromFunc = func(table interface{}) dbr.SelectStmt {
+							s.FromFunc = func(table any) dbr.SelectStmt {
 								return s
 							}
-							s.WhereFunc = func(query interface{}, value ...interface{}) dbr.SelectStmt {
+							s.WhereFunc = func(query any, value ...any) dbr.SelectStmt {
 								return s
 							}
 							s.LimitFunc = func(n uint64) dbr.SelectStmt {
 								return s
 							}
-							s.LoadContextFunc = func(ctx context.Context, value interface{}) (int, error) {
+							s.LoadContextFunc = func(ctx context.Context, value any) (int, error) {
 								var mv *data
 								var pp []podIP
 								if reflect.TypeOf(value) == reflect.TypeOf(&mv) {
@@ -985,7 +985,7 @@ func Test_mySQLClient_GetVector(t *testing.T) {
 						return
 					}(),
 					dbr: &dbr.MockDBR{
-						EqFunc: func(col string, val interface{}) dbr.Builder {
+						EqFunc: func(col string, val any) dbr.Builder {
 							return dbr.New().Eq(col, val)
 						},
 					},
@@ -1112,16 +1112,16 @@ func Test_mySQLClient_GetIPs(t *testing.T) {
 					session: &dbr.MockSession{
 						SelectFunc: func(column ...string) dbr.SelectStmt {
 							s := new(dbr.MockSelect)
-							s.FromFunc = func(table interface{}) dbr.SelectStmt {
+							s.FromFunc = func(table any) dbr.SelectStmt {
 								return s
 							}
-							s.WhereFunc = func(query interface{}, value ...interface{}) dbr.SelectStmt {
+							s.WhereFunc = func(query any, value ...any) dbr.SelectStmt {
 								return s
 							}
 							s.LimitFunc = func(n uint64) dbr.SelectStmt {
 								return s
 							}
-							s.LoadContextFunc = func(ctx context.Context, value interface{}) (int, error) {
+							s.LoadContextFunc = func(ctx context.Context, value any) (int, error) {
 								var id int64
 								if reflect.TypeOf(value) == reflect.TypeOf(&id) {
 									return 0, err
@@ -1136,7 +1136,7 @@ func Test_mySQLClient_GetIPs(t *testing.T) {
 						return
 					}(),
 					dbr: &dbr.MockDBR{
-						EqFunc: func(col string, val interface{}) dbr.Builder {
+						EqFunc: func(col string, val any) dbr.Builder {
 							return dbr.New().Eq(col, val)
 						},
 					},
@@ -1158,16 +1158,16 @@ func Test_mySQLClient_GetIPs(t *testing.T) {
 					session: &dbr.MockSession{
 						SelectFunc: func(column ...string) dbr.SelectStmt {
 							s := new(dbr.MockSelect)
-							s.FromFunc = func(table interface{}) dbr.SelectStmt {
+							s.FromFunc = func(table any) dbr.SelectStmt {
 								return s
 							}
-							s.WhereFunc = func(query interface{}, value ...interface{}) dbr.SelectStmt {
+							s.WhereFunc = func(query any, value ...any) dbr.SelectStmt {
 								return s
 							}
 							s.LimitFunc = func(n uint64) dbr.SelectStmt {
 								return s
 							}
-							s.LoadContextFunc = func(ctx context.Context, value interface{}) (int, error) {
+							s.LoadContextFunc = func(ctx context.Context, value any) (int, error) {
 								var id int64
 								if reflect.TypeOf(value) == reflect.TypeOf(&id) {
 									return 0, nil
@@ -1182,7 +1182,7 @@ func Test_mySQLClient_GetIPs(t *testing.T) {
 						return
 					}(),
 					dbr: &dbr.MockDBR{
-						EqFunc: func(col string, val interface{}) dbr.Builder {
+						EqFunc: func(col string, val any) dbr.Builder {
 							return dbr.New().Eq(col, val)
 						},
 					},
@@ -1215,16 +1215,16 @@ func Test_mySQLClient_GetIPs(t *testing.T) {
 					session: &dbr.MockSession{
 						SelectFunc: func(column ...string) dbr.SelectStmt {
 							s := new(dbr.MockSelect)
-							s.FromFunc = func(table interface{}) dbr.SelectStmt {
+							s.FromFunc = func(table any) dbr.SelectStmt {
 								return s
 							}
-							s.WhereFunc = func(query interface{}, value ...interface{}) dbr.SelectStmt {
+							s.WhereFunc = func(query any, value ...any) dbr.SelectStmt {
 								return s
 							}
 							s.LimitFunc = func(n uint64) dbr.SelectStmt {
 								return s
 							}
-							s.LoadContextFunc = func(ctx context.Context, value interface{}) (int, error) {
+							s.LoadContextFunc = func(ctx context.Context, value any) (int, error) {
 								var id int64
 								var pp []podIP
 								if reflect.TypeOf(value) == reflect.TypeOf(&id) {
@@ -1244,7 +1244,7 @@ func Test_mySQLClient_GetIPs(t *testing.T) {
 						return
 					}(),
 					dbr: &dbr.MockDBR{
-						EqFunc: func(col string, val interface{}) dbr.Builder {
+						EqFunc: func(col string, val any) dbr.Builder {
 							return dbr.New().Eq(col, val)
 						},
 					},
@@ -1280,16 +1280,16 @@ func Test_mySQLClient_GetIPs(t *testing.T) {
 					session: &dbr.MockSession{
 						SelectFunc: func(column ...string) dbr.SelectStmt {
 							s := new(dbr.MockSelect)
-							s.FromFunc = func(table interface{}) dbr.SelectStmt {
+							s.FromFunc = func(table any) dbr.SelectStmt {
 								return s
 							}
-							s.WhereFunc = func(query interface{}, value ...interface{}) dbr.SelectStmt {
+							s.WhereFunc = func(query any, value ...any) dbr.SelectStmt {
 								return s
 							}
 							s.LimitFunc = func(n uint64) dbr.SelectStmt {
 								return s
 							}
-							s.LoadContextFunc = func(ctx context.Context, value interface{}) (int, error) {
+							s.LoadContextFunc = func(ctx context.Context, value any) (int, error) {
 								var id int64
 								var pp []podIP
 								if reflect.TypeOf(value) == reflect.TypeOf(&id) {
@@ -1311,7 +1311,7 @@ func Test_mySQLClient_GetIPs(t *testing.T) {
 						return
 					}(),
 					dbr: &dbr.MockDBR{
-						EqFunc: func(col string, val interface{}) dbr.Builder {
+						EqFunc: func(col string, val any) dbr.Builder {
 							return dbr.New().Eq(col, val)
 						},
 					},
@@ -1560,7 +1560,7 @@ func Test_mySQLClient_SetVector(t *testing.T) {
 								return nil
 							}
 							tx.RollbackUnlessCommittedFunc = func() {}
-							tx.InsertBySqlFunc = func(query string, value ...interface{}) dbr.InsertStmt {
+							tx.InsertBySqlFunc = func(query string, value ...any) dbr.InsertStmt {
 								return &dbr.MockInsert{
 									ExecContextFunc: func(ctx context.Context) (sql.Result, error) {
 										return nil, err
@@ -1598,7 +1598,7 @@ func Test_mySQLClient_SetVector(t *testing.T) {
 								return nil
 							}
 							tx.RollbackUnlessCommittedFunc = func() {}
-							tx.InsertBySqlFunc = func(query string, value ...interface{}) dbr.InsertStmt {
+							tx.InsertBySqlFunc = func(query string, value ...any) dbr.InsertStmt {
 								return &dbr.MockInsert{
 									ExecContextFunc: func(ctx context.Context) (sql.Result, error) {
 										return nil, nil
@@ -1607,16 +1607,16 @@ func Test_mySQLClient_SetVector(t *testing.T) {
 							}
 							tx.SelectFunc = func(column ...string) dbr.SelectStmt {
 								s := new(dbr.MockSelect)
-								s.FromFunc = func(table interface{}) dbr.SelectStmt {
+								s.FromFunc = func(table any) dbr.SelectStmt {
 									return s
 								}
-								s.WhereFunc = func(query interface{}, value ...interface{}) dbr.SelectStmt {
+								s.WhereFunc = func(query any, value ...any) dbr.SelectStmt {
 									return s
 								}
 								s.LimitFunc = func(n uint64) dbr.SelectStmt {
 									return s
 								}
-								s.LoadContextFunc = func(ctx context.Context, value interface{}) (int, error) {
+								s.LoadContextFunc = func(ctx context.Context, value any) (int, error) {
 									return 0, err
 								}
 								return s
@@ -1629,7 +1629,7 @@ func Test_mySQLClient_SetVector(t *testing.T) {
 						return
 					}(),
 					dbr: &dbr.MockDBR{
-						EqFunc: func(col string, val interface{}) dbr.Builder {
+						EqFunc: func(col string, val any) dbr.Builder {
 							return dbr.New().Eq(col, val)
 						},
 					},
@@ -1656,7 +1656,7 @@ func Test_mySQLClient_SetVector(t *testing.T) {
 								return nil
 							}
 							tx.RollbackUnlessCommittedFunc = func() {}
-							tx.InsertBySqlFunc = func(query string, value ...interface{}) dbr.InsertStmt {
+							tx.InsertBySqlFunc = func(query string, value ...any) dbr.InsertStmt {
 								return &dbr.MockInsert{
 									ExecContextFunc: func(ctx context.Context) (sql.Result, error) {
 										return nil, nil
@@ -1665,16 +1665,16 @@ func Test_mySQLClient_SetVector(t *testing.T) {
 							}
 							tx.SelectFunc = func(column ...string) dbr.SelectStmt {
 								s := new(dbr.MockSelect)
-								s.FromFunc = func(table interface{}) dbr.SelectStmt {
+								s.FromFunc = func(table any) dbr.SelectStmt {
 									return s
 								}
-								s.WhereFunc = func(query interface{}, value ...interface{}) dbr.SelectStmt {
+								s.WhereFunc = func(query any, value ...any) dbr.SelectStmt {
 									return s
 								}
 								s.LimitFunc = func(n uint64) dbr.SelectStmt {
 									return s
 								}
-								s.LoadContextFunc = func(ctx context.Context, value interface{}) (int, error) {
+								s.LoadContextFunc = func(ctx context.Context, value any) (int, error) {
 									var id int64
 									if reflect.TypeOf(value) == reflect.TypeOf(&id) {
 										id = int64(len(m.podIPs))
@@ -1693,7 +1693,7 @@ func Test_mySQLClient_SetVector(t *testing.T) {
 						return
 					}(),
 					dbr: &dbr.MockDBR{
-						EqFunc: func(col string, val interface{}) dbr.Builder {
+						EqFunc: func(col string, val any) dbr.Builder {
 							return dbr.New().Eq(col, val)
 						},
 					},
@@ -1727,7 +1727,7 @@ func Test_mySQLClient_SetVector(t *testing.T) {
 								return nil
 							}
 							tx.RollbackUnlessCommittedFunc = func() {}
-							tx.InsertBySqlFunc = func(query string, value ...interface{}) dbr.InsertStmt {
+							tx.InsertBySqlFunc = func(query string, value ...any) dbr.InsertStmt {
 								return &dbr.MockInsert{
 									ExecContextFunc: func(ctx context.Context) (sql.Result, error) {
 										return nil, nil
@@ -1736,16 +1736,16 @@ func Test_mySQLClient_SetVector(t *testing.T) {
 							}
 							tx.SelectFunc = func(column ...string) dbr.SelectStmt {
 								s := new(dbr.MockSelect)
-								s.FromFunc = func(table interface{}) dbr.SelectStmt {
+								s.FromFunc = func(table any) dbr.SelectStmt {
 									return s
 								}
-								s.WhereFunc = func(query interface{}, value ...interface{}) dbr.SelectStmt {
+								s.WhereFunc = func(query any, value ...any) dbr.SelectStmt {
 									return s
 								}
 								s.LimitFunc = func(n uint64) dbr.SelectStmt {
 									return s
 								}
-								s.LoadContextFunc = func(ctx context.Context, value interface{}) (int, error) {
+								s.LoadContextFunc = func(ctx context.Context, value any) (int, error) {
 									var id int64
 									if reflect.TypeOf(value) == reflect.TypeOf(&id) {
 										id = int64(len(m.podIPs))
@@ -1761,7 +1761,7 @@ func Test_mySQLClient_SetVector(t *testing.T) {
 								s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
 									return nil, err
 								}
-								s.WhereFunc = func(query interface{}, value ...interface{}) dbr.DeleteStmt {
+								s.WhereFunc = func(query any, value ...any) dbr.DeleteStmt {
 									return s
 								}
 								return s
@@ -1775,7 +1775,7 @@ func Test_mySQLClient_SetVector(t *testing.T) {
 						return
 					}(),
 					dbr: &dbr.MockDBR{
-						EqFunc: func(col string, val interface{}) dbr.Builder {
+						EqFunc: func(col string, val any) dbr.Builder {
 							return dbr.New().Eq(col, val)
 						},
 					},
@@ -1809,7 +1809,7 @@ func Test_mySQLClient_SetVector(t *testing.T) {
 								return nil
 							}
 							tx.RollbackUnlessCommittedFunc = func() {}
-							tx.InsertBySqlFunc = func(query string, value ...interface{}) dbr.InsertStmt {
+							tx.InsertBySqlFunc = func(query string, value ...any) dbr.InsertStmt {
 								return &dbr.MockInsert{
 									ExecContextFunc: func(ctx context.Context) (sql.Result, error) {
 										return nil, nil
@@ -1824,23 +1824,23 @@ func Test_mySQLClient_SetVector(t *testing.T) {
 								s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
 									return nil, err
 								}
-								s.RecordFunc = func(structValue interface{}) dbr.InsertStmt {
+								s.RecordFunc = func(structValue any) dbr.InsertStmt {
 									return s
 								}
 								return s
 							}
 							tx.SelectFunc = func(column ...string) dbr.SelectStmt {
 								s := new(dbr.MockSelect)
-								s.FromFunc = func(table interface{}) dbr.SelectStmt {
+								s.FromFunc = func(table any) dbr.SelectStmt {
 									return s
 								}
-								s.WhereFunc = func(query interface{}, value ...interface{}) dbr.SelectStmt {
+								s.WhereFunc = func(query any, value ...any) dbr.SelectStmt {
 									return s
 								}
 								s.LimitFunc = func(n uint64) dbr.SelectStmt {
 									return s
 								}
-								s.LoadContextFunc = func(ctx context.Context, value interface{}) (int, error) {
+								s.LoadContextFunc = func(ctx context.Context, value any) (int, error) {
 									var id int64
 									if reflect.TypeOf(value) == reflect.TypeOf(&id) {
 										id = int64(len(m.podIPs))
@@ -1856,7 +1856,7 @@ func Test_mySQLClient_SetVector(t *testing.T) {
 								s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
 									return nil, nil
 								}
-								s.WhereFunc = func(query interface{}, value ...interface{}) dbr.DeleteStmt {
+								s.WhereFunc = func(query any, value ...any) dbr.DeleteStmt {
 									return s
 								}
 								return s
@@ -1870,7 +1870,7 @@ func Test_mySQLClient_SetVector(t *testing.T) {
 						return
 					}(),
 					dbr: &dbr.MockDBR{
-						EqFunc: func(col string, val interface{}) dbr.Builder {
+						EqFunc: func(col string, val any) dbr.Builder {
 							return dbr.New().Eq(col, val)
 						},
 					},
@@ -1907,7 +1907,7 @@ func Test_mySQLClient_SetVector(t *testing.T) {
 								return nil
 							}
 							tx.RollbackUnlessCommittedFunc = func() {}
-							tx.InsertBySqlFunc = func(query string, value ...interface{}) dbr.InsertStmt {
+							tx.InsertBySqlFunc = func(query string, value ...any) dbr.InsertStmt {
 								return &dbr.MockInsert{
 									ExecContextFunc: func(ctx context.Context) (sql.Result, error) {
 										return nil, nil
@@ -1922,23 +1922,23 @@ func Test_mySQLClient_SetVector(t *testing.T) {
 								s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
 									return nil, nil
 								}
-								s.RecordFunc = func(structValue interface{}) dbr.InsertStmt {
+								s.RecordFunc = func(structValue any) dbr.InsertStmt {
 									return s
 								}
 								return s
 							}
 							tx.SelectFunc = func(column ...string) dbr.SelectStmt {
 								s := new(dbr.MockSelect)
-								s.FromFunc = func(table interface{}) dbr.SelectStmt {
+								s.FromFunc = func(table any) dbr.SelectStmt {
 									return s
 								}
-								s.WhereFunc = func(query interface{}, value ...interface{}) dbr.SelectStmt {
+								s.WhereFunc = func(query any, value ...any) dbr.SelectStmt {
 									return s
 								}
 								s.LimitFunc = func(n uint64) dbr.SelectStmt {
 									return s
 								}
-								s.LoadContextFunc = func(ctx context.Context, value interface{}) (int, error) {
+								s.LoadContextFunc = func(ctx context.Context, value any) (int, error) {
 									var id int64
 									if reflect.TypeOf(value) == reflect.TypeOf(&id) {
 										id = int64(len(m.podIPs))
@@ -1954,7 +1954,7 @@ func Test_mySQLClient_SetVector(t *testing.T) {
 								s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
 									return nil, nil
 								}
-								s.WhereFunc = func(query interface{}, value ...interface{}) dbr.DeleteStmt {
+								s.WhereFunc = func(query any, value ...any) dbr.DeleteStmt {
 									return s
 								}
 								return s
@@ -1968,7 +1968,7 @@ func Test_mySQLClient_SetVector(t *testing.T) {
 						return
 					}(),
 					dbr: &dbr.MockDBR{
-						EqFunc: func(col string, val interface{}) dbr.Builder {
+						EqFunc: func(col string, val any) dbr.Builder {
 							return dbr.New().Eq(col, val)
 						},
 					},
@@ -2004,7 +2004,7 @@ func Test_mySQLClient_SetVector(t *testing.T) {
 								return nil
 							}
 							tx.RollbackUnlessCommittedFunc = func() {}
-							tx.InsertBySqlFunc = func(query string, value ...interface{}) dbr.InsertStmt {
+							tx.InsertBySqlFunc = func(query string, value ...any) dbr.InsertStmt {
 								return &dbr.MockInsert{
 									ExecContextFunc: func(ctx context.Context) (sql.Result, error) {
 										return nil, nil
@@ -2019,23 +2019,23 @@ func Test_mySQLClient_SetVector(t *testing.T) {
 								s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
 									return nil, nil
 								}
-								s.RecordFunc = func(structValue interface{}) dbr.InsertStmt {
+								s.RecordFunc = func(structValue any) dbr.InsertStmt {
 									return s
 								}
 								return s
 							}
 							tx.SelectFunc = func(column ...string) dbr.SelectStmt {
 								s := new(dbr.MockSelect)
-								s.FromFunc = func(table interface{}) dbr.SelectStmt {
+								s.FromFunc = func(table any) dbr.SelectStmt {
 									return s
 								}
-								s.WhereFunc = func(query interface{}, value ...interface{}) dbr.SelectStmt {
+								s.WhereFunc = func(query any, value ...any) dbr.SelectStmt {
 									return s
 								}
 								s.LimitFunc = func(n uint64) dbr.SelectStmt {
 									return s
 								}
-								s.LoadContextFunc = func(ctx context.Context, value interface{}) (int, error) {
+								s.LoadContextFunc = func(ctx context.Context, value any) (int, error) {
 									var id int64
 									if reflect.TypeOf(value) == reflect.TypeOf(&id) {
 										id = int64(len(m.podIPs))
@@ -2051,7 +2051,7 @@ func Test_mySQLClient_SetVector(t *testing.T) {
 								s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
 									return nil, nil
 								}
-								s.WhereFunc = func(query interface{}, value ...interface{}) dbr.DeleteStmt {
+								s.WhereFunc = func(query any, value ...any) dbr.DeleteStmt {
 									return s
 								}
 								return s
@@ -2065,7 +2065,7 @@ func Test_mySQLClient_SetVector(t *testing.T) {
 						return
 					}(),
 					dbr: &dbr.MockDBR{
-						EqFunc: func(col string, val interface{}) dbr.Builder {
+						EqFunc: func(col string, val any) dbr.Builder {
 							return dbr.New().Eq(col, val)
 						},
 					},
@@ -2245,7 +2245,7 @@ func Test_mySQLClient_SetVectors(t *testing.T) {
 								return nil
 							}
 							tx.RollbackUnlessCommittedFunc = func() {}
-							tx.InsertBySqlFunc = func(query string, value ...interface{}) dbr.InsertStmt {
+							tx.InsertBySqlFunc = func(query string, value ...any) dbr.InsertStmt {
 								return &dbr.MockInsert{
 									ExecContextFunc: func(ctx context.Context) (sql.Result, error) {
 										return nil, err
@@ -2285,7 +2285,7 @@ func Test_mySQLClient_SetVectors(t *testing.T) {
 								return nil
 							}
 							tx.RollbackUnlessCommittedFunc = func() {}
-							tx.InsertBySqlFunc = func(query string, value ...interface{}) dbr.InsertStmt {
+							tx.InsertBySqlFunc = func(query string, value ...any) dbr.InsertStmt {
 								return &dbr.MockInsert{
 									ExecContextFunc: func(ctx context.Context) (sql.Result, error) {
 										return nil, err
@@ -2294,16 +2294,16 @@ func Test_mySQLClient_SetVectors(t *testing.T) {
 							}
 							tx.SelectFunc = func(column ...string) dbr.SelectStmt {
 								s := new(dbr.MockSelect)
-								s.FromFunc = func(table interface{}) dbr.SelectStmt {
+								s.FromFunc = func(table any) dbr.SelectStmt {
 									return s
 								}
-								s.WhereFunc = func(query interface{}, value ...interface{}) dbr.SelectStmt {
+								s.WhereFunc = func(query any, value ...any) dbr.SelectStmt {
 									return s
 								}
 								s.LimitFunc = func(n uint64) dbr.SelectStmt {
 									return s
 								}
-								s.LoadContextFunc = func(ctx context.Context, value interface{}) (int, error) {
+								s.LoadContextFunc = func(ctx context.Context, value any) (int, error) {
 									return 0, err
 								}
 								return s
@@ -2316,7 +2316,7 @@ func Test_mySQLClient_SetVectors(t *testing.T) {
 						return
 					}(),
 					dbr: &dbr.MockDBR{
-						EqFunc: func(col string, val interface{}) dbr.Builder {
+						EqFunc: func(col string, val any) dbr.Builder {
 							return dbr.New().Eq(col, val)
 						},
 					},
@@ -2345,7 +2345,7 @@ func Test_mySQLClient_SetVectors(t *testing.T) {
 								return nil
 							}
 							tx.RollbackUnlessCommittedFunc = func() {}
-							tx.InsertBySqlFunc = func(query string, value ...interface{}) dbr.InsertStmt {
+							tx.InsertBySqlFunc = func(query string, value ...any) dbr.InsertStmt {
 								return &dbr.MockInsert{
 									ExecContextFunc: func(ctx context.Context) (sql.Result, error) {
 										return nil, nil
@@ -2354,16 +2354,16 @@ func Test_mySQLClient_SetVectors(t *testing.T) {
 							}
 							tx.SelectFunc = func(column ...string) dbr.SelectStmt {
 								s := new(dbr.MockSelect)
-								s.FromFunc = func(table interface{}) dbr.SelectStmt {
+								s.FromFunc = func(table any) dbr.SelectStmt {
 									return s
 								}
-								s.WhereFunc = func(query interface{}, value ...interface{}) dbr.SelectStmt {
+								s.WhereFunc = func(query any, value ...any) dbr.SelectStmt {
 									return s
 								}
 								s.LimitFunc = func(n uint64) dbr.SelectStmt {
 									return s
 								}
-								s.LoadContextFunc = func(ctx context.Context, value interface{}) (int, error) {
+								s.LoadContextFunc = func(ctx context.Context, value any) (int, error) {
 									var id int64
 									if reflect.TypeOf(value) == reflect.TypeOf(&id) {
 										id = int64(len(m[0].GetIPs()))
@@ -2382,7 +2382,7 @@ func Test_mySQLClient_SetVectors(t *testing.T) {
 						return
 					}(),
 					dbr: &dbr.MockDBR{
-						EqFunc: func(col string, val interface{}) dbr.Builder {
+						EqFunc: func(col string, val any) dbr.Builder {
 							return dbr.New().Eq(col, val)
 						},
 					},
@@ -2419,7 +2419,7 @@ func Test_mySQLClient_SetVectors(t *testing.T) {
 								return nil
 							}
 							tx.RollbackUnlessCommittedFunc = func() {}
-							tx.InsertBySqlFunc = func(query string, value ...interface{}) dbr.InsertStmt {
+							tx.InsertBySqlFunc = func(query string, value ...any) dbr.InsertStmt {
 								return &dbr.MockInsert{
 									ExecContextFunc: func(ctx context.Context) (sql.Result, error) {
 										return nil, nil
@@ -2428,16 +2428,16 @@ func Test_mySQLClient_SetVectors(t *testing.T) {
 							}
 							tx.SelectFunc = func(column ...string) dbr.SelectStmt {
 								s := new(dbr.MockSelect)
-								s.FromFunc = func(table interface{}) dbr.SelectStmt {
+								s.FromFunc = func(table any) dbr.SelectStmt {
 									return s
 								}
-								s.WhereFunc = func(query interface{}, value ...interface{}) dbr.SelectStmt {
+								s.WhereFunc = func(query any, value ...any) dbr.SelectStmt {
 									return s
 								}
 								s.LimitFunc = func(n uint64) dbr.SelectStmt {
 									return s
 								}
-								s.LoadContextFunc = func(ctx context.Context, value interface{}) (int, error) {
+								s.LoadContextFunc = func(ctx context.Context, value any) (int, error) {
 									var id int64
 									if reflect.TypeOf(value) == reflect.TypeOf(&id) {
 										id = int64(len(m[0].GetIPs()))
@@ -2453,7 +2453,7 @@ func Test_mySQLClient_SetVectors(t *testing.T) {
 								s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
 									return nil, err
 								}
-								s.WhereFunc = func(query interface{}, value ...interface{}) dbr.DeleteStmt {
+								s.WhereFunc = func(query any, value ...any) dbr.DeleteStmt {
 									return s
 								}
 								return s
@@ -2467,7 +2467,7 @@ func Test_mySQLClient_SetVectors(t *testing.T) {
 						return
 					}(),
 					dbr: &dbr.MockDBR{
-						EqFunc: func(col string, val interface{}) dbr.Builder {
+						EqFunc: func(col string, val any) dbr.Builder {
 							return dbr.New().Eq(col, val)
 						},
 					},
@@ -2503,7 +2503,7 @@ func Test_mySQLClient_SetVectors(t *testing.T) {
 								return nil
 							}
 							tx.RollbackUnlessCommittedFunc = func() {}
-							tx.InsertBySqlFunc = func(query string, value ...interface{}) dbr.InsertStmt {
+							tx.InsertBySqlFunc = func(query string, value ...any) dbr.InsertStmt {
 								return &dbr.MockInsert{
 									ExecContextFunc: func(ctx context.Context) (sql.Result, error) {
 										return nil, nil
@@ -2518,23 +2518,23 @@ func Test_mySQLClient_SetVectors(t *testing.T) {
 								s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
 									return nil, err
 								}
-								s.RecordFunc = func(structValue interface{}) dbr.InsertStmt {
+								s.RecordFunc = func(structValue any) dbr.InsertStmt {
 									return s
 								}
 								return s
 							}
 							tx.SelectFunc = func(column ...string) dbr.SelectStmt {
 								s := new(dbr.MockSelect)
-								s.FromFunc = func(table interface{}) dbr.SelectStmt {
+								s.FromFunc = func(table any) dbr.SelectStmt {
 									return s
 								}
-								s.WhereFunc = func(query interface{}, value ...interface{}) dbr.SelectStmt {
+								s.WhereFunc = func(query any, value ...any) dbr.SelectStmt {
 									return s
 								}
 								s.LimitFunc = func(n uint64) dbr.SelectStmt {
 									return s
 								}
-								s.LoadContextFunc = func(ctx context.Context, value interface{}) (int, error) {
+								s.LoadContextFunc = func(ctx context.Context, value any) (int, error) {
 									var id int64
 									if reflect.TypeOf(value) == reflect.TypeOf(&id) {
 										id = int64(len(m[0].GetIPs()))
@@ -2550,7 +2550,7 @@ func Test_mySQLClient_SetVectors(t *testing.T) {
 								s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
 									return nil, nil
 								}
-								s.WhereFunc = func(query interface{}, value ...interface{}) dbr.DeleteStmt {
+								s.WhereFunc = func(query any, value ...any) dbr.DeleteStmt {
 									return s
 								}
 								return s
@@ -2564,7 +2564,7 @@ func Test_mySQLClient_SetVectors(t *testing.T) {
 						return
 					}(),
 					dbr: &dbr.MockDBR{
-						EqFunc: func(col string, val interface{}) dbr.Builder {
+						EqFunc: func(col string, val any) dbr.Builder {
 							return dbr.New().Eq(col, val)
 						},
 					},
@@ -2603,7 +2603,7 @@ func Test_mySQLClient_SetVectors(t *testing.T) {
 								return nil
 							}
 							tx.RollbackUnlessCommittedFunc = func() {}
-							tx.InsertBySqlFunc = func(query string, value ...interface{}) dbr.InsertStmt {
+							tx.InsertBySqlFunc = func(query string, value ...any) dbr.InsertStmt {
 								return &dbr.MockInsert{
 									ExecContextFunc: func(ctx context.Context) (sql.Result, error) {
 										return nil, nil
@@ -2618,23 +2618,23 @@ func Test_mySQLClient_SetVectors(t *testing.T) {
 								s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
 									return nil, nil
 								}
-								s.RecordFunc = func(structValue interface{}) dbr.InsertStmt {
+								s.RecordFunc = func(structValue any) dbr.InsertStmt {
 									return s
 								}
 								return s
 							}
 							tx.SelectFunc = func(column ...string) dbr.SelectStmt {
 								s := new(dbr.MockSelect)
-								s.FromFunc = func(table interface{}) dbr.SelectStmt {
+								s.FromFunc = func(table any) dbr.SelectStmt {
 									return s
 								}
-								s.WhereFunc = func(query interface{}, value ...interface{}) dbr.SelectStmt {
+								s.WhereFunc = func(query any, value ...any) dbr.SelectStmt {
 									return s
 								}
 								s.LimitFunc = func(n uint64) dbr.SelectStmt {
 									return s
 								}
-								s.LoadContextFunc = func(ctx context.Context, value interface{}) (int, error) {
+								s.LoadContextFunc = func(ctx context.Context, value any) (int, error) {
 									var id int64
 									if reflect.TypeOf(value) == reflect.TypeOf(&id) {
 										id = int64(len(m[0].GetIPs()))
@@ -2650,7 +2650,7 @@ func Test_mySQLClient_SetVectors(t *testing.T) {
 								s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
 									return nil, nil
 								}
-								s.WhereFunc = func(query interface{}, value ...interface{}) dbr.DeleteStmt {
+								s.WhereFunc = func(query any, value ...any) dbr.DeleteStmt {
 									return s
 								}
 								return s
@@ -2664,7 +2664,7 @@ func Test_mySQLClient_SetVectors(t *testing.T) {
 						return
 					}(),
 					dbr: &dbr.MockDBR{
-						EqFunc: func(col string, val interface{}) dbr.Builder {
+						EqFunc: func(col string, val any) dbr.Builder {
 							return dbr.New().Eq(col, val)
 						},
 					},
@@ -2702,7 +2702,7 @@ func Test_mySQLClient_SetVectors(t *testing.T) {
 								return nil
 							}
 							tx.RollbackUnlessCommittedFunc = func() {}
-							tx.InsertBySqlFunc = func(query string, value ...interface{}) dbr.InsertStmt {
+							tx.InsertBySqlFunc = func(query string, value ...any) dbr.InsertStmt {
 								return &dbr.MockInsert{
 									ExecContextFunc: func(ctx context.Context) (sql.Result, error) {
 										return nil, nil
@@ -2717,23 +2717,23 @@ func Test_mySQLClient_SetVectors(t *testing.T) {
 								s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
 									return nil, nil
 								}
-								s.RecordFunc = func(structValue interface{}) dbr.InsertStmt {
+								s.RecordFunc = func(structValue any) dbr.InsertStmt {
 									return s
 								}
 								return s
 							}
 							tx.SelectFunc = func(column ...string) dbr.SelectStmt {
 								s := new(dbr.MockSelect)
-								s.FromFunc = func(table interface{}) dbr.SelectStmt {
+								s.FromFunc = func(table any) dbr.SelectStmt {
 									return s
 								}
-								s.WhereFunc = func(query interface{}, value ...interface{}) dbr.SelectStmt {
+								s.WhereFunc = func(query any, value ...any) dbr.SelectStmt {
 									return s
 								}
 								s.LimitFunc = func(n uint64) dbr.SelectStmt {
 									return s
 								}
-								s.LoadContextFunc = func(ctx context.Context, value interface{}) (int, error) {
+								s.LoadContextFunc = func(ctx context.Context, value any) (int, error) {
 									var id int64
 									if reflect.TypeOf(value) == reflect.TypeOf(&id) {
 										id = int64(len(m[0].GetIPs()))
@@ -2749,7 +2749,7 @@ func Test_mySQLClient_SetVectors(t *testing.T) {
 								s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
 									return nil, nil
 								}
-								s.WhereFunc = func(query interface{}, value ...interface{}) dbr.DeleteStmt {
+								s.WhereFunc = func(query any, value ...any) dbr.DeleteStmt {
 									return s
 								}
 								return s
@@ -2763,7 +2763,7 @@ func Test_mySQLClient_SetVectors(t *testing.T) {
 						return
 					}(),
 					dbr: &dbr.MockDBR{
-						EqFunc: func(col string, val interface{}) dbr.Builder {
+						EqFunc: func(col string, val any) dbr.Builder {
 							return dbr.New().Eq(col, val)
 						},
 					},
@@ -2847,16 +2847,16 @@ func Test_mySQLClient_DeleteVector(t *testing.T) {
 								RollbackUnlessCommittedFunc: func() {},
 								SelectFunc: func(column ...string) dbr.SelectStmt {
 									s := new(dbr.MockSelect)
-									s.FromFunc = func(table interface{}) dbr.SelectStmt {
+									s.FromFunc = func(table any) dbr.SelectStmt {
 										return s
 									}
-									s.WhereFunc = func(query interface{}, value ...interface{}) dbr.SelectStmt {
+									s.WhereFunc = func(query any, value ...any) dbr.SelectStmt {
 										return s
 									}
 									s.LimitFunc = func(n uint64) dbr.SelectStmt {
 										return s
 									}
-									s.LoadContextFunc = func(ctx context.Context, value interface{}) (int, error) {
+									s.LoadContextFunc = func(ctx context.Context, value any) (int, error) {
 										var id int64
 										if reflect.TypeOf(value) == reflect.TypeOf(&id) {
 											id := int64(1)
@@ -2873,7 +2873,7 @@ func Test_mySQLClient_DeleteVector(t *testing.T) {
 									s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
 										return nil, nil
 									}
-									s.WhereFunc = func(query interface{}, value ...interface{}) dbr.DeleteStmt {
+									s.WhereFunc = func(query any, value ...any) dbr.DeleteStmt {
 										return s
 									}
 									return s
@@ -2886,7 +2886,7 @@ func Test_mySQLClient_DeleteVector(t *testing.T) {
 						return
 					}(),
 					dbr: &dbr.MockDBR{
-						EqFunc: func(col string, val interface{}) dbr.Builder {
+						EqFunc: func(col string, val any) dbr.Builder {
 							return dbr.New().Eq(col, val)
 						},
 					},
@@ -2911,16 +2911,16 @@ func Test_mySQLClient_DeleteVector(t *testing.T) {
 								RollbackUnlessCommittedFunc: func() {},
 								SelectFunc: func(column ...string) dbr.SelectStmt {
 									s := new(dbr.MockSelect)
-									s.FromFunc = func(table interface{}) dbr.SelectStmt {
+									s.FromFunc = func(table any) dbr.SelectStmt {
 										return s
 									}
-									s.WhereFunc = func(query interface{}, value ...interface{}) dbr.SelectStmt {
+									s.WhereFunc = func(query any, value ...any) dbr.SelectStmt {
 										return s
 									}
 									s.LimitFunc = func(n uint64) dbr.SelectStmt {
 										return s
 									}
-									s.LoadContextFunc = func(ctx context.Context, value interface{}) (int, error) {
+									s.LoadContextFunc = func(ctx context.Context, value any) (int, error) {
 										var id int64
 										if reflect.TypeOf(value) == reflect.TypeOf(&id) {
 											id := int64(1)
@@ -2937,7 +2937,7 @@ func Test_mySQLClient_DeleteVector(t *testing.T) {
 									s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
 										return nil, nil
 									}
-									s.WhereFunc = func(query interface{}, value ...interface{}) dbr.DeleteStmt {
+									s.WhereFunc = func(query any, value ...any) dbr.DeleteStmt {
 										return s
 									}
 									return s
@@ -2950,7 +2950,7 @@ func Test_mySQLClient_DeleteVector(t *testing.T) {
 						return
 					}(),
 					dbr: &dbr.MockDBR{
-						EqFunc: func(col string, val interface{}) dbr.Builder {
+						EqFunc: func(col string, val any) dbr.Builder {
 							return dbr.New().Eq(col, val)
 						},
 					},
@@ -3061,16 +3061,16 @@ func Test_mySQLClient_DeleteVector(t *testing.T) {
 								RollbackUnlessCommittedFunc: func() {},
 								SelectFunc: func(column ...string) dbr.SelectStmt {
 									s := new(dbr.MockSelect)
-									s.FromFunc = func(table interface{}) dbr.SelectStmt {
+									s.FromFunc = func(table any) dbr.SelectStmt {
 										return s
 									}
-									s.WhereFunc = func(query interface{}, value ...interface{}) dbr.SelectStmt {
+									s.WhereFunc = func(query any, value ...any) dbr.SelectStmt {
 										return s
 									}
 									s.LimitFunc = func(n uint64) dbr.SelectStmt {
 										return s
 									}
-									s.LoadContextFunc = func(ctx context.Context, value interface{}) (int, error) {
+									s.LoadContextFunc = func(ctx context.Context, value any) (int, error) {
 										return 0, err
 									}
 
@@ -3084,7 +3084,7 @@ func Test_mySQLClient_DeleteVector(t *testing.T) {
 						return
 					}(),
 					dbr: &dbr.MockDBR{
-						EqFunc: func(col string, val interface{}) dbr.Builder {
+						EqFunc: func(col string, val any) dbr.Builder {
 							return dbr.New().Eq(col, val)
 						},
 					},
@@ -3113,16 +3113,16 @@ func Test_mySQLClient_DeleteVector(t *testing.T) {
 								RollbackUnlessCommittedFunc: func() {},
 								SelectFunc: func(column ...string) dbr.SelectStmt {
 									s := new(dbr.MockSelect)
-									s.FromFunc = func(table interface{}) dbr.SelectStmt {
+									s.FromFunc = func(table any) dbr.SelectStmt {
 										return s
 									}
-									s.WhereFunc = func(query interface{}, value ...interface{}) dbr.SelectStmt {
+									s.WhereFunc = func(query any, value ...any) dbr.SelectStmt {
 										return s
 									}
 									s.LimitFunc = func(n uint64) dbr.SelectStmt {
 										return s
 									}
-									s.LoadContextFunc = func(ctx context.Context, value interface{}) (int, error) {
+									s.LoadContextFunc = func(ctx context.Context, value any) (int, error) {
 										return 0, nil
 									}
 
@@ -3136,7 +3136,7 @@ func Test_mySQLClient_DeleteVector(t *testing.T) {
 						return
 					}(),
 					dbr: &dbr.MockDBR{
-						EqFunc: func(col string, val interface{}) dbr.Builder {
+						EqFunc: func(col string, val any) dbr.Builder {
 							return dbr.New().Eq(col, val)
 						},
 					},
@@ -3164,16 +3164,16 @@ func Test_mySQLClient_DeleteVector(t *testing.T) {
 								RollbackUnlessCommittedFunc: func() {},
 								SelectFunc: func(column ...string) dbr.SelectStmt {
 									s := new(dbr.MockSelect)
-									s.FromFunc = func(table interface{}) dbr.SelectStmt {
+									s.FromFunc = func(table any) dbr.SelectStmt {
 										return s
 									}
-									s.WhereFunc = func(query interface{}, value ...interface{}) dbr.SelectStmt {
+									s.WhereFunc = func(query any, value ...any) dbr.SelectStmt {
 										return s
 									}
 									s.LimitFunc = func(n uint64) dbr.SelectStmt {
 										return s
 									}
-									s.LoadContextFunc = func(ctx context.Context, value interface{}) (int, error) {
+									s.LoadContextFunc = func(ctx context.Context, value any) (int, error) {
 										var id int64
 										if reflect.TypeOf(value) == reflect.TypeOf(&id) {
 											id := int64(1)
@@ -3193,7 +3193,7 @@ func Test_mySQLClient_DeleteVector(t *testing.T) {
 										}
 										return nil, nil
 									}
-									s.WhereFunc = func(query interface{}, value ...interface{}) dbr.DeleteStmt {
+									s.WhereFunc = func(query any, value ...any) dbr.DeleteStmt {
 										return s
 									}
 									return s
@@ -3206,7 +3206,7 @@ func Test_mySQLClient_DeleteVector(t *testing.T) {
 						return
 					}(),
 					dbr: &dbr.MockDBR{
-						EqFunc: func(col string, val interface{}) dbr.Builder {
+						EqFunc: func(col string, val any) dbr.Builder {
 							return dbr.New().Eq(col, val)
 						},
 					},
@@ -3234,16 +3234,16 @@ func Test_mySQLClient_DeleteVector(t *testing.T) {
 								RollbackUnlessCommittedFunc: func() {},
 								SelectFunc: func(column ...string) dbr.SelectStmt {
 									s := new(dbr.MockSelect)
-									s.FromFunc = func(table interface{}) dbr.SelectStmt {
+									s.FromFunc = func(table any) dbr.SelectStmt {
 										return s
 									}
-									s.WhereFunc = func(query interface{}, value ...interface{}) dbr.SelectStmt {
+									s.WhereFunc = func(query any, value ...any) dbr.SelectStmt {
 										return s
 									}
 									s.LimitFunc = func(n uint64) dbr.SelectStmt {
 										return s
 									}
-									s.LoadContextFunc = func(ctx context.Context, value interface{}) (int, error) {
+									s.LoadContextFunc = func(ctx context.Context, value any) (int, error) {
 										var id int64
 										if reflect.TypeOf(value) == reflect.TypeOf(&id) {
 											id := int64(1)
@@ -3263,7 +3263,7 @@ func Test_mySQLClient_DeleteVector(t *testing.T) {
 										}
 										return nil, nil
 									}
-									s.WhereFunc = func(query interface{}, value ...interface{}) dbr.DeleteStmt {
+									s.WhereFunc = func(query any, value ...any) dbr.DeleteStmt {
 										return s
 									}
 									return s
@@ -3276,7 +3276,7 @@ func Test_mySQLClient_DeleteVector(t *testing.T) {
 						return
 					}(),
 					dbr: &dbr.MockDBR{
-						EqFunc: func(col string, val interface{}) dbr.Builder {
+						EqFunc: func(col string, val any) dbr.Builder {
 							return dbr.New().Eq(col, val)
 						},
 					},
@@ -3303,16 +3303,16 @@ func Test_mySQLClient_DeleteVector(t *testing.T) {
 								RollbackUnlessCommittedFunc: func() {},
 								SelectFunc: func(column ...string) dbr.SelectStmt {
 									s := new(dbr.MockSelect)
-									s.FromFunc = func(table interface{}) dbr.SelectStmt {
+									s.FromFunc = func(table any) dbr.SelectStmt {
 										return s
 									}
-									s.WhereFunc = func(query interface{}, value ...interface{}) dbr.SelectStmt {
+									s.WhereFunc = func(query any, value ...any) dbr.SelectStmt {
 										return s
 									}
 									s.LimitFunc = func(n uint64) dbr.SelectStmt {
 										return s
 									}
-									s.LoadContextFunc = func(ctx context.Context, value interface{}) (int, error) {
+									s.LoadContextFunc = func(ctx context.Context, value any) (int, error) {
 										var id int64
 										if reflect.TypeOf(value) == reflect.TypeOf(&id) {
 											id := int64(1)
@@ -3329,7 +3329,7 @@ func Test_mySQLClient_DeleteVector(t *testing.T) {
 									s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
 										return nil, nil
 									}
-									s.WhereFunc = func(query interface{}, value ...interface{}) dbr.DeleteStmt {
+									s.WhereFunc = func(query any, value ...any) dbr.DeleteStmt {
 										return s
 									}
 									return s
@@ -3342,7 +3342,7 @@ func Test_mySQLClient_DeleteVector(t *testing.T) {
 						return
 					}(),
 					dbr: &dbr.MockDBR{
-						EqFunc: func(col string, val interface{}) dbr.Builder {
+						EqFunc: func(col string, val any) dbr.Builder {
 							return dbr.New().Eq(col, val)
 						},
 					},
@@ -3426,16 +3426,16 @@ func Test_mySQLClient_DeleteVectors(t *testing.T) {
 								RollbackUnlessCommittedFunc: func() {},
 								SelectFunc: func(column ...string) dbr.SelectStmt {
 									s := new(dbr.MockSelect)
-									s.FromFunc = func(table interface{}) dbr.SelectStmt {
+									s.FromFunc = func(table any) dbr.SelectStmt {
 										return s
 									}
-									s.WhereFunc = func(query interface{}, value ...interface{}) dbr.SelectStmt {
+									s.WhereFunc = func(query any, value ...any) dbr.SelectStmt {
 										return s
 									}
 									s.LimitFunc = func(n uint64) dbr.SelectStmt {
 										return s
 									}
-									s.LoadContextFunc = func(ctx context.Context, value interface{}) (int, error) {
+									s.LoadContextFunc = func(ctx context.Context, value any) (int, error) {
 										var id int64
 										if reflect.TypeOf(value) == reflect.TypeOf(&id) {
 											id := int64(1)
@@ -3452,7 +3452,7 @@ func Test_mySQLClient_DeleteVectors(t *testing.T) {
 									s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
 										return nil, nil
 									}
-									s.WhereFunc = func(query interface{}, value ...interface{}) dbr.DeleteStmt {
+									s.WhereFunc = func(query any, value ...any) dbr.DeleteStmt {
 										return s
 									}
 									return s
@@ -3465,7 +3465,7 @@ func Test_mySQLClient_DeleteVectors(t *testing.T) {
 						return
 					}(),
 					dbr: &dbr.MockDBR{
-						EqFunc: func(col string, val interface{}) dbr.Builder {
+						EqFunc: func(col string, val any) dbr.Builder {
 							return dbr.New().Eq(col, val)
 						},
 					},
@@ -3493,16 +3493,16 @@ func Test_mySQLClient_DeleteVectors(t *testing.T) {
 								RollbackUnlessCommittedFunc: func() {},
 								SelectFunc: func(column ...string) dbr.SelectStmt {
 									s := new(dbr.MockSelect)
-									s.FromFunc = func(table interface{}) dbr.SelectStmt {
+									s.FromFunc = func(table any) dbr.SelectStmt {
 										return s
 									}
-									s.WhereFunc = func(query interface{}, value ...interface{}) dbr.SelectStmt {
+									s.WhereFunc = func(query any, value ...any) dbr.SelectStmt {
 										return s
 									}
 									s.LimitFunc = func(n uint64) dbr.SelectStmt {
 										return s
 									}
-									s.LoadContextFunc = func(ctx context.Context, value interface{}) (int, error) {
+									s.LoadContextFunc = func(ctx context.Context, value any) (int, error) {
 										var id int64
 										if reflect.TypeOf(value) == reflect.TypeOf(&id) {
 											id := int64(1)
@@ -3519,7 +3519,7 @@ func Test_mySQLClient_DeleteVectors(t *testing.T) {
 									s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
 										return nil, nil
 									}
-									s.WhereFunc = func(query interface{}, value ...interface{}) dbr.DeleteStmt {
+									s.WhereFunc = func(query any, value ...any) dbr.DeleteStmt {
 										return s
 									}
 									return s
@@ -3532,7 +3532,7 @@ func Test_mySQLClient_DeleteVectors(t *testing.T) {
 						return
 					}(),
 					dbr: &dbr.MockDBR{
-						EqFunc: func(col string, val interface{}) dbr.Builder {
+						EqFunc: func(col string, val any) dbr.Builder {
 							return dbr.New().Eq(col, val)
 						},
 					},
@@ -3695,16 +3695,16 @@ func Test_mySQLClient_SetIPs(t *testing.T) {
 								RollbackUnlessCommittedFunc: func() {},
 								SelectFunc: func(column ...string) dbr.SelectStmt {
 									s := new(dbr.MockSelect)
-									s.FromFunc = func(table interface{}) dbr.SelectStmt {
+									s.FromFunc = func(table any) dbr.SelectStmt {
 										return s
 									}
-									s.WhereFunc = func(query interface{}, value ...interface{}) dbr.SelectStmt {
+									s.WhereFunc = func(query any, value ...any) dbr.SelectStmt {
 										return s
 									}
 									s.LimitFunc = func(n uint64) dbr.SelectStmt {
 										return s
 									}
-									s.LoadContextFunc = func(ctx context.Context, value interface{}) (int, error) {
+									s.LoadContextFunc = func(ctx context.Context, value any) (int, error) {
 										var id int64
 										if reflect.TypeOf(value) == reflect.TypeOf(&id) {
 											id = 1
@@ -3723,7 +3723,7 @@ func Test_mySQLClient_SetIPs(t *testing.T) {
 						return
 					}(),
 					dbr: &dbr.MockDBR{
-						EqFunc: func(col string, val interface{}) dbr.Builder {
+						EqFunc: func(col string, val any) dbr.Builder {
 							return dbr.New().Eq(col, val)
 						},
 					},
@@ -3754,16 +3754,16 @@ func Test_mySQLClient_SetIPs(t *testing.T) {
 								RollbackUnlessCommittedFunc: func() {},
 								SelectFunc: func(column ...string) dbr.SelectStmt {
 									s := new(dbr.MockSelect)
-									s.FromFunc = func(table interface{}) dbr.SelectStmt {
+									s.FromFunc = func(table any) dbr.SelectStmt {
 										return s
 									}
-									s.WhereFunc = func(query interface{}, value ...interface{}) dbr.SelectStmt {
+									s.WhereFunc = func(query any, value ...any) dbr.SelectStmt {
 										return s
 									}
 									s.LimitFunc = func(n uint64) dbr.SelectStmt {
 										return s
 									}
-									s.LoadContextFunc = func(ctx context.Context, value interface{}) (int, error) {
+									s.LoadContextFunc = func(ctx context.Context, value any) (int, error) {
 										var id int64
 										if reflect.TypeOf(value) == reflect.TypeOf(&id) {
 											reflect.ValueOf(value).Elem().Set(reflect.ValueOf(id))
@@ -3781,7 +3781,7 @@ func Test_mySQLClient_SetIPs(t *testing.T) {
 						return
 					}(),
 					dbr: &dbr.MockDBR{
-						EqFunc: func(col string, val interface{}) dbr.Builder {
+						EqFunc: func(col string, val any) dbr.Builder {
 							return dbr.New().Eq(col, val)
 						},
 					},
@@ -3819,23 +3819,23 @@ func Test_mySQLClient_SetIPs(t *testing.T) {
 									s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
 										return nil, err
 									}
-									s.RecordFunc = func(structValue interface{}) dbr.InsertStmt {
+									s.RecordFunc = func(structValue any) dbr.InsertStmt {
 										return s
 									}
 									return s
 								},
 								SelectFunc: func(column ...string) dbr.SelectStmt {
 									s := new(dbr.MockSelect)
-									s.FromFunc = func(table interface{}) dbr.SelectStmt {
+									s.FromFunc = func(table any) dbr.SelectStmt {
 										return s
 									}
-									s.WhereFunc = func(query interface{}, value ...interface{}) dbr.SelectStmt {
+									s.WhereFunc = func(query any, value ...any) dbr.SelectStmt {
 										return s
 									}
 									s.LimitFunc = func(n uint64) dbr.SelectStmt {
 										return s
 									}
-									s.LoadContextFunc = func(ctx context.Context, value interface{}) (int, error) {
+									s.LoadContextFunc = func(ctx context.Context, value any) (int, error) {
 										var id int64
 										if reflect.TypeOf(value) == reflect.TypeOf(&id) {
 											id = 1
@@ -3854,7 +3854,7 @@ func Test_mySQLClient_SetIPs(t *testing.T) {
 						return
 					}(),
 					dbr: &dbr.MockDBR{
-						EqFunc: func(col string, val interface{}) dbr.Builder {
+						EqFunc: func(col string, val any) dbr.Builder {
 							return dbr.New().Eq(col, val)
 						},
 					},
@@ -3891,23 +3891,23 @@ func Test_mySQLClient_SetIPs(t *testing.T) {
 									s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
 										return nil, nil
 									}
-									s.RecordFunc = func(structValue interface{}) dbr.InsertStmt {
+									s.RecordFunc = func(structValue any) dbr.InsertStmt {
 										return s
 									}
 									return s
 								},
 								SelectFunc: func(column ...string) dbr.SelectStmt {
 									s := new(dbr.MockSelect)
-									s.FromFunc = func(table interface{}) dbr.SelectStmt {
+									s.FromFunc = func(table any) dbr.SelectStmt {
 										return s
 									}
-									s.WhereFunc = func(query interface{}, value ...interface{}) dbr.SelectStmt {
+									s.WhereFunc = func(query any, value ...any) dbr.SelectStmt {
 										return s
 									}
 									s.LimitFunc = func(n uint64) dbr.SelectStmt {
 										return s
 									}
-									s.LoadContextFunc = func(ctx context.Context, value interface{}) (int, error) {
+									s.LoadContextFunc = func(ctx context.Context, value any) (int, error) {
 										var id int64
 										if reflect.TypeOf(value) == reflect.TypeOf(&id) {
 											id = 1
@@ -3926,7 +3926,7 @@ func Test_mySQLClient_SetIPs(t *testing.T) {
 						return
 					}(),
 					dbr: &dbr.MockDBR{
-						EqFunc: func(col string, val interface{}) dbr.Builder {
+						EqFunc: func(col string, val any) dbr.Builder {
 							return dbr.New().Eq(col, val)
 						},
 					},
@@ -4087,7 +4087,7 @@ func Test_mySQLClient_RemoveIPs(t *testing.T) {
 									s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
 										return nil, err
 									}
-									s.WhereFunc = func(query interface{}, value ...interface{}) dbr.DeleteStmt {
+									s.WhereFunc = func(query any, value ...any) dbr.DeleteStmt {
 										return s
 									}
 									return s
@@ -4100,7 +4100,7 @@ func Test_mySQLClient_RemoveIPs(t *testing.T) {
 						return
 					}(),
 					dbr: &dbr.MockDBR{
-						EqFunc: func(col string, val interface{}) dbr.Builder {
+						EqFunc: func(col string, val any) dbr.Builder {
 							return dbr.New().Eq(col, val)
 						},
 					},
@@ -4133,7 +4133,7 @@ func Test_mySQLClient_RemoveIPs(t *testing.T) {
 									s.ExecContextFunc = func(ctx context.Context) (sql.Result, error) {
 										return nil, nil
 									}
-									s.WhereFunc = func(query interface{}, value ...interface{}) dbr.DeleteStmt {
+									s.WhereFunc = func(query any, value ...any) dbr.DeleteStmt {
 										return s
 									}
 									return s
@@ -4146,7 +4146,7 @@ func Test_mySQLClient_RemoveIPs(t *testing.T) {
 						return
 					}(),
 					dbr: &dbr.MockDBR{
-						EqFunc: func(col string, val interface{}) dbr.Builder {
+						EqFunc: func(col string, val any) dbr.Builder {
 							return dbr.New().Eq(col, val)
 						},
 					},
@@ -4214,8 +4214,7 @@ func Test_mySQLClient_RemoveIPs(t *testing.T) {
 // 		eventReceiver        EventReceiver
 // 		dbr                  dbr.DBR
 // 	}
-// 	type want struct {
-// 	}
+// 	type want struct{}
 // 	type test struct {
 // 		name       string
 // 		args       args

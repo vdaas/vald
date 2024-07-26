@@ -15,7 +15,7 @@
 #
 defaults:
   image:
-    tag: latest
+    tag: nightly
 gateway:
   lb:
     resources:

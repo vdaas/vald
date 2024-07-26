@@ -107,7 +107,6 @@ package circuitbreaker
 // 			if err := checkFunc(test.want, gotN); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -204,7 +203,6 @@ package circuitbreaker
 // 			if err := checkFunc(test.want, gotN); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -301,7 +299,6 @@ package circuitbreaker
 // 			if err := checkFunc(test.want, gotN); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -398,7 +395,6 @@ package circuitbreaker
 // 			if err := checkFunc(test.want, gotN); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -409,8 +405,7 @@ package circuitbreaker
 // 		successes int64
 // 		failures  int64
 // 	}
-// 	type want struct {
-// 	}
+// 	type want struct{}
 // 	type test struct {
 // 		name       string
 // 		fields     fields
@@ -501,8 +496,7 @@ package circuitbreaker
 // 		successes int64
 // 		failures  int64
 // 	}
-// 	type want struct {
-// 	}
+// 	type want struct{}
 // 	type test struct {
 // 		name       string
 // 		fields     fields
@@ -593,8 +587,7 @@ package circuitbreaker
 // 		successes int64
 // 		failures  int64
 // 	}
-// 	type want struct {
-// 	}
+// 	type want struct{}
 // 	type test struct {
 // 		name       string
 // 		fields     fields
@@ -685,8 +678,7 @@ package circuitbreaker
 // 		successes int64
 // 		failures  int64
 // 	}
-// 	type want struct {
-// 	}
+// 	type want struct{}
 // 	type test struct {
 // 		name       string
 // 		fields     fields

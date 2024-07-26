@@ -227,9 +227,9 @@ There are many tools for building proto in Rust, we use [tonic](https://github.c
         }
         ```
 
-    1.  `src/clinet.rs`
+    1.  `src/client.rs`
 
-        There are 4 steps in `src/clinet.rs`:
+        There are 4 steps in `src/client.rs`:
 
         1. Load dataset
         1. Insert vector to Vald cluster

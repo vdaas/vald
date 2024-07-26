@@ -14,7 +14,7 @@ Please also read the [Contribution guideline](../contributing/contributing-guide
 Code formatting and naming conventions affect coding readability and maintainability.
 Every developer has a different coding style.
 Luckily Go provides tools to format source code and check for potential issues in the source code.
-We recommend using [golines](https://github.com/segmentio/golines), [gofumpt](https://github.com/mvdan/gofumpt), and [goimports](https://github.com/golang/tools/tree/master/cmd/goimports) to format the source code in Vald and [golangci-lint](https://github.com/golangci/golangci-lint) with the `--enable-all` option.
+We recommend using [golines](https://github.com/segmentio/golines), [gofumpt](https://github.com/mvdan/gofumpt), and [goimports](https://github.com/golang/tools/tree/master/cmd/goimports) and [crlfmt](https://github.com/cockroachdb/crlfmt) to format the source code in Vald and [golangci-lint](https://github.com/golangci/golangci-lint) with the `--enable-all` option.
 We suggest everyone install the plugin for your editor to format the code once you edit the code automatically and use `make format/go` command if you want to format the source code manually.
 
 But having tools to format source code does not mean you do not need to care about the formatting of the code, for example:
@@ -91,7 +91,7 @@ Here are the naming conventions of the package:
 
   ```go
   // bad
-  package encodebase64
+  package encode
 
   // good
   package base64 // inside the encoding/base64 folder
@@ -273,7 +273,7 @@ The variable and the constant should be named as:
 
   ```go
   // bad
-  yamlprocessor := new(something)
+  yamlProcessor := new(something)
 
   // good
   yamlProcessor := new(something)
@@ -315,7 +315,7 @@ In this section, rules also apply to the `function` (without receiver). The meth
 
   ```go
   // bad
-  func (s *something) somemethod() {}
+  func (s *something) someMethod() {}
 
   // bad
   func (s *something) some_method() {}
@@ -329,7 +329,7 @@ In this section, rules also apply to the `function` (without receiver). The meth
 
   ```go
   // bad
-  func (s *something) genereateRandomNumber() int {}
+  func (s *something) generateRandomNumber() int {}
 
   // good
   func (s *something) genRandNum() int {}
@@ -875,7 +875,7 @@ tests := []test {
 
 for _, tc := range tests {
     test := tc
-    t.Run(test.name, func(tt *tesint.T) {
+    t.Run(test.name, func(tt *testing.T) {
         checkFunc = defaultCheckFunc
         if test.checkFunc != nil {
             checkFunc = test.checkFunc
@@ -1246,7 +1246,7 @@ In Vald, we can apply it to the different helper functions like `beforeFunc()` o
 ```go
 type test struct {
     ...
-    beforeFunc func(*testing.T) // helper function to initialze testing
+    beforeFunc func(*testing.T) // helper function to initialize testing
     afterFunc  func(*testing.T) // helper function to cleanup
 }
 
@@ -1318,7 +1318,7 @@ For example, we decided to mock the following implementation `Encoder`.
 package json
 
 type Encoder interface {
-    Encode(interface{}) ([]byte, error)
+    Encode(any) ([]byte, error)
 }
 ```
 
@@ -1327,7 +1327,7 @@ type encoder struct {
     encoder json.Encoder
 }
 
-func (e *encoder) Encode(obj interface{}) ([]byte, error) {
+func (e *encoder) Encode(obj any) ([]byte, error) {
     return e.encoder.Encode(obj)
 }
 ```
@@ -1338,10 +1338,10 @@ The following is an example of mock implementation:
 package json
 
 type MockEncoder struct {
-    EncoderFunc func(interface{}) ([]byte, error)
+    EncoderFunc func(any) ([]byte, error)
 }
 
-func (m *MockEncoder) Encode(obj interface{}) ([]byte, error) {
+func (m *MockEncoder) Encode(obj any) ([]byte, error) {
     return m.EncodeFunc(obj)
 }
 ```
@@ -1354,7 +1354,7 @@ tests := []test {
         name: "returns (byte{}, nil) when encode success"
         fields: fields {
             encoding: &json.MockEncoder {
-                EncoderFunc: func(interface{}) ([]byte, error) {
+                EncoderFunc: func(any) ([]byte, error) {
                     return []byte{}, nil
                 },
             },

@@ -148,7 +148,9 @@ func (sm *sidecarMetrics) Register(m metrics.Meter) error {
 	return err
 }
 
-func (*sidecarMetrics) BeforeProcess(ctx context.Context, _ *observer.BackupInfo) (context.Context, error) {
+func (*sidecarMetrics) BeforeProcess(
+	ctx context.Context, _ *observer.BackupInfo,
+) (context.Context, error) {
 	return ctx, nil
 }
 

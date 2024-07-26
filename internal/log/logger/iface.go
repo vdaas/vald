@@ -18,49 +18,49 @@ package logger
 
 type Logger interface {
 	// Debug logs the vals at Debug level.
-	Debug(vals ...interface{})
+	Debug(vals ...any)
 
 	// Debugf logs the formatted message at Debug level.
-	Debugf(format string, vals ...interface{})
+	Debugf(format string, vals ...any)
 
 	// Debugd logs the message with details at Debug level.
-	Debugd(msg string, details ...interface{})
+	Debugd(msg string, details ...any)
 
 	// Info logs the vals at Info level.
-	Info(vals ...interface{})
+	Info(vals ...any)
 
 	// Infof logs the formatted message at Info level.
-	Infof(format string, vals ...interface{})
+	Infof(format string, vals ...any)
 
 	// Infod logs the message with details at Info level.
-	Infod(msg string, details ...interface{})
+	Infod(msg string, details ...any)
 
 	// Warn logs the vals at Warn level.
-	Warn(vals ...interface{})
+	Warn(vals ...any)
 
 	// Warnf logs the formatted message at Warn level.
-	Warnf(format string, vals ...interface{})
+	Warnf(format string, vals ...any)
 
 	// Warnd logs the message with details at Warn level.
-	Warnd(msg string, details ...interface{})
+	Warnd(msg string, details ...any)
 
 	// Error logs the vals at Error level.
-	Error(vals ...interface{})
+	Error(vals ...any)
 
 	// Errorf logs the formatted message at Error level.
-	Errorf(format string, vals ...interface{})
+	Errorf(format string, vals ...any)
 
 	// Errord logs the message with details at Error level.
-	Errord(msg string, details ...interface{})
+	Errord(msg string, details ...any)
 
 	// Fatal logs the vals at Fatal level, then calls os.Exit(1).
-	Fatal(vals ...interface{})
+	Fatal(vals ...any)
 
 	// Fatalf logs the formatted message at Fatal level, then calls os.Exit(1).
-	Fatalf(format string, vals ...interface{})
+	Fatalf(format string, vals ...any)
 
 	// Fatald logs the message with details at Fatal level, then calls os.Exit(1).
-	Fatald(msg string, details ...interface{})
+	Fatald(msg string, details ...any)
 
 	// Close calls finalizer of logger implementations.
 	Close() error

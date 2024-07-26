@@ -94,7 +94,9 @@ func extractAPIPorts(ports []corev1.ServicePort) []servicePort {
 }
 
 // Reconcile reconciles the service resources and put the information into the Service struct.
-func (r *reconciler) Reconcile(ctx context.Context, _ reconcile.Request) (res reconcile.Result, err error) {
+func (r *reconciler) Reconcile(
+	ctx context.Context, _ reconcile.Request,
+) (res reconcile.Result, err error) {
 	svcList := &corev1.ServiceList{}
 
 	if r.lopts != nil {

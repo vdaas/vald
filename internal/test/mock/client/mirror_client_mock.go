@@ -33,22 +33,32 @@ type MirrorClientMock struct {
 	RemoveByTimestampFunc func(ctx context.Context, in *payload.Remove_TimestampRequest, opts ...grpc.CallOption) (*payload.Object_Locations, error)
 }
 
-func (mc *MirrorClientMock) Insert(ctx context.Context, in *payload.Insert_Request, opts ...grpc.CallOption) (*payload.Object_Location, error) {
+func (mc *MirrorClientMock) Insert(
+	ctx context.Context, in *payload.Insert_Request, opts ...grpc.CallOption,
+) (*payload.Object_Location, error) {
 	return mc.InsertFunc(ctx, in, opts...)
 }
 
-func (mc *MirrorClientMock) Update(ctx context.Context, in *payload.Update_Request, opts ...grpc.CallOption) (*payload.Object_Location, error) {
+func (mc *MirrorClientMock) Update(
+	ctx context.Context, in *payload.Update_Request, opts ...grpc.CallOption,
+) (*payload.Object_Location, error) {
 	return mc.UpdateFunc(ctx, in, opts...)
 }
 
-func (mc *MirrorClientMock) Upsert(ctx context.Context, in *payload.Upsert_Request, opts ...grpc.CallOption) (*payload.Object_Location, error) {
+func (mc *MirrorClientMock) Upsert(
+	ctx context.Context, in *payload.Upsert_Request, opts ...grpc.CallOption,
+) (*payload.Object_Location, error) {
 	return mc.UpsertFunc(ctx, in, opts...)
 }
 
-func (mc *MirrorClientMock) Remove(ctx context.Context, in *payload.Remove_Request, opts ...grpc.CallOption) (*payload.Object_Location, error) {
+func (mc *MirrorClientMock) Remove(
+	ctx context.Context, in *payload.Remove_Request, opts ...grpc.CallOption,
+) (*payload.Object_Location, error) {
 	return mc.RemoveFunc(ctx, in, opts...)
 }
 
-func (mc *MirrorClientMock) RemoveByTimestamp(ctx context.Context, in *payload.Remove_TimestampRequest, opts ...grpc.CallOption) (*payload.Object_Locations, error) {
+func (mc *MirrorClientMock) RemoveByTimestamp(
+	ctx context.Context, in *payload.Remove_TimestampRequest, opts ...grpc.CallOption,
+) (*payload.Object_Locations, error) {
 	return mc.RemoveByTimestampFunc(ctx, in, opts...)
 }

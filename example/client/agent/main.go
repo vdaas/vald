@@ -44,10 +44,10 @@ var (
 
 func init() {
 	/**
-	Path option specifies hdf file by path. Default value is `fashion-mnist-784-euclidean.hdf5`.
-	Addr option specifies grpc server address. Default value is `127.0.0.1:8080`.
-	Wait option specifies indexing wait time (in seconds). Default value is  `60`.
-	**/
+	  Path option specifies hdf file by path. Default value is `fashion-mnist-784-euclidean.hdf5`.
+	  Addr option specifies grpc server address. Default value is `127.0.0.1:8080`.
+	  Wait option specifies indexing wait time (in seconds). Default value is  `60`.
+	  **/
 	flag.StringVar(&datasetPath, "path", "fashion-mnist-784-euclidean.hdf5", "dataset path")
 	flag.StringVar(&grpcServerAddr, "addr", "127.0.0.1:8081", "gRPC server address")
 	flag.UintVar(&indexingWaitSeconds, "wait", 60, "indexing wait seconds")
@@ -56,9 +56,9 @@ func init() {
 
 func main() {
 	/**
-	Gets training data, test data and ids based on the dataset path.
-	the number of ids is equal to that of training dataset.
-	**/
+	  Gets training data, test data and ids based on the dataset path.
+	  the number of ids is equal to that of training dataset.
+	  **/
 	ids, train, test, err := load(datasetPath)
 	if err != nil {
 		glg.Fatal(err)
@@ -98,10 +98,10 @@ func main() {
 	}
 	glg.Infof("Finish Inserting %d training vector to Vald Agent", insertCount)
 	/**
-	Optional: Run Indexing instead of Auto Indexing
-	If you run client.CreateAndSaveIndex, it costs less time for search
-	When default_pool_size is not set, the below codes are required.
-	**/
+	  Optional: Run Indexing instead of Auto Indexing
+	  If you run client.CreateAndSaveIndex, it costs less time for search
+	  When default_pool_size is not set, the below codes are required.
+	  **/
 	glg.Info("Start Indexing dataset.")
 	_, err = agent.NewAgentClient(conn).CreateAndSaveIndex(ctx, &payload.Control_CreateIndexRequest{
 		PoolSize: uint32(insertCount),
@@ -142,9 +142,9 @@ func main() {
 	glg.Info("Finish getting object")
 
 	/**
-	Gets approximate vectors, which is based on the value of `SearchConfig`, from the indexed tree based on the training data.
-	In this example, Vald Agent gets 10 approximate vectors each search vector.
-	**/
+	  Gets approximate vectors, which is based on the value of `SearchConfig`, from the indexed tree based on the training data.
+	  In this example, Vald Agent gets 10 approximate vectors each search vector.
+	  **/
 	glg.Infof("Start searching %d times", testCount)
 	for i, vec := range test[:testCount] {
 		// Send searching vector and configuration object to the Vald Agent server via gRPC.
@@ -188,11 +188,11 @@ func main() {
 	glg.Info("Finish removing vector")
 	glg.Info("Start removing indexed vector from backup")
 	/**
-	Run Indexing instead of Auto Indexing.
-	Before calling the SaveIndex (or CreateAndSaveIndex) API, the vectors you inserted before still exist in the NGT graph index even the Remove API is called due to the design of NGT.
-	So at this moment, the neighbor vectors will be returned from the SearchByID API.
-	To remove the vectors from the NGT graph completely, the SaveIndex API will be used here instead of waiting auto CreateIndex phase.
-	**/
+	  Run Indexing instead of Auto Indexing.
+	  Before calling the SaveIndex (or CreateAndSaveIndex) API, the vectors you inserted before still exist in the NGT graph index even the Remove API is called due to the design of NGT.
+	  So at this moment, the neighbor vectors will be returned from the SearchByID API.
+	  To remove the vectors from the NGT graph completely, the SaveIndex API will be used here instead of waiting auto CreateIndex phase.
+	  **/
 	_, err = agent.NewAgentClient(conn).SaveIndex(ctx, &payload.Empty{})
 	if err != nil {
 		glg.Fatal(err)

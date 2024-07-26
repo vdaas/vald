@@ -51,4 +51,4 @@ k3d/restart: \
 .PHONY: k3d/delete
 ## stop k3d (kubernetes in docker) cluster
 k3d/delete:
-	$(K3D_COMMAND) cluster delete $(K3D_CLUSTER_NAME)
+	-$(K3D_COMMAND) cluster delete $(K3D_CLUSTER_NAME)

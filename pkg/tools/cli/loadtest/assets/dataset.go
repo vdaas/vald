@@ -28,9 +28,9 @@ var ErrOutOfBounds = x1b.ErrOutOfBounds
 
 // Dataset is representation of train and test dataset.
 type Dataset interface {
-	Train(i int) (interface{}, error)
+	Train(i int) (any, error)
 	TrainSize() int
-	Query(i int) (interface{}, error)
+	Query(i int) (any, error)
 	QuerySize() int
 	Distance(i int) ([]float32, error)
 	DistanceSize() int

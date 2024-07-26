@@ -100,14 +100,13 @@ package strategy
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
 //
 // func TestWithProp32(t *testing.T) {
 // 	type args struct {
-// 		fn func(context.Context, *testing.B, algorithm.Bit32, assets.Dataset, []uint, *uint64) (interface{}, error)
+// 		fn func(context.Context, *testing.B, algorithm.Bit32, assets.Dataset, []uint, *uint64) (any, error)
 // 	}
 // 	type want struct {
 // 		want StrategyOption
@@ -186,7 +185,6 @@ package strategy
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -272,14 +270,13 @@ package strategy
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
 //
 // func TestWithProp64(t *testing.T) {
 // 	type args struct {
-// 		fn func(context.Context, *testing.B, algorithm.Bit64, assets.Dataset, []uint, *uint64) (interface{}, error)
+// 		fn func(context.Context, *testing.B, algorithm.Bit64, assets.Dataset, []uint, *uint64) (any, error)
 // 	}
 // 	type want struct {
 // 		want StrategyOption
@@ -358,7 +355,6 @@ package strategy
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -444,7 +440,6 @@ package strategy
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -530,7 +525,6 @@ package strategy
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -616,7 +610,6 @@ package strategy
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -692,7 +685,6 @@ package strategy
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }

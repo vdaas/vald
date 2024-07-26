@@ -15,6 +15,117 @@ package assets
 
 // NOT IMPLEMENTED BELOW
 //
+// func Test_loadLargeData(t *testing.T) {
+// 	type args struct {
+// 		trainFileName       string
+// 		queryFileName       string
+// 		groundTruthFileName string
+// 		distanceFileName    string
+// 		name                string
+// 		distanceType        string
+// 		objectType          string
+// 	}
+// 	type want struct {
+// 		want func() (Dataset, error)
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		want       want
+// 		checkFunc  func(want, func() (Dataset, error)) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, got func() (Dataset, error)) error {
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           trainFileName:"",
+// 		           queryFileName:"",
+// 		           groundTruthFileName:"",
+// 		           distanceFileName:"",
+// 		           name:"",
+// 		           distanceType:"",
+// 		           objectType:"",
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           trainFileName:"",
+// 		           queryFileName:"",
+// 		           groundTruthFileName:"",
+// 		           distanceFileName:"",
+// 		           name:"",
+// 		           distanceType:"",
+// 		           objectType:"",
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+//
+// 			got := loadLargeData(
+// 				test.args.trainFileName,
+// 				test.args.queryFileName,
+// 				test.args.groundTruthFileName,
+// 				test.args.distanceFileName,
+// 				test.args.name,
+// 				test.args.distanceType,
+// 				test.args.objectType,
+// 			)
+// 			if err := checkFunc(test.want, got); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
 // func Test_largeDataset_Train(t *testing.T) {
 // 	type args struct {
 // 		i int
@@ -27,7 +138,7 @@ package assets
 // 		distances   x1b.FloatVectors
 // 	}
 // 	type want struct {
-// 		want interface{}
+// 		want any
 // 		err  error
 // 	}
 // 	type test struct {
@@ -35,11 +146,11 @@ package assets
 // 		args       args
 // 		fields     fields
 // 		want       want
-// 		checkFunc  func(want, interface{}, error) error
+// 		checkFunc  func(want, any, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
 // 	}
-// 	defaultCheckFunc := func(w want, got interface{}, err error) error {
+// 	defaultCheckFunc := func(w want, got any, err error) error {
 // 		if !errors.Is(err, w.err) {
 // 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 // 		}
@@ -129,7 +240,6 @@ package assets
 // 			if err := checkFunc(test.want, got, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -234,7 +344,6 @@ package assets
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -251,7 +360,7 @@ package assets
 // 		distances   x1b.FloatVectors
 // 	}
 // 	type want struct {
-// 		want interface{}
+// 		want any
 // 		err  error
 // 	}
 // 	type test struct {
@@ -259,11 +368,11 @@ package assets
 // 		args       args
 // 		fields     fields
 // 		want       want
-// 		checkFunc  func(want, interface{}, error) error
+// 		checkFunc  func(want, any, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
 // 	}
-// 	defaultCheckFunc := func(w want, got interface{}, err error) error {
+// 	defaultCheckFunc := func(w want, got any, err error) error {
 // 		if !errors.Is(err, w.err) {
 // 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 // 		}
@@ -353,7 +462,6 @@ package assets
 // 			if err := checkFunc(test.want, got, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -458,7 +566,6 @@ package assets
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -577,7 +684,6 @@ package assets
 // 			if err := checkFunc(test.want, got, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -682,7 +788,6 @@ package assets
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -801,7 +906,6 @@ package assets
 // 			if err := checkFunc(test.want, got, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -906,7 +1010,6 @@ package assets
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -1011,7 +1114,6 @@ package assets
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -1116,7 +1218,6 @@ package assets
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -1221,7 +1322,6 @@ package assets
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -1326,7 +1426,6 @@ package assets
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }

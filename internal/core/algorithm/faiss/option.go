@@ -17,6 +17,10 @@
 // Package faiss provides implementation of Go API for https://github.com/facebookresearch/faiss
 package faiss
 
+/*
+#cgo LDFLAGS: -lfaiss
+#include <Capi.h>
+*/
 import "C"
 
 import (

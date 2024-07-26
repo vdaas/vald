@@ -190,7 +190,7 @@ The important parameters are the followings:
 - `agent.faiss.nlist`
 
 Users should configure these parameters first to fit their use case.
-For further details, please read [the Fiass wiki][faiss-wiki].
+For further details, please read [the Faiss wiki][faiss-wiki].
 
 Vald Agent Faiss has a feature to start indexing automatically.
 The behavior of this feature can be configured with these parameters:
@@ -394,7 +394,7 @@ For further details, there are references to the Helm values in the Vald GitHub 
 - [README of Vald Helm Chart][vald-helm-chart]
 - [README of Vald-Helm-Operator Chart][vald-helm-operator-chart]
 
-<!-- TODO: add related document(pullugable options) -->
+<!-- TODO: add related document(pluggable options) -->
 
 [vald-helm-chart]: https://github.com/vdaas/vald/tree/main/charts/vald
 [vald-helm-operator-chart]: https://github.com/vdaas/vald/tree/main/charts/vald-helm-operator

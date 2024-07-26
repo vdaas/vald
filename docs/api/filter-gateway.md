@@ -2,7 +2,7 @@
 
 ## Overview
 
-Filter Servie is responsible for providing insert, update, upsert and search interface for `Vald Filter Gateway`.
+Filter Server is responsible for providing insert, update, upsert and search interface for `Vald Filter Gateway`.
 
 Vald Filter Gateway forward user request to user-defined ingress/egress filter components allowing user to run custom logic.
 
@@ -1476,6 +1476,17 @@ service Filter {
     | :------: | :----- | :---- | :---------------------------------------------------- |
     |    id    | string |       | the vector ID                                         |
     | distance | float  |       | the distance between result vector and request vector |
+
+### Status Code
+
+| code | desc.             |
+| :--: | :---------------- |
+|  0   | OK                |
+|  1   | CANCELLED         |
+|  3   | INVALID_ARGUMENT  |
+|  4   | DEADLINE_EXCEEDED |
+|  5   | NOT_FOUND         |
+|  13  | INTERNAL          |
 
 ## MultiSearch RPC
 

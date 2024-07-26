@@ -572,8 +572,1296 @@ func Test_discovery_syncWithAddr(t *testing.T) {
 // 			if err := checkFunc(test.want, gotDsc, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
 //
+// func Test_discovery_onReconcile(t *testing.T) {
+// 	type args struct {
+// 		in0  context.Context
+// 		list map[string]target.Target
+// 	}
+// 	type fields struct {
+// 		namespace       string
+// 		labels          map[string]string
+// 		colocation      string
+// 		der             net.Dialer
+// 		targetsByName   atomic.Pointer[map[string]target.Target]
+// 		ctrl            k8s.Controller
+// 		dur             time.Duration
+// 		selfMirrAddrs   []string
+// 		selfMirrAddrStr string
+// 		mirr            Mirror
+// 		eg              errgroup.Group
+// 	}
+// 	type want struct{}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want) error {
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           in0:nil,
+// 		           list:nil,
+// 		       },
+// 		       fields: fields {
+// 		           namespace:"",
+// 		           labels:nil,
+// 		           colocation:"",
+// 		           der:nil,
+// 		           targetsByName:nil,
+// 		           ctrl:nil,
+// 		           dur:nil,
+// 		           selfMirrAddrs:nil,
+// 		           selfMirrAddrStr:"",
+// 		           mirr:nil,
+// 		           eg:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           in0:nil,
+// 		           list:nil,
+// 		           },
+// 		           fields: fields {
+// 		           namespace:"",
+// 		           labels:nil,
+// 		           colocation:"",
+// 		           der:nil,
+// 		           targetsByName:nil,
+// 		           ctrl:nil,
+// 		           dur:nil,
+// 		           selfMirrAddrs:nil,
+// 		           selfMirrAddrStr:"",
+// 		           mirr:nil,
+// 		           eg:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			d := &discovery{
+// 				namespace:       test.fields.namespace,
+// 				labels:          test.fields.labels,
+// 				colocation:      test.fields.colocation,
+// 				der:             test.fields.der,
+// 				targetsByName:   test.fields.targetsByName,
+// 				ctrl:            test.fields.ctrl,
+// 				dur:             test.fields.dur,
+// 				selfMirrAddrs:   test.fields.selfMirrAddrs,
+// 				selfMirrAddrStr: test.fields.selfMirrAddrStr,
+// 				mirr:            test.fields.mirr,
+// 				eg:              test.fields.eg,
+// 			}
+//
+// 			d.onReconcile(test.args.in0, test.args.list)
+// 			if err := checkFunc(test.want); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_discovery_Start(t *testing.T) {
+// 	type args struct {
+// 		ctx context.Context
+// 	}
+// 	type fields struct {
+// 		namespace       string
+// 		labels          map[string]string
+// 		colocation      string
+// 		der             net.Dialer
+// 		targetsByName   atomic.Pointer[map[string]target.Target]
+// 		ctrl            k8s.Controller
+// 		dur             time.Duration
+// 		selfMirrAddrs   []string
+// 		selfMirrAddrStr string
+// 		mirr            Mirror
+// 		eg              errgroup.Group
+// 	}
+// 	type want struct {
+// 		want <-chan error
+// 		err  error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, <-chan error, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, got <-chan error, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           ctx:nil,
+// 		       },
+// 		       fields: fields {
+// 		           namespace:"",
+// 		           labels:nil,
+// 		           colocation:"",
+// 		           der:nil,
+// 		           targetsByName:nil,
+// 		           ctrl:nil,
+// 		           dur:nil,
+// 		           selfMirrAddrs:nil,
+// 		           selfMirrAddrStr:"",
+// 		           mirr:nil,
+// 		           eg:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           ctx:nil,
+// 		           },
+// 		           fields: fields {
+// 		           namespace:"",
+// 		           labels:nil,
+// 		           colocation:"",
+// 		           der:nil,
+// 		           targetsByName:nil,
+// 		           ctrl:nil,
+// 		           dur:nil,
+// 		           selfMirrAddrs:nil,
+// 		           selfMirrAddrStr:"",
+// 		           mirr:nil,
+// 		           eg:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			d := &discovery{
+// 				namespace:       test.fields.namespace,
+// 				labels:          test.fields.labels,
+// 				colocation:      test.fields.colocation,
+// 				der:             test.fields.der,
+// 				targetsByName:   test.fields.targetsByName,
+// 				ctrl:            test.fields.ctrl,
+// 				dur:             test.fields.dur,
+// 				selfMirrAddrs:   test.fields.selfMirrAddrs,
+// 				selfMirrAddrStr: test.fields.selfMirrAddrStr,
+// 				mirr:            test.fields.mirr,
+// 				eg:              test.fields.eg,
+// 			}
+//
+// 			got, err := d.Start(test.args.ctx)
+// 			if err := checkFunc(test.want, got, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_discovery_loadTargets(t *testing.T) {
+// 	type fields struct {
+// 		namespace       string
+// 		labels          map[string]string
+// 		colocation      string
+// 		der             net.Dialer
+// 		targetsByName   atomic.Pointer[map[string]target.Target]
+// 		ctrl            k8s.Controller
+// 		dur             time.Duration
+// 		selfMirrAddrs   []string
+// 		selfMirrAddrStr string
+// 		mirr            Mirror
+// 		eg              errgroup.Group
+// 	}
+// 	type want struct {
+// 		want map[string]target.Target
+// 	}
+// 	type test struct {
+// 		name       string
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, map[string]target.Target) error
+// 		beforeFunc func(*testing.T)
+// 		afterFunc  func(*testing.T)
+// 	}
+// 	defaultCheckFunc := func(w want, got map[string]target.Target) error {
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       fields: fields {
+// 		           namespace:"",
+// 		           labels:nil,
+// 		           colocation:"",
+// 		           der:nil,
+// 		           targetsByName:nil,
+// 		           ctrl:nil,
+// 		           dur:nil,
+// 		           selfMirrAddrs:nil,
+// 		           selfMirrAddrStr:"",
+// 		           mirr:nil,
+// 		           eg:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           fields: fields {
+// 		           namespace:"",
+// 		           labels:nil,
+// 		           colocation:"",
+// 		           der:nil,
+// 		           targetsByName:nil,
+// 		           ctrl:nil,
+// 		           dur:nil,
+// 		           selfMirrAddrs:nil,
+// 		           selfMirrAddrStr:"",
+// 		           mirr:nil,
+// 		           eg:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			d := &discovery{
+// 				namespace:       test.fields.namespace,
+// 				labels:          test.fields.labels,
+// 				colocation:      test.fields.colocation,
+// 				der:             test.fields.der,
+// 				targetsByName:   test.fields.targetsByName,
+// 				ctrl:            test.fields.ctrl,
+// 				dur:             test.fields.dur,
+// 				selfMirrAddrs:   test.fields.selfMirrAddrs,
+// 				selfMirrAddrStr: test.fields.selfMirrAddrStr,
+// 				mirr:            test.fields.mirr,
+// 				eg:              test.fields.eg,
+// 			}
+//
+// 			got := d.loadTargets()
+// 			if err := checkFunc(test.want, got); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_discovery_connectTarget(t *testing.T) {
+// 	type args struct {
+// 		ctx context.Context
+// 		req map[string]*createdTarget
+// 	}
+// 	type fields struct {
+// 		namespace       string
+// 		labels          map[string]string
+// 		colocation      string
+// 		der             net.Dialer
+// 		targetsByName   atomic.Pointer[map[string]target.Target]
+// 		ctrl            k8s.Controller
+// 		dur             time.Duration
+// 		selfMirrAddrs   []string
+// 		selfMirrAddrStr string
+// 		mirr            Mirror
+// 		eg              errgroup.Group
+// 	}
+// 	type want struct {
+// 		err error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           ctx:nil,
+// 		           req:nil,
+// 		       },
+// 		       fields: fields {
+// 		           namespace:"",
+// 		           labels:nil,
+// 		           colocation:"",
+// 		           der:nil,
+// 		           targetsByName:nil,
+// 		           ctrl:nil,
+// 		           dur:nil,
+// 		           selfMirrAddrs:nil,
+// 		           selfMirrAddrStr:"",
+// 		           mirr:nil,
+// 		           eg:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           ctx:nil,
+// 		           req:nil,
+// 		           },
+// 		           fields: fields {
+// 		           namespace:"",
+// 		           labels:nil,
+// 		           colocation:"",
+// 		           der:nil,
+// 		           targetsByName:nil,
+// 		           ctrl:nil,
+// 		           dur:nil,
+// 		           selfMirrAddrs:nil,
+// 		           selfMirrAddrStr:"",
+// 		           mirr:nil,
+// 		           eg:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			d := &discovery{
+// 				namespace:       test.fields.namespace,
+// 				labels:          test.fields.labels,
+// 				colocation:      test.fields.colocation,
+// 				der:             test.fields.der,
+// 				targetsByName:   test.fields.targetsByName,
+// 				ctrl:            test.fields.ctrl,
+// 				dur:             test.fields.dur,
+// 				selfMirrAddrs:   test.fields.selfMirrAddrs,
+// 				selfMirrAddrStr: test.fields.selfMirrAddrStr,
+// 				mirr:            test.fields.mirr,
+// 				eg:              test.fields.eg,
+// 			}
+//
+// 			err := d.connectTarget(test.args.ctx, test.args.req)
+// 			if err := checkFunc(test.want, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_discovery_createMirrorTargetResource(t *testing.T) {
+// 	type args struct {
+// 		ctx  context.Context
+// 		name string
+// 		host string
+// 		port int
+// 	}
+// 	type fields struct {
+// 		namespace       string
+// 		labels          map[string]string
+// 		colocation      string
+// 		der             net.Dialer
+// 		targetsByName   atomic.Pointer[map[string]target.Target]
+// 		ctrl            k8s.Controller
+// 		dur             time.Duration
+// 		selfMirrAddrs   []string
+// 		selfMirrAddrStr string
+// 		mirr            Mirror
+// 		eg              errgroup.Group
+// 	}
+// 	type want struct {
+// 		err error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           ctx:nil,
+// 		           name:"",
+// 		           host:"",
+// 		           port:0,
+// 		       },
+// 		       fields: fields {
+// 		           namespace:"",
+// 		           labels:nil,
+// 		           colocation:"",
+// 		           der:nil,
+// 		           targetsByName:nil,
+// 		           ctrl:nil,
+// 		           dur:nil,
+// 		           selfMirrAddrs:nil,
+// 		           selfMirrAddrStr:"",
+// 		           mirr:nil,
+// 		           eg:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           ctx:nil,
+// 		           name:"",
+// 		           host:"",
+// 		           port:0,
+// 		           },
+// 		           fields: fields {
+// 		           namespace:"",
+// 		           labels:nil,
+// 		           colocation:"",
+// 		           der:nil,
+// 		           targetsByName:nil,
+// 		           ctrl:nil,
+// 		           dur:nil,
+// 		           selfMirrAddrs:nil,
+// 		           selfMirrAddrStr:"",
+// 		           mirr:nil,
+// 		           eg:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			d := &discovery{
+// 				namespace:       test.fields.namespace,
+// 				labels:          test.fields.labels,
+// 				colocation:      test.fields.colocation,
+// 				der:             test.fields.der,
+// 				targetsByName:   test.fields.targetsByName,
+// 				ctrl:            test.fields.ctrl,
+// 				dur:             test.fields.dur,
+// 				selfMirrAddrs:   test.fields.selfMirrAddrs,
+// 				selfMirrAddrStr: test.fields.selfMirrAddrStr,
+// 				mirr:            test.fields.mirr,
+// 				eg:              test.fields.eg,
+// 			}
+//
+// 			err := d.createMirrorTargetResource(test.args.ctx, test.args.name, test.args.host, test.args.port)
+// 			if err := checkFunc(test.want, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_discovery_disconnectTarget(t *testing.T) {
+// 	type args struct {
+// 		ctx context.Context
+// 		req map[string]*deletedTarget
+// 	}
+// 	type fields struct {
+// 		namespace       string
+// 		labels          map[string]string
+// 		colocation      string
+// 		der             net.Dialer
+// 		targetsByName   atomic.Pointer[map[string]target.Target]
+// 		ctrl            k8s.Controller
+// 		dur             time.Duration
+// 		selfMirrAddrs   []string
+// 		selfMirrAddrStr string
+// 		mirr            Mirror
+// 		eg              errgroup.Group
+// 	}
+// 	type want struct {
+// 		err error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           ctx:nil,
+// 		           req:nil,
+// 		       },
+// 		       fields: fields {
+// 		           namespace:"",
+// 		           labels:nil,
+// 		           colocation:"",
+// 		           der:nil,
+// 		           targetsByName:nil,
+// 		           ctrl:nil,
+// 		           dur:nil,
+// 		           selfMirrAddrs:nil,
+// 		           selfMirrAddrStr:"",
+// 		           mirr:nil,
+// 		           eg:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           ctx:nil,
+// 		           req:nil,
+// 		           },
+// 		           fields: fields {
+// 		           namespace:"",
+// 		           labels:nil,
+// 		           colocation:"",
+// 		           der:nil,
+// 		           targetsByName:nil,
+// 		           ctrl:nil,
+// 		           dur:nil,
+// 		           selfMirrAddrs:nil,
+// 		           selfMirrAddrStr:"",
+// 		           mirr:nil,
+// 		           eg:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			d := &discovery{
+// 				namespace:       test.fields.namespace,
+// 				labels:          test.fields.labels,
+// 				colocation:      test.fields.colocation,
+// 				der:             test.fields.der,
+// 				targetsByName:   test.fields.targetsByName,
+// 				ctrl:            test.fields.ctrl,
+// 				dur:             test.fields.dur,
+// 				selfMirrAddrs:   test.fields.selfMirrAddrs,
+// 				selfMirrAddrStr: test.fields.selfMirrAddrStr,
+// 				mirr:            test.fields.mirr,
+// 				eg:              test.fields.eg,
+// 			}
+//
+// 			err := d.disconnectTarget(test.args.ctx, test.args.req)
+// 			if err := checkFunc(test.want, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_discovery_updateMirrorTargetPhase(t *testing.T) {
+// 	type args struct {
+// 		ctx   context.Context
+// 		name  string
+// 		phase target.MirrorTargetPhase
+// 	}
+// 	type fields struct {
+// 		namespace       string
+// 		labels          map[string]string
+// 		colocation      string
+// 		der             net.Dialer
+// 		targetsByName   atomic.Pointer[map[string]target.Target]
+// 		ctrl            k8s.Controller
+// 		dur             time.Duration
+// 		selfMirrAddrs   []string
+// 		selfMirrAddrStr string
+// 		mirr            Mirror
+// 		eg              errgroup.Group
+// 	}
+// 	type want struct {
+// 		err error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           ctx:nil,
+// 		           name:"",
+// 		           phase:nil,
+// 		       },
+// 		       fields: fields {
+// 		           namespace:"",
+// 		           labels:nil,
+// 		           colocation:"",
+// 		           der:nil,
+// 		           targetsByName:nil,
+// 		           ctrl:nil,
+// 		           dur:nil,
+// 		           selfMirrAddrs:nil,
+// 		           selfMirrAddrStr:"",
+// 		           mirr:nil,
+// 		           eg:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           ctx:nil,
+// 		           name:"",
+// 		           phase:nil,
+// 		           },
+// 		           fields: fields {
+// 		           namespace:"",
+// 		           labels:nil,
+// 		           colocation:"",
+// 		           der:nil,
+// 		           targetsByName:nil,
+// 		           ctrl:nil,
+// 		           dur:nil,
+// 		           selfMirrAddrs:nil,
+// 		           selfMirrAddrStr:"",
+// 		           mirr:nil,
+// 		           eg:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			d := &discovery{
+// 				namespace:       test.fields.namespace,
+// 				labels:          test.fields.labels,
+// 				colocation:      test.fields.colocation,
+// 				der:             test.fields.der,
+// 				targetsByName:   test.fields.targetsByName,
+// 				ctrl:            test.fields.ctrl,
+// 				dur:             test.fields.dur,
+// 				selfMirrAddrs:   test.fields.selfMirrAddrs,
+// 				selfMirrAddrStr: test.fields.selfMirrAddrStr,
+// 				mirr:            test.fields.mirr,
+// 				eg:              test.fields.eg,
+// 			}
+//
+// 			err := d.updateMirrorTargetPhase(test.args.ctx, test.args.name, test.args.phase)
+// 			if err := checkFunc(test.want, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_discovery_updateTarget(t *testing.T) {
+// 	type args struct {
+// 		ctx context.Context
+// 		req map[string]*updatedTarget
+// 	}
+// 	type fields struct {
+// 		namespace       string
+// 		labels          map[string]string
+// 		colocation      string
+// 		der             net.Dialer
+// 		targetsByName   atomic.Pointer[map[string]target.Target]
+// 		ctrl            k8s.Controller
+// 		dur             time.Duration
+// 		selfMirrAddrs   []string
+// 		selfMirrAddrStr string
+// 		mirr            Mirror
+// 		eg              errgroup.Group
+// 	}
+// 	type want struct {
+// 		err error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           ctx:nil,
+// 		           req:nil,
+// 		       },
+// 		       fields: fields {
+// 		           namespace:"",
+// 		           labels:nil,
+// 		           colocation:"",
+// 		           der:nil,
+// 		           targetsByName:nil,
+// 		           ctrl:nil,
+// 		           dur:nil,
+// 		           selfMirrAddrs:nil,
+// 		           selfMirrAddrStr:"",
+// 		           mirr:nil,
+// 		           eg:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           ctx:nil,
+// 		           req:nil,
+// 		           },
+// 		           fields: fields {
+// 		           namespace:"",
+// 		           labels:nil,
+// 		           colocation:"",
+// 		           der:nil,
+// 		           targetsByName:nil,
+// 		           ctrl:nil,
+// 		           dur:nil,
+// 		           selfMirrAddrs:nil,
+// 		           selfMirrAddrStr:"",
+// 		           mirr:nil,
+// 		           eg:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			d := &discovery{
+// 				namespace:       test.fields.namespace,
+// 				labels:          test.fields.labels,
+// 				colocation:      test.fields.colocation,
+// 				der:             test.fields.der,
+// 				targetsByName:   test.fields.targetsByName,
+// 				ctrl:            test.fields.ctrl,
+// 				dur:             test.fields.dur,
+// 				selfMirrAddrs:   test.fields.selfMirrAddrs,
+// 				selfMirrAddrStr: test.fields.selfMirrAddrStr,
+// 				mirr:            test.fields.mirr,
+// 				eg:              test.fields.eg,
+// 			}
+//
+// 			err := d.updateTarget(test.args.ctx, test.args.req)
+// 			if err := checkFunc(test.want, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_isConnectedPhase(t *testing.T) {
+// 	type args struct {
+// 		phase target.MirrorTargetPhase
+// 	}
+// 	type want struct {
+// 		want bool
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		want       want
+// 		checkFunc  func(want, bool) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, got bool) error {
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           phase:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           phase:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+//
+// 			got := isConnectedPhase(test.args.phase)
+// 			if err := checkFunc(test.want, got); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_isDisconnectedPhase(t *testing.T) {
+// 	type args struct {
+// 		phase target.MirrorTargetPhase
+// 	}
+// 	type want struct {
+// 		want bool
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		want       want
+// 		checkFunc  func(want, bool) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, got bool) error {
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           phase:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           phase:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+//
+// 			got := isDisconnectedPhase(test.args.phase)
+// 			if err := checkFunc(test.want, got); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }

@@ -287,6 +287,10 @@ func readAndRewrite(path string) error {
 				"semaphore_example_test.go",
 				"semaphore_test.go":
 				tmpl = goStandard
+			case "error_details.pb.go",
+				"error_details.pb.json.go",
+				"error_details_vtproto.pb.go":
+				tmpl = googleProtoApache
 			default:
 			}
 		case ".proto":

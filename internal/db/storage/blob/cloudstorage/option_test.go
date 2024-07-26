@@ -96,7 +96,6 @@ package cloudstorage
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -182,14 +181,13 @@ package cloudstorage
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
 //
 // func TestWithBeforeRead(t *testing.T) {
 // 	type args struct {
-// 		fn func(asFunc func(interface{}) bool) error
+// 		fn func(asFunc func(any) bool) error
 // 	}
 // 	type want struct {
 // 		want Option
@@ -268,7 +266,6 @@ package cloudstorage
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -354,7 +351,6 @@ package cloudstorage
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -440,7 +436,6 @@ package cloudstorage
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -526,7 +521,6 @@ package cloudstorage
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -612,7 +606,6 @@ package cloudstorage
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -698,7 +691,6 @@ package cloudstorage
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -784,7 +776,6 @@ package cloudstorage
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -870,7 +861,6 @@ package cloudstorage
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -956,14 +946,13 @@ package cloudstorage
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
 //
 // func TestWithBeforeWrite(t *testing.T) {
 // 	type args struct {
-// 		f func(asFunc func(interface{}) bool) error
+// 		f func(asFunc func(any) bool) error
 // 	}
 // 	type want struct {
 // 		want Option
@@ -1042,7 +1031,6 @@ package cloudstorage
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }

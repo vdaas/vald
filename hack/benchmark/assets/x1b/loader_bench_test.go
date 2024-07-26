@@ -13,9 +13,7 @@
 // limitations under the License.
 package x1b
 
-import (
-	"testing"
-)
+import "testing"
 
 const (
 	bvecsFile = "../large/sift1b/bigann_base.bvecs"

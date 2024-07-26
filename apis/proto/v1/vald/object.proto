@@ -45,4 +45,9 @@ service Object {
   rpc StreamListObject(payload.v1.Object.List.Request) returns (stream payload.v1.Object.List.Response) {
     option (google.api.http).get = "/object/list";
   }
+
+  // Represent the RPC to get the vector metadata. This RPC is mainly used for index correction process
+  rpc GetTimestamp(payload.v1.Object.TimestampRequest) returns (payload.v1.Object.Timestamp) {
+    option (google.api.http).get = "/object/meta/{id.id}";
+  }
 }

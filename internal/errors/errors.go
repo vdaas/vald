@@ -61,7 +61,7 @@ var (
 	}
 
 	// ErrInvalidTypeConversion represents a function to generate an error that type conversion fails due to an invalid input type.
-	ErrInvalidTypeConversion = func(i interface{}, tgt interface{}) error {
+	ErrInvalidTypeConversion = func(i any, tgt any) error {
 		return Errorf("invalid type conversion %v to %v", reflect.TypeOf(i), reflect.TypeOf(tgt))
 	}
 
@@ -108,7 +108,7 @@ var (
 	// Wrapf represents a function to generate an error that is used by input error, format, and args.
 	// When all of the input is nil, it will return a new error based on format and args even these are nil.
 	// When the input error is not nil, it will return an error based on the input error.
-	Wrapf = func(err error, format string, args ...interface{}) error {
+	Wrapf = func(err error, format string, args ...any) error {
 		if err != nil {
 			if format != "" && len(args) != 0 {
 				return Wrap(err, fmt.Sprintf(format, args...))
@@ -129,7 +129,7 @@ var (
 
 	// Errorf represents a function to generate an error based on format and args.
 	// When format and args do not satisfy the condition, it will return nil.
-	Errorf = func(format string, args ...interface{}) error {
+	Errorf = func(format string, args ...any) error {
 		const delim = " "
 		if format == "" && len(args) == 0 {
 			return nil
@@ -263,12 +263,17 @@ func Join(errs ...error) error {
 	var e *joinError
 	switch x := errs[0].(type) {
 	case *joinError:
-		e = x
+		if x != nil && len(x.errs) != 0 {
+			e = x
+		}
 		errs = errs[1:]
 	case interface{ Unwrap() []error }:
-		e = &joinError{errs: x.Unwrap()}
+		if x != nil && len(x.Unwrap()) != 0 {
+			e = &joinError{errs: x.Unwrap()}
+		}
 		errs = errs[1:]
-	default:
+	}
+	if e == nil {
 		e = &joinError{
 			errs: make([]error, 0, l),
 		}
@@ -277,6 +282,9 @@ func Join(errs ...error) error {
 		if err != nil {
 			e.errs = append(e.errs, err)
 		}
+	}
+	if len(e.errs) == 0 {
+		return nil
 	}
 	return e
 }
@@ -296,7 +304,7 @@ type joinError struct {
 }
 
 var sbPool = sync.Pool{
-	New: func() interface{} {
+	New: func() any {
 		return new(strings.Builder)
 	},
 }

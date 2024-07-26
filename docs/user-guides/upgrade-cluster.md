@@ -27,7 +27,7 @@ You can edit your `values.yaml` and update your Vald cluster by following steps:
 
    ```bash
    helm upgrade <NAME> vald/vald --values <YOUR VALUES FILE PATH>
-   # e.g., helm upgrade vald vald/vald --values valeus.yaml
+   # e.g., helm upgrade vald vald/vald --values values.yaml
    ```
 
 ### Using vald-helm-operator
@@ -107,7 +107,7 @@ If there is major or minor upgrading, the chart structure may have changed.
 
    ```bash
    helm upgrade <NAME> vald/vald --values <YOUR VALUES FILE PATH>
-   # e.g., helm upgrade vald vald/vald --values valeus.yaml
+   # e.g., helm upgrade vald vald/vald --values values.yaml
    ```
 
 ### Using vald-helm-operator

@@ -49,13 +49,14 @@ type DistPayload struct {
 	distance *big.Float
 }
 
-func (s *server) aggregationSearch(ctx context.Context, aggr Aggregator,
+func (s *server) aggregationSearch(
+	ctx context.Context,
+	aggr Aggregator,
 	bcfg *payload.Search_Config, // Base Config of Request
 	f func(ctx context.Context,
 		fcfg *payload.Search_Config, // Forwarding Config to Agent
-		vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error)) (
-	res *payload.Search_Response, err error,
-) {
+		vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error),
+) (res *payload.Search_Response, err error) {
 	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "aggregationSearch"), apiName+"/aggregationSearch")
 	defer func() {
 		if span != nil {
@@ -665,7 +666,7 @@ type valdPoolSliceAggr struct {
 
 var (
 	poolDist = sync.Pool{
-		New: func() interface{} {
+		New: func() any {
 			return make([]*DistPayload, 0, poolLen.Load())
 		},
 	}

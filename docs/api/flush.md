@@ -31,7 +31,6 @@ Flush RPC is the method to remove all vectors.
 
     empty
 
-
 ### Output
 
 - the scheme of `payload.v1.Info.Index.Count`
@@ -47,14 +46,14 @@ Flush RPC is the method to remove all vectors.
   }
   ```
 
-   Object.Info_Index_Count
+  Object.Info_Index_Count
 
-    | field       | type   | label | desc.                                                                      |
-    | :---------: |:------ | :---- | :------------------------------------------------------------------------- |
-    | stored      | uint32 |       | count of indices.                                                          | 
-    | uncommitted | uint32 |       | count of uncommitted indices.                                              |
-    | indexing    |  bool  |       | the state indicating whether `vald-agent` pods is present in the indexing. |
-    | saving      |  bool  |       | the state indicating whether `vald-agent` pods is present in the saving.   |
+  |    field    | type   | label | desc.                                                                      |
+  | :---------: | :----- | :---- | :------------------------------------------------------------------------- |
+  |   stored    | uint32 |       | count of indices.                                                          |
+  | uncommitted | uint32 |       | count of uncommitted indices.                                              |
+  |  indexing   | bool   |       | the state indicating whether `vald-agent` pods is present in the indexing. |
+  |   saving    | bool   |       | the state indicating whether `vald-agent` pods is present in the saving.   |
 
 ### Status Code
 

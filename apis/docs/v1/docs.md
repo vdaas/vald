@@ -23,6 +23,11 @@
   - [Info.IPs](#payload-v1-Info-IPs)
   - [Info.Index](#payload-v1-Info-Index)
   - [Info.Index.Count](#payload-v1-Info-Index-Count)
+  - [Info.Index.Detail](#payload-v1-Info-Index-Detail)
+  - [Info.Index.Detail.CountsEntry](#payload-v1-Info-Index-Detail-CountsEntry)
+  - [Info.Index.Statistics](#payload-v1-Info-Index-Statistics)
+  - [Info.Index.StatisticsDetail](#payload-v1-Info-Index-StatisticsDetail)
+  - [Info.Index.StatisticsDetail.DetailsEntry](#payload-v1-Info-Index-StatisticsDetail-DetailsEntry)
   - [Info.Index.UUID](#payload-v1-Info-Index-UUID)
   - [Info.Index.UUID.Committed](#payload-v1-Info-Index-UUID-Committed)
   - [Info.Index.UUID.Uncommitted](#payload-v1-Info-Index-UUID-Uncommitted)
@@ -48,7 +53,6 @@
   - [Object](#payload-v1-Object)
   - [Object.Blob](#payload-v1-Object-Blob)
   - [Object.Distance](#payload-v1-Object-Distance)
-  - [Object.GetTimestampRequest](#payload-v1-Object-GetTimestampRequest)
   - [Object.ID](#payload-v1-Object-ID)
   - [Object.IDs](#payload-v1-Object-IDs)
   - [Object.List](#payload-v1-Object-List)
@@ -62,6 +66,7 @@
   - [Object.StreamLocation](#payload-v1-Object-StreamLocation)
   - [Object.StreamVector](#payload-v1-Object-StreamVector)
   - [Object.Timestamp](#payload-v1-Object-Timestamp)
+  - [Object.TimestampRequest](#payload-v1-Object-TimestampRequest)
   - [Object.Vector](#payload-v1-Object-Vector)
   - [Object.VectorRequest](#payload-v1-Object-VectorRequest)
   - [Object.Vectors](#payload-v1-Object-Vectors)
@@ -107,8 +112,6 @@
   - [Filter](#filter-egress-v1-Filter)
 - [v1/filter/ingress/ingress_filter.proto](#v1_filter_ingress_ingress_filter-proto)
   - [Filter](#filter-ingress-v1-Filter)
-- [v1/manager/index/index_manager.proto](#v1_manager_index_index_manager-proto)
-  - [Index](#manager-index-v1-Index)
 - [v1/mirror/mirror.proto](#v1_mirror_mirror-proto)
   - [Mirror](#mirror-v1-Mirror)
 - [v1/rpc/errdetails/error_details.proto](#v1_rpc_errdetails_error_details-proto)
@@ -131,6 +134,8 @@
   - [Filter](#vald-v1-Filter)
 - [v1/vald/flush.proto](#v1_vald_flush-proto)
   - [Flush](#vald-v1-Flush)
+- [v1/vald/index.proto](#v1_vald_index-proto)
+  - [Index](#vald-v1-Index)
 - [v1/vald/insert.proto](#v1_vald_insert-proto)
   - [Insert](#vald-v1-Insert)
 - [v1/vald/object.proto](#v1_vald_object-proto)
@@ -293,6 +298,88 @@ Represent the index count message.
 | uncommitted | [uint32](#uint32) |       | The uncommitted index count. |
 | indexing    | [bool](#bool)     |       | The indexing index count.    |
 | saving      | [bool](#bool)     |       | The saving index count.      |
+
+<a name="payload-v1-Info-Index-Detail"></a>
+
+### Info.Index.Detail
+
+Represent the index count for each Agents message.
+
+| Field       | Type                                                                       | Label    | Description                        |
+| ----------- | -------------------------------------------------------------------------- | -------- | ---------------------------------- |
+| counts      | [Info.Index.Detail.CountsEntry](#payload-v1-Info-Index-Detail-CountsEntry) | repeated | count infos for each agents        |
+| replica     | [uint32](#uint32)                                                          |          | index replica of vald cluster      |
+| live_agents | [uint32](#uint32)                                                          |          | live agent replica of vald cluster |
+
+<a name="payload-v1-Info-Index-Detail-CountsEntry"></a>
+
+### Info.Index.Detail.CountsEntry
+
+| Field | Type                                             | Label | Description |
+| ----- | ------------------------------------------------ | ----- | ----------- |
+| key   | [string](#string)                                |       |             |
+| value | [Info.Index.Count](#payload-v1-Info-Index-Count) |       |             |
+
+<a name="payload-v1-Info-Index-Statistics"></a>
+
+### Info.Index.Statistics
+
+Represents index Statistics
+
+| Field                                | Type              | Label    | Description |
+| ------------------------------------ | ----------------- | -------- | ----------- |
+| valid                                | [bool](#bool)     |          |             |
+| median_indegree                      | [int32](#int32)   |          |             |
+| median_outdegree                     | [int32](#int32)   |          |             |
+| max_number_of_indegree               | [uint64](#uint64) |          |             |
+| max_number_of_outdegree              | [uint64](#uint64) |          |             |
+| min_number_of_indegree               | [uint64](#uint64) |          |             |
+| min_number_of_outdegree              | [uint64](#uint64) |          |             |
+| mode_indegree                        | [uint64](#uint64) |          |             |
+| mode_outdegree                       | [uint64](#uint64) |          |             |
+| nodes_skipped_for_10_edges           | [uint64](#uint64) |          |             |
+| nodes_skipped_for_indegree_distance  | [uint64](#uint64) |          |             |
+| number_of_edges                      | [uint64](#uint64) |          |             |
+| number_of_indexed_objects            | [uint64](#uint64) |          |             |
+| number_of_nodes                      | [uint64](#uint64) |          |             |
+| number_of_nodes_without_edges        | [uint64](#uint64) |          |             |
+| number_of_nodes_without_indegree     | [uint64](#uint64) |          |             |
+| number_of_objects                    | [uint64](#uint64) |          |             |
+| number_of_removed_objects            | [uint64](#uint64) |          |             |
+| size_of_object_repository            | [uint64](#uint64) |          |             |
+| size_of_refinement_object_repository | [uint64](#uint64) |          |             |
+| variance_of_indegree                 | [double](#double) |          |             |
+| variance_of_outdegree                | [double](#double) |          |             |
+| mean_edge_length                     | [double](#double) |          |             |
+| mean_edge_length_for_10_edges        | [double](#double) |          |             |
+| mean_indegree_distance_for_10_edges  | [double](#double) |          |             |
+| mean_number_of_edges_per_node        | [double](#double) |          |             |
+| c1_indegree                          | [double](#double) |          |             |
+| c5_indegree                          | [double](#double) |          |             |
+| c95_outdegree                        | [double](#double) |          |             |
+| c99_outdegree                        | [double](#double) |          |             |
+| indegree_count                       | [int64](#int64)   | repeated |             |
+| outdegree_histogram                  | [uint64](#uint64) | repeated |             |
+| indegree_histogram                   | [uint64](#uint64) | repeated |             |
+
+<a name="payload-v1-Info-Index-StatisticsDetail"></a>
+
+### Info.Index.StatisticsDetail
+
+Represents index Statistics for each Agents
+
+| Field   | Type                                                                                             | Label    | Description                 |
+| ------- | ------------------------------------------------------------------------------------------------ | -------- | --------------------------- |
+| details | [Info.Index.StatisticsDetail.DetailsEntry](#payload-v1-Info-Index-StatisticsDetail-DetailsEntry) | repeated | count infos for each agents |
+
+<a name="payload-v1-Info-Index-StatisticsDetail-DetailsEntry"></a>
+
+### Info.Index.StatisticsDetail.DetailsEntry
+
+| Field | Type                                                       | Label | Description |
+| ----- | ---------------------------------------------------------- | ----- | ----------- |
+| key   | [string](#string)                                          |       |             |
+| value | [Info.Index.Statistics](#payload-v1-Info-Index-Statistics) |       |             |
 
 <a name="payload-v1-Info-Index-UUID"></a>
 
@@ -554,16 +641,6 @@ Represent the ID and distance pair.
 | id       | [string](#string) |       | The vector ID. |
 | distance | [float](#float)   |       | The distance.  |
 
-<a name="payload-v1-Object-GetTimestampRequest"></a>
-
-### Object.GetTimestampRequest
-
-Represent a request to fetch vector meta data.
-
-| Field | Type                               | Label | Description                  |
-| ----- | ---------------------------------- | ----- | ---------------------------- |
-| id    | [Object.ID](#payload-v1-Object-ID) |       | The vector ID to be fetched. |
-
 <a name="payload-v1-Object-ID"></a>
 
 ### Object.ID
@@ -690,6 +767,16 @@ Represent a vector meta data.
 | --------- | ----------------- | ----- | ----------------------------------------------- |
 | id        | [string](#string) |       | The vector ID.                                  |
 | timestamp | [int64](#int64)   |       | timestamp represents when this vector inserted. |
+
+<a name="payload-v1-Object-TimestampRequest"></a>
+
+### Object.TimestampRequest
+
+Represent a request to fetch vector meta data.
+
+| Field | Type                               | Label | Description                  |
+| ----- | ---------------------------------- | ----- | ---------------------------- |
+| id    | [Object.ID](#payload-v1-Object-ID) |       | The vector ID to be fetched. |
 
 <a name="payload-v1-Object-Vector"></a>
 
@@ -1069,13 +1156,11 @@ AggregationAlgorithm is enum of each aggregation algorithms
 
 Represent the agent service.
 
-| Method Name        | Request Type                                                                     | Response Type                                                | Description                                                                                        |
-| ------------------ | -------------------------------------------------------------------------------- | ------------------------------------------------------------ | -------------------------------------------------------------------------------------------------- |
-| CreateIndex        | [.payload.v1.Control.CreateIndexRequest](#payload-v1-Control-CreateIndexRequest) | [.payload.v1.Empty](#payload-v1-Empty)                       | Represent the creating index RPC.                                                                  |
-| SaveIndex          | [.payload.v1.Empty](#payload-v1-Empty)                                           | [.payload.v1.Empty](#payload-v1-Empty)                       | Represent the saving index RPC.                                                                    |
-| CreateAndSaveIndex | [.payload.v1.Control.CreateIndexRequest](#payload-v1-Control-CreateIndexRequest) | [.payload.v1.Empty](#payload-v1-Empty)                       | Represent the creating and saving index RPC.                                                       |
-| IndexInfo          | [.payload.v1.Empty](#payload-v1-Empty)                                           | [.payload.v1.Info.Index.Count](#payload-v1-Info-Index-Count) | Represent the RPC to get the agent index information.                                              |
-| GetTimestamp       | [.payload.v1.Object.GetTimestampRequest](#payload-v1-Object-GetTimestampRequest) | [.payload.v1.Object.Timestamp](#payload-v1-Object-Timestamp) | Represent the RPC to get the vector metadata. This RPC is mainly used for index correction process |
+| Method Name        | Request Type                                                                     | Response Type                          | Description                                  |
+| ------------------ | -------------------------------------------------------------------------------- | -------------------------------------- | -------------------------------------------- |
+| CreateIndex        | [.payload.v1.Control.CreateIndexRequest](#payload-v1-Control-CreateIndexRequest) | [.payload.v1.Empty](#payload-v1-Empty) | Represent the creating index RPC.            |
+| SaveIndex          | [.payload.v1.Empty](#payload-v1-Empty)                                           | [.payload.v1.Empty](#payload-v1-Empty) | Represent the saving index RPC.              |
+| CreateAndSaveIndex | [.payload.v1.Control.CreateIndexRequest](#payload-v1-Control-CreateIndexRequest) | [.payload.v1.Empty](#payload-v1-Empty) | Represent the creating and saving index RPC. |
 
 <a name="v1_agent_sidecar_sidecar-proto"></a>
 
@@ -1143,22 +1228,6 @@ Represent the ingress filter service.
 | ------------ | ------------------------------------------------------ | ------------------------------------------------------ | ----------------------------------------- |
 | GenVector    | [.payload.v1.Object.Blob](#payload-v1-Object-Blob)     | [.payload.v1.Object.Vector](#payload-v1-Object-Vector) | Represent the RPC to generate the vector. |
 | FilterVector | [.payload.v1.Object.Vector](#payload-v1-Object-Vector) | [.payload.v1.Object.Vector](#payload-v1-Object-Vector) | Represent the RPC to filter the vector.   |
-
-<a name="v1_manager_index_index_manager-proto"></a>
-
-<p align="right"><a href="#top">Top</a></p>
-
-## v1/manager/index/index_manager.proto
-
-<a name="manager-index-v1-Index"></a>
-
-### Index
-
-Represent the index manager service.
-
-| Method Name | Request Type                           | Response Type                                                | Description                                     |
-| ----------- | -------------------------------------- | ------------------------------------------------------------ | ----------------------------------------------- |
-| IndexInfo   | [.payload.v1.Empty](#payload-v1-Empty) | [.payload.v1.Info.Index.Count](#payload-v1-Info-Index-Count) | Represent the RPC to get the index information. |
 
 <a name="v1_mirror_mirror-proto"></a>
 
@@ -1480,6 +1549,25 @@ Flush service provides ways to flush all indexed vectors.
 | ----------- | ------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------- |
 | Flush       | [.payload.v1.Flush.Request](#payload-v1-Flush-Request) | [.payload.v1.Info.Index.Count](#payload-v1-Info-Index-Count) | A method to flush all indexed vector. |
 
+<a name="v1_vald_index-proto"></a>
+
+<p align="right"><a href="#top">Top</a></p>
+
+## v1/vald/index.proto
+
+<a name="vald-v1-Index"></a>
+
+### Index
+
+Represent the index manager service.
+
+| Method Name           | Request Type                           | Response Type                                                                      | Description                                                     |
+| --------------------- | -------------------------------------- | ---------------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| IndexInfo             | [.payload.v1.Empty](#payload-v1-Empty) | [.payload.v1.Info.Index.Count](#payload-v1-Info-Index-Count)                       | Represent the RPC to get the index information.                 |
+| IndexDetail           | [.payload.v1.Empty](#payload-v1-Empty) | [.payload.v1.Info.Index.Detail](#payload-v1-Info-Index-Detail)                     | Represent the RPC to get the index information for each agents. |
+| IndexStatistics       | [.payload.v1.Empty](#payload-v1-Empty) | [.payload.v1.Info.Index.Statistics](#payload-v1-Info-Index-Statistics)             | Represent the RPC to get the index statistics.                  |
+| IndexStatisticsDetail | [.payload.v1.Empty](#payload-v1-Empty) | [.payload.v1.Info.Index.StatisticsDetail](#payload-v1-Info-Index-StatisticsDetail) | Represent the RPC to get the index statistics for each agents.  |
+
 <a name="v1_vald_insert-proto"></a>
 
 <p align="right"><a href="#top">Top</a></p>
@@ -1510,12 +1598,13 @@ Insert service provides ways to add new vectors.
 
 Object service provides ways to fetch indexed vectors.
 
-| Method Name      | Request Type                                                                | Response Type                                                               | Description                                                 |
-| ---------------- | --------------------------------------------------------------------------- | --------------------------------------------------------------------------- | ----------------------------------------------------------- |
-| Exists           | [.payload.v1.Object.ID](#payload-v1-Object-ID)                              | [.payload.v1.Object.ID](#payload-v1-Object-ID)                              | A method to check whether a specified ID is indexed or not. |
-| GetObject        | [.payload.v1.Object.VectorRequest](#payload-v1-Object-VectorRequest)        | [.payload.v1.Object.Vector](#payload-v1-Object-Vector)                      | A method to fetch a vector.                                 |
-| StreamGetObject  | [.payload.v1.Object.VectorRequest](#payload-v1-Object-VectorRequest) stream | [.payload.v1.Object.StreamVector](#payload-v1-Object-StreamVector) stream   | A method to fetch vectors by bidirectional streaming.       |
-| StreamListObject | [.payload.v1.Object.List.Request](#payload-v1-Object-List-Request)          | [.payload.v1.Object.List.Response](#payload-v1-Object-List-Response) stream | A method to get all the vectors with server streaming       |
+| Method Name      | Request Type                                                                | Response Type                                                               | Description                                                                                        |
+| ---------------- | --------------------------------------------------------------------------- | --------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| Exists           | [.payload.v1.Object.ID](#payload-v1-Object-ID)                              | [.payload.v1.Object.ID](#payload-v1-Object-ID)                              | A method to check whether a specified ID is indexed or not.                                        |
+| GetObject        | [.payload.v1.Object.VectorRequest](#payload-v1-Object-VectorRequest)        | [.payload.v1.Object.Vector](#payload-v1-Object-Vector)                      | A method to fetch a vector.                                                                        |
+| StreamGetObject  | [.payload.v1.Object.VectorRequest](#payload-v1-Object-VectorRequest) stream | [.payload.v1.Object.StreamVector](#payload-v1-Object-StreamVector) stream   | A method to fetch vectors by bidirectional streaming.                                              |
+| StreamListObject | [.payload.v1.Object.List.Request](#payload-v1-Object-List-Request)          | [.payload.v1.Object.List.Response](#payload-v1-Object-List-Response) stream | A method to get all the vectors with server streaming                                              |
+| GetTimestamp     | [.payload.v1.Object.TimestampRequest](#payload-v1-Object-TimestampRequest)  | [.payload.v1.Object.Timestamp](#payload-v1-Object-Timestamp)                | Represent the RPC to get the vector metadata. This RPC is mainly used for index correction process |
 
 <a name="v1_vald_remove-proto"></a>
 

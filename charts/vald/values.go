@@ -13,9 +13,7 @@
 // limitations under the License.
 package vald
 
-import (
-	"github.com/vdaas/vald/internal/config"
-)
+import "github.com/vdaas/vald/internal/config"
 
 // Affinity.
 type Affinity struct {

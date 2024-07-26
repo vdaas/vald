@@ -54,7 +54,9 @@ func NewFlushClient(cc grpc.ClientConnInterface) FlushClient {
 	return &flushClient{cc}
 }
 
-func (c *flushClient) Flush(ctx context.Context, in *payload.Flush_Request, opts ...grpc.CallOption) (*payload.Info_Index_Count, error) {
+func (c *flushClient) Flush(
+	ctx context.Context, in *payload.Flush_Request, opts ...grpc.CallOption,
+) (*payload.Info_Index_Count, error) {
 	out := new(payload.Info_Index_Count)
 	err := c.cc.Invoke(ctx, "/vald.v1.Flush/Flush", in, out, opts...)
 	if err != nil {
@@ -73,10 +75,11 @@ type FlushServer interface {
 }
 
 // UnimplementedFlushServer must be embedded to have forward compatible implementations.
-type UnimplementedFlushServer struct {
-}
+type UnimplementedFlushServer struct{}
 
-func (UnimplementedFlushServer) Flush(context.Context, *payload.Flush_Request) (*payload.Info_Index_Count, error) {
+func (UnimplementedFlushServer) Flush(
+	context.Context, *payload.Flush_Request,
+) (*payload.Info_Index_Count, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Flush not implemented")
 }
 func (UnimplementedFlushServer) mustEmbedUnimplementedFlushServer() {}
@@ -92,7 +95,9 @@ func RegisterFlushServer(s grpc.ServiceRegistrar, srv FlushServer) {
 	s.RegisterService(&Flush_ServiceDesc, srv)
 }
 
-func _Flush_Flush_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Flush_Flush_Handler(
+	srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor,
+) (any, error) {
 	in := new(payload.Flush_Request)
 	if err := dec(in); err != nil {
 		return nil, err
@@ -104,7 +109,7 @@ func _Flush_Flush_Handler(srv interface{}, ctx context.Context, dec func(interfa
 		Server:     srv,
 		FullMethod: "/vald.v1.Flush/Flush",
 	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+	handler := func(ctx context.Context, req any) (any, error) {
 		return srv.(FlushServer).Flush(ctx, req.(*payload.Flush_Request))
 	}
 	return interceptor(ctx, in, info, handler)

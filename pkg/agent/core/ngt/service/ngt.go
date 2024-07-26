@@ -89,8 +89,10 @@ type NGT interface {
 	DeleteVQueueBufferLen() uint64
 	InsertVQueueBufferLen() uint64
 	GetDimensionSize() int
-	Close(ctx context.Context) error
 	BrokenIndexCount() uint64
+	IndexStatistics() (*payload.Info_Index_Statistics, error)
+	IsStatisticsEnabled() bool
+	Close(ctx context.Context) error
 }
 
 type ngt struct {
@@ -160,6 +162,9 @@ type ngt struct {
 	enableExportIndexInfo   bool
 	exportIndexInfoDuration time.Duration
 	patcher                 client.Patcher
+
+	enableStatistics bool
+	statisticsCache  atomic.Pointer[payload.Info_Index_Statistics]
 }
 
 const (
@@ -177,7 +182,7 @@ const (
 	lastTimeSaveIndexTimestampAnnotationsKey     = "vald.vdaas.org/last-time-save-index-timestamp"
 	indexCountAnnotationsKey                     = "vald.vdaas.org/index-count"
 
-	// use this only for tests. usually just leave the ctx value empty and let time.Now() be used
+	// use this only for tests. usually just leave the ctx value empty and let time.Now() be used.
 	saveIndexTimeKey contextSaveIndexTimeKey = "saveIndexTimeKey"
 )
 
@@ -924,7 +929,9 @@ func (n *ngt) Start(ctx context.Context) <-chan error {
 	return ech
 }
 
-func (n *ngt) Search(ctx context.Context, vec []float32, size uint32, epsilon, radius float32) (res *payload.Search_Response, err error) {
+func (n *ngt) Search(
+	ctx context.Context, vec []float32, size uint32, epsilon, radius float32,
+) (res *payload.Search_Response, err error) {
 	if n.IsFlushing() {
 		return nil, errors.ErrFlushingIsInProgress
 	}
@@ -946,7 +953,9 @@ func (n *ngt) Search(ctx context.Context, vec []float32, size uint32, epsilon, r
 	return n.toSearchResponse(sr)
 }
 
-func (n *ngt) SearchByID(ctx context.Context, uuid string, size uint32, epsilon, radius float32) (vec []float32, dst *payload.Search_Response, err error) {
+func (n *ngt) SearchByID(
+	ctx context.Context, uuid string, size uint32, epsilon, radius float32,
+) (vec []float32, dst *payload.Search_Response, err error) {
 	if n.IsFlushing() {
 		return nil, nil, errors.ErrFlushingIsInProgress
 	}
@@ -964,7 +973,9 @@ func (n *ngt) SearchByID(ctx context.Context, uuid string, size uint32, epsilon,
 	return vec, dst, nil
 }
 
-func (n *ngt) LinearSearch(ctx context.Context, vec []float32, size uint32) (res *payload.Search_Response, err error) {
+func (n *ngt) LinearSearch(
+	ctx context.Context, vec []float32, size uint32,
+) (res *payload.Search_Response, err error) {
 	if n.IsFlushing() {
 		return nil, errors.ErrFlushingIsInProgress
 	}
@@ -986,7 +997,9 @@ func (n *ngt) LinearSearch(ctx context.Context, vec []float32, size uint32) (res
 	return n.toSearchResponse(sr)
 }
 
-func (n *ngt) LinearSearchByID(ctx context.Context, uuid string, size uint32) (vec []float32, dst *payload.Search_Response, err error) {
+func (n *ngt) LinearSearchByID(
+	ctx context.Context, uuid string, size uint32,
+) (vec []float32, dst *payload.Search_Response, err error) {
 	if n.IsFlushing() {
 		return nil, nil, errors.ErrFlushingIsInProgress
 	}
@@ -1228,26 +1241,34 @@ func (n *ngt) RegenerateIndexes(ctx context.Context) (err error) {
 	if err != nil {
 		log.Errorf("failed to flushing vector to ngt index in delete kvs. error: %v", err)
 	}
-	n.kvs = kvs.New(kvs.WithConcurrency(n.kvsdbConcurrency))
-
-	n.vq, err = vqueue.New()
+	n.kvs = nil
+	n.vq = nil
 
 	// gc
 	runtime.GC()
 	atomic.AddUint64(&n.nogce, 1)
 
-	// delete file
-	err = file.DeleteDir(ctx, n.path)
-	if err != nil {
-		log.Errorf("failed to flushing vector to ngt index in delete file. error: %v", err)
+	if n.inMem {
+		// delete file
+		err = file.DeleteDir(ctx, n.path)
+		if err != nil {
+			log.Errorf("failed to flushing vector to ngt index in delete file.\tpath: '%s', error: %v", n.path, err)
+		}
+
+		// delete cow
+		if n.enableCopyOnWrite {
+			err := file.DeleteDir(ctx, n.oldPath)
+			if err != nil {
+				log.Errorf("failed to flushing vector to ngt index in delete file.\tpath: '%s', error: %v", n.oldPath, err)
+			}
+		}
 	}
 
-	// delete cow
-	if n.enableCopyOnWrite {
-		err := file.DeleteDir(ctx, n.oldPath)
-		if err != nil {
-			log.Errorf("failed to flushing vector to ngt index in delete file. error: %v", err)
-		}
+	nkvs := kvs.New(kvs.WithConcurrency(n.kvsdbConcurrency))
+
+	nvq, err := vqueue.New()
+	if err != nil {
+		log.Errorf("failed to create new vector vector queue. error: %v", err)
 	}
 
 	// renew instance
@@ -1255,9 +1276,15 @@ func (n *ngt) RegenerateIndexes(ctx context.Context) (err error) {
 	if err != nil {
 		return err
 	}
+	nn.kvs = nkvs
+	nn.vq = nvq
+
 	// Regenerate with flags set
 	nn.flushing.Store(true)
 	nn.indexing.Store(true)
+	defer nn.flushing.Store(false)
+	defer nn.indexing.Store(false)
+
 	n = nn
 
 	return nil
@@ -1400,6 +1427,50 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 			return err
 		}
 	}
+	if n.IsStatisticsEnabled() {
+		log.Info("loading index statistics to cache")
+		stats, err := n.core.GetGraphStatistics(core.AdditionalStatistics)
+		if err != nil {
+			log.Errorf("failed to load index statistics to cache: %v", err)
+			return err
+		}
+		n.statisticsCache.Store(&payload.Info_Index_Statistics{
+			Valid:                            stats.Valid,
+			MedianIndegree:                   stats.MedianIndegree,
+			MedianOutdegree:                  stats.MedianOutdegree,
+			MaxNumberOfIndegree:              stats.MaxNumberOfIndegree,
+			MaxNumberOfOutdegree:             stats.MaxNumberOfOutdegree,
+			MinNumberOfIndegree:              stats.MinNumberOfIndegree,
+			MinNumberOfOutdegree:             stats.MinNumberOfOutdegree,
+			ModeIndegree:                     stats.ModeIndegree,
+			ModeOutdegree:                    stats.ModeOutdegree,
+			NodesSkippedFor10Edges:           stats.NodesSkippedFor10Edges,
+			NodesSkippedForIndegreeDistance:  stats.NodesSkippedForIndegreeDistance,
+			NumberOfEdges:                    stats.NumberOfEdges,
+			NumberOfIndexedObjects:           stats.NumberOfIndexedObjects,
+			NumberOfNodes:                    stats.NumberOfNodes,
+			NumberOfNodesWithoutEdges:        stats.NumberOfNodesWithoutEdges,
+			NumberOfNodesWithoutIndegree:     stats.NumberOfNodesWithoutIndegree,
+			NumberOfObjects:                  stats.NumberOfObjects,
+			NumberOfRemovedObjects:           stats.NumberOfRemovedObjects,
+			SizeOfObjectRepository:           stats.SizeOfObjectRepository,
+			SizeOfRefinementObjectRepository: stats.SizeOfRefinementObjectRepository,
+			VarianceOfIndegree:               stats.VarianceOfIndegree,
+			VarianceOfOutdegree:              stats.VarianceOfOutdegree,
+			MeanEdgeLength:                   stats.MeanEdgeLength,
+			MeanEdgeLengthFor10Edges:         stats.MeanEdgeLengthFor10Edges,
+			MeanIndegreeDistanceFor10Edges:   stats.MeanIndegreeDistanceFor10Edges,
+			MeanNumberOfEdgesPerNode:         stats.MeanNumberOfEdgesPerNode,
+			C1Indegree:                       stats.C1Indegree,
+			C5Indegree:                       stats.C5Indegree,
+			C95Outdegree:                     stats.C95Outdegree,
+			C99Outdegree:                     stats.C99Outdegree,
+			IndegreeCount:                    stats.IndegreeCount,
+			OutdegreeHistogram:               stats.OutdegreeHistogram,
+			IndegreeHistogram:                stats.IndegreeHistogram,
+		})
+	}
+
 	return err
 }
 
@@ -1958,7 +2029,24 @@ func (n *ngt) ListObjectFunc(ctx context.Context, f func(uuid string, oid uint32
 	})
 }
 
-func (n *ngt) toSearchResponse(sr []algorithm.SearchResult) (res *payload.Search_Response, err error) {
+func (n *ngt) IndexStatistics() (stats *payload.Info_Index_Statistics, err error) {
+	if !n.IsStatisticsEnabled() {
+		return nil, errors.ErrNGTIndexStatisticsDisabled
+	}
+	stats = n.statisticsCache.Load()
+	if stats == nil {
+		return nil, errors.ErrNGTIndexStatisticsNotReady
+	}
+	return stats, nil
+}
+
+func (n *ngt) IsStatisticsEnabled() bool {
+	return n.enableStatistics
+}
+
+func (n *ngt) toSearchResponse(
+	sr []algorithm.SearchResult,
+) (res *payload.Search_Response, err error) {
 	if len(sr) == 0 {
 		if n.Len() == 0 {
 			return nil, nil

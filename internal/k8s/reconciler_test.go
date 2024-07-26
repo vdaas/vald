@@ -104,7 +104,6 @@ package k8s
 // 			if err := checkFunc(test.want, gotCl, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -114,13 +113,15 @@ package k8s
 // 		ctx context.Context
 // 	}
 // 	type fields struct {
-// 		eg             errgroup.Group
-// 		name           string
-// 		merticsAddr    string
-// 		leaderElection bool
-// 		mgr            manager.Manager
-// 		rcs            []ResourceController
-// 		der            net.Dialer
+// 		eg                      errgroup.Group
+// 		name                    string
+// 		merticsAddr             string
+// 		leaderElection          bool
+// 		leaderElectionID        string
+// 		leaderElectionNamespace string
+// 		mgr                     manager.Manager
+// 		rcs                     []ResourceController
+// 		der                     net.Dialer
 // 	}
 // 	type want struct {
 // 		want <-chan error
@@ -157,6 +158,8 @@ package k8s
 // 		           name:"",
 // 		           merticsAddr:"",
 // 		           leaderElection:false,
+// 		           leaderElectionID:"",
+// 		           leaderElectionNamespace:"",
 // 		           mgr:nil,
 // 		           rcs:nil,
 // 		           der:nil,
@@ -185,6 +188,8 @@ package k8s
 // 		           name:"",
 // 		           merticsAddr:"",
 // 		           leaderElection:false,
+// 		           leaderElectionID:"",
+// 		           leaderElectionNamespace:"",
 // 		           mgr:nil,
 // 		           rcs:nil,
 // 		           der:nil,
@@ -218,20 +223,141 @@ package k8s
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			c := &controller{
-// 				eg:             test.fields.eg,
-// 				name:           test.fields.name,
-// 				merticsAddr:    test.fields.merticsAddr,
-// 				leaderElection: test.fields.leaderElection,
-// 				mgr:            test.fields.mgr,
-// 				rcs:            test.fields.rcs,
-// 				der:            test.fields.der,
+// 				eg:                      test.fields.eg,
+// 				name:                    test.fields.name,
+// 				merticsAddr:             test.fields.merticsAddr,
+// 				leaderElection:          test.fields.leaderElection,
+// 				leaderElectionID:        test.fields.leaderElectionID,
+// 				leaderElectionNamespace: test.fields.leaderElectionNamespace,
+// 				mgr:                     test.fields.mgr,
+// 				rcs:                     test.fields.rcs,
+// 				der:                     test.fields.der,
 // 			}
 //
 // 			got, err := c.Start(test.args.ctx)
 // 			if err := checkFunc(test.want, got, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
+// 		})
+// 	}
+// }
 //
+// func Test_controller_GetManager(t *testing.T) {
+// 	type fields struct {
+// 		eg                      errgroup.Group
+// 		name                    string
+// 		merticsAddr             string
+// 		leaderElection          bool
+// 		leaderElectionID        string
+// 		leaderElectionNamespace string
+// 		mgr                     manager.Manager
+// 		rcs                     []ResourceController
+// 		der                     net.Dialer
+// 	}
+// 	type want struct {
+// 		want Manager
+// 	}
+// 	type test struct {
+// 		name       string
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, Manager) error
+// 		beforeFunc func(*testing.T)
+// 		afterFunc  func(*testing.T)
+// 	}
+// 	defaultCheckFunc := func(w want, got Manager) error {
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       fields: fields {
+// 		           eg:nil,
+// 		           name:"",
+// 		           merticsAddr:"",
+// 		           leaderElection:false,
+// 		           leaderElectionID:"",
+// 		           leaderElectionNamespace:"",
+// 		           mgr:nil,
+// 		           rcs:nil,
+// 		           der:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           fields: fields {
+// 		           eg:nil,
+// 		           name:"",
+// 		           merticsAddr:"",
+// 		           leaderElection:false,
+// 		           leaderElectionID:"",
+// 		           leaderElectionNamespace:"",
+// 		           mgr:nil,
+// 		           rcs:nil,
+// 		           der:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			c := &controller{
+// 				eg:                      test.fields.eg,
+// 				name:                    test.fields.name,
+// 				merticsAddr:             test.fields.merticsAddr,
+// 				leaderElection:          test.fields.leaderElection,
+// 				leaderElectionID:        test.fields.leaderElectionID,
+// 				leaderElectionNamespace: test.fields.leaderElectionNamespace,
+// 				mgr:                     test.fields.mgr,
+// 				rcs:                     test.fields.rcs,
+// 				der:                     test.fields.der,
+// 			}
+//
+// 			got := c.GetManager()
+// 			if err := checkFunc(test.want, got); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
 // 		})
 // 	}
 // }

@@ -160,10 +160,10 @@ RemoveByTimestamp RPC is the method to remove vectors based on timestamp.
 
   - Remove.Timestamp
 
-    |   field   | type                      | label | required | description                                       |
-    | :-------: | :------------------------ | :---- | :------: | :------------------------------------------------ |
-    | timestamp | int64                     |       |    \*    | The timestamp.                                    |
-    | operator  | Remove.Timestamp.Operator |       |          | The conditionl operator. (default value is `Eq`). |
+    |   field   | type                      | label | required | description                                        |
+    | :-------: | :------------------------ | :---- | :------: | :------------------------------------------------- |
+    | timestamp | int64                     |       |    \*    | The timestamp.                                     |
+    | operator  | Remove.Timestamp.Operator |       |          | The conditional operator. (default value is `Eq`). |
 
   - Remove.Timestamp.Operator
 
@@ -369,7 +369,7 @@ gRPC has a message size limitation.<br>
 Please be careful that the size of the request exceeds the limit.
 </div>
 
-## Input
+### Input
 
 - the scheme of `payload.v1.Remove.MultiRequest`
 

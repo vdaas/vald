@@ -46,6 +46,10 @@ var (
 	}
 
 	ErrSearchResultEmptyButNoDataStored = New("empty search result from cgo but no index data stored in ngt, this error can be ignored.")
+
+	ErrNGTIndexStatisticsDisabled = New("ngt get statistics is disabled")
+
+	ErrNGTIndexStatisticsNotReady = New("ngt get statistics is not ready")
 )
 
 type NGTError struct {

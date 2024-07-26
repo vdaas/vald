@@ -25,7 +25,7 @@ This is the easiest way to start developing `Vald`. You can just open our [devco
 We don't officially have a setup documentation for now, but you can take a look at the [`Dockerfile`](https://github.com/vdaas/vald/blob/main/dockers/dev/Dockerfile).
 That's everything you need to build and test `Vald`, so you can use it as a reference.
 
-> If you would like to use the `Dockerfile` directlly, please note that `docker-in-docker` environment is required to run our E2E tests.
+> If you would like to use the `Dockerfile` directly, please note that `docker-in-docker` environment is required to run our E2E tests.
 > In devcontainer, [`VS Code` handles it for us](https://github.com/devcontainers/features/tree/main/src/docker-in-docker).
 
 ## Run tests

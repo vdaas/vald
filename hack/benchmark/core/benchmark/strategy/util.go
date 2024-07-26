@@ -42,7 +42,9 @@ func wrapErrors(errs []error) (wrapped error) {
 	return
 }
 
-func insertAndCreateIndex32(ctx context.Context, c algorithm.Bit32, dataset assets.Dataset) (ids []uint, err error) {
+func insertAndCreateIndex32(
+	ctx context.Context, c algorithm.Bit32, dataset assets.Dataset,
+) (ids []uint, err error) {
 	ids = make([]uint, 0, dataset.TrainSize()*bulkInsertCnt)
 
 	n := 0
@@ -72,7 +74,9 @@ func insertAndCreateIndex32(ctx context.Context, c algorithm.Bit32, dataset asse
 	return
 }
 
-func insertAndCreateIndex64(ctx context.Context, c algorithm.Bit64, dataset assets.Dataset) (ids []uint, err error) {
+func insertAndCreateIndex64(
+	ctx context.Context, c algorithm.Bit64, dataset assets.Dataset,
+) (ids []uint, err error) {
 	ids = make([]uint, 0, dataset.TrainSize()*bulkInsertCnt)
 
 	n := 0
