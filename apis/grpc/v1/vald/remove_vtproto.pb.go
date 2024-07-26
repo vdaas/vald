@@ -142,22 +142,24 @@ type RemoveServer interface {
 }
 
 // UnimplementedRemoveServer must be embedded to have forward compatible implementations.
-type UnimplementedRemoveServer struct {
-}
+type UnimplementedRemoveServer struct{}
 
 func (UnimplementedRemoveServer) Remove(
 	context.Context, *payload.Remove_Request,
 ) (*payload.Object_Location, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Remove not implemented")
 }
+
 func (UnimplementedRemoveServer) RemoveByTimestamp(
 	context.Context, *payload.Remove_TimestampRequest,
 ) (*payload.Object_Locations, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RemoveByTimestamp not implemented")
 }
+
 func (UnimplementedRemoveServer) StreamRemove(Remove_StreamRemoveServer) error {
 	return status.Errorf(codes.Unimplemented, "method StreamRemove not implemented")
 }
+
 func (UnimplementedRemoveServer) MultiRemove(
 	context.Context, *payload.Remove_MultiRequest,
 ) (*payload.Object_Locations, error) {

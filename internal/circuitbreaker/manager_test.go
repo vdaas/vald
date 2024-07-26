@@ -100,7 +100,6 @@ package circuitbreaker
 // 			if err := checkFunc(test.want, got, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -213,7 +212,6 @@ package circuitbreaker
 // 			if err := checkFunc(test.want, gotVal, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -299,7 +297,6 @@ package circuitbreaker
 // 			if err := checkFunc(test.want, gotMs); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }

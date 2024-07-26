@@ -81,6 +81,7 @@ var file_v1_discoverer_discoverer_proto_goTypes = []any{
 	(*payload.Info_Nodes)(nil),         // 2: payload.v1.Info.Nodes
 	(*payload.Info_Services)(nil),      // 3: payload.v1.Info.Services
 }
+
 var file_v1_discoverer_discoverer_proto_depIdxs = []int32{
 	0, // 0: discoverer.v1.Discoverer.Pods:input_type -> payload.v1.Discoverer.Request
 	0, // 1: discoverer.v1.Discoverer.Nodes:input_type -> payload.v1.Discoverer.Request

@@ -103,7 +103,6 @@ package pool
 // 			if err := checkFunc(test.want, gotC, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -131,8 +130,7 @@ package pool
 // 		resolveDNS    bool
 // 		reconnectHash atomic.Pointer[string]
 // 	}
-// 	type want struct {
-// 	}
+// 	type want struct{}
 // 	type test struct {
 // 		name       string
 // 		args       args
@@ -289,8 +287,7 @@ package pool
 // 		resolveDNS    bool
 // 		reconnectHash atomic.Pointer[string]
 // 	}
-// 	type want struct {
-// 	}
+// 	type want struct{}
 // 	type test struct {
 // 		name       string
 // 		args       args
@@ -582,7 +579,6 @@ package pool
 // 			if err := checkFunc(test.want, gotPc); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -611,8 +607,7 @@ package pool
 // 		resolveDNS    bool
 // 		reconnectHash atomic.Pointer[string]
 // 	}
-// 	type want struct {
-// 	}
+// 	type want struct{}
 // 	type test struct {
 // 		name       string
 // 		args       args
@@ -909,7 +904,6 @@ package pool
 // 			if err := checkFunc(test.want, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -1062,7 +1056,6 @@ package pool
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -1215,7 +1208,6 @@ package pool
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -1240,8 +1232,7 @@ package pool
 // 		resolveDNS    bool
 // 		reconnectHash atomic.Pointer[string]
 // 	}
-// 	type want struct {
-// 	}
+// 	type want struct{}
 // 	type test struct {
 // 		name       string
 // 		fields     fields
@@ -1535,7 +1526,6 @@ package pool
 // 			if err := checkFunc(test.want, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -1702,7 +1692,175 @@ package pool
 // 			if err := checkFunc(test.want, gotC, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
+// 		})
+// 	}
+// }
 //
+// func Test_pool_connect(t *testing.T) {
+// 	type args struct {
+// 		ctx context.Context
+// 		ips []string
+// 	}
+// 	type fields struct {
+// 		pool          []atomic.Pointer[poolConn]
+// 		startPort     uint16
+// 		endPort       uint16
+// 		host          string
+// 		port          uint16
+// 		addr          string
+// 		size          atomic.Uint64
+// 		current       atomic.Uint64
+// 		bo            backoff.Backoff
+// 		eg            errgroup.Group
+// 		dopts         []DialOption
+// 		dialTimeout   time.Duration
+// 		roccd         time.Duration
+// 		closing       atomic.Bool
+// 		isIP          bool
+// 		resolveDNS    bool
+// 		reconnectHash atomic.Pointer[string]
+// 	}
+// 	type want struct {
+// 		wantC Conn
+// 		err   error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, Conn, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, gotC Conn, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		if !reflect.DeepEqual(gotC, w.wantC) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotC, w.wantC)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           ctx:nil,
+// 		           ips:nil,
+// 		       },
+// 		       fields: fields {
+// 		           pool:nil,
+// 		           startPort:0,
+// 		           endPort:0,
+// 		           host:"",
+// 		           port:0,
+// 		           addr:"",
+// 		           size:nil,
+// 		           current:nil,
+// 		           bo:nil,
+// 		           eg:nil,
+// 		           dopts:nil,
+// 		           dialTimeout:nil,
+// 		           roccd:nil,
+// 		           closing:nil,
+// 		           isIP:false,
+// 		           resolveDNS:false,
+// 		           reconnectHash:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           ctx:nil,
+// 		           ips:nil,
+// 		           },
+// 		           fields: fields {
+// 		           pool:nil,
+// 		           startPort:0,
+// 		           endPort:0,
+// 		           host:"",
+// 		           port:0,
+// 		           addr:"",
+// 		           size:nil,
+// 		           current:nil,
+// 		           bo:nil,
+// 		           eg:nil,
+// 		           dopts:nil,
+// 		           dialTimeout:nil,
+// 		           roccd:nil,
+// 		           closing:nil,
+// 		           isIP:false,
+// 		           resolveDNS:false,
+// 		           reconnectHash:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			p := &pool{
+// 				pool:          test.fields.pool,
+// 				startPort:     test.fields.startPort,
+// 				endPort:       test.fields.endPort,
+// 				host:          test.fields.host,
+// 				port:          test.fields.port,
+// 				addr:          test.fields.addr,
+// 				size:          test.fields.size,
+// 				current:       test.fields.current,
+// 				bo:            test.fields.bo,
+// 				eg:            test.fields.eg,
+// 				dopts:         test.fields.dopts,
+// 				dialTimeout:   test.fields.dialTimeout,
+// 				roccd:         test.fields.roccd,
+// 				closing:       test.fields.closing,
+// 				isIP:          test.fields.isIP,
+// 				resolveDNS:    test.fields.resolveDNS,
+// 				reconnectHash: test.fields.reconnectHash,
+// 			}
+//
+// 			gotC, err := p.connect(test.args.ctx, test.args.ips...)
+// 			if err := checkFunc(test.want, gotC, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
 // 		})
 // 	}
 // }
@@ -1872,7 +2030,6 @@ package pool
 // 			if err := checkFunc(test.want, gotC, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -2039,7 +2196,6 @@ package pool
 // 			if err := checkFunc(test.want, gotC, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -2192,7 +2348,6 @@ package pool
 // 			if err := checkFunc(test.want, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -2362,7 +2517,6 @@ package pool
 // 			if err := checkFunc(test.want, gotConn, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -2525,7 +2679,6 @@ package pool
 // 			if err := checkFunc(test.want, gotHealthy); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -2691,7 +2844,6 @@ package pool
 // 			if err := checkFunc(test.want, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -2858,7 +3010,6 @@ package pool
 // 			if err := checkFunc(test.want, got, got1); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -3031,7 +3182,6 @@ package pool
 // 			if err := checkFunc(test.want, got, got1); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -3184,7 +3334,6 @@ package pool
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -3337,7 +3486,6 @@ package pool
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -3504,7 +3652,6 @@ package pool
 // 			if err := checkFunc(test.want, gotIps, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -3671,7 +3818,6 @@ package pool
 // 			if err := checkFunc(test.want, gotPort, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -3824,7 +3970,6 @@ package pool
 // 			if err := checkFunc(test.want, gotIsIP); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -3977,7 +4122,6 @@ package pool
 // 			if err := checkFunc(test.want, gotStr); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -4083,13 +4227,13 @@ package pool
 // 			if err := checkFunc(test.want, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
 //
 // func Test_isHealthy(t *testing.T) {
 // 	type args struct {
+// 		ctx  context.Context
 // 		conn *ClientConn
 // 	}
 // 	type want struct {
@@ -4115,6 +4259,7 @@ package pool
 // 		   {
 // 		       name: "test_case_1",
 // 		       args: args {
+// 		           ctx:nil,
 // 		           conn:nil,
 // 		       },
 // 		       want: want{},
@@ -4134,6 +4279,7 @@ package pool
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           args: args {
+// 		           ctx:nil,
 // 		           conn:nil,
 // 		           },
 // 		           want: want{},
@@ -4165,11 +4311,10 @@ package pool
 // 				checkFunc = defaultCheckFunc
 // 			}
 //
-// 			got := isHealthy(test.args.conn)
+// 			got := isHealthy(test.args.ctx, test.args.conn)
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }

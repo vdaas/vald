@@ -1985,7 +1985,6 @@ func Test_dialer_tlsHandshake(t *testing.T) {
 // 			if err := checkFunc(test.want, gotIps, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }

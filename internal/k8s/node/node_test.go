@@ -102,7 +102,6 @@ import _ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -119,8 +118,7 @@ import _ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 // 		onReconcile func(nodes []Node)
 // 		lopts       []client.ListOption
 // 	}
-// 	type want struct {
-// 	}
+// 	type want struct{}
 // 	type test struct {
 // 		name       string
 // 		args       args
@@ -342,7 +340,6 @@ import _ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 // 			if err := checkFunc(test.want, gotRes, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -451,14 +448,13 @@ import _ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
 //
 // func Test_reconciler_NewReconciler(t *testing.T) {
 // 	type args struct {
-// 		in0 context.Context
+// 		ctx context.Context
 // 		mgr manager.Manager
 // 	}
 // 	type fields struct {
@@ -493,7 +489,7 @@ import _ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 // 		   {
 // 		       name: "test_case_1",
 // 		       args: args {
-// 		           in0:nil,
+// 		           ctx:nil,
 // 		           mgr:nil,
 // 		       },
 // 		       fields: fields {
@@ -521,7 +517,7 @@ import _ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           args: args {
-// 		           in0:nil,
+// 		           ctx:nil,
 // 		           mgr:nil,
 // 		           },
 // 		           fields: fields {
@@ -569,11 +565,10 @@ import _ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 // 				lopts:       test.fields.lopts,
 // 			}
 //
-// 			got := r.NewReconciler(test.args.in0, test.args.mgr)
+// 			got := r.NewReconciler(test.args.ctx, test.args.mgr)
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -686,7 +681,6 @@ import _ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 // 			if err := checkFunc(test.want, got, got1); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -799,7 +793,6 @@ import _ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 // 			if err := checkFunc(test.want, got, got1); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -916,7 +909,6 @@ import _ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 // 			if err := checkFunc(test.want, got, got1, got2); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }

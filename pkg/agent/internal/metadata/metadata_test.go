@@ -104,7 +104,6 @@ package metadata
 // 			if err := checkFunc(test.want, gotMeta, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -193,7 +192,6 @@ package metadata
 // 			if err := checkFunc(test.want, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }

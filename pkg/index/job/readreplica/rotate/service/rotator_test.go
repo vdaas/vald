@@ -276,7 +276,6 @@ func Test_parseReplicaID(t *testing.T) {
 // 			if err := checkFunc(test.want, got, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -289,9 +288,7 @@ func Test_parseReplicaID(t *testing.T) {
 // 		namespace           string
 // 		volumeName          string
 // 		readReplicaLabelKey string
-// 		readReplicaID       string
-// 		client              client.Client
-// 		listOpts            client.ListOptions
+// 		subProcesses        []subProcess
 // 	}
 // 	type want struct {
 // 		err error
@@ -323,9 +320,7 @@ func Test_parseReplicaID(t *testing.T) {
 // 		           namespace:"",
 // 		           volumeName:"",
 // 		           readReplicaLabelKey:"",
-// 		           readReplicaID:"",
-// 		           client:nil,
-// 		           listOpts:nil,
+// 		           subProcesses:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -350,9 +345,7 @@ func Test_parseReplicaID(t *testing.T) {
 // 		           namespace:"",
 // 		           volumeName:"",
 // 		           readReplicaLabelKey:"",
-// 		           readReplicaID:"",
-// 		           client:nil,
-// 		           listOpts:nil,
+// 		           subProcesses:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -386,16 +379,1033 @@ func Test_parseReplicaID(t *testing.T) {
 // 				namespace:           test.fields.namespace,
 // 				volumeName:          test.fields.volumeName,
 // 				readReplicaLabelKey: test.fields.readReplicaLabelKey,
-// 				readReplicaID:       test.fields.readReplicaID,
-// 				client:              test.fields.client,
-// 				listOpts:            test.fields.listOpts,
+// 				subProcesses:        test.fields.subProcesses,
 // 			}
 //
 // 			err := r.Start(test.args.ctx)
 // 			if err := checkFunc(test.want, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
+// 		})
+// 	}
+// }
 //
+// func Test_rotator_newSubprocess(t *testing.T) {
+// 	type args struct {
+// 		c         client.Client
+// 		replicaID string
+// 	}
+// 	type fields struct {
+// 		namespace           string
+// 		volumeName          string
+// 		readReplicaLabelKey string
+// 		subProcesses        []subProcess
+// 	}
+// 	type want struct {
+// 		want subProcess
+// 		err  error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, subProcess, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, got subProcess, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           c:nil,
+// 		           replicaID:"",
+// 		       },
+// 		       fields: fields {
+// 		           namespace:"",
+// 		           volumeName:"",
+// 		           readReplicaLabelKey:"",
+// 		           subProcesses:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           c:nil,
+// 		           replicaID:"",
+// 		           },
+// 		           fields: fields {
+// 		           namespace:"",
+// 		           volumeName:"",
+// 		           readReplicaLabelKey:"",
+// 		           subProcesses:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			r := &rotator{
+// 				namespace:           test.fields.namespace,
+// 				volumeName:          test.fields.volumeName,
+// 				readReplicaLabelKey: test.fields.readReplicaLabelKey,
+// 				subProcesses:        test.fields.subProcesses,
+// 			}
+//
+// 			got, err := r.newSubprocess(test.args.c, test.args.replicaID)
+// 			if err := checkFunc(test.want, got, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_subProcess_rotate(t *testing.T) {
+// 	type args struct {
+// 		ctx context.Context
+// 	}
+// 	type fields struct {
+// 		listOpts   k8s.ListOptions
+// 		client     client.Client
+// 		volumeName string
+// 	}
+// 	type want struct {
+// 		err error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           ctx:nil,
+// 		       },
+// 		       fields: fields {
+// 		           listOpts:nil,
+// 		           client:nil,
+// 		           volumeName:"",
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           ctx:nil,
+// 		           },
+// 		           fields: fields {
+// 		           listOpts:nil,
+// 		           client:nil,
+// 		           volumeName:"",
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			s := &subProcess{
+// 				listOpts:   test.fields.listOpts,
+// 				client:     test.fields.client,
+// 				volumeName: test.fields.volumeName,
+// 			}
+//
+// 			err := s.rotate(test.args.ctx)
+// 			if err := checkFunc(test.want, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_subProcess_createSnapshot(t *testing.T) {
+// 	type args struct {
+// 		ctx        context.Context
+// 		deployment *k8s.Deployment
+// 	}
+// 	type fields struct {
+// 		listOpts   k8s.ListOptions
+// 		client     client.Client
+// 		volumeName string
+// 	}
+// 	type want struct {
+// 		wantNewSnap *k8s.VolumeSnapshot
+// 		wantOldSnap *k8s.VolumeSnapshot
+// 		err         error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, *k8s.VolumeSnapshot, *k8s.VolumeSnapshot, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, gotNewSnap *k8s.VolumeSnapshot, gotOldSnap *k8s.VolumeSnapshot, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		if !reflect.DeepEqual(gotNewSnap, w.wantNewSnap) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotNewSnap, w.wantNewSnap)
+// 		}
+// 		if !reflect.DeepEqual(gotOldSnap, w.wantOldSnap) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotOldSnap, w.wantOldSnap)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           ctx:nil,
+// 		           deployment:nil,
+// 		       },
+// 		       fields: fields {
+// 		           listOpts:nil,
+// 		           client:nil,
+// 		           volumeName:"",
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           ctx:nil,
+// 		           deployment:nil,
+// 		           },
+// 		           fields: fields {
+// 		           listOpts:nil,
+// 		           client:nil,
+// 		           volumeName:"",
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			s := &subProcess{
+// 				listOpts:   test.fields.listOpts,
+// 				client:     test.fields.client,
+// 				volumeName: test.fields.volumeName,
+// 			}
+//
+// 			gotNewSnap, gotOldSnap, err := s.createSnapshot(test.args.ctx, test.args.deployment)
+// 			if err := checkFunc(test.want, gotNewSnap, gotOldSnap, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_subProcess_createPVC(t *testing.T) {
+// 	type args struct {
+// 		ctx         context.Context
+// 		newSnapShot string
+// 		deployment  *k8s.Deployment
+// 	}
+// 	type fields struct {
+// 		listOpts   k8s.ListOptions
+// 		client     client.Client
+// 		volumeName string
+// 	}
+// 	type want struct {
+// 		wantNewPvc *k8s.PersistentVolumeClaim
+// 		wantOldPvc *k8s.PersistentVolumeClaim
+// 		err        error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, *k8s.PersistentVolumeClaim, *k8s.PersistentVolumeClaim, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, gotNewPvc *k8s.PersistentVolumeClaim, gotOldPvc *k8s.PersistentVolumeClaim, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		if !reflect.DeepEqual(gotNewPvc, w.wantNewPvc) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotNewPvc, w.wantNewPvc)
+// 		}
+// 		if !reflect.DeepEqual(gotOldPvc, w.wantOldPvc) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotOldPvc, w.wantOldPvc)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           ctx:nil,
+// 		           newSnapShot:"",
+// 		           deployment:nil,
+// 		       },
+// 		       fields: fields {
+// 		           listOpts:nil,
+// 		           client:nil,
+// 		           volumeName:"",
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           ctx:nil,
+// 		           newSnapShot:"",
+// 		           deployment:nil,
+// 		           },
+// 		           fields: fields {
+// 		           listOpts:nil,
+// 		           client:nil,
+// 		           volumeName:"",
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			s := &subProcess{
+// 				listOpts:   test.fields.listOpts,
+// 				client:     test.fields.client,
+// 				volumeName: test.fields.volumeName,
+// 			}
+//
+// 			gotNewPvc, gotOldPvc, err := s.createPVC(test.args.ctx, test.args.newSnapShot, test.args.deployment)
+// 			if err := checkFunc(test.want, gotNewPvc, gotOldPvc, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_subProcess_getDeployment(t *testing.T) {
+// 	type args struct {
+// 		ctx context.Context
+// 	}
+// 	type fields struct {
+// 		listOpts   k8s.ListOptions
+// 		client     client.Client
+// 		volumeName string
+// 	}
+// 	type want struct {
+// 		want *k8s.Deployment
+// 		err  error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, *k8s.Deployment, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, got *k8s.Deployment, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           ctx:nil,
+// 		       },
+// 		       fields: fields {
+// 		           listOpts:nil,
+// 		           client:nil,
+// 		           volumeName:"",
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           ctx:nil,
+// 		           },
+// 		           fields: fields {
+// 		           listOpts:nil,
+// 		           client:nil,
+// 		           volumeName:"",
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			s := &subProcess{
+// 				listOpts:   test.fields.listOpts,
+// 				client:     test.fields.client,
+// 				volumeName: test.fields.volumeName,
+// 			}
+//
+// 			got, err := s.getDeployment(test.args.ctx)
+// 			if err := checkFunc(test.want, got, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_subProcess_updateDeployment(t *testing.T) {
+// 	type args struct {
+// 		ctx          context.Context
+// 		newPVC       string
+// 		deployment   *k8s.Deployment
+// 		snapshotTime time.Time
+// 	}
+// 	type fields struct {
+// 		listOpts   k8s.ListOptions
+// 		client     client.Client
+// 		volumeName string
+// 	}
+// 	type want struct {
+// 		err error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           ctx:nil,
+// 		           newPVC:"",
+// 		           deployment:nil,
+// 		           snapshotTime:time.Time{},
+// 		       },
+// 		       fields: fields {
+// 		           listOpts:nil,
+// 		           client:nil,
+// 		           volumeName:"",
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           ctx:nil,
+// 		           newPVC:"",
+// 		           deployment:nil,
+// 		           snapshotTime:time.Time{},
+// 		           },
+// 		           fields: fields {
+// 		           listOpts:nil,
+// 		           client:nil,
+// 		           volumeName:"",
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			s := &subProcess{
+// 				listOpts:   test.fields.listOpts,
+// 				client:     test.fields.client,
+// 				volumeName: test.fields.volumeName,
+// 			}
+//
+// 			err := s.updateDeployment(test.args.ctx, test.args.newPVC, test.args.deployment, test.args.snapshotTime)
+// 			if err := checkFunc(test.want, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_subProcess_deleteSnapshot(t *testing.T) {
+// 	type args struct {
+// 		ctx      context.Context
+// 		snapshot *k8s.VolumeSnapshot
+// 	}
+// 	type fields struct {
+// 		listOpts   k8s.ListOptions
+// 		client     client.Client
+// 		volumeName string
+// 	}
+// 	type want struct {
+// 		err error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           ctx:nil,
+// 		           snapshot:nil,
+// 		       },
+// 		       fields: fields {
+// 		           listOpts:nil,
+// 		           client:nil,
+// 		           volumeName:"",
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           ctx:nil,
+// 		           snapshot:nil,
+// 		           },
+// 		           fields: fields {
+// 		           listOpts:nil,
+// 		           client:nil,
+// 		           volumeName:"",
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			s := &subProcess{
+// 				listOpts:   test.fields.listOpts,
+// 				client:     test.fields.client,
+// 				volumeName: test.fields.volumeName,
+// 			}
+//
+// 			err := s.deleteSnapshot(test.args.ctx, test.args.snapshot)
+// 			if err := checkFunc(test.want, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_subProcess_deletePVC(t *testing.T) {
+// 	type args struct {
+// 		ctx context.Context
+// 		pvc *k8s.PersistentVolumeClaim
+// 	}
+// 	type fields struct {
+// 		listOpts   k8s.ListOptions
+// 		client     client.Client
+// 		volumeName string
+// 	}
+// 	type want struct {
+// 		err error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           ctx:nil,
+// 		           pvc:nil,
+// 		       },
+// 		       fields: fields {
+// 		           listOpts:nil,
+// 		           client:nil,
+// 		           volumeName:"",
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           ctx:nil,
+// 		           pvc:nil,
+// 		           },
+// 		           fields: fields {
+// 		           listOpts:nil,
+// 		           client:nil,
+// 		           volumeName:"",
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			s := &subProcess{
+// 				listOpts:   test.fields.listOpts,
+// 				client:     test.fields.client,
+// 				volumeName: test.fields.volumeName,
+// 			}
+//
+// 			err := s.deletePVC(test.args.ctx, test.args.pvc)
+// 			if err := checkFunc(test.want, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_rotator_parseReplicaID(t *testing.T) {
+// 	type args struct {
+// 		replicaID string
+// 		c         client.Client
+// 	}
+// 	type fields struct {
+// 		namespace           string
+// 		volumeName          string
+// 		readReplicaLabelKey string
+// 		subProcesses        []subProcess
+// 	}
+// 	type want struct {
+// 		want []string
+// 		err  error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, []string, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, got []string, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           replicaID:"",
+// 		           c:nil,
+// 		       },
+// 		       fields: fields {
+// 		           namespace:"",
+// 		           volumeName:"",
+// 		           readReplicaLabelKey:"",
+// 		           subProcesses:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           replicaID:"",
+// 		           c:nil,
+// 		           },
+// 		           fields: fields {
+// 		           namespace:"",
+// 		           volumeName:"",
+// 		           readReplicaLabelKey:"",
+// 		           subProcesses:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			r := &rotator{
+// 				namespace:           test.fields.namespace,
+// 				volumeName:          test.fields.volumeName,
+// 				readReplicaLabelKey: test.fields.readReplicaLabelKey,
+// 				subProcesses:        test.fields.subProcesses,
+// 			}
+//
+// 			got, err := r.parseReplicaID(test.args.replicaID, test.args.c)
+// 			if err := checkFunc(test.want, got, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
 // 		})
 // 	}
 // }

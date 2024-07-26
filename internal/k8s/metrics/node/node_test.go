@@ -100,7 +100,6 @@ package node
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -117,8 +116,7 @@ package node
 // 		onReconcile func(nodeList map[string]Node)
 // 		lopts       []client.ListOption
 // 	}
-// 	type want struct {
-// 	}
+// 	type want struct{}
 // 	type test struct {
 // 		name       string
 // 		args       args
@@ -340,7 +338,6 @@ package node
 // 			if err := checkFunc(test.want, gotRes, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -449,7 +446,6 @@ package node
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -571,7 +567,6 @@ package node
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -684,7 +679,6 @@ package node
 // 			if err := checkFunc(test.want, got, got1); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -797,7 +791,6 @@ package node
 // 			if err := checkFunc(test.want, got, got1); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -914,7 +907,6 @@ package node
 // 			if err := checkFunc(test.want, got, got1, got2); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }

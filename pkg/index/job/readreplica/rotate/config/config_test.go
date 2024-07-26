@@ -100,7 +100,6 @@ package config
 // 			if err := checkFunc(test.want, gotCfg, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }

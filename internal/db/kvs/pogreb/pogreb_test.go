@@ -582,7 +582,6 @@ func Test_db_Len(t *testing.T) {
 
 // NOT IMPLEMENTED BELOW
 //
-//
 // func Test_db_Set(t *testing.T) {
 // 	type args struct {
 // 		key string
@@ -688,7 +687,6 @@ func Test_db_Len(t *testing.T) {
 // 			if err := checkFunc(test.want, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -795,7 +793,6 @@ func Test_db_Len(t *testing.T) {
 // 			if err := checkFunc(test.want, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }

@@ -518,7 +518,6 @@ func TestNewX509CertPool(t *testing.T) {
 // 			if err := checkFunc(test.want, gotC, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }

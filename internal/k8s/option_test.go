@@ -100,7 +100,6 @@ package k8s
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -186,7 +185,6 @@ package k8s
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -272,7 +270,6 @@ package k8s
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -358,7 +355,6 @@ package k8s
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -444,21 +440,26 @@ package k8s
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
 //
-// func TestWithEnableLeaderElection(t *testing.T) {
+// func TestWithLeaderElection(t *testing.T) {
+// 	type args struct {
+// 		enabled   bool
+// 		id        string
+// 		namespace string
+// 	}
 // 	type want struct {
 // 		want Option
 // 	}
 // 	type test struct {
 // 		name       string
+// 		args       args
 // 		want       want
 // 		checkFunc  func(want, Option) error
-// 		beforeFunc func(*testing.T)
-// 		afterFunc  func(*testing.T)
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
 // 	}
 // 	defaultCheckFunc := func(w want, got Option) error {
 // 		if !reflect.DeepEqual(got, w.want) {
@@ -471,12 +472,17 @@ package k8s
 // 		/*
 // 		   {
 // 		       name: "test_case_1",
+// 		       args: args {
+// 		           enabled:false,
+// 		           id:"",
+// 		           namespace:"",
+// 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
-// 		       beforeFunc: func(t *testing.T,) {
+// 		       beforeFunc: func(t *testing.T, args args) {
 // 		           t.Helper()
 // 		       },
-// 		       afterFunc: func(t *testing.T,) {
+// 		       afterFunc: func(t *testing.T, args args) {
 // 		           t.Helper()
 // 		       },
 // 		   },
@@ -487,12 +493,17 @@ package k8s
 // 		   func() test {
 // 		       return test {
 // 		           name: "test_case_2",
+// 		           args: args {
+// 		           enabled:false,
+// 		           id:"",
+// 		           namespace:"",
+// 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
-// 		           beforeFunc: func(t *testing.T,) {
+// 		           beforeFunc: func(t *testing.T, args args) {
 // 		               t.Helper()
 // 		           },
-// 		           afterFunc: func(t *testing.T,) {
+// 		           afterFunc: func(t *testing.T, args args) {
 // 		               t.Helper()
 // 		           },
 // 		       }
@@ -506,97 +517,20 @@ package k8s
 // 			tt.Parallel()
 // 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
 // 			if test.beforeFunc != nil {
-// 				test.beforeFunc(tt)
+// 				test.beforeFunc(tt, test.args)
 // 			}
 // 			if test.afterFunc != nil {
-// 				defer test.afterFunc(tt)
+// 				defer test.afterFunc(tt, test.args)
 // 			}
 // 			checkFunc := test.checkFunc
 // 			if test.checkFunc == nil {
 // 				checkFunc = defaultCheckFunc
 // 			}
 //
-// 			got := WithEnableLeaderElection()
+// 			got := WithLeaderElection(test.args.enabled, test.args.id, test.args.namespace)
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
-// 		})
-// 	}
-// }
-//
-// func TestWithDisableLeaderElection(t *testing.T) {
-// 	type want struct {
-// 		want Option
-// 	}
-// 	type test struct {
-// 		name       string
-// 		want       want
-// 		checkFunc  func(want, Option) error
-// 		beforeFunc func(*testing.T)
-// 		afterFunc  func(*testing.T)
-// 	}
-// 	defaultCheckFunc := func(w want, got Option) error {
-// 		if !reflect.DeepEqual(got, w.want) {
-// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-// 		}
-// 		return nil
-// 	}
-// 	tests := []test{
-// 		// TODO test cases
-// 		/*
-// 		   {
-// 		       name: "test_case_1",
-// 		       want: want{},
-// 		       checkFunc: defaultCheckFunc,
-// 		       beforeFunc: func(t *testing.T,) {
-// 		           t.Helper()
-// 		       },
-// 		       afterFunc: func(t *testing.T,) {
-// 		           t.Helper()
-// 		       },
-// 		   },
-// 		*/
-//
-// 		// TODO test cases
-// 		/*
-// 		   func() test {
-// 		       return test {
-// 		           name: "test_case_2",
-// 		           want: want{},
-// 		           checkFunc: defaultCheckFunc,
-// 		           beforeFunc: func(t *testing.T,) {
-// 		               t.Helper()
-// 		           },
-// 		           afterFunc: func(t *testing.T,) {
-// 		               t.Helper()
-// 		           },
-// 		       }
-// 		   }(),
-// 		*/
-// 	}
-//
-// 	for _, tc := range tests {
-// 		test := tc
-// 		t.Run(test.name, func(tt *testing.T) {
-// 			tt.Parallel()
-// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-// 			if test.beforeFunc != nil {
-// 				test.beforeFunc(tt)
-// 			}
-// 			if test.afterFunc != nil {
-// 				defer test.afterFunc(tt)
-// 			}
-// 			checkFunc := test.checkFunc
-// 			if test.checkFunc == nil {
-// 				checkFunc = defaultCheckFunc
-// 			}
-//
-// 			got := WithDisableLeaderElection()
-// 			if err := checkFunc(test.want, got); err != nil {
-// 				tt.Errorf("error = %v", err)
-// 			}
-//
 // 		})
 // 	}
 // }
@@ -682,7 +616,6 @@ package k8s
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }

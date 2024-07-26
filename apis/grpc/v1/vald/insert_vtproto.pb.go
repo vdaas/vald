@@ -127,17 +127,18 @@ type InsertServer interface {
 }
 
 // UnimplementedInsertServer must be embedded to have forward compatible implementations.
-type UnimplementedInsertServer struct {
-}
+type UnimplementedInsertServer struct{}
 
 func (UnimplementedInsertServer) Insert(
 	context.Context, *payload.Insert_Request,
 ) (*payload.Object_Location, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Insert not implemented")
 }
+
 func (UnimplementedInsertServer) StreamInsert(Insert_StreamInsertServer) error {
 	return status.Errorf(codes.Unimplemented, "method StreamInsert not implemented")
 }
+
 func (UnimplementedInsertServer) MultiInsert(
 	context.Context, *payload.Insert_MultiRequest,
 ) (*payload.Object_Locations, error) {
