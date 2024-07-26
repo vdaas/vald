@@ -23,22 +23,6 @@ on:
       - "v*.*.*"
       - "*.*.*-*"
       - "v*.*.*-*"
-    paths:
-      - ".github/actions/docker-build/action.yaml"
-      - ".github/workflows/_docker-image.yaml"
-      - ".github/workflows/dockers-benchmak-job-image.yml"
-      - "go.mod"
-      - "go.sum"
-      - "internal/**"
-      - "!internal/**/*_test.go"
-      - "!internal/db/**"
-      - "apis/grpc/**"
-      - "pkg/tools/benchmark/operator/**"
-      - "cmd/tools/benchmark/operator/**"
-      - "pkg/tools/benchmark/job/**"
-      - "cmd/tools/benchmark/job/**"
-      - "dockers/tools/benchmark/job/Dockerfile"
-      - "versions/GO_VERSION"
   pull_request:
     paths:
       - ".github/actions/docker-build/action.yaml"
