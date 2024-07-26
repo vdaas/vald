@@ -142,22 +142,24 @@ type RemoveServer interface {
 }
 
 // UnimplementedRemoveServer must be embedded to have forward compatible implementations.
-type UnimplementedRemoveServer struct {
-}
+type UnimplementedRemoveServer struct{}
 
 func (UnimplementedRemoveServer) Remove(
 	context.Context, *payload.Remove_Request,
 ) (*payload.Object_Location, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Remove not implemented")
 }
+
 func (UnimplementedRemoveServer) RemoveByTimestamp(
 	context.Context, *payload.Remove_TimestampRequest,
 ) (*payload.Object_Locations, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RemoveByTimestamp not implemented")
 }
+
 func (UnimplementedRemoveServer) StreamRemove(Remove_StreamRemoveServer) error {
 	return status.Errorf(codes.Unimplemented, "method StreamRemove not implemented")
 }
+
 func (UnimplementedRemoveServer) MultiRemove(
 	context.Context, *payload.Remove_MultiRequest,
 ) (*payload.Object_Locations, error) {
@@ -177,10 +179,7 @@ func RegisterRemoveServer(s grpc.ServiceRegistrar, srv RemoveServer) {
 }
 
 func _Remove_Remove_Handler(
-	srv any,
-	ctx context.Context,
-	dec func(any) error,
-	interceptor grpc.UnaryServerInterceptor,
+	srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor,
 ) (any, error) {
 	in := new(payload.Remove_Request)
 	if err := dec(in); err != nil {
@@ -200,10 +199,7 @@ func _Remove_Remove_Handler(
 }
 
 func _Remove_RemoveByTimestamp_Handler(
-	srv any,
-	ctx context.Context,
-	dec func(any) error,
-	interceptor grpc.UnaryServerInterceptor,
+	srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor,
 ) (any, error) {
 	in := new(payload.Remove_TimestampRequest)
 	if err := dec(in); err != nil {
@@ -249,10 +245,7 @@ func (x *removeStreamRemoveServer) Recv() (*payload.Remove_Request, error) {
 }
 
 func _Remove_MultiRemove_Handler(
-	srv any,
-	ctx context.Context,
-	dec func(any) error,
-	interceptor grpc.UnaryServerInterceptor,
+	srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor,
 ) (any, error) {
 	in := new(payload.Remove_MultiRequest)
 	if err := dec(in); err != nil {

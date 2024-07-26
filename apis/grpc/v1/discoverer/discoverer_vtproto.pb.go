@@ -105,19 +105,20 @@ type DiscovererServer interface {
 }
 
 // UnimplementedDiscovererServer must be embedded to have forward compatible implementations.
-type UnimplementedDiscovererServer struct {
-}
+type UnimplementedDiscovererServer struct{}
 
 func (UnimplementedDiscovererServer) Pods(
 	context.Context, *payload.Discoverer_Request,
 ) (*payload.Info_Pods, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Pods not implemented")
 }
+
 func (UnimplementedDiscovererServer) Nodes(
 	context.Context, *payload.Discoverer_Request,
 ) (*payload.Info_Nodes, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Nodes not implemented")
 }
+
 func (UnimplementedDiscovererServer) Services(
 	context.Context, *payload.Discoverer_Request,
 ) (*payload.Info_Services, error) {
@@ -137,10 +138,7 @@ func RegisterDiscovererServer(s grpc.ServiceRegistrar, srv DiscovererServer) {
 }
 
 func _Discoverer_Pods_Handler(
-	srv any,
-	ctx context.Context,
-	dec func(any) error,
-	interceptor grpc.UnaryServerInterceptor,
+	srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor,
 ) (any, error) {
 	in := new(payload.Discoverer_Request)
 	if err := dec(in); err != nil {
@@ -160,10 +158,7 @@ func _Discoverer_Pods_Handler(
 }
 
 func _Discoverer_Nodes_Handler(
-	srv any,
-	ctx context.Context,
-	dec func(any) error,
-	interceptor grpc.UnaryServerInterceptor,
+	srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor,
 ) (any, error) {
 	in := new(payload.Discoverer_Request)
 	if err := dec(in); err != nil {
@@ -183,10 +178,7 @@ func _Discoverer_Nodes_Handler(
 }
 
 func _Discoverer_Services_Handler(
-	srv any,
-	ctx context.Context,
-	dec func(any) error,
-	interceptor grpc.UnaryServerInterceptor,
+	srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor,
 ) (any, error) {
 	in := new(payload.Discoverer_Request)
 	if err := dec(in); err != nil {

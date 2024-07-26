@@ -50,6 +50,7 @@ var defaultOptions = []Option{
 	WithDefaultEpsilon(core.DefaultEpsilon),
 	WithProactiveGC(true),
 	WithExportIndexInfoDuration("1m"),
+	WithEnableStatistics(false),
 }
 
 // WithErrGroup returns the functional option to set the error group.
@@ -336,6 +337,14 @@ func WithPatcher(p client.Patcher) Option {
 			return errors.NewErrInvalidOption("patcher", p)
 		}
 		n.patcher = p
+		return nil
+	}
+}
+
+// WithEnableStatistics returns the functional option to set the statistics flag.
+func WithEnableStatistics(enabled bool) Option {
+	return func(n *ngt) error {
+		n.enableStatistics = enabled
 		return nil
 	}
 }

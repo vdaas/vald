@@ -135,8 +135,10 @@ const (
 	StreamGetObjectRPCName  = "StreamGetObject"
 	StreamListObjectRPCName = "StreamListObject"
 
-	IndexInfoRPCName   = "IndexInfo"
-	IndexDetailRPCName = "IndexDetail"
+	IndexInfoRPCName             = "IndexInfo"
+	IndexDetailRPCName           = "IndexDetail"
+	IndexStatisticsRPCName       = "IndexStatistics"
+	IndexStatisticsDetailRPCName = "IndexStatisticsDetail"
 )
 
 type client struct {

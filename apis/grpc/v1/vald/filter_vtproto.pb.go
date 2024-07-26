@@ -328,56 +328,66 @@ type FilterServer interface {
 }
 
 // UnimplementedFilterServer must be embedded to have forward compatible implementations.
-type UnimplementedFilterServer struct {
-}
+type UnimplementedFilterServer struct{}
 
 func (UnimplementedFilterServer) SearchObject(
 	context.Context, *payload.Search_ObjectRequest,
 ) (*payload.Search_Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SearchObject not implemented")
 }
+
 func (UnimplementedFilterServer) MultiSearchObject(
 	context.Context, *payload.Search_MultiObjectRequest,
 ) (*payload.Search_Responses, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method MultiSearchObject not implemented")
 }
+
 func (UnimplementedFilterServer) StreamSearchObject(Filter_StreamSearchObjectServer) error {
 	return status.Errorf(codes.Unimplemented, "method StreamSearchObject not implemented")
 }
+
 func (UnimplementedFilterServer) InsertObject(
 	context.Context, *payload.Insert_ObjectRequest,
 ) (*payload.Object_Location, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method InsertObject not implemented")
 }
+
 func (UnimplementedFilterServer) StreamInsertObject(Filter_StreamInsertObjectServer) error {
 	return status.Errorf(codes.Unimplemented, "method StreamInsertObject not implemented")
 }
+
 func (UnimplementedFilterServer) MultiInsertObject(
 	context.Context, *payload.Insert_MultiObjectRequest,
 ) (*payload.Object_Locations, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method MultiInsertObject not implemented")
 }
+
 func (UnimplementedFilterServer) UpdateObject(
 	context.Context, *payload.Update_ObjectRequest,
 ) (*payload.Object_Location, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateObject not implemented")
 }
+
 func (UnimplementedFilterServer) StreamUpdateObject(Filter_StreamUpdateObjectServer) error {
 	return status.Errorf(codes.Unimplemented, "method StreamUpdateObject not implemented")
 }
+
 func (UnimplementedFilterServer) MultiUpdateObject(
 	context.Context, *payload.Update_MultiObjectRequest,
 ) (*payload.Object_Locations, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method MultiUpdateObject not implemented")
 }
+
 func (UnimplementedFilterServer) UpsertObject(
 	context.Context, *payload.Upsert_ObjectRequest,
 ) (*payload.Object_Location, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpsertObject not implemented")
 }
+
 func (UnimplementedFilterServer) StreamUpsertObject(Filter_StreamUpsertObjectServer) error {
 	return status.Errorf(codes.Unimplemented, "method StreamUpsertObject not implemented")
 }
+
 func (UnimplementedFilterServer) MultiUpsertObject(
 	context.Context, *payload.Upsert_MultiObjectRequest,
 ) (*payload.Object_Locations, error) {
@@ -397,10 +407,7 @@ func RegisterFilterServer(s grpc.ServiceRegistrar, srv FilterServer) {
 }
 
 func _Filter_SearchObject_Handler(
-	srv any,
-	ctx context.Context,
-	dec func(any) error,
-	interceptor grpc.UnaryServerInterceptor,
+	srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor,
 ) (any, error) {
 	in := new(payload.Search_ObjectRequest)
 	if err := dec(in); err != nil {
@@ -420,10 +427,7 @@ func _Filter_SearchObject_Handler(
 }
 
 func _Filter_MultiSearchObject_Handler(
-	srv any,
-	ctx context.Context,
-	dec func(any) error,
-	interceptor grpc.UnaryServerInterceptor,
+	srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor,
 ) (any, error) {
 	in := new(payload.Search_MultiObjectRequest)
 	if err := dec(in); err != nil {
@@ -469,10 +473,7 @@ func (x *filterStreamSearchObjectServer) Recv() (*payload.Search_ObjectRequest, 
 }
 
 func _Filter_InsertObject_Handler(
-	srv any,
-	ctx context.Context,
-	dec func(any) error,
-	interceptor grpc.UnaryServerInterceptor,
+	srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor,
 ) (any, error) {
 	in := new(payload.Insert_ObjectRequest)
 	if err := dec(in); err != nil {
@@ -518,10 +519,7 @@ func (x *filterStreamInsertObjectServer) Recv() (*payload.Insert_ObjectRequest, 
 }
 
 func _Filter_MultiInsertObject_Handler(
-	srv any,
-	ctx context.Context,
-	dec func(any) error,
-	interceptor grpc.UnaryServerInterceptor,
+	srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor,
 ) (any, error) {
 	in := new(payload.Insert_MultiObjectRequest)
 	if err := dec(in); err != nil {
@@ -541,10 +539,7 @@ func _Filter_MultiInsertObject_Handler(
 }
 
 func _Filter_UpdateObject_Handler(
-	srv any,
-	ctx context.Context,
-	dec func(any) error,
-	interceptor grpc.UnaryServerInterceptor,
+	srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor,
 ) (any, error) {
 	in := new(payload.Update_ObjectRequest)
 	if err := dec(in); err != nil {
@@ -590,10 +585,7 @@ func (x *filterStreamUpdateObjectServer) Recv() (*payload.Update_ObjectRequest, 
 }
 
 func _Filter_MultiUpdateObject_Handler(
-	srv any,
-	ctx context.Context,
-	dec func(any) error,
-	interceptor grpc.UnaryServerInterceptor,
+	srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor,
 ) (any, error) {
 	in := new(payload.Update_MultiObjectRequest)
 	if err := dec(in); err != nil {
@@ -613,10 +605,7 @@ func _Filter_MultiUpdateObject_Handler(
 }
 
 func _Filter_UpsertObject_Handler(
-	srv any,
-	ctx context.Context,
-	dec func(any) error,
-	interceptor grpc.UnaryServerInterceptor,
+	srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor,
 ) (any, error) {
 	in := new(payload.Upsert_ObjectRequest)
 	if err := dec(in); err != nil {
@@ -662,10 +651,7 @@ func (x *filterStreamUpsertObjectServer) Recv() (*payload.Upsert_ObjectRequest, 
 }
 
 func _Filter_MultiUpsertObject_Handler(
-	srv any,
-	ctx context.Context,
-	dec func(any) error,
-	interceptor grpc.UnaryServerInterceptor,
+	srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor,
 ) (any, error) {
 	in := new(payload.Upsert_MultiObjectRequest)
 	if err := dec(in); err != nil {

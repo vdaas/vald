@@ -46,6 +46,10 @@ type IndexClient interface {
 	IndexInfo(ctx context.Context, in *payload.Empty, opts ...grpc.CallOption) (*payload.Info_Index_Count, error)
 	// Represent the RPC to get the index information for each agents.
 	IndexDetail(ctx context.Context, in *payload.Empty, opts ...grpc.CallOption) (*payload.Info_Index_Detail, error)
+	// Represent the RPC to get the index statistics.
+	IndexStatistics(ctx context.Context, in *payload.Empty, opts ...grpc.CallOption) (*payload.Info_Index_Statistics, error)
+	// Represent the RPC to get the index statistics for each agents.
+	IndexStatisticsDetail(ctx context.Context, in *payload.Empty, opts ...grpc.CallOption) (*payload.Info_Index_StatisticsDetail, error)
 }
 
 type indexClient struct {
@@ -78,6 +82,28 @@ func (c *indexClient) IndexDetail(
 	return out, nil
 }
 
+func (c *indexClient) IndexStatistics(
+	ctx context.Context, in *payload.Empty, opts ...grpc.CallOption,
+) (*payload.Info_Index_Statistics, error) {
+	out := new(payload.Info_Index_Statistics)
+	err := c.cc.Invoke(ctx, "/vald.v1.Index/IndexStatistics", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *indexClient) IndexStatisticsDetail(
+	ctx context.Context, in *payload.Empty, opts ...grpc.CallOption,
+) (*payload.Info_Index_StatisticsDetail, error) {
+	out := new(payload.Info_Index_StatisticsDetail)
+	err := c.cc.Invoke(ctx, "/vald.v1.Index/IndexStatisticsDetail", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // IndexServer is the server API for Index service.
 // All implementations must embed UnimplementedIndexServer
 // for forward compatibility
@@ -86,22 +112,38 @@ type IndexServer interface {
 	IndexInfo(context.Context, *payload.Empty) (*payload.Info_Index_Count, error)
 	// Represent the RPC to get the index information for each agents.
 	IndexDetail(context.Context, *payload.Empty) (*payload.Info_Index_Detail, error)
+	// Represent the RPC to get the index statistics.
+	IndexStatistics(context.Context, *payload.Empty) (*payload.Info_Index_Statistics, error)
+	// Represent the RPC to get the index statistics for each agents.
+	IndexStatisticsDetail(context.Context, *payload.Empty) (*payload.Info_Index_StatisticsDetail, error)
 	mustEmbedUnimplementedIndexServer()
 }
 
 // UnimplementedIndexServer must be embedded to have forward compatible implementations.
-type UnimplementedIndexServer struct {
-}
+type UnimplementedIndexServer struct{}
 
 func (UnimplementedIndexServer) IndexInfo(
 	context.Context, *payload.Empty,
 ) (*payload.Info_Index_Count, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method IndexInfo not implemented")
 }
+
 func (UnimplementedIndexServer) IndexDetail(
 	context.Context, *payload.Empty,
 ) (*payload.Info_Index_Detail, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method IndexDetail not implemented")
+}
+
+func (UnimplementedIndexServer) IndexStatistics(
+	context.Context, *payload.Empty,
+) (*payload.Info_Index_Statistics, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method IndexStatistics not implemented")
+}
+
+func (UnimplementedIndexServer) IndexStatisticsDetail(
+	context.Context, *payload.Empty,
+) (*payload.Info_Index_StatisticsDetail, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method IndexStatisticsDetail not implemented")
 }
 func (UnimplementedIndexServer) mustEmbedUnimplementedIndexServer() {}
 
@@ -117,10 +159,7 @@ func RegisterIndexServer(s grpc.ServiceRegistrar, srv IndexServer) {
 }
 
 func _Index_IndexInfo_Handler(
-	srv any,
-	ctx context.Context,
-	dec func(any) error,
-	interceptor grpc.UnaryServerInterceptor,
+	srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor,
 ) (any, error) {
 	in := new(payload.Empty)
 	if err := dec(in); err != nil {
@@ -140,10 +179,7 @@ func _Index_IndexInfo_Handler(
 }
 
 func _Index_IndexDetail_Handler(
-	srv any,
-	ctx context.Context,
-	dec func(any) error,
-	interceptor grpc.UnaryServerInterceptor,
+	srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor,
 ) (any, error) {
 	in := new(payload.Empty)
 	if err := dec(in); err != nil {
@@ -162,6 +198,46 @@ func _Index_IndexDetail_Handler(
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Index_IndexStatistics_Handler(
+	srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor,
+) (any, error) {
+	in := new(payload.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(IndexServer).IndexStatistics(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/vald.v1.Index/IndexStatistics",
+	}
+	handler := func(ctx context.Context, req any) (any, error) {
+		return srv.(IndexServer).IndexStatistics(ctx, req.(*payload.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Index_IndexStatisticsDetail_Handler(
+	srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor,
+) (any, error) {
+	in := new(payload.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(IndexServer).IndexStatisticsDetail(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/vald.v1.Index/IndexStatisticsDetail",
+	}
+	handler := func(ctx context.Context, req any) (any, error) {
+		return srv.(IndexServer).IndexStatisticsDetail(ctx, req.(*payload.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Index_ServiceDesc is the grpc.ServiceDesc for Index service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -176,6 +252,14 @@ var Index_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "IndexDetail",
 			Handler:    _Index_IndexDetail_Handler,
+		},
+		{
+			MethodName: "IndexStatistics",
+			Handler:    _Index_IndexStatistics_Handler,
+		},
+		{
+			MethodName: "IndexStatisticsDetail",
+			Handler:    _Index_IndexStatisticsDetail_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

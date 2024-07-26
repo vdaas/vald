@@ -127,17 +127,18 @@ type UpdateServer interface {
 }
 
 // UnimplementedUpdateServer must be embedded to have forward compatible implementations.
-type UnimplementedUpdateServer struct {
-}
+type UnimplementedUpdateServer struct{}
 
 func (UnimplementedUpdateServer) Update(
 	context.Context, *payload.Update_Request,
 ) (*payload.Object_Location, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Update not implemented")
 }
+
 func (UnimplementedUpdateServer) StreamUpdate(Update_StreamUpdateServer) error {
 	return status.Errorf(codes.Unimplemented, "method StreamUpdate not implemented")
 }
+
 func (UnimplementedUpdateServer) MultiUpdate(
 	context.Context, *payload.Update_MultiRequest,
 ) (*payload.Object_Locations, error) {
@@ -157,10 +158,7 @@ func RegisterUpdateServer(s grpc.ServiceRegistrar, srv UpdateServer) {
 }
 
 func _Update_Update_Handler(
-	srv any,
-	ctx context.Context,
-	dec func(any) error,
-	interceptor grpc.UnaryServerInterceptor,
+	srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor,
 ) (any, error) {
 	in := new(payload.Update_Request)
 	if err := dec(in); err != nil {
@@ -206,10 +204,7 @@ func (x *updateStreamUpdateServer) Recv() (*payload.Update_Request, error) {
 }
 
 func _Update_MultiUpdate_Handler(
-	srv any,
-	ctx context.Context,
-	dec func(any) error,
-	interceptor grpc.UnaryServerInterceptor,
+	srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor,
 ) (any, error) {
 	in := new(payload.Update_MultiRequest)
 	if err := dec(in); err != nil {

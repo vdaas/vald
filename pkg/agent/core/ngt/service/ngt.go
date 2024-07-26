@@ -89,8 +89,10 @@ type NGT interface {
 	DeleteVQueueBufferLen() uint64
 	InsertVQueueBufferLen() uint64
 	GetDimensionSize() int
-	Close(ctx context.Context) error
 	BrokenIndexCount() uint64
+	IndexStatistics() (*payload.Info_Index_Statistics, error)
+	IsStatisticsEnabled() bool
+	Close(ctx context.Context) error
 }
 
 type ngt struct {
@@ -160,6 +162,9 @@ type ngt struct {
 	enableExportIndexInfo   bool
 	exportIndexInfoDuration time.Duration
 	patcher                 client.Patcher
+
+	enableStatistics bool
+	statisticsCache  atomic.Pointer[payload.Info_Index_Statistics]
 }
 
 const (
@@ -1422,6 +1427,50 @@ func (n *ngt) CreateIndex(ctx context.Context, poolSize uint32) (err error) {
 			return err
 		}
 	}
+	if n.IsStatisticsEnabled() {
+		log.Info("loading index statistics to cache")
+		stats, err := n.core.GetGraphStatistics(core.AdditionalStatistics)
+		if err != nil {
+			log.Errorf("failed to load index statistics to cache: %v", err)
+			return err
+		}
+		n.statisticsCache.Store(&payload.Info_Index_Statistics{
+			Valid:                            stats.Valid,
+			MedianIndegree:                   stats.MedianIndegree,
+			MedianOutdegree:                  stats.MedianOutdegree,
+			MaxNumberOfIndegree:              stats.MaxNumberOfIndegree,
+			MaxNumberOfOutdegree:             stats.MaxNumberOfOutdegree,
+			MinNumberOfIndegree:              stats.MinNumberOfIndegree,
+			MinNumberOfOutdegree:             stats.MinNumberOfOutdegree,
+			ModeIndegree:                     stats.ModeIndegree,
+			ModeOutdegree:                    stats.ModeOutdegree,
+			NodesSkippedFor10Edges:           stats.NodesSkippedFor10Edges,
+			NodesSkippedForIndegreeDistance:  stats.NodesSkippedForIndegreeDistance,
+			NumberOfEdges:                    stats.NumberOfEdges,
+			NumberOfIndexedObjects:           stats.NumberOfIndexedObjects,
+			NumberOfNodes:                    stats.NumberOfNodes,
+			NumberOfNodesWithoutEdges:        stats.NumberOfNodesWithoutEdges,
+			NumberOfNodesWithoutIndegree:     stats.NumberOfNodesWithoutIndegree,
+			NumberOfObjects:                  stats.NumberOfObjects,
+			NumberOfRemovedObjects:           stats.NumberOfRemovedObjects,
+			SizeOfObjectRepository:           stats.SizeOfObjectRepository,
+			SizeOfRefinementObjectRepository: stats.SizeOfRefinementObjectRepository,
+			VarianceOfIndegree:               stats.VarianceOfIndegree,
+			VarianceOfOutdegree:              stats.VarianceOfOutdegree,
+			MeanEdgeLength:                   stats.MeanEdgeLength,
+			MeanEdgeLengthFor10Edges:         stats.MeanEdgeLengthFor10Edges,
+			MeanIndegreeDistanceFor10Edges:   stats.MeanIndegreeDistanceFor10Edges,
+			MeanNumberOfEdgesPerNode:         stats.MeanNumberOfEdgesPerNode,
+			C1Indegree:                       stats.C1Indegree,
+			C5Indegree:                       stats.C5Indegree,
+			C95Outdegree:                     stats.C95Outdegree,
+			C99Outdegree:                     stats.C99Outdegree,
+			IndegreeCount:                    stats.IndegreeCount,
+			OutdegreeHistogram:               stats.OutdegreeHistogram,
+			IndegreeHistogram:                stats.IndegreeHistogram,
+		})
+	}
+
 	return err
 }
 
@@ -1978,6 +2027,21 @@ func (n *ngt) ListObjectFunc(ctx context.Context, f func(uuid string, oid uint32
 		}
 		return f(uuid, oid, ts)
 	})
+}
+
+func (n *ngt) IndexStatistics() (stats *payload.Info_Index_Statistics, err error) {
+	if !n.IsStatisticsEnabled() {
+		return nil, errors.ErrNGTIndexStatisticsDisabled
+	}
+	stats = n.statisticsCache.Load()
+	if stats == nil {
+		return nil, errors.ErrNGTIndexStatisticsNotReady
+	}
+	return stats, nil
+}
+
+func (n *ngt) IsStatisticsEnabled() bool {
+	return n.enableStatistics
 }
 
 func (n *ngt) toSearchResponse(

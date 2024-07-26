@@ -80,6 +80,7 @@ var file_v1_vald_insert_proto_goTypes = []any{
 	(*payload.Object_StreamLocation)(nil), // 3: payload.v1.Object.StreamLocation
 	(*payload.Object_Locations)(nil),      // 4: payload.v1.Object.Locations
 }
+
 var file_v1_vald_insert_proto_depIdxs = []int32{
 	0, // 0: vald.v1.Insert.Insert:input_type -> payload.v1.Insert.Request
 	0, // 1: vald.v1.Insert.StreamInsert:input_type -> payload.v1.Insert.Request

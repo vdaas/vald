@@ -75,8 +75,7 @@ type MirrorServer interface {
 }
 
 // UnimplementedMirrorServer must be embedded to have forward compatible implementations.
-type UnimplementedMirrorServer struct {
-}
+type UnimplementedMirrorServer struct{}
 
 func (UnimplementedMirrorServer) Register(
 	context.Context, *payload.Mirror_Targets,
@@ -97,10 +96,7 @@ func RegisterMirrorServer(s grpc.ServiceRegistrar, srv MirrorServer) {
 }
 
 func _Mirror_Register_Handler(
-	srv any,
-	ctx context.Context,
-	dec func(any) error,
-	interceptor grpc.UnaryServerInterceptor,
+	srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor,
 ) (any, error) {
 	in := new(payload.Mirror_Targets)
 	if err := dec(in); err != nil {

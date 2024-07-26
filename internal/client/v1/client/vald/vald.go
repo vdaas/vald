@@ -784,6 +784,50 @@ func (c *client) IndexDetail(
 	return res, nil
 }
 
+func (c *client) IndexStatistics(
+	ctx context.Context, in *payload.Empty, opts ...grpc.CallOption,
+) (res *payload.Info_Index_Statistics, err error) {
+	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+vald.IndexStatisticsRPCName), apiName+"/"+vald.IndexStatisticsRPCName)
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	_, err = c.c.RoundRobin(ctx, func(ctx context.Context,
+		conn *grpc.ClientConn,
+		copts ...grpc.CallOption,
+	) (any, error) {
+		res, err = vald.NewValdClient(conn).IndexStatistics(ctx, in, append(copts, opts...)...)
+		return nil, err
+	})
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
+}
+
+func (c *client) IndexStatisticsDetail(
+	ctx context.Context, in *payload.Empty, opts ...grpc.CallOption,
+) (res *payload.Info_Index_StatisticsDetail, err error) {
+	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+vald.IndexStatisticsDetailRPCName), apiName+"/"+vald.IndexStatisticsDetailRPCName)
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	_, err = c.c.RoundRobin(ctx, func(ctx context.Context,
+		conn *grpc.ClientConn,
+		copts ...grpc.CallOption,
+	) (any, error) {
+		res, err = vald.NewValdClient(conn).IndexStatisticsDetail(ctx, in, append(copts, opts...)...)
+		return nil, err
+	})
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
+}
+
 func (c *client) GetTimestamp(
 	ctx context.Context, in *payload.Object_TimestampRequest, opts ...grpc.CallOption,
 ) (res *payload.Object_Timestamp, err error) {
@@ -1200,6 +1244,30 @@ func (c *singleClient) IndexDetail(
 		}
 	}()
 	return c.vc.IndexDetail(ctx, in, opts...)
+}
+
+func (c *singleClient) IndexStatistics(
+	ctx context.Context, in *payload.Empty, opts ...grpc.CallOption,
+) (res *payload.Info_Index_Statistics, err error) {
+	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/singleClient/"+vald.IndexStatisticsRPCName), apiName+"/"+vald.IndexStatisticsRPCName)
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	return c.vc.IndexStatistics(ctx, in, opts...)
+}
+
+func (c *singleClient) IndexStatisticsDetail(
+	ctx context.Context, in *payload.Empty, opts ...grpc.CallOption,
+) (res *payload.Info_Index_StatisticsDetail, err error) {
+	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "internal/client/"+vald.IndexStatisticsDetailRPCName), apiName+"/"+vald.IndexStatisticsDetailRPCName)
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	return c.vc.IndexStatisticsDetail(ctx, in, opts...)
 }
 
 func (c *singleClient) GetTimestamp(

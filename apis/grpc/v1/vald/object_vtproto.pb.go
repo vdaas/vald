@@ -180,27 +180,30 @@ type ObjectServer interface {
 }
 
 // UnimplementedObjectServer must be embedded to have forward compatible implementations.
-type UnimplementedObjectServer struct {
-}
+type UnimplementedObjectServer struct{}
 
 func (UnimplementedObjectServer) Exists(
 	context.Context, *payload.Object_ID,
 ) (*payload.Object_ID, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Exists not implemented")
 }
+
 func (UnimplementedObjectServer) GetObject(
 	context.Context, *payload.Object_VectorRequest,
 ) (*payload.Object_Vector, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetObject not implemented")
 }
+
 func (UnimplementedObjectServer) StreamGetObject(Object_StreamGetObjectServer) error {
 	return status.Errorf(codes.Unimplemented, "method StreamGetObject not implemented")
 }
+
 func (UnimplementedObjectServer) StreamListObject(
 	*payload.Object_List_Request, Object_StreamListObjectServer,
 ) error {
 	return status.Errorf(codes.Unimplemented, "method StreamListObject not implemented")
 }
+
 func (UnimplementedObjectServer) GetTimestamp(
 	context.Context, *payload.Object_TimestampRequest,
 ) (*payload.Object_Timestamp, error) {
@@ -220,10 +223,7 @@ func RegisterObjectServer(s grpc.ServiceRegistrar, srv ObjectServer) {
 }
 
 func _Object_Exists_Handler(
-	srv any,
-	ctx context.Context,
-	dec func(any) error,
-	interceptor grpc.UnaryServerInterceptor,
+	srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor,
 ) (any, error) {
 	in := new(payload.Object_ID)
 	if err := dec(in); err != nil {
@@ -243,10 +243,7 @@ func _Object_Exists_Handler(
 }
 
 func _Object_GetObject_Handler(
-	srv any,
-	ctx context.Context,
-	dec func(any) error,
-	interceptor grpc.UnaryServerInterceptor,
+	srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor,
 ) (any, error) {
 	in := new(payload.Object_VectorRequest)
 	if err := dec(in); err != nil {
@@ -313,10 +310,7 @@ func (x *objectStreamListObjectServer) Send(m *payload.Object_List_Response) err
 }
 
 func _Object_GetTimestamp_Handler(
-	srv any,
-	ctx context.Context,
-	dec func(any) error,
-	interceptor grpc.UnaryServerInterceptor,
+	srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor,
 ) (any, error) {
 	in := new(payload.Object_TimestampRequest)
 	if err := dec(in); err != nil {

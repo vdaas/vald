@@ -119,7 +119,6 @@ package operation
 // 			if err := checkFunc(test.want, gotInsertedNum); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -228,7 +227,6 @@ package operation
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }

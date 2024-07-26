@@ -75,8 +75,7 @@ type FlushServer interface {
 }
 
 // UnimplementedFlushServer must be embedded to have forward compatible implementations.
-type UnimplementedFlushServer struct {
-}
+type UnimplementedFlushServer struct{}
 
 func (UnimplementedFlushServer) Flush(
 	context.Context, *payload.Flush_Request,
@@ -97,10 +96,7 @@ func RegisterFlushServer(s grpc.ServiceRegistrar, srv FlushServer) {
 }
 
 func _Flush_Flush_Handler(
-	srv any,
-	ctx context.Context,
-	dec func(any) error,
-	interceptor grpc.UnaryServerInterceptor,
+	srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor,
 ) (any, error) {
 	in := new(payload.Flush_Request)
 	if err := dec(in); err != nil {

@@ -332,56 +332,66 @@ type SearchServer interface {
 }
 
 // UnimplementedSearchServer must be embedded to have forward compatible implementations.
-type UnimplementedSearchServer struct {
-}
+type UnimplementedSearchServer struct{}
 
 func (UnimplementedSearchServer) Search(
 	context.Context, *payload.Search_Request,
 ) (*payload.Search_Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Search not implemented")
 }
+
 func (UnimplementedSearchServer) SearchByID(
 	context.Context, *payload.Search_IDRequest,
 ) (*payload.Search_Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SearchByID not implemented")
 }
+
 func (UnimplementedSearchServer) StreamSearch(Search_StreamSearchServer) error {
 	return status.Errorf(codes.Unimplemented, "method StreamSearch not implemented")
 }
+
 func (UnimplementedSearchServer) StreamSearchByID(Search_StreamSearchByIDServer) error {
 	return status.Errorf(codes.Unimplemented, "method StreamSearchByID not implemented")
 }
+
 func (UnimplementedSearchServer) MultiSearch(
 	context.Context, *payload.Search_MultiRequest,
 ) (*payload.Search_Responses, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method MultiSearch not implemented")
 }
+
 func (UnimplementedSearchServer) MultiSearchByID(
 	context.Context, *payload.Search_MultiIDRequest,
 ) (*payload.Search_Responses, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method MultiSearchByID not implemented")
 }
+
 func (UnimplementedSearchServer) LinearSearch(
 	context.Context, *payload.Search_Request,
 ) (*payload.Search_Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method LinearSearch not implemented")
 }
+
 func (UnimplementedSearchServer) LinearSearchByID(
 	context.Context, *payload.Search_IDRequest,
 ) (*payload.Search_Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method LinearSearchByID not implemented")
 }
+
 func (UnimplementedSearchServer) StreamLinearSearch(Search_StreamLinearSearchServer) error {
 	return status.Errorf(codes.Unimplemented, "method StreamLinearSearch not implemented")
 }
+
 func (UnimplementedSearchServer) StreamLinearSearchByID(Search_StreamLinearSearchByIDServer) error {
 	return status.Errorf(codes.Unimplemented, "method StreamLinearSearchByID not implemented")
 }
+
 func (UnimplementedSearchServer) MultiLinearSearch(
 	context.Context, *payload.Search_MultiRequest,
 ) (*payload.Search_Responses, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method MultiLinearSearch not implemented")
 }
+
 func (UnimplementedSearchServer) MultiLinearSearchByID(
 	context.Context, *payload.Search_MultiIDRequest,
 ) (*payload.Search_Responses, error) {
@@ -401,10 +411,7 @@ func RegisterSearchServer(s grpc.ServiceRegistrar, srv SearchServer) {
 }
 
 func _Search_Search_Handler(
-	srv any,
-	ctx context.Context,
-	dec func(any) error,
-	interceptor grpc.UnaryServerInterceptor,
+	srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor,
 ) (any, error) {
 	in := new(payload.Search_Request)
 	if err := dec(in); err != nil {
@@ -424,10 +431,7 @@ func _Search_Search_Handler(
 }
 
 func _Search_SearchByID_Handler(
-	srv any,
-	ctx context.Context,
-	dec func(any) error,
-	interceptor grpc.UnaryServerInterceptor,
+	srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor,
 ) (any, error) {
 	in := new(payload.Search_IDRequest)
 	if err := dec(in); err != nil {
@@ -499,10 +503,7 @@ func (x *searchStreamSearchByIDServer) Recv() (*payload.Search_IDRequest, error)
 }
 
 func _Search_MultiSearch_Handler(
-	srv any,
-	ctx context.Context,
-	dec func(any) error,
-	interceptor grpc.UnaryServerInterceptor,
+	srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor,
 ) (any, error) {
 	in := new(payload.Search_MultiRequest)
 	if err := dec(in); err != nil {
@@ -522,10 +523,7 @@ func _Search_MultiSearch_Handler(
 }
 
 func _Search_MultiSearchByID_Handler(
-	srv any,
-	ctx context.Context,
-	dec func(any) error,
-	interceptor grpc.UnaryServerInterceptor,
+	srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor,
 ) (any, error) {
 	in := new(payload.Search_MultiIDRequest)
 	if err := dec(in); err != nil {
@@ -545,10 +543,7 @@ func _Search_MultiSearchByID_Handler(
 }
 
 func _Search_LinearSearch_Handler(
-	srv any,
-	ctx context.Context,
-	dec func(any) error,
-	interceptor grpc.UnaryServerInterceptor,
+	srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor,
 ) (any, error) {
 	in := new(payload.Search_Request)
 	if err := dec(in); err != nil {
@@ -568,10 +563,7 @@ func _Search_LinearSearch_Handler(
 }
 
 func _Search_LinearSearchByID_Handler(
-	srv any,
-	ctx context.Context,
-	dec func(any) error,
-	interceptor grpc.UnaryServerInterceptor,
+	srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor,
 ) (any, error) {
 	in := new(payload.Search_IDRequest)
 	if err := dec(in); err != nil {
@@ -643,10 +635,7 @@ func (x *searchStreamLinearSearchByIDServer) Recv() (*payload.Search_IDRequest, 
 }
 
 func _Search_MultiLinearSearch_Handler(
-	srv any,
-	ctx context.Context,
-	dec func(any) error,
-	interceptor grpc.UnaryServerInterceptor,
+	srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor,
 ) (any, error) {
 	in := new(payload.Search_MultiRequest)
 	if err := dec(in); err != nil {
@@ -666,10 +655,7 @@ func _Search_MultiLinearSearch_Handler(
 }
 
 func _Search_MultiLinearSearchByID_Handler(
-	srv any,
-	ctx context.Context,
-	dec func(any) error,
-	interceptor grpc.UnaryServerInterceptor,
+	srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor,
 ) (any, error) {
 	in := new(payload.Search_MultiIDRequest)
 	if err := dec(in); err != nil {

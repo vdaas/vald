@@ -138,6 +138,7 @@ func TestNew(t *testing.T) {
 						epsilon:             DefaultEpsilon,
 						poolSize:            DefaultPoolSize,
 						bulkInsertChunkSize: 100,
+						ces:                 10,
 						objectType:          Float,
 						mu:                  &sync.RWMutex{},
 						cmu:                 &sync.RWMutex{},
@@ -161,6 +162,7 @@ func TestNew(t *testing.T) {
 				want: want{
 					want: &ngt{
 						idxPath:             idxPath,
+						ces:                 10,
 						radius:              DefaultRadius,
 						epsilon:             DefaultEpsilon,
 						poolSize:            DefaultPoolSize,
@@ -187,6 +189,7 @@ func TestNew(t *testing.T) {
 				want: want{
 					want: &ngt{
 						idxPath:             idxPath,
+						ces:                 10,
 						radius:              DefaultRadius,
 						epsilon:             DefaultEpsilon,
 						poolSize:            100,
@@ -317,6 +320,7 @@ func TestLoad(t *testing.T) {
 				want: want{
 					want: &ngt{
 						idxPath:             idxPath,
+						ces:                 10,
 						radius:              DefaultRadius,
 						epsilon:             DefaultEpsilon,
 						poolSize:            DefaultPoolSize,
@@ -384,6 +388,7 @@ func TestLoad(t *testing.T) {
 				want: want{
 					want: &ngt{
 						idxPath:             idxPath,
+						ces:                 10,
 						radius:              DefaultRadius,
 						epsilon:             DefaultEpsilon,
 						poolSize:            DefaultPoolSize,
@@ -451,6 +456,7 @@ func TestLoad(t *testing.T) {
 				want: want{
 					want: &ngt{
 						idxPath:             idxPath,
+						ces:                 10,
 						radius:              DefaultRadius,
 						epsilon:             DefaultEpsilon,
 						poolSize:            DefaultPoolSize,
@@ -518,6 +524,7 @@ func TestLoad(t *testing.T) {
 				want: want{
 					want: &ngt{
 						idxPath:             idxPath,
+						ces:                 10,
 						radius:              DefaultRadius,
 						epsilon:             DefaultEpsilon,
 						poolSize:            DefaultPoolSize,
@@ -715,6 +722,7 @@ func Test_gen(t *testing.T) {
 			want: want{
 				want: &ngt{
 					idxPath:             "/tmp/ngt-",
+					ces:                 10,
 					radius:              DefaultRadius,
 					epsilon:             DefaultEpsilon,
 					poolSize:            DefaultPoolSize,
@@ -762,6 +770,7 @@ func Test_gen(t *testing.T) {
 				},
 				want: want{
 					want: &ngt{
+						ces:                 10,
 						idxPath:             idxPath,
 						radius:              DefaultRadius,
 						epsilon:             DefaultEpsilon,

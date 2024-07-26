@@ -90,14 +90,14 @@ type FilterServer interface {
 }
 
 // UnimplementedFilterServer must be embedded to have forward compatible implementations.
-type UnimplementedFilterServer struct {
-}
+type UnimplementedFilterServer struct{}
 
 func (UnimplementedFilterServer) FilterDistance(
 	context.Context, *payload.Object_Distance,
 ) (*payload.Object_Distance, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method FilterDistance not implemented")
 }
+
 func (UnimplementedFilterServer) FilterVector(
 	context.Context, *payload.Object_Vector,
 ) (*payload.Object_Vector, error) {
@@ -117,10 +117,7 @@ func RegisterFilterServer(s grpc.ServiceRegistrar, srv FilterServer) {
 }
 
 func _Filter_FilterDistance_Handler(
-	srv any,
-	ctx context.Context,
-	dec func(any) error,
-	interceptor grpc.UnaryServerInterceptor,
+	srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor,
 ) (any, error) {
 	in := new(payload.Object_Distance)
 	if err := dec(in); err != nil {
@@ -140,10 +137,7 @@ func _Filter_FilterDistance_Handler(
 }
 
 func _Filter_FilterVector_Handler(
-	srv any,
-	ctx context.Context,
-	dec func(any) error,
-	interceptor grpc.UnaryServerInterceptor,
+	srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor,
 ) (any, error) {
 	in := new(payload.Object_Vector)
 	if err := dec(in); err != nil {

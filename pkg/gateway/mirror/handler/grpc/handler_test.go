@@ -2340,25 +2340,24 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 }
 
 // NOT IMPLEMENTED BELOW
-
+//
 // func TestNew(t *testing.T) {
-// 	t.Parallel()
 // 	type args struct {
 // 		opts []Option
 // 	}
 // 	type want struct {
-// 		want vald.ServerWithMirror
+// 		want Server
 // 		err  error
 // 	}
 // 	type test struct {
 // 		name       string
 // 		args       args
 // 		want       want
-// 		checkFunc  func(want, vald.Server, error) error
+// 		checkFunc  func(want, Server, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
 // 	}
-// 	defaultCheckFunc := func(w want, got vald.Server, err error) error {
+// 	defaultCheckFunc := func(w want, got Server, err error) error {
 // 		if !errors.Is(err, w.err) {
 // 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 // 		}
@@ -2432,20 +2431,20 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 // }
 //
 // func Test_server_Register(t *testing.T) {
-// 	t.Parallel()
 // 	type args struct {
 // 		ctx context.Context
 // 		req *payload.Mirror_Targets
 // 	}
 // 	type fields struct {
-// 		eg                                errgroup.Group
-// 		gateway                           service.Gateway
-// 		mirror                            service.Mirror
-// 		vAddr                             string
-// 		streamConcurrency                 int
-// 		name                              string
-// 		ip                                string
-// 		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
+// 		eg                        errgroup.Group
+// 		gateway                   service.Gateway
+// 		mirror                    service.Mirror
+// 		vAddr                     string
+// 		streamConcurrency         int
+// 		name                      string
+// 		ip                        string
+// 		UnimplementedValdServer   vald.UnimplementedValdServer
+// 		UnimplementedMirrorServer mirror.UnimplementedMirrorServer
 // 	}
 // 	type want struct {
 // 		want *payload.Mirror_Targets
@@ -2486,7 +2485,8 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 // 		           streamConcurrency:0,
 // 		           name:"",
 // 		           ip:"",
-// 		           UnimplementedValdServerWithMirror:nil,
+// 		           UnimplementedValdServer:nil,
+// 		           UnimplementedMirrorServer:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -2516,7 +2516,8 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 // 		           streamConcurrency:0,
 // 		           name:"",
 // 		           ip:"",
-// 		           UnimplementedValdServerWithMirror:nil,
+// 		           UnimplementedValdServer:nil,
+// 		           UnimplementedMirrorServer:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -2547,14 +2548,15 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &server{
-// 				eg:                                test.fields.eg,
-// 				gateway:                           test.fields.gateway,
-// 				mirror:                            test.fields.mirror,
-// 				vAddr:                             test.fields.vAddr,
-// 				streamConcurrency:                 test.fields.streamConcurrency,
-// 				name:                              test.fields.name,
-// 				ip:                                test.fields.ip,
-// 				UnimplementedValdServerWithMirror: test.fields.UnimplementedValdServerWithMirror,
+// 				eg:                        test.fields.eg,
+// 				gateway:                   test.fields.gateway,
+// 				mirror:                    test.fields.mirror,
+// 				vAddr:                     test.fields.vAddr,
+// 				streamConcurrency:         test.fields.streamConcurrency,
+// 				name:                      test.fields.name,
+// 				ip:                        test.fields.ip,
+// 				UnimplementedValdServer:   test.fields.UnimplementedValdServer,
+// 				UnimplementedMirrorServer: test.fields.UnimplementedMirrorServer,
 // 			}
 //
 // 			got, err := s.Register(test.args.ctx, test.args.req)
@@ -2566,20 +2568,20 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 // }
 //
 // func Test_server_Exists(t *testing.T) {
-// 	t.Parallel()
 // 	type args struct {
 // 		ctx  context.Context
 // 		meta *payload.Object_ID
 // 	}
 // 	type fields struct {
-// 		eg                                errgroup.Group
-// 		gateway                           service.Gateway
-// 		mirror                            service.Mirror
-// 		vAddr                             string
-// 		streamConcurrency                 int
-// 		name                              string
-// 		ip                                string
-// 		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
+// 		eg                        errgroup.Group
+// 		gateway                   service.Gateway
+// 		mirror                    service.Mirror
+// 		vAddr                     string
+// 		streamConcurrency         int
+// 		name                      string
+// 		ip                        string
+// 		UnimplementedValdServer   vald.UnimplementedValdServer
+// 		UnimplementedMirrorServer mirror.UnimplementedMirrorServer
 // 	}
 // 	type want struct {
 // 		wantId *payload.Object_ID
@@ -2594,12 +2596,12 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
 // 	}
-// 	defaultCheckFunc := func(w want, gotID *payload.Object_ID, err error) error {
+// 	defaultCheckFunc := func(w want, gotId *payload.Object_ID, err error) error {
 // 		if !errors.Is(err, w.err) {
 // 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 // 		}
-// 		if !reflect.DeepEqual(gotID, w.wantId) {
-// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotID, w.wantId)
+// 		if !reflect.DeepEqual(gotId, w.wantId) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotId, w.wantId)
 // 		}
 // 		return nil
 // 	}
@@ -2620,7 +2622,8 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 // 		           streamConcurrency:0,
 // 		           name:"",
 // 		           ip:"",
-// 		           UnimplementedValdServerWithMirror:nil,
+// 		           UnimplementedValdServer:nil,
+// 		           UnimplementedMirrorServer:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -2650,7 +2653,8 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 // 		           streamConcurrency:0,
 // 		           name:"",
 // 		           ip:"",
-// 		           UnimplementedValdServerWithMirror:nil,
+// 		           UnimplementedValdServer:nil,
+// 		           UnimplementedMirrorServer:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -2681,18 +2685,19 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &server{
-// 				eg:                                test.fields.eg,
-// 				gateway:                           test.fields.gateway,
-// 				mirror:                            test.fields.mirror,
-// 				vAddr:                             test.fields.vAddr,
-// 				streamConcurrency:                 test.fields.streamConcurrency,
-// 				name:                              test.fields.name,
-// 				ip:                                test.fields.ip,
-// 				UnimplementedValdServerWithMirror: test.fields.UnimplementedValdServerWithMirror,
+// 				eg:                        test.fields.eg,
+// 				gateway:                   test.fields.gateway,
+// 				mirror:                    test.fields.mirror,
+// 				vAddr:                     test.fields.vAddr,
+// 				streamConcurrency:         test.fields.streamConcurrency,
+// 				name:                      test.fields.name,
+// 				ip:                        test.fields.ip,
+// 				UnimplementedValdServer:   test.fields.UnimplementedValdServer,
+// 				UnimplementedMirrorServer: test.fields.UnimplementedMirrorServer,
 // 			}
 //
-// 			gotID, err := s.Exists(test.args.ctx, test.args.meta)
-// 			if err := checkFunc(test.want, gotID, err); err != nil {
+// 			gotId, err := s.Exists(test.args.ctx, test.args.meta)
+// 			if err := checkFunc(test.want, gotId, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
 // 		})
@@ -2700,20 +2705,20 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 // }
 //
 // func Test_server_Search(t *testing.T) {
-// 	t.Parallel()
 // 	type args struct {
 // 		ctx context.Context
 // 		req *payload.Search_Request
 // 	}
 // 	type fields struct {
-// 		eg                                errgroup.Group
-// 		gateway                           service.Gateway
-// 		mirror                            service.Mirror
-// 		vAddr                             string
-// 		streamConcurrency                 int
-// 		name                              string
-// 		ip                                string
-// 		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
+// 		eg                        errgroup.Group
+// 		gateway                   service.Gateway
+// 		mirror                    service.Mirror
+// 		vAddr                     string
+// 		streamConcurrency         int
+// 		name                      string
+// 		ip                        string
+// 		UnimplementedValdServer   vald.UnimplementedValdServer
+// 		UnimplementedMirrorServer mirror.UnimplementedMirrorServer
 // 	}
 // 	type want struct {
 // 		wantRes *payload.Search_Response
@@ -2754,7 +2759,8 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 // 		           streamConcurrency:0,
 // 		           name:"",
 // 		           ip:"",
-// 		           UnimplementedValdServerWithMirror:nil,
+// 		           UnimplementedValdServer:nil,
+// 		           UnimplementedMirrorServer:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -2784,7 +2790,8 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 // 		           streamConcurrency:0,
 // 		           name:"",
 // 		           ip:"",
-// 		           UnimplementedValdServerWithMirror:nil,
+// 		           UnimplementedValdServer:nil,
+// 		           UnimplementedMirrorServer:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -2815,14 +2822,15 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &server{
-// 				eg:                                test.fields.eg,
-// 				gateway:                           test.fields.gateway,
-// 				mirror:                            test.fields.mirror,
-// 				vAddr:                             test.fields.vAddr,
-// 				streamConcurrency:                 test.fields.streamConcurrency,
-// 				name:                              test.fields.name,
-// 				ip:                                test.fields.ip,
-// 				UnimplementedValdServerWithMirror: test.fields.UnimplementedValdServerWithMirror,
+// 				eg:                        test.fields.eg,
+// 				gateway:                   test.fields.gateway,
+// 				mirror:                    test.fields.mirror,
+// 				vAddr:                     test.fields.vAddr,
+// 				streamConcurrency:         test.fields.streamConcurrency,
+// 				name:                      test.fields.name,
+// 				ip:                        test.fields.ip,
+// 				UnimplementedValdServer:   test.fields.UnimplementedValdServer,
+// 				UnimplementedMirrorServer: test.fields.UnimplementedMirrorServer,
 // 			}
 //
 // 			gotRes, err := s.Search(test.args.ctx, test.args.req)
@@ -2834,20 +2842,20 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 // }
 //
 // func Test_server_SearchByID(t *testing.T) {
-// 	t.Parallel()
 // 	type args struct {
 // 		ctx context.Context
 // 		req *payload.Search_IDRequest
 // 	}
 // 	type fields struct {
-// 		eg                                errgroup.Group
-// 		gateway                           service.Gateway
-// 		mirror                            service.Mirror
-// 		vAddr                             string
-// 		streamConcurrency                 int
-// 		name                              string
-// 		ip                                string
-// 		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
+// 		eg                        errgroup.Group
+// 		gateway                   service.Gateway
+// 		mirror                    service.Mirror
+// 		vAddr                     string
+// 		streamConcurrency         int
+// 		name                      string
+// 		ip                        string
+// 		UnimplementedValdServer   vald.UnimplementedValdServer
+// 		UnimplementedMirrorServer mirror.UnimplementedMirrorServer
 // 	}
 // 	type want struct {
 // 		wantRes *payload.Search_Response
@@ -2888,7 +2896,8 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 // 		           streamConcurrency:0,
 // 		           name:"",
 // 		           ip:"",
-// 		           UnimplementedValdServerWithMirror:nil,
+// 		           UnimplementedValdServer:nil,
+// 		           UnimplementedMirrorServer:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -2918,7 +2927,8 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 // 		           streamConcurrency:0,
 // 		           name:"",
 // 		           ip:"",
-// 		           UnimplementedValdServerWithMirror:nil,
+// 		           UnimplementedValdServer:nil,
+// 		           UnimplementedMirrorServer:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -2949,14 +2959,15 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &server{
-// 				eg:                                test.fields.eg,
-// 				gateway:                           test.fields.gateway,
-// 				mirror:                            test.fields.mirror,
-// 				vAddr:                             test.fields.vAddr,
-// 				streamConcurrency:                 test.fields.streamConcurrency,
-// 				name:                              test.fields.name,
-// 				ip:                                test.fields.ip,
-// 				UnimplementedValdServerWithMirror: test.fields.UnimplementedValdServerWithMirror,
+// 				eg:                        test.fields.eg,
+// 				gateway:                   test.fields.gateway,
+// 				mirror:                    test.fields.mirror,
+// 				vAddr:                     test.fields.vAddr,
+// 				streamConcurrency:         test.fields.streamConcurrency,
+// 				name:                      test.fields.name,
+// 				ip:                        test.fields.ip,
+// 				UnimplementedValdServer:   test.fields.UnimplementedValdServer,
+// 				UnimplementedMirrorServer: test.fields.UnimplementedMirrorServer,
 // 			}
 //
 // 			gotRes, err := s.SearchByID(test.args.ctx, test.args.req)
@@ -2968,19 +2979,19 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 // }
 //
 // func Test_server_StreamSearch(t *testing.T) {
-// 	t.Parallel()
 // 	type args struct {
 // 		stream vald.Search_StreamSearchServer
 // 	}
 // 	type fields struct {
-// 		eg                                errgroup.Group
-// 		gateway                           service.Gateway
-// 		mirror                            service.Mirror
-// 		vAddr                             string
-// 		streamConcurrency                 int
-// 		name                              string
-// 		ip                                string
-// 		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
+// 		eg                        errgroup.Group
+// 		gateway                   service.Gateway
+// 		mirror                    service.Mirror
+// 		vAddr                     string
+// 		streamConcurrency         int
+// 		name                      string
+// 		ip                        string
+// 		UnimplementedValdServer   vald.UnimplementedValdServer
+// 		UnimplementedMirrorServer mirror.UnimplementedMirrorServer
 // 	}
 // 	type want struct {
 // 		err error
@@ -3016,7 +3027,8 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 // 		           streamConcurrency:0,
 // 		           name:"",
 // 		           ip:"",
-// 		           UnimplementedValdServerWithMirror:nil,
+// 		           UnimplementedValdServer:nil,
+// 		           UnimplementedMirrorServer:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -3045,7 +3057,8 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 // 		           streamConcurrency:0,
 // 		           name:"",
 // 		           ip:"",
-// 		           UnimplementedValdServerWithMirror:nil,
+// 		           UnimplementedValdServer:nil,
+// 		           UnimplementedMirrorServer:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -3076,14 +3089,15 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &server{
-// 				eg:                                test.fields.eg,
-// 				gateway:                           test.fields.gateway,
-// 				mirror:                            test.fields.mirror,
-// 				vAddr:                             test.fields.vAddr,
-// 				streamConcurrency:                 test.fields.streamConcurrency,
-// 				name:                              test.fields.name,
-// 				ip:                                test.fields.ip,
-// 				UnimplementedValdServerWithMirror: test.fields.UnimplementedValdServerWithMirror,
+// 				eg:                        test.fields.eg,
+// 				gateway:                   test.fields.gateway,
+// 				mirror:                    test.fields.mirror,
+// 				vAddr:                     test.fields.vAddr,
+// 				streamConcurrency:         test.fields.streamConcurrency,
+// 				name:                      test.fields.name,
+// 				ip:                        test.fields.ip,
+// 				UnimplementedValdServer:   test.fields.UnimplementedValdServer,
+// 				UnimplementedMirrorServer: test.fields.UnimplementedMirrorServer,
 // 			}
 //
 // 			err := s.StreamSearch(test.args.stream)
@@ -3095,19 +3109,19 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 // }
 //
 // func Test_server_StreamSearchByID(t *testing.T) {
-// 	t.Parallel()
 // 	type args struct {
 // 		stream vald.Search_StreamSearchByIDServer
 // 	}
 // 	type fields struct {
-// 		eg                                errgroup.Group
-// 		gateway                           service.Gateway
-// 		mirror                            service.Mirror
-// 		vAddr                             string
-// 		streamConcurrency                 int
-// 		name                              string
-// 		ip                                string
-// 		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
+// 		eg                        errgroup.Group
+// 		gateway                   service.Gateway
+// 		mirror                    service.Mirror
+// 		vAddr                     string
+// 		streamConcurrency         int
+// 		name                      string
+// 		ip                        string
+// 		UnimplementedValdServer   vald.UnimplementedValdServer
+// 		UnimplementedMirrorServer mirror.UnimplementedMirrorServer
 // 	}
 // 	type want struct {
 // 		err error
@@ -3143,7 +3157,8 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 // 		           streamConcurrency:0,
 // 		           name:"",
 // 		           ip:"",
-// 		           UnimplementedValdServerWithMirror:nil,
+// 		           UnimplementedValdServer:nil,
+// 		           UnimplementedMirrorServer:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -3172,7 +3187,8 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 // 		           streamConcurrency:0,
 // 		           name:"",
 // 		           ip:"",
-// 		           UnimplementedValdServerWithMirror:nil,
+// 		           UnimplementedValdServer:nil,
+// 		           UnimplementedMirrorServer:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -3203,14 +3219,15 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &server{
-// 				eg:                                test.fields.eg,
-// 				gateway:                           test.fields.gateway,
-// 				mirror:                            test.fields.mirror,
-// 				vAddr:                             test.fields.vAddr,
-// 				streamConcurrency:                 test.fields.streamConcurrency,
-// 				name:                              test.fields.name,
-// 				ip:                                test.fields.ip,
-// 				UnimplementedValdServerWithMirror: test.fields.UnimplementedValdServerWithMirror,
+// 				eg:                        test.fields.eg,
+// 				gateway:                   test.fields.gateway,
+// 				mirror:                    test.fields.mirror,
+// 				vAddr:                     test.fields.vAddr,
+// 				streamConcurrency:         test.fields.streamConcurrency,
+// 				name:                      test.fields.name,
+// 				ip:                        test.fields.ip,
+// 				UnimplementedValdServer:   test.fields.UnimplementedValdServer,
+// 				UnimplementedMirrorServer: test.fields.UnimplementedMirrorServer,
 // 			}
 //
 // 			err := s.StreamSearchByID(test.args.stream)
@@ -3222,20 +3239,20 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 // }
 //
 // func Test_server_MultiSearch(t *testing.T) {
-// 	t.Parallel()
 // 	type args struct {
 // 		ctx context.Context
 // 		req *payload.Search_MultiRequest
 // 	}
 // 	type fields struct {
-// 		eg                                errgroup.Group
-// 		gateway                           service.Gateway
-// 		mirror                            service.Mirror
-// 		vAddr                             string
-// 		streamConcurrency                 int
-// 		name                              string
-// 		ip                                string
-// 		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
+// 		eg                        errgroup.Group
+// 		gateway                   service.Gateway
+// 		mirror                    service.Mirror
+// 		vAddr                     string
+// 		streamConcurrency         int
+// 		name                      string
+// 		ip                        string
+// 		UnimplementedValdServer   vald.UnimplementedValdServer
+// 		UnimplementedMirrorServer mirror.UnimplementedMirrorServer
 // 	}
 // 	type want struct {
 // 		wantRes *payload.Search_Responses
@@ -3276,7 +3293,8 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 // 		           streamConcurrency:0,
 // 		           name:"",
 // 		           ip:"",
-// 		           UnimplementedValdServerWithMirror:nil,
+// 		           UnimplementedValdServer:nil,
+// 		           UnimplementedMirrorServer:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -3306,7 +3324,8 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 // 		           streamConcurrency:0,
 // 		           name:"",
 // 		           ip:"",
-// 		           UnimplementedValdServerWithMirror:nil,
+// 		           UnimplementedValdServer:nil,
+// 		           UnimplementedMirrorServer:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -3337,14 +3356,15 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &server{
-// 				eg:                                test.fields.eg,
-// 				gateway:                           test.fields.gateway,
-// 				mirror:                            test.fields.mirror,
-// 				vAddr:                             test.fields.vAddr,
-// 				streamConcurrency:                 test.fields.streamConcurrency,
-// 				name:                              test.fields.name,
-// 				ip:                                test.fields.ip,
-// 				UnimplementedValdServerWithMirror: test.fields.UnimplementedValdServerWithMirror,
+// 				eg:                        test.fields.eg,
+// 				gateway:                   test.fields.gateway,
+// 				mirror:                    test.fields.mirror,
+// 				vAddr:                     test.fields.vAddr,
+// 				streamConcurrency:         test.fields.streamConcurrency,
+// 				name:                      test.fields.name,
+// 				ip:                        test.fields.ip,
+// 				UnimplementedValdServer:   test.fields.UnimplementedValdServer,
+// 				UnimplementedMirrorServer: test.fields.UnimplementedMirrorServer,
 // 			}
 //
 // 			gotRes, err := s.MultiSearch(test.args.ctx, test.args.req)
@@ -3356,20 +3376,20 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 // }
 //
 // func Test_server_MultiSearchByID(t *testing.T) {
-// 	t.Parallel()
 // 	type args struct {
 // 		ctx context.Context
 // 		req *payload.Search_MultiIDRequest
 // 	}
 // 	type fields struct {
-// 		eg                                errgroup.Group
-// 		gateway                           service.Gateway
-// 		mirror                            service.Mirror
-// 		vAddr                             string
-// 		streamConcurrency                 int
-// 		name                              string
-// 		ip                                string
-// 		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
+// 		eg                        errgroup.Group
+// 		gateway                   service.Gateway
+// 		mirror                    service.Mirror
+// 		vAddr                     string
+// 		streamConcurrency         int
+// 		name                      string
+// 		ip                        string
+// 		UnimplementedValdServer   vald.UnimplementedValdServer
+// 		UnimplementedMirrorServer mirror.UnimplementedMirrorServer
 // 	}
 // 	type want struct {
 // 		wantRes *payload.Search_Responses
@@ -3410,7 +3430,8 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 // 		           streamConcurrency:0,
 // 		           name:"",
 // 		           ip:"",
-// 		           UnimplementedValdServerWithMirror:nil,
+// 		           UnimplementedValdServer:nil,
+// 		           UnimplementedMirrorServer:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -3440,7 +3461,8 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 // 		           streamConcurrency:0,
 // 		           name:"",
 // 		           ip:"",
-// 		           UnimplementedValdServerWithMirror:nil,
+// 		           UnimplementedValdServer:nil,
+// 		           UnimplementedMirrorServer:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -3471,14 +3493,15 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &server{
-// 				eg:                                test.fields.eg,
-// 				gateway:                           test.fields.gateway,
-// 				mirror:                            test.fields.mirror,
-// 				vAddr:                             test.fields.vAddr,
-// 				streamConcurrency:                 test.fields.streamConcurrency,
-// 				name:                              test.fields.name,
-// 				ip:                                test.fields.ip,
-// 				UnimplementedValdServerWithMirror: test.fields.UnimplementedValdServerWithMirror,
+// 				eg:                        test.fields.eg,
+// 				gateway:                   test.fields.gateway,
+// 				mirror:                    test.fields.mirror,
+// 				vAddr:                     test.fields.vAddr,
+// 				streamConcurrency:         test.fields.streamConcurrency,
+// 				name:                      test.fields.name,
+// 				ip:                        test.fields.ip,
+// 				UnimplementedValdServer:   test.fields.UnimplementedValdServer,
+// 				UnimplementedMirrorServer: test.fields.UnimplementedMirrorServer,
 // 			}
 //
 // 			gotRes, err := s.MultiSearchByID(test.args.ctx, test.args.req)
@@ -3490,20 +3513,20 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 // }
 //
 // func Test_server_LinearSearch(t *testing.T) {
-// 	t.Parallel()
 // 	type args struct {
 // 		ctx context.Context
 // 		req *payload.Search_Request
 // 	}
 // 	type fields struct {
-// 		eg                                errgroup.Group
-// 		gateway                           service.Gateway
-// 		mirror                            service.Mirror
-// 		vAddr                             string
-// 		streamConcurrency                 int
-// 		name                              string
-// 		ip                                string
-// 		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
+// 		eg                        errgroup.Group
+// 		gateway                   service.Gateway
+// 		mirror                    service.Mirror
+// 		vAddr                     string
+// 		streamConcurrency         int
+// 		name                      string
+// 		ip                        string
+// 		UnimplementedValdServer   vald.UnimplementedValdServer
+// 		UnimplementedMirrorServer mirror.UnimplementedMirrorServer
 // 	}
 // 	type want struct {
 // 		wantRes *payload.Search_Response
@@ -3544,7 +3567,8 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 // 		           streamConcurrency:0,
 // 		           name:"",
 // 		           ip:"",
-// 		           UnimplementedValdServerWithMirror:nil,
+// 		           UnimplementedValdServer:nil,
+// 		           UnimplementedMirrorServer:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -3574,7 +3598,8 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 // 		           streamConcurrency:0,
 // 		           name:"",
 // 		           ip:"",
-// 		           UnimplementedValdServerWithMirror:nil,
+// 		           UnimplementedValdServer:nil,
+// 		           UnimplementedMirrorServer:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -3605,14 +3630,15 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &server{
-// 				eg:                                test.fields.eg,
-// 				gateway:                           test.fields.gateway,
-// 				mirror:                            test.fields.mirror,
-// 				vAddr:                             test.fields.vAddr,
-// 				streamConcurrency:                 test.fields.streamConcurrency,
-// 				name:                              test.fields.name,
-// 				ip:                                test.fields.ip,
-// 				UnimplementedValdServerWithMirror: test.fields.UnimplementedValdServerWithMirror,
+// 				eg:                        test.fields.eg,
+// 				gateway:                   test.fields.gateway,
+// 				mirror:                    test.fields.mirror,
+// 				vAddr:                     test.fields.vAddr,
+// 				streamConcurrency:         test.fields.streamConcurrency,
+// 				name:                      test.fields.name,
+// 				ip:                        test.fields.ip,
+// 				UnimplementedValdServer:   test.fields.UnimplementedValdServer,
+// 				UnimplementedMirrorServer: test.fields.UnimplementedMirrorServer,
 // 			}
 //
 // 			gotRes, err := s.LinearSearch(test.args.ctx, test.args.req)
@@ -3624,20 +3650,20 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 // }
 //
 // func Test_server_LinearSearchByID(t *testing.T) {
-// 	t.Parallel()
 // 	type args struct {
 // 		ctx context.Context
 // 		req *payload.Search_IDRequest
 // 	}
 // 	type fields struct {
-// 		eg                                errgroup.Group
-// 		gateway                           service.Gateway
-// 		mirror                            service.Mirror
-// 		vAddr                             string
-// 		streamConcurrency                 int
-// 		name                              string
-// 		ip                                string
-// 		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
+// 		eg                        errgroup.Group
+// 		gateway                   service.Gateway
+// 		mirror                    service.Mirror
+// 		vAddr                     string
+// 		streamConcurrency         int
+// 		name                      string
+// 		ip                        string
+// 		UnimplementedValdServer   vald.UnimplementedValdServer
+// 		UnimplementedMirrorServer mirror.UnimplementedMirrorServer
 // 	}
 // 	type want struct {
 // 		wantRes *payload.Search_Response
@@ -3678,7 +3704,8 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 // 		           streamConcurrency:0,
 // 		           name:"",
 // 		           ip:"",
-// 		           UnimplementedValdServerWithMirror:nil,
+// 		           UnimplementedValdServer:nil,
+// 		           UnimplementedMirrorServer:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -3708,7 +3735,8 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 // 		           streamConcurrency:0,
 // 		           name:"",
 // 		           ip:"",
-// 		           UnimplementedValdServerWithMirror:nil,
+// 		           UnimplementedValdServer:nil,
+// 		           UnimplementedMirrorServer:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -3739,14 +3767,15 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &server{
-// 				eg:                                test.fields.eg,
-// 				gateway:                           test.fields.gateway,
-// 				mirror:                            test.fields.mirror,
-// 				vAddr:                             test.fields.vAddr,
-// 				streamConcurrency:                 test.fields.streamConcurrency,
-// 				name:                              test.fields.name,
-// 				ip:                                test.fields.ip,
-// 				UnimplementedValdServerWithMirror: test.fields.UnimplementedValdServerWithMirror,
+// 				eg:                        test.fields.eg,
+// 				gateway:                   test.fields.gateway,
+// 				mirror:                    test.fields.mirror,
+// 				vAddr:                     test.fields.vAddr,
+// 				streamConcurrency:         test.fields.streamConcurrency,
+// 				name:                      test.fields.name,
+// 				ip:                        test.fields.ip,
+// 				UnimplementedValdServer:   test.fields.UnimplementedValdServer,
+// 				UnimplementedMirrorServer: test.fields.UnimplementedMirrorServer,
 // 			}
 //
 // 			gotRes, err := s.LinearSearchByID(test.args.ctx, test.args.req)
@@ -3758,19 +3787,19 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 // }
 //
 // func Test_server_StreamLinearSearch(t *testing.T) {
-// 	t.Parallel()
 // 	type args struct {
 // 		stream vald.Search_StreamLinearSearchServer
 // 	}
 // 	type fields struct {
-// 		eg                                errgroup.Group
-// 		gateway                           service.Gateway
-// 		mirror                            service.Mirror
-// 		vAddr                             string
-// 		streamConcurrency                 int
-// 		name                              string
-// 		ip                                string
-// 		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
+// 		eg                        errgroup.Group
+// 		gateway                   service.Gateway
+// 		mirror                    service.Mirror
+// 		vAddr                     string
+// 		streamConcurrency         int
+// 		name                      string
+// 		ip                        string
+// 		UnimplementedValdServer   vald.UnimplementedValdServer
+// 		UnimplementedMirrorServer mirror.UnimplementedMirrorServer
 // 	}
 // 	type want struct {
 // 		err error
@@ -3806,7 +3835,8 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 // 		           streamConcurrency:0,
 // 		           name:"",
 // 		           ip:"",
-// 		           UnimplementedValdServerWithMirror:nil,
+// 		           UnimplementedValdServer:nil,
+// 		           UnimplementedMirrorServer:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -3835,7 +3865,8 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 // 		           streamConcurrency:0,
 // 		           name:"",
 // 		           ip:"",
-// 		           UnimplementedValdServerWithMirror:nil,
+// 		           UnimplementedValdServer:nil,
+// 		           UnimplementedMirrorServer:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -3866,14 +3897,15 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &server{
-// 				eg:                                test.fields.eg,
-// 				gateway:                           test.fields.gateway,
-// 				mirror:                            test.fields.mirror,
-// 				vAddr:                             test.fields.vAddr,
-// 				streamConcurrency:                 test.fields.streamConcurrency,
-// 				name:                              test.fields.name,
-// 				ip:                                test.fields.ip,
-// 				UnimplementedValdServerWithMirror: test.fields.UnimplementedValdServerWithMirror,
+// 				eg:                        test.fields.eg,
+// 				gateway:                   test.fields.gateway,
+// 				mirror:                    test.fields.mirror,
+// 				vAddr:                     test.fields.vAddr,
+// 				streamConcurrency:         test.fields.streamConcurrency,
+// 				name:                      test.fields.name,
+// 				ip:                        test.fields.ip,
+// 				UnimplementedValdServer:   test.fields.UnimplementedValdServer,
+// 				UnimplementedMirrorServer: test.fields.UnimplementedMirrorServer,
 // 			}
 //
 // 			err := s.StreamLinearSearch(test.args.stream)
@@ -3885,19 +3917,19 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 // }
 //
 // func Test_server_StreamLinearSearchByID(t *testing.T) {
-// 	t.Parallel()
 // 	type args struct {
 // 		stream vald.Search_StreamLinearSearchByIDServer
 // 	}
 // 	type fields struct {
-// 		eg                                errgroup.Group
-// 		gateway                           service.Gateway
-// 		mirror                            service.Mirror
-// 		vAddr                             string
-// 		streamConcurrency                 int
-// 		name                              string
-// 		ip                                string
-// 		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
+// 		eg                        errgroup.Group
+// 		gateway                   service.Gateway
+// 		mirror                    service.Mirror
+// 		vAddr                     string
+// 		streamConcurrency         int
+// 		name                      string
+// 		ip                        string
+// 		UnimplementedValdServer   vald.UnimplementedValdServer
+// 		UnimplementedMirrorServer mirror.UnimplementedMirrorServer
 // 	}
 // 	type want struct {
 // 		err error
@@ -3933,7 +3965,8 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 // 		           streamConcurrency:0,
 // 		           name:"",
 // 		           ip:"",
-// 		           UnimplementedValdServerWithMirror:nil,
+// 		           UnimplementedValdServer:nil,
+// 		           UnimplementedMirrorServer:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -3962,7 +3995,8 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 // 		           streamConcurrency:0,
 // 		           name:"",
 // 		           ip:"",
-// 		           UnimplementedValdServerWithMirror:nil,
+// 		           UnimplementedValdServer:nil,
+// 		           UnimplementedMirrorServer:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -3993,14 +4027,15 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &server{
-// 				eg:                                test.fields.eg,
-// 				gateway:                           test.fields.gateway,
-// 				mirror:                            test.fields.mirror,
-// 				vAddr:                             test.fields.vAddr,
-// 				streamConcurrency:                 test.fields.streamConcurrency,
-// 				name:                              test.fields.name,
-// 				ip:                                test.fields.ip,
-// 				UnimplementedValdServerWithMirror: test.fields.UnimplementedValdServerWithMirror,
+// 				eg:                        test.fields.eg,
+// 				gateway:                   test.fields.gateway,
+// 				mirror:                    test.fields.mirror,
+// 				vAddr:                     test.fields.vAddr,
+// 				streamConcurrency:         test.fields.streamConcurrency,
+// 				name:                      test.fields.name,
+// 				ip:                        test.fields.ip,
+// 				UnimplementedValdServer:   test.fields.UnimplementedValdServer,
+// 				UnimplementedMirrorServer: test.fields.UnimplementedMirrorServer,
 // 			}
 //
 // 			err := s.StreamLinearSearchByID(test.args.stream)
@@ -4012,20 +4047,20 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 // }
 //
 // func Test_server_MultiLinearSearch(t *testing.T) {
-// 	t.Parallel()
 // 	type args struct {
 // 		ctx context.Context
 // 		req *payload.Search_MultiRequest
 // 	}
 // 	type fields struct {
-// 		eg                                errgroup.Group
-// 		gateway                           service.Gateway
-// 		mirror                            service.Mirror
-// 		vAddr                             string
-// 		streamConcurrency                 int
-// 		name                              string
-// 		ip                                string
-// 		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
+// 		eg                        errgroup.Group
+// 		gateway                   service.Gateway
+// 		mirror                    service.Mirror
+// 		vAddr                     string
+// 		streamConcurrency         int
+// 		name                      string
+// 		ip                        string
+// 		UnimplementedValdServer   vald.UnimplementedValdServer
+// 		UnimplementedMirrorServer mirror.UnimplementedMirrorServer
 // 	}
 // 	type want struct {
 // 		wantRes *payload.Search_Responses
@@ -4066,7 +4101,8 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 // 		           streamConcurrency:0,
 // 		           name:"",
 // 		           ip:"",
-// 		           UnimplementedValdServerWithMirror:nil,
+// 		           UnimplementedValdServer:nil,
+// 		           UnimplementedMirrorServer:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -4096,7 +4132,8 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 // 		           streamConcurrency:0,
 // 		           name:"",
 // 		           ip:"",
-// 		           UnimplementedValdServerWithMirror:nil,
+// 		           UnimplementedValdServer:nil,
+// 		           UnimplementedMirrorServer:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -4127,14 +4164,15 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &server{
-// 				eg:                                test.fields.eg,
-// 				gateway:                           test.fields.gateway,
-// 				mirror:                            test.fields.mirror,
-// 				vAddr:                             test.fields.vAddr,
-// 				streamConcurrency:                 test.fields.streamConcurrency,
-// 				name:                              test.fields.name,
-// 				ip:                                test.fields.ip,
-// 				UnimplementedValdServerWithMirror: test.fields.UnimplementedValdServerWithMirror,
+// 				eg:                        test.fields.eg,
+// 				gateway:                   test.fields.gateway,
+// 				mirror:                    test.fields.mirror,
+// 				vAddr:                     test.fields.vAddr,
+// 				streamConcurrency:         test.fields.streamConcurrency,
+// 				name:                      test.fields.name,
+// 				ip:                        test.fields.ip,
+// 				UnimplementedValdServer:   test.fields.UnimplementedValdServer,
+// 				UnimplementedMirrorServer: test.fields.UnimplementedMirrorServer,
 // 			}
 //
 // 			gotRes, err := s.MultiLinearSearch(test.args.ctx, test.args.req)
@@ -4146,20 +4184,20 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 // }
 //
 // func Test_server_MultiLinearSearchByID(t *testing.T) {
-// 	t.Parallel()
 // 	type args struct {
 // 		ctx context.Context
 // 		req *payload.Search_MultiIDRequest
 // 	}
 // 	type fields struct {
-// 		eg                                errgroup.Group
-// 		gateway                           service.Gateway
-// 		mirror                            service.Mirror
-// 		vAddr                             string
-// 		streamConcurrency                 int
-// 		name                              string
-// 		ip                                string
-// 		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
+// 		eg                        errgroup.Group
+// 		gateway                   service.Gateway
+// 		mirror                    service.Mirror
+// 		vAddr                     string
+// 		streamConcurrency         int
+// 		name                      string
+// 		ip                        string
+// 		UnimplementedValdServer   vald.UnimplementedValdServer
+// 		UnimplementedMirrorServer mirror.UnimplementedMirrorServer
 // 	}
 // 	type want struct {
 // 		wantRes *payload.Search_Responses
@@ -4200,7 +4238,8 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 // 		           streamConcurrency:0,
 // 		           name:"",
 // 		           ip:"",
-// 		           UnimplementedValdServerWithMirror:nil,
+// 		           UnimplementedValdServer:nil,
+// 		           UnimplementedMirrorServer:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -4230,7 +4269,8 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 // 		           streamConcurrency:0,
 // 		           name:"",
 // 		           ip:"",
-// 		           UnimplementedValdServerWithMirror:nil,
+// 		           UnimplementedValdServer:nil,
+// 		           UnimplementedMirrorServer:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -4261,14 +4301,15 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &server{
-// 				eg:                                test.fields.eg,
-// 				gateway:                           test.fields.gateway,
-// 				mirror:                            test.fields.mirror,
-// 				vAddr:                             test.fields.vAddr,
-// 				streamConcurrency:                 test.fields.streamConcurrency,
-// 				name:                              test.fields.name,
-// 				ip:                                test.fields.ip,
-// 				UnimplementedValdServerWithMirror: test.fields.UnimplementedValdServerWithMirror,
+// 				eg:                        test.fields.eg,
+// 				gateway:                   test.fields.gateway,
+// 				mirror:                    test.fields.mirror,
+// 				vAddr:                     test.fields.vAddr,
+// 				streamConcurrency:         test.fields.streamConcurrency,
+// 				name:                      test.fields.name,
+// 				ip:                        test.fields.ip,
+// 				UnimplementedValdServer:   test.fields.UnimplementedValdServer,
+// 				UnimplementedMirrorServer: test.fields.UnimplementedMirrorServer,
 // 			}
 //
 // 			gotRes, err := s.MultiLinearSearchByID(test.args.ctx, test.args.req)
@@ -4279,20 +4320,440 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 // 	}
 // }
 //
+// func Test_server_handleInsert(t *testing.T) {
+// 	type args struct {
+// 		ctx context.Context
+// 		req *payload.Insert_Request
+// 	}
+// 	type fields struct {
+// 		eg                        errgroup.Group
+// 		gateway                   service.Gateway
+// 		mirror                    service.Mirror
+// 		vAddr                     string
+// 		streamConcurrency         int
+// 		name                      string
+// 		ip                        string
+// 		UnimplementedValdServer   vald.UnimplementedValdServer
+// 		UnimplementedMirrorServer mirror.UnimplementedMirrorServer
+// 	}
+// 	type want struct {
+// 		wantLoc *payload.Object_Location
+// 		err     error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, *payload.Object_Location, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, gotLoc *payload.Object_Location, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		if !reflect.DeepEqual(gotLoc, w.wantLoc) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotLoc, w.wantLoc)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           ctx:nil,
+// 		           req:nil,
+// 		       },
+// 		       fields: fields {
+// 		           eg:nil,
+// 		           gateway:nil,
+// 		           mirror:nil,
+// 		           vAddr:"",
+// 		           streamConcurrency:0,
+// 		           name:"",
+// 		           ip:"",
+// 		           UnimplementedValdServer:nil,
+// 		           UnimplementedMirrorServer:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           ctx:nil,
+// 		           req:nil,
+// 		           },
+// 		           fields: fields {
+// 		           eg:nil,
+// 		           gateway:nil,
+// 		           mirror:nil,
+// 		           vAddr:"",
+// 		           streamConcurrency:0,
+// 		           name:"",
+// 		           ip:"",
+// 		           UnimplementedValdServer:nil,
+// 		           UnimplementedMirrorServer:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			s := &server{
+// 				eg:                        test.fields.eg,
+// 				gateway:                   test.fields.gateway,
+// 				mirror:                    test.fields.mirror,
+// 				vAddr:                     test.fields.vAddr,
+// 				streamConcurrency:         test.fields.streamConcurrency,
+// 				name:                      test.fields.name,
+// 				ip:                        test.fields.ip,
+// 				UnimplementedValdServer:   test.fields.UnimplementedValdServer,
+// 				UnimplementedMirrorServer: test.fields.UnimplementedMirrorServer,
+// 			}
+//
+// 			gotLoc, err := s.handleInsert(test.args.ctx, test.args.req)
+// 			if err := checkFunc(test.want, gotLoc, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_server_handleInsertResult(t *testing.T) {
+// 	type args struct {
+// 		ctx               context.Context
+// 		alreadyExistsTgts []string
+// 		req               *payload.Update_Request
+// 		result            *sync.Map[string, *errorState]
+// 	}
+// 	type fields struct {
+// 		eg                        errgroup.Group
+// 		gateway                   service.Gateway
+// 		mirror                    service.Mirror
+// 		vAddr                     string
+// 		streamConcurrency         int
+// 		name                      string
+// 		ip                        string
+// 		UnimplementedValdServer   vald.UnimplementedValdServer
+// 		UnimplementedMirrorServer mirror.UnimplementedMirrorServer
+// 	}
+// 	type want struct {
+// 		wantLoc *payload.Object_Location
+// 		err     error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, *payload.Object_Location, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, gotLoc *payload.Object_Location, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		if !reflect.DeepEqual(gotLoc, w.wantLoc) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotLoc, w.wantLoc)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           ctx:nil,
+// 		           alreadyExistsTgts:nil,
+// 		           req:nil,
+// 		           result:nil,
+// 		       },
+// 		       fields: fields {
+// 		           eg:nil,
+// 		           gateway:nil,
+// 		           mirror:nil,
+// 		           vAddr:"",
+// 		           streamConcurrency:0,
+// 		           name:"",
+// 		           ip:"",
+// 		           UnimplementedValdServer:nil,
+// 		           UnimplementedMirrorServer:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           ctx:nil,
+// 		           alreadyExistsTgts:nil,
+// 		           req:nil,
+// 		           result:nil,
+// 		           },
+// 		           fields: fields {
+// 		           eg:nil,
+// 		           gateway:nil,
+// 		           mirror:nil,
+// 		           vAddr:"",
+// 		           streamConcurrency:0,
+// 		           name:"",
+// 		           ip:"",
+// 		           UnimplementedValdServer:nil,
+// 		           UnimplementedMirrorServer:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			s := &server{
+// 				eg:                        test.fields.eg,
+// 				gateway:                   test.fields.gateway,
+// 				mirror:                    test.fields.mirror,
+// 				vAddr:                     test.fields.vAddr,
+// 				streamConcurrency:         test.fields.streamConcurrency,
+// 				name:                      test.fields.name,
+// 				ip:                        test.fields.ip,
+// 				UnimplementedValdServer:   test.fields.UnimplementedValdServer,
+// 				UnimplementedMirrorServer: test.fields.UnimplementedMirrorServer,
+// 			}
+//
+// 			gotLoc, err := s.handleInsertResult(test.args.ctx, test.args.alreadyExistsTgts, test.args.req, test.args.result)
+// 			if err := checkFunc(test.want, gotLoc, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_server_doInsert(t *testing.T) {
+// 	type args struct {
+// 		ctx context.Context
+// 		req *payload.Insert_Request
+// 		f   func(ctx context.Context) (*payload.Object_Location, error)
+// 	}
+// 	type fields struct {
+// 		eg                        errgroup.Group
+// 		gateway                   service.Gateway
+// 		mirror                    service.Mirror
+// 		vAddr                     string
+// 		streamConcurrency         int
+// 		name                      string
+// 		ip                        string
+// 		UnimplementedValdServer   vald.UnimplementedValdServer
+// 		UnimplementedMirrorServer mirror.UnimplementedMirrorServer
+// 	}
+// 	type want struct {
+// 		wantLoc *payload.Object_Location
+// 		err     error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, *payload.Object_Location, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, gotLoc *payload.Object_Location, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		if !reflect.DeepEqual(gotLoc, w.wantLoc) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotLoc, w.wantLoc)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           ctx:nil,
+// 		           req:nil,
+// 		           f:nil,
+// 		       },
+// 		       fields: fields {
+// 		           eg:nil,
+// 		           gateway:nil,
+// 		           mirror:nil,
+// 		           vAddr:"",
+// 		           streamConcurrency:0,
+// 		           name:"",
+// 		           ip:"",
+// 		           UnimplementedValdServer:nil,
+// 		           UnimplementedMirrorServer:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           ctx:nil,
+// 		           req:nil,
+// 		           f:nil,
+// 		           },
+// 		           fields: fields {
+// 		           eg:nil,
+// 		           gateway:nil,
+// 		           mirror:nil,
+// 		           vAddr:"",
+// 		           streamConcurrency:0,
+// 		           name:"",
+// 		           ip:"",
+// 		           UnimplementedValdServer:nil,
+// 		           UnimplementedMirrorServer:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			s := &server{
+// 				eg:                        test.fields.eg,
+// 				gateway:                   test.fields.gateway,
+// 				mirror:                    test.fields.mirror,
+// 				vAddr:                     test.fields.vAddr,
+// 				streamConcurrency:         test.fields.streamConcurrency,
+// 				name:                      test.fields.name,
+// 				ip:                        test.fields.ip,
+// 				UnimplementedValdServer:   test.fields.UnimplementedValdServer,
+// 				UnimplementedMirrorServer: test.fields.UnimplementedMirrorServer,
+// 			}
+//
+// 			gotLoc, err := s.doInsert(test.args.ctx, test.args.req, test.args.f)
+// 			if err := checkFunc(test.want, gotLoc, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
 // func Test_server_StreamInsert(t *testing.T) {
-// 	t.Parallel()
 // 	type args struct {
 // 		stream vald.Insert_StreamInsertServer
 // 	}
 // 	type fields struct {
-// 		eg                                errgroup.Group
-// 		gateway                           service.Gateway
-// 		mirror                            service.Mirror
-// 		vAddr                             string
-// 		streamConcurrency                 int
-// 		name                              string
-// 		ip                                string
-// 		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
+// 		eg                        errgroup.Group
+// 		gateway                   service.Gateway
+// 		mirror                    service.Mirror
+// 		vAddr                     string
+// 		streamConcurrency         int
+// 		name                      string
+// 		ip                        string
+// 		UnimplementedValdServer   vald.UnimplementedValdServer
+// 		UnimplementedMirrorServer mirror.UnimplementedMirrorServer
 // 	}
 // 	type want struct {
 // 		err error
@@ -4328,7 +4789,8 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 // 		           streamConcurrency:0,
 // 		           name:"",
 // 		           ip:"",
-// 		           UnimplementedValdServerWithMirror:nil,
+// 		           UnimplementedValdServer:nil,
+// 		           UnimplementedMirrorServer:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -4357,7 +4819,8 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 // 		           streamConcurrency:0,
 // 		           name:"",
 // 		           ip:"",
-// 		           UnimplementedValdServerWithMirror:nil,
+// 		           UnimplementedValdServer:nil,
+// 		           UnimplementedMirrorServer:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -4388,14 +4851,15 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &server{
-// 				eg:                                test.fields.eg,
-// 				gateway:                           test.fields.gateway,
-// 				mirror:                            test.fields.mirror,
-// 				vAddr:                             test.fields.vAddr,
-// 				streamConcurrency:                 test.fields.streamConcurrency,
-// 				name:                              test.fields.name,
-// 				ip:                                test.fields.ip,
-// 				UnimplementedValdServerWithMirror: test.fields.UnimplementedValdServerWithMirror,
+// 				eg:                        test.fields.eg,
+// 				gateway:                   test.fields.gateway,
+// 				mirror:                    test.fields.mirror,
+// 				vAddr:                     test.fields.vAddr,
+// 				streamConcurrency:         test.fields.streamConcurrency,
+// 				name:                      test.fields.name,
+// 				ip:                        test.fields.ip,
+// 				UnimplementedValdServer:   test.fields.UnimplementedValdServer,
+// 				UnimplementedMirrorServer: test.fields.UnimplementedMirrorServer,
 // 			}
 //
 // 			err := s.StreamInsert(test.args.stream)
@@ -4407,20 +4871,20 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 // }
 //
 // func Test_server_MultiInsert(t *testing.T) {
-// 	t.Parallel()
 // 	type args struct {
 // 		ctx  context.Context
 // 		reqs *payload.Insert_MultiRequest
 // 	}
 // 	type fields struct {
-// 		eg                                errgroup.Group
-// 		gateway                           service.Gateway
-// 		mirror                            service.Mirror
-// 		vAddr                             string
-// 		streamConcurrency                 int
-// 		name                              string
-// 		ip                                string
-// 		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
+// 		eg                        errgroup.Group
+// 		gateway                   service.Gateway
+// 		mirror                    service.Mirror
+// 		vAddr                     string
+// 		streamConcurrency         int
+// 		name                      string
+// 		ip                        string
+// 		UnimplementedValdServer   vald.UnimplementedValdServer
+// 		UnimplementedMirrorServer mirror.UnimplementedMirrorServer
 // 	}
 // 	type want struct {
 // 		wantRes *payload.Object_Locations
@@ -4461,7 +4925,8 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 // 		           streamConcurrency:0,
 // 		           name:"",
 // 		           ip:"",
-// 		           UnimplementedValdServerWithMirror:nil,
+// 		           UnimplementedValdServer:nil,
+// 		           UnimplementedMirrorServer:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -4491,7 +4956,8 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 // 		           streamConcurrency:0,
 // 		           name:"",
 // 		           ip:"",
-// 		           UnimplementedValdServerWithMirror:nil,
+// 		           UnimplementedValdServer:nil,
+// 		           UnimplementedMirrorServer:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -4522,14 +4988,15 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &server{
-// 				eg:                                test.fields.eg,
-// 				gateway:                           test.fields.gateway,
-// 				mirror:                            test.fields.mirror,
-// 				vAddr:                             test.fields.vAddr,
-// 				streamConcurrency:                 test.fields.streamConcurrency,
-// 				name:                              test.fields.name,
-// 				ip:                                test.fields.ip,
-// 				UnimplementedValdServerWithMirror: test.fields.UnimplementedValdServerWithMirror,
+// 				eg:                        test.fields.eg,
+// 				gateway:                   test.fields.gateway,
+// 				mirror:                    test.fields.mirror,
+// 				vAddr:                     test.fields.vAddr,
+// 				streamConcurrency:         test.fields.streamConcurrency,
+// 				name:                      test.fields.name,
+// 				ip:                        test.fields.ip,
+// 				UnimplementedValdServer:   test.fields.UnimplementedValdServer,
+// 				UnimplementedMirrorServer: test.fields.UnimplementedMirrorServer,
 // 			}
 //
 // 			gotRes, err := s.MultiInsert(test.args.ctx, test.args.reqs)
@@ -4540,20 +5007,440 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 // 	}
 // }
 //
+// func Test_server_handleUpdate(t *testing.T) {
+// 	type args struct {
+// 		ctx context.Context
+// 		req *payload.Update_Request
+// 	}
+// 	type fields struct {
+// 		eg                        errgroup.Group
+// 		gateway                   service.Gateway
+// 		mirror                    service.Mirror
+// 		vAddr                     string
+// 		streamConcurrency         int
+// 		name                      string
+// 		ip                        string
+// 		UnimplementedValdServer   vald.UnimplementedValdServer
+// 		UnimplementedMirrorServer mirror.UnimplementedMirrorServer
+// 	}
+// 	type want struct {
+// 		wantLoc *payload.Object_Location
+// 		err     error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, *payload.Object_Location, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, gotLoc *payload.Object_Location, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		if !reflect.DeepEqual(gotLoc, w.wantLoc) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotLoc, w.wantLoc)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           ctx:nil,
+// 		           req:nil,
+// 		       },
+// 		       fields: fields {
+// 		           eg:nil,
+// 		           gateway:nil,
+// 		           mirror:nil,
+// 		           vAddr:"",
+// 		           streamConcurrency:0,
+// 		           name:"",
+// 		           ip:"",
+// 		           UnimplementedValdServer:nil,
+// 		           UnimplementedMirrorServer:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           ctx:nil,
+// 		           req:nil,
+// 		           },
+// 		           fields: fields {
+// 		           eg:nil,
+// 		           gateway:nil,
+// 		           mirror:nil,
+// 		           vAddr:"",
+// 		           streamConcurrency:0,
+// 		           name:"",
+// 		           ip:"",
+// 		           UnimplementedValdServer:nil,
+// 		           UnimplementedMirrorServer:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			s := &server{
+// 				eg:                        test.fields.eg,
+// 				gateway:                   test.fields.gateway,
+// 				mirror:                    test.fields.mirror,
+// 				vAddr:                     test.fields.vAddr,
+// 				streamConcurrency:         test.fields.streamConcurrency,
+// 				name:                      test.fields.name,
+// 				ip:                        test.fields.ip,
+// 				UnimplementedValdServer:   test.fields.UnimplementedValdServer,
+// 				UnimplementedMirrorServer: test.fields.UnimplementedMirrorServer,
+// 			}
+//
+// 			gotLoc, err := s.handleUpdate(test.args.ctx, test.args.req)
+// 			if err := checkFunc(test.want, gotLoc, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_server_handleUpdateResult(t *testing.T) {
+// 	type args struct {
+// 		ctx          context.Context
+// 		notFoundTgts []string
+// 		req          *payload.Insert_Request
+// 		result       *sync.Map[string, *errorState]
+// 	}
+// 	type fields struct {
+// 		eg                        errgroup.Group
+// 		gateway                   service.Gateway
+// 		mirror                    service.Mirror
+// 		vAddr                     string
+// 		streamConcurrency         int
+// 		name                      string
+// 		ip                        string
+// 		UnimplementedValdServer   vald.UnimplementedValdServer
+// 		UnimplementedMirrorServer mirror.UnimplementedMirrorServer
+// 	}
+// 	type want struct {
+// 		wantLoc *payload.Object_Location
+// 		err     error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, *payload.Object_Location, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, gotLoc *payload.Object_Location, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		if !reflect.DeepEqual(gotLoc, w.wantLoc) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotLoc, w.wantLoc)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           ctx:nil,
+// 		           notFoundTgts:nil,
+// 		           req:nil,
+// 		           result:nil,
+// 		       },
+// 		       fields: fields {
+// 		           eg:nil,
+// 		           gateway:nil,
+// 		           mirror:nil,
+// 		           vAddr:"",
+// 		           streamConcurrency:0,
+// 		           name:"",
+// 		           ip:"",
+// 		           UnimplementedValdServer:nil,
+// 		           UnimplementedMirrorServer:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           ctx:nil,
+// 		           notFoundTgts:nil,
+// 		           req:nil,
+// 		           result:nil,
+// 		           },
+// 		           fields: fields {
+// 		           eg:nil,
+// 		           gateway:nil,
+// 		           mirror:nil,
+// 		           vAddr:"",
+// 		           streamConcurrency:0,
+// 		           name:"",
+// 		           ip:"",
+// 		           UnimplementedValdServer:nil,
+// 		           UnimplementedMirrorServer:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			s := &server{
+// 				eg:                        test.fields.eg,
+// 				gateway:                   test.fields.gateway,
+// 				mirror:                    test.fields.mirror,
+// 				vAddr:                     test.fields.vAddr,
+// 				streamConcurrency:         test.fields.streamConcurrency,
+// 				name:                      test.fields.name,
+// 				ip:                        test.fields.ip,
+// 				UnimplementedValdServer:   test.fields.UnimplementedValdServer,
+// 				UnimplementedMirrorServer: test.fields.UnimplementedMirrorServer,
+// 			}
+//
+// 			gotLoc, err := s.handleUpdateResult(test.args.ctx, test.args.notFoundTgts, test.args.req, test.args.result)
+// 			if err := checkFunc(test.want, gotLoc, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_server_doUpdate(t *testing.T) {
+// 	type args struct {
+// 		ctx context.Context
+// 		req *payload.Update_Request
+// 		f   func(ctx context.Context) (*payload.Object_Location, error)
+// 	}
+// 	type fields struct {
+// 		eg                        errgroup.Group
+// 		gateway                   service.Gateway
+// 		mirror                    service.Mirror
+// 		vAddr                     string
+// 		streamConcurrency         int
+// 		name                      string
+// 		ip                        string
+// 		UnimplementedValdServer   vald.UnimplementedValdServer
+// 		UnimplementedMirrorServer mirror.UnimplementedMirrorServer
+// 	}
+// 	type want struct {
+// 		wantLoc *payload.Object_Location
+// 		err     error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, *payload.Object_Location, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, gotLoc *payload.Object_Location, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		if !reflect.DeepEqual(gotLoc, w.wantLoc) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotLoc, w.wantLoc)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           ctx:nil,
+// 		           req:nil,
+// 		           f:nil,
+// 		       },
+// 		       fields: fields {
+// 		           eg:nil,
+// 		           gateway:nil,
+// 		           mirror:nil,
+// 		           vAddr:"",
+// 		           streamConcurrency:0,
+// 		           name:"",
+// 		           ip:"",
+// 		           UnimplementedValdServer:nil,
+// 		           UnimplementedMirrorServer:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           ctx:nil,
+// 		           req:nil,
+// 		           f:nil,
+// 		           },
+// 		           fields: fields {
+// 		           eg:nil,
+// 		           gateway:nil,
+// 		           mirror:nil,
+// 		           vAddr:"",
+// 		           streamConcurrency:0,
+// 		           name:"",
+// 		           ip:"",
+// 		           UnimplementedValdServer:nil,
+// 		           UnimplementedMirrorServer:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			s := &server{
+// 				eg:                        test.fields.eg,
+// 				gateway:                   test.fields.gateway,
+// 				mirror:                    test.fields.mirror,
+// 				vAddr:                     test.fields.vAddr,
+// 				streamConcurrency:         test.fields.streamConcurrency,
+// 				name:                      test.fields.name,
+// 				ip:                        test.fields.ip,
+// 				UnimplementedValdServer:   test.fields.UnimplementedValdServer,
+// 				UnimplementedMirrorServer: test.fields.UnimplementedMirrorServer,
+// 			}
+//
+// 			gotLoc, err := s.doUpdate(test.args.ctx, test.args.req, test.args.f)
+// 			if err := checkFunc(test.want, gotLoc, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
 // func Test_server_StreamUpdate(t *testing.T) {
-// 	t.Parallel()
 // 	type args struct {
 // 		stream vald.Update_StreamUpdateServer
 // 	}
 // 	type fields struct {
-// 		eg                                errgroup.Group
-// 		gateway                           service.Gateway
-// 		mirror                            service.Mirror
-// 		vAddr                             string
-// 		streamConcurrency                 int
-// 		name                              string
-// 		ip                                string
-// 		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
+// 		eg                        errgroup.Group
+// 		gateway                   service.Gateway
+// 		mirror                    service.Mirror
+// 		vAddr                     string
+// 		streamConcurrency         int
+// 		name                      string
+// 		ip                        string
+// 		UnimplementedValdServer   vald.UnimplementedValdServer
+// 		UnimplementedMirrorServer mirror.UnimplementedMirrorServer
 // 	}
 // 	type want struct {
 // 		err error
@@ -4589,7 +5476,8 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 // 		           streamConcurrency:0,
 // 		           name:"",
 // 		           ip:"",
-// 		           UnimplementedValdServerWithMirror:nil,
+// 		           UnimplementedValdServer:nil,
+// 		           UnimplementedMirrorServer:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -4618,7 +5506,8 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 // 		           streamConcurrency:0,
 // 		           name:"",
 // 		           ip:"",
-// 		           UnimplementedValdServerWithMirror:nil,
+// 		           UnimplementedValdServer:nil,
+// 		           UnimplementedMirrorServer:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -4649,14 +5538,15 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &server{
-// 				eg:                                test.fields.eg,
-// 				gateway:                           test.fields.gateway,
-// 				mirror:                            test.fields.mirror,
-// 				vAddr:                             test.fields.vAddr,
-// 				streamConcurrency:                 test.fields.streamConcurrency,
-// 				name:                              test.fields.name,
-// 				ip:                                test.fields.ip,
-// 				UnimplementedValdServerWithMirror: test.fields.UnimplementedValdServerWithMirror,
+// 				eg:                        test.fields.eg,
+// 				gateway:                   test.fields.gateway,
+// 				mirror:                    test.fields.mirror,
+// 				vAddr:                     test.fields.vAddr,
+// 				streamConcurrency:         test.fields.streamConcurrency,
+// 				name:                      test.fields.name,
+// 				ip:                        test.fields.ip,
+// 				UnimplementedValdServer:   test.fields.UnimplementedValdServer,
+// 				UnimplementedMirrorServer: test.fields.UnimplementedMirrorServer,
 // 			}
 //
 // 			err := s.StreamUpdate(test.args.stream)
@@ -4668,20 +5558,20 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 // }
 //
 // func Test_server_MultiUpdate(t *testing.T) {
-// 	t.Parallel()
 // 	type args struct {
 // 		ctx  context.Context
 // 		reqs *payload.Update_MultiRequest
 // 	}
 // 	type fields struct {
-// 		eg                                errgroup.Group
-// 		gateway                           service.Gateway
-// 		mirror                            service.Mirror
-// 		vAddr                             string
-// 		streamConcurrency                 int
-// 		name                              string
-// 		ip                                string
-// 		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
+// 		eg                        errgroup.Group
+// 		gateway                   service.Gateway
+// 		mirror                    service.Mirror
+// 		vAddr                     string
+// 		streamConcurrency         int
+// 		name                      string
+// 		ip                        string
+// 		UnimplementedValdServer   vald.UnimplementedValdServer
+// 		UnimplementedMirrorServer mirror.UnimplementedMirrorServer
 // 	}
 // 	type want struct {
 // 		wantRes *payload.Object_Locations
@@ -4722,7 +5612,8 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 // 		           streamConcurrency:0,
 // 		           name:"",
 // 		           ip:"",
-// 		           UnimplementedValdServerWithMirror:nil,
+// 		           UnimplementedValdServer:nil,
+// 		           UnimplementedMirrorServer:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -4752,7 +5643,8 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 // 		           streamConcurrency:0,
 // 		           name:"",
 // 		           ip:"",
-// 		           UnimplementedValdServerWithMirror:nil,
+// 		           UnimplementedValdServer:nil,
+// 		           UnimplementedMirrorServer:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -4783,14 +5675,15 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &server{
-// 				eg:                                test.fields.eg,
-// 				gateway:                           test.fields.gateway,
-// 				mirror:                            test.fields.mirror,
-// 				vAddr:                             test.fields.vAddr,
-// 				streamConcurrency:                 test.fields.streamConcurrency,
-// 				name:                              test.fields.name,
-// 				ip:                                test.fields.ip,
-// 				UnimplementedValdServerWithMirror: test.fields.UnimplementedValdServerWithMirror,
+// 				eg:                        test.fields.eg,
+// 				gateway:                   test.fields.gateway,
+// 				mirror:                    test.fields.mirror,
+// 				vAddr:                     test.fields.vAddr,
+// 				streamConcurrency:         test.fields.streamConcurrency,
+// 				name:                      test.fields.name,
+// 				ip:                        test.fields.ip,
+// 				UnimplementedValdServer:   test.fields.UnimplementedValdServer,
+// 				UnimplementedMirrorServer: test.fields.UnimplementedMirrorServer,
 // 			}
 //
 // 			gotRes, err := s.MultiUpdate(test.args.ctx, test.args.reqs)
@@ -4801,20 +5694,297 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 // 	}
 // }
 //
+// func Test_server_handleUpsert(t *testing.T) {
+// 	type args struct {
+// 		ctx context.Context
+// 		req *payload.Upsert_Request
+// 	}
+// 	type fields struct {
+// 		eg                        errgroup.Group
+// 		gateway                   service.Gateway
+// 		mirror                    service.Mirror
+// 		vAddr                     string
+// 		streamConcurrency         int
+// 		name                      string
+// 		ip                        string
+// 		UnimplementedValdServer   vald.UnimplementedValdServer
+// 		UnimplementedMirrorServer mirror.UnimplementedMirrorServer
+// 	}
+// 	type want struct {
+// 		wantLoc *payload.Object_Location
+// 		err     error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, *payload.Object_Location, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, gotLoc *payload.Object_Location, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		if !reflect.DeepEqual(gotLoc, w.wantLoc) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotLoc, w.wantLoc)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           ctx:nil,
+// 		           req:nil,
+// 		       },
+// 		       fields: fields {
+// 		           eg:nil,
+// 		           gateway:nil,
+// 		           mirror:nil,
+// 		           vAddr:"",
+// 		           streamConcurrency:0,
+// 		           name:"",
+// 		           ip:"",
+// 		           UnimplementedValdServer:nil,
+// 		           UnimplementedMirrorServer:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           ctx:nil,
+// 		           req:nil,
+// 		           },
+// 		           fields: fields {
+// 		           eg:nil,
+// 		           gateway:nil,
+// 		           mirror:nil,
+// 		           vAddr:"",
+// 		           streamConcurrency:0,
+// 		           name:"",
+// 		           ip:"",
+// 		           UnimplementedValdServer:nil,
+// 		           UnimplementedMirrorServer:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			s := &server{
+// 				eg:                        test.fields.eg,
+// 				gateway:                   test.fields.gateway,
+// 				mirror:                    test.fields.mirror,
+// 				vAddr:                     test.fields.vAddr,
+// 				streamConcurrency:         test.fields.streamConcurrency,
+// 				name:                      test.fields.name,
+// 				ip:                        test.fields.ip,
+// 				UnimplementedValdServer:   test.fields.UnimplementedValdServer,
+// 				UnimplementedMirrorServer: test.fields.UnimplementedMirrorServer,
+// 			}
+//
+// 			gotLoc, err := s.handleUpsert(test.args.ctx, test.args.req)
+// 			if err := checkFunc(test.want, gotLoc, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_server_doUpsert(t *testing.T) {
+// 	type args struct {
+// 		ctx context.Context
+// 		req *payload.Upsert_Request
+// 		f   func(ctx context.Context) (*payload.Object_Location, error)
+// 	}
+// 	type fields struct {
+// 		eg                        errgroup.Group
+// 		gateway                   service.Gateway
+// 		mirror                    service.Mirror
+// 		vAddr                     string
+// 		streamConcurrency         int
+// 		name                      string
+// 		ip                        string
+// 		UnimplementedValdServer   vald.UnimplementedValdServer
+// 		UnimplementedMirrorServer mirror.UnimplementedMirrorServer
+// 	}
+// 	type want struct {
+// 		wantLoc *payload.Object_Location
+// 		err     error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, *payload.Object_Location, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, gotLoc *payload.Object_Location, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		if !reflect.DeepEqual(gotLoc, w.wantLoc) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotLoc, w.wantLoc)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           ctx:nil,
+// 		           req:nil,
+// 		           f:nil,
+// 		       },
+// 		       fields: fields {
+// 		           eg:nil,
+// 		           gateway:nil,
+// 		           mirror:nil,
+// 		           vAddr:"",
+// 		           streamConcurrency:0,
+// 		           name:"",
+// 		           ip:"",
+// 		           UnimplementedValdServer:nil,
+// 		           UnimplementedMirrorServer:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           ctx:nil,
+// 		           req:nil,
+// 		           f:nil,
+// 		           },
+// 		           fields: fields {
+// 		           eg:nil,
+// 		           gateway:nil,
+// 		           mirror:nil,
+// 		           vAddr:"",
+// 		           streamConcurrency:0,
+// 		           name:"",
+// 		           ip:"",
+// 		           UnimplementedValdServer:nil,
+// 		           UnimplementedMirrorServer:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			s := &server{
+// 				eg:                        test.fields.eg,
+// 				gateway:                   test.fields.gateway,
+// 				mirror:                    test.fields.mirror,
+// 				vAddr:                     test.fields.vAddr,
+// 				streamConcurrency:         test.fields.streamConcurrency,
+// 				name:                      test.fields.name,
+// 				ip:                        test.fields.ip,
+// 				UnimplementedValdServer:   test.fields.UnimplementedValdServer,
+// 				UnimplementedMirrorServer: test.fields.UnimplementedMirrorServer,
+// 			}
+//
+// 			gotLoc, err := s.doUpsert(test.args.ctx, test.args.req, test.args.f)
+// 			if err := checkFunc(test.want, gotLoc, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
 // func Test_server_StreamUpsert(t *testing.T) {
-// 	t.Parallel()
 // 	type args struct {
 // 		stream vald.Upsert_StreamUpsertServer
 // 	}
 // 	type fields struct {
-// 		eg                                errgroup.Group
-// 		gateway                           service.Gateway
-// 		mirror                            service.Mirror
-// 		vAddr                             string
-// 		streamConcurrency                 int
-// 		name                              string
-// 		ip                                string
-// 		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
+// 		eg                        errgroup.Group
+// 		gateway                   service.Gateway
+// 		mirror                    service.Mirror
+// 		vAddr                     string
+// 		streamConcurrency         int
+// 		name                      string
+// 		ip                        string
+// 		UnimplementedValdServer   vald.UnimplementedValdServer
+// 		UnimplementedMirrorServer mirror.UnimplementedMirrorServer
 // 	}
 // 	type want struct {
 // 		err error
@@ -4850,7 +6020,8 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 // 		           streamConcurrency:0,
 // 		           name:"",
 // 		           ip:"",
-// 		           UnimplementedValdServerWithMirror:nil,
+// 		           UnimplementedValdServer:nil,
+// 		           UnimplementedMirrorServer:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -4879,7 +6050,8 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 // 		           streamConcurrency:0,
 // 		           name:"",
 // 		           ip:"",
-// 		           UnimplementedValdServerWithMirror:nil,
+// 		           UnimplementedValdServer:nil,
+// 		           UnimplementedMirrorServer:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -4910,14 +6082,15 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &server{
-// 				eg:                                test.fields.eg,
-// 				gateway:                           test.fields.gateway,
-// 				mirror:                            test.fields.mirror,
-// 				vAddr:                             test.fields.vAddr,
-// 				streamConcurrency:                 test.fields.streamConcurrency,
-// 				name:                              test.fields.name,
-// 				ip:                                test.fields.ip,
-// 				UnimplementedValdServerWithMirror: test.fields.UnimplementedValdServerWithMirror,
+// 				eg:                        test.fields.eg,
+// 				gateway:                   test.fields.gateway,
+// 				mirror:                    test.fields.mirror,
+// 				vAddr:                     test.fields.vAddr,
+// 				streamConcurrency:         test.fields.streamConcurrency,
+// 				name:                      test.fields.name,
+// 				ip:                        test.fields.ip,
+// 				UnimplementedValdServer:   test.fields.UnimplementedValdServer,
+// 				UnimplementedMirrorServer: test.fields.UnimplementedMirrorServer,
 // 			}
 //
 // 			err := s.StreamUpsert(test.args.stream)
@@ -4929,20 +6102,20 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 // }
 //
 // func Test_server_MultiUpsert(t *testing.T) {
-// 	t.Parallel()
 // 	type args struct {
 // 		ctx  context.Context
 // 		reqs *payload.Upsert_MultiRequest
 // 	}
 // 	type fields struct {
-// 		eg                                errgroup.Group
-// 		gateway                           service.Gateway
-// 		mirror                            service.Mirror
-// 		vAddr                             string
-// 		streamConcurrency                 int
-// 		name                              string
-// 		ip                                string
-// 		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
+// 		eg                        errgroup.Group
+// 		gateway                   service.Gateway
+// 		mirror                    service.Mirror
+// 		vAddr                     string
+// 		streamConcurrency         int
+// 		name                      string
+// 		ip                        string
+// 		UnimplementedValdServer   vald.UnimplementedValdServer
+// 		UnimplementedMirrorServer mirror.UnimplementedMirrorServer
 // 	}
 // 	type want struct {
 // 		wantRes *payload.Object_Locations
@@ -4983,7 +6156,8 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 // 		           streamConcurrency:0,
 // 		           name:"",
 // 		           ip:"",
-// 		           UnimplementedValdServerWithMirror:nil,
+// 		           UnimplementedValdServer:nil,
+// 		           UnimplementedMirrorServer:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -5013,7 +6187,8 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 // 		           streamConcurrency:0,
 // 		           name:"",
 // 		           ip:"",
-// 		           UnimplementedValdServerWithMirror:nil,
+// 		           UnimplementedValdServer:nil,
+// 		           UnimplementedMirrorServer:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -5044,14 +6219,15 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &server{
-// 				eg:                                test.fields.eg,
-// 				gateway:                           test.fields.gateway,
-// 				mirror:                            test.fields.mirror,
-// 				vAddr:                             test.fields.vAddr,
-// 				streamConcurrency:                 test.fields.streamConcurrency,
-// 				name:                              test.fields.name,
-// 				ip:                                test.fields.ip,
-// 				UnimplementedValdServerWithMirror: test.fields.UnimplementedValdServerWithMirror,
+// 				eg:                        test.fields.eg,
+// 				gateway:                   test.fields.gateway,
+// 				mirror:                    test.fields.mirror,
+// 				vAddr:                     test.fields.vAddr,
+// 				streamConcurrency:         test.fields.streamConcurrency,
+// 				name:                      test.fields.name,
+// 				ip:                        test.fields.ip,
+// 				UnimplementedValdServer:   test.fields.UnimplementedValdServer,
+// 				UnimplementedMirrorServer: test.fields.UnimplementedMirrorServer,
 // 			}
 //
 // 			gotRes, err := s.MultiUpsert(test.args.ctx, test.args.reqs)
@@ -5062,20 +6238,297 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 // 	}
 // }
 //
+// func Test_server_handleRemove(t *testing.T) {
+// 	type args struct {
+// 		ctx context.Context
+// 		req *payload.Remove_Request
+// 	}
+// 	type fields struct {
+// 		eg                        errgroup.Group
+// 		gateway                   service.Gateway
+// 		mirror                    service.Mirror
+// 		vAddr                     string
+// 		streamConcurrency         int
+// 		name                      string
+// 		ip                        string
+// 		UnimplementedValdServer   vald.UnimplementedValdServer
+// 		UnimplementedMirrorServer mirror.UnimplementedMirrorServer
+// 	}
+// 	type want struct {
+// 		wantLoc *payload.Object_Location
+// 		err     error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, *payload.Object_Location, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, gotLoc *payload.Object_Location, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		if !reflect.DeepEqual(gotLoc, w.wantLoc) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotLoc, w.wantLoc)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           ctx:nil,
+// 		           req:nil,
+// 		       },
+// 		       fields: fields {
+// 		           eg:nil,
+// 		           gateway:nil,
+// 		           mirror:nil,
+// 		           vAddr:"",
+// 		           streamConcurrency:0,
+// 		           name:"",
+// 		           ip:"",
+// 		           UnimplementedValdServer:nil,
+// 		           UnimplementedMirrorServer:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           ctx:nil,
+// 		           req:nil,
+// 		           },
+// 		           fields: fields {
+// 		           eg:nil,
+// 		           gateway:nil,
+// 		           mirror:nil,
+// 		           vAddr:"",
+// 		           streamConcurrency:0,
+// 		           name:"",
+// 		           ip:"",
+// 		           UnimplementedValdServer:nil,
+// 		           UnimplementedMirrorServer:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			s := &server{
+// 				eg:                        test.fields.eg,
+// 				gateway:                   test.fields.gateway,
+// 				mirror:                    test.fields.mirror,
+// 				vAddr:                     test.fields.vAddr,
+// 				streamConcurrency:         test.fields.streamConcurrency,
+// 				name:                      test.fields.name,
+// 				ip:                        test.fields.ip,
+// 				UnimplementedValdServer:   test.fields.UnimplementedValdServer,
+// 				UnimplementedMirrorServer: test.fields.UnimplementedMirrorServer,
+// 			}
+//
+// 			gotLoc, err := s.handleRemove(test.args.ctx, test.args.req)
+// 			if err := checkFunc(test.want, gotLoc, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_server_doRemove(t *testing.T) {
+// 	type args struct {
+// 		ctx context.Context
+// 		req *payload.Remove_Request
+// 		f   func(ctx context.Context) (*payload.Object_Location, error)
+// 	}
+// 	type fields struct {
+// 		eg                        errgroup.Group
+// 		gateway                   service.Gateway
+// 		mirror                    service.Mirror
+// 		vAddr                     string
+// 		streamConcurrency         int
+// 		name                      string
+// 		ip                        string
+// 		UnimplementedValdServer   vald.UnimplementedValdServer
+// 		UnimplementedMirrorServer mirror.UnimplementedMirrorServer
+// 	}
+// 	type want struct {
+// 		wantLoc *payload.Object_Location
+// 		err     error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, *payload.Object_Location, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, gotLoc *payload.Object_Location, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		if !reflect.DeepEqual(gotLoc, w.wantLoc) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotLoc, w.wantLoc)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           ctx:nil,
+// 		           req:nil,
+// 		           f:nil,
+// 		       },
+// 		       fields: fields {
+// 		           eg:nil,
+// 		           gateway:nil,
+// 		           mirror:nil,
+// 		           vAddr:"",
+// 		           streamConcurrency:0,
+// 		           name:"",
+// 		           ip:"",
+// 		           UnimplementedValdServer:nil,
+// 		           UnimplementedMirrorServer:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           ctx:nil,
+// 		           req:nil,
+// 		           f:nil,
+// 		           },
+// 		           fields: fields {
+// 		           eg:nil,
+// 		           gateway:nil,
+// 		           mirror:nil,
+// 		           vAddr:"",
+// 		           streamConcurrency:0,
+// 		           name:"",
+// 		           ip:"",
+// 		           UnimplementedValdServer:nil,
+// 		           UnimplementedMirrorServer:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			s := &server{
+// 				eg:                        test.fields.eg,
+// 				gateway:                   test.fields.gateway,
+// 				mirror:                    test.fields.mirror,
+// 				vAddr:                     test.fields.vAddr,
+// 				streamConcurrency:         test.fields.streamConcurrency,
+// 				name:                      test.fields.name,
+// 				ip:                        test.fields.ip,
+// 				UnimplementedValdServer:   test.fields.UnimplementedValdServer,
+// 				UnimplementedMirrorServer: test.fields.UnimplementedMirrorServer,
+// 			}
+//
+// 			gotLoc, err := s.doRemove(test.args.ctx, test.args.req, test.args.f)
+// 			if err := checkFunc(test.want, gotLoc, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
 // func Test_server_StreamRemove(t *testing.T) {
-// 	t.Parallel()
 // 	type args struct {
 // 		stream vald.Remove_StreamRemoveServer
 // 	}
 // 	type fields struct {
-// 		eg                                errgroup.Group
-// 		gateway                           service.Gateway
-// 		mirror                            service.Mirror
-// 		vAddr                             string
-// 		streamConcurrency                 int
-// 		name                              string
-// 		ip                                string
-// 		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
+// 		eg                        errgroup.Group
+// 		gateway                   service.Gateway
+// 		mirror                    service.Mirror
+// 		vAddr                     string
+// 		streamConcurrency         int
+// 		name                      string
+// 		ip                        string
+// 		UnimplementedValdServer   vald.UnimplementedValdServer
+// 		UnimplementedMirrorServer mirror.UnimplementedMirrorServer
 // 	}
 // 	type want struct {
 // 		err error
@@ -5111,7 +6564,8 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 // 		           streamConcurrency:0,
 // 		           name:"",
 // 		           ip:"",
-// 		           UnimplementedValdServerWithMirror:nil,
+// 		           UnimplementedValdServer:nil,
+// 		           UnimplementedMirrorServer:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -5140,7 +6594,8 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 // 		           streamConcurrency:0,
 // 		           name:"",
 // 		           ip:"",
-// 		           UnimplementedValdServerWithMirror:nil,
+// 		           UnimplementedValdServer:nil,
+// 		           UnimplementedMirrorServer:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -5171,14 +6626,15 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &server{
-// 				eg:                                test.fields.eg,
-// 				gateway:                           test.fields.gateway,
-// 				mirror:                            test.fields.mirror,
-// 				vAddr:                             test.fields.vAddr,
-// 				streamConcurrency:                 test.fields.streamConcurrency,
-// 				name:                              test.fields.name,
-// 				ip:                                test.fields.ip,
-// 				UnimplementedValdServerWithMirror: test.fields.UnimplementedValdServerWithMirror,
+// 				eg:                        test.fields.eg,
+// 				gateway:                   test.fields.gateway,
+// 				mirror:                    test.fields.mirror,
+// 				vAddr:                     test.fields.vAddr,
+// 				streamConcurrency:         test.fields.streamConcurrency,
+// 				name:                      test.fields.name,
+// 				ip:                        test.fields.ip,
+// 				UnimplementedValdServer:   test.fields.UnimplementedValdServer,
+// 				UnimplementedMirrorServer: test.fields.UnimplementedMirrorServer,
 // 			}
 //
 // 			err := s.StreamRemove(test.args.stream)
@@ -5190,20 +6646,20 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 // }
 //
 // func Test_server_MultiRemove(t *testing.T) {
-// 	t.Parallel()
 // 	type args struct {
 // 		ctx  context.Context
 // 		reqs *payload.Remove_MultiRequest
 // 	}
 // 	type fields struct {
-// 		eg                                errgroup.Group
-// 		gateway                           service.Gateway
-// 		mirror                            service.Mirror
-// 		vAddr                             string
-// 		streamConcurrency                 int
-// 		name                              string
-// 		ip                                string
-// 		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
+// 		eg                        errgroup.Group
+// 		gateway                   service.Gateway
+// 		mirror                    service.Mirror
+// 		vAddr                     string
+// 		streamConcurrency         int
+// 		name                      string
+// 		ip                        string
+// 		UnimplementedValdServer   vald.UnimplementedValdServer
+// 		UnimplementedMirrorServer mirror.UnimplementedMirrorServer
 // 	}
 // 	type want struct {
 // 		wantRes *payload.Object_Locations
@@ -5244,7 +6700,8 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 // 		           streamConcurrency:0,
 // 		           name:"",
 // 		           ip:"",
-// 		           UnimplementedValdServerWithMirror:nil,
+// 		           UnimplementedValdServer:nil,
+// 		           UnimplementedMirrorServer:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -5274,7 +6731,8 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 // 		           streamConcurrency:0,
 // 		           name:"",
 // 		           ip:"",
-// 		           UnimplementedValdServerWithMirror:nil,
+// 		           UnimplementedValdServer:nil,
+// 		           UnimplementedMirrorServer:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -5305,14 +6763,15 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &server{
-// 				eg:                                test.fields.eg,
-// 				gateway:                           test.fields.gateway,
-// 				mirror:                            test.fields.mirror,
-// 				vAddr:                             test.fields.vAddr,
-// 				streamConcurrency:                 test.fields.streamConcurrency,
-// 				name:                              test.fields.name,
-// 				ip:                                test.fields.ip,
-// 				UnimplementedValdServerWithMirror: test.fields.UnimplementedValdServerWithMirror,
+// 				eg:                        test.fields.eg,
+// 				gateway:                   test.fields.gateway,
+// 				mirror:                    test.fields.mirror,
+// 				vAddr:                     test.fields.vAddr,
+// 				streamConcurrency:         test.fields.streamConcurrency,
+// 				name:                      test.fields.name,
+// 				ip:                        test.fields.ip,
+// 				UnimplementedValdServer:   test.fields.UnimplementedValdServer,
+// 				UnimplementedMirrorServer: test.fields.UnimplementedMirrorServer,
 // 			}
 //
 // 			gotRes, err := s.MultiRemove(test.args.ctx, test.args.reqs)
@@ -5323,21 +6782,298 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 // 	}
 // }
 //
+// func Test_server_handleRemoveByTimestamp(t *testing.T) {
+// 	type args struct {
+// 		ctx context.Context
+// 		req *payload.Remove_TimestampRequest
+// 	}
+// 	type fields struct {
+// 		eg                        errgroup.Group
+// 		gateway                   service.Gateway
+// 		mirror                    service.Mirror
+// 		vAddr                     string
+// 		streamConcurrency         int
+// 		name                      string
+// 		ip                        string
+// 		UnimplementedValdServer   vald.UnimplementedValdServer
+// 		UnimplementedMirrorServer mirror.UnimplementedMirrorServer
+// 	}
+// 	type want struct {
+// 		wantLocs *payload.Object_Locations
+// 		err      error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, *payload.Object_Locations, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, gotLocs *payload.Object_Locations, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		if !reflect.DeepEqual(gotLocs, w.wantLocs) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotLocs, w.wantLocs)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           ctx:nil,
+// 		           req:nil,
+// 		       },
+// 		       fields: fields {
+// 		           eg:nil,
+// 		           gateway:nil,
+// 		           mirror:nil,
+// 		           vAddr:"",
+// 		           streamConcurrency:0,
+// 		           name:"",
+// 		           ip:"",
+// 		           UnimplementedValdServer:nil,
+// 		           UnimplementedMirrorServer:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           ctx:nil,
+// 		           req:nil,
+// 		           },
+// 		           fields: fields {
+// 		           eg:nil,
+// 		           gateway:nil,
+// 		           mirror:nil,
+// 		           vAddr:"",
+// 		           streamConcurrency:0,
+// 		           name:"",
+// 		           ip:"",
+// 		           UnimplementedValdServer:nil,
+// 		           UnimplementedMirrorServer:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			s := &server{
+// 				eg:                        test.fields.eg,
+// 				gateway:                   test.fields.gateway,
+// 				mirror:                    test.fields.mirror,
+// 				vAddr:                     test.fields.vAddr,
+// 				streamConcurrency:         test.fields.streamConcurrency,
+// 				name:                      test.fields.name,
+// 				ip:                        test.fields.ip,
+// 				UnimplementedValdServer:   test.fields.UnimplementedValdServer,
+// 				UnimplementedMirrorServer: test.fields.UnimplementedMirrorServer,
+// 			}
+//
+// 			gotLocs, err := s.handleRemoveByTimestamp(test.args.ctx, test.args.req)
+// 			if err := checkFunc(test.want, gotLocs, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_server_doRemoveByTimestamp(t *testing.T) {
+// 	type args struct {
+// 		ctx context.Context
+// 		req *payload.Remove_TimestampRequest
+// 		f   func(ctx context.Context) (*payload.Object_Locations, error)
+// 	}
+// 	type fields struct {
+// 		eg                        errgroup.Group
+// 		gateway                   service.Gateway
+// 		mirror                    service.Mirror
+// 		vAddr                     string
+// 		streamConcurrency         int
+// 		name                      string
+// 		ip                        string
+// 		UnimplementedValdServer   vald.UnimplementedValdServer
+// 		UnimplementedMirrorServer mirror.UnimplementedMirrorServer
+// 	}
+// 	type want struct {
+// 		wantLocs *payload.Object_Locations
+// 		err      error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, *payload.Object_Locations, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, gotLocs *payload.Object_Locations, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		if !reflect.DeepEqual(gotLocs, w.wantLocs) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotLocs, w.wantLocs)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           ctx:nil,
+// 		           req:nil,
+// 		           f:nil,
+// 		       },
+// 		       fields: fields {
+// 		           eg:nil,
+// 		           gateway:nil,
+// 		           mirror:nil,
+// 		           vAddr:"",
+// 		           streamConcurrency:0,
+// 		           name:"",
+// 		           ip:"",
+// 		           UnimplementedValdServer:nil,
+// 		           UnimplementedMirrorServer:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           ctx:nil,
+// 		           req:nil,
+// 		           f:nil,
+// 		           },
+// 		           fields: fields {
+// 		           eg:nil,
+// 		           gateway:nil,
+// 		           mirror:nil,
+// 		           vAddr:"",
+// 		           streamConcurrency:0,
+// 		           name:"",
+// 		           ip:"",
+// 		           UnimplementedValdServer:nil,
+// 		           UnimplementedMirrorServer:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			s := &server{
+// 				eg:                        test.fields.eg,
+// 				gateway:                   test.fields.gateway,
+// 				mirror:                    test.fields.mirror,
+// 				vAddr:                     test.fields.vAddr,
+// 				streamConcurrency:         test.fields.streamConcurrency,
+// 				name:                      test.fields.name,
+// 				ip:                        test.fields.ip,
+// 				UnimplementedValdServer:   test.fields.UnimplementedValdServer,
+// 				UnimplementedMirrorServer: test.fields.UnimplementedMirrorServer,
+// 			}
+//
+// 			gotLocs, err := s.doRemoveByTimestamp(test.args.ctx, test.args.req, test.args.f)
+// 			if err := checkFunc(test.want, gotLocs, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
 // func Test_server_GetObject(t *testing.T) {
-// 	t.Parallel()
 // 	type args struct {
 // 		ctx context.Context
 // 		req *payload.Object_VectorRequest
 // 	}
 // 	type fields struct {
-// 		eg                                errgroup.Group
-// 		gateway                           service.Gateway
-// 		mirror                            service.Mirror
-// 		vAddr                             string
-// 		streamConcurrency                 int
-// 		name                              string
-// 		ip                                string
-// 		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
+// 		eg                        errgroup.Group
+// 		gateway                   service.Gateway
+// 		mirror                    service.Mirror
+// 		vAddr                     string
+// 		streamConcurrency         int
+// 		name                      string
+// 		ip                        string
+// 		UnimplementedValdServer   vald.UnimplementedValdServer
+// 		UnimplementedMirrorServer mirror.UnimplementedMirrorServer
 // 	}
 // 	type want struct {
 // 		wantVec *payload.Object_Vector
@@ -5378,7 +7114,8 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 // 		           streamConcurrency:0,
 // 		           name:"",
 // 		           ip:"",
-// 		           UnimplementedValdServerWithMirror:nil,
+// 		           UnimplementedValdServer:nil,
+// 		           UnimplementedMirrorServer:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -5408,7 +7145,8 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 // 		           streamConcurrency:0,
 // 		           name:"",
 // 		           ip:"",
-// 		           UnimplementedValdServerWithMirror:nil,
+// 		           UnimplementedValdServer:nil,
+// 		           UnimplementedMirrorServer:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -5439,14 +7177,15 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &server{
-// 				eg:                                test.fields.eg,
-// 				gateway:                           test.fields.gateway,
-// 				mirror:                            test.fields.mirror,
-// 				vAddr:                             test.fields.vAddr,
-// 				streamConcurrency:                 test.fields.streamConcurrency,
-// 				name:                              test.fields.name,
-// 				ip:                                test.fields.ip,
-// 				UnimplementedValdServerWithMirror: test.fields.UnimplementedValdServerWithMirror,
+// 				eg:                        test.fields.eg,
+// 				gateway:                   test.fields.gateway,
+// 				mirror:                    test.fields.mirror,
+// 				vAddr:                     test.fields.vAddr,
+// 				streamConcurrency:         test.fields.streamConcurrency,
+// 				name:                      test.fields.name,
+// 				ip:                        test.fields.ip,
+// 				UnimplementedValdServer:   test.fields.UnimplementedValdServer,
+// 				UnimplementedMirrorServer: test.fields.UnimplementedMirrorServer,
 // 			}
 //
 // 			gotVec, err := s.GetObject(test.args.ctx, test.args.req)
@@ -5458,19 +7197,19 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 // }
 //
 // func Test_server_StreamGetObject(t *testing.T) {
-// 	t.Parallel()
 // 	type args struct {
 // 		stream vald.Object_StreamGetObjectServer
 // 	}
 // 	type fields struct {
-// 		eg                                errgroup.Group
-// 		gateway                           service.Gateway
-// 		mirror                            service.Mirror
-// 		vAddr                             string
-// 		streamConcurrency                 int
-// 		name                              string
-// 		ip                                string
-// 		UnimplementedValdServerWithMirror vald.UnimplementedValdServerWithMirror
+// 		eg                        errgroup.Group
+// 		gateway                   service.Gateway
+// 		mirror                    service.Mirror
+// 		vAddr                     string
+// 		streamConcurrency         int
+// 		name                      string
+// 		ip                        string
+// 		UnimplementedValdServer   vald.UnimplementedValdServer
+// 		UnimplementedMirrorServer mirror.UnimplementedMirrorServer
 // 	}
 // 	type want struct {
 // 		err error
@@ -5506,7 +7245,8 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 // 		           streamConcurrency:0,
 // 		           name:"",
 // 		           ip:"",
-// 		           UnimplementedValdServerWithMirror:nil,
+// 		           UnimplementedValdServer:nil,
+// 		           UnimplementedMirrorServer:nil,
 // 		       },
 // 		       want: want{},
 // 		       checkFunc: defaultCheckFunc,
@@ -5535,7 +7275,8 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 // 		           streamConcurrency:0,
 // 		           name:"",
 // 		           ip:"",
-// 		           UnimplementedValdServerWithMirror:nil,
+// 		           UnimplementedValdServer:nil,
+// 		           UnimplementedMirrorServer:nil,
 // 		           },
 // 		           want: want{},
 // 		           checkFunc: defaultCheckFunc,
@@ -5566,18 +7307,555 @@ func Test_server_RemoveByTimestamp(t *testing.T) {
 // 				checkFunc = defaultCheckFunc
 // 			}
 // 			s := &server{
-// 				eg:                                test.fields.eg,
-// 				gateway:                           test.fields.gateway,
-// 				mirror:                            test.fields.mirror,
-// 				vAddr:                             test.fields.vAddr,
-// 				streamConcurrency:                 test.fields.streamConcurrency,
-// 				name:                              test.fields.name,
-// 				ip:                                test.fields.ip,
-// 				UnimplementedValdServerWithMirror: test.fields.UnimplementedValdServerWithMirror,
+// 				eg:                        test.fields.eg,
+// 				gateway:                   test.fields.gateway,
+// 				mirror:                    test.fields.mirror,
+// 				vAddr:                     test.fields.vAddr,
+// 				streamConcurrency:         test.fields.streamConcurrency,
+// 				name:                      test.fields.name,
+// 				ip:                        test.fields.ip,
+// 				UnimplementedValdServer:   test.fields.UnimplementedValdServer,
+// 				UnimplementedMirrorServer: test.fields.UnimplementedMirrorServer,
 // 			}
 //
 // 			err := s.StreamGetObject(test.args.stream)
 // 			if err := checkFunc(test.want, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_server_StreamListObject(t *testing.T) {
+// 	type args struct {
+// 		req    *payload.Object_List_Request
+// 		stream vald.Object_StreamListObjectServer
+// 	}
+// 	type fields struct {
+// 		eg                        errgroup.Group
+// 		gateway                   service.Gateway
+// 		mirror                    service.Mirror
+// 		vAddr                     string
+// 		streamConcurrency         int
+// 		name                      string
+// 		ip                        string
+// 		UnimplementedValdServer   vald.UnimplementedValdServer
+// 		UnimplementedMirrorServer mirror.UnimplementedMirrorServer
+// 	}
+// 	type want struct {
+// 		err error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           req:nil,
+// 		           stream:nil,
+// 		       },
+// 		       fields: fields {
+// 		           eg:nil,
+// 		           gateway:nil,
+// 		           mirror:nil,
+// 		           vAddr:"",
+// 		           streamConcurrency:0,
+// 		           name:"",
+// 		           ip:"",
+// 		           UnimplementedValdServer:nil,
+// 		           UnimplementedMirrorServer:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           req:nil,
+// 		           stream:nil,
+// 		           },
+// 		           fields: fields {
+// 		           eg:nil,
+// 		           gateway:nil,
+// 		           mirror:nil,
+// 		           vAddr:"",
+// 		           streamConcurrency:0,
+// 		           name:"",
+// 		           ip:"",
+// 		           UnimplementedValdServer:nil,
+// 		           UnimplementedMirrorServer:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			s := &server{
+// 				eg:                        test.fields.eg,
+// 				gateway:                   test.fields.gateway,
+// 				mirror:                    test.fields.mirror,
+// 				vAddr:                     test.fields.vAddr,
+// 				streamConcurrency:         test.fields.streamConcurrency,
+// 				name:                      test.fields.name,
+// 				ip:                        test.fields.ip,
+// 				UnimplementedValdServer:   test.fields.UnimplementedValdServer,
+// 				UnimplementedMirrorServer: test.fields.UnimplementedMirrorServer,
+// 			}
+//
+// 			err := s.StreamListObject(test.args.req, test.args.stream)
+// 			if err := checkFunc(test.want, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_server_doStreamListObject(t *testing.T) {
+// 	type args struct {
+// 		ctx    context.Context
+// 		client vald.Object_StreamListObjectClient
+// 		server vald.Object_StreamListObjectServer
+// 	}
+// 	type fields struct {
+// 		eg                        errgroup.Group
+// 		gateway                   service.Gateway
+// 		mirror                    service.Mirror
+// 		vAddr                     string
+// 		streamConcurrency         int
+// 		name                      string
+// 		ip                        string
+// 		UnimplementedValdServer   vald.UnimplementedValdServer
+// 		UnimplementedMirrorServer mirror.UnimplementedMirrorServer
+// 	}
+// 	type want struct {
+// 		err error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           ctx:nil,
+// 		           client:nil,
+// 		           server:nil,
+// 		       },
+// 		       fields: fields {
+// 		           eg:nil,
+// 		           gateway:nil,
+// 		           mirror:nil,
+// 		           vAddr:"",
+// 		           streamConcurrency:0,
+// 		           name:"",
+// 		           ip:"",
+// 		           UnimplementedValdServer:nil,
+// 		           UnimplementedMirrorServer:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           ctx:nil,
+// 		           client:nil,
+// 		           server:nil,
+// 		           },
+// 		           fields: fields {
+// 		           eg:nil,
+// 		           gateway:nil,
+// 		           mirror:nil,
+// 		           vAddr:"",
+// 		           streamConcurrency:0,
+// 		           name:"",
+// 		           ip:"",
+// 		           UnimplementedValdServer:nil,
+// 		           UnimplementedMirrorServer:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			s := &server{
+// 				eg:                        test.fields.eg,
+// 				gateway:                   test.fields.gateway,
+// 				mirror:                    test.fields.mirror,
+// 				vAddr:                     test.fields.vAddr,
+// 				streamConcurrency:         test.fields.streamConcurrency,
+// 				name:                      test.fields.name,
+// 				ip:                        test.fields.ip,
+// 				UnimplementedValdServer:   test.fields.UnimplementedValdServer,
+// 				UnimplementedMirrorServer: test.fields.UnimplementedMirrorServer,
+// 			}
+//
+// 			err := s.doStreamListObject(test.args.ctx, test.args.client, test.args.server)
+// 			if err := checkFunc(test.want, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_server_Flush(t *testing.T) {
+// 	type args struct {
+// 		ctx context.Context
+// 		req *payload.Flush_Request
+// 	}
+// 	type fields struct {
+// 		eg                        errgroup.Group
+// 		gateway                   service.Gateway
+// 		mirror                    service.Mirror
+// 		vAddr                     string
+// 		streamConcurrency         int
+// 		name                      string
+// 		ip                        string
+// 		UnimplementedValdServer   vald.UnimplementedValdServer
+// 		UnimplementedMirrorServer mirror.UnimplementedMirrorServer
+// 	}
+// 	type want struct {
+// 		want *payload.Info_Index_Count
+// 		err  error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, *payload.Info_Index_Count, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, got *payload.Info_Index_Count, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           ctx:nil,
+// 		           req:nil,
+// 		       },
+// 		       fields: fields {
+// 		           eg:nil,
+// 		           gateway:nil,
+// 		           mirror:nil,
+// 		           vAddr:"",
+// 		           streamConcurrency:0,
+// 		           name:"",
+// 		           ip:"",
+// 		           UnimplementedValdServer:nil,
+// 		           UnimplementedMirrorServer:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           ctx:nil,
+// 		           req:nil,
+// 		           },
+// 		           fields: fields {
+// 		           eg:nil,
+// 		           gateway:nil,
+// 		           mirror:nil,
+// 		           vAddr:"",
+// 		           streamConcurrency:0,
+// 		           name:"",
+// 		           ip:"",
+// 		           UnimplementedValdServer:nil,
+// 		           UnimplementedMirrorServer:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			s := &server{
+// 				eg:                        test.fields.eg,
+// 				gateway:                   test.fields.gateway,
+// 				mirror:                    test.fields.mirror,
+// 				vAddr:                     test.fields.vAddr,
+// 				streamConcurrency:         test.fields.streamConcurrency,
+// 				name:                      test.fields.name,
+// 				ip:                        test.fields.ip,
+// 				UnimplementedValdServer:   test.fields.UnimplementedValdServer,
+// 				UnimplementedMirrorServer: test.fields.UnimplementedMirrorServer,
+// 			}
+//
+// 			got, err := s.Flush(test.args.ctx, test.args.req)
+// 			if err := checkFunc(test.want, got, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_server_isProxied(t *testing.T) {
+// 	type args struct {
+// 		ctx context.Context
+// 	}
+// 	type fields struct {
+// 		eg                        errgroup.Group
+// 		gateway                   service.Gateway
+// 		mirror                    service.Mirror
+// 		vAddr                     string
+// 		streamConcurrency         int
+// 		name                      string
+// 		ip                        string
+// 		UnimplementedValdServer   vald.UnimplementedValdServer
+// 		UnimplementedMirrorServer mirror.UnimplementedMirrorServer
+// 	}
+// 	type want struct {
+// 		want bool
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, bool) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, got bool) error {
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           ctx:nil,
+// 		       },
+// 		       fields: fields {
+// 		           eg:nil,
+// 		           gateway:nil,
+// 		           mirror:nil,
+// 		           vAddr:"",
+// 		           streamConcurrency:0,
+// 		           name:"",
+// 		           ip:"",
+// 		           UnimplementedValdServer:nil,
+// 		           UnimplementedMirrorServer:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           ctx:nil,
+// 		           },
+// 		           fields: fields {
+// 		           eg:nil,
+// 		           gateway:nil,
+// 		           mirror:nil,
+// 		           vAddr:"",
+// 		           streamConcurrency:0,
+// 		           name:"",
+// 		           ip:"",
+// 		           UnimplementedValdServer:nil,
+// 		           UnimplementedMirrorServer:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			s := &server{
+// 				eg:                        test.fields.eg,
+// 				gateway:                   test.fields.gateway,
+// 				mirror:                    test.fields.mirror,
+// 				vAddr:                     test.fields.vAddr,
+// 				streamConcurrency:         test.fields.streamConcurrency,
+// 				name:                      test.fields.name,
+// 				ip:                        test.fields.ip,
+// 				UnimplementedValdServer:   test.fields.UnimplementedValdServer,
+// 				UnimplementedMirrorServer: test.fields.UnimplementedMirrorServer,
+// 			}
+//
+// 			got := s.isProxied(test.args.ctx)
+// 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
 // 		})

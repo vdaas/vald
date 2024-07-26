@@ -127,17 +127,18 @@ type InsertServer interface {
 }
 
 // UnimplementedInsertServer must be embedded to have forward compatible implementations.
-type UnimplementedInsertServer struct {
-}
+type UnimplementedInsertServer struct{}
 
 func (UnimplementedInsertServer) Insert(
 	context.Context, *payload.Insert_Request,
 ) (*payload.Object_Location, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Insert not implemented")
 }
+
 func (UnimplementedInsertServer) StreamInsert(Insert_StreamInsertServer) error {
 	return status.Errorf(codes.Unimplemented, "method StreamInsert not implemented")
 }
+
 func (UnimplementedInsertServer) MultiInsert(
 	context.Context, *payload.Insert_MultiRequest,
 ) (*payload.Object_Locations, error) {
@@ -157,10 +158,7 @@ func RegisterInsertServer(s grpc.ServiceRegistrar, srv InsertServer) {
 }
 
 func _Insert_Insert_Handler(
-	srv any,
-	ctx context.Context,
-	dec func(any) error,
-	interceptor grpc.UnaryServerInterceptor,
+	srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor,
 ) (any, error) {
 	in := new(payload.Insert_Request)
 	if err := dec(in); err != nil {
@@ -206,10 +204,7 @@ func (x *insertStreamInsertServer) Recv() (*payload.Insert_Request, error) {
 }
 
 func _Insert_MultiInsert_Handler(
-	srv any,
-	ctx context.Context,
-	dec func(any) error,
-	interceptor grpc.UnaryServerInterceptor,
+	srv any, ctx context.Context, dec func(any) error, interceptor grpc.UnaryServerInterceptor,
 ) (any, error) {
 	in := new(payload.Insert_MultiRequest)
 	if err := dec(in); err != nil {

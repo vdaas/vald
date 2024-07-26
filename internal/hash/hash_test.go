@@ -18,7 +18,7 @@
 package hash
 
 // NOT IMPLEMENTED BELOW
-
+//
 // func TestString(t *testing.T) {
 // 	type args struct {
 // 		s string
@@ -100,7 +100,6 @@ package hash
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }

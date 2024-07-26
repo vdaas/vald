@@ -219,6 +219,7 @@ data:
       enable_export_index_info_to_k8s: false
       enable_in_memory_mode: true
       enable_proactive_gc: false
+      enable_statistics: false
       error_buffer_limit: 10
       export_index_info_duration: 1m
       index_path: ""
