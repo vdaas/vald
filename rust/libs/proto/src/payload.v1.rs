@@ -444,7 +444,8 @@ pub mod remove {
     #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
     pub struct TimestampRequest {
-        /// The timestamp comparison list. If more than one is specified, the `AND` search is applied.
+        /// The timestamp comparison list. If more than one is specified, the `AND`
+        /// search is applied.
         #[prost(message, repeated, tag="1")]
         pub timestamps: ::prost::alloc::vec::Vec<Timestamp>,
     }
@@ -469,11 +470,13 @@ pub mod remove {
             Eq = 0,
             /// The timestamp is not equal to the specified value in the request.
             Ne = 1,
-            /// The timestamp is greater than or equal to the specified value in the request.
+            /// The timestamp is greater than or equal to the specified value in the
+            /// request.
             Ge = 2,
             /// The timestamp is greater than the specified value in the request.
             Gt = 3,
-            /// The timestamp is less than or equal to the specified value in the request.
+            /// The timestamp is less than or equal to the specified value in the
+            /// request.
             Le = 4,
             /// The timestamp is less than the specified value in the request.
             Lt = 5,
@@ -873,6 +876,85 @@ pub mod info {
                 #[prost(string, tag="1")]
                 pub uuid: ::prost::alloc::string::String,
             }
+        }
+        /// Represents index Statistics
+        #[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(Clone, PartialEq, ::prost::Message)]
+        pub struct Statistics {
+            #[prost(bool, tag="1")]
+            pub valid: bool,
+            #[prost(int32, tag="2")]
+            pub median_indegree: i32,
+            #[prost(int32, tag="3")]
+            pub median_outdegree: i32,
+            #[prost(uint64, tag="4")]
+            pub max_number_of_indegree: u64,
+            #[prost(uint64, tag="5")]
+            pub max_number_of_outdegree: u64,
+            #[prost(uint64, tag="6")]
+            pub min_number_of_indegree: u64,
+            #[prost(uint64, tag="7")]
+            pub min_number_of_outdegree: u64,
+            #[prost(uint64, tag="8")]
+            pub mode_indegree: u64,
+            #[prost(uint64, tag="9")]
+            pub mode_outdegree: u64,
+            #[prost(uint64, tag="10")]
+            pub nodes_skipped_for_10_edges: u64,
+            #[prost(uint64, tag="11")]
+            pub nodes_skipped_for_indegree_distance: u64,
+            #[prost(uint64, tag="12")]
+            pub number_of_edges: u64,
+            #[prost(uint64, tag="13")]
+            pub number_of_indexed_objects: u64,
+            #[prost(uint64, tag="14")]
+            pub number_of_nodes: u64,
+            #[prost(uint64, tag="15")]
+            pub number_of_nodes_without_edges: u64,
+            #[prost(uint64, tag="16")]
+            pub number_of_nodes_without_indegree: u64,
+            #[prost(uint64, tag="17")]
+            pub number_of_objects: u64,
+            #[prost(uint64, tag="18")]
+            pub number_of_removed_objects: u64,
+            #[prost(uint64, tag="19")]
+            pub size_of_object_repository: u64,
+            #[prost(uint64, tag="20")]
+            pub size_of_refinement_object_repository: u64,
+            #[prost(double, tag="21")]
+            pub variance_of_indegree: f64,
+            #[prost(double, tag="22")]
+            pub variance_of_outdegree: f64,
+            #[prost(double, tag="23")]
+            pub mean_edge_length: f64,
+            #[prost(double, tag="24")]
+            pub mean_edge_length_for_10_edges: f64,
+            #[prost(double, tag="25")]
+            pub mean_indegree_distance_for_10_edges: f64,
+            #[prost(double, tag="26")]
+            pub mean_number_of_edges_per_node: f64,
+            #[prost(double, tag="27")]
+            pub c1_indegree: f64,
+            #[prost(double, tag="28")]
+            pub c5_indegree: f64,
+            #[prost(double, tag="29")]
+            pub c95_outdegree: f64,
+            #[prost(double, tag="30")]
+            pub c99_outdegree: f64,
+            #[prost(int64, repeated, tag="31")]
+            pub indegree_count: ::prost::alloc::vec::Vec<i64>,
+            #[prost(uint64, repeated, tag="32")]
+            pub outdegree_histogram: ::prost::alloc::vec::Vec<u64>,
+            #[prost(uint64, repeated, tag="33")]
+            pub indegree_histogram: ::prost::alloc::vec::Vec<u64>,
+        }
+        /// Represents index Statistics for each Agents
+        #[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(Clone, PartialEq, ::prost::Message)]
+        pub struct StatisticsDetail {
+            /// count infos for each agents
+            #[prost(map="string, message", tag="1")]
+            pub details: ::std::collections::HashMap<::prost::alloc::string::String, Statistics>,
         }
     }
     /// Represent the pod information message.

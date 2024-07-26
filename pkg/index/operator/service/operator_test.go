@@ -325,3 +325,762 @@ func Test_operator_podOnReconcile(t *testing.T) {
 		})
 	}
 }
+
+// NOT IMPLEMENTED BELOW
+//
+// func TestNew(t *testing.T) {
+// 	type args struct {
+// 		namespace              string
+// 		agentName              string
+// 		rotatorName            string
+// 		targetReadReplicaIDKey string
+// 		rotatorJob             *k8s.Job
+// 		opts                   []Option
+// 	}
+// 	type want struct {
+// 		wantO Operator
+// 		err   error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		want       want
+// 		checkFunc  func(want, Operator, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, gotO Operator, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		if !reflect.DeepEqual(gotO, w.wantO) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotO, w.wantO)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           namespace:"",
+// 		           agentName:"",
+// 		           rotatorName:"",
+// 		           targetReadReplicaIDKey:"",
+// 		           rotatorJob:nil,
+// 		           opts:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           namespace:"",
+// 		           agentName:"",
+// 		           rotatorName:"",
+// 		           targetReadReplicaIDKey:"",
+// 		           rotatorJob:nil,
+// 		           opts:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+//
+// 			gotO, err := New(test.args.namespace, test.args.agentName, test.args.rotatorName, test.args.targetReadReplicaIDKey, test.args.rotatorJob, test.args.opts...)
+// 			if err := checkFunc(test.want, gotO, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_operator_Start(t *testing.T) {
+// 	type args struct {
+// 		ctx context.Context
+// 	}
+// 	type fields struct {
+// 		ctrl                              k8s.Controller
+// 		eg                                errgroup.Group
+// 		namespace                         string
+// 		client                            client.Client
+// 		rotatorName                       string
+// 		targetReadReplicaIDAnnotationsKey string
+// 		readReplicaEnabled                bool
+// 		readReplicaLabelKey               string
+// 		rotationJobConcurrency            uint
+// 		rotatorJob                        *k8s.Job
+// 	}
+// 	type want struct {
+// 		want <-chan error
+// 		err  error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, <-chan error, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, got <-chan error, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           ctx:nil,
+// 		       },
+// 		       fields: fields {
+// 		           ctrl:nil,
+// 		           eg:nil,
+// 		           namespace:"",
+// 		           client:nil,
+// 		           rotatorName:"",
+// 		           targetReadReplicaIDAnnotationsKey:"",
+// 		           readReplicaEnabled:false,
+// 		           readReplicaLabelKey:"",
+// 		           rotationJobConcurrency:0,
+// 		           rotatorJob:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           ctx:nil,
+// 		           },
+// 		           fields: fields {
+// 		           ctrl:nil,
+// 		           eg:nil,
+// 		           namespace:"",
+// 		           client:nil,
+// 		           rotatorName:"",
+// 		           targetReadReplicaIDAnnotationsKey:"",
+// 		           readReplicaEnabled:false,
+// 		           readReplicaLabelKey:"",
+// 		           rotationJobConcurrency:0,
+// 		           rotatorJob:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			o := &operator{
+// 				ctrl:                              test.fields.ctrl,
+// 				eg:                                test.fields.eg,
+// 				namespace:                         test.fields.namespace,
+// 				client:                            test.fields.client,
+// 				rotatorName:                       test.fields.rotatorName,
+// 				targetReadReplicaIDAnnotationsKey: test.fields.targetReadReplicaIDAnnotationsKey,
+// 				readReplicaEnabled:                test.fields.readReplicaEnabled,
+// 				readReplicaLabelKey:               test.fields.readReplicaLabelKey,
+// 				rotationJobConcurrency:            test.fields.rotationJobConcurrency,
+// 				rotatorJob:                        test.fields.rotatorJob,
+// 			}
+//
+// 			got, err := o.Start(test.args.ctx)
+// 			if err := checkFunc(test.want, got, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_operator_reconcileRotatorJob(t *testing.T) {
+// 	type args struct {
+// 		ctx context.Context
+// 		pod *k8s.Pod
+// 	}
+// 	type fields struct {
+// 		ctrl                              k8s.Controller
+// 		eg                                errgroup.Group
+// 		namespace                         string
+// 		client                            client.Client
+// 		rotatorName                       string
+// 		targetReadReplicaIDAnnotationsKey string
+// 		readReplicaEnabled                bool
+// 		readReplicaLabelKey               string
+// 		rotationJobConcurrency            uint
+// 		rotatorJob                        *k8s.Job
+// 	}
+// 	type want struct {
+// 		wantRequeue bool
+// 		err         error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, bool, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, gotRequeue bool, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		if !reflect.DeepEqual(gotRequeue, w.wantRequeue) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRequeue, w.wantRequeue)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           ctx:nil,
+// 		           pod:nil,
+// 		       },
+// 		       fields: fields {
+// 		           ctrl:nil,
+// 		           eg:nil,
+// 		           namespace:"",
+// 		           client:nil,
+// 		           rotatorName:"",
+// 		           targetReadReplicaIDAnnotationsKey:"",
+// 		           readReplicaEnabled:false,
+// 		           readReplicaLabelKey:"",
+// 		           rotationJobConcurrency:0,
+// 		           rotatorJob:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           ctx:nil,
+// 		           pod:nil,
+// 		           },
+// 		           fields: fields {
+// 		           ctrl:nil,
+// 		           eg:nil,
+// 		           namespace:"",
+// 		           client:nil,
+// 		           rotatorName:"",
+// 		           targetReadReplicaIDAnnotationsKey:"",
+// 		           readReplicaEnabled:false,
+// 		           readReplicaLabelKey:"",
+// 		           rotationJobConcurrency:0,
+// 		           rotatorJob:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			o := &operator{
+// 				ctrl:                              test.fields.ctrl,
+// 				eg:                                test.fields.eg,
+// 				namespace:                         test.fields.namespace,
+// 				client:                            test.fields.client,
+// 				rotatorName:                       test.fields.rotatorName,
+// 				targetReadReplicaIDAnnotationsKey: test.fields.targetReadReplicaIDAnnotationsKey,
+// 				readReplicaEnabled:                test.fields.readReplicaEnabled,
+// 				readReplicaLabelKey:               test.fields.readReplicaLabelKey,
+// 				rotationJobConcurrency:            test.fields.rotationJobConcurrency,
+// 				rotatorJob:                        test.fields.rotatorJob,
+// 			}
+//
+// 			gotRequeue, err := o.reconcileRotatorJob(test.args.ctx, test.args.pod)
+// 			if err := checkFunc(test.want, gotRequeue, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_needsRotation(t *testing.T) {
+// 	type args struct {
+// 		agentAnnotations       map[string]string
+// 		readReplicaAnnotations map[string]string
+// 	}
+// 	type want struct {
+// 		want bool
+// 		err  error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		want       want
+// 		checkFunc  func(want, bool, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, got bool, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           agentAnnotations:nil,
+// 		           readReplicaAnnotations:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           agentAnnotations:nil,
+// 		           readReplicaAnnotations:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+//
+// 			got, err := needsRotation(test.args.agentAnnotations, test.args.readReplicaAnnotations)
+// 			if err := checkFunc(test.want, got, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_operator_createRotationJobOrRequeue(t *testing.T) {
+// 	type args struct {
+// 		ctx    context.Context
+// 		podIdx string
+// 	}
+// 	type fields struct {
+// 		ctrl                              k8s.Controller
+// 		eg                                errgroup.Group
+// 		namespace                         string
+// 		client                            client.Client
+// 		rotatorName                       string
+// 		targetReadReplicaIDAnnotationsKey string
+// 		readReplicaEnabled                bool
+// 		readReplicaLabelKey               string
+// 		rotationJobConcurrency            uint
+// 		rotatorJob                        *k8s.Job
+// 	}
+// 	type want struct {
+// 		wantRq bool
+// 		err    error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, bool, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, gotRq bool, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		if !reflect.DeepEqual(gotRq, w.wantRq) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotRq, w.wantRq)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           ctx:nil,
+// 		           podIdx:"",
+// 		       },
+// 		       fields: fields {
+// 		           ctrl:nil,
+// 		           eg:nil,
+// 		           namespace:"",
+// 		           client:nil,
+// 		           rotatorName:"",
+// 		           targetReadReplicaIDAnnotationsKey:"",
+// 		           readReplicaEnabled:false,
+// 		           readReplicaLabelKey:"",
+// 		           rotationJobConcurrency:0,
+// 		           rotatorJob:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           ctx:nil,
+// 		           podIdx:"",
+// 		           },
+// 		           fields: fields {
+// 		           ctrl:nil,
+// 		           eg:nil,
+// 		           namespace:"",
+// 		           client:nil,
+// 		           rotatorName:"",
+// 		           targetReadReplicaIDAnnotationsKey:"",
+// 		           readReplicaEnabled:false,
+// 		           readReplicaLabelKey:"",
+// 		           rotationJobConcurrency:0,
+// 		           rotatorJob:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			o := &operator{
+// 				ctrl:                              test.fields.ctrl,
+// 				eg:                                test.fields.eg,
+// 				namespace:                         test.fields.namespace,
+// 				client:                            test.fields.client,
+// 				rotatorName:                       test.fields.rotatorName,
+// 				targetReadReplicaIDAnnotationsKey: test.fields.targetReadReplicaIDAnnotationsKey,
+// 				readReplicaEnabled:                test.fields.readReplicaEnabled,
+// 				readReplicaLabelKey:               test.fields.readReplicaLabelKey,
+// 				rotationJobConcurrency:            test.fields.rotationJobConcurrency,
+// 				rotatorJob:                        test.fields.rotatorJob,
+// 			}
+//
+// 			gotRq, err := o.createRotationJobOrRequeue(test.args.ctx, test.args.podIdx)
+// 			if err := checkFunc(test.want, gotRq, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_operator_ensureJobConcurrency(t *testing.T) {
+// 	type args struct {
+// 		ctx    context.Context
+// 		podIdx string
+// 	}
+// 	type fields struct {
+// 		ctrl                              k8s.Controller
+// 		eg                                errgroup.Group
+// 		namespace                         string
+// 		client                            client.Client
+// 		rotatorName                       string
+// 		targetReadReplicaIDAnnotationsKey string
+// 		readReplicaEnabled                bool
+// 		readReplicaLabelKey               string
+// 		rotationJobConcurrency            uint
+// 		rotatorJob                        *k8s.Job
+// 	}
+// 	type want struct {
+// 		want jobReconcileResult
+// 		err  error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, jobReconcileResult, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, got jobReconcileResult, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           ctx:nil,
+// 		           podIdx:"",
+// 		       },
+// 		       fields: fields {
+// 		           ctrl:nil,
+// 		           eg:nil,
+// 		           namespace:"",
+// 		           client:nil,
+// 		           rotatorName:"",
+// 		           targetReadReplicaIDAnnotationsKey:"",
+// 		           readReplicaEnabled:false,
+// 		           readReplicaLabelKey:"",
+// 		           rotationJobConcurrency:0,
+// 		           rotatorJob:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           ctx:nil,
+// 		           podIdx:"",
+// 		           },
+// 		           fields: fields {
+// 		           ctrl:nil,
+// 		           eg:nil,
+// 		           namespace:"",
+// 		           client:nil,
+// 		           rotatorName:"",
+// 		           targetReadReplicaIDAnnotationsKey:"",
+// 		           readReplicaEnabled:false,
+// 		           readReplicaLabelKey:"",
+// 		           rotationJobConcurrency:0,
+// 		           rotatorJob:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			o := &operator{
+// 				ctrl:                              test.fields.ctrl,
+// 				eg:                                test.fields.eg,
+// 				namespace:                         test.fields.namespace,
+// 				client:                            test.fields.client,
+// 				rotatorName:                       test.fields.rotatorName,
+// 				targetReadReplicaIDAnnotationsKey: test.fields.targetReadReplicaIDAnnotationsKey,
+// 				readReplicaEnabled:                test.fields.readReplicaEnabled,
+// 				readReplicaLabelKey:               test.fields.readReplicaLabelKey,
+// 				rotationJobConcurrency:            test.fields.rotationJobConcurrency,
+// 				rotatorJob:                        test.fields.rotatorJob,
+// 			}
+//
+// 			got, err := o.ensureJobConcurrency(test.args.ctx, test.args.podIdx)
+// 			if err := checkFunc(test.want, got, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }

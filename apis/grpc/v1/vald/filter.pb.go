@@ -154,6 +154,7 @@ var file_v1_vald_filter_proto_goTypes = []any{
 	(*payload.Object_StreamLocation)(nil),     // 12: payload.v1.Object.StreamLocation
 	(*payload.Object_Locations)(nil),          // 13: payload.v1.Object.Locations
 }
+
 var file_v1_vald_filter_proto_depIdxs = []int32{
 	0,  // 0: vald.v1.Filter.SearchObject:input_type -> payload.v1.Search.ObjectRequest
 	1,  // 1: vald.v1.Filter.MultiSearchObject:input_type -> payload.v1.Search.MultiObjectRequest

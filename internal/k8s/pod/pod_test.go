@@ -100,7 +100,6 @@ package pod
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -114,11 +113,10 @@ package pod
 // 		name        string
 // 		namespace   string
 // 		onError     func(err error)
-// 		onReconcile func(podList map[string][]Pod)
+// 		onReconcile func(ctx context.Context, podList map[string][]Pod)
 // 		lopts       []client.ListOption
 // 	}
-// 	type want struct {
-// 	}
+// 	type want struct{}
 // 	type test struct {
 // 		name       string
 // 		args       args
@@ -229,7 +227,7 @@ package pod
 // 		name        string
 // 		namespace   string
 // 		onError     func(err error)
-// 		onReconcile func(podList map[string][]Pod)
+// 		onReconcile func(ctx context.Context, podList map[string][]Pod)
 // 		lopts       []client.ListOption
 // 	}
 // 	type want struct {
@@ -340,7 +338,6 @@ package pod
 // 			if err := checkFunc(test.want, gotRes, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -351,7 +348,7 @@ package pod
 // 		name        string
 // 		namespace   string
 // 		onError     func(err error)
-// 		onReconcile func(podList map[string][]Pod)
+// 		onReconcile func(ctx context.Context, podList map[string][]Pod)
 // 		lopts       []client.ListOption
 // 	}
 // 	type want struct {
@@ -449,7 +446,6 @@ package pod
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -464,7 +460,7 @@ package pod
 // 		name        string
 // 		namespace   string
 // 		onError     func(err error)
-// 		onReconcile func(podList map[string][]Pod)
+// 		onReconcile func(ctx context.Context, podList map[string][]Pod)
 // 		lopts       []client.ListOption
 // 	}
 // 	type want struct {
@@ -571,7 +567,6 @@ package pod
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -582,7 +577,7 @@ package pod
 // 		name        string
 // 		namespace   string
 // 		onError     func(err error)
-// 		onReconcile func(podList map[string][]Pod)
+// 		onReconcile func(ctx context.Context, podList map[string][]Pod)
 // 		lopts       []client.ListOption
 // 	}
 // 	type want struct {
@@ -684,7 +679,6 @@ package pod
 // 			if err := checkFunc(test.want, got, got1); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -695,7 +689,7 @@ package pod
 // 		name        string
 // 		namespace   string
 // 		onError     func(err error)
-// 		onReconcile func(podList map[string][]Pod)
+// 		onReconcile func(ctx context.Context, podList map[string][]Pod)
 // 		lopts       []client.ListOption
 // 	}
 // 	type want struct {
@@ -797,7 +791,6 @@ package pod
 // 			if err := checkFunc(test.want, got, got1); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -808,7 +801,7 @@ package pod
 // 		name        string
 // 		namespace   string
 // 		onError     func(err error)
-// 		onReconcile func(podList map[string][]Pod)
+// 		onReconcile func(ctx context.Context, podList map[string][]Pod)
 // 		lopts       []client.ListOption
 // 	}
 // 	type want struct {
@@ -914,7 +907,6 @@ package pod
 // 			if err := checkFunc(test.want, got, got1, got2); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }

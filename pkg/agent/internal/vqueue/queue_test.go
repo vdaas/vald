@@ -166,7 +166,6 @@ func TestGetVector(t *testing.T) {
 // 			if err := checkFunc(test.want, got, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -283,7 +282,6 @@ func TestGetVector(t *testing.T) {
 // 			if err := checkFunc(test.want, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -397,7 +395,6 @@ func TestGetVector(t *testing.T) {
 // 			if err := checkFunc(test.want, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -516,7 +513,6 @@ func TestGetVector(t *testing.T) {
 // 			if err := checkFunc(test.want, gotVec, gotTimestamp, gotExists); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -627,7 +623,6 @@ func TestGetVector(t *testing.T) {
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -738,7 +733,6 @@ func TestGetVector(t *testing.T) {
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -755,8 +749,7 @@ func TestGetVector(t *testing.T) {
 // 		ic uint64
 // 		dc uint64
 // 	}
-// 	type want struct {
-// 	}
+// 	type want struct{}
 // 	type test struct {
 // 		name       string
 // 		args       args
@@ -867,8 +860,7 @@ func TestGetVector(t *testing.T) {
 // 		ic uint64
 // 		dc uint64
 // 	}
-// 	type want struct {
-// 	}
+// 	type want struct{}
 // 	type test struct {
 // 		name       string
 // 		args       args
@@ -969,7 +961,7 @@ func TestGetVector(t *testing.T) {
 //
 // func Test_vqueue_Range(t *testing.T) {
 // 	type args struct {
-// 		ctx context.Context
+// 		in0 context.Context
 // 		f   func(uuid string, vector []float32, ts int64) bool
 // 	}
 // 	type fields struct {
@@ -978,8 +970,7 @@ func TestGetVector(t *testing.T) {
 // 		ic uint64
 // 		dc uint64
 // 	}
-// 	type want struct {
-// 	}
+// 	type want struct{}
 // 	type test struct {
 // 		name       string
 // 		args       args
@@ -998,7 +989,7 @@ func TestGetVector(t *testing.T) {
 // 		   {
 // 		       name: "test_case_1",
 // 		       args: args {
-// 		           ctx:nil,
+// 		           in0:nil,
 // 		           f:nil,
 // 		       },
 // 		       fields: fields {
@@ -1024,7 +1015,7 @@ func TestGetVector(t *testing.T) {
 // 		       return test {
 // 		           name: "test_case_2",
 // 		           args: args {
-// 		           ctx:nil,
+// 		           in0:nil,
 // 		           f:nil,
 // 		           },
 // 		           fields: fields {
@@ -1068,7 +1059,7 @@ func TestGetVector(t *testing.T) {
 // 				dc: test.fields.dc,
 // 			}
 //
-// 			v.Range(test.args.ctx, test.args.f)
+// 			v.Range(test.args.in0, test.args.f)
 // 			if err := checkFunc(test.want); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
@@ -1172,7 +1163,6 @@ func TestGetVector(t *testing.T) {
 // 			if err := checkFunc(test.want, gotL); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -1273,7 +1263,6 @@ func TestGetVector(t *testing.T) {
 // 			if err := checkFunc(test.want, gotL); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }

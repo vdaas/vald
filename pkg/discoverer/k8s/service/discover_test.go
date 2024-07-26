@@ -107,7 +107,6 @@ package service
 // 			if err := checkFunc(test.want, gotDsc, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -122,7 +121,7 @@ package service
 // 		nodeMetrics     sync.Map[string, mnode.Node]
 // 		pods            sync.Map[string, *[]pod.Pod]
 // 		podMetrics      sync.Map[string, mpod.Pod]
-// 		rrsvcs          sync.Map[string, *service.Service]
+// 		services        sync.Map[string, *service.Service]
 // 		podsByNode      atomic.Value
 // 		podsByNamespace atomic.Value
 // 		podsByName      atomic.Value
@@ -171,7 +170,7 @@ package service
 // 		           nodeMetrics:nil,
 // 		           pods:nil,
 // 		           podMetrics:nil,
-// 		           rrsvcs:nil,
+// 		           services:nil,
 // 		           podsByNode:nil,
 // 		           podsByNamespace:nil,
 // 		           podsByName:nil,
@@ -209,7 +208,7 @@ package service
 // 		           nodeMetrics:nil,
 // 		           pods:nil,
 // 		           podMetrics:nil,
-// 		           rrsvcs:nil,
+// 		           services:nil,
 // 		           podsByNode:nil,
 // 		           podsByNamespace:nil,
 // 		           podsByName:nil,
@@ -256,7 +255,7 @@ package service
 // 				nodeMetrics:     test.fields.nodeMetrics,
 // 				pods:            test.fields.pods,
 // 				podMetrics:      test.fields.podMetrics,
-// 				rrsvcs:          test.fields.rrsvcs,
+// 				services:        test.fields.services,
 // 				podsByNode:      test.fields.podsByNode,
 // 				podsByNamespace: test.fields.podsByNamespace,
 // 				podsByName:      test.fields.podsByName,
@@ -274,7 +273,6 @@ package service
 // 			if err := checkFunc(test.want, got, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -289,7 +287,7 @@ package service
 // 		nodeMetrics     sync.Map[string, mnode.Node]
 // 		pods            sync.Map[string, *[]pod.Pod]
 // 		podMetrics      sync.Map[string, mpod.Pod]
-// 		rrsvcs          sync.Map[string, *service.Service]
+// 		services        sync.Map[string, *service.Service]
 // 		podsByNode      atomic.Value
 // 		podsByNamespace atomic.Value
 // 		podsByName      atomic.Value
@@ -338,7 +336,7 @@ package service
 // 		           nodeMetrics:nil,
 // 		           pods:nil,
 // 		           podMetrics:nil,
-// 		           rrsvcs:nil,
+// 		           services:nil,
 // 		           podsByNode:nil,
 // 		           podsByNamespace:nil,
 // 		           podsByName:nil,
@@ -376,7 +374,7 @@ package service
 // 		           nodeMetrics:nil,
 // 		           pods:nil,
 // 		           podMetrics:nil,
-// 		           rrsvcs:nil,
+// 		           services:nil,
 // 		           podsByNode:nil,
 // 		           podsByNamespace:nil,
 // 		           podsByName:nil,
@@ -423,7 +421,7 @@ package service
 // 				nodeMetrics:     test.fields.nodeMetrics,
 // 				pods:            test.fields.pods,
 // 				podMetrics:      test.fields.podMetrics,
-// 				rrsvcs:          test.fields.rrsvcs,
+// 				services:        test.fields.services,
 // 				podsByNode:      test.fields.podsByNode,
 // 				podsByNamespace: test.fields.podsByNamespace,
 // 				podsByName:      test.fields.podsByName,
@@ -441,7 +439,6 @@ package service
 // 			if err := checkFunc(test.want, gotPods, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -456,7 +453,7 @@ package service
 // 		nodeMetrics     sync.Map[string, mnode.Node]
 // 		pods            sync.Map[string, *[]pod.Pod]
 // 		podMetrics      sync.Map[string, mpod.Pod]
-// 		rrsvcs          sync.Map[string, *service.Service]
+// 		services        sync.Map[string, *service.Service]
 // 		podsByNode      atomic.Value
 // 		podsByNamespace atomic.Value
 // 		podsByName      atomic.Value
@@ -505,7 +502,7 @@ package service
 // 		           nodeMetrics:nil,
 // 		           pods:nil,
 // 		           podMetrics:nil,
-// 		           rrsvcs:nil,
+// 		           services:nil,
 // 		           podsByNode:nil,
 // 		           podsByNamespace:nil,
 // 		           podsByName:nil,
@@ -543,7 +540,7 @@ package service
 // 		           nodeMetrics:nil,
 // 		           pods:nil,
 // 		           podMetrics:nil,
-// 		           rrsvcs:nil,
+// 		           services:nil,
 // 		           podsByNode:nil,
 // 		           podsByNamespace:nil,
 // 		           podsByName:nil,
@@ -590,7 +587,7 @@ package service
 // 				nodeMetrics:     test.fields.nodeMetrics,
 // 				pods:            test.fields.pods,
 // 				podMetrics:      test.fields.podMetrics,
-// 				rrsvcs:          test.fields.rrsvcs,
+// 				services:        test.fields.services,
 // 				podsByNode:      test.fields.podsByNode,
 // 				podsByNamespace: test.fields.podsByNamespace,
 // 				podsByName:      test.fields.podsByName,
@@ -608,7 +605,6 @@ package service
 // 			if err := checkFunc(test.want, gotNodes, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -623,7 +619,7 @@ package service
 // 		nodeMetrics     sync.Map[string, mnode.Node]
 // 		pods            sync.Map[string, *[]pod.Pod]
 // 		podMetrics      sync.Map[string, mpod.Pod]
-// 		rrsvcs          sync.Map[string, *service.Service]
+// 		services        sync.Map[string, *service.Service]
 // 		podsByNode      atomic.Value
 // 		podsByNamespace atomic.Value
 // 		podsByName      atomic.Value
@@ -672,7 +668,7 @@ package service
 // 		           nodeMetrics:nil,
 // 		           pods:nil,
 // 		           podMetrics:nil,
-// 		           rrsvcs:nil,
+// 		           services:nil,
 // 		           podsByNode:nil,
 // 		           podsByNamespace:nil,
 // 		           podsByName:nil,
@@ -710,7 +706,7 @@ package service
 // 		           nodeMetrics:nil,
 // 		           pods:nil,
 // 		           podMetrics:nil,
-// 		           rrsvcs:nil,
+// 		           services:nil,
 // 		           podsByNode:nil,
 // 		           podsByNamespace:nil,
 // 		           podsByName:nil,
@@ -757,7 +753,7 @@ package service
 // 				nodeMetrics:     test.fields.nodeMetrics,
 // 				pods:            test.fields.pods,
 // 				podMetrics:      test.fields.podMetrics,
-// 				rrsvcs:          test.fields.rrsvcs,
+// 				services:        test.fields.services,
 // 				podsByNode:      test.fields.podsByNode,
 // 				podsByNamespace: test.fields.podsByNamespace,
 // 				podsByName:      test.fields.podsByName,
@@ -775,7 +771,6 @@ package service
 // 			if err := checkFunc(test.want, gotSvcs, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }

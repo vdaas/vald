@@ -75,8 +75,7 @@ type MirrorServer interface {
 }
 
 // UnimplementedMirrorServer must be embedded to have forward compatible implementations.
-type UnimplementedMirrorServer struct {
-}
+type UnimplementedMirrorServer struct{}
 
 func (UnimplementedMirrorServer) Register(
 	context.Context, *payload.Mirror_Targets,

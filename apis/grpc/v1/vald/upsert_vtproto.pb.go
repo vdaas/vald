@@ -127,17 +127,18 @@ type UpsertServer interface {
 }
 
 // UnimplementedUpsertServer must be embedded to have forward compatible implementations.
-type UnimplementedUpsertServer struct {
-}
+type UnimplementedUpsertServer struct{}
 
 func (UnimplementedUpsertServer) Upsert(
 	context.Context, *payload.Upsert_Request,
 ) (*payload.Object_Location, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Upsert not implemented")
 }
+
 func (UnimplementedUpsertServer) StreamUpsert(Upsert_StreamUpsertServer) error {
 	return status.Errorf(codes.Unimplemented, "method StreamUpsert not implemented")
 }
+
 func (UnimplementedUpsertServer) MultiUpsert(
 	context.Context, *payload.Upsert_MultiRequest,
 ) (*payload.Object_Locations, error) {

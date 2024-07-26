@@ -100,7 +100,6 @@ package strategy
 // 			if err := checkFunc(test.want, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -196,7 +195,6 @@ package strategy
 // 			if err := checkFunc(test.want, gotIds, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -292,7 +290,6 @@ package strategy
 // 			if err := checkFunc(test.want, gotIds, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -378,7 +375,6 @@ package strategy
 // 			if err := checkFunc(test.want, gotY); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }

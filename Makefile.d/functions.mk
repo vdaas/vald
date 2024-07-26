@@ -60,9 +60,9 @@ define go-build
 	CFLAGS="$(CFLAGS)" \
 	CXXFLAGS="$(CXXFLAGS)" \
 	CGO_ENABLED=$(CGO_ENABLED) \
-	CGO_CXXFLAGS="-g -Ofast -march=native" \
-	CGO_FFLAGS="-g -Ofast -march=native" \
-	CGO_LDFLAGS="-g -Ofast -march=native" \
+	CGO_CXXFLAGS="$3" \
+	CGO_FFLAGS="$3" \
+	CGO_LDFLAGS="$3" \
 	GO111MODULE=on \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
@@ -106,6 +106,7 @@ define run-e2e-crud-test
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
+	CGO_LDFLAGS="$(HDF5_LDFLAGS)" \
 	go test \
 	    -race \
 	    -mod=readonly \
@@ -135,6 +136,7 @@ define run-e2e-crud-faiss-test
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
+	CGO_LDFLAGS="$(HDF5_LDFLAGS)" \
 	go test \
 	    -race \
 	    -mod=readonly \
@@ -160,6 +162,7 @@ define run-e2e-multi-crud-test
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
+	CGO_LDFLAGS="$(HDF5_LDFLAGS)" \
 	go test \
 	    -race \
 	    -mod=readonly \
@@ -189,6 +192,7 @@ define run-e2e-max-dim-test
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
+	CGO_LDFLAGS="$(HDF5_LDFLAGS)" \
 	go test \
 	    -race \
 	    -mod=readonly \
@@ -210,6 +214,7 @@ define run-e2e-sidecar-test
 	GOPRIVATE=$(GOPRIVATE) \
 	GOARCH=$(GOARCH) \
 	GOOS=$(GOOS) \
+	CGO_LDFLAGS="$(HDF5_LDFLAGS)" \
 	go test \
 	    -race \
 	    -mod=readonly \

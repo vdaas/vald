@@ -369,6 +369,10 @@
               "type": "boolean",
               "description": "enable proactive GC call for reducing heap memory allocation"
             },
+            "enable_statistics": {
+              "type": "boolean",
+              "description": "enable index statistics loading"
+            },
             "error_buffer_limit": {
               "type": "integer",
               "description": "maximum number of core ngt error buffer pool size limit",

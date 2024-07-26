@@ -180,27 +180,30 @@ type ObjectServer interface {
 }
 
 // UnimplementedObjectServer must be embedded to have forward compatible implementations.
-type UnimplementedObjectServer struct {
-}
+type UnimplementedObjectServer struct{}
 
 func (UnimplementedObjectServer) Exists(
 	context.Context, *payload.Object_ID,
 ) (*payload.Object_ID, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Exists not implemented")
 }
+
 func (UnimplementedObjectServer) GetObject(
 	context.Context, *payload.Object_VectorRequest,
 ) (*payload.Object_Vector, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetObject not implemented")
 }
+
 func (UnimplementedObjectServer) StreamGetObject(Object_StreamGetObjectServer) error {
 	return status.Errorf(codes.Unimplemented, "method StreamGetObject not implemented")
 }
+
 func (UnimplementedObjectServer) StreamListObject(
 	*payload.Object_List_Request, Object_StreamListObjectServer,
 ) error {
 	return status.Errorf(codes.Unimplemented, "method StreamListObject not implemented")
 }
+
 func (UnimplementedObjectServer) GetTimestamp(
 	context.Context, *payload.Object_TimestampRequest,
 ) (*payload.Object_Timestamp, error) {

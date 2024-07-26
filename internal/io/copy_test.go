@@ -437,7 +437,6 @@ func Test_copier_Copy(t *testing.T) {
 // 			if err := checkFunc(test.want, gotWritten, err, dst.String()); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -548,7 +547,6 @@ func Test_copier_Copy(t *testing.T) {
 // 			if err := checkFunc(test.want, gotWritten, err, dst.String()); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -659,7 +657,6 @@ func Test_copier_Copy(t *testing.T) {
 // 			if err := checkFunc(test.want, gotWritten, err, dst.String()); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }

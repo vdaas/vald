@@ -109,6 +109,9 @@ type NGT struct {
 
 	// ExportIndexInfoDuration represents the duration of exporting index info to k8s
 	ExportIndexInfoDuration string `json:"export_index_info_duration,omitempty" yaml:"export_index_info_duration"`
+
+	// EnableStatistics represents whether the ngt index statistics load or not
+	EnableStatistics bool `json:"enable_statistics" yaml:"enable_statistics"`
 }
 
 // KVSDB represent the ngt vector bidirectional kv store configuration.

@@ -16,8 +16,7 @@ package main
 // NOT IMPLEMENTED BELOW
 //
 // func Test_main(t *testing.T) {
-// 	type want struct {
-// 	}
+// 	type want struct{}
 // 	type test struct {
 // 		name       string
 // 		want       want
@@ -97,8 +96,7 @@ package main
 // 		dur     time.Duration
 // 		output  func(header string)
 // 	}
-// 	type want struct {
-// 	}
+// 	type want struct{}
 // 	type test struct {
 // 		name       string
 // 		args       args
@@ -196,8 +194,7 @@ package main
 // 		fn       func()
 // 		efn      func()
 // 	}
-// 	type want struct {
-// 	}
+// 	type want struct{}
 // 	type test struct {
 // 		name       string
 // 		args       args
@@ -370,7 +367,6 @@ package main
 // 			if err := checkFunc(test.want, gotTrain, gotTest, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }

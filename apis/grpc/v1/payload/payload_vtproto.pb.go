@@ -1549,6 +1549,90 @@ func (m *Info_Index_UUID) CloneMessageVT() proto.Message {
 	return m.CloneVT()
 }
 
+func (m *Info_Index_Statistics) CloneVT() *Info_Index_Statistics {
+	if m == nil {
+		return (*Info_Index_Statistics)(nil)
+	}
+	r := new(Info_Index_Statistics)
+	r.Valid = m.Valid
+	r.MedianIndegree = m.MedianIndegree
+	r.MedianOutdegree = m.MedianOutdegree
+	r.MaxNumberOfIndegree = m.MaxNumberOfIndegree
+	r.MaxNumberOfOutdegree = m.MaxNumberOfOutdegree
+	r.MinNumberOfIndegree = m.MinNumberOfIndegree
+	r.MinNumberOfOutdegree = m.MinNumberOfOutdegree
+	r.ModeIndegree = m.ModeIndegree
+	r.ModeOutdegree = m.ModeOutdegree
+	r.NodesSkippedFor10Edges = m.NodesSkippedFor10Edges
+	r.NodesSkippedForIndegreeDistance = m.NodesSkippedForIndegreeDistance
+	r.NumberOfEdges = m.NumberOfEdges
+	r.NumberOfIndexedObjects = m.NumberOfIndexedObjects
+	r.NumberOfNodes = m.NumberOfNodes
+	r.NumberOfNodesWithoutEdges = m.NumberOfNodesWithoutEdges
+	r.NumberOfNodesWithoutIndegree = m.NumberOfNodesWithoutIndegree
+	r.NumberOfObjects = m.NumberOfObjects
+	r.NumberOfRemovedObjects = m.NumberOfRemovedObjects
+	r.SizeOfObjectRepository = m.SizeOfObjectRepository
+	r.SizeOfRefinementObjectRepository = m.SizeOfRefinementObjectRepository
+	r.VarianceOfIndegree = m.VarianceOfIndegree
+	r.VarianceOfOutdegree = m.VarianceOfOutdegree
+	r.MeanEdgeLength = m.MeanEdgeLength
+	r.MeanEdgeLengthFor10Edges = m.MeanEdgeLengthFor10Edges
+	r.MeanIndegreeDistanceFor10Edges = m.MeanIndegreeDistanceFor10Edges
+	r.MeanNumberOfEdgesPerNode = m.MeanNumberOfEdgesPerNode
+	r.C1Indegree = m.C1Indegree
+	r.C5Indegree = m.C5Indegree
+	r.C95Outdegree = m.C95Outdegree
+	r.C99Outdegree = m.C99Outdegree
+	if rhs := m.IndegreeCount; rhs != nil {
+		tmpContainer := make([]int64, len(rhs))
+		copy(tmpContainer, rhs)
+		r.IndegreeCount = tmpContainer
+	}
+	if rhs := m.OutdegreeHistogram; rhs != nil {
+		tmpContainer := make([]uint64, len(rhs))
+		copy(tmpContainer, rhs)
+		r.OutdegreeHistogram = tmpContainer
+	}
+	if rhs := m.IndegreeHistogram; rhs != nil {
+		tmpContainer := make([]uint64, len(rhs))
+		copy(tmpContainer, rhs)
+		r.IndegreeHistogram = tmpContainer
+	}
+	if len(m.unknownFields) > 0 {
+		r.unknownFields = make([]byte, len(m.unknownFields))
+		copy(r.unknownFields, m.unknownFields)
+	}
+	return r
+}
+
+func (m *Info_Index_Statistics) CloneMessageVT() proto.Message {
+	return m.CloneVT()
+}
+
+func (m *Info_Index_StatisticsDetail) CloneVT() *Info_Index_StatisticsDetail {
+	if m == nil {
+		return (*Info_Index_StatisticsDetail)(nil)
+	}
+	r := new(Info_Index_StatisticsDetail)
+	if rhs := m.Details; rhs != nil {
+		tmpContainer := make(map[string]*Info_Index_Statistics, len(rhs))
+		for k, v := range rhs {
+			tmpContainer[k] = v.CloneVT()
+		}
+		r.Details = tmpContainer
+	}
+	if len(m.unknownFields) > 0 {
+		r.unknownFields = make([]byte, len(m.unknownFields))
+		copy(r.unknownFields, m.unknownFields)
+	}
+	return r
+}
+
+func (m *Info_Index_StatisticsDetail) CloneMessageVT() proto.Message {
+	return m.CloneVT()
+}
+
 func (m *Info_Index) CloneVT() *Info_Index {
 	if m == nil {
 		return (*Info_Index)(nil)
@@ -1951,6 +2035,7 @@ func (this *Search_Request) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Search_MultiRequest) EqualVT(that *Search_MultiRequest) bool {
 	if this == that {
 		return true
@@ -1984,6 +2069,7 @@ func (this *Search_MultiRequest) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Search_IDRequest) EqualVT(that *Search_IDRequest) bool {
 	if this == that {
 		return true
@@ -2006,6 +2092,7 @@ func (this *Search_IDRequest) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Search_MultiIDRequest) EqualVT(that *Search_MultiIDRequest) bool {
 	if this == that {
 		return true
@@ -2039,6 +2126,7 @@ func (this *Search_MultiIDRequest) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Search_ObjectRequest) EqualVT(that *Search_ObjectRequest) bool {
 	if this == that {
 		return true
@@ -2064,6 +2152,7 @@ func (this *Search_ObjectRequest) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Search_MultiObjectRequest) EqualVT(that *Search_MultiObjectRequest) bool {
 	if this == that {
 		return true
@@ -2097,6 +2186,7 @@ func (this *Search_MultiObjectRequest) EqualMessageVT(thatMsg proto.Message) boo
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Search_Config) EqualVT(that *Search_Config) bool {
 	if this == that {
 		return true
@@ -2143,6 +2233,7 @@ func (this *Search_Config) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Search_Response) EqualVT(that *Search_Response) bool {
 	if this == that {
 		return true
@@ -2179,6 +2270,7 @@ func (this *Search_Response) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Search_Responses) EqualVT(that *Search_Responses) bool {
 	if this == that {
 		return true
@@ -2212,6 +2304,7 @@ func (this *Search_Responses) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Search_StreamResponse) EqualVT(that *Search_StreamResponse) bool {
 	if this == that {
 		return true
@@ -2240,6 +2333,7 @@ func (this *Search_StreamResponse) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Search_StreamResponse_Response) EqualVT(
 	thatIface isSearch_StreamResponse_Payload,
 ) bool {
@@ -2312,6 +2406,7 @@ func (this *Search) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Filter_Target) EqualVT(that *Filter_Target) bool {
 	if this == that {
 		return true
@@ -2334,6 +2429,7 @@ func (this *Filter_Target) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Filter_Config) EqualVT(that *Filter_Config) bool {
 	if this == that {
 		return true
@@ -2367,6 +2463,7 @@ func (this *Filter_Config) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Filter) EqualVT(that *Filter) bool {
 	if this == that {
 		return true
@@ -2383,6 +2480,7 @@ func (this *Filter) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Insert_Request) EqualVT(that *Insert_Request) bool {
 	if this == that {
 		return true
@@ -2405,6 +2503,7 @@ func (this *Insert_Request) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Insert_MultiRequest) EqualVT(that *Insert_MultiRequest) bool {
 	if this == that {
 		return true
@@ -2438,6 +2537,7 @@ func (this *Insert_MultiRequest) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Insert_ObjectRequest) EqualVT(that *Insert_ObjectRequest) bool {
 	if this == that {
 		return true
@@ -2463,6 +2563,7 @@ func (this *Insert_ObjectRequest) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Insert_MultiObjectRequest) EqualVT(that *Insert_MultiObjectRequest) bool {
 	if this == that {
 		return true
@@ -2496,6 +2597,7 @@ func (this *Insert_MultiObjectRequest) EqualMessageVT(thatMsg proto.Message) boo
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Insert_Config) EqualVT(that *Insert_Config) bool {
 	if this == that {
 		return true
@@ -2521,6 +2623,7 @@ func (this *Insert_Config) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Insert) EqualVT(that *Insert) bool {
 	if this == that {
 		return true
@@ -2537,6 +2640,7 @@ func (this *Insert) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Update_Request) EqualVT(that *Update_Request) bool {
 	if this == that {
 		return true
@@ -2559,6 +2663,7 @@ func (this *Update_Request) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Update_MultiRequest) EqualVT(that *Update_MultiRequest) bool {
 	if this == that {
 		return true
@@ -2592,6 +2697,7 @@ func (this *Update_MultiRequest) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Update_ObjectRequest) EqualVT(that *Update_ObjectRequest) bool {
 	if this == that {
 		return true
@@ -2617,6 +2723,7 @@ func (this *Update_ObjectRequest) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Update_MultiObjectRequest) EqualVT(that *Update_MultiObjectRequest) bool {
 	if this == that {
 		return true
@@ -2650,6 +2757,7 @@ func (this *Update_MultiObjectRequest) EqualMessageVT(thatMsg proto.Message) boo
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Update_Config) EqualVT(that *Update_Config) bool {
 	if this == that {
 		return true
@@ -2678,6 +2786,7 @@ func (this *Update_Config) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Update) EqualVT(that *Update) bool {
 	if this == that {
 		return true
@@ -2694,6 +2803,7 @@ func (this *Update) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Upsert_Request) EqualVT(that *Upsert_Request) bool {
 	if this == that {
 		return true
@@ -2716,6 +2826,7 @@ func (this *Upsert_Request) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Upsert_MultiRequest) EqualVT(that *Upsert_MultiRequest) bool {
 	if this == that {
 		return true
@@ -2749,6 +2860,7 @@ func (this *Upsert_MultiRequest) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Upsert_ObjectRequest) EqualVT(that *Upsert_ObjectRequest) bool {
 	if this == that {
 		return true
@@ -2774,6 +2886,7 @@ func (this *Upsert_ObjectRequest) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Upsert_MultiObjectRequest) EqualVT(that *Upsert_MultiObjectRequest) bool {
 	if this == that {
 		return true
@@ -2807,6 +2920,7 @@ func (this *Upsert_MultiObjectRequest) EqualMessageVT(thatMsg proto.Message) boo
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Upsert_Config) EqualVT(that *Upsert_Config) bool {
 	if this == that {
 		return true
@@ -2835,6 +2949,7 @@ func (this *Upsert_Config) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Upsert) EqualVT(that *Upsert) bool {
 	if this == that {
 		return true
@@ -2851,6 +2966,7 @@ func (this *Upsert) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Remove_Request) EqualVT(that *Remove_Request) bool {
 	if this == that {
 		return true
@@ -2873,6 +2989,7 @@ func (this *Remove_Request) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Remove_MultiRequest) EqualVT(that *Remove_MultiRequest) bool {
 	if this == that {
 		return true
@@ -2906,6 +3023,7 @@ func (this *Remove_MultiRequest) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Remove_TimestampRequest) EqualVT(that *Remove_TimestampRequest) bool {
 	if this == that {
 		return true
@@ -2939,6 +3057,7 @@ func (this *Remove_TimestampRequest) EqualMessageVT(thatMsg proto.Message) bool 
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Remove_Timestamp) EqualVT(that *Remove_Timestamp) bool {
 	if this == that {
 		return true
@@ -2961,6 +3080,7 @@ func (this *Remove_Timestamp) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Remove_Config) EqualVT(that *Remove_Config) bool {
 	if this == that {
 		return true
@@ -2983,6 +3103,7 @@ func (this *Remove_Config) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Remove) EqualVT(that *Remove) bool {
 	if this == that {
 		return true
@@ -2999,6 +3120,7 @@ func (this *Remove) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Flush_Request) EqualVT(that *Flush_Request) bool {
 	if this == that {
 		return true
@@ -3015,6 +3137,7 @@ func (this *Flush_Request) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Flush) EqualVT(that *Flush) bool {
 	if this == that {
 		return true
@@ -3031,6 +3154,7 @@ func (this *Flush) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Object_VectorRequest) EqualVT(that *Object_VectorRequest) bool {
 	if this == that {
 		return true
@@ -3053,6 +3177,7 @@ func (this *Object_VectorRequest) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Object_Distance) EqualVT(that *Object_Distance) bool {
 	if this == that {
 		return true
@@ -3075,6 +3200,7 @@ func (this *Object_Distance) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Object_StreamDistance) EqualVT(that *Object_StreamDistance) bool {
 	if this == that {
 		return true
@@ -3103,6 +3229,7 @@ func (this *Object_StreamDistance) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Object_StreamDistance_Distance) EqualVT(
 	thatIface isObject_StreamDistance_Payload,
 ) bool {
@@ -3178,6 +3305,7 @@ func (this *Object_ID) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Object_IDs) EqualVT(that *Object_IDs) bool {
 	if this == that {
 		return true
@@ -3203,6 +3331,7 @@ func (this *Object_IDs) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Object_Vector) EqualVT(that *Object_Vector) bool {
 	if this == that {
 		return true
@@ -3234,6 +3363,7 @@ func (this *Object_Vector) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Object_TimestampRequest) EqualVT(that *Object_TimestampRequest) bool {
 	if this == that {
 		return true
@@ -3253,6 +3383,7 @@ func (this *Object_TimestampRequest) EqualMessageVT(thatMsg proto.Message) bool 
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Object_Timestamp) EqualVT(that *Object_Timestamp) bool {
 	if this == that {
 		return true
@@ -3275,6 +3406,7 @@ func (this *Object_Timestamp) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Object_Vectors) EqualVT(that *Object_Vectors) bool {
 	if this == that {
 		return true
@@ -3308,6 +3440,7 @@ func (this *Object_Vectors) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Object_StreamVector) EqualVT(that *Object_StreamVector) bool {
 	if this == that {
 		return true
@@ -3336,6 +3469,7 @@ func (this *Object_StreamVector) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Object_StreamVector_Vector) EqualVT(thatIface isObject_StreamVector_Payload) bool {
 	that, ok := thatIface.(*Object_StreamVector_Vector)
 	if !ok {
@@ -3418,6 +3552,7 @@ func (this *Object_ReshapeVector) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Object_Blob) EqualVT(that *Object_Blob) bool {
 	if this == that {
 		return true
@@ -3440,6 +3575,7 @@ func (this *Object_Blob) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Object_StreamBlob) EqualVT(that *Object_StreamBlob) bool {
 	if this == that {
 		return true
@@ -3468,6 +3604,7 @@ func (this *Object_StreamBlob) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Object_StreamBlob_Blob) EqualVT(thatIface isObject_StreamBlob_Payload) bool {
 	that, ok := thatIface.(*Object_StreamBlob_Blob)
 	if !ok {
@@ -3553,6 +3690,7 @@ func (this *Object_Location) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Object_StreamLocation) EqualVT(that *Object_StreamLocation) bool {
 	if this == that {
 		return true
@@ -3581,6 +3719,7 @@ func (this *Object_StreamLocation) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Object_StreamLocation_Location) EqualVT(
 	thatIface isObject_StreamLocation_Payload,
 ) bool {
@@ -3670,6 +3809,7 @@ func (this *Object_Locations) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Object_List_Request) EqualVT(that *Object_List_Request) bool {
 	if this == that {
 		return true
@@ -3686,6 +3826,7 @@ func (this *Object_List_Request) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Object_List_Response) EqualVT(that *Object_List_Response) bool {
 	if this == that {
 		return true
@@ -3714,6 +3855,7 @@ func (this *Object_List_Response) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Object_List_Response_Vector) EqualVT(thatIface isObject_List_Response_Payload) bool {
 	that, ok := thatIface.(*Object_List_Response_Vector)
 	if !ok {
@@ -3784,6 +3926,7 @@ func (this *Object_List) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Object) EqualVT(that *Object) bool {
 	if this == that {
 		return true
@@ -3800,6 +3943,7 @@ func (this *Object) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Control_CreateIndexRequest) EqualVT(that *Control_CreateIndexRequest) bool {
 	if this == that {
 		return true
@@ -3819,6 +3963,7 @@ func (this *Control_CreateIndexRequest) EqualMessageVT(thatMsg proto.Message) bo
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Control) EqualVT(that *Control) bool {
 	if this == that {
 		return true
@@ -3835,6 +3980,7 @@ func (this *Control) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Discoverer_Request) EqualVT(that *Discoverer_Request) bool {
 	if this == that {
 		return true
@@ -3860,6 +4006,7 @@ func (this *Discoverer_Request) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Discoverer) EqualVT(that *Discoverer) bool {
 	if this == that {
 		return true
@@ -3876,6 +4023,7 @@ func (this *Discoverer) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Info_Index_Count) EqualVT(that *Info_Index_Count) bool {
 	if this == that {
 		return true
@@ -3904,6 +4052,7 @@ func (this *Info_Index_Count) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Info_Index_Detail) EqualVT(that *Info_Index_Detail) bool {
 	if this == that {
 		return true
@@ -3946,6 +4095,7 @@ func (this *Info_Index_Detail) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Info_Index_UUID_Committed) EqualVT(that *Info_Index_UUID_Committed) bool {
 	if this == that {
 		return true
@@ -3965,6 +4115,7 @@ func (this *Info_Index_UUID_Committed) EqualMessageVT(thatMsg proto.Message) boo
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Info_Index_UUID_Uncommitted) EqualVT(that *Info_Index_UUID_Uncommitted) bool {
 	if this == that {
 		return true
@@ -3984,6 +4135,7 @@ func (this *Info_Index_UUID_Uncommitted) EqualMessageVT(thatMsg proto.Message) b
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Info_Index_UUID) EqualVT(that *Info_Index_UUID) bool {
 	if this == that {
 		return true
@@ -4000,6 +4152,178 @@ func (this *Info_Index_UUID) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
+func (this *Info_Index_Statistics) EqualVT(that *Info_Index_Statistics) bool {
+	if this == that {
+		return true
+	} else if this == nil || that == nil {
+		return false
+	}
+	if this.Valid != that.Valid {
+		return false
+	}
+	if this.MedianIndegree != that.MedianIndegree {
+		return false
+	}
+	if this.MedianOutdegree != that.MedianOutdegree {
+		return false
+	}
+	if this.MaxNumberOfIndegree != that.MaxNumberOfIndegree {
+		return false
+	}
+	if this.MaxNumberOfOutdegree != that.MaxNumberOfOutdegree {
+		return false
+	}
+	if this.MinNumberOfIndegree != that.MinNumberOfIndegree {
+		return false
+	}
+	if this.MinNumberOfOutdegree != that.MinNumberOfOutdegree {
+		return false
+	}
+	if this.ModeIndegree != that.ModeIndegree {
+		return false
+	}
+	if this.ModeOutdegree != that.ModeOutdegree {
+		return false
+	}
+	if this.NodesSkippedFor10Edges != that.NodesSkippedFor10Edges {
+		return false
+	}
+	if this.NodesSkippedForIndegreeDistance != that.NodesSkippedForIndegreeDistance {
+		return false
+	}
+	if this.NumberOfEdges != that.NumberOfEdges {
+		return false
+	}
+	if this.NumberOfIndexedObjects != that.NumberOfIndexedObjects {
+		return false
+	}
+	if this.NumberOfNodes != that.NumberOfNodes {
+		return false
+	}
+	if this.NumberOfNodesWithoutEdges != that.NumberOfNodesWithoutEdges {
+		return false
+	}
+	if this.NumberOfNodesWithoutIndegree != that.NumberOfNodesWithoutIndegree {
+		return false
+	}
+	if this.NumberOfObjects != that.NumberOfObjects {
+		return false
+	}
+	if this.NumberOfRemovedObjects != that.NumberOfRemovedObjects {
+		return false
+	}
+	if this.SizeOfObjectRepository != that.SizeOfObjectRepository {
+		return false
+	}
+	if this.SizeOfRefinementObjectRepository != that.SizeOfRefinementObjectRepository {
+		return false
+	}
+	if this.VarianceOfIndegree != that.VarianceOfIndegree {
+		return false
+	}
+	if this.VarianceOfOutdegree != that.VarianceOfOutdegree {
+		return false
+	}
+	if this.MeanEdgeLength != that.MeanEdgeLength {
+		return false
+	}
+	if this.MeanEdgeLengthFor10Edges != that.MeanEdgeLengthFor10Edges {
+		return false
+	}
+	if this.MeanIndegreeDistanceFor10Edges != that.MeanIndegreeDistanceFor10Edges {
+		return false
+	}
+	if this.MeanNumberOfEdgesPerNode != that.MeanNumberOfEdgesPerNode {
+		return false
+	}
+	if this.C1Indegree != that.C1Indegree {
+		return false
+	}
+	if this.C5Indegree != that.C5Indegree {
+		return false
+	}
+	if this.C95Outdegree != that.C95Outdegree {
+		return false
+	}
+	if this.C99Outdegree != that.C99Outdegree {
+		return false
+	}
+	if len(this.IndegreeCount) != len(that.IndegreeCount) {
+		return false
+	}
+	for i, vx := range this.IndegreeCount {
+		vy := that.IndegreeCount[i]
+		if vx != vy {
+			return false
+		}
+	}
+	if len(this.OutdegreeHistogram) != len(that.OutdegreeHistogram) {
+		return false
+	}
+	for i, vx := range this.OutdegreeHistogram {
+		vy := that.OutdegreeHistogram[i]
+		if vx != vy {
+			return false
+		}
+	}
+	if len(this.IndegreeHistogram) != len(that.IndegreeHistogram) {
+		return false
+	}
+	for i, vx := range this.IndegreeHistogram {
+		vy := that.IndegreeHistogram[i]
+		if vx != vy {
+			return false
+		}
+	}
+	return string(this.unknownFields) == string(that.unknownFields)
+}
+
+func (this *Info_Index_Statistics) EqualMessageVT(thatMsg proto.Message) bool {
+	that, ok := thatMsg.(*Info_Index_Statistics)
+	if !ok {
+		return false
+	}
+	return this.EqualVT(that)
+}
+
+func (this *Info_Index_StatisticsDetail) EqualVT(that *Info_Index_StatisticsDetail) bool {
+	if this == that {
+		return true
+	} else if this == nil || that == nil {
+		return false
+	}
+	if len(this.Details) != len(that.Details) {
+		return false
+	}
+	for i, vx := range this.Details {
+		vy, ok := that.Details[i]
+		if !ok {
+			return false
+		}
+		if p, q := vx, vy; p != q {
+			if p == nil {
+				p = &Info_Index_Statistics{}
+			}
+			if q == nil {
+				q = &Info_Index_Statistics{}
+			}
+			if !p.EqualVT(q) {
+				return false
+			}
+		}
+	}
+	return string(this.unknownFields) == string(that.unknownFields)
+}
+
+func (this *Info_Index_StatisticsDetail) EqualMessageVT(thatMsg proto.Message) bool {
+	that, ok := thatMsg.(*Info_Index_StatisticsDetail)
+	if !ok {
+		return false
+	}
+	return this.EqualVT(that)
+}
+
 func (this *Info_Index) EqualVT(that *Info_Index) bool {
 	if this == that {
 		return true
@@ -4016,6 +4340,7 @@ func (this *Info_Index) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Info_Pod) EqualVT(that *Info_Pod) bool {
 	if this == that {
 		return true
@@ -4053,6 +4378,7 @@ func (this *Info_Pod) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Info_Node) EqualVT(that *Info_Node) bool {
 	if this == that {
 		return true
@@ -4087,6 +4413,7 @@ func (this *Info_Node) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Info_Service) EqualVT(that *Info_Service) bool {
 	if this == that {
 		return true
@@ -4141,6 +4468,7 @@ func (this *Info_Service) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Info_ServicePort) EqualVT(that *Info_ServicePort) bool {
 	if this == that {
 		return true
@@ -4163,6 +4491,7 @@ func (this *Info_ServicePort) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Info_Labels) EqualVT(that *Info_Labels) bool {
 	if this == that {
 		return true
@@ -4191,6 +4520,7 @@ func (this *Info_Labels) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Info_Annotations) EqualVT(that *Info_Annotations) bool {
 	if this == that {
 		return true
@@ -4219,6 +4549,7 @@ func (this *Info_Annotations) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Info_CPU) EqualVT(that *Info_CPU) bool {
 	if this == that {
 		return true
@@ -4244,6 +4575,7 @@ func (this *Info_CPU) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Info_Memory) EqualVT(that *Info_Memory) bool {
 	if this == that {
 		return true
@@ -4269,6 +4601,7 @@ func (this *Info_Memory) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Info_Pods) EqualVT(that *Info_Pods) bool {
 	if this == that {
 		return true
@@ -4302,6 +4635,7 @@ func (this *Info_Pods) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Info_Nodes) EqualVT(that *Info_Nodes) bool {
 	if this == that {
 		return true
@@ -4335,6 +4669,7 @@ func (this *Info_Nodes) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Info_Services) EqualVT(that *Info_Services) bool {
 	if this == that {
 		return true
@@ -4368,6 +4703,7 @@ func (this *Info_Services) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Info_IPs) EqualVT(that *Info_IPs) bool {
 	if this == that {
 		return true
@@ -4393,6 +4729,7 @@ func (this *Info_IPs) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Info) EqualVT(that *Info) bool {
 	if this == that {
 		return true
@@ -4409,6 +4746,7 @@ func (this *Info) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Mirror_Target) EqualVT(that *Mirror_Target) bool {
 	if this == that {
 		return true
@@ -4431,6 +4769,7 @@ func (this *Mirror_Target) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Mirror_Targets) EqualVT(that *Mirror_Targets) bool {
 	if this == that {
 		return true
@@ -4464,6 +4803,7 @@ func (this *Mirror_Targets) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Mirror) EqualVT(that *Mirror) bool {
 	if this == that {
 		return true
@@ -4480,6 +4820,7 @@ func (this *Mirror) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (this *Empty) EqualVT(that *Empty) bool {
 	if this == that {
 		return true
@@ -4496,6 +4837,7 @@ func (this *Empty) EqualMessageVT(thatMsg proto.Message) bool {
 	}
 	return this.EqualVT(that)
 }
+
 func (m *Search_Request) MarshalVT() (dAtA []byte, err error) {
 	if m == nil {
 		return nil, nil
@@ -5054,6 +5396,7 @@ func (m *Search_StreamResponse_Response) MarshalToSizedBufferVT(dAtA []byte) (in
 	}
 	return len(dAtA) - i, nil
 }
+
 func (m *Search_StreamResponse_Status) MarshalToVT(dAtA []byte) (int, error) {
 	size := m.SizeVT()
 	return m.MarshalToSizedBufferVT(dAtA[:size])
@@ -5085,6 +5428,7 @@ func (m *Search_StreamResponse_Status) MarshalToSizedBufferVT(dAtA []byte) (int,
 	}
 	return len(dAtA) - i, nil
 }
+
 func (m *Search) MarshalVT() (dAtA []byte, err error) {
 	if m == nil {
 		return nil, nil
@@ -6645,6 +6989,7 @@ func (m *Object_StreamDistance_Distance) MarshalToSizedBufferVT(dAtA []byte) (in
 	}
 	return len(dAtA) - i, nil
 }
+
 func (m *Object_StreamDistance_Status) MarshalToVT(dAtA []byte) (int, error) {
 	size := m.SizeVT()
 	return m.MarshalToSizedBufferVT(dAtA[:size])
@@ -6676,6 +7021,7 @@ func (m *Object_StreamDistance_Status) MarshalToSizedBufferVT(dAtA []byte) (int,
 	}
 	return len(dAtA) - i, nil
 }
+
 func (m *Object_ID) MarshalVT() (dAtA []byte, err error) {
 	if m == nil {
 		return nil, nil
@@ -7007,6 +7353,7 @@ func (m *Object_StreamVector_Vector) MarshalToSizedBufferVT(dAtA []byte) (int, e
 	}
 	return len(dAtA) - i, nil
 }
+
 func (m *Object_StreamVector_Status) MarshalToVT(dAtA []byte) (int, error) {
 	size := m.SizeVT()
 	return m.MarshalToSizedBufferVT(dAtA[:size])
@@ -7038,6 +7385,7 @@ func (m *Object_StreamVector_Status) MarshalToSizedBufferVT(dAtA []byte) (int, e
 	}
 	return len(dAtA) - i, nil
 }
+
 func (m *Object_ReshapeVector) MarshalVT() (dAtA []byte, err error) {
 	if m == nil {
 		return nil, nil
@@ -7207,6 +7555,7 @@ func (m *Object_StreamBlob_Blob) MarshalToSizedBufferVT(dAtA []byte) (int, error
 	}
 	return len(dAtA) - i, nil
 }
+
 func (m *Object_StreamBlob_Status) MarshalToVT(dAtA []byte) (int, error) {
 	size := m.SizeVT()
 	return m.MarshalToSizedBufferVT(dAtA[:size])
@@ -7238,6 +7587,7 @@ func (m *Object_StreamBlob_Status) MarshalToSizedBufferVT(dAtA []byte) (int, err
 	}
 	return len(dAtA) - i, nil
 }
+
 func (m *Object_Location) MarshalVT() (dAtA []byte, err error) {
 	if m == nil {
 		return nil, nil
@@ -7355,6 +7705,7 @@ func (m *Object_StreamLocation_Location) MarshalToSizedBufferVT(dAtA []byte) (in
 	}
 	return len(dAtA) - i, nil
 }
+
 func (m *Object_StreamLocation_Status) MarshalToVT(dAtA []byte) (int, error) {
 	size := m.SizeVT()
 	return m.MarshalToSizedBufferVT(dAtA[:size])
@@ -7386,6 +7737,7 @@ func (m *Object_StreamLocation_Status) MarshalToSizedBufferVT(dAtA []byte) (int,
 	}
 	return len(dAtA) - i, nil
 }
+
 func (m *Object_Locations) MarshalVT() (dAtA []byte, err error) {
 	if m == nil {
 		return nil, nil
@@ -7525,6 +7877,7 @@ func (m *Object_List_Response_Vector) MarshalToSizedBufferVT(dAtA []byte) (int, 
 	}
 	return len(dAtA) - i, nil
 }
+
 func (m *Object_List_Response_Status) MarshalToVT(dAtA []byte) (int, error) {
 	size := m.SizeVT()
 	return m.MarshalToSizedBufferVT(dAtA[:size])
@@ -7556,6 +7909,7 @@ func (m *Object_List_Response_Status) MarshalToSizedBufferVT(dAtA []byte) (int, 
 	}
 	return len(dAtA) - i, nil
 }
+
 func (m *Object_List) MarshalVT() (dAtA []byte, err error) {
 	if m == nil {
 		return nil, nil
@@ -8017,6 +8371,356 @@ func (m *Info_Index_UUID) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
 	if m.unknownFields != nil {
 		i -= len(m.unknownFields)
 		copy(dAtA[i:], m.unknownFields)
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *Info_Index_Statistics) MarshalVT() (dAtA []byte, err error) {
+	if m == nil {
+		return nil, nil
+	}
+	size := m.SizeVT()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBufferVT(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *Info_Index_Statistics) MarshalToVT(dAtA []byte) (int, error) {
+	size := m.SizeVT()
+	return m.MarshalToSizedBufferVT(dAtA[:size])
+}
+
+func (m *Info_Index_Statistics) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.unknownFields != nil {
+		i -= len(m.unknownFields)
+		copy(dAtA[i:], m.unknownFields)
+	}
+	if len(m.IndegreeHistogram) > 0 {
+		var pksize2 int
+		for _, num := range m.IndegreeHistogram {
+			pksize2 += protohelpers.SizeOfVarint(uint64(num))
+		}
+		i -= pksize2
+		j1 := i
+		for _, num := range m.IndegreeHistogram {
+			for num >= 1<<7 {
+				dAtA[j1] = uint8(uint64(num)&0x7f | 0x80)
+				num >>= 7
+				j1++
+			}
+			dAtA[j1] = uint8(num)
+			j1++
+		}
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(pksize2))
+		i--
+		dAtA[i] = 0x2
+		i--
+		dAtA[i] = 0x8a
+	}
+	if len(m.OutdegreeHistogram) > 0 {
+		var pksize4 int
+		for _, num := range m.OutdegreeHistogram {
+			pksize4 += protohelpers.SizeOfVarint(uint64(num))
+		}
+		i -= pksize4
+		j3 := i
+		for _, num := range m.OutdegreeHistogram {
+			for num >= 1<<7 {
+				dAtA[j3] = uint8(uint64(num)&0x7f | 0x80)
+				num >>= 7
+				j3++
+			}
+			dAtA[j3] = uint8(num)
+			j3++
+		}
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(pksize4))
+		i--
+		dAtA[i] = 0x2
+		i--
+		dAtA[i] = 0x82
+	}
+	if len(m.IndegreeCount) > 0 {
+		var pksize6 int
+		for _, num := range m.IndegreeCount {
+			pksize6 += protohelpers.SizeOfVarint(uint64(num))
+		}
+		i -= pksize6
+		j5 := i
+		for _, num1 := range m.IndegreeCount {
+			num := uint64(num1)
+			for num >= 1<<7 {
+				dAtA[j5] = uint8(uint64(num)&0x7f | 0x80)
+				num >>= 7
+				j5++
+			}
+			dAtA[j5] = uint8(num)
+			j5++
+		}
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(pksize6))
+		i--
+		dAtA[i] = 0x1
+		i--
+		dAtA[i] = 0xfa
+	}
+	if m.C99Outdegree != 0 {
+		i -= 8
+		binary.LittleEndian.PutUint64(dAtA[i:], uint64(math.Float64bits(float64(m.C99Outdegree))))
+		i--
+		dAtA[i] = 0x1
+		i--
+		dAtA[i] = 0xf1
+	}
+	if m.C95Outdegree != 0 {
+		i -= 8
+		binary.LittleEndian.PutUint64(dAtA[i:], uint64(math.Float64bits(float64(m.C95Outdegree))))
+		i--
+		dAtA[i] = 0x1
+		i--
+		dAtA[i] = 0xe9
+	}
+	if m.C5Indegree != 0 {
+		i -= 8
+		binary.LittleEndian.PutUint64(dAtA[i:], uint64(math.Float64bits(float64(m.C5Indegree))))
+		i--
+		dAtA[i] = 0x1
+		i--
+		dAtA[i] = 0xe1
+	}
+	if m.C1Indegree != 0 {
+		i -= 8
+		binary.LittleEndian.PutUint64(dAtA[i:], uint64(math.Float64bits(float64(m.C1Indegree))))
+		i--
+		dAtA[i] = 0x1
+		i--
+		dAtA[i] = 0xd9
+	}
+	if m.MeanNumberOfEdgesPerNode != 0 {
+		i -= 8
+		binary.LittleEndian.PutUint64(dAtA[i:], uint64(math.Float64bits(float64(m.MeanNumberOfEdgesPerNode))))
+		i--
+		dAtA[i] = 0x1
+		i--
+		dAtA[i] = 0xd1
+	}
+	if m.MeanIndegreeDistanceFor10Edges != 0 {
+		i -= 8
+		binary.LittleEndian.PutUint64(dAtA[i:], uint64(math.Float64bits(float64(m.MeanIndegreeDistanceFor10Edges))))
+		i--
+		dAtA[i] = 0x1
+		i--
+		dAtA[i] = 0xc9
+	}
+	if m.MeanEdgeLengthFor10Edges != 0 {
+		i -= 8
+		binary.LittleEndian.PutUint64(dAtA[i:], uint64(math.Float64bits(float64(m.MeanEdgeLengthFor10Edges))))
+		i--
+		dAtA[i] = 0x1
+		i--
+		dAtA[i] = 0xc1
+	}
+	if m.MeanEdgeLength != 0 {
+		i -= 8
+		binary.LittleEndian.PutUint64(dAtA[i:], uint64(math.Float64bits(float64(m.MeanEdgeLength))))
+		i--
+		dAtA[i] = 0x1
+		i--
+		dAtA[i] = 0xb9
+	}
+	if m.VarianceOfOutdegree != 0 {
+		i -= 8
+		binary.LittleEndian.PutUint64(dAtA[i:], uint64(math.Float64bits(float64(m.VarianceOfOutdegree))))
+		i--
+		dAtA[i] = 0x1
+		i--
+		dAtA[i] = 0xb1
+	}
+	if m.VarianceOfIndegree != 0 {
+		i -= 8
+		binary.LittleEndian.PutUint64(dAtA[i:], uint64(math.Float64bits(float64(m.VarianceOfIndegree))))
+		i--
+		dAtA[i] = 0x1
+		i--
+		dAtA[i] = 0xa9
+	}
+	if m.SizeOfRefinementObjectRepository != 0 {
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.SizeOfRefinementObjectRepository))
+		i--
+		dAtA[i] = 0x1
+		i--
+		dAtA[i] = 0xa0
+	}
+	if m.SizeOfObjectRepository != 0 {
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.SizeOfObjectRepository))
+		i--
+		dAtA[i] = 0x1
+		i--
+		dAtA[i] = 0x98
+	}
+	if m.NumberOfRemovedObjects != 0 {
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.NumberOfRemovedObjects))
+		i--
+		dAtA[i] = 0x1
+		i--
+		dAtA[i] = 0x90
+	}
+	if m.NumberOfObjects != 0 {
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.NumberOfObjects))
+		i--
+		dAtA[i] = 0x1
+		i--
+		dAtA[i] = 0x88
+	}
+	if m.NumberOfNodesWithoutIndegree != 0 {
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.NumberOfNodesWithoutIndegree))
+		i--
+		dAtA[i] = 0x1
+		i--
+		dAtA[i] = 0x80
+	}
+	if m.NumberOfNodesWithoutEdges != 0 {
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.NumberOfNodesWithoutEdges))
+		i--
+		dAtA[i] = 0x78
+	}
+	if m.NumberOfNodes != 0 {
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.NumberOfNodes))
+		i--
+		dAtA[i] = 0x70
+	}
+	if m.NumberOfIndexedObjects != 0 {
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.NumberOfIndexedObjects))
+		i--
+		dAtA[i] = 0x68
+	}
+	if m.NumberOfEdges != 0 {
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.NumberOfEdges))
+		i--
+		dAtA[i] = 0x60
+	}
+	if m.NodesSkippedForIndegreeDistance != 0 {
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.NodesSkippedForIndegreeDistance))
+		i--
+		dAtA[i] = 0x58
+	}
+	if m.NodesSkippedFor10Edges != 0 {
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.NodesSkippedFor10Edges))
+		i--
+		dAtA[i] = 0x50
+	}
+	if m.ModeOutdegree != 0 {
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.ModeOutdegree))
+		i--
+		dAtA[i] = 0x48
+	}
+	if m.ModeIndegree != 0 {
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.ModeIndegree))
+		i--
+		dAtA[i] = 0x40
+	}
+	if m.MinNumberOfOutdegree != 0 {
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.MinNumberOfOutdegree))
+		i--
+		dAtA[i] = 0x38
+	}
+	if m.MinNumberOfIndegree != 0 {
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.MinNumberOfIndegree))
+		i--
+		dAtA[i] = 0x30
+	}
+	if m.MaxNumberOfOutdegree != 0 {
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.MaxNumberOfOutdegree))
+		i--
+		dAtA[i] = 0x28
+	}
+	if m.MaxNumberOfIndegree != 0 {
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.MaxNumberOfIndegree))
+		i--
+		dAtA[i] = 0x20
+	}
+	if m.MedianOutdegree != 0 {
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.MedianOutdegree))
+		i--
+		dAtA[i] = 0x18
+	}
+	if m.MedianIndegree != 0 {
+		i = protohelpers.EncodeVarint(dAtA, i, uint64(m.MedianIndegree))
+		i--
+		dAtA[i] = 0x10
+	}
+	if m.Valid {
+		i--
+		if m.Valid {
+			dAtA[i] = 1
+		} else {
+			dAtA[i] = 0
+		}
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *Info_Index_StatisticsDetail) MarshalVT() (dAtA []byte, err error) {
+	if m == nil {
+		return nil, nil
+	}
+	size := m.SizeVT()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBufferVT(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *Info_Index_StatisticsDetail) MarshalToVT(dAtA []byte) (int, error) {
+	size := m.SizeVT()
+	return m.MarshalToSizedBufferVT(dAtA[:size])
+}
+
+func (m *Info_Index_StatisticsDetail) MarshalToSizedBufferVT(dAtA []byte) (int, error) {
+	if m == nil {
+		return 0, nil
+	}
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.unknownFields != nil {
+		i -= len(m.unknownFields)
+		copy(dAtA[i:], m.unknownFields)
+	}
+	if len(m.Details) > 0 {
+		for k := range m.Details {
+			v := m.Details[k]
+			baseI := i
+			size, err := v.MarshalToSizedBufferVT(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(size))
+			i--
+			dAtA[i] = 0x12
+			i -= len(k)
+			copy(dAtA[i:], k)
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(len(k)))
+			i--
+			dAtA[i] = 0xa
+			i = protohelpers.EncodeVarint(dAtA, i, uint64(baseI-i))
+			i--
+			dAtA[i] = 0xa
+		}
 	}
 	return len(dAtA) - i, nil
 }
@@ -9144,6 +9848,7 @@ func (m *Search_StreamResponse_Response) SizeVT() (n int) {
 	}
 	return n
 }
+
 func (m *Search_StreamResponse_Status) SizeVT() (n int) {
 	if m == nil {
 		return 0
@@ -9162,6 +9867,7 @@ func (m *Search_StreamResponse_Status) SizeVT() (n int) {
 	}
 	return n
 }
+
 func (m *Search) SizeVT() (n int) {
 	if m == nil {
 		return 0
@@ -9699,6 +10405,7 @@ func (m *Object_StreamDistance_Distance) SizeVT() (n int) {
 	}
 	return n
 }
+
 func (m *Object_StreamDistance_Status) SizeVT() (n int) {
 	if m == nil {
 		return 0
@@ -9717,6 +10424,7 @@ func (m *Object_StreamDistance_Status) SizeVT() (n int) {
 	}
 	return n
 }
+
 func (m *Object_ID) SizeVT() (n int) {
 	if m == nil {
 		return 0
@@ -9839,6 +10547,7 @@ func (m *Object_StreamVector_Vector) SizeVT() (n int) {
 	}
 	return n
 }
+
 func (m *Object_StreamVector_Status) SizeVT() (n int) {
 	if m == nil {
 		return 0
@@ -9857,6 +10566,7 @@ func (m *Object_StreamVector_Status) SizeVT() (n int) {
 	}
 	return n
 }
+
 func (m *Object_ReshapeVector) SizeVT() (n int) {
 	if m == nil {
 		return 0
@@ -9921,6 +10631,7 @@ func (m *Object_StreamBlob_Blob) SizeVT() (n int) {
 	}
 	return n
 }
+
 func (m *Object_StreamBlob_Status) SizeVT() (n int) {
 	if m == nil {
 		return 0
@@ -9939,6 +10650,7 @@ func (m *Object_StreamBlob_Status) SizeVT() (n int) {
 	}
 	return n
 }
+
 func (m *Object_Location) SizeVT() (n int) {
 	if m == nil {
 		return 0
@@ -9988,6 +10700,7 @@ func (m *Object_StreamLocation_Location) SizeVT() (n int) {
 	}
 	return n
 }
+
 func (m *Object_StreamLocation_Status) SizeVT() (n int) {
 	if m == nil {
 		return 0
@@ -10006,6 +10719,7 @@ func (m *Object_StreamLocation_Status) SizeVT() (n int) {
 	}
 	return n
 }
+
 func (m *Object_Locations) SizeVT() (n int) {
 	if m == nil {
 		return 0
@@ -10057,6 +10771,7 @@ func (m *Object_List_Response_Vector) SizeVT() (n int) {
 	}
 	return n
 }
+
 func (m *Object_List_Response_Status) SizeVT() (n int) {
 	if m == nil {
 		return 0
@@ -10075,6 +10790,7 @@ func (m *Object_List_Response_Status) SizeVT() (n int) {
 	}
 	return n
 }
+
 func (m *Object_List) SizeVT() (n int) {
 	if m == nil {
 		return 0
@@ -10235,6 +10951,150 @@ func (m *Info_Index_UUID) SizeVT() (n int) {
 	}
 	var l int
 	_ = l
+	n += len(m.unknownFields)
+	return n
+}
+
+func (m *Info_Index_Statistics) SizeVT() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.Valid {
+		n += 2
+	}
+	if m.MedianIndegree != 0 {
+		n += 1 + protohelpers.SizeOfVarint(uint64(m.MedianIndegree))
+	}
+	if m.MedianOutdegree != 0 {
+		n += 1 + protohelpers.SizeOfVarint(uint64(m.MedianOutdegree))
+	}
+	if m.MaxNumberOfIndegree != 0 {
+		n += 1 + protohelpers.SizeOfVarint(uint64(m.MaxNumberOfIndegree))
+	}
+	if m.MaxNumberOfOutdegree != 0 {
+		n += 1 + protohelpers.SizeOfVarint(uint64(m.MaxNumberOfOutdegree))
+	}
+	if m.MinNumberOfIndegree != 0 {
+		n += 1 + protohelpers.SizeOfVarint(uint64(m.MinNumberOfIndegree))
+	}
+	if m.MinNumberOfOutdegree != 0 {
+		n += 1 + protohelpers.SizeOfVarint(uint64(m.MinNumberOfOutdegree))
+	}
+	if m.ModeIndegree != 0 {
+		n += 1 + protohelpers.SizeOfVarint(uint64(m.ModeIndegree))
+	}
+	if m.ModeOutdegree != 0 {
+		n += 1 + protohelpers.SizeOfVarint(uint64(m.ModeOutdegree))
+	}
+	if m.NodesSkippedFor10Edges != 0 {
+		n += 1 + protohelpers.SizeOfVarint(uint64(m.NodesSkippedFor10Edges))
+	}
+	if m.NodesSkippedForIndegreeDistance != 0 {
+		n += 1 + protohelpers.SizeOfVarint(uint64(m.NodesSkippedForIndegreeDistance))
+	}
+	if m.NumberOfEdges != 0 {
+		n += 1 + protohelpers.SizeOfVarint(uint64(m.NumberOfEdges))
+	}
+	if m.NumberOfIndexedObjects != 0 {
+		n += 1 + protohelpers.SizeOfVarint(uint64(m.NumberOfIndexedObjects))
+	}
+	if m.NumberOfNodes != 0 {
+		n += 1 + protohelpers.SizeOfVarint(uint64(m.NumberOfNodes))
+	}
+	if m.NumberOfNodesWithoutEdges != 0 {
+		n += 1 + protohelpers.SizeOfVarint(uint64(m.NumberOfNodesWithoutEdges))
+	}
+	if m.NumberOfNodesWithoutIndegree != 0 {
+		n += 2 + protohelpers.SizeOfVarint(uint64(m.NumberOfNodesWithoutIndegree))
+	}
+	if m.NumberOfObjects != 0 {
+		n += 2 + protohelpers.SizeOfVarint(uint64(m.NumberOfObjects))
+	}
+	if m.NumberOfRemovedObjects != 0 {
+		n += 2 + protohelpers.SizeOfVarint(uint64(m.NumberOfRemovedObjects))
+	}
+	if m.SizeOfObjectRepository != 0 {
+		n += 2 + protohelpers.SizeOfVarint(uint64(m.SizeOfObjectRepository))
+	}
+	if m.SizeOfRefinementObjectRepository != 0 {
+		n += 2 + protohelpers.SizeOfVarint(uint64(m.SizeOfRefinementObjectRepository))
+	}
+	if m.VarianceOfIndegree != 0 {
+		n += 10
+	}
+	if m.VarianceOfOutdegree != 0 {
+		n += 10
+	}
+	if m.MeanEdgeLength != 0 {
+		n += 10
+	}
+	if m.MeanEdgeLengthFor10Edges != 0 {
+		n += 10
+	}
+	if m.MeanIndegreeDistanceFor10Edges != 0 {
+		n += 10
+	}
+	if m.MeanNumberOfEdgesPerNode != 0 {
+		n += 10
+	}
+	if m.C1Indegree != 0 {
+		n += 10
+	}
+	if m.C5Indegree != 0 {
+		n += 10
+	}
+	if m.C95Outdegree != 0 {
+		n += 10
+	}
+	if m.C99Outdegree != 0 {
+		n += 10
+	}
+	if len(m.IndegreeCount) > 0 {
+		l = 0
+		for _, e := range m.IndegreeCount {
+			l += protohelpers.SizeOfVarint(uint64(e))
+		}
+		n += 2 + protohelpers.SizeOfVarint(uint64(l)) + l
+	}
+	if len(m.OutdegreeHistogram) > 0 {
+		l = 0
+		for _, e := range m.OutdegreeHistogram {
+			l += protohelpers.SizeOfVarint(uint64(e))
+		}
+		n += 2 + protohelpers.SizeOfVarint(uint64(l)) + l
+	}
+	if len(m.IndegreeHistogram) > 0 {
+		l = 0
+		for _, e := range m.IndegreeHistogram {
+			l += protohelpers.SizeOfVarint(uint64(e))
+		}
+		n += 2 + protohelpers.SizeOfVarint(uint64(l)) + l
+	}
+	n += len(m.unknownFields)
+	return n
+}
+
+func (m *Info_Index_StatisticsDetail) SizeVT() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if len(m.Details) > 0 {
+		for k, v := range m.Details {
+			_ = k
+			_ = v
+			l = 0
+			if v != nil {
+				l = v.SizeVT()
+			}
+			l += 1 + protohelpers.SizeOfVarint(uint64(l))
+			mapEntrySize := 1 + len(k) + protohelpers.SizeOfVarint(uint64(len(k))) + l
+			n += mapEntrySize + 1 + protohelpers.SizeOfVarint(uint64(mapEntrySize))
+		}
+	}
 	n += len(m.unknownFields)
 	return n
 }
@@ -10718,6 +11578,7 @@ func (m *Search_Request) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Search_MultiRequest) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -10803,6 +11664,7 @@ func (m *Search_MultiRequest) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Search_IDRequest) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -10922,6 +11784,7 @@ func (m *Search_IDRequest) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Search_MultiIDRequest) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -11007,6 +11870,7 @@ func (m *Search_MultiIDRequest) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Search_ObjectRequest) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -11164,6 +12028,7 @@ func (m *Search_ObjectRequest) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Search_MultiObjectRequest) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -11249,6 +12114,7 @@ func (m *Search_MultiObjectRequest) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Search_Config) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -11538,6 +12404,7 @@ func (m *Search_Config) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Search_Response) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -11655,6 +12522,7 @@ func (m *Search_Response) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Search_Responses) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -11740,6 +12608,7 @@ func (m *Search_Responses) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Search_StreamResponse) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -11889,6 +12758,7 @@ func (m *Search_StreamResponse) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Search) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -11940,6 +12810,7 @@ func (m *Search) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Filter_Target) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -12042,6 +12913,7 @@ func (m *Filter_Target) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Filter_Config) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -12127,6 +12999,7 @@ func (m *Filter_Config) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Filter) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -12178,6 +13051,7 @@ func (m *Filter) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Insert_Request) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -12301,6 +13175,7 @@ func (m *Insert_Request) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Insert_MultiRequest) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -12386,6 +13261,7 @@ func (m *Insert_MultiRequest) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Insert_ObjectRequest) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -12545,6 +13421,7 @@ func (m *Insert_ObjectRequest) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Insert_MultiObjectRequest) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -12630,6 +13507,7 @@ func (m *Insert_MultiObjectRequest) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Insert_Config) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -12756,6 +13634,7 @@ func (m *Insert_Config) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Insert) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -12807,6 +13686,7 @@ func (m *Insert) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Update_Request) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -12930,6 +13810,7 @@ func (m *Update_Request) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Update_MultiRequest) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -13015,6 +13896,7 @@ func (m *Update_MultiRequest) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Update_ObjectRequest) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -13174,6 +14056,7 @@ func (m *Update_ObjectRequest) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Update_MultiObjectRequest) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -13259,6 +14142,7 @@ func (m *Update_MultiObjectRequest) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Update_Config) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -13405,6 +14289,7 @@ func (m *Update_Config) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Update) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -13456,6 +14341,7 @@ func (m *Update) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Upsert_Request) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -13579,6 +14465,7 @@ func (m *Upsert_Request) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Upsert_MultiRequest) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -13664,6 +14551,7 @@ func (m *Upsert_MultiRequest) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Upsert_ObjectRequest) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -13823,6 +14711,7 @@ func (m *Upsert_ObjectRequest) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Upsert_MultiObjectRequest) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -13908,6 +14797,7 @@ func (m *Upsert_MultiObjectRequest) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Upsert_Config) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -14054,6 +14944,7 @@ func (m *Upsert_Config) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Upsert) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -14105,6 +14996,7 @@ func (m *Upsert) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Remove_Request) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -14228,6 +15120,7 @@ func (m *Remove_Request) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Remove_MultiRequest) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -14313,6 +15206,7 @@ func (m *Remove_MultiRequest) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Remove_TimestampRequest) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -14398,6 +15292,7 @@ func (m *Remove_TimestampRequest) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Remove_Timestamp) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -14487,6 +15382,7 @@ func (m *Remove_Timestamp) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Remove_Config) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -14577,6 +15473,7 @@ func (m *Remove_Config) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Remove) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -14628,6 +15525,7 @@ func (m *Remove) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Flush_Request) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -14679,6 +15577,7 @@ func (m *Flush_Request) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Flush) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -14730,6 +15629,7 @@ func (m *Flush) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Object_VectorRequest) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -14853,6 +15753,7 @@ func (m *Object_VectorRequest) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Object_Distance) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -14947,6 +15848,7 @@ func (m *Object_Distance) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Object_StreamDistance) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -15096,6 +15998,7 @@ func (m *Object_StreamDistance) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Object_ID) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -15179,6 +16082,7 @@ func (m *Object_ID) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Object_IDs) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -15262,6 +16166,7 @@ func (m *Object_IDs) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Object_Vector) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -15418,6 +16323,7 @@ func (m *Object_Vector) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Object_TimestampRequest) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -15505,6 +16411,7 @@ func (m *Object_TimestampRequest) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Object_Timestamp) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -15607,6 +16514,7 @@ func (m *Object_Timestamp) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Object_Vectors) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -15692,6 +16600,7 @@ func (m *Object_Vectors) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Object_StreamVector) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -15841,6 +16750,7 @@ func (m *Object_StreamVector) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Object_ReshapeVector) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -16002,6 +16912,7 @@ func (m *Object_ReshapeVector) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Object_Blob) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -16119,6 +17030,7 @@ func (m *Object_Blob) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Object_StreamBlob) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -16268,6 +17180,7 @@ func (m *Object_StreamBlob) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Object_Location) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -16415,6 +17328,7 @@ func (m *Object_Location) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Object_StreamLocation) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -16564,6 +17478,7 @@ func (m *Object_StreamLocation) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Object_Locations) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -16649,6 +17564,7 @@ func (m *Object_Locations) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Object_List_Request) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -16700,6 +17616,7 @@ func (m *Object_List_Request) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Object_List_Response) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -16849,6 +17766,7 @@ func (m *Object_List_Response) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Object_List) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -16900,6 +17818,7 @@ func (m *Object_List) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Object) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -16951,6 +17870,7 @@ func (m *Object) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Control_CreateIndexRequest) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -17021,6 +17941,7 @@ func (m *Control_CreateIndexRequest) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Control) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -17072,6 +17993,7 @@ func (m *Control) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Discoverer_Request) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -17219,6 +18141,7 @@ func (m *Discoverer_Request) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Discoverer) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -17270,6 +18193,7 @@ func (m *Discoverer) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Info_Index_Count) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -17399,6 +18323,7 @@ func (m *Info_Index_Count) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Info_Index_Detail) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -17617,6 +18542,7 @@ func (m *Info_Index_Detail) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Info_Index_UUID_Committed) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -17700,6 +18626,7 @@ func (m *Info_Index_UUID_Committed) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Info_Index_UUID_Uncommitted) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -17783,6 +18710,7 @@ func (m *Info_Index_UUID_Uncommitted) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Info_Index_UUID) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -17834,6 +18762,959 @@ func (m *Info_Index_UUID) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
+func (m *Info_Index_Statistics) UnmarshalVT(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return protohelpers.ErrIntOverflow
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: Info_Index_Statistics: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: Info_Index_Statistics: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Valid", wireType)
+			}
+			var v int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			m.Valid = bool(v != 0)
+		case 2:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field MedianIndegree", wireType)
+			}
+			m.MedianIndegree = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.MedianIndegree |= int32(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 3:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field MedianOutdegree", wireType)
+			}
+			m.MedianOutdegree = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.MedianOutdegree |= int32(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 4:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field MaxNumberOfIndegree", wireType)
+			}
+			m.MaxNumberOfIndegree = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.MaxNumberOfIndegree |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 5:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field MaxNumberOfOutdegree", wireType)
+			}
+			m.MaxNumberOfOutdegree = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.MaxNumberOfOutdegree |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 6:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field MinNumberOfIndegree", wireType)
+			}
+			m.MinNumberOfIndegree = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.MinNumberOfIndegree |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 7:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field MinNumberOfOutdegree", wireType)
+			}
+			m.MinNumberOfOutdegree = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.MinNumberOfOutdegree |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 8:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ModeIndegree", wireType)
+			}
+			m.ModeIndegree = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.ModeIndegree |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 9:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ModeOutdegree", wireType)
+			}
+			m.ModeOutdegree = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.ModeOutdegree |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 10:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field NodesSkippedFor10Edges", wireType)
+			}
+			m.NodesSkippedFor10Edges = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.NodesSkippedFor10Edges |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 11:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field NodesSkippedForIndegreeDistance", wireType)
+			}
+			m.NodesSkippedForIndegreeDistance = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.NodesSkippedForIndegreeDistance |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 12:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field NumberOfEdges", wireType)
+			}
+			m.NumberOfEdges = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.NumberOfEdges |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 13:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field NumberOfIndexedObjects", wireType)
+			}
+			m.NumberOfIndexedObjects = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.NumberOfIndexedObjects |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 14:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field NumberOfNodes", wireType)
+			}
+			m.NumberOfNodes = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.NumberOfNodes |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 15:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field NumberOfNodesWithoutEdges", wireType)
+			}
+			m.NumberOfNodesWithoutEdges = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.NumberOfNodesWithoutEdges |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 16:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field NumberOfNodesWithoutIndegree", wireType)
+			}
+			m.NumberOfNodesWithoutIndegree = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.NumberOfNodesWithoutIndegree |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 17:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field NumberOfObjects", wireType)
+			}
+			m.NumberOfObjects = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.NumberOfObjects |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 18:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field NumberOfRemovedObjects", wireType)
+			}
+			m.NumberOfRemovedObjects = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.NumberOfRemovedObjects |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 19:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field SizeOfObjectRepository", wireType)
+			}
+			m.SizeOfObjectRepository = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.SizeOfObjectRepository |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 20:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field SizeOfRefinementObjectRepository", wireType)
+			}
+			m.SizeOfRefinementObjectRepository = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.SizeOfRefinementObjectRepository |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 21:
+			if wireType != 1 {
+				return fmt.Errorf("proto: wrong wireType = %d for field VarianceOfIndegree", wireType)
+			}
+			var v uint64
+			if (iNdEx + 8) > l {
+				return io.ErrUnexpectedEOF
+			}
+			v = uint64(binary.LittleEndian.Uint64(dAtA[iNdEx:]))
+			iNdEx += 8
+			m.VarianceOfIndegree = float64(math.Float64frombits(v))
+		case 22:
+			if wireType != 1 {
+				return fmt.Errorf("proto: wrong wireType = %d for field VarianceOfOutdegree", wireType)
+			}
+			var v uint64
+			if (iNdEx + 8) > l {
+				return io.ErrUnexpectedEOF
+			}
+			v = uint64(binary.LittleEndian.Uint64(dAtA[iNdEx:]))
+			iNdEx += 8
+			m.VarianceOfOutdegree = float64(math.Float64frombits(v))
+		case 23:
+			if wireType != 1 {
+				return fmt.Errorf("proto: wrong wireType = %d for field MeanEdgeLength", wireType)
+			}
+			var v uint64
+			if (iNdEx + 8) > l {
+				return io.ErrUnexpectedEOF
+			}
+			v = uint64(binary.LittleEndian.Uint64(dAtA[iNdEx:]))
+			iNdEx += 8
+			m.MeanEdgeLength = float64(math.Float64frombits(v))
+		case 24:
+			if wireType != 1 {
+				return fmt.Errorf("proto: wrong wireType = %d for field MeanEdgeLengthFor10Edges", wireType)
+			}
+			var v uint64
+			if (iNdEx + 8) > l {
+				return io.ErrUnexpectedEOF
+			}
+			v = uint64(binary.LittleEndian.Uint64(dAtA[iNdEx:]))
+			iNdEx += 8
+			m.MeanEdgeLengthFor10Edges = float64(math.Float64frombits(v))
+		case 25:
+			if wireType != 1 {
+				return fmt.Errorf("proto: wrong wireType = %d for field MeanIndegreeDistanceFor10Edges", wireType)
+			}
+			var v uint64
+			if (iNdEx + 8) > l {
+				return io.ErrUnexpectedEOF
+			}
+			v = uint64(binary.LittleEndian.Uint64(dAtA[iNdEx:]))
+			iNdEx += 8
+			m.MeanIndegreeDistanceFor10Edges = float64(math.Float64frombits(v))
+		case 26:
+			if wireType != 1 {
+				return fmt.Errorf("proto: wrong wireType = %d for field MeanNumberOfEdgesPerNode", wireType)
+			}
+			var v uint64
+			if (iNdEx + 8) > l {
+				return io.ErrUnexpectedEOF
+			}
+			v = uint64(binary.LittleEndian.Uint64(dAtA[iNdEx:]))
+			iNdEx += 8
+			m.MeanNumberOfEdgesPerNode = float64(math.Float64frombits(v))
+		case 27:
+			if wireType != 1 {
+				return fmt.Errorf("proto: wrong wireType = %d for field C1Indegree", wireType)
+			}
+			var v uint64
+			if (iNdEx + 8) > l {
+				return io.ErrUnexpectedEOF
+			}
+			v = uint64(binary.LittleEndian.Uint64(dAtA[iNdEx:]))
+			iNdEx += 8
+			m.C1Indegree = float64(math.Float64frombits(v))
+		case 28:
+			if wireType != 1 {
+				return fmt.Errorf("proto: wrong wireType = %d for field C5Indegree", wireType)
+			}
+			var v uint64
+			if (iNdEx + 8) > l {
+				return io.ErrUnexpectedEOF
+			}
+			v = uint64(binary.LittleEndian.Uint64(dAtA[iNdEx:]))
+			iNdEx += 8
+			m.C5Indegree = float64(math.Float64frombits(v))
+		case 29:
+			if wireType != 1 {
+				return fmt.Errorf("proto: wrong wireType = %d for field C95Outdegree", wireType)
+			}
+			var v uint64
+			if (iNdEx + 8) > l {
+				return io.ErrUnexpectedEOF
+			}
+			v = uint64(binary.LittleEndian.Uint64(dAtA[iNdEx:]))
+			iNdEx += 8
+			m.C95Outdegree = float64(math.Float64frombits(v))
+		case 30:
+			if wireType != 1 {
+				return fmt.Errorf("proto: wrong wireType = %d for field C99Outdegree", wireType)
+			}
+			var v uint64
+			if (iNdEx + 8) > l {
+				return io.ErrUnexpectedEOF
+			}
+			v = uint64(binary.LittleEndian.Uint64(dAtA[iNdEx:]))
+			iNdEx += 8
+			m.C99Outdegree = float64(math.Float64frombits(v))
+		case 31:
+			if wireType == 0 {
+				var v int64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protohelpers.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					v |= int64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				m.IndegreeCount = append(m.IndegreeCount, v)
+			} else if wireType == 2 {
+				var packedLen int
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protohelpers.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					packedLen |= int(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				if packedLen < 0 {
+					return protohelpers.ErrInvalidLength
+				}
+				postIndex := iNdEx + packedLen
+				if postIndex < 0 {
+					return protohelpers.ErrInvalidLength
+				}
+				if postIndex > l {
+					return io.ErrUnexpectedEOF
+				}
+				var elementCount int
+				var count int
+				for _, integer := range dAtA[iNdEx:postIndex] {
+					if integer < 128 {
+						count++
+					}
+				}
+				elementCount = count
+				if elementCount != 0 && len(m.IndegreeCount) == 0 {
+					m.IndegreeCount = make([]int64, 0, elementCount)
+				}
+				for iNdEx < postIndex {
+					var v int64
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return protohelpers.ErrIntOverflow
+						}
+						if iNdEx >= l {
+							return io.ErrUnexpectedEOF
+						}
+						b := dAtA[iNdEx]
+						iNdEx++
+						v |= int64(b&0x7F) << shift
+						if b < 0x80 {
+							break
+						}
+					}
+					m.IndegreeCount = append(m.IndegreeCount, v)
+				}
+			} else {
+				return fmt.Errorf("proto: wrong wireType = %d for field IndegreeCount", wireType)
+			}
+		case 32:
+			if wireType == 0 {
+				var v uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protohelpers.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					v |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				m.OutdegreeHistogram = append(m.OutdegreeHistogram, v)
+			} else if wireType == 2 {
+				var packedLen int
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protohelpers.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					packedLen |= int(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				if packedLen < 0 {
+					return protohelpers.ErrInvalidLength
+				}
+				postIndex := iNdEx + packedLen
+				if postIndex < 0 {
+					return protohelpers.ErrInvalidLength
+				}
+				if postIndex > l {
+					return io.ErrUnexpectedEOF
+				}
+				var elementCount int
+				var count int
+				for _, integer := range dAtA[iNdEx:postIndex] {
+					if integer < 128 {
+						count++
+					}
+				}
+				elementCount = count
+				if elementCount != 0 && len(m.OutdegreeHistogram) == 0 {
+					m.OutdegreeHistogram = make([]uint64, 0, elementCount)
+				}
+				for iNdEx < postIndex {
+					var v uint64
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return protohelpers.ErrIntOverflow
+						}
+						if iNdEx >= l {
+							return io.ErrUnexpectedEOF
+						}
+						b := dAtA[iNdEx]
+						iNdEx++
+						v |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							break
+						}
+					}
+					m.OutdegreeHistogram = append(m.OutdegreeHistogram, v)
+				}
+			} else {
+				return fmt.Errorf("proto: wrong wireType = %d for field OutdegreeHistogram", wireType)
+			}
+		case 33:
+			if wireType == 0 {
+				var v uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protohelpers.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					v |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				m.IndegreeHistogram = append(m.IndegreeHistogram, v)
+			} else if wireType == 2 {
+				var packedLen int
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protohelpers.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					packedLen |= int(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				if packedLen < 0 {
+					return protohelpers.ErrInvalidLength
+				}
+				postIndex := iNdEx + packedLen
+				if postIndex < 0 {
+					return protohelpers.ErrInvalidLength
+				}
+				if postIndex > l {
+					return io.ErrUnexpectedEOF
+				}
+				var elementCount int
+				var count int
+				for _, integer := range dAtA[iNdEx:postIndex] {
+					if integer < 128 {
+						count++
+					}
+				}
+				elementCount = count
+				if elementCount != 0 && len(m.IndegreeHistogram) == 0 {
+					m.IndegreeHistogram = make([]uint64, 0, elementCount)
+				}
+				for iNdEx < postIndex {
+					var v uint64
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return protohelpers.ErrIntOverflow
+						}
+						if iNdEx >= l {
+							return io.ErrUnexpectedEOF
+						}
+						b := dAtA[iNdEx]
+						iNdEx++
+						v |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							break
+						}
+					}
+					m.IndegreeHistogram = append(m.IndegreeHistogram, v)
+				}
+			} else {
+				return fmt.Errorf("proto: wrong wireType = %d for field IndegreeHistogram", wireType)
+			}
+		default:
+			iNdEx = preIndex
+			skippy, err := protohelpers.Skip(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.unknownFields = append(m.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+
+func (m *Info_Index_StatisticsDetail) UnmarshalVT(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return protohelpers.ErrIntOverflow
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: Info_Index_StatisticsDetail: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: Info_Index_StatisticsDetail: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Details", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protohelpers.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.Details == nil {
+				m.Details = make(map[string]*Info_Index_Statistics)
+			}
+			var mapkey string
+			var mapvalue *Info_Index_Statistics
+			for iNdEx < postIndex {
+				entryPreIndex := iNdEx
+				var wire uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protohelpers.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					wire |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				fieldNum := int32(wire >> 3)
+				if fieldNum == 1 {
+					var stringLenmapkey uint64
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return protohelpers.ErrIntOverflow
+						}
+						if iNdEx >= l {
+							return io.ErrUnexpectedEOF
+						}
+						b := dAtA[iNdEx]
+						iNdEx++
+						stringLenmapkey |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							break
+						}
+					}
+					intStringLenmapkey := int(stringLenmapkey)
+					if intStringLenmapkey < 0 {
+						return protohelpers.ErrInvalidLength
+					}
+					postStringIndexmapkey := iNdEx + intStringLenmapkey
+					if postStringIndexmapkey < 0 {
+						return protohelpers.ErrInvalidLength
+					}
+					if postStringIndexmapkey > l {
+						return io.ErrUnexpectedEOF
+					}
+					mapkey = string(dAtA[iNdEx:postStringIndexmapkey])
+					iNdEx = postStringIndexmapkey
+				} else if fieldNum == 2 {
+					var mapmsglen int
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return protohelpers.ErrIntOverflow
+						}
+						if iNdEx >= l {
+							return io.ErrUnexpectedEOF
+						}
+						b := dAtA[iNdEx]
+						iNdEx++
+						mapmsglen |= int(b&0x7F) << shift
+						if b < 0x80 {
+							break
+						}
+					}
+					if mapmsglen < 0 {
+						return protohelpers.ErrInvalidLength
+					}
+					postmsgIndex := iNdEx + mapmsglen
+					if postmsgIndex < 0 {
+						return protohelpers.ErrInvalidLength
+					}
+					if postmsgIndex > l {
+						return io.ErrUnexpectedEOF
+					}
+					mapvalue = &Info_Index_Statistics{}
+					if err := mapvalue.UnmarshalVT(dAtA[iNdEx:postmsgIndex]); err != nil {
+						return err
+					}
+					iNdEx = postmsgIndex
+				} else {
+					iNdEx = entryPreIndex
+					skippy, err := protohelpers.Skip(dAtA[iNdEx:])
+					if err != nil {
+						return err
+					}
+					if (skippy < 0) || (iNdEx+skippy) < 0 {
+						return protohelpers.ErrInvalidLength
+					}
+					if (iNdEx + skippy) > postIndex {
+						return io.ErrUnexpectedEOF
+					}
+					iNdEx += skippy
+				}
+			}
+			m.Details[mapkey] = mapvalue
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := protohelpers.Skip(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return protohelpers.ErrInvalidLength
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.unknownFields = append(m.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+
 func (m *Info_Index) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -17885,6 +19766,7 @@ func (m *Info_Index) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Info_Pod) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -18172,6 +20054,7 @@ func (m *Info_Pod) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Info_Node) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -18427,6 +20310,7 @@ func (m *Info_Node) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Info_Service) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -18680,6 +20564,7 @@ func (m *Info_Service) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Info_ServicePort) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -18782,6 +20667,7 @@ func (m *Info_ServicePort) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Info_Labels) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -18960,6 +20846,7 @@ func (m *Info_Labels) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Info_Annotations) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -19138,6 +21025,7 @@ func (m *Info_Annotations) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Info_CPU) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -19222,6 +21110,7 @@ func (m *Info_CPU) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Info_Memory) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -19306,6 +21195,7 @@ func (m *Info_Memory) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Info_Pods) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -19391,6 +21281,7 @@ func (m *Info_Pods) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Info_Nodes) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -19476,6 +21367,7 @@ func (m *Info_Nodes) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Info_Services) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -19561,6 +21453,7 @@ func (m *Info_Services) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Info_IPs) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -19644,6 +21537,7 @@ func (m *Info_IPs) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Info) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -19695,6 +21589,7 @@ func (m *Info) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Mirror_Target) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -19797,6 +21692,7 @@ func (m *Mirror_Target) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Mirror_Targets) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -19882,6 +21778,7 @@ func (m *Mirror_Targets) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Mirror) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -19933,6 +21830,7 @@ func (m *Mirror) UnmarshalVT(dAtA []byte) error {
 	}
 	return nil
 }
+
 func (m *Empty) UnmarshalVT(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0

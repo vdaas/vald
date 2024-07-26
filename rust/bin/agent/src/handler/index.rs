@@ -61,4 +61,19 @@ impl index_server::Index for super::Agent {
     ) -> std::result::Result<tonic::Response<info::index::Detail>, tonic::Status> {
         todo!()
     }
+    #[doc = " Represent the RPC to get the agent index statistics.\n"]
+    async fn index_statistics(
+        &self,
+        request: tonic::Request<Empty>,
+    ) -> std::result::Result<tonic::Response<info::index::Statistics>, tonic::Status> {
+        todo!()
+    }
+
+    #[doc = " Represent the RPC to get the agent index detailed statistics.\n"]
+    async fn index_statistics_detail(
+        &self,
+        request: tonic::Request<Empty>,
+    ) -> std::result::Result<tonic::Response<info::index::StatisticsDetail>, tonic::Status> {
+        todo!()
+    }
 }

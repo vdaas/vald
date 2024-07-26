@@ -20,8 +20,7 @@ package goleak
 // 		t       TestingT
 // 		options []Option
 // 	}
-// 	type want struct {
-// 	}
+// 	type want struct{}
 // 	type test struct {
 // 		name       string
 // 		args       args
@@ -104,8 +103,7 @@ package goleak
 // 		m       TestingM
 // 		options []Option
 // 	}
-// 	type want struct {
-// 	}
+// 	type want struct{}
 // 	type test struct {
 // 		name       string
 // 		args       args
