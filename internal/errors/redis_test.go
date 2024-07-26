@@ -1026,7 +1026,6 @@ func TestIsRedisNotFoundError(t *testing.T) {
 // 			if err := checkFunc(test.want, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }

@@ -36,4 +36,13 @@ service Index {
   rpc IndexDetail(payload.v1.Empty) returns (payload.v1.Info.Index.Detail) {
     option (google.api.http).get = "/index/detail";
   }
+  // Represent the RPC to get the index statistics.
+  rpc IndexStatistics(payload.v1.Empty) returns (payload.v1.Info.Index.Statistics) {
+    option (google.api.http).get = "/index/statistics";
+  }
+
+  // Represent the RPC to get the index statistics for each agents.
+  rpc IndexStatisticsDetail(payload.v1.Empty) returns (payload.v1.Info.Index.StatisticsDetail) {
+    option (google.api.http).get = "/index/statistics/detail";
+  }
 }

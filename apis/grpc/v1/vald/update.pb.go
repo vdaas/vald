@@ -80,6 +80,7 @@ var file_v1_vald_update_proto_goTypes = []any{
 	(*payload.Object_StreamLocation)(nil), // 3: payload.v1.Object.StreamLocation
 	(*payload.Object_Locations)(nil),      // 4: payload.v1.Object.Locations
 }
+
 var file_v1_vald_update_proto_depIdxs = []int32{
 	0, // 0: vald.v1.Update.Update:input_type -> payload.v1.Update.Request
 	0, // 1: vald.v1.Update.StreamUpdate:input_type -> payload.v1.Update.Request

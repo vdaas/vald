@@ -1149,7 +1149,6 @@ func TestFatalf(t *testing.T) {
 // 			if err := checkFunc(test.want, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -1159,8 +1158,7 @@ func TestFatalf(t *testing.T) {
 // 		msg     string
 // 		details []any
 // 	}
-// 	type want struct {
-// 	}
+// 	type want struct{}
 // 	type test struct {
 // 		name       string
 // 		args       args
@@ -1243,8 +1241,7 @@ func TestFatalf(t *testing.T) {
 // 		msg     string
 // 		details []any
 // 	}
-// 	type want struct {
-// 	}
+// 	type want struct{}
 // 	type test struct {
 // 		name       string
 // 		args       args
@@ -1327,8 +1324,7 @@ func TestFatalf(t *testing.T) {
 // 		msg     string
 // 		details []any
 // 	}
-// 	type want struct {
-// 	}
+// 	type want struct{}
 // 	type test struct {
 // 		name       string
 // 		args       args
@@ -1411,8 +1407,7 @@ func TestFatalf(t *testing.T) {
 // 		msg     string
 // 		details []any
 // 	}
-// 	type want struct {
-// 	}
+// 	type want struct{}
 // 	type test struct {
 // 		name       string
 // 		args       args
@@ -1495,8 +1490,7 @@ func TestFatalf(t *testing.T) {
 // 		msg     string
 // 		details []any
 // 	}
-// 	type want struct {
-// 	}
+// 	type want struct{}
 // 	type test struct {
 // 		name       string
 // 		args       args

@@ -208,3 +208,35 @@ func (s *server) IndexDetail(
 	}
 	return res, nil
 }
+
+func (s *server) IndexStatistics(
+	ctx context.Context, _ *payload.Empty,
+) (res *payload.Info_Index_Statistics, err error) {
+	_, span := trace.StartSpan(ctx, apiName+".IndexStatistics")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	return s.ngt.IndexStatistics()
+}
+
+func (s *server) IndexStatisticsDetail(
+	ctx context.Context, _ *payload.Empty,
+) (res *payload.Info_Index_StatisticsDetail, err error) {
+	_, span := trace.StartSpan(ctx, apiName+".IndexStatisticsDetail")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	stats, err := s.ngt.IndexStatistics()
+	if err != nil {
+		return nil, err
+	}
+	return &payload.Info_Index_StatisticsDetail{
+		Details: map[string]*payload.Info_Index_Statistics{
+			s.name: stats,
+		},
+	}, nil
+}

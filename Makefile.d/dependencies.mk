@@ -121,6 +121,11 @@ update/golangci-lint:
 update/rust:
 	curl -fsSL https://releases.rs | grep -Po 'Stable: \K[\d.]+\s' | head -n 1 > $(ROOTDIR)/versions/RUST_VERSION
 
+.PHONY: update/docker
+## update docker version
+update/docker:
+	curl -fsSL https://api.github.com/repos/moby/moby/releases/latest | grep -Po '"tag_name": "\K.*?(?=")' > $(ROOTDIR)/versions/DOCKER_VERSION
+
 .PHONY: update/helm
 ## update helm version
 update/helm:
@@ -219,22 +224,44 @@ update/valdcli:
 .PHONY: update/template
 ## update PULL_REQUEST_TEMPLATE and ISSUE_TEMPLATE
 update/template:
+	$(eval VALD_VERSION     := $(shell $(MAKE) -s version/vald))
 	$(eval GO_VERSION      := $(shell $(MAKE) -s version/go))
-	$(eval NGT_VERSION     := $(shell $(MAKE) -s version/ngt))
-	$(eval KUBECTL_VERSION := $(shell $(MAKE) -s version/k8s))
 	$(eval RUST_VERSION    := $(shell $(MAKE) -s version/rust))
-	sed -i -e "s/^- Go Version: .*$$/- Go Version: $(GO_VERSION)/" $(ROOTDIR)/.github/ISSUE_TEMPLATE/bug_report.md
-	sed -i -e "s/^- Go Version: .*$$/- Go Version: $(GO_VERSION)/" $(ROOTDIR)/.github/ISSUE_TEMPLATE/security_issue_report.md
-	sed -i -e "s/^- Go Version: .*$$/- Go Version: $(GO_VERSION)/" $(ROOTDIR)/.github/PULL_REQUEST_TEMPLATE.md
+	$(eval DOCKER_VERSION := $(shell $(MAKE) -s version/docker))
+	$(eval KUBECTL_VERSION := $(shell $(MAKE) -s version/k8s))
+	$(eval HELM_VERSION := $(shell $(MAKE) -s version/helm))
+	$(eval NGT_VERSION     := $(shell $(MAKE) -s version/ngt))
+	$(eval FAISS_VERSION     := $(shell $(MAKE) -s version/faiss))
 
-	sed -i -e "s/^- NGT Version: .*$$/- NGT Version: $(NGT_VERSION)/" $(ROOTDIR)/.github/ISSUE_TEMPLATE/bug_report.md
-	sed -i -e "s/^- NGT Version: .*$$/- NGT Version: $(NGT_VERSION)/" $(ROOTDIR)/.github/ISSUE_TEMPLATE/security_issue_report.md
-	sed -i -e "s/^- NGT Version: .*$$/- NGT Version: $(NGT_VERSION)/" $(ROOTDIR)/.github/PULL_REQUEST_TEMPLATE.md
+	sed -i -e "s/^- Vald Version: .*$$/- Vald Version: $(VALD_VERSION)/" $(ROOTDIR)/.github/ISSUE_TEMPLATE/bug_report.md
+	sed -i -e "s/^- Vald Version: .*$$/- Vald Version: $(VALD_VERSION)/" $(ROOTDIR)/.github/ISSUE_TEMPLATE/security_issue_report.md
+	sed -i -e "s/^- Vald Version: .*$$/- Vald Version: $(VALD_VERSION)/" $(ROOTDIR)/.github/PULL_REQUEST_TEMPLATE.md
+
+	sed -i -e "s/^- Go Version: .*$$/- Go Version: v$(GO_VERSION)/" $(ROOTDIR)/.github/ISSUE_TEMPLATE/bug_report.md
+	sed -i -e "s/^- Go Version: .*$$/- Go Version: v$(GO_VERSION)/" $(ROOTDIR)/.github/ISSUE_TEMPLATE/security_issue_report.md
+	sed -i -e "s/^- Go Version: .*$$/- Go Version: v$(GO_VERSION)/" $(ROOTDIR)/.github/PULL_REQUEST_TEMPLATE.md
+
+	sed -i -e "s/^- Rust Version: .*$$/- Rust Version: v$(RUST_VERSION)/" $(ROOTDIR)/.github/ISSUE_TEMPLATE/bug_report.md
+	sed -i -e "s/^- Rust Version: .*$$/- Rust Version: v$(RUST_VERSION)/" $(ROOTDIR)/.github/ISSUE_TEMPLATE/security_issue_report.md
+	sed -i -e "s/^- Rust Version: .*$$/- Rust Version: v$(RUST_VERSION)/" $(ROOTDIR)/.github/PULL_REQUEST_TEMPLATE.md
+
+	sed -i -e "s/^- Docker Version: .*$$/- Docker Version: $(DOCKER_VERSION)/" $(ROOTDIR)/.github/ISSUE_TEMPLATE/bug_report.md
+	sed -i -e "s/^- Docker Version: .*$$/- Docker Version: $(DOCKER_VERSION)/" $(ROOTDIR)/.github/ISSUE_TEMPLATE/security_issue_report.md
+	sed -i -e "s/^- Docker Version: .*$$/- Docker Version: $(DOCKER_VERSION)/" $(ROOTDIR)/.github/PULL_REQUEST_TEMPLATE.md
 
 	sed -i -e "s/^- Kubernetes Version: .*$$/- Kubernetes Version: $(KUBECTL_VERSION)/" $(ROOTDIR)/.github/ISSUE_TEMPLATE/bug_report.md
 	sed -i -e "s/^- Kubernetes Version: .*$$/- Kubernetes Version: $(KUBECTL_VERSION)/" $(ROOTDIR)/.github/ISSUE_TEMPLATE/security_issue_report.md
 	sed -i -e "s/^- Kubernetes Version: .*$$/- Kubernetes Version: $(KUBECTL_VERSION)/" $(ROOTDIR)/.github/PULL_REQUEST_TEMPLATE.md
 
-	sed -i -e "s/^- Rust Version: .*$$/- Rust Version: $(RUST_VERSION)/" $(ROOTDIR)/.github/ISSUE_TEMPLATE/bug_report.md
-	sed -i -e "s/^- Rust Version: .*$$/- Rust Version: $(RUST_VERSION)/" $(ROOTDIR)/.github/ISSUE_TEMPLATE/security_issue_report.md
-	sed -i -e "s/^- Rust Version: .*$$/- Rust Version: $(RUST_VERSION)/" $(ROOTDIR)/.github/PULL_REQUEST_TEMPLATE.md
+	sed -i -e "s/^- Helm Version: .*$$/- Helm Version: $(HELM_VERSION)/" $(ROOTDIR)/.github/ISSUE_TEMPLATE/bug_report.md
+	sed -i -e "s/^- Helm Version: .*$$/- Helm Version: $(HELM_VERSION)/" $(ROOTDIR)/.github/ISSUE_TEMPLATE/security_issue_report.md
+	sed -i -e "s/^- Helm Version: .*$$/- Helm Version: $(HELM_VERSION)/" $(ROOTDIR)/.github/PULL_REQUEST_TEMPLATE.md
+
+	sed -i -e "s/^- NGT Version: .*$$/- NGT Version: v$(NGT_VERSION)/" $(ROOTDIR)/.github/ISSUE_TEMPLATE/bug_report.md
+	sed -i -e "s/^- NGT Version: .*$$/- NGT Version: v$(NGT_VERSION)/" $(ROOTDIR)/.github/ISSUE_TEMPLATE/security_issue_report.md
+	sed -i -e "s/^- NGT Version: .*$$/- NGT Version: v$(NGT_VERSION)/" $(ROOTDIR)/.github/PULL_REQUEST_TEMPLATE.md
+
+	sed -i -e "s/^- Faiss Version: .*$$/- Faiss Version: v$(FAISS_VERSION)/" $(ROOTDIR)/.github/ISSUE_TEMPLATE/bug_report.md
+	sed -i -e "s/^- Faiss Version: .*$$/- Faiss Version: v$(FAISS_VERSION)/" $(ROOTDIR)/.github/ISSUE_TEMPLATE/security_issue_report.md
+	sed -i -e "s/^- Faiss Version: .*$$/- Faiss Version: v$(FAISS_VERSION)/" $(ROOTDIR)/.github/PULL_REQUEST_TEMPLATE.md
+

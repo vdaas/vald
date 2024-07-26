@@ -53,6 +53,48 @@
         },
         "tags": ["Index"]
       }
+    },
+    "/index/statistics": {
+      "get": {
+        "summary": "Represent the RPC to get the index statistics.",
+        "operationId": "Index_IndexStatistics",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/IndexStatistics"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": ["Index"]
+      }
+    },
+    "/index/statistics/detail": {
+      "get": {
+        "summary": "Represent the RPC to get the index statistics for each agents.",
+        "operationId": "Index_IndexStatisticsDetail",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/IndexStatisticsDetail"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": ["Index"]
+      }
     }
   },
   "definitions": {
@@ -102,6 +144,165 @@
         }
       },
       "description": "Represent the index count for each Agents message."
+    },
+    "IndexStatistics": {
+      "type": "object",
+      "properties": {
+        "valid": {
+          "type": "boolean"
+        },
+        "medianIndegree": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "medianOutdegree": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "maxNumberOfIndegree": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "maxNumberOfOutdegree": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "minNumberOfIndegree": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "minNumberOfOutdegree": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "modeIndegree": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "modeOutdegree": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "nodesSkippedFor10Edges": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "nodesSkippedForIndegreeDistance": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "numberOfEdges": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "numberOfIndexedObjects": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "numberOfNodes": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "numberOfNodesWithoutEdges": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "numberOfNodesWithoutIndegree": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "numberOfObjects": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "numberOfRemovedObjects": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "sizeOfObjectRepository": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "sizeOfRefinementObjectRepository": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "varianceOfIndegree": {
+          "type": "number",
+          "format": "double"
+        },
+        "varianceOfOutdegree": {
+          "type": "number",
+          "format": "double"
+        },
+        "meanEdgeLength": {
+          "type": "number",
+          "format": "double"
+        },
+        "meanEdgeLengthFor10Edges": {
+          "type": "number",
+          "format": "double"
+        },
+        "meanIndegreeDistanceFor10Edges": {
+          "type": "number",
+          "format": "double"
+        },
+        "meanNumberOfEdgesPerNode": {
+          "type": "number",
+          "format": "double"
+        },
+        "c1Indegree": {
+          "type": "number",
+          "format": "double"
+        },
+        "c5Indegree": {
+          "type": "number",
+          "format": "double"
+        },
+        "c95Outdegree": {
+          "type": "number",
+          "format": "double"
+        },
+        "c99Outdegree": {
+          "type": "number",
+          "format": "double"
+        },
+        "indegreeCount": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "int64"
+          }
+        },
+        "outdegreeHistogram": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uint64"
+          }
+        },
+        "indegreeHistogram": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uint64"
+          }
+        }
+      },
+      "title": "Represents index Statistics"
+    },
+    "IndexStatisticsDetail": {
+      "type": "object",
+      "properties": {
+        "details": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/IndexStatistics"
+          },
+          "title": "count infos for each agents"
+        }
+      },
+      "title": "Represents index Statistics for each Agents"
     },
     "protobufAny": {
       "type": "object",

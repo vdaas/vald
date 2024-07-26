@@ -25,6 +25,9 @@
   - [Info.Index.Count](#payload-v1-Info-Index-Count)
   - [Info.Index.Detail](#payload-v1-Info-Index-Detail)
   - [Info.Index.Detail.CountsEntry](#payload-v1-Info-Index-Detail-CountsEntry)
+  - [Info.Index.Statistics](#payload-v1-Info-Index-Statistics)
+  - [Info.Index.StatisticsDetail](#payload-v1-Info-Index-StatisticsDetail)
+  - [Info.Index.StatisticsDetail.DetailsEntry](#payload-v1-Info-Index-StatisticsDetail-DetailsEntry)
   - [Info.Index.UUID](#payload-v1-Info-Index-UUID)
   - [Info.Index.UUID.Committed](#payload-v1-Info-Index-UUID-Committed)
   - [Info.Index.UUID.Uncommitted](#payload-v1-Info-Index-UUID-Uncommitted)
@@ -316,6 +319,67 @@ Represent the index count for each Agents message.
 | ----- | ------------------------------------------------ | ----- | ----------- |
 | key   | [string](#string)                                |       |             |
 | value | [Info.Index.Count](#payload-v1-Info-Index-Count) |       |             |
+
+<a name="payload-v1-Info-Index-Statistics"></a>
+
+### Info.Index.Statistics
+
+Represents index Statistics
+
+| Field                                | Type              | Label    | Description |
+| ------------------------------------ | ----------------- | -------- | ----------- |
+| valid                                | [bool](#bool)     |          |             |
+| median_indegree                      | [int32](#int32)   |          |             |
+| median_outdegree                     | [int32](#int32)   |          |             |
+| max_number_of_indegree               | [uint64](#uint64) |          |             |
+| max_number_of_outdegree              | [uint64](#uint64) |          |             |
+| min_number_of_indegree               | [uint64](#uint64) |          |             |
+| min_number_of_outdegree              | [uint64](#uint64) |          |             |
+| mode_indegree                        | [uint64](#uint64) |          |             |
+| mode_outdegree                       | [uint64](#uint64) |          |             |
+| nodes_skipped_for_10_edges           | [uint64](#uint64) |          |             |
+| nodes_skipped_for_indegree_distance  | [uint64](#uint64) |          |             |
+| number_of_edges                      | [uint64](#uint64) |          |             |
+| number_of_indexed_objects            | [uint64](#uint64) |          |             |
+| number_of_nodes                      | [uint64](#uint64) |          |             |
+| number_of_nodes_without_edges        | [uint64](#uint64) |          |             |
+| number_of_nodes_without_indegree     | [uint64](#uint64) |          |             |
+| number_of_objects                    | [uint64](#uint64) |          |             |
+| number_of_removed_objects            | [uint64](#uint64) |          |             |
+| size_of_object_repository            | [uint64](#uint64) |          |             |
+| size_of_refinement_object_repository | [uint64](#uint64) |          |             |
+| variance_of_indegree                 | [double](#double) |          |             |
+| variance_of_outdegree                | [double](#double) |          |             |
+| mean_edge_length                     | [double](#double) |          |             |
+| mean_edge_length_for_10_edges        | [double](#double) |          |             |
+| mean_indegree_distance_for_10_edges  | [double](#double) |          |             |
+| mean_number_of_edges_per_node        | [double](#double) |          |             |
+| c1_indegree                          | [double](#double) |          |             |
+| c5_indegree                          | [double](#double) |          |             |
+| c95_outdegree                        | [double](#double) |          |             |
+| c99_outdegree                        | [double](#double) |          |             |
+| indegree_count                       | [int64](#int64)   | repeated |             |
+| outdegree_histogram                  | [uint64](#uint64) | repeated |             |
+| indegree_histogram                   | [uint64](#uint64) | repeated |             |
+
+<a name="payload-v1-Info-Index-StatisticsDetail"></a>
+
+### Info.Index.StatisticsDetail
+
+Represents index Statistics for each Agents
+
+| Field   | Type                                                                                             | Label    | Description                 |
+| ------- | ------------------------------------------------------------------------------------------------ | -------- | --------------------------- |
+| details | [Info.Index.StatisticsDetail.DetailsEntry](#payload-v1-Info-Index-StatisticsDetail-DetailsEntry) | repeated | count infos for each agents |
+
+<a name="payload-v1-Info-Index-StatisticsDetail-DetailsEntry"></a>
+
+### Info.Index.StatisticsDetail.DetailsEntry
+
+| Field | Type                                                       | Label | Description |
+| ----- | ---------------------------------------------------------- | ----- | ----------- |
+| key   | [string](#string)                                          |       |             |
+| value | [Info.Index.Statistics](#payload-v1-Info-Index-Statistics) |       |             |
 
 <a name="payload-v1-Info-Index-UUID"></a>
 
@@ -1497,10 +1561,12 @@ Flush service provides ways to flush all indexed vectors.
 
 Represent the index manager service.
 
-| Method Name | Request Type                           | Response Type                                                  | Description                                                     |
-| ----------- | -------------------------------------- | -------------------------------------------------------------- | --------------------------------------------------------------- |
-| IndexInfo   | [.payload.v1.Empty](#payload-v1-Empty) | [.payload.v1.Info.Index.Count](#payload-v1-Info-Index-Count)   | Represent the RPC to get the index information.                 |
-| IndexDetail | [.payload.v1.Empty](#payload-v1-Empty) | [.payload.v1.Info.Index.Detail](#payload-v1-Info-Index-Detail) | Represent the RPC to get the index information for each agents. |
+| Method Name           | Request Type                           | Response Type                                                                      | Description                                                     |
+| --------------------- | -------------------------------------- | ---------------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| IndexInfo             | [.payload.v1.Empty](#payload-v1-Empty) | [.payload.v1.Info.Index.Count](#payload-v1-Info-Index-Count)                       | Represent the RPC to get the index information.                 |
+| IndexDetail           | [.payload.v1.Empty](#payload-v1-Empty) | [.payload.v1.Info.Index.Detail](#payload-v1-Info-Index-Detail)                     | Represent the RPC to get the index information for each agents. |
+| IndexStatistics       | [.payload.v1.Empty](#payload-v1-Empty) | [.payload.v1.Info.Index.Statistics](#payload-v1-Info-Index-Statistics)             | Represent the RPC to get the index statistics.                  |
+| IndexStatisticsDetail | [.payload.v1.Empty](#payload-v1-Empty) | [.payload.v1.Info.Index.StatisticsDetail](#payload-v1-Info-Index-StatisticsDetail) | Represent the RPC to get the index statistics for each agents.  |
 
 <a name="v1_vald_insert-proto"></a>
 

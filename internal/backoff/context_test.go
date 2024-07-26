@@ -99,7 +99,6 @@ package backoff
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -185,7 +184,6 @@ package backoff
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -275,7 +273,6 @@ package backoff
 // 			if err := checkFunc(test.want, got, got1); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
