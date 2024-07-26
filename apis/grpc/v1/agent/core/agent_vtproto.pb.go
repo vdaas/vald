@@ -105,17 +105,18 @@ type AgentServer interface {
 }
 
 // UnimplementedAgentServer must be embedded to have forward compatible implementations.
-type UnimplementedAgentServer struct {
-}
+type UnimplementedAgentServer struct{}
 
 func (UnimplementedAgentServer) CreateIndex(
 	context.Context, *payload.Control_CreateIndexRequest,
 ) (*payload.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateIndex not implemented")
 }
+
 func (UnimplementedAgentServer) SaveIndex(context.Context, *payload.Empty) (*payload.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SaveIndex not implemented")
 }
+
 func (UnimplementedAgentServer) CreateAndSaveIndex(
 	context.Context, *payload.Control_CreateIndexRequest,
 ) (*payload.Empty, error) {

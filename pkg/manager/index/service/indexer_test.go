@@ -104,7 +104,6 @@ package service
 // 			if err := checkFunc(test.want, gotIdx, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -119,13 +118,14 @@ package service
 // 		creationPoolSize       uint32
 // 		indexDuration          time.Duration
 // 		indexDurationLimit     time.Duration
+// 		saveIndexDuration      time.Duration
 // 		saveIndexDurationLimit time.Duration
-// 		saveIndexWaitDuration  time.Duration
-// 		saveIndexTargetAddrCh  chan string
-// 		schMap                 sync.Map[string, any]
-// 		concurrency            int
+// 		shouldSaveList         sync.Map[string, struct{}]
+// 		createIndexConcurrency int
+// 		saveIndexConcurrency   int
 // 		indexInfos             sync.Map[string, *payload.Info_Index_Count]
-// 		indexing               atomic.Value
+// 		indexing               atomic.Bool
+// 		saving                 atomic.Bool
 // 		minUncommitted         uint32
 // 		uuidsCount             uint32
 // 		uncommittedUUIDsCount  uint32
@@ -166,13 +166,14 @@ package service
 // 		           creationPoolSize:0,
 // 		           indexDuration:nil,
 // 		           indexDurationLimit:nil,
+// 		           saveIndexDuration:nil,
 // 		           saveIndexDurationLimit:nil,
-// 		           saveIndexWaitDuration:nil,
-// 		           saveIndexTargetAddrCh:nil,
-// 		           schMap:nil,
-// 		           concurrency:0,
+// 		           shouldSaveList:nil,
+// 		           createIndexConcurrency:0,
+// 		           saveIndexConcurrency:0,
 // 		           indexInfos:nil,
 // 		           indexing:nil,
+// 		           saving:nil,
 // 		           minUncommitted:0,
 // 		           uuidsCount:0,
 // 		           uncommittedUUIDsCount:0,
@@ -202,13 +203,14 @@ package service
 // 		           creationPoolSize:0,
 // 		           indexDuration:nil,
 // 		           indexDurationLimit:nil,
+// 		           saveIndexDuration:nil,
 // 		           saveIndexDurationLimit:nil,
-// 		           saveIndexWaitDuration:nil,
-// 		           saveIndexTargetAddrCh:nil,
-// 		           schMap:nil,
-// 		           concurrency:0,
+// 		           shouldSaveList:nil,
+// 		           createIndexConcurrency:0,
+// 		           saveIndexConcurrency:0,
 // 		           indexInfos:nil,
 // 		           indexing:nil,
+// 		           saving:nil,
 // 		           minUncommitted:0,
 // 		           uuidsCount:0,
 // 		           uncommittedUUIDsCount:0,
@@ -247,13 +249,14 @@ package service
 // 				creationPoolSize:       test.fields.creationPoolSize,
 // 				indexDuration:          test.fields.indexDuration,
 // 				indexDurationLimit:     test.fields.indexDurationLimit,
+// 				saveIndexDuration:      test.fields.saveIndexDuration,
 // 				saveIndexDurationLimit: test.fields.saveIndexDurationLimit,
-// 				saveIndexWaitDuration:  test.fields.saveIndexWaitDuration,
-// 				saveIndexTargetAddrCh:  test.fields.saveIndexTargetAddrCh,
-// 				schMap:                 test.fields.schMap,
-// 				concurrency:            test.fields.concurrency,
+// 				shouldSaveList:         test.fields.shouldSaveList,
+// 				createIndexConcurrency: test.fields.createIndexConcurrency,
+// 				saveIndexConcurrency:   test.fields.saveIndexConcurrency,
 // 				indexInfos:             test.fields.indexInfos,
 // 				indexing:               test.fields.indexing,
+// 				saving:                 test.fields.saving,
 // 				minUncommitted:         test.fields.minUncommitted,
 // 				uuidsCount:             test.fields.uuidsCount,
 // 				uncommittedUUIDsCount:  test.fields.uncommittedUUIDsCount,
@@ -263,7 +266,486 @@ package service
 // 			if err := checkFunc(test.want, got, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
+// 		})
+// 	}
+// }
 //
+// func Test_index_createIndex(t *testing.T) {
+// 	type args struct {
+// 		ctx                context.Context
+// 		enableLowIndexSkip bool
+// 	}
+// 	type fields struct {
+// 		client                 discoverer.Client
+// 		eg                     errgroup.Group
+// 		creationPoolSize       uint32
+// 		indexDuration          time.Duration
+// 		indexDurationLimit     time.Duration
+// 		saveIndexDuration      time.Duration
+// 		saveIndexDurationLimit time.Duration
+// 		shouldSaveList         sync.Map[string, struct{}]
+// 		createIndexConcurrency int
+// 		saveIndexConcurrency   int
+// 		indexInfos             sync.Map[string, *payload.Info_Index_Count]
+// 		indexing               atomic.Bool
+// 		saving                 atomic.Bool
+// 		minUncommitted         uint32
+// 		uuidsCount             uint32
+// 		uncommittedUUIDsCount  uint32
+// 	}
+// 	type want struct {
+// 		err error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           ctx:nil,
+// 		           enableLowIndexSkip:false,
+// 		       },
+// 		       fields: fields {
+// 		           client:nil,
+// 		           eg:nil,
+// 		           creationPoolSize:0,
+// 		           indexDuration:nil,
+// 		           indexDurationLimit:nil,
+// 		           saveIndexDuration:nil,
+// 		           saveIndexDurationLimit:nil,
+// 		           shouldSaveList:nil,
+// 		           createIndexConcurrency:0,
+// 		           saveIndexConcurrency:0,
+// 		           indexInfos:nil,
+// 		           indexing:nil,
+// 		           saving:nil,
+// 		           minUncommitted:0,
+// 		           uuidsCount:0,
+// 		           uncommittedUUIDsCount:0,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           ctx:nil,
+// 		           enableLowIndexSkip:false,
+// 		           },
+// 		           fields: fields {
+// 		           client:nil,
+// 		           eg:nil,
+// 		           creationPoolSize:0,
+// 		           indexDuration:nil,
+// 		           indexDurationLimit:nil,
+// 		           saveIndexDuration:nil,
+// 		           saveIndexDurationLimit:nil,
+// 		           shouldSaveList:nil,
+// 		           createIndexConcurrency:0,
+// 		           saveIndexConcurrency:0,
+// 		           indexInfos:nil,
+// 		           indexing:nil,
+// 		           saving:nil,
+// 		           minUncommitted:0,
+// 		           uuidsCount:0,
+// 		           uncommittedUUIDsCount:0,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			idx := &index{
+// 				client:                 test.fields.client,
+// 				eg:                     test.fields.eg,
+// 				creationPoolSize:       test.fields.creationPoolSize,
+// 				indexDuration:          test.fields.indexDuration,
+// 				indexDurationLimit:     test.fields.indexDurationLimit,
+// 				saveIndexDuration:      test.fields.saveIndexDuration,
+// 				saveIndexDurationLimit: test.fields.saveIndexDurationLimit,
+// 				shouldSaveList:         test.fields.shouldSaveList,
+// 				createIndexConcurrency: test.fields.createIndexConcurrency,
+// 				saveIndexConcurrency:   test.fields.saveIndexConcurrency,
+// 				indexInfos:             test.fields.indexInfos,
+// 				indexing:               test.fields.indexing,
+// 				saving:                 test.fields.saving,
+// 				minUncommitted:         test.fields.minUncommitted,
+// 				uuidsCount:             test.fields.uuidsCount,
+// 				uncommittedUUIDsCount:  test.fields.uncommittedUUIDsCount,
+// 			}
+//
+// 			err := idx.createIndex(test.args.ctx, test.args.enableLowIndexSkip)
+// 			if err := checkFunc(test.want, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_index_saveIndex(t *testing.T) {
+// 	type args struct {
+// 		ctx   context.Context
+// 		force bool
+// 	}
+// 	type fields struct {
+// 		client                 discoverer.Client
+// 		eg                     errgroup.Group
+// 		creationPoolSize       uint32
+// 		indexDuration          time.Duration
+// 		indexDurationLimit     time.Duration
+// 		saveIndexDuration      time.Duration
+// 		saveIndexDurationLimit time.Duration
+// 		shouldSaveList         sync.Map[string, struct{}]
+// 		createIndexConcurrency int
+// 		saveIndexConcurrency   int
+// 		indexInfos             sync.Map[string, *payload.Info_Index_Count]
+// 		indexing               atomic.Bool
+// 		saving                 atomic.Bool
+// 		minUncommitted         uint32
+// 		uuidsCount             uint32
+// 		uncommittedUUIDsCount  uint32
+// 	}
+// 	type want struct {
+// 		err error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           ctx:nil,
+// 		           force:false,
+// 		       },
+// 		       fields: fields {
+// 		           client:nil,
+// 		           eg:nil,
+// 		           creationPoolSize:0,
+// 		           indexDuration:nil,
+// 		           indexDurationLimit:nil,
+// 		           saveIndexDuration:nil,
+// 		           saveIndexDurationLimit:nil,
+// 		           shouldSaveList:nil,
+// 		           createIndexConcurrency:0,
+// 		           saveIndexConcurrency:0,
+// 		           indexInfos:nil,
+// 		           indexing:nil,
+// 		           saving:nil,
+// 		           minUncommitted:0,
+// 		           uuidsCount:0,
+// 		           uncommittedUUIDsCount:0,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           ctx:nil,
+// 		           force:false,
+// 		           },
+// 		           fields: fields {
+// 		           client:nil,
+// 		           eg:nil,
+// 		           creationPoolSize:0,
+// 		           indexDuration:nil,
+// 		           indexDurationLimit:nil,
+// 		           saveIndexDuration:nil,
+// 		           saveIndexDurationLimit:nil,
+// 		           shouldSaveList:nil,
+// 		           createIndexConcurrency:0,
+// 		           saveIndexConcurrency:0,
+// 		           indexInfos:nil,
+// 		           indexing:nil,
+// 		           saving:nil,
+// 		           minUncommitted:0,
+// 		           uuidsCount:0,
+// 		           uncommittedUUIDsCount:0,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			idx := &index{
+// 				client:                 test.fields.client,
+// 				eg:                     test.fields.eg,
+// 				creationPoolSize:       test.fields.creationPoolSize,
+// 				indexDuration:          test.fields.indexDuration,
+// 				indexDurationLimit:     test.fields.indexDurationLimit,
+// 				saveIndexDuration:      test.fields.saveIndexDuration,
+// 				saveIndexDurationLimit: test.fields.saveIndexDurationLimit,
+// 				shouldSaveList:         test.fields.shouldSaveList,
+// 				createIndexConcurrency: test.fields.createIndexConcurrency,
+// 				saveIndexConcurrency:   test.fields.saveIndexConcurrency,
+// 				indexInfos:             test.fields.indexInfos,
+// 				indexing:               test.fields.indexing,
+// 				saving:                 test.fields.saving,
+// 				minUncommitted:         test.fields.minUncommitted,
+// 				uuidsCount:             test.fields.uuidsCount,
+// 				uncommittedUUIDsCount:  test.fields.uncommittedUUIDsCount,
+// 			}
+//
+// 			err := idx.saveIndex(test.args.ctx, test.args.force)
+// 			if err := checkFunc(test.want, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_index_loadInfos(t *testing.T) {
+// 	type args struct {
+// 		ctx context.Context
+// 	}
+// 	type fields struct {
+// 		client                 discoverer.Client
+// 		eg                     errgroup.Group
+// 		creationPoolSize       uint32
+// 		indexDuration          time.Duration
+// 		indexDurationLimit     time.Duration
+// 		saveIndexDuration      time.Duration
+// 		saveIndexDurationLimit time.Duration
+// 		shouldSaveList         sync.Map[string, struct{}]
+// 		createIndexConcurrency int
+// 		saveIndexConcurrency   int
+// 		indexInfos             sync.Map[string, *payload.Info_Index_Count]
+// 		indexing               atomic.Bool
+// 		saving                 atomic.Bool
+// 		minUncommitted         uint32
+// 		uuidsCount             uint32
+// 		uncommittedUUIDsCount  uint32
+// 	}
+// 	type want struct {
+// 		err error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           ctx:nil,
+// 		       },
+// 		       fields: fields {
+// 		           client:nil,
+// 		           eg:nil,
+// 		           creationPoolSize:0,
+// 		           indexDuration:nil,
+// 		           indexDurationLimit:nil,
+// 		           saveIndexDuration:nil,
+// 		           saveIndexDurationLimit:nil,
+// 		           shouldSaveList:nil,
+// 		           createIndexConcurrency:0,
+// 		           saveIndexConcurrency:0,
+// 		           indexInfos:nil,
+// 		           indexing:nil,
+// 		           saving:nil,
+// 		           minUncommitted:0,
+// 		           uuidsCount:0,
+// 		           uncommittedUUIDsCount:0,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           ctx:nil,
+// 		           },
+// 		           fields: fields {
+// 		           client:nil,
+// 		           eg:nil,
+// 		           creationPoolSize:0,
+// 		           indexDuration:nil,
+// 		           indexDurationLimit:nil,
+// 		           saveIndexDuration:nil,
+// 		           saveIndexDurationLimit:nil,
+// 		           shouldSaveList:nil,
+// 		           createIndexConcurrency:0,
+// 		           saveIndexConcurrency:0,
+// 		           indexInfos:nil,
+// 		           indexing:nil,
+// 		           saving:nil,
+// 		           minUncommitted:0,
+// 		           uuidsCount:0,
+// 		           uncommittedUUIDsCount:0,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			idx := &index{
+// 				client:                 test.fields.client,
+// 				eg:                     test.fields.eg,
+// 				creationPoolSize:       test.fields.creationPoolSize,
+// 				indexDuration:          test.fields.indexDuration,
+// 				indexDurationLimit:     test.fields.indexDurationLimit,
+// 				saveIndexDuration:      test.fields.saveIndexDuration,
+// 				saveIndexDurationLimit: test.fields.saveIndexDurationLimit,
+// 				shouldSaveList:         test.fields.shouldSaveList,
+// 				createIndexConcurrency: test.fields.createIndexConcurrency,
+// 				saveIndexConcurrency:   test.fields.saveIndexConcurrency,
+// 				indexInfos:             test.fields.indexInfos,
+// 				indexing:               test.fields.indexing,
+// 				saving:                 test.fields.saving,
+// 				minUncommitted:         test.fields.minUncommitted,
+// 				uuidsCount:             test.fields.uuidsCount,
+// 				uncommittedUUIDsCount:  test.fields.uncommittedUUIDsCount,
+// 			}
+//
+// 			err := idx.loadInfos(test.args.ctx)
+// 			if err := checkFunc(test.want, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
 // 		})
 // 	}
 // }
@@ -275,13 +757,14 @@ package service
 // 		creationPoolSize       uint32
 // 		indexDuration          time.Duration
 // 		indexDurationLimit     time.Duration
+// 		saveIndexDuration      time.Duration
 // 		saveIndexDurationLimit time.Duration
-// 		saveIndexWaitDuration  time.Duration
-// 		saveIndexTargetAddrCh  chan string
-// 		schMap                 sync.Map[string, any]
-// 		concurrency            int
+// 		shouldSaveList         sync.Map[string, struct{}]
+// 		createIndexConcurrency int
+// 		saveIndexConcurrency   int
 // 		indexInfos             sync.Map[string, *payload.Info_Index_Count]
-// 		indexing               atomic.Value
+// 		indexing               atomic.Bool
+// 		saving                 atomic.Bool
 // 		minUncommitted         uint32
 // 		uuidsCount             uint32
 // 		uncommittedUUIDsCount  uint32
@@ -314,13 +797,14 @@ package service
 // 		           creationPoolSize:0,
 // 		           indexDuration:nil,
 // 		           indexDurationLimit:nil,
+// 		           saveIndexDuration:nil,
 // 		           saveIndexDurationLimit:nil,
-// 		           saveIndexWaitDuration:nil,
-// 		           saveIndexTargetAddrCh:nil,
-// 		           schMap:nil,
-// 		           concurrency:0,
+// 		           shouldSaveList:nil,
+// 		           createIndexConcurrency:0,
+// 		           saveIndexConcurrency:0,
 // 		           indexInfos:nil,
 // 		           indexing:nil,
+// 		           saving:nil,
 // 		           minUncommitted:0,
 // 		           uuidsCount:0,
 // 		           uncommittedUUIDsCount:0,
@@ -347,13 +831,14 @@ package service
 // 		           creationPoolSize:0,
 // 		           indexDuration:nil,
 // 		           indexDurationLimit:nil,
+// 		           saveIndexDuration:nil,
 // 		           saveIndexDurationLimit:nil,
-// 		           saveIndexWaitDuration:nil,
-// 		           saveIndexTargetAddrCh:nil,
-// 		           schMap:nil,
-// 		           concurrency:0,
+// 		           shouldSaveList:nil,
+// 		           createIndexConcurrency:0,
+// 		           saveIndexConcurrency:0,
 // 		           indexInfos:nil,
 // 		           indexing:nil,
+// 		           saving:nil,
 // 		           minUncommitted:0,
 // 		           uuidsCount:0,
 // 		           uncommittedUUIDsCount:0,
@@ -392,13 +877,14 @@ package service
 // 				creationPoolSize:       test.fields.creationPoolSize,
 // 				indexDuration:          test.fields.indexDuration,
 // 				indexDurationLimit:     test.fields.indexDurationLimit,
+// 				saveIndexDuration:      test.fields.saveIndexDuration,
 // 				saveIndexDurationLimit: test.fields.saveIndexDurationLimit,
-// 				saveIndexWaitDuration:  test.fields.saveIndexWaitDuration,
-// 				saveIndexTargetAddrCh:  test.fields.saveIndexTargetAddrCh,
-// 				schMap:                 test.fields.schMap,
-// 				concurrency:            test.fields.concurrency,
+// 				shouldSaveList:         test.fields.shouldSaveList,
+// 				createIndexConcurrency: test.fields.createIndexConcurrency,
+// 				saveIndexConcurrency:   test.fields.saveIndexConcurrency,
 // 				indexInfos:             test.fields.indexInfos,
 // 				indexing:               test.fields.indexing,
+// 				saving:                 test.fields.saving,
 // 				minUncommitted:         test.fields.minUncommitted,
 // 				uuidsCount:             test.fields.uuidsCount,
 // 				uncommittedUUIDsCount:  test.fields.uncommittedUUIDsCount,
@@ -408,7 +894,154 @@ package service
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
+// 		})
+// 	}
+// }
 //
+// func Test_index_IsSaving(t *testing.T) {
+// 	type fields struct {
+// 		client                 discoverer.Client
+// 		eg                     errgroup.Group
+// 		creationPoolSize       uint32
+// 		indexDuration          time.Duration
+// 		indexDurationLimit     time.Duration
+// 		saveIndexDuration      time.Duration
+// 		saveIndexDurationLimit time.Duration
+// 		shouldSaveList         sync.Map[string, struct{}]
+// 		createIndexConcurrency int
+// 		saveIndexConcurrency   int
+// 		indexInfos             sync.Map[string, *payload.Info_Index_Count]
+// 		indexing               atomic.Bool
+// 		saving                 atomic.Bool
+// 		minUncommitted         uint32
+// 		uuidsCount             uint32
+// 		uncommittedUUIDsCount  uint32
+// 	}
+// 	type want struct {
+// 		want bool
+// 	}
+// 	type test struct {
+// 		name       string
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, bool) error
+// 		beforeFunc func(*testing.T)
+// 		afterFunc  func(*testing.T)
+// 	}
+// 	defaultCheckFunc := func(w want, got bool) error {
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       fields: fields {
+// 		           client:nil,
+// 		           eg:nil,
+// 		           creationPoolSize:0,
+// 		           indexDuration:nil,
+// 		           indexDurationLimit:nil,
+// 		           saveIndexDuration:nil,
+// 		           saveIndexDurationLimit:nil,
+// 		           shouldSaveList:nil,
+// 		           createIndexConcurrency:0,
+// 		           saveIndexConcurrency:0,
+// 		           indexInfos:nil,
+// 		           indexing:nil,
+// 		           saving:nil,
+// 		           minUncommitted:0,
+// 		           uuidsCount:0,
+// 		           uncommittedUUIDsCount:0,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T,) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           fields: fields {
+// 		           client:nil,
+// 		           eg:nil,
+// 		           creationPoolSize:0,
+// 		           indexDuration:nil,
+// 		           indexDurationLimit:nil,
+// 		           saveIndexDuration:nil,
+// 		           saveIndexDurationLimit:nil,
+// 		           shouldSaveList:nil,
+// 		           createIndexConcurrency:0,
+// 		           saveIndexConcurrency:0,
+// 		           indexInfos:nil,
+// 		           indexing:nil,
+// 		           saving:nil,
+// 		           minUncommitted:0,
+// 		           uuidsCount:0,
+// 		           uncommittedUUIDsCount:0,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T,) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			idx := &index{
+// 				client:                 test.fields.client,
+// 				eg:                     test.fields.eg,
+// 				creationPoolSize:       test.fields.creationPoolSize,
+// 				indexDuration:          test.fields.indexDuration,
+// 				indexDurationLimit:     test.fields.indexDurationLimit,
+// 				saveIndexDuration:      test.fields.saveIndexDuration,
+// 				saveIndexDurationLimit: test.fields.saveIndexDurationLimit,
+// 				shouldSaveList:         test.fields.shouldSaveList,
+// 				createIndexConcurrency: test.fields.createIndexConcurrency,
+// 				saveIndexConcurrency:   test.fields.saveIndexConcurrency,
+// 				indexInfos:             test.fields.indexInfos,
+// 				indexing:               test.fields.indexing,
+// 				saving:                 test.fields.saving,
+// 				minUncommitted:         test.fields.minUncommitted,
+// 				uuidsCount:             test.fields.uuidsCount,
+// 				uncommittedUUIDsCount:  test.fields.uncommittedUUIDsCount,
+// 			}
+//
+// 			got := idx.IsSaving()
+// 			if err := checkFunc(test.want, got); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
 // 		})
 // 	}
 // }
@@ -420,13 +1053,14 @@ package service
 // 		creationPoolSize       uint32
 // 		indexDuration          time.Duration
 // 		indexDurationLimit     time.Duration
+// 		saveIndexDuration      time.Duration
 // 		saveIndexDurationLimit time.Duration
-// 		saveIndexWaitDuration  time.Duration
-// 		saveIndexTargetAddrCh  chan string
-// 		schMap                 sync.Map[string, any]
-// 		concurrency            int
+// 		shouldSaveList         sync.Map[string, struct{}]
+// 		createIndexConcurrency int
+// 		saveIndexConcurrency   int
 // 		indexInfos             sync.Map[string, *payload.Info_Index_Count]
-// 		indexing               atomic.Value
+// 		indexing               atomic.Bool
+// 		saving                 atomic.Bool
 // 		minUncommitted         uint32
 // 		uuidsCount             uint32
 // 		uncommittedUUIDsCount  uint32
@@ -459,13 +1093,14 @@ package service
 // 		           creationPoolSize:0,
 // 		           indexDuration:nil,
 // 		           indexDurationLimit:nil,
+// 		           saveIndexDuration:nil,
 // 		           saveIndexDurationLimit:nil,
-// 		           saveIndexWaitDuration:nil,
-// 		           saveIndexTargetAddrCh:nil,
-// 		           schMap:nil,
-// 		           concurrency:0,
+// 		           shouldSaveList:nil,
+// 		           createIndexConcurrency:0,
+// 		           saveIndexConcurrency:0,
 // 		           indexInfos:nil,
 // 		           indexing:nil,
+// 		           saving:nil,
 // 		           minUncommitted:0,
 // 		           uuidsCount:0,
 // 		           uncommittedUUIDsCount:0,
@@ -492,13 +1127,14 @@ package service
 // 		           creationPoolSize:0,
 // 		           indexDuration:nil,
 // 		           indexDurationLimit:nil,
+// 		           saveIndexDuration:nil,
 // 		           saveIndexDurationLimit:nil,
-// 		           saveIndexWaitDuration:nil,
-// 		           saveIndexTargetAddrCh:nil,
-// 		           schMap:nil,
-// 		           concurrency:0,
+// 		           shouldSaveList:nil,
+// 		           createIndexConcurrency:0,
+// 		           saveIndexConcurrency:0,
 // 		           indexInfos:nil,
 // 		           indexing:nil,
+// 		           saving:nil,
 // 		           minUncommitted:0,
 // 		           uuidsCount:0,
 // 		           uncommittedUUIDsCount:0,
@@ -537,13 +1173,14 @@ package service
 // 				creationPoolSize:       test.fields.creationPoolSize,
 // 				indexDuration:          test.fields.indexDuration,
 // 				indexDurationLimit:     test.fields.indexDurationLimit,
+// 				saveIndexDuration:      test.fields.saveIndexDuration,
 // 				saveIndexDurationLimit: test.fields.saveIndexDurationLimit,
-// 				saveIndexWaitDuration:  test.fields.saveIndexWaitDuration,
-// 				saveIndexTargetAddrCh:  test.fields.saveIndexTargetAddrCh,
-// 				schMap:                 test.fields.schMap,
-// 				concurrency:            test.fields.concurrency,
+// 				shouldSaveList:         test.fields.shouldSaveList,
+// 				createIndexConcurrency: test.fields.createIndexConcurrency,
+// 				saveIndexConcurrency:   test.fields.saveIndexConcurrency,
 // 				indexInfos:             test.fields.indexInfos,
 // 				indexing:               test.fields.indexing,
+// 				saving:                 test.fields.saving,
 // 				minUncommitted:         test.fields.minUncommitted,
 // 				uuidsCount:             test.fields.uuidsCount,
 // 				uncommittedUUIDsCount:  test.fields.uncommittedUUIDsCount,
@@ -553,7 +1190,6 @@ package service
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -565,13 +1201,14 @@ package service
 // 		creationPoolSize       uint32
 // 		indexDuration          time.Duration
 // 		indexDurationLimit     time.Duration
+// 		saveIndexDuration      time.Duration
 // 		saveIndexDurationLimit time.Duration
-// 		saveIndexWaitDuration  time.Duration
-// 		saveIndexTargetAddrCh  chan string
-// 		schMap                 sync.Map[string, any]
-// 		concurrency            int
+// 		shouldSaveList         sync.Map[string, struct{}]
+// 		createIndexConcurrency int
+// 		saveIndexConcurrency   int
 // 		indexInfos             sync.Map[string, *payload.Info_Index_Count]
-// 		indexing               atomic.Value
+// 		indexing               atomic.Bool
+// 		saving                 atomic.Bool
 // 		minUncommitted         uint32
 // 		uuidsCount             uint32
 // 		uncommittedUUIDsCount  uint32
@@ -604,13 +1241,14 @@ package service
 // 		           creationPoolSize:0,
 // 		           indexDuration:nil,
 // 		           indexDurationLimit:nil,
+// 		           saveIndexDuration:nil,
 // 		           saveIndexDurationLimit:nil,
-// 		           saveIndexWaitDuration:nil,
-// 		           saveIndexTargetAddrCh:nil,
-// 		           schMap:nil,
-// 		           concurrency:0,
+// 		           shouldSaveList:nil,
+// 		           createIndexConcurrency:0,
+// 		           saveIndexConcurrency:0,
 // 		           indexInfos:nil,
 // 		           indexing:nil,
+// 		           saving:nil,
 // 		           minUncommitted:0,
 // 		           uuidsCount:0,
 // 		           uncommittedUUIDsCount:0,
@@ -637,13 +1275,14 @@ package service
 // 		           creationPoolSize:0,
 // 		           indexDuration:nil,
 // 		           indexDurationLimit:nil,
+// 		           saveIndexDuration:nil,
 // 		           saveIndexDurationLimit:nil,
-// 		           saveIndexWaitDuration:nil,
-// 		           saveIndexTargetAddrCh:nil,
-// 		           schMap:nil,
-// 		           concurrency:0,
+// 		           shouldSaveList:nil,
+// 		           createIndexConcurrency:0,
+// 		           saveIndexConcurrency:0,
 // 		           indexInfos:nil,
 // 		           indexing:nil,
+// 		           saving:nil,
 // 		           minUncommitted:0,
 // 		           uuidsCount:0,
 // 		           uncommittedUUIDsCount:0,
@@ -682,13 +1321,14 @@ package service
 // 				creationPoolSize:       test.fields.creationPoolSize,
 // 				indexDuration:          test.fields.indexDuration,
 // 				indexDurationLimit:     test.fields.indexDurationLimit,
+// 				saveIndexDuration:      test.fields.saveIndexDuration,
 // 				saveIndexDurationLimit: test.fields.saveIndexDurationLimit,
-// 				saveIndexWaitDuration:  test.fields.saveIndexWaitDuration,
-// 				saveIndexTargetAddrCh:  test.fields.saveIndexTargetAddrCh,
-// 				schMap:                 test.fields.schMap,
-// 				concurrency:            test.fields.concurrency,
+// 				shouldSaveList:         test.fields.shouldSaveList,
+// 				createIndexConcurrency: test.fields.createIndexConcurrency,
+// 				saveIndexConcurrency:   test.fields.saveIndexConcurrency,
 // 				indexInfos:             test.fields.indexInfos,
 // 				indexing:               test.fields.indexing,
+// 				saving:                 test.fields.saving,
 // 				minUncommitted:         test.fields.minUncommitted,
 // 				uuidsCount:             test.fields.uuidsCount,
 // 				uncommittedUUIDsCount:  test.fields.uncommittedUUIDsCount,
@@ -698,7 +1338,6 @@ package service
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -710,13 +1349,14 @@ package service
 // 		creationPoolSize       uint32
 // 		indexDuration          time.Duration
 // 		indexDurationLimit     time.Duration
+// 		saveIndexDuration      time.Duration
 // 		saveIndexDurationLimit time.Duration
-// 		saveIndexWaitDuration  time.Duration
-// 		saveIndexTargetAddrCh  chan string
-// 		schMap                 sync.Map[string, any]
-// 		concurrency            int
+// 		shouldSaveList         sync.Map[string, struct{}]
+// 		createIndexConcurrency int
+// 		saveIndexConcurrency   int
 // 		indexInfos             sync.Map[string, *payload.Info_Index_Count]
-// 		indexing               atomic.Value
+// 		indexing               atomic.Bool
+// 		saving                 atomic.Bool
 // 		minUncommitted         uint32
 // 		uuidsCount             uint32
 // 		uncommittedUUIDsCount  uint32
@@ -749,13 +1389,14 @@ package service
 // 		           creationPoolSize:0,
 // 		           indexDuration:nil,
 // 		           indexDurationLimit:nil,
+// 		           saveIndexDuration:nil,
 // 		           saveIndexDurationLimit:nil,
-// 		           saveIndexWaitDuration:nil,
-// 		           saveIndexTargetAddrCh:nil,
-// 		           schMap:nil,
-// 		           concurrency:0,
+// 		           shouldSaveList:nil,
+// 		           createIndexConcurrency:0,
+// 		           saveIndexConcurrency:0,
 // 		           indexInfos:nil,
 // 		           indexing:nil,
+// 		           saving:nil,
 // 		           minUncommitted:0,
 // 		           uuidsCount:0,
 // 		           uncommittedUUIDsCount:0,
@@ -782,13 +1423,14 @@ package service
 // 		           creationPoolSize:0,
 // 		           indexDuration:nil,
 // 		           indexDurationLimit:nil,
+// 		           saveIndexDuration:nil,
 // 		           saveIndexDurationLimit:nil,
-// 		           saveIndexWaitDuration:nil,
-// 		           saveIndexTargetAddrCh:nil,
-// 		           schMap:nil,
-// 		           concurrency:0,
+// 		           shouldSaveList:nil,
+// 		           createIndexConcurrency:0,
+// 		           saveIndexConcurrency:0,
 // 		           indexInfos:nil,
 // 		           indexing:nil,
+// 		           saving:nil,
 // 		           minUncommitted:0,
 // 		           uuidsCount:0,
 // 		           uncommittedUUIDsCount:0,
@@ -827,13 +1469,14 @@ package service
 // 				creationPoolSize:       test.fields.creationPoolSize,
 // 				indexDuration:          test.fields.indexDuration,
 // 				indexDurationLimit:     test.fields.indexDurationLimit,
+// 				saveIndexDuration:      test.fields.saveIndexDuration,
 // 				saveIndexDurationLimit: test.fields.saveIndexDurationLimit,
-// 				saveIndexWaitDuration:  test.fields.saveIndexWaitDuration,
-// 				saveIndexTargetAddrCh:  test.fields.saveIndexTargetAddrCh,
-// 				schMap:                 test.fields.schMap,
-// 				concurrency:            test.fields.concurrency,
+// 				shouldSaveList:         test.fields.shouldSaveList,
+// 				createIndexConcurrency: test.fields.createIndexConcurrency,
+// 				saveIndexConcurrency:   test.fields.saveIndexConcurrency,
 // 				indexInfos:             test.fields.indexInfos,
 // 				indexing:               test.fields.indexing,
+// 				saving:                 test.fields.saving,
 // 				minUncommitted:         test.fields.minUncommitted,
 // 				uuidsCount:             test.fields.uuidsCount,
 // 				uncommittedUUIDsCount:  test.fields.uncommittedUUIDsCount,
@@ -843,7 +1486,6 @@ package service
 // 			if err := checkFunc(test.want, gotDetail); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }

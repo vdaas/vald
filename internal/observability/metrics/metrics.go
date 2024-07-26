@@ -29,6 +29,9 @@ type (
 		View() ([]View, error)
 		Register(Meter) error
 	}
+
+	Int64ObservableGauge   = metric.Int64ObservableGauge
+	Float64ObservableGauge = metric.Float64ObservableGauge
 )
 
 const (

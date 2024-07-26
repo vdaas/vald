@@ -1142,7 +1142,9 @@ func TestWithCreationEdgeSize(t *testing.T) {
 				size: 0,
 			},
 			want: want{
-				obj: new(T),
+				obj: &ngt{
+					ces: 0,
+				},
 			},
 		},
 		{
@@ -1151,7 +1153,9 @@ func TestWithCreationEdgeSize(t *testing.T) {
 				size: 1,
 			},
 			want: want{
-				obj: new(T),
+				obj: &ngt{
+					ces: 1,
+				},
 			},
 		},
 		{
@@ -1160,7 +1164,9 @@ func TestWithCreationEdgeSize(t *testing.T) {
 				size: -1,
 			},
 			want: want{
-				obj: new(T),
+				obj: &ngt{
+					ces: 0,
+				},
 			},
 		},
 		{
@@ -1169,7 +1175,9 @@ func TestWithCreationEdgeSize(t *testing.T) {
 				size: math.MinInt64,
 			},
 			want: want{
-				obj: new(T),
+				obj: &ngt{
+					ces: 0,
+				},
 			},
 		},
 		{
@@ -1178,7 +1186,9 @@ func TestWithCreationEdgeSize(t *testing.T) {
 				size: math.MaxInt64,
 			},
 			want: want{
-				obj: new(T),
+				obj: &ngt{
+					ces: math.MaxInt64,
+				},
 			},
 		},
 	}

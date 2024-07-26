@@ -96,7 +96,6 @@ package operation
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -110,8 +109,7 @@ package operation
 // 		client   client.Client
 // 		indexerC client.Indexer
 // 	}
-// 	type want struct {
-// 	}
+// 	type want struct{}
 // 	type test struct {
 // 		name       string
 // 		args       args

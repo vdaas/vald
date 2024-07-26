@@ -555,6 +555,91 @@ func Test_mirr_connectedOtherMirrorAddrs(t *testing.T) {
 
 // NOT IMPLEMENTED BELOW
 //
+// func TestNewMirrorClient(t *testing.T) {
+// 	type args struct {
+// 		conn *grpc.ClientConn
+// 	}
+// 	type want struct {
+// 		want MirrorClient
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		want       want
+// 		checkFunc  func(want, MirrorClient) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, got MirrorClient) error {
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           conn:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           conn:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+//
+// 			got := NewMirrorClient(test.args.conn)
+// 			if err := checkFunc(test.want, got); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
 // func TestNewMirror(t *testing.T) {
 // 	type args struct {
 // 		opts []MirrorOption
@@ -640,7 +725,6 @@ func Test_mirr_connectedOtherMirrorAddrs(t *testing.T) {
 // 			if err := checkFunc(test.want, got, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -763,15 +847,14 @@ func Test_mirr_connectedOtherMirrorAddrs(t *testing.T) {
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
 //
-// func Test_mirr_Disconnect(t *testing.T) {
+// func Test_mirr_registers(t *testing.T) {
 // 	type args struct {
-// 		ctx     context.Context
-// 		targets []*payload.Mirror_Target
+// 		ctx  context.Context
+// 		tgts *payload.Mirror_Targets
 // 	}
 // 	type fields struct {
 // 		addrl         sync.Map[string, any]
@@ -783,20 +866,24 @@ func Test_mirr_connectedOtherMirrorAddrs(t *testing.T) {
 // 		gateway       Gateway
 // 	}
 // 	type want struct {
-// 		err error
+// 		want []*payload.Mirror_Target
+// 		err  error
 // 	}
 // 	type test struct {
 // 		name       string
 // 		args       args
 // 		fields     fields
 // 		want       want
-// 		checkFunc  func(want, error) error
+// 		checkFunc  func(want, []*payload.Mirror_Target, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
 // 	}
-// 	defaultCheckFunc := func(w want, err error) error {
+// 	defaultCheckFunc := func(w want, got []*payload.Mirror_Target, err error) error {
 // 		if !errors.Is(err, w.err) {
 // 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
 // 		}
 // 		return nil
 // 	}
@@ -807,7 +894,7 @@ func Test_mirr_connectedOtherMirrorAddrs(t *testing.T) {
 // 		       name: "test_case_1",
 // 		       args: args {
 // 		           ctx:nil,
-// 		           targets:nil,
+// 		           tgts:nil,
 // 		       },
 // 		       fields: fields {
 // 		           addrl:nil,
@@ -836,7 +923,7 @@ func Test_mirr_connectedOtherMirrorAddrs(t *testing.T) {
 // 		           name: "test_case_2",
 // 		           args: args {
 // 		           ctx:nil,
-// 		           targets:nil,
+// 		           tgts:nil,
 // 		           },
 // 		           fields: fields {
 // 		           addrl:nil,
@@ -885,11 +972,10 @@ func Test_mirr_connectedOtherMirrorAddrs(t *testing.T) {
 // 				gateway:       test.fields.gateway,
 // 			}
 //
-// 			err := m.Disconnect(test.args.ctx, test.args.targets...)
-// 			if err := checkFunc(test.want, err); err != nil {
+// 			got, err := m.registers(test.args.ctx, test.args.tgts)
+// 			if err := checkFunc(test.want, got, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -1015,12 +1101,255 @@ func Test_mirr_connectedOtherMirrorAddrs(t *testing.T) {
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
 //
-// func Test_mirr_RangeAllMirrorAddr(t *testing.T) {
+// func Test_mirr_isSelfMirrorAddr(t *testing.T) {
+// 	type args struct {
+// 		addr string
+// 	}
+// 	type fields struct {
+// 		addrl         sync.Map[string, any]
+// 		selfMirrTgts  []*payload.Mirror_Target
+// 		selfMirrAddrl sync.Map[string, any]
+// 		gwAddrl       sync.Map[string, any]
+// 		eg            errgroup.Group
+// 		registerDur   time.Duration
+// 		gateway       Gateway
+// 	}
+// 	type want struct {
+// 		want bool
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, bool) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, got bool) error {
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           addr:"",
+// 		       },
+// 		       fields: fields {
+// 		           addrl:nil,
+// 		           selfMirrTgts:nil,
+// 		           selfMirrAddrl:nil,
+// 		           gwAddrl:nil,
+// 		           eg:nil,
+// 		           registerDur:nil,
+// 		           gateway:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           addr:"",
+// 		           },
+// 		           fields: fields {
+// 		           addrl:nil,
+// 		           selfMirrTgts:nil,
+// 		           selfMirrAddrl:nil,
+// 		           gwAddrl:nil,
+// 		           eg:nil,
+// 		           registerDur:nil,
+// 		           gateway:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			m := &mirr{
+// 				addrl:         test.fields.addrl,
+// 				selfMirrTgts:  test.fields.selfMirrTgts,
+// 				selfMirrAddrl: test.fields.selfMirrAddrl,
+// 				gwAddrl:       test.fields.gwAddrl,
+// 				eg:            test.fields.eg,
+// 				registerDur:   test.fields.registerDur,
+// 				gateway:       test.fields.gateway,
+// 			}
+//
+// 			got := m.isSelfMirrorAddr(test.args.addr)
+// 			if err := checkFunc(test.want, got); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_mirr_isGatewayAddr(t *testing.T) {
+// 	type args struct {
+// 		addr string
+// 	}
+// 	type fields struct {
+// 		addrl         sync.Map[string, any]
+// 		selfMirrTgts  []*payload.Mirror_Target
+// 		selfMirrAddrl sync.Map[string, any]
+// 		gwAddrl       sync.Map[string, any]
+// 		eg            errgroup.Group
+// 		registerDur   time.Duration
+// 		gateway       Gateway
+// 	}
+// 	type want struct {
+// 		want bool
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, bool) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, got bool) error {
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           addr:"",
+// 		       },
+// 		       fields: fields {
+// 		           addrl:nil,
+// 		           selfMirrTgts:nil,
+// 		           selfMirrAddrl:nil,
+// 		           gwAddrl:nil,
+// 		           eg:nil,
+// 		           registerDur:nil,
+// 		           gateway:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           addr:"",
+// 		           },
+// 		           fields: fields {
+// 		           addrl:nil,
+// 		           selfMirrTgts:nil,
+// 		           selfMirrAddrl:nil,
+// 		           gwAddrl:nil,
+// 		           eg:nil,
+// 		           registerDur:nil,
+// 		           gateway:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			m := &mirr{
+// 				addrl:         test.fields.addrl,
+// 				selfMirrTgts:  test.fields.selfMirrTgts,
+// 				selfMirrAddrl: test.fields.selfMirrAddrl,
+// 				gwAddrl:       test.fields.gwAddrl,
+// 				eg:            test.fields.eg,
+// 				registerDur:   test.fields.registerDur,
+// 				gateway:       test.fields.gateway,
+// 			}
+//
+// 			got := m.isGatewayAddr(test.args.addr)
+// 			if err := checkFunc(test.want, got); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func Test_mirr_RangeMirrorAddr(t *testing.T) {
 // 	type args struct {
 // 		f func(addr string, _ any) bool
 // 	}
@@ -1033,8 +1362,7 @@ func Test_mirr_connectedOtherMirrorAddrs(t *testing.T) {
 // 		registerDur   time.Duration
 // 		gateway       Gateway
 // 	}
-// 	type want struct {
-// 	}
+// 	type want struct{}
 // 	type test struct {
 // 		name       string
 // 		args       args
@@ -1130,7 +1458,7 @@ func Test_mirr_connectedOtherMirrorAddrs(t *testing.T) {
 // 				gateway:       test.fields.gateway,
 // 			}
 //
-// 			m.RangeAllMirrorAddr(test.args.f)
+// 			m.RangeMirrorAddr(test.args.f)
 // 			if err := checkFunc(test.want); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}

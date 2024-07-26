@@ -1017,7 +1017,6 @@ func TestErrorf(t *testing.T) {
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -1128,7 +1127,6 @@ func TestErrorf(t *testing.T) {
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -1229,7 +1227,6 @@ func TestErrorf(t *testing.T) {
 // 			if err := checkFunc(test.want, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -1244,8 +1241,7 @@ func TestErrorf(t *testing.T) {
 // 		retry  retry.Retry
 // 		glg    *glg.Glg
 // 	}
-// 	type want struct {
-// 	}
+// 	type want struct{}
 // 	type test struct {
 // 		name       string
 // 		args       args
@@ -1351,8 +1347,7 @@ func TestErrorf(t *testing.T) {
 // 		retry  retry.Retry
 // 		glg    *glg.Glg
 // 	}
-// 	type want struct {
-// 	}
+// 	type want struct{}
 // 	type test struct {
 // 		name       string
 // 		args       args
@@ -1460,8 +1455,7 @@ func TestErrorf(t *testing.T) {
 // 		retry  retry.Retry
 // 		glg    *glg.Glg
 // 	}
-// 	type want struct {
-// 	}
+// 	type want struct{}
 // 	type test struct {
 // 		name       string
 // 		args       args
@@ -1568,8 +1562,7 @@ func TestErrorf(t *testing.T) {
 // 		retry  retry.Retry
 // 		glg    *glg.Glg
 // 	}
-// 	type want struct {
-// 	}
+// 	type want struct{}
 // 	type test struct {
 // 		name       string
 // 		args       args
@@ -1675,8 +1668,7 @@ func TestErrorf(t *testing.T) {
 // 		retry  retry.Retry
 // 		glg    *glg.Glg
 // 	}
-// 	type want struct {
-// 	}
+// 	type want struct{}
 // 	type test struct {
 // 		name       string
 // 		args       args
@@ -1784,8 +1776,7 @@ func TestErrorf(t *testing.T) {
 // 		retry  retry.Retry
 // 		glg    *glg.Glg
 // 	}
-// 	type want struct {
-// 	}
+// 	type want struct{}
 // 	type test struct {
 // 		name       string
 // 		args       args
@@ -1892,8 +1883,7 @@ func TestErrorf(t *testing.T) {
 // 		retry  retry.Retry
 // 		glg    *glg.Glg
 // 	}
-// 	type want struct {
-// 	}
+// 	type want struct{}
 // 	type test struct {
 // 		name       string
 // 		args       args
@@ -1999,8 +1989,7 @@ func TestErrorf(t *testing.T) {
 // 		retry  retry.Retry
 // 		glg    *glg.Glg
 // 	}
-// 	type want struct {
-// 	}
+// 	type want struct{}
 // 	type test struct {
 // 		name       string
 // 		args       args
@@ -2108,8 +2097,7 @@ func TestErrorf(t *testing.T) {
 // 		retry  retry.Retry
 // 		glg    *glg.Glg
 // 	}
-// 	type want struct {
-// 	}
+// 	type want struct{}
 // 	type test struct {
 // 		name       string
 // 		args       args
@@ -2216,8 +2204,7 @@ func TestErrorf(t *testing.T) {
 // 		retry  retry.Retry
 // 		glg    *glg.Glg
 // 	}
-// 	type want struct {
-// 	}
+// 	type want struct{}
 // 	type test struct {
 // 		name       string
 // 		args       args
@@ -2323,8 +2310,7 @@ func TestErrorf(t *testing.T) {
 // 		retry  retry.Retry
 // 		glg    *glg.Glg
 // 	}
-// 	type want struct {
-// 	}
+// 	type want struct{}
 // 	type test struct {
 // 		name       string
 // 		args       args
@@ -2432,8 +2418,7 @@ func TestErrorf(t *testing.T) {
 // 		retry  retry.Retry
 // 		glg    *glg.Glg
 // 	}
-// 	type want struct {
-// 	}
+// 	type want struct{}
 // 	type test struct {
 // 		name       string
 // 		args       args
@@ -2540,8 +2525,7 @@ func TestErrorf(t *testing.T) {
 // 		retry  retry.Retry
 // 		glg    *glg.Glg
 // 	}
-// 	type want struct {
-// 	}
+// 	type want struct{}
 // 	type test struct {
 // 		name       string
 // 		args       args
@@ -2647,8 +2631,7 @@ func TestErrorf(t *testing.T) {
 // 		retry  retry.Retry
 // 		glg    *glg.Glg
 // 	}
-// 	type want struct {
-// 	}
+// 	type want struct{}
 // 	type test struct {
 // 		name       string
 // 		args       args
@@ -2756,8 +2739,7 @@ func TestErrorf(t *testing.T) {
 // 		retry  retry.Retry
 // 		glg    *glg.Glg
 // 	}
-// 	type want struct {
-// 	}
+// 	type want struct{}
 // 	type test struct {
 // 		name       string
 // 		args       args
