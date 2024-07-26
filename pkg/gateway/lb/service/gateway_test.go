@@ -104,7 +104,6 @@ package service
 // 			if err := checkFunc(test.want, gotGw, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -211,15 +210,15 @@ package service
 // 			if err := checkFunc(test.want, got, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
 //
 // func Test_gateway_BroadCast(t *testing.T) {
 // 	type args struct {
-// 		ctx context.Context
-// 		f   func(ctx context.Context, target string, ac vald.Client, copts ...grpc.CallOption) error
+// 		ctx  context.Context
+// 		kind BroadCastKind
+// 		f    func(ctx context.Context, target string, ac vald.Client, copts ...grpc.CallOption) error
 // 	}
 // 	type fields struct {
 // 		client discoverer.Client
@@ -250,6 +249,7 @@ package service
 // 		       name: "test_case_1",
 // 		       args: args {
 // 		           ctx:nil,
+// 		           kind:nil,
 // 		           f:nil,
 // 		       },
 // 		       fields: fields {
@@ -274,6 +274,7 @@ package service
 // 		           name: "test_case_2",
 // 		           args: args {
 // 		           ctx:nil,
+// 		           kind:nil,
 // 		           f:nil,
 // 		           },
 // 		           fields: fields {
@@ -313,11 +314,10 @@ package service
 // 				eg:     test.fields.eg,
 // 			}
 //
-// 			err := g.BroadCast(test.args.ctx, test.args.f)
+// 			err := g.BroadCast(test.args.ctx, test.args.kind, test.args.f)
 // 			if err := checkFunc(test.want, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -426,7 +426,6 @@ package service
 // 			if err := checkFunc(test.want, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -529,7 +528,6 @@ package service
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -632,7 +630,6 @@ package service
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }

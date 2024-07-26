@@ -19,7 +19,7 @@ package config
 // 	type fields struct {
 // 		AgentNamespace      string
 // 		ReadReplicaLabelKey string
-// 		ReadReplicaID       string
+// 		TargetReadReplicaID string
 // 		VolumeName          string
 // 	}
 // 	type want struct {
@@ -47,7 +47,7 @@ package config
 // 		       fields: fields {
 // 		           AgentNamespace:"",
 // 		           ReadReplicaLabelKey:"",
-// 		           ReadReplicaID:"",
+// 		           TargetReadReplicaID:"",
 // 		           VolumeName:"",
 // 		       },
 // 		       want: want{},
@@ -69,7 +69,7 @@ package config
 // 		           fields: fields {
 // 		           AgentNamespace:"",
 // 		           ReadReplicaLabelKey:"",
-// 		           ReadReplicaID:"",
+// 		           TargetReadReplicaID:"",
 // 		           VolumeName:"",
 // 		           },
 // 		           want: want{},
@@ -103,7 +103,7 @@ package config
 // 			r := &ReadReplicaRotate{
 // 				AgentNamespace:      test.fields.AgentNamespace,
 // 				ReadReplicaLabelKey: test.fields.ReadReplicaLabelKey,
-// 				ReadReplicaID:       test.fields.ReadReplicaID,
+// 				TargetReadReplicaID: test.fields.TargetReadReplicaID,
 // 				VolumeName:          test.fields.VolumeName,
 // 			}
 //
@@ -111,7 +111,6 @@ package config
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }

@@ -544,7 +544,6 @@ func Test_breaker_fail(t *testing.T) {
 // 			if err := checkFunc(test.want, got, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -698,7 +697,6 @@ func Test_breaker_fail(t *testing.T) {
 // 			if err := checkFunc(test.want, gotVal, gotSt, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -831,7 +829,6 @@ func Test_breaker_fail(t *testing.T) {
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -851,8 +848,7 @@ func Test_breaker_fail(t *testing.T) {
 // 		cloedRefreshTimeout   time.Duration
 // 		closedRefreshExp      int64
 // 	}
-// 	type want struct {
-// 	}
+// 	type want struct{}
 // 	type test struct {
 // 		name       string
 // 		fields     fields
@@ -979,8 +975,7 @@ func Test_breaker_fail(t *testing.T) {
 // 		cloedRefreshTimeout   time.Duration
 // 		closedRefreshExp      int64
 // 	}
-// 	type want struct {
-// 	}
+// 	type want struct{}
 // 	type test struct {
 // 		name       string
 // 		fields     fields
@@ -1220,7 +1215,6 @@ func Test_breaker_fail(t *testing.T) {
 // 			if err := checkFunc(test.want, gotOk); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }

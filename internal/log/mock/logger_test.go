@@ -845,8 +845,7 @@ func TestLogger_Fatalf(t *testing.T) {
 // 		FatalFunc  func(vals ...any)
 // 		FatalfFunc func(format string, vals ...any)
 // 	}
-// 	type want struct {
-// 	}
+// 	type want struct{}
 // 	type test struct {
 // 		name       string
 // 		args       args
@@ -978,8 +977,7 @@ func TestLogger_Fatalf(t *testing.T) {
 // 		FatalFunc  func(vals ...any)
 // 		FatalfFunc func(format string, vals ...any)
 // 	}
-// 	type want struct {
-// 	}
+// 	type want struct{}
 // 	type test struct {
 // 		name       string
 // 		args       args
@@ -1111,8 +1109,7 @@ func TestLogger_Fatalf(t *testing.T) {
 // 		FatalFunc  func(vals ...any)
 // 		FatalfFunc func(format string, vals ...any)
 // 	}
-// 	type want struct {
-// 	}
+// 	type want struct{}
 // 	type test struct {
 // 		name       string
 // 		args       args
@@ -1244,8 +1241,7 @@ func TestLogger_Fatalf(t *testing.T) {
 // 		FatalFunc  func(vals ...any)
 // 		FatalfFunc func(format string, vals ...any)
 // 	}
-// 	type want struct {
-// 	}
+// 	type want struct{}
 // 	type test struct {
 // 		name       string
 // 		args       args
@@ -1377,8 +1373,7 @@ func TestLogger_Fatalf(t *testing.T) {
 // 		FatalFunc  func(vals ...any)
 // 		FatalfFunc func(format string, vals ...any)
 // 	}
-// 	type want struct {
-// 	}
+// 	type want struct{}
 // 	type test struct {
 // 		name       string
 // 		args       args
@@ -1613,7 +1608,6 @@ func TestLogger_Fatalf(t *testing.T) {
 // 			if err := checkFunc(test.want, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }

@@ -328,56 +328,66 @@ type FilterServer interface {
 }
 
 // UnimplementedFilterServer must be embedded to have forward compatible implementations.
-type UnimplementedFilterServer struct {
-}
+type UnimplementedFilterServer struct{}
 
 func (UnimplementedFilterServer) SearchObject(
 	context.Context, *payload.Search_ObjectRequest,
 ) (*payload.Search_Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SearchObject not implemented")
 }
+
 func (UnimplementedFilterServer) MultiSearchObject(
 	context.Context, *payload.Search_MultiObjectRequest,
 ) (*payload.Search_Responses, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method MultiSearchObject not implemented")
 }
+
 func (UnimplementedFilterServer) StreamSearchObject(Filter_StreamSearchObjectServer) error {
 	return status.Errorf(codes.Unimplemented, "method StreamSearchObject not implemented")
 }
+
 func (UnimplementedFilterServer) InsertObject(
 	context.Context, *payload.Insert_ObjectRequest,
 ) (*payload.Object_Location, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method InsertObject not implemented")
 }
+
 func (UnimplementedFilterServer) StreamInsertObject(Filter_StreamInsertObjectServer) error {
 	return status.Errorf(codes.Unimplemented, "method StreamInsertObject not implemented")
 }
+
 func (UnimplementedFilterServer) MultiInsertObject(
 	context.Context, *payload.Insert_MultiObjectRequest,
 ) (*payload.Object_Locations, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method MultiInsertObject not implemented")
 }
+
 func (UnimplementedFilterServer) UpdateObject(
 	context.Context, *payload.Update_ObjectRequest,
 ) (*payload.Object_Location, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateObject not implemented")
 }
+
 func (UnimplementedFilterServer) StreamUpdateObject(Filter_StreamUpdateObjectServer) error {
 	return status.Errorf(codes.Unimplemented, "method StreamUpdateObject not implemented")
 }
+
 func (UnimplementedFilterServer) MultiUpdateObject(
 	context.Context, *payload.Update_MultiObjectRequest,
 ) (*payload.Object_Locations, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method MultiUpdateObject not implemented")
 }
+
 func (UnimplementedFilterServer) UpsertObject(
 	context.Context, *payload.Upsert_ObjectRequest,
 ) (*payload.Object_Location, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpsertObject not implemented")
 }
+
 func (UnimplementedFilterServer) StreamUpsertObject(Filter_StreamUpsertObjectServer) error {
 	return status.Errorf(codes.Unimplemented, "method StreamUpsertObject not implemented")
 }
+
 func (UnimplementedFilterServer) MultiUpsertObject(
 	context.Context, *payload.Upsert_MultiObjectRequest,
 ) (*payload.Object_Locations, error) {

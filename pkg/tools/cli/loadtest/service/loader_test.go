@@ -100,7 +100,6 @@ package service
 // 			if err := checkFunc(test.want, got, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -239,7 +238,6 @@ package service
 // 			if err := checkFunc(test.want, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -378,7 +376,150 @@ package service
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
+// 		})
+// 	}
+// }
 //
+// func Test_loader_do(t *testing.T) {
+// 	type args struct {
+// 		ctx    context.Context
+// 		f      func(any, error)
+// 		notify func(context.Context, error)
+// 	}
+// 	type fields struct {
+// 		eg               errgroup.Group
+// 		client           grpc.Client
+// 		addr             string
+// 		concurrency      int
+// 		batchSize        int
+// 		dataset          string
+// 		progressDuration time.Duration
+// 		loaderFunc       loadFunc
+// 		dataProvider     func() any
+// 		dataSize         int
+// 		operation        config.Operation
+// 	}
+// 	type want struct {
+// 		err error
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		fields     fields
+// 		want       want
+// 		checkFunc  func(want, error) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, err error) error {
+// 		if !errors.Is(err, w.err) {
+// 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           ctx:nil,
+// 		           f:nil,
+// 		           notify:nil,
+// 		       },
+// 		       fields: fields {
+// 		           eg:nil,
+// 		           client:nil,
+// 		           addr:"",
+// 		           concurrency:0,
+// 		           batchSize:0,
+// 		           dataset:"",
+// 		           progressDuration:nil,
+// 		           loaderFunc:nil,
+// 		           dataProvider:nil,
+// 		           dataSize:0,
+// 		           operation:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           ctx:nil,
+// 		           f:nil,
+// 		           notify:nil,
+// 		           },
+// 		           fields: fields {
+// 		           eg:nil,
+// 		           client:nil,
+// 		           addr:"",
+// 		           concurrency:0,
+// 		           batchSize:0,
+// 		           dataset:"",
+// 		           progressDuration:nil,
+// 		           loaderFunc:nil,
+// 		           dataProvider:nil,
+// 		           dataSize:0,
+// 		           operation:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+// 			l := &loader{
+// 				eg:               test.fields.eg,
+// 				client:           test.fields.client,
+// 				addr:             test.fields.addr,
+// 				concurrency:      test.fields.concurrency,
+// 				batchSize:        test.fields.batchSize,
+// 				dataset:          test.fields.dataset,
+// 				progressDuration: test.fields.progressDuration,
+// 				loaderFunc:       test.fields.loaderFunc,
+// 				dataProvider:     test.fields.dataProvider,
+// 				dataSize:         test.fields.dataSize,
+// 				operation:        test.fields.operation,
+// 			}
+//
+// 			err := l.do(test.args.ctx, test.args.f, test.args.notify)
+// 			if err := checkFunc(test.want, err); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
 // 		})
 // 	}
 // }

@@ -100,7 +100,6 @@ package urlopener
 // 			if err := checkFunc(test.want, got, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -211,7 +210,6 @@ package urlopener
 // 			if err := checkFunc(test.want, gotGuo, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
