@@ -1,4 +1,4 @@
-use std::{any::type_name, net::Shutdown, path::Path, sync::{atomic::{AtomicBool, AtomicUsize, Ordering}, Arc}, thread, time::{Duration, Instant}};
+use std::{any::type_name, path::Path, sync::{atomic::{AtomicBool, AtomicUsize, Ordering}, Arc}, thread, time::{Duration, Instant}};
 
 use kvs::KVS;
 
@@ -54,7 +54,7 @@ fn parallel_bencher<T: KVS + 'static>(name: &str, path: &Path, size: usize, kdim
     }
 
     let mut progress = vec![];
-    loop {
+    while {
         thread::sleep(Duration::from_secs(interval));
         let p = begin.elapsed();
         let st = me.status().unwrap();
@@ -64,11 +64,9 @@ fn parallel_bencher<T: KVS + 'static>(name: &str, path: &Path, size: usize, kdim
         let get_count = get_count.load(Ordering::Relaxed);
         println!("{},get,{},{},{},{},{},{},{}", name, kdim, vdim, thread, get_count, p.as_nanos(), st.vmrss.unwrap(), dir_size/1024);
         progress.push((set_count, p, st, dir_size));
-        if set_count >= size {
-            shutdown.store(true, Ordering::SeqCst);
-            break;
-        }
-    }
+        
+        !shutdown.load(Ordering::Relaxed) 
+    } {}
 
     for t in threads {
         t.join().unwrap();
@@ -77,13 +75,13 @@ fn parallel_bencher<T: KVS + 'static>(name: &str, path: &Path, size: usize, kdim
     progress
 }
 
-fn parallel_benchmark<T: KVS + 'static>(size: usize, kdims: &[usize], vdims: &[usize], threads: &[usize]) {
+fn parallel_benchmark<T: KVS + 'static>(size: usize, kdims: &[usize], vdims: &[usize], threads: &[usize], ratio: f64, interval: u64, timer: u64) {
     let name = type_name::<T>().split("::").last().unwrap();
     for &kdim in kdims {
         for &vdim in vdims {
             for &thread in threads {
                 let (path, db) = setup_kvs::<T>(format!("{}-{}-{}", kdim, vdim, thread).as_str());
-                parallel_bencher(name, path.as_path(), size, kdim, vdim, db, 0.5, thread, 1, 600);
+                parallel_bencher(name, path.as_path(), size, kdim, vdim, db, ratio, thread, interval, timer);
             }
         }
     }
@@ -120,21 +118,25 @@ fn monotonic_benchmark<T: KVS + 'static>(size: usize, kdims: &[usize], vdims: &[
 }
 
 fn main() {
-    let size = 1 << 16;
+    let size = 1 << 24;
     let kdims: &[usize] = &[1 << 3, 1 << 10];
     let vdims: &[usize] = &[1 << 8, 1 << 12];
-    let threads: &[usize] = &[2, 8, 32];
-    println!("name,operation,key size(B),value size(B),thread,insert size,time(ns),vmrss(KB),file size(B)");
+    let threads: &[usize] = &[1, 16, 32];
+    let ratio = 0.5;
+    let interval = 3;
+    let timer = 30;
+    println!("name,operation,key size(B),value size(B),thread,operation count,time(ns),vmrss(KB),file size(B)");
     //monotonic_benchmark::<Kv>(size, kdims, vdims);
     //monotonic_benchmark::<Persy>(size, kdims, vdims);
     //monotonic_benchmark::<Redb>(size, kdims, vdims);
     //monotonic_benchmark::<Rkv>(size, kdims, vdims);
     //monotonic_benchmark::<Rocksdb>(size, kdims, vdims);
     //monotonic_benchmark::<Sled>(size, kdims, vdims);
-    parallel_benchmark::<Kv>(size, kdims, vdims, threads);
-    parallel_benchmark::<Persy>(size, kdims, vdims, threads);
-    //parallel_benchmark::<Redb>(size, kdims, vdims, threads);
+    parallel_benchmark::<Kv>(size, kdims, vdims, threads, ratio, interval, timer);
+    parallel_benchmark::<Kv2>(size, kdims, vdims, threads, ratio, interval, timer);
+    //parallel_benchmark::<Persy>(size, kdims, vdims, threads, ratio, interval, timer);
+    //parallel_benchmark::<Redb>(size, kdims, vdims, threads, ratio, interval, timer);
     //parallel_benchmark::<Rkv>(size, kdims, vdims, threads);
-    parallel_benchmark::<Rocksdb>(size, kdims, vdims, threads);
-    parallel_benchmark::<Sled>(size, kdims, vdims, threads);
+    parallel_benchmark::<Rocksdb>(size, kdims, vdims, threads, ratio, interval, timer);
+    parallel_benchmark::<Sled>(size, kdims, vdims, threads, ratio, interval, timer);
 }

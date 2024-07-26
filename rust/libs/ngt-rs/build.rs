@@ -25,6 +25,7 @@ fn main() -> miette::Result<()> {
         .compile("ngt-rs");
 
     println!("cargo:rustc-link-search=native=/usr/local/lib");
+    println!("cargo:rustc-link-search=native=~/.local/lib");
     println!("cargo:rustc-link-lib=static=ngt");
     println!("cargo:rustc-link-lib=dylib=gomp");
     println!("cargo:rerun-if-changed=src/*");

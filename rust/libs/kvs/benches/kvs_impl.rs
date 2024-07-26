@@ -46,6 +46,29 @@ impl KVS for Kv {
     }
 }
 
+pub struct Kv2(kv::Bucket<'static, kv::Raw, kv::Raw>);
+impl KVS for Kv2 {
+    fn new(path: &str) -> Result<Self, Box<dyn Error>> {
+        let cfg = kv::Config::new(path);
+        let store = kv::Store::new(cfg)?;
+        let bucket = store.bucket::<kv::Raw, kv::Raw>(Some("root"))?;
+        Ok(Kv2(bucket))
+    }
+
+    fn get(&self, key: &[u8]) -> Result<Option<Vec<u8>>, Box<dyn Error>> {
+        Ok(self.0.get(&kv::Raw::from(key))?.map(|v| v.to_vec()))
+    }
+
+    fn set(&self, key: &[u8], value: &[u8]) -> Result<(), Box<dyn Error>> {
+        self.0.set(&kv::Raw::from(key), &kv::Raw::from(value))?;
+        Ok(())
+    }
+
+    fn del(&self, _key: &[u8]) -> Result<(), Box<dyn Error + '_>> {
+        todo!()
+    }
+}
+
 // Implement KVS for rkv
 pub struct Rkv(rkv::Rkv<rkv::backend::SafeModeEnvironment>, rkv::SingleStore<rkv::backend::SafeModeDatabase>);
 impl KVS for Rkv {
@@ -84,17 +107,21 @@ impl KVS for Redb {
         fs::create_dir_all(path)?;
         let db = redb::Database::create(Path::new(path).join("db"))?;
         let def = redb::TableDefinition::new("x");
+        let txn = db.begin_write()?;
+        {
+            txn.open_table(def)?;
+        }
         Ok(Redb(db, def))
     }
 
     fn get(&self, key: &[u8]) -> Result<Option<Vec<u8>>, Box<dyn Error>> {
         let txn = self.0.begin_read()?;
-        let table = txn.open_table(self.1)?;
-        if let Some(val) = table.get(key)? {
-            Ok(Some(val.value().to_vec()))
-        } else {
-            Ok(None)
+        if let Ok(table) = txn.open_table(self.1) {
+            if let Some(val) = table.get(key)? {
+                return Ok(Some(val.value().to_vec()));
+            }
         }
+        Ok(None)
     }
 
     fn set(&self, key: &[u8], value: &[u8]) -> Result<(), Box<dyn Error>> {

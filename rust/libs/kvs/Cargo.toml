@@ -38,7 +38,3 @@ harness = false
 [[bench]]
 name = "hand_written"
 harness = false
-
-[[bench]]
-name = "visualize"
-harness = false
