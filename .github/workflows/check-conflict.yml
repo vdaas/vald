@@ -35,7 +35,7 @@ jobs:
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
       - name: Check conflict
         run: |
-          if grep -r ">>> HEAD" . --exclude-dir=.git --exclude=check-conflict.yml; then
+          if grep -r "<<<< HEAD" . --exclude-dir=.git --exclude=check-conflict.yml; then
             echo "Please fix conflict locally."
             exit 1
           fi
