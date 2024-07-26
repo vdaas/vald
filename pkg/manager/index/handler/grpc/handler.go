@@ -20,8 +20,8 @@ package grpc
 import (
 	"context"
 
-	"github.com/vdaas/vald/apis/grpc/v1/manager/index"
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
+	index "github.com/vdaas/vald/apis/grpc/v1/vald"
 	"github.com/vdaas/vald/internal/observability/trace"
 	"github.com/vdaas/vald/pkg/manager/index/service"
 )
@@ -40,7 +40,9 @@ func New(opts ...Option) index.IndexServer {
 	return s
 }
 
-func (s *server) IndexInfo(ctx context.Context, _ *payload.Empty) (res *payload.Info_Index_Count, err error) {
+func (s *server) IndexInfo(
+	ctx context.Context, _ *payload.Empty,
+) (res *payload.Info_Index_Count, err error) {
 	ctx, span := trace.StartSpan(ctx, "vald/manager-index.IndexInfo")
 	defer func() {
 		if span != nil {
@@ -52,4 +54,16 @@ func (s *server) IndexInfo(ctx context.Context, _ *payload.Empty) (res *payload.
 		Uncommitted: s.indexer.NumberOfUncommittedUUIDs(),
 		Indexing:    s.indexer.IsIndexing(),
 	}, nil
+}
+
+func (s *server) IndexDetail(
+	ctx context.Context, _ *payload.Empty,
+) (res *payload.Info_Index_Detail, err error) {
+	ctx, span := trace.StartSpan(ctx, "vald/manager-index.IndexDetail")
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	return s.indexer.LoadIndexDetail(), nil
 }

@@ -112,7 +112,9 @@ func New[V any]() Group[V] {
 // time. If a duplicate comes in, the duplicate caller waits for the
 // original to complete and receives the same results.
 // The return value shared indicates whether v was given to multiple callers.
-func (g *group[V]) Do(ctx context.Context, key string, fn func(context.Context) (V, error)) (v V, shared bool, err error) {
+func (g *group[V]) Do(
+	ctx context.Context, key string, fn func(context.Context) (V, error),
+) (v V, shared bool, err error) {
 	g.mu.Lock()
 	if g.m == nil {
 		g.m = make(map[string]*call[V])
@@ -142,7 +144,9 @@ func (g *group[V]) Do(ctx context.Context, key string, fn func(context.Context) 
 // results when they are ready.
 //
 // The returned channel will not be closed.
-func (g *group[V]) DoChan(ctx context.Context, key string, fn func(context.Context) (V, error)) <-chan Result[V] {
+func (g *group[V]) DoChan(
+	ctx context.Context, key string, fn func(context.Context) (V, error),
+) <-chan Result[V] {
 	ch := make(chan Result[V])
 	g.mu.Lock()
 	if g.m == nil {
@@ -165,7 +169,9 @@ func (g *group[V]) DoChan(ctx context.Context, key string, fn func(context.Conte
 }
 
 // doCall handles the single call for a key.
-func (g *group[V]) doCall(ctx context.Context, c *call[V], key string, fn func(ctx context.Context) (V, error)) {
+func (g *group[V]) doCall(
+	ctx context.Context, c *call[V], key string, fn func(ctx context.Context) (V, error),
+) {
 	normalReturn := false
 	recovered := false
 

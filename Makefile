@@ -26,6 +26,7 @@ AGENT_NGT_IMAGE                 = $(NAME)-agent-ngt
 AGENT_FAISS_IMAGE               = $(NAME)-agent-faiss
 AGENT_SIDECAR_IMAGE             = $(NAME)-agent-sidecar
 AGENT_IMAGE                     = $(NAME)-agent
+BUILDBASE_IMAGE                 = $(NAME)-buildbase
 CI_CONTAINER_IMAGE              = $(NAME)-ci-container
 DEV_CONTAINER_IMAGE             = $(NAME)-dev-container
 DISCOVERER_IMAGE                = $(NAME)-discoverer-k8s
@@ -48,6 +49,17 @@ VERSION ?= $(eval VERSION := $(shell cat versions/VALD_VERSION))$(VERSION)
 
 NGT_REPO = github.com/yahoojapan/NGT
 
+NPM_GLOBAL_PREFIX := $(eval NPM_GLOBAL_PREFIX := $(shell npm prefix --location=global))$(NPM_GLOBAL_PREFIX)
+
+TEST_NOT_IMPL_PLACEHOLDER = NOT IMPLEMENTED BELOW
+
+TEMP_DIR := $(eval TEMP_DIR := $(shell mktemp -d))$(TEMP_DIR)
+USR_LOCAL = /usr/local
+BINDIR = $(USR_LOCAL)/bin
+LIB_PATH = $(USR_LOCAL)/lib
+$(LIB_PATH):
+	mkdir -p $(LIB_PATH)
+
 GOPRIVATE = $(GOPKG),$(GOPKG)/apis,$(GOPKG)-client-go
 GOPROXY = "https://proxy.golang.org,direct"
 GOPATH := $(eval GOPATH := $(shell go env GOPATH))$(GOPATH)
@@ -60,21 +72,16 @@ GO_CLEAN_DEPS := true
 GOTEST_TIMEOUT = 30m
 CGO_ENABLED = 1
 
-RUST_HOME ?= /usr/local/lib/rust
+RUST_HOME ?= $(LIB_PATH)/rust
 RUSTUP_HOME ?= $(RUST_HOME)/rustup
 CARGO_HOME ?= $(RUST_HOME)/cargo
 RUST_VERSION := $(eval RUST_VERSION := $(shell cat versions/RUST_VERSION))$(RUST_VERSION)
 
-NPM_GLOBAL_PREFIX := $(eval NPM_GLOBAL_PREFIX := $(shell npm prefix --location=global))$(NPM_GLOBAL_PREFIX)
-
-TEST_NOT_IMPL_PLACEHOLDER = NOT IMPLEMENTED BELOW
-
-TEMP_DIR := $(eval TEMP_DIR := $(shell mktemp -d))$(TEMP_DIR)
-
 BUF_VERSION               := $(eval BUF_VERSION := $(shell cat versions/BUF_VERSION))$(BUF_VERSION)
-NGT_VERSION 		  := $(eval NGT_VERSION := $(shell cat versions/NGT_VERSION))$(NGT_VERSION)
+DOCKER_VERSION               := $(eval DOCKER_VERSION := $(shell cat versions/DOCKER_VERSION))$(DOCKER_VERSION)
 FAISS_VERSION             := $(eval FAISS_VERSION := $(shell cat versions/FAISS_VERSION))$(FAISS_VERSION)
 GOLANGCILINT_VERSION      := $(eval GOLANGCILINT_VERSION := $(shell cat versions/GOLANGCILINT_VERSION))$(GOLANGCILINT_VERSION)
+HDF5_VERSION              := $(eval HDF5_VERSION := $(shell cat versions/HDF5_VERSION))$(HDF5_VERSION)
 HELM_DOCS_VERSION         := $(eval HELM_DOCS_VERSION := $(shell cat versions/HELM_DOCS_VERSION))$(HELM_DOCS_VERSION)
 HELM_VERSION              := $(eval HELM_VERSION := $(shell cat versions/HELM_VERSION))$(HELM_VERSION)
 JAEGER_OPERATOR_VERSION   := $(eval JAEGER_OPERATOR_VERSION := $(shell cat versions/JAEGER_OPERATOR_VERSION))$(JAEGER_OPERATOR_VERSION)
@@ -90,9 +97,7 @@ REVIEWDOG_VERSION         := $(eval REVIEWDOG_VERSION := $(shell cat versions/RE
 TELEPRESENCE_VERSION      := $(eval TELEPRESENCE_VERSION := $(shell cat versions/TELEPRESENCE_VERSION))$(TELEPRESENCE_VERSION)
 VALDCLI_VERSION           := $(eval VALDCLI_VERSION := $(shell cat versions/VALDCLI_VERSION))$(VALDCLI_VERSION)
 YQ_VERSION                := $(eval YQ_VERSION := $(shell cat versions/YQ_VERSION))$(YQ_VERSION)
-BUF_VERSION               := $(eval BUF_VERSION := $(shell cat versions/BUF_VERSION))$(BUF_VERSION)
 ZLIB_VERSION              := $(eval ZLIB_VERSION := $(shell cat versions/ZLIB_VERSION))$(ZLIB_VERSION)
-HDF5_VERSION              := $(eval HDF5_VERSION := $(shell cat versions/HDF5_VERSION))$(HDF5_VERSION)
 
 OTEL_OPERATOR_RELEASE_NAME ?= opentelemetry-operator
 PROMETHEUS_RELEASE_NAME    ?= prometheus
@@ -100,8 +105,6 @@ PROMETHEUS_RELEASE_NAME    ?= prometheus
 SWAP_DEPLOYMENT_TYPE ?= deployment
 SWAP_IMAGE           ?= ""
 SWAP_TAG             ?= latest
-
-BINDIR ?= /usr/local/bin
 
 UNAME := $(eval UNAME := $(shell uname -s))$(UNAME)
 OS := $(eval OS := $(shell echo $(UNAME) | tr '[:upper:]' '[:lower:]'))$(OS)
@@ -136,6 +139,13 @@ PROTOS_V1 := $(eval PROTOS_V1 := $(filter apis/proto/v1/%.proto,$(PROTOS)))$(PRO
 PBGOS = $(PROTOS:apis/proto/%.proto=apis/grpc/%.pb.go)
 SWAGGERS = $(PROTOS:apis/proto/%.proto=apis/swagger/%.swagger.json)
 PBDOCS = apis/docs/v1/docs.md
+
+LDFLAGS = -static -fPIC -pthread -std=gnu++20 -lstdc++ -lm -z relro -z now -flto=auto -march=native -mtune=native -fno-plt -Ofast -fvisibility=hidden -ffp-contract=fast -fomit-frame-pointer -fmerge-all-constants -funroll-loops -falign-functions=32 -ffunction-sections -fdata-sections
+
+NGT_LDFLAGS = -fopenmp -lopenblas -llapack
+FAISS_LDFLAGS = $(NGT_LDFLAGS) -lgfortran
+HDF5_LDFLAGS = -lhdf5 -lhdf5_hl -lsz -laec -lz -ldl
+CGO_LDFLAGS = $(FAISS_LDFLAGS) $(HDF5_LDFLAGS)
 
 ifeq ($(GOARCH),amd64)
 CFLAGS ?= -mno-avx512f -mno-avx512dq -mno-avx512cd -mno-avx512bw -mno-avx512vl
@@ -239,6 +249,7 @@ GO_SOURCES = $(eval GO_SOURCES := $(shell find \
 		-not -path '$(ROOTDIR)/hack/benchmark/internal/starter/gateway/*' \
 		-not -path '$(ROOTDIR)/hack/gorules/*' \
 		-not -path '$(ROOTDIR)/hack/license/*' \
+		-not -path '$(ROOTDIR)/hack/docker/*' \
 		-not -path '$(ROOTDIR)/hack/swagger/*' \
 		-not -path '$(ROOTDIR)/hack/tools/*' \
 		-not -path '$(ROOTDIR)/tests/*' \
@@ -270,6 +281,7 @@ GO_OPTION_SOURCES = $(eval GO_OPTION_SOURCES := $(shell find \
 		-not -path '$(ROOTDIR)/hack/benchmark/internal/starter/gateway/*' \
 		-not -path '$(ROOTDIR)/hack/gorules/*' \
 		-not -path '$(ROOTDIR)/hack/license/*' \
+		-not -path '$(ROOTDIR)/hack/docker/*' \
 		-not -path '$(ROOTDIR)/hack/swagger/*' \
 		-not -path '$(ROOTDIR)/hack/tools/*' \
 		-not -path '$(ROOTDIR)/tests/*' \
@@ -324,21 +336,22 @@ SHELL = bash
 
 E2E_BIND_HOST                      ?= 127.0.0.1
 E2E_BIND_PORT                      ?= 8082
-E2E_TIMEOUT                        ?= 30m
 E2E_DATASET_NAME                   ?= fashion-mnist-784-euclidean.hdf5
-E2E_INSERT_COUNT                   ?= 10000
-E2E_SEARCH_COUNT                   ?= 1000
-E2E_SEARCH_BY_ID_COUNT             ?= 100
 E2E_GET_OBJECT_COUNT               ?= 10
+E2E_INSERT_COUNT                   ?= 10000
+E2E_PORTFORWARD_ENABLED            ?= true
+E2E_REMOVE_COUNT                   ?= 3
+E2E_SEARCH_BY_ID_COUNT             ?= 100
+E2E_SEARCH_COUNT                   ?= 1000
+E2E_TARGET_NAME                    ?= vald-lb-gateway
+E2E_TARGET_NAMESPACE               ?= default
+E2E_TARGET_POD_NAME                ?= $(eval E2E_TARGET_POD_NAME := $(shell kubectl get pods --selector=app=$(E2E_TARGET_NAME) -n $(E2E_TARGET_NAMESPACE) | tail -1 | cut -f1 -d " "))$(E2E_TARGET_POD_NAME)
+E2E_TARGET_PORT                    ?= 8081
+E2E_TIMEOUT                        ?= 30m
 E2E_UPDATE_COUNT                   ?= 10
 E2E_UPSERT_COUNT                   ?= 10
-E2E_REMOVE_COUNT                   ?= 3
 E2E_WAIT_FOR_CREATE_INDEX_DURATION ?= 8m
-E2E_TARGET_NAME                    ?= vald-lb-gateway
-E2E_TARGET_POD_NAME                ?= $(eval E2E_TARGET_POD_NAME := $(shell kubectl get pods --selector=app=$(E2E_TARGET_NAME) -n $(E2E_TARGET_NAMESPACE) | tail -1 | cut -f1 -d " "))$(E2E_TARGET_POD_NAME)
-E2E_TARGET_NAMESPACE               ?= default
-E2E_TARGET_PORT                    ?= 8081
-E2E_PORTFORWARD_ENABLED            ?= true
+E2E_WAIT_FOR_START_TIMEOUT         ?= 10m
 
 TEST_RESULT_DIR ?= /tmp
 
@@ -353,14 +366,14 @@ maintainer:
 ## print all available commands
 help:
 	@awk '/^[a-zA-Z_0-9%:\\\/-]+:/ { \
-	  helpMessage = match(lastLine, /^## (.*)/); \
-	  if (helpMessage) { \
-	    helpCommand = $$1; \
-	    helpMessage = substr(lastLine, RSTART + 3, RLENGTH); \
-      gsub("\\\\", "", helpCommand); \
-      gsub(":+$$", "", helpCommand); \
-	    printf "  \x1b[32;01m%-38s\x1b[0m %s\n", helpCommand, helpMessage; \
-	  } \
+		helpMessage = match(lastLine, /^## (.*)/); \
+		if (helpMessage) { \
+			helpCommand = $$1; \
+			helpMessage = substr(lastLine, RSTART + 3, RLENGTH); \
+			gsub("\\\\", "", helpCommand); \
+			gsub(":+$$", "", helpCommand); \
+			printf "  \x1b[32;01m%-38s\x1b[0m %s\n", helpCommand, helpMessage; \
+		} \
 	} \
 	{ lastLine = $$0 }' $(MAKELISTS) | sort -u
 	@printf "\n"
@@ -412,6 +425,11 @@ files:
 license:
 	$(call gen-license,$(ROOTDIR),$(MAINTAINER))
 
+.PHONY: dockerfile
+## generate dockerfiles
+dockerfile:
+	$(call gen-dockerfile,$(ROOTDIR),$(MAINTAINER))
+
 .PHONY: init
 ## initialize development environment
 init: \
@@ -445,6 +463,7 @@ update: \
 .PHONY: format
 ## format go codes
 format: \
+	dockerfile \
 	license \
 	format/proto \
 	format/go \
@@ -455,26 +474,30 @@ format: \
 .PHONY: format/go
 ## run golines, gofumpt, goimports for all go files
 format/go: \
+	crlfmt/install \
 	golines/install \
 	gofumpt/install \
 	strictgoimports/install \
 	goimports/install
-	find $(ROOTDIR)/ -type d -name .git -prune -o -type f -regex '.*[^\.pb]\.go' -print | xargs -P$(CORES) $(GOBIN)/golines -w -m $(GOLINES_MAX_WIDTH)
-	find $(ROOTDIR)/ -type d -name .git -prune -o -type f -regex '.*[^\.pb]\.go' -print | xargs -P$(CORES) $(GOBIN)/gofumpt -w
-	find $(ROOTDIR)/ -type d -name .git -prune -o -type f -regex '.*[^\.pb]\.go' -print | xargs -P$(CORES) $(GOBIN)/strictgoimports -w
+	find $(ROOTDIR)/ -type d -name .git -prune -o -type f -regex '.*\.go' -print | xargs -P$(CORES) $(GOBIN)/golines -w -m $(GOLINES_MAX_WIDTH)
+	find $(ROOTDIR)/ -type d -name .git -prune -o -type f -regex '.*\.go' -print | xargs -P$(CORES) $(GOBIN)/strictgoimports -w
 	find $(ROOTDIR)/ -type d -name .git -prune -o -type f -regex '.*\.go' -print | xargs -P$(CORES) $(GOBIN)/goimports -w
+	find $(ROOTDIR)/ -type d -name .git -prune -o -type f -regex '.*\.go' -print | xargs -P$(CORES) $(GOBIN)/crlfmt -w -diff=false
+	find $(ROOTDIR)/ -type d -name .git -prune -o -type f -regex '.*\.go' -print | xargs -P$(CORES) $(GOBIN)/gofumpt -w
 
 .PHONY: format/go/test
 ## run golines, gofumpt, goimports for go test files
 format/go/test: \
+	crlfmt/install \
 	golines/install \
 	gofumpt/install \
 	strictgoimports/install \
 	goimports/install
 	find $(ROOTDIR) -name '*_test.go' | xargs -P$(CORES) $(GOBIN)/golines -w -m $(GOLINES_MAX_WIDTH)
-	find $(ROOTDIR) -name '*_test.go' | xargs -P$(CORES) $(GOBIN)/gofumpt -w
 	find $(ROOTDIR) -name '*_test.go' | xargs -P$(CORES) $(GOBIN)/strictgoimports -w
 	find $(ROOTDIR) -name '*_test.go' | xargs -P$(CORES) $(GOBIN)/goimports -w
+	find $(ROOTDIR) -name '*_test.go' | xargs -P$(CORES) $(GOBIN)/crlfmt -w -diff=false
+	find $(ROOTDIR) -name '*_test.go' | xargs -P$(CORES) $(GOBIN)/gofumpt -w
 
 .PHONY: format/yaml
 format/yaml: \
@@ -517,6 +540,7 @@ deps: \
 .PHONY: deps/install
 ## install dependencies
 deps/install: \
+	crlfmt/install \
 	golines/install \
 	gofumpt/install \
 	strictgoimports/install \
@@ -551,6 +575,16 @@ version/rust:
 version/ngt:
 	@echo $(NGT_VERSION)
 
+.PHONY: version/faiss
+## print Faiss version
+version/faiss:
+	@echo $(FAISS_VERSION)
+
+.PHONY: version/docker
+## print Kubernetes version
+version/docker:
+	@echo $(DOCKER_VERSION)
+
 .PHONY: version/k8s
 ## print Kubernetes version
 version/k8s:
@@ -578,12 +612,19 @@ version/telepresence:
 
 .PHONY: ngt/install
 ## install NGT
-ngt/install: /usr/local/include/NGT/Capi.h
-/usr/local/include/NGT/Capi.h:
+ngt/install: $(USR_LOCAL)/include/NGT/Capi.h
+$(USR_LOCAL)/include/NGT/Capi.h:
 	git clone --depth 1 --branch v$(NGT_VERSION) https://github.com/yahoojapan/NGT $(TEMP_DIR)/NGT-$(NGT_VERSION)
 	cd $(TEMP_DIR)/NGT-$(NGT_VERSION) && \
-		cmake -DCMAKE_C_FLAGS="$(CFLAGS)" -DCMAKE_CXX_FLAGS="$(CXXFLAGS)" "$(NGT_EXTRA_FLAGS)" .
-	make -j -C $(TEMP_DIR)/NGT-$(NGT_VERSION)
+	cmake -DCMAKE_BUILD_TYPE=Release \
+		-DBUILD_SHARED_LIBS=OFF \
+		-DBUILD_STATIC_EXECS=ON \
+		-DBUILD_TESTING=OFF \
+		-DCMAKE_C_FLAGS="$(CFLAGS)" \
+		-DCMAKE_CXX_FLAGS="$(CXXFLAGS)" \
+		-DCMAKE_INSTALL_PREFIX=$(USR_LOCAL) \
+		"$(NGT_EXTRA_FLAGS)" .
+	make -j$(CORES) -C $(TEMP_DIR)/NGT-$(NGT_VERSION)
 	make install -C $(TEMP_DIR)/NGT-$(NGT_VERSION)
 	cd $(ROOTDIR)
 	rm -rf $(TEMP_DIR)/NGT-$(NGT_VERSION)
@@ -591,13 +632,23 @@ ngt/install: /usr/local/include/NGT/Capi.h
 
 .PHONY: faiss/install
 ## install Faiss
-faiss/install: /usr/local/lib/libfaiss.so
-/usr/local/lib/libfaiss.so:
-	curl -fsSLO https://github.com/facebookresearch/faiss/archive/v$(FAISS_VERSION).tar.gz
-	tar zxf v$(FAISS_VERSION).tar.gz -C $(TEMP_DIR)/
+faiss/install: $(LIB_PATH)/libfaiss.a
+$(LIB_PATH)/libfaiss.a:
+	curl -fsSL https://github.com/facebookresearch/faiss/archive/v$(FAISS_VERSION).tar.gz -o $(TEMP_DIR)/v$(FAISS_VERSION).tar.gz
+	tar zxf $(TEMP_DIR)/v$(FAISS_VERSION).tar.gz -C $(TEMP_DIR)/
 	cd $(TEMP_DIR)/faiss-$(FAISS_VERSION) && \
-		cmake -DFAISS_ENABLE_GPU=OFF -DFAISS_ENABLE_PYTHON=OFF -DBUILD_TESTING=OFF -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON -B build . && \
-		make -C build -j faiss && \
+	cmake -DCMAKE_BUILD_TYPE=Release \
+		-DBUILD_SHARED_LIBS=OFF \
+		-DBUILD_STATIC_EXECS=ON \
+		-DBUILD_TESTING=OFF \
+		-DCMAKE_C_FLAGS="$(LDFLAGS)" \
+		-DCMAKE_INSTALL_PREFIX=$(USR_LOCAL) \
+		-DFAISS_ENABLE_PYTHON=OFF \
+	        -DFAISS_ENABLE_GPU=OFF \
+		-DBLA_VENDOR=OpenBLAS \
+		-DCMAKE_EXE_LINKER_FLAGS="$(FAISS_LDFLAGS)" \
+		-B build . && \
+		make -C build -j$(CORES) faiss && \
 		make -C build install
 	rm -rf v$(FAISS_VERSION).tar.gz
 	rm -rf $(TEMP_DIR)/faiss-$(FAISS_VERSION)
@@ -608,7 +659,11 @@ faiss/install: /usr/local/lib/libfaiss.so
 lint: \
 	docs/lint \
 	files/lint \
-	vet
+	vet \
+	go/lint
+
+.PHONY: go/lint
+go/lint:
 	$(call go-lint)
 
 .PHONY: vet

@@ -45,8 +45,6 @@ spec:
           image: "vdaas/vald-helm-operator:v1.7.12"
           imagePullPolicy: Always
           args:
-            - "run"
-            - "--watches-file=./watches.yaml"
             - "--leader-elect"
             - "--leader-election-id=vald-helm-operator"
             - "--leader-election-namespace=default"

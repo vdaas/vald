@@ -40,7 +40,7 @@ func TestParseError(t *testing.T) {
 		err         error
 		defaultCode codes.Code
 		defaultMsg  string
-		details     []interface{}
+		details     []any
 	}
 	type want struct {
 		wantSt  codes.Code
@@ -238,7 +238,6 @@ func TestParseError(t *testing.T) {
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -248,7 +247,7 @@ func TestParseError(t *testing.T) {
 // 		code    codes.Code
 // 		msg     string
 // 		err     error
-// 		details []interface{}
+// 		details []any
 // 	}
 // 	type want struct {
 // 		wantSt *Status
@@ -333,7 +332,6 @@ func TestParseError(t *testing.T) {
 // 			if err := checkFunc(test.want, gotSt); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -342,7 +340,7 @@ func TestParseError(t *testing.T) {
 // 	type args struct {
 // 		msg     string
 // 		err     error
-// 		details []interface{}
+// 		details []any
 // 	}
 // 	type want struct {
 // 		err error
@@ -425,7 +423,6 @@ func TestParseError(t *testing.T) {
 // 			if err := checkFunc(test.want, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -434,7 +431,7 @@ func TestParseError(t *testing.T) {
 // 	type args struct {
 // 		msg     string
 // 		err     error
-// 		details []interface{}
+// 		details []any
 // 	}
 // 	type want struct {
 // 		err error
@@ -517,7 +514,6 @@ func TestParseError(t *testing.T) {
 // 			if err := checkFunc(test.want, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -526,7 +522,7 @@ func TestParseError(t *testing.T) {
 // 	type args struct {
 // 		msg     string
 // 		err     error
-// 		details []interface{}
+// 		details []any
 // 	}
 // 	type want struct {
 // 		err error
@@ -609,7 +605,6 @@ func TestParseError(t *testing.T) {
 // 			if err := checkFunc(test.want, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -618,7 +613,7 @@ func TestParseError(t *testing.T) {
 // 	type args struct {
 // 		msg     string
 // 		err     error
-// 		details []interface{}
+// 		details []any
 // 	}
 // 	type want struct {
 // 		err error
@@ -701,7 +696,6 @@ func TestParseError(t *testing.T) {
 // 			if err := checkFunc(test.want, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -710,7 +704,7 @@ func TestParseError(t *testing.T) {
 // 	type args struct {
 // 		msg     string
 // 		err     error
-// 		details []interface{}
+// 		details []any
 // 	}
 // 	type want struct {
 // 		err error
@@ -793,7 +787,6 @@ func TestParseError(t *testing.T) {
 // 			if err := checkFunc(test.want, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -802,7 +795,7 @@ func TestParseError(t *testing.T) {
 // 	type args struct {
 // 		msg     string
 // 		err     error
-// 		details []interface{}
+// 		details []any
 // 	}
 // 	type want struct {
 // 		err error
@@ -885,7 +878,6 @@ func TestParseError(t *testing.T) {
 // 			if err := checkFunc(test.want, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -894,7 +886,7 @@ func TestParseError(t *testing.T) {
 // 	type args struct {
 // 		msg     string
 // 		err     error
-// 		details []interface{}
+// 		details []any
 // 	}
 // 	type want struct {
 // 		err error
@@ -977,7 +969,6 @@ func TestParseError(t *testing.T) {
 // 			if err := checkFunc(test.want, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -986,7 +977,7 @@ func TestParseError(t *testing.T) {
 // 	type args struct {
 // 		msg     string
 // 		err     error
-// 		details []interface{}
+// 		details []any
 // 	}
 // 	type want struct {
 // 		err error
@@ -1069,7 +1060,6 @@ func TestParseError(t *testing.T) {
 // 			if err := checkFunc(test.want, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -1078,7 +1068,7 @@ func TestParseError(t *testing.T) {
 // 	type args struct {
 // 		msg     string
 // 		err     error
-// 		details []interface{}
+// 		details []any
 // 	}
 // 	type want struct {
 // 		err error
@@ -1161,7 +1151,6 @@ func TestParseError(t *testing.T) {
 // 			if err := checkFunc(test.want, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -1170,7 +1159,7 @@ func TestParseError(t *testing.T) {
 // 	type args struct {
 // 		msg     string
 // 		err     error
-// 		details []interface{}
+// 		details []any
 // 	}
 // 	type want struct {
 // 		err error
@@ -1253,7 +1242,6 @@ func TestParseError(t *testing.T) {
 // 			if err := checkFunc(test.want, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -1262,7 +1250,7 @@ func TestParseError(t *testing.T) {
 // 	type args struct {
 // 		msg     string
 // 		err     error
-// 		details []interface{}
+// 		details []any
 // 	}
 // 	type want struct {
 // 		err error
@@ -1345,7 +1333,6 @@ func TestParseError(t *testing.T) {
 // 			if err := checkFunc(test.want, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -1354,7 +1341,7 @@ func TestParseError(t *testing.T) {
 // 	type args struct {
 // 		msg     string
 // 		err     error
-// 		details []interface{}
+// 		details []any
 // 	}
 // 	type want struct {
 // 		err error
@@ -1437,7 +1424,6 @@ func TestParseError(t *testing.T) {
 // 			if err := checkFunc(test.want, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -1446,7 +1432,7 @@ func TestParseError(t *testing.T) {
 // 	type args struct {
 // 		msg     string
 // 		err     error
-// 		details []interface{}
+// 		details []any
 // 	}
 // 	type want struct {
 // 		err error
@@ -1529,7 +1515,6 @@ func TestParseError(t *testing.T) {
 // 			if err := checkFunc(test.want, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -1538,7 +1523,7 @@ func TestParseError(t *testing.T) {
 // 	type args struct {
 // 		msg     string
 // 		err     error
-// 		details []interface{}
+// 		details []any
 // 	}
 // 	type want struct {
 // 		err error
@@ -1621,7 +1606,6 @@ func TestParseError(t *testing.T) {
 // 			if err := checkFunc(test.want, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -1630,7 +1614,7 @@ func TestParseError(t *testing.T) {
 // 	type args struct {
 // 		msg     string
 // 		err     error
-// 		details []interface{}
+// 		details []any
 // 	}
 // 	type want struct {
 // 		err error
@@ -1713,7 +1697,6 @@ func TestParseError(t *testing.T) {
 // 			if err := checkFunc(test.want, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -1722,7 +1705,7 @@ func TestParseError(t *testing.T) {
 // 	type args struct {
 // 		msg     string
 // 		err     error
-// 		details []interface{}
+// 		details []any
 // 	}
 // 	type want struct {
 // 		err error
@@ -1805,7 +1788,6 @@ func TestParseError(t *testing.T) {
 // 			if err := checkFunc(test.want, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -1814,7 +1796,7 @@ func TestParseError(t *testing.T) {
 // 	type args struct {
 // 		msg     string
 // 		err     error
-// 		details []interface{}
+// 		details []any
 // 	}
 // 	type want struct {
 // 		want *Status
@@ -1897,7 +1879,6 @@ func TestParseError(t *testing.T) {
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -1986,7 +1967,6 @@ func TestParseError(t *testing.T) {
 // 			if err := checkFunc(test.want, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -1995,7 +1975,7 @@ func TestParseError(t *testing.T) {
 // 	type args struct {
 // 		code   codes.Code
 // 		format string
-// 		args   []interface{}
+// 		args   []any
 // 	}
 // 	type want struct {
 // 		err error
@@ -2078,7 +2058,6 @@ func TestParseError(t *testing.T) {
 // 			if err := checkFunc(test.want, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -2168,7 +2147,6 @@ func TestParseError(t *testing.T) {
 // 			if err := checkFunc(test.want, gotSt, gotOk); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -2177,7 +2155,7 @@ func TestParseError(t *testing.T) {
 // 	type args struct {
 // 		st      *Status
 // 		err     error
-// 		details []interface{}
+// 		details []any
 // 	}
 // 	type want struct {
 // 		want *Status
@@ -2260,7 +2238,6 @@ func TestParseError(t *testing.T) {
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -2270,8 +2247,7 @@ func TestParseError(t *testing.T) {
 // 		code codes.Code
 // 		err  error
 // 	}
-// 	type want struct {
-// 	}
+// 	type want struct{}
 // 	type test struct {
 // 		name       string
 // 		args       args

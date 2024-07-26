@@ -24,14 +24,14 @@ import (
 
 type MockDBR struct {
 	OpenFunc func(driver, dsn string, log EventReceiver) (Connection, error)
-	EqFunc   func(col string, val interface{}) Builder
+	EqFunc   func(col string, val any) Builder
 }
 
 func (d *MockDBR) Open(driver, dsn string, log EventReceiver) (Connection, error) {
 	return d.OpenFunc(driver, dsn, log)
 }
 
-func (d *MockDBR) Eq(col string, val interface{}) Builder {
+func (d *MockDBR) Eq(col string, val any) Builder {
 	return d.EqFunc(col, val)
 }
 
@@ -62,7 +62,7 @@ type MockTx struct {
 	CommitFunc                  func() error
 	RollbackFunc                func() error
 	RollbackUnlessCommittedFunc func()
-	InsertBySqlFunc             func(query string, value ...interface{}) InsertStmt
+	InsertBySqlFunc             func(query string, value ...any) InsertStmt
 	InsertIntoFunc              func(table string) InsertStmt
 	SelectFunc                  func(column ...string) SelectStmt
 	DeleteFromFunc              func(table string) DeleteStmt
@@ -80,7 +80,7 @@ func (t *MockTx) RollbackUnlessCommitted() {
 	t.RollbackUnlessCommittedFunc()
 }
 
-func (t *MockTx) InsertBySql(query string, value ...interface{}) InsertStmt {
+func (t *MockTx) InsertBySql(query string, value ...any) InsertStmt {
 	return t.InsertBySqlFunc(query, value...)
 }
 
@@ -120,17 +120,17 @@ func (c *MockConn) SetMaxOpenConns(n int) {
 }
 
 type MockSelect struct {
-	FromFunc        func(table interface{}) SelectStmt
-	WhereFunc       func(query interface{}, value ...interface{}) SelectStmt
+	FromFunc        func(table any) SelectStmt
+	WhereFunc       func(query any, value ...any) SelectStmt
 	LimitFunc       func(n uint64) SelectStmt
-	LoadContextFunc func(ctx context.Context, value interface{}) (int, error)
+	LoadContextFunc func(ctx context.Context, value any) (int, error)
 }
 
-func (s *MockSelect) From(table interface{}) SelectStmt {
+func (s *MockSelect) From(table any) SelectStmt {
 	return s.FromFunc(table)
 }
 
-func (s *MockSelect) Where(query interface{}, value ...interface{}) SelectStmt {
+func (s *MockSelect) Where(query any, value ...any) SelectStmt {
 	return s.WhereFunc(query, value...)
 }
 
@@ -138,14 +138,14 @@ func (s *MockSelect) Limit(n uint64) SelectStmt {
 	return s.LimitFunc(n)
 }
 
-func (s *MockSelect) LoadContext(ctx context.Context, value interface{}) (int, error) {
+func (s *MockSelect) LoadContext(ctx context.Context, value any) (int, error) {
 	return s.LoadContextFunc(ctx, value)
 }
 
 type MockInsert struct {
 	ColumnsFunc     func(column ...string) InsertStmt
 	ExecContextFunc func(ctx context.Context) (sql.Result, error)
-	RecordFunc      func(structValue interface{}) InsertStmt
+	RecordFunc      func(structValue any) InsertStmt
 }
 
 func (s *MockInsert) Columns(column ...string) InsertStmt {
@@ -156,19 +156,19 @@ func (s *MockInsert) ExecContext(ctx context.Context) (sql.Result, error) {
 	return s.ExecContextFunc(ctx)
 }
 
-func (s *MockInsert) Record(structValue interface{}) InsertStmt {
+func (s *MockInsert) Record(structValue any) InsertStmt {
 	return s.RecordFunc(structValue)
 }
 
 type MockDelete struct {
 	ExecContextFunc func(ctx context.Context) (sql.Result, error)
-	WhereFunc       func(query interface{}, value ...interface{}) DeleteStmt
+	WhereFunc       func(query any, value ...any) DeleteStmt
 }
 
 func (s *MockDelete) ExecContext(ctx context.Context) (sql.Result, error) {
 	return s.ExecContextFunc(ctx)
 }
 
-func (s *MockDelete) Where(query interface{}, value ...interface{}) DeleteStmt {
+func (s *MockDelete) Where(query any, value ...any) DeleteStmt {
 	return s.WhereFunc(query, value...)
 }

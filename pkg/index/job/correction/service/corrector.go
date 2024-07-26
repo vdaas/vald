@@ -24,7 +24,6 @@ import (
 	"sync/atomic"
 	"time"
 
-	agent "github.com/vdaas/vald/apis/grpc/v1/agent/core"
 	"github.com/vdaas/vald/apis/grpc/v1/payload"
 	"github.com/vdaas/vald/apis/grpc/v1/vald"
 	"github.com/vdaas/vald/internal/client/v1/client/discoverer"
@@ -306,7 +305,9 @@ type vectorReplica struct {
 }
 
 // Validate len(addrs) >= 2 before calling this function.
-func (c *correct) checkConsistency(ctx context.Context, targetReplica *vectorReplica, targetAgentIdx int) error {
+func (c *correct) checkConsistency(
+	ctx context.Context, targetReplica *vectorReplica, targetAgentIdx int,
+) error {
 	// leftAgentAddrs is the agents' addr that hasn't been corrected yet.
 	leftAgentAddrs := c.sortedByIndexCntAddrs[targetAgentIdx+1:]
 
@@ -321,7 +322,7 @@ func (c *correct) checkConsistency(ctx context.Context, targetReplica *vectorRep
 	var mu sync.Mutex
 	if err := c.discoverer.GetClient().OrderedRangeConcurrent(ctx, leftAgentAddrs, len(leftAgentAddrs),
 		func(ctx context.Context, addr string, conn *grpc.ClientConn, copts ...grpc.CallOption) error {
-			vecMeta, err := agent.NewAgentClient(conn).GetTimestamp(ctx, &payload.Object_GetTimestampRequest{
+			vecMeta, err := vald.NewValdClient(conn).GetTimestamp(ctx, &payload.Object_TimestampRequest{
 				Id: &payload.Object_ID{
 					Id: targetReplica.vec.GetId(),
 				},
@@ -379,7 +380,9 @@ func (c *correct) checkConsistency(ctx context.Context, targetReplica *vectorRep
 	return nil
 }
 
-func (c *correct) correctTimestamp(ctx context.Context, targetReplica *vectorReplica, foundReplicas []*vectorReplica) error {
+func (c *correct) correctTimestamp(
+	ctx context.Context, targetReplica *vectorReplica, foundReplicas []*vectorReplica,
+) error {
 	if len(foundReplicas) == 0 {
 		// no replica found. nothing to do about timestamp
 		return nil
@@ -421,9 +424,7 @@ func (c *correct) correctTimestamp(ctx context.Context, targetReplica *vectorRep
 // correctReplica corrects the number of replicas of the target vector.
 // skipcq: GO-R1005
 func (c *correct) correctReplica(
-	ctx context.Context,
-	targetReplica *vectorReplica,
-	foundReplicas []*vectorReplica,
+	ctx context.Context, targetReplica *vectorReplica, foundReplicas []*vectorReplica,
 ) error {
 	// diff < 0 means there is less replica than the correct number
 	existReplica := len(foundReplicas) + 1
@@ -514,7 +515,7 @@ func (c *correct) updateObject(ctx context.Context, dest, src *vectorReplica) er
 	}
 
 	res, err := c.discoverer.GetClient().
-		Do(grpc.WithGRPCMethod(ctx, updateMethod), dest.addr, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
+		Do(grpc.WithGRPCMethod(ctx, updateMethod), dest.addr, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (any, error) {
 			// TODO: use UpdateTimestamp when it's implemented because here we just want to update only the timestamp but not the vector
 			return vald.NewUpdateClient(conn).Update(ctx, &payload.Update_Request{
 				Vector: src.vec,
@@ -540,7 +541,7 @@ func (c *correct) updateObject(ctx context.Context, dest, src *vectorReplica) er
 
 func (c *correct) fillVectorField(ctx context.Context, replica *vectorReplica) error {
 	res, err := c.discoverer.GetClient().
-		Do(grpc.WithGRPCMethod(ctx, "core.v1.Vald/GetObject"), replica.addr, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
+		Do(grpc.WithGRPCMethod(ctx, "core.v1.Vald/GetObject"), replica.addr, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (any, error) {
 			return vald.NewValdClient(conn).GetObject(ctx, &payload.Object_VectorRequest{
 				Id: &payload.Object_ID{
 					Id: replica.vec.GetId(),
@@ -562,9 +563,11 @@ func (c *correct) fillVectorField(ctx context.Context, replica *vectorReplica) e
 	return nil
 }
 
-func (c *correct) insertObject(ctx context.Context, addr string, vector *payload.Object_Vector) error {
+func (c *correct) insertObject(
+	ctx context.Context, addr string, vector *payload.Object_Vector,
+) error {
 	res, err := c.discoverer.GetClient().
-		Do(grpc.WithGRPCMethod(ctx, insertMethod), addr, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
+		Do(grpc.WithGRPCMethod(ctx, insertMethod), addr, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (any, error) {
 			return vald.NewInsertClient(conn).Insert(ctx, &payload.Insert_Request{
 				Vector: vector,
 				// TODO: this should be deleted after Config.Timestamp deprecation
@@ -584,9 +587,11 @@ func (c *correct) insertObject(ctx context.Context, addr string, vector *payload
 	return nil
 }
 
-func (c *correct) deleteObject(ctx context.Context, addr string, vector *payload.Object_Vector) error {
+func (c *correct) deleteObject(
+	ctx context.Context, addr string, vector *payload.Object_Vector,
+) error {
 	res, err := c.discoverer.GetClient().
-		Do(grpc.WithGRPCMethod(ctx, deleteMethod), addr, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (interface{}, error) {
+		Do(grpc.WithGRPCMethod(ctx, deleteMethod), addr, func(ctx context.Context, conn *grpc.ClientConn, copts ...grpc.CallOption) (any, error) {
 			return vald.NewRemoveClient(conn).Remove(ctx, &payload.Remove_Request{
 				Id: &payload.Object_ID{
 					Id: vector.GetId(),
@@ -619,7 +624,7 @@ func (c *correct) loadAgentIndexInfo(ctx context.Context) (err error) {
 			case <-ctx.Done():
 				return nil
 			default:
-				info, err := agent.NewAgentClient(conn).IndexInfo(ctx, new(payload.Empty), copts...)
+				info, err := vald.NewValdClient(conn).IndexInfo(ctx, new(payload.Empty), copts...)
 				if err != nil {
 					log.Warnf("an error occurred while calling IndexInfo of %s: %s", addr, err)
 					return nil

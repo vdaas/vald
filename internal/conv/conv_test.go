@@ -466,7 +466,6 @@ func Test_encode(t *testing.T) {
 // 			if err := checkFunc(test.want, gotS); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }

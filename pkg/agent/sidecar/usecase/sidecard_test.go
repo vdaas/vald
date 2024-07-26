@@ -103,7 +103,6 @@ package usecase
 // 			if err := checkFunc(test.want, gotR, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }

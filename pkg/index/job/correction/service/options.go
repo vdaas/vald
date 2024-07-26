@@ -22,10 +22,8 @@ import (
 type Option func(*correct) error
 
 var defaultOpts = []Option{
-	//nolint:gomnd
-	WithStreamListConcurrency(200),
-	//nolint:gomnd
-	WithKvsAsyncWriteConcurrency(2048),
+	WithStreamListConcurrency(200),     //nolint:gomnd
+	WithKvsAsyncWriteConcurrency(2048), //nolint:gomnd
 }
 
 // WithIndexReplica returns Option that sets index replica.

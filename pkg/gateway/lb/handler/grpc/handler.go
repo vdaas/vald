@@ -206,7 +206,9 @@ func (s *server) exists(ctx context.Context, uuid string) (id *payload.Object_ID
 	return id, nil
 }
 
-func (s *server) Exists(ctx context.Context, meta *payload.Object_ID) (id *payload.Object_ID, err error) {
+func (s *server) Exists(
+	ctx context.Context, meta *payload.Object_ID,
+) (id *payload.Object_ID, err error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.ObjectRPCServiceName+"/"+vald.ExistsRPCName), apiName+"/"+vald.ExistsRPCName)
 	defer func() {
 		if span != nil {
@@ -267,7 +269,9 @@ func (s *server) Exists(ctx context.Context, meta *payload.Object_ID) (id *paylo
 	return nil, err
 }
 
-func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *payload.Search_Response, err error) {
+func (s *server) Search(
+	ctx context.Context, req *payload.Search_Request,
+) (res *payload.Search_Response, err error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.SearchRPCServiceName+"/"+vald.SearchRPCName), apiName+"/"+vald.SearchRPCName)
 	defer func() {
 		if span != nil {
@@ -321,9 +325,9 @@ func (s *server) Search(ctx context.Context, req *payload.Search_Request) (res *
 	return res, nil
 }
 
-func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) (
-	res *payload.Search_Response, err error,
-) {
+func (s *server) SearchByID(
+	ctx context.Context, req *payload.Search_IDRequest,
+) (res *payload.Search_Response, err error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.SearchRPCServiceName+"/"+vald.SearchByIDRPCName), apiName+"/"+vald.SearchByIDRPCName)
 	defer func() {
 		if span != nil {
@@ -451,7 +455,7 @@ func (s *server) SearchByID(ctx context.Context, req *payload.Search_IDRequest) 
 // calculateNum adjusts the number of search results based on the ratio and the number of replicas.
 // It ensures that the number of results is not less than the minimum required and adjusts based on the provided ratio.
 func (s *server) calculateNum(ctx context.Context, num uint32, ratio float32) (n uint32) {
-	min := float64(s.replica) / float64(len(s.gateway.Addrs(ctx)))
+	min := float64(s.replica) / float64(s.gateway.GetAgentCount(ctx))
 	if ratio <= 0.0 {
 		return uint32(math.Ceil(float64(num) * min))
 	}
@@ -463,10 +467,11 @@ func (s *server) calculateNum(ctx context.Context, num uint32, ratio float32) (n
 	return n - 1
 }
 
-func (s *server) doSearch(ctx context.Context, cfg *payload.Search_Config,
-	f func(ctx context.Context, cfg *payload.Search_Config, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error)) (
-	res *payload.Search_Response, err error,
-) {
+func (s *server) doSearch(
+	ctx context.Context,
+	cfg *payload.Search_Config,
+	f func(ctx context.Context, cfg *payload.Search_Config, vc vald.Client, copts ...grpc.CallOption) (*payload.Search_Response, error),
+) (res *payload.Search_Response, err error) {
 	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "doSearch"), apiName+"/doSearch")
 	defer func() {
 		if span != nil {
@@ -601,7 +606,9 @@ func (s *server) StreamSearchByID(stream vald.Search_StreamSearchByIDServer) (er
 	return nil
 }
 
-func (s *server) MultiSearch(ctx context.Context, reqs *payload.Search_MultiRequest) (res *payload.Search_Responses, errs error) {
+func (s *server) MultiSearch(
+	ctx context.Context, reqs *payload.Search_MultiRequest,
+) (res *payload.Search_Responses, errs error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.SearchRPCServiceName+"/"+vald.MultiSearchRPCName), apiName+"/"+vald.MultiSearchRPCName)
 	defer func() {
 		if span != nil {
@@ -675,7 +682,9 @@ func (s *server) MultiSearch(ctx context.Context, reqs *payload.Search_MultiRequ
 	return res, nil
 }
 
-func (s *server) MultiSearchByID(ctx context.Context, reqs *payload.Search_MultiIDRequest) (res *payload.Search_Responses, errs error) {
+func (s *server) MultiSearchByID(
+	ctx context.Context, reqs *payload.Search_MultiIDRequest,
+) (res *payload.Search_Responses, errs error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.SearchRPCServiceName+"/"+vald.MultiSearchByIDRPCName), apiName+"/"+vald.MultiSearchByIDRPCName)
 	defer func() {
 		if span != nil {
@@ -750,7 +759,9 @@ func (s *server) MultiSearchByID(ctx context.Context, reqs *payload.Search_Multi
 	return res, nil
 }
 
-func (s *server) LinearSearch(ctx context.Context, req *payload.Search_Request) (res *payload.Search_Response, err error) {
+func (s *server) LinearSearch(
+	ctx context.Context, req *payload.Search_Request,
+) (res *payload.Search_Response, err error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.SearchRPCServiceName+"/"+vald.LinearSearchRPCName), apiName+"/"+vald.LinearSearchRPCName)
 	defer func() {
 		if span != nil {
@@ -804,9 +815,9 @@ func (s *server) LinearSearch(ctx context.Context, req *payload.Search_Request) 
 	return res, nil
 }
 
-func (s *server) LinearSearchByID(ctx context.Context, req *payload.Search_IDRequest) (
-	res *payload.Search_Response, err error,
-) {
+func (s *server) LinearSearchByID(
+	ctx context.Context, req *payload.Search_IDRequest,
+) (res *payload.Search_Response, err error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.SearchRPCServiceName+"/"+vald.LinearSearchByIDRPCName), apiName+"/"+vald.LinearSearchByIDRPCName)
 	defer func() {
 		if span != nil {
@@ -979,7 +990,9 @@ func (s *server) StreamLinearSearch(stream vald.Search_StreamLinearSearchServer)
 	return nil
 }
 
-func (s *server) StreamLinearSearchByID(stream vald.Search_StreamLinearSearchByIDServer) (err error) {
+func (s *server) StreamLinearSearchByID(
+	stream vald.Search_StreamLinearSearchByIDServer,
+) (err error) {
 	ctx, span := trace.StartSpan(
 		grpc.WithGRPCMethod(stream.Context(), vald.PackageName+"."+vald.SearchRPCServiceName+"/"+vald.StreamLinearSearchByIDRPCName),
 		apiName+"/"+vald.StreamLinearSearchByIDRPCName,
@@ -1030,7 +1043,9 @@ func (s *server) StreamLinearSearchByID(stream vald.Search_StreamLinearSearchByI
 	return nil
 }
 
-func (s *server) MultiLinearSearch(ctx context.Context, reqs *payload.Search_MultiRequest) (res *payload.Search_Responses, errs error) {
+func (s *server) MultiLinearSearch(
+	ctx context.Context, reqs *payload.Search_MultiRequest,
+) (res *payload.Search_Responses, errs error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.SearchRPCServiceName+"/"+vald.MultiLinearSearchRPCName), apiName+"/"+vald.MultiLinearSearchRPCName)
 	defer func() {
 		if span != nil {
@@ -1104,7 +1119,9 @@ func (s *server) MultiLinearSearch(ctx context.Context, reqs *payload.Search_Mul
 	return res, nil
 }
 
-func (s *server) MultiLinearSearchByID(ctx context.Context, reqs *payload.Search_MultiIDRequest) (res *payload.Search_Responses, errs error) {
+func (s *server) MultiLinearSearchByID(
+	ctx context.Context, reqs *payload.Search_MultiIDRequest,
+) (res *payload.Search_Responses, errs error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.SearchRPCServiceName+"/"+vald.MultiLinearSearchByIDRPCName), apiName+"/"+vald.MultiLinearSearchByIDRPCName)
 	defer func() {
 		if span != nil {
@@ -1179,7 +1196,9 @@ func (s *server) MultiLinearSearchByID(ctx context.Context, reqs *payload.Search
 	return res, nil
 }
 
-func (s *server) Insert(ctx context.Context, req *payload.Insert_Request) (ce *payload.Object_Location, err error) {
+func (s *server) Insert(
+	ctx context.Context, req *payload.Insert_Request,
+) (ce *payload.Object_Location, err error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.InsertRPCServiceName+"/"+vald.InsertRPCName), apiName+"/"+vald.InsertRPCName)
 	defer func() {
 		if span != nil {
@@ -1447,7 +1466,9 @@ func (s *server) StreamInsert(stream vald.Insert_StreamInsertServer) (err error)
 	return nil
 }
 
-func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequest) (locs *payload.Object_Locations, errs error) {
+func (s *server) MultiInsert(
+	ctx context.Context, reqs *payload.Insert_MultiRequest,
+) (locs *payload.Object_Locations, errs error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.InsertRPCServiceName+"/"+vald.MultiInsertRPCName), apiName+"/"+vald.MultiInsertRPCName)
 	defer func() {
 		if span != nil {
@@ -1560,7 +1581,9 @@ func (s *server) MultiInsert(ctx context.Context, reqs *payload.Insert_MultiRequ
 	return locs, errs
 }
 
-func (s *server) Update(ctx context.Context, req *payload.Update_Request) (res *payload.Object_Location, err error) {
+func (s *server) Update(
+	ctx context.Context, req *payload.Update_Request,
+) (res *payload.Object_Location, err error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.UpdateRPCServiceName+"/"+vald.UpdateRPCName), apiName+"/"+vald.UpdateRPCName)
 	defer func() {
 		if span != nil {
@@ -1983,7 +2006,9 @@ func (s *server) StreamUpdate(stream vald.Update_StreamUpdateServer) (err error)
 	return nil
 }
 
-func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequest) (locs *payload.Object_Locations, errs error) {
+func (s *server) MultiUpdate(
+	ctx context.Context, reqs *payload.Update_MultiRequest,
+) (locs *payload.Object_Locations, errs error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.UpdateRPCServiceName+"/"+vald.MultiUpdateRPCName), apiName+"/"+vald.MultiUpdateRPCName)
 	defer func() {
 		if span != nil {
@@ -2096,7 +2121,9 @@ func (s *server) MultiUpdate(ctx context.Context, reqs *payload.Update_MultiRequ
 	return locs, errs
 }
 
-func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *payload.Object_Location, err error) {
+func (s *server) Upsert(
+	ctx context.Context, req *payload.Upsert_Request,
+) (loc *payload.Object_Location, err error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.UpsertRPCServiceName+"/"+vald.UpsertRPCName), apiName+"/"+vald.UpsertRPCName)
 	defer func() {
 		if span != nil {
@@ -2331,7 +2358,9 @@ func (s *server) StreamUpsert(stream vald.Upsert_StreamUpsertServer) (err error)
 	return nil
 }
 
-func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequest) (locs *payload.Object_Locations, errs error) {
+func (s *server) MultiUpsert(
+	ctx context.Context, reqs *payload.Upsert_MultiRequest,
+) (locs *payload.Object_Locations, errs error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.UpsertRPCServiceName+"/"+vald.MultiUpsertRPCName), apiName+"/"+vald.MultiUpsertRPCName)
 	defer func() {
 		if span != nil {
@@ -2444,7 +2473,9 @@ func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequ
 	return locs, errs
 }
 
-func (s *server) Remove(ctx context.Context, req *payload.Remove_Request) (locs *payload.Object_Location, err error) {
+func (s *server) Remove(
+	ctx context.Context, req *payload.Remove_Request,
+) (locs *payload.Object_Location, err error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.RemoveRPCServiceName+"/"+vald.RemoveRPCName), apiName+"/"+vald.RemoveRPCName)
 	defer func() {
 		if span != nil {
@@ -2634,7 +2665,9 @@ func (s *server) StreamRemove(stream vald.Remove_StreamRemoveServer) (err error)
 	return nil
 }
 
-func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequest) (locs *payload.Object_Locations, errs error) {
+func (s *server) MultiRemove(
+	ctx context.Context, reqs *payload.Remove_MultiRequest,
+) (locs *payload.Object_Locations, errs error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.RemoveRPCServiceName+"/"+vald.MultiRemoveRPCName), apiName+"/"+vald.MultiRemoveRPCName)
 	defer func() {
 		if span != nil {
@@ -2736,7 +2769,9 @@ func (s *server) MultiRemove(ctx context.Context, reqs *payload.Remove_MultiRequ
 	return locs, errs
 }
 
-func (s *server) RemoveByTimestamp(ctx context.Context, req *payload.Remove_TimestampRequest) (locs *payload.Object_Locations, errs error) {
+func (s *server) RemoveByTimestamp(
+	ctx context.Context, req *payload.Remove_TimestampRequest,
+) (locs *payload.Object_Locations, errs error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.RemoveRPCServiceName+"/"+vald.RemoveByTimestampRPCName), apiName+"/"+vald.RemoveByTimestampRPCName)
 	defer func() {
 		if span != nil {
@@ -2861,7 +2896,9 @@ func (s *server) RemoveByTimestamp(ctx context.Context, req *payload.Remove_Time
 	return locs, nil
 }
 
-func (s *server) getObject(ctx context.Context, uuid string) (vec *payload.Object_Vector, err error) {
+func (s *server) getObject(
+	ctx context.Context, uuid string,
+) (vec *payload.Object_Vector, err error) {
 	ctx, span := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "getObject"), apiName+"/"+vald.GetObjectRPCName+"/getObject")
 	defer func() {
 		if span != nil {
@@ -2989,7 +3026,9 @@ func (s *server) getObject(ctx context.Context, uuid string) (vec *payload.Objec
 	return vec, nil
 }
 
-func (s *server) Flush(ctx context.Context, req *payload.Flush_Request) (cnts *payload.Info_Index_Count, err error) {
+func (s *server) Flush(
+	ctx context.Context, req *payload.Flush_Request,
+) (cnts *payload.Info_Index_Count, err error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.FlushRPCServiceName+"/"+vald.FlushRPCName), apiName+"/"+vald.FlushRPCName)
 	defer func() {
 		if span != nil {
@@ -3072,7 +3111,7 @@ func (s *server) Flush(ctx context.Context, req *payload.Flush_Request) (cnts *p
 	}
 	if cnts.Stored > 0 || cnts.Uncommitted > 0 || cnts.Indexing || cnts.Saving {
 		err = errors.Errorf(
-			"stored index: %d, uncommited: %d, indexing: %t, saving: %t",
+			"stored index: %d, uncommitted: %d, indexing: %t, saving: %t",
 			cnts.Stored, cnts.Uncommitted, cnts.Indexing, cnts.Saving,
 		)
 		err = status.WrapWithInternal(vald.FlushRPCName+" API flush failed", err,
@@ -3095,7 +3134,9 @@ func (s *server) Flush(ctx context.Context, req *payload.Flush_Request) (cnts *p
 	return cnts, nil
 }
 
-func (s *server) GetObject(ctx context.Context, req *payload.Object_VectorRequest) (vec *payload.Object_Vector, err error) {
+func (s *server) GetObject(
+	ctx context.Context, req *payload.Object_VectorRequest,
+) (vec *payload.Object_Vector, err error) {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.ObjectRPCServiceName+"/"+vald.GetObjectRPCName), apiName+"/"+vald.GetObjectRPCName)
 	defer func() {
 		if span != nil {
@@ -3207,7 +3248,9 @@ func (s *server) StreamGetObject(stream vald.Object_StreamGetObjectServer) (err 
 	return nil
 }
 
-func (s *server) StreamListObject(req *payload.Object_List_Request, stream vald.Object_StreamListObjectServer) error {
+func (s *server) StreamListObject(
+	req *payload.Object_List_Request, stream vald.Object_StreamListObjectServer,
+) error {
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(stream.Context(), vald.PackageName+"."+vald.ObjectRPCServiceName+"/"+vald.StreamListObjectRPCName), apiName+"/"+vald.StreamListObjectRPCName)
 	defer func() {
 		if span != nil {
@@ -3292,4 +3335,729 @@ func (s *server) StreamListObject(req *payload.Object_List_Request, stream vald.
 		}
 	})
 	return err
+}
+
+func (s *server) IndexInfo(
+	ctx context.Context, _ *payload.Empty,
+) (vec *payload.Info_Index_Count, err error) {
+	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.IndexRPCServiceName+"/"+vald.IndexInfoRPCName), apiName+"/"+vald.IndexInfoRPCName)
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	ech := make(chan error, 1)
+	var (
+		stored, uncommitted atomic.Uint32
+		indexing, saving    atomic.Bool
+	)
+	s.eg.Go(safety.RecoverFunc(func() error {
+		defer close(ech)
+		ech <- s.gateway.BroadCast(ctx, service.READ, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error {
+			sctx, sspan := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "BroadCast/"+target), apiName+"/"+vald.IndexInfoRPCName+"/"+target)
+			defer func() {
+				if sspan != nil {
+					sspan.End()
+				}
+			}()
+			info, err := vc.IndexInfo(sctx, new(payload.Empty), copts...)
+			if err != nil {
+				var (
+					attrs trace.Attributes
+					st    *status.Status
+					msg   string
+					code  codes.Code
+				)
+				switch {
+				case errors.Is(err, context.Canceled),
+					errors.Is(err, errors.ErrRPCCallFailed(target, context.Canceled)):
+					attrs = trace.StatusCodeCancelled(
+						errdetails.ValdGRPCResourceTypePrefix +
+							"/vald.v1." + vald.IndexInfoRPCName + ".BroadCast/" +
+							target + " canceled: " + err.Error())
+					code = codes.Canceled
+				case errors.Is(err, context.DeadlineExceeded),
+					errors.Is(err, errors.ErrRPCCallFailed(target, context.DeadlineExceeded)):
+					attrs = trace.StatusCodeDeadlineExceeded(
+						errdetails.ValdGRPCResourceTypePrefix +
+							"/vald.v1." + vald.IndexInfoRPCName + ".BroadCast/" +
+							target + " deadline_exceeded: " + err.Error())
+					code = codes.DeadlineExceeded
+				default:
+					st, msg, err = status.ParseError(err, codes.NotFound, "error "+vald.IndexInfoRPCName+" API",
+						&errdetails.ResourceInfo{
+							ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.IndexInfoRPCName + ".BroadCase/" + target,
+							ResourceName: fmt.Sprintf("%s: %s(%s) to %s", apiName, s.name, s.ip, target),
+						})
+					if st != nil {
+						code = st.Code()
+					} else {
+						code = codes.NotFound
+					}
+					attrs = trace.FromGRPCStatus(code, msg)
+				}
+				if sspan != nil {
+					sspan.RecordError(err)
+					sspan.SetAttributes(attrs...)
+					sspan.SetStatus(trace.StatusError, err.Error())
+				}
+				if err != nil && st != nil &&
+					code != codes.Canceled &&
+					code != codes.DeadlineExceeded &&
+					code != codes.InvalidArgument &&
+					code != codes.NotFound &&
+					code != codes.OK &&
+					code != codes.Unimplemented {
+					return err
+				}
+				return nil
+			}
+			if info != nil {
+				stored.Add(info.GetStored())
+				uncommitted.Add(info.GetUncommitted())
+				if info.GetIndexing() {
+					indexing.Store(true)
+				}
+				if info.GetSaving() {
+					saving.Store(true)
+				}
+			}
+			return nil
+		})
+		return nil
+	}))
+	select {
+	case <-ctx.Done():
+		err = ctx.Err()
+	case err = <-ech:
+	}
+	if err != nil {
+		resInfo := &errdetails.ResourceInfo{
+			ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.IndexInfoRPCName,
+			ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
+		}
+		var attrs trace.Attributes
+		switch {
+		case errors.Is(err, errors.ErrGRPCClientConnNotFound("*")):
+			err = status.WrapWithInternal(vald.IndexInfoRPCName+" API connection not found", err, resInfo)
+			attrs = trace.StatusCodeInternal(err.Error())
+		case errors.Is(err, context.Canceled):
+			err = status.WrapWithCanceled(vald.IndexInfoRPCName+" API canceled", err, resInfo)
+			attrs = trace.StatusCodeCancelled(err.Error())
+		case errors.Is(err, context.DeadlineExceeded):
+			err = status.WrapWithDeadlineExceeded(vald.IndexInfoRPCName+" API deadline exceeded", err, resInfo)
+			attrs = trace.StatusCodeDeadlineExceeded(err.Error())
+		default:
+			var (
+				st  *status.Status
+				msg string
+			)
+			st, msg, err = status.ParseError(err, codes.Unknown, vald.IndexInfoRPCName+" API request returned error", resInfo)
+			attrs = trace.FromGRPCStatus(st.Code(), msg)
+		}
+		log.Debug(err)
+		if span != nil {
+			span.RecordError(err)
+			span.SetAttributes(attrs...)
+			span.SetStatus(trace.StatusError, err.Error())
+		}
+		return nil, err
+	}
+	return &payload.Info_Index_Count{
+		Stored:      stored.Load(),
+		Uncommitted: uncommitted.Load(),
+		Indexing:    indexing.Load(),
+		Saving:      saving.Load(),
+	}, nil
+}
+
+func (s *server) IndexDetail(
+	ctx context.Context, _ *payload.Empty,
+) (vec *payload.Info_Index_Detail, err error) {
+	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.IndexRPCServiceName+"/"+vald.IndexDetailRPCName), apiName+"/"+vald.IndexDetailRPCName)
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	ech := make(chan error, 1)
+	var (
+		mu     sync.Mutex
+		detail = &payload.Info_Index_Detail{
+			Counts:     make(map[string]*payload.Info_Index_Count),
+			Replica:    uint32(s.replica),
+			LiveAgents: uint32(s.gateway.GetAgentCount(ctx)),
+		}
+	)
+	s.eg.Go(safety.RecoverFunc(func() error {
+		defer close(ech)
+		ech <- s.gateway.BroadCast(ctx, service.READ, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error {
+			sctx, sspan := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "BroadCast/"+target), apiName+"/"+vald.IndexDetailRPCName+"/"+target)
+			defer func() {
+				if sspan != nil {
+					sspan.End()
+				}
+			}()
+			info, err := vc.IndexInfo(sctx, new(payload.Empty), copts...)
+			if err != nil {
+				var (
+					attrs trace.Attributes
+					st    *status.Status
+					msg   string
+					code  codes.Code
+				)
+				switch {
+				case errors.Is(err, context.Canceled),
+					errors.Is(err, errors.ErrRPCCallFailed(target, context.Canceled)):
+					attrs = trace.StatusCodeCancelled(
+						errdetails.ValdGRPCResourceTypePrefix +
+							"/vald.v1." + vald.IndexDetailRPCName + ".BroadCast/" +
+							target + " canceled: " + err.Error())
+					code = codes.Canceled
+				case errors.Is(err, context.DeadlineExceeded),
+					errors.Is(err, errors.ErrRPCCallFailed(target, context.DeadlineExceeded)):
+					attrs = trace.StatusCodeDeadlineExceeded(
+						errdetails.ValdGRPCResourceTypePrefix +
+							"/vald.v1." + vald.IndexDetailRPCName + ".BroadCast/" +
+							target + " deadline_exceeded: " + err.Error())
+					code = codes.DeadlineExceeded
+				default:
+					st, msg, err = status.ParseError(err, codes.NotFound, "error "+vald.IndexDetailRPCName+" API",
+						&errdetails.ResourceInfo{
+							ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.IndexDetailRPCName + ".BroadCase/" + target,
+							ResourceName: fmt.Sprintf("%s: %s(%s) to %s", apiName, s.name, s.ip, target),
+						})
+					if st != nil {
+						code = st.Code()
+					} else {
+						code = codes.NotFound
+					}
+					attrs = trace.FromGRPCStatus(code, msg)
+				}
+				if sspan != nil {
+					sspan.RecordError(err)
+					sspan.SetAttributes(attrs...)
+					sspan.SetStatus(trace.StatusError, err.Error())
+				}
+				if err != nil && st != nil &&
+					code != codes.Canceled &&
+					code != codes.DeadlineExceeded &&
+					code != codes.InvalidArgument &&
+					code != codes.NotFound &&
+					code != codes.OK &&
+					code != codes.Unimplemented {
+					return err
+				}
+				return nil
+			}
+			if info != nil {
+				mu.Lock()
+				detail.Counts[target] = info
+				mu.Unlock()
+			}
+			return nil
+		})
+		return nil
+	}))
+	select {
+	case <-ctx.Done():
+		err = ctx.Err()
+	case err = <-ech:
+	}
+	if err != nil {
+		resInfo := &errdetails.ResourceInfo{
+			ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.IndexDetailRPCName,
+			ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
+		}
+		var attrs trace.Attributes
+		switch {
+		case errors.Is(err, errors.ErrGRPCClientConnNotFound("*")):
+			err = status.WrapWithInternal(vald.IndexDetailRPCName+" API connection not found", err, resInfo)
+			attrs = trace.StatusCodeInternal(err.Error())
+		case errors.Is(err, context.Canceled):
+			err = status.WrapWithCanceled(vald.IndexDetailRPCName+" API canceled", err, resInfo)
+			attrs = trace.StatusCodeCancelled(err.Error())
+		case errors.Is(err, context.DeadlineExceeded):
+			err = status.WrapWithDeadlineExceeded(vald.IndexDetailRPCName+" API deadline exceeded", err, resInfo)
+			attrs = trace.StatusCodeDeadlineExceeded(err.Error())
+		default:
+			var (
+				st  *status.Status
+				msg string
+			)
+			st, msg, err = status.ParseError(err, codes.Unknown, vald.IndexDetailRPCName+" API request returned error", resInfo)
+			attrs = trace.FromGRPCStatus(st.Code(), msg)
+		}
+		log.Debug(err)
+		if span != nil {
+			span.RecordError(err)
+			span.SetAttributes(attrs...)
+			span.SetStatus(trace.StatusError, err.Error())
+		}
+		return nil, err
+	}
+	return detail, nil
+}
+
+func (s *server) GetTimestamp(
+	ctx context.Context, req *payload.Object_TimestampRequest,
+) (ts *payload.Object_Timestamp, err error) {
+	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.ObjectRPCServiceName+"/"+vald.GetTimestampRPCName), apiName+"/"+vald.GetTimestampRPCName)
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	uuid := req.GetId().GetId()
+	tch := make(chan *payload.Object_Timestamp, 1)
+	ech := make(chan error, 1)
+	doneErr := errors.New("done getTimestamp")
+	ctx, cancel := context.WithCancelCause(ctx)
+	s.eg.Go(safety.RecoverFunc(func() error {
+		defer close(tch)
+		defer close(ech)
+		var once sync.Once
+		ech <- s.gateway.BroadCast(ctx, service.READ, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error {
+			sctx, sspan := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "BroadCast/"+target), apiName+"/getTimestamp/BroadCast/"+target)
+			defer func() {
+				if sspan != nil {
+					sspan.End()
+				}
+			}()
+			req := &payload.Object_TimestampRequest{
+				Id: &payload.Object_ID{
+					Id: uuid,
+				},
+			}
+			ots, err := vc.GetTimestamp(sctx, req, copts...)
+			if err != nil {
+				var (
+					attrs trace.Attributes
+					st    *status.Status
+					msg   string
+					code  codes.Code
+				)
+				switch {
+				case errors.Is(err, context.Canceled),
+					errors.Is(err, errors.ErrRPCCallFailed(target, context.Canceled)):
+					attrs = trace.StatusCodeCancelled(
+						errdetails.ValdGRPCResourceTypePrefix +
+							"/vald.v1." + vald.GetTimestampRPCName + ".BroadCast/" +
+							target + " canceled: " + err.Error())
+					code = codes.Canceled
+				case errors.Is(err, context.DeadlineExceeded),
+					errors.Is(err, errors.ErrRPCCallFailed(target, context.DeadlineExceeded)):
+					attrs = trace.StatusCodeDeadlineExceeded(
+						errdetails.ValdGRPCResourceTypePrefix +
+							"/vald.v1." + vald.GetTimestampRPCName + ".BroadCast/" +
+							target + " deadline_exceeded: " + err.Error())
+					code = codes.DeadlineExceeded
+				default:
+					st, msg, err = status.ParseError(err, codes.NotFound, "error "+vald.GetTimestampRPCName+" API meta "+uuid+"'s uuid not found",
+						&errdetails.RequestInfo{
+							RequestId:   uuid,
+							ServingData: errdetails.Serialize(req),
+						},
+						&errdetails.ResourceInfo{
+							ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.GetTimestampRPCName,
+							ResourceName: fmt.Sprintf("%s: %s(%s) to %s", apiName, s.name, s.ip, target),
+						})
+					if st != nil {
+						code = st.Code()
+					} else {
+						code = codes.NotFound
+					}
+					attrs = trace.FromGRPCStatus(code, msg)
+				}
+				if sspan != nil {
+					sspan.RecordError(err)
+					sspan.SetAttributes(attrs...)
+					sspan.SetStatus(trace.StatusError, err.Error())
+				}
+				if err != nil && st != nil &&
+					code != codes.Canceled &&
+					code != codes.DeadlineExceeded &&
+					code != codes.InvalidArgument &&
+					code != codes.NotFound &&
+					code != codes.OK &&
+					code != codes.Unimplemented {
+					return err
+				}
+				return nil
+			}
+			if ots != nil && ots.GetId() != "" {
+				once.Do(func() {
+					tch <- ots
+					cancel(doneErr)
+				})
+			}
+			return nil
+		})
+		return nil
+	}))
+	select {
+	case <-ctx.Done():
+		err = ctx.Err()
+		if errors.Is(err, context.Canceled) && errors.Is(context.Cause(ctx), doneErr) {
+			select {
+			case ts = <-tch:
+				if ts == nil || ts.GetId() == "" {
+					err = errors.ErrObjectNotFound(nil, uuid)
+				} else {
+					err = nil
+				}
+			default:
+			}
+		}
+	case ts = <-tch:
+		if ts == nil || ts.GetId() == "" {
+			err = errors.ErrObjectNotFound(nil, uuid)
+		}
+	case err = <-ech:
+	}
+	if err != nil {
+		reqInfo := &errdetails.RequestInfo{
+			RequestId:   uuid,
+			ServingData: errdetails.Serialize(req),
+		}
+		resInfo := &errdetails.ResourceInfo{
+			ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.GetTimestampRPCName,
+			ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
+		}
+		var attrs trace.Attributes
+		switch {
+		case errors.Is(err, errors.ErrInvalidUUID(uuid)):
+			err = status.WrapWithInvalidArgument(vald.GetTimestampRPCName+" API invalid argument for uuid \""+uuid+"\" detected", err, reqInfo, resInfo, &errdetails.BadRequest{
+				FieldViolations: []*errdetails.BadRequestFieldViolation{
+					{
+						Field:       "uuid",
+						Description: err.Error(),
+					},
+				},
+			})
+			attrs = trace.StatusCodeInvalidArgument(err.Error())
+		case errors.Is(err, errors.ErrObjectIDNotFound(uuid)), errors.Is(err, errors.ErrObjectNotFound(nil, uuid)):
+			err = status.WrapWithNotFound(vald.GetTimestampRPCName+" API id "+uuid+"'s object not found", err, reqInfo, resInfo)
+			attrs = trace.StatusCodeNotFound(err.Error())
+		case errors.Is(err, errors.ErrGRPCClientConnNotFound("*")):
+			err = status.WrapWithInternal(vald.GetTimestampRPCName+" API connection not found", err, reqInfo, resInfo)
+			attrs = trace.StatusCodeInternal(err.Error())
+		case errors.Is(err, context.Canceled):
+			err = status.WrapWithCanceled(vald.GetTimestampRPCName+" API canceled", err, reqInfo, resInfo)
+			attrs = trace.StatusCodeCancelled(err.Error())
+		case errors.Is(err, context.DeadlineExceeded):
+			err = status.WrapWithDeadlineExceeded(vald.GetTimestampRPCName+" API deadline exceeded", err, reqInfo, resInfo)
+			attrs = trace.StatusCodeDeadlineExceeded(err.Error())
+		default:
+			var (
+				st  *status.Status
+				msg string
+			)
+			st, msg, err = status.ParseError(err, codes.Unknown, vald.GetTimestampRPCName+" API uuid "+uuid+"'s request returned error", reqInfo, resInfo)
+			attrs = trace.FromGRPCStatus(st.Code(), msg)
+		}
+		if span != nil {
+			span.RecordError(err)
+			span.SetAttributes(attrs...)
+			span.SetStatus(trace.StatusError, err.Error())
+		}
+		return nil, err
+	}
+	return ts, nil
+}
+
+func (s *server) IndexStatistics(
+	ctx context.Context, req *payload.Empty,
+) (vec *payload.Info_Index_Statistics, err error) {
+	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.IndexRPCServiceName+"/"+vald.IndexStatisticsRPCName), apiName+"/"+vald.IndexStatisticsRPCName)
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	details, err := s.IndexStatisticsDetail(ctx, req)
+	if err != nil || details == nil {
+		resInfo := &errdetails.ResourceInfo{
+			ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.IndexStatisticsRPCName,
+			ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
+		}
+		var attrs trace.Attributes
+		switch {
+		case errors.Is(err, errors.ErrGRPCClientConnNotFound("*")):
+			err = status.WrapWithInternal(vald.IndexStatisticsRPCName+" API connection not found", err, resInfo)
+			attrs = trace.StatusCodeInternal(err.Error())
+		case errors.Is(err, context.Canceled):
+			err = status.WrapWithCanceled(vald.IndexStatisticsRPCName+" API canceled", err, resInfo)
+			attrs = trace.StatusCodeCancelled(err.Error())
+		case errors.Is(err, context.DeadlineExceeded):
+			err = status.WrapWithDeadlineExceeded(vald.IndexStatisticsRPCName+" API deadline exceeded", err, resInfo)
+			attrs = trace.StatusCodeDeadlineExceeded(err.Error())
+		default:
+			var (
+				st  *status.Status
+				msg string
+			)
+			st, msg, err = status.ParseError(err, codes.Unknown, vald.IndexStatisticsRPCName+" API request returned error", resInfo)
+			attrs = trace.FromGRPCStatus(st.Code(), msg)
+		}
+		log.Debug(err)
+		if span != nil {
+			span.RecordError(err)
+			span.SetAttributes(attrs...)
+			span.SetStatus(trace.StatusError, err.Error())
+		}
+		return nil, err
+	}
+	return mergeInfoIndexStatistics(details.GetDetails()), nil
+}
+
+func (s *server) IndexStatisticsDetail(
+	ctx context.Context, _ *payload.Empty,
+) (vec *payload.Info_Index_StatisticsDetail, err error) {
+	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+vald.IndexRPCServiceName+"/"+vald.IndexStatisticsDetailRPCName), apiName+"/"+vald.IndexStatisticsDetailRPCName)
+	defer func() {
+		if span != nil {
+			span.End()
+		}
+	}()
+	ech := make(chan error, 1)
+	var (
+		mu     sync.Mutex
+		detail = &payload.Info_Index_StatisticsDetail{
+			Details: make(map[string]*payload.Info_Index_Statistics, s.gateway.GetAgentCount(ctx)),
+		}
+	)
+	s.eg.Go(safety.RecoverFunc(func() error {
+		defer close(ech)
+		ech <- s.gateway.BroadCast(ctx, service.READ, func(ctx context.Context, target string, vc vald.Client, copts ...grpc.CallOption) error {
+			sctx, sspan := trace.StartSpan(grpc.WrapGRPCMethod(ctx, "BroadCast/"+target), apiName+"/"+vald.IndexStatisticsDetailRPCName+"/"+target)
+			defer func() {
+				if sspan != nil {
+					sspan.End()
+				}
+			}()
+			var stats *payload.Info_Index_Statistics
+			stats, err = vc.IndexStatistics(sctx, new(payload.Empty), copts...)
+			if err != nil {
+				var (
+					attrs trace.Attributes
+					st    *status.Status
+					msg   string
+					code  codes.Code
+				)
+				switch {
+				case errors.Is(err, context.Canceled),
+					errors.Is(err, errors.ErrRPCCallFailed(target, context.Canceled)):
+					attrs = trace.StatusCodeCancelled(
+						errdetails.ValdGRPCResourceTypePrefix +
+							"/vald.v1." + vald.IndexStatisticsDetailRPCName + ".BroadCast/" +
+							target + " canceled: " + err.Error())
+					code = codes.Canceled
+				case errors.Is(err, context.DeadlineExceeded),
+					errors.Is(err, errors.ErrRPCCallFailed(target, context.DeadlineExceeded)):
+					attrs = trace.StatusCodeDeadlineExceeded(
+						errdetails.ValdGRPCResourceTypePrefix +
+							"/vald.v1." + vald.IndexStatisticsDetailRPCName + ".BroadCast/" +
+							target + " deadline_exceeded: " + err.Error())
+					code = codes.DeadlineExceeded
+				default:
+					st, msg, err = status.ParseError(err, codes.NotFound, "error "+vald.IndexStatisticsDetailRPCName+" API",
+						&errdetails.ResourceInfo{
+							ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.IndexStatisticsDetailRPCName + ".BroadCase/" + target,
+							ResourceName: fmt.Sprintf("%s: %s(%s) to %s", apiName, s.name, s.ip, target),
+						})
+					if st != nil {
+						code = st.Code()
+					} else {
+						code = codes.NotFound
+					}
+					attrs = trace.FromGRPCStatus(code, msg)
+				}
+				if sspan != nil {
+					sspan.RecordError(err)
+					sspan.SetAttributes(attrs...)
+					sspan.SetStatus(trace.StatusError, err.Error())
+				}
+				if err != nil && st != nil &&
+					code != codes.Canceled &&
+					code != codes.DeadlineExceeded &&
+					code != codes.InvalidArgument &&
+					code != codes.NotFound &&
+					code != codes.OK &&
+					code != codes.Unimplemented {
+					return err
+				}
+				return nil
+			}
+			if stats != nil {
+				mu.Lock()
+				detail.Details[target] = stats
+				mu.Unlock()
+			}
+			return nil
+		})
+		return nil
+	}))
+	select {
+	case <-ctx.Done():
+		err = ctx.Err()
+	case err = <-ech:
+	}
+	if err != nil {
+		resInfo := &errdetails.ResourceInfo{
+			ResourceType: errdetails.ValdGRPCResourceTypePrefix + "/vald.v1." + vald.IndexStatisticsDetailRPCName,
+			ResourceName: fmt.Sprintf("%s: %s(%s) to %v", apiName, s.name, s.ip, s.gateway.Addrs(ctx)),
+		}
+		var attrs trace.Attributes
+		switch {
+		case errors.Is(err, errors.ErrGRPCClientConnNotFound("*")):
+			err = status.WrapWithInternal(vald.IndexStatisticsDetailRPCName+" API connection not found", err, resInfo)
+			attrs = trace.StatusCodeInternal(err.Error())
+		case errors.Is(err, context.Canceled):
+			err = status.WrapWithCanceled(vald.IndexStatisticsDetailRPCName+" API canceled", err, resInfo)
+			attrs = trace.StatusCodeCancelled(err.Error())
+		case errors.Is(err, context.DeadlineExceeded):
+			err = status.WrapWithDeadlineExceeded(vald.IndexStatisticsDetailRPCName+" API deadline exceeded", err, resInfo)
+			attrs = trace.StatusCodeDeadlineExceeded(err.Error())
+		default:
+			var (
+				st  *status.Status
+				msg string
+			)
+			st, msg, err = status.ParseError(err, codes.Unknown, vald.IndexStatisticsDetailRPCName+" API request returned error", resInfo)
+			attrs = trace.FromGRPCStatus(st.Code(), msg)
+		}
+		log.Debug(err)
+		if span != nil {
+			span.RecordError(err)
+			span.SetAttributes(attrs...)
+			span.SetStatus(trace.StatusError, err.Error())
+		}
+		return nil, err
+	}
+	return detail, nil
+}
+
+func calculateMedian(data []int32) int32 {
+	slices.Sort(data)
+	n := len(data)
+	if n%2 == 0 {
+		return (data[n/2-1] + data[n/2]) / 2
+	}
+	return data[n/2]
+}
+
+func sumHistograms(hist1, hist2 []uint64) []uint64 {
+	if len(hist1) < len(hist2) {
+		hist1, hist2 = hist2, hist1
+	}
+	for i := range hist2 {
+		hist1[i] += hist2[i]
+	}
+	return hist1
+}
+
+func mergeInfoIndexStatistics(
+	stats map[string]*payload.Info_Index_Statistics,
+) (merged *payload.Info_Index_Statistics) {
+	merged = new(payload.Info_Index_Statistics)
+
+	if len(stats) == 0 {
+		return merged
+	}
+
+	var indegrees, outdegrees []int32
+	var indegreeCounts [][]int64
+	var outdegreeHistograms, indegreeHistograms [][]uint64
+	merged.Valid = true
+
+	for _, stat := range stats {
+		if !stat.Valid {
+			continue
+		}
+		indegrees = append(indegrees, stat.MedianIndegree)
+		outdegrees = append(outdegrees, stat.MedianOutdegree)
+
+		indegreeCounts = append(indegreeCounts, stat.IndegreeCount)
+		outdegreeHistograms = append(outdegreeHistograms, stat.OutdegreeHistogram)
+		indegreeHistograms = append(indegreeHistograms, stat.IndegreeHistogram)
+
+		if stat.MaxNumberOfIndegree > merged.MaxNumberOfIndegree {
+			merged.MaxNumberOfIndegree = stat.MaxNumberOfIndegree
+		}
+		if stat.MaxNumberOfOutdegree > merged.MaxNumberOfOutdegree {
+			merged.MaxNumberOfOutdegree = stat.MaxNumberOfOutdegree
+		}
+		if stat.MinNumberOfIndegree < merged.MinNumberOfIndegree || merged.MinNumberOfIndegree == 0 {
+			merged.MinNumberOfIndegree = stat.MinNumberOfIndegree
+		}
+		if stat.MinNumberOfOutdegree < merged.MinNumberOfOutdegree || merged.MinNumberOfOutdegree == 0 {
+			merged.MinNumberOfOutdegree = stat.MinNumberOfOutdegree
+		}
+		merged.ModeIndegree += stat.ModeIndegree
+		merged.ModeOutdegree += stat.ModeOutdegree
+		merged.NodesSkippedFor10Edges += stat.NodesSkippedFor10Edges
+		merged.NodesSkippedForIndegreeDistance += stat.NodesSkippedForIndegreeDistance
+		merged.NumberOfEdges += stat.NumberOfEdges
+		merged.NumberOfIndexedObjects += stat.NumberOfIndexedObjects
+		merged.NumberOfNodes += stat.NumberOfNodes
+		merged.NumberOfNodesWithoutEdges += stat.NumberOfNodesWithoutEdges
+		merged.NumberOfNodesWithoutIndegree += stat.NumberOfNodesWithoutIndegree
+		merged.NumberOfObjects += stat.NumberOfObjects
+		merged.NumberOfRemovedObjects += stat.NumberOfRemovedObjects
+		merged.SizeOfObjectRepository += stat.SizeOfObjectRepository
+		merged.SizeOfRefinementObjectRepository += stat.SizeOfRefinementObjectRepository
+
+		merged.VarianceOfIndegree += stat.VarianceOfIndegree
+		merged.VarianceOfOutdegree += stat.VarianceOfOutdegree
+		merged.MeanEdgeLength += stat.MeanEdgeLength
+		merged.MeanEdgeLengthFor10Edges += stat.MeanEdgeLengthFor10Edges
+		merged.MeanIndegreeDistanceFor10Edges += stat.MeanIndegreeDistanceFor10Edges
+		merged.MeanNumberOfEdgesPerNode += stat.MeanNumberOfEdgesPerNode
+
+		merged.C1Indegree += stat.C1Indegree
+		merged.C5Indegree += stat.C5Indegree
+		merged.C95Outdegree += stat.C95Outdegree
+		merged.C99Outdegree += stat.C99Outdegree
+	}
+
+	merged.MedianIndegree = calculateMedian(indegrees)
+	merged.MedianOutdegree = calculateMedian(outdegrees)
+	merged.IndegreeCount = make([]int64, len(indegreeCounts[0]))
+	for i := range merged.IndegreeCount {
+		var (
+			alen int64
+			sum  int64
+		)
+		for _, count := range indegreeCounts {
+			if i < len(count) {
+				alen++
+				sum += count[i]
+			}
+		}
+		merged.IndegreeCount[i] = sum / alen
+	}
+
+	for _, hist := range outdegreeHistograms {
+		merged.OutdegreeHistogram = sumHistograms(merged.OutdegreeHistogram, hist)
+	}
+
+	for _, hist := range indegreeHistograms {
+		merged.IndegreeHistogram = sumHistograms(merged.IndegreeHistogram, hist)
+	}
+
+	merged.ModeIndegree /= uint64(len(stats))
+	merged.ModeOutdegree /= uint64(len(stats))
+	merged.VarianceOfIndegree /= float64(len(stats))
+	merged.VarianceOfOutdegree /= float64(len(stats))
+	merged.MeanEdgeLength /= float64(len(stats))
+	merged.MeanEdgeLengthFor10Edges /= float64(len(stats))
+	merged.MeanIndegreeDistanceFor10Edges /= float64(len(stats))
+	merged.MeanNumberOfEdgesPerNode /= float64(len(stats))
+	merged.C1Indegree /= float64(len(stats))
+	merged.C5Indegree /= float64(len(stats))
+	merged.C95Outdegree /= float64(len(stats))
+	merged.C99Outdegree /= float64(len(stats))
+
+	return merged
 }

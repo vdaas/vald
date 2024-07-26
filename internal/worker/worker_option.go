@@ -17,9 +17,7 @@
 // Package worker provides worker processes
 package worker
 
-import (
-	"github.com/vdaas/vald/internal/sync/errgroup"
-)
+import "github.com/vdaas/vald/internal/sync/errgroup"
 
 type WorkerOption func(w *worker) error
 

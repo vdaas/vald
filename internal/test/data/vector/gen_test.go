@@ -795,7 +795,6 @@ func TestConvertVectorsUint8ToFloat32(t *testing.T) {
 // 			if err := checkFunc(test.want, gotRet); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -884,7 +883,6 @@ func TestConvertVectorsUint8ToFloat32(t *testing.T) {
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -973,7 +971,6 @@ func TestConvertVectorsUint8ToFloat32(t *testing.T) {
 // 			if err := checkFunc(test.want, gotVecs); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -1062,7 +1059,6 @@ func TestConvertVectorsUint8ToFloat32(t *testing.T) {
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -1154,7 +1150,6 @@ func TestConvertVectorsUint8ToFloat32(t *testing.T) {
 // 			if err := checkFunc(test.want, gotRet); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -1243,7 +1238,6 @@ func TestConvertVectorsUint8ToFloat32(t *testing.T) {
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -1332,7 +1326,6 @@ func TestConvertVectorsUint8ToFloat32(t *testing.T) {
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }

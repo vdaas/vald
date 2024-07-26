@@ -103,6 +103,98 @@
           "type": "string",
           "description": "external traffic policy (can be specified when service type is LoadBalancer or NodePort) : Cluster or Local"
         },
+        "faiss": {
+          "type": "object",
+          "properties": {
+            "auto_index_check_duration": {
+              "type": "string",
+              "description": "check duration of automatic indexing"
+            },
+            "auto_index_duration_limit": {
+              "type": "string",
+              "description": "limit duration of automatic indexing"
+            },
+            "auto_index_length": {
+              "type": "integer",
+              "description": "number of cache to trigger automatic indexing"
+            },
+            "auto_save_index_duration": {
+              "type": "string",
+              "description": "duration of automatic save index"
+            },
+            "dimension": {
+              "type": "integer",
+              "description": "vector dimension",
+              "minimum": 1
+            },
+            "enable_copy_on_write": {
+              "type": "boolean",
+              "description": "enable copy on write saving for more stable backup"
+            },
+            "enable_in_memory_mode": {
+              "type": "boolean",
+              "description": "in-memory mode enabled"
+            },
+            "enable_proactive_gc": {
+              "type": "boolean",
+              "description": "enable proactive GC call for reducing heap memory allocation"
+            },
+            "index_path": {
+              "type": "string",
+              "description": "path to index data"
+            },
+            "initial_delay_max_duration": {
+              "type": "string",
+              "description": "maximum duration for initial delay"
+            },
+            "kvsdb": {
+              "type": "object",
+              "properties": {
+                "concurrency": {
+                  "type": "integer",
+                  "description": "kvsdb processing concurrency"
+                }
+              }
+            },
+            "load_index_timeout_factor": {
+              "type": "string",
+              "description": "a factor of load index timeout. timeout duration will be calculated by (index count to be loaded) * (factor)."
+            },
+            "m": { "type": "integer" },
+            "max_load_index_timeout": {
+              "type": "string",
+              "description": "maximum duration of load index timeout"
+            },
+            "metric_type": { "type": "string", "enum": ["innerproduct", "l2"] },
+            "min_load_index_timeout": {
+              "type": "string",
+              "description": "minimum duration of load index timeout"
+            },
+            "namespace": {
+              "type": "string",
+              "description": "namespace of myself"
+            },
+            "nbits_per_idx": { "type": "integer" },
+            "nlist": { "type": "integer" },
+            "pod_name": {
+              "type": "string",
+              "description": "pod name of myself"
+            },
+            "vqueue": {
+              "type": "object",
+              "properties": {
+                "delete_buffer_pool_size": {
+                  "type": "integer",
+                  "description": "delete slice pool buffer size"
+                },
+                "insert_buffer_pool_size": {
+                  "type": "integer",
+                  "description": "insert slice pool buffer size"
+                }
+              }
+            }
+          }
+        },
         "hpa": {
           "type": "object",
           "properties": {
@@ -276,6 +368,10 @@
             "enable_proactive_gc": {
               "type": "boolean",
               "description": "enable proactive GC call for reducing heap memory allocation"
+            },
+            "enable_statistics": {
+              "type": "boolean",
+              "description": "enable index statistics loading"
             },
             "error_buffer_limit": {
               "type": "integer",

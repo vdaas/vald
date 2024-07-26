@@ -16,9 +16,7 @@
 
 package redis
 
-import (
-	redis "github.com/go-redis/redis/v8"
-)
+import redis "github.com/go-redis/redis/v8"
 
 type (
 	Hook  = redis.Hook

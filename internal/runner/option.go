@@ -45,7 +45,7 @@ func WithVersion(ver, max, min string) Option {
 	}
 }
 
-func WithConfigLoader(f func(string) (interface{}, *config.GlobalConfig, error)) Option {
+func WithConfigLoader(f func(string) (any, *config.GlobalConfig, error)) Option {
 	return func(r *runner) {
 		if f != nil {
 			r.loadConfig = f
@@ -53,7 +53,7 @@ func WithConfigLoader(f func(string) (interface{}, *config.GlobalConfig, error))
 	}
 }
 
-func WithDaemonInitializer(f func(interface{}) (Runner, error)) Option {
+func WithDaemonInitializer(f func(any) (Runner, error)) Option {
 	return func(r *runner) {
 		if f != nil {
 			r.initializeDaemon = f

@@ -32,7 +32,9 @@ import (
 	"github.com/vdaas/vald/internal/sync"
 )
 
-func (s *server) Upsert(ctx context.Context, req *payload.Upsert_Request) (loc *payload.Object_Location, err error) {
+func (s *server) Upsert(
+	ctx context.Context, req *payload.Upsert_Request,
+) (loc *payload.Object_Location, err error) {
 	ctx, span := trace.StartSpan(ctx, apiName+"/"+vald.UpsertRPCName)
 	defer func() {
 		if span != nil {
@@ -180,7 +182,9 @@ func (s *server) StreamUpsert(stream vald.Upsert_StreamUpsertServer) (err error)
 	return nil
 }
 
-func (s *server) MultiUpsert(ctx context.Context, reqs *payload.Upsert_MultiRequest) (res *payload.Object_Locations, err error) {
+func (s *server) MultiUpsert(
+	ctx context.Context, reqs *payload.Upsert_MultiRequest,
+) (res *payload.Object_Locations, err error) {
 	ctx, span := trace.StartSpan(ctx, apiName+"/"+vald.MultiUpsertRPCName)
 	defer func() {
 		if span != nil {

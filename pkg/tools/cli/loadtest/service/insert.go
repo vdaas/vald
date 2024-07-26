@@ -25,7 +25,9 @@ import (
 	"github.com/vdaas/vald/pkg/tools/cli/loadtest/assets"
 )
 
-func insertRequestProvider(dataset assets.Dataset, batchSize int) (f func() interface{}, size int, err error) {
+func insertRequestProvider(
+	dataset assets.Dataset, batchSize int,
+) (f func() any, size int, err error) {
 	switch {
 	case batchSize == 1:
 		f, size = objectVectorProvider(dataset)
@@ -40,10 +42,10 @@ func insertRequestProvider(dataset assets.Dataset, batchSize int) (f func() inte
 	return f, size, nil
 }
 
-func objectVectorProvider(dataset assets.Dataset) (func() interface{}, int) {
+func objectVectorProvider(dataset assets.Dataset) (func() any, int) {
 	idx := int32(-1)
 	size := dataset.TrainSize()
-	return func() (ret interface{}) {
+	return func() (ret any) {
 		if i := int(atomic.AddInt32(&idx, 1)); i < size {
 			v, err := dataset.Train(i)
 			if err != nil {
@@ -60,13 +62,13 @@ func objectVectorProvider(dataset assets.Dataset) (func() interface{}, int) {
 	}, size
 }
 
-func objectVectorsProvider(dataset assets.Dataset, n int) (func() interface{}, int) {
+func objectVectorsProvider(dataset assets.Dataset, n int) (func() any, int) {
 	provider, s := objectVectorProvider(dataset)
 	size := s / n
 	if s%n != 0 {
 		size = size + 1
 	}
-	return func() (ret interface{}) {
+	return func() (ret any) {
 		r := make([]*payload.Insert_Request, 0, n)
 		for i := 0; i < n; i++ {
 			d := provider()
@@ -87,11 +89,11 @@ func objectVectorsProvider(dataset assets.Dataset, n int) (func() interface{}, i
 func (l *loader) newInsert() (f loadFunc, err error) {
 	switch {
 	case l.batchSize == 1:
-		f = func(ctx context.Context, conn *grpc.ClientConn, i interface{}, copts ...grpc.CallOption) (interface{}, error) {
+		f = func(ctx context.Context, conn *grpc.ClientConn, i any, copts ...grpc.CallOption) (any, error) {
 			return vald.NewInsertClient(conn).Insert(ctx, i.(*payload.Insert_Request), copts...)
 		}
 	case l.batchSize >= 2:
-		f = func(ctx context.Context, conn *grpc.ClientConn, i interface{}, copts ...grpc.CallOption) (interface{}, error) {
+		f = func(ctx context.Context, conn *grpc.ClientConn, i any, copts ...grpc.CallOption) (any, error) {
 			return vald.NewInsertClient(conn).MultiInsert(ctx, i.(*payload.Insert_MultiRequest), copts...)
 		}
 	default:
@@ -105,7 +107,7 @@ func (l *loader) newInsert() (f loadFunc, err error) {
 
 func (l *loader) newStreamInsert() (f loadFunc, err error) {
 	l.batchSize = 1
-	return func(ctx context.Context, conn *grpc.ClientConn, i interface{}, copts ...grpc.CallOption) (interface{}, error) {
+	return func(ctx context.Context, conn *grpc.ClientConn, i any, copts ...grpc.CallOption) (any, error) {
 		return vald.NewValdClient(conn).StreamInsert(ctx, copts...)
 	}, nil
 }

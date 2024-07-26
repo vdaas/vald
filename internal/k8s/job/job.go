@@ -49,7 +49,7 @@ type reconciler struct {
 func New(opts ...Option) (JobWatcher, error) {
 	r := &reconciler{
 		jobsByAppNamePool: sync.Pool{
-			New: func() interface{} {
+			New: func() any {
 				return make(map[string][]k8s.Job)
 			},
 		},
@@ -72,7 +72,9 @@ func New(opts ...Option) (JobWatcher, error) {
 }
 
 // Reconcile implements k8s reconciliation loop to retrieve the Job information from k8s.
-func (r *reconciler) Reconcile(ctx context.Context, _ reconcile.Request) (res reconcile.Result, err error) {
+func (r *reconciler) Reconcile(
+	ctx context.Context, _ reconcile.Request,
+) (res reconcile.Result, err error) {
 	js := new(batchv1.JobList)
 
 	err = r.mgr.GetClient().List(ctx, js, r.listOpts...)

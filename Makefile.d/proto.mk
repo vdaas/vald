@@ -54,8 +54,14 @@ proto/gen: \
 	$(PROTOS) \
 	proto/deps
 	@$(call green, "generating pb.go and swagger.json files and documents for API v1...")
+	buf format -w
 	buf generate
+	make proto/replace
+
+proto/replace:
 	find $(ROOTDIR)/apis/grpc/* -name '*.go' | xargs -P$(CORES) sed -i -E "s%google.golang.org/grpc/codes%github.com/vdaas/vald/internal/net/grpc/codes%g"
 	find $(ROOTDIR)/apis/grpc/* -name '*.go' | xargs -P$(CORES) sed -i -E "s%google.golang.org/grpc/status%github.com/vdaas/vald/internal/net/grpc/status%g"
 	find $(ROOTDIR)/apis/grpc/* -name '*.go' | xargs -P$(CORES) sed -i -E "s%\"io\"%\"github.com/vdaas/vald/internal/io\"%g"
 	find $(ROOTDIR)/apis/grpc/* -name '*.go' | xargs -P$(CORES) sed -i -E "s%\"sync\"%\"github.com/vdaas/vald/internal/sync\"%g"
+	find $(ROOTDIR)/apis/grpc/* -name '*.go' | xargs -P$(CORES) sed -i -E "s%interface\{\}%any%g"
+	find $(ROOTDIR)/apis/grpc/* -name '*.go' | xargs -P$(CORES) sed -i -E "s%For_%For%g"

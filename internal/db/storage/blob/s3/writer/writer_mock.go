@@ -49,7 +49,9 @@ type MockS3Manager struct {
 }
 
 // NewUploaderWithClient calls NewUNewUploaderWithClientFunc.
-func (m *MockS3Manager) NewUploaderWithClient(svc s3iface.S3API, opts ...func(*s3manager.Uploader)) s3manager.UploadClient {
+func (m *MockS3Manager) NewUploaderWithClient(
+	svc s3iface.S3API, opts ...func(*s3manager.Uploader),
+) s3manager.UploadClient {
 	return m.NewUploaderWithClientFunc(svc, opts...)
 }
 
@@ -57,7 +59,9 @@ type MockUploadClient struct {
 	UploadWithContextFunc func(aws.Context, *s3manager.UploadInput, ...func(*s3manager.Uploader)) (*s3manager.UploadOutput, error)
 }
 
-func (m *MockUploadClient) UploadWithContext(ctx aws.Context, input *s3manager.UploadInput, opts ...func(*s3manager.Uploader)) (*s3manager.UploadOutput, error) {
+func (m *MockUploadClient) UploadWithContext(
+	ctx aws.Context, input *s3manager.UploadInput, opts ...func(*s3manager.Uploader),
+) (*s3manager.UploadOutput, error) {
 	return m.UploadWithContextFunc(ctx, input, opts...)
 }
 

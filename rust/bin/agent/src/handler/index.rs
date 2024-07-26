@@ -16,6 +16,7 @@
 use proto::{
     core::v1::agent_server,
     payload::v1::{control, info, object, Empty},
+    vald::v1::index_server,
 };
 
 #[tonic::async_trait]
@@ -41,7 +42,10 @@ impl agent_server::Agent for super::Agent {
     ) -> std::result::Result<tonic::Response<Empty>, tonic::Status> {
         todo!()
     }
+}
 
+#[tonic::async_trait]
+impl index_server::Index for super::Agent {
     #[doc = " Represent the RPC to get the agent index information.\n"]
     async fn index_info(
         &self,
@@ -50,11 +54,26 @@ impl agent_server::Agent for super::Agent {
         todo!()
     }
 
-    #[doc = " Represent the RPC to get the vector metadata. This RPC is mainly used for index correction process\n"]
-    async fn get_timestamp(
+    #[doc = " Represent the RPC to get the agent index detailed information.\n"]
+    async fn index_detail(
         &self,
-        request: tonic::Request<object::GetTimestampRequest>,
-    ) -> std::result::Result<tonic::Response<object::Timestamp>, tonic::Status> {
+        request: tonic::Request<Empty>,
+    ) -> std::result::Result<tonic::Response<info::index::Detail>, tonic::Status> {
+        todo!()
+    }
+    #[doc = " Represent the RPC to get the agent index statistics.\n"]
+    async fn index_statistics(
+        &self,
+        request: tonic::Request<Empty>,
+    ) -> std::result::Result<tonic::Response<info::index::Statistics>, tonic::Status> {
+        todo!()
+    }
+
+    #[doc = " Represent the RPC to get the agent index detailed statistics.\n"]
+    async fn index_statistics_detail(
+        &self,
+        request: tonic::Request<Empty>,
+    ) -> std::result::Result<tonic::Response<info::index::StatisticsDetail>, tonic::Status> {
         todo!()
     }
 }

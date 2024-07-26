@@ -183,7 +183,9 @@ func (s *subProcess) rotate(ctx context.Context) error {
 	return nil
 }
 
-func (s *subProcess) createSnapshot(ctx context.Context, deployment *k8s.Deployment) (newSnap, oldSnap *k8s.VolumeSnapshot, err error) {
+func (s *subProcess) createSnapshot(
+	ctx context.Context, deployment *k8s.Deployment,
+) (newSnap, oldSnap *k8s.VolumeSnapshot, err error) {
 	list := k8s.VolumeSnapshotList{}
 	if err := s.client.List(ctx, &list, &s.listOpts); err != nil {
 		return nil, nil, fmt.Errorf("failed to get snapshot: %w", err)
@@ -227,7 +229,9 @@ func (s *subProcess) createSnapshot(ctx context.Context, deployment *k8s.Deploym
 	return newSnap, oldSnap, nil
 }
 
-func (s *subProcess) createPVC(ctx context.Context, newSnapShot string, deployment *k8s.Deployment) (newPvc, oldPvc *k8s.PersistentVolumeClaim, err error) {
+func (s *subProcess) createPVC(
+	ctx context.Context, newSnapShot string, deployment *k8s.Deployment,
+) (newPvc, oldPvc *k8s.PersistentVolumeClaim, err error) {
 	list := k8s.PersistentVolumeClaimList{}
 	if err := s.client.List(ctx, &list, &s.listOpts); err != nil {
 		return nil, nil, fmt.Errorf("failed to get PVC: %w", err)
@@ -293,7 +297,9 @@ func (s *subProcess) getDeployment(ctx context.Context) (*k8s.Deployment, error)
 	return &list.Items[0], nil
 }
 
-func (s *subProcess) updateDeployment(ctx context.Context, newPVC string, deployment *k8s.Deployment, snapshotTime time.Time) error {
+func (s *subProcess) updateDeployment(
+	ctx context.Context, newPVC string, deployment *k8s.Deployment, snapshotTime time.Time,
+) error {
 	if deployment.Spec.Template.ObjectMeta.Annotations == nil {
 		deployment.Spec.Template.ObjectMeta.Annotations = map[string]string{}
 	}

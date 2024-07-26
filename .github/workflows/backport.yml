@@ -23,7 +23,7 @@ on:
 env:
   TARGET_LABEL_NAME_PREFIX: "actions/backport/"
   BACKPORT_BRANCH_NAME_PREFIX: "backport"
-  FETCHED_GITHUB_INFO_PATH: github_info.json
+  FETCHED_GITHUB_INFO_PATH: /tmp/github_info.json
   GITHUB_USER: ${{ secrets.DISPATCH_USER }}
   GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
 jobs:

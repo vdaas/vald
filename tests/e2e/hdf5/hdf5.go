@@ -19,9 +19,7 @@
 // package hdf5 provides hdf5 utilities for e2e testing
 package hdf5
 
-import (
-	"gonum.org/v1/hdf5"
-)
+import "gonum.org/v1/hdf5"
 
 type Dataset struct {
 	Train     [][]float32

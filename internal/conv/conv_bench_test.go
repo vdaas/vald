@@ -13,9 +13,7 @@
 // limitations under the License.
 package conv
 
-import (
-	"testing"
-)
+import "testing"
 
 func Benchmark_Btoa(b *testing.B) {
 	data := []byte(testData)

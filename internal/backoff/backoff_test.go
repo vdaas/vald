@@ -219,7 +219,7 @@ func Test_backoff_Do(t *testing.T) {
 	t.Parallel()
 	type args struct {
 		ctx context.Context
-		f   func(ctx context.Context) (val interface{}, retryable bool, err error)
+		f   func(ctx context.Context) (val any, retryable bool, err error)
 	}
 	type fields struct {
 		backoffFactor         float64
@@ -233,7 +233,7 @@ func Test_backoff_Do(t *testing.T) {
 		errLog                bool
 	}
 	type want struct {
-		wantRes interface{}
+		wantRes any
 		err     error
 	}
 	type test struct {
@@ -241,11 +241,11 @@ func Test_backoff_Do(t *testing.T) {
 		args       args
 		fields     fields
 		want       want
-		checkFunc  func(want, interface{}, error) error
+		checkFunc  func(want, any, error) error
 		beforeFunc func(args)
 		afterFunc  func(args)
 	}
-	defaultCheckFunc := func(w want, gotRes interface{}, err error) error {
+	defaultCheckFunc := func(w want, gotRes any, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
@@ -258,7 +258,7 @@ func Test_backoff_Do(t *testing.T) {
 		func() test {
 			ctx := context.Background()
 			err := errors.New("error is occurred")
-			f := func(context.Context) (interface{}, bool, error) {
+			f := func(context.Context) (any, bool, error) {
 				return nil, false, err
 			}
 			return test{
@@ -274,7 +274,7 @@ func Test_backoff_Do(t *testing.T) {
 		}(),
 		func() test {
 			ctx := context.Background()
-			f := func(context.Context) (interface{}, bool, error) {
+			f := func(context.Context) (any, bool, error) {
 				return nil, true, nil
 			}
 			return test{
@@ -289,7 +289,7 @@ func Test_backoff_Do(t *testing.T) {
 		func() test {
 			ctx := context.Background()
 			err := errors.New("erros is occurred")
-			f := func(context.Context) (interface{}, bool, error) {
+			f := func(context.Context) (any, bool, error) {
 				return nil, false, err
 			}
 			return test{
@@ -318,7 +318,7 @@ func Test_backoff_Do(t *testing.T) {
 		func() test {
 			ctx := context.Background()
 			err := errors.New("erros is occurred")
-			f := func(context.Context) (interface{}, bool, error) {
+			f := func(context.Context) (any, bool, error) {
 				return str, true, err
 			}
 			return test{
@@ -348,7 +348,7 @@ func Test_backoff_Do(t *testing.T) {
 			ctx := context.Background()
 			err := errors.New("erros is occurred")
 			cnt := 0
-			f := func(context.Context) (interface{}, bool, error) {
+			f := func(context.Context) (any, bool, error) {
 				cnt++
 				if cnt == 2 {
 					return str, false, err
@@ -382,7 +382,7 @@ func Test_backoff_Do(t *testing.T) {
 			ctx := context.Background()
 			err := errors.New("erros is occurred")
 			cnt := 0
-			f := func(context.Context) (interface{}, bool, error) {
+			f := func(context.Context) (any, bool, error) {
 				cnt++
 				if cnt == 2 {
 					return str, true, nil
@@ -414,7 +414,7 @@ func Test_backoff_Do(t *testing.T) {
 		func() test {
 			ctx := context.Background()
 			err := errors.New("erros is occurred")
-			f := func(context.Context) (interface{}, bool, error) {
+			f := func(context.Context) (any, bool, error) {
 				return str, true, err
 			}
 			return test{
@@ -443,7 +443,7 @@ func Test_backoff_Do(t *testing.T) {
 		func() test {
 			ctx := context.Background()
 			err := errors.New("erros is occurred")
-			f := func(context.Context) (interface{}, bool, error) {
+			f := func(context.Context) (any, bool, error) {
 				return str, true, err
 			}
 			return test{
@@ -471,7 +471,7 @@ func Test_backoff_Do(t *testing.T) {
 		func() test {
 			ctx, cancel := context.WithCancel(context.Background())
 			err := errors.New("erros is occurred")
-			f := func(context.Context) (interface{}, bool, error) {
+			f := func(context.Context) (any, bool, error) {
 				cancel()
 				return str, true, err
 			}
@@ -501,7 +501,7 @@ func Test_backoff_Do(t *testing.T) {
 			ctx, cancel := context.WithCancel(context.Background())
 			err := errors.New("erros is occurred")
 			cnt := 0
-			f := func(context.Context) (interface{}, bool, error) {
+			f := func(context.Context) (any, bool, error) {
 				cnt++
 				if cnt > 1 {
 					cancel()
@@ -534,7 +534,7 @@ func Test_backoff_Do(t *testing.T) {
 			ctx := context.Background()
 			err := errors.New("erros is occurred")
 			cnt := 0
-			f := func(context.Context) (interface{}, bool, error) {
+			f := func(context.Context) (any, bool, error) {
 				cnt++
 				if cnt > 1 {
 					time.Sleep(10 * time.Millisecond)
@@ -683,7 +683,6 @@ func Test_backoff_Do(t *testing.T) {
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }

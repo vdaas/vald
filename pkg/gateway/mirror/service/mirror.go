@@ -168,7 +168,9 @@ func (m *mirr) Start(ctx context.Context) <-chan error { // skipcq: GO-R1005
 	return ech
 }
 
-func (m *mirr) registers(ctx context.Context, tgts *payload.Mirror_Targets) ([]*payload.Mirror_Target, error) { // skipcq: GO-R1005
+func (m *mirr) registers(
+	ctx context.Context, tgts *payload.Mirror_Targets,
+) ([]*payload.Mirror_Target, error) { // skipcq: GO-R1005
 	ctx, span := trace.StartSpan(grpc.WithGRPCMethod(ctx, vald.PackageName+"."+mirror.RPCServiceName+"/"+mirror.RegisterRPCName), "vald/gateway/mirror/service/Mirror.registers")
 	defer func() {
 		if span != nil {

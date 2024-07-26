@@ -19,9 +19,7 @@
 // Package control provides network socket option
 package control
 
-import (
-	"golang.org/x/sys/windows"
-)
+import "golang.org/x/sys/windows"
 
 var SetsockoptInt = func(fd, level, opt int, value int) (err error) {
 	if level == windows.SOL_SOCKET && opt == windows.SO_REUSEADDR {

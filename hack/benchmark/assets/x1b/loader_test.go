@@ -103,7 +103,6 @@ package x1b
 // 			if err := checkFunc(test.want, gotF, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -204,7 +203,6 @@ package x1b
 // 			if err := checkFunc(test.want, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -319,7 +317,6 @@ package x1b
 // 			if err := checkFunc(test.want, got, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -420,7 +417,6 @@ package x1b
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -521,7 +517,6 @@ package x1b
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -624,7 +619,6 @@ package x1b
 // 			if err := checkFunc(test.want, got, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -637,7 +631,7 @@ package x1b
 // 		file *file
 // 	}
 // 	type want struct {
-// 		want interface{}
+// 		want any
 // 		err  error
 // 	}
 // 	type test struct {
@@ -645,11 +639,11 @@ package x1b
 // 		args       args
 // 		fields     fields
 // 		want       want
-// 		checkFunc  func(want, interface{}, error) error
+// 		checkFunc  func(want, any, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
 // 	}
-// 	defaultCheckFunc := func(w want, got interface{}, err error) error {
+// 	defaultCheckFunc := func(w want, got any, err error) error {
 // 		if !errors.Is(err, w.err) {
 // 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 // 		}
@@ -727,7 +721,6 @@ package x1b
 // 			if err := checkFunc(test.want, got, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -830,7 +823,6 @@ package x1b
 // 			if err := checkFunc(test.want, got, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -843,7 +835,7 @@ package x1b
 // 		file *file
 // 	}
 // 	type want struct {
-// 		want interface{}
+// 		want any
 // 		err  error
 // 	}
 // 	type test struct {
@@ -851,11 +843,11 @@ package x1b
 // 		args       args
 // 		fields     fields
 // 		want       want
-// 		checkFunc  func(want, interface{}, error) error
+// 		checkFunc  func(want, any, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
 // 	}
-// 	defaultCheckFunc := func(w want, got interface{}, err error) error {
+// 	defaultCheckFunc := func(w want, got any, err error) error {
 // 		if !errors.Is(err, w.err) {
 // 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 // 		}
@@ -933,7 +925,6 @@ package x1b
 // 			if err := checkFunc(test.want, got, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -1036,7 +1027,6 @@ package x1b
 // 			if err := checkFunc(test.want, got, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -1049,7 +1039,7 @@ package x1b
 // 		file *file
 // 	}
 // 	type want struct {
-// 		want interface{}
+// 		want any
 // 		err  error
 // 	}
 // 	type test struct {
@@ -1057,11 +1047,11 @@ package x1b
 // 		args       args
 // 		fields     fields
 // 		want       want
-// 		checkFunc  func(want, interface{}, error) error
+// 		checkFunc  func(want, any, error) error
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
 // 	}
-// 	defaultCheckFunc := func(w want, got interface{}, err error) error {
+// 	defaultCheckFunc := func(w want, got any, err error) error {
 // 		if !errors.Is(err, w.err) {
 // 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 // 		}
@@ -1139,7 +1129,6 @@ package x1b
 // 			if err := checkFunc(test.want, got, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -1229,7 +1218,6 @@ package x1b
 // 			if err := checkFunc(test.want, got, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -1319,7 +1307,6 @@ package x1b
 // 			if err := checkFunc(test.want, got, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -1409,7 +1396,6 @@ package x1b
 // 			if err := checkFunc(test.want, got, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -1499,7 +1485,6 @@ package x1b
 // 			if err := checkFunc(test.want, got, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }

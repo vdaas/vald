@@ -58,7 +58,7 @@ func NewCopier(size int) Copier {
 		atomic.StoreInt64(&c.bufSize, int64(defaultBufferSize))
 	}
 	c.pool = sync.Pool{
-		New: func() interface{} {
+		New: func() any {
 			return bytes.NewBuffer(make([]byte, int(atomic.LoadInt64(&c.bufSize))))
 		},
 	}
@@ -81,7 +81,9 @@ func (c *copier) CopyBuffer(dst io.Writer, src io.Reader, buf []byte) (written i
 	return c.copyBuffer(dst, src, b)
 }
 
-func (c *copier) copyBuffer(dst io.Writer, src io.Reader, buf *bytes.Buffer) (written int64, err error) {
+func (c *copier) copyBuffer(
+	dst io.Writer, src io.Reader, buf *bytes.Buffer,
+) (written int64, err error) {
 	if dst == nil || src == nil {
 		return 0, errors.New("empty source or destination")
 	}

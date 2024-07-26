@@ -297,3 +297,5 @@ func Test_operatorMetrics_Register(t *testing.T) {
 		})
 	}
 }
+
+// NOT IMPLEMENTED BELOW

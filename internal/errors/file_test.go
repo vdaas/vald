@@ -13,9 +13,7 @@
 // limitations under the License.
 package errors
 
-import (
-	"testing"
-)
+import "testing"
 
 func TestErrWatchDirNotFound(t *testing.T) {
 	type want struct {
@@ -327,7 +325,6 @@ func TestErrPathNotAllowed(t *testing.T) {
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }

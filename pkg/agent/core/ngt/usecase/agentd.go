@@ -71,6 +71,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		service.WithProactiveGC(cfg.NGT.EnableProactiveGC),
 		service.WithCopyOnWrite(cfg.NGT.EnableCopyOnWrite),
 		service.WithIsReadReplica(cfg.NGT.IsReadReplica),
+		service.WithEnableStatistics(cfg.NGT.EnableStatistics),
 	}
 	if cfg.NGT.EnableExportIndexInfoToK8s {
 		patcher, err := client.NewPatcher(fieldManager)

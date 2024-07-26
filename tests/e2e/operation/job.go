@@ -22,6 +22,22 @@ import (
 	"testing"
 )
 
+type JobExecutor interface {
+	CreateAndWait(t *testing.T, ctx context.Context, jobName string) error
+}
+
+type cronJobExecute struct {
+	cronJob string
+}
+
+var _ JobExecutor = (*cronJobExecute)(nil)
+
+func NewCronJobExecutor(cronJob string) JobExecutor {
+	return &cronJobExecute{
+		cronJob: cronJob,
+	}
+}
+
 func (j *cronJobExecute) CreateAndWait(t *testing.T, ctx context.Context, jobName string) error {
 	if err := createJob(t, jobName, j.cronJob); err != nil {
 		return err

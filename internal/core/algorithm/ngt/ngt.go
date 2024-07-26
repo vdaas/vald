@@ -85,6 +85,8 @@ type (
 		// GetVector returns vector stored in NGT index.
 		GetVector(id uint) ([]float32, error)
 
+		GetGraphStatistics(m statisticsType) (stats *GraphStatistics, err error)
+
 		// Close Without save index.
 		CloseWithoutSaveIndex()
 
@@ -103,6 +105,7 @@ type (
 		poolSize            uint32
 		cnt                 atomic.Uint64
 		prop                C.NGTProperty
+		ces                 uint64        // NGT edge size for creation
 		epool               sync.Pool     // NGT error buffer pool
 		eps                 atomic.Uint64 // NGT error buffer pool size
 		epl                 uint64        // NGT error buffer pool size limit
@@ -115,6 +118,42 @@ type (
 	ngtError struct {
 		err       C.NGTError
 		destroyed atomic.Bool
+	}
+
+	GraphStatistics struct {
+		Valid                            bool
+		MedianIndegree                   int32
+		MedianOutdegree                  int32
+		MaxNumberOfIndegree              uint64
+		MaxNumberOfOutdegree             uint64
+		MinNumberOfIndegree              uint64
+		MinNumberOfOutdegree             uint64
+		ModeIndegree                     uint64
+		ModeOutdegree                    uint64
+		NodesSkippedFor10Edges           uint64
+		NodesSkippedForIndegreeDistance  uint64
+		NumberOfEdges                    uint64
+		NumberOfIndexedObjects           uint64
+		NumberOfNodes                    uint64
+		NumberOfNodesWithoutEdges        uint64
+		NumberOfNodesWithoutIndegree     uint64
+		NumberOfObjects                  uint64
+		NumberOfRemovedObjects           uint64
+		SizeOfObjectRepository           uint64
+		SizeOfRefinementObjectRepository uint64
+		VarianceOfIndegree               float64
+		VarianceOfOutdegree              float64
+		MeanEdgeLength                   float64
+		MeanEdgeLengthFor10Edges         float64
+		MeanIndegreeDistanceFor10Edges   float64
+		MeanNumberOfEdgesPerNode         float64
+		C1Indegree                       float64
+		C5Indegree                       float64
+		C95Outdegree                     float64
+		C99Outdegree                     float64
+		IndegreeCount                    []int64
+		OutdegreeHistogram               []uint64
+		IndegreeHistogram                []uint64
 	}
 )
 
@@ -141,6 +180,8 @@ type objectType int
 
 // DistanceType is alias of distance type in NGT.
 type distanceType int
+
+type statisticsType int
 
 const (
 	// -------------------------------------------------------------
@@ -195,6 +236,9 @@ const (
 	// -------------------------------------------------------------.
 	ErrorCode = C._Bool(false)
 	// -------------------------------------------------------------.
+
+	NormalStatistics statisticsType = iota - 1
+	AdditionalStatistics
 )
 
 func (o objectType) String() string {
@@ -304,7 +348,7 @@ func gen(isLoad bool, opts ...Option) (NGT, error) {
 
 func (n *ngt) setup() error {
 	n.epool = sync.Pool{
-		New: func() interface{} {
+		New: func() any {
 			return newNGTError()
 		},
 	}
@@ -404,7 +448,9 @@ func (n *ngt) loadObjectSpace() error {
 }
 
 // Search returns search result as []algorithm.SearchResult.
-func (n *ngt) Search(ctx context.Context, vec []float32, size int, epsilon, radius float32) (result []algorithm.SearchResult, err error) {
+func (n *ngt) Search(
+	ctx context.Context, vec []float32, size int, epsilon, radius float32,
+) (result []algorithm.SearchResult, err error) {
 	if len(vec) != int(n.dimension) {
 		return nil, errors.ErrIncompatibleDimensionSize(len(vec), int(n.dimension))
 	}
@@ -476,7 +522,9 @@ func (n *ngt) Search(ctx context.Context, vec []float32, size int, epsilon, radi
 }
 
 // Linear Search returns linear search result as []algorithm.SearchResult.
-func (n *ngt) LinearSearch(ctx context.Context, vec []float32, size int) (result []algorithm.SearchResult, err error) {
+func (n *ngt) LinearSearch(
+	ctx context.Context, vec []float32, size int,
+) (result []algorithm.SearchResult, err error) {
 	if len(vec) != int(n.dimension) {
 		return nil, errors.ErrIncompatibleDimensionSize(len(vec), int(n.dimension))
 	}
@@ -851,4 +899,83 @@ func (n *ngt) Close() {
 		n.prop = nil
 		n.ospace = nil
 	}
+}
+
+func fromCGraphStatistics(cstats *C.NGTGraphStatistics) *GraphStatistics {
+	goStats := &GraphStatistics{
+		NumberOfObjects:                  uint64(cstats.numberOfObjects),
+		NumberOfIndexedObjects:           uint64(cstats.numberOfIndexedObjects),
+		SizeOfObjectRepository:           uint64(cstats.sizeOfObjectRepository),
+		SizeOfRefinementObjectRepository: uint64(cstats.sizeOfRefinementObjectRepository),
+		NumberOfRemovedObjects:           uint64(cstats.numberOfRemovedObjects),
+		NumberOfNodes:                    uint64(cstats.numberOfNodes),
+		NumberOfEdges:                    uint64(cstats.numberOfEdges),
+		MeanEdgeLength:                   float64(cstats.meanEdgeLength),
+		MeanNumberOfEdgesPerNode:         float64(cstats.meanNumberOfEdgesPerNode),
+		NumberOfNodesWithoutEdges:        uint64(cstats.numberOfNodesWithoutEdges),
+		MaxNumberOfOutdegree:             uint64(cstats.maxNumberOfOutdegree),
+		MinNumberOfOutdegree:             uint64(cstats.minNumberOfOutdegree),
+		NumberOfNodesWithoutIndegree:     uint64(cstats.numberOfNodesWithoutIndegree),
+		MaxNumberOfIndegree:              uint64(cstats.maxNumberOfIndegree),
+		MinNumberOfIndegree:              uint64(cstats.minNumberOfIndegree),
+		MeanEdgeLengthFor10Edges:         float64(cstats.meanEdgeLengthFor10Edges),
+		NodesSkippedFor10Edges:           uint64(cstats.nodesSkippedFor10Edges),
+		MeanIndegreeDistanceFor10Edges:   float64(cstats.meanIndegreeDistanceFor10Edges),
+		NodesSkippedForIndegreeDistance:  uint64(cstats.nodesSkippedForIndegreeDistance),
+		VarianceOfOutdegree:              float64(cstats.varianceOfOutdegree),
+		VarianceOfIndegree:               float64(cstats.varianceOfIndegree),
+		MedianOutdegree:                  int32(cstats.medianOutdegree),
+		ModeOutdegree:                    uint64(cstats.modeOutdegree),
+		C95Outdegree:                     float64(cstats.c95Outdegree),
+		C99Outdegree:                     float64(cstats.c99Outdegree),
+		MedianIndegree:                   int32(cstats.medianIndegree),
+		ModeIndegree:                     uint64(cstats.modeIndegree),
+		C5Indegree:                       float64(cstats.c5Indegree),
+		C1Indegree:                       float64(cstats.c1Indegree),
+		Valid:                            bool(cstats.valid),
+	}
+
+	// Convert indegreeCount
+	indegreeCountSize := int(cstats.indegreeCountSize)
+	goStats.IndegreeCount = make([]int64, indegreeCountSize)
+	cIndegreeCount := (*[1 << 30]C.size_t)(unsafe.Pointer(cstats.indegreeCount))[:indegreeCountSize:indegreeCountSize]
+	for i := 0; i < indegreeCountSize; i++ {
+		goStats.IndegreeCount[i] = int64(cIndegreeCount[i])
+	}
+
+	// Convert outdegreeHistogram
+	outdegreeHistogramSize := int(cstats.outdegreeHistogramSize)
+	goStats.OutdegreeHistogram = make([]uint64, outdegreeHistogramSize)
+	cOutdegreeHistogram := (*[1 << 30]C.size_t)(unsafe.Pointer(cstats.outdegreeHistogram))[:outdegreeHistogramSize:outdegreeHistogramSize]
+	for i := 0; i < outdegreeHistogramSize; i++ {
+		goStats.OutdegreeHistogram[i] = uint64(cOutdegreeHistogram[i])
+	}
+
+	// Convert indegreeHistogram
+	indegreeHistogramSize := int(cstats.indegreeHistogramSize)
+	goStats.IndegreeHistogram = make([]uint64, indegreeHistogramSize)
+	cIndegreeHistogram := (*[1 << 30]C.size_t)(unsafe.Pointer(cstats.indegreeHistogram))[:indegreeHistogramSize:indegreeHistogramSize]
+	for i := 0; i < indegreeHistogramSize; i++ {
+		goStats.IndegreeHistogram[i] = uint64(cIndegreeHistogram[i])
+	}
+
+	return goStats
+}
+
+func (n *ngt) GetGraphStatistics(m statisticsType) (stats *GraphStatistics, err error) {
+	var mode rune
+	switch m {
+	case NormalStatistics:
+		mode = '-'
+	case AdditionalStatistics:
+		mode = 'a'
+	}
+	ne := n.GetErrorBuffer()
+	cstats := C.ngt_get_graph_statistics(n.index, C.char(mode), C.size_t(n.ces), ne.err)
+	if !cstats.valid {
+		return nil, n.newGoError(ne)
+	}
+	n.PutErrorBuffer(ne)
+	defer C.ngt_free_graph_statistics(&cstats)
+	return fromCGraphStatistics(&cstats), nil
 }

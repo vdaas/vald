@@ -288,10 +288,10 @@ func TestBold(t *testing.T) {
 
 func TestDebug(t *testing.T) {
 	type args struct {
-		vals []interface{}
+		vals []any
 	}
 	type want struct {
-		vals []interface{}
+		vals []any
 	}
 	type test struct {
 		name       string
@@ -303,16 +303,16 @@ func TestDebug(t *testing.T) {
 	}
 	tests := []test{
 		func() test {
-			var got []interface{}
+			var got []any
 
 			ml := &mock.Logger{
-				DebugFunc: func(vals ...interface{}) {
+				DebugFunc: func(vals ...any) {
 					got = vals
 				},
 			}
 
 			w := want{
-				vals: []interface{}{
+				vals: []any{
 					"vald",
 				},
 			}
@@ -363,11 +363,11 @@ func TestDebug(t *testing.T) {
 func TestDebugf(t *testing.T) {
 	type args struct {
 		format string
-		vals   []interface{}
+		vals   []any
 	}
 	type want struct {
 		format string
-		vals   []interface{}
+		vals   []any
 	}
 	type test struct {
 		name       string
@@ -381,18 +381,18 @@ func TestDebugf(t *testing.T) {
 		func() test {
 			var (
 				gotFormat string
-				gotVals   []interface{}
+				gotVals   []any
 			)
 
 			ml := &mock.Logger{
-				DebugfFunc: func(format string, vals ...interface{}) {
+				DebugfFunc: func(format string, vals ...any) {
 					gotFormat, gotVals = format, vals
 				},
 			}
 
 			w := want{
 				format: "format",
-				vals: []interface{}{
+				vals: []any{
 					"vald",
 				},
 			}
@@ -446,10 +446,10 @@ func TestDebugf(t *testing.T) {
 
 func TestInfo(t *testing.T) {
 	type args struct {
-		vals []interface{}
+		vals []any
 	}
 	type want struct {
-		vals []interface{}
+		vals []any
 	}
 	type test struct {
 		name       string
@@ -461,16 +461,16 @@ func TestInfo(t *testing.T) {
 	}
 	tests := []test{
 		func() test {
-			var got []interface{}
+			var got []any
 
 			ml := &mock.Logger{
-				InfoFunc: func(vals ...interface{}) {
+				InfoFunc: func(vals ...any) {
 					got = vals
 				},
 			}
 
 			w := want{
-				vals: []interface{}{
+				vals: []any{
 					"vald",
 				},
 			}
@@ -521,11 +521,11 @@ func TestInfo(t *testing.T) {
 func TestInfof(t *testing.T) {
 	type args struct {
 		format string
-		vals   []interface{}
+		vals   []any
 	}
 	type want struct {
 		format string
-		vals   []interface{}
+		vals   []any
 	}
 	type test struct {
 		name       string
@@ -539,18 +539,18 @@ func TestInfof(t *testing.T) {
 		func() test {
 			var (
 				gotFormat string
-				gotVals   []interface{}
+				gotVals   []any
 			)
 
 			ml := &mock.Logger{
-				InfofFunc: func(format string, vals ...interface{}) {
+				InfofFunc: func(format string, vals ...any) {
 					gotFormat, gotVals = format, vals
 				},
 			}
 
 			w := want{
 				format: "format",
-				vals: []interface{}{
+				vals: []any{
 					"vald",
 				},
 			}
@@ -604,10 +604,10 @@ func TestInfof(t *testing.T) {
 
 func TestWarn(t *testing.T) {
 	type args struct {
-		vals []interface{}
+		vals []any
 	}
 	type want struct {
-		vals []interface{}
+		vals []any
 	}
 	type test struct {
 		name       string
@@ -619,16 +619,16 @@ func TestWarn(t *testing.T) {
 	}
 	tests := []test{
 		func() test {
-			var got []interface{}
+			var got []any
 
 			ml := &mock.Logger{
-				WarnFunc: func(vals ...interface{}) {
+				WarnFunc: func(vals ...any) {
 					got = vals
 				},
 			}
 
 			w := want{
-				vals: []interface{}{
+				vals: []any{
 					"vald",
 				},
 			}
@@ -679,11 +679,11 @@ func TestWarn(t *testing.T) {
 func TestWarnf(t *testing.T) {
 	type args struct {
 		format string
-		vals   []interface{}
+		vals   []any
 	}
 	type want struct {
 		format string
-		vals   []interface{}
+		vals   []any
 	}
 	type test struct {
 		name       string
@@ -697,18 +697,18 @@ func TestWarnf(t *testing.T) {
 		func() test {
 			var (
 				gotFormat string
-				gotVals   []interface{}
+				gotVals   []any
 			)
 
 			ml := &mock.Logger{
-				WarnfFunc: func(format string, vals ...interface{}) {
+				WarnfFunc: func(format string, vals ...any) {
 					gotFormat, gotVals = format, vals
 				},
 			}
 
 			w := want{
 				format: "format",
-				vals: []interface{}{
+				vals: []any{
 					"vald",
 				},
 			}
@@ -762,10 +762,10 @@ func TestWarnf(t *testing.T) {
 
 func TestError(t *testing.T) {
 	type args struct {
-		vals []interface{}
+		vals []any
 	}
 	type want struct {
-		vals []interface{}
+		vals []any
 	}
 	type test struct {
 		name       string
@@ -777,16 +777,16 @@ func TestError(t *testing.T) {
 	}
 	tests := []test{
 		func() test {
-			var got []interface{}
+			var got []any
 
 			ml := &mock.Logger{
-				ErrorFunc: func(vals ...interface{}) {
+				ErrorFunc: func(vals ...any) {
 					got = vals
 				},
 			}
 
 			w := want{
-				vals: []interface{}{
+				vals: []any{
 					"vald",
 				},
 			}
@@ -837,11 +837,11 @@ func TestError(t *testing.T) {
 func TestErrorf(t *testing.T) {
 	type args struct {
 		format string
-		vals   []interface{}
+		vals   []any
 	}
 	type want struct {
 		format string
-		vals   []interface{}
+		vals   []any
 	}
 	type test struct {
 		name       string
@@ -855,18 +855,18 @@ func TestErrorf(t *testing.T) {
 		func() test {
 			var (
 				gotFormat string
-				gotVals   []interface{}
+				gotVals   []any
 			)
 
 			ml := &mock.Logger{
-				ErrorfFunc: func(format string, vals ...interface{}) {
+				ErrorfFunc: func(format string, vals ...any) {
 					gotFormat, gotVals = format, vals
 				},
 			}
 
 			w := want{
 				format: "format",
-				vals: []interface{}{
+				vals: []any{
 					"vald",
 				},
 			}
@@ -920,10 +920,10 @@ func TestErrorf(t *testing.T) {
 
 func TestFatal(t *testing.T) {
 	type args struct {
-		vals []interface{}
+		vals []any
 	}
 	type want struct {
-		vals []interface{}
+		vals []any
 	}
 	type test struct {
 		name       string
@@ -935,16 +935,16 @@ func TestFatal(t *testing.T) {
 	}
 	tests := []test{
 		func() test {
-			var got []interface{}
+			var got []any
 
 			ml := &mock.Logger{
-				FatalFunc: func(vals ...interface{}) {
+				FatalFunc: func(vals ...any) {
 					got = vals
 				},
 			}
 
 			w := want{
-				vals: []interface{}{
+				vals: []any{
 					"vald",
 				},
 			}
@@ -995,11 +995,11 @@ func TestFatal(t *testing.T) {
 func TestFatalf(t *testing.T) {
 	type args struct {
 		format string
-		vals   []interface{}
+		vals   []any
 	}
 	type want struct {
 		format string
-		vals   []interface{}
+		vals   []any
 	}
 	type test struct {
 		name       string
@@ -1013,18 +1013,18 @@ func TestFatalf(t *testing.T) {
 		func() test {
 			var (
 				gotFormat string
-				gotVals   []interface{}
+				gotVals   []any
 			)
 
 			ml := &mock.Logger{
-				FatalfFunc: func(format string, vals ...interface{}) {
+				FatalfFunc: func(format string, vals ...any) {
 					gotFormat, gotVals = format, vals
 				},
 			}
 
 			w := want{
 				format: "format",
-				vals: []interface{}{
+				vals: []any{
 					"vald",
 				},
 			}
@@ -1149,7 +1149,6 @@ func TestFatalf(t *testing.T) {
 // 			if err := checkFunc(test.want, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -1157,10 +1156,9 @@ func TestFatalf(t *testing.T) {
 // func TestDebugd(t *testing.T) {
 // 	type args struct {
 // 		msg     string
-// 		details []interface{}
+// 		details []any
 // 	}
-// 	type want struct {
-// 	}
+// 	type want struct{}
 // 	type test struct {
 // 		name       string
 // 		args       args
@@ -1241,10 +1239,9 @@ func TestFatalf(t *testing.T) {
 // func TestInfod(t *testing.T) {
 // 	type args struct {
 // 		msg     string
-// 		details []interface{}
+// 		details []any
 // 	}
-// 	type want struct {
-// 	}
+// 	type want struct{}
 // 	type test struct {
 // 		name       string
 // 		args       args
@@ -1325,10 +1322,9 @@ func TestFatalf(t *testing.T) {
 // func TestWarnd(t *testing.T) {
 // 	type args struct {
 // 		msg     string
-// 		details []interface{}
+// 		details []any
 // 	}
-// 	type want struct {
-// 	}
+// 	type want struct{}
 // 	type test struct {
 // 		name       string
 // 		args       args
@@ -1409,10 +1405,9 @@ func TestFatalf(t *testing.T) {
 // func TestErrord(t *testing.T) {
 // 	type args struct {
 // 		msg     string
-// 		details []interface{}
+// 		details []any
 // 	}
-// 	type want struct {
-// 	}
+// 	type want struct{}
 // 	type test struct {
 // 		name       string
 // 		args       args
@@ -1493,10 +1488,9 @@ func TestFatalf(t *testing.T) {
 // func TestFatald(t *testing.T) {
 // 	type args struct {
 // 		msg     string
-// 		details []interface{}
+// 		details []any
 // 	}
-// 	type want struct {
-// 	}
+// 	type want struct{}
 // 	type test struct {
 // 		name       string
 // 		args       args

@@ -86,7 +86,6 @@ package sidecar
 // 			if err := checkFunc(test.want, got); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -99,18 +98,18 @@ package sidecar
 // 		info           *observer.BackupInfo
 // 	}
 // 	type want struct {
-// 		want []*metrics.View
+// 		want []metrics.View
 // 		err  error
 // 	}
 // 	type test struct {
 // 		name       string
 // 		fields     fields
 // 		want       want
-// 		checkFunc  func(want, []*metrics.View, error) error
+// 		checkFunc  func(want, []metrics.View, error) error
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)
 // 	}
-// 	defaultCheckFunc := func(w want, got []*metrics.View, err error) error {
+// 	defaultCheckFunc := func(w want, got []metrics.View, err error) error {
 // 		if !errors.Is(err, w.err) {
 // 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 // 		}
@@ -191,7 +190,6 @@ package sidecar
 // 			if err := checkFunc(test.want, got, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -302,7 +300,6 @@ package sidecar
 // 			if err := checkFunc(test.want, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -420,7 +417,6 @@ package sidecar
 // 			if err := checkFunc(test.want, got, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
@@ -534,7 +530,6 @@ package sidecar
 // 			if err := checkFunc(test.want, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
-//
 // 		})
 // 	}
 // }
