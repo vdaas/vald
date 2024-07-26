@@ -20,15 +20,6 @@ on:
       - "main"
       - "release/v*.*"
       - "!release/v*.*.*"
-    paths:
-      - ".github/actions/docker-build/action.yaml"
-      - ".github/workflows/_docker-image.yaml"
-      - ".github/workflows/dockers-dev-container-image.yml"
-      - "dockers/dev/**"
-      - "Makefile"
-      - "Makefile.d/**"
-      - "versions/GO_VERSION"
-      - "versions/NGT_VERSION"
   pull_request:
     paths:
       - ".github/actions/docker-build/action.yaml"
