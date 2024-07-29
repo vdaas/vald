@@ -1,3 +1,5 @@
+<<<<<< HEAD
+
 <div align="center">
 <a href="https://vald.vdaas.org/">
     <img src="./assets/image/readme.svg" width="50%" />
