@@ -53,8 +53,6 @@ ifeq ($(REMOTE),true)
 		--build-arg BUILDKIT_INLINE_CACHE=$(BUILDKIT_INLINE_CACHE) \
 		--build-arg GO_VERSION=$(GO_VERSION) \
 		--build-arg RUST_VERSION=$(RUST_VERSION) \
-		--build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
-		--build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
 		--build-arg MAINTAINER=$(MAINTAINER) \
 		--sbom=true \
 		--provenance=mode=max \
@@ -70,8 +68,6 @@ else
 		--build-arg BUILDKIT_INLINE_CACHE=$(BUILDKIT_INLINE_CACHE) \
 		--build-arg GO_VERSION=$(GO_VERSION) \
 		--build-arg RUST_VERSION=$(RUST_VERSION) \
-		--build-arg DISTROLESS_IMAGE=$(DISTROLESS_IMAGE) \
-		--build-arg DISTROLESS_IMAGE_TAG=$(DISTROLESS_IMAGE_TAG) \
 		--build-arg MAINTAINER=$(MAINTAINER) \
 		$(EXTRA_ARGS) \
 		-t $(CRORG)/$(IMAGE):$(TAG) \
@@ -120,8 +116,6 @@ docker/name/agent:
 docker/build/agent:
 	@make DOCKERFILE="$(ROOTDIR)/dockers/agent/core/agent/Dockerfile" \
 		IMAGE=$(AGENT_IMAGE) \
-		DISTROLESS_IMAGE=gcr.io/distroless/cc-debian12 \
-		EXTRA_ARGS="--build-arg RUST_VERSION=$(RUST_VERSION)" \
 		docker/build/image
 
 .PHONY: docker/name/discoverer-k8s

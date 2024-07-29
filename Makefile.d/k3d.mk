@@ -17,6 +17,8 @@
 K3D_CLUSTER_NAME = "vald-cluster"
 K3D_COMMAND      = k3d
 K3D_NODES        = 5
+K3D_PORT         = 6550
+K3D_HOST         = 0.0.0.0
 
 .PHONY: k3d/install
 ## install K3D
@@ -36,10 +38,12 @@ k3d/start:
 	  --host-pid-mode=true \
 	  --port 8081:80@loadbalancer \
 	  --k3s-arg "--disable=traefik@server:*" \
+	  --api-port "$(K3D_HOST):$(K3D_PORT)" \
 	  -v "/lib/modules:/lib/modules"
-	# $(K3D_COMMAND) cluster create $(K3D_CLUSTER_NAME) --agents $(K3D_NODES) -v "/lib/modules:/lib/modules"
-	# $(K3D_COMMAND) cluster create $(K3D_CLUSTER_NAME) -p "8081:80@loadbalancer" --agents $(K3D_NODES) --k3s-arg '--disable=traefik@all'
-	export KUBECONFIG="$(shell sudo $(K3D_COMMAND) kubeconfig merge -o $(TEMP_DIR)/k3d_$(K3D_CLUSTER_NAME)_kubeconfig.yaml $(K3D_CLUSTER_NAME))"
+	export KUBECONFIG="$(shell $(K3D_COMMAND) kubeconfig merge -o $(TEMP_DIR)/k3d_$(K3D_CLUSTER_NAME)_kubeconfig.yaml $(K3D_CLUSTER_NAME)) --kubeconfig-switch-context"
+	docker logs k3d-$(K3D_CLUSTER_NAME)-server-0
+	docker inspect k3d-$(K3D_CLUSTER_NAME)-server-0
+	kubectl cluster-info dump
 
 .PHONY: k3d/restart
 ## restart k3d (kubernetes in docker) cluster

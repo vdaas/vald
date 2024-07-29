@@ -18,9 +18,12 @@
 ## update vald libraries including tools
 update/libs: \
 	update/chaos-mesh \
+	update/cmake \
+	update/docker \
 	update/faiss \
 	update/go \
 	update/golangci-lint \
+	update/hdf5 \
 	update/helm \
 	update/helm-docs \
 	update/helm-operator \
@@ -33,12 +36,12 @@ update/libs: \
 	update/prometheus-stack \
 	update/protobuf \
 	update/reviewdog \
+	update/rust \
 	update/telepresence \
 	update/vald \
 	update/valdcli \
 	update/yq \
-	update/zlib \
-	update/hdf5
+	update/zlib
 
 .PHONY: go/download
 ## download Go package dependencies
@@ -87,6 +90,8 @@ go/example/deps:
 rust/deps: \
 	rust/install
 	sed -i "17s/channel = \"[0-9]\+\.[0-9]\+\(\.[0-9]\+\)\?\"/channel = \"$(RUST_VERSION)\"/g" $(ROOTDIR)/rust/rust-toolchain.toml
+	rustup toolchain install $(RUST_VERSION)
+	rustup default $(RUST_VERSION)
 	cd $(ROOTDIR)/rust && $(CARGO_HOME)/bin/cargo update && cd -
 
 .PHONY: update/chaos-mesh
@@ -120,6 +125,7 @@ update/golangci-lint:
 ## update rust version
 update/rust:
 	curl -fsSL https://releases.rs | grep -Po 'Stable: \K[\d.]+\s' | head -n 1 > $(ROOTDIR)/versions/RUST_VERSION
+	cp -f $(ROOTDIR)/versions/RUST_VERSION $(ROOTDIR)/rust/rust-toolchain
 
 .PHONY: update/docker
 ## update docker version
@@ -185,6 +191,11 @@ update/ngt:
 ## update facebookresearch/faiss version
 update/faiss:
 	curl -fsSL https://api.github.com/repos/facebookresearch/faiss/releases/latest | grep -Po '"tag_name": "\K.*?(?=")' | sed 's/v//g' > $(ROOTDIR)/versions/FAISS_VERSION
+
+.PHONY: update/cmake
+## update CMAKE version
+update/cmake:
+	curl -fsSL https://api.github.com/repos/Kitware/CMAKE/releases/latest | grep -Po '"tag_name": "\K.*?(?=")' | sed 's/v//g' > $(ROOTDIR)/versions/CMAKE_VERSION
 
 .PHONY: update/reviewdog
 ## update reviewdog version
