@@ -35,6 +35,9 @@ jobs:
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
       - name: Check conflict
         run: |
+          ls
+          grep -r "<<<< HEAD" . --exclude-dir=.git --exclude=check-conflict.yml
+
           if grep -r "<<<< HEAD" . --exclude-dir=.git --exclude=check-conflict.yml; then
             PR_COMMENTS=$(curl ${API_URL}?per_page=10000)
             BODY=$(echo -E "${PR_COMMENTS}" | jq 'last(.[] | select(.user.login == "vdaas-ci") | select(.body | test("^\\\\*\\\\*\\\\[WARNING:CONFLICT")) | .body)' -r)
