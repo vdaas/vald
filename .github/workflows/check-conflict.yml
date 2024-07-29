@@ -36,6 +36,7 @@ jobs:
       - name: Check conflict
         run: |
           ls
+          cat README.md
           grep -r "<<<< HEAD" . --exclude-dir=.git --exclude=check-conflict.yml
 
           if grep -r "<<<< HEAD" . --exclude-dir=.git --exclude=check-conflict.yml; then
