@@ -51,6 +51,8 @@ jobs:
             fi
             echo "Please fix conflict locally."
             exit 1
+          else
+            echo "Nothing conflict"
           fi
         env:
           GITHUB_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
