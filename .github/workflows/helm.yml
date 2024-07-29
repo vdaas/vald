@@ -75,6 +75,9 @@ jobs:
     name: CRUD test on remote Helm chart
     runs-on: ubuntu-latest
     timeout-minutes: 60
+    needs: [detect-ci-container]
+    container:
+      image: ghcr.io/vdaas/vald/vald-ci-container:${{ needs.detect-ci-container.outputs.TAG }}
     steps:
       - uses: actions/checkout@v4
       - name: Set Git config

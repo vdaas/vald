@@ -33,11 +33,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/dump-context
+  detect-ci-container:
+    uses: ./.github/workflows/_detect-ci-container.yml
   e2e-stream-crud:
     name: "E2E test (Stream CRUD)"
-    needs: [dump-contexts-to-log]
+    needs: [detect-ci-container]
     runs-on: ubuntu-latest
     timeout-minutes: 60
+    container:
+      image: ghcr.io/vdaas/vald/vald-ci-container:${{ needs.detect-ci-container.outputs.TAG }}
     steps:
       - uses: actions/checkout@v4
       - name: Set Git config
@@ -73,9 +77,11 @@ jobs:
           POD_NAME: ${{ steps.deploy_vald.outputs.POD_NAME }}
   e2e-stream-crud-for-operator:
     name: "E2E test (Stream CRUD) for operator"
-    needs: [dump-contexts-to-log]
+    needs: [detect-ci-container]
     runs-on: ubuntu-latest
     timeout-minutes: 60
+    container:
+      image: ghcr.io/vdaas/vald/vald-ci-container:${{ needs.detect-ci-container.outputs.TAG }}
     steps:
       - uses: actions/checkout@v4
       - name: Set Git config
@@ -133,9 +139,11 @@ jobs:
           POD_NAME: ${{ steps.deploy_vald.outputs.POD_NAME }}
   e2e-stream-crud-under-index-management-jobs:
     name: "E2E test (Stream CRUD) under index management jobs"
-    needs: [dump-contexts-to-log]
+    needs: [detect-ci-container]
     runs-on: ubuntu-latest
     timeout-minutes: 60
+    container:
+      image: ghcr.io/vdaas/vald/vald-ci-container:${{ needs.detect-ci-container.outputs.TAG }}
     steps:
       - uses: actions/checkout@v4
       - name: Set Git config
@@ -175,9 +183,11 @@ jobs:
           POD_NAME: ${{ steps.deploy_vald.outputs.POD_NAME }}
   e2e-stream-crud-skip-exist-check:
     name: "E2E test (Stream CRUD: skip strict exist check)"
-    needs: [dump-contexts-to-log]
+    needs: [detect-ci-container]
     runs-on: ubuntu-latest
     timeout-minutes: 60
+    container:
+      image: ghcr.io/vdaas/vald/vald-ci-container:${{ needs.detect-ci-container.outputs.TAG }}
     steps:
       - uses: actions/checkout@v4
       - name: Set Git config
@@ -213,9 +223,11 @@ jobs:
           POD_NAME: ${{ steps.deploy_vald.outputs.POD_NAME }}
   e2e-multiapis-crud:
     name: "E2E test (Multi-APIs CRUD)"
-    needs: [dump-contexts-to-log]
+    needs: [detect-ci-container]
     runs-on: ubuntu-latest
     timeout-minutes: 60
+    container:
+      image: ghcr.io/vdaas/vald/vald-ci-container:${{ needs.detect-ci-container.outputs.TAG }}
     steps:
       - uses: actions/checkout@v4
       - name: Set Git config
@@ -247,9 +259,11 @@ jobs:
           POD_NAME: ${{ steps.deploy_vald.outputs.POD_NAME }}
   e2e-jobs:
     name: "E2E test (Jobs)"
-    needs: [dump-contexts-to-log]
+    needs: [detect-ci-container]
     runs-on: ubuntu-latest
     timeout-minutes: 60
+    container:
+      image: ghcr.io/vdaas/vald/vald-ci-container:${{ needs.detect-ci-container.outputs.TAG }}
     steps:
       - uses: actions/checkout@v4
       - name: Set Git config
@@ -278,9 +292,11 @@ jobs:
           POD_NAME: ${{ steps.deploy_vald.outputs.POD_NAME }}
   e2e-stream-crud-with-readreplica:
     name: "E2E test (Stream CRUD) with read replica"
-    needs: [dump-contexts-to-log]
+    needs: [detect-ci-container]
     runs-on: ubuntu-latest
     timeout-minutes: 60
+    container:
+      image: ghcr.io/vdaas/vald/vald-ci-container:${{ needs.detect-ci-container.outputs.TAG }}
     steps:
       - uses: actions/checkout@v4
       - name: Set Git config
@@ -326,9 +342,11 @@ jobs:
           POD_NAME: ${{ steps.deploy_vald_readreplica.outputs.POD_NAME }}
   e2e-stream-crud-with-mirror:
     name: "E2E test (Stream CRUD) with mirror"
-    needs: [dump-contexts-to-log]
+    needs: [detect-ci-container]
     runs-on: ubuntu-latest
     timeout-minutes: 60
+    container:
+      image: ghcr.io/vdaas/vald/vald-ci-container:${{ needs.detect-ci-container.outputs.TAG }}
     steps:
       - uses: actions/checkout@v4
       - name: Set Git config

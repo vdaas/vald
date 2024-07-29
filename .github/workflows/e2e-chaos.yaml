@@ -35,11 +35,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/dump-context
+  detect-ci-container:
+    uses: ./.github/workflows/_detect-ci-container.yml
   agent-failure:
     name: "E2E chaos test (Agent failure: to test insert/search works even if one of the agents is failing)"
-    needs: [dump-contexts-to-log]
+    needs: [detect-ci-container]
     runs-on: ubuntu-latest
     timeout-minutes: 60
+    container:
+      image: ghcr.io/vdaas/vald/vald-ci-container:${{ needs.detect-ci-container.outputs.TAG }}
     steps:
       - uses: actions/checkout@v4
       - name: Set Git config
@@ -75,9 +79,11 @@ jobs:
             e2e/insert/search
   random-pod-failure:
     name: "E2E chaos test (random Pod failure: to test redundancy)"
-    needs: [dump-contexts-to-log]
+    needs: [detect-ci-container]
     runs-on: ubuntu-latest
     timeout-minutes: 60
+    container:
+      image: ghcr.io/vdaas/vald/vald-ci-container:${{ needs.detect-ci-container.outputs.TAG }}
     steps:
       - uses: actions/checkout@v4
       - name: Set Git config
@@ -113,9 +119,11 @@ jobs:
             e2e/insert/search
   agent-network-partition:
     name: "E2E chaos test (agent network partition: to test retries)"
-    needs: [dump-contexts-to-log]
+    needs: [detect-ci-container]
     runs-on: ubuntu-latest
     timeout-minutes: 60
+    container:
+      image: ghcr.io/vdaas/vald/vald-ci-container:${{ needs.detect-ci-container.outputs.TAG }}
     steps:
       - uses: actions/checkout@v4
       - name: Set Git config
@@ -151,9 +159,11 @@ jobs:
             e2e/insert/search
   clusterwide-network-bandwidth:
     name: "E2E chaos test (network bandwidth: to test it works properly under bandwidth limitation)"
-    needs: [dump-contexts-to-log]
+    needs: [detect-ci-container]
     runs-on: ubuntu-latest
     timeout-minutes: 60
+    container:
+      image: ghcr.io/vdaas/vald/vald-ci-container:${{ needs.detect-ci-container.outputs.TAG }}
     steps:
       - uses: actions/checkout@v4
       - name: Set Git config

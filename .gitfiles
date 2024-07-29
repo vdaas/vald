@@ -1971,6 +1971,7 @@ rust/libs/proto/src/sidecar.v1.rs
 rust/libs/proto/src/sidecar.v1.tonic.rs
 rust/libs/proto/src/vald.v1.rs
 rust/libs/proto/src/vald.v1.tonic.rs
+rust/rust-toolchain
 rust/rust-toolchain.toml
 tests/chaos/chart/.helmignore
 tests/chaos/chart/Chart.yaml
@@ -2000,6 +2001,7 @@ tests/e2e/sidecar/sidecar_test.go
 tests/performance/max_vector_dim_test.go
 versions/BUF_VERSION
 versions/CHAOS_MESH_VERSION
+versions/CMAKE_VERSION
 versions/DOCKER_VERSION
 versions/FAISS_VERSION
 versions/GOLANGCILINT_VERSION

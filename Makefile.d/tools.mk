@@ -53,9 +53,10 @@ $(GOBIN)/crlfmt:
 	$(call go-install, github.com/cockroachdb/crlfmt)
 
 .PHONY: prettier/install
-prettier/install: $(BINDIR)/prettier
-$(BINDIR)/prettier:
-	npm config set registry http://registry.npmjs.org/
+prettier/install: $(NPM_GLOBAL_PREFIX)/bin/prettier
+$(NPM_GLOBAL_PREFIX)/bin/prettier:
+	npm config -g set registry http://registry.npmjs.org/
+	npm cache clean --force
 	type prettier || npm install -g prettier
 
 .PHONY: reviewdog/install
@@ -170,6 +171,8 @@ rust/install: $(CARGO_HOME)/bin/cargo
 
 $(CARGO_HOME)/bin/cargo:
 	curl --proto '=https' --tlsv1.2 -fsSL https://sh.rustup.rs | CARGO_HOME=${CARGO_HOME} RUSTUP_HOME=${RUSTUP_HOME} sh -s -- --default-toolchain $(RUST_VERSION) -y
+	rustup toolchain install $(RUST_VERSION)
+	rustup default $(RUST_VERSION)
 	source "${CARGO_HOME}/env"
 
 .PHONY: zlib/install

@@ -33,11 +33,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/dump-context
+  detect-ci-container:
+    uses: ./.github/workflows/_detect-ci-container.yml
   e2e-profiling:
     name: "E2E profiling"
-    needs: [dump-contexts-to-log]
+    needs: [detect-ci-container]
     runs-on: ubuntu-latest
     timeout-minutes: 60
+    container:
+      image: ghcr.io/vdaas/vald/vald-ci-container:${{ needs.detect-ci-container.outputs.TAG }}
     steps:
       - uses: actions/checkout@v4
       - name: Set Git config

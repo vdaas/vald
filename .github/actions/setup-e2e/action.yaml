@@ -19,7 +19,7 @@ inputs:
   require_libhdf5:
     description: "If libhdf5 is not required, set this to false"
     required: false
-    default: "true"
+    default: "false"
   require_go:
     description: "If go is not required, set this to false"
     required: false

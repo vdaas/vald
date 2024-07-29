@@ -19,12 +19,15 @@
 
 ARG UPX_OPTIONS=-9
 ARG OPERATOR_SDK_VERSION=latest
-# skipcq: DOK-DL3026
+# skipcq: DOK-DL3026,DOK-DL3007
 FROM quay.io/operator-framework/helm-operator:${OPERATOR_SDK_VERSION} AS operator
-# skipcq: DOK-DL3026
+# skipcq: DOK-DL3026,DOK-DL3007
 FROM ghcr.io/vdaas/vald/vald-buildbase:nightly AS builder
 ARG MAINTAINER="vdaas.org vald team <vald@vdaas.org>"
 LABEL maintainer="${MAINTAINER}"
+
+# skipcq: DOK-DL3002
+USER root:root
 
 ARG TARGETARCH
 ARG TARGETOS
@@ -38,14 +41,21 @@ ENV GOROOT=/opt/go
 ENV HOME=/root
 ENV INITRD=No
 ENV LANG=en_US.UTF-8
+ENV LANGUAGE=en_US.UTF-8
+ENV LC_ALL=en_US.UTF-8
 ENV ORG=vdaas
 ENV PKG=operator/helm
 ENV REPO=vald
+ENV TZ=Etc/UTC
+ENV USER=root
 ENV PATH=${GOPATH}/bin:${GOROOT}/bin:/usr/local/bin:${PATH}
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-# skipcq: DOK-DL3008
-RUN apt-get clean \
+#skipcq: DOK-W1001, DOK-SC2046, DOK-SC2086, DOK-DL3008
+RUN rm -f /etc/apt/apt.conf.d/docker-clean \
+    && echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' > /etc/apt/apt.conf.d/keep-cache \
+    && echo 'APT::Install-Recommends "false";' > /etc/apt/apt.conf.d/no-install-recommends \
+    && apt-get clean \
     && rm -rf \
         /var/lib/apt/lists/* \
         /var/cache/* \
@@ -55,14 +65,22 @@ RUN apt-get clean \
     build-essential \
     ca-certificates \
     curl \
+    tzdata \
+    locales \
     git \
     upx \
     && ldconfig \
+    && echo "${LANG} UTF-8" > /etc/locale.gen \
+    && ln -fs /usr/share/zoneinfo/${TZ} /etc/localtime \
+    && locale-gen ${LANGUAGE} \
+    && update-locale LANG=${LANGUAGE} \
+    && dpkg-reconfigure -f noninteractive tzdata \
     && apt-get clean \
+    && apt-get autoclean -y \
     && rm -rf \
         /var/lib/apt/lists/* \
         /var/cache/* \
-    && apt-get autoremove
+    && apt-get autoremove -y
 
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}
 COPY Makefile .
@@ -82,7 +100,7 @@ COPY hack .
 COPY --from=operator /usr/local/bin/${APP_NAME} /usr/bin/${APP_NAME}
 
 WORKDIR ${GOPATH}/src/github.com/${ORG}/${REPO}
-#skipcq: DOK-W1001, DOK-SC2086
+#skipcq: DOK-W1001, DOK-SC2046, DOK-SC2086, DOK-DL3008
 RUN --mount=type=cache,target="${GOPATH}/pkg",id="go-build-${TARGETARCH}" \
     --mount=type=cache,target="${HOME}/.cache/go-build",id="go-build-${TARGETARCH}" \
     make GO_VERSION="${GO_VERSION}" go/install \
@@ -103,7 +121,7 @@ RUN --mount=type=cache,target="${GOPATH}/pkg",id="go-build-${TARGETARCH}" \
     && make GOARCH=${TARGETARCH} GOOS=${TARGETOS} helm/schema/vald-helm-operator \
     && cp -r charts/* /opt/helm/charts/ \
     && upx "/usr/bin/${APP_NAME}"
-# skipcq: DOK-DL3026
+# skipcq: DOK-DL3026,DOK-DL3007
 FROM gcr.io/distroless/static:nonroot
 ARG MAINTAINER="vdaas.org vald team <vald@vdaas.org>"
 LABEL maintainer="${MAINTAINER}"
@@ -114,5 +132,6 @@ COPY --from=builder /usr/bin/${APP_NAME} /usr/bin/${APP_NAME}
 COPY --from=builder /opt/helm/watches.yaml /opt/helm/watches.yaml
 COPY --from=builder /opt/helm/charts/vald /opt/helm/charts/vald
 COPY --from=builder /opt/helm/charts/vald-helm-operator /opt/helm/charts/vald-helm-operator
+# skipcq: DOK-DL3002
 USER nonroot:nonroot
 ENTRYPOINT ["/usr/bin/helm-operator", "run", "--watches-file=/opt/helm/watches.yaml"]

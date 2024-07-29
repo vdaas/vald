@@ -61,13 +61,16 @@ ARG UPX_OPTIONS=-9
 ARG {{$key}}={{$value}}
 {{- end}}
 {{- range $image := .ExtraImages }}
-# skipcq: DOK-DL3026
+# skipcq: DOK-DL3026,DOK-DL3007
 FROM {{$image}}
 {{- end}}
-# skipcq: DOK-DL3026
+# skipcq: DOK-DL3026,DOK-DL3007
 FROM {{.BuilderImage}}:{{.BuilderTag}}{{- if not .DevContainer}} AS builder {{- end}}
 ARG MAINTAINER="{{.Maintainer}}"
 LABEL maintainer="${MAINTAINER}"
+
+# skipcq: DOK-DL3002
+USER {{.BuildUser}}
 
 ARG TARGETARCH
 ARG TARGETOS
@@ -79,27 +82,49 @@ ENV {{$keyValue}}
 {{- end}}
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-# skipcq: DOK-DL3008
-RUN apt-get clean \
+#skipcq: DOK-W1001, DOK-SC2046, DOK-SC2086, DOK-DL3008
+RUN rm -f /etc/apt/apt.conf.d/docker-clean \
+    && echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' > /etc/apt/apt.conf.d/keep-cache \
+    && echo 'APT::Install-Recommends "false";' > /etc/apt/apt.conf.d/no-install-recommends \
+    && apt-get clean \
     && rm -rf \
         /var/lib/apt/lists/* \
         /var/cache/* \
     && apt-get update -y \
     && apt-get upgrade -y \
+{{- if .DevContainer}}
+    && apt-get install -y --no-install-recommends --fix-missing \
+    curl \
+    gnupg \
+    software-properties-common \
+    && add-apt-repository ppa:ubuntu-toolchain-r/test -y \
+    && apt-get update -y \
+    && apt-get upgrade -y \
+{{- end}}
     && apt-get install -y --no-install-recommends --fix-missing \
     build-essential \
     ca-certificates \
+{{- if not .DevContainer}}
     curl \
+{{- end}}
+    tzdata \
+    locales \
     git \
 {{- range $epkg := .ExtraPackages }}
     {{$epkg}} \
 {{- end}}
     && ldconfig \
+    && echo "${LANG} UTF-8" > /etc/locale.gen \
+    && ln -fs /usr/share/zoneinfo/${TZ} /etc/localtime \
+    && locale-gen ${LANGUAGE} \
+    && update-locale LANG=${LANGUAGE} \
+    && dpkg-reconfigure -f noninteractive tzdata \
     && apt-get clean \
+    && apt-get autoclean -y \
     && rm -rf \
         /var/lib/apt/lists/* \
         /var/cache/* \
-    && apt-get autoremove
+    && apt-get autoremove -y
 
 WORKDIR {{.RootDir}}/${ORG}/${REPO}
 COPY Makefile .
@@ -120,23 +145,22 @@ COPY cmd/${PKG}/sample.yaml {{$.TmpConfigPath}}
 WORKDIR {{$.RootDir}}/${ORG}/${REPO}/{{$files}}
 COPY {{$files}} .
 {{- end}}
-{{- range $files := .ExtraCopies }}
-COPY {{$files}}
-{{- end}}
-
 {{- else}}
 WORKDIR {{.RootDir}}/${ORG}/${REPO}
 COPY . .
 {{- end}}
+{{- range $files := .ExtraCopies }}
+COPY {{$files}}
+{{- end}}
 
 WORKDIR {{.RootDir}}/${ORG}/${REPO}
 {{- if .RunCommands}}
-#skipcq: DOK-W1001, DOK-SC2086
+#skipcq: DOK-W1001, DOK-SC2046, DOK-SC2086, DOK-DL3008
 RUN {{RunCommands .RunCommands}}
 {{- end}}
 
 {{- if not .DevContainer}}
-# skipcq: DOK-DL3026
+# skipcq: DOK-DL3026,DOK-DL3007
 FROM {{.RuntimeImage}}:{{.RuntimeTag}}
 ARG MAINTAINER="{{.Maintainer}}"
 LABEL maintainer="${MAINTAINER}"
@@ -150,14 +174,16 @@ COPY --from=builder {{$.TmpConfigPath}} /etc/server/config.yaml
 {{- range $from, $file := .StageFiles }}
 COPY --from=builder {{$file}} {{$file}}
 {{- end}}
-USER nonroot:nonroot
+{{- end}}
+# skipcq: DOK-DL3002
+USER {{.RuntimeUser}}
 
 {{- if .Entrypoints}}
 ENTRYPOINT [{{Entrypoint .Entrypoints}}]
-{{- else}}
+{{- else if not .DevContainer}}
 ENTRYPOINT ["{{.BinDir}}/{{.AppName}}"]
 {{- end}}
-{{- end}}`
+`
 
 var docker = template.Must(template.New("Dockerfile").Funcs(template.FuncMap{
 	"RunCommands": func(commands []string) string {
@@ -188,6 +214,7 @@ type Data struct {
 	ContainerType     ContainerType
 	AppName           string
 	BinDir            string
+	BuildUser         string
 	BuilderImage      string
 	BuilderTag        string
 	Maintainer        string
@@ -195,6 +222,7 @@ type Data struct {
 	RootDir           string
 	RuntimeImage      string
 	RuntimeTag        string
+	RuntimeUser       string
 	TmpConfigPath     string
 	Arguments         map[string]string
 	Environments      map[string]string
@@ -214,15 +242,19 @@ type ContainerType int
 const (
 	organization          = "vdaas"
 	repository            = "vald"
-	minimumArgumentLength = 2
-	defaultMaintainer     = organization + ".org " + repository + " team <" + repository + "@" + organization + ".org>"
-	maintainerKey         = "MAINTAINER"
-	defaultRuntimeImage   = "gcr.io/distroless/static"
-	defaultRuntimeTag     = "nonroot"
+	defaultBinaryDir      = "/usr/bin"
 	defaultBuilderImage   = "ghcr.io/vdaas/vald/vald-buildbase"
 	defaultBuilderTag     = "nightly"
-	defaultBinaryDir      = "/usr/bin"
+	defaultLanguage       = "en_US.UTF-8"
+	defaultMaintainer     = organization + ".org " + repository + " team <" + repository + "@" + organization + ".org>"
+	defaultRuntimeImage   = "gcr.io/distroless/static"
+	defaultRuntimeTag     = "nonroot"
 	defaultTmpConfigPath  = "/tmp/config.yaml"
+	defaultRuntimeUser    = "nonroot:nonroot"
+	defaultBuildUser      = "root:root"
+	maintainerKey         = "MAINTAINER"
+	minimumArgumentLength = 2
+	ubuntuVersion         = "22.04"
 
 	goWorkdir   = "${GOPATH}/src/github.com"
 	rustWorkdir = "${HOME}/rust/src/github.com"
@@ -249,9 +281,13 @@ var (
 	defaultEnvironments = map[string]string{
 		"DEBIAN_FRONTEND": "noninteractive",
 		"HOME":            "/root",
+		"USER":            "root",
 		"INITRD":          "No",
-		"LANG":            "en_US.UTF-8",
+		"LANG":            defaultLanguage,
+		"LANGUAGE":        defaultLanguage,
+		"LC_ALL":          defaultLanguage,
 		"ORG":             organization,
+		"TZ":              "Etc/UTC",
 		"PATH":            "${PATH}:/usr/local/bin",
 		"REPO":            repository,
 	}
@@ -266,6 +302,10 @@ var (
 		"RUSTUP_HOME": "${RUST_HOME}/rustup",
 		"CARGO_HOME":  "${RUST_HOME}/cargo",
 		"PATH":        "${PATH}:${RUSTUP_HOME}/bin:${CARGO_HOME}/bin:/usr/local/bin",
+	}
+	clangDefaultEnvironments = map[string]string{
+		"CC":  "gcc",
+		"CXX": "g++",
 	}
 
 	defaultCopyDirectories = []string{
@@ -303,9 +343,10 @@ var (
 
 	clangBuildDeps = []string{
 		"cmake",
-		"g++",
 		"gcc",
+		"g++",
 		"unzip",
+		"libssl-dev",
 	}
 	ngtBuildDeps = []string{
 		"liblapack-dev",
@@ -316,24 +357,32 @@ var (
 		"gfortran",
 	}
 	devContainerDeps = []string{
-		"curl",
 		"gawk",
-		"git",
 		"gnupg2",
 		"graphviz",
 		"jq",
 		"libhdf5-dev",
 		"libaec-dev",
-		"nodejs",
-		"npm",
 		"sed",
 		"zip",
 	}
 
 	ciContainerPreprocess = []string{
+		"curl -fsSL https://deb.nodesource.com/setup_current.x | bash -",
+		"apt-get clean",
+		"rm -rf /var/lib/apt/lists/* /var/cache/*",
+		"apt-get update -y",
+		"apt-get upgrade -y",
+		"apt-get install -y --no-install-recommends --fix-missing nodejs",
+		"npm install -g npm@latest",
+		"apt-get clean",
+		"apt-get autoclean -y",
+		"rm -rf /var/lib/apt/lists/* /var/cache/*",
+		"apt-get autoremove -y",
 		"make GOARCH=${TARGETARCH} GOOS=${TARGETOS} deps GO_CLEAN_DEPS=false",
 		"make GOARCH=${TARGETARCH} GOOS=${TARGETOS} golangci-lint/install",
 		"make GOARCH=${TARGETARCH} GOOS=${TARGETOS} gotestfmt/install",
+		"make cmake/install",
 		"make buf/install",
 		"make hdf5/install",
 		"make helm-docs/install",
@@ -384,6 +433,9 @@ func appendM[K comparable](maps ...map[K]string) map[K]string {
 		v = strings.Join(slices.Compact(vs), ":")
 		if strings.Contains(v, "${PATH}:") {
 			v = strings.TrimPrefix(strings.ReplaceAll(strings.ReplaceAll(v, "${PATH}", ""), "::", ":")+":${PATH}", ":")
+		}
+		if strings.Contains(v, ":unix") {
+			v = "unix:" + strings.TrimSuffix(v, ":unix")
 		}
 		result[k] = v
 	}
@@ -461,7 +513,7 @@ func main() {
 	defer cancel()
 
 	maintainer := os.Getenv(maintainerKey)
-	if len(maintainer) == 0 {
+	if maintainer == "" {
 		maintainer = defaultMaintainer
 	}
 	year := time.Now().Year()
@@ -612,22 +664,23 @@ func main() {
 			AppName:       "ci-container",
 			DevContainer:  true,
 			ContainerType: DevContainer,
+			BuilderImage:  "ghcr.io/actions-runner-controller/actions-runner-controller/actions-runner-dind",
+			BuilderTag:    "ubuntu-" + ubuntuVersion,
 			PackageDir:    "ci/base",
+			RuntimeUser:   defaultBuildUser,
 			ExtraPackages: append(clangBuildDeps,
 				append(ngtBuildDeps,
 					append(faissBuildDeps,
 						devContainerDeps...)...)...),
-			Preprocess: append([]string{
-				"sysctl -w net.ipv6.conf.all.disable_ipv6=1",
-				"sysctl -w net.ipv6.conf.default.disable_ipv6=1",
-				"sysctl -w net.ipv6.conf.lo.disable_ipv6=1",
-				"sysctl -p",
-			}, append(ciContainerPreprocess, ngtPreprocess, faissPreprocess)...),
+			Preprocess:  append(ciContainerPreprocess, ngtPreprocess, faissPreprocess),
+			Entrypoints: []string{"/bin/bash", "-c", "/usr/bin/entrypoint-dind.sh"},
 		},
 		"vald-dev-container": {
 			AppName:       "dev-container",
-			BuilderImage:  "mcr.microsoft.com/vscode/devcontainers/base",
-			BuilderTag:    "debian",
+			BuilderImage:  "mcr.microsoft.com/devcontainers/base",
+			BuilderTag:    "ubuntu" + ubuntuVersion,
+			BuildUser:     defaultBuildUser,
+			RuntimeUser:   defaultBuildUser,
 			DevContainer:  true,
 			ContainerType: DevContainer,
 			PackageDir:    "dev",
@@ -665,6 +718,13 @@ func main() {
 			if data.BuilderTag == "" {
 				data.BuilderTag = defaultBuilderTag
 			}
+			if data.RuntimeUser == "" {
+				data.RuntimeUser = defaultRuntimeUser
+			}
+
+			if data.BuildUser == "" {
+				data.BuildUser = defaultBuildUser
+			}
 
 			if data.CopyDirectories != nil {
 				data.CopyDirectories = append(defaultCopyDirectories, data.CopyDirectories...)
@@ -701,12 +761,13 @@ func main() {
 				if data.Preprocess != nil {
 					commands = append(commands, data.Preprocess...)
 				}
-				data.RunCommands = append(commands, rustBuildCommands...)
+				commands = append(commands, rustBuildCommands...)
+				data.RunCommands = commands
 			case DevContainer:
 				data.CopyDirectories = append(data.CopyDirectories, append(goDefaultCopyDirectories, rustDefaultCopyDirectories...)...)
-				data.Environments = appendM(data.Environments, goDefaultEnvironments, rustDefaultEnvironments)
+				data.Environments = appendM(data.Environments, goDefaultEnvironments, rustDefaultEnvironments, clangDefaultEnvironments)
 				data.RootDir = goWorkdir
-				commands := make([]string, 0, len(goInstallCommands)+len(rustInstallCommands)+len(data.Preprocess))
+				commands := make([]string, 0, len(goInstallCommands)+len(rustInstallCommands)+len(data.Preprocess)+1)
 				commands = append(commands, append(goInstallCommands, rustInstallCommands...)...)
 				if data.Preprocess != nil {
 					commands = append(commands, data.Preprocess...)
@@ -726,6 +787,17 @@ func main() {
 				data.RootDir = "${HOME}"
 				data.Environments["ROOTDIR"] = os.Args[1]
 			}
+			if strings.Contains(data.BuildUser, "root") {
+				data.Environments["HOME"] = "/root"
+				data.Environments["USER"] = "root"
+			} else {
+				user := data.BuildUser
+				if strings.Contains(user, ":") {
+					user = strings.SplitN(user, ":", 2)[0]
+				}
+				data.Environments["HOME"] = "/home/" + user
+				data.Environments["USER"] = user
+			}
 
 			data.Environments["APP_NAME"] = data.AppName
 			data.Environments["PKG"] = data.PackageDir
@@ -733,7 +805,7 @@ func main() {
 			data.ConfigExists = file.Exists(file.Join(os.Args[1], "cmd", data.PackageDir, "sample.yaml"))
 
 			buf := bytes.NewBuffer(make([]byte, 0, len(tmpl)))
-			log.Infof("generating %s's docker file", name)
+			log.Infof("Generating %s's Dockerfile", name)
 			docker.Execute(buf, data)
 			tpl := buf.String()
 			buf.Reset()
