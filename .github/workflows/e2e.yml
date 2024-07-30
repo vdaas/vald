@@ -56,10 +56,10 @@ jobs:
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
       - name: Setup K3d environment
         uses: ./.github/actions/setup-k3d
-        env:
-          DOCKER_HOST: tcp://0.0.0.0:2375
+        # env:
+        #   DOCKER_HOST: tcp://0.0.0.0:2375
       - name: Chec
         run: |
           kubectl get pods -A
-        env:
-          DOCKER_HOST: tcp://0.0.0.0:2375
+        # env:
+        #   DOCKER_HOST: tcp://0.0.0.0:2375
