@@ -43,18 +43,12 @@ jobs:
         image: docker:23.0.1-dind
         options: --privileged
         ports:
-          - 6443:6443
           - 2375:2375
         volumes:
           - "/var/run/docker.sock:/var/run/docker.sock:ro"
     container:
       image: ghcr.io/vdaas/vald/vald-ci-container:nightly
       options: --privileged
-      ports:
-        - 6443:6443
-        - 2375:2375
-      volumes:
-        - "/var/run/docker.sock:/var/run/docker.sock:ro"
     steps:
       - uses: actions/checkout@v4
       - name: Set Git config
