@@ -22,8 +22,7 @@ on:
       - "*.*.*-*"
       - "v*.*.*-*"
   pull_request:
-    types:
-      - "labeled"
+
 env:
   DATASET: fashion-mnist-784-euclidean.hdf5
 jobs:
@@ -33,385 +32,390 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/dump-context
-  detect-ci-container:
-    uses: ./.github/workflows/_detect-ci-container.yml
+  # detect-ci-container:
+  #   uses: ./.github/workflows/_detect-ci-container.yml
   e2e-stream-crud:
     name: "E2E test (Stream CRUD)"
-    needs: [detect-ci-container]
     runs-on: ubuntu-latest
     timeout-minutes: 60
     container:
-      image: ghcr.io/vdaas/vald/vald-ci-container:${{ needs.detect-ci-container.outputs.TAG }}
+      image: ghcr.io/vdaas/vald/vald-ci-container:pr-2549
     steps:
       - uses: actions/checkout@v4
       - name: Set Git config
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
-      - name: Setup E2E environment
-        id: setup_e2e
-        uses: ./.github/actions/setup-e2e
-      - name: Deploy Vald
-        id: deploy_vald
-        uses: ./.github/actions/e2e-deploy-vald
-        with:
-          helm_extra_options: ${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }}
-          values: .github/helm/values/values-lb.yaml
-          wait_for_selector: app=vald-lb-gateway
-      - name: Run E2E CRUD
+      - name: Setup K3d environment
+        uses: ./.github/actions/setup-k3d
+      - name: Chec
         run: |
-          make hack/benchmark/assets/dataset/${{ env.DATASET }}
-          make E2E_BIND_PORT=8081 \
-            E2E_DATASET_NAME=${{ env.DATASET }} \
-            E2E_INSERT_COUNT=10000\
-            E2E_SEARCH_COUNT=10000 \
-            E2E_SEARCH_BY_ID_COUNT=10000 \
-            E2E_GET_OBJECT_COUNT=100 \
-            E2E_UPDATE_COUNT=100 \
-            E2E_UPSERT_COUNT=100 \
-            E2E_REMOVE_COUNT=100 \
-            E2E_WAIT_FOR_CREATE_INDEX_DURATION=3m \
-            E2E_TARGET_POD_NAME=${POD_NAME} \
-            E2E_TARGET_NAMESPACE=default \
-            e2e
-        env:
-          POD_NAME: ${{ steps.deploy_vald.outputs.POD_NAME }}
-  e2e-stream-crud-for-operator:
-    name: "E2E test (Stream CRUD) for operator"
-    needs: [detect-ci-container]
-    runs-on: ubuntu-latest
-    timeout-minutes: 60
-    container:
-      image: ghcr.io/vdaas/vald/vald-ci-container:${{ needs.detect-ci-container.outputs.TAG }}
-    steps:
-      - uses: actions/checkout@v4
-      - name: Set Git config
-        run: |
-          git config --global --add safe.directory ${GITHUB_WORKSPACE}
-      - name: Setup E2E environment
-        id: setup_e2e
-        uses: ./.github/actions/setup-e2e
-      - name: Create Helm options for vald-helm-operator
-        uses: ./.github/actions/setup-e2e
-        id: vald_helm_operator
-        with:
-          target_images: "vdaas/vald-helm-operator"
-          require_libhdf5: false
-          require_go: false
-          require_helm: false
-          require_k3d: false
-      - name: Merge Docker image tag
-        run: |
-          IMAGE_TAGS=(${{ steps.setup_e2e.outputs.IMAGE_TAGS }})
-
-          for IMAGE_TAG in "${IMAGE_TAGS[@]}"
-          do
-            echo "IMAGE_TAG:${IMAGE_TAG}"
-
-            ARR=(${IMAGE_TAG//=/ })
-            FIELD=${ARR[0]}
-            TAG="\"${ARR[1]}\""
-            yq e ".spec.$FIELD=$TAG" -i ./.github/valdrelease/valdrelease.yaml
-          done
-      - name: Deploy Vald using Vald Helm Operator
-        id: deploy_vald
-        uses: ./.github/actions/e2e-deploy-vald-helm-operator
-        with:
-          helm_extra_options: ${{ steps.vald_helm_operator.outputs.HELM_EXTRA_OPTIONS }}
-          valdrelease: ./.github/valdrelease/valdrelease.yaml
-          wait_for_selector: app=vald-lb-gateway
-      - name: Run E2E CRUD
-        run: |
-          make hack/benchmark/assets/dataset/${{ env.DATASET }}
-          make E2E_BIND_PORT=8081 \
-            E2E_DATASET_NAME=${{ env.DATASET }} \
-            E2E_INSERT_COUNT=10000 \
-            E2E_SEARCH_COUNT=10000 \
-            E2E_SEARCH_BY_ID_COUNT=10000 \
-            E2E_GET_OBJECT_COUNT=100 \
-            E2E_UPDATE_COUNT=100 \
-            E2E_UPSERT_COUNT=100 \
-            E2E_REMOVE_COUNT=100 \
-            E2E_WAIT_FOR_CREATE_INDEX_DURATION=3m \
-            E2E_TARGET_POD_NAME=${POD_NAME} \
-            E2E_TARGET_NAMESPACE=default \
-            e2e
-        env:
-          POD_NAME: ${{ steps.deploy_vald.outputs.POD_NAME }}
-  e2e-stream-crud-under-index-management-jobs:
-    name: "E2E test (Stream CRUD) under index management jobs"
-    needs: [detect-ci-container]
-    runs-on: ubuntu-latest
-    timeout-minutes: 60
-    container:
-      image: ghcr.io/vdaas/vald/vald-ci-container:${{ needs.detect-ci-container.outputs.TAG }}
-    steps:
-      - uses: actions/checkout@v4
-      - name: Set Git config
-        run: |
-          git config --global --add safe.directory ${GITHUB_WORKSPACE}
-      - name: Setup E2E environment
-        id: setup_e2e
-        uses: ./.github/actions/setup-e2e
-        with:
-          target_images: "vdaas/vald-agent-ngt vdaas/vald-discoverer-k8s vdaas/vald-lb-gateway vdaas/vald-index-creation vdaas/vald-index-save"
-      - name: Deploy Vald
-        id: deploy_vald
-        uses: ./.github/actions/e2e-deploy-vald
-        env:
-          HELM_EXTRA_OPTIONS: "--values .github/helm/values/values-index-management-jobs.yaml"
-        with:
-          helm_extra_options: ${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }} ${{ env.HELM_EXTRA_OPTIONS }}
-          values: .github/helm/values/values-lb.yaml
-          wait_for_selector: app=vald-lb-gateway
-      - name: Run E2E CRUD
-        run: |
-          make hack/benchmark/assets/dataset/${{ env.DATASET }}
-          make E2E_BIND_PORT=8081 \
-            E2E_DATASET_NAME=${{ env.DATASET }} \
-            E2E_INSERT_COUNT=10000\
-            E2E_SEARCH_COUNT=10000 \
-            E2E_SEARCH_BY_ID_COUNT=10000 \
-            E2E_GET_OBJECT_COUNT=100 \
-            E2E_UPDATE_COUNT=100 \
-            E2E_UPSERT_COUNT=100 \
-            E2E_REMOVE_COUNT=100 \
-            E2E_WAIT_FOR_CREATE_INDEX_DURATION=3m \
-            E2E_TARGET_POD_NAME=${POD_NAME} \
-            E2E_TARGET_NAMESPACE=default \
-            e2e
-        env:
-          POD_NAME: ${{ steps.deploy_vald.outputs.POD_NAME }}
-  e2e-stream-crud-skip-exist-check:
-    name: "E2E test (Stream CRUD: skip strict exist check)"
-    needs: [detect-ci-container]
-    runs-on: ubuntu-latest
-    timeout-minutes: 60
-    container:
-      image: ghcr.io/vdaas/vald/vald-ci-container:${{ needs.detect-ci-container.outputs.TAG }}
-    steps:
-      - uses: actions/checkout@v4
-      - name: Set Git config
-        run: |
-          git config --global --add safe.directory ${GITHUB_WORKSPACE}
-      - name: Setup E2E environment
-        id: setup_e2e
-        uses: ./.github/actions/setup-e2e
-      - name: Deploy Vald
-        id: deploy_vald
-        uses: ./.github/actions/e2e-deploy-vald
-        with:
-          helm_extra_options: ${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }}
-          values: .github/helm/values/values-lb.yaml
-          wait_for_selector: app=vald-lb-gateway
-      - name: Run E2E CRUD
-        run: |
-          make hack/benchmark/assets/dataset/${{ env.DATASET }}
-          make E2E_BIND_PORT=8081 \
-            E2E_DATASET_NAME=${{ env.DATASET }} \
-            E2E_INSERT_COUNT=10 \
-            E2E_SEARCH_COUNT=10 \
-            E2E_SEARCH_BY_ID_COUNT=10 \
-            E2E_GET_OBJECT_COUNT=10 \
-            E2E_UPDATE_COUNT=10 \
-            E2E_UPSERT_COUNT=10 \
-            E2E_REMOVE_COUNT=10 \
-            E2E_WAIT_FOR_CREATE_INDEX_DURATION=3m \
-            E2E_TARGET_POD_NAME=${POD_NAME} \
-            E2E_TARGET_NAMESPACE=default \
-            e2e/skip
-        env:
-          POD_NAME: ${{ steps.deploy_vald.outputs.POD_NAME }}
-  e2e-multiapis-crud:
-    name: "E2E test (Multi-APIs CRUD)"
-    needs: [detect-ci-container]
-    runs-on: ubuntu-latest
-    timeout-minutes: 60
-    container:
-      image: ghcr.io/vdaas/vald/vald-ci-container:${{ needs.detect-ci-container.outputs.TAG }}
-    steps:
-      - uses: actions/checkout@v4
-      - name: Set Git config
-        run: |
-          git config --global --add safe.directory ${GITHUB_WORKSPACE}
-      - name: Setup E2E environment
-        id: setup_e2e
-        uses: ./.github/actions/setup-e2e
-      - name: Deploy Vald
-        id: deploy_vald
-        uses: ./.github/actions/e2e-deploy-vald
-        with:
-          helm_extra_options: ${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }}
-          values: .github/helm/values/values-lb.yaml
-          wait_for_selector: app=vald-lb-gateway
-      - name: Run E2E CRUD
-        run: |
-          make hack/benchmark/assets/dataset/${{ env.DATASET }}
-          make E2E_BIND_PORT=8081 \
-            E2E_DATASET_NAME=${{ env.DATASET }} \
-            E2E_INSERT_COUNT=100 \
-            E2E_SEARCH_COUNT=10 \
-            E2E_SEARCH_BY_ID_COUNT=10 \
-            E2E_WAIT_FOR_CREATE_INDEX_DURATION=2m \
-            E2E_TARGET_POD_NAME=${POD_NAME} \
-            E2E_TARGET_NAMESPACE=default \
-            e2e/multi
-        env:
-          POD_NAME: ${{ steps.deploy_vald.outputs.POD_NAME }}
-  e2e-jobs:
-    name: "E2E test (Jobs)"
-    needs: [detect-ci-container]
-    runs-on: ubuntu-latest
-    timeout-minutes: 60
-    container:
-      image: ghcr.io/vdaas/vald/vald-ci-container:${{ needs.detect-ci-container.outputs.TAG }}
-    steps:
-      - uses: actions/checkout@v4
-      - name: Set Git config
-        run: |
-          git config --global --add safe.directory ${GITHUB_WORKSPACE}
-      - name: Setup E2E environment
-        id: setup_e2e
-        uses: ./.github/actions/setup-e2e
-      - name: Deploy Vald
-        id: deploy_vald
-        uses: ./.github/actions/e2e-deploy-vald
-        with:
-          helm_extra_options: ${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }}
-          values: .github/helm/values/values-lb.yaml
-          wait_for_selector: app=vald-lb-gateway
-      - name: Run E2E Jobs
-        run: |
-          make hack/benchmark/assets/dataset/${{ env.DATASET }}
-          make E2E_BIND_PORT=8081 \
-            E2E_INSERT_COUNT=10000\
-            E2E_WAIT_FOR_CREATE_INDEX_DURATION=3m \
-            E2E_TARGET_POD_NAME=${POD_NAME} \
-            E2E_TARGET_NAMESPACE=default \
-            e2e/index/job/correction
-        env:
-          POD_NAME: ${{ steps.deploy_vald.outputs.POD_NAME }}
-  e2e-stream-crud-with-readreplica:
-    name: "E2E test (Stream CRUD) with read replica"
-    needs: [detect-ci-container]
-    runs-on: ubuntu-latest
-    timeout-minutes: 60
-    container:
-      image: ghcr.io/vdaas/vald/vald-ci-container:${{ needs.detect-ci-container.outputs.TAG }}
-    steps:
-      - uses: actions/checkout@v4
-      - name: Set Git config
-        run: |
-          git config --global --add safe.directory ${GITHUB_WORKSPACE}
-      - name: Setup E2E environment
-        id: setup_e2e
-        uses: ./.github/actions/setup-e2e
-        with:
-          require_k3d: "false"
-          require_minikube: "true"
-      - name: Deploy Vald
-        id: deploy_vald
-        uses: ./.github/actions/e2e-deploy-vald
-        with:
-          helm_extra_options: ${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }}
-          values: .github/helm/values/values-readreplica.yaml
-          wait_for_selector: app=vald-agent
-      - name: Deploy Vald Read Replica
-        id: deploy_vald_readreplica
-        uses: ./.github/actions/e2e-deploy-vald-readreplica
-        with:
-          helm_extra_options: ${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }}
-          values: .github/helm/values/values-readreplica.yaml
-          wait_for_selector: app=vald-lb-gateway
-      - name: Run E2E CRUD with read replica rotation
-        run: |
-          make hack/benchmark/assets/dataset/${{ env.DATASET }}
-          make E2E_BIND_PORT=8081 \
-            E2E_DATASET_NAME=${{ env.DATASET }} \
-            E2E_INSERT_COUNT=1000 \
-            E2E_SEARCH_COUNT=1000 \
-            E2E_SEARCH_BY_ID_COUNT=1000 \
-            E2E_GET_OBJECT_COUNT=100 \
-            E2E_UPDATE_COUNT=100 \
-            E2E_UPSERT_COUNT=100 \
-            E2E_REMOVE_COUNT=100 \
-            E2E_WAIT_FOR_CREATE_INDEX_DURATION=3m \
-            E2E_TARGET_POD_NAME=${POD_NAME} \
-            E2E_TARGET_NAMESPACE=default \
-            e2e/readreplica
-        env:
-          POD_NAME: ${{ steps.deploy_vald_readreplica.outputs.POD_NAME }}
-  e2e-stream-crud-with-mirror:
-    name: "E2E test (Stream CRUD) with mirror"
-    needs: [detect-ci-container]
-    runs-on: ubuntu-latest
-    timeout-minutes: 60
-    container:
-      image: ghcr.io/vdaas/vald/vald-ci-container:${{ needs.detect-ci-container.outputs.TAG }}
-    steps:
-      - uses: actions/checkout@v4
-      - name: Set Git config
-        run: |
-          git config --global --add safe.directory ${GITHUB_WORKSPACE}
-      - name: Setup E2E environment
-        id: setup_e2e
-        uses: ./.github/actions/setup-e2e
-        with:
-          target_images: "vdaas/vald-agent-ngt vdaas/vald-discoverer-k8s vdaas/vald-lb-gateway vdaas/vald-manager-index vdaas/vald-mirror-gateway"
-      - name: Deploy Vald-01
-        id: deploy_vald_01
-        uses: ./.github/actions/e2e-deploy-vald
-        with:
-          namespace: vald-01
-          helm_extra_options: ${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }}
-          values: .github/helm/values/values-mirror-01.yaml
-          wait_for_selector: app=vald-mirror-gateway
-      - name: Deploy Vald-02
-        id: deploy_vald_02
-        uses: ./.github/actions/e2e-deploy-vald
-        with:
-          namespace: vald-02
-          helm_extra_options: ${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }}
-          values: .github/helm/values/values-mirror-02.yaml
-          wait_for_selector: app=vald-mirror-gateway
-      - name: Deploy Mirror Target
-        run: |
-          kubectl apply -f .github/helm/values/vald-mirror-target.yaml -n vald-01
-          sleep 5s
-          kubectl get pods -A && kubectl get vmt -o wide -A
-      - name: Run E2E CRUD
-        run: |
-          make hack/benchmark/assets/dataset/${{ env.DATASET }}
-          make E2E_BIND_PORT=8081 \
-            E2E_DATASET_NAME=${{ env.DATASET }} \
-            E2E_INSERT_COUNT=10000\
-            E2E_SEARCH_COUNT=10000 \
-            E2E_SEARCH_BY_ID_COUNT=10000 \
-            E2E_GET_OBJECT_COUNT=100 \
-            E2E_UPDATE_COUNT=100 \
-            E2E_UPSERT_COUNT=100 \
-            E2E_REMOVE_COUNT=100 \
-            E2E_WAIT_FOR_CREATE_INDEX_DURATION=3m \
-            E2E_TARGET_POD_NAME=${POD_NAME} \
-            E2E_TARGET_NAMESPACE=vald-01 \
-            e2e
-        env:
-          POD_NAME: ${{ steps.deploy_vald_01.outputs.POD_NAME }}
-  slack-notification:
-    name: "Slack notification"
-    if: startsWith( github.ref, 'refs/tags/')
-    needs:
-      - e2e-jobs
-      - e2e-multiapis-crud
-      - e2e-stream-crud
-      - e2e-stream-crud-for-operator
-      - e2e-stream-crud-skip-exist-check
-      - e2e-stream-crud-under-index-management-jobs
-      - e2e-stream-crud-with-mirror
-      - e2e-stream-crud-with-readreplica
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/notify-slack
-        with:
-          author_name: "E2E deploy test"
-          slack_notify_webhook_url: ${{ secrets.SLACK_NOTIFY_WEBHOOK_URL }}
+          docker ps -a
+          kubectl get pods -A
+      # - name: Setup E2E environment
+      #   id: setup_e2e
+      #   uses: ./.github/actions/setup-e2e
+      # - name: Deploy Vald
+      #   id: deploy_vald
+      #   uses: ./.github/actions/e2e-deploy-vald
+      #   with:
+      #     helm_extra_options: ${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }}
+      #     values: .github/helm/values/values-lb.yaml
+      #     wait_for_selector: app=vald-lb-gateway
+      # - name: Run E2E CRUD
+      #   run: |
+      #     make hack/benchmark/assets/dataset/${{ env.DATASET }}
+      #     make E2E_BIND_PORT=8081 \
+      #       E2E_DATASET_NAME=${{ env.DATASET }} \
+      #       E2E_INSERT_COUNT=10000\
+      #       E2E_SEARCH_COUNT=10000 \
+      #       E2E_SEARCH_BY_ID_COUNT=10000 \
+      #       E2E_GET_OBJECT_COUNT=100 \
+      #       E2E_UPDATE_COUNT=100 \
+      #       E2E_UPSERT_COUNT=100 \
+      #       E2E_REMOVE_COUNT=100 \
+      #       E2E_WAIT_FOR_CREATE_INDEX_DURATION=3m \
+      #       E2E_TARGET_POD_NAME=${POD_NAME} \
+      #       E2E_TARGET_NAMESPACE=default \
+      #       e2e
+      #   env:
+      #     POD_NAME: ${{ steps.deploy_vald.outputs.POD_NAME }}
+  # e2e-stream-crud-for-operator:
+  #   name: "E2E test (Stream CRUD) for operator"
+  #   needs: [detect-ci-container]
+  #   runs-on: ubuntu-latest
+  #   timeout-minutes: 60
+  #   container:
+  #     image: ghcr.io/vdaas/vald/vald-ci-container:${{ needs.detect-ci-container.outputs.TAG }}
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - name: Set Git config
+  #       run: |
+  #         git config --global --add safe.directory ${GITHUB_WORKSPACE}
+  #     - name: Setup E2E environment
+  #       id: setup_e2e
+  #       uses: ./.github/actions/setup-e2e
+  #     - name: Create Helm options for vald-helm-operator
+  #       uses: ./.github/actions/setup-e2e
+  #       id: vald_helm_operator
+  #       with:
+  #         target_images: "vdaas/vald-helm-operator"
+  #         require_libhdf5: false
+  #         require_go: false
+  #         require_helm: false
+  #         require_k3d: false
+  #     - name: Merge Docker image tag
+  #       run: |
+  #         IMAGE_TAGS=(${{ steps.setup_e2e.outputs.IMAGE_TAGS }})
+  #
+  #         for IMAGE_TAG in "${IMAGE_TAGS[@]}"
+  #         do
+  #           echo "IMAGE_TAG:${IMAGE_TAG}"
+  #
+  #           ARR=(${IMAGE_TAG//=/ })
+  #           FIELD=${ARR[0]}
+  #           TAG="\"${ARR[1]}\""
+  #           yq e ".spec.$FIELD=$TAG" -i ./.github/valdrelease/valdrelease.yaml
+  #         done
+  #     - name: Deploy Vald using Vald Helm Operator
+  #       id: deploy_vald
+  #       uses: ./.github/actions/e2e-deploy-vald-helm-operator
+  #       with:
+  #         helm_extra_options: ${{ steps.vald_helm_operator.outputs.HELM_EXTRA_OPTIONS }}
+  #         valdrelease: ./.github/valdrelease/valdrelease.yaml
+  #         wait_for_selector: app=vald-lb-gateway
+  #     - name: Run E2E CRUD
+  #       run: |
+  #         make hack/benchmark/assets/dataset/${{ env.DATASET }}
+  #         make E2E_BIND_PORT=8081 \
+  #           E2E_DATASET_NAME=${{ env.DATASET }} \
+  #           E2E_INSERT_COUNT=10000 \
+  #           E2E_SEARCH_COUNT=10000 \
+  #           E2E_SEARCH_BY_ID_COUNT=10000 \
+  #           E2E_GET_OBJECT_COUNT=100 \
+  #           E2E_UPDATE_COUNT=100 \
+  #           E2E_UPSERT_COUNT=100 \
+  #           E2E_REMOVE_COUNT=100 \
+  #           E2E_WAIT_FOR_CREATE_INDEX_DURATION=3m \
+  #           E2E_TARGET_POD_NAME=${POD_NAME} \
+  #           E2E_TARGET_NAMESPACE=default \
+  #           e2e
+  #       env:
+  #         POD_NAME: ${{ steps.deploy_vald.outputs.POD_NAME }}
+  # e2e-stream-crud-under-index-management-jobs:
+  #   name: "E2E test (Stream CRUD) under index management jobs"
+  #   needs: [detect-ci-container]
+  #   runs-on: ubuntu-latest
+  #   timeout-minutes: 60
+  #   container:
+  #     image: ghcr.io/vdaas/vald/vald-ci-container:${{ needs.detect-ci-container.outputs.TAG }}
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - name: Set Git config
+  #       run: |
+  #         git config --global --add safe.directory ${GITHUB_WORKSPACE}
+  #     - name: Setup E2E environment
+  #       id: setup_e2e
+  #       uses: ./.github/actions/setup-e2e
+  #       with:
+  #         target_images: "vdaas/vald-agent-ngt vdaas/vald-discoverer-k8s vdaas/vald-lb-gateway vdaas/vald-index-creation vdaas/vald-index-save"
+  #     - name: Deploy Vald
+  #       id: deploy_vald
+  #       uses: ./.github/actions/e2e-deploy-vald
+  #       env:
+  #         HELM_EXTRA_OPTIONS: "--values .github/helm/values/values-index-management-jobs.yaml"
+  #       with:
+  #         helm_extra_options: ${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }} ${{ env.HELM_EXTRA_OPTIONS }}
+  #         values: .github/helm/values/values-lb.yaml
+  #         wait_for_selector: app=vald-lb-gateway
+  #     - name: Run E2E CRUD
+  #       run: |
+  #         make hack/benchmark/assets/dataset/${{ env.DATASET }}
+  #         make E2E_BIND_PORT=8081 \
+  #           E2E_DATASET_NAME=${{ env.DATASET }} \
+  #           E2E_INSERT_COUNT=10000\
+  #           E2E_SEARCH_COUNT=10000 \
+  #           E2E_SEARCH_BY_ID_COUNT=10000 \
+  #           E2E_GET_OBJECT_COUNT=100 \
+  #           E2E_UPDATE_COUNT=100 \
+  #           E2E_UPSERT_COUNT=100 \
+  #           E2E_REMOVE_COUNT=100 \
+  #           E2E_WAIT_FOR_CREATE_INDEX_DURATION=3m \
+  #           E2E_TARGET_POD_NAME=${POD_NAME} \
+  #           E2E_TARGET_NAMESPACE=default \
+  #           e2e
+  #       env:
+  #         POD_NAME: ${{ steps.deploy_vald.outputs.POD_NAME }}
+  # e2e-stream-crud-skip-exist-check:
+  #   name: "E2E test (Stream CRUD: skip strict exist check)"
+  #   needs: [detect-ci-container]
+  #   runs-on: ubuntu-latest
+  #   timeout-minutes: 60
+  #   container:
+  #     image: ghcr.io/vdaas/vald/vald-ci-container:${{ needs.detect-ci-container.outputs.TAG }}
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - name: Set Git config
+  #       run: |
+  #         git config --global --add safe.directory ${GITHUB_WORKSPACE}
+  #     - name: Setup E2E environment
+  #       id: setup_e2e
+  #       uses: ./.github/actions/setup-e2e
+  #     - name: Deploy Vald
+  #       id: deploy_vald
+  #       uses: ./.github/actions/e2e-deploy-vald
+  #       with:
+  #         helm_extra_options: ${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }}
+  #         values: .github/helm/values/values-lb.yaml
+  #         wait_for_selector: app=vald-lb-gateway
+  #     - name: Run E2E CRUD
+  #       run: |
+  #         make hack/benchmark/assets/dataset/${{ env.DATASET }}
+  #         make E2E_BIND_PORT=8081 \
+  #           E2E_DATASET_NAME=${{ env.DATASET }} \
+  #           E2E_INSERT_COUNT=10 \
+  #           E2E_SEARCH_COUNT=10 \
+  #           E2E_SEARCH_BY_ID_COUNT=10 \
+  #           E2E_GET_OBJECT_COUNT=10 \
+  #           E2E_UPDATE_COUNT=10 \
+  #           E2E_UPSERT_COUNT=10 \
+  #           E2E_REMOVE_COUNT=10 \
+  #           E2E_WAIT_FOR_CREATE_INDEX_DURATION=3m \
+  #           E2E_TARGET_POD_NAME=${POD_NAME} \
+  #           E2E_TARGET_NAMESPACE=default \
+  #           e2e/skip
+  #       env:
+  #         POD_NAME: ${{ steps.deploy_vald.outputs.POD_NAME }}
+  # e2e-multiapis-crud:
+  #   name: "E2E test (Multi-APIs CRUD)"
+  #   needs: [detect-ci-container]
+  #   runs-on: ubuntu-latest
+  #   timeout-minutes: 60
+  #   container:
+  #     image: ghcr.io/vdaas/vald/vald-ci-container:${{ needs.detect-ci-container.outputs.TAG }}
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - name: Set Git config
+  #       run: |
+  #         git config --global --add safe.directory ${GITHUB_WORKSPACE}
+  #     - name: Setup E2E environment
+  #       id: setup_e2e
+  #       uses: ./.github/actions/setup-e2e
+  #     - name: Deploy Vald
+  #       id: deploy_vald
+  #       uses: ./.github/actions/e2e-deploy-vald
+  #       with:
+  #         helm_extra_options: ${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }}
+  #         values: .github/helm/values/values-lb.yaml
+  #         wait_for_selector: app=vald-lb-gateway
+  #     - name: Run E2E CRUD
+  #       run: |
+  #         make hack/benchmark/assets/dataset/${{ env.DATASET }}
+  #         make E2E_BIND_PORT=8081 \
+  #           E2E_DATASET_NAME=${{ env.DATASET }} \
+  #           E2E_INSERT_COUNT=100 \
+  #           E2E_SEARCH_COUNT=10 \
+  #           E2E_SEARCH_BY_ID_COUNT=10 \
+  #           E2E_WAIT_FOR_CREATE_INDEX_DURATION=2m \
+  #           E2E_TARGET_POD_NAME=${POD_NAME} \
+  #           E2E_TARGET_NAMESPACE=default \
+  #           e2e/multi
+  #       env:
+  #         POD_NAME: ${{ steps.deploy_vald.outputs.POD_NAME }}
+  # e2e-jobs:
+  #   name: "E2E test (Jobs)"
+  #   needs: [detect-ci-container]
+  #   runs-on: ubuntu-latest
+  #   timeout-minutes: 60
+  #   container:
+  #     image: ghcr.io/vdaas/vald/vald-ci-container:${{ needs.detect-ci-container.outputs.TAG }}
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - name: Set Git config
+  #       run: |
+  #         git config --global --add safe.directory ${GITHUB_WORKSPACE}
+  #     - name: Setup E2E environment
+  #       id: setup_e2e
+  #       uses: ./.github/actions/setup-e2e
+  #     - name: Deploy Vald
+  #       id: deploy_vald
+  #       uses: ./.github/actions/e2e-deploy-vald
+  #       with:
+  #         helm_extra_options: ${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }}
+  #         values: .github/helm/values/values-lb.yaml
+  #         wait_for_selector: app=vald-lb-gateway
+  #     - name: Run E2E Jobs
+  #       run: |
+  #         make hack/benchmark/assets/dataset/${{ env.DATASET }}
+  #         make E2E_BIND_PORT=8081 \
+  #           E2E_INSERT_COUNT=10000\
+  #           E2E_WAIT_FOR_CREATE_INDEX_DURATION=3m \
+  #           E2E_TARGET_POD_NAME=${POD_NAME} \
+  #           E2E_TARGET_NAMESPACE=default \
+  #           e2e/index/job/correction
+  #       env:
+  #         POD_NAME: ${{ steps.deploy_vald.outputs.POD_NAME }}
+  # e2e-stream-crud-with-readreplica:
+  #   name: "E2E test (Stream CRUD) with read replica"
+  #   needs: [detect-ci-container]
+  #   runs-on: ubuntu-latest
+  #   timeout-minutes: 60
+  #   container:
+  #     image: ghcr.io/vdaas/vald/vald-ci-container:${{ needs.detect-ci-container.outputs.TAG }}
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - name: Set Git config
+  #       run: |
+  #         git config --global --add safe.directory ${GITHUB_WORKSPACE}
+  #     - name: Setup E2E environment
+  #       id: setup_e2e
+  #       uses: ./.github/actions/setup-e2e
+  #       with:
+  #         require_k3d: "false"
+  #         require_minikube: "true"
+  #     - name: Deploy Vald
+  #       id: deploy_vald
+  #       uses: ./.github/actions/e2e-deploy-vald
+  #       with:
+  #         helm_extra_options: ${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }}
+  #         values: .github/helm/values/values-readreplica.yaml
+  #         wait_for_selector: app=vald-agent
+  #     - name: Deploy Vald Read Replica
+  #       id: deploy_vald_readreplica
+  #       uses: ./.github/actions/e2e-deploy-vald-readreplica
+  #       with:
+  #         helm_extra_options: ${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }}
+  #         values: .github/helm/values/values-readreplica.yaml
+  #         wait_for_selector: app=vald-lb-gateway
+  #     - name: Run E2E CRUD with read replica rotation
+  #       run: |
+  #         make hack/benchmark/assets/dataset/${{ env.DATASET }}
+  #         make E2E_BIND_PORT=8081 \
+  #           E2E_DATASET_NAME=${{ env.DATASET }} \
+  #           E2E_INSERT_COUNT=1000 \
+  #           E2E_SEARCH_COUNT=1000 \
+  #           E2E_SEARCH_BY_ID_COUNT=1000 \
+  #           E2E_GET_OBJECT_COUNT=100 \
+  #           E2E_UPDATE_COUNT=100 \
+  #           E2E_UPSERT_COUNT=100 \
+  #           E2E_REMOVE_COUNT=100 \
+  #           E2E_WAIT_FOR_CREATE_INDEX_DURATION=3m \
+  #           E2E_TARGET_POD_NAME=${POD_NAME} \
+  #           E2E_TARGET_NAMESPACE=default \
+  #           e2e/readreplica
+  #       env:
+  #         POD_NAME: ${{ steps.deploy_vald_readreplica.outputs.POD_NAME }}
+  # e2e-stream-crud-with-mirror:
+  #   name: "E2E test (Stream CRUD) with mirror"
+  #   needs: [detect-ci-container]
+  #   runs-on: ubuntu-latest
+  #   timeout-minutes: 60
+  #   container:
+  #     image: ghcr.io/vdaas/vald/vald-ci-container:${{ needs.detect-ci-container.outputs.TAG }}
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - name: Set Git config
+  #       run: |
+  #         git config --global --add safe.directory ${GITHUB_WORKSPACE}
+  #     - name: Setup E2E environment
+  #       id: setup_e2e
+  #       uses: ./.github/actions/setup-e2e
+  #       with:
+  #         target_images: "vdaas/vald-agent-ngt vdaas/vald-discoverer-k8s vdaas/vald-lb-gateway vdaas/vald-manager-index vdaas/vald-mirror-gateway"
+  #     - name: Deploy Vald-01
+  #       id: deploy_vald_01
+  #       uses: ./.github/actions/e2e-deploy-vald
+  #       with:
+  #         namespace: vald-01
+  #         helm_extra_options: ${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }}
+  #         values: .github/helm/values/values-mirror-01.yaml
+  #         wait_for_selector: app=vald-mirror-gateway
+  #     - name: Deploy Vald-02
+  #       id: deploy_vald_02
+  #       uses: ./.github/actions/e2e-deploy-vald
+  #       with:
+  #         namespace: vald-02
+  #         helm_extra_options: ${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }}
+  #         values: .github/helm/values/values-mirror-02.yaml
+  #         wait_for_selector: app=vald-mirror-gateway
+  #     - name: Deploy Mirror Target
+  #       run: |
+  #         kubectl apply -f .github/helm/values/vald-mirror-target.yaml -n vald-01
+  #         sleep 5s
+  #         kubectl get pods -A && kubectl get vmt -o wide -A
+  #     - name: Run E2E CRUD
+  #       run: |
+  #         make hack/benchmark/assets/dataset/${{ env.DATASET }}
+  #         make E2E_BIND_PORT=8081 \
+  #           E2E_DATASET_NAME=${{ env.DATASET }} \
+  #           E2E_INSERT_COUNT=10000\
+  #           E2E_SEARCH_COUNT=10000 \
+  #           E2E_SEARCH_BY_ID_COUNT=10000 \
+  #           E2E_GET_OBJECT_COUNT=100 \
+  #           E2E_UPDATE_COUNT=100 \
+  #           E2E_UPSERT_COUNT=100 \
+  #           E2E_REMOVE_COUNT=100 \
+  #           E2E_WAIT_FOR_CREATE_INDEX_DURATION=3m \
+  #           E2E_TARGET_POD_NAME=${POD_NAME} \
+  #           E2E_TARGET_NAMESPACE=vald-01 \
+  #           e2e
+  #       env:
+  #         POD_NAME: ${{ steps.deploy_vald_01.outputs.POD_NAME }}
+  # slack-notification:
+  #   name: "Slack notification"
+  #   if: startsWith( github.ref, 'refs/tags/')
+  #   needs:
+  #     - e2e-jobs
+  #     - e2e-multiapis-crud
+  #     - e2e-stream-crud
+  #     - e2e-stream-crud-for-operator
+  #     - e2e-stream-crud-skip-exist-check
+  #     - e2e-stream-crud-under-index-management-jobs
+  #     - e2e-stream-crud-with-mirror
+  #     - e2e-stream-crud-with-readreplica
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - uses: ./.github/actions/notify-slack
+  #       with:
+  #         author_name: "E2E deploy test"
+  #         slack_notify_webhook_url: ${{ secrets.SLACK_NOTIFY_WEBHOOK_URL }}
