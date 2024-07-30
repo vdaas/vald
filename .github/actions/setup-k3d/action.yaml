@@ -94,6 +94,10 @@ runs:
       id: start_k3d
       run: |
         k3d cluster create ${{ inputs.name }} ${{ steps.k3d_options.outputs.options }}
+        kubectl config view --minify
+        kubectl cluster-info
+        k3d kubeconfig get vald > kubeconfig
+        export KUBECONFIG=$(pwd)/kubeconfig
     - name: Ready k8s cluster
       shell: bash
       run: |
