@@ -89,7 +89,6 @@ runs:
         INGRESS_PORT: ${{ inputs.ingress_port }}
         OPTIONS: ${{ inputs.options }}
         K3S_VERSION: ${{ steps.k3s_version.outputs.tag }}
-    - uses: azure/setup-kubectl@v3
     - name: Create k8s cluster
       shell: bash
       id: start_k3d

@@ -48,7 +48,7 @@ jobs:
     #     volumes:
     #       - "/var/run/docker.sock:/var/run/docker.sock:ro"
     container:
-      image: docker:23.0.1-dind
+      image: ghcr.io/vdaas/vald/vald-ci-container:pr-2549
       options: "--privileged"
     steps:
       - uses: actions/checkout@v4
