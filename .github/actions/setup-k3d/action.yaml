@@ -93,31 +93,9 @@ runs:
       shell: bash
       id: start_k3d
       run: |
-        k3d cluster create ${{ inputs.name }} ${{ steps.k3d_options.outputs.options }} \
-          --image docker.io/rancher/k3s:latest \
-          --k3s-arg "--disable=traefik@server:*" \
-          --api-port 0.0.0.0:6443 \
-          -v "/lib/modules:/lib/modules"
-        k3d cluster start ${{ inputs.name }}
-        k3d kubeconfig merge ${{ inputs.name }} --kubeconfig-switch-context
+        k3d cluster create ${{ inputs.name }} ${{ steps.k3d_options.outputs.options }}
     - name: Ready k8s cluster
       shell: bash
       run: |
         k3d cluster list
-        server="k3d-${{ inputs.name }}-server-0"
-        docker logs ${server}
-        docker inspect ${server}
-    - name: Set k3d cluster config to KUBECONFIG
-      shell: bash
-      run: |
-        echo "KUBECONFIG=$(k3d kubeconfig write ${{ inputs.name }})" >> $GITHUB_ENV
-    - name: Check KUBECONFIG environment variable
-      shell: bash
-      run: |
-        echo $KUBECONFIG
-        cat $KUBECONFIG
-        cat /etc/hosts
-    - name: Show Kubernetes Cluster Info
-      shell: bash
-      run: |
         kubectl cluster-info dump
