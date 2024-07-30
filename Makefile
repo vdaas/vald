@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 
+SHELL                           = bash
 ORG                             ?= vdaas
 NAME                            = vald
 GOPKG                           = github.com/$(ORG)/$(NAME)
