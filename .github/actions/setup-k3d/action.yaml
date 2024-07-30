@@ -95,7 +95,7 @@ runs:
       run: |
         # k3d cluster create ${{ inputs.name }} ${{ steps.k3d_options.outputs.options }}
         # k3d cluster create vald --api-port 127.0.0.1:6443 --port '8080:80@loadbalancer'
-        k3d cluster create vald --network host
+        k3d cluster create vald
         export KUBECONFIG=$(k3d kubeconfig write my-cluster)
         echo "${KUBECONFIG}"
 
