@@ -49,6 +49,8 @@ jobs:
     container:
       image: ghcr.io/vdaas/vald/vald-ci-container:nightly
       options: --privileged
+      ports:
+        - 6443:6443
     steps:
       - uses: actions/checkout@v4
       - name: Set Git config
