@@ -42,6 +42,8 @@ jobs:
       docker:
         image: docker:20.10-dind
         options: --privileged
+        ports:
+          - 2375:2375
     container:
       image: ghcr.io/vdaas/vald/vald-ci-container:nightly
       options: --privileged
@@ -52,9 +54,13 @@ jobs:
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
       - name: Setup K3d environment
         uses: ./.github/actions/setup-k3d
+        env:
+          DOCKER_HOST: tcp://localhost:2375
       - name: Chec
         run: |
           kubectl get pods -A
+        env:
+          DOCKER_HOST: tcp://localhost:2375
       # - name: Setup E2E environment
       #   id: setup_e2e
       #   uses: ./.github/actions/setup-e2e
