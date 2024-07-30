@@ -40,7 +40,7 @@ jobs:
     timeout-minutes: 60
     services:
       docker:
-        image: docker:20.10-dind
+        image: docker:23.0.1-dind
         options: --privileged
         ports:
           - 2375:2375
@@ -55,12 +55,12 @@ jobs:
       - name: Setup K3d environment
         uses: ./.github/actions/setup-k3d
         env:
-          DOCKER_HOST: tcp://localhost:2375
+          DOCKER_HOST: tcp://0.0.0.0:2375
       - name: Chec
         run: |
           kubectl get pods -A
         env:
-          DOCKER_HOST: tcp://localhost:2375
+          DOCKER_HOST: tcp://0.0.0.0:2375
       # - name: Setup E2E environment
       #   id: setup_e2e
       #   uses: ./.github/actions/setup-e2e
