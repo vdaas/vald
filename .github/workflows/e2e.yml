@@ -54,7 +54,6 @@ jobs:
         uses: ./.github/actions/setup-k3d
       - name: Chec
         run: |
-          docker ps -a
           kubectl get pods -A
       # - name: Setup E2E environment
       #   id: setup_e2e
