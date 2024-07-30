@@ -38,21 +38,18 @@ jobs:
     name: "E2E test (Stream CRUD)"
     runs-on: ubuntu-latest
     timeout-minutes: 60
-    services:
-      docker:
-        image: docker:23.0.1-dind
-        options: --privileged
-        ports:
-          - 2375:2375
-          - 6443:6443
-        volumes:
-          - "/var/run/docker.sock:/var/run/docker.sock:ro"
+    # services:
+      # docker:
+      #   image: docker:23.0.1-dind
+      #   options: --privileged
+      #   ports:
+      #     - 2375:2375
+      #     - 6443:6443
+      #   volumes:
+      #     - "/var/run/docker.sock:/var/run/docker.sock:ro"
     container:
       image: ghcr.io/vdaas/vald/vald-ci-container:nightly
       options: --privileged
-      ports:
-        - 2375:2375
-        - 6443:6443
     steps:
       - uses: actions/checkout@v4
       - name: Set Git config
