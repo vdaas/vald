@@ -9,7 +9,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: vdaas/vald/.github/actions/dump-context@main
-
   update-version:
     runs-on: ubuntu-latest
     steps:
