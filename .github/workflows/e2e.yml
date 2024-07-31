@@ -48,13 +48,25 @@ jobs:
     #     volumes:
     #       - "/var/run/docker.sock:/var/run/docker.sock:ro"
     container:
-      image: ghcr.io/vdaas/vald/vald-ci-container:pr-2549
+      image: cruizba/ubuntu-dind
       options: "--privileged"
     steps:
       - uses: actions/checkout@v4
-      - name: Set Git config
+      - name: Update
         run: |
-          git config --global --add safe.directory ${GITHUB_WORKSPACE}
+          apt-get clean \
+          && rm -rf \
+              /var/lib/apt/lists/* \
+              /var/cache/* \
+          && apt-get update -y \
+          && apt-get upgrade -y \
+          && apt-get install -y --no-install-recommends --fix-missing \
+            ca-certificates \
+            curl \
+            gnupg \
+            lsb-release \
+            git
+      - uses: azure/setup-kubectl@v3
       - name: Setup K3d environment
         uses: ./.github/actions/setup-k3d
         # env:
