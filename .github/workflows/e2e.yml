@@ -102,6 +102,7 @@ jobs:
           require_helm: false
           require_k3d: false
       - name: Merge Docker image tag
+        shell: bash
         run: |
           IMAGE_TAGS=(${{ steps.setup_e2e.outputs.IMAGE_TAGS }})
 
