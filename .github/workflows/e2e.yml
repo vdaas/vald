@@ -53,7 +53,7 @@ jobs:
         id: deploy_vald
         uses: ./.github/actions/e2e-deploy-vald
         with:
-          helm_extra_options: ${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }}
+          # helm_extra_options: ${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }}
           values: .github/helm/values/values-lb.yaml
           wait_for_selector: app=vald-lb-gateway
       - name: Run E2E CRUD
@@ -117,7 +117,7 @@ jobs:
         id: deploy_vald
         uses: ./.github/actions/e2e-deploy-vald-helm-operator
         with:
-          helm_extra_options: ${{ steps.vald_helm_operator.outputs.HELM_EXTRA_OPTIONS }}
+          # helm_extra_options: ${{ steps.vald_helm_operator.outputs.HELM_EXTRA_OPTIONS }}
           valdrelease: ./.github/valdrelease/valdrelease.yaml
           wait_for_selector: app=vald-lb-gateway
       - name: Run E2E CRUD
@@ -162,7 +162,7 @@ jobs:
         env:
           HELM_EXTRA_OPTIONS: "--values .github/helm/values/values-index-management-jobs.yaml"
         with:
-          helm_extra_options: ${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }} ${{ env.HELM_EXTRA_OPTIONS }}
+          # helm_extra_options: ${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }} ${{ env.HELM_EXTRA_OPTIONS }}
           values: .github/helm/values/values-lb.yaml
           wait_for_selector: app=vald-lb-gateway
       - name: Run E2E CRUD
@@ -203,7 +203,7 @@ jobs:
         id: deploy_vald
         uses: ./.github/actions/e2e-deploy-vald
         with:
-          helm_extra_options: ${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }}
+          # helm_extra_options: ${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }}
           values: .github/helm/values/values-lb.yaml
           wait_for_selector: app=vald-lb-gateway
       - name: Run E2E CRUD
@@ -244,7 +244,7 @@ jobs:
         id: deploy_vald
         uses: ./.github/actions/e2e-deploy-vald
         with:
-          helm_extra_options: ${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }}
+          # helm_extra_options: ${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }}
           values: .github/helm/values/values-lb.yaml
           wait_for_selector: app=vald-lb-gateway
       - name: Run E2E CRUD
@@ -281,7 +281,7 @@ jobs:
         id: deploy_vald
         uses: ./.github/actions/e2e-deploy-vald
         with:
-          helm_extra_options: ${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }}
+          # helm_extra_options: ${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }}
           values: .github/helm/values/values-lb.yaml
           wait_for_selector: app=vald-lb-gateway
       - name: Run E2E Jobs
@@ -318,14 +318,14 @@ jobs:
         id: deploy_vald
         uses: ./.github/actions/e2e-deploy-vald
         with:
-          helm_extra_options: ${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }}
+          # helm_extra_options: ${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }}
           values: .github/helm/values/values-readreplica.yaml
           wait_for_selector: app=vald-agent
       - name: Deploy Vald Read Replica
         id: deploy_vald_readreplica
         uses: ./.github/actions/e2e-deploy-vald-readreplica
         with:
-          helm_extra_options: ${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }}
+          # helm_extra_options: ${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }}
           values: .github/helm/values/values-readreplica.yaml
           wait_for_selector: app=vald-lb-gateway
       - name: Run E2E CRUD with read replica rotation
@@ -369,7 +369,7 @@ jobs:
         uses: ./.github/actions/e2e-deploy-vald
         with:
           namespace: vald-01
-          helm_extra_options: ${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }}
+          # helm_extra_options: ${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }}
           values: .github/helm/values/values-mirror-01.yaml
           wait_for_selector: app=vald-mirror-gateway
       - name: Deploy Vald-02
@@ -377,7 +377,7 @@ jobs:
         uses: ./.github/actions/e2e-deploy-vald
         with:
           namespace: vald-02
-          helm_extra_options: ${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }}
+          # helm_extra_options: ${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }}
           values: .github/helm/values/values-mirror-02.yaml
           wait_for_selector: app=vald-mirror-gateway
       - name: Deploy Mirror Target
