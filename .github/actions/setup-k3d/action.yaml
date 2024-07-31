@@ -76,7 +76,6 @@ runs:
       shell: bash
       id: k3d_options
       run: |
-        OPTIONS="${OPTIONS} --api-port host.docker.internal:6550"
         if [ "${AGENTS}" != 0 ]; then
           OPTIONS="${OPTIONS} --agents ${AGENTS}"
         fi
@@ -97,6 +96,7 @@ runs:
         k3d cluster create ${{ inputs.name }} ${{ steps.k3d_options.outputs.options }} \
           --image docker.io/rancher/k3s:latest \
           --k3s-arg "--disable=traefik@server:*" \
+          --api-port host.docker.internal:6550 \
           --api-port 0.0.0.0:6443 \
           --wait
         k3d cluster start ${{ inputs.name }}
