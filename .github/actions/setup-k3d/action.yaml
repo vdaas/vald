@@ -76,6 +76,7 @@ runs:
       shell: bash
       id: k3d_options
       run: |
+        OPTIONS="${OPTIONS} --api-port host.docker.internal:6550"
         if [ "${AGENTS}" != 0 ]; then
           OPTIONS="${OPTIONS} --agents ${AGENTS}"
         fi

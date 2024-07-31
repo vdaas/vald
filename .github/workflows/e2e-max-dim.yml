@@ -27,12 +27,12 @@ on:
       - "labeled"
 jobs:
   dump-contexts-to-log:
-    if: startsWith( github.ref, 'refs/tags/') || github.event.action == 'labeled' && github.event.label.name == 'actions/e2e-max-dim'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/dump-context
   detect-ci-container:
+    if: startsWith( github.ref, 'refs/tags/') || github.event.action == 'labeled' && github.event.label.name == 'actions/e2e-deploy'
     uses: ./.github/workflows/_detect-ci-container.yml
   e2e-max-dimension-insert:
     name: "E2E test (Max Dimension Insert: skip strict exist check)"
@@ -41,6 +41,7 @@ jobs:
     timeout-minutes: 60
     container:
       image: ghcr.io/vdaas/vald/vald-ci-container:${{ needs.detect-ci-container.outputs.TAG }}
+      options: "--add-host host.docker.internal:host-gateway"
     steps:
       - uses: actions/checkout@v4
       - name: Set Git config
