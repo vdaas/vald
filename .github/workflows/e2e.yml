@@ -76,3 +76,46 @@ jobs:
           kubectl get pods -A
         # env:
         #   DOCKER_HOST: tcp://0.0.0.0:2375
+
+  e2e-crud:
+    name: "E2E test (Stream CRUD)"
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    # services:
+    #   docker:
+    #     image: docker:23.0.1-dind
+    #     options: --privileged
+    #     ports:
+    #       - 2375:2375
+    #       - 6443:6443
+    #     volumes:
+    #       - "/var/run/docker.sock:/var/run/docker.sock:ro"
+    container:
+      image: ghcr.io/vdaas/vald/vald-ci-container:nightly
+      options: "--privileged --add-host host.docker.internal:host-gateway"
+    steps:
+      - uses: actions/checkout@v4
+      # - name: Update
+      #   run: |
+      #     apt-get clean \
+      #     && rm -rf \
+      #         /var/lib/apt/lists/* \
+      #         /var/cache/* \
+      #     && apt-get update -y \
+      #     && apt-get upgrade -y \
+      #     && apt-get install -y --no-install-recommends --fix-missing \
+      #       ca-certificates \
+      #       curl \
+      #       gnupg \
+      #       lsb-release \
+      #       git
+      # - uses: azure/setup-kubectl@v3
+      - name: Setup K3d environment
+        uses: ./.github/actions/setup-k3d
+        # env:
+        #   DOCKER_HOST: tcp://0.0.0.0:2375
+      - name: Chec
+        run: |
+          kubectl get pods -A
+        # env:
+        #   DOCKER_HOST: tcp://0.0.0.0:2375
