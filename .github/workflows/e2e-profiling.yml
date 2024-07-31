@@ -107,8 +107,8 @@ jobs:
           restore-keys: ${{ runner.os }}-profiles-main-
       - name: Install dependencies
         run: |
-          sudo apt update
-          sudo apt install -y graphviz
+          apt update
+          apt install -y graphviz
       - name: Generate graphs
         run: |
           tag=$(cat profiles-main/VALD_VERSION || echo "unknown")
