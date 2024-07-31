@@ -97,7 +97,6 @@ runs:
           --image docker.io/rancher/k3s:latest \
           --k3s-arg "--disable=traefik@server:*" \
           --api-port host.docker.internal:6550 \
-          --api-port 0.0.0.0:6443 \
           --wait
         k3d cluster start ${{ inputs.name }}
         k3d kubeconfig merge ${{ inputs.name }} --kubeconfig-switch-context
