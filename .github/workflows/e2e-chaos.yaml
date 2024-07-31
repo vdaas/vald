@@ -35,7 +35,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/dump-context
   detect-ci-container:
-    if: startsWith( github.ref, 'refs/tags/') || github.event.action == 'labeled' && github.event.label.name == 'actions/e2e-deploy'
+    # if: startsWith( github.ref, 'refs/tags/') || github.event.action == 'labeled' && github.event.label.name == 'actions/e2e-deploy'
     uses: ./.github/workflows/_detect-ci-container.yml
   agent-failure:
     name: "E2E chaos test (Agent failure: to test insert/search works even if one of the agents is failing)"
