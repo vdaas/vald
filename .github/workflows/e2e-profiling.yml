@@ -105,10 +105,6 @@ jobs:
           path: ./profiles-main
           key: ${{ runner.os }}-profiles-main-${{ github.sha }}
           restore-keys: ${{ runner.os }}-profiles-main-
-      - name: Install dependencies
-        run: |
-          apt update
-          apt install -y graphviz
       - name: Generate graphs
         run: |
           tag=$(cat profiles-main/VALD_VERSION || echo "unknown")
