@@ -63,7 +63,6 @@ $(LIB_PATH):
 GOPRIVATE = $(GOPKG),$(GOPKG)/apis,$(GOPKG)-client-go
 GOPROXY = "https://proxy.golang.org,direct"
 GOPATH := $(eval GOPATH := $(shell go env GOPATH))$(GOPATH)
-GO_VERSION := $(eval GO_VERSION := $(shell cat versions/GO_VERSION))$(GO_VERSION)
 GOARCH := $(eval GOARCH := $(shell go env GOARCH))$(GOARCH)
 GOBIN := $(eval GOBIN := $(or $(shell go env GOBIN),$(GOPATH)/bin))$(GOBIN)
 GOCACHE := $(eval GOCACHE := $(shell go env GOCACHE))$(GOCACHE)
@@ -75,16 +74,18 @@ CGO_ENABLED = 1
 RUST_HOME ?= $(LIB_PATH)/rust
 RUSTUP_HOME ?= $(RUST_HOME)/rustup
 CARGO_HOME ?= $(RUST_HOME)/cargo
-RUST_VERSION := $(eval RUST_VERSION := $(shell cat versions/RUST_VERSION))$(RUST_VERSION)
 
 BUF_VERSION               := $(eval BUF_VERSION := $(shell cat versions/BUF_VERSION))$(BUF_VERSION)
-DOCKER_VERSION               := $(eval DOCKER_VERSION := $(shell cat versions/DOCKER_VERSION))$(DOCKER_VERSION)
+CMAKE_VERSION             := $(eval CMAKE_VERSION := $(shell cat versions/CMAKE_VERSION))$(CMAKE_VERSION)
+DOCKER_VERSION            := $(eval DOCKER_VERSION := $(shell cat versions/DOCKER_VERSION))$(DOCKER_VERSION)
 FAISS_VERSION             := $(eval FAISS_VERSION := $(shell cat versions/FAISS_VERSION))$(FAISS_VERSION)
 GOLANGCILINT_VERSION      := $(eval GOLANGCILINT_VERSION := $(shell cat versions/GOLANGCILINT_VERSION))$(GOLANGCILINT_VERSION)
+GO_VERSION                := $(eval GO_VERSION := $(shell cat versions/GO_VERSION))$(GO_VERSION)
 HDF5_VERSION              := $(eval HDF5_VERSION := $(shell cat versions/HDF5_VERSION))$(HDF5_VERSION)
 HELM_DOCS_VERSION         := $(eval HELM_DOCS_VERSION := $(shell cat versions/HELM_DOCS_VERSION))$(HELM_DOCS_VERSION)
 HELM_VERSION              := $(eval HELM_VERSION := $(shell cat versions/HELM_VERSION))$(HELM_VERSION)
 JAEGER_OPERATOR_VERSION   := $(eval JAEGER_OPERATOR_VERSION := $(shell cat versions/JAEGER_OPERATOR_VERSION))$(JAEGER_OPERATOR_VERSION)
+K3S_VERSION               := $(eval K3S_VERSION := $(shell cat versions/K3S_VERSION))$(K3S_VERSION)
 KIND_VERSION              := $(eval KIND_VERSION := $(shell cat versions/KIND_VERSION))$(KIND_VERSION)
 KUBECTL_VERSION           := $(eval KUBECTL_VERSION := $(shell cat versions/KUBECTL_VERSION))$(KUBECTL_VERSION)
 KUBELINTER_VERSION        := $(eval KUBELINTER_VERSION := $(shell cat versions/KUBELINTER_VERSION))$(KUBELINTER_VERSION)
@@ -94,6 +95,7 @@ OTEL_OPERATOR_VERSION     := $(eval OTEL_OPERATOR_VERSION := $(shell cat version
 PROMETHEUS_STACK_VERSION  := $(eval PROMETHEUS_STACK_VERSION := $(shell cat versions/PROMETHEUS_STACK_VERSION))$(PROMETHEUS_STACK_VERSION)
 PROTOBUF_VERSION          := $(eval PROTOBUF_VERSION := $(shell cat versions/PROTOBUF_VERSION))$(PROTOBUF_VERSION)
 REVIEWDOG_VERSION         := $(eval REVIEWDOG_VERSION := $(shell cat versions/REVIEWDOG_VERSION))$(REVIEWDOG_VERSION)
+RUST_VERSION              := $(eval RUST_VERSION := $(shell cat versions/RUST_VERSION))$(RUST_VERSION)
 TELEPRESENCE_VERSION      := $(eval TELEPRESENCE_VERSION := $(shell cat versions/TELEPRESENCE_VERSION))$(TELEPRESENCE_VERSION)
 VALDCLI_VERSION           := $(eval VALDCLI_VERSION := $(shell cat versions/VALDCLI_VERSION))$(VALDCLI_VERSION)
 YQ_VERSION                := $(eval YQ_VERSION := $(shell cat versions/YQ_VERSION))$(YQ_VERSION)
@@ -140,10 +142,10 @@ PBGOS = $(PROTOS:apis/proto/%.proto=apis/grpc/%.pb.go)
 SWAGGERS = $(PROTOS:apis/proto/%.proto=apis/swagger/%.swagger.json)
 PBDOCS = apis/docs/v1/docs.md
 
-LDFLAGS = -static -fPIC -pthread -std=gnu++20 -lstdc++ -lm -z relro -z now -flto=auto -march=native -mtune=native -fno-plt -Ofast -fvisibility=hidden -ffp-contract=fast -fomit-frame-pointer -fmerge-all-constants -funroll-loops -falign-functions=32 -ffunction-sections -fdata-sections
+LDFLAGS = -static -fPIC -pthread -std=gnu++23 -lstdc++ -lm -z relro -z now -flto=auto -march=native -mtune=native -fno-plt -Ofast -fvisibility=hidden -ffp-contract=fast -fomit-frame-pointer -fmerge-all-constants -funroll-loops -falign-functions=32 -ffunction-sections -fdata-sections
 
 NGT_LDFLAGS = -fopenmp -lopenblas -llapack
-FAISS_LDFLAGS = $(NGT_LDFLAGS) -lgfortran
+FAISS_LDFLAGS = $(NGT_LDFLAGS) -lgfortran -lquadmath
 HDF5_LDFLAGS = -lhdf5 -lhdf5_hl -lsz -laec -lz -ldl
 CGO_LDFLAGS = $(FAISS_LDFLAGS) $(HDF5_LDFLAGS)
 
@@ -151,17 +153,14 @@ ifeq ($(GOARCH),amd64)
 CFLAGS ?= -mno-avx512f -mno-avx512dq -mno-avx512cd -mno-avx512bw -mno-avx512vl
 CXXFLAGS ?= $(CFLAGS)
 EXTLDFLAGS ?= -m64
-NGT_EXTRA_FLAGS ?=
 else ifeq ($(GOARCH),arm64)
 CFLAGS ?=
 CXXFLAGS ?= $(CFLAGS)
 EXTLDFLAGS ?= -march=armv8-a
-NGT_EXTRA_FLAGS ?=
 else
 CFLAGS ?=
 CXXFLAGS ?= $(CFLAGS)
 EXTLDFLAGS ?=
-NGT_EXTRA_FLAGS ?=
 endif
 
 BENCH_DATASET_MD5S := $(eval BENCH_DATASET_MD5S := $(shell find $(BENCH_DATASET_MD5_DIR) -type f -regex ".*\.md5"))$(BENCH_DATASET_MD5S)
@@ -623,9 +622,9 @@ $(USR_LOCAL)/include/NGT/Capi.h:
 		-DCMAKE_C_FLAGS="$(CFLAGS)" \
 		-DCMAKE_CXX_FLAGS="$(CXXFLAGS)" \
 		-DCMAKE_INSTALL_PREFIX=$(USR_LOCAL) \
-		"$(NGT_EXTRA_FLAGS)" .
-	make -j$(CORES) -C $(TEMP_DIR)/NGT-$(NGT_VERSION)
-	make install -C $(TEMP_DIR)/NGT-$(NGT_VERSION)
+		-B $(TEMP_DIR)/NGT-$(NGT_VERSION)/build $(TEMP_DIR)/NGT-$(NGT_VERSION)
+	make -C $(TEMP_DIR)/NGT-$(NGT_VERSION)/build -j$(CORES) ngt
+	make -C $(TEMP_DIR)/NGT-$(NGT_VERSION)/build install
 	cd $(ROOTDIR)
 	rm -rf $(TEMP_DIR)/NGT-$(NGT_VERSION)
 	ldconfig
@@ -641,18 +640,37 @@ $(LIB_PATH)/libfaiss.a:
 		-DBUILD_SHARED_LIBS=OFF \
 		-DBUILD_STATIC_EXECS=ON \
 		-DBUILD_TESTING=OFF \
-		-DCMAKE_C_FLAGS="$(LDFLAGS)" \
-		-DCMAKE_INSTALL_PREFIX=$(USR_LOCAL) \
 		-DFAISS_ENABLE_PYTHON=OFF \
 	        -DFAISS_ENABLE_GPU=OFF \
 		-DBLA_VENDOR=OpenBLAS \
+		-DCMAKE_C_FLAGS="$(LDFLAGS)" \
 		-DCMAKE_EXE_LINKER_FLAGS="$(FAISS_LDFLAGS)" \
-		-B build . && \
-		make -C build -j$(CORES) faiss && \
-		make -C build install
-	rm -rf v$(FAISS_VERSION).tar.gz
-	rm -rf $(TEMP_DIR)/faiss-$(FAISS_VERSION)
+		-DCMAKE_INSTALL_PREFIX=$(USR_LOCAL) \
+		-B $(TEMP_DIR)/faiss-$(FAISS_VERSION)/build $(TEMP_DIR)/faiss-$(FAISS_VERSION)
+	make -C $(TEMP_DIR)/faiss-$(FAISS_VERSION)/build -j$(CORES) faiss
+	make -C $(TEMP_DIR)/faiss-$(FAISS_VERSION)/build install
+	cd $(ROOTDIR)
+	rm -rf $(TEMP_DIR)/v$(FAISS_VERSION).tar.gz $(TEMP_DIR)/faiss-$(FAISS_VERSION)
 	ldconfig
+
+.PHONY: cmake/install
+## install CMAKE
+cmake/install:
+	git clone --depth 1 --branch v$(CMAKE_VERSION) https://github.com/Kitware/CMake.git $(TEMP_DIR)/CMAKE-$(CMAKE_VERSION)
+	cd $(TEMP_DIR)/CMAKE-$(CMAKE_VERSION) && \
+	cmake -DCMAKE_BUILD_TYPE=Release \
+		-DBUILD_SHARED_LIBS=OFF \
+		-DBUILD_TESTING=OFF \
+		-DCMAKE_C_FLAGS="$(CFLAGS)" \
+		-DCMAKE_CXX_FLAGS="$(CXXFLAGS)" \
+		-DCMAKE_INSTALL_PREFIX=$(USR_LOCAL) \
+		-B $(TEMP_DIR)/CMAKE-$(CMAKE_VERSION)/build $(TEMP_DIR)/CMAKE-$(CMAKE_VERSION)
+	make -C $(TEMP_DIR)/CMAKE-$(CMAKE_VERSION)/build -j$(CORES) cmake
+	make -C $(TEMP_DIR)/CMAKE-$(CMAKE_VERSION)/build install
+	cd $(ROOTDIR)
+	rm -rf $(TEMP_DIR)/CMAKE-$(CMAKE_VERSION)
+	ldconfig
+	# -DCMAKE_USE_OPENSSL=OFF
 
 .PHONY: lint
 ## run lints

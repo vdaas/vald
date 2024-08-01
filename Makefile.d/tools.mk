@@ -53,9 +53,10 @@ $(GOBIN)/crlfmt:
 	$(call go-install, github.com/cockroachdb/crlfmt)
 
 .PHONY: prettier/install
-prettier/install: $(BINDIR)/prettier
-$(BINDIR)/prettier:
-	npm config set registry http://registry.npmjs.org/
+prettier/install: $(NPM_GLOBAL_PREFIX)/bin/prettier
+$(NPM_GLOBAL_PREFIX)/bin/prettier:
+	npm config -g set registry http://registry.npmjs.org/
+	npm cache clean --force
 	type prettier || npm install -g prettier
 
 .PHONY: reviewdog/install
@@ -158,18 +159,20 @@ go/install: $(GOROOT)/bin/go
 
 $(GOROOT)/bin/go:
 	TAR_NAME=go$(GO_VERSION).$(OS)-$(subst x86_64,amd64,$(subst aarch64,arm64,$(ARCH))).tar.gz \
-	&& curl -fsSLO "https://go.dev/dl/$${TAR_NAME}" \
-	&& tar zxf "$${TAR_NAME}" \
-	&& rm -rf "$${TAR_NAME}" \
-	&& mv go $(GOROOT) \
-	&& $(GOROOT)/bin/go version \
-	&& mkdir -p "$(GOPATH)/src" "$(GOPATH)/bin" "$(GOPATH)/pkg"
+	&& curl -fsSL "https://go.dev/dl/$${TAR_NAME}" -o "$(TEMP_DIR)/$${TAR_NAME}" \
+	&& mkdir -p $(TEMP_DIR)/go \
+	&& tar -xzvf "$(TEMP_DIR)/$${TAR_NAME}" -C $(TEMP_DIR)/go --strip-components 1 \
+	&& rm -rf "$(TEMP_DIR)/$${TAR_NAME}" \
+	&& mv $(TEMP_DIR)/go $(GOROOT) \
+	&& $(GOROOT)/bin/go version
 
 .PHONY: rust/install
 rust/install: $(CARGO_HOME)/bin/cargo
 
 $(CARGO_HOME)/bin/cargo:
 	curl --proto '=https' --tlsv1.2 -fsSL https://sh.rustup.rs | CARGO_HOME=${CARGO_HOME} RUSTUP_HOME=${RUSTUP_HOME} sh -s -- --default-toolchain $(RUST_VERSION) -y
+	rustup toolchain install $(RUST_VERSION)
+	rustup default $(RUST_VERSION)
 	source "${CARGO_HOME}/env"
 
 .PHONY: zlib/install
@@ -206,7 +209,7 @@ $(LIB_PATH)/libhdf5.a: $(LIB_PATH) \
 	mkdir -p $(TEMP_DIR)/hdf5 \
 	&& curl -fsSL https://github.com/HDFGroup/hdf5/releases/download/$(HDF5_VERSION)/hdf5.tar.gz -o $(TEMP_DIR)/hdf5.tar.gz \
 	&& tar -xzvf $(TEMP_DIR)/hdf5.tar.gz -C $(TEMP_DIR)/hdf5 --strip-components 2 \
-	&& mkdir $(TEMP_DIR)/hdf5/build \
+	&& mkdir -p $(TEMP_DIR)/hdf5/build \
 	&& cd $(TEMP_DIR)/hdf5/build \
 	&& cmake -DCMAKE_BUILD_TYPE=Release \
 		-DBUILD_SHARED_LIBS=OFF \

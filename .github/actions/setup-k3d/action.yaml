@@ -57,9 +57,14 @@ runs:
       id: k3s_version
       shell: bash
       run: |
-        K3S_VERSION=${K3S_VERSION:-`cat versions/K3S_VERSION`}
-
-        echo "tag=${K3S_VERSION=$}" >> $GITHUB_OUTPUT
+        if [ -z "${K3S_VERSION}" ]; then
+          if [ -f "versions/K3S_VERSION" ]; then
+            K3S_VERSION=$(cat versions/K3S_VERSION)
+          else
+            K3S_VERSION=latest
+          fi
+        fi
+        echo "tag=${K3S_VERSION}" >> $GITHUB_OUTPUT
       env:
         K3S_VERSION: ${{ inputs.k3s_version }}
     - name: Install k3d
@@ -72,30 +77,38 @@ runs:
       shell: bash
       run: |
         k3d version
-    - name: Setup k3d options
-      shell: bash
-      id: k3d_options
-      run: |
-        if [ "${AGENTS}" != 0 ]; then
-          OPTIONS="${OPTIONS} --agents ${AGENTS}"
-        fi
-        if [ "${INGRESS_PORT}" != 0 ]; then
-          OPTIONS="${OPTIONS} -p ${INGRESS_PORT}:80@loadbalancer"
-        fi
-        OPTIONS="${OPTIONS} --image rancher/k3s:${K3S_VERSION}"
-        echo "options=${OPTIONS}" >> $GITHUB_OUTPUT
-      env:
-        AGENTS: ${{ inputs.agents }}
-        INGRESS_PORT: ${{ inputs.ingress_port }}
-        OPTIONS: ${{ inputs.options }}
-        K3S_VERSION: ${{ steps.k3s_version.outputs.tag }}
     - name: Create k8s cluster
       shell: bash
       id: start_k3d
       run: |
-        k3d cluster create ${{ inputs.name }} ${{ steps.k3d_options.outputs.options }}
-    - name: Ready k8s cluster
+        if [ "${K3D_INGRESS_PORT}" == "0" ] && [ -z "${K3D_OPTIONS}" ]; then
+          K3D_OPTIONS="--k3s-arg \"--disable=traefik@server:*\""
+        fi
+        if [ "${K3D_INGRESS_PORT}" != "0" ] && [ -n "${K3D_OPTIONS}" ]; then
+          K3D_OPTIONS="--port ${K3D_INGRESS_PORT}:80@loadbalancer ${K3D_OPTIONS}"
+        fi
+        make K3D_CLUSTER_NAME="${{ inputs.name }}" \
+            K3D_NODES="${{ inputs.agents }}" \
+            K3D_INGRESS_PORT="${K3D_INGRESS_PORT}" \
+            K3S_VERSION="${{ steps.k3s_version.outputs.tag }}" \
+            K3D_HOST="host.docker.internal" \
+            K3D_OPTIONS="${K3D_OPTIONS}" \
+            k3d/start
+        k3d cluster list
+      env:
+        K3D_INGRESS_PORT: ${{ inputs.ingress_port }}
+        K3D_OPTIONS: ${{ inputs.options }}
+    - name: Set k3d cluster config to KUBECONFIG
       shell: bash
       run: |
-        k3d cluster list
+        echo "KUBECONFIG=$(k3d kubeconfig write ${{ inputs.name }})" >> $GITHUB_ENV
+    - name: Check KUBECONFIG environment variable
+      shell: bash
+      run: |
+        echo $KUBECONFIG
+        cat $KUBECONFIG
+        cat /etc/hosts
+    - name: Show Kubernetes Cluster Info
+      shell: bash
+      run: |
         kubectl cluster-info dump

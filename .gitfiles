@@ -71,6 +71,7 @@
 .github/workflows/build-protobuf.yml
 .github/workflows/chatops-help.yml
 .github/workflows/chatops.yml
+.github/workflows/check-conflict.yml
 .github/workflows/codeql-analysis.yml
 .github/workflows/coverage.yml
 .github/workflows/detect-internal-config-changes.yml
@@ -117,6 +118,7 @@
 .github/workflows/semver-patch.yaml
 .github/workflows/test-hack.yml
 .github/workflows/unit-test.yaml
+.github/workflows/update-actions.yaml
 .github/workflows/update-protobuf.yaml
 .github/workflows/update-pull-request-and-issue-template.yml
 .github/workflows/update-web-docs.yml
@@ -544,7 +546,6 @@ dockers/manager/index/Dockerfile
 dockers/manager/index/README.md
 dockers/operator/helm/Dockerfile
 dockers/operator/helm/README.md
-dockers/readreplica/job/readreplica/rotate/Dockerfile
 dockers/template.md
 dockers/tools/benchmark/job/Dockerfile
 dockers/tools/benchmark/operator/Dockerfile
@@ -1971,6 +1972,7 @@ rust/libs/proto/src/sidecar.v1.rs
 rust/libs/proto/src/sidecar.v1.tonic.rs
 rust/libs/proto/src/vald.v1.rs
 rust/libs/proto/src/vald.v1.tonic.rs
+rust/rust-toolchain
 rust/rust-toolchain.toml
 tests/chaos/chart/.helmignore
 tests/chaos/chart/Chart.yaml
@@ -2000,6 +2002,7 @@ tests/e2e/sidecar/sidecar_test.go
 tests/performance/max_vector_dim_test.go
 versions/BUF_VERSION
 versions/CHAOS_MESH_VERSION
+versions/CMAKE_VERSION
 versions/DOCKER_VERSION
 versions/FAISS_VERSION
 versions/GOLANGCILINT_VERSION
@@ -2047,6 +2050,7 @@ versions/actions/GITHUB_CODEQL_ACTION_UPLOAD_SARIF
 versions/actions/GITHUB_ISSUE_METRICS
 versions/actions/MACHINE_LEARNING_APPS_ACTIONS_CHATOPS
 versions/actions/PETER_EVANS_CREATE_ISSUE_FROM_FILE
+versions/actions/PETER_EVANS_CREATE_PULL_REQUEST
 versions/actions/REVIEWDOG_ACTION_HADOLINT
 versions/actions/REVIEWDOG_ACTION_LANGUAGETOOL
 versions/actions/SHOGO82148_ACTIONS_UPLOAD_RELEASE_ASSET
