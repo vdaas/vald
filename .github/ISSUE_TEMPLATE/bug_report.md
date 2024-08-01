@@ -24,7 +24,7 @@ assignees: ""
 
 - Vald Version: v1.7.12
 - Go Version: v1.22.5
-- Rust Version: v1.77.2
+- Rust Version: v1.80.0
 - Docker Version: v27.1.1
 - Kubernetes Version: v1.30.3
 - Helm Version: v3.15.3

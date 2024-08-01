@@ -207,14 +207,15 @@ func dirwalk(dir string) []string {
 			case
 				"AUTHORS",
 				"CONTRIBUTORS",
+				"FAISS_VERSION",
 				"GO_VERSION",
 				"NGT_VERSION",
-				"FAISS_VERSION",
 				"Pipefile",
 				"VALD_VERSION",
 				"grp",
 				"obj",
 				"prf",
+				"rust-toolchain",
 				"src",
 				"tre":
 			default:
@@ -260,7 +261,7 @@ func readAndRewrite(path string) error {
 	}
 	buf := bytes.NewBuffer(make([]byte, 0, fi.Size()))
 	maintainer := os.Getenv(maintainerKey)
-	if len(maintainer) == 0 {
+	if maintainer == "" {
 		maintainer = defaultMaintainer
 	}
 	d := Data{
