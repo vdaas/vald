@@ -37,6 +37,6 @@ minikube/delete:
 	minikube delete
 
 .PHONY: minikube/restart
-minikube/restart:
-	@make minikube/delete
-	@make minikube/start
+minikube/restart: \
+	minikube/delete \
+	minikube/start

@@ -35,7 +35,7 @@ gateway:
     enabled: true
     ingress:
       enabled: true
-      host: "localhost"
+      host: "host.docker.internal"
     service:
       # NOTE: https://doc.traefik.io/traefik/routing/providers/kubernetes-ingress/#on-service
       annotations:

@@ -734,7 +734,7 @@ func Test_server_Insert(t *testing.T) {
 				want: want{
 					err: func() error {
 						err := errors.ErrUUIDNotFound(0)
-						err = status.WrapWithInvalidArgument(fmt.Sprintf("Insert API empty uuid \"%s\" was given", req.GetVector().GetId()), err,
+						err = status.WrapWithInvalidArgument(fmt.Sprintf("Insert API invalid id: \"%s\" or vector: %v was given", req.GetVector().GetId(), req.GetVector().GetVector()), err,
 							&errdetails.RequestInfo{
 								RequestId:   req.GetVector().GetId(),
 								ServingData: errdetails.Serialize(req),
@@ -786,7 +786,7 @@ func Test_server_Insert(t *testing.T) {
 				want: want{
 					err: func() error {
 						err := errors.ErrUUIDNotFound(0)
-						err = status.WrapWithInvalidArgument(fmt.Sprintf("Insert API empty uuid \"%s\" was given", req.GetVector().GetId()), err,
+						err = status.WrapWithInvalidArgument(fmt.Sprintf("Insert API invalid id: \"%s\" or vector: %v was given", req.GetVector().GetId(), req.GetVector().GetVector()), err,
 							&errdetails.RequestInfo{
 								RequestId:   req.GetVector().GetId(),
 								ServingData: errdetails.Serialize(req),
@@ -838,7 +838,7 @@ func Test_server_Insert(t *testing.T) {
 				want: want{
 					err: func() error {
 						err := errors.ErrUUIDNotFound(0)
-						err = status.WrapWithInvalidArgument(fmt.Sprintf("Insert API empty uuid \"%s\" was given", req.GetVector().GetId()), err,
+						err = status.WrapWithInvalidArgument(fmt.Sprintf("Insert API invalid id: \"%s\" or vector: %v was given", req.GetVector().GetId(), req.GetVector().GetVector()), err,
 							&errdetails.RequestInfo{
 								RequestId:   req.GetVector().GetId(),
 								ServingData: errdetails.Serialize(req),
