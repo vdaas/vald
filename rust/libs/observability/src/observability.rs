@@ -13,8 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-use std::sync::Arc;
-
 use anyhow::{Ok, Result};
 use opentelemetry::global::{self, shutdown_tracer_provider};
 use opentelemetry_otlp::WithExportConfig;
@@ -25,19 +23,21 @@ use opentelemetry_sdk::{runtime, Resource};
 
 use crate::config::Config;
 
+pub const SERVICE_NAME: &str = opentelemetry_semantic_conventions::resource::SERVICE_NAME;
+
 pub trait Observability {
-    fn build(&mut self) -> Result<()>;
+    fn build(self) -> Result<ObservabilityImpl, anyhow::Error>;
     fn shutdown(&mut self) -> Result<()>;
 }
 
 pub struct ObservabilityImpl {
-    config: Arc<Config>,
+    config: Config,
     meter_provider: Option<SdkMeterProvider>,
     tracer_provider: Option<TracerProvider>,
 }
 
 impl ObservabilityImpl {
-    fn new(cfg: Arc<Config>) -> ObservabilityImpl {
+    pub fn new(cfg: Config) -> ObservabilityImpl {
         ObservabilityImpl {
             config: cfg,
             meter_provider: None,
@@ -51,9 +51,9 @@ impl ObservabilityImpl {
 }
 
 impl Observability for ObservabilityImpl {
-    fn build(&mut self) -> Result<()> {
+    fn build(mut self) -> Result<ObservabilityImpl, anyhow::Error> {
         if !self.config.enabled {
-            return Ok(());
+            return Ok(self);
         }
 
         if self.config.meter.enabled {
@@ -92,7 +92,7 @@ impl Observability for ObservabilityImpl {
             global::set_text_map_propagator(TraceContextPropagator::new());
             global::set_tracer_provider(tracer.provider().unwrap());
         }
-        Ok(())
+        Ok(self)
     }
 
     fn shutdown(&mut self) -> Result<()> {

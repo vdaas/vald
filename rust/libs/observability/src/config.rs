@@ -61,8 +61,8 @@ impl Config {
         self
     }
 
-    pub fn attribute(mut self, key: String, value: String) -> Self {
-        self.attributes.insert(key, value);
+    pub fn attribute(mut self, key: &str, value: &str) -> Self {
+        self.attributes.insert(key.to_string(), value.to_string());
         self
     }
 
@@ -106,6 +106,11 @@ impl Tracer {
         self.enabled = enabled;
         self
     }
+
+    pub fn endpoint(mut self, endpoint: &str) -> Self {
+        self.endpoint = endpoint.to_string();
+        self
+    }
 }
 
 impl Default for Tracer {
@@ -126,6 +131,11 @@ impl Meter {
 
     pub fn enabled(mut self, enabled: bool) -> Self {
         self.enabled = enabled;
+        self
+    }
+
+    pub fn endpoint(mut self, endpoint: &str) -> Self {
+        self.endpoint = endpoint.to_string();
         self
     }
 
