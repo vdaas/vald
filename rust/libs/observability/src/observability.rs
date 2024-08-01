@@ -57,13 +57,16 @@ impl Observability for ObservabilityImpl {
         }
 
         if self.config.meter.enabled {
+            // NOTE: Since the agent implementation does not use views, we will use the simplest implementation for the current phase.
+            // If we want flexibility and customization, use SdkMeterProvider::builder.
             let provider = opentelemetry_otlp::new_pipeline()
                 .metrics(runtime::Tokio)
                 .with_period(self.config.meter.export_duration)
                 .with_resource(Resource::from(self.config()))
+                .with_timeout(self.config.meter.export_timeout_duration)
                 .with_exporter(
                     opentelemetry_otlp::new_exporter()
-                        .http()
+                        .tonic()
                         .with_endpoint(self.config.meter.endpoint.as_str()),
                 )
                 .build()?;
@@ -76,7 +79,7 @@ impl Observability for ObservabilityImpl {
                 .tracing()
                 .with_exporter(
                     opentelemetry_otlp::new_exporter()
-                        .http()
+                        .tonic()
                         .with_endpoint(self.config.tracer.endpoint.as_str()),
                 )
                 .with_trace_config(

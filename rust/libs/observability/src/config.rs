@@ -38,6 +38,7 @@ pub struct Meter {
     pub enabled: bool,
     pub endpoint: String,
     pub export_duration: Duration,
+    pub export_timeout_duration: Duration,
 }
 
 impl Config {
@@ -119,6 +120,7 @@ impl Meter {
             enabled: false,
             endpoint: "".to_string(),
             export_duration: Duration::from_secs(1),
+            export_timeout_duration: Duration::from_secs(10),
         }
     }
 
@@ -129,6 +131,11 @@ impl Meter {
 
     pub fn export_duration(mut self, dur: Duration) -> Self {
         self.export_duration = dur;
+        self
+    }
+
+    pub fn export_timeout_duration(mut self, dur: Duration) -> Self {
+        self.export_timeout_duration = dur;
         self
     }
 }
