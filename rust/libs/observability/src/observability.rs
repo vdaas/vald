@@ -20,8 +20,8 @@ use opentelemetry::global::{self, shutdown_tracer_provider};
 use opentelemetry_otlp::WithExportConfig;
 use opentelemetry_sdk::metrics::SdkMeterProvider;
 use opentelemetry_sdk::propagation::TraceContextPropagator;
-use opentelemetry_sdk::trace::TracerProvider;
-use opentelemetry_sdk::Resource;
+use opentelemetry_sdk::trace::{self, TracerProvider};
+use opentelemetry_sdk::{runtime, Resource};
 
 use crate::config::Config;
 
@@ -58,7 +58,7 @@ impl Observability for ObservabilityImpl {
 
         if self.config.meter.enabled {
             let provider = opentelemetry_otlp::new_pipeline()
-                .metrics(opentelemetry_sdk::runtime::Tokio)
+                .metrics(runtime::Tokio)
                 .with_period(self.config.meter.export_duration)
                 .with_resource(Resource::from(self.config()))
                 .with_exporter(
@@ -80,12 +80,12 @@ impl Observability for ObservabilityImpl {
                         .with_endpoint(self.config.tracer.endpoint.as_str()),
                 )
                 .with_trace_config(
-                    opentelemetry_sdk::trace::config()
-                        .with_sampler(opentelemetry_sdk::trace::Sampler::AlwaysOn)
+                    trace::config()
+                        .with_sampler(trace::Sampler::AlwaysOn)
                         .with_resource(Resource::from(self.config()))
-                        .with_id_generator(opentelemetry_sdk::trace::RandomIdGenerator::default()),
+                        .with_id_generator(trace::RandomIdGenerator::default()),
                 )
-                .install_batch(opentelemetry_sdk::runtime::Tokio)?;
+                .install_batch(runtime::Tokio)?;
             global::set_text_map_propagator(TraceContextPropagator::new());
             global::set_tracer_provider(tracer.provider().unwrap());
         }
