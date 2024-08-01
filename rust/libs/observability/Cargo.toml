@@ -30,3 +30,4 @@ opentelemetry-semantic-conventions = { version = "0.16.0"}
 scopeguard = { version = "1.2.0"}
 paste = {version = "1.0.15"}
 anyhow = { version = "1.0.86"}
+url = { version = "2.5.2"}

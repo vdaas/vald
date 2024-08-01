@@ -20,6 +20,7 @@ use opentelemetry_sdk::metrics::SdkMeterProvider;
 use opentelemetry_sdk::propagation::TraceContextPropagator;
 use opentelemetry_sdk::trace::{self, TracerProvider};
 use opentelemetry_sdk::{runtime, Resource};
+use url::Url;
 
 use crate::config::Config;
 
@@ -65,9 +66,11 @@ impl Observability for ObservabilityImpl {
                 .with_resource(Resource::from(self.config()))
                 .with_timeout(self.config.meter.export_timeout_duration)
                 .with_exporter(
-                    opentelemetry_otlp::new_exporter()
-                        .tonic()
-                        .with_endpoint(self.config.meter.endpoint.as_str()),
+                    opentelemetry_otlp::new_exporter().tonic().with_endpoint(
+                        Url::parse(self.config.endpoint.as_str())?
+                            .join("/v1/metrics")?
+                            .as_str(),
+                    ),
                 )
                 .build()?;
             self.meter_provider = Some(provider.clone());
@@ -78,9 +81,11 @@ impl Observability for ObservabilityImpl {
             let tracer = opentelemetry_otlp::new_pipeline()
                 .tracing()
                 .with_exporter(
-                    opentelemetry_otlp::new_exporter()
-                        .tonic()
-                        .with_endpoint(self.config.tracer.endpoint.as_str()),
+                    opentelemetry_otlp::new_exporter().tonic().with_endpoint(
+                        Url::parse(self.config.endpoint.as_str())?
+                            .join("/v1/traces")?
+                            .as_str(),
+                    ),
                 )
                 .with_trace_config(
                     trace::config()

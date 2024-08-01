@@ -22,6 +22,7 @@ use opentelemetry_sdk::{self, Resource};
 #[derive(Clone, Debug)]
 pub struct Config {
     pub enabled: bool,
+    pub endpoint: String,
     pub attributes: HashMap<String, String>,
     pub tracer: Tracer,
     pub meter: Meter,
@@ -30,13 +31,11 @@ pub struct Config {
 #[derive(Clone, Debug)]
 pub struct Tracer {
     pub enabled: bool,
-    pub endpoint: String,
 }
 
 #[derive(Clone, Debug)]
 pub struct Meter {
     pub enabled: bool,
-    pub endpoint: String,
     pub export_duration: Duration,
     pub export_timeout_duration: Duration,
 }
@@ -45,6 +44,7 @@ impl Config {
     pub fn new() -> Self {
         Self {
             enabled: false,
+            endpoint: "".to_string(),
             attributes: HashMap::new(),
             tracer: Tracer::default(),
             meter: Meter::default(),
@@ -53,6 +53,11 @@ impl Config {
 
     pub fn enabled(mut self, enabled: bool) -> Self {
         self.enabled = enabled;
+        self
+    }
+
+    pub fn endpoint(mut self, endpoint: &str) -> Self {
+        self.endpoint = endpoint.to_string();
         self
     }
 
@@ -96,19 +101,11 @@ impl From<&Config> for Resource {
 
 impl Tracer {
     pub fn new() -> Self {
-        Self {
-            enabled: false,
-            endpoint: "".to_string(),
-        }
+        Self { enabled: false }
     }
 
     pub fn enabled(mut self, enabled: bool) -> Self {
         self.enabled = enabled;
-        self
-    }
-
-    pub fn endpoint(mut self, endpoint: &str) -> Self {
-        self.endpoint = endpoint.to_string();
         self
     }
 }
@@ -123,19 +120,13 @@ impl Meter {
     pub fn new() -> Self {
         Self {
             enabled: false,
-            endpoint: "".to_string(),
             export_duration: Duration::from_secs(1),
-            export_timeout_duration: Duration::from_secs(10),
+            export_timeout_duration: Duration::from_secs(5),
         }
     }
 
     pub fn enabled(mut self, enabled: bool) -> Self {
         self.enabled = enabled;
-        self
-    }
-
-    pub fn endpoint(mut self, endpoint: &str) -> Self {
-        self.endpoint = endpoint.to_string();
         self
     }
 
