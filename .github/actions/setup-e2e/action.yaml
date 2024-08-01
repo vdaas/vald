@@ -19,7 +19,7 @@ inputs:
   require_libhdf5:
     description: "If libhdf5 is not required, set this to false"
     required: false
-    default: "true"
+    default: "false"
   require_go:
     description: "If go is not required, set this to false"
     required: false
@@ -58,8 +58,8 @@ runs:
       if: ${{ inputs.require_libhdf5 == 'true' }}
       shell: bash
       run: |
-        sudo apt-get update
-        sudo apt-get install -y libhdf5-dev
+        apt-get update
+        apt-get install -y libhdf5-dev
     - name: Setup Go environment
       if: ${{ inputs.require_go == 'true' }}
       uses: ./.github/actions/setup-go
