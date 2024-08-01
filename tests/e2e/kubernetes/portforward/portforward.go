@@ -68,7 +68,7 @@ func (p *Portforward) Start() error {
 	path := fmt.Sprintf("/api/v1/namespaces/%s/pods/%s/portforward",
 		p.namespace, p.podName)
 
-	hostIP := strings.TrimLeft(p.restConfig.Host, "https:/")
+	hostIP := strings.TrimPrefix(strings.TrimPrefix(p.restConfig.Host, "http://"), "https://")
 
 	transport, upgrader, err := spdy.RoundTripperFor(p.restConfig)
 	if err != nil {
