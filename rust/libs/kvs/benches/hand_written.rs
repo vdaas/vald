@@ -80,11 +80,43 @@ fn benchmark<T: KVS + 'static>(size: usize, kdims: &[usize], vdims: &[usize], th
     for &kdim in kdims {
         for &vdim in vdims {
             for &thread in threads {
-                let (path, db) = setup_kvs::<T>(format!("{}-{}-{}", kdim, vdim, thread).as_str());
+                let (path, db) = setup_kvs::<T>(format!("{}-{}-{}", kdim, vdim, thread).as_str(), None, None, None);
                 bencher(name, path.as_path(), size, kdim, vdim, db, ratio, thread, interval, timer);
             }
         }
     }
+}
+
+fn benchmark_iter<T: KVS + 'static>(size: usize, kdim: usize, vdim: usize, interval: u64) {
+    let name = type_name::<T>().split("::").last().unwrap();
+    let (path, db) = setup_kvs::<T>(format!("{}-{}-{}", size, kdim, vdim).as_str(), Some(size), Some(kdim), Some(vdim));
+    let me = Arc::new(procfs::process::Process::myself().unwrap());
+    let shutdown = Arc::new(AtomicBool::new(false));
+    let count = Arc::new(AtomicUsize::new(0));
+    
+    let begin = Arc::new(Instant::now());
+    {
+        let shutdown = shutdown.clone();
+        let count = count.clone();
+        thread::spawn(move || {
+            db.range(|_, _| {
+                count.fetch_add(1, Ordering::Release);
+                Ok(())
+            });
+            shutdown.store(true, Ordering::SeqCst);
+        });    
+    }
+
+    while {
+        thread::sleep(Duration::from_secs(interval));
+        let p = begin.elapsed();
+        let st = me.status().unwrap();
+        let dir_size = fs_extra::dir::get_size(path.clone()).unwrap_or_default();
+        let count = count.load(Ordering::Relaxed);
+        println!("{},range,{},{},1,{},{},{},{}", name, kdim, vdim, count, p.as_nanos(), st.vmrss.unwrap(), dir_size/1024);
+        
+        !shutdown.load(Ordering::Relaxed) 
+    } {}
 }
 
 fn main() {
@@ -96,11 +128,15 @@ fn main() {
     let interval = 5;
     let timer = 15;
     println!("name,operation,key size(B),value size(B),thread,operation count,time(ns),vmrss(KB),file size(B)");
-    benchmark::<Kv>(size, kdims, vdims, threads, ratio, interval, timer);
-    benchmark::<Kv2>(size, kdims, vdims, threads, ratio, interval, timer);
+    //benchmark::<Kv>(size, kdims, vdims, threads, ratio, interval, timer);
+    //benchmark::<Kv2>(size, kdims, vdims, threads, ratio, interval, timer);
     //parallel_benchmark::<Persy>(size, kdims, vdims, threads, ratio, interval, timer);
     //parallel_benchmark::<Redb>(size, kdims, vdims, threads, ratio, interval, timer);
     //parallel_benchmark::<Rkv>(size, kdims, vdims, threads);
-    benchmark::<Rocksdb>(size, kdims, vdims, threads, ratio, interval, timer);
-    benchmark::<Sled>(size, kdims, vdims, threads, ratio, interval, timer);
+    //benchmark::<Rocksdb>(size, kdims, vdims, threads, ratio, interval, timer);
+    //benchmark::<Sled>(size, kdims, vdims, threads, ratio, interval, timer);
+    benchmark_iter::<Kv>(5000000, 1024, 64, 1);
+    benchmark_iter::<Kv2>(5000000, 1024, 64, 1);
+    benchmark_iter::<Rocksdb>(5000000, 1024, 64, 1);
+    benchmark_iter::<Sled>(5000000, 1024, 64, 1);
 }
