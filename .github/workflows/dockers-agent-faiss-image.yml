@@ -27,42 +27,43 @@ on:
       - "v*.*.*-*"
   pull_request:
     paths:
-      - ".github/actions/docker-build/action.yaml"
-      - ".github/workflows/_docker-image.yaml"
-      - ".github/workflows/dockers-agent-faiss-image.yml"
-      - "go.mod"
-      - "go.sum"
-      - "internal/**"
       - "!internal/**/*_test.go"
       - "!internal/db/**"
       - "!internal/k8s/**"
+      - ".github/actions/docker-build/action.yaml"
+      - ".github/workflows/_docker-image.yaml"
+      - ".github/workflows/dockers-agent-faiss-image.yml"
+      - "Makefile"
       - "apis/grpc/**"
-      - "pkg/agent/core/faiss/**"
       - "cmd/agent/core/faiss/**"
       - "dockers/agent/core/faiss/Dockerfile"
-      - "versions/GO_VERSION"
+      - "go.mod"
+      - "go.sum"
+      - "internal/**"
+      - "pkg/agent/core/faiss/**"
       - "versions/FAISS_VERSION"
+      - "versions/GO_VERSION"
   pull_request_target:
     paths:
-      - ".github/actions/docker-build/action.yaml"
-      - ".github/workflows/_docker-image.yaml"
-      - ".github/workflows/dockers-agent-faiss-image.yml"
-      - "go.mod"
-      - "go.sum"
-      - "internal/**"
       - "!internal/**/*_test.go"
       - "!internal/db/**"
       - "!internal/k8s/**"
+      - ".github/actions/docker-build/action.yaml"
+      - ".github/workflows/_docker-image.yaml"
+      - ".github/workflows/dockers-agent-faiss-image.yml"
+      - "Makefile"
       - "apis/grpc/**"
-      - "pkg/agent/core/faiss/**"
       - "cmd/agent/core/faiss/**"
       - "dockers/agent/core/faiss/Dockerfile"
-      - "versions/GO_VERSION"
+      - "go.mod"
+      - "go.sum"
+      - "internal/**"
+      - "pkg/agent/core/faiss/**"
       - "versions/FAISS_VERSION"
+      - "versions/GO_VERSION"
 jobs:
   build:
     uses: ./.github/workflows/_docker-image.yaml
     with:
       target: agent-faiss
-      platforms: linux/amd64
     secrets: inherit

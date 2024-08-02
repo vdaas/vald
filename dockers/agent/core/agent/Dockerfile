@@ -43,8 +43,8 @@ ENV REPO=vald
 ENV RUST_HOME=/usr/loacl/lib/rust
 ENV TZ=Etc/UTC
 ENV USER=root
-ENV RUSTUP_HOME=${RUST_HOME}/rustup
 ENV CARGO_HOME=${RUST_HOME}/cargo
+ENV RUSTUP_HOME=${RUST_HOME}/rustup
 ENV PATH=${CARGO_HOME}/bin:${RUSTUP_HOME}/bin:/usr/local/bin:${PATH}
 
 WORKDIR ${HOME}/rust/src/github.com/${ORG}/${REPO}
@@ -75,7 +75,6 @@ RUN --mount=type=bind,target=.,rw \
     libomp-dev \
     libopenblas-dev \
     gfortran \
-    libquadmath0 \
     && ldconfig \
     && echo "${LANG} UTF-8" > /etc/locale.gen \
     && ln -fs /usr/share/zoneinfo/${TZ} /etc/localtime \
