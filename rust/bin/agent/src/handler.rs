@@ -13,18 +13,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+mod common;
+mod index;
+mod insert;
+mod remove;
+mod search;
+mod update;
+mod upsert;
 
-mod handler;
-
-#[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let addr = "[::1]:8081".parse()?;
-    let agent = handler::Agent::default();
-
-    tonic::transport::Server::builder()
-        .add_service(proto::core::v1::agent_server::AgentServer::new(agent))
-        .serve(addr)
-        .await?;
-
-    Ok(())
+#[derive(Default, Debug)]
+pub struct Agent {
+    
 }
