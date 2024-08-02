@@ -348,7 +348,6 @@ var (
 	}
 	faissBuildDeps = []string{
 		"gfortran",
-		"libquadmath0",
 	}
 	devContainerDeps = []string{
 		"gawk",

@@ -76,7 +76,12 @@
 .github/workflows/coverage.yml
 .github/workflows/detect-internal-config-changes.yml
 .github/workflows/dockers-agent-faiss-image.yml
+.github/workflows/dockers-agent-faiss-image.yml
+.github/workflows/dockers-agent-faiss-image.yml
 .github/workflows/dockers-agent-image.yml
+.github/workflows/dockers-agent-image.yml
+.github/workflows/dockers-agent-ngt-image.yml
+.github/workflows/dockers-agent-ngt-image.yml
 .github/workflows/dockers-agent-ngt-image.yml
 .github/workflows/dockers-agent-sidecar-image.yml
 .github/workflows/dockers-benchmark-job-image.yml
@@ -132,6 +137,8 @@ CHANGELOG.md
 CODE_OF_CONDUCT.md
 CONTRIBUTING.md
 LICENSE
+Makefile
+Makefile
 Makefile
 Makefile.d/actions.mk
 Makefile.d/bench.mk
@@ -519,7 +526,10 @@ design/Vald Architecture Dataflow.drawio
 design/Vald Architecture Overview.drawio
 design/vald_architecture_overview.png
 dockers/agent/core/agent/Dockerfile
+dockers/agent/core/agent/Dockerfile
 dockers/agent/core/agent/README.md
+dockers/agent/core/faiss/Dockerfile
+dockers/agent/core/faiss/Dockerfile
 dockers/agent/core/faiss/Dockerfile
 dockers/agent/core/ngt/Dockerfile
 dockers/agent/core/ngt/README.md
@@ -527,7 +537,11 @@ dockers/agent/sidecar/Dockerfile
 dockers/agent/sidecar/README.md
 dockers/buildbase/Dockerfile
 dockers/ci/base/Dockerfile
+dockers/ci/base/Dockerfile
+dockers/ci/base/Dockerfile
 dockers/ci/base/README.md
+dockers/dev/Dockerfile
+dockers/dev/Dockerfile
 dockers/dev/Dockerfile
 dockers/dev/README.md
 dockers/discoverer/k8s/Dockerfile
@@ -554,6 +568,7 @@ dockers/tools/cli/loadtest/README.md
 docs/api/README.md
 docs/api/build_proto.md
 docs/api/filter-gateway.md
+docs/api/flush.md
 docs/api/flush.md
 docs/api/insert.md
 docs/api/mirror-gateway.md
@@ -622,7 +637,12 @@ example/helm/values-with-pyroscope.yaml
 example/helm/values.yaml
 example/manifest/scylla/configmap.yaml
 example/manifest/scylla/job.yaml
+github_info.json
 go.mod
+go.mod
+go.mod
+go.sum
+go.sum
 go.sum
 hack/CHANGELOG.template.md
 hack/benchmark/assets/checksum/fashion-mnist-784-euclidean.md5
@@ -698,6 +718,7 @@ hack/benchmark/internal/starter/gateway/vald/vald_test.go
 hack/benchmark/internal/starter/starter.go
 hack/benchmark/metrics/metrics.go
 hack/benchmark/src/singleflight/singleflight_bench_test.go
+hack/docker/gen/main.go
 hack/docker/gen/main.go
 hack/git/hooks/pre-commit
 hack/go.mod.default
@@ -1936,7 +1957,11 @@ pkg/tools/cli/loadtest/usecase/load.go
 pkg/tools/cli/loadtest/usecase/load_test.go
 renovate.json
 rust/Cargo.lock
+rust/Cargo.lock
+rust/Cargo.lock
 rust/Cargo.toml
+rust/bin/agent/Cargo.toml
+rust/bin/agent/Cargo.toml
 rust/bin/agent/Cargo.toml
 rust/bin/agent/src/handler.rs
 rust/bin/agent/src/handler/common.rs
@@ -2018,6 +2043,8 @@ versions/KUBELINTER_VERSION
 versions/NGT_VERSION
 versions/OPERATOR_SDK_VERSION
 versions/OTEL_OPERATOR_VERSION
+versions/PROMETHEUS_STACK_VERSION
+versions/PROMETHEUS_STACK_VERSION
 versions/PROMETHEUS_STACK_VERSION
 versions/PROTOBUF_VERSION
 versions/REVIEWDOG_VERSION

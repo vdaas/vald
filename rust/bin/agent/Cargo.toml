@@ -22,3 +22,8 @@ edition = "2021"
 
 [dependencies]
 ngt = { version = "0.1.0", path = "../../libs/ngt" }
+prost = "0.12.4"
+proto = { version = "0.1.0", path = "../../libs/proto" }
+tokio = { version = "1.37.0", features = ["full"] }
+tokio-stream = { version = "0.1.15", features = ["full"] }
+tonic = "0.11.0"

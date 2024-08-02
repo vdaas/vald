@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 
+SHELL                           = bash
 ORG                             ?= vdaas
 NAME                            = vald
 GOPKG                           = github.com/$(ORG)/$(NAME)
@@ -144,7 +145,7 @@ PBDOCS = apis/docs/v1/docs.md
 LDFLAGS = -static -fPIC -pthread -std=gnu++23 -lstdc++ -lm -z relro -z now -flto=auto -march=native -mtune=native -fno-plt -Ofast -fvisibility=hidden -ffp-contract=fast -fomit-frame-pointer -fmerge-all-constants -funroll-loops -falign-functions=32 -ffunction-sections -fdata-sections
 
 NGT_LDFLAGS = -fopenmp -lopenblas -llapack
-FAISS_LDFLAGS = $(NGT_LDFLAGS) -lgfortran -lquadmath
+FAISS_LDFLAGS = $(NGT_LDFLAGS) -lgfortran
 HDF5_LDFLAGS = -lhdf5 -lhdf5_hl -lsz -laec -lz -ldl
 CGO_LDFLAGS = $(FAISS_LDFLAGS) $(HDF5_LDFLAGS)
 
