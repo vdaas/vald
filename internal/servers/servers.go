@@ -20,7 +20,7 @@ package servers
 import (
 	"context"
 	"net/http"
-	"sort"
+	"slices"
 	"time"
 
 	"github.com/vdaas/vald/internal/errors"
@@ -50,10 +50,8 @@ func New(opts ...Option) Listener {
 	}
 
 	if l.sus != nil && len(l.sus) != 0 && (l.sds == nil || len(l.sds) == 0) {
-		s := make([]string, len(l.sus))
-		copy(s, l.sus)
-		l.sds = s
-		sort.Sort(sort.Reverse(sort.StringSlice(l.sds)))
+		l.sds = slices.Clone(l.sus)
+		slices.Reverse(l.sds)
 	}
 	return l
 }

@@ -38,14 +38,20 @@ type Corrector struct {
 	// this directly affects the memory usage of this job
 	StreamListConcurrency int `json:"stream_list_concurrency" yaml:"stream_list_concurrency"`
 
-	// KvsAsyncWriteConcurrency represent concurrency for kvs async write
-	KvsAsyncWriteConcurrency int `json:"kvs_async_write_concurrency" yaml:"kvs_async_write_concurrency"`
+	// KVSBackgroundSyncInterval represents interval for checked id list kvs sync duration
+	KVSBackgroundSyncInterval string `json:"kvs_background_sync_interval" yaml:"kvs_background_sync_interval"`
+
+	// KVSBackgroundCompactionInterval represents interval for checked id list kvs compaction duration
+	KVSBackgroundCompactionInterval string `json:"kvs_background_compaction_interval" yaml:"kvs_background_compaction_interval"`
 
 	// IndexReplica represent index replica count. This should be equal to the lb setting
 	IndexReplica int `json:"index_replica" yaml:"index_replica"`
 
 	// Discoverer represent agent discoverer service configuration
 	Discoverer *DiscovererClient `json:"discoverer" yaml:"discoverer"`
+
+	// Gateway represent gateway service configuration
+	Gateway *GRPCClient `json:"gateway" yaml:"gateway"`
 }
 
 // Bind binds the actual data from the Indexer receiver field.
@@ -54,9 +60,14 @@ func (c *Corrector) Bind() *Corrector {
 	c.AgentNamespace = GetActualValue(c.AgentNamespace)
 	c.AgentDNS = GetActualValue(c.AgentDNS)
 	c.NodeName = GetActualValue(c.NodeName)
+	c.KVSBackgroundCompactionInterval = GetActualValue(c.KVSBackgroundCompactionInterval)
+	c.KVSBackgroundSyncInterval = GetActualValue(c.KVSBackgroundSyncInterval)
 
 	if c.Discoverer != nil {
 		c.Discoverer = c.Discoverer.Bind()
+	}
+	if c.Gateway != nil {
+		c.Gateway = c.Gateway.Bind()
 	}
 	return c
 }

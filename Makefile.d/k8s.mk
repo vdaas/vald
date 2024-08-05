@@ -37,6 +37,10 @@ k8s/manifest/update: \
 	helm template \
 		--values $(HELM_VALUES) \
 		$(HELM_EXTRA_OPTIONS) \
+		--set manager.index.operator.enabled=true \
+		--set manager.index.saver.enabled=true \
+		--set manager.index.creator.enabled=true \
+		--set manager.index.corrector.enabled=true \
 		--output-dir $(TEMP_DIR) \
 		charts/vald
 	mkdir -p k8s/gateway
@@ -536,27 +540,27 @@ $(BINDIR)/telepresence:
 .PHONY: telepresence/swap/agent-ngt
 ## swap agent-ngt deployment using telepresence
 telepresence/swap/agent-ngt:
-	$(call telepresence,vald-agent-ngt,vdaas/vald-agent-ngt)
+	$(call telepresence,vald-agent-ngt,$(REPO)-agent-ngt)
 
 .PHONY: telepresence/swap/agent-faiss
 ## swap agent-faiss deployment using telepresence
 telepresence/swap/agent-faiss:
-	$(call telepresence,vald-agent-faiss,vdaas/vald-agent-faiss)
+	$(call telepresence,vald-agent-faiss,$(REPO)-agent-faiss)
 
 .PHONY: telepresence/swap/discoverer
 ## swap discoverer deployment using telepresence
 telepresence/swap/discoverer:
-	$(call telepresence,vald-discoverer,vdaas/vald-discoverer-k8s)
+	$(call telepresence,vald-discoverer,$(REPO)-discoverer-k8s)
 
 .PHONY: telepresence/swap/manager-index
 ## swap manager-index deployment using telepresence
 telepresence/swap/manager-index:
-	$(call telepresence,vald-manager-index,vdaas/vald-manager-index)
+	$(call telepresence,vald-manager-index,$(REPO)-manager-index)
 
 .PHONY: telepresence/swap/lb-gateway
 ## swap lb-gateway deployment using telepresence
 telepresence/swap/lb-gateway:
-	$(call telepresence,vald-lb-gateway,vdaas/vald-lb-gateway)
+	$(call telepresence,vald-lb-gateway,$(REPO)-lb-gateway)
 
 .PHONY: kubelinter/install
 ## install kubelinter

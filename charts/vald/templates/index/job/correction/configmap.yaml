@@ -51,12 +51,32 @@ data:
       agent_namespace: {{ $index.indexer.agent_namespace | quote }}
       node_name: {{ $index.indexer.node_name | quote }}
       stream_list_concurrency: {{ $corrector.stream_list_concurrency }}
-      kvs_async_write_concurrency: {{ $corrector.kvs_async_write_concurrency }}
+      kvs_background_sync_interval:  {{ $corrector.kvs_background_sync_interval }}
+      kvs_background_compaction_interval:  {{ $corrector.kvs_background_compaction_interval }}
       index_replica: {{ $gateway.gateway_config.index_replica }}
+      gateway:
+        {{- $nextGatewayClient := $corrector.gateway}}
+        {{- if $gateway.enabled -}}
+        {{- $lbServerPort := $gateway.server_config.servers.grpc.port }}
+        {{- $defaultLBHost := printf "%s.%s.svc.cluster.local" $gateway.name .Release.Namespace }}
+        {{- $defaultLBPort := default .Values.defaults.server_config.servers.grpc.port $lbServerPort }}
+        {{- $defaultLBAddr := (list (printf "%s:%d" $defaultLBHost (int64 $defaultLBPort))) }}
+        {{- $lbAddrs := dict "Values" $nextGatewayClient.addrs "default" $defaultLBAddr }}
+        {{- include "vald.grpc.client.addrs" $lbAddrs | nindent 8 }}
+        {{- else -}}
+        {{- $agentServerPort := $agent.server_config.servers.grpc.port }}
+        {{- $defaultAgentHost := printf "%s.%s.svc.cluster.local" $agent.name .Release.Namespace }}
+        {{- $defaultAgentPort := default .Values.defaults.server_config.servers.grpc.port $agentServerPort }}
+        {{- $defaultAgentAddr := (list (printf "%s:%d" $defaultAgentHost (int64 $defaultAgentPort))) }}
+        {{- $agentAddrs := dict "Values" $nextGatewayClient.addrs "default" $defaultAgentAddr }}
+        {{- include "vald.grpc.client.addrs" $agentAddrs | nindent 8 }}
+        {{- end -}}
+        {{- $nextGRPCClient := dict "Values" $nextGatewayClient "default" .Values.defaults.grpc.client }}
+        {{- include "vald.grpc.client" $nextGRPCClient | nindent 8 }}
       discoverer:
         duration: {{ $corrector.discoverer.duration }}
         client:
-          {{- $discovererClient := $index.corrector.discoverer.client }}
+          {{- $discovererClient := $corrector.discoverer.client }}
           {{- $discovererServerPort := $discoverer.server_config.servers.grpc.port }}
           {{- $defaultDiscovererHost := printf "%s.%s.svc.cluster.local" $discoverer.name .Release.Namespace }}
           {{- $defaultDiscovererPort := default .Values.defaults.server_config.servers.grpc.port $discovererServerPort }}

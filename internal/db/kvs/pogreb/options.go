@@ -21,7 +21,7 @@ import (
 
 var deafultOpts = []Option{
 	WithPath("pogreb.db"),
-	WithBackgroundSyncInterval("5s"),
+	WithBackgroundSyncInterval(time.Second * 5),
 }
 
 // Option represents the functional option for database.
@@ -40,20 +40,10 @@ func WithPath(path string) Option {
 // WithBackgroundSyncInterval returns the option to sets the amount of time between background Sync() calls.
 // Setting the value to 0 disables the automatic background synchronization.
 // Setting the value to -1 or less makes the DB call Sync() after every write operation.
-func WithBackgroundSyncInterval(s string) Option {
+func WithBackgroundSyncInterval(dur time.Duration) Option {
 	return func(d *db) error {
-		if s == "" {
-			return nil
-		}
-		dur, err := time.ParseDuration(s)
-		if err != nil {
-			return err
-		}
 		if d.opts == nil {
 			d.opts = new(pogreb.Options)
-		}
-		if dur < -1 {
-			dur = -1
 		}
 		d.opts.BackgroundSyncInterval = dur
 		return nil
@@ -62,21 +52,10 @@ func WithBackgroundSyncInterval(s string) Option {
 
 // WithBackgroundCompactionInterval returns the option to sets the amount of time between background Compact() calls.
 // Setting the value to 0 or less disables the automatic background compaction.
-func WithBackgroundCompactionInterval(s string) Option {
+func WithBackgroundCompactionInterval(dur time.Duration) Option {
 	return func(d *db) error {
-		if s == "" {
-			return nil
-		}
-		dur, err := time.ParseDuration(s)
-		if err != nil {
-			return err
-		}
 		if d.opts == nil {
 			d.opts = new(pogreb.Options)
-		}
-
-		if dur < 0 {
-			dur = 0
 		}
 		d.opts.BackgroundCompactionInterval = dur
 		return nil
