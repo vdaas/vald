@@ -1,3 +1,4 @@
+# syntax = docker/dockerfile:latest
 #
 # Copyright (C) 2019-2024 vdaas.org vald team <vald@vdaas.org>
 #
@@ -13,18 +14,5 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-apiVersion: scheduling.k8s.io/v1
-kind: PriorityClass
-metadata:
-  name: default-vald-index-operator-priority
-  labels:
-    app.kubernetes.io/name: vald
-    helm.sh/chart: vald-v1.7.12
-    app.kubernetes.io/managed-by: Helm
-    app.kubernetes.io/instance: release-name
-    app.kubernetes.io/version: v1.7.12
-    app.kubernetes.io/component: index-operator
-value: 1e+06
-preemptionPolicy: Never
-globalDefault: false
-description: "A priority class for Vald index operator."
+
+FROM moby/buildkit:master AS builder

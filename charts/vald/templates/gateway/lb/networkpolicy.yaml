@@ -19,6 +19,7 @@
 {{- $filter := .Values.gateway.filter -}}
 {{- $mirror := .Values.gateway.mirror -}}
 {{- $discoverer := .Values.discoverer -}}
+{{- $corrector  := .Values.manager.index.corrector -}}
 {{- if .Values.defaults.networkPolicy.enabled }}
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
@@ -48,6 +49,12 @@ spec:
         podSelector:
           matchLabels:
             app: {{ $mirror.name }}
+      - namespaceSelector:
+          matchLabels:
+            kubernetes.io/metadata.name: {{ .Release.Namespace }}
+        podSelector:
+          matchLabels:
+            app: {{ $corrector.name }}
     {{- if .Values.defaults.networkPolicy.custom.ingress }}
     {{- toYaml .Values.defaults.networkPolicy.custom.ingress | nindent 4 }}
     {{- end }}

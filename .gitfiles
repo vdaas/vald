@@ -50,6 +50,7 @@
 .github/helm/values/vald-mirror-target.yaml
 .github/helm/values/values-agent-sidecar.yaml
 .github/helm/values/values-chaos.yaml
+.github/helm/values/values-correction.yaml
 .github/helm/values/values-index-management-jobs.yaml
 .github/helm/values/values-lb.yaml
 .github/helm/values/values-max-dim.yaml
@@ -86,7 +87,9 @@
 .github/workflows/dockers-agent-sidecar-image.yml
 .github/workflows/dockers-benchmark-job-image.yml
 .github/workflows/dockers-benchmark-operator-image.yaml
+.github/workflows/dockers-binfmt-image.yaml
 .github/workflows/dockers-buildbase-image.yml
+.github/workflows/dockers-buildkit-image.yaml
 .github/workflows/dockers-ci-container-image.yml
 .github/workflows/dockers-dev-container-image.yml
 .github/workflows/dockers-discoverer-k8s-image.yml
@@ -535,7 +538,9 @@ dockers/agent/core/ngt/Dockerfile
 dockers/agent/core/ngt/README.md
 dockers/agent/sidecar/Dockerfile
 dockers/agent/sidecar/README.md
+dockers/binfmt/Dockerfile
 dockers/buildbase/Dockerfile
+dockers/buildkit/Dockerfile
 dockers/ci/base/Dockerfile
 dockers/ci/base/Dockerfile
 dockers/ci/base/Dockerfile

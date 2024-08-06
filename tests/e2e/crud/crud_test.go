@@ -77,7 +77,7 @@ func init() {
 	flag.IntVar(&port, "port", 8081, "gRPC port")
 
 	flag.IntVar(&insertNum, "insert-num", 10000, "number of id-vector pairs used for insert")
-	flag.IntVar(&correctionInsertNum, "correction-insert-num", 3000, "number of id-vector pairs used for insert")
+	flag.IntVar(&correctionInsertNum, "correction-insert-num", 10000, "number of id-vector pairs used for insert")
 	flag.IntVar(&searchNum, "search-num", 10000, "number of id-vector pairs used for search")
 	flag.IntVar(&searchByIDNum, "search-by-id-num", 100, "number of id-vector pairs used for search-by-id")
 	flag.IntVar(&getObjectNum, "get-object-num", 100, "number of id-vector pairs used for get-object")
