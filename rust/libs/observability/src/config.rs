@@ -28,7 +28,7 @@ pub struct Config {
     pub meter: Meter,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 pub struct Tracer {
     pub enabled: bool,
 }
@@ -42,13 +42,7 @@ pub struct Meter {
 
 impl Config {
     pub fn new() -> Self {
-        Self {
-            enabled: false,
-            endpoint: "".to_string(),
-            attributes: HashMap::new(),
-            tracer: Tracer::default(),
-            meter: Meter::default(),
-        }
+        Self::default()
     }
 
     pub fn enabled(mut self, enabled: bool) -> Self {
@@ -84,7 +78,13 @@ impl Config {
 
 impl Default for Config {
     fn default() -> Self {
-        Self::new()
+        Self {
+            enabled: false,
+            endpoint: "".to_string(),
+            attributes: HashMap::new(),
+            tracer: Tracer::default(),
+            meter: Meter::default(),
+        }
     }
 }
 
@@ -101,7 +101,7 @@ impl From<&Config> for Resource {
 
 impl Tracer {
     pub fn new() -> Self {
-        Self { enabled: false }
+        Tracer::default()
     }
 
     pub fn enabled(mut self, enabled: bool) -> Self {
@@ -110,19 +110,9 @@ impl Tracer {
     }
 }
 
-impl Default for Tracer {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
 impl Meter {
     pub fn new() -> Self {
-        Self {
-            enabled: false,
-            export_duration: Duration::from_secs(1),
-            export_timeout_duration: Duration::from_secs(5),
-        }
+        Meter::default()
     }
 
     pub fn enabled(mut self, enabled: bool) -> Self {
@@ -143,6 +133,10 @@ impl Meter {
 
 impl Default for Meter {
     fn default() -> Self {
-        Self::new()
+        Self {
+            enabled: false,
+            export_duration: Duration::from_secs(1),
+            export_timeout_duration: Duration::from_secs(5),
+        }
     }
 }
