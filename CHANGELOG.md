@@ -1,5 +1,152 @@
 # CHANGELOG
 
+## v1.7.13
+
+### Docker images
+
+<table>
+  <tr>
+    <th>component</th>
+    <th>Docker pull</th>
+  </tr>
+  <tr>
+    <td>Agent NGT</td>
+    <td>
+      <code>docker pull vdaas/vald-agent-ngt:v1.7.13</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-agent-ngt:v1.7.13</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Agent sidecar</td>
+    <td>
+      <code>docker pull vdaas/vald-agent-sidecar:v1.7.13</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-agent-sidecar:v1.7.13</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Discoverers</td>
+    <td>
+      <code>docker pull vdaas/vald-discoverer-k8s:v1.7.13</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-discoverer-k8s:v1.7.13</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Gateways</td>
+    <td>
+      <code>docker pull vdaas/vald-lb-gateway:v1.7.13</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-lb-gateway:v1.7.13</code><br/>
+      <code>docker pull vdaas/vald-filter-gateway:v1.7.13</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-filter-gateway:v1.7.13</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Index Manager</td>
+    <td>
+      <code>docker pull vdaas/vald-manager-index:v1.7.13</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-manager-index:v1.7.13</code>
+    </td>
+  </tr>
+  <tr>
+    <td>Helm Operator</td>
+    <td>
+      <code>docker pull vdaas/vald-helm-operator:v1.7.13</code><br/>
+      <code>docker pull ghcr.io/vdaas/vald/vald-helm-operator:v1.7.13</code>
+    </td>
+  </tr>
+</table>
+
+### Documents
+
+- [GoDoc](https://pkg.go.dev/github.com/vdaas/vald@v1.7.13)
+- [Helm Chart Reference](https://github.com/vdaas/vald/blob/v1.7.13/charts/vald/README.md)
+- [Helm Operator Chart Reference](https://github.com/vdaas/vald/blob/v1.7.13/charts/vald-helm-operator/README.md)
+
+### Changes
+
+### [Bugfix]
+
+- **General Fixes**
+
+  1. Fix index correction process [#2565](https://github.com/vdaas/vald/pull/2565) ([#2566](https://github.com/vdaas/vald/pull/2566))
+  2. libquadmath is not available on ARM [#2559](https://github.com/vdaas/vald/pull/2559)
+  3. fix: add checkout option [#2545](https://github.com/vdaas/vald/pull/2545) ([#2546](https://github.com/vdaas/vald/pull/2546))
+  4. fix: make format [#2534](https://github.com/vdaas/vald/pull/2534) ([#2540](https://github.com/vdaas/vald/pull/2540))
+  5. fix conflict bug [#2537](https://github.com/vdaas/vald/pull/2537)
+  6. Bugfix that caused an error when argument has 3 or more nil arguments [#2517](https://github.com/vdaas/vald/pull/2517) ([#2520](https://github.com/vdaas/vald/pull/2520))
+  7. Bugfix recreate benchmark job when operator reboot [#2463](https://github.com/vdaas/vald/pull/2463) ([#2464](https://github.com/vdaas/vald/pull/2464))
+  8. Fix agent-faiss build failed [#2418](https://github.com/vdaas/vald/pull/2418) ([#2419](https://github.com/vdaas/vald/pull/2419))
+  9. Fix the logic to determine docker image [#2410](https://github.com/vdaas/vald/pull/2410) ([#2420](https://github.com/vdaas/vald/pull/2420))
+
+- **Backport and Release-Related**
+
+  1. Fix workflow trigger for backport pr creation [#2471](https://github.com/vdaas/vald/pull/2471) ([#2472](https://github.com/vdaas/vald/pull/2472))
+  2. Fix output settings to determine-docker-image-tag action and release branch build tag name [#2423](https://github.com/vdaas/vald/pull/2423) ([#2425](https://github.com/vdaas/vald/pull/2425))
+
+- **E2E and Index**
+
+  1. Fix e2e for read replica and add e2e for index operator [#2455](https://github.com/vdaas/vald/pull/2455) ([#2459](https://github.com/vdaas/vald/pull/2459))
+  2. Fix index job logic to pass DNS A record [#2438](https://github.com/vdaas/vald/pull/2438) ([#2448](https://github.com/vdaas/vald/pull/2448))
+
+- **Documentation and Other**
+  1. fix: typo of execution rule [#2426](https://github.com/vdaas/vald/pull/2426) ([#2427](https://github.com/vdaas/vald/pull/2427))
+  2. :pencil: Fix typo of file name [#2413](https://github.com/vdaas/vald/pull/2413) ([#2415](https://github.com/vdaas/vald/pull/2415))
+
+### [Enhancement]
+
+- **General Improvements**
+
+  1. Update dependencies, C++ standard, and improve Dockerfiles for better build systems and localization [#2549](https://github.com/vdaas/vald/pull/2549) ([#2557](https://github.com/vdaas/vald/pull/2557))
+  2. Implement ngt Statistics API [#2539](https://github.com/vdaas/vald/pull/2539) ([#2547](https://github.com/vdaas/vald/pull/2547))
+  3. refactor index manager service add index service API to expose index informations [#2525](https://github.com/vdaas/vald/pull/2525) ([#2532](https://github.com/vdaas/vald/pull/2532))
+
+- **API and Logic Changes**
+
+  1. Change default image tag from latest to nightly [#2516](https://github.com/vdaas/vald/pull/2516) ([#2518](https://github.com/vdaas/vald/pull/2518))
+  2. update large top-K ratio handling logic [#2509](https://github.com/vdaas/vald/pull/2509) ([#2511](https://github.com/vdaas/vald/pull/2511))
+  3. add inner product distance type for ngt [#2454](https://github.com/vdaas/vald/pull/2454) ([#2458](https://github.com/vdaas/vald/pull/2458))
+  4. Implement index operator logic for read replica rotation [#2444](https://github.com/vdaas/vald/pull/2444) ([#2456](https://github.com/vdaas/vald/pull/2456))
+
+- **Performance and Optimization**
+
+  1. update deps & add validation for Flush API when agent is Read Only [#2433](https://github.com/vdaas/vald/pull/2433) ([#2436](https://github.com/vdaas/vald/pull/2436))
+  2. Add `index-operator` template implementation [#2375](https://github.com/vdaas/vald/pull/2375) ([#2424](https://github.com/vdaas/vald/pull/2424))
+
+- **Testing and Metrics**
+  1. Implement client metrics interceptor for continuous benchmark job [#2477](https://github.com/vdaas/vald/pull/2477) ([#2480](https://github.com/vdaas/vald/pull/2480))
+  2. Add tests for index information export [#2412](https://github.com/vdaas/vald/pull/2412) ([#2414](https://github.com/vdaas/vald/pull/2414))
+
+### [CI]
+
+1. [create-pull-request] automated change [#2552](https://github.com/vdaas/vald/pull/2552) ([#2556](https://github.com/vdaas/vald/pull/2556))
+2. Add workflow to check git conflict for backport PR [#2548](https://github.com/vdaas/vald/pull/2548) ([#2550](https://github.com/vdaas/vald/pull/2550))
+3. [CI] Add workflow to synchronize ubuntu base image [#2526](https://github.com/vdaas/vald/pull/2526) ([#2527](https://github.com/vdaas/vald/pull/2527))
+4. Automatically add backport main label for release-pr [#2473](https://github.com/vdaas/vald/pull/2473) ([#2475](https://github.com/vdaas/vald/pull/2475))
+5. change external docker image reference to ghcr.io registry [#2567](https://github.com/vdaas/vald/pull/2567) ([#2568](https://github.com/vdaas/vald/pull/2568))
+
+### [Backport]
+
+1. Backport PR #2542, #2538 to release/v1.7 [#2543](https://github.com/vdaas/vald/pull/2543)
+2. Backport docs updates to release/v1.7 [#2521](https://github.com/vdaas/vald/pull/2521)
+3. Backport Flush API [#2434](https://github.com/vdaas/vald/pull/2434)
+
+### [Documentation]
+
+1. capitalize faq [#2512](https://github.com/vdaas/vald/pull/2512) ([#2522](https://github.com/vdaas/vald/pull/2522))
+2. add faiss in values.yaml & valdrelease.yaml [#2514](https://github.com/vdaas/vald/pull/2514) ([#2519](https://github.com/vdaas/vald/pull/2519))
+3. add read replica and rotator docs [#2497](https://github.com/vdaas/vald/pull/2497) ([#2499](https://github.com/vdaas/vald/pull/2499))
+4. Update continuous benchmark docs [#2485](https://github.com/vdaas/vald/pull/2485) ([#2486](https://github.com/vdaas/vald/pull/2486))
+5. docs: add hrichiksite as a contributor for doc [#2441](https://github.com/vdaas/vald/pull/2441) ([#2442](https://github.com/vdaas/vald/pull/2442))
+
+### [Other]
+
+1. Add base of benchmark operator dashboard [#2430](https://github.com/vdaas/vald/pull/2430) ([#2453](https://github.com/vdaas/vald/pull/2453))
+2. Add client metrics panels for continuous benchmark job [#2481](https://github.com/vdaas/vald/pull/2481) ([#2483](https://github.com/vdaas/vald/pull/2483))
+3. Add unit tests for index operator [#2460](https://github.com/vdaas/vald/pull/2460) ([#2461](https://github.com/vdaas/vald/pull/2461))
+4. add reviewer guideline [#2507](https://github.com/vdaas/vald/pull/2507) ([#2508](https://github.com/vdaas/vald/pull/2508))
+5. Sync release/v1.7 to main [#2495](https://github.com/vdaas/vald/pull/2495)
+6. Add snapshot timestamp annotations to read replica agent [#2428](https://github.com/vdaas/vald/pull/2428) ([#2443](https://github.com/vdaas/vald/pull/2443))
+7. Update build rule for nightly image [#2421](https://github.com/vdaas/vald/pull/2421) ([#2422](https://github.com/vdaas/vald/pull/2422))
+
 ## v1.7.12
 
 ### Docker images
