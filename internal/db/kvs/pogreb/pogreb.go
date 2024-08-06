@@ -24,8 +24,8 @@ import (
 	"github.com/vdaas/vald/internal/log"
 )
 
-// Pogreb represents an interface for operating the pogreb database.
-type Pogreb interface {
+// DB represents an interface for operating the pogreb database.
+type DB interface {
 	Set(key string, val []byte) error
 	Get(key string) ([]byte, bool, error)
 	Delete(key string) error
@@ -43,7 +43,7 @@ type db struct {
 // New returns a new pogreb instance.
 // If the directory path does not exist, it creates a directory for database.
 // If opts is nil, it uses default options.
-func New(opts ...Option) (_ Pogreb, err error) {
+func New(opts ...Option) (_ DB, err error) {
 	db := new(db)
 	for _, opt := range append(deafultOpts, opts...) {
 		if err := opt(db); err != nil {
