@@ -35,6 +35,7 @@ jobs:
     needs: [detect-ci-container]
     container:
       image: ghcr.io/vdaas/vald/vald-ci-container:${{ needs.detect-ci-container.outputs.TAG }}
+      options: "--add-host host.docker.internal:host-gateway"
     steps:
       - uses: actions/checkout@v4
         with:
