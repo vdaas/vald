@@ -19,10 +19,10 @@ metadata:
   name: vald-agent-ngt-readreplica-config
   labels:
     app.kubernetes.io/name: vald-readreplica
-    helm.sh/chart: vald-readreplica-v1.7.12
+    helm.sh/chart: vald-readreplica-v1.7.13
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: release-name
-    app.kubernetes.io/version: v1.7.12
+    app.kubernetes.io/version: v1.7.13
     app.kubernetes.io/component: agent
 data:
   config.yaml: |
@@ -87,9 +87,10 @@ data:
             read_timeout: ""
             shutdown_duration: 5s
             write_timeout: ""
-          mode: ""
+          mode: REST
           network: tcp
           probe_wait_time: 3s
+          restart: true
           socket_option:
             ip_recover_destination_addr: false
             ip_transparent: false
@@ -111,9 +112,10 @@ data:
             read_timeout: ""
             shutdown_duration: 0s
             write_timeout: ""
-          mode: ""
+          mode: REST
           network: tcp
           probe_wait_time: 3s
+          restart: true
           socket_option:
             ip_recover_destination_addr: false
             ip_transparent: false
@@ -190,6 +192,7 @@ data:
       enable_export_index_info_to_k8s: false
       enable_in_memory_mode: true
       enable_proactive_gc: false
+      enable_statistics: false
       error_buffer_limit: 10
       export_index_info_duration: 1m
       index_path: ""

@@ -20,11 +20,11 @@ metadata:
   labels:
     app: vald-index-save
     app.kubernetes.io/name: vald
-    helm.sh/chart: vald-v1.7.12
+    helm.sh/chart: vald-v1.7.13
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/instance: release-name
     app.kubernetes.io/component: vald-index-save
-    app.kubernetes.io/version: v1.7.12
+    app.kubernetes.io/version: v1.7.13
 spec:
   schedule: "0 */3 * * *"
   concurrencyPolicy: Forbid
@@ -38,11 +38,11 @@ spec:
           labels:
             app: vald-index-save
             app.kubernetes.io/name: vald
-            helm.sh/chart: vald-v1.7.12
+            helm.sh/chart: vald-v1.7.13
             app.kubernetes.io/managed-by: Helm
             app.kubernetes.io/instance: release-name
             app.kubernetes.io/component: vald-index-save
-            app.kubernetes.io/version: v1.7.12
+            app.kubernetes.io/version: v1.7.13
           annotations:
             pyroscope.io/scrape: "true"
             pyroscope.io/application-name: vald-index-save
