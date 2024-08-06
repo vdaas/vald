@@ -11,11 +11,11 @@ replace (
 	cloud.google.com/go/iam => cloud.google.com/go/iam v1.1.12
 	cloud.google.com/go/kms => cloud.google.com/go/kms v1.18.4
 	cloud.google.com/go/monitoring => cloud.google.com/go/monitoring v1.20.3
-	cloud.google.com/go/pubsub => cloud.google.com/go/pubsub v1.40.0
+	cloud.google.com/go/pubsub => cloud.google.com/go/pubsub v1.41.0
 	cloud.google.com/go/secretmanager => cloud.google.com/go/secretmanager v1.13.5
 	cloud.google.com/go/storage => cloud.google.com/go/storage v1.43.0
 	cloud.google.com/go/trace => cloud.google.com/go/trace v1.10.11
-	code.cloudfoundry.org/bytefmt => code.cloudfoundry.org/bytefmt v0.0.0-20240730181512-d61d30bca0a4
+	code.cloudfoundry.org/bytefmt => code.cloudfoundry.org/bytefmt v0.0.0-20240804182054-0a63f33a903d
 	contrib.go.opencensus.io/exporter/aws => contrib.go.opencensus.io/exporter/aws v0.0.0-20230502192102-15967c811cec
 	contrib.go.opencensus.io/exporter/prometheus => contrib.go.opencensus.io/exporter/prometheus v0.4.2
 	contrib.go.opencensus.io/integrations/ocsql => contrib.go.opencensus.io/integrations/ocsql v0.1.7
@@ -50,7 +50,7 @@ replace (
 	github.com/aws/aws-sdk-go-v2/config => github.com/aws/aws-sdk-go-v2/config v1.27.27
 	github.com/aws/aws-sdk-go-v2/credentials => github.com/aws/aws-sdk-go-v2/credentials v1.17.27
 	github.com/aws/aws-sdk-go-v2/feature/ec2/imds => github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.16.11
-	github.com/aws/aws-sdk-go-v2/feature/s3/manager => github.com/aws/aws-sdk-go-v2/feature/s3/manager v1.17.9
+	github.com/aws/aws-sdk-go-v2/feature/s3/manager => github.com/aws/aws-sdk-go-v2/feature/s3/manager v1.17.10
 	github.com/aws/aws-sdk-go-v2/internal/configsources => github.com/aws/aws-sdk-go-v2/internal/configsources v1.3.15
 	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 => github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.6.15
 	github.com/aws/aws-sdk-go-v2/internal/ini => github.com/aws/aws-sdk-go-v2/internal/ini v1.8.0
@@ -59,7 +59,7 @@ replace (
 	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url => github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.11.17
 	github.com/aws/aws-sdk-go-v2/service/internal/s3shared => github.com/aws/aws-sdk-go-v2/service/internal/s3shared v1.17.15
 	github.com/aws/aws-sdk-go-v2/service/kms => github.com/aws/aws-sdk-go-v2/service/kms v1.35.3
-	github.com/aws/aws-sdk-go-v2/service/s3 => github.com/aws/aws-sdk-go-v2/service/s3 v1.58.2
+	github.com/aws/aws-sdk-go-v2/service/s3 => github.com/aws/aws-sdk-go-v2/service/s3 v1.58.3
 	github.com/aws/aws-sdk-go-v2/service/secretsmanager => github.com/aws/aws-sdk-go-v2/service/secretsmanager v1.32.4
 	github.com/aws/aws-sdk-go-v2/service/sns => github.com/aws/aws-sdk-go-v2/service/sns v1.31.3
 	github.com/aws/aws-sdk-go-v2/service/sqs => github.com/aws/aws-sdk-go-v2/service/sqs v1.34.3
@@ -93,7 +93,7 @@ replace (
 	github.com/dustin/go-humanize => github.com/dustin/go-humanize v1.0.1
 	github.com/emicklei/go-restful/v3 => github.com/emicklei/go-restful/v3 v3.12.1
 	github.com/envoyproxy/go-control-plane => github.com/envoyproxy/go-control-plane v0.12.0
-	github.com/envoyproxy/protoc-gen-validate => github.com/envoyproxy/protoc-gen-validate v1.0.4
+	github.com/envoyproxy/protoc-gen-validate => github.com/envoyproxy/protoc-gen-validate v1.1.0
 	github.com/evanphx/json-patch => github.com/evanphx/json-patch v0.5.2
 	github.com/fogleman/gg => github.com/fogleman/gg v1.3.0
 	github.com/fortytw2/leaktest => github.com/fortytw2/leaktest v1.3.0
@@ -170,7 +170,7 @@ replace (
 	github.com/hashicorp/go-uuid => github.com/hashicorp/go-uuid v1.0.3
 	github.com/hashicorp/go-version => github.com/hashicorp/go-version v1.7.0
 	github.com/iancoleman/strcase => github.com/iancoleman/strcase v0.3.0
-	github.com/ianlancetaylor/demangle => github.com/ianlancetaylor/demangle v0.0.0-20240312041847-bd984b5ce465
+	github.com/ianlancetaylor/demangle => github.com/ianlancetaylor/demangle v0.0.0-20240805132620-81f5be970eca
 	github.com/inconshreveable/mousetrap => github.com/inconshreveable/mousetrap v1.1.0
 	github.com/jackc/chunkreader/v2 => github.com/jackc/chunkreader/v2 v2.0.1
 	github.com/jackc/pgconn => github.com/jackc/pgconn v1.14.3
@@ -192,7 +192,7 @@ replace (
 	github.com/jstemmer/go-junit-report => github.com/jstemmer/go-junit-report v1.0.0
 	github.com/kisielk/errcheck => github.com/kisielk/errcheck v1.7.0
 	github.com/kisielk/gotool => github.com/kisielk/gotool v1.0.0
-	github.com/klauspost/compress => github.com/klauspost/compress v1.17.10-0.20240726110848-d76f801616d1
+	github.com/klauspost/compress => github.com/klauspost/compress v1.17.10-0.20240805110405-8b81499bfd70
 	github.com/klauspost/cpuid/v2 => github.com/klauspost/cpuid/v2 v2.2.8
 	github.com/kpango/fastime => github.com/kpango/fastime v1.1.9
 	github.com/kpango/fuid => github.com/kpango/fuid v0.0.0-20221203053508-503b5ad89aa1
@@ -300,25 +300,25 @@ replace (
 	golang.org/x/image => golang.org/x/image v0.18.0
 	golang.org/x/lint => golang.org/x/lint v0.0.0-20210508222113-6edffad5e616
 	golang.org/x/mobile => golang.org/x/mobile v0.0.0-20240716161057-1ad2df20a8b6
-	golang.org/x/mod => golang.org/x/mod v0.19.0
+	golang.org/x/mod => golang.org/x/mod v0.20.0
 	golang.org/x/net => golang.org/x/net v0.27.0
-	golang.org/x/oauth2 => golang.org/x/oauth2 v0.21.0
-	golang.org/x/sync => golang.org/x/sync v0.7.0
-	golang.org/x/sys => golang.org/x/sys v0.22.0
+	golang.org/x/oauth2 => golang.org/x/oauth2 v0.22.0
+	golang.org/x/sync => golang.org/x/sync v0.8.0
+	golang.org/x/sys => golang.org/x/sys v0.23.0
 	golang.org/x/term => golang.org/x/term v0.22.0
 	golang.org/x/text => golang.org/x/text v0.16.0
-	golang.org/x/time => golang.org/x/time v0.5.0
+	golang.org/x/time => golang.org/x/time v0.6.0
 	golang.org/x/tools => golang.org/x/tools v0.23.0
 	golang.org/x/xerrors => golang.org/x/xerrors v0.0.0-20240716161551-93cc26a95ae9
 	gomodules.xyz/jsonpatch/v2 => gomodules.xyz/jsonpatch/v2 v2.4.0
 	gonum.org/v1/gonum => gonum.org/v1/gonum v0.15.0
 	gonum.org/v1/hdf5 => gonum.org/v1/hdf5 v0.0.0-20210714002203-8c5d23bc6946
 	gonum.org/v1/plot => gonum.org/v1/plot v0.14.0
-	google.golang.org/api => google.golang.org/api v0.189.0
+	google.golang.org/api => google.golang.org/api v0.190.0
 	google.golang.org/appengine => google.golang.org/appengine v1.6.8
-	google.golang.org/genproto => google.golang.org/genproto v0.0.0-20240730163845-b1a4ccb954bf
-	google.golang.org/genproto/googleapis/api => google.golang.org/genproto/googleapis/api v0.0.0-20240730163845-b1a4ccb954bf
-	google.golang.org/genproto/googleapis/rpc => google.golang.org/genproto/googleapis/rpc v0.0.0-20240730163845-b1a4ccb954bf
+	google.golang.org/genproto => google.golang.org/genproto v0.0.0-20240805194559-2c9e96a0b5d4
+	google.golang.org/genproto/googleapis/api => google.golang.org/genproto/googleapis/api v0.0.0-20240805194559-2c9e96a0b5d4
+	google.golang.org/genproto/googleapis/rpc => google.golang.org/genproto/googleapis/rpc v0.0.0-20240805194559-2c9e96a0b5d4
 	google.golang.org/grpc => google.golang.org/grpc v1.65.0
 	google.golang.org/grpc/cmd/protoc-gen-go-grpc => google.golang.org/grpc/cmd/protoc-gen-go-grpc v1.5.1
 	google.golang.org/protobuf => google.golang.org/protobuf v1.34.2
@@ -399,14 +399,14 @@ require (
 	golang.org/x/net v0.27.0
 	golang.org/x/oauth2 v0.21.0
 	golang.org/x/sync v0.7.0
-	golang.org/x/sys v0.22.0
+	golang.org/x/sys v0.23.0
 	golang.org/x/text v0.16.0
 	golang.org/x/time v0.5.0
 	golang.org/x/tools v0.23.0
 	gonum.org/v1/hdf5 v0.0.0-00010101000000-000000000000
 	gonum.org/v1/plot v0.14.0
-	google.golang.org/genproto/googleapis/api v0.0.0-20240725223205-93522f1f2a9f
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20240725223205-93522f1f2a9f
+	google.golang.org/genproto/googleapis/api v0.0.0-20240730163845-b1a4ccb954bf
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20240730163845-b1a4ccb954bf
 	google.golang.org/grpc v1.65.0
 	google.golang.org/protobuf v1.34.2
 	gopkg.in/yaml.v2 v2.4.0
@@ -422,7 +422,7 @@ require (
 
 require (
 	cloud.google.com/go v0.115.0 // indirect
-	cloud.google.com/go/auth v0.7.2 // indirect
+	cloud.google.com/go/auth v0.7.3 // indirect
 	cloud.google.com/go/auth/oauth2adapt v0.2.3 // indirect
 	cloud.google.com/go/compute/metadata v0.5.0 // indirect
 	cloud.google.com/go/iam v1.1.12 // indirect
@@ -462,7 +462,7 @@ require (
 	github.com/google/gnostic-models v0.6.8 // indirect
 	github.com/google/gofuzz v1.2.0 // indirect
 	github.com/google/pprof v0.0.0-20240727154555-813a5fbdbec8 // indirect
-	github.com/google/s2a-go v0.1.7 // indirect
+	github.com/google/s2a-go v0.1.8 // indirect
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510 // indirect
 	github.com/google/wire v0.6.0 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.3.2 // indirect
@@ -514,7 +514,7 @@ require (
 	golang.org/x/xerrors v0.0.0-20231012003039-104605ab7028 // indirect
 	gomodules.xyz/jsonpatch/v2 v2.4.0 // indirect
 	google.golang.org/api v0.189.0 // indirect
-	google.golang.org/genproto v0.0.0-20240725223205-93522f1f2a9f // indirect
+	google.golang.org/genproto v0.0.0-20240730163845-b1a4ccb954bf // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	k8s.io/apiextensions-apiserver v0.30.1 // indirect

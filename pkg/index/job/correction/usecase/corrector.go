@@ -16,10 +16,12 @@ package usecase
 import (
 	"context"
 	"os"
+	"slices"
 	"syscall"
 	"time"
 
 	"github.com/vdaas/vald/internal/client/v1/client/discoverer"
+	"github.com/vdaas/vald/internal/client/v1/client/vald"
 	iconf "github.com/vdaas/vald/internal/config"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/log"
@@ -47,6 +49,18 @@ type run struct {
 func New(cfg *config.Data) (r runner.Runner, err error) {
 	eg := errgroup.Get()
 
+	gOpts, err := cfg.Corrector.Gateway.Opts()
+	if err != nil {
+		return nil, err
+	}
+	// skipcq: CRT-D0001
+	gOpts = append(gOpts, grpc.WithErrGroup(eg))
+
+	gateway, err := vald.New(vald.WithClient(grpc.New(gOpts...)))
+	if err != nil {
+		return nil, err
+	}
+
 	dOpts, err := cfg.Corrector.Discoverer.Client.Opts()
 	if err != nil {
 		return nil, err
@@ -72,11 +86,8 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 		discoverer.WithDiscoverDuration(cfg.Corrector.Discoverer.Duration),
 		discoverer.WithOptions(acOpts...),
 		discoverer.WithNodeName(cfg.Corrector.NodeName),
-		discoverer.WithOnDiscoverFunc(func(ctx context.Context, c discoverer.Client, addrs []string) error {
-			last := len(addrs) - 1
-			for i := 0; i < len(addrs)/2; i++ {
-				addrs[i], addrs[last-i] = addrs[last-i], addrs[i]
-			}
+		discoverer.WithOnDiscoverFunc(func(_ context.Context, _ discoverer.Client, addrs []string) error {
+			slices.Reverse(addrs)
 			return nil
 		}),
 	)
@@ -93,7 +104,7 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 
 	// For health check and metrics
 	srv, err := starter.New(starter.WithConfig(cfg.Server),
-		starter.WithGRPC(func(sc *iconf.Server) []server.Option {
+		starter.WithGRPC(func(_ *iconf.Server) []server.Option {
 			return grpcServerOptions
 		}),
 	)
@@ -103,9 +114,11 @@ func New(cfg *config.Data) (r runner.Runner, err error) {
 
 	corrector, err := service.New(
 		service.WithDiscoverer(discoverer),
+		service.WithGateway(gateway),
 		service.WithIndexReplica(cfg.Corrector.IndexReplica),
-		service.WithKvsAsyncWriteConcurrency(cfg.Corrector.KvsAsyncWriteConcurrency),
 		service.WithStreamListConcurrency(cfg.Corrector.StreamListConcurrency),
+		service.WithKVSSyncInterval(cfg.Corrector.KVSBackgroundSyncInterval),
+		service.WithKVSCompactionInterval(cfg.Corrector.KVSBackgroundCompactionInterval),
 	)
 	if err != nil {
 		return nil, err

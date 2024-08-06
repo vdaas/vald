@@ -344,15 +344,15 @@ gotests/gen-test:
 ## apply patches to generated go test files
 gotests/patch:
 	@$(call green, "apply patches to go test files...")
-	find $(ROOTDIR)/internal/k8s/* -name '*_test.go' | xargs -P$(CORES) sed -i -E "s%k8s.io/apimachinery/pkg/api/errors%github.com/vdaas/vald/internal/errors%g"
-	find $(ROOTDIR)/* -name '*_test.go' | xargs -P$(CORES) sed -i -E "s%cockroachdb/errors%vdaas/vald/internal/errors%g"
-	find $(ROOTDIR)/* -name '*_test.go' | xargs -P$(CORES) sed -i -E "s%golang.org/x/sync/errgroup%github.com/vdaas/vald/internal/sync/errgroup%g"
-	find $(ROOTDIR)/* -name '*_test.go' | xargs -P$(CORES) sed -i -E "s%pkg/errors%vdaas/vald/internal/errors%g"
-	find $(ROOTDIR)/* -name '*_test.go' | xargs -P$(CORES) sed -i -E "s%go-errors/errors%vdaas/vald/internal/errors%g"
-	find $(ROOTDIR)/* -name '*_test.go' | xargs -P$(CORES) sed -i -E "s%go.uber.org/goleak%github.com/vdaas/vald/internal/test/goleak%g"
-	find $(ROOTDIR)/internal/errors -name '*_test.go' | xargs -P$(CORES) sed -i -E "s%\"github.com/vdaas/vald/internal/errors\"%%g"
+	find $(ROOTDIR)/internal/k8s/* -name '*_test.go' | xargs -P$(CORES) sed -i -E "s%k8s.io/apimachinery/pkg/api/errors%$(GOPKG)/internal/errors%g"
+	find $(ROOTDIR)/* -name '*_test.go' | xargs -P$(CORES) sed -i -E "s%cockroachdb/errors%$(REPO)/internal/errors%g"
+	find $(ROOTDIR)/* -name '*_test.go' | xargs -P$(CORES) sed -i -E "s%golang.org/x/sync/errgroup%$(GOPKG)/internal/sync/errgroup%g"
+	find $(ROOTDIR)/* -name '*_test.go' | xargs -P$(CORES) sed -i -E "s%pkg/errors%$(REPO)/internal/errors%g"
+	find $(ROOTDIR)/* -name '*_test.go' | xargs -P$(CORES) sed -i -E "s%go-errors/errors%$(REPO)/internal/errors%g"
+	find $(ROOTDIR)/* -name '*_test.go' | xargs -P$(CORES) sed -i -E "s%go.uber.org/goleak%$(GOPKG)/internal/test/goleak%g"
+	find $(ROOTDIR)/internal/errors -name '*_test.go' | xargs -P$(CORES) sed -i -E "s%\"$(GOPKG)/internal/errors\"%%g"
 	find $(ROOTDIR)/internal/errors -name '*_test.go' -not -name '*_benchmark_test.go' | xargs -P$(CORES) sed -i -E "s/errors\.//g"
-	find $(ROOTDIR)/internal/test/goleak -name '*_test.go' | xargs -P$(CORES) sed -i -E "s%\"github.com/vdaas/vald/internal/test/goleak\"%%g"
+	find $(ROOTDIR)/internal/test/goleak -name '*_test.go' | xargs -P$(CORES) sed -i -E "s%\"$(GOPKG)/internal/test/goleak\"%%g"
 	find $(ROOTDIR)/internal/test/goleak -name '*_test.go' | xargs -P$(CORES) sed -i -E "s/goleak\.//g"
 
 .PHONY: test/patch-placeholder

@@ -17,32 +17,35 @@
 SHELL                           = bash
 ORG                             ?= vdaas
 NAME                            = vald
-GOPKG                           = github.com/$(ORG)/$(NAME)
+REPO                            = $(ORG)/$(NAME)
+GOPKG                           = github.com/$(REPO)
 DATETIME                        = $(eval DATETIME := $(shell date -u +%Y/%m/%d_%H:%M:%S%z))$(DATETIME)
 TAG                            ?= latest
 CRORG                          ?= $(ORG)
-GHCRORG                         = ghcr.io/$(ORG)/$(NAME)
+GHCRORG                         = ghcr.io/$(REPO)
+AGENT_IMAGE                     = $(NAME)-agent
 AGENT_NGT_IMAGE                 = $(NAME)-agent-ngt
 AGENT_FAISS_IMAGE               = $(NAME)-agent-faiss
 AGENT_SIDECAR_IMAGE             = $(NAME)-agent-sidecar
-AGENT_IMAGE                     = $(NAME)-agent
+BENCHMARK_JOB_IMAGE             = $(NAME)-benchmark-job
+BENCHMARK_OPERATOR_IMAGE        = $(NAME)-benchmark-operator
+BINFMT_IMAGE                    = $(NAME)-binfmt
 BUILDBASE_IMAGE                 = $(NAME)-buildbase
+BUILDKIT_IMAGE                  = $(NAME)-buildkit
 CI_CONTAINER_IMAGE              = $(NAME)-ci-container
 DEV_CONTAINER_IMAGE             = $(NAME)-dev-container
 DISCOVERER_IMAGE                = $(NAME)-discoverer-k8s
 FILTER_GATEWAY_IMAGE            = $(NAME)-filter-gateway
-MIRROR_GATEWAY_IMAGE            = $(NAME)-mirror-gateway
 HELM_OPERATOR_IMAGE             = $(NAME)-helm-operator
-LB_GATEWAY_IMAGE                = $(NAME)-lb-gateway
-LOADTEST_IMAGE                  = $(NAME)-loadtest
 INDEX_CORRECTION_IMAGE          = $(NAME)-index-correction
 INDEX_CREATION_IMAGE            = $(NAME)-index-creation
-INDEX_SAVE_IMAGE                = $(NAME)-index-save
 INDEX_OPERATOR_IMAGE            = $(NAME)-index-operator
-READREPLICA_ROTATE_IMAGE        = $(NAME)-readreplica-rotate
+INDEX_SAVE_IMAGE                = $(NAME)-index-save
+LB_GATEWAY_IMAGE                = $(NAME)-lb-gateway
+LOADTEST_IMAGE                  = $(NAME)-loadtest
 MANAGER_INDEX_IMAGE             = $(NAME)-manager-index
-BENCHMARK_JOB_IMAGE             = $(NAME)-benchmark-job
-BENCHMARK_OPERATOR_IMAGE        = $(NAME)-benchmark-operator
+MIRROR_GATEWAY_IMAGE            = $(NAME)-mirror-gateway
+READREPLICA_ROTATE_IMAGE        = $(NAME)-readreplica-rotate
 MAINTAINER                      = "$(ORG).org $(NAME) team <$(NAME)@$(ORG).org>"
 
 VERSION ?= $(eval VERSION := $(shell cat versions/VALD_VERSION))$(VERSION)
@@ -145,7 +148,7 @@ PBDOCS = apis/docs/v1/docs.md
 LDFLAGS = -static -fPIC -pthread -std=gnu++23 -lstdc++ -lm -z relro -z now -flto=auto -march=native -mtune=native -fno-plt -Ofast -fvisibility=hidden -ffp-contract=fast -fomit-frame-pointer -fmerge-all-constants -funroll-loops -falign-functions=32 -ffunction-sections -fdata-sections
 
 NGT_LDFLAGS = -fopenmp -lopenblas -llapack
-FAISS_LDFLAGS = $(NGT_LDFLAGS) -lgfortran -lquadmath
+FAISS_LDFLAGS = $(NGT_LDFLAGS) -lgfortran
 HDF5_LDFLAGS = -lhdf5 -lhdf5_hl -lsz -laec -lz -ldl
 CGO_LDFLAGS = $(FAISS_LDFLAGS) $(HDF5_LDFLAGS)
 
@@ -351,6 +354,13 @@ E2E_UPDATE_COUNT                   ?= 10
 E2E_UPSERT_COUNT                   ?= 10
 E2E_WAIT_FOR_CREATE_INDEX_DURATION ?= 8m
 E2E_WAIT_FOR_START_TIMEOUT         ?= 10m
+E2E_SEARCH_FROM                    ?= 0
+E2E_SEARCH_BY_ID_FROM              ?= 0
+E2E_INSERT_FROM                    ?= 0
+E2E_UPDATE_FROM                    ?= 0
+E2E_UPSERT_FROM                    ?= 0
+E2E_GET_OBJECT_FROM                ?= 0
+E2E_REMOVE_FROM                    ?= 0
 
 TEST_RESULT_DIR ?= /tmp
 

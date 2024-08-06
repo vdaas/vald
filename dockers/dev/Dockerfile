@@ -88,7 +88,6 @@ RUN --mount=type=bind,target=.,rw \
     libomp-dev \
     libopenblas-dev \
     gfortran \
-    libquadmath0 \
     gawk \
     gnupg2 \
     graphviz \

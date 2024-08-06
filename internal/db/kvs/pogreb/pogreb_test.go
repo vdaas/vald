@@ -51,7 +51,7 @@ func TestNew(t *testing.T) {
 				args: args{
 					opts: []Option{
 						WithPath(t.TempDir()),
-						WithBackgroundSyncInterval("0s"),
+						WithBackgroundSyncInterval(0),
 					},
 				},
 			}
@@ -59,7 +59,7 @@ func TestNew(t *testing.T) {
 		func() test {
 			opts := []Option{
 				WithPath(t.TempDir()),
-				WithBackgroundSyncInterval("0s"),
+				WithBackgroundSyncInterval(0),
 			}
 			return test{
 				name: " Succeeds to restart the pogres instance",
@@ -122,8 +122,8 @@ func Test_db_Get(t *testing.T) {
 		args       args
 		want       want
 		checkFunc  func(want, []byte, bool, error) error
-		beforeFunc func(*testing.T, Pogreb, args)
-		afterFunc  func(*testing.T, Pogreb, args)
+		beforeFunc func(*testing.T, DB, args)
+		afterFunc  func(*testing.T, DB, args)
 	}
 	defaultCheckFunc := func(w want, got []byte, got1 bool, err error) error {
 		if !errors.Is(err, w.err) {
@@ -148,7 +148,7 @@ func Test_db_Get(t *testing.T) {
 				args: args{
 					opts: []Option{
 						WithPath(t.TempDir()),
-						WithBackgroundSyncInterval("0s"),
+						WithBackgroundSyncInterval(0),
 					},
 					key: key,
 				},
@@ -156,13 +156,13 @@ func Test_db_Get(t *testing.T) {
 					want:  val,
 					want1: true,
 				},
-				beforeFunc: func(t *testing.T, d Pogreb, args args) {
+				beforeFunc: func(t *testing.T, d DB, args args) {
 					t.Helper()
 					if err := d.Set(key, val); err != nil {
 						t.Fatal(err)
 					}
 				},
-				afterFunc: func(t *testing.T, d Pogreb, args args) {
+				afterFunc: func(t *testing.T, d DB, args args) {
 					t.Helper()
 					if err := d.Close(true); err != nil {
 						t.Fatal(err)
@@ -180,20 +180,20 @@ func Test_db_Get(t *testing.T) {
 				args: args{
 					opts: []Option{
 						WithPath(t.TempDir()),
-						WithBackgroundSyncInterval("0s"),
+						WithBackgroundSyncInterval(0),
 					},
 					key: "not-exist",
 				},
 				want: want{
 					want1: false,
 				},
-				beforeFunc: func(t *testing.T, d Pogreb, args args) {
+				beforeFunc: func(t *testing.T, d DB, args args) {
 					t.Helper()
 					if err := d.Set(key, val); err != nil {
 						t.Fatal(err)
 					}
 				},
-				afterFunc: func(t *testing.T, d Pogreb, args args) {
+				afterFunc: func(t *testing.T, d DB, args args) {
 					t.Helper()
 					if err := d.Close(true); err != nil {
 						t.Fatal(err)
@@ -247,11 +247,11 @@ func Test_db_Delete(t *testing.T) {
 		name       string
 		args       args
 		want       want
-		checkFunc  func(want, Pogreb, error) error
-		beforeFunc func(*testing.T, Pogreb, args)
-		afterFunc  func(*testing.T, Pogreb, args)
+		checkFunc  func(want, DB, error) error
+		beforeFunc func(*testing.T, DB, args)
+		afterFunc  func(*testing.T, DB, args)
 	}
-	defaultCheckFunc := func(w want, _ Pogreb, err error) error {
+	defaultCheckFunc := func(w want, _ DB, err error) error {
 		if !errors.Is(err, w.err) {
 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 		}
@@ -268,11 +268,11 @@ func Test_db_Delete(t *testing.T) {
 				args: args{
 					opts: []Option{
 						WithPath(t.TempDir()),
-						WithBackgroundSyncInterval("0s"),
+						WithBackgroundSyncInterval(0),
 					},
 					key: key,
 				},
-				checkFunc: func(w want, d Pogreb, err error) error {
+				checkFunc: func(w want, d DB, err error) error {
 					if err := defaultCheckFunc(w, d, err); err != nil {
 						return err
 					}
@@ -285,13 +285,13 @@ func Test_db_Delete(t *testing.T) {
 					}
 					return nil
 				},
-				beforeFunc: func(t *testing.T, d Pogreb, args args) {
+				beforeFunc: func(t *testing.T, d DB, args args) {
 					t.Helper()
 					if err := d.Set(key, val); err != nil {
 						t.Fatal(err)
 					}
 				},
-				afterFunc: func(t *testing.T, d Pogreb, args args) {
+				afterFunc: func(t *testing.T, d DB, args args) {
 					t.Helper()
 					if err := d.Close(true); err != nil {
 						t.Fatal(err)
@@ -346,8 +346,8 @@ func Test_db_Range(t *testing.T) {
 		args       args
 		want       want
 		checkFunc  func(want, error) error
-		beforeFunc func(*testing.T, Pogreb, args)
-		afterFunc  func(*testing.T, Pogreb, args)
+		beforeFunc func(*testing.T, DB, args)
+		afterFunc  func(*testing.T, DB, args)
 	}
 	defaultCheckFunc := func(w want, err error) error {
 		if !errors.Is(err, w.err) {
@@ -367,7 +367,7 @@ func Test_db_Range(t *testing.T) {
 				args: args{
 					opts: []Option{
 						WithPath(t.TempDir()),
-						WithBackgroundSyncInterval("0s"),
+						WithBackgroundSyncInterval(0),
 					},
 					ctx: context.Background(),
 					f: func(key string, val []byte) bool {
@@ -384,7 +384,7 @@ func Test_db_Range(t *testing.T) {
 					}
 					return nil
 				},
-				beforeFunc: func(t *testing.T, d Pogreb, args args) {
+				beforeFunc: func(t *testing.T, d DB, args args) {
 					t.Helper()
 					for key, val := range data {
 						if err := d.Set(key, val); err != nil {
@@ -392,7 +392,7 @@ func Test_db_Range(t *testing.T) {
 						}
 					}
 				},
-				afterFunc: func(t *testing.T, d Pogreb, args args) {
+				afterFunc: func(t *testing.T, d DB, args args) {
 					t.Helper()
 					if err := d.Close(true); err != nil {
 						t.Fatal(err)
@@ -409,7 +409,7 @@ func Test_db_Range(t *testing.T) {
 				args: args{
 					opts: []Option{
 						WithPath(t.TempDir()),
-						WithBackgroundSyncInterval("0s"),
+						WithBackgroundSyncInterval(0),
 					},
 					ctx: ctx,
 					f: func(key string, val []byte) bool {
@@ -426,7 +426,7 @@ func Test_db_Range(t *testing.T) {
 					}
 					return nil
 				},
-				beforeFunc: func(t *testing.T, d Pogreb, args args) {
+				beforeFunc: func(t *testing.T, d DB, args args) {
 					t.Helper()
 					data := map[string][]byte{
 						"key-1": []byte("val-1"),
@@ -438,7 +438,7 @@ func Test_db_Range(t *testing.T) {
 						}
 					}
 				},
-				afterFunc: func(t *testing.T, d Pogreb, args args) {
+				afterFunc: func(t *testing.T, d DB, args args) {
 					t.Helper()
 					if err := d.Close(true); err != nil {
 						t.Fatal(err)
@@ -490,8 +490,8 @@ func Test_db_Len(t *testing.T) {
 		args       args
 		want       want
 		checkFunc  func(want, uint32) error
-		beforeFunc func(*testing.T, Pogreb, args)
-		afterFunc  func(*testing.T, Pogreb, args)
+		beforeFunc func(*testing.T, DB, args)
+		afterFunc  func(*testing.T, DB, args)
 	}
 	defaultCheckFunc := func(w want, got uint32) error {
 		if !reflect.DeepEqual(got, w.want) {
@@ -510,13 +510,13 @@ func Test_db_Len(t *testing.T) {
 				args: args{
 					opts: []Option{
 						WithPath(t.TempDir()),
-						WithBackgroundSyncInterval("0s"),
+						WithBackgroundSyncInterval(0),
 					},
 				},
 				want: want{
 					want: uint32(len(data)),
 				},
-				beforeFunc: func(t *testing.T, d Pogreb, args args) {
+				beforeFunc: func(t *testing.T, d DB, args args) {
 					t.Helper()
 					for key, val := range data {
 						if err := d.Set(key, val); err != nil {
@@ -524,7 +524,7 @@ func Test_db_Len(t *testing.T) {
 						}
 					}
 				},
-				afterFunc: func(t *testing.T, d Pogreb, args args) {
+				afterFunc: func(t *testing.T, d DB, args args) {
 					t.Helper()
 					if err := d.Close(true); err != nil {
 						t.Fatal(err)
@@ -538,10 +538,10 @@ func Test_db_Len(t *testing.T) {
 				args: args{
 					opts: []Option{
 						WithPath(t.TempDir()),
-						WithBackgroundSyncInterval("0s"),
+						WithBackgroundSyncInterval(0),
 					},
 				},
-				afterFunc: func(t *testing.T, d Pogreb, args args) {
+				afterFunc: func(t *testing.T, d DB, args args) {
 					t.Helper()
 					if err := d.Close(true); err != nil {
 						t.Fatal(err)

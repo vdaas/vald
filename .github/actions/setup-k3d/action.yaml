@@ -81,11 +81,18 @@ runs:
       shell: bash
       id: start_k3d
       run: |
-        if [ "${K3D_INGRESS_PORT}" == "0" ] && [ -z "${K3D_OPTIONS}" ]; then
-          K3D_OPTIONS="--k3s-arg \"--disable=traefik@server:*\""
-        fi
-        if [ "${K3D_INGRESS_PORT}" != "0" ] && [ -n "${K3D_OPTIONS}" ]; then
-          K3D_OPTIONS="--port ${K3D_INGRESS_PORT}:80@loadbalancer ${K3D_OPTIONS}"
+        if [ "${K3D_INGRESS_PORT}" == "0" ]; then
+          if [ -z "${K3D_OPTIONS}" ]; then
+            K3D_OPTIONS="--k3s-arg \"--disable=traefik@server:*\""
+          else
+            K3D_OPTIONS="${K3D_OPTIONS} --k3s-arg \"--disable=traefik@server:*\""
+          fi
+        else
+          if [ -z "${K3D_OPTIONS}" ]; then
+            K3D_OPTIONS="--port ${K3D_INGRESS_PORT}:80@loadbalancer"
+          else
+            K3D_OPTIONS="${K3D_OPTIONS} --port ${K3D_INGRESS_PORT}:80@loadbalancer"
+          fi
         fi
         make K3D_CLUSTER_NAME="${{ inputs.name }}" \
             K3D_NODES="${{ inputs.agents }}" \

@@ -13,8 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-name: "Build docker image: agent"
+name: "Build docker image: binfmt"
 on:
+  schedule:
+    - cron: "0 * * * *"
   push:
     branches:
       - "main"
@@ -29,37 +31,18 @@ on:
     paths:
       - ".github/actions/docker-build/action.yaml"
       - ".github/workflows/_docker-image.yaml"
-      - ".github/workflows/dockers-agent-image.yml"
-      - "Makefile"
-      - "dockers/agent/core/agent/Dockerfile"
-      - "rust/Cargo.lock"
-      - "rust/Cargo.toml"
-      - "rust/bin/agent/**"
-      - "rust/libs/ngt-rs/**"
-      - "rust/libs/ngt/**"
-      - "rust/libs/proto/**"
-      - "versions/FAISS_VERSION"
-      - "versions/NGT_VERSION"
-      - "versions/RUST_VERSION"
+      - ".github/workflows/dockers-binfmt-image.yml"
+      - "dockers/binfmt/Dockerfile"
   pull_request_target:
     paths:
       - ".github/actions/docker-build/action.yaml"
       - ".github/workflows/_docker-image.yaml"
-      - ".github/workflows/dockers-agent-image.yml"
-      - "Makefile"
-      - "dockers/agent/core/agent/Dockerfile"
-      - "rust/Cargo.lock"
-      - "rust/Cargo.toml"
-      - "rust/bin/agent/**"
-      - "rust/libs/ngt-rs/**"
-      - "rust/libs/ngt/**"
-      - "rust/libs/proto/**"
-      - "versions/FAISS_VERSION"
-      - "versions/NGT_VERSION"
-      - "versions/RUST_VERSION"
+      - ".github/workflows/dockers-binfmt-image.yml"
+      - "dockers/binfmt/Dockerfile"
 jobs:
   build:
     uses: ./.github/workflows/_docker-image.yaml
     with:
-      target: agent
+      target: binfmt
+      platforms: linux/amd64,linux/arm64
     secrets: inherit
