@@ -69,7 +69,7 @@ jobs:
       - name: Setup QEMU
         uses: docker/setup-qemu-action@v3
         with:
-          image: tonistiigi/binfmt:master
+          image: ghcr.io/vdaas/vald/vald-binfmt:nightly
           platforms: linux/amd64,linux/arm64
       - name: Setup Docker Buildx
         id: buildx
@@ -78,7 +78,7 @@ jobs:
           version: latest
           platforms: linux/amd64,linux/arm64
           driver-opts: |
-            image=moby/buildkit:master
+            image=ghcr.io/vdaas/vald/vald-buildkit:nightly
             network=host
           buildkitd-flags: "--debug --oci-worker-gc=false"
       - name: Login to DockerHub
