@@ -5650,7 +5650,7 @@ package grpc
 // 		stats map[string]*payload.Info_Index_Statistics
 // 	}
 // 	type want struct {
-// 		want *payload.Info_Index_Statistics
+// 		wantMerged *payload.Info_Index_Statistics
 // 	}
 // 	type test struct {
 // 		name       string
@@ -5660,9 +5660,9 @@ package grpc
 // 		beforeFunc func(*testing.T, args)
 // 		afterFunc  func(*testing.T, args)
 // 	}
-// 	defaultCheckFunc := func(w want, got *payload.Info_Index_Statistics) error {
-// 		if !reflect.DeepEqual(got, w.want) {
-// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 	defaultCheckFunc := func(w want, gotMerged *payload.Info_Index_Statistics) error {
+// 		if !reflect.DeepEqual(gotMerged, w.wantMerged) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotMerged, w.wantMerged)
 // 		}
 // 		return nil
 // 	}
@@ -5722,8 +5722,8 @@ package grpc
 // 				checkFunc = defaultCheckFunc
 // 			}
 //
-// 			got := mergeInfoIndexStatistics(test.args.stats)
-// 			if err := checkFunc(test.want, got); err != nil {
+// 			gotMerged := mergeInfoIndexStatistics(test.args.stats)
+// 			if err := checkFunc(test.want, gotMerged); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
 // 		})

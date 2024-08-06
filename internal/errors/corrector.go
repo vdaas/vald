@@ -26,6 +26,9 @@ var ErrAgentReplicaOne = New("nothing to correct when agent replica is 1")
 // ErrNoAvailableAgentToInsert represents an error that no available agent to insert replica.
 var ErrNoAvailableAgentToInsert = New("no available agent to insert replica")
 
+// ErrNoAvailableAgentToRemove represents an error that no available agent to remove replica.
+var ErrNoAvailableAgentToRemove = New("no available agent to remove replica")
+
 // ErrFailedToCorrectReplicaNum represents an error that failed to correct replica number after correction process.
 var ErrFailedToCorrectReplicaNum = New("failed to correct replica number after correction process")
 

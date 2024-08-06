@@ -3248,15 +3248,21 @@ manager:
       # @schema {"name": "manager.index.corrector.stream_list_concurrency", "type": "integer", "minimum": 1}
       # manager.index.corrector.stream_list_concurrency -- concurrency for stream list object rpc
       stream_list_concurrency: 200
-      # @schema {"name": "manager.index.corrector.kvs_async_write_concurrency", "type": "integer", "minimum": 1}
-      # manager.index.corrector.kvs_async_write_concurrency -- concurrency for kvs async write
-      kvs_async_write_concurrency: 2048
+      # @schema {"name": "manager.index.corrector.kvs_background_sync_interval", "type": "string"}
+      # manager.index.corrector.kvs_background_sync_interval -- interval of checked id list kvs sync
+      kvs_background_sync_interval: 5s
+      # @schema {"name": "manager.index.corrector.kvs_background_compaction_interval", "type": "string"}
+      # manager.index.corrector.kvs_background_compaction_interval -- interval of checked id list kvs compaction
+      kvs_background_compaction_interval: 5s
       # @schema {"name": "manager.index.corrector.agent_namespace", "type": "string"}
       # manager.index.corrector.agent_namespace -- namespace of agent pods to manage
       agent_namespace: _MY_POD_NAMESPACE_
       # @schema {"name": "manager.index.corrector.node_name", "type": "string"}
       # manager.index.corrector.node_name -- node name
       node_name: "" # _MY_NODE_NAME_
+      # @schema {"name": "manager.index.corrector.gateway", "alias": "grpc.client"}
+      # manager.index.corrector.gateway -- gRPC client for gateway (overrides defaults.grpc.client)
+      gateway: {}
       # @schema {"name": "manager.index.corrector.discoverer", "type": "object"}
       discoverer:
         # @schema {"name": "manager.index.corrector.discoverer.duration", "type": "string"}

@@ -16,16 +16,29 @@
 .PHONY: docker/build
 ## build all docker images
 docker/build: \
-	docker/build/agent-ngt \
+	docker/build/agent \
 	docker/build/agent-faiss \
+	docker/build/agent-ngt \
 	docker/build/agent-sidecar \
-	docker/build/discoverer-k8s \
-	docker/build/gateway-lb \
-	docker/build/gateway-filter \
-	docker/build/manager-index \
 	docker/build/benchmark-job \
 	docker/build/benchmark-operator \
-	docker/build/operator/helm
+	docker/build/binfmt \
+	docker/build/buildbase \
+	docker/build/buildkit \
+	docker/build/ci-container \
+	docker/build/dev-container \
+	docker/build/discoverer-k8s \
+	docker/build/gateway-filter \
+	docker/build/gateway-lb \
+	docker/build/gateway-mirror \
+	docker/build/index-correction \
+	docker/build/index-creation \
+	docker/build/index-operator \
+	docker/build/index-save \
+	docker/build/loadtest \
+	docker/build/manager-index \
+	docker/build/operator/helm \
+	docker/build/readreplica-rotate
 
 .PHONY: docker/name/org
 docker/name/org:
@@ -182,6 +195,28 @@ docker/name/buildbase:
 docker/build/buildbase:
 	@make DOCKERFILE="$(ROOTDIR)/dockers/buildbase/Dockerfile" \
 		IMAGE=$(BUILDBASE_IMAGE) \
+		docker/build/image
+
+.PHONY: docker/name/buildkit
+docker/name/buildkit:
+	@echo "$(ORG)/$(BUILDKIT_IMAGE)"
+
+.PHONY: docker/build/buildkit
+## build buildkit image
+docker/build/buildkit:
+	@make DOCKERFILE="$(ROOTDIR)/dockers/buildkit/Dockerfile" \
+		IMAGE=$(BUILDKIT_IMAGE) \
+		docker/build/image
+
+.PHONY: docker/name/binfmt
+docker/name/binfmt:
+	@echo "$(ORG)/$(BINFMT_IMAGE)"
+
+.PHONY: docker/build/binfmt
+## build binfmt image
+docker/build/binfmt:
+	@make DOCKERFILE="$(ROOTDIR)/dockers/binfmt/Dockerfile" \
+		IMAGE=$(BINFMT_IMAGE) \
 		docker/build/image
 
 .PHONY: docker/name/ci-container

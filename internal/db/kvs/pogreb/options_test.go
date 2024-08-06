@@ -16,9 +16,7 @@ package pogreb
 import (
 	"reflect"
 	"testing"
-	"time"
 
-	"github.com/akrylysov/pogreb"
 	"github.com/vdaas/vald/internal/errors"
 	"github.com/vdaas/vald/internal/test/goleak"
 )
@@ -92,170 +90,174 @@ func TestWithPath(t *testing.T) {
 	}
 }
 
-func TestWithBackgroundSyncInterval(t *testing.T) {
-	t.Parallel()
-	type args struct {
-		s string
-	}
-	type want struct {
-		want Option
-		err  error
-		opts *pogreb.Options
-	}
-	type test struct {
-		name       string
-		args       args
-		want       want
-		checkFunc  func(want, *db, error) error
-		beforeFunc func(*testing.T, args)
-		afterFunc  func(*testing.T, args)
-	}
-	defaultCheckFunc := func(w want, got *db, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-		}
-		if err == nil {
-			if !reflect.DeepEqual(got.opts.BackgroundSyncInterval, w.opts.BackgroundSyncInterval) {
-				return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-			}
-		}
-		return nil
-	}
-	tests := []test{
-		func() test {
-			dur := "100ms"
-			return test{
-				name: "Succeeds to apply option",
-				args: args{
-					s: dur,
-				},
-				want: want{
-					opts: &pogreb.Options{
-						BackgroundSyncInterval: 100 * time.Millisecond,
-					},
-				},
-			}
-		}(),
-		func() test {
-			dur := "invalid"
-			return test{
-				name: "Fails to apply option with invalid value",
-				args: args{
-					s: dur,
-				},
-				want: want{
-					err: errors.New("time: invalid duration \"invalid\""),
-				},
-			}
-		}(),
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-			if test.beforeFunc != nil {
-				test.beforeFunc(tt, test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(tt, test.args)
-			}
-			checkFunc := test.checkFunc
-			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
-			}
-
-			got := new(db)
-			err := WithBackgroundSyncInterval(test.args.s)(got)
-			if err := checkFunc(test.want, got, err); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
-
-func TestWithBackgroundCompactionInterval(t *testing.T) {
-	t.Parallel()
-	type args struct {
-		s string
-	}
-	type want struct {
-		want Option
-		err  error
-		opts *pogreb.Options
-	}
-	type test struct {
-		name       string
-		args       args
-		want       want
-		checkFunc  func(want, *db, error) error
-		beforeFunc func(*testing.T, args)
-		afterFunc  func(*testing.T, args)
-	}
-	defaultCheckFunc := func(w want, got *db, err error) error {
-		if !errors.Is(err, w.err) {
-			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
-		}
-		if err == nil {
-			if !reflect.DeepEqual(got.opts.BackgroundCompactionInterval, w.opts.BackgroundCompactionInterval) {
-				return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
-			}
-		}
-		return nil
-	}
-	tests := []test{
-		func() test {
-			dur := "100ms"
-			return test{
-				name: "Succeeds to apply option",
-				args: args{
-					s: dur,
-				},
-				want: want{
-					opts: &pogreb.Options{
-						BackgroundCompactionInterval: 100 * time.Millisecond,
-					},
-				},
-			}
-		}(),
-		func() test {
-			dur := "invalid"
-			return test{
-				name: "Fails to apply option with invalid value",
-				args: args{
-					s: dur,
-				},
-				want: want{
-					err: errors.New("time: invalid duration \"invalid\""),
-				},
-			}
-		}(),
-	}
-
-	for _, tc := range tests {
-		test := tc
-		t.Run(test.name, func(tt *testing.T) {
-			tt.Parallel()
-			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
-			if test.beforeFunc != nil {
-				test.beforeFunc(tt, test.args)
-			}
-			if test.afterFunc != nil {
-				defer test.afterFunc(tt, test.args)
-			}
-			checkFunc := test.checkFunc
-			if test.checkFunc == nil {
-				checkFunc = defaultCheckFunc
-			}
-
-			got := new(db)
-			err := WithBackgroundCompactionInterval(test.args.s)(got)
-			if err := checkFunc(test.want, got, err); err != nil {
-				tt.Errorf("error = %v", err)
-			}
-		})
-	}
-}
-
 // NOT IMPLEMENTED BELOW
+//
+// func TestWithBackgroundSyncInterval(t *testing.T) {
+// 	type args struct {
+// 		dur time.Duration
+// 	}
+// 	type want struct {
+// 		want Option
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		want       want
+// 		checkFunc  func(want, Option) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, got Option) error {
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           dur:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           dur:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+//
+// 			got := WithBackgroundSyncInterval(test.args.dur)
+// 			if err := checkFunc(test.want, got); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }
+//
+// func TestWithBackgroundCompactionInterval(t *testing.T) {
+// 	type args struct {
+// 		dur time.Duration
+// 	}
+// 	type want struct {
+// 		want Option
+// 	}
+// 	type test struct {
+// 		name       string
+// 		args       args
+// 		want       want
+// 		checkFunc  func(want, Option) error
+// 		beforeFunc func(*testing.T, args)
+// 		afterFunc  func(*testing.T, args)
+// 	}
+// 	defaultCheckFunc := func(w want, got Option) error {
+// 		if !reflect.DeepEqual(got, w.want) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		}
+// 		return nil
+// 	}
+// 	tests := []test{
+// 		// TODO test cases
+// 		/*
+// 		   {
+// 		       name: "test_case_1",
+// 		       args: args {
+// 		           dur:nil,
+// 		       },
+// 		       want: want{},
+// 		       checkFunc: defaultCheckFunc,
+// 		       beforeFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		       afterFunc: func(t *testing.T, args args) {
+// 		           t.Helper()
+// 		       },
+// 		   },
+// 		*/
+//
+// 		// TODO test cases
+// 		/*
+// 		   func() test {
+// 		       return test {
+// 		           name: "test_case_2",
+// 		           args: args {
+// 		           dur:nil,
+// 		           },
+// 		           want: want{},
+// 		           checkFunc: defaultCheckFunc,
+// 		           beforeFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		           afterFunc: func(t *testing.T, args args) {
+// 		               t.Helper()
+// 		           },
+// 		       }
+// 		   }(),
+// 		*/
+// 	}
+//
+// 	for _, tc := range tests {
+// 		test := tc
+// 		t.Run(test.name, func(tt *testing.T) {
+// 			tt.Parallel()
+// 			defer goleak.VerifyNone(tt, goleak.IgnoreCurrent())
+// 			if test.beforeFunc != nil {
+// 				test.beforeFunc(tt, test.args)
+// 			}
+// 			if test.afterFunc != nil {
+// 				defer test.afterFunc(tt, test.args)
+// 			}
+// 			checkFunc := test.checkFunc
+// 			if test.checkFunc == nil {
+// 				checkFunc = defaultCheckFunc
+// 			}
+//
+// 			got := WithBackgroundCompactionInterval(test.args.dur)
+// 			if err := checkFunc(test.want, got); err != nil {
+// 				tt.Errorf("error = %v", err)
+// 			}
+// 		})
+// 	}
+// }

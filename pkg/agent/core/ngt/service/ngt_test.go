@@ -16607,8 +16607,8 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		statisticsCache         atomic.Pointer[payload.Info_Index_Statistics]
 // 	}
 // 	type want struct {
-// 		want *payload.Info_Index_Statistics
-// 		err  error
+// 		wantStats *payload.Info_Index_Statistics
+// 		err       error
 // 	}
 // 	type test struct {
 // 		name       string
@@ -16618,12 +16618,12 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 		beforeFunc func(*testing.T)
 // 		afterFunc  func(*testing.T)
 // 	}
-// 	defaultCheckFunc := func(w want, got *payload.Info_Index_Statistics, err error) error {
+// 	defaultCheckFunc := func(w want, gotStats *payload.Info_Index_Statistics, err error) error {
 // 		if !errors.Is(err, w.err) {
 // 			return errors.Errorf("got_error: \"%#v\",\n\t\t\t\twant: \"%#v\"", err, w.err)
 // 		}
-// 		if !reflect.DeepEqual(got, w.want) {
-// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", got, w.want)
+// 		if !reflect.DeepEqual(gotStats, w.wantStats) {
+// 			return errors.Errorf("got: \"%#v\",\n\t\t\t\twant: \"%#v\"", gotStats, w.wantStats)
 // 		}
 // 		return nil
 // 	}
@@ -16824,8 +16824,8 @@ func createRandomData(num int, cfg *createRandomDataConfig) []index {
 // 				statisticsCache:         test.fields.statisticsCache,
 // 			}
 //
-// 			got, err := n.IndexStatistics()
-// 			if err := checkFunc(test.want, got, err); err != nil {
+// 			gotStats, err := n.IndexStatistics()
+// 			if err := checkFunc(test.want, gotStats, err); err != nil {
 // 				tt.Errorf("error = %v", err)
 // 			}
 // 		})
