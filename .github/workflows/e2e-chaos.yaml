@@ -62,10 +62,10 @@ jobs:
           helm_extra_options: ${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }}
           values: ${{ env.VALUES }}
           wait_for_selector: app=vald-lb-gateway
-      # - name: Deploy Chaos Mesh
-      #   uses: ./.github/actions/deploy-chaos-mesh
-      #   with:
-      #     helm_extra_options: "--set podChaos.failure.enabled=true"
+      - name: Deploy Chaos Mesh
+        uses: ./.github/actions/deploy-chaos-mesh
+        with:
+          helm_extra_options: "--set podChaos.failure.enabled=true"
       - name: Run Insert and Search operations
         run: |
           make hack/benchmark/assets/dataset/${{ env.DATASET }}
@@ -103,10 +103,10 @@ jobs:
           helm_extra_options: ${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }}
           values: ${{ env.VALUES }}
           wait_for_selector: app=vald-lb-gateway
-      # - name: Deploy Chaos Mesh
-      #   uses: ./.github/actions/deploy-chaos-mesh
-      #   with:
-      #     helm_extra_options: "--set podChaos.kill.enabled=true"
+      - name: Deploy Chaos Mesh
+        uses: ./.github/actions/deploy-chaos-mesh
+        with:
+          helm_extra_options: "--set podChaos.kill.enabled=true"
       - name: Run Insert and Search operations
         run: |
           make hack/benchmark/assets/dataset/${{ env.DATASET }}
@@ -144,10 +144,10 @@ jobs:
           helm_extra_options: ${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }}
           values: ${{ env.VALUES }}
           wait_for_selector: app=vald-lb-gateway
-      # - name: Deploy Chaos Mesh
-      #   uses: ./.github/actions/deploy-chaos-mesh
-      #   with:
-      #     helm_extra_options: "--set networkChaos.partition.enabled=true"
+      - name: Deploy Chaos Mesh
+        uses: ./.github/actions/deploy-chaos-mesh
+        with:
+          helm_extra_options: "--set networkChaos.partition.enabled=true"
       - name: Run Insert and Search operations
         run: |
           make hack/benchmark/assets/dataset/${{ env.DATASET }}
@@ -185,10 +185,10 @@ jobs:
           helm_extra_options: ${{ steps.setup_e2e.outputs.HELM_EXTRA_OPTIONS }}
           values: ${{ env.VALUES }}
           wait_for_selector: app=vald-lb-gateway
-      # - name: Deploy Chaos Mesh
-      #   uses: ./.github/actions/deploy-chaos-mesh
-      #   with:
-      #     helm_extra_options: "--set networkChaos.bandwidth.enabled=true"
+      - name: Deploy Chaos Mesh
+        uses: ./.github/actions/deploy-chaos-mesh
+        with:
+          helm_extra_options: "--set networkChaos.bandwidth.enabled=true"
       - name: Run Insert and Search operations
         run: |
           make hack/benchmark/assets/dataset/${{ env.DATASET }}
