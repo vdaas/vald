@@ -27,6 +27,7 @@ import (
 	"github.com/vdaas/vald/internal/net"
 	"github.com/vdaas/vald/internal/net/grpc"
 	"github.com/vdaas/vald/internal/sync/errgroup"
+	"golang.org/x/net/http2"
 )
 
 func TestServerMode_String(t *testing.T) {
@@ -502,9 +503,11 @@ func Test_server_ListenAndServe(t *testing.T) {
 				mode: test.field.mode,
 				eg:   test.field.eg,
 				http: struct {
-					srv     *http.Server
-					h       http.Handler
-					starter func(net.Listener) error
+					srv      *http.Server
+					h        http.Handler
+					h2srv    *http2.Server
+					enableH2 bool
+					starter  func(net.Listener) error
 				}{
 					starter: test.field.httpSrvStarter,
 				},
@@ -661,9 +664,11 @@ func Test_server_Shutdown(t *testing.T) {
 				mode: test.field.mode,
 				eg:   test.field.eg,
 				http: struct {
-					srv     *http.Server
-					h       http.Handler
-					starter func(net.Listener) error
+					srv      *http.Server
+					h        http.Handler
+					h2srv    *http2.Server
+					enableH2 bool
+					starter  func(net.Listener) error
 				}{
 					srv: test.field.httpSrv,
 				},

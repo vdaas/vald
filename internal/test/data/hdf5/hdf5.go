@@ -209,7 +209,10 @@ func downloadFile(url, path string) error {
 	if len(path) == 0 {
 		return errors.NewErrInvalidOption("no path is specified", path)
 	}
-	cli, err := client.New()
+	cli, err := client.New(
+		client.WithForceAttemptHTTP2(true),
+		client.WithEnableKeepalives(true),
+	)
 	if err != nil {
 		return err
 	}

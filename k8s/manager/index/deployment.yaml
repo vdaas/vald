@@ -46,7 +46,7 @@ spec:
         app.kubernetes.io/instance: release-name
         app.kubernetes.io/component: manager-index
       annotations:
-        checksum/configmap: 8f46024fd15030dbea48c80bcd8becf43a805ac2677efffc8adc4b9306fc62ca
+        checksum/configmap: 749ebf7ce611dafee119650baad5ea66a08b3b5df9858d4bce9a94ef86851e9c
         profefe.com/enable: "true"
         profefe.com/port: "6060"
         profefe.com/service: vald-manager-index

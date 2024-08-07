@@ -40,6 +40,7 @@ import (
 	"github.com/vdaas/vald/internal/strings"
 	"github.com/vdaas/vald/internal/sync"
 	"github.com/vdaas/vald/internal/sync/errgroup"
+	"golang.org/x/net/http2"
 )
 
 type Server interface {
@@ -88,9 +89,11 @@ type server struct {
 	wg   sync.WaitGroup
 	eg   errgroup.Group
 	http struct { // REST API
-		srv     *http.Server
-		h       http.Handler
-		starter func(net.Listener) error
+		srv      *http.Server
+		h        http.Handler
+		h2srv    *http2.Server
+		enableH2 bool
+		starter  func(net.Listener) error
 	}
 	grpc struct { // gRPC API
 		srv       *grpc.Server
@@ -178,16 +181,29 @@ func New(opts ...Option) (Server, error) {
 			srv.http.srv.Handler = srv.http.h
 		}
 		srv.http.starter = srv.http.srv.Serve
+		srv.http.srv.SetKeepAlivesEnabled(true)
 		if srv.tcfg != nil &&
 			(len(srv.tcfg.Certificates) != 0 ||
 				srv.tcfg.GetCertificate != nil ||
 				srv.tcfg.GetConfigForClient != nil) {
 			srv.http.srv.TLSConfig = srv.tcfg
-			srv.http.starter = func(l net.Listener) error {
-				return srv.http.srv.ServeTLS(l, "", "")
+			srv.http.starter = func(l net.Listener) (err error) {
+				if srv.http.enableH2 {
+					if srv.http.h2srv != nil {
+						srv.http.h2srv.IdleTimeout = srv.it
+					}
+					err = http2.ConfigureServer(srv.http.srv, srv.http.h2srv)
+					if err != nil {
+						return err
+					}
+				}
+				err = srv.http.srv.ServeTLS(l, "", "")
+				if err != nil {
+					return err
+				}
+				return nil
 			}
 		}
-		srv.http.srv.SetKeepAlivesEnabled(true)
 	case GRPC:
 		if srv.grpc.regs == nil {
 			return nil, errors.ErrInvalidAPIConfig

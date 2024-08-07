@@ -29,6 +29,12 @@ import (
 
 // Servers represents the configuration of server list.
 type Servers struct {
+	// TLS represent server tls configuration.
+	TLS *TLS `json:"tls" yaml:"tls"`
+
+	// FullShutdownDuration represent summary duration of shutdown time
+	FullShutdownDuration string `json:"full_shutdown_duration" yaml:"full_shutdown_duration"`
+
 	// Server represent server configuration.
 	Servers []*Server `json:"servers" yaml:"servers"`
 
@@ -43,31 +49,26 @@ type Servers struct {
 
 	// ShutdownStrategy represent shutdown order of server name
 	ShutdownStrategy []string `json:"shutdown_strategy" yaml:"shutdown_strategy"`
-
-	// FullShutdownDuration represent summary duration of shutdown time
-	FullShutdownDuration string `json:"full_shutdown_duration" yaml:"full_shutdown_duration"`
-
-	// TLS represent server tls configuration.
-	TLS *TLS `json:"tls" yaml:"tls"`
 }
 
 // Server represents the server configuration.
 type Server struct {
+	GRPC          *GRPC         `json:"grpc,omitempty"            yaml:"grpc"`
+	SocketOption  *SocketOption `json:"socket_option,omitempty"   yaml:"socket_option"`
+	HTTP          *HTTP         `json:"http,omitempty"            yaml:"http"`
 	Name          string        `json:"name,omitempty"            yaml:"name"`
 	Network       string        `json:"network,omitempty"         yaml:"network"`
 	Host          string        `json:"host,omitempty"            yaml:"host"`
-	Port          uint16        `json:"port,omitempty"            yaml:"port"`
 	SocketPath    string        `json:"socket_path,omitempty"     yaml:"socket_path"`
 	Mode          string        `json:"mode,omitempty"            yaml:"mode"` // gRPC, REST, GraphQL
 	ProbeWaitTime string        `json:"probe_wait_time,omitempty" yaml:"probe_wait_time"`
-	HTTP          *HTTP         `json:"http,omitempty"            yaml:"http"`
-	GRPC          *GRPC         `json:"grpc,omitempty"            yaml:"grpc"`
-	SocketOption  *SocketOption `json:"socket_option,omitempty"   yaml:"socket_option"`
 	Restart       bool          `json:"restart,omitempty"         yaml:"restart"`
+	Port          uint16        `json:"port,omitempty"            yaml:"port"`
 }
 
 // HTTP represents the configuration for HTTP.
 type HTTP struct {
+	HTTP2             *HTTP2 `json:"http2"               yaml:"http2"`
 	ShutdownDuration  string `json:"shutdown_duration"   yaml:"shutdown_duration"`
 	HandlerTimeout    string `json:"handler_timeout"     yaml:"handler_timeout"`
 	IdleTimeout       string `json:"idle_timeout"        yaml:"idle_timeout"`
@@ -76,22 +77,35 @@ type HTTP struct {
 	WriteTimeout      string `json:"write_timeout"       yaml:"write_timeout"`
 }
 
+// HTTP2 represents the configuration for HTTP2.
+type HTTP2 struct {
+	HandlerLimit                 int    `json:"handler_limit,omitempty"                    yaml:"handler_limit"`
+	Enabled                      bool   `json:"enabled,omitempty"                          yaml:"enabled"`
+	PermitProhibitedCipherSuites bool   `json:"permit_prohibited_cipher_suites,omitempty"  yaml:"permit_prohibited_cipher_suites"`
+	MaxUploadBufferPerConnection int32  `json:"max_upload_buffer_per_connection,omitempty" yaml:"max_upload_buffer_per_connection"`
+	MaxUploadBufferPerStream     int32  `json:"max_upload_buffer_per_stream,omitempty"     yaml:"max_upload_buffer_per_stream"`
+	MaxConcurrentStreams         uint32 `json:"max_concurrent_streams,omitempty"           yaml:"max_concurrent_streams"`
+	MaxDecoderHeaderTableSize    uint32 `json:"max_decoder_header_table_size,omitempty"    yaml:"max_decoder_header_table_size"`
+	MaxEncoderHeaderTableSize    uint32 `json:"max_encoder_header_table_size,omitempty"    yaml:"max_encoder_header_table_size"`
+	MaxReadFrameSize             uint32 `json:"max_read_frame_size,omitempty"              yaml:"max_read_frame_size"`
+}
+
 // GRPC represents the configuration for gPRC.
 type GRPC struct {
+	Keepalive                      *GRPCKeepalive `json:"keepalive,omitempty"                        yaml:"keepalive"`
+	ConnectionTimeout              string         `json:"connection_timeout,omitempty"               yaml:"connection_timeout"`
+	Interceptors                   []string       `json:"interceptors,omitempty"                     yaml:"interceptors"`
+	EnableReflection               bool           `json:"enable_reflection,omitempty"                yaml:"enable_reflection"`
+	EnableAdmin                    bool           `json:"enable_admin,omitempty"                     yaml:"enable_admin"`
 	BidirectionalStreamConcurrency int            `json:"bidirectional_stream_concurrency,omitempty" yaml:"bidirectional_stream_concurrency"`
 	MaxReceiveMessageSize          int            `json:"max_receive_message_size,omitempty"         yaml:"max_receive_message_size"`
 	MaxSendMessageSize             int            `json:"max_send_message_size,omitempty"            yaml:"max_send_message_size"`
 	InitialWindowSize              int            `json:"initial_window_size,omitempty"              yaml:"initial_window_size"`
 	InitialConnWindowSize          int            `json:"initial_conn_window_size,omitempty"         yaml:"initial_conn_window_size"`
-	Keepalive                      *GRPCKeepalive `json:"keepalive,omitempty"                        yaml:"keepalive"`
 	WriteBufferSize                int            `json:"write_buffer_size,omitempty"                yaml:"write_buffer_size"`
 	ReadBufferSize                 int            `json:"read_buffer_size,omitempty"                 yaml:"read_buffer_size"`
-	ConnectionTimeout              string         `json:"connection_timeout,omitempty"               yaml:"connection_timeout"`
 	MaxHeaderListSize              int            `json:"max_header_list_size,omitempty"             yaml:"max_header_list_size"`
 	HeaderTableSize                int            `json:"header_table_size,omitempty"                yaml:"header_table_size"`
-	Interceptors                   []string       `json:"interceptors,omitempty"                     yaml:"interceptors"`
-	EnableReflection               bool           `json:"enable_reflection,omitempty"                yaml:"enable_reflection"`
-	EnableAdmin                    bool           `json:"enable_admin,omitempty"                     yaml:"enable_admin"`
 }
 
 // GRPCKeepalive represents the configuration for gRPC keep-alive.
@@ -257,6 +271,19 @@ func (s *Server) Opts() []server.Option {
 				server.WithIdleTimeout(s.HTTP.IdleTimeout),
 				server.WithShutdownDuration(s.HTTP.ShutdownDuration),
 			)
+			if s.HTTP.HTTP2 != nil && s.HTTP.HTTP2.Enabled {
+				opts = append(opts,
+					server.WithHTTP2Enabled(s.HTTP.HTTP2.Enabled),
+					server.WithHandlerLimit(s.HTTP.HTTP2.HandlerLimit),
+					server.WithPermitProhibitedCipherSuites(s.HTTP.HTTP2.PermitProhibitedCipherSuites),
+					server.WithMaxConcurrentStreams(s.HTTP.HTTP2.MaxConcurrentStreams),
+					server.WithMaxUploadBufferPerConnection(s.HTTP.HTTP2.MaxUploadBufferPerConnection),
+					server.WithMaxUploadBufferPerStream(s.HTTP.HTTP2.MaxUploadBufferPerStream),
+					server.WithMaxDecoderHeaderTableSize(s.HTTP.HTTP2.MaxDecoderHeaderTableSize),
+					server.WithMaxEncoderHeaderTableSize(s.HTTP.HTTP2.MaxEncoderHeaderTableSize),
+					server.WithMaxReadFrameSize(s.HTTP.HTTP2.MaxReadFrameSize),
+				)
+			}
 		}
 	case server.GRPC:
 		opts = append(opts,

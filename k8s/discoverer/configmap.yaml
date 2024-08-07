@@ -82,6 +82,16 @@ data:
           port: 3000
           http:
             handler_timeout: ""
+            http2:
+              enabled: false
+              handler_limit: 0
+              max_concurrent_streams: 0
+              max_decoder_header_table_size: 4096
+              max_encoder_header_table_size: 4096
+              max_read_frame_size: 0
+              max_upload_buffer_per_connection: 0
+              max_upload_buffer_per_stream: 0
+              permit_prohibited_cipher_suites: true
             idle_timeout: ""
             read_header_timeout: ""
             read_timeout: ""
@@ -107,6 +117,16 @@ data:
           port: 3001
           http:
             handler_timeout: ""
+            http2:
+              enabled: false
+              handler_limit: 0
+              max_concurrent_streams: 0
+              max_decoder_header_table_size: 4096
+              max_encoder_header_table_size: 4096
+              max_read_frame_size: 0
+              max_upload_buffer_per_connection: 0
+              max_upload_buffer_per_stream: 0
+              permit_prohibited_cipher_suites: true
             idle_timeout: ""
             read_header_timeout: ""
             read_timeout: ""
@@ -133,6 +153,16 @@ data:
           port: 6060
           http:
             handler_timeout: 5s
+            http2:
+              enabled: false
+              handler_limit: 0
+              max_concurrent_streams: 0
+              max_decoder_header_table_size: 4096
+              max_encoder_header_table_size: 4096
+              max_read_frame_size: 0
+              max_upload_buffer_per_connection: 0
+              max_upload_buffer_per_stream: 0
+              permit_prohibited_cipher_suites: true
             idle_timeout: 2s
             read_header_timeout: 1s
             read_timeout: 1s

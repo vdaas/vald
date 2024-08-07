@@ -43,8 +43,8 @@ ENV REPO=vald
 ENV RUST_HOME=/usr/loacl/lib/rust
 ENV TZ=Etc/UTC
 ENV USER=root
-ENV CARGO_HOME=${RUST_HOME}/cargo
 ENV RUSTUP_HOME=${RUST_HOME}/rustup
+ENV CARGO_HOME=${RUST_HOME}/cargo
 ENV PATH=${CARGO_HOME}/bin:${RUSTUP_HOME}/bin:/usr/local/bin:${PATH}
 
 WORKDIR ${HOME}/rust/src/github.com/${ORG}/${REPO}
